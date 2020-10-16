@@ -64,6 +64,7 @@
 namespace QtWebEngineCore {
 class RenderWidgetHostViewQtDelegate;
 class RenderWidgetHostViewQtDelegateWidget;
+class RenderWidgetHostViewQtDelegateClient;
 class TouchHandleDrawableClient;
 class TouchSelectionMenuController;
 class WebContentsAdapter;
@@ -76,6 +77,34 @@ class QWebEnginePage;
 class QWebEngineProfile;
 class QWebEngineSettings;
 class QWebEngineView;
+
+class PageView
+{
+public:
+    virtual void contextMenuRequested(QWebEngineContextMenuRequest *request) = 0;
+    virtual QStringList chooseFiles(QWebEnginePage::FileSelectionMode mode,
+                                    const QStringList &oldFiles,
+                                    const QStringList &acceptedMimeTypes) = 0;
+    virtual void
+    showColorDialog(QSharedPointer<QtWebEngineCore::ColorChooserController> controller) = 0;
+    virtual bool showAuthorizationDialog(const QString &title, const QString &message) = 0;
+    virtual void javaScriptAlert(const QUrl &url, const QString &msg) = 0;
+    virtual bool javaScriptConfirm(const QUrl &url, const QString &msg) = 0;
+    virtual bool javaScriptPrompt(const QUrl &url, const QString &msg, const QString &defaultValue,
+                                  QString *result) = 0;
+    virtual void setToolTip(const QString &toolTipText) = 0;
+    virtual QtWebEngineCore::RenderWidgetHostViewQtDelegate *CreateRenderWidgetHostViewQtDelegate(
+            QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) = 0;
+    virtual QWebEngineContextMenuRequest *lastContextMenuRequest() const = 0;
+    virtual QWebEnginePage *createPageForWindow(QWebEnginePage::WebWindowType type) = 0;
+    virtual bool isEnabled() const = 0;
+    virtual bool isVisible() const = 0;
+    virtual QRect viewportRect() const = 0;
+    virtual void focusContainer() = 0;
+    virtual void unhandledKeyEvent(QKeyEvent *event) = 0;
+    virtual bool passOnFocus(bool reverse) = 0;
+    virtual QObject *accessibilityParentObject() = 0;
+};
 
 class QWebEnginePagePrivate : public QtWebEngineCore::WebContentsAdapterClient
 {
@@ -174,7 +203,7 @@ public:
     QWebEngineHistory *history;
     QWebEngineProfile *profile;
     QWebEngineSettings *settings;
-    QWebEngineView *view;
+    PageView *view;
     QUrl url;
     bool isLoading;
     QWebEngineScriptCollection scriptCollection;

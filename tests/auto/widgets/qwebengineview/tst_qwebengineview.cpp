@@ -3483,6 +3483,12 @@ void tst_QWebEngineView::switchPage()
       QWebEnginePage page2(&profile);
       QSignalSpy loadFinishedSpy1(&page1, SIGNAL(loadFinished(bool)));
       QSignalSpy loadFinishedSpy2(&page2, SIGNAL(loadFinished(bool)));
+      // TODO fixme: page without the view has no real widget behind, so
+      // reading graphical content will fail, add view for now.
+      QWebEngineView webView1;
+      QWebEngineView webView2;
+      webView1.setPage(&page1);
+      webView2.setPage(&page2);
       page1.setHtml("<html><body bgcolor=\"#000000\"></body></html>");
       page2.setHtml("<html><body bgcolor=\"#ffffff\"></body></html>");
       QTRY_VERIFY(loadFinishedSpy1.count() && loadFinishedSpy2.count());

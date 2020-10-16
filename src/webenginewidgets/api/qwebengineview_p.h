@@ -54,17 +54,19 @@
 #include <QtWebEngineWidgets/qwebengineview.h>
 #include "qwebenginecontextmenurequest.h"
 #include "render_view_context_menu_qt.h"
+#include "qwebenginepage_p.h"
 #include <QtWidgets/qaccessiblewidget.h>
 
 namespace QtWebEngineCore {
 class RenderWidgetHostViewQtDelegateWidget;
+class RenderWidgetHostViewQtDelegate;
 }
 
 QT_BEGIN_NAMESPACE
 
 class QWebEngineView;
 
-class QWebEngineViewPrivate
+class QWebEngineViewPrivate : public PageView
 {
 public:
     Q_DECLARE_PUBLIC(QWebEngineView)
@@ -74,22 +76,34 @@ public:
     void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *oldWidget,
                        QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *newWidget);
 
-    void contextMenuRequested(QWebEngineContextMenuRequest *request);
+    void contextMenuRequested(QWebEngineContextMenuRequest *request) override;
     QStringList chooseFiles(QWebEnginePage::FileSelectionMode mode, const QStringList &oldFiles,
-                            const QStringList &acceptedMimeTypes);
-    void showColorDialog(QSharedPointer<QtWebEngineCore::ColorChooserController> controller);
-    bool showAuthorizationDialog(const QString &title, const QString &message);
-    void javaScriptAlert(const QUrl &url, const QString &msg);
-    bool javaScriptConfirm(const QUrl &url, const QString &msg);
+                            const QStringList &acceptedMimeTypes) override;
+    void
+    showColorDialog(QSharedPointer<QtWebEngineCore::ColorChooserController> controller) override;
+    bool showAuthorizationDialog(const QString &title, const QString &message) override;
+    void javaScriptAlert(const QUrl &url, const QString &msg) override;
+    bool javaScriptConfirm(const QUrl &url, const QString &msg) override;
     bool javaScriptPrompt(const QUrl &url, const QString &msg, const QString &defaultValue,
-                          QString *result);
-    void setToolTip(const QString &toolTipText);
+                          QString *result) override;
+    void setToolTip(const QString &toolTipText) override;
+    QtWebEngineCore::RenderWidgetHostViewQtDelegate *CreateRenderWidgetHostViewQtDelegate(
+            QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override;
+    QWebEngineContextMenuRequest *lastContextMenuRequest() const override;
+    QWebEnginePage *createPageForWindow(QWebEnginePage::WebWindowType type) override;
+    QObject *accessibilityParentObject() override;
     QWebEngineViewPrivate();
+    virtual ~QWebEngineViewPrivate();
     static void bindPageAndView(QWebEnginePage *page, QWebEngineView *view);
     static void bindPageAndWidget(QWebEnginePage *page,
                                   QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *widget);
     QIcon webActionIcon(QWebEnginePage::WebAction action);
-
+    void unhandledKeyEvent(QKeyEvent *event) override;
+    void focusContainer() override;
+    bool passOnFocus(bool reverse) override;
+    bool isEnabled() const override;
+    bool isVisible() const override;
+    QRect viewportRect() const override;
     QWebEnginePage *page;
     bool m_dragEntered;
     mutable bool m_ownsPage;

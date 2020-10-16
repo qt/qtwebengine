@@ -78,6 +78,7 @@
 #    include <QMessageBox>
 #endif
 #include <QStyle>
+#include <QGuiApplication>
 
 QT_BEGIN_NAMESPACE
 
@@ -306,6 +307,26 @@ bool QWebEngineViewPrivate::javaScriptPrompt(const QUrl &url, const QString &msg
 #endif // QT_CONFIG(inputdialog)
 }
 
+void QWebEngineViewPrivate::focusContainer()
+{
+    Q_Q(QWebEngineView);
+    q->activateWindow();
+    q->setFocus();
+}
+
+void QWebEngineViewPrivate::unhandledKeyEvent(QKeyEvent *event)
+{
+    Q_Q(QWebEngineView);
+    if (q->parentWidget())
+        QGuiApplication::sendEvent(q->parentWidget(), event);
+}
+
+bool QWebEngineViewPrivate::passOnFocus(bool reverse)
+{
+    Q_Q(QWebEngineView);
+    return q->focusNextPrevChild(!reverse);
+}
+
 #ifndef QT_NO_ACCESSIBILITY
 static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *object)
 {
@@ -323,9 +344,13 @@ QWebEngineViewPrivate::QWebEngineViewPrivate()
 #endif // QT_NO_ACCESSIBILITY
 }
 
+QWebEngineViewPrivate::~QWebEngineViewPrivate() = default;
+
 void QWebEngineViewPrivate::bindPageAndView(QWebEnginePage *page, QWebEngineView *view)
 {
-    auto oldView = page ? page->d_func()->view : nullptr;
+    QWebEngineViewPrivate *v =
+            page ? static_cast<QWebEngineViewPrivate *>(page->d_func()->view) : nullptr;
+    auto oldView = v ? v->q_func() : nullptr;
     auto oldPage = view ? view->d_func()->page : nullptr;
 
     bool ownNewPage = false;
@@ -339,7 +364,7 @@ void QWebEngineViewPrivate::bindPageAndView(QWebEnginePage *page, QWebEngineView
             oldView->d_func()->page = nullptr;
             oldView->d_func()->m_ownsPage = false;
         }
-        page->d_func()->view = view;
+        page->d_func()->view = view ? view->d_func() : nullptr;
     }
 
     if (view && oldPage != page) {
@@ -399,12 +424,12 @@ void QWebEngineViewPrivate::bindPageAndWidget(
 
     if (widget && oldPage != page && oldPage && oldPage->d_func()) {
         if (auto oldView = oldPage->d_func()->view)
-            oldView->d_func()->widgetChanged(widget, nullptr);
+            static_cast<QWebEngineViewPrivate *>(oldView)->widgetChanged(widget, nullptr);
     }
 
     if (page && oldWidget != widget) {
         if (auto view = page->d_func()->view)
-            view->d_func()->widgetChanged(oldWidget, widget);
+            static_cast<QWebEngineViewPrivate *>(view)->widgetChanged(oldWidget, widget);
     }
 }
 
@@ -434,6 +459,56 @@ QIcon QWebEngineViewPrivate::webActionIcon(QWebEnginePage::WebAction action)
         break;
     }
     return icon;
+}
+
+QWebEnginePage *QWebEngineViewPrivate::createPageForWindow(QWebEnginePage::WebWindowType type)
+{
+    Q_Q(QWebEngineView);
+    QWebEngineView *newView = q->createWindow(type);
+    if (newView)
+        return newView->page();
+    return nullptr;
+}
+
+void QWebEngineViewPrivate::setToolTip(const QString &toolTipText)
+{
+    Q_Q(QWebEngineView);
+    q->setToolTip(toolTipText);
+}
+
+bool QWebEngineViewPrivate::isEnabled() const
+{
+    Q_Q(const QWebEngineView);
+    return q->isEnabled();
+}
+
+QObject *QWebEngineViewPrivate::accessibilityParentObject()
+{
+    Q_Q(QWebEngineView);
+    return q;
+}
+
+bool QWebEngineViewPrivate::isVisible() const
+{
+    Q_Q(const QWebEngineView);
+    return q->isVisible();
+}
+QRect QWebEngineViewPrivate::viewportRect() const
+{
+    Q_Q(const QWebEngineView);
+    return q->rect();
+}
+QtWebEngineCore::RenderWidgetHostViewQtDelegate *
+QWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate(
+        QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client)
+{
+    Q_Q(QWebEngineView);
+    return new QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget(client, q);
+}
+
+QWebEngineContextMenuRequest *QWebEngineViewPrivate::lastContextMenuRequest() const
+{
+    return m_contextRequest;
 }
 /*!
     \fn QWebEngineView::renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode)

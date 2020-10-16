@@ -63,14 +63,13 @@
 #include "qwebengineregisterprotocolhandlerrequest.h"
 #include "qwebenginescriptcollection_p.h"
 #include "qwebenginesettings.h"
-#include "qwebengineview.h"
-#include "qwebengineview_p.h"
 #include "user_notification_controller.h"
 #include "render_widget_host_view_qt_delegate_widget.h"
 #include "web_contents_adapter.h"
 #include "web_engine_settings.h"
 #include "qwebenginescript.h"
-
+#include "render_view_context_menu_qt.h"
+#include "render_widget_host_view_qt_delegate_client.h"
 #include <QAction>
 #include <QApplication>
 #include <QAuthenticator>
@@ -92,6 +91,49 @@ QT_BEGIN_NAMESPACE
 using namespace QtWebEngineCore;
 
 static const int MaxTooltipLength = 1024;
+
+// add temporary dummy code to cover the case when page is loading and there is no view
+class DummyDelegate : public QObject, public QtWebEngineCore::RenderWidgetHostViewQtDelegate
+{
+public:
+    DummyDelegate(RenderWidgetHostViewQtDelegateClient *client) : m_delegateClient(client) {};
+    ~DummyDelegate() = default;
+    void initAsPopup(const QRect &) override { Q_UNREACHABLE(); }
+    QRectF viewGeometry() const override { return QRectF(m_pos, m_size); }
+    void setKeyboardFocus() override { }
+    bool hasKeyboardFocus() override { return false; }
+    void lockMouse() override { Q_UNREACHABLE(); }
+    void unlockMouse() override { Q_UNREACHABLE(); }
+    void show() override { m_delegateClient->notifyShown(); }
+    void hide() override { m_delegateClient->notifyHidden(); }
+    bool isVisible() const override { Q_UNREACHABLE(); }
+    QWindow *window() const override { return nullptr; }
+    void updateCursor(const QCursor &cursor) override
+    { /*setCursor(cursor);*/
+    }
+    void resize(int width, int height) override
+    {
+        m_size = QSize(width, height);
+        m_delegateClient->visualPropertiesChanged();
+    }
+    void move(const QPoint &) override { Q_UNREACHABLE(); }
+    void inputMethodStateChanged(bool, bool) override { }
+    void setInputMethodHints(Qt::InputMethodHints) override { }
+    void setClearColor(const QColor &) override { }
+    void adapterClientChanged(WebContentsAdapterClient *client) override { }
+    bool copySurface(const QRect &rect, const QSize &size, QImage &image)
+    {
+        Q_UNREACHABLE();
+        return false;
+    }
+    QRect windowGeometry() const override { return QRect(m_pos, m_size); }
+    bool forwardEvent(QEvent *ev) { return m_delegateClient->forwardEvent(ev); }
+
+private:
+    RenderWidgetHostViewQtDelegateClient *m_delegateClient;
+    QPoint m_pos;
+    QSize m_size;
+};
 
 static QWebEnginePage::WebWindowType toWindowType(WebContentsAdapterClient::WindowOpenDisposition disposition)
 {
@@ -159,7 +201,7 @@ RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostVie
     // The new delegate will not be deleted by the parent view though, because we unset the parent
     // when the parent is destroyed. The delegate will be destroyed by Chromium when the popup is
     // dismissed.
-    return new RenderWidgetHostViewQtDelegateWidget(client, this->view);
+    return view ? view->CreateRenderWidgetHostViewQtDelegate(client) : new DummyDelegate(client);
 }
 
 void QWebEnginePagePrivate::initializationFinished()
@@ -243,7 +285,7 @@ void QWebEnginePagePrivate::renderProcessPidChanged(qint64 pid)
 
 QRectF QWebEnginePagePrivate::viewportRect() const
 {
-    return view ? view->rect() : QRectF();
+    return view ? view->viewportRect() : QRectF();
 }
 
 QColor QWebEnginePagePrivate::backgroundColor() const
@@ -298,15 +340,15 @@ void QWebEnginePagePrivate::didPrintPageToPdf(const QString &filePath, bool succ
 void QWebEnginePagePrivate::focusContainer()
 {
     if (view) {
-        view->activateWindow();
-        view->setFocus();
+        view->focusContainer();
     }
 }
 
 void QWebEnginePagePrivate::unhandledKeyEvent(QKeyEvent *event)
 {
-    if (view && view->parentWidget())
-        QGuiApplication::sendEvent(view->parentWidget(), event);
+    if (view) {
+        view->unhandledKeyEvent(event);
+    }
 }
 
 QSharedPointer<WebContentsAdapter>
@@ -415,9 +457,7 @@ void QWebEnginePagePrivate::didPrintPage(quint64 requestId, QSharedPointer<QByte
 
 bool QWebEnginePagePrivate::passOnFocus(bool reverse)
 {
-    if (view)
-        return view->focusNextPrevChild(!reverse);
-    return false;
+    return view ? view->passOnFocus(reverse) : false;
 }
 
 void QWebEnginePagePrivate::authenticationRequired(QSharedPointer<AuthenticationDialogController> controller)
@@ -450,7 +490,7 @@ void QWebEnginePagePrivate::releaseProfile()
 void QWebEnginePagePrivate::showColorDialog(QSharedPointer<ColorChooserController> controller)
 {
     if (view)
-        view->d_func()->showColorDialog(controller);
+        view->showColorDialog(controller);
 }
 
 void QWebEnginePagePrivate::runMediaAccessPermissionRequest(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags requestFlags)
@@ -512,7 +552,7 @@ void QWebEnginePagePrivate::runRegisterProtocolHandlerRequest(QWebEngineRegister
 
 QObject *QWebEnginePagePrivate::accessibilityParentObject()
 {
-    return view;
+    return view ? view->accessibilityParentObject() : nullptr;
 }
 
 void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
@@ -1522,7 +1562,7 @@ bool QWebEnginePage::event(QEvent *e)
 void QWebEnginePagePrivate::contextMenuRequested(QWebEngineContextMenuRequest *data)
 {
     if (view)
-        view->d_ptr->contextMenuRequested(data);
+        view->contextMenuRequested(data);
 }
 
 void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame)
@@ -1568,8 +1608,7 @@ void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogCont
         accepted = q->javaScriptConfirm(controller->securityOrigin(), QCoreApplication::translate("QWebEnginePage", "Are you sure you want to leave this page? Changes that you made may not be saved."));
         break;
     case InternalAuthorizationDialog:
-        accepted = view ? view->d_func()->showAuthorizationDialog(controller->title(),
-                                                                  controller->message())
+        accepted = view ? view->showAuthorizationDialog(controller->title(), controller->message())
                         : false;
         break;
     }
@@ -1641,9 +1680,8 @@ QObject *QWebEnginePagePrivate::dragSource() const
 
 bool QWebEnginePagePrivate::isEnabled() const
 {
-    const QWidget *widget = view;
-    if (widget)
-        return widget->isEnabled();
+    if (view)
+        return view->isEnabled();
     return true;
 }
 
@@ -2003,12 +2041,7 @@ QWebEngineScriptCollection &QWebEnginePage::scripts()
 QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)
 {
     Q_D(QWebEnginePage);
-    if (d->view) {
-        QWebEngineView *newView = d->view->createWindow(type);
-        if (newView)
-            return newView->page();
-    }
-    return 0;
+    return d->view ? d->view->createPageForWindow(type) : nullptr;
 }
 
 /*!
@@ -2107,8 +2140,7 @@ ASSERT_ENUMS_MATCH(FilePickerController::OpenMultiple, QWebEnginePage::FileSelec
 QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringList &oldFiles, const QStringList &acceptedMimeTypes)
 {
     Q_D(const QWebEnginePage);
-    return d->view ? d->view->d_func()->chooseFiles(mode, oldFiles, acceptedMimeTypes)
-                   : QStringList();
+    return d->view ? d->view->chooseFiles(mode, oldFiles, acceptedMimeTypes) : QStringList();
 }
 
 void QWebEnginePage::javaScriptAlert(const QUrl &securityOrigin, const QString &msg)
@@ -2116,21 +2148,21 @@ void QWebEnginePage::javaScriptAlert(const QUrl &securityOrigin, const QString &
     Q_UNUSED(securityOrigin);
     Q_D(const QWebEnginePage);
     if (d->view)
-        d->view->d_func()->javaScriptAlert(url(), msg);
+        d->view->javaScriptAlert(url(), msg);
 }
 
 bool QWebEnginePage::javaScriptConfirm(const QUrl &securityOrigin, const QString &msg)
 {
     Q_UNUSED(securityOrigin);
     Q_D(const QWebEnginePage);
-    return d->view ? d->view->d_func()->javaScriptConfirm(url(), msg) : false;
+    return d->view ? d->view->javaScriptConfirm(url(), msg) : false;
 }
 
 bool QWebEnginePage::javaScriptPrompt(const QUrl &securityOrigin, const QString &msg, const QString &defaultValue, QString *result)
 {
     Q_UNUSED(securityOrigin);
     Q_D(const QWebEnginePage);
-    return d->view ? d->view->d_func()->javaScriptPrompt(url(), msg, defaultValue, result) : false;
+    return d->view ? d->view->javaScriptPrompt(url(), msg, defaultValue, result) : false;
 }
 
 void QWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID)

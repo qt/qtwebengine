@@ -50,8 +50,8 @@
 #include <QtCore/qurl.h>
 #include <QtCore/qvariant.h>
 #include <QtGui/qpagelayout.h>
+#include <QtGui/qaction.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
-#include <QtWidgets/qwidget.h>
 
 QT_BEGIN_NAMESPACE
 class QMenu;
