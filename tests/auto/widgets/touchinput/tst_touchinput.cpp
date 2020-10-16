@@ -51,7 +51,9 @@ private Q_SLOTS:
     void touchTapAndHold();
     void touchTapAndHoldCancelled();
     void scrolling();
+    void pinchZoom_data();
     void pinchZoom();
+    void complexSequence();
 
 private:
     QWebEngineView view;
@@ -75,13 +77,17 @@ private:
         QTest::touchEvent(target, s_touchDevice).release(42, p, target);
     }
 
-    void gesturePinch(bool zoomIn) {
+    void gesturePinch(bool zoomIn, bool tapOneByOne = false) {
         auto target = view.focusProxy();
         QPoint p(target->width() / 2, target->height() / 2);
         auto t1 = p - QPoint(zoomIn ? 50 : 150, 10), t2 = p + QPoint(zoomIn ? 50 : 150, 10);
 
-        QTest::touchEvent(target, s_touchDevice).press(42, t1, target);
-        QTest::touchEvent(target, s_touchDevice).stationary(42).press(24, t2, target);
+        if (tapOneByOne) {
+            QTest::touchEvent(target, s_touchDevice).press(42, t1, target);
+            QTest::touchEvent(target, s_touchDevice).stationary(42).press(24, t2, target);
+        } else {
+            QTest::touchEvent(target, s_touchDevice).press(42, t1, target).press(24, t2, target);
+        }
 
         for (int i = 0; i < 3; ++i) {
             if (zoomIn) {
@@ -95,8 +101,12 @@ private:
             QTest::touchEvent(target, s_touchDevice).move(24, t1, target).move(42, t2, target);
         }
 
-        QTest::touchEvent(target, s_touchDevice).stationary(42).release(24, t2, target);
-        QTest::touchEvent(target, s_touchDevice).release(42, t1, target);
+        if (tapOneByOne) {
+            QTest::touchEvent(target, s_touchDevice).stationary(42).release(24, t2, target);
+            QTest::touchEvent(target, s_touchDevice).release(42, t1, target);
+        } else {
+            QTest::touchEvent(target, s_touchDevice).release(42, t1, target).release(24, t2, target);
+        }
     }
 
     int getScrollPosition(int *position = nullptr) {
@@ -275,16 +285,55 @@ void TouchInputTest::scrolling()
     QTRY_COMPARE(getScrollPosition(), 0);
 }
 
+void TouchInputTest::pinchZoom_data()
+{
+    QTest::addColumn<bool>("tapOneByOne");
+    QTest::addRow("sequential") << true;
+    QTest::addRow("simultaneous") << false;
+}
+
 void TouchInputTest::pinchZoom()
 {
+    QFETCH(bool, tapOneByOne);
     double scale = getScaleFactor();
     QCOMPARE(scale, 1.0);
 
     for (int i = 0; i < 3; ++i) {
-        gesturePinch(/* zoomIn = */true);
+        gesturePinch(/* zoomIn = */true, tapOneByOne);
         QTRY_VERIFY2(getScaleFactor(&scale) > 1.5, qPrintable(QString("i: %1, scale: %2").arg(i).arg(scale)));
-        gesturePinch(/* zoomIn = */false);
+        gesturePinch(/* zoomIn = */false, tapOneByOne);
         QTRY_COMPARE(getScaleFactor(&scale), 1.0);
+    }
+}
+
+void TouchInputTest::complexSequence()
+{
+    auto t = view.focusProxy();
+    QPoint pc(view.width() / 2, view.height() / 2), p1 = pc - QPoint(50, 25), p2 = pc + QPoint(50, 25);
+
+    for (int i = 0; i < 4; ++i) {
+        QTest::touchEvent(t, s_touchDevice).press(42, p1, t); QTest::qWait(50);
+        QTest::touchEvent(t, s_touchDevice).stationary(42).press(24, p2, t); QTest::qWait(50);
+        QTest::touchEvent(t, s_touchDevice).release(42, p1, t).release(24, p2, t);
+
+        // for additional variablity add zooming in on even steps and zooming out on odd steps
+        // MEMO scroll position will always be 0 while viewport scale factor > 1.0, so do zoom in after scroll
+        bool zoomIn = i % 2 == 0;
+
+        if (!zoomIn) {
+            gesturePinch(false);
+            QTRY_COMPARE(getScaleFactor(), 1.0);
+        }
+
+        int p = getScrollPosition(), positionBefore = p;
+        gestureScroll(true);
+        QTRY_VERIFY2_WITH_TIMEOUT(getScrollPosition(&p) > positionBefore, qPrintable(QString("i: %1, position: %2 -> %3").arg(i).arg(positionBefore).arg(p)), 1000);
+
+        if (zoomIn) {
+            double s = getScaleFactor(), scaleBefore = s;
+            gesturePinch(true);
+            QTRY_VERIFY2(getScaleFactor(&s) > scaleBefore, qPrintable(QString("i: %1, scale: %2").arg(i).arg(s)));
+        }
     }
 }
 

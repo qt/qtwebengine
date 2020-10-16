@@ -66,6 +66,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/content_switches_internal.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
+#include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/input_messages.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -198,8 +199,12 @@ public:
         , flags(flagsFromModifiers(modifiers))
         , index(index)
     {
-        // ACTION_DOWN and ACTION_UP must be accesssed through pointer_index 0
-        Q_ASSERT((action != Action::DOWN && action != Action::UP) || index == 0);
+        // index is only valid for ACTION_DOWN and ACTION_UP and should correspond to the point causing it
+        // see blink_event_util.cc:ToWebTouchPointState for details
+        Q_ASSERT_X((action != Action::POINTER_DOWN && action != Action::POINTER_UP && index == -1)
+                || (action == Action::POINTER_DOWN && index >= 0 && touchPoint(index).state() == Qt::TouchPointPressed)
+                || (action == Action::POINTER_UP && index >= 0 && touchPoint(index).state() == Qt::TouchPointReleased),
+                "MotionEventQt", qPrintable(QString("action: %1, index: %2, state: %3").arg(int(action)).arg(index).arg(touchPoint(index).state())));
     }
 
     uint32_t GetUniqueEventId() const override { return eventId; }
@@ -1231,7 +1236,8 @@ void RenderWidgetHostViewQt::closePopup()
 void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) {
     Q_UNUSED(touch);
     const bool eventConsumed = ack_result == content::INPUT_EVENT_ACK_STATE_CONSUMED;
-    m_gestureProvider.OnTouchEventAck(touch.event.unique_touch_event_id, eventConsumed, /*fixme: ?? */false);
+    const bool isSetNonBlocking = content::InputEventAckStateIsSetNonBlocking(ack_result);
+    m_gestureProvider.OnTouchEventAck(touch.event.unique_touch_event_id, eventConsumed, isSetNonBlocking);
 }
 
 void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEvent)
@@ -1611,6 +1617,7 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
                 m_previousTouchPoints.clear();
                 m_touchMotionStarted = false;
                 break;
+
             default:
                 m_previousTouchPoints = touchPoints;
                 break;
@@ -1648,8 +1655,7 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
         action = ui::MotionEvent::Action::CANCEL;
     }
 
-    MotionEventQt me(touchPoints, eventTimestamp, action, ev->modifiers(),
-                     action == ui::MotionEvent::Action::CANCEL ? -1 : 0);
+    MotionEventQt me(touchPoints, eventTimestamp, action, ev->modifiers());
     if (m_touchSelectionController->WillHandleTouchEvent(me))
         return;
 
@@ -1692,31 +1698,49 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
 #endif
     }
 
-    for (int i = 0; i < touchPoints.size(); ++i) {
-        ui::MotionEvent::Action action;
-        switch (touchPoints[i].second.state()) {
-        case Qt::TouchPointPressed:
-            if (m_sendMotionActionDown) {
-                action = ui::MotionEvent::Action::DOWN;
-                m_sendMotionActionDown = false;
-            } else {
-                action = ui::MotionEvent::Action::POINTER_DOWN;
+    // MEMO for the basis of this logic look into:
+    //      * blink_event_util.cc:ToWebTouchPointState: which is used later to forward touch event
+    //        composed from motion event after gesture recognition
+    //      * gesture_detector.cc:GestureDetector::OnTouchEvent: contains logic for every motion
+    //        event action and corresponding gesture recognition routines
+    //      * input_router_imp.cc:InputRouterImp::SetMovementXYForTouchPoints: expectation about
+    //        touch event content like number of points for different states
+
+    int lastPressIndex = -1;
+    while ((lastPressIndex + 1) < touchPoints.size() && touchPoints[lastPressIndex + 1].second.state() == Qt::TouchPointPressed)
+        ++lastPressIndex;
+
+    switch (ev->type()) {
+        case QEvent::TouchBegin:
+            processMotionEvent(MotionEventQt(touchPoints.mid(lastPressIndex),
+                                             eventTimestamp, ui::MotionEvent::Action::DOWN, ev->modifiers()));
+            --lastPressIndex;
+            Q_FALLTHROUGH();
+
+        case QEvent::TouchUpdate:
+            for (; lastPressIndex >= 0; --lastPressIndex) {
+                Q_ASSERT(touchPoints[lastPressIndex].second.state() == Qt::TouchPointPressed);
+                MotionEventQt me(touchPoints.mid(lastPressIndex), eventTimestamp, ui::MotionEvent::Action::POINTER_DOWN, ev->modifiers(), 0);
+                processMotionEvent(me);
+            }
+
+            if (ev->touchPointStates() & Qt::TouchPointMoved)
+                processMotionEvent(MotionEventQt(touchPoints, eventTimestamp, ui::MotionEvent::Action::MOVE, ev->modifiers()));
+
+            Q_FALLTHROUGH();
+
+        case QEvent::TouchEnd:
+            while (!touchPoints.isEmpty() && touchPoints.back().second.state() == Qt::TouchPointReleased) {
+                auto action = touchPoints.size() > 1 ? ui::MotionEvent::Action::POINTER_UP : ui::MotionEvent::Action::UP;
+                int index = action == ui::MotionEvent::Action::POINTER_UP ? touchPoints.size() - 1 : -1;
+                processMotionEvent(MotionEventQt(touchPoints, eventTimestamp, action, ev->modifiers(), index));
+                touchPoints.pop_back();
             }
             break;
-        case Qt::TouchPointMoved:
-            action = ui::MotionEvent::Action::MOVE;
-            break;
-        case Qt::TouchPointReleased:
-            action = touchPoints.size() > 1 ? ui::MotionEvent::Action::POINTER_UP :
-                                              ui::MotionEvent::Action::UP;
-            break;
-        default:
-            // Ignore Qt::TouchPointStationary
-            continue;
-        }
 
-        MotionEventQt motionEvent(touchPoints, eventTimestamp, action, ev->modifiers(), i);
-        processMotionEvent(motionEvent);
+        default:
+            Q_ASSERT_X(false, __FUNCTION__, "Other event types are expected to be already handled.");
+            break;
     }
 }
 
