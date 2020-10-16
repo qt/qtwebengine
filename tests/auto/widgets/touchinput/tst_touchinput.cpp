@@ -50,6 +50,8 @@ private Q_SLOTS:
     void touchTap();
     void touchTapAndHold();
     void touchTapAndHoldCancelled();
+    void scrolling();
+    void pinchZoom();
 
 private:
     QWebEngineView view;
@@ -57,6 +59,55 @@ private:
     QPoint notextCenter, textCenter, inputCenter;
 
     QString activeElement() { return evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(); }
+
+    void gestureScroll(bool down) {
+        auto target = view.focusProxy();
+        QPoint p(target->width() / 2, target->height() / 4 * (down ? 3 : 1));
+
+        QTest::touchEvent(target, s_touchDevice).press(42, p, target);
+
+        for (int i = 0; i < 3; ++i) {
+            down ? p -= QPoint(5, 15) : p += QPoint(5, 15);
+            QTest::qWait(100); // too fast and events are recognized as fling gesture
+            QTest::touchEvent(target, s_touchDevice).move(42, p, target);
+        }
+
+        QTest::touchEvent(target, s_touchDevice).release(42, p, target);
+    }
+
+    void gesturePinch(bool zoomIn) {
+        auto target = view.focusProxy();
+        QPoint p(target->width() / 2, target->height() / 2);
+        auto t1 = p - QPoint(zoomIn ? 50 : 150, 10), t2 = p + QPoint(zoomIn ? 50 : 150, 10);
+
+        QTest::touchEvent(target, s_touchDevice).press(42, t1, target);
+        QTest::touchEvent(target, s_touchDevice).stationary(42).press(24, t2, target);
+
+        for (int i = 0; i < 3; ++i) {
+            if (zoomIn) {
+                t1 -= QPoint(25, 5);
+                t2 += QPoint(25, 5);
+            } else {
+                t1 += QPoint(35, 5);
+                t2 -= QPoint(35, 5);
+            }
+            QTest::qWait(100); // too fast and events are recognized as fling gesture
+            QTest::touchEvent(target, s_touchDevice).move(24, t1, target).move(42, t2, target);
+        }
+
+        QTest::touchEvent(target, s_touchDevice).stationary(42).release(24, t2, target);
+        QTest::touchEvent(target, s_touchDevice).release(42, t1, target);
+    }
+
+    int getScrollPosition(int *position = nullptr) {
+        int p = evaluateJavaScriptSync(view.page(), "window.scrollY").toInt();
+        return position ? (*position = p) : p;
+    }
+
+    double getScaleFactor(double *scale = nullptr)  {
+        double s = evaluateJavaScriptSync(view.page(), "window.visualViewport.scale").toDouble();
+        return scale ? (*scale = s) : s;
+    }
 };
 
 void TouchInputTest::initTestCase()
@@ -68,10 +119,14 @@ void TouchInputTest::initTestCase()
     view.show(); view.resize(480, 320);
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    view.setHtml("<html><body>"
+    view.setHtml("<html><head><style>.rect { min-width: 240px; min-height: 120px; }</style></head><body>"
                  "<p id='text' style='width: 150px;'>The Qt Company</p>"
                  "<div id='notext' style='width: 150px; height: 100px; background-color: #f00;'></div>"
                  "<form><input id='input' width='150px' type='text' value='The Qt Company2' /></form>"
+                 "<table style='width: 100%; padding: 15px; text-align: center;'>"
+                 "<tr><td>BEFORE</td><td><div class='rect' style='background-color: #00f;'></div></td><td>AFTER</td></tr>"
+                 "<tr><td>BEFORE</td><td><div class='rect' style='background-color: #0f0;'></div></td><td>AFTER</td></tr>"
+                 "<tr><td>BEFORE</td><td><div class='rect' style='background-color: #f00;'></div></td><td>AFTER</td></tr></table>"
                  "</body></html>");
     QVERIFY(loadSpy.wait() && loadSpy.first().first().toBool());
 
@@ -88,6 +143,8 @@ void TouchInputTest::init()
 void TouchInputTest::cleanup()
 {
     evaluateJavaScriptSync(view.page(), "if (document.activeElement) document.activeElement.blur()");
+    evaluateJavaScriptSync(view.page(), "window.scrollTo(0, 0)");
+    QTRY_COMPARE(getScrollPosition(), 0);
 }
 
 void TouchInputTest::touchTap()
@@ -194,6 +251,41 @@ void TouchInputTest::touchTapAndHoldCancelled()
     cancelledTapAndHold(notextCenter);
     QVERIFY(QApplication::activePopupWidget() == nullptr);
 #endif
+}
+
+void TouchInputTest::scrolling()
+{
+    int p = getScrollPosition();
+    QCOMPARE(p, 0);
+
+    // scroll a bit down...
+    for (int i = 0; i < 3; ++i) {
+        gestureScroll(/* down = */true);
+        int positionBefore = p;
+        QTRY_VERIFY2(getScrollPosition(&p) > positionBefore, qPrintable(QString("i: %1, position: %2 -> %3").arg(i).arg(positionBefore).arg(p)));
+    }
+
+    // ... and then scroll page again but in opposite direction
+    for (int i = 0; i < 3; ++i) {
+        gestureScroll(/* down = */false);
+        int positionBefore = p;
+        QTRY_VERIFY2(getScrollPosition(&p) < positionBefore, qPrintable(QString("i: %1, position: %2 -> %3").arg(i).arg(positionBefore).arg(p)));
+    }
+
+    QTRY_COMPARE(getScrollPosition(), 0);
+}
+
+void TouchInputTest::pinchZoom()
+{
+    double scale = getScaleFactor();
+    QCOMPARE(scale, 1.0);
+
+    for (int i = 0; i < 3; ++i) {
+        gesturePinch(/* zoomIn = */true);
+        QTRY_VERIFY2(getScaleFactor(&scale) > 1.5, qPrintable(QString("i: %1, scale: %2").arg(i).arg(scale)));
+        gesturePinch(/* zoomIn = */false);
+        QTRY_COMPARE(getScaleFactor(&scale), 1.0);
+    }
 }
 
 QTEST_MAIN(TouchInputTest)
