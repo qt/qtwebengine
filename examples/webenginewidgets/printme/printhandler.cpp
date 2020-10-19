@@ -54,7 +54,7 @@
 #include <QPrinter>
 #include <QPainter>
 #include <QPrintPreviewDialog>
-#include <QWebEnginePage>
+#include <QWebEngineView>
 
 PrintHandler::PrintHandler(QObject *parent)
     : QObject(parent)
@@ -62,17 +62,17 @@ PrintHandler::PrintHandler(QObject *parent)
 
 }
 
-void PrintHandler::setPage(QWebEnginePage *page)
+void PrintHandler::setView(QWebEngineView *view)
 {
-    Q_ASSERT(!m_page);
-    m_page = page;
-    connect(m_page, &QWebEnginePage::printRequested, this, &PrintHandler::printPreview);
+    Q_ASSERT(!m_view);
+    m_view = view;
+    connect(view->page(), &QWebEnginePage::printRequested, this, &PrintHandler::printPreview);
 }
 
 void PrintHandler::print()
 {
     QPrinter printer(QPrinter::HighResolution);
-    QPrintDialog dialog(&printer, m_page->view());
+    QPrintDialog dialog(&printer, m_view);
     if (dialog.exec() != QDialog::Accepted)
         return;
     printDocument(&printer);
@@ -83,7 +83,7 @@ void PrintHandler::printDocument(QPrinter *printer)
     QEventLoop loop;
     bool result;
     auto printPreview = [&](bool success) { result = success; loop.quit(); };
-    m_page->print(printer, std::move(printPreview));
+    m_view->page()->print(printer, std::move(printPreview));
     loop.exec();
     if (!result) {
         QPainter painter;
@@ -101,13 +101,13 @@ void PrintHandler::printDocument(QPrinter *printer)
 
 void PrintHandler::printPreview()
 {
-    if (!m_page)
+    if (!m_view)
         return;
     if (m_inPrintPreview)
         return;
     m_inPrintPreview = true;
     QPrinter printer;
-    QPrintPreviewDialog preview(&printer, m_page->view());
+    QPrintPreviewDialog preview(&printer, m_view);
     connect(&preview, &QPrintPreviewDialog::paintRequested,
             this, &PrintHandler::printDocument);
     preview.exec();

@@ -383,7 +383,7 @@ void tst_QWebEnginePage::geolocationRequestJS()
     QFETCH(int, errorCode);
     QWebEngineView view;
     JSTestPage *newPage = new JSTestPage(&view);
-    newPage->setView(&view);
+    view.setPage(newPage);
     newPage->setGeolocationPermission(allowed);
 
     connect(newPage, SIGNAL(featurePermissionRequested(const QUrl&, QWebEnginePage::Feature)),
@@ -1721,7 +1721,7 @@ void tst_QWebEnginePage::openWindowDefaultSize()
     TestPage page;
     QSignalSpy windowCreatedSpy(&page, SIGNAL(windowCreated()));
     QWebEngineView view;
-    page.setView(&view);
+    view.setPage(&page);
     view.show();
 
     page.settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
@@ -4680,7 +4680,7 @@ void tst_QWebEnginePage::closeContents()
 
     QWebEngineView *dialogView = new QWebEngineView;
     QWebEnginePage *dialogPage = page.createdWindows[0];
-    dialogPage->setView(dialogView);
+    dialogView->setPage(dialogPage);
     QCOMPARE(dialogPage->lifecycleState(), QWebEnginePage::LifecycleState::Active);
 
     // This should not crash.

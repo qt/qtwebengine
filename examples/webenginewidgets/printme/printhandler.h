@@ -56,7 +56,7 @@
 QT_BEGIN_NAMESPACE
 class QPainter;
 class QPrinter;
-class QWebEnginePage;
+class QWebEngineView;
 QT_END_NAMESPACE
 
 class PrintHandler : public QObject
@@ -64,7 +64,7 @@ class PrintHandler : public QObject
     Q_OBJECT
 public:
     PrintHandler(QObject *parent = nullptr);
-    void setPage(QWebEnginePage *page);
+    void setView(QWebEngineView *view);
 
 public slots:
     void print();
@@ -72,7 +72,7 @@ public slots:
     void printDocument(QPrinter *printer);
 
 private:
-    QWebEnginePage *m_page = nullptr;
+    QWebEngineView *m_view = nullptr;
     bool m_inPrintPreview = false;
 };
 

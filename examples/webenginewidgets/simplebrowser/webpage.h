@@ -53,6 +53,7 @@
 
 #include <QWebEnginePage>
 #include <QWebEngineRegisterProtocolHandlerRequest>
+#include <QWebEngineCertificateError>
 
 class WebPage : public QWebEnginePage
 {
@@ -61,14 +62,13 @@ class WebPage : public QWebEnginePage
 public:
     WebPage(QWebEngineProfile *profile, QObject *parent = nullptr);
 
+signals:
+    void createCertificateErrorDialog(QWebEngineCertificateError error);
+
 protected:
     void certificateError(QWebEngineCertificateError error) override;
 
 private slots:
-    void handleAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth);
-    void handleFeaturePermissionRequested(const QUrl &securityOrigin, Feature feature);
-    void handleProxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost);
-    void handleRegisterProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest request);
     void handleSelectClientCertificate(QWebEngineClientCertificateSelection clientCertSelection);
 };
 

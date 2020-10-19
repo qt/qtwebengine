@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     view.show();
 
     PrintHandler handler;
-    handler.setPage(view.page());
+    handler.setView(&view);
 
     auto printPreviewShortCut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_P), &view);
     auto printShortCut = new QShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_P), &view);

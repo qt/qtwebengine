@@ -3526,7 +3526,7 @@ void tst_QWebEngineView::setViewDeletesImplicitPage()
     QWebEngineView view;
     QPointer<QWebEnginePage> implicitPage = view.page();
     QWebEnginePage explicitPage;
-    explicitPage.setView(&view);
+    view.setPage(&explicitPage);
     QCOMPARE(view.page(), &explicitPage);
     QVERIFY(!implicitPage); // should be deleted
 }
@@ -3547,8 +3547,8 @@ void tst_QWebEngineView::setViewPreservesExplicitPage()
     QWebEngineView view;
     QPointer<QWebEnginePage> explicitPage1 = new QWebEnginePage(&view);
     QPointer<QWebEnginePage> explicitPage2 = new QWebEnginePage(&view);
-    explicitPage1->setView(&view);
-    explicitPage2->setView(&view);
+    view.setPage(explicitPage1.data());
+    view.setPage(explicitPage2.data());
     QCOMPARE(view.page(), explicitPage2.data());
     QVERIFY(explicitPage1); // should not be deleted
 }

@@ -53,6 +53,9 @@
 
 #include <QIcon>
 #include <QWebEngineView>
+#include <QWebEngineCertificateError>
+#include <QWebEnginePage>
+#include <QWebEngineRegisterProtocolHandlerRequest>
 
 class WebPage;
 
@@ -76,6 +79,14 @@ signals:
     void webActionEnabledChanged(QWebEnginePage::WebAction webAction, bool enabled);
     void favIconChanged(const QIcon &icon);
     void devToolsRequested(QWebEnginePage *source);
+private slots:
+    void handleCertificateError(QWebEngineCertificateError error);
+    void handleAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth);
+    void handleFeaturePermissionRequested(const QUrl &securityOrigin,
+                                          QWebEnginePage::Feature feature);
+    void handleProxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth,
+                                           const QString &proxyHost);
+    void handleRegisterProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest request);
 
 private:
     void createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction);

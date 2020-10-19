@@ -831,15 +831,15 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 */
 
 /*!
-    \fn QWebEnginePage::registerProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest request)
-    \since 5.11
+    \fn QWebEnginePage::registerProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest
+   request) \since 5.11
 
     This signal is emitted when the web page tries to register a custom protocol
     using the \l registerProtocolHandler API.
 
     The request object \a request can be used to accept or reject the request:
 
-    \snippet webenginewidgets/simplebrowser/webpage.cpp registerProtocolHandlerRequested
+    \snippet webenginewidgets/simplebrowser/webview.cpp registerProtocolHandlerRequested
 */
 
 /*!
@@ -1123,17 +1123,6 @@ qint64 QWebEnginePage::renderProcessPid() const
 {
     Q_D(const QWebEnginePage);
     return d->adapter->renderProcessPid();
-}
-
-void QWebEnginePage::setView(QWidget *newViewBase)
-{
-    QWebEnginePagePrivate::bindPageAndView(this, qobject_cast<QWebEngineView *>(newViewBase));
-}
-
-QWidget *QWebEnginePage::view() const
-{
-    Q_D(const QWebEnginePage);
-    return d->view;
 }
 
 /*!
@@ -1756,10 +1745,9 @@ QObject *QWebEnginePagePrivate::dragSource() const
 
 bool QWebEnginePagePrivate::isEnabled() const
 {
-    const Q_Q(QWebEnginePage);
-    const QWidget *view = q->view();
-    if (view)
-        return view->isEnabled();
+    const QWidget *widget = view;
+    if (widget)
+        return widget->isEnabled();
     return true;
 }
 

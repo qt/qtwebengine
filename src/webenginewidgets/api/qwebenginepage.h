@@ -239,9 +239,6 @@ public:
     ~QWebEnginePage();
     QWebEngineHistory *history() const;
 
-    void setView(QWidget *view);
-    QWidget *view() const;
-
     bool hasSelection() const;
     QString selectedText() const;
 

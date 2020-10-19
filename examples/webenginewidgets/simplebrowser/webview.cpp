@@ -54,11 +54,15 @@
 #include "webpage.h"
 #include "webpopupwindow.h"
 #include "webview.h"
+#include "ui_certificateerrordialog.h"
+#include "ui_passworddialog.h"
 #include <QContextMenuEvent>
 #include <QDebug>
 #include <QMenu>
 #include <QMessageBox>
+#include <QAuthenticator>
 #include <QTimer>
+#include <QStyle>
 
 WebView::WebView(QWidget *parent)
     : QWebEngineView(parent)
@@ -104,13 +108,56 @@ WebView::WebView(QWidget *parent)
     });
 }
 
+inline QString questionForFeature(QWebEnginePage::Feature feature)
+{
+    switch (feature) {
+    case QWebEnginePage::Geolocation:
+        return QObject::tr("Allow %1 to access your location information?");
+    case QWebEnginePage::MediaAudioCapture:
+        return QObject::tr("Allow %1 to access your microphone?");
+    case QWebEnginePage::MediaVideoCapture:
+        return QObject::tr("Allow %1 to access your webcam?");
+    case QWebEnginePage::MediaAudioVideoCapture:
+        return QObject::tr("Allow %1 to access your microphone and webcam?");
+    case QWebEnginePage::MouseLock:
+        return QObject::tr("Allow %1 to lock your mouse cursor?");
+    case QWebEnginePage::DesktopVideoCapture:
+        return QObject::tr("Allow %1 to capture video of your desktop?");
+    case QWebEnginePage::DesktopAudioVideoCapture:
+        return QObject::tr("Allow %1 to capture audio and video of your desktop?");
+    case QWebEnginePage::Notifications:
+        return QObject::tr("Allow %1 to show notification on your desktop?");
+    }
+    return QString();
+}
+
 void WebView::setPage(WebPage *page)
 {
+    WebPage *oldPage = qobject_cast<WebPage *>(QWebEngineView::page());
+    disconnect(oldPage, &WebPage::createCertificateErrorDialog, this,
+               &WebView::handleCertificateError);
+    disconnect(oldPage, &QWebEnginePage::authenticationRequired, this,
+               &WebView::handleAuthenticationRequired);
+    disconnect(oldPage, &QWebEnginePage::featurePermissionRequested, this,
+               &WebView::handleFeaturePermissionRequested);
+    disconnect(oldPage, &QWebEnginePage::proxyAuthenticationRequired, this,
+               &WebView::handleProxyAuthenticationRequired);
+    disconnect(oldPage, &QWebEnginePage::registerProtocolHandlerRequested, this,
+               &WebView::handleRegisterProtocolHandlerRequested);
     createWebActionTrigger(page,QWebEnginePage::Forward);
     createWebActionTrigger(page,QWebEnginePage::Back);
     createWebActionTrigger(page,QWebEnginePage::Reload);
     createWebActionTrigger(page,QWebEnginePage::Stop);
     QWebEngineView::setPage(page);
+    connect(page, &WebPage::createCertificateErrorDialog, this, &WebView::handleCertificateError);
+    connect(page, &QWebEnginePage::authenticationRequired, this,
+            &WebView::handleAuthenticationRequired);
+    connect(page, &QWebEnginePage::featurePermissionRequested, this,
+            &WebView::handleFeaturePermissionRequested);
+    connect(page, &QWebEnginePage::proxyAuthenticationRequired, this,
+            &WebView::handleProxyAuthenticationRequired);
+    connect(page, &QWebEnginePage::registerProtocolHandlerRequested, this,
+            &WebView::handleRegisterProtocolHandlerRequested);
 }
 
 int WebView::loadProgress() const
@@ -196,3 +243,106 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
     menu->popup(event->globalPos());
 }
 
+void WebView::handleCertificateError(QWebEngineCertificateError error)
+{
+    QDialog dialog(window());
+    dialog.setModal(true);
+    dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
+    Ui::CertificateErrorDialog certificateDialog;
+    certificateDialog.setupUi(&dialog);
+    certificateDialog.m_iconLabel->setText(QString());
+    QIcon icon(window()->style()->standardIcon(QStyle::SP_MessageBoxWarning, 0, window()));
+    certificateDialog.m_iconLabel->setPixmap(icon.pixmap(32, 32));
+    certificateDialog.m_errorLabel->setText(error.description());
+    dialog.setWindowTitle(tr("Certificate Error"));
+
+    if (dialog.exec() == QDialog::Accepted)
+        error.acceptCertificate();
+    else
+        error.rejectCertificate();
+}
+
+void WebView::handleAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth)
+{
+    QDialog dialog(window());
+    dialog.setModal(true);
+    dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
+    Ui::PasswordDialog passwordDialog;
+    passwordDialog.setupUi(&dialog);
+
+    passwordDialog.m_iconLabel->setText(QString());
+    QIcon icon(window()->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, window()));
+    passwordDialog.m_iconLabel->setPixmap(icon.pixmap(32, 32));
+
+    QString introMessage(tr("Enter username and password for \"%1\" at %2")
+                                 .arg(auth->realm())
+                                 .arg(requestUrl.toString().toHtmlEscaped()));
+    passwordDialog.m_infoLabel->setText(introMessage);
+    passwordDialog.m_infoLabel->setWordWrap(true);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        auth->setUser(passwordDialog.m_userNameLineEdit->text());
+        auth->setPassword(passwordDialog.m_passwordLineEdit->text());
+    } else {
+        // Set authenticator null if dialog is cancelled
+        *auth = QAuthenticator();
+    }
+}
+
+void WebView::handleFeaturePermissionRequested(const QUrl &securityOrigin,
+                                               QWebEnginePage::Feature feature)
+{
+    QString title = tr("Permission Request");
+    QString question = questionForFeature(feature).arg(securityOrigin.host());
+    if (!question.isEmpty() && QMessageBox::question(window(), title, question) == QMessageBox::Yes)
+        page()->setFeaturePermission(securityOrigin, feature,
+                                     QWebEnginePage::PermissionGrantedByUser);
+    else
+        page()->setFeaturePermission(securityOrigin, feature,
+                                     QWebEnginePage::PermissionDeniedByUser);
+}
+
+void WebView::handleProxyAuthenticationRequired(const QUrl &, QAuthenticator *auth,
+                                                const QString &proxyHost)
+{
+    QDialog dialog(window());
+    dialog.setModal(true);
+    dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
+    Ui::PasswordDialog passwordDialog;
+    passwordDialog.setupUi(&dialog);
+
+    passwordDialog.m_iconLabel->setText(QString());
+    QIcon icon(window()->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, window()));
+    passwordDialog.m_iconLabel->setPixmap(icon.pixmap(32, 32));
+
+    QString introMessage = tr("Connect to proxy \"%1\" using:");
+    introMessage = introMessage.arg(proxyHost.toHtmlEscaped());
+    passwordDialog.m_infoLabel->setText(introMessage);
+    passwordDialog.m_infoLabel->setWordWrap(true);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        auth->setUser(passwordDialog.m_userNameLineEdit->text());
+        auth->setPassword(passwordDialog.m_passwordLineEdit->text());
+    } else {
+        // Set authenticator null if dialog is cancelled
+        *auth = QAuthenticator();
+    }
+}
+
+//! [registerProtocolHandlerRequested]
+void WebView::handleRegisterProtocolHandlerRequested(
+        QWebEngineRegisterProtocolHandlerRequest request)
+{
+    auto answer = QMessageBox::question(window(), tr("Permission Request"),
+                                        tr("Allow %1 to open all %2 links?")
+                                                .arg(request.origin().host())
+                                                .arg(request.scheme()));
+    if (answer == QMessageBox::Yes)
+        request.accept();
+    else
+        request.reject();
+}
+//! [registerProtocolHandlerRequested]
