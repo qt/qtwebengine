@@ -27,6 +27,7 @@ General
   - [QTBUG-75391] Fix pasting Unicode characters copied from WebEngine on macOS
   - [QTBUG-83710] Fix input of keys requiring AltGr on Windows
   - [QTBUG-84337] Fixed GPU switching with CoreProfile on macOS (for e.g. AirPlay)
+  - [QTBUG-86018] Fixed build with Bison 3.7
   - Fixed build with the linux-clang 10 spec
 
 Chromium
