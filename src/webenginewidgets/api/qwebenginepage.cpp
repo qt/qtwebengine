@@ -1770,23 +1770,13 @@ void QWebEnginePagePrivate::requestGeometryChange(const QRect &geometry, const Q
     Q_EMIT q->geometryChangeRequested(frameGeometry);
 }
 
-void QWebEnginePagePrivate::startDragging(const content::DropData &dropData,
-                                          Qt::DropActions allowedActions, const QPixmap &pixmap,
-                                          const QPoint &offset)
+QObject *QWebEnginePagePrivate::dragSource() const
 {
 #if !QT_CONFIG(draganddrop)
-    Q_UNUSED(dropData);
-    Q_UNUSED(allowedActions);
-    Q_UNUSED(pixmap);
-    Q_UNUSED(offset);
+    return view;
 #else
-    adapter->startDragging(view, dropData, allowedActions, pixmap, offset);
+    return nullptr;
 #endif // QT_CONFIG(draganddrop)
-}
-
-bool QWebEnginePagePrivate::supportsDragging() const
-{
-    return true;
 }
 
 bool QWebEnginePagePrivate::isEnabled() const

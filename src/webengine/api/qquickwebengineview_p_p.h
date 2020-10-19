@@ -158,9 +158,7 @@ public:
     void updateContentsSize(const QSizeF &size) override;
     void updateNavigationActions() override;
     void updateEditActions() override;
-    void startDragging(const content::DropData &dropData, Qt::DropActions allowedActions,
-                       const QPixmap &pixmap, const QPoint &offset) override;
-    bool supportsDragging() const override;
+    QObject *dragSource() const override;
     bool isEnabled() const override;
     void setToolTip(const QString &toolTipText) override;
     QtWebEngineCore::TouchHandleDrawableClient *createTouchHandle(const QMap<int, QImage> &images) override;

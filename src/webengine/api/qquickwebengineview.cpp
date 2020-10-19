@@ -1289,25 +1289,16 @@ void QQuickWebEngineViewPrivate::requestGeometryChange(const QRect &geometry, co
     Q_EMIT q->geometryChangeRequested(geometry, frameGeometry);
 }
 
-void QQuickWebEngineViewPrivate::startDragging(const content::DropData &dropData,
-                                               Qt::DropActions allowedActions,
-                                               const QPixmap &pixmap, const QPoint &offset)
-{
-#if !QT_CONFIG(draganddrop)
-    Q_UNUSED(dropData);
-    Q_UNUSED(allowedActions);
-    Q_UNUSED(pixmap);
-    Q_UNUSED(offset);
-#else
-    adapter->startDragging(q_ptr->window(), dropData, allowedActions, pixmap, offset);
-#endif // QT_CONFIG(draganddrop)
-}
-
-bool QQuickWebEngineViewPrivate::supportsDragging() const
+QObject *QQuickWebEngineViewPrivate::dragSource() const
 {
     // QTBUG-57516
     // Fixme: This is just a band-aid workaround.
-    return QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MultipleWindows);
+#if !QT_CONFIG(draganddrop)
+  return QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MultipleWindows) ?
+    q_ptr->window : nullptr;
+#else
+  return nullptr;
+#endif
 }
 
 bool QQuickWebEngineViewPrivate::isEnabled() const

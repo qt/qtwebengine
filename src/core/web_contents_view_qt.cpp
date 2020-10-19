@@ -285,7 +285,8 @@ void WebContentsViewQt::StartDragging(const content::DropData &drop_data,
 #if QT_CONFIG(draganddrop)
     Q_UNUSED(event_info);
 
-    if (!m_client->supportsDragging()) {
+    QObject *dragSource = m_client->dragSource();
+    if (!dragSource) {
         if (source_rwh)
             source_rwh->DragSourceSystemDragEnded();
         return;
@@ -299,7 +300,7 @@ void WebContentsViewQt::StartDragging(const content::DropData &drop_data,
         hotspot.setY(image_offset.y());
     }
 
-    m_client->startDragging(drop_data, toQtDropActions(allowed_ops), pixmap, hotspot);
+    m_client->webContentsAdapter()->startDragging(dragSource, drop_data, toQtDropActions(allowed_ops), pixmap, hotspot);
 #endif // QT_CONFIG(draganddrop)
 }
 
