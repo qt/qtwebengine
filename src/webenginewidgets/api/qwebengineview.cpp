@@ -43,7 +43,9 @@
 #include "qwebenginepage_p.h"
 #include "render_widget_host_view_qt_delegate_widget.h"
 #include "web_contents_adapter.h"
-
+#include "file_picker_controller.h"
+#include "color_chooser_controller.h"
+#include <QStandardPaths>
 #if QT_CONFIG(action)
 #include <QAction>
 #endif
@@ -53,6 +55,26 @@
 #include <QContextMenuEvent>
 #include <QToolTip>
 #include <QVBoxLayout>
+#if QT_CONFIG(colordialog)
+#    include <QColorDialog>
+#endif
+#include <QContextMenuEvent>
+#if QT_CONFIG(filedialog)
+#    include <QFileDialog>
+#endif
+#include <QKeyEvent>
+#include <QIcon>
+#if QT_CONFIG(inputdialog)
+#    include <QInputDialog>
+#endif
+#include <QLayout>
+#include <QLoggingCategory>
+#if QT_CONFIG(menu)
+#    include <QMenu>
+#endif
+#if QT_CONFIG(messagebox)
+#    include <QMessageBox>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -155,6 +177,130 @@ void QWebEngineViewPrivate::contextMenuRequested(QWebEngineContextMenuRequest *r
 #else
     Q_UNUSED(data);
 #endif // QT_CONFIG(action)
+}
+
+QStringList QWebEngineViewPrivate::chooseFiles(QWebEnginePage::FileSelectionMode mode,
+                                               const QStringList &oldFiles,
+                                               const QStringList &acceptedMimeTypes)
+{
+#if QT_CONFIG(filedialog)
+    Q_Q(QWebEngineView);
+    const QStringList &filter =
+            QtWebEngineCore::FilePickerController::nameFilters(acceptedMimeTypes);
+    QStringList ret;
+    QString str;
+    switch (static_cast<QtWebEngineCore::FilePickerController::FileChooserMode>(mode)) {
+    case QtWebEngineCore::FilePickerController::OpenMultiple:
+        ret = QFileDialog::getOpenFileNames(q, QString(), QString(),
+                                            filter.join(QStringLiteral(";;")), nullptr,
+                                            QFileDialog::HideNameFilterDetails);
+        break;
+    // Chromium extension, not exposed as part of the public API for now.
+    case QtWebEngineCore::FilePickerController::UploadFolder:
+        str = QFileDialog::getExistingDirectory(q, QObject::tr("Select folder to upload"));
+        if (!str.isNull())
+            ret << str;
+        break;
+    case QtWebEngineCore::FilePickerController::Save:
+        str = QFileDialog::getSaveFileName(
+                q, QString(),
+                (QStandardPaths::writableLocation(QStandardPaths::DownloadLocation)
+                 + oldFiles.first()));
+        if (!str.isNull())
+            ret << str;
+        break;
+    case QtWebEngineCore::FilePickerController::Open:
+        str = QFileDialog::getOpenFileName(q, QString(), oldFiles.first(),
+                                           filter.join(QStringLiteral(";;")), nullptr,
+                                           QFileDialog::HideNameFilterDetails);
+        if (!str.isNull())
+            ret << str;
+        break;
+    }
+    return ret;
+#else
+    Q_UNUSED(mode);
+    Q_UNUSED(oldFiles);
+    Q_UNUSED(acceptedMimeTypes);
+
+    return QStringList();
+#endif // QT_CONFIG(filedialog)
+}
+
+void QWebEngineViewPrivate::showColorDialog(
+        QSharedPointer<QtWebEngineCore::ColorChooserController> controller)
+{
+#if QT_CONFIG(colordialog)
+    Q_Q(QWebEngineView);
+    QColorDialog *dialog = new QColorDialog(controller.data()->initialColor(), q);
+
+    QColorDialog::connect(dialog, SIGNAL(colorSelected(QColor)), controller.data(),
+                          SLOT(accept(QColor)));
+    QColorDialog::connect(dialog, SIGNAL(rejected()), controller.data(), SLOT(reject()));
+
+    // Delete when done
+    QColorDialog::connect(dialog, SIGNAL(colorSelected(QColor)), dialog, SLOT(deleteLater()));
+    QColorDialog::connect(dialog, SIGNAL(rejected()), dialog, SLOT(deleteLater()));
+
+    dialog->open();
+#else
+    Q_UNUSED(controller);
+#endif
+}
+
+bool QWebEngineViewPrivate::showAuthorizationDialog(const QString &title, const QString &message)
+{
+#if QT_CONFIG(messagebox)
+    Q_Q(QWebEngineView);
+    return QMessageBox::question(q, title, message, QMessageBox::Yes, QMessageBox::No)
+            == QMessageBox::Yes;
+#else
+    return false;
+#endif // QT_CONFIG(messagebox)
+}
+
+void QWebEngineViewPrivate::javaScriptAlert(const QUrl &url, const QString &msg)
+{
+#if QT_CONFIG(messagebox)
+    Q_Q(QWebEngineView);
+    QMessageBox::information(q, QStringLiteral("Javascript Alert - %1").arg(url.toString()),
+                             msg.toHtmlEscaped());
+#else
+    Q_UNUSED(msg);
+#endif // QT_CONFIG(messagebox)
+}
+
+bool QWebEngineViewPrivate::javaScriptConfirm(const QUrl &url, const QString &msg)
+{
+#if QT_CONFIG(messagebox)
+    Q_Q(QWebEngineView);
+    return (QMessageBox::information(q,
+                                     QStringLiteral("Javascript Confirm - %1").arg(url.toString()),
+                                     msg.toHtmlEscaped(), QMessageBox::Ok, QMessageBox::Cancel)
+            == QMessageBox::Ok);
+#else
+    Q_UNUSED(msg);
+    return false;
+#endif // QT_CONFIG(messagebox)
+}
+
+bool QWebEngineViewPrivate::javaScriptPrompt(const QUrl &url, const QString &msg,
+                                             const QString &defaultValue, QString *result)
+{
+#if QT_CONFIG(inputdialog)
+    Q_Q(QWebEngineView);
+    bool ret = false;
+    if (result)
+        *result = QInputDialog::getText(
+                q, QStringLiteral("Javascript Prompt - %1").arg(url.toString()),
+                msg.toHtmlEscaped(), QLineEdit::Normal, defaultValue.toHtmlEscaped(), &ret);
+    return ret;
+#else
+    Q_UNUSED(msg);
+    Q_UNUSED(defaultValue);
+    Q_UNUSED(result);
+    return false;
+#endif // QT_CONFIG(inputdialog)
 }
 
 #ifndef QT_NO_ACCESSIBILITY

@@ -73,8 +73,17 @@ public:
     void pageChanged(QWebEnginePage *oldPage, QWebEnginePage *newPage);
     void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *oldWidget,
                        QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *newWidget);
-    void contextMenuRequested(QWebEngineContextMenuRequest *request);
 
+    void contextMenuRequested(QWebEngineContextMenuRequest *request);
+    QStringList chooseFiles(QWebEnginePage::FileSelectionMode mode, const QStringList &oldFiles,
+                            const QStringList &acceptedMimeTypes);
+    void showColorDialog(QSharedPointer<QtWebEngineCore::ColorChooserController> controller);
+    bool showAuthorizationDialog(const QString &title, const QString &message);
+    void javaScriptAlert(const QUrl &url, const QString &msg);
+    bool javaScriptConfirm(const QUrl &url, const QString &msg);
+    bool javaScriptPrompt(const QUrl &url, const QString &msg, const QString &defaultValue,
+                          QString *result);
+    void setToolTip(const QString &toolTipText);
     QWebEngineViewPrivate();
 
     QWebEnginePage *page;
