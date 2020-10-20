@@ -72,6 +72,7 @@ Chromium
     - CVE-2020-15965: Out of bounds write in V8
     - CVE-2020-15968: Use after free in Blink
     - CVE-2020-15969: Use after free in WebRTC.
+    - CVE-2020-15999: Heap buffer overflow in freetype
     - Security Bug 1051439
     - Security bug 1052492
     - Security bug 1054229
