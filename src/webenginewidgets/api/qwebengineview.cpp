@@ -75,6 +75,7 @@
 #if QT_CONFIG(messagebox)
 #    include <QMessageBox>
 #endif
+#include <QStyle>
 
 QT_BEGIN_NAMESPACE
 
@@ -405,6 +406,33 @@ void QWebEngineViewPrivate::bindPageAndWidget(
     }
 }
 
+QIcon QWebEngineViewPrivate::webActionIcon(QWebEnginePage::WebAction action)
+{
+    Q_Q(QWebEngineView);
+    QIcon icon;
+    QStyle *style = q->style();
+
+    switch (action) {
+    case QWebEnginePage::Back:
+        icon = style->standardIcon(QStyle::SP_ArrowBack);
+        break;
+    case QWebEnginePage::Forward:
+        icon = style->standardIcon(QStyle::SP_ArrowForward);
+        break;
+    case QWebEnginePage::Stop:
+        icon = style->standardIcon(QStyle::SP_BrowserStop);
+        break;
+    case QWebEnginePage::Reload:
+        icon = style->standardIcon(QStyle::SP_BrowserReload);
+        break;
+    case QWebEnginePage::ReloadAndBypassCache:
+        icon = style->standardIcon(QStyle::SP_BrowserReload);
+        break;
+    default:
+        break;
+    }
+    return icon;
+}
 /*!
     \fn QWebEngineView::renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode)
     \since 5.6

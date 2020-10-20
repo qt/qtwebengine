@@ -85,7 +85,6 @@
 #include <QPrinter>
 #include <QThread>
 #endif
-#include <QStyle>
 #include <QTimer>
 #include <QUrl>
 
@@ -1065,29 +1064,21 @@ QAction *QWebEnginePage::action(WebAction action) const
         return d->actions[action];
 
     QString text;
-    QIcon icon;
-    QStyle *style = d->view ? d->view->style() : qApp->style();
-
     switch (action) {
     case Back:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Back);
-        icon = style->standardIcon(QStyle::SP_ArrowBack);
         break;
     case Forward:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Forward);
-        icon = style->standardIcon(QStyle::SP_ArrowForward);
         break;
     case Stop:
         text = tr("Stop");
-        icon = style->standardIcon(QStyle::SP_BrowserStop);
         break;
     case Reload:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Reload);
-        icon = style->standardIcon(QStyle::SP_BrowserReload);
         break;
     case ReloadAndBypassCache:
         text = tr("Reload and Bypass Cache");
-        icon = style->standardIcon(QStyle::SP_BrowserReload);
         break;
     case Cut:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Cut);
@@ -1218,7 +1209,6 @@ QAction *QWebEnginePage::action(WebAction action) const
     QAction *a = new QAction(const_cast<QWebEnginePage*>(this));
     a->setText(text);
     a->setData(action);
-    a->setIcon(icon);
 
     connect(a, SIGNAL(triggered(bool)), this, SLOT(_q_webActionTriggered(bool)));
 

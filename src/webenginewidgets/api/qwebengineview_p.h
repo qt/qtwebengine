@@ -88,6 +88,7 @@ public:
     static void bindPageAndView(QWebEnginePage *page, QWebEngineView *view);
     static void bindPageAndWidget(QWebEnginePage *page,
                                   QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *widget);
+    QIcon webActionIcon(QWebEnginePage::WebAction action);
 
     QWebEnginePage *page;
     bool m_dragEntered;
