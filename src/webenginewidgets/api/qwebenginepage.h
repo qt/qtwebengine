@@ -364,6 +364,9 @@ Q_SIGNALS:
 
     void findTextFinished(const QWebEngineFindTextResult &result);
 
+    // TODO: fixme / rewrite bindPageToView
+    void _q_aboutToDelete();
+
 protected:
     virtual QWebEnginePage *createWindow(WebWindowType type);
     virtual QStringList chooseFiles(FileSelectionMode mode, const QStringList &oldFiles, const QStringList &acceptedMimeTypes);
@@ -373,7 +376,6 @@ protected:
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID);
     virtual void certificateError(QWebEngineCertificateError certificateError);
     virtual bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame);
-
 private:
     Q_DISABLE_COPY(QWebEnginePage)
     Q_DECLARE_PRIVATE(QWebEnginePage)

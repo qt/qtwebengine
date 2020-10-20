@@ -171,10 +171,6 @@ public:
     void setFullScreenMode(bool);
     void ensureInitialized() const;
 
-    static void bindPageAndView(QWebEnginePage *page, QWebEngineView *view);
-    static void bindPageAndWidget(QWebEnginePage *page,
-                                  QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *widget);
-
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter;
     QWebEngineHistory *history;
     QWebEngineProfile *profile;

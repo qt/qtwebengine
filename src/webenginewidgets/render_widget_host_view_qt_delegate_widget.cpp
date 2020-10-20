@@ -180,7 +180,7 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
 
 RenderWidgetHostViewQtDelegateWidget::~RenderWidgetHostViewQtDelegateWidget()
 {
-    QWebEnginePagePrivate::bindPageAndWidget(nullptr, this);
+    QWebEngineViewPrivate::bindPageAndWidget(nullptr, this);
 }
 
 void RenderWidgetHostViewQtDelegateWidget::connectRemoveParentBeforeParentDelete()

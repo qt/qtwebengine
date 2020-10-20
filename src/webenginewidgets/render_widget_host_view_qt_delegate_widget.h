@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 class QWebEnginePage;
 class QWebEngineView;
 class QWebEngineViewAccessible;
-class QWebEnginePagePrivate;
+class QWebEngineViewPrivate;
 QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
@@ -102,7 +102,7 @@ private slots:
     void removeParentBeforeParentDelete();
 
 private:
-    friend QWebEnginePagePrivate;
+    friend QWebEngineViewPrivate;
 
     RenderWidgetHostViewQtDelegateClient *m_client;
     QScopedPointer<QQuickItem> m_rootItem;

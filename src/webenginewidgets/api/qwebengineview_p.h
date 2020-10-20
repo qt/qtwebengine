@@ -85,6 +85,9 @@ public:
                           QString *result);
     void setToolTip(const QString &toolTipText);
     QWebEngineViewPrivate();
+    static void bindPageAndView(QWebEnginePage *page, QWebEngineView *view);
+    static void bindPageAndWidget(QWebEnginePage *page,
+                                  QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *widget);
 
     QWebEnginePage *page;
     bool m_dragEntered;
