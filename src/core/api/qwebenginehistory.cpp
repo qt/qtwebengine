@@ -40,7 +40,6 @@
 #include "qwebenginehistory.h"
 #include "qwebenginehistory_p.h"
 
-#include "qwebenginepage_p.h"
 #include "web_contents_adapter.h"
 
 QT_BEGIN_NAMESPACE
@@ -50,21 +49,15 @@ QT_BEGIN_NAMESPACE
     Swaps the history item with the \a other item.
 */
 
-QWebEngineHistoryItemPrivate::QWebEngineHistoryItemPrivate(QWebEnginePagePrivate *page, int index)
-    : page(page)
-    , index(index)
+QWebEngineHistoryItemPrivate::QWebEngineHistoryItemPrivate(
+        QtWebEngineCore::WebContentsAdapterClient *adapter, int index)
+    : m_adapter(adapter), index(index)
 {
 }
 
-QWebEngineHistoryItem::QWebEngineHistoryItem(QWebEngineHistoryItemPrivate *d)
-    : d(d)
-{
-}
+QWebEngineHistoryItem::QWebEngineHistoryItem(QWebEngineHistoryItemPrivate *d) : d(d) { }
 
-QWebEngineHistoryItem::QWebEngineHistoryItem(const QWebEngineHistoryItem &other)
-    : d(other.d)
-{
-}
+QWebEngineHistoryItem::QWebEngineHistoryItem(const QWebEngineHistoryItem &other) : d(other.d) { }
 
 QWebEngineHistoryItem &QWebEngineHistoryItem::operator=(const QWebEngineHistoryItem &other)
 {
@@ -72,32 +65,35 @@ QWebEngineHistoryItem &QWebEngineHistoryItem::operator=(const QWebEngineHistoryI
     return *this;
 }
 
-QWebEngineHistoryItem::~QWebEngineHistoryItem()
-{
-}
+QWebEngineHistoryItem::~QWebEngineHistoryItem() { }
 
 QUrl QWebEngineHistoryItem::originalUrl() const
 {
     Q_D(const QWebEngineHistoryItem);
-    return d->page ? d->page->webContents()->getNavigationEntryOriginalUrl(d->index) : QUrl();
+    return d->m_adapter
+            ? d->m_adapter->webContentsAdapter()->getNavigationEntryOriginalUrl(d->index)
+            : QUrl();
 }
 
 QUrl QWebEngineHistoryItem::url() const
 {
     Q_D(const QWebEngineHistoryItem);
-    return d->page ? d->page->webContents()->getNavigationEntryUrl(d->index) : QUrl();
+    return d->m_adapter ? d->m_adapter->webContentsAdapter()->getNavigationEntryUrl(d->index)
+                        : QUrl();
 }
 
 QString QWebEngineHistoryItem::title() const
 {
     Q_D(const QWebEngineHistoryItem);
-    return d->page ? d->page->webContents()->getNavigationEntryTitle(d->index) : QString();
+    return d->m_adapter ? d->m_adapter->webContentsAdapter()->getNavigationEntryTitle(d->index)
+                        : QString();
 }
 
 QDateTime QWebEngineHistoryItem::lastVisited() const
 {
     Q_D(const QWebEngineHistoryItem);
-    return d->page ? d->page->webContents()->getNavigationEntryTimestamp(d->index) : QDateTime();
+    return d->m_adapter ? d->m_adapter->webContentsAdapter()->getNavigationEntryTimestamp(d->index)
+                        : QDateTime();
 }
 
 /*!
@@ -108,19 +104,21 @@ QDateTime QWebEngineHistoryItem::lastVisited() const
 QUrl QWebEngineHistoryItem::iconUrl() const
 {
     Q_D(const QWebEngineHistoryItem);
-    return d->page ? d->page->webContents()->getNavigationEntryIconUrl(d->index) : QUrl();
+    return d->m_adapter ? d->m_adapter->webContentsAdapter()->getNavigationEntryIconUrl(d->index)
+                        : QUrl();
 }
 
 bool QWebEngineHistoryItem::isValid() const
 {
     Q_D(const QWebEngineHistoryItem);
-    if (!d->page)
+    if (!d->m_adapter)
         return false;
-    return d->index >= 0 && d->index < d->page->webContents()->navigationEntryCount();
+    return d->index >= 0 && d->index < d->m_adapter->webContentsAdapter()->navigationEntryCount();
 }
 
-QWebEngineHistoryPrivate::QWebEngineHistoryPrivate(QWebEnginePagePrivate *page)
-    : page(page)
+QWebEngineHistoryPrivate::QWebEngineHistoryPrivate(
+        QtWebEngineCore::WebContentsAdapterClient *adapter)
+    : m_adapter(adapter)
 {
 }
 
@@ -129,38 +127,33 @@ QWebEngineHistoryPrivate::~QWebEngineHistoryPrivate()
     // Invalidate shared item references possibly still out there.
     QList<QWebEngineHistoryItem>::iterator it, end;
     for (it = items.begin(), end = items.end(); it != end; ++it)
-        it->d->page = 0;
+        it->d->m_adapter = 0;
 }
 
 void QWebEngineHistoryPrivate::updateItems() const
 {
     // Keep track of items we return to be able to invalidate them
-    // and avoid dangling references to our page.
-    int entryCount = page->webContents()->navigationEntryCount();
+    // and avoid dangling references to our m_adapter.
+    int entryCount = m_adapter->webContentsAdapter()->navigationEntryCount();
     while (items.size() > entryCount) {
-        items.last().d->page = 0;
+        items.last().d->m_adapter = 0;
         items.removeLast();
     }
     while (items.size() < entryCount) {
         int nextIndex = items.size();
-        items.append(QWebEngineHistoryItem(new QWebEngineHistoryItemPrivate(page, nextIndex)));
+        items.append(QWebEngineHistoryItem(new QWebEngineHistoryItemPrivate(m_adapter, nextIndex)));
     }
 }
 
-QWebEngineHistory::QWebEngineHistory(QWebEngineHistoryPrivate *d)
-    : d_ptr(d)
-{
-}
+QWebEngineHistory::QWebEngineHistory(QWebEngineHistoryPrivate *d) : d_ptr(d) { }
 
-QWebEngineHistory::~QWebEngineHistory()
-{
-}
+QWebEngineHistory::~QWebEngineHistory() { }
 
 void QWebEngineHistory::clear()
 {
     Q_D(const QWebEngineHistory);
-    d->page->webContents()->clearNavigationHistory();
-    d->page->updateNavigationActions();
+    d->m_adapter->webContentsAdapter()->clearNavigationHistory();
+    d->m_adapter->updateNavigationActions();
 }
 
 QList<QWebEngineHistoryItem> QWebEngineHistory::items() const
@@ -191,32 +184,32 @@ QList<QWebEngineHistoryItem> QWebEngineHistory::forwardItems(int maxItems) const
 bool QWebEngineHistory::canGoBack() const
 {
     Q_D(const QWebEngineHistory);
-    return d->page->webContents()->canGoToOffset(-1);
+    return d->m_adapter->webContentsAdapter()->canGoToOffset(-1);
 }
 
 bool QWebEngineHistory::canGoForward() const
 {
     Q_D(const QWebEngineHistory);
-    return d->page->webContents()->canGoToOffset(1);
+    return d->m_adapter->webContentsAdapter()->canGoToOffset(1);
 }
 
 void QWebEngineHistory::back()
 {
     Q_D(const QWebEngineHistory);
-    d->page->webContents()->navigateToOffset(-1);
+    d->m_adapter->webContentsAdapter()->navigateToOffset(-1);
 }
 
 void QWebEngineHistory::forward()
 {
     Q_D(const QWebEngineHistory);
-    d->page->webContents()->navigateToOffset(1);
+    d->m_adapter->webContentsAdapter()->navigateToOffset(1);
 }
 
 void QWebEngineHistory::goToItem(const QWebEngineHistoryItem &item)
 {
     Q_D(const QWebEngineHistory);
-    Q_ASSERT(item.d->page == d->page);
-    d->page->webContents()->navigateToIndex(item.d->index);
+    Q_ASSERT(item.d->m_adapter == d->m_adapter);
+    d->m_adapter->webContentsAdapter()->navigateToIndex(item.d->index);
 }
 
 QWebEngineHistoryItem QWebEngineHistory::backItem() const
@@ -251,30 +244,15 @@ QWebEngineHistoryItem QWebEngineHistory::itemAt(int i) const
 int QWebEngineHistory::currentItemIndex() const
 {
     Q_D(const QWebEngineHistory);
-    return d->page->webContents()->currentNavigationEntryIndex();
+    return d->m_adapter->webContentsAdapter()->currentNavigationEntryIndex();
 }
 
 int QWebEngineHistory::count() const
 {
     Q_D(const QWebEngineHistory);
-    if (!d->page->webContents()->isInitialized())
+    if (!d->m_adapter->webContentsAdapter()->isInitialized())
         return 0;
-    return d->page->webContents()->navigationEntryCount();
-}
-
-QDataStream& operator<<(QDataStream& stream, const QWebEngineHistory& history)
-{
-    QtWebEngineCore::WebContentsAdapter *adapter = history.d_func()->page->webContents();
-    if (!adapter->isInitialized())
-        adapter->loadDefault();
-    adapter->serializeNavigationHistory(stream);
-    return stream;
-}
-
-QDataStream& operator>>(QDataStream& stream, QWebEngineHistory& history)
-{
-    history.d_func()->page->recreateFromSerializedHistory(stream);
-    return stream;
+    return d->m_adapter->webContentsAdapter()->navigationEntryCount();
 }
 
 QT_END_NAMESPACE

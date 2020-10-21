@@ -40,12 +40,12 @@
 #ifndef QWEBENGINEHISTORY_H
 #define QWEBENGINEHISTORY_H
 
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qshareddata.h>
 #include <QtGui/qicon.h>
-#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -54,7 +54,8 @@ class QWebEngineHistoryItemPrivate;
 class QWebEnginePage;
 class QWebEnginePagePrivate;
 
-class QWEBENGINEWIDGETS_EXPORT QWebEngineHistoryItem {
+class Q_WEBENGINECORE_EXPORT QWebEngineHistoryItem
+{
 public:
     QWebEngineHistoryItem(const QWebEngineHistoryItem &other);
     QWebEngineHistoryItem &operator=(const QWebEngineHistoryItem &other);
@@ -82,7 +83,8 @@ private:
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QWebEngineHistoryItem)
 
 class QWebEngineHistoryPrivate;
-class QWEBENGINEWIDGETS_EXPORT QWebEngineHistory {
+class Q_WEBENGINECORE_EXPORT QWebEngineHistory
+{
 public:
     void clear();
 
@@ -114,14 +116,11 @@ private:
     Q_DECLARE_PRIVATE(QWebEngineHistory)
     QScopedPointer<QWebEngineHistoryPrivate> d_ptr;
 
-    friend QWEBENGINEWIDGETS_EXPORT QDataStream& operator>>(QDataStream&, QWebEngineHistory&);
-    friend QWEBENGINEWIDGETS_EXPORT QDataStream& operator<<(QDataStream&, const QWebEngineHistory&);
+    friend Q_WEBENGINECORE_EXPORT QDataStream &operator>>(QDataStream &, QWebEngineHistory &);
+    friend Q_WEBENGINECORE_EXPORT QDataStream &operator<<(QDataStream &, const QWebEngineHistory &);
     friend class QWebEnginePage;
     friend class QWebEnginePagePrivate;
 };
-
-QWEBENGINEWIDGETS_EXPORT QDataStream& operator<<(QDataStream& stream, const QWebEngineHistory& history);
-QWEBENGINEWIDGETS_EXPORT QDataStream& operator>>(QDataStream& stream, QWebEngineHistory& history);
 
 QT_END_NAMESPACE
 

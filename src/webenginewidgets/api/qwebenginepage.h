@@ -395,6 +395,10 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::FindFlags)
 
+QWEBENGINEWIDGETS_EXPORT QDataStream &operator<<(QDataStream &stream,
+                                                 const QWebEngineHistory &history);
+QWEBENGINEWIDGETS_EXPORT QDataStream &operator>>(QDataStream &stream, QWebEngineHistory &history);
+
 QT_END_NAMESPACE
 
 #endif // QWEBENGINEPAGE_H

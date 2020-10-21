@@ -50,8 +50,12 @@
 //
 // We mean it.
 //
-
+#include "qtwebenginecoreglobal_p.h"
 #include <QtCore/qshareddata.h>
+
+namespace QtWebEngineCore {
+class WebContentsAdapterClient;
+}
 
 QT_BEGIN_NAMESPACE
 class QWebEnginePagePrivate;
@@ -59,20 +63,20 @@ class QWebEnginePagePrivate;
 class QWebEngineHistoryItemPrivate : public QSharedData
 {
 public:
-    QWebEngineHistoryItemPrivate(QWebEnginePagePrivate *page = 0, int index = 0);
-
-    QWebEnginePagePrivate *page;
+    QWebEngineHistoryItemPrivate(QtWebEngineCore::WebContentsAdapterClient *adapter = nullptr,
+                                 int index = 0);
+    QtWebEngineCore::WebContentsAdapterClient *m_adapter;
     int index;
 };
 
-class QWebEngineHistoryPrivate
+class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineHistoryPrivate
 {
 public:
-    QWebEngineHistoryPrivate(QWebEnginePagePrivate *page);
+    QWebEngineHistoryPrivate(QtWebEngineCore::WebContentsAdapterClient *adapter);
     ~QWebEngineHistoryPrivate();
     void updateItems() const;
 
-    QWebEnginePagePrivate *page;
+    QtWebEngineCore::WebContentsAdapterClient *m_adapter;
     mutable QList<QWebEngineHistoryItem> items;
 };
 

@@ -2432,6 +2432,23 @@ QWebEnginePage* QWebEnginePage::fromDownloadRequest(QWebEngineDownloadRequest *r
     return static_cast<QWebEnginePagePrivate *>(request->d_ptr->m_adapterClient)->q_ptr;
 }
 
+QDataStream &operator<<(QDataStream &stream, const QWebEngineHistory &history)
+{
+    QtWebEngineCore::WebContentsAdapter *adapter =
+            history.d_func()->m_adapter->webContentsAdapter();
+    if (!adapter->isInitialized())
+        adapter->loadDefault();
+    adapter->serializeNavigationHistory(stream);
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, QWebEngineHistory &history)
+{
+    static_cast<QWebEnginePagePrivate *>(history.d_func()->m_adapter)
+            ->recreateFromSerializedHistory(stream);
+    return stream;
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qwebenginepage.cpp"

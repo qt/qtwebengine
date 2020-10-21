@@ -12,7 +12,6 @@ QT_PRIVATE += quick-private gui-private core-private widgets-private quickwidget
 INCLUDEPATH += $$PWD api ../core ../core/api ../webengine/api
 
 SOURCES = \
-        api/qwebenginehistory.cpp \
         api/qwebenginenotificationpresenter.cpp \
         api/qwebenginepage.cpp \
         api/qwebengineview.cpp \
@@ -20,7 +19,6 @@ SOURCES = \
 
 HEADERS = \
         api/qtwebenginewidgetsglobal.h \
-        api/qwebenginehistory.h \
         api/qwebenginenotificationpresenter_p.h \
         api/qwebenginepage.h \
         api/qwebenginepage_p.h \
