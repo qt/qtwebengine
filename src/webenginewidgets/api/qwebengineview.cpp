@@ -41,9 +41,11 @@
 #include "qwebengineview_p.h"
 
 #include "qwebenginepage_p.h"
+#include "qwebengineprofile.h"
 #include "render_widget_host_view_qt_delegate_widget.h"
 #include "web_contents_adapter.h"
 #include "file_picker_controller.h"
+#include "qwebenginenotificationpresenter_p.h"
 #include "color_chooser_controller.h"
 #include <QStandardPaths>
 #if QT_CONFIG(action)
@@ -487,6 +489,9 @@ void QWebEngineView::setPage(QWebEnginePage *newPage)
     QWebEngineViewPrivate::bindPageAndView(newPage, this);
     connect(newPage, &QWebEnginePage::_q_aboutToDelete, this,
             [newPage]() { QWebEngineViewPrivate::bindPageAndView(newPage, nullptr); });
+    auto profile = newPage->profile();
+    if (!profile->notificationPresenter())
+        profile->setNotificationPresenter(&defaultNotificationPresenter);
 }
 
 void QWebEngineView::load(const QUrl& url)
