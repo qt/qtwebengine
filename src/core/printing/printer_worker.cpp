@@ -47,14 +47,11 @@
 namespace QtWebEngineCore {
 
 PrinterWorker::PrinterWorker(QSharedPointer<QByteArray> data, QPrinter *printer)
-    : m_data(data)
-    , m_printer(printer)
+    : m_data(data), m_printer(printer)
 {
 }
 
-PrinterWorker::~PrinterWorker()
-{
-}
+PrinterWorker::~PrinterWorker() { }
 
 void PrinterWorker::print()
 {
@@ -107,15 +104,17 @@ void PrinterWorker::print()
         for (int i = 0; true; i++) {
             QSizeF documentSize = (pdfiumWrapper.pageSize(currentPageIndex - 1) * resolution);
             bool isLandscape = documentSize.width() > documentSize.height();
-            m_printer->setPageOrientation(isLandscape ? QPageLayout::Landscape : QPageLayout::Portrait);
+            m_printer->setPageOrientation(isLandscape ? QPageLayout::Landscape
+                                                      : QPageLayout::Portrait);
             QRectF pageRect = m_printer->pageRect(QPrinter::DevicePixel);
             documentSize = documentSize.scaled(pageRect.size(), Qt::KeepAspectRatio);
 
-            // setPageOrientation has to be called before qpainter.begin() or before qprinter.newPage() so correct metrics is used,
-            // therefore call begin now for only first page
+            // setPageOrientation has to be called before qpainter.begin() or before
+            // qprinter.newPage() so correct metrics is used, therefore call begin now for only
+            // first page
             if (!painter.isActive() && !painter.begin(m_printer)) {
                 qWarning("Failure to print on printer %ls: Could not open printer for painting.",
-                          qUtf16Printable(m_printer->printerName()));
+                         qUtf16Printable(m_printer->printerName()));
                 Q_EMIT resultReady(false);
                 return;
             }
@@ -125,7 +124,7 @@ void PrinterWorker::print()
 
             for (int printedPages = 0; printedPages < pageCopies; printedPages++) {
                 if (m_printer->printerState() == QPrinter::Aborted
-                        || m_printer->printerState() == QPrinter::Error) {
+                    || m_printer->printerState() == QPrinter::Error) {
                     Q_EMIT resultReady(false);
                     return;
                 }
@@ -133,12 +132,13 @@ void PrinterWorker::print()
                 if (printedPages > 0)
                     m_printer->newPage();
 
-                QImage currentImage = pdfiumWrapper.pageAsQImage(currentPageIndex - 1,documentSize.width(),documentSize.height());
+                QImage currentImage = pdfiumWrapper.pageAsQImage(
+                        currentPageIndex - 1, documentSize.width(), documentSize.height());
                 if (currentImage.isNull()) {
                     Q_EMIT resultReady(false);
                     return;
                 }
-                painter.drawImage(0,0, currentImage);
+                painter.drawImage(0, 0, currentImage);
             }
 
             if (currentPageIndex == toPage)

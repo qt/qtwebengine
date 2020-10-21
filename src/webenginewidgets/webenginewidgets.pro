@@ -26,11 +26,4 @@ HEADERS = \
         api/qwebengineview_p.h \
         render_widget_host_view_qt_delegate_widget.h
 
-qtConfig(webengine-printing-and-pdf) {
-    QT += printsupport
-
-    SOURCES += printer_worker.cpp
-    HEADERS += printer_worker.h
-}
-
 load(qt_module)

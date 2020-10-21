@@ -49,7 +49,7 @@
 #include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
-#include "printer_worker.h"
+#include "printing/printer_worker.h"
 #endif
 #include "qwebenginecertificateerror.h"
 #include "qwebenginefindtextresult.h"

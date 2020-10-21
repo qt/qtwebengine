@@ -7,6 +7,7 @@ QT_FOR_CONFIG += buildtools-private webenginecore webenginecore-private
 
 TARGET = QtWebEngineCore
 QT += qml-private quick-private gui-private core-private
+qtConfig(webengine-printing-and-pdf): QT += printsupport
 QT_PRIVATE += webenginecoreheaders-private
 
 qtConfig(webengine-geolocation): QT += positioning

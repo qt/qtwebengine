@@ -61,7 +61,7 @@ QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
 
-class PrinterWorker : public QObject
+class Q_WEBENGINECORE_PRIVATE_EXPORT PrinterWorker : public QObject
 {
     Q_OBJECT
 public:
@@ -83,6 +83,6 @@ private:
 
 } // namespace QtWebEngineCore
 
-Q_DECLARE_METATYPE(QtWebEngineCore::PrinterWorker*)
+Q_DECLARE_METATYPE(QtWebEngineCore::PrinterWorker *)
 
 #endif // PRINTER_WORKER_H
