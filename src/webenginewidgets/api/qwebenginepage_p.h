@@ -156,7 +156,6 @@ public:
     void hideTouchSelectionMenu() override { }
     const QObject *holdingQObject() const override;
     ClientType clientType() override { return QtWebEngineCore::WebContentsAdapterClient::WidgetsClient; }
-    void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegate *newWidget) override;
     void findTextFinished(const QWebEngineFindTextResult &result) override;
 
     QtWebEngineCore::ProfileAdapter *profileAdapter() override;

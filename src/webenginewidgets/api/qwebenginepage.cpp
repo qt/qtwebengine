@@ -648,13 +648,6 @@ const QObject *QWebEnginePagePrivate::holdingQObject() const
     return q;
 }
 
-void QWebEnginePagePrivate::widgetChanged(RenderWidgetHostViewQtDelegate *newWidgetBase)
-{
-    Q_Q(QWebEnginePage);
-    QWebEngineViewPrivate::bindPageAndWidget(
-            q, static_cast<RenderWidgetHostViewQtDelegateWidget *>(newWidgetBase));
-}
-
 void QWebEnginePagePrivate::findTextFinished(const QWebEngineFindTextResult &result)
 {
     Q_Q(QWebEnginePage);
@@ -856,7 +849,6 @@ QWebEnginePage::~QWebEnginePage()
         // d_ptr might be exceptionally null if profile adapter got deleted first
         setDevToolsPage(nullptr);
         emit _q_aboutToDelete();
-        QWebEngineViewPrivate::bindPageAndWidget(this, nullptr);
     }
 }
 

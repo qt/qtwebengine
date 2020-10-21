@@ -65,6 +65,7 @@ QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
 
+class WebContentsAdapterClient;
 class Q_WEBENGINECORE_PRIVATE_EXPORT RenderWidgetHostViewQtDelegate {
 public:
     virtual ~RenderWidgetHostViewQtDelegate() { }
@@ -85,6 +86,7 @@ public:
     virtual void inputMethodStateChanged(bool editorVisible, bool passwordInput) = 0;
     virtual void setInputMethodHints(Qt::InputMethodHints hints) = 0;
     virtual void setClearColor(const QColor &color) = 0;
+    virtual void adapterClientChanged(WebContentsAdapterClient *client) = 0;
     virtual void unhandledWheelEvent(QWheelEvent *) {}
 };
 

@@ -72,7 +72,7 @@ public:
     void inputMethodStateChanged(bool, bool) override {}
     void setInputMethodHints(Qt::InputMethodHints) override { }
     void setClearColor(const QColor &) override { }
-
+    void adapterClientChanged(WebContentsAdapterClient *) override { }
     void setVirtualParent(QQuickItem *virtualParent);
 
 private:

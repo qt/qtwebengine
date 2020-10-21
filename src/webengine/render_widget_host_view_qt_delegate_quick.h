@@ -83,8 +83,8 @@ public:
     void setInputMethodHints(Qt::InputMethodHints) override { }
     // The QtQuick view doesn't have a backbuffer of its own and doesn't need this
     void setClearColor(const QColor &) override { }
-
     void readyToSwap() override;
+    void adapterClientChanged(WebContentsAdapterClient *client) override;
 
 protected:
     bool event(QEvent *event) override;

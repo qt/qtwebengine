@@ -334,7 +334,8 @@ void WebContentsDelegateQt::RenderViewHostChanged(content::RenderViewHost *, con
 {
     if (newHost && newHost->GetWidget() && newHost->GetWidget()->GetView()) {
         auto rwhv = static_cast<RenderWidgetHostViewQt *>(newHost->GetWidget()->GetView());
-        m_viewClient->widgetChanged(rwhv->delegate());
+        Q_ASSERT(rwhv->delegate());
+        rwhv->delegate()->adapterClientChanged(m_viewClient);
     }
 }
 

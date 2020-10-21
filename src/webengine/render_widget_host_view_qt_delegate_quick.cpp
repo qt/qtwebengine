@@ -386,6 +386,12 @@ void RenderWidgetHostViewQtDelegateQuick::onHide()
     m_client->forwardEvent(&event);
 }
 
+void RenderWidgetHostViewQtDelegateQuick::adapterClientChanged(WebContentsAdapterClient *client)
+{
+    QQuickWebEngineViewPrivate::bindViewAndWidget(
+            static_cast<QQuickWebEngineViewPrivate *>(client)->q_func(), this);
+}
+
 #if QT_CONFIG(accessibility)
 RenderWidgetHostViewQtDelegateQuickAccessible::RenderWidgetHostViewQtDelegateQuickAccessible(RenderWidgetHostViewQtDelegateQuick *o, QQuickWebEngineView *view)
     : QAccessibleObject(o)

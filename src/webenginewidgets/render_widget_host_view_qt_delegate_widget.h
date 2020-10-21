@@ -95,6 +95,7 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const override;
+    void adapterClientChanged(WebContentsAdapterClient *client) override;
 
 private slots:
     void onWindowPosChanged();

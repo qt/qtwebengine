@@ -730,12 +730,6 @@ void QQuickWebEngineViewPrivate::printRequested()
     });
 }
 
-void QQuickWebEngineViewPrivate::widgetChanged(RenderWidgetHostViewQtDelegate *newWidgetBase)
-{
-    Q_Q(QQuickWebEngineView);
-    bindViewAndWidget(q, static_cast<RenderWidgetHostViewQtDelegateQuick *>(newWidgetBase));
-}
-
 void QQuickWebEngineViewPrivate::findTextFinished(const QWebEngineFindTextResult &result)
 {
     Q_Q(QQuickWebEngineView);

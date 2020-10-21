@@ -244,7 +244,6 @@ public:
     virtual void setToolTip(const QString& toolTipText) = 0;
     virtual ClientType clientType() = 0;
     virtual void printRequested() = 0;
-    virtual void widgetChanged(RenderWidgetHostViewQtDelegate *newWidget) = 0;
     virtual TouchHandleDrawableClient *createTouchHandle(const QMap<int, QImage> &images) = 0;
     virtual void showTouchSelectionMenu(TouchSelectionMenuController *menuController, const QRect &bounds, const QSize &handleSize) = 0;
     virtual void hideTouchSelectionMenu() = 0;

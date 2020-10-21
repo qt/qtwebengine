@@ -465,6 +465,14 @@ void RenderWidgetHostViewQtDelegateWidget::onWindowPosChanged()
     m_client->visualPropertiesChanged();
 }
 
+void RenderWidgetHostViewQtDelegateWidget::adapterClientChanged(WebContentsAdapterClient *client)
+{
+    QWebEnginePage *page = static_cast<QWebEnginePagePrivate *>(client)->q_func();
+    QWebEngineViewPrivate::bindPageAndWidget(page, this);
+    connect(page, &QWebEnginePage::_q_aboutToDelete, this,
+            [this]() { QWebEngineViewPrivate::bindPageAndWidget(nullptr, this); });
+}
+
 #if QT_CONFIG(accessibility)
 RenderWidgetHostViewQtDelegateWidgetAccessible::RenderWidgetHostViewQtDelegateWidgetAccessible(RenderWidgetHostViewQtDelegateWidget *o, QWebEngineView *view)
     : QAccessibleWidget(o)
