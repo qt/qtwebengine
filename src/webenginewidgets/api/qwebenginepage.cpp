@@ -71,7 +71,7 @@
 #include "render_view_context_menu_qt.h"
 #include "render_widget_host_view_qt_delegate_client.h"
 #include <QAction>
-#include <QApplication>
+#include <QGuiApplication>
 #include <QAuthenticator>
 #include <QClipboard>
 #include <QKeyEvent>
@@ -1338,7 +1338,7 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
                          + linkText + QStringLiteral("</a>");
             data->setHtml(html);
             data->setUrls(QList<QUrl>() << d->view->lastContextMenuRequest()->linkUrl());
-            qApp->clipboard()->setMimeData(data);
+            QGuiApplication::clipboard()->setMimeData(data);
         }
         break;
     case DownloadLinkToDisk:
@@ -1375,7 +1375,7 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
             QString html = QStringLiteral("<img src=\"") + urlString + QStringLiteral("\"") + title + alt + QStringLiteral("></img>");
             data->setHtml(html);
             data->setUrls(QList<QUrl>() << d->view->lastContextMenuRequest()->mediaUrl());
-            qApp->clipboard()->setMimeData(data);
+            QGuiApplication::clipboard()->setMimeData(data);
         }
         break;
     case DownloadImageToDisk:
@@ -1407,7 +1407,7 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
                 data->setHtml(QStringLiteral("<video src=\"") + urlString + QStringLiteral("\"") + title +
                               QStringLiteral("></video>"));
             data->setUrls(QList<QUrl>() << d->view->lastContextMenuRequest()->mediaUrl());
-            qApp->clipboard()->setMimeData(data);
+            QGuiApplication::clipboard()->setMimeData(data);
         }
         break;
     case ToggleMediaControls:
