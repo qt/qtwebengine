@@ -64,7 +64,7 @@
 #include "qwebenginescriptcollection_p.h"
 #include "qwebenginesettings.h"
 #include "user_notification_controller.h"
-#include "render_widget_host_view_qt_delegate_widget.h"
+#include "render_widget_host_view_qt_delegate.h"
 #include "web_contents_adapter.h"
 #include "web_engine_settings.h"
 #include "qwebenginescript.h"
@@ -76,7 +76,6 @@
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QIcon>
-#include <QLayout>
 #include <QLoggingCategory>
 #include <QMimeData>
 #if QT_CONFIG(webengine_printing_and_pdf)

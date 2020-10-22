@@ -32,7 +32,7 @@
 #include <QtWebEngineCore/qwebengineurlrequestinterceptor.h>
 #include <QtWebEngineCore/qwebenginesettings.h>
 #include <QtWebEngineCore/qwebengineprofile.h>
-#include <QtWebEngineWidgets/qwebenginepage.h>
+#include <QtWebEngineCore/qwebenginepage.h>
 
 #include <httpserver.h>
 #include <httpreqrep.h>

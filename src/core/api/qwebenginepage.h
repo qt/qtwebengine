@@ -40,7 +40,7 @@
 #ifndef QWEBENGINEPAGE_H
 #define QWEBENGINEPAGE_H
 
-#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtWebEngineCore/qwebengineclientcertificateselection.h>
 #include <QtWebEngineCore/qwebenginedownloadrequest.h>
 #include <QtWebEngineCore/qwebenginecallback.h>
@@ -73,7 +73,7 @@ class QWebEngineScriptCollection;
 class QWebEngineSettings;
 class QWebEngineUrlRequestInterceptor;
 
-class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
+class Q_WEBENGINECORE_EXPORT QWebEnginePage : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString selectedText READ selectedText)
     Q_PROPERTY(bool hasSelection READ hasSelection)
@@ -395,9 +395,9 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::FindFlags)
 
-QWEBENGINEWIDGETS_EXPORT QDataStream &operator<<(QDataStream &stream,
+Q_WEBENGINECORE_EXPORT QDataStream &operator<<(QDataStream &stream,
                                                  const QWebEngineHistory &history);
-QWEBENGINEWIDGETS_EXPORT QDataStream &operator>>(QDataStream &stream, QWebEngineHistory &history);
+Q_WEBENGINECORE_EXPORT QDataStream &operator>>(QDataStream &stream, QWebEngineHistory &history);
 
 QT_END_NAMESPACE
 

@@ -13,15 +13,12 @@ INCLUDEPATH += $$PWD api ../core ../core/api ../webengine/api
 
 SOURCES = \
         api/qwebenginenotificationpresenter.cpp \
-        api/qwebenginepage.cpp \
         api/qwebengineview.cpp \
         render_widget_host_view_qt_delegate_widget.cpp
 
 HEADERS = \
         api/qtwebenginewidgetsglobal.h \
         api/qwebenginenotificationpresenter_p.h \
-        api/qwebenginepage.h \
-        api/qwebenginepage_p.h \
         api/qwebengineview.h \
         api/qwebengineview_p.h \
         render_widget_host_view_qt_delegate_widget.h

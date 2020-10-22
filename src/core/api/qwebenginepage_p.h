@@ -106,7 +106,7 @@ public:
     virtual QObject *accessibilityParentObject() = 0;
 };
 
-class QWebEnginePagePrivate : public QtWebEngineCore::WebContentsAdapterClient
+class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEnginePagePrivate : public QtWebEngineCore::WebContentsAdapterClient
 {
 public:
     Q_DECLARE_PUBLIC(QWebEnginePage)

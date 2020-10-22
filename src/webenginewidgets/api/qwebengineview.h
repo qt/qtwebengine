@@ -45,7 +45,7 @@
 #include <QtWidgets/qwidget.h>
 
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
-#include <QtWebEngineWidgets/qwebenginepage.h>
+#include <QtWebEngineCore/qwebenginepage.h>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
 #include <QtWebEngineCore/qwebenginecontextmenurequest.h>
 

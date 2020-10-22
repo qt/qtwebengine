@@ -4,7 +4,7 @@ DESTDIR = $$OUT_PWD/$$getConfigDir()
 TEMPLATE = lib
 
 CONFIG += staticlib
-QT += network core-private webenginecoreheaders-private quick
+QT += network core-private webenginecoreheaders-private quick printsupport qml #fixme
 
 # Don't create .prl file for this intermediate library because
 # their contents get used when linking against them, breaking
@@ -64,8 +64,9 @@ HEADERS = \
     qwebengineprofile_p.h \
     qwebengineclientcertificateselection.h \
     qwebenginehistory.h \
-    qwebenginehistory_p.h
-
+    qwebenginehistory_p.h \
+    qwebenginepage.h \
+    qwebenginepage_p.h
 
 SOURCES = \
     qtwebenginecoreglobal.cpp \
@@ -90,7 +91,8 @@ SOURCES = \
     qwebenginescriptcollection.cpp \
     qwebengineprofile.cpp \
     qwebengineclientcertificateselection.cpp \
-    qwebenginehistory.cpp
+    qwebenginehistory.cpp \
+    qwebenginepage.cpp
 
 # Chromium headers included are not remotely clean
 CONFIG -= warning_clean
