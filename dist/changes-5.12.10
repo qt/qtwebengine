@@ -32,7 +32,7 @@ General
 Chromium
 --------
 
-  - Security fixes from Chromium up to version 86.0.4240.75, including:
+  - Security fixes from Chromium up to version 86.0.4240.111, including:
 
     - CVE-2020-6459
     - CVE-2020-6462: Use after free in task scheduling
@@ -71,6 +71,10 @@ Chromium
     - CVE-2020-15965: Out of bounds write in V8
     - CVE-2020-15968: Use after free in Blink
     - CVE-2020-15969: Use after free in WebRTC.
+    - CVE-2020-15999: Heap buffer overflow in freetype
+    - CVE-2020-16001: Use after free in media.
+    - CVE-2020-16002: Use after free in PDFium.
+    - CVE-2020-16003: Use after free in printing.
     - Security Bug 1051439
     - Security bug 1052492
     - Security bug 1054229
