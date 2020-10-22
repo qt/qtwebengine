@@ -62,7 +62,6 @@
 #include <QSharedPointer>
 
 struct PrintHostMsg_RequestPrintPreview_Params;
-struct PrintHostMsg_DidPreviewDocument_Params;
 
 namespace content {
 class RenderViewHost;
@@ -122,12 +121,12 @@ protected:
     void OnDidShowPrintDialog();
     void OnRequestPrintPreview(const PrintHostMsg_RequestPrintPreview_Params&);
     void OnMetafileReadyForPrinting(content::RenderFrameHost* rfh,
-                                    const PrintHostMsg_DidPreviewDocument_Params& params,
+                                    const printing::mojom::DidPreviewDocumentParams& params,
                                     const PrintHostMsg_PreviewIds &ids);
     void OnSetupScriptedPrintPreview(content::RenderFrameHost* rfh,
                                       IPC::Message* reply_msg);
     void OnDidPreviewPage(content::RenderFrameHost* rfh,
-                          const PrintHostMsg_DidPreviewPage_Params& params,
+                          const printing::mojom::DidPreviewPageParams& params,
                           const PrintHostMsg_PreviewIds& ids);
     void OnShowScriptedPrintPreview(content::RenderFrameHost* rfh,
                                     bool source_is_modifiable);

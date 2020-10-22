@@ -47,6 +47,7 @@ class DEPSParser:
     def __init__(self):
         self.global_scope = {
           'Var': lambda var_name: '{%s}' % var_name,
+          'Str': str,
           'deps_os': {},
         }
         self.local_scope = {}
@@ -229,8 +230,8 @@ class Submodule:
             # supermodule.
             if self.topmost_supermodule_path_prefix:
                 if not os.path.isdir(self.path):
-                    print '-- skipping ' + self.path + ' as dir has been stripped. --'
-                    return
+                    print '-- creating ' + self.path + ' as dir is missing. --'
+                    os.makedirs(self.path)
                 os.chdir(self.topmost_supermodule_path_prefix)
 
             if os.path.isdir(self.path):

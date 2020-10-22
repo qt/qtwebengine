@@ -48,9 +48,9 @@
 #include "web_engine_context.h"
 
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -149,7 +149,7 @@ printing::PrintedDocument *PrintViewManagerBaseQt::GetDocument(int cookie)
 
 // IPC handlers
 void PrintViewManagerBaseQt::OnDidPrintDocument(content::RenderFrameHost* /*render_frame_host*/,
-                                                const PrintHostMsg_DidPrintDocument_Params &params,
+                                                const printing::mojom::DidPrintDocumentParams &params,
                                                 std::unique_ptr<DelayedFrameDispatchHelper> helper)
 {
     printing::PrintedDocument *document = GetDocument(params.document_cookie);
@@ -157,13 +157,13 @@ void PrintViewManagerBaseQt::OnDidPrintDocument(content::RenderFrameHost* /*rend
         return;
 
     const auto &content = params.content;
-    if (!content.metafile_data_region.IsValid()) {
+    if (!content->metafile_data_region.IsValid()) {
         NOTREACHED() << "invalid memory handle";
         web_contents()->Stop();
         return;
     }
 
-    auto data = base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(content.metafile_data_region);
+    auto data = base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(content->metafile_data_region);
     if (!data) {
         NOTREACHED() << "couldn't map";
         web_contents()->Stop();
@@ -457,7 +457,7 @@ bool PrintViewManagerBaseQt::RunInnerMessageLoop() {
 
   // Need to enable recursive task.
   {
-      base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
+      base::CurrentThread::ScopedNestableTaskAllower allow;
       run_loop.Run();
   }
 

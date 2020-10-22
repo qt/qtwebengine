@@ -108,18 +108,18 @@ void ExtensionsClientQt::FilterHostPermissions(const URLPatternSet &hosts,
 {
 }
 
-// Replaces the scripting whitelist with |whitelist|. Used in the renderer{}
+// Replaces the scripting allowlist with |allowlist|. Used in the renderer{}
 // only used for testing in the browser process.
-void ExtensionsClientQt::SetScriptingWhitelist(const ExtensionsClient::ScriptingWhitelist &whitelist)
+void ExtensionsClientQt::SetScriptingAllowlist(const ExtensionsClient::ScriptingAllowlist &allowlist)
 {
-    scripting_whitelist_ = whitelist;
+    scripting_allowlist_ = allowlist;
 }
 
-// Return the whitelist of extensions that can run content scripts on
+// Return the allowlist of extensions that can run content scripts on
 // any origin.
-const ExtensionsClient::ScriptingWhitelist &ExtensionsClientQt::GetScriptingWhitelist() const
+const ExtensionsClient::ScriptingAllowlist &ExtensionsClientQt::GetScriptingAllowlist() const
 {
-    return scripting_whitelist_;
+    return scripting_allowlist_;
 }
 
 // Get the set of chrome:// hosts that |extension| can run content scripts on.

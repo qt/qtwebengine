@@ -86,6 +86,9 @@ static ProfileAdapter::PermissionType toQt(content::PermissionType type)
     case content::PermissionType::AR:
     case content::PermissionType::VR:
     case content::PermissionType::STORAGE_ACCESS_GRANT:
+    case content::PermissionType::CAMERA_PAN_TILT_ZOOM: // FIXME: This one seems to be checked together with webrtc
+    case content::PermissionType::WINDOW_PLACEMENT:
+    case content::PermissionType::FONT_ACCESS:
     case content::PermissionType::NUM:
         LOG(INFO) << "Unsupported permission type: " << static_cast<int>(type);
         break;

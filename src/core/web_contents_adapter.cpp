@@ -62,6 +62,7 @@
 
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
@@ -1057,13 +1058,10 @@ void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldI
     content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
 //    static_cast<content::RenderFrameHostImpl *>(rvh->GetMainFrame())->NotifyUserActivation();
-    if (worldId == 0) {
+    if (worldId == 0)
         rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript), base::NullCallback());
-        return;
-    }
-
-    content::RenderFrameHost::JavaScriptResultCallback callback = base::BindOnce(&callbackOnEvaluateJS, m_adapterClient, CallbackDirectory::NoCallbackId);
-    rvh->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), std::move(callback), worldId);
+    else
+        rvh->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), base::NullCallback(), worldId);
 }
 
 quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScript, quint32 worldId)
@@ -1094,10 +1092,10 @@ quint64 WebContentsAdapter::fetchDocumentInnerText()
     return m_nextRequestId++;
 }
 
-void WebContentsAdapter::updateWebPreferences(const content::WebPreferences & webPreferences)
+void WebContentsAdapter::updateWebPreferences(const content::WebPreferences &webPreferences)
 {
     CHECK_INITIALIZED();
-    m_webContents->GetRenderViewHost()->UpdateWebkitPreferences(webPreferences);
+    m_webContents->SetWebPreferences(webPreferences);
 
     // In case of updating preferences during navigation, there might be a pending RVH what will
     // be active on successful navigation.
@@ -1105,7 +1103,7 @@ void WebContentsAdapter::updateWebPreferences(const content::WebPreferences & we
     if (pendingRFH) {
         content::RenderViewHost *pendingRVH = pendingRFH->GetRenderViewHost();
         Q_ASSERT(pendingRVH);
-        pendingRVH->UpdateWebkitPreferences(webPreferences);
+        static_cast<content::RenderViewHostImpl*>(pendingRVH)->SendWebPreferencesToRenderer();
     }
 }
 
@@ -1528,7 +1526,7 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
     }
 
     {
-        base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
+        base::CurrentThread::ScopedNestableTaskAllower allow;
         drag->exec(allowedActions);
     }
 
@@ -1672,7 +1670,7 @@ void WebContentsAdapter::waitForUpdateDragActionCalled()
     const qint64 timeout = 3000;
     QElapsedTimer t;
     t.start();
-    auto seqMan = base::MessageLoopCurrent::GetCurrentSequenceManagerImpl();
+    auto seqMan = base::CurrentThread::GetCurrentSequenceManagerImpl();
     base::MessagePump::Delegate *delegate =
             static_cast<base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl *>(
                 seqMan->controller_.get());
@@ -2055,6 +2053,6 @@ ASSERT_ENUMS_MATCH(ReferrerPolicy::OriginWhenCrossOrigin, network::mojom::Referr
 //ASSERT_ENUMS_MATCH(ReferrerPolicy::NoReferrerWhenDowngradeOriginWhenCrossOrigin, network::mojom::ReferrerPolicy::kNoReferrerWhenDowngradeOriginWhenCrossOrigin)
 ASSERT_ENUMS_MATCH(ReferrerPolicy::SameOrigin, network::mojom::ReferrerPolicy::kSameOrigin)
 ASSERT_ENUMS_MATCH(ReferrerPolicy::StrictOrigin, network::mojom::ReferrerPolicy::kStrictOrigin)
-ASSERT_ENUMS_MATCH(ReferrerPolicy::Last, network::mojom::ReferrerPolicy::kLast)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::Last, network::mojom::ReferrerPolicy::kMaxValue)
 
 } // namespace QtWebEngineCore

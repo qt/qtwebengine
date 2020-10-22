@@ -127,7 +127,6 @@ public:
                          GURL *new_url,
                          bool *attach_same_site_cookies) override;
 
-    void BindReceiverOnMainThread(mojo::GenericPendingReceiver receiver) override;
     bool RequiresWebComponentsV0(const GURL &url) override;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -153,8 +152,6 @@ private:
 #if QT_CONFIG(webengine_spellchecker)
     QScopedPointer<SpellCheck> m_spellCheck;
 #endif
-
-    service_manager::BinderRegistry m_registry;
 
     DISALLOW_COPY_AND_ASSIGN(ContentRendererClientQt);
 };

@@ -101,7 +101,7 @@ network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams()
     network::mojom::HttpAuthDynamicParamsPtr auth_dynamic_params = network::mojom::HttpAuthDynamicParams::New();
 
     auto *command_line = base::CommandLine::ForCurrentProcess();
-    auth_dynamic_params->server_allowlist = command_line->GetSwitchValueASCII(switches::kAuthServerWhitelist);
+    auth_dynamic_params->server_allowlist = command_line->GetSwitchValueASCII(switches::kAuthServerAllowlist);
 //    auth_dynamic_params->delegate_allowlist = command_line->GetSwitchValueASCII(switches::kAuthNegotiateDelegateWhitelist);
 //    auth_dynamic_params->enable_negotiate_port = command_line->HasSwitch(switches::kEnableAuthNegotiatePort);
 

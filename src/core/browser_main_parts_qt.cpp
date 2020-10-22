@@ -41,9 +41,9 @@
 
 #include "api/qwebenginemessagepumpscheduler_p.h"
 
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_ui.h"
 #include "base/process/process.h"
+#include "base/task/current_thread.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/threading/thread_restrictions.h"
@@ -149,7 +149,7 @@ private:
     void ensureDelegate()
     {
         if (!m_delegate) {
-            auto seqMan = base::MessageLoopCurrent::GetCurrentSequenceManagerImpl();
+            auto seqMan = base::CurrentThread::Get()->GetCurrentSequenceManagerImpl();
             m_delegate = static_cast<base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl *>(
                              seqMan->controller_.get());
         }

@@ -141,6 +141,7 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/android_')
             or file_path.startswith('third_party/angle/third_party/deqp')
             or file_path.startswith('third_party/angle/third_party/glmark2')
+            or file_path.startswith('third_party/angle/third_party/VK-GL-CTS')
             or file_path.startswith('third_party/angle/third_party/vulkan-validation-layers')
             or file_path.startswith('third_party/apache-')
             or file_path.startswith('third_party/arcode-android-sdk')

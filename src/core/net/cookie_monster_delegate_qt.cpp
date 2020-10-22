@@ -273,10 +273,10 @@ void CookieMonsterDelegateQt::GetAllCookiesCallbackOnUIThread(qint64 callbackId,
         m_client->d_func()->onGetAllCallbackResult(callbackId, rawCookies);
 }
 
-void CookieMonsterDelegateQt::SetCookieCallbackOnUIThread(qint64 callbackId, net::CookieInclusionStatus status)
+void CookieMonsterDelegateQt::SetCookieCallbackOnUIThread(qint64 callbackId, net::CookieAccessResult status)
 {
     if (m_client)
-        m_client->d_func()->onSetCallbackResult(callbackId, status.IsInclude());
+        m_client->d_func()->onSetCallbackResult(callbackId, status.status.IsInclude());
 }
 
 void CookieMonsterDelegateQt::DeleteCookiesCallbackOnUIThread(qint64 callbackId, uint numCookies)

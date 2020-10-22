@@ -52,7 +52,6 @@
 #include <base/strings/nullable_string16.h>
 #include "base/files/file_path.h"
 #include "base/time/time.h"
-#include "content/public/common/file_chooser_file_info.h"
 #include "favicon_manager.h"
 #include "net/cookies/canonical_cookie.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom-forward.h"
@@ -259,43 +258,6 @@ inline base::FilePath::StringType toFilePathString(const QString &str)
 inline base::FilePath toFilePath(const QString &str)
 {
     return base::FilePath(toFilePathString(str));
-}
-
-template <typename T>
-inline T fileListingHelper(const QString &)
-// Clang is still picky about this though it should be supported eventually.
-// See http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#941
-#ifndef Q_CC_CLANG
-= delete;
-#else
-{ return T(); }
-#endif
-
-template <>
-inline content::FileChooserFileInfo fileListingHelper<content::FileChooserFileInfo>(const QString &file)
-{
-    content::FileChooserFileInfo choose_file;
-    base::FilePath fp(toFilePath(file));
-    choose_file.file_path = fp;
-    choose_file.display_name = fp.BaseName().value();
-    return choose_file;
-}
-
-template <>
-inline base::FilePath fileListingHelper<base::FilePath>(const QString &file)
-{
-    return base::FilePath(toFilePathString(file));
-}
-
-
-template <typename T>
-inline std::vector<T> toVector(const QStringList &fileList)
-{
-    std::vector<T> selectedFiles;
-    selectedFiles.reserve(fileList.size());
-    for (const QString &file : fileList)
-        selectedFiles.push_back(fileListingHelper<T>(file));
-    return selectedFiles;
 }
 
 int flagsFromModifiers(Qt::KeyboardModifiers modifiers);

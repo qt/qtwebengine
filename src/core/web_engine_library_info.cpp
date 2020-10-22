@@ -45,9 +45,10 @@
 #include "base/files/file_util.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/common/content_paths.h"
+#include "sandbox/policy/switches.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
-#include "services/service_manager/sandbox/switches.h"
+
 #include "type_conversion.h"
 
 #include <QByteArray>
@@ -184,7 +185,7 @@ QString subProcessPath()
 
 #if defined(OS_WIN)
         base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
-        if (!parsedCommandLine->HasSwitch(service_manager::switches::kNoSandbox)) {
+        if (!parsedCommandLine->HasSwitch(sandbox::policy::switches::kNoSandbox)) {
             if (WebEngineLibraryInfo::isUNCPath(processPath) || WebEngineLibraryInfo::isRemoteDrivePath(processPath))
                 qCritical("Can not launch QtWebEngineProcess from network path if sandbox is enabled: %s.", processPath.toUtf8().constData());
         }

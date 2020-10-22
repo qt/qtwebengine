@@ -55,11 +55,7 @@
 #include "components/navigation_interception/navigation_params.h"
 #include "components/network_hints/browser/simple_network_hints_handler_impl.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
-#include "components/performance_manager/graph/process_node_impl.h"
-#include "components/performance_manager/performance_manager_impl.h"
-#include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
 #include "components/performance_manager/public/performance_manager.h"
-#include "components/performance_manager/render_process_user_data.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -97,11 +93,11 @@
 #include "qtwebengine/browser/qtwebengine_content_renderer_overlay_manifest.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/client_cert_store.h"
+#include "sandbox/policy/switches.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/sandbox/switches.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -274,7 +270,7 @@ public:
     }
 
     void* GetHandle() override { return m_handle; }
-    unsigned int CheckStickyGraphicsResetStatus() override
+    unsigned int CheckStickyGraphicsResetStatusImpl() override
     {
 #if QT_CONFIG(opengl)
         if (QOpenGLContext *context = qt_gl_global_share_context()) {
@@ -287,7 +283,7 @@ public:
 
     // We don't care about the rest, this context shouldn't be used except for its handle.
     bool Initialize(gl::GLSurface *, const gl::GLContextAttribs &) override { Q_UNREACHABLE(); return false; }
-    bool MakeCurrent(gl::GLSurface *) override { Q_UNREACHABLE(); return false; }
+    bool MakeCurrentImpl(gl::GLSurface *) override { Q_UNREACHABLE(); return false; }
     void ReleaseCurrent(gl::GLSurface *) override { Q_UNREACHABLE(); }
     bool IsCurrent(gl::GLSurface *) override { Q_UNREACHABLE(); return false; }
     scoped_refptr<gl::GPUTimingClient> CreateGPUTimingClient() override
@@ -1098,6 +1094,7 @@ std::vector<base::FilePath> ContentBrowserClientQt::GetNetworkContextsParentDire
 }
 
 void ContentBrowserClientQt::RegisterNonNetworkNavigationURLLoaderFactories(int frame_tree_node_id,
+                                                                            base::UkmSourceId ukm_source_id,
                                                                             NonNetworkURLLoaderFactoryMap *factories)
 {
     content::WebContents *web_contents = content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
@@ -1110,7 +1107,7 @@ void ContentBrowserClientQt::RegisterNonNetworkNavigationURLLoaderFactories(int 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     factories->emplace(
         extensions::kExtensionScheme,
-        extensions::CreateExtensionNavigationURLLoaderFactory(profile,
+        extensions::CreateExtensionNavigationURLLoaderFactory(profile, ukm_source_id,
                                                               !!extensions::WebViewGuest::FromWebContents(web_contents)));
 #endif
 }

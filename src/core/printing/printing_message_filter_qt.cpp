@@ -106,7 +106,7 @@ void PrintingMessageFilterQt::OnGetDefaultPrintSettings(IPC::Message* reply_msg)
       printing::PrinterQuery::GetSettingsAskParam::DEFAULTS,
       0,
       false,
-      printing::DEFAULT_MARGINS,
+      printing::mojom::MarginType::kDefaultMargins,
       false,
       false,
       base::BindOnce(&PrintingMessageFilterQt::OnGetDefaultPrintSettingsReply,
@@ -115,28 +115,25 @@ void PrintingMessageFilterQt::OnGetDefaultPrintSettings(IPC::Message* reply_msg)
                      reply_msg));
 }
 
-void PrintingMessageFilterQt::OnGetDefaultPrintSettingsReply(
-    std::unique_ptr<printing::PrinterQuery> printer_query,
-    IPC::Message* reply_msg) {
-  PrintMsg_Print_Params params;
-  if (!printer_query.get() ||
-      printer_query->last_status() != printing::PrintingContext::OK) {
-    params.Reset();
-  } else {
-    RenderParamsFromPrintSettings(printer_query->settings(), &params);
-    params.document_cookie = printer_query->cookie();
-  }
-  PrintHostMsg_GetDefaultPrintSettings::WriteReplyParams(reply_msg, params);
-  Send(reply_msg);
-  // If printing was enabled.
-  if (printer_query.get()) {
-    // If user hasn't cancelled.
-    if (printer_query->cookie() && printer_query->settings().dpi()) {
-      queue_->QueuePrinterQuery(std::move(printer_query));
-    } else {
-      printer_query->StopWorker();
+void PrintingMessageFilterQt::OnGetDefaultPrintSettingsReply(std::unique_ptr<printing::PrinterQuery> printer_query,
+                                                             IPC::Message *reply_msg)
+{
+    printing::mojom::PrintParams params;
+    if (printer_query && printer_query->last_status() == printing::PrintingContext::OK) {
+        printing::RenderParamsFromPrintSettings(printer_query->settings(), &params);
+        params.document_cookie = printer_query->cookie();
     }
-  }
+    PrintHostMsg_GetDefaultPrintSettings::WriteReplyParams(reply_msg, params);
+    Send(reply_msg);
+    // If printing was enabled.
+    if (printer_query) {
+        // If user hasn't cancelled.
+        if (printer_query->cookie() && printer_query->settings().dpi()) {
+            queue_->QueuePrinterQuery(std::move(printer_query));
+        } else {
+            printer_query->StopWorker();
+        }
+    }
 }
 
 void PrintingMessageFilterQt::OnScriptedPrint(

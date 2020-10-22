@@ -234,10 +234,10 @@ void UserScript::parseMetadataHeader()
         line = base::StringPiece(script_text.data() + line_start, line_end - line_start);
 
         if (!in_metadata) {
-            if (line.starts_with(kUserScriptBegin))
+            if (base::StartsWith(line, kUserScriptBegin))
                 in_metadata = true;
         } else {
-            if (line.starts_with(kUserScriptEnd))
+            if (base::StartsWith(line, kUserScriptEnd))
                 break;
 
             std::string value;

@@ -51,8 +51,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-struct PrintHostMsg_DidPrintDocument_Params;
-
 namespace base {
 class RefCountedBytes;
 }
@@ -100,7 +98,7 @@ protected:
 
     // printing::PrintManager implementation:
     void OnDidPrintDocument(content::RenderFrameHost *render_frame_host,
-                            const PrintHostMsg_DidPrintDocument_Params &params,
+                            const printing::mojom::DidPrintDocumentParams &params,
                             std::unique_ptr<DelayedFrameDispatchHelper> helper) override;
     void OnGetDefaultPrintSettings(content::RenderFrameHost* render_frame_host,
                                    IPC::Message* reply_msg) override;

@@ -162,14 +162,14 @@ static base::DictionaryValue *createPrintSettingsFromQPageLayout(const QPageLayo
         marginsDict->SetInteger(printing::kSettingMarginRight, pageMarginsInPoints.right());
 
         printSettings->Set(printing::kSettingMarginsCustom, std::move(marginsDict));
-        printSettings->SetInteger(printing::kSettingMarginsType, printing::CUSTOM_MARGINS);
+        printSettings->SetInteger(printing::kSettingMarginsType, (int)printing::mojom::MarginType::kCustomMargins);
 
         // pageSizeInMillimeter is in portrait orientation. Transpose it if necessary.
         printSettings->SetBoolean(printing::kSettingLandscape, pageLayout.orientation() == QPageLayout::Landscape);
     } else {
         // QPrinter will handle margins
         pageSizeInMillimeter = pageLayout.paintRect(QPageLayout::Millimeter);
-        printSettings->SetInteger(printing::kSettingMarginsType, printing::NO_MARGINS);
+        printSettings->SetInteger(printing::kSettingMarginsType, (int)printing::mojom::MarginType::kNoMargins);
 
         // pageSizeInMillimeter already contains the orientation.
         printSettings->SetBoolean(printing::kSettingLandscape, false);
@@ -261,10 +261,9 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
 
     m_printSettings.reset(createPrintSettingsFromQPageLayout(pageLayout, useCustomMargins));
     m_printSettings->SetBoolean(printing::kSettingShouldPrintBackgrounds,
-                                web_contents()->GetRenderViewHost()->
-                                GetWebkitPreferences().should_print_backgrounds);
+                                web_contents()->GetOrCreateWebPreferences().should_print_backgrounds);
     m_printSettings->SetInteger(printing::kSettingColor,
-                                printInColor ? printing::COLOR : printing::GRAYSCALE);
+                                int(printInColor ? printing::mojom::ColorModel::kColor : printing::mojom::ColorModel::kGrayscale));
 
     if (web_contents()->IsCrashed())
         return false;
@@ -356,7 +355,7 @@ void PrintViewManagerQt::OnRequestPrintPreview(
 }
 
 void PrintViewManagerQt::OnMetafileReadyForPrinting(content::RenderFrameHost* rfh,
-                                                    const PrintHostMsg_DidPreviewDocument_Params& params,
+                                                    const printing::mojom::DidPreviewDocumentParams& params,
                                                     const PrintHostMsg_PreviewIds &ids)
 {
     StopWorker(params.document_cookie);
@@ -369,11 +368,11 @@ void PrintViewManagerQt::OnMetafileReadyForPrinting(content::RenderFrameHost* rf
     resetPdfState();
 
     if (!pdf_print_callback.is_null()) {
-        QSharedPointer<QByteArray> data_array = GetStdVectorFromHandle(params.content.metafile_data_region);
+        QSharedPointer<QByteArray> data_array = GetStdVectorFromHandle(params.content->metafile_data_region);
         base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                        base::BindOnce(pdf_print_callback, data_array));
     } else {
-        scoped_refptr<base::RefCountedBytes> data_bytes = GetBytesFromHandle(params.content.metafile_data_region);
+        scoped_refptr<base::RefCountedBytes> data_bytes = GetBytesFromHandle(params.content->metafile_data_region);
         base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
                        base::BindOnce(&SavePdfFile, data_bytes, pdfOutputPath, pdf_save_callback));
     }
@@ -411,7 +410,7 @@ void PrintViewManagerQt::RenderProcessGone(base::TerminationStatus status)
 }
 
 void PrintViewManagerQt::OnDidPreviewPage(content::RenderFrameHost* rfh,
-                                          const PrintHostMsg_DidPreviewPage_Params& params,
+                                          const printing::mojom::DidPreviewPageParams &params,
                                           const PrintHostMsg_PreviewIds& ids)
 {
     // just consume the message, this is just for sending 'page-preview-ready' for webui

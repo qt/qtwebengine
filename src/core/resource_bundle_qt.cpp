@@ -42,7 +42,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "content/public/common/content_switches.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/data_pack.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -77,7 +77,7 @@ bool ResourceBundle::LocaleDataPakExists(const std::string& locale)
 #if defined(OS_LINUX)
     base::CommandLine *parsed_command_line = base::CommandLine::ForCurrentProcess();
     std::string process_type = parsed_command_line->GetSwitchValueASCII(switches::kProcessType);
-    bool no_sandbox = parsed_command_line->HasSwitch(service_manager::switches::kNoSandbox);
+    bool no_sandbox = parsed_command_line->HasSwitch(sandbox::policy::switches::kNoSandbox);
     if (process_type == switches::kRendererProcess && !no_sandbox) {
         // The Renderer Process is sandboxed thus only one locale is available in it.
         // The particular one is passed by the --lang command line option.

@@ -521,7 +521,7 @@ void tst_QWebEnginePage::consoleOutput()
 class TestPage : public QWebEnginePage {
     Q_OBJECT
 public:
-    TestPage(QObject* parent = 0) : QWebEnginePage(parent)
+    TestPage(QObject *parent = nullptr) : QWebEnginePage(parent)
     {
         connect(this, SIGNAL(geometryChangeRequested(QRect)), this, SLOT(slotGeometryChangeRequested(QRect)));
     }
@@ -1714,12 +1714,15 @@ void tst_QWebEnginePage::savePage()
 void tst_QWebEnginePage::openWindowDefaultSize()
 {
     TestPage page;
+    QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
     QSignalSpy windowCreatedSpy(&page, SIGNAL(windowCreated()));
     QWebEngineView view;
     page.setView(&view);
-    view.show();
-
     page.settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
+    page.setUrl(QUrl("about:blank"));
+    view.show();
+    QTRY_COMPARE(spyFinished.count(), 1);
+
     // Open a default window.
     page.runJavaScript("window.open()");
     QTRY_COMPARE(windowCreatedSpy.count(), 1);
@@ -4703,7 +4706,10 @@ void tst_QWebEnginePage::audioMuted()
 void tst_QWebEnginePage::closeContents()
 {
     TestPage page;
+    QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
     QSignalSpy windowCreatedSpy(&page, &TestPage::windowCreated);
+    page.setUrl(QUrl("about:blank"));
+    QTRY_COMPARE(spyFinished.count(), 1);
     page.runJavaScript("var dialog = window.open('', '', 'width=100, height=100');");
     QTRY_COMPARE(windowCreatedSpy.count(), 1);
 

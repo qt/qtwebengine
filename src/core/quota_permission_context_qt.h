@@ -42,8 +42,6 @@
 
 #include "content/public/browser/quota_permission_context.h"
 
-#include <QtCore/qcompilerdetection.h> // Needed for override
-
 namespace QtWebEngineCore {
 
 class QuotaPermissionContextQt : public content::QuotaPermissionContext {

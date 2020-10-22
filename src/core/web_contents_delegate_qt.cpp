@@ -604,8 +604,10 @@ ASSERT_ENUMS_MATCH(FilePickerController::OpenMultiple, blink::mojom::FileChooser
 ASSERT_ENUMS_MATCH(FilePickerController::UploadFolder, blink::mojom::FileChooserParams::Mode::kUploadFolder)
 ASSERT_ENUMS_MATCH(FilePickerController::Save, blink::mojom::FileChooserParams::Mode::kSave)
 
+extern FilePickerController *createFilePickerController(FilePickerController::FileChooserMode mode, scoped_refptr<content::FileSelectListener> listener, const QString &defaultFileName, const QStringList &acceptedMimeTypes, QObject *parent = nullptr);
+
 void WebContentsDelegateQt::RunFileChooser(content::RenderFrameHost * /*frameHost*/,
-                                           std::unique_ptr<content::FileSelectListener> listener,
+                                           scoped_refptr<content::FileSelectListener> listener,
                                            const blink::mojom::FileChooserParams& params)
 {
     QStringList acceptedMimeTypes;
@@ -613,8 +615,8 @@ void WebContentsDelegateQt::RunFileChooser(content::RenderFrameHost * /*frameHos
     for (std::vector<base::string16>::const_iterator it = params.accept_types.begin(); it < params.accept_types.end(); ++it)
         acceptedMimeTypes.append(toQt(*it));
 
-    m_filePickerController.reset(new FilePickerController(static_cast<FilePickerController::FileChooserMode>(params.mode),
-                                                          std::move(listener), toQt(params.default_file_name.value()), acceptedMimeTypes));
+    m_filePickerController.reset(createFilePickerController(static_cast<FilePickerController::FileChooserMode>(params.mode),
+                                                            listener, toQt(params.default_file_name.value()), acceptedMimeTypes));
 
     // Defer the call to not block base::MessageLoop::RunTask with modal dialogs.
     QTimer::singleShot(0, [this] () {
@@ -795,9 +797,9 @@ bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost 
     }
 }
 
-void WebContentsDelegateQt::RegisterProtocolHandler(content::WebContents *webContents, const std::string &protocol, const GURL &url, bool)
+void WebContentsDelegateQt::RegisterProtocolHandler(content::RenderFrameHost *frameHost, const std::string &protocol, const GURL &url, bool)
 {
-    content::BrowserContext *context = webContents->GetBrowserContext();
+    content::BrowserContext *context = frameHost->GetBrowserContext();
     if (context->IsOffTheRecord())
         return;
 
@@ -810,13 +812,13 @@ void WebContentsDelegateQt::RegisterProtocolHandler(content::WebContents *webCon
         return;
 
     QWebEngineRegisterProtocolHandlerRequest request(
-        QSharedPointer<RegisterProtocolHandlerRequestControllerImpl>::create(webContents, handler));
+        QSharedPointer<RegisterProtocolHandlerRequestControllerImpl>::create(content::WebContents::FromRenderFrameHost(frameHost), handler));
     m_viewClient->runRegisterProtocolHandlerRequest(std::move(request));
 }
 
-void WebContentsDelegateQt::UnregisterProtocolHandler(content::WebContents *webContents, const std::string &protocol, const GURL &url, bool)
+void WebContentsDelegateQt::UnregisterProtocolHandler(content::RenderFrameHost *frameHost, const std::string &protocol, const GURL &url, bool)
 {
-    content::BrowserContext* context = webContents->GetBrowserContext();
+    content::BrowserContext* context = frameHost->GetBrowserContext();
     if (context->IsOffTheRecord())
         return;
 

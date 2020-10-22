@@ -260,9 +260,9 @@ private:
     const QTouchEvent::TouchPoint& touchPoint(size_t i) const { return touchPoints[i].second; }
 };
 
-static content::ScreenInfo screenInfoFromQScreen(QScreen *screen)
+static blink::ScreenInfo screenInfoFromQScreen(QScreen *screen)
 {
-    content::ScreenInfo r;
+    blink::ScreenInfo r;
     if (screen) {
         r.device_scale_factor = screen->devicePixelRatio();
         r.depth_per_component = 8;
@@ -758,7 +758,7 @@ void RenderWidgetHostViewQt::DisplayTooltipText(const base::string16 &tooltip_te
         m_adapterClient->setToolTip(toQt(tooltip_text));
 }
 
-void RenderWidgetHostViewQt::GetScreenInfo(content::ScreenInfo *results)
+void RenderWidgetHostViewQt::GetScreenInfo(blink::ScreenInfo *results)
 {
     *results = m_screenInfo;
 }
@@ -1048,7 +1048,7 @@ void RenderWidgetHostViewQt::visualPropertiesChanged()
     m_windowRectInDips = toGfx(m_delegate->windowGeometry());
 
     QWindow *window = m_delegate->window();
-    content::ScreenInfo oldScreenInfo = m_screenInfo;
+    blink::ScreenInfo oldScreenInfo = m_screenInfo;
     m_screenInfo = screenInfoFromQScreen(window ? window->screen() : nullptr);
 
     if (m_viewRectInDips != oldViewRect || m_windowRectInDips != oldWindowRect)

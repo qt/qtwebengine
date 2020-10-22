@@ -308,9 +308,9 @@ void InterceptedRequest::ContinueAfterIntercept()
         }
 
         if (info.shouldRedirectRequest) {
-            net::URLRequest::FirstPartyURLPolicy first_party_url_policy =
-                    request_.update_first_party_url_on_redirect ? net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT
-                                                                : net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
+            net::RedirectInfo::FirstPartyURLPolicy first_party_url_policy =
+                    request_.update_first_party_url_on_redirect ? net::RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT
+                                                                : net::RedirectInfo::FirstPartyURLPolicy::NEVER_CHANGE_URL;
             net::RedirectInfo redirectInfo = net::RedirectInfo::ComputeRedirectInfo(
                     request_.method, request_.url, request_.site_for_cookies,
                     first_party_url_policy, request_.referrer_policy, request_.referrer.spec(),

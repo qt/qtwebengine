@@ -186,6 +186,11 @@ bool GLSurfaceEGL::IsANGLEPowerPreferenceSupported()
     return false;
 }
 
+bool GLSurfaceEGL::IsDisplaySemaphoreShareGroupSupported()
+{
+    return false;
+}
+
 void GLSurfaceEGL::ShutdownOneOff()
 {
 }

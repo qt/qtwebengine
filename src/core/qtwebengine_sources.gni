@@ -181,6 +181,7 @@ source_set("qtwebengine_sources") {
       deps += [
          "//pdf",
          "//pdf:buildflags",
+         "//pdf:pdf_ppapi",
          "//components/pdf/browser:browser",
          "//components/pdf/renderer:renderer",
          "//components/printing/browser",

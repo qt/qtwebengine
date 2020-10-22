@@ -68,6 +68,7 @@ private:
     const std::string GetAllowString() override;
     const std::string GetDenyString() override;
     const std::string GetDenyNodeString() override;
+    const std::string GetRunUntilEventString() override;
     void RecursiveBuildAccessibilityTree(const content::BrowserAccessibility &node, base::DictionaryValue *dict) const;
     void AddProperties(const BrowserAccessibility &node, base::DictionaryValue *dict) const;
     base::string16 ProcessTreeForOutput(const base::DictionaryValue &node, base::DictionaryValue * = nullptr) override;
@@ -230,6 +231,11 @@ const std::string AccessibilityTreeFormatterQt::GetDenyString()
 const std::string AccessibilityTreeFormatterQt::GetDenyNodeString()
 {
     return "@QT-DENY-NODE:";
+}
+
+const std::string AccessibilityTreeFormatterQt::GetRunUntilEventString()
+{
+    return "@QT-RUN-UNTIL-EVENT:";
 }
 
 #endif // QT_CONFIG(accessibility)

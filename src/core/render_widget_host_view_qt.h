@@ -158,7 +158,7 @@ public:
     viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(const cc::RenderFrameMetadata &metadata) override;
     void OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata);
 
-    void GetScreenInfo(content::ScreenInfo *results) override;
+    void GetScreenInfo(blink::ScreenInfo *results) override;
     gfx::Rect GetBoundsInRootWindow() override;
     void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch,
                                 blink::mojom::InputEventResultState ack_result) override;
@@ -252,7 +252,7 @@ private:
     gfx::Rect m_viewRectInDips;
     // Geometry of the window, including frame, in screen DIPs.
     gfx::Rect m_windowRectInDips;
-    content::ScreenInfo m_screenInfo;
+    blink::ScreenInfo m_screenInfo;
 
     scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
 

@@ -87,13 +87,13 @@ public:
                                URLPatternSet *new_hosts,
                                PermissionIDSet *permissions) const override;
 
-    // Replaces the scripting whitelist with |whitelist|. Used in the renderer;
+    // Replaces the scripting allowlist with |allowlist|. Used in the renderer;
     // only used for testing in the browser process.
-    void SetScriptingWhitelist(const ScriptingWhitelist &whitelist) override;
+    void SetScriptingAllowlist(const ScriptingAllowlist &allowlist) override;
 
-    // Return the whitelist of extensions that can run content scripts on
+    // Return the allowlist of extensions that can run content scripts on
     // any origin.
-    const ScriptingWhitelist &GetScriptingWhitelist() const override;
+    const ScriptingAllowlist &GetScriptingAllowlist() const override;
 
     // Get the set of chrome:// hosts that |extension| can run content scripts on.
     URLPatternSet GetPermittedChromeSchemeHosts(const Extension *extension,
@@ -127,7 +127,7 @@ public:
     static ExtensionsClientQt *GetInstance();
 
 private:
-    ScriptingWhitelist scripting_whitelist_;
+    ScriptingAllowlist scripting_allowlist_;
     const ChromePermissionMessageProvider permission_message_provider_;
     mutable GURL update_url_;
     mutable GURL base_url_;

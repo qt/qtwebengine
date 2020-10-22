@@ -120,7 +120,7 @@ public:
 
 private:
     void GetAllCookiesCallbackOnUIThread(qint64 callbackId, const net::CookieList &cookies);
-    void SetCookieCallbackOnUIThread(qint64 callbackId, net::CookieInclusionStatus status);
+    void SetCookieCallbackOnUIThread(qint64 callbackId, net::CookieAccessResult status);
     void DeleteCookiesCallbackOnUIThread(qint64 callbackId, uint numCookies);
 };
 

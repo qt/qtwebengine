@@ -77,7 +77,7 @@ void RenderFrameObserverQt::DidCreatePepperPlugin(content::RendererPpapiHost *ho
 }
 #endif
 
-void RenderFrameObserverQt::FrameDetached()
+void RenderFrameObserverQt::WillDetach()
 {
     m_isFrameDetached = true;
 }

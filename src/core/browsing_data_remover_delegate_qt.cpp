@@ -73,7 +73,7 @@ void BrowsingDataRemoverDelegateQt::RemoveEmbedderData(const base::Time &delete_
             uint64_t remove_mask,
             content::BrowsingDataFilterBuilder *filter_builder,
             uint64_t origin_type_mask,
-            base::OnceClosure callback)
+            base::OnceCallback<void(/*failed_data_types=*/uint64_t)> callback)
 {
     Q_UNUSED(delete_begin);
     Q_UNUSED(delete_end);
@@ -83,7 +83,7 @@ void BrowsingDataRemoverDelegateQt::RemoveEmbedderData(const base::Time &delete_
     if (remove_mask & content::BrowsingDataRemover::DATA_TYPE_CACHE)
         web_cache::WebCacheManager::GetInstance()->ClearCache();
 
-    std::move(callback).Run();
+    std::move(callback).Run(0);
 }
 
 std::vector<std::string> BrowsingDataRemoverDelegateQt::GetDomainsForDeferredCookieDeletion(uint64_t)

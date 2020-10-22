@@ -70,7 +70,7 @@ class BrowsingDataRemoverObserverQt : public content::BrowsingDataRemover::Obser
 public:
     BrowsingDataRemoverObserverQt(ProfileIODataQt *profileIOData);
 
-    void OnBrowsingDataRemoverDone() override;
+    void OnBrowsingDataRemoverDone(uint64_t) override;
 
 private:
     ProfileIODataQt *m_profileIOData;

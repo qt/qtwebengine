@@ -42,6 +42,7 @@
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/grit/generated_resources.h"
@@ -55,8 +56,8 @@
 #include "ui/base/webui/jstemplate_builder.h"
 #include "net/grit/net_resources.h"
 #include "net/base/net_module.h"
+#include "sandbox/policy/switches.h"
 #include "services/service_manager/embedder/switches.h"
-#include "services/service_manager/sandbox/switches.h"
 #include "url/url_util_qt.h"
 
 #include "content_client_qt.h"
@@ -260,7 +261,7 @@ content::ContentRendererClient *ContentMainDelegateQt::CreateContentRendererClie
 #if defined(OS_LINUX)
     base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
     std::string process_type = parsedCommandLine->GetSwitchValueASCII(switches::kProcessType);
-    bool no_sandbox = parsedCommandLine->HasSwitch(service_manager::switches::kNoSandbox);
+    bool no_sandbox = parsedCommandLine->HasSwitch(sandbox::policy::switches::kNoSandbox);
 
     // Reload locale if the renderer process is sandboxed
     if (process_type == switches::kRendererProcess && !no_sandbox) {

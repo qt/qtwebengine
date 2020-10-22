@@ -38,8 +38,8 @@ import json
 import urllib2
 import git_submodule as GitSubmodule
 
-chromium_version = '85.0.4183.140'
-chromium_branch = '4183'
+chromium_version = '86.0.4240.124'
+chromium_branch = '4240'
 ninja_version = 'v1.8.2'
 
 json_url = 'http://omahaproxy.appspot.com/all.json'
@@ -89,8 +89,6 @@ def readSubmodules():
         submodule_dict[sub.path] = sub
 
     extradeps_dirs = parser.get_recursedeps()
-    # Add buildtools submodules
-    extradeps_dirs.append('buildtools')
 
     for extradeps_dir in extradeps_dirs:
         if extradeps_dir.startswith('src/'):

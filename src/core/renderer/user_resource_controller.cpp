@@ -153,7 +153,7 @@ private:
     void DidCommitProvisionalLoad(ui::PageTransition transition) override;
     void DidFinishDocumentLoad() override;
     void DidFinishLoad() override;
-    void FrameDetached() override;
+    void WillDetach() override;
     void OnDestruct() override;
     void AddScript(const QtWebEngineCore::UserScriptData &data) override;
     void RemoveScript(const QtWebEngineCore::UserScriptData &data) override;
@@ -274,7 +274,7 @@ void UserResourceController::RenderFrameObserverHelper::DidFinishLoad()
                                QtWebEngineCore::UserScriptData::AfterLoad));
 }
 
-void UserResourceController::RenderFrameObserverHelper::FrameDetached()
+void UserResourceController::RenderFrameObserverHelper::WillDetach()
 {
     m_runner.reset();
 }

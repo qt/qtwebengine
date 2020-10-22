@@ -50,7 +50,6 @@
 #include "components/cdm/renderer/external_clear_key_key_system_properties.h"
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "components/error_page/common/error.h"
-#include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/network_hints/renderer/web_prescient_networking_impl.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
@@ -103,7 +102,6 @@
 
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 
 #include "components/grit/components_resources.h"
 
@@ -304,8 +302,7 @@ void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderF
                 error_page::LocalizedError::GetPageState(
                         error.reason(), error.domain(), error.url(), isPost, false,
                         error.stale_copy_in_cache(), false,
-                        RenderConfiguration::is_incognito_process(), false, false, false, locale,
-                        std::unique_ptr<error_page::ErrorPageParams>());
+                        RenderConfiguration::is_incognito_process(), false, false, false, locale);
 
         resourceId = IDR_NET_ERROR_HTML;
 
@@ -387,13 +384,6 @@ content::BrowserPluginDelegate *ContentRendererClientQt::CreateBrowserPluginDele
 #else
     return nullptr;
 #endif
-}
-
-void ContentRendererClientQt::BindReceiverOnMainThread(mojo::GenericPendingReceiver receiver)
-{
-    std::string interface_name = *receiver.interface_name();
-    auto pipe = receiver.PassPipe();
-    m_registry.TryBindInterface(interface_name, &pipe);
 }
 
 void ContentRendererClientQt::GetInterface(const std::string &interface_name, mojo::ScopedMessagePipeHandle interface_pipe)

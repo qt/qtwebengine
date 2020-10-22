@@ -58,7 +58,7 @@ public:
         uint64_t remove_mask,
         content::BrowsingDataFilterBuilder *filter_builder,
         uint64_t origin_type_mask,
-        base::OnceClosure callback) override;
+        base::OnceCallback<void(/*failed_data_types=*/uint64_t)> callback) override;
     std::vector<std::string> GetDomainsForDeferredCookieDeletion(uint64_t) override;
 };
 

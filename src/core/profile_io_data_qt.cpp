@@ -160,7 +160,7 @@ BrowsingDataRemoverObserverQt::BrowsingDataRemoverObserverQt(ProfileIODataQt *pr
 {
 }
 
-void BrowsingDataRemoverObserverQt::OnBrowsingDataRemoverDone()
+void BrowsingDataRemoverObserverQt::OnBrowsingDataRemoverDone(uint64_t)
 {
     Q_ASSERT(m_profileIOData->m_clearHttpCacheInProgress);
     m_profileIOData->removeBrowsingDataRemoverObserver();
