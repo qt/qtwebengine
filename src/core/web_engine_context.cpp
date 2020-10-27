@@ -162,6 +162,9 @@ static bool usingANGLE()
 
 static bool usingDefaultSGBackend()
 {
+    if (QQuickWindow::graphicsApi() != QSGRendererInterface::OpenGL)
+        return false;
+
     const QStringList args = QGuiApplication::arguments();
 
     //folow logic from contextFactory in src/quick/scenegraph/qsgcontextplugin.cpp
@@ -187,7 +190,7 @@ bool usingSoftwareDynamicGL()
     if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
         return true;
 #if defined(Q_OS_WIN)
-    HMODULE handle = QPlatformInterface::QWGLContext::openGLModuleHandle();
+    HMODULE handle = QNativeInterface::QWGLContext::openGLModuleHandle();
     wchar_t path[MAX_PATH];
     DWORD size = GetModuleFileName(handle, path, MAX_PATH);
     QFileInfo openGLModule(QString::fromWCharArray(path, size));
@@ -652,6 +655,9 @@ WebEngineContext::WebEngineContext()
 
     // Enable sandboxing on OS X and Linux (Desktop / Embedded) by default.
     bool disable_sandbox = qEnvironmentVariableIsSet(kDisableSandboxEnv);
+#if defined(Q_OS_WIN)
+    disable_sandbox = true; // FIXME: Windows sandbox no longer works on CI, but works fine locally.
+#endif
     if (!disable_sandbox) {
 #if defined(Q_OS_LINUX)
         parsedCommandLine->AppendSwitch(service_manager::switches::kDisableSetuidSandbox);

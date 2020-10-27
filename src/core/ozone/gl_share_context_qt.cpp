@@ -57,21 +57,21 @@ QtShareGLContext::QtShareGLContext(QOpenGLContext *qtContext)
 #if QT_CONFIG(opengl)
     QOpenGLContext *context = QOpenGLContext::globalShareContext();
 #if defined(Q_OS_MACOS)
-    auto *ctx = context->platformInterface<QPlatformInterface::QCocoaGLContext>();
+    auto *ctx = context->nativeInterface<QNativeInterface::QCocoaGLContext>();
     if (ctx)
         m_handle = cglContext(ctx->nativeContext());
 #endif
 #if defined(Q_OS_WIN)
-    auto *ctx = context->platformInterface<QPlatformInterface::QWGLContext>();
+    auto *ctx = context->nativeInterface<QNativeInterface::QWGLContext>();
 #endif
 #if defined(Q_OS_LINUX)
-    auto *ctx = context->platformInterface<QPlatformInterface::QGLXContext>();
+    auto *ctx = context->nativeInterface<QNativeInterface::QGLXContext>();
 #endif
     if (ctx && !m_handle)
         m_handle = (void *)ctx->nativeContext();
 #if QT_CONFIG(egl)
     if (!m_handle) {
-        auto *ctx = context->platformInterface<QPlatformInterface::QEGLContext>();
+        auto *ctx = context->nativeInterface<QNativeInterface::QEGLContext>();
         if (ctx)
             m_handle = (void *)ctx->nativeContext();
     }

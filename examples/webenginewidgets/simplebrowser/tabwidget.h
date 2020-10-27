@@ -52,6 +52,7 @@
 #define TABWIDGET_H
 
 #include <QTabWidget>
+#include <QWebEngineFindTextResult>
 #include <QWebEnginePage>
 
 QT_BEGIN_NAMESPACE

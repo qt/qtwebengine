@@ -1543,9 +1543,9 @@ void tst_QWebEngineView::touchTap()
     QVERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
 
     auto singleTap = [](QWidget* target, const QPoint& tapCoords) -> void {
-        QTest::touchEvent(target, s_touchDevice).press(1, tapCoords, target);
-        QTest::touchEvent(target, s_touchDevice).stationary(1);
-        QTest::touchEvent(target, s_touchDevice).release(1, tapCoords, target);
+        QTest::touchEvent(target->window(), s_touchDevice).press(0, tapCoords, target);
+        QTest::touchEvent(target->window(), s_touchDevice).stationary(0);
+        QTest::touchEvent(target->window(), s_touchDevice).release(0, tapCoords, target);
     };
 
     // Single tap on text doesn't trigger a selection
@@ -1604,10 +1604,10 @@ void tst_QWebEngineView::touchTapAndHold()
     QVERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
 
     auto tapAndHold = [](QWidget* target, const QPoint& tapCoords) -> void {
-        QTest::touchEvent(target, s_touchDevice).press(1, tapCoords, target);
-        QTest::touchEvent(target, s_touchDevice).stationary(1);
+        QTest::touchEvent(target, s_touchDevice).press(0, tapCoords, target);
+        QTest::touchEvent(target, s_touchDevice).stationary(0);
         QTest::qWait(1000);
-        QTest::touchEvent(target, s_touchDevice).release(1, tapCoords, target);
+        QTest::touchEvent(target, s_touchDevice).release(0, tapCoords, target);
     };
 
     // Tap-and-hold on text selects the word under it
@@ -1848,7 +1848,7 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
     };
 
     // The input form is not focused. The action is triggered on pressing Shift+Delete.
-    action->setShortcut(Qt::SHIFT + Qt::Key_Delete);
+    action->setShortcut(Qt::SHIFT | Qt::Key_Delete);
     QTest::keyClick(view.windowHandle(), Qt::Key_Delete, Qt::ShiftModifier);
     QTRY_VERIFY(actionTriggered);
     QCOMPARE(inputFieldValue(), QString("x"));
@@ -1884,7 +1884,7 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
     // A Ctrl-1 action is no default Qt key binding and should be triggerable.
     evaluateJavaScriptSync(view.page(), "document.getElementById('input1').focus();");
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
-    action->setShortcut(Qt::CTRL + Qt::Key_1);
+    action->setShortcut(Qt::CTRL | Qt::Key_1);
     QTest::keyClick(view.windowHandle(), Qt::Key_1, Qt::ControlModifier);
     QTRY_VERIFY(actionTriggered);
     QCOMPARE(inputFieldValue(), QString("yxx"));

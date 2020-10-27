@@ -53,7 +53,7 @@ qtConfig(build_all): CONFIG += build_all
 
 qtConfig(framework) {
     # Deploy the QtWebEngineProcess app bundle into the QtWebEngineCore framework.
-    DESTDIR = $$MODULE_BASE_OUTDIR/lib/QtWebEngineCore.framework/Versions/$$QT_MAJOR_VERSION/Helpers
+    DESTDIR = $$MODULE_BASE_OUTDIR/lib/QtWebEngineCore.framework/Versions/A/Helpers
 
     # Deploy the entitlements file so macdeployqt can use it.
     entitlements.files = QtWebEngineProcess.entitlements
@@ -67,7 +67,7 @@ qtConfig(framework) {
 msvc: QMAKE_LFLAGS *= /LARGEADDRESSAWARE
 
 qtConfig(framework) {
-    target.path = $$[QT_INSTALL_LIBS]/QtWebEngineCore.framework/Versions/$$QT_MAJOR_VERSION/Helpers
+    target.path = $$[QT_INSTALL_LIBS]/QtWebEngineCore.framework/Versions/A/Helpers
 } else {
     target.path = $$[QT_INSTALL_LIBEXECS]
 }

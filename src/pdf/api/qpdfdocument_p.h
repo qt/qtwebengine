@@ -58,9 +58,11 @@
 #include <QtCore/qpointer.h>
 #include <QtNetwork/qnetworkreply.h>
 
+#include <mutex>
+
 QT_BEGIN_NAMESPACE
 
-class QPdfMutexLocker : public QMutexLocker
+class QPdfMutexLocker : public std::unique_lock<QRecursiveMutex>
 {
 public:
     QPdfMutexLocker();

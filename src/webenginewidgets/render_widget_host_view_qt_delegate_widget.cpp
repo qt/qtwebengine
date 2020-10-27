@@ -131,7 +131,7 @@ protected:
             if (comp->hasAlphaChannel())
                 texOpts.setFlag(QQuickWindow::TextureHasAlphaChannel);
             int texId = comp->textureId();
-            node->setTexture(QPlatformInterface::QSGOpenGLTexture::fromNative(texId, win, texSize, texOpts));
+            node->setTexture(QNativeInterface::QSGOpenGLTexture::fromNative(texId, win, texSize, texOpts));
             node->setTextureCoordinatesTransform(QSGImageNode::MirrorVertically);
         } else {
             Q_UNREACHABLE();

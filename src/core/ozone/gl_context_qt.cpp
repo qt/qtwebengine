@@ -177,7 +177,7 @@ void *GLContextHelper::getGlxPlatformInterface()
 {
 #if QT_CONFIG(opengl) && defined(USE_GLX)
     if (QOpenGLContext *context = qt_gl_global_share_context())
-        return context->platformInterface<QPlatformInterface::QGLXContext>();
+        return context->nativeInterface<QNativeInterface::QGLXContext>();
 #endif
     return nullptr;
 }
@@ -186,7 +186,7 @@ void *GLContextHelper::getEglPlatformInterface()
 {
 #if QT_CONFIG(opengl) && QT_CONFIG(egl)
     if (QOpenGLContext *context = qt_gl_global_share_context())
-        return context->platformInterface<QPlatformInterface::QEGLContext>();
+        return context->nativeInterface<QNativeInterface::QEGLContext>();
 #endif
     return nullptr;
 }

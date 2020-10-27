@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
     }
 
     bool icuDataDirFound = false;
-    QString icuDataDir = QLibraryInfo::location(QLibraryInfo::DataPath)
+    QString icuDataDir = QLibraryInfo::path(QLibraryInfo::DataPath)
             % QLatin1String("/resources");
 
     // Try to look up the path to the ICU data directory via an environment variable

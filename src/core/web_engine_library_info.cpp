@@ -166,7 +166,7 @@ QString subProcessPath()
             candidatePaths << getPath(frameworkBundle())
                               % QStringLiteral("/Helpers/" QTWEBENGINEPROCESS_NAME ".app/Contents/MacOS/" QTWEBENGINEPROCESS_NAME);
 #else
-            candidatePaths << QLibraryInfo::location(QLibraryInfo::LibraryExecutablesPath)
+            candidatePaths << QLibraryInfo::path(QLibraryInfo::LibraryExecutablesPath)
                               % QLatin1Char('/') % processBinary;
 #endif
             candidatePaths << QCoreApplication::applicationDirPath()
@@ -203,7 +203,7 @@ QString localesPath()
 #if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
             getResourcesPath(frameworkBundle()) % QLatin1String("/qtwebengine_locales");
 #else
-            QLibraryInfo::location(QLibraryInfo::TranslationsPath) % QDir::separator() % QLatin1String("qtwebengine_locales");
+            QLibraryInfo::path(QLibraryInfo::TranslationsPath) % QDir::separator() % QLatin1String("qtwebengine_locales");
 #endif
 
     if (!initialized) {
@@ -252,7 +252,7 @@ QString dictionariesPath()
             candidatePaths << frameworkDictionariesPath;
 #endif
 
-            QString libraryDictionariesPath = QLibraryInfo::location(QLibraryInfo::DataPath)
+            QString libraryDictionariesPath = QLibraryInfo::path(QLibraryInfo::DataPath)
                     % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
             candidatePaths << libraryDictionariesPath;
         }
@@ -276,13 +276,13 @@ QString resourcesDataPath()
 #if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
             getResourcesPath(frameworkBundle());
 #else
-            QLibraryInfo::location(QLibraryInfo::DataPath) % QLatin1String("/resources");
+            QLibraryInfo::path(QLibraryInfo::DataPath) % QLatin1String("/resources");
 #endif
     if (!initialized) {
         initialized = true;
         if (!QFileInfo::exists(potentialResourcesPath % QLatin1String("/qtwebengine_resources.pak"))) {
             qWarning("Qt WebEngine resources not found at %s. Trying parent directory...", qPrintable(potentialResourcesPath));
-            potentialResourcesPath = QLibraryInfo::location(QLibraryInfo::DataPath);
+            potentialResourcesPath = QLibraryInfo::path(QLibraryInfo::DataPath);
         }
         if (!QFileInfo::exists(potentialResourcesPath % QLatin1String("/qtwebengine_resources.pak"))) {
             qWarning("Qt WebEngine resources not found at %s. Trying application directory...", qPrintable(potentialResourcesPath));

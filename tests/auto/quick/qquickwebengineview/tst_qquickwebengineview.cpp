@@ -876,6 +876,7 @@ public:
         QQuickItem(parent), m_eventCounter(0), m_child(child) {
         setFlag(ItemHasContents);
         setAcceptedMouseButtons(Qt::AllButtons);
+        setAcceptTouchEvents(true);
         setAcceptHoverEvents(true);
     }
 
