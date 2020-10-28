@@ -1283,6 +1283,7 @@ void tst_QWebEngineView::inputMethodsTextFormat()
 
     evaluateJavaScriptSync(view.page(), "document.getElementById('input1').focus()");
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QFETCH(QString, string);
     QFETCH(int, start);
@@ -2051,6 +2052,7 @@ void tst_QWebEngineView::inputContextQueryInput()
                  "  <input type='text' id='input1' value='' size='50'/>"
                  "</body></html>");
     QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QCOMPARE(testContext.infos.count(), 0);
 
     // Set focus on an input field.
@@ -2202,6 +2204,7 @@ void tst_QWebEngineView::inputMethods()
                  "  <input type='text' id='input1' style='font-family: serif' value='' maxlength='20' size='50'/>"
                  "</body></html>");
     QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QPoint textInputCenter = elementCenter(view.page(), "input1");
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, textInputCenter);
@@ -2299,6 +2302,7 @@ void tst_QWebEngineView::textSelectionInInputField()
                  "  <input type='text' id='input1' value='QtWebEngine' size='50'/>"
                  "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     // Tests for Selection when the Editor is NOT in Composition mode
 
@@ -2508,6 +2512,7 @@ void tst_QWebEngineView::emptyInputMethodEvent()
                  "  <input type='text' id='input1' value='QtWebEngine'/>"
                  "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.focus(); inputEle.select();");
     QTRY_COMPARE(selectionChangedSpy.count(), 1);
@@ -2556,6 +2561,7 @@ void tst_QWebEngineView::imeComposition()
                  "  <input type='text' id='input1' value='QtWebEngine inputMethod'/>"
                  "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.focus(); inputEle.select();");
     QTRY_COMPARE(selectionChangedSpy.count(), 1);
@@ -2773,6 +2779,7 @@ void tst_QWebEngineView::newlineInTextarea()
                          "  <textarea rows='5' cols='1' id='input1'></textarea>"
                          "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.focus(); inputEle.select();");
     QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString().isEmpty());
@@ -2897,6 +2904,7 @@ void tst_QWebEngineView::imeJSInputEvents()
                          "  <pre id='log'></pre>"
                          "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     evaluateJavaScriptSync(view.page(), "document.getElementById('input').focus()");
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input"));
@@ -3019,6 +3027,7 @@ void tst_QWebEngineView::imeCompositionQueryEvent()
                  "  <input type='text' id='input1' />"
                  "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     evaluateJavaScriptSync(view.page(), "document.getElementById('input1').focus()");
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
