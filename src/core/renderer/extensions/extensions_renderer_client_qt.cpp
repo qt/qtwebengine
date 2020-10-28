@@ -147,8 +147,6 @@ bool ExtensionsRendererClientQt::ExtensionAPIEnabledForServiceWorkerScript(const
 void ExtensionsRendererClientQt::RenderThreadStarted()
 {
     content::RenderThread *thread = content::RenderThread::Get();
-    // ChromeRenderViewTest::SetUp() creates its own ExtensionDispatcher and
-    // injects it using SetExtensionDispatcher(). Don't overwrite it.
     if (!extension_dispatcher_)
         extension_dispatcher_.reset(new extensions::Dispatcher(std::make_unique<ExtensionsDispatcherDelegateQt>()));
     extension_dispatcher_->OnRenderThreadStarted(thread);

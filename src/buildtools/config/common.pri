@@ -29,7 +29,8 @@ gn_args += \
     use_allocator_shim=false \
     use_allocator=\"none\" \
     use_custom_libcxx=false \
-    chrome_pgo_phase=0
+    chrome_pgo_phase=0 \
+    enable_hangout_services_extension=true
 
 # Closure compile requires Java
 gn_args += \

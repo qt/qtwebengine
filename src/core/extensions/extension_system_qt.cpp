@@ -61,6 +61,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "chrome/common/buildflags.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -87,7 +88,6 @@
 #include "extensions/browser/service_worker_manager.h"
 #include "extensions/browser/value_store/value_store_factory_impl.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/common/manifest_url_handlers.h"
@@ -359,15 +359,29 @@ void ExtensionSystemQt::Init(bool extensions_enabled)
         // Inform the rest of the extensions system to start.
         ready_.Signal();
 
-        std::string pdf_manifest = ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_PDF_MANIFEST).as_string();
-        base::ReplaceFirstSubstringAfterOffset(&pdf_manifest, 0, "<NAME>", "chromium-pdf");
+        {
+            std::string pdf_manifest = ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_PDF_MANIFEST).as_string();
+            base::ReplaceFirstSubstringAfterOffset(&pdf_manifest, 0, "<NAME>", "chromium-pdf");
 
-        std::unique_ptr<base::DictionaryValue> pdfManifestDict = ParseManifest(pdf_manifest);
-        base::FilePath path;
-        base::PathService::Get(base::DIR_QT_LIBRARY_DATA, &path);
-        path = path.Append(base::FilePath(FILE_PATH_LITERAL("pdf")));
-        std::string id = GenerateId(pdfManifestDict.get(), path);
-        LoadExtension(id, std::move(pdfManifestDict), path);
+            std::unique_ptr<base::DictionaryValue> pdfManifestDict = ParseManifest(pdf_manifest);
+            base::FilePath path;
+            base::PathService::Get(base::DIR_QT_LIBRARY_DATA, &path);
+            path = path.Append(base::FilePath(FILE_PATH_LITERAL("pdf")));
+            std::string id = GenerateId(pdfManifestDict.get(), path);
+            LoadExtension(id, std::move(pdfManifestDict), path);
+        }
+
+#if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
+        {
+            std::string hangout_manifest = ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_HANGOUT_SERVICES_MANIFEST).as_string();
+            std::unique_ptr<base::DictionaryValue> hangoutManifestDict = ParseManifest(hangout_manifest);
+            base::FilePath path;
+            base::PathService::Get(base::DIR_QT_LIBRARY_DATA, &path);
+            path = path.Append(base::FilePath(FILE_PATH_LITERAL("hangout_services")));
+            std::string id = GenerateId(hangoutManifestDict.get(), path);
+            LoadExtension(id, std::move(hangoutManifestDict), path);
+        }
+#endif // BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
     }
 }
 
@@ -385,19 +399,6 @@ std::unique_ptr<ExtensionSet> ExtensionSystemQt::GetDependentExtensions(const Ex
 {
     return base::WrapUnique(new ExtensionSet());
 }
-
-#if !defined(TOOLKIT_QT)
-void ExtensionSystemQt::InstallUpdate(const std::string &extension_id,
-                                      const std::string &public_key,
-                                      const base::FilePath &unpacked_dir,
-                                      bool install_immediately,
-                                      InstallUpdateCallback install_update_callback)
-{
-    NOTREACHED() << "Not yet implemented";
-    base::DeleteFile(unpacked_dir, true /* recursive */);
-    std::move(install_update_callback).Run(CrxInstallError(CrxInstallErrorType::DECLINED, CrxInstallErrorDetail::DISALLOWED_BY_POLICY));
-}
-#endif
 
 void ExtensionSystemQt::RegisterExtensionWithRequestContexts(const Extension *extension,
                                                              base::OnceClosure callback)

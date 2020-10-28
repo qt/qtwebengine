@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,27 +37,30 @@
 **
 ****************************************************************************/
 
-#ifndef EXTENSIONSDISPATCHERDELEGATEQT_H
-#define EXTENSIONSDISPATCHERDELEGATEQT_H
+#ifndef MESSAGING_DELEGATE_QT_H
+#define MESSAGING_DELEGATE_QT_H
 
-#include "base/macros.h"
-#include "extensions/renderer/dispatcher_delegate.h"
+#include "extensions/browser/api/messaging/messaging_delegate.h"
 
-namespace QtWebEngineCore {
+namespace base {
+class DictionaryValue;
+}
 
-class ExtensionsDispatcherDelegateQt : public extensions::DispatcherDelegate
+namespace content {
+class WebContents;
+}
+
+namespace extensions {
+
+class MessagingDelegateQt : public MessagingDelegate
 {
 public:
-    ExtensionsDispatcherDelegateQt();
-    ~ExtensionsDispatcherDelegateQt() override;
+    MessagingDelegateQt();
 
-private:
-    // extensions::DispatcherDelegate implementation.
-    void PopulateSourceMap(extensions::ResourceBundleSourceMap *source_map) override;
-
-    DISALLOW_COPY_AND_ASSIGN(ExtensionsDispatcherDelegateQt);
+    // MessagingDelegate implementation.
+    std::unique_ptr<base::DictionaryValue> MaybeGetTabInfo(content::WebContents *web_contents) override;
 };
 
-} // namespace QtWebEngineCore
+} // namespace extensions
 
-#endif // EXTENSIONSDISPATCHERDELEGATEQT_H
+#endif // MESSAGING_DELEGATE_QT_H

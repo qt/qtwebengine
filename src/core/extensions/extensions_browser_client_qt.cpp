@@ -49,25 +49,24 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/memory/ref_counted_memory.h"
+#include "chrome/browser/extensions/api/generated_api_registration.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/runtime/runtime_api_delegate.h"
-#include "extensions/browser/app_sorting.h"
 #include "extensions/browser/core_extensions_browser_api_provider.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/extension_protocols.h"
+#include "extensions/browser/extensions_browser_api_provider.h"
 #include "extensions/browser/extensions_browser_interface_binders.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/common/file_util.h"
-#include "net/base/completion_once_callback.h"
 #include "net/base/mime_util.h"
+#include "qtwebengine/browser/extensions/api/generated_api_registration.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/zlib/google/compression_utils.h"
@@ -78,10 +77,10 @@
 #include "extension_web_contents_observer_qt.h"
 #include "extensions_api_client_qt.h"
 #include "extensions_browser_client_qt.h"
+#include "extension_host_delegate_qt.h"
 #include "web_engine_library_info.h"
 
 using content::BrowserContext;
-using content::BrowserThread;
 
 namespace {
 
@@ -251,11 +250,46 @@ private:
 
 namespace extensions {
 
+// Copied from chrome/browser/extensions/chrome_extensions_browser_api_provider.(h|cc)
+class ChromeExtensionsBrowserAPIProvider : public ExtensionsBrowserAPIProvider
+{
+public:
+    ChromeExtensionsBrowserAPIProvider() = default;
+    ~ChromeExtensionsBrowserAPIProvider() override = default;
+
+    void RegisterExtensionFunctions(ExtensionFunctionRegistry *registry) override
+    {
+        // Generated APIs from Chrome.
+        api::ChromeGeneratedFunctionRegistry::RegisterAll(registry);
+    }
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsBrowserAPIProvider);
+};
+
+class QtWebEngineExtensionsBrowserAPIProvider : public ExtensionsBrowserAPIProvider
+{
+public:
+    QtWebEngineExtensionsBrowserAPIProvider() = default;
+    ~QtWebEngineExtensionsBrowserAPIProvider() override = default;
+
+    void RegisterExtensionFunctions(ExtensionFunctionRegistry *registry) override
+    {
+        // Generated APIs from QtWebEngine.
+        api::QtWebEngineGeneratedFunctionRegistry::RegisterAll(registry);
+    }
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(QtWebEngineExtensionsBrowserAPIProvider);
+};
+
 ExtensionsBrowserClientQt::ExtensionsBrowserClientQt()
     : api_client_(new ExtensionsAPIClientQt)
     , resource_manager_(new ComponentExtensionResourceManagerQt)
 {
     AddAPIProvider(std::make_unique<CoreExtensionsBrowserAPIProvider>());
+    AddAPIProvider(std::make_unique<ChromeExtensionsBrowserAPIProvider>());
+    AddAPIProvider(std::make_unique<QtWebEngineExtensionsBrowserAPIProvider>());
 }
 
 ExtensionsBrowserClientQt::~ExtensionsBrowserClientQt()
@@ -370,8 +404,11 @@ bool ExtensionsBrowserClientQt::AllowCrossRendererResourceLoad(const GURL &url,
                                                                const ExtensionSet &extensions,
                                                                const ProcessMap &process_map)
 {
-
     if (extension && extension->id() == extension_misc::kPdfExtensionId)
+        return true;
+
+    // hangout services id
+    if (extension && extension->id() == "nkeimhogjdpnpccoofpliimaahmaaome")
         return true;
 
     bool allowed = false;
@@ -402,9 +439,7 @@ ProcessManagerDelegate *ExtensionsBrowserClientQt::GetProcessManagerDelegate() c
 
 std::unique_ptr<ExtensionHostDelegate> ExtensionsBrowserClientQt::CreateExtensionHostDelegate()
 {
-    // TODO(extensions): Implement to support Apps.
-    NOTREACHED();
-    return std::unique_ptr<ExtensionHostDelegate>();
+    return std::unique_ptr<ExtensionHostDelegate>(new ExtensionHostDelegateQt);
 }
 
 bool ExtensionsBrowserClientQt::DidVersionUpdate(BrowserContext *context)

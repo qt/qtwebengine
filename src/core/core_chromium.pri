@@ -318,11 +318,13 @@ qtConfig(webengine-extensions) {
         common/extensions/extensions_api_provider_qt.cpp \
         common/extensions/extensions_client_qt.cpp \
         extensions/component_extension_resource_manager_qt.cpp \
+        extensions/extension_host_delegate_qt.cpp \
         extensions/extension_system_qt.cpp \
         extensions/extension_system_factory_qt.cpp \
         extensions/extension_web_contents_observer_qt.cpp \
         extensions/extensions_api_client_qt.cpp \
         extensions/extensions_browser_client_qt.cpp \
+        extensions/messaging_delegate_qt.cpp \
         extensions/mime_handler_view_guest_delegate_qt.cpp \
         net/plugin_response_interceptor_url_loader_throttle.cpp \
         renderer/extensions/extensions_dispatcher_delegate_qt.cpp \
@@ -334,11 +336,13 @@ qtConfig(webengine-extensions) {
         common/extensions/extensions_api_provider_qt.h \
         common/extensions/extensions_client_qt.h \
         extensions/component_extension_resource_manager_qt.h \
+        extensions/extension_host_delegate_qt.h \
         extensions/extension_system_qt.h \
         extensions/extension_system_factory_qt.h \
         extensions/extension_web_contents_observer_qt.h \
         extensions/extensions_api_client_qt.h \
         extensions/extensions_browser_client_qt.h \
+        extensions/messaging_delegate_qt.h \
         extensions/mime_handler_view_guest_delegate_qt.h \
         net/plugin_response_interceptor_url_loader_throttle.h \
         renderer/extensions/extensions_dispatcher_delegate_qt.h \

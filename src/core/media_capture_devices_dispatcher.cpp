@@ -381,7 +381,7 @@ void MediaCaptureDevicesDispatcher::Observe(int type, const content::Notificatio
     }
 }
 
-void MediaCaptureDevicesDispatcher::processMediaAccessRequest(WebContentsAdapterClient *adapterClient, content::WebContents *webContents, const content::MediaStreamRequest &request, content::MediaResponseCallback callback)
+void MediaCaptureDevicesDispatcher::processMediaAccessRequest(content::WebContents *webContents, const content::MediaStreamRequest &request, content::MediaResponseCallback callback)
 {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -390,6 +390,9 @@ void MediaCaptureDevicesDispatcher::processMediaAccessRequest(WebContentsAdapter
         std::move(callback).Run(blink::MediaStreamDevices(), MediaStreamRequestResult::NOT_SUPPORTED, std::unique_ptr<content::MediaStreamUI>());
         return;
     }
+
+    WebContentsDelegateQt *delegate = static_cast<WebContentsDelegateQt *>(webContents->GetDelegate());
+    WebContentsAdapterClient *adapterClient = delegate->adapterClient();
 
     if (flags.testFlag(WebContentsAdapterClient::MediaDesktopVideoCapture)) {
         const bool screenCaptureEnabled =

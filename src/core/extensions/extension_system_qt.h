@@ -106,15 +106,6 @@ public:
     ContentVerifier *content_verifier() override;
     std::unique_ptr<ExtensionSet> GetDependentExtensions(const Extension *extension) override;
 
-#if !defined(TOOLKIT_QT)
-    void InstallUpdate(const std::string &extension_id,
-                       const std::string &public_key,
-                       const base::FilePath &unpacked_dir,
-                       bool install_immediately,
-                       InstallUpdateCallback install_update_callback) override;
-#endif // TOOLKIT_QT
-    //friend class ExtensionSystemSharedFactory;
-
     bool FinishDelayedInstallationIfReady(const std::string &extension_id, bool install_immediately) override;
 
     void Init(bool extensions_enabled);

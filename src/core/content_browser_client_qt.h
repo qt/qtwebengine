@@ -260,6 +260,8 @@ public:
                                                          NonNetworkURLLoaderFactoryMap *factories) override;
     void RegisterNonNetworkWorkerMainResourceURLLoaderFactories(content::BrowserContext* browser_context,
                                                                 NonNetworkURLLoaderFactoryMap* factories) override;
+    void SiteInstanceGotProcess(content::SiteInstance *site_instance) override;
+    void SiteInstanceDeleting(content::SiteInstance *site_instance) override;
 
     static std::string getUserAgent();
 

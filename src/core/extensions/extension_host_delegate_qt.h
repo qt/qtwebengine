@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,27 +37,41 @@
 **
 ****************************************************************************/
 
-#ifndef EXTENSIONSDISPATCHERDELEGATEQT_H
-#define EXTENSIONSDISPATCHERDELEGATEQT_H
+#ifndef EXTENSION_HOST_DELEGATE_QT_H
+#define EXTENSION_HOST_DELEGATE_QT_H
 
-#include "base/macros.h"
-#include "extensions/renderer/dispatcher_delegate.h"
+#include "extensions/browser/extension_host_delegate.h"
 
-namespace QtWebEngineCore {
+namespace extensions {
 
-class ExtensionsDispatcherDelegateQt : public extensions::DispatcherDelegate
+class ExtensionHostDelegateQt : public ExtensionHostDelegate
 {
 public:
-    ExtensionsDispatcherDelegateQt();
-    ~ExtensionsDispatcherDelegateQt() override;
+    ExtensionHostDelegateQt();
 
-private:
-    // extensions::DispatcherDelegate implementation.
-    void PopulateSourceMap(extensions::ResourceBundleSourceMap *source_map) override;
-
-    DISALLOW_COPY_AND_ASSIGN(ExtensionsDispatcherDelegateQt);
+    // EtensionHostDelegate implementation.
+    void OnExtensionHostCreated(content::WebContents *web_contents) override;
+    void OnRenderViewCreatedForBackgroundPage(ExtensionHost *host) override;
+    content::JavaScriptDialogManager *GetJavaScriptDialogManager() override;
+    void CreateTab(std::unique_ptr<content::WebContents> web_contents,
+                   const std::string &extension_id,
+                   WindowOpenDisposition disposition,
+                   const gfx::Rect &initial_rect,
+                   bool user_gesture) override;
+    void ProcessMediaAccessRequest(content::WebContents *web_contents,
+                                   const content::MediaStreamRequest &request,
+                                   content::MediaResponseCallback callback,
+                                   const Extension *extension) override;
+    bool CheckMediaAccessPermission(content::RenderFrameHost *render_frame_host,
+                                    const GURL &security_origin,
+                                    blink::mojom::MediaStreamType type,
+                                    const Extension *extension) override;
+    content::PictureInPictureResult EnterPictureInPicture(content::WebContents *web_contents,
+                                                          const viz::SurfaceId &surface_id,
+                                                          const gfx::Size &natural_size) override;
+    void ExitPictureInPicture() override;
 };
 
-} // namespace QtWebEngineCore
+} // namespace extensions
 
-#endif // EXTENSIONSDISPATCHERDELEGATEQT_H
+#endif // EXTENSION_HOST_DELEGATE_QT_H

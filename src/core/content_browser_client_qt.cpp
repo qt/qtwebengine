@@ -60,6 +60,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/url_schemes.h"
+#include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -85,6 +86,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "extensions/browser/process_map.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -166,6 +168,7 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "content/public/browser/file_url_loader.h"
 #include "extensions/browser/extension_message_filter.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
 #include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/common/constants.h"
@@ -384,6 +387,10 @@ void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, b
     if (content::WebContents *webContents = rvh->GetDelegate()->GetAsWebContents()) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
         if (guest_view::GuestViewBase::IsGuest(webContents))
+            return;
+
+        WebContentsViewQt *view = WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(webContents)->GetView());
+        if (!view->client())
             return;
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
         WebContentsDelegateQt* delegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
@@ -940,6 +947,11 @@ static bool navigationThrottleCallback(content::WebContents *source,
     ProfileQt *profile = static_cast<ProfileQt *>(source->GetBrowserContext());
     if (params.is_external_protocol() && !profile->profileAdapter()->urlSchemeHandler(toQByteArray(params.url().scheme())))
         return false;
+
+    WebContentsViewQt *view = WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(source)->GetView());
+    if (!view->client())
+        return false;
+
     int navigationRequestAction = WebContentsAdapterClient::AcceptRequest;
     WebContentsDelegateQt *delegate = static_cast<WebContentsDelegateQt *>(source->GetDelegate());
     WebContentsAdapterClient *client = delegate->adapterClient();
@@ -1225,6 +1237,9 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
     if (web_contents) {
         WebContentsAdapterClient *client =
                 WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(web_contents)->GetView())->client();
+        if (!client)
+            return false;
+
         page_interceptor = client->webContentsAdapter()->requestInterceptor();
     }
 
@@ -1239,6 +1254,38 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
         return true;
     }
     return false;
+}
+
+void ContentBrowserClientQt::SiteInstanceGotProcess(content::SiteInstance *site_instance)
+{
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    content::BrowserContext *context = site_instance->GetBrowserContext();
+    extensions::ExtensionRegistry *registry = extensions::ExtensionRegistry::Get(context);
+    const extensions::Extension *extension = registry->enabled_extensions().GetExtensionOrAppByURL(site_instance->GetSiteURL());
+    if (!extension)
+        return;
+
+    extensions::ProcessMap *processMap = extensions::ProcessMap::Get(context);
+    processMap->Insert(extension->id(), site_instance->GetProcess()->GetID(), site_instance->GetId());
+#endif
+}
+
+void ContentBrowserClientQt::SiteInstanceDeleting(content::SiteInstance *site_instance)
+{
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    // Don't do anything if we're shutting down.
+    if (content::BrowserMainRunner::ExitedMainMessageLoop() || !site_instance->HasProcess())
+       return;
+
+    content::BrowserContext *context = site_instance->GetBrowserContext();
+    extensions::ExtensionRegistry *registry = extensions::ExtensionRegistry::Get(context);
+    const extensions::Extension *extension = registry->enabled_extensions().GetExtensionOrAppByURL(site_instance->GetSiteURL());
+    if (!extension)
+        return;
+
+    extensions::ProcessMap *processMap = extensions::ProcessMap::Get(context);
+    processMap->Remove(extension->id(), site_instance->GetProcess()->GetID(), site_instance->GetId());
+#endif
 }
 
 } // namespace QtWebEngineCore

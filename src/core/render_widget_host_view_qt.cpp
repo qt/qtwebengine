@@ -419,6 +419,9 @@ void RenderWidgetHostViewQt::InitAsFullscreen(content::RenderWidgetHostView*)
 
 void RenderWidgetHostViewQt::SetSize(const gfx::Size &sizeInDips)
 {
+    if (!m_delegate)
+        return;
+
     m_delegate->resize(sizeInDips.width(), sizeInDips.height());
 }
 

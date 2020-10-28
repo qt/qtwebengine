@@ -43,13 +43,13 @@
 // found in the LICENSE file.
 
 #include "extensions_api_client_qt.h"
+#include "messaging_delegate_qt.h"
 
 #include <memory>
-//#include "base/memory/ptr_util.h"
-#include "extension_web_contents_observer_qt.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
+#include "extension_web_contents_observer_qt.h"
 #include "printing/print_view_manager_qt.h"
 
 namespace extensions {
@@ -80,6 +80,13 @@ void ExtensionsAPIClientQt::AttachWebContentsHelpers(content::WebContents *web_c
     // PrefsTabHelper::CreateForWebContents(web_contents);
     QtWebEngineCore::PrintViewManagerQt::CreateForWebContents(web_contents);
     ExtensionWebContentsObserverQt::CreateForWebContents(web_contents);
+}
+
+MessagingDelegate *ExtensionsAPIClientQt::GetMessagingDelegate()
+{
+    if (!m_messagingDelegate)
+        m_messagingDelegate = std::make_unique<MessagingDelegateQt>();
+    return m_messagingDelegate.get();
 }
 
 } // namespace extensions
