@@ -3075,7 +3075,7 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::newRow("usb-internals") << QUrl("chrome://usb-internals") << false;
     QTest::newRow("user-actions") << QUrl("chrome://user-actions") << false;
     QTest::newRow("version") << QUrl("chrome://version") << false;
-    QTest::newRow("webrtc-internals") << QUrl("chrome://webrtc-internals") << true;
+    QTest::newRow("webrtc-internals") << QUrl("chrome://webrtc-internals") << false;
     QTest::newRow("webrtc-logs") << QUrl("chrome://webrtc-logs") << false;
 }
 
