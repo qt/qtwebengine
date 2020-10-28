@@ -1251,6 +1251,7 @@ void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEve
 
 QList<QTouchEvent::TouchPoint> RenderWidgetHostViewQt::mapTouchPointIds(const QList<QTouchEvent::TouchPoint> &inputPoints)
 {
+    QList<int> idsToRemove;
     QList<QTouchEvent::TouchPoint> outputPoints = inputPoints;
     for (int i = 0; i < outputPoints.size(); ++i) {
         QTouchEvent::TouchPoint &point = outputPoints[i];
@@ -1262,9 +1263,14 @@ QList<QTouchEvent::TouchPoint> RenderWidgetHostViewQt::mapTouchPointIds(const QL
         point.setId(it.value());
 
         if (point.state() == Qt::TouchPointReleased)
-            m_touchIdMapping.remove(qtId);
+            idsToRemove.append(qtId);
     }
 
+    for (int qtId : qAsConst(idsToRemove))
+        m_touchIdMapping.remove(qtId);
+
+    Q_ASSERT(outputPoints.size() == std::accumulate(outputPoints.cbegin(), outputPoints.cend(), QSet<int>(),
+                [] (QSet<int> s, const QTouchEvent::TouchPoint &p) { s.insert(p.id()); return s; }).size());
     return outputPoints;
 }
 
