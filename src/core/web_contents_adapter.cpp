@@ -53,7 +53,7 @@
 #include "profile_adapter.h"
 #include "profile_qt.h"
 #include "qwebenginecallback_p.h"
-#include "renderer_host/render_view_observer_host_qt.h"
+#include "renderer_host/web_engine_page_host.h"
 #include "render_widget_host_view_qt.h"
 #include "type_conversion.h"
 #include "web_contents_view_qt.h"
@@ -96,6 +96,7 @@
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/font_render_params.h"
+#include "qtwebengine/browser/qtwebenginepage.mojom.h"
 
 #if QT_CONFIG(webengine_webchannel)
 #include "renderer_host/web_channel_ipc_transport_host.h"
@@ -511,7 +512,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
 
     // Create and attach observers to the WebContents.
     m_webContentsDelegate.reset(new WebContentsDelegateQt(m_webContents.get(), m_adapterClient));
-    m_renderViewObserverHost.reset(new RenderViewObserverHostQt(m_webContents.get(), m_adapterClient));
+    m_pageHost.reset(new WebEnginePageHost(m_webContents.get(), m_adapterClient));
 
     // Let the WebContent's view know about the WebContentsAdapterClient.
     WebContentsViewQt* contentsView = static_cast<WebContentsViewQt*>(static_cast<content::WebContentsImpl*>(m_webContents.get())->GetView());
@@ -1078,14 +1079,14 @@ quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScrip
 quint64 WebContentsAdapter::fetchDocumentMarkup()
 {
     CHECK_INITIALIZED(0);
-    m_renderViewObserverHost->fetchDocumentMarkup(m_nextRequestId);
+    m_pageHost->FetchDocumentMarkup(m_nextRequestId);
     return m_nextRequestId++;
 }
 
 quint64 WebContentsAdapter::fetchDocumentInnerText()
 {
     CHECK_INITIALIZED(0);
-    m_renderViewObserverHost->fetchDocumentInnerText(m_nextRequestId);
+    m_pageHost->FetchDocumentInnerText(m_nextRequestId);
     return m_nextRequestId++;
 }
 
@@ -1415,8 +1416,11 @@ void WebContentsAdapter::handlePendingMouseLockPermission()
 void WebContentsAdapter::setBackgroundColor(const QColor &color)
 {
     CHECK_INITIALIZED();
+    SkColor c = toSk(color);
     if (content::RenderWidgetHostView *rwhv = m_webContents->GetRenderWidgetHostView())
-        rwhv->SetBackgroundColor(toSk(color));
+        rwhv->SetBackgroundColor(c);
+    if (color != Qt::transparent)
+        m_pageHost->SetBackgroundColor(c);
 }
 
 content::WebContents *WebContentsAdapter::webContents() const
@@ -1990,14 +1994,14 @@ void WebContentsAdapter::discard()
     m_webChannel = nullptr;
     m_webChannelWorld = 0;
 #endif
-    m_renderViewObserverHost.reset();
+    m_pageHost.reset();
     m_webContentsDelegate.reset();
     m_webContents.reset();
 
     m_webContents = std::move(nullContents);
     initializeRenderPrefs();
     m_webContentsDelegate = std::move(nullDelegate);
-    m_renderViewObserverHost.reset(new RenderViewObserverHostQt(m_webContents.get(), m_adapterClient));
+    m_pageHost.reset(new WebEnginePageHost(m_webContents.get(), m_adapterClient));
     WebContentsViewQt *contentsView =
             static_cast<WebContentsViewQt *>(static_cast<content::WebContentsImpl *>(m_webContents.get())->GetView());
     contentsView->setClient(m_adapterClient);

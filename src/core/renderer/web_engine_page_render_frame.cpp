@@ -37,11 +37,11 @@
 **
 ****************************************************************************/
 
-#include "renderer/render_view_observer_qt.h"
+#include "renderer/web_engine_page_render_frame.h"
+#include "content/public/renderer/render_frame.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 
-#include "common/qt_messages.h"
-
-#include "content/public/renderer/render_view.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -50,45 +50,45 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
 
-RenderViewObserverQt::RenderViewObserverQt(content::RenderView *render_view) : content::RenderViewObserver(render_view)
-{}
+namespace QtWebEngineCore {
 
-void RenderViewObserverQt::onFetchDocumentMarkup(quint64 requestId)
+WebEnginePageRenderFrame::WebEnginePageRenderFrame(content::RenderFrame *render_frame)
+    : content::RenderFrameObserver(render_frame), m_binding(this)
 {
-    blink::WebString markup;
-    if (render_view()->GetWebView()->MainFrame()->IsWebLocalFrame())
-        markup = blink::WebFrameContentDumper::DumpAsMarkup(
-                static_cast<blink::WebLocalFrame *>(render_view()->GetWebView()->MainFrame()));
-    Send(new RenderViewObserverHostQt_DidFetchDocumentMarkup(routing_id(), requestId, markup.Utf16()));
+    render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
+            base::BindRepeating(&WebEnginePageRenderFrame::BindReceiver, base::Unretained(this)));
 }
 
-void RenderViewObserverQt::onFetchDocumentInnerText(quint64 requestId)
+void WebEnginePageRenderFrame::BindReceiver(
+        mojo::PendingAssociatedReceiver<qtwebenginepage::mojom::WebEnginePageRenderFrame> receiver)
 {
-    blink::WebString text;
-    if (render_view()->GetWebView()->MainFrame()->IsWebLocalFrame())
-        text = blink::WebFrameContentDumper::DumpWebViewAsText(render_view()->GetWebView(),
-                                                               std::numeric_limits<std::size_t>::max());
-    Send(new RenderViewObserverHostQt_DidFetchDocumentInnerText(routing_id(), requestId, text.Utf16()));
+    m_binding.Bind(std::move(receiver));
 }
 
-void RenderViewObserverQt::onSetBackgroundColor(quint32 color)
+void WebEnginePageRenderFrame::FetchDocumentMarkup(uint64_t requestId,
+                                                   FetchDocumentMarkupCallback callback)
 {
-    render_view()->GetWebView()->SetBaseBackgroundColorOverride(color);
+    blink::WebString markup =
+            blink::WebFrameContentDumper::DumpAsMarkup(render_frame()->GetWebFrame());
+    std::move(callback).Run(requestId, markup.Utf8());
 }
 
-void RenderViewObserverQt::OnDestruct()
+void WebEnginePageRenderFrame::FetchDocumentInnerText(uint64_t requestId,
+                                                      FetchDocumentInnerTextCallback callback)
+{
+    blink::WebString text = blink::WebFrameContentDumper::DumpWebViewAsText(
+            render_frame()->GetWebFrame()->View(), std::numeric_limits<std::size_t>::max());
+    std::move(callback).Run(requestId, text.Utf8());
+}
+
+void WebEnginePageRenderFrame::SetBackgroundColor(uint32_t color)
+{
+    render_frame()->GetWebFrame()->View()->SetBaseBackgroundColorOverride(color);
+}
+
+void WebEnginePageRenderFrame::OnDestruct()
 {
     delete this;
 }
 
-bool RenderViewObserverQt::OnMessageReceived(const IPC::Message &message)
-{
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(RenderViewObserverQt, message)
-        IPC_MESSAGE_HANDLER(RenderViewObserverQt_FetchDocumentMarkup, onFetchDocumentMarkup)
-        IPC_MESSAGE_HANDLER(RenderViewObserverQt_FetchDocumentInnerText, onFetchDocumentInnerText)
-        IPC_MESSAGE_HANDLER(RenderViewObserverQt_SetBackgroundColor, onSetBackgroundColor)
-        IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
 }

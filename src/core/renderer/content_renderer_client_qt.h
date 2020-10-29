@@ -88,7 +88,6 @@ public:
     // content::ContentRendererClient:
     void RenderThreadStarted() override;
     void ExposeInterfacesToBrowser(mojo::BinderMap* binders) override;
-    void RenderViewCreated(content::RenderView *render_view) override;
     void RenderFrameCreated(content::RenderFrame *render_frame) override;
     bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) override;
     bool HasErrorPage(int http_status_code) override;

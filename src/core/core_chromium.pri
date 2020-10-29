@@ -110,11 +110,11 @@ SOURCES = \
         renderer/content_renderer_client_qt.cpp \
         renderer/content_settings_observer_qt.cpp \
         renderer/render_frame_observer_qt.cpp \
-        renderer/render_view_observer_qt.cpp \
+        renderer/web_engine_page_render_frame.cpp \
         renderer/render_configuration.cpp \
         renderer/user_resource_controller.cpp \
         renderer/plugins/plugin_placeholder_qt.cpp \
-        renderer_host/render_view_observer_host_qt.cpp \
+        renderer_host/web_engine_page_host.cpp \
         renderer_host/user_resource_controller_host.cpp \
         resource_bundle_qt.cpp \
         resource_context_qt.cpp \
@@ -215,11 +215,11 @@ HEADERS = \
         renderer/content_renderer_client_qt.h \
         renderer/content_settings_observer_qt.h \
         renderer/render_frame_observer_qt.h \
-        renderer/render_view_observer_qt.h \
+        renderer/web_engine_page_render_frame.h \
         renderer/render_configuration.h \
         renderer/user_resource_controller.h \
         renderer/plugins/plugin_placeholder_qt.h \
-        renderer_host/render_view_observer_host_qt.h \
+        renderer_host/web_engine_page_host.h \
         renderer_host/user_resource_controller_host.h \
         request_controller.h \
         resource_context_qt.h \

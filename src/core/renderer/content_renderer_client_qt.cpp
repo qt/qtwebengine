@@ -83,7 +83,7 @@
 
 #include "common/qt_messages.h"
 #include "renderer/render_frame_observer_qt.h"
-#include "renderer/render_view_observer_qt.h"
+#include "renderer/web_engine_page_render_frame.h"
 #include "renderer/render_configuration.h"
 #include "renderer/user_resource_controller.h"
 #if QT_CONFIG(webengine_webchannel)
@@ -188,20 +188,16 @@ void ContentRendererClientQt::ExposeInterfacesToBrowser(mojo::BinderMap* binders
 #endif
 }
 
-void ContentRendererClientQt::RenderViewCreated(content::RenderView *render_view)
-{
-    // RenderViewObservers destroy themselves with their RenderView.
-    new RenderViewObserverQt(render_view);
-}
-
 void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_frame)
 {
     QtWebEngineCore::RenderFrameObserverQt *render_frame_observer =
             new QtWebEngineCore::RenderFrameObserverQt(render_frame, m_webCacheImpl.data());
+    if (render_frame->IsMainFrame()) {
 #if QT_CONFIG(webengine_webchannel)
-    if (render_frame->IsMainFrame())
         new WebChannelIPCTransport(render_frame);
 #endif
+        new WebEnginePageRenderFrame(render_frame);
+    }
 
     m_userResourceController->renderFrameCreated(render_frame);
 

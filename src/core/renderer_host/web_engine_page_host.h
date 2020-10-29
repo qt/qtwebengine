@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef RENDER_VIEW_OBSERVER_HOST_QT_H
-#define RENDER_VIEW_OBSERVER_HOST_QT_H
+#ifndef WEB_ENGINE_PAGE_HOST_H
+#define WEB_ENGINE_PAGE_HOST_H
 
 #include "content/public/browser/web_contents_observer.h"
 
@@ -48,25 +48,43 @@ namespace content {
 class WebContents;
 }
 
+namespace mojo {
+template<typename Type>
+class AssociatedRemote;
+}
+
+namespace qtwebenginepage {
+namespace mojom {
+class WebEnginePageRenderFrame;
+}
+}
+
 namespace QtWebEngineCore {
+
+using WebEnginePageRenderFrameRemote = mojo::AssociatedRemote<qtwebenginepage::mojom::WebEnginePageRenderFrame>;
 
 class WebContentsAdapterClient;
 
-class RenderViewObserverHostQt : public content::WebContentsObserver
+class WebEnginePageHost : public content::WebContentsObserver
 {
 public:
-    RenderViewObserverHostQt(content::WebContents *, WebContentsAdapterClient *adapterClient);
-    void fetchDocumentMarkup(quint64 requestId);
-    void fetchDocumentInnerText(quint64 requestId);
+    WebEnginePageHost(content::WebContents *, WebContentsAdapterClient *adapterClient);
+    void FetchDocumentMarkup(uint64_t requestId);
+    void FetchDocumentInnerText(uint64_t requestId);
+    void RenderFrameDeleted(content::RenderFrameHost *render_frame) override;
+    void SetBackgroundColor(uint32_t color);
 
 private:
-    bool OnMessageReceived(const IPC::Message &message) override;
-    void onDidFetchDocumentMarkup(quint64 requestId, const base::string16 &markup);
-    void onDidFetchDocumentInnerText(quint64 requestId, const base::string16 &innerText);
+    void OnDidFetchDocumentMarkup(uint64_t requestId, const std::string &markup);
+    void OnDidFetchDocumentInnerText(uint64_t requestId, const std::string &innerText);
+    const WebEnginePageRenderFrameRemote &
+    GetWebEnginePageRenderFrame(content::RenderFrameHost *rfh);
 
+private:
     WebContentsAdapterClient *m_adapterClient;
+    std::map<content::RenderFrameHost *, WebEnginePageRenderFrameRemote> m_renderFrames;
 };
 
 } // namespace QtWebEngineCore
 
-#endif // RENDER_VIEW_OBSERVER_HOST_QT_H
+#endif // WEB_ENGINE_PAGE_HOST_H

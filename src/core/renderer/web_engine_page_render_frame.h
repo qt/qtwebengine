@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -36,28 +36,40 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef RENDER_VIEW_OBSERVER_QT_H
-#define RENDER_VIEW_OBSERVER_QT_H
+#ifndef WEB_ENGINE_PAGE_RENDER_FRAME_H
+#define WEB_ENGINE_PAGE_RENDER_FRAME_H
 
-#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_frame_observer.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "qtwebengine/browser/qtwebenginepage.mojom.h"
 
-#include <QtGlobal>
+namespace content {
+class RenderFrame;
+}
 
-class RenderViewObserverQt : public content::RenderViewObserver
+namespace QtWebEngineCore {
+
+class WebEnginePageRenderFrame : private content::RenderFrameObserver,
+                                 public qtwebenginepage::mojom::WebEnginePageRenderFrame
 {
 public:
-    RenderViewObserverQt(content::RenderView *render_view);
+    WebEnginePageRenderFrame(content::RenderFrame *render_frame);
+    WebEnginePageRenderFrame(const WebEnginePageRenderFrame &) = delete;
+    WebEnginePageRenderFrame &operator=(const WebEnginePageRenderFrame &) = delete;
 
 private:
-    void onFetchDocumentMarkup(quint64 requestId);
-    void onFetchDocumentInnerText(quint64 requestId);
-    void onSetBackgroundColor(quint32 color);
-
+    void FetchDocumentMarkup(uint64_t requestId, FetchDocumentMarkupCallback callback) override;
+    void FetchDocumentInnerText(uint64_t requestId,
+                                FetchDocumentInnerTextCallback callback) override;
+    void SetBackgroundColor(uint32_t color) override;
     void OnDestruct() override;
+    void
+    BindReceiver(mojo::PendingAssociatedReceiver<qtwebenginepage::mojom::WebEnginePageRenderFrame>
+                         receiver);
 
-    bool OnMessageReceived(const IPC::Message &message) override;
-
-    DISALLOW_COPY_AND_ASSIGN(RenderViewObserverQt);
+private:
+    mojo::AssociatedReceiver<qtwebenginepage::mojom::WebEnginePageRenderFrame> m_binding;
 };
+} // namespace
 
-#endif // RENDER_VIEW_OBSERVER_QT_H
+#endif // WEB_ENGINE_PAGE_RENDER_FRAME_H

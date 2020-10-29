@@ -12,36 +12,14 @@
 
 #define IPC_MESSAGE_START QtMsgStart
 
-//-----------------------------------------------------------------------------
-// RenderView messages
-// These are messages sent from the browser to the renderer process.
-
-IPC_MESSAGE_ROUTED1(RenderViewObserverQt_FetchDocumentMarkup,
-                    uint64_t /* requestId */)
-
-IPC_MESSAGE_ROUTED1(RenderViewObserverQt_FetchDocumentInnerText,
-                    uint64_t /* requestId */)
-
-IPC_MESSAGE_ROUTED1(RenderViewObserverQt_SetBackgroundColor,
-                    uint32_t /* color */)
-
 // Tells the renderer whether or not a file system access has been allowed.
 IPC_MESSAGE_ROUTED2(QtWebEngineMsg_RequestFileSystemAccessAsyncResponse,
                     int  /* request_id */,
                     bool /* allowed */)
 
-
 //-----------------------------------------------------------------------------
 // WebContents messages
 // These are messages sent from the renderer back to the browser process.
-
-IPC_MESSAGE_ROUTED2(RenderViewObserverHostQt_DidFetchDocumentMarkup,
-                    uint64_t /* requestId */,
-                    base::string16 /* markup */)
-
-IPC_MESSAGE_ROUTED2(RenderViewObserverHostQt_DidFetchDocumentInnerText,
-                    uint64_t /* requestId */,
-                    base::string16 /* innerText */)
 
 IPC_MESSAGE_ROUTED0(RenderViewObserverHostQt_DidFirstVisuallyNonEmptyLayout)
 

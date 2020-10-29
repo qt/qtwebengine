@@ -527,8 +527,6 @@ void RenderWidgetHostViewQt::UpdateBackgroundColor()
     content::RenderViewHost *rvh = content::RenderViewHost::From(host());
     if (color == SK_ColorTRANSPARENT)
         host()->owner_delegate()->SetBackgroundOpaque(false);
-    else
-        host()->Send(new RenderViewObserverQt_SetBackgroundColor(rvh->GetRoutingID(), color));
 }
 
 // Return value indicates whether the mouse is locked successfully or not.
