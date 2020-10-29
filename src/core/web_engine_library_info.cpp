@@ -275,6 +275,8 @@ QString resourcesDataPath()
     static QString potentialResourcesPath =
 #if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
             getResourcesPath(frameworkBundle());
+#elif defined(OS_MACOSX)
+            QLibraryInfo::location(QLibraryInfo::DataPath) % QLatin1String("/Resources");
 #else
             QLibraryInfo::location(QLibraryInfo::DataPath) % QLatin1String("/resources");
 #endif
