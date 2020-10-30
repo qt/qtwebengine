@@ -272,7 +272,8 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
                 break;
             }
         } else if (desktopVideoRequested) {
-            getDevicesForDesktopCapture(&devices, getDefaultScreenId(), desktopAudioRequested,
+            bool captureAudio = desktopAudioRequested && m_loopbackAudioSupported;
+            getDevicesForDesktopCapture(&devices, getDefaultScreenId(), captureAudio,
                                         request.video_type, request.audio_type);
         }
     }
@@ -309,6 +310,10 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
     // content::NOTIFICATION_WEB_CONTENTS_DESTROYED, and that will result in
     // possible use after free.
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+#if defined(OS_WIN)
+    // Currently loopback audio capture is supported only on Windows.
+    m_loopbackAudioSupported = true;
+#endif
     m_notificationsRegistrar.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                                  content::NotificationService::AllSources());
 }
@@ -383,9 +388,11 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
     }
 
     // Audio is only supported for screen capture streams.
-    bool capture_audio = (mediaId.type == content::DesktopMediaID::TYPE_SCREEN && request.audio_type == MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE);
+    bool audioRequested = request.audio_type == MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE;
+    bool audioSupported = (mediaId.type == content::DesktopMediaID::TYPE_SCREEN && m_loopbackAudioSupported);
+    bool captureAudio = (audioRequested && audioSupported);
 
-    getDevicesForDesktopCapture(&devices, mediaId, capture_audio, request.video_type, request.audio_type);
+    getDevicesForDesktopCapture(&devices, mediaId, captureAudio, request.video_type, request.audio_type);
 
     if (devices.empty())
         std::move(callback).Run(devices, MediaStreamRequestResult::INVALID_STATE,
