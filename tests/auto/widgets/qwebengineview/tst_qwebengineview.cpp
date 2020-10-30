@@ -2372,6 +2372,7 @@ void tst_QWebEngineView::textSelectionInInputField()
 void tst_QWebEngineView::textSelectionOutOfInputField()
 {
     QWebEngineView view;
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     view.resize(640, 480);
     view.show();
 
@@ -2381,6 +2382,7 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
                  "  This is a text"
                  "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QCOMPARE(selectionChangedSpy.count(), 0);
     QVERIFY(!view.hasSelection());
@@ -2429,6 +2431,7 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
                  "  <input type='text' id='input1' value='QtWebEngine' size='50'/>"
                  "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QCOMPARE(selectionChangedSpy.count(), 0);
     QVERIFY(!view.hasSelection());
