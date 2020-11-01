@@ -30,7 +30,7 @@
 
 TestHandler::TestHandler(QObject *parent) : QObject(parent)
 {
-    setObjectName(QStringLiteral("TestListner"));
+    setObjectName(QStringLiteral("TestListener"));
 }
 
 QObject* TestHandler::request() const
