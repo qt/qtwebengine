@@ -20,6 +20,6 @@ qtConfig(build-qtwebengine-core):qtConfig(webengine-core-support) {
 }
 
 qtConfig(build-qtpdf):qtConfig(webengine-qtpdf-support) {
-    SUDIRS += pdf
+    SUBDIRS += pdf
     qtConfig(pdf-widgets): SUBDIRS += pdfwidgets
 }

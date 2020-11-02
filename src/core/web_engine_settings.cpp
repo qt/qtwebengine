@@ -112,9 +112,8 @@ WebEngineSettings::~WebEngineSettings()
     if (parentSettings)
         parentSettings->childSettings.remove(this);
     // In QML the profile and its settings may be garbage collected before the page and its settings.
-    for (WebEngineSettings *settings : qAsConst(childSettings)) {
-        settings->parentSettings = 0;
-    }
+    for (WebEngineSettings *settings : qAsConst(childSettings))
+        settings->parentSettings = nullptr;
 }
 
 void WebEngineSettings::overrideWebPreferences(content::WebContents *webContents, content::WebPreferences *prefs)
@@ -141,11 +140,15 @@ void WebEngineSettings::setAttribute(QWebEngineSettings::WebAttribute attr, bool
 
 bool WebEngineSettings::testAttribute(QWebEngineSettings::WebAttribute attr) const
 {
-    if (!parentSettings) {
-        Q_ASSERT(s_defaultAttributes.contains(attr));
-        return m_attributes.value(attr, s_defaultAttributes.value(attr));
-    }
-    return m_attributes.value(attr, parentSettings->testAttribute(attr));
+    auto it = m_attributes.constFind(attr);
+    if (it != m_attributes.constEnd())
+        return *it;
+
+    if (parentSettings)
+        return parentSettings->testAttribute(attr);
+
+    Q_ASSERT(s_defaultAttributes.contains(attr));
+    return s_defaultAttributes.value(attr);
 }
 
 bool WebEngineSettings::isAttributeExplicitlySet(QWebEngineSettings::WebAttribute attr) const

@@ -47,6 +47,7 @@
 #include "content/public/common/content_paths.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "type_conversion.h"
 
 #include <QByteArray>
@@ -56,7 +57,10 @@
 #include <QLibraryInfo>
 #include <QLocale>
 #include <QStandardPaths>
-#include <QString>
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif // OS_WIN
 
 #ifndef QTWEBENGINEPROCESS_NAME
 #error "No name defined for QtWebEngine's process"
@@ -177,6 +181,14 @@ QString subProcessPath()
         }
         if (processPath.isEmpty())
             qFatal("Could not find %s", processBinary.toUtf8().constData());
+
+#if defined(OS_WIN)
+        base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
+        if (!parsedCommandLine->HasSwitch(service_manager::switches::kNoSandbox)) {
+            if (WebEngineLibraryInfo::isUNCPath(processPath) || WebEngineLibraryInfo::isRemoteDrivePath(processPath))
+                qCritical("Can not launch QtWebEngineProcess from network path if sandbox is enabled: %s.", processPath.toUtf8().constData());
+        }
+#endif
 
     }
 
@@ -351,3 +363,21 @@ std::string WebEngineLibraryInfo::getApplicationLocale()
 
     return parsedCommandLine->GetSwitchValueASCII(switches::kLang);
 }
+
+#if defined(OS_WIN)
+bool WebEngineLibraryInfo::isRemoteDrivePath(const QString &path)
+{
+    WCHAR wDriveLetter[3];
+    swprintf(wDriveLetter, L"%S", path.mid(0, 3).toStdString().c_str());
+    return GetDriveType(wDriveLetter) == DRIVE_REMOTE;
+}
+
+bool WebEngineLibraryInfo::isUNCPath(const QString &path)
+{
+    return (base::FilePath::IsSeparator(path.at(0).toLatin1())
+            && base::FilePath::IsSeparator(path.at(1).toLatin1())
+            && path.at(2) != "." && path.at(2) != "?"
+            && path.at(2).isLetter() && path.at(3) != ":");
+}
+
+#endif

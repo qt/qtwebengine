@@ -43,6 +43,8 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
+#include <QString>
+
 enum {
     QT_RESOURCES_PAK = 5000,
     QT_RESOURCES_100P_PAK = 5001,
@@ -56,6 +58,10 @@ public:
     // Called by localized_error in our custom chrome layer
     static base::string16 getApplicationName();
     static std::string getApplicationLocale();
+#if defined(OS_WIN)
+    static bool isRemoteDrivePath(const QString &path);
+    static bool isUNCPath(const QString &path);
+#endif
 };
 
 

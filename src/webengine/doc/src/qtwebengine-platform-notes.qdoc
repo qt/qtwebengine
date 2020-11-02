@@ -59,12 +59,13 @@
 
     \section2 All Platforms
 
-    On all platforms, the following tools are required:
+    On all platforms, the following tools are required at build time:
 
     \list
         \li \l Python 2.7.5 or later. Python 3 is not supported.
         \li Bison, Flex
         \li GPerf
+        \li Node.js for a full featured Dev Tools.
     \endlist
 
     \section2 Windows
