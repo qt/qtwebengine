@@ -44,6 +44,9 @@ win32 {
 
 TEMPLATE = app
 
+# On Windows this triggers file versioning of QtWebEngineProcess.exe
+VERSION = $$MODULE_VERSION
+
 load(qt_build_paths)
 
 !build_pass:qtConfig(debug_and_release): CONFIG += release
