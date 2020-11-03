@@ -97,18 +97,18 @@ void FindTextHelper::startFinding(const QString &findText, bool caseSensitively,
 
 void FindTextHelper::startFinding(const QString &findText, bool caseSensitively, bool findBackward)
 {
-    if (findText.isEmpty()) {
-        stopFinding();
-        return;
-    }
+    Q_ASSERT(!findText.isEmpty());
 
-    if (m_currentFindRequestId > m_lastCompletedFindRequestId) {
+    const bool findNext = !m_previousFindText.isEmpty() && findText == m_previousFindText;
+    if (isFindTextInProgress()) {
         // There are cases where the render process will overwrite a previous request
         // with the new search and we'll have a dangling callback, leaving the application
         // waiting for it forever.
         // Assume that any unfinished find has been unsuccessful when a new one is started
         // to cover that case.
         m_lastCompletedFindRequestId = m_currentFindRequestId;
+        if (!findNext)
+            m_webContents->StopFinding(content::STOP_FIND_ACTION_KEEP_SELECTION);
         m_viewClient->findTextFinished(QWebEngineFindTextResult());
         invokeResultCallback(m_currentFindRequestId, 0);
     }
@@ -116,7 +116,7 @@ void FindTextHelper::startFinding(const QString &findText, bool caseSensitively,
     blink::mojom::FindOptionsPtr options = blink::mojom::FindOptions::New();
     options->forward = !findBackward;
     options->match_case = caseSensitively;
-    options->new_session = findText != m_previousFindText;
+    options->new_session = !findNext;
     m_previousFindText = findText;
 
     m_currentFindRequestId = m_findRequestIdCounter++;
