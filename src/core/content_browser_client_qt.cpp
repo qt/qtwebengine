@@ -992,7 +992,7 @@ mojo::Remote<network::mojom::NetworkContext> ContentBrowserClientQt::CreateNetwo
 std::vector<base::FilePath> ContentBrowserClientQt::GetNetworkContextsParentDirectory()
 {
     return {
-        toFilePath(QStandardPaths::writableLocation(QStandardPaths::DataLocation)),
+        toFilePath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)),
         toFilePath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)) };
 }
 

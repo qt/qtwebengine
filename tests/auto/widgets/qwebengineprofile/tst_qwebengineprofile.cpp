@@ -116,7 +116,7 @@ void tst_QWebEngineProfile::init()
     QCOMPARE(profile->persistentCookiesPolicy(), QWebEngineProfile::AllowPersistentCookies);
     QCOMPARE(profile->cachePath(),  QStandardPaths::writableLocation(QStandardPaths::CacheLocation)
              + QStringLiteral("/QtWebEngine/Default"));
-    QCOMPARE(profile->persistentStoragePath(),  QStandardPaths::writableLocation(QStandardPaths::DataLocation)
+    QCOMPARE(profile->persistentStoragePath(),  QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
              + QStringLiteral("/QtWebEngine/Default"));
 }
 
@@ -136,7 +136,7 @@ void tst_QWebEngineProfile::privateProfile()
     QCOMPARE(otrProfile.httpCacheType(), QWebEngineProfile::MemoryHttpCache);
     QCOMPARE(otrProfile.persistentCookiesPolicy(), QWebEngineProfile::NoPersistentCookies);
     QCOMPARE(otrProfile.cachePath(), QString());
-    QCOMPARE(otrProfile.persistentStoragePath(), QStandardPaths::writableLocation(QStandardPaths::DataLocation)
+    QCOMPARE(otrProfile.persistentStoragePath(), QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
              + QStringLiteral("/QtWebEngine/OffTheRecord"));
     // TBD: setters do not really work
     otrProfile.setCachePath(QStringLiteral("/home/foo/bar"));
@@ -159,7 +159,7 @@ void tst_QWebEngineProfile::testProfile()
     QCOMPARE(profile.persistentCookiesPolicy(), QWebEngineProfile::AllowPersistentCookies);
     QCOMPARE(profile.cachePath(),  QStandardPaths::writableLocation(QStandardPaths::CacheLocation)
              + QStringLiteral("/QtWebEngine/Test"));
-    QCOMPARE(profile.persistentStoragePath(),  QStandardPaths::writableLocation(QStandardPaths::DataLocation)
+    QCOMPARE(profile.persistentStoragePath(),  QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
              + QStringLiteral("/QtWebEngine/Test"));
 }
 
@@ -845,9 +845,9 @@ void tst_QWebEngineProfile::changePersistentPath()
     TestServer server;
     QVERIFY(server.start());
 
-    AutoDir dataDir1(QStandardPaths::writableLocation(QStandardPaths::DataLocation)
+    AutoDir dataDir1(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
                      + QStringLiteral("/QtWebEngine/Test"));
-    AutoDir dataDir2(QStandardPaths::writableLocation(QStandardPaths::DataLocation)
+    AutoDir dataDir2(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
                      + QStringLiteral("/QtWebEngine/Test2"));
 
     QWebEngineProfile testProfile(QStringLiteral("Test"));
