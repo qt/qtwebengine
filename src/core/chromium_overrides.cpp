@@ -110,8 +110,7 @@ std::unique_ptr<base::ListValue> GetFontList_SlowBlocking()
 {
     std::unique_ptr<base::ListValue> font_list(new base::ListValue);
 
-    QFontDatabase database;
-    for (auto family : database.families()){
+    for (auto family : QFontDatabase::families()){
         std::unique_ptr<base::ListValue> font_item(new base::ListValue());
         font_item->AppendString(family.toStdString());
         font_item->AppendString(family.toStdString());  // localized name.
