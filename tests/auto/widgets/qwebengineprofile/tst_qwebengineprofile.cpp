@@ -514,7 +514,7 @@ void tst_QWebEngineProfile::urlSchemeHandlerStreaming()
     view.setPage(new QWebEnginePage(&profile, &view));
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     view.load(QUrl(QStringLiteral("stream://whatever")));
-    QVERIFY(loadFinishedSpy.wait());
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
     QByteArray result;
     result.append(1000, 'c');
     QCOMPARE(toPlainTextSync(view.page()), QString::fromLatin1(result));
@@ -575,7 +575,7 @@ void tst_QWebEngineProfile::urlSchemeHandlerRequestHeaders()
     QWebEnginePage page(&profile);
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
     page.load(QUrl(QStringLiteral("myscheme://whatever")));
-    QVERIFY(loadFinishedSpy.wait());
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
 }
 
 void tst_QWebEngineProfile::urlSchemeHandlerInstallation()
@@ -707,7 +707,7 @@ void tst_QWebEngineProfile::urlSchemeHandlerXhrStatus()
     profile.installUrlSchemeHandler("aviancarrier", &handler);
     page.setWebChannel(&channel);
     page.load(QUrl("aviancarrier:/"));
-    QTRY_VERIFY(host.isReady());
+    QTRY_VERIFY_WITH_TIMEOUT(host.isReady(), 30000);
     host.load(QUrl("aviancarrier:/ok"));
     host.load(QUrl("aviancarrier:/redirect"));
     host.load(QUrl("aviancarrier:/fail"));

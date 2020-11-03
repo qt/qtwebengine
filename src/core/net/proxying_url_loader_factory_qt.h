@@ -55,15 +55,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-QT_FORWARD_DECLARE_CLASS(QWebEngineUrlRequestInterceptor)
-
 namespace QtWebEngineCore {
+
+class ProfileAdapter;
 
 class ProxyingURLLoaderFactoryQt : public network::mojom::URLLoaderFactory
 {
 public:
-    ProxyingURLLoaderFactoryQt(int processId, QWebEngineUrlRequestInterceptor *profile,
-                               QWebEngineUrlRequestInterceptor *page,
+    ProxyingURLLoaderFactoryQt(ProfileAdapter *adapter, int processId,
                                mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
                                mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_target_factory_remote);
 
@@ -81,11 +80,10 @@ private:
     void OnTargetFactoryError();
     void OnProxyBindingError();
 
+    QPointer<ProfileAdapter> m_profileAdapter;
     int m_processId;
     mojo::ReceiverSet<network::mojom::URLLoaderFactory> m_proxyReceivers;
     mojo::Remote<network::mojom::URLLoaderFactory> m_targetFactory;
-    QPointer<QWebEngineUrlRequestInterceptor> m_profileRequestInterceptor;
-    QPointer<QWebEngineUrlRequestInterceptor> m_pageRequestInterceptor;
     base::WeakPtrFactory<ProxyingURLLoaderFactoryQt> m_weakFactory;
 
     DISALLOW_COPY_AND_ASSIGN(ProxyingURLLoaderFactoryQt);

@@ -1270,32 +1270,14 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
         bool *disable_secure_dns,
         network::mojom::URLLoaderFactoryOverridePtr *factory_override)
 {
-    auto *web_contents = content::WebContents::FromRenderFrameHost(frame);
-    ProfileQt *profile = static_cast<ProfileQt *>(browser_context);
-
-    QWebEngineUrlRequestInterceptor *profile_interceptor = profile->profileAdapter()->requestInterceptor();
-    QWebEngineUrlRequestInterceptor *page_interceptor = nullptr;
-
-    if (web_contents) {
-        WebContentsAdapterClient *client =
-                WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(web_contents)->GetView())->client();
-        if (!client)
-            return false;
-
-        page_interceptor = client->webContentsAdapter()->requestInterceptor();
-    }
-
-    if (profile_interceptor || page_interceptor) {
-        int process_id = type == URLLoaderFactoryType::kNavigation ? 0 : render_process_id;
-        auto proxied_receiver = std::move(*factory_receiver);
-        mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_url_loader_factory;
-        *factory_receiver = pending_url_loader_factory.InitWithNewPipeAndPassReceiver();
-        // Will manage its own lifetime
-        new ProxyingURLLoaderFactoryQt(process_id, profile_interceptor, page_interceptor, std::move(proxied_receiver),
-                                       std::move(pending_url_loader_factory));
-        return true;
-    }
-    return false;
+    auto adapter = static_cast<ProfileQt *>(browser_context)->profileAdapter();
+    int process_id = type == URLLoaderFactoryType::kNavigation ? 0 : render_process_id;
+    auto proxied_receiver = std::move(*factory_receiver);
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_url_loader_factory;
+    *factory_receiver = pending_url_loader_factory.InitWithNewPipeAndPassReceiver();
+    // Will manage its own lifetime
+    new ProxyingURLLoaderFactoryQt(adapter, process_id, std::move(proxied_receiver), std::move(pending_url_loader_factory));
+    return true;
 }
 
 void ContentBrowserClientQt::SiteInstanceGotProcess(content::SiteInstance *site_instance)
