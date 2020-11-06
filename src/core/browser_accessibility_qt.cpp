@@ -435,8 +435,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::CheckBox;
     case ax::mojom::Role::kMenuItemRadio:
         return QAccessible::RadioButton;
-    case ax::mojom::Role::kMenuButton:
-        return QAccessible::MenuItem;
     case ax::mojom::Role::kMenuListOption:
         return QAccessible::MenuItem;
     case ax::mojom::Role::kMenuListPopup:

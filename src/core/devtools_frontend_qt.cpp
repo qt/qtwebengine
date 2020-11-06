@@ -442,11 +442,11 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
         resource_request->site_for_cookies = net::SiteForCookies::FromUrl(gurl);
         resource_request->headers.AddHeadersFromString(headers);
 
-        std::unique_ptr<network::mojom::URLLoaderFactory> file_url_loader_factory;
+        mojo::Remote<network::mojom::URLLoaderFactory> file_url_loader_factory;
         scoped_refptr<network::SharedURLLoaderFactory> network_url_loader_factory;
         network::mojom::URLLoaderFactory *url_loader_factory;
         if (gurl.SchemeIsFile()) {
-            file_url_loader_factory = content::CreateFileURLLoaderFactory(base::FilePath(), nullptr);
+            file_url_loader_factory.Bind(content::CreateFileURLLoaderFactory(base::FilePath(), nullptr));
             url_loader_factory = file_url_loader_factory.get();
         } else if (content::HasWebUIScheme(gurl)) {
             base::DictionaryValue response;

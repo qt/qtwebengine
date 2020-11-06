@@ -87,10 +87,10 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/web_preferences.h"
 #include "extensions/buildflags/buildflags.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom.h"
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -452,7 +452,7 @@ WebContentsAdapter::WebContentsAdapter()
 #endif
   , m_adapterClient(nullptr)
   , m_nextRequestId(CallbackDirectory::ReservedCallbackIdsEnd)
-  , m_currentDropAction(blink::kWebDragOperationNone)
+  , m_currentDropAction(blink::kDragOperationNone)
   , m_devToolsFrontend(nullptr)
 {
     // This has to be the first thing we create, and the last we destroy.
@@ -468,7 +468,7 @@ WebContentsAdapter::WebContentsAdapter(std::unique_ptr<content::WebContents> web
 #endif
   , m_adapterClient(nullptr)
   , m_nextRequestId(CallbackDirectory::ReservedCallbackIdsEnd)
-  , m_currentDropAction(blink::kWebDragOperationNone)
+  , m_currentDropAction(blink::kDragOperationNone)
   , m_devToolsFrontend(nullptr)
 {
     // This has to be the first thing we create, and the last we destroy.
@@ -1092,7 +1092,7 @@ quint64 WebContentsAdapter::fetchDocumentInnerText()
     return m_nextRequestId++;
 }
 
-void WebContentsAdapter::updateWebPreferences(const content::WebPreferences &webPreferences)
+void WebContentsAdapter::updateWebPreferences(const blink::web_pref::WebPreferences &webPreferences)
 {
     CHECK_INITIALIZED();
     m_webContents->SetWebPreferences(webPreferences);
@@ -1480,16 +1480,16 @@ static QMimeData *mimeDataFromDropData(const content::DropData &dropData)
     return mimeData;
 }
 
-static blink::WebDragOperationsMask toWeb(const Qt::DropActions action)
+static blink::DragOperationsMask toWeb(const Qt::DropActions action)
 {
-    int result = blink::kWebDragOperationNone;
+    int result = blink::kDragOperationNone;
     if (action & Qt::CopyAction)
-        result |= blink::kWebDragOperationCopy;
+        result |= blink::kDragOperationCopy;
     if (action & Qt::LinkAction)
-        result |= blink::kWebDragOperationLink;
+        result |= blink::kDragOperationLink;
     if (action & Qt::MoveAction)
-        result |= blink::kWebDragOperationMove;
-    return static_cast<blink::WebDragOperationsMask>(result);
+        result |= blink::kDragOperationMove;
+    return static_cast<blink::DragOperationsMask>(result);
 }
 
 void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropData &dropData,
@@ -1508,7 +1508,7 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
     m_currentDropData->file_contents.clear();
     m_currentDropData->file_contents_content_disposition.clear();
 
-    m_currentDropAction = blink::kWebDragOperationNone;
+    m_currentDropAction = blink::kDragOperationNone;
     QDrag *drag = new QDrag(dragSource);    // will be deleted by Qt's DnD implementation
     bool dValid = true;
     QMetaObject::Connection onDestroyed = QObject::connect(dragSource, &QObject::destroyed, [&dValid](){
@@ -1537,7 +1537,7 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
             if (rvh) {
                 rvh->GetWidget()->DragSourceEndedAt(gfx::PointF(m_lastDragClientPos.x(), m_lastDragClientPos.y()),
                                                     gfx::PointF(m_lastDragScreenPos.x(), m_lastDragScreenPos.y()),
-                                                    blink::WebDragOperation(m_currentDropAction));
+                                                    blink::DragOperation(m_currentDropAction));
                 rvh->GetWidget()->DragSourceSystemDragEnded();
             }
         }
@@ -1598,13 +1598,13 @@ static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeDat
     }
 }
 
-Qt::DropAction toQt(blink::WebDragOperation op)
+Qt::DropAction toQt(blink::DragOperation op)
 {
-    if (op & blink::kWebDragOperationCopy)
+    if (op & blink::kDragOperationCopy)
         return Qt::CopyAction;
-    if (op & blink::kWebDragOperationLink)
+    if (op & blink::kDragOperationLink)
         return Qt::LinkAction;
-    if (op & blink::kWebDragOperationMove || op & blink::kWebDragOperationDelete)
+    if (op & blink::kDragOperationMove || op & blink::kDragOperationDelete)
         return Qt::MoveAction;
     return Qt::IgnoreAction;
 }
@@ -1661,7 +1661,7 @@ Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const Q
     rvh->GetWidget()->DragTargetDragOver(toGfx(m_lastDragClientPos), toGfx(m_lastDragScreenPos), toWeb(e->possibleActions()),
                                          toWeb(e->mouseButtons()) | toWeb(e->keyboardModifiers()));
     waitForUpdateDragActionCalled();
-    return toQt(blink::WebDragOperation(m_currentDropAction));
+    return toQt(blink::DragOperation(m_currentDropAction));
 }
 
 void WebContentsAdapter::waitForUpdateDragActionCalled()
@@ -1694,7 +1694,7 @@ void WebContentsAdapter::updateDragAction(int action)
 {
     CHECK_INITIALIZED();
     m_updateDragActionCalled = true;
-    m_currentDropAction = static_cast<blink::WebDragOperation>(action);
+    m_currentDropAction = static_cast<blink::DragOperation>(action);
 }
 
 void WebContentsAdapter::endDragging(QDropEvent *e, const QPointF &screenPos)

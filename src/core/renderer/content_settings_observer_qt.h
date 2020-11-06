@@ -67,10 +67,9 @@ public:
     ~ContentSettingsObserverQt() override;
 
     // blink::WebContentSettingsClient:
-    bool AllowDatabase() override;
-    void RequestFileSystemAccessAsync(base::OnceCallback<void(bool)> callback) override;
-    bool AllowIndexedDB() override;
-    bool AllowStorage(bool local) override;
+    void AllowStorageAccess(StorageType storage_type,
+                            base::OnceCallback<void(bool)> callback) override;
+    bool AllowStorageAccessSync(StorageType storage_type) override;
 
 private:
     // RenderFrameObserver implementation:
@@ -79,13 +78,13 @@ private:
     void OnDestruct() override;
 
     // Message handlers.
-    void OnRequestFileSystemAccessAsyncResponse(int request_id, bool allowed);
+    void OnRequestStorageAccessAsyncResponse(int request_id, bool allowed);
 
     // Clears m_cachedStoragePermissions
     void ClearBlockedContentSettings();
 
     // Caches the result of AllowStorage.
-    using StoragePermissionsKey = std::pair<GURL, bool>;
+    using StoragePermissionsKey = std::pair<GURL, int>;
     base::flat_map<StoragePermissionsKey, bool> m_cachedStoragePermissions;
 
     int m_currentRequestId;

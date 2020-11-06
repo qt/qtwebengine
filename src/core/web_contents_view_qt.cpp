@@ -236,23 +236,23 @@ void WebContentsViewQt::ShowContextMenu(content::RenderFrameHost *, const conten
     m_client->contextMenuRequested(contextMenuData);
 }
 
-Qt::DropActions toQtDropActions(blink::WebDragOperationsMask ops)
+static Qt::DropActions toQtDropActions(blink::DragOperationsMask ops)
 {
     Qt::DropActions result;
-    if (ops & blink::kWebDragOperationCopy)
+    if (ops & blink::kDragOperationCopy)
         result |= Qt::CopyAction;
-    if (ops & blink::kWebDragOperationLink)
+    if (ops & blink::kDragOperationLink)
         result |= Qt::LinkAction;
-    if (ops & blink::kWebDragOperationMove || ops & blink::kWebDragOperationDelete)
+    if (ops & blink::kDragOperationMove || ops & blink::kDragOperationDelete)
         result |= Qt::MoveAction;
     return result;
 }
 
 void WebContentsViewQt::StartDragging(const content::DropData &drop_data,
-                                      blink::WebDragOperationsMask allowed_ops,
+                                      blink::DragOperationsMask allowed_ops,
                                       const gfx::ImageSkia &image,
                                       const gfx::Vector2d &image_offset,
-                                      const content::DragEventSourceInfo &event_info,
+                                      const blink::mojom::DragEventSourceInfo &event_info,
                                       content::RenderWidgetHostImpl* source_rwh)
 {
 #if QT_CONFIG(draganddrop)
@@ -276,7 +276,7 @@ void WebContentsViewQt::StartDragging(const content::DropData &drop_data,
 #endif // QT_CONFIG(draganddrop)
 }
 
-void WebContentsViewQt::UpdateDragCursor(blink::WebDragOperation dragOperation)
+void WebContentsViewQt::UpdateDragCursor(blink::DragOperation dragOperation)
 {
 #if QT_CONFIG(draganddrop)
     m_client->webContentsAdapter()->updateDragAction(dragOperation);

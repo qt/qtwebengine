@@ -51,7 +51,7 @@
 #ifndef CUSTOM_URL_LOADER_FACTORY_H_
 #define CUSTOM_URL_LOADER_FACTORY_H_
 
-#include <memory>
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace network {
 namespace mojom {
@@ -62,7 +62,7 @@ class URLLoaderFactory;
 namespace QtWebEngineCore {
 class ProfileAdapter;
 
-std::unique_ptr<network::mojom::URLLoaderFactory> CreateCustomURLLoaderFactory(ProfileAdapter *profileAdapter);
+mojo::PendingRemote<network::mojom::URLLoaderFactory> CreateCustomURLLoaderFactory(ProfileAdapter *profileAdapter);
 
 } // namespace QtWebEngineCore
 

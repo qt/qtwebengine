@@ -62,7 +62,6 @@
 
 #if defined(USE_AURA) && !defined(USE_OZONE)
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/platform_font.h"
 #endif
@@ -194,7 +193,7 @@ void GrabViewSnapshotAsync(gfx::NativeView view,
 } // namespace ui
 #endif // defined(USE_AURA)
 
-std::unique_ptr<ui::OSExchangeDataProvider>
-ui::OSExchangeDataProviderFactory::CreateProvider() {
+std::unique_ptr<ui::OSExchangeDataProvider> ui::OSExchangeDataProviderFactory::CreateProvider()
+{
     return nullptr;
 }

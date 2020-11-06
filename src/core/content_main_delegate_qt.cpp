@@ -57,7 +57,7 @@
 #include "net/grit/net_resources.h"
 #include "net/base/net_module.h"
 #include "sandbox/policy/switches.h"
-#include "services/service_manager/embedder/switches.h"
+#include "services/service_manager/switches.h"
 #include "url/url_util_qt.h"
 
 #include "content_client_qt.h"
@@ -83,7 +83,7 @@
 #include "media/gpu/windows/media_foundation_video_encode_accelerator_win.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "content/public/common/content_features.h"
 #include "media/gpu/mac/vt_video_decode_accelerator_mac.h"
 #endif
@@ -217,7 +217,7 @@ void ContentMainDelegateQt::PreSandboxStartup()
     media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     if (base::FeatureList::IsEnabled(features::kMacV2GPUSandbox)) {
         TRACE_EVENT0("gpu", "Initialize VideoToolbox");
         media::InitializeVideoToolbox();

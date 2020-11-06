@@ -42,7 +42,6 @@
 
 #include "base/callback.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "content/public/common/webplugininfo.h"
 
 class GURL;
 class Profile;
@@ -59,39 +58,33 @@ public:
 private:
     bool OnMessageReceived(const IPC::Message& message) override;
 
-    void OnAllowDatabase(int render_frame_id,
-                         const GURL &origin_url,
-                         const GURL &top_origin_url,
-                         bool *allowed);
 
-    void OnAllowDOMStorage(int render_frame_id,
-                           const GURL &origin_url,
-                           const GURL &top_origin_url,
-                           bool local,
-                           bool *allowed);
+    void OnAllowStorageAccess(int render_frame_id,
+                              const GURL &origin_url,
+                              const GURL &top_origin_url,
+                              int storage_type,
+                              bool *allowed);
 
-    void OnAllowIndexedDB(int render_frame_id,
-                          const GURL &origin_url,
-                          const GURL &top_origin_url,
-                          bool *allowed);
-
-    void OnRequestFileSystemAccessSync(int render_frame_id,
-                                       const GURL &origin_url,
-                                       const GURL &top_origin_url,
-                                       IPC::Message *message);
-    void OnRequestFileSystemAccessAsync(int render_frame_id,
-                                        int request_id,
-                                        const GURL &origin_url,
-                                        const GURL &top_origin_url);
-    void OnRequestFileSystemAccessSyncResponse(IPC::Message *reply_msg,
-                                               bool allowed);
-    void OnRequestFileSystemAccessAsyncResponse(int render_frame_id,
-                                                int request_id,
-                                                bool allowed);
-    void OnRequestFileSystemAccess(int render_frame_id,
-                                   const GURL &origin_url,
-                                   const GURL &top_origin_url,
-                                   base::Callback<void(bool)> callback);
+    void OnRequestStorageAccessSync(int render_frame_id,
+                                    const GURL &origin_url,
+                                    const GURL &top_origin_url,
+                                    int storage_type,
+                                    IPC::Message *message);
+    void OnRequestStorageAccessAsync(int render_frame_id,
+                                     int request_id,
+                                     const GURL &origin_url,
+                                     const GURL &top_origin_url,
+                                     int storage_type);
+    void OnRequestStorageAccessSyncResponse(IPC::Message *reply_msg,
+                                            bool allowed);
+    void OnRequestStorageAccessAsyncResponse(int render_frame_id,
+                                             int request_id,
+                                             bool allowed);
+    void OnRequestStorageAccess(int render_frame_id,
+                                const GURL &origin_url,
+                                const GURL &top_origin_url,
+                                int storage_type,
+                                base::Callback<void(bool)> callback);
 
     ProfileIODataQt *m_profileData;
 };

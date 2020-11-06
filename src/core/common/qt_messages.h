@@ -12,8 +12,12 @@
 
 #define IPC_MESSAGE_START QtMsgStart
 
-// Tells the renderer whether or not a file system access has been allowed.
-IPC_MESSAGE_ROUTED2(QtWebEngineMsg_RequestFileSystemAccessAsyncResponse,
+//-----------------------------------------------------------------------------
+// RenderView messages
+// These are messages sent from the browser to the renderer process.
+
+// Tells the renderer whether or not a storage access has been allowed.
+IPC_MESSAGE_ROUTED2(QtWebEngineMsg_RequestStorageAccessAsyncResponse,
                     int  /* request_id */,
                     bool /* allowed */)
 
@@ -27,43 +31,26 @@ IPC_MESSAGE_ROUTED0(RenderViewObserverHostQt_DidFirstVisuallyNonEmptyLayout)
 // Misc messages
 // These are messages sent from the renderer to the browser process.
 
-// Sent by the renderer process to check whether access to web databases is
-// granted by content settings.
-IPC_SYNC_MESSAGE_CONTROL3_1(QtWebEngineHostMsg_AllowDatabase,
+IPC_SYNC_MESSAGE_CONTROL4_1(QtWebEngineHostMsg_AllowStorageAccess,
                             int /* render_frame_id */,
                             GURL /* origin_url */,
                             GURL /* top origin url */,
+                            int /* storage_type */,
                             bool /* allowed */)
 
-// Sent by the renderer process to check whether access to DOM Storage is
-// granted by content settings.
-IPC_SYNC_MESSAGE_CONTROL4_1(QtWebEngineHostMsg_AllowDOMStorage,
+IPC_SYNC_MESSAGE_CONTROL4_1(QtWebEngineHostMsg_RequestStorageAccessSync,
                             int /* render_frame_id */,
                             GURL /* origin_url */,
                             GURL /* top origin url */,
-                            bool /* if true local storage, otherwise session */,
+                            int /* storage_type */,
                             bool /* allowed */)
 
-// Sent by the renderer process to check whether access to FileSystem is
+// Sent by the renderer process to check whether access to storage is
 // granted by content settings.
-IPC_SYNC_MESSAGE_CONTROL3_1(QtWebEngineHostMsg_RequestFileSystemAccessSync,
-                            int /* render_frame_id */,
-                            GURL /* origin_url */,
-                            GURL /* top origin url */,
-                            bool /* allowed */)
-
-// Sent by the renderer process to check whether access to FileSystem is
-// granted by content settings.
-IPC_MESSAGE_CONTROL4(QtWebEngineHostMsg_RequestFileSystemAccessAsync,
+IPC_MESSAGE_CONTROL5(QtWebEngineHostMsg_RequestStorageAccessAsync,
                      int /* render_frame_id */,
                      int /* request_id */,
                      GURL /* origin_url */,
-                     GURL /* top origin url */)
+                     GURL /* top origin url */,
+                     int /* storage_type */)
 
-// Sent by the renderer process to check whether access to Indexed DB is
-// granted by content settings.
-IPC_SYNC_MESSAGE_CONTROL3_1(QtWebEngineHostMsg_AllowIndexedDB,
-                            int /* render_frame_id */,
-                            GURL /* origin_url */,
-                            GURL /* top origin url */,
-                            bool /* allowed */)

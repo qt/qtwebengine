@@ -88,7 +88,8 @@ public:
     gl::GLShareGroup* GetInProcessGpuShareGroup() override;
     content::MediaObserver* GetMediaObserver() override;
     scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext() override;
-    void OverrideWebkitPrefs(content::RenderViewHost *, content::WebPreferences *) override;
+    void OverrideWebkitPrefs(content::RenderViewHost *render_view_host,
+                             blink::web_pref::WebPreferences *prefs) override;
     void AllowCertificateError(content::WebContents *web_contents,
                                int cert_error,
                                const net::SSLInfo &ssl_info,
@@ -235,6 +236,7 @@ public:
                                     URLLoaderFactoryType type,
                                     const url::Origin &request_initiator,
                                     base::Optional<int64_t> navigation_id,
+                                    base::UkmSourceId ukm_source_id,
                                     mojo::PendingReceiver<network::mojom::URLLoaderFactory> *factory_receiver,
                                     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient> *header_client,
                                     bool *bypass_redirect_checks,
@@ -250,9 +252,12 @@ public:
                                        network::mojom::CertVerifierCreationParams *cert_verifier_creation_params) override;
 
     std::vector<base::FilePath> GetNetworkContextsParentDirectory() override;
-    void RegisterNonNetworkNavigationURLLoaderFactories(int frame_tree_node_id, base::UkmSourceId ukm_source_id, NonNetworkURLLoaderFactoryMap *factories) override;
+    void RegisterNonNetworkNavigationURLLoaderFactories(int frame_tree_node_id, base::UkmSourceId ukm_source_id,
+                                                        NonNetworkURLLoaderFactoryDeprecatedMap *uniquely_owned_factories,
+                                                        NonNetworkURLLoaderFactoryMap *factories) override;
     void RegisterNonNetworkSubresourceURLLoaderFactories(int render_process_id, int render_frame_id,
-                                                         NonNetworkURLLoaderFactoryMap* factories) override;
+                                                         NonNetworkURLLoaderFactoryDeprecatedMap *uniquely_owned_factories,
+                                                         NonNetworkURLLoaderFactoryMap *factories) override;
     void RegisterNonNetworkWorkerMainResourceURLLoaderFactories(content::BrowserContext* browser_context,
                                                                 NonNetworkURLLoaderFactoryMap* factories) override;
 

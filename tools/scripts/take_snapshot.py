@@ -220,6 +220,7 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('ui/file_manager')
             or file_path.startswith('ui/gfx/chromeos')
         ))
+        or '/android/java/' in file_path
         or ('/fuzz' in file_path
           and ('/fuzz/' in file_path
             or '/fuzzer/' in file_path

@@ -201,6 +201,19 @@ defineTest(qtConfTest_detectNodeJS) {
             return(false)
         }
     }
+    nodejs = $$system_quote($$system_path($$nodejs))
+    !qtRunLoggedCommand("$$nodejs --version", version) {
+        qtLog("'$$nodejs' didn't run.")
+        return(false)
+    }
+    # at least version 10
+    version10 = false
+    contains(version, "v([1-9][0-9])\..*"): version10 = true
+
+    $${1}.version10 = $$version10
+    export($${1}.version10)
+    $${1}.cache += version10
+    export($${1}.cache)
     return(true)
 }
 

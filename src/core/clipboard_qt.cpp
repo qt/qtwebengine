@@ -51,6 +51,7 @@
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/clipboard/clipboard_data_endpoint.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
 
 #include <QGuiApplication>
@@ -326,6 +327,25 @@ void ClipboardQt::ReadBookmark(const ui::ClipboardDataEndpoint *data_dst, base::
     NOTIMPLEMENTED();
 }
 
+void ClipboardQt::ReadSvg(ui::ClipboardBuffer clipboard_type,
+                          const ui::ClipboardDataEndpoint *,
+                          base::string16 *result) const
+{
+    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(
+            clipboard_type == ui::ClipboardBuffer::kCopyPaste ? QClipboard::Clipboard : QClipboard::Selection);
+    if (!mimeData)
+        return;
+    const QByteArray svgData = mimeData->data(QString::fromLatin1(ui::kMimeTypeSvg));
+    if (!svgData.isEmpty())
+        *result = toString16(QString::fromUtf8(svgData));
+}
+
+void ClipboardQt::WriteSvg(const char *svg_data, size_t data_len)
+{
+    getUncommittedData()->setData(QString::fromLatin1(ui::kMimeTypeSvg),
+                                  QByteArray(svg_data, data_len));
+}
+
 void ClipboardQt::ReadData(const ui::ClipboardFormatType &format,
                            const ui::ClipboardDataEndpoint *data_dst,
                            std::string *result) const
@@ -343,10 +363,6 @@ uint64_t ClipboardQt::GetSequenceNumber(ui::ClipboardBuffer type) const
                                                                                                 : QClipboard::Selection);
 }
 
-void ClipboardQt::SetClipboardDlpController(std::unique_ptr<ui::ClipboardDlpController>)
-{
-    NOTIMPLEMENTED();
-}
 
 #if defined(USE_OZONE)
 bool ClipboardQt::IsSelectionBufferAvailable() const
@@ -367,6 +383,8 @@ std::vector<base::string16> ClipboardQt::ReadAvailablePlatformSpecificFormatName
         types.push_back(base::UTF8ToUTF16(ui::ClipboardFormatType::GetRtfType().GetName()));
     if (IsFormatAvailable(ui::ClipboardFormatType::GetBitmapType(), buffer, data_dst))
         types.push_back(base::UTF8ToUTF16(ui::kMimeTypePNG));
+    if (IsFormatAvailable(ui::ClipboardFormatType::GetSvgType(), buffer, data_dst))
+        types.push_back(base::UTF8ToUTF16(ui::kMimeTypeSvg));
 
     return types;
 }

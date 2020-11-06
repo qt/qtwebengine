@@ -68,6 +68,12 @@
                 { "type": "pkgConfig", "args": "x11" }
             ]
         },
+        "webengine-xproto-gl": {
+            "label": "xproto (glproto)",
+            "sources": [
+                { "type": "pkgConfig", "args": "glproto" }
+            ]
+        },
         "webengine-glib": {
             "label": "glib-2.0 >= 2.32.0",
             "sources": [
@@ -155,9 +161,9 @@
             ]
         },
         "webengine-icu": {
-            "label": "icu >= 64",
+            "label": "icu >= 65",
             "sources": [
-                { "type": "pkgConfig", "args": "icu-uc >= 64 icu-i18n >= 64" }
+                { "type": "pkgConfig", "args": "icu-uc >= 65 icu-i18n >= 65" }
             ]
         },
         "webengine-webp": {
@@ -238,10 +244,11 @@
                     "vpx_codec_cx_pkt pkt;",
                     "pkt.data.frame.width[0] = 0u;",
                     "pkt.data.frame.height[0] = 0u;",
-                    "auto a = CONSTRAINED_FROM_ABOVE_DROP;"
+                    "auto a = CONSTRAINED_FROM_ABOVE_DROP;",
+                    "auto b = VPX_IMG_FMT_NV12;"
                 ]
             },
-            "headers": [ "vpx/vpx_encoder.h", "vpx/vp8cx.h" ],
+            "headers": [ "vpx/vpx_encoder.h", "vpx/vp8cx.h", "vpx/vpx_image.h" ],
             "sources": [
                 { "type": "pkgConfig", "args": "vpx" },
                 "-lvpx"
@@ -357,6 +364,11 @@
             "label": "linker supports -z noexecstack",
             "type": "linkerSupportsFlag",
             "flag": "-z,noexecstack"
+        },
+        "webengine-nodejs": {
+            "label": "node.js",
+            "type": "detectNodeJS",
+            "log": "version10"
         }
     },
     "features": {
@@ -373,6 +385,7 @@
                          && features.webengine-bison
                          && features.webengine-flex
                          && features.webengine-python2
+                         && features.webengine-nodejs
                          && (!config.sanitizer || features.webengine-sanitizer)
                          && (!config.linux || features.pkg-config)
                          && (!config.linux || features.webengine-host-pkg-config)
@@ -443,6 +456,16 @@
             "condition": "tests.webengine-flex",
             "output": [ "privateFeature" ]
         },
+        "webengine-nodejs": {
+            "label": "node.js",
+            "condition": "tests.webengine-nodejs",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-nodejs10": {
+            "label": "node.js",
+            "condition": "tests.webengine-nodejs && tests.webengine-nodejs.version10",
+            "output": [ "privateFeature" ]
+        },
         "webengine-system-ninja": {
             "label": "Use System Ninja",
             "condition": "tests.webengine-ninja",
@@ -509,6 +532,11 @@
             "condition": "config.unix && libs.webengine-x11",
             "output": [ "privateFeature" ]
         },
+        "webengine-system-xproto-gl" : {
+            "label": "xproto (glproto)",
+            "condition": "config.unix && libs.webengine-xproto-gl",
+            "output": [ "privateFeature" ]
+        },
         "webengine-host-pkg-config": {
             "label": "host-pkg-config",
             "condition": "config.unix && tests.webengine-host-pkg-config",
@@ -525,6 +553,7 @@
                           && features.webengine-system-xcomposite
                           && features.webengine-system-xcursor
                           && features.webengine-system-xi
+                          && features.webengine-system-xproto-gl
                           && features.webengine-system-xtst",
              "output": [ "privateFeature" ]
         },
@@ -781,6 +810,7 @@
                         "webengine-system-xcomposite",
                         "webengine-system-xcursor",
                         "webengine-system-xi",
+                        "webengine-system-xproto-gl",
                         "webengine-system-xtst"
                      ]
                 },

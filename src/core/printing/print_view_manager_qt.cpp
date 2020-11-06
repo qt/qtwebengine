@@ -37,6 +37,7 @@
 **
 ****************************************************************************/
 
+// Loosely based on print_view_manager.cc and print_preview_message_handler.cc
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE.Chromium file.
@@ -56,13 +57,13 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/common/web_preferences.h"
 #include "printing/metafile_skia.h"
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
@@ -276,12 +277,6 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
     return true;
 }
 
-// PrintedPagesSource implementation.
-base::string16 PrintViewManagerQt::RenderSourceName()
-{
-    return base::string16();
-}
-
 PrintViewManagerQt::PrintViewManagerQt(content::WebContents *contents)
     : PrintViewManagerBaseQt(contents)
     , m_printPreviewRfh(nullptr)
@@ -296,7 +291,6 @@ bool PrintViewManagerQt::OnMessageReceived(const IPC::Message& message,
     FrameDispatchHelper helper = {this, render_frame_host};
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(PrintViewManagerQt, message, render_frame_host);
-        IPC_MESSAGE_HANDLER(PrintHostMsg_DidShowPrintDialog, OnDidShowPrintDialog)
         IPC_MESSAGE_HANDLER(PrintHostMsg_RequestPrintPreview, OnRequestPrintPreview)
         IPC_MESSAGE_HANDLER(PrintHostMsg_MetafileReadyForPrinting, OnMetafileReadyForPrinting);
         IPC_MESSAGE_HANDLER(PrintHostMsg_DidPreviewPage, OnDidPreviewPage)
@@ -356,7 +350,7 @@ void PrintViewManagerQt::OnRequestPrintPreview(
 
 void PrintViewManagerQt::OnMetafileReadyForPrinting(content::RenderFrameHost* rfh,
                                                     const printing::mojom::DidPreviewDocumentParams& params,
-                                                    const PrintHostMsg_PreviewIds &ids)
+                                                    const printing::mojom::PreviewIds &ids)
 {
     StopWorker(params.document_cookie);
 
@@ -376,10 +370,6 @@ void PrintViewManagerQt::OnMetafileReadyForPrinting(content::RenderFrameHost* rf
         base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
                        base::BindOnce(&SavePdfFile, data_bytes, pdfOutputPath, pdf_save_callback));
     }
-}
-
-void PrintViewManagerQt::OnDidShowPrintDialog()
-{
 }
 
 // content::WebContentsObserver implementation.
@@ -411,7 +401,7 @@ void PrintViewManagerQt::RenderProcessGone(base::TerminationStatus status)
 
 void PrintViewManagerQt::OnDidPreviewPage(content::RenderFrameHost* rfh,
                                           const printing::mojom::DidPreviewPageParams &params,
-                                          const PrintHostMsg_PreviewIds& ids)
+                                          const printing::mojom::PreviewIds& ids)
 {
     // just consume the message, this is just for sending 'page-preview-ready' for webui
 }

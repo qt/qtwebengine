@@ -45,7 +45,7 @@
 #include "web_contents_adapter.h"
 #include "web_contents_adapter_client.h"
 
-#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "ui/gfx/geometry/size_conversions.h"
 

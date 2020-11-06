@@ -200,16 +200,6 @@ bool ExtensionsRendererClientQt::ShouldFork(blink::WebLocalFrame *frame,
     return false; // TODO: Fix this to a sensible value
 }
 
-content::BrowserPluginDelegate *ExtensionsRendererClientQt::CreateBrowserPluginDelegate(content::RenderFrame *render_frame,
-                                                                                        const content::WebPluginInfo &info,
-                                                                                        const std::string &mime_type,
-                                                                                        const GURL &original_url)
-{
-    if (mime_type == content::kBrowserPluginMimeType)
-        return new extensions::ExtensionsGuestViewContainer(render_frame);
-    return new extensions::MimeHandlerViewContainer(render_frame, info, mime_type, original_url);
-}
-
 void ExtensionsRendererClientQt::RunScriptsAtDocumentStart(content::RenderFrame *render_frame)
 {
     extension_dispatcher_->RunScriptsAtDocumentStart(render_frame);

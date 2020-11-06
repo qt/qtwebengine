@@ -40,7 +40,7 @@
 #ifndef WEB_CONTENTS_DELEGATE_QT_H
 #define WEB_CONTENTS_DELEGATE_QT_H
 
-#include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -58,12 +58,17 @@
 QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
 QT_FORWARD_DECLARE_CLASS(ClientCertSelectController)
 
+namespace blink {
+    namespace web_pref {
+        struct WebPreferences;
+    }
+}
+
 namespace content {
     class ColorChooser;
     class SiteInstance;
     class JavaScriptDialogManager;
     class WebContents;
-    struct WebPreferences;
     struct ColorSuggestion;
 }
 
@@ -172,7 +177,7 @@ public:
     bool ShouldNavigateOnBackForwardMouseButtons() override;
 
     void didFailLoad(const QUrl &url, int errorCode, const QString &errorDescription);
-    void overrideWebPreferences(content::WebContents *, content::WebPreferences*);
+    void overrideWebPreferences(content::WebContents *, blink::web_pref::WebPreferences*);
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &);
     void selectClientCert(const QSharedPointer<ClientCertSelectController> &);
     void requestFeaturePermission(ProfileAdapter::PermissionType feature, const QUrl &requestingOrigin);

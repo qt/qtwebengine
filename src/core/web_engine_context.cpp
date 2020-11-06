@@ -92,6 +92,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/service_manager/switches.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "third_party/blink/public/common/features.h"
@@ -537,7 +538,7 @@ WebEngineContext::WebEngineContext()
 #endif
 
     base::ThreadPoolInstance::Create("Browser");
-    m_contentRunner.reset(content::ContentMainRunner::Create());
+    m_contentRunner = content::ContentMainRunner::Create();
     m_browserRunner = content::BrowserMainRunner::Create();
 
 #ifdef Q_OS_LINUX
@@ -656,9 +657,6 @@ WebEngineContext::WebEngineContext()
     appendToFeatureList(disableFeatures, features::kWebPayments.name);
     appendToFeatureList(disableFeatures, features::kWebUsb.name);
     appendToFeatureList(disableFeatures, media::kPictureInPicture.name);
-
-    // Breaks current colordialog tests.
-    appendToFeatureList(disableFeatures, features::kFormControlsRefresh.name);
 
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc

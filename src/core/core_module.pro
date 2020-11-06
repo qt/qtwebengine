@@ -41,7 +41,11 @@ QMAKE_INFO_PLIST = Info_mac.plist
 # and doesn't let Chromium get access to libc symbols through dlsym.
 CONFIG -= bsymbolic_functions
 
-linux:qtConfig(separate_debug_info): QMAKE_POST_LINK="cd $(DESTDIR) && $(STRIP) --strip-unneeded $(TARGET)"
+linux {
+    QMAKE_LINK="ulimit -n 4096 && $$QMAKE_LINK"
+    QMAKE_LINK_SHLIB="ulimit -n 4096 && $$QMAKE_LINK_SHLIB"
+    qtConfig(separate_debug_info): QMAKE_POST_LINK="cd $(DESTDIR) && $(STRIP) --strip-unneeded $(TARGET)"
+}
 
 REPACK_DIR = $$OUT_PWD/$$getConfigDir()
 

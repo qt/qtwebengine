@@ -14,24 +14,25 @@ gn_args += \
     enable_nacl=false \
     enable_remoting=false \
     enable_reporting=false \
-    enable_resource_whitelist_generation=false \
+    enable_resource_allowlist_generation=false \
     enable_swiftshader=false \
+    enable_swiftshader_vulkan=false \
     angle_enable_swiftshader=false \
-    enable_web_auth=true \
     enable_web_speech=false \
     enable_widevine=true \
     forbid_non_component_debug_builds=false \
     has_native_accessibility=false \
     safe_browsing_mode=0 \
+    skia_use_dawn=false \
     toolkit_views=false \
     treat_warnings_as_errors=false \
     use_allocator_shim=false \
     use_allocator=\"none\" \
-    use_custom_libcxx=false
+    use_custom_libcxx=false \
+    chrome_pgo_phase=0
 
 # No closure compile supported at this time
 gn_args += \
-    closure_compile=false \
     optimize_webui=false
 
 # We always embed v8 startup data currently

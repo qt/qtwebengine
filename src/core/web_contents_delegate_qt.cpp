@@ -65,7 +65,7 @@
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/web_cache/browser/web_cache_manager.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -79,7 +79,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/web_preferences.h"
 #include "net/base/data_url.h"
 #include "net/base/url_util.h"
 
@@ -372,6 +371,9 @@ void WebContentsDelegateQt::EmitLoadStarted(const QUrl &url, bool isErrorPage)
 
 void WebContentsDelegateQt::DidStartNavigation(content::NavigationHandle *navigation_handle)
 {
+    if (!webEngineSettings()->testAttribute(WebEngineSettings::ErrorPageEnabled))
+        navigation_handle->SetSilentlyIgnoreErrors();
+
     if (!navigation_handle->IsInMainFrame())
         return;
 
@@ -694,7 +696,7 @@ void WebContentsDelegateQt::RequestToLockMouse(content::WebContents *web_content
         m_viewClient->runMouseLockPermissionRequest(toQt(web_contents->GetLastCommittedURL().GetOrigin()));
 }
 
-void WebContentsDelegateQt::overrideWebPreferences(content::WebContents *webContents, content::WebPreferences *webPreferences)
+void WebContentsDelegateQt::overrideWebPreferences(content::WebContents *webContents, blink::web_pref::WebPreferences *webPreferences)
 {
     m_viewClient->webEngineSettings()->overrideWebPreferences(webContents, webPreferences);
 }

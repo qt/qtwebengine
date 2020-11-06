@@ -78,7 +78,7 @@
 #include <QOpenGLContext>
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/message_loop/message_pump_mac.h"
 #include "ui/base/idle/idle.h"
 #endif
@@ -225,7 +225,7 @@ std::unique_ptr<base::MessagePump> messagePumpFactory()
         madePrimaryPump = true;
         return std::make_unique<MessagePumpForUIQt>();
     }
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     return base::MessagePumpMac::Create();
 #else
     return std::make_unique<base::MessagePumpForUI>();
@@ -268,7 +268,7 @@ int BrowserMainPartsQt::PreCreateThreads()
 {
     base::ThreadRestrictions::SetIOAllowed(true);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     ui::InitIdleMonitor();
 #endif
 

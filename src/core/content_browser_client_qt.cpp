@@ -96,6 +96,7 @@
 #include "sandbox/policy/switches.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
+#include "services/service_manager/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "storage/browser/quota/quota_settings.h"
@@ -378,7 +379,7 @@ content::MediaObserver *ContentBrowserClientQt::GetMediaObserver()
     return MediaCaptureDevicesDispatcher::GetInstance();
 }
 
-void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, content::WebPreferences *web_prefs)
+void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, blink::web_pref::WebPreferences *web_prefs)
 {
     if (content::WebContents *webContents = rvh->GetDelegate()->GetAsWebContents()) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -493,7 +494,7 @@ void ContentBrowserClientQt::AppendExtraCommandLineSwitches(base::CommandLine* c
     url::CustomScheme::SaveSchemes(command_line);
 
     std::string processType = command_line->GetSwitchValueASCII(switches::kProcessType);
-    if (processType == service_manager::switches::kZygoteProcess)
+    if (processType == switches::kZygoteProcess)
         command_line->AppendSwitchASCII(switches::kLang, GetApplicationLocale());
 }
 
@@ -1095,8 +1096,10 @@ std::vector<base::FilePath> ContentBrowserClientQt::GetNetworkContextsParentDire
 
 void ContentBrowserClientQt::RegisterNonNetworkNavigationURLLoaderFactories(int frame_tree_node_id,
                                                                             base::UkmSourceId ukm_source_id,
+                                                                            NonNetworkURLLoaderFactoryDeprecatedMap *uniquely_owned_factories,
                                                                             NonNetworkURLLoaderFactoryMap *factories)
 {
+    Q_UNUSED(uniquely_owned_factories);
     content::WebContents *web_contents = content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
     Profile *profile = Profile::FromBrowserContext(web_contents->GetBrowserContext());
     ProfileAdapter *profileAdapter = static_cast<ProfileQt *>(profile)->profileAdapter();
@@ -1123,8 +1126,10 @@ void ContentBrowserClientQt::RegisterNonNetworkWorkerMainResourceURLLoaderFactor
 }
 
 void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int render_process_id, int render_frame_id,
+                                                                             NonNetworkURLLoaderFactoryDeprecatedMap *uniquely_owned_factories,
                                                                              NonNetworkURLLoaderFactoryMap *factories)
 {
+    Q_UNUSED(uniquely_owned_factories);
     content::RenderProcessHost *process_host = content::RenderProcessHost::FromID(render_process_id);
     Profile *profile = Profile::FromBrowserContext(process_host->GetBrowserContext());
     ProfileAdapter *profileAdapter = static_cast<ProfileQt *>(profile)->profileAdapter();
@@ -1190,9 +1195,9 @@ void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int
     }
     if (!allowed_webui_hosts.empty()) {
         factories->emplace(content::kChromeUIScheme,
-                           content::CreateWebUIURLLoader(frame_host,
-                                                         content::kChromeUIScheme,
-                                                         std::move(allowed_webui_hosts)));
+                           content::CreateWebUIURLLoaderFactory(frame_host,
+                                                                content::kChromeUIScheme,
+                                                                std::move(allowed_webui_hosts)));
     }
 #endif
 }
@@ -1204,6 +1209,7 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
         URLLoaderFactoryType type,
         const url::Origin &request_initiator,
         base::Optional<int64_t> navigation_id,
+        base::UkmSourceId ukm_source_id,
         mojo::PendingReceiver<network::mojom::URLLoaderFactory> *factory_receiver,
         mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient> *header_client,
         bool *bypass_redirect_checks,

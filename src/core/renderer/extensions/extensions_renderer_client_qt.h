@@ -108,10 +108,6 @@ public:
                            bool is_initial_navigation,
                            bool is_server_redirect,
                            bool *send_referrer);
-    static content::BrowserPluginDelegate *CreateBrowserPluginDelegate(content::RenderFrame *render_frame,
-                                                                       const content::WebPluginInfo &info,
-                                                                       const std::string &mime_type,
-                                                                       const GURL &original_url);
 
     bool ExtensionAPIEnabledForServiceWorkerScript(const GURL &scope, const GURL &script_url) const override;
 

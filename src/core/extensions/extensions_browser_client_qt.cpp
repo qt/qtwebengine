@@ -111,29 +111,13 @@ scoped_refptr<base::RefCountedMemory> GetResource(int resource_id, const std::st
                       extension_id)
             : nullptr;
 
-    bool is_gzipped = rb.IsGzipped(resource_id);
-    if (!bytes->size() || (!replacements && !is_gzipped)) {
-        return bytes;
-    }
-
-    base::StringPiece input(reinterpret_cast<const char *>(bytes->front()), bytes->size());
-
-    std::string temp_str;
-
-    base::StringPiece source = input;
-    if (is_gzipped) {
-        temp_str.resize(compression::GetUncompressedSize(input));
-        source = temp_str;
-        CHECK(compression::GzipUncompress(input, source));
-    }
-
     if (replacements) {
-        temp_str = ui::ReplaceTemplateExpressions(source, *replacements);
+        base::StringPiece input(reinterpret_cast<const char *>(bytes->front()), bytes->size());
+        std::string temp_str = ui::ReplaceTemplateExpressions(input, *replacements);
+        DCHECK(!temp_str.empty());
+        return base::RefCountedString::TakeString(&temp_str);
     }
-
-    DCHECK(!temp_str.empty());
-
-    return base::RefCountedString::TakeString(&temp_str);
+    return bytes;
 }
 
 // Loads an extension resource in a Chrome .pak file. These are used by

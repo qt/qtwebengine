@@ -54,7 +54,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "services/service_manager/embedder/switches.h"
+#include "services/service_manager/switches.h"
 #include "type_conversion.h"
 
 #include <QCoreApplication>
@@ -71,7 +71,7 @@
 
 // File name of the CDM on different platforms.
 const char kWidevineCdmFileName[] =
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     "widevinecdm.plugin";
 #elif defined(OS_WIN)
     "widevinecdm.dll";

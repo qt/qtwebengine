@@ -102,6 +102,7 @@ class RenderWidgetHostViewQt
     , public RenderWidgetHostViewQtDelegateClient
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
     , public content::TextInputManager::Observer
+    , public content::RenderFrameMetadataProvider::Observer
     , public DisplayConsumer
 {
 public:
@@ -164,7 +165,8 @@ public:
                                 blink::mojom::InputEventResultState ack_result) override;
     viz::SurfaceId GetCurrentSurfaceId() const override;
     const viz::FrameSinkId &GetFrameSinkId() const override;
-    const viz::LocalSurfaceIdAllocation &GetLocalSurfaceIdAllocation() const override;
+    const viz::LocalSurfaceId &GetLocalSurfaceId() const;
+
     void TakeFallbackContentFrom(content::RenderWidgetHostView *view) override;
     void EnsureSurfaceSynchronizedForWebTest() override;
     uint32_t GetCaptureSequenceNumber() const override;
@@ -207,11 +209,12 @@ public:
 
     template<class T> void handlePointerEvent(T*);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     void SetActive(bool active) override { QT_NOT_YET_IMPLEMENTED }
     void SpeakSelection() override { QT_NOT_YET_IMPLEMENTED }
     void ShowDefinitionForSelection() override { QT_NOT_YET_IMPLEMENTED }
-#endif // defined(OS_MACOSX)
+    void SetWindowFrameInScreen(const gfx::Rect&) override { QT_NOT_YET_IMPLEMENTED }
+#endif // defined(OS_MAC)
 
     // Overridden from content::BrowserAccessibilityDelegate
     content::BrowserAccessibilityManager* CreateBrowserAccessibilityManager(content::BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
@@ -221,6 +224,9 @@ public:
 
     // Overridden from content::RenderFrameMetadataProvider::Observer
     void OnRenderFrameMetadataChangedAfterActivation() override;
+    void OnRenderFrameMetadataChangedBeforeActivation(const cc::RenderFrameMetadata &) override {}
+    void OnRenderFrameSubmission() override {}
+    void OnLocalSurfaceIdChanged(const cc::RenderFrameMetadata &) override {}
 
     // Overridden from DisplayConsumer
     void scheduleUpdate() override;
@@ -244,7 +250,7 @@ private:
 
     void selectionChanged();
 
-    void synchronizeVisualProperties(const base::Optional<viz::LocalSurfaceIdAllocation> &childSurfaceId);
+    void synchronizeVisualProperties(const base::Optional<viz::LocalSurfaceId> &childSurfaceId);
 
     void callUpdate();
 

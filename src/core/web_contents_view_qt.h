@@ -106,17 +106,17 @@ public:
 
     void FocusThroughTabTraversal(bool reverse) override;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     bool CloseTabAfterEventTrackingIfNeeded() override { QT_NOT_YET_IMPLEMENTED return false; }
-#endif // defined(OS_MACOSX)
+#endif // defined(OS_MAC)
 
     // content::RenderViewHostDelegateView overrides:
-    void StartDragging(const content::DropData& drop_data, blink::WebDragOperationsMask allowed_ops,
+    void StartDragging(const content::DropData& drop_data, blink::DragOperationsMask allowed_ops,
                        const gfx::ImageSkia& image, const gfx::Vector2d& image_offset,
-                       const content::DragEventSourceInfo& event_info,
-                       content::RenderWidgetHostImpl* source_rwh) override;
+                       const blink::mojom::DragEventSourceInfo &event_info,
+                       content::RenderWidgetHostImpl *source_rwh) override;
 
-    void UpdateDragCursor(blink::WebDragOperation dragOperation) override;
+    void UpdateDragCursor(blink::DragOperation dragOperation) override;
 
     void ShowContextMenu(content::RenderFrameHost *, const content::ContextMenuParams &params) override;
 

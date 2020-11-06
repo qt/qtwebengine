@@ -64,12 +64,12 @@ public:
     void ReadCustomData(ui::ClipboardBuffer clipboard_type, const base::string16 &type, const ui::ClipboardDataEndpoint *data_dst, base::string16 *result) const override;
     void ReadBookmark(const ui::ClipboardDataEndpoint *data_dst, base::string16 *title, std::string *url) const override;
     void ReadData(const ui::ClipboardFormatType &format, const ui::ClipboardDataEndpoint *data_dst, std::string *result) const override;
-    void SetClipboardDlpController(std::unique_ptr<ui::ClipboardDlpController>) override;
 #if defined(USE_OZONE)
     bool IsSelectionBufferAvailable() const override;
 #endif
     void OnPreShutdown() override {}
-
+    void ReadSvg(ui::ClipboardBuffer, const ui::ClipboardDataEndpoint *, base::string16 *) const override;
+    void WriteSvg(const char *, size_t) override;
     std::vector<base::string16> ReadAvailablePlatformSpecificFormatNames(ui::ClipboardBuffer buffer, const ui::ClipboardDataEndpoint *data_dst) const override;
 
 protected:

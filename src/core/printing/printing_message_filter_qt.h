@@ -46,24 +46,13 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
-#include "components/prefs/pref_member.h"
 #include "content/public/browser/browser_message_filter.h"
 
-struct PrintHostMsg_PreviewIds;
-struct PrintHostMsg_ScriptedPrint_Params;
-
-namespace base {
-class DictionaryValue;
-class FilePath;
-}
-
-namespace content {
-class WebContents;
-}
-
 namespace printing {
-class PrintJobManager;
+namespace mojom {
+class ScriptedPrintParams;
+class PreviewIds;
+}
 class PrintQueriesQueue;
 class PrinterQuery;
 }
@@ -76,28 +65,20 @@ class PrintingMessageFilterQt : public content::BrowserMessageFilter {
   PrintingMessageFilterQt(int render_process_id);
 
   // content::BrowserMessageFilter methods.
-  void OverrideThreadForMessage(const IPC::Message& message,
-                                content::BrowserThread::ID* thread) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
+  friend class base::DeleteHelper<PrintingMessageFilterQt>;
+  friend class content::BrowserThread;
+
   ~PrintingMessageFilterQt() override;
 
-  // GetPrintSettingsForRenderView must be called via PostTask and
-  // base::Bind.  Collapse the settings-specific params into a
-  // struct to avoid running into issues with too many params
-  // to base::Bind.
-  struct GetPrintSettingsForRenderViewParams;
-
-  // Get the default print setting.
-  void OnGetDefaultPrintSettings(IPC::Message* reply_msg);
-  void OnGetDefaultPrintSettingsReply(std::unique_ptr<printing::PrinterQuery> printer_query,
-                                      IPC::Message* reply_msg);
+  void OnDestruct() const override;
 
   // The renderer host have to show to the user the print dialog and returns
   // the selected print settings. The task is handled by the print worker
   // thread and the UI thread. The reply occurs on the IO thread.
-  void OnScriptedPrint(const PrintHostMsg_ScriptedPrint_Params& params,
+  void OnScriptedPrint(const printing::mojom::ScriptedPrintParams& params,
                        IPC::Message* reply_msg);
   void OnScriptedPrintReply(std::unique_ptr<printing::PrinterQuery> printer_query,
                             IPC::Message* reply_msg);
@@ -112,7 +93,7 @@ class PrintingMessageFilterQt : public content::BrowserMessageFilter {
                                   IPC::Message* reply_msg);
 
   // Check to see if print preview has been cancelled.
-  void OnCheckForCancel(const PrintHostMsg_PreviewIds& ids, bool* cancel);
+  void OnCheckForCancel(const printing::mojom::PreviewIds& ids, bool* cancel);
 
   const int render_process_id_;
 

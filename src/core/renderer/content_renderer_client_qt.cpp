@@ -74,7 +74,6 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
-#include "content/public/common/web_preferences.h"
 
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "renderer/print_web_view_helper_delegate_qt.h"
@@ -254,11 +253,6 @@ bool ContentRendererClientQt::HasErrorPage(int httpStatusCode)
     return true;
 }
 
-bool ContentRendererClientQt::ShouldSuppressErrorPage(content::RenderFrame *frame, const GURL &, int)
-{
-    return !(frame->GetWebkitPreferences().enable_error_page);
-}
-
 // To tap into the chromium localized strings. Ripped from the chrome layer (highly simplified).
 void ContentRendererClientQt::PrepareErrorPage(content::RenderFrame *renderFrame,
                                                const blink::WebURLError &web_error,
@@ -372,19 +366,6 @@ blink::WebPlugin* ContentRendererClientQt::CreatePlugin(content::RenderFrame* re
     return LoadablePluginPlaceholderQt::CreateLoadableMissingPlugin(render_frame, original_params)->plugin();
 }
 #endif  //BUILDFLAG(ENABLE_PLUGINS)
-
-content::BrowserPluginDelegate *ContentRendererClientQt::CreateBrowserPluginDelegate(content::RenderFrame *render_frame,
-                                                                                     const content::WebPluginInfo &info,
-                                                                                     const std::string &mime_type,
-                                                                                     const GURL &original_url)
-{
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    return ExtensionsRendererClientQt::GetInstance()->CreateBrowserPluginDelegate(render_frame, info, mime_type,
-                                                                                  original_url);
-#else
-    return nullptr;
-#endif
-}
 
 void ContentRendererClientQt::GetInterface(const std::string &interface_name, mojo::ScopedMessagePipeHandle interface_pipe)
 {
