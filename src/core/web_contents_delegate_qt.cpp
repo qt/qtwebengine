@@ -106,7 +106,6 @@ WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, 
     : m_viewClient(adapterClient)
     , m_faviconManager(new FaviconManager(webContents, adapterClient))
     , m_findTextHelper(new FindTextHelper(webContents, adapterClient))
-    , m_lastLoadProgress(-1)
     , m_loadingState(determineLoadingState(webContents))
     , m_didStartLoadingSeen(m_loadingState == LoadingState::Loading)
     , m_frameFocusedObserver(adapterClient)
@@ -260,14 +259,14 @@ void WebContentsDelegateQt::CloseContents(content::WebContents *source)
 
 void WebContentsDelegateQt::LoadProgressChanged(double progress)
 {
-    if (!m_loadingErrorFrameList.isEmpty())
-        return;
-    if (m_lastLoadProgress < 0) // suppress signals that aren't between loadStarted and loadFinished
+    QUrl current_url(m_viewClient->webContentsAdapter()->getNavigationEntryOriginalUrl(m_viewClient->webContentsAdapter()->currentNavigationEntryIndex()));
+    int p = qMin(qRound(progress * 100), 100);
+
+    if (!m_loadingErrorFrameList.isEmpty() || !m_loadProgressMap.contains(current_url) || m_loadProgressMap[current_url] == 100 || p ==  100)
         return;
 
-    int p = qMin(qRound(progress * 100), 100);
-    if (p > m_lastLoadProgress) { // ensure strict monotonic increase
-        m_lastLoadProgress = p;
+    if (p > m_loadProgressMap[current_url]) { // ensure strict monotonic increase
+        m_loadProgressMap[current_url] = p;
         m_viewClient->loadProgressChanged(p);
     }
 }
@@ -342,12 +341,32 @@ void WebContentsDelegateQt::RenderViewHostChanged(content::RenderViewHost *, con
 
 void WebContentsDelegateQt::EmitLoadStarted(const QUrl &url, bool isErrorPage)
 {
-    if (m_lastLoadProgress >= 0 && m_lastLoadProgress < 100) // already running
-        return;
     m_viewClient->loadStarted(url, isErrorPage);
     m_viewClient->updateNavigationActions();
+
+    if ((url.hasFragment() || m_lastLoadedUrl.hasFragment())
+        && url.adjusted(QUrl::RemoveFragment) == m_lastLoadedUrl.adjusted(QUrl::RemoveFragment)
+        && !m_isNavigationCommitted) {
+        m_loadProgressMap.insert(url, 100);
+        m_lastLoadedUrl = url;
+        m_viewClient->loadProgressChanged(100);
+        return;
+    }
+
+    if (!m_loadProgressMap.isEmpty()) {
+        QMap<QUrl, int>::iterator it = m_loadProgressMap.begin();
+        while (it != m_loadProgressMap.end()) {
+            if (it.value() == 100) {
+                it = m_loadProgressMap.erase(it);
+                continue;
+            }
+            ++it;
+        }
+    }
+
+    m_lastLoadedUrl = url;
+    m_loadProgressMap.insert(url, 0);
     m_viewClient->loadProgressChanged(0);
-    m_lastLoadProgress = 0;
 }
 
 void WebContentsDelegateQt::DidStartNavigation(content::NavigationHandle *navigation_handle)
@@ -365,11 +384,15 @@ void WebContentsDelegateQt::DidStartNavigation(content::NavigationHandle *naviga
 
 void WebContentsDelegateQt::EmitLoadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode, const QString &errorDescription)
 {
-    if (m_lastLoadProgress < 0) // not currently running
+    // When error page enabled we don't need to send the error page load finished signal
+    if (m_loadProgressMap[url] == 100)
         return;
-    if (m_lastLoadProgress < 100)
-        m_viewClient->loadProgressChanged(100);
-    m_lastLoadProgress = -1;
+
+    m_lastLoadedUrl = url;
+    m_loadProgressMap[url] = 100;
+    m_isNavigationCommitted = false;
+    m_viewClient->loadProgressChanged(100);
+
     m_viewClient->loadFinished(success, url, isErrorPage, errorCode, errorDescription);
     m_viewClient->updateNavigationActions();
 }
@@ -394,8 +417,10 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
                 profileAdapter->visitedLinksManager()->addUrl(url);
         }
 
+        m_isNavigationCommitted = true;
         EmitLoadCommitted();
     }
+
     // Success is reported by DidFinishLoad, but DidFailLoad is now dead code and needs to be handled below
     if (navigation_handle->GetNetErrorCode() == net::OK)
         return;

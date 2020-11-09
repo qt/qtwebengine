@@ -320,7 +320,8 @@ void tst_QWebEngineHistory::serialize_2()
     hist->forward();
     QTRY_COMPARE(loadFinishedSpy->count(), 5);
     hist->forward();
-    QTRY_COMPARE(loadFinishedSpy->count(), 6);
+    // In-page navigation, the last url was the page5.html
+    QTRY_COMPARE(loadFinishedSpy->count(), 5);
     QTRY_COMPARE(hist->currentItemIndex(), initialCurrentIndex);
 }
 

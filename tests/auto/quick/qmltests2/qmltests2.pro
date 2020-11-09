@@ -33,6 +33,7 @@ OTHER_FILES += \
     $$PWD/data/tst_linkHovered.qml \
     $$PWD/data/tst_loadFail.qml \
     $$PWD/data/tst_mouseClick.qml \
+    $$PWD/data/tst_viewSource.qml \
     $$PWD/data/icons/favicon.png \
     $$PWD/data/icons/gray128.png \
     $$PWD/data/icons/gray16.png \

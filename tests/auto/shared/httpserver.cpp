@@ -54,6 +54,7 @@ bool HttpServer::start()
 {
     m_error = false;
     m_expectingError = false;
+    m_ignoreNewConnection = false;
 
     if (!m_tcpServer->listen()) {
         qCWarning(gHttpServerLog).noquote() << m_tcpServer->errorString();
@@ -84,6 +85,9 @@ QUrl HttpServer::url(const QString &path) const
 
 void HttpServer::handleNewConnection()
 {
+    if (m_ignoreNewConnection)
+        return;
+
     auto rr = new HttpReqRep(m_tcpServer->nextPendingConnection(), this);
     connect(rr, &HttpReqRep::requestReceived, [this, rr]() {
         Q_EMIT newRequest(rr);
@@ -122,5 +126,9 @@ void HttpServer::handleNewConnection()
                                             << error;
         m_error = true;
     });
-    connect(rr, &HttpReqRep::closed, rr, &QObject::deleteLater);
+
+    if (!m_tcpServer->isListening()) {
+        m_ignoreNewConnection = true;
+        connect(rr, &HttpReqRep::closed, rr, &QObject::deleteLater);
+    }
 }
