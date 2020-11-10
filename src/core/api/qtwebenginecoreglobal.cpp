@@ -50,6 +50,7 @@
 #endif
 #endif
 #include <QThread>
+#include <QQuickWindow>
 
 #if QT_CONFIG(opengl)
 QT_BEGIN_NAMESPACE
@@ -206,3 +207,24 @@ Q_WEBENGINECORE_PRIVATE_EXPORT void initialize()
 #endif // QT_CONFIG(opengl)
 }
 } // namespace QtWebEngineCore
+
+static void initialize()
+{
+#if QT_CONFIG(opengl)
+  if (QCoreApplication::instance()) {
+    // On window/ANGLE, calling QtWebEngine::initialize from DllMain will result in a crash.
+    if (!qt_gl_global_share_context()) {
+      qWarning("Qt WebEngine seems to be initialized from a plugin. Please "
+               "set Qt::AA_ShareOpenGLContexts using QCoreApplication::setAttribute and "
+               "QSGRendererInterface::OpenGLRhi using QQuickWindow::setGraphicsApi "
+               "before constructing QGuiApplication.");
+    }
+    return;
+  }
+  // QCoreApplication is not yet instantiated, ensuring the call will be deferred
+  qAddPreRoutine(QtWebEngineCore::initialize);
+  QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGLRhi);
+#endif // QT_CONFIG(opengl)
+}
+
+Q_CONSTRUCTOR_FUNCTION(initialize)

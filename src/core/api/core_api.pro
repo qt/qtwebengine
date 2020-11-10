@@ -4,7 +4,7 @@ DESTDIR = $$OUT_PWD/$$getConfigDir()
 TEMPLATE = lib
 
 CONFIG += staticlib
-QT += network core-private webenginecoreheaders-private
+QT += network core-private webenginecoreheaders-private quick
 
 # Don't create .prl file for this intermediate library because
 # their contents get used when linking against them, breaking
