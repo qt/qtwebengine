@@ -137,7 +137,7 @@ QQuickWebEngineClientCertificateSelection::QQuickWebEngineClientCertificateSelec
     : QObject(), d_ptr(selectController)
 {}
 
-int QQuickWebEngineClientCertificateSelection::certificates_count(
+qsizetype QQuickWebEngineClientCertificateSelection::certificates_count(
         QQmlListProperty<QQuickWebEngineClientCertificateOption> *p)
 {
     Q_ASSERT(p && p->object);
@@ -146,7 +146,7 @@ int QQuickWebEngineClientCertificateSelection::certificates_count(
 }
 
 QQuickWebEngineClientCertificateOption *QQuickWebEngineClientCertificateSelection::certificates_at(
-        QQmlListProperty<QQuickWebEngineClientCertificateOption> *p, int idx)
+        QQmlListProperty<QQuickWebEngineClientCertificateOption> *p, qsizetype idx)
 {
     Q_ASSERT(p && p->object);
     QQuickWebEngineClientCertificateSelection *d = static_cast<QQuickWebEngineClientCertificateSelection *>(p->object);

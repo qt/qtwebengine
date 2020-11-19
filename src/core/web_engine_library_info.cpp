@@ -378,8 +378,8 @@ bool WebEngineLibraryInfo::isUNCPath(const QString &path)
 {
     return (base::FilePath::IsSeparator(path.at(0).toLatin1())
             && base::FilePath::IsSeparator(path.at(1).toLatin1())
-            && path.at(2) != "." && path.at(2) != "?"
-            && path.at(2).isLetter() && path.at(3) != ":");
+            && path.at(2) != QLatin1Char('.') && path.at(2) != QLatin1Char('?')
+            && path.at(2).isLetter() && path.at(3) != QLatin1Char(':'));
 }
 
 #endif

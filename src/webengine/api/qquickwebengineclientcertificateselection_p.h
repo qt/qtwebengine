@@ -114,8 +114,8 @@ private:
     friend class QQuickWebEngineViewPrivate;
     friend class QQuickWebEngineClientCertificateOption;
 
-    static int certificates_count(QQmlListProperty<QQuickWebEngineClientCertificateOption> *p);
-    static QQuickWebEngineClientCertificateOption *certificates_at(QQmlListProperty<QQuickWebEngineClientCertificateOption> *p, int idx);
+    static qsizetype certificates_count(QQmlListProperty<QQuickWebEngineClientCertificateOption> *p);
+    static QQuickWebEngineClientCertificateOption *certificates_at(QQmlListProperty<QQuickWebEngineClientCertificateOption> *p, qsizetype idx);
 
     explicit QQuickWebEngineClientCertificateSelection(
             QSharedPointer<QtWebEngineCore::ClientCertSelectController>);
