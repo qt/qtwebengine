@@ -180,12 +180,6 @@ static inline ui::GestureProvider::Config QtGestureProviderConfig() {
     return config;
 }
 
-static inline bool compareTouchPoints(const QTouchEvent::TouchPoint &lhs, const QTouchEvent::TouchPoint &rhs)
-{
-    // TouchPointPressed < TouchPointMoved < TouchPointReleased
-    return lhs.state() < rhs.state();
-}
-
 static inline bool isCommonTextEditShortcut(const QKeyEvent *ke)
 {
     return QInputControl::isCommonTextEditShortcut(ke);
@@ -194,8 +188,9 @@ static inline bool isCommonTextEditShortcut(const QKeyEvent *ke)
 static uint32_t s_eventId = 0;
 class MotionEventQt : public ui::MotionEvent {
 public:
-    MotionEventQt(const QList<QTouchEvent::TouchPoint> &touchPoints, const base::TimeTicks &eventTime, Action action, const Qt::KeyboardModifiers modifiers, int index = -1)
-        : touchPoints(touchPoints)
+    MotionEventQt(const QList<QPair<int, QTouchEvent::TouchPoint>> &points, const base::TimeTicks &eventTime,
+                  Action action, const Qt::KeyboardModifiers modifiers, int index = -1)
+        : touchPoints(points)
         , eventTime(eventTime)
         , action(action)
         , eventId(++s_eventId)
@@ -210,19 +205,19 @@ public:
     Action GetAction() const override { return action; }
     int GetActionIndex() const override { return index; }
     size_t GetPointerCount() const override { return touchPoints.size(); }
-    int GetPointerId(size_t pointer_index) const override { return touchPoints.at(pointer_index).id(); }
-    float GetX(size_t pointer_index) const override { return touchPoints.at(pointer_index).pos().x(); }
-    float GetY(size_t pointer_index) const override { return touchPoints.at(pointer_index).pos().y(); }
-    float GetRawX(size_t pointer_index) const override { return touchPoints.at(pointer_index).screenPos().x(); }
-    float GetRawY(size_t pointer_index) const override { return touchPoints.at(pointer_index).screenPos().y(); }
+    int GetPointerId(size_t pointer_index) const override { return touchPoints[pointer_index].first; }
+    float GetX(size_t pointer_index) const override { return touchPoint(pointer_index).pos().x(); }
+    float GetY(size_t pointer_index) const override { return touchPoint(pointer_index).pos().y(); }
+    float GetRawX(size_t pointer_index) const override { return touchPoint(pointer_index).screenPos().x(); }
+    float GetRawY(size_t pointer_index) const override { return touchPoint(pointer_index).screenPos().y(); }
     float GetTouchMajor(size_t pointer_index) const override
     {
-        QSizeF diams = touchPoints.at(pointer_index).ellipseDiameters();
+        QSizeF diams = touchPoint(pointer_index).ellipseDiameters();
         return std::max(diams.height(), diams.width());
     }
     float GetTouchMinor(size_t pointer_index) const override
     {
-        QSizeF diams = touchPoints.at(pointer_index).ellipseDiameters();
+        QSizeF diams = touchPoint(pointer_index).ellipseDiameters();
         return std::min(diams.height(), diams.width());
     }
     float GetOrientation(size_t pointer_index) const override
@@ -230,7 +225,7 @@ public:
         return 0;
     }
     int GetFlags() const override { return flags; }
-    float GetPressure(size_t pointer_index) const override { return touchPoints.at(pointer_index).pressure(); }
+    float GetPressure(size_t pointer_index) const override { return touchPoint(pointer_index).pressure(); }
     float GetTiltX(size_t pointer_index) const override { return 0; }
     float GetTiltY(size_t pointer_index) const override { return 0; }
     float GetTwist(size_t) const override { return 0; }
@@ -243,18 +238,19 @@ public:
     float GetHistoricalX(size_t pointer_index, size_t historical_index) const override { return 0; }
     float GetHistoricalY(size_t pointer_index, size_t historical_index) const override { return 0; }
     ToolType GetToolType(size_t pointer_index) const override {
-        return (touchPoints.at(pointer_index).flags() & QTouchEvent::TouchPoint::InfoFlag::Pen) ? ui::MotionEvent::ToolType::STYLUS
-                                                                                                : ui::MotionEvent::ToolType::FINGER;
+        bool isPen = touchPoint(pointer_index).flags() & QTouchEvent::TouchPoint::InfoFlag::Pen;
+        return isPen ? ui::MotionEvent::ToolType::STYLUS : ui::MotionEvent::ToolType::FINGER;
     }
     int GetButtonState() const override { return 0; }
 
 private:
-    QList<QTouchEvent::TouchPoint> touchPoints;
+    QList<QPair<int, QTouchEvent::TouchPoint>> touchPoints;
     base::TimeTicks eventTime;
     Action action;
     const uint32_t eventId;
     int flags;
     int index;
+    const QTouchEvent::TouchPoint& touchPoint(size_t i) const { return touchPoints[i].second; }
 };
 
 static content::ScreenInfo screenInfoFromQScreen(QScreen *screen)
@@ -1249,29 +1245,28 @@ void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEve
     host()->ForwardTouchEventWithLatencyInfo(touchEvent, CreateLatencyInfo(touchEvent));
 }
 
-QList<QTouchEvent::TouchPoint> RenderWidgetHostViewQt::mapTouchPointIds(const QList<QTouchEvent::TouchPoint> &inputPoints)
+QList<RenderWidgetHostViewQt::TouchPoint> RenderWidgetHostViewQt::mapTouchPoints(const QList<QTouchEvent::TouchPoint> &input)
 {
-    QList<int> idsToRemove;
-    QList<QTouchEvent::TouchPoint> outputPoints = inputPoints;
-    for (int i = 0; i < outputPoints.size(); ++i) {
-        QTouchEvent::TouchPoint &point = outputPoints[i];
+    QList<TouchPoint> output;
+    for (int i = 0; i < input.size(); ++i) {
+        const QTouchEvent::TouchPoint &point = input[i];
 
         int qtId = point.id();
         QMap<int, int>::const_iterator it = m_touchIdMapping.find(qtId);
         if (it == m_touchIdMapping.end())
             it = m_touchIdMapping.insert(qtId, firstAvailableId(m_touchIdMapping));
-        point.setId(it.value());
 
-        if (point.state() == Qt::TouchPointReleased)
-            idsToRemove.append(qtId);
+        output.append(qMakePair(it.value(), point));
     }
 
-    for (int qtId : qAsConst(idsToRemove))
-        m_touchIdMapping.remove(qtId);
+    Q_ASSERT(output.size() == std::accumulate(output.cbegin(), output.cend(), QSet<int>(),
+                 [] (QSet<int> s, const TouchPoint &p) { s.insert(p.second.id()); return s; }).size());
 
-    Q_ASSERT(outputPoints.size() == std::accumulate(outputPoints.cbegin(), outputPoints.cend(), QSet<int>(),
-                [] (QSet<int> s, const QTouchEvent::TouchPoint &p) { s.insert(p.id()); return s; }).size());
-    return outputPoints;
+    for (auto &&point : qAsConst(input))
+        if (point.state() == Qt::TouchPointReleased)
+            m_touchIdMapping.remove(point.id());
+
+    return output;
 }
 
 bool RenderWidgetHostViewQt::IsPopup() const
@@ -1604,15 +1599,16 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
         m_eventsToNowDelta = base::TimeTicks::Now() - eventTimestamp;
     eventTimestamp += m_eventsToNowDelta;
 
-    QList<QTouchEvent::TouchPoint> touchPoints = mapTouchPointIds(ev->touchPoints());
-    // Make sure that ACTION_POINTER_DOWN is delivered before ACTION_MOVE,
-    // and ACTION_MOVE before ACTION_POINTER_UP.
-    std::sort(touchPoints.begin(), touchPoints.end(), compareTouchPoints);
+    auto touchPoints = mapTouchPoints(ev->touchPoints());
+    // Make sure that POINTER_DOWN action is delivered before MOVE, and MOVE before POINTER_UP
+    std::sort(touchPoints.begin(), touchPoints.end(), [] (const TouchPoint &l, const TouchPoint &r) {
+        return l.second.state() < r.second.state();
+    });
 
     // Check first if the touch event should be routed to the selectionController
     if (!touchPoints.isEmpty()) {
         ui::MotionEvent::Action action;
-        switch (touchPoints[0].state()) {
+        switch (touchPoints[0].second.state()) {
         case Qt::TouchPointPressed:
             action = ui::MotionEvent::Action::DOWN;
             break;
@@ -1694,7 +1690,7 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
 
     for (int i = 0; i < touchPoints.size(); ++i) {
         ui::MotionEvent::Action action;
-        switch (touchPoints[i].state()) {
+        switch (touchPoints[i].second.state()) {
         case Qt::TouchPointPressed:
             if (m_sendMotionActionDown) {
                 action = ui::MotionEvent::Action::DOWN;

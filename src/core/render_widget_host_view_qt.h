@@ -238,7 +238,8 @@ private:
 
     void processMotionEvent(const ui::MotionEvent &motionEvent);
     void clearPreviousTouchMotionState();
-    QList<QTouchEvent::TouchPoint> mapTouchPointIds(const QList<QTouchEvent::TouchPoint> &inputPoints);
+    typedef QPair<int, QTouchEvent::TouchPoint> TouchPoint;
+    QList<TouchPoint> mapTouchPoints(const QList<QTouchEvent::TouchPoint> &input);
 
     bool IsPopup() const;
 
@@ -262,7 +263,7 @@ private:
     bool m_sendMotionActionDown;
     bool m_touchMotionStarted;
     QMap<int, int> m_touchIdMapping;
-    QList<QTouchEvent::TouchPoint> m_previousTouchPoints;
+    QList<TouchPoint> m_previousTouchPoints;
     std::unique_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 
     bool m_visible;
