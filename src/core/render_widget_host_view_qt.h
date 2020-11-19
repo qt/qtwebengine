@@ -237,7 +237,6 @@ private:
     friend class DelegatedFrameHostClientQt;
 
     void processMotionEvent(const ui::MotionEvent &motionEvent);
-    void clearPreviousTouchMotionState();
     typedef QPair<int, QTouchEvent::TouchPoint> TouchPoint;
     QList<TouchPoint> mapTouchPoints(const QList<QTouchEvent::TouchPoint> &input);
 
