@@ -40,14 +40,6 @@
 #if defined(USE_OZONE)
 #include <QtCore/qobject.h>
 #include <QtGui/qtgui-config.h>
-
-#if QT_CONFIG(opengl)
-#include <QOpenGLContext>
-QT_BEGIN_NAMESPACE
-Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
-QT_END_NAMESPACE
-#endif
-
 #include "gl_context_qt.h"
 #include "gl_ozone_egl_qt.h"
 #include "gl_surface_egl_qt.h"
@@ -90,10 +82,8 @@ bool GLOzoneEGLQt::LoadGLES2Bindings(gl::GLImplementation /*implementation*/)
 #if QT_CONFIG(opengl)
     if (!get_proc_address) {
         // QTBUG-63341 most likely libgles2 not linked with libegl -> fallback to qpa
-        if (QOpenGLContext *context = qt_gl_global_share_context()) {
-            get_proc_address = reinterpret_cast<gl::GLGetProcAddressProc>(
-                context->getProcAddress("eglGetProcAddress"));
-        }
+        get_proc_address =
+                reinterpret_cast<gl::GLGetProcAddressProc>(GLContextHelper::getEglGetProcAddress());
     }
 #endif
 
