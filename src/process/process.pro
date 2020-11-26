@@ -37,9 +37,9 @@ win32 {
         support_win.cpp
 
     msvc: QMAKE_LFLAGS += /MANIFESTINPUT:$$PWD/process.exe.manifest
-    VERSION = $${QT_VERSION}.0
+    VERSION = $${MODULE_VERSION}.0
 } else {
-    VERSION = $${QT_VERSION}
+    VERSION = $${MODULE_VERSION}
 }
 
 TEMPLATE = app
