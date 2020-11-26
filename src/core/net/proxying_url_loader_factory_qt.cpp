@@ -292,9 +292,20 @@ void InterceptedRequest::ContinueAfterIntercept()
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     if (request_info_.changed()) {
-        if (request_info_.d_ptr->shouldBlockRequest)
+        QWebEngineUrlRequestInfoPrivate &info = *request_info_.d_ptr;
+        if (info.shouldBlockRequest)
             return SendErrorAndCompleteImmediately(net::ERR_BLOCKED_BY_CLIENT);
-        if (request_info_.d_ptr->shouldRedirectRequest) {
+
+        for (auto header = info.extraHeaders.constBegin(); header != info.extraHeaders.constEnd(); ++header) {
+            std::string h = header.key().toStdString();
+            if (base::LowerCaseEqualsASCII(h, "referer")) {
+                request_.referrer = GURL(header.value().toStdString());
+            } else {
+                request_.headers.SetHeader(h, header.value().toStdString());
+            }
+        }
+
+        if (info.shouldRedirectRequest) {
             net::URLRequest::FirstPartyURLPolicy first_party_url_policy =
                     request_.update_first_party_url_on_redirect ? net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT
                                                                 : net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
@@ -315,18 +326,6 @@ void InterceptedRequest::ContinueAfterIntercept()
                 request_.request_body = nullptr;
             target_client_->OnReceiveRedirect(redirectInfo, std::move(current_response_));
             return;
-        }
-
-        if (!request_info_.d_ptr->extraHeaders.isEmpty()) {
-            auto end = request_info_.d_ptr->extraHeaders.constEnd();
-            for (auto header = request_info_.d_ptr->extraHeaders.constBegin(); header != end; ++header) {
-                std::string h = header.key().toStdString();
-                if (base::LowerCaseEqualsASCII(h, "referer")) {
-                    request_.referrer = GURL(header.value().toStdString());
-                } else {
-                    request_.headers.SetHeader(h, header.value().toStdString());
-                }
-            }
         }
     }
 
