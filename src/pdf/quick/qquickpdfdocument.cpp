@@ -94,7 +94,7 @@ void QQuickPdfDocument::setSource(QUrl source)
     if (source.scheme() == QLatin1String("qrc"))
         m_doc.load(QLatin1Char(':') + source.path());
     else
-        m_doc.load(source.path());
+        m_doc.load(source.toLocalFile());
 }
 
 /*!
