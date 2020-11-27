@@ -845,8 +845,7 @@ void RenderWidgetHostViewQtDelegateClient::handleInputMethodEvent(QInputMethodEv
     if (commitString.isEmpty() && preeditString.isEmpty() && replacementLength == 0) {
         if (!m_receivedEmptyImeEvent && m_imeInProgress && !hasSelection) {
             m_receivedEmptyImeEvent = true;
-            QInputMethodEvent *eventCopy = new QInputMethodEvent(*event);
-            QGuiApplication::postEvent(qApp->focusObject(), eventCopy);
+            QGuiApplication::postEvent(qApp->focusObject(), event->clone());
         } else {
             m_receivedEmptyImeEvent = false;
             if (m_imeInProgress) {

@@ -771,9 +771,13 @@ void tst_QQuickWebEngineView::inputMethodHints()
     QTRY_COMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("a@b.com"));
     QVERIFY(input->flags().testFlag(QQuickItem::ItemAcceptsInputMethod));
     QVERIFY(view->flags().testFlag(QQuickItem::ItemAcceptsInputMethod));
-    QInputMethodQueryEvent query(Qt::ImHints);
-    QGuiApplication::sendEvent(input, &query);
-    QTRY_COMPARE(Qt::InputMethodHints(query.value(Qt::ImHints).toUInt() & Qt::ImhExclusiveInputMask), Qt::ImhEmailCharactersOnly);
+    {
+        QInputMethodQueryEvent query(Qt::ImHints);
+        QGuiApplication::sendEvent(input, &query);
+        QTRY_COMPARE(
+                Qt::InputMethodHints(query.value(Qt::ImHints).toUInt() & Qt::ImhExclusiveInputMask),
+                Qt::ImhEmailCharactersOnly);
+    }
 
     // The focus of an editable DIV is given directly to it, so no shadow root element
     // is necessary. This tests the WebPage::editorState() method ability to get the
@@ -784,9 +788,13 @@ void tst_QQuickWebEngineView::inputMethodHints()
     QTRY_COMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("bla"));
     QVERIFY(input->flags().testFlag(QQuickItem::ItemAcceptsInputMethod));
     QVERIFY(view->flags().testFlag(QQuickItem::ItemAcceptsInputMethod));
-    query = QInputMethodQueryEvent(Qt::ImHints);
-    QGuiApplication::sendEvent(input, &query);
-    QTRY_COMPARE(Qt::InputMethodHints(query.value(Qt::ImHints).toUInt()), Qt::ImhPreferLowercase | Qt::ImhNoPredictiveText | Qt::ImhMultiLine | Qt::ImhNoEditMenu | Qt::ImhNoTextHandles);
+    {
+        QInputMethodQueryEvent query(Qt::ImHints);
+        QGuiApplication::sendEvent(input, &query);
+        QTRY_COMPARE(Qt::InputMethodHints(query.value(Qt::ImHints).toUInt()),
+                     Qt::ImhPreferLowercase | Qt::ImhNoPredictiveText | Qt::ImhMultiLine
+                             | Qt::ImhNoEditMenu | Qt::ImhNoTextHandles);
+    }
 }
 
 void tst_QQuickWebEngineView::setZoomFactor()

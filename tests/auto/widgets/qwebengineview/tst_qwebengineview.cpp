@@ -616,10 +616,10 @@ void tst_QWebEngineView::focusInputTypes()
 
 class KeyEventRecordingWidget : public QWidget {
 public:
-    QList<QKeyEvent> pressEvents;
-    QList<QKeyEvent> releaseEvents;
-    void keyPressEvent(QKeyEvent *e) override { pressEvents << *e; }
-    void keyReleaseEvent(QKeyEvent *e) override { releaseEvents << *e; }
+    QList<QKeyEvent *> pressEvents;
+    QList<QKeyEvent *> releaseEvents;
+    void keyPressEvent(QKeyEvent *e) override { pressEvents << e->clone(); }
+    void keyReleaseEvent(QKeyEvent *e) override { releaseEvents << e->clone(); }
 };
 
 void tst_QWebEngineView::unhandledKeyEventPropagation()
@@ -665,15 +665,15 @@ void tst_QWebEngineView::unhandledKeyEventPropagation()
     // The page will consume the Tab key to change focus between elements while the arrow
     // keys won't be used.
     QCOMPARE(parentWidget.pressEvents.size(), 3);
-    QCOMPARE(parentWidget.pressEvents[0].key(), (int)Qt::Key_Right);
-    QCOMPARE(parentWidget.pressEvents[1].key(), (int)Qt::Key_Left);
-    QCOMPARE(parentWidget.pressEvents[2].key(), (int)Qt::Key_Y);
+    QCOMPARE(parentWidget.pressEvents[0]->key(), (int)Qt::Key_Right);
+    QCOMPARE(parentWidget.pressEvents[1]->key(), (int)Qt::Key_Left);
+    QCOMPARE(parentWidget.pressEvents[2]->key(), (int)Qt::Key_Y);
 
     // Key releases will all come back unconsumed.
-    QCOMPARE(parentWidget.releaseEvents[0].key(), (int)Qt::Key_Right);
-    QCOMPARE(parentWidget.releaseEvents[1].key(), (int)Qt::Key_Tab);
-    QCOMPARE(parentWidget.releaseEvents[2].key(), (int)Qt::Key_Left);
-    QCOMPARE(parentWidget.releaseEvents[3].key(), (int)Qt::Key_Y);
+    QCOMPARE(parentWidget.releaseEvents[0]->key(), (int)Qt::Key_Right);
+    QCOMPARE(parentWidget.releaseEvents[1]->key(), (int)Qt::Key_Tab);
+    QCOMPARE(parentWidget.releaseEvents[2]->key(), (int)Qt::Key_Left);
+    QCOMPARE(parentWidget.releaseEvents[3]->key(), (int)Qt::Key_Y);
 }
 
 void tst_QWebEngineView::horizontalScrollbarTest()

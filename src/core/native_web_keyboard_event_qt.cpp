@@ -52,7 +52,11 @@ namespace {
 // event is destroyed.
 gfx::NativeEvent CopyEvent(gfx::NativeEvent event)
 {
-    return event ? reinterpret_cast<gfx::NativeEvent>(new QKeyEvent(*reinterpret_cast<QKeyEvent*>(event))) : 0;
+    if (!event)
+        return nullptr;
+
+    QKeyEvent *keyEvent = reinterpret_cast<QKeyEvent *>(event);
+    return reinterpret_cast<gfx::NativeEvent>(keyEvent->clone());
 }
 
 void DestroyEvent(gfx::NativeEvent event)
