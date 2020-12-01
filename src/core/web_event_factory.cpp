@@ -1280,6 +1280,29 @@ static unsigned mouseButtonsModifiersForEvent(const T* event)
     return ret;
 }
 
+static WebInputEvent::Modifiers lockKeyModifiers(const quint32 nativeModifiers)
+{
+    unsigned result = 0;
+    if (keyboardDriver() == KeyboardDriver::Xkb) {
+        if (nativeModifiers & 0x42) /* Caps_Lock */
+            result |= WebInputEvent::kCapsLockOn;
+        if (nativeModifiers & 0x4d) /* Num_Lock */
+            result |= WebInputEvent::kNumLockOn;
+    } else if (keyboardDriver() == KeyboardDriver::Windows) {
+        if (nativeModifiers & 0x100) /* CapsLock */
+            result |= WebInputEvent::kCapsLockOn;
+        if (nativeModifiers & 0x200) /* NumLock */
+            result |= WebInputEvent::kNumLockOn;
+        if (nativeModifiers & 0x400) /* ScrollLock */
+            result |= WebInputEvent::kScrollLockOn;
+    } else if (keyboardDriver() == KeyboardDriver::Cocoa) {
+        if (nativeModifiers & 0x10000) /* NSEventModifierFlagCapsLock */
+            result |= WebInputEvent::kCapsLockOn;
+    }
+
+    return static_cast<WebInputEvent::Modifiers>(result);
+}
+
 // If only a modifier key is pressed, Qt only reports the key code.
 // But Chromium also expects the modifier being set.
 static inline WebInputEvent::Modifiers modifierForKeyCode(int key)
@@ -1328,13 +1351,14 @@ static inline WebInputEvent::Modifiers modifiersForEvent(const QInputEvent* even
         if (keyEvent->isAutoRepeat())
             result |= WebInputEvent::kIsAutoRepeat;
         result |= modifierForKeyCode(qtKeyForKeyEvent(keyEvent));
+        result |= lockKeyModifiers(keyEvent->nativeModifiers());
         break;
     }
     default:
         break;
     }
 
-    return (WebInputEvent::Modifiers)result;
+    return static_cast<WebInputEvent::Modifiers>(result);
 }
 
 static inline Qt::KeyboardModifiers keyboardModifiersForModifier(unsigned int modifier)
