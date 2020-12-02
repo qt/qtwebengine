@@ -290,7 +290,6 @@ void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isE
     Q_UNUSED(errorDescription);
 
     if (isErrorPage) {
-        Q_ASSERT(settings->testAttribute(QWebEngineSettings::ErrorPageEnabled));
         QTimer::singleShot(0, q, [q](){
             emit q->loadFinished(false);
         });
