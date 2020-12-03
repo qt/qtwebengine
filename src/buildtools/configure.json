@@ -75,9 +75,9 @@
             ]
         },
         "webengine-harfbuzz": {
-            "label": "harfbuzz >= 2.2.0",
+            "label": "harfbuzz >= 2.4.0",
             "sources": [
-                { "type": "pkgConfig", "args": "harfbuzz >= 2.2.0" }
+                { "type": "pkgConfig", "args": "harfbuzz >= 2.4.0 harfbuzz-subset >= 2.4.0" }
             ]
         },
         "webengine-jpeglib": {
