@@ -20,5 +20,7 @@ qtConfig(webengine-testsupport) {
 
 qtConfig(ssl): SUBDIRS += qmltests_ssl
 
+lessThan(QT_MAJOR_VERSION, 6):lessThan(QT_MINOR_VERSION, 14): SUBDIRS -= qmltests qmltests2 qmltests_ssl
+
 # QTBUG-66055
 boot2qt: SUBDIRS -= inspectorserver qquickwebengineview qmltests qmltests2

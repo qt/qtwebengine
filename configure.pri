@@ -461,10 +461,17 @@ defineTest(qtwebengine_isMacOsPlatformSupported) {
 
 defineTest(qtwebengine_isGCCVersionSupported) {
   # Keep in sync with src/webengine/doc/src/qtwebengine-platform-notes.qdoc
-  greaterThan(QMAKE_GCC_MAJOR_VERSION, 4):return(true)
+  lessThan(QMAKE_GCC_MAJOR_VERSION, 5) {
+    qtwebengine_platformError("requires at least gcc version 5, but using gcc version $${QMAKE_GCC_MAJOR_VERSION}.$${QMAKE_GCC_MINOR_VERSION}.")
+    return(false)
+  }
 
-  qtwebengine_platformError("requires at least gcc version 5, but using gcc version $${QMAKE_GCC_MAJOR_VERSION}.$${QMAKE_GCC_MINOR_VERSION}.")
-  return(false)
+  equals(QMAKE_GCC_MAJOR_VERSION, 5): equals(QMAKE_GCC_MINOR_VERSION, 4): equals(QMAKE_GCC_PATCH_VERSION, 0) {
+    qtwebengine_platformError("gcc version 5.4.0 is blacklisted due to internal compiler errors.")
+    return(false)
+  }
+
+  return(true)
 }
 
 defineTest(qtwebengine_isBuildingOnWin32) {

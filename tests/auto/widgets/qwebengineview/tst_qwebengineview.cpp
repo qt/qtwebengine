@@ -1160,6 +1160,7 @@ void tst_QWebEngineView::doNotBreakLayout()
 
 void tst_QWebEngineView::changeLocale()
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     QStringList errorLines;
     QUrl url("http://non.existent/");
 
@@ -1195,6 +1196,7 @@ void tst_QWebEngineView::changeLocale()
     QTRY_VERIFY(!toPlainTextSync(viewDE.page()).isEmpty());
     errorLines = toPlainTextSync(viewDE.page()).split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
+#endif
 }
 
 void tst_QWebEngineView::inputMethodsTextFormat_data()
@@ -1480,6 +1482,7 @@ void tst_QWebEngineView::mouseClick()
 
 void tst_QWebEngineView::postData()
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     QMap<QString, QString> postData;
     // use reserved characters to make the test harder to pass
     postData[QStringLiteral("Spä=m")] = QStringLiteral("ëgg:s");
@@ -1607,6 +1610,7 @@ void tst_QWebEngineView::postData()
 
     timeoutGuard.stop();
     server.close();
+#endif
 }
 
 void tst_QWebEngineView::inputFieldOverridesShortcuts()
