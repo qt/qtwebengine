@@ -993,7 +993,6 @@ void tst_QQuickWebEngineView::inputEventForwardingDisabledWhenActiveFocusOnPress
 
 void tst_QQuickWebEngineView::changeLocale()
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     QStringList errorLines;
     QUrl url("http://non.existent/");
 
@@ -1004,7 +1003,11 @@ void tst_QQuickWebEngineView::changeLocale()
 
     QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body").isNull());
     QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").isNull());
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
+#else
+    errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
+#endif
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
 
     QLocale::setDefault(QLocale("en"));
@@ -1014,7 +1017,11 @@ void tst_QQuickWebEngineView::changeLocale()
 
     QTRY_VERIFY(!evaluateJavaScriptSync(viewEN.data(), "document.body").isNull());
     QTRY_VERIFY(!evaluateJavaScriptSync(viewEN.data(), "document.body.innerText").isNull());
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     errorLines = evaluateJavaScriptSync(viewEN.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
+#else
+    errorLines = evaluateJavaScriptSync(viewEN.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
+#endif
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("This site can\xE2\x80\x99t be reached"));
 
     // Reset error page
@@ -1027,9 +1034,12 @@ void tst_QQuickWebEngineView::changeLocale()
 
     QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body").isNull());
     QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").isNull());
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
-    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
+#else
+    errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
 #endif
+    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
 }
 
 void tst_QQuickWebEngineView::userScripts()
