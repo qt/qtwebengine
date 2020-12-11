@@ -127,6 +127,8 @@ private:
 
     content::NotificationRegistrar m_notificationsRegistrar;
 
+    bool m_loopbackAudioSupported = false;
+
     DISALLOW_COPY_AND_ASSIGN(MediaCaptureDevicesDispatcher);
 };
 

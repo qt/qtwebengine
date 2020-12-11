@@ -25,7 +25,6 @@
 #include <private/qinputmethod_p.h>
 #include <qpainter.h>
 #include <qpagelayout.h>
-#include <qpa/qplatforminputcontext.h>
 #include <qwebengineview.h>
 #include <qwebenginepage.h>
 #include <qwebenginesettings.h>
@@ -59,44 +58,6 @@ do { \
         __fail_block\
     QCOMPARE((__expr), __expected); \
 } while (0)
-
-static QPointingDevice* s_touchDevice = nullptr;
-
-static QPoint elementCenter(QWebEnginePage *page, const QString &id)
-{
-    const QString jsCode(
-            "(function(){"
-            "   var elem = document.getElementById('" + id + "');"
-            "   var rect = elem.getBoundingClientRect();"
-            "   return [(rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2];"
-            "})()");
-    QVariantList rectList = evaluateJavaScriptSync(page, jsCode).toList();
-
-    if (rectList.count() != 2) {
-        qWarning("elementCenter failed.");
-        return QPoint();
-    }
-
-    return QPoint(rectList.at(0).toInt(), rectList.at(1).toInt());
-}
-
-static QRect elementGeometry(QWebEnginePage *page, const QString &id)
-{
-    const QString jsCode(
-                "(function() {"
-                "   var elem = document.getElementById('" + id + "');"
-                "   var rect = elem.getBoundingClientRect();"
-                "   return [rect.left, rect.top, rect.right, rect.bottom];"
-                "})()");
-    QVariantList coords = evaluateJavaScriptSync(page, jsCode).toList();
-
-    if (coords.count() != 4) {
-        qWarning("elementGeometry faield.");
-        return QRect();
-    }
-
-    return QRect(coords[0].toInt(), coords[1].toInt(), coords[2].toInt(), coords[3].toInt());
-}
 
 QT_BEGIN_NAMESPACE
 namespace QTest {
@@ -167,9 +128,6 @@ private Q_SLOTS:
     void keyboardEvents();
     void keyboardFocusAfterPopup();
     void mouseClick();
-    void touchTap();
-    void touchTapAndHold();
-    void touchTapAndHoldCancelled();
     void postData();
     void inputFieldOverridesShortcuts();
 
@@ -216,7 +174,6 @@ private Q_SLOTS:
 // It is only called once.
 void tst_QWebEngineView::initTestCase()
 {
-    s_touchDevice = QTest::createTouchDevice();
 }
 
 // This will be called after the last test function is executed.
@@ -1203,6 +1160,7 @@ void tst_QWebEngineView::doNotBreakLayout()
 
 void tst_QWebEngineView::changeLocale()
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     QStringList errorLines;
     QUrl url("http://non.existent/");
 
@@ -1238,6 +1196,7 @@ void tst_QWebEngineView::changeLocale()
     QTRY_VERIFY(!toPlainTextSync(viewDE.page()).isEmpty());
     errorLines = toPlainTextSync(viewDE.page()).split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
+#endif
 }
 
 void tst_QWebEngineView::inputMethodsTextFormat_data()
@@ -1283,6 +1242,7 @@ void tst_QWebEngineView::inputMethodsTextFormat()
 
     evaluateJavaScriptSync(view.page(), "document.getElementById('input1').focus()");
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QFETCH(QString, string);
     QFETCH(int, start);
@@ -1520,174 +1480,9 @@ void tst_QWebEngineView::mouseClick()
     QVERIFY(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString().isEmpty());
 }
 
-void tst_QWebEngineView::touchTap()
-{
-#if defined(Q_OS_MACOS)
-    QSKIP("Synthetic touch events are not supported on macOS");
-#endif
-
-    QWebEngineView view;
-    view.show();
-    view.resize(200, 200);
-    QVERIFY(QTest::qWaitForWindowExposed(&view));
-
-    QSignalSpy loadFinishedSpy(&view, &QWebEngineView::loadFinished);
-
-    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, false);
-    view.setHtml("<html><body>"
-                 "<p id='text' style='width: 150px;'>The Qt Company</p>"
-                 "<div id='notext' style='width: 150px; height: 100px; background-color: #f00;'></div>"
-                 "<form><input id='input' width='150px' type='text' value='The Qt Company2' /></form>"
-                 "</body></html>");
-    QVERIFY(loadFinishedSpy.wait());
-    QVERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
-
-    auto singleTap = [](QWidget* target, const QPoint& tapCoords) -> void {
-        QTest::touchEvent(target->window(), s_touchDevice).press(0, tapCoords, target);
-        QTest::touchEvent(target->window(), s_touchDevice).stationary(0);
-        QTest::touchEvent(target->window(), s_touchDevice).release(0, tapCoords, target);
-    };
-
-    // Single tap on text doesn't trigger a selection
-    singleTap(view.focusProxy(), elementCenter(view.page(), "text"));
-    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
-    QTRY_VERIFY(!view.hasSelection());
-
-    // Single tap inside the input field focuses it without selecting the text
-    singleTap(view.focusProxy(), elementCenter(view.page(), "input"));
-    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input"));
-    QTRY_VERIFY(!view.hasSelection());
-
-    // Single tap on the div clears the input field focus
-    singleTap(view.focusProxy(), elementCenter(view.page(), "notext"));
-    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
-
-    // Double tap on text still doesn't trigger a selection
-    singleTap(view.focusProxy(), elementCenter(view.page(), "text"));
-    singleTap(view.focusProxy(), elementCenter(view.page(), "text"));
-    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
-    QTRY_VERIFY(!view.hasSelection());
-
-    // Double tap inside the input field focuses it and selects the word under it
-    singleTap(view.focusProxy(), elementCenter(view.page(), "input"));
-    singleTap(view.focusProxy(), elementCenter(view.page(), "input"));
-    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input"));
-    QTRY_COMPARE(view.selectedText(), QStringLiteral("Company2"));
-
-    // Double tap outside the input field behaves like a single tap: clears its focus and selection
-    singleTap(view.focusProxy(), elementCenter(view.page(), "notext"));
-    singleTap(view.focusProxy(), elementCenter(view.page(), "notext"));
-    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
-    QTRY_VERIFY(!view.hasSelection());
-}
-
-void tst_QWebEngineView::touchTapAndHold()
-{
-#if defined(Q_OS_MACOS)
-    QSKIP("Synthetic touch events are not supported on macOS");
-#endif
-
-    QWebEngineView view;
-    view.show();
-    view.resize(200, 200);
-    QVERIFY(QTest::qWaitForWindowExposed(&view));
-
-    QSignalSpy loadFinishedSpy(&view, &QWebEngineView::loadFinished);
-
-    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, false);
-    view.setHtml("<html><body>"
-                 "<p id='text' style='width: 150px;'>The Qt Company</p>"
-                 "<div id='notext' style='width: 150px; height: 100px; background-color: #f00;'></div>"
-                 "<form><input id='input' width='150px' type='text' value='The Qt Company2' /></form>"
-                 "</body></html>");
-    QVERIFY(loadFinishedSpy.wait());
-    QVERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
-
-    auto tapAndHold = [](QWidget* target, const QPoint& tapCoords) -> void {
-        QTest::touchEvent(target, s_touchDevice).press(0, tapCoords, target);
-        QTest::touchEvent(target, s_touchDevice).stationary(0);
-        QTest::qWait(1000);
-        QTest::touchEvent(target, s_touchDevice).release(0, tapCoords, target);
-    };
-
-    // Tap-and-hold on text selects the word under it
-    tapAndHold(view.focusProxy(), elementCenter(view.page(), "text"));
-    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
-    QTRY_COMPARE(view.selectedText(), QStringLiteral("Company"));
-
-    // Tap-and-hold inside the input field focuses it and selects the word under it
-    tapAndHold(view.focusProxy(), elementCenter(view.page(), "input"));
-    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input"));
-    QTRY_COMPARE(view.selectedText(), QStringLiteral("Company2"));
-
-    // Only test the page context menu on Windows, as Linux doesn't handle context menus consistently
-    // and other non-desktop platforms like Android may not even support context menus at all
-#if defined(Q_OS_WIN)
-    // Tap-and-hold clears the text selection and shows the page's context menu
-    QVERIFY(QApplication::activePopupWidget() == nullptr);
-    tapAndHold(view.focusProxy(), elementCenter(view.page(), "notext"));
-    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
-    QTRY_VERIFY(!view.hasSelection());
-    QTRY_VERIFY(QApplication::activePopupWidget() != nullptr);
-
-    QApplication::activePopupWidget()->close();
-    QVERIFY(QApplication::activePopupWidget() == nullptr);
-#endif
-}
-
-void tst_QWebEngineView::touchTapAndHoldCancelled()
-{
-#if defined(Q_OS_MACOS)
-    QSKIP("Synthetic touch events are not supported on macOS");
-#endif
-
-    QWebEngineView view;
-    view.show();
-    view.resize(200, 200);
-    QVERIFY(QTest::qWaitForWindowExposed(&view));
-
-    QSignalSpy loadFinishedSpy(&view, &QWebEngineView::loadFinished);
-
-    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, false);
-    view.setHtml("<html><body>"
-                 "<p id='text' style='width: 150px;'>The Qt Company</p>"
-                 "<div id='notext' style='width: 150px; height: 100px; background-color: #f00;'></div>"
-                 "<form><input id='input' width='150px' type='text' value='The Qt Company2' /></form>"
-                 "</body></html>");
-    QVERIFY(loadFinishedSpy.wait());
-    QVERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
-
-    auto cancelledTapAndHold = [](QWidget* target, const QPoint& tapCoords) -> void {
-        QTest::touchEvent(target, s_touchDevice).press(1, tapCoords, target);
-        QTest::touchEvent(target, s_touchDevice).stationary(1);
-        QTest::qWait(1000);
-        QWindowSystemInterface::handleTouchCancelEvent(target->windowHandle(), s_touchDevice);
-    };
-
-    // A cancelled tap-and-hold should cancel text selection, but currently doesn't
-    cancelledTapAndHold(view.focusProxy(), elementCenter(view.page(), "text"));
-    QEXPECT_FAIL("", "Incorrect Chromium selection behavior when cancelling tap-and-hold on text", Continue);
-    QTRY_VERIFY_WITH_TIMEOUT(!view.hasSelection(), 100);
-
-    // A cancelled tap-and-hold should cancel input field focusing and selection, but currently doesn't
-    cancelledTapAndHold(view.focusProxy(), elementCenter(view.page(), "input"));
-    QEXPECT_FAIL("", "Incorrect Chromium selection behavior when cancelling tap-and-hold on input field", Continue);
-    QTRY_VERIFY_WITH_TIMEOUT(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty(), 100);
-    QEXPECT_FAIL("", "Incorrect Chromium focus behavior when cancelling tap-and-hold on input field", Continue);
-    QTRY_VERIFY_WITH_TIMEOUT(!view.hasSelection(), 100);
-
-    // Only test the page context menu on Windows, as Linux doesn't handle context menus consistently
-    // and other non-desktop platforms like Android may not even support context menus at all
-#if defined(Q_OS_WIN)
-    // A cancelled tap-and-hold cancels the context menu
-    QVERIFY(QApplication::activePopupWidget() == nullptr);
-    cancelledTapAndHold(view.focusProxy(), elementCenter(view.page(), "notext"));
-    QVERIFY(QApplication::activePopupWidget() == nullptr);
-#endif
-}
-
 void tst_QWebEngineView::postData()
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     QMap<QString, QString> postData;
     // use reserved characters to make the test harder to pass
     postData[QStringLiteral("Spä=m")] = QStringLiteral("ëgg:s");
@@ -1815,6 +1610,7 @@ void tst_QWebEngineView::postData()
 
     timeoutGuard.stop();
     server.close();
+#endif
 }
 
 void tst_QWebEngineView::inputFieldOverridesShortcuts()
@@ -2051,6 +1847,7 @@ void tst_QWebEngineView::inputContextQueryInput()
                  "  <input type='text' id='input1' value='' size='50'/>"
                  "</body></html>");
     QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QCOMPARE(testContext.infos.count(), 0);
 
     // Set focus on an input field.
@@ -2202,6 +1999,7 @@ void tst_QWebEngineView::inputMethods()
                  "  <input type='text' id='input1' style='font-family: serif' value='' maxlength='20' size='50'/>"
                  "</body></html>");
     QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QPoint textInputCenter = elementCenter(view.page(), "input1");
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, textInputCenter);
@@ -2299,6 +2097,7 @@ void tst_QWebEngineView::textSelectionInInputField()
                  "  <input type='text' id='input1' value='QtWebEngine' size='50'/>"
                  "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     // Tests for Selection when the Editor is NOT in Composition mode
 
@@ -2372,6 +2171,7 @@ void tst_QWebEngineView::textSelectionInInputField()
 void tst_QWebEngineView::textSelectionOutOfInputField()
 {
     QWebEngineView view;
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     view.resize(640, 480);
     view.show();
 
@@ -2381,6 +2181,7 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
                  "  This is a text"
                  "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QCOMPARE(selectionChangedSpy.count(), 0);
     QVERIFY(!view.hasSelection());
@@ -2429,6 +2230,7 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
                  "  <input type='text' id='input1' value='QtWebEngine' size='50'/>"
                  "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QCOMPARE(selectionChangedSpy.count(), 0);
     QVERIFY(!view.hasSelection());
@@ -2508,6 +2310,7 @@ void tst_QWebEngineView::emptyInputMethodEvent()
                  "  <input type='text' id='input1' value='QtWebEngine'/>"
                  "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.focus(); inputEle.select();");
     QTRY_COMPARE(selectionChangedSpy.count(), 1);
@@ -2556,6 +2359,7 @@ void tst_QWebEngineView::imeComposition()
                  "  <input type='text' id='input1' value='QtWebEngine inputMethod'/>"
                  "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.focus(); inputEle.select();");
     QTRY_COMPARE(selectionChangedSpy.count(), 1);
@@ -2773,6 +2577,7 @@ void tst_QWebEngineView::newlineInTextarea()
                          "  <textarea rows='5' cols='1' id='input1'></textarea>"
                          "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.focus(); inputEle.select();");
     QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString().isEmpty());
@@ -2897,6 +2702,7 @@ void tst_QWebEngineView::imeJSInputEvents()
                          "  <pre id='log'></pre>"
                          "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     evaluateJavaScriptSync(view.page(), "document.getElementById('input').focus()");
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input"));
@@ -3019,6 +2825,7 @@ void tst_QWebEngineView::imeCompositionQueryEvent()
                  "  <input type='text' id='input1' />"
                  "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     evaluateJavaScriptSync(view.page(), "document.getElementById('input1').focus()");
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));

@@ -55,7 +55,8 @@ qtConfig(webengine-testsupport) {
         $$PWD/data/tst_inputMethod.qml \
         $$PWD/data/tst_linkHovered.qml \
         $$PWD/data/tst_loadFail.qml \
-        $$PWD/data/tst_mouseClick.qml
+        $$PWD/data/tst_mouseClick.qml \
+        $$PWD/data/tst_viewSoure.qml
      qtHaveModule(quickcontrols): QML_TESTS += $$PWD/data/tst_javaScriptDialogs.qml
 } else {
     PLUGIN_EXTENSION = .so

@@ -85,12 +85,14 @@ WebEngineView {
 
     function getElementCenter(element) {
             var center;
-            runJavaScript("(function() {" +
+            testCase.tryVerify(function() {
+                runJavaScript("(function() {" +
                           "   var elem = document.getElementById('" + element + "');" +
                           "   var rect = elem.getBoundingClientRect();" +
                           "   return { 'x': (rect.left + rect.right) / 2, 'y': (rect.top + rect.bottom) / 2 };" +
                           "})();", function(result) { center = result } );
-            testCase.tryVerify(function() { return center !== undefined; });
+                return center !== undefined;
+            });
             return center;
     }
 

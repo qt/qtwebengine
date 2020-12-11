@@ -360,8 +360,13 @@ QWebEnginePagePrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebC
     Q_UNUSED(targetUrl);
 
     QWebEnginePage *newPage = q->createWindow(toWindowType(disposition));
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     if (!newPage)
         return nullptr;
+#else
+    if (!newPage)
+        return adapter;
+#endif
 
     if (!newWebContents->webContents())
         return newPage->d_func()->adapter; // Reuse existing adapter

@@ -22,6 +22,9 @@ SUBDIRS += \
     qwebenginesettings \
     qwebengineview
 
+# Synthetic touch events are not supported on macOS
+!macos: SUBDIRS += touchinput
+
 qtConfig(accessibility) {
     SUBDIRS += accessibility
 }

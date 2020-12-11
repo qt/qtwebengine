@@ -202,6 +202,7 @@ private:
     QSharedPointer<WebContentsAdapter>
     createWindow(std::unique_ptr<content::WebContents> new_contents,
                  WindowOpenDisposition disposition, const gfx::Rect &initial_pos,
+                 const QUrl &url,
                  bool user_gesture);
     void EmitLoadStarted(const QUrl &url, bool isErrorPage = false);
     void EmitLoadFinished(bool success, const QUrl &url, bool isErrorPage = false, int errorCode = 0, const QString &errorDescription = QString());
@@ -219,7 +220,6 @@ private:
     SavePageInfo m_savePageInfo;
     QSharedPointer<FilePickerController> m_filePickerController;
     QUrl m_initialTargetUrl;
-    int m_lastLoadProgress;
     LoadingState m_loadingState;
     bool m_didStartLoadingSeen;
     FrameFocusedObserver m_frameFocusedObserver;
@@ -231,6 +231,9 @@ private:
     int m_desktopStreamCount = 0;
     mutable bool m_pendingUrlUpdate = false;
 
+    QMap<QUrl, int> m_loadProgressMap;
+    QUrl m_lastLoadedUrl;
+    bool m_isNavigationCommitted = false;
     base::WeakPtrFactory<WebContentsDelegateQt> m_weakPtrFactory { this };
     QList<QWeakPointer<CertificateErrorController>> m_certificateErrorControllers;
 };

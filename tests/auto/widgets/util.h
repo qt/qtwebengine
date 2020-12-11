@@ -184,6 +184,43 @@ static inline bool loadSync(QWebEngineView *view, const QUrl &url, bool ok = tru
     return loadSync(view->page(), url, ok);
 }
 
+static inline QPoint elementCenter(QWebEnginePage *page, const QString &id)
+{
+    const QString jsCode(
+            "(function(){"
+            "   var elem = document.getElementById('" + id + "');"
+            "   var rect = elem.getBoundingClientRect();"
+            "   return [(rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2];"
+            "})()");
+    QVariantList rectList = evaluateJavaScriptSync(page, jsCode).toList();
+
+    if (rectList.count() != 2) {
+        qWarning("elementCenter failed.");
+        return QPoint();
+    }
+
+    return QPoint(rectList.at(0).toInt(), rectList.at(1).toInt());
+}
+
+static inline QRect elementGeometry(QWebEnginePage *page, const QString &id)
+{
+    const QString jsCode(
+                "(function() {"
+                "   var elem = document.getElementById('" + id + "');"
+                "   var rect = elem.getBoundingClientRect();"
+                "   return [rect.left, rect.top, rect.right, rect.bottom];"
+                "})()");
+    QVariantList coords = evaluateJavaScriptSync(page, jsCode).toList();
+
+    if (coords.count() != 4) {
+        qWarning("elementGeometry faield.");
+        return QRect();
+    }
+
+    return QRect(coords[0].toInt(), coords[1].toInt(), coords[2].toInt(), coords[3].toInt());
+}
+
+
 #define W_QSKIP(a, b) QSKIP(a)
 
 #define W_QTEST_MAIN(TestObject, params) \

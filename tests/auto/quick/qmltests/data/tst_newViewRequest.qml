@@ -38,6 +38,13 @@ TestWebEngineView {
     property var newViewRequest: null
     property var dialog: null
     property string viewType: ""
+    property var loadRequestArray: []
+
+    onLoadingChanged: {
+        loadRequestArray.push({
+            "status": loadRequest.status,
+        });
+    }
 
     SignalSpy {
         id: newViewRequestedSpy
@@ -81,6 +88,7 @@ TestWebEngineView {
             newViewRequestedSpy.clear();
             newViewRequest = null;
             viewType = "";
+            loadRequestArray = [];
         }
 
         function cleanup() {
@@ -163,6 +171,23 @@ TestWebEngineView {
                 }
                 newViewRequestedSpy.clear();
             }
+
+            loadRequestArray = [];
+            compare(loadRequestArray.length, 0);
+            webEngineView.url = Qt.resolvedUrl("test2.html");
+            verify(webEngineView.waitForLoadSucceeded());
+            var center = getElementCenter("link");
+            mouseClick(webEngineView, center.x, center.y, Qt.LeftButton, Qt.ControlModifier);
+            tryCompare(newViewRequestedSpy, "count", 1);
+            compare(newViewRequest.requestedUrl, Qt.resolvedUrl("test1.html"));
+            compare(newViewRequest.destination, WebEngineView.NewViewInBackgroundTab);
+            verify(newViewRequest.userInitiated);
+            if (viewType === "" || viewType === "null") {
+                compare(loadRequestArray[0].status, WebEngineView.LoadStartedStatus);
+                compare(loadRequestArray[1].status, WebEngineView.LoadSucceededStatus);
+                compare(loadRequestArray.length, 2);
+            }
+            newViewRequestedSpy.clear();
         }
     }
 }

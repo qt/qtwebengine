@@ -79,8 +79,8 @@ bool GLOzoneEGLQt::LoadGLES2Bindings(gl::GLImplementation /*implementation*/)
                                                           "eglGetProcAddress"));
     if (!get_proc_address) {
         // QTBUG-63341 most likely libgles2 not linked with libegl -> fallback to qpa
-        QFunctionPointer address = GLContextHelper::getEglGetProcAddress();
-        get_proc_address = reinterpret_cast<gl::GLGetProcAddressProc>(address);
+        get_proc_address =
+                reinterpret_cast<gl::GLGetProcAddressProc>(GLContextHelper::getEglGetProcAddress());
     }
 
     if (!get_proc_address) {

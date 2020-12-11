@@ -63,7 +63,9 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
+#include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/content_switches_internal.h"
+#include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/input_messages.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -86,6 +88,7 @@
 
 #include <QGuiApplication>
 #include <QPixmap>
+#include <QScopeGuard>
 #include <QScreen>
 #include <QWindow>
 
@@ -767,7 +770,8 @@ void RenderWidgetHostViewQt::notifyHidden()
 void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) {
     Q_UNUSED(touch);
     const bool eventConsumed = ack_result == content::INPUT_EVENT_ACK_STATE_CONSUMED;
-    m_gestureProvider.OnTouchEventAck(touch.event.unique_touch_event_id, eventConsumed, /*fixme: ?? */false);
+    const bool isSetNonBlocking = content::InputEventAckStateIsSetNonBlocking(ack_result);
+    m_gestureProvider.OnTouchEventAck(touch.event.unique_touch_event_id, eventConsumed, isSetNonBlocking);
 }
 
 void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEvent)

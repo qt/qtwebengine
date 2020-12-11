@@ -140,9 +140,13 @@ private:
     std::string m_editCommand;
 
     // Touch
-    QList<QTouchEvent::TouchPoint> m_previousTouchPoints;
+    typedef QPair<int, QTouchEvent::TouchPoint> TouchPoint;
+    QList<TouchPoint> mapTouchPointIds(const QList<QTouchEvent::TouchPoint> &input);
+    QMap<int, int> m_touchIdMapping;
+    QList<TouchPoint> m_previousTouchPoints;
     bool m_touchMotionStarted = false;
     bool m_sendMotionActionDown = false;
+    int64_t m_eventsToNowDelta = 0; // delta for first touch in microseconds
 
     // IME
     bool m_receivedEmptyImeEvent = false;

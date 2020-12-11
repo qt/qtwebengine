@@ -71,6 +71,12 @@
 
 #include <QtCore/qcoreapplication.h>
 
+#if defined(WEBRTC_USE_X11)
+#include <dlfcn.h>
+#include <X11/extensions/Xrandr.h>
+#include <X11/Xlib.h>
+#endif
+
 namespace QtWebEngineCore {
 
 using content::BrowserThread;
@@ -117,25 +123,16 @@ void getDevicesForDesktopCapture(blink::MediaStreamDevices *devices,
 
 content::DesktopMediaID getDefaultScreenId()
 {
-    // While this function is executing another thread may also want to create a
-    // DesktopCapturer [1]. Unfortunately, creating a DesktopCapturer is not
-    // thread safe on X11 due to the use of webrtc::XErrorTrap. It's safe to
-    // disable this code on X11 since we don't actually need to create a
-    // DesktopCapturer to get the screen id anyway
-    // (ScreenCapturerLinux::GetSourceList always returns 0 as the id).
-    //
-    // [1]: webrtc::InProcessVideoCaptureDeviceLauncher::DoStartDesktopCaptureOnDeviceThread
-
-#if QT_CONFIG(webengine_webrtc) && !defined(WEBRTC_USE_X11)
+#if QT_CONFIG(webengine_webrtc)
     // Source id patterns are different across platforms.
-    // On Linux, the hardcoded value "0" is used.
+    // On Linux and macOS, the source ids are randomish numbers assigned by the OS.
     // On Windows, the screens are enumerated consecutively in increasing order from 0.
-    // On macOS the source ids are randomish numbers assigned by the OS.
 
     // In order to provide a correct screen id, we query for the available screen ids, and
     // select the first one as the main display id.
+#if !defined(WEBRTC_USE_X11)
     // The code is based on the file
-    // src/chrome/browser/extensions/api/desktop_capture/desktop_capture_base.cc.
+    // chrome/browser/media/webrtc/native_desktop_media_list.cc.
     webrtc::DesktopCaptureOptions options =
             webrtc::DesktopCaptureOptions::CreateDefault();
     options.set_disable_effects(false);
@@ -150,7 +147,60 @@ content::DesktopMediaID getDefaultScreenId()
             }
         }
     }
-#endif
+#else
+    // This is a workaround to avoid thread issues with DesktopCapturer [1]. Unfortunately,
+    // creating a DesktopCapturer is not thread safe on X11 due to the use of webrtc::XErrorTrap.
+    // Can be removed if https://crbug.com/2022 and/or https://crbug.com/570852 are fixed.
+    // The code is based on the file
+    // third_party/webrtc/modules/desktop_capture/linux/screen_capturer_x11.cc.
+    //
+    // [1]: webrtc::InProcessVideoCaptureDeviceLauncher::DoStartDesktopCaptureOnDeviceThread
+    Display *display = XOpenDisplay(nullptr);
+    if (!display) {
+        qWarning("Unable to open display.");
+        return content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0);
+    }
+
+    int randrEventBase = 0;
+    int errorBaseIgnored = 0;
+    if (!XRRQueryExtension(display, &randrEventBase, &errorBaseIgnored)) {
+        qWarning("X server does not support XRandR.");
+        return content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0);
+    }
+
+    int majorVersion = 0;
+    int minorVersion = 0;
+    if (!XRRQueryVersion(display, &majorVersion, &minorVersion)) {
+        qWarning("X server does not support XRandR.");
+        return content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0);
+    }
+
+    if (majorVersion < 1 || (majorVersion == 1 && minorVersion < 5)) {
+        qWarning("XRandR entension is older than v1.5.");
+        return content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0);
+    }
+
+    typedef XRRMonitorInfo *(*GetMonitorsFunc)(Display *, Window, Bool, int *);
+    GetMonitorsFunc getMonitors = reinterpret_cast<GetMonitorsFunc>(dlsym(RTLD_DEFAULT, "XRRGetMonitors"));
+    typedef void (*FreeMonitorsFunc)(XRRMonitorInfo*);
+    FreeMonitorsFunc freeMonitors = reinterpret_cast<FreeMonitorsFunc>(dlsym(RTLD_DEFAULT, "XRRFreeMonitors"));
+    if (!getMonitors && !freeMonitors) {
+        qWarning("Unable to link XRandR monitor functions.");
+        return content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0);
+    }
+
+    Window rootWindow = RootWindow(display, DefaultScreen(display));
+    if (rootWindow == BadValue) {
+        qWarning("Unable to get the root window.");
+        return content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0);
+    }
+
+    int numMonitors = 0;
+    XRRMonitorInfo *monitors = getMonitors(display, rootWindow, true, &numMonitors);
+    if (numMonitors > 0)
+        return content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, monitors[0].name);
+#endif // !defined(WEBRTC_USE_X11)
+#endif // QT_CONFIG(webengine_webrtc)
 
     return content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0);
 }
@@ -272,7 +322,8 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
                 break;
             }
         } else if (desktopVideoRequested) {
-            getDevicesForDesktopCapture(&devices, getDefaultScreenId(), desktopAudioRequested,
+            bool captureAudio = desktopAudioRequested && m_loopbackAudioSupported;
+            getDevicesForDesktopCapture(&devices, getDefaultScreenId(), captureAudio,
                                         request.video_type, request.audio_type);
         }
     }
@@ -309,6 +360,10 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
     // content::NOTIFICATION_WEB_CONTENTS_DESTROYED, and that will result in
     // possible use after free.
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+#if defined(OS_WIN)
+    // Currently loopback audio capture is supported only on Windows.
+    m_loopbackAudioSupported = true;
+#endif
     m_notificationsRegistrar.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                                  content::NotificationService::AllSources());
 }
@@ -383,9 +438,11 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
     }
 
     // Audio is only supported for screen capture streams.
-    bool capture_audio = (mediaId.type == content::DesktopMediaID::TYPE_SCREEN && request.audio_type == MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE);
+    bool audioRequested = request.audio_type == MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE;
+    bool audioSupported = (mediaId.type == content::DesktopMediaID::TYPE_SCREEN && m_loopbackAudioSupported);
+    bool captureAudio = (audioRequested && audioSupported);
 
-    getDevicesForDesktopCapture(&devices, mediaId, capture_audio, request.video_type, request.audio_type);
+    getDevicesForDesktopCapture(&devices, mediaId, captureAudio, request.video_type, request.audio_type);
 
     if (devices.empty())
         std::move(callback).Run(devices, MediaStreamRequestResult::INVALID_STATE,

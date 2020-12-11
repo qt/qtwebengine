@@ -90,6 +90,7 @@ private:
     QUrl m_url;
     QStringList m_dirs;
     bool m_error = false;
+    bool m_ignoreNewConnection = false;
     bool m_expectingError = false;
 };
 

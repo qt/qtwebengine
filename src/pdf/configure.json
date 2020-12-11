@@ -2,7 +2,7 @@
     "module": "pdf",
     "depends" : [ "buildtools-private" ],
     "testDir": "../../config.tests",
-    "condition": "features.build-qtpdf && features.webengine-qtpdf-support",
+    "condition": "module.gui && features.webengine-qtpdf-support && features.build-qtpdf",
     "libraries": {
     },
     "tests": {

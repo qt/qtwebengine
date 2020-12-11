@@ -1001,6 +1001,7 @@ void tst_QQuickWebEngineView::inputEventForwardingDisabledWhenActiveFocusOnPress
 
 void tst_QQuickWebEngineView::changeLocale()
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     QStringList errorLines;
     QUrl url("http://non.existent/");
 
@@ -1036,6 +1037,7 @@ void tst_QQuickWebEngineView::changeLocale()
     QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").isNull());
     errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
+#endif
 }
 
 void tst_QQuickWebEngineView::userScripts()
@@ -1181,6 +1183,9 @@ void tst_QQuickWebEngineView::focusChild_data()
 
 void tst_QQuickWebEngineView::focusChild()
 {
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 1)
+    QSKIP("Requires newer base Qt");
+#endif
     auto traverseToWebDocumentAccessibleInterface = [](QAccessibleInterface *iface) -> QAccessibleInterface * {
         QFETCH(QList<QAccessible::Role>, ancestorRoles);
         for (int i = 0; i < ancestorRoles.size(); ++i) {

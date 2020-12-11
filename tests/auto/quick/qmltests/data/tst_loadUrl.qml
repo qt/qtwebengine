@@ -301,8 +301,8 @@ TestWebEngineView {
             // In-page navigation.
             webEngineView.url = Qt.resolvedUrl("test4.html#content");
             // In-page navigation doesn't trigger load succeeded, wait for load progress instead.
+            tryCompare(loadRequestArray, "length", 3);
             tryCompare(webEngineView, "loadProgress", 100);
-            compare(loadRequestArray.length, 3);
             compare(loadRequestArray[2].status, WebEngineView.LoadStartedStatus);
 
             // Load after in-page navigation.

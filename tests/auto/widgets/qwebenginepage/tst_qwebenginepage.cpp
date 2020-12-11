@@ -3468,7 +3468,11 @@ void tst_QWebEnginePage::openLinkInNewPage_data()
     // the disposition and performing the navigation request normally.
 
     QTest::newRow("BlockPopup")     << Decision::ReturnNull  << Cause::TargetBlank << Effect::Blocked;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QTest::newRow("IgnoreIntent")   << Decision::ReturnNull  << Cause::MiddleClick << Effect::Blocked;
+#else
     QTest::newRow("IgnoreIntent")   << Decision::ReturnNull  << Cause::MiddleClick << Effect::LoadInSelf;
+#endif
     QTest::newRow("OverridePopup")  << Decision::ReturnSelf  << Cause::TargetBlank << Effect::LoadInSelf;
     QTest::newRow("OverrideIntent") << Decision::ReturnSelf  << Cause::MiddleClick << Effect::LoadInSelf;
     QTest::newRow("AcceptPopup")    << Decision::ReturnOther << Cause::TargetBlank << Effect::LoadInOther;
@@ -3545,7 +3549,10 @@ void tst_QWebEnginePage::openLinkInNewPage()
 
     switch (effect) {
     case Effect::Blocked:
-        // Nothing to test
+        // Test nothing new loaded
+        QTest::qWait(500);
+        QCOMPARE(page1.spy.count(), 0);
+        QCOMPARE(page2.spy.count(), 0);
         break;
     case Effect::LoadInSelf:
         QTRY_COMPARE(page1.spy.count(), 1);

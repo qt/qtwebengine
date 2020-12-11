@@ -52,6 +52,7 @@ private Q_SLOTS:
     void secondLoadForError_WhenErrorPageEnabled();
     void loadAfterInPageNavigation_qtbug66869();
     void fileDownloadDoesNotTriggerLoadSignals_qtbug66661();
+    void numberOfStartedAndFinishedSignalsIsSame();
 
 private:
     QWebEngineProfile profile;
@@ -241,6 +242,45 @@ void tst_LoadSignals::fileDownloadDoesNotTriggerLoadSignals_qtbug66661()
     // No further loadStarted should have occurred within this time
     QCOMPARE(loadStartedSpy.size(), 1);
     QCOMPARE(loadFinishedSpy.size(), 1);
+}
+
+void tst_LoadSignals::numberOfStartedAndFinishedSignalsIsSame() {
+
+    HttpServer server;
+    server.setResourceDirs({ TESTS_SOURCE_DIR "/qwebengineprofile/resources" });
+    connect(&server, &HttpServer::newRequest, [] (HttpReqRep *) {
+         QTest::qWait(250); // just add delay to trigger some progress for every sub resource
+    });
+    QVERIFY(server.start());
+
+    view.load(server.url("/hedgehog.png"));
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QVERIFY(loadFinishedSpy[0][0].toBool());
+
+    loadStartedSpy.clear();
+    loadFinishedSpy.clear();
+    loadProgressSpy.clear();
+
+    view.page()->setHtml("<html><body>"
+                         "<img src=\"" + server.url("/hedgehog.png").toEncoded() + "\">"
+                         "<form method='GET' name='hiddenform' action='qrc:///resources/page1.html' />"
+                         "<script language='javascript'>document.forms[0].submit();</script>"
+                         "</body></html>");
+
+    QTRY_COMPARE(loadStartedSpy.size(), 2);
+    QTRY_COMPARE(loadFinishedSpy.size(), 2);
+
+    QTRY_VERIFY(!loadFinishedSpy[0][0].toBool());
+    QTRY_VERIFY(loadFinishedSpy[1][0].toBool());
+
+    view.page()->setHtml("<html><body>"
+                         "<form method='GET' name='hiddenform' action='qrc:///resources/page1.html' />"
+                         "<script language='javascript'>document.forms[0].submit();</script>"
+                         "</body></html>");
+    QTRY_COMPARE(loadStartedSpy.size(), 4);
+    QTRY_COMPARE(loadFinishedSpy.size(), 4);
+    QVERIFY(loadFinishedSpy[2][0].toBool());
+    QVERIFY(loadFinishedSpy[3][0].toBool());
 }
 
 QTEST_MAIN(tst_LoadSignals)
