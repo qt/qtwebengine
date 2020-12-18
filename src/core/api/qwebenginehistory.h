@@ -41,6 +41,7 @@
 #define QWEBENGINEHISTORY_H
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
+#include <QtCore/QAbstractListModel>
 #include <QtCore/qurl.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qdatetime.h>
@@ -50,15 +51,20 @@
 QT_BEGIN_NAMESPACE
 
 class QWebEngineHistory;
+class QWebEngineHistoryPrivate;
 class QWebEngineHistoryItemPrivate;
+class QWebEngineHistoryModelPrivate;
 class QWebEnginePage;
 class QWebEnginePagePrivate;
+class QQuickWebEngineViewPrivate;
 
 class Q_WEBENGINECORE_EXPORT QWebEngineHistoryItem
 {
 public:
     QWebEngineHistoryItem(const QWebEngineHistoryItem &other);
+    QWebEngineHistoryItem(QWebEngineHistoryItem &&other);
     QWebEngineHistoryItem &operator=(const QWebEngineHistoryItem &other);
+    QWebEngineHistoryItem &operator=(QWebEngineHistoryItem &&other);
     ~QWebEngineHistoryItem();
 
     QUrl originalUrl() const;
@@ -80,13 +86,47 @@ private:
     friend class QWebEngineHistoryPrivate;
 };
 
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QWebEngineHistoryItem)
+Q_DECLARE_SHARED(QWebEngineHistoryItem)
 
-class QWebEngineHistoryPrivate;
-class Q_WEBENGINECORE_EXPORT QWebEngineHistory
+class Q_WEBENGINECORE_EXPORT QWebEngineHistoryModel : public QAbstractListModel
 {
+    Q_OBJECT
+
 public:
-    void clear();
+    enum Roles {
+        UrlRole = Qt::UserRole,
+        TitleRole,
+        OffsetRole,
+        IconUrlRole,
+    };
+
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    QHash<int, QByteArray> roleNames() const override;
+    void reset();
+
+private:
+    QWebEngineHistoryModel(QWebEngineHistoryModelPrivate *);
+    virtual ~QWebEngineHistoryModel();
+
+    Q_DISABLE_COPY(QWebEngineHistoryModel)
+    Q_DECLARE_PRIVATE(QWebEngineHistoryModel)
+    QScopedPointer<QWebEngineHistoryModelPrivate> d_ptr;
+
+    friend class QWebEngineHistory;
+    friend class QWebEngineHistoryPrivate;
+    friend void QScopedPointerDeleter<QWebEngineHistoryModel>::cleanup(QWebEngineHistoryModel *) noexcept;
+};
+
+class Q_WEBENGINECORE_EXPORT QWebEngineHistory : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QWebEngineHistoryModel *items READ itemsModel CONSTANT FINAL)
+    Q_PROPERTY(QWebEngineHistoryModel *backItems READ backItemsModel CONSTANT FINAL)
+    Q_PROPERTY(QWebEngineHistoryModel *forwardItems READ forwardItemsModel CONSTANT FINAL)
+
+public:
+    Q_REVISION(1) Q_INVOKABLE void clear();
 
     QList<QWebEngineHistoryItem> items() const;
     QList<QWebEngineHistoryItem> backItems(int maxItems) const;
@@ -108,6 +148,10 @@ public:
 
     int count() const;
 
+    QWebEngineHistoryModel *itemsModel() const;
+    QWebEngineHistoryModel *backItemsModel() const;
+    QWebEngineHistoryModel *forwardItemsModel() const;
+
 private:
     QWebEngineHistory(QWebEngineHistoryPrivate *d);
     ~QWebEngineHistory();
@@ -116,10 +160,14 @@ private:
     Q_DECLARE_PRIVATE(QWebEngineHistory)
     QScopedPointer<QWebEngineHistoryPrivate> d_ptr;
 
+    void reset();
+
     friend Q_WEBENGINECORE_EXPORT QDataStream &operator>>(QDataStream &, QWebEngineHistory &);
     friend Q_WEBENGINECORE_EXPORT QDataStream &operator<<(QDataStream &, const QWebEngineHistory &);
     friend class QWebEnginePage;
     friend class QWebEnginePagePrivate;
+    friend class QQuickWebEngineViewPrivate;
+    friend void QScopedPointerDeleter<QWebEngineHistory>::cleanup(QWebEngineHistory *) noexcept;
 };
 
 QT_END_NAMESPACE

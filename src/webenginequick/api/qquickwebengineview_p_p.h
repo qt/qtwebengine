@@ -82,6 +82,7 @@ class QQuickWebEngineFaviconProvider;
 class QQuickWebEngineProfilePrivate;
 class QQuickWebEngineTouchHandleProvider;
 class QWebEngineFindTextResult;
+class QWebEngineHistory;
 
 #if QT_CONFIG(webenginequick_testsupport)
 class QQuickWebEngineTestSupport;
@@ -187,7 +188,7 @@ public:
 
     QQuickWebEngineProfile *m_profile;
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter;
-    QScopedPointer<QQuickWebEngineHistory> m_history;
+    QScopedPointer<QWebEngineHistory> m_history;
     QScopedPointer<QQuickWebEngineSettings> m_settings;
 #if QT_CONFIG(webenginequick_testsupport)
     QQuickWebEngineTestSupport *m_testSupport;

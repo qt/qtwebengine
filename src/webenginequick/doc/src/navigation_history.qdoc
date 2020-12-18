@@ -1,0 +1,137 @@
+/****************************************************************************
+**
+** Copyright (C) 2020 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \qmltype WebEngineHistoryModel
+    \instantiates QWebEngineHistoryModel
+    \inqmlmodule QtWebEngine
+    \since QtWebEngine 1.1
+
+    \brief A data model that represents the history of a web engine page.
+
+    The WebEngineHistoryModel type exposes the \e title, \e url, \e icon, and \e offset roles.
+    The \e title, \e url and \e icon specify the title, URL, and favicon of the visited page.
+    The \e offset specifies
+    the position of the page in respect to the current page (0). A positive number indicates that
+    the page was visited after the current page, whereas a negative number indicates that the page
+    was visited before the current page.
+
+    This type is uncreatable, but it can be accessed by using the
+    \l{WebEngineView::navigationHistory}{WebEngineView.navigationHistory} property.
+
+    \sa WebEngineHistory
+*/
+
+/*!
+    \qmltype WebEngineHistory
+    \instantiates QWebEngineHistory
+    \inqmlmodule QtWebEngine
+    \since QtWebEngine 1.1
+
+    \brief Provides data models that represent the history of a web engine page.
+
+    The WebEngineHistory type can be accessed by using the
+    \l{WebEngineView::navigationHistory}{WebEngineView.navigationHistory} property.
+
+    The WebEngineHistory type provides the following WebEngineHistoryModel data model objects:
+
+    \list
+        \li \c backItems, which contains the URLs of visited pages.
+        \li \c forwardItems, which contains the URLs of the pages that were visited after visiting
+            the current page.
+        \li \c items, which contains the URLs of the back and forward items, as well as the URL of
+            the current page.
+    \endlist
+
+    The easiest way to use these models is to use them in a ListView as illustrated by the
+    following code snippet:
+
+    \code
+    ListView {
+        id: historyItemsList
+        anchors.fill: parent
+        model: webEngineView.navigationHistory.items
+        delegate:
+            Text {
+                color: "black"
+                text: model.title + " - " + model.url + " (" + model.offset + ")"
+            }
+    }
+    \endcode
+
+    The ListView shows the content of the corresponding model. The delegate is responsible for the
+    format of the list items. The appearance of each item of the list in the delegate can be defined
+    separately (it is not web engine specific).
+
+    The model roles \e title, \e url, and \e icon specify the title, URL, and favicon of the
+    visited page. The \e offset
+    role specifies the position of the page in respect to the current page (0). A positive number
+    indicates that the page was visited after the current page, whereas a negative number indicates
+    that the page was visited before the current page.
+
+    The data models can also be used to create a menu, as illustrated by the following code
+    snippet:
+
+    \quotefromfile webengine/quicknanobrowser/BrowserWindow.qml
+    \skipto ToolBar
+    \printuntil onObjectRemoved
+    \printuntil }
+    \printuntil }
+    \printuntil }
+
+    For the complete example, see \l{WebEngine Quick Nano Browser}.
+
+    \sa WebEngineHistoryModel
+*/
+
+/*!
+    \qmlproperty WebEngineHistoryModel WebEngineHistory::items
+    \readonly
+
+    URLs of back items, forward items, and the current item in the history.
+*/
+
+/*!
+    \qmlproperty WebEngineHistoryModel WebEngineHistory::backItems
+    \readonly
+
+    URLs of visited pages.
+*/
+
+/*!
+    \qmlproperty WebEngineHistoryModel WebEngineHistory::forwardItems
+    \readonly
+
+    URLs of the pages that were visited after visiting the current page.
+*/
+
+/*!
+    \qmlmethod void WebEngineHistory::clear()
+    \since QtWebEngine 1.11
+
+    Clears the history.
+*/

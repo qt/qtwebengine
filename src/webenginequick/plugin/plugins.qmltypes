@@ -641,7 +641,7 @@ Module {
         Method { name: "reject" }
     }
     Component {
-        name: "QQuickWebEngineHistory"
+        name: "QWebEngineHistory"
         defaultProperty: "data"
         prototype: "QQuickItem"
         exports: ["QtWebEngine/NavigationHistory 1.1"]
@@ -649,27 +649,27 @@ Module {
         exportMetaObjectRevisions: [0]
         Property {
             name: "items"
-            type: "QQuickWebEngineHistoryListModel"
+            type: "QWebEngineHistoryModel"
             isReadonly: true
             isPointer: true
         }
         Property {
             name: "backItems"
-            type: "QQuickWebEngineHistoryListModel"
+            type: "QWebEngineHistoryModel"
             isReadonly: true
             isPointer: true
         }
         Property {
             name: "forwardItems"
-            type: "QQuickWebEngineHistoryListModel"
+            type: "QWebEngineHistoryModel"
             isReadonly: true
             isPointer: true
         }
     }
     Component {
-        name: "QQuickWebEngineHistoryListModel"
+        name: "QWebEngineHistoryModel"
         prototype: "QAbstractListModel"
-        exports: ["QtWebEngine/NavigationHistoryListModel 1.1"]
+        exports: ["QtWebEngine/NavigationHistoryModel 1.1"]
         isCreatable: false
         exportMetaObjectRevisions: [0]
     }
@@ -1324,7 +1324,7 @@ Module {
         Property {
             name: "navigationHistory"
             revision: 1
-            type: "QQuickWebEngineHistory"
+            type: "QWebEngineHistory"
             isReadonly: true
             isPointer: true
         }

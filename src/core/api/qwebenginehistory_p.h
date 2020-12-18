@@ -51,33 +51,83 @@
 // We mean it.
 //
 #include "qtwebenginecoreglobal_p.h"
+#include "qwebenginehistory.h"
 #include <QtCore/qshareddata.h>
 
 namespace QtWebEngineCore {
+class WebContentsAdapter;
 class WebContentsAdapterClient;
 }
 
 QT_BEGIN_NAMESPACE
+
 class QWebEnginePagePrivate;
 
 class QWebEngineHistoryItemPrivate : public QSharedData
 {
 public:
-    QWebEngineHistoryItemPrivate(QtWebEngineCore::WebContentsAdapterClient *adapter = nullptr,
-                                 int index = 0);
-    QtWebEngineCore::WebContentsAdapterClient *m_adapter;
+    QWebEngineHistoryItemPrivate(QtWebEngineCore::WebContentsAdapterClient *client = nullptr, int index = 0);
+    QtWebEngineCore::WebContentsAdapter *adapter() const;
+    QtWebEngineCore::WebContentsAdapterClient *client;
     int index;
+};
+
+class QWebEngineHistoryModelPrivate
+{
+public:
+    QWebEngineHistoryModelPrivate(const QWebEngineHistoryPrivate *history);
+    virtual ~QWebEngineHistoryModelPrivate();
+
+    virtual int count() const;
+    virtual int index(int) const;
+    virtual int offsetForIndex(int) const;
+
+    QtWebEngineCore::WebContentsAdapter *adapter() const;
+    const QWebEngineHistoryPrivate *history;
+};
+
+class QWebEngineBackHistoryModelPrivate : public QWebEngineHistoryModelPrivate
+{
+public:
+    QWebEngineBackHistoryModelPrivate(const QWebEngineHistoryPrivate *history)
+        : QWebEngineHistoryModelPrivate(history) { }
+
+    int count() const override;
+    int index(int) const override;
+    int offsetForIndex(int) const override;
+};
+
+class QWebEngineForwardHistoryModelPrivate : public QWebEngineHistoryModelPrivate
+{
+public:
+    QWebEngineForwardHistoryModelPrivate(const QWebEngineHistoryPrivate *history)
+        : QWebEngineHistoryModelPrivate(history) { }
+
+    int count() const override;
+    int index(int) const override;
+    int offsetForIndex(int) const override;
 };
 
 class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineHistoryPrivate
 {
 public:
-    QWebEngineHistoryPrivate(QtWebEngineCore::WebContentsAdapterClient *adapter);
+    typedef std::function<QUrl (const QUrl &)> ImageProviderUrl;
+    QWebEngineHistoryPrivate(QtWebEngineCore::WebContentsAdapterClient *client,
+                             const ImageProviderUrl &imageProviderUrl = ImageProviderUrl());
     ~QWebEngineHistoryPrivate();
-    void updateItems() const;
 
-    QtWebEngineCore::WebContentsAdapterClient *m_adapter;
+    void updateItems() const;
+    QtWebEngineCore::WebContentsAdapter *adapter() const;
+
+    QtWebEngineCore::WebContentsAdapterClient *client;
+
+    ImageProviderUrl imageProviderUrl;
+    QUrl urlOrImageProviderUrl(const QUrl &url) const { return imageProviderUrl ? imageProviderUrl(url) : url; }
+
     mutable QList<QWebEngineHistoryItem> items;
+    mutable QScopedPointer<QWebEngineHistoryModel> navigationModel;
+    mutable QScopedPointer<QWebEngineHistoryModel> backNavigationModel;
+    mutable QScopedPointer<QWebEngineHistoryModel> forwardNavigationModel;
 };
 
 QT_END_NAMESPACE

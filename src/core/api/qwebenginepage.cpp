@@ -2389,8 +2389,7 @@ QWebEnginePage* QWebEnginePage::fromDownloadRequest(QWebEngineDownloadRequest *r
 
 QDataStream &operator<<(QDataStream &stream, const QWebEngineHistory &history)
 {
-    QtWebEngineCore::WebContentsAdapter *adapter =
-            history.d_func()->m_adapter->webContentsAdapter();
+    auto adapter = history.d_func()->adapter();
     if (!adapter->isInitialized())
         adapter->loadDefault();
     adapter->serializeNavigationHistory(stream);
@@ -2399,8 +2398,7 @@ QDataStream &operator<<(QDataStream &stream, const QWebEngineHistory &history)
 
 QDataStream &operator>>(QDataStream &stream, QWebEngineHistory &history)
 {
-    static_cast<QWebEnginePagePrivate *>(history.d_func()->m_adapter)
-            ->recreateFromSerializedHistory(stream);
+    static_cast<QWebEnginePagePrivate *>(history.d_func()->client)->recreateFromSerializedHistory(stream);
     return stream;
 }
 

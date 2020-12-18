@@ -42,7 +42,6 @@
 
 #include <QtWebEngineQuick/private/qquickwebengineclientcertificateselection_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginedialogrequests_p.h>
-#include <QtWebEngineQuick/private/qquickwebenginehistory_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginefaviconprovider_p_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginesettings_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginesingleton_p.h>
@@ -52,6 +51,7 @@
 #include <QtWebEngineCore/qwebenginecertificateerror.h>
 #include <QtWebEngineCore/qwebenginefindtextresult.h>
 #include <QtWebEngineCore/qwebenginefullscreenrequest.h>
+#include <QtWebEngineCore/qwebenginehistory.h>
 #include <QtWebEngineCore/qwebengineloadrequest.h>
 #include <QtWebEngineCore/qwebenginenavigationrequest.h>
 #include <QtWebEngineCore/qwebenginenewwindowrequest.h>
@@ -124,11 +124,9 @@ public:
         qmlRegisterUncreatableType<QQuickWebEngineSettings, 7>(uri, 1, 8, "WebEngineSettings", msgUncreatableType("WebEngineSettings"));
         qmlRegisterUncreatableType<QQuickWebEngineSettings, 8>(uri, 1, 9, "WebEngineSettings", msgUncreatableType("WebEngineSettings"));
         qmlRegisterSingletonType<QQuickWebEngineSingleton>(uri, 1, 1, "WebEngine", webEngineSingletonProvider);
-        qmlRegisterUncreatableType<QQuickWebEngineHistory>(uri, 1, 1, "NavigationHistory",
-            msgUncreatableType("NavigationHistory"));
-        qmlRegisterUncreatableType<QQuickWebEngineHistory, 1>(uri, 1, 11, "NavigationHistory", msgUncreatableType("NavigationHistory"));
-        qmlRegisterUncreatableType<QQuickWebEngineHistoryListModel>(uri, 1, 1, "NavigationHistoryListModel",
-            msgUncreatableType("NavigationHistory"));
+        qmlRegisterUncreatableType<QWebEngineHistory>(uri, 1, 1, "WebEngineHistory", msgUncreatableType("WebEngineHistory"));
+        qmlRegisterUncreatableType<QWebEngineHistory, 1>(uri, 1, 11, "WebEngineHistory", msgUncreatableType("WebEngineHistory"));
+        qmlRegisterUncreatableType<QWebEngineHistoryModel>(uri, 1, 1, "WebEngineHistoryModel", msgUncreatableType("WebEngineHistoryModel"));
         qmlRegisterUncreatableType<QWebEngineFullScreenRequest>(uri, 1, 1, "FullScreenRequest",
             msgUncreatableType("FullScreenRequest"));
 

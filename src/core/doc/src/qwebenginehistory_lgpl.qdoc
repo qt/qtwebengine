@@ -26,7 +26,7 @@
     \class QWebEngineHistoryItem
     \brief The QWebEngineHistoryItem class represents one item in the history of a web engine page.
     \since 5.4
-    \inmodule QtWebEngineWidgets
+    \inmodule QtWebEngineCore
 
     Each web engine history item represents an entry in the history stack of a web page,
     containing information about the page, its location, and the time when it was last visited.
@@ -87,10 +87,40 @@
 */
 
 /*!
+    \class QWebEngineHistoryModel
+    \inqmlmodule QtWebEngineCore
+    \since 6.2
+
+    \brief A data model that represents the history of a web engine page.
+
+    The QWebEngineHistoryModel type exposes the \e title, \e url, \e icon, and \e offset roles.
+    The \e title, \e url and \e icon specify the title, URL, and favicon of the visited page.
+    The \e offset specifies the position of the page in respect to the current page (0).
+    A positive number indicates that the page was visited after the current page, whereas a
+    negative number indicates that the page was visited before the current page.
+
+    This type is uncreatable, but it can be accessed by using the QWebEngineHistory::itemsModel,
+    QWebEngineHistory::backItemsModel, QWebEngineHistory::forwardItemsModel methods.
+
+    \sa QWebEngineHistory
+*/
+
+/*!
+    \enum QWebEngineHistoryModel::Roles
+
+    This enum describes specific roles, which history data model supports.
+
+    \value UrlRole URL of the visited page
+    \value TitleRole Title of the visited page
+    \value OffsetRole The offset of the page in respect to the current page (0)
+    \value IconUrlRole Favicon of the visited page
+*/
+
+/*!
     \class QWebEngineHistory
     \brief The QWebEngineHistory class represents the history of a web engine page.
     \since 5.4
-    \inmodule QtWebEngineWidgets
+    \inmodule QtWebEngineCore
 
     Each web engine page contains a history of visited pages that can be accessed
     by QWebEnginePage::history().
@@ -105,6 +135,16 @@
     obtained by calling the backItems() function; similarly, items describing the
     pages ahead of the current page can be obtained with the forwardItems() function.
     The total list of items is obtained with the items() function.
+
+    Also, the following QWebEngineHistoryModel data model objects are provided:
+
+    \list
+        \li \c backItemsModel(), which contains the URLs of visited pages.
+        \li \c forwardItemsModel(), which contains the URLs of the pages that were visited after visiting
+            the current page.
+        \li \c itemsModel(), which contains the URLs of the back and forward items, as well as the URL of
+            the current page.
+    \endlist
 
     Just as with containers, functions are available to examine the history in terms
     of a list. Arbitrary items in the history can be obtained with itemAt(), the total
@@ -145,6 +185,23 @@
     At most \a maxItems entries are returned.
 
     \sa backItems()
+*/
+
+/*!
+    \fn QWebEngineHistoryModel *QWebEngineHistory::itemsModel
+    Returns the data model, which represents URLs of back items, forward items,
+    and the current item in the history.
+*/
+
+/*!
+    \fn QWebEngineHistoryModel *QWebEngineHistory::backItemsModel
+    Return the data model, which represents URLs of visited pages.
+*/
+
+/*!
+    \fn QWebEngineHistoryModel *QWebEngineHistory::forwardItemsModel
+    Return the data model, which represents URLs of the pages
+    that were visited after visiting the current page.
 */
 
 /*!

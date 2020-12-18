@@ -37,6 +37,7 @@
 #include <QtWebEngineCore/QWebEngineCertificateError>
 #include <QtWebEngineCore/QWebEngineFindTextResult>
 #include <QtWebEngineCore/QWebEngineFullScreenRequest>
+#include <QtWebEngineCore/QWebEngineHistory>
 #include <QtWebEngineCore/QWebEngineNavigationRequest>
 #include <QtWebEngineCore/QWebEngineNewWindowRequest>
 #include <QtWebEngineCore/QWebEngineNotification>
@@ -50,7 +51,6 @@
 #include <private/qquickwebengineaction_p.h>
 #include <private/qquickwebengineclientcertificateselection_p.h>
 #include <private/qquickwebenginedialogrequests_p.h>
-#include <private/qquickwebenginehistory_p.h>
 #include <private/qquickwebenginesettings_p.h>
 #include <private/qquickwebenginesingleton_p.h>
 
@@ -66,8 +66,8 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QQuickWebEngineClientCertificateOption::staticMetaObject
     << &QQuickWebEngineClientCertificateSelection::staticMetaObject
     << &QWebEngineDownloadRequest::staticMetaObject
-    << &QQuickWebEngineHistory::staticMetaObject
-    << &QQuickWebEngineHistoryListModel::staticMetaObject
+    << &QWebEngineHistory::staticMetaObject
+    << &QWebEngineHistoryModel::staticMetaObject
     << &QQuickWebEngineProfile::staticMetaObject
     << &QQuickWebEngineSettings::staticMetaObject
     << &QWebEngineFullScreenRequest::staticMetaObject
@@ -294,10 +294,10 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineFullScreenRequest.origin --> QUrl"
     << "QWebEngineFullScreenRequest.reject() --> void"
     << "QWebEngineFullScreenRequest.toggleOn --> bool"
-    << "QQuickWebEngineHistory.backItems --> QQuickWebEngineHistoryListModel*"
-    << "QQuickWebEngineHistory.clear() --> void"
-    << "QQuickWebEngineHistory.forwardItems --> QQuickWebEngineHistoryListModel*"
-    << "QQuickWebEngineHistory.items --> QQuickWebEngineHistoryListModel*"
+    << "QWebEngineHistory.backItems --> QWebEngineHistoryModel*"
+    << "QWebEngineHistory.clear() --> void"
+    << "QWebEngineHistory.forwardItems --> QWebEngineHistoryModel*"
+    << "QWebEngineHistory.items --> QWebEngineHistoryModel*"
     << "QQuickWebEngineJavaScriptDialogRequest.DialogTypeAlert --> DialogType"
     << "QQuickWebEngineJavaScriptDialogRequest.DialogTypeBeforeUnload --> DialogType"
     << "QQuickWebEngineJavaScriptDialogRequest.DialogTypeConfirm --> DialogType"
@@ -721,7 +721,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.loadProgressChanged() --> void"
     << "QQuickWebEngineView.loading --> bool"
     << "QQuickWebEngineView.loadingChanged(QWebEngineLoadRequest) --> void"
-    << "QQuickWebEngineView.navigationHistory --> QQuickWebEngineHistory*"
+    << "QQuickWebEngineView.navigationHistory --> QWebEngineHistory*"
     << "QQuickWebEngineView.navigationRequested(QWebEngineNavigationRequest*) --> void"
     << "QQuickWebEngineView.newViewRequested(QWebEngineNewWindowRequest*) --> void"
     << "QQuickWebEngineView.pdfPrintingFinished(QString,bool) --> void"

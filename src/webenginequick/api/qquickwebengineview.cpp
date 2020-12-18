@@ -48,7 +48,6 @@
 
 #include "qquickwebengineaction_p.h"
 #include "qquickwebengineaction_p_p.h"
-#include "qquickwebenginehistory_p.h"
 #include "qquickwebengineclientcertificateselection_p.h"
 #include "qquickwebenginedialogrequests_p.h"
 #include "qquickwebenginefaviconprovider_p_p.h"
@@ -63,6 +62,7 @@
 #include "qwebenginenewwindowrequest.h"
 #include "qwebenginequotarequest.h"
 #include "qwebenginescriptcollection.h"
+#include <QtWebEngineCore/private/qwebenginehistory_p.h>
 #include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
 #include "qwebengineregisterprotocolhandlerrequest.h"
 #if QT_CONFIG(webenginequick_testsupport)
@@ -127,7 +127,9 @@ static QLatin1String defaultMimeType("text/html;charset=UTF-8");
 QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     : m_profile(nullptr)
     , adapter(QSharedPointer<WebContentsAdapter>::create())
-    , m_history(new QQuickWebEngineHistory(this))
+    , m_history(new QWebEngineHistory(new QWebEngineHistoryPrivate(this, [] (const QUrl &url) {
+        return QQuickWebEngineFaviconProvider::faviconProviderUrl(url);
+    })))
 #if QT_CONFIG(webenginequick_testsupport)
     , m_testSupport(0)
 #endif
@@ -1521,7 +1523,7 @@ void QQuickWebEngineView::findText(const QString &subString, FindFlags options, 
     d->adapter->findTextHelper()->startFinding(subString, options & FindCaseSensitively, options & FindBackward, callback);
 }
 
-QQuickWebEngineHistory *QQuickWebEngineView::navigationHistory() const
+QWebEngineHistory *QQuickWebEngineView::navigationHistory() const
 {
     Q_D(const QQuickWebEngineView);
     return d->m_history.data();
