@@ -648,6 +648,9 @@ WebEngineContext::WebEngineContext()
     // When enabled, event.movement is calculated in blink instead of in browser.
     appendToFeatureList(disableFeatures, features::kConsolidatedMovementXY.name);
 
+    // Avoid crashing when websites tries using this feature (since 83)
+    appendToFeatureList(disableFeatures, features::kInstalledApp.name);
+
     // Explicitly tell Chromium about default-on features we do not support
     appendToFeatureList(disableFeatures, features::kBackgroundFetch.name);
     appendToFeatureList(disableFeatures, features::kSmsReceiver.name);
