@@ -1,0 +1,3 @@
+dependencies:
+  ../tqtc-qt5.git:
+    ref: "tqtc/lts-5.15"
