@@ -112,6 +112,13 @@ TestWebEngineView {
             simulateUserGesture()
             webEngineView.triggerWebAction(WebEngineView.RequestClose);
             verify(webEngineView.waitForWindowCloseRequested());
+
+            // Navigate away from page with onbeforeunload handler,
+            // otherwise it would trigger an extra dialog request when
+            // navigating in the subsequent test.
+            webEngineView.url = Qt.resolvedUrl("about:blank");
+            verify(webEngineView.waitForLoadSucceeded());
+            compare(JSDialogParams.dialogCount, 2)
         }
 
         function test_rejectClose() {
@@ -123,6 +130,14 @@ TestWebEngineView {
             simulateUserGesture()
             webEngineView.triggerWebAction(WebEngineView.RequestClose);
             verify(webEngineView.testSupport.waitForWindowCloseRejected());
+
+            // Navigate away from page with onbeforeunload handler,
+            // otherwise it would trigger an extra dialog request when
+            // navigating in the subsequent test.
+            JSDialogParams.shouldAcceptDialog = true;
+            webEngineView.url = Qt.resolvedUrl("about:blank");
+            verify(webEngineView.waitForLoadSucceeded());
+            compare(JSDialogParams.dialogCount, 2)
         }
 
         function test_prompt() {
