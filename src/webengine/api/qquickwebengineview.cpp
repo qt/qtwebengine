@@ -235,7 +235,6 @@ void QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
 
     m_contextMenuData = data;
 
-    QQuickWebEngineContextMenuRequest *request = new QQuickWebEngineContextMenuRequest(data);
     QQmlEngine *engine = qmlEngine(q);
 
     // TODO: this is a workaround for QTBUG-65044
@@ -243,6 +242,7 @@ void QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         return;
 
     // mark the object for gc by creating temporary jsvalue
+    QQuickWebEngineContextMenuRequest *request = new QQuickWebEngineContextMenuRequest(data);
     engine->newQObject(request);
     Q_EMIT q->contextMenuRequested(request);
 
