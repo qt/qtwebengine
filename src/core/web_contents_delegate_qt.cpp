@@ -541,7 +541,7 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
         m_viewClient->iconChanged(QUrl());
 
     content::NavigationEntry *entry = web_contents()->GetController().GetActiveEntry();
-    int http_statuscode = entry ? http_statuscode = entry->GetHttpStatusCode() : 0;
+    int http_statuscode = entry ? entry->GetHttpStatusCode() : 0;
     EmitLoadFinished(http_statuscode < 400, toQt(validated_url), false /* isErrorPage */, http_statuscode);
 }
 
