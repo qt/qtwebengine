@@ -68,7 +68,6 @@
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/values.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
-#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -529,11 +528,6 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::ExtensionWebContentsObserverQt::CreateForWebContents(webContents());
 #endif
-    FormInteractionTabHelper::CreateForWebContents(webContents());
-    if (auto *performance_manager_registry = performance_manager::PerformanceManagerRegistry::GetInstance()) {
-        if (!webContents()->GetMainFrame()->IsRenderFrameCreated())
-            performance_manager_registry->CreatePageNodeForWebContents(webContents());
-    }
 
     // Create an instance of WebEngineVisitedLinksManager to catch the first
     // content::NOTIFICATION_RENDERER_PROCESS_CREATED event. This event will
@@ -2013,9 +2007,6 @@ void WebContentsAdapter::discard()
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::ExtensionWebContentsObserverQt::CreateForWebContents(webContents());
 #endif
-    FormInteractionTabHelper::CreateForWebContents(webContents());
-    if (auto *performance_manager_registry = performance_manager::PerformanceManagerRegistry::GetInstance())
-        performance_manager_registry->CreatePageNodeForWebContents(webContents());
 }
 
 void WebContentsAdapter::undiscard()

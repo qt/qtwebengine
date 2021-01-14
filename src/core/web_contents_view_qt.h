@@ -59,11 +59,7 @@ class WebContentsViewQt
 public:
     static inline WebContentsViewQt *from(WebContentsView *view) { return static_cast<WebContentsViewQt*>(view); }
 
-    WebContentsViewQt(content::WebContents* webContents)
-        : m_webContents(webContents)
-        , m_client(nullptr)
-        , m_factoryClient(nullptr)
-    { }
+    WebContentsViewQt(content::WebContents *webContents);
 
     void setFactoryClient(WebContentsAdapterClient* client);
     void setClient(WebContentsAdapterClient* client);
