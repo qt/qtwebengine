@@ -169,16 +169,6 @@ defineTest(qtConfTest_detectNinja) {
     return(false)
 }
 
-defineTest(qtConfTest_detectProtoc) {
-    protoc = $$qtConfFindInPath("protoc")
-    isEmpty(protoc) {
-        qtLog("Optional protoc could not be found.")
-        return(false)
-    }
-    qtLog("Found protoc from path: $$protoc")
-    return(true)
-}
-
 defineTest(qtConfTest_detectGn) {
     gn = $$qtConfFindInPath("gn$$EXE_SUFFIX")
     !isEmpty(gn) {

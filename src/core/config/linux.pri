@@ -41,9 +41,4 @@ qtConfig(webengine-embedded-build) {
     qtConfig(webengine-system-ffmpeg):   gn_args += use_system_ffmpeg=true
     qtConfig(webengine-system-re2):      gn_args += use_system_re2=true
     qtConfig(webengine-system-lcms2):    gn_args += use_system_lcms2=true
-
-    # FIXME:
-    #qtConfig(webengine-system-protobuf): gn_args += use_system_protobuf=true
-    #qtConfig(webengine-system-jsoncpp): gn_args += use_system_jsoncpp=true
-    #qtConfig(webengine-system-libsrtp: gn_args += use_system_libsrtp=true
 }

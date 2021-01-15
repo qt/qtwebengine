@@ -108,12 +108,6 @@
                 "-ljpeg"
             ]
         },
-        "webengine-jsoncpp": {
-            "label": "jsoncpp",
-            "sources": [
-                { "type": "pkgConfig", "args": "jsoncpp" }
-            ]
-        },
         "webengine-libevent": {
             "label": "libevent",
             "sources": [
@@ -130,12 +124,6 @@
             "label": "libpng >= 1.6.0",
             "sources": [
                 { "type": "pkgConfig", "args": "libpng >= 1.6.0" }
-            ]
-        },
-        "webengine-protobuf": {
-            "label": "protobuf",
-            "sources": [
-                { "type": "pkgConfig", "args": "protobuf" }
             ]
         },
         "webengine-zlib": {
@@ -326,10 +314,6 @@
             "label": "jumbo build merge limit",
             "type": "detectJumboBuild",
             "log": "merge_limit"
-        },
-        "webengine-protoc": {
-            "label": "protoc",
-            "type": "detectProtoc"
         },
         "webengine-win-compiler64": {
             "label": "64bit compiler",
@@ -600,16 +584,6 @@
             "condition": "config.unix && libs.webengine-libevent",
             "output": [ "privateFeature" ]
         },
-        "webengine-system-jsoncpp" : {
-            "label": "jsoncpp",
-            "condition": "config.unix && libs.webengine-jsoncpp",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-protobuf" : {
-            "label": "protobuf",
-            "condition": "config.unix && libs.webengine-protobuf && tests.webengine-protoc",
-            "output": [ "privateFeature" ]
-        },
         "webengine-system-png" : {
             "label": "png",
             "condition": "config.unix && features.system-png && libs.webengine-png",
@@ -779,7 +753,6 @@
             "section": "Qt WebEngine Build Tools",
             "entries": [
                 "webengine-system-ninja",
-                "webengine-system-gn",
                 {
                     "message": "Jumbo Build Merge Limit",
                     "type": "jumboBuild"
@@ -829,8 +802,6 @@
                         "webengine-system-zlib",
                         "webengine-system-minizip",
                         "webengine-system-libevent",
-                        "webengine-system-jsoncpp",
-                        "webengine-system-protobuf",
                         "webengine-system-libxml2",
                         "webengine-system-lcms2",
                         "webengine-system-png",
