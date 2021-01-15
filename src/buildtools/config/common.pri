@@ -31,9 +31,10 @@ gn_args += \
     use_custom_libcxx=false \
     chrome_pgo_phase=0
 
-# No closure compile supported at this time
+# Closure compile requires Java
 gn_args += \
-    optimize_webui=false
+    optimize_webui=false \
+    enable_js_type_check=false
 
 # We always embed v8 startup data currently
 gn_args += \
