@@ -81,8 +81,7 @@ void RenderWidgetHostViewQtDelegateQuickWindow::initAsPopup(const QRect &screenR
     popupRect = mapRectFromGlobal(m_virtualParent, popupRect);
     popupRect = m_virtualParent->mapRectToScene(popupRect);
     popupRect = mapRectToGlobal(m_virtualParent, popupRect);
-
-    m_realDelegate->initAsPopup(QRect(QPoint(0, 0), popupRect.size().toSize()));
+    m_realDelegate->setSize(popupRect.size());
     popupRect.setSize(screenRect.size());
     setGeometry(popupRect.toAlignedRect());
     raise();

@@ -88,14 +88,13 @@ RenderWidgetHostViewQtDelegateQuick::~RenderWidgetHostViewQtDelegateQuick()
     QQuickWebEngineViewPrivate::bindViewAndWidget(nullptr, this);
 }
 
-void RenderWidgetHostViewQtDelegateQuick::initAsPopup(const QRect &r)
+void RenderWidgetHostViewQtDelegateQuick::initAsPopup(const QRect &screenRect)
 {
+    //note this is called when there is no windowing system
+    //otherwsie see RenderWidgetHostViewQtDelegateQuickWindow
     Q_ASSERT(m_isPopup && parentItem());
-    QRectF rect(parentItem()->mapRectFromScene(r));
-    setX(rect.x());
-    setY(rect.y());
-    setWidth(rect.width());
-    setHeight(rect.height());
+    setPosition(screenRect.topLeft());
+    setSize(screenRect.size());
     setVisible(true);
 }
 
