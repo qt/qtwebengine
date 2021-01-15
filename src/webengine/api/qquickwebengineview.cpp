@@ -226,6 +226,7 @@ RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHo
         return wrapperWindow;
     }
     quickDelegate->setParentItem(q);
+    quickDelegate->show();
     return quickDelegate;
 }
 
