@@ -529,6 +529,8 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
             return;
     } else if (method == "bringToFront") {
         Activate();
+    } else if (method == "closeWindow") {
+        web_contents()->Close();
     } else {
         VLOG(1) << "Unimplemented devtools method: " << message;
         return;
