@@ -370,7 +370,7 @@ std::string WebEngineLibraryInfo::getApplicationLocale()
 #if defined(OS_WIN)
 bool WebEngineLibraryInfo::isRemoteDrivePath(const QString &path)
 {
-    WCHAR wDriveLetter[3];
+    WCHAR wDriveLetter[4] = { 0 };
     swprintf(wDriveLetter, L"%S", path.mid(0, 3).toStdString().c_str());
     return GetDriveType(wDriveLetter) == DRIVE_REMOTE;
 }
