@@ -89,7 +89,7 @@
     \l{https://chromium.googlesource.com/chromium/src/+/master/docs/chromium_browser_vs_google_chrome.md}{overview}
     that is part of the documentation in the \l {Chromium Project} upstream source tree.
 
-    This version of \QWE is based on Chromium version 80.0.3987, with additional security
+    This version of \QWE is based on Chromium version 87.0.4280, with additional security
     fixes from newer versions.
 
     \section2 Qt WebEngine Process

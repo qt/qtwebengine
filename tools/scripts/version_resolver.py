@@ -38,7 +38,7 @@ import json
 import urllib2
 import git_submodule as GitSubmodule
 
-chromium_version = '87.0.4280.89'
+chromium_version = '87.0.4280.144'
 chromium_branch = '4280'
 ninja_version = 'v1.8.2'
 
