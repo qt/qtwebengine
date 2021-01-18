@@ -84,6 +84,8 @@ private Q_SLOTS:
 #endif
     void downloadToDirectoryWithFileName_data();
     void downloadToDirectoryWithFileName();
+    void downloadDataUrls_data();
+    void downloadDataUrls();
 
 private:
     void saveLink(QPoint linkPos);
@@ -1390,6 +1392,51 @@ void tst_QWebEngineDownloadItem::downloadToDirectoryWithFileName()
     QVERIFY(QFile(downloadedFilePath).exists());
     QCOMPARE(downloadedFilePath, QDir(downloadDirectory).filePath(fileName));
     QCOMPARE(downloadedSuggestedFileName, fileName);
+}
+
+void tst_QWebEngineDownloadItem::downloadDataUrls_data()
+{
+    QTest::addColumn<QByteArray>("htmlData");
+    QTest::addColumn<QString>("expectedFileName");
+    QTest::newRow("data url without slash") << QByteArrayLiteral("<html><head><meta charset=\"utf-8\"></head><body><a href=\"data:application/gzip;base64,dGVzdA==\">data URL without slash</a><br/></body></html>") << QStringLiteral("qwe_download.gz") ;
+    QTest::newRow("data url with slash") << QByteArrayLiteral("<html><head><meta charset=\"utf-8\"></head><body><a href=\"data:application/gzip;base64,dGVzcnI/dGVzdA==\">data URL with filename</a><br/></body></html>") << QStringLiteral("qwe_download.gz") ;
+    QTest::newRow("data url with download tag") << QByteArrayLiteral("<html><head><meta charset=\"utf-8\"></head><body><a href=\"data:application/gzip;base64,dGVzdA/IHRlc3Q=\" download=\"filename.gz\">data URL with filename</a><br/></body></html>") << QStringLiteral("filename.gz") ;
+
+}
+
+void tst_QWebEngineDownloadItem::downloadDataUrls()
+{
+    QFETCH(QByteArray, htmlData);
+    QFETCH(QString, expectedFileName);
+    // Set up HTTP server
+    ScopedConnection sc1 = connect(m_server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
+        if (rr->requestMethod() == "GET" && rr->requestPath() == "/") {
+            rr->setResponseHeader(QByteArrayLiteral("content-type"), QByteArrayLiteral("text/html"));
+            rr->setResponseBody(htmlData);
+            rr->sendResponse();
+        }
+    });
+
+    // Set up profile and download handler
+    QTemporaryDir tmpDir;
+    QVERIFY(tmpDir.isValid());
+    m_profile->setDownloadPath(tmpDir.path());
+
+    int downloadRequestCount = 0;
+    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
+        QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadRequested);
+        QCOMPARE(item->downloadFileName(), expectedFileName);
+        downloadRequestCount++;
+    });
+
+    QSignalSpy loadSpy(m_page, &QWebEnginePage::loadFinished);
+    m_view->load(m_server->url());
+    QTRY_COMPARE(loadSpy.count(), 1);
+    QCOMPARE(loadSpy.takeFirst().value(0).toBool(), true);
+
+    // Trigger download
+    simulateUserAction(QPoint(10, 10), UserAction::ClickLink);
+    QTRY_COMPARE(downloadRequestCount, 1);
 }
 
 QTEST_MAIN(tst_QWebEngineDownloadItem)
