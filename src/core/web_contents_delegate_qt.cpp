@@ -380,8 +380,6 @@ void WebContentsDelegateQt::DidStartNavigation(content::NavigationHandle *naviga
     if (!navigation_handle->IsInMainFrame())
         return;
 
-    // Error-pages are not reported as separate started navigations.
-    Q_ASSERT(!navigation_handle->IsErrorPage());
 
     m_loadingErrorFrameList.clear();
     m_faviconManager->resetCandidates();
@@ -390,6 +388,8 @@ void WebContentsDelegateQt::DidStartNavigation(content::NavigationHandle *naviga
 
 void WebContentsDelegateQt::EmitLoadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode, const QString &errorDescription)
 {
+    Q_ASSERT(!isErrorPage || webEngineSettings()->testAttribute(QWebEngineSettings::ErrorPageEnabled));
+
     // When error page enabled we don't need to send the error page load finished signal
     if (m_loadProgressMap[url] == 100)
         return;
@@ -544,10 +544,8 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
         m_viewClient->iconChanged(QUrl());
 
     content::NavigationEntry *entry = web_contents()->GetController().GetActiveEntry();
-    int http_statuscode = 0;
-    if (entry)
-       http_statuscode = entry->GetHttpStatusCode();
-    EmitLoadFinished(true /* success */ , toQt(validated_url), false /* isErrorPage */, http_statuscode);
+    int http_statuscode = entry ? http_statuscode = entry->GetHttpStatusCode() : 0;
+    EmitLoadFinished(http_statuscode < 400, toQt(validated_url), false /* isErrorPage */, http_statuscode);
 }
 
 void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<blink::mojom::FaviconURLPtr> &candidates)

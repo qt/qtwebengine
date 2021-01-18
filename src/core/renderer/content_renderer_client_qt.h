@@ -75,8 +75,8 @@ struct WebPluginInfo;
 
 namespace QtWebEngineCore {
 
-class RenderThreadObserverQt;
-
+class UserResourceController;
+class RenderConfiguration;
 class ContentRendererClientQt
     : public content::ContentRendererClient
     , public service_manager::LocalInterfaceProvider
@@ -88,7 +88,6 @@ public:
     // content::ContentRendererClient:
     void RenderThreadStarted() override;
     void ExposeInterfacesToBrowser(mojo::BinderMap* binders) override;
-    void RenderViewCreated(content::RenderView *render_view) override;
     void RenderFrameCreated(content::RenderFrame *render_frame) override;
     bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) override;
     bool HasErrorPage(int http_status_code) override;
@@ -147,7 +146,8 @@ private:
     void GetNavigationErrorStringsInternal(content::RenderFrame *renderFrame, const std::string &httpMethod,
                                            const error_page::Error &error, std::string *errorHtml);
 
-    QScopedPointer<RenderThreadObserverQt> m_renderThreadObserver;
+    QScopedPointer<RenderConfiguration> m_renderConfiguration;
+    QScopedPointer<UserResourceController> m_userResourceController;
     QScopedPointer<visitedlink::VisitedLinkReader> m_visitedLinkReader;
     QScopedPointer<web_cache::WebCacheImpl> m_webCacheImpl;
 #if QT_CONFIG(webengine_spellchecker)

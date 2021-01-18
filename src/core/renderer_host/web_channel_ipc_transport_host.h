@@ -47,6 +47,7 @@
 #include "qtwebengine/browser/qtwebchannel.mojom.h"
 
 #include <QWebChannelAbstractTransport>
+#include <map>
 
 QT_FORWARD_DECLARE_CLASS(QString)
 
@@ -71,8 +72,12 @@ private:
     void setWorldId(content::RenderFrameHost *frame, uint32_t worldId);
     void resetWorldId();
 
+    const mojo::AssociatedRemote<qtwebchannel::mojom::WebChannelTransportRender> &
+    GetWebChannelIPCTransportRemote(content::RenderFrameHost *rfh);
+
     // WebContentsObserver
     void RenderFrameCreated(content::RenderFrameHost *frame) override;
+    void RenderFrameDeleted(content::RenderFrameHost *render_frame_host) override;
 
     // qtwebchannel::mojom::WebChannelTransportHost
     void DispatchWebChannelMessage(const std::vector<uint8_t> &json) override;
@@ -81,6 +86,9 @@ private:
     // WebChannelIPCTransports/RenderFrames in the observed WebContents.
     uint32_t m_worldId;
     content::WebContentsFrameReceiverSet<qtwebchannel::mojom::WebChannelTransportHost> m_receiver;
+    std::map<content::RenderFrameHost *,
+             mojo::AssociatedRemote<qtwebchannel::mojom::WebChannelTransportRender>>
+            m_renderFrames;
 };
 
 } // namespace

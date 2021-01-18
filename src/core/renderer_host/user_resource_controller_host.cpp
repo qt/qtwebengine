@@ -48,6 +48,8 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "qtwebengine/userscript/userscript.mojom.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace QtWebEngineCore {
 
@@ -59,6 +61,7 @@ public:
     // WebContentsObserver overrides:
     void RenderFrameCreated(content::RenderFrameHost *renderFrameHost) override;
     void RenderFrameHostChanged(content::RenderFrameHost *oldHost, content::RenderFrameHost *newHost) override;
+    void RenderFrameDeleted(content::RenderFrameHost *render_frame_host) override;
     void WebContentsDestroyed() override;
 
 private:
@@ -75,16 +78,25 @@ UserResourceControllerHost::WebContentsObserverHelper::WebContentsObserverHelper
 void UserResourceControllerHost::WebContentsObserverHelper::RenderFrameCreated(content::RenderFrameHost *renderFrameHost)
 {
     content::WebContents *contents = web_contents();
+    auto &remote = m_controllerHost->GetUserResourceControllerRenderFrame(renderFrameHost);
     const QList<UserScript> scripts = m_controllerHost->m_perContentsScripts.value(contents);
     for (const UserScript &script : scripts)
-        renderFrameHost->Send(new RenderFrameObserverHelper_AddScript(renderFrameHost->GetRoutingID(), script.data()));
+        remote->AddScript(script.data());
 }
 
 void UserResourceControllerHost::WebContentsObserverHelper::RenderFrameHostChanged(content::RenderFrameHost *oldHost,
                                                                                    content::RenderFrameHost *newHost)
 {
-    if (oldHost)
-        oldHost->Send(new RenderFrameObserverHelper_ClearScripts(oldHost->GetRoutingID()));
+    if (oldHost) {
+        auto &remote = m_controllerHost->GetUserResourceControllerRenderFrame(oldHost);
+        remote->ClearScripts();
+    }
+}
+
+void UserResourceControllerHost::WebContentsObserverHelper::RenderFrameDeleted(
+        content::RenderFrameHost *render_frame_host)
+{
+    m_controllerHost->m_renderFrames.erase(render_frame_host);
 }
 
 void UserResourceControllerHost::WebContentsObserverHelper::WebContentsDestroyed()
@@ -111,6 +123,7 @@ UserResourceControllerHost::RenderProcessObserverHelper::RenderProcessObserverHe
 void UserResourceControllerHost::RenderProcessObserverHelper::RenderProcessHostDestroyed(content::RenderProcessHost *renderer)
 {
     Q_ASSERT(m_controllerHost);
+    delete m_controllerHost->m_observedProcesses[renderer];
     m_controllerHost->m_observedProcesses.remove(renderer);
 }
 
@@ -121,8 +134,8 @@ void UserResourceControllerHost::addUserScript(const UserScript &script, WebCont
     if (isProfileWideScript) {
         if (!m_profileWideScripts.contains(script)) {
             m_profileWideScripts.append(script);
-            for (content::RenderProcessHost *renderer : qAsConst(m_observedProcesses))
-                renderer->Send(new UserResourceController_AddScript(script.data()));
+            for (auto controller : m_observedProcesses.values())
+                (*controller)->AddScript(script.data());
         }
     } else {
         content::WebContents *contents = adapter->webContents();
@@ -139,10 +152,8 @@ void UserResourceControllerHost::addUserScript(const UserScript &script, WebCont
                 m_perContentsScripts.insert(contents, currentScripts);
             }
         }
-        contents->GetRenderViewHost()->Send(
-                new RenderFrameObserverHelper_AddScript(
-                    contents->GetRenderViewHost()->GetMainFrame()->GetRoutingID(),
-                    script.data()));
+        GetUserResourceControllerRenderFrame(contents->GetRenderViewHost()->GetMainFrame())
+                ->AddScript(script.data());
     }
 }
 
@@ -153,8 +164,8 @@ bool UserResourceControllerHost::removeUserScript(const UserScript &script, WebC
         QList<UserScript>::iterator it = std::find(m_profileWideScripts.begin(), m_profileWideScripts.end(), script);
         if (it == m_profileWideScripts.end())
             return false;
-        for (content::RenderProcessHost *renderer : qAsConst(m_observedProcesses))
-            renderer->Send(new UserResourceController_RemoveScript((*it).data()));
+        for (auto controller : m_observedProcesses.values())
+            (*controller)->RemoveScript((*it).data());
         m_profileWideScripts.erase(it);
     } else {
         content::WebContents *contents = adapter->webContents();
@@ -164,8 +175,8 @@ bool UserResourceControllerHost::removeUserScript(const UserScript &script, WebC
         QList<UserScript>::iterator it = std::find(list.begin(), list.end(), script);
         if (it == list.end())
             return false;
-        contents->GetRenderViewHost()->Send(
-                new RenderFrameObserverHelper_RemoveScript(contents->GetMainFrame()->GetRoutingID(), (*it).data()));
+        GetUserResourceControllerRenderFrame(contents->GetRenderViewHost()->GetMainFrame())
+                ->RemoveScript((*it).data());
         list.erase(it);
     }
     return true;
@@ -176,13 +187,15 @@ void UserResourceControllerHost::clearAllScripts(WebContentsAdapter *adapter)
     const bool isProfileWideScript = !adapter;
     if (isProfileWideScript) {
         m_profileWideScripts.clear();
-        for (content::RenderProcessHost *renderer : qAsConst(m_observedProcesses))
-            renderer->Send(new UserResourceController_ClearScripts);
+        for (auto controller : m_observedProcesses.values())
+            (*controller)->ClearScripts();
     } else {
         content::WebContents *contents = adapter->webContents();
         m_perContentsScripts.remove(contents);
-        contents->GetRenderViewHost()->Send(
-                new RenderFrameObserverHelper_ClearScripts(contents->GetMainFrame()->GetRoutingID()));
+        mojo::AssociatedRemote<qtwebengine::mojom::UserResourceControllerRenderFrame>
+                userResourceController;
+        GetUserResourceControllerRenderFrame(contents->GetRenderViewHost()->GetMainFrame())
+                ->ClearScripts();
     }
 }
 
@@ -197,15 +210,18 @@ void UserResourceControllerHost::reserve(WebContentsAdapter *adapter, int count)
 
 void UserResourceControllerHost::renderProcessStartedWithHost(content::RenderProcessHost *renderer)
 {
-    if (m_observedProcesses.contains(renderer))
+    if (m_observedProcesses.keys().contains(renderer))
         return;
 
     if (m_renderProcessObserver.isNull())
         m_renderProcessObserver.reset(new RenderProcessObserverHelper(this));
     renderer->AddObserver(m_renderProcessObserver.data());
-    m_observedProcesses.insert(renderer);
-    for (const UserScript &script : qAsConst(m_profileWideScripts))
-        renderer->Send(new UserResourceController_AddScript(script.data()));
+    auto userResourceController = new UserResourceControllerRemote;
+    renderer->GetChannel()->GetRemoteAssociatedInterface(userResourceController);
+    m_observedProcesses.insert(renderer, userResourceController);
+    for (const UserScript &script : qAsConst(m_profileWideScripts)) {
+        (*userResourceController)->AddScript(script.data());
+    }
 }
 
 void UserResourceControllerHost::webContentsDestroyed(content::WebContents *contents)
@@ -219,8 +235,26 @@ UserResourceControllerHost::UserResourceControllerHost()
 
 UserResourceControllerHost::~UserResourceControllerHost()
 {
-    for (content::RenderProcessHost *renderer : qAsConst(m_observedProcesses))
+    for (content::RenderProcessHost *renderer : m_observedProcesses.keys()) {
         renderer->RemoveObserver(m_renderProcessObserver.data());
+        delete m_observedProcesses[renderer];
+    }
+}
+
+const UserResourceControllerRenderFrameRemote &
+UserResourceControllerHost::GetUserResourceControllerRenderFrame(content::RenderFrameHost *rfh)
+{
+    auto it = m_renderFrames.find(rfh);
+    if (it == m_renderFrames.end()) {
+        UserResourceControllerRenderFrameRemote remote;
+        rfh->GetRemoteAssociatedInterfaces()->GetInterface(remote.BindNewEndpointAndPassReceiver());
+        it = m_renderFrames.insert(std::make_pair(rfh, std::move(remote))).first;
+    } else if (it->second.is_bound() && !it->second.is_connected()) {
+        it->second.reset();
+        rfh->GetRemoteAssociatedInterfaces()->GetInterface(&it->second);
+    }
+
+    return it->second;
 }
 
 } // namespace

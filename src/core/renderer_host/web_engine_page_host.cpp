@@ -37,59 +37,76 @@
 **
 ****************************************************************************/
 
-#include "render_view_observer_host_qt.h"
+#include "web_engine_page_host.h"
 
-#include "common/qt_messages.h"
-#include "content/public/browser/render_view_host.h"
+#include "qtwebengine/browser/qtwebenginepage.mojom.h"
 #include "content/public/browser/web_contents.h"
 
 #include "render_widget_host_view_qt.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace QtWebEngineCore {
 
-RenderViewObserverHostQt::RenderViewObserverHostQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
-    : content::WebContentsObserver(webContents)
-    , m_adapterClient(adapterClient)
+WebEnginePageHost::WebEnginePageHost(content::WebContents *webContents,
+                                     WebContentsAdapterClient *adapterClient)
+    : content::WebContentsObserver(webContents), m_adapterClient(adapterClient)
 {
 }
 
-void RenderViewObserverHostQt::fetchDocumentMarkup(quint64 requestId)
+void WebEnginePageHost::FetchDocumentMarkup(uint64_t requestId)
 {
-    web_contents()->GetRenderViewHost()->Send(
-                new RenderViewObserverQt_FetchDocumentMarkup(
-                        web_contents()->GetRenderViewHost()->GetRoutingID(), requestId));
+    auto &remote = GetWebEnginePageRenderFrame(web_contents()->GetMainFrame());
+    remote->FetchDocumentMarkup(
+            requestId,
+            base::BindOnce(&WebEnginePageHost::OnDidFetchDocumentMarkup, base::Unretained(this)));
 }
 
-void RenderViewObserverHostQt::fetchDocumentInnerText(quint64 requestId)
+void WebEnginePageHost::FetchDocumentInnerText(uint64_t requestId)
 {
-    web_contents()->GetRenderViewHost()->Send(
-                new RenderViewObserverQt_FetchDocumentInnerText(
-                        web_contents()->GetRenderViewHost()->GetRoutingID(), requestId));
+    auto &remote = GetWebEnginePageRenderFrame(web_contents()->GetMainFrame());
+    remote->FetchDocumentInnerText(requestId,
+                                   base::BindOnce(&WebEnginePageHost::OnDidFetchDocumentInnerText,
+                                                  base::Unretained(this)));
 }
 
-bool RenderViewObserverHostQt::OnMessageReceived(const IPC::Message &message)
-{
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(RenderViewObserverHostQt, message)
-        IPC_MESSAGE_HANDLER(RenderViewObserverHostQt_DidFetchDocumentMarkup,
-                            onDidFetchDocumentMarkup)
-        IPC_MESSAGE_HANDLER(RenderViewObserverHostQt_DidFetchDocumentInnerText,
-                            onDidFetchDocumentInnerText)
-        IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-}
-
-void RenderViewObserverHostQt::onDidFetchDocumentMarkup(quint64 requestId, const base::string16 &markup)
+void WebEnginePageHost::OnDidFetchDocumentMarkup(uint64_t requestId, const std::string &markup)
 {
     m_adapterClient->didFetchDocumentMarkup(requestId, toQt(markup));
 }
 
-void RenderViewObserverHostQt::onDidFetchDocumentInnerText(quint64 requestId, const base::string16 &innerText)
+void WebEnginePageHost::OnDidFetchDocumentInnerText(uint64_t requestId,
+                                                    const std::string &innerText)
 {
     m_adapterClient->didFetchDocumentInnerText(requestId, toQt(innerText));
+}
+
+void WebEnginePageHost::RenderFrameDeleted(content::RenderFrameHost *render_frame)
+{
+    m_renderFrames.erase(render_frame);
+}
+
+void WebEnginePageHost::SetBackgroundColor(uint32_t color)
+{
+    auto &remote = GetWebEnginePageRenderFrame(web_contents()->GetMainFrame());
+    remote->SetBackgroundColor(color);
+}
+
+const WebEnginePageRenderFrameRemote &
+WebEnginePageHost::GetWebEnginePageRenderFrame(content::RenderFrameHost *rfh)
+{
+    auto it = m_renderFrames.find(rfh);
+    if (it == m_renderFrames.end()) {
+        WebEnginePageRenderFrameRemote remote;
+        rfh->GetRemoteAssociatedInterfaces()->GetInterface(remote.BindNewEndpointAndPassReceiver());
+        it = m_renderFrames.insert(std::make_pair(rfh, std::move(remote))).first;
+    } else if (it->second.is_bound() && !it->second.is_connected()) {
+        it->second.reset();
+        rfh->GetRemoteAssociatedInterfaces()->GetInterface(&it->second);
+    }
+
+    return it->second;
 }
 
 } // namespace QtWebEngineCore

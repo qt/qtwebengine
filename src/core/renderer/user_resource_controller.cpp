@@ -52,9 +52,12 @@
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "v8/include/v8.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 
 #include "common/qt_messages.h"
-#include "common/user_script_data.h"
+#include "qtwebengine/userscript/user_script_data.h"
 #include "type_conversion.h"
 #include "user_script.h"
 
@@ -62,9 +65,9 @@
 
 #include <bitset>
 
-Q_GLOBAL_STATIC(UserResourceController, qt_webengine_userResourceController)
+namespace QtWebEngineCore {
 
-static content::RenderView *const globalScriptsIndex = nullptr;
+static content::RenderFrame *const globalScriptsIndex = nullptr;
 
 // Scripts meant to run after the load event will be run 500ms after DOMContentLoaded if the load event doesn't come within that delay.
 static const int afterLoadTimeout = 500;
@@ -97,7 +100,7 @@ static bool includeRuleMatchesURL(const std::string &pat, const GURL &url)
     return false;
 }
 
-static bool scriptMatchesURL(const UserScriptData &scriptData, const GURL &url)
+static bool scriptMatchesURL(const QtWebEngineCore::UserScriptData &scriptData, const GURL &url)
 {
     // Logic taken from Chromium (extensions/common/user_script.cc)
     bool matchFound;
@@ -132,10 +135,18 @@ static bool scriptMatchesURL(const UserScriptData &scriptData, const GURL &url)
     return true;
 }
 
-class UserResourceController::RenderFrameObserverHelper : public content::RenderFrameObserver
+// using UserScriptDataPtr = mojo::StructPtr<qtwebengine::mojom::UserScriptData>;
+
+class UserResourceController::RenderFrameObserverHelper
+    : public content::RenderFrameObserver,
+      public qtwebengine::mojom::UserResourceControllerRenderFrame
 {
 public:
-    RenderFrameObserverHelper(content::RenderFrame *render_frame);
+    RenderFrameObserverHelper(content::RenderFrame *render_frame,
+                              UserResourceController *controller);
+    void BindReceiver(
+            mojo::PendingAssociatedReceiver<qtwebengine::mojom::UserResourceControllerRenderFrame>
+                    receiver);
 
 private:
     // RenderFrameObserver implementation.
@@ -144,14 +155,14 @@ private:
     void DidFinishLoad() override;
     void FrameDetached() override;
     void OnDestruct() override;
-    bool OnMessageReceived(const IPC::Message &message) override;
-
-    void onUserScriptAdded(const UserScriptData &);
-    void onUserScriptRemoved(const UserScriptData &);
-    void onScriptsCleared();
+    void AddScript(const QtWebEngineCore::UserScriptData &data) override;
+    void RemoveScript(const QtWebEngineCore::UserScriptData &data) override;
+    void ClearScripts() override;
 
     class Runner;
     QScopedPointer<Runner> m_runner;
+    mojo::AssociatedReceiver<qtwebengine::mojom::UserResourceControllerRenderFrame> m_binding;
+    UserResourceController *m_userResourceController;
 };
 
 // Helper class to create WeakPtrs so the AfterLoad tasks can be canceled and to
@@ -159,13 +170,16 @@ private:
 class UserResourceController::RenderFrameObserverHelper::Runner : public base::SupportsWeakPtr<Runner>
 {
 public:
-    explicit Runner(blink::WebLocalFrame *frame) : m_frame(frame) {}
+    explicit Runner(blink::WebLocalFrame *frame, UserResourceController *controller)
+        : m_frame(frame), m_userResourceController(controller)
+    {
+    }
 
-    void run(UserScriptData::InjectionPoint p)
+    void run(QtWebEngineCore::UserScriptData::InjectionPoint p)
     {
         DCHECK_LT(p, m_ran.size());
         if (!m_ran[p]) {
-            UserResourceController::instance()->runScripts(p, m_frame);
+            m_userResourceController->runScripts(p, m_frame);
             m_ran[p] = true;
         }
     }
@@ -173,35 +187,22 @@ public:
 private:
     blink::WebLocalFrame *m_frame;
     std::bitset<3> m_ran;
+    UserResourceController *m_userResourceController;
 };
 
-// Used only for script cleanup on RenderView destruction.
-class UserResourceController::RenderViewObserverHelper : public content::RenderViewObserver
-{
-public:
-    RenderViewObserverHelper(content::RenderView *render_view);
-
-private:
-    // RenderViewObserver implementation.
-    void OnDestruct() override;
-};
-
-void UserResourceController::runScripts(UserScriptData::InjectionPoint p, blink::WebLocalFrame *frame)
+void UserResourceController::runScripts(QtWebEngineCore::UserScriptData::InjectionPoint p,
+                                        blink::WebLocalFrame *frame)
 {
     content::RenderFrame *renderFrame = content::RenderFrame::FromWebFrame(frame);
     if (!renderFrame)
         return;
     const bool isMainFrame = renderFrame->IsMainFrame();
 
-    content::RenderView *renderView = renderFrame->GetRenderView();
-    if (!renderView)
-        return;
-
-    QList<uint64_t> scriptsToRun = m_viewUserScriptMap.value(0).values();
-    scriptsToRun.append(m_viewUserScriptMap.value(renderView).values());
+    QList<uint64_t> scriptsToRun = m_frameUserScriptMap.value(0).values();
+    scriptsToRun.append(m_frameUserScriptMap.value(renderFrame).values());
 
     for (uint64_t id : qAsConst(scriptsToRun)) {
-        const UserScriptData &script = m_scripts.value(id);
+        const QtWebEngineCore::UserScriptData &script = m_scripts.value(id);
         if (script.injectionPoint != p || (!script.injectForSubframes && !isMainFrame))
             continue;
         if (!scriptMatchesURL(script, frame->GetDocument().Url()))
@@ -216,16 +217,27 @@ void UserResourceController::runScripts(UserScriptData::InjectionPoint p, blink:
 
 void UserResourceController::RunScriptsAtDocumentEnd(content::RenderFrame *render_frame)
 {
-    runScripts(UserScriptData::DocumentLoadFinished, render_frame->GetWebFrame());
+    runScripts(QtWebEngineCore::UserScriptData::DocumentLoadFinished, render_frame->GetWebFrame());
 }
 
-UserResourceController::RenderFrameObserverHelper::RenderFrameObserverHelper(content::RenderFrame *render_frame)
+UserResourceController::RenderFrameObserverHelper::RenderFrameObserverHelper(
+        content::RenderFrame *render_frame, UserResourceController *controller)
     : content::RenderFrameObserver(render_frame)
-{}
+    , m_binding(this)
+    , m_userResourceController(controller)
+{
+    render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
+            base::BindRepeating(&UserResourceController::RenderFrameObserverHelper::BindReceiver,
+                                base::Unretained(this)));
+}
 
-UserResourceController::RenderViewObserverHelper::RenderViewObserverHelper(content::RenderView *render_view)
-    : content::RenderViewObserver(render_view)
-{}
+
+void UserResourceController::RenderFrameObserverHelper::BindReceiver(
+        mojo::PendingAssociatedReceiver<qtwebengine::mojom::UserResourceControllerRenderFrame>
+                receiver)
+{
+    m_binding.Bind(std::move(receiver));
+}
 
 void UserResourceController::RenderFrameObserverHelper::DidCommitProvisionalLoad(bool is_same_document_navigation,
                                                                                  ui::PageTransition /*transitionbool*/)
@@ -237,10 +249,12 @@ void UserResourceController::RenderFrameObserverHelper::DidCommitProvisionalLoad
     // process has been notified of the DidCommitProvisionalLoad event to ensure
     // that the WebChannelTransportHost is ready to receive messages.
 
-    m_runner.reset(new Runner(render_frame()->GetWebFrame()));
+    m_runner.reset(new Runner(render_frame()->GetWebFrame(), m_userResourceController));
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::BindOnce(&Runner::run, m_runner->AsWeakPtr(), UserScriptData::DocumentElementCreation));
+            FROM_HERE,
+            base::BindOnce(&Runner::run, m_runner->AsWeakPtr(),
+                           QtWebEngineCore::UserScriptData::DocumentElementCreation));
 }
 
 void UserResourceController::RenderFrameObserverHelper::DidFinishDocumentLoad()
@@ -249,7 +263,9 @@ void UserResourceController::RenderFrameObserverHelper::DidFinishDocumentLoad()
     // called instead of DidCommitProvisionalLoad).
     if (m_runner)
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-                FROM_HERE, base::BindOnce(&Runner::run, m_runner->AsWeakPtr(), UserScriptData::AfterLoad),
+                FROM_HERE,
+                base::BindOnce(&Runner::run, m_runner->AsWeakPtr(),
+                               QtWebEngineCore::UserScriptData::AfterLoad),
                 base::TimeDelta::FromMilliseconds(afterLoadTimeout));
 }
 
@@ -257,7 +273,9 @@ void UserResourceController::RenderFrameObserverHelper::DidFinishLoad()
 {
     if (m_runner)
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-                FROM_HERE, base::BindOnce(&Runner::run, m_runner->AsWeakPtr(), UserScriptData::AfterLoad));
+                FROM_HERE,
+                base::BindOnce(&Runner::run, m_runner->AsWeakPtr(),
+                               QtWebEngineCore::UserScriptData::AfterLoad));
 }
 
 void UserResourceController::RenderFrameObserverHelper::FrameDetached()
@@ -267,68 +285,39 @@ void UserResourceController::RenderFrameObserverHelper::FrameDetached()
 
 void UserResourceController::RenderFrameObserverHelper::OnDestruct()
 {
+    if (content::RenderFrame *frame = render_frame()) {
+        m_userResourceController->renderFrameDestroyed(frame);
+    }
     delete this;
 }
 
-void UserResourceController::RenderViewObserverHelper::OnDestruct()
-{
-    // Remove all scripts associated with the render view.
-    if (content::RenderView *view = render_view())
-        UserResourceController::instance()->renderViewDestroyed(view);
-    delete this;
-}
-
-bool UserResourceController::RenderFrameObserverHelper::OnMessageReceived(const IPC::Message &message)
-{
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(UserResourceController::RenderFrameObserverHelper, message)
-        IPC_MESSAGE_HANDLER(RenderFrameObserverHelper_AddScript, onUserScriptAdded)
-        IPC_MESSAGE_HANDLER(RenderFrameObserverHelper_RemoveScript, onUserScriptRemoved)
-        IPC_MESSAGE_HANDLER(RenderFrameObserverHelper_ClearScripts, onScriptsCleared)
-        IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-}
-
-void UserResourceController::RenderFrameObserverHelper::onUserScriptAdded(const UserScriptData &script)
+void UserResourceController::RenderFrameObserverHelper::AddScript(
+        const QtWebEngineCore::UserScriptData &script)
 {
     if (content::RenderFrame *frame = render_frame())
-        if (content::RenderView *view = frame->GetRenderView())
-            UserResourceController::instance()->addScriptForView(script, view);
+        m_userResourceController->addScriptForFrame(script, frame);
 }
 
-void UserResourceController::RenderFrameObserverHelper::onUserScriptRemoved(const UserScriptData &script)
+void UserResourceController::RenderFrameObserverHelper::RemoveScript(
+        const QtWebEngineCore::UserScriptData &script)
 {
     if (content::RenderFrame *frame = render_frame())
-        if (content::RenderView *view = frame->GetRenderView())
-            UserResourceController::instance()->removeScriptForView(script, view);
+        m_userResourceController->removeScriptForFrame(script, frame);
 }
 
-void UserResourceController::RenderFrameObserverHelper::onScriptsCleared()
+void UserResourceController::RenderFrameObserverHelper::ClearScripts()
 {
     if (content::RenderFrame *frame = render_frame())
-        if (content::RenderView *view = frame->GetRenderView())
-            UserResourceController::instance()->clearScriptsForView(view);
+        m_userResourceController->clearScriptsForFrame(frame);
 }
 
-UserResourceController *UserResourceController::instance()
+void UserResourceController::BindReceiver(
+        mojo::PendingAssociatedReceiver<qtwebengine::mojom::UserResourceController> receiver)
 {
-    return qt_webengine_userResourceController();
+    m_binding.Bind(std::move(receiver));
 }
 
-bool UserResourceController::OnControlMessageReceived(const IPC::Message &message)
-{
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(UserResourceController, message)
-        IPC_MESSAGE_HANDLER(UserResourceController_AddScript, onAddScript)
-        IPC_MESSAGE_HANDLER(UserResourceController_RemoveScript, onRemoveScript)
-        IPC_MESSAGE_HANDLER(UserResourceController_ClearScripts, onClearScripts)
-        IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-}
-
-UserResourceController::UserResourceController()
+UserResourceController::UserResourceController() : m_binding(this)
 {
 #if !defined(QT_NO_DEBUG) || defined(QT_FORCE_ASSERTS)
     static bool onlyCalledOnce = true;
@@ -340,68 +329,79 @@ UserResourceController::UserResourceController()
 void UserResourceController::renderFrameCreated(content::RenderFrame *renderFrame)
 {
     // Will destroy itself when the RenderFrame is destroyed.
-    new RenderFrameObserverHelper(renderFrame);
+    new RenderFrameObserverHelper(renderFrame, this);
 }
 
-void UserResourceController::renderViewCreated(content::RenderView *renderView)
+void UserResourceController::renderFrameDestroyed(content::RenderFrame *renderFrame)
 {
-    // Will destroy itself when the RenderView is destroyed.
-    new RenderViewObserverHelper(renderView);
-}
-
-void UserResourceController::renderViewDestroyed(content::RenderView *renderView)
-{
-    ViewUserScriptMap::iterator it = m_viewUserScriptMap.find(renderView);
-    if (it == m_viewUserScriptMap.end()) // ASSERT maybe?
+    FrameUserScriptMap::iterator it = m_frameUserScriptMap.find(renderFrame);
+    if (it == m_frameUserScriptMap.end()) // ASSERT maybe?
         return;
     for (uint64_t id : qAsConst(it.value())) {
         m_scripts.remove(id);
     }
-    m_viewUserScriptMap.remove(renderView);
+    m_frameUserScriptMap.remove(renderFrame);
 }
 
-void UserResourceController::addScriptForView(const UserScriptData &script, content::RenderView *view)
+void UserResourceController::addScriptForFrame(const QtWebEngineCore::UserScriptData &script,
+                                               content::RenderFrame *frame)
 {
-    ViewUserScriptMap::iterator it = m_viewUserScriptMap.find(view);
-    if (it == m_viewUserScriptMap.end())
-        it = m_viewUserScriptMap.insert(view, UserScriptSet());
+    FrameUserScriptMap::iterator it = m_frameUserScriptMap.find(frame);
+    if (it == m_frameUserScriptMap.end())
+        it = m_frameUserScriptMap.insert(frame, UserScriptSet());
 
     (*it).insert(script.scriptId);
     m_scripts.insert(script.scriptId, script);
 }
 
-void UserResourceController::removeScriptForView(const UserScriptData &script, content::RenderView *view)
+void UserResourceController::removeScriptForFrame(const QtWebEngineCore::UserScriptData &script,
+                                                  content::RenderFrame *frame)
 {
-    ViewUserScriptMap::iterator it = m_viewUserScriptMap.find(view);
-    if (it == m_viewUserScriptMap.end())
+    FrameUserScriptMap::iterator it = m_frameUserScriptMap.find(frame);
+    if (it == m_frameUserScriptMap.end())
         return;
 
     (*it).remove(script.scriptId);
     m_scripts.remove(script.scriptId);
 }
 
-void UserResourceController::clearScriptsForView(content::RenderView *view)
+void UserResourceController::clearScriptsForFrame(content::RenderFrame *frame)
 {
-    ViewUserScriptMap::iterator it = m_viewUserScriptMap.find(view);
-    if (it == m_viewUserScriptMap.end())
+    FrameUserScriptMap::iterator it = m_frameUserScriptMap.find(frame);
+    if (it == m_frameUserScriptMap.end())
         return;
     for (uint64_t id : qAsConst(it.value()))
         m_scripts.remove(id);
 
-    m_viewUserScriptMap.remove(view);
+    m_frameUserScriptMap.remove(frame);
 }
 
-void UserResourceController::onAddScript(const UserScriptData &script)
+void UserResourceController::AddScript(const QtWebEngineCore::UserScriptData &script)
 {
-    addScriptForView(script, globalScriptsIndex);
+    addScriptForFrame(script, globalScriptsIndex);
 }
 
-void UserResourceController::onRemoveScript(const UserScriptData &script)
+void UserResourceController::RemoveScript(const QtWebEngineCore::UserScriptData &script)
 {
-    removeScriptForView(script, globalScriptsIndex);
+    removeScriptForFrame(script, globalScriptsIndex);
 }
 
-void UserResourceController::onClearScripts()
+void UserResourceController::ClearScripts()
 {
-    clearScriptsForView(globalScriptsIndex);
+    clearScriptsForFrame(globalScriptsIndex);
 }
+
+void UserResourceController::RegisterMojoInterfaces(
+        blink::AssociatedInterfaceRegistry *associated_interfaces)
+{
+    associated_interfaces->AddInterface(
+            base::Bind(&UserResourceController::BindReceiver, base::Unretained(this)));
+}
+
+void UserResourceController::UnregisterMojoInterfaces(
+        blink::AssociatedInterfaceRegistry *associated_interfaces)
+{
+    associated_interfaces->RemoveInterface(qtwebengine::mojom::UserResourceController::Name_);
+}
+
+} // namespace

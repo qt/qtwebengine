@@ -236,9 +236,6 @@ void QQuickWebEngineViewPrivate::contextMenuRequested(QWebEngineContextMenuReque
 
     m_contextMenuRequest = request;
 
-    // FIXME: we most liekly do not need to make any copy here
-    auto *r = new QWebEngineContextMenuRequest(
-            new QWebEngineContextMenuRequestPrivate(*request->d.data()));
     QQmlEngine *engine = qmlEngine(q);
 
     // TODO: this is a workaround for QTBUG-65044
@@ -246,6 +243,9 @@ void QQuickWebEngineViewPrivate::contextMenuRequested(QWebEngineContextMenuReque
         return;
 
     // mark the object for gc by creating temporary jsvalue
+    // FIXME: we most likely do not need to make any copy here
+    auto *r = new QWebEngineContextMenuRequest(
+            new QWebEngineContextMenuRequestPrivate(*request->d.data()));
     engine->newQObject(r);
     Q_EMIT q->contextMenuRequested(r);
 

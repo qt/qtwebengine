@@ -91,7 +91,7 @@ class FaviconManager;
 class FindTextHelper;
 class MessagePassingInterface;
 class ProfileQt;
-class RenderViewObserverHostQt;
+class WebEnginePageHost;
 class WebChannelIPCTransportHost;
 class WebEngineContext;
 
@@ -262,7 +262,7 @@ private:
     ProfileAdapter *m_profileAdapter;
     std::unique_ptr<content::WebContents> m_webContents;
     std::unique_ptr<WebContentsDelegateQt> m_webContentsDelegate;
-    std::unique_ptr<RenderViewObserverHostQt> m_renderViewObserverHost;
+    std::unique_ptr<WebEnginePageHost> m_pageHost;
 #if QT_CONFIG(webengine_webchannel)
     std::unique_ptr<WebChannelIPCTransportHost> m_webChannelTransport;
     QWebChannel *m_webChannel;

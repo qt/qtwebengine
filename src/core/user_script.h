@@ -52,16 +52,16 @@
 #define USER_SCRIPT_H
 
 #include "qtwebenginecoreglobal_p.h"
-#include "common/user_script_data.h"
+
+#include "qtwebengine/userscript/user_script_data.h"
+
 #include <QtCore/QScopedPointer>
 #include <QtCore/QSharedData>
 #include <QtCore/QString>
 #include <QtCore/QUrl>
 
-struct UserScriptData;
 
 namespace QtWebEngineCore {
-
 class UserResourceControllerHost;
 
 class UserScript : public QSharedData

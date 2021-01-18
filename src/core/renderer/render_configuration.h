@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef RENDER_THREAD_OBSERVER_QT_H
-#define RENDER_THREAD_OBSERVER_QT_H
+#ifndef RENDER_CONFIGURATION_H
+#define RENDER_CONFIGURATION_H
 
 #include "content/public/renderer/render_thread_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
@@ -47,13 +47,12 @@
 
 namespace QtWebEngineCore {
 
-class RenderThreadObserverQt
-    : public content::RenderThreadObserver
-    , public qtwebengine::mojom::RendererConfiguration
+class RenderConfiguration : public content::RenderThreadObserver,
+                            public qtwebengine::mojom::RendererConfiguration
 {
 public:
-    RenderThreadObserverQt() = default;
-    ~RenderThreadObserverQt() override = default;
+    RenderConfiguration() = default;
+    ~RenderConfiguration() override = default;
 
     static bool is_incognito_process() { return m_isIncognitoProcess; }
 
@@ -70,11 +69,12 @@ private:
 
     static bool m_isIncognitoProcess;
 
-    mojo::AssociatedReceiverSet<qtwebengine::mojom::RendererConfiguration> m_rendererConfigurationReceivers;
+    mojo::AssociatedReceiverSet<qtwebengine::mojom::RendererConfiguration>
+            m_rendererConfigurationReceivers;
 
-    DISALLOW_COPY_AND_ASSIGN(RenderThreadObserverQt);
+    DISALLOW_COPY_AND_ASSIGN(RenderConfiguration);
 };
 
 } // namespace QtWebEngineCore
 
-#endif // RENDER_THREAD_OBSERVER_QT_H
+#endif // RENDER_CONFIGURATION_H

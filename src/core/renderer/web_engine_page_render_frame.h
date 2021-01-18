@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -36,40 +36,40 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef WEB_ENGINE_PAGE_RENDER_FRAME_H
+#define WEB_ENGINE_PAGE_RENDER_FRAME_H
 
-// based on chrome/renderer/chrome_render_thread_observer.cc:
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+#include "content/public/renderer/render_frame_observer.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "qtwebengine/browser/qtwebenginepage.mojom.h"
 
-#include "renderer/render_thread_observer_qt.h"
-
-#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
+namespace content {
+class RenderFrame;
+}
 
 namespace QtWebEngineCore {
 
-bool RenderThreadObserverQt::m_isIncognitoProcess = false;
-
-void RenderThreadObserverQt::RegisterMojoInterfaces(blink::AssociatedInterfaceRegistry *associated_interfaces)
+class WebEnginePageRenderFrame : private content::RenderFrameObserver,
+                                 public qtwebenginepage::mojom::WebEnginePageRenderFrame
 {
-    associated_interfaces->AddInterface(
-            base::Bind(&RenderThreadObserverQt::OnRendererConfigurationAssociatedRequest, base::Unretained(this)));
-}
+public:
+    WebEnginePageRenderFrame(content::RenderFrame *render_frame);
+    WebEnginePageRenderFrame(const WebEnginePageRenderFrame &) = delete;
+    WebEnginePageRenderFrame &operator=(const WebEnginePageRenderFrame &) = delete;
 
-void RenderThreadObserverQt::UnregisterMojoInterfaces(blink::AssociatedInterfaceRegistry *associated_interfaces)
-{
-    associated_interfaces->RemoveInterface(qtwebengine::mojom::RendererConfiguration::Name_);
-}
+private:
+    void FetchDocumentMarkup(uint64_t requestId, FetchDocumentMarkupCallback callback) override;
+    void FetchDocumentInnerText(uint64_t requestId,
+                                FetchDocumentInnerTextCallback callback) override;
+    void SetBackgroundColor(uint32_t color) override;
+    void OnDestruct() override;
+    void
+    BindReceiver(mojo::PendingAssociatedReceiver<qtwebenginepage::mojom::WebEnginePageRenderFrame>
+                         receiver);
 
-void RenderThreadObserverQt::SetInitialConfiguration(bool is_incognito_process)
-{
-    m_isIncognitoProcess = is_incognito_process;
-}
-
-void RenderThreadObserverQt::OnRendererConfigurationAssociatedRequest(
-        mojo::PendingAssociatedReceiver<qtwebengine::mojom::RendererConfiguration> receiver)
-{
-    m_rendererConfigurationReceivers.Add(this, std::move(receiver));
-}
-
+private:
+    mojo::AssociatedReceiver<qtwebenginepage::mojom::WebEnginePageRenderFrame> m_binding;
+};
 } // namespace
+
+#endif // WEB_ENGINE_PAGE_RENDER_FRAME_H

@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "common/user_script_data.h"
+#include "qtwebengine/userscript/user_script_data.h"
 #include "user_script.h"
 #include "type_conversion.h"
 
@@ -72,6 +72,8 @@ ASSERT_ENUMS_MATCH(UserScript::DocumentElementCreation, UserScriptData::Document
 UserScript::UserScript()
     : QSharedData()
 {
+    static uint64_t idCount = 0;
+    m_scriptData.scriptId = idCount++;
 }
 
 UserScript::UserScript(const UserScript &other) = default;

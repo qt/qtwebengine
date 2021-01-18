@@ -45,7 +45,7 @@
 #include "extensions_renderer_client_qt.h"
 
 #include "extensions_dispatcher_delegate_qt.h"
-#include "renderer/render_thread_observer_qt.h"
+#include "renderer/render_configuration.h"
 #include "renderer_permissions_policy_delegate_qt.h"
 #include "resource_request_policy_qt.h"
 
@@ -88,7 +88,7 @@ ExtensionsRendererClientQt::~ExtensionsRendererClientQt()
 // Returns true if the current render process was launched incognito.
 bool ExtensionsRendererClientQt::IsIncognitoProcess() const
 {
-    return RenderThreadObserverQt::is_incognito_process();
+    return RenderConfiguration::is_incognito_process();
 }
 
 // Returns the lowest isolated world ID available to extensions.

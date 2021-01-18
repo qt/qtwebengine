@@ -76,7 +76,7 @@ private:
     bool m_worldInitialized;
     // True means it's currently OK to manipulate the frame's script context.
     bool m_canUseContext = false;
-    mojo::AssociatedReceiverSet<qtwebchannel::mojom::WebChannelTransportRender> m_receivers;
+    mojo::AssociatedReceiver<qtwebchannel::mojom::WebChannelTransportRender> m_binding;
 };
 
 } // namespace

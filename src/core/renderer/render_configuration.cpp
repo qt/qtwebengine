@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -36,28 +36,43 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef RENDER_VIEW_OBSERVER_QT_H
-#define RENDER_VIEW_OBSERVER_QT_H
 
-#include "content/public/renderer/render_view_observer.h"
+// based on chrome/renderer/chrome_render_thread_observer.cc:
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#include <QtGlobal>
+#include "renderer/render_configuration.h"
+#include "user_resource_controller.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 
-class RenderViewObserverQt : public content::RenderViewObserver
+namespace QtWebEngineCore {
+
+bool RenderConfiguration::m_isIncognitoProcess = false;
+
+void RenderConfiguration::RegisterMojoInterfaces(
+        blink::AssociatedInterfaceRegistry *associated_interfaces)
 {
-public:
-    RenderViewObserverQt(content::RenderView *render_view);
+    associated_interfaces->AddInterface(
+            base::Bind(&RenderConfiguration::OnRendererConfigurationAssociatedRequest,
+                       base::Unretained(this)));
+}
 
-private:
-    void onFetchDocumentMarkup(quint64 requestId);
-    void onFetchDocumentInnerText(quint64 requestId);
-    void onSetBackgroundColor(quint32 color);
+void RenderConfiguration::UnregisterMojoInterfaces(
+        blink::AssociatedInterfaceRegistry *associated_interfaces)
+{
+    associated_interfaces->RemoveInterface(qtwebengine::mojom::RendererConfiguration::Name_);
+}
 
-    void OnDestruct() override;
+void RenderConfiguration::SetInitialConfiguration(bool is_incognito_process)
+{
+    m_isIncognitoProcess = is_incognito_process;
+}
 
-    bool OnMessageReceived(const IPC::Message &message) override;
+void RenderConfiguration::OnRendererConfigurationAssociatedRequest(
+        mojo::PendingAssociatedReceiver<qtwebengine::mojom::RendererConfiguration> receiver)
+{
+    m_rendererConfigurationReceivers.Add(this, std::move(receiver));
+}
 
-    DISALLOW_COPY_AND_ASSIGN(RenderViewObserverQt);
-};
-
-#endif // RENDER_VIEW_OBSERVER_QT_H
+} // namespace
