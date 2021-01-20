@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
@@ -89,7 +90,8 @@ bool ResourceBundle::LocaleDataPakExists(const std::string& locale)
     }
 #endif
 
-    return !GetLocaleFilePath(locale).empty();
+    const auto path = GetLocaleFilePath(locale);
+    return !path.empty() && base::PathExists(path);
 }
 
 std::string ResourceBundle::LoadLocaleResources(const std::string &pref_locale, bool /*crash_on_failure*/)
