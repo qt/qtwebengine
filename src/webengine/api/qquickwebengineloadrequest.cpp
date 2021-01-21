@@ -97,10 +97,13 @@ QUrl QQuickWebEngineLoadRequest::url() const
 
     This enumeration represents the load status of a web page load request:
 
-    \value  WebEngineLoadRequest.LoadStartedStatus Page is currently loading.
-    \value  WebEngineLoadRequest.LoadSucceededStatus
+    \value  WebEngineView.LoadStartedStatus Page is currently loading.
+    \value  WebEngineView.LoadStoppedStatus
+            Loading the page was stopped by the stop() method or by the loader
+            code or network stack in Chromium.
+    \value  WebEngineView.LoadSucceededStatus
             Page has been loaded with success.
-    \value  WebEngineLoadRequest.LoadFailedStatus Page could not be loaded.
+    \value  WebEngineView.LoadFailedStatus Page could not be loaded.
 
     \sa WebEngineView::loadingChanged
 */
