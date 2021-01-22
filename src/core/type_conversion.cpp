@@ -133,6 +133,21 @@ QImage toQImage(const SkBitmap &bitmap)
             break;
         }
         break;
+    case kBGR_101010x_SkColorType:
+    case kBGRA_1010102_SkColorType:
+        switch (bitmap.alphaType()) {
+        case kUnknown_SkAlphaType:
+            break;
+        case kUnpremul_SkAlphaType:
+            // not supported - treat as opaque
+        case kOpaque_SkAlphaType:
+            image = toQImage(bitmap, QImage::Format_BGR30);
+            break;
+        case kPremul_SkAlphaType:
+            image = toQImage(bitmap, QImage::Format_A2BGR30_Premultiplied);
+            break;
+        }
+        break;
     case kGray_8_SkColorType:
         image = toQImage(bitmap, QImage::Format_Grayscale8);
         break;

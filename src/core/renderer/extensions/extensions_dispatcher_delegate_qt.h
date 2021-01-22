@@ -52,6 +52,9 @@ public:
     ~ExtensionsDispatcherDelegateQt() override;
 
 private:
+    // extensions::DispatcherDelegate implementation.
+    void PopulateSourceMap(extensions::ResourceBundleSourceMap *source_map) override;
+
     DISALLOW_COPY_AND_ASSIGN(ExtensionsDispatcherDelegateQt);
 };
 

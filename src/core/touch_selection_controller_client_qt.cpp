@@ -45,7 +45,7 @@
 #include "web_contents_adapter.h"
 #include "web_contents_adapter_client.h"
 
-#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
@@ -229,29 +229,29 @@ void TouchSelectionControllerClientQt::SetNeedsAnimate()
 
 void TouchSelectionControllerClientQt::MoveCaret(const gfx::PointF& position)
 {
-    content::mojom::FrameInputHandler *frameInputHandler = m_rwhv->getFrameInputHandler();
-    if (!frameInputHandler)
+    auto *frameWidgetInputHandler = m_rwhv->getFrameWidgetInputHandler();
+    if (!frameWidgetInputHandler)
         return;
 
-    frameInputHandler->MoveCaret(gfx::ToRoundedPoint(position));
+    frameWidgetInputHandler->MoveCaret(gfx::ToRoundedPoint(position));
 }
 
 void TouchSelectionControllerClientQt::MoveRangeSelectionExtent(const gfx::PointF& extent)
 {
-    content::mojom::FrameInputHandler *frameInputHandler = m_rwhv->getFrameInputHandler();
-    if (!frameInputHandler)
+    auto *frameWidgetInputHandler = m_rwhv->getFrameWidgetInputHandler();
+    if (!frameWidgetInputHandler)
         return;
 
-    frameInputHandler->MoveRangeSelectionExtent(gfx::ToRoundedPoint(extent));
+    frameWidgetInputHandler->MoveRangeSelectionExtent(gfx::ToRoundedPoint(extent));
 }
 
 void TouchSelectionControllerClientQt::SelectBetweenCoordinates(const gfx::PointF& base, const gfx::PointF& extent)
 {
-    content::mojom::FrameInputHandler *frameInputHandler = m_rwhv->getFrameInputHandler();
-    if (!frameInputHandler)
+    auto *frameWidgetInputHandler = m_rwhv->getFrameWidgetInputHandler();
+    if (!frameWidgetInputHandler)
         return;
 
-    frameInputHandler->SelectRange(gfx::ToRoundedPoint(base), gfx::ToRoundedPoint(extent));
+    frameWidgetInputHandler->SelectRange(gfx::ToRoundedPoint(base), gfx::ToRoundedPoint(extent));
 }
 
 void TouchSelectionControllerClientQt::OnSelectionEvent(ui::SelectionEventType event)

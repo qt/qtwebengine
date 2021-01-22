@@ -47,10 +47,6 @@
 
 QT_FORWARD_DECLARE_CLASS(QThread)
 
-namespace base {
-class MessageLoop;
-}
-
 namespace QtWebEngineCore {
 class QtPositioningHelper;
 

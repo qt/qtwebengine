@@ -130,8 +130,8 @@ public:
     // SSL configuration updates.
     void AddSSLConfigToNetworkContextParams(network::mojom::NetworkContextParams *network_context_params);
 
-    // Returns default set of parameters for configuring the network service.
-    network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams();
+    // Configures the default set of parameters for the network context.
+    void ConfigureDefaultNetworkContextParams(network::mojom::NetworkContextParams *);
 
 private:
     class URLLoaderFactoryForSystem;

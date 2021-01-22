@@ -45,9 +45,10 @@
 #include "base/files/file_util.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/common/content_paths.h"
+#include "sandbox/policy/switches.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
-#include "services/service_manager/sandbox/switches.h"
+
 #include "type_conversion.h"
 
 #include <QByteArray>
@@ -75,7 +76,7 @@ QString fallbackDir() {
     return directory;
 }
 
-#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+#if defined(OS_MAC) && defined(QT_MAC_FRAMEWORK_BUILD)
 static inline CFBundleRef frameworkBundle()
 {
     return CFBundleGetBundleWithIdentifier(CFSTR("org.qt-project.Qt.QtWebEngineCore"));
@@ -118,7 +119,7 @@ static QString getResourcesPath(CFBundleRef frameworkBundle)
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 static QString getMainApplicationResourcesPath()
 {
     QString resourcesPath;
@@ -162,7 +163,7 @@ QString subProcessPath()
             // Only search in QTWEBENGINEPROCESS_PATH if set
             candidatePaths << fromEnv;
         } else {
-#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+#if defined(OS_MAC) && defined(QT_MAC_FRAMEWORK_BUILD)
             candidatePaths << getPath(frameworkBundle())
                               % QStringLiteral("/Helpers/" QTWEBENGINEPROCESS_NAME ".app/Contents/MacOS/" QTWEBENGINEPROCESS_NAME);
 #else
@@ -184,7 +185,7 @@ QString subProcessPath()
 
 #if defined(OS_WIN)
         base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
-        if (!parsedCommandLine->HasSwitch(service_manager::switches::kNoSandbox)) {
+        if (!parsedCommandLine->HasSwitch(sandbox::policy::switches::kNoSandbox)) {
             if (WebEngineLibraryInfo::isUNCPath(processPath) || WebEngineLibraryInfo::isRemoteDrivePath(processPath))
                 qCritical("Can not launch QtWebEngineProcess from network path if sandbox is enabled: %s.", processPath.toUtf8().constData());
         }
@@ -200,7 +201,7 @@ QString localesPath()
 {
     static bool initialized = false;
     static QString potentialLocalesPath =
-#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+#if defined(OS_MAC) && defined(QT_MAC_FRAMEWORK_BUILD)
             getResourcesPath(frameworkBundle()) % QLatin1String("/qtwebengine_locales");
 #else
             QLibraryInfo::path(QLibraryInfo::TranslationsPath) % QDir::separator() % QLatin1String("qtwebengine_locales");
@@ -236,7 +237,7 @@ QString dictionariesPath()
             candidatePaths << fromEnv;
         } else {
             // First try to find dictionaries near the application.
-#ifdef OS_MACOSX
+#ifdef OS_MAC
             QString resourcesDictionariesPath = getMainApplicationResourcesPath()
                     % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
             candidatePaths << resourcesDictionariesPath;
@@ -246,7 +247,7 @@ QString dictionariesPath()
             candidatePaths << applicationDictionariesPath;
 
             // Then try to find dictionaries near the installed library.
-#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+#if defined(OS_MAC) && defined(QT_MAC_FRAMEWORK_BUILD)
             QString frameworkDictionariesPath = getResourcesPath(frameworkBundle())
                     % QLatin1String("/qtwebengine_dictionaries");
             candidatePaths << frameworkDictionariesPath;
@@ -273,9 +274,9 @@ QString resourcesDataPath()
 {
     static bool initialized = false;
     static QString potentialResourcesPath =
-#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+#if defined(OS_MAC) && defined(QT_MAC_FRAMEWORK_BUILD)
             getResourcesPath(frameworkBundle());
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
             QLibraryInfo::location(QLibraryInfo::DataPath) % QLatin1String("/Resources");
 #else
             QLibraryInfo::path(QLibraryInfo::DataPath) % QLatin1String("/resources");

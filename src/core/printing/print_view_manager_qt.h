@@ -51,30 +51,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "components/prefs/pref_member.h"
-#include "components/printing/browser/print_manager.h"
 #include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 
 #include <QSharedPointer>
-
-struct PrintHostMsg_RequestPrintPreview_Params;
-struct PrintHostMsg_DidPreviewDocument_Params;
-
-namespace content {
-class RenderViewHost;
-}
-
-namespace printing {
-class JobEventDetails;
-class MetafilePlayer;
-class PrintJob;
-class PrintJobWorkerOwner;
-class PrintQueriesQueue;
-}
 
 QT_BEGIN_NAMESPACE
 class QPageLayout;
@@ -101,8 +83,6 @@ public:
                                 bool useCustomMargins,
                                 const PrintToPDFCallback &callback);
 
-    base::string16 RenderSourceName() override;
-
 protected:
     explicit PrintViewManagerQt(content::WebContents*);
 
@@ -119,16 +99,15 @@ protected:
     void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
     // IPC handlers
-    void OnDidShowPrintDialog();
     void OnRequestPrintPreview(const PrintHostMsg_RequestPrintPreview_Params&);
     void OnMetafileReadyForPrinting(content::RenderFrameHost* rfh,
-                                    const PrintHostMsg_DidPreviewDocument_Params& params,
-                                    const PrintHostMsg_PreviewIds &ids);
+                                    const printing::mojom::DidPreviewDocumentParams& params,
+                                    const printing::mojom::PreviewIds &ids);
     void OnSetupScriptedPrintPreview(content::RenderFrameHost* rfh,
                                       IPC::Message* reply_msg);
     void OnDidPreviewPage(content::RenderFrameHost* rfh,
-                          const PrintHostMsg_DidPreviewPage_Params& params,
-                          const PrintHostMsg_PreviewIds& ids);
+                          const printing::mojom::DidPreviewPageParams& params,
+                          const printing::mojom::PreviewIds& ids);
     void OnShowScriptedPrintPreview(content::RenderFrameHost* rfh,
                                     bool source_is_modifiable);
     bool PrintToPDFInternal(const QPageLayout &, bool printInColor, bool useCustomMargins = true);

@@ -101,7 +101,7 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterStringPref(language::prefs::kAcceptLanguages, std::string());
     registry->RegisterListPref(spellcheck::prefs::kSpellCheckDictionaries);
     registry->RegisterListPref(spellcheck::prefs::kSpellCheckForcedDictionaries);
-    registry->RegisterListPref(spellcheck::prefs::kSpellCheckBlacklistedDictionaries);
+    registry->RegisterListPref(spellcheck::prefs::kSpellCheckBlocklistedDictionaries);
     registry->RegisterStringPref(spellcheck::prefs::kSpellCheckDictionary, std::string());
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckEnable, false);
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckUseSpellingService, false);
@@ -120,8 +120,8 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterBooleanPref(extensions::pref_names::kStorageGarbageCollect, false);
     registry->RegisterListPref(extensions::pref_names::kAllowedInstallSites);
     registry->RegisterStringPref(extensions::pref_names::kLastChromeVersion, std::string());
-    registry->RegisterListPref(extensions::pref_names::kNativeMessagingBlacklist);
-    registry->RegisterListPref(extensions::pref_names::kNativeMessagingWhitelist);
+    registry->RegisterListPref(extensions::pref_names::kNativeMessagingBlocklist);
+    registry->RegisterListPref(extensions::pref_names::kNativeMessagingAllowlist);
     registry->RegisterBooleanPref(extensions::pref_names::kNativeMessagingUserLevelHosts, true);
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 

@@ -48,10 +48,9 @@
 #include "web_engine_context.h"
 
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -59,10 +58,13 @@
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
+#include "components/printing/browser/print_manager_utils.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -72,12 +74,71 @@
 
 namespace QtWebEngineCore {
 
+namespace {
+
+// Runs |callback| with |params| to reply to
+// mojom::PrintManagerHost::GetDefaultPrintSettings.
+void GetDefaultPrintSettingsReply(printing::mojom::PrintManagerHost::GetDefaultPrintSettingsCallback callback,
+                                  printing::mojom::PrintParamsPtr params)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    std::move(callback).Run(std::move(params));
+}
+
+void GetDefaultPrintSettingsReplyOnIO(scoped_refptr<printing::PrintQueriesQueue> queue,
+                                      std::unique_ptr<printing::PrinterQuery> printer_query,
+                                      printing::mojom::PrintManagerHost::GetDefaultPrintSettingsCallback callback)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    printing::mojom::PrintParamsPtr params = printing::mojom::PrintParams::New();
+    if (printer_query && printer_query->last_status() == printing::PrintingContext::OK) {
+        RenderParamsFromPrintSettings(printer_query->settings(), params.get());
+        params->document_cookie = printer_query->cookie();
+    }
+
+    content::GetUIThreadTaskRunner({})->PostTask(
+                FROM_HERE,
+                base::BindOnce(&GetDefaultPrintSettingsReply,
+                               std::move(callback), std::move(params)));
+
+    // If printing was enabled.
+    if (printer_query) {
+        // If user hasn't cancelled.
+        if (printer_query->cookie() && printer_query->settings().dpi()) {
+            queue->QueuePrinterQuery(std::move(printer_query));
+        } else {
+            printer_query->StopWorker();
+        }
+    }
+}
+
+void GetDefaultPrintSettingsOnIO(printing::mojom::PrintManagerHost::GetDefaultPrintSettingsCallback callback,
+                                 scoped_refptr<printing::PrintQueriesQueue> queue,
+                                 int process_id, int routing_id)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+    std::unique_ptr<printing::PrinterQuery> printer_query = queue->PopPrinterQuery(0);
+    if (!printer_query)
+        printer_query = queue->CreatePrinterQuery(process_id, routing_id);
+
+    // Loads default settings. This is asynchronous, only the mojo message sender
+    // will hang until the settings are retrieved.
+    auto *printer_query_ptr = printer_query.get();
+    printer_query_ptr->GetSettings(
+                printing::PrinterQuery::GetSettingsAskParam::DEFAULTS, 0, false,
+                printing::mojom::MarginType::kDefaultMargins, false, false,
+                base::BindOnce(&GetDefaultPrintSettingsReplyOnIO, queue,
+                               std::move(printer_query), std::move(callback)));
+}
+
+}  // namespace
+
 PrintViewManagerBaseQt::PrintViewManagerBaseQt(content::WebContents *contents)
     : printing::PrintManager(contents)
-    , m_isInsideInnerMessageLoop(false)
+    , m_printingRFH(nullptr)
     , m_didPrintingSucceed(false)
     , m_printerQueriesQueue(WebEngineContext::current()->getPrintJobManager()->queue())
-    , m_printingRFH(nullptr)
 {
     // FIXME: Check if this needs to be executed async:
     // TODO: Add isEnabled to profile
@@ -119,8 +180,7 @@ base::string16 PrintViewManagerBaseQt::RenderSourceName()
      return toString16(QLatin1String(""));
 }
 
-void PrintViewManagerBaseQt::PrintDocument(printing::PrintedDocument *document,
-                                           const scoped_refptr<base::RefCountedMemory> &print_data,
+void PrintViewManagerBaseQt::PrintDocument(scoped_refptr<base::RefCountedMemory> print_data,
                                            const gfx::Size &page_size,
                                            const gfx::Rect &content_area,
                                            const gfx::Point &offsets)
@@ -130,34 +190,37 @@ void PrintViewManagerBaseQt::PrintDocument(printing::PrintedDocument *document,
     CHECK(metafile->InitFromData(*print_data));
 
     // Update the rendered document. It will send notifications to the listener.
-    document->SetDocument(std::move(metafile), page_size, content_area);
+    printing::PrintedDocument* document = m_printJob->document();
+    document->SetDocument(std::move(metafile));
     ShouldQuitFromInnerMessageLoop();
 }
 
-printing::PrintedDocument *PrintViewManagerBaseQt::GetDocument(int cookie)
+void PrintViewManagerBaseQt::DidGetPrintedPagesCount(int32_t cookie, uint32_t number_pages)
+{
+    PrintManager::DidGetPrintedPagesCount(cookie, number_pages);
+    OpportunisticallyCreatePrintJob(cookie);
+}
+
+bool PrintViewManagerBaseQt::PrintJobHasDocument(int cookie)
 {
     if (!OpportunisticallyCreatePrintJob(cookie))
-        return nullptr;
+        return false;
 
+    // These checks may fail since we are completely asynchronous. Old spurious
+    // messages can be received if one of the processes is overloaded.
     printing::PrintedDocument* document = m_printJob->document();
-    if (!document || cookie != document->cookie()) {
-        // Out of sync. It may happen since we are completely asynchronous. Old
-        // spurious messages can be received if one of the processes is overloaded.
-        return nullptr;
-    }
-    return document;
+    return document && document->cookie() == cookie;
 }
 
 // IPC handlers
 void PrintViewManagerBaseQt::OnDidPrintDocument(content::RenderFrameHost* /*render_frame_host*/,
-                                                const PrintHostMsg_DidPrintDocument_Params &params,
+                                                const printing::mojom::DidPrintDocumentParams &params,
                                                 std::unique_ptr<DelayedFrameDispatchHelper> helper)
 {
-    printing::PrintedDocument *document = GetDocument(params.document_cookie);
-    if (!document)
+    if (!PrintJobHasDocument(params.document_cookie))
         return;
 
-    const PrintHostMsg_DidPrintContent_Params &content = params.content;
+    const printing::mojom::DidPrintContentParams &content = *params.content;
     if (!content.metafile_data_region.IsValid()) {
         NOTREACHED() << "invalid memory handle";
         web_contents()->Stop();
@@ -171,26 +234,44 @@ void PrintViewManagerBaseQt::OnDidPrintDocument(content::RenderFrameHost* /*rend
         return;
     }
 
-    PrintDocument(document, data, params.page_size, params.content_area,
+    PrintDocument(data, params.page_size, params.content_area,
                   params.physical_offsets);
     if (helper)
         helper->SendCompleted();
 }
 
-void PrintViewManagerBaseQt::OnGetDefaultPrintSettings(content::RenderFrameHost *render_frame_host,
-                                                       IPC::Message *reply_msg)
+void PrintViewManagerBaseQt::GetDefaultPrintSettings(GetDefaultPrintSettingsCallback callback)
 {
-    NOTREACHED() << "should be handled by printing::PrintingMessageFilter";
+    content::RenderFrameHost* render_frame_host =
+        print_manager_host_receivers_.GetCurrentTargetFrame();
+
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(&GetDefaultPrintSettingsOnIO, std::move(callback), m_printerQueriesQueue,
+                       render_frame_host->GetProcess()->GetID(),
+                       render_frame_host->GetRoutingID()));
+}
+
+void PrintViewManagerBaseQt::PrintingFailed(int32_t cookie)
+{
+    PrintManager::PrintingFailed(cookie);
+
+    ReleasePrinterQuery();
+
+    content::NotificationService::current()->Notify(
+                chrome::NOTIFICATION_PRINT_JOB_RELEASED,
+                content::Source<content::WebContents>(web_contents()),
+                content::NotificationService::NoDetails());
 }
 
 void PrintViewManagerBaseQt::OnScriptedPrint(content::RenderFrameHost *render_frame_host,
-                                             const PrintHostMsg_ScriptedPrint_Params &params,
+                                             const printing::mojom::ScriptedPrintParams &params,
                                              IPC::Message *reply_msg)
 {
     NOTREACHED() << "should be handled by printing::PrintingMessageFilter";
 }
 
-void PrintViewManagerBaseQt::OnShowInvalidPrinterSettingsError()
+void PrintViewManagerBaseQt::ShowInvalidPrinterSettingsError()
 {
 }
 
@@ -203,6 +284,8 @@ void PrintViewManagerBaseQt::DidStartLoading()
 // so m_printingRFH is never set and used at the moment.
 void PrintViewManagerBaseQt::RenderFrameDeleted(content::RenderFrameHost *render_frame_host)
 {
+    PrintManager::RenderFrameDeleted(render_frame_host);
+
     // Terminates or cancels the print job if one was pending.
     if (render_frame_host != m_printingRFH)
         return;
@@ -216,24 +299,12 @@ void PrintViewManagerBaseQt::RenderFrameDeleted(content::RenderFrameHost *render
         return;
 
     scoped_refptr<printing::PrintedDocument> document(m_printJob->document());
-    if (document.get()) {
+    if (document) {
         // If IsComplete() returns false, the document isn't completely rendered.
         // Since our renderer is gone, there's nothing to do, cancel it. Otherwise,
         // the print job may finish without problem.
         TerminatePrintJob(!document->IsComplete());
     }
-}
-
-bool PrintViewManagerBaseQt::OnMessageReceived(const IPC::Message& message,
-                                               content::RenderFrameHost* render_frame_host)
-{
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(PrintViewManagerBaseQt, message)
-        IPC_MESSAGE_HANDLER(PrintHostMsg_ShowInvalidPrinterSettingsError,
-                            OnShowInvalidPrinterSettingsError);
-        IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled || PrintManager::OnMessageReceived(message, render_frame_host);
 }
 
 void PrintViewManagerBaseQt::Observe(int type,
@@ -333,28 +404,21 @@ bool PrintViewManagerBaseQt::RenderAllMissingPagesNow()
     return true;
 }
 
-// Quits the current message loop if these conditions hold true: a document is
-// loaded and is complete and waiting_for_pages_to_be_rendered_ is true. This
-// function is called in DidPrintPage() or on ALL_PAGES_REQUESTED
-// notification. The inner message loop is created was created by
-// RenderAllMissingPagesNow().
 void PrintViewManagerBaseQt::ShouldQuitFromInnerMessageLoop()
 {
     // Look at the reason.
     DCHECK(m_printJob->document());
-    if (m_printJob->document() &&
-        m_printJob->document()->IsComplete() &&
-        m_isInsideInnerMessageLoop) {
-      // We are in a message loop created by RenderAllMissingPagesNow. Quit from
-      // it.
-      base::RunLoop::QuitCurrentWhenIdleDeprecated();
-      m_isInsideInnerMessageLoop = false;
+    if (m_printJob->document() && m_printJob->document()->IsComplete() && m_quitInnerLoop) {
+        // We are in a message loop created by RenderAllMissingPagesNow. Quit from
+        // it.
+        std::move(m_quitInnerLoop).Run();
     }
 }
 
 bool PrintViewManagerBaseQt::CreateNewPrintJob(std::unique_ptr<printing::PrinterQuery> query)
 {
-    DCHECK(!m_isInsideInnerMessageLoop);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    DCHECK(!m_quitInnerLoop);
     DCHECK(query);
 
     // Disconnect the current |m_printJob|.
@@ -405,9 +469,9 @@ void PrintViewManagerBaseQt::TerminatePrintJob(bool cancel)
     if (cancel) {
         // We don't need the metafile data anymore because the printing is canceled.
         m_printJob->Cancel();
-        m_isInsideInnerMessageLoop = false;
+        m_quitInnerLoop.Reset();
     } else {
-        DCHECK(!m_isInsideInnerMessageLoop);
+        DCHECK(!m_quitInnerLoop);
         DCHECK(!m_printJob->document() || m_printJob->document()->IsComplete());
 
         // WebContents is either dying or navigating elsewhere. We need to render
@@ -435,7 +499,8 @@ void PrintViewManagerBaseQt::ReleasePrintJob()
     m_printJob = nullptr;
 }
 
-bool PrintViewManagerBaseQt::RunInnerMessageLoop() {
+bool PrintViewManagerBaseQt::RunInnerMessageLoop()
+{
   // This value may actually be too low:
   //
   // - If we're looping because of printer settings initialization, the premise
@@ -454,20 +519,16 @@ bool PrintViewManagerBaseQt::RunInnerMessageLoop() {
                    base::TimeDelta::FromMilliseconds(kPrinterSettingsTimeout),
                    run_loop.QuitWhenIdleClosure());
 
-  m_isInsideInnerMessageLoop = true;
+  m_quitInnerLoop = run_loop.QuitClosure();
 
   // Need to enable recursive task.
   {
-      base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
+      base::CurrentThread::ScopedNestableTaskAllower allow;
       run_loop.Run();
   }
 
-  bool success = true;
-  if (m_isInsideInnerMessageLoop) {
-    // Ok we timed out. That's sad.
-    m_isInsideInnerMessageLoop = false;
-    success = false;
-  }
+  bool success = !m_quitInnerLoop;
+  m_quitInnerLoop.Reset();
 
   return success;
 }

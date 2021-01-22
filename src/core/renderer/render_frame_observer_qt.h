@@ -68,7 +68,7 @@ public:
     void DidCreatePepperPlugin(content::RendererPpapiHost *host) override;
 #endif
     void OnDestruct() override;
-    void FrameDetached() override;
+    void WillDetach() override;
 
     bool isFrameDetached() const;
 

@@ -112,8 +112,10 @@ source_set("qtwebengine_sources") {
     deps += [
       ":qtwebengine_extensions_features",
       "//chrome/app:generated_resources",
+      "//chrome/browser/extensions/api:api_registration",
       "//chrome/browser/resources:component_extension_resources_grit",
       "//chrome/common/extensions/api",
+      "//chrome/common/extensions/api:api",
       "//chrome/common/extensions/api:extensions_features",
       "//components/crx_file",
       "//components/crx_file:crx_creator",
@@ -128,8 +130,12 @@ source_set("qtwebengine_sources") {
       "//extensions/renderer",
       "//extensions:extensions_resources",
       "//extensions/strings",
+      "//qtwebengine/browser/extensions/api:api_registration",
+      "//qtwebengine/common/extensions/api:api",
     ]
     sources += [
+      "//chrome/browser/extensions/api/enterprise_hardware_platform/enterprise_hardware_platform_api.cc",
+      "//chrome/browser/extensions/api/enterprise_hardware_platform/enterprise_hardware_platform_api.h",
       "//chrome/common/extensions/permissions/chrome_api_permissions.cc",
       "//chrome/common/extensions/permissions/chrome_api_permissions.h",
       "//chrome/common/extensions/permissions/chrome_permission_message_provider.cc",
@@ -192,6 +198,7 @@ source_set("qtwebengine_sources") {
       deps += [
          "//pdf",
          "//pdf:buildflags",
+         "//pdf:pdf_ppapi",
          "//components/pdf/browser:browser",
          "//components/pdf/renderer:renderer",
          "//components/printing/browser",

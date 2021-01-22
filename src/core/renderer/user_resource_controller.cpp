@@ -150,10 +150,10 @@ public:
 
 private:
     // RenderFrameObserver implementation.
-    void DidCommitProvisionalLoad(bool is_same_document_navigation, ui::PageTransition transition) override;
+    void DidCommitProvisionalLoad(ui::PageTransition transition) override;
     void DidFinishDocumentLoad() override;
     void DidFinishLoad() override;
-    void FrameDetached() override;
+    void WillDetach() override;
     void OnDestruct() override;
     void AddScript(const QtWebEngineCore::UserScriptData &data) override;
     void RemoveScript(const QtWebEngineCore::UserScriptData &data) override;
@@ -198,7 +198,7 @@ void UserResourceController::runScripts(QtWebEngineCore::UserScriptData::Injecti
         return;
     const bool isMainFrame = renderFrame->IsMainFrame();
 
-    QList<uint64_t> scriptsToRun = m_frameUserScriptMap.value(0).values();
+    QList<uint64_t> scriptsToRun = m_frameUserScriptMap.value(globalScriptsIndex).values();
     scriptsToRun.append(m_frameUserScriptMap.value(renderFrame).values());
 
     for (uint64_t id : qAsConst(scriptsToRun)) {
@@ -239,12 +239,8 @@ void UserResourceController::RenderFrameObserverHelper::BindReceiver(
     m_binding.Bind(std::move(receiver));
 }
 
-void UserResourceController::RenderFrameObserverHelper::DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                                                                 ui::PageTransition /*transitionbool*/)
+void UserResourceController::RenderFrameObserverHelper::DidCommitProvisionalLoad(ui::PageTransition /*transition*/)
 {
-    if (is_same_document_navigation)
-        return;
-
     // We are almost ready to run scripts. We still have to wait until the host
     // process has been notified of the DidCommitProvisionalLoad event to ensure
     // that the WebChannelTransportHost is ready to receive messages.
@@ -278,7 +274,7 @@ void UserResourceController::RenderFrameObserverHelper::DidFinishLoad()
                                QtWebEngineCore::UserScriptData::AfterLoad));
 }
 
-void UserResourceController::RenderFrameObserverHelper::FrameDetached()
+void UserResourceController::RenderFrameObserverHelper::WillDetach()
 {
     m_runner.reset();
 }

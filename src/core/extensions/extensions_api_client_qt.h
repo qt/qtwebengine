@@ -49,6 +49,8 @@
 
 namespace extensions {
 
+class MessagingDelegate;
+
 class ExtensionsAPIClientQt : public ExtensionsAPIClient
 {
 public:
@@ -61,6 +63,10 @@ public:
     std::unique_ptr<MimeHandlerViewGuestDelegate>
     CreateMimeHandlerViewGuestDelegate(MimeHandlerViewGuest *guest) const override;
     void AttachWebContentsHelpers(content::WebContents *web_contents) const override;
+    MessagingDelegate *GetMessagingDelegate() override;
+
+private:
+    std::unique_ptr<MessagingDelegate> m_messagingDelegate;
 };
 
 } // namespace extensions

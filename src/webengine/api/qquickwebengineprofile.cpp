@@ -801,6 +801,7 @@ bool QQuickWebEngineProfile::isSpellCheckEnabled() const
 /*!
     \property QQuickWebEngineProfile::useForGlobalCertificateVerification
     \since 5.13
+    \obsolete
 
     This property holds whether this profile is used for downloading and
     caching during global certificate verification when using the online
@@ -814,13 +815,17 @@ bool QQuickWebEngineProfile::isSpellCheckEnabled() const
 
     By default, no profile has this property enabled.
 
-    Currently, only affects Linux/NSS installations, where having a profile with
-    this role enables OCSP.
+    Originally only affected Linux/NSS installations, where having a profile with
+    this role enabled OCSP.
+
+    Since 5.15.3 no longer does anything, and certificate verification is now
+    done using AIO on the requesting profile.
 */
 
 /*!
     \qmlproperty bool WebEngineProfile::useForGlobalCertificateVerification
     \since QtWebEngine 1.9
+    \obsolete
 
     This property holds whether this profile is used for downloading and
     caching during global certificate verification when using the online
@@ -834,8 +839,11 @@ bool QQuickWebEngineProfile::isSpellCheckEnabled() const
 
     By default, no profile has this property enabled.
 
-    Currently, only affects Linux/NSS installations, where having a profile with
-    this role enables OCSP.
+    Originally only affected Linux/NSS installations, where having a profile with
+    this role enabled OCSP.
+
+    Since 5.15.3 no longer does anything, and certificate verification is now
+    done using AIO on the requesting profile.
 */
 
 void QQuickWebEngineProfile::setUseForGlobalCertificateVerification(bool enable)

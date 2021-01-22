@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -40,74 +40,20 @@
 #include "desktop_screen_qt.h"
 
 #include "ui/display/display.h"
-#include "ui/gfx/geometry/point.h"
-
-#include <QtGlobal>
 
 namespace QtWebEngineCore {
 
-gfx::Point DesktopScreenQt::GetCursorScreenPoint()
+DesktopScreenQt::DesktopScreenQt()
 {
-    Q_UNREACHABLE();
-    return gfx::Point();
+    ProcessDisplayChanged(display::Display::GetDefaultDisplay(), true /* is_primary */);
 }
 
-bool DesktopScreenQt::IsWindowUnderCursor(gfx::NativeWindow)
-{
-    Q_UNREACHABLE();
-    return false;
-}
+DesktopScreenQt::~DesktopScreenQt()
+{}
 
-gfx::NativeWindow DesktopScreenQt::GetWindowAtScreenPoint(const gfx::Point& point)
+display::Display DesktopScreenQt::GetDisplayNearestWindow(gfx::NativeWindow /*window*/) const
 {
-    Q_UNREACHABLE();
-    return gfx::NativeWindow();
-}
-
-int DesktopScreenQt::GetNumDisplays() const
-{
-    Q_UNREACHABLE();
-    return 0;
-}
-
-std::vector<display::Display>& DesktopScreenQt::GetAllDisplays() const
-{
-    static std::vector<display::Display> empty;
-    return empty;
-}
-
-display::Display DesktopScreenQt::GetDisplayNearestWindow(gfx::NativeWindow window) const
-{
-    // RenderViewHostImpl::OnStartDragging uses this to determine
-    // the scale factor for the view.
-    return display::Display(0);
-}
-
-display::Display DesktopScreenQt::GetDisplayNearestPoint(const gfx::Point& point) const
-{
-    Q_UNREACHABLE();
-    return display::Display();
-}
-
-display::Display DesktopScreenQt::GetDisplayMatching(const gfx::Rect& match_rect) const
-{
-    Q_UNREACHABLE();
-    return display::Display();
-}
-
-display::Display DesktopScreenQt::GetPrimaryDisplay() const
-{
-    return display::Display(0);
-}
-
-void DesktopScreenQt::AddObserver(display::DisplayObserver* observer)
-{
-    Q_UNREACHABLE();
-}
-
-void DesktopScreenQt::RemoveObserver(display::DisplayObserver* observer)
-{
-    Q_UNREACHABLE();
+    return GetPrimaryDisplay();
 }
 
 } // namespace QtWebEngineCore

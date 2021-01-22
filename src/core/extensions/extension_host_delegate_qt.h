@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,57 +37,41 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#ifndef EXTENSION_HOST_DELEGATE_QT_H
+#define EXTENSION_HOST_DELEGATE_QT_H
 
-#ifndef FILE_PICKER_CONTROLLER_H
-#define FILE_PICKER_CONTROLLER_H
+#include "extensions/browser/extension_host_delegate.h"
 
-#include "qtwebenginecoreglobal_p.h"
+namespace extensions {
 
-#include <QObject>
-#include <QStringList>
-
-namespace QtWebEngineCore {
-
-class FilePickerControllerPrivate;
-class Q_WEBENGINECORE_PRIVATE_EXPORT FilePickerController : public QObject {
-    Q_OBJECT
+class ExtensionHostDelegateQt : public ExtensionHostDelegate
+{
 public:
-    enum FileChooserMode {
-        Open,
-        OpenMultiple,
-        UploadFolder,
-        Save
-    };
+    ExtensionHostDelegateQt();
 
-    FilePickerController(FilePickerControllerPrivate *priv, QObject *parent = nullptr);
-    ~FilePickerController() override;
-
-    QStringList acceptedMimeTypes() const;
-    QString defaultFileName() const;
-    FileChooserMode mode() const;
-
-    static QStringList nameFilters(const QStringList &acceptedMimeTypes);
-
-public Q_SLOTS:
-    void accepted(const QStringList &files);
-    void accepted(const QVariant &files);
-    void rejected();
-
-private:
-    void filesSelectedInChooser(const QStringList &filesList);
-    FilePickerControllerPrivate *d_ptr;
+    // EtensionHostDelegate implementation.
+    void OnExtensionHostCreated(content::WebContents *web_contents) override;
+    void OnRenderViewCreatedForBackgroundPage(ExtensionHost *host) override;
+    content::JavaScriptDialogManager *GetJavaScriptDialogManager() override;
+    void CreateTab(std::unique_ptr<content::WebContents> web_contents,
+                   const std::string &extension_id,
+                   WindowOpenDisposition disposition,
+                   const gfx::Rect &initial_rect,
+                   bool user_gesture) override;
+    void ProcessMediaAccessRequest(content::WebContents *web_contents,
+                                   const content::MediaStreamRequest &request,
+                                   content::MediaResponseCallback callback,
+                                   const Extension *extension) override;
+    bool CheckMediaAccessPermission(content::RenderFrameHost *render_frame_host,
+                                    const GURL &security_origin,
+                                    blink::mojom::MediaStreamType type,
+                                    const Extension *extension) override;
+    content::PictureInPictureResult EnterPictureInPicture(content::WebContents *web_contents,
+                                                          const viz::SurfaceId &surface_id,
+                                                          const gfx::Size &natural_size) override;
+    void ExitPictureInPicture() override;
 };
 
-} // namespace QtWebEngineCore
+} // namespace extensions
 
-#endif // FILE_PICKER_CONTROLLER_H
+#endif // EXTENSION_HOST_DELEGATE_QT_H

@@ -91,6 +91,7 @@ public:
     // network::mojom::URLLoader:
     void FollowRedirect(const std::vector<std::string> &removed_headers,
                         const net::HttpRequestHeaders &modified_headers,
+                        const net::HttpRequestHeaders &modified_cors_exempt_headers, // FIXME: do something with this?
                         const base::Optional<GURL> &new_url) override
     {
         // We can be asked for follow our own redirect
@@ -287,9 +288,9 @@ private:
 
         if (!m_redirect.is_empty()) {
             m_head->content_length = m_head->encoded_body_length = -1;
-            net::URLRequest::FirstPartyURLPolicy first_party_url_policy =
-                    m_request.update_first_party_url_on_redirect ? net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT
-                                                                 : net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
+            net::RedirectInfo::FirstPartyURLPolicy first_party_url_policy =
+                    m_request.update_first_party_url_on_redirect ? net::RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT
+                                                                 : net::RedirectInfo::FirstPartyURLPolicy::NEVER_CHANGE_URL;
             net::RedirectInfo redirectInfo = net::RedirectInfo::ComputeRedirectInfo(
                         m_request.method, m_request.url,
                         m_request.site_for_cookies,
@@ -457,10 +458,13 @@ private:
 
 class CustomURLLoaderFactory : public network::mojom::URLLoaderFactory {
 public:
-    CustomURLLoaderFactory(ProfileAdapter *profileAdapter)
+    CustomURLLoaderFactory(ProfileAdapter *profileAdapter, mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
         : m_taskRunner(base::CreateSequencedTaskRunner({ content::BrowserThread::IO }))
         , m_profileAdapter(profileAdapter)
     {
+        m_receivers.set_disconnect_handler(base::BindRepeating(
+            &CustomURLLoaderFactory::OnDisconnect, base::Unretained(this)));
+        m_receivers.Add(this, std::move(receiver));
     }
     ~CustomURLLoaderFactory() override = default;
 
@@ -491,6 +495,19 @@ public:
         m_receivers.Add(this, std::move(receiver));
     }
 
+    void OnDisconnect()
+    {
+        if (m_receivers.empty())
+            delete this;
+    }
+
+    static mojo::PendingRemote<network::mojom::URLLoaderFactory> Create(ProfileAdapter *profileAdapter)
+    {
+        mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_remote;
+        new CustomURLLoaderFactory(profileAdapter, pending_remote.InitWithNewPipeAndPassReceiver());
+        return pending_remote;
+    }
+
     const scoped_refptr<base::SequencedTaskRunner> m_taskRunner;
     mojo::ReceiverSet<network::mojom::URLLoaderFactory> m_receivers;
     QPointer<ProfileAdapter> m_profileAdapter;
@@ -499,9 +516,9 @@ public:
 
 } // namespace
 
-std::unique_ptr<network::mojom::URLLoaderFactory> CreateCustomURLLoaderFactory(ProfileAdapter *profileAdapter)
+mojo::PendingRemote<network::mojom::URLLoaderFactory> CreateCustomURLLoaderFactory(ProfileAdapter *profileAdapter)
 {
-    return std::make_unique<CustomURLLoaderFactory>(profileAdapter);
+    return CustomURLLoaderFactory::Create(profileAdapter);
 }
 
 } // namespace QtWebEngineCore

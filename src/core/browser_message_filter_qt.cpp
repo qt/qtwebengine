@@ -64,90 +64,77 @@ BrowserMessageFilterQt::BrowserMessageFilterQt(int /*render_process_id*/, Profil
 bool BrowserMessageFilterQt::OnMessageReceived(const IPC::Message& message)
 {
     IPC_BEGIN_MESSAGE_MAP(BrowserMessageFilterQt, message)
-        IPC_MESSAGE_HANDLER(QtWebEngineHostMsg_AllowDatabase, OnAllowDatabase)
-        IPC_MESSAGE_HANDLER(QtWebEngineHostMsg_AllowDOMStorage, OnAllowDOMStorage)
-        IPC_MESSAGE_HANDLER_DELAY_REPLY(QtWebEngineHostMsg_RequestFileSystemAccessSync,
-                                        OnRequestFileSystemAccessSync)
-        IPC_MESSAGE_HANDLER(QtWebEngineHostMsg_RequestFileSystemAccessAsync,
-                            OnRequestFileSystemAccessAsync)
-        IPC_MESSAGE_HANDLER(QtWebEngineHostMsg_AllowIndexedDB, OnAllowIndexedDB)
+        IPC_MESSAGE_HANDLER(QtWebEngineHostMsg_AllowStorageAccess, OnAllowStorageAccess)
+        IPC_MESSAGE_HANDLER_DELAY_REPLY(QtWebEngineHostMsg_RequestStorageAccessSync,
+                                        OnRequestStorageAccessSync)
+        IPC_MESSAGE_HANDLER(QtWebEngineHostMsg_RequestStorageAccessAsync,
+                            OnRequestStorageAccessAsync)
         IPC_MESSAGE_UNHANDLED(return false)
     IPC_END_MESSAGE_MAP()
     return true;
 }
 
-void BrowserMessageFilterQt::OnAllowDatabase(int /*render_frame_id*/,
-                                             const GURL &origin_url,
-                                             const GURL &top_origin_url,
-                                             bool* allowed)
+void BrowserMessageFilterQt::OnAllowStorageAccess(int /*render_frame_id*/,
+                                                  const GURL &origin_url,
+                                                  const GURL &top_origin_url,
+                                                  int /*storage_type*/,
+                                                  bool *allowed)
 {
     *allowed = m_profileData->canGetCookies(toQt(top_origin_url), toQt(origin_url));
 }
 
-void BrowserMessageFilterQt::OnAllowDOMStorage(int /*render_frame_id*/,
-                                               const GURL &origin_url,
-                                               const GURL &top_origin_url,
-                                               bool /*local*/,
-                                               bool *allowed)
-{
-    *allowed = m_profileData->canGetCookies(toQt(top_origin_url), toQt(origin_url));
-}
-
-void BrowserMessageFilterQt::OnAllowIndexedDB(int /*render_frame_id*/,
-                                              const GURL &origin_url,
-                                              const GURL &top_origin_url,
-                                              bool *allowed)
-{
-    *allowed = m_profileData->canGetCookies(toQt(top_origin_url), toQt(origin_url));
-}
-
-void BrowserMessageFilterQt::OnRequestFileSystemAccessSync(int render_frame_id,
-                                                           const GURL& origin_url,
-                                                           const GURL& top_origin_url,
-                                                           IPC::Message* reply_msg)
+void BrowserMessageFilterQt::OnRequestStorageAccessSync(int render_frame_id,
+                                                        const GURL& origin_url,
+                                                        const GURL& top_origin_url,
+                                                        int storage_type,
+                                                        IPC::Message* reply_msg)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     base::Callback<void(bool)> callback = base::Bind(
-            &BrowserMessageFilterQt::OnRequestFileSystemAccessSyncResponse,
+            &BrowserMessageFilterQt::OnRequestStorageAccessSyncResponse,
             base::WrapRefCounted(this), reply_msg);
-    OnRequestFileSystemAccess(render_frame_id,
-                              origin_url,
-                              top_origin_url,
-                              callback);
+    OnRequestStorageAccess(render_frame_id,
+                           origin_url,
+                           top_origin_url,
+                           storage_type,
+                           callback);
 }
 
-void BrowserMessageFilterQt::OnRequestFileSystemAccessSyncResponse(IPC::Message *reply_msg, bool allowed)
+void BrowserMessageFilterQt::OnRequestStorageAccessSyncResponse(IPC::Message *reply_msg, bool allowed)
 {
-    QtWebEngineHostMsg_RequestFileSystemAccessSync::WriteReplyParams(reply_msg, allowed);
+    QtWebEngineHostMsg_RequestStorageAccessSync::WriteReplyParams(reply_msg, allowed);
     Send(reply_msg);
 }
 
-void BrowserMessageFilterQt::OnRequestFileSystemAccessAsync(int render_frame_id,
-                                                            int request_id,
-                                                            const GURL& origin_url,
-                                                            const GURL& top_origin_url)
+void BrowserMessageFilterQt::OnRequestStorageAccessAsync(int render_frame_id,
+                                                         int request_id,
+                                                         const GURL& origin_url,
+                                                         const GURL& top_origin_url,
+                                                         int storage_type)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     base::Callback<void(bool)> callback = base::Bind(
-            &BrowserMessageFilterQt::OnRequestFileSystemAccessAsyncResponse,
+            &BrowserMessageFilterQt::OnRequestStorageAccessAsyncResponse,
             base::WrapRefCounted(this), render_frame_id, request_id);
-    OnRequestFileSystemAccess(render_frame_id,
-                              origin_url,
-                              top_origin_url,
-                              callback);
+    OnRequestStorageAccess(render_frame_id,
+                           origin_url,
+                           top_origin_url,
+                           storage_type,
+                           callback);
 }
 
-void BrowserMessageFilterQt::OnRequestFileSystemAccessAsyncResponse(int render_frame_id,
-                                                                    int request_id,
-                                                                    bool allowed)
+void BrowserMessageFilterQt::OnRequestStorageAccessAsyncResponse(int render_frame_id,
+                                                                 int request_id,
+                                                                 bool allowed)
 {
-    Send(new QtWebEngineMsg_RequestFileSystemAccessAsyncResponse(render_frame_id, request_id, allowed));
+    Send(new QtWebEngineMsg_RequestStorageAccessAsyncResponse(render_frame_id, request_id, allowed));
 }
 
-void BrowserMessageFilterQt::OnRequestFileSystemAccess(int /*render_frame_id*/,
-                                                       const GURL &origin_url,
-                                                       const GURL &top_origin_url,
-                                                       base::Callback<void(bool)> callback)
+void BrowserMessageFilterQt::OnRequestStorageAccess(int /*render_frame_id*/,
+                                                    const GURL &origin_url,
+                                                    const GURL &top_origin_url,
+                                                    int /*storage_type*/,
+                                                    base::Callback<void(bool)> callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     bool allowed = m_profileData->canGetCookies(toQt(top_origin_url), toQt(origin_url));

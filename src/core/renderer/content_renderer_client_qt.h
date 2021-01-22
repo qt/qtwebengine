@@ -89,7 +89,6 @@ public:
     void RenderThreadStarted() override;
     void ExposeInterfacesToBrowser(mojo::BinderMap* binders) override;
     void RenderFrameCreated(content::RenderFrame *render_frame) override;
-    bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) override;
     bool HasErrorPage(int http_status_code) override;
 
     void PrepareErrorPage(content::RenderFrame *render_frame,
@@ -114,10 +113,6 @@ public:
                               const blink::WebPluginParams &params,
                               blink::WebPlugin **plugin) override;
     bool IsOriginIsolatedPepperPlugin(const base::FilePath& plugin_path) override;
-    content::BrowserPluginDelegate *CreateBrowserPluginDelegate(content::RenderFrame *render_frame,
-                                                                const content::WebPluginInfo &info,
-                                                                const std::string &mime_type,
-                                                                const GURL &original_url) override;
 
     void WillSendRequest(blink::WebLocalFrame *frame,
                          ui::PageTransition transition_type,
@@ -127,7 +122,6 @@ public:
                          GURL *new_url,
                          bool *attach_same_site_cookies) override;
 
-    void BindReceiverOnMainThread(mojo::GenericPendingReceiver receiver) override;
     bool RequiresWebComponentsV0(const GURL &url) override;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -153,8 +147,6 @@ private:
 #if QT_CONFIG(webengine_spellchecker)
     QScopedPointer<SpellCheck> m_spellCheck;
 #endif
-
-    service_manager::BinderRegistry m_registry;
 
     DISALLOW_COPY_AND_ASSIGN(ContentRendererClientQt);
 };

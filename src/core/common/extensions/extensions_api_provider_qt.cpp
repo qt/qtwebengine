@@ -39,6 +39,8 @@
 
 #include "extensions_api_provider_qt.h"
 
+#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
+#include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/grit/common_resources.h"
 
 #include "extensions/common/api/api_features.h"
@@ -51,6 +53,7 @@
 #include "extensions/common/features/json_feature_provider_source.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/grit/extensions_resources.h"
+#include "qtwebengine/common/extensions/api/generated_schemas.h"
 
 #include "qt_api_features.h"
 //#include "qt_behavior_features.h"
@@ -85,16 +88,30 @@ void ExtensionsAPIProviderQt::AddPermissionFeatures(FeatureProvider *provider)
 
 bool ExtensionsAPIProviderQt::IsAPISchemaGenerated(const std::string &name)
 {
-    return api::GeneratedSchemas::IsGenerated(name);
+    return api::GeneratedSchemas::IsGenerated(name) ||
+            api::ChromeGeneratedSchemas::IsGenerated(name) ||
+            api::QtWebEngineGeneratedSchemas::IsGenerated(name);
 }
 
 base::StringPiece ExtensionsAPIProviderQt::GetAPISchema(const std::string &name)
 {
-    return api::GeneratedSchemas::Get(name);
+    if (!api::GeneratedSchemas::Get(name).empty())
+        return api::GeneratedSchemas::Get(name);
+
+    if (!api::ChromeGeneratedSchemas::Get(name).empty())
+        return api::ChromeGeneratedSchemas::Get(name);
+
+    if (!api::QtWebEngineGeneratedSchemas::Get(name).empty())
+        return api::QtWebEngineGeneratedSchemas::Get(name);
+
+    return "";
 }
 
 void ExtensionsAPIProviderQt::RegisterPermissions(PermissionsInfo* permissions_info)
 {
+    permissions_info->RegisterPermissions(
+        chrome_api_permissions::GetPermissionInfos(),
+        chrome_api_permissions::GetPermissionAliases());
 }
 
 }

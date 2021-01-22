@@ -116,7 +116,7 @@ void FindTextHelper::startFinding(const QString &findText, bool caseSensitively,
     blink::mojom::FindOptionsPtr options = blink::mojom::FindOptions::New();
     options->forward = !findBackward;
     options->match_case = caseSensitively;
-    options->find_next = findText == m_previousFindText;
+    options->new_session = findText != m_previousFindText;
     m_previousFindText = findText;
 
     m_currentFindRequestId = m_findRequestIdCounter++;

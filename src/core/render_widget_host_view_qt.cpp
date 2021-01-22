@@ -57,15 +57,15 @@
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
-#include "content/browser/frame_host/frame_tree.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/frame_tree.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/content_switches_internal.h"
-#include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/input_messages.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -188,6 +188,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     config.enable_longpress_drag_selection = false;
     m_touchSelectionController.reset(new ui::TouchSelectionController(m_touchSelectionControllerClient.get(), config));
 
+    host()->render_frame_metadata_provider()->AddObserver(this);
     host()->render_frame_metadata_provider()->ReportAllFrameSubmissionsForTesting(true);
 
     host()->SetView(this);
@@ -242,6 +243,9 @@ void RenderWidgetHostViewQt::InitAsFullscreen(content::RenderWidgetHostView*)
 
 void RenderWidgetHostViewQt::SetSize(const gfx::Size &sizeInDips)
 {
+    if (!m_delegate)
+        return;
+
     m_delegate->resize(sizeInDips.width(), sizeInDips.height());
 }
 
@@ -582,7 +586,7 @@ void RenderWidgetHostViewQt::DisplayTooltipText(const base::string16 &tooltip_te
         m_adapterClient->setToolTip(toQt(tooltip_text));
 }
 
-void RenderWidgetHostViewQt::GetScreenInfo(content::ScreenInfo *results)
+void RenderWidgetHostViewQt::GetScreenInfo(blink::ScreenInfo *results)
 {
     *results = m_screenInfo;
 }
@@ -598,7 +602,7 @@ void RenderWidgetHostViewQt::OnUpdateTextInputStateCalled(content::TextInputMana
     Q_UNUSED(updated_view);
     Q_UNUSED(did_update_state);
 
-    const content::TextInputState *state = text_input_manager_->GetTextInputState();
+    const ui::mojom::TextInputState *state = text_input_manager_->GetTextInputState();
     if (!state) {
         m_delegate->inputMethodStateChanged(false /*editorVisible*/, false /*passwordInput*/);
         m_delegate->setInputMethodHints(Qt::ImhNone);
@@ -613,16 +617,16 @@ void RenderWidgetHostViewQt::OnUpdateTextInputStateCalled(content::TextInputMana
 #endif
     QString surroundingText = toQt(state->value);
     // Remove IME composition text from the surrounding text
-    if (state->composition_start != -1 && state->composition_end != -1)
-        surroundingText.remove(state->composition_start,
-                               state->composition_end - state->composition_start);
+    if (state->composition.has_value())
+        surroundingText.remove(state->composition->start(),
+                               state->composition->end() - state->composition->start());
     delegateClient()->setSurroundingText(surroundingText);
 
     // In case of text selection, the update is expected in RenderWidgetHostViewQt::selectionChanged().
     if (GetSelectedText().empty()) {
         // At this point it is unknown whether the text input state has been updated due to a text selection.
         // Keep the cursor position updated for cursor movements too.
-        delegateClient()->setCursorPosition(state->selection_start);
+        delegateClient()->setCursorPosition(state->selection.start());
         m_delegate->inputMethodStateChanged(type != ui::TEXT_INPUT_TYPE_NONE, type == ui::TEXT_INPUT_TYPE_PASSWORD);
     }
 
@@ -632,7 +636,7 @@ void RenderWidgetHostViewQt::OnUpdateTextInputStateCalled(content::TextInputMana
     }
 
     // Ignore selection change triggered by ime composition unless it clears an actual text selection
-    if (state->composition_start != -1 && delegateClient()->isPreviousSelectionEmpty()) {
+    if (state->composition.has_value() && delegateClient()->isPreviousSelectionEmpty()) {
         m_imState = 0;
         return;
     }
@@ -691,16 +695,16 @@ void RenderWidgetHostViewQt::OnGestureEvent(const ui::GestureEventData& gesture)
 
     if (m_touchSelectionController && m_touchSelectionControllerClient) {
         switch (event.GetType()) {
-        case blink::WebInputEvent::kGestureLongPress:
+        case blink::WebInputEvent::Type::kGestureLongPress:
             m_touchSelectionController->HandleLongPressEvent(event.TimeStamp(), event.PositionInWidget());
             break;
-        case blink::WebInputEvent::kGestureTap:
+        case blink::WebInputEvent::Type::kGestureTap:
             m_touchSelectionController->HandleTapEvent(event.PositionInWidget(), event.data.tap.tap_count);
             break;
-        case blink::WebInputEvent::kGestureScrollBegin:
+        case blink::WebInputEvent::Type::kGestureScrollBegin:
             m_touchSelectionControllerClient->onScrollBegin();
             break;
-        case blink::WebInputEvent::kGestureScrollEnd:
+        case blink::WebInputEvent::Type::kGestureScrollEnd:
             m_touchSelectionControllerClient->onScrollEnd();
             break;
         default:
@@ -726,7 +730,7 @@ viz::ScopedSurfaceIdAllocator RenderWidgetHostViewQt::DidUpdateVisualProperties(
 
 void RenderWidgetHostViewQt::OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata)
 {
-    synchronizeVisualProperties(metadata.local_surface_id_allocation);
+    synchronizeVisualProperties(metadata.local_surface_id);
 }
 
 void RenderWidgetHostViewQt::OnDidFirstVisuallyNonEmptyPaint()
@@ -742,17 +746,18 @@ Compositor::Id RenderWidgetHostViewQt::compositorId()
 void RenderWidgetHostViewQt::notifyShown()
 {
     // Handle possible frame eviction:
-    if (!m_dfhLocalSurfaceIdAllocator.HasValidLocalSurfaceIdAllocation())
+    if (!m_dfhLocalSurfaceIdAllocator.HasValidLocalSurfaceId())
         m_dfhLocalSurfaceIdAllocator.GenerateId();
     if (m_visible)
         return;
     m_visible = true;
 
-    host()->WasShown(base::nullopt);
+    host()->WasShown(nullptr);
 
     m_delegatedFrameHost->AttachToCompositor(m_uiCompositor.get());
-    m_delegatedFrameHost->WasShown(GetLocalSurfaceIdAllocation().local_surface_id(),
-                                   toGfx(delegateClient()->viewRectInDips().size()), base::nullopt);
+    m_delegatedFrameHost->WasShown(GetLocalSurfaceId(),
+                                   toGfx(delegateClient()->viewRectInDips().size()),
+                                   nullptr);
 }
 
 void RenderWidgetHostViewQt::notifyHidden()
@@ -765,10 +770,10 @@ void RenderWidgetHostViewQt::notifyHidden()
     m_delegatedFrameHost->DetachFromCompositor();
 }
 
-void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) {
+void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, blink::mojom::InputEventResultState ack_result) {
     Q_UNUSED(touch);
-    const bool eventConsumed = ack_result == content::INPUT_EVENT_ACK_STATE_CONSUMED;
-    const bool isSetNonBlocking = content::InputEventAckStateIsSetNonBlocking(ack_result);
+    const bool eventConsumed = ack_result == blink::mojom::InputEventResultState::kConsumed;
+    const bool isSetNonBlocking = content::InputEventResultStateIsSetNonBlocking(ack_result);
     m_gestureProvider.OnTouchEventAck(touch.event.unique_touch_event_id, eventConsumed, isSetNonBlocking);
 }
 
@@ -791,7 +796,7 @@ bool RenderWidgetHostViewQt::isPopup() const
 
 bool RenderWidgetHostViewQt::updateScreenInfo()
 {
-    content::ScreenInfo oldScreenInfo = m_screenInfo;
+    blink::ScreenInfo oldScreenInfo = m_screenInfo;
     QScreen *screen = m_delegate->window() ? m_delegate->window()->screen() : nullptr;
 
     if (screen) {
@@ -826,7 +831,7 @@ void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *event)
     m_pendingWheelEvents.append(WebEventFactory::toWebWheelEvent(event));
 }
 
-void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &event, content::InputEventAckState /*ack_result*/)
+void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &event, blink::mojom::InputEventResultState /*ack_result*/)
 {
     if (event.phase == blink::WebMouseWheelEvent::kPhaseEnded)
         return;
@@ -840,14 +845,14 @@ void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &even
     }
 }
 
-void RenderWidgetHostViewQt::GestureEventAck(const blink::WebGestureEvent &event, content::InputEventAckState ack_result)
+void RenderWidgetHostViewQt::GestureEventAck(const blink::WebGestureEvent &event, blink::mojom::InputEventResultState ack_result)
 {
     // Forward unhandled scroll events back as wheel events
-    if (event.GetType() != blink::WebInputEvent::kGestureScrollUpdate)
+    if (event.GetType() != blink::WebInputEvent::Type::kGestureScrollUpdate)
         return;
     switch (ack_result) {
-    case content::INPUT_EVENT_ACK_STATE_NOT_CONSUMED:
-    case content::INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS:
+    case blink::mojom::InputEventResultState::kNotConsumed:
+    case blink::mojom::InputEventResultState::kNoConsumerExists:
         WebEventFactory::sendUnhandledWheelEvent(event, delegate());
         break;
     default:
@@ -860,26 +865,13 @@ content::MouseWheelPhaseHandler *RenderWidgetHostViewQt::GetMouseWheelPhaseHandl
     return &m_mouseWheelPhaseHandler;
 }
 
-content::RenderFrameHost *RenderWidgetHostViewQt::getFocusedFrameHost()
+blink::mojom::FrameWidgetInputHandler *RenderWidgetHostViewQt::getFrameWidgetInputHandler()
 {
-    content::RenderViewHostImpl *viewHost = content::RenderViewHostImpl::From(host());
-    if (!viewHost)
+    auto *focused_widget = GetFocusedWidget();
+    if (!focused_widget)
         return nullptr;
 
-    content::FrameTreeNode *focusedFrame = viewHost->GetDelegate()->GetFrameTree()->GetFocusedFrame();
-    if (!focusedFrame)
-        return nullptr;
-
-    return focusedFrame->current_frame_host();
-}
-
-content::mojom::FrameInputHandler *RenderWidgetHostViewQt::getFrameInputHandler()
-{
-    content::RenderFrameHostImpl *frameHost = static_cast<content::RenderFrameHostImpl *>(getFocusedFrameHost());
-    if (!frameHost)
-        return nullptr;
-
-    return frameHost->GetFrameInputHandler();
+    return focused_widget->GetFrameWidgetInputHandler();
 }
 
 ui::TextInputType RenderWidgetHostViewQt::getTextInputType() const
@@ -900,9 +892,9 @@ const viz::FrameSinkId &RenderWidgetHostViewQt::GetFrameSinkId() const
     return m_delegatedFrameHost->frame_sink_id();
 }
 
-const viz::LocalSurfaceIdAllocation &RenderWidgetHostViewQt::GetLocalSurfaceIdAllocation() const
+const viz::LocalSurfaceId &RenderWidgetHostViewQt::GetLocalSurfaceId() const
 {
-    return m_dfhLocalSurfaceIdAllocator.GetCurrentLocalSurfaceIdAllocation();
+    return m_dfhLocalSurfaceIdAllocator.GetCurrentLocalSurfaceId();
 }
 
 void RenderWidgetHostViewQt::TakeFallbackContentFrom(content::RenderWidgetHostView *view)
@@ -932,8 +924,6 @@ void RenderWidgetHostViewQt::ResetFallbackToFirstNavigationSurface()
 
 void RenderWidgetHostViewQt::OnRenderFrameMetadataChangedAfterActivation()
 {
-    content::RenderWidgetHostViewBase::OnRenderFrameMetadataChangedAfterActivation();
-
     const cc::RenderFrameMetadata &metadata = host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
     if (metadata.selection.start != m_selectionStart || metadata.selection.end != m_selectionEnd) {
         m_selectionStart = metadata.selection.start;
@@ -951,7 +941,7 @@ void RenderWidgetHostViewQt::OnRenderFrameMetadataChangedAfterActivation()
         m_adapterClient->updateContentsSize(toQt(m_lastContentsSize));
 }
 
-void RenderWidgetHostViewQt::synchronizeVisualProperties(const base::Optional<viz::LocalSurfaceIdAllocation> &childSurfaceId)
+void RenderWidgetHostViewQt::synchronizeVisualProperties(const base::Optional<viz::LocalSurfaceId> &childSurfaceId)
 {
     if (childSurfaceId)
         m_dfhLocalSurfaceIdAllocator.UpdateFromChild(*childSurfaceId);
@@ -965,9 +955,9 @@ void RenderWidgetHostViewQt::synchronizeVisualProperties(const base::Optional<vi
     m_uiCompositor->SetScaleAndSize(
             m_screenInfo.device_scale_factor,
             viewSizeInPixels,
-            m_uiCompositorLocalSurfaceIdAllocator.GetCurrentLocalSurfaceIdAllocation());
+            m_uiCompositorLocalSurfaceIdAllocator.GetCurrentLocalSurfaceId());
     m_delegatedFrameHost->EmbedSurface(
-            m_dfhLocalSurfaceIdAllocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
+            m_dfhLocalSurfaceIdAllocator.GetCurrentLocalSurfaceId(),
             viewSizeInDips,
             cc::DeadlinePolicy::UseDefaultDeadline());
 

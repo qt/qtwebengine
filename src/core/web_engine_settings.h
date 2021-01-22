@@ -61,11 +61,14 @@
 
 namespace content {
 class WebContents;
-struct WebPreferences;
 }
+
 namespace blink {
 namespace mojom {
 class RendererPreferences;
+}
+namespace web_pref {
+struct WebPreferences;
 }
 }
 namespace QtWebEngineCore {
@@ -81,7 +84,7 @@ public:
 
     void setParentSettings(WebEngineSettings *parentSettings);
 
-    void overrideWebPreferences(content::WebContents *webContents, content::WebPreferences *prefs);
+    void overrideWebPreferences(content::WebContents *webContents, blink::web_pref::WebPreferences *prefs);
 
     void setAttribute(QWebEngineSettings::WebAttribute, bool on);
     bool testAttribute(QWebEngineSettings::WebAttribute) const;
@@ -111,7 +114,7 @@ public:
 private:
     void initDefaults();
     void doApply();
-    void applySettingsToWebPreferences(content::WebPreferences *);
+    void applySettingsToWebPreferences(blink::web_pref::WebPreferences *);
     bool applySettingsToRendererPreferences(blink::mojom::RendererPreferences *);
     void setWebContentsAdapter(WebContentsAdapter *adapter) { m_adapter = adapter; }
 
@@ -120,7 +123,7 @@ private:
     QHash<QWebEngineSettings::FontFamily, QString> m_fontFamilies;
     QHash<QWebEngineSettings::FontSize, int> m_fontSizes;
     QString m_defaultEncoding;
-    QScopedPointer<content::WebPreferences> webPreferences;
+    QScopedPointer<blink::web_pref::WebPreferences> webPreferences;
     QTimer m_batchTimer;
 
     WebEngineSettings *parentSettings;

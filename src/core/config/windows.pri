@@ -6,6 +6,3 @@ qtConfig(build-qtwebengine-core):qtConfig(webengine-spellchecker) {
 } else {
     gn_args += use_browser_spellchecker=false
 }
-
-# Avoid conflicting vulkan.h headers
-gn_args += enable_vulkan=false

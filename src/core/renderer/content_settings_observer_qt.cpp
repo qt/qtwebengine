@@ -82,21 +82,20 @@ bool ContentSettingsObserverQt::OnMessageReceived(const IPC::Message &message)
 {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(ContentSettingsObserverQt, message)
-        IPC_MESSAGE_HANDLER(QtWebEngineMsg_RequestFileSystemAccessAsyncResponse, OnRequestFileSystemAccessAsyncResponse)
+        IPC_MESSAGE_HANDLER(QtWebEngineMsg_RequestStorageAccessAsyncResponse, OnRequestStorageAccessAsyncResponse)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
 
     return handled;
 }
 
-void ContentSettingsObserverQt::DidCommitProvisionalLoad(bool is_same_document_navigation, ui::PageTransition /*transition*/)
+void ContentSettingsObserverQt::DidCommitProvisionalLoad(ui::PageTransition /*transition*/)
 {
     blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
     if (frame->Parent())
         return; // Not a top-level navigation.
 
-    if (!is_same_document_navigation)
-        ClearBlockedContentSettings();
+    ClearBlockedContentSettings();
 
     GURL url = frame->GetDocument().Url();
     // If we start failing this DCHECK, please makes sure we don't regress
@@ -109,68 +108,51 @@ void ContentSettingsObserverQt::OnDestruct()
     delete this;
 }
 
-bool ContentSettingsObserverQt::AllowDatabase()
-{
-    blink::WebFrame *frame = render_frame()->GetWebFrame();
-    if (IsUniqueFrame(frame))
-        return false;
-
-    bool result = false;
-    Send(new QtWebEngineHostMsg_AllowDatabase(routing_id(), url::Origin(frame->GetSecurityOrigin()).GetURL(),
-                                              url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(), &result));
-    return result;
-}
-
-void ContentSettingsObserverQt::RequestFileSystemAccessAsync(base::OnceCallback<void(bool)> callback)
+void ContentSettingsObserverQt::AllowStorageAccess(StorageType storage_type,
+                                                   base::OnceCallback<void(bool)> callback)
 {
     blink::WebFrame *frame = render_frame()->GetWebFrame();
     if (IsUniqueFrame(frame)) {
         std::move(callback).Run(false);
         return;
     }
+
     ++m_currentRequestId;
     bool inserted = m_permissionRequests.insert(std::make_pair(m_currentRequestId, std::move(callback))).second;
 
     // Verify there are no duplicate insertions.
     DCHECK(inserted);
 
-    Send(new QtWebEngineHostMsg_RequestFileSystemAccessAsync(routing_id(), m_currentRequestId,
-                                                             url::Origin(frame->GetSecurityOrigin()).GetURL(),
-                                                             url::Origin(frame->Top()->GetSecurityOrigin()).GetURL()));
+    Send(new QtWebEngineHostMsg_RequestStorageAccessAsync(routing_id(), m_currentRequestId,
+                                                          url::Origin(frame->GetSecurityOrigin()).GetURL(),
+                                                          url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(),
+                                                          int(storage_type)));
 }
 
-bool ContentSettingsObserverQt::AllowIndexedDB()
-{
-    blink::WebFrame *frame = render_frame()->GetWebFrame();
-    if (IsUniqueFrame(frame))
-        return false;
-
-    bool result = false;
-    Send(new QtWebEngineHostMsg_AllowIndexedDB(routing_id(),
-                                               url::Origin(frame->GetSecurityOrigin()).GetURL(),
-                                               url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(), &result));
-    return result;
-}
-
-bool ContentSettingsObserverQt::AllowStorage(bool local)
+bool ContentSettingsObserverQt::AllowStorageAccessSync(StorageType storage_type)
 {
     blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
     if (IsUniqueFrame(frame))
         return false;
 
-    StoragePermissionsKey key(url::Origin(frame->GetDocument().GetSecurityOrigin()).GetURL(), local);
-    const auto permissions = m_cachedStoragePermissions.find(key);
-    if (permissions != m_cachedStoragePermissions.end())
-        return permissions->second;
+    bool sameOrigin = url::Origin(frame->Top()->GetSecurityOrigin()).IsSameOriginWith(url::Origin(frame->GetSecurityOrigin()));
+    StoragePermissionsKey key(url::Origin(frame->GetSecurityOrigin()).GetURL(), int(storage_type));
+    if (sameOrigin) {
+        const auto permissions = m_cachedStoragePermissions.find(key);
+        if (permissions != m_cachedStoragePermissions.end())
+            return permissions->second;
+    }
 
     bool result = false;
-    Send(new QtWebEngineHostMsg_AllowDOMStorage(routing_id(), url::Origin(frame->GetSecurityOrigin()).GetURL(),
-                                                url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(), local, &result));
-    m_cachedStoragePermissions[key] = result;
+    Send(new QtWebEngineHostMsg_AllowStorageAccess(routing_id(), url::Origin(frame->GetSecurityOrigin()).GetURL(),
+                                                   url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(),
+                                                   int(storage_type), &result));
+    if (sameOrigin)
+        m_cachedStoragePermissions[key] = result;
     return result;
 }
 
-void ContentSettingsObserverQt::OnRequestFileSystemAccessAsyncResponse(int request_id, bool allowed)
+void ContentSettingsObserverQt::OnRequestStorageAccessAsyncResponse(int request_id, bool allowed)
 {
     auto it = m_permissionRequests.find(request_id);
     if (it == m_permissionRequests.end())

@@ -21,7 +21,7 @@ defineReplace(qtwebengine_checkWebEngineCoreError) {
     !qtwebengine_checkForGperf(QtWebEngine):return(false)
     !qtwebengine_checkForBison(QtWebEngine):return(false)
     !qtwebengine_checkForFlex(QtWebEngine):return(false)
-    !qtwebengine_checkForPython2(QtWebengine):return(false)
+    !qtwebengine_checkForPython2(QtWebEngine):return(false)
     !qtwebengine_checkForSanitizer(QtWebEngine):return(false)
     linux:!qtwebengine_checkForPkgCfg(QtWebEngine):return(false)
     linux:!qtwebengine_checkForHostPkgCfg(QtWebEngine):return(false)
@@ -146,6 +146,15 @@ defineTest(qtwebengine_checkForPython2) {
     module = $$1
     !qtConfig(webengine-python2) {
         qtwebengine_skipBuild("Python version 2 (2.7.5 or later) is required to build $${module}.")
+        return(false)
+    }
+    return(true)
+}
+
+defineTest(qtwebengine_checkForNodejs) {
+    module = $$1
+    !qtConfig(webengine-nodejs) {
+        qtwebengine_skipBuild("Nodejs is required to build $${module}.")
         return(false)
     }
     return(true)

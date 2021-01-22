@@ -147,8 +147,6 @@ bool ExtensionsRendererClientQt::ExtensionAPIEnabledForServiceWorkerScript(const
 void ExtensionsRendererClientQt::RenderThreadStarted()
 {
     content::RenderThread *thread = content::RenderThread::Get();
-    // ChromeRenderViewTest::SetUp() creates its own ExtensionDispatcher and
-    // injects it using SetExtensionDispatcher(). Don't overwrite it.
     if (!extension_dispatcher_)
         extension_dispatcher_.reset(new extensions::Dispatcher(std::make_unique<ExtensionsDispatcherDelegateQt>()));
     extension_dispatcher_->OnRenderThreadStarted(thread);
@@ -198,16 +196,6 @@ bool ExtensionsRendererClientQt::ShouldFork(blink::WebLocalFrame *frame,
                                             bool *send_referrer)
 {
     return false; // TODO: Fix this to a sensible value
-}
-
-content::BrowserPluginDelegate *ExtensionsRendererClientQt::CreateBrowserPluginDelegate(content::RenderFrame *render_frame,
-                                                                                        const content::WebPluginInfo &info,
-                                                                                        const std::string &mime_type,
-                                                                                        const GURL &original_url)
-{
-    if (mime_type == content::kBrowserPluginMimeType)
-        return new extensions::ExtensionsGuestViewContainer(render_frame);
-    return new extensions::MimeHandlerViewContainer(render_frame, info, mime_type, original_url);
 }
 
 void ExtensionsRendererClientQt::RunScriptsAtDocumentStart(content::RenderFrame *render_frame)

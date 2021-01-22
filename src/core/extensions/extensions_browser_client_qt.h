@@ -93,8 +93,9 @@ public:
     bool IsRunningInForcedAppMode() override;
     bool IsLoggedInAsPublicAccount() override;
     ExtensionSystemProvider *GetExtensionSystemFactory() override;
-    void RegisterBrowserInterfaceBindersForFrame(service_manager::BinderMapWithContext<content::RenderFrameHost*> *,
+    void RegisterBrowserInterfaceBindersForFrame(mojo::BinderMapWithContext<content::RenderFrameHost*> *,
                                                  content::RenderFrameHost *, const extensions::Extension *) const override;
+
     std::unique_ptr<RuntimeAPIDelegate> CreateRuntimeAPIDelegate(content::BrowserContext *context) const override;
     const ComponentExtensionResourceManager *
     GetComponentExtensionResourceManager() override;

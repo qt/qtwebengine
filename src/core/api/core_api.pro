@@ -26,6 +26,7 @@ CHROMIUM_SRC_DIR = $$QTWEBENGINE_ROOT/$$getChromiumSrcDir()
 CHROMIUM_GEN_DIR = $$OUT_PWD/../$$getConfigDir()/gen
 INCLUDEPATH += $$QTWEBENGINE_ROOT/src/core \
                $$CHROMIUM_GEN_DIR \
+               $$CHROMIUM_SRC_DIR/third_party/abseil-cpp \
                $$CHROMIUM_SRC_DIR
 
 gcc: QMAKE_CXXFLAGS_WARN_ON = -Wno-unused-parameter

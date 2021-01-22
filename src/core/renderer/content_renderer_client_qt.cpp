@@ -50,7 +50,6 @@
 #include "components/cdm/renderer/external_clear_key_key_system_properties.h"
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "components/error_page/common/error.h"
-#include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/network_hints/renderer/web_prescient_networking_impl.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
@@ -72,10 +71,8 @@
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_security_policy.h"
-#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
-#include "content/public/common/web_preferences.h"
 
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "renderer/print_web_view_helper_delegate_qt.h"
@@ -103,7 +100,6 @@
 
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 
 #include "components/grit/components_resources.h"
 
@@ -148,7 +144,7 @@ void ContentRendererClientQt::RenderThreadStarted()
 
     // Allow XMLHttpRequests from qrc to file.
     // ### consider removing for Qt6
-    blink::WebURL qrc(blink::KURL("qrc:"));
+    blink::WebURL qrc(GURL("qrc:"));
     blink::WebString file(blink::WebString::FromASCII("file"));
     blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(
             qrc, file, blink::WebString(), 0, network::mojom::CorsDomainMatchMode::kAllowSubdomains,
@@ -157,7 +153,7 @@ void ContentRendererClientQt::RenderThreadStarted()
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     // Allow the pdf viewer extension to access chrome resources
-    blink::WebURL pdfViewerExtension(blink::KURL("chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai"));
+    blink::WebURL pdfViewerExtension(GURL("chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai"));
     blink::WebString chromeResources(blink::WebString::FromASCII("chrome"));
     blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(
             pdfViewerExtension, chromeResources, blink::WebString(), 0,
@@ -256,11 +252,6 @@ bool ContentRendererClientQt::HasErrorPage(int httpStatusCode)
     return true;
 }
 
-bool ContentRendererClientQt::ShouldSuppressErrorPage(content::RenderFrame *frame, const GURL &)
-{
-    return !(frame->GetWebkitPreferences().enable_error_page);
-}
-
 // To tap into the chromium localized strings. Ripped from the chrome layer (highly simplified).
 void ContentRendererClientQt::PrepareErrorPage(content::RenderFrame *renderFrame,
                                                const blink::WebURLError &web_error,
@@ -304,8 +295,7 @@ void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderF
                 error_page::LocalizedError::GetPageState(
                         error.reason(), error.domain(), error.url(), isPost, false,
                         error.stale_copy_in_cache(), false,
-                        RenderConfiguration::is_incognito_process(), false, false, false, locale,
-                        std::unique_ptr<error_page::ErrorPageParams>());
+                        RenderConfiguration::is_incognito_process(), false, false, false, locale);
 
         resourceId = IDR_NET_ERROR_HTML;
 
@@ -375,26 +365,6 @@ blink::WebPlugin* ContentRendererClientQt::CreatePlugin(content::RenderFrame* re
     return LoadablePluginPlaceholderQt::CreateLoadableMissingPlugin(render_frame, original_params)->plugin();
 }
 #endif  //BUILDFLAG(ENABLE_PLUGINS)
-
-content::BrowserPluginDelegate *ContentRendererClientQt::CreateBrowserPluginDelegate(content::RenderFrame *render_frame,
-                                                                                     const content::WebPluginInfo &info,
-                                                                                     const std::string &mime_type,
-                                                                                     const GURL &original_url)
-{
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    return ExtensionsRendererClientQt::GetInstance()->CreateBrowserPluginDelegate(render_frame, info, mime_type,
-                                                                                  original_url);
-#else
-    return nullptr;
-#endif
-}
-
-void ContentRendererClientQt::BindReceiverOnMainThread(mojo::GenericPendingReceiver receiver)
-{
-    std::string interface_name = *receiver.interface_name();
-    auto pipe = receiver.PassPipe();
-    m_registry.TryBindInterface(interface_name, &pipe);
-}
 
 void ContentRendererClientQt::GetInterface(const std::string &interface_name, mojo::ScopedMessagePipeHandle interface_pipe)
 {

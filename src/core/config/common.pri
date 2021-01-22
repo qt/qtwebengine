@@ -1,4 +1,3 @@
-
 qtConfig(webengine-printing-and-pdf) {
     gn_args += enable_basic_printing=true enable_print_preview=true
     gn_args += enable_pdf=true
@@ -22,7 +21,7 @@ qtConfig(webengine-spellchecker) {
 qtConfig(webengine-webrtc) {
     gn_args += enable_webrtc=true
 } else {
-    gn_args += enable_webrtc=false audio_processing_in_audio_service_supported=false
+    gn_args += enable_webrtc=false
 }
 
 qtConfig(webengine-proprietary-codecs) {
@@ -47,8 +46,4 @@ qtConfig(webengine-kerberos) {
     gn_args += use_kerberos=false
 }
 
-qtConfig(webengine-nodejs) {
-    gn_args += have_nodejs=true
-} else {
-    gn_args += have_nodejs=false
-}
+!qtConfig(webengine-nodejs10): gn_args += use_rollup=false

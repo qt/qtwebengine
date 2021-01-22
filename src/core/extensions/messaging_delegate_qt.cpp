@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,57 +37,20 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include "messaging_delegate_qt.h"
 
-#ifndef FILE_PICKER_CONTROLLER_H
-#define FILE_PICKER_CONTROLLER_H
+#include <QtGlobal>
 
-#include "qtwebenginecoreglobal_p.h"
+namespace extensions {
 
-#include <QObject>
-#include <QStringList>
+MessagingDelegateQt::MessagingDelegateQt()
+{
+}
 
-namespace QtWebEngineCore {
+std::unique_ptr<base::DictionaryValue> MessagingDelegateQt::MaybeGetTabInfo(content::WebContents *web_contents)
+{
+    Q_UNUSED(web_contents);
+    return nullptr;
+}
 
-class FilePickerControllerPrivate;
-class Q_WEBENGINECORE_PRIVATE_EXPORT FilePickerController : public QObject {
-    Q_OBJECT
-public:
-    enum FileChooserMode {
-        Open,
-        OpenMultiple,
-        UploadFolder,
-        Save
-    };
-
-    FilePickerController(FilePickerControllerPrivate *priv, QObject *parent = nullptr);
-    ~FilePickerController() override;
-
-    QStringList acceptedMimeTypes() const;
-    QString defaultFileName() const;
-    FileChooserMode mode() const;
-
-    static QStringList nameFilters(const QStringList &acceptedMimeTypes);
-
-public Q_SLOTS:
-    void accepted(const QStringList &files);
-    void accepted(const QVariant &files);
-    void rejected();
-
-private:
-    void filesSelectedInChooser(const QStringList &filesList);
-    FilePickerControllerPrivate *d_ptr;
-};
-
-} // namespace QtWebEngineCore
-
-#endif // FILE_PICKER_CONTROLLER_H
+} // namespace extensions

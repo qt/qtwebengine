@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -40,24 +40,17 @@
 #ifndef DESKTOP_SCREEN_QT_H
 #define DESKTOP_SCREEN_QT_H
 
-#include "ui/display/screen.h"
+#include "ui/display/screen_base.h"
 
 namespace QtWebEngineCore {
 
-class DesktopScreenQt : public display::Screen {
+class DesktopScreenQt : public display::ScreenBase
+{
 public:
-    // Overridden from gfx::Screen:
-    gfx::Point GetCursorScreenPoint() override;
-    bool IsWindowUnderCursor(gfx::NativeWindow) override;
-    gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
-    int GetNumDisplays() const override;
-    std::vector<display::Display>& GetAllDisplays() const override;
-    display::Display GetDisplayNearestWindow(gfx::NativeWindow window) const override;
-    display::Display GetDisplayNearestPoint(const gfx::Point& point) const override;
-    display::Display GetDisplayMatching(const gfx::Rect& match_rect) const override;
-    display::Display GetPrimaryDisplay() const override;
-    void AddObserver(display::DisplayObserver* observer) override;
-    void RemoveObserver(display::DisplayObserver* observer) override;
+    DesktopScreenQt();
+    ~DesktopScreenQt() override;
+
+    display::Display GetDisplayNearestWindow(gfx::NativeWindow /*window*/) const override;
 };
 
 } // namespace QtWebEngineCore

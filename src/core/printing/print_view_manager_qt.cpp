@@ -37,6 +37,7 @@
 **
 ****************************************************************************/
 
+// Loosely based on print_view_manager.cc and print_preview_message_handler.cc
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE.Chromium file.
@@ -56,13 +57,13 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/common/web_preferences.h"
 #include "printing/metafile_skia.h"
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
@@ -121,12 +122,12 @@ static base::DictionaryValue *createPrintSettings()
     printSettings->SetInteger(printing::kPreviewRequestID, internalRequestId);
 
     // The following are standard settings that Chromium expects to be set.
-    printSettings->SetInteger(printing::kSettingPrinterType, printing::kPdfPrinter);
+    printSettings->SetInteger(printing::kSettingPrinterType, static_cast<int>(printing::PrinterType::kPdf));
 
     printSettings->SetInteger(printing::kSettingDpiHorizontal, printing::kPointsPerInch);
     printSettings->SetInteger(printing::kSettingDpiVertical, printing::kPointsPerInch);
 
-    printSettings->SetInteger(printing::kSettingDuplexMode, printing::SIMPLEX);
+    printSettings->SetInteger(printing::kSettingDuplexMode, static_cast<int>(printing::mojom::DuplexMode::kSimplex));
     printSettings->SetInteger(printing::kSettingCopies, 1);
     printSettings->SetInteger(printing::kSettingPagesPerSheet, 1);
     printSettings->SetBoolean(printing::kSettingCollate, false);
@@ -162,14 +163,14 @@ static base::DictionaryValue *createPrintSettingsFromQPageLayout(const QPageLayo
         marginsDict->SetInteger(printing::kSettingMarginRight, pageMarginsInPoints.right());
 
         printSettings->Set(printing::kSettingMarginsCustom, std::move(marginsDict));
-        printSettings->SetInteger(printing::kSettingMarginsType, printing::CUSTOM_MARGINS);
+        printSettings->SetInteger(printing::kSettingMarginsType, (int)printing::mojom::MarginType::kCustomMargins);
 
         // pageSizeInMillimeter is in portrait orientation. Transpose it if necessary.
         printSettings->SetBoolean(printing::kSettingLandscape, pageLayout.orientation() == QPageLayout::Landscape);
     } else {
         // QPrinter will handle margins
         pageSizeInMillimeter = pageLayout.paintRect(QPageLayout::Millimeter);
-        printSettings->SetInteger(printing::kSettingMarginsType, printing::NO_MARGINS);
+        printSettings->SetInteger(printing::kSettingMarginsType, (int)printing::mojom::MarginType::kNoMargins);
 
         // pageSizeInMillimeter already contains the orientation.
         printSettings->SetBoolean(printing::kSettingLandscape, false);
@@ -261,12 +262,11 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
 
     m_printSettings.reset(createPrintSettingsFromQPageLayout(pageLayout, useCustomMargins));
     m_printSettings->SetBoolean(printing::kSettingShouldPrintBackgrounds,
-                                web_contents()->GetRenderViewHost()->
-                                GetWebkitPreferences().should_print_backgrounds);
+                                web_contents()->GetOrCreateWebPreferences().should_print_backgrounds);
     m_printSettings->SetInteger(printing::kSettingColor,
-                                printInColor ? printing::COLOR : printing::GRAYSCALE);
+                                int(printInColor ? printing::mojom::ColorModel::kColor : printing::mojom::ColorModel::kGrayscale));
 
-    if (web_contents()->ShowingInterstitialPage() || web_contents()->IsCrashed())
+    if (web_contents()->IsCrashed())
         return false;
 
     content::RenderFrameHost* rfh = web_contents()->GetMainFrame();
@@ -275,12 +275,6 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
     DCHECK(!m_printPreviewRfh);
     m_printPreviewRfh = rfh;
     return true;
-}
-
-// PrintedPagesSource implementation.
-base::string16 PrintViewManagerQt::RenderSourceName()
-{
-    return base::string16();
 }
 
 PrintViewManagerQt::PrintViewManagerQt(content::WebContents *contents)
@@ -297,7 +291,6 @@ bool PrintViewManagerQt::OnMessageReceived(const IPC::Message& message,
     FrameDispatchHelper helper = {this, render_frame_host};
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(PrintViewManagerQt, message, render_frame_host);
-        IPC_MESSAGE_HANDLER(PrintHostMsg_DidShowPrintDialog, OnDidShowPrintDialog)
         IPC_MESSAGE_HANDLER(PrintHostMsg_RequestPrintPreview, OnRequestPrintPreview)
         IPC_MESSAGE_HANDLER(PrintHostMsg_MetafileReadyForPrinting, OnMetafileReadyForPrinting);
         IPC_MESSAGE_HANDLER(PrintHostMsg_DidPreviewPage, OnDidPreviewPage)
@@ -356,8 +349,8 @@ void PrintViewManagerQt::OnRequestPrintPreview(
 }
 
 void PrintViewManagerQt::OnMetafileReadyForPrinting(content::RenderFrameHost* rfh,
-                                                    const PrintHostMsg_DidPreviewDocument_Params& params,
-                                                    const PrintHostMsg_PreviewIds &ids)
+                                                    const printing::mojom::DidPreviewDocumentParams& params,
+                                                    const printing::mojom::PreviewIds &ids)
 {
     StopWorker(params.document_cookie);
 
@@ -369,18 +362,14 @@ void PrintViewManagerQt::OnMetafileReadyForPrinting(content::RenderFrameHost* rf
     resetPdfState();
 
     if (!pdf_print_callback.is_null()) {
-        QSharedPointer<QByteArray> data_array = GetStdVectorFromHandle(params.content.metafile_data_region);
+        QSharedPointer<QByteArray> data_array = GetStdVectorFromHandle(params.content->metafile_data_region);
         base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                        base::BindOnce(pdf_print_callback, data_array));
     } else {
-        scoped_refptr<base::RefCountedBytes> data_bytes = GetBytesFromHandle(params.content.metafile_data_region);
+        scoped_refptr<base::RefCountedBytes> data_bytes = GetBytesFromHandle(params.content->metafile_data_region);
         base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
                        base::BindOnce(&SavePdfFile, data_bytes, pdfOutputPath, pdf_save_callback));
     }
-}
-
-void PrintViewManagerQt::OnDidShowPrintDialog()
-{
 }
 
 // content::WebContentsObserver implementation.
@@ -411,8 +400,8 @@ void PrintViewManagerQt::RenderProcessGone(base::TerminationStatus status)
 }
 
 void PrintViewManagerQt::OnDidPreviewPage(content::RenderFrameHost* rfh,
-                                          const PrintHostMsg_DidPreviewPage_Params& params,
-                                          const PrintHostMsg_PreviewIds& ids)
+                                          const printing::mojom::DidPreviewPageParams &params,
+                                          const printing::mojom::PreviewIds& ids)
 {
     // just consume the message, this is just for sending 'page-preview-ready' for webui
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,57 +37,30 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#ifndef MESSAGING_DELEGATE_QT_H
+#define MESSAGING_DELEGATE_QT_H
 
-#ifndef FILE_PICKER_CONTROLLER_H
-#define FILE_PICKER_CONTROLLER_H
+#include "extensions/browser/api/messaging/messaging_delegate.h"
 
-#include "qtwebenginecoreglobal_p.h"
+namespace base {
+class DictionaryValue;
+}
 
-#include <QObject>
-#include <QStringList>
+namespace content {
+class WebContents;
+}
 
-namespace QtWebEngineCore {
+namespace extensions {
 
-class FilePickerControllerPrivate;
-class Q_WEBENGINECORE_PRIVATE_EXPORT FilePickerController : public QObject {
-    Q_OBJECT
+class MessagingDelegateQt : public MessagingDelegate
+{
 public:
-    enum FileChooserMode {
-        Open,
-        OpenMultiple,
-        UploadFolder,
-        Save
-    };
+    MessagingDelegateQt();
 
-    FilePickerController(FilePickerControllerPrivate *priv, QObject *parent = nullptr);
-    ~FilePickerController() override;
-
-    QStringList acceptedMimeTypes() const;
-    QString defaultFileName() const;
-    FileChooserMode mode() const;
-
-    static QStringList nameFilters(const QStringList &acceptedMimeTypes);
-
-public Q_SLOTS:
-    void accepted(const QStringList &files);
-    void accepted(const QVariant &files);
-    void rejected();
-
-private:
-    void filesSelectedInChooser(const QStringList &filesList);
-    FilePickerControllerPrivate *d_ptr;
+    // MessagingDelegate implementation.
+    std::unique_ptr<base::DictionaryValue> MaybeGetTabInfo(content::WebContents *web_contents) override;
 };
 
-} // namespace QtWebEngineCore
+} // namespace extensions
 
-#endif // FILE_PICKER_CONTROLLER_H
+#endif // MESSAGING_DELEGATE_QT_H

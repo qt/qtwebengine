@@ -126,7 +126,7 @@ inline bool VerifyWords(const convert_dict::DicReader::WordList& org_words,
     return true;
 }
 
-#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+#if defined(OS_MAC) && defined(QT_MAC_FRAMEWORK_BUILD)
 QString frameworkIcuDataPath()
 {
     return QLibraryInfo::location(QLibraryInfo::LibrariesPath) +
@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
         icuDataDir = icuPossibleEnvDataDir;
         icuDataDirFound = true;
     }
-#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+#if defined(OS_MAC) && defined(QT_MAC_FRAMEWORK_BUILD)
     // In a macOS Qt framework build, the resources are inside the QtWebEngineCore framework
     // Resources directory, rather than in the Qt install location.
     else if (QFileInfo::exists(frameworkIcuDataPath())) {

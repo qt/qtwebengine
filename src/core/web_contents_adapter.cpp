@@ -62,12 +62,12 @@
 
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/values.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
-#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -86,10 +86,10 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/web_preferences.h"
 #include "extensions/buildflags/buildflags.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom.h"
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -373,7 +373,9 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
     }
 }
 
-static void Navigate(WebContentsAdapter *adapter, const content::NavigationController::LoadURLParams &params)
+namespace {
+
+void Navigate(WebContentsAdapter *adapter, const content::NavigationController::LoadURLParams &params)
 {
     Q_ASSERT(adapter);
     adapter->webContents()->GetController().LoadURLWithParams(params);
@@ -381,7 +383,7 @@ static void Navigate(WebContentsAdapter *adapter, const content::NavigationContr
     adapter->resetSelection();
 }
 
-static void NavigateTask(QWeakPointer<WebContentsAdapter> weakAdapter, const content::NavigationController::LoadURLParams &params)
+void NavigateTask(QWeakPointer<WebContentsAdapter> weakAdapter, const content::NavigationController::LoadURLParams &params)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     const auto adapter = weakAdapter.toStrongRef();
@@ -390,7 +392,6 @@ static void NavigateTask(QWeakPointer<WebContentsAdapter> weakAdapter, const con
     Navigate(adapter.get(), params);
 }
 
-namespace {
 static QList<WebContentsAdapter *> recursive_guard_loading_adapters;
 
 class LoadRecursionGuard {
@@ -451,7 +452,7 @@ WebContentsAdapter::WebContentsAdapter()
 #endif
   , m_adapterClient(nullptr)
   , m_nextRequestId(CallbackDirectory::ReservedCallbackIdsEnd)
-  , m_currentDropAction(blink::kWebDragOperationNone)
+  , m_currentDropAction(blink::kDragOperationNone)
   , m_devToolsFrontend(nullptr)
 {
     // This has to be the first thing we create, and the last we destroy.
@@ -467,7 +468,7 @@ WebContentsAdapter::WebContentsAdapter(std::unique_ptr<content::WebContents> web
 #endif
   , m_adapterClient(nullptr)
   , m_nextRequestId(CallbackDirectory::ReservedCallbackIdsEnd)
-  , m_currentDropAction(blink::kWebDragOperationNone)
+  , m_currentDropAction(blink::kDragOperationNone)
   , m_devToolsFrontend(nullptr)
 {
     // This has to be the first thing we create, and the last we destroy.
@@ -528,9 +529,6 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::ExtensionWebContentsObserverQt::CreateForWebContents(webContents());
 #endif
-    FormInteractionTabHelper::CreateForWebContents(webContents());
-    if (auto *performance_manager_registry = performance_manager::PerformanceManagerRegistry::GetInstance())
-        performance_manager_registry->CreatePageNodeForWebContents(webContents());
 
     // Create an instance of WebEngineVisitedLinksManager to catch the first
     // content::NOTIFICATION_RENDERER_PROCESS_CREATED event. This event will
@@ -542,7 +540,8 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
     if (!rvh->IsRenderViewLive())
-        static_cast<content::WebContentsImpl*>(m_webContents.get())->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE, MSG_ROUTING_NONE, base::UnguessableToken::Create(), content::FrameReplicationState());
+        static_cast<content::WebContentsImpl*>(m_webContents.get())->CreateRenderViewForRenderManager(
+                rvh, base::nullopt, MSG_ROUTING_NONE);
 
     m_webContentsDelegate->RenderViewHostChanged(nullptr, rvh);
 
@@ -1053,13 +1052,10 @@ void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldI
     content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
 //    static_cast<content::RenderFrameHostImpl *>(rvh->GetMainFrame())->NotifyUserActivation();
-    if (worldId == 0) {
+    if (worldId == 0)
         rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript), base::NullCallback());
-        return;
-    }
-
-    content::RenderFrameHost::JavaScriptResultCallback callback = base::BindOnce(&callbackOnEvaluateJS, m_adapterClient, CallbackDirectory::NoCallbackId);
-    rvh->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), std::move(callback), worldId);
+    else
+        rvh->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), base::NullCallback(), worldId);
 }
 
 quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScript, quint32 worldId)
@@ -1090,10 +1086,10 @@ quint64 WebContentsAdapter::fetchDocumentInnerText()
     return m_nextRequestId++;
 }
 
-void WebContentsAdapter::updateWebPreferences(const content::WebPreferences & webPreferences)
+void WebContentsAdapter::updateWebPreferences(const blink::web_pref::WebPreferences &webPreferences)
 {
     CHECK_INITIALIZED();
-    m_webContents->GetRenderViewHost()->UpdateWebkitPreferences(webPreferences);
+    m_webContents->SetWebPreferences(webPreferences);
 
     // In case of updating preferences during navigation, there might be a pending RVH what will
     // be active on successful navigation.
@@ -1101,7 +1097,7 @@ void WebContentsAdapter::updateWebPreferences(const content::WebPreferences & we
     if (pendingRFH) {
         content::RenderViewHost *pendingRVH = pendingRFH->GetRenderViewHost();
         Q_ASSERT(pendingRVH);
-        pendingRVH->UpdateWebkitPreferences(webPreferences);
+        static_cast<content::RenderViewHostImpl*>(pendingRVH)->SendWebPreferencesToRenderer();
     }
 }
 
@@ -1463,10 +1459,10 @@ void WebContentsAdapter::setWebChannel(QWebChannel *channel, uint worldId)
 static QMimeData *mimeDataFromDropData(const content::DropData &dropData)
 {
     QMimeData *mimeData = new QMimeData();
-    if (!dropData.text.is_null())
-        mimeData->setText(toQt(dropData.text.string()));
-    if (!dropData.html.is_null())
-        mimeData->setHtml(toQt(dropData.html.string()));
+    if (dropData.text.has_value())
+        mimeData->setText(toQt(*dropData.text));
+    if (dropData.html.has_value())
+        mimeData->setHtml(toQt(*dropData.html));
     if (dropData.url.is_valid())
         mimeData->setUrls(QList<QUrl>() << toQt(dropData.url));
     if (!dropData.custom_data.empty()) {
@@ -1477,16 +1473,16 @@ static QMimeData *mimeDataFromDropData(const content::DropData &dropData)
     return mimeData;
 }
 
-static blink::WebDragOperationsMask toWeb(const Qt::DropActions action)
+static blink::DragOperationsMask toWeb(const Qt::DropActions action)
 {
-    int result = blink::kWebDragOperationNone;
+    int result = blink::kDragOperationNone;
     if (action & Qt::CopyAction)
-        result |= blink::kWebDragOperationCopy;
+        result |= blink::kDragOperationCopy;
     if (action & Qt::LinkAction)
-        result |= blink::kWebDragOperationLink;
+        result |= blink::kDragOperationLink;
     if (action & Qt::MoveAction)
-        result |= blink::kWebDragOperationMove;
-    return static_cast<blink::WebDragOperationsMask>(result);
+        result |= blink::kDragOperationMove;
+    return static_cast<blink::DragOperationsMask>(result);
 }
 
 void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropData &dropData,
@@ -1505,7 +1501,7 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
     m_currentDropData->file_contents.clear();
     m_currentDropData->file_contents_content_disposition.clear();
 
-    m_currentDropAction = blink::kWebDragOperationNone;
+    m_currentDropAction = blink::kDragOperationNone;
     QDrag *drag = new QDrag(dragSource);    // will be deleted by Qt's DnD implementation
     bool dValid = true;
     QMetaObject::Connection onDestroyed = QObject::connect(dragSource, &QObject::destroyed, [&dValid](){
@@ -1523,7 +1519,7 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
     }
 
     {
-        base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
+        base::CurrentThread::ScopedNestableTaskAllower allow;
         drag->exec(allowedActions);
     }
 
@@ -1534,7 +1530,7 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
             if (rvh) {
                 rvh->GetWidget()->DragSourceEndedAt(gfx::PointF(m_lastDragClientPos.x(), m_lastDragClientPos.y()),
                                                     gfx::PointF(m_lastDragScreenPos.x(), m_lastDragScreenPos.y()),
-                                                    blink::WebDragOperation(m_currentDropAction));
+                                                    blink::DragOperation(m_currentDropAction));
                 rvh->GetWidget()->DragSourceSystemDragEnded();
             }
         }
@@ -1586,22 +1582,22 @@ static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeDat
     if (!dropData->filenames.empty())
         return;
     if (mimeData->hasHtml())
-        dropData->html = toNullableString16(mimeData->html());
+        dropData->html = toOptionalString16(mimeData->html());
     if (mimeData->hasText())
-        dropData->text = toNullableString16(mimeData->text());
+        dropData->text = toOptionalString16(mimeData->text());
     if (mimeData->hasFormat(QLatin1String(ui::kMimeTypeWebCustomData))) {
         QByteArray customData = mimeData->data(QLatin1String(ui::kMimeTypeWebCustomData));
         ui::ReadCustomDataIntoMap(customData.constData(), customData.length(), &dropData->custom_data);
     }
 }
 
-Qt::DropAction toQt(blink::WebDragOperation op)
+Qt::DropAction toQt(blink::DragOperation op)
 {
-    if (op & blink::kWebDragOperationCopy)
+    if (op & blink::kDragOperationCopy)
         return Qt::CopyAction;
-    if (op & blink::kWebDragOperationLink)
+    if (op & blink::kDragOperationLink)
         return Qt::LinkAction;
-    if (op & blink::kWebDragOperationMove || op & blink::kWebDragOperationDelete)
+    if (op & blink::kDragOperationMove || op & blink::kDragOperationDelete)
         return Qt::MoveAction;
     return Qt::IgnoreAction;
 }
@@ -1658,7 +1654,7 @@ Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const Q
     rvh->GetWidget()->DragTargetDragOver(toGfx(m_lastDragClientPos), toGfx(m_lastDragScreenPos), toWeb(e->possibleActions()),
                                          toWeb(e->buttons()) | toWeb(e->modifiers()));
     waitForUpdateDragActionCalled();
-    return toQt(blink::WebDragOperation(m_currentDropAction));
+    return toQt(blink::DragOperation(m_currentDropAction));
 }
 
 void WebContentsAdapter::waitForUpdateDragActionCalled()
@@ -1667,7 +1663,7 @@ void WebContentsAdapter::waitForUpdateDragActionCalled()
     const qint64 timeout = 3000;
     QElapsedTimer t;
     t.start();
-    auto seqMan = base::MessageLoopCurrent::GetCurrentSequenceManagerImpl();
+    auto seqMan = base::CurrentThread::GetCurrentSequenceManagerImpl();
     base::MessagePump::Delegate *delegate =
             static_cast<base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl *>(
                 seqMan->controller_.get());
@@ -1691,7 +1687,7 @@ void WebContentsAdapter::updateDragAction(int action)
 {
     CHECK_INITIALIZED();
     m_updateDragActionCalled = true;
-    m_currentDropAction = static_cast<blink::WebDragOperation>(action);
+    m_currentDropAction = static_cast<blink::DragOperation>(action);
 }
 
 void WebContentsAdapter::endDragging(QDropEvent *e, const QPointF &screenPos)
@@ -2010,9 +2006,6 @@ void WebContentsAdapter::discard()
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::ExtensionWebContentsObserverQt::CreateForWebContents(webContents());
 #endif
-    FormInteractionTabHelper::CreateForWebContents(webContents());
-    if (auto *performance_manager_registry = performance_manager::PerformanceManagerRegistry::GetInstance())
-        performance_manager_registry->CreatePageNodeForWebContents(webContents());
 }
 
 void WebContentsAdapter::undiscard()
@@ -2024,9 +2017,7 @@ void WebContentsAdapter::undiscard()
     Q_ASSERT(rvh);
     if (!rvh->IsRenderViewLive())
         static_cast<content::WebContentsImpl *>(m_webContents.get())
-                ->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
-                                                   base::UnguessableToken::Create(),
-                                                   content::FrameReplicationState());
+                ->CreateRenderViewForRenderManager(rvh, base::nullopt, MSG_ROUTING_NONE);
     m_webContentsDelegate->RenderViewHostChanged(nullptr, rvh);
     m_adapterClient->initializationFinished();
     m_adapterClient->selectionChanged();
@@ -2052,6 +2043,6 @@ ASSERT_ENUMS_MATCH(ReferrerPolicy::OriginWhenCrossOrigin, network::mojom::Referr
 //ASSERT_ENUMS_MATCH(ReferrerPolicy::NoReferrerWhenDowngradeOriginWhenCrossOrigin, network::mojom::ReferrerPolicy::kNoReferrerWhenDowngradeOriginWhenCrossOrigin)
 ASSERT_ENUMS_MATCH(ReferrerPolicy::SameOrigin, network::mojom::ReferrerPolicy::kSameOrigin)
 ASSERT_ENUMS_MATCH(ReferrerPolicy::StrictOrigin, network::mojom::ReferrerPolicy::kStrictOrigin)
-ASSERT_ENUMS_MATCH(ReferrerPolicy::Last, network::mojom::ReferrerPolicy::kLast)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::Last, network::mojom::ReferrerPolicy::kMaxValue)
 
 } // namespace QtWebEngineCore

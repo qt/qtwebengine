@@ -12,7 +12,8 @@ json_features("qt_permission_features") {
   feature_type = "PermissionFeature"
   method_name = "AddQtPermissionFeatures"
   sources = [
-    "//extensions/common/api/_permission_features.json"
+    "//chrome/common/extensions/api/_permission_features.json",
+    "//extensions/common/api/_permission_features.json",
   ]
 }
 
@@ -20,6 +21,7 @@ group("qtwebengine_extensions_features") {
   public_deps = [
     ":qt_api_features",
     ":qt_permission_features",
+    "//chrome/common/extensions/api:extensions_features",
     "//extensions/common/api:extensions_features",
   ]
 }

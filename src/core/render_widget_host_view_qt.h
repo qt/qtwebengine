@@ -59,9 +59,6 @@ QT_FORWARD_DECLARE_CLASS(QAccessibleInterface)
 namespace content {
 class RenderFrameHost;
 class RenderWidgetHostImpl;
-namespace mojom {
-class FrameInputHandler;
-}
 }
 
 namespace ui {
@@ -79,6 +76,7 @@ class RenderWidgetHostViewQt
     , public ui::GestureProviderClient
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
     , public content::TextInputManager::Observer
+    , public content::RenderFrameMetadataProvider::Observer
 {
 public:
     RenderWidgetHostViewQt(content::RenderWidgetHost* widget);
@@ -121,18 +119,22 @@ public:
     void Destroy() override;
     void SetTooltipText(const base::string16 &tooltip_text) override;
     void DisplayTooltipText(const base::string16& tooltip_text) override;
-    void WheelEventAck(const blink::WebMouseWheelEvent &event, content::InputEventAckState ack_result) override;
-    void GestureEventAck(const blink::WebGestureEvent &event, content::InputEventAckState ack_result) override;
+    void WheelEventAck(const blink::WebMouseWheelEvent &event,
+                       blink::mojom::InputEventResultState ack_result) override;
+    void GestureEventAck(const blink::WebGestureEvent &event,
+                         blink::mojom::InputEventResultState ack_result) override;
     content::MouseWheelPhaseHandler *GetMouseWheelPhaseHandler() override;
     viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(const cc::RenderFrameMetadata &metadata) override;
     void OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata);
 
-    void GetScreenInfo(content::ScreenInfo *results) override;
+    void GetScreenInfo(blink::ScreenInfo *results) override;
     gfx::Rect GetBoundsInRootWindow() override;
-    void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) override;
+    void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch,
+                                blink::mojom::InputEventResultState ack_result) override;
     viz::SurfaceId GetCurrentSurfaceId() const override;
     const viz::FrameSinkId &GetFrameSinkId() const override;
-    const viz::LocalSurfaceIdAllocation &GetLocalSurfaceIdAllocation() const override;
+    const viz::LocalSurfaceId &GetLocalSurfaceId() const;
+
     void TakeFallbackContentFrom(content::RenderWidgetHostView *view) override;
     void EnsureSurfaceSynchronizedForWebTest() override;
     uint32_t GetCaptureSequenceNumber() const override;
@@ -140,11 +142,12 @@ public:
     void DidStopFlinging() override;
     std::unique_ptr<content::SyntheticGestureTarget> CreateSyntheticGestureTarget() override;
     ui::Compositor *GetCompositor() override;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     void SetActive(bool active) override { QT_NOT_YET_IMPLEMENTED }
     void SpeakSelection() override { QT_NOT_YET_IMPLEMENTED }
     void ShowDefinitionForSelection() override { QT_NOT_YET_IMPLEMENTED }
-#endif // defined(OS_MACOSX)
+    void SetWindowFrameInScreen(const gfx::Rect&) override { QT_NOT_YET_IMPLEMENTED }
+#endif // defined(OS_MAC)
 
     // Overridden from ui::GestureProviderClient.
     void OnGestureEvent(const ui::GestureEventData& gesture) override;
@@ -159,6 +162,9 @@ public:
 
     // Overridden from content::RenderFrameMetadataProvider::Observer
     void OnRenderFrameMetadataChangedAfterActivation() override;
+    void OnRenderFrameMetadataChangedBeforeActivation(const cc::RenderFrameMetadata &) override {}
+    void OnRenderFrameSubmission() override {}
+    void OnLocalSurfaceIdChanged(const cc::RenderFrameMetadata &) override {}
 
     // Called from RenderWidgetHostViewQtDelegateClient.
     Compositor::Id compositorId();
@@ -176,20 +182,18 @@ public:
     gfx::SizeF lastContentsSize() const { return m_lastContentsSize; }
     gfx::Vector2dF lastScrollOffset() const { return m_lastScrollOffset; }
 
-    ui::TextInputType getTextInputType() const;
-    content::mojom::FrameInputHandler *getFrameInputHandler();
-
     ui::TouchSelectionController *getTouchSelectionController() const { return m_touchSelectionController.get(); }
     TouchSelectionControllerClientQt *getTouchSelectionControllerClient() const { return m_touchSelectionControllerClient.get(); }
+    blink::mojom::FrameWidgetInputHandler *getFrameWidgetInputHandler();
+    ui::TextInputType getTextInputType() const;
 
     void synchronizeVisualProperties(
-            const base::Optional<viz::LocalSurfaceIdAllocation> &childSurfaceId);
+            const base::Optional<viz::LocalSurfaceId> &childSurfaceId);
 
 private:
     friend class DelegatedFrameHostClientQt;
 
     bool isPopup() const;
-    content::RenderFrameHost *getFocusedFrameHost();
 
     scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
     ui::FilteredGestureProvider m_gestureProvider;
@@ -207,7 +211,7 @@ private:
     DelegatedFrameHostClientQt m_delegatedFrameHostClient { this };
 
     // VIZ
-    content::ScreenInfo m_screenInfo;
+    blink::ScreenInfo m_screenInfo;
     std::unique_ptr<content::DelegatedFrameHost> m_delegatedFrameHost;
     std::unique_ptr<ui::Layer> m_rootLayer;
     std::unique_ptr<ui::Compositor> m_uiCompositor;

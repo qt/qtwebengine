@@ -64,9 +64,14 @@
 #include <QUrl>
 #include <QPointer>
 
+namespace blink {
+namespace web_pref {
+struct WebPreferences;
+}
+}
+
 namespace content {
 class WebContents;
-struct WebPreferences;
 struct OpenURLParams;
 class SiteInstance;
 }
@@ -162,7 +167,7 @@ public:
     quint64 runJavaScriptCallbackResult(const QString &javaScript, quint32 worldId);
     quint64 fetchDocumentMarkup();
     quint64 fetchDocumentInnerText();
-    void updateWebPreferences(const content::WebPreferences &webPreferences);
+    void updateWebPreferences(const blink::web_pref::WebPreferences &webPreferences);
     void download(const QUrl &url, const QString &suggestedFileName,
                   const QUrl &referrerUrl = QUrl(),
                   ReferrerPolicy referrerPolicy = ReferrerPolicy::Default);

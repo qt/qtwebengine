@@ -43,7 +43,6 @@
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/message_loop/message_loop.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -56,15 +55,12 @@
 #include "components/navigation_interception/navigation_params.h"
 #include "components/network_hints/browser/simple_network_hints_handler_impl.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
-#include "components/performance_manager/graph/process_node_impl.h"
-#include "components/performance_manager/performance_manager_impl.h"
-#include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
 #include "components/performance_manager/public/performance_manager.h"
-#include "components/performance_manager/render_process_user_data.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/url_schemes.h"
+#include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -90,6 +86,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "extensions/browser/process_map.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -98,11 +95,12 @@
 #include "qtwebengine/browser/qtwebengine_content_renderer_overlay_manifest.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/client_cert_store.h"
+#include "sandbox/policy/switches.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
+#include "services/service_manager/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/sandbox/switches.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -165,6 +163,7 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "content/public/browser/file_url_loader.h"
 #include "extensions/browser/extension_message_filter.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
 #include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/common/constants.h"
@@ -265,7 +264,7 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost 
 #endif //ENABLE_EXTENSIONS
 
     bool is_incognito_process = profile->IsOffTheRecord();
-    qtwebengine::mojom::RendererConfigurationAssociatedPtr renderer_configuration;
+    mojo::AssociatedRemote<qtwebengine::mojom::RendererConfiguration> renderer_configuration;
     host->GetChannel()->GetRemoteAssociatedInterface(&renderer_configuration);
     renderer_configuration->SetInitialConfiguration(is_incognito_process);
 }
@@ -282,11 +281,15 @@ content::MediaObserver *ContentBrowserClientQt::GetMediaObserver()
     return MediaCaptureDevicesDispatcher::GetInstance();
 }
 
-void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, content::WebPreferences *web_prefs)
+void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, blink::web_pref::WebPreferences *web_prefs)
 {
     if (content::WebContents *webContents = rvh->GetDelegate()->GetAsWebContents()) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
         if (guest_view::GuestViewBase::IsGuest(webContents))
+            return;
+
+        WebContentsViewQt *view = WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(webContents)->GetView());
+        if (!view->client())
             return;
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
         WebContentsDelegateQt* delegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
@@ -360,7 +363,7 @@ void ContentBrowserClientQt::AppendExtraCommandLineSwitches(base::CommandLine* c
     url::CustomScheme::SaveSchemes(command_line);
 
     std::string processType = command_line->GetSwitchValueASCII(switches::kProcessType);
-    if (processType == service_manager::switches::kZygoteProcess)
+    if (processType == switches::kZygoteProcess)
         command_line->AppendSwitchASCII(switches::kLang, GetApplicationLocale());
 }
 
@@ -469,23 +472,6 @@ private:
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ServiceDriver)
 
-void ContentBrowserClientQt::InitFrameInterfaces()
-{
-    m_frameInterfaces = std::make_unique<service_manager::BinderRegistry>();
-    m_frameInterfacesParameterized = std::make_unique<service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>();
-}
-
-void ContentBrowserClientQt::BindInterfaceRequestFromFrame(content::RenderFrameHost* render_frame_host,
-                                                           const std::string& interface_name,
-                                                           mojo::ScopedMessagePipeHandle interface_pipe)
-{
-    if (!m_frameInterfaces.get() && !m_frameInterfacesParameterized.get())
-        InitFrameInterfaces();
-
-    if (!m_frameInterfacesParameterized->TryBindInterface(interface_name, &interface_pipe, render_frame_host))
-        m_frameInterfaces->TryBindInterface(interface_name, &interface_pipe);
-}
-
 void ContentBrowserClientQt::BindHostReceiverForRenderer(content::RenderProcessHost *render_process_host,
                                                          mojo::GenericPendingReceiver receiver)
 {
@@ -505,41 +491,19 @@ static void BindNetworkHintsHandler(content::RenderFrameHost *frame_host,
 
 void ContentBrowserClientQt::RegisterBrowserInterfaceBindersForFrame(
         content::RenderFrameHost *render_frame_host,
-        service_manager::BinderMapWithContext<content::RenderFrameHost *> *map)
+        mojo::BinderMapWithContext<content::RenderFrameHost *> *map)
 {
     Q_UNUSED(render_frame_host);
     map->Add<blink::mojom::InsecureInputService>(base::BindRepeating(&ServiceDriver::BindInsecureInputService));
     map->Add<network_hints::mojom::NetworkHintsHandler>(base::BindRepeating(&BindNetworkHintsHandler));
 }
 
-namespace {
-void BindProcessNode(int render_process_host_id,
-                     mojo::PendingReceiver<performance_manager::mojom::ProcessCoordinationUnit> receiver)
-{
-    content::RenderProcessHost *render_process_host = content::RenderProcessHost::FromID(render_process_host_id);
-    if (!render_process_host)
-        return;
-
-    performance_manager::RenderProcessUserData *user_data =
-            performance_manager::RenderProcessUserData::GetForRenderProcessHost(render_process_host);
-
-    DCHECK(performance_manager::PerformanceManagerImpl::IsAvailable());
-    performance_manager::PerformanceManagerImpl::CallOnGraphImpl(
-                FROM_HERE, base::BindOnce(&performance_manager::ProcessNodeImpl::Bind,
-                                          base::Unretained(user_data->process_node()),
-                                          std::move(receiver)));
-}
-}  // namespace
-
 void ContentBrowserClientQt::ExposeInterfacesToRenderer(service_manager::BinderRegistry *registry,
                                                         blink::AssociatedInterfaceRegistry *associated_registry,
                                                         content::RenderProcessHost *render_process_host)
 {
     Q_UNUSED(associated_registry);
-    registry->AddInterface(base::BindRepeating(&BindProcessNode, render_process_host->GetID()),
-                           base::SequencedTaskRunnerHandle::Get());
-
-    performance_manager::PerformanceManagerRegistry::GetInstance()->CreateProcessNodeForRenderProcessHost(render_process_host);
+    performance_manager::PerformanceManagerRegistry::GetInstance()->CreateProcessNodeAndExposeInterfacesToRendererProcess(registry, render_process_host);
 }
 
 void ContentBrowserClientQt::RunServiceInstance(const service_manager::Identity &identity,
@@ -650,36 +614,41 @@ bool ContentBrowserClientQt::WillCreateRestrictedCookieManager(network::mojom::R
 
 bool ContentBrowserClientQt::AllowAppCache(const GURL &manifest_url,
                                            const GURL &first_party,
+                                           const base::Optional<url::Origin> &top_frame_origin,
                                            content::BrowserContext *context)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     return static_cast<ProfileQt *>(context)->profileAdapter()->cookieStore()->d_func()->canAccessCookies(toQt(first_party), toQt(manifest_url));
 }
 
-bool ContentBrowserClientQt::AllowServiceWorkerOnIO(const GURL &scope,
+content::AllowServiceWorkerResult
+ContentBrowserClientQt::AllowServiceWorkerOnIO(const GURL &scope,
                                                     const GURL &site_for_cookies,
                                                     const base::Optional<url::Origin> & /*top_frame_origin*/,
                                                     const GURL & /*script_url*/,
-                                                    content::ResourceContext *context,
-                                                    base::RepeatingCallback<content::WebContents*()> wc_getter)
+                                                    content::ResourceContext *context)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     // FIXME: Chrome also checks if javascript is enabled here to check if has been disabled since the service worker
     // was started.
-    return ProfileIODataQt::FromResourceContext(context)->canGetCookies(toQt(site_for_cookies), toQt(scope));
+    return ProfileIODataQt::FromResourceContext(context)->canGetCookies(toQt(site_for_cookies), toQt(scope))
+         ? content::AllowServiceWorkerResult::Yes()
+         : content::AllowServiceWorkerResult::No();
 }
 
-bool ContentBrowserClientQt::AllowServiceWorkerOnUI(const GURL &scope,
+content::AllowServiceWorkerResult
+ContentBrowserClientQt::AllowServiceWorkerOnUI(const GURL &scope,
                                                     const GURL &site_for_cookies,
                                                     const base::Optional<url::Origin> & /*top_frame_origin*/,
                                                     const GURL & /*script_url*/,
-                                                    content::BrowserContext *context,
-                                                    base::RepeatingCallback<content::WebContents*()> wc_getter)
+                                                    content::BrowserContext *context)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // FIXME: Chrome also checks if javascript is enabled here to check if has been disabled since the service worker
     // was started.
-    return static_cast<ProfileQt *>(context)->profileAdapter()->cookieStore()->d_func()->canAccessCookies(toQt(site_for_cookies), toQt(scope));
+    return static_cast<ProfileQt *>(context)->profileAdapter()->cookieStore()->d_func()->canAccessCookies(toQt(site_for_cookies), toQt(scope))
+         ? content::AllowServiceWorkerResult::Yes()
+         : content::AllowServiceWorkerResult::No();
 }
 
 // We control worker access to FS and indexed-db using cookie permissions, this is mirroring Chromium's logic.
@@ -769,7 +738,8 @@ public:
                              const network::mojom::URLResponseHead &response_head,
                              bool *defer,
                              std::vector<std::string> *to_be_removed_headers,
-                             net::HttpRequestHeaders *modified_headers) override
+                             net::HttpRequestHeaders *modified_headers,
+                             net::HttpRequestHeaders *modified_cors_exempt_headers) override
     {
         TranslateUrl(&redirect_info->new_url);
     }
@@ -839,6 +809,11 @@ static bool navigationThrottleCallback(content::WebContents *source,
     ProfileQt *profile = static_cast<ProfileQt *>(source->GetBrowserContext());
     if (params.is_external_protocol() && !profile->profileAdapter()->urlSchemeHandler(toQByteArray(params.url().scheme())))
         return false;
+
+    WebContentsViewQt *view = WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(source)->GetView());
+    if (!view->client())
+        return false;
+
     int navigationRequestAction = WebContentsAdapterClient::AcceptRequest;
     WebContentsDelegateQt *delegate = static_cast<WebContentsDelegateQt *>(source->GetDelegate());
     WebContentsAdapterClient *client = delegate->adapterClient();
@@ -971,22 +946,19 @@ void ContentBrowserClientQt::OnNetworkServiceCreated(network::mojom::NetworkServ
     SystemNetworkContextManager::GetInstance()->OnNetworkServiceCreated(network_service);
 }
 
-mojo::Remote<network::mojom::NetworkContext> ContentBrowserClientQt::CreateNetworkContext(
+void ContentBrowserClientQt::ConfigureNetworkContextParams(
         content::BrowserContext *context,
         bool in_memory,
-        const base::FilePath &relative_partition_path)
+        const base::FilePath &relative_partition_path,
+        network::mojom::NetworkContextParams *network_context_params,
+        network::mojom::CertVerifierCreationParams *cert_verifier_creation_params)
 {
-    mojo::Remote<network::mojom::NetworkContext> network_context;
-    // ### do we need to pass in_memory and relative_partition_path to ProfileIODataQt::CreateNetworkContextParams() ?
-    network::mojom::NetworkContextParamsPtr context_params = ProfileIODataQt::FromBrowserContext(context)->CreateNetworkContextParams();
-    content::GetNetworkService()->CreateNetworkContext(
-            network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
+    ProfileIODataQt::FromBrowserContext(context)->ConfigureNetworkContextParams(in_memory, relative_partition_path,
+                                                                                network_context_params, cert_verifier_creation_params);
 
-    network::mojom::CookieManagerPtrInfo cookie_manager_info;
-    network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager_info));
-    ProfileIODataQt::FromBrowserContext(context)->cookieDelegate()->setMojoCookieManager(std::move(cookie_manager_info));
-
-    return network_context;
+    mojo::PendingRemote<network::mojom::CookieManager> cookie_manager_remote;
+    network_context_params->cookie_manager = cookie_manager_remote.InitWithNewPipeAndPassReceiver();
+    ProfileIODataQt::FromBrowserContext(context)->cookieDelegate()->setMojoCookieManager(std::move(cookie_manager_remote));
 }
 
 std::vector<base::FilePath> ContentBrowserClientQt::GetNetworkContextsParentDirectory()
@@ -997,8 +969,11 @@ std::vector<base::FilePath> ContentBrowserClientQt::GetNetworkContextsParentDire
 }
 
 void ContentBrowserClientQt::RegisterNonNetworkNavigationURLLoaderFactories(int frame_tree_node_id,
+                                                                            base::UkmSourceId ukm_source_id,
+                                                                            NonNetworkURLLoaderFactoryDeprecatedMap *uniquely_owned_factories,
                                                                             NonNetworkURLLoaderFactoryMap *factories)
 {
+    Q_UNUSED(uniquely_owned_factories);
     content::WebContents *web_contents = content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
     Profile *profile = Profile::FromBrowserContext(web_contents->GetBrowserContext());
     ProfileAdapter *profileAdapter = static_cast<ProfileQt *>(profile)->profileAdapter();
@@ -1009,7 +984,7 @@ void ContentBrowserClientQt::RegisterNonNetworkNavigationURLLoaderFactories(int 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     factories->emplace(
         extensions::kExtensionScheme,
-        extensions::CreateExtensionNavigationURLLoaderFactory(profile,
+        extensions::CreateExtensionNavigationURLLoaderFactory(profile, ukm_source_id,
                                                               !!extensions::WebViewGuest::FromWebContents(web_contents)));
 #endif
 }
@@ -1025,8 +1000,10 @@ void ContentBrowserClientQt::RegisterNonNetworkWorkerMainResourceURLLoaderFactor
 }
 
 void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int render_process_id, int render_frame_id,
+                                                                             NonNetworkURLLoaderFactoryDeprecatedMap *uniquely_owned_factories,
                                                                              NonNetworkURLLoaderFactoryMap *factories)
 {
+    Q_UNUSED(uniquely_owned_factories);
     content::RenderProcessHost *process_host = content::RenderProcessHost::FromID(render_process_id);
     Profile *profile = Profile::FromBrowserContext(process_host->GetBrowserContext());
     ProfileAdapter *profileAdapter = static_cast<ProfileQt *>(profile)->profileAdapter();
@@ -1092,9 +1069,9 @@ void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int
     }
     if (!allowed_webui_hosts.empty()) {
         factories->emplace(content::kChromeUIScheme,
-                           content::CreateWebUIURLLoader(frame_host,
-                                                         content::kChromeUIScheme,
-                                                         std::move(allowed_webui_hosts)));
+                           content::CreateWebUIURLLoaderFactory(frame_host,
+                                                                content::kChromeUIScheme,
+                                                                std::move(allowed_webui_hosts)));
     }
 #endif
 }
@@ -1106,6 +1083,7 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
         URLLoaderFactoryType type,
         const url::Origin &request_initiator,
         base::Optional<int64_t> navigation_id,
+        base::UkmSourceId ukm_source_id,
         mojo::PendingReceiver<network::mojom::URLLoaderFactory> *factory_receiver,
         mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient> *header_client,
         bool *bypass_redirect_checks,
@@ -1121,6 +1099,9 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
     if (web_contents) {
         WebContentsAdapterClient *client =
                 WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(web_contents)->GetView())->client();
+        if (!client)
+            return false;
+
         page_interceptor = client->webContentsAdapter()->requestInterceptor();
     }
 
@@ -1135,6 +1116,38 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
         return true;
     }
     return false;
+}
+
+void ContentBrowserClientQt::SiteInstanceGotProcess(content::SiteInstance *site_instance)
+{
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    content::BrowserContext *context = site_instance->GetBrowserContext();
+    extensions::ExtensionRegistry *registry = extensions::ExtensionRegistry::Get(context);
+    const extensions::Extension *extension = registry->enabled_extensions().GetExtensionOrAppByURL(site_instance->GetSiteURL());
+    if (!extension)
+        return;
+
+    extensions::ProcessMap *processMap = extensions::ProcessMap::Get(context);
+    processMap->Insert(extension->id(), site_instance->GetProcess()->GetID(), site_instance->GetId());
+#endif
+}
+
+void ContentBrowserClientQt::SiteInstanceDeleting(content::SiteInstance *site_instance)
+{
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    // Don't do anything if we're shutting down.
+    if (content::BrowserMainRunner::ExitedMainMessageLoop() || !site_instance->HasProcess())
+       return;
+
+    content::BrowserContext *context = site_instance->GetBrowserContext();
+    extensions::ExtensionRegistry *registry = extensions::ExtensionRegistry::Get(context);
+    const extensions::Extension *extension = registry->enabled_extensions().GetExtensionOrAppByURL(site_instance->GetSiteURL());
+    if (!extension)
+        return;
+
+    extensions::ProcessMap *processMap = extensions::ProcessMap::Get(context);
+    processMap->Remove(extension->id(), site_instance->GetProcess()->GetID(), site_instance->GetId());
+#endif
 }
 
 } // namespace QtWebEngineCore

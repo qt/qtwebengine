@@ -68,10 +68,12 @@ private:
 
         QTest::touchEvent(target, s_touchDevice).press(42, p, target);
 
+        QSignalSpy spy(view.page(), &QWebEnginePage::scrollPositionChanged);
         for (int i = 0; i < 3; ++i) {
             down ? p -= QPoint(5, 15) : p += QPoint(5, 15);
             QTest::qWait(100); // too fast and events are recognized as fling gesture
             QTest::touchEvent(target, s_touchDevice).move(42, p, target);
+            spy.wait();
         }
 
         QTest::touchEvent(target, s_touchDevice).release(42, p, target);
@@ -112,6 +114,11 @@ private:
     int getScrollPosition(int *position = nullptr) {
         int p = evaluateJavaScriptSync(view.page(), "window.scrollY").toInt();
         return position ? (*position = p) : p;
+    }
+
+    int pageScrollPosition() {
+        // this one is updated later in page in asynchronous way
+        return qRound(view.page()->scrollPosition().y());
     }
 
     double getScaleFactor(double *scale = nullptr)  {
@@ -155,6 +162,7 @@ void TouchInputTest::cleanup()
     evaluateJavaScriptSync(view.page(), "if (document.activeElement) document.activeElement.blur()");
     evaluateJavaScriptSync(view.page(), "window.scrollTo(0, 0)");
     QTRY_COMPARE(getScrollPosition(), 0);
+    QTRY_COMPARE(pageScrollPosition(), 0);
 }
 
 void TouchInputTest::touchTap()

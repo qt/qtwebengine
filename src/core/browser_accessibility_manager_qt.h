@@ -54,10 +54,9 @@ namespace content {
 class BrowserAccessibilityManagerQt : public BrowserAccessibilityManager
 {
 public:
-    BrowserAccessibilityManagerQt(QObject* parentObject,
-                                  const ui::AXTreeUpdate& initialTree,
-                                  BrowserAccessibilityDelegate* delegate,
-                                  BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
+    BrowserAccessibilityManagerQt(QObject *parentObject,
+                                  const ui::AXTreeUpdate &initialTree,
+                                  BrowserAccessibilityDelegate *delegate);
     ~BrowserAccessibilityManagerQt() override;
     void FireBlinkEvent(ax::mojom::Event event_type,
                         BrowserAccessibility* node) override;

@@ -40,11 +40,11 @@
 #include "ozone_platform_qt.h"
 
 #if defined(USE_OZONE)
+#include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/ozone/common/stub_client_native_pixmap_factory.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
-#include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -66,7 +66,7 @@ public:
     ~OzonePlatformQt() override;
 
     ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override;
-    ui::CursorFactoryOzone* GetCursorFactoryOzone() override;
+    ui::CursorFactory* GetCursorFactory() override;
     GpuPlatformSupportHost* GetGpuPlatformSupportHost() override;
     std::unique_ptr<PlatformWindow> CreatePlatformWindow(PlatformWindowDelegate* delegate, PlatformWindowInitProperties properties) override;
     std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate() override;
@@ -80,7 +80,7 @@ private:
     void InitializeGPU(const ui::OzonePlatform::InitParams &) override;
 
     std::unique_ptr<QtWebEngineCore::SurfaceFactoryQt> surface_factory_ozone_;
-    std::unique_ptr<CursorFactoryOzone> cursor_factory_ozone_;
+    std::unique_ptr<CursorFactory> cursor_factory_ozone_;
 
     std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
     std::unique_ptr<InputController> input_controller_;
@@ -99,7 +99,7 @@ ui::SurfaceFactoryOzone* OzonePlatformQt::GetSurfaceFactoryOzone()
     return surface_factory_ozone_.get();
 }
 
-ui::CursorFactoryOzone* OzonePlatformQt::GetCursorFactoryOzone()
+ui::CursorFactory* OzonePlatformQt::GetCursorFactory()
 {
     return cursor_factory_ozone_.get();
 }
@@ -138,7 +138,7 @@ std::unique_ptr<display::NativeDisplayDelegate> OzonePlatformQt::CreateNativeDis
 void OzonePlatformQt::InitializeUI(const ui::OzonePlatform::InitParams &)
 {
     overlay_manager_.reset(new StubOverlayManager());
-    cursor_factory_ozone_.reset(new CursorFactoryOzone());
+    cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone());
     gpu_platform_support_host_.reset(ui::CreateStubGpuPlatformSupportHost());
     input_controller_ = CreateStubInputController();
 }

@@ -47,6 +47,7 @@
 
 #ifndef NDEBUG
 #include "../3rdparty/chromium/base/command_line.h"
+#include "../3rdparty/chromium/base/logging.h"
 #endif
 
 class User32DLL {

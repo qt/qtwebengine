@@ -61,6 +61,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "chrome/common/buildflags.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -83,11 +84,10 @@
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/browser/runtime_data.h"
-#include "extensions/browser/shared_user_script_master.h"
+#include "extensions/browser/shared_user_script_manager.h"
 #include "extensions/browser/service_worker_manager.h"
 #include "extensions/browser/value_store/value_store_factory_impl.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/common/manifest_url_handlers.h"
@@ -278,9 +278,9 @@ ManagementPolicy *ExtensionSystemQt::management_policy()
     return nullptr;
 }
 
-SharedUserScriptMaster *ExtensionSystemQt::shared_user_script_master()
+SharedUserScriptManager *ExtensionSystemQt::shared_user_script_manager()
 {
-    return shared_user_script_master_.get();
+    return shared_user_script_manager_.get();
 }
 
 StateStore *ExtensionSystemQt::state_store()
@@ -349,8 +349,8 @@ void ExtensionSystemQt::Init(bool extensions_enabled)
     quota_service_.reset(new QuotaService);
     app_sorting_.reset(new NullAppSorting);
 
-    shared_user_script_master_ =
-        std::make_unique<SharedUserScriptMaster>(browser_context_);
+    shared_user_script_manager_ =
+        std::make_unique<SharedUserScriptManager>(browser_context_);
 
     // Make the chrome://extension-icon/ resource available.
     // content::URLDataSource::Add(browser_context_, new ExtensionIconSource(browser_context_));
@@ -358,20 +358,30 @@ void ExtensionSystemQt::Init(bool extensions_enabled)
     if (extensions_enabled) {
         // Inform the rest of the extensions system to start.
         ready_.Signal();
-        content::NotificationService::current()->Notify(
-            NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
-            content::Source<content::BrowserContext>(browser_context_),
-            content::NotificationService::NoDetails());
 
-        std::string pdf_manifest = ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_PDF_MANIFEST).as_string();
-        base::ReplaceFirstSubstringAfterOffset(&pdf_manifest, 0, "<NAME>", "chromium-pdf");
+        {
+            std::string pdf_manifest = ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_PDF_MANIFEST).as_string();
+            base::ReplaceFirstSubstringAfterOffset(&pdf_manifest, 0, "<NAME>", "chromium-pdf");
 
-        std::unique_ptr<base::DictionaryValue> pdfManifestDict = ParseManifest(pdf_manifest);
-        base::FilePath path;
-        base::PathService::Get(base::DIR_QT_LIBRARY_DATA, &path);
-        path = path.Append(base::FilePath(FILE_PATH_LITERAL("pdf")));
-        std::string id = GenerateId(pdfManifestDict.get(), path);
-        LoadExtension(id, std::move(pdfManifestDict), path);
+            std::unique_ptr<base::DictionaryValue> pdfManifestDict = ParseManifest(pdf_manifest);
+            base::FilePath path;
+            base::PathService::Get(base::DIR_QT_LIBRARY_DATA, &path);
+            path = path.Append(base::FilePath(FILE_PATH_LITERAL("pdf")));
+            std::string id = GenerateId(pdfManifestDict.get(), path);
+            LoadExtension(id, std::move(pdfManifestDict), path);
+        }
+
+#if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
+        {
+            std::string hangout_manifest = ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_HANGOUT_SERVICES_MANIFEST).as_string();
+            std::unique_ptr<base::DictionaryValue> hangoutManifestDict = ParseManifest(hangout_manifest);
+            base::FilePath path;
+            base::PathService::Get(base::DIR_QT_LIBRARY_DATA, &path);
+            path = path.Append(base::FilePath(FILE_PATH_LITERAL("hangout_services")));
+            std::string id = GenerateId(hangoutManifestDict.get(), path);
+            LoadExtension(id, std::move(hangoutManifestDict), path);
+        }
+#endif // BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
     }
 }
 
@@ -389,19 +399,6 @@ std::unique_ptr<ExtensionSet> ExtensionSystemQt::GetDependentExtensions(const Ex
 {
     return base::WrapUnique(new ExtensionSet());
 }
-
-#if !defined(TOOLKIT_QT)
-void ExtensionSystemQt::InstallUpdate(const std::string &extension_id,
-                                      const std::string &public_key,
-                                      const base::FilePath &unpacked_dir,
-                                      bool install_immediately,
-                                      InstallUpdateCallback install_update_callback)
-{
-    NOTREACHED() << "Not yet implemented";
-    base::DeleteFile(unpacked_dir, true /* recursive */);
-    std::move(install_update_callback).Run(CrxInstallError(CrxInstallErrorType::DECLINED, CrxInstallErrorDetail::DISALLOWED_BY_POLICY));
-}
-#endif
 
 void ExtensionSystemQt::RegisterExtensionWithRequestContexts(const Extension *extension,
                                                              base::OnceClosure callback)
@@ -426,4 +423,10 @@ void ExtensionSystemQt::UnregisterExtensionWithRequestContexts(const std::string
         FROM_HERE, {BrowserThread::IO},
         base::Bind(&InfoMap::RemoveExtension, info_map(), extension_id, reason));
 }
+
+bool ExtensionSystemQt::is_ready() const
+{
+    return ready_.is_signaled();
+}
+
 } // namespace extensions

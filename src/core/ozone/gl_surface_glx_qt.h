@@ -42,9 +42,7 @@
 
 #include "gl_surface_qt.h"
 
-extern "C" {
-#include <X11/Xlib.h>
-}
+#include "ui/gfx/x/x11_types.h"
 
 namespace gl {
 

@@ -40,7 +40,7 @@
 #ifndef WEB_CONTENTS_DELEGATE_QT_H
 #define WEB_CONTENTS_DELEGATE_QT_H
 
-#include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -55,12 +55,17 @@
 #include <QtCore/qlist.h>
 #include <QWebEngineCertificateError>
 
+namespace blink {
+    namespace web_pref {
+        struct WebPreferences;
+    }
+}
+
 namespace content {
     class ColorChooser;
     class SiteInstance;
     class JavaScriptDialogManager;
     class WebContents;
-    struct WebPreferences;
     struct ColorSuggestion;
 }
 
@@ -117,7 +122,8 @@ public:
     // WebContentsDelegate overrides
     content::WebContents *OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params) override;
     void NavigationStateChanged(content::WebContents* source, content::InvalidateTypes changed_flags) override;
-    void AddNewContents(content::WebContents *source, std::unique_ptr<content::WebContents> new_contents, WindowOpenDisposition disposition, const gfx::Rect &initial_pos, bool user_gesture, bool *was_blocked) override;
+    void AddNewContents(content::WebContents *source, std::unique_ptr<content::WebContents> new_contents, const GURL &target_url,
+                        WindowOpenDisposition disposition, const gfx::Rect &initial_pos, bool user_gesture, bool *was_blocked) override;
     void CloseContents(content::WebContents *source) override;
     void LoadProgressChanged(double progress) override;
     bool HandleKeyboardEvent(content::WebContents *source, const content::NativeWebKeyboardEvent &event) override;
@@ -125,11 +131,11 @@ public:
     void WebContentsCreated(content::WebContents *source_contents, int opener_render_process_id, int opener_render_frame_id,
                             const std::string &frame_name, const GURL &target_url, content::WebContents *new_contents) override;
     content::JavaScriptDialogManager *GetJavaScriptDialogManager(content::WebContents *source) override;
-    void EnterFullscreenModeForTab(content::WebContents *web_contents, const GURL &origin, const blink::mojom::FullscreenOptions &options) override;
+    void EnterFullscreenModeForTab(content::RenderFrameHost *requesting_frame, const blink::mojom::FullscreenOptions &options) override;
     void ExitFullscreenModeForTab(content::WebContents*) override;
     bool IsFullscreenForTabOrPending(const content::WebContents* web_contents) override;
     void RunFileChooser(content::RenderFrameHost* render_frame_host,
-                        std::unique_ptr<content::FileSelectListener> listener,
+                        scoped_refptr<content::FileSelectListener> listener,
                         const blink::mojom::FileChooserParams& params) override;
     bool DidAddMessageToConsole(content::WebContents *source, blink::mojom::ConsoleMessageLevel log_level,
                                 const base::string16 &message, int32_t line_no, const base::string16 &source_id) override;
@@ -142,8 +148,8 @@ public:
     void RequestToLockMouse(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target) override;
     void BeforeUnloadFired(content::WebContents* tab, bool proceed, bool* proceed_to_fire_unload) override;
     bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host, const GURL& security_origin, blink::mojom::MediaStreamType type) override;
-    void RegisterProtocolHandler(content::WebContents* web_contents, const std::string& protocol, const GURL& url, bool user_gesture) override;
-    void UnregisterProtocolHandler(content::WebContents* web_contents, const std::string& protocol, const GURL& url, bool user_gesture) override;
+    void RegisterProtocolHandler(content::RenderFrameHost* frame_host, const std::string& protocol, const GURL& url, bool user_gesture) override;
+    void UnregisterProtocolHandler(content::RenderFrameHost* frame_host, const std::string& protocol, const GURL& url, bool user_gesture) override;
     bool TakeFocus(content::WebContents *source, bool reverse) override;
     void ContentsZoomChange(bool zoom_in) override;
 
@@ -161,14 +167,14 @@ public:
     void DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code) override;
     void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) override;
     void BeforeUnloadFired(bool proceed, const base::TimeTicks& proceed_time) override;
-    void DidUpdateFaviconURL(const std::vector<blink::mojom::FaviconURLPtr> &candidates) override;
+    void DidUpdateFaviconURL(content::RenderFrameHost *render_frame_host, const std::vector<blink::mojom::FaviconURLPtr> &candidates) override;
     void OnVisibilityChanged(content::Visibility visibility) override;
     void DidFirstVisuallyNonEmptyPaint() override;
     void ActivateContents(content::WebContents* contents) override;
     bool ShouldNavigateOnBackForwardMouseButtons() override;
 
     void didFailLoad(const QUrl &url, int errorCode, const QString &errorDescription);
-    void overrideWebPreferences(content::WebContents *, content::WebPreferences*);
+    void overrideWebPreferences(content::WebContents *, blink::web_pref::WebPreferences*);
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &);
     void selectClientCert(const QSharedPointer<ClientCertSelectController> &);
     void requestFeaturePermission(ProfileAdapter::PermissionType feature, const QUrl &requestingOrigin);
@@ -219,7 +225,6 @@ private:
     QScopedPointer<FindTextHelper> m_findTextHelper;
     SavePageInfo m_savePageInfo;
     QSharedPointer<FilePickerController> m_filePickerController;
-    QUrl m_initialTargetUrl;
     LoadingState m_loadingState;
     bool m_didStartLoadingSeen;
     FrameFocusedObserver m_frameFocusedObserver;

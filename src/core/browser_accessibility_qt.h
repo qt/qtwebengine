@@ -80,9 +80,7 @@ public:
     QAccessible::State state() const override;
 
     // BrowserAccessible
-    void NativeAddReference() override;
-    void NativeReleaseReference() override;
-    bool IsNative() const override { return true; }
+    void Destroy() override;
 
     // QAccessibleActionInterface
     QStringList actionNames() const override;

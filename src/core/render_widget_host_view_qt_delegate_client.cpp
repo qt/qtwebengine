@@ -428,8 +428,8 @@ void RenderWidgetHostViewQtDelegateClient::handlePointerEvent(T *event)
     // Currently WebMouseEvent is a subclass of WebPointerProperties, so basically
     // tablet events are mouse events with extra properties.
     blink::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event);
-    if ((webEvent.GetType() == blink::WebInputEvent::kMouseDown
-         || webEvent.GetType() == blink::WebInputEvent::kMouseUp)
+    if ((webEvent.GetType() == blink::WebInputEvent::Type::kMouseDown
+         || webEvent.GetType() == blink::WebInputEvent::Type::kMouseUp)
         && webEvent.button == blink::WebMouseEvent::Button::kNoButton) {
         // Blink can only handle the 5 main mouse-buttons and may assert when processing mouse-down
         // for no button.
@@ -437,7 +437,7 @@ void RenderWidgetHostViewQtDelegateClient::handlePointerEvent(T *event)
         return;
     }
 
-    if (webEvent.GetType() == blink::WebInputEvent::kMouseDown) {
+    if (webEvent.GetType() == blink::WebInputEvent::Type::kMouseDown) {
         if (event->button() != m_clickHelper.lastPressButton
             || (event->timestamp() - m_clickHelper.lastPressTimestamp
                 > static_cast<ulong>(qGuiApp->styleHints()->mouseDoubleClickInterval()))
@@ -452,7 +452,7 @@ void RenderWidgetHostViewQtDelegateClient::handlePointerEvent(T *event)
         m_clickHelper.lastPressPosition = event->position().toPoint();
     }
 
-    if (webEvent.GetType() == blink::WebInputEvent::kMouseUp)
+    if (webEvent.GetType() == blink::WebInputEvent::Type::kMouseUp)
         webEvent.click_count = m_clickHelper.clickCounter;
 
     webEvent.movement_x = event->globalPosition().x() - m_previousMousePosition.x();
@@ -463,7 +463,7 @@ void RenderWidgetHostViewQtDelegateClient::handlePointerEvent(T *event)
     else
         m_previousMousePosition = event->globalPosition().toPoint();
 
-    if (m_imeInProgress && webEvent.GetType() == blink::WebInputEvent::kMouseDown) {
+    if (m_imeInProgress && webEvent.GetType() == blink::WebInputEvent::Type::kMouseDown) {
         m_imeInProgress = false;
         // Tell input method to commit the pre-edit string entered so far, and finish the
         // composition operation.
@@ -529,18 +529,18 @@ void RenderWidgetHostViewQtDelegateClient::handleKeyEvent(QKeyEvent *event)
         return;
 
     content::NativeWebKeyboardEvent webEvent = WebEventFactory::toWebKeyboardEvent(event);
-    if (webEvent.GetType() == blink::WebInputEvent::kRawKeyDown && !m_editCommand.empty()) {
+    if (webEvent.GetType() == blink::WebInputEvent::Type::kRawKeyDown && !m_editCommand.empty()) {
         ui::LatencyInfo latency;
         latency.set_source_event_type(ui::SourceEventType::KEY_PRESS);
-        content::EditCommands commands;
-        commands.emplace_back(m_editCommand, "");
+        std::vector<blink::mojom::EditCommandPtr> commands;
+        commands.emplace_back(blink::mojom::EditCommand::New(m_editCommand, ""));
         m_editCommand.clear();
-        m_rwhv->host()->ForwardKeyboardEventWithCommands(webEvent, latency, &commands, nullptr);
+        m_rwhv->host()->ForwardKeyboardEventWithCommands(webEvent, latency, std::move(commands), nullptr);
         return;
     }
 
     bool keyDownTextInsertion =
-            webEvent.GetType() == blink::WebInputEvent::kRawKeyDown && webEvent.text[0];
+            webEvent.GetType() == blink::WebInputEvent::Type::kRawKeyDown && webEvent.text[0];
     webEvent.skip_in_browser = keyDownTextInsertion;
     m_rwhv->host()->ForwardKeyboardEvent(webEvent);
 
@@ -549,7 +549,7 @@ void RenderWidgetHostViewQtDelegateClient::handleKeyEvent(QKeyEvent *event)
         // The RawKeyDown is skipped on the way back (see above).
         // The same os_event will be set on both NativeWebKeyboardEvents.
         webEvent.skip_in_browser = false;
-        webEvent.SetType(blink::WebInputEvent::kChar);
+        webEvent.SetType(blink::WebInputEvent::Type::kChar);
         m_rwhv->host()->ForwardKeyboardEvent(webEvent);
     }
 }
@@ -843,10 +843,8 @@ void RenderWidgetHostViewQtDelegateClient::handleInputMethodEvent(QInputMethodEv
     }
 
     if (hasSelection) {
-        content::mojom::FrameInputHandler *frameInputHandler = m_rwhv->getFrameInputHandler();
-        if (frameInputHandler)
-            frameInputHandler->SetEditableSelectionOffsets(selectionRange.start(),
-                                                           selectionRange.end());
+        if (auto *frameWidgetInputHandler = m_rwhv->getFrameWidgetInputHandler())
+            frameWidgetInputHandler->SetEditableSelectionOffsets(selectionRange.start(), selectionRange.end());
     }
 
     int replacementLength = event->replacementLength();
@@ -951,7 +949,7 @@ void RenderWidgetHostViewQtDelegateClient::selectionChanged()
         // position if the selection is cleared because TextInputState changes before the
         // TextSelection change.
         Q_ASSERT(text_input_manager->GetTextInputState());
-        m_cursorPosition = text_input_manager->GetTextInputState()->selection_start;
+        m_cursorPosition = text_input_manager->GetTextInputState()->selection.start();
         m_rwhv->delegate()->inputMethodStateChanged(true /*editorVisible*/,
                                                     type == ui::TEXT_INPUT_TYPE_PASSWORD);
 

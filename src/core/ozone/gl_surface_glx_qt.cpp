@@ -45,8 +45,7 @@
 #include "ozone/gl_surface_glx_qt.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface_glx.h"
-#include <GL/glx.h>
-#include <GL/glxext.h>
+#include "ui/gfx/x/x11_types.h"
 
 namespace gl {
 
@@ -104,6 +103,11 @@ bool GLSurfaceGLX::HasGLXExtension(const char *name)
 bool GLSurfaceGLX::IsTextureFromPixmapSupported()
 {
     return ExtensionsContain(GLSurfaceQt::g_extensions, "GLX_EXT_texture_from_pixmap");
+}
+
+bool GLSurfaceGLX::IsRobustnessVideoMemoryPurgeSupported()
+{
+    return false;
 }
 
 const char* GLSurfaceGLX::GetGLXExtensions()
@@ -171,9 +175,9 @@ bool GLSurfaceGLXQt::Initialize(GLSurfaceFormat format)
     const int pbuffer_attributes[] = {
         GLX_PBUFFER_WIDTH, m_size.width(),
         GLX_PBUFFER_HEIGHT, m_size.height(),
-        GLX_LARGEST_PBUFFER, x11::False,
-        GLX_PRESERVED_CONTENTS, x11::False,
-        x11::None // MEMO doc: ...must be terminated with None or NULL
+        GLX_LARGEST_PBUFFER, GL_FALSE,
+        GLX_PRESERVED_CONTENTS, GL_FALSE,
+        GL_NONE // MEMO doc: ...must be terminated with None or NULL
     };
 
     m_surfaceBuffer = glXCreatePbuffer(display, static_cast<GLXFBConfig>(g_config), pbuffer_attributes);

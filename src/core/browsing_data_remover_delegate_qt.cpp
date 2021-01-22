@@ -48,7 +48,7 @@
 
 namespace QtWebEngineCore {
 
-bool DoesOriginMatchEmbedderMask(int origin_type_mask,
+bool DoesOriginMatchEmbedderMask(uint64_t origin_type_mask,
                                  const url::Origin &origin,
                                  storage::SpecialStoragePolicy *policy)
 {
@@ -70,10 +70,10 @@ bool BrowsingDataRemoverDelegateQt::MayRemoveDownloadHistory()
 
 void BrowsingDataRemoverDelegateQt::RemoveEmbedderData(const base::Time &delete_begin,
             const base::Time &delete_end,
-            int remove_mask,
+            uint64_t remove_mask,
             content::BrowsingDataFilterBuilder *filter_builder,
-            int origin_type_mask,
-            base::OnceClosure callback)
+            uint64_t origin_type_mask,
+            base::OnceCallback<void(/*failed_data_types=*/uint64_t)> callback)
 {
     Q_UNUSED(delete_begin);
     Q_UNUSED(delete_end);
@@ -83,7 +83,12 @@ void BrowsingDataRemoverDelegateQt::RemoveEmbedderData(const base::Time &delete_
     if (remove_mask & content::BrowsingDataRemover::DATA_TYPE_CACHE)
         web_cache::WebCacheManager::GetInstance()->ClearCache();
 
-    std::move(callback).Run();
+    std::move(callback).Run(0);
+}
+
+std::vector<std::string> BrowsingDataRemoverDelegateQt::GetDomainsForDeferredCookieDeletion(uint64_t)
+{
+    return {};
 }
 
 } // namespace QtWebEngineCore

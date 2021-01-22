@@ -59,9 +59,9 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/origin_util.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager_base.h"
+#include "third_party/blink/public/common/loader/network_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if QT_CONFIG(webengine_webrtc)
@@ -381,7 +381,7 @@ void MediaCaptureDevicesDispatcher::Observe(int type, const content::Notificatio
     }
 }
 
-void MediaCaptureDevicesDispatcher::processMediaAccessRequest(WebContentsAdapterClient *adapterClient, content::WebContents *webContents, const content::MediaStreamRequest &request, content::MediaResponseCallback callback)
+void MediaCaptureDevicesDispatcher::processMediaAccessRequest(content::WebContents *webContents, const content::MediaStreamRequest &request, content::MediaResponseCallback callback)
 {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -391,10 +391,13 @@ void MediaCaptureDevicesDispatcher::processMediaAccessRequest(WebContentsAdapter
         return;
     }
 
+    WebContentsDelegateQt *delegate = static_cast<WebContentsDelegateQt *>(webContents->GetDelegate());
+    WebContentsAdapterClient *adapterClient = delegate->adapterClient();
+
     if (flags.testFlag(WebContentsAdapterClient::MediaDesktopVideoCapture)) {
         const bool screenCaptureEnabled = adapterClient->webEngineSettings()->testAttribute(
                 QWebEngineSettings::ScreenCaptureEnabled);
-        const bool originIsSecure = content::IsOriginSecure(request.security_origin);
+        const bool originIsSecure = blink::network_utils::IsOriginSecure(request.security_origin);
         if (!screenCaptureEnabled || !originIsSecure) {
             std::move(callback).Run(blink::MediaStreamDevices(), MediaStreamRequestResult::INVALID_STATE, std::unique_ptr<content::MediaStreamUI>());
             return;

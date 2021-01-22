@@ -53,16 +53,32 @@
 
 namespace QtWebEngineCore {
 
-FilePickerController::FilePickerController(FileChooserMode mode, std::unique_ptr<content::FileSelectListener> listener, const QString &defaultFileName, const QStringList &acceptedMimeTypes, QObject *parent)
+class FilePickerControllerPrivate {
+public:
+    FilePickerController::FileChooserMode mode;
+    scoped_refptr<content::FileSelectListener> listener;
+    QString defaultFileName;
+    QStringList acceptedMimeTypes;
+};
+
+FilePickerController *createFilePickerController(
+        FilePickerController::FileChooserMode mode, scoped_refptr<content::FileSelectListener> listener,
+        const QString &defaultFileName, const QStringList &acceptedMimeTypes, QObject *parent = nullptr)
+{
+    auto priv = new FilePickerControllerPrivate{mode, listener, defaultFileName, acceptedMimeTypes};
+    return new FilePickerController(priv, parent);
+}
+
+FilePickerController::FilePickerController(FilePickerControllerPrivate *priv, QObject *parent)
     : QObject(parent)
-    , m_defaultFileName(defaultFileName)
-    , m_acceptedMimeTypes(acceptedMimeTypes)
-    , m_listener(std::move(listener))
-    , m_mode(mode)
+    , d_ptr(priv)
 {
 }
 
-FilePickerController::~FilePickerController() = default;
+FilePickerController::~FilePickerController()
+{
+    delete d_ptr;
+}
 
 void FilePickerController::accepted(const QStringList &files)
 {
@@ -178,7 +194,7 @@ ASSERT_ENUMS_MATCH(FilePickerController::Save, blink::mojom::FileChooserParams_M
 void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
 {
     QStringList files(filesList);
-    if (this->m_mode == UploadFolder && !filesList.isEmpty()
+    if (d_ptr->mode == UploadFolder && !filesList.isEmpty()
             && QFileInfo(filesList.first()).isDir()) // Enumerate the directory
         files = listRecursively(QDir(filesList.first()));
 
@@ -189,26 +205,26 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
     }
 
     if (files.isEmpty())
-        m_listener->FileSelectionCanceled();
+        d_ptr->listener->FileSelectionCanceled();
     else
-        m_listener->FileSelected(std::move(chooser_files),
+        d_ptr->listener->FileSelected(std::move(chooser_files),
                                   /* FIXME? */ base::FilePath(),
-                                 static_cast<blink::mojom::FileChooserParams::Mode>(this->m_mode));
+                                 static_cast<blink::mojom::FileChooserParams::Mode>(d_ptr->mode));
 }
 
 QStringList FilePickerController::acceptedMimeTypes() const
 {
-    return m_acceptedMimeTypes;
+    return d_ptr->acceptedMimeTypes;
 }
 
 FilePickerController::FileChooserMode FilePickerController::mode() const
 {
-    return m_mode;
+    return d_ptr->mode;
 }
 
 QString FilePickerController::defaultFileName() const
 {
-    return m_defaultFileName;
+    return d_ptr->defaultFileName;
 }
 
 QStringList FilePickerController::nameFilters(const QStringList &acceptedMimeTypes)

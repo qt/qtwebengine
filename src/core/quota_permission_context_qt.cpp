@@ -61,7 +61,7 @@ void QuotaPermissionContextQt::RequestQuotaPermission(const StorageQuotaParams &
     if (params.storage_type != blink::mojom::StorageType::kPersistent) {
         // For now we only support requesting quota with this interface
         // for Persistent storage type.
-        std::move(callback).Run(QUOTA_PERMISSION_RESPONSE_DISALLOW);
+        dispatchCallbackOnIOThread(std::move(callback), QUOTA_PERMISSION_RESPONSE_DISALLOW);
         return;
     }
 
@@ -74,16 +74,26 @@ void QuotaPermissionContextQt::RequestQuotaPermission(const StorageQuotaParams &
     }
 
     RenderFrameHost *renderFrameHost = RenderFrameHost::FromID(render_process_id, params.render_frame_id);
-    if (!renderFrameHost)
+    if (!renderFrameHost) {
+        LOG(WARNING) << "Attempt to request quota from frameless renderer: "
+                     << render_process_id << "," << params.render_frame_id;
+        dispatchCallbackOnIOThread(std::move(callback), QUOTA_PERMISSION_RESPONSE_CANCELLED);
         return;
+    }
 
     WebContents *webContents = WebContents::FromRenderFrameHost(renderFrameHost);
-    if (!webContents)
+    if (!webContents) {
+        LOG(ERROR) << "Attempt to request quota from frame missing webcontents";
+        dispatchCallbackOnIOThread(std::move(callback), QUOTA_PERMISSION_RESPONSE_CANCELLED);
         return;
+    }
 
     WebContentsAdapterClient *client = WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(webContents)->GetView())->client();
-    if (!client)
+    if (!client) {
+        LOG(ERROR) << "Attempt to request quota from content missing webcontents client";
+        dispatchCallbackOnIOThread(std::move(callback), QUOTA_PERMISSION_RESPONSE_CANCELLED);
         return;
+    }
 
     QWebEngineQuotaRequest request(
         QSharedPointer<QuotaRequestControllerImpl>::create(this, params, std::move(callback)));

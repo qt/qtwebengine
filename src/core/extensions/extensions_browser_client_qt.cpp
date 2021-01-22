@@ -49,25 +49,24 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/memory/ref_counted_memory.h"
+#include "chrome/browser/extensions/api/generated_api_registration.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/runtime/runtime_api_delegate.h"
-#include "extensions/browser/app_sorting.h"
 #include "extensions/browser/core_extensions_browser_api_provider.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/extension_protocols.h"
+#include "extensions/browser/extensions_browser_api_provider.h"
 #include "extensions/browser/extensions_browser_interface_binders.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/common/file_util.h"
-#include "net/base/completion_once_callback.h"
 #include "net/base/mime_util.h"
+#include "qtwebengine/browser/extensions/api/generated_api_registration.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/zlib/google/compression_utils.h"
@@ -78,10 +77,10 @@
 #include "extension_web_contents_observer_qt.h"
 #include "extensions_api_client_qt.h"
 #include "extensions_browser_client_qt.h"
+#include "extension_host_delegate_qt.h"
 #include "web_engine_library_info.h"
 
 using content::BrowserContext;
-using content::BrowserThread;
 
 namespace {
 
@@ -111,29 +110,13 @@ scoped_refptr<base::RefCountedMemory> GetResource(int resource_id, const std::st
                       extension_id)
             : nullptr;
 
-    bool is_gzipped = rb.IsGzipped(resource_id);
-    if (!bytes->size() || (!replacements && !is_gzipped)) {
-        return bytes;
-    }
-
-    base::StringPiece input(reinterpret_cast<const char *>(bytes->front()), bytes->size());
-
-    std::string temp_str;
-
-    base::StringPiece source = input;
-    if (is_gzipped) {
-        temp_str.resize(compression::GetUncompressedSize(input));
-        source = temp_str;
-        CHECK(compression::GzipUncompress(input, source));
-    }
-
     if (replacements) {
-        temp_str = ui::ReplaceTemplateExpressions(source, *replacements);
+        base::StringPiece input(reinterpret_cast<const char *>(bytes->front()), bytes->size());
+        std::string temp_str = ui::ReplaceTemplateExpressions(input, *replacements);
+        DCHECK(!temp_str.empty());
+        return base::RefCountedString::TakeString(&temp_str);
     }
-
-    DCHECK(!temp_str.empty());
-
-    return base::RefCountedString::TakeString(&temp_str);
+    return bytes;
 }
 
 // Loads an extension resource in a Chrome .pak file. These are used by
@@ -156,7 +139,9 @@ public:
 
     // mojom::URLLoader implementation:
     void FollowRedirect(const std::vector<std::string> &removed_headers,
-                        const net::HttpRequestHeaders &modified_headers, const base::Optional<GURL> &new_url) override
+                        const net::HttpRequestHeaders &modified_headers,
+                        const net::HttpRequestHeaders &modified_cors_exempt_headers,
+                        const base::Optional<GURL> &new_url) override
     {
         NOTREACHED() << "No redirects for local file loads.";
     }
@@ -210,11 +195,10 @@ private:
             return;
         }
         head->headers = response_headers_;
-        head->headers->AddHeader(base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentLength,
-                                                   base::NumberToString(head->content_length).c_str()));
+        head->headers->AddHeader(net::HttpRequestHeaders::kContentLength,
+                                 base::NumberToString(head->content_length).c_str());
         if (!head->mime_type.empty()) {
-            head->headers->AddHeader(
-                    base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType, head->mime_type.c_str()));
+            head->headers->AddHeader(net::HttpRequestHeaders::kContentType, head->mime_type.c_str());
         }
         client_->OnReceiveResponse(std::move(head));
         client_->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
@@ -266,11 +250,46 @@ private:
 
 namespace extensions {
 
+// Copied from chrome/browser/extensions/chrome_extensions_browser_api_provider.(h|cc)
+class ChromeExtensionsBrowserAPIProvider : public ExtensionsBrowserAPIProvider
+{
+public:
+    ChromeExtensionsBrowserAPIProvider() = default;
+    ~ChromeExtensionsBrowserAPIProvider() override = default;
+
+    void RegisterExtensionFunctions(ExtensionFunctionRegistry *registry) override
+    {
+        // Generated APIs from Chrome.
+        api::ChromeGeneratedFunctionRegistry::RegisterAll(registry);
+    }
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsBrowserAPIProvider);
+};
+
+class QtWebEngineExtensionsBrowserAPIProvider : public ExtensionsBrowserAPIProvider
+{
+public:
+    QtWebEngineExtensionsBrowserAPIProvider() = default;
+    ~QtWebEngineExtensionsBrowserAPIProvider() override = default;
+
+    void RegisterExtensionFunctions(ExtensionFunctionRegistry *registry) override
+    {
+        // Generated APIs from QtWebEngine.
+        api::QtWebEngineGeneratedFunctionRegistry::RegisterAll(registry);
+    }
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(QtWebEngineExtensionsBrowserAPIProvider);
+};
+
 ExtensionsBrowserClientQt::ExtensionsBrowserClientQt()
     : api_client_(new ExtensionsAPIClientQt)
     , resource_manager_(new ComponentExtensionResourceManagerQt)
 {
     AddAPIProvider(std::make_unique<CoreExtensionsBrowserAPIProvider>());
+    AddAPIProvider(std::make_unique<ChromeExtensionsBrowserAPIProvider>());
+    AddAPIProvider(std::make_unique<QtWebEngineExtensionsBrowserAPIProvider>());
 }
 
 ExtensionsBrowserClientQt::~ExtensionsBrowserClientQt()
@@ -385,8 +404,11 @@ bool ExtensionsBrowserClientQt::AllowCrossRendererResourceLoad(const GURL &url,
                                                                const ExtensionSet &extensions,
                                                                const ProcessMap &process_map)
 {
-
     if (extension && extension->id() == extension_misc::kPdfExtensionId)
+        return true;
+
+    // hangout services id
+    if (extension && extension->id() == "nkeimhogjdpnpccoofpliimaahmaaome")
         return true;
 
     bool allowed = false;
@@ -417,9 +439,7 @@ ProcessManagerDelegate *ExtensionsBrowserClientQt::GetProcessManagerDelegate() c
 
 std::unique_ptr<ExtensionHostDelegate> ExtensionsBrowserClientQt::CreateExtensionHostDelegate()
 {
-    // TODO(extensions): Implement to support Apps.
-    NOTREACHED();
-    return std::unique_ptr<ExtensionHostDelegate>();
+    return std::unique_ptr<ExtensionHostDelegate>(new ExtensionHostDelegateQt);
 }
 
 bool ExtensionsBrowserClientQt::DidVersionUpdate(BrowserContext *context)
@@ -448,7 +468,7 @@ ExtensionSystemProvider *ExtensionsBrowserClientQt::GetExtensionSystemFactory()
 }
 
 void ExtensionsBrowserClientQt::RegisterBrowserInterfaceBindersForFrame(
-        service_manager::BinderMapWithContext<content::RenderFrameHost*> *binder_map,
+        mojo::BinderMapWithContext<content::RenderFrameHost*> *binder_map,
         content::RenderFrameHost* render_frame_host,
         const Extension* extension) const
 {

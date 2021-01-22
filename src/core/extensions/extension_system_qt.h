@@ -89,7 +89,7 @@ public:
     RuntimeData *runtime_data() override;
     ManagementPolicy *management_policy() override;
     ServiceWorkerManager *service_worker_manager() override;
-    SharedUserScriptMaster *shared_user_script_master() override;
+    SharedUserScriptManager *shared_user_script_manager() override;
     StateStore *state_store() override;
     StateStore *rules_store() override;
     scoped_refptr<ValueStoreFactory> store_factory() override;
@@ -106,20 +106,14 @@ public:
     ContentVerifier *content_verifier() override;
     std::unique_ptr<ExtensionSet> GetDependentExtensions(const Extension *extension) override;
 
-#if !defined(TOOLKIT_QT)
-    void InstallUpdate(const std::string &extension_id,
-                       const std::string &public_key,
-                       const base::FilePath &unpacked_dir,
-                       bool install_immediately,
-                       InstallUpdateCallback install_update_callback) override;
-#endif // TOOLKIT_QT
-    //friend class ExtensionSystemSharedFactory;
-
     bool FinishDelayedInstallationIfReady(const std::string &extension_id, bool install_immediately) override;
 
     void Init(bool extensions_enabled);
 
     const base::OneShotEvent &ready() const override { return ready_; }
+    bool is_ready() const override;
+
+    void PerformActionBasedOnOmahaAttributes(const std::string &, const base::Value &) override { /* fixme? */}
 
 private:
     void OnExtensionRegisteredWithRequestContexts(scoped_refptr<const extensions::Extension> extension);
@@ -135,7 +129,7 @@ private:
     std::unique_ptr<RuntimeData> runtime_data_;
     std::unique_ptr<QuotaService> quota_service_;
     std::unique_ptr<AppSorting> app_sorting_;
-    std::unique_ptr<SharedUserScriptMaster> shared_user_script_master_;
+    std::unique_ptr<SharedUserScriptManager> shared_user_script_manager_;
 
 
     // For verifying the contents of extensions read from disk.

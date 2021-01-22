@@ -79,7 +79,7 @@ bool BrowserAccessibilityQt::isValid() const
 
 QObject *BrowserAccessibilityQt::object() const
 {
-    return 0;
+    return nullptr;
 }
 
 QAccessibleInterface *BrowserAccessibilityQt::childAt(int x, int y) const
@@ -90,7 +90,7 @@ QAccessibleInterface *BrowserAccessibilityQt::childAt(int x, int y) const
         if (childIface->rect().contains(x,y))
             return childIface;
     }
-    return 0;
+    return nullptr;
 }
 
 void *BrowserAccessibilityQt::interface_cast(QAccessible::InterfaceType type)
@@ -132,7 +132,7 @@ void *BrowserAccessibilityQt::interface_cast(QAccessible::InterfaceType type)
     default:
         break;
     }
-    return 0;
+    return nullptr;
 }
 
 QAccessibleInterface *BrowserAccessibilityQt::parent() const
@@ -207,6 +207,13 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     switch (GetRole()) {
     case ax::mojom::Role::kNone:
     case ax::mojom::Role::kUnknown:
+        return QAccessible::NoRole;
+
+    // Internal roles (matching auralinux and win)
+    case ax::mojom::Role::kKeyboard:
+    case ax::mojom::Role::kIgnored:
+    case ax::mojom::Role::kImeCandidate:
+    case ax::mojom::Role::kPresentational:
         return QAccessible::NoRole;
 
     // Used by Chromium to distinguish between the root of the tree
@@ -376,8 +383,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::WebDocument;
     case ax::mojom::Role::kIframePresentational:
         return QAccessible::Grouping;
-    case ax::mojom::Role::kIgnored:
-        return QAccessible::NoRole;
     case ax::mojom::Role::kImage:
         return QAccessible::Graphic;
     case ax::mojom::Role::kImageMap:
@@ -386,8 +391,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::StaticText;
     case ax::mojom::Role::kInputTime:
         return QAccessible::SpinBox;
-    case ax::mojom::Role::kKeyboard:
-        return QAccessible::NoRole; // FIXME
     case ax::mojom::Role::kLabelText:
         return QAccessible::StaticText;
     case ax::mojom::Role::kLayoutTable:
@@ -432,8 +435,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::CheckBox;
     case ax::mojom::Role::kMenuItemRadio:
         return QAccessible::RadioButton;
-    case ax::mojom::Role::kMenuButton:
-        return QAccessible::MenuItem;
     case ax::mojom::Role::kMenuListOption:
         return QAccessible::MenuItem;
     case ax::mojom::Role::kMenuListPopup:
@@ -458,8 +459,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Button;
     case ax::mojom::Role::kPre:
         return QAccessible::Section;
-    case ax::mojom::Role::kPresentational:
-        return QAccessible::NoRole; // FIXME
     case ax::mojom::Role::kProgressIndicator:
         return QAccessible::ProgressBar;
     case ax::mojom::Role::kRadioButton:
@@ -646,16 +645,7 @@ QAccessible::State BrowserAccessibilityQt::state() const
     return state;
 }
 
-// Qt does not reference count accessibles
-void BrowserAccessibilityQt::NativeAddReference()
-{
-}
-
-// there is no reference counting, but BrowserAccessibility::Destroy
-// calls this (and that is the only place in the chromium sources,
-// so we can safely use it to dispose of ourselves here
-// (the default implementation of this function just contains a "delete this")
-void BrowserAccessibilityQt::NativeReleaseReference()
+void BrowserAccessibilityQt::Destroy()
 {
     // delete this
     QAccessible::Id interfaceId = QAccessible::uniqueId(this);
@@ -987,7 +977,7 @@ QAccessibleInterface *BrowserAccessibilityQt::table() const
     while (find_table && find_table->GetRole() != ax::mojom::Role::kTable)
         find_table = find_table->PlatformGetParent();
     if (!find_table)
-        return 0;
+        return nullptr;
     return static_cast<BrowserAccessibilityQt*>(find_table);
 }
 

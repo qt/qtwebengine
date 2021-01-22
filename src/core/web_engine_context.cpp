@@ -59,7 +59,6 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "chrome/browser/printing/print_job_manager.h"
-#include "components/printing/browser/features.h"
 #endif
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/viz/common/features.h"
@@ -89,10 +88,11 @@
 #include "mojo/core/embedder/embedder.h"
 #include "net/base/port_util.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "sandbox/policy/switches.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_context.mojom.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "services/service_manager/switches.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "third_party/blink/public/common/features.h"
@@ -615,7 +615,7 @@ WebEngineContext::WebEngineContext()
 #endif
 
     base::ThreadPoolInstance::Create("Browser");
-    m_contentRunner.reset(content::ContentMainRunner::Create());
+    m_contentRunner = content::ContentMainRunner::Create();
     m_browserRunner = content::BrowserMainRunner::Create();
 
 #ifdef Q_OS_LINUX
@@ -660,10 +660,10 @@ WebEngineContext::WebEngineContext()
 #endif
     if (!disable_sandbox) {
 #if defined(Q_OS_LINUX)
-        parsedCommandLine->AppendSwitch(service_manager::switches::kDisableSetuidSandbox);
+        parsedCommandLine->AppendSwitch(sandbox::policy::switches::kDisableSetuidSandbox);
 #endif
     } else {
-        parsedCommandLine->AppendSwitch(service_manager::switches::kNoSandbox);
+        parsedCommandLine->AppendSwitch(sandbox::policy::switches::kNoSandbox);
         qInfo() << "Sandboxing disabled by user.";
     }
 
@@ -707,9 +707,6 @@ WebEngineContext::WebEngineContext()
     appendToFeatureList(disableFeatures, features::kWebPayments.name);
     appendToFeatureList(disableFeatures, features::kWebUsb.name);
     appendToFeatureList(disableFeatures, media::kPictureInPicture.name);
-
-    // Breaks current colordialog tests.
-    appendToFeatureList(disableFeatures, features::kFormControlsRefresh.name);
 
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc

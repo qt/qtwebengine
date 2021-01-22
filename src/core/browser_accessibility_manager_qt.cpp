@@ -48,13 +48,11 @@ namespace content {
 
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
       const ui::AXTreeUpdate& initialTree,
-      BrowserAccessibilityDelegate* delegate,
-      BrowserAccessibilityFactory* factory)
+      BrowserAccessibilityDelegate* delegate)
 {
 #if QT_CONFIG(accessibility)
-    return new BrowserAccessibilityManagerQt(nullptr, initialTree, delegate, factory);
+    return new BrowserAccessibilityManagerQt(nullptr, initialTree, delegate);
 #else
-    delete factory;
     return nullptr;
 #endif // QT_CONFIG(accessibility)
 }
@@ -71,8 +69,8 @@ BrowserAccessibility *BrowserAccessibility::Create()
 #if QT_CONFIG(accessibility)
 BrowserAccessibilityManagerQt::BrowserAccessibilityManagerQt(
     QObject *parentObject, const ui::AXTreeUpdate &initialTree,
-    BrowserAccessibilityDelegate* delegate, BrowserAccessibilityFactory* factory)
-      : BrowserAccessibilityManager(delegate, factory)
+    BrowserAccessibilityDelegate* delegate)
+      : BrowserAccessibilityManager(delegate)
       , m_parentObject(parentObject)
 {
     Initialize(initialTree);

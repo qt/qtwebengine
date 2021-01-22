@@ -1406,36 +1406,36 @@ static WebInputEvent::Type webEventTypeForEvent(const QEvent* event)
     switch (event->type()) {
     case QEvent::MouseButtonPress:
     case QEvent::TabletPress:
-        return WebInputEvent::kMouseDown;
+        return WebInputEvent::Type::kMouseDown;
     case QEvent::MouseButtonRelease:
     case QEvent::TabletRelease:
-        return WebInputEvent::kMouseUp;
+        return WebInputEvent::Type::kMouseUp;
     case QEvent::Enter:
-        return WebInputEvent::kMouseEnter;
+        return WebInputEvent::Type::kMouseEnter;
     case QEvent::Leave:
-        return WebInputEvent::kMouseLeave;
+        return WebInputEvent::Type::kMouseLeave;
     case QEvent::MouseMove:
     case QEvent::TabletMove:
-        return WebInputEvent::kMouseMove;
+        return WebInputEvent::Type::kMouseMove;
     case QEvent::Wheel:
-        return WebInputEvent::kMouseWheel;
+        return WebInputEvent::Type::kMouseWheel;
     case QEvent::KeyPress:
-        return WebInputEvent::kRawKeyDown;
+        return WebInputEvent::Type::kRawKeyDown;
     case QEvent::KeyRelease:
-        return WebInputEvent::kKeyUp;
+        return WebInputEvent::Type::kKeyUp;
     case QEvent::HoverMove:
-        return WebInputEvent::kMouseMove;
+        return WebInputEvent::Type::kMouseMove;
     case QEvent::TouchBegin:
-        return WebInputEvent::kTouchStart;
+        return WebInputEvent::Type::kTouchStart;
     case QEvent::TouchUpdate:
-        return WebInputEvent::kTouchMove;
+        return WebInputEvent::Type::kTouchMove;
     case QEvent::TouchEnd:
-        return WebInputEvent::kTouchEnd;
+        return WebInputEvent::Type::kTouchEnd;
     case QEvent::TouchCancel:
-        return WebInputEvent::kTouchCancel;
+        return WebInputEvent::Type::kTouchCancel;
     default:
         Q_ASSERT(false);
-        return WebInputEvent::kMouseMove;
+        return WebInputEvent::Type::kMouseMove;
     }
 }
 
@@ -1514,7 +1514,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QEvent *ev)
 
     WebMouseEvent webKitEvent;
     webKitEvent.SetTimeStamp(base::TimeTicks::Now());
-    webKitEvent.SetType(WebInputEvent::kMouseLeave);
+    webKitEvent.SetType(WebInputEvent::Type::kMouseLeave);
     return webKitEvent;
 }
 
@@ -1536,11 +1536,11 @@ WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev)
     Qt::NativeGestureType gestureType = ev->gestureType();
     switch (gestureType) {
     case Qt::ZoomNativeGesture:
-        webKitEvent.SetType(WebInputEvent::kGesturePinchUpdate);
+        webKitEvent.SetType(WebInputEvent::Type::kGesturePinchUpdate);
         webKitEvent.data.pinch_update.scale = static_cast<float>(ev->value() + 1.0);
         break;
     case Qt::SmartZoomNativeGesture:
-        webKitEvent.SetType(WebInputEvent::kGestureDoubleTap);
+        webKitEvent.SetType(WebInputEvent::Type::kGestureDoubleTap);
         webKitEvent.data.tap.tap_count = 1;
         break;
     case Qt::BeginNativeGesture:
@@ -1549,7 +1549,7 @@ WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev)
     case Qt::PanNativeGesture:
     case Qt::SwipeNativeGesture:
         // Not implemented by Chromium for now.
-        webKitEvent.SetType(blink::WebInputEvent::kUndefined);
+        webKitEvent.SetType(blink::WebInputEvent::Type::kUndefined);
         break;
     }
 
@@ -1665,7 +1665,7 @@ static QPointF toQt(gfx::PointF p)
 void WebEventFactory::sendUnhandledWheelEvent(const blink::WebGestureEvent &event,
                                               RenderWidgetHostViewQtDelegate *delegate)
 {
-    Q_ASSERT(event.GetType() == blink::WebInputEvent::kGestureScrollUpdate);
+    Q_ASSERT(event.GetType() == blink::WebInputEvent::Type::kGestureScrollUpdate);
 
     QWheelEvent ev(toQt(event.PositionInWidget()),
                    toQt(event.PositionInScreen()),

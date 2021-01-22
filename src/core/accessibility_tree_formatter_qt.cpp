@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "content/browser/accessibility/accessibility_tree_formatter_browser.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_base.h"
 
 #include <utility>
 
@@ -53,10 +53,15 @@
 namespace content {
 
 #if QT_CONFIG(accessibility)
-class AccessibilityTreeFormatterQt : public AccessibilityTreeFormatterBrowser {
+class AccessibilityTreeFormatterQt : public AccessibilityTreeFormatterBase {
 public:
     explicit AccessibilityTreeFormatterQt();
     ~AccessibilityTreeFormatterQt() override;
+
+   std::unique_ptr<base::DictionaryValue> BuildAccessibilityTreeForSelector(const content::AccessibilityTreeFormatter::TreeSelector &)
+   { return nullptr; }
+   std::unique_ptr<base::DictionaryValue> BuildAccessibilityTreeForWindow(gfx::AcceleratedWidget) override { return nullptr; }
+   std::unique_ptr<base::DictionaryValue> BuildAccessibilityTree(content::BrowserAccessibility *) override;
 
 private:
     base::FilePath::StringType GetExpectedFileSuffix() override;
@@ -64,8 +69,10 @@ private:
     const std::string GetAllowString() override;
     const std::string GetDenyString() override;
     const std::string GetDenyNodeString() override;
-    void AddProperties(const BrowserAccessibility &node, base::DictionaryValue* dict) override;
-    base::string16 ProcessTreeForOutput(const base::DictionaryValue &node, base::DictionaryValue * = nullptr) override;
+    const std::string GetRunUntilEventString() override;
+    void RecursiveBuildAccessibilityTree(const content::BrowserAccessibility &node, base::DictionaryValue *dict) const;
+    void AddProperties(const BrowserAccessibility &node, base::DictionaryValue *dict) const;
+    std::string ProcessTreeForOutput(const base::DictionaryValue &node, base::DictionaryValue * = nullptr) override;
 };
 
 AccessibilityTreeFormatterQt::AccessibilityTreeFormatterQt()
@@ -76,7 +83,30 @@ AccessibilityTreeFormatterQt::~AccessibilityTreeFormatterQt()
 {
 }
 
-void AccessibilityTreeFormatterQt::AddProperties(const BrowserAccessibility &node, base::DictionaryValue *dict)
+std::unique_ptr<base::DictionaryValue> AccessibilityTreeFormatterQt::BuildAccessibilityTree(content::BrowserAccessibility *root)
+{
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+    RecursiveBuildAccessibilityTree(*root, dict.get());
+    return dict;
+}
+
+void AccessibilityTreeFormatterQt::RecursiveBuildAccessibilityTree(const BrowserAccessibility &node, base::DictionaryValue *dict) const
+{
+    AddProperties(node, dict);
+
+    auto children = std::make_unique<base::ListValue>();
+    for (size_t i = 0; i < node.PlatformChildCount(); ++i) {
+        std::unique_ptr<base::DictionaryValue> child_dict(new base::DictionaryValue);
+
+        content::BrowserAccessibility *child_node = node.PlatformGetChild(i);
+
+        RecursiveBuildAccessibilityTree(*child_node, child_dict.get());
+        children->Append(std::move(child_dict));
+    }
+    dict->Set(kChildrenDictAttr, std::move(children));
+}
+
+void AccessibilityTreeFormatterQt::AddProperties(const BrowserAccessibility &node, base::DictionaryValue *dict) const
 {
     dict->SetInteger("id", node.GetId());
     const BrowserAccessibilityQt *acc_node = ToBrowserAccessibilityQt(&node);
@@ -142,13 +172,13 @@ void AccessibilityTreeFormatterQt::AddProperties(const BrowserAccessibility &nod
     dict->SetString("description", acc_node->text(QAccessible::Description).toStdString());
 }
 
-base::string16 AccessibilityTreeFormatterQt::ProcessTreeForOutput(const base::DictionaryValue &node, base::DictionaryValue *)
+std::string AccessibilityTreeFormatterQt::ProcessTreeForOutput(const base::DictionaryValue &node, base::DictionaryValue *)
 {
-    base::string16 error_value;
+    std::string error_value;
     if (node.GetString("error", &error_value))
         return error_value;
 
-    base::string16 line;
+    std::string line;
     std::string role_value;
     node.GetString("role", &role_value);
     if (!role_value.empty())
@@ -176,7 +206,7 @@ base::string16 AccessibilityTreeFormatterQt::ProcessTreeForOutput(const base::Di
     node.GetInteger("id", &id_value);
     WriteAttribute(false, base::StringPrintf("id=%d", id_value), &line);
 
-    return line + base::ASCIIToUTF16("\n");
+    return line + "\n";
 }
 
 base::FilePath::StringType AccessibilityTreeFormatterQt::GetExpectedFileSuffix()
@@ -202,6 +232,11 @@ const std::string AccessibilityTreeFormatterQt::GetDenyString()
 const std::string AccessibilityTreeFormatterQt::GetDenyNodeString()
 {
     return "@QT-DENY-NODE:";
+}
+
+const std::string AccessibilityTreeFormatterQt::GetRunUntilEventString()
+{
+    return "@QT-RUN-UNTIL-EVENT:";
 }
 
 #endif // QT_CONFIG(accessibility)

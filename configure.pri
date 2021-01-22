@@ -175,16 +175,6 @@ defineTest(qtConfTest_detectNinja) {
     return(false)
 }
 
-defineTest(qtConfTest_detectProtoc) {
-    protoc = $$qtConfFindInPath("protoc")
-    isEmpty(protoc) {
-        qtLog("Optional protoc could not be found.")
-        return(false)
-    }
-    qtLog("Found protoc from path: $$protoc")
-    return(true)
-}
-
 defineTest(qtConfTest_detectGn) {
     gn = $$qtConfFindInPath("gn$$EXE_SUFFIX")
     !isEmpty(gn) {
@@ -207,6 +197,19 @@ defineTest(qtConfTest_detectNodeJS) {
             return(false)
         }
     }
+    nodejs = $$system_quote($$system_path($$nodejs))
+    !qtRunLoggedCommand("$$nodejs --version", version) {
+        qtLog("'$$nodejs' didn't run.")
+        return(false)
+    }
+    # at least version 10
+    version10 = false
+    contains(version, "v([1-9][0-9])\..*"): version10 = true
+
+    $${1}.version10 = $$version10
+    export($${1}.version10)
+    $${1}.cache += version10
+    export($${1}.cache)
     return(true)
 }
 
@@ -436,8 +439,8 @@ defineTest(qtwebengine_isWindowsPlatformSupported) {
         qtwebengine_platformError("requires MSVC or Clang (MSVC mode).")
         return(false)
     }
-    !qtwebengine_isMinWinSDKVersion(10, 18362): {
-        qtwebengine_platformError("requires a Windows SDK version 10.0.18362 or newer.")
+    !qtwebengine_isMinWinSDKVersion(10, 19041): {
+        qtwebengine_platformError("requires a Windows SDK version 10.0.19041 or newer.")
         return(false)
     }
     return(true)

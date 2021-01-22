@@ -51,6 +51,8 @@
 #include "web_engine_context.h"
 #include "web_contents_delegate_qt.h"
 
+#include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
+#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -64,6 +66,18 @@
 #include <QtGui/qpixmap.h>
 
 namespace QtWebEngineCore {
+
+WebContentsViewQt::WebContentsViewQt(content::WebContents *webContents)
+    : m_webContents(webContents)
+    , m_client(nullptr)
+    , m_factoryClient(nullptr)
+    , m_contextMenuRequest(
+        new QWebEngineContextMenuRequest(new QWebEngineContextMenuRequestPrivate()))
+{
+    FormInteractionTabHelper::CreateForWebContents(webContents);
+    if (auto *performance_manager_registry = performance_manager::PerformanceManagerRegistry::GetInstance())
+        performance_manager_registry->CreatePageNodeForWebContents(webContents);
+}
 
 void WebContentsViewQt::setFactoryClient(WebContentsAdapterClient* client)
 {
@@ -122,12 +136,13 @@ gfx::NativeView WebContentsViewQt::GetNativeView() const
     return nullptr;
 }
 
-void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
+gfx::Rect WebContentsViewQt::GetContainerBounds() const
 {
     if (m_client) {
         const QRectF r(m_client->viewportRect());
-        *out = gfx::Rect(r.x(), r.y(), r.width(), r.height());
+        return gfx::Rect(r.x(), r.y(), r.width(), r.height());
     }
+    return gfx::Rect();
 }
 
 void WebContentsViewQt::Focus()
@@ -147,10 +162,6 @@ void WebContentsViewQt::SetInitialFocus()
 void WebContentsViewQt::FocusThroughTabTraversal(bool reverse)
 {
     content::WebContentsImpl *web_contents = static_cast<content::WebContentsImpl*>(m_webContents);
-    if (web_contents->ShowingInterstitialPage()) {
-        web_contents->GetInterstitialPage()->FocusThroughTabTraversal(reverse);
-        return;
-    }
     content::RenderWidgetHostView *fullscreen_view = web_contents->GetFullscreenRenderWidgetHostView();
     if (fullscreen_view) {
         fullscreen_view->Focus();
@@ -204,32 +215,23 @@ ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::CanTranslate, blink::kCanTransl
 ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::CanEditRichly, blink::kCanEditRichly)
 
 
-WebContentsViewQt::WebContentsViewQt(content::WebContents* webContents)
-: m_webContents(webContents)
-  , m_client(nullptr)
-  , m_factoryClient(nullptr)
-  , m_contextMenuRequest(
-                         new QWebEngineContextMenuRequest(new QWebEngineContextMenuRequestPrivate()))
-{ }
-
-
 void WebContentsViewQt::update(QWebEngineContextMenuRequest *request,
                                const content::ContextMenuParams &params, bool spellcheckEnabled)
 {
     auto *re = request->d.data();
     re->m_position = QPoint(params.x, params.y);
     re->m_filteredLinkUrl = toQt(params.link_url);
-    re->m_linkText = toQt(params.link_text.data());
-    re->m_altText = toQt(params.alt_text.data());
-    re->m_titleText = toQt(params.title_text.data());
+    re->m_linkText = toQt(params.link_text);
+    re->m_altText = toQt(params.alt_text);
+    re->m_titleText = toQt(params.title_text);
     re->m_unfilteredLinkUrl = toQt(params.unfiltered_link_url);
-    re->m_selectedText = toQt(params.selection_text.data());
+    re->m_selectedText = toQt(params.selection_text);
     re->m_mediaUrl = toQt(params.src_url);
     re->m_mediaType = (QWebEngineContextMenuRequest::MediaType)params.media_type;
     re->m_hasImageContent = params.has_image_contents;
     re->m_mediaFlags = (QWebEngineContextMenuRequest::MediaFlags)params.media_flags;
     re->m_editFlags = (QWebEngineContextMenuRequest::EditFlags)params.edit_flags;
-    re->m_suggestedFileName = toQt(params.suggested_filename.data());
+    re->m_suggestedFileName = toQt(params.suggested_filename);
     re->m_isEditable = params.is_editable;
 #if QT_CONFIG(webengine_spellchecker)
     re->m_misspelledWord = toQt(params.misspelled_word);
@@ -263,23 +265,23 @@ void WebContentsViewQt::ShowContextMenu(content::RenderFrameHost *,
     m_client->contextMenuRequested(m_contextMenuRequest.get());
 }
 
-Qt::DropActions toQtDropActions(blink::WebDragOperationsMask ops)
+static Qt::DropActions toQtDropActions(blink::DragOperationsMask ops)
 {
     Qt::DropActions result;
-    if (ops & blink::kWebDragOperationCopy)
+    if (ops & blink::kDragOperationCopy)
         result |= Qt::CopyAction;
-    if (ops & blink::kWebDragOperationLink)
+    if (ops & blink::kDragOperationLink)
         result |= Qt::LinkAction;
-    if (ops & blink::kWebDragOperationMove || ops & blink::kWebDragOperationDelete)
+    if (ops & blink::kDragOperationMove || ops & blink::kDragOperationDelete)
         result |= Qt::MoveAction;
     return result;
 }
 
 void WebContentsViewQt::StartDragging(const content::DropData &drop_data,
-                                      blink::WebDragOperationsMask allowed_ops,
+                                      blink::DragOperationsMask allowed_ops,
                                       const gfx::ImageSkia &image,
                                       const gfx::Vector2d &image_offset,
-                                      const content::DragEventSourceInfo &event_info,
+                                      const blink::mojom::DragEventSourceInfo &event_info,
                                       content::RenderWidgetHostImpl* source_rwh)
 {
 #if QT_CONFIG(draganddrop)
@@ -304,7 +306,7 @@ void WebContentsViewQt::StartDragging(const content::DropData &drop_data,
 #endif // QT_CONFIG(draganddrop)
 }
 
-void WebContentsViewQt::UpdateDragCursor(blink::WebDragOperation dragOperation)
+void WebContentsViewQt::UpdateDragCursor(blink::DragOperation dragOperation)
 {
 #if QT_CONFIG(draganddrop)
     m_client->webContentsAdapter()->updateDragAction(dragOperation);
