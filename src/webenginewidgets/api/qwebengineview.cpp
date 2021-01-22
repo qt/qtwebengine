@@ -62,7 +62,15 @@ void QWebEngineViewPrivate::pageChanged(QWebEnginePage *oldPage, QWebEnginePage 
 
     if (oldPage) {
         oldPage->setVisible(false);
-        oldPage->disconnect(q);
+        QObject::disconnect(oldPage, &QWebEnginePage::titleChanged, q, &QWebEngineView::titleChanged);
+        QObject::disconnect(oldPage, &QWebEnginePage::urlChanged, q, &QWebEngineView::urlChanged);
+        QObject::disconnect(oldPage, &QWebEnginePage::iconUrlChanged, q, &QWebEngineView::iconUrlChanged);
+        QObject::disconnect(oldPage, &QWebEnginePage::iconChanged, q, &QWebEngineView::iconChanged);
+        QObject::disconnect(oldPage, &QWebEnginePage::loadStarted, q, &QWebEngineView::loadStarted);
+        QObject::disconnect(oldPage, &QWebEnginePage::loadProgress, q, &QWebEngineView::loadProgress);
+        QObject::disconnect(oldPage, &QWebEnginePage::loadFinished, q, &QWebEngineView::loadFinished);
+        QObject::disconnect(oldPage, &QWebEnginePage::selectionChanged, q, &QWebEngineView::selectionChanged);
+        QObject::disconnect(oldPage, &QWebEnginePage::renderProcessTerminated, q, &QWebEngineView::renderProcessTerminated);
     }
 
     if (newPage) {
