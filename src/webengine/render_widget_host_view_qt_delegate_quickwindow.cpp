@@ -44,9 +44,9 @@
 
 namespace QtWebEngineCore {
 
-RenderWidgetHostViewQtDelegateQuickWindow::RenderWidgetHostViewQtDelegateQuickWindow(RenderWidgetHostViewQtDelegateQuick *realDelegate)
-    : m_realDelegate(realDelegate)
-    , m_virtualParent(nullptr)
+RenderWidgetHostViewQtDelegateQuickWindow::RenderWidgetHostViewQtDelegateQuickWindow(
+        RenderWidgetHostViewQtDelegateQuick *realDelegate, QWindow *parent)
+    : QQuickWindow(parent), m_realDelegate(realDelegate), m_virtualParent(nullptr)
 {
     setFlags(Qt::Tool | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
 }

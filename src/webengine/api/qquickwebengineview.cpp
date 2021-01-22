@@ -220,7 +220,8 @@ RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHo
     const bool hasWindowCapability = QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MultipleWindows);
     RenderWidgetHostViewQtDelegateQuick *quickDelegate = new RenderWidgetHostViewQtDelegateQuick(client, /*isPopup = */ true);
     if (hasWindowCapability) {
-        RenderWidgetHostViewQtDelegateQuickWindow *wrapperWindow = new RenderWidgetHostViewQtDelegateQuickWindow(quickDelegate);
+        RenderWidgetHostViewQtDelegateQuickWindow *wrapperWindow =
+                new RenderWidgetHostViewQtDelegateQuickWindow(quickDelegate, q->window());
         wrapperWindow->setVirtualParent(q);
         quickDelegate->setParentItem(wrapperWindow->contentItem());
         return wrapperWindow;
