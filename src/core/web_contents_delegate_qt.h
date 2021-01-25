@@ -175,6 +175,9 @@ public:
     void DidFirstVisuallyNonEmptyPaint() override;
     void ActivateContents(content::WebContents* contents) override;
     bool ShouldNavigateOnBackForwardMouseButtons() override;
+    void ResourceLoadComplete(content::RenderFrameHost* render_frame_host,
+                              const content::GlobalRequestID& request_id,
+                              const blink::mojom::ResourceLoadInfo& resource_load_info) override;
 
     void didFailLoad(const QUrl &url, int errorCode, const QString &errorDescription);
     void overrideWebPreferences(content::WebContents *, blink::web_pref::WebPreferences*);
@@ -214,7 +217,7 @@ private:
                  const QUrl &url,
                  bool user_gesture);
     void EmitLoadStarted(const QUrl &url, bool isErrorPage = false);
-    void EmitLoadFinished(bool success, const QUrl &url, bool isErrorPage = false, int errorCode = 0, const QString &errorDescription = QString());
+    void EmitLoadFinished(bool success, const QUrl &url, bool isErrorPage = false, int errorCode = 0, const QString &errorDescription = QString(), bool triggersErrorPage = false);
     void EmitLoadCommitted();
 
     LoadingState determineLoadingState(content::WebContents *contents);
@@ -242,6 +245,7 @@ private:
     QMap<QUrl, int> m_loadProgressMap;
     QUrl m_lastLoadedUrl;
     bool m_isNavigationCommitted = false;
+    bool m_isDocumentEmpty = true;
     base::WeakPtrFactory<WebContentsDelegateQt> m_weakPtrFactory { this };
 };
 

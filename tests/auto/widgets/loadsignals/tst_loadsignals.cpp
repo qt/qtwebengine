@@ -53,6 +53,10 @@ private Q_SLOTS:
     void loadAfterInPageNavigation_qtbug66869();
     void fileDownloadDoesNotTriggerLoadSignals_qtbug66661();
     void numberOfStartedAndFinishedSignalsIsSame();
+    void loadFinishedAfterNotFoundError_data();
+    void loadFinishedAfterNotFoundError();
+    void errorPageTriggered_data();
+    void errorPageTriggered();
 
 private:
     QWebEngineProfile profile;
@@ -72,6 +76,11 @@ void tst_LoadSignals::initTestCase()
 
 void tst_LoadSignals::init()
 {
+    // Reset content
+    loadFinishedSpy.clear();
+    view.load(QUrl("about:blank"));
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+
     loadStartedSpy.clear();
     loadProgressSpy.clear();
     loadFinishedSpy.clear();
@@ -282,6 +291,103 @@ void tst_LoadSignals::numberOfStartedAndFinishedSignalsIsSame() {
     QVERIFY(loadFinishedSpy[2][0].toBool());
     QVERIFY(loadFinishedSpy[3][0].toBool());
 }
+
+void tst_LoadSignals::loadFinishedAfterNotFoundError_data()
+{
+    QTest::addColumn<bool>("rfcInvalid");
+    QTest::addColumn<bool>("withServer");
+    QTest::addRow("rfc_invalid")  << true  << false;
+    QTest::addRow("non_existent") << false << false;
+    QTest::addRow("server_404")   << false << true;
+}
+
+void tst_LoadSignals::loadFinishedAfterNotFoundError()
+{
+    QFETCH(bool, withServer);
+    QFETCH(bool, rfcInvalid);
+
+    QScopedPointer<HttpServer> server;
+    if (withServer) {
+        server.reset(new HttpServer);
+        QVERIFY(server->start());
+    }
+
+    view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
+    auto url = server
+        ? server->url("/not-found-page.html")
+        : QUrl(rfcInvalid ? "http://some.invalid" : "http://non.existent/url");
+    view.load(url);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 20000);
+    QVERIFY(!loadFinishedSpy.at(0).at(0).toBool());
+    QCOMPARE(toPlainTextSync(view.page()), QString());
+    QCOMPARE(loadFinishedSpy.count(), 1);
+
+    view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, true);
+    url = server
+        ? server->url("/another-missing-one.html")
+        : QUrl(rfcInvalid ? "http://some.other.invalid" : "http://another.non.existent/url");
+    view.load(url);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 2, 20000);
+    QVERIFY(!loadFinishedSpy.at(1).at(0).toBool());
+
+    QEXPECT_FAIL("", "No more loads (like separate load for error pages) are expected", Continue);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 3, 1000);
+}
+
+void tst_LoadSignals::errorPageTriggered_data()
+{
+    QTest::addColumn<QString>("urlPath");
+    QTest::addColumn<bool>("loadSucceed");
+    QTest::addColumn<bool>("triggersErrorPage");
+    QTest::newRow("/content/200") << QStringLiteral("/content/200") << true << false;
+    QTest::newRow("/empty/200") << QStringLiteral("/content/200") << true << false;
+    QTest::newRow("/content/404") << QStringLiteral("/content/404") << false << false;
+    QTest::newRow("/empty/404") << QStringLiteral("/empty/404") << false << true;
+}
+
+void tst_LoadSignals::errorPageTriggered()
+{
+    HttpServer server;
+    connect(&server, &HttpServer::newRequest, [] (HttpReqRep *rr) {
+        QList<QByteArray> parts = rr->requestPath().split('/');
+        if (parts.length() != 3) {
+            // For example, /favicon.ico
+            rr->sendResponse(404);
+            return;
+        }
+        bool isDocumentEmpty = (parts[1] == "empty");
+        int httpStatusCode = parts[2].toInt();
+
+        rr->setResponseHeader(QByteArrayLiteral("content-type"), QByteArrayLiteral("text/html"));
+        if (!isDocumentEmpty) {
+            rr->setResponseBody(QByteArrayLiteral("<html></html>"));
+        }
+        rr->sendResponse(httpStatusCode);
+    });
+    QVERIFY(server.start());
+
+    QFETCH(QString, urlPath);
+    QFETCH(bool, loadSucceed);
+    QFETCH(bool, triggersErrorPage);
+
+    view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, true);
+    view.load(server.url(urlPath));
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QCOMPARE(loadFinishedSpy[0][0].toBool(), loadSucceed);
+    if (triggersErrorPage)
+        QVERIFY(toPlainTextSync(view.page()).contains("HTTP ERROR 404"));
+    else
+        QVERIFY(toPlainTextSync(view.page()).isEmpty());
+    loadFinishedSpy.clear();
+
+    view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
+    view.load(server.url(urlPath));
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QCOMPARE(loadFinishedSpy[0][0].toBool(), loadSucceed);
+    QVERIFY(toPlainTextSync(view.page()).isEmpty());
+    loadFinishedSpy.clear();
+}
+
 
 QTEST_MAIN(tst_LoadSignals)
 #include "tst_loadsignals.moc"

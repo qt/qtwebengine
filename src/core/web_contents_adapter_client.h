@@ -466,7 +466,8 @@ public:
     virtual void loadStarted(const QUrl &provisionalUrl, bool isErrorPage = false) = 0;
     virtual void loadCommitted() = 0;
     virtual void loadVisuallyCommitted() = 0;
-    virtual void loadFinished(bool success, const QUrl &url, bool isErrorPage = false, int errorCode = 0, const QString &errorDescription = QString()) = 0;
+    virtual void loadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode,
+                              const QString &errorDescription, bool triggersErrorPage) = 0;
     virtual void focusContainer() = 0;
     virtual void unhandledKeyEvent(QKeyEvent *event) = 0;
     virtual QSharedPointer<WebContentsAdapter>

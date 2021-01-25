@@ -174,8 +174,6 @@ private Q_SLOTS:
     void setUrlUsingStateObject();
     void setUrlThenLoads_data();
     void setUrlThenLoads();
-    void loadFinishedAfterNotFoundError_data();
-    void loadFinishedAfterNotFoundError();
     void loadInSignalHandlers_data();
     void loadInSignalHandlers();
     void loadFromQrc();
@@ -2822,51 +2820,6 @@ void tst_QWebEnginePage::setUrlThenLoads()
     QCOMPARE(m_page->url(), urlToLoad2);
     QCOMPARE(m_page->requestedUrl(), urlToLoad2);
     QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad2));
-}
-
-void tst_QWebEnginePage::loadFinishedAfterNotFoundError_data()
-{
-    QTest::addColumn<bool>("rfcInvalid");
-    QTest::addColumn<bool>("withServer");
-    QTest::addRow("rfc_invalid")  << true  << false;
-    QTest::addRow("non_existent") << false << false;
-    QTest::addRow("server_404")   << false << true;
-}
-
-void tst_QWebEnginePage::loadFinishedAfterNotFoundError()
-{
-    QFETCH(bool, withServer);
-    QFETCH(bool, rfcInvalid);
-
-    QScopedPointer<HttpServer> server;
-    if (withServer) {
-        server.reset(new HttpServer);
-        QVERIFY(server->start());
-    }
-
-    QWebEnginePage page;
-    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
-
-    page.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
-    auto url = server
-        ? server->url("/not-found-page.html")
-        : QUrl(rfcInvalid ? "http://some.invalid" : "http://non.existent/url");
-    page.setUrl(url);
-    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 20000);
-    QVERIFY(!spy.at(0).at(0).toBool());
-    QCOMPARE(toPlainTextSync(&page), QString());
-    QCOMPARE(spy.count(), 1);
-
-    page.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, true);
-    url = server
-        ? server->url("/another-missing-one.html")
-        : QUrl(rfcInvalid ? "http://some.other.invalid" : "http://another.non.existent/url");
-    page.setUrl(url);
-    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 2, 20000);
-    QVERIFY(!spy.at(1).at(0).toBool());
-
-    QEXPECT_FAIL("", "No more loads (like separate load for error pages) are expected", Continue);
-    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 3, 1000);
 }
 
 class URLSetter : public QObject {

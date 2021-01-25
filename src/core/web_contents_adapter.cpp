@@ -713,9 +713,10 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
         // chromium accepts LOAD_TYPE_HTTP_POST only for the HTTP and HTTPS protocols
         if (!params.url.SchemeIsHTTPOrHTTPS()) {
             m_adapterClient->loadFinished(false, request.url(), false,
-                                           net::ERR_DISALLOWED_URL_SCHEME,
-                                           QCoreApplication::translate("WebContentsAdapter",
-                                           "HTTP-POST data can only be sent over HTTP(S) protocol"));
+                                          net::ERR_DISALLOWED_URL_SCHEME,
+                                          QCoreApplication::translate("WebContentsAdapter",
+                                          "HTTP-POST data can only be sent over HTTP(S) protocol"),
+                                          false);
             return;
         }
         params.post_data = network::ResourceRequestBody::CreateFromBytes(
@@ -771,7 +772,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
 
     GURL dataUrlToLoad(urlString);
     if (dataUrlToLoad.spec().size() > url::kMaxURLChars) {
-        m_adapterClient->loadFinished(false, baseUrl, false, net::ERR_ABORTED);
+        m_adapterClient->loadFinished(false, baseUrl, false, net::ERR_ABORTED, QString(), false);
         return;
     }
     content::NavigationController::LoadURLParams params((dataUrlToLoad));
