@@ -407,23 +407,16 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
 
     // Set the theme colors. Based on chrome_content_browser_client.cc:
     const ui::NativeTheme *webTheme = ui::NativeTheme::GetInstanceForWeb();
-    // WebPreferences::preferred_color_scheme was deleted in Chromium 80, but it
-    // will make a comeback in Chromium 82...
-    //
-    // See also: https://chromium-review.googlesource.com/c/chromium/src/+/2079192
-    //
-    // if (webTheme) {
-    //     switch (webTheme->GetPreferredColorScheme()) {
-    //       case ui::NativeTheme::PreferredColorScheme::kDark:
-    //         prefs->preferred_color_scheme = blink::PreferredColorScheme::kDark;
-    //         break;
-    //       case ui::NativeTheme::PreferredColorScheme::kLight:
-    //         prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
-    //         break;
-    //       case ui::NativeTheme::PreferredColorScheme::kNoPreference:
-    //         prefs->preferred_color_scheme = blink::PreferredColorScheme::kNoPreference;
-    //     }
-    // }
+    if (webTheme) {
+        switch (webTheme->GetPreferredColorScheme()) {
+          case ui::NativeTheme::PreferredColorScheme::kDark:
+            prefs->preferred_color_scheme = blink::PreferredColorScheme::kDark;
+            break;
+          case ui::NativeTheme::PreferredColorScheme::kLight:
+            prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
+            break;
+        }
+    }
 
     // Apply native CaptionStyle parameters.
     base::Optional<ui::CaptionStyle> style;
