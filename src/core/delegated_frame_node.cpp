@@ -768,13 +768,15 @@ static bool areSharedQuadStatesEqual(const viz::SharedQuadState *layerState,
 // *structurally* equivalent to the one of the previous frame.
 // If it is, we will just reuse and update the old nodes where necessary.
 static bool areRenderPassStructuresEqual(viz::CompositorFrame *frameData,
-                                         viz::CompositorFrame *previousFrameData)
+                                         viz::CompositorFrame *previousFrameData, const gfx::Rect &viewportRect)
 {
     if (!previousFrameData)
         return false;
 
     if (previousFrameData->render_pass_list.size() != frameData->render_pass_list.size())
         return false;
+
+    auto rootRenderPass = frameData->render_pass_list.back().get();
 
     for (unsigned i = 0; i < frameData->render_pass_list.size(); ++i) {
         viz::RenderPass *newPass = frameData->render_pass_list.at(i).get();
@@ -785,6 +787,13 @@ static bool areRenderPassStructuresEqual(viz::CompositorFrame *frameData,
 
         if (newPass->quad_list.size() != prevPass->quad_list.size())
             return false;
+
+        auto &&scissorRect = newPass == rootRenderPass ? viewportRect : newPass->output_rect;
+        auto &&prevScissorRect = newPass == rootRenderPass ? viewportRect : prevPass->output_rect;
+        if (newPass != rootRenderPass) {
+            if (scissorRect.IsEmpty() != prevScissorRect.IsEmpty())
+                return false;
+        }
 
         viz::QuadList::ConstBackToFrontIterator it = newPass->quad_list.BackToFrontBegin();
         viz::QuadList::ConstBackToFrontIterator end = newPass->quad_list.BackToFrontEnd();
@@ -803,18 +812,25 @@ static bool areRenderPassStructuresEqual(viz::CompositorFrame *frameData,
                 return false;
 #endif // GL_OES_EGL_image_external
 #endif // QT_NO_OPENGL
-            if (!areSharedQuadStatesEqual(quad->shared_quad_state, prevQuad->shared_quad_state))
+
+            auto sharedState = quad->shared_quad_state, prevSharedState = prevQuad->shared_quad_state;
+            if (!areSharedQuadStatesEqual(sharedState, prevSharedState))
                 return false;
-            if (quad->shared_quad_state->is_clipped && quad->visible_rect != prevQuad->visible_rect) {
-                gfx::Rect targetRect1 =
-                        cc::MathUtil::MapEnclosingClippedRect(quad->shared_quad_state->quad_to_target_transform, quad->visible_rect);
-                gfx::Rect targetRect2 =
-                        cc::MathUtil::MapEnclosingClippedRect(quad->shared_quad_state->quad_to_target_transform, prevQuad->visible_rect);
-                targetRect1.Intersect(quad->shared_quad_state->clip_rect);
-                targetRect2.Intersect(quad->shared_quad_state->clip_rect);
-                if (targetRect1.IsEmpty() != targetRect2.IsEmpty())
-                    return false;
-            }
+
+            auto &&transform = quad->shared_quad_state->quad_to_target_transform;
+
+            gfx::Rect targetRect1 = cc::MathUtil::MapEnclosingClippedRect(transform, quad->visible_rect);
+            if (sharedState->is_clipped)
+                targetRect1.Intersect(sharedState->clip_rect);
+            targetRect1.Intersect(scissorRect);
+
+            gfx::Rect targetRect2 = cc::MathUtil::MapEnclosingClippedRect(transform, prevQuad->visible_rect);
+            if (prevSharedState->is_clipped)
+                targetRect2.Intersect(prevSharedState->clip_rect);
+            targetRect2.Intersect(scissorRect);
+
+            if (targetRect1.IsEmpty() != targetRect2.IsEmpty())
+                return false;
         }
     }
     return true;
@@ -854,11 +870,20 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
     }
 
     frameData->resource_list.clear();
-    QScopedPointer<DelegatedNodeTreeHandler> nodeHandler;
+
+    // The RenderPasses list is actually a tree where a parent RenderPass is connected
+    // to its dependencies through a RenderPassId reference in one or more RenderPassQuads.
+    // The list is already ordered with intermediate RenderPasses placed before their
+    // parent, with the last one in the list being the root RenderPass, the one
+    // that we displayed to the user.
+    // All RenderPasses except the last one are rendered to an FBO.
+    viz::RenderPass *rootRenderPass = frameData->render_pass_list.back().get();
 
     const QSizeF viewportSizeInPt = apiDelegate->screenRect().size();
     const QSizeF viewportSizeF = viewportSizeInPt * devicePixelRatio;
     const QSize viewportSize(std::ceil(viewportSizeF.width()), std::ceil(viewportSizeF.height()));
+    gfx::Rect viewportRect(toGfx(viewportSize));
+    viewportRect += rootRenderPass->output_rect.OffsetFromOrigin();
 
     // We first compare if the render passes from the previous frame data are structurally
     // equivalent to the render passes in the current frame data. If they are, we are going
@@ -867,10 +892,11 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
     // Additionally, because we clip (i.e. don't build scene graph nodes for) quads outside
     // of the visible area, we also have to rebuild the tree whenever the window is resized.
     const bool buildNewTree =
-        !areRenderPassStructuresEqual(frameData, &m_chromiumCompositorData->previousFrameData) ||
         m_sceneGraphNodes.empty() ||
-        viewportSize != m_previousViewportSize;
+        viewportSize != m_previousViewportSize ||
+        !areRenderPassStructuresEqual(frameData, &m_chromiumCompositorData->previousFrameData, viewportRect);
 
+    QScopedPointer<DelegatedNodeTreeHandler> nodeHandler;
     m_chromiumCompositorData->previousFrameData = viz::CompositorFrame();
     SGObjects previousSGObjects;
     QVector<QSharedPointer<QSGTexture> > textureStrongRefs;
@@ -889,20 +915,12 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
         qSwap(m_sgObjects.textureStrongRefs, textureStrongRefs);
         nodeHandler.reset(new DelegatedNodeTreeUpdater(&m_sceneGraphNodes));
     }
-    // The RenderPasses list is actually a tree where a parent RenderPass is connected
-    // to its dependencies through a RenderPassId reference in one or more RenderPassQuads.
-    // The list is already ordered with intermediate RenderPasses placed before their
-    // parent, with the last one in the list being the root RenderPass, the one
-    // that we displayed to the user.
-    // All RenderPasses except the last one are rendered to an FBO.
-    viz::RenderPass *rootRenderPass = frameData->render_pass_list.back().get();
 
-    gfx::Rect viewportRect(toGfx(viewportSize));
     for (unsigned i = 0; i < frameData->render_pass_list.size(); ++i) {
         viz::RenderPass *pass = frameData->render_pass_list.at(i).get();
 
         QSGNode *renderPassParent = 0;
-        gfx::Rect scissorRect;
+        auto &&scissorRect = pass != rootRenderPass ? pass->output_rect : viewportRect;
         if (pass != rootRenderPass) {
             QSharedPointer<QSGLayer> rpLayer;
             if (buildNewTree) {
@@ -927,11 +945,8 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
             rpLayer->setFormat(pass->has_transparent_background ? GL_RGBA : GL_RGB);
             rpLayer->setHasMipmaps(pass->generate_mipmap);
             rpLayer->setMirrorVertical(true);
-            scissorRect = pass->output_rect;
         } else {
             renderPassParent = this;
-            scissorRect = viewportRect;
-            scissorRect += rootRenderPass->output_rect.OffsetFromOrigin();
         }
 
         if (scissorRect.IsEmpty()) {
