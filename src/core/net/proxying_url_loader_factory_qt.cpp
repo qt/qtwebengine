@@ -42,26 +42,16 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/global_request_id.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_constants.h"
-#include "content/public/common/url_utils.h"
-#include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
-#include "net/http/http_util.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 #include "api/qwebengineurlrequestinfo_p.h"
-#include "profile_qt.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
-#include "web_contents_view_qt.h"
 
 #include <QVariant>
 

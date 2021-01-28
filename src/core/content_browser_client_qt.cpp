@@ -39,69 +39,37 @@
 
 #include "content_browser_client_qt.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
-#include "base/path_service.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
-#if QT_CONFIG(webengine_spellchecker)
-#include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
-#endif
-#include "components/guest_view/browser/guest_view_base.h"
 #include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/navigation_interception/navigation_params.h"
 #include "components/network_hints/browser/simple_network_hints_handler_impl.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/public/performance_manager.h"
-#include "components/spellcheck/spellcheck_buildflags.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/url_schemes.h"
 #include "content/public/browser/browser_main_runner.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/file_url_loader.h"
 #include "content/public/browser/media_observer.h"
-#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
-#include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
-#include "media/media_buildflags.h"
 #include "extensions/buildflags/buildflags.h"
-#include "extensions/browser/extension_protocols.h"
-#include "extensions/browser/guest_view/web_view/web_view_guest.h"
-#include "extensions/browser/process_map.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "printing/buildflags/buildflags.h"
-#include "qtwebengine/browser/qtwebengine_content_browser_overlay_manifest.h"
-#include "qtwebengine/browser/qtwebengine_content_renderer_overlay_manifest.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/client_cert_store.h"
-#include "sandbox/policy/switches.h"
 #include "services/network/network_service.h"
-#include "services/network/public/cpp/features.h"
-#include "services/service_manager/switches.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "storage/browser/quota/quota_settings.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
@@ -113,6 +81,8 @@
 #include "ui/gl/gpu_timing.h"
 #include "url/url_util_qt.h"
 
+#include "qtwebengine/browser/qtwebengine_content_browser_overlay_manifest.h"
+#include "qtwebengine/browser/qtwebengine_content_renderer_overlay_manifest.h"
 #include "qtwebengine/common/renderer_configuration.mojom.h"
 #include "qtwebengine/grit/qt_webengine_resources.h"
 
@@ -129,12 +99,8 @@
 #include "net/custom_url_loader_factory.h"
 #include "net/proxying_restricted_cookie_manager_qt.h"
 #include "net/proxying_url_loader_factory_qt.h"
-#include "net/qrc_url_scheme_handler.h"
 #include "net/system_network_context_manager.h"
 #include "platform_notification_service_qt.h"
-#if QT_CONFIG(webengine_printing_and_pdf)
-#include "printing/printing_message_filter_qt.h"
-#endif
 #include "profile_qt.h"
 #include "profile_io_data_qt.h"
 #include "quota_permission_context_qt.h"
@@ -143,16 +109,19 @@
 #include "web_contents_adapter_client.h"
 #include "web_contents_adapter.h"
 #include "web_contents_delegate_qt.h"
-#include "web_engine_context.h"
 #include "web_contents_view_qt.h"
 #include "web_engine_library_info.h"
 #include "api/qwebenginecookiestore.h"
 #include "api/qwebenginecookiestore_p.h"
-#include "api/qwebengineurlscheme.h"
 
-#if defined(Q_OS_LINUX)
-#include "global_descriptors_qt.h"
-#include "ui/base/resource/resource_bundle.h"
+#if QT_CONFIG(opengl)
+#include <QOpenGLContext>
+#include <QOpenGLExtraFunctions>
+#endif
+
+#if QT_CONFIG(webengine_geolocation)
+#include "base/memory/ptr_util.h"
+#include "location_provider_qt.h"
 #endif
 
 #if QT_CONFIG(webengine_pepper_plugins)
@@ -161,22 +130,32 @@
 #include "renderer_host/pepper/pepper_host_factory_qt.h"
 #endif
 
-#if QT_CONFIG(webengine_geolocation)
-#include "location_provider_qt.h"
+#if QT_CONFIG(webengine_printing_and_pdf)
+#include "printing/printing_message_filter_qt.h"
+#endif
+
+#if QT_CONFIG(webengine_spellchecker)
+#include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
+#include "components/spellcheck/common/spellcheck.mojom.h"
+#endif
+
+#if defined(Q_OS_LINUX)
+#include "global_descriptors_qt.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "content/public/browser/file_url_loader.h"
+#include "common/extensions/extensions_client_qt.h"
+#include "components/guest_view/browser/guest_view_base.h"
 #include "extensions/browser/api/mime_handler_private/mime_handler_private.h"
 #include "extensions/browser/extension_message_filter.h"
-#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/common/constants.h"
-
-#include "common/extensions/extensions_client_qt.h"
 #include "extensions/extension_web_contents_observer_qt.h"
 #include "extensions/extensions_browser_client_qt.h"
 #include "net/plugin_response_interceptor_url_loader_throttle.h"
@@ -187,18 +166,8 @@
 #include "media/mojo/services/media_service_factory.h"
 #endif
 
-#if BUILDFLAG(ENABLE_SPELLCHECK)
-#include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
-#include "components/spellcheck/common/spellcheck.mojom.h"
-#endif
-
 #include <QGuiApplication>
-#include <QLocale>
 #include <QStandardPaths>
-#if QT_CONFIG(opengl)
-# include <QOpenGLContext>
-# include <QOpenGLExtraFunctions>
-#endif
 #include <qpa/qplatformnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
@@ -616,12 +585,12 @@ WEB_CONTENTS_USER_DATA_KEY_IMPL(ServiceDriver)
 void ContentBrowserClientQt::BindHostReceiverForRenderer(content::RenderProcessHost *render_process_host,
                                                          mojo::GenericPendingReceiver receiver)
 {
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
     if (auto host_receiver = receiver.As<spellcheck::mojom::SpellCheckHost>()) {
         SpellCheckHostChromeImpl::Create(render_process_host->GetID(), std::move(host_receiver));
         return;
     }
-#endif  // BUILDFLAG(ENABLE_SPELLCHECK)
+#endif
 }
 
 static void BindNetworkHintsHandler(content::RenderFrameHost *frame_host,
@@ -885,7 +854,6 @@ bool ContentBrowserClientQt::HandleExternalProtocol(const GURL &url,
         const base::Optional<url::Origin> &initiating_origin,
         mojo::PendingRemote<network::mojom::URLLoaderFactory> *out_factory)
 {
-//    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_UNUSED(child_id);
     Q_UNUSED(navigation_data);
     Q_UNUSED(initiating_origin);

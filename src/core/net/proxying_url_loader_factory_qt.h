@@ -42,16 +42,12 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "url/gurl.h"
 
 #include <QPointer>
 // based on aw_proxying_url_loader_factory.h:
@@ -60,10 +56,6 @@
 // found in the LICENSE file.
 
 QT_FORWARD_DECLARE_CLASS(QWebEngineUrlRequestInterceptor)
-
-namespace content {
-class ResourceContext;
-}
 
 namespace QtWebEngineCore {
 

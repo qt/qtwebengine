@@ -44,35 +44,16 @@
 
 #include "net/system_network_context_manager.h"
 
-#include <set>
-#include <unordered_map>
-#include <utility>
-
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
-#include "base/logging.h"
-#include "base/sequence_checker.h"
-#include "base/strings/string_split.h"
-#include "base/task/post_task.h"
-#include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/certificate_transparency/ct_known_logs.h"
-#include "components/network_session_configurator/common/network_features.h"
 #include "components/network_session_configurator/common/network_switches.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
-#include "content/public/common/user_agent.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
-#include "net/dns/public/util.h"
 #include "net/net_buildflags.h"
-#include "net/third_party/uri_template/uri_template.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 #include "services/network/public/cpp/features.h"
@@ -80,7 +61,6 @@
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
-#include "url/gurl.h"
 
 namespace {
 

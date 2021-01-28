@@ -44,10 +44,6 @@
 
 #include <QtCore/qobject.h>
 
-namespace QtWebEngineCore {
-class URLRequestContextGetterQt;
-}
-
 QT_BEGIN_NAMESPACE
 
 class QWebEngineUrlRequestJob;

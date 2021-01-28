@@ -53,7 +53,6 @@
 
 namespace net {
 class ClientCertStore;
-class URLRequestContext;
 }
 
 namespace extensions {

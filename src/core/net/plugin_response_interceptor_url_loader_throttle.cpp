@@ -41,7 +41,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
-#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_request_utils.h"
@@ -49,10 +49,6 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 
-#include "extensions/extension_system_qt.h"
-#include "profile_adapter.h"
-#include "profile_io_data_qt.h"
-#include "profile_qt.h"
 #include "web_contents_delegate_qt.h"
 
 #include <string>

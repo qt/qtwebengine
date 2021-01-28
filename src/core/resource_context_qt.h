@@ -42,21 +42,6 @@
 
 #include "content/public/browser/resource_context.h"
 
-#include "extensions/buildflags/buildflags.h"
-
-namespace net {
-class URLRequestContext;
-class URLRequestContextGetter;
-}
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-namespace extensions {
-class ExtensionSystemQt;
-}
-#endif // BUILDFLAG(ENABLE_EXTENSIONS)
-
-class GURL;
-
 namespace QtWebEngineCore {
 
 class ProfileIODataQt;

@@ -46,16 +46,10 @@
 #define SYSTEM_NETWORK_CONTEXT_MANAGER_H_
 
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/optional.h"
-#include "services/network/public/mojom/host_resolver.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom-forward.h"
-#include "services/network/public/mojom/ssl_config.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 
 #include "net/proxy_config_monitor.h"
@@ -66,10 +60,6 @@ class URLLoaderFactory;
 }
 class SharedURLLoaderFactory;
 } // namespace network
-
-namespace net_log {
-class NetExportFileWriter;
-}
 
 // Responsible for creating and managing access to the system NetworkContext.
 // Lives on the UI thread. The NetworkContext this owns is intended for requests

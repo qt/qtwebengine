@@ -45,23 +45,18 @@
 #include "webui_controller_factory_qt.h"
 
 #include "base/bind.h"
-#include "base/location.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/accessibility/accessibility_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_ui.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/content_client.h"
 #include "content/public/common/url_utils.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
-#include "ui/web_dialogs/web_dialog_ui.h"
 #include "url/gurl.h"
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)

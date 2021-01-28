@@ -41,12 +41,7 @@
 #define CONTENT_BROWSER_CLIENT_QT_H
 
 #include "qtwebenginecoreglobal_p.h"
-#include "base/memory/ref_counted.h"
 #include "content/public/browser/content_browser_client.h"
-
-namespace net {
-class URLRequestContextGetter;
-}
 
 namespace content {
 class BrowserContext;
@@ -59,10 +54,7 @@ class BrowserPpapiHost;
 class DevToolsManagerDelegate;
 class RenderFrameHost;
 class RenderProcessHost;
-class RenderViewHostDelegateView;
 class ResourceContext;
-class ResourceDispatcherHostDelegate;
-class WebContentsViewPort;
 class WebContents;
 struct MainFunctionParams;
 struct Referrer;
@@ -74,8 +66,6 @@ class GLShareGroup;
 
 namespace QtWebEngineCore {
 
-class BrowserMainPartsQt;
-class ProfileQt;
 class ShareGroupQtQuick;
 
 class ContentBrowserClientQt : public content::ContentBrowserClient
