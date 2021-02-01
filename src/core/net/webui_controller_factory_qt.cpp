@@ -50,6 +50,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_ui.h"
+#include "chrome/browser/ui/webui/user_actions/user_actions_ui.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/url_utils.h"
@@ -67,7 +68,6 @@
 // or doesn't work, but would be interesting for us if they did:
 
 // #include "chrome/browser/ui/webui/inspect_ui.h"
-// #include "chrome/browser/ui/webui/user_actions/user_actions_ui.h"
 
 // #if BUILDFLAG(ENABLE_WEBRTC)
 // #include "chrome/browser/ui/webui/media/webrtc_logs_ui.h"
@@ -132,8 +132,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
     if (url.host() == chrome::kChromeUIAccessibilityHost)
         return &NewWebUI<AccessibilityUI>;
 
-//    if (url.host_piece() == chrome::kChromeUIUserActionsHost)
-//        return &NewWebUI<UserActionsUI>;
+    if (url.host_piece() == chrome::kChromeUIUserActionsHost)
+        return &NewWebUI<UserActionsUI>;
+
 //    if (url.host_piece() == chrome::kChromeUIInspectHost)
 //        return &NewWebUI<InspectUI>;
 //

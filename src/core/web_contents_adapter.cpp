@@ -61,6 +61,7 @@
 #include "web_engine_settings.h"
 
 #include "base/command_line.h"
+#include "base/metrics/user_metrics.h"
 #include "base/run_loop.h"
 #include "base/task/current_thread.h"
 #include "base/task/post_task.h"
@@ -602,8 +603,9 @@ bool WebContentsAdapter::canGoToOffset(int offset) const
 void WebContentsAdapter::stop()
 {
     CHECK_INITIALIZED();
-    content::NavigationController& controller = m_webContents->GetController();
+    base::RecordAction(base::UserMetricsAction("Stop"));
 
+    content::NavigationController& controller = m_webContents->GetController();
     int index = controller.GetPendingEntryIndex();
     if (index != -1)
         controller.RemoveEntryAtIndex(index);
@@ -615,6 +617,8 @@ void WebContentsAdapter::stop()
 void WebContentsAdapter::reload()
 {
     CHECK_INITIALIZED();
+    base::RecordAction(base::UserMetricsAction("Reload"));
+
     bool wasDiscarded = (m_lifecycleState == LifecycleState::Discarded);
     setLifecycleState(LifecycleState::Active);
     CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
@@ -628,6 +632,8 @@ void WebContentsAdapter::reload()
 void WebContentsAdapter::reloadAndBypassCache()
 {
     CHECK_INITIALIZED();
+    base::RecordAction(base::UserMetricsAction("ReloadBypassingCache"));
+
     bool wasDiscarded = (m_lifecycleState == LifecycleState::Discarded);
     setLifecycleState(LifecycleState::Active);
     CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
@@ -652,6 +658,7 @@ void WebContentsAdapter::load(const QUrl &url)
 
 void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
 {
+    base::RecordAction(base::UserMetricsAction("LoadURL"));
     GURL gurl = toGurl(request.url());
     if (!isInitialized()) {
         scoped_refptr<content::SiteInstance> site =
@@ -780,6 +787,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
 void WebContentsAdapter::save(const QString &filePath, int savePageFormat)
 {
     CHECK_INITIALIZED();
+    base::RecordAction(base::UserMetricsAction("SavePage"));
     m_webContentsDelegate->setSavePageInfo(SavePageInfo(filePath, savePageFormat));
     m_webContents->OnSavePage();
 }
@@ -834,42 +842,49 @@ QString WebContentsAdapter::selectedText() const
 void WebContentsAdapter::undo()
 {
     CHECK_INITIALIZED();
+    base::RecordAction(base::UserMetricsAction("Undo"));
     m_webContents->Undo();
 }
 
 void WebContentsAdapter::redo()
 {
     CHECK_INITIALIZED();
+    base::RecordAction(base::UserMetricsAction("Redo"));
     m_webContents->Redo();
 }
 
 void WebContentsAdapter::cut()
 {
     CHECK_INITIALIZED();
+    base::RecordAction(base::UserMetricsAction("Cut"));
     m_webContents->Cut();
 }
 
 void WebContentsAdapter::copy()
 {
     CHECK_INITIALIZED();
+    base::RecordAction(base::UserMetricsAction("Copy"));
     m_webContents->Copy();
 }
 
 void WebContentsAdapter::paste()
 {
     CHECK_INITIALIZED();
+    base::RecordAction(base::UserMetricsAction("Paste"));
     m_webContents->Paste();
 }
 
 void WebContentsAdapter::pasteAndMatchStyle()
 {
     CHECK_INITIALIZED();
+    base::RecordAction(base::UserMetricsAction("PasteAndMatchStyle"));
     m_webContents->PasteAndMatchStyle();
 }
 
 void WebContentsAdapter::selectAll()
 {
     CHECK_INITIALIZED();
+    base::RecordAction(base::UserMetricsAction("SelectAll"));
     m_webContents->SelectAll();
 }
 
@@ -888,6 +903,7 @@ void WebContentsAdapter::unselect()
 void WebContentsAdapter::navigateBack()
 {
     CHECK_INITIALIZED();
+    base::RecordAction(base::UserMetricsAction("Back"));
     CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
     if (!m_webContents->GetController().CanGoBack())
         return;
@@ -898,6 +914,7 @@ void WebContentsAdapter::navigateBack()
 void WebContentsAdapter::navigateForward()
 {
     CHECK_INITIALIZED();
+    base::RecordAction(base::UserMetricsAction("Forward"));
     CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
     if (!m_webContents->GetController().CanGoForward())
         return;
@@ -1284,12 +1301,14 @@ void WebContentsAdapter::devToolsFrontendDestroyed(DevToolsFrontendQt *frontend)
 void WebContentsAdapter::exitFullScreen()
 {
     CHECK_INITIALIZED();
+    base::RecordAction(base::UserMetricsAction("ToggleFullscreen"));
     m_webContents->ExitFullscreen(false);
 }
 
 void WebContentsAdapter::changedFullScreen()
 {
     CHECK_INITIALIZED();
+    base::RecordAction(base::UserMetricsAction("ToggleFullscreen"));
     m_webContents->NotifyFullscreenChanged(false);
 }
 
@@ -1793,6 +1812,7 @@ FindTextHelper *WebContentsAdapter::findTextHelper()
 void WebContentsAdapter::viewSource()
 {
     CHECK_INITIALIZED();
+    base::RecordAction(base::UserMetricsAction("ViewSource"));
     m_webContents->GetMainFrame()->ViewSource();
 }
 
