@@ -162,9 +162,12 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "content/public/browser/file_url_loader.h"
+#include "extensions/browser/api/mime_handler_private/mime_handler_private.h"
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/common/constants.h"
 
@@ -489,6 +492,32 @@ static void BindNetworkHintsHandler(content::RenderFrameHost *frame_host,
     network_hints::SimpleNetworkHintsHandlerImpl::Create(frame_host, std::move(receiver));
 }
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+static void BindMimeHandlerService(content::RenderFrameHost *frame_host,
+                                   mojo::PendingReceiver<extensions::mime_handler::MimeHandlerService>
+                                   receiver) {
+    auto *web_contents = content::WebContents::FromRenderFrameHost(frame_host);
+    if (!web_contents)
+        return;
+    auto *guest_view = extensions::MimeHandlerViewGuest::FromWebContents(web_contents);
+    if (!guest_view)
+        return;
+    extensions::MimeHandlerServiceImpl::Create(guest_view->GetStreamWeakPtr(), std::move(receiver));
+}
+
+static void BindBeforeUnloadControl(content::RenderFrameHost *frame_host,
+                                    mojo::PendingReceiver<extensions::mime_handler::BeforeUnloadControl>
+                                    receiver) {
+    auto *web_contents = content::WebContents::FromRenderFrameHost(frame_host);
+    if (!web_contents)
+        return;
+    auto *guest_view = extensions::MimeHandlerViewGuest::FromWebContents(web_contents);
+    if (!guest_view)
+        return;
+    guest_view->FuseBeforeUnloadControl(std::move(receiver));
+}
+#endif
+
 void ContentBrowserClientQt::RegisterBrowserInterfaceBindersForFrame(
         content::RenderFrameHost *render_frame_host,
         mojo::BinderMapWithContext<content::RenderFrameHost *> *map)
@@ -496,6 +525,22 @@ void ContentBrowserClientQt::RegisterBrowserInterfaceBindersForFrame(
     Q_UNUSED(render_frame_host);
     map->Add<blink::mojom::InsecureInputService>(base::BindRepeating(&ServiceDriver::BindInsecureInputService));
     map->Add<network_hints::mojom::NetworkHintsHandler>(base::BindRepeating(&BindNetworkHintsHandler));
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    map->Add<extensions::mime_handler::MimeHandlerService>(base::BindRepeating(&BindMimeHandlerService));
+    map->Add<extensions::mime_handler::BeforeUnloadControl>(base::BindRepeating(&BindBeforeUnloadControl));
+    const GURL &site = render_frame_host->GetSiteInstance()->GetSiteURL();
+    if (!site.SchemeIs(extensions::kExtensionScheme))
+        return;
+    content::BrowserContext *browser_context = render_frame_host->GetProcess()->GetBrowserContext();
+    auto *extension = extensions::ExtensionRegistry::Get(browser_context)
+                        ->enabled_extensions()
+                        .GetByID(site.host());
+    if (!extension)
+        return;
+    extensions::ExtensionsBrowserClient::Get()->RegisterBrowserInterfaceBindersForFrame(map,
+                                                                                        render_frame_host,
+                                                                                        extension);
+#endif
 }
 
 void ContentBrowserClientQt::ExposeInterfacesToRenderer(service_manager::BinderRegistry *registry,

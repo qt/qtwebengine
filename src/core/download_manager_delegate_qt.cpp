@@ -150,8 +150,11 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
     if (suggestedFilename.isEmpty())
         suggestedFilename = toQt(item->GetTargetFilePath().AsUTF8Unsafe());
 
-    if (suggestedFilename.isEmpty())
-        suggestedFilename = QUrl::fromPercentEncoding(toQByteArray(item->GetURL().ExtractFileName()));
+    if (suggestedFilename.isEmpty()) {
+        GURL itemUrl = item->GetURL();
+        if (!itemUrl.SchemeIs("about") && !itemUrl.SchemeIs("data"))
+            suggestedFilename = QUrl::fromPercentEncoding(toQByteArray(itemUrl.ExtractFileName()));
+    }
 
     if (suggestedFilename.isEmpty()) {
         suggestedFilename = QStringLiteral("qwe_download");

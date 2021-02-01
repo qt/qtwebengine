@@ -196,7 +196,9 @@ void TabWidget::setupView(WebView *webView)
     });
     connect(webPage, &QWebEnginePage::windowCloseRequested, [this, webView]() {
         int index = indexOf(webView);
-        if (index >= 0)
+        if (webView->page()->inspectedPage())
+            window()->close();
+        else if (index >= 0)
             closeTab(index);
     });
     connect(webView, &WebView::devToolsRequested, this, &TabWidget::devToolsRequested);

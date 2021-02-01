@@ -73,6 +73,9 @@ private:
     // IsComponentExtensionResource.
     std::map<base::FilePath, int> path_to_resource_id_;
 
+    // A map from an extension ID to its i18n template replacements.
+    std::map<std::string, ui::TemplateReplacements> template_replacements_;
+
     DISALLOW_COPY_AND_ASSIGN(ComponentExtensionResourceManagerQt);
 };
 

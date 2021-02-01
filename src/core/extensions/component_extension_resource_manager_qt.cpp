@@ -44,12 +44,19 @@
 
 #include "component_extension_resource_manager_qt.h"
 
+#include "base/check.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-
 #include "chrome/grit/component_extension_resources_map.h"
+#include "content/public/browser/browser_thread.h"
+#include "extensions/common/constants.h"
+#include "pdf/buildflags.h"
+
+#if BUILDFLAG(ENABLE_PDF)
+#include "qtwebengine/browser/pdf/pdf_extension_util.h"
+#endif  // BUILDFLAG(ENABLE_PDF)
 
 namespace extensions {
 
@@ -57,6 +64,16 @@ ComponentExtensionResourceManagerQt::ComponentExtensionResourceManagerQt()
 {
     AddComponentResourceEntries(kComponentExtensionResources,
                                 kComponentExtensionResourcesSize);
+
+#if BUILDFLAG(ENABLE_PDF)
+    base::Value dict(base::Value::Type::DICTIONARY);
+    pdf_extension_util::AddStrings(pdf_extension_util::PdfViewerContext::kPdfViewer, &dict);
+    pdf_extension_util::AddAdditionalData(&dict);
+
+    ui::TemplateReplacements pdf_viewer_replacements;
+    ui::TemplateReplacementsFromDictionaryValue(base::Value::AsDictionaryValue(dict), &pdf_viewer_replacements);
+    template_replacements_[extension_misc::kPdfExtensionId] = std::move(pdf_viewer_replacements);
+#endif
 }
 
 ComponentExtensionResourceManagerQt::~ComponentExtensionResourceManagerQt() {}
@@ -85,9 +102,11 @@ bool ComponentExtensionResourceManagerQt::IsComponentExtensionResource(const bas
     return false;
 }
 
-const ui::TemplateReplacements *ComponentExtensionResourceManagerQt::GetTemplateReplacementsForExtension(const std::string &) const
+const ui::TemplateReplacements *ComponentExtensionResourceManagerQt::GetTemplateReplacementsForExtension(const std::string &extension_id) const
 {
-    return nullptr;
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    auto it = template_replacements_.find(extension_id);
+    return it != template_replacements_.end() ? &it->second : nullptr;
 }
 
 void ComponentExtensionResourceManagerQt::AddComponentResourceEntries(const GritResourceMap *entries, size_t size)
