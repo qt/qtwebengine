@@ -47,8 +47,6 @@
 
 namespace QtWebEngineCore {
 class InterceptedRequest;
-class NetworkDelegateQt;
-class URLRequestNotification;
 } // namespace QtWebEngineCore
 
 QT_BEGIN_NAMESPACE
@@ -109,8 +107,6 @@ public:
     void setHttpHeader(const QByteArray &name, const QByteArray &value);
 
 private:
-    friend class QtWebEngineCore::NetworkDelegateQt;
-    friend class QtWebEngineCore::URLRequestNotification;
     friend class QtWebEngineCore::InterceptedRequest;
     Q_DISABLE_COPY(QWebEngineUrlRequestInfo)
     Q_DECLARE_PRIVATE(QWebEngineUrlRequestInfo)

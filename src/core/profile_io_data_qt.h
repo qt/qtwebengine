@@ -97,7 +97,6 @@ public:
 
     bool canGetCookies(const QUrl &firstPartyUrl, const QUrl &url) const;
 
-    // Used in NetworkDelegateQt::OnBeforeURLRequest.
     void setFullConfiguration(); // runs on ui thread
     void resetNetworkContext(); // runs on ui thread
     void clearHttpCache(); // runs on ui thread
