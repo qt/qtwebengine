@@ -14,6 +14,37 @@ find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Co
 
 set(installDir ${CMAKE_CURRENT_BINARY_DIR}/install)
 
+### FEATURES
+
+qt_build_repo_begin()
+qt_feature_module_begin(ONLY_EVALUATE_FEATURES)
+# Enable printing of feature summary by forcing qt_configure_record_command
+# to work in spite of ONLY_EVALUATE_FEATURES.
+set(__QtFeature_only_evaluate_features OFF)
+include(configure.cmake)
+qt_feature_module_end(ONLY_EVALUATE_FEATURES)
+qt_build_repo_end()
+
+if(NOT ${webEngineSupport})
+    add_custom_target(WebEngineErrorMessage ALL
+        ${CMAKE_COMMAND} -E cmake_echo_color --red "QtWebEngine will not be built: ${webEngineError}"
+        COMMENT "Check QtWebEngine support")
+    message("-- Support check for QtWebEngine failed: ${webEngineError}")
+    set(QT_FEATURE_qtwebengine_build OFF CACHE BOOL "Build QtWebEngine" FORCE)
+endif()
+
+if(NOT ${pdfSupport})
+    add_custom_target(PdfErrorMessage ALL
+        ${CMAKE_COMMAND} -E cmake_echo_color --red "QtPdf will not be built: ${pdfError}"
+        COMMENT "Check QtPdf support")
+    message("-- Support check for QtPdf failed: ${pdfError}")
+    set(QT_FEATURE_qtpdf_build OFF CACHE BOOL "Build QtPdf" FORCE)
+endif()
+
+if(NOT QT_FEATURE_qtwebengine_build AND NOT QT_FEATURE_qtpdf_build)
+    return()
+endif()
+
 ### NINJA
 
 if(NOT Ninja_FOUND)
