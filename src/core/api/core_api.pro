@@ -1,10 +1,15 @@
+include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri)
+QT_FOR_CONFIG += webenginecore webenginecore-private
+
 TARGET = qtwebenginecoreapi$$qtPlatformTargetSuffix()
 DESTDIR = $$OUT_PWD/$$getConfigDir()
 
 TEMPLATE = lib
 
 CONFIG += staticlib
-QT += network core-private webenginecoreheaders-private quick printsupport qml #fixme
+QT += network core-private webenginecoreheaders-private quick qml
+
+qtConfig(webengine-printing-and-pdf): QT += printsupport
 
 # Don't create .prl file for this intermediate library because
 # their contents get used when linking against them, breaking
