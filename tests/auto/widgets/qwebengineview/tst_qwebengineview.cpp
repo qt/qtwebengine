@@ -3095,7 +3095,6 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::newRow("downloads") << QUrl("chrome://downloads") << false;
     QTest::newRow("extensions") << QUrl("chrome://extensions") << false;
     QTest::newRow("flags") << QUrl("chrome://flags") << false;
-    QTest::newRow("flash") << QUrl("chrome://flash") << false;
     QTest::newRow("gcm-internals") << QUrl("chrome://gcm-internals") << false;
     QTest::newRow("gpu") << QUrl("chrome://gpu") << true;
     QTest::newRow("help") << QUrl("chrome://help") << false;

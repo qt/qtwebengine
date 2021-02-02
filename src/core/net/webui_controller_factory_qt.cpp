@@ -146,10 +146,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
 //    if (url.host_piece() == chrome::kChromeUIExtensionsFrameHost)
 //        return &NewWebUI<extensions::ExtensionsUI>;
 //#endif
-//#if BUILDFLAG(ENABLE_PLUGINS)
-//    if (url.host_piece() == chrome::kChromeUIFlashHost)
-//        return &NewWebUI<FlashUI>;
-//#endif
 //#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 //    if (url.host_piece() == chrome::kChromeUIPrintHost &&
 //        !profile->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled)) {
