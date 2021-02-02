@@ -168,6 +168,7 @@ private Q_SLOTS:
     void setPagePreservesExplicitPage();
     void setViewPreservesExplicitPage();
     void closeDiscardsPage();
+    void loadAfterRendererCrashed();
 };
 
 // This will be called before the first test function is executed.
@@ -3385,6 +3386,25 @@ void tst_QWebEngineView::closeDiscardsPage()
     view.close();
     QCOMPARE(page.isVisible(), false);
     QCOMPARE(page.lifecycleState(), QWebEnginePage::LifecycleState::Discarded);
+}
+
+
+void tst_QWebEngineView::loadAfterRendererCrashed()
+{
+    QWebEngineView view;
+    view.resize(640, 480);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    bool terminated = false;
+    connect(view.page(), &QWebEnginePage::renderProcessTerminated, [&] () { terminated = true; });
+    view.load(QUrl("chrome://crash"));
+    QTRY_VERIFY_WITH_TIMEOUT(terminated, 30000);
+
+    QSignalSpy loadSpy(&view, &QWebEngineView::loadFinished);
+    view.load(QUrl("qrc:///resources/dummy.html"));
+    QTRY_COMPARE(loadSpy.count(), 1);
+    QVERIFY(loadSpy.first().first().toBool());
 }
 
 QTEST_MAIN(tst_QWebEngineView)
