@@ -13,6 +13,11 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/../../cmake")
 set(buildDir "${CMAKE_CURRENT_BINARY_DIR}/debug")
 
+include(${PROJECT_SOURCE_DIR}/../../cmake/Functions.cmake)
+
+get_qt_features(featureList webengine)
+message(${featureList})
+
 find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core)
 find_package(Qt6 ${PROJECT_VERSION} CONFIG OPTIONAL_COMPONENTS Gui Widgets Network OpenGL OpenGLWidgets Quick Qml QuickTest Test)
 find_package(Gn REQUIRED)

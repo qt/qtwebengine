@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.18.0)
 
 include(.cmake.conf)
 include(ExternalProject)
+include(cmake/Functions.cmake)
 
 project(QtWebEngineSuperBuild
     VERSION "${QT_REPO_MODULE_VERSION}"
@@ -76,9 +77,20 @@ if(NOT Gn_FOUND)
 )
 endif()
 
+### LIBS
+
 # on windows source path can be specified without hard drive letter,
 # however we need that for gn use REALPATH
 get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
+get_qt_features(featureList webengine)
+get_qt_features(featureList qtwebengine)
+
+list(TRANSFORM featureList PREPEND "-D")
+list(APPEND webenginecoreCmakeArgs
+        "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
+        "-DWEBENGINE_ROOT_BUILD_PATH=${CMAKE_CURRENT_BINARY_DIR}"
+        "-DWEBENGINE_ROOT_SOURCE_DIR=${WEBENGINE_ROOT_SOURCE_DIR}"
+        "${featureList}")
 
 externalproject_add(libs
     SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/src/core
@@ -87,9 +99,7 @@ externalproject_add(libs
     PREFIX      libs
     USES_TERMINAL_CONFIGURE ON
     USES_TERMINAL_BUILD ON
-    CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
-               -DWEBENGINE_ROOT_BUILD_PATH=${CMAKE_CURRENT_BINARY_DIR}
-               -DWEBENGINE_ROOT_SOURCE_DIR=${WEBENGINE_ROOT_SOURCE_DIR}
+    CMAKE_ARGS  ${webenginecoreCmakeArgs}
 )
 
 if(NOT Gn_FOUND)
