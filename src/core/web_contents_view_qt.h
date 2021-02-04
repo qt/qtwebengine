@@ -44,6 +44,7 @@
 #include "content/browser/web_contents/web_contents_view.h"
 
 #include "api/qtwebenginecoreglobal_p.h"
+#include "web_contents_adapter_client.h"
 
 namespace content {
 class WebContents;
@@ -119,6 +120,8 @@ public:
     void GotFocus(content::RenderWidgetHostImpl *render_widget_host) override;
     void LostFocus(content::RenderWidgetHostImpl *render_widget_host) override;
     void TakeFocus(bool reverse) override;
+
+    static WebEngineContextMenuData buildContextMenuData(const content::ContextMenuParams &params);
 
 private:
     content::WebContents *m_webContents;

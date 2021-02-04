@@ -199,7 +199,10 @@ source_set("qtwebengine_sources") {
          "//components/pdf/browser:browser",
          "//components/pdf/renderer:renderer",
          "//components/printing/browser",
-         "//components/printing/renderer",
+         "//components/printing/renderer"
+      ]
+      sources += [
+         "//chrome/browser/extensions/api/streams_private/streams_private_api.cc",
       ]
   }
 

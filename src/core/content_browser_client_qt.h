@@ -258,6 +258,7 @@ public:
                                                                  NonNetworkURLLoaderFactoryMap* factories) override;
     void SiteInstanceGotProcess(content::SiteInstance *site_instance) override;
     void SiteInstanceDeleting(content::SiteInstance *site_instance) override;
+    base::flat_set<std::string> GetPluginMimeTypesWithExternalHandlers(content::BrowserContext *browser_context) override;
 
     content::WebContentsViewDelegate* GetWebContentsViewDelegate(content::WebContents* web_contents) override;
 

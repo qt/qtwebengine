@@ -68,6 +68,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/user_agent.h"
 #include "extensions/buildflags/buildflags.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/client_cert_store.h"
 #include "services/network/network_service.h"
@@ -156,12 +157,14 @@
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/extension_web_contents_observer_qt.h"
 #include "extensions/extensions_browser_client_qt.h"
 #include "net/plugin_response_interceptor_url_loader_throttle.h"
@@ -984,8 +987,11 @@ static bool navigationThrottleCallback(content::WebContents *source,
         return false;
 
     int navigationRequestAction = WebContentsAdapterClient::AcceptRequest;
-    WebContentsDelegateQt *delegate = static_cast<WebContentsDelegateQt *>(source->GetDelegate());
-    WebContentsAdapterClient *client = delegate->adapterClient();
+
+    WebContentsAdapterClient *client =
+        WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(source)->GetView())->client();
+    if (!client)
+        return false;
     client->navigationRequested(pageTransitionToNavigationType(params.transition_type()),
                                 toQt(params.url()),
                                 navigationRequestAction,
@@ -1271,6 +1277,33 @@ void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int
                                                                 std::move(allowed_webui_hosts)));
     }
 #endif
+}
+
+base::flat_set<std::string> ContentBrowserClientQt::GetPluginMimeTypesWithExternalHandlers(
+        content::BrowserContext *browser_context)
+{
+    base::flat_set<std::string> mime_types;
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    ProfileQt *profile = static_cast<ProfileQt *>(browser_context);
+    for (const std::string &extension_id : MimeTypesHandler::GetMIMETypeAllowlist()) {
+        const extensions::Extension *extension =
+            extensions::ExtensionRegistry::Get(browser_context)
+                ->enabled_extensions()
+                .GetByID(extension_id);
+        // The allowed extension may not be installed, so we have to nullptr
+        // check |extension|.
+        if (!extension ||
+            (profile->IsOffTheRecord() && !extensions::util::IsIncognitoEnabled(
+                                              extension_id, browser_context))) {
+            continue;
+        }
+        if (MimeTypesHandler *handler = MimeTypesHandler::GetHandler(extension)) {
+            for (const auto &supported_mime_type : handler->mime_type_set())
+                mime_types.insert(supported_mime_type);
+        }
+    }
+#endif
+    return mime_types;
 }
 
 bool ContentBrowserClientQt::WillCreateURLLoaderFactory(

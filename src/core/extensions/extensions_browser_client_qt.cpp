@@ -335,7 +335,7 @@ BrowserContext *ExtensionsBrowserClientQt::GetOriginalContext(BrowserContext *co
 
 bool ExtensionsBrowserClientQt::IsGuestSession(BrowserContext *context) const
 {
-    return false;
+    return context->IsOffTheRecord();
 }
 
 bool ExtensionsBrowserClientQt::IsExtensionIncognitoEnabled(const std::string &extension_id,

@@ -76,6 +76,7 @@ class TouchSelectionController;
 
 namespace QtWebEngineCore {
 
+class GuestInputEventObserverQt;
 class TouchHandleDrawableClient;
 class TouchSelectionControllerClientQt;
 class TouchSelectionMenuController;
@@ -119,6 +120,7 @@ public:
     void setDelegate(RenderWidgetHostViewQtDelegate *delegate);
     WebContentsAdapterClient *adapterClient() { return m_adapterClient; }
     void setAdapterClient(WebContentsAdapterClient *adapterClient);
+    void setGuest(content::RenderWidgetHostImpl *);
 
     void InitAsChild(gfx::NativeView) override;
     void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&) override;
@@ -130,6 +132,7 @@ public:
     void Focus() override;
     bool HasFocus() override;
     bool IsMouseLocked() override;
+    viz::FrameSinkId GetRootFrameSinkId() override;
     bool IsSurfaceAvailableForCopy() override;
     void CopyFromSurface(const gfx::Rect &src_rect,
                          const gfx::Size &output_size,
@@ -144,10 +147,14 @@ public:
     void UnlockMouse() override;
     void UpdateCursor(const content::WebCursor&) override;
     void DisplayCursor(const content::WebCursor&) override;
+    content::CursorManager *GetCursorManager() override;
     void SetIsLoading(bool) override;
     void ImeCancelComposition() override;
     void ImeCompositionRangeChanged(const gfx::Range&, const std::vector<gfx::Rect>&) override;
     void RenderProcessGone() override;
+    bool TransformPointToCoordSpaceForView(const gfx::PointF &point,
+                                           content::RenderWidgetHostViewBase *target_view,
+                                           gfx::PointF *transformed_point) override;
     void Destroy() override;
     void SetTooltipText(const base::string16 &tooltip_text) override;
     void DisplayTooltipText(const base::string16& tooltip_text) override;
@@ -263,6 +270,7 @@ private:
     blink::ScreenInfo m_screenInfo;
 
     scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
+    std::unique_ptr<content::CursorManager> m_cursorManager;
 
     ui::FilteredGestureProvider m_gestureProvider;
     base::TimeDelta m_eventsToNowDelta;
@@ -271,6 +279,7 @@ private:
     QMap<int, int> m_touchIdMapping;
     QList<TouchPoint> m_previousTouchPoints;
     std::unique_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
+    std::unique_ptr<GuestInputEventObserverQt> m_guestInputEventObserver;
 
     bool m_visible;
     bool m_deferredShow = false;

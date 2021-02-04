@@ -46,7 +46,6 @@
 #include "render_widget_host_view_qt.h"
 #include "touch_selection_controller_client_qt.h"
 #include "type_conversion.h"
-#include "web_contents_adapter_client.h"
 #include "web_contents_adapter.h"
 #include "web_engine_context.h"
 #include "web_contents_delegate_qt.h"
@@ -195,7 +194,7 @@ ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanSelectAll, blink::kCanSelectAll)
 ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanTranslate, blink::kCanTranslate)
 ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanEditRichly, blink::kCanEditRichly)
 
-static inline WebEngineContextMenuData fromParams(const content::ContextMenuParams &params)
+WebEngineContextMenuData WebContentsViewQt::buildContextMenuData(const content::ContextMenuParams &params)
 {
     WebEngineContextMenuData ret;
     ret.setPosition(QPoint(params.x, params.y));
@@ -229,7 +228,7 @@ void WebContentsViewQt::ShowContextMenu(content::RenderFrameHost *, const conten
             return;
     }
 
-    WebEngineContextMenuData contextMenuData(fromParams(params));
+    WebEngineContextMenuData contextMenuData(buildContextMenuData(params));
 #if QT_CONFIG(webengine_spellchecker)
     // Do not use params.spellcheck_enabled, since it is never
     // correctly initialized for chrome asynchronous spellchecking.

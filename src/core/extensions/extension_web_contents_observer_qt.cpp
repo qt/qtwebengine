@@ -43,12 +43,16 @@
 
 #include "extension_web_contents_observer_qt.h"
 
+#include "components/guest_view/browser/guest_view_base.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/manifest.h"
+
+#include "render_widget_host_view_qt.h"
 
 namespace extensions {
 
@@ -83,6 +87,16 @@ void ExtensionWebContentsObserverQt::RenderFrameCreated(content::RenderFrameHost
 
     if (extension->is_extension() && Manifest::IsComponentLocation(extension->location()))
         policy->GrantRequestOrigin(process_id, url::Origin::Create(GURL(content::kChromeUIResourcesURL)));
+}
+
+void ExtensionWebContentsObserverQt::RenderViewCreated(content::RenderViewHost *render_view_host)
+{
+    if (web_contents()->IsInnerWebContentsForGuest()) {
+        content::RenderWidgetHost *render_widget_host = render_view_host->GetWidget();
+        content::WebContents *parent_web_contents = guest_view::GuestViewBase::GetTopLevelWebContents(web_contents());
+        QtWebEngineCore::RenderWidgetHostViewQt *parent_rwhv = static_cast<QtWebEngineCore::RenderWidgetHostViewQt *>(parent_web_contents->GetRenderWidgetHostView());
+        parent_rwhv->setGuest(static_cast<content::RenderWidgetHostImpl *>(render_widget_host));
+    }
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ExtensionWebContentsObserverQt)

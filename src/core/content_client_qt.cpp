@@ -86,7 +86,7 @@ const char kWidevineCdmFileName[] =
 #include "pdf/pdf.h"
 #include "pdf/pdf_ppapi.h"
 const char kPdfPluginMimeType[] = "application/x-google-chrome-pdf";
-const char kPdfPluginPath[] = "internal-pdf-viewer/";
+const char kPdfPluginPath[] = "internal-pdf-viewer";
 const char kPdfPluginSrc[] = "src";
 #endif // QT_CONFIG(webengine_printing_and_pdf)
 

@@ -48,6 +48,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/renderer/pepper/pepper_flash_font_file_host.h"
+#include "chrome/renderer/pepper/pepper_uma_host.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "components/pdf/renderer/pepper_pdf_host.h"
 #endif // QT_CONFIG(webengine_printing_and_pdf)
@@ -127,6 +128,14 @@ std::unique_ptr<ppapi::host::ResourceHost> PepperRendererHostFactoryQt::CreateRe
         }
     }
 #endif // QT_CONFIG(webengine_printing_and_pdf)
+
+    // Create a default ResourceHost for this message type to suppress
+    // "Failed to create PPAPI resource host" console error message.
+    switch (message.type()) {
+    case PpapiHostMsg_UMA_Create::ID:
+        return std::make_unique<ppapi::host::ResourceHost>(host_->GetPpapiHost(), instance, resource);
+    }
+
     return nullptr;
 }
 

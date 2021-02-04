@@ -62,6 +62,7 @@
 #include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -302,12 +303,35 @@ public:
     }
 };
 
+class GuestInputEventObserverQt : public content::RenderWidgetHost::InputEventObserver
+{
+public:
+    GuestInputEventObserverQt(RenderWidgetHostViewQt *rwhv)
+        : m_rwhv(rwhv)
+    {
+    }
+    ~GuestInputEventObserverQt() {}
+
+    void OnInputEvent(const blink::WebInputEvent&) override {}
+    void OnInputEventAck(blink::mojom::InputEventResultSource,
+                         blink::mojom::InputEventResultState state,
+                         const blink::WebInputEvent &event) override
+    {
+        if (event.GetType() == blink::WebInputEvent::Type::kMouseWheel)
+            m_rwhv->WheelEventAck(static_cast<const blink::WebMouseWheelEvent &>(event), state);
+    }
+
+private:
+    RenderWidgetHostViewQt *m_rwhv;
+};
+
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget)
     : content::RenderWidgetHostViewBase::RenderWidgetHostViewBase(widget)
     , m_taskRunner(base::ThreadTaskRunnerHandle::Get())
     , m_gestureProvider(QtGestureProviderConfig(), this)
     , m_sendMotionActionDown(false)
     , m_touchMotionStarted(false)
+    , m_guestInputEventObserver(new GuestInputEventObserverQt(this))
     , m_visible(false)
     , m_loadVisuallyCommittedState(NotCommitted)
     , m_adapterClient(0)
@@ -353,6 +377,8 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
 
     if (host()->delegate() && host()->delegate()->GetInputEventRouter())
         host()->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(GetFrameSinkId(), this);
+
+    m_cursorManager.reset(new content::CursorManager(this));
 
     m_touchSelectionControllerClient.reset(new TouchSelectionControllerClientQt(this));
     ui::TouchSelectionController::Config config;
@@ -404,6 +430,11 @@ void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterC
     m_adapterClientDestroyedConnection = QObject::connect(adapterClient->holdingQObject(),
                                                           &QObject::destroyed, [this] {
                                                             m_adapterClient = nullptr; });
+}
+
+void RenderWidgetHostViewQt::setGuest(content::RenderWidgetHostImpl *rwh)
+{
+    rwh->AddInputEventObserver(m_guestInputEventObserver.get());
 }
 
 void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView)
@@ -479,6 +510,11 @@ bool RenderWidgetHostViewQt::HasFocus()
 bool RenderWidgetHostViewQt::IsMouseLocked()
 {
     return m_isMouseLocked;
+}
+
+viz::FrameSinkId RenderWidgetHostViewQt::GetRootFrameSinkId()
+{
+    return m_uiCompositor->frame_sink_id();
 }
 
 bool RenderWidgetHostViewQt::IsSurfaceAvailableForCopy()
@@ -727,6 +763,11 @@ void RenderWidgetHostViewQt::DisplayCursor(const content::WebCursor &webCursor)
     m_delegate->updateCursor(QCursor(shape));
 }
 
+content::CursorManager *RenderWidgetHostViewQt::GetCursorManager()
+{
+    return m_cursorManager.get();
+}
+
 void RenderWidgetHostViewQt::SetIsLoading(bool)
 {
     // We use WebContentsDelegateQt::LoadingStateChanged to notify about loading state.
@@ -748,6 +789,18 @@ void RenderWidgetHostViewQt::RenderProcessGone()
     Destroy();
 }
 
+bool RenderWidgetHostViewQt::TransformPointToCoordSpaceForView(const gfx::PointF &point,
+                                                               content::RenderWidgetHostViewBase *target_view,
+                                                               gfx::PointF *transformed_point)
+{
+    if (target_view == this) {
+        *transformed_point = point;
+        return true;
+    }
+
+    return target_view->TransformPointToLocalCoordSpace(point, GetCurrentSurfaceId(), transformed_point);
+}
+
 void RenderWidgetHostViewQt::Destroy()
 {
     delete this;
@@ -760,7 +813,7 @@ void RenderWidgetHostViewQt::SetTooltipText(const base::string16 &tooltip_text)
 
 void RenderWidgetHostViewQt::DisplayTooltipText(const base::string16 &tooltip_text)
 {
-    if (m_adapterClient)
+    if (host()->delegate() && m_adapterClient)
         m_adapterClient->setToolTip(toQt(tooltip_text));
 }
 
@@ -960,7 +1013,8 @@ void RenderWidgetHostViewQt::OnGestureEvent(const ui::GestureEventData& gesture)
         }
     }
 
-    host()->ForwardGestureEvent(event);
+    if (host()->delegate() && host()->delegate()->GetInputEventRouter())
+        host()->delegate()->GetInputEventRouter()->RouteGestureEvent(this, &event, ui::LatencyInfo());
 }
 
 void RenderWidgetHostViewQt::DidStopFlinging()
@@ -1169,8 +1223,12 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
         if (m_mouseButtonPressed > 0)
             return false;
 #endif
-    case QEvent::HoverLeave:
-        host()->ForwardMouseEvent(WebEventFactory::toWebMouseEvent(event));
+    case QEvent::HoverLeave: {
+            if (host()->delegate() && host()->delegate()->GetInputEventRouter()) {
+                auto webEvent = WebEventFactory::toWebMouseEvent(event);
+                host()->delegate()->GetInputEventRouter()->RouteMouseEvent(this, &webEvent, ui::LatencyInfo());
+            }
+        }
         break;
     default:
         return false;
@@ -1251,11 +1309,11 @@ void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEve
     auto result = m_gestureProvider.OnTouchEvent(motionEvent);
     if (!result.succeeded)
         return;
-
     blink::WebTouchEvent touchEvent = ui::CreateWebTouchEventFromMotionEvent(motionEvent,
                                                                              result.moved_beyond_slop_region,
                                                                              false /*hovering, FIXME ?*/);
-    host()->ForwardTouchEventWithLatencyInfo(touchEvent, CreateLatencyInfo(touchEvent));
+    if (host()->delegate() && host()->delegate()->GetInputEventRouter())
+        host()->delegate()->GetInputEventRouter()->RouteTouchEvent(this, &touchEvent, CreateLatencyInfo(touchEvent));
 }
 
 QList<RenderWidgetHostViewQt::TouchPoint> RenderWidgetHostViewQt::mapTouchPoints(const QList<QTouchEvent::TouchPoint> &input)
@@ -1343,13 +1401,13 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
         std::vector<blink::mojom::EditCommandPtr> commands;
         commands.emplace_back(blink::mojom::EditCommand::New(m_editCommand, ""));
         m_editCommand.clear();
-        host()->ForwardKeyboardEventWithCommands(webEvent, latency, std::move(commands), nullptr);
+        GetFocusedWidget()->ForwardKeyboardEventWithCommands(webEvent, latency, std::move(commands), nullptr);
         return;
     }
 
     bool keyDownTextInsertion = webEvent.GetType() == blink::WebInputEvent::Type::kRawKeyDown && webEvent.text[0];
     webEvent.skip_in_browser = keyDownTextInsertion;
-    host()->ForwardKeyboardEvent(webEvent);
+    GetFocusedWidget()->ForwardKeyboardEvent(webEvent);
 
     if (keyDownTextInsertion) {
         // Blink won't consume the RawKeyDown, but rather the Char event in this case.
@@ -1357,7 +1415,7 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
         // The same os_event will be set on both NativeWebKeyboardEvents.
         webEvent.skip_in_browser = false;
         webEvent.SetType(blink::WebInputEvent::Type::kChar);
-        host()->ForwardKeyboardEvent(webEvent);
+        GetFocusedWidget()->ForwardKeyboardEvent(webEvent);
     }
 }
 
@@ -1525,8 +1583,9 @@ void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
         Q_ASSERT(m_pendingWheelEvents.isEmpty());
         blink::WebMouseWheelEvent webEvent = WebEventFactory::toWebWheelEvent(ev);
         m_wheelAckPending = (webEvent.phase != blink::WebMouseWheelEvent::kPhaseEnded);
-        m_mouseWheelPhaseHandler.AddPhaseIfNeededAndScheduleEndEvent(webEvent, false);
-        host()->ForwardWheelEvent(webEvent);
+        m_mouseWheelPhaseHandler.AddPhaseIfNeededAndScheduleEndEvent(webEvent, true);
+        if (host()->delegate() && host()->delegate()->GetInputEventRouter())
+            host()->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(this, &webEvent, ui::LatencyInfo());
         return;
     }
     if (!m_pendingWheelEvents.isEmpty()) {
@@ -1546,8 +1605,9 @@ void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &even
     while (!m_pendingWheelEvents.isEmpty() && !m_wheelAckPending) {
         blink::WebMouseWheelEvent webEvent = m_pendingWheelEvents.takeFirst();
         m_wheelAckPending = (webEvent.phase != blink::WebMouseWheelEvent::kPhaseEnded);
-        m_mouseWheelPhaseHandler.AddPhaseIfNeededAndScheduleEndEvent(webEvent, false);
-        host()->ForwardWheelEvent(webEvent);
+        m_mouseWheelPhaseHandler.AddPhaseIfNeededAndScheduleEndEvent(webEvent, true);
+        if (host()->delegate() && host()->delegate()->GetInputEventRouter())
+            host()->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(this, &webEvent, ui::LatencyInfo());
     }
 }
 
@@ -1577,7 +1637,10 @@ void RenderWidgetHostViewQt::handleGestureEvent(QNativeGestureEvent *ev)
     const Qt::NativeGestureType type = ev->gestureType();
     // These are the only supported gestures by Chromium so far.
     if (type == Qt::ZoomNativeGesture || type == Qt::SmartZoomNativeGesture) {
-        host()->ForwardGestureEvent(WebEventFactory::toWebGestureEvent(ev));
+        if (host()->delegate() && host()->delegate()->GetInputEventRouter()) {
+            auto webEvent = WebEventFactory::toWebGestureEvent(ev);
+            host()->delegate()->GetInputEventRouter()->RouteGestureEvent(this, &webEvent, ui::LatencyInfo());
+        }
     }
 }
 #endif
@@ -1806,12 +1869,16 @@ void RenderWidgetHostViewQt::handlePointerEvent(T *event)
 #endif
     }
 
-    host()->ForwardMouseEvent(webEvent);
+    if (host()->delegate() && host()->delegate()->GetInputEventRouter())
+        host()->delegate()->GetInputEventRouter()->RouteMouseEvent(this, &webEvent, ui::LatencyInfo());
 }
 
 void RenderWidgetHostViewQt::handleHoverEvent(QHoverEvent *ev)
 {
-    host()->ForwardMouseEvent(WebEventFactory::toWebMouseEvent(ev));
+    if (host()->delegate() && host()->delegate()->GetInputEventRouter()) {
+        auto webEvent = WebEventFactory::toWebMouseEvent(ev);
+        host()->delegate()->GetInputEventRouter()->RouteMouseEvent(this, &webEvent, ui::LatencyInfo());
+    }
 }
 
 void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
