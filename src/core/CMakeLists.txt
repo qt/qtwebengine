@@ -26,6 +26,10 @@ find_package(Python2 REQUIRED)
 
 qt_build_repo_begin()
 
+include(generator.cmake)
+configure_file(${PROJECT_SOURCE_DIR}/configure/BUILD.toolchain.gn.in ${buildDir}/toolchain/BUILD.gn @ONLY)
+configure_file(${PROJECT_SOURCE_DIR}/configure/BUILD.root.gn.in ${buildDir}/BUILD.gn @ONLY)
+
 get_target_property(gnCmd Gn::gn IMPORTED_LOCATION)
 
 set(gnArg help)

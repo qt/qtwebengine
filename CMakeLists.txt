@@ -23,6 +23,7 @@ qt_feature_module_begin(ONLY_EVALUATE_FEATURES)
 # to work in spite of ONLY_EVALUATE_FEATURES.
 set(__QtFeature_only_evaluate_features OFF)
 include(configure.cmake)
+include(src/core/api/configure.cmake)
 qt_feature_module_end(ONLY_EVALUATE_FEATURES)
 qt_build_repo_end()
 

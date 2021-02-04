@@ -1,0 +1,43 @@
+import("//build/config/sysroot.gni")
+import("//build/toolchain/gcc_toolchain.gni")
+gcc_toolchain("host") {
+  cc = "@CMAKE_C_COMPILER@"
+  cxx = "@CMAKE_CXX_COMPILER@"
+  ld = "@CMAKE_CXX_COMPILER@"
+  ar = "@CMAKE_AR@"
+  nm = "@CMAKE_NM@"
+  extra_cppflags = ""
+  toolchain_args = {
+    current_os = "linux"
+    current_cpu = "x64"
+    is_clang = false
+    use_gold = false
+  }
+}
+gcc_toolchain("v8_snapshot") {
+  cc = "@CMAKE_C_COMPILER@"
+  cxx = "@CMAKE_CXX_COMPILER@"
+  ld = "@CMAKE_CXX_COMPILER@"
+  ar = "@CMAKE_AR@"
+  nm = "@CMAKE_NM@"
+  toolchain_args = {
+    current_os = "linux"
+    current_cpu = "x64"
+    v8_current_cpu = "x64"
+    is_clang = false
+    use_gold = false
+  }
+ }
+gcc_toolchain("target") {
+  cc = "@CMAKE_C_COMPILER@"
+  cxx = "@CMAKE_CXX_COMPILER@"
+  ld = "@CMAKE_CXX_COMPILER@"
+  ar = "@CMAKE_AR@"
+  nm = "@CMAKE_NM@"
+  toolchain_args = {
+    current_os = "linux"
+    current_cpu = "x64"
+    is_clang = false
+    use_gold = false
+  }
+}

@@ -1,0 +1,516 @@
+import("//build/config/features.gni")
+import("//build/config/ui.gni")
+import("//chrome/common/features.gni")
+import("//components/spellcheck/spellcheck_build_features.gni")
+import("//pdf/features.gni")
+import("//ppapi/buildflags/buildflags.gni")
+import("//printing/buildflags/buildflags.gni")
+import("//extensions/buildflags/buildflags.gni")
+import("//tools/grit/repack.gni")
+import("//build/config/locales.gni")
+import("//chrome/chrome_repack_locales.gni")
+import("//extensions/buildflags/buildflags.gni")
+
+moc_source_h_files = exec_script("@WEBENGINE_ROOT_SOURCE_DIR@/tools/scripts/gn_find_mocables.py",
+  [
+  @GN_HEADERS@
+  ], "list lines", ["@WEBENGINE_ROOT_SOURCE_DIR@/src/core/CMakeLists.txt"]
+)
+moc_source_cpp_files = exec_script("@WEBENGINE_ROOT_SOURCE_DIR@/tools/scripts/gn_find_mocables.py",
+  [
+  @GN_SOURCES@
+  ], "list lines", ["@WEBENGINE_ROOT_SOURCE_DIR@/src/core/CMakeLists.txt"]
+)
+if (moc_source_h_files != []) {
+  action_foreach("generate_h_mocs") {
+    script = "@WEBENGINE_ROOT_SOURCE_DIR@/tools/scripts/gn_run_binary.py"
+    sources =  moc_source_h_files
+    outputs = [ "${target_gen_dir}/.moc/moc_{{source_name_part}}.cpp" ]
+    inputs = [ "@WEBENGINE_ROOT_SOURCE_DIR@/CMakeLists.txt" ]
+    args = [
+      @GN_ARGS_MOC_BIN@,
+      @GN_ARGS_DEFINES@,
+      @GN_ARGS_INCLUDES@,
+      "{{source}}",
+      "-o",
+      rebase_path("${target_gen_dir}/.moc/moc_{{source_name_part}}.cpp")
+    ]
+  }
+}
+
+if (moc_source_cpp_files != []) {
+  action_foreach("generate_cpp_mocs") {
+    script = "@WEBENGINE_ROOT_SOURCE_DIR@/tools/scripts/gn_run_binary.py"
+    sources =  moc_source_cpp_files
+    outputs = [ "${target_gen_dir}/.moc/{{source_name_part}}.moc" ]
+    inputs = [ "@WEBENGINE_ROOT_SOURCE_DIR@/src/core/CMakeLists.txt" ]
+    args = [
+      @GN_ARGS_MOC_BIN@,
+      @GN_ARGS_DEFINES@,
+      @GN_ARGS_INCLUDES@,
+      "{{source}}",
+      "-o",
+      rebase_path("${target_gen_dir}/.moc/{{source_name_part}}.moc")
+    ]
+  }
+}
+
+config("QtWebEngineCore_config") {
+  cflags = [
+    @GN_CFLAGS_C@,
+  ]
+  cflags_cc = [
+    @GN_CFLAGS_CC@,
+  ]
+  defines = [
+    @GN_DEFINES@,
+  ]
+  include_dirs = [
+    @GN_INCLUDE_DIRS@,
+    rebase_path("${target_gen_dir}/.moc/")
+  ]
+}
+
+config("cpp17_config") {
+  # static initialized constexpr expressions must be compiled always as c++14 or always as c++17
+  # and our qtwebengine core sources use them as c++17
+  if (is_win) {
+    cflags_cc = [ "/std:c++17" ]
+  } else {
+    cflags_cc = [ "-std=c++17" ]
+  }
+}
+
+shared_library("QtWebEngineCore") {
+  cmake_config = "@GN_CONFIG@"
+  import("@WEBENGINE_ROOT_SOURCE_DIR@/src/core/qtwebengine.gni")
+  configs += [
+    ":cpp17_config",
+    ":QtWebEngineCore_config",
+    "//build/config:precompiled_headers"
+  ]
+  sources = [
+  @GN_HEADERS@,
+  @GN_SOURCES@
+  ]
+  if (moc_source_h_files != []) {
+    deps += [
+        ":generate_h_mocs",
+    ]
+    sources += get_target_outputs(":generate_h_mocs")
+  }
+  if (moc_source_cpp_files != []) {
+    deps += [
+        ":generate_cpp_mocs",
+    ]
+  }
+}
+
+source_set("qtwebengine_spellcheck_sources") {
+  include_dirs = [ "@WEBENGINE_ROOT_SOURCE_DIR@/src/core/service" ]
+  configs += [ "//third_party/boringssl:external_config" ]
+  sources = [
+    "//chrome/browser/spellchecker/spell_check_host_chrome_impl.cc",
+    "//chrome/browser/spellchecker/spell_check_host_chrome_impl.h",
+    "//chrome/browser/spellchecker/spellcheck_custom_dictionary.cc",
+    "//chrome/browser/spellchecker/spellcheck_custom_dictionary.h",
+    "//chrome/browser/spellchecker/spellcheck_factory.cc",
+    "//chrome/browser/spellchecker/spellcheck_factory.h",
+    "//chrome/browser/spellchecker/spellcheck_hunspell_dictionary.cc",
+    "//chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h",
+    "//chrome/browser/spellchecker/spellcheck_service.cc",
+    "//chrome/browser/spellchecker/spellcheck_service.h",
+    "//components/language/core/browser/pref_names.cc",
+    "//components/language/core/browser/pref_names.h",
+  ]
+  deps = [
+    "//components/spellcheck/browser",
+    "//components/spellcheck/renderer",
+    "//third_party/blink/public:blink",
+    "//third_party/hunspell",
+  ]
+  if (is_mac && use_browser_spellchecker) {
+    sources += [
+        "//chrome/browser/spellchecker/spell_check_host_chrome_impl_mac.cc",
+    ]
+  }
+}
+
+source_set("qtwebengine_sources") {
+  configs += [
+    ":cpp17_config",
+    "//skia:skia_config",
+    "//third_party/boringssl:external_config",
+  ]
+  deps = [
+    "//build:branding_buildflags",
+    "//chrome/browser/resources/quota_internals:quota_internals_resources",
+    "//chrome/common:buildflags",
+    "//components/nacl/common:buildflags",
+    "//components/performance_manager",
+    "//components/plugins/renderer/",
+    "//extensions/buildflags:buildflags",
+    "//rlz/buildflags:buildflags",
+    "//third_party/blink/public/mojom:mojom_platform",
+  ]
+  sources = [
+    "//chrome/browser/accessibility/accessibility_ui.cc",
+    "//chrome/browser/accessibility/accessibility_ui.h",
+    "//chrome/browser/custom_handlers/protocol_handler_registry.cc",
+    "//chrome/browser/custom_handlers/protocol_handler_registry.h",
+    "//chrome/browser/custom_handlers/protocol_handler_registry_factory.cc",
+    "//chrome/browser/custom_handlers/protocol_handler_registry_factory.h",
+    "//chrome/browser/devtools/devtools_eye_dropper.cc",
+    "//chrome/browser/devtools/devtools_eye_dropper.h",
+    "//chrome/browser/media/webrtc/desktop_media_list.h",
+    "//chrome/browser/net/chrome_mojo_proxy_resolver_factory.cc",
+    "//chrome/browser/net/chrome_mojo_proxy_resolver_factory.h",
+    "//chrome/browser/prefs/chrome_command_line_pref_store.cc",
+    "//chrome/browser/prefs/chrome_command_line_pref_store.h",
+    "//chrome/browser/profiles/profile.cc",
+    "//chrome/browser/profiles/profile.h",
+    "//chrome/browser/tab_contents/form_interaction_tab_helper.cc",
+    "//chrome/browser/tab_contents/form_interaction_tab_helper.h",
+    "//chrome/browser/ui/webui/devtools_ui.cc",
+    "//chrome/browser/ui/webui/devtools_ui.h",
+    "//chrome/browser/ui/webui/devtools_ui_data_source.cc",
+    "//chrome/browser/ui/webui/devtools_ui_data_source.h",
+    "//chrome/browser/ui/webui/net_internals/net_internals_ui.cc",
+    "//chrome/browser/ui/webui/net_internals/net_internals_ui.h",
+    "//chrome/browser/ui/webui/quota_internals/quota_internals_handler.cc",
+    "//chrome/browser/ui/webui/quota_internals/quota_internals_handler.h",
+    "//chrome/browser/ui/webui/quota_internals/quota_internals_proxy.cc",
+    "//chrome/browser/ui/webui/quota_internals/quota_internals_proxy.h",
+    "//chrome/browser/ui/webui/quota_internals/quota_internals_types.cc",
+    "//chrome/browser/ui/webui/quota_internals/quota_internals_types.h",
+    "//chrome/browser/ui/webui/quota_internals/quota_internals_ui.cc",
+    "//chrome/browser/ui/webui/quota_internals/quota_internals_ui.h",
+    "//chrome/browser/ui/webui/user_actions/user_actions_ui.cc",
+    "//chrome/browser/ui/webui/user_actions/user_actions_ui.h",
+    "//chrome/browser/ui/webui/user_actions/user_actions_ui_handler.cc",
+    "//chrome/browser/ui/webui/user_actions/user_actions_ui_handler.h",
+    "//chrome/common/custom_handlers/protocol_handler.cc",
+    "//chrome/common/custom_handlers/protocol_handler.h",
+    "//chrome/browser/ui/webui/webui_util.cc",
+    "//chrome/browser/ui/webui/webui_util.h",
+    "//chrome/common/chrome_switches.cc",
+    "//chrome/common/chrome_switches.h",
+    "//chrome/common/pref_names.cc",
+    "//chrome/common/pref_names.h",
+    "//chrome/common/url_constants.cc",
+    "//chrome/common/url_constants.h",
+    "//chrome/common/webui_url_constants.cc",
+    "//chrome/common/webui_url_constants.h",
+  ]
+  if (enable_extensions) {
+    deps += [
+      ":qtwebengine_extensions_features",
+      "//chrome/app:generated_resources",
+      "//chrome/browser/extensions/api:api_registration",
+      "//chrome/browser/resources:component_extension_resources_grit",
+      "//chrome/common/extensions/api",
+      "//chrome/common/extensions/api:api",
+      "//chrome/common/extensions/api:extensions_features",
+      "//components/crx_file",
+      "//components/crx_file:crx_creator",
+      "//components/spellcheck:buildflags",
+      "//extensions/buildflags:buildflags",
+      "//extensions/common",
+      "//extensions/common/api",
+      "//extensions/common:core_api_provider",
+      "//extensions/browser",
+      "//extensions/browser/api",
+      "//extensions/browser:core_api_provider",
+      "//extensions/renderer",
+      "//extensions:extensions_resources",
+      "//extensions/strings",
+      "//qtwebengine/browser/extensions/api:api_registration",
+      "//qtwebengine/common/extensions/api:api",
+    ]
+    sources += [
+      "//chrome/browser/extensions/api/streams_private/streams_private_api.cc",
+      "//chrome/browser/extensions/api/streams_private/streams_private_api.h",
+      "//chrome/browser/extensions/api/enterprise_hardware_platform/enterprise_hardware_platform_api.cc",
+      "//chrome/browser/extensions/api/enterprise_hardware_platform/enterprise_hardware_platform_api.h",
+      "//chrome/common/extensions/permissions/chrome_api_permissions.cc",
+      "//chrome/common/extensions/permissions/chrome_api_permissions.h",
+      "//chrome/common/extensions/permissions/chrome_permission_message_provider.cc",
+      "//chrome/common/extensions/permissions/chrome_permission_message_provider.h",
+      "//chrome/common/extensions/permissions/chrome_permission_message_rules.cc",
+      "//chrome/common/extensions/permissions/chrome_permission_message_rules.h",
+    ]
+  } else {
+    deps += [
+      "//extensions/common:common_constants",
+    ]
+    sources += [
+      "//extensions/common/url_pattern.cc",
+      "//extensions/common/url_pattern.h",
+    ]
+  }
+  if (is_linux) {
+    sources += [
+      "//chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc",
+      "//chrome/browser/ui/webui/sandbox/sandbox_internals_ui.h",
+    ]
+  }
+  if (enable_spellcheck) {
+    deps += [
+      ":qtwebengine_spellcheck_sources",
+      "//chrome/tools/convert_dict",
+    ]
+  }
+  if (enable_plugins) {
+      sources += [
+        "//chrome/renderer/pepper/pepper_flash_font_file_host.cc",
+        "//chrome/renderer/pepper/pepper_flash_font_file_host.h",
+        "//chrome/renderer/pepper/pepper_shared_memory_message_filter.cc",
+        "//chrome/renderer/pepper/pepper_shared_memory_message_filter.h",
+      ]
+  }
+  if (enable_basic_printing || enable_print_preview) {
+    sources += [
+      "//chrome/browser/printing/printer_query.cc",
+      "//chrome/browser/printing/printer_query.h",
+      "//chrome/browser/printing/print_job.cc",
+      "//chrome/browser/printing/print_job.h",
+      "//chrome/browser/printing/print_job_manager.cc",
+      "//chrome/browser/printing/print_job_manager.h",
+      "//chrome/browser/printing/print_job_worker.cc",
+      "//chrome/browser/printing/print_job_worker.h",
+    ]
+    deps += [
+      "//printing/buildflags:buildflags",
+    ]
+  }
+  if (enable_pdf) {
+      deps += [
+         "//pdf",
+         "//pdf:buildflags",
+         "//pdf:pdf_ppapi",
+         "//components/pdf/browser:browser",
+         "//components/pdf/renderer:renderer",
+         "//components/printing/browser",
+         "//components/printing/renderer",
+      ]
+  }
+
+  if (enable_webrtc && enable_extensions) {
+    deps += [
+      "//chrome/browser/resources/media:webrtc_logs_resources",
+      "//components/upload_list",
+      "//components/webrtc_logging/browser",
+      "//components/webrtc_logging/common",
+    ]
+
+    sources += [
+      "//chrome/browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.cc",
+      "//chrome/browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h",
+      "//chrome/browser/media/webrtc/audio_debug_recordings_handler.cc",
+      "//chrome/browser/media/webrtc/audio_debug_recordings_handler.h",
+      "//chrome/browser/media/webrtc/webrtc_event_log_history.cc",
+      "//chrome/browser/media/webrtc/webrtc_event_log_history.h",
+      "//chrome/browser/media/webrtc/webrtc_event_log_manager.cc",
+      "//chrome/browser/media/webrtc/webrtc_event_log_manager.h",
+      "//chrome/browser/media/webrtc/webrtc_event_log_manager_common.cc",
+      "//chrome/browser/media/webrtc/webrtc_event_log_manager_common.h",
+      "//chrome/browser/media/webrtc/webrtc_event_log_manager_local.cc",
+      "//chrome/browser/media/webrtc/webrtc_event_log_manager_local.h",
+      "//chrome/browser/media/webrtc/webrtc_event_log_manager_remote.cc",
+      "//chrome/browser/media/webrtc/webrtc_event_log_manager_remote.h",
+      "//chrome/browser/media/webrtc/webrtc_event_log_uploader.cc",
+      "//chrome/browser/media/webrtc/webrtc_event_log_uploader.h",
+      "//chrome/browser/media/webrtc/webrtc_log_buffer.cc",
+      "//chrome/browser/media/webrtc/webrtc_log_buffer.h",
+      "//chrome/browser/media/webrtc/webrtc_log_uploader.cc",
+      "//chrome/browser/media/webrtc/webrtc_log_uploader.h",
+      "//chrome/browser/media/webrtc/webrtc_logging_controller.cc",
+      "//chrome/browser/media/webrtc/webrtc_logging_controller.h",
+      "//chrome/browser/media/webrtc/webrtc_rtp_dump_handler.cc",
+      "//chrome/browser/media/webrtc/webrtc_rtp_dump_handler.h",
+      "//chrome/browser/media/webrtc/webrtc_rtp_dump_writer.cc",
+      "//chrome/browser/media/webrtc/webrtc_rtp_dump_writer.h",
+      "//chrome/browser/media/webrtc/webrtc_text_log_handler.cc",
+      "//chrome/browser/media/webrtc/webrtc_text_log_handler.h",
+      "//chrome/browser/ui/webui/media/webrtc_logs_ui.cc",
+      "//chrome/browser/ui/webui/media/webrtc_logs_ui.h",
+      "//chrome/renderer/media/webrtc_logging_agent_impl.cc",
+      "//chrome/renderer/media/webrtc_logging_agent_impl.h",
+    ]
+  }
+}
+
+if (is_win) {
+  shared_library("qtwebengine_sandbox_win") {
+    cmake_config = "@GN_CONFIG@"
+    public_deps = [ "//sandbox/win:sandbox" ]
+  }
+}
+
+group("qtwebengine_resources") {
+  deps = [
+      "//chrome/app:generated_resources",
+      "//chrome/browser:resources",
+      "//chrome/browser/resources:component_extension_resources",
+      "//chrome/common:resources",
+      "//components/resources:components_resources",
+      ":qtwebengine_repack_resources",
+      ":qtwebengine_repack_resources_100",
+      ":qtwebengine_repack_resources_200",
+      ":qtwebengine_repack_resources_devtools",
+      ":qtwebengine_repack_locales_pack"
+   ]
+}
+
+repack("qtwebengine_repack_resources") {
+  sources = [
+    "$root_gen_dir/qtwebengine/qt_webengine_resources.pak",
+    "$root_gen_dir/chrome/common_resources.pak",
+    "$root_gen_dir/chrome/net_internals_resources.pak",
+    "$root_gen_dir/chrome/quota_internals_resources.pak",
+    "$root_gen_dir/components/components_resources.pak",
+    "$root_gen_dir/components/dev_ui_components_resources.pak",
+    "$root_gen_dir/content/browser/resources/media/media_internals_resources.pak",
+    "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
+    "$root_gen_dir/content/content_resources.pak",
+    "$root_gen_dir/content/dev_ui_content_resources.pak",
+    "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
+    "$root_gen_dir/net/net_resources.pak",
+    "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
+    "$root_gen_dir/ui/resources/webui_resources.pak",
+    "$root_gen_dir/ui/resources/webui_generated_resources.pak",
+  ]
+  output = "$root_out_dir/qtwebengine_resources.pak"
+  deps = [
+     "//qtwebengine/browser:qt_webengine_resources",
+     "//chrome/browser/resources/net_internals:net_internals_resources",
+     "//chrome/browser/resources/quota_internals:quota_internals_resources",
+     "//chrome/common:resources_grit",
+     "//components/resources:components_resources_grit",
+     "//components/resources:dev_ui_components_resources_grit",
+     "//content/browser/resources/media:media_internals_resources",
+     "//content/browser/tracing:resources",
+     "//content:content_resources_grit",
+     "//content:dev_ui_content_resources_grit",
+     "//mojo/public/js:resources",
+     "//net:net_resources_grit",
+     "//third_party/blink/public:resources_grit",
+     "//ui/resources:webui_resources_grd_grit",
+     "//ui/resources:webui_generated_resources_grd",
+  ]
+  if (enable_extensions) {
+    sources += [
+      "$root_gen_dir/chrome/component_extension_resources.pak",
+      "$root_gen_dir/extensions/extensions_renderer_resources.pak",
+      "$root_gen_dir/extensions/extensions_resources.pak",
+    ]
+    deps += [
+      "//chrome/browser/resources:component_extension_resources_grit",
+      "//extensions:extensions_renderer_resources_grit",
+      "//extensions:extensions_resources_grd_grit",
+    ]
+  }
+  if (enable_webrtc) {
+    sources += [
+      "$root_gen_dir/content/browser/webrtc/resources/webrtc_internals_resources.pak",
+    ]
+    deps += [
+      "//content/browser/webrtc/resources",
+    ]
+  }
+}
+
+repack("qtwebengine_repack_resources_100") {
+  sources = [
+    "$root_gen_dir/chrome/renderer_resources_100_percent.pak",
+    "$root_gen_dir/components/components_resources_100_percent.pak",
+    "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
+    "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_100_percent.pak",
+    "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+  ]
+  output = "$root_out_dir/qtwebengine_resources_100p.pak"
+  deps = [
+    "//chrome/renderer:resources_grit",
+    "//components/resources:components_scaled_resources_grit",
+    "//content/app/resources:resources_grit",
+    "//third_party/blink/public:scaled_resources_100_percent",
+    "//ui/resources:ui_resources_grd_grit"
+  ]
+  if (enable_extensions) {
+    sources += [
+      "$root_gen_dir/extensions/extensions_browser_resources_100_percent.pak"
+    ]
+    deps += [
+      "//extensions:extensions_browser_resources_grit"
+    ]
+  }
+}
+
+repack("qtwebengine_repack_resources_200") {
+  sources = [
+    "$root_gen_dir/chrome/renderer_resources_200_percent.pak",
+    "$root_gen_dir/components/components_resources_200_percent.pak",
+    "$root_gen_dir/content/app/resources/content_resources_200_percent.pak",
+    "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_200_percent.pak",
+    "$root_gen_dir/ui/resources/ui_resources_200_percent.pak",
+  ]
+  output = "$root_out_dir/qtwebengine_resources_200p.pak"
+  deps = [
+    "//chrome/renderer:resources_grit",
+    "//components/resources:components_scaled_resources_grit",
+    "//content/app/resources:resources_grit",
+    "//third_party/blink/public:scaled_resources_200_percent",
+    "//ui/resources:ui_resources_grd_grit"
+  ]
+  if (enable_extensions) {
+    sources += [
+      "$root_gen_dir/extensions/extensions_browser_resources_200_percent.pak"
+    ]
+    deps += [
+      "//extensions:extensions_browser_resources_grit"
+    ]
+  }
+}
+
+repack("qtwebengine_repack_resources_devtools") {
+  sources = [
+    "$root_gen_dir/content/browser/devtools/devtools_resources.pak",
+  ]
+  output = "$root_out_dir/qtwebengine_devtools_resources.pak"
+  deps = [
+    "//content/browser/devtools:devtools_resources_grit",
+  ]
+}
+
+chrome_repack_locales("qtwebengine_repack_locales_pack") {
+  input_locales = locales
+  output_dir = "$root_out_dir/qtwebengine_locales"
+  output_locales = locales
+}
+
+if (enable_extensions) {
+  import("//tools/json_schema_compiler/json_features.gni")
+  json_features("qt_api_features") {
+    feature_type = "APIFeature"
+    method_name = "AddQtAPIFeatures"
+    sources = [
+      "//extensions/common/api/_webengine_api_features.json"
+    ]
+  }
+  json_features("qt_permission_features") {
+    feature_type = "PermissionFeature"
+    method_name = "AddQtPermissionFeatures"
+    sources = [
+      "//chrome/common/extensions/api/_permission_features.json",
+      "//extensions/common/api/_permission_features.json",
+    ]
+  }
+  group("qtwebengine_extensions_features") {
+    public_deps = [
+      ":qt_api_features",
+      ":qt_permission_features",
+      "//chrome/common/extensions/api:extensions_features",
+      "//extensions/common/api:extensions_features",
+  ]
+  }
+}
