@@ -177,6 +177,7 @@ public:
     bool ShouldUseSpareRenderProcessHost(content::BrowserContext *browser_context, const GURL& site_url) override;
     bool ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(base::StringPiece scheme,
                                                       bool is_embedded_origin_secure) override;
+    bool DoesSchemeAllowCrossOriginSharedWorker(const std::string &scheme) override;
     void OverrideURLLoaderFactoryParams(content::BrowserContext *browser_context,
                                         const url::Origin &origin,
                                         bool is_for_isolated_world,
@@ -250,8 +251,12 @@ public:
                                                          NonNetworkURLLoaderFactoryMap *factories) override;
     void RegisterNonNetworkWorkerMainResourceURLLoaderFactories(content::BrowserContext* browser_context,
                                                                 NonNetworkURLLoaderFactoryMap* factories) override;
+    void RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(content::BrowserContext* browser_context,
+                                                                 NonNetworkURLLoaderFactoryMap* factories) override;
     void SiteInstanceGotProcess(content::SiteInstance *site_instance) override;
     void SiteInstanceDeleting(content::SiteInstance *site_instance) override;
+
+    content::WebContentsViewDelegate* GetWebContentsViewDelegate(content::WebContents* web_contents) override;
 
     static std::string getUserAgent();
 

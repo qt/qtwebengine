@@ -43,6 +43,7 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+#include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/navigation_interception/navigation_params.h"
 #include "components/network_hints/browser/simple_network_hints_handler_impl.h"
@@ -1051,6 +1052,16 @@ bool ContentBrowserClientQt::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(base::
 #endif
 }
 
+bool ContentBrowserClientQt::DoesSchemeAllowCrossOriginSharedWorker(const std::string &scheme)
+{
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    // Extensions are allowed to start cross-origin shared workers.
+    return scheme == extensions::kExtensionScheme;
+#else
+    return false;
+#endif
+}
+
 void ContentBrowserClientQt::OverrideURLLoaderFactoryParams(content::BrowserContext *browser_context,
                                                             const url::Origin &origin,
                                                             bool is_for_isolated_world,
@@ -1148,6 +1159,24 @@ void ContentBrowserClientQt::RegisterNonNetworkWorkerMainResourceURLLoaderFactor
 
     for (const QByteArray &scheme : profileAdapter->customUrlSchemes())
         factories->emplace(scheme.toStdString(), CreateCustomURLLoaderFactory(profileAdapter));
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    factories->emplace(
+        extensions::kExtensionScheme,
+        extensions::CreateExtensionWorkerMainResourceURLLoaderFactory(browser_context));
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+}
+
+void ContentBrowserClientQt::RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(content::BrowserContext* browser_context,
+                                                                                     NonNetworkURLLoaderFactoryMap* factories)
+{
+    DCHECK(browser_context);
+    DCHECK(factories);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    factories->emplace(
+        extensions::kExtensionScheme,
+        extensions::CreateExtensionServiceWorkerScriptURLLoaderFactory(browser_context));
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 }
 
 void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int render_process_id, int render_frame_id,
@@ -1299,6 +1328,15 @@ void ContentBrowserClientQt::SiteInstanceDeleting(content::SiteInstance *site_in
     extensions::ProcessMap *processMap = extensions::ProcessMap::Get(context);
     processMap->Remove(extension->id(), site_instance->GetProcess()->GetID(), site_instance->GetId());
 #endif
+}
+
+content::WebContentsViewDelegate *ContentBrowserClientQt::GetWebContentsViewDelegate(content::WebContents *web_contents)
+{
+    FormInteractionTabHelper::CreateForWebContents(web_contents);
+    if (auto *registry = performance_manager::PerformanceManagerRegistry::GetInstance())
+        registry->MaybeCreatePageNodeForWebContents(web_contents);
+
+     return nullptr;
 }
 
 } // namespace QtWebEngineCore
