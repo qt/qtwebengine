@@ -56,3 +56,42 @@ function(get_qt_features outList module)
         set(${outList} "${${outList}}" "${_featureList}" PARENT_SCOPE)
     endif()
 endfunction()
+
+function(get_configure_mode configureMode)
+    if (NOT DEFINED WEBENGINE_REPO_BUILD)
+        set(${configureMode} NO_CONFIG_HEADER_FILE NO_SYNC_QT PARENT_SCOPE)
+    endif()
+endfunction()
+
+function(make_config_for_gn target configFileName)
+    if(NOT DEFINED WEBENGINE_REPO_BUILD)
+        file(GENERATE
+            OUTPUT ${configFileName}.cxx.cmake
+            CONTENT [[
+                set(GN_INCLUDES_IN $<TARGET_PROPERTY:INCLUDE_DIRECTORIES>)
+                set(GN_DEFINES_IN $<TARGET_PROPERTY:COMPILE_DEFINITIONS>)
+                set(GN_LIBS_IN $<TARGET_PROPERTY:LINK_LIBRARIES>)
+                set(GN_LINK_OPTIONS_IN $<TARGET_PROPERTY:LINK_OPTIONS>)
+                set(GN_CXX_COMPILE_OPTIONS_IN $<TARGET_PROPERTY:COMPILE_OPTIONS>)]]
+            CONDITION $<COMPILE_LANGUAGE:CXX>
+            TARGET ${target})
+        file(GENERATE
+            OUTPUT ${configFileName}.c.cmake
+            CONTENT [[ set(GN_C_COMPILE_OPTIONS_IN $<TARGET_PROPERTY:COMPILE_OPTIONS>)]]
+            CONDITION $<COMPILE_LANGUAGE:C>
+            TARGET ${target})
+    endif()
+endfunction()
+
+function(make_install_only target)
+    if(NOT DEFINED WEBENGINE_REPO_BUILD)
+        set_target_properties(${target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+    endif()
+endfunction()
+
+macro(assertRunAsTopLevelBuild condition)
+    if (NOT DEFINED WEBENGINE_REPO_BUILD AND ${condition})
+        message(FATAL_ERROR "This cmake file should run as top level build.")
+        return()
+    endif()
+endmacro()

@@ -1,7 +1,7 @@
 set(GN_DEFINES QT_NO_KEYWORDS
       QT_USE_QSTRINGBUILDER
       QTWEBENGINECORE_VERSION_STR=\\\"${QT_REPO_MODULE_VERSION}\\\"
-      QTWEBENGINEPROCESS_NAME=\\\"${QTWEBENGINEPROCESS_NAME}\\\"
+      QTWEBENGINEPROCESS_NAME=\\\"${qtWebEngineProcessName}\\\"
       BUILDING_CHROMIUM)
 
 set(GN_SOURCES_IN
@@ -242,6 +242,13 @@ foreach(GN_DEFINE ${GN_DEFINES_IN})
 endforeach()
 string(REPLACE ";" ",\n  " GN_ARGS_DEFINES "${GN_ARGS_DEFINES}")
 string(REPLACE ";" ",\n  " GN_DEFINES "${GN_DEFINES}")
+# we had no qtsync on headers during configure, so take current interface from expression generator
+get_target_property(moduleIncludes WebEngineCore INCLUDE_DIRECTORIES)
+foreach(moduleInclude  ${moduleIncludes})
+    if (moduleInclude MATCHES "\\$<BUILD_INTERFACE:([^,>]+)>")
+        list(APPEND GN_INCLUDES_IN ${CMAKE_MATCH_1})
+    endif()
+endforeach()
 list(REMOVE_DUPLICATES GN_INCLUDES_IN)
 foreach(GN_INCLUDE ${GN_INCLUDES_IN})
     list(APPEND GN_ARGS_INCLUDES \"-I${GN_INCLUDE}\")
@@ -261,3 +268,4 @@ foreach(GN_C_COMPILE_OPTION ${GN_C_COMPILE_OPTIONS_IN})
 endforeach()
 list(REMOVE_DUPLICATES GN_CFLAGS_C)
 string(REPLACE ";" ",\n  " GN_CFLAGS_C "${GN_CFLAGS_C}")
+

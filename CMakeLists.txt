@@ -4,7 +4,7 @@ include(.cmake.conf)
 include(ExternalProject)
 include(cmake/Functions.cmake)
 
-project(QtWebEngineSuperBuild
+project(QtWebEngineRepoSuperBuild
     VERSION "${QT_REPO_MODULE_VERSION}"
     DESCRIPTION "Qt WebEngine Libraries"
     HOMEPAGE_URL "https://qt.io/"
@@ -25,7 +25,6 @@ set(__QtFeature_only_evaluate_features OFF)
 include(configure.cmake)
 include(src/core/api/configure.cmake)
 qt_feature_module_end(ONLY_EVALUATE_FEATURES)
-qt_build_repo_end()
 
 if(NOT ${webEngineSupport})
     add_custom_target(WebEngineErrorMessage ALL
@@ -46,6 +45,10 @@ endif()
 if(NOT QT_FEATURE_qtwebengine_build AND NOT QT_FEATURE_qtpdf_build)
     return()
 endif()
+
+add_subdirectory(src/core/api)
+add_subdirectory(src/process)
+qt_build_repo_end()
 
 ### NINJA
 
@@ -87,20 +90,22 @@ get_qt_features(featureList webengine)
 get_qt_features(featureList qtwebengine)
 
 list(TRANSFORM featureList PREPEND "-D")
-list(APPEND webenginecoreCmakeArgs
+list(APPEND libsCmakeArgs
         "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
         "-DWEBENGINE_ROOT_BUILD_PATH=${CMAKE_CURRENT_BINARY_DIR}"
         "-DWEBENGINE_ROOT_SOURCE_DIR=${WEBENGINE_ROOT_SOURCE_DIR}"
-        "${featureList}")
+        "-DWEBENGINE_REPO_BUILD=TRUE"
+        "${featureList}"
+)
 
 externalproject_add(libs
-    SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/src/core
-    BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR}/src/core
-    INSTALL_DIR ${installDir}
+    SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/src
+    BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR}/src
     PREFIX      libs
     USES_TERMINAL_CONFIGURE ON
     USES_TERMINAL_BUILD ON
-    CMAKE_ARGS  ${webenginecoreCmakeArgs}
+    BUILD_ALWAYS TRUE
+    CMAKE_ARGS  ${libsCmakeArgs}
 )
 
 if(NOT Gn_FOUND)
@@ -111,3 +116,10 @@ if(NOT Ninja_FOUND)
     externalproject_add_stepdependencies(gn install ninja)
 endif()
 
+# install resources (again), coin calls install with DESTDIR
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/translations/qtwebengine_locales
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/translations
+)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/resources
+    DESTINATION ${CMAKE_INSTALL_PREFIX}
+)
