@@ -41,7 +41,6 @@
 #include "qquickwebenginehistory_p_p.h"
 
 #include "qquickwebenginefaviconprovider_p_p.h"
-#include "qquickwebengineloadrequest_p.h"
 #include "qquickwebengineview_p_p.h"
 #include "web_contents_adapter.h"
 

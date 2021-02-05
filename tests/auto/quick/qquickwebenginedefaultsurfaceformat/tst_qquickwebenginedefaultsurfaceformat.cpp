@@ -126,10 +126,10 @@ void tst_QQuickWebEngineDefaultSurfaceFormat::customDefaultSurfaceFormat()
 
     QObject::connect(
         view,
-        &QQuickWebEngineView::loadingChanged, [](QQuickWebEngineLoadRequest* request)
+        &QQuickWebEngineView::loadingChanged, [](const QWebEngineLoadRequest &request)
         {
-            if (request->status() == QQuickWebEngineView::LoadSucceededStatus
-               || request->status() == QQuickWebEngineView::LoadFailedStatus)
+            if (request.status() == QWebEngineLoadRequest::LoadSucceededStatus
+               || request.status() == QWebEngineLoadRequest::LoadFailedStatus)
                 QTimer::singleShot(100, qApp, &QCoreApplication::quit);
         }
     );

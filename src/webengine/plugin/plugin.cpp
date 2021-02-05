@@ -44,7 +44,6 @@
 #include <QtWebEngine/private/qquickwebenginedialogrequests_p.h>
 #include <QtWebEngine/private/qquickwebenginehistory_p.h>
 #include <QtWebEngine/private/qquickwebenginefaviconprovider_p_p.h>
-#include <QtWebEngine/private/qquickwebengineloadrequest_p.h>
 #include <QtWebEngine/private/qquickwebenginenavigationrequest_p.h>
 #include <QtWebEngine/private/qquickwebenginenewviewrequest_p.h>
 #include <QtWebEngine/private/qquickwebenginesettings_p.h>
@@ -55,6 +54,7 @@
 #include <QtWebEngineCore/qwebenginecertificateerror.h>
 #include <QtWebEngineCore/qwebenginefindtextresult.h>
 #include <QtWebEngineCore/qwebenginefullscreenrequest.h>
+#include <QtWebEngineCore/qwebengineloadrequest.h>
 #include <QtWebEngineCore/qwebenginenotification.h>
 #include <QtWebEngineCore/qwebenginequotarequest.h>
 #include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
@@ -86,7 +86,7 @@ public:
         Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
 
         qmlRegisterType<QQuickWebEngineView>(uri, 1, 0, "WebEngineView");
-        qmlRegisterUncreatableType<QQuickWebEngineLoadRequest>(uri, 1, 0, "WebEngineLoadRequest", msgUncreatableType("WebEngineLoadRequest"));
+        qmlRegisterUncreatableType<QWebEngineLoadRequest>(uri, 1, 0, "WebEngineLoadRequest", msgUncreatableType("WebEngineLoadRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineNavigationRequest>(uri, 1, 0, "WebEngineNavigationRequest", msgUncreatableType("WebEngineNavigationRequest"));
 
         qmlRegisterType<QQuickWebEngineView, 1>(uri, 1, 1, "WebEngineView");

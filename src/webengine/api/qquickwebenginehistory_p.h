@@ -63,7 +63,6 @@ QT_BEGIN_NAMESPACE
 class QQuickWebEngineHistory;
 class QQuickWebEngineHistoryPrivate;
 class QQuickWebEngineHistoryListModelPrivate;
-class QQuickWebEngineLoadRequest;
 class QQuickWebEngineViewPrivate;
 
 class Q_WEBENGINE_EXPORT QQuickWebEngineHistoryListModel : public QAbstractListModel {

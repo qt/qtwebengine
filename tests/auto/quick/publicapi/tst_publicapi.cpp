@@ -43,12 +43,12 @@
 #include <QtWebEngineCore/QWebEngineContextMenuRequest>
 #include <QtWebEngineCore/QWebEngineDownloadRequest>
 #include <QtWebEngineCore/QWebEngineScript>
+#include <QtWebEngineCore/QWebEngineLoadRequest>
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebengineaction_p.h>
 #include <private/qquickwebengineclientcertificateselection_p.h>
 #include <private/qquickwebenginedialogrequests_p.h>
 #include <private/qquickwebenginehistory_p.h>
-#include <private/qquickwebengineloadrequest_p.h>
 #include <private/qquickwebenginenavigationrequest_p.h>
 #include <private/qquickwebenginenewviewrequest_p.h>
 #include <private/qquickwebenginesettings_p.h>
@@ -68,7 +68,7 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QWebEngineDownloadRequest::staticMetaObject
     << &QQuickWebEngineHistory::staticMetaObject
     << &QQuickWebEngineHistoryListModel::staticMetaObject
-    << &QQuickWebEngineLoadRequest::staticMetaObject
+    << &QWebEngineLoadRequest::staticMetaObject
     << &QQuickWebEngineNavigationRequest::staticMetaObject
     << &QQuickWebEngineNewViewRequest::staticMetaObject
     << &QQuickWebEngineProfile::staticMetaObject
@@ -311,11 +311,22 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineJavaScriptDialogRequest.securityOrigin --> QUrl"
     << "QQuickWebEngineJavaScriptDialogRequest.title --> QString"
     << "QQuickWebEngineJavaScriptDialogRequest.type --> DialogType"
-    << "QQuickWebEngineLoadRequest.errorCode --> int"
-    << "QQuickWebEngineLoadRequest.errorDomain --> QQuickWebEngineView::ErrorDomain"
-    << "QQuickWebEngineLoadRequest.errorString --> QString"
-    << "QQuickWebEngineLoadRequest.status --> QQuickWebEngineView::LoadStatus"
-    << "QQuickWebEngineLoadRequest.url --> QUrl"
+    << "QWebEngineLoadRequest.errorCode --> int"
+    << "QWebEngineLoadRequest.errorDomain --> ErrorDomain"
+    << "QWebEngineLoadRequest.errorString --> QString"
+    << "QWebEngineLoadRequest.status --> LoadStatus"
+    << "QWebEngineLoadRequest.url --> QUrl"
+    << "QWebEngineLoadRequest.LoadFailedStatus --> LoadStatus"
+    << "QWebEngineLoadRequest.LoadStartedStatus --> LoadStatus"
+    << "QWebEngineLoadRequest.LoadStoppedStatus --> LoadStatus"
+    << "QWebEngineLoadRequest.LoadSucceededStatus --> LoadStatus"
+    << "QWebEngineLoadRequest.CertificateErrorDomain --> ErrorDomain"
+    << "QWebEngineLoadRequest.ConnectionErrorDomain --> ErrorDomain"
+    << "QWebEngineLoadRequest.DnsErrorDomain --> ErrorDomain"
+    << "QWebEngineLoadRequest.FtpErrorDomain --> ErrorDomain"
+    << "QWebEngineLoadRequest.HttpErrorDomain --> ErrorDomain"
+    << "QWebEngineLoadRequest.InternalErrorDomain --> ErrorDomain"
+    << "QWebEngineLoadRequest.NoErrorDomain --> ErrorDomain"
     << "QQuickWebEngineNavigationRequest.action --> QQuickWebEngineView::NavigationRequestAction"
     << "QQuickWebEngineNavigationRequest.actionChanged() --> void"
     << "QQuickWebEngineNavigationRequest.isMainFrame --> bool"
@@ -707,7 +718,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.loadProgress --> int"
     << "QQuickWebEngineView.loadProgressChanged() --> void"
     << "QQuickWebEngineView.loading --> bool"
-    << "QQuickWebEngineView.loadingChanged(QQuickWebEngineLoadRequest*) --> void"
+    << "QQuickWebEngineView.loadingChanged(QWebEngineLoadRequest) --> void"
     << "QQuickWebEngineView.navigationHistory --> QQuickWebEngineHistory*"
     << "QQuickWebEngineView.navigationRequested(QQuickWebEngineNavigationRequest*) --> void"
     << "QQuickWebEngineView.newViewRequested(QQuickWebEngineNewViewRequest*) --> void"

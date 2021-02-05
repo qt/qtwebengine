@@ -74,7 +74,7 @@ class QQuickWebEngineFaviconProvider;
 class QQuickWebEngineFileDialogRequest;
 class QQuickWebEngineHistory;
 class QQuickWebEngineJavaScriptDialogRequest;
-class QQuickWebEngineLoadRequest;
+class QWebEngineLoadRequest;
 class QQuickWebEngineNavigationRequest;
 class QQuickWebEngineNewViewRequest;
 class QQuickWebEngineSettings;
@@ -529,7 +529,7 @@ Q_SIGNALS:
     void titleChanged();
     void urlChanged();
     void iconChanged();
-    void loadingChanged(QQuickWebEngineLoadRequest *loadRequest);
+    void loadingChanged(const QWebEngineLoadRequest &loadRequest);
     void loadProgressChanged();
     void linkHovered(const QUrl &hoveredUrl);
     void navigationRequested(QQuickWebEngineNavigationRequest *request);

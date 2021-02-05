@@ -52,7 +52,6 @@
 #include "qquickwebengineclientcertificateselection_p.h"
 #include "qquickwebenginedialogrequests_p.h"
 #include "qquickwebenginefaviconprovider_p_p.h"
-#include "qquickwebengineloadrequest_p.h"
 #include "qquickwebenginenavigationrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
 #include "qquickwebengineprofile_p.h"
@@ -61,6 +60,7 @@
 #include "qwebenginecertificateerror.h"
 #include "qwebenginefindtextresult.h"
 #include "qwebenginefullscreenrequest.h"
+#include "qwebengineloadrequest.h"
 #include "qwebenginequotarequest.h"
 #include "qwebenginescriptcollection.h"
 #include "qwebenginescriptcollection_p.h"
@@ -98,6 +98,20 @@
 #include <QtGui/qpa/qplatformintegration.h>
 QT_BEGIN_NAMESPACE
 using namespace QtWebEngineCore;
+
+using LoadStatus = QWebEngineLoadRequest::LoadStatus;
+using ErrorDomain = QWebEngineLoadRequest::ErrorDomain;
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::NoErrorDomain)          == static_cast<int>(ErrorDomain::NoErrorDomain));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::InternalErrorDomain)    == static_cast<int>(ErrorDomain::InternalErrorDomain));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::ConnectionErrorDomain)  == static_cast<int>(ErrorDomain::ConnectionErrorDomain));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::CertificateErrorDomain) == static_cast<int>(ErrorDomain::CertificateErrorDomain));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::HttpErrorDomain)        == static_cast<int>(ErrorDomain::HttpErrorDomain));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::FtpErrorDomain)         == static_cast<int>(ErrorDomain::FtpErrorDomain));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::DnsErrorDomain)         == static_cast<int>(ErrorDomain::DnsErrorDomain));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::LoadStartedStatus)   == static_cast<int>(LoadStatus::LoadStartedStatus));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::LoadStoppedStatus)   == static_cast<int>(LoadStatus::LoadStoppedStatus));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::LoadFailedStatus)    == static_cast<int>(LoadStatus::LoadFailedStatus));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::LoadSucceededStatus) == static_cast<int>(LoadStatus::LoadSucceededStatus));
 
 #ifndef QT_NO_ACCESSIBILITY
 static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *object)
@@ -467,9 +481,7 @@ void QQuickWebEngineViewPrivate::loadStarted(const QUrl &provisionalUrl, bool is
     m_history->reset();
 
     QTimer::singleShot(0, q, [q, provisionalUrl]() {
-        QQuickWebEngineLoadRequest loadRequest(provisionalUrl, QQuickWebEngineView::LoadStartedStatus);
-
-        emit q->loadingChanged(&loadRequest);
+        emit q->loadingChanged(QWebEngineLoadRequest(provisionalUrl, LoadStatus::LoadStartedStatus));
     });
 }
 
@@ -504,10 +516,6 @@ void QQuickWebEngineViewPrivate::didCompositorFrameSwap()
 #endif
 }
 
-Q_STATIC_ASSERT(static_cast<int>(WebEngineError::NoErrorDomain) == static_cast<int>(QQuickWebEngineView::NoErrorDomain));
-Q_STATIC_ASSERT(static_cast<int>(WebEngineError::CertificateErrorDomain) == static_cast<int>(QQuickWebEngineView::CertificateErrorDomain));
-Q_STATIC_ASSERT(static_cast<int>(WebEngineError::DnsErrorDomain) == static_cast<int>(QQuickWebEngineView::DnsErrorDomain));
-
 void QQuickWebEngineViewPrivate::loadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode,
                                               const QString &errorDescription, bool triggersErrorPage)
 {
@@ -526,24 +534,21 @@ void QQuickWebEngineViewPrivate::loadFinished(bool success, const QUrl &url, boo
     m_history->reset();
     if (errorCode == WebEngineError::UserAbortedError) {
         QTimer::singleShot(0, q, [q, url]() {
-            QQuickWebEngineLoadRequest loadRequest(url, QQuickWebEngineView::LoadStoppedStatus);
-            emit q->loadingChanged(&loadRequest);
+            emit q->loadingChanged(QWebEngineLoadRequest(url, LoadStatus::LoadStoppedStatus));
         });
         return;
     }
     if (success) {
         QTimer::singleShot(0, q, [q, url, errorDescription, errorCode]() {
-            QQuickWebEngineLoadRequest loadRequest(url, QQuickWebEngineView::LoadSucceededStatus, errorDescription, errorCode);
-            emit q->loadingChanged(&loadRequest);
+            emit q->loadingChanged(QWebEngineLoadRequest(url, LoadStatus::LoadSucceededStatus, errorDescription, errorCode));
         });
         return;
     }
 
     Q_ASSERT(errorCode);
-    QQuickWebEngineView::ErrorDomain errorDomain = static_cast<QQuickWebEngineView::ErrorDomain>(WebEngineError::toQtErrorDomain(errorCode));
+    auto errorDomain = static_cast<ErrorDomain>(WebEngineError::toQtErrorDomain(errorCode));
     QTimer::singleShot(0, q, [q, url, errorDescription, errorCode, errorDomain]() {
-        QQuickWebEngineLoadRequest loadRequest(url, QQuickWebEngineView::LoadFailedStatus,errorDescription, errorCode, errorDomain);
-        emit q->loadingChanged(&loadRequest);
+        emit q->loadingChanged(QWebEngineLoadRequest(url, LoadStatus::LoadFailedStatus, errorDescription, errorCode, errorDomain));
     });
     return;
 }
@@ -939,8 +944,7 @@ void QQuickWebEngineViewPrivate::initializationFinished()
     emit q->titleChanged();
     emit q->urlChanged();
     emit q->iconChanged();
-    QQuickWebEngineLoadRequest loadRequest(m_url, QQuickWebEngineView::LoadSucceededStatus);
-    emit q->loadingChanged(&loadRequest);
+    emit q->loadingChanged(QWebEngineLoadRequest(m_url, LoadStatus::LoadSucceededStatus));
     emit q->loadProgressChanged();
 
     m_isBeingAdopted = false;

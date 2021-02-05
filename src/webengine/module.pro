@@ -20,7 +20,6 @@ SOURCES = \
         api/qquickwebenginedialogrequests.cpp \
         api/qquickwebenginehistory.cpp \
         api/qquickwebenginefaviconprovider.cpp \
-        api/qquickwebengineloadrequest.cpp \
         api/qquickwebenginenavigationrequest.cpp \
         api/qquickwebenginenewviewrequest.cpp \
         api/qquickwebengineprofile.cpp \
@@ -43,7 +42,6 @@ HEADERS = \
         api/qquickwebenginedialogrequests_p.h \
         api/qquickwebenginehistory_p.h \
         api/qquickwebenginefaviconprovider_p_p.h \
-        api/qquickwebengineloadrequest_p.h \
         api/qquickwebenginenavigationrequest_p.h \
         api/qquickwebenginenewviewrequest_p.h \
         api/qquickwebengineprofile.h \

@@ -17,7 +17,7 @@ Module {
         exportMetaObjectRevisions: [0]
         Signal {
             name: "loadingChanged"
-            Parameter { name: "loadRequest"; type: "QQuickWebEngineLoadRequest"; isPointer: true }
+            Parameter { name: "loadRequest"; type: "QWebEngineLoadRequest"; isPointer: true }
         }
     }
     Component {

@@ -702,7 +702,7 @@ Module {
         Method { name: "dialogReject" }
     }
     Component {
-        name: "QQuickWebEngineLoadRequest"
+        name: "QWebEngineLoadRequest"
         prototype: "QObject"
         exports: ["QtWebEngine/WebEngineLoadRequest 1.0"]
         isCreatable: false
@@ -1350,7 +1350,7 @@ Module {
         Property { name: "renderProcessId"; revision: 11; type: "qint64"; isReadonly: true }
         Signal {
             name: "loadingChanged"
-            Parameter { name: "loadRequest"; type: "QQuickWebEngineLoadRequest"; isPointer: true }
+            Parameter { name: "loadRequest"; type: "QWebEngineLoadRequest" }
         }
         Signal {
             name: "linkHovered"

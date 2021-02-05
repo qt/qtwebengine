@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,51 +37,68 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINELOADREQUEST_P_H
-#define QQUICKWEBENGINELOADREQUEST_P_H
+#ifndef QWEBENGINELOADREQUEST_H
+#define QWEBENGINELOADREQUEST_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
-#include <QtWebEngine/private/qtwebengineglobal_p.h>
-#include "qquickwebengineview_p.h"
+#include <QObject>
+#include <QUrl>
 
 QT_BEGIN_NAMESPACE
 
-class QQuickWebEngineLoadRequestPrivate;
 
-class Q_WEBENGINE_EXPORT QQuickWebEngineLoadRequest : public QObject {
-    Q_OBJECT
+class Q_WEBENGINECORE_EXPORT QWebEngineLoadRequest
+{
+    Q_GADGET
     Q_PROPERTY(QUrl url READ url CONSTANT FINAL)
-    Q_PROPERTY(QQuickWebEngineView::LoadStatus status READ status CONSTANT FINAL)
+    Q_PROPERTY(LoadStatus status READ status CONSTANT FINAL)
     Q_PROPERTY(QString errorString READ errorString CONSTANT FINAL)
-    Q_PROPERTY(QQuickWebEngineView::ErrorDomain errorDomain READ errorDomain CONSTANT FINAL)
+    Q_PROPERTY(ErrorDomain errorDomain READ errorDomain CONSTANT FINAL)
     Q_PROPERTY(int errorCode READ errorCode CONSTANT FINAL)
 
 public:
-    QQuickWebEngineLoadRequest(const QUrl& url, QQuickWebEngineView::LoadStatus status, const QString& errorString = QString(), int errorCode = 0, QQuickWebEngineView::ErrorDomain errorDomain = QQuickWebEngineView::NoErrorDomain, QObject* parent = 0);
-    ~QQuickWebEngineLoadRequest();
+    enum LoadStatus {
+        LoadStartedStatus,
+        LoadStoppedStatus,
+        LoadSucceededStatus,
+        LoadFailedStatus
+    };
+    Q_ENUM(LoadStatus)
+
+    enum ErrorDomain {
+         NoErrorDomain,
+         InternalErrorDomain,
+         ConnectionErrorDomain,
+         CertificateErrorDomain,
+         HttpErrorDomain,
+         FtpErrorDomain,
+         DnsErrorDomain
+    };
+    Q_ENUM(ErrorDomain)
+
+    QWebEngineLoadRequest(const QWebEngineLoadRequest &other);
+    QWebEngineLoadRequest &operator=(const QWebEngineLoadRequest &other);
+    QWebEngineLoadRequest(QWebEngineLoadRequest &&other);
+    QWebEngineLoadRequest &operator=(QWebEngineLoadRequest &&other);
+    ~QWebEngineLoadRequest();
+
     QUrl url() const;
-    QQuickWebEngineView::LoadStatus status() const;
+    LoadStatus status() const;
     QString errorString() const;
-    QQuickWebEngineView::ErrorDomain errorDomain() const;
+    ErrorDomain errorDomain() const;
     int errorCode() const;
 
 private:
-    Q_DECLARE_PRIVATE(QQuickWebEngineLoadRequest)
-    QScopedPointer<QQuickWebEngineLoadRequestPrivate> d_ptr;
+    QWebEngineLoadRequest(const QUrl& url, LoadStatus status, const QString& errorString = QString(),
+                          int errorCode = 0, ErrorDomain errorDomain = NoErrorDomain);
+    class QWebEngineLoadRequestPrivate;
+    Q_DECLARE_PRIVATE(QWebEngineLoadRequest)
+    QExplicitlySharedDataPointer<QWebEngineLoadRequestPrivate> d_ptr;
+    friend class QQuickWebEngineViewPrivate;
+    friend class QQuickWebEngineErrorPage;
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QQuickWebEngineLoadRequest)
-
-#endif // QQUICKWEBENGINELOADREQUEST_P_H
+#endif // QWEBENGINELOADREQUEST_H

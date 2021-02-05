@@ -62,6 +62,7 @@ HEADERS = \
     qwebenginecontextmenurequest_p.h \
     qwebenginedownloadrequest.h \
     qwebenginedownloadrequest_p.h \
+    qwebengineloadrequest.h \
     qwebenginesettings.h \
     qwebenginescript.h \
     qwebenginescriptcollection.h \
@@ -92,6 +93,7 @@ SOURCES = \
     qwebengineurlschemehandler.cpp \
     qwebenginecontextmenurequest.cpp \
     qwebenginedownloadrequest.cpp \
+    qwebengineloadrequest.cpp \
     qwebenginesettings.cpp \
     qwebenginescript.cpp \
     qwebenginescriptcollection.cpp \

@@ -35,7 +35,7 @@
 #include <QTimer>
 #include <QtTest/QtTest>
 #include <QtWebEngine/private/qquickwebengineview_p.h>
-#include <QtWebEngine/private/qquickwebengineloadrequest_p.h>
+#include <QtWebEngineCore/QWebEngineLoadRequest>
 #include <QGuiApplication>
 
 #if !defined(TESTS_SOURCE_DIR)
@@ -48,7 +48,7 @@ class LoadSpy : public QEventLoop {
 public:
     LoadSpy(QQuickWebEngineView *webEngineView)
     {
-        connect(webEngineView, SIGNAL(loadingChanged(QQuickWebEngineLoadRequest*)), SLOT(onLoadingChanged(QQuickWebEngineLoadRequest*)));
+        connect(webEngineView, &QQuickWebEngineView::loadingChanged, this, &LoadSpy::onLoadingChanged);
     }
 
     ~LoadSpy() { }
@@ -58,11 +58,11 @@ Q_SIGNALS:
     void loadFailed();
 
 private Q_SLOTS:
-    void onLoadingChanged(QQuickWebEngineLoadRequest *loadRequest)
+    void onLoadingChanged(const QWebEngineLoadRequest &request)
     {
-        if (loadRequest->status() == QQuickWebEngineView::LoadSucceededStatus)
+        if (request.status() == QWebEngineLoadRequest::LoadSucceededStatus)
             emit loadSucceeded();
-        else if (loadRequest->status() == QQuickWebEngineView::LoadFailedStatus)
+        else if (request.status() == QWebEngineLoadRequest::LoadFailedStatus)
             emit loadFailed();
     }
 };
@@ -74,15 +74,15 @@ public:
     LoadStartedCatcher(QQuickWebEngineView *webEngineView)
         : m_webEngineView(webEngineView)
     {
-        connect(m_webEngineView, SIGNAL(loadingChanged(QQuickWebEngineLoadRequest*)), this, SLOT(onLoadingChanged(QQuickWebEngineLoadRequest*)));
+        connect(m_webEngineView, &QQuickWebEngineView::loadingChanged, this, &LoadStartedCatcher::onLoadingChanged);
     }
 
     virtual ~LoadStartedCatcher() { }
 
 public Q_SLOTS:
-    void onLoadingChanged(QQuickWebEngineLoadRequest *loadRequest)
+    void onLoadingChanged(const QWebEngineLoadRequest &request)
     {
-        if (loadRequest->status() == QQuickWebEngineView::LoadStartedStatus)
+        if (request.status() == QWebEngineLoadRequest::LoadStartedStatus)
             QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
     }
 
