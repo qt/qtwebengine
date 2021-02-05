@@ -53,6 +53,10 @@
 
 #include <QScopedPointer>
 
+namespace chrome {
+class WebRtcLoggingAgentImpl;
+}
+
 namespace error_page {
 class Error;
 }
@@ -130,6 +134,11 @@ public:
                                           const chrome::mojom::PluginInfo& plugin_info);
 #endif
 
+#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
+    chrome::WebRtcLoggingAgentImpl *GetWebRtcLoggingAgent();
+#endif
+
+
 private:
 #if BUILDFLAG(ENABLE_SPELLCHECK)
     void InitSpellCheck();
@@ -146,6 +155,9 @@ private:
     QScopedPointer<web_cache::WebCacheImpl> m_webCacheImpl;
 #if QT_CONFIG(webengine_spellchecker)
     QScopedPointer<SpellCheck> m_spellCheck;
+#endif
+#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
+    std::unique_ptr<chrome::WebRtcLoggingAgentImpl> m_webrtcLoggingAgentImpl;
 #endif
 
     DISALLOW_COPY_AND_ASSIGN(ContentRendererClientQt);

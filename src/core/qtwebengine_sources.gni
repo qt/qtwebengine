@@ -89,6 +89,8 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/ui/webui/user_actions/user_actions_ui.h",
     "//chrome/browser/ui/webui/user_actions/user_actions_ui_handler.cc",
     "//chrome/browser/ui/webui/user_actions/user_actions_ui_handler.h",
+    "//chrome/browser/ui/webui/webui_util.cc",
+    "//chrome/browser/ui/webui/webui_util.h",
     "//chrome/common/custom_handlers/protocol_handler.cc",
     "//chrome/common/custom_handlers/protocol_handler.h",
     "//chrome/common/chrome_switches.cc",
@@ -197,6 +199,50 @@ source_set("qtwebengine_sources") {
          "//components/printing/browser",
          "//components/printing/renderer",
       ]
+  }
+
+  if (enable_webrtc && enable_extensions) {
+    deps += [
+      "//chrome/browser/resources/media:webrtc_logs_resources",
+      "//components/upload_list",
+      "//components/webrtc_logging/browser",
+      "//components/webrtc_logging/common",
+    ]
+
+    sources += [
+      "//chrome/browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.cc",
+      "//chrome/browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h",
+      "//chrome/browser/media/webrtc/audio_debug_recordings_handler.cc",
+      "//chrome/browser/media/webrtc/audio_debug_recordings_handler.h",
+      "//chrome/browser/media/webrtc/webrtc_event_log_history.cc",
+      "//chrome/browser/media/webrtc/webrtc_event_log_history.h",
+      "//chrome/browser/media/webrtc/webrtc_event_log_manager.cc",
+      "//chrome/browser/media/webrtc/webrtc_event_log_manager.h",
+      "//chrome/browser/media/webrtc/webrtc_event_log_manager_common.cc",
+      "//chrome/browser/media/webrtc/webrtc_event_log_manager_common.h",
+      "//chrome/browser/media/webrtc/webrtc_event_log_manager_local.cc",
+      "//chrome/browser/media/webrtc/webrtc_event_log_manager_local.h",
+      "//chrome/browser/media/webrtc/webrtc_event_log_manager_remote.cc",
+      "//chrome/browser/media/webrtc/webrtc_event_log_manager_remote.h",
+      "//chrome/browser/media/webrtc/webrtc_event_log_uploader.cc",
+      "//chrome/browser/media/webrtc/webrtc_event_log_uploader.h",
+      "//chrome/browser/media/webrtc/webrtc_log_buffer.cc",
+      "//chrome/browser/media/webrtc/webrtc_log_buffer.h",
+      "//chrome/browser/media/webrtc/webrtc_log_uploader.cc",
+      "//chrome/browser/media/webrtc/webrtc_log_uploader.h",
+      "//chrome/browser/media/webrtc/webrtc_logging_controller.cc",
+      "//chrome/browser/media/webrtc/webrtc_logging_controller.h",
+      "//chrome/browser/media/webrtc/webrtc_rtp_dump_handler.cc",
+      "//chrome/browser/media/webrtc/webrtc_rtp_dump_handler.h",
+      "//chrome/browser/media/webrtc/webrtc_rtp_dump_writer.cc",
+      "//chrome/browser/media/webrtc/webrtc_rtp_dump_writer.h",
+      "//chrome/browser/media/webrtc/webrtc_text_log_handler.cc",
+      "//chrome/browser/media/webrtc/webrtc_text_log_handler.h",
+      "//chrome/browser/ui/webui/media/webrtc_logs_ui.cc",
+      "//chrome/browser/ui/webui/media/webrtc_logs_ui.h",
+      "//chrome/renderer/media/webrtc_logging_agent_impl.cc",
+      "//chrome/renderer/media/webrtc_logging_agent_impl.h",
+    ]
   }
 }
 

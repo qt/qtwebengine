@@ -44,6 +44,8 @@
 
 #include "webui_controller_factory_qt.h"
 
+#include "build_config_qt.h"
+
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/accessibility/accessibility_ui.h"
@@ -64,14 +66,14 @@
 #include "chrome/browser/ui/webui/sandbox/sandbox_internals_ui.h"
 #endif
 
+#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
+#include "chrome/browser/ui/webui/media/webrtc_logs_ui.h"
+#endif
+
 // The Following WebUIs are disabled because they currently doesn't build
 // or doesn't work, but would be interesting for us if they did:
 
 // #include "chrome/browser/ui/webui/inspect_ui.h"
-
-// #if BUILDFLAG(ENABLE_WEBRTC)
-// #include "chrome/browser/ui/webui/media/webrtc_logs_ui.h"
-// #endif
 
 // #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 // #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
@@ -152,10 +154,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
 //        return &NewWebUI<PrintPreviewUI>;
 //    }
 //#endif
-//#if BUILDFLAG(ENABLE_WEBRTC)
-//    if (url.host_piece() == chrome::kChromeUIWebRtcLogsHost)
-//        return &NewWebUI<WebRtcLogsUI>;
-//#endif
+#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
+    if (url.host_piece() == chrome::kChromeUIWebRtcLogsHost)
+        return &NewWebUI<WebRtcLogsUI>;
+#endif
 #if defined(OS_LINUX) || defined(OS_ANDROID)
     if (url.host_piece() == chrome::kChromeUISandboxHost)
         return &NewWebUI<SandboxInternalsUI>;

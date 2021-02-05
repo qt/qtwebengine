@@ -3142,7 +3142,7 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::newRow("user-actions") << QUrl("chrome://user-actions") << true;
     QTest::newRow("version") << QUrl("chrome://version") << false;
     QTest::newRow("webrtc-internals") << QUrl("chrome://webrtc-internals") << true;
-    QTest::newRow("webrtc-logs") << QUrl("chrome://webrtc-logs") << false;
+    QTest::newRow("webrtc-logs") << QUrl("chrome://webrtc-logs") << true;
 }
 
 void tst_QWebEngineView::webUIURLs()

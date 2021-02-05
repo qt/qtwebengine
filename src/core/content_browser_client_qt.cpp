@@ -111,6 +111,7 @@
 #include "web_contents_adapter.h"
 #include "web_contents_delegate_qt.h"
 #include "web_contents_view_qt.h"
+#include "web_engine_context.h"
 #include "web_engine_library_info.h"
 #include "api/qwebenginecookiestore.h"
 #include "api/qwebenginecookiestore_p.h"
@@ -138,6 +139,10 @@
 #if QT_CONFIG(webengine_spellchecker)
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
+#endif
+
+#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
+#include "chrome/browser/media/webrtc/webrtc_logging_controller.h"
 #endif
 
 #if defined(Q_OS_LINUX)
@@ -318,6 +323,10 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost 
 {
     const int id = host->GetID();
     Profile *profile = Profile::FromBrowserContext(host->GetBrowserContext());
+
+#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
+    WebRtcLoggingController::AttachToRenderProcessHost(host, WebEngineContext::current()->webRtcLogUploader());
+#endif
 
     // Allow requesting custom schemes.
     const auto policy = content::ChildProcessSecurityPolicy::GetInstance();

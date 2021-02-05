@@ -70,6 +70,10 @@
 #include "net/ssl/openssl_client_key_store.h"
 #endif
 
+#if !QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
+#include "chrome/browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h"
+#endif
+
 void *GetQtXDisplay()
 {
     return GLContextHelper::getXDisplay();
@@ -197,3 +201,77 @@ std::unique_ptr<ui::OSExchangeDataProvider> ui::OSExchangeDataProviderFactory::C
 {
     return nullptr;
 }
+
+#if !QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
+namespace extensions {
+ExtensionFunction::ResponseAction WebrtcLoggingPrivateSetMetaDataFunction::Run()
+{
+    return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction WebrtcLoggingPrivateStartFunction::Run()
+{
+    return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::Run()
+{
+    return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction WebrtcLoggingPrivateStopFunction::Run()
+{
+    return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction WebrtcLoggingPrivateStoreFunction::Run()
+{
+    return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction WebrtcLoggingPrivateUploadStoredFunction::Run()
+{
+    return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction WebrtcLoggingPrivateUploadFunction::Run()
+{
+    return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction WebrtcLoggingPrivateDiscardFunction::Run()
+{
+    return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction WebrtcLoggingPrivateStartRtpDumpFunction::Run()
+{
+    return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction WebrtcLoggingPrivateStopRtpDumpFunction::Run()
+{
+    return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction WebrtcLoggingPrivateStartAudioDebugRecordingsFunction::Run()
+{
+    return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction WebrtcLoggingPrivateStopAudioDebugRecordingsFunction::Run()
+{
+    return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction WebrtcLoggingPrivateStartEventLoggingFunction::Run()
+{
+    return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction WebrtcLoggingPrivateGetLogsDirectoryFunction::Run()
+{
+    return RespondNow(NoArguments());
+}
+} // namespace extensions
+#endif // !QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)

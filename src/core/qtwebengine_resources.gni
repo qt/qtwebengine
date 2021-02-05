@@ -70,6 +70,15 @@ repack("qtwebengine_repack_resources") {
       "//content/browser/webrtc/resources",
     ]
   }
+
+  if (enable_webrtc && enable_extensions) {
+    sources += [
+      "$root_gen_dir/chrome/webrtc_logs_resources.pak",
+    ]
+    deps += [
+      "//chrome/browser/resources/media:webrtc_logs_resources",
+    ]
+  }
 }
 
 repack("qtwebengine_repack_resources_100") {
