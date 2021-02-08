@@ -3136,7 +3136,7 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::newRow("system") << QUrl("chrome://system") << false;
     QTest::newRow("terms") << QUrl("chrome://terms") << false;
     QTest::newRow("thumbnails") << QUrl("chrome://thumbnails") << false;
-    QTest::newRow("tracing") << QUrl("chrome://tracing") << false;
+    QTest::newRow("tracing") << QUrl("chrome://tracing") << true;
     QTest::newRow("translate-internals") << QUrl("chrome://translate-internals") << false;
     QTest::newRow("usb-internals") << QUrl("chrome://usb-internals") << false;
     QTest::newRow("user-actions") << QUrl("chrome://user-actions") << true;
