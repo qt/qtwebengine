@@ -41,13 +41,16 @@
 
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
+
 #include <QGuiApplication>
-#include <QQuickPaintedItem>
 #include <QQuickWindow>
-#include <QSurfaceFormat>
 #include <QVariant>
 #include <QWindow>
-#include <QtQuick/private/qquickwindow_p.h>
+
+#if defined(Q_OS_MACOS) && QT_CONFIG(opengl)
+#include <QOpenGLContext>
+#include <QSurfaceFormat>
+#endif
 
 namespace QtWebEngineCore {
 
@@ -167,20 +170,9 @@ QSGTexture *RenderWidgetHostViewQtDelegateQuick::createTextureFromImage(const QI
     return QQuickItem::window()->createTextureFromImage(image, QQuickWindow::TextureCanUseAtlas);
 }
 
-QSGLayer *RenderWidgetHostViewQtDelegateQuick::createLayer()
-{
-    QSGRenderContext *renderContext = QQuickWindowPrivate::get(QQuickItem::window())->context;
-    return renderContext->sceneGraphContext()->createLayer(renderContext);
-}
-
 QSGImageNode *RenderWidgetHostViewQtDelegateQuick::createImageNode()
 {
     return QQuickItem::window()->createImageNode();
-}
-
-QSGRectangleNode *RenderWidgetHostViewQtDelegateQuick::createRectangleNode()
-{
-    return QQuickItem::window()->createRectangleNode();
 }
 
 void RenderWidgetHostViewQtDelegateQuick::update()

@@ -50,7 +50,6 @@
 #include <QSGAbstractRenderer>
 #include <QSGNode>
 #include <QWindow>
-#include <QtQuick/private/qquickwindow_p.h>
 
 namespace QtWebEngineCore {
 
@@ -296,20 +295,9 @@ QSGTexture *RenderWidgetHostViewQtDelegateWidget::createTextureFromImage(const Q
     return quickWindow()->createTextureFromImage(image, QQuickWindow::TextureCanUseAtlas);
 }
 
-QSGLayer *RenderWidgetHostViewQtDelegateWidget::createLayer()
-{
-    QSGRenderContext *renderContext = QQuickWindowPrivate::get(quickWindow())->context;
-    return renderContext->sceneGraphContext()->createLayer(renderContext);
-}
-
 QSGImageNode *RenderWidgetHostViewQtDelegateWidget::createImageNode()
 {
     return quickWindow()->createImageNode();
-}
-
-QSGRectangleNode *RenderWidgetHostViewQtDelegateWidget::createRectangleNode()
-{
-    return quickWindow()->createRectangleNode();
 }
 
 void RenderWidgetHostViewQtDelegateWidget::update()
