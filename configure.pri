@@ -143,6 +143,7 @@ defineTest(qtConfTest_detectArch) {
     contains(QT_ARCH, "i386")|contains(QT_ARCH, "x86_64"): return(true)
     contains(QT_ARCH, "arm")|contains(QT_ARCH, "arm64"): return(true)
     contains(QT_ARCH, "mips"): return(true)
+    contains(QT_ARCH, "mips64"): return(true)
     qtLog("Architecture not supported.")
     return(false)
 }

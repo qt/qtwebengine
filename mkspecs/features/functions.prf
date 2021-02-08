@@ -106,6 +106,7 @@ defineReplace(gnArch) {
     contains(qtArch, "arm64"): return(arm64)
     contains(qtArch, "mips"): return(mipsel)
     contains(qtArch, "mips64"): return(mips64el)
+    contains(qtArch, "mips64el"): return(mips64el)
     return(unknown)
 }
 
