@@ -78,6 +78,8 @@ public:
 
     Q_INVOKABLE void setResourceDirs(const QStringList &dirs) { m_dirs = dirs; }
 
+    Q_INVOKABLE void setHostDomain(const QString &host) { m_url.setHost(host); }
+
 Q_SIGNALS:
     // Emitted after a HTTP request has been successfully parsed.
     void newRequest(HttpReqRep *reqRep);

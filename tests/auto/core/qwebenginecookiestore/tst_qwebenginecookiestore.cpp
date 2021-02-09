@@ -249,22 +249,27 @@ void tst_QWebEngineCookieStore::basicFilterOverHTTP()
     QWebEngineCookieStore *client = m_profile->cookieStore();
 
     QAtomicInt accessTested = 0;
-    client->setCookieFilter([&](const QWebEngineCookieStore::FilterRequest &) { ++accessTested; return true; });
+    QList<QPair<QUrl, QUrl>> resourceFirstParty;
+    client->setCookieFilter([&](const QWebEngineCookieStore::FilterRequest &request) {
+        resourceFirstParty.append(qMakePair(request.origin, request.firstPartyUrl));
+        ++accessTested;
+        return true;
+    });
 
     HttpServer httpServer;
-
-    if (!httpServer.start())
-        QSKIP("Failed to start http server");
+    httpServer.setHostDomain(QString("sub.test.localhost"));
+    QVERIFY(httpServer.start());
 
     QByteArray cookieRequestHeader;
     connect(&httpServer, &HttpServer::newRequest, [&cookieRequestHeader](HttpReqRep *rr) {
-        if (rr->requestPath().size() <= 1) {
+        if (rr->requestMethod() == "GET" && rr->requestPath() == "/test.html") {
             cookieRequestHeader = rr->requestHeader(QByteArrayLiteral("Cookie"));
             if (cookieRequestHeader.isEmpty())
                 rr->setResponseHeader(QByteArrayLiteral("Set-Cookie"), QByteArrayLiteral("Test=test"));
+            rr->setResponseBody("<head><link rel='icon' type='image/png' href='resources/Fav.png'/>"
+                                "<title>Page with a favicon and an icon</title></head>"
+                                "<body><img src='resources/Img.ico'></body>");
             rr->sendResponse();
-        } else {
-            rr->sendResponse(404);
         }
     });
 
@@ -273,12 +278,13 @@ void tst_QWebEngineCookieStore::basicFilterOverHTTP()
     QSignalSpy cookieRemovedSpy(client, SIGNAL(cookieRemoved(const QNetworkCookie &)));
     QSignalSpy serverSpy(&httpServer, SIGNAL(newRequest(HttpReqRep *)));
 
-    page.load(httpServer.url());
+    QUrl firstPartyUrl = httpServer.url("/test.html");
+    page.load(firstPartyUrl);
 
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 30000);
     QVERIFY(loadSpy.takeFirst().takeFirst().toBool());
     QTRY_COMPARE(cookieAddedSpy.count(), 1);
-    QTRY_COMPARE(accessTested.loadAcquire(), 3);
+    QTRY_COMPARE(accessTested.loadAcquire(), 4);
     QVERIFY(cookieRequestHeader.isEmpty());
 
     page.triggerAction(QWebEnginePage::Reload);
@@ -286,12 +292,16 @@ void tst_QWebEngineCookieStore::basicFilterOverHTTP()
     QVERIFY(loadSpy.takeFirst().takeFirst().toBool());
     QVERIFY(!cookieRequestHeader.isEmpty());
     QTRY_COMPARE(cookieAddedSpy.count(), 1);
-    QTRY_COMPARE(accessTested.loadAcquire(), 5);
+    QTRY_COMPARE(accessTested.loadAcquire(), 7);
 
     client->deleteAllCookies();
     QTRY_COMPARE(cookieRemovedSpy.count(), 1);
 
-    client->setCookieFilter([&](const QWebEngineCookieStore::FilterRequest &) { ++accessTested; return false; });
+    client->setCookieFilter([&](const QWebEngineCookieStore::FilterRequest &request) {
+        resourceFirstParty.append(qMakePair(request.origin, request.firstPartyUrl));
+        ++accessTested;
+        return false;
+    });
     page.triggerAction(QWebEnginePage::ReloadAndBypassCache);
     QTRY_COMPARE(loadSpy.count(), 1);
     QVERIFY(loadSpy.takeFirst().takeFirst().toBool());
@@ -299,8 +309,7 @@ void tst_QWebEngineCookieStore::basicFilterOverHTTP()
     // Test cookies are NOT added:
     QTest::qWait(100);
     QCOMPARE(cookieAddedSpy.count(), 1);
-    QTRY_COMPARE(accessTested.loadAcquire(), 8);
-
+    QTRY_COMPARE(accessTested.loadAcquire(), 11);
     page.triggerAction(QWebEnginePage::Reload);
     QTRY_COMPARE(loadSpy.count(), 1);
     QVERIFY(loadSpy.takeFirst().takeFirst().toBool());
@@ -308,8 +317,13 @@ void tst_QWebEngineCookieStore::basicFilterOverHTTP()
     QCOMPARE(cookieAddedSpy.count(), 1);
 
     // Wait for last GET /favicon.ico
-    QTRY_COMPARE(serverSpy.count(), 8);
+    QTRY_COMPARE(serverSpy.count(), 12);
     (void) httpServer.stop();
+
+    QCOMPARE(resourceFirstParty.size(), accessTested.loadAcquire());
+    for (auto &&p : qAsConst(resourceFirstParty))
+        QVERIFY2(p.second == firstPartyUrl,
+                 qPrintable(QString("Resource [%1] has wrong firstPartyUrl: %2").arg(p.first.toString(), p.second.toString())));
 }
 
 void tst_QWebEngineCookieStore::html5featureFilter()

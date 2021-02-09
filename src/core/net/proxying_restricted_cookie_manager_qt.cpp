@@ -197,7 +197,7 @@ bool ProxyingRestrictedCookieManagerQt::allowCookies(const GURL &url, const net:
 {
     if (!m_profileIoData)
         return false;
-    return m_profileIoData->canGetCookies(toQt(site_for_cookies.RepresentativeUrl()), toQt(url));
+    return m_profileIoData->canGetCookies(toQt(site_for_cookies.first_party_url()), toQt(url));
 }
 
 }  // namespace QtWebEngineCore
