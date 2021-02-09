@@ -945,3 +945,31 @@ base::CommandLine* WebEngineContext::commandLine() {
 }
 
 } // namespace
+
+QT_BEGIN_NAMESPACE
+/*!
+    \relates <qtwebenginecoreglobal.h>
+    \since 6.2
+
+    Returns the version number of Qt WebEngine at run-time as a string
+    (for example, "6.2.0"). This may be a different version than the
+    version the application was compiled against, and a different version
+    than Qt.
+*/
+const char *qWebEngineVersion() noexcept
+{
+    return QTWEBENGINECORE_VERSION_STR;
+}
+
+/*!
+    \relates <qtwebenginecoreglobal.h>
+    \since 6.2
+
+    Returns the version number of Chromium used by Qt WebEngine at run-time
+    as a string (for example, "83.0.4103.122").
+*/
+const char *qWebEngineChromiumVersion() noexcept
+{
+    return CHROMIUM_VERSION;
+}
+QT_END_NAMESPACE

@@ -53,6 +53,9 @@ QT_BEGIN_NAMESPACE
 
 #define ASSERT_ENUMS_MATCH(A, B) Q_STATIC_ASSERT_X(static_cast<int>(A) == static_cast<int>(B), "The enum values must match");
 
+Q_WEBENGINECORE_EXPORT Q_DECL_CONST_FUNCTION const char *qWebEngineVersion() noexcept;
+Q_WEBENGINECORE_EXPORT Q_DECL_CONST_FUNCTION const char *qWebEngineChromiumVersion() noexcept;
+
 QT_END_NAMESPACE
 
 #endif // QTWEBENGINECOREGLOBAL_H
