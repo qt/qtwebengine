@@ -39,7 +39,7 @@
 
 #include "qquickwebenginescriptcollection.h"
 #include "qwebenginescriptcollection.h"
-#include "qwebenginescriptcollection_p.h"
+#include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
 #include <QtQml/QQmlInfo>
 #include <QtQml/private/qqmlengine_p.h>
 #include <QtQml/private/qv4scopedvalue_p.h>

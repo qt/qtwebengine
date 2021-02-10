@@ -51,7 +51,7 @@
 #ifndef WEB_ENGINE_ERROR_H
 #define WEB_ENGINE_ERROR_H
 
-#include "qtwebenginecoreglobal_p.h"
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 
 class Q_WEBENGINECORE_PRIVATE_EXPORT WebEngineError
 {

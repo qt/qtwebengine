@@ -54,7 +54,7 @@
 #include <QtWebEngineWidgets/qwebengineview.h>
 #include "qwebenginecontextmenurequest.h"
 #include "render_view_context_menu_qt.h"
-#include "qwebenginepage_p.h"
+#include <QtWebEngineCore/private/qwebenginepage_p.h>
 #include <QtWidgets/qaccessiblewidget.h>
 
 namespace QtWebEngineCore {

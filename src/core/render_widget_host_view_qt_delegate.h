@@ -51,8 +51,7 @@
 #ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
 #define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
 
-#include "qtwebenginecoreglobal_p.h"
-
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 #include <QtCore/QRect>
 #include <QtGui/QColor>
 #include <QtGui/QCursor>

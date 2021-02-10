@@ -51,7 +51,7 @@
 #ifndef WEB_CONTENTS_ADAPTER_CLIENT_H
 #define WEB_CONTENTS_ADAPTER_CLIENT_H
 
-#include "qtwebenginecoreglobal_p.h"
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 
 #include "profile_adapter.h"
 

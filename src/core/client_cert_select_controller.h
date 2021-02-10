@@ -51,7 +51,7 @@
 #ifndef CLIENT_CERT_SELECT_CONTROLLER_H
 #define CLIENT_CERT_SELECT_CONTROLLER_H
 
-#include "qtwebenginecoreglobal_p.h"
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 #include <QtNetwork/qtnetwork-config.h>
 
 #include <QtCore/QUrl>

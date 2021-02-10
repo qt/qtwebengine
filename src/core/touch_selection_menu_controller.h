@@ -40,7 +40,7 @@
 #ifndef TOUCH_SELECTION_MENU_CONTROLLER_H
 #define TOUCH_SELECTION_MENU_CONTROLLER_H
 
-#include "qtwebenginecoreglobal_p.h"
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 #include <QtCore/QObject>
 
 namespace QtWebEngineCore {

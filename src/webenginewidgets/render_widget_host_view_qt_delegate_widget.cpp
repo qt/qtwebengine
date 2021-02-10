@@ -41,7 +41,7 @@
 
 #include "render_widget_host_view_qt_delegate_client.h"
 
-#include "qwebenginepage_p.h"
+#include <QtWebEngineCore/private/qwebenginepage_p.h>
 #include "qwebengineview.h"
 #include "qwebengineview_p.h"
 

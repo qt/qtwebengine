@@ -51,8 +51,7 @@
 #ifndef AUTHENTICATION_DIALOG_CONTROLLER_H
 #define AUTHENTICATION_DIALOG_CONTROLLER_H
 
-#include "qtwebenginecoreglobal_p.h"
-
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 #include <QObject>
 
 namespace QtWebEngineCore {

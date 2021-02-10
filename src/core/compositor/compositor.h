@@ -40,7 +40,7 @@
 #ifndef COMPOSITOR_H
 #define COMPOSITOR_H
 
-#include "qtwebenginecoreglobal_p.h"
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 class QImage;

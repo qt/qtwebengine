@@ -40,7 +40,7 @@
 #ifndef TOUCH_HANDLE_DRAWABLE_CLIENT_H
 #define TOUCH_HANDLE_DRAWABLE_CLIENT_H
 
-#include "qtwebenginecoreglobal_p.h"
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 #include <QRect>
 
 namespace QtWebEngineCore {

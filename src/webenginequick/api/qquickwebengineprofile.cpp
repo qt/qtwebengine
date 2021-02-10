@@ -38,25 +38,23 @@
 ****************************************************************************/
 
 #include "qquickwebengineprofile.h"
-
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginesettings_p.h"
-#include "qwebenginescriptcollection.h"
-#include "qwebenginescriptcollection_p.h"
 #include "qquickwebenginescriptcollection.h"
 #include "qquickwebengineview_p_p.h"
-#include "qwebenginecookiestore.h"
-#include "qwebenginenotification.h"
+#include "profile_adapter.h"
+#include "web_engine_settings.h"
+
+#include <QtWebEngineCore/qwebenginescriptcollection.h>
+#include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
+#include <QtWebEngineCore/qwebenginecookiestore.h>
+#include <QtWebEngineCore/qwebenginenotification.h>
+#include <QtWebEngineCore/private/qwebenginedownloadrequest_p.h>
+#include <QtWebEngineCore/qwebengineurlscheme.h>
 #include <QFileInfo>
 #include <QDir>
 #include <QQmlEngine>
 #include <QtQml/QQmlInfo>
-
-#include "profile_adapter.h"
-#include "web_engine_settings.h"
-
-#include <QtWebEngineCore/private/qwebenginedownloadrequest_p.h>
-#include <QtWebEngineCore/qwebengineurlscheme.h>
 
 using QtWebEngineCore::ProfileAdapter;
 

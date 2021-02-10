@@ -63,7 +63,7 @@
 #include "qwebengineloadrequest.h"
 #include "qwebenginequotarequest.h"
 #include "qwebenginescriptcollection.h"
-#include "qwebenginescriptcollection_p.h"
+#include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
 #include "qwebengineregisterprotocolhandlerrequest.h"
 #if QT_CONFIG(webenginequick_testsupport)
 #include "qquickwebenginetestsupport_p.h"

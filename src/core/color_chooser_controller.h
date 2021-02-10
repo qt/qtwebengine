@@ -51,8 +51,7 @@
 #ifndef COLOR_CHOOSER_CONTROLLER_H
 #define COLOR_CHOOSER_CONTROLLER_H
 
-#include "qtwebenginecoreglobal_p.h"
-
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 #include <QObject>
 
 QT_FORWARD_DECLARE_CLASS(QColor)

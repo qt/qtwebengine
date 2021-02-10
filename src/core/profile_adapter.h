@@ -51,7 +51,7 @@
 #ifndef PROFILE_ADAPTER_H
 #define PROFILE_ADAPTER_H
 
-#include "qtwebenginecoreglobal_p.h"
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 
 #include <QEnableSharedFromThis>
 #include <QList>
@@ -59,10 +59,10 @@
 #include <QScopedPointer>
 #include <QString>
 
-#include "api/qwebengineclientcertificatestore.h"
-#include "api/qwebenginecookiestore.h"
-#include "api/qwebengineurlrequestinterceptor.h"
-#include "api/qwebengineurlschemehandler.h"
+#include <QtWebEngineCore/qwebengineclientcertificatestore.h>
+#include <QtWebEngineCore/qwebenginecookiestore.h>
+#include <QtWebEngineCore/qwebengineurlrequestinterceptor.h>
+#include <QtWebEngineCore/qwebengineurlschemehandler.h>
 #include "net/qrc_url_scheme_handler.h"
 
 QT_FORWARD_DECLARE_CLASS(QObject)

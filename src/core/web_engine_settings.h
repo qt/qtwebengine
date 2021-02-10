@@ -51,8 +51,8 @@
 #ifndef WEB_ENGINE_SETTINGS_H
 #define WEB_ENGINE_SETTINGS_H
 
-#include "qtwebenginecoreglobal_p.h"
-#include "qwebenginesettings.h"
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
+#include <QtWebEngineCore/qwebenginesettings.h>
 #include <QScopedPointer>
 #include <QHash>
 #include <QUrl>

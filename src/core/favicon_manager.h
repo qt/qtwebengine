@@ -51,7 +51,7 @@
 #ifndef FAVICON_MANAGER_H
 #define FAVICON_MANAGER_H
 
-#include "qtwebenginecoreglobal_p.h"
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 #include <memory>
 #include <QtCore/QMap>
 #include <QtCore/QObject>

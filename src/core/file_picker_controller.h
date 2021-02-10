@@ -51,8 +51,7 @@
 #ifndef FILE_PICKER_CONTROLLER_H
 #define FILE_PICKER_CONTROLLER_H
 
-#include "qtwebenginecoreglobal_p.h"
-
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 #include <QObject>
 #include <QStringList>
 

@@ -48,6 +48,8 @@ endif()
 
 add_subdirectory(src/core/api)
 add_subdirectory(src/process)
+add_subdirectory(src/webenginewidgets)
+add_subdirectory(src/webenginequick)
 qt_build_repo_end()
 
 ### NINJA

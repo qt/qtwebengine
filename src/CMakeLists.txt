@@ -18,10 +18,11 @@ project(QtWebEngineRepo
     LANGUAGES CXX C)
 
 find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core)
-find_package(Qt6 ${PROJECT_VERSION} CONFIG OPTIONAL_COMPONENTS Gui Widgets Network OpenGL OpenGLWidgets Quick Qml QuickTest Test)
 
 qt_build_repo_begin()
 add_subdirectory(core)
 add_subdirectory(process)
+add_subdirectory(webenginewidgets)
+add_subdirectory(webenginequick)
 qt_build_repo_end()
 

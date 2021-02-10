@@ -51,9 +51,8 @@
 #ifndef FIND_TEXT_HELPER_H
 #define FIND_TEXT_HELPER_H
 
-#include "qtwebenginecoreglobal_p.h"
-
-#include "qwebenginecallback_p.h"
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
+#include <QtWebEngineCore/private/qwebenginecallback_p.h>
 #include <QJSValue>
 
 namespace content {
