@@ -1,0 +1,8 @@
+add_subdirectory(customdialogs)
+add_subdirectory(minimal)
+add_subdirectory(quicknanobrowser)
+add_subdirectory(webengineaction)
+if(TARGET Qt::QuickControls2)
+    add_subdirectory(lifecycle)
+    add_subdirectory(recipebrowser)
+endif()

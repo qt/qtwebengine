@@ -1,0 +1,91 @@
+cmake_minimum_required(VERSION 3.18)
+project(quicknanobrowser LANGUAGES CXX)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+if(NOT DEFINED INSTALL_EXAMPLESDIR)
+  set(INSTALL_EXAMPLESDIR "examples")
+endif()
+
+set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/webengine/quicknanobrowser")
+
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
+find_package(Qt6 COMPONENTS Qml)
+find_package(Qt6 COMPONENTS Quick)
+find_package(Qt6 COMPONENTS WebEngineQuick)
+
+qt_add_executable(quicknanobrowser
+    main.cpp
+    utils.h
+)
+set_target_properties(quicknanobrowser PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
+target_link_libraries(quicknanobrowser PUBLIC
+    Qt::Core
+    Qt::Gui
+    Qt::Qml
+    Qt::Quick
+    Qt::WebEngineQuick
+)
+
+
+# Resources:
+set(resources_resource_files
+    "ApplicationRoot.qml"
+    "BrowserDialog.qml"
+    "BrowserWindow.qml"
+    "DownloadView.qml"
+    "FindBar.qml"
+    "FullScreenNotification.qml"
+)
+
+qt6_add_resources(quicknanobrowser "resources"
+    PREFIX
+        "/"
+    FILES
+        ${resources_resource_files}
+)
+set_source_files_properties("icons/3rdparty/go-next.png"
+    PROPERTIES QT_RESOURCE_ALIAS "go-next.png"
+)
+set_source_files_properties("icons/3rdparty/go-previous.png"
+    PROPERTIES QT_RESOURCE_ALIAS "go-previous.png"
+)
+set_source_files_properties("icons/3rdparty/process-stop.png"
+    PROPERTIES QT_RESOURCE_ALIAS "process-stop.png"
+)
+set_source_files_properties("icons/3rdparty/view-refresh.png"
+    PROPERTIES QT_RESOURCE_ALIAS "view-refresh.png"
+)
+set(resources1_resource_files
+    "icons/3rdparty/go-next.png"
+    "icons/3rdparty/go-previous.png"
+    "icons/3rdparty/process-stop.png"
+    "icons/3rdparty/view-refresh.png"
+)
+
+qt6_add_resources(quicknanobrowser "resources1"
+    PREFIX
+        "/icons"
+    FILES
+        ${resources1_resource_files}
+)
+
+if(TARGET Qt::Widgets)
+    target_link_libraries(quicknanobrowser PUBLIC
+        Qt::Widgets
+    )
+endif()
+
+install(TARGETS quicknanobrowser
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

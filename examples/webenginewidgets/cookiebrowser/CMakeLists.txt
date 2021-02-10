@@ -1,0 +1,56 @@
+cmake_minimum_required(VERSION 3.18)
+project(cookiebrowser LANGUAGES CXX)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+if(NOT DEFINED INSTALL_EXAMPLESDIR)
+  set(INSTALL_EXAMPLESDIR "examples")
+endif()
+
+set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/webenginewidgets/cookiebrowser")
+
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
+find_package(Qt6 COMPONENTS WebEngineWidgets)
+
+qt_add_executable(cookiebrowser
+    cookiedialog.ui
+    cookiewidget.ui
+    main.cpp
+    mainwindow.cpp mainwindow.h mainwindow.ui
+)
+set_target_properties(cookiebrowser PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
+target_link_libraries(cookiebrowser PUBLIC
+    Qt::Core
+    Qt::Gui
+    Qt::WebEngineWidgets
+)
+
+
+# Resources:
+set_source_files_properties("3rdparty/view-refresh.png"
+    PROPERTIES QT_RESOURCE_ALIAS "view-refresh.png"
+)
+set(cookiebrowser_resource_files
+    "3rdparty/view-refresh.png"
+)
+
+qt6_add_resources(cookiebrowser "cookiebrowser"
+    PREFIX
+        "/"
+    FILES
+        ${cookiebrowser_resource_files}
+)
+
+install(TARGETS cookiebrowser
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

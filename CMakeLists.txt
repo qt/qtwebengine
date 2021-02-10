@@ -110,6 +110,19 @@ externalproject_add(libs
     CMAKE_ARGS  ${libsCmakeArgs}
 )
 
+if(QT_BUILD_EXAMPLES AND BUILD_SHARED_LIBS)
+    externalproject_add(examples
+        SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/examples
+        BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR}/examples
+        PREFIX      examples
+        USES_TERMINAL_BUILD ON
+        BUILD_ALWAYS TRUE
+        CMAKE_ARGS  -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
+                    "${featureList}"
+    )
+    externalproject_add_stepdependencies(examples install libs)
+endif()
+
 if(NOT Gn_FOUND)
     externalproject_add_stepdependencies(libs install gn)
 endif()
