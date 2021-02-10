@@ -1,6 +1,6 @@
 TEMPLATE = app
 
-QT += webengine
+QT += webenginequick
 
 SOURCES += main.cpp
 

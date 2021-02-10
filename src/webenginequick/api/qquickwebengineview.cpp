@@ -65,7 +65,7 @@
 #include "qwebenginescriptcollection.h"
 #include "qwebenginescriptcollection_p.h"
 #include "qwebengineregisterprotocolhandlerrequest.h"
-#if QT_CONFIG(webengine_testsupport)
+#if QT_CONFIG(webenginequick_testsupport)
 #include "qquickwebenginetestsupport_p.h"
 #endif
 
@@ -128,7 +128,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     : m_profile(nullptr)
     , adapter(QSharedPointer<WebContentsAdapter>::create())
     , m_history(new QQuickWebEngineHistory(this))
-#if QT_CONFIG(webengine_testsupport)
+#if QT_CONFIG(webenginequick_testsupport)
     , m_testSupport(0)
 #endif
     , contextMenuExtraItems(0)
@@ -471,7 +471,7 @@ void QQuickWebEngineViewPrivate::loadStarted(const QUrl &provisionalUrl, bool is
 {
     Q_Q(QQuickWebEngineView);
     if (isErrorPage) {
-#if QT_CONFIG(webengine_testsupport)
+#if QT_CONFIG(webenginequick_testsupport)
         if (m_testSupport)
             m_testSupport->errorPage()->loadStarted(provisionalUrl);
 #endif
@@ -493,7 +493,7 @@ void QQuickWebEngineViewPrivate::loadCommitted()
 
 void QQuickWebEngineViewPrivate::didFirstVisuallyNonEmptyPaint()
 {
-#if QT_CONFIG(webengine_testsupport)
+#if QT_CONFIG(webenginequick_testsupport)
     if (m_loadVisuallyCommittedState == NotCommitted) {
         m_loadVisuallyCommittedState = DidFirstVisuallyNonEmptyPaint;
     } else if (m_loadVisuallyCommittedState == DidFirstCompositorFrameSwap) {
@@ -506,7 +506,7 @@ void QQuickWebEngineViewPrivate::didFirstVisuallyNonEmptyPaint()
 
 void QQuickWebEngineViewPrivate::didCompositorFrameSwap()
 {
-#if QT_CONFIG(webengine_testsupport)
+#if QT_CONFIG(webenginequick_testsupport)
     if (m_loadVisuallyCommittedState == NotCommitted) {
         m_loadVisuallyCommittedState = DidFirstCompositorFrameSwap;
     } else if (m_loadVisuallyCommittedState == DidFirstVisuallyNonEmptyPaint) {
@@ -524,7 +524,7 @@ void QQuickWebEngineViewPrivate::loadFinished(bool success, const QUrl &url, boo
     Q_UNUSED(triggersErrorPage);
 
     if (isErrorPage) {
-#if QT_CONFIG(webengine_testsupport)
+#if QT_CONFIG(webenginequick_testsupport)
         if (m_testSupport)
             m_testSupport->errorPage()->loadFinished(success, url);
 #endif
@@ -620,7 +620,7 @@ void QQuickWebEngineViewPrivate::close()
 
 void QQuickWebEngineViewPrivate::windowCloseRejected()
 {
-#if QT_CONFIG(webengine_testsupport)
+#if QT_CONFIG(webenginequick_testsupport)
     if (m_testSupport)
         Q_EMIT m_testSupport->windowCloseRejected();
 #endif
@@ -1220,7 +1220,7 @@ void QQuickWebEngineViewPrivate::updateAdapter()
     }
 }
 
-#if QT_CONFIG(webengine_testsupport)
+#if QT_CONFIG(webenginequick_testsupport)
 QQuickWebEngineTestSupport *QQuickWebEngineView::testSupport() const
 {
     Q_D(const QQuickWebEngineView);

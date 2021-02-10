@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,41 +37,29 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINETOUCHHANDLEPROVIDER_P_P_H
-#define QQUICKWEBENGINETOUCHHANDLEPROVIDER_P_P_H
+#ifndef QTWEBENGINEGLOBAL_H
+#define QTWEBENGINEGLOBAL_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtQuick/QQuickImageProvider>
-#include <QtWebEngine/private/qtwebengineglobal_p.h>
+#include <QtCore/qglobal.h>
+#include <QtWebEngineQuick/qtwebenginequick-config.h>
 
 QT_BEGIN_NAMESPACE
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineTouchHandleProvider : public QQuickImageProvider {
-public:
-    static QString identifier();
-    static QUrl url(int orientation);
+#ifndef QT_STATIC
+#  if defined(QT_BUILD_WEBENGINE_LIB)
+#      define Q_WEBENGINE_EXPORT Q_DECL_EXPORT
+#  else
+#      define Q_WEBENGINE_EXPORT Q_DECL_IMPORT
+#  endif
+#else
+#  define Q_WEBENGINE_EXPORT
+#endif
 
-    QQuickWebEngineTouchHandleProvider();
-    ~QQuickWebEngineTouchHandleProvider();
-
-    void init(const QMap<int, QImage> &images);
-    QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize) override;
-
-private:
-    QMap<int, QImage> m_touchHandleMap;
-};
-
+namespace QtWebEngine
+{
+    Q_WEBENGINE_EXPORT void initialize();
+}
 
 QT_END_NAMESPACE
 
-#endif // QQUICKWEBENGINETOUCHHANDLEPROVIDER_P_P_H
+#endif // QTWEBENGINEGLOBAL_H

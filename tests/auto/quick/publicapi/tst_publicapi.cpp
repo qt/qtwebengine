@@ -33,7 +33,7 @@
 #include <QMetaType>
 #include <QQmlListProperty>
 #include <QtTest/QtTest>
-#include <QtWebEngine/QQuickWebEngineProfile>
+#include <QtWebEngineQuick/QQuickWebEngineProfile>
 #include <QtWebEngineCore/QWebEngineCertificateError>
 #include <QtWebEngineCore/QWebEngineFindTextResult>
 #include <QtWebEngineCore/QWebEngineFullScreenRequest>
@@ -754,7 +754,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.setActiveFocusOnPress(bool) --> void"
     << "QQuickWebEngineView.settings --> QQuickWebEngineSettings*"
     << "QQuickWebEngineView.stop() --> void"
-#if QT_CONFIG(webengine_testsupport)
+#if QT_CONFIG(webenginequick_testsupport)
     << "QQuickWebEngineView.testSupport --> QQuickWebEngineTestSupport*"
     << "QQuickWebEngineView.testSupportChanged() --> void"
 #endif

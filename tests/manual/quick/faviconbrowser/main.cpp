@@ -37,7 +37,7 @@ typedef QGuiApplication Application;
 #endif
 #include <QtQml/QQmlApplicationEngine>
 #include <QtQml/QQmlContext>
-#include <QtWebEngine/qtwebengineglobal.h>
+#include <QtWebEngineQuick/qtwebengineglobal.h>
 
 int main(int argc, char **argv)
 {

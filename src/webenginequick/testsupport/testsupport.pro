@@ -4,7 +4,7 @@ TARGETPATH = QtWebEngine/testsupport
 IMPORT_VERSION = 1.0
 
 QT += qml quick
-QT_PRIVATE += webengine-private gui-private
+QT_PRIVATE += webenginequick-private gui-private
 
 SOURCES = plugin.cpp
 

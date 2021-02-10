@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINEHISTORY_P_H
-#define QQUICKWEBENGINEHISTORY_P_H
+#ifndef QQUICKWEBENGINEFAVICONPROVIDER_P_P_H
+#define QQUICKWEBENGINEFAVICONPROVIDER_P_P_H
 
 //
 //  W A R N I N G
@@ -51,74 +51,37 @@
 // We mean it.
 //
 
-#include <QtWebEngine/qtwebengineglobal.h>
-#include <QAbstractListModel>
-#include <QtCore/qshareddata.h>
-#include <QQuickItem>
-#include <QUrl>
-#include <QVariant>
+#include <QtWebEngineQuick/private/qtwebengineglobal_p.h>
+#include <QtQuick/QQuickImageProvider>
+
+#include <QtCore/QMap>
 
 QT_BEGIN_NAMESPACE
 
-class QQuickWebEngineHistory;
-class QQuickWebEngineHistoryPrivate;
-class QQuickWebEngineHistoryListModelPrivate;
-class QQuickWebEngineViewPrivate;
+class QQuickWebEngineView;
 
-class Q_WEBENGINE_EXPORT QQuickWebEngineHistoryListModel : public QAbstractListModel {
-    Q_OBJECT
-
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineFaviconProvider : public QQuickImageProvider {
 public:
-    QQuickWebEngineHistoryListModel(QQuickWebEngineHistoryListModelPrivate*);
-    virtual ~QQuickWebEngineHistoryListModel();
+    static QString identifier();
+    static QUrl faviconProviderUrl(const QUrl &);
 
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex& index, int role) const override;
-    QHash<int, QByteArray> roleNames() const override;
-    void reset();
+    QQuickWebEngineFaviconProvider();
+    ~QQuickWebEngineFaviconProvider();
+
+    QUrl attach(QQuickWebEngineView *, const QUrl &);
+    void detach(QQuickWebEngineView *);
+
+
+    QPixmap requestPixmap(const QString &, QSize *, const QSize &) override;
 
 private:
-    QQuickWebEngineHistoryListModel();
+    QQuickWebEngineView *viewForIconUrl(const QUrl &) const;
+    QSize findFitSize(const QList<QSize> &, const QSize &, const QSize &) const;
 
-    Q_DECLARE_PRIVATE(QQuickWebEngineHistoryListModel)
-    QScopedPointer<QQuickWebEngineHistoryListModelPrivate> d_ptr;
-
-    friend class QQuickWebEngineHistory;
-};
-
-class Q_WEBENGINE_EXPORT QQuickWebEngineHistory : public QQuickItem {
-    Q_OBJECT
-    Q_PROPERTY(QQuickWebEngineHistoryListModel *items READ items CONSTANT FINAL)
-    Q_PROPERTY(QQuickWebEngineHistoryListModel *backItems READ backItems CONSTANT FINAL)
-    Q_PROPERTY(QQuickWebEngineHistoryListModel *forwardItems READ forwardItems CONSTANT FINAL)
-
-public:
-    QQuickWebEngineHistory(QQuickWebEngineViewPrivate*);
-    virtual ~QQuickWebEngineHistory();
-
-    enum NavigationHistoryRoles {
-        UrlRole = Qt::UserRole + 1,
-        TitleRole = Qt::UserRole + 2,
-        OffsetRole = Qt::UserRole + 3,
-        IconUrlRole = Qt::UserRole + 4,
-    };
-
-    QQuickWebEngineHistoryListModel *items() const;
-    QQuickWebEngineHistoryListModel *backItems() const;
-    QQuickWebEngineHistoryListModel *forwardItems() const;
-    Q_REVISION(1) Q_INVOKABLE void clear();
-
-    void reset();
-
-private:
-    QQuickWebEngineHistory();
-
-    Q_DECLARE_PRIVATE(QQuickWebEngineHistory)
-    QScopedPointer<QQuickWebEngineHistoryPrivate> d_ptr;
+    QMap<QQuickWebEngineView *, QList<QUrl> *> m_iconUrlMap;
+    QQuickWebEngineView *m_latestView;
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QQuickWebEngineHistory)
-
-#endif // QQUICKWEBENGINEHISTORY_P_H
+#endif // QQUICKWEBENGINEFAVICONPROVIDER_P_P_H

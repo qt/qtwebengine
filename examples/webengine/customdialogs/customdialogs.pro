@@ -1,4 +1,4 @@
-QT += webengine
+QT += webenginequick
 
 HEADERS += \
     server.h

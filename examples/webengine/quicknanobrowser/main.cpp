@@ -59,7 +59,7 @@ typedef QGuiApplication Application;
 #endif
 #include <QtQml/QQmlApplicationEngine>
 #include <QtQml/QQmlContext>
-#include <QtWebEngine/qtwebengineglobal.h>
+#include <QtWebEngineQuick/qtwebengineglobal.h>
 
 static QUrl startupUrl()
 {

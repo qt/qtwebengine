@@ -26,7 +26,6 @@
 **
 ****************************************************************************/
 
-#include "qtwebengineglobal.h"
 #include <QTest>
 #include <QSignalSpy>
 #include <QWebEngineProfile>

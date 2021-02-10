@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,55 +37,50 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINENEWVIEWREQUEST_P_H
-#define QQUICKWEBENGINENEWVIEWREQUEST_P_H
+#ifndef QQUICKWEBENGINESCRIPTCOLLECTION_H
+#define QQUICKWEBENGINESCRIPTCOLLECTION_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtWebEngine/private/qtwebengineglobal_p.h>
-#include "qquickwebengineview_p.h"
-
-namespace QtWebEngineCore {
-class WebContentsAdapter;
-}
+#include <QtWebEngineQuick/qtwebengineglobal.h>
+#include <QtWebEngineCore/qwebenginescript.h>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qset.h>
+#include <QtCore/QObject>
+#include <QtQml/QJSValue>
 
 QT_BEGIN_NAMESPACE
+class QWebEngineScriptCollection;
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineNewViewRequest : public QObject {
+class Q_WEBENGINE_EXPORT QQuickWebEngineScriptCollection : public QObject
+{
     Q_OBJECT
-    Q_PROPERTY(QQuickWebEngineView::NewViewDestination destination READ destination CONSTANT FINAL)
-    Q_PROPERTY(QUrl requestedUrl READ requestedUrl CONSTANT REVISION 1 FINAL)
-    Q_PROPERTY(bool userInitiated READ isUserInitiated CONSTANT FINAL)
 public:
-    ~QQuickWebEngineNewViewRequest();
+    Q_PROPERTY(QJSValue collection READ collection WRITE setCollection NOTIFY collectionChanged)
+    ~QQuickWebEngineScriptCollection();
 
-    QQuickWebEngineView::NewViewDestination destination() const;
-    QUrl requestedUrl() const;
-    bool isUserInitiated() const;
-    Q_INVOKABLE void openIn(QQuickWebEngineView *view);
+    Q_INVOKABLE bool contains(const QWebEngineScript &value) const;
+    Q_INVOKABLE QList<QWebEngineScript> find(const QString &name) const;
+    Q_INVOKABLE void insert(const QWebEngineScript &);
+    Q_INVOKABLE void insert(const QList<QWebEngineScript> &list);
+    Q_INVOKABLE bool remove(const QWebEngineScript &);
+    Q_INVOKABLE void clear();
+
+    QJSValue collection() const;
+    void setCollection(const QJSValue &scripts);
+
+Q_SIGNALS:
+    void collectionChanged();
 
 private:
-    QQuickWebEngineNewViewRequest();
-    QQuickWebEngineView::NewViewDestination m_destination;
-    bool m_isUserInitiated;
-    bool m_isRequestHandled = false;
-    QSharedPointer<QtWebEngineCore::WebContentsAdapter> m_adapter;
-    QUrl m_requestedUrl;
-    friend class QQuickWebEngineView;
+    Q_DISABLE_COPY(QQuickWebEngineScriptCollection)
+    QQuickWebEngineScriptCollection(QWebEngineScriptCollection *d);
+    QScopedPointer<QWebEngineScriptCollection> d;
+    friend class QQuickWebEngineProfilePrivate;
     friend class QQuickWebEngineViewPrivate;
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QQuickWebEngineNewViewRequest)
+Q_DECLARE_METATYPE(QQuickWebEngineScriptCollection *)
 
-#endif // QQUICKWEBENGINENEWVIEWREQUEST_P_H
+#endif // QWEBENGINESCRIPTCOLLECTION_H

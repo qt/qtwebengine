@@ -2,7 +2,7 @@
     "subconfigs": [
         "src/buildtools",
         "src/core",
-        "src/webengine",
+        "src/webenginequick",
         "src/webenginewidgets",
         "src/pdf",
         "src/pdfwidgets"

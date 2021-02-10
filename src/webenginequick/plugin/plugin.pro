@@ -4,7 +4,7 @@ TARGETPATH = QtWebEngine
 IMPORT_VERSION = 1.10
 
 QT += qml quick
-QT_PRIVATE += core-private webenginecore-private webengine-private
+QT_PRIVATE += core-private webenginecore-private webenginequick-private
 
 SOURCES = plugin.cpp
 

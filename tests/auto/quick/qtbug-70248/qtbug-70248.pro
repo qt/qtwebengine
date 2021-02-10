@@ -1,5 +1,5 @@
 include(../tests.pri)
-QT += webengine webengine-private
+QT += webenginequick webenginequick-private
 
 RESOURCES += \
     test.qrc

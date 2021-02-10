@@ -26,7 +26,6 @@
 **
 ****************************************************************************/
 
-#include "qtwebengineglobal.h"
 #include "proxyserver.h"
 #include <QTest>
 #include <QSignalSpy>

@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <QtWebEngine/private/qtwebengineglobal_p.h>
+#include <QtWebEngineQuick/private/qtwebengineglobal_p.h>
 #include <QObject>
 #include <QScopedPointer>
 

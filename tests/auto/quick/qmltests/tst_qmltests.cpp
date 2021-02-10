@@ -35,7 +35,7 @@
 #include <QtCore/QScopedPointer>
 #include <QTemporaryDir>
 #include <QtQuickTest/quicktest.h>
-#include <QtWebEngine/QQuickWebEngineProfile>
+#include <QtWebEngineQuick/QQuickWebEngineProfile>
 #include <QQmlEngine>
 #include "qt_webengine_quicktest.h"
 

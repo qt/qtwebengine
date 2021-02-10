@@ -1,8 +1,8 @@
-include($$QTWEBENGINE_OUT_ROOT/src/webengine/qtwebengine-config.pri)
-QT_FOR_CONFIG += webengine-private webenginecore-private
+include($$QTWEBENGINE_OUT_ROOT/src/webenginequick/qtwebenginequick-config.pri)
+QT_FOR_CONFIG += webenginequick-private webenginecore-private
 
-TARGET = QtWebEngine
-MODULE = webengine
+TARGET = QtWebEngineQuick
+MODULE = webenginequick
 
 # For our export macros
 DEFINES += QT_BUILD_WEBENGINE_LIB
@@ -56,7 +56,7 @@ HEADERS = \
         render_widget_host_view_qt_delegate_quickwindow.h \
         ui_delegates_manager.h
 
-qtConfig(webengine-testsupport) {
+qtConfig(webenginequick-testsupport) {
     QT_PRIVATE += testlib
     SOURCES += api/qquickwebenginetestsupport.cpp
     HEADERS += api/qquickwebenginetestsupport_p.h

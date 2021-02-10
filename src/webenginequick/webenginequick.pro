@@ -7,13 +7,13 @@ qml_plugin.depends = qml_module
 
 SUBDIRS += qml_module qml_plugin
 
-qtConfig(webengine-testsupport) {
+qtConfig(webenginequick-testsupport) {
     testsupport_plugin.file = testsupport/testsupport.pro
     testsupport_plugin.depends = qml_module
     SUBDIRS += testsupport_plugin
 }
 
-qtConfig(webengine-ui-delegates) {
+qtConfig(webenginequick-ui-delegates) {
     SUBDIRS += ui \
                ui2
 }

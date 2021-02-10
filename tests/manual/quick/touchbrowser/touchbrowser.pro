@@ -1,6 +1,6 @@
 TEMPLATE = app
 
-QT += quick webengine
+QT += quick webenginequick
 CONFIG += c++11
 
 SOURCES += \

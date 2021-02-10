@@ -28,7 +28,7 @@
 
 #include <QtQml/QQmlEngine>
 #include <QtTest/QtTest>
-#include <QtWebEngine/QQuickWebEngineProfile>
+#include <QtWebEngineQuick/QQuickWebEngineProfile>
 
 class tst_QQuickWebEngineProfile : public QObject {
     Q_OBJECT

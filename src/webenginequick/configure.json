@@ -1,26 +1,26 @@
 {
-    "module": "webengine",
-    "condition": "module.webenginecore && features.webengine-qml",
+    "module": "webenginequick",
+    "condition": "module.webenginecore && features.webengine-quick",
     "depends": [
         "webenginecore-private"
     ],
     "commandline": {
         "options": {
-            "webengine-qml": "boolean"
+            "webengine-quick": "boolean"
         }
     },
     "features": {
-        "webengine-qml": {
-            "label": "Support Qt WebEngine Qml",
-            "purpose": "Provides WebEngine Qml support.",
+        "webengine-quick": {
+            "label": "Support Qt WebEngineQuick",
+            "purpose": "Provides WebEngineQuick support.",
             "output": [ "privateFeature" ]
         },
-        "webengine-ui-delegates": {
+        "webenginequick-ui-delegates": {
             "label": "UI Delegates",
             "section": "WebEngine",
             "output": [ "privateFeature" ]
         },
-        "webengine-testsupport": {
+        "webenginequick-testsupport": {
             "label": "Test Support",
             "autoDetect": "features.private_tests || call.isTestsInBuildParts",
             "output": [ "privateFeature" ]
@@ -28,11 +28,11 @@
     },
     "summary": [
         {
-            "section": "Qt WebEngineQml",
+            "section": "Qt WebEngineQuick",
             "entries": [
-                "webengine-qml",
-                "webengine-ui-delegates",
-                "webengine-testsupport"
+                "webengine-quick",
+                "webenginequick-ui-delegates",
+                "webenginequick-testsupport"
             ]
         }
     ]

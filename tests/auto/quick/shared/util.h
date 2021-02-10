@@ -34,8 +34,9 @@
 #include <QSignalSpy>
 #include <QTimer>
 #include <QtTest/QtTest>
-#include <QtWebEngine/private/qquickwebengineview_p.h>
+#include <QtWebEngineQuick/private/qquickwebengineview_p.h>
 #include <QtWebEngineCore/QWebEngineLoadRequest>
+#include <QtWebEngineQuick/private/qquickwebengineview_p.h>
 #include <QGuiApplication>
 
 #if !defined(TESTS_SOURCE_DIR)

@@ -37,11 +37,11 @@
 #include <QtGui/qpa/qwindowsysteminterface.h>
 #include <QtQml/QQmlEngine>
 #include <QtTest/QtTest>
-#include <QtWebEngine/QQuickWebEngineProfile>
-#include <QtWebEngine/QQuickWebEngineScriptCollection>
+#include <QtWebEngineQuick/QQuickWebEngineProfile>
+#include <QtWebEngineQuick/QQuickWebEngineScriptCollection>
 #include <QtGui/private/qinputmethod_p.h>
-#include <QtWebEngine/private/qquickwebengineview_p.h>
-#include <QtWebEngine/private/qquickwebenginesettings_p.h>
+#include <QtWebEngineQuick/private/qquickwebengineview_p.h>
+#include <QtWebEngineQuick/private/qquickwebenginesettings_p.h>
 #include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
 #include <qpa/qplatforminputcontext.h>
 

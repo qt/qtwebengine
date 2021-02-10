@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINESINGLETON_P_H
-#define QQUICKWEBENGINESINGLETON_P_H
+#ifndef QQUICKWEBENGINEHISTORY_P_H
+#define QQUICKWEBENGINEHISTORY_P_H
 
 //
 //  W A R N I N G
@@ -51,25 +51,74 @@
 // We mean it.
 //
 
-#include <QtWebEngine/private/qtwebengineglobal_p.h>
-#include <QtWebEngineCore/qwebenginescript.h>
-#include <QtCore/qobject.h>
+#include <QtWebEngineQuick/qtwebengineglobal.h>
+#include <QAbstractListModel>
+#include <QtCore/qshareddata.h>
+#include <QQuickItem>
+#include <QUrl>
+#include <QVariant>
 
 QT_BEGIN_NAMESPACE
 
-class QQuickWebEngineSettings;
-class QQuickWebEngineProfile;
+class QQuickWebEngineHistory;
+class QQuickWebEngineHistoryPrivate;
+class QQuickWebEngineHistoryListModelPrivate;
+class QQuickWebEngineViewPrivate;
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSingleton : public QObject {
+class Q_WEBENGINE_EXPORT QQuickWebEngineHistoryListModel : public QAbstractListModel {
     Q_OBJECT
-    Q_PROPERTY(QQuickWebEngineSettings* settings READ settings CONSTANT FINAL)
-    Q_PROPERTY(QQuickWebEngineProfile* defaultProfile READ defaultProfile CONSTANT FINAL REVISION 1)
+
 public:
-    QQuickWebEngineSettings *settings() const;
-    QQuickWebEngineProfile *defaultProfile() const;
-    Q_INVOKABLE QWebEngineScript script() const;
+    QQuickWebEngineHistoryListModel(QQuickWebEngineHistoryListModelPrivate*);
+    virtual ~QQuickWebEngineHistoryListModel();
+
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex& index, int role) const override;
+    QHash<int, QByteArray> roleNames() const override;
+    void reset();
+
+private:
+    QQuickWebEngineHistoryListModel();
+
+    Q_DECLARE_PRIVATE(QQuickWebEngineHistoryListModel)
+    QScopedPointer<QQuickWebEngineHistoryListModelPrivate> d_ptr;
+
+    friend class QQuickWebEngineHistory;
+};
+
+class Q_WEBENGINE_EXPORT QQuickWebEngineHistory : public QQuickItem {
+    Q_OBJECT
+    Q_PROPERTY(QQuickWebEngineHistoryListModel *items READ items CONSTANT FINAL)
+    Q_PROPERTY(QQuickWebEngineHistoryListModel *backItems READ backItems CONSTANT FINAL)
+    Q_PROPERTY(QQuickWebEngineHistoryListModel *forwardItems READ forwardItems CONSTANT FINAL)
+
+public:
+    QQuickWebEngineHistory(QQuickWebEngineViewPrivate*);
+    virtual ~QQuickWebEngineHistory();
+
+    enum NavigationHistoryRoles {
+        UrlRole = Qt::UserRole + 1,
+        TitleRole = Qt::UserRole + 2,
+        OffsetRole = Qt::UserRole + 3,
+        IconUrlRole = Qt::UserRole + 4,
+    };
+
+    QQuickWebEngineHistoryListModel *items() const;
+    QQuickWebEngineHistoryListModel *backItems() const;
+    QQuickWebEngineHistoryListModel *forwardItems() const;
+    Q_REVISION(1) Q_INVOKABLE void clear();
+
+    void reset();
+
+private:
+    QQuickWebEngineHistory();
+
+    Q_DECLARE_PRIVATE(QQuickWebEngineHistory)
+    QScopedPointer<QQuickWebEngineHistoryPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE
 
-#endif // QQUICKWEBENGINESINGLETON_P_H
+QML_DECLARE_TYPE(QQuickWebEngineHistory)
+
+#endif // QQUICKWEBENGINEHISTORY_P_H

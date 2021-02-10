@@ -38,19 +38,19 @@
 ****************************************************************************/
 
 #include <QtQml/qqmlextensionplugin.h>
-#include <QtWebEngine/QQuickWebEngineProfile>
+#include <QtWebEngineQuick/QQuickWebEngineProfile>
 
-#include <QtWebEngine/private/qquickwebengineclientcertificateselection_p.h>
-#include <QtWebEngine/private/qquickwebenginedialogrequests_p.h>
-#include <QtWebEngine/private/qquickwebenginehistory_p.h>
-#include <QtWebEngine/private/qquickwebenginefaviconprovider_p_p.h>
-#include <QtWebEngine/private/qquickwebenginenavigationrequest_p.h>
-#include <QtWebEngine/private/qquickwebenginenewviewrequest_p.h>
-#include <QtWebEngine/private/qquickwebenginesettings_p.h>
-#include <QtWebEngine/private/qquickwebenginesingleton_p.h>
-#include <QtWebEngine/private/qquickwebenginetouchhandleprovider_p_p.h>
-#include <QtWebEngine/private/qquickwebengineview_p.h>
-#include <QtWebEngine/private/qquickwebengineaction_p.h>
+#include <QtWebEngineQuick/private/qquickwebengineclientcertificateselection_p.h>
+#include <QtWebEngineQuick/private/qquickwebenginedialogrequests_p.h>
+#include <QtWebEngineQuick/private/qquickwebenginehistory_p.h>
+#include <QtWebEngineQuick/private/qquickwebenginefaviconprovider_p_p.h>
+#include <QtWebEngineQuick/private/qquickwebenginenavigationrequest_p.h>
+#include <QtWebEngineQuick/private/qquickwebenginenewviewrequest_p.h>
+#include <QtWebEngineQuick/private/qquickwebenginesettings_p.h>
+#include <QtWebEngineQuick/private/qquickwebenginesingleton_p.h>
+#include <QtWebEngineQuick/private/qquickwebenginetouchhandleprovider_p_p.h>
+#include <QtWebEngineQuick/private/qquickwebengineview_p.h>
+#include <QtWebEngineQuick/private/qquickwebengineaction_p.h>
 #include <QtWebEngineCore/qwebenginecertificateerror.h>
 #include <QtWebEngineCore/qwebenginefindtextresult.h>
 #include <QtWebEngineCore/qwebenginefullscreenrequest.h>

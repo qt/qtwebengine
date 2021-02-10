@@ -52,7 +52,7 @@
 //
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
-#include <QtWebEngine/private/qtwebengineglobal_p.h>
+#include <QtWebEngineQuick/private/qtwebengineglobal_p.h>
 #include <QQuickItem>
 #include <QtGui/qcolor.h>
 
@@ -89,7 +89,7 @@ class QWebEngineRegisterProtocolHandlerRequest;
 class QWebEngineContextMenuRequest;
 class QQuickWebEngineScriptCollection;
 
-#if QT_CONFIG(webengine_testsupport)
+#if QT_CONFIG(webenginequick_testsupport)
 class QQuickWebEngineTestSupport;
 #endif
 
@@ -124,7 +124,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
 
     Q_PROPERTY(QQuickWebEngineView *inspectedView READ inspectedView WRITE setInspectedView NOTIFY inspectedViewChanged REVISION 7 FINAL)
     Q_PROPERTY(QQuickWebEngineView *devToolsView READ devToolsView WRITE setDevToolsView NOTIFY devToolsViewChanged REVISION 7 FINAL)
-#if QT_CONFIG(webengine_testsupport)
+#if QT_CONFIG(webenginequick_testsupport)
     Q_PROPERTY(QQuickWebEngineTestSupport *testSupport READ testSupport WRITE setTestSupport NOTIFY testSupportChanged FINAL)
 #endif
 
@@ -486,7 +486,7 @@ public:
 
     qint64 renderProcessPid() const;
 
-#if QT_CONFIG(webengine_testsupport)
+#if QT_CONFIG(webenginequick_testsupport)
     QQuickWebEngineTestSupport *testSupport() const;
     void setTestSupport(QQuickWebEngineTestSupport *testSupport);
 #endif
@@ -571,7 +571,7 @@ Q_SIGNALS:
     Q_REVISION(10) void findTextFinished(const QWebEngineFindTextResult &result);
     Q_REVISION(11) void renderProcessPidChanged(qint64 pid);
 
-#if QT_CONFIG(webengine_testsupport)
+#if QT_CONFIG(webenginequick_testsupport)
     void testSupportChanged();
 #endif
 

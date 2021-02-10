@@ -83,7 +83,7 @@ class QQuickWebEngineProfilePrivate;
 class QQuickWebEngineTouchHandleProvider;
 class QWebEngineFindTextResult;
 
-#if QT_CONFIG(webengine_testsupport)
+#if QT_CONFIG(webenginequick_testsupport)
 class QQuickWebEngineTestSupport;
 #endif
 
@@ -190,7 +190,7 @@ public:
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter;
     QScopedPointer<QQuickWebEngineHistory> m_history;
     QScopedPointer<QQuickWebEngineSettings> m_settings;
-#if QT_CONFIG(webengine_testsupport)
+#if QT_CONFIG(webenginequick_testsupport)
     QQuickWebEngineTestSupport *m_testSupport;
 #endif
     QQmlComponent *contextMenuExtraItems;

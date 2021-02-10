@@ -1,5 +1,5 @@
-include($$QTWEBENGINE_OUT_ROOT/src/webengine/qtwebengine-config.pri) # workaround for QTBUG-68093
-QT_FOR_CONFIG += webengine-private
+include($$QTWEBENGINE_OUT_ROOT/src/webenginequick/qtwebenginequick-config.pri) # workaround for QTBUG-68093
+QT_FOR_CONFIG += webenginequick-private
 
 include(../tests.pri)
 
@@ -49,7 +49,7 @@ qtConfig(ssl) {
     include(../../shared/http.pri)
 }
 
-qtConfig(webengine-testsupport) {
+qtConfig(webenginequick-testsupport) {
     QML_TESTS += \
         $$PWD/data/tst_favicon.qml \
         $$PWD/data/tst_faviconDownload.qml \

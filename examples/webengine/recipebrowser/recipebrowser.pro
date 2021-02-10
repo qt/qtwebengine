@@ -1,6 +1,6 @@
 TEMPLATE = app
 
-QT += quick qml quickcontrols2 webengine
+QT += quick qml quickcontrols2 webenginequick
 
 cross_compile {
   posix|qnx|linux: DEFINES += QTWEBENGINE_RECIPE_BROWSER_EMBEDDED

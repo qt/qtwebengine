@@ -1,5 +1,5 @@
 include(../tests.pri)
-QT += core-private webengine webengine-private
+QT += core-private webenginewidgets webenginewidgets-private
 
 HEADERS += \
     proxy_server.h

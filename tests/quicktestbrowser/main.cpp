@@ -38,8 +38,8 @@ typedef QGuiApplication Application;
 #include <QtQml/QQmlApplicationEngine>
 #include <QtQml/QQmlContext>
 #include <QtQml/QQmlComponent>
-#include <QtWebEngine/qtwebengineglobal.h>
-#include <QtWebEngine/QQuickWebEngineProfile>
+#include <QtWebEngineQuick/qtwebengineglobal.h>
+#include <QtWebEngineQuick/QQuickWebEngineProfile>
 #include <QtWebEngineCore/qwebenginecookiestore.h>
 
 static QUrl startupUrl()

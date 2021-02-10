@@ -37,65 +37,55 @@
 **
 ****************************************************************************/
 
-#include "qquickwebenginesingleton_p.h"
+#ifndef QQUICKWEBENGINENEWVIEWREQUEST_P_H
+#define QQUICKWEBENGINENEWVIEWREQUEST_P_H
 
-#include "qquickwebenginesettings_p.h"
-#include <QtWebEngine/QQuickWebEngineProfile>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtWebEngineQuick/private/qtwebengineglobal_p.h>
+#include "qquickwebengineview_p.h"
+
+namespace QtWebEngineCore {
+class WebContentsAdapter;
+}
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \qmltype WebEngine
-    \instantiates QQuickWebEngineSingleton
-    \inqmlmodule QtWebEngine
-    \since QtWebEngine 1.1
-    \brief Provides access to the default settings and profiles shared by all web engine views.
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineNewViewRequest : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(QQuickWebEngineView::NewViewDestination destination READ destination CONSTANT FINAL)
+    Q_PROPERTY(QUrl requestedUrl READ requestedUrl CONSTANT REVISION 1 FINAL)
+    Q_PROPERTY(bool userInitiated READ isUserInitiated CONSTANT FINAL)
+public:
+    ~QQuickWebEngineNewViewRequest();
 
-    The WebEngine singleton type provides access to the default profile and the default settings
-    shared by all web engine views. It can be used to change settings globally, as illustrated by
-    the following code snippet:
+    QQuickWebEngineView::NewViewDestination destination() const;
+    QUrl requestedUrl() const;
+    bool isUserInitiated() const;
+    Q_INVOKABLE void openIn(QQuickWebEngineView *view);
 
-    \code
-    Component.onCompleted: {
-        WebEngine.settings.pluginsEnabled = true;
-    }
-    \endcode
-*/
-
-/*!
-    \qmlproperty WebEngineSettings WebEngine::settings
-    \readonly
-    \since QtWebEngine 1.1
-
-    Default settings for all web engine views.
-
-    \sa WebEngineSettings
-*/
-
-QQuickWebEngineSettings *QQuickWebEngineSingleton::settings() const
-{
-    return defaultProfile()->settings();
-}
-
-/*!
-    \qmlproperty WebEngineProfile WebEngine::defaultProfile
-    \readonly
-    \since QtWebEngine 1.1
-
-    Default profile for all web engine views.
-
-    \sa WebEngineProfile
-*/
-QQuickWebEngineProfile *QQuickWebEngineSingleton::defaultProfile() const
-{
-    return QQuickWebEngineProfile::defaultProfile();
-}
-
-QWebEngineScript QQuickWebEngineSingleton::script() const
-{
-    return QWebEngineScript();
-}
-
-#include "moc_qquickwebenginesingleton_p.cpp"
+private:
+    QQuickWebEngineNewViewRequest();
+    QQuickWebEngineView::NewViewDestination m_destination;
+    bool m_isUserInitiated;
+    bool m_isRequestHandled = false;
+    QSharedPointer<QtWebEngineCore::WebContentsAdapter> m_adapter;
+    QUrl m_requestedUrl;
+    friend class QQuickWebEngineView;
+    friend class QQuickWebEngineViewPrivate;
+};
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QQuickWebEngineNewViewRequest)
+
+#endif // QQUICKWEBENGINENEWVIEWREQUEST_P_H

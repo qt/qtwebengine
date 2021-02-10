@@ -1,6 +1,6 @@
 TEMPLATE = app
 
-QT += quickcontrols2 webengine
+QT += quickcontrols2 webenginequick
 
 SOURCES += main.cpp
 

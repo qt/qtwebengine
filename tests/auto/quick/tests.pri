@@ -1,5 +1,5 @@
-include($$QTWEBENGINE_OUT_ROOT/src/webengine/qtwebengine-config.pri) # workaround for QTBUG-68093
-QT_FOR_CONFIG += webengine-private
+include($$QTWEBENGINE_OUT_ROOT/src/webenginequick/qtwebenginequick-config.pri) # workaround for QTBUG-68093
+QT_FOR_CONFIG += webenginequick-private
 
 TEMPLATE = app
 
@@ -13,7 +13,7 @@ INCLUDEPATH += \
     $$PWD \
     ../shared
 
-QT += testlib network quick webengine
+QT += testlib network quick webenginequick
 
 # This define is used by some tests to look up resources in the source tree
 DEFINES += TESTS_SOURCE_DIR=\\\"$$PWD/\\\"

@@ -37,51 +37,34 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINEFAVICONPROVIDER_P_P_H
-#define QQUICKWEBENGINEFAVICONPROVIDER_P_P_H
+#include <QtQml>
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtWebEngine/private/qtwebengineglobal_p.h>
-#include <QtQuick/QQuickImageProvider>
-
-#include <QtCore/QMap>
+#include <QtWebEngineQuick/private/qquickwebenginetestsupport_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QQuickWebEngineView;
-
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineFaviconProvider : public QQuickImageProvider {
+class QtWebEngineTestSupportPlugin : public QQmlExtensionPlugin
+{
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID QQmlExtensionInterface_iid)
 public:
-    static QString identifier();
-    static QUrl faviconProviderUrl(const QUrl &);
+    void registerTypes(const char *uri) override
+    {
+        qWarning("\nWARNING: This project is using the testsupport QML API extensions for QtWebEngine and is therefore tied to a specific QtWebEngine release.\n"
+                 "WARNING: The testsupport API will change from version to version, or even be removed. You have been warned!\n");
 
-    QQuickWebEngineFaviconProvider();
-    ~QQuickWebEngineFaviconProvider();
+        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine.testsupport"));
 
-    QUrl attach(QQuickWebEngineView *, const QUrl &);
-    void detach(QQuickWebEngineView *);
-
-
-    QPixmap requestPixmap(const QString &, QSize *, const QSize &) override;
-
-private:
-    QQuickWebEngineView *viewForIconUrl(const QUrl &) const;
-    QSize findFitSize(const QList<QSize> &, const QSize &, const QSize &) const;
-
-    QMap<QQuickWebEngineView *, QList<QUrl> *> m_iconUrlMap;
-    QQuickWebEngineView *m_latestView;
+        qmlRegisterType<QQuickWebEngineTestSupport>(uri, 1, 0, "WebEngineTestSupport");
+        qmlRegisterUncreatableType<QQuickWebEngineErrorPage>(uri, 1, 0, "WebEngineErrorPage",
+            tr("Cannot create a separate instance of WebEngineErrorPage"));
+        qmlRegisterUncreatableType<QQuickWebEngineTestInputContext>(uri, 1, 0, "TestInputContext",
+            tr("Cannot create a separate instance of WebEngineErrorPage"));
+        qmlRegisterUncreatableType<QQuickWebEngineTestEvent>(uri, 1, 0, "WebEngineTestEvent",
+            tr("Cannot create a separate instance of WebEngineTestEvent"));
+    }
 };
 
 QT_END_NAMESPACE
 
-#endif // QQUICKWEBENGINEFAVICONPROVIDER_P_P_H
+#include "plugin.moc"

@@ -1,5 +1,5 @@
-include($$QTWEBENGINE_OUT_ROOT/src/webengine/qtwebengine-config.pri) # workaround for QTBUG-68093
-QT_FOR_CONFIG += webengine-private
+include($$QTWEBENGINE_OUT_ROOT/src/webenginequick/qtwebenginequick-config.pri) # workaround for QTBUG-68093
+QT_FOR_CONFIG += webenginequick-private
 
 TEMPLATE = subdirs
 
@@ -13,7 +13,7 @@ SUBDIRS += \
     qtbug-70248 \
     certificateerror
 
-qtConfig(webengine-testsupport) {
+qtConfig(webenginequick-testsupport) {
     SUBDIRS += qquickwebengineviewgraphics
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,50 +37,41 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINESCRIPTCOLLECTION_H
-#define QQUICKWEBENGINESCRIPTCOLLECTION_H
+#ifndef QQUICKWEBENGINETOUCHHANDLEPROVIDER_P_P_H
+#define QQUICKWEBENGINETOUCHHANDLEPROVIDER_P_P_H
 
-#include <QtWebEngine/qtwebengineglobal.h>
-#include <QtWebEngineCore/qwebenginescript.h>
-#include <QtCore/qscopedpointer.h>
-#include <QtCore/qlist.h>
-#include <QtCore/qset.h>
-#include <QtCore/QObject>
-#include <QtQml/QJSValue>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtQuick/QQuickImageProvider>
+#include <QtWebEngineQuick/private/qtwebengineglobal_p.h>
 
 QT_BEGIN_NAMESPACE
-class QWebEngineScriptCollection;
 
-class Q_WEBENGINE_EXPORT QQuickWebEngineScriptCollection : public QObject
-{
-    Q_OBJECT
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineTouchHandleProvider : public QQuickImageProvider {
 public:
-    Q_PROPERTY(QJSValue collection READ collection WRITE setCollection NOTIFY collectionChanged)
-    ~QQuickWebEngineScriptCollection();
+    static QString identifier();
+    static QUrl url(int orientation);
 
-    Q_INVOKABLE bool contains(const QWebEngineScript &value) const;
-    Q_INVOKABLE QList<QWebEngineScript> find(const QString &name) const;
-    Q_INVOKABLE void insert(const QWebEngineScript &);
-    Q_INVOKABLE void insert(const QList<QWebEngineScript> &list);
-    Q_INVOKABLE bool remove(const QWebEngineScript &);
-    Q_INVOKABLE void clear();
+    QQuickWebEngineTouchHandleProvider();
+    ~QQuickWebEngineTouchHandleProvider();
 
-    QJSValue collection() const;
-    void setCollection(const QJSValue &scripts);
-
-Q_SIGNALS:
-    void collectionChanged();
+    void init(const QMap<int, QImage> &images);
+    QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize) override;
 
 private:
-    Q_DISABLE_COPY(QQuickWebEngineScriptCollection)
-    QQuickWebEngineScriptCollection(QWebEngineScriptCollection *d);
-    QScopedPointer<QWebEngineScriptCollection> d;
-    friend class QQuickWebEngineProfilePrivate;
-    friend class QQuickWebEngineViewPrivate;
+    QMap<int, QImage> m_touchHandleMap;
 };
+
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QQuickWebEngineScriptCollection *)
-
-#endif // QWEBENGINESCRIPTCOLLECTION_H
+#endif // QQUICKWEBENGINETOUCHHANDLEPROVIDER_P_P_H

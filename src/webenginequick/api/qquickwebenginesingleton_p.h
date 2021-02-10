@@ -37,29 +37,39 @@
 **
 ****************************************************************************/
 
-#ifndef QTWEBENGINEGLOBAL_H
-#define QTWEBENGINEGLOBAL_H
+#ifndef QQUICKWEBENGINESINGLETON_P_H
+#define QQUICKWEBENGINESINGLETON_P_H
 
-#include <QtCore/qglobal.h>
-#include <QtWebEngine/qtwebengine-config.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtWebEngineQuick/private/qtwebengineglobal_p.h>
+#include <QtWebEngineCore/qwebenginescript.h>
+#include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_STATIC
-#  if defined(QT_BUILD_WEBENGINE_LIB)
-#      define Q_WEBENGINE_EXPORT Q_DECL_EXPORT
-#  else
-#      define Q_WEBENGINE_EXPORT Q_DECL_IMPORT
-#  endif
-#else
-#  define Q_WEBENGINE_EXPORT
-#endif
+class QQuickWebEngineSettings;
+class QQuickWebEngineProfile;
 
-namespace QtWebEngine
-{
-    Q_WEBENGINE_EXPORT void initialize();
-}
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSingleton : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(QQuickWebEngineSettings* settings READ settings CONSTANT FINAL)
+    Q_PROPERTY(QQuickWebEngineProfile* defaultProfile READ defaultProfile CONSTANT FINAL REVISION 1)
+public:
+    QQuickWebEngineSettings *settings() const;
+    QQuickWebEngineProfile *defaultProfile() const;
+    Q_INVOKABLE QWebEngineScript script() const;
+};
 
 QT_END_NAMESPACE
 
-#endif // QTWEBENGINEGLOBAL_H
+#endif // QQUICKWEBENGINESINGLETON_P_H

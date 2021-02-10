@@ -2,6 +2,6 @@ TEMPLATE = subdirs
 
 SUBDIRS +=  auto
 
-qtHaveModule(webengine) {
+qtHaveModule(webengine-quick) {
     SUBDIRS += quicktestbrowser
 }

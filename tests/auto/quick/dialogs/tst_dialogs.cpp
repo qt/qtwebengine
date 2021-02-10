@@ -30,7 +30,7 @@
 #include "server.h"
 #include "util.h"
 
-#include <QtWebEngine/private/qquickwebenginedialogrequests_p.h>
+#include <QtWebEngineQuick/private/qquickwebenginedialogrequests_p.h>
 #include <QtWebEngineCore/qwebenginecontextmenurequest.h>
 #include <QQuickWebEngineProfile>
 

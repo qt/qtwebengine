@@ -358,7 +358,7 @@ QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, 
         Q_UNREACHABLE();
     }
 
-#if QT_CONFIG(webengine_testsupport)
+#if QT_CONFIG(webenginequick_testsupport)
     if (m_view)
         QMetaObject::invokeMethod(
                 m_view, [view = m_view]() { view->d_ptr->didCompositorFrameSwap(); },
