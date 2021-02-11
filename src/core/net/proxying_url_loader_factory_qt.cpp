@@ -236,8 +236,8 @@ QWebEngineUrlRequestInterceptor* InterceptedRequest::getPageInterceptor()
 {
     if (auto wc = webContents()) {
         auto view = static_cast<content::WebContentsImpl *>(wc)->GetView();
-        WebContentsAdapterClient *client = WebContentsViewQt::from(view)->client();
-        return client->webContentsAdapter()->requestInterceptor();
+        if (WebContentsAdapterClient *client = WebContentsViewQt::from(view)->client())
+            return client->webContentsAdapter()->requestInterceptor();
     }
     return nullptr;
 }
