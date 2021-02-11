@@ -55,7 +55,6 @@ defineReplace(qtwebengine_checkPdfError) {
     !qtwebengine_checkForSanitizer(QtPdf):return(false)
     linux:!qtwebengine_checkForPkgCfg(QtPdf):return(false)
     linux:!qtwebengine_checkForHostPkgCfg(QtPdf):return(false)
-    linux:!qtwebengine_checkForPackage(QtPdf,nss):return(false)
     win32:!qtwebengine_checkForWinVersion(QtPdf):return(false)
     return(true)
 }
