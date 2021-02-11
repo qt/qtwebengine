@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include "../../widgets/util.h"
+#include <util.h>
 #include <QtTest/QtTest>
 #include <QtWebEngineCore/qwebengineurlrequestinfo.h>
 #include <QtWebEngineCore/qwebengineurlrequestinterceptor.h>
@@ -416,7 +416,8 @@ void tst_QWebEngineUrlRequestInterceptor::firstPartyUrl()
 
 void tst_QWebEngineUrlRequestInterceptor::firstPartyUrlNestedIframes_data()
 {
-    QUrl url = QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebengineurlrequestinterceptor/resources/iframe.html"));
+    QUrl url = QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                   + QLatin1String("/resources/iframe.html"));
     QTest::addColumn<QUrl>("requestUrl");
     QTest::newRow("ui file") << url;
     QTest::newRow("ui qrc") << QUrl("qrc:///resources/iframe.html");
@@ -426,8 +427,13 @@ void tst_QWebEngineUrlRequestInterceptor::firstPartyUrlNestedIframes()
 {
     QFETCH(QUrl, requestUrl);
 
-    if (requestUrl.scheme() == "file" && !QDir(TESTS_SOURCE_DIR).exists())
-        W_QSKIP(QString("This test requires access to resources found in '%1'").arg(TESTS_SOURCE_DIR).toLatin1().constData(), SkipAll);
+    if (requestUrl.scheme() == "file"
+        && !QDir(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()).exists())
+        W_QSKIP(QString("This test requires access to resources found in '%1'")
+                        .arg(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath())
+                        .toLatin1()
+                        .constData(),
+                SkipAll);
 
     QString adjustedUrl = requestUrl.adjusted(QUrl::RemoveFilename).toString();
 
@@ -461,17 +467,30 @@ void tst_QWebEngineUrlRequestInterceptor::firstPartyUrlNestedIframes()
 
 void tst_QWebEngineUrlRequestInterceptor::requestInterceptorByResourceType_data()
 {
-    QUrl firstPartyUrl = QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebengineurlrequestinterceptor/resources/resource_in_iframe.html"));
-    QUrl styleRequestUrl = QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebengineurlrequestinterceptor/resources/style.css"));
-    QUrl scriptRequestUrl = QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebengineurlrequestinterceptor/resources/script.js"));
-    QUrl fontRequestUrl = QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebengineurlrequestinterceptor/resources/fontawesome.woff"));
-    QUrl xhrRequestUrl = QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebengineurlrequestinterceptor/resources/test"));
-    QUrl imageFirstPartyUrl = QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebengineurlrequestinterceptor/resources/image_in_iframe.html"));
-    QUrl imageRequestUrl = QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebengineurlrequestinterceptor/resources/icons/favicon.png"));
-    QUrl mediaFirstPartyUrl = QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebengineurlrequestinterceptor/resources/media_in_iframe.html"));
-    QUrl mediaRequestUrl = QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebengineurlrequestinterceptor/resources/media.mp4"));
-    QUrl faviconFirstPartyUrl = QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebengineurlrequestinterceptor/resources/favicon.html"));
-    QUrl faviconRequestUrl = QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebengineurlrequestinterceptor/resources/icons/favicon.png"));
+    QUrl firstPartyUrl = QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                             + QLatin1String("/resources/resource_in_iframe.html"));
+    QUrl styleRequestUrl = QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                               + QLatin1String("/resources/style.css"));
+    QUrl scriptRequestUrl = QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                                + QLatin1String("/resources/script.js"));
+    QUrl fontRequestUrl = QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                              + QLatin1String("/resources/fontawesome.woff"));
+    QUrl xhrRequestUrl = QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                             + QLatin1String("/resources/test"));
+    QUrl imageFirstPartyUrl =
+            QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                + QLatin1String("/resources/image_in_iframe.html"));
+    QUrl imageRequestUrl = QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                               + QLatin1String("/resources/icons/favicon.png"));
+    QUrl mediaFirstPartyUrl =
+            QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                + QLatin1String("/resources/media_in_iframe.html"));
+    QUrl mediaRequestUrl = QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                               + QLatin1String("/resources/media.mp4"));
+    QUrl faviconFirstPartyUrl = QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                                    + QLatin1String("/resources/favicon.html"));
+    QUrl faviconRequestUrl = QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                                 + QLatin1String("/resources/icons/favicon.png"));
 
     QTest::addColumn<QUrl>("requestUrl");
     QTest::addColumn<QUrl>("firstPartyUrl");
@@ -498,8 +517,12 @@ void tst_QWebEngineUrlRequestInterceptor::requestInterceptorByResourceType_data(
 
 void tst_QWebEngineUrlRequestInterceptor::requestInterceptorByResourceType()
 {
-    if (!QDir(TESTS_SOURCE_DIR).exists())
-        W_QSKIP(QString("This test requires access to resources found in '%1'").arg(TESTS_SOURCE_DIR).toLatin1().constData(), SkipAll);
+    if (!QDir(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()).exists())
+        W_QSKIP(QString("This test requires access to resources found in '%1'")
+                        .arg(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath())
+                        .toLatin1()
+                        .constData(),
+                SkipAll);
     QFETCH(QUrl, requestUrl);
     QFETCH(QUrl, firstPartyUrl);
     QFETCH(int, resourceType);
@@ -583,7 +606,8 @@ void tst_QWebEngineUrlRequestInterceptor::customHeaders()
 {
     // Create HTTP Server to parse the request.
     HttpServer httpServer;
-    httpServer.setResourceDirs({ TESTS_SOURCE_DIR "qwebengineurlrequestinterceptor/resources" });
+    httpServer.setResourceDirs({ QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                 + "/resources" });
     QVERIFY(httpServer.start());
 
     QWebEngineProfile profile;
@@ -700,7 +724,7 @@ void tst_QWebEngineUrlRequestInterceptor::jsServiceWorker()
 {
 
     HttpServer server;
-    server.setResourceDirs({ TESTS_SOURCE_DIR "qwebengineurlrequestinterceptor/resources" });
+    server.setResourceDirs({ QDir(QT_TESTCASE_SOURCEDIR).canonicalPath() + "/resources" });
     QVERIFY(server.start());
 
     QWebEngineProfile profile(QStringLiteral("Test"));

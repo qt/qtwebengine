@@ -29,7 +29,7 @@
 #include <QtTest/QtTest>
 
 #include "httpserver.h"
-#include "../util.h"
+#include <util.h>
 #include "qdebug.h"
 #include "qwebenginepage.h"
 #include "qwebengineprofile.h"
@@ -276,7 +276,7 @@ void tst_LoadSignals::rejectNavigationRequest()
 void tst_LoadSignals::monotonicity()
 {
     HttpServer server;
-    server.setResourceDirs({ TESTS_SHARED_DATA_DIR });
+    server.setResourceDirs({ server.sharedDataDir() });
     connect(&server, &HttpServer::newRequest, [] (HttpReqRep *) {
          QTest::qWait(250); // just add delay to trigger some progress for every sub resource
     });
@@ -376,7 +376,7 @@ void tst_LoadSignals::numberOfStartedAndFinishedSignalsIsSame()
     QFETCH(QString, imageResourceUrl);
 
     HttpServer server;
-    server.setResourceDirs({ TESTS_SOURCE_DIR "/qwebengineprofile/resources" });
+    server.setResourceDirs({ server.sharedDataDir() });
     QVERIFY(server.start());
 
     QUrl serverImage = server.url("/hedgehog.png");

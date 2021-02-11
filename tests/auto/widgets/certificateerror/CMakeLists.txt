@@ -1,0 +1,23 @@
+include(../../httpserver/httpserver.cmake)
+include(../../util/util.cmake)
+
+qt_internal_add_test(tst_certificateerror
+    SOURCES
+        tst_certificateerror.cpp
+    LIBRARIES
+        Qt::WebEngineWidgets
+        Test::HttpServer
+        Test::Util
+)
+
+set(tst_certificateerror_resource_files
+    "resources/cert.pem"
+    "resources/key.pem"
+)
+
+qt_internal_add_resource(tst_certificateerror "tst_certificateerror"
+    PREFIX
+       "/"
+    FILES
+       ${tst_certificateerror_resource_files}
+)

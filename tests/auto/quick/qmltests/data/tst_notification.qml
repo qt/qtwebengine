@@ -29,6 +29,7 @@
 import QtQuick 2.2
 import QtTest 1.0
 import QtWebEngine 1.9
+import Test.Shared 1.0 as Shared
 
 TestWebEngineView {
     id: view
@@ -60,7 +61,8 @@ TestWebEngineView {
         when: windowShown
 
         function resolverUrl(html) {
-            return Qt.resolvedUrl('../../../shared/data/' + html)
+            console.log(Shared.HttpServer.sharedDataDir())
+            return Qt.resolvedUrl(Shared.HttpServer.sharedDataDir() + "/" + html)
         }
 
         function init() {

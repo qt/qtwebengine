@@ -40,9 +40,9 @@
 
 struct SslTcpServer : QTcpServer
 {
-    SslTcpServer() {
-        sslconf.setLocalCertificateChain(QSslCertificate::fromPath(":/resources/cert.pem"));
-        sslconf.setPrivateKey(readKey(":/resources/key.pem"));
+    SslTcpServer(const QString &certPath, const QString &keyPath) {
+        sslconf.setLocalCertificateChain(QSslCertificate::fromPath(certPath));
+        sslconf.setPrivateKey(readKey(keyPath));
     }
 
     void incomingConnection(qintptr d) override {
@@ -75,7 +75,11 @@ struct SslTcpServer : QTcpServer
 
 struct HttpsServer : HttpServer
 {
-    HttpsServer(QObject *parent = nullptr) : HttpServer(new SslTcpServer, "https", parent) { }
+    HttpsServer(const QString &certPath, const QString &keyPath, QObject *parent = nullptr)
+        : HttpServer(new SslTcpServer(certPath, keyPath), "https", QHostAddress::LocalHost, 0,
+                     parent)
+    {
+    }
 };
 
 #endif

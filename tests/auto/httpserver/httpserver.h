@@ -59,7 +59,9 @@ class HttpServer : public QObject
     Q_OBJECT
 public:
     explicit HttpServer(QObject *parent = nullptr);
-    explicit HttpServer(QTcpServer *server, const QString &protocol, QObject *parent = nullptr);
+    HttpServer(const QHostAddress &hostAddress, quint16 port, QObject *parent = nullptr);
+    HttpServer(QTcpServer *server, const QString &protocol, const QHostAddress &address,
+               quint16 port, QObject *parent = nullptr);
 
     ~HttpServer() override;
 
@@ -75,6 +77,8 @@ public:
 
     // Full URL for given relative path
     Q_INVOKABLE QUrl url(const QString &path = QStringLiteral("/")) const;
+
+    Q_INVOKABLE QString sharedDataDir() const;
 
     Q_INVOKABLE void setResourceDirs(const QStringList &dirs) { m_dirs = dirs; }
 
@@ -94,6 +98,8 @@ private:
     bool m_error = false;
     bool m_ignoreNewConnection = false;
     bool m_expectingError = false;
+    QHostAddress m_hostAddress;
+    quint16 m_port;
 };
 
 #endif // !HTTPSERVER_H

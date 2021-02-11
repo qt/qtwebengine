@@ -18,7 +18,7 @@
 */
 
 #include <qtest.h>
-#include "../util.h"
+#include <util.h>
 
 #include <QHBoxLayout>
 #include <QMainWindow>

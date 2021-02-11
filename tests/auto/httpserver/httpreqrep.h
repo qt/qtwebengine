@@ -41,6 +41,7 @@ public:
     explicit HttpReqRep(QTcpSocket *socket, QObject *parent = nullptr);
 
     Q_INVOKABLE void sendResponse(int statusCode = 200);
+    void sendResponse(const QByteArray &response);
     void close();
     bool isClosed() const { return m_state == State::DISCONNECTED; }
 

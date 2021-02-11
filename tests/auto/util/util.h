@@ -38,10 +38,6 @@
 #include <qwebenginepage.h>
 #include <qwebengineview.h>
 
-#if !defined(TESTS_SOURCE_DIR)
-#define TESTS_SOURCE_DIR ""
-#endif
-
 // Disconnect signal on destruction.
 class ScopedConnection
 {

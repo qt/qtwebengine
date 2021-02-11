@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include "testwindow.h"
-#include "util.h"
+#include "quickutil.h"
 
 #include <QGuiApplication>
 #include <QtQml/QQmlEngine>
@@ -93,7 +93,7 @@ inline QQuickWebEngineView *tst_QQuickWebEngineDefaultSurfaceFormat::webEngineVi
 
 QUrl tst_QQuickWebEngineDefaultSurfaceFormat::urlFromTestPath(const char *localFilePath)
 {
-    QString testSourceDirPath = QString::fromLocal8Bit(TESTS_SOURCE_DIR);
+    QString testSourceDirPath = QDir(QT_TESTCASE_SOURCEDIR).canonicalPath();
     if (!testSourceDirPath.endsWith(QLatin1Char('/')))
         testSourceDirPath.append(QLatin1Char('/'));
 

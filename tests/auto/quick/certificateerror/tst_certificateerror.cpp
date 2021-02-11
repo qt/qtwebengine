@@ -27,7 +27,7 @@
 ****************************************************************************/
 #include "testhandler.h"
 #include <httpsserver.h>
-#include <util.h>
+#include <quickutil.h>
 #include <QWebEngineCertificateError>
 #include <QQuickWebEngineProfile>
 #include <QQmlApplicationEngine>
@@ -75,7 +75,7 @@ void tst_CertificateError::handleError_data()
 
 void tst_CertificateError::handleError()
 {
-    HttpsServer server;
+    HttpsServer server(":/resources/cert.pem",":/resources/key.pem");
     server.setExpectError(true);
     QVERIFY(server.start());
 

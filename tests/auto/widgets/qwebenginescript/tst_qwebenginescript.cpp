@@ -25,7 +25,7 @@
 #include <qwebenginescriptcollection.h>
 #include <qwebenginesettings.h>
 #include <qwebengineview.h>
-#include "../util.h"
+#include <util.h>
 #if QT_CONFIG(webengine_webchannel)
 #include <QWebChannel>
 #endif

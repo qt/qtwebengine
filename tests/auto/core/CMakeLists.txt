@@ -1,0 +1,5 @@
+add_subdirectory(qwebenginecookiestore)
+add_subdirectory(qwebengineurlrequestinterceptor)
+if(QT_FEATURE_ssl)
+    add_subdirectory(qwebengineclientcertificatestore)
+endif()

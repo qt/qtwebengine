@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include "../util.h"
+#include <util.h>
 
 #include <QCoreApplication>
 #include <QSignalSpy>

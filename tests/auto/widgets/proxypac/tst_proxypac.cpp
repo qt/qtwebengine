@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include "proxyserver.h"
+#include "proxy_server.h"
 #include <QTest>
 #include <QSignalSpy>
 #include <QWebEngineProfile>
@@ -47,17 +47,17 @@ void tst_ProxyPac::proxypac()
 {
     const QString fromEnv = qEnvironmentVariable("QTWEBENGINE_CHROMIUM_FLAGS");
     if (!fromEnv.contains("--proxy-pac-url"))
-        qFatal("--proxy-pac-url argument is not passed.");
+        qFatal("--proxy-pac-url argument is not passed. Use ctest or set QTWEBENGINE_CHROMIUM_FLAGS");
 
     ProxyServer proxyServer1;
+    QSignalSpy proxySpy1(&proxyServer1, &ProxyServer::requestReceived);
     proxyServer1.setPort(5551);
     proxyServer1.run();
-    QSignalSpy proxySpy1(&proxyServer1, &ProxyServer::requestReceived);
 
     ProxyServer proxyServer2;
+    QSignalSpy proxySpy2(&proxyServer2, &ProxyServer::requestReceived);
     proxyServer2.setPort(5552);
     proxyServer2.run();
-    QSignalSpy proxySpy2(&proxyServer2, &ProxyServer::requestReceived);
 
     QTRY_VERIFY2(proxyServer1.isListening(), "Could not setup proxy server 1");
     QTRY_VERIFY2(proxyServer2.isListening(), "Could not setup proxy server 2");

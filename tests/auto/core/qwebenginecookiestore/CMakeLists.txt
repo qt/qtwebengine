@@ -1,0 +1,23 @@
+include(../../httpserver/httpserver.cmake)
+include(../../util/util.cmake)
+
+qt_internal_add_test(tst_qwebenginecookiestore
+    SOURCES
+        tst_qwebenginecookiestore.cpp
+    LIBRARIES
+        Qt::WebEngineWidgets
+        Test::HttpServer
+        Test::Util
+)
+
+set(tst_qwebenginecookiestore_resource_files
+    "resources/content.html"
+    "resources/index.html"
+)
+
+qt_add_resource(tst_qwebenginecookiestore "tst_qwebenginecookiestore"
+    PREFIX
+        "/"
+    FILES
+        ${tst_qwebenginecookiestore_resource_files}
+)

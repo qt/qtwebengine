@@ -33,14 +33,21 @@
 
 Q_LOGGING_CATEGORY(gHttpServerLog, "HttpServer")
 
-HttpServer::HttpServer(QObject *parent) : HttpServer(new QTcpServer, "http", parent)
+HttpServer::HttpServer(QObject *parent)
+    : HttpServer(new QTcpServer, "http", QHostAddress::LocalHost, 0, parent)
 {
 }
 
-HttpServer::HttpServer(QTcpServer *tcpServer, const QString &protocol, QObject *parent)
-    : QObject(parent), m_tcpServer(tcpServer)
+HttpServer::HttpServer(const QHostAddress &hostAddress, quint16 port, QObject *parent)
+    : HttpServer(new QTcpServer, "http", hostAddress, port, parent)
 {
-    m_url.setHost(QStringLiteral("127.0.0.1"));
+}
+
+HttpServer::HttpServer(QTcpServer *tcpServer, const QString &protocol,
+                       const QHostAddress &hostAddress, quint16 port, QObject *parent)
+    : QObject(parent), m_tcpServer(tcpServer), m_hostAddress(hostAddress), m_port(port)
+{
+    m_url.setHost(hostAddress.toString());
     m_url.setScheme(protocol);
     connect(tcpServer, &QTcpServer::newConnection, this, &HttpServer::handleNewConnection);
 }
@@ -56,7 +63,7 @@ bool HttpServer::start()
     m_expectingError = false;
     m_ignoreNewConnection = false;
 
-    if (!m_tcpServer->listen()) {
+    if (!m_tcpServer->listen(m_hostAddress, m_port)) {
         qCWarning(gHttpServerLog).noquote() << m_tcpServer->errorString();
         return false;
     }
@@ -110,6 +117,8 @@ void HttpServer::handleNewConnection()
                         rr->sendResponse(500); // internal server error
                     }
                     break;
+                } else {
+                    qWarning() << "Can't open resource" << dir + rr->requestPath();
                 }
             }
         }
@@ -131,4 +140,9 @@ void HttpServer::handleNewConnection()
         m_ignoreNewConnection = true;
         connect(rr, &HttpReqRep::closed, rr, &QObject::deleteLater);
     }
+}
+
+QString HttpServer::sharedDataDir() const
+{
+    return SERVER_SOURCE_DIR + QLatin1String("/data");
 }

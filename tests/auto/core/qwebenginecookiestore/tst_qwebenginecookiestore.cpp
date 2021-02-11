@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include "../../widgets/util.h"
+#include <util.h>
 #include <QtTest/QtTest>
 #include <QtWebEngineCore/qwebenginecallback.h>
 #include <QtWebEngineCore/qwebenginecookiestore.h>

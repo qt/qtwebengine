@@ -36,6 +36,11 @@ ProxyServer::ProxyServer(QObject *parent) : QObject(parent)
     connect(&m_server, &QTcpServer::newConnection, this, &ProxyServer::handleNewConnection);
 }
 
+void ProxyServer::setPort(int port)
+{
+    m_port = port;
+}
+
 void ProxyServer::setCredentials(const QByteArray &user, const QByteArray password)
 {
     m_auth.append(user);
@@ -59,7 +64,7 @@ bool ProxyServer::isListening()
 
 void ProxyServer::run()
 {
-    if (!m_server.listen(QHostAddress::LocalHost, 5555))
+    if (!m_server.listen(QHostAddress::LocalHost, m_port))
         qFatal("Could not start the test server");
 }
 
@@ -99,4 +104,5 @@ void ProxyServer::handleReadReady()
         emit cookieMatch();
     }
     m_data.clear();
+    emit requestReceived();
 }

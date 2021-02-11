@@ -42,10 +42,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QUICK_TEST_SOURCE_DIR
-#define QUICK_TEST_SOURCE_DIR 0
-#endif
-
 #ifdef QT_WIDGETS_LIB
 #define Application QApplication
 #else

@@ -20,7 +20,7 @@
 #include <QtTest/QtTest>
 #include <QAction>
 
-#include "../util.h"
+#include <util.h>
 #include "qwebenginepage.h"
 #include "qwebengineview.h"
 #include "qwebenginehistory.h"

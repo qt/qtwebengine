@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include "testwindow.h"
-#include "util.h"
+#include "quickutil.h"
 
 #include <QScopedPointer>
 #include <QtCore/qelapsedtimer.h>
@@ -111,7 +111,7 @@ tst_QQuickWebEngineView::tst_QQuickWebEngineView()
     QtWebEngine::initialize();
     QQuickWebEngineProfile::defaultProfile()->setOffTheRecord(true);
 
-    m_testSourceDirPath = QString::fromLocal8Bit(TESTS_SOURCE_DIR);
+    m_testSourceDirPath = QDir(QT_TESTCASE_SOURCEDIR).canonicalPath();
     if (!m_testSourceDirPath.endsWith(QLatin1Char('/')))
         m_testSourceDirPath.append(QLatin1Char('/'));
 
@@ -1252,3 +1252,4 @@ static QByteArrayList params = QByteArrayList()
 
 W_QTEST_MAIN(tst_QQuickWebEngineView, params)
 #include "tst_qquickwebengineview.moc"
+#include "moc_quickutil.cpp"

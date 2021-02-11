@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <qtest.h>
-#include "../util.h"
+#include <util.h>
 
 #include <QSurfaceFormat>
 #include <QTimer>

@@ -57,6 +57,14 @@ void HttpReqRep::sendResponse(int statusCode)
     Q_EMIT responseSent();
 }
 
+void HttpReqRep::sendResponse(const QByteArray &response)
+{
+    m_socket->write(response);
+    m_state = State::DISCONNECTING;
+    m_socket->disconnectFromHost();
+    Q_EMIT responseSent();
+}
+
 void HttpReqRep::close()
 {
     if (m_state != State::REQUEST_RECEIVED)

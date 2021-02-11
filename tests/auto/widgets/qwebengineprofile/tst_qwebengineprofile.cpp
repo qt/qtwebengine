@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include "../util.h"
+#include <util.h>
 #include <QtCore/qbuffer.h>
 #include <QtCore/qmimedatabase.h>
 #include <QtTest/QtTest>
@@ -198,7 +198,7 @@ public:
 private:
     void onNewRequest(HttpReqRep *rr)
     {
-        const QDir resourceDir(TESTS_SOURCE_DIR "qwebengineprofile/resources");
+        const QDir resourceDir(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath() + "/resources");
         QString path = rr->requestPath();
         path.remove(0, 1);
 

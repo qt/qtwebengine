@@ -41,6 +41,7 @@ public:
     void setCredentials(const QByteArray &user, const QByteArray password);
     void setCookie(const QByteArray &cookie);
     bool isListening();
+    void setPort(int port);
 
 public slots:
     void run();
@@ -52,8 +53,10 @@ private slots:
 signals:
     void authenticationSuccess();
     void cookieMatch();
+    void requestReceived();
 
 private:
+    int m_port = 5555;
     QByteArray m_data;
     QTcpServer m_server;
     QByteArray m_auth;

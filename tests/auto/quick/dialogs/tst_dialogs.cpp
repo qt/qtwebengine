@@ -27,8 +27,8 @@
 ****************************************************************************/
 
 #include "testhandler.h"
-#include "server.h"
-#include "util.h"
+#include <quickutil.h>
+#include <httpserver.h>
 
 #include <QtWebEngineQuick/private/qquickwebenginedialogrequests_p.h>
 #include <QtWebEngineCore/qwebenginecontextmenurequest.h>
@@ -147,7 +147,7 @@ void tst_Dialogs::authenticationDialogRequested_data()
     QTest::addColumn<QUrl>("url");
     QTest::addColumn<QQuickWebEngineAuthenticationDialogRequest::AuthenticationType>("type");
     QTest::addColumn<QString>("realm");
-    QTest::addColumn<QByteArray>("reply");
+    QTest::addColumn<QByteArray>("response");
     QTest::newRow("Http Authentication Dialog") << QUrl("http://localhost:5555/")
                                                 << QQuickWebEngineAuthenticationDialogRequest::AuthenticationTypeHTTP
                                                 << QStringLiteral("Very Restricted Area")
@@ -167,12 +167,13 @@ void tst_Dialogs::authenticationDialogRequested()
     QFETCH(QUrl, url);
     QFETCH(QQuickWebEngineAuthenticationDialogRequest::AuthenticationType, type);
     QFETCH(QString, realm);
+    QFETCH(QByteArray, response);
 
-    QFETCH(QByteArray, reply);
-    Server server;
-    server.setReply(reply);
-    server.run();
-    QTRY_VERIFY2(server.isListening(), "Could not setup authentication server");
+    HttpServer server(QHostAddress::LocalHost, 5555);
+    connect(&server, &HttpServer::newRequest, [url, response](HttpReqRep *rr) {
+        rr->sendResponse(response);
+    });
+    QVERIFY(server.start());
 
     QSignalSpy dialogSpy(m_listener, &TestHandler::requestChanged);
     m_listener->load(url);
@@ -186,6 +187,7 @@ void tst_Dialogs::authenticationDialogRequested()
     QCOMPARE(dialog->realm(),realm);
     QCOMPARE(dialog->url(), url);
     QCOMPARE(dialog->proxyHost(), QStringLiteral("localhost"));
+    QVERIFY(server.stop());
 }
 
 void tst_Dialogs::javaScriptDialogRequested_data()

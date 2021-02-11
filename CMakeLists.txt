@@ -11,7 +11,15 @@ project(QtWebEngineRepoSuperBuild
     LANGUAGES CXX C
 )
 
+option(FORCE_TEST_RUN "Forces test run after compilation" FALSE)
+
 find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core)
+
+# coin configures 'just' for test build
+if(QT_BUILD_STANDALONE_TESTS)
+    qt_build_repo()
+    return()
+endif()
 
 set(installDir ${CMAKE_CURRENT_BINARY_DIR}/install)
 
@@ -121,6 +129,30 @@ if(QT_BUILD_EXAMPLES AND BUILD_SHARED_LIBS)
                     "${featureList}"
     )
     externalproject_add_stepdependencies(examples install libs)
+endif()
+
+if(FORCE_TEST_RUN OR QT_BUILD_TESTS)
+     find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS QuickTest Test)
+     unset(testRunCommand)
+     if(FORCE_TEST_RUN)
+        set(testRunCommand TEST_COMMAND ctest)
+     endif()
+     externalproject_add(tests
+         SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/tests
+         BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tests
+         PREFIX      tests
+         USES_TERMINAL_BUILD ON
+         USES_TERMINAL_TEST ON
+         BUILD_ALWAYS TRUE
+         CMAKE_ARGS  -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
+                 "${featureList}"
+         INSTALL_COMMAND ""
+         ${testRunCommand}
+    )
+    externalproject_add_stepdependencies(tests install libs)
+    if(QT_BUILD_EXAMPLES AND BUILD_SHARED_LIBS)
+       externalproject_add_stepdependencies(tests install examples)
+    endif()
 endif()
 
 if(NOT Gn_FOUND)

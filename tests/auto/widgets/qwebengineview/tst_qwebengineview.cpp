@@ -18,10 +18,9 @@
     the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
     Boston, MA 02110-1301, USA.
 */
-
+#include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
 #include <qtest.h>
-#include "../util.h"
-
+#include <util.h>
 #include <private/qinputmethod_p.h>
 #include <qpainter.h>
 #include <qpagelayout.h>
@@ -363,17 +362,21 @@ void tst_QWebEngineView::reusePage_data()
 
 void tst_QWebEngineView::reusePage()
 {
-    if (!QDir(TESTS_SOURCE_DIR).exists())
-        W_QSKIP(QString("This test requires access to resources found in '%1'").arg(TESTS_SOURCE_DIR).toLatin1().constData(), SkipAll);
+    if (!QDir(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()).exists())
+        W_QSKIP(QString("This test requires access to resources found in '%1'")
+                        .arg(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath())
+                        .toLatin1()
+                        .constData(),
+                SkipAll);
 
-    QDir::setCurrent(TESTS_SOURCE_DIR);
+    QDir::setCurrent(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath());
 
     QFETCH(QString, html);
     QWebEngineView* view1 = new QWebEngineView;
     QPointer<QWebEnginePage> page = new QWebEnginePage;
     view1->setPage(page.data());
     page.data()->settings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
-    page->setHtml(html, QUrl::fromLocalFile(TESTS_SOURCE_DIR));
+    page->setHtml(html, QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()));
     if (html.contains("</embed>")) {
         // some reasonable time for the PluginStream to feed test.swf to flash and start painting
         QSignalSpy spyFinished(view1, &QWebEngineView::loadFinished);
@@ -3193,8 +3196,10 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::newRow("usb-internals") << QUrl("chrome://usb-internals") << false;
     QTest::newRow("user-actions") << QUrl("chrome://user-actions") << true;
     QTest::newRow("version") << QUrl("chrome://version") << false;
+#if QT_CONFIG(webengine_webrtc)
     QTest::newRow("webrtc-internals") << QUrl("chrome://webrtc-internals") << true;
     QTest::newRow("webrtc-logs") << QUrl("chrome://webrtc-logs") << true;
+#endif
 }
 
 void tst_QWebEngineView::webUIURLs()

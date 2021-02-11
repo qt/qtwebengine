@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include "../util.h"
+#include <util.h>
 #include "httpserver.h"
 
 #include <QtCore/qfile.h>
@@ -47,7 +47,6 @@
 
 #define QSL QStringLiteral
 #define QBAL QByteArrayLiteral
-#define THIS_DIR TESTS_SOURCE_DIR "origins/"
 
 void registerSchemes()
 {
@@ -185,7 +184,7 @@ private:
             return;
         }
 
-        QString pathPrefix = QSL(THIS_DIR);
+        QString pathPrefix = QDir(QT_TESTCASE_SOURCEDIR).canonicalPath();
         QString pathSuffix = url.path();
         QFile *file = new QFile(pathPrefix + pathSuffix, job);
         if (!file->open(QIODevice::ReadOnly)) {
@@ -460,7 +459,8 @@ void tst_Origins::subdirWithAccess()
 {
     ScopedAttribute sa(m_page->settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, true);
 
-    QVERIFY(verifyLoad(QSL("file:" THIS_DIR "resources/subdir/index.html")));
+    QVERIFY(verifyLoad("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                       + "/resources/subdir/index.html"));
     QCOMPARE(eval(QSL("msg[0]")), QVariant(QSL("hello")));
     QCOMPARE(eval(QSL("msg[1]")), QVariant(QSL("world")));
 
@@ -488,7 +488,8 @@ void tst_Origins::subdirWithoutAccess()
 
     QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
-    QVERIFY(verifyLoad(QSL("file:" THIS_DIR "resources/subdir/index.html")));
+    QVERIFY(verifyLoad("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                       + "/resources/subdir/index.html"));
     QCOMPARE(eval(QSL("msg[0]")), QVariant());
     QCOMPARE(eval(QSL("msg[1]")), QVariant());
 
@@ -513,14 +514,15 @@ void tst_Origins::fileAccessRemoteUrl()
     QFETCH(bool, EnableAccess);
 
     HttpServer server;
-    server.setResourceDirs({ THIS_DIR "resources" });
+    server.setResourceDirs({ QDir(QT_TESTCASE_SOURCEDIR).canonicalPath() + "/resources" });
     QVERIFY(server.start());
 
     ScopedAttribute sa(m_page->settings(), QWebEngineSettings::LocalContentCanAccessRemoteUrls, EnableAccess);
     if (!EnableAccess)
         QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("blocked by CORS policy")));
 
-    QVERIFY(verifyLoad(QSL("file:" THIS_DIR "resources/mixedXHR.html")));
+    QVERIFY(verifyLoad("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                       + "/resources/mixedXHR.html"));
 
     eval("sendXHR('" + server.url("/mixedXHR.txt").toString() + "')");
     QTRY_COMPARE(eval("result"), (EnableAccess ? QString("ok") : QString("error")));
@@ -536,8 +538,10 @@ void tst_Origins::fileAccessRemoteUrl()
 // file: scheme.
 void tst_Origins::mixedSchemes()
 {
-    QVERIFY(verifyLoad(QSL("file:" THIS_DIR "resources/mixedSchemes.html")));
-    eval(QSL("setIFrameUrl('file:" THIS_DIR "resources/mixedSchemes_frame.html')"));
+    QVERIFY(verifyLoad("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                       + "/resources/mixedSchemes.html"));
+    eval("setIFrameUrl('file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+         + "/resources/mixedSchemes_frame.html')");
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
     QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('qrc:/resources/mixedSchemes_frame.html')"));
@@ -548,7 +552,8 @@ void tst_Origins::mixedSchemes()
 
     QVERIFY(verifyLoad(QSL("qrc:/resources/mixedSchemes.html")));
     QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
-    eval(QSL("setIFrameUrl('file:" THIS_DIR "resources/mixedSchemes_frame.html')"));
+    eval("setIFrameUrl('file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+         + "/resources/mixedSchemes_frame.html')");
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
     eval(QSL("setIFrameUrl('qrc:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
@@ -558,7 +563,8 @@ void tst_Origins::mixedSchemes()
 
     QVERIFY(verifyLoad(QSL("tst:/resources/mixedSchemes.html")));
     QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Not allowed to load local resource")));
-    eval(QSL("setIFrameUrl('file:" THIS_DIR "resources/mixedSchemes_frame.html')"));
+    eval("setIFrameUrl('file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+         + "/resources/mixedSchemes_frame.html')");
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("cannotLoad")));
     QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('qrc:/resources/mixedSchemes_frame.html')"));
@@ -644,24 +650,32 @@ void tst_Origins::mixedXHR_data()
     QTest::addColumn<QString>("url");
     QTest::addColumn<QString>("command");
     QTest::addColumn<QVariant>("result");
-    QTest::newRow("file->file") << QString("file:" THIS_DIR "resources/mixedXHR.html")
-                                << QString("sendXHR('file:" THIS_DIR "resources/mixedXHR.txt')")
+    QTest::newRow("file->file") << QString("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                           + "/resources/mixedXHR.html")
+                                << QString("sendXHR('file:"
+                                           + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                           + "/resources/mixedXHR.txt')")
                                 << QVariant(QString("ok"));
-    QTest::newRow("file->qrc") << QString("file:" THIS_DIR "resources/mixedXHR.html")
+    QTest::newRow("file->qrc") << QString("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                          + "/resources/mixedXHR.html")
                                << QString("sendXHR('qrc:/resources/mixedXHR.txt')")
                                << QVariant(QString("error"));
-    QTest::newRow("file->tst") << QString("file:" THIS_DIR "resources/mixedXHR.html")
+    QTest::newRow("file->tst") << QString("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                          + "/resources/mixedXHR.html")
                                << QString("sendXHR('tst:/resources/mixedXHR.txt')")
                                << QVariant(QString("error"));
-    QTest::newRow("file->data") << QString("file:" THIS_DIR "resources/mixedXHR.html")
-                                << QString("sendXHR('data:,ok')")
-                                << QVariant(QString("ok"));
-    QTest::newRow("file->cors") << QString("file:" THIS_DIR "resources/mixedXHR.html")
+    QTest::newRow("file->data") << QString("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                           + "/resources/mixedXHR.html")
+                                << QString("sendXHR('data:,ok')") << QVariant(QString("ok"));
+    QTest::newRow("file->cors") << QString("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                           + "/resources/mixedXHR.html")
                                 << QString("sendXHR('cors:/resources/mixedXHR.txt')")
                                 << QVariant(QString("ok"));
 
     QTest::newRow("qrc->file") << QString("qrc:/resources/mixedXHR.html")
-                               << QString("sendXHR('file:" THIS_DIR "resources/mixedXHR.txt')")
+                               << QString("sendXHR('file:"
+                                          + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                          + "/resources/mixedXHR.txt')")
                                << QVariant(QString("ok"));
     QTest::newRow("qrc->qrc") << QString("qrc:/resources/mixedXHR.html")
                               << QString("sendXHR('qrc:/resources/mixedXHR.txt')")
@@ -676,9 +690,10 @@ void tst_Origins::mixedXHR_data()
                                << QString("sendXHR('cors:/resources/mixedXHR.txt')")
                                << QVariant(QString("ok"));
 
-
     QTest::newRow("tst->file") << QString("tst:/resources/mixedXHR.html")
-                               << QString("sendXHR('file:" THIS_DIR "resources/mixedXHR.txt')")
+                               << QString("sendXHR('file:"
+                                          + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                                          + "/resources/mixedXHR.txt')")
                                << QVariant(QString("error"));
     QTest::newRow("tst->qrc") << QString("tst:/resources/mixedXHR.html")
                               << QString("sendXHR('qrc:/resources/mixedXHR.txt')")
@@ -760,7 +775,8 @@ void tst_Origins::webSocket()
     m_page->setWebChannel(&channel);
     QVERIFY(echoServer.listen());
 
-    QVERIFY(verifyLoad(QSL("file:" THIS_DIR "resources/websocket.html")));
+    QVERIFY(verifyLoad(
+            QSL("file:" QDir(QT_TESTCASE_SOURCEDIR).canonicalPath() "/resources/websocket.html")));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
 
     QVERIFY(verifyLoad(QSL("qrc:/resources/websocket.html")));
@@ -779,7 +795,8 @@ void tst_Origins::webSocket()
 // one page, there is not much need for security restrictions.
 void tst_Origins::dedicatedWorker()
 {
-    QVERIFY(verifyLoad(QSL("file:" THIS_DIR "resources/dedicatedWorker.html")));
+    QVERIFY(verifyLoad("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                       + "/resources/dedicatedWorker.html"));
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QCOMPARE(eval(QSL("result")), QVariant(42));
 
@@ -810,7 +827,8 @@ void tst_Origins::sharedWorker()
 {
     {
         ScopedAttribute sa(m_page->settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, false);
-        QVERIFY(verifyLoad(QSL("file:" THIS_DIR "resources/sharedWorker.html")));
+        QVERIFY(verifyLoad("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/sharedWorker.html"));
         QTRY_VERIFY_WITH_TIMEOUT(eval(QSL("done")).toBool(), 10000);
         QVERIFY(eval(QSL("error")).toString()
                 .contains(QSL("cannot be accessed from origin 'null'")));
@@ -818,7 +836,8 @@ void tst_Origins::sharedWorker()
 
     {
         ScopedAttribute sa(m_page->settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, true);
-        QVERIFY(verifyLoad(QSL("file:" THIS_DIR "resources/sharedWorker.html")));
+        QVERIFY(verifyLoad("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/sharedWorker.html"));
         QTRY_VERIFY_WITH_TIMEOUT(eval(QSL("done")).toBool(), 10000);
         QCOMPARE(eval(QSL("result")), QVariant(42));
     }
@@ -842,7 +861,8 @@ void tst_Origins::sharedWorker()
 // Service workers have to be explicitly enabled for a scheme.
 void tst_Origins::serviceWorker()
 {
-    QVERIFY(verifyLoad(QSL("file:" THIS_DIR "resources/serviceWorker.html")));
+    QVERIFY(verifyLoad("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                       + "/resources/serviceWorker.html"));
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QVERIFY(eval(QSL("error")).toString()
             .contains(QSL("The URL protocol of the current origin ('file://') is not supported.")));
@@ -885,11 +905,16 @@ void tst_Origins::serviceWorker()
 // Support for view-source must be enabled explicitly.
 void tst_Origins::viewSource()
 {
-    QVERIFY(verifyLoad(QSL("view-source:file:" THIS_DIR "resources/viewSource.html")));
+    QVERIFY(verifyLoad("view-source:file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                       + "/resources/viewSource.html"));
 #ifdef Q_OS_WIN
-    QCOMPARE(m_page->requestedUrl().toString(), QSL("file:///" THIS_DIR "resources/viewSource.html"));
+    QCOMPARE(m_page->requestedUrl().toString(),
+             "file:///" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                     + "/resources/viewSource.html");
 #else
-    QCOMPARE(m_page->requestedUrl().toString(), QSL("file://" THIS_DIR "resources/viewSource.html"));
+    QCOMPARE(m_page->requestedUrl().toString(),
+             "file://" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                     + "/resources/viewSource.html");
 #endif
 
     QVERIFY(verifyLoad(QSL("view-source:qrc:/resources/viewSource.html")));
