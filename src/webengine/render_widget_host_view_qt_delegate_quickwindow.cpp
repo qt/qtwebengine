@@ -44,6 +44,16 @@
 
 namespace QtWebEngineCore {
 
+static inline QPoint getOffset(QQuickItem *item)
+{
+    // get parent window (scene) offset
+    QPointF offset = item->mapFromScene(QPoint(0, 0));
+    offset = item->mapToGlobal(offset);
+    // get local offset
+    offset -= item->mapToScene(QPoint(0, 0));
+    return offset.toPoint();
+}
+
 RenderWidgetHostViewQtDelegateQuickWindow::RenderWidgetHostViewQtDelegateQuickWindow(
         RenderWidgetHostViewQtDelegateQuick *realDelegate, QWindow *parent)
     : QQuickWindow(parent), m_realDelegate(realDelegate), m_virtualParent(nullptr)
@@ -61,29 +71,12 @@ void RenderWidgetHostViewQtDelegateQuickWindow::setVirtualParent(QQuickItem *vir
     m_virtualParent = virtualParent;
 }
 
-static inline QRectF mapRectToGlobal(const QQuickItem *item, const QRectF &rect)
+void RenderWidgetHostViewQtDelegateQuickWindow::initAsPopup(const QRect &rect)
 {
-    const QPointF p1 = item->mapToGlobal(rect.topLeft());
-    const QPointF p2 = item->mapToGlobal(rect.bottomRight());
-    return QRectF(p1, p2).normalized();
-}
-
-static inline QRectF mapRectFromGlobal(const QQuickItem *item, const QRectF &rect)
-{
-    const QPointF p1 = item->mapFromGlobal(rect.topLeft());
-    const QPointF p2 = item->mapFromGlobal(rect.bottomRight());
-    return QRectF(p1, p2).normalized();
-}
-
-void RenderWidgetHostViewQtDelegateQuickWindow::initAsPopup(const QRect &screenRect)
-{
-    QRectF popupRect(screenRect);
-    popupRect = mapRectFromGlobal(m_virtualParent, popupRect);
-    popupRect = m_virtualParent->mapRectToScene(popupRect);
-    popupRect = mapRectToGlobal(m_virtualParent, popupRect);
-    m_realDelegate->setSize(popupRect.size());
-    popupRect.setSize(screenRect.size());
-    setGeometry(popupRect.toAlignedRect());
+    m_realDelegate->setSize(rect.size());
+    QRect geometry(rect);
+    geometry.moveTo(rect.topLeft() - getOffset(m_virtualParent));
+    setGeometry(geometry);
     raise();
     show();
 }
@@ -149,12 +142,7 @@ void RenderWidgetHostViewQtDelegateQuickWindow::resize(int width, int height)
 
 void RenderWidgetHostViewQtDelegateQuickWindow::move(const QPoint &screenPos)
 {
-    QRectF popupRect(screenPos, size());
-    popupRect = mapRectFromGlobal(m_virtualParent, popupRect);
-    popupRect = m_virtualParent->mapRectToScene(popupRect);
-    popupRect = mapRectToGlobal(m_virtualParent, popupRect);
-
-    QQuickWindow::setPosition(popupRect.topLeft().toPoint());
+    QQuickWindow::setPosition(screenPos - getOffset(m_virtualParent));
 }
 
 } // namespace QtWebEngineCore
