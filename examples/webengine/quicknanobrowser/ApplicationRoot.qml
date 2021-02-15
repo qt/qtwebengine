@@ -66,7 +66,6 @@ QtObject {
 
     property Component browserWindowComponent: BrowserWindow {
         applicationRoot: root
-        onClosing: destroy()
     }
     property Component browserDialogComponent: BrowserDialog {
         onClosing: destroy()
