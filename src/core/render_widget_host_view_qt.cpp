@@ -59,6 +59,7 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/compositor/surface_utils.h"
+#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
@@ -260,19 +261,17 @@ private:
     const QTouchEvent::TouchPoint& touchPoint(size_t i) const { return touchPoints[i].second; }
 };
 
+extern display::Display toDisplayDisplay(int id, const QScreen *screen);
+
 static blink::ScreenInfo screenInfoFromQScreen(QScreen *screen)
 {
     blink::ScreenInfo r;
-    if (screen) {
-        r.device_scale_factor = screen->devicePixelRatio();
-        r.depth_per_component = 8;
-        r.depth = screen->depth();
-        r.is_monochrome = (r.depth == 1);
-        r.rect = toGfx(screen->geometry());
-        r.available_rect = toGfx(screen->availableGeometry());
-    } else {
+    if (!screen)
+        screen = qApp->primaryScreen();
+    if (screen)
+        content::DisplayUtil::DisplayToScreenInfo(&r, toDisplayDisplay(0, screen));
+    else
         r.device_scale_factor = qGuiApp->devicePixelRatio();
-    }
     return r;
 }
 

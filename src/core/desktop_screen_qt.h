@@ -42,6 +42,8 @@
 
 #include "ui/display/screen_base.h"
 
+#include <qmetaobject.h>
+
 namespace QtWebEngineCore {
 
 class DesktopScreenQt : public display::ScreenBase
@@ -51,6 +53,11 @@ public:
     ~DesktopScreenQt() override;
 
     display::Display GetDisplayNearestWindow(gfx::NativeWindow /*window*/) const override;
+
+private:
+    void initializeScreens();
+    bool updateAllScreens();
+    QMetaObject::Connection m_connections[3];
 };
 
 } // namespace QtWebEngineCore
