@@ -79,6 +79,8 @@ public:
 private:
     QScopedPointer<RenderWidgetHostViewQtDelegateQuick> m_realDelegate;
     QQuickItem *m_virtualParent;
+    QRect m_rect;
+    bool m_rotated;
 };
 
 } // namespace QtWebEngineCore

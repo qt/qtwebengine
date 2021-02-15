@@ -54,9 +54,22 @@ static inline QPoint getOffset(QQuickItem *item)
     return offset.toPoint();
 }
 
+static inline QPointF transformPoint(const QPointF &point, const QTransform &transform,
+                                     const QPointF &offset, const QQuickItem *parent)
+{
+    // make scene vector
+    QPointF a = point - offset;
+    // apply local transformation
+    a = transform.map(a);
+    // make screen coordinates
+    a = parent->mapFromScene(a);
+    a = parent->mapToGlobal(a);
+    return a;
+}
+
 RenderWidgetHostViewQtDelegateQuickWindow::RenderWidgetHostViewQtDelegateQuickWindow(
         RenderWidgetHostViewQtDelegateQuick *realDelegate, QWindow *parent)
-    : QQuickWindow(parent), m_realDelegate(realDelegate), m_virtualParent(nullptr)
+    : QQuickWindow(parent), m_realDelegate(realDelegate), m_virtualParent(nullptr), m_rotated(false)
 {
     setFlags(Qt::Tool | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
 }
@@ -71,24 +84,54 @@ void RenderWidgetHostViewQtDelegateQuickWindow::setVirtualParent(QQuickItem *vir
     m_virtualParent = virtualParent;
 }
 
+// rect is window geometry in form of parent window offset + offset in scene coordinates
+// chromium knows nothing about local transformation
 void RenderWidgetHostViewQtDelegateQuickWindow::initAsPopup(const QRect &rect)
 {
-    m_realDelegate->setSize(rect.size());
-    QRect geometry(rect);
-    geometry.moveTo(rect.topLeft() - getOffset(m_virtualParent));
-    setGeometry(geometry);
+    m_rotated = m_virtualParent->parentItem()->rotation() > 0;
+    if (m_rotated) {
+        // code below tries to cover the case where webengine view is rotated,
+        // the code assumes the rotation is in the form of  90, 180, 270 degrees
+        // to archive that we keep chromium unaware of transformation and we transform
+        // just the window content.
+        m_rect = rect;
+        // get parent window (scene) offset
+        QPointF offset = m_virtualParent->mapFromScene(QPoint(0, 0));
+        offset = m_virtualParent->mapToGlobal(offset);
+        // get local transform
+        QTransform transform = m_virtualParent->itemTransform(nullptr, nullptr);
+        QPointF tl = transformPoint(rect.topLeft(), transform, offset, m_virtualParent);
+        QPointF br = transformPoint(rect.bottomRight(), transform, offset, m_virtualParent);
+        QRectF popupRect(tl, br);
+        popupRect = popupRect.normalized();
+        m_realDelegate->setSize(rect.size());
+        // include offset from parent window
+        popupRect.moveTo(popupRect.topLeft() - offset);
+        setGeometry(popupRect.adjusted(0, 0, 1, 1).toRect());
+        // add offset since screenRect and transformed popupRect one are different and
+        // we want to rotate in center.
+        m_realDelegate->setX(-rect.width() / 2.0 + geometry().width() / 2.0);
+        m_realDelegate->setY(-rect.height() / 2.0 + geometry().height() / 2.0);
+        m_realDelegate->setTransformOrigin(QQuickItem::Center);
+        m_realDelegate->setRotation(m_virtualParent->parentItem()->rotation());
+    } else {
+        m_realDelegate->setSize(rect.size());
+        QRect geometry(rect);
+        geometry.moveTo(rect.topLeft() - getOffset(m_virtualParent));
+        setGeometry(geometry);
+    }
     raise();
     show();
 }
 
 QRectF RenderWidgetHostViewQtDelegateQuickWindow::viewGeometry() const
 {
-    return geometry();
+    return m_rotated ? m_rect : geometry();
 }
 
 QRect RenderWidgetHostViewQtDelegateQuickWindow::windowGeometry() const
 {
-    return frameGeometry();
+    return m_rotated ? m_rect : frameGeometry();
 }
 
 void RenderWidgetHostViewQtDelegateQuickWindow::show()
@@ -120,13 +163,16 @@ void RenderWidgetHostViewQtDelegateQuickWindow::updateCursor(const QCursor &curs
 
 void RenderWidgetHostViewQtDelegateQuickWindow::resize(int width, int height)
 {
-    QQuickWindow::resize(width, height);
-    m_realDelegate->resize(width, height);
+    if (!m_rotated) {
+        QQuickWindow::resize(width, height);
+        m_realDelegate->resize(width, height);
+    }
 }
 
 void RenderWidgetHostViewQtDelegateQuickWindow::move(const QPoint &screenPos)
 {
-    QQuickWindow::setPosition(screenPos - getOffset(m_virtualParent));
+    if (!m_rotated)
+        QQuickWindow::setPosition(screenPos - getOffset(m_virtualParent));
 }
 
 } // namespace QtWebEngineCore
