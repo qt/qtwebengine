@@ -144,6 +144,7 @@ source_set("qtwebengine_sources") {
   ]
   deps = [
     "//build:branding_buildflags",
+    "//chrome/browser:dev_ui_browser_resources_grit",
     "//chrome/browser/resources/quota_internals:quota_internals_resources",
     "//chrome/common:buildflags",
     "//components/nacl/common:buildflags",
@@ -172,6 +173,8 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/profiles/profile.h",
     "//chrome/browser/tab_contents/form_interaction_tab_helper.cc",
     "//chrome/browser/tab_contents/form_interaction_tab_helper.h",
+    "//chrome/browser/ui/webui/device_log_ui.cc",
+    "//chrome/browser/ui/webui/device_log_ui.h",
     "//chrome/browser/ui/webui/devtools_ui.cc",
     "//chrome/browser/ui/webui/devtools_ui.h",
     "//chrome/browser/ui/webui/devtools_ui_data_source.cc",
@@ -375,6 +378,7 @@ repack("qtwebengine_repack_resources") {
   sources = [
     "$root_gen_dir/qtwebengine/qt_webengine_resources.pak",
     "$root_gen_dir/chrome/common_resources.pak",
+    "$root_gen_dir/chrome/dev_ui_browser_resources.pak",
     "$root_gen_dir/chrome/net_internals_resources.pak",
     "$root_gen_dir/chrome/quota_internals_resources.pak",
     "$root_gen_dir/components/components_resources.pak",
@@ -393,6 +397,7 @@ repack("qtwebengine_repack_resources") {
   deps = [
      "//qtwebengine/browser:qt_webengine_resources",
      "//chrome/browser/resources/net_internals:net_internals_resources",
+     "//chrome/browser:dev_ui_browser_resources_grit",
      "//chrome/browser/resources/quota_internals:quota_internals_resources",
      "//chrome/common:resources_grit",
      "//components/resources:components_resources_grit",

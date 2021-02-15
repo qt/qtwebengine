@@ -50,6 +50,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/accessibility/accessibility_ui.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/device_log_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_ui.h"
@@ -142,6 +143,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
 
     if (url.host_piece() == chrome::kChromeUIUserActionsHost)
         return &NewWebUI<UserActionsUI>;
+
+    if (url.host_piece() == chrome::kChromeUIDeviceLogHost)
+        return &NewWebUI<chromeos::DeviceLogUI>;
 
 //    if (url.host_piece() == chrome::kChromeUIInspectHost)
 //        return &NewWebUI<InspectUI>;

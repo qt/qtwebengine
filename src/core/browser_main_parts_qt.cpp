@@ -46,16 +46,21 @@
 #include "base/task/current_thread.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
+#include "components/device_event_log/device_event_log.h"
 #include "components/performance_manager/embedder/performance_manager_lifetime.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/public/graph/graph.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "content/public/browser/browser_main_parts.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/system_connector.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/buildflags/buildflags.h"
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -73,6 +78,7 @@
 #include "ui/display/screen.h"
 
 #include "web_engine_context.h"
+#include "web_usb_detector_qt.h"
 
 #include <QtGui/qtgui-config.h>
 
@@ -247,6 +253,12 @@ void BrowserMainPartsQt::PreMainMessageLoopStart()
 {
 }
 
+void BrowserMainPartsQt::PostMainMessageLoopStart()
+{
+    if (!device_event_log::IsInitialized())
+        device_event_log::Initialize(0 /* default max entries */);
+}
+
 void BrowserMainPartsQt::PreMainMessageLoopRun()
 {
     ui::SelectFileDialog::SetFactory(new SelectFileDialogFactoryQt());
@@ -259,6 +271,14 @@ void BrowserMainPartsQt::PreMainMessageLoopRun()
     content::PluginService *plugin_service = content::PluginService::GetInstance();
     plugin_service->SetFilter(extensions::PluginServiceFilterQt::GetInstance());
 #endif //ENABLE_EXTENSIONS
+
+    if (base::FeatureList::IsEnabled(features::kWebUsb)) {
+        m_webUsbDetector.reset(new WebUsbDetectorQt());
+        content::GetUIThreadTaskRunner({ base::TaskPriority::BEST_EFFORT })
+                ->PostTask(FROM_HERE,
+                           base::BindOnce(&WebUsbDetectorQt::Initialize,
+                                          base::Unretained(m_webUsbDetector.get())));
+    }
 }
 
 void BrowserMainPartsQt::PostMainMessageLoopRun()
@@ -266,6 +286,8 @@ void BrowserMainPartsQt::PostMainMessageLoopRun()
     performance_manager_registry_->TearDown();
     performance_manager_registry_.reset();
     performance_manager::DestroyPerformanceManager(std::move(performance_manager_));
+
+    m_webUsbDetector.reset();
 
     // The ProfileQt's destructor uses the MessageLoop so it should be deleted
     // right before the RenderProcessHostImpl's destructor destroys it.

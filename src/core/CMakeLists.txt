@@ -173,6 +173,7 @@ foreach(config ${configs})
             web_engine_library_info.cpp web_engine_library_info.h
             web_engine_settings.cpp web_engine_settings.h
             web_event_factory.cpp web_event_factory.h
+            web_usb_detector_qt.cpp web_usb_detector_qt.h
     )
 
     extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_ozone_x11

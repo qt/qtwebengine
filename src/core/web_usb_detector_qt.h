@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,51 +37,39 @@
 **
 ****************************************************************************/
 
-#ifndef BROWSER_MAIN_PARTS_QT_H
-#define BROWSER_MAIN_PARTS_QT_H
+#ifndef WEB_USB_DETECTOR_QT_H
+#define WEB_USB_DETECTOR_QT_H
 
-#include "content/public/browser/browser_main_parts.h"
+#include "base/macros.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "services/device/public/mojom/usb_manager.mojom.h"
+#include "services/device/public/mojom/usb_manager_client.mojom.h"
+#include "url/gurl.h"
 
-#include "web_usb_detector_qt.h"
-
-namespace base {
-class MessagePump;
-}
-
-namespace content {
-class ServiceManagerConnection;
-}
-
-namespace performance_manager {
-class PerformanceManager;
-class PerformanceManagerRegistry;
-}
-
-namespace QtWebEngineCore {
-
-std::unique_ptr<base::MessagePump> messagePumpFactory();
-
-class BrowserMainPartsQt : public content::BrowserMainParts
+class WebUsbDetectorQt : public device::mojom::UsbDeviceManagerClient
 {
 public:
-    BrowserMainPartsQt() = default;
-    ~BrowserMainPartsQt() override = default;
+    WebUsbDetectorQt();
+    ~WebUsbDetectorQt() override;
 
-    int PreEarlyInitialization() override;
-    void PreMainMessageLoopStart() override;
-    void PostMainMessageLoopStart() override;
-    void PreMainMessageLoopRun() override;
-    void PostMainMessageLoopRun() override;
-    int PreCreateThreads() override;
-    void PostCreateThreads() override;
+    void Initialize();
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsQt);
-    std::unique_ptr<performance_manager::PerformanceManager> performance_manager_;
-    std::unique_ptr<performance_manager::PerformanceManagerRegistry> performance_manager_registry_;
-    std::unique_ptr<WebUsbDetectorQt> m_webUsbDetector;
+    // device::mojom::UsbDeviceManagerClient implementation.
+    void OnDeviceAdded(device::mojom::UsbDeviceInfoPtr device_info) override;
+    void OnDeviceRemoved(device::mojom::UsbDeviceInfoPtr device_info) override;
+
+    void OnDeviceManagerConnectionError();
+
+    // Connection to |device_manager_instance_|.
+    mojo::Remote<device::mojom::UsbDeviceManager> m_deviceManager;
+    mojo::AssociatedReceiver<device::mojom::UsbDeviceManagerClient> m_clientReceiver { this };
+
+    base::WeakPtrFactory<WebUsbDetectorQt> m_weakFactory { this };
+
+    DISALLOW_COPY_AND_ASSIGN(WebUsbDetectorQt);
 };
 
-} // namespace QtWebEngineCore
-
-#endif // BROWSER_MAIN_PARTS_QT_H
+#endif // WEB_USB_DETECTOR_QT_H

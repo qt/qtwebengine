@@ -3132,7 +3132,7 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::newRow("conversion-internals") << QUrl("chrome://conversion-internals") << true;
     QTest::newRow("crashes") << QUrl("chrome://crashes") << false;
     QTest::newRow("credits") << QUrl("chrome://credits") << false;
-    QTest::newRow("device-log") << QUrl("chrome://device-log") << false;
+    QTest::newRow("device-log") << QUrl("chrome://device-log") << true;
     QTest::newRow("devices") << QUrl("chrome://devices") << false;
     QTest::newRow("dino") << QUrl("chrome://dino") << false; // It works but this is an error page
     QTest::newRow("discards") << QUrl("chrome://discards") << false;

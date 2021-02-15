@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,51 +37,58 @@
 **
 ****************************************************************************/
 
-#ifndef BROWSER_MAIN_PARTS_QT_H
-#define BROWSER_MAIN_PARTS_QT_H
-
-#include "content/public/browser/browser_main_parts.h"
-
 #include "web_usb_detector_qt.h"
 
-namespace base {
-class MessagePump;
-}
+#include "qtwebenginecoreglobal_p.h"
 
-namespace content {
-class ServiceManagerConnection;
-}
+#include "content/public/browser/device_service.h"
+#include "device/base/features.h"
 
-namespace performance_manager {
-class PerformanceManager;
-class PerformanceManagerRegistry;
-}
+WebUsbDetectorQt::WebUsbDetectorQt() = default;
 
-namespace QtWebEngineCore {
+WebUsbDetectorQt::~WebUsbDetectorQt() = default;
 
-std::unique_ptr<base::MessagePump> messagePumpFactory();
-
-class BrowserMainPartsQt : public content::BrowserMainParts
+void WebUsbDetectorQt::Initialize()
 {
-public:
-    BrowserMainPartsQt() = default;
-    ~BrowserMainPartsQt() override = default;
+#if defined(OS_WIN)
+    // The WebUSB device detector is disabled on Windows due to jank and hangs
+    // caused by enumerating devices. The new USB backend is designed to resolve
+    // these issues so enable it for testing. https://crbug.com/656702
+    if (!base::FeatureList::IsEnabled(device::kNewUsbBackend))
+        return;
+#endif // defined(OS_WIN)
 
-    int PreEarlyInitialization() override;
-    void PreMainMessageLoopStart() override;
-    void PostMainMessageLoopStart() override;
-    void PreMainMessageLoopRun() override;
-    void PostMainMessageLoopRun() override;
-    int PreCreateThreads() override;
-    void PostCreateThreads() override;
+    if (!m_deviceManager) {
+        // Receive mojo::Remote<UsbDeviceManager> from DeviceService.
+        content::GetDeviceService().BindUsbDeviceManager(
+                m_deviceManager.BindNewPipeAndPassReceiver());
+    }
+    DCHECK(m_deviceManager);
+    m_deviceManager.set_disconnect_handler(base::BindOnce(
+            &WebUsbDetectorQt::OnDeviceManagerConnectionError, base::Unretained(this)));
 
-private:
-    DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsQt);
-    std::unique_ptr<performance_manager::PerformanceManager> performance_manager_;
-    std::unique_ptr<performance_manager::PerformanceManagerRegistry> performance_manager_registry_;
-    std::unique_ptr<WebUsbDetectorQt> m_webUsbDetector;
-};
+    // Listen for added/removed device events.
+    DCHECK(!m_clientReceiver.is_bound());
+    m_deviceManager->SetClient(m_clientReceiver.BindNewEndpointAndPassRemote());
+}
 
-} // namespace QtWebEngineCore
+void WebUsbDetectorQt::OnDeviceAdded(device::mojom::UsbDeviceInfoPtr device_info)
+{
+    Q_UNUSED(device_info);
+    QT_NOT_YET_IMPLEMENTED
+}
 
-#endif // BROWSER_MAIN_PARTS_QT_H
+void WebUsbDetectorQt::OnDeviceRemoved(device::mojom::UsbDeviceInfoPtr device_info)
+{
+    Q_UNUSED(device_info);
+    QT_NOT_YET_IMPLEMENTED
+}
+
+void WebUsbDetectorQt::OnDeviceManagerConnectionError()
+{
+    m_deviceManager.reset();
+    m_clientReceiver.reset();
+
+    // Try to reconnect the device manager.
+    Initialize();
+}
