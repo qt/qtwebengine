@@ -354,6 +354,15 @@ void WebEngineContext::removeProfileAdapter(ProfileAdapter *profileAdapter)
     m_profileAdapters.removeAll(profileAdapter);
 }
 
+void WebEngineContext::flushMessages()
+{
+    if (!m_destroyed) {
+        base::MessagePump::Delegate *delegate = static_cast<
+                base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl *>(
+                WebEngineContext::current()->m_runLoop->delegate_);
+        while (delegate->DoWork().is_immediate()) { }
+    }
+}
 void WebEngineContext::destroy()
 {
     if (m_devtoolsServer)
@@ -364,20 +373,17 @@ void WebEngineContext::destroy()
         m_webrtcLogUploader->Shutdown();
 #endif
 
-    base::MessagePump::Delegate *delegate =
-            static_cast<base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl *>(
-                m_runLoop->delegate_);
     // Normally the GPU thread is shut down when the GpuProcessHost is destroyed
     // on IO thread (triggered by ~BrowserMainRunner). But by that time the UI
     // task runner is not working anymore so we need to do this earlier.
     cleanupVizProcess();
     while (waitForViz) {
-        while (delegate->DoWork().is_immediate()) { }
+        flushMessages();
         QThread::msleep(50);
     }
     destroyGpuProcess();
     // Flush the UI message loop before quitting.
-    while (delegate->DoWork().is_immediate()) { }
+    flushMessages();
 
 #if QT_CONFIG(webengine_printing_and_pdf)
     // Kill print job manager early as it has a content::NotificationRegistrar
@@ -399,7 +405,7 @@ void WebEngineContext::destroy()
 
     // Handle any events posted by browser-context shutdown.
     // This should deliver all nessesery calls of DeleteSoon from PostTask
-    while (delegate->DoWork().is_immediate()) { }
+    flushMessages();
 
     m_devtoolsServer.reset();
     m_runLoop->AfterRun();
