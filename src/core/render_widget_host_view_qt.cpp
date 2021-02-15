@@ -205,6 +205,8 @@ RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 
     m_touchSelectionController.reset();
     m_touchSelectionControllerClient.reset();
+
+    host()->render_frame_metadata_provider()->RemoveObserver(this);
 }
 
 void RenderWidgetHostViewQt::setDelegate(RenderWidgetHostViewQtDelegate* delegate)

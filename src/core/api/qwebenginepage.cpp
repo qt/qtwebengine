@@ -305,7 +305,8 @@ void QWebEnginePagePrivate::loadStarted(const QUrl &provisionalUrl, bool isError
     QTimer::singleShot(0, q, &QWebEnginePage::loadStarted);
 }
 
-void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode, const QString &errorDescription)
+void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode,
+                                         const QString &errorDescription, bool triggersErrorPage)
 {
     Q_Q(QWebEnginePage);
     Q_UNUSED(url);
@@ -320,9 +321,8 @@ void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isE
     }
 
     isLoading = false;
-    // Delay notifying failure until the error-page is done loading.
-    // Error-pages are not loaded on failures due to abort.
-    if (success || errorCode == -3 /* ERR_ABORTED*/ || !settings->testAttribute(QWebEngineSettings::ErrorPageEnabled)) {
+    Q_ASSERT((success && !triggersErrorPage) || !success);
+    if (!triggersErrorPage) {
         QTimer::singleShot(0, q, [q, success](){
             emit q->loadFinished(success);
         });

@@ -40,7 +40,6 @@
 #ifndef PEPPER_FLASH_BROWSER_HOST_QT_H
 #define PEPPER_FLASH_BROWSER_HOST_QT_H
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
@@ -51,7 +50,6 @@ class Time;
 
 namespace content {
 class BrowserPpapiHost;
-class ResourceContext;
 }
 
 class GURL;
@@ -77,12 +75,6 @@ private:
             const base::Time& t);
     int32_t OnGetLocalDataRestrictions(ppapi::host::HostMessageContext* context);
 
-    void GetLocalDataRestrictions(ppapi::host::ReplyMessageContext reply_context,
-                                  const GURL& document_url,
-                                  const GURL& plugin_url);
-
-    content::BrowserPpapiHost* host_;
-    int render_process_id_;
     base::WeakPtrFactory<PepperFlashBrowserHostQt> weak_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(PepperFlashBrowserHostQt);

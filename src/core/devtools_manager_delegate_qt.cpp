@@ -181,7 +181,7 @@ void DevToolsManagerDelegateQt::Initialized(const net::IPEndPoint *ip_address)
 
 std::string DevToolsManagerDelegateQt::GetDiscoveryPageHTML()
 {
-    return ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
+    return ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(IDR_DEVTOOLS_DISCOVERY_PAGE_HTML);
 }
 
 bool DevToolsManagerDelegateQt::HasBundledFrontendResources()

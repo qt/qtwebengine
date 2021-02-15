@@ -44,7 +44,7 @@
 
 #include <QtCore/QSharedPointer>
 #include <QtCore/QUrl>
-#include <QtGui/QIcon>
+#include <QtGui/QImage>
 
 class GURL;
 

@@ -347,6 +347,7 @@ void WebContentsDelegateQt::EmitLoadStarted(const QUrl &url, bool isErrorPage)
             controller->deactivate();
     m_certificateErrorControllers.clear();
 
+    m_isDocumentEmpty = true;
     m_viewClient->loadStarted(url, isErrorPage);
     m_viewClient->updateNavigationActions();
 
@@ -389,9 +390,10 @@ void WebContentsDelegateQt::DidStartNavigation(content::NavigationHandle *naviga
     EmitLoadStarted(toQt(navigation_handle->GetURL()));
 }
 
-void WebContentsDelegateQt::EmitLoadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode, const QString &errorDescription)
+void WebContentsDelegateQt::EmitLoadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode, const QString &errorDescription, bool triggersErrorPage)
 {
     Q_ASSERT(!isErrorPage || webEngineSettings()->testAttribute(QWebEngineSettings::ErrorPageEnabled));
+    Q_ASSERT((triggersErrorPage && webEngineSettings()->testAttribute(QWebEngineSettings::ErrorPageEnabled)) || !triggersErrorPage);
 
     // When error page enabled we don't need to send the error page load finished signal
     if (m_loadProgressMap[url] == 100)
@@ -402,7 +404,7 @@ void WebContentsDelegateQt::EmitLoadFinished(bool success, const QUrl &url, bool
     m_isNavigationCommitted = false;
     m_viewClient->loadProgressChanged(100);
 
-    m_viewClient->loadFinished(success, url, isErrorPage, errorCode, errorDescription);
+    m_viewClient->loadFinished(success, url, isErrorPage, errorCode, errorDescription, triggersErrorPage);
     m_viewClient->updateNavigationActions();
 }
 
@@ -495,7 +497,11 @@ void WebContentsDelegateQt::DidStopLoading()
 void WebContentsDelegateQt::didFailLoad(const QUrl &url, int errorCode, const QString &errorDescription)
 {
     m_viewClient->iconChanged(QUrl());
-    EmitLoadFinished(false /* success */ , url, false /* isErrorPage */, errorCode, errorDescription);
+    bool errorPageEnabled = webEngineSettings()->testAttribute(QWebEngineSettings::ErrorPageEnabled);
+    // Delay notifying failure until the error-page is done loading.
+    // Error-pages are not loaded on failures due to abort.
+    bool aborted = (errorCode == -3 /* ERR_ABORTED*/ );
+    EmitLoadFinished(false /* success */ , url, false /* isErrorPage */, errorCode, errorDescription, errorPageEnabled && !aborted);
 }
 
 void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code)
@@ -548,7 +554,9 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
 
     content::NavigationEntry *entry = web_contents()->GetController().GetActiveEntry();
     int http_statuscode = entry ? entry->GetHttpStatusCode() : 0;
-    EmitLoadFinished(http_statuscode < 400, toQt(validated_url), false /* isErrorPage */, http_statuscode);
+    bool errorPageEnabled = webEngineSettings()->testAttribute(QWebEngineSettings::ErrorPageEnabled);
+    bool triggersErrorPage = errorPageEnabled && (http_statuscode >= 400) && m_isDocumentEmpty;
+    EmitLoadFinished(http_statuscode < 400, toQt(validated_url), false /* isErrorPage */, http_statuscode, QString(), triggersErrorPage);
 }
 
 void WebContentsDelegateQt::DidUpdateFaviconURL(content::RenderFrameHost *render_frame_host, const std::vector<blink::mojom::FaviconURLPtr> &candidates)
@@ -866,6 +874,18 @@ bool WebContentsDelegateQt::ShouldNavigateOnBackForwardMouseButtons()
 #else
     return true;
 #endif
+}
+
+void WebContentsDelegateQt::ResourceLoadComplete(content::RenderFrameHost* render_frame_host,
+                                                 const content::GlobalRequestID& request_id,
+                                                 const blink::mojom::ResourceLoadInfo& resource_load_info)
+{
+    Q_UNUSED(render_frame_host);
+    Q_UNUSED(request_id);
+
+    if (resource_load_info.request_destination == network::mojom::RequestDestination::kDocument) {
+        m_isDocumentEmpty = (resource_load_info.raw_body_bytes == 0);
+    }
 }
 
 FaviconManager *WebContentsDelegateQt::faviconManager()

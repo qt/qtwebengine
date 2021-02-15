@@ -45,19 +45,14 @@
 #include "pepper_flash_browser_host_qt.h"
 
 #include "base/time/time.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_ppapi_host.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_process_host.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "qtwebenginecoreglobal_p.h"
-#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -66,8 +61,6 @@
 #endif
 
 using content::BrowserPpapiHost;
-using content::BrowserThread;
-using content::RenderProcessHost;
 
 namespace QtWebEngineCore {
 
@@ -75,11 +68,8 @@ PepperFlashBrowserHostQt::PepperFlashBrowserHostQt(BrowserPpapiHost* host,
                                                    PP_Instance instance,
                                                    PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
-      host_(host),
       weak_factory_(this)
 {
-    int unused;
-    host->GetRenderFrameIDsForInstance(instance, &render_process_id_, &unused);
 }
 
 PepperFlashBrowserHostQt::~PepperFlashBrowserHostQt() {}

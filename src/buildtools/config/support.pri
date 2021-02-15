@@ -22,6 +22,7 @@ defineReplace(qtwebengine_checkWebEngineCoreError) {
     !qtwebengine_checkForBison(QtWebEngine):return(false)
     !qtwebengine_checkForFlex(QtWebEngine):return(false)
     !qtwebengine_checkForPython2(QtWebEngine):return(false)
+    !qtwebengine_checkForNodejs(QtWebEngine):return(false)
     !qtwebengine_checkForSanitizer(QtWebEngine):return(false)
     linux:!qtwebengine_checkForPkgCfg(QtWebEngine):return(false)
     linux:!qtwebengine_checkForHostPkgCfg(QtWebEngine):return(false)
@@ -54,6 +55,7 @@ defineReplace(qtwebengine_checkPdfError) {
     !qtwebengine_checkForSanitizer(QtPdf):return(false)
     linux:!qtwebengine_checkForPkgCfg(QtPdf):return(false)
     linux:!qtwebengine_checkForHostPkgCfg(QtPdf):return(false)
+    linux:!qtwebengine_checkForPackage(QtPdf,nss):return(false)
     win32:!qtwebengine_checkForWinVersion(QtPdf):return(false)
     return(true)
 }

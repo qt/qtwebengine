@@ -6,5 +6,6 @@
         <file>resources/scrolltest_page.html</file>
         <file>resources/keyboardEvents.html</file>
         <file>resources/image2.png</file>
+        <file>resources/dummy.html</file>
     </qresource>
 </RCC>

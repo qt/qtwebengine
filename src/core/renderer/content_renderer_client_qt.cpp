@@ -112,6 +112,10 @@
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 #endif
 
+#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
+#include "chrome/renderer/media/webrtc_logging_agent_impl.h"
+#endif
+
 namespace QtWebEngineCore {
 
 static const char kHttpErrorDomain[] = "http";
@@ -179,6 +183,15 @@ void ContentRendererClientQt::ExposeInterfacesToBrowser(mojo::BinderMap* binders
                              if (!client->m_spellCheck)
                                  client->InitSpellCheck();
                              client->m_spellCheck->BindReceiver(std::move(receiver));
+                         }, this),
+                 base::SequencedTaskRunnerHandle::Get());
+#endif
+
+#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
+    binders->Add(base::BindRepeating(
+                         [](ContentRendererClientQt *client,
+                            mojo::PendingReceiver<chrome::mojom::WebRtcLoggingAgent> receiver) {
+                                client->GetWebRtcLoggingAgent()->AddReceiver(std::move(receiver));
                          }, this),
                  base::SequencedTaskRunnerHandle::Get());
 #endif
@@ -365,6 +378,17 @@ blink::WebPlugin* ContentRendererClientQt::CreatePlugin(content::RenderFrame* re
     return LoadablePluginPlaceholderQt::CreateLoadableMissingPlugin(render_frame, original_params)->plugin();
 }
 #endif  //BUILDFLAG(ENABLE_PLUGINS)
+
+#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
+chrome::WebRtcLoggingAgentImpl *ContentRendererClientQt::GetWebRtcLoggingAgent()
+{
+    if (!m_webrtcLoggingAgentImpl) {
+        m_webrtcLoggingAgentImpl = std::make_unique<chrome::WebRtcLoggingAgentImpl>();
+    }
+
+    return m_webrtcLoggingAgentImpl.get();
+}
+#endif // QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
 
 void ContentRendererClientQt::GetInterface(const std::string &interface_name, mojo::ScopedMessagePipeHandle interface_pipe)
 {

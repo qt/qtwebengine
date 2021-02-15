@@ -51,8 +51,6 @@
 #include "web_engine_context.h"
 #include "web_contents_delegate_qt.h"
 
-#include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
-#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -74,9 +72,6 @@ WebContentsViewQt::WebContentsViewQt(content::WebContents *webContents)
     , m_contextMenuRequest(
         new QWebEngineContextMenuRequest(new QWebEngineContextMenuRequestPrivate()))
 {
-    FormInteractionTabHelper::CreateForWebContents(webContents);
-    if (auto *performance_manager_registry = performance_manager::PerformanceManagerRegistry::GetInstance())
-        performance_manager_registry->CreatePageNodeForWebContents(webContents);
 }
 
 void WebContentsViewQt::setFactoryClient(WebContentsAdapterClient* client)

@@ -41,12 +41,7 @@
 #define CONTENT_BROWSER_CLIENT_QT_H
 
 #include "qtwebenginecoreglobal_p.h"
-#include "base/memory/ref_counted.h"
 #include "content/public/browser/content_browser_client.h"
-
-namespace net {
-class URLRequestContextGetter;
-}
 
 namespace content {
 class BrowserContext;
@@ -59,10 +54,7 @@ class BrowserPpapiHost;
 class DevToolsManagerDelegate;
 class RenderFrameHost;
 class RenderProcessHost;
-class RenderViewHostDelegateView;
 class ResourceContext;
-class ResourceDispatcherHostDelegate;
-class WebContentsViewPort;
 class WebContents;
 struct MainFunctionParams;
 struct Referrer;
@@ -74,8 +66,6 @@ class GLShareGroup;
 
 namespace QtWebEngineCore {
 
-class BrowserMainPartsQt;
-class ProfileQt;
 class ShareGroupQt;
 
 class ContentBrowserClientQt : public content::ContentBrowserClient
@@ -187,6 +177,7 @@ public:
     bool ShouldUseSpareRenderProcessHost(content::BrowserContext *browser_context, const GURL& site_url) override;
     bool ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(base::StringPiece scheme,
                                                       bool is_embedded_origin_secure) override;
+    bool DoesSchemeAllowCrossOriginSharedWorker(const std::string &scheme) override;
     void OverrideURLLoaderFactoryParams(content::BrowserContext *browser_context,
                                         const url::Origin &origin,
                                         bool is_for_isolated_world,
@@ -260,8 +251,12 @@ public:
                                                          NonNetworkURLLoaderFactoryMap *factories) override;
     void RegisterNonNetworkWorkerMainResourceURLLoaderFactories(content::BrowserContext* browser_context,
                                                                 NonNetworkURLLoaderFactoryMap* factories) override;
+    void RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(content::BrowserContext* browser_context,
+                                                                 NonNetworkURLLoaderFactoryMap* factories) override;
     void SiteInstanceGotProcess(content::SiteInstance *site_instance) override;
     void SiteInstanceDeleting(content::SiteInstance *site_instance) override;
+
+    content::WebContentsViewDelegate* GetWebContentsViewDelegate(content::WebContents* web_contents) override;
 
     static std::string getUserAgent();
 

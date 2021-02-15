@@ -44,15 +44,14 @@
 #include "qwebenginepage_p.h"
 #include "qwebengineview.h"
 #include "qwebengineview_p.h"
+
 #include <QGuiApplication>
 #include <QLayout>
 #include <QMouseEvent>
 #include <QOpenGLContext>
 #include <QResizeEvent>
-#include <QSGNode>
+#include <QSGImageNode>
 #include <QWindow>
-#include <QtQuick/qsgimagenode.h>
-#include <QtQuick/private/qquickwindow_p.h>
 
 namespace QtWebEngineCore {
 

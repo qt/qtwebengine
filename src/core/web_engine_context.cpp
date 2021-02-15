@@ -52,6 +52,9 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
+#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
+#include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
+#endif
 #include "chrome/common/chrome_switches.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -433,6 +436,10 @@ void WebEngineContext::destroy()
     if (m_devtoolsServer)
         m_devtoolsServer->stop();
 
+#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
+    if (m_webrtcLogUploader)
+        m_webrtcLogUploader->Shutdown();
+#endif
 
     base::MessagePump::Delegate *delegate =
             static_cast<base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl *>(
@@ -490,6 +497,10 @@ void WebEngineContext::destroy()
 
     // Drop the false reference.
     m_handle->Release();
+
+#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
+    m_webrtcLogUploader.reset();
+#endif
 }
 
 WebEngineContext::~WebEngineContext()
@@ -853,6 +864,16 @@ printing::PrintJobManager* WebEngineContext::getPrintJobManager()
     return m_printJobManager.get();
 }
 #endif
+
+#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
+WebRtcLogUploader *WebEngineContext::webRtcLogUploader()
+{
+    if (!m_webrtcLogUploader)
+        m_webrtcLogUploader = std::make_unique<WebRtcLogUploader>();
+    return m_webrtcLogUploader.get();
+}
+#endif
+
 
 static QMutex s_spmMutex;
 QAtomicPointer<gpu::SyncPointManager> WebEngineContext::s_syncPointManager;

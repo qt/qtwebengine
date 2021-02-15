@@ -26,6 +26,7 @@ repack("qtwebengine_repack_resources") {
     "$root_gen_dir/components/components_resources.pak",
     "$root_gen_dir/components/dev_ui_components_resources.pak",
     "$root_gen_dir/content/browser/resources/media/media_internals_resources.pak",
+    "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
     "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/content/dev_ui_content_resources.pak",
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
@@ -41,6 +42,7 @@ repack("qtwebengine_repack_resources") {
      "//components/resources:components_resources_grit",
      "//components/resources:dev_ui_components_resources_grit",
      "//content/browser/resources/media:media_internals_resources",
+     "//content/browser/tracing:resources",
      "//content:content_resources_grit",
      "//content:dev_ui_content_resources_grit",
      "//mojo/public/js:resources",
@@ -68,6 +70,15 @@ repack("qtwebengine_repack_resources") {
     ]
     deps += [
       "//content/browser/webrtc/resources",
+    ]
+  }
+
+  if (enable_webrtc && enable_extensions) {
+    sources += [
+      "$root_gen_dir/chrome/webrtc_logs_resources.pak",
+    ]
+    deps += [
+      "//chrome/browser/resources/media:webrtc_logs_resources",
     ]
   }
 }

@@ -42,16 +42,12 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "url/gurl.h"
 
 #include <QPointer>
 // based on aw_proxying_url_loader_factory.h:
@@ -59,19 +55,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-QT_FORWARD_DECLARE_CLASS(QWebEngineUrlRequestInterceptor)
-
-namespace content {
-class ResourceContext;
-}
-
 namespace QtWebEngineCore {
+
+class ProfileAdapter;
 
 class ProxyingURLLoaderFactoryQt : public network::mojom::URLLoaderFactory
 {
 public:
-    ProxyingURLLoaderFactoryQt(int processId, QWebEngineUrlRequestInterceptor *profile,
-                               QWebEngineUrlRequestInterceptor *page,
+    ProxyingURLLoaderFactoryQt(ProfileAdapter *adapter, int processId,
                                mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
                                mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_target_factory_remote);
 
@@ -89,11 +80,10 @@ private:
     void OnTargetFactoryError();
     void OnProxyBindingError();
 
+    QPointer<ProfileAdapter> m_profileAdapter;
     int m_processId;
     mojo::ReceiverSet<network::mojom::URLLoaderFactory> m_proxyReceivers;
     mojo::Remote<network::mojom::URLLoaderFactory> m_targetFactory;
-    QPointer<QWebEngineUrlRequestInterceptor> m_profileRequestInterceptor;
-    QPointer<QWebEngineUrlRequestInterceptor> m_pageRequestInterceptor;
     base::WeakPtrFactory<ProxyingURLLoaderFactoryQt> m_weakFactory;
 
     DISALLOW_COPY_AND_ASSIGN(ProxyingURLLoaderFactoryQt);

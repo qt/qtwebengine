@@ -67,6 +67,9 @@ private Q_SLOTS:
     void customHeaders();
     void initiator();
     void jsServiceWorker();
+    void replaceInterceptor_data();
+    void replaceInterceptor();
+    void replaceOnIntercept();
 };
 
 tst_QWebEngineUrlRequestInterceptor::tst_QWebEngineUrlRequestInterceptor()
@@ -119,6 +122,7 @@ public:
     QUrl redirectUrl;
     QMap<QUrl, QSet<QUrl>> requestInitiatorUrls;
     QMap<QByteArray, QByteArray> headers;
+    std::function<bool (QWebEngineUrlRequestInfo &)> onIntercept;
 
     void interceptRequest(QWebEngineUrlRequestInfo &info) override
     {
@@ -128,6 +132,9 @@ public:
 
         // Since 63 we also intercept some unrelated blob requests..
         if (info.requestUrl().scheme() == QLatin1String("blob"))
+            return;
+
+        if (onIntercept && !onIntercept(info))
             return;
 
         bool block = info.requestMethod() != QByteArrayLiteral("GET");
@@ -728,6 +735,126 @@ void tst_QWebEngineUrlRequestInterceptor::jsServiceWorker()
         QCOMPARE(info.firstPartyUrl, firstPartyUrl);
 
     QVERIFY(server.stop());
+}
+
+void tst_QWebEngineUrlRequestInterceptor::replaceInterceptor_data()
+{
+    QTest::addColumn<bool>("firstInterceptIsInPage");
+    QTest::addColumn<bool>("keepInterceptionPoint");
+    QTest::newRow("page")         << true << true;
+    QTest::newRow("page-profile") << true << false;
+    QTest::newRow("profile")      << false << true;
+    QTest::newRow("profile-page") << false << false;
+}
+
+void tst_QWebEngineUrlRequestInterceptor::replaceInterceptor()
+{
+    QFETCH(bool, firstInterceptIsInPage);
+    QFETCH(bool, keepInterceptionPoint);
+
+    HttpServer server;
+    server.setResourceDirs({ ":/resources" });
+    QVERIFY(server.start());
+
+    QWebEngineProfile profile;
+    profile.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
+    QWebEnginePage page(&profile);
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+    bool fetchFinished = false;
+
+    auto setInterceptor = [&] (QWebEngineUrlRequestInterceptor *interceptor, bool interceptInPage) {
+        interceptInPage ? page.setUrlRequestInterceptor(interceptor) : profile.setUrlRequestInterceptor(interceptor);
+    };
+
+    std::vector<TestRequestInterceptor> interceptors(3);
+    std::vector<int> requestsOnReplace;
+    setInterceptor(&interceptors.front(), firstInterceptIsInPage);
+
+    auto sc = connect(&page, &QWebEnginePage::loadFinished, [&] () {
+        auto currentInterceptorIndex = requestsOnReplace.size();
+        requestsOnReplace.push_back(interceptors[currentInterceptorIndex].requestInfos.size());
+
+        bool isFirstReinstall = currentInterceptorIndex == 0;
+        bool interceptInPage = keepInterceptionPoint ? firstInterceptIsInPage : (isFirstReinstall ^ firstInterceptIsInPage);
+        setInterceptor(&interceptors[++currentInterceptorIndex], interceptInPage);
+        if (!keepInterceptionPoint)
+            setInterceptor(nullptr, !interceptInPage);
+
+        if (isFirstReinstall) {
+            page.triggerAction(QWebEnginePage::Reload);
+        } else {
+            page.runJavaScript("fetch('http://nonexistent.invalid').catch(() => {})", [&, interceptInPage] (const QVariant &) {
+                requestsOnReplace.push_back(interceptors.back().requestInfos.size());
+                setInterceptor(nullptr, interceptInPage);
+                fetchFinished = true;
+            });
+        }
+    });
+
+    page.setUrl(server.url("/favicon.html"));
+    QTRY_COMPARE(spy.count(), 2);
+    QTRY_VERIFY(fetchFinished);
+
+    QString s; QDebug d(&s);
+    for (auto i = 0u; i < interceptors.size(); ++i) {
+        auto &&interceptor = interceptors[i];
+        auto &&requests = interceptor.requestInfos;
+        d << "\nInterceptor [" << i << "] with" << requestsOnReplace[i] << "requests on replace and" << requests.size() << "in the end:";
+        for (int j = 0; j < requests.size(); ++j) {
+            auto &&r = requests[j];
+            d << "\n\t" << j << "| url:" << r.requestUrl << "firstPartyUrl:" << r.firstPartyUrl;
+        }
+        QVERIFY2(!requests.isEmpty(), qPrintable(s));
+        QVERIFY2(requests.size() == requestsOnReplace[i], qPrintable(s));
+    }
+}
+
+void tst_QWebEngineUrlRequestInterceptor::replaceOnIntercept()
+{
+    HttpServer server;
+    server.setResourceDirs({ ":/resources" });
+    QVERIFY(server.start());
+
+    QWebEngineProfile profile;
+    profile.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
+    QWebEnginePage page(&profile);
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+
+    struct Interceptor : QWebEngineUrlRequestInterceptor {
+        Interceptor(const std::function<void ()> &a) : action(a) { }
+        void interceptRequest(QWebEngineUrlRequestInfo &) override { action(); }
+        std::function<void ()> action;
+        int interceptRequestReceived = 0;
+    };
+
+    TestRequestInterceptor profileInterceptor, pageInterceptor1, pageInterceptor2;
+    page.setUrlRequestInterceptor(&pageInterceptor1);
+    profile.setUrlRequestInterceptor(&profileInterceptor);
+    profileInterceptor.onIntercept = [&] (QWebEngineUrlRequestInfo &) {
+        page.setUrlRequestInterceptor(&pageInterceptor2);
+        return true;
+    };
+
+    page.setUrl(server.url("/favicon.html"));
+    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(profileInterceptor.requestInfos.size(), 2);
+
+    // if interceptor for page was replaced on intercept call in profile then, since request first
+    // comes to profile, forward to page's interceptor should land to second one
+    QCOMPARE(pageInterceptor1.requestInfos.size(), 0);
+    QCOMPARE(profileInterceptor.requestInfos.size(), pageInterceptor2.requestInfos.size());
+
+    page.setUrlRequestInterceptor(&pageInterceptor1);
+    bool fetchFinished = false;
+    page.runJavaScript("fetch('http://nonexistent.invalid').catch(() => {})", [&] (const QVariant &) {
+        page.setUrlRequestInterceptor(&pageInterceptor2);
+        fetchFinished = true;
+    });
+
+    QTRY_VERIFY(fetchFinished);
+    QCOMPARE(profileInterceptor.requestInfos.size(), 3);
+    QCOMPARE(pageInterceptor1.requestInfos.size(), 0);
+    QCOMPARE(profileInterceptor.requestInfos.size(), pageInterceptor2.requestInfos.size());
 }
 
 QTEST_MAIN(tst_QWebEngineUrlRequestInterceptor)

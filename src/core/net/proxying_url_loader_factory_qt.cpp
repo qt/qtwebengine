@@ -42,24 +42,17 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/global_request_id.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_constants.h"
-#include "content/public/common/url_utils.h"
-#include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
-#include "net/http/http_util.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 #include "api/qwebengineurlrequestinfo_p.h"
-#include "profile_qt.h"
 #include "type_conversion.h"
+#include "web_contents_adapter.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_view_qt.h"
 
@@ -114,11 +107,10 @@ class InterceptedRequest : public network::mojom::URLLoader
                          , public network::mojom::URLLoaderClient
 {
 public:
-    InterceptedRequest(int process_id, uint64_t request_id, int32_t routing_id, uint32_t options,
+    InterceptedRequest(ProfileAdapter *profile_adapter,
+                       int process_id, uint64_t request_id, int32_t routing_id, uint32_t options,
                        const network::ResourceRequest &request,
                        const net::MutableNetworkTrafficAnnotationTag &traffic_annotation,
-                       QWebEngineUrlRequestInterceptor *profile_request_interceptor,
-                       QWebEngineUrlRequestInterceptor *page_request_interceptor,
                        mojo::PendingReceiver<network::mojom::URLLoader> loader,
                        mojo::PendingRemote<network::mojom::URLLoaderClient> client,
                        mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory);
@@ -144,6 +136,8 @@ public:
     void PauseReadingBodyFromNet() override;
     void ResumeReadingBodyFromNet() override;
 
+    static inline void cleanup(QWebEngineUrlRequestInfo *info) { delete info; }
+
 private:
     void InterceptOnUIThread();
     void ContinueAfterIntercept();
@@ -161,12 +155,15 @@ private:
 
     void SendErrorAndCompleteImmediately(int error_code);
 
+    content::WebContents* webContents();
+    QWebEngineUrlRequestInterceptor* getProfileInterceptor();
+    QWebEngineUrlRequestInterceptor* getPageInterceptor();
+
+    QPointer<ProfileAdapter> profile_adapter_;
     const int process_id_;
     const uint64_t request_id_;
     const int32_t routing_id_;
     const uint32_t options_;
-    bool input_stream_previously_failed_ = false;
-    bool request_was_redirected_ = false;
 
     // If the |target_loader_| called OnComplete with an error this stores it.
     // That way the destructor can send it to OnReceivedError if safe browsing
@@ -177,9 +174,8 @@ private:
 
     const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
-    QWebEngineUrlRequestInfo request_info_;
-    QPointer<QWebEngineUrlRequestInterceptor> profile_request_interceptor_;
-    QPointer<QWebEngineUrlRequestInterceptor> page_request_interceptor_;
+    QScopedPointer<QWebEngineUrlRequestInfo, InterceptedRequest> request_info_;
+
     mojo::Receiver<network::mojom::URLLoader> proxied_loader_receiver_;
     mojo::Remote<network::mojom::URLLoaderClient> target_client_;
     mojo::Receiver<network::mojom::URLLoaderClient> proxied_client_receiver_{this};
@@ -190,22 +186,20 @@ private:
     DISALLOW_COPY_AND_ASSIGN(InterceptedRequest);
 };
 
-InterceptedRequest::InterceptedRequest(int process_id, uint64_t request_id, int32_t routing_id, uint32_t options,
+InterceptedRequest::InterceptedRequest(ProfileAdapter *profile_adapter,
+                                       int process_id, uint64_t request_id, int32_t routing_id, uint32_t options,
                                        const network::ResourceRequest &request,
                                        const net::MutableNetworkTrafficAnnotationTag &traffic_annotation,
-                                       QWebEngineUrlRequestInterceptor *profile_request_interceptor,
-                                       QWebEngineUrlRequestInterceptor *page_request_interceptor,
                                        mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
                                        mojo::PendingRemote<network::mojom::URLLoaderClient> client,
                                        mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory)
-    : process_id_(process_id)
+    : profile_adapter_(profile_adapter)
+    , process_id_(process_id)
     , request_id_(request_id)
     , routing_id_(routing_id)
     , options_(options)
     , request_(request)
     , traffic_annotation_(traffic_annotation)
-    , profile_request_interceptor_(profile_request_interceptor)
-    , page_request_interceptor_(page_request_interceptor)
     , proxied_loader_receiver_(this, std::move(loader_receiver))
     , target_client_(std::move(client))
     , target_factory_(std::move(target_factory))
@@ -224,35 +218,61 @@ InterceptedRequest::~InterceptedRequest()
     weak_factory_.InvalidateWeakPtrs();
 }
 
+content::WebContents* InterceptedRequest::webContents()
+{
+    if (process_id_) {
+        content::RenderFrameHost *frameHost = content::RenderFrameHost::FromID(process_id_, request_.render_frame_id);
+        return content::WebContents::FromRenderFrameHost(frameHost);
+    }
+
+    return content::WebContents::FromFrameTreeNodeId(request_.render_frame_id);
+}
+
+QWebEngineUrlRequestInterceptor* InterceptedRequest::getProfileInterceptor()
+{
+    return profile_adapter_ ? profile_adapter_->requestInterceptor() : nullptr;
+}
+
+QWebEngineUrlRequestInterceptor* InterceptedRequest::getPageInterceptor()
+{
+    if (auto wc = webContents()) {
+        auto view = static_cast<content::WebContentsImpl *>(wc)->GetView();
+        if (WebContentsAdapterClient *client = WebContentsViewQt::from(view)->client())
+            return client->webContentsAdapter()->requestInterceptor();
+    }
+    return nullptr;
+}
+
 void InterceptedRequest::Restart()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    blink::mojom::ResourceType resourceType = blink::mojom::ResourceType(request_.resource_type);
-    WebContentsAdapterClient::NavigationType navigationType =
-            pageTransitionToNavigationType(ui::PageTransition(request_.transition_type));
 
+    // MEMO since all codepatch leading to Restart scheduled and executed as asynchronous tasks in main thread,
+    //      interceptors may change in meantime and also during intercept call, so they should be resolved anew.
+    //      Set here only profile's interceptor since it runs first without going to user code.
+    auto profileInterceptor = getProfileInterceptor();
+    if (!profileInterceptor && !getPageInterceptor()) {
+        ContinueAfterIntercept();
+        return;
+    }
+
+    auto resourceType = toQt(blink::mojom::ResourceType(request_.resource_type));
+    auto navigationType = toQt(pageTransitionToNavigationType(ui::PageTransition(request_.transition_type)));
     const QUrl originalUrl = toQt(request_.url);
     const QUrl initiator = request_.request_initiator.has_value() ? toQt(request_.request_initiator->GetURL()) : QUrl();
 
-    content::WebContents *webContents = nullptr;
-    if (process_id_) {
-        content::RenderFrameHost *frameHost = content::RenderFrameHost::FromID(process_id_, request_.render_frame_id);
-        webContents = content::WebContents::FromRenderFrameHost(frameHost);
-    } else {
-        webContents = content::WebContents::FromFrameTreeNodeId(request_.render_frame_id);
-    }
-
-    GURL top_document_url = webContents ? webContents->GetVisibleURL() : GURL();
+    auto wc = webContents();
+    GURL top_document_url = wc ? wc->GetVisibleURL() : GURL();
     QUrl firstPartyUrl;
     if (!top_document_url.is_empty())
         firstPartyUrl = toQt(top_document_url);
     else
         firstPartyUrl = toQt(request_.site_for_cookies.RepresentativeUrl()); // m_topDocumentUrl can be empty for the main-frame.
 
-    QWebEngineUrlRequestInfoPrivate *infoPrivate =
-            new QWebEngineUrlRequestInfoPrivate(toQt(resourceType), toQt(navigationType), originalUrl, firstPartyUrl,
-                                                initiator, QByteArray::fromStdString(request_.method));
-    request_info_ = QWebEngineUrlRequestInfo(infoPrivate);
+    auto info = new QWebEngineUrlRequestInfoPrivate(resourceType, navigationType, originalUrl, firstPartyUrl,
+                                                    initiator, QByteArray::fromStdString(request_.method));
+    Q_ASSERT(!request_info_);
+    request_info_.reset(new QWebEngineUrlRequestInfo(info));
 
     InterceptOnUIThread();
     ContinueAfterIntercept();
@@ -261,52 +281,59 @@ void InterceptedRequest::Restart()
 void InterceptedRequest::InterceptOnUIThread()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (profile_request_interceptor_)
-        profile_request_interceptor_->interceptRequest(request_info_);
+    if (auto interceptor = getProfileInterceptor())
+        interceptor->interceptRequest(*request_info_);
 
-    if (!request_info_.changed() && page_request_interceptor_)
-        page_request_interceptor_->interceptRequest(request_info_);
+    if (!request_info_->changed()) {
+        if (auto interceptor = getPageInterceptor())
+            interceptor->interceptRequest(*request_info_);
+    }
 }
 
 void InterceptedRequest::ContinueAfterIntercept()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    if (request_info_.changed()) {
-        QWebEngineUrlRequestInfoPrivate &info = *request_info_.d_ptr;
-        if (info.shouldBlockRequest)
-            return SendErrorAndCompleteImmediately(net::ERR_BLOCKED_BY_CLIENT);
+    if (request_info_) {
+        // cleanup in scope because of delete this and it's not needed else where after
+        decltype(request_info_) scoped_request_info(request_info_.take());
+        QWebEngineUrlRequestInfoPrivate &info = *scoped_request_info->d_ptr;
 
-        for (auto header = info.extraHeaders.constBegin(); header != info.extraHeaders.constEnd(); ++header) {
-            std::string h = header.key().toStdString();
-            if (base::LowerCaseEqualsASCII(h, "referer")) {
-                request_.referrer = GURL(header.value().toStdString());
-            } else {
-                request_.headers.SetHeader(h, header.value().toStdString());
+        if (info.changed) {
+            if (info.shouldBlockRequest)
+                return SendErrorAndCompleteImmediately(net::ERR_BLOCKED_BY_CLIENT);
+
+            for (auto header = info.extraHeaders.constBegin(); header != info.extraHeaders.constEnd(); ++header) {
+                std::string h = header.key().toStdString();
+                if (base::LowerCaseEqualsASCII(h, "referer")) {
+                    request_.referrer = GURL(header.value().toStdString());
+                } else {
+                    request_.headers.SetHeader(h, header.value().toStdString());
+                }
             }
-        }
 
-        if (info.shouldRedirectRequest) {
-            net::RedirectInfo::FirstPartyURLPolicy first_party_url_policy =
-                    request_.update_first_party_url_on_redirect ? net::RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT
-                                                                : net::RedirectInfo::FirstPartyURLPolicy::NEVER_CHANGE_URL;
-            net::RedirectInfo redirectInfo = net::RedirectInfo::ComputeRedirectInfo(
-                    request_.method, request_.url, request_.site_for_cookies,
-                    first_party_url_policy, request_.referrer_policy, request_.referrer.spec(),
-                    net::HTTP_TEMPORARY_REDIRECT, toGurl(request_info_.requestUrl()), base::nullopt,
-                    false /*insecure_scheme_was_upgraded*/);
+            if (info.shouldRedirectRequest) {
+                net::RedirectInfo::FirstPartyURLPolicy first_party_url_policy =
+                        request_.update_first_party_url_on_redirect ? net::RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT
+                                                                    : net::RedirectInfo::FirstPartyURLPolicy::NEVER_CHANGE_URL;
+                net::RedirectInfo redirectInfo = net::RedirectInfo::ComputeRedirectInfo(
+                        request_.method, request_.url, request_.site_for_cookies,
+                        first_party_url_policy, request_.referrer_policy, request_.referrer.spec(),
+                        net::HTTP_TEMPORARY_REDIRECT, toGurl(info.url), base::nullopt,
+                        false /*insecure_scheme_was_upgraded*/);
 
-            // FIXME: Should probably create a new header.
-            current_response_->encoded_data_length = 0;
-            request_.method = redirectInfo.new_method;
-            request_.url = redirectInfo.new_url;
-            request_.site_for_cookies = redirectInfo.new_site_for_cookies;
-            request_.referrer = GURL(redirectInfo.new_referrer);
-            request_.referrer_policy = redirectInfo.new_referrer_policy;
-            if (request_.method == net::HttpRequestHeaders::kGetMethod)
-                request_.request_body = nullptr;
-            target_client_->OnReceiveRedirect(redirectInfo, std::move(current_response_));
-            return;
+                // FIXME: Should probably create a new header.
+                current_response_->encoded_data_length = 0;
+                request_.method = redirectInfo.new_method;
+                request_.url = redirectInfo.new_url;
+                request_.site_for_cookies = redirectInfo.new_site_for_cookies;
+                request_.referrer = GURL(redirectInfo.new_referrer);
+                request_.referrer_policy = redirectInfo.new_referrer_policy;
+                if (request_.method == net::HttpRequestHeaders::kGetMethod)
+                    request_.request_body = nullptr;
+                target_client_->OnReceiveRedirect(redirectInfo, std::move(current_response_));
+                return;
+            }
         }
     }
 
@@ -329,7 +356,6 @@ void InterceptedRequest::OnReceiveResponse(network::mojom::URLResponseHeadPtr he
 void InterceptedRequest::OnReceiveRedirect(const net::RedirectInfo &redirect_info, network::mojom::URLResponseHeadPtr head)
 {
     // TODO(timvolodine): handle redirect override.
-    request_was_redirected_ = true;
     current_response_ = head.Clone();
     target_client_->OnReceiveRedirect(redirect_info, std::move(head));
     request_.url = redirect_info.new_url;
@@ -459,10 +485,10 @@ void InterceptedRequest::SendErrorAndCompleteImmediately(int error_code)
     delete this;
 }
 
-ProxyingURLLoaderFactoryQt::ProxyingURLLoaderFactoryQt(int process_id, QWebEngineUrlRequestInterceptor *profile, QWebEngineUrlRequestInterceptor *page,
+ProxyingURLLoaderFactoryQt::ProxyingURLLoaderFactoryQt(ProfileAdapter *adapter, int process_id,
                                                        mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
                                                        mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_info)
-    : m_processId(process_id), m_profileRequestInterceptor(profile), m_pageRequestInterceptor(page), m_weakFactory(this)
+    : m_profileAdapter(adapter), m_processId(process_id), m_weakFactory(this)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (target_factory_info) {
@@ -491,8 +517,8 @@ void ProxyingURLLoaderFactoryQt::CreateLoaderAndStart(mojo::PendingReceiver<netw
         m_targetFactory->Clone(target_factory_clone.InitWithNewPipeAndPassReceiver());
 
     // Will manage its own lifetime
-    InterceptedRequest *req = new InterceptedRequest(m_processId, request_id, routing_id, options, request, traffic_annotation,
-                                                     m_profileRequestInterceptor, m_pageRequestInterceptor, std::move(loader),
+    InterceptedRequest *req = new InterceptedRequest(m_profileAdapter, m_processId, request_id, routing_id, options,
+                                                     request, traffic_annotation, std::move(loader),
                                                      std::move(url_loader_client), std::move(target_factory_clone));
     req->Restart();
 }
