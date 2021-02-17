@@ -91,12 +91,9 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
     WebEngineSettings *settings = contentsDelegate->webEngineSettings();
     if (!settings->testAttribute(WebEngineSettings::PdfViewerEnabled)
         || !settings->testAttribute(WebEngineSettings::PluginsEnabled)) {
-        // If the applications has been set up to always download PDF files to open them in an
-        // external viewer, trigger the download.
-        std::unique_ptr<download::DownloadUrlParameters> params(
-                content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(web_contents, response_url,
-                                                                                     MISSING_TRAFFIC_ANNOTATION));
-        content::BrowserContext::GetDownloadManager(web_contents->GetBrowserContext())->DownloadUrl(std::move(params));
+        // PluginServiceFilterQt will inform the URLLoader about the disabled state of plugins
+        // and we can expect the download to be triggered automatically. It's unnecessary to
+        // go further and start the guest view embedding process.
         return;
     }
 
