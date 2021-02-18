@@ -780,6 +780,8 @@ bool ContentBrowserClientQt::AllowAppCache(const GURL &manifest_url,
                                            content::BrowserContext *context)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (!context || context->ShutdownStarted())
+        return false;
     return static_cast<ProfileQt *>(context)->profileAdapter()->cookieStore()->d_func()->canAccessCookies(toQt(first_party), toQt(manifest_url));
 }
 
@@ -806,6 +808,8 @@ ContentBrowserClientQt::AllowServiceWorkerOnUI(const GURL &scope,
                                                     content::BrowserContext *context)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (!context || context->ShutdownStarted())
+        return content::AllowServiceWorkerResult::No();
     // FIXME: Chrome also checks if javascript is enabled here to check if has been disabled since the service worker
     // was started.
     return static_cast<ProfileQt *>(context)->profileAdapter()->cookieStore()->d_func()->canAccessCookies(toQt(site_for_cookies), toQt(scope))
@@ -820,6 +824,8 @@ void ContentBrowserClientQt::AllowWorkerFileSystem(const GURL &url,
                                                    base::OnceCallback<void(bool)> callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (!context || context->ShutdownStarted())
+        return std::move(callback).Run(false);
     std::move(callback).Run(
             static_cast<ProfileQt *>(context)->profileAdapter()->cookieStore()->d_func()->canAccessCookies(toQt(url), toQt(url)));
 }
@@ -830,6 +836,8 @@ bool ContentBrowserClientQt::AllowWorkerIndexedDB(const GURL &url,
                                                   const std::vector<content::GlobalFrameRoutingId> &/*render_frames*/)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (!context || context->ShutdownStarted())
+        return false;
     return static_cast<ProfileQt *>(context)->profileAdapter()->cookieStore()->d_func()->canAccessCookies(toQt(url), toQt(url));
 }
 
