@@ -118,7 +118,7 @@ std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(const net::HttpRes
 
 static std::string GetFrontendURL()
 {
-    return "devtools://devtools/bundled/devtools_app.html";
+    return "devtools://devtools/bundled/inspector.html";
 }
 
 }  // namespace
