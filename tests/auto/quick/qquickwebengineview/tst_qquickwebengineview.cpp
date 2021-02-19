@@ -198,7 +198,7 @@ void tst_QQuickWebEngineView::loadEmptyPageViewVisible()
 
 void tst_QQuickWebEngineView::loadEmptyPageViewHidden()
 {
-    QSignalSpy loadSpy(webEngineView(), SIGNAL(loadingChanged(QWebEngineLoadRequest)));
+    QSignalSpy loadSpy(webEngineView(), SIGNAL(loadingChanged(QWebEngineLoadingInfo)));
 
     webEngineView()->setUrl(urlFromTestPath("html/basic_page.html"));
     QVERIFY(waitForLoadSucceeded(webEngineView()));
@@ -208,7 +208,7 @@ void tst_QQuickWebEngineView::loadEmptyPageViewHidden()
 
 void tst_QQuickWebEngineView::loadNonexistentFileUrl()
 {
-    QSignalSpy loadSpy(webEngineView(), SIGNAL(loadingChanged(QWebEngineLoadRequest)));
+    QSignalSpy loadSpy(webEngineView(), SIGNAL(loadingChanged(QWebEngineLoadingInfo)));
 
     webEngineView()->setUrl(urlFromTestPath("html/file_that_does_not_exist.html"));
     QVERIFY(waitForLoadFailed(webEngineView()));
@@ -1169,7 +1169,7 @@ void tst_QQuickWebEngineView::javascriptClipboard()
 }
 
 void tst_QQuickWebEngineView::setProfile() {
-    QSignalSpy loadSpy(webEngineView(), SIGNAL(loadingChanged(QWebEngineLoadRequest)));
+    QSignalSpy loadSpy(webEngineView(), SIGNAL(loadingChanged(QWebEngineLoadingInfo)));
     webEngineView()->setUrl(urlFromTestPath("html/basic_page.html"));
     QVERIFY(waitForLoadSucceeded(webEngineView()));
     QCOMPARE(loadSpy.size(), 2);

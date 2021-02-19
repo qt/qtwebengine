@@ -24,7 +24,7 @@ qt_internal_add_module(WebEngineCore
         qwebenginefullscreenrequest.cpp qwebenginefullscreenrequest.h
         qwebenginehistory.cpp qwebenginehistory.h qwebenginehistory_p.h
         qwebenginehttprequest.cpp qwebenginehttprequest.h
-        qwebengineloadrequest.cpp qwebengineloadrequest.h
+        qwebengineloadinginfo.cpp qwebengineloadinginfo.h
         qwebenginemessagepumpscheduler.cpp qwebenginemessagepumpscheduler_p.h
         qwebenginenavigationrequest.cpp qwebenginenavigationrequest.h
         qwebenginenewwindowrequest.cpp qwebenginenewwindowrequest.h

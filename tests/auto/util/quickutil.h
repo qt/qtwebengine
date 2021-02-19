@@ -34,8 +34,7 @@
 #include <QSignalSpy>
 #include <QTimer>
 #include <QtTest/QtTest>
-#include <QtWebEngineQuick/private/qquickwebengineview_p.h>
-#include <QtWebEngineCore/QWebEngineLoadRequest>
+#include <QtWebEngineCore/QWebEngineLoadingInfo>
 #include <QtWebEngineQuick/private/qquickwebengineview_p.h>
 #include <QGuiApplication>
 
@@ -59,11 +58,11 @@ Q_SIGNALS:
     void loadFailed();
 
 private Q_SLOTS:
-    void onLoadingChanged(const QWebEngineLoadRequest &request)
+    void onLoadingChanged(const QWebEngineLoadingInfo &info)
     {
-        if (request.status() == QWebEngineLoadRequest::LoadSucceededStatus)
+        if (info.status() == QWebEngineLoadingInfo::LoadSucceededStatus)
             emit loadSucceeded();
-        else if (request.status() == QWebEngineLoadRequest::LoadFailedStatus)
+        else if (info.status() == QWebEngineLoadingInfo::LoadFailedStatus)
             emit loadFailed();
     }
 };
@@ -81,9 +80,9 @@ public:
     virtual ~LoadStartedCatcher() { }
 
 public Q_SLOTS:
-    void onLoadingChanged(const QWebEngineLoadRequest &request)
+    void onLoadingChanged(const QWebEngineLoadingInfo &info)
     {
-        if (request.status() == QWebEngineLoadRequest::LoadStartedStatus)
+        if (info.status() == QWebEngineLoadingInfo::LoadStartedStatus)
             QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
     }
 

@@ -39,7 +39,7 @@
 
 #include "qquickwebenginetestsupport_p.h"
 
-#include "qwebengineloadrequest.h"
+#include "qwebengineloadinginfo.h"
 
 #include <QQuickItem>
 #include <QQuickWindow>
@@ -60,14 +60,14 @@ void QQuickWebEngineErrorPage::loadFinished(bool success, const QUrl &url)
 {
     Q_UNUSED(success);
     QTimer::singleShot(0, this, [this, url]() {
-       emit loadingChanged(QWebEngineLoadRequest(url, QWebEngineLoadRequest::LoadSucceededStatus));
+       emit loadingChanged(QWebEngineLoadingInfo(url, QWebEngineLoadingInfo::LoadSucceededStatus));
     });
 }
 
 void QQuickWebEngineErrorPage::loadStarted(const QUrl &provisionalUrl)
 {
     QTimer::singleShot(0, this, [this, provisionalUrl]() {
-        emit loadingChanged(QWebEngineLoadRequest(provisionalUrl, QWebEngineLoadRequest::LoadStartedStatus));
+        emit loadingChanged(QWebEngineLoadingInfo(provisionalUrl, QWebEngineLoadingInfo::LoadStartedStatus));
     });
 }
 

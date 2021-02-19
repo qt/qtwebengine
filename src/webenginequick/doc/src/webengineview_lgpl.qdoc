@@ -525,13 +525,13 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::loadingChanged(WebEngineLoadRequest loadRequest)
+    \qmlsignal WebEngineView::loadingChanged(WebEngineLoadingInfo loadingInfo)
 
     This signal is emitted when a page load begins, ends, or fails.
 
     When handling the signal with \c onLoadingChanged, various read-only
-    parameters are available on the WebEngineLoadRequest specified by
-    \a loadRequest.
+    parameters are available on the WebEngineLoadingInfo specified by
+    \a loadingInfo.
 
     \sa loading, LoadStatus, ErrorDomain
 */

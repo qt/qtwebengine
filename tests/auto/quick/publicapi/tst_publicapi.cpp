@@ -46,7 +46,7 @@
 #include <QtWebEngineCore/QWebEngineContextMenuRequest>
 #include <QtWebEngineCore/QWebEngineDownloadRequest>
 #include <QtWebEngineCore/QWebEngineScript>
-#include <QtWebEngineCore/QWebEngineLoadRequest>
+#include <QtWebEngineCore/QWebEngineLoadingInfo>
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebengineaction_p.h>
 #include <private/qquickwebengineclientcertificateselection_p.h>
@@ -82,7 +82,7 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QWebEngineContextMenuRequest::staticMetaObject
     << &QWebEngineCertificateError::staticMetaObject
     << &QWebEngineFindTextResult::staticMetaObject
-    << &QWebEngineLoadRequest::staticMetaObject
+    << &QWebEngineLoadingInfo::staticMetaObject
     << &QWebEngineNavigationRequest::staticMetaObject
     << &QWebEngineNewWindowRequest::staticMetaObject
     << &QWebEngineNotification::staticMetaObject
@@ -311,22 +311,22 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineJavaScriptDialogRequest.securityOrigin --> QUrl"
     << "QQuickWebEngineJavaScriptDialogRequest.title --> QString"
     << "QQuickWebEngineJavaScriptDialogRequest.type --> QQuickWebEngineJavaScriptDialogRequest::DialogType"
-    << "QWebEngineLoadRequest.errorCode --> int"
-    << "QWebEngineLoadRequest.errorDomain --> QWebEngineLoadRequest::ErrorDomain"
-    << "QWebEngineLoadRequest.errorString --> QString"
-    << "QWebEngineLoadRequest.status --> QWebEngineLoadRequest::LoadStatus"
-    << "QWebEngineLoadRequest.url --> QUrl"
-    << "QWebEngineLoadRequest.LoadFailedStatus --> LoadStatus"
-    << "QWebEngineLoadRequest.LoadStartedStatus --> LoadStatus"
-    << "QWebEngineLoadRequest.LoadStoppedStatus --> LoadStatus"
-    << "QWebEngineLoadRequest.LoadSucceededStatus --> LoadStatus"
-    << "QWebEngineLoadRequest.CertificateErrorDomain --> ErrorDomain"
-    << "QWebEngineLoadRequest.ConnectionErrorDomain --> ErrorDomain"
-    << "QWebEngineLoadRequest.DnsErrorDomain --> ErrorDomain"
-    << "QWebEngineLoadRequest.FtpErrorDomain --> ErrorDomain"
-    << "QWebEngineLoadRequest.HttpErrorDomain --> ErrorDomain"
-    << "QWebEngineLoadRequest.InternalErrorDomain --> ErrorDomain"
-    << "QWebEngineLoadRequest.NoErrorDomain --> ErrorDomain"
+    << "QWebEngineLoadingInfo.errorCode --> int"
+    << "QWebEngineLoadingInfo.errorDomain --> QWebEngineLoadingInfo::ErrorDomain"
+    << "QWebEngineLoadingInfo.errorString --> QString"
+    << "QWebEngineLoadingInfo.status --> QWebEngineLoadingInfo::LoadStatus"
+    << "QWebEngineLoadingInfo.url --> QUrl"
+    << "QWebEngineLoadingInfo.LoadFailedStatus --> LoadStatus"
+    << "QWebEngineLoadingInfo.LoadStartedStatus --> LoadStatus"
+    << "QWebEngineLoadingInfo.LoadStoppedStatus --> LoadStatus"
+    << "QWebEngineLoadingInfo.LoadSucceededStatus --> LoadStatus"
+    << "QWebEngineLoadingInfo.CertificateErrorDomain --> ErrorDomain"
+    << "QWebEngineLoadingInfo.ConnectionErrorDomain --> ErrorDomain"
+    << "QWebEngineLoadingInfo.DnsErrorDomain --> ErrorDomain"
+    << "QWebEngineLoadingInfo.FtpErrorDomain --> ErrorDomain"
+    << "QWebEngineLoadingInfo.HttpErrorDomain --> ErrorDomain"
+    << "QWebEngineLoadingInfo.InternalErrorDomain --> ErrorDomain"
+    << "QWebEngineLoadingInfo.NoErrorDomain --> ErrorDomain"
     << "QWebEngineNavigationRequest.action --> QWebEngineNavigationRequest::NavigationRequestAction"
     << "QWebEngineNavigationRequest.actionChanged() --> void"
     << "QWebEngineNavigationRequest.isMainFrame --> bool"
@@ -721,7 +721,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.loadProgress --> int"
     << "QQuickWebEngineView.loadProgressChanged() --> void"
     << "QQuickWebEngineView.loading --> bool"
-    << "QQuickWebEngineView.loadingChanged(QWebEngineLoadRequest) --> void"
+    << "QQuickWebEngineView.loadingChanged(QWebEngineLoadingInfo) --> void"
     << "QQuickWebEngineView.navigationRequested(QWebEngineNavigationRequest*) --> void"
     << "QQuickWebEngineView.newViewRequested(QWebEngineNewWindowRequest*) --> void"
     << "QQuickWebEngineView.pdfPrintingFinished(QString,bool) --> void"

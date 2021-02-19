@@ -37,14 +37,14 @@
 **
 ****************************************************************************/
 
-#include <qwebengineloadrequest.h>
+#include <qwebengineloadinginfo.h>
 
 #include <web_engine_error.h>
 
 QT_BEGIN_NAMESPACE
 
-using LoadStatus = QWebEngineLoadRequest::LoadStatus;
-using ErrorDomain = QWebEngineLoadRequest::ErrorDomain;
+using LoadStatus = QWebEngineLoadingInfo::LoadStatus;
+using ErrorDomain = QWebEngineLoadingInfo::ErrorDomain;
 
 Q_STATIC_ASSERT(static_cast<int>(WebEngineError::NoErrorDomain) == static_cast<int>(ErrorDomain::NoErrorDomain));
 Q_STATIC_ASSERT(static_cast<int>(WebEngineError::InternalErrorDomain) == static_cast<int>(ErrorDomain::InternalErrorDomain));
@@ -54,9 +54,9 @@ Q_STATIC_ASSERT(static_cast<int>(WebEngineError::HttpErrorDomain) == static_cast
 Q_STATIC_ASSERT(static_cast<int>(WebEngineError::FtpErrorDomain) == static_cast<int>(ErrorDomain::FtpErrorDomain));
 Q_STATIC_ASSERT(static_cast<int>(WebEngineError::DnsErrorDomain) == static_cast<int>(ErrorDomain::DnsErrorDomain));
 
-class QWebEngineLoadRequest::QWebEngineLoadRequestPrivate : public QSharedData {
+class QWebEngineLoadingInfo::QWebEngineLoadingInfoPrivate : public QSharedData {
 public:
-    QWebEngineLoadRequestPrivate(const QUrl& url, LoadStatus status, const QString& errorString, int errorCode, ErrorDomain errorDomain)
+    QWebEngineLoadingInfoPrivate(const QUrl& url, LoadStatus status, const QString& errorString, int errorCode, ErrorDomain errorDomain)
         : url(url)
         , status(status)
         , errorString(errorString)
@@ -73,7 +73,7 @@ public:
 };
 
 /*!
-    \class QWebEngineLoadRequest
+    \class QWebEngineLoadingInfo
     \brief A utility type for the WebEngineView::loadingChanged signal.
     \inmodule QtWebEngineCore
     \since 6.2
@@ -83,34 +83,34 @@ public:
 
     \sa QWebEnginePage::loadStarted, QWebEnginePage::loadFinished, WebEngineView::loadingChanged
 */
-QWebEngineLoadRequest::QWebEngineLoadRequest(const QUrl& url, LoadStatus status, const QString& errorString,
+QWebEngineLoadingInfo::QWebEngineLoadingInfo(const QUrl& url, LoadStatus status, const QString& errorString,
                                            int errorCode, ErrorDomain errorDomain)
-    : d_ptr(new QWebEngineLoadRequestPrivate(url, status, errorString, errorCode, errorDomain))
+    : d_ptr(new QWebEngineLoadingInfoPrivate(url, status, errorString, errorCode, errorDomain))
 {
 }
 
-QWebEngineLoadRequest::QWebEngineLoadRequest(const QWebEngineLoadRequest &other) = default;
-QWebEngineLoadRequest& QWebEngineLoadRequest::operator=(const QWebEngineLoadRequest &other) = default;
-QWebEngineLoadRequest::QWebEngineLoadRequest(QWebEngineLoadRequest &&other) = default;
-QWebEngineLoadRequest& QWebEngineLoadRequest::operator=(QWebEngineLoadRequest &&other) = default;
+QWebEngineLoadingInfo::QWebEngineLoadingInfo(const QWebEngineLoadingInfo &other) = default;
+QWebEngineLoadingInfo& QWebEngineLoadingInfo::operator=(const QWebEngineLoadingInfo &other) = default;
+QWebEngineLoadingInfo::QWebEngineLoadingInfo(QWebEngineLoadingInfo &&other) = default;
+QWebEngineLoadingInfo& QWebEngineLoadingInfo::operator=(QWebEngineLoadingInfo &&other) = default;
 
-QWebEngineLoadRequest::~QWebEngineLoadRequest()
+QWebEngineLoadingInfo::~QWebEngineLoadingInfo()
 {
 }
 /*!
-    \property QWebEngineLoadRequest::url
+    \property QWebEngineLoadingInfo::url
     \brief Holds the URL of the load request.
 */
 /*!
     Returns the URL of the load request.
 */
-QUrl QWebEngineLoadRequest::url() const
+QUrl QWebEngineLoadingInfo::url() const
 {
-    Q_D(const QWebEngineLoadRequest);
+    Q_D(const QWebEngineLoadingInfo);
     return d->url;
 }
 /*!
-    \enum QWebEngineLoadRequest::status
+    \enum QWebEngineLoadingInfo::status
 
     This enumeration represents the load status of a web page load request:
 
@@ -127,25 +127,25 @@ QUrl QWebEngineLoadRequest::url() const
 /*!
     Returns the page's load status.
 */
-LoadStatus QWebEngineLoadRequest::status() const
+LoadStatus QWebEngineLoadingInfo::status() const
 {
-    Q_D(const QWebEngineLoadRequest);
+    Q_D(const QWebEngineLoadingInfo);
     return d->status;
 }
 /*!
-    \property QWebEngineLoadRequest::errorString
+    \property QWebEngineLoadingInfo::errorString
     \brief Holds the error message.
 */
 /*
     Returns the error message.
 */
-QString QWebEngineLoadRequest::errorString() const
+QString QWebEngineLoadingInfo::errorString() const
 {
-    Q_D(const QWebEngineLoadRequest);
+    Q_D(const QWebEngineLoadingInfo);
     return d->errorString;
 }
 /*!
-    \enum enumeration QWebEngineLoadRequest::errorDomain
+    \enum enumeration QWebEngineLoadingInfo::errorDomain
     This enumeration holds the type of a load error:
 
     \value  NoErrorDomain
@@ -164,28 +164,28 @@ QString QWebEngineLoadRequest::errorString() const
             Error is related to the DNS connection.
 */
 /*
-    \property QWebEngineLoadRequest::errorDomain
+    \property QWebEngineLoadingInfo::errorDomain
     \brief Holds the error domain
 */
 /*
     Returns the error domain.
 */
-ErrorDomain QWebEngineLoadRequest::errorDomain() const
+ErrorDomain QWebEngineLoadingInfo::errorDomain() const
 {
-    Q_D(const QWebEngineLoadRequest);
+    Q_D(const QWebEngineLoadingInfo);
     return d->errorDomain;
 }
 
 /*!
-    \property int QWebEngineLoadRequest::errorCode
+    \property int QWebEngineLoadingInfo::errorCode
     \brief Holds the error code.
 */
 /*
     Returns the error code.
 */
-int QWebEngineLoadRequest::errorCode() const
+int QWebEngineLoadingInfo::errorCode() const
 {
-    Q_D(const QWebEngineLoadRequest);
+    Q_D(const QWebEngineLoadingInfo);
     return d->errorCode;
 }
 

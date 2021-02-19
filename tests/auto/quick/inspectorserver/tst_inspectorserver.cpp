@@ -119,7 +119,7 @@ void tst_InspectorServer::testPageList()
 {
     const QUrl testPageUrl = QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
                                                  + QLatin1String("/html/basic_page.html"));
-    QSignalSpy loadSpy(webView(), SIGNAL(loadingChanged(QWebEngineLoadRequest)));
+    QSignalSpy loadSpy(webView(), SIGNAL(loadingChanged(QWebEngineLoadingInfo)));
     webView()->setUrl(testPageUrl);
     QTRY_VERIFY(loadSpy.size() && !webView()->isLoading());
 
@@ -133,7 +133,7 @@ void tst_InspectorServer::testRemoteDebuggingMessage()
 {
     const QUrl testPageUrl = QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
                                                  + QLatin1String("/html/basic_page.html"));
-    QSignalSpy loadSpy(webView(), SIGNAL(loadingChanged(QWebEngineLoadRequest)));
+    QSignalSpy loadSpy(webView(), SIGNAL(loadingChanged(QWebEngineLoadingInfo)));
     webView()->setUrl(testPageUrl);
     QTRY_VERIFY(loadSpy.size() && !webView()->isLoading());
 
@@ -168,7 +168,7 @@ void tst_InspectorServer::openRemoteDebuggingSession()
 {
     const QUrl testPageUrl = QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
                                                  + QLatin1String("/html/basic_page.html"));
-    QSignalSpy loadSpy(webView(), SIGNAL(loadingChanged(QWebEngineLoadRequest)));
+    QSignalSpy loadSpy(webView(), SIGNAL(loadingChanged(QWebEngineLoadingInfo)));
     webView()->setUrl(testPageUrl);
     QTRY_VERIFY(loadSpy.size() && !webView()->isLoading());
 

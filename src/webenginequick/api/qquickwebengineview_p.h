@@ -81,7 +81,7 @@ class QWebEngineContextMenuRequest;
 class QWebEngineFindTextResult;
 class QWebEngineFullScreenRequest;
 class QWebEngineHistory;
-class QWebEngineLoadRequest;
+class QWebEngineLoadingInfo;
 class QWebEngineNavigationRequest;
 class QWebEngineNewWindowRequest;
 class QWebEngineQuotaRequest;
@@ -499,7 +499,7 @@ Q_SIGNALS:
     void titleChanged();
     void urlChanged();
     void iconChanged();
-    void loadingChanged(const QWebEngineLoadRequest &loadRequest);
+    void loadingChanged(const QWebEngineLoadingInfo &loadingInfo);
     void loadProgressChanged();
     void linkHovered(const QUrl &hoveredUrl);
     void navigationRequested(QWebEngineNavigationRequest *request);

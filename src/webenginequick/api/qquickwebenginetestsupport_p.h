@@ -60,7 +60,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QWebEngineLoadRequest;
+class QWebEngineLoadingInfo;
 class QWindow;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineErrorPage : public QObject {
@@ -73,7 +73,7 @@ public:
     void loadStarted(const QUrl &provisionalUrl);
 
 Q_SIGNALS:
-    void loadingChanged(const QWebEngineLoadRequest &loadRequest);
+    void loadingChanged(const QWebEngineLoadingInfo &loadStatus);
 };
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineTestInputContext : public QPlatformInputContext {

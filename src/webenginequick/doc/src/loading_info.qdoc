@@ -26,8 +26,8 @@
 ****************************************************************************/
 
 /*!
-    \qmltype WebEngineLoadRequest
-    \instantiates QWebEngineLoadRequest
+    \qmltype WebEngineLoadingInfo
+    \instantiates QWebEngineLoadingInfo
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.0
 
@@ -39,11 +39,11 @@
     \sa WebEngineView::loadingChanged
 */
 /*!
-    \qmlproperty url WebEngineLoadRequest::url
+    \qmlproperty url WebEngineLoadingInfo::url
     \brief Holds the URL of the load request.
  */
 /*!
-    \qmlproperty enumeration WebEngineLoadRequest::status
+    \qmlproperty enumeration WebEngineLoadingInfo::status
 
     This enumeration represents the load status of a web page load request:
 
@@ -58,29 +58,32 @@
     \sa WebEngineView::loadingChanged
 */
 /*!
-    \qmlproperty string WebEngineLoadRequest::errorString
+    \qmlproperty Indicates if the load's resulted in an error page.
+*/
+/*!
+    \qmlproperty string WebEngineLoadingInfo::errorString
     \brief Holds the error message.
 */
 /*!
-    \qmlproperty enumeration WebEngineLoadRequest::errorDomain
+    \qmlproperty enumeration WebEngineLoadingInfo::errorDomain
     This enumeration holds the type of a load request error:
 
-    \value  WebEngineLoadRequest.NoErrorDomain
+    \value  WebEngineLoadingInfo.NoErrorDomain
             Error type is not known.
-    \value  WebEngineLoadRequest.InternalErrorDomain
+    \value  WebEngineLoadingInfo.InternalErrorDomain
             Content cannot be interpreted by \QWE.
-    \value  WebEngineLoadRequest.ConnectionErrorDomain
+    \value  WebEngineLoadingInfo.ConnectionErrorDomain
             Error results from a faulty network connection.
-    \value  WebEngineLoadRequest.CertificateErrorDomain
+    \value  WebEngineLoadingInfo.CertificateErrorDomain
             Error is related to the SSL/TLS certificate.
-    \value  WebEngineLoadRequest.HttpErrorDomain
+    \value  WebEngineLoadingInfo.HttpErrorDomain
             Error is related to the HTTP connection.
-    \value  WebEngineLoadRequest.FtpErrorDomain
+    \value  WebEngineLoadingInfo.FtpErrorDomain
             Error is related to the FTP connection.
-    \value  WebEngineLoadRequest.DnsErrorDomain
+    \value  WebEngineLoadingInfo.DnsErrorDomain
             Error is related to the DNS connection.
 */
 /*!
-    \qmlproperty int WebEngineLoadRequest::errorCode
+    \qmlproperty int WebEngineLoadingInfo::errorCode
     \brief Holds the error code.
 */

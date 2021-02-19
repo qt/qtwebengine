@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINELOADREQUEST_H
-#define QWEBENGINELOADREQUEST_H
+#ifndef QWEBENGINELOADINGINFO_H
+#define QWEBENGINELOADINGINFO_H
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
@@ -47,8 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
-
-class Q_WEBENGINECORE_EXPORT QWebEngineLoadRequest
+class Q_WEBENGINECORE_EXPORT QWebEngineLoadingInfo
 {
     Q_GADGET
     Q_PROPERTY(QUrl url READ url CONSTANT FINAL)
@@ -77,11 +76,11 @@ public:
     };
     Q_ENUM(ErrorDomain)
 
-    QWebEngineLoadRequest(const QWebEngineLoadRequest &other);
-    QWebEngineLoadRequest &operator=(const QWebEngineLoadRequest &other);
-    QWebEngineLoadRequest(QWebEngineLoadRequest &&other);
-    QWebEngineLoadRequest &operator=(QWebEngineLoadRequest &&other);
-    ~QWebEngineLoadRequest();
+    QWebEngineLoadingInfo(const QWebEngineLoadingInfo &other);
+    QWebEngineLoadingInfo &operator=(const QWebEngineLoadingInfo &other);
+    QWebEngineLoadingInfo(QWebEngineLoadingInfo &&other);
+    QWebEngineLoadingInfo &operator=(QWebEngineLoadingInfo &&other);
+    ~QWebEngineLoadingInfo();
 
     QUrl url() const;
     LoadStatus status() const;
@@ -90,15 +89,15 @@ public:
     int errorCode() const;
 
 private:
-    QWebEngineLoadRequest(const QUrl& url, LoadStatus status, const QString& errorString = QString(),
-                          int errorCode = 0, ErrorDomain errorDomain = NoErrorDomain);
-    class QWebEngineLoadRequestPrivate;
-    Q_DECLARE_PRIVATE(QWebEngineLoadRequest)
-    QExplicitlySharedDataPointer<QWebEngineLoadRequestPrivate> d_ptr;
+    QWebEngineLoadingInfo(const QUrl& url, LoadStatus status, const QString& errorString = QString(),
+                       int errorCode = 0, ErrorDomain errorDomain = NoErrorDomain);
+    class QWebEngineLoadingInfoPrivate;
+    Q_DECLARE_PRIVATE(QWebEngineLoadingInfo)
+    QExplicitlySharedDataPointer<QWebEngineLoadingInfoPrivate> d_ptr;
     friend class QQuickWebEngineViewPrivate;
     friend class QQuickWebEngineErrorPage;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWEBENGINELOADREQUEST_H
+#endif // QWEBENGINELOADINGINFO_H

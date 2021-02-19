@@ -52,7 +52,7 @@
 #include <QtWebEngineCore/qwebenginefindtextresult.h>
 #include <QtWebEngineCore/qwebenginefullscreenrequest.h>
 #include <QtWebEngineCore/qwebenginehistory.h>
-#include <QtWebEngineCore/qwebengineloadrequest.h>
+#include <QtWebEngineCore/qwebengineloadinginfo.h>
 #include <QtWebEngineCore/qwebenginenavigationrequest.h>
 #include <QtWebEngineCore/qwebenginenewwindowrequest.h>
 #include <QtWebEngineCore/qwebenginenotification.h>
@@ -86,7 +86,7 @@ public:
         Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
 
         qmlRegisterType<QQuickWebEngineView>(uri, 1, 0, "WebEngineView");
-        qmlRegisterUncreatableType<QWebEngineLoadRequest>(uri, 1, 0, "WebEngineLoadRequest", msgUncreatableType("WebEngineLoadRequest"));
+        qmlRegisterUncreatableType<QWebEngineLoadingInfo>(uri, 1, 0, "WebEngineLoadingInfo", msgUncreatableType("WebEngineLoadingInfo"));
         qmlRegisterUncreatableType<QWebEngineNavigationRequest>(uri, 1, 0, "WebEngineNavigationRequest", msgUncreatableType("WebEngineNavigationRequest"));
 
         qmlRegisterType<QQuickWebEngineView, 1>(uri, 1, 1, "WebEngineView");
