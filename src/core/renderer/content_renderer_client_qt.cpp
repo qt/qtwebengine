@@ -97,7 +97,6 @@
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "plugins/loadable_plugin_placeholder_qt.h"
-#include "plugins/plugin_placeholder_qt.h"
 #include "content/common/frame_messages.h"
 #endif // ENABLE_PLUGINS
 

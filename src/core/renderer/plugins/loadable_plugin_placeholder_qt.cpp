@@ -77,7 +77,7 @@ LoadablePluginPlaceholderQt::~LoadablePluginPlaceholderQt()
 LoadablePluginPlaceholderQt* LoadablePluginPlaceholderQt::CreateLoadableMissingPlugin(content::RenderFrame* render_frame,
                                                                                       const blink::WebPluginParams& params)
 {
-    const base::StringPiece template_html(ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_BLOCKED_PLUGIN_HTML));
+    std::string template_html(ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(IDR_BLOCKED_PLUGIN_HTML));
 
     base::DictionaryValue values;
     values.SetString("name", "");
