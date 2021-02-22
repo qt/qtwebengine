@@ -263,6 +263,8 @@ private:
 
     void callUpdate();
 
+    bool updateCursorFromResource(ui::mojom::CursorType type);
+
     // Geometry of the view in screen DIPs.
     gfx::Rect m_viewRectInDips;
     // Geometry of the window, including frame, in screen DIPs.

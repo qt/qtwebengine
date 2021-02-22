@@ -74,6 +74,7 @@
 #include "content/common/input_messages.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -89,7 +90,10 @@
 #if defined(USE_AURA)
 #include "ui/base/cursor/cursor_size.h"
 #include "ui/base/cursor/cursors_aura.h"
-#include "ui/base/resource/resource_bundle.h"
+#endif
+
+#if defined(Q_OS_MACOS)
+#include "content/app/resources/grit/content_resources.h"
 #endif
 
 #include <private/qguiapplication_p.h>
@@ -600,6 +604,74 @@ void RenderWidgetHostViewQt::UnlockMouse()
     host()->LostMouseLock();
 }
 
+bool RenderWidgetHostViewQt::updateCursorFromResource(ui::mojom::CursorType type)
+{
+    int resourceId;
+    // GetCursorDataFor only knows hotspots for 1x and 2x cursor images, in physical pixels.
+    qreal hotspotDpr = m_screenInfo.device_scale_factor <= 1.0f ? 1.0f : 2.0f;
+    qreal hotX;
+    qreal hotY;
+
+#if defined(USE_AURA)
+    gfx::Point hotspot;
+    if (!ui::GetCursorDataFor(ui::CursorSize::kNormal, type, hotspotDpr, &resourceId, &hotspot))
+        return false;
+    hotX = hotspot.x();
+    hotY = hotspot.y();
+#elif defined(Q_OS_MACOS)
+    // See chromium/content/common/cursors/webcursor_mac.mm
+    switch (type) {
+    case ui::mojom::CursorType::kVerticalText:
+        // TODO: [NSCursor IBeamCursorForVerticalLayout]
+        return false;
+    case ui::mojom::CursorType::kCell:
+        resourceId = IDR_CELL_CURSOR;
+        hotX = 7;
+        hotY = 7;
+        break;
+    case ui::mojom::CursorType::kContextMenu:
+        // TODO: [NSCursor contextualMenuCursor]
+        return false;
+    case ui::mojom::CursorType::kZoomIn:
+        resourceId = IDR_ZOOMIN_CURSOR;
+        hotX = 7;
+        hotY = 7;
+        break;
+    case ui::mojom::CursorType::kZoomOut:
+        resourceId = IDR_ZOOMOUT_CURSOR;
+        hotX = 7;
+        hotY = 7;
+        break;
+    default:
+        Q_UNREACHABLE();
+        return false;
+    }
+#else
+    Q_UNREACHABLE();
+    return false;
+#endif
+
+    const gfx::ImageSkia *imageSkia = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resourceId);
+    if (!imageSkia)
+        return false;
+
+    QImage imageQt = toQImage(imageSkia->GetRepresentation(m_screenInfo.device_scale_factor));
+
+    // Convert hotspot coordinates into device-independent pixels.
+    hotX /= hotspotDpr;
+    hotY /= hotspotDpr;
+
+#if defined(Q_OS_LINUX)
+    // QTBUG-68571: On Linux (xcb, wayland, eglfs), hotspot coordinates must be in physical pixels.
+    qreal imageDpr = imageQt.devicePixelRatio();
+    hotX *= imageDpr;
+    hotY *= imageDpr;
+#endif
+
+    m_delegate->updateCursor(QCursor(QPixmap::fromImage(std::move(imageQt)), qRound(hotX), qRound(hotY)));
+    return true;
+}
+
 void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
 {
     DisplayCursor(webCursor);
@@ -609,9 +681,6 @@ void RenderWidgetHostViewQt::DisplayCursor(const content::WebCursor &webCursor)
 {
     const ui::Cursor &cursorInfo = webCursor.cursor();
     Qt::CursorShape shape = Qt::ArrowCursor;
-#if defined(USE_AURA)
-    ui::mojom::CursorType auraType = ui::mojom::CursorType::kNull;
-#endif
     switch (cursorInfo.type()) {
     case ui::mojom::CursorType::kNull:
     case ui::mojom::CursorType::kPointer:
@@ -687,31 +756,14 @@ void RenderWidgetHostViewQt::DisplayCursor(const content::WebCursor &webCursor)
     case ui::mojom::CursorType::kAlias:
         shape = Qt::DragLinkCursor;
         break;
-#if defined(USE_AURA)
-    case ui::mojom::CursorType::kVerticalText:
-        auraType = ui::mojom::CursorType::kVerticalText;
-        break;
-    case ui::mojom::CursorType::kCell:
-        auraType = ui::mojom::CursorType::kCell;
-        break;
-    case ui::mojom::CursorType::kContextMenu:
-        auraType = ui::mojom::CursorType::kContextMenu;
-        break;
-    case ui::mojom::CursorType::kZoomIn:
-        auraType = ui::mojom::CursorType::kZoomIn;
-        break;
-    case ui::mojom::CursorType::kZoomOut:
-        auraType = ui::mojom::CursorType::kZoomOut;
-        break;
-#else
     case ui::mojom::CursorType::kVerticalText:
     case ui::mojom::CursorType::kCell:
     case ui::mojom::CursorType::kContextMenu:
     case ui::mojom::CursorType::kZoomIn:
     case ui::mojom::CursorType::kZoomOut:
-        // FIXME: Support on OS X
+        if (updateCursorFromResource(cursorInfo.type()))
+            return;
         break;
-#endif
     case ui::mojom::CursorType::kNoDrop:
     case ui::mojom::CursorType::kNotAllowed:
         shape = Qt::ForbiddenCursor;
@@ -733,33 +785,6 @@ void RenderWidgetHostViewQt::DisplayCursor(const content::WebCursor &webCursor)
         }
         break;
     }
-#if defined(USE_AURA)
-    if (auraType != ui::mojom::CursorType::kNull) {
-        int resourceId;
-        gfx::Point hotspot;
-        // GetCursorDataFor only knows hotspots for 1x and 2x cursor images, in physical pixels.
-        qreal hotspotDpr = m_screenInfo.device_scale_factor <= 1.0f ? 1.0f : 2.0f;
-        if (ui::GetCursorDataFor(ui::CursorSize::kNormal, auraType, hotspotDpr, &resourceId, &hotspot)) {
-            if (const gfx::ImageSkia *imageSkia = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resourceId)) {
-                QImage imageQt = toQImage(imageSkia->GetRepresentation(m_screenInfo.device_scale_factor));
-
-                // Convert hotspot coordinates into device-independent pixels.
-                qreal hotX = hotspot.x() / hotspotDpr;
-                qreal hotY = hotspot.y() / hotspotDpr;
-
-#if defined(Q_OS_LINUX)
-                // QTBUG-68571: On Linux (xcb, wayland, eglfs), hotspot coordinates must be in physical pixels.
-                qreal imageDpr = imageQt.devicePixelRatio();
-                hotX *= imageDpr;
-                hotY *= imageDpr;
-#endif
-
-                m_delegate->updateCursor(QCursor(QPixmap::fromImage(std::move(imageQt)), qRound(hotX), qRound(hotY)));
-                return;
-            }
-        }
-    }
-#endif
     m_delegate->updateCursor(QCursor(shape));
 }
 
