@@ -50,37 +50,37 @@ public:
     uint64_t GetSequenceNumber(ui::ClipboardBuffer type) const override;
     bool IsFormatAvailable(const ui::ClipboardFormatType &format,
                            ui::ClipboardBuffer buffer,
-                           const ui::ClipboardDataEndpoint *data_dst) const override;
+                           const ui::DataTransferEndpoint *data_dst) const override;
     void Clear(ui::ClipboardBuffer type) override;
     void ReadAvailableTypes(ui::ClipboardBuffer type,
-                            const ui::ClipboardDataEndpoint *data_dst,
+                            const ui::DataTransferEndpoint *data_dst,
                             std::vector<base::string16> *types) const override;
-    void ReadText(ui::ClipboardBuffer type, const ui::ClipboardDataEndpoint *data_dst, base::string16 *result) const override;
-    void ReadAsciiText(ui::ClipboardBuffer type, const ui::ClipboardDataEndpoint *data_dst, std::string *result) const override;
-    void ReadHTML(ui::ClipboardBuffer type, const ui::ClipboardDataEndpoint *data_dst, base::string16 *markup, std::string *src_url, uint32_t *fragment_start,
+    void ReadText(ui::ClipboardBuffer type, const ui::DataTransferEndpoint *data_dst, base::string16 *result) const override;
+    void ReadAsciiText(ui::ClipboardBuffer type, const ui::DataTransferEndpoint *data_dst, std::string *result) const override;
+    void ReadHTML(ui::ClipboardBuffer type, const ui::DataTransferEndpoint *data_dst, base::string16 *markup, std::string *src_url, uint32_t *fragment_start,
                   uint32_t *fragment_end) const override;
-    void ReadRTF(ui::ClipboardBuffer type, const ui::ClipboardDataEndpoint *data_dst, std::string *result) const override;
-    void ReadImage(ui::ClipboardBuffer buffer, const ui::ClipboardDataEndpoint *data_dst, ReadImageCallback callback) const override;
-    void ReadCustomData(ui::ClipboardBuffer clipboard_type, const base::string16 &type, const ui::ClipboardDataEndpoint *data_dst, base::string16 *result) const override;
-    void ReadBookmark(const ui::ClipboardDataEndpoint *data_dst, base::string16 *title, std::string *url) const override;
-    void ReadData(const ui::ClipboardFormatType &format, const ui::ClipboardDataEndpoint *data_dst, std::string *result) const override;
+    void ReadRTF(ui::ClipboardBuffer type, const ui::DataTransferEndpoint *data_dst, std::string *result) const override;
+    void ReadImage(ui::ClipboardBuffer buffer, const ui::DataTransferEndpoint *data_dst, ReadImageCallback callback) const override;
+    void ReadCustomData(ui::ClipboardBuffer clipboard_type, const base::string16 &type, const ui::DataTransferEndpoint *data_dst, base::string16 *result) const override;
+    void ReadBookmark(const ui::DataTransferEndpoint *data_dst, base::string16 *title, std::string *url) const override;
+    void ReadData(const ui::ClipboardFormatType &format, const ui::DataTransferEndpoint *data_dst, std::string *result) const override;
 #if defined(USE_OZONE)
     bool IsSelectionBufferAvailable() const override;
 #endif
     void OnPreShutdown() override {}
-    void ReadSvg(ui::ClipboardBuffer, const ui::ClipboardDataEndpoint *, base::string16 *) const override;
+    void ReadSvg(ui::ClipboardBuffer, const ui::DataTransferEndpoint *, base::string16 *) const override;
     void WriteSvg(const char *, size_t) override;
-    std::vector<base::string16> ReadAvailablePlatformSpecificFormatNames(ui::ClipboardBuffer buffer, const ui::ClipboardDataEndpoint *data_dst) const override;
+    std::vector<base::string16> ReadAvailablePlatformSpecificFormatNames(ui::ClipboardBuffer buffer, const ui::DataTransferEndpoint *data_dst) const override;
 
 protected:
     void WritePortableRepresentations(
         ui::ClipboardBuffer buffer,
         const ObjectMap &objects,
-        std::unique_ptr<ui::ClipboardDataEndpoint> data_src) override;
+        std::unique_ptr<ui::DataTransferEndpoint> data_src) override;
     void WritePlatformRepresentations(
         ui::ClipboardBuffer buffer,
         std::vector<Clipboard::PlatformRepresentation> platform_representations,
-        std::unique_ptr<ui::ClipboardDataEndpoint> data_src) override;
+        std::unique_ptr<ui::DataTransferEndpoint> data_src) override;
     void WriteText(const char *text_data, size_t text_len) override;
     void WriteHTML(const char *markup_data, size_t markup_len, const char *url_data, size_t url_len) override;
     void WriteRTF(const char *rtf_data, size_t data_len) override;

@@ -179,8 +179,6 @@ source_set("qtwebengine_sources") {
 
   if (enable_plugins) {
       sources += [
-        "//chrome/browser/renderer_host/pepper/pepper_flash_clipboard_message_filter.cc",
-        "//chrome/browser/renderer_host/pepper/pepper_flash_clipboard_message_filter.h",
         "//chrome/renderer/pepper/pepper_flash_font_file_host.cc",
         "//chrome/renderer/pepper/pepper_flash_font_file_host.h",
         "//chrome/renderer/pepper/pepper_shared_memory_message_filter.cc",

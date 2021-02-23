@@ -38,8 +38,8 @@ import json
 import urllib2
 import git_submodule as GitSubmodule
 
-chromium_version = '87.0.4280.144'
-chromium_branch = '4280'
+chromium_version = '88.0.4324.187'
+chromium_branch = '4324'
 ninja_version = 'v1.8.2'
 
 json_url = 'http://omahaproxy.appspot.com/all.json'
@@ -54,6 +54,14 @@ submodule_blacklist = [
     , 'chrome/tools/test/reference_build/chrome_mac'
     , 'chrome/tools/test/reference_build/chrome_linux'
     , 'chrome/tools/test/reference_build/chrome_win'
+   # buildtools duplicates:
+    , 'buildtools/clang_format/script'
+    , 'buildtools/linux64'
+    , 'buildtools/mac'
+    , 'buildtools/win'
+    , 'buildtools/third_party/libc++/trunk'
+    , 'buildtools/third_party/libc++abi/trunk'
+    , 'buildtools/third_party/libunwind/trunk'
     ]
 
 sys.path.append(os.path.join(qtwebengine_root, 'tools', 'scripts'))

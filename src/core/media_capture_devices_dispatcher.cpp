@@ -227,8 +227,13 @@ WebContentsAdapterClient::MediaRequestFlags mediaRequestFlagsForRequest(const co
         request.video_type == MediaStreamType::DISPLAY_VIDEO_CAPTURE)
         return {WebContentsAdapterClient::MediaDesktopAudioCapture, WebContentsAdapterClient::MediaDesktopVideoCapture};
 
+    if (request.audio_type == MediaStreamType::DISPLAY_AUDIO_CAPTURE &&
+        request.video_type == MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB)
+        return {WebContentsAdapterClient::MediaDesktopAudioCapture, WebContentsAdapterClient::MediaDesktopVideoCapture};
+
     if (request.video_type == MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE ||
-        request.video_type == MediaStreamType::DISPLAY_VIDEO_CAPTURE)
+        request.video_type == MediaStreamType::DISPLAY_VIDEO_CAPTURE ||
+        request.video_type == MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB)
         return {WebContentsAdapterClient::MediaDesktopVideoCapture};
 
     return {};
@@ -249,21 +254,41 @@ public:
     {
         if (m_started && m_delegate)
             m_delegate->removeDevices(m_devices);
+        m_onStop.Reset();
     }
 
 private:
-    gfx::NativeViewId OnStarted(base::OnceClosure, SourceCallback) override
+    gfx::NativeViewId OnStarted(base::OnceClosure stop, SourceCallback source,
+                                const std::string& label,
+                                std::vector<content::DesktopMediaID> screen_capture_ids,
+                                StateChangeCallback state_change) override
     {
-        DCHECK(!m_started);
+        if (m_started) {
+            // Ignore possibly-compromised renderers that might call
+            // MediaStreamDispatcherHost::OnStreamStarted() more than once.
+            // See: https://crbug.com/1155426
+            return 0;
+        }
         m_started = true;
+        m_onStop = std::move(stop);
         if (m_delegate)
             m_delegate->addDevices(m_devices);
         return 0;
+    }
+    void OnDeviceStopped(const std::string &label, const content::DesktopMediaID &media_id) override
+    {
+        NOTIMPLEMENTED();
+    }
+
+    void SetStopCallback(base::OnceClosure stop) override
+    {
+        m_onStop = std::move(stop);
     }
 
     base::WeakPtr<WebContentsDelegateQt> m_delegate;
     const blink::MediaStreamDevices m_devices;
     bool m_started = false;
+    base::OnceClosure m_onStop; // currently unused
 
     DISALLOW_COPY_AND_ASSIGN(MediaStreamUIQt);
 };
@@ -441,7 +466,8 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
     }
 
     // Audio is only supported for screen capture streams.
-    bool audioRequested = request.audio_type == MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE;
+    bool audioRequested = (request.audio_type == MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE ||
+                           request.audio_type == MediaStreamType::DISPLAY_AUDIO_CAPTURE);
     bool audioSupported = (mediaId.type == content::DesktopMediaID::TYPE_SCREEN && m_loopbackAudioSupported);
     bool captureAudio = (audioRequested && audioSupported);
 

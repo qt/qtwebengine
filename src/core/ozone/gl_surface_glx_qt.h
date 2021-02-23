@@ -42,8 +42,6 @@
 
 #include "gl_surface_qt.h"
 
-#include "ui/gfx/x/x11_types.h"
-
 namespace gl {
 
 class GLSurfaceGLXQt: public GLSurfaceQt {
@@ -62,7 +60,7 @@ protected:
 
 private:
     static bool s_initialized;
-    XID m_surfaceBuffer;
+    int m_surfaceBuffer;
     DISALLOW_COPY_AND_ASSIGN(GLSurfaceGLXQt);
 };
 

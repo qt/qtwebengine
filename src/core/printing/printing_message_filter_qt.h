@@ -58,6 +58,7 @@ class PrinterQuery;
 }
 
 namespace QtWebEngineCore {
+
 // This class filters out incoming printing related IPC messages for the
 // renderer process on the IPC thread.
 class PrintingMessageFilterQt : public content::BrowserMessageFilter {
@@ -83,15 +84,6 @@ class PrintingMessageFilterQt : public content::BrowserMessageFilter {
   void OnScriptedPrintReply(std::unique_ptr<printing::PrinterQuery> printer_query,
                             IPC::Message* reply_msg);
 
-  // Modify the current print settings based on |job_settings|. The task is
-  // handled by the print worker thread and the UI thread. The reply occurs on
-  // the IO thread.
-  void OnUpdatePrintSettings(int document_cookie,
-                             base::Value job_settings,
-                             IPC::Message* reply_msg);
-  void OnUpdatePrintSettingsReply(std::unique_ptr<printing::PrinterQuery> printer_query,
-                                  IPC::Message* reply_msg);
-
   // Check to see if print preview has been cancelled.
   void OnCheckForCancel(const printing::mojom::PreviewIds& ids, bool* cancel);
 
@@ -102,6 +94,6 @@ class PrintingMessageFilterQt : public content::BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(PrintingMessageFilterQt);
 };
 
-}  // namespace printing
+}  // namespace QtWebEngineCore
 
 #endif  // PRINTING_PRINTING_MESSAGE_FILTER_QT_H_

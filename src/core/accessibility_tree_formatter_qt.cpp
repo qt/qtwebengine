@@ -58,18 +58,17 @@ public:
     explicit AccessibilityTreeFormatterQt();
     ~AccessibilityTreeFormatterQt() override;
 
-   std::unique_ptr<base::DictionaryValue> BuildAccessibilityTreeForSelector(const content::AccessibilityTreeFormatter::TreeSelector &)
-   { return nullptr; }
-   std::unique_ptr<base::DictionaryValue> BuildAccessibilityTreeForWindow(gfx::AcceleratedWidget) override { return nullptr; }
    std::unique_ptr<base::DictionaryValue> BuildAccessibilityTree(content::BrowserAccessibility *) override;
+   base::Value BuildTreeForWindow(gfx::AcceleratedWidget hwnd) const override
+   {
+       return base::Value{};
+   }
+   base::Value BuildTreeForSelector(const AXTreeSelector &selector) const override
+   {
+       return base::Value{};
+   }
 
 private:
-    base::FilePath::StringType GetExpectedFileSuffix() override;
-    const std::string GetAllowEmptyString() override;
-    const std::string GetAllowString() override;
-    const std::string GetDenyString() override;
-    const std::string GetDenyNodeString() override;
-    const std::string GetRunUntilEventString() override;
     void RecursiveBuildAccessibilityTree(const content::BrowserAccessibility &node, base::DictionaryValue *dict) const;
     void AddProperties(const BrowserAccessibility &node, base::DictionaryValue *dict) const;
     std::string ProcessTreeForOutput(const base::DictionaryValue &node, base::DictionaryValue * = nullptr) override;
@@ -209,40 +208,10 @@ std::string AccessibilityTreeFormatterQt::ProcessTreeForOutput(const base::Dicti
     return line + "\n";
 }
 
-base::FilePath::StringType AccessibilityTreeFormatterQt::GetExpectedFileSuffix()
-{
-    return FILE_PATH_LITERAL("-expected-qt.txt");
-}
-
-const std::string AccessibilityTreeFormatterQt::GetAllowEmptyString()
-{
-    return "@QT-ALLOW-EMPTY:";
-}
-
-const std::string AccessibilityTreeFormatterQt::GetAllowString()
-{
-    return "@QT-ALLOW:";
-}
-
-const std::string AccessibilityTreeFormatterQt::GetDenyString()
-{
-    return "@QT-DENY:";
-}
-
-const std::string AccessibilityTreeFormatterQt::GetDenyNodeString()
-{
-    return "@QT-DENY-NODE:";
-}
-
-const std::string AccessibilityTreeFormatterQt::GetRunUntilEventString()
-{
-    return "@QT-RUN-UNTIL-EVENT:";
-}
-
 #endif // QT_CONFIG(accessibility)
 
 // static
-std::unique_ptr<AccessibilityTreeFormatter> AccessibilityTreeFormatter::Create()
+std::unique_ptr<ui::AXTreeFormatter> AccessibilityTreeFormatter::Create()
 {
 #if QT_CONFIG(accessibility)
     return std::unique_ptr<AccessibilityTreeFormatter>(new AccessibilityTreeFormatterQt());

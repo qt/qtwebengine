@@ -51,8 +51,8 @@
 #include "content/public/common/content_switches.h"
 #include "media/base/media_switches.h"
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
+#include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
-#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event_switches.h"
 #include "ui/native_theme/native_theme.h"
@@ -396,8 +396,8 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
     prefs->hide_scrollbars = !testAttribute(QWebEngineSettings::ShowScrollBars);
     if (isAttributeExplicitlySet(QWebEngineSettings::PlaybackRequiresUserGesture)) {
         prefs->autoplay_policy = testAttribute(QWebEngineSettings::PlaybackRequiresUserGesture)
-                               ? blink::web_pref::AutoplayPolicy::kUserGestureRequired
-                               : blink::web_pref::AutoplayPolicy::kNoUserGestureRequired;
+                               ? blink::mojom::AutoplayPolicy::kUserGestureRequired
+                               : blink::mojom::AutoplayPolicy::kNoUserGestureRequired;
     }
     prefs->dom_paste_enabled = testAttribute(QWebEngineSettings::JavascriptCanPaste);
     prefs->dns_prefetching_enabled = testAttribute(QWebEngineSettings::DnsPrefetchEnabled);
@@ -428,10 +428,10 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
     if (webTheme) {
         switch (webTheme->GetPreferredColorScheme()) {
           case ui::NativeTheme::PreferredColorScheme::kDark:
-            prefs->preferred_color_scheme = blink::PreferredColorScheme::kDark;
+            prefs->preferred_color_scheme = blink::mojom::PreferredColorScheme::kDark;
             break;
           case ui::NativeTheme::PreferredColorScheme::kLight:
-            prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
+            prefs->preferred_color_scheme = blink::mojom::PreferredColorScheme::kLight;
             break;
         }
     }
@@ -460,7 +460,7 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
     }
 }
 
-bool WebEngineSettings::applySettingsToRendererPreferences(blink::mojom::RendererPreferences *prefs)
+bool WebEngineSettings::applySettingsToRendererPreferences(blink::RendererPreferences *prefs)
 {
     bool changed = false;
 #if QT_CONFIG(webengine_webrtc)

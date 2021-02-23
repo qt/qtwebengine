@@ -84,11 +84,11 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/drop_data.h"
-#include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/buildflags/buildflags.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
+#include "third_party/blink/public/common/page_state/page_state.h"
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom.h"
@@ -356,7 +356,7 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
             nullptr);
 
         entry->SetTitle(toString16(title));
-        entry->SetPageState(content::PageState::CreateFromEncodedData(std::string(pageState.data(), pageState.size())));
+        entry->SetPageState(blink::PageState::CreateFromEncodedData(std::string(pageState.data(), pageState.size())));
         entry->SetHasPostData(hasPostData);
         entry->SetOriginalRequestURL(toGurl(originalRequestUrl));
         entry->SetIsOverridingUserAgent(isOverridingUserAgent);
@@ -436,7 +436,7 @@ QSharedPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavig
         // TODO(joth): This is duplicated from chrome/.../session_restore.cc and
         // should be shared e.g. in  NavigationController. http://crbug.com/68222
         const int id = newWebContents->GetMainFrame()->GetProcess()->GetID();
-        const content::PageState& pageState = controller.GetActiveEntry()->GetPageState();
+        const blink::PageState& pageState = controller.GetActiveEntry()->GetPageState();
         const std::vector<base::FilePath>& filePaths = pageState.GetReferencedFiles();
         for (std::vector<base::FilePath>::const_iterator file = filePaths.begin(); file != filePaths.end(); ++file)
             content::ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(id, *file);
@@ -552,7 +552,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
 
 void WebContentsAdapter::initializeRenderPrefs()
 {
-    blink::mojom::RendererPreferences *rendererPrefs = m_webContents->GetMutableRendererPrefs();
+    blink::RendererPreferences *rendererPrefs = m_webContents->GetMutableRendererPrefs();
     rendererPrefs->use_custom_colors = true;
     // Qt returns a flash time (the whole cycle) in ms, chromium expects just the interval in
     // seconds

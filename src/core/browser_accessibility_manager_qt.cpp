@@ -151,7 +151,7 @@ void BrowserAccessibilityManagerQt::FireGeneratedEvent(ui::AXEventGenerator::Eve
     BrowserAccessibilityQt *iface = static_cast<BrowserAccessibilityQt*>(node);
 
     switch (event_type) {
-    case ui::AXEventGenerator::Event::VALUE_CHANGED:
+    case ui::AXEventGenerator::Event::VALUE_IN_TEXT_FIELD_CHANGED:
         if (iface->role() == QAccessible::EditableText) {
             QAccessibleTextUpdateEvent event(iface, -1, QString(), QString());
             QAccessible::updateAccessibility(&event);

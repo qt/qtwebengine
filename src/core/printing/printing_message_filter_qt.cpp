@@ -51,8 +51,6 @@
 #include "chrome/browser/printing/printer_query.h"
 #include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print_messages.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/common/child_process_host.h"
 
 namespace QtWebEngineCore {
 
@@ -75,8 +73,6 @@ bool PrintingMessageFilterQt::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintingMessageFilterQt, message)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_ScriptedPrint, OnScriptedPrint)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_UpdatePrintSettings,
-                                    OnUpdatePrintSettings)
     IPC_MESSAGE_HANDLER(PrintHostMsg_CheckForCancel, OnCheckForCancel)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -127,61 +123,9 @@ void PrintingMessageFilterQt::OnScriptedPrintReply(
   }
 }
 
-void PrintingMessageFilterQt::OnUpdatePrintSettings(int document_cookie,
-                                                    base::Value job_settings,
-                                                    IPC::Message* reply_msg) {
-  if (!job_settings.is_dict() ||
-      !job_settings.FindIntKey(printing::kSettingPrinterType)) {
-    // Reply with null query.
-    OnUpdatePrintSettingsReply(nullptr, reply_msg);
-    return;
-  }
-
-  std::unique_ptr<printing::PrinterQuery> printer_query =
-      queue_->PopPrinterQuery(document_cookie);
-  if (!printer_query.get()) {
-    printer_query = queue_->CreatePrinterQuery(
-        content::ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE);
-  }
-  auto* printer_query_ptr = printer_query.get();
-  printer_query_ptr->SetSettings(
-      std::move(job_settings),
-      base::BindOnce(&PrintingMessageFilterQt::OnUpdatePrintSettingsReply, this,
-                     std::move(printer_query), reply_msg));
-}
-
-void PrintingMessageFilterQt::OnUpdatePrintSettingsReply(std::unique_ptr<printing::PrinterQuery> printer_query,
-    IPC::Message* reply_msg) {
-  printing::mojom::PrintPagesParams params;
-  params.params = printing::mojom::PrintParams::New();
-  if (!printer_query.get() ||
-      printer_query->last_status() != printing::PrintingContext::OK) {
-    params.params.reset();
-  } else {
-    RenderParamsFromPrintSettings(printer_query->settings(), params.params.get());
-    params.params->document_cookie = printer_query->cookie();
-    params.pages = printing::PageRange::GetPages(printer_query->settings().ranges());
-  }
-
-  PrintHostMsg_UpdatePrintSettings::WriteReplyParams(
-      reply_msg,
-      params,
-      printer_query.get() &&
-          (printer_query->last_status() == printing::PrintingContext::CANCEL));
-  Send(reply_msg);
-  // If user hasn't cancelled.
-  if (printer_query) {
-    if (printer_query->cookie() && printer_query->settings().dpi()) {
-      queue_->QueuePrinterQuery(std::move(printer_query));
-    } else {
-      printer_query->StopWorker();
-    }
-  }
-}
-
 void PrintingMessageFilterQt::OnCheckForCancel(const printing::mojom::PreviewIds& ids,
                                                bool* cancel) {
   *cancel = false;
 }
 
-}  // namespace printing
+}  // namespace QtWebEngineCore

@@ -261,16 +261,6 @@ void ContentRendererClientQt::RunScriptsAtDocumentIdle(content::RenderFrame *ren
 #endif
 }
 
-bool ContentRendererClientQt::HasErrorPage(int httpStatusCode)
-{
-    // Use an internal error page, if we have one for the status code.
-    if (!error_page::LocalizedError::HasStrings(error_page::Error::kHttpErrorDomain, httpStatusCode)) {
-        return false;
-    }
-
-    return true;
-}
-
 // To tap into the chromium localized strings. Ripped from the chrome layer (highly simplified).
 void ContentRendererClientQt::PrepareErrorPage(content::RenderFrame *renderFrame,
                                                const blink::WebURLError &web_error,
@@ -284,13 +274,13 @@ void ContentRendererClientQt::PrepareErrorPage(content::RenderFrame *renderFrame
 }
 
 void ContentRendererClientQt::PrepareErrorPageForHttpStatusError(content::RenderFrame *renderFrame,
-                                                                 const GURL &unreachable_url,
+                                                                 const blink::WebURLError &error,
                                                                  const std::string &httpMethod,
                                                                  int http_status,
                                                                  std::string *errorHtml)
 {
     GetNavigationErrorStringsInternal(renderFrame, httpMethod,
-                                      error_page::Error::HttpError(unreachable_url, http_status),
+                                      error_page::Error::HttpError(error.url(), http_status),
                                       errorHtml);
 }
 
@@ -386,7 +376,7 @@ bool ContentRendererClientQt::OverrideCreatePlugin(content::RenderFrame *render_
     if (!found)
         *plugin = LoadablePluginPlaceholderQt::CreateLoadableMissingPlugin(render_frame, params)->plugin();
     else
-        *plugin = render_frame->CreatePlugin(info, params, nullptr);
+        *plugin = render_frame->CreatePlugin(info, params);
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
     return true;
 }
@@ -631,12 +621,6 @@ void ContentRendererClientQt::WillSendRequest(blink::WebLocalFrame *frame,
     if (!new_url->is_empty())
         return;
 #endif
-}
-
-bool ContentRendererClientQt::RequiresWebComponentsV0(const GURL &url)
-{
-    Q_UNUSED(url);
-    return false;
 }
 
 } // namespace QtWebEngineCore

@@ -34,6 +34,7 @@ repack("qtwebengine_repack_resources") {
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",
+    "$root_gen_dir/ui/resources/webui_generated_resources.pak",
   ]
   output = "$root_out_dir/qtwebengine_resources.pak"
   deps = [
@@ -51,6 +52,7 @@ repack("qtwebengine_repack_resources") {
      "//net:net_resources_grit",
      "//third_party/blink/public:resources_grit",
      "//ui/resources:webui_resources_grd_grit",
+     "//ui/resources:webui_generated_resources_grd",
   ]
 
   if (enable_extensions) {

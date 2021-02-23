@@ -156,11 +156,6 @@ void WebContentsViewQt::SetInitialFocus()
 void WebContentsViewQt::FocusThroughTabTraversal(bool reverse)
 {
     content::WebContentsImpl *web_contents = static_cast<content::WebContentsImpl*>(m_webContents);
-    content::RenderWidgetHostView *fullscreen_view = web_contents->GetFullscreenRenderWidgetHostView();
-    if (fullscreen_view) {
-        fullscreen_view->Focus();
-        return;
-    }
     web_contents->GetRenderViewHost()->SetInitialFocus(reverse);
 }
 

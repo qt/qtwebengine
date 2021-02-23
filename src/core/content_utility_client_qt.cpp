@@ -56,12 +56,9 @@ auto RunProxyResolver(mojo::PendingReceiver<proxy_resolver::mojom::ProxyResolver
     return std::make_unique<proxy_resolver::ProxyResolverFactoryImpl>(std::move(receiver));
 }
 
-mojo::ServiceFactory *ContentUtilityClientQt::GetIOThreadServiceFactory()
+void ContentUtilityClientQt::RegisterIOThreadServices(mojo::ServiceFactory &services)
 {
-    static base::NoDestructor<mojo::ServiceFactory> factory {
-        RunProxyResolver,
-    };
-    return factory.get();
+    services.Add(RunProxyResolver);
 }
 
 } // namespace

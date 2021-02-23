@@ -132,6 +132,66 @@ void GetDefaultPrintSettingsOnIO(printing::mojom::PrintManagerHost::GetDefaultPr
                                std::move(printer_query), std::move(callback)));
 }
 
+// Runs |callback| with |params| to reply to
+// mojom::PrintManagerHost::UpdatePrintSettings.
+void UpdatePrintSettingsReply(printing::mojom::PrintManagerHost::UpdatePrintSettingsCallback callback,
+                              printing::mojom::PrintPagesParamsPtr params, bool canceled)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (!params) {
+        // Fills |params| with initial values.
+        params = printing::mojom::PrintPagesParams::New();
+        params->params = printing::mojom::PrintParams::New();
+    }
+    std::move(callback).Run(std::move(params), canceled);
+}
+
+void UpdatePrintSettingsReplyOnIO(scoped_refptr<printing::PrintQueriesQueue> queue,
+                                  std::unique_ptr<printing::PrinterQuery> printer_query,
+                                  printing::mojom::PrintManagerHost::UpdatePrintSettingsCallback callback,
+                                  int process_id, int routing_id)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    DCHECK(printer_query);
+    auto params = printing::mojom::PrintPagesParams::New();
+    params->params = printing::mojom::PrintParams::New();
+    if (printer_query->last_status() == printing::PrintingContext::OK) {
+        RenderParamsFromPrintSettings(printer_query->settings(), params->params.get());
+        params->params->document_cookie = printer_query->cookie();
+        params->pages = printing::PageRange::GetPages(printer_query->settings().ranges());
+    }
+    bool canceled = printer_query->last_status() == printing::PrintingContext::CANCEL;
+
+    content::GetUIThreadTaskRunner({})->PostTask(
+                FROM_HERE,
+                base::BindOnce(&UpdatePrintSettingsReply, std::move(callback), std::move(params), canceled));
+
+    if (printer_query->cookie() && printer_query->settings().dpi()) {
+        queue->QueuePrinterQuery(std::move(printer_query));
+    } else {
+        printer_query->StopWorker();
+    }
+}
+
+void UpdatePrintSettingsOnIO(int32_t cookie,
+                             printing::mojom::PrintManagerHost::UpdatePrintSettingsCallback callback,
+                             scoped_refptr<printing::PrintQueriesQueue> queue,
+                             base::Value job_settings,
+                             int process_id, int routing_id)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    std::unique_ptr<printing::PrinterQuery> printer_query = queue->PopPrinterQuery(cookie);
+    if (!printer_query)
+        printer_query = queue->CreatePrinterQuery(content::ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE);
+
+    auto *printer_query_ptr = printer_query.get();
+    printer_query_ptr->SetSettings(
+                std::move(job_settings),
+                base::BindOnce(&UpdatePrintSettingsReplyOnIO,
+                               queue, std::move(printer_query), std::move(callback),
+                               process_id, routing_id));
+}
+
 }  // namespace
 
 PrintViewManagerBaseQt::PrintViewManagerBaseQt(content::WebContents *contents)
@@ -600,6 +660,27 @@ void PrintViewManagerBaseQt::StopWorker(int documentCookie)
 void PrintViewManagerBaseQt::SendPrintingEnabled(bool enabled, content::RenderFrameHost* rfh)
 {
     GetPrintRenderFrame(rfh)->SetPrintingEnabled(enabled);
+}
+
+void PrintViewManagerBaseQt::UpdatePrintSettings(int32_t cookie, base::Value job_settings,
+                                                 UpdatePrintSettingsCallback callback)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    if (!job_settings.FindIntKey(printing::kSettingPrinterType)) {
+        UpdatePrintSettingsReply(std::move(callback), nullptr, false);
+        return;
+    }
+
+    content::RenderFrameHost *render_frame_host =
+            print_manager_host_receivers_.GetCurrentTargetFrame();
+
+    content::GetIOThreadTaskRunner({})->PostTask(
+                FROM_HERE,
+                base::BindOnce(&UpdatePrintSettingsOnIO, cookie, std::move(callback),
+                               m_printerQueriesQueue, std::move(job_settings),
+                               render_frame_host->GetProcess()->GetID(),
+                               render_frame_host->GetRoutingID()));
 }
 
 } // namespace QtWebEngineCore

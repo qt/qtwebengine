@@ -77,7 +77,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/data_url.h"
 #include "net/base/url_util.h"
@@ -867,15 +866,6 @@ void WebContentsDelegateQt::ContentsZoomChange(bool zoom_in)
         adapter->setZoomFactor(adapter->currentZoomFactor() - 0.1f);
 }
 
-bool WebContentsDelegateQt::ShouldNavigateOnBackForwardMouseButtons()
-{
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    return false;
-#else
-    return true;
-#endif
-}
-
 void WebContentsDelegateQt::ResourceLoadComplete(content::RenderFrameHost* render_frame_host,
                                                  const content::GlobalRequestID& request_id,
                                                  const blink::mojom::ResourceLoadInfo& resource_load_info)
@@ -956,6 +946,7 @@ int &WebContentsDelegateQt::streamCount(blink::mojom::MediaStreamType type)
     case blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE:
     case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE:
     case blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE:
+    case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB:
         return m_desktopStreamCount;
 
     case blink::mojom::MediaStreamType::NO_SERVICE:

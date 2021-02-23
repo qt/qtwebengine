@@ -171,7 +171,6 @@ public:
     void OnVisibilityChanged(content::Visibility visibility) override;
     void DidFirstVisuallyNonEmptyPaint() override;
     void ActivateContents(content::WebContents* contents) override;
-    bool ShouldNavigateOnBackForwardMouseButtons() override;
     void ResourceLoadComplete(content::RenderFrameHost* render_frame_host,
                               const content::GlobalRequestID& request_id,
                               const blink::mojom::ResourceLoadInfo& resource_load_info) override;

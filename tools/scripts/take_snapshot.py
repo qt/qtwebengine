@@ -198,7 +198,6 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/skia/infra')
             or file_path.startswith('third_party/skia/site/dev/tools/calendar.mskp')
             or file_path.startswith('third_party/sqlite/sqlite-src-')
-            or file_path.startswith('third_party/speech-dispatcher')
             or file_path.startswith('third_party/spirv-cross/spirv-cross/reference/')
             or file_path.startswith('third_party/swiftshader/third_party/')
             or file_path.startswith('third_party/wayland')

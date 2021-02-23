@@ -59,7 +59,7 @@ PlatformWindowQt::~PlatformWindowQt()
     ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
 }
 
-gfx::Rect PlatformWindowQt::GetBounds()
+gfx::Rect PlatformWindowQt::GetBounds() const
 {
     return bounds_;
 }

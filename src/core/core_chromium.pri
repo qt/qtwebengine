@@ -252,18 +252,14 @@ qtConfig(webengine-ozone-x11) {
 qtConfig(webengine-pepper-plugins) {
 
     SOURCES += \
-        renderer_host/pepper/pepper_flash_browser_host_qt.cpp \
         renderer_host/pepper/pepper_host_factory_qt.cpp \
         renderer_host/pepper/pepper_isolated_file_system_message_filter.cpp \
-        renderer/pepper/pepper_flash_renderer_host_qt.cpp \
         renderer/pepper/pepper_renderer_host_factory_qt.cpp \
         renderer/plugins/loadable_plugin_placeholder_qt.cpp
 
     HEADERS += \
-        renderer_host/pepper/pepper_flash_browser_host_qt.h \
         renderer_host/pepper/pepper_host_factory_qt.h \
         renderer_host/pepper/pepper_isolated_file_system_message_filter.h \
-        renderer/pepper/pepper_flash_renderer_host_qt.h \
         renderer/pepper/pepper_renderer_host_factory_qt.h \
         renderer/plugins/loadable_plugin_placeholder_qt.h
 }

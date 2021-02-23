@@ -45,7 +45,6 @@
 #include "ozone/gl_surface_glx_qt.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface_glx.h"
-#include "ui/gfx/x/x11_types.h"
 
 namespace gl {
 
@@ -58,6 +57,7 @@ GLSurfaceGLXQt::~GLSurfaceGLXQt()
 
 void GLSurfaceGLX::ShutdownOneOff()
 {
+    s_initialized = false;
 }
 
 bool GLSurfaceGLX::IsCreateContextSupported()
@@ -119,8 +119,6 @@ bool GLSurfaceGLXQt::InitializeOneOff()
 {
     if (s_initialized)
         return true;
-
-    XInitThreads();
 
     g_display = GLContextHelper::getXDisplay();
     if (!g_display) {

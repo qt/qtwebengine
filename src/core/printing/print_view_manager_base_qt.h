@@ -82,6 +82,8 @@ public:
     // mojom::PrintManagerHost:
     void DidGetPrintedPagesCount(int32_t cookie, uint32_t number_pages) override;
     void GetDefaultPrintSettings(GetDefaultPrintSettingsCallback callback) override;
+    void UpdatePrintSettings(int32_t cookie, base::Value job_settings,
+                             UpdatePrintSettingsCallback callback) override;
     void ShowInvalidPrinterSettingsError() override;
     void PrintingFailed(int32_t cookie) override;
 

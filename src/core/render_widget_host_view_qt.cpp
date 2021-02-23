@@ -1072,4 +1072,14 @@ ui::Compositor *RenderWidgetHostViewQt::GetCompositor()
     return m_uiCompositor.get();
 }
 
+base::Optional<content::DisplayFeature> RenderWidgetHostViewQt::GetDisplayFeature()
+{
+    return base::nullopt;
+}
+
+void RenderWidgetHostViewQt::SetDisplayFeatureForTesting(const content::DisplayFeature *)
+{
+    NOTIMPLEMENTED();
+}
+
 } // namespace QtWebEngineCore

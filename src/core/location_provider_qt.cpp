@@ -228,14 +228,14 @@ inline void QtPositioningHelper::postToLocationProvider(const base::Closure &tas
 }
 
 LocationProviderQt::LocationProviderQt()
-    : m_positioningHelper(0)
+    : m_positioningHelper(nullptr)
 {
 }
 
 LocationProviderQt::~LocationProviderQt()
 {
     if (m_positioningHelper) {
-        m_positioningHelper->m_locationProvider = 0;
+        m_positioningHelper->m_locationProvider = nullptr;
         m_positioningHelper->m_locationProviderFactory.InvalidateWeakPtrs();
         m_positioningHelper->deleteLater();
     }

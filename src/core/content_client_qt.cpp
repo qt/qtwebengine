@@ -135,12 +135,6 @@ static QString getProgramFilesDir(bool x86Dir = false)
 #include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
-static const int32_t kPepperFlashPermissions = ppapi::PERMISSION_DEV |
-                                               ppapi::PERMISSION_PRIVATE |
-                                               ppapi::PERMISSION_BYPASS_USER_GESTURE |
-                                               ppapi::PERMISSION_FLASH |
-                                               ppapi::PERMISSION_SOCKET;
-
 namespace switches {
 const char kPpapiFlashPath[]    = "ppapi-flash-path";
 const char kPpapiFlashVersion[] = "ppapi-flash-version";
@@ -158,95 +152,6 @@ static QString ppapiPluginsPath()
             potentialPluginsPath = QCoreApplication::applicationDirPath();
     }
     return potentialPluginsPath;
-}
-
-
-content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path, const std::string& version)
-{
-    content::PepperPluginInfo plugin;
-
-    plugin.is_out_of_process = true;
-    plugin.name = content::kFlashPluginName;
-    plugin.path = path;
-    plugin.permissions = kPepperFlashPermissions;
-
-    std::vector<std::string> flash_version_numbers = base::SplitString(version, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    if (flash_version_numbers.size() < 1)
-        flash_version_numbers.push_back("11");
-    else if (flash_version_numbers[0].empty())
-        flash_version_numbers[0] = "11";
-    if (flash_version_numbers.size() < 2)
-        flash_version_numbers.push_back("2");
-    if (flash_version_numbers.size() < 3)
-        flash_version_numbers.push_back("999");
-    if (flash_version_numbers.size() < 4)
-        flash_version_numbers.push_back("999");
-
-    // E.g., "Shockwave Flash 10.2 r154":
-    plugin.description = plugin.name + " " + flash_version_numbers[0] + "." + flash_version_numbers[1] + " r" + flash_version_numbers[2];
-    plugin.version = base::JoinString(flash_version_numbers, ".");
-    content::WebPluginMimeType swf_mime_type(content::kFlashPluginSwfMimeType,
-                                             content::kFlashPluginSwfExtension,
-                                             content::kFlashPluginSwfDescription);
-    plugin.mime_types.push_back(swf_mime_type);
-    content::WebPluginMimeType spl_mime_type(content::kFlashPluginSplMimeType,
-                                             content::kFlashPluginSplExtension,
-                                             content::kFlashPluginSplDescription);
-    plugin.mime_types.push_back(spl_mime_type);
-
-    return plugin;
-}
-
-void AddPepperFlashFromSystem(std::vector<content::PepperPluginInfo>* plugins)
-{
-    QStringList pluginPaths;
-#if defined(Q_OS_WIN)
-    QString winDir = QDir::fromNativeSeparators(qEnvironmentVariable("WINDIR"));
-    if (winDir.isEmpty())
-        winDir = QString::fromLatin1("C:/Windows");
-    QDir pluginDir(winDir + "/System32/Macromed/Flash");
-    pluginDir.setFilter(QDir::Files);
-    const QFileInfoList infos = pluginDir.entryInfoList(QStringList("pepflashplayer*.dll"));
-    for (const QFileInfo &info : infos)
-        pluginPaths << info.absoluteFilePath();
-    pluginPaths << ppapiPluginsPath() + QStringLiteral("/pepflashplayer.dll");
-#endif
-#if defined(Q_OS_OSX)
-    pluginPaths << "/Library/Internet Plug-Ins/PepperFlashPlayer/PepperFlashPlayer.plugin"; // System path
-    QDir potentialDir(QDir::homePath() + "/Library/Application Support/Google/Chrome/PepperFlash");
-    if (potentialDir.exists()) {
-        QFileInfoList versionDirs = potentialDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
-        for (int i = 0; i < versionDirs.size(); ++i) {
-            pluginPaths << versionDirs.at(i).absoluteFilePath() + "/PepperFlashPlayer.plugin";
-        }
-    }
-    pluginPaths << ppapiPluginsPath() + QStringLiteral("/PepperFlashPlayer.plugin");
-#endif
-#if defined(Q_OS_LINUX)
-    pluginPaths << "/opt/google/chrome/PepperFlash/libpepflashplayer.so" // Google Chrome
-                << "/usr/lib/pepperflashplugin-nonfree/libpepflashplayer.so" // Ubuntu, package pepperflashplugin-nonfree
-                << "/usr/lib/adobe-flashplugin/libpepflashplayer.so" // Ubuntu, package adobe-flashplugin
-                << "/usr/lib/PepperFlash/libpepflashplayer.so" // Arch
-                << "/usr/lib64/chromium/PepperFlash/libpepflashplayer.so"; // OpenSuSE
-    pluginPaths << ppapiPluginsPath() + QStringLiteral("/libpepflashplayer.so");
-#endif
-    std::string flash_version = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kPpapiFlashVersion);
-    for (auto it = pluginPaths.constBegin(); it != pluginPaths.constEnd(); ++it) {
-        if (!QFile::exists(*it))
-            continue;
-        plugins->push_back(CreatePepperFlashInfo(QtWebEngineCore::toFilePath(*it), flash_version));
-    }
-}
-
-void AddPepperFlashFromCommandLine(std::vector<content::PepperPluginInfo>* plugins)
-{
-    const base::CommandLine::StringType flash_path = base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(switches::kPpapiFlashPath);
-    if (flash_path.empty() || !QFile::exists(QtWebEngineCore::toQt(flash_path)))
-        return;
-
-    // Read pepper flash plugin version from command-line. (e.g. 16.0.0.235)
-    std::string flash_version = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kPpapiFlashVersion);
-    plugins->push_back(CreatePepperFlashInfo(base::FilePath(flash_path), flash_version));
 }
 
 void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins)
@@ -273,8 +178,6 @@ namespace QtWebEngineCore {
 void ContentClientQt::AddPepperPlugins(std::vector<content::PepperPluginInfo>* plugins)
 {
     ComputeBuiltInPlugins(plugins);
-    AddPepperFlashFromSystem(plugins);
-    AddPepperFlashFromCommandLine(plugins);
 }
 
 } // namespace QtWebEngineCore

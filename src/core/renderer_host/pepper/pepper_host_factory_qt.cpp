@@ -46,7 +46,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/renderer_host/pepper/pepper_flash_clipboard_message_filter.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "ppapi/host/message_filter_host.h"
 #include "ppapi/host/ppapi_host.h"
@@ -54,7 +53,6 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
-#include "pepper_flash_browser_host_qt.h"
 #include "pepper_isolated_file_system_message_filter.h"
 
 using ppapi::host::MessageFilterHost;
@@ -79,19 +77,6 @@ std::unique_ptr<ppapi::host::ResourceHost> PepperHostFactoryQt::CreateResourceHo
 
     if (!host_->IsValidInstance(instance))
         return nullptr;
-
-    // Flash interfaces.
-    if (host_->GetPpapiHost()->permissions().HasPermission(ppapi::PERMISSION_FLASH)) {
-        switch (message.type()) {
-        case PpapiHostMsg_Flash_Create::ID:
-            return base::WrapUnique(new PepperFlashBrowserHostQt(host_, instance, resource));
-        case PpapiHostMsg_FlashClipboard_Create::ID: {
-            scoped_refptr<ResourceMessageFilter> clipboard_filter(new PepperFlashClipboardMessageFilter);
-            return base::WrapUnique(new MessageFilterHost(
-                host_->GetPpapiHost(), instance, resource, clipboard_filter));
-        }
-        }
-    }
 
     // Permissions for the following interfaces will be checked at the
     // time of the corresponding instance's methods calls (because

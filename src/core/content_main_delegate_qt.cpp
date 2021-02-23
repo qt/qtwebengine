@@ -194,11 +194,11 @@ void ContentMainDelegateQt::PreSandboxStartup()
                          false //enable_tickcount
                         );
 
-    if (logging::GetMinLogLevel() >= logging::LOG_INFO) {
+    if (logging::GetMinLogLevel() >= logging::LOGGING_INFO) {
         if (parsedCommandLine->HasSwitch(switches::kLoggingLevel)) {
             std::string logLevelValue = parsedCommandLine->GetSwitchValueASCII(switches::kLoggingLevel);
             int level = 0;
-            if (base::StringToInt(logLevelValue, &level) && level >= logging::LOG_INFO && level < logging::LOG_NUM_SEVERITIES)
+            if (base::StringToInt(logLevelValue, &level) && level >= logging::LOGGING_INFO && level < logging::LOGGING_NUM_SEVERITIES)
                 logging::SetMinLogLevel(level);
         }
     }

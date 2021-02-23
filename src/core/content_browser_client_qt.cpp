@@ -44,6 +44,8 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
+#include "components/error_page/common/error.h"
+#include "components/error_page/common/localized_error.h"
 #include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/navigation_interception/navigation_params.h"
 #include "components/network_hints/browser/simple_network_hints_handler_impl.h"
@@ -165,11 +167,6 @@
 #include "extensions/extensions_browser_client_qt.h"
 #include "extensions/pdf_iframe_navigation_throttle_qt.h"
 #include "net/plugin_response_interceptor_url_loader_throttle.h"
-#endif
-
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-#include "media/mojo/interfaces/constants.mojom.h"
-#include "media/mojo/services/media_service_factory.h"
 #endif
 
 #include <QGuiApplication>
@@ -559,13 +556,6 @@ void ContentBrowserClientQt::ExposeInterfacesToRenderer(service_manager::BinderR
 void ContentBrowserClientQt::RunServiceInstance(const service_manager::Identity &identity,
                                                 mojo::PendingReceiver<service_manager::mojom::Service> *receiver)
 {
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-    if (identity.name() == media::mojom::kMediaServiceName) {
-        service_manager::Service::RunAsyncUntilTermination(media::CreateMediaService(std::move(*receiver)));
-        return;
-    }
-#endif
-
     content::ContentBrowserClient::RunServiceInstance(identity, receiver);
 }
 
@@ -674,26 +664,11 @@ bool ContentBrowserClientQt::AllowAppCache(const GURL &manifest_url,
 }
 
 content::AllowServiceWorkerResult
-ContentBrowserClientQt::AllowServiceWorkerOnIO(const GURL &scope,
-                                                    const GURL &site_for_cookies,
-                                                    const base::Optional<url::Origin> & /*top_frame_origin*/,
-                                                    const GURL & /*script_url*/,
-                                                    content::ResourceContext *context)
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    // FIXME: Chrome also checks if javascript is enabled here to check if has been disabled since the service worker
-    // was started.
-    return ProfileIODataQt::FromResourceContext(context)->canGetCookies(toQt(site_for_cookies), toQt(scope))
-         ? content::AllowServiceWorkerResult::Yes()
-         : content::AllowServiceWorkerResult::No();
-}
-
-content::AllowServiceWorkerResult
-ContentBrowserClientQt::AllowServiceWorkerOnUI(const GURL &scope,
-                                                    const GURL &site_for_cookies,
-                                                    const base::Optional<url::Origin> & /*top_frame_origin*/,
-                                                    const GURL & /*script_url*/,
-                                                    content::BrowserContext *context)
+ContentBrowserClientQt::AllowServiceWorker(const GURL &scope,
+                                           const GURL &site_for_cookies,
+                                           const base::Optional<url::Origin> & /*top_frame_origin*/,
+                                           const GURL & /*script_url*/,
+                                           content::BrowserContext *context)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (!context || context->ShutdownStarted())
@@ -905,6 +880,21 @@ bool ContentBrowserClientQt::IsHandledURL(const GURL &url)
     return url::IsHandledProtocol(url.scheme());
 }
 
+bool ContentBrowserClientQt::HasErrorPage(int httpStatusCode, content::WebContents *contents)
+{
+    if (contents) {
+        WebEngineSettings *settings = nullptr;
+        WebContentsDelegateQt *delegate =
+                    static_cast<WebContentsDelegateQt*>(contents->GetDelegate());
+        if (delegate)
+            settings = delegate->webEngineSettings();
+        if (settings && !settings->testAttribute(QWebEngineSettings::ErrorPageEnabled))
+            return false;
+    }
+    // Use an internal error page, if we have one for the status code.
+    return error_page::LocalizedError::HasStrings(error_page::Error::kHttpErrorDomain, httpStatusCode);
+}
+
 std::unique_ptr<content::LoginDelegate> ContentBrowserClientQt::CreateLoginDelegate(
         const net::AuthChallengeInfo &authInfo,
         content::WebContents *web_contents,
@@ -1044,11 +1034,9 @@ std::vector<base::FilePath> ContentBrowserClientQt::GetNetworkContextsParentDire
 }
 
 void ContentBrowserClientQt::RegisterNonNetworkNavigationURLLoaderFactories(int frame_tree_node_id,
-                                                                            base::UkmSourceId ukm_source_id,
-                                                                            NonNetworkURLLoaderFactoryDeprecatedMap *uniquely_owned_factories,
+                                                                            ukm::SourceIdObj ukm_source_id,
                                                                             NonNetworkURLLoaderFactoryMap *factories)
 {
-    Q_UNUSED(uniquely_owned_factories);
     content::WebContents *web_contents = content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
     Profile *profile = Profile::FromBrowserContext(web_contents->GetBrowserContext());
     ProfileAdapter *profileAdapter = static_cast<ProfileQt *>(profile)->profileAdapter();
@@ -1093,10 +1081,8 @@ void ContentBrowserClientQt::RegisterNonNetworkServiceWorkerUpdateURLLoaderFacto
 }
 
 void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int render_process_id, int render_frame_id,
-                                                                             NonNetworkURLLoaderFactoryDeprecatedMap *uniquely_owned_factories,
                                                                              NonNetworkURLLoaderFactoryMap *factories)
 {
-    Q_UNUSED(uniquely_owned_factories);
     content::RenderProcessHost *process_host = content::RenderProcessHost::FromID(render_process_id);
     Profile *profile = Profile::FromBrowserContext(process_host->GetBrowserContext());
     ProfileAdapter *profileAdapter = static_cast<ProfileQt *>(profile)->profileAdapter();
@@ -1203,7 +1189,7 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
         URLLoaderFactoryType type,
         const url::Origin &request_initiator,
         base::Optional<int64_t> navigation_id,
-        base::UkmSourceId ukm_source_id,
+        ukm::SourceIdObj ukm_source_id,
         mojo::PendingReceiver<network::mojom::URLLoaderFactory> *factory_receiver,
         mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient> *header_client,
         bool *bypass_redirect_checks,

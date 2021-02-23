@@ -585,7 +585,7 @@ void ProfileAdapter::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
     std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
     for (content::WebContentsImpl *web_contents : list) {
         if (web_contents->GetBrowserContext() == m_profile.data()) {
-            blink::mojom::RendererPreferences *rendererPrefs = web_contents->GetMutableRendererPrefs();
+            blink::RendererPreferences *rendererPrefs = web_contents->GetMutableRendererPrefs();
             rendererPrefs->accept_languages = http_accept_language;
             web_contents->SyncRendererPrefs();
         }

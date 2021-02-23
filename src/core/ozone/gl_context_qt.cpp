@@ -53,7 +53,7 @@
 QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
-GLContextHelper* GLContextHelper::contextHelper = 0;
+GLContextHelper* GLContextHelper::contextHelper = nullptr;
 
 namespace {
 
@@ -95,7 +95,7 @@ void GLContextHelper::initialize()
 void GLContextHelper::destroy()
 {
     delete contextHelper;
-    contextHelper = 0;
+    contextHelper = nullptr;
 }
 
 bool GLContextHelper::initializeContextOnBrowserThread(gl::GLContext* context, gl::GLSurface* surface, gl::GLContextAttribs attribs)

@@ -151,6 +151,8 @@ public:
     void DidStopFlinging() override;
     std::unique_ptr<content::SyntheticGestureTarget> CreateSyntheticGestureTarget() override;
     ui::Compositor *GetCompositor() override;
+    base::Optional<content::DisplayFeature> GetDisplayFeature() override;
+    void SetDisplayFeatureForTesting(const content::DisplayFeature*) override;
 #if defined(OS_MAC)
     void SetActive(bool active) override { QT_NOT_YET_IMPLEMENTED }
     void SpeakSelection() override { QT_NOT_YET_IMPLEMENTED }

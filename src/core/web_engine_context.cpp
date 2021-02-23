@@ -744,7 +744,7 @@ WebEngineContext::WebEngineContext()
 
     // Explicitly tell Chromium about default-on features we do not support
     disableFeatures.push_back(features::kBackgroundFetch.name);
-    disableFeatures.push_back(features::kSmsReceiver.name);
+    disableFeatures.push_back(features::kWebOTP.name);
     disableFeatures.push_back(features::kWebPayments.name);
     disableFeatures.push_back(features::kWebUsb.name);
     disableFeatures.push_back(media::kPictureInPicture.name);

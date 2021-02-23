@@ -238,8 +238,7 @@
             },
             "headers": [ "vpx/vpx_encoder.h", "vpx/vp8cx.h", "vpx/vpx_image.h" ],
             "sources": [
-                { "type": "pkgConfig", "args": "vpx" },
-                "-lvpx"
+                { "type": "pkgConfig", "args": "vpx >= 1.10.0" }
             ]
         }
     },
