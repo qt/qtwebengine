@@ -40,9 +40,9 @@ TestWebEngineView {
     property string viewType: ""
     property var loadRequestArray: []
 
-    onLoadingChanged: {
+    onLoadingChanged: function(load) {
         loadRequestArray.push({
-            "status": loadRequest.status,
+            "status": load.status,
         });
     }
 

@@ -37,10 +37,10 @@ TestWebEngineView {
 
     property var loadRequestArray: []
 
-    onLoadingChanged: {
+    onLoadingChanged: function(load) {
         loadRequestArray.push({
-            "status": loadRequest.status,
-            "url": loadRequest.url,
+            "status": load.status,
+            "url": load.url,
             "activeUrl": webEngineView.url
         });
     }

@@ -47,8 +47,8 @@ TestWebEngineView {
             return success
         }
 
-        errorPage.onLoadingChanged: {
-            errorPageLoadStatus = loadRequest.status
+        errorPage.onLoadingChanged: function(load) {
+            errorPageLoadStatus = load.status
         }
     }
 

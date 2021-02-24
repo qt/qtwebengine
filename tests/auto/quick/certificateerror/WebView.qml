@@ -47,12 +47,8 @@ Window {
     WebEngineView {
         id: view
         anchors.fill: parent
-        onLoadingChanged: function(request) {
-            if (request.status === WebEngineView.LoadSucceededStatus) {
-                handler.loadSuccess = true
-            } else if (request.status === WebEngineView.LoadFailedStatus) {
-                handler.loadSuccess = false
-            }
+        onLoadingChanged: function(load) {
+            handler.loadSuccess = load.status === WebEngineView.LoadSucceededStatus
         }
         onCertificateError: function(error) {
             handler.certificateError = error

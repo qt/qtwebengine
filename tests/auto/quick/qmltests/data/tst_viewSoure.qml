@@ -41,16 +41,16 @@ TestWebEngineView {
     property var loadRequestArray: []
 
     testSupport: WebEngineTestSupport {
-        errorPage.onLoadingChanged: {
+        errorPage.onLoadingChanged: function(load) {
             loadRequestArray.push({
-               "status": loadRequest.status,
+               "status": load.status,
             })
         }
     }
 
-    onLoadingChanged: {
+    onLoadingChanged: function(load) {
         loadRequestArray.push({
-            "status": loadRequest.status,
+            "status": load.status,
         });
     }
 

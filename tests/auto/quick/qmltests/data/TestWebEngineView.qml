@@ -106,8 +106,8 @@ WebEngineView {
     TestResult { id: testResult }
     TestCase { id: testCase }
 
-    onLoadingChanged: {
-        loadStatus = loadRequest.status
+    onLoadingChanged: function(load) {
+        loadStatus = load.status
     }
 
     onWindowCloseRequested: {

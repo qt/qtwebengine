@@ -126,8 +126,8 @@ TestWebEngineView {
         signalName: "loadFinished"
     }
 
-    onLoadingChanged: {
-        if (loadRequest.status == WebEngineLoadRequest.LoadSucceededStatus) {
+    onLoadingChanged: function(load) {
+        if (load.status == WebEngineView.LoadSucceededStatus) {
             loadFinished()
         }
     }

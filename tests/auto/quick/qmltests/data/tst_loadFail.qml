@@ -49,28 +49,28 @@ TestWebEngineView {
             return success
         }
 
-        errorPage.onLoadingChanged: {
-            errorPageLoadStatus = loadRequest.status
+        errorPage.onLoadingChanged: function(load) {
+            errorPageLoadStatus = load.status
 
             loadRequestArray.push({
-               "status": loadRequest.status,
-               "url": loadRequest.url.toString(),
-               "errorDomain": loadRequest.errorDomain,
+               "status": load.status,
+               "url": load.url.toString(),
+               "errorDomain": load.errorDomain,
                "isErrorPage": true
             })
         }
     }
 
-    onLoadingChanged: {
-        if (loadRequest.status == WebEngineView.LoadFailedStatus) {
-            test.compare(loadRequest.url, unavailableUrl)
-            test.compare(loadRequest.errorDomain, WebEngineView.InternalErrorDomain)
+    onLoadingChanged: function(load) {
+        if (load.status == WebEngineView.LoadFailedStatus) {
+            test.compare(load.url, unavailableUrl)
+            test.compare(load.errorDomain, WebEngineView.InternalErrorDomain)
         }
 
         loadRequestArray.push({
-           "status": loadRequest.status,
-           "url": loadRequest.url.toString(),
-           "errorDomain": loadRequest.errorDomain,
+           "status": load.status,
+           "url": load.url.toString(),
+           "errorDomain": load.errorDomain,
            "isErrorPage": false
         })
     }
