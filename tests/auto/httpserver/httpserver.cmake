@@ -28,8 +28,9 @@ if (NOT TARGET Test::HttpServer)
       Qt::Network
    )
 
+   get_filename_component(SERVER_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}" REALPATH)
    target_compile_definitions(httpserver PRIVATE
-       SERVER_SOURCE_DIR="${CMAKE_CURRENT_LIST_DIR}"
+       SERVER_SOURCE_DIR="${SERVER_SOURCE_DIR}"
    )
 
    set_target_properties(httpserver PROPERTIES

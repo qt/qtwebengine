@@ -9,7 +9,8 @@ qt_internal_add_test(tst_proxypac_file
 )
 
 if(WIN32)
-    set(fileEnvArg "--proxy-pac-url=\"file:///${CMAKE_CURRENT_LIST_DIR}/proxy.pac\"")
+    get_filename_component(SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}" REALPATH)
+    set(fileEnvArg "--proxy-pac-url=\"file:///${SOURCE_DIR}/proxy.pac\"")
 elseif(boot2qt)
     set(fileEnvArg "--single-process --no-sandbox --proxy-pac-url=\"file://${CMAKE_CURRENT_LIST_DIR}/proxy.pac\"")
 else()

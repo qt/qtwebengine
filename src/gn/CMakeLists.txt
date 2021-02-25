@@ -8,8 +8,8 @@ project(Gn
 )
 
 set(GN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/gn)
-set(GN_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gn)
-set(GN_EXECUTABLE ${GN_BINARY_DIR}/gn)
+set(GN_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
+set(GN_EXECUTABLE gn)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../../cmake")
 
 find_package(Python2 REQUIRED)
@@ -21,16 +21,17 @@ add_custom_command(
     WORKING_DIRECTORY ${GN_BINARY_DIR}
     COMMAND ${Python2_EXECUTABLE} ${GN_SOURCE_DIR}/build/gen.py
         --no-last-commit-position
-        --out-path .
+        --out-path ${GN_BINARY_DIR}/$<CONFIG>
         --cc ${CMAKE_C_COMPILER}
         --cxx ${CMAKE_CXX_COMPILER}
         --ld ${CMAKE_CXX_COMPILER}
-    COMMAND Ninja::ninja gn
+    COMMAND Ninja::ninja -C ${GN_BINARY_DIR}/$<CONFIG> ${GN_EXECUTABLE}
     VERBATIM
     USES_TERMINAL
     COMMAND_EXPAND_LISTS
 )
-add_custom_target(gn ALL DEPENDS ${GN_EXECUTABLE})
-install(FILES ${GN_EXECUTABLE}
+add_custom_target(Gn ALL DEPENDS ${GN_EXECUTABLE})
+install(FILES ${GN_BINARY_DIR}/$<CONFIG>/${GN_EXECUTABLE}
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-        DESTINATION bin)
+        DESTINATION bin
+)

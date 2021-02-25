@@ -66,18 +66,18 @@ endfunction()
 function(make_config_for_gn target configFileName)
     if(NOT DEFINED WEBENGINE_REPO_BUILD)
         file(GENERATE
-            OUTPUT ${configFileName}.cxx.cmake
+            OUTPUT $<CONFIG>/${configFileName}.cxx.cmake
             CONTENT [[
-                set(GN_INCLUDES_IN $<TARGET_PROPERTY:INCLUDE_DIRECTORIES>)
-                set(GN_DEFINES_IN $<TARGET_PROPERTY:COMPILE_DEFINITIONS>)
-                set(GN_LIBS_IN $<TARGET_PROPERTY:LINK_LIBRARIES>)
-                set(GN_LINK_OPTIONS_IN $<TARGET_PROPERTY:LINK_OPTIONS>)
-                set(GN_CXX_COMPILE_OPTIONS_IN $<TARGET_PROPERTY:COMPILE_OPTIONS>)]]
+                set(GN_INCLUDES $<TARGET_PROPERTY:INCLUDE_DIRECTORIES>)
+                set(GN_DEFINES $<TARGET_PROPERTY:COMPILE_DEFINITIONS>)
+                set(GN_LIBS $<TARGET_PROPERTY:LINK_LIBRARIES>)
+                set(GN_LINK_OPTIONS $<TARGET_PROPERTY:LINK_OPTIONS>)
+                set(GN_CXX_COMPILE_OPTIONS $<TARGET_PROPERTY:COMPILE_OPTIONS>)]]
             CONDITION $<COMPILE_LANGUAGE:CXX>
             TARGET ${target})
         file(GENERATE
-            OUTPUT ${configFileName}.c.cmake
-            CONTENT [[ set(GN_C_COMPILE_OPTIONS_IN $<TARGET_PROPERTY:COMPILE_OPTIONS>)]]
+            OUTPUT $<CONFIG>/${configFileName}.c.cmake
+            CONTENT [[ set(GN_C_COMPILE_OPTIONS $<TARGET_PROPERTY:COMPILE_OPTIONS>)]]
             CONDITION $<COMPILE_LANGUAGE:C>
             TARGET ${target})
     endif()
@@ -86,6 +86,151 @@ endfunction()
 function(make_install_only target)
     if(NOT DEFINED WEBENGINE_REPO_BUILD)
         set_target_properties(${target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+    endif()
+endfunction()
+
+function(add_gn_target target)
+    add_custom_target(${target})
+    list(REMOVE_ITEM ARGN ${target})
+    set_target_properties(${target} PROPERTIES
+        ELEMENTS "${ARGN}"
+        PREFIX "GN")
+endfunction()
+
+function(read_gn_target target filePath)
+    include(${filePath})
+    applyToGnTarget(${target})
+endfunction()
+
+macro(applyToGnTarget target)
+    get_target_property(elementList ${target} ELEMENTS)
+    get_target_property(prefix ${target} PREFIX)
+    foreach(element IN LISTS elementList)
+        if(${prefix}_${element})
+             message(DEBUG "${prefix}_${element} = ${${prefix}_${element}}")
+            set_property(TARGET ${target} APPEND PROPERTY ${prefix}_${element} ${${prefix}_${element}})
+        endif()
+    endforeach()
+endmacro()
+
+function(extend_gn_target target)
+    get_target_property(elements ${target} ELEMENTS)
+    qt_parse_all_arguments(GN "extend_gn_target" "" "" "CONDITION;${elements}" "${ARGN}")
+    if ("x${GN_CONDITION}" STREQUAL x)
+        set(GN_CONDITION ON)
+    endif()
+    qt_evaluate_config_expression(result ${GN_CONDITION})
+    if(${result})
+        message(DEBUG "extend_gn_target(${target} CONDITION ${GN_CONDITION} ...): Evaluated")
+        applyToGnTarget(${target})
+    endif()
+endfunction()
+
+function(extend_gn_list outList)
+    qt_parse_all_arguments(GN "extend_gn_list" "" "" "ARGS;CONDITION" "${ARGN}")
+    if ("x${GN_CONDITION}" STREQUAL x)
+        set(GN_CONDITION ON)
+    endif()
+    qt_evaluate_config_expression(result ${GN_CONDITION})
+    if(${result})
+        set(value "true")
+    else()
+        set(value "false")
+    endif()
+    message(DEBUG "extend_gn_list(${outList} ${GN_ARGS} CONDITION ${GN_CONDITION} ...): Evaluated to ${value}")
+    foreach(gnArg ${GN_ARGS})
+        set(${outList} "${${outList}}" "${gnArg}=${value}")
+    endforeach()
+    set(${outList} "${${outList}}" PARENT_SCOPE)
+endfunction()
+
+function(configure_gn_target target configType inFilePath outFilePath)
+
+    # GN_CONFIG
+    string(TOUPPER ${configType} GN_CONFIG)
+
+    # GN_SOURCES GN_HEADERS
+    get_target_property(gnSources ${target} GN_SOURCES)
+    foreach(gnSourceFile ${gnSources})
+        get_filename_component(gnSourcePath ${gnSourceFile} REALPATH)
+        list(APPEND sourceList \"${gnSourcePath}\")
+    endforeach()
+    set(GN_HEADERS ${sourceList})
+    set(GN_SOURCES ${sourceList})
+    list(FILTER GN_HEADERS INCLUDE REGEX "^.+\\.h\"$")
+    list(FILTER GN_SOURCES EXCLUDE REGEX "^.+\\.h\"$")
+    string(REPLACE ";" ",\n  " GN_HEADERS "${GN_HEADERS}")
+    string(REPLACE ";" ",\n  " GN_SOURCES "${GN_SOURCES}")
+
+    # GN_DEFINES
+    get_target_property(gnDefines ${target} GN_DEFINES)
+    list(REMOVE_DUPLICATES gnDefines)
+    foreach(gnDefine ${gnDefines})
+        list(APPEND GN_ARGS_DEFINES \"-D${gnDefine}\")
+        list(APPEND GN_DEFINES \"${gnDefine}\")
+    endforeach()
+    string(REPLACE ";" ",\n  " GN_ARGS_DEFINES "${GN_ARGS_DEFINES}")
+    string(REPLACE ";" ",\n  " GN_DEFINES "${GN_DEFINES}")
+
+    # GN_INCLUDES
+    get_target_property(gnIncludes ${target} GN_INCLUDES)
+    list(REMOVE_DUPLICATES gnIncludes)
+    foreach(gnInclude ${gnIncludes})
+        get_filename_component(gnInclude ${gnInclude} REALPATH)
+        list(APPEND GN_ARGS_INCLUDES \"-I${gnInclude}\")
+        list(APPEND GN_INCLUDE_DIRS \"${gnInclude}\")
+    endforeach()
+    string(REPLACE ";" ",\n  " GN_ARGS_INCLUDES "${GN_ARGS_INCLUDES}")
+    string(REPLACE ";" ",\n  " GN_INCLUDE_DIRS "${GN_INCLUDE_DIRS}")
+
+    # MOC
+    get_target_property(GN_MOC_BIN_IN Qt6::moc IMPORTED_LOCATION)
+    set(GN_ARGS_MOC_BIN \"${GN_MOC_BIN_IN}\")
+
+    # GN_CFLAGS_CC
+    get_target_property(gnCxxCompileOptions ${target} GN_CXX_COMPILE_OPTIONS)
+    foreach(gnCxxCompileOption ${gnCxxCompileOptions})
+        list(APPEND GN_CFLAGS_CC \"${gnCxxCompileOption}\")
+    endforeach()
+    list(REMOVE_DUPLICATES GN_CFLAGS_CC)
+    string(REPLACE ";" ",\n  " GN_CFLAGS_CC "${GN_CFLAGS_CC}")
+
+    # GN_CFLAGS_C
+    get_target_property(gnCCompileOptions ${target} GN_C_COMPILE_OPTIONS)
+    foreach(gnCCompileOption ${gnCCompileOptions})
+        list(APPEND GN_CFLAGS_C \"${gnCCompileOption}\")
+    endforeach()
+    list(REMOVE_DUPLICATES GN_CFLAGS_C)
+    string(REPLACE ";" ",\n  " GN_CFLAGS_C "${GN_CFLAGS_C}")
+    configure_file(${inFilePath} ${outFilePath} @ONLY)
+endfunction()
+
+# we had no qtsync on headers during configure, so take current interface from expression
+# generator from our WebEngieCore target so we can apply it for our buildGn target
+function(resolve_target_includes resultVar target)
+    get_target_property(includeDirs ${target} INCLUDE_DIRECTORIES)
+    foreach(includeDir  ${includeDirs})
+        if (includeDir MATCHES "\\$<BUILD_INTERFACE:([^,>]+)>")
+           list(APPEND includeDirList ${CMAKE_MATCH_1})
+        endif()
+    endforeach()
+    set(${resultVar} ${includeDirList} PARENT_SCOPE)
+endfunction()
+
+function(get_install_config result)
+    if(DEFINED CMAKE_BUILD_TYPE)
+        set(${result} ${CMAKE_BUILD_TYPE} PARENT_SCOPE)
+    elseif(DEFINED CMAKE_CONFIGURATION_TYPES)
+        if("Release" IN_LIST CMAKE_CONFIGURATION_TYPES)
+            set(${result} "Release" PARENT_SCOPE)
+        elseif("RelWithDebInfo" IN_LIST CMAKE_CONFIGURATION_TYPES)
+            set(${result} "RelWithDebInfo" PARENT_SCOPE)
+        elseif("Debug" IN_LIST CMAKE_CONFIGURATION_TYPE)
+            set(${result} "Debug" PARENT_SCOPE)
+        else()
+            # assume MinSizeRel ?
+            set(${result} "${CMAKE_CONFIGURATION_TYPES}" PARENT_SCOPE)
+        endif()
     endif()
 endfunction()
 

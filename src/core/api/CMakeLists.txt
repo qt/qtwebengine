@@ -1,5 +1,5 @@
 if(NOT DEFINED WEBENGINE_ROOT_SOURCE_DIR)
-    get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+    get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../../.." REALPATH)
 endif()
 find_package(Qt6 ${PROJECT_VERSION} REQUIRED COMPONENTS Gui Network OpenGL Quick)
 find_package(Qt6 ${PROJECT_VERSION} QUIET OPTIONAL_COMPONENTS PrintSupport WebChannel)
