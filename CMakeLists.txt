@@ -163,10 +163,12 @@ if(NOT Ninja_FOUND)
     externalproject_add_stepdependencies(gn install ninja)
 endif()
 
-# install resources (again), coin calls install with DESTDIR
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/translations/qtwebengine_locales
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/translations
-)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/resources
-    DESTINATION ${CMAKE_INSTALL_PREFIX}
-)
+if(NOT QT_FEATURE_framework)
+    # install resources (again), coin calls install with DESTDIR
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/translations/qtwebengine_locales
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/translations
+    )
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/resources
+        DESTINATION ${CMAKE_INSTALL_PREFIX}
+    )
+endif()

@@ -11,7 +11,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${WEBENGINE_ROOT_SOURCE_DIR}/cmake")
 set(buildDir "${CMAKE_CURRENT_BINARY_DIR}")
 
 include(${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Functions.cmake)
-
 assertRunAsTopLevelBuild(TRUE)
 
 add_subdirectory(api)
@@ -48,6 +47,7 @@ foreach(config ${configs})
     add_gn_target(${buildGn} SOURCES DEFINES CXX_COMPILE_OPTIONS C_COMPILE_OPTIONS INCLUDES)
 
     resolve_target_includes(gnIncludes WebEngineCore)
+    get_forward_declaration_macro(forwardDeclarationMacro)
 
     extend_gn_target(${buildGn}
         INCLUDES
@@ -58,6 +58,7 @@ foreach(config ${configs})
             QTWEBENGINECORE_VERSION_STR=\\\\\"${QT_REPO_MODULE_VERSION}\\\\\"
             QTWEBENGINEPROCESS_NAME=\\\\\"${qtWebEngineProcessName}\\\\\"
             BUILDING_CHROMIUM
+            ${forwardDeclarationMacro}
         SOURCES
             accessibility_activation_observer.cpp accessibility_activation_observer.h
             accessibility_tree_formatter_qt.cpp
@@ -462,6 +463,22 @@ foreach(config ${configs})
         )
     endif()
 
+    if(MACOS)
+        get_darwin_sdk_version(macSdkVersion)
+        get_filename_component(clangBasePath ${CMAKE_OBJCXX_COMPILER} DIRECTORY)
+        get_filename_component(clangBasePath ${clangBasePath} DIRECTORY)
+        list(APPEND gnArgArg
+            use_sysroot=false
+            use_system_xcode=true
+            clang_base_path="${clangBasePath}"
+            clang_use_chrome_plugins=false
+            mac_deployment_target="${CMAKE_OSX_DEPLOYMENT_TARGET}"
+            mac_sdk_min="${macSdkVersion}"
+            use_external_popup_menu=false
+            angle_enable_vulkan=false
+       )
+    endif()
+
     list(JOIN gnArgArg " " gnArgArg)
     list(APPEND gnArg "--args=${gnArgArg}")
 
@@ -559,28 +576,56 @@ endforeach()
 
 get_filename_component(icuFiles ${buildDir}/${config}/icudtl.dat REALPATH)
 
-install(FILES ${localeFiles}
+if(QT_FEATURE_framework)
+    set(allResourceFiles ${localeFiles} ${resourceFiles} ${icuFiles})
+    target_sources(WebEngineCore PRIVATE ${icuFiles} ${resourceFiles} ${localeFiles})
+
+    set_source_files_properties(${localeFiles}
+        TARGET_DIRECTORY WebEngineCore
+        PROPERTIES MACOSX_PACKAGE_LOCATION Resources/qtwebengine_locales
+        GENERATED TRUE
+    )
+    set_source_files_properties(${resourceFiles}
+        TARGET_DIRECTORY WebEngineCore
+        PROPERTIES MACOSX_PACKAGE_LOCATION Resources
+        GENERATED TRUE
+    )
+    set_source_files_properties(${icuFiles}
+        TARGET_DIRECTORY WebEngineCore
+        PROPERTIES MACOSX_PACKAGE_LOCATION Resources
+        GENERATED TRUE
+    )
+    add_custom_command(OUTPUT ${localeFiles} ${resourceFiles} ${icuFiles}
+        DEPENDS QtWebEngineCore.stamp
+    )
+    add_custom_target(generate_resources_${config}
+        DEPENDS ${localeFiles} ${resourcesFiles} ${icuFiles}
+    )
+else()
+    install(FILES ${localeFiles}
         DESTINATION translations/qtwebengine_locales
         CONFIGURATIONS ${config}
-)
-install(FILES ${resourceFiles}
+    )
+    install(FILES ${resourceFiles}
         DESTINATION resources
         CONFIGURATIONS ${config}
-)
-install(FILES ${icuFiles}
+    )
+    install(FILES ${icuFiles}
         DESTINATION resources
         CONFIGURATIONS ${config}
-)
+    )
 # install (again) for superbuild
-install(FILES ${localeFiles}
+    install(FILES ${localeFiles}
         DESTINATION ${WEBENGINE_ROOT_BUILD_DIR}/translations/qtwebengine_locales
         CONFIGURATIONS ${config}
-)
-install(FILES ${resourceFiles}
+    )
+    install(FILES ${resourceFiles}
         DESTINATION ${WEBENGINE_ROOT_BUILD_DIR}/resources
         CONFIGURATIONS ${config}
-)
-install(FILES ${icuFiles}
+    )
+    install(FILES ${icuFiles}
         DESTINATION ${WEBENGINE_ROOT_BUILD_DIR}/resources
         CONFIGURATIONS ${config}
-)
+    )
+endif()
+

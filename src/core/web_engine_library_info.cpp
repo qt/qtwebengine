@@ -80,7 +80,7 @@ QString fallbackDir() {
 #if defined(OS_MAC) && defined(QT_MAC_FRAMEWORK_BUILD)
 static inline CFBundleRef frameworkBundle()
 {
-    return CFBundleGetBundleWithIdentifier(CFSTR("org.qt-project.Qt.QtWebEngineCore"));
+    return CFBundleGetBundleWithIdentifier(CFSTR("org.qt-project.QtWebEngineCore"));
 }
 
 static QString getPath(CFBundleRef frameworkBundle)

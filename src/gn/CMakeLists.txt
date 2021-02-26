@@ -25,6 +25,8 @@ add_custom_command(
         --cc ${CMAKE_C_COMPILER}
         --cxx ${CMAKE_CXX_COMPILER}
         --ld ${CMAKE_CXX_COMPILER}
+        $<$<PLATFORM_ID:Darwin>:--isysroot>
+        $<$<PLATFORM_ID:Darwin>:${CMAKE_OSX_SYSROOT}>
     COMMAND Ninja::ninja -C ${GN_BINARY_DIR}/$<CONFIG> ${GN_EXECUTABLE}
     VERBATIM
     USES_TERMINAL
