@@ -166,6 +166,9 @@ public:
     bool AllowWorkerIndexedDB(const GURL &url,
                               content::BrowserContext *context,
                               const std::vector<content::GlobalFrameRoutingId> &render_frames) override;
+    AllowWebBluetoothResult AllowWebBluetooth(content::BrowserContext *browser_context,
+                                              const url::Origin &requesting_origin,
+                                              const url::Origin &embedding_origin) override;
 
 #if QT_CONFIG(webengine_geolocation)
     std::unique_ptr<device::LocationProvider> OverrideSystemLocationProvider() override;

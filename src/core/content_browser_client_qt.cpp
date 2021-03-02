@@ -1338,4 +1338,13 @@ content::WebContentsViewDelegate *ContentBrowserClientQt::GetWebContentsViewDele
      return nullptr;
 }
 
+content::ContentBrowserClient::AllowWebBluetoothResult
+ContentBrowserClientQt::AllowWebBluetooth(content::BrowserContext *browser_context,
+                                          const url::Origin &requesting_origin,
+                                          const url::Origin &embedding_origin)
+{
+    DCHECK(browser_context);
+    return content::ContentBrowserClient::AllowWebBluetoothResult::BLOCK_GLOBALLY_DISABLED;
+}
+
 } // namespace QtWebEngineCore
