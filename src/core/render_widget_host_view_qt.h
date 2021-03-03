@@ -159,13 +159,15 @@ public:
     viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(const cc::RenderFrameMetadata &metadata) override;
     void OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata);
 
+    // Overridden from RenderWidgetHostViewBase:
     void GetScreenInfo(blink::ScreenInfo *results) override;
     gfx::Rect GetBoundsInRootWindow() override;
     void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch,
                                 blink::mojom::InputEventResultState ack_result) override;
     viz::SurfaceId GetCurrentSurfaceId() const override;
     const viz::FrameSinkId &GetFrameSinkId() const override;
-    const viz::LocalSurfaceId &GetLocalSurfaceId() const;
+    const viz::LocalSurfaceId &GetLocalSurfaceId() const override;
+    void FocusedNodeChanged(bool is_editable_node, const gfx::Rect& node_bounds_in_screen) override;
 
     void TakeFallbackContentFrom(content::RenderWidgetHostView *view) override;
     void EnsureSurfaceSynchronizedForWebTest() override;

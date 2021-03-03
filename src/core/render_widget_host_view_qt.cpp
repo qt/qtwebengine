@@ -782,8 +782,8 @@ void RenderWidgetHostViewQt::OnUpdateTextInputStateCalled(content::TextInputMana
 
     const ui::mojom::TextInputState *state = text_input_manager_->GetTextInputState();
     if (!state) {
-        m_delegate->inputMethodStateChanged(false /*editorVisible*/, false /*passwordInput*/);
-        m_delegate->setInputMethodHints(Qt::ImhNone);
+        // Do not reset input method state here because an editable node might be still focused and
+        // this would hide the virtual keyboard if a child of the focused node is removed.
         return;
     }
 
@@ -1865,6 +1865,15 @@ const viz::FrameSinkId &RenderWidgetHostViewQt::GetFrameSinkId() const
 const viz::LocalSurfaceId &RenderWidgetHostViewQt::GetLocalSurfaceId() const
 {
     return m_dfhLocalSurfaceIdAllocator.GetCurrentLocalSurfaceId();
+}
+
+void RenderWidgetHostViewQt::FocusedNodeChanged(bool is_editable_node, const gfx::Rect& node_bounds_in_screen)
+{
+    Q_UNUSED(node_bounds_in_screen);
+    if (!is_editable_node) {
+        m_delegate->inputMethodStateChanged(false /*editorVisible*/, false /*passwordInput*/);
+        m_delegate->setInputMethodHints(Qt::ImhNone);
+    }
 }
 
 void RenderWidgetHostViewQt::TakeFallbackContentFrom(content::RenderWidgetHostView *view)
