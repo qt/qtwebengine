@@ -22,6 +22,7 @@ repack("qtwebengine_repack_resources") {
   sources = [
     "$root_gen_dir/qtwebengine/qt_webengine_resources.pak",
     "$root_gen_dir/chrome/common_resources.pak",
+    "$root_gen_dir/chrome/net_internals_resources.pak",
     "$root_gen_dir/chrome/quota_internals_resources.pak",
     "$root_gen_dir/components/components_resources.pak",
     "$root_gen_dir/components/dev_ui_components_resources.pak",
@@ -37,6 +38,7 @@ repack("qtwebengine_repack_resources") {
   output = "$root_out_dir/qtwebengine_resources.pak"
   deps = [
      "//qtwebengine/browser:qt_webengine_resources",
+     "//chrome/browser/resources/net_internals:net_internals_resources",
      "//chrome/browser/resources/quota_internals:quota_internals_resources",
      "//chrome/common:resources_grit",
      "//components/resources:components_resources_grit",

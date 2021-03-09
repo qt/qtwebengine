@@ -51,6 +51,7 @@
 #include "chrome/browser/accessibility/accessibility_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
+#include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_ui.h"
 #include "chrome/browser/ui/webui/user_actions/user_actions_ui.h"
 #include "chrome/common/url_constants.h"
@@ -116,6 +117,8 @@ std::unique_ptr<WebUIController> NewWebUI(WebUI *web_ui, const GURL & /*url*/)
 // with it.
 WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, const GURL &url)
 {
+    Q_UNUSED(web_ui);
+    Q_UNUSED(profile);
     // This will get called a lot to check all URLs, so do a quick check of other
     // schemes to filter out most URLs.
     if (!content::HasWebUIScheme(url))
@@ -123,6 +126,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
 
     // We must compare hosts only since some of the Web UIs append extra stuff
     // after the host name.
+    if (url.host() == chrome::kChromeUINetInternalsHost)
+        return &NewWebUI<NetInternalsUI>;
+
     if (url.host() == chrome::kChromeUIQuotaInternalsHost)
         return &NewWebUI<QuotaInternalsUI>;
 

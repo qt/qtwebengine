@@ -3137,7 +3137,7 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::newRow("media-engagement") << QUrl("chrome://media-engagement") << false;
     QTest::newRow("media-internals") << QUrl("chrome://media-internals") << true;
     QTest::newRow("net-export") << QUrl("chrome://net-export") << false;
-    QTest::newRow("net-internals") << QUrl("chrome://net-internals") << false;
+    QTest::newRow("net-internals") << QUrl("chrome://net-internals") << true;
     QTest::newRow("network-error") << QUrl("chrome://network-error") << false;
     QTest::newRow("network-errors") << QUrl("chrome://network-errors") << true;
     QTest::newRow("ntp-tiles-internals") << QUrl("chrome://ntp-tiles-internals") << false;
