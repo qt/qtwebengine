@@ -123,6 +123,7 @@ private Q_SLOTS:
     void doNotBreakLayout();
 
     void changeLocale();
+    void mixLangLocale();
     void inputMethodsTextFormat_data();
     void inputMethodsTextFormat();
     void keyboardEvents();
@@ -1208,6 +1209,29 @@ void tst_QWebEngineView::changeLocale()
     errorLines = toPlainTextSync(viewDE.page()).split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
 #endif
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
+}
+
+void tst_QWebEngineView::mixLangLocale()
+{
+    for (QString locale : { "en_DK", "de_CH", "eu_ES" }) {
+        QLocale::setDefault(locale);
+        QWebEngineView view;
+        QSignalSpy loadSpy(&view, &QWebEngineView::loadFinished);
+
+        bool terminated = false;
+        auto sc = connect(view.page(), &QWebEnginePage::renderProcessTerminated, [&] () { terminated = true; });
+
+        view.load(QUrl("qrc:///resources/dummy.html"));
+        QTRY_VERIFY(terminated || loadSpy.count() == 1);
+
+        QVERIFY2(!terminated,
+            qPrintable(QString("Locale [%1] terminated: %2, loaded: %3").arg(locale).arg(terminated).arg(loadSpy.count())));
+        QVERIFY(loadSpy.first().first().toBool());
+
+        QString content = toPlainTextSync(view.page());
+        QVERIFY2(!content.isEmpty() && content.contains("test content"), qPrintable(content));
+    }
+    QLocale::setDefault(QLocale("en"));
 }
 
 void tst_QWebEngineView::inputMethodsTextFormat_data()

@@ -471,7 +471,12 @@ std::unique_ptr<net::ClientCertStore> ContentBrowserClientQt::CreateClientCertSt
 
 std::string ContentBrowserClientQt::GetApplicationLocale()
 {
-    return WebEngineLibraryInfo::getApplicationLocale();
+    std::string bcp47Name = QLocale().bcp47Name().toStdString();
+    if (m_cachedQtLocale != bcp47Name) {
+        m_cachedQtLocale = bcp47Name;
+        m_appLocale = WebEngineLibraryInfo::getApplicationLocale();
+    }
+    return m_appLocale;
 }
 
 std::string ContentBrowserClientQt::GetAcceptLangs(content::BrowserContext *context)
