@@ -47,9 +47,10 @@
 
 #include <memory>
 #include "components/pdf/browser/pdf_web_contents_helper.h"
+#include "extension_web_contents_observer_qt.h"
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
-#include "extension_web_contents_observer_qt.h"
+#include "mime_handler_view_guest_delegate_qt.h"
 #include "printing/print_view_manager_qt.h"
 
 namespace extensions {
@@ -67,12 +68,12 @@ AppViewGuestDelegate *ExtensionsAPIClientQt::CreateAppViewGuestDelegate() const
 
 std::unique_ptr<guest_view::GuestViewManagerDelegate> ExtensionsAPIClientQt::CreateGuestViewManagerDelegate(content::BrowserContext *context) const
 {
-    return std::make_unique<guest_view::GuestViewManagerDelegate>();
+    return std::make_unique<extensions::ExtensionsGuestViewManagerDelegate>(context);
 }
 
 std::unique_ptr<MimeHandlerViewGuestDelegate> ExtensionsAPIClientQt::CreateMimeHandlerViewGuestDelegate(MimeHandlerViewGuest *guest) const
 {
-    return std::make_unique<MimeHandlerViewGuestDelegate>();
+    return std::make_unique<MimeHandlerViewGuestDelegateQt>(guest);
 }
 
 void ExtensionsAPIClientQt::AttachWebContentsHelpers(content::WebContents *web_contents) const

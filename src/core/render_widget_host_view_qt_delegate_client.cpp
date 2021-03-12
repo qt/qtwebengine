@@ -47,6 +47,7 @@
 #include "web_event_factory.h"
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 
 #include <QEvent>
@@ -94,7 +95,7 @@ QList<TouchPoint> RenderWidgetHostViewQtDelegateClient::mapTouchPointIds(const Q
                  [] (QSet<int> s, const TouchPoint &p) { s.insert(p.second.id()); return s; }).size());
 
     for (auto &&point : qAsConst(input))
-        if (point.state() == Qt::TouchPointReleased)
+        if (point.state() == QEventPoint::Released)
             m_touchIdMapping.remove(point.id());
 
     return output;
@@ -117,8 +118,8 @@ public:
         // index is only valid for ACTION_DOWN and ACTION_UP and should correspond to the point causing it
         // see blink_event_util.cc:ToWebTouchPointState for details
         Q_ASSERT_X((action != Action::POINTER_DOWN && action != Action::POINTER_UP && index == -1)
-                || (action == Action::POINTER_DOWN && index >= 0 && touchPoint(index).state() == Qt::TouchPointPressed)
-                || (action == Action::POINTER_UP && index >= 0 && touchPoint(index).state() == Qt::TouchPointReleased),
+                || (action == Action::POINTER_DOWN && index >= 0 && touchPoint(index).state() == QEventPoint::Pressed)
+                || (action == Action::POINTER_UP && index >= 0 && touchPoint(index).state() == QEventPoint::Released),
                 "MotionEventQt", qPrintable(QString("action: %1, index: %2, state: %3").arg(int(action)).arg(index).arg(touchPoint(index).state())));
     }
 
@@ -350,7 +351,10 @@ bool RenderWidgetHostViewQtDelegateClient::forwardEvent(QEvent *event)
             return false;
 #endif
     case QEvent::HoverLeave:
-        m_rwhv->host()->ForwardMouseEvent(WebEventFactory::toWebMouseEvent(event));
+        if (m_rwhv->host()->delegate() && m_rwhv->host()->delegate()->GetInputEventRouter()) {
+            auto webEvent = WebEventFactory::toWebMouseEvent(event);
+            m_rwhv->host()->delegate()->GetInputEventRouter()->RouteMouseEvent(m_rwhv, &webEvent, ui::LatencyInfo());
+        }
         break;
     default:
         return false;
@@ -476,7 +480,8 @@ void RenderWidgetHostViewQtDelegateClient::handlePointerEvent(T *event)
 #endif
     }
 
-    m_rwhv->host()->ForwardMouseEvent(webEvent);
+    if (m_rwhv->host()->delegate() && m_rwhv->host()->delegate()->GetInputEventRouter())
+        m_rwhv->host()->delegate()->GetInputEventRouter()->RouteMouseEvent(m_rwhv, &webEvent, ui::LatencyInfo());
 }
 
 void RenderWidgetHostViewQtDelegateClient::handleMouseEvent(QMouseEvent *event)
@@ -535,14 +540,14 @@ void RenderWidgetHostViewQtDelegateClient::handleKeyEvent(QKeyEvent *event)
         std::vector<blink::mojom::EditCommandPtr> commands;
         commands.emplace_back(blink::mojom::EditCommand::New(m_editCommand, ""));
         m_editCommand.clear();
-        m_rwhv->host()->ForwardKeyboardEventWithCommands(webEvent, latency, std::move(commands), nullptr);
+        m_rwhv->GetFocusedWidget()->ForwardKeyboardEventWithCommands(webEvent, latency, std::move(commands), nullptr);
         return;
     }
 
     bool keyDownTextInsertion =
             webEvent.GetType() == blink::WebInputEvent::Type::kRawKeyDown && webEvent.text[0];
     webEvent.skip_in_browser = keyDownTextInsertion;
-    m_rwhv->host()->ForwardKeyboardEvent(webEvent);
+    m_rwhv->GetFocusedWidget()->ForwardKeyboardEvent(webEvent);
 
     if (keyDownTextInsertion) {
         // Blink won't consume the RawKeyDown, but rather the Char event in this case.
@@ -550,7 +555,7 @@ void RenderWidgetHostViewQtDelegateClient::handleKeyEvent(QKeyEvent *event)
         // The same os_event will be set on both NativeWebKeyboardEvents.
         webEvent.skip_in_browser = false;
         webEvent.SetType(blink::WebInputEvent::Type::kChar);
-        m_rwhv->host()->ForwardKeyboardEvent(webEvent);
+        m_rwhv->GetFocusedWidget()->ForwardKeyboardEvent(webEvent);
     }
 }
 
@@ -733,14 +738,22 @@ void RenderWidgetHostViewQtDelegateClient::handleGestureEvent(QNativeGestureEven
     const Qt::NativeGestureType type = event->gestureType();
     // These are the only supported gestures by Chromium so far.
     if (type == Qt::ZoomNativeGesture || type == Qt::SmartZoomNativeGesture) {
-        m_rwhv->host()->ForwardGestureEvent(WebEventFactory::toWebGestureEvent(event));
+        auto *hostDelegate = m_rwhv->host()->delegate();
+        if (hostDelegate && hostDelegate->GetInputEventRouter()) {
+            auto webEvent = WebEventFactory::toWebGestureEvent(event);
+            hostDelegate->GetInputEventRouter()->RouteGestureEvent(m_rwhv, &webEvent, ui::LatencyInfo());
+        }
     }
 }
 #endif
 
 void RenderWidgetHostViewQtDelegateClient::handleHoverEvent(QHoverEvent *event)
 {
-    m_rwhv->host()->ForwardMouseEvent(WebEventFactory::toWebMouseEvent(event));
+    auto *hostDelegate = m_rwhv->host()->delegate();
+    if (hostDelegate && hostDelegate->GetInputEventRouter()) {
+        auto webEvent = WebEventFactory::toWebMouseEvent(event);
+        hostDelegate->GetInputEventRouter()->RouteMouseEvent(m_rwhv, &webEvent, ui::LatencyInfo());
+    }
 }
 
 void RenderWidgetHostViewQtDelegateClient::handleFocusEvent(QFocusEvent *event)

@@ -166,6 +166,9 @@ public:
     bool AllowWorkerIndexedDB(const GURL &url,
                               content::BrowserContext *context,
                               const std::vector<content::GlobalFrameRoutingId> &render_frames) override;
+    AllowWebBluetoothResult AllowWebBluetooth(content::BrowserContext *browser_context,
+                                              const url::Origin &requesting_origin,
+                                              const url::Origin &embedding_origin) override;
 
 #if QT_CONFIG(webengine_geolocation)
     std::unique_ptr<device::LocationProvider> OverrideSystemLocationProvider() override;
@@ -255,6 +258,7 @@ public:
                                                                  NonNetworkURLLoaderFactoryMap* factories) override;
     void SiteInstanceGotProcess(content::SiteInstance *site_instance) override;
     void SiteInstanceDeleting(content::SiteInstance *site_instance) override;
+    base::flat_set<std::string> GetPluginMimeTypesWithExternalHandlers(content::BrowserContext *browser_context) override;
 
     content::WebContentsViewDelegate* GetWebContentsViewDelegate(content::WebContents* web_contents) override;
 
@@ -265,6 +269,8 @@ public:
 
 private:
     scoped_refptr<ShareGroupQt> m_shareGroupQt;
+    std::string m_appLocale;
+    std::string m_cachedQtLocale;
 };
 
 } // namespace QtWebEngineCore

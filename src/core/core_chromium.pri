@@ -331,6 +331,7 @@ qtConfig(webengine-extensions) {
         extensions/extensions_browser_client_qt.cpp \
         extensions/messaging_delegate_qt.cpp \
         extensions/mime_handler_view_guest_delegate_qt.cpp \
+        extensions/plugin_service_filter_qt.cpp \
         net/plugin_response_interceptor_url_loader_throttle.cpp \
         renderer/extensions/extensions_dispatcher_delegate_qt.cpp \
         renderer/extensions/extensions_renderer_client_qt.cpp \
@@ -349,6 +350,7 @@ qtConfig(webengine-extensions) {
         extensions/extensions_browser_client_qt.h \
         extensions/messaging_delegate_qt.h \
         extensions/mime_handler_view_guest_delegate_qt.h \
+        extensions/plugin_service_filter_qt.h \
         net/plugin_response_interceptor_url_loader_throttle.h \
         renderer/extensions/extensions_dispatcher_delegate_qt.h \
         renderer/extensions/extensions_renderer_client_qt.h \

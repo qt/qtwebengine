@@ -68,6 +68,7 @@ class TouchSelectionController;
 namespace QtWebEngineCore {
 
 class RenderWidgetHostViewQtDelegateClient;
+class GuestInputEventObserverQt;
 class TouchSelectionControllerClientQt;
 class WebContentsAdapterClient;
 
@@ -87,6 +88,7 @@ public:
     WebContentsAdapterClient *adapterClient() { return m_adapterClient; }
     void setAdapterClient(WebContentsAdapterClient *adapterClient);
     RenderWidgetHostViewQtDelegateClient *delegateClient() const { return m_delegateClient.get(); }
+    void setGuest(content::RenderWidgetHostImpl *);
 
     void InitAsChild(gfx::NativeView) override;
     void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&) override;
@@ -98,6 +100,7 @@ public:
     void Focus() override;
     bool HasFocus() override;
     bool IsMouseLocked() override;
+    viz::FrameSinkId GetRootFrameSinkId() override;
     bool IsSurfaceAvailableForCopy() override;
     void CopyFromSurface(const gfx::Rect &src_rect,
                          const gfx::Size &output_size,
@@ -112,10 +115,14 @@ public:
     void UnlockMouse() override;
     void UpdateCursor(const content::WebCursor&) override;
     void DisplayCursor(const content::WebCursor&) override;
+    content::CursorManager *GetCursorManager() override;
     void SetIsLoading(bool) override;
     void ImeCancelComposition() override;
     void ImeCompositionRangeChanged(const gfx::Range&, const std::vector<gfx::Rect>&) override;
     void RenderProcessGone() override;
+    bool TransformPointToCoordSpaceForView(const gfx::PointF &point,
+                                           content::RenderWidgetHostViewBase *target_view,
+                                           gfx::PointF *transformed_point) override;
     void Destroy() override;
     void SetTooltipText(const base::string16 &tooltip_text) override;
     void DisplayTooltipText(const base::string16& tooltip_text) override;
@@ -127,13 +134,15 @@ public:
     viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(const cc::RenderFrameMetadata &metadata) override;
     void OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata);
 
+    // Overridden from RenderWidgetHostViewBase:
     void GetScreenInfo(blink::ScreenInfo *results) override;
     gfx::Rect GetBoundsInRootWindow() override;
     void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch,
                                 blink::mojom::InputEventResultState ack_result) override;
     viz::SurfaceId GetCurrentSurfaceId() const override;
     const viz::FrameSinkId &GetFrameSinkId() const override;
-    const viz::LocalSurfaceId &GetLocalSurfaceId() const;
+    const viz::LocalSurfaceId &GetLocalSurfaceId() const override;
+    void FocusedNodeChanged(bool is_editable_node, const gfx::Rect& node_bounds_in_screen) override;
 
     void TakeFallbackContentFrom(content::RenderWidgetHostView *view) override;
     void EnsureSurfaceSynchronizedForWebTest() override;
@@ -195,8 +204,15 @@ private:
 
     bool isPopup() const;
 
+    bool updateCursorFromResource(ui::mojom::CursorType type);
+
     scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
+
+    std::unique_ptr<content::CursorManager> m_cursorManager;
+
     ui::FilteredGestureProvider m_gestureProvider;
+    std::unique_ptr<GuestInputEventObserverQt> m_guestInputEventObserver;
+
     viz::FrameSinkId m_frameSinkId;
     std::unique_ptr<RenderWidgetHostViewQtDelegateClient> m_delegateClient;
     std::unique_ptr<RenderWidgetHostViewQtDelegate> m_delegate;

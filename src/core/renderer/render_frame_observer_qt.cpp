@@ -77,6 +77,12 @@ void RenderFrameObserverQt::DidCreatePepperPlugin(content::RendererPpapiHost *ho
 }
 #endif
 
+bool RenderFrameObserverQt::OnAssociatedInterfaceRequestForFrame(const std::string &interface_name,
+                                                                 mojo::ScopedInterfaceEndpointHandle *handle)
+{
+    return m_associated_interfaces.TryBindInterface(interface_name, handle);
+}
+
 void RenderFrameObserverQt::WillDetach()
 {
     m_isFrameDetached = true;

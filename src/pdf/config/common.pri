@@ -1,6 +1,8 @@
 include($$QTWEBENGINE_OUT_ROOT/src/pdf/qtpdf-config.pri)
 QT_FOR_CONFIG += pdf-private
 
+gn_args += use_nss_certs=false
+
 qtConfig(webengine-qt-png) {
     gn_args += pdfium_use_qt_libpng=true
     gn_args += "pdfium_qt_libpng_includes=\"$$system_path($$QMAKE_INCDIR_LIBPNG)\""

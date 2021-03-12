@@ -44,33 +44,44 @@
 
 #include "mime_handler_view_guest_delegate_qt.h"
 
-#include "content/browser/browser_plugin/browser_plugin_guest.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
+
+#include "profile_adapter.h"
+#include "qwebenginecontextmenurequest.h"
+#include "qwebenginecontextmenurequest_p.h"
+#include "render_widget_host_view_qt.h"
+#include "touch_selection_controller_client_qt.h"
+#include "web_contents_adapter.h"
+#include "web_contents_adapter_client.h"
+#include "web_contents_view_qt.h"
 
 namespace extensions {
 
 MimeHandlerViewGuestDelegateQt::MimeHandlerViewGuestDelegateQt(MimeHandlerViewGuest *)
     : MimeHandlerViewGuestDelegate()
+    , m_contextMenuRequest(new QWebEngineContextMenuRequest(new QWebEngineContextMenuRequestPrivate))
 {
 }
 
 MimeHandlerViewGuestDelegateQt::~MimeHandlerViewGuestDelegateQt()
 {
+    delete m_contextMenuRequest;
 }
 
 bool MimeHandlerViewGuestDelegateQt::HandleContextMenu(content::WebContents *web_contents, const content::ContextMenuParams &params)
 {
-    content::ContextMenuParams new_params = params;
+    content::WebContents *parent_web_contents = guest_view::GuestViewBase::GetTopLevelWebContents(web_contents);
+    if (auto rwhv = static_cast<QtWebEngineCore::RenderWidgetHostViewQt *>(parent_web_contents->GetRenderWidgetHostView())) {
+        if (rwhv->getTouchSelectionControllerClient()->handleContextMenu(params))
+            return true;
 
-    gfx::Point guest_coordinates =
-            static_cast<content::WebContentsImpl *>(web_contents)->GetBrowserPluginGuest()->GetScreenCoordinates(gfx::Point());
-
-    // Adjust (x,y) position for offset from guest to embedder.
-    new_params.x += guest_coordinates.x();
-    new_params.y += guest_coordinates.y();
+        QtWebEngineCore::WebContentsAdapterClient *adapterClient = rwhv->adapterClient();
+        QtWebEngineCore::WebContentsViewQt::update(m_contextMenuRequest, params, adapterClient->profileAdapter()->isSpellCheckEnabled());
+        adapterClient->contextMenuRequested(m_contextMenuRequest);
+        return true;
+    }
 
     return false;
 }

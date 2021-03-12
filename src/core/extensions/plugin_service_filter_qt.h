@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,29 +37,35 @@
 **
 ****************************************************************************/
 
-#ifndef DESKTOP_SCREEN_QT_H
-#define DESKTOP_SCREEN_QT_H
+#ifndef PLUGIN_SERVICE_FILTER_QT
+#define PLUGIN_SERVICE_FILTER_QT
 
-#include "ui/display/screen_base.h"
+#include "content/public/browser/plugin_service_filter.h"
 
-#include <qmetaobject.h>
+#include "base/memory/singleton.h"
 
-namespace QtWebEngineCore {
+namespace extensions {
 
-class DesktopScreenQt : public display::ScreenBase
-{
+class PluginServiceFilterQt : public content::PluginServiceFilter {
 public:
-    DesktopScreenQt();
-    ~DesktopScreenQt() override;
+    static PluginServiceFilterQt* GetInstance();
 
-    display::Display GetDisplayNearestWindow(gfx::NativeWindow /*window*/) const override;
+    bool IsPluginAvailable(int render_process_id,
+                           int render_frame_id,
+                           const GURL &url,
+                           const url::Origin &main_frame_origin,
+                           content::WebPluginInfo *plugin) override;
+
+    bool CanLoadPlugin(int render_process_id,
+                       const base::FilePath &path) override;
 
 private:
-    void initializeScreens();
-    bool updateAllScreens();
-    QMetaObject::Connection m_connections[3];
+    friend struct base::DefaultSingletonTraits<PluginServiceFilterQt>;
+
+    PluginServiceFilterQt();
+    ~PluginServiceFilterQt();
 };
 
-} // namespace QtWebEngineCore
+} // namespace extensions
 
-#endif // DESKTOP_SCREEN_QT_H
+#endif // PLUGIN_SERVICE_FILTER_QT

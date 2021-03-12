@@ -111,7 +111,6 @@ ProfileQt::~ProfileQt()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     m_prefServiceAdapter.commit();
-    content::BrowserContext::NotifyWillBeDestroyed(this);
     BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(this);
     ShutdownStoragePartitions();
     m_profileIOData->shutdownOnUIThread();

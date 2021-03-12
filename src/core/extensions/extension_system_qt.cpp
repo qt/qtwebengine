@@ -223,11 +223,12 @@ void ExtensionSystemQt::NotifyExtensionLoaded(const Extension *extension)
     // Register plugins included with the extension.
     // Implementation based on PluginManager::OnExtensionLoaded.
     const MimeTypesHandler *handler = MimeTypesHandler::GetHandler(extension);
-    if (handler && !handler->handler_url().empty()) {
+    if (handler && handler->HasPlugin()) {
         content::WebPluginInfo info;
         info.type = content::WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN;
         info.name = base::UTF8ToUTF16(extension->name());
-        info.path = base::FilePath::FromUTF8Unsafe(extension->url().spec());
+        info.path = handler->GetPluginPath();
+        info.background_color = handler->GetBackgroundColor();
         for (std::set<std::string>::const_iterator mime_type = handler->mime_type_set().begin();
              mime_type != handler->mime_type_set().end(); ++mime_type) {
             content::WebPluginMimeType mime_type_info;

@@ -46,7 +46,6 @@
 #include "render_widget_host_view_qt.h"
 #include "touch_selection_controller_client_qt.h"
 #include "type_conversion.h"
-#include "web_contents_adapter_client.h"
 #include "web_contents_adapter.h"
 #include "web_engine_context.h"
 #include "web_contents_delegate_qt.h"
@@ -209,7 +208,7 @@ ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::CanSelectAll, blink::kCanSelect
 ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::CanTranslate, blink::kCanTranslate)
 ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::CanEditRichly, blink::kCanEditRichly)
 
-
+// static
 void WebContentsViewQt::update(QWebEngineContextMenuRequest *request,
                                const content::ContextMenuParams &params, bool spellcheckEnabled)
 {

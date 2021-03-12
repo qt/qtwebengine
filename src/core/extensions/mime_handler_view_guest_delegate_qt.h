@@ -46,8 +46,11 @@
 #define MIME_HANDLER_VIEW_GUEST_DELEGATE_QT_H_
 
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
-#include "content/browser/web_contents/web_contents_view.h"
-#include "content/public/browser/web_contents.h"
+#include "api/qtwebenginecoreglobal_p.h"
+
+QT_BEGIN_NAMESPACE
+class QWebEngineContextMenuRequest;
+QT_END_NAMESPACE
 
 namespace content {
 struct ContextMenuParams;
@@ -66,6 +69,7 @@ public:
                            const content::ContextMenuParams &params) override;
 
 private:
+    QWebEngineContextMenuRequest *m_contextMenuRequest;
     DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewGuestDelegateQt);
 };
 

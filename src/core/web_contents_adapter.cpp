@@ -1546,7 +1546,15 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
     QObject::disconnect(onDestroyed);
     if (dValid) {
         if (m_webContents) {
-            content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
+            // This is the quickest and (at the moment) the most safe solution to not break guest views when
+            // dropping data into them. We don't even try to support dropping into PDF input fields,
+            // since it's not working in Chrome right now.
+            content::WebContents *targetWebContents = m_webContents.get();
+            std::vector<content::WebContents *> innerWebContents = m_webContents->GetInnerWebContents();
+            if (!innerWebContents.empty())
+                targetWebContents = innerWebContents[0];
+
+            content::RenderViewHost *rvh = targetWebContents->GetRenderViewHost();
             if (rvh) {
                 rvh->GetWidget()->DragSourceEndedAt(gfx::PointF(m_lastDragClientPos.x(), m_lastDragClientPos.y()),
                                                     gfx::PointF(m_lastDragScreenPos.x(), m_lastDragScreenPos.y()),

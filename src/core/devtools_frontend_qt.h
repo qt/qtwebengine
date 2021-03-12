@@ -65,6 +65,7 @@ class RenderViewHost;
 class WebContents;
 }  // namespace content
 
+class DevToolsEyeDropper;
 class PersistentPrefStore;
 
 namespace QtWebEngineCore {
@@ -113,6 +114,8 @@ private:
     void RemovePreference(const std::string &name);
     void ClearPreferences();
     void CreateJsonPreferences(bool clear);
+    void SetEyeDropperActive(bool active);
+    void ColorPickedInEyeDropper(int r, int g, int b, int a);
 
     // We shouldn't be keeping it alive
     QWeakPointer<WebContentsAdapter> m_frontendAdapter;
@@ -123,6 +126,7 @@ private:
     int m_inspect_element_at_x;
     int m_inspect_element_at_y;
     std::unique_ptr<content::DevToolsFrontendHost> m_frontendHost;
+    std::unique_ptr<DevToolsEyeDropper> m_eyeDropper;
 
     class NetworkResourceLoader;
     std::set<std::unique_ptr<NetworkResourceLoader>, base::UniquePtrComparator> m_loaders;

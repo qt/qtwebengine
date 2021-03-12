@@ -46,6 +46,10 @@
 #include <QtCore/QPoint>
 #include <QScopedPointer>
 
+namespace extensions {
+class MimeHandlerViewGuestDelegateQt;
+}
+
 namespace QtWebEngineCore {
 class RenderViewContextMenuQt;
 class WebContentsViewQt;
@@ -156,6 +160,7 @@ private:
     QScopedPointer<QWebEngineContextMenuRequestPrivate> d;
     friend class QtWebEngineCore::WebContentsViewQt;
     friend class QtWebEngineCore::RenderViewContextMenuQt;
+    friend class extensions::MimeHandlerViewGuestDelegateQt;
     friend class QQuickWebEngineViewPrivate;
     friend class QQuickWebEngineView;
     friend class ContextMenuRequestJSWrapper;

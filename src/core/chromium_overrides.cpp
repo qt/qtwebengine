@@ -50,7 +50,6 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/snapshot/snapshot.h"
 #include "ppapi/buildflags/buildflags.h"
 
 #include <QGuiApplication>
@@ -148,53 +147,6 @@ std::vector<AccessibilityTreeFormatter::TestPass> AccessibilityTreeFormatter::Ge
     };
 }
 } // namespace content
-
-#if defined(USE_AURA)
-namespace ui {
-
-bool GrabWindowSnapshot(gfx::NativeWindow window,
-                        const gfx::Rect& snapshot_bounds,
-                        gfx::Image* image)
-{
-    NOTIMPLEMENTED();
-    return false;
-}
-
-bool GrabViewSnapshot(gfx::NativeView view,
-                      const gfx::Rect& snapshot_bounds,
-                      gfx::Image* image)
-{
-    NOTIMPLEMENTED();
-    return false;
-}
-
-void GrabWindowSnapshotAndScaleAsync(gfx::NativeWindow window,
-                                     const gfx::Rect& source_rect,
-                                     const gfx::Size& target_size,
-                                     GrabWindowSnapshotAsyncCallback callback)
-{
-    NOTIMPLEMENTED();
-    std::move(callback).Run(gfx::Image());
-}
-
-void GrabWindowSnapshotAsync(gfx::NativeWindow window,
-                             const gfx::Rect& source_rect,
-                             GrabWindowSnapshotAsyncCallback callback)
-{
-    NOTIMPLEMENTED();
-    std::move(callback).Run(gfx::Image());
-}
-
-void GrabViewSnapshotAsync(gfx::NativeView view,
-                           const gfx::Rect& source_rect,
-                           GrabWindowSnapshotAsyncCallback callback)
-{
-    NOTIMPLEMENTED();
-    std::move(callback).Run(gfx::Image());
-}
-
-} // namespace ui
-#endif // defined(USE_AURA)
 
 std::unique_ptr<ui::OSExchangeDataProvider> ui::OSExchangeDataProviderFactory::CreateProvider()
 {

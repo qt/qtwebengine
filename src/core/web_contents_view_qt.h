@@ -44,8 +44,13 @@
 #include "content/browser/web_contents/web_contents_view.h"
 
 #include "api/qtwebenginecoreglobal_p.h"
+#include "web_contents_adapter_client.h"
 
 QT_FORWARD_DECLARE_CLASS(QWebEngineContextMenuRequest)
+
+namespace extensions {
+class MimeHandlerViewGuestDelegateQt;
+}
 
 namespace content {
 class WebContents;
@@ -131,6 +136,8 @@ private:
     WebContentsAdapterClient *m_client;
     WebContentsAdapterClient *m_factoryClient;
     std::unique_ptr<QWebEngineContextMenuRequest> m_contextMenuRequest;
+
+    friend class extensions::MimeHandlerViewGuestDelegateQt;
 };
 
 } // namespace QtWebEngineCore

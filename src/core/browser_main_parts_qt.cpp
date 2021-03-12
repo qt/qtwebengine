@@ -59,10 +59,12 @@
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/buildflags/buildflags.h"
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "content/public/browser/plugin_service.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/extensions_browser_client_qt.h"
 #include "extensions/extension_system_factory_qt.h"
+#include "extensions/plugin_service_filter_qt.h"
 #include "common/extensions/extensions_client_qt.h"
 #endif //BUILDFLAG(ENABLE_EXTENSIONS)
 #include "services/service_manager/public/cpp/connector.h"
@@ -250,6 +252,9 @@ void BrowserMainPartsQt::PreMainMessageLoopRun()
     extensions::ExtensionsClient::Set(new extensions::ExtensionsClientQt());
     extensions::ExtensionsBrowserClient::Set(new extensions::ExtensionsBrowserClientQt());
     extensions::ExtensionSystemFactoryQt::GetInstance();
+
+    content::PluginService *plugin_service = content::PluginService::GetInstance();
+    plugin_service->SetFilter(extensions::PluginServiceFilterQt::GetInstance());
 #endif //ENABLE_EXTENSIONS
 }
 

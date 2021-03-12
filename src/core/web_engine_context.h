@@ -108,6 +108,7 @@ public:
     static WebEngineContext *current();
     static void destroyContextPostRoutine();
     static ProxyAuthentication qProxyNetworkAuthentication(QString host, int port);
+    static void flushMessages();
 
     ProfileAdapter *createDefaultProfileAdapter();
     ProfileAdapter *defaultProfileAdapter();

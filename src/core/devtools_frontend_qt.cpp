@@ -59,6 +59,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
+#include "chrome/browser/devtools/devtools_eye_dropper.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/json_pref_store.h"
@@ -531,6 +532,11 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
         Activate();
     } else if (method == "closeWindow") {
         web_contents()->Close();
+    } else if (method == "setEyeDropperActive" && params->GetSize() == 1) {
+        bool active;
+        if (!params->GetBoolean(0, &active))
+            return;
+        SetEyeDropperActive(active);
     } else {
         VLOG(1) << "Unimplemented devtools method: " << message;
         return;
@@ -538,6 +544,30 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
 
     if (request_id)
         SendMessageAck(request_id, nullptr);
+}
+
+void DevToolsFrontendQt::SetEyeDropperActive(bool active)
+{
+    if (!m_inspectedContents)
+        return;
+    if (active) {
+        m_eyeDropper.reset(new DevToolsEyeDropper(
+                               m_inspectedContents,
+                               base::Bind(&DevToolsFrontendQt::ColorPickedInEyeDropper,
+                                          base::Unretained(this))));
+    } else {
+        m_eyeDropper.reset();
+    }
+}
+
+void DevToolsFrontendQt::ColorPickedInEyeDropper(int r, int g, int b, int a)
+{
+    base::DictionaryValue color;
+    color.SetInteger("r", r);
+    color.SetInteger("g", g);
+    color.SetInteger("b", b);
+    color.SetInteger("a", a);
+    CallClientFunction("DevToolsAPI.eyeDropperPickedColor", &color, nullptr, nullptr);
 }
 
 void DevToolsFrontendQt::DispatchProtocolMessage(content::DevToolsAgentHost *agentHost, base::span<const uint8_t> message)

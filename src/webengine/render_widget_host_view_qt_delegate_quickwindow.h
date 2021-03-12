@@ -52,7 +52,8 @@ namespace QtWebEngineCore {
 class RenderWidgetHostViewQtDelegateQuickWindow : public QQuickWindow , public RenderWidgetHostViewQtDelegate {
 
 public:
-    RenderWidgetHostViewQtDelegateQuickWindow(RenderWidgetHostViewQtDelegateQuick *realDelegate);
+    RenderWidgetHostViewQtDelegateQuickWindow(RenderWidgetHostViewQtDelegateQuick *realDelegate,
+                                              QWindow *parent);
     ~RenderWidgetHostViewQtDelegateQuickWindow();
 
     void initAsPopup(const QRect&) override;

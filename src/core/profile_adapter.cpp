@@ -121,6 +121,7 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
 
 ProfileAdapter::~ProfileAdapter()
 {
+    content::BrowserContext::NotifyWillBeDestroyed(m_profile.data());
     while (!m_webContentsAdapterClients.isEmpty()) {
        m_webContentsAdapterClients.first()->releaseProfile();
     }
@@ -131,7 +132,9 @@ ProfileAdapter::~ProfileAdapter()
     }
 #if QT_CONFIG(ssl)
     delete m_clientCertificateStore;
+    m_clientCertificateStore = nullptr;
 #endif
+    WebEngineContext::flushMessages();
 }
 
 void ProfileAdapter::setStorageName(const QString &storageName)

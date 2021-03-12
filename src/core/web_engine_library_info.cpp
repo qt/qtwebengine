@@ -46,6 +46,7 @@
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/common/content_paths.h"
 #include "sandbox/policy/switches.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -353,18 +354,15 @@ base::string16 WebEngineLibraryInfo::getApplicationName()
 std::string WebEngineLibraryInfo::getApplicationLocale()
 {
     base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
-    if (!parsedCommandLine->HasSwitch(switches::kLang)) {
+    if (parsedCommandLine->HasSwitch(switches::kLang)) {
+        return parsedCommandLine->GetSwitchValueASCII(switches::kLang);
+    } else {
         const QString &locale = QLocale().bcp47Name();
-
-        // QLocale::bcp47Name returns "en" for American English locale. Chromium requires the "US" suffix
-        // to clarify the dialect and ignores the shorter version.
-        if (locale == "en")
-            return "en-US";
-
-        return locale.toStdString();
+        std::string resolvedLocale;
+        if (l10n_util::CheckAndResolveLocale(locale.toStdString(), &resolvedLocale))
+            return resolvedLocale;
     }
-
-    return parsedCommandLine->GetSwitchValueASCII(switches::kLang);
+    return "en-US";
 }
 
 #if defined(OS_WIN)

@@ -40,58 +40,26 @@
 #include "plugin_response_interceptor_url_loader_throttle.h"
 
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/download_utils.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/mime_types_handler.h"
+#include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
 
+#include "extensions/extension_system_qt.h"
 #include "web_contents_delegate_qt.h"
 
 #include <string>
 
 namespace QtWebEngineCore {
-
-void onPdfStreamIntercepted(const GURL &original_url, std::string extension_id, int frame_tree_node_id)
-{
-    content::WebContents *web_contents = content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
-    if (!web_contents)
-        return;
-
-    WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt *>(web_contents->GetDelegate());
-    if (!contentsDelegate)
-        return;
-
-    WebEngineSettings *settings = contentsDelegate->webEngineSettings();
-    if (!settings->testAttribute(QWebEngineSettings::PdfViewerEnabled)
-        || !settings->testAttribute(QWebEngineSettings::PluginsEnabled)) {
-        // If the applications has been set up to always download PDF files to open them in an
-        // external viewer, trigger the download.
-        std::unique_ptr<download::DownloadUrlParameters> params(
-                content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(web_contents, original_url,
-                                                                                     MISSING_TRAFFIC_ANNOTATION));
-        content::BrowserContext::GetDownloadManager(web_contents->GetBrowserContext())->DownloadUrl(std::move(params));
-        return;
-    }
-
-    // The URL passes the original pdf resource url, that will be requested
-    // by the pdf viewer extension page.
-    content::NavigationController::LoadURLParams params(
-            GURL(base::StringPrintf("%s://%s/index.html?%s", extensions::kExtensionScheme,
-                                    extension_id.c_str(), original_url.spec().c_str())));
-
-    params.frame_tree_node_id = frame_tree_node_id;
-    web_contents->GetController().LoadURLWithParams(params);
-}
-
-
-PluginResponseInterceptorURLLoaderThrottle::PluginResponseInterceptorURLLoaderThrottle(
-        content::ResourceContext *resource_context, int resource_type, int frame_tree_node_id)
-    : m_resource_context(resource_context), m_resource_type(resource_type), m_frame_tree_node_id(frame_tree_node_id)
-{}
 
 PluginResponseInterceptorURLLoaderThrottle::PluginResponseInterceptorURLLoaderThrottle(
         content::BrowserContext *browser_context, int resource_type, int frame_tree_node_id)
@@ -102,31 +70,111 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
                                                                      network::mojom::URLResponseHead *response_head,
                                                                      bool *defer)
 {
-    Q_UNUSED(defer);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (content::download_utils::MustDownload(response_url, response_head->headers.get(), response_head->mime_type))
         return;
 
-    if (m_resource_context) {
-        DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    } else {
-        DCHECK(m_browser_context);
-        DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    }
+    content::WebContents *web_contents = content::WebContents::FromFrameTreeNodeId(m_frame_tree_node_id);
+    if (!web_contents)
+        return;
 
     std::string extension_id;
-    // FIXME: We should use extensions::InfoMap in the future:
     if (response_head->mime_type == "application/pdf")
         extension_id = extension_misc::kPdfExtensionId;
     if (extension_id.empty())
         return;
 
-    *defer = true;
+    WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt *>(web_contents->GetDelegate());
+    if (!contentsDelegate)
+        return;
 
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&onPdfStreamIntercepted,
-                                  response_url,
-                                  extension_id,
-                                  m_frame_tree_node_id));
+    WebEngineSettings *settings = contentsDelegate->webEngineSettings();
+    if (!settings->testAttribute(QWebEngineSettings::PdfViewerEnabled)
+        || !settings->testAttribute(QWebEngineSettings::PluginsEnabled)) {
+        // PluginServiceFilterQt will inform the URLLoader about the disabled state of plugins
+        // and we can expect the download to be triggered automatically. It's unnecessary to
+        // go further and start the guest view embedding process.
+        return;
+    }
+
+    // Chrome's PDF Extension does not work properly in the face of a restrictive
+    // Content-Security-Policy, and does not currently respect the policy anyway.
+    // Ignore CSP served on a PDF response. https://crbug.com/271452
+    if (extension_id == extension_misc::kPdfExtensionId && response_head->headers)
+        response_head->headers->RemoveHeader("Content-Security-Policy");
+
+    MimeTypesHandler::ReportUsedHandler(extension_id);
+
+    std::string view_id = base::GenerateGUID();
+    // The string passed down to the original client with the response body.
+    std::string payload = view_id;
+
+    mojo::PendingRemote<network::mojom::URLLoader> dummy_new_loader;
+    ignore_result(dummy_new_loader.InitWithNewPipeAndPassReceiver());
+    mojo::Remote<network::mojom::URLLoaderClient> new_client;
+    mojo::PendingReceiver<network::mojom::URLLoaderClient> new_client_receiver =
+        new_client.BindNewPipeAndPassReceiver();
+
+
+    uint32_t data_pipe_size = 64U;
+    // Provide the MimeHandlerView code a chance to override the payload. This is
+    // the case where the resource is handled by frame-based MimeHandlerView.
+    *defer = extensions::MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
+        m_frame_tree_node_id, response_url, response_head->mime_type, view_id,
+        &payload, &data_pipe_size,
+        base::BindOnce(
+            &PluginResponseInterceptorURLLoaderThrottle::ResumeLoad,
+            weak_factory_.GetWeakPtr()));
+
+    mojo::DataPipe data_pipe(data_pipe_size);
+    uint32_t len = static_cast<uint32_t>(payload.size());
+    CHECK_EQ(MOJO_RESULT_OK,
+                data_pipe.producer_handle->WriteData(
+                    payload.c_str(), &len, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
+
+
+    new_client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
+
+    network::URLLoaderCompletionStatus status(net::OK);
+    status.decoded_body_length = len;
+    new_client->OnComplete(status);
+
+    mojo::PendingRemote<network::mojom::URLLoader> original_loader;
+    mojo::PendingReceiver<network::mojom::URLLoaderClient> original_client;
+    delegate_->InterceptResponse(std::move(dummy_new_loader),
+                                std::move(new_client_receiver), &original_loader,
+                                &original_client);
+
+    // Make a deep copy of URLResponseHead before passing it cross-thread.
+    auto deep_copied_response = response_head->Clone();
+    if (response_head->headers) {
+        deep_copied_response->headers =
+            base::MakeRefCounted<net::HttpResponseHeaders>(
+                response_head->headers->raw_headers());
+    }
+
+    auto transferrable_loader = blink::mojom::TransferrableURLLoader::New();
+    transferrable_loader->url = GURL(
+        extensions::Extension::GetBaseURLFromExtensionId(extension_id).spec() +
+        base::GenerateGUID());
+    transferrable_loader->url_loader = std::move(original_loader);
+    transferrable_loader->url_loader_client = std::move(original_client);
+    transferrable_loader->head = std::move(deep_copied_response);
+    transferrable_loader->head->intercepted_by_plugin = true;
+
+    bool embedded = m_resource_type !=
+                        static_cast<int>(blink::mojom::ResourceType::kMainFrame);
+    content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+            &extensions::StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent,
+            extension_id, view_id, embedded, m_frame_tree_node_id,
+            -1 /* render_process_id */, -1 /* render_frame_id */,
+            std::move(transferrable_loader), response_url));
+}
+
+void PluginResponseInterceptorURLLoaderThrottle::ResumeLoad() {
+    delegate_->Resume();
 }
 
 } // namespace QtWebEngineCore

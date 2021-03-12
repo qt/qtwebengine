@@ -68,6 +68,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/user_agent.h"
 #include "extensions/buildflags/buildflags.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/client_cert_store.h"
 #include "services/network/network_service.h"
@@ -152,12 +153,14 @@
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/extension_web_contents_observer_qt.h"
 #include "extensions/extensions_browser_client_qt.h"
 #include "net/plugin_response_interceptor_url_loader_throttle.h"
@@ -340,7 +343,12 @@ std::unique_ptr<net::ClientCertStore> ContentBrowserClientQt::CreateClientCertSt
 
 std::string ContentBrowserClientQt::GetApplicationLocale()
 {
-    return WebEngineLibraryInfo::getApplicationLocale();
+    std::string bcp47Name = QLocale().bcp47Name().toStdString();
+    if (m_cachedQtLocale != bcp47Name) {
+        m_cachedQtLocale = bcp47Name;
+        m_appLocale = WebEngineLibraryInfo::getApplicationLocale();
+    }
+    return m_appLocale;
 }
 
 std::string ContentBrowserClientQt::GetAcceptLangs(content::BrowserContext *context)
@@ -652,6 +660,8 @@ bool ContentBrowserClientQt::AllowAppCache(const GURL &manifest_url,
                                            content::BrowserContext *context)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (!context || context->ShutdownStarted())
+        return false;
     return static_cast<ProfileQt *>(context)->profileAdapter()->cookieStore()->d_func()->canAccessCookies(toQt(first_party), toQt(manifest_url));
 }
 
@@ -678,6 +688,8 @@ ContentBrowserClientQt::AllowServiceWorkerOnUI(const GURL &scope,
                                                     content::BrowserContext *context)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (!context || context->ShutdownStarted())
+        return content::AllowServiceWorkerResult::No();
     // FIXME: Chrome also checks if javascript is enabled here to check if has been disabled since the service worker
     // was started.
     return static_cast<ProfileQt *>(context)->profileAdapter()->cookieStore()->d_func()->canAccessCookies(toQt(site_for_cookies), toQt(scope))
@@ -692,6 +704,8 @@ void ContentBrowserClientQt::AllowWorkerFileSystem(const GURL &url,
                                                    base::OnceCallback<void(bool)> callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (!context || context->ShutdownStarted())
+        return std::move(callback).Run(false);
     std::move(callback).Run(
             static_cast<ProfileQt *>(context)->profileAdapter()->cookieStore()->d_func()->canAccessCookies(toQt(url), toQt(url)));
 }
@@ -702,6 +716,8 @@ bool ContentBrowserClientQt::AllowWorkerIndexedDB(const GURL &url,
                                                   const std::vector<content::GlobalFrameRoutingId> &/*render_frames*/)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (!context || context->ShutdownStarted())
+        return false;
     return static_cast<ProfileQt *>(context)->profileAdapter()->cookieStore()->d_func()->canAccessCookies(toQt(url), toQt(url));
 }
 
@@ -848,8 +864,11 @@ static bool navigationThrottleCallback(content::WebContents *source,
         return false;
 
     int navigationRequestAction = WebContentsAdapterClient::AcceptRequest;
-    WebContentsDelegateQt *delegate = static_cast<WebContentsDelegateQt *>(source->GetDelegate());
-    WebContentsAdapterClient *client = delegate->adapterClient();
+
+    WebContentsAdapterClient *client =
+        WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(source)->GetView())->client();
+    if (!client)
+        return false;
     client->navigationRequested(pageTransitionToNavigationType(params.transition_type()),
                                 toQt(params.url()),
                                 navigationRequestAction,
@@ -1137,6 +1156,33 @@ void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int
 #endif
 }
 
+base::flat_set<std::string> ContentBrowserClientQt::GetPluginMimeTypesWithExternalHandlers(
+        content::BrowserContext *browser_context)
+{
+    base::flat_set<std::string> mime_types;
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    ProfileQt *profile = static_cast<ProfileQt *>(browser_context);
+    for (const std::string &extension_id : MimeTypesHandler::GetMIMETypeAllowlist()) {
+        const extensions::Extension *extension =
+            extensions::ExtensionRegistry::Get(browser_context)
+                ->enabled_extensions()
+                .GetByID(extension_id);
+        // The allowed extension may not be installed, so we have to nullptr
+        // check |extension|.
+        if (!extension ||
+            (profile->IsOffTheRecord() && !extensions::util::IsIncognitoEnabled(
+                                              extension_id, browser_context))) {
+            continue;
+        }
+        if (MimeTypesHandler *handler = MimeTypesHandler::GetHandler(extension)) {
+            for (const auto &supported_mime_type : handler->mime_type_set())
+                mime_types.insert(supported_mime_type);
+        }
+    }
+#endif
+    return mime_types;
+}
+
 bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
         content::BrowserContext *browser_context,
         content::RenderFrameHost *frame,
@@ -1200,6 +1246,15 @@ content::WebContentsViewDelegate *ContentBrowserClientQt::GetWebContentsViewDele
         registry->MaybeCreatePageNodeForWebContents(web_contents);
 
      return nullptr;
+}
+
+content::ContentBrowserClient::AllowWebBluetoothResult
+ContentBrowserClientQt::AllowWebBluetooth(content::BrowserContext *browser_context,
+                                          const url::Origin &requesting_origin,
+                                          const url::Origin &embedding_origin)
+{
+    DCHECK(browser_context);
+    return content::ContentBrowserClient::AllowWebBluetoothResult::BLOCK_GLOBALLY_DISABLED;
 }
 
 } // namespace QtWebEngineCore

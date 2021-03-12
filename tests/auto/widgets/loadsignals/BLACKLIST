@@ -12,3 +12,6 @@
 # QTBUG-66661
 [fileDownloadDoesNotTriggerLoadSignals_qtbug66661]
 *
+
+[numberOfStartedAndFinishedSignalsIsSame]
+b2qt

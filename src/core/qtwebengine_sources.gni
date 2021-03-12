@@ -75,6 +75,8 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/custom_handlers/protocol_handler_registry.h",
     "//chrome/browser/custom_handlers/protocol_handler_registry_factory.cc",
     "//chrome/browser/custom_handlers/protocol_handler_registry_factory.h",
+    "//chrome/browser/devtools/devtools_eye_dropper.cc",
+    "//chrome/browser/devtools/devtools_eye_dropper.h",
     "//chrome/browser/media/webrtc/desktop_media_list.h",
     "//chrome/browser/net/chrome_mojo_proxy_resolver_factory.cc",
     "//chrome/browser/net/chrome_mojo_proxy_resolver_factory.h",
@@ -208,7 +210,10 @@ source_set("qtwebengine_sources") {
          "//components/pdf/browser:browser",
          "//components/pdf/renderer:renderer",
          "//components/printing/browser",
-         "//components/printing/renderer",
+         "//components/printing/renderer"
+      ]
+      sources += [
+         "//chrome/browser/extensions/api/streams_private/streams_private_api.cc",
       ]
   }
 
