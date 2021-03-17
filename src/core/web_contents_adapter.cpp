@@ -381,6 +381,7 @@ void Navigate(WebContentsAdapter *adapter, const content::NavigationController::
     adapter->webContents()->GetController().LoadURLWithParams(params);
     adapter->focusIfNecessary();
     adapter->resetSelection();
+    adapter->findTextHelper()->stopFinding();
 }
 
 void NavigateTask(QWeakPointer<WebContentsAdapter> weakAdapter, const content::NavigationController::LoadURLParams &params)
