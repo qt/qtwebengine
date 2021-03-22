@@ -116,8 +116,8 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(bool loading READ isLoading NOTIFY loadingChanged FINAL)
     Q_PROPERTY(int loadProgress READ loadProgress NOTIFY loadProgressChanged FINAL)
     Q_PROPERTY(QString title READ title NOTIFY titleChanged FINAL)
-    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY urlChanged FINAL)
-    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY urlChanged FINAL)
+    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY canGoBackChanged FINAL)
+    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY canGoForwardChanged FINAL)
     Q_PROPERTY(bool isFullScreen READ isFullScreen NOTIFY isFullScreenChanged REVISION 1 FINAL)
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged REVISION 1 FINAL)
     Q_PROPERTY(QQuickWebEngineProfile *profile READ profile WRITE setProfile NOTIFY profileChanged FINAL REVISION 1)
@@ -581,6 +581,8 @@ Q_SIGNALS:
     Q_REVISION(10) void recommendedStateChanged(LifecycleState state);
     Q_REVISION(10) void findTextFinished(const QWebEngineFindTextResult &result);
     Q_REVISION(11) void renderProcessPidChanged(qint64 pid);
+    Q_REVISION(11) void canGoBackChanged();
+    Q_REVISION(11) void canGoForwardChanged();
 
 #if QT_CONFIG(webengine_testsupport)
     void testSupportChanged();

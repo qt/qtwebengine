@@ -26,7 +26,8 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 import QtTest 1.0
 import QtWebEngine 1.2
 
@@ -57,6 +58,20 @@ TestWebEngineView {
                 color:"black"
                 text: url
             }
+    }
+
+    Button {
+        id: backButton
+        text: "Back"
+        enabled: webEngineView.canGoBack
+        onClicked: webEngineView.goBack()
+    }
+
+    Button {
+        id: forwardButton
+        text: "Forward"
+        enabled: webEngineView.canGoForward
+        onClicked: webEngineView.goForward()
     }
 
     TestCase {
@@ -141,6 +156,35 @@ TestWebEngineView {
             compare(webEngineView.canGoForward, false)
             compare(backItemsList.count, 0)
             compare(forwardItemsList.count, 0)
+        }
+
+        function test_navigationButtons() {
+            compare(webEngineView.loadProgress, 0)
+
+            webEngineView.url = Qt.resolvedUrl("test1.html")
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(backButton.enabled, false)
+            compare(forwardButton.enabled, false)
+
+            webEngineView.url = Qt.resolvedUrl("test2.html")
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(backButton.enabled, true)
+            compare(forwardButton.enabled, false)
+
+            webEngineView.url = Qt.resolvedUrl("test3.html")
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(backButton.enabled, true)
+            compare(forwardButton.enabled, false)
+
+            backButton.clicked()
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(backButton.enabled, true)
+            compare(forwardButton.enabled, true)
+
+            webEngineView.url = Qt.resolvedUrl("test1.html")
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(backButton.enabled, true)
+            compare(forwardButton.enabled, false)
         }
     }
 }
