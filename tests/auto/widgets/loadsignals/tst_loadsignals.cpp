@@ -48,8 +48,6 @@ private Q_SLOTS:
     void monotonicity();
     void loadStartedAndFinishedCount_data();
     void loadStartedAndFinishedCount();
-    void secondLoadForError_WhenErrorPageEnabled_data();
-    void secondLoadForError_WhenErrorPageEnabled();
     void loadAfterInPageNavigation_qtbug66869();
     void fileDownloadDoesNotTriggerLoadSignals_qtbug66661();
     void numberOfStartedAndFinishedSignalsIsSame();
@@ -147,41 +145,6 @@ void tst_LoadSignals::monotonicity()
 
     // last loadProgress should have 100% progress
     QCOMPARE(loadProgressSpy.last()[0].toInt(), 100);
-}
-
-/**
-  * Test that we get a second loadStarted and loadFinished signal
-  * for error-pages (unless error-pages are disabled)
-  */
-void tst_LoadSignals::secondLoadForError_WhenErrorPageEnabled_data()
-{
-    QTest::addColumn<bool>("enabled");
-    // in this case, we get no second loadStarted and loadFinished, although we had
-    // agreed on making the navigation to an error page an individual load
-    QTest::newRow("ErrorPageEnabled") << true;
-    QTest::newRow("ErrorPageDisabled") << false;
-}
-
-void tst_LoadSignals::secondLoadForError_WhenErrorPageEnabled()
-{
-    QFETCH(bool, enabled);
-    view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, enabled);
-    int expectedLoadCount = (enabled ? 2 : 1);
-
-    // RFC 2606 guarantees that this will never become a valid domain
-    view.load(QUrl("http://nonexistent.invalid"));
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), expectedLoadCount, 10000);
-    QVERIFY(!loadFinishedSpy[0][0].toBool());
-    if (enabled)
-        QVERIFY(loadFinishedSpy[1][0].toBool());
-
-    // Wait for 10 seconds (abort waiting if another loadStarted or loadFinished occurs)
-    QTRY_LOOP_IMPL((loadStartedSpy.size() != expectedLoadCount)
-                || (loadFinishedSpy.size() != expectedLoadCount), 10000, 100);
-
-    // No further loadStarted should have occurred within this time
-    QCOMPARE(loadStartedSpy.size(), expectedLoadCount);
-    QCOMPARE(loadFinishedSpy.size(), expectedLoadCount);
 }
 
 /**

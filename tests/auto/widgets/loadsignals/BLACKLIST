@@ -1,6 +1,3 @@
-[secondLoadForError_WhenErrorPageEnabled:ErrorPageEnabled]
-*
-
 # QTBUG-65223
 [loadStartedAndFinishedCount:WithAnchorClickedFromJS]
 *
