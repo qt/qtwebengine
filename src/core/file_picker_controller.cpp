@@ -154,7 +154,7 @@ void FilePickerController::accepted(const QVariant &files)
 {
     QStringList stringList;
 
-    if (files.canConvert(QVariant::StringList)) {
+    if (files.canConvert(QMetaType::QStringList)) {
         stringList = files.toStringList();
     } else if (files.canConvert<QList<QUrl> >()) {
         const QList<QUrl> urls = files.value<QList<QUrl>>();
