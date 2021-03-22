@@ -112,7 +112,7 @@ public:
     Q_DECLARE_PUBLIC(QWebEnginePage)
     QWebEnginePage *q_ptr;
 
-    QWebEnginePagePrivate(QWebEngineProfile *profile = 0);
+    QWebEnginePagePrivate(QWebEngineProfile *profile = nullptr);
     ~QWebEnginePagePrivate();
 
     QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override;

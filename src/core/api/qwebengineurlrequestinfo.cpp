@@ -87,7 +87,7 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::RedirectNavigation
 */
 
 /*!
-    \fn QWebEngineUrlRequestInterceptor::QWebEngineUrlRequestInterceptor(QObject * p = 0)
+    \fn QWebEngineUrlRequestInterceptor::QWebEngineUrlRequestInterceptor(QObject *p = nullptr)
 
     Creates a new QWebEngineUrlRequestInterceptor object with \a p as parent.
 */

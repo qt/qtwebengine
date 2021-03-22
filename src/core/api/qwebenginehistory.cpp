@@ -127,7 +127,7 @@ QWebEngineHistoryPrivate::~QWebEngineHistoryPrivate()
     // Invalidate shared item references possibly still out there.
     QList<QWebEngineHistoryItem>::iterator it, end;
     for (it = items.begin(), end = items.end(); it != end; ++it)
-        it->d->m_adapter = 0;
+        it->d->m_adapter = nullptr;
 }
 
 void QWebEngineHistoryPrivate::updateItems() const
@@ -136,7 +136,7 @@ void QWebEngineHistoryPrivate::updateItems() const
     // and avoid dangling references to our m_adapter.
     int entryCount = m_adapter->webContentsAdapter()->navigationEntryCount();
     while (items.size() > entryCount) {
-        items.last().d->m_adapter = 0;
+        items.last().d->m_adapter = nullptr;
         items.removeLast();
     }
     while (items.size() < entryCount) {

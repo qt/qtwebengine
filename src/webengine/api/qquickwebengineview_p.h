@@ -134,7 +134,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(qint64 renderProcessPid READ renderProcessPid NOTIFY renderProcessPidChanged FINAL REVISION 11)
 
 public:
-    QQuickWebEngineView(QQuickItem *parent = 0);
+    QQuickWebEngineView(QQuickItem *parent = nullptr);
     ~QQuickWebEngineView();
 
     QUrl url() const;

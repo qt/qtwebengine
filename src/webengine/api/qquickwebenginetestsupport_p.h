@@ -104,7 +104,7 @@ public Q_SLOTS:
     bool mouseMultiClick(QObject *item, qreal x, qreal y, int clickCount);
 
 private:
-    QWindow *eventWindow(QObject *item = 0);
+    QWindow *eventWindow(QObject *item = nullptr);
     void mouseEvent(QEvent::Type type, QWindow *window, QObject *item, const QPointF &_pos);
 };
 

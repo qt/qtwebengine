@@ -55,7 +55,7 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    QWidget *parent = 0;
+    QWidget *parent = nullptr;
 //! [Using QWebEngineView]
     QWebEngineView *view = new QWebEngineView(parent);
     view->load(QUrl("http://qt-project.org/"));

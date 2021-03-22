@@ -939,7 +939,7 @@ bool QContextMenuBuilder::isFullScreenMode()
 void QContextMenuBuilder::addMenuItem(ContextMenuItem menuItem)
 {
     QPointer<QWebEnginePage> thisRef(m_view->page());
-    QAction *action = 0;
+    QAction *action = nullptr;
 
     switch (menuItem) {
     case ContextMenuItem::Back:

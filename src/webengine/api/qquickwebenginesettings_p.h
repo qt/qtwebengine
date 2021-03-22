@@ -205,7 +205,7 @@ signals:
     Q_REVISION(8) void pdfViewerEnabledChanged();
 
 private:
-    explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = 0);
+    explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = nullptr);
     Q_DISABLE_COPY(QQuickWebEngineSettings)
     friend class QQuickWebEngineProfilePrivate;
     friend class QQuickWebEngineViewPrivate;
