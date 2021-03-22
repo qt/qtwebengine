@@ -414,7 +414,6 @@ void tst_LoadSignals::loadFinishedAfterNotFoundError()
         server.reset(new HttpServer);
         QVERIFY(server->start());
     }
-
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     auto url = server
         ? server->url("/not-found-page.html")
@@ -425,6 +424,8 @@ void tst_LoadSignals::loadFinishedAfterNotFoundError()
     QCOMPARE(toPlainTextSync(view.page()), QString());
     QCOMPARE(loadFinishedSpy.count(), 1);
     QCOMPARE(loadStartedSpy.count(), 1);
+    QVERIFY(std::is_sorted(page.loadProgress.begin(), page.loadProgress.end()));
+    page.loadProgress.clear();
 
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, true);
     url = server
@@ -438,6 +439,7 @@ void tst_LoadSignals::loadFinishedAfterNotFoundError()
     QEXPECT_FAIL("", "No more loads (like separate load for error pages) are expected", Continue);
     QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 3, 1000);
     QCOMPARE(loadStartedSpy.count(), 2);
+    QVERIFY(std::is_sorted(page.loadProgress.begin(), page.loadProgress.end()));
 }
 
 void tst_LoadSignals::errorPageTriggered_data()

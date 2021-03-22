@@ -158,7 +158,6 @@ public:
 
     // WebContentsObserver overrides
     void RenderFrameCreated(content::RenderFrameHost *render_frame_host) override;
-    void RenderFrameDeleted(content::RenderFrameHost *render_frame_host) override;
     void RenderProcessGone(base::TerminationStatus status) override;
     void RenderFrameHostChanged(content::RenderFrameHost *old_host, content::RenderFrameHost *new_host) override;
     void RenderViewHostChanged(content::RenderViewHost *old_host, content::RenderViewHost *new_host) override;
@@ -226,7 +225,6 @@ private:
     int &streamCount(blink::mojom::MediaStreamType type);
 
     WebContentsAdapterClient *m_viewClient;
-    QVector<int64_t> m_loadingErrorFrameList;
     QScopedPointer<FaviconManager> m_faviconManager;
     QScopedPointer<FindTextHelper> m_findTextHelper;
     SavePageInfo m_savePageInfo;

@@ -259,7 +259,7 @@ void WebContentsDelegateQt::CloseContents(content::WebContents *source)
 
 void WebContentsDelegateQt::LoadProgressChanged(double progress)
 {
-    if (!m_loadingErrorFrameList.isEmpty() || !m_loadingInfo.isLoading()) // suppress signals that aren't between loadStarted and loadFinished
+    if (!m_loadingInfo.isLoading()) // suppress signals that aren't between loadStarted and loadFinished
         return;
 
     int p = qMin(qRound(progress * 100), 100);
@@ -282,11 +282,6 @@ void WebContentsDelegateQt::RenderFrameCreated(content::RenderFrameHost *render_
 {
     content::FrameTreeNode *node = static_cast<content::RenderFrameHostImpl *>(render_frame_host)->frame_tree_node();
     m_frameFocusedObserver.addNode(node);
-}
-
-void WebContentsDelegateQt::RenderFrameDeleted(content::RenderFrameHost *render_frame_host)
-{
-    m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
 }
 
 void WebContentsDelegateQt::RenderProcessGone(base::TerminationStatus status)
@@ -362,8 +357,6 @@ void WebContentsDelegateQt::DidStartNavigation(content::NavigationHandle *naviga
     if (!navigation_handle->IsInMainFrame() || !web_contents()->IsLoadingToDifferentDocument())
         return;
 
-
-    m_loadingErrorFrameList.clear();
     m_faviconManager->resetCandidates();
 
     m_loadingInfo.url = toQt(navigation_handle->GetURL());
@@ -428,7 +421,6 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
     // The load will succede as an error-page load later, and we reported the original error above
     if (navigation_handle->IsErrorPage()) {
         // Now report we are starting to load an error-page.
-        m_loadingErrorFrameList.append(navigation_handle->GetRenderFrameHost()->GetRoutingID());
         m_faviconManager->resetCandidates();
         emitLoadStarted(true);
 
@@ -506,7 +498,6 @@ void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_h
     if (validated_url.spec() == content::kUnreachableWebDataURL) {
         // error-pages should only ever fail due to abort:
         Q_ASSERT(error_code == -3 /* ERR_ABORTED */);
-        m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
         m_viewClient->iconChanged(QUrl());
         emitLoadFinished(/* isErrorPage = */true);
         return;
@@ -523,8 +514,6 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
 {
     Q_ASSERT(validated_url.is_valid());
     if (validated_url.spec() == content::kUnreachableWebDataURL) {
-        m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
-
         // Trigger LoadFinished signal for main frame's error page only.
         if (!render_frame_host->GetParent()) {
             m_viewClient->iconChanged(QUrl());
