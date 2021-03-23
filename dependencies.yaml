@@ -1,6 +1,12 @@
 dependencies:
+  ../qtbase:
+    ref: 640eb55c130c6c2c982dc212a8a5bd2b8fb7a225
+    required: true
+  ../qtshadertools:
+    ref: cf08b62f103b8e2bc3e9a117ccd262d7a278a260
+    required: true
   ../qtdeclarative:
-    ref: fa87052d56526e1529e694fb1c69c69eec38f2fd
+    ref: 3e9cece90ae7097bbf915ef1e941390abecf28a8
     required: true
 #  ../qtlocation:
 #    ref: a8793c6d9695498b3a53793f21859421262b4541
@@ -8,12 +14,12 @@ dependencies:
 #  ../qtquickcontrols:
 #    ref: 59749d56d666a6687fcedc2f7892080467db8574
 #    required: false
-  ../qtquickcontrols2:
-    ref: 9a19ec26f45e7382431f52136f03887cfaa04b66
-    required: false
-  ../qttools:
-    ref: 3fd594493c3ba31639a7515b901554456a90b4c7
-    required: false
-  ../qtwebchannel:
-    ref: 0e13bd10bc7f31b1540987faeb0e3c83668daa3e
-    required: false
+#  ../qtquickcontrols2:
+#    ref: 9a19ec26f45e7382431f52136f03887cfaa04b66
+#    required: false
+#  ../qttools:
+#    ref: 3fd594493c3ba31639a7515b901554456a90b4c7
+#    required: false
+#  ../qtwebchannel:
+#    ref: 0e13bd10bc7f31b1540987faeb0e3c83668daa3e
+#    required: false
