@@ -9,11 +9,16 @@ project(Gn
 
 set(GN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/gn)
 set(GN_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
-set(GN_EXECUTABLE gn)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../../cmake")
 
 find_package(Python2 REQUIRED)
 find_package(Ninja 1.7.2 REQUIRED)
+
+if(WIN32)
+    set(GN_EXECUTABLE gn.exe)
+else()
+    set(GN_EXECUTABLE gn)
+endif()
 
 file(MAKE_DIRECTORY ${GN_BINARY_DIR})
 add_custom_command(

@@ -68,7 +68,7 @@ if (enable_extensions) {
 }
 
 if (is_win) {
-  data_deps = [ ":qtwebengine_sandbox_win" ]
+  data_deps = [ ":QtWebEngineCoreSandbox" ]
 }
 
 defines = [

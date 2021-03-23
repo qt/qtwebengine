@@ -341,8 +341,16 @@ source_set("qtwebengine_sources") {
 }
 
 if (is_win) {
-  shared_library("qtwebengine_sandbox_win") {
-    cmake_config = "@GN_CONFIG@"
+  static_library("QtWebEngineCoreSandbox") {
+    complete_static_lib = true
+    configs += [ ":cpp17_config",
+                 ":QtWebEngineCore_config",
+                 "//build/config:precompiled_headers"
+    ]
+    output_dir = "$root_out_dir"
+    sources = [
+      "@GN_SOURCE_ROOT@/sandbox_win.cpp"
+    ]
     public_deps = [ "//sandbox/win:sandbox" ]
   }
 }

@@ -287,18 +287,6 @@ static void logContext(const char *glType, base::CommandLine *cmd)
     }
 }
 
-#if defined(Q_OS_WIN)
-sandbox::SandboxInterfaceInfo *staticSandboxInterfaceInfo(sandbox::SandboxInterfaceInfo *info)
-{
-    static sandbox::SandboxInterfaceInfo *g_info = nullptr;
-    if (info) {
-        Q_ASSERT(g_info == nullptr);
-        g_info = info;
-    }
-    return g_info;
-}
-#endif
-
 extern std::unique_ptr<base::MessagePump> messagePumpFactory();
 
 static void setupProxyPac(base::CommandLine *commandLine)
@@ -806,7 +794,7 @@ WebEngineContext::WebEngineContext()
 
     content::ContentMainParams contentMainParams(m_mainDelegate.get());
 #if defined(OS_WIN)
-    contentMainParams.sandbox_info = staticSandboxInterfaceInfo();
+    contentMainParams.sandbox_info = QtWebEngineSandbox::staticSandboxInterfaceInfo();
     sandbox::SandboxInterfaceInfo sandbox_info = {0};
     if (!contentMainParams.sandbox_info) {
         content::InitializeSandboxInfo(&sandbox_info);

@@ -10,6 +10,11 @@ get_target_property(isFramework WebEngineCore FRAMEWORK)
 
 qt_internal_add_executable(${qtWebEngineProcessName} SOURCES main.cpp)
 
+if(WIN32)
+   target_sources(${qtWebEngineProcessName} PRIVATE support_win.cpp)
+   target_link_libraries(${qtWebEngineProcessName} PRIVATE WebEngineCoreSandbox)
+endif()
+
 target_link_libraries(${qtWebEngineProcessName}
    PUBLIC
        Qt::Gui

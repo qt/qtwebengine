@@ -37,8 +37,7 @@
 **
 ****************************************************************************/
 
-#include "process_main.h"
-
+#include "qtwebenginecoreglobal_p.h"
 #include "content_main_delegate_qt.h"
 #include "content/public/app/content_main.h"
 #if defined(OS_WIN)
@@ -51,10 +50,6 @@
 
 namespace QtWebEngineCore {
 
-#if defined(OS_WIN)
-extern sandbox::SandboxInterfaceInfo *staticSandboxInterfaceInfo(sandbox::SandboxInterfaceInfo *info = nullptr);
-#endif
-
 /*! \internal */
 int processMain(int argc, const char **argv)
 {
@@ -63,7 +58,7 @@ int processMain(int argc, const char **argv)
 
 #if defined(OS_WIN)
     HINSTANCE instance_handle = NULL;
-    params.sandbox_info = staticSandboxInterfaceInfo();
+    params.sandbox_info = QtWebEngineSandbox::staticSandboxInterfaceInfo();
     sandbox::SandboxInterfaceInfo sandbox_info = {0};
     if (!params.sandbox_info) {
         content::InitializeSandboxInfo(&sandbox_info);

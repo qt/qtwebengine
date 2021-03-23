@@ -208,6 +208,19 @@ Q_WEBENGINECORE_PRIVATE_EXPORT void initialize()
 }
 } // namespace QtWebEngineCore
 
+#if defined(Q_OS_WIN)
+namespace QtWebEngineSandbox {
+sandbox::SandboxInterfaceInfo *staticSandboxInterfaceInfo(sandbox::SandboxInterfaceInfo *info)
+{
+    static sandbox::SandboxInterfaceInfo *g_info = nullptr;
+    if (info) {
+        Q_ASSERT(g_info == nullptr);
+        g_info = info;
+    }
+    return g_info;
+}
+} //namespace
+#endif
 static void initialize()
 {
 #if QT_CONFIG(opengl)

@@ -65,4 +65,16 @@
 
 #define Q_WEBENGINECORE_PRIVATE_EXPORT Q_WEBENGINECORE_EXPORT
 
+namespace QtWebEngineCore {
+Q_WEBENGINECORE_PRIVATE_EXPORT int processMain(int argc, const char **argv);
+} // namespace
+#if defined(Q_OS_WIN)
+namespace sandbox {
+struct SandboxInterfaceInfo;
+}
+namespace QtWebEngineSandbox {
+Q_WEBENGINECORE_PRIVATE_EXPORT sandbox::SandboxInterfaceInfo *staticSandboxInterfaceInfo(sandbox::SandboxInterfaceInfo *info = nullptr);
+void initializeStaticCopy(int argc, const char **argv);
+}
+#endif
 #endif // QTWEBENGINECOREGLOBAL_P_H

@@ -125,7 +125,7 @@ foreach(config ${configs})
             permission_manager_qt.cpp permission_manager_qt.h
             platform_notification_service_qt.cpp platform_notification_service_qt.h
             pref_service_adapter.cpp pref_service_adapter.h
-            process_main.cpp process_main.h
+            process_main.cpp
             profile_adapter.cpp profile_adapter.h
             profile_adapter_client.cpp profile_adapter_client.h
             profile_io_data_qt.cpp profile_io_data_qt.h
@@ -479,6 +479,25 @@ foreach(config ${configs})
        )
     endif()
 
+    if(WIN32)
+        get_filename_component(windowsSdkPath $ENV{WINDOWSSDKDIR} DIRECTORY)
+        get_filename_component(visualStudioPath $ENV{VSINSTALLDIR} DIRECTORY)
+        list(APPEND gnArgArg
+            use_sysroot=false
+            enable_session_service=false
+            ninja_use_custom_environment_files=false
+            win_linker_timing=true
+            com_init_check_hook_disabled=true
+            heterogeneous_executables=true
+            enable_vr=false
+            use_incremental_linking=false
+            visual_studio_version=2019
+            visual_studio_path=\"${visualStudioPath}\"
+            windows_sdk_path=\"${windowsSdkPath}\"
+            target_cpu="x64"
+        )
+    endif()
+
     list(JOIN gnArgArg " " gnArgArg)
     list(APPEND gnArg "--args=${gnArgArg}")
 
@@ -509,19 +528,27 @@ endforeach()
 #  NINJA CALL
 ##
 
+if(WIN32)
+    set(sandboxOutput QtWebEngineCoreSandbox.lib)
+    set(sandboxTarget QtWebEngineCoreSandbox)
+else()
+    unset(sandboxOutput)
+    unset(sandboxTarget)
+endif()
+
 add_custom_command(
-    OUTPUT QtWebEngineCore.stamp
+    OUTPUT QtWebEngineCore.stamp ${sandboxOutput}
     WORKING_DIRECTORY ${buildDir}/$<CONFIG>
     COMMAND Ninja::ninja
             $ENV{NINJAFLAGS}
             -C ${buildDir}/$<CONFIG>
-            QtWebEngineCore
+            QtWebEngineCore ${sandboxTarget}
     USES_TERMINAL
     VERBATIM
     COMMAND_EXPAND_LISTS
 )
 
-add_custom_target(ninja DEPENDS QtWebEngineCore.stamp)
+add_custom_target(ninja DEPENDS QtWebEngineCore.stamp ${sandboxOutput})
 
 ##
 #  WEBENGINECORE SETUP
@@ -530,7 +557,13 @@ add_custom_target(ninja DEPENDS QtWebEngineCore.stamp)
 add_dependencies(WebEngineCore ninja)
 target_include_directories(WebEngineCore PRIVATE ${buildDir}/$<CONFIG>/gen)
 add_library(GnObjects OBJECT IMPORTED GLOBAL)
+add_dependencies(GnObjects ninja)
 target_link_libraries(WebEngineCore PRIVATE GnObjects)
+
+if(WIN32)
+    add_library(WebEngineCoreSandbox STATIC IMPORTED GLOBAL)
+    add_dependencies(WebEngineCoreSandbox ninja)
+endif()
 
 foreach(config ${configs})
      string(TOUPPER ${config} cfg)
@@ -546,6 +579,14 @@ foreach(config ${configs})
      # we depend on WebEnigneCore stamp, but ninja backend generator needs more
      add_custom_command(OUTPUT ${${cfg}_NINJA_OBJECTS} ${${cfg}_NINJA_ARCHIVES} DEPENDS QtWebEngineCore.stamp)
      add_custom_target(generate_${cfg} DEPENDS ${${cfg}_NINJA_OBJECTS} ${${cfg}_NINJA_ARCHIVES})
+     if(WIN32)
+         set(sandboxLibraryPath ${buildDir}/${config}/QtWebEngineCoreSandbox.lib)
+         set_property(TARGET WebEngineCoreSandbox
+             PROPERTY IMPORTED_LOCATION_${cfg} ${sandboxLibraryPath})
+         set_source_files_properties(${sandboxLibraryPath} PROPERTIES GENERATED TRUE)
+         add_custom_command(OUTPUT ${sandboxLibraryPath} DEPENDS QtWebEngineCoreSandbox.lib)
+         add_custom_target(generate_sandbox_${cfg} DEPENDS ${sandboxLibraryPath})
+     endif()
 endforeach()
 
 ##

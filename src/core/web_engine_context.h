@@ -97,10 +97,6 @@ class ProfileAdapter;
 
 bool usingSoftwareDynamicGL();
 
-#ifdef Q_OS_WIN
-Q_WEBENGINECORE_PRIVATE_EXPORT sandbox::SandboxInterfaceInfo *staticSandboxInterfaceInfo(sandbox::SandboxInterfaceInfo *info = nullptr);
-#endif
-
 typedef std::tuple<bool, QString, QString> ProxyAuthentication;
 
 class WebEngineContext : public base::RefCounted<WebEngineContext> {

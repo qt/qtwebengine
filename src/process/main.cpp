@@ -37,8 +37,7 @@
 **
 ****************************************************************************/
 
-#include "process_main.h"
-
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 #include <QCoreApplication>
 #include <stdio.h>
 #include <memory>
@@ -88,17 +87,16 @@ struct tm* localtime64_r_proxy(const time_t* timep, struct tm* result)
 
 #endif // defined(OS_LINUX)
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN32)
 namespace QtWebEngineProcess {
 void initDpiAwareness();
-void initializeStaticCopy(int argc, const char **argv);
-} // namespace
-#endif // defined(Q_OS_WIN)
+}
+#endif // defined(Q_OS_WIN32)
 
 int main(int argc, const char **argv)
 {
-#ifdef Q_OS_WIN
-    QtWebEngineProcess::initializeStaticCopy(argc, argv);
+#if defined(Q_OS_WIN32)
+    QtWebEngineSandbox::initializeStaticCopy(argc, argv);
     QtWebEngineProcess::initDpiAwareness();
 #endif
 

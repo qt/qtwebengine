@@ -195,6 +195,9 @@ function(configure_gn_target target configType inFilePath outFilePath)
     endforeach()
     list(REMOVE_DUPLICATES GN_CFLAGS_C)
 
+    # GN_SOURCE_ROOT
+    get_filename_component(GN_SOURCE_ROOT "${CMAKE_CURRENT_LIST_DIR}" REALPATH)
+
     if(MACOS)
        recoverFrameworkBuild(GN_INCLUDE_DIRS GN_CFLAGS_C)
     endif()
