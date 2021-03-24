@@ -118,6 +118,8 @@
 #include "chrome/renderer/media/webrtc_logging_agent_impl.h"
 #endif
 
+#include "web_engine_library_info.h"
+
 namespace QtWebEngineCore {
 
 static const char kHttpErrorDomain[] = "http";
@@ -134,6 +136,7 @@ ContentRendererClientQt::~ContentRendererClientQt() {}
 
 void ContentRendererClientQt::RenderThreadStarted()
 {
+    base::i18n::SetICUDefaultLocale(WebEngineLibraryInfo::getApplicationLocale());
     content::RenderThread *renderThread = content::RenderThread::Get();
     m_renderConfiguration.reset(new RenderConfiguration());
     m_userResourceController.reset(new UserResourceController());

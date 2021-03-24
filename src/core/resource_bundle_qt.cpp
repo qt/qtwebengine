@@ -98,7 +98,7 @@ std::string ResourceBundle::LoadLocaleResources(const std::string &pref_locale, 
 {
     DCHECK(!locale_resources_data_.get()) << "locale.pak already loaded";
 
-    std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
+    std::string app_locale = l10n_util::GetApplicationLocale(pref_locale, false /* set_icu_locale */);
 
 #if defined(OS_LINUX)
     int locale_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(kWebEngineLocale);

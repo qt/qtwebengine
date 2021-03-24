@@ -351,7 +351,7 @@ base::string16 WebEngineLibraryInfo::getApplicationName()
     return toString16(qApp->applicationName());
 }
 
-std::string WebEngineLibraryInfo::getApplicationLocale()
+std::string WebEngineLibraryInfo::getResolvedLocale()
 {
     base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
     if (parsedCommandLine->HasSwitch(switches::kLang)) {
@@ -363,6 +363,14 @@ std::string WebEngineLibraryInfo::getApplicationLocale()
             return resolvedLocale;
     }
     return "en-US";
+}
+
+std::string WebEngineLibraryInfo::getApplicationLocale()
+{
+    base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
+    return parsedCommandLine->HasSwitch(switches::kLang)
+        ? parsedCommandLine->GetSwitchValueASCII(switches::kLang)
+        : QLocale().bcp47Name().toStdString();
 }
 
 #if defined(OS_WIN)

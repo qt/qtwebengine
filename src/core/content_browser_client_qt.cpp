@@ -39,6 +39,7 @@
 
 #include "content_browser_client_qt.h"
 
+#include "base/files/file_util.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -479,12 +480,7 @@ std::unique_ptr<net::ClientCertStore> ContentBrowserClientQt::CreateClientCertSt
 
 std::string ContentBrowserClientQt::GetApplicationLocale()
 {
-    std::string bcp47Name = QLocale().bcp47Name().toStdString();
-    if (m_cachedQtLocale != bcp47Name) {
-        m_cachedQtLocale = bcp47Name;
-        m_appLocale = WebEngineLibraryInfo::getApplicationLocale();
-    }
-    return m_appLocale;
+    return WebEngineLibraryInfo::getApplicationLocale();
 }
 
 std::string ContentBrowserClientQt::GetAcceptLangs(content::BrowserContext *context)
@@ -500,7 +496,7 @@ void ContentBrowserClientQt::AppendExtraCommandLineSwitches(base::CommandLine* c
 
     std::string processType = command_line->GetSwitchValueASCII(switches::kProcessType);
     if (processType == switches::kZygoteProcess)
-        command_line->AppendSwitchASCII(switches::kLang, GetApplicationLocale());
+        command_line->AppendSwitchASCII(switches::kLang, WebEngineLibraryInfo::getApplicationLocale());
 }
 
 void ContentBrowserClientQt::GetAdditionalWebUISchemes(std::vector<std::string>* additional_schemes)
@@ -528,9 +524,8 @@ void ContentBrowserClientQt::GetAdditionalAllowedSchemesForFileSystem(std::vecto
 #if defined(Q_OS_LINUX)
 void ContentBrowserClientQt::GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::PosixFileDescriptorInfo* mappings)
 {
-    const std::string &locale = GetApplicationLocale();
-    const base::FilePath &locale_file_path = ui::ResourceBundle::GetSharedInstance().GetLocaleFilePath(locale);
-    if (locale_file_path.empty())
+    const base::FilePath &locale_file_path = ui::ResourceBundle::GetSharedInstance().GetLocaleFilePath(WebEngineLibraryInfo::getResolvedLocale());
+    if (locale_file_path.empty() || !base::PathExists(locale_file_path))
         return;
 
     // Open pak file of the current locale in the Browser process and pass its file descriptor to the sandboxed

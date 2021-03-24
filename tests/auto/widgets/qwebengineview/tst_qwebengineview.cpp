@@ -124,6 +124,7 @@ private Q_SLOTS:
     void doNotBreakLayout();
 
     void changeLocale();
+    void mixLangLocale_data();
     void mixLangLocale();
     void inputMethodsTextFormat_data();
     void inputMethodsTextFormat();
@@ -1213,26 +1214,46 @@ void tst_QWebEngineView::changeLocale()
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
 }
 
+void tst_QWebEngineView::mixLangLocale_data()
+{
+    QTest::addColumn<QString>("locale");
+    QTest::addColumn<QByteArray>("formattedNumber");
+    QTest::newRow("en_DK") << "en-DK" << QByteArray("1.234.567.890");
+    QTest::newRow("de")    << "de"    << QByteArray("1.234.567.890");
+    QTest::newRow("de_CH") << "de-CH" << QByteArray("1’234’567’890");
+    QTest::newRow("eu_ES") << "eu-ES" << QByteArray("1.234.567.890");
+    QTest::newRow("hu_HU") << "hu-HU" << QByteArray("1\xC2\xA0""234\xC2\xA0""567\xC2\xA0""890"); // no-break spaces
+}
+
 void tst_QWebEngineView::mixLangLocale()
 {
-    for (QString locale : { "en_DK", "de_CH", "eu_ES" }) {
-        QLocale::setDefault(locale);
-        QWebEngineView view;
-        QSignalSpy loadSpy(&view, &QWebEngineView::loadFinished);
+    QFETCH(QString, locale);
+    QFETCH(QByteArray, formattedNumber);
 
-        bool terminated = false;
-        auto sc = connect(view.page(), &QWebEnginePage::renderProcessTerminated, [&] () { terminated = true; });
+    QLocale::setDefault(locale);
 
-        view.load(QUrl("qrc:///resources/dummy.html"));
-        QTRY_VERIFY(terminated || loadSpy.count() == 1);
+    QWebEngineView view;
+    QSignalSpy loadSpy(&view, &QWebEngineView::loadFinished);
 
-        QVERIFY2(!terminated,
-            qPrintable(QString("Locale [%1] terminated: %2, loaded: %3").arg(locale).arg(terminated).arg(loadSpy.count())));
-        QVERIFY(loadSpy.first().first().toBool());
+    bool terminated = false;
+    auto sc = connect(view.page(), &QWebEnginePage::renderProcessTerminated, [&] () { terminated = true; });
 
-        QString content = toPlainTextSync(view.page());
-        QVERIFY2(!content.isEmpty() && content.contains("test content"), qPrintable(content));
-    }
+    view.load(QUrl("qrc:///resources/dummy.html"));
+    QTRY_VERIFY(terminated || loadSpy.count() == 1);
+
+    QVERIFY2(!terminated,
+        qPrintable(QString("Locale [%1] terminated: %2, loaded: %3").arg(locale).arg(terminated).arg(loadSpy.count())));
+    QVERIFY(loadSpy.first().first().toBool());
+
+    QString content = toPlainTextSync(view.page());
+    QVERIFY2(!content.isEmpty() && content.contains("test content"), qPrintable(content));
+
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "navigator.language").toString(), QLocale().bcp47Name());
+
+    if (locale == "eu-ES")
+        QEXPECT_FAIL("", "Basque number formatting is somehow dependent on environment", Continue);
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "Number(1234567890).toLocaleString()").toByteArray(), formattedNumber);
+
     QLocale::setDefault(QLocale("en"));
 }
 
