@@ -26,10 +26,9 @@ qtConfig(webengine-webrtc) {
 
 qtConfig(webengine-proprietary-codecs) {
     gn_args += proprietary_codecs=true ffmpeg_branding=\"Chrome\"
-# Fix after updating 3rdparty in dev to include the right fix
-#    qtConfig(webengine-webrtc) {
-#        gn_args += rtc_use_h264=true
-#    }
+    qtConfig(webengine-webrtc) {
+        gn_args += rtc_use_h264=true
+    }
 } else {
     gn_args += proprietary_codecs=false
 }
