@@ -72,8 +72,7 @@ namespace QtWebEngine {
 */
 void initialize()
 {
-     QCoreApplication *app = QCoreApplication::instance();
-     if (app) {
+     if (!QCoreApplication::startingUp()) {
         qWarning("QtWebEngine::initialize() called with QCoreApplication object already created and should be call before. "\
                  "This is depreciated and may fail in the future.");
         QtWebEngineCore::initialize();
