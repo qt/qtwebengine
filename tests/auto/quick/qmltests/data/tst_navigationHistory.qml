@@ -78,7 +78,7 @@ TestWebEngineView {
         name: "WebEngineViewNavigationHistory"
 
         function test_navigationHistory() {
-            compare(webEngineView.loadProgress, 0)
+            webEngineView.navigationHistory.clear()
 
             webEngineView.url = Qt.resolvedUrl("test1.html")
             verify(webEngineView.waitForLoadSucceeded())
@@ -159,7 +159,7 @@ TestWebEngineView {
         }
 
         function test_navigationButtons() {
-            compare(webEngineView.loadProgress, 0)
+            webEngineView.navigationHistory.clear()
 
             webEngineView.url = Qt.resolvedUrl("test1.html")
             verify(webEngineView.waitForLoadSucceeded())
