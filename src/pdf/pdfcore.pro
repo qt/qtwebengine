@@ -78,10 +78,10 @@ HEADERS += \
     api/qpdfselection_p.h \
 
 
-qtConfig(webengine-qt-freetype): QMAKE_USE_PRIVATE+= freetype
-qtConfig(webengine-qt-png): QMAKE_USE_PRIVATE+= libpng
-qtConfig(webengine-qt-harfbuzz): QMAKE_USE_PRIVATE+= harfbuzz
-#qtConfig(webengine-qt-jpeg): QMAKE_USE_PRIVATE+= libjpeg
+qtConfig(webengine-qt-freetype): QMAKE_USE += freetype
+qtConfig(webengine-qt-png): QMAKE_USE += libpng
+qtConfig(webengine-qt-harfbuzz): QMAKE_USE += harfbuzz
+#qtConfig(webengine-qt-jpeg): QMAKE_USE += libjpeg
 qtConfig(webengine-qt-zlib){} #qtzlib is a part of QtCore
 
 load(qt_module)

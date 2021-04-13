@@ -163,6 +163,7 @@
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/extension_web_contents_observer_qt.h"
 #include "extensions/extensions_browser_client_qt.h"
+#include "extensions/pdf_iframe_navigation_throttle_qt.h"
 #include "net/plugin_response_interceptor_url_loader_throttle.h"
 #endif
 
@@ -217,6 +218,13 @@ bool IsHandledProtocol(base::StringPiece scheme)
 }
 
 namespace QtWebEngineCore {
+
+void MaybeAddThrottle(
+    std::unique_ptr<content::NavigationThrottle> maybe_throttle,
+    std::vector<std::unique_ptr<content::NavigationThrottle>>* throttles) {
+    if (maybe_throttle)
+        throttles->push_back(std::move(maybe_throttle));
+}
 
 ContentBrowserClientQt::ContentBrowserClientQt()
 {
@@ -884,6 +892,11 @@ std::vector<std::unique_ptr<content::NavigationThrottle>> ContentBrowserClientQt
                             navigation_handle,
                             base::BindRepeating(&navigationThrottleCallback),
                             navigation_interception::SynchronyMode::kSync));
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    MaybeAddThrottle(extensions::PDFIFrameNavigationThrottleQt::MaybeCreateThrottleFor(navigation_handle), &throttles);
+#endif
+
     return throttles;
 }
 

@@ -90,6 +90,8 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/ui/webui/devtools_ui.h",
     "//chrome/browser/ui/webui/devtools_ui_data_source.cc",
     "//chrome/browser/ui/webui/devtools_ui_data_source.h",
+    "//chrome/browser/ui/webui/net_internals/net_internals_ui.cc",
+    "//chrome/browser/ui/webui/net_internals/net_internals_ui.h",
     "//chrome/browser/ui/webui/quota_internals/quota_internals_handler.cc",
     "//chrome/browser/ui/webui/quota_internals/quota_internals_handler.h",
     "//chrome/browser/ui/webui/quota_internals/quota_internals_proxy.cc",

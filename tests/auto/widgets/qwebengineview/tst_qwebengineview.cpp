@@ -42,6 +42,7 @@
 #include <QQuickItem>
 #include <QQuickWidget>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
+#include <QScopeGuard>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QStyle>
@@ -161,6 +162,7 @@ private Q_SLOTS:
     void jsKeyboardEvent_data();
     void jsKeyboardEvent();
     void deletePage();
+    void autoDeleteOnExternalPageDelete();
     void closeOpenerTab();
     void switchPage();
     void setPageDeletesImplicitPage();
@@ -3137,7 +3139,7 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::newRow("media-engagement") << QUrl("chrome://media-engagement") << false;
     QTest::newRow("media-internals") << QUrl("chrome://media-internals") << true;
     QTest::newRow("net-export") << QUrl("chrome://net-export") << false;
-    QTest::newRow("net-internals") << QUrl("chrome://net-internals") << false;
+    QTest::newRow("net-internals") << QUrl("chrome://net-internals") << true;
     QTest::newRow("network-error") << QUrl("chrome://network-error") << false;
     QTest::newRow("network-errors") << QUrl("chrome://network-errors") << true;
     QTest::newRow("ntp-tiles-internals") << QUrl("chrome://ntp-tiles-internals") << false;
@@ -3286,6 +3288,26 @@ void tst_QWebEngineView::deletePage()
     QSignalSpy spy(view.page(), &QWebEnginePage::loadFinished);
     view.page()->load(QStringLiteral("about:blank"));
     QTRY_VERIFY(spy.count());
+}
+
+void tst_QWebEngineView::autoDeleteOnExternalPageDelete()
+{
+    QPointer<QWebEngineView> view = new QWebEngineView;
+    QPointer<QWebEnginePage> page = new QWebEnginePage;
+    auto sg = qScopeGuard([&] () { delete view; delete page; });
+
+    QSignalSpy spy(page, &QWebEnginePage::loadFinished);
+    view->setPage(page);
+    view->show();
+    view->resize(320, 240);
+    page->load(QUrl("about:blank"));
+    QTRY_VERIFY(spy.count());
+    QVERIFY(page->parent() != view);
+
+    auto sc = QObject::connect(page, &QWebEnginePage::destroyed, view, &QWebEngineView::deleteLater);
+    QTimer::singleShot(0, page, &QObject::deleteLater);
+    QTRY_VERIFY(!page);
+    QTRY_VERIFY(!view);
 }
 
 class TestView : public QWebEngineView {

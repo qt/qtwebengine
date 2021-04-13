@@ -24,12 +24,21 @@ qtConfig(webengine-qt-freetype) {
 }
 
 qtConfig(webengine-qt-zlib) {
+    win32 {
+      CONFIG(debug, debug|release) {
+          qtzlib = Qt5Cored.lib
+      } else {
+          qtzlib = Qt5Core.lib
+      }
+
+    } else { qtzlib = libQt5Core.a
+    }
     gn_args += use_qt_zlib = true
     gn_args += "qt_zlib_includes=\["\
                "\"$$system_path($$[QT_INSTALL_HEADERS])\"," \
                "\"$$system_path($$[QT_INSTALL_HEADERS]/QtCore)\"," \
                "\"$$system_path($$[QT_INSTALL_HEADERS]/QtZlib)\"\]"
-    gn_args += "qt_zlib=\"$$system_path($$[QT_INSTALL_LIBS]/libQt5Core.a)\""
+    gn_args += "qt_zlib=\"$$system_path($$[QT_INSTALL_LIBS]/$$qtzlib)\""
 }
 
 qtConfig(pdf-v8) {

@@ -888,6 +888,11 @@ QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
     d->q_ptr = this;
     this->setActiveFocusOnTab(true);
     this->setFlags(QQuickItem::ItemIsFocusScope | QQuickItem::ItemAcceptsDrops);
+
+    connect(action(WebAction::Back), &QQuickWebEngineAction::enabledChanged,
+            this, &QQuickWebEngineView::canGoBackChanged);
+    connect(action(WebAction::Forward), &QQuickWebEngineAction::enabledChanged,
+            this, &QQuickWebEngineView::canGoForwardChanged);
 }
 
 QQuickWebEngineView::~QQuickWebEngineView()

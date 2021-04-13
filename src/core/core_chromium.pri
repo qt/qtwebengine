@@ -115,7 +115,6 @@ SOURCES = \
         renderer/web_engine_page_render_frame.cpp \
         renderer/render_configuration.cpp \
         renderer/user_resource_controller.cpp \
-        renderer/plugins/plugin_placeholder_qt.cpp \
         renderer_host/web_engine_page_host.cpp \
         renderer_host/user_resource_controller_host.cpp \
         resource_bundle_qt.cpp \
@@ -221,7 +220,6 @@ HEADERS = \
         renderer/web_engine_page_render_frame.h \
         renderer/render_configuration.h \
         renderer/user_resource_controller.h \
-        renderer/plugins/plugin_placeholder_qt.h \
         renderer_host/web_engine_page_host.h \
         renderer_host/user_resource_controller_host.h \
         request_controller.h \
@@ -331,6 +329,7 @@ qtConfig(webengine-extensions) {
         extensions/extensions_browser_client_qt.cpp \
         extensions/messaging_delegate_qt.cpp \
         extensions/mime_handler_view_guest_delegate_qt.cpp \
+        extensions/pdf_iframe_navigation_throttle_qt.cpp \
         extensions/plugin_service_filter_qt.cpp \
         net/plugin_response_interceptor_url_loader_throttle.cpp \
         renderer/extensions/extensions_dispatcher_delegate_qt.cpp \
@@ -350,6 +349,7 @@ qtConfig(webengine-extensions) {
         extensions/extensions_browser_client_qt.h \
         extensions/messaging_delegate_qt.h \
         extensions/mime_handler_view_guest_delegate_qt.h \
+        extensions/pdf_iframe_navigation_throttle_qt.h \
         extensions/plugin_service_filter_qt.h \
         net/plugin_response_interceptor_url_loader_throttle.h \
         renderer/extensions/extensions_dispatcher_delegate_qt.h \

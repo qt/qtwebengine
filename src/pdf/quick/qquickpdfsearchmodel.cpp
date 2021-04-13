@@ -39,7 +39,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(qLcS, "qt.pdf.search")
+Q_LOGGING_CATEGORY(qLcSearch, "qt.pdf.search")
 
 /*!
     \qmltype PdfSearchModel
@@ -282,7 +282,7 @@ void QQuickPdfSearchModel::setCurrentResult(int currentResult)
             currentResult = 0;
         }
     }
-    qCDebug(qLcS) << "currentResult was" << m_currentResult
+    qCDebug(qLcSearch) << "currentResult was" << m_currentResult
                   << "requested" << currentResultWas << "on page" << currentPageWas
                   << "->" << currentResult << "on page" << m_currentPage;
 
