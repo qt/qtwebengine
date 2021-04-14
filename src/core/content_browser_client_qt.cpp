@@ -1005,7 +1005,13 @@ static bool navigationThrottleCallback(content::WebContents *source,
         WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(source)->GetView())->client();
     if (!client)
         return false;
-    client->navigationRequested(pageTransitionToNavigationType(params.transition_type()),
+
+    // Redirects might not be reflected in transition_type at this point (see also chrome/.../web_navigation_api_helpers.cc)
+    auto transition_type = params.transition_type();
+    if (params.is_redirect())
+        transition_type = ui::PageTransitionFromInt(transition_type | ui::PAGE_TRANSITION_SERVER_REDIRECT);
+
+    client->navigationRequested(pageTransitionToNavigationType(transition_type),
                                 toQt(params.url()),
                                 navigationRequestAction,
                                 params.is_main_frame());

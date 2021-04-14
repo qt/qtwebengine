@@ -596,6 +596,39 @@ void tst_QWebEnginePage::acceptNavigationRequestNavigationType()
         << QWebEnginePage::NavigationTypeReload
         << QWebEnginePage::NavigationTypeTyped
         << QWebEnginePage::NavigationTypeRedirect;
+
+    // client side redirect
+    page.load(QUrl("qrc:///resources/redirect.html"));
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 8, 20000);
+    QTRY_COMPARE(page.navigations.count(), 8);
+    expectedList += { QWebEnginePage::NavigationTypeTyped, QWebEnginePage::NavigationTypeRedirect };
+
+    // server side redirect
+    HttpServer server;
+    server.setResourceDirs({ ":/resources" });
+    connect(&server, &HttpServer::newRequest, &server, [&] (HttpReqRep *r) {
+        if (r->requestMethod() == "GET") {
+            if (r->requestPath() == "/redirect1.html") {
+                r->setResponseHeader("Location", server.url("/redirect2.html").toEncoded());
+                r->setResponseBody("<html><body>Redirect1</body></html>");
+                r->sendResponse(307); // Internal server redirect
+            } else if (r->requestPath() == "/redirect2.html") {
+                r->setResponseHeader("Location", server.url("/content.html").toEncoded());
+                r->setResponseBody("<html><body>Redirect2</body></html>");
+                r->sendResponse(301); // Moved permanently
+            }
+        }
+    });
+    QVERIFY(server.start());
+    page.load(QUrl(server.url("/redirect1.html")));
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 9, 20000);
+    QTRY_COMPARE(page.navigations.count(), 11);
+    expectedList += {
+        QWebEnginePage::NavigationTypeTyped,
+        QWebEnginePage::NavigationTypeRedirect,
+        QWebEnginePage::NavigationTypeRedirect
+    };
+
     QVERIFY(expectedList.count() == page.navigations.count());
     for (int i = 0; i < expectedList.count(); ++i) {
         QCOMPARE(page.navigations[i].type, expectedList[i]);
