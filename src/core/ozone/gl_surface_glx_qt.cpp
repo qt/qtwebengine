@@ -48,16 +48,8 @@
 
 namespace gl {
 
-bool GLSurfaceGLXQt::s_initialized = false;
-
-GLSurfaceGLXQt::~GLSurfaceGLXQt()
-{
-    Destroy();
-}
-
 void GLSurfaceGLX::ShutdownOneOff()
 {
-    s_initialized = false;
 }
 
 bool GLSurfaceGLX::IsCreateContextSupported()
@@ -113,6 +105,20 @@ bool GLSurfaceGLX::IsRobustnessVideoMemoryPurgeSupported()
 const char* GLSurfaceGLX::GetGLXExtensions()
 {
     return GLSurfaceQt::g_extensions;
+}
+
+
+bool GLSurfaceGLXQt::s_initialized = false;
+
+GLSurfaceGLXQt::GLSurfaceGLXQt(const gfx::Size& size)
+    : GLSurfaceQt(size),
+      m_surfaceBuffer(0)
+{
+}
+
+GLSurfaceGLXQt::~GLSurfaceGLXQt()
+{
+    Destroy();
 }
 
 bool GLSurfaceGLXQt::InitializeOneOff()
@@ -195,12 +201,6 @@ void GLSurfaceGLXQt::Destroy()
         glXDestroyPbuffer(static_cast<Display*>(g_display), m_surfaceBuffer);
         m_surfaceBuffer = 0;
     }
-}
-
-GLSurfaceGLXQt::GLSurfaceGLXQt(const gfx::Size& size)
-    : GLSurfaceQt(size),
-      m_surfaceBuffer(0)
-{
 }
 
 void* GLSurfaceGLXQt::GetHandle()
