@@ -181,6 +181,7 @@ QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfoPriva
     \value ResourceTypePluginResource  A resource requested by a plugin. (Added in Qt 5.7)
     \value ResourceTypeNavigationPreloadMainFrame  A main-frame service worker navigation preload request. (Added in Qt 5.14)
     \value ResourceTypeNavigationPreloadSubFrame  A sub-frame service worker navigation preload request. (Added in Qt 5.14)
+    \value ResourceTypeWebSocket  A WebSocket request. (Added in Qt 6.4)
     \value ResourceTypeUnknown  Unknown request type.
 
     \note For forward compatibility all values not matched should be treated as unknown,
