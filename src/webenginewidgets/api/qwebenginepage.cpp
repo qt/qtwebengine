@@ -2526,6 +2526,10 @@ void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &res
     during page destruction. When QWebEnginePage is deleted, the callback is triggered with an invalid
     value and it is not safe to use the corresponding QWebEnginePage or QWebEngineView instance inside it.
 
+    \note This function rasterizes the result when rendering onto \a printer. Please consider raising
+    the default resolution of \a printer to at least 300 DPI or using printToPdf() to produce
+    PDF file output more effectively.
+
     \since 5.8
 */
 void QWebEnginePage::print(QPrinter *printer, const QWebEngineCallback<bool> &resultCallback)

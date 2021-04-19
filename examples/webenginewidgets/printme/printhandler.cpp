@@ -107,6 +107,7 @@ void PrintHandler::printPreview()
         return;
     m_inPrintPreview = true;
     QPrinter printer;
+    printer.setResolution(300);
     QPrintPreviewDialog preview(&printer, m_page->view());
     connect(&preview, &QPrintPreviewDialog::paintRequested,
             this, &PrintHandler::printDocument);
