@@ -144,6 +144,14 @@ public:
             int process_id,
             int routing_id,
             mojo::PendingReceiver<network::mojom::RestrictedCookieManager> *receiver) override;
+    bool WillInterceptWebSocket(content::RenderFrameHost *frame) override;
+    void CreateWebSocket(
+            content::RenderFrameHost *frame,
+            WebSocketFactory factory,
+            const GURL &url,
+            const net::SiteForCookies &site_for_cookies,
+            const absl::optional<std::string> &user_agent,
+            mojo::PendingRemote<network::mojom::WebSocketHandshakeClient> handshake_client) override;
 
     content::AllowServiceWorkerResult AllowServiceWorker(
             const GURL &scope,

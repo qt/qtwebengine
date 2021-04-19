@@ -76,6 +76,7 @@
 #include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
+#include "services/network/public/mojom/websocket.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -117,6 +118,7 @@
 #include "web_engine_settings.h"
 #include "api/qwebenginecookiestore.h"
 #include "api/qwebenginecookiestore_p.h"
+#include "api/qwebengineurlrequestinfo_p.h"
 
 #if QT_CONFIG(opengl)
 #include <QOpenGLContext>
@@ -1214,6 +1216,75 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
                                    frame ? frame->GetFrameTreeNodeId() : content::RenderFrameHost::kNoFrameTreeNodeId,
                                    std::move(proxied_receiver), std::move(pending_url_loader_factory));
     return true;
+}
+
+bool ContentBrowserClientQt::WillInterceptWebSocket(content::RenderFrameHost *frame)
+{
+    Q_UNUSED(frame);
+    return true; // It is probably not worth it to only intercept when interceptors are installed
+}
+
+QWebEngineUrlRequestInterceptor *getProfileInterceptorFromFrame(content::RenderFrameHost *frame)
+{
+    ProfileQt *profile = static_cast<ProfileQt *>(frame->GetBrowserContext());
+    if (profile)
+        return profile->profileAdapter()->requestInterceptor();
+    return nullptr;
+}
+
+QWebEngineUrlRequestInterceptor *getPageInterceptor(content::WebContents *web_contents)
+{
+    if (web_contents) {
+        auto view = static_cast<content::WebContentsImpl *>(web_contents)->GetView();
+        if (WebContentsAdapterClient *client = WebContentsViewQt::from(view)->client())
+            return client->webContentsAdapter()->requestInterceptor();
+    }
+    return nullptr;
+}
+
+void ContentBrowserClientQt::CreateWebSocket(
+        content::RenderFrameHost *frame,
+        WebSocketFactory factory,
+        const GURL &url,
+        const net::SiteForCookies &site_for_cookies,
+        const absl::optional<std::string> &user_agent,
+        mojo::PendingRemote<network::mojom::WebSocketHandshakeClient> handshake_client)
+{
+    QWebEngineUrlRequestInterceptor *profileInterceptor = getProfileInterceptorFromFrame(frame);
+    content::WebContents *web_contents = content::WebContents::FromRenderFrameHost(frame);
+    QWebEngineUrlRequestInterceptor *pageInterceptor = getPageInterceptor(web_contents);
+    std::vector<network::mojom::HttpHeaderPtr> headers;
+    GURL to_url = url;
+    bool addedUserAgent = false;
+    if (profileInterceptor || pageInterceptor) {
+        QUrl initiator = web_contents ? toQt(web_contents->GetURL()) : QUrl();
+        auto *infoPrivate = new QWebEngineUrlRequestInfoPrivate(
+                    QWebEngineUrlRequestInfo::ResourceTypeWebSocket,
+                    QWebEngineUrlRequestInfo::NavigationTypeOther,
+                    toQt(url), toQt(site_for_cookies.first_party_url()), initiator,
+                    QByteArrayLiteral("GET"));
+        QWebEngineUrlRequestInfo requestInfo(infoPrivate);
+        if (profileInterceptor) {
+            profileInterceptor->interceptRequest(requestInfo);
+            pageInterceptor = getPageInterceptor(web_contents);
+        }
+        if (pageInterceptor && !requestInfo.changed())
+            pageInterceptor->interceptRequest(requestInfo);
+        if (infoPrivate->shouldBlockRequest)
+            return; // ### should we call OnFailure on handshake_client?
+        if (infoPrivate->shouldRedirectRequest)
+            to_url = toGurl(infoPrivate->url);
+        for (auto header = infoPrivate->extraHeaders.constBegin(); header != infoPrivate->extraHeaders.constEnd(); ++header) {
+            std::string h = header.key().toStdString();
+            if (base::LowerCaseEqualsASCII(h, net::HttpRequestHeaders::kUserAgent))
+                addedUserAgent = true;
+            headers.push_back(network::mojom::HttpHeader::New(h, header.value().toStdString()));
+        }
+    }
+    if (!addedUserAgent && user_agent)
+        headers.push_back(network::mojom::HttpHeader::New(net::HttpRequestHeaders::kUserAgent, *user_agent));
+
+    std::move(factory).Run(to_url, std::move(headers), std::move(handshake_client), mojo::NullRemote(), mojo::NullRemote());
 }
 
 void ContentBrowserClientQt::SiteInstanceGotProcess(content::SiteInstance *site_instance)

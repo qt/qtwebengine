@@ -46,6 +46,7 @@
 #include <QtCore/qurl.h>
 
 namespace QtWebEngineCore {
+class ContentBrowserClientQt;
 class InterceptedRequest;
 } // namespace QtWebEngineCore
 
@@ -81,6 +82,7 @@ public:
 #ifndef Q_QDOC
         ResourceTypeLast = ResourceTypeNavigationPreloadSubFrame,
 #endif
+        ResourceTypeWebSocket = 254,
         ResourceTypeUnknown = 255
     };
 
@@ -108,6 +110,7 @@ public:
     void setHttpHeader(const QByteArray &name, const QByteArray &value);
 
 private:
+    friend class QtWebEngineCore::ContentBrowserClientQt;
     friend class QtWebEngineCore::InterceptedRequest;
     Q_DISABLE_COPY(QWebEngineUrlRequestInfo)
     Q_DECLARE_PRIVATE(QWebEngineUrlRequestInfo)
