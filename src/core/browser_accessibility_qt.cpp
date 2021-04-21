@@ -334,6 +334,11 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ax::mojom::Role::kDocIndex:
     case ax::mojom::Role::kDocIntroduction:
     case ax::mojom::Role::kDocNotice:
+        return QAccessible::Section;
+    case ax::mojom::Role::kDocPageFooter:
+        return QAccessible::Footer;
+    case ax::mojom::Role::kDocPageHeader:
+        return QAccessible::Heading;
     case ax::mojom::Role::kDocPageList:
     case ax::mojom::Role::kDocPart:
     case ax::mojom::Role::kDocPreface:
@@ -359,7 +364,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ax::mojom::Role::kFigure:
         return QAccessible::Section;
     case ax::mojom::Role::kFooter:
-        return QAccessible::Footer;
+        // CORE-AAM recommends LANDMARK instead of FOOTER.
+        return QAccessible::Section;
     case ax::mojom::Role::kFooterAsNonLandmark:
         return QAccessible::Section;
     case ax::mojom::Role::kForm:
