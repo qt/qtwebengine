@@ -216,6 +216,7 @@ public:
 
     QString determineDownloadPath(const QString &downloadDirectory, const QString &suggestedFilename, const time_t &startTime);
 
+    static QPointer<ProfileAdapter> s_profileForGlobalCertificateVerification;
 private:
     void updateCustomUrlSchemeHandlers();
     void resetVisitedLinksManager();

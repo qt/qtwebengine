@@ -87,6 +87,9 @@ inline QString buildLocationFromStandardPath(const QString &standardPath, const 
 
 namespace QtWebEngineCore {
 
+// static
+QPointer<ProfileAdapter> ProfileAdapter::s_profileForGlobalCertificateVerification;
+
 ProfileAdapter::ProfileAdapter(const QString &storageName):
       m_name(storageName)
     , m_offTheRecord(storageName.isEmpty())
@@ -654,26 +657,26 @@ void ProfileAdapter::setUseForGlobalCertificateVerification(bool enable)
     if (m_usedForGlobalCertificateVerification == enable)
         return;
 
-    static QPointer<ProfileAdapter> profileForglobalCertificateVerification;
-
     m_usedForGlobalCertificateVerification = enable;
     if (enable) {
-        if (profileForglobalCertificateVerification) {
-            profileForglobalCertificateVerification->m_usedForGlobalCertificateVerification = false;
-            if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
-                profileForglobalCertificateVerification->m_profile->m_profileIOData->resetNetworkContext();
-            for (auto *client : qAsConst(profileForglobalCertificateVerification->m_clients))
+        if (s_profileForGlobalCertificateVerification) {
+            s_profileForGlobalCertificateVerification->m_usedForGlobalCertificateVerification = false;
+            for (auto *client : qAsConst(s_profileForGlobalCertificateVerification->m_clients))
                 client->useForGlobalCertificateVerificationChanged();
+        } else {
+            // OCSP enabled
+            for (auto adapter : qAsConst(WebEngineContext::current()->m_profileAdapters))
+                adapter->m_profile->m_profileIOData->resetNetworkContext();
         }
-        profileForglobalCertificateVerification = this;
+        s_profileForGlobalCertificateVerification = this;
     } else {
-        Q_ASSERT(profileForglobalCertificateVerification);
-        Q_ASSERT(profileForglobalCertificateVerification == this);
-        profileForglobalCertificateVerification = nullptr;
+        Q_ASSERT(s_profileForGlobalCertificateVerification);
+        Q_ASSERT(s_profileForGlobalCertificateVerification == this);
+        s_profileForGlobalCertificateVerification = nullptr;
+        // OCSP disabled
+        for (auto adapter : qAsConst(WebEngineContext::current()->m_profileAdapters))
+            adapter->m_profile->m_profileIOData->resetNetworkContext();
     }
-
-    if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
-        m_profile->m_profileIOData->resetNetworkContext();
 }
 
 bool ProfileAdapter::isUsedForGlobalCertificateVerification() const
