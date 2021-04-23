@@ -688,7 +688,7 @@ void RenderWidgetHostViewQtDelegateClient::handleTouchEvent(QTouchEvent *event)
     //        touch event content like number of points for different states
 
     int lastPressIndex = -1;
-    while ((lastPressIndex + 1) < touchPoints.size() && touchPoints[lastPressIndex + 1].second.state() == Qt::TouchPointPressed)
+    while ((lastPressIndex + 1) < touchPoints.size() && touchPoints[lastPressIndex + 1].second.state() == QEventPoint::Pressed)
         ++lastPressIndex;
 
     switch (event->type()) {
@@ -700,7 +700,7 @@ void RenderWidgetHostViewQtDelegateClient::handleTouchEvent(QTouchEvent *event)
 
         case QEvent::TouchUpdate:
             for (; lastPressIndex >= 0; --lastPressIndex) {
-                Q_ASSERT(touchPoints[lastPressIndex].second.state() == Qt::TouchPointPressed);
+                Q_ASSERT(touchPoints[lastPressIndex].second.state() == QEventPoint::Pressed);
                 MotionEventQt me(touchPoints.mid(lastPressIndex), eventTimestamp, ui::MotionEvent::Action::POINTER_DOWN, event->modifiers(), 0);
                 m_rwhv->processMotionEvent(me);
             }
@@ -711,7 +711,7 @@ void RenderWidgetHostViewQtDelegateClient::handleTouchEvent(QTouchEvent *event)
             Q_FALLTHROUGH();
 
         case QEvent::TouchEnd:
-            while (!touchPoints.isEmpty() && touchPoints.back().second.state() == Qt::TouchPointReleased) {
+            while (!touchPoints.isEmpty() && touchPoints.back().second.state() == QEventPoint::Released) {
                 auto action = touchPoints.size() > 1 ? ui::MotionEvent::Action::POINTER_UP : ui::MotionEvent::Action::UP;
                 int index = action == ui::MotionEvent::Action::POINTER_UP ? touchPoints.size() - 1 : -1;
                 m_rwhv->processMotionEvent(MotionEventQt(touchPoints, eventTimestamp, action, event->modifiers(), index));
