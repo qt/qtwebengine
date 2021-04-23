@@ -522,43 +522,44 @@ foreach(config ${configs})
         message("-- GN ${gnOutput}")
     endif()
     include(${buildDir}/${config}/QtWebEngineCore.cmake)
-endforeach()
+
 
 ##
 #  NINJA CALL
 ##
 
-if(WIN32)
-    set(sandboxOutput QtWebEngineCoreSandbox.lib)
-    set(sandboxTarget QtWebEngineCoreSandbox)
-else()
-    unset(sandboxOutput)
-    unset(sandboxTarget)
-endif()
+    # config loop is a workaround to be able to add_custom_command per config
+    # note this is fixed in CMAKE.3.20 and should be cleaned up when 3.20 is
+    # the minimum cmake we support
 
-add_custom_command(
-    OUTPUT QtWebEngineCore.stamp ${sandboxOutput}
-    WORKING_DIRECTORY ${buildDir}/$<CONFIG>
-    COMMAND Ninja::ninja
+    if(WIN32)
+        set(sandboxOutput ${buildDir}/${config}/QtWebEngineCoreSandbox.lib)
+        set(sandboxTarget QtWebEngineCoreSandbox)
+    else()
+        unset(sandboxOutput)
+        unset(sandboxTarget)
+    endif()
+
+    add_custom_command(
+        OUTPUT ${buildDir}/${config}/QtWebEngineCore.stamp ${sandboxOutput} runAlways # use generator expression in CMAKE 3.20
+        WORKING_DIRECTORY ${buildDir}/${config}
+        COMMAND ${CMAKE_COMMAND} -E echo "Ninja ${config} build"
+        COMMAND Ninja::ninja
             $ENV{NINJAFLAGS}
-            -C ${buildDir}/$<CONFIG>
+            -C ${buildDir}/${config}
             QtWebEngineCore ${sandboxTarget}
-    USES_TERMINAL
-    VERBATIM
-    COMMAND_EXPAND_LISTS
-)
-
-add_custom_target(ninja DEPENDS QtWebEngineCore.stamp ${sandboxOutput})
+        USES_TERMINAL
+        VERBATIM
+        COMMAND_EXPAND_LISTS
+    )
+    add_custom_target(ninja_${config} DEPENDS ${buildDir}/${config}/QtWebEngineCore.stamp ${sandboxOutput} runAlways)
+endforeach()
 
 ##
 #  WEBENGINECORE SETUP
 ##
 
-add_dependencies(WebEngineCore ninja)
 target_include_directories(WebEngineCore PRIVATE ${buildDir}/$<CONFIG>/gen)
-add_library(GnObjects OBJECT IMPORTED GLOBAL)
-add_dependencies(GnObjects ninja)
-target_link_libraries(WebEngineCore PRIVATE GnObjects)
 
 if(WIN32)
     add_library(WebEngineCoreSandbox STATIC IMPORTED GLOBAL)
@@ -566,27 +567,39 @@ if(WIN32)
 endif()
 
 foreach(config ${configs})
+
      string(TOUPPER ${config} cfg)
-     set_property(TARGET GnObjects PROPERTY IMPORTED_OBJECTS_${cfg} ${${cfg}_NINJA_OBJECTS})
+
+     add_library(GnObjects_${config} OBJECT IMPORTED GLOBAL)
+     target_link_libraries(WebEngineCore PRIVATE $<$<CONFIG:${config}>:GnObjects_${config}>)
+     add_dependencies(GnObjects_${config} ninja_${config})
+     #TODO: remove GnObjects_${config} with CMAKE 3.20
+     set_property(TARGET GnObjects_${config} PROPERTY IMPORTED_OBJECTS_${cfg} ${${cfg}_NINJA_OBJECTS})
      set_source_files_properties(${${cfg}_NINJA_OBJECTS} PROPERTIES GENERATED TRUE)
+
      if(LINUX)
      target_link_libraries(WebEngineCore
          PRIVATE "-Wl,--start-group" "$<$<CONFIG:${config}>:${${cfg}_NINJA_ARCHIVES}>" "-Wl,--end-group")
      else()
      target_link_libraries(WebEngineCore PRIVATE "$<$<CONFIG:${config}>:${${cfg}_NINJA_ARCHIVES}>")
      endif()
+
      target_link_libraries(WebEngineCore PUBLIC  "$<$<CONFIG:${config}>:${${cfg}_NINJA_LIBS}>")
+
      # we depend on WebEnigneCore stamp, but ninja backend generator needs more
-     add_custom_command(OUTPUT ${${cfg}_NINJA_OBJECTS} ${${cfg}_NINJA_ARCHIVES} DEPENDS QtWebEngineCore.stamp)
+     add_custom_command(OUTPUT ${${cfg}_NINJA_OBJECTS} ${${cfg}_NINJA_ARCHIVES}
+         DEPENDS ${buildDir}/${config}/QtWebEngineCore.stamp)
      add_custom_target(generate_${cfg} DEPENDS ${${cfg}_NINJA_OBJECTS} ${${cfg}_NINJA_ARCHIVES})
+
      if(WIN32)
          set(sandboxLibraryPath ${buildDir}/${config}/QtWebEngineCoreSandbox.lib)
          set_property(TARGET WebEngineCoreSandbox
              PROPERTY IMPORTED_LOCATION_${cfg} ${sandboxLibraryPath})
          set_source_files_properties(${sandboxLibraryPath} PROPERTIES GENERATED TRUE)
-         add_custom_command(OUTPUT ${sandboxLibraryPath} DEPENDS QtWebEngineCoreSandbox.lib)
+         add_custom_command(OUTPUT ${sandboxLibraryPath} DEPENDS ninja_${config})
          add_custom_target(generate_sandbox_${cfg} DEPENDS ${sandboxLibraryPath})
      endif()
+
 endforeach()
 
 ##
@@ -637,7 +650,7 @@ if(QT_FEATURE_framework)
         GENERATED TRUE
     )
     add_custom_command(OUTPUT ${localeFiles} ${resourceFiles} ${icuFiles}
-        DEPENDS QtWebEngineCore.stamp
+        DEPENDS ${buildDir}/${config}/QtWebEngineCore.stamp
     )
     add_custom_target(generate_resources_${config}
         DEPENDS ${localeFiles} ${resourcesFiles} ${icuFiles}
