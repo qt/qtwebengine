@@ -89,13 +89,13 @@ public:
         base::OnceCallback<void(
             const std::vector<blink::mojom::PermissionStatus>&)> callback) override;
 
-    int SubscribePermissionStatusChange(
+    content::PermissionControllerDelegate::SubscriptionId SubscribePermissionStatusChange(
         content::PermissionType permission,
         content::RenderFrameHost* render_frame_host,
         const GURL& requesting_origin,
         const base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback) override;
 
-    void UnsubscribePermissionStatusChange(int subscription_id) override;
+    void UnsubscribePermissionStatusChange(content::PermissionControllerDelegate::SubscriptionId subscription_id) override;
 
 private:
     QHash<QPair<QUrl, ProfileAdapter::PermissionType>, bool> m_permissions;
@@ -118,9 +118,9 @@ private:
     };
     std::vector<Request> m_requests;
     std::vector<MultiRequest> m_multiRequests;
-    std::map<int, Subscription> m_subscribers;
+    std::map<content::PermissionControllerDelegate::SubscriptionId, Subscription> m_subscribers;
+    content::PermissionControllerDelegate::SubscriptionId::Generator subscription_id_generator_;
     int m_requestIdCount;
-    int m_subscriberIdCount;
 
 };
 
