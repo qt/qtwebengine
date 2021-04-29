@@ -45,6 +45,7 @@ TestWebEngineView {
     }
 
     TestCase {
+        id: testCase
         name: 'CertificateError'
         when: windowShown
 

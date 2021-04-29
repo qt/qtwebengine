@@ -52,6 +52,7 @@ TestWebEngineView {
     }
 
     TestCase {
+        id: testCase
         name: "WebEngineViewLoadUrl"
         when: windowShown
 

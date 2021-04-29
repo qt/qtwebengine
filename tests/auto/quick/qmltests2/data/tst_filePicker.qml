@@ -58,6 +58,7 @@ TestWebEngineView {
     onTitleChanged: { titleChanges.push(webEngineView.title) }
 
     TestCase {
+        id: testCase
         name: "WebEngineViewSingleFileUpload"
         when: windowShown
 

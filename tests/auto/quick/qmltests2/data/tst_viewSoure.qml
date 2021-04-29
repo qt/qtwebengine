@@ -78,7 +78,7 @@ TestWebEngineView {
     }
 
     TestCase {
-        id: test
+        id: testCase
         name: "WebEngineViewSource"
 
         function init() {

@@ -65,12 +65,12 @@ TestWebEngineView {
     }
 
     function destroyContextMenu() {
-        contextMenuTest.keyPress(Qt.Key_Escape);
+        testCase.keyPress(Qt.Key_Escape);
         return getContextMenus().length == 0;
     }
 
     TestCase {
-        id: contextMenuTest
+        id: testCase
         name: "WebEngineViewContextMenu"
         when: windowShown
 

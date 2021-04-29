@@ -104,7 +104,6 @@ WebEngineView {
     }
 
     TestResult { id: testResult }
-    TestCase { id: testCase }
 
     onLoadingChanged: {
         loadStatus = loadRequest.status
