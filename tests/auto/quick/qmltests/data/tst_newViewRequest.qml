@@ -77,7 +77,6 @@ TestWebEngineView {
     }
 
     TestCase {
-        id: test
         name: "NewViewRequest"
         when: windowShown
 
