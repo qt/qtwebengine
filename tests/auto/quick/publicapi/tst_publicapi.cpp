@@ -90,7 +90,7 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QWebEngineFindTextResult::staticMetaObject
     ;
 
-static QList<const char *> knownEnumNames = QList<const char *>();
+static QList<QMetaEnum> knownEnumNames = QList<QMetaEnum>();
 
 static const QStringList hardcodedTypes = QStringList()
     << "QJSValue"
@@ -120,7 +120,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineAuthenticationDialogRequest.dialogReject() --> void"
     << "QQuickWebEngineAuthenticationDialogRequest.proxyHost --> QString"
     << "QQuickWebEngineAuthenticationDialogRequest.realm --> QString"
-    << "QQuickWebEngineAuthenticationDialogRequest.type --> AuthenticationType"
+    << "QQuickWebEngineAuthenticationDialogRequest.type --> QQuickWebEngineAuthenticationDialogRequest::AuthenticationType"
     << "QQuickWebEngineAuthenticationDialogRequest.url --> QUrl"
     << "QWebEngineCertificateError.CertificateAuthorityInvalid --> Type"
     << "QWebEngineCertificateError.CertificateCommonNameInvalid --> Type"
@@ -142,7 +142,7 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineCertificateError.SslPinnedKeyNotInCertificateChain --> Type"
     << "QWebEngineCertificateError.defer() --> void"
     << "QWebEngineCertificateError.description --> QString"
-    << "QWebEngineCertificateError.type --> Type"
+    << "QWebEngineCertificateError.type --> QWebEngineCertificateError::Type"
     << "QWebEngineCertificateError.acceptCertificate() --> void"
     << "QWebEngineCertificateError.overridable --> bool"
     << "QWebEngineCertificateError.rejectCertificate() --> void"
@@ -171,7 +171,7 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineContextMenuRequest.CanEditRichly --> EditFlags"
     << "QQuickWebEngineColorDialogRequest.dialogAccept(QColor) --> void"
     << "QQuickWebEngineColorDialogRequest.dialogReject() --> void"
-    << "QWebEngineContextMenuRequest.editFlags --> EditFlags"
+    << "QWebEngineContextMenuRequest.editFlags --> QFlags<QWebEngineContextMenuRequest::EditFlag>"
     << "QWebEngineContextMenuRequest.MediaInError --> MediaFlags"
     << "QWebEngineContextMenuRequest.MediaPaused --> MediaFlags"
     << "QWebEngineContextMenuRequest.MediaMuted --> MediaFlags"
@@ -193,8 +193,8 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineContextMenuRequest.isContentEditable --> bool"
     << "QWebEngineContextMenuRequest.linkText --> QString"
     << "QWebEngineContextMenuRequest.linkUrl --> QUrl"
-    << "QWebEngineContextMenuRequest.mediaFlags --> MediaFlags"
-    << "QWebEngineContextMenuRequest.mediaType --> MediaType"
+    << "QWebEngineContextMenuRequest.mediaFlags --> QFlags<QWebEngineContextMenuRequest::MediaFlag>"
+    << "QWebEngineContextMenuRequest.mediaType --> QWebEngineContextMenuRequest::MediaType"
     << "QWebEngineContextMenuRequest.mediaUrl --> QUrl"
     << "QWebEngineContextMenuRequest.misspelledWord --> QString"
     << "QWebEngineContextMenuRequest.selectedText --> QString"
@@ -236,7 +236,7 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineDownloadRequest.accept() --> void"
     << "QWebEngineDownloadRequest.cancel() --> void"
     << "QWebEngineDownloadRequest.id --> uint"
-    << "QWebEngineDownloadRequest.interruptReason --> DownloadInterruptReason"
+    << "QWebEngineDownloadRequest.interruptReason --> QWebEngineDownloadRequest::DownloadInterruptReason"
     << "QWebEngineDownloadRequest.interruptReasonChanged() --> void"
     << "QWebEngineDownloadRequest.interruptReasonString --> QString"
     << "QWebEngineDownloadRequest.isFinished --> bool"
@@ -249,9 +249,9 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineDownloadRequest.receivedBytes --> qlonglong"
     << "QWebEngineDownloadRequest.receivedBytesChanged() --> void"
     << "QWebEngineDownloadRequest.resume() --> void"
-    << "QWebEngineDownloadRequest.savePageFormat --> SavePageFormat"
+    << "QWebEngineDownloadRequest.savePageFormat --> QWebEngineDownloadRequest::SavePageFormat"
     << "QWebEngineDownloadRequest.savePageFormatChanged() --> void"
-    << "QWebEngineDownloadRequest.state --> DownloadState"
+    << "QWebEngineDownloadRequest.state --> QWebEngineDownloadRequest::DownloadState"
     << "QWebEngineDownloadRequest.stateChanged(QWebEngineDownloadRequest::DownloadState) --> void"
     << "QWebEngineDownloadRequest.totalBytes --> qlonglong"
     << "QWebEngineDownloadRequest.totalBytesChanged() --> void"
@@ -272,7 +272,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineFileDialogRequest.defaultFileName --> QString"
     << "QQuickWebEngineFileDialogRequest.dialogAccept(QStringList) --> void"
     << "QQuickWebEngineFileDialogRequest.dialogReject() --> void"
-    << "QQuickWebEngineFileDialogRequest.mode --> FileMode"
+    << "QQuickWebEngineFileDialogRequest.mode --> QQuickWebEngineFileDialogRequest::FileMode"
     << "QWebEngineFindTextResult.numberOfMatches --> int"
     << "QWebEngineFindTextResult.activeMatch --> int"
     << "QQuickWebEngineFormValidationMessageRequest.Hide --> RequestType"
@@ -282,13 +282,13 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineFormValidationMessageRequest.anchor --> QRect"
     << "QQuickWebEngineFormValidationMessageRequest.subText --> QString"
     << "QQuickWebEngineFormValidationMessageRequest.text --> QString"
-    << "QQuickWebEngineFormValidationMessageRequest.type --> RequestType"
+    << "QQuickWebEngineFormValidationMessageRequest.type --> QQuickWebEngineFormValidationMessageRequest::RequestType"
     << "QQuickWebEngineTooltipRequest.Hide --> RequestType"
     << "QQuickWebEngineTooltipRequest.Show --> RequestType"
     << "QQuickWebEngineTooltipRequest.x --> int"
     << "QQuickWebEngineTooltipRequest.y --> int"
     << "QQuickWebEngineTooltipRequest.text --> QString"
-    << "QQuickWebEngineTooltipRequest.type --> RequestType"
+    << "QQuickWebEngineTooltipRequest.type --> QQuickWebEngineTooltipRequest::RequestType"
     << "QQuickWebEngineTooltipRequest.accepted --> bool"
     << "QWebEngineFullScreenRequest.accept() --> void"
     << "QWebEngineFullScreenRequest.origin --> QUrl"
@@ -310,11 +310,11 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineJavaScriptDialogRequest.message --> QString"
     << "QQuickWebEngineJavaScriptDialogRequest.securityOrigin --> QUrl"
     << "QQuickWebEngineJavaScriptDialogRequest.title --> QString"
-    << "QQuickWebEngineJavaScriptDialogRequest.type --> DialogType"
+    << "QQuickWebEngineJavaScriptDialogRequest.type --> QQuickWebEngineJavaScriptDialogRequest::DialogType"
     << "QWebEngineLoadRequest.errorCode --> int"
-    << "QWebEngineLoadRequest.errorDomain --> ErrorDomain"
+    << "QWebEngineLoadRequest.errorDomain --> QWebEngineLoadRequest::ErrorDomain"
     << "QWebEngineLoadRequest.errorString --> QString"
-    << "QWebEngineLoadRequest.status --> LoadStatus"
+    << "QWebEngineLoadRequest.status --> QWebEngineLoadRequest::LoadStatus"
     << "QWebEngineLoadRequest.url --> QUrl"
     << "QWebEngineLoadRequest.LoadFailedStatus --> LoadStatus"
     << "QWebEngineLoadRequest.LoadStartedStatus --> LoadStatus"
@@ -354,13 +354,13 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineProfile.httpAcceptLanguageChanged() --> void"
     << "QQuickWebEngineProfile.httpCacheMaximumSize --> int"
     << "QQuickWebEngineProfile.httpCacheMaximumSizeChanged() --> void"
-    << "QQuickWebEngineProfile.httpCacheType --> HttpCacheType"
+    << "QQuickWebEngineProfile.httpCacheType --> QQuickWebEngineProfile::HttpCacheType"
     << "QQuickWebEngineProfile.httpCacheTypeChanged() --> void"
     << "QQuickWebEngineProfile.httpUserAgent --> QString"
     << "QQuickWebEngineProfile.httpUserAgentChanged() --> void"
     << "QQuickWebEngineProfile.offTheRecord --> bool"
     << "QQuickWebEngineProfile.offTheRecordChanged() --> void"
-    << "QQuickWebEngineProfile.persistentCookiesPolicy --> PersistentCookiesPolicy"
+    << "QQuickWebEngineProfile.persistentCookiesPolicy --> QQuickWebEngineProfile::PersistentCookiesPolicy"
     << "QQuickWebEngineProfile.persistentCookiesPolicyChanged() --> void"
     << "QQuickWebEngineProfile.persistentStoragePath --> QString"
     << "QQuickWebEngineProfile.persistentStoragePathChanged() --> void"
@@ -432,7 +432,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.spatialNavigationEnabledChanged() --> void"
     << "QQuickWebEngineSettings.touchIconsEnabled --> bool"
     << "QQuickWebEngineSettings.touchIconsEnabledChanged() --> void"
-    << "QQuickWebEngineSettings.unknownUrlSchemePolicy --> UnknownUrlSchemePolicy"
+    << "QQuickWebEngineSettings.unknownUrlSchemePolicy --> QQuickWebEngineSettings::UnknownUrlSchemePolicy"
     << "QQuickWebEngineSettings.unknownUrlSchemePolicyChanged() --> void"
     << "QQuickWebEngineSettings.webGLEnabled --> bool"
     << "QQuickWebEngineSettings.webGLEnabledChanged() --> void"
@@ -447,7 +447,7 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineScript.DocumentReady --> InjectionPoint"
     << "QWebEngineScript.MainWorld --> ScriptWorldId"
     << "QWebEngineScript.UserWorld --> ScriptWorldId"
-    << "QWebEngineScript.injectionPoint --> InjectionPoint"
+    << "QWebEngineScript.injectionPoint --> QWebEngineScript::InjectionPoint"
     << "QWebEngineScript.name --> QString"
     << "QWebEngineScript.runsOnSubFrames --> bool"
     << "QWebEngineScript.sourceCode --> QString"
@@ -712,7 +712,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.isFullScreenChanged() --> void"
     << "QQuickWebEngineView.javaScriptConsoleMessage(JavaScriptConsoleMessageLevel,QString,int,QString) --> void"
     << "QQuickWebEngineView.javaScriptDialogRequested(QQuickWebEngineJavaScriptDialogRequest*) --> void"
-    << "QQuickWebEngineView.lifecycleState --> LifecycleState"
+    << "QQuickWebEngineView.lifecycleState --> QQuickWebEngineView::LifecycleState"
     << "QQuickWebEngineView.lifecycleStateChanged(LifecycleState) --> void"
     << "QQuickWebEngineView.linkHovered(QUrl) --> void"
     << "QQuickWebEngineView.loadHtml(QString) --> void"
@@ -739,7 +739,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.recentlyAudibleChanged(bool) --> void"
     << "QQuickWebEngineView.renderProcessPid --> qlonglong"
     << "QQuickWebEngineView.renderProcessPidChanged(qlonglong) --> void"
-    << "QQuickWebEngineView.recommendedState --> LifecycleState"
+    << "QQuickWebEngineView.recommendedState --> QQuickWebEngineView::LifecycleState"
     << "QQuickWebEngineView.recommendedStateChanged(LifecycleState) --> void"
     << "QQuickWebEngineView.registerProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest) --> void"
     << "QQuickWebEngineView.reload() --> void"
@@ -796,24 +796,21 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineNotification.closed() --> void"
     ;
 
-static bool isCheckedEnum(const QByteArray &typeName)
+static bool isCheckedEnum(QMetaType t)
 {
-    QList<QByteArray> tokens = typeName.split(':');
-    if (tokens.size() == 3) {
-        QByteArray &enumClass = tokens[0];
-        QByteArray &enumName = tokens[2];
-        for (const QMetaObject *mo : typesToCheck) {
-            if (mo->className() != enumClass)
-                continue;
-            for (int i = mo->enumeratorOffset(); i < mo->enumeratorCount(); ++i)
-                if (mo->enumerator(i).name() == enumName)
+    if (t.flags() & QMetaType::IsEnumeration) {
+        if (const QMetaObject *metaObject = t.metaObject()) {
+            QRegularExpression re("^QFlags<(.*)>$");
+            QRegularExpressionMatch match = re.match(t.name());
+            const QByteArray enumName =
+                    match.hasMatch() ? match.captured(1).toUtf8() : QByteArray(t.name());
+            const char *lastColon = std::strrchr(enumName, ':');
+            QMetaEnum type = metaObject->enumerator(metaObject->indexOfEnumerator(
+                    lastColon ? lastColon + 1 : enumName.constData()));
+            for (auto knownEnum : knownEnumNames) {
+                if (type.name() == knownEnum.name() && type.scope() == knownEnum.scope())
                     return true;
-        }
-    } else if (tokens.size() == 1) {
-        QByteArray &enumName = tokens[0];
-        for (const char *knownEnumName : qAsConst(knownEnumNames)) {
-            if (enumName == knownEnumName)
-                return true;
+            }
         }
     }
     return false;
@@ -829,10 +826,12 @@ static bool isCheckedClass(const QByteArray &typeName)
     return false;
 }
 
-static void checkKnownType(const QByteArray &typeName)
+static void checkKnownType(const QMetaType &type)
 {
-    if ((!hardcodedTypes.contains(typeName) && !QMetaType::type(typeName)) || QMetaType::type(typeName) >= QMetaType::User) {
-        bool knownEnum = isCheckedEnum(typeName);
+    const QByteArray typeName = type.name();
+    // calling id() registers the object
+    if (!hardcodedTypes.contains(typeName) && type.id() >= QMetaType::User) {
+        bool knownEnum = isCheckedEnum(type);
         bool knownClass = isCheckedClass(typeName);
         QVERIFY2(knownEnum || knownClass, qPrintable(QString("The API uses an unknown type [%1], you might have to add it to the typesToCheck list.").arg(typeName.constData())));
     }
@@ -843,12 +842,13 @@ static void gatherAPI(const QString &prefix, const QMetaEnum &metaEnum, QStringL
     const auto format = metaEnum.isScoped() ? "%1%3.%2 --> %3" : "%1%2 --> %3";
     for (int i = 0; i < metaEnum.keyCount(); ++i)
         *output << QString::fromLatin1(format).arg(prefix).arg(metaEnum.key(i)).arg(metaEnum.name());
+    knownEnumNames << metaEnum;
 }
 
 static void gatherAPI(const QString &prefix, const QMetaProperty &property, QStringList *output)
 {
     *output << QString::fromLatin1("%1%2 --> %3").arg(prefix).arg(property.name()).arg(property.typeName());
-    checkKnownType(property.typeName());
+    checkKnownType(property.metaType());
 }
 
 static void gatherAPI(const QString &prefix, const QMetaMethod &method, QStringList *output)
@@ -857,20 +857,21 @@ static void gatherAPI(const QString &prefix, const QMetaMethod &method, QStringL
         const char *methodTypeName = !!strlen(method.typeName()) ? method.typeName() : "void";
         *output << QString::fromLatin1("%1%2 --> %3").arg(prefix).arg(QString::fromLatin1(method.methodSignature())).arg(QString::fromLatin1(methodTypeName));
 
-        checkKnownType(methodTypeName);
-        const QList<QByteArray> paramTypes = method.parameterTypes();
-        for (const QByteArray &paramType : paramTypes)
-            checkKnownType(paramType);
+        checkKnownType(method.returnMetaType());
+
+        const auto parameterCount = method.parameterCount();
+        for (int i = 0; i < parameterCount; ++i) {
+            const QMetaType metaType = method.parameterMetaType(i);
+            checkKnownType(metaType);
+        }
     }
 }
 
 static void gatherAPI(const QString &prefix, const QMetaObject *meta, QStringList *output)
 {
     // *Offset points us only at the leaf class members, we don't have inheritance in our API yet anyway.
-    for (int i = meta->enumeratorOffset(); i < meta->enumeratorCount(); ++i) {
-        knownEnumNames << meta->enumerator(i).name();
+    for (int i = meta->enumeratorOffset(); i < meta->enumeratorCount(); ++i)
         gatherAPI(prefix, meta->enumerator(i), output);
-    }
     for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i)
         gatherAPI(prefix, meta->property(i), output);
     for (int i = meta->methodOffset(); i < meta->methodCount(); ++i)
