@@ -175,6 +175,7 @@ public:
     const viz::FrameSinkId &GetFrameSinkId() const override;
     const viz::LocalSurfaceId &GetLocalSurfaceId() const override;
     void FocusedNodeChanged(bool is_editable_node, const gfx::Rect& node_bounds_in_screen) override;
+    base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
 
     void TakeFallbackContentFrom(content::RenderWidgetHostView *view) override;
     void EnsureSurfaceSynchronizedForWebTest() override;
