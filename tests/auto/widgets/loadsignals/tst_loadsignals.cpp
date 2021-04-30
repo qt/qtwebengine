@@ -91,6 +91,7 @@ private Q_SLOTS:
     void rejectNavigationRequest();
     void loadAfterInPageNavigation_qtbug66869();
     void fileDownload();
+    void numberOfStartedAndFinishedSignalsIsSame_data();
     void numberOfStartedAndFinishedSignalsIsSame();
     void loadFinishedAfterNotFoundError_data();
     void loadFinishedAfterNotFoundError();
@@ -311,19 +312,14 @@ void tst_LoadSignals::loadAfterInPageNavigation_qtbug66869()
     QVERIFY(loadFinishedSpy[0][0].toBool());
 
     // page3 does an in-page navigation after 500ms
-    QTest::qWait(2000);
-    loadFinishedSpy.clear();
-    loadStartedSpy.clear();
+    QTRY_COMPARE(view.url(), QUrl("qrc:///resources/page3.html#anchor"));
 
     // second load
     view.load(QUrl("qrc:///resources/page1.html"));
-    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QTRY_COMPARE(loadFinishedSpy.size(), 2);
     QVERIFY(loadFinishedSpy[0][0].toBool());
     // loadStarted and loadFinished should have been signalled
-    QCOMPARE(loadStartedSpy.size(), 1);
-
-    // reminder that we still need to solve the core issue
-    QFAIL("https://codereview.qt-project.org/#/c/222112/ only hides the symptom, the core issue still needs to be solved");
+    QCOMPARE(loadStartedSpy.size(), 2);
 }
 
 void tst_LoadSignals::fileDownload()
@@ -361,42 +357,42 @@ void tst_LoadSignals::fileDownload()
     QCOMPARE(page.signalsOrder, SignalsOrderTwiceWithFailure);
 }
 
-void tst_LoadSignals::numberOfStartedAndFinishedSignalsIsSame() {
+void tst_LoadSignals::numberOfStartedAndFinishedSignalsIsSame_data()
+{
+    QTest::addColumn<bool>("imageFromServer");
+    QTest::addColumn<QString>("imageResourceUrl");
+    // triggers these calls in delegate internally:
+    // just two ordered triples DidStartNavigation/DidFinishNavigation/DidFinishLoad
+    QTest::newRow("no_image_resource") << false << "";
+    // out of order: DidStartNavigation/DidFinishNavigation/DidStartNavigation/DidFailLoad/DidFinishNavigation/DidFinishLoad
+    QTest::newRow("with_invalid_image") << false << "https://non.existent.locahost/image.png";
+    // out of order: DidStartNavigation/DidFinishNavigation/DidStartNavigation/DidFinishLoad/DidFinishNavigation/DidFinishLoad
+    QTest::newRow("with_server_image") << true << "";
+}
+
+void tst_LoadSignals::numberOfStartedAndFinishedSignalsIsSame()
+{
+    QFETCH(bool, imageFromServer);
+    QFETCH(QString, imageResourceUrl);
 
     HttpServer server;
     server.setResourceDirs({ TESTS_SOURCE_DIR "/qwebengineprofile/resources" });
-    connect(&server, &HttpServer::newRequest, [] (HttpReqRep *) {
-         QTest::qWait(250); // just add delay to trigger some progress for every sub resource
-    });
     QVERIFY(server.start());
 
-    view.load(server.url("/hedgehog.png"));
+    QUrl serverImage = server.url("/hedgehog.png");
+    QString imageUrl(!imageFromServer && imageResourceUrl.isEmpty()
+                     ? "" : (imageFromServer ? serverImage.toEncoded() : imageResourceUrl));
+
+    auto html = "<html><head><link rel='icon' href='data:,'></head><body>"
+                "%1" "<form method='GET' name='hiddenform' action='qrc:///resources/page1.html' />"
+                "<script language='javascript'>document.forms[0].submit();</script>"
+                "</body></html>";
+    view.page()->setHtml(QString(html).arg(imageUrl.isEmpty() ? "" : "<img src='" + imageUrl + "'>"));
     QTRY_COMPARE(loadFinishedSpy.size(), 1);
-    QVERIFY(loadFinishedSpy[0][0].toBool());
 
-    loadStartedSpy.clear();
-    loadFinishedSpy.clear();
-
-    view.page()->setHtml("<html><body>"
-                         "<img src=\"" + server.url("/hedgehog.png").toEncoded() + "\">"
-                         "<form method='GET' name='hiddenform' action='qrc:///resources/page1.html' />"
-                         "<script language='javascript'>document.forms[0].submit();</script>"
-                         "</body></html>");
-
-    QTRY_COMPARE(loadStartedSpy.size(), 2);
-    QTRY_COMPARE(loadFinishedSpy.size(), 2);
-
-    QTRY_VERIFY(!loadFinishedSpy[0][0].toBool());
-    QTRY_VERIFY(loadFinishedSpy[1][0].toBool());
-
-    view.page()->setHtml("<html><body>"
-                         "<form method='GET' name='hiddenform' action='qrc:///resources/page1.html' />"
-                         "<script language='javascript'>document.forms[0].submit();</script>"
-                         "</body></html>");
-    QTRY_COMPARE(loadStartedSpy.size(), 4);
-    QTRY_COMPARE(loadFinishedSpy.size(), 4);
-    QVERIFY(loadFinishedSpy[2][0].toBool());
-    QVERIFY(loadFinishedSpy[3][0].toBool());
+    resetSpies();
+    QTRY_LOOP_IMPL(loadStartedSpy.size() || loadFinishedSpy.size(), 1000, 100);
+    QCOMPARE(page.signalsOrder, SignalsOrderOnce);
 }
 
 void tst_LoadSignals::loadFinishedAfterNotFoundError_data()
@@ -428,6 +424,7 @@ void tst_LoadSignals::loadFinishedAfterNotFoundError()
     QVERIFY(!loadFinishedSpy.at(0).at(0).toBool());
     QCOMPARE(toPlainTextSync(view.page()), QString());
     QCOMPARE(loadFinishedSpy.count(), 1);
+    QCOMPARE(loadStartedSpy.count(), 1);
 
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, true);
     url = server
@@ -436,9 +433,11 @@ void tst_LoadSignals::loadFinishedAfterNotFoundError()
     view.load(url);
     QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 2, 20000);
     QVERIFY(!loadFinishedSpy.at(1).at(0).toBool());
+    QCOMPARE(loadStartedSpy.count(), 2);
 
     QEXPECT_FAIL("", "No more loads (like separate load for error pages) are expected", Continue);
     QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 3, 1000);
+    QCOMPARE(loadStartedSpy.count(), 2);
 }
 
 void tst_LoadSignals::errorPageTriggered_data()

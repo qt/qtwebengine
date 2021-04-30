@@ -116,8 +116,7 @@ public:
     void loadStarted(const QUrl &provisionalUrl, bool isErrorPage = false) override;
     void loadCommitted() override;
     void loadVisuallyCommitted() override;
-    void loadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode,
-                      const QString &errorDescription, bool triggersErrorPage) override;
+    void loadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode, const QString &errorDescription) override;
     void focusContainer() override;
     void unhandledKeyEvent(QKeyEvent *event) override;
     QSharedPointer<QtWebEngineCore::WebContentsAdapter>

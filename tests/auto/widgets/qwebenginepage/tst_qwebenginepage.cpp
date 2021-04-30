@@ -599,7 +599,7 @@ void tst_QWebEnginePage::acceptNavigationRequestNavigationType()
 
     // client side redirect
     page.load(QUrl("qrc:///resources/redirect.html"));
-    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 8, 20000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 7, 20000);
     QTRY_COMPARE(page.navigations.count(), 8);
     expectedList += { QWebEnginePage::NavigationTypeTyped, QWebEnginePage::NavigationTypeRedirect };
 
@@ -621,7 +621,7 @@ void tst_QWebEnginePage::acceptNavigationRequestNavigationType()
     });
     QVERIFY(server.start());
     page.load(QUrl(server.url("/redirect1.html")));
-    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 9, 20000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 8, 20000);
     QTRY_COMPARE(page.navigations.count(), 11);
     expectedList += {
         QWebEnginePage::NavigationTypeTyped,
@@ -2936,11 +2936,7 @@ void tst_QWebEnginePage::loadInSignalHandlers()
     URLSetter setter(m_page, signal, type, urlForSetter);
     QSignalSpy spy(&setter, &URLSetter::finished);
     m_page->load(url);
-    // every loadStarted() call should have also loadFinished()
-    if (signal == URLSetter::LoadStarted)
-        QTRY_COMPARE(spy.count(), 2);
-    else
-        QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(m_page->url(), urlForSetter);
 }
 
@@ -4091,8 +4087,7 @@ void tst_QWebEnginePage::setLifecycleStateWithDevTools()
     devToolsPage.setLifecycleState(QWebEnginePage::LifecycleState::Discarded);
     devToolsPage.setInspectedPage(&inspectedPage);
     QCOMPARE(devToolsPage.lifecycleState(), QWebEnginePage::LifecycleState::Active);
-    QTRY_COMPARE_WITH_TIMEOUT(devToolsSpy.count(), 2, 90000);
-    QCOMPARE(devToolsSpy.takeFirst().value(0), QVariant(false));
+    QTRY_COMPARE_WITH_TIMEOUT(devToolsSpy.count(), 1, 90000);
     QCOMPARE(devToolsSpy.takeFirst().value(0), QVariant(true));
     // keep DevTools open
 

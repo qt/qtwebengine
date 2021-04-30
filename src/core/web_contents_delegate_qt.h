@@ -216,9 +216,9 @@ private:
                  WindowOpenDisposition disposition, const gfx::Rect &initial_pos,
                  const QUrl &url,
                  bool user_gesture);
-    void EmitLoadStarted(const QUrl &url, bool isErrorPage = false);
-    void EmitLoadFinished(bool success, const QUrl &url, bool isErrorPage = false, int errorCode = 0, const QString &errorDescription = QString(), bool triggersErrorPage = false);
-    void EmitLoadCommitted();
+    void emitLoadStarted(bool isErrorPage = false);
+    void emitLoadFinished(bool isErrorPage = false);
+    void emitLoadCommitted();
 
     LoadingState determineLoadingState(content::WebContents *contents);
     void setLoadingState(LoadingState state);
@@ -242,9 +242,17 @@ private:
     int m_desktopStreamCount = 0;
     mutable bool m_pendingUrlUpdate = false;
 
-    QMap<QUrl, int> m_loadProgressMap;
-    QUrl m_lastLoadedUrl;
-    bool m_isNavigationCommitted = false;
+    struct LoadingInfo {
+        bool success = false;
+        int progress = -1;
+        bool isLoading() const { return progress >= 0; }
+        QUrl url;
+        int errorCode = 0;
+        QString errorDescription;
+        bool triggersErrorPage = false;
+        void clear() { *this = LoadingInfo(); }
+    } m_loadingInfo;
+
     bool m_isDocumentEmpty = true;
     base::WeakPtrFactory<WebContentsDelegateQt> m_weakPtrFactory { this };
 };

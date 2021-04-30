@@ -716,8 +716,7 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
             m_adapterClient->loadFinished(false, request.url(), false,
                                           net::ERR_DISALLOWED_URL_SCHEME,
                                           QCoreApplication::translate("WebContentsAdapter",
-                                          "HTTP-POST data can only be sent over HTTP(S) protocol"),
-                                          false);
+                                          "HTTP-POST data can only be sent over HTTP(S) protocol"));
             return;
         }
         params.post_data = network::ResourceRequestBody::CreateFromBytes(
@@ -773,7 +772,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
 
     GURL dataUrlToLoad(urlString);
     if (dataUrlToLoad.spec().size() > url::kMaxURLChars) {
-        m_adapterClient->loadFinished(false, baseUrl, false, net::ERR_ABORTED, QString(), false);
+        m_adapterClient->loadFinished(false, baseUrl, false, net::ERR_ABORTED, QString());
         return;
     }
     content::NavigationController::LoadURLParams params((dataUrlToLoad));
@@ -1995,6 +1994,7 @@ void WebContentsAdapter::discard()
     if (m_webContents->IsLoading()) {
         m_webContentsDelegate->didFailLoad(m_webContentsDelegate->url(webContents()), net::Error::ERR_ABORTED,
                                            QStringLiteral("Discarded"));
+        m_webContentsDelegate->DidStopLoading();
     }
 
     content::WebContents::CreateParams createParams(m_profileAdapter->profile());

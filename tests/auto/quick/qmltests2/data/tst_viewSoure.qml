@@ -44,6 +44,7 @@ TestWebEngineView {
         errorPage.onLoadingChanged: {
             loadRequestArray.push({
                "status": loadRequest.status,
+               "url": loadRequest.url
             })
         }
     }
@@ -51,6 +52,7 @@ TestWebEngineView {
     onLoadingChanged: {
         loadRequestArray.push({
             "status": loadRequest.status,
+            "url": loadRequest.url
         });
     }
 
@@ -109,14 +111,16 @@ TestWebEngineView {
             WebEngine.settings.errorPageEnabled = true
             webEngineView.url = row.userInputUrl;
 
+
             if (row.loadSucceed) {
-                tryVerify(function() { return loadRequestArray.length >= 2 });
+                tryVerify(function() { return loadRequestArray.length == 2 });
                 compare(loadRequestArray[1].status, WebEngineView.LoadSucceededStatus);
             } else {
-                tryVerify(function() { return loadRequestArray.length >= 2 });
-                compare(loadRequestArray[1].status, WebEngineView.LoadFailedStatus);
-                tryVerify(function() { return loadRequestArray.length == 4 });
-                compare(loadRequestArray[3].status, WebEngineView.LoadSucceededStatus);
+                tryVerify(function() { return loadRequestArray.length == 4 }, 90000);
+                // error page load is done inside main load through test support
+                compare(loadRequestArray[2].status, WebEngineView.LoadSucceededStatus);
+                compare(loadRequestArray[2].url, "chrome-error://chromewebdata/")
+                compare(loadRequestArray[3].status, WebEngineView.LoadFailedStatus);
             }
             tryVerify(function() { return titleChangedSpy.count == 1; });
 

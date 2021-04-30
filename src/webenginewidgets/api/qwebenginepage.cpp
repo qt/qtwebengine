@@ -282,28 +282,20 @@ void QWebEnginePagePrivate::loadStarted(const QUrl &provisionalUrl, bool isError
     QTimer::singleShot(0, q, &QWebEnginePage::loadStarted);
 }
 
-void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode,
-                                         const QString &errorDescription, bool triggersErrorPage)
+void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode, const QString &errorDescription)
 {
     Q_Q(QWebEnginePage);
     Q_UNUSED(url);
     Q_UNUSED(errorCode);
     Q_UNUSED(errorDescription);
 
-    if (isErrorPage) {
-        QTimer::singleShot(0, q, [q](){
-            emit q->loadFinished(false);
-        });
+    if (isErrorPage)
         return;
-    }
 
     isLoading = false;
-    Q_ASSERT((success && !triggersErrorPage) || !success);
-    if (!triggersErrorPage) {
-        QTimer::singleShot(0, q, [q, success](){
-            emit q->loadFinished(success);
-        });
-    }
+    QTimer::singleShot(0, q, [q, success](){
+        emit q->loadFinished(success);
+    });
 }
 
 void QWebEnginePagePrivate::didPrintPageToPdf(const QString &filePath, bool success)
