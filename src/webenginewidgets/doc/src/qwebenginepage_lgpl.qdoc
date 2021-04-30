@@ -520,7 +520,7 @@
 
 /*!
     \fn void QWebEnginePage::certificateError(const QWebEngineCertificateError & certificateError)
-    This function is called when an invalid certificate error is raised while loading a given request.
+    This signal is emitted when an invalid certificate error is raised while loading a given request.
 
     The \a certificateError parameter contains information about the certificate and details of the error,
     it also provides the way to ignore the error and complete the request or stop loading

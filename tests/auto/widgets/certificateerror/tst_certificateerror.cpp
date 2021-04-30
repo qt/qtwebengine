@@ -48,9 +48,15 @@ private Q_SLOTS:
 
 struct PageWithCertificateErrorHandler : QWebEnginePage
 {
+    Q_OBJECT
+
+public:
     PageWithCertificateErrorHandler(bool defer, bool accept, QObject *p = nullptr)
         : QWebEnginePage(p), deferError(defer), acceptCertificate(accept)
-        , loadSpy(this, &QWebEnginePage::loadFinished) {
+        , loadSpy(this, &QWebEnginePage::loadFinished)
+    {
+        connect(this, &PageWithCertificateErrorHandler::certificateError,
+                this, &PageWithCertificateErrorHandler::onCertificateError);
     }
 
     bool deferError, acceptCertificate;
@@ -58,7 +64,8 @@ struct PageWithCertificateErrorHandler : QWebEnginePage
     QSignalSpy loadSpy;
     QScopedPointer<QWebEngineCertificateError> error;
 
-    void certificateError(QWebEngineCertificateError e) override
+public Q_SLOTS:
+    void onCertificateError(QWebEngineCertificateError e)
     {
         error.reset(new QWebEngineCertificateError(e));
         if (deferError) {

@@ -1616,7 +1616,7 @@ void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogCont
 void QWebEnginePagePrivate::allowCertificateError(const QWebEngineCertificateError &error)
 {
     Q_Q(QWebEnginePage);
-    q->certificateError(error);
+    Q_EMIT q->certificateError(error);
 }
 
 void QWebEnginePagePrivate::selectClientCert(const QSharedPointer<ClientCertSelectController> &controller)
@@ -2181,8 +2181,6 @@ void QWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel leve
         break;
     }
 }
-
-void QWebEnginePage::certificateError(QWebEngineCertificateError) { }
 
 bool QWebEnginePage::acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame)
 {

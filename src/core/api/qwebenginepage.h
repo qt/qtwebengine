@@ -341,6 +341,7 @@ Q_SIGNALS:
     void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator, const QString &proxyHost);
 
     void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode);
+    void certificateError(const QWebEngineCertificateError &certificateError);
 
     // Ex-QWebFrame signals
     void titleChanged(const QString &title);
@@ -374,7 +375,6 @@ protected:
     virtual bool javaScriptConfirm(const QUrl &securityOrigin, const QString& msg);
     virtual bool javaScriptPrompt(const QUrl &securityOrigin, const QString& msg, const QString& defaultValue, QString* result);
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID);
-    virtual void certificateError(QWebEngineCertificateError certificateError);
     virtual bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame);
 private:
     Q_DISABLE_COPY(QWebEnginePage)

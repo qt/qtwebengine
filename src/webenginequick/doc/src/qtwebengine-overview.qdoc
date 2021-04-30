@@ -227,8 +227,8 @@
 
     The \l{WebEngineCertificateError::error} and \l{QWebEngineCertificateError::Error} enumerations
     provide information about the types of certificate errors that might occur. The errors can be
-    handled by using the WebEngineView::certificateError QML method or by reimplementing the
-    QWebEnginePage::certificateError function.
+    handled by using the WebEngineView::certificateError QML method or by connecting to the
+    QWebEnginePage::certificateError signal.
 
     \section1 Proxy Support
 

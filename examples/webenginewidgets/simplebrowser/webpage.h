@@ -65,10 +65,8 @@ public:
 signals:
     void createCertificateErrorDialog(QWebEngineCertificateError error);
 
-protected:
-    void certificateError(QWebEngineCertificateError error) override;
-
 private slots:
+    void handleCertificateError(QWebEngineCertificateError error);
     void handleSelectClientCertificate(QWebEngineClientCertificateSelection clientCertSelection);
 };
 

@@ -59,9 +59,10 @@ WebPage::WebPage(QWebEngineProfile *profile, QObject *parent)
     : QWebEnginePage(profile, parent)
 {
     connect(this, &QWebEnginePage::selectClientCertificate, this, &WebPage::handleSelectClientCertificate);
+    connect(this, &QWebEnginePage::certificateError, this, &WebPage::handleCertificateError);
 }
 
-void WebPage::certificateError(QWebEngineCertificateError error)
+void WebPage::handleCertificateError(QWebEngineCertificateError error)
 {
     error.defer();
     QTimer::singleShot(0, this,

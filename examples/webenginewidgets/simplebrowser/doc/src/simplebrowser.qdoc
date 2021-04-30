@@ -224,7 +224,7 @@
     whether the certificate should be ignored.
 
     \quotefromfile webenginewidgets/simplebrowser/webpage.cpp
-    \skipto WebPage::certificateError(
+    \skipto WebPage::handleCertificateError(
     \printuntil }
     \printuntil }
 
