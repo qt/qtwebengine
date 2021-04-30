@@ -705,7 +705,7 @@ void QWebEngineView::reload()
 QWebEngineView *QWebEngineView::createWindow(QWebEnginePage::WebWindowType type)
 {
     Q_UNUSED(type);
-    return 0;
+    return nullptr;
 }
 
 qreal QWebEngineView::zoomFactor() const

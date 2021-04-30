@@ -64,6 +64,7 @@ class QWebEngineClientCertificateSelection;
 class QWebEngineFindTextResult;
 class QWebEngineFullScreenRequest;
 class QWebEngineHistory;
+class QWebEngineNewWindowRequest;
 class QWebEnginePage;
 class QWebEnginePagePrivate;
 class QWebEngineProfile;
@@ -320,6 +321,8 @@ public:
     bool isVisible() const;
     void setVisible(bool visible);
 
+    void acceptAsNewWindow(QWebEngineNewWindowRequest &request);
+
     static QWebEnginePage* fromDownloadRequest(QWebEngineDownloadRequest * request);
 
 Q_SIGNALS:
@@ -343,6 +346,7 @@ Q_SIGNALS:
 
     void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode);
     void certificateError(const QWebEngineCertificateError &certificateError);
+    void newWindowRequested(QWebEngineNewWindowRequest &request);
 
     // Ex-QWebFrame signals
     void titleChanged(const QString &title);

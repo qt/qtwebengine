@@ -50,7 +50,7 @@
 
 import QtQuick 2.0
 import QtQuick.Window 2.1
-import QtWebEngine 1.1
+import QtWebEngine 2.0
 
 //! [0]
 QtObject {
@@ -76,7 +76,7 @@ QtObject {
             // use its WebEngineView as the destination of our request.
             onNewViewRequested: function(request) {
                 var newWindow = windowComponent.createObject(windowParent);
-                request.openIn(newWindow.webView);
+                newWindow.webView.acceptAsNewView(request);
             }
         }
     }

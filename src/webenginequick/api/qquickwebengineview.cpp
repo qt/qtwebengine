@@ -53,7 +53,6 @@
 #include "qquickwebenginedialogrequests_p.h"
 #include "qquickwebenginefaviconprovider_p_p.h"
 #include "qquickwebenginenavigationrequest_p.h"
-#include "qquickwebenginenewviewrequest_p.h"
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginetouchhandleprovider_p_p.h"
@@ -61,6 +60,7 @@
 #include "qwebenginefindtextresult.h"
 #include "qwebenginefullscreenrequest.h"
 #include "qwebengineloadrequest.h"
+#include "qwebenginenewwindowrequest.h"
 #include "qwebenginequotarequest.h"
 #include "qwebenginescriptcollection.h"
 #include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
@@ -568,41 +568,37 @@ void QQuickWebEngineViewPrivate::unhandledKeyEvent(QKeyEvent *event)
         QCoreApplication::sendEvent(q->parentItem(), event);
 }
 
-QSharedPointer<WebContentsAdapter>
-QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents,
-                                           WindowOpenDisposition disposition, bool userGesture,
-                                           const QRect &, const QUrl &targetUrl)
+static QWebEngineNewWindowRequest::DestinationType toDestinationType(WebContentsAdapterClient::WindowOpenDisposition disposition)
 {
-    Q_Q(QQuickWebEngineView);
-    Q_ASSERT(newWebContents);
-    QQuickWebEngineNewViewRequest request;
-    request.m_adapter = newWebContents;
-    request.m_isUserInitiated = userGesture;
-    request.m_requestedUrl = targetUrl;
-
     switch (disposition) {
     case WebContentsAdapterClient::NewForegroundTabDisposition:
-        request.m_destination = QQuickWebEngineView::NewViewInTab;
-        break;
+        return QWebEngineNewWindowRequest::InNewTab;
     case WebContentsAdapterClient::NewBackgroundTabDisposition:
-        request.m_destination = QQuickWebEngineView::NewViewInBackgroundTab;
-        break;
+        return QWebEngineNewWindowRequest::InNewBackgroundTab;
     case WebContentsAdapterClient::NewPopupDisposition:
-        request.m_destination = QQuickWebEngineView::NewViewInDialog;
-        break;
+        return QWebEngineNewWindowRequest::InNewDialog;
     case WebContentsAdapterClient::NewWindowDisposition:
-        request.m_destination = QQuickWebEngineView::NewViewInWindow;
-        break;
+        return QWebEngineNewWindowRequest::InNewWindow;
     default:
         Q_UNREACHABLE();
     }
+}
+
+QSharedPointer<WebContentsAdapter>
+QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents,
+                                           WindowOpenDisposition disposition, bool userGesture,
+                                           const QRect &geometry, const QUrl &targetUrl)
+{
+    Q_Q(QQuickWebEngineView);
+    Q_ASSERT(newWebContents);
+    QWebEngineNewWindowRequest request(toDestinationType(disposition), geometry,
+                                       targetUrl, userGesture, newWebContents);
 
     Q_EMIT q->newViewRequested(&request);
 
-    if (!request.m_isRequestHandled)
-        return nullptr;
-
-    return newWebContents;
+    if (request.isHandled())
+        return newWebContents;
+    return nullptr;
 }
 
 bool QQuickWebEngineViewPrivate::isBeingAdopted()
@@ -1723,6 +1719,24 @@ void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &va
     QQuickItem::itemChange(change, value);
 }
 
+void QQuickWebEngineView::acceptAsNewView(QWebEngineNewWindowRequest *request)
+{
+    Q_D(QQuickWebEngineView);
+    if (!request || (!request->adapter() && !request->requestedUrl().isValid()) || request->isHandled()) {
+        qWarning("Trying to open an empty request, it was either already used or was invalidated."
+            "\nYou must complete the request synchronously within the newViewRequested signal handler."
+            " If a view hasn't been adopted before returning, the request will be invalidated.");
+        return;
+    }
+
+    if (auto adapter = request->adapter())
+        d->adoptWebContents(adapter.data());
+    else
+        setUrl(request->requestedUrl());
+
+    request->setHandled();
+}
+
 #if QT_CONFIG(draganddrop)
 static QPointF mapToScreen(const QQuickItem *item, const QPointF &clientPos)
 {
@@ -1812,19 +1826,15 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
         break;
     case OpenLinkInNewWindow:
         if (d->m_contextMenuRequest->filteredLinkUrl().isValid()) {
-            QQuickWebEngineNewViewRequest request;
-            request.m_requestedUrl = d->m_contextMenuRequest->filteredLinkUrl();
-            request.m_isUserInitiated = true;
-            request.m_destination = NewViewInWindow;
+            QWebEngineNewWindowRequest request(QWebEngineNewWindowRequest::InNewWindow, QRect(),
+                                               d->m_contextMenuRequest->filteredLinkUrl(), true, nullptr);
             Q_EMIT newViewRequested(&request);
         }
         break;
     case OpenLinkInNewTab:
         if (d->m_contextMenuRequest->filteredLinkUrl().isValid()) {
-            QQuickWebEngineNewViewRequest request;
-            request.m_requestedUrl = d->m_contextMenuRequest->filteredLinkUrl();
-            request.m_isUserInitiated = true;
-            request.m_destination = NewViewInBackgroundTab;
+            QWebEngineNewWindowRequest request(QWebEngineNewWindowRequest::InNewBackgroundTab, QRect(),
+                                               d->m_contextMenuRequest->filteredLinkUrl(), true, nullptr);
             Q_EMIT newViewRequested(&request);
         }
         break;

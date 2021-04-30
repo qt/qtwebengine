@@ -51,6 +51,7 @@
 #include <qwebenginefindtextresult.h>
 #include <qwebenginefullscreenrequest.h>
 #include <qwebenginehistory.h>
+#include <qwebenginenewwindowrequest.h>
 #include <qwebenginenotification.h>
 #include <qwebenginepage.h>
 #include <qwebengineprofile.h>
@@ -308,7 +309,7 @@ public:
 
     bool m_acceptNavigationRequest;
 protected:
-    virtual bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame)
+    bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame) override
     {
         Q_UNUSED(url);
         Q_UNUSED(isMainFrame);
@@ -527,7 +528,8 @@ class TestPage : public QWebEnginePage {
 public:
     TestPage(QObject *parent = nullptr) : QWebEnginePage(parent)
     {
-        connect(this, SIGNAL(geometryChangeRequested(QRect)), this, SLOT(slotGeometryChangeRequested(QRect)));
+        connect(this, &QWebEnginePage::geometryChangeRequested, this, &TestPage::slotGeometryChangeRequested);
+        connect(this, &QWebEnginePage::newWindowRequested, this, &TestPage::slotNewWindowRequested);
     }
 
     struct Navigation {
@@ -537,7 +539,7 @@ public:
     };
     QList<Navigation> navigations;
 
-    virtual bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame)
+    bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame) override
     {
         Navigation n;
         n.url = url;
@@ -548,12 +550,6 @@ public:
     }
 
     QList<TestPage*> createdWindows;
-    virtual QWebEnginePage* createWindow(WebWindowType) {
-        TestPage* page = new TestPage(this);
-        createdWindows.append(page);
-        emit windowCreated();
-        return page;
-    }
 
     QRect requestedGeometry;
 
@@ -561,7 +557,16 @@ signals:
     void windowCreated();
 
 private Q_SLOTS:
-    void slotGeometryChangeRequested(const QRect& geom) {
+    void slotNewWindowRequested(QWebEngineNewWindowRequest &request)
+    {
+        TestPage *page = new TestPage(this);
+        createdWindows.append(page);
+        emit windowCreated();
+        page->acceptAsNewWindow(request);
+    }
+
+    void slotGeometryChangeRequested(const QRect &geom)
+    {
         requestedGeometry = geom;
     }
 };
@@ -3418,15 +3423,13 @@ void tst_QWebEnginePage::devTools()
 
 void tst_QWebEnginePage::openLinkInDifferentProfile()
 {
-    class Page : public QWebEnginePage {
-    public:
-        QWebEnginePage *targetPage = nullptr;
-        Page(QWebEngineProfile *profile) : QWebEnginePage(profile) {}
-    private:
-        QWebEnginePage *createWindow(WebWindowType) override { return targetPage; }
-    };
+    QWebEnginePage *targetPage = nullptr;
     QWebEngineProfile profile1, profile2;
-    Page page1(&profile1), page2(&profile2);
+    QWebEnginePage page1(&profile1), page2(&profile2);
+    connect(&page1, &QWebEnginePage::newWindowRequested, [&](QWebEngineNewWindowRequest &request) {
+        if (targetPage)
+            targetPage->acceptAsNewWindow(request);
+    });
     QWebEngineView view;
     view.resize(500, 500);
     view.setPage(&page1);
@@ -3438,7 +3441,7 @@ void tst_QWebEnginePage::openLinkInDifferentProfile()
                   "</body></html>");
     QTRY_COMPARE(spy1.count(), 1);
     QVERIFY(spy1.takeFirst().value(0).toBool());
-    page1.targetPage = &page2;
+    targetPage = &page2;
     QTest::mouseClick(view.focusProxy(), Qt::MiddleButton, {}, elementCenter(&page1, "link"));
     QTRY_COMPARE(spy2.count(), 1);
     QVERIFY(spy2.takeFirst().value(0).toBool());
@@ -3500,11 +3503,7 @@ void tst_QWebEnginePage::openLinkInNewPage_data()
     // the disposition and performing the navigation request normally.
 
     QTest::newRow("BlockPopup")     << Decision::ReturnNull  << Cause::TargetBlank << Effect::Blocked;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QTest::newRow("IgnoreIntent")   << Decision::ReturnNull  << Cause::MiddleClick << Effect::Blocked;
-#else
-    QTest::newRow("IgnoreIntent")   << Decision::ReturnNull  << Cause::MiddleClick << Effect::LoadInSelf;
-#endif
     QTest::newRow("OverridePopup")  << Decision::ReturnSelf  << Cause::TargetBlank << Effect::LoadInSelf;
     QTest::newRow("OverrideIntent") << Decision::ReturnSelf  << Cause::MiddleClick << Effect::LoadInSelf;
     QTest::newRow("AcceptPopup")    << Decision::ReturnOther << Cause::TargetBlank << Effect::LoadInOther;

@@ -56,6 +56,7 @@
 #include "qwebenginefullscreenrequest.h"
 #include "qwebenginehistory.h"
 #include "qwebenginehistory_p.h"
+#include "qwebenginenewwindowrequest.h"
 #include "qwebenginenotification.h"
 #include "qwebengineprofile.h"
 #include "qwebengineprofile_p.h"
@@ -145,6 +146,22 @@ static QWebEnginePage::WebWindowType toWindowType(WebContentsAdapterClient::Wind
         return QWebEnginePage::WebDialog;
     case WebContentsAdapterClient::NewWindowDisposition:
         return QWebEnginePage::WebBrowserWindow;
+    default:
+        Q_UNREACHABLE();
+    }
+}
+
+static QWebEngineNewWindowRequest::DestinationType toDestinationType(WebContentsAdapterClient::WindowOpenDisposition disposition)
+{
+    switch (disposition) {
+    case WebContentsAdapterClient::NewForegroundTabDisposition:
+        return QWebEngineNewWindowRequest::InNewTab;
+    case WebContentsAdapterClient::NewBackgroundTabDisposition:
+        return QWebEngineNewWindowRequest::InNewBackgroundTab;
+    case WebContentsAdapterClient::NewPopupDisposition:
+        return QWebEngineNewWindowRequest::InNewDialog;
+    case WebContentsAdapterClient::NewWindowDisposition:
+        return QWebEngineNewWindowRequest::InNewWindow;
     default:
         Q_UNREACHABLE();
     }
@@ -347,40 +364,93 @@ QWebEnginePagePrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebC
                                       const QRect &initialGeometry, const QUrl &targetUrl)
 {
     Q_Q(QWebEnginePage);
-    Q_UNUSED(userGesture);
-    Q_UNUSED(targetUrl);
-
+    Q_ASSERT(newWebContents);
     QWebEnginePage *newPage = q->createWindow(toWindowType(disposition));
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    if (!newPage)
-        return nullptr;
-#else
-    if (!newPage)
-        return adapter;
-#endif
+    if (newPage) {
+        if (!newWebContents->webContents())
+            return newPage->d_func()->adapter; // Reuse existing adapter
 
-    if (!newWebContents->webContents())
-        return newPage->d_func()->adapter; // Reuse existing adapter
+        // Mark the new page as being in the process of being adopted, so that a second mouse move event
+        // sent by newWebContents->initialize() gets filtered in RenderWidgetHostViewQt::forwardEvent.
+        // The first mouse move event is being sent by q->createWindow(). This is necessary because
+        // Chromium does not get a mouse move acknowledgment message between the two events, and
+        // InputRouterImpl::ProcessMouseAck is not executed, thus all subsequent mouse move events
+        // get coalesced together, and don't get processed at all.
+        // The mouse move events are actually sent as a result of show() being called on
+        // RenderWidgetHostViewQtDelegateWidget, both when creating the window and when initialize is
+        // called.
+        newPage->d_func()->m_isBeingAdopted = true;
 
-    // Mark the new page as being in the process of being adopted, so that a second mouse move event
-    // sent by newWebContents->initialize() gets filtered in RenderWidgetHostViewQt::forwardEvent.
-    // The first mouse move event is being sent by q->createWindow(). This is necessary because
-    // Chromium does not get a mouse move acknowledgment message between the two events, and
-    // InputRouterImpl::ProcessMouseAck is not executed, thus all subsequent mouse move events
-    // get coalesced together, and don't get processed at all.
-    // The mouse move events are actually sent as a result of show() being called on
-    // RenderWidgetHostViewQtDelegateWidget, both when creating the window and when initialize is
-    // called.
-    newPage->d_func()->m_isBeingAdopted = true;
+        // Overwrite the new page's WebContents with ours.
+        newPage->d_func()->adapter = newWebContents;
+        newWebContents->setClient(newPage->d_func());
 
-    // Overwrite the new page's WebContents with ours.
-    newPage->d_func()->adapter = newWebContents;
-    newWebContents->setClient(newPage->d_func());
+        if (!initialGeometry.isEmpty())
+            emit newPage->geometryChangeRequested(initialGeometry);
 
-    if (!initialGeometry.isEmpty())
-        emit newPage->geometryChangeRequested(initialGeometry);
+        return newWebContents;
+    }
 
-    return newWebContents;
+    QWebEngineNewWindowRequest request(toDestinationType(disposition), initialGeometry,
+                                       targetUrl, userGesture, newWebContents);
+
+    Q_EMIT q->newWindowRequested(request);
+
+    if (request.isHandled())
+        return newWebContents;
+    return nullptr;
+}
+
+void QWebEnginePagePrivate::createNewWindow(WindowOpenDisposition disposition, bool userGesture, const QUrl &targetUrl)
+{
+    Q_Q(QWebEnginePage);
+    QWebEnginePage *newPage = q->createWindow(toWindowType(disposition));
+    if (newPage) {
+        newPage->setUrl(targetUrl);
+        return;
+    }
+
+    QWebEngineNewWindowRequest request(toDestinationType(disposition), QRect(),
+                                       targetUrl, userGesture, nullptr);
+
+    Q_EMIT q->newWindowRequested(request);
+}
+
+class WebContentsAdapterOwner : public QObject
+{
+public:
+    typedef QSharedPointer<QtWebEngineCore::WebContentsAdapter> AdapterPtr;
+    WebContentsAdapterOwner(const AdapterPtr &ptr)
+        : adapter(ptr)
+    {}
+
+private:
+    AdapterPtr adapter;
+};
+
+void QWebEnginePagePrivate::adoptWebContents(WebContentsAdapter *webContents)
+{
+    if (!webContents) {
+        qWarning("Trying to open an empty request, it was either already used or was invalidated."
+            "\nYou must complete the request synchronously within the newPageRequested signal handler."
+            " If a view hasn't been adopted before returning, the request will be invalidated.");
+        return;
+    }
+
+    if (webContents->profileAdapter() && profileAdapter() != webContents->profileAdapter()) {
+        qWarning("Can not adopt content from a different WebEngineProfile.");
+        return;
+    }
+
+    m_isBeingAdopted = true;
+
+    // This throws away the WebContentsAdapter that has been used until now.
+    // All its states, particularly the loading URL, are replaced by the adopted WebContentsAdapter.
+    WebContentsAdapterOwner *adapterOwner = new WebContentsAdapterOwner(adapter->sharedFromThis());
+    adapterOwner->deleteLater();
+
+    adapter = webContents->sharedFromThis();
+    adapter->setClient(this);
 }
 
 bool QWebEnginePagePrivate::isBeingAdopted()
@@ -1299,25 +1369,19 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
             setUrl(d->view->lastContextMenuRequest()->filteredLinkUrl());
         break;
     case OpenLinkInNewWindow:
-        if (d->view && d->view->lastContextMenuRequest()->filteredLinkUrl().isValid()) {
-            QWebEnginePage *newPage = createWindow(WebBrowserWindow);
-            if (newPage)
-                newPage->setUrl(d->view->lastContextMenuRequest()->filteredLinkUrl());
-        }
+        if (d->view && d->view->lastContextMenuRequest()->filteredLinkUrl().isValid())
+            d->createNewWindow(WebContentsAdapterClient::NewWindowDisposition, true,
+                               d->view->lastContextMenuRequest()->filteredLinkUrl());
         break;
     case OpenLinkInNewTab:
-        if (d->view && d->view->lastContextMenuRequest()->filteredLinkUrl().isValid()) {
-            QWebEnginePage *newPage = createWindow(WebBrowserTab);
-            if (newPage)
-                newPage->setUrl(d->view->lastContextMenuRequest()->filteredLinkUrl());
-        }
+        if (d->view && d->view->lastContextMenuRequest()->filteredLinkUrl().isValid())
+            d->createNewWindow(WebContentsAdapterClient::NewForegroundTabDisposition, true,
+                               d->view->lastContextMenuRequest()->filteredLinkUrl());
         break;
     case OpenLinkInNewBackgroundTab:
-        if (d->view && d->view->lastContextMenuRequest()->filteredLinkUrl().isValid()) {
-            QWebEnginePage *newPage = createWindow(WebBrowserBackgroundTab);
-            if (newPage)
-                newPage->setUrl(d->view->lastContextMenuRequest()->filteredLinkUrl());
-        }
+        if (d->view && d->view->lastContextMenuRequest()->filteredLinkUrl().isValid())
+            d->createNewWindow(WebContentsAdapterClient::NewBackgroundTabDisposition, true,
+                               d->view->lastContextMenuRequest()->filteredLinkUrl());
         break;
     case CopyLinkToClipboard:
         if (d->view && !d->view->lastContextMenuRequest()->linkUrl().isEmpty()) {
@@ -2311,6 +2375,53 @@ void QWebEnginePage::print(QPrinter *printer, const QWebEngineCallback<bool> &re
 #endif
 }
 
+
+/*!
+    \fn void QWebEnginePage::newWindowRequested(WebEngineNewViewRequest &request)
+    \since 6.2
+
+    This signal is emitted when \a request is issued to load a page in a separate
+    web engine window. This can either be because the current page requested it explicitly
+    through a JavaScript call to \c window.open, or because the user clicked on a link
+    while holding Shift, Ctrl, or a built-in combination that triggers the page to open
+    in a new window.
+
+    The signal is handled by calling acceptAsNewWindow() on the destination page.
+    If this signal is not handled, the requested load will fail.
+
+    \note This signal is not emitted if \l createWindow() handled the request first.
+
+    \sa createWindow()
+*/
+
+/*!
+    Handles the newWindowRequested() signal by opening the \a request in this page.
+    \since 6.2
+    \sa newWindowRequested
+*/
+void QWebEnginePage::acceptAsNewWindow(QWebEngineNewWindowRequest &request)
+{
+    Q_D(QWebEnginePage);
+    auto adapter = request.adapter();
+    QUrl url = request.requestedUrl();
+    if ((!adapter && !url.isValid()) || request.isHandled()) {
+        qWarning("Trying to open an empty request, it was either already used or was invalidated."
+            "\nYou must complete the request synchronously within the newWindowRequested signal handler."
+            " If a view hasn't been adopted before returning, the request will be invalidated.");
+        return;
+    }
+
+    if (adapter)
+        d->adoptWebContents(adapter.data());
+    else
+        setUrl(url);
+
+    QRect geometry = request.requestedGeometry();
+    if (!geometry.isEmpty())
+        emit geometryChangeRequested(geometry);
+
+    request.setHandled();
+}
 
 /*!
   \enum QWebEnginePage::LifecycleState

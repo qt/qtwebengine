@@ -518,19 +518,19 @@ ApplicationWindow {
                 onNewViewRequested: function(request) {
                     if (!request.userInitiated)
                         print("Warning: Blocked a popup window.");
-                    else if (request.destination === WebEngineView.NewViewInTab) {
+                    else if (request.destination === WebEngineNewViewRequest.InNewTab) {
                         var tab = tabs.createEmptyTab(currentWebView.profile);
                         tabs.currentIndex = tabs.count - 1;
-                        request.openIn(tab.item);
-                    } else if (request.destination === WebEngineView.NewViewInBackgroundTab) {
+                        tab.item.acceptAsNewView(request);
+                    } else if (request.destination === WebEngineNewViewRequest.InNewBackgroundTab) {
                         var backgroundTab = tabs.createEmptyTab(currentWebView.profile);
-                        request.openIn(backgroundTab.item);
-                    } else if (request.destination === WebEngineView.NewViewInDialog) {
+                        backgroundTab.item.acceptAsNewView(request);
+                    } else if (request.destination === WebEngineNewViewRequest.InNewDialog) {
                         var dialog = applicationRoot.createDialog(currentWebView.profile);
-                        request.openIn(dialog.currentWebView);
+                        dialog.currentWebView.acceptAsNewView(request);
                     } else {
                         var window = applicationRoot.createWindow(currentWebView.profile);
-                        request.openIn(window.currentWebView);
+                        window.currentWebView.acceptAsNewView(request);
                     }
                 }
 

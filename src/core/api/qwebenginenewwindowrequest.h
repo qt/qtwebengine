@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,22 +37,15 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINENEWVIEWREQUEST_P_H
-#define QQUICKWEBENGINENEWVIEWREQUEST_P_H
+#ifndef QWEBENGINENEWWINDOWREQUEST_P_H
+#define QWEBENGINENEWWINDOWREQUEST_P_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtWebEngineQuick/private/qtwebengineglobal_p.h>
-#include "qquickwebengineview_p.h"
+#include <qtwebenginecoreglobal.h>
+#include <QtCore/QObject>
+#include <QtCore/QRect>
+#include <QtCore/QScopedPointer>
+#include <QtCore/QSharedPointer>
+#include <QtCore/QUrl>
 
 namespace QtWebEngineCore {
 class WebContentsAdapter;
@@ -60,32 +53,47 @@ class WebContentsAdapter;
 
 QT_BEGIN_NAMESPACE
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineNewViewRequest : public QObject {
+struct QWebEngineNewWindowRequestPrivate;
+
+class Q_WEBENGINECORE_EXPORT QWebEngineNewWindowRequest : public QObject
+{
     Q_OBJECT
-    Q_PROPERTY(QQuickWebEngineView::NewViewDestination destination READ destination CONSTANT FINAL)
-    Q_PROPERTY(QUrl requestedUrl READ requestedUrl CONSTANT REVISION(1,1) FINAL)
+    Q_PROPERTY(DestinationType destination READ destination CONSTANT FINAL)
+    Q_PROPERTY(QUrl requestedUrl READ requestedUrl CONSTANT FINAL)
+    Q_PROPERTY(QRect requestedGeometry READ requestedGeometry CONSTANT FINAL)
     Q_PROPERTY(bool userInitiated READ isUserInitiated CONSTANT FINAL)
 public:
-    ~QQuickWebEngineNewViewRequest();
+    ~QWebEngineNewWindowRequest();
 
-    QQuickWebEngineView::NewViewDestination destination() const;
+    enum DestinationType {
+        InNewWindow,
+        InNewTab,
+        InNewDialog,
+        InNewBackgroundTab
+    };
+    Q_ENUM(DestinationType)
+
+    DestinationType destination() const;
     QUrl requestedUrl() const;
+    QRect requestedGeometry() const;
     bool isUserInitiated() const;
-    Q_INVOKABLE void openIn(QQuickWebEngineView *view);
 
 private:
-    QQuickWebEngineNewViewRequest();
-    QQuickWebEngineView::NewViewDestination m_destination;
-    bool m_isUserInitiated;
-    bool m_isRequestHandled = false;
-    QSharedPointer<QtWebEngineCore::WebContentsAdapter> m_adapter;
-    QUrl m_requestedUrl;
+    QWebEngineNewWindowRequest(DestinationType, const QRect &, const QUrl &, bool,
+                               QSharedPointer<QtWebEngineCore::WebContentsAdapter>,
+                               QObject * = nullptr);
+
+    QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter();
+    bool isHandled() const;
+    void setHandled();
+
+    QScopedPointer<QWebEngineNewWindowRequestPrivate> d_ptr;
+    friend class QWebEnginePage;
+    friend class QWebEnginePagePrivate;
     friend class QQuickWebEngineView;
     friend class QQuickWebEngineViewPrivate;
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QQuickWebEngineNewViewRequest)
-
-#endif // QQUICKWEBENGINENEWVIEWREQUEST_P_H
+#endif // QWEBENGINENEWWINDOWREQUEST_P_H

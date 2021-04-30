@@ -583,13 +583,23 @@
     while holding Shift, Ctrl, or a built-in combination that triggers the page to open
     in a new window.
 
+    The signal is handled by calling acceptAsNewView() on the destination view.
     If this signal is not handled, the requested load will fail.
 
     An example implementation:
 
     \snippet snippets/qtwebengine_webengineview_newviewrequested.qml 0
 
-    \sa NewViewDestination, {WebEngine Quick Nano Browser}
+    \sa WebEngineNewViewRequest, {WebEngine Quick Nano Browser}
+*/
+
+/*!
+    \qmlmethod void WebEngineView::acceptAsNewView(QWebEngineNewWindowRequest *request)
+    \since QtWebEngine 2.0
+
+    Handle the newViewRequested signal by opening the \a request in this view.
+
+    \sa newViewRequested
 */
 
 /*!
@@ -686,23 +696,6 @@
             Page has successfully loaded, and is not currently loading.
     \value  WebEngineView.LoadFailedStatus
             Page has failed to load, and is not currently loading.
-*/
-
-/*!
-    \qmlproperty enumeration WebEngineView::NewViewDestination
-
-    Describes how to open a new view:
-
-    \value WebEngineView.NewViewInWindow
-            In a separate Window.
-    \value WebEngineView.NewViewInTab
-            In a tab of the same window.
-    \value WebEngineView.NewViewInDialog
-            In a Window without a tab bar, toolbar, or URL bar.
-    \value WebEngineView.NewViewInBackgroundTab
-            In a tab of the same window, without hiding the currently visible web engine view.
-
-    \sa {WebEngineNewViewRequest::destination}{WebEngineNewViewRequest.destination}
 */
 
 /*!

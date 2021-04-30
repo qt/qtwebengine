@@ -193,6 +193,8 @@ public:
     void updateAction(QWebEnginePage::WebAction) const;
     void _q_webActionTriggered(bool checked);
 
+    void createNewWindow(WindowOpenDisposition disposition, bool userGesture, const QUrl &targetUrl);
+    void adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
     QtWebEngineCore::WebContentsAdapter *webContents() { return adapter.data(); }
     void recreateFromSerializedHistory(QDataStream &input);
 

@@ -133,11 +133,11 @@
 
     \value OpenLinkInThisWindow Open the current link in the current window. (Added in Qt 5.6)
     \value OpenLinkInNewWindow Open the current link in a new window. Requires implementation of
-           \l createWindow(). (Added in Qt 5.6)
+           \l createWindow() or \l newWindowRequested() (Added in Qt 5.6)
     \value OpenLinkInNewTab Open the current link in a new tab. Requires implementation of
-           \l createWindow(). (Added in Qt 5.6)
+           \l createWindow() or \l newWindowRequested(). (Added in Qt 5.6)
     \value OpenLinkInNewBackgroundTab Open the current link in a new background tab. Requires
-           implementation of \l createWindow(). (Added in Qt 5.7)
+           implementation of \l createWindow() or \l newWindowRequested(). (Added in Qt 5.7)
     \value CopyLinkToClipboard Copy the current link to the clipboard. (Added in Qt 5.6)
 
     \value CopyImageToClipboard Copy the clicked image to the clipboard. (Added in Qt 5.6)
@@ -168,7 +168,7 @@
            the web page on disk. Requires a slot for \l{QWebEngineProfile::}{downloadRequested()}.
            (Added in Qt 5.7)
     \value ViewSource Show the source of the current page in a new tab. Requires implementation of
-            \l createWindow(). (Added in Qt 5.8)
+            \l createWindow() or \l newWindowRequested(). (Added in Qt 5.8)
 
     \value ToggleBold
            Toggles boldness for the selection or at the cursor position.
@@ -445,11 +445,14 @@
     If the view associated with the web page is a QWebEngineView object, then the default implementation forwards
     the request to QWebEngineView::createWindow(); otherwise it returns a null pointer.
 
+    If this call is not implemented or does not return a new page, \l newWindowRequested() is emitted to handle
+    the request.
+
     \note In the cases when the window creation is being triggered by JavaScript, apart from
     reimplementing this method the application must also set
     QWebEngineSettings::JavascriptCanOpenWindows to \c true in order for the method to get called.
 
-    \sa QWebEngineView::createWindow()
+    \sa QWebEngineView::createWindow(), newWindowRequested()
 */
 
 /*!

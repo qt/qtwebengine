@@ -26,6 +26,7 @@ qt_internal_add_module(WebEngineCore
         qwebenginehttprequest.cpp qwebenginehttprequest.h
         qwebengineloadrequest.cpp qwebengineloadrequest.h
         qwebenginemessagepumpscheduler.cpp qwebenginemessagepumpscheduler_p.h
+        qwebenginenewwindowrequest.cpp qwebenginenewwindowrequest.h
         qwebenginenotification.cpp qwebenginenotification.h
         qwebenginepage.cpp qwebenginepage.h qwebenginepage_p.h
         qwebengineprofile.cpp qwebengineprofile.h qwebengineprofile_p.h

@@ -45,7 +45,6 @@
 #include <QtWebEngineQuick/private/qquickwebenginehistory_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginefaviconprovider_p_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginenavigationrequest_p.h>
-#include <QtWebEngineQuick/private/qquickwebenginenewviewrequest_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginesettings_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginesingleton_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginetouchhandleprovider_p_p.h>
@@ -55,6 +54,7 @@
 #include <QtWebEngineCore/qwebenginefindtextresult.h>
 #include <QtWebEngineCore/qwebenginefullscreenrequest.h>
 #include <QtWebEngineCore/qwebengineloadrequest.h>
+#include <QtWebEngineCore/qwebenginenewwindowrequest.h>
 #include <QtWebEngineCore/qwebenginenotification.h>
 #include <QtWebEngineCore/qwebenginequotarequest.h>
 #include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
@@ -113,8 +113,7 @@ public:
         qmlRegisterUncreatableType<QWebEngineCertificateError>(uri, 1, 1, "WebEngineCertificateError", msgUncreatableType("WebEngineCertificateError"));
         qmlRegisterUncreatableType<QWebEngineDownloadRequest>(uri, 1, 1, "WebEngineDownloadRequest",
             msgUncreatableType("WebEngineDownloadRequest"));
-        qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest>(uri, 1, 1, "WebEngineNewViewRequest", msgUncreatableType("WebEngineNewViewRequest"));
-        qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest, 1>(uri, 1, 5, "WebEngineNewViewRequest", tr("Cannot create separate instance of WebEngineNewViewRequest"));
+        qmlRegisterUncreatableType<QWebEngineNewWindowRequest>(uri, 1, 1, "WebEngineNewViewRequest", msgUncreatableType("WebEngineNewViewRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineSettings>(uri, 1, 1, "WebEngineSettings", msgUncreatableType("WebEngineSettings"));
         qmlRegisterUncreatableType<QQuickWebEngineSettings, 1>(uri, 1, 2, "WebEngineSettings", msgUncreatableType("WebEngineSettings"));
         qmlRegisterUncreatableType<QQuickWebEngineSettings, 2>(uri, 1, 3, "WebEngineSettings", msgUncreatableType("WebEngineSettings"));

@@ -76,17 +76,17 @@ class QQuickWebEngineHistory;
 class QQuickWebEngineJavaScriptDialogRequest;
 class QWebEngineLoadRequest;
 class QQuickWebEngineNavigationRequest;
-class QQuickWebEngineNewViewRequest;
 class QQuickWebEngineSettings;
 class QQuickWebEngineTooltipRequest;
 class QQuickWebEngineFormValidationMessageRequest;
 class QQuickWebEngineViewPrivate;
 class QWebEngineCertificateError;
+class QWebEngineContextMenuRequest;
 class QWebEngineFindTextResult;
 class QWebEngineFullScreenRequest;
+class QWebEngineNewWindowRequest;
 class QWebEngineQuotaRequest;
 class QWebEngineRegisterProtocolHandlerRequest;
-class QWebEngineContextMenuRequest;
 class QQuickWebEngineScriptCollection;
 
 #if QT_CONFIG(webenginequick_testsupport)
@@ -190,14 +190,6 @@ public:
          DnsErrorDomain
     };
     Q_ENUM(ErrorDomain)
-
-    enum NewViewDestination {
-        NewViewInWindow,
-        NewViewInTab,
-        NewViewInDialog,
-        NewViewInBackgroundTab
-    };
-    Q_ENUM(NewViewDestination)
 
     enum Feature {
         MediaAudioCapture,
@@ -478,6 +470,8 @@ public:
     void setWebChannelWorld(uint);
     Q_REVISION(1,8) Q_INVOKABLE QQuickWebEngineAction *action(WebAction action);
 
+    Q_INVOKABLE void acceptAsNewView(QWebEngineNewWindowRequest *request);
+
     bool isAudioMuted() const;
     void setAudioMuted(bool muted);
     bool recentlyAudible() const;
@@ -536,7 +530,7 @@ Q_SIGNALS:
     Q_REVISION(1,1) void fullScreenRequested(const QWebEngineFullScreenRequest &request);
     Q_REVISION(1,1) void isFullScreenChanged();
     Q_REVISION(1,1) void featurePermissionRequested(const QUrl &securityOrigin, Feature feature);
-    Q_REVISION(1,1) void newViewRequested(QQuickWebEngineNewViewRequest *request);
+    Q_REVISION(1,1) void newViewRequested(QWebEngineNewWindowRequest *request);
     Q_REVISION(1,1) void zoomFactorChanged(qreal arg);
     Q_REVISION(1,1) void profileChanged();
     Q_REVISION(1,1) void webChannelChanged();
@@ -591,7 +585,6 @@ private:
 
     friend class QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick;
     friend class QQuickContextMenuBuilder;
-    friend class QQuickWebEngineNewViewRequest;
     friend class QQuickWebEngineFaviconProvider;
 #ifndef QT_NO_ACCESSIBILITY
     friend class QQuickWebEngineViewAccessible;
