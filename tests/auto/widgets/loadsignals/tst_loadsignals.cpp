@@ -90,7 +90,7 @@ private Q_SLOTS:
     void rejectNavigationRequest_data();
     void rejectNavigationRequest();
     void loadAfterInPageNavigation_qtbug66869();
-    void fileDownloadDoesNotTriggerLoadSignals_qtbug66661();
+    void fileDownload();
     void numberOfStartedAndFinishedSignalsIsSame();
     void loadFinishedAfterNotFoundError_data();
     void loadFinishedAfterNotFoundError();
@@ -326,11 +326,7 @@ void tst_LoadSignals::loadAfterInPageNavigation_qtbug66869()
     QFAIL("https://codereview.qt-project.org/#/c/222112/ only hides the symptom, the core issue still needs to be solved");
 }
 
-/**
-  * Test that file-downloads don't trigger loadStarted or loadFinished signals.
-  * See QTBUG-66661
-  */
-void tst_LoadSignals::fileDownloadDoesNotTriggerLoadSignals_qtbug66661()
+void tst_LoadSignals::fileDownload()
 {
     view.load(QUrl("qrc:///resources/page4.html"));
     QTRY_COMPARE(loadFinishedSpy.size(), 1);
@@ -352,20 +348,17 @@ void tst_LoadSignals::fileDownloadDoesNotTriggerLoadSignals_qtbug66661()
                     });
 
     // trigger the download link that becomes focused on page4
-    QTest::qWait(1000);
     QTest::sendKeyEvent(QTest::Press, view.focusProxy(), Qt::Key_Return, QString("\r"), Qt::NoModifier);
     QTest::sendKeyEvent(QTest::Release, view.focusProxy(), Qt::Key_Return, QString("\r"), Qt::NoModifier);
 
-    // Wait for 5 seconds (abort waiting if another loadStarted or loadFinished occurs)
-    QTRY_LOOP_IMPL((loadStartedSpy.size() != 1)
-                || (loadFinishedSpy.size() != 1), 5000, 100);
-
     // Download must have occurred
     QTRY_COMPARE(downloadState, QWebEngineDownloadItem::DownloadCompleted);
+    QTRY_COMPARE(loadFinishedSpy.size() + loadStartedSpy.size(), 4);
 
-    // No further loadStarted should have occurred within this time
-    QCOMPARE(loadStartedSpy.size(), 1);
-    QCOMPARE(loadFinishedSpy.size(), 1);
+    // verify no more signals is emitted by waiting for another loadStarted or loadFinished
+    QTRY_LOOP_IMPL(loadStartedSpy.size() != 2 || loadFinishedSpy.size() != 2, 1000, 100);
+
+    QCOMPARE(page.signalsOrder, SignalsOrderTwiceWithFailure);
 }
 
 void tst_LoadSignals::numberOfStartedAndFinishedSignalsIsSame() {
