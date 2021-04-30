@@ -426,6 +426,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.localContentCanAccessRemoteUrlsChanged() --> void"
     << "QQuickWebEngineSettings.localStorageEnabled --> bool"
     << "QQuickWebEngineSettings.localStorageEnabledChanged() --> void"
+    << "QQuickWebEngineSettings.navigateOnDropEnabled --> bool"
+    << "QQuickWebEngineSettings.navigateOnDropEnabledChanged() --> void"
     << "QQuickWebEngineSettings.pdfViewerEnabled --> bool"
     << "QQuickWebEngineSettings.pdfViewerEnabledChanged() --> void"
     << "QQuickWebEngineSettings.playbackRequiresUserGesture --> bool"

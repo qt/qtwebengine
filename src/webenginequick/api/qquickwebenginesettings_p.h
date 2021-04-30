@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -92,6 +92,7 @@ class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool javascriptCanPaste READ javascriptCanPaste WRITE setJavascriptCanPaste NOTIFY javascriptCanPasteChanged REVISION(1,6) FINAL)
     Q_PROPERTY(bool dnsPrefetchEnabled READ dnsPrefetchEnabled WRITE setDnsPrefetchEnabled NOTIFY dnsPrefetchEnabledChanged REVISION(1,7) FINAL)
     Q_PROPERTY(bool pdfViewerEnabled READ pdfViewerEnabled WRITE setPdfViewerEnabled NOTIFY pdfViewerEnabledChanged REVISION(1,8) FINAL)
+    Q_PROPERTY(bool navigateOnDropEnabled READ navigateOnDropEnabled WRITE setNavigateOnDropEnabled NOTIFY navigateOnDropEnabledChanged REVISION(6,4) FINAL)
     QML_NAMED_ELEMENT(WebEngineSettings)
     QML_ADDED_IN_VERSION(1, 1)
     QML_EXTRA_VERSION(2, 0)
@@ -138,6 +139,7 @@ public:
     bool javascriptCanPaste() const;
     bool dnsPrefetchEnabled() const;
     bool pdfViewerEnabled() const;
+    bool navigateOnDropEnabled() const;
 
     void setAutoLoadImages(bool on);
     void setJavascriptEnabled(bool on);
@@ -170,6 +172,7 @@ public:
     void setJavascriptCanPaste(bool on);
     void setDnsPrefetchEnabled(bool on);
     void setPdfViewerEnabled(bool on);
+    void setNavigateOnDropEnabled(bool on);
 
 signals:
     void autoLoadImagesChanged();
@@ -203,6 +206,7 @@ signals:
     Q_REVISION(1,6) void javascriptCanPasteChanged();
     Q_REVISION(1,7) void dnsPrefetchEnabledChanged();
     Q_REVISION(1,8) void pdfViewerEnabledChanged();
+    Q_REVISION(6,4) void navigateOnDropEnabledChanged();
 
 private:
     explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = nullptr);

@@ -3519,16 +3519,21 @@ void tst_QWebEngineView::inspectElement()
 void tst_QWebEngineView::navigateOnDrop_data()
 {
     QTest::addColumn<QUrl>("url");
-    QTest::newRow("file") << QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).absoluteFilePath("resources/dummy.html"));
-    QTest::newRow("qrc") << QUrl("qrc:///resources/dummy.html");
+    QTest::addColumn<bool>("navigateOnDrop");
+    QTest::newRow("file") << QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).absoluteFilePath("resources/dummy.html")) << true;
+    QTest::newRow("qrc") << QUrl("qrc:///resources/dummy.html") << true;
+    QTest::newRow("file_no_navigate") << QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).absoluteFilePath("resources/dummy.html")) << false;
+    QTest::newRow("qrc_no_navigate") << QUrl("qrc:///resources/dummy.html") << false;
 }
 
 void tst_QWebEngineView::navigateOnDrop()
 {
     QFETCH(QUrl, url);
+    QFETCH(bool, navigateOnDrop);
     struct WebEngineView : QWebEngineView {
         QWebEngineView* createWindow(QWebEnginePage::WebWindowType /* type */) override { return this; }
     } view;
+    view.page()->settings()->setAttribute(QWebEngineSettings::NavigateOnDropEnabled, navigateOnDrop);
     view.resize(640, 480);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
@@ -3545,9 +3550,32 @@ void tst_QWebEngineView::navigateOnDrop()
     };
 
     sendEvents();
+    if (navigateOnDrop) {
+        QTRY_COMPARE(loadSpy.count(), 1);
+        QVERIFY(loadSpy.last().first().toBool());
+        QCOMPARE(view.url(), url);
+    } else {
+        QTest::qWait(500);
+        QCOMPARE(loadSpy.size(), 0);
+        QVERIFY(view.url() != url);
+    }
+
+    // Check dynamically changing the setting
+    loadSpy.clear();
+    view.page()->settings()->setAttribute(QWebEngineSettings::NavigateOnDropEnabled, !navigateOnDrop);
+    view.setUrl(QUrl("about:blank"));
     QTRY_COMPARE(loadSpy.count(), 1);
-    QVERIFY(loadSpy.first().first().toBool());
-    QCOMPARE(view.url(), url);
+
+    sendEvents();
+    if (!navigateOnDrop) {
+        QTRY_COMPARE(loadSpy.count(), 2);
+        QVERIFY(loadSpy.last().first().toBool());
+        QCOMPARE(view.url(), url);
+    } else {
+        QTest::qWait(500);
+        QCOMPARE(loadSpy.size(), 1);
+        QVERIFY(view.url() != url);
+    }
 }
 
 QTEST_MAIN(tst_QWebEngineView)

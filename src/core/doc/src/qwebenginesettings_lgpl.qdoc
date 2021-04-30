@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2015 The Qt Company Ltd.
+    Copyright (C) 2022 The Qt Company Ltd.
     Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
 
     This library is free software; you can redistribute it and/or
@@ -180,6 +180,9 @@
     \value PdfViewerEnabled Specifies that PDF documents will be opened in the internal PDF viewer
            instead of being downloaded.
            Enabled by default. (Added in Qt 5.13)
+    \value NavigateOnDropEnabled Specifies that navigations can be triggered by dropping URLs on
+           the view.
+           Enabled by default. (Added in Qt 6.4)
 */
 
 /*!

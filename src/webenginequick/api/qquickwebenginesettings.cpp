@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -455,6 +455,20 @@ bool QQuickWebEngineSettings::pdfViewerEnabled() const
 }
 
 /*!
+    \qmlproperty bool WebEngineSettings::navigateOnDropEnabled
+    \since QtWebEngine 6.4
+
+    Specifies that navigations can be triggered by dropping URLs on
+    the view.
+
+    Enabled by default.
+*/
+bool QQuickWebEngineSettings::navigateOnDropEnabled() const
+{
+    return d_ptr->testAttribute(QWebEngineSettings::NavigateOnDropEnabled);
+}
+
+/*!
     \qmlproperty string WebEngineSettings::defaultTextEncoding
     \since QtWebEngine 1.2
 
@@ -727,6 +741,14 @@ void QQuickWebEngineSettings::setPdfViewerEnabled(bool on)
     d_ptr->setAttribute(QWebEngineSettings::PdfViewerEnabled, on);
     if (wasOn != on)
         Q_EMIT pdfViewerEnabledChanged();
+}
+
+void QQuickWebEngineSettings::setNavigateOnDropEnabled(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::NavigateOnDropEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::NavigateOnDropEnabled, on);
+    if (wasOn != on)
+        Q_EMIT navigateOnDropEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setUnknownUrlSchemePolicy(QQuickWebEngineSettings::UnknownUrlSchemePolicy policy)

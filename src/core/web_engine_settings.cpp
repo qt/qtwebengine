@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -297,6 +297,7 @@ void WebEngineSettings::initDefaults()
 #else
         s_defaultAttributes.insert(QWebEngineSettings::PdfViewerEnabled, false);
 #endif
+        s_defaultAttributes.insert(QWebEngineSettings::NavigateOnDropEnabled, true);
     }
 
     if (s_defaultFontFamilies.isEmpty()) {
@@ -403,6 +404,7 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
     }
     prefs->dom_paste_enabled = testAttribute(QWebEngineSettings::JavascriptCanPaste);
     prefs->dns_prefetching_enabled = testAttribute(QWebEngineSettings::DnsPrefetchEnabled);
+    prefs->navigate_on_drag_drop = testAttribute(QWebEngineSettings::NavigateOnDropEnabled);
 
     // Fonts settings.
     prefs->standard_font_family_map[blink::web_pref::kCommonScript] =

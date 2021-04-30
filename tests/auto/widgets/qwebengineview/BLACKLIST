@@ -15,3 +15,6 @@ b2qt arm
 
 [navigateOnDrop:file]
 windows
+
+[navigateOnDrop:file_no_navigate]
+windows

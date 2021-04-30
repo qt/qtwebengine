@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -95,6 +95,7 @@ public:
         JavascriptCanPaste,
         DnsPrefetchEnabled,
         PdfViewerEnabled,
+        NavigateOnDropEnabled,
     };
 
     enum FontSize {
