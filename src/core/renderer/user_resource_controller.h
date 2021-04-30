@@ -91,7 +91,7 @@ private:
 
     void runScripts(QtWebEngineCore::UserScriptData::InjectionPoint, blink::WebLocalFrame *);
 
-    typedef QSet<uint64_t> UserScriptSet;
+    typedef QList<uint64_t> UserScriptSet;
     typedef QHash<const content::RenderFrame *, UserScriptSet> FrameUserScriptMap;
     FrameUserScriptMap m_frameUserScriptMap;
     QHash<uint64_t, QtWebEngineCore::UserScriptData> m_scripts;

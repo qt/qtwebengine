@@ -198,8 +198,8 @@ void UserResourceController::runScripts(QtWebEngineCore::UserScriptData::Injecti
         return;
     const bool isMainFrame = renderFrame->IsMainFrame();
 
-    QList<uint64_t> scriptsToRun = m_frameUserScriptMap.value(globalScriptsIndex).values();
-    scriptsToRun.append(m_frameUserScriptMap.value(renderFrame).values());
+    QList<uint64_t> scriptsToRun = m_frameUserScriptMap.value(globalScriptsIndex);
+    scriptsToRun.append(m_frameUserScriptMap.value(renderFrame));
 
     for (uint64_t id : qAsConst(scriptsToRun)) {
         const QtWebEngineCore::UserScriptData &script = m_scripts.value(id);
@@ -346,7 +346,8 @@ void UserResourceController::addScriptForFrame(const QtWebEngineCore::UserScript
     if (it == m_frameUserScriptMap.end())
         it = m_frameUserScriptMap.insert(frame, UserScriptSet());
 
-    (*it).insert(script.scriptId);
+    if (!(*it).contains(script.scriptId))
+        (*it).append(script.scriptId);
     m_scripts.insert(script.scriptId, script);
 }
 
@@ -357,7 +358,7 @@ void UserResourceController::removeScriptForFrame(const QtWebEngineCore::UserScr
     if (it == m_frameUserScriptMap.end())
         return;
 
-    (*it).remove(script.scriptId);
+    (*it).removeOne(script.scriptId);
     m_scripts.remove(script.scriptId);
 }
 
