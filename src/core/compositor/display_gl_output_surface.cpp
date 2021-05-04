@@ -75,8 +75,12 @@ DisplayGLOutputSurface::~DisplayGLOutputSurface()
 // Called from viz::Display::Initialize.
 void DisplayGLOutputSurface::BindToClient(viz::OutputSurfaceClient *client)
 {
-    m_display = static_cast<viz::Display *>(client);
-    bind(m_display->frame_sink_id());
+    m_client = client;
+}
+
+void DisplayGLOutputSurface::SetFrameSinkId(const viz::FrameSinkId &id)
+{
+    bind(id);
 }
 
 // Triggered by ui::Compositor::SetVisible(true).
@@ -227,8 +231,8 @@ void DisplayGLOutputSurface::swapBuffersOnVizThread()
     }
 
     const auto now = base::TimeTicks::Now();
-    m_display->DidReceiveSwapBuffersAck(gfx::SwapTimings{now, now});
-    m_display->DidReceivePresentationFeedback(
+    m_client->DidReceiveSwapBuffersAck(gfx::SwapTimings{now, now});
+    m_client->DidReceivePresentationFeedback(
             gfx::PresentationFeedback(now, base::TimeDelta(),
                                       gfx::PresentationFeedback::Flags::kVSync));
 }

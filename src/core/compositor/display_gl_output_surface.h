@@ -51,11 +51,6 @@
 
 #include <QMutex>
 
-namespace viz {
-class Display;
-class SyntheticBeginFrameSource;
-} // namespace viz
-
 namespace QtWebEngineCore {
 
 class DisplayGLOutputSurface final : public viz::OutputSurface, public Compositor
@@ -85,6 +80,7 @@ public:
     void SetUpdateVSyncParametersCallback(viz::UpdateVSyncParametersCallback callback) override;
     void SetDisplayTransformHint(gfx::OverlayTransform transform) override;
     gfx::OverlayTransform GetDisplayTransform() override;
+    void SetFrameSinkId(const viz::FrameSinkId &id) override;
 
     // Overridden from Compositor.
     void swapFrame() override;
@@ -138,7 +134,7 @@ private:
     gpu::gles2::GLES2Interface *const m_gl;
     mutable QMutex m_mutex;
     uint32_t m_fboId = 0;
-    viz::Display *m_display = nullptr;
+    viz::OutputSurfaceClient *m_client = nullptr;
     Shape m_currentShape;
     std::unique_ptr<Buffer> m_backBuffer;
     std::unique_ptr<Buffer> m_middleBuffer;

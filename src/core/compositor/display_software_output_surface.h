@@ -50,8 +50,8 @@ public:
     DisplaySoftwareOutputSurface();
     ~DisplaySoftwareOutputSurface() override;
 
-    // Overridden from viz::SoftwareOutputSurface.
-    void BindToClient(viz::OutputSurfaceClient *client) override;
+    // Overridden from viz::OutputSurface.
+    void SetFrameSinkId(const viz::FrameSinkId &id) override;
 
 private:
     class Device;
