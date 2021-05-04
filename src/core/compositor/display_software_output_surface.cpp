@@ -173,12 +173,9 @@ DisplaySoftwareOutputSurface::DisplaySoftwareOutputSurface()
 DisplaySoftwareOutputSurface::~DisplaySoftwareOutputSurface() {}
 
 // Called from viz::Display::Initialize.
-void DisplaySoftwareOutputSurface::BindToClient(viz::OutputSurfaceClient *client)
+void DisplaySoftwareOutputSurface::SetFrameSinkId(const viz::FrameSinkId &id)
 {
-    auto display = static_cast<viz::Display *>(client);
-    auto device = static_cast<Device *>(software_device());
-    device->bind(display->frame_sink_id());
-    SoftwareOutputSurface::BindToClient(client);
+    static_cast<Device *>(software_device())->bind(id);
 }
 
 } // namespace QtWebEngineCore
