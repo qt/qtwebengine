@@ -80,11 +80,21 @@ TestWebEngineView {
     Connections {
         id: downloadItemConnections
         ignoreUnknownSignals: true
-        onStateChanged: downloadState.push(target.state)
-        onInterruptReasonChanged: downloadInterruptReason = target.interruptReason
-        onDownloadDirectoryChanged: downloadDirectoryChanged++
-        onDownloadFileNameChanged: downloadFileNameChanged++
-        onPathChanged: downloadPathChanged++
+        function onStateChanged() {
+            downloadState.push(target.state);
+        }
+        function onInterruptReasonChanged() {
+            downloadInterruptReason = target.interruptReason;
+        }
+        function onDownloadDirectoryChanged() {
+            downloadDirectoryChanged++;
+        }
+        function onDownloadFileNameChanged() {
+            downloadFileNameChanged++;
+        }
+        function onPathChanged() {
+            downloadPathChanged++;
+        }
     }
 
     WebEngineProfile {
