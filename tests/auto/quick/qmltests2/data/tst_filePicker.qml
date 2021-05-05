@@ -227,15 +227,15 @@ TestWebEngineView {
                    { tag: "file://applib/products/a%2Db/ abc%5F9/4148.920a/media/test.txt", input: "file://applib/products/a%2Db/ abc%5F9/4148.920a/media/test.txt", expected: "test.txt"},
                    { tag: "file://applib/products/a-b/abc_1/t.est/test.txt", input: "file://applib/products/a-b/abc_1/t.est/test.txt", expected: "test.txt"},
                    { tag: "file:\\\\applib\\products\\a-b\\abc_1\\t:est\\test.txt", input: "file:\\\\applib\\products\\a-b\\abc_1\\t:est\\test.txt", expected: "test.txt"},
-                   { tag: "file:C:/test.txt", input: "file:C:/test.txt", expected: "test.tx"},
-                   { tag: "file:/C:/test.txt", input: "file:/C:/test.txt", expected: "test.tx"},
+                   { tag: "file:C:/test.txt", input: "file:C:/test.txt", expected: "test.txt"},
+                   { tag: "file:/C:/test.txt", input: "file:/C:/test.txt", expected: "test.txt"},
                    { tag: "file://C:/test.txt", input: "file://C:/test.txt", expected: "Failed to Upload"},
                    { tag: "file:///C:test.txt", input: "file:///C:test.txt", expected: "Failed to Upload"},
                    { tag: "file:///C:/test.txt", input: "file:///C:/test.txt", expected: "test.txt"},
                    { tag: "file:///C:\\test.txt", input: "file:///C:\\test.txt", expected: "test.txt"},
                    { tag: "file:\\//C:/test.txt", input: "file:\\//C:/test.txt", expected: "test.txt"},
                    { tag: "file:\\\\/C:\\test.txt", input: "file:\\\\/C:\\test.txt", expected: "test.txt"},
-                   { tag: "\\\\?\\C:/test.txt", input: "\\\\?\\C:/test.txt", expected: "test.tx"},
+                   { tag: "\\\\?\\C:/test.txt", input: "\\\\?\\C:/test.txt", expected: "test.txt"},
             ];
         }
 

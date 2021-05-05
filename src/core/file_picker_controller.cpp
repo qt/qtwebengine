@@ -95,7 +95,7 @@ void FilePickerController::accepted(const QStringList &files)
         if (urlString.startsWith("file:")) {
             base::FilePath filePath = toFilePath(urlString).NormalizePathSeparators();
             std::vector<base::FilePath::StringType> pathComponents;
-            // Splits the file URL into host name, path and file name.
+            // Splits the file URL into scheme, host name, path and file name.
             filePath.GetComponents(&pathComponents);
 
             QString absolutePath;
@@ -107,7 +107,7 @@ void FilePickerController::accepted(const QStringList &files)
             if (scheme.size() > 5) {
 #if defined(OS_WIN)
                 // There is no slash at the end of the file scheme and it is valid on Windows: file:C:/
-                if (scheme.at(5).isLetter() && scheme.at(6) != ':') {
+                if (scheme.size() == 7 && scheme.at(5).isLetter() && scheme.at(6) == ':') {
                     absolutePath += scheme.at(5) + ":/";
                 } else {
 #endif
