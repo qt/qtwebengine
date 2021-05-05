@@ -1147,20 +1147,28 @@ void tst_QWebEngineDownloadRequest::downloadToDirectoryWithFileName()
 
     // Set up profile and download handler
     ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *item) {
-
+        QSignalSpy fileNameSpy(item, &QWebEngineDownloadRequest::downloadFileNameChanged);
+        QSignalSpy directorySpy(item, &QWebEngineDownloadRequest::downloadDirectoryChanged);
+        bool isUniquifiedFileName = false;
         if (!downloadDirectory.isEmpty() && setDirectoryFirst) {
+            const QString &originalFileName = item->downloadFileName();
             item->setDownloadDirectory(downloadDirectory);
             QCOMPARE(item->downloadDirectory(), downloadDirectory);
+            QCOMPARE(directorySpy.count(), 1);
+            isUniquifiedFileName = (originalFileName != item->downloadFileName());
+            QCOMPARE(fileNameSpy.count(), isUniquifiedFileName ? 1 : 0);
         }
 
         if (!downloadFileName.isEmpty()) {
             item->setDownloadFileName(downloadFileName);
             QCOMPARE(item->downloadFileName(), downloadFileName);
+            QCOMPARE(fileNameSpy.count(), isUniquifiedFileName ? 2 : 1);
         }
 
         if (!downloadDirectory.isEmpty() && !setDirectoryFirst) {
             item->setDownloadDirectory(downloadDirectory);
             QCOMPARE(item->downloadDirectory(), downloadDirectory);
+            QCOMPARE(directorySpy.count(), 1);
         }
 
         item->accept();

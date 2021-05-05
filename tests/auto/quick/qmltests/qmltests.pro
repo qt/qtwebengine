@@ -12,6 +12,7 @@ QML_TESTS = \
     $$PWD/data/tst_activeFocusOnPress.qml \
     $$PWD/data/tst_audioMuted.qml \
     $$PWD/data/tst_desktopBehaviorLoadHtml.qml \
+    $$PWD/data/tst_download.qml \
     $$PWD/data/tst_findText.qml \
     $$PWD/data/tst_focusOnNavigation.qml \
     $$PWD/data/tst_fullScreenRequest.qml \
@@ -81,7 +82,6 @@ qtConfig(webenginequick-testsupport) {
 qtHaveModule(quickcontrols) {
     QML_TESTS += \
         $$PWD/data/tst_contextMenu.qml \
-        $$PWD/data/tst_download.qml \
         $$PWD/data/tst_filePicker.qml
 }
 

@@ -51,7 +51,6 @@ TestWebEngineView {
     property string downloadedSetPath: ""
     property int downloadDirectoryChanged: 0
     property int downloadFileNameChanged: 0
-    property int downloadPathChanged: 0
     property bool setDirectoryFirst: false
 
     TempDir { id: tempDir }
@@ -91,9 +90,6 @@ TestWebEngineView {
         }
         function onDownloadFileNameChanged() {
             downloadFileNameChanged++;
-        }
-        function onPathChanged() {
-            downloadPathChanged++;
         }
     }
 
@@ -149,7 +145,6 @@ TestWebEngineView {
             downloadInterruptReason = null
             downloadDirectoryChanged = 0
             downloadFileNameChanged = 0
-            downloadPathChanged = 0
             downloadDirectory = ""
             downloadFileName = ""
             downloadedPath = ""
@@ -245,7 +240,6 @@ TestWebEngineView {
             compare(downloadedPath, testDownloadProfile.downloadPath + downloadDirectory + downloadFileName);
             compare(downloadDirectoryChanged, 1);
             compare(downloadFileNameChanged, 1);
-            compare(downloadPathChanged, 2);
             downloadFinishedSpy.wait();
             compare(totalBytes, receivedBytes);
             tryCompare(downloadState, "2", WebEngineDownloadRequest.DownloadCompleted);
@@ -268,7 +262,6 @@ TestWebEngineView {
             compare(downloadedPath, testDownloadProfile.downloadPath + downloadDirectory + "download.zip");
             compare(downloadDirectoryChanged, 1);
             compare(downloadFileNameChanged, 0);
-            compare(downloadPathChanged, 1);
             downloadFinishedSpy.wait();
             compare(totalBytes, receivedBytes);
             tryCompare(downloadState, "2", WebEngineDownloadRequest.DownloadCompleted);
@@ -280,7 +273,6 @@ TestWebEngineView {
             compare(downLoadRequestedSpy.count, 0);
             downloadDirectoryChanged = 0;
             downloadFileNameChanged = 0;
-            downloadPathChanged = 0;
             downloadDirectory = "/test_downloadToDirectoryWithSuggestedFileName1/";
             webEngineView.url = Qt.resolvedUrl("download.zip");
             downLoadRequestedSpy.wait();
@@ -292,7 +284,6 @@ TestWebEngineView {
             compare(downloadedPath, testDownloadProfile.downloadPath + downloadDirectory + "download.zip");
             compare(downloadDirectoryChanged, 1);
             compare(downloadFileNameChanged, 0);
-            compare(downloadPathChanged, 1);
             downloadFinishedSpy.wait();
             compare(totalBytes, receivedBytes);
             tryCompare(downloadState, "2", WebEngineDownloadRequest.DownloadCompleted);
@@ -304,7 +295,6 @@ TestWebEngineView {
             compare(downLoadRequestedSpy.count, 0);
             downloadDirectoryChanged = 0;
             downloadFileNameChanged = 0;
-            downloadPathChanged = 0;
             downloadDirectory = "/test_downloadToDirectoryWithSuggestedFileName1/";
             webEngineView.url = Qt.resolvedUrl("download.zip");
             downLoadRequestedSpy.wait();
@@ -316,29 +306,6 @@ TestWebEngineView {
             compare(downloadedPath, testDownloadProfile.downloadPath + downloadDirectory + "download (1).zip");
             compare(downloadDirectoryChanged, 1);
             compare(downloadFileNameChanged, 1);
-            compare(downloadPathChanged, 1);
-            downloadFinishedSpy.wait();
-            compare(totalBytes, receivedBytes);
-            tryCompare(downloadState, "2", WebEngineDownloadRequest.DownloadCompleted);
-            verify(!downloadInterruptReason);
-}
-
-        function test_downloadWithSetPath() {
-            compare(downLoadRequestedSpy.count, 0);
-            compare(downloadDirectoryChanged, 0);
-            compare(downloadFileNameChanged, 0);
-            downloadedSetPath = "/test_downloadWithSetPath/test.zip";
-            webEngineView.url = Qt.resolvedUrl("download.zip");
-            downLoadRequestedSpy.wait();
-            compare(downLoadRequestedSpy.count, 1);
-            compare(downloadUrl, webEngineView.url);
-            compare(suggestedFileName, "download.zip");
-            compare(downloadState[0], WebEngineDownloadRequest.DownloadRequested);
-            tryCompare(downloadState, "1", WebEngineDownloadRequest.DownloadInProgress);
-            compare(downloadedPath, testDownloadProfile.downloadPath + downloadedSetPath);
-            compare(downloadDirectoryChanged, 1);
-            compare(downloadFileNameChanged, 1);
-            compare(downloadPathChanged, 2);
             downloadFinishedSpy.wait();
             compare(totalBytes, receivedBytes);
             tryCompare(downloadState, "2", WebEngineDownloadRequest.DownloadCompleted);

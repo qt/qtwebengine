@@ -516,13 +516,20 @@ void QWebEngineDownloadRequest::setDownloadDirectory(const QString &directory)
         return;
     }
 
-    if (!directory.isEmpty() && d->downloadDirectory != directory)
+    if (!directory.isEmpty() && d->downloadDirectory != directory) {
         d->downloadDirectory = directory;
+        Q_EMIT downloadDirectoryChanged();
+    }
 
-    if (!d->isCustomFileName && d->m_profileAdapter)
-        d->downloadFileName = QFileInfo(d->m_profileAdapter->determineDownloadPath(d->downloadDirectory,
-                                                                                            d->suggestedFileName,
-                                                                                            d->startTime)).fileName();
+    if (!d->isCustomFileName && d->m_profileAdapter) {
+        QString newFileName = QFileInfo(d->m_profileAdapter->determineDownloadPath(d->downloadDirectory,
+                                                                                   d->suggestedFileName,
+                                                                                   d->startTime)).fileName();
+        if (d->downloadFileName != newFileName) {
+            d->downloadFileName = newFileName;
+            Q_EMIT downloadFileNameChanged();
+        }
+    }
 }
 
 /*!
@@ -554,6 +561,7 @@ void QWebEngineDownloadRequest::setDownloadFileName(const QString &fileName)
     if (!fileName.isEmpty()) {
         d->downloadFileName = fileName;
         d->isCustomFileName = true;
+        Q_EMIT downloadFileNameChanged();
     }
 }
 
