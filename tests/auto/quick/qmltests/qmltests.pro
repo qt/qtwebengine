@@ -55,11 +55,11 @@ qtConfig(webenginequick-testsupport) {
         $$PWD/data/tst_favicon.qml \
         $$PWD/data/tst_faviconDownload.qml \
         $$PWD/data/tst_inputMethod.qml \
+        $$PWD/data/tst_javaScriptDialogs.qml \
         $$PWD/data/tst_linkHovered.qml \
         $$PWD/data/tst_loadFail.qml \
         $$PWD/data/tst_mouseClick.qml \
         $$PWD/data/tst_viewSoure.qml
-     qtHaveModule(quickcontrols): QML_TESTS += $$PWD/data/tst_javaScriptDialogs.qml
 } else {
     PLUGIN_EXTENSION = .so
     PLUGIN_PREFIX = lib
@@ -134,16 +134,17 @@ OTHER_FILES += \
     $$PWD/data/icons/qt32.ico \
     $$PWD/data/icons/qtmulti.ico \
     $$PWD/data/icons/small-favicon.png \
-    $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/AlertDialog.qml \
-    $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/ConfirmDialog.qml \
     $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/FilePicker.qml \
     $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/Menu.qml \
     $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/MenuItem.qml \
-    $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/PromptDialog.qml \
     $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/qmldir \
     $$PWD/mock-delegates/TestParams/FilePickerParams.qml \
     $$PWD/mock-delegates/TestParams/JSDialogParams.qml \
-    $$PWD/mock-delegates/TestParams/qmldir
+    $$PWD/mock-delegates/TestParams/qmldir \
+    $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/AlertDialog.qml \
+    $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/ConfirmDialog.qml \
+    $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/PromptDialog.qml \
+    $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/qmldir
 
 OTHER_FILES += $$QML_TESTS
 

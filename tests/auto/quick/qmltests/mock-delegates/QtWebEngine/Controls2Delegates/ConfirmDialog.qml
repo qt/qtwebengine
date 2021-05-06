@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -26,24 +26,24 @@
 **
 ****************************************************************************/
 
-import QtQml 2.0
-import QtTest 1.0
-import "../../TestParams" 1.0
+import QtQml
+import QtTest
+import "../../TestParams"
 
 QtObject {
-    property string text;
-    property string title;
-    signal accepted();
-    signal rejected();
+    property string text
+    property string title
+    signal accepted()
+    signal rejected()
 
     function open() {
         JSDialogParams.dialogTitle = title;
         JSDialogParams.dialogMessage = text;
         JSDialogParams.dialogCount++;
         if (JSDialogParams.shouldAcceptDialog)
-            accepted()
+            accepted();
         else
-            rejected()
+            rejected();
     }
 }
 

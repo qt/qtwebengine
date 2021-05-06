@@ -56,16 +56,12 @@ if(QT_FEATURE_webengine_testsupport)
         tst_favicon.qml
         tst_faviconDownload.qml
         tst_inputMethod.qml
+        tst_javaScriptDialogs.qml
         tst_linkHovered.qml
         tst_loadFail.qml
         tst_mouseClick.qml
         tst_viewSoure.qml
     )
-#    if(TARGET Qt::QuickControls) #FIXME
-        list(APPEND testList tst_javaScriptDialogs.qml)
-#    else()
-#        message("\n!!! QuickControls target is missing, some tests are not executed !!! FIXME \n")
-#    endif()
 endif()
 
 if(TARGET Qt::QuickControls) #FIXME
