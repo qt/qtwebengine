@@ -51,6 +51,8 @@ if(NOT ${pdfSupport})
 endif()
 
 if(NOT QT_FEATURE_qtwebengine_build AND NOT QT_FEATURE_qtpdf_build)
+    # coin missing artifacts workaround
+    install(FILES coin-bug-707 DESTINATION ${INSTALL_DATADIR})
     return()
 endif()
 
