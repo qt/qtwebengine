@@ -110,6 +110,18 @@ list(APPEND libsCmakeArgs
         "${featureList}"
 )
 
+if(LINUX)
+    set(cmd "${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/src")
+    file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/src/build.sh CONTENT "ulimit -n 4096 && ${cmd}\n")
+    set(coinBug699 COMMAND bash build.sh)
+else()
+    if ("${CMAKE_DEFAULT_CONFIGS}" STREQUAL "all")
+        set(coinBug699 COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/src)
+    else()
+        set(coinBug699 COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/src --config $<CONFIG>)
+    endif()
+endif()
+
 externalproject_add(libs
     SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/src
     BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR}/src
@@ -118,6 +130,9 @@ externalproject_add(libs
     USES_TERMINAL_BUILD ON
     BUILD_ALWAYS TRUE
     CMAKE_ARGS  ${libsCmakeArgs}
+    BUILD_COMMAND ${CMAKE_COMMAND} -E echo "Starting $<CONFIG> build"
+    ${coinBug699}
+    COMMAND ${CMAKE_COMMAND} -E echo "$<CONFIG> build complete"
 )
 
 if(QT_BUILD_EXAMPLES AND BUILD_SHARED_LIBS)
