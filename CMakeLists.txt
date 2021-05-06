@@ -133,6 +133,11 @@ externalproject_add(libs
     BUILD_COMMAND ${CMAKE_COMMAND} -E echo "Starting $<CONFIG> build"
     ${coinBug699}
     COMMAND ${CMAKE_COMMAND} -E echo "$<CONFIG> build complete"
+    # TODO: this is aworkaround for broken qt_lib_webengine*.pri files,
+    # coin does the in-source build and later calls qmake to build examples
+    # and this leftover file gets sucked instead of install or src/mkspecs,
+    # simply remove it, we need to implment a dry run in qt base to fix it.
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ../mkspecs
 )
 
 if(QT_BUILD_EXAMPLES AND BUILD_SHARED_LIBS)
