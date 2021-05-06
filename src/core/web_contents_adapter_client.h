@@ -69,7 +69,7 @@ QT_FORWARD_DECLARE_CLASS(QWebEngineRegisterProtocolHandlerRequest)
 QT_FORWARD_DECLARE_CLASS(QWebEngineUrlRequestInfo)
 QT_FORWARD_DECLARE_CLASS(QWebEngineUrlRequestInterceptor)
 QT_FORWARD_DECLARE_CLASS(QWebEngineContextMenuRequest)
-QT_FORWARD_DECLARE_CLASS(QWebEngineCertificateError);
+QT_FORWARD_DECLARE_CLASS(QWebEngineCertificateError)
 QT_FORWARD_DECLARE_CLASS(QWebEngineSettings)
 
 namespace content {

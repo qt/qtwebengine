@@ -97,7 +97,7 @@ protected:
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const override;
     void adapterClientChanged(WebContentsAdapterClient *client) override;
 
-private slots:
+private Q_SLOTS:
     void onWindowPosChanged();
     void connectRemoveParentBeforeParentDelete();
     void removeParentBeforeParentDelete();

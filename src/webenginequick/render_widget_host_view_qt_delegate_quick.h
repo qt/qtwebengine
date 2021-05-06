@@ -105,7 +105,7 @@ protected:
     void itemChange(ItemChange change, const ItemChangeData &value) override;
     QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) override;
 
-private slots:
+private Q_SLOTS:
     void onBeforeRendering();
     void onWindowPosChanged();
     void onHide();

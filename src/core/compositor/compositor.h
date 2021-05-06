@@ -177,7 +177,7 @@ public:
 
 protected:
     Compositor(Type type) : m_type(type) { }
-    ~Compositor() = default;
+    virtual ~Compositor() = default;
 
 private:
     template<typename T>
