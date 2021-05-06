@@ -277,7 +277,8 @@ private:
     }
     void OnDeviceStopped(const std::string &label, const content::DesktopMediaID &media_id) override
     {
-        NOTIMPLEMENTED();
+        Q_UNUSED(label);
+        Q_UNUSED(media_id);
     }
 
     void SetStopCallback(base::OnceClosure stop) override
