@@ -71,7 +71,6 @@ public:
 private Q_SLOTS:
     void updatePosition(const QGeoPositionInfo &);
     void error(QGeoPositionInfoSource::Error positioningError);
-    void timeout();
 
 private:
     LocationProviderQt *m_locationProvider;
@@ -133,9 +132,8 @@ void QtPositioningHelper::start(bool highAccuracy)
 
     connect(m_positionInfoSource, &QGeoPositionInfoSource::positionUpdated, this, &QtPositioningHelper::updatePosition);
     // disambiguate the error getter and the signal in QGeoPositionInfoSource.
-    connect(m_positionInfoSource, static_cast<void (QGeoPositionInfoSource::*)(QGeoPositionInfoSource::Error)>(&QGeoPositionInfoSource::error)
+    connect(m_positionInfoSource, static_cast<void (QGeoPositionInfoSource::*)(QGeoPositionInfoSource::Error)>(&QGeoPositionInfoSource::errorOccurred)
             , this, &QtPositioningHelper::error);
-    connect(m_positionInfoSource, &QGeoPositionInfoSource::updateTimeout, this, &QtPositioningHelper::timeout);
 
     m_positionInfoSource->startUpdates();
     return;
@@ -201,23 +199,18 @@ void QtPositioningHelper::error(QGeoPositionInfoSource::Error positioningError)
     case QGeoPositionInfoSource::AccessError:
         newPos.error_code = device::mojom::Geoposition::ErrorCode::PERMISSION_DENIED;
         break;
+    case QGeoPositionInfoSource::UpdateTimeoutError:
+        // content::Geoposition::ERROR_CODE_TIMEOUT is not handled properly in the renderer process, and the timeout
+        // argument used in JS never comes all the way to the browser process.
+        // Let's just treat it like any other error where the position is unavailable.
+        newPos.error_code = device::mojom::Geoposition::ErrorCode::POSITION_UNAVAILABLE;
+        break;
     case QGeoPositionInfoSource::ClosedError:
     case QGeoPositionInfoSource::UnknownSourceError: // position unavailable is as good as it gets in Geoposition
     default:
         newPos.error_code = device::mojom::Geoposition::ErrorCode::POSITION_UNAVAILABLE;
         break;
     }
-    if (m_locationProvider)
-        postToLocationProvider(base::Bind(&LocationProviderQt::updatePosition, m_locationProviderFactory.GetWeakPtr(), newPos));
-}
-
-void QtPositioningHelper::timeout()
-{
-    device::mojom::Geoposition newPos;
-    // content::Geoposition::ERROR_CODE_TIMEOUT is not handled properly in the renderer process, and the timeout
-    // argument used in JS never comes all the way to the browser process.
-    // Let's just treat it like any other error where the position is unavailable.
-    newPos.error_code = device::mojom::Geoposition::ErrorCode::POSITION_UNAVAILABLE;
     if (m_locationProvider)
         postToLocationProvider(base::Bind(&LocationProviderQt::updatePosition, m_locationProviderFactory.GetWeakPtr(), newPos));
 }
