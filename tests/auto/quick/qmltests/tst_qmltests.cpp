@@ -160,7 +160,7 @@ int main(int argc, char **argv)
 #if QT_CONFIG(ssl)
     qmlRegisterSingletonType<HttpsServer>(
             "Test.Shared", 1, 0, "HttpsServer",
-            [&](QQmlEngine *, QJSEngine *) { return new HttpsServer(":/resources/cert.pem",":/resources/key.pem"); });
+            [&](QQmlEngine *, QJSEngine *) { return new HttpsServer(":/resources/server.pem",":/resources/server.key"); });
 #endif
 
     int i = quick_test_main(argc, argv, "qmltests",  qPrintable(QT_TESTCASE_BUILDDIR + QLatin1String("/webengine.qmltests")));

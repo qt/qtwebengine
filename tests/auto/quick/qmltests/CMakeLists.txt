@@ -90,8 +90,8 @@ endforeach()
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/webengine.qmltests ${contents})
 
 set(tst_qmltests_resource_files
-    "resources/cert.pem"
-    "resources/key.pem"
+    "resources/server.pem"
+    "resources/server.key"
 )
 
 qt_internal_add_resource(tst_qmltests "tst_qmltests"

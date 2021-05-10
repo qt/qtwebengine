@@ -11,8 +11,8 @@ qt_internal_add_test(tst_certificateerror
 )
 
 set(tst_certificateerror_resource_files
-    "resources/cert.pem"
-    "resources/key.pem"
+    "resources/server.pem"
+    "resources/server.key"
 )
 
 qt_internal_add_resource(tst_certificateerror "tst_certificateerror"

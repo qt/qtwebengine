@@ -13,8 +13,8 @@ qt_internal_add_test(tst_certificateerror_quick
 )
 
 set(certificateerror_resource_files
-    "resources/cert.pem"
-    "resources/key.pem"
+    "resources/server.pem"
+    "resources/server.key"
     "WebView.qml"
 )
 

@@ -1,5 +1,2 @@
-[CertificateError::test_error]
-macos
-
 [NewViewRequest::test_loadNewViewRequest]
 macos
