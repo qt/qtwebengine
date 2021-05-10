@@ -77,11 +77,10 @@ void tst_Accessibility::noPage()
     QWebEngineView webView;
     webView.show();
 
-    QTest::qWait(1000);
-    QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
-    QVERIFY(view);
+    QAccessibleInterface *view = nullptr;
+    QTRY_VERIFY((view = QAccessible::queryAccessibleInterface(&webView)));
     QCOMPARE(view->role(), QAccessible::Client);
-    QCOMPARE(view->childCount(), 1);
+    QTRY_COMPARE(view->childCount(), 1);
     QAccessibleInterface *document = view->child(0);
     QCOMPARE(document->role(), QAccessible::WebDocument);
     QCOMPARE(document->parent(), view);
