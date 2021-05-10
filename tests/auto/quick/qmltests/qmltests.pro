@@ -134,7 +134,6 @@ OTHER_FILES += \
     $$PWD/data/icons/qt32.ico \
     $$PWD/data/icons/qtmulti.ico \
     $$PWD/data/icons/small-favicon.png \
-    $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/FilePicker.qml \
     $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/Menu.qml \
     $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/MenuItem.qml \
     $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/qmldir \
@@ -143,6 +142,7 @@ OTHER_FILES += \
     $$PWD/mock-delegates/TestParams/qmldir \
     $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/AlertDialog.qml \
     $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/ConfirmDialog.qml \
+    $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/FilePicker.qml \
     $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/PromptDialog.qml \
     $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/qmldir
 

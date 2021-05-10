@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -26,24 +26,24 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.2
-import "../../TestParams" 1.0
+import QtQuick
+import "../../TestParams"
 
 QtObject {
-    property bool selectMultiple: false;
-    property bool selectExisting: false;
-    property bool selectFolder: false;
-    property var nameFilters: [];
+    property bool selectMultiple: false
+    property bool selectExisting: false
+    property bool selectFolder: false
+    property var nameFilters: []
 
-    signal filesSelected(var fileList);
-    signal rejected();
+    signal filesSelected(var fileList)
+    signal rejected()
 
     function open() {
         FilePickerParams.filePickerOpened = true;
         FilePickerParams.nameFilters = nameFilters;
         if (FilePickerParams.selectFiles)
-            filesSelected(FilePickerParams.selectedFilesUrl)
+            filesSelected(FilePickerParams.selectedFilesUrl);
         else
-            rejected()
+            rejected();
     }
 }
