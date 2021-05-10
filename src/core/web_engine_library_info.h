@@ -57,6 +57,7 @@ public:
     static base::FilePath getPath(int key);
     // Called by localized_error in our custom chrome layer
     static base::string16 getApplicationName();
+    static std::string getResolvedLocale();
     static std::string getApplicationLocale();
 #if defined(OS_WIN)
     static bool isRemoteDrivePath(const QString &path);

@@ -65,7 +65,7 @@
         \li \l Python 2.7.5 or later. Python 3 is not supported.
         \li Bison, Flex
         \li GPerf
-        \li Node.js for a full featured Dev Tools.
+        \li Node.js version 8 or later (version 12 or later is recommended)
     \endlist
 
     \section2 Windows
@@ -73,7 +73,7 @@
     On Windows, the following additional tools are required:
 
     \list
-        \li Visual Studio 2017 version 15.8 or later
+        \li Visual Studio 2017 version 15.8 or later, or clang-cl version 8 or later
         \li Active Template Library (ATL), usually included in the Visual Studio
             installation
         \li Windows 10 SDK version 10.0.19041 or later

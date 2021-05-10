@@ -267,7 +267,7 @@ void InterceptedRequest::Restart()
     if (!top_document_url.is_empty())
         firstPartyUrl = toQt(top_document_url);
     else
-        firstPartyUrl = toQt(request_.site_for_cookies.RepresentativeUrl()); // m_topDocumentUrl can be empty for the main-frame.
+        firstPartyUrl = toQt(request_.site_for_cookies.first_party_url()); // m_topDocumentUrl can be empty for the main-frame.
 
     auto info = new QWebEngineUrlRequestInfoPrivate(resourceType, navigationType, originalUrl, firstPartyUrl,
                                                     initiator, QByteArray::fromStdString(request_.method));

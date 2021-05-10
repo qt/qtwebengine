@@ -59,16 +59,16 @@ TestWebEngineView {
     function getFaviconPixel(faviconImage) {
         var grabImage = Qt.createQmlObject("
                 import QtQuick 2.5\n
-                Image { }", test)
+                Image { }", testCase)
         var faviconCanvas = Qt.createQmlObject("
                 import QtQuick 2.5\n
-                Canvas { }", test)
+                Canvas { }", testCase)
 
-        test.tryVerify(function() { return faviconImage.status == Image.Ready });
+        testCase.tryVerify(function() { return faviconImage.status == Image.Ready });
         faviconImage.grabToImage(function(result) {
                 grabImage.source = result.url
             });
-        test.tryVerify(function() { return grabImage.status == Image.Ready });
+        testCase.tryVerify(function() { return grabImage.status == Image.Ready });
 
         faviconCanvas.width = faviconImage.width;
         faviconCanvas.height = faviconImage.height;
@@ -97,7 +97,7 @@ TestWebEngineView {
     }
 
     TestCase {
-        id: test
+        id: testCase
         name: "WebEngineFavicon"
         when: windowShown
 
@@ -315,7 +315,7 @@ TestWebEngineView {
         function test_faviconProvider(row) {
             var faviconImage = Qt.createQmlObject("
                     import QtQuick 2.5\n
-                    Image { sourceSize: Qt.size(width, height) }", test)
+                    Image { sourceSize: Qt.size(width, height) }", testCase)
 
             compare(iconChangedSpy.count, 0)
 
@@ -338,7 +338,7 @@ TestWebEngineView {
         function test_dynamicFavicon() {
             var faviconImage = Qt.createQmlObject("
                     import QtQuick 2.5\n
-                    Image { width: 16; height: 16; sourceSize: Qt.size(width, height); }", test)
+                    Image { width: 16; height: 16; sourceSize: Qt.size(width, height); }", testCase)
             faviconImage.source = Qt.binding(function() { return webEngineView.icon; });
 
             var colors = [

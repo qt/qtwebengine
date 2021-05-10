@@ -41,7 +41,7 @@ TestWebEngineView {
     }
 
     TestCase {
-        id: actionTests
+        id: testCase
         name: "WebEngineAction"
         when: windowShown
 
@@ -116,8 +116,8 @@ TestWebEngineView {
             var stopAction = webEngineView.action(WebEngineView.Stop);
             verify(stopAction);
 
-            var triggerSpy = createTemporaryObject(signalSpy, actionTests, {target: selectAction, signalName: "triggered"});
-            var stopTriggerSpy = createTemporaryObject(signalSpy, actionTests, {target: stopAction, signalName: "triggered"});
+            var triggerSpy = createTemporaryObject(signalSpy, testCase, {target: selectAction, signalName: "triggered"});
+            var stopTriggerSpy = createTemporaryObject(signalSpy, testCase, {target: stopAction, signalName: "triggered"});
 
             verify(selectAction.enabled);
             selectAction.trigger();
@@ -148,7 +148,7 @@ TestWebEngineView {
             compare(enabledSpy.count, 0);
             selectAllAction.trigger();
             compare(triggerSpy.count, 0);
-            compare(getTextSelection(), "");
+            compare(webEngineView.getTextSelection(), "");
 
             // Focus content by focusing window from JavaScript. Edit actions should be enabled and functional.
             webView.runJavaScript("window.focus();");
@@ -157,6 +157,7 @@ TestWebEngineView {
             selectAllAction.trigger();
             compare(triggerSpy.count, 1);
             tryVerify(function() { return webView.getTextSelection() === "foo bar" });
+            webView.destroy();
         }
 
         function test_editActionsWithInitialFocus() {
@@ -180,6 +181,7 @@ TestWebEngineView {
             selectAllAction.trigger();
             compare(triggerSpy.count, 1);
             tryVerify(function() { return webView.getTextSelection() === "foo bar" });
+            webView.destroy();
         }
     }
 }

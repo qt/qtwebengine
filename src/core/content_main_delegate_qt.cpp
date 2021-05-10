@@ -179,7 +179,9 @@ void ContentMainDelegateQt::PreSandboxStartup()
 #endif
 
     net::NetModule::SetResourceProvider(PlatformResourceProvider);
-    ui::ResourceBundle::InitSharedInstanceWithLocale(WebEngineLibraryInfo::getApplicationLocale(), nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+
+    base::i18n::SetICUDefaultLocale(WebEngineLibraryInfo::getApplicationLocale());
+    ui::ResourceBundle::InitSharedInstanceWithLocale(WebEngineLibraryInfo::getResolvedLocale(), nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 
     base::CommandLine* parsedCommandLine = base::CommandLine::ForCurrentProcess();
     logging::LoggingSettings settings;

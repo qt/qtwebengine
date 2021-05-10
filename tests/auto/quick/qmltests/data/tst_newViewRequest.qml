@@ -77,7 +77,7 @@ TestWebEngineView {
     }
 
     TestCase {
-        id: test
+        id: testCase
         name: "NewViewRequest"
         when: windowShown
 
@@ -158,7 +158,7 @@ TestWebEngineView {
                     "   <button id='popupButton' onclick='popup()'>Pop Up!</button>" +
                     "</body></html>");
                 verify(webEngineView.waitForLoadSucceeded());
-                verifyElementHasFocus("popupButton");
+                webEngineView.verifyElementHasFocus("popupButton");
                 keyPress(Qt.Key_Enter);
                 tryCompare(newViewRequestedSpy, "count", 1);
                 compare(newViewRequest.requestedUrl, url);
@@ -176,7 +176,7 @@ TestWebEngineView {
             compare(loadRequestArray.length, 0);
             webEngineView.url = Qt.resolvedUrl("test2.html");
             verify(webEngineView.waitForLoadSucceeded());
-            var center = getElementCenter("link");
+            var center = webEngineView.getElementCenter("link");
             mouseClick(webEngineView, center.x, center.y, Qt.LeftButton, Qt.ControlModifier);
             tryCompare(newViewRequestedSpy, "count", 1);
             compare(newViewRequest.requestedUrl, Qt.resolvedUrl("test1.html"));

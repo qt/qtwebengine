@@ -263,8 +263,6 @@ public:
 
 private:
     scoped_refptr<ShareGroupQt> m_shareGroupQt;
-    std::string m_appLocale;
-    std::string m_cachedQtLocale;
 };
 
 } // namespace QtWebEngineCore

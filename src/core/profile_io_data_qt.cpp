@@ -224,6 +224,9 @@ void ProfileIODataQt::ConfigureNetworkContextParams(bool in_memory,
 
     SystemNetworkContextManager::GetInstance()->ConfigureDefaultNetworkContextParams(network_context_params);
 
+    // FIXME: Faking old behavior to allow not enabling OCSP
+    network_context_params->initial_ssl_config->rev_checking_enabled = !ProfileAdapter::s_profileForGlobalCertificateVerification.isNull();
+
     network_context_params->context_name = m_storageName.toStdString();
     network_context_params->user_agent = m_httpUserAgent.toStdString();
     network_context_params->accept_language = m_httpAcceptLanguage.toStdString();

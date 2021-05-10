@@ -1,0 +1,20 @@
+<html>
+  <head>
+    <title>Page with js navigation in the end of document to anchor within the page</title>
+  </head>
+  <style>
+    .fardown {
+      position: absolute;
+      top: 2500px;
+    }
+  </style>
+  <body>
+    <div><a id="anchorLink" href="#anchor">go to the anchor</a></div>
+    <div class="fardown" id="anchor">here is the anchor</div>
+    <script>
+      addEventListener('load', (event) => {
+        window.location.replace(document.getElementById('anchorLink').href)
+      })
+    </script>
+  </body>
+</html>

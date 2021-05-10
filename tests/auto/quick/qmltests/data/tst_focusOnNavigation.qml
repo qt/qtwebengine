@@ -65,6 +65,7 @@ Item {
     }
 
     TestCase {
+        id: testCase
         name: "WebEngineViewFocusOnNavigation"
         when: windowShown
 

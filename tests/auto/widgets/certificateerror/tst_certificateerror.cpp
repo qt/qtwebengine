@@ -30,6 +30,7 @@
 
 #include <QWebEngineCertificateError>
 #include <QWebEnginePage>
+#include <QWebEngineProfile>
 #include <QWebEngineSettings>
 
 #include <QtTest/QtTest>
@@ -128,6 +129,7 @@ void tst_CertificateError::handleError()
 void tst_CertificateError::fatalError()
 {
     PageWithCertificateErrorHandler page(false, false);
+    page.profile()->setUseForGlobalCertificateVerification();
     page.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     QSignalSpy loadFinishedSpy(&page, &QWebEnginePage::loadFinished);
 

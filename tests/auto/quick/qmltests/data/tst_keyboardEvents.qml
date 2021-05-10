@@ -36,6 +36,7 @@ TestWebEngineView {
     height: 480
 
     TestCase {
+        id: testCase
         name: "WebEngineViewKeyboardEvents"
         when: windowShown
 

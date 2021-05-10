@@ -624,6 +624,18 @@ ApplicationWindow {
             tabs.currentIndex = tabs.count - 1;
             request.openIn(tab.item);
         }
+
+        Timer {
+            id: hideTimer
+            interval: 0
+            running: false
+            repeat: false
+            onTriggered: devToolsEnabled.checked = false
+        }
+        onWindowCloseRequested: function(request) {
+            // Delay hiding for keep the inspectedView set to receive the ACK message of close.
+            hideTimer.running = true;
+        }
     }
     MessageDialog {
         id: sslDialog
