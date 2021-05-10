@@ -93,8 +93,6 @@ class QQuickWebEngineScriptCollection;
 class QQuickWebEngineTestSupport;
 #endif
 
-#define LATEST_WEBENGINEVIEW_REVISION 10
-
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
     Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
@@ -105,33 +103,33 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QString title READ title NOTIFY titleChanged FINAL)
     Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY canGoBackChanged FINAL)
     Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY canGoForwardChanged FINAL)
-    Q_PROPERTY(bool isFullScreen READ isFullScreen NOTIFY isFullScreenChanged REVISION 1 FINAL)
-    Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged REVISION 1 FINAL)
-    Q_PROPERTY(QQuickWebEngineProfile *profile READ profile WRITE setProfile NOTIFY profileChanged FINAL REVISION 1)
-    Q_PROPERTY(QQuickWebEngineSettings *settings READ settings REVISION 1 CONSTANT FINAL)
-    Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL REVISION 1)
+    Q_PROPERTY(bool isFullScreen READ isFullScreen NOTIFY isFullScreenChanged REVISION(1,1) FINAL)
+    Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged REVISION(1,1) FINAL)
+    Q_PROPERTY(QQuickWebEngineProfile *profile READ profile WRITE setProfile NOTIFY profileChanged FINAL REVISION(1,1))
+    Q_PROPERTY(QQuickWebEngineSettings *settings READ settings REVISION(1,1) CONSTANT FINAL)
+    Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL REVISION(1,1))
 #if QT_CONFIG(webengine_webchannel)
-    Q_PROPERTY(QQmlWebChannel *webChannel READ webChannel WRITE setWebChannel NOTIFY webChannelChanged REVISION 1 FINAL)
+    Q_PROPERTY(QQmlWebChannel *webChannel READ webChannel WRITE setWebChannel NOTIFY webChannelChanged REVISION(1,1) FINAL)
 #endif
-    Q_PROPERTY(QQuickWebEngineScriptCollection *userScripts READ userScripts FINAL REVISION 1)
-    Q_PROPERTY(bool activeFocusOnPress READ activeFocusOnPress WRITE setActiveFocusOnPress NOTIFY activeFocusOnPressChanged REVISION 2 FINAL)
-    Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged REVISION 2 FINAL)
-    Q_PROPERTY(QSizeF contentsSize READ contentsSize NOTIFY contentsSizeChanged FINAL REVISION 3)
-    Q_PROPERTY(QPointF scrollPosition READ scrollPosition NOTIFY scrollPositionChanged FINAL REVISION 3)
-    Q_PROPERTY(bool audioMuted READ isAudioMuted WRITE setAudioMuted NOTIFY audioMutedChanged FINAL REVISION 3)
-    Q_PROPERTY(bool recentlyAudible READ recentlyAudible NOTIFY recentlyAudibleChanged FINAL REVISION 3)
-    Q_PROPERTY(uint webChannelWorld READ webChannelWorld WRITE setWebChannelWorld NOTIFY webChannelWorldChanged REVISION 3 FINAL)
+    Q_PROPERTY(QQuickWebEngineScriptCollection *userScripts READ userScripts FINAL REVISION(1,1))
+    Q_PROPERTY(bool activeFocusOnPress READ activeFocusOnPress WRITE setActiveFocusOnPress NOTIFY activeFocusOnPressChanged REVISION(1,2) FINAL)
+    Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged REVISION(1,2) FINAL)
+    Q_PROPERTY(QSizeF contentsSize READ contentsSize NOTIFY contentsSizeChanged FINAL REVISION(1,3))
+    Q_PROPERTY(QPointF scrollPosition READ scrollPosition NOTIFY scrollPositionChanged FINAL REVISION(1,3))
+    Q_PROPERTY(bool audioMuted READ isAudioMuted WRITE setAudioMuted NOTIFY audioMutedChanged FINAL REVISION(1,3))
+    Q_PROPERTY(bool recentlyAudible READ recentlyAudible NOTIFY recentlyAudibleChanged FINAL REVISION(1,3))
+    Q_PROPERTY(uint webChannelWorld READ webChannelWorld WRITE setWebChannelWorld NOTIFY webChannelWorldChanged REVISION(1,3) FINAL)
 
-    Q_PROPERTY(QQuickWebEngineView *inspectedView READ inspectedView WRITE setInspectedView NOTIFY inspectedViewChanged REVISION 7 FINAL)
-    Q_PROPERTY(QQuickWebEngineView *devToolsView READ devToolsView WRITE setDevToolsView NOTIFY devToolsViewChanged REVISION 7 FINAL)
+    Q_PROPERTY(QQuickWebEngineView *inspectedView READ inspectedView WRITE setInspectedView NOTIFY inspectedViewChanged REVISION(1,7) FINAL)
+    Q_PROPERTY(QQuickWebEngineView *devToolsView READ devToolsView WRITE setDevToolsView NOTIFY devToolsViewChanged REVISION(1,7) FINAL)
 #if QT_CONFIG(webenginequick_testsupport)
     Q_PROPERTY(QQuickWebEngineTestSupport *testSupport READ testSupport WRITE setTestSupport NOTIFY testSupportChanged FINAL)
 #endif
 
-    Q_PROPERTY(LifecycleState lifecycleState READ lifecycleState WRITE setLifecycleState NOTIFY lifecycleStateChanged REVISION 10 FINAL)
-    Q_PROPERTY(LifecycleState recommendedState READ recommendedState NOTIFY recommendedStateChanged REVISION 10 FINAL)
+    Q_PROPERTY(LifecycleState lifecycleState READ lifecycleState WRITE setLifecycleState NOTIFY lifecycleStateChanged REVISION(1,10) FINAL)
+    Q_PROPERTY(LifecycleState recommendedState READ recommendedState NOTIFY recommendedStateChanged REVISION(1,10) FINAL)
 
-    Q_PROPERTY(qint64 renderProcessPid READ renderProcessPid NOTIFY renderProcessPidChanged FINAL REVISION 11)
+    Q_PROPERTY(qint64 renderProcessPid READ renderProcessPid NOTIFY renderProcessPidChanged FINAL REVISION(1,11))
 
 public:
     QQuickWebEngineView(QQuickItem *parent = nullptr);
@@ -478,7 +476,7 @@ public:
     QQuickWebEngineHistory *navigationHistory() const;
     uint webChannelWorld() const;
     void setWebChannelWorld(uint);
-    Q_REVISION(8) Q_INVOKABLE QQuickWebEngineAction *action(WebAction action);
+    Q_REVISION(1,8) Q_INVOKABLE QQuickWebEngineAction *action(WebAction action);
 
     bool isAudioMuted() const;
     void setAudioMuted(bool muted);
@@ -505,22 +503,22 @@ public:
 
 public Q_SLOTS:
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
-    Q_REVISION(3) void runJavaScript(const QString&, quint32 worldId, const QJSValue & = QJSValue());
+    Q_REVISION(1,3) void runJavaScript(const QString&, quint32 worldId, const QJSValue & = QJSValue());
     void loadHtml(const QString &html, const QUrl &baseUrl = QUrl());
     void goBack();
     void goForward();
-    Q_REVISION(1) void goBackOrForward(int index);
+    Q_REVISION(1,1) void goBackOrForward(int index);
     void reload();
-    Q_REVISION(1) void reloadAndBypassCache();
+    Q_REVISION(1,1) void reloadAndBypassCache();
     void stop();
-    Q_REVISION(1) void findText(const QString &subString, FindFlags options = { }, const QJSValue &callback = QJSValue());
-    Q_REVISION(1) void fullScreenCancelled();
-    Q_REVISION(1) void grantFeaturePermission(const QUrl &securityOrigin, Feature, bool granted);
-    Q_REVISION(2) void setActiveFocusOnPress(bool arg);
-    Q_REVISION(2) void triggerWebAction(WebAction action);
-    Q_REVISION(3) void printToPdf(const QString &filePath, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
-    Q_REVISION(3) void printToPdf(const QJSValue &callback, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
-    Q_REVISION(4) void replaceMisspelledWord(const QString &replacement);
+    Q_REVISION(1,1) void findText(const QString &subString, FindFlags options = { }, const QJSValue &callback = QJSValue());
+    Q_REVISION(1,1) void fullScreenCancelled();
+    Q_REVISION(1,1) void grantFeaturePermission(const QUrl &securityOrigin, Feature, bool granted);
+    Q_REVISION(1,2) void setActiveFocusOnPress(bool arg);
+    Q_REVISION(1,2) void triggerWebAction(WebAction action);
+    Q_REVISION(1,3) void printToPdf(const QString &filePath, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
+    Q_REVISION(1,3) void printToPdf(const QJSValue &callback, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
+    Q_REVISION(1,4) void replaceMisspelledWord(const QString &replacement);
 
 private Q_SLOTS:
     void lazyInitialize();
@@ -534,44 +532,44 @@ Q_SIGNALS:
     void linkHovered(const QUrl &hoveredUrl);
     void navigationRequested(QQuickWebEngineNavigationRequest *request);
     void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID);
-    Q_REVISION(1) void certificateError(const QWebEngineCertificateError &error);
-    Q_REVISION(1) void fullScreenRequested(const QWebEngineFullScreenRequest &request);
-    Q_REVISION(1) void isFullScreenChanged();
-    Q_REVISION(1) void featurePermissionRequested(const QUrl &securityOrigin, Feature feature);
-    Q_REVISION(1) void newViewRequested(QQuickWebEngineNewViewRequest *request);
-    Q_REVISION(1) void zoomFactorChanged(qreal arg);
-    Q_REVISION(1) void profileChanged();
-    Q_REVISION(1) void webChannelChanged();
-    Q_REVISION(2) void activeFocusOnPressChanged(bool);
-    Q_REVISION(2) void backgroundColorChanged();
-    Q_REVISION(2) void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode);
-    Q_REVISION(2) void windowCloseRequested();
-    Q_REVISION(3) void contentsSizeChanged(const QSizeF& size);
-    Q_REVISION(3) void scrollPositionChanged(const QPointF& position);
-    Q_REVISION(3) void audioMutedChanged(bool muted);
-    Q_REVISION(3) void recentlyAudibleChanged(bool recentlyAudible);
-    Q_REVISION(3) void webChannelWorldChanged(uint);
-    Q_REVISION(4) void contextMenuRequested(QWebEngineContextMenuRequest *request);
-    Q_REVISION(4) void authenticationDialogRequested(QQuickWebEngineAuthenticationDialogRequest *request);
-    Q_REVISION(4) void javaScriptDialogRequested(QQuickWebEngineJavaScriptDialogRequest *request);
-    Q_REVISION(4) void colorDialogRequested(QQuickWebEngineColorDialogRequest *request);
-    Q_REVISION(4) void fileDialogRequested(QQuickWebEngineFileDialogRequest *request);
-    Q_REVISION(4) void formValidationMessageRequested(QQuickWebEngineFormValidationMessageRequest *request);
-    Q_REVISION(5) void pdfPrintingFinished(const QString &filePath, bool success);
-    Q_REVISION(7) void quotaRequested(const QWebEngineQuotaRequest &request);
-    Q_REVISION(7) void geometryChangeRequested(const QRect &geometry, const QRect &frameGeometry);
-    Q_REVISION(7) void inspectedViewChanged();
-    Q_REVISION(7) void devToolsViewChanged();
-    Q_REVISION(7) void registerProtocolHandlerRequested(const QWebEngineRegisterProtocolHandlerRequest &request);
-    Q_REVISION(8) void printRequested();
-    Q_REVISION(9) void selectClientCertificate(QQuickWebEngineClientCertificateSelection *clientCertSelection);
-    Q_REVISION(10) void tooltipRequested(QQuickWebEngineTooltipRequest *request);
-    Q_REVISION(10) void lifecycleStateChanged(LifecycleState state);
-    Q_REVISION(10) void recommendedStateChanged(LifecycleState state);
-    Q_REVISION(10) void findTextFinished(const QWebEngineFindTextResult &result);
-    Q_REVISION(11) void renderProcessPidChanged(qint64 pid);
-    Q_REVISION(11) void canGoBackChanged();
-    Q_REVISION(11) void canGoForwardChanged();
+    Q_REVISION(1,1) void certificateError(const QWebEngineCertificateError &error);
+    Q_REVISION(1,1) void fullScreenRequested(const QWebEngineFullScreenRequest &request);
+    Q_REVISION(1,1) void isFullScreenChanged();
+    Q_REVISION(1,1) void featurePermissionRequested(const QUrl &securityOrigin, Feature feature);
+    Q_REVISION(1,1) void newViewRequested(QQuickWebEngineNewViewRequest *request);
+    Q_REVISION(1,1) void zoomFactorChanged(qreal arg);
+    Q_REVISION(1,1) void profileChanged();
+    Q_REVISION(1,1) void webChannelChanged();
+    Q_REVISION(1,2) void activeFocusOnPressChanged(bool);
+    Q_REVISION(1,2) void backgroundColorChanged();
+    Q_REVISION(1,2) void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode);
+    Q_REVISION(1,2) void windowCloseRequested();
+    Q_REVISION(1,3) void contentsSizeChanged(const QSizeF& size);
+    Q_REVISION(1,3) void scrollPositionChanged(const QPointF& position);
+    Q_REVISION(1,3) void audioMutedChanged(bool muted);
+    Q_REVISION(1,3) void recentlyAudibleChanged(bool recentlyAudible);
+    Q_REVISION(1,3) void webChannelWorldChanged(uint);
+    Q_REVISION(1,4) void contextMenuRequested(QWebEngineContextMenuRequest *request);
+    Q_REVISION(1,4) void authenticationDialogRequested(QQuickWebEngineAuthenticationDialogRequest *request);
+    Q_REVISION(1,4) void javaScriptDialogRequested(QQuickWebEngineJavaScriptDialogRequest *request);
+    Q_REVISION(1,4) void colorDialogRequested(QQuickWebEngineColorDialogRequest *request);
+    Q_REVISION(1,4) void fileDialogRequested(QQuickWebEngineFileDialogRequest *request);
+    Q_REVISION(1,4) void formValidationMessageRequested(QQuickWebEngineFormValidationMessageRequest *request);
+    Q_REVISION(1,5) void pdfPrintingFinished(const QString &filePath, bool success);
+    Q_REVISION(1,7) void quotaRequested(const QWebEngineQuotaRequest &request);
+    Q_REVISION(1,7) void geometryChangeRequested(const QRect &geometry, const QRect &frameGeometry);
+    Q_REVISION(1,7) void inspectedViewChanged();
+    Q_REVISION(1,7) void devToolsViewChanged();
+    Q_REVISION(1,7) void registerProtocolHandlerRequested(const QWebEngineRegisterProtocolHandlerRequest &request);
+    Q_REVISION(1,8) void printRequested();
+    Q_REVISION(1,9) void selectClientCertificate(QQuickWebEngineClientCertificateSelection *clientCertSelection);
+    Q_REVISION(1,10) void tooltipRequested(QQuickWebEngineTooltipRequest *request);
+    Q_REVISION(1,10) void lifecycleStateChanged(LifecycleState state);
+    Q_REVISION(1,10) void recommendedStateChanged(LifecycleState state);
+    Q_REVISION(1,10) void findTextFinished(const QWebEngineFindTextResult &result);
+    Q_REVISION(1,11) void renderProcessPidChanged(qint64 pid);
+    Q_REVISION(1,11) void canGoBackChanged();
+    Q_REVISION(1,11) void canGoForwardChanged();
 
 #if QT_CONFIG(webenginequick_testsupport)
     void testSupportChanged();

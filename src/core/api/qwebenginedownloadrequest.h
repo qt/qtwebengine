@@ -66,7 +66,7 @@ public:
     Q_PROPERTY(bool isFinished READ isFinished NOTIFY isFinishedChanged FINAL)
     Q_PROPERTY(bool isPaused READ isPaused NOTIFY isPausedChanged FINAL)
     Q_PROPERTY(bool isSavePageDownload READ isSavePageDownload CONSTANT FINAL)
-    //TODO: Q_PROPERTY(QQuickWebEngineView *view READ view CONSTANT REVISION 7 FINAL)
+    //TODO: Q_PROPERTY(QQuickWebEngineView *view READ view CONSTANT REVISION(1,7) FINAL)
     Q_PROPERTY(QUrl url READ url CONSTANT FINAL)
     Q_PROPERTY(QString suggestedFileName READ suggestedFileName CONSTANT FINAL)
     Q_PROPERTY(QString downloadDirectory READ downloadDirectory WRITE setDownloadDirectory NOTIFY downloadDirectoryChanged FINAL)

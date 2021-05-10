@@ -66,18 +66,18 @@ class Q_WEBENGINE_EXPORT QQuickWebEngineProfile : public QObject {
     Q_PROPERTY(QString cachePath READ cachePath WRITE setCachePath NOTIFY cachePathChanged FINAL)
     Q_PROPERTY(QString httpUserAgent READ httpUserAgent WRITE setHttpUserAgent NOTIFY httpUserAgentChanged FINAL)
     Q_PROPERTY(HttpCacheType httpCacheType READ httpCacheType WRITE setHttpCacheType NOTIFY httpCacheTypeChanged FINAL)
-    Q_PROPERTY(QString httpAcceptLanguage READ httpAcceptLanguage WRITE setHttpAcceptLanguage NOTIFY httpAcceptLanguageChanged FINAL REVISION 1)
+    Q_PROPERTY(QString httpAcceptLanguage READ httpAcceptLanguage WRITE setHttpAcceptLanguage NOTIFY httpAcceptLanguageChanged FINAL REVISION(1,1))
     Q_PROPERTY(PersistentCookiesPolicy persistentCookiesPolicy READ persistentCookiesPolicy WRITE setPersistentCookiesPolicy NOTIFY persistentCookiesPolicyChanged FINAL)
     Q_PROPERTY(int httpCacheMaximumSize READ httpCacheMaximumSize WRITE setHttpCacheMaximumSize NOTIFY httpCacheMaximumSizeChanged FINAL)
-    Q_PROPERTY(QStringList spellCheckLanguages READ spellCheckLanguages WRITE setSpellCheckLanguages NOTIFY spellCheckLanguagesChanged FINAL REVISION 3)
-    Q_PROPERTY(bool spellCheckEnabled READ isSpellCheckEnabled WRITE setSpellCheckEnabled NOTIFY spellCheckEnabledChanged FINAL REVISION 3)
+    Q_PROPERTY(QStringList spellCheckLanguages READ spellCheckLanguages WRITE setSpellCheckLanguages NOTIFY spellCheckLanguagesChanged FINAL REVISION(1,3))
+    Q_PROPERTY(bool spellCheckEnabled READ isSpellCheckEnabled WRITE setSpellCheckEnabled NOTIFY spellCheckEnabledChanged FINAL REVISION(1,3))
     Q_PROPERTY(QQuickWebEngineScriptCollection *userScripts READ userScripts)
     Q_PROPERTY(bool useForGlobalCertificateVerification
                READ isUsedForGlobalCertificateVerification
                WRITE setUseForGlobalCertificateVerification
                NOTIFY useForGlobalCertificateVerificationChanged
-               FINAL REVISION 5)
-    Q_PROPERTY(QString downloadPath READ downloadPath WRITE setDownloadPath NOTIFY downloadPathChanged FINAL REVISION 5)
+               FINAL REVISION(1,5))
+    Q_PROPERTY(QString downloadPath READ downloadPath WRITE setDownloadPath NOTIFY downloadPathChanged FINAL REVISION(1,5))
 
 public:
     QQuickWebEngineProfile(QObject *parent = Q_NULLPTR);
@@ -134,7 +134,7 @@ public:
     void removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
     void removeAllUrlSchemeHandlers();
 
-    Q_REVISION(2) Q_INVOKABLE void clearHttpCache();
+    Q_REVISION(1,2) Q_INVOKABLE void clearHttpCache();
 
     void setSpellCheckLanguages(const QStringList &languages);
     QStringList spellCheckLanguages() const;
@@ -162,15 +162,15 @@ Q_SIGNALS:
     void httpCacheTypeChanged();
     void persistentCookiesPolicyChanged();
     void httpCacheMaximumSizeChanged();
-    Q_REVISION(1) void httpAcceptLanguageChanged();
-    Q_REVISION(3) void spellCheckLanguagesChanged();
-    Q_REVISION(3) void spellCheckEnabledChanged();
-    Q_REVISION(5) void useForGlobalCertificateVerificationChanged();
-    Q_REVISION(5) void downloadPathChanged();
+    Q_REVISION(1,1) void httpAcceptLanguageChanged();
+    Q_REVISION(1,3) void spellCheckLanguagesChanged();
+    Q_REVISION(1,3) void spellCheckEnabledChanged();
+    Q_REVISION(1,5) void useForGlobalCertificateVerificationChanged();
+    Q_REVISION(1,5) void downloadPathChanged();
     void downloadRequested(QWebEngineDownloadRequest *download);
     void downloadFinished(QWebEngineDownloadRequest *download);
 
-    Q_REVISION(5) void presentNotification(QWebEngineNotification *notification);
+    Q_REVISION(1,5) void presentNotification(QWebEngineNotification *notification);
 
 private:
     Q_DECLARE_PRIVATE(QQuickWebEngineProfile)

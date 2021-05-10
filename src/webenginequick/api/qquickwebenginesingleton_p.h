@@ -63,7 +63,7 @@ class QQuickWebEngineProfile;
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSingleton : public QObject {
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineSettings* settings READ settings CONSTANT FINAL)
-    Q_PROPERTY(QQuickWebEngineProfile* defaultProfile READ defaultProfile CONSTANT FINAL REVISION 1)
+    Q_PROPERTY(QQuickWebEngineProfile* defaultProfile READ defaultProfile CONSTANT FINAL REVISION(1,1))
 public:
     QQuickWebEngineSettings *settings() const;
     QQuickWebEngineProfile *defaultProfile() const;

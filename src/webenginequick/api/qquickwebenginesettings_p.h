@@ -76,25 +76,25 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool hyperlinkAuditingEnabled READ hyperlinkAuditingEnabled WRITE setHyperlinkAuditingEnabled NOTIFY hyperlinkAuditingEnabledChanged FINAL)
     Q_PROPERTY(bool errorPageEnabled READ errorPageEnabled WRITE setErrorPageEnabled NOTIFY errorPageEnabledChanged FINAL)
     Q_PROPERTY(bool pluginsEnabled READ pluginsEnabled WRITE setPluginsEnabled NOTIFY pluginsEnabledChanged FINAL)
-    Q_PROPERTY(bool fullScreenSupportEnabled READ fullScreenSupportEnabled WRITE setFullScreenSupportEnabled NOTIFY fullScreenSupportEnabledChanged REVISION 1 FINAL)
+    Q_PROPERTY(bool fullScreenSupportEnabled READ fullScreenSupportEnabled WRITE setFullScreenSupportEnabled NOTIFY fullScreenSupportEnabledChanged REVISION(1,1) FINAL)
     Q_PROPERTY(QString defaultTextEncoding READ defaultTextEncoding WRITE setDefaultTextEncoding NOTIFY defaultTextEncodingChanged FINAL)
-    Q_PROPERTY(bool screenCaptureEnabled READ screenCaptureEnabled WRITE setScreenCaptureEnabled NOTIFY screenCaptureEnabledChanged REVISION 2 FINAL)
-    Q_PROPERTY(bool webGLEnabled READ webGLEnabled WRITE setWebGLEnabled NOTIFY webGLEnabledChanged REVISION 2 FINAL)
-    Q_PROPERTY(bool accelerated2dCanvasEnabled READ accelerated2dCanvasEnabled WRITE setAccelerated2dCanvasEnabled NOTIFY accelerated2dCanvasEnabledChanged REVISION 2 FINAL)
-    Q_PROPERTY(bool autoLoadIconsForPage READ autoLoadIconsForPage WRITE setAutoLoadIconsForPage NOTIFY autoLoadIconsForPageChanged REVISION 2 FINAL)
-    Q_PROPERTY(bool touchIconsEnabled READ touchIconsEnabled WRITE setTouchIconsEnabled NOTIFY touchIconsEnabledChanged REVISION 2 FINAL)
-    Q_PROPERTY(bool focusOnNavigationEnabled READ focusOnNavigationEnabled WRITE setFocusOnNavigationEnabled NOTIFY focusOnNavigationEnabledChanged REVISION 3 FINAL)
-    Q_PROPERTY(bool printElementBackgrounds READ printElementBackgrounds WRITE setPrintElementBackgrounds NOTIFY printElementBackgroundsChanged REVISION 3 FINAL)
-    Q_PROPERTY(bool allowRunningInsecureContent READ allowRunningInsecureContent WRITE setAllowRunningInsecureContent NOTIFY allowRunningInsecureContentChanged REVISION 3 FINAL)
-    Q_PROPERTY(bool allowGeolocationOnInsecureOrigins READ allowGeolocationOnInsecureOrigins WRITE setAllowGeolocationOnInsecureOrigins NOTIFY allowGeolocationOnInsecureOriginsChanged REVISION 4 FINAL)
-    Q_PROPERTY(bool allowWindowActivationFromJavaScript READ allowWindowActivationFromJavaScript WRITE setAllowWindowActivationFromJavaScript NOTIFY allowWindowActivationFromJavaScriptChanged REVISION 5 FINAL)
-    Q_PROPERTY(bool showScrollBars READ showScrollBars WRITE setShowScrollBars NOTIFY showScrollBarsChanged REVISION 5 FINAL)
-    Q_PROPERTY(UnknownUrlSchemePolicy unknownUrlSchemePolicy READ unknownUrlSchemePolicy WRITE setUnknownUrlSchemePolicy NOTIFY unknownUrlSchemePolicyChanged REVISION 6 FINAL)
-    Q_PROPERTY(bool playbackRequiresUserGesture READ playbackRequiresUserGesture WRITE setPlaybackRequiresUserGesture NOTIFY playbackRequiresUserGestureChanged REVISION 6 FINAL)
-    Q_PROPERTY(bool webRTCPublicInterfacesOnly READ webRTCPublicInterfacesOnly WRITE setWebRTCPublicInterfacesOnly NOTIFY webRTCPublicInterfacesOnlyChanged REVISION 6 FINAL)
-    Q_PROPERTY(bool javascriptCanPaste READ javascriptCanPaste WRITE setJavascriptCanPaste NOTIFY javascriptCanPasteChanged REVISION 6 FINAL)
-    Q_PROPERTY(bool dnsPrefetchEnabled READ dnsPrefetchEnabled WRITE setDnsPrefetchEnabled NOTIFY dnsPrefetchEnabledChanged REVISION 7 FINAL)
-    Q_PROPERTY(bool pdfViewerEnabled READ pdfViewerEnabled WRITE setPdfViewerEnabled NOTIFY pdfViewerEnabledChanged REVISION 8 FINAL)
+    Q_PROPERTY(bool screenCaptureEnabled READ screenCaptureEnabled WRITE setScreenCaptureEnabled NOTIFY screenCaptureEnabledChanged REVISION(1,2) FINAL)
+    Q_PROPERTY(bool webGLEnabled READ webGLEnabled WRITE setWebGLEnabled NOTIFY webGLEnabledChanged REVISION(1,2) FINAL)
+    Q_PROPERTY(bool accelerated2dCanvasEnabled READ accelerated2dCanvasEnabled WRITE setAccelerated2dCanvasEnabled NOTIFY accelerated2dCanvasEnabledChanged REVISION(1,2) FINAL)
+    Q_PROPERTY(bool autoLoadIconsForPage READ autoLoadIconsForPage WRITE setAutoLoadIconsForPage NOTIFY autoLoadIconsForPageChanged REVISION(1,2) FINAL)
+    Q_PROPERTY(bool touchIconsEnabled READ touchIconsEnabled WRITE setTouchIconsEnabled NOTIFY touchIconsEnabledChanged REVISION(1,2) FINAL)
+    Q_PROPERTY(bool focusOnNavigationEnabled READ focusOnNavigationEnabled WRITE setFocusOnNavigationEnabled NOTIFY focusOnNavigationEnabledChanged REVISION(1,3) FINAL)
+    Q_PROPERTY(bool printElementBackgrounds READ printElementBackgrounds WRITE setPrintElementBackgrounds NOTIFY printElementBackgroundsChanged REVISION(1,3) FINAL)
+    Q_PROPERTY(bool allowRunningInsecureContent READ allowRunningInsecureContent WRITE setAllowRunningInsecureContent NOTIFY allowRunningInsecureContentChanged REVISION(1,3) FINAL)
+    Q_PROPERTY(bool allowGeolocationOnInsecureOrigins READ allowGeolocationOnInsecureOrigins WRITE setAllowGeolocationOnInsecureOrigins NOTIFY allowGeolocationOnInsecureOriginsChanged REVISION(1,4) FINAL)
+    Q_PROPERTY(bool allowWindowActivationFromJavaScript READ allowWindowActivationFromJavaScript WRITE setAllowWindowActivationFromJavaScript NOTIFY allowWindowActivationFromJavaScriptChanged REVISION(1,5) FINAL)
+    Q_PROPERTY(bool showScrollBars READ showScrollBars WRITE setShowScrollBars NOTIFY showScrollBarsChanged REVISION(1,5) FINAL)
+    Q_PROPERTY(UnknownUrlSchemePolicy unknownUrlSchemePolicy READ unknownUrlSchemePolicy WRITE setUnknownUrlSchemePolicy NOTIFY unknownUrlSchemePolicyChanged REVISION(1,6) FINAL)
+    Q_PROPERTY(bool playbackRequiresUserGesture READ playbackRequiresUserGesture WRITE setPlaybackRequiresUserGesture NOTIFY playbackRequiresUserGestureChanged REVISION(1,6) FINAL)
+    Q_PROPERTY(bool webRTCPublicInterfacesOnly READ webRTCPublicInterfacesOnly WRITE setWebRTCPublicInterfacesOnly NOTIFY webRTCPublicInterfacesOnlyChanged REVISION(1,6) FINAL)
+    Q_PROPERTY(bool javascriptCanPaste READ javascriptCanPaste WRITE setJavascriptCanPaste NOTIFY javascriptCanPasteChanged REVISION(1,6) FINAL)
+    Q_PROPERTY(bool dnsPrefetchEnabled READ dnsPrefetchEnabled WRITE setDnsPrefetchEnabled NOTIFY dnsPrefetchEnabledChanged REVISION(1,7) FINAL)
+    Q_PROPERTY(bool pdfViewerEnabled READ pdfViewerEnabled WRITE setPdfViewerEnabled NOTIFY pdfViewerEnabledChanged REVISION(1,8) FINAL)
 
 public:
     enum UnknownUrlSchemePolicy {
@@ -184,25 +184,25 @@ signals:
     void hyperlinkAuditingEnabledChanged();
     void errorPageEnabledChanged();
     void pluginsEnabledChanged();
-    Q_REVISION(1) void fullScreenSupportEnabledChanged();
+    Q_REVISION(1,1) void fullScreenSupportEnabledChanged();
     void defaultTextEncodingChanged();
-    Q_REVISION(2) void screenCaptureEnabledChanged();
-    Q_REVISION(2) void webGLEnabledChanged();
-    Q_REVISION(2) void accelerated2dCanvasEnabledChanged();
-    Q_REVISION(2) void autoLoadIconsForPageChanged();
-    Q_REVISION(2) void touchIconsEnabledChanged();
-    Q_REVISION(3) void focusOnNavigationEnabledChanged();
-    Q_REVISION(3) void printElementBackgroundsChanged();
-    Q_REVISION(3) void allowRunningInsecureContentChanged();
-    Q_REVISION(4) void allowGeolocationOnInsecureOriginsChanged();
-    Q_REVISION(5) void allowWindowActivationFromJavaScriptChanged();
-    Q_REVISION(5) void showScrollBarsChanged();
-    Q_REVISION(6) void unknownUrlSchemePolicyChanged();
-    Q_REVISION(6) void playbackRequiresUserGestureChanged();
-    Q_REVISION(6) void webRTCPublicInterfacesOnlyChanged();
-    Q_REVISION(6) void javascriptCanPasteChanged();
-    Q_REVISION(7) void dnsPrefetchEnabledChanged();
-    Q_REVISION(8) void pdfViewerEnabledChanged();
+    Q_REVISION(1,2) void screenCaptureEnabledChanged();
+    Q_REVISION(1,2) void webGLEnabledChanged();
+    Q_REVISION(1,2) void accelerated2dCanvasEnabledChanged();
+    Q_REVISION(1,2) void autoLoadIconsForPageChanged();
+    Q_REVISION(1,2) void touchIconsEnabledChanged();
+    Q_REVISION(1,3) void focusOnNavigationEnabledChanged();
+    Q_REVISION(1,3) void printElementBackgroundsChanged();
+    Q_REVISION(1,3) void allowRunningInsecureContentChanged();
+    Q_REVISION(1,4) void allowGeolocationOnInsecureOriginsChanged();
+    Q_REVISION(1,5) void allowWindowActivationFromJavaScriptChanged();
+    Q_REVISION(1,5) void showScrollBarsChanged();
+    Q_REVISION(1,6) void unknownUrlSchemePolicyChanged();
+    Q_REVISION(1,6) void playbackRequiresUserGestureChanged();
+    Q_REVISION(1,6) void webRTCPublicInterfacesOnlyChanged();
+    Q_REVISION(1,6) void javascriptCanPasteChanged();
+    Q_REVISION(1,7) void dnsPrefetchEnabledChanged();
+    Q_REVISION(1,8) void pdfViewerEnabledChanged();
 
 private:
     explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = nullptr);

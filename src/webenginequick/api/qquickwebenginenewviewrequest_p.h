@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineNewViewRequest : public QObject {
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineView::NewViewDestination destination READ destination CONSTANT FINAL)
-    Q_PROPERTY(QUrl requestedUrl READ requestedUrl CONSTANT REVISION 1 FINAL)
+    Q_PROPERTY(QUrl requestedUrl READ requestedUrl CONSTANT REVISION(1,1) FINAL)
     Q_PROPERTY(bool userInitiated READ isUserInitiated CONSTANT FINAL)
 public:
     ~QQuickWebEngineNewViewRequest();
