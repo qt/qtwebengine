@@ -100,8 +100,8 @@ void tst_CertificateError::handleError()
     QVERIFY(page.error->isOverridable());
     auto chain = page.error->certificateChain();
     QCOMPARE(chain.size(), 2);
-    QCOMPARE(chain[0].serialNumber(), "3b:dd:1a:b7:2f:40:32:3b:c1:bf:37:d4:86:bd:56:c1:d0:6b:2a:43");
-    QCOMPARE(chain[1].serialNumber(), "6d:52:fb:b4:57:3b:b2:03:c8:62:7b:7e:44:45:5c:d3:08:87:74:17");
+    QCOMPARE(chain[0].serialNumber(), "15:91:08:23:37:91:ee:51:00:d7:4a:db:d7:8c:3b:31:f8:4f:f3:b3");
+    QCOMPARE(chain[1].serialNumber(), "3c:16:83:83:59:c4:2a:65:8f:7a:b2:07:10:14:4e:2d:70:9a:3e:23");
 
     if (deferError) {
         QVERIFY(page.error->deferred());
