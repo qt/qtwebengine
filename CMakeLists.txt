@@ -77,7 +77,7 @@ if(NOT Ninja_FOUND)
         CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release
                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                    -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>
-)
+    )
 endif()
 
 ### GN

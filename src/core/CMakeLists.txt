@@ -16,7 +16,7 @@ assertRunAsTopLevelBuild(TRUE)
 add_subdirectory(api)
 
 find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core)
-find_package(Gn REQUIRED)
+find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT REQUIRED)
 find_package(Ninja 1.7.2 REQUIRED)
 find_package(Python2 2.7.5 REQUIRED)
 find_package(Nodejs 12.0)

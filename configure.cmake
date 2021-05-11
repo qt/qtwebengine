@@ -3,7 +3,7 @@
 #### Libraries
 
 find_package(Ninja 1.7.2)
-find_package(Gn)
+find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT)
 find_package(Python2 2.7.5)
 find_package(GPerf)
 find_package(BISON)

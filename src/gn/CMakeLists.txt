@@ -7,9 +7,15 @@ project(Gn
     LANGUAGES CXX C
 )
 
-set(GN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/gn)
+if(NOT DEFINED WEBENGINE_ROOT_SOURCE_DIR)
+    get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../.." REALPATH)
+endif()
+
+include(${WEBENGINE_ROOT_SOURCE_DIR}/.cmake.conf)
+
+set(GN_SOURCE_DIR ${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/gn)
 set(GN_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../../cmake")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${WEBENGINE_ROOT_SOURCE_DIR}/cmake")
 
 find_package(Python2 REQUIRED)
 find_package(Ninja 1.7.2 REQUIRED)
@@ -30,6 +36,7 @@ add_custom_command(
         --cc ${CMAKE_C_COMPILER}
         --cxx ${CMAKE_CXX_COMPILER}
         --ld ${CMAKE_CXX_COMPILER}
+        --qt-version "${QT_REPO_MODULE_VERSION}.qtwebengine.qt.io"
         $<$<PLATFORM_ID:Darwin>:--isysroot>
         $<$<PLATFORM_ID:Darwin>:${CMAKE_OSX_SYSROOT}>
     COMMAND Ninja::ninja -C ${GN_BINARY_DIR}/$<CONFIG> ${GN_EXECUTABLE}
@@ -38,7 +45,6 @@ add_custom_command(
     COMMAND_EXPAND_LISTS
 )
 add_custom_target(Gn ALL DEPENDS ${GN_EXECUTABLE})
-install(FILES ${GN_BINARY_DIR}/$<CONFIG>/${GN_EXECUTABLE}
-        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+install(PROGRAMS ${GN_BINARY_DIR}/$<CONFIG>/${GN_EXECUTABLE}
         DESTINATION bin
 )
