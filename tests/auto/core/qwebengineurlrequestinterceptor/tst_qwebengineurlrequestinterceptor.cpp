@@ -588,12 +588,6 @@ void tst_QWebEngineUrlRequestInterceptor::firstPartyUrlHttp()
 
     QList<RequestInfo> infos;
 
-    // SubFrame
-    QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeSubFrame));
-    infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeSubFrame);
-    foreach (auto info, infos)
-        QCOMPARE(info.firstPartyUrl, firstPartyUrl);
-
     // Stylesheet
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeStylesheet));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeStylesheet);
@@ -722,12 +716,6 @@ void tst_QWebEngineUrlRequestInterceptor::initiator()
         QSKIP("Couldn't load page from network, skipping test.");
 
     QList<RequestInfo> infos;
-
-    // SubFrame
-    QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeSubFrame));
-    infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeSubFrame);
-    foreach (auto info, infos)
-        QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // Stylesheet
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeStylesheet));
