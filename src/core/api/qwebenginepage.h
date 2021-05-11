@@ -206,6 +206,7 @@ public:
     enum FileSelectionMode {
         FileSelectOpen,
         FileSelectOpenMultiple,
+        FileSelectUploadFolder,
     };
     Q_ENUM(FileSelectionMode)
 

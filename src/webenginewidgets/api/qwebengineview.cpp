@@ -207,7 +207,6 @@ QStringList QWebEngineViewPrivate::chooseFiles(QWebEnginePage::FileSelectionMode
                                             filter.join(QStringLiteral(";;")), nullptr,
                                             QFileDialog::HideNameFilterDetails);
         break;
-    // Chromium extension, not exposed as part of the public API for now.
     case QtWebEngineCore::FilePickerController::UploadFolder:
         str = QFileDialog::getExistingDirectory(q, QObject::tr("Select folder to upload"));
         if (!str.isNull())

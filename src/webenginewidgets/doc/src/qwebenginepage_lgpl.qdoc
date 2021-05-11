@@ -250,6 +250,8 @@
             Return only one file name.
     \value  FileSelectOpenMultiple
             Return multiple file names.
+    \value  FileSelectUploadFolder
+            Allows users to specify a single existing folder for upload.
 
     \sa chooseFiles()
 */

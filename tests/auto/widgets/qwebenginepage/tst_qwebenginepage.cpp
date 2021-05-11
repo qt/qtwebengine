@@ -236,6 +236,9 @@ private Q_SLOTS:
     void isSafeRedirect_data();
     void isSafeRedirect();
 
+    void testChooseFilesParameters_data();
+    void testChooseFilesParameters();
+
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
     static bool isFalseJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
@@ -4643,6 +4646,84 @@ void tst_QWebEnginePage::renderProcessPid()
     QTRY_VERIFY_WITH_TIMEOUT(crashed, 20000);
 
     QCOMPARE(m_page->renderProcessPid(), 0);
+}
+
+class FileSelectionTestPage : public QWebEnginePage {
+public:
+    FileSelectionTestPage()
+    { }
+
+    QStringList chooseFiles(FileSelectionMode mode, const QStringList &oldFiles, const QStringList &acceptedMimeTypes) override
+    {
+        Q_UNUSED(oldFiles);
+        chosenFileSelectionMode = mode;
+        chosenAcceptedMimeTypes = acceptedMimeTypes;
+        return QStringList();
+    }
+
+    int chosenFileSelectionMode = -1;
+    QStringList chosenAcceptedMimeTypes;
+};
+
+void tst_QWebEnginePage::testChooseFilesParameters_data()
+{
+    QTest::addColumn<QString>("uploadAttribute");
+    QTest::addColumn<QString>("mimeTypeAttribute");
+    QTest::addColumn<QWebEnginePage::FileSelectionMode>("expectedFileSelectionMode");
+    QTest::addColumn<QStringList>("expectedMimeType");
+    QStringList mimeTypes;
+
+    QTest::addRow("Single file upload") << QString() << QString()
+                                        << QWebEnginePage::FileSelectOpen << QStringList();
+    QTest::addRow("Multiple file upload") << QString("multiple") << QString()
+                                          << QWebEnginePage::FileSelectOpenMultiple << QStringList();
+    QTest::addRow("Folder upload") << QString("multiple webkitdirectory") << QString()
+                                   << QWebEnginePage::FileSelectUploadFolder << QStringList();
+    mimeTypes = QStringList() << "audio/*";
+    QTest::addRow("MIME type: audio") << QString() << QString("accept='%1'").arg(mimeTypes.join(','))
+                                      << QWebEnginePage::FileSelectOpen << mimeTypes;
+    mimeTypes = QStringList() << "video/*";
+    QTest::addRow("MIME type: video") << QString() << QString("accept='%1'").arg(mimeTypes.join(','))
+                                      << QWebEnginePage::FileSelectOpen << mimeTypes;
+    mimeTypes = QStringList() << "image/*";
+    QTest::addRow("MIME type: image") << QString() << QString("accept='%1'").arg(mimeTypes.join(','))
+                                      << QWebEnginePage::FileSelectOpen << mimeTypes;
+    mimeTypes = QStringList() << ".txt" << ".html";
+    QTest::addRow("MIME type: custom") << QString() << QString("accept='%1'").arg(mimeTypes.join(','))
+                                       << QWebEnginePage::FileSelectOpen << mimeTypes;
+    mimeTypes = QStringList() << "audio/*" << "video/*" << "image/*" << ".txt" << ".html";
+    QTest::addRow("Multiple MIME types") << QString() << QString("accept='%1'").arg(mimeTypes.join(','))
+                                        << QWebEnginePage::FileSelectOpen << mimeTypes;
+}
+
+void tst_QWebEnginePage::testChooseFilesParameters()
+{
+    QFETCH(QString, uploadAttribute);
+    QFETCH(QString, mimeTypeAttribute);
+    QFETCH(QWebEnginePage::FileSelectionMode, expectedFileSelectionMode);
+    QFETCH(QStringList, expectedMimeType);
+
+    FileSelectionTestPage page;
+    QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
+
+    QWebEngineView view;
+    view.resize(500, 500);
+    view.setPage(&page);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    page.setHtml(QString("<html><body>"
+                         "<input id='filePicker' type='file' name='filePicker' %1 %2 />"
+                         "</body></html>").arg(uploadAttribute, mimeTypeAttribute));
+    QVERIFY(spyFinished.wait());
+    QTRY_COMPARE(spyFinished.count(), 1);
+
+    evaluateJavaScriptSync(view.page(), "document.getElementById('filePicker').focus()");
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("filePicker"));
+    QTest::keyClick(view.focusProxy(), Qt::Key_Enter);
+
+    QTRY_COMPARE(page.chosenFileSelectionMode, expectedFileSelectionMode);
+    QTRY_COMPARE(page.chosenAcceptedMimeTypes, expectedMimeType);
 }
 
 void tst_QWebEnginePage::backgroundColor()
