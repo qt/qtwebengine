@@ -157,6 +157,16 @@ TestWebEngineView {
             webEngineView.url = Qt.resolvedUrl("directoryupload.html")
             verify(webEngineView.waitForLoadSucceeded())
 
+            webEngineView.runJavaScript(
+                "let relativePathCount = 0;" +
+                "document.getElementById('upfile').addEventListener('change', function(event) {" +
+                "   let files = event.target.files;" +
+                "   for (let i = 0; i < files.length; i++) {" +
+                "      if (files[i].webkitRelativePath != '')" +
+                "         relativePathCount++;" +
+                "   }" +
+                "}, false);")
+
             FilePickerParams.selectFiles = true
             FilePickerParams.selectedFilesUrl.push(Qt.resolvedUrl("../data"))
 
@@ -164,6 +174,11 @@ TestWebEngineView {
             tryCompare(FilePickerParams, "filePickerOpened", true)
             // Check that the title is a file list (eg. "test1.html,test2.html")
             tryVerify(function() { return webEngineView.title.match("^([^,]+,)+[^,]+$"); })
+
+            var relativePathCount = 0;
+            runJavaScript("relativePathCount", function(result) { relativePathCount = result; });
+            // The number of files in data directory may vary
+            tryVerify(function() { return relativePathCount > 0; });
         }
 
         function test_reject() {

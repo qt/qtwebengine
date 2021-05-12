@@ -194,9 +194,13 @@ ASSERT_ENUMS_MATCH(FilePickerController::Save, blink::mojom::FileChooserParams_M
 void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
 {
     QStringList files(filesList);
+    base::FilePath baseDir;
     if (d_ptr->mode == UploadFolder && !filesList.isEmpty()
-            && QFileInfo(filesList.first()).isDir()) // Enumerate the directory
+            && QFileInfo(filesList.first()).isDir()) {
+        // Enumerate the directory
         files = listRecursively(QDir(filesList.first()));
+        baseDir = toFilePath(filesList.first());
+    }
 
     std::vector<blink::mojom::FileChooserFileInfoPtr> chooser_files;
     for (const auto &file : qAsConst(files)) {
@@ -208,7 +212,7 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
         d_ptr->listener->FileSelectionCanceled();
     else
         d_ptr->listener->FileSelected(std::move(chooser_files),
-                                  /* FIXME? */ base::FilePath(),
+                                 baseDir,
                                  static_cast<blink::mojom::FileChooserParams::Mode>(d_ptr->mode));
 }
 
