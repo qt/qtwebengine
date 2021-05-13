@@ -65,6 +65,7 @@ TestWebEngineView {
 
 
     TestCase {
+        id: testCase
         name: "WebEngineViewMouseClick"
         when: windowShown
 

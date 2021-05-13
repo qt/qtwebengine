@@ -36,6 +36,43 @@
 #include "qwebenginesettings.h"
 #include "qwebengineview.h"
 
+enum { LoadStarted, LoadSucceeded, LoadFailed };
+static const QList<int> SignalsOrderOnce({ LoadStarted, LoadSucceeded});
+static const QList<int> SignalsOrderTwice({ LoadStarted, LoadSucceeded, LoadStarted, LoadSucceeded });
+static const QList<int> SignalsOrderOnceFailure({ LoadStarted, LoadFailed });
+static const QList<int> SignalsOrderTwiceWithFailure({ LoadStarted, LoadSucceeded, LoadStarted, LoadFailed });
+
+class TestPage : public QWebEnginePage
+{
+public:
+    QSet<QUrl> blacklist;
+    int navigationRequestCount = 0;
+    QList<int> signalsOrder;
+    QList<int> loadProgress;
+
+    explicit TestPage(QObject *parent = nullptr) : TestPage(nullptr, parent) { }
+    TestPage(QWebEngineProfile *profile, QObject *parent = nullptr) : QWebEnginePage(profile, parent) {
+        connect(this, &QWebEnginePage::loadStarted, [this] () { signalsOrder.append(LoadStarted); });
+        connect(this, &QWebEnginePage::loadProgress, [this] (int p) { loadProgress.append(p); });
+        connect(this, &QWebEnginePage::loadFinished, [this] (bool r) { signalsOrder.append(r ? LoadSucceeded : LoadFailed); });
+    }
+
+    void reset()
+    {
+        blacklist.clear();
+        navigationRequestCount = 0;
+        signalsOrder.clear();
+        loadProgress.clear();
+    }
+
+protected:
+    bool acceptNavigationRequest(const QUrl &url, NavigationType, bool) override
+    {
+        ++navigationRequestCount;
+        return !blacklist.contains(url);
+    }
+};
+
 class tst_LoadSignals : public QObject
 {
     Q_OBJECT
@@ -48,10 +85,13 @@ private Q_SLOTS:
     void monotonicity();
     void loadStartedAndFinishedCount_data();
     void loadStartedAndFinishedCount();
-    void secondLoadForError_WhenErrorPageEnabled_data();
-    void secondLoadForError_WhenErrorPageEnabled();
+    void loadStartedAndFinishedCountClick_data();
+    void loadStartedAndFinishedCountClick();
+    void rejectNavigationRequest_data();
+    void rejectNavigationRequest();
     void loadAfterInPageNavigation_qtbug66869();
-    void fileDownloadDoesNotTriggerLoadSignals_qtbug66661();
+    void fileDownload();
+    void numberOfStartedAndFinishedSignalsIsSame_data();
     void numberOfStartedAndFinishedSignalsIsSame();
     void loadFinishedAfterNotFoundError_data();
     void loadFinishedAfterNotFoundError();
@@ -59,31 +99,45 @@ private Q_SLOTS:
     void errorPageTriggered();
 
 private:
+    void clickLink(QPoint linkPos);
+
     QWebEngineProfile profile;
-    QWebEnginePage page{&profile};
+    TestPage page{&profile};
     QWebEngineView view;
     QSignalSpy loadStartedSpy{&page, &QWebEnginePage::loadStarted};
-    QSignalSpy loadProgressSpy{&page, &QWebEnginePage::loadProgress};
     QSignalSpy loadFinishedSpy{&page, &QWebEnginePage::loadFinished};
+    void resetSpies() {
+        loadStartedSpy.clear();
+        loadFinishedSpy.clear();
+    }
 };
 
 void tst_LoadSignals::initTestCase()
 {
     view.setPage(&page);
-    view.resize(1024,768);
+    view.resize(640, 480);
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 }
 
 void tst_LoadSignals::init()
 {
     // Reset content
-    loadFinishedSpy.clear();
-    view.load(QUrl("about:blank"));
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    if (!view.url().isEmpty()) {
+        loadFinishedSpy.clear();
+        view.load(QUrl("about:blank"));
+        QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    }
+    resetSpies();
+    page.reset();
+}
 
-    loadStartedSpy.clear();
-    loadProgressSpy.clear();
-    loadFinishedSpy.clear();
+void tst_LoadSignals::clickLink(QPoint linkPos)
+{
+    // Simulate left-clicking on link.
+    QTRY_VERIFY(view.focusWidget());
+    QWidget *renderWidget = view.focusWidget();
+    QTest::mouseClick(renderWidget, Qt::LeftButton, {}, linkPos);
 }
 
 /**
@@ -92,27 +146,124 @@ void tst_LoadSignals::init()
 void tst_LoadSignals::loadStartedAndFinishedCount_data()
 {
     QTest::addColumn<QUrl>("url");
-    QTest::addColumn<int>("expectedLoadCount");
-    QTest::newRow("Normal") << QUrl("qrc:///resources/page1.html") << 1;
-    QTest::newRow("WithAnchor") << QUrl("qrc:///resources/page2.html#anchor") << 1;
-
-    // In this case, we get an unexpected additional loadStarted, but no corresponding
-    // loadFinished, so expectedLoadCount=2 would also not work. See also QTBUG-65223
-    QTest::newRow("WithAnchorClickedFromJS") << QUrl("qrc:///resources/page3.html") << 1;
+    QTest::addColumn<QList<int>>("expectedSignals");
+    QTest::newRow("Simple") << QUrl("qrc:///resources/page1.html") << SignalsOrderOnce;
+    QTest::newRow("SimpleWithAnchor") << QUrl("qrc:///resources/page2.html#anchor") << SignalsOrderOnce;
+    QTest::newRow("SamePageImmediate") << QUrl("qrc:///resources/page5.html") << SignalsOrderOnce;
+    QTest::newRow("SamePageDeferred") << QUrl("qrc:///resources/page3.html") << SignalsOrderOnce;
+    QTest::newRow("OtherPageImmediate") << QUrl("qrc:///resources/page6.html") << SignalsOrderOnce;
+    QTest::newRow("OtherPageDeferred") << QUrl("qrc:///resources/page7.html") << SignalsOrderTwice;
+    QTest::newRow("SamePageImmediateJS") << QUrl("qrc:///resources/page8.html") << SignalsOrderOnce;
 }
 
 void tst_LoadSignals::loadStartedAndFinishedCount()
 {
     QFETCH(QUrl, url);
-    QFETCH(int, expectedLoadCount);
+    QFETCH(QList<int>, expectedSignals);
 
     view.load(url);
-    QTRY_COMPARE(loadFinishedSpy.size(), expectedLoadCount);
-    QVERIFY(loadFinishedSpy[0][0].toBool());
 
-    // Wait for 10 seconds (abort waiting if another loadStarted or loadFinished occurs)
-    QTRY_LOOP_IMPL((loadStartedSpy.size() != expectedLoadCount)
-                || (loadFinishedSpy.size() != expectedLoadCount), 10000, 100);
+    int expectedLoadCount = expectedSignals.size() / 2;
+    QTRY_COMPARE(loadStartedSpy.size(), expectedLoadCount);
+    QTRY_COMPARE(loadFinishedSpy.size(), expectedLoadCount);
+
+    // verify no more signals is emitted by waiting for another loadStarted or loadFinished
+    QTRY_LOOP_IMPL(loadStartedSpy.size() != expectedLoadCount || loadFinishedSpy.size() != expectedLoadCount, 1000, 100);
+
+    // No further signals should have occurred within this time and expected number of signals is preserved
+    QCOMPARE(loadStartedSpy.size(), expectedLoadCount);
+    QCOMPARE(loadFinishedSpy.size(), expectedLoadCount);
+    QCOMPARE(page.signalsOrder, expectedSignals);
+}
+
+/**
+ * Load a URL, then simulate a click to load a different URL.
+ */
+void tst_LoadSignals::loadStartedAndFinishedCountClick_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<int>("numberOfSignals");
+    QTest::newRow("SamePage") << QUrl("qrc:///resources/page2.html") << 0; // in-page navigation to anchor shouldn't emit anything
+    QTest::newRow("OtherPage") << QUrl("qrc:///resources/page1.html") << 1;
+}
+
+void tst_LoadSignals::loadStartedAndFinishedCountClick()
+{
+    QFETCH(QUrl, url);
+    QFETCH(int, numberOfSignals);
+
+    view.load(url);
+    QTRY_COMPARE(loadStartedSpy.size(), 1);
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QVERIFY(loadFinishedSpy[0][0].toBool());
+    resetSpies();
+
+    clickLink(QPoint(10, 10));
+    if (numberOfSignals > 0) {
+        QTRY_COMPARE(loadStartedSpy.size(), numberOfSignals);
+        QTRY_COMPARE(loadFinishedSpy.size(), numberOfSignals);
+        QVERIFY(loadFinishedSpy[0][0].toBool());
+    }
+
+    // verify no more signals is emitted by waiting for another loadStarted or loadFinished
+    QTRY_LOOP_IMPL(loadStartedSpy.size() != numberOfSignals || loadFinishedSpy.size() != numberOfSignals, 1000, 100);
+
+    // No further loadStarted should have occurred within this time
+    QCOMPARE(loadStartedSpy.size(), numberOfSignals);
+    QCOMPARE(loadFinishedSpy.size(), numberOfSignals);
+    QCOMPARE(page.signalsOrder, numberOfSignals > 0 ? SignalsOrderTwice : SignalsOrderOnce);
+}
+
+void tst_LoadSignals::rejectNavigationRequest_data()
+{
+    QTest::addColumn<QUrl>("initialUrl");
+    QTest::addColumn<QUrl>("rejectedUrl");
+    QTest::addColumn<int>("expectedNavigations");
+    QTest::addColumn<QList<int>>("expectedSignals");
+    QTest::newRow("Simple")
+            << QUrl("qrc:///resources/page1.html")
+            << QUrl("qrc:///resources/page1.html")
+            << 1 << SignalsOrderOnceFailure;
+    QTest::newRow("SamePageImmediate")
+            << QUrl("qrc:///resources/page5.html")
+            << QUrl("qrc:///resources/page5.html#anchor")
+            << 1 << SignalsOrderOnce;
+    QTest::newRow("SamePageDeferred")
+            << QUrl("qrc:///resources/page3.html")
+            << QUrl("qrc:///resources/page3.html#anchor")
+            << 1 << SignalsOrderOnce;
+    QTest::newRow("OtherPageImmediate")
+            << QUrl("qrc:///resources/page6.html")
+            << QUrl("qrc:///resources/page2.html#anchor")
+            << 2 << SignalsOrderOnceFailure;
+    QTest::newRow("OtherPageDeferred")
+            << QUrl("qrc:///resources/page7.html")
+            << QUrl("qrc:///resources/page2.html#anchor")
+            << 2 << SignalsOrderTwiceWithFailure;
+}
+
+/**
+ * Returning false from acceptNavigationRequest means that the load
+ * fails, not that the load never starts.
+ *
+ * See QTBUG-75185.
+ */
+void tst_LoadSignals::rejectNavigationRequest()
+{
+    QFETCH(QUrl, initialUrl);
+    QFETCH(QUrl, rejectedUrl);
+    QFETCH(int, expectedNavigations);
+    QFETCH(QList<int>, expectedSignals);
+
+    page.blacklist.insert(rejectedUrl);
+    page.load(initialUrl);
+    QTRY_COMPARE(page.navigationRequestCount, expectedNavigations);
+    int expectedLoadCount = expectedSignals.size() / 2;
+    QTRY_COMPARE(loadFinishedSpy.size(), expectedLoadCount);
+    QCOMPARE(page.signalsOrder, expectedSignals);
+
+    // verify no more signals is emitted by waiting for another loadStarted or loadFinished
+    QTRY_LOOP_IMPL(loadStartedSpy.size() != expectedLoadCount || loadFinishedSpy.size() != expectedLoadCount, 1000, 100);
 
     // No further loadStarted should have occurred within this time
     QCOMPARE(loadStartedSpy.size(), expectedLoadCount);
@@ -135,53 +286,19 @@ void tst_LoadSignals::monotonicity()
     QTRY_COMPARE(loadFinishedSpy.size(), 1);
     QVERIFY(loadFinishedSpy[0][0].toBool());
 
+    QVERIFY(page.loadProgress.size() >= 3);
     // first loadProgress should have 0% progress
-    QCOMPARE(loadProgressSpy.takeFirst()[0].toInt(), 0);
+    QCOMPARE(page.loadProgress.first(), 0);
 
     // every loadProgress should have more progress than the one before
-    int progress = 0;
-    for (const auto &item : loadProgressSpy) {
-        QVERIFY(progress < item[0].toInt());
-        progress = item[0].toInt();
+    int progress = -1;
+    for (int p : page.loadProgress) {
+        QVERIFY(progress < p);
+        progress = p;
     }
 
     // last loadProgress should have 100% progress
-    QCOMPARE(loadProgressSpy.last()[0].toInt(), 100);
-}
-
-/**
-  * Test that we get a second loadStarted and loadFinished signal
-  * for error-pages (unless error-pages are disabled)
-  */
-void tst_LoadSignals::secondLoadForError_WhenErrorPageEnabled_data()
-{
-    QTest::addColumn<bool>("enabled");
-    // in this case, we get no second loadStarted and loadFinished, although we had
-    // agreed on making the navigation to an error page an individual load
-    QTest::newRow("ErrorPageEnabled") << true;
-    QTest::newRow("ErrorPageDisabled") << false;
-}
-
-void tst_LoadSignals::secondLoadForError_WhenErrorPageEnabled()
-{
-    QFETCH(bool, enabled);
-    view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, enabled);
-    int expectedLoadCount = (enabled ? 2 : 1);
-
-    // RFC 2606 guarantees that this will never become a valid domain
-    view.load(QUrl("http://nonexistent.invalid"));
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), expectedLoadCount, 10000);
-    QVERIFY(!loadFinishedSpy[0][0].toBool());
-    if (enabled)
-        QVERIFY(loadFinishedSpy[1][0].toBool());
-
-    // Wait for 10 seconds (abort waiting if another loadStarted or loadFinished occurs)
-    QTRY_LOOP_IMPL((loadStartedSpy.size() != expectedLoadCount)
-                || (loadFinishedSpy.size() != expectedLoadCount), 10000, 100);
-
-    // No further loadStarted should have occurred within this time
-    QCOMPARE(loadStartedSpy.size(), expectedLoadCount);
-    QCOMPARE(loadFinishedSpy.size(), expectedLoadCount);
+    QCOMPARE(page.loadProgress.last(), 100);
 }
 
 /**
@@ -195,27 +312,17 @@ void tst_LoadSignals::loadAfterInPageNavigation_qtbug66869()
     QVERIFY(loadFinishedSpy[0][0].toBool());
 
     // page3 does an in-page navigation after 500ms
-    QTest::qWait(2000);
-    loadFinishedSpy.clear();
-    loadProgressSpy.clear();
-    loadStartedSpy.clear();
+    QTRY_COMPARE(view.url(), QUrl("qrc:///resources/page3.html#anchor"));
 
     // second load
     view.load(QUrl("qrc:///resources/page1.html"));
-    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QTRY_COMPARE(loadFinishedSpy.size(), 2);
     QVERIFY(loadFinishedSpy[0][0].toBool());
     // loadStarted and loadFinished should have been signalled
-    QCOMPARE(loadStartedSpy.size(), 1);
-
-    // reminder that we still need to solve the core issue
-    QFAIL("https://codereview.qt-project.org/#/c/222112/ only hides the symptom, the core issue still needs to be solved");
+    QCOMPARE(loadStartedSpy.size(), 2);
 }
 
-/**
-  * Test that file-downloads don't trigger loadStarted or loadFinished signals.
-  * See QTBUG-66661
-  */
-void tst_LoadSignals::fileDownloadDoesNotTriggerLoadSignals_qtbug66661()
+void tst_LoadSignals::fileDownload()
 {
     view.load(QUrl("qrc:///resources/page4.html"));
     QTRY_COMPARE(loadFinishedSpy.size(), 1);
@@ -237,59 +344,55 @@ void tst_LoadSignals::fileDownloadDoesNotTriggerLoadSignals_qtbug66661()
                     });
 
     // trigger the download link that becomes focused on page4
-    QTest::qWait(1000);
     QTest::sendKeyEvent(QTest::Press, view.focusProxy(), Qt::Key_Return, QString("\r"), Qt::NoModifier);
     QTest::sendKeyEvent(QTest::Release, view.focusProxy(), Qt::Key_Return, QString("\r"), Qt::NoModifier);
 
-    // Wait for 10 seconds (abort waiting if another loadStarted or loadFinished occurs)
-    QTRY_LOOP_IMPL((loadStartedSpy.size() != 1)
-                || (loadFinishedSpy.size() != 1), 10000, 100);
-
     // Download must have occurred
     QTRY_COMPARE(downloadState, QWebEngineDownloadRequest::DownloadCompleted);
+    QTRY_COMPARE(loadFinishedSpy.size() + loadStartedSpy.size(), 4);
 
-    // No further loadStarted should have occurred within this time
-    QCOMPARE(loadStartedSpy.size(), 1);
-    QCOMPARE(loadFinishedSpy.size(), 1);
+    // verify no more signals is emitted by waiting for another loadStarted or loadFinished
+    QTRY_LOOP_IMPL(loadStartedSpy.size() != 2 || loadFinishedSpy.size() != 2, 1000, 100);
+
+    QCOMPARE(page.signalsOrder, SignalsOrderTwiceWithFailure);
 }
 
-void tst_LoadSignals::numberOfStartedAndFinishedSignalsIsSame() {
+void tst_LoadSignals::numberOfStartedAndFinishedSignalsIsSame_data()
+{
+    QTest::addColumn<bool>("imageFromServer");
+    QTest::addColumn<QString>("imageResourceUrl");
+    // triggers these calls in delegate internally:
+    // just two ordered triples DidStartNavigation/DidFinishNavigation/DidFinishLoad
+    QTest::newRow("no_image_resource") << false << "";
+    // out of order: DidStartNavigation/DidFinishNavigation/DidStartNavigation/DidFailLoad/DidFinishNavigation/DidFinishLoad
+    QTest::newRow("with_invalid_image") << false << "https://non.existent.locahost/image.png";
+    // out of order: DidStartNavigation/DidFinishNavigation/DidStartNavigation/DidFinishLoad/DidFinishNavigation/DidFinishLoad
+    QTest::newRow("with_server_image") << true << "";
+}
+
+void tst_LoadSignals::numberOfStartedAndFinishedSignalsIsSame()
+{
+    QFETCH(bool, imageFromServer);
+    QFETCH(QString, imageResourceUrl);
 
     HttpServer server;
     server.setResourceDirs({ TESTS_SOURCE_DIR "/qwebengineprofile/resources" });
-    connect(&server, &HttpServer::newRequest, [] (HttpReqRep *) {
-         QTest::qWait(250); // just add delay to trigger some progress for every sub resource
-    });
     QVERIFY(server.start());
 
-    view.load(server.url("/hedgehog.png"));
+    QUrl serverImage = server.url("/hedgehog.png");
+    QString imageUrl(!imageFromServer && imageResourceUrl.isEmpty()
+                     ? "" : (imageFromServer ? serverImage.toEncoded() : imageResourceUrl));
+
+    auto html = "<html><head><link rel='icon' href='data:,'></head><body>"
+                "%1" "<form method='GET' name='hiddenform' action='qrc:///resources/page1.html' />"
+                "<script language='javascript'>document.forms[0].submit();</script>"
+                "</body></html>";
+    view.page()->setHtml(QString(html).arg(imageUrl.isEmpty() ? "" : "<img src='" + imageUrl + "'>"));
     QTRY_COMPARE(loadFinishedSpy.size(), 1);
-    QVERIFY(loadFinishedSpy[0][0].toBool());
 
-    loadStartedSpy.clear();
-    loadFinishedSpy.clear();
-    loadProgressSpy.clear();
-
-    view.page()->setHtml("<html><body>"
-                         "<img src=\"" + server.url("/hedgehog.png").toEncoded() + "\">"
-                         "<form method='GET' name='hiddenform' action='qrc:///resources/page1.html' />"
-                         "<script language='javascript'>document.forms[0].submit();</script>"
-                         "</body></html>");
-
-    QTRY_COMPARE(loadStartedSpy.size(), 2);
-    QTRY_COMPARE(loadFinishedSpy.size(), 2);
-
-    QTRY_VERIFY(!loadFinishedSpy[0][0].toBool());
-    QTRY_VERIFY(loadFinishedSpy[1][0].toBool());
-
-    view.page()->setHtml("<html><body>"
-                         "<form method='GET' name='hiddenform' action='qrc:///resources/page1.html' />"
-                         "<script language='javascript'>document.forms[0].submit();</script>"
-                         "</body></html>");
-    QTRY_COMPARE(loadStartedSpy.size(), 4);
-    QTRY_COMPARE(loadFinishedSpy.size(), 4);
-    QVERIFY(loadFinishedSpy[2][0].toBool());
-    QVERIFY(loadFinishedSpy[3][0].toBool());
+    resetSpies();
+    QTRY_LOOP_IMPL(loadStartedSpy.size() || loadFinishedSpy.size(), 1000, 100);
+    QCOMPARE(page.signalsOrder, SignalsOrderOnce);
 }
 
 void tst_LoadSignals::loadFinishedAfterNotFoundError_data()
@@ -311,7 +414,6 @@ void tst_LoadSignals::loadFinishedAfterNotFoundError()
         server.reset(new HttpServer);
         QVERIFY(server->start());
     }
-
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     auto url = server
         ? server->url("/not-found-page.html")
@@ -321,6 +423,9 @@ void tst_LoadSignals::loadFinishedAfterNotFoundError()
     QVERIFY(!loadFinishedSpy.at(0).at(0).toBool());
     QCOMPARE(toPlainTextSync(view.page()), QString());
     QCOMPARE(loadFinishedSpy.count(), 1);
+    QCOMPARE(loadStartedSpy.count(), 1);
+    QVERIFY(std::is_sorted(page.loadProgress.begin(), page.loadProgress.end()));
+    page.loadProgress.clear();
 
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, true);
     url = server
@@ -329,9 +434,12 @@ void tst_LoadSignals::loadFinishedAfterNotFoundError()
     view.load(url);
     QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 2, 20000);
     QVERIFY(!loadFinishedSpy.at(1).at(0).toBool());
+    QCOMPARE(loadStartedSpy.count(), 2);
 
     QEXPECT_FAIL("", "No more loads (like separate load for error pages) are expected", Continue);
     QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 3, 1000);
+    QCOMPARE(loadStartedSpy.count(), 2);
+    QVERIFY(std::is_sorted(page.loadProgress.begin(), page.loadProgress.end()));
 }
 
 void tst_LoadSignals::errorPageTriggered_data()
@@ -387,7 +495,6 @@ void tst_LoadSignals::errorPageTriggered()
     QVERIFY(toPlainTextSync(view.page()).isEmpty());
     loadFinishedSpy.clear();
 }
-
 
 QTEST_MAIN(tst_LoadSignals)
 #include "tst_loadsignals.moc"

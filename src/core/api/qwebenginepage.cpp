@@ -305,28 +305,20 @@ void QWebEnginePagePrivate::loadStarted(const QUrl &provisionalUrl, bool isError
     QTimer::singleShot(0, q, &QWebEnginePage::loadStarted);
 }
 
-void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode,
-                                         const QString &errorDescription, bool triggersErrorPage)
+void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode, const QString &errorDescription)
 {
     Q_Q(QWebEnginePage);
     Q_UNUSED(url);
     Q_UNUSED(errorCode);
     Q_UNUSED(errorDescription);
 
-    if (isErrorPage) {
-        QTimer::singleShot(0, q, [q](){
-            emit q->loadFinished(false);
-        });
+    if (isErrorPage)
         return;
-    }
 
     isLoading = false;
-    Q_ASSERT((success && !triggersErrorPage) || !success);
-    if (!triggersErrorPage) {
-        QTimer::singleShot(0, q, [q, success](){
-            emit q->loadFinished(success);
-        });
-    }
+    QTimer::singleShot(0, q, [q, success](){
+        emit q->loadFinished(success);
+    });
 }
 
 void QWebEnginePagePrivate::didPrintPageToPdf(const QString &filePath, bool success)
@@ -2292,6 +2284,10 @@ void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &res
     \warning We guarantee that the callback (\a resultCallback) is always called, but it might be done
     during page destruction. When QWebEnginePage is deleted, the callback is triggered with an invalid
     value and it is not safe to use the corresponding QWebEnginePage or QWebEngineView instance inside it.
+
+    \note This function rasterizes the result when rendering onto \a printer. Please consider raising
+    the default resolution of \a printer to at least 300 DPI or using printToPdf() to produce
+    PDF file output more effectively.
 
     \since 5.8
 */

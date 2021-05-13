@@ -258,14 +258,12 @@ void WebContentsDelegateQt::CloseContents(content::WebContents *source)
 
 void WebContentsDelegateQt::LoadProgressChanged(double progress)
 {
-    QUrl current_url(m_viewClient->webContentsAdapter()->getNavigationEntryOriginalUrl(m_viewClient->webContentsAdapter()->currentNavigationEntryIndex()));
-    int p = qMin(qRound(progress * 100), 100);
-
-    if (!m_loadingErrorFrameList.isEmpty() || !m_loadProgressMap.contains(current_url) || m_loadProgressMap[current_url] == 100 || p ==  100)
+    if (!m_loadingInfo.isLoading()) // suppress signals that aren't between loadStarted and loadFinished
         return;
 
-    if (p > m_loadProgressMap[current_url]) { // ensure strict monotonic increase
-        m_loadProgressMap[current_url] = p;
+    int p = qMin(qRound(progress * 100), 100);
+    if (p > m_loadingInfo.progress) { // ensure strict monotonic increase
+        m_loadingInfo.progress = p;
         m_viewClient->loadProgressChanged(p);
     }
 }
@@ -283,11 +281,6 @@ void WebContentsDelegateQt::RenderFrameCreated(content::RenderFrameHost *render_
 {
     content::FrameTreeNode *node = static_cast<content::RenderFrameHostImpl *>(render_frame_host)->frame_tree_node();
     m_frameFocusedObserver.addNode(node);
-}
-
-void WebContentsDelegateQt::RenderFrameDeleted(content::RenderFrameHost *render_frame_host)
-{
-    m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
 }
 
 void WebContentsDelegateQt::RenderProcessGone(base::TerminationStatus status)
@@ -339,40 +332,26 @@ void WebContentsDelegateQt::RenderViewHostChanged(content::RenderViewHost *, con
     }
 }
 
-void WebContentsDelegateQt::EmitLoadStarted(const QUrl &url, bool isErrorPage)
+void WebContentsDelegateQt::emitLoadStarted(bool isErrorPage)
 {
     for (auto &&wc : m_certificateErrorControllers)
         if (auto controller = wc.lock())
             controller->deactivate();
     m_certificateErrorControllers.clear();
 
-    m_isDocumentEmpty = true;
-    m_viewClient->loadStarted(url, isErrorPage);
-    m_viewClient->updateNavigationActions();
-
-    if ((url.hasFragment() || m_lastLoadedUrl.hasFragment())
-        && url.adjusted(QUrl::RemoveFragment) == m_lastLoadedUrl.adjusted(QUrl::RemoveFragment)
-        && !m_isNavigationCommitted) {
-        m_loadProgressMap.insert(url, 100);
-        m_lastLoadedUrl = url;
-        m_viewClient->loadProgressChanged(100);
+    // only report first ever load start or separate one for error page only
+    if (!isErrorPage && m_loadingInfo.isLoading()) // already running
         return;
-    }
 
-    if (!m_loadProgressMap.isEmpty()) {
-        QMap<QUrl, int>::iterator it = m_loadProgressMap.begin();
-        while (it != m_loadProgressMap.end()) {
-            if (it.value() == 100) {
-                it = m_loadProgressMap.erase(it);
-                continue;
-            }
-            ++it;
-        }
+    m_isDocumentEmpty = true; // reset to default which may only be overridden on actual resource load complete
+    if (!isErrorPage) {
+        m_loadingInfo.progress = 0;
+        m_viewClient->loadStarted(m_loadingInfo.url, false);
+        m_viewClient->updateNavigationActions();
+        m_viewClient->loadProgressChanged(0);
+    } else {
+        m_viewClient->loadStarted(toQt(GURL(content::kUnreachableWebDataURL)), true);
     }
-
-    m_lastLoadedUrl = url;
-    m_loadProgressMap.insert(url, 0);
-    m_viewClient->loadProgressChanged(0);
 }
 
 void WebContentsDelegateQt::DidStartNavigation(content::NavigationHandle *navigation_handle)
@@ -380,34 +359,39 @@ void WebContentsDelegateQt::DidStartNavigation(content::NavigationHandle *naviga
     if (!webEngineSettings()->testAttribute(QWebEngineSettings::ErrorPageEnabled))
         navigation_handle->SetSilentlyIgnoreErrors();
 
-    if (!navigation_handle->IsInMainFrame())
+    if (!navigation_handle->IsInMainFrame() || !web_contents()->IsLoadingToDifferentDocument())
         return;
 
-
-    m_loadingErrorFrameList.clear();
     m_faviconManager->resetCandidates();
-    EmitLoadStarted(toQt(navigation_handle->GetURL()));
+
+    m_loadingInfo.url = toQt(navigation_handle->GetURL());
+    // IsErrorPage is only set after navigation commit, so check it otherwise: error page shouldn't have navigation entry
+    bool isErrorPage = m_loadingInfo.triggersErrorPage && !navigation_handle->GetNavigationEntry();
+    emitLoadStarted(isErrorPage);
 }
 
-void WebContentsDelegateQt::EmitLoadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode, const QString &errorDescription, bool triggersErrorPage)
+void WebContentsDelegateQt::emitLoadFinished(bool isErrorPage)
 {
-    Q_ASSERT(!isErrorPage || webEngineSettings()->testAttribute(QWebEngineSettings::ErrorPageEnabled));
-    Q_ASSERT((triggersErrorPage && webEngineSettings()->testAttribute(QWebEngineSettings::ErrorPageEnabled)) || !triggersErrorPage);
-
-    // When error page enabled we don't need to send the error page load finished signal
-    if (m_loadProgressMap[url] == 100)
+    if (!m_loadingInfo.isLoading()) // not currently running
         return;
 
-    m_lastLoadedUrl = url;
-    m_loadProgressMap[url] = 100;
-    m_isNavigationCommitted = false;
-    m_viewClient->loadProgressChanged(100);
+    Q_ASSERT(!isErrorPage || webEngineSettings()->testAttribute(QWebEngineSettings::ErrorPageEnabled));
+    Q_ASSERT((m_loadingInfo.triggersErrorPage && webEngineSettings()->testAttribute(QWebEngineSettings::ErrorPageEnabled)) || !m_loadingInfo.triggersErrorPage);
 
-    m_viewClient->loadFinished(success, url, isErrorPage, errorCode, errorDescription, triggersErrorPage);
-    m_viewClient->updateNavigationActions();
+    if (!isErrorPage) {
+        if (m_loadingInfo.progress < 100) {
+            m_loadingInfo.progress = 100;
+            m_viewClient->loadProgressChanged(100);
+        }
+
+        m_viewClient->loadFinished(m_loadingInfo.success, m_loadingInfo.url, false, m_loadingInfo.errorCode, m_loadingInfo.errorDescription);
+        m_viewClient->updateNavigationActions();
+    } else {
+        m_viewClient->loadFinished(false, toQt(GURL(content::kUnreachableWebDataURL)), true, 0, QString());
+    }
 }
 
-void WebContentsDelegateQt::EmitLoadCommitted()
+void WebContentsDelegateQt::emitLoadCommitted()
 {
     m_findTextHelper->handleLoadCommitted();
     m_viewClient->loadCommitted();
@@ -427,8 +411,7 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
                 profileAdapter->visitedLinksManager()->addUrl(url);
         }
 
-        m_isNavigationCommitted = true;
-        EmitLoadCommitted();
+        emitLoadCommitted();
     }
 
     // Success is reported by DidFinishLoad, but DidFailLoad is now dead code and needs to be handled below
@@ -443,13 +426,12 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
     // The load will succede as an error-page load later, and we reported the original error above
     if (navigation_handle->IsErrorPage()) {
         // Now report we are starting to load an error-page.
-        m_loadingErrorFrameList.append(navigation_handle->GetRenderFrameHost()->GetRoutingID());
         m_faviconManager->resetCandidates();
-        EmitLoadStarted(toQt(GURL(content::kUnreachableWebDataURL)), true);
+        emitLoadStarted(true);
 
         // If it is already committed we will not see another DidFinishNavigation call or a DidFinishLoad call.
         if (navigation_handle->HasCommitted())
-            EmitLoadCommitted();
+            emitLoadCommitted();
     }
 }
 
@@ -491,6 +473,9 @@ void WebContentsDelegateQt::DidStopLoading()
 
     if (m_loadingState == LoadingState::Loading)
         setLoadingState(LoadingState::Loaded);
+
+    emitLoadFinished();
+    m_loadingInfo.clear();
 }
 
 void WebContentsDelegateQt::didFailLoad(const QUrl &url, int errorCode, const QString &errorDescription)
@@ -500,7 +485,11 @@ void WebContentsDelegateQt::didFailLoad(const QUrl &url, int errorCode, const QS
     // Delay notifying failure until the error-page is done loading.
     // Error-pages are not loaded on failures due to abort.
     bool aborted = (errorCode == -3 /* ERR_ABORTED*/ );
-    EmitLoadFinished(false /* success */ , url, false /* isErrorPage */, errorCode, errorDescription, errorPageEnabled && !aborted);
+    m_loadingInfo.success = false;
+    m_loadingInfo.url = url;
+    m_loadingInfo.errorCode = errorCode;
+    m_loadingInfo.errorDescription = errorDescription;
+    m_loadingInfo.triggersErrorPage = errorPageEnabled && !aborted;
 }
 
 void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code)
@@ -514,10 +503,8 @@ void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_h
     if (validated_url.spec() == content::kUnreachableWebDataURL) {
         // error-pages should only ever fail due to abort:
         Q_ASSERT(error_code == -3 /* ERR_ABORTED */);
-        m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
         m_viewClient->iconChanged(QUrl());
-
-        EmitLoadFinished(false /* success */, toQt(validated_url), true /* isErrorPage */);
+        emitLoadFinished(/* isErrorPage = */true);
         return;
     }
     // Qt6: Consider getting rid of the error_description (Chromium already has)
@@ -532,12 +519,10 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
 {
     Q_ASSERT(validated_url.is_valid());
     if (validated_url.spec() == content::kUnreachableWebDataURL) {
-        m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
-
         // Trigger LoadFinished signal for main frame's error page only.
         if (!render_frame_host->GetParent()) {
             m_viewClient->iconChanged(QUrl());
-            EmitLoadFinished(true /* success */, toQt(validated_url), true /* isErrorPage */);
+            emitLoadFinished(/* isErrorPage = */true);
         }
 
         return;
@@ -555,7 +540,11 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
     int http_statuscode = entry ? entry->GetHttpStatusCode() : 0;
     bool errorPageEnabled = webEngineSettings()->testAttribute(QWebEngineSettings::ErrorPageEnabled);
     bool triggersErrorPage = errorPageEnabled && (http_statuscode >= 400) && m_isDocumentEmpty;
-    EmitLoadFinished(http_statuscode < 400, toQt(validated_url), false /* isErrorPage */, http_statuscode, QString(), triggersErrorPage);
+
+    m_loadingInfo.success = http_statuscode < 400;
+    m_loadingInfo.url = toQt(validated_url);
+    m_loadingInfo.errorCode = http_statuscode;
+    m_loadingInfo.triggersErrorPage = triggersErrorPage;
 }
 
 void WebContentsDelegateQt::DidUpdateFaviconURL(content::RenderFrameHost *render_frame_host, const std::vector<blink::mojom::FaviconURLPtr> &candidates)

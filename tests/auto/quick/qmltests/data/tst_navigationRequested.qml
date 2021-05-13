@@ -79,6 +79,7 @@ TestWebEngineView {
     }
 
     TestCase {
+        id: testCase
         name: "WebEngineViewNavigationRequested"
         when: windowShown
 

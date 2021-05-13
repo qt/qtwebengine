@@ -56,7 +56,7 @@ TestWebEngineView {
         // If this starts to fail then either clear was not called before findText
         // or unexpected callback was triggered from some search.
         // On c++ side callback id can be checked to verify
-        testcase.verify(!findCallbackCalled(), 'Unexpected callback call or uncleared state before findText call!')
+        testCase.verify(!findCallbackCalled(), 'Unexpected callback call or uncleared state before findText call!')
 
         webEngineView.matchCount = matchCount
         findFailed = matchCount == 0
@@ -64,7 +64,7 @@ TestWebEngineView {
 
 
     TestCase {
-        id: testcase
+        id: testCase
         name: "WebViewFindText"
 
         function getBodyInnerHTML() {

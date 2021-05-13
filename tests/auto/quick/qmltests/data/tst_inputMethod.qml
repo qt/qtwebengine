@@ -40,6 +40,7 @@ TestWebEngineView {
     testSupport: WebEngineTestSupport { }
 
     TestCase {
+        id: testCase
         name: "WebEngineViewInputMethod"
         when: windowShown
 

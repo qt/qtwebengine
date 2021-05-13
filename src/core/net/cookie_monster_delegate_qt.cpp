@@ -80,7 +80,7 @@ public:
 
     void AllowedAccess(const GURL &url, const net::SiteForCookies &site_for_cookies, AllowedAccessCallback callback) override
     {
-        bool allow = m_delegate->canGetCookies(toQt(site_for_cookies.RepresentativeUrl()), toQt(url));
+        bool allow = m_delegate->canGetCookies(toQt(site_for_cookies.first_party_url()), toQt(url));
         std::move(callback).Run(allow);
     }
 

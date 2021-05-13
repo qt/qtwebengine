@@ -47,7 +47,7 @@ TestWebEngineView {
     }
 
     TestCase {
-        id: test
+        id: testCase
         name: "WebEngineFaviconDownload"
 
         function init() {

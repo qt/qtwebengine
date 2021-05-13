@@ -6,3 +6,6 @@ windows
 
 [horizontalScrollbarTest]
 osx
+
+[mixLangLocale:eu_ES]
+*

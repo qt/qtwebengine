@@ -46,6 +46,7 @@ Item {
         focus: true
     }
     TestCase {
+        id: testCase
         name: "WebEngineViewUnhandledKeyEventPropagation"
 
         when: false

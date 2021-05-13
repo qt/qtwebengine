@@ -122,7 +122,6 @@ static blink::mojom::PermissionStatus toBlink(ProfileAdapter::PermissionState re
 
 PermissionManagerQt::PermissionManagerQt()
     : m_requestIdCount(0)
-    , m_subscriberIdCount(0)
 {
 }
 
@@ -341,19 +340,19 @@ void PermissionManagerQt::ResetPermission(
     m_permissions.remove(key);
 }
 
-int PermissionManagerQt::SubscribePermissionStatusChange(
+content::PermissionControllerDelegate::SubscriptionId PermissionManagerQt::SubscribePermissionStatusChange(
     content::PermissionType permission,
     content::RenderFrameHost * /* render_frame_host */,
     const GURL& requesting_origin,
     base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback)
 {
-    int subscriber_id = ++m_subscriberIdCount;
+    auto subscriber_id = subscription_id_generator_.GenerateNextId();
     m_subscribers.insert( { subscriber_id,
                             Subscription { toQt(permission), toQt(requesting_origin), std::move(callback) } });
     return subscriber_id;
 }
 
-void PermissionManagerQt::UnsubscribePermissionStatusChange(int subscription_id)
+void PermissionManagerQt::UnsubscribePermissionStatusChange(content::PermissionControllerDelegate::SubscriptionId subscription_id)
 {
     if (!m_subscribers.erase(subscription_id))
         LOG(WARNING) << "PermissionManagerQt::UnsubscribePermissionStatusChange called on unknown subscription id" << subscription_id;

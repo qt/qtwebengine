@@ -52,6 +52,7 @@ TestWebEngineView {
     }
 
     TestCase {
+        id: testCase
         name: "WebEngineViewLoadUrl"
         when: windowShown
 
@@ -298,20 +299,19 @@ TestWebEngineView {
             compare(loadRequestArray[0].status, WebEngineView.LoadStartedStatus);
             compare(loadRequestArray[1].status, WebEngineView.LoadSucceededStatus);
 
-            // In-page navigation.
-            webEngineView.url = Qt.resolvedUrl("test4.html#content");
-            // In-page navigation doesn't trigger load succeeded, wait for load progress instead.
-            tryCompare(loadRequestArray, "length", 3);
-            tryCompare(webEngineView, "loadProgress", 100);
-            compare(loadRequestArray[2].status, WebEngineView.LoadStartedStatus);
+            // In-page navigation shouldn't trigger load
+            let anchorUrl = Qt.resolvedUrl("test4.html#anchor");
+            let c = webEngineView.getElementCenter('anchor')
+            mouseClick(webEngineView, c.x, c.y)
+            tryCompare(webEngineView, 'url', anchorUrl)
 
             // Load after in-page navigation.
             webEngineView.url = Qt.resolvedUrl("test4.html");
             verify(webEngineView.waitForLoadSucceeded());
             compare(webEngineView.loadProgress, 100);
-            compare(loadRequestArray.length, 5);
-            compare(loadRequestArray[3].status, WebEngineView.LoadStartedStatus);
-            compare(loadRequestArray[4].status, WebEngineView.LoadSucceededStatus);
+            compare(loadRequestArray.length, 4);
+            compare(loadRequestArray[2].status, WebEngineView.LoadStartedStatus);
+            compare(loadRequestArray[3].status, WebEngineView.LoadSucceededStatus);
 
             webEngineView.clear();
         }

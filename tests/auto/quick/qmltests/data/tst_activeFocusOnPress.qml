@@ -55,6 +55,7 @@ Item {
         }
 
         TestCase {
+            id: testCase
             name: "ActiveFocusOnPress"
             when:windowShown
 

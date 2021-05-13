@@ -119,21 +119,22 @@ TestWebEngineView {
             verify(!loadRequest.isErrorPage)
 
             // Loading of the unavailableUrl must fail
-            loadRequest = loadRequestArray[1]
+            loadRequest = loadRequestArray[3]
             compare(loadRequest.status, WebEngineView.LoadFailedStatus)
             compare(loadRequest.errorDomain, WebEngineView.InternalErrorDomain)
             compare(loadRequest.url, unavailableUrl)
             verify(!loadRequest.isErrorPage)
 
+            // error page load is done inside main load through test support
             // Start to load error page
-            loadRequest = loadRequestArray[2]
+            loadRequest = loadRequestArray[1]
             compare(loadRequest.status, WebEngineView.LoadStartedStatus)
             compare(loadRequest.errorDomain, WebEngineView.NoErrorDomain)
             compare(loadRequest.url, "chrome-error://chromewebdata/")
             verify(loadRequest.isErrorPage)
 
             // Loading of the error page must be successful
-            loadRequest = loadRequestArray[3]
+            loadRequest = loadRequestArray[2]
             compare(loadRequest.status, WebEngineView.LoadSucceededStatus)
             compare(loadRequest.errorDomain, WebEngineView.NoErrorDomain)
             compare(loadRequest.url, "chrome-error://chromewebdata/")

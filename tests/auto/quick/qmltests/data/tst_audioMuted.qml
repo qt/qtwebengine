@@ -42,7 +42,7 @@ TestWebEngineView {
     }
 
     TestCase {
-        id: test
+        id: testCase
         name: "WebEngineViewAudioMuted"
 
         function test_audioMuted() {
