@@ -135,8 +135,8 @@ void tst_LoadSignals::init()
 void tst_LoadSignals::clickLink(QPoint linkPos)
 {
     // Simulate left-clicking on link.
-    QTRY_VERIFY(view.focusWidget());
-    QWidget *renderWidget = view.focusWidget();
+    QTRY_VERIFY(view.focusProxy());
+    QWidget *renderWidget = view.focusProxy();
     QTest::mouseClick(renderWidget, Qt::LeftButton, {}, linkPos);
 }
 

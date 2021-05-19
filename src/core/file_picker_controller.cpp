@@ -95,7 +95,7 @@ void FilePickerController::accepted(const QStringList &files)
         if (urlString.startsWith("file:")) {
             base::FilePath filePath = toFilePath(urlString).NormalizePathSeparators();
             std::vector<base::FilePath::StringType> pathComponents;
-            // Splits the file URL into host name, path and file name.
+            // Splits the file URL into scheme, host name, path and file name.
             filePath.GetComponents(&pathComponents);
 
             QString absolutePath;
@@ -107,7 +107,7 @@ void FilePickerController::accepted(const QStringList &files)
             if (scheme.size() > 5) {
 #if defined(OS_WIN)
                 // There is no slash at the end of the file scheme and it is valid on Windows: file:C:/
-                if (scheme.at(5).isLetter() && scheme.at(6) != ':') {
+                if (scheme.size() == 7 && scheme.at(5).isLetter() && scheme.at(6) == ':') {
                     absolutePath += scheme.at(5) + ":/";
                 } else {
 #endif
@@ -194,9 +194,13 @@ ASSERT_ENUMS_MATCH(FilePickerController::Save, blink::mojom::FileChooserParams_M
 void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
 {
     QStringList files(filesList);
+    base::FilePath baseDir;
     if (d_ptr->mode == UploadFolder && !filesList.isEmpty()
-            && QFileInfo(filesList.first()).isDir()) // Enumerate the directory
+            && QFileInfo(filesList.first()).isDir()) {
+        // Enumerate the directory
         files = listRecursively(QDir(filesList.first()));
+        baseDir = toFilePath(filesList.first());
+    }
 
     std::vector<blink::mojom::FileChooserFileInfoPtr> chooser_files;
     for (const auto &file : qAsConst(files)) {
@@ -208,7 +212,7 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
         d_ptr->listener->FileSelectionCanceled();
     else
         d_ptr->listener->FileSelected(std::move(chooser_files),
-                                  /* FIXME? */ base::FilePath(),
+                                 baseDir,
                                  static_cast<blink::mojom::FileChooserParams::Mode>(d_ptr->mode));
 }
 

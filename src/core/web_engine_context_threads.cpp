@@ -84,7 +84,7 @@ struct GpuThreadControllerQt : content::GpuThreadController
         if (s_gpuProcessDestroyed)
             return;
 
-        s_gpuProcess = std::make_unique<content::GpuProcess>(base::ThreadPriority::DISPLAY);
+        s_gpuProcess = std::make_unique<content::GpuProcess>(base::ThreadPriority::NORMAL);
         auto gpuInit = std::make_unique<gpu::GpuInit>();
         gpuInit->InitializeInProcess(base::CommandLine::ForCurrentProcess(), gpuPreferences);
         auto childThread = new content::GpuChildThread(params, std::move(gpuInit));

@@ -56,6 +56,12 @@
                 { "type": "pkgConfig", "args": "xtst" }
             ]
         },
+        "webengine-xkbfile": {
+            "label": "xkbfile",
+            "sources": [
+                { "type": "pkgConfig", "args": "xkbfile" }
+            ]
+        },
         "webengine-nss": {
             "label": "nss >= 3.26",
             "sources": [
@@ -493,6 +499,11 @@
             "condition": "libs.webengine-xtst",
             "output": [ "privateFeature" ]
         },
+        "webengine-system-xkbfile": {
+            "label": "xkbfile",
+            "condition": "libs.webengine-xkbfile",
+            "output": [ "privateFeature" ]
+        },
         "webengine-system-gn": {
             "label": "Use System Gn",
             "autoDetect": "false",
@@ -541,7 +552,8 @@
                           && features.webengine-system-xcursor
                           && features.webengine-system-xi
                           && features.webengine-system-xproto-gl
-                          && features.webengine-system-xtst",
+                          && features.webengine-system-xtst
+                          && features.webengine-system-xkbfile",
              "output": [ "privateFeature" ]
         },
         "webengine-jumbo-build": {
@@ -787,7 +799,8 @@
                         "webengine-system-xcursor",
                         "webengine-system-xi",
                         "webengine-system-xproto-gl",
-                        "webengine-system-xtst"
+                        "webengine-system-xtst",
+                        "webengine-system-xkbfile"
                      ]
                 },
                 {

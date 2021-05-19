@@ -77,6 +77,7 @@
 #include "ui/events/event.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
+#include "ui/events/keycodes/dom/dom_keyboard_layout_map.h"
 #include "ui/gfx/image/image_skia.h"
 
 #if defined(USE_OZONE)
@@ -992,6 +993,11 @@ void RenderWidgetHostViewQt::FocusedNodeChanged(bool is_editable_node, const gfx
         m_delegate->inputMethodStateChanged(false /*editorVisible*/, false /*passwordInput*/);
         m_delegate->setInputMethodHints(Qt::ImhNone);
     }
+}
+
+base::flat_map<std::string, std::string> RenderWidgetHostViewQt::GetKeyboardLayoutMap()
+{
+    return ui::GenerateDomKeyboardLayoutMap();
 }
 
 void RenderWidgetHostViewQt::TakeFallbackContentFrom(content::RenderWidgetHostView *view)
