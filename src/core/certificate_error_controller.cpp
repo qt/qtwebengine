@@ -118,8 +118,10 @@ CertificateErrorController::CertificateErrorController(
     , m_requestUrl(toQt(request_url))
     , m_overridable(!IsCertErrorFatal(cert_error) && !strict_enforcement)
 {
-    if (m_overridable)
-        m_callback = std::move(cb);
+    // MEMO set callback anyway even for non overridable error since chromium halts load until it's called
+    //      callback will be executed either explicitly by use code or implicitly when error goes out of scope
+    m_callback = std::move(cb);
+
     if (auto cert = ssl_info.cert.get()) {
         m_validExpiry = toQt(cert->valid_expiry());
         m_certificateChain = toCertificateChain(cert);
