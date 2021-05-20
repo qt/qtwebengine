@@ -30,7 +30,6 @@
 
 #include <QWebEngineCertificateError>
 #include <QWebEnginePage>
-#include <QWebEngineProfile>
 #include <QWebEngineSettings>
 
 #include <QtTest/QtTest>

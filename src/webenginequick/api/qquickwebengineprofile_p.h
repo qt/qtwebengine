@@ -86,8 +86,6 @@ public:
     void downloadRequested(DownloadItemInfo &info) override;
     void downloadUpdated(const DownloadItemInfo &info) override;
 
-    void useForGlobalCertificateVerificationChanged() override;
-
     void showNotification(QSharedPointer<QtWebEngineCore::UserNotificationController> &controller) override;
 
 private:

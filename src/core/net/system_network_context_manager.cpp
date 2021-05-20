@@ -237,7 +237,6 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(network::mojom::Networ
 void SystemNetworkContextManager::AddSSLConfigToNetworkContextParams(network::mojom::NetworkContextParams *network_context_params)
 {
     network_context_params->initial_ssl_config = network::mojom::SSLConfig::New();
-    network_context_params->initial_ssl_config->rev_checking_enabled = true;
     network_context_params->initial_ssl_config->symantec_enforcement_disabled = true;
 }
 

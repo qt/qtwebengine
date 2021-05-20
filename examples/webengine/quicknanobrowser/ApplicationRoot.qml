@@ -57,7 +57,6 @@ QtObject {
     property QtObject defaultProfile: WebEngineProfile {
         storageName: "Profile"
         offTheRecord: false
-        useForGlobalCertificateVerification: true
     }
 
     property QtObject otrProfile: WebEngineProfile {

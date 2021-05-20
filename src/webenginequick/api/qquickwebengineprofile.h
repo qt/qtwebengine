@@ -73,11 +73,6 @@ class Q_WEBENGINE_EXPORT QQuickWebEngineProfile : public QObject {
     Q_PROPERTY(QStringList spellCheckLanguages READ spellCheckLanguages WRITE setSpellCheckLanguages NOTIFY spellCheckLanguagesChanged FINAL REVISION(1,3))
     Q_PROPERTY(bool spellCheckEnabled READ isSpellCheckEnabled WRITE setSpellCheckEnabled NOTIFY spellCheckEnabledChanged FINAL REVISION(1,3))
     Q_PROPERTY(QQuickWebEngineScriptCollection *userScripts READ userScripts)
-    Q_PROPERTY(bool useForGlobalCertificateVerification
-               READ isUsedForGlobalCertificateVerification
-               WRITE setUseForGlobalCertificateVerification
-               NOTIFY useForGlobalCertificateVerificationChanged
-               FINAL REVISION(1,5))
     Q_PROPERTY(QString downloadPath READ downloadPath WRITE setDownloadPath NOTIFY downloadPathChanged FINAL REVISION(1,5))
     QML_NAMED_ELEMENT(WebEngineProfile)
     QML_ADDED_IN_VERSION(1, 1)
@@ -147,9 +142,6 @@ public:
 
     QQuickWebEngineScriptCollection *userScripts() const;
 
-    void setUseForGlobalCertificateVerification(bool b);
-    bool isUsedForGlobalCertificateVerification() const;
-
     QString downloadPath() const;
     void setDownloadPath(const QString &path);
 
@@ -169,7 +161,6 @@ Q_SIGNALS:
     Q_REVISION(1,1) void httpAcceptLanguageChanged();
     Q_REVISION(1,3) void spellCheckLanguagesChanged();
     Q_REVISION(1,3) void spellCheckEnabledChanged();
-    Q_REVISION(1,5) void useForGlobalCertificateVerificationChanged();
     Q_REVISION(1,5) void downloadPathChanged();
     void downloadRequested(QQuickWebEngineDownloadRequest *download);
     void downloadFinished(QQuickWebEngineDownloadRequest *download);
