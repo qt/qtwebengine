@@ -205,9 +205,6 @@ public:
 
     void clearHttpCache();
 
-    void setUseForGlobalCertificateVerification(bool enable = true);
-    bool isUsedForGlobalCertificateVerification() const;
-
 #if QT_CONFIG(ssl)
     QWebEngineClientCertificateStore *clientCertificateStore();
 #endif
@@ -225,7 +222,6 @@ public:
                                std::function<void (const QIcon &, const QUrl &)> iconAvailableCallback);
     base::CancelableTaskTracker *cancelableTaskTracker() { return m_cancelableTaskTracker.get(); }
 
-    static QPointer<ProfileAdapter> s_profileForGlobalCertificateVerification;
 private:
     void updateCustomUrlSchemeHandlers();
     void resetVisitedLinksManager();
@@ -234,7 +230,6 @@ private:
 
     QString m_name;
     bool m_offTheRecord;
-    bool m_usedForGlobalCertificateVerification = false;
     QScopedPointer<ProfileQt> m_profile;
     QScopedPointer<VisitedLinksManagerQt> m_visitedLinksManager;
     QScopedPointer<DownloadManagerDelegateQt> m_downloadManagerDelegate;

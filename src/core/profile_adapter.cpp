@@ -93,9 +93,6 @@ inline QString buildLocationFromStandardPath(const QString &standardPath, const 
 
 namespace QtWebEngineCore {
 
-// static
-QPointer<ProfileAdapter> ProfileAdapter::s_profileForGlobalCertificateVerification;
-
 ProfileAdapter::ProfileAdapter(const QString &storageName):
       m_name(storageName)
     , m_offTheRecord(storageName.isEmpty())
@@ -675,38 +672,6 @@ void ProfileAdapter::reinitializeHistoryService()
     } else {
         qWarning("Favicon database is not available for this profile.");
     }
-}
-
-void ProfileAdapter::setUseForGlobalCertificateVerification(bool enable)
-{
-    if (m_usedForGlobalCertificateVerification == enable)
-        return;
-
-    m_usedForGlobalCertificateVerification = enable;
-    if (enable) {
-        if (s_profileForGlobalCertificateVerification) {
-            s_profileForGlobalCertificateVerification->m_usedForGlobalCertificateVerification = false;
-            for (auto *client : qAsConst(s_profileForGlobalCertificateVerification->m_clients))
-                client->useForGlobalCertificateVerificationChanged();
-        } else {
-            // OCSP enabled
-            for (auto adapter : qAsConst(WebEngineContext::current()->m_profileAdapters))
-                adapter->m_profile->m_profileIOData->resetNetworkContext();
-        }
-        s_profileForGlobalCertificateVerification = this;
-    } else {
-        Q_ASSERT(s_profileForGlobalCertificateVerification);
-        Q_ASSERT(s_profileForGlobalCertificateVerification == this);
-        s_profileForGlobalCertificateVerification = nullptr;
-        // OCSP disabled
-        for (auto adapter : qAsConst(WebEngineContext::current()->m_profileAdapters))
-            adapter->m_profile->m_profileIOData->resetNetworkContext();
-    }
-}
-
-bool ProfileAdapter::isUsedForGlobalCertificateVerification() const
-{
-    return m_usedForGlobalCertificateVerification;
 }
 
 QString ProfileAdapter::determineDownloadPath(const QString &downloadDirectory, const QString &suggestedFilename, const time_t &startTime)

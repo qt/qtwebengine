@@ -56,7 +56,6 @@ TestWebEngineView {
                 request.sendResponse()
             })
             view.settings.errorPageEnabled = false
-            view.profile.useForGlobalCertificateVerification = true
         }
 
         function init() {

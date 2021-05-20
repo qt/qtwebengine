@@ -38,7 +38,6 @@ set(testList
     tst_navigationRequested.qml
     tst_newViewRequest.qml
     tst_notification.qml
-    tst_profile.qml
     tst_properties.qml
     tst_runJavaScript.qml
     tst_scrollPosition.qml

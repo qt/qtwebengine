@@ -77,7 +77,6 @@ private Q_SLOTS:
     void changePersistentPath();
     void changeHttpUserAgent();
     void changeHttpAcceptLanguage();
-    void changeUseForGlobalCertificateVerification();
     void changePersistentCookiesPolicy();
     void initiator();
     void badDeleteOrder();
@@ -910,25 +909,6 @@ void tst_QWebEngineProfile::changeHttpAcceptLanguage()
     QVERIFY(languages[0] != languages[1]);
 
     QVERIFY(server.stop());
-}
-
-void tst_QWebEngineProfile::changeUseForGlobalCertificateVerification()
-{
-    TestServer server;
-    QVERIFY(server.start());
-
-    // Check that we don't crash
-
-    QWebEngineProfile profile(QStringLiteral("changeUseForGlobalCertifateVerification"));
-    std::unique_ptr<QWebEnginePage> page;
-    page.reset(new QWebEnginePage(&profile));
-    QVERIFY(loadSync(page.get(), server.url("/hedgehog.html")));
-    page.reset();
-    profile.setUseForGlobalCertificateVerification(true);
-    page.reset(new QWebEnginePage(&profile));
-    QVERIFY(loadSync(page.get(), server.url("/hedgehog.html")));
-    // Don't check for error: there can be disconnects during GET hedgehog.png.
-    (void)server.stop();
 }
 
 void tst_QWebEngineProfile::changePersistentCookiesPolicy()

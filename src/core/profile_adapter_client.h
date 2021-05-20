@@ -140,7 +140,6 @@ public:
 
     virtual void downloadRequested(DownloadItemInfo &info) = 0;
     virtual void downloadUpdated(const DownloadItemInfo &info) = 0;
-    virtual void useForGlobalCertificateVerificationChanged() {}
     virtual void showNotification(QSharedPointer<UserNotificationController> &) { }
 
     virtual void addWebContentsAdapterClient(WebContentsAdapterClient *adapter) = 0;

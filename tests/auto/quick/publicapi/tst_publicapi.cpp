@@ -388,8 +388,6 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineProfile.spellCheckLanguagesChanged() --> void"
     << "QQuickWebEngineProfile.storageName --> QString"
     << "QQuickWebEngineProfile.storageNameChanged() --> void"
-    << "QQuickWebEngineProfile.useForGlobalCertificateVerification --> bool"
-    << "QQuickWebEngineProfile.useForGlobalCertificateVerificationChanged() --> void"
     << "QQuickWebEngineProfile.userScripts --> QQuickWebEngineScriptCollection*"
     << "QQuickWebEngineSettings.AllowAllUnknownUrlSchemes --> UnknownUrlSchemePolicy"
     << "QQuickWebEngineSettings.AllowUnknownUrlSchemesFromUserInteraction --> UnknownUrlSchemePolicy"

@@ -131,9 +131,6 @@ public:
     void setSpellCheckEnabled(bool enabled);
     bool isSpellCheckEnabled() const;
 
-    void setUseForGlobalCertificateVerification(bool enabled = true);
-    bool isUsedForGlobalCertificateVerification() const;
-
     QString downloadPath() const;
     void setDownloadPath(const QString &path);
 
