@@ -35,19 +35,29 @@ WebEngineView {
     property bool windowCloseRequestedSignalEmitted: false
     settings.focusOnNavigationEnabled: true
 
-    function waitForLoadSucceeded(timeout) {
-        var success = _waitFor(function() { return loadStatus == WebEngineView.LoadSucceededStatus }, timeout)
+    function loadSucceeded() { return loadStatus == WebEngineView.LoadSucceededStatus }
+    function loadFailed() { return loadStatus == WebEngineView.LoadFailedStatus }
+    function loadStopped() { return loadStatus == WebEngineView.LoadStoppedStatus }
+
+    function waitForLoadResult(timeout) {
         loadStatus = null
+        var r = _waitFor(function() { return loadStatus != null && loadStatus != WebEngineView.LoadStartedStatus }, timeout)
+        return r
+    }
+
+    function waitForLoadSucceeded(timeout) {
+        loadStatus = null
+        var success = _waitFor(function() { return loadStatus == WebEngineView.LoadSucceededStatus }, timeout)
         return success
     }
     function waitForLoadFailed(timeout) {
-        var failure = _waitFor(function() { return loadStatus == WebEngineView.LoadFailedStatus }, timeout)
         loadStatus = null
+        var failure = _waitFor(function() { return loadStatus == WebEngineView.LoadFailedStatus }, timeout)
         return failure
     }
     function waitForLoadStopped(timeout) {
-        var stop = _waitFor(function() { return loadStatus == WebEngineView.LoadStoppedStatus }, timeout)
         loadStatus = null
+        var stop = _waitFor(function() { return loadStatus == WebEngineView.LoadStoppedStatus }, timeout)
         return stop
     }
     function waitForWindowCloseRequested() {

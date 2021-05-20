@@ -122,7 +122,7 @@ TestWebEngineView {
             verify(!newViewRequest.userInitiated);
 
             if (viewType === "dialog") {
-                verify(dialog.webEngineView.waitForLoadSucceeded());
+                tryVerify(dialog.webEngineView.loadSucceeded)
                 compare(dialog.webEngineView.url, "");
                 dialog.destroy();
             }
@@ -143,7 +143,7 @@ TestWebEngineView {
             compare(newViewRequest.requestedUrl, url);
             verify(!newViewRequest.userInitiated);
             if (viewType === "dialog") {
-                verify(dialog.webEngineView.waitForLoadSucceeded());
+                tryVerify(dialog.webEngineView.loadSucceeded)
                 dialog.destroy();
             }
             newViewRequestedSpy.clear();
@@ -166,7 +166,7 @@ TestWebEngineView {
                 compare(newViewRequest.destination, WebEngineNewViewRequest.InNewDialog);
                 verify(newViewRequest.userInitiated);
                 if (viewType === "dialog") {
-                    verify(dialog.webEngineView.waitForLoadSucceeded());
+                    tryVerify(dialog.webEngineView.loadSucceeded)
                     dialog.destroy();
                 }
                 newViewRequestedSpy.clear();

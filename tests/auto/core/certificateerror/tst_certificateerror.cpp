@@ -139,13 +139,19 @@ void tst_CertificateError::fatalError()
     QSignalSpy loadFinishedSpy(&page, &QWebEnginePage::loadFinished);
 
     page.setUrl(QUrl("https://revoked.badssl.com"));
-    if (!loadFinishedSpy.wait(10000))
+    if (!loadFinishedSpy.wait(10000)) {
+        QVERIFY2(!page.error, "There shouldn't be any certificate error if not loaded due to missing internet access!");
         QSKIP("Couldn't load page from network, skipping test.");
-    QTRY_VERIFY(page.error);
-    QVERIFY(!page.error->isOverridable());
+    }
 
-    // Fatal certificate errors are implicitly rejected. This should not cause crash.
-    page.error->rejectCertificate();
+    // revoked certificate might not be reported as invalid by chromium and the load will silently succeed
+    bool failed = !loadFinishedSpy.first().first().toBool(), hasError = bool(page.error);
+    QCOMPARE(failed, hasError);
+    if (hasError) {
+        QVERIFY(!page.error->isOverridable());
+        // Fatal certificate errors are implicitly rejected. But second call should not cause crash.
+        page.error->rejectCertificate();
+    }
 }
 
 QTEST_MAIN(tst_CertificateError)

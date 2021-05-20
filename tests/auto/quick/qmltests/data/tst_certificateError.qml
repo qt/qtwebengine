@@ -123,20 +123,25 @@ TestWebEngineView {
         }
 
         function test_fatalError() {
-            var handleCertificateError = function(error) {
-                verify(!error.overrideable);
-                // QQuickWebEngineViewPrivate::allowCertificateError() will implicitly reject
-                // fatal errors and it should not crash if already rejected in handler.
-                error.rejectCertificate();
-            }
+            let error = undefined
+            var handleCertificateError = function(e) { error = e; }
             view.certificateError.connect(handleCertificateError);
 
             view.url = Qt.resolvedUrl('https://revoked.badssl.com');
-            if (!view.waitForLoadFailed(10000))
+            if (!view.waitForLoadResult()) {
+                verify(!error, "There shouldn't be any certificate error if not loaded due to missing internet access!");
                 skip("Couldn't load page from network, skipping test.");
-            compare(spyError.count, 1);
-
+            }
             view.certificateError.disconnect(handleCertificateError);
+
+            // revoked certificate might not be reported as invalid by chromium and the load will silently succeed
+            const failed = view.loadStatus == WebEngineView.LoadFailedStatus, hasError = Boolean(error)
+            compare(hasError, failed)
+            if (failed) {
+                verify(!error.overrideable);
+                // Fatal certificate errors are implicitly rejected. But second call should not cause crash.
+                error.rejectCertificate();
+            }
         }
     }
 }
