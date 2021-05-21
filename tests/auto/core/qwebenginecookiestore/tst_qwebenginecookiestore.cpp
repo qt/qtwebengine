@@ -287,12 +287,16 @@ void tst_QWebEngineCookieStore::basicFilterOverHTTP()
     QTRY_COMPARE(accessTested.loadAcquire(), 4);
     QVERIFY(cookieRequestHeader.isEmpty());
 
+    QTRY_COMPARE(serverSpy.count(), 3);
+
     page.triggerAction(QWebEnginePage::Reload);
     QTRY_COMPARE(loadSpy.count(), 1);
     QVERIFY(loadSpy.takeFirst().takeFirst().toBool());
     QVERIFY(!cookieRequestHeader.isEmpty());
     QTRY_COMPARE(cookieAddedSpy.count(), 1);
     QTRY_COMPARE(accessTested.loadAcquire(), 7);
+
+    QTRY_COMPARE(serverSpy.count(), 6);
 
     client->deleteAllCookies();
     QTRY_COMPARE(cookieRemovedSpy.count(), 1);
@@ -310,6 +314,9 @@ void tst_QWebEngineCookieStore::basicFilterOverHTTP()
     QTest::qWait(100);
     QCOMPARE(cookieAddedSpy.count(), 1);
     QTRY_COMPARE(accessTested.loadAcquire(), 11);
+
+    QTRY_COMPARE(serverSpy.count(), 9);
+
     page.triggerAction(QWebEnginePage::Reload);
     QTRY_COMPARE(loadSpy.count(), 1);
     QVERIFY(loadSpy.takeFirst().takeFirst().toBool());
