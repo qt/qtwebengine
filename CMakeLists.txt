@@ -69,6 +69,7 @@ add_subdirectory(src/process)
 add_subdirectory(src/webenginewidgets)
 add_subdirectory(src/webenginequick)
 qt_build_repo_end()
+get_install_config(installConfig)
 
 ### NINJA
 
@@ -100,8 +101,9 @@ if(NOT Gn_FOUND)
                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                    -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>
                    -DWEBENGINE_ROOT_BUILD_DIR=${CMAKE_CURRENT_BINARY_DIR}
-)
+    )
 endif()
+
 
 ### LIBS
 
@@ -121,16 +123,21 @@ endif()
 list(TRANSFORM featureList PREPEND "-D")
 list(APPEND libsCmakeArgs
         "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
-        "-DWEBENGINE_ROOT_BUILD_PATH=${CMAKE_CURRENT_BINARY_DIR}"
+        "-DWEBENGINE_ROOT_BUILD_DIR=${CMAKE_CURRENT_BINARY_DIR}"
         "-DWEBENGINE_ROOT_SOURCE_DIR=${WEBENGINE_ROOT_SOURCE_DIR}"
         "-DWEBENGINE_REPO_BUILD=TRUE"
         "${featureList}"
 )
+
 if (CMAKE_C_COMPILER_LAUNCHER)
     list(APPEND libsCmakeArgs "-DCMAKE_C_COMPILER_LAUNCHER=${CMAKE_C_COMPILER_LAUNCHER}")
 endif()
 if (CMAKE_CXX_COMPILER_LAUNCHER)
     list(APPEND libsCmakeArgs "-DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}")
+endif()
+
+if(QT_HOST_PATH)
+    list(APPEND libsCmakeArgs "-DQT_HOST_PATH=${QT_HOST_PATH}")
 endif()
 
 if(LINUX)
@@ -227,4 +234,31 @@ if(NOT QT_FEATURE_framework)
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/resources
         DESTINATION ${CMAKE_INSTALL_PREFIX}
     )
+endif()
+
+### CROSS BUILD SETUP
+
+# install gn for cross build
+# TODO: is this really needed, should we skip it and just build gn as host build ?
+if(LINUX AND NOT Gn_FOUND OR INSTALL_GN)
+    set(INSTALL_GN 1 CACHE INTERNAL "")
+    install(
+        PROGRAMS ${installDir}/bin/gn
+        CONFIGURATIONS ${installConfig}
+        RUNTIME DESTINATION "${INSTALL_LIBEXECDIR}"
+    )
+endif()
+
+if(CMAKE_CROSSCOMPILING)
+    externalproject_add(hostBuild
+        SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/src/core/configure
+        BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR}/configure
+        PREFIX      cross
+        USES_TERMINAL_BUILD ON
+        CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=${QT_HOST_PATH}/lib/cmake/Qt6/qt.toolchain.cmake
+                   -DWEBENGINE_ROOT_BUILD_DIR=${CMAKE_CURRENT_BINARY_DIR}
+                   -DWEBENGINE_ROOT_SOURCE_DIR=${WEBENGINE_ROOT_SOURCE_DIR}
+                   -DGN_TARGET_CPU=${TEST_architecture_arch}
+    )
+    externalproject_add_stepdependencies(qtwebengine install hostBuild)
 endif()

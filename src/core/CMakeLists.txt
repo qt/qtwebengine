@@ -24,6 +24,11 @@ find_package(Nodejs 12.0)
 find_package(PkgConfig)
 if(PkgConfig_FOUND)
     pkg_check_modules(XSCRNSAVER xscrnsaver)
+    find_package(PkgConfigHost)
+    if(CMAKE_CROSSCOMPILING)
+        create_pkg_config_host_wrapper("${buildDir}/pkg-config-host_wrapper.sh" "${PKG_CONFIG_HOST_EXECUTABLE}")
+        set(PKG_CONFIG_HOST_EXECUTABLE "${buildDir}/pkg-config-host_wrapper.sh")
+    endif()
 endif()
 
 get_target_property(qtWebEngineProcessName WebEngineCore QTWEBENGINEPROCESS_NAME)
@@ -34,6 +39,24 @@ if(QT_GENERATOR_IS_MULTI_CONFIG)
     set(configs ${CMAKE_CONFIGURATION_TYPES})
 else()
     set(configs ${CMAKE_BUILD_TYPE})
+endif()
+
+##
+#   TOOLCHAIN SETUP
+##
+
+if(LINUX)
+    if(NOT CMAKE_CROSSCOMPILING) # delivered by hostBuild project
+        configure_gn_toolchain(host ${TEST_architecture_arch} ${TEST_architecture_arch}
+            ${WEBENGINE_ROOT_SOURCE_DIR}/src/core/configure/BUILD.toolchain.gn.in
+            ${buildDir}/host_toolchain)
+        configure_gn_toolchain(v8 ${TEST_architecture_arch} ${TEST_architecture_arch}
+            ${WEBENGINE_ROOT_SOURCE_DIR}/src/core/configure/BUILD.toolchain.gn.in
+            ${buildDir}/v8_toolchain)
+    endif()
+    configure_gn_toolchain(target ${TEST_architecture_arch} ${TEST_architecture_arch}
+        ${WEBENGINE_ROOT_SOURCE_DIR}/src/core/configure/BUILD.toolchain.gn.in
+        ${buildDir}/target_toolchain)
 endif()
 
 foreach(config ${configs})
@@ -249,12 +272,6 @@ foreach(config ${configs})
     configure_gn_target(${buildGn} ${config}
         ${WEBENGINE_ROOT_SOURCE_DIR}/src/core/configure/BUILD.root.gn.in ${buildDir}/${config}/BUILD.gn)
 
-##
-#   TOOLCHAIN SETUP
-##
-
-    configure_file(${WEBENGINE_ROOT_SOURCE_DIR}/src/core/configure/BUILD.toolchain.gn.in
-        ${buildDir}/${config}/toolchain/BUILD.gn @ONLY)
 
 ##
 #   GN CALL PARAMETERS SETUP
@@ -416,6 +433,15 @@ foreach(config ${configs})
         )
     endif()
     if(LINUX)
+        get_gn_arch(cpu ${TEST_architecture_arch})
+        if(CMAKE_CROSSCOMPILING)
+            list(APPEND gnArgArg target_cpu="${cpu}")
+        else()
+            list(APPEND gnArgArg host_cpu="${cpu}")
+        endif()
+        if(CMAKE_SYSROOT)
+            list(APPEND gnArgArg target_sysroot="${CMAKE_SYSROOT}")
+        endif()
         list(APPEND gnArgArg
             use_cups=false
             use_gio=false
@@ -432,11 +458,11 @@ foreach(config ${configs})
             ozone_platform_external=true
             ozone_platform="qt"
             ozone_extra_path="${CMAKE_CURRENT_LIST_DIR}/ozone/ozone_extra.gni"
-            custom_toolchain="${buildDir}/${config}/toolchain:target"
-            host_toolchain="${buildDir}/${config}/toolchain:host"
-            host_cpu="x64"
-            pkg_config="pkg-config"
-            host_pkg_config="/usr/bin/pkg-config"
+            custom_toolchain="${buildDir}/target_toolchain:target"
+            host_toolchain="${buildDir}/host_toolchain:host"
+            v8_snapshot_toolchain="${buildDir}/v8_toolchain:v8"
+            pkg_config="${PKG_CONFIG_EXECUTABLE}"
+            host_pkg_config="${PKG_CONFIG_HOST_EXECUTABLE}"
             use_glib=false
         )
         set(systemLibs libjpeg libpng freetype harfbuzz libevent libwebp libxml
