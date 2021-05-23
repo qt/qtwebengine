@@ -337,9 +337,17 @@ endif()
 assertTargets(webEngineError webEngineSupport Gui Widgets OpenGL OpenGLWidgets Quick Qml)
 add_check_for_support(webEngineError webEngineSupport
    MODULE QtWebEngine
-   CONDITION (LINUX AND NOT CMAKE_CROSSCOMPILING) OR (WIN32 AND NOT WIN_ARM_64) OR (MACOS AND NOT MAC_UNIVERSAL)
+   CONDITION LINUX OR (WIN32 AND NOT WIN_ARM_64) OR (MACOS AND NOT MAC_UNIVERSAL)
    MESSAGE "Build can be done only on Linux, Windows or macOS."
 )
+if(LINUX AND CMAKE_CROSSCOMPILING)
+   get_gn_arch(testArch ${TEST_architecture_arch})
+   add_check_for_support(webEngineError webEngineSupport
+       MODULE QtWebEngine
+       CONDITION testArch
+       MESSAGE "Cross compiling is not supported for ${TEST_architecture_arch}."
+   )
+endif()
 add_check_for_support(webEngineError webEngineSupport
    MODULE QtWebEngine
    CONDITION NOT QT_FEATURE_static

@@ -360,3 +360,48 @@ function(qt_internal_add_external_project_dependency_to_root_project name)
 
     cmake_policy(POP)
 endfunction()
+
+function(get_gn_arch result arch)
+   if("${arch}" STREQUAL "i386")
+      set(${result} "x86" PARENT_SCOPE)
+   elseif("${arch}" STREQUAL "x86_64")
+      set(${result} "x64" PARENT_SCOPE)
+   elseif("${arch}" STREQUAL "arm")
+      set(${result} "arm" PARENT_SCOPE)
+   elseif("${arch}" STREQUAL "arm64")
+      set(${result} "arm64" PARENT_SCOPE)
+   elseif("${arch}" STREQUAL "mipsel")
+      set(${result} "mipsel" PARENT_SCOPE)
+   elseif("${arch}" STREQUAL "mipsel64")
+      set(${result} "mips64el" PARENT_SCOPE)
+   else()
+      message(DEBUG "Unsupported achitecture: ${arch}")
+   endif()
+endfunction()
+
+function(get_v8_arch result targetArch)
+   set(list32 i386 arm mipsel)
+   if("${targetArch}" IN_LIST list32)
+       set(${result} "i386" PARENT_SCOPE)
+   else()
+       set(${result} "x86_64" PARENT_SCOPE)
+   endif()
+endfunction()
+
+function(configure_gn_toolchain name cpuType v8CpuType toolchainIn toolchainOut)
+    set(GN_TOOLCHAIN ${name})
+    get_gn_arch(GN_CPU ${cpuType})
+    get_gn_arch(GN_V8_CPU ${v8CpuType})
+    configure_file(${toolchainIn} ${toolchainOut}/BUILD.gn @ONLY)
+endfunction()
+
+function(create_pkg_config_host_wrapper wrapperName wrapperCmd)
+    file(WRITE ${wrapperName}
+        "#!/bin/sh\n"
+        "unset PKG_CONFIG_LIBDIR\n"
+        "unset PKG_CONFIG_PATH\n"
+        "unset PKG_CONFIG_SYSROOT_DIR\n"
+        "exec ${wrapperCmd} \"$@\""
+    )
+    file(CHMOD ${wrapperName} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE)
+endfunction()
