@@ -2,7 +2,7 @@ if(NOT DEFINED WEBENGINE_ROOT_SOURCE_DIR)
     get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../../.." REALPATH)
 endif()
 find_package(Qt6 ${PROJECT_VERSION} REQUIRED COMPONENTS Gui Network OpenGL Quick)
-find_package(Qt6 ${PROJECT_VERSION} QUIET OPTIONAL_COMPONENTS PrintSupport WebChannel)
+find_package(Qt6 ${PROJECT_VERSION} QUIET OPTIONAL_COMPONENTS PrintSupport WebChannel Positioning)
 include(${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Functions.cmake)
 
 get_configure_mode(configureMode)
@@ -71,4 +71,8 @@ qt_internal_extend_target(WebEngineCore CONDITION QT_FEATURE_webengine_printing_
 qt_internal_extend_target(WebEngineCore CONDITION QT_FEATURE_webengine_webchannel
     PUBLIC_LIBRARIES
         Qt::WebChannel
+)
+qt_internal_extend_target(WebEngineCore CONDITION QT_FEATURE_webengine_geolocation
+    PUBLIC_LIBRARIES
+        Qt::Positioning
 )

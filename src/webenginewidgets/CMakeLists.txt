@@ -1,5 +1,5 @@
 find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Gui Widgets Quick QuickWidgets)
-find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS PrintSupport)
+find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS PrintSupport WebChannel Positioning)
 
 get_configure_mode(configureMode)
 
