@@ -170,6 +170,8 @@ QString subProcessPath()
 #else
             candidatePaths << QLibraryInfo::path(QLibraryInfo::LibraryExecutablesPath)
                               % QLatin1Char('/') % processBinary;
+            candidatePaths << QLibraryInfo::path(QLibraryInfo::BinariesPath)
+                              % QLatin1Char('/') % processBinary;
 #endif
             candidatePaths << QCoreApplication::applicationDirPath()
                               % QLatin1Char('/') % processBinary;

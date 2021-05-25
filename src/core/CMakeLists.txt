@@ -681,5 +681,25 @@ else()
         DESTINATION ${WEBENGINE_ROOT_BUILD_DIR}/resources
         CONFIGURATIONS ${config}
     )
+    if(NOT QT_WILL_INSTALL)
+        # TODO: Could we get rid of ALL?
+        add_custom_target(
+                install_resources_${config}
+                ALL
+                DEPENDS ${buildDir}/${config}/QtWebEngineCore.stamp
+                COMMAND ${CMAKE_COMMAND} -E make_directory
+                        ${CMAKE_INSTALL_PREFIX}/resources
+                COMMAND ${CMAKE_COMMAND} -E copy
+                        ${resourceFiles} ${icuFiles}
+                        ${CMAKE_INSTALL_PREFIX}/resources)
+        add_custom_target(
+                install_locales_${config}
+                ALL
+                DEPENDS ${buildDir}/${config}/QtWebEngineCore.stamp
+                COMMAND ${CMAKE_COMMAND} -E make_directory
+                        ${CMAKE_INSTALL_PREFIX}/translations/qtwebengine_locales
+                COMMAND ${CMAKE_COMMAND} -E copy
+                        ${localeFiles}
+                        ${CMAKE_INSTALL_PREFIX}/translations/qtwebengine_locales)
+    endif()
 endif()
-
