@@ -29,7 +29,7 @@ int main(){};
 qt_feature("webengine-embedded-build" PRIVATE
     LABEL "Embedded build"
     PURPOSE "Enables the embedded build configuration."
-    AUTODETECT tests.webengine-embedded-build OR FIXME
+    AUTODETECT CMAKE_CROSSCOMPILING
     CONDITION UNIX
 )
 qt_feature("webengine-system-alsa" PRIVATE
@@ -98,7 +98,7 @@ qt_feature("webengine-extensions" PUBLIC
 qt_feature("webengine-webrtc" PRIVATE
     LABEL "WebRTC"
     PURPOSE "Provides WebRTC support."
-    AUTODETECT OFF
+    AUTODETECT NOT QT_FEATURE_webengine_embedded_build
 )
 qt_feature("webengine-webrtc-pipewire" PRIVATE
     LABEL "PipeWire over GIO"
