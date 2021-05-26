@@ -775,8 +775,8 @@ void tst_Origins::webSocket()
     m_page->setWebChannel(&channel);
     QVERIFY(echoServer.listen());
 
-    QVERIFY(verifyLoad(
-            QSL("file:" QDir(QT_TESTCASE_SOURCEDIR).canonicalPath() "/resources/websocket.html")));
+    QVERIFY(verifyLoad("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                       + "/resources/websocket.html"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
 
     QVERIFY(verifyLoad(QSL("qrc:/resources/websocket.html")));

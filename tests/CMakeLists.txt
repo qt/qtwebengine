@@ -16,7 +16,7 @@ endif()
 
 find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core)
 find_package(Qt6 ${PROJECT_VERSION} CONFIG OPTIONAL_COMPONENTS Gui Widgets
-    WebEngineCore WebEngineWidgets WebEngineQuick QuickWidgets Test QuickTest)
+    WebEngineCore WebEngineWidgets WebEngineQuick QuickWidgets Test QuickTest WebSockets)
 
 if(NOT QT_BUILD_STANDALONE_TESTS)
     qt_build_repo_begin()
