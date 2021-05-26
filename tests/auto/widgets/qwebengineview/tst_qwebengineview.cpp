@@ -3198,8 +3198,10 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::newRow("version") << QUrl("chrome://version") << false;
 #if QT_CONFIG(webengine_webrtc)
     QTest::newRow("webrtc-internals") << QUrl("chrome://webrtc-internals") << true;
+#if QT_CONFIG(webengine_extensions)
     QTest::newRow("webrtc-logs") << QUrl("chrome://webrtc-logs") << true;
-#endif
+#endif // QT_CONFIG(webengine_extensions)
+#endif // QT_CONFIG(webengine_webrtc)
 }
 
 void tst_QWebEngineView::webUIURLs()

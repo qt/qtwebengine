@@ -297,7 +297,6 @@ source_set("qtwebengine_sources") {
 
   if (enable_webrtc && enable_extensions) {
     deps += [
-      "//chrome/browser/resources/media:webrtc_logs_resources",
       "//components/upload_list",
       "//components/webrtc_logging/browser",
       "//components/webrtc_logging/common",
@@ -424,6 +423,14 @@ repack("qtwebengine_repack_resources") {
     ]
     deps += [
       "//content/browser/webrtc/resources",
+    ]
+  }
+  if (enable_webrtc && enable_extensions) {
+    sources += [
+      "$root_gen_dir/chrome/webrtc_logs_resources.pak",
+    ]
+    deps += [
+      "//chrome/browser/resources/media:webrtc_logs_resources",
     ]
   }
 }
