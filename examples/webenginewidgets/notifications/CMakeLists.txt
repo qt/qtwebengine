@@ -34,8 +34,8 @@ target_link_libraries(notifications PUBLIC
 
 # Resources:
 set(data_resource_files
-    "icon.png"
-    "index.html"
+    "data/icon.png"
+    "data/index.html"
 )
 
 qt6_add_resources(notifications "data"

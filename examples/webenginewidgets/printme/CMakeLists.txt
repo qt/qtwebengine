@@ -36,9 +36,9 @@ target_link_libraries(printme PUBLIC
 
 # Resources:
 set(data_resource_files
-    "icon.svg"
-    "index.html"
-    "style.css"
+    "data/icon.svg"
+    "data/index.html"
+    "data/style.css"
 )
 
 qt6_add_resources(printme "data"

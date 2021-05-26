@@ -38,10 +38,10 @@ target_link_libraries(markdowneditor PUBLIC
 
 # Resources:
 set(markdowneditor_resource_files
-    "3rdparty/markdown.css"
-    "3rdparty/marked.js"
-    "default.md"
-    "index.html"
+    "resources/3rdparty/markdown.css"
+    "resources/3rdparty/marked.js"
+    "resources/default.md"
+    "resources/index.html"
 )
 
 qt6_add_resources(markdowneditor "markdowneditor"

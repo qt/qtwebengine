@@ -9,6 +9,9 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
         HOMEPAGE_URL "https://qt.io/"
         LANGUAGES CXX C
     )
+
+    # Make sure we use the fixed BASE argument of qt_add_resource.
+    set(QT_USE_FIXED_QT_ADD_RESOURCE_BASE TRUE)
 endif()
 
 find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core)

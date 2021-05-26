@@ -34,9 +34,6 @@ target_link_libraries(stylesheetbrowser PUBLIC
 
 
 # Resources:
-set_source_files_properties("3rdparty/view-refresh.png"
-    PROPERTIES QT_RESOURCE_ALIAS "view-refresh.png"
-)
 set(stylesheetbrowser_resource_files
     "3rdparty/view-refresh.png"
 )
@@ -44,6 +41,8 @@ set(stylesheetbrowser_resource_files
 qt6_add_resources(stylesheetbrowser "stylesheetbrowser"
     PREFIX
         "/"
+    BASE
+        "3rdparty"
     FILES
         ${stylesheetbrowser_resource_files}
 )

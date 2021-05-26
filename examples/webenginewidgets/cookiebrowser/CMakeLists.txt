@@ -35,9 +35,6 @@ target_link_libraries(cookiebrowser PUBLIC
 
 
 # Resources:
-set_source_files_properties("3rdparty/view-refresh.png"
-    PROPERTIES QT_RESOURCE_ALIAS "view-refresh.png"
-)
 set(cookiebrowser_resource_files
     "3rdparty/view-refresh.png"
 )
@@ -45,6 +42,8 @@ set(cookiebrowser_resource_files
 qt6_add_resources(cookiebrowser "cookiebrowser"
     PREFIX
         "/"
+    BASE
+        "3rdparty"
     FILES
         ${cookiebrowser_resource_files}
 )

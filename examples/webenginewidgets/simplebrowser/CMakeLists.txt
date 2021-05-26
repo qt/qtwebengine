@@ -43,8 +43,8 @@ target_link_libraries(simplebrowser PUBLIC
 
 # Resources:
 set(simplebrowser_resource_files
-    "AppLogoColor.png"
-    "ninja.png"
+    "data/AppLogoColor.png"
+    "data/ninja.png"
 )
 
 qt6_add_resources(simplebrowser "simplebrowser"
@@ -55,46 +55,22 @@ qt6_add_resources(simplebrowser "simplebrowser"
     FILES
         ${simplebrowser_resource_files}
 )
-set_source_files_properties("data/3rdparty/dialog-error.png"
-    PROPERTIES QT_RESOURCE_ALIAS "dialog-error.png"
-)
-set_source_files_properties("data/3rdparty/edit-clear.png"
-    PROPERTIES QT_RESOURCE_ALIAS "edit-clear.png"
-)
-set_source_files_properties("data/3rdparty/go-bottom.png"
-    PROPERTIES QT_RESOURCE_ALIAS "go-bottom.png"
-)
-set_source_files_properties("data/3rdparty/go-next.png"
-    PROPERTIES QT_RESOURCE_ALIAS "go-next.png"
-)
-set_source_files_properties("data/3rdparty/go-previous.png"
-    PROPERTIES QT_RESOURCE_ALIAS "go-previous.png"
-)
-set_source_files_properties("data/3rdparty/process-stop.png"
-    PROPERTIES QT_RESOURCE_ALIAS "process-stop.png"
-)
-set_source_files_properties("data/3rdparty/text-html.png"
-    PROPERTIES QT_RESOURCE_ALIAS "text-html.png"
-)
-set_source_files_properties("data/3rdparty/view-refresh.png"
-    PROPERTIES QT_RESOURCE_ALIAS "view-refresh.png"
-)
 set(simplebrowser1_resource_files
-    "3rdparty/dialog-error.png"
-    "3rdparty/edit-clear.png"
-    "3rdparty/go-bottom.png"
-    "3rdparty/go-next.png"
-    "3rdparty/go-previous.png"
-    "3rdparty/process-stop.png"
-    "3rdparty/text-html.png"
-    "3rdparty/view-refresh.png"
+    "data/3rdparty/dialog-error.png"
+    "data/3rdparty/edit-clear.png"
+    "data/3rdparty/go-bottom.png"
+    "data/3rdparty/go-next.png"
+    "data/3rdparty/go-previous.png"
+    "data/3rdparty/process-stop.png"
+    "data/3rdparty/text-html.png"
+    "data/3rdparty/view-refresh.png"
 )
 
 qt6_add_resources(simplebrowser "simplebrowser1"
     PREFIX
         "/"
     BASE
-        "data"
+        "data/3rdparty"
     FILES
         ${simplebrowser1_resource_files}
 )

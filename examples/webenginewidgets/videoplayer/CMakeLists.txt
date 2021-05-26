@@ -36,7 +36,7 @@ target_link_libraries(videoplayer PUBLIC
 
 # Resources:
 set(videoplayer_resource_files
-    "index.html"
+    "data/index.html"
 )
 
 qt6_add_resources(videoplayer "videoplayer"
