@@ -719,9 +719,6 @@ WebEngineContext::WebEngineContext()
     disableFeatures.push_back(features::kFontSrcLocalMatching.name);
 #endif
 
-    // We don't support the skia renderer (enabled by default on Linux since 80)
-    disableFeatures.push_back(features::kUseSkiaRenderer.name);
-
     disableFeatures.push_back(network::features::kDnsOverHttpsUpgrade.name);
 
     // When enabled, event.movement is calculated in blink instead of in browser.

@@ -83,6 +83,7 @@ foreach(config ${configs})
             compositor/content_gpu_client_qt.cpp compositor/content_gpu_client_qt.h
             compositor/display_overrides.cpp
             compositor/display_software_output_surface.cpp compositor/display_software_output_surface.h
+            compositor/display_skia_output_device.cpp compositor/display_skia_output_device.h
             content_browser_client_qt.cpp content_browser_client_qt.h
             content_client_qt.cpp content_client_qt.h
             content_main_delegate_qt.cpp content_main_delegate_qt.h

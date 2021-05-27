@@ -38,9 +38,11 @@
 ****************************************************************************/
 
 #include "display_gl_output_surface.h"
+#include "display_skia_output_device.h"
 #include "display_software_output_surface.h"
 
 #include "components/viz/service/display_embedder/output_surface_provider_impl.h"
+#include "components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include <qtgui-config.h>
 
@@ -59,6 +61,15 @@ std::unique_ptr<viz::OutputSurface>
 viz::OutputSurfaceProviderImpl::CreateSoftwareOutputSurface()
 {
     return std::make_unique<QtWebEngineCore::DisplaySoftwareOutputSurface>();
+}
+
+std::unique_ptr<viz::SkiaOutputDevice>
+viz::SkiaOutputSurfaceImplOnGpu::CreateOutputDevice()
+{
+    return std::make_unique<QtWebEngineCore::DisplaySkiaOutputDevice>(
+            context_state_,
+            shared_gpu_deps_->memory_tracker(),
+            GetDidSwapBuffersCompleteCallback());
 }
 
 void gpu::InProcessCommandBuffer::GetTextureQt(
