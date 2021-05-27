@@ -53,6 +53,7 @@ source_set("qtwebengine_sources") {
     "//components/performance_manager",
     "//components/plugins/renderer/",
     "//extensions/buildflags:buildflags",
+    "//qtwebengine/common:mojo_bindings",
     "//rlz/buildflags:buildflags",
     "//third_party/blink/public/mojom:mojom_platform",
   ]
