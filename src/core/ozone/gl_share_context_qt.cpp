@@ -57,24 +57,24 @@ QtShareGLContext::QtShareGLContext(QOpenGLContext *qtContext)
 #if QT_CONFIG(opengl)
     QOpenGLContext *context = QOpenGLContext::globalShareContext();
 #if defined(Q_OS_MACOS)
-    auto *ctx = context->nativeInterface<QNativeInterface::QCocoaGLContext>();
-    if (ctx)
-        m_handle = cglContext(ctx->nativeContext());
+    auto *mac_ctx = context->nativeInterface<QNativeInterface::QCocoaGLContext>();
+    if (mac_ctx)
+        m_handle = cglContext(mac_ctx->nativeContext());
 #endif
 #if defined(Q_OS_WIN)
-    auto *ctx = context->nativeInterface<QNativeInterface::QWGLContext>();
+    auto *win_ctx = context->nativeInterface<QNativeInterface::QWGLContext>();
+    if (win_ctx && !m_handle)
+        m_handle = (void *)win_ctx->nativeContext();
 #endif
-#if defined(Q_OS_LINUX)
-    auto *ctx = context->nativeInterface<QNativeInterface::QGLXContext>();
+#if QT_CONFIG(xcb_glx_plugin)
+    auto *glx_ctx = context->nativeInterface<QNativeInterface::QGLXContext>();
+    if (glx_ctx && !m_handle)
+        m_handle = (void *)glx_ctx->nativeContext();
 #endif
-    if (ctx && !m_handle)
-        m_handle = (void *)ctx->nativeContext();
 #if QT_CONFIG(egl)
-    if (!m_handle) {
-        auto *ctx = context->nativeInterface<QNativeInterface::QEGLContext>();
-        if (ctx)
-            m_handle = (void *)ctx->nativeContext();
-    }
+    auto *egl_ctx = context->nativeInterface<QNativeInterface::QEGLContext>();
+    if (egl_ctx  && !m_handle)
+        m_handle = (void *)egl_ctx->nativeContext();
 #endif
     if (!m_handle)
         qFatal("Could not get handle for shared contex");
