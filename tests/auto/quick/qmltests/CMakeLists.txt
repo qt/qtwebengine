@@ -28,6 +28,7 @@ set(testList
     tst_loadRecursionCrash.qml
     tst_loadUrl.qml
     tst_mouseMove.qml
+    tst_navigationHistory.qml
     tst_navigationRequested.qml
     tst_newViewRequest.qml
     tst_notification.qml
@@ -75,12 +76,6 @@ if(TARGET Qt::QuickControls) #FIXME
    )
 else()
    message("\n!!!! QuickControls target is missing, some tests are not executed !!! FIXME \n")
-endif()
-
-if(TARGET Qt::QuickControls2)
-   list(APPEND testList tst_navigationHistory.qml)
-else()
-   message("\n!!!! QuickControls2 target is missing, some tests are not executed !!! FIXME \n")
 endif()
 
 set(content "")

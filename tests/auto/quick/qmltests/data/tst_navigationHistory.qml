@@ -27,7 +27,6 @@
 ****************************************************************************/
 
 import QtQuick 2.15
-import QtQuick.Controls 2.15
 import QtTest 1.0
 import QtWebEngine 1.2
 
@@ -60,22 +59,20 @@ TestWebEngineView {
             }
     }
 
-    Button {
+    Item { // simple button-like interface to not depend on controls
         id: backButton
-        text: "Back"
         enabled: webEngineView.canGoBack
-        onClicked: webEngineView.goBack()
+        function clicked() { if (enabled) webEngineView.goBack() }
     }
 
-    Button {
+    Item { // simple button-like interface to not depend on controls
         id: forwardButton
-        text: "Forward"
         enabled: webEngineView.canGoForward
-        onClicked: webEngineView.goForward()
+        function clicked() { if (enabled) webEngineView.goForward() }
     }
 
     TestCase {
-        name: "WebEngineViewNavigationHistory"
+        name: "NavigationHistory"
 
         function test_navigationHistory() {
             webEngineView.navigationHistory.clear()
@@ -161,17 +158,20 @@ TestWebEngineView {
         function test_navigationButtons() {
             webEngineView.navigationHistory.clear()
 
-            webEngineView.url = Qt.resolvedUrl("test1.html")
+            const url1 = Qt.resolvedUrl("test1.html")
+            webEngineView.url = url1
             verify(webEngineView.waitForLoadSucceeded())
             compare(backButton.enabled, false)
             compare(forwardButton.enabled, false)
 
-            webEngineView.url = Qt.resolvedUrl("test2.html")
+            const url2 = Qt.resolvedUrl("test2.html")
+            webEngineView.url = url2
             verify(webEngineView.waitForLoadSucceeded())
             compare(backButton.enabled, true)
             compare(forwardButton.enabled, false)
 
-            webEngineView.url = Qt.resolvedUrl("test3.html")
+            const url3 = Qt.resolvedUrl("test3.html")
+            webEngineView.url = url3
             verify(webEngineView.waitForLoadSucceeded())
             compare(backButton.enabled, true)
             compare(forwardButton.enabled, false)
@@ -180,11 +180,25 @@ TestWebEngineView {
             verify(webEngineView.waitForLoadSucceeded())
             compare(backButton.enabled, true)
             compare(forwardButton.enabled, true)
+            compare(webEngineView.url, url2)
 
-            webEngineView.url = Qt.resolvedUrl("test1.html")
+            backButton.clicked()
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(backButton.enabled, false)
+            compare(forwardButton.enabled, true)
+            compare(webEngineView.url, url1)
+
+            forwardButton.clicked()
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(backButton.enabled, true)
+            compare(forwardButton.enabled, true)
+            compare(webEngineView.url, url2)
+
+            webEngineView.url = url1
             verify(webEngineView.waitForLoadSucceeded())
             compare(backButton.enabled, true)
             compare(forwardButton.enabled, false)
+            compare(webEngineView.url, url1)
         }
     }
 }
