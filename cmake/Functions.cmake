@@ -294,3 +294,37 @@ function(get_darwin_sdk_version result)
     endif()
 endfunction()
 
+function(extend_target_with_gn_objects target config cmakeFile stampFile)
+
+     include(${buildDir}/${config}/${cmakeFile})
+
+     string(TOUPPER ${config} cfg)
+     add_library(GnObjects_${target}_${config} OBJECT IMPORTED GLOBAL)
+     target_link_libraries(${target} PRIVATE $<$<CONFIG:${config}>:GnObjects_${target}_${config}>)
+     add_custom_target(ninja_${target}_${config} DEPENDS ${buildDir}/${config}/${stampFile})
+     add_dependencies(GnObjects_${target}_${config} ninja_${target}_${config})
+     #TODO: remove GnObjects_${target}_${config} with CMAKE 3.20
+     set_property(TARGET GnObjects_${target}_${config}
+         PROPERTY IMPORTED_OBJECTS_${cfg} ${${cfg}_NINJA_OBJECTS}
+     )
+     set_source_files_properties(${${cfg}_NINJA_OBJECTS} PROPERTIES GENERATED TRUE)
+
+     if(LINUX)
+     target_link_libraries(${target}
+         PRIVATE "-Wl,--start-group" "$<$<CONFIG:${config}>:${${cfg}_NINJA_ARCHIVES}>" "-Wl,--end-group")
+     else()
+     target_link_libraries(${target} PRIVATE "$<$<CONFIG:${config}>:${${cfg}_NINJA_ARCHIVES}>")
+     endif()
+
+     target_link_libraries(${target} PUBLIC  "$<$<CONFIG:${config}>:${${cfg}_NINJA_LIBS}>")
+
+     # we depend on stampFile, but ninja backend generator needs more (create once)
+     if(stampFile)
+         add_custom_command(OUTPUT ${${cfg}_NINJA_OBJECTS} ${${cfg}_NINJA_ARCHIVES}
+             DEPENDS ${buildDir}/${config}/${stampFile}
+         )
+         add_custom_target(generate_${target}_${cfg}
+             DEPENDS ${${cfg}_NINJA_OBJECTS} ${${cfg}_NINJA_ARCHIVES}
+         )
+     endif()
+endfunction()

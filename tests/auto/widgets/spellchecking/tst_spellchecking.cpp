@@ -26,12 +26,12 @@
 **
 ****************************************************************************/
 
-#include "util.h"
+#include <util.h>
 #include <QtTest/QtTest>
 #include <QtWebEngineCore/qwebengineprofile.h>
 #include <QtWebEngineCore/qwebenginepage.h>
+#include <QtWebEngineCore/qwebenginesettings.h>
 #include <QtWebEngineWidgets/qwebengineview.h>
-#include <qwebenginesettings.h>
 
 class WebView : public QWebEngineView
 {
