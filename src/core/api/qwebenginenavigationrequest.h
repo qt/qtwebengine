@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,57 +37,66 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINENAVIGATIONREQUEST_P_H
-#define QQUICKWEBENGINENAVIGATIONREQUEST_P_H
+#ifndef QWEBENGINENAVIGATIONREQUEST_H
+#define QWEBENGINENAVIGATIONREQUEST_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qquickwebengineview_p.h"
-
+#include <qtwebenginecoreglobal.h>
 #include <QtCore/QObject>
 #include <QtCore/QUrl>
 
 QT_BEGIN_NAMESPACE
 
-class QQuickWebEngineNavigationRequestPrivate;
+class QWebEngineNavigationRequestPrivate;
 
-class Q_WEBENGINE_EXPORT QQuickWebEngineNavigationRequest : public QObject {
+class Q_WEBENGINECORE_EXPORT QWebEngineNavigationRequest : public QObject
+{
     Q_OBJECT
     Q_PROPERTY(QUrl url READ url CONSTANT FINAL)
     Q_PROPERTY(bool isMainFrame READ isMainFrame CONSTANT FINAL)
-    Q_PROPERTY(QQuickWebEngineView::NavigationRequestAction action READ action WRITE setAction NOTIFY actionChanged FINAL)
-    Q_PROPERTY(QQuickWebEngineView::NavigationType navigationType READ navigationType CONSTANT FINAL)
+    Q_PROPERTY(NavigationRequestAction action READ action WRITE setAction NOTIFY actionChanged FINAL)
+    Q_PROPERTY(NavigationType navigationType READ navigationType CONSTANT FINAL)
 
 public:
-    QQuickWebEngineNavigationRequest(const QUrl& url, QQuickWebEngineView::NavigationType navigationType, bool mainFrame, QObject* parent = 0);
-    ~QQuickWebEngineNavigationRequest();
+    ~QWebEngineNavigationRequest();
+
+    // must match WebContentsAdapterClient::NavigationRequestAction
+    enum NavigationRequestAction {
+        AcceptRequest,
+        IgnoreRequest = 0xFF
+    };
+    Q_ENUM(NavigationRequestAction)
+
+    // must match WebContentsAdapterClient::NavigationType
+    enum NavigationType {
+        LinkClickedNavigation,
+        TypedNavigation,
+        FormSubmittedNavigation,
+        BackForwardNavigation,
+        ReloadNavigation,
+        OtherNavigation,
+        RedirectNavigation,
+    };
+    Q_ENUM(NavigationType)
 
     QUrl url() const;
     bool isMainFrame() const;
-    QQuickWebEngineView::NavigationRequestAction action() const;
+    NavigationType navigationType() const;
+    NavigationRequestAction action() const;
 
-    void setAction(QQuickWebEngineView::NavigationRequestAction action);
-    QQuickWebEngineView::NavigationType navigationType() const;
+    void setAction(NavigationRequestAction action);
 
 Q_SIGNALS:
     void actionChanged();
 
 private:
-    Q_DECLARE_PRIVATE(QQuickWebEngineNavigationRequest)
-    QScopedPointer<QQuickWebEngineNavigationRequestPrivate> d_ptr;
+    QWebEngineNavigationRequest(const QUrl& url, NavigationType navigationType, bool mainFrame, QObject *parent = nullptr);
+
+    Q_DECLARE_PRIVATE(QWebEngineNavigationRequest)
+    QScopedPointer<QWebEngineNavigationRequestPrivate> d_ptr;
+    friend class QWebEnginePagePrivate;
+    friend class QQuickWebEngineViewPrivate;
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QQuickWebEngineNavigationRequest)
-
-#endif // QQUICKWEBENGINENAVIGATIONREQUEST_P_H
+#endif // QWEBENGINENAVIGATIONREQUEST_H

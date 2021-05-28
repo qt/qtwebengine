@@ -63,6 +63,7 @@ class QWebEngineClientCertificateSelection;
 class QWebEngineFindTextResult;
 class QWebEngineFullScreenRequest;
 class QWebEngineHistory;
+class QWebEngineNavigationRequest;
 class QWebEngineNewWindowRequest;
 class QWebEnginePage;
 class QWebEnginePagePrivate;
@@ -341,6 +342,7 @@ Q_SIGNALS:
 
     void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode);
     void certificateError(const QWebEngineCertificateError &certificateError);
+    bool navigationRequested(QWebEngineNavigationRequest &request);
     void newWindowRequested(QWebEngineNewWindowRequest &request);
 
     // Ex-QWebFrame signals
@@ -373,6 +375,7 @@ protected:
     virtual bool javaScriptPrompt(const QUrl &securityOrigin, const QString& msg, const QString& defaultValue, QString* result);
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID);
     virtual bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame);
+
 private:
     Q_DISABLE_COPY(QWebEnginePage)
     Q_DECLARE_PRIVATE(QWebEnginePage)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,35 +37,48 @@
 **
 ****************************************************************************/
 
-#include "qquickwebenginenavigationrequest_p.h"
+#include "qwebenginenavigationrequest.h"
 
-#include "qquickwebengineview_p.h"
+#include "qwebenginepage.h"
 
 QT_BEGIN_NAMESPACE
 
-class QQuickWebEngineNavigationRequestPrivate {
+class QWebEngineNavigationRequestPrivate {
 public:
-    QQuickWebEngineNavigationRequestPrivate(const QUrl& url, QQuickWebEngineView::NavigationType navigationType, bool mainFrame)
+    QWebEngineNavigationRequestPrivate(const QUrl& url, QWebEngineNavigationRequest::NavigationType navigationType, bool mainFrame)
         : url(url)
-        , action(QQuickWebEngineView::AcceptRequest)
+        , action(QWebEngineNavigationRequest::AcceptRequest)
         , navigationType(navigationType)
         , isMainFrame(mainFrame)
-    {
-    }
-
-    ~QQuickWebEngineNavigationRequestPrivate()
-    {
-    }
+    {}
 
     QUrl url;
-    QQuickWebEngineView::NavigationRequestAction action;
-    QQuickWebEngineView::NavigationType navigationType;
+    QWebEngineNavigationRequest::NavigationRequestAction action;
+    QWebEngineNavigationRequest::NavigationType navigationType;
     bool isMainFrame;
 };
 
 /*!
+    \class QWebEngineNavigationRequest
+    \brief A utility type for the QWebEnginePage::navigationRequested signal.
+    \since 6.2
+
+    \inmodule QtWebEngineCore
+
+    Contains information about a navigation request.
+
+    To accept or reject a request, set \l action to
+    \c QWebEngineNavigationRequest::AcceptRequest or
+    \c QWebEngineNavigationRequest::IgnoreRequest.
+
+    The default if not handled is to accept the navigation.
+
+    \sa QWebEnginePage::navigationRequested
+*/
+
+/*!
     \qmltype WebEngineNavigationRequest
-    \instantiates QQuickWebEngineNavigationRequest
+    \instantiates QWebEngineNavigationRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.0
 
@@ -77,16 +90,22 @@ public:
     \c WebEngineNavigationRequest.IgnoreRequest.
 */
 
-QQuickWebEngineNavigationRequest::QQuickWebEngineNavigationRequest(const QUrl& url, QQuickWebEngineView::NavigationType navigationType, bool mainFrame, QObject* parent)
+/*! \internal
+*/
+QWebEngineNavigationRequest::QWebEngineNavigationRequest(const QUrl& url, QWebEngineNavigationRequest::NavigationType navigationType, bool mainFrame, QObject* parent)
     : QObject(parent)
-    , d_ptr(new QQuickWebEngineNavigationRequestPrivate(url, navigationType, mainFrame))
+    , d_ptr(new QWebEngineNavigationRequestPrivate(url, navigationType, mainFrame))
 {
 }
 
-QQuickWebEngineNavigationRequest::~QQuickWebEngineNavigationRequest()
+QWebEngineNavigationRequest::~QWebEngineNavigationRequest()
 {
 }
 
+/*!
+    \property QWebEngineNavigationRequest::action
+    \brief Whether to accept or ignore the navigation request.
+*/
 /*!
     \qmlproperty enumeration WebEngineNavigationRequest::action
 
@@ -98,9 +117,9 @@ QQuickWebEngineNavigationRequest::~QQuickWebEngineNavigationRequest()
             Ignores a navigation request.
 */
 
-void QQuickWebEngineNavigationRequest::setAction(QQuickWebEngineView::NavigationRequestAction action)
+void QWebEngineNavigationRequest::setAction(QWebEngineNavigationRequest::NavigationRequestAction action)
 {
-    Q_D(QQuickWebEngineNavigationRequest);
+    Q_D(QWebEngineNavigationRequest);
     if (d->action == action)
         return;
 
@@ -109,24 +128,32 @@ void QQuickWebEngineNavigationRequest::setAction(QQuickWebEngineView::Navigation
 }
 
 /*!
+    \property QWebEngineNavigationRequest::url
+    \brief The URL of the web page to go to.
+*/
+/*!
     \qmlproperty url WebEngineNavigationRequest::url
     \readonly
 
     The URL of the web page to go to.
 */
 
-QUrl QQuickWebEngineNavigationRequest::url() const
+QUrl QWebEngineNavigationRequest::url() const
 {
-    Q_D(const QQuickWebEngineNavigationRequest);
+    Q_D(const QWebEngineNavigationRequest);
     return d->url;
 }
 
-QQuickWebEngineView::NavigationRequestAction QQuickWebEngineNavigationRequest::action() const
+QWebEngineNavigationRequest::NavigationRequestAction QWebEngineNavigationRequest::action() const
 {
-    Q_D(const QQuickWebEngineNavigationRequest);
+    Q_D(const QWebEngineNavigationRequest);
     return d->action;
 }
 
+/*!
+    \property QWebEngineNavigationRequest::navigationType
+    \brief The method used to navigate to a web page.
+*/
 /*!
     \qmlproperty enumeration WebEngineNavigationRequest::navigationType
     \readonly
@@ -149,12 +176,16 @@ QQuickWebEngineView::NavigationRequestAction QQuickWebEngineNavigationRequest::a
             Using some other method to go to a page.
 */
 
-QQuickWebEngineView::NavigationType QQuickWebEngineNavigationRequest::navigationType() const
+QWebEngineNavigationRequest::NavigationType QWebEngineNavigationRequest::navigationType() const
 {
-    Q_D(const QQuickWebEngineNavigationRequest);
+    Q_D(const QWebEngineNavigationRequest);
     return d->navigationType;
 }
 
+/*!
+    \property QWebEngineNavigationRequest::isMainFrame
+    \brief Whether the navigation issue is requested for a top level page.
+*/
 /*!
     \qmlproperty bool WebEngineNavigationRequest::isMainFrame
     \readonly
@@ -162,9 +193,9 @@ QQuickWebEngineView::NavigationType QQuickWebEngineNavigationRequest::navigation
     Whether the navigation issue is requested for a top level page.
 */
 
-bool QQuickWebEngineNavigationRequest::isMainFrame() const
+bool QWebEngineNavigationRequest::isMainFrame() const
 {
-    Q_D(const QQuickWebEngineNavigationRequest);
+    Q_D(const QWebEngineNavigationRequest);
     return d->isMainFrame;
 }
 

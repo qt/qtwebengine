@@ -74,8 +74,6 @@ class QQuickWebEngineFaviconProvider;
 class QQuickWebEngineFileDialogRequest;
 class QQuickWebEngineHistory;
 class QQuickWebEngineJavaScriptDialogRequest;
-class QWebEngineLoadRequest;
-class QQuickWebEngineNavigationRequest;
 class QQuickWebEngineSettings;
 class QQuickWebEngineTooltipRequest;
 class QQuickWebEngineFormValidationMessageRequest;
@@ -84,6 +82,8 @@ class QWebEngineCertificateError;
 class QWebEngineContextMenuRequest;
 class QWebEngineFindTextResult;
 class QWebEngineFullScreenRequest;
+class QWebEngineLoadRequest;
+class QWebEngineNavigationRequest;
 class QWebEngineNewWindowRequest;
 class QWebEngineQuotaRequest;
 class QWebEngineRegisterProtocolHandlerRequest;
@@ -150,27 +150,6 @@ public:
     void setBackgroundColor(const QColor &color);
     QSizeF contentsSize() const;
     QPointF scrollPosition() const;
-
-    // must match WebContentsAdapterClient::NavigationRequestAction
-    enum NavigationRequestAction {
-        AcceptRequest,
-        // Make room in the valid range of the enum so
-        // we can expose extra actions.
-        IgnoreRequest = 0xFF
-    };
-    Q_ENUM(NavigationRequestAction)
-
-    // must match WebContentsAdapterClient::NavigationType
-    enum NavigationType {
-        LinkClickedNavigation,
-        TypedNavigation,
-        FormSubmittedNavigation,
-        BackForwardNavigation,
-        ReloadNavigation,
-        OtherNavigation,
-        RedirectNavigation,
-    };
-    Q_ENUM(NavigationType)
 
     enum LoadStatus {
         LoadStartedStatus,
@@ -524,7 +503,7 @@ Q_SIGNALS:
     void loadingChanged(const QWebEngineLoadRequest &loadRequest);
     void loadProgressChanged();
     void linkHovered(const QUrl &hoveredUrl);
-    void navigationRequested(QQuickWebEngineNavigationRequest *request);
+    void navigationRequested(QWebEngineNavigationRequest *request);
     void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID);
     Q_REVISION(1,1) void certificateError(const QWebEngineCertificateError &error);
     Q_REVISION(1,1) void fullScreenRequested(const QWebEngineFullScreenRequest &request);

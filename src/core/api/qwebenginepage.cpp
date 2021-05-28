@@ -53,6 +53,7 @@
 #include "qwebenginefullscreenrequest.h"
 #include "qwebenginehistory.h"
 #include "qwebenginehistory_p.h"
+#include "qwebenginenavigationrequest.h"
 #include "qwebenginenewwindowrequest.h"
 #include "qwebenginenotification.h"
 #include "qwebengineprofile.h"
@@ -1563,10 +1564,28 @@ void QWebEnginePagePrivate::contextMenuRequested(QWebEngineContextMenuRequest *d
         view->contextMenuRequested(data);
 }
 
+/*!
+    \fn void QWebEnginePage::navigationRequested(QWebEngineNavigationRequest &request)
+    \since 6.2
+
+    This signal is emitted on navigation together with the call the acceptNavigationRequest().
+    It can be used to accept or ignore the request. The default is to accept.
+
+    \sa acceptNavigationRequest()
+
+*/
+
 void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame)
 {
     Q_Q(QWebEnginePage);
+
     bool accepted = q->acceptNavigationRequest(url, static_cast<QWebEnginePage::NavigationType>(navigationType), isMainFrame);
+    if (accepted) {
+        QWebEngineNavigationRequest navigationRequest(url, static_cast<QWebEngineNavigationRequest::NavigationType>(navigationType), isMainFrame);
+        Q_EMIT q->navigationRequested(navigationRequest);
+        accepted = (navigationRequest.action() == QWebEngineNavigationRequest::AcceptRequest);
+    }
+
     if (accepted && adapter->findTextHelper()->isFindTextInProgress())
         adapter->findTextHelper()->stopFinding();
     navigationRequestAction = accepted ? WebContentsAdapterClient::AcceptRequest : WebContentsAdapterClient::IgnoreRequest;

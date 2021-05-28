@@ -37,6 +37,7 @@
 #include <QtWebEngineCore/QWebEngineCertificateError>
 #include <QtWebEngineCore/QWebEngineFindTextResult>
 #include <QtWebEngineCore/QWebEngineFullScreenRequest>
+#include <QtWebEngineCore/QWebEngineNavigationRequest>
 #include <QtWebEngineCore/QWebEngineNewWindowRequest>
 #include <QtWebEngineCore/QWebEngineNotification>
 #include <QtWebEngineCore/QWebEngineQuotaRequest>
@@ -50,7 +51,6 @@
 #include <private/qquickwebengineclientcertificateselection_p.h>
 #include <private/qquickwebenginedialogrequests_p.h>
 #include <private/qquickwebenginehistory_p.h>
-#include <private/qquickwebenginenavigationrequest_p.h>
 #include <private/qquickwebenginesettings_p.h>
 #include <private/qquickwebenginesingleton_p.h>
 
@@ -68,8 +68,6 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QWebEngineDownloadRequest::staticMetaObject
     << &QQuickWebEngineHistory::staticMetaObject
     << &QQuickWebEngineHistoryListModel::staticMetaObject
-    << &QWebEngineLoadRequest::staticMetaObject
-    << &QQuickWebEngineNavigationRequest::staticMetaObject
     << &QQuickWebEngineProfile::staticMetaObject
     << &QQuickWebEngineSettings::staticMetaObject
     << &QWebEngineFullScreenRequest::staticMetaObject
@@ -83,11 +81,13 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QQuickWebEngineTooltipRequest::staticMetaObject
     << &QWebEngineContextMenuRequest::staticMetaObject
     << &QWebEngineCertificateError::staticMetaObject
-    << &QWebEngineQuotaRequest::staticMetaObject
-    << &QWebEngineRegisterProtocolHandlerRequest::staticMetaObject
+    << &QWebEngineFindTextResult::staticMetaObject
+    << &QWebEngineLoadRequest::staticMetaObject
+    << &QWebEngineNavigationRequest::staticMetaObject
     << &QWebEngineNewWindowRequest::staticMetaObject
     << &QWebEngineNotification::staticMetaObject
-    << &QWebEngineFindTextResult::staticMetaObject
+    << &QWebEngineQuotaRequest::staticMetaObject
+    << &QWebEngineRegisterProtocolHandlerRequest::staticMetaObject
     ;
 
 static QList<QMetaEnum> knownEnumNames = QList<QMetaEnum>();
@@ -327,11 +327,20 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineLoadRequest.HttpErrorDomain --> ErrorDomain"
     << "QWebEngineLoadRequest.InternalErrorDomain --> ErrorDomain"
     << "QWebEngineLoadRequest.NoErrorDomain --> ErrorDomain"
-    << "QQuickWebEngineNavigationRequest.action --> QQuickWebEngineView::NavigationRequestAction"
-    << "QQuickWebEngineNavigationRequest.actionChanged() --> void"
-    << "QQuickWebEngineNavigationRequest.isMainFrame --> bool"
-    << "QQuickWebEngineNavigationRequest.navigationType --> QQuickWebEngineView::NavigationType"
-    << "QQuickWebEngineNavigationRequest.url --> QUrl"
+    << "QWebEngineNavigationRequest.action --> QWebEngineNavigationRequest::NavigationRequestAction"
+    << "QWebEngineNavigationRequest.actionChanged() --> void"
+    << "QWebEngineNavigationRequest.isMainFrame --> bool"
+    << "QWebEngineNavigationRequest.navigationType --> QWebEngineNavigationRequest::NavigationType"
+    << "QWebEngineNavigationRequest.url --> QUrl"
+    << "QWebEngineNavigationRequest.AcceptRequest --> NavigationRequestAction"
+    << "QWebEngineNavigationRequest.IgnoreRequest --> NavigationRequestAction"
+    << "QWebEngineNavigationRequest.BackForwardNavigation --> NavigationType"
+    << "QWebEngineNavigationRequest.FormSubmittedNavigation --> NavigationType"
+    << "QWebEngineNavigationRequest.LinkClickedNavigation --> NavigationType"
+    << "QWebEngineNavigationRequest.OtherNavigation --> NavigationType"
+    << "QWebEngineNavigationRequest.RedirectNavigation --> NavigationType"
+    << "QWebEngineNavigationRequest.ReloadNavigation --> NavigationType"
+    << "QWebEngineNavigationRequest.TypedNavigation --> NavigationType"
     << "QWebEngineNewWindowRequest.destination --> QWebEngineNewWindowRequest::DestinationType"
     << "QWebEngineNewWindowRequest.requestedUrl --> QUrl"
     << "QWebEngineNewWindowRequest.requestedGeometry --> QRect"
@@ -475,7 +484,6 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.A8 --> PrintedPageSizeId"
     << "QQuickWebEngineView.A9 --> PrintedPageSizeId"
     << "QQuickWebEngineView.AbnormalTerminationStatus --> RenderProcessTerminationStatus"
-    << "QQuickWebEngineView.AcceptRequest --> NavigationRequestAction"
     << "QQuickWebEngineView.AlignCenter --> WebAction"
     << "QQuickWebEngineView.AlignJustified --> WebAction"
     << "QQuickWebEngineView.AlignLeft --> WebAction"
@@ -503,7 +511,6 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.B8 --> PrintedPageSizeId"
     << "QQuickWebEngineView.B9 --> PrintedPageSizeId"
     << "QQuickWebEngineView.Back --> WebAction"
-    << "QQuickWebEngineView.BackForwardNavigation --> NavigationType"
     << "QQuickWebEngineView.C5E --> PrintedPageSizeId"
     << "QQuickWebEngineView.CertificateErrorDomain --> ErrorDomain"
     << "QQuickWebEngineView.Comm10E --> PrintedPageSizeId"
@@ -571,12 +578,10 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.FindBackward --> FindFlags"
     << "QQuickWebEngineView.FindCaseSensitively --> FindFlags"
     << "QQuickWebEngineView.Folio --> PrintedPageSizeId"
-    << "QQuickWebEngineView.FormSubmittedNavigation --> NavigationType"
     << "QQuickWebEngineView.Forward --> WebAction"
     << "QQuickWebEngineView.FtpErrorDomain --> ErrorDomain"
     << "QQuickWebEngineView.Geolocation --> Feature"
     << "QQuickWebEngineView.HttpErrorDomain --> ErrorDomain"
-    << "QQuickWebEngineView.IgnoreRequest --> NavigationRequestAction"
     << "QQuickWebEngineView.Imperial10x11 --> PrintedPageSizeId"
     << "QQuickWebEngineView.Imperial10x13 --> PrintedPageSizeId"
     << "QQuickWebEngineView.Imperial10x14 --> PrintedPageSizeId"
@@ -616,7 +621,6 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.LifecycleState.Active --> LifecycleState"
     << "QQuickWebEngineView.LifecycleState.Discarded --> LifecycleState"
     << "QQuickWebEngineView.LifecycleState.Frozen --> LifecycleState"
-    << "QQuickWebEngineView.LinkClickedNavigation --> NavigationType"
     << "QQuickWebEngineView.LoadFailedStatus --> LoadStatus"
     << "QQuickWebEngineView.LoadStartedStatus --> LoadStatus"
     << "QQuickWebEngineView.LoadStoppedStatus --> LoadStatus"
@@ -634,7 +638,6 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.OpenLinkInNewTab --> WebAction"
     << "QQuickWebEngineView.OpenLinkInNewWindow --> WebAction"
     << "QQuickWebEngineView.OpenLinkInThisWindow --> WebAction"
-    << "QQuickWebEngineView.OtherNavigation --> NavigationType"
     << "QQuickWebEngineView.Outdent --> WebAction"
     << "QQuickWebEngineView.Paste --> WebAction"
     << "QQuickWebEngineView.PasteAndMatchStyle --> WebAction"
@@ -644,11 +647,9 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.Prc32K --> PrintedPageSizeId"
     << "QQuickWebEngineView.Prc32KBig --> PrintedPageSizeId"
     << "QQuickWebEngineView.Quarto --> PrintedPageSizeId"
-    << "QQuickWebEngineView.RedirectNavigation --> NavigationType"
     << "QQuickWebEngineView.Redo --> WebAction"
     << "QQuickWebEngineView.Reload --> WebAction"
     << "QQuickWebEngineView.ReloadAndBypassCache --> WebAction"
-    << "QQuickWebEngineView.ReloadNavigation --> NavigationType"
     << "QQuickWebEngineView.RequestClose --> WebAction"
     << "QQuickWebEngineView.SavePage --> WebAction"
     << "QQuickWebEngineView.SelectAll --> WebAction"
@@ -666,7 +667,6 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.ToggleMediaPlayPause --> WebAction"
     << "QQuickWebEngineView.ToggleStrikethrough --> WebAction"
     << "QQuickWebEngineView.ToggleUnderline --> WebAction"
-    << "QQuickWebEngineView.TypedNavigation --> NavigationType"
     << "QQuickWebEngineView.Undo --> WebAction"
     << "QQuickWebEngineView.Unselect --> WebAction"
     << "QQuickWebEngineView.ViewSource --> WebAction"
@@ -722,7 +722,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.loading --> bool"
     << "QQuickWebEngineView.loadingChanged(QWebEngineLoadRequest) --> void"
     << "QQuickWebEngineView.navigationHistory --> QQuickWebEngineHistory*"
-    << "QQuickWebEngineView.navigationRequested(QQuickWebEngineNavigationRequest*) --> void"
+    << "QQuickWebEngineView.navigationRequested(QWebEngineNavigationRequest*) --> void"
     << "QQuickWebEngineView.newViewRequested(QWebEngineNewWindowRequest*) --> void"
     << "QQuickWebEngineView.pdfPrintingFinished(QString,bool) --> void"
     << "QQuickWebEngineView.printRequested() --> void"

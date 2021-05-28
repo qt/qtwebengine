@@ -44,7 +44,6 @@
 #include <QtWebEngineQuick/private/qquickwebenginedialogrequests_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginehistory_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginefaviconprovider_p_p.h>
-#include <QtWebEngineQuick/private/qquickwebenginenavigationrequest_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginesettings_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginesingleton_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginetouchhandleprovider_p_p.h>
@@ -54,6 +53,7 @@
 #include <QtWebEngineCore/qwebenginefindtextresult.h>
 #include <QtWebEngineCore/qwebenginefullscreenrequest.h>
 #include <QtWebEngineCore/qwebengineloadrequest.h>
+#include <QtWebEngineCore/qwebenginenavigationrequest.h>
 #include <QtWebEngineCore/qwebenginenewwindowrequest.h>
 #include <QtWebEngineCore/qwebenginenotification.h>
 #include <QtWebEngineCore/qwebenginequotarequest.h>
@@ -87,7 +87,7 @@ public:
 
         qmlRegisterType<QQuickWebEngineView>(uri, 1, 0, "WebEngineView");
         qmlRegisterUncreatableType<QWebEngineLoadRequest>(uri, 1, 0, "WebEngineLoadRequest", msgUncreatableType("WebEngineLoadRequest"));
-        qmlRegisterUncreatableType<QQuickWebEngineNavigationRequest>(uri, 1, 0, "WebEngineNavigationRequest", msgUncreatableType("WebEngineNavigationRequest"));
+        qmlRegisterUncreatableType<QWebEngineNavigationRequest>(uri, 1, 0, "WebEngineNavigationRequest", msgUncreatableType("WebEngineNavigationRequest"));
 
         qmlRegisterType<QQuickWebEngineView, 1>(uri, 1, 1, "WebEngineView");
         qmlRegisterType<QQuickWebEngineView, 2>(uri, 1, 2, "WebEngineView");

@@ -52,7 +52,6 @@
 #include "qquickwebengineclientcertificateselection_p.h"
 #include "qquickwebenginedialogrequests_p.h"
 #include "qquickwebenginefaviconprovider_p_p.h"
-#include "qquickwebenginenavigationrequest_p.h"
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginetouchhandleprovider_p_p.h"
@@ -60,6 +59,7 @@
 #include "qwebenginefindtextresult.h"
 #include "qwebenginefullscreenrequest.h"
 #include "qwebengineloadrequest.h"
+#include "qwebenginenavigationrequest.h"
 #include "qwebenginenewwindowrequest.h"
 #include "qwebenginequotarequest.h"
 #include "qwebenginescriptcollection.h"
@@ -290,7 +290,7 @@ void QQuickWebEngineViewPrivate::contextMenuRequested(QWebEngineContextMenuReque
 void QQuickWebEngineViewPrivate::navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame)
 {
     Q_Q(QQuickWebEngineView);
-    QQuickWebEngineNavigationRequest navigationRequest(url, static_cast<QQuickWebEngineView::NavigationType>(navigationType), isMainFrame);
+    QWebEngineNavigationRequest navigationRequest(url, static_cast<QWebEngineNavigationRequest::NavigationType>(navigationType), isMainFrame);
     Q_EMIT q->navigationRequested(&navigationRequest);
 
     navigationRequestAction = navigationRequest.action();

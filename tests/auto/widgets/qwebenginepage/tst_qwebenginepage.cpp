@@ -51,6 +51,7 @@
 #include <qwebenginefindtextresult.h>
 #include <qwebenginefullscreenrequest.h>
 #include <qwebenginehistory.h>
+#include <qwebenginenavigationrequest.h>
 #include <qwebenginenewwindowrequest.h>
 #include <qwebenginenotification.h>
 #include <qwebenginepage.h>
@@ -529,25 +530,16 @@ public:
     TestPage(QObject *parent = nullptr) : QWebEnginePage(parent)
     {
         connect(this, &QWebEnginePage::geometryChangeRequested, this, &TestPage::slotGeometryChangeRequested);
+        connect(this, &QWebEnginePage::navigationRequested, this, &TestPage::slotNavigationRequested);
         connect(this, &QWebEnginePage::newWindowRequested, this, &TestPage::slotNewWindowRequested);
     }
 
     struct Navigation {
-        NavigationType type;
+        QWebEngineNavigationRequest::NavigationType type;
         QUrl url;
         bool isMainFrame;
     };
     QList<Navigation> navigations;
-
-    bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame) override
-    {
-        Navigation n;
-        n.url = url;
-        n.type = type;
-        n.isMainFrame = isMainFrame;
-        navigations.append(n);
-        return true;
-    }
 
     QList<TestPage*> createdWindows;
 
@@ -557,6 +549,15 @@ signals:
     void windowCreated();
 
 private Q_SLOTS:
+    void slotNavigationRequested(QWebEngineNavigationRequest &request)
+    {
+        Navigation n;
+        n.url = request.url();
+        n.type = request.navigationType();
+        n.isMainFrame = request.isMainFrame();
+        navigations.append(n);
+        request.setAction(QWebEngineNavigationRequest::AcceptRequest);
+    }
     void slotNewWindowRequested(QWebEngineNewWindowRequest &request)
     {
         TestPage *page = new TestPage(this);
@@ -600,19 +601,19 @@ void tst_QWebEnginePage::acceptNavigationRequestNavigationType()
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 6, 20000);
     QTRY_COMPARE(page.navigations.count(), 6);
 
-    QList<QWebEnginePage::NavigationType> expectedList;
-    expectedList << QWebEnginePage::NavigationTypeTyped
-        << QWebEnginePage::NavigationTypeTyped
-        << QWebEnginePage::NavigationTypeBackForward
-        << QWebEnginePage::NavigationTypeReload
-        << QWebEnginePage::NavigationTypeTyped
-        << QWebEnginePage::NavigationTypeRedirect;
+    QList<QWebEngineNavigationRequest::NavigationType> expectedList;
+    expectedList << QWebEngineNavigationRequest::TypedNavigation
+                 << QWebEngineNavigationRequest::TypedNavigation
+                 << QWebEngineNavigationRequest::BackForwardNavigation
+                 << QWebEngineNavigationRequest::ReloadNavigation
+                 << QWebEngineNavigationRequest::TypedNavigation
+                 << QWebEngineNavigationRequest::RedirectNavigation;
 
     // client side redirect
     page.load(QUrl("qrc:///resources/redirect.html"));
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 7, 20000);
     QTRY_COMPARE(page.navigations.count(), 8);
-    expectedList += { QWebEnginePage::NavigationTypeTyped, QWebEnginePage::NavigationTypeRedirect };
+    expectedList += { QWebEngineNavigationRequest::TypedNavigation, QWebEngineNavigationRequest::RedirectNavigation };
 
     // server side redirect
     HttpServer server;
@@ -635,9 +636,9 @@ void tst_QWebEnginePage::acceptNavigationRequestNavigationType()
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 8, 20000);
     QTRY_COMPARE(page.navigations.count(), 11);
     expectedList += {
-        QWebEnginePage::NavigationTypeTyped,
-        QWebEnginePage::NavigationTypeRedirect,
-        QWebEnginePage::NavigationTypeRedirect
+        QWebEngineNavigationRequest::TypedNavigation,
+        QWebEngineNavigationRequest::RedirectNavigation,
+        QWebEngineNavigationRequest::RedirectNavigation
     };
 
     QVERIFY(expectedList.count() == page.navigations.count());
@@ -668,9 +669,9 @@ void tst_QWebEnginePage::acceptNavigationRequestRelativeToNothing()
     // The two setHtml and the second click are counted, while the
     // first click is ignored due to the empty base url.
     QCOMPARE(page.navigations.count(), 3);
-    QCOMPARE(page.navigations[0].type, QWebEnginePage::NavigationTypeTyped);
-    QCOMPARE(page.navigations[1].type, QWebEnginePage::NavigationTypeTyped);
-    QCOMPARE(page.navigations[2].type, QWebEnginePage::NavigationTypeLinkClicked);
+    QCOMPARE(page.navigations[0].type, QWebEngineNavigationRequest::TypedNavigation);
+    QCOMPARE(page.navigations[1].type, QWebEngineNavigationRequest::TypedNavigation);
+    QCOMPARE(page.navigations[2].type, QWebEngineNavigationRequest::LinkClickedNavigation);
     QCOMPARE(page.navigations[2].url, QUrl(QString("qrc:/S0")));
 }
 

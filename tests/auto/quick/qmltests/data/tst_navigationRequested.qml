@@ -65,14 +65,14 @@ TestWebEngineView {
         } else {
             attributes.iframeUrl = request.url
             if (shouldIgnoreSubFrameRequests) {
-                request.action = WebEngineView.IgnoreRequest
+                request.action = WebEngineNavigationRequest.IgnoreRequest
             }
         }
 
-        if (request.navigationType === WebEngineView.LinkClickedNavigation) {
+        if (request.navigationType === WebEngineNavigationRequest.LinkClickedNavigation) {
             attributes.linkClickedNavigationRequested = true
             if (shouldIgnoreLinkClicks) {
-                request.action = WebEngineView.IgnoreRequest
+                request.action = WebEngineNavigationRequest.IgnoreRequest
                 attributes.linkClickedNavigationIgnored = true
             }
         }
