@@ -258,7 +258,8 @@ source_set("qtwebengine_sources") {
   if (enable_spellcheck) {
     deps += [
       ":qtwebengine_spellcheck_sources",
-      "//chrome/tools/convert_dict",
+      "//chrome/tools/convert_dict:lib",
+      "//third_party/hunspell",
     ]
   }
   if (enable_plugins) {
@@ -528,5 +529,18 @@ if (enable_extensions) {
       "//chrome/common/extensions/api:extensions_features",
       "//extensions/common/api:extensions_features",
   ]
+  }
+}
+
+if (enable_spellcheck) {
+  shared_library("convert_dict") {
+    cmake_config = "@GN_CONFIG@"
+    configs += [ "//build/config/compiler:wexit_time_destructors" ]
+    deps = [
+      "//chrome/tools/convert_dict:lib",
+      "//base",
+      "//base:i18n",
+      "//third_party/hunspell",
+    ]
   }
 }

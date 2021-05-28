@@ -14,6 +14,7 @@ include(${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Functions.cmake)
 assertRunAsTopLevelBuild(TRUE)
 
 add_subdirectory(api)
+add_subdirectory(tools)
 
 find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core)
 find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT REQUIRED)
@@ -528,7 +529,6 @@ foreach(config ${configs})
         string(REGEX REPLACE "\n$" "" gnOutput "${gnOutput}")
         message("-- GN ${gnOutput}")
     endif()
-    include(${buildDir}/${config}/QtWebEngineCore.cmake)
 
 
 ##
@@ -577,30 +577,10 @@ endif()
 
 foreach(config ${configs})
 
-     string(TOUPPER ${config} cfg)
-
-     add_library(GnObjects_${config} OBJECT IMPORTED GLOBAL)
-     target_link_libraries(WebEngineCore PRIVATE $<$<CONFIG:${config}>:GnObjects_${config}>)
-     add_dependencies(GnObjects_${config} ninja_${config})
-     #TODO: remove GnObjects_${config} with CMAKE 3.20
-     set_property(TARGET GnObjects_${config} PROPERTY IMPORTED_OBJECTS_${cfg} ${${cfg}_NINJA_OBJECTS})
-     set_source_files_properties(${${cfg}_NINJA_OBJECTS} PROPERTIES GENERATED TRUE)
-
-     if(LINUX)
-     target_link_libraries(WebEngineCore
-         PRIVATE "-Wl,--start-group" "$<$<CONFIG:${config}>:${${cfg}_NINJA_ARCHIVES}>" "-Wl,--end-group")
-     else()
-     target_link_libraries(WebEngineCore PRIVATE "$<$<CONFIG:${config}>:${${cfg}_NINJA_ARCHIVES}>")
-     endif()
-
-     target_link_libraries(WebEngineCore PUBLIC  "$<$<CONFIG:${config}>:${${cfg}_NINJA_LIBS}>")
-
-     # we depend on WebEnigneCore stamp, but ninja backend generator needs more
-     add_custom_command(OUTPUT ${${cfg}_NINJA_OBJECTS} ${${cfg}_NINJA_ARCHIVES}
-         DEPENDS ${buildDir}/${config}/QtWebEngineCore.stamp)
-     add_custom_target(generate_${cfg} DEPENDS ${${cfg}_NINJA_OBJECTS} ${${cfg}_NINJA_ARCHIVES})
+     extend_target_with_gn_objects(WebEngineCore ${config} QtWebEngineCore.cmake QtWebEngineCore.stamp)
 
      if(WIN32)
+         string(TOUPPER ${config} cfg)
          set(sandboxLibraryPath ${buildDir}/${config}/QtWebEngineCoreSandbox.lib)
          set_property(TARGET WebEngineCoreSandbox
              PROPERTY IMPORTED_LOCATION_${cfg} ${sandboxLibraryPath})
@@ -612,7 +592,7 @@ foreach(config ${configs})
 endforeach()
 
 ##
-#  RESOURCES
+#  WEBENGINECORE RESOURCES
 ##
 
 #TODO: use simply filter / globbing-expressions
@@ -712,3 +692,20 @@ else()
                         ${CMAKE_INSTALL_PREFIX}/translations/qtwebengine_locales)
     endif()
 endif()
+
+##
+#  WEBENGINECORE DICT TOOL SETUP
+##
+
+if(QT_FEATURE_webengine_spellchecker)
+    qt_get_tool_target_name(dict_target_name qwebengine_convert_dict)
+    target_include_directories(${dict_target_name} PRIVATE
+        ../3rdparty/chromium
+        ../3rdparty/chromium/third_party/boringssl/src/include
+        ${buildDir}/${config}/gen
+    )
+    foreach(config ${configs})
+        extend_target_with_gn_objects(${dict_target_name} ${config} convert_dict.cmake "")
+    endforeach()
+endif()
+

@@ -81,7 +81,6 @@ qt_feature("webengine-kerberos" PRIVATE
 qt_feature("webengine-spellchecker" PUBLIC
     LABEL "Spellchecker"
     PURPOSE "Provides a spellchecker."
-    AUTODETECT OFF
 )
 qt_feature("webengine-native-spellchecker" PUBLIC
     LABEL "Native Spellchecker"

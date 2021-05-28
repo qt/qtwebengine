@@ -63,6 +63,7 @@ if(NOT QT_FEATURE_qtwebengine_build AND NOT QT_FEATURE_qtpdf_build)
 endif()
 
 add_subdirectory(src/core/api)
+add_subdirectory(src/core/tools)
 add_subdirectory(src/process)
 add_subdirectory(src/webenginewidgets)
 add_subdirectory(src/webenginequick)
