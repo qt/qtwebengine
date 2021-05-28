@@ -321,10 +321,16 @@ else()
    set(MAC_ARM_64 OFF)
 endif()
 
+if(WIN32 AND (CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64" OR CMAKE_CROSSCOMPILING))
+   set(WIN_ARM_64 ON)
+else()
+   set(WIN_ARM_64 OFF)
+endif()
+
 assertTargets(webEngineError webEngineSupport Gui Widgets OpenGL OpenGLWidgets Quick Qml)
 add_check_for_support(webEngineError webEngineSupport
    MODULE QtWebEngine
-   CONDITION LINUX OR WIN32 OR (MACOS AND NOT MAC_ARM_64)
+   CONDITION LINUX OR (WIN32 AND NOT WIN_ARM_64) OR (MACOS AND NOT MAC_ARM_64)
    MESSAGE "Build can be done only on Linux, Windows or macOS."
 )
 add_check_for_support(webEngineError webEngineSupport
