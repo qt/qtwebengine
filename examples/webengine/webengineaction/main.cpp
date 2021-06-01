@@ -50,12 +50,12 @@
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <qtwebengineglobal.h>
+#include <QtWebEngineQuick/qtwebenginequickglobal.h>
 
 int main(int argc, char *argv[])
 {
     QCoreApplication::setOrganizationName("QtExamples");
-    QtWebEngine::initialize();
+    QtWebEngineQuick::initialize();
 
     QGuiApplication app(argc, argv);
 

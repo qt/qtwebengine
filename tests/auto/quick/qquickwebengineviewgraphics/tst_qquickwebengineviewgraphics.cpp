@@ -33,7 +33,7 @@
 #include <QQuickView>
 #include <QQuickItem>
 #include <QPainter>
-#include <qtwebengineglobal.h>
+#include <QtWebEngineQuick/qtwebenginequickglobal.h>
 #include <private/qquickwebengineview_p.h>
 
 #include <map>

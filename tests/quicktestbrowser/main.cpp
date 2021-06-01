@@ -38,7 +38,7 @@ typedef QGuiApplication Application;
 #include <QtQml/QQmlApplicationEngine>
 #include <QtQml/QQmlContext>
 #include <QtQml/QQmlComponent>
-#include <QtWebEngineQuick/qtwebengineglobal.h>
+#include <QtWebEngineQuick/qtwebenginequickglobal.h>
 #include <QtWebEngineQuick/QQuickWebEngineProfile>
 #include <QtWebEngineCore/qwebenginecookiestore.h>
 
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
     // Enable dev tools by default for the test browser
     if (qgetenv("QTWEBENGINE_REMOTE_DEBUGGING").isNull())
         qputenv("QTWEBENGINE_REMOTE_DEBUGGING", "1337");
-    QtWebEngine::initialize();
+    QtWebEngineQuick::initialize();
 
     QQmlApplicationEngine appEngine;
     Utils utils;

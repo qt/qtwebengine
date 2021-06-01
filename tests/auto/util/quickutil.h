@@ -171,7 +171,7 @@ inline QString activeElementId(QQuickWebEngineView *webEngineView)
 #define W_QTEST_MAIN(TestObject, params) \
 int main(int argc, char *argv[]) \
 { \
-    QtWebEngine::initialize(); \
+    QtWebEngineQuick::initialize(); \
     \
     QList<const char *> w_argv(argc); \
     for (int i = 0; i < argc; ++i) \

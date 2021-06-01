@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include "qtwebengineglobal.h"
+#include "qtwebenginequickglobal.h"
 #include <QQuickWebEngineProfile>
 #include <QQmlApplicationEngine>
 #include <QQuickWindow>
@@ -43,7 +43,7 @@ private slots:
 
 void tst_qtbug_70248::test()
 {
-    QtWebEngine::initialize();
+    QtWebEngineQuick::initialize();
     QScopedPointer<QQmlApplicationEngine> engine;
     QQuickWebEngineProfile::defaultProfile()->setOffTheRecord(true);
     engine.reset(new QQmlApplicationEngine());

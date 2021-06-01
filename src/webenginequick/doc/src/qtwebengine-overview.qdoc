@@ -123,14 +123,14 @@
 
     For a widget based application, the web engine is automatically initialized, unless it is
     placed in a plugin. In that case, it must be initialized in the application main source file
-    by using \l QtWebEngine::initialize, as illustrated by the following code snippet:
+    by using \l QtWebEngineQuick::initialize, as illustrated by the following code snippet:
 
     \code
     int main(int argc, char **argv)
     {
         QApplication app(argc, argv);
 
-        QtWebEngine::initialize();
+        QtWebEngineQuick::initialize();
 
         QMainWindow window;
         window.show();
@@ -146,7 +146,7 @@
     full screen as specified within the Qt Quick application.
 
     To make sure that OpenGL context can be shared between the GUI and render processes, the web
-    engine must be initialized by using \l QtWebEngine::initialize in the application main source
+    engine must be initialized by using \l QtWebEngineQuick::initialize in the application main source
     file, as illustrated by the following code snippet:
 
     \code
@@ -154,7 +154,7 @@
     {
         QGuiApplication app(argc, argv);
 
-        QtWebEngine::initialize();
+        QtWebEngineQuick::initialize();
 
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/main.qml"));

@@ -53,7 +53,7 @@
 
 #include <QObject>
 #include <QtQml/qqml.h>
-#include "qtwebengineglobal_p.h"
+#include "qtwebenginequickglobal_p.h"
 #include <QVariant>
 
 namespace QtWebEngineCore {

@@ -147,7 +147,7 @@ int main(int argc, char **argv)
     if (!QCoreApplication::instance()) {
         app.reset(new Application(w_argc, const_cast<char **>(w_argv.data())));
     }
-    QtWebEngine::initialize();
+    QtWebEngineQuick::initialize();
     QQuickWebEngineProfile::defaultProfile()->setOffTheRecord(true);
     qmlRegisterType<TempDir>("Test.util", 1, 0, "TempDir");
 

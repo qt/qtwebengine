@@ -37,29 +37,28 @@
 **
 ****************************************************************************/
 
-#ifndef QTWEBENGINEGLOBAL_H
-#define QTWEBENGINEGLOBAL_H
+#ifndef QTWEBENGINEQUICKGLOBAL_P_H
+#define QTWEBENGINEQUICKGLOBAL_P_H
 
-#include <QtCore/qglobal.h>
-#include <QtWebEngineQuick/qtwebenginequick-config.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtWebEngineQuick/qtwebenginequickglobal.h>
+#include <QtCore/private/qglobal_p.h>
+#include <QtWebEngineQuick/private/qtwebenginequick-config_p.h>
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_STATIC
-#  if defined(QT_BUILD_WEBENGINE_LIB)
-#      define Q_WEBENGINE_EXPORT Q_DECL_EXPORT
-#  else
-#      define Q_WEBENGINE_EXPORT Q_DECL_IMPORT
-#  endif
-#else
-#  define Q_WEBENGINE_EXPORT
-#endif
-
-namespace QtWebEngine
-{
-    Q_WEBENGINE_EXPORT void initialize();
-}
+#define Q_WEBENGINE_PRIVATE_EXPORT Q_WEBENGINE_EXPORT
 
 QT_END_NAMESPACE
 
-#endif // QTWEBENGINEGLOBAL_H
+#endif // QTWEBENGINEQUICKGLOBAL_P_H

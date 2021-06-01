@@ -116,7 +116,7 @@ void tst_QQuickWebEngineDefaultSurfaceFormat::customDefaultSurfaceFormat()
     QSurfaceFormat::setDefaultFormat( format );
 
     QGuiApplication app(argc, argv);
-    QtWebEngine::initialize();
+    QtWebEngineQuick::initialize();
 
     initEngineAndViewComponent();
     initWindow();

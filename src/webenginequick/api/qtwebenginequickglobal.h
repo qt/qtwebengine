@@ -37,52 +37,29 @@
 **
 ****************************************************************************/
 
-#include "qtwebengineglobal.h"
-#include <QCoreApplication>
-#include <QQuickWindow>
+#ifndef QTWEBENGINEQUICKGLOBAL_H
+#define QTWEBENGINEQUICKGLOBAL_H
 
-namespace QtWebEngineCore
-{
-    extern void initialize();
-}
+#include <QtCore/qglobal.h>
+#include <QtWebEngineQuick/qtwebenginequick-config.h>
 
 QT_BEGIN_NAMESPACE
 
-namespace QtWebEngine {
+#ifndef QT_STATIC
+#  if defined(QT_BUILD_WEBENGINE_LIB)
+#      define Q_WEBENGINE_EXPORT Q_DECL_EXPORT
+#  else
+#      define Q_WEBENGINE_EXPORT Q_DECL_IMPORT
+#  endif
+#else
+#  define Q_WEBENGINE_EXPORT
+#endif
 
-/*!
-    \namespace QtWebEngine
-    \inmodule QtWebEngine
-    \ingroup qtwebengine-namespaces
-    \keyword QtWebEngine Namespace
-
-    \brief Helper functions for the \QWE (Qt Quick) module.
-
-    The \l[CPP]{QtWebEngine} namespace is part of the \QWE module.
-*/
-
-/*!
-    \fn QtWebEngine::initialize()
-
-    Sets up an OpenGL Context that can be shared between threads. This has to be done before
-    QGuiApplication is created and before window's QPlatformOpenGLContext is created.
-
-    This has the same effect as setting the Qt::AA_ShareOpenGLContexts
-    attribute with QCoreApplication::setAttribute before constructing
-    QGuiApplication.
-*/
-void initialize()
+namespace QtWebEngineQuick
 {
-    if (!QCoreApplication::startingUp()) {
-        qWarning("QtWebEngine::initialize() called with QCoreApplication object already created and should be call before. "\
-                 "This is depreciated and may fail in the future.");
-        QtWebEngineCore::initialize();
-        return;
-    }
-    // call initialize the same way as widgets do
-    qAddPreRoutine(QtWebEngineCore::initialize);
-    QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGLRhi);
+    Q_WEBENGINE_EXPORT void initialize();
 }
-} // namespace QtWebEngine
 
 QT_END_NAMESPACE
+
+#endif // QTWEBENGINEQUICKGLOBAL_H

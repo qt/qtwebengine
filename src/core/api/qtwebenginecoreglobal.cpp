@@ -91,7 +91,7 @@ static void deleteShareContext()
 
 #endif
 // ### Qt 6: unify this logic and Qt::AA_ShareOpenGLContexts.
-// QtWebEngine::initialize was introduced first and meant to be called
+// QtWebEngineQuick::initialize was introduced first and meant to be called
 // after the QGuiApplication creation, when AA_ShareOpenGLContexts fills
 // the same need but the flag has to be set earlier.
 
@@ -110,7 +110,7 @@ Q_WEBENGINECORE_PRIVATE_EXPORT void initialize()
 
         QCoreApplication *app = QCoreApplication::instance();
         if (!app) {
-            qFatal("QtWebEngine::initialize() but no core application instance.");
+            qFatal("QtWebEngineQuick::initialize() but no core application instance.");
             return;
         }
 
@@ -119,7 +119,7 @@ Q_WEBENGINECORE_PRIVATE_EXPORT void initialize()
             return;
 
         if (app->thread() != QThread::currentThread()) {
-            qFatal("QtWebEngine::initialize() must be called from the Qt gui thread.");
+            qFatal("QtWebEngineQuick::initialize() must be called from the Qt gui thread.");
             return;
         }
 
@@ -225,7 +225,7 @@ static void initialize()
 {
 #if QT_CONFIG(opengl)
   if (QCoreApplication::instance()) {
-    // On window/ANGLE, calling QtWebEngine::initialize from DllMain will result in a crash.
+    // On window/ANGLE, calling QtWebEngineQuick::initialize from DllMain will result in a crash.
     if (!qt_gl_global_share_context()) {
       qWarning("Qt WebEngine seems to be initialized from a plugin. Please "
                "set Qt::AA_ShareOpenGLContexts using QCoreApplication::setAttribute and "

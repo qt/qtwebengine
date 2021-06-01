@@ -52,7 +52,7 @@
 //
 
 #include <QtGui/private/qinputmethod_p.h>
-#include <QtWebEngineQuick/private/qtwebengineglobal_p.h>
+#include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 
 #include <QEvent>
 #include <QObject>

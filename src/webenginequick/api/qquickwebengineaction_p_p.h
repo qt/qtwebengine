@@ -52,7 +52,7 @@
 //
 
 #include <QObject>
-#include "qtwebengineglobal_p.h"
+#include "qtwebenginequickglobal_p.h"
 #include <QVariant>
 
 QT_BEGIN_NAMESPACE

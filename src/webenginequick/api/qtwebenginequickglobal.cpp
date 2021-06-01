@@ -37,28 +37,52 @@
 **
 ****************************************************************************/
 
-#ifndef QTWEBENGINEGLOBAL_P_H
-#define QTWEBENGINEGLOBAL_P_H
+#include <QtWebEngineQuick/qtwebenginequickglobal.h>
+#include <QCoreApplication>
+#include <QQuickWindow>
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtWebEngineQuick/qtwebengineglobal.h>
-#include <QtCore/private/qglobal_p.h>
-#include <QtWebEngineQuick/private/qtwebenginequick-config_p.h>
+namespace QtWebEngineCore
+{
+    extern void initialize();
+}
 
 QT_BEGIN_NAMESPACE
 
-#define Q_WEBENGINE_PRIVATE_EXPORT Q_WEBENGINE_EXPORT
+namespace QtWebEngineQuick {
+
+/*!
+    \namespace QtWebEngineQuick
+    \inmodule QtWebEngineQuick
+    \ingroup qtwebengine-namespaces
+    \keyword QtWebEngine Namespace
+
+    \brief Helper functions for the \QWE (Qt Quick) module.
+
+    The \l[CPP]{QtWebEngineQuick} namespace is part of the \QWE module.
+*/
+
+/*!
+    \fn QtWebEngineQuick::initialize()
+
+    Sets up an OpenGL Context that can be shared between threads. This has to be done before
+    QGuiApplication is created and before window's QPlatformOpenGLContext is created.
+
+    This has the same effect as setting the Qt::AA_ShareOpenGLContexts
+    attribute with QCoreApplication::setAttribute before constructing
+    QGuiApplication.
+*/
+void initialize()
+{
+    if (!QCoreApplication::startingUp()) {
+        qWarning("QtWebEngineQuick::initialize() called with QCoreApplication object already created and should be call before. "\
+                 "This is depreciated and may fail in the future.");
+        QtWebEngineCore::initialize();
+        return;
+    }
+    // call initialize the same way as widgets do
+    qAddPreRoutine(QtWebEngineCore::initialize);
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGLRhi);
+}
+} // namespace QtWebEngineQuick
 
 QT_END_NAMESPACE
-
-#endif // QTWEBENGINEGLOBAL_P_H

@@ -40,7 +40,7 @@
 #ifndef QQUICKWEBENGINESCRIPTCOLLECTION_H
 #define QQUICKWEBENGINESCRIPTCOLLECTION_H
 
-#include <QtWebEngineQuick/qtwebengineglobal.h>
+#include <QtWebEngineQuick/qtwebenginequickglobal.h>
 #include <QtWebEngineCore/qwebenginescript.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qlist.h>
