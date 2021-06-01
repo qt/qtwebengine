@@ -26,10 +26,10 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtQuick.Controls 1.4
-import QtTest 1.0
-import QtWebEngine 1.6
+import QtQuick
+import QtTest
+import QtWebEngine
+import "../mock-delegates/TestParams"
 
 TestWebEngineView {
     id: webEngineView
@@ -40,7 +40,7 @@ TestWebEngineView {
     property var mediaType: null
     property string selectedText: ""
 
-    onContextMenuRequested: {
+    onContextMenuRequested: function (request) {
         linkText = request.linkText;
         mediaType = request.mediaType;
         selectedText = request.selectedText;
@@ -52,38 +52,20 @@ TestWebEngineView {
         signalName: "contextMenuRequested"
     }
 
-    function getContextMenus() {
-        var data = webEngineView.data;
-        var contextMenus = [];
-
-        for (var i = 0; i < data.length; i++) {
-            if (data[i].type == MenuItemType.Menu) {
-                contextMenus.push(data[i]);
-            }
-        }
-        return contextMenus;
-    }
-
-    function destroyContextMenu() {
-        testCase.keyPress(Qt.Key_Escape);
-        return getContextMenus().length == 0;
-    }
-
     TestCase {
         id: testCase
         name: "WebEngineViewContextMenu"
         when: windowShown
 
         function init() {
-            var contextMenus = getContextMenus();
-            compare(contextMenus.length, 0);
+            MenuParams.isMenuOpened = false;
         }
 
         function cleanup() {
             contextMenuRequestedSpy.clear();
         }
 
-        function test_contextMenu_data() {
+        function test_contextMenuRequest_data() {
             return [
                    { tag: "defaultContextMenu", userHandled: false, accepted: false },
                    { tag: "defaultContextMenuWithConnect", userHandled: true, accepted: false },
@@ -91,11 +73,7 @@ TestWebEngineView {
             ];
         }
 
-        function test_contextMenu(row) {
-            if (Qt.platform.os == "osx") {
-                skip("When the menu pops up on macOS, it does not return and the test fails after time out.");
-            }
-
+        function test_contextMenuRequest(row) {
             function contextMenuHandler(request) {
                 request.accepted = row.accepted;
             }
@@ -109,22 +87,12 @@ TestWebEngineView {
             mouseClick(webEngineView, 20, 20, Qt.RightButton);
             contextMenuRequestedSpy.wait();
             compare(contextMenuRequestedSpy.count, 1);
+            tryCompare(MenuParams, "isMenuOpened", !row.accepted);
 
-            // There should be maximum one ContextMenu present at a time
-            var contextMenus = getContextMenus();
-            verify(contextMenus.length <= 1);
-            compare(contextMenus[0] != null, !row.accepted);
-
-            // FIXME: Sometimes the keyPress(Qt.Key_Escape) event isn't caught so we keep trying
-            tryVerify(destroyContextMenu);
             webEngineView.contextMenuRequested.disconnect(contextMenuHandler);
         }
 
         function test_contextMenuLinkAndSelectedText() {
-            if (Qt.platform.os == "osx") {
-                skip("When the menu pops up on macOS, it does not return and the test fails after time out.");
-            }
-
             webEngineView.loadHtml("<html><body>" +
                                    "<span id='text'>Text </span>" +
                                    "<a id='link' href='test1.html'>Link</a>" +
@@ -137,9 +105,6 @@ TestWebEngineView {
             contextMenuRequestedSpy.wait();
             compare(contextMenuRequestedSpy.count, 1);
 
-            var contextMenus = getContextMenus();
-            compare(contextMenus.length, 1);
-            verify(contextMenus[0]);
             compare(linkText, "Link");
             compare(mediaType, ContextMenuRequest.MediaTypeNone);
             compare(selectedText, "");
@@ -150,8 +115,6 @@ TestWebEngineView {
             verify(webEngineView.action(WebEngineView.CopyLinkToClipboard).enabled);
 
             contextMenuRequestedSpy.clear();
-            // FIXME: Sometimes the keyPress(Qt.Key_Escape) event isn't caught so we keep trying
-            tryVerify(destroyContextMenu);
 
             // 2. Everything is selected, right click on the link
             webEngineView.triggerWebAction(WebEngineView.SelectAll);
@@ -161,16 +124,11 @@ TestWebEngineView {
             contextMenuRequestedSpy.wait();
             compare(contextMenuRequestedSpy.count, 1);
 
-            contextMenus = getContextMenus();
-            compare(contextMenus.length, 1);
-            verify(contextMenus[0]);
             compare(linkText, "Link");
             compare(mediaType, ContextMenuRequest.MediaTypeNone);
             compare(selectedText, "Text Link");
 
             contextMenuRequestedSpy.clear();
-            // FIXME: Sometimes the keyPress(Qt.Key_Escape) event isn't caught so we keep trying
-            tryVerify(destroyContextMenu);
 
             // 3. Everything is selected, right click on the text
             var textCenter = getElementCenter("text");
@@ -178,22 +136,12 @@ TestWebEngineView {
             contextMenuRequestedSpy.wait();
             compare(contextMenuRequestedSpy.count, 1);
 
-            contextMenus = getContextMenus();
-            compare(contextMenus.length, 1);
-            verify(contextMenus[0]);
             compare(linkText, "");
             compare(mediaType, ContextMenuRequest.MediaTypeNone);
             compare(selectedText, "Text Link");
-
-            // FIXME: Sometimes the keyPress(Qt.Key_Escape) event isn't caught so we keep trying
-            tryVerify(destroyContextMenu);
         }
 
         function test_contextMenuMediaType() {
-            if (Qt.platform.os == "osx") {
-                skip("When the menu pops up on macOS, it does not return and the test fails after time out.");
-            }
-
             webEngineView.url = Qt.resolvedUrl("favicon.html");
             verify(webEngineView.waitForLoadSucceeded());
             // 1. Right click on the image
@@ -202,30 +150,19 @@ TestWebEngineView {
             contextMenuRequestedSpy.wait();
             compare(contextMenuRequestedSpy.count, 1);
 
-            var contextMenus = getContextMenus();
-            compare(contextMenus.length, 1);
-            verify(contextMenus[0]);
             compare(linkText, "");
             compare(mediaType, ContextMenuRequest.MediaTypeImage);
             compare(selectedText, "");
             contextMenuRequestedSpy.clear();
-            // FIXME: Sometimes the keyPress(Qt.Key_Escape) event isn't caught so we keep trying
-            tryVerify(destroyContextMenu);
 
             // 2. Right click out of the image
             mouseClick(webEngineView, center.x + 30, center.y, Qt.RightButton);
             contextMenuRequestedSpy.wait();
             compare(contextMenuRequestedSpy.count, 1);
 
-            contextMenus = getContextMenus();
-            compare(contextMenus.length, 1);
-            verify(contextMenus[0]);
             compare(linkText, "");
             compare(mediaType, ContextMenuRequest.MediaTypeNone);
             compare(selectedText, "");
-
-            // FIXME: Sometimes the keyPress(Qt.Key_Escape) event isn't caught so we keep trying
-            tryVerify(destroyContextMenu);
         }
     }
 }
