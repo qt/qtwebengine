@@ -43,7 +43,7 @@ tagfile                 = ../../../doc/qtwebengine/qtwebengine.tags
 moduleheader = QtWebEngineDoc
 
 # Additional include paths for clang
-includepaths = -I .
+includepaths += -I .
 
 depends += qtcore \
            qtgui \
@@ -60,20 +60,20 @@ depends += qtcore \
            qtwebview \
            qtwidgets
 
-headerdirs  += .. \
-               ../../core/api \
+headerdirs  += ../../core/api \
+               ../../webenginequick/api \
                ../../webenginewidgets/api
 
-sourcedirs  += .. \
-                ../../core/api \
-                ../../core/doc \
+sourcedirs   = ../../core/api \
+               ../../core/doc \
+               ../../webenginequick/api \
+               ../../webenginequick/doc \
                ../../webenginewidgets/api \
                ../../webenginewidgets/doc
 
-exampledirs +=  . \
-                ../../../examples \
-                snippets \
+exampledirs +=  ../../../examples \
                 ../../core/doc/snippets \
+                ../../webenginequick/doc/snippets \
                 ../../webenginewidgets/doc/snippets
 
 examples.fileextensions += *.aff *.dic *.html

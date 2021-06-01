@@ -74,3 +74,7 @@ qt_internal_extend_target(WebEngineCore CONDITION QT_FEATURE_webengine_geolocati
     PUBLIC_LIBRARIES
         Qt::Positioning
 )
+
+qt_internal_add_docs(WebEngineCore
+    ../doc/qtwebengine.qdocconf
+)
