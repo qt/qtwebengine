@@ -15,6 +15,7 @@ set(testList
     tst_action.qml
     tst_activeFocusOnPress.qml
     tst_audioMuted.qml
+    tst_contextMenu.qml
     tst_desktopBehaviorLoadHtml.qml
     tst_download.qml
     tst_favicon.qml
@@ -64,14 +65,6 @@ if(QT_FEATURE_webenginequick_testsupport)
         tst_mouseClick.qml
         tst_viewSoure.qml
     )
-endif()
-
-if(TARGET Qt::QuickControls) #FIXME
-   list(APPEND testList
-        tst_contextMenu.qml
-   )
-else()
-   message("\n!!!! QuickControls target is missing, some tests are not executed !!! FIXME \n")
 endif()
 
 set(content "")

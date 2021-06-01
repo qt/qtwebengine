@@ -11,6 +11,7 @@ QML_TESTS = \
     $$PWD/data/tst_action.qml \
     $$PWD/data/tst_activeFocusOnPress.qml \
     $$PWD/data/tst_audioMuted.qml \
+    $$PWD/data/tst_contextMenu.qml \
     $$PWD/data/tst_desktopBehaviorLoadHtml.qml \
     $$PWD/data/tst_download.qml \
     $$PWD/data/tst_findText.qml \
@@ -81,7 +82,6 @@ qtConfig(webenginequick-testsupport) {
 
 qtHaveModule(quickcontrols) {
     QML_TESTS += \
-        $$PWD/data/tst_contextMenu.qml \
         $$PWD/data/tst_filePicker.qml
 }
 
@@ -134,8 +134,6 @@ OTHER_FILES += \
     $$PWD/data/icons/qt32.ico \
     $$PWD/data/icons/qtmulti.ico \
     $$PWD/data/icons/small-favicon.png \
-    $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/Menu.qml \
-    $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/MenuItem.qml \
     $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/qmldir \
     $$PWD/mock-delegates/TestParams/FilePickerParams.qml \
     $$PWD/mock-delegates/TestParams/JSDialogParams.qml \
@@ -143,6 +141,8 @@ OTHER_FILES += \
     $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/AlertDialog.qml \
     $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/ConfirmDialog.qml \
     $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/FilePicker.qml \
+    $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/Menu.qml \
+    $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/MenuItem.qml \
     $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/PromptDialog.qml \
     $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/qmldir
 

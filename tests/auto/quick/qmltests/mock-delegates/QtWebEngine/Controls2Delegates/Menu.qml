@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,21 +37,18 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.5
-import QtQuick.Controls 1.4 as Controls
+import QtQml
+import "../../TestParams"
 
-Controls.Menu {
+QtObject {
     id: menu
+    property string linkText: ""
+    property var mediaType: null
+    property string selectedText: ""
+
     signal done()
 
-    // Use private API for now
-    onAboutToHide: doneTimer.start()
-
-    // WORKAROUND On Mac the Menu may be destroyed before the MenuItem
-    // is actually triggered (see qtbase commit 08cc9b9991ae9ab51)
-    Timer {
-        id: doneTimer
-        interval: 100
-        onTriggered: menu.done()
+    function open() {
+        MenuParams.isMenuOpened = true;
     }
 }
