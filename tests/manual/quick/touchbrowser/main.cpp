@@ -35,7 +35,7 @@
 #include <QtQml/QQmlApplicationEngine>
 #include <QtQml/QQmlContext>
 #include <QtQuick/QQuickView>
-#include <QtWebEngineQuick/qtwebengineglobal.h>
+#include <QtWebEngineQuick/qtwebenginequickglobal.h>
 
 static QUrl startupUrl()
 {
@@ -72,7 +72,7 @@ int main(int argc, char **argv)
 
     int qAppArgCount = qargv.size();
 
-    QtWebEngine::initialize();
+    QtWebEngineQuick::initialize();
 
 #if defined(DESKTOP_BUILD)
     TouchMockingApplication app(qAppArgCount, qargv.data());

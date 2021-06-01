@@ -40,7 +40,7 @@
 #ifndef QWEBENGINENEWWINDOWREQUEST_P_H
 #define QWEBENGINENEWWINDOWREQUEST_P_H
 
-#include <qtwebenginecoreglobal.h>
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtCore/QObject>
 #include <QtCore/QRect>
 #include <QtCore/QScopedPointer>

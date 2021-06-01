@@ -52,7 +52,7 @@
 //
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
-#include <QtWebEngineQuick/private/qtwebengineglobal_p.h>
+#include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 #include <QQuickItem>
 #include <QtGui/qcolor.h>
 

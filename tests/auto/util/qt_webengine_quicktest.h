@@ -38,7 +38,7 @@
 #endif
 
 #include "qopenglcontext.h"
-#include <qtwebengineglobal.h>
+#include <QtWebEngineQuick/qtwebenginequickglobal.h>
 
 QT_BEGIN_NAMESPACE
 

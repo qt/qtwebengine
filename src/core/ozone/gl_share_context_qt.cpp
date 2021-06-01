@@ -100,7 +100,7 @@ void ShareGroupQt::AboutToAddFirstContext()
     QOpenGLContext *shareContext = QOpenGLContext::globalShareContext();
     if (!shareContext) {
         qFatal("QWebEngine: OpenGL resource sharing is not set up in QtQuick. Please make sure to "
-               "call QtWebEngine::initialize() in your main() function before QCoreApplication is "
+               "call QtWebEngineCore::initialize() in your main() function before QCoreApplication is "
                "created.");
     }
     m_shareContextQt = new QtShareGLContext(shareContext);

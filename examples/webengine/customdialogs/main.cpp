@@ -49,7 +49,7 @@
 ****************************************************************************/
 
 #include "server.h"
-#include <qtwebengineglobal.h>
+#include <QtWebEngineQuick/qtwebenginequickglobal.h>
 #include <QNetworkProxy>
 #include <QQmlApplicationEngine>
 #include <QTimer>
@@ -66,7 +66,7 @@ typedef QGuiApplication Application;
 int main(int argc, char *argv[])
 {
     QCoreApplication::setOrganizationName("QtExamples");
-    QtWebEngine::initialize();
+    QtWebEngineQuick::initialize();
 
     Application app(argc, argv);
 

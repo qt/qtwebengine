@@ -44,7 +44,7 @@
 
     In \c main.cpp we use only the QGuiApplication and QQmlApplicationEngine
     classes. We also include \c qtwebengineglobal.h to be able to use
-    \l{QtWebEngine::initialize}.
+    \l{QtWebEngineQuick::initialize}.
 
     \quotefromfile webengine/minimal/main.cpp
     \skipto #include
@@ -56,7 +56,7 @@
     \l{WebEngineProfile::cachePath} and
     \l{WebEngineProfile::persistentStoragePath}).
 
-    Next, we call \l{QtWebEngine::initialize}, which makes sure that OpenGL
+    Next, we call \l{QtWebEngineQuick::initialize}, which makes sure that OpenGL
     contexts can be shared between the main process and the dedicated renderer
     process (\c QtWebEngineProcess). This method needs to be called before
     any OpenGL context is created.

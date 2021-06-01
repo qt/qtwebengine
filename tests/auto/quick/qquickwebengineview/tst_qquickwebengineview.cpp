@@ -108,7 +108,7 @@ private:
 
 tst_QQuickWebEngineView::tst_QQuickWebEngineView()
 {
-    QtWebEngine::initialize();
+    QtWebEngineQuick::initialize();
     QQuickWebEngineProfile::defaultProfile()->setOffTheRecord(true);
 
     m_testSourceDirPath = QDir(QT_TESTCASE_SOURCEDIR).canonicalPath();

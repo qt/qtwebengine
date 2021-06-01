@@ -212,7 +212,7 @@ static const char *getGLType(bool enableGLSoftwareRendering)
             || enableGLSoftwareRendering;
     if (tryGL) {
         if (!qt_gl_global_share_context() || !qt_gl_global_share_context()->isValid()) {
-            qWarning("WebEngineContext used before QtWebEngine::initialize() or OpenGL context "
+            qWarning("WebEngineContext used before QtWebEngineCore::initialize() or OpenGL context "
                      "creation failed.");
         } else {
             const QSurfaceFormat sharedFormat = qt_gl_global_share_context()->format();

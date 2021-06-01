@@ -46,7 +46,7 @@
     \section1 C++ Code
 
     In \c main.cpp, we use the \l{QGuiApplication} and \l{QQmlApplicationEngine}
-    classes to set up and load the main QML file. We call \l{QtWebEngine::initialize} so we can use
+    classes to set up and load the main QML file. We call \l{QtWebEngineQuick::initialize} so we can use
     \l{WebEngineView} in our QML code. We set the default Qt Quick Controls 2 style
     to the Material style, so we do not have to specify it for each new item we add. Finally, we use
     a C++ define to check whether the application is compiled for an embedded platform.

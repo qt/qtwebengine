@@ -38,7 +38,7 @@
     \section2 Initializing Web Engine
 
     For the web engine view to be rendered, the web engine must be initialized by using
-    \l QtWebEngine::initialize in the application main source file, as illustrated by the
+    \l QtWebEngineQuick::initialize in the application main source file, as illustrated by the
     following code snippet:
 
     \quotefromfile webengine/minimal/main.cpp
@@ -137,7 +137,7 @@
 
     When using a QQuickRenderControl to render a Qt Quick user interface to an OpenGL surface, the
     WebEngineView type is not rendered correctly. The web engine view attempts to use a global
-    OpenGL context created by \l QtWebEngine::initialize, but there is no public API for accessing
+    OpenGL context created by \l QtWebEngineQuick::initialize, but there is no public API for accessing
     that context in order to share it with the \c QQuickRenderControl context.
 
     To have the web engine view rendered correctly, it is possible to manually create a new

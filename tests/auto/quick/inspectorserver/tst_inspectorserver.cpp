@@ -62,7 +62,7 @@ private:
 tst_InspectorServer::tst_InspectorServer()
 {
     qputenv("QTWEBENGINE_REMOTE_DEBUGGING", INSPECTOR_SERVER_PORT);
-    QtWebEngine::initialize();
+    QtWebEngineQuick::initialize();
     QQuickWebEngineProfile::defaultProfile()->setOffTheRecord(true);
     prepareWebViewComponent();
 }

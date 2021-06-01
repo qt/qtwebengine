@@ -52,7 +52,7 @@
 //
 
 #include <QtQuick/QQuickImageProvider>
-#include <QtWebEngineQuick/private/qtwebengineglobal_p.h>
+#include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 
