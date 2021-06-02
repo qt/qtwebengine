@@ -38,6 +38,7 @@ qt_feature_module_begin(ONLY_EVALUATE_FEATURES)
 set(__QtFeature_only_evaluate_features OFF)
 include(configure.cmake)
 include(src/core/api/configure.cmake)
+include(src/webenginequick/configure.cmake)
 qt_feature_module_end(ONLY_EVALUATE_FEATURES)
 
 if(NOT ${webEngineSupport})

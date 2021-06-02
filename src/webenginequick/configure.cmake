@@ -8,7 +8,7 @@ qt_feature("webenginequick-ui-delegates" PRIVATE
 )
 qt_feature("webenginequick-testsupport" PRIVATE
     LABEL "Test Support"
-    AUTODETECT FALSE
+    AUTODETECT QT_FEATURE_webengine_developer_build
 )
 qt_configure_add_summary_section(NAME "Qt WebEngineQuick")
 qt_configure_add_summary_entry(ARGS "webenginequick-qml")

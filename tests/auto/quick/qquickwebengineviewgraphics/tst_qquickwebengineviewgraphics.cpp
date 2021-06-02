@@ -26,15 +26,14 @@
 **
 ****************************************************************************/
 
-#include "util.h"
-
+#include <quickutil.h>
 #include <QtTest/QtTest>
 #include <QQmlContext>
 #include <QQuickView>
 #include <QQuickItem>
 #include <QPainter>
 #include <QtWebEngineQuick/qtwebenginequickglobal.h>
-#include <private/qquickwebengineview_p.h>
+#include <QtWebEngineQuick/private/qquickwebengineview_p.h>
 
 #include <map>
 
@@ -153,10 +152,11 @@ void tst_QQuickWebEngineViewGraphics::setHtml(const QString &html)
     m_view->create();
 
     QQuickWebEngineView *webEngineView = static_cast<QQuickWebEngineView *>(m_view->rootObject());
-    webEngineView->setProperty("url", QUrl(QStringLiteral("data:text/html,%1").arg(htmlData)));
-    QTRY_COMPARE_WITH_TIMEOUT(m_view->rootObject()->property("loading"), QVariant(false), 30000);
+    webEngineView->setUrl(QUrl(QStringLiteral("data:text/html,%1").arg(htmlData)));
+    QVERIFY(waitForLoadSucceeded(webEngineView));
 }
 
 static QByteArrayList params;
 W_QTEST_MAIN(tst_QQuickWebEngineViewGraphics, params)
 #include "tst_qquickwebengineviewgraphics.moc"
+#include "moc_quickutil.cpp"

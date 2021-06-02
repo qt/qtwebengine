@@ -55,7 +55,7 @@ if(QT_FEATURE_ssl)
     list(APPEND testList tst_certificateError.qml)
 endif()
 
-if(QT_FEATURE_webengine_testsupport)
+if(QT_FEATURE_webenginequick_testsupport)
     list(APPEND testList
         tst_inputMethod.qml
         tst_javaScriptDialogs.qml
