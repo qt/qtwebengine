@@ -51,6 +51,7 @@
 
 QT_BEGIN_NAMESPACE
 class QContextMenuEvent;
+class QPrinter;
 class QUrl;
 class QWebEnginePage;
 class QWebEngineSettings;
@@ -107,6 +108,10 @@ public:
 #endif
     QWebEngineContextMenuRequest *lastContextMenuRequest() const;
 
+    void printToPdf(const QString &filePath, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
+    void printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
+    void print(QPrinter *printer, const QWebEngineCallback<bool> &resultCallback);
+
 public Q_SLOTS:
     void stop();
     void back();
@@ -124,6 +129,8 @@ Q_SIGNALS:
     void iconChanged(const QIcon&);
     void renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus terminationStatus,
                              int exitCode);
+    void pdfPrintingFinished(const QString &filePath, bool success);
+    void printRequested();
 
 protected:
     virtual QWebEngineView *createWindow(QWebEnginePage::WebWindowType type);

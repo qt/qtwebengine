@@ -48,9 +48,6 @@
 #include "find_text_helper.h"
 #include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
-#if QT_CONFIG(webengine_printing_and_pdf)
-#include "printing/printer_worker.h"
-#endif
 #include "qwebenginecertificateerror.h"
 #include "qwebenginefindtextresult.h"
 #include "qwebenginefullscreenrequest.h"
@@ -79,12 +76,9 @@
 #include <QIcon>
 #include <QLoggingCategory>
 #include <QMimeData>
-#if QT_CONFIG(webengine_printing_and_pdf)
-#include <QPrinter>
-#include <QThread>
-#endif
 #include <QTimer>
 #include <QUrl>
+
 
 QT_BEGIN_NAMESPACE
 
@@ -182,9 +176,6 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     , webChannelWorldId(QWebEngineScript::MainWorld)
     , defaultAudioMuted(false)
     , defaultZoomFactor(1.0)
-#if QT_CONFIG(webengine_printing_and_pdf)
-    , currentPrinter(nullptr)
-#endif
 {
     memset(actions, 0, sizeof(actions));
 
@@ -340,8 +331,8 @@ void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isE
 
 void QWebEnginePagePrivate::didPrintPageToPdf(const QString &filePath, bool success)
 {
-    Q_Q(QWebEnginePage);
-    Q_EMIT q->pdfPrintingFinished(filePath, success);
+    if (view)
+        view->didPrintPageToPdf(filePath, success);
 }
 
 void QWebEnginePagePrivate::focusContainer()
@@ -486,38 +477,8 @@ void QWebEnginePagePrivate::didFetchDocumentInnerText(quint64 requestId, const Q
 
 void QWebEnginePagePrivate::didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result)
 {
-#if QT_CONFIG(webengine_printing_and_pdf)
-    Q_Q(QWebEnginePage);
-
-    // If no currentPrinter is set that means that were printing to PDF only.
-    if (!currentPrinter) {
-        if (!result.data())
-            return;
-        m_callbacks.invoke(requestId, *(result.data()));
-        return;
-    }
-
-    QThread *printerThread = new QThread;
-    QObject::connect(printerThread, &QThread::finished, printerThread, &QThread::deleteLater);
-    printerThread->start();
-
-    PrinterWorker *printerWorker = new PrinterWorker(result, currentPrinter);
-    QObject::connect(printerWorker, &PrinterWorker::resultReady, q, [requestId, this](bool success) {
-        currentPrinter = nullptr;
-        m_callbacks.invoke(requestId, success);
-    });
-
-    QObject::connect(printerWorker, &PrinterWorker::resultReady, printerThread, &QThread::quit);
-    QObject::connect(printerThread, &QThread::finished, printerWorker, &PrinterWorker::deleteLater);
-
-    printerWorker->moveToThread(printerThread);
-    QMetaObject::invokeMethod(printerWorker, "print");
-
-#else
-    // we should never enter this branch, but just for safe-keeping...
-    Q_UNUSED(result);
-    m_callbacks.invoke(requestId, QByteArray());
-#endif
+    if (view)
+        view->didPrintPage(requestId, result);
 }
 
 bool QWebEnginePagePrivate::passOnFocus(bool reverse)
@@ -780,15 +741,6 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
     \sa findText()
 */
 
-/*!
-    \fn void QWebEnginePage::printRequested()
-    \since 5.12
-
-    This signal is emitted when the JavaScript \c{window.print()} method is called.
-    Typically, the signal handler can simply call printToPdf().
-
-    \sa printToPdf()
-*/
 
 /*!
     \enum QWebEnginePage::RenderProcessTerminationStatus
@@ -851,19 +803,6 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
     The request object \a request can be used to accept or reject the request:
 
     \snippet webenginewidgets/simplebrowser/webview.cpp registerProtocolHandlerRequested
-*/
-
-/*!
-    \fn void QWebEnginePage::pdfPrintingFinished(const QString &filePath, bool success)
-    \since 5.9
-
-    This signal is emitted when printing the web page into a PDF file has
-    finished.
-    \a filePath will contain the path the file was requested to be created
-    at, and \a success will be \c true if the file was successfully created and
-    \c false otherwise.
-
-    \sa printToPdf()
 */
 
 /*!
@@ -1752,10 +1691,8 @@ void QWebEnginePagePrivate::setToolTip(const QString &toolTipText)
 
 void QWebEnginePagePrivate::printRequested()
 {
-    Q_Q(QWebEnginePage);
-    QTimer::singleShot(0, q, [q](){
-        Q_EMIT q->printRequested();
-    });
+    if (view)
+        view->printRequested();
 }
 
 void QWebEnginePagePrivate::lifecycleStateChanged(LifecycleState state)
@@ -2266,115 +2203,6 @@ QSizeF QWebEnginePage::contentsSize() const
     Q_D(const QWebEnginePage);
     return d->adapter->lastContentsSize();
 }
-
-/*!
-    Renders the current content of the page into a PDF document and saves it
-    in the location specified in \a filePath.
-    The page size and orientation of the produced PDF document are taken from
-    the values specified in \a pageLayout.
-
-    This method issues an asynchronous request for printing the web page into
-    a PDF and returns immediately.
-    To be informed about the result of the request, connect to the signal
-    pdfPrintingFinished().
-
-    If a file already exists at the provided file path, it will be overwritten.
-    \since 5.7
-    \sa pdfPrintingFinished()
-*/
-void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &pageLayout)
-{
-#if QT_CONFIG(webengine_printing_and_pdf)
-    Q_D(const QWebEnginePage);
-    if (d->currentPrinter) {
-        qWarning("Cannot print to PDF while at the same time printing on printer %ls", qUtf16Printable(d->currentPrinter->printerName()));
-        return;
-    }
-    d->ensureInitialized();
-    d->adapter->printToPDF(pageLayout, filePath);
-#else
-    Q_UNUSED(filePath);
-    Q_UNUSED(pageLayout);
-#endif
-}
-
-
-/*!
-    Renders the current content of the page into a PDF document and returns a byte array containing the PDF data
-    as parameter to \a resultCallback.
-    The page size and orientation of the produced PDF document are taken from the values specified in \a pageLayout.
-
-    The \a resultCallback must take a const reference to a QByteArray as parameter. If printing was successful, this byte array
-    will contain the PDF data, otherwise, the byte array will be empty.
-
-    \warning We guarantee that the callback (\a resultCallback) is always called, but it might be done
-    during page destruction. When QWebEnginePage is deleted, the callback is triggered with an invalid
-    value and it is not safe to use the corresponding QWebEnginePage or QWebEngineView instance inside it.
-
-    \since 5.7
-*/
-void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &pageLayout)
-{
-    Q_D(QWebEnginePage);
-#if QT_CONFIG(webengine_printing_and_pdf)
-    if (d->currentPrinter) {
-        qWarning("Cannot print to PDF while at the same time printing on printer %ls", qUtf16Printable(d->currentPrinter->printerName()));
-        d->m_callbacks.invokeEmpty(resultCallback);
-        return;
-    }
-    d->ensureInitialized();
-    quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout);
-    d->m_callbacks.registerCallback(requestId, resultCallback);
-#else
-    Q_UNUSED(pageLayout);
-    d->m_callbacks.invokeEmpty(resultCallback);
-#endif
-}
-
-/*!
-    Renders the current content of the page into a temporary PDF document, then prints it using \a printer.
-
-    The settings for creating and printing the PDF document will be retrieved from the \a printer
-    object.
-    It is the users responsibility to ensure the \a printer remains valid until \a resultCallback
-    has been called.
-
-    \note Printing runs on the browser process, which is by default not sandboxed.
-
-    The \a resultCallback must take a boolean as parameter. If printing was successful, this
-    boolean will have the value \c true, otherwise, its value will be \c false.
-
-    \warning We guarantee that the callback (\a resultCallback) is always called, but it might be done
-    during page destruction. When QWebEnginePage is deleted, the callback is triggered with an invalid
-    value and it is not safe to use the corresponding QWebEnginePage or QWebEngineView instance inside it.
-
-    \note This function rasterizes the result when rendering onto \a printer. Please consider raising
-    the default resolution of \a printer to at least 300 DPI or using printToPdf() to produce
-    PDF file output more effectively.
-
-    \since 5.8
-*/
-void QWebEnginePage::print(QPrinter *printer, const QWebEngineCallback<bool> &resultCallback)
-{
-    Q_D(QWebEnginePage);
-#if QT_CONFIG(webengine_printing_and_pdf)
-    if (d->currentPrinter) {
-        qWarning("Cannot print page on printer %ls: Already printing on %ls.", qUtf16Printable(printer->printerName()), qUtf16Printable(d->currentPrinter->printerName()));
-        d->m_callbacks.invokeDirectly(resultCallback, false);
-        return;
-    }
-    d->currentPrinter = printer;
-    d->ensureInitialized();
-    quint64 requestId = d->adapter->printToPDFCallbackResult(printer->pageLayout(),
-                                                             printer->colorMode() == QPrinter::Color,
-                                                             false);
-    d->m_callbacks.registerCallback(requestId, resultCallback);
-#else
-    Q_UNUSED(printer);
-    d->m_callbacks.invokeDirectly(resultCallback, false);
-#endif
-}
-
 
 /*!
     \fn void QWebEnginePage::newWindowRequested(WebEngineNewViewRequest &request)

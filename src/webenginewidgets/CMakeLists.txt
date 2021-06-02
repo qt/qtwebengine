@@ -29,3 +29,8 @@ qt_internal_add_module(WebEngineWidgets
         Qt::WebEngineCore
 )
 make_install_only(WebEngineWidgets)
+
+qt_internal_extend_target(WebEngineWidgets CONDITION QT_FEATURE_webengine_printing_and_pdf
+    PUBLIC_LIBRARIES
+        Qt::PrintSupport
+)

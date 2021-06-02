@@ -58,6 +58,7 @@
 #include <QtWidgets/qaccessiblewidget.h>
 
 namespace QtWebEngineCore {
+class QPrinter;
 class RenderWidgetHostViewQtDelegateWidget;
 class RenderWidgetHostViewQtDelegate;
 }
@@ -92,6 +93,10 @@ public:
     QWebEngineContextMenuRequest *lastContextMenuRequest() const override;
     QWebEnginePage *createPageForWindow(QWebEnginePage::WebWindowType type) override;
     QObject *accessibilityParentObject() override;
+    void didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result) override;
+    void didPrintPageToPdf(const QString &filePath, bool success) override;
+    void printRequested() override;
+
     QWebEngineViewPrivate();
     virtual ~QWebEngineViewPrivate();
     static void bindPageAndView(QWebEnginePage *page, QWebEngineView *view);
@@ -108,6 +113,9 @@ public:
     bool m_dragEntered;
     mutable bool m_ownsPage;
     QWebEngineContextMenuRequest *m_contextRequest;
+#if QT_CONFIG(webengine_printing_and_pdf)
+    QPrinter *currentPrinter;
+#endif
 };
 
 #ifndef QT_NO_ACCESSIBILITY

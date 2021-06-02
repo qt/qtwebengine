@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
-#include <QWebEnginePage>
+#include <QWebEngineView>
 #include <QTemporaryDir>
 #include <QTest>
 #include <QSignalSpy>
@@ -53,15 +53,15 @@ void tst_Printing::printToPdfBasic()
 {
     QTemporaryDir tempDir(QDir::tempPath() + "/tst_qwebengineview-XXXXXX");
     QVERIFY(tempDir.isValid());
-    QWebEnginePage page;
-    QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
-    page.load(QUrl("qrc:///resources/basic_printing_page.html"));
+    QWebEngineView view;
+    QSignalSpy spy(&view, &QWebEngineView::loadFinished);
+    view.load(QUrl("qrc:///resources/basic_printing_page.html"));
     QTRY_VERIFY(spy.count() == 1);
 
-    QSignalSpy savePdfSpy(&page, &QWebEnginePage::pdfPrintingFinished);
+    QSignalSpy savePdfSpy(&view, &QWebEngineView::pdfPrintingFinished);
     QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0.0, 0.0, 0.0, 0.0));
     QString path = tempDir.path() + "/print_1_success.pdf";
-    page.printToPdf(path, layout);
+    view.printToPdf(path, layout);
     QTRY_VERIFY2(savePdfSpy.count() == 1, "Printing to PDF file failed without signal");
 
     QList<QVariant> successArguments = savePdfSpy.takeFirst();
@@ -73,7 +73,7 @@ void tst_Printing::printToPdfBasic()
 #else
     path = tempDir.path() + "/print_|2_failed.pdf";
 #endif
-    page.printToPdf(path, QPageLayout());
+    view.printToPdf(path, QPageLayout());
     QTRY_VERIFY2(savePdfSpy.count() == 1, "Printing to PDF file failed without signal");
 
     QList<QVariant> failedArguments = savePdfSpy.takeFirst();
@@ -81,29 +81,29 @@ void tst_Printing::printToPdfBasic()
     QVERIFY2(failedArguments.at(1).toBool() == false, "Printing to PDF file succeeded though it should fail");
 
     CallbackSpy<QByteArray> successfulSpy;
-    page.printToPdf(successfulSpy.ref(), layout);
+    view.printToPdf(successfulSpy.ref(), layout);
     QVERIFY(successfulSpy.waitForResult().length() > 0);
 
     CallbackSpy<QByteArray> failedInvalidLayoutSpy;
-    page.printToPdf(failedInvalidLayoutSpy.ref(), QPageLayout());
+    view.printToPdf(failedInvalidLayoutSpy.ref(), QPageLayout());
     QCOMPARE(failedInvalidLayoutSpy.waitForResult().length(), 0);
 }
 
 void tst_Printing::printRequest()
 {
-     QWebEnginePage webPage;
+     QWebEngineView view;
      QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0.0, 0.0, 0.0, 0.0));
-     QSignalSpy loadFinishedSpy(&webPage, &QWebEnginePage::loadFinished);
-     QSignalSpy printRequestedSpy(&webPage, &QWebEnginePage::printRequested);
-     QSignalSpy savePdfSpy(&webPage, &QWebEnginePage::pdfPrintingFinished);
+     QSignalSpy loadFinishedSpy(&view, &QWebEngineView::loadFinished);
+     QSignalSpy printRequestedSpy(&view, &QWebEngineView::printRequested);
+     QSignalSpy savePdfSpy(&view, &QWebEngineView::pdfPrintingFinished);
      CallbackSpy<QByteArray> resultSpy;
 
-     webPage.load(QUrl("qrc:///resources/basic_printing_page.html"));
+     view.load(QUrl("qrc:///resources/basic_printing_page.html"));
      QTRY_VERIFY(loadFinishedSpy.count() == 1);
-     webPage.runJavaScript("window.print()");
+     view.page()->runJavaScript("window.print()");
      QTRY_VERIFY(printRequestedSpy.count() == 1);
      //check if printing still works
-     webPage.printToPdf(resultSpy.ref(), layout);
+     view.printToPdf(resultSpy.ref(), layout);
      const QByteArray data = resultSpy.waitForResult();
      QVERIFY(data.length() > 0);
 }
@@ -113,16 +113,16 @@ void tst_Printing::printToPdfPoppler()
 {
     // check if generated pdf is correct by searching for a know string on the page
     using namespace poppler;
-    QWebEnginePage webPage;
+    QWebEngineView view;
     QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0.0, 0.0, 0.0, 0.0));
 
-    QSignalSpy spy(&webPage, &QWebEnginePage::loadFinished);
-    QSignalSpy savePdfSpy(&webPage, &QWebEnginePage::pdfPrintingFinished);
+    QSignalSpy spy(&view, &QWebEngineView::loadFinished);
+    QSignalSpy savePdfSpy(&view, &QWebEngineView::pdfPrintingFinished);
     CallbackSpy<QByteArray> resultSpy;
 
-    webPage.load(QUrl("qrc:///resources/basic_printing_page.html"));
+    view.load(QUrl("qrc:///resources/basic_printing_page.html"));
     QTRY_VERIFY(spy.count() == 1);
-    webPage.printToPdf(resultSpy.ref(), layout);
+    view.printToPdf(resultSpy.ref(), layout);
     const QByteArray data = resultSpy.waitForResult();
     QVERIFY(data.length() > 0);
 

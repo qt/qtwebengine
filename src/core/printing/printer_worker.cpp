@@ -42,12 +42,12 @@
 #include "printing/pdfium_document_wrapper_qt.h"
 
 #include <QPainter>
-#include <QPrinter>
+#include <QPagedPaintDevice>
 
 namespace QtWebEngineCore {
 
-PrinterWorker::PrinterWorker(QSharedPointer<QByteArray> data, QPrinter *printer)
-    : m_data(data), m_printer(printer)
+PrinterWorker::PrinterWorker(QSharedPointer<QByteArray> data, QPagedPaintDevice *device)
+    : m_data(data), m_device(device)
 {
 }
 
@@ -56,16 +56,16 @@ PrinterWorker::~PrinterWorker() { }
 void PrinterWorker::print()
 {
     if (!m_data->size()) {
-        qWarning("Failure to print on printer %ls: Print result data is empty.",
-                 qUtf16Printable(m_printer->printerName()));
+        qWarning("Failed to print: Print result data is empty.");
         Q_EMIT resultReady(false);
         return;
     }
 
     PdfiumDocumentWrapperQt pdfiumWrapper(m_data->constData(), m_data->size());
 
-    int toPage = m_printer->toPage();
-    int fromPage = m_printer->fromPage();
+    const QPageRanges ranges = m_device->pageRanges();
+    int toPage = ranges.firstPage();
+    int fromPage = ranges.lastPage();
     bool ascendingOrder = true;
 
     if (fromPage == 0 && toPage == 0) {
@@ -75,62 +75,50 @@ void PrinterWorker::print()
     fromPage = qMax(1, fromPage);
     toPage = qMin(pdfiumWrapper.pageCount(), toPage);
 
-    if (m_printer->pageOrder() == QPrinter::LastPageFirst) {
+    if (!m_firstPageFirst) {
         qSwap(fromPage, toPage);
         ascendingOrder = false;
     }
 
     int pageCopies = 1;
-    int documentCopies = 1;
-
-    if (!m_printer->supportsMultipleCopies())
-        documentCopies = m_printer->copyCount();
-
-    if (m_printer->collateCopies()) {
-        pageCopies = documentCopies;
-        documentCopies = 1;
+    if (m_collateCopies) {
+        pageCopies = m_documentCopies;
+        m_documentCopies = 1;
     }
 
-    qreal resolution = m_printer->resolution() / 72.0; // pdfium uses points so 1/72 inch
+    qreal resolution = m_deviceResolution / 72.0; // pdfium uses points so 1/72 inch
 
     QPainter painter;
 
-    for (int printedDocuments = 0; printedDocuments < documentCopies; printedDocuments++) {
+    for (int printedDocuments = 0; printedDocuments < m_documentCopies; printedDocuments++) {
         if (printedDocuments > 0)
-            m_printer->newPage();
+            m_device->newPage();
 
         int currentPageIndex = fromPage;
 
         for (int i = 0; true; i++) {
             QSizeF documentSize = (pdfiumWrapper.pageSize(currentPageIndex - 1) * resolution);
             bool isLandscape = documentSize.width() > documentSize.height();
-            m_printer->setPageOrientation(isLandscape ? QPageLayout::Landscape
+            m_device->setPageOrientation(isLandscape ? QPageLayout::Landscape
                                                       : QPageLayout::Portrait);
-            QRectF pageRect = m_printer->pageRect(QPrinter::DevicePixel);
+            QRectF pageRect = m_device->pageLayout().pageSize().rectPixels(m_deviceResolution);
             documentSize = documentSize.scaled(pageRect.size(), Qt::KeepAspectRatio);
 
             // setPageOrientation has to be called before qpainter.begin() or before
             // qprinter.newPage() so correct metrics is used, therefore call begin now for only
             // first page
-            if (!painter.isActive() && !painter.begin(m_printer)) {
-                qWarning("Failure to print on printer %ls: Could not open printer for painting.",
-                         qUtf16Printable(m_printer->printerName()));
+            if (!painter.isActive() && !painter.begin(m_device)) {
+                qWarning("Failure to print on device: Could not open printer for painting.");
                 Q_EMIT resultReady(false);
                 return;
             }
 
             if (i > 0)
-                m_printer->newPage();
+                m_device->newPage();
 
             for (int printedPages = 0; printedPages < pageCopies; printedPages++) {
-                if (m_printer->printerState() == QPrinter::Aborted
-                    || m_printer->printerState() == QPrinter::Error) {
-                    Q_EMIT resultReady(false);
-                    return;
-                }
-
                 if (printedPages > 0)
-                    m_printer->newPage();
+                    m_device->newPage();
 
                 QImage currentImage = pdfiumWrapper.pageAsQImage(
                         currentPageIndex - 1, documentSize.width(), documentSize.height());

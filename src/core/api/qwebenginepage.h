@@ -55,7 +55,6 @@
 
 QT_BEGIN_NAMESPACE
 class QMenu;
-class QPrinter;
 
 class QContextMenuBuilder;
 class QWebChannel;
@@ -302,10 +301,6 @@ public:
     bool recentlyAudible() const;
     qint64 renderProcessPid() const;
 
-    void printToPdf(const QString &filePath, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
-    void printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
-    void print(QPrinter *printer, const QWebEngineCallback<bool> &resultCallback);
-
     void setInspectedPage(QWebEnginePage *page);
     QWebEnginePage *inspectedPage() const;
     void setDevToolsPage(QWebEnginePage *page);
@@ -359,9 +354,6 @@ Q_SIGNALS:
     void audioMutedChanged(bool muted);
     void recentlyAudibleChanged(bool recentlyAudible);
     void renderProcessPidChanged(qint64 pid);
-
-    void pdfPrintingFinished(const QString &filePath, bool success);
-    void printRequested();
 
     void visibleChanged(bool visible);
 

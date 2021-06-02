@@ -51,12 +51,12 @@
 #ifndef PRINTER_WORKER_H
 #define PRINTER_WORKER_H
 
-#include "qtwebenginecoreglobal_p.h"
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 
 #include <QSharedPointer>
 
 QT_BEGIN_NAMESPACE
-class QPrinter;
+class QPagedPaintDevice;
 QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
@@ -65,8 +65,13 @@ class Q_WEBENGINECORE_PRIVATE_EXPORT PrinterWorker : public QObject
 {
     Q_OBJECT
 public:
-    PrinterWorker(QSharedPointer<QByteArray> data, QPrinter *printer);
+    PrinterWorker(QSharedPointer<QByteArray> data, QPagedPaintDevice *device);
     virtual ~PrinterWorker();
+
+    int m_deviceResolution;
+    bool m_firstPageFirst;
+    int m_documentCopies;
+    bool m_collateCopies;
 
 public Q_SLOTS:
     void print();
@@ -78,7 +83,7 @@ private:
     Q_DISABLE_COPY(PrinterWorker)
 
     QSharedPointer<QByteArray> m_data;
-    QPrinter *m_printer;
+    QPagedPaintDevice *m_device;
 };
 
 } // namespace QtWebEngineCore

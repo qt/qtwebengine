@@ -2,7 +2,7 @@ if(NOT DEFINED WEBENGINE_ROOT_SOURCE_DIR)
     get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../../.." REALPATH)
 endif()
 find_package(Qt6 ${PROJECT_VERSION} REQUIRED COMPONENTS Gui Network OpenGL Quick)
-find_package(Qt6 ${PROJECT_VERSION} QUIET OPTIONAL_COMPONENTS PrintSupport WebChannel Positioning)
+find_package(Qt6 ${PROJECT_VERSION} QUIET OPTIONAL_COMPONENTS WebChannel Positioning)
 include(${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Functions.cmake)
 
 get_configure_mode(configureMode)
@@ -65,10 +65,6 @@ qt_skip_warnings_are_errors(WebEngineCore)
 make_install_only(WebEngineCore)
 make_config_for_gn(WebEngineCore gn_config)
 
-qt_internal_extend_target(WebEngineCore CONDITION QT_FEATURE_webengine_printing_and_pdf
-    PUBLIC_LIBRARIES
-        Qt::PrintSupport
-)
 qt_internal_extend_target(WebEngineCore CONDITION QT_FEATURE_webengine_webchannel
     PUBLIC_LIBRARIES
         Qt::WebChannel

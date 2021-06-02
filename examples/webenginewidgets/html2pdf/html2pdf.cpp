@@ -52,7 +52,7 @@
 #include <QCommandLineParser>
 #include <QFile>
 #include <QTextStream>
-#include <QWebEnginePage>
+#include <QWebEngineView>
 
 #include <functional>
 
@@ -73,23 +73,23 @@ private slots:
 private:
     QString m_inputPath;
     QString m_outputPath;
-    QScopedPointer<QWebEnginePage> m_page;
+    QScopedPointer<QWebEngineView> m_view;
 };
 
 Html2PdfConverter::Html2PdfConverter(QString inputPath, QString outputPath)
     : m_inputPath(move(inputPath))
     , m_outputPath(move(outputPath))
-    , m_page(new QWebEnginePage)
+    , m_view(new QWebEngineView)
 {
-    connect(m_page.data(), &QWebEnginePage::loadFinished,
+    connect(m_view.data(), &QWebEngineView::loadFinished,
             this, &Html2PdfConverter::loadFinished);
-    connect(m_page.data(), &QWebEnginePage::pdfPrintingFinished,
+    connect(m_view.data(), &QWebEngineView::pdfPrintingFinished,
             this, &Html2PdfConverter::pdfPrintingFinished);
 }
 
 int Html2PdfConverter::run()
 {
-    m_page->load(QUrl::fromUserInput(m_inputPath));
+    m_view->load(QUrl::fromUserInput(m_inputPath));
     return QApplication::exec();
 }
 
@@ -102,7 +102,7 @@ void Html2PdfConverter::loadFinished(bool ok)
         return;
     }
 
-    m_page->printToPdf(m_outputPath);
+    m_view->printToPdf(m_outputPath);
 }
 
 void Html2PdfConverter::pdfPrintingFinished(const QString &filePath, bool success)

@@ -66,7 +66,7 @@ void PrintHandler::setView(QWebEngineView *view)
 {
     Q_ASSERT(!m_view);
     m_view = view;
-    connect(view->page(), &QWebEnginePage::printRequested, this, &PrintHandler::printPreview);
+    connect(view, &QWebEngineView::printRequested, this, &PrintHandler::printPreview);
 }
 
 void PrintHandler::print()
@@ -83,7 +83,7 @@ void PrintHandler::printDocument(QPrinter *printer)
     QEventLoop loop;
     bool result;
     auto printPreview = [&](bool success) { result = success; loop.quit(); };
-    m_view->page()->print(printer, std::move(printPreview));
+    m_view->print(printer, std::move(printPreview));
     loop.exec();
     if (!result) {
         QPainter painter;

@@ -104,6 +104,9 @@ public:
     virtual void unhandledKeyEvent(QKeyEvent *event) = 0;
     virtual bool passOnFocus(bool reverse) = 0;
     virtual QObject *accessibilityParentObject() = 0;
+    virtual void didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result) = 0;
+    virtual void didPrintPageToPdf(const QString &filePath, bool success) = 0;
+    virtual void printRequested() = 0;
 };
 
 class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEnginePagePrivate : public QtWebEngineCore::WebContentsAdapterClient
@@ -225,9 +228,6 @@ public:
 
     mutable QtWebEngineCore::CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];
-#if QT_CONFIG(webengine_printing_and_pdf)
-    QPrinter *currentPrinter;
-#endif
 };
 
 QT_END_NAMESPACE
