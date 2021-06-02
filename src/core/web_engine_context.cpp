@@ -525,7 +525,7 @@ ProfileAdapter *WebEngineContext::createDefaultProfileAdapter()
 {
     Q_ASSERT(!m_destroyed);
     if (!m_defaultProfileAdapter) {
-        ProfileAdapter *profile = new ProfileAdapter(QStringLiteral("Default"));
+        ProfileAdapter *profile = new ProfileAdapter();
         // profile when added to m_profileAdapters might be set default
         // profile in case of single-process
         if (!m_defaultProfileAdapter)

@@ -73,6 +73,6 @@ public:
 private:
     QList<BrowserWindow*> m_windows;
     DownloadManagerWidget m_downloadManagerWidget;
-    QScopedPointer<QWebEngineProfile> m_otrProfile;
+    QScopedPointer<QWebEngineProfile> m_profile;
 };
 #endif // BROWSER_H

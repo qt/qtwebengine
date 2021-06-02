@@ -666,7 +666,7 @@ std::function<void(std::unique_ptr<QWebEngineNotification>)> QWebEngineProfile::
 /*!
     Returns the default profile.
 
-    The default profile uses the storage name "Default".
+    The default profile is off-the-record.
 
     \sa storageName()
 */

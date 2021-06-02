@@ -794,8 +794,6 @@ bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost 
 void WebContentsDelegateQt::RegisterProtocolHandler(content::RenderFrameHost *frameHost, const std::string &protocol, const GURL &url, bool)
 {
     content::BrowserContext *context = frameHost->GetBrowserContext();
-    if (context->IsOffTheRecord())
-        return;
 
     ProtocolHandler handler =
         ProtocolHandler::CreateProtocolHandler(protocol, url);
@@ -813,8 +811,6 @@ void WebContentsDelegateQt::RegisterProtocolHandler(content::RenderFrameHost *fr
 void WebContentsDelegateQt::UnregisterProtocolHandler(content::RenderFrameHost *frameHost, const std::string &protocol, const GURL &url, bool)
 {
     content::BrowserContext* context = frameHost->GetBrowserContext();
-    if (context->IsOffTheRecord())
-        return;
 
     ProtocolHandler handler =
         ProtocolHandler::CreateProtocolHandler(protocol, url);
