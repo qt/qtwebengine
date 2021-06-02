@@ -1581,7 +1581,7 @@ blink::WebMouseWheelEvent::Phase toBlinkPhase(QWheelEvent *ev)
 #endif
         return blink::WebMouseWheelEvent::kPhaseNone;
     case Qt::ScrollBegin:
-        return ev->angleDelta().isNull() ? blink::WebMouseWheelEvent::kPhaseMayBegin : blink::WebMouseWheelEvent::kPhaseBegan;
+        return blink::WebMouseWheelEvent::kPhaseBegan;
     case Qt::ScrollUpdate:
         return blink::WebMouseWheelEvent::kPhaseChanged;
     case Qt::ScrollEnd:
