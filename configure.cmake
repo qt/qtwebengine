@@ -335,6 +335,11 @@ add_check_for_support(webEngineError webEngineSupport
 )
 add_check_for_support(webEngineError webEngineSupport
    MODULE QtWebEngine
+   CONDITION NOT QT_FEATURE_static
+   MESSAGE "Static build is not supported."
+)
+add_check_for_support(webEngineError webEngineSupport
+   MODULE QtWebEngine
    CONDITION TARGET Nodejs::Nodejs
    MESSAGE "Nodejs is required."
 )
