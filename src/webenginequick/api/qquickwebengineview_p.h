@@ -106,7 +106,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged REVISION(1,1) FINAL)
     Q_PROPERTY(QQuickWebEngineProfile *profile READ profile WRITE setProfile NOTIFY profileChanged FINAL REVISION(1,1))
     Q_PROPERTY(QQuickWebEngineSettings *settings READ settings REVISION(1,1) CONSTANT FINAL)
-    Q_PROPERTY(QWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL REVISION(1,1))
+    Q_PROPERTY(QWebEngineHistory *history READ history CONSTANT FINAL REVISION(1,1))
 #if QT_CONFIG(webengine_webchannel)
     Q_PROPERTY(QQmlWebChannel *webChannel READ webChannel WRITE setWebChannel NOTIFY webChannelChanged REVISION(1,1) FINAL)
 #endif
@@ -443,7 +443,7 @@ public:
     QQuickWebEngineSettings *settings();
     QQmlWebChannel *webChannel();
     void setWebChannel(QQmlWebChannel *);
-    QWebEngineHistory *navigationHistory() const;
+    QWebEngineHistory *history() const;
     uint webChannelWorld() const;
     void setWebChannelWorld(uint);
     Q_REVISION(1,8) Q_INVOKABLE QQuickWebEngineAction *action(WebAction action);

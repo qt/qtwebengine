@@ -1523,7 +1523,7 @@ void QQuickWebEngineView::findText(const QString &subString, FindFlags options, 
     d->adapter->findTextHelper()->startFinding(subString, options & FindCaseSensitively, options & FindBackward, callback);
 }
 
-QWebEngineHistory *QQuickWebEngineView::navigationHistory() const
+QWebEngineHistory *QQuickWebEngineView::history() const
 {
     Q_D(const QQuickWebEngineView);
     return d->m_history.data();

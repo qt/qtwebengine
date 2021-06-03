@@ -52,7 +52,7 @@
     method is always used to load URLs.
 
     The history is represented by a WebEngineHistory data model that is held by
-    the \l navigationHistory property.
+    the \l history property.
 
     The following sample QML application loads a web page using the \c url property:
 
@@ -286,7 +286,7 @@
 */
 
 /*!
-    \qmlproperty WebEngineHistory WebEngineView::navigationHistory
+    \qmlproperty WebEngineHistory WebEngineView::history
     \since QtWebEngine 1.1
     \readonly
 

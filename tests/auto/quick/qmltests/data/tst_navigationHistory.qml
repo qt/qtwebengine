@@ -38,7 +38,7 @@ TestWebEngineView {
     ListView {
         id: backItemsList
         anchors.fill: parent
-        model: webEngineView.navigationHistory.backItems
+        model: webEngineView.history.backItems
         currentIndex: count - 1
         delegate:
             Text {
@@ -50,7 +50,7 @@ TestWebEngineView {
     ListView {
         id: forwardItemsList
         anchors.fill: parent
-        model: webEngineView.navigationHistory.forwardItems
+        model: webEngineView.history.forwardItems
         currentIndex: 0
         delegate:
             Text {
@@ -75,7 +75,7 @@ TestWebEngineView {
         name: "NavigationHistory"
 
         function test_navigationHistory() {
-            webEngineView.navigationHistory.clear()
+            webEngineView.history.clear()
 
             webEngineView.url = Qt.resolvedUrl("test1.html")
             verify(webEngineView.waitForLoadSucceeded())
@@ -147,7 +147,7 @@ TestWebEngineView {
             compare(backItemsList.currentItem.text, Qt.resolvedUrl("test1.html"))
             compare(forwardItemsList.currentItem.text, Qt.resolvedUrl("javascript.html"))
 
-            webEngineView.navigationHistory.clear()
+            webEngineView.history.clear()
             compare(webEngineView.url, Qt.resolvedUrl("test2.html"))
             compare(webEngineView.canGoBack, false)
             compare(webEngineView.canGoForward, false)
@@ -156,7 +156,7 @@ TestWebEngineView {
         }
 
         function test_navigationButtons() {
-            webEngineView.navigationHistory.clear()
+            webEngineView.history.clear()
 
             const url1 = Qt.resolvedUrl("test1.html")
             webEngineView.url = url1

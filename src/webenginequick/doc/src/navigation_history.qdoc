@@ -41,7 +41,7 @@
     was visited before the current page.
 
     This type is uncreatable, but it can be accessed by using the
-    \l{WebEngineView::navigationHistory}{WebEngineView.navigationHistory} property.
+    \l{WebEngineView::history}{WebEngineView.history} property.
 
     \sa WebEngineHistory
 */
@@ -55,7 +55,7 @@
     \brief Provides data models that represent the history of a web engine page.
 
     The WebEngineHistory type can be accessed by using the
-    \l{WebEngineView::navigationHistory}{WebEngineView.navigationHistory} property.
+    \l{WebEngineView::history}{WebEngineView.history} property.
 
     The WebEngineHistory type provides the following WebEngineHistoryModel data model objects:
 
@@ -74,7 +74,7 @@
     ListView {
         id: historyItemsList
         anchors.fill: parent
-        model: webEngineView.navigationHistory.items
+        model: webEngineView.history.items
         delegate:
             Text {
                 color: "black"

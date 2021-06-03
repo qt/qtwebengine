@@ -224,7 +224,7 @@ ApplicationWindow {
                         id: historyMenu
 
                         Instantiator {
-                            model: currentWebView && currentWebView.navigationHistory.items
+                            model: currentWebView && currentWebView.history.items
                             MenuItem {
                                 text: model.title
                                 onTriggered: currentWebView.goBackOrForward(model.offset)

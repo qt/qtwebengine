@@ -1322,7 +1322,7 @@ Module {
             isPointer: true
         }
         Property {
-            name: "navigationHistory"
+            name: "history"
             revision: 1
             type: "QWebEngineHistory"
             isReadonly: true

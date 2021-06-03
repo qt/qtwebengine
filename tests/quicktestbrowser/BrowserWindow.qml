@@ -142,7 +142,7 @@ ApplicationWindow {
         id: backHistoryMenu
 
         Instantiator {
-            model: currentWebView && currentWebView.navigationHistory.backItems
+            model: currentWebView && currentWebView.history.backItems
             MenuItem {
                 text: model.title
                 onTriggered: currentWebView.goBackOrForward(model.offset)
@@ -157,7 +157,7 @@ ApplicationWindow {
         id: forwardHistoryMenu
 
         Instantiator {
-            model: currentWebView && currentWebView.navigationHistory.forwardItems
+            model: currentWebView && currentWebView.history.forwardItems
             MenuItem {
                 text: model.title
                 onTriggered: currentWebView.goBackOrForward(model.offset)
