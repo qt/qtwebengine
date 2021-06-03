@@ -497,7 +497,7 @@
 */
 
 /*!
-    \fn void QWebEnginePage::findText(const QString &subString, QWebEnginePage::FindFlags options = FindFlags(), const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>())
+    \fn void QWebEnginePage::findText(const QString &subString, QWebEnginePage::FindFlags options = {}, const std::function<void(bool)> &resultCallback = std::function<void(bool)>)
     Finds the specified string, \a subString, in the page, using the given \a options.
     The findTextFinished() signal is emitted when a string search is completed.
 

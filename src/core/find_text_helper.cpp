@@ -64,17 +64,18 @@ FindTextHelper::~FindTextHelper()
         stopFinding();
 }
 
-void FindTextHelper::startFinding(const QString &findText, bool caseSensitively, bool findBackward, const QWebEngineCallback<bool> resultCallback)
+void FindTextHelper::startFinding(const QString &findText, bool caseSensitively, bool findBackward, const std::function<void(bool)> &resultCallback)
 {
     if (findText.isEmpty()) {
         stopFinding();
         m_viewClient->findTextFinished(QWebEngineFindTextResult());
-        m_widgetCallbacks.invokeEmpty(resultCallback);
+        if (resultCallback)
+            resultCallback(false);
         return;
     }
 
     startFinding(findText, caseSensitively, findBackward);
-    m_widgetCallbacks.registerCallback(m_currentFindRequestId, resultCallback);
+    m_widgetCallbacks.insert(m_currentFindRequestId, resultCallback);
 }
 
 void FindTextHelper::startFinding(const QString &findText, bool caseSensitively, bool findBackward, const QJSValue &resultCallback)
@@ -164,8 +165,8 @@ void FindTextHelper::invokeResultCallback(int requestId, int numberOfMatches)
         QJSValueList args;
         args.append(QJSValue(numberOfMatches));
         resultCallback.call(args);
-    } else {
-        m_widgetCallbacks.invoke(requestId, numberOfMatches > 0);
+    } else if (auto func = m_widgetCallbacks.take(requestId)) {
+        func(numberOfMatches > 0);
     }
 }
 

@@ -98,7 +98,7 @@ public:
 
     qreal zoomFactor() const;
     void setZoomFactor(qreal factor);
-    void findText(const QString &subString, QWebEnginePage::FindFlags options = QWebEnginePage::FindFlags(), const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>());
+    void findText(const QString &subString, QWebEnginePage::FindFlags options = {}, const std::function<void(bool)> &resultCallback = std::function<void(bool)>());
 
     QSize sizeHint() const override;
     QWebEngineSettings *settings() const;

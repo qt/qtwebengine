@@ -53,6 +53,8 @@
 #include <QtGui/qaction.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 
+#include <functional>
+
 QT_BEGIN_NAMESPACE
 class QMenu;
 
@@ -257,7 +259,7 @@ public:
 
     bool event(QEvent*) override;
 
-    void findText(const QString &subString, FindFlags options = FindFlags(), const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>());
+    void findText(const QString &subString, FindFlags options = {}, const std::function<void(bool)> &resultCallback = std::function<void(bool)>());
 
     void setFeaturePermission(const QUrl &securityOrigin, Feature feature, PermissionPolicy policy);
 
