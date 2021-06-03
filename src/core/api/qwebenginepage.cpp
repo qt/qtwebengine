@@ -301,20 +301,23 @@ QColor QWebEnginePagePrivate::backgroundColor() const
     return m_backgroundColor;
 }
 
-void QWebEnginePagePrivate::loadStarted(QWebEngineLoadingInfo /* info */)
+void QWebEnginePagePrivate::loadStarted(QWebEngineLoadingInfo info)
 {
     Q_Q(QWebEnginePage);
     isLoading = true;
-    QTimer::singleShot(0, q, &QWebEnginePage::loadStarted);
+    QTimer::singleShot(0, q, [q, info = std::move(info)] () {
+        Q_EMIT q->loadStarted();
+        Q_EMIT q->loadingChanged(info);
+    });
 }
 
 void QWebEnginePagePrivate::loadFinished(QWebEngineLoadingInfo info)
 {
     Q_Q(QWebEnginePage);
     isLoading = false;
-    bool success = info.status() == QWebEngineLoadingInfo::LoadSucceededStatus;
-    QTimer::singleShot(0, q, [q, success] () {
-        emit q->loadFinished(success);
+    QTimer::singleShot(0, q, [q, info = std::move(info)] () {
+        Q_EMIT q->loadFinished(info.status() == QWebEngineLoadingInfo::LoadSucceededStatus);
+        Q_EMIT q->loadingChanged(info);
     });
 }
 
@@ -1861,6 +1864,21 @@ void QWebEnginePage::download(const QUrl& url, const QString& filename)
     Q_D(QWebEnginePage);
     d->ensureInitialized();
     d->adapter->download(url, filename);
+}
+
+/*!
+  \property QWebEnginePage::loading
+  \since 6.2
+
+  \brief Whether the page is currently loading.
+
+  The \l loadingChanged() signal is emitted when loading the page begins, ends, or fails.
+
+  \sa QWebEngineLoadingInfo, loadStarted, loadFinished
+*/
+bool QWebEnginePage::isLoading() const
+{
+    return d_ptr->isLoading;
 }
 
 void QWebEnginePage::load(const QUrl& url)

@@ -63,6 +63,7 @@ class QWebEngineClientCertificateSelection;
 class QWebEngineFindTextResult;
 class QWebEngineFullScreenRequest;
 class QWebEngineHistory;
+class QWebEngineLoadingInfo;
 class QWebEngineNavigationRequest;
 class QWebEngineNewWindowRequest;
 class QWebEnginePage;
@@ -93,6 +94,7 @@ class Q_WEBENGINECORE_EXPORT QWebEnginePage : public QObject {
     Q_PROPERTY(LifecycleState lifecycleState READ lifecycleState WRITE setLifecycleState NOTIFY lifecycleStateChanged)
     Q_PROPERTY(LifecycleState recommendedState READ recommendedState NOTIFY recommendedStateChanged)
     Q_PROPERTY(qint64 renderProcessPid READ renderProcessPid NOTIFY renderProcessPidChanged)
+    Q_PROPERTY(bool loading READ isLoading NOTIFY loadingChanged FINAL)
 
 public:
     enum WebAction {
@@ -259,6 +261,8 @@ public:
 
     void setFeaturePermission(const QUrl &securityOrigin, Feature feature, PermissionPolicy policy);
 
+    bool isLoading() const;
+
     void load(const QUrl &url);
     void load(const QWebEngineHttpRequest &request);
     void download(const QUrl &url, const QString &filename = QString());
@@ -325,6 +329,7 @@ Q_SIGNALS:
     void loadStarted();
     void loadProgress(int progress);
     void loadFinished(bool ok);
+    void loadingChanged(const QWebEngineLoadingInfo &loadingInfo);
 
     void linkHovered(const QString &url);
     void selectionChanged();

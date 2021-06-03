@@ -31,12 +31,18 @@
 #include "httpserver.h"
 #include <util.h>
 #include "qdebug.h"
+#include "qwebengineloadinginfo.h"
 #include "qwebenginepage.h"
 #include "qwebengineprofile.h"
 #include "qwebenginesettings.h"
 #include "qwebengineview.h"
 
-enum { LoadStarted, LoadSucceeded, LoadFailed };
+enum {
+    LoadStarted = QWebEngineLoadingInfo::LoadStartedStatus,
+    LoadStopped = QWebEngineLoadingInfo::LoadStoppedStatus,
+    LoadSucceeded = QWebEngineLoadingInfo::LoadSucceededStatus,
+    LoadFailed = QWebEngineLoadingInfo::LoadFailedStatus,
+};
 static const QList<int> SignalsOrderOnce({ LoadStarted, LoadSucceeded});
 static const QList<int> SignalsOrderTwice({ LoadStarted, LoadSucceeded, LoadStarted, LoadSucceeded });
 static const QList<int> SignalsOrderOnceFailure({ LoadStarted, LoadFailed });
@@ -49,13 +55,16 @@ public:
     int navigationRequestCount = 0;
     QList<int> signalsOrder;
     QList<int> loadProgress;
+    QList<QWebEngineLoadingInfo> loadingInfos;
 
     explicit TestPage(QObject *parent = nullptr) : TestPage(nullptr, parent) { }
     TestPage(QWebEngineProfile *profile, QObject *parent = nullptr) : QWebEnginePage(profile, parent) {
         connect(this, &QWebEnginePage::loadStarted, [this] () { signalsOrder.append(LoadStarted); });
         connect(this, &QWebEnginePage::loadProgress, [this] (int p) { loadProgress.append(p); });
         connect(this, &QWebEnginePage::loadFinished, [this] (bool r) { signalsOrder.append(r ? LoadSucceeded : LoadFailed); });
+        connect(this, &QWebEnginePage::loadingChanged, [this] (const QWebEngineLoadingInfo &i) { loadingInfos.append(i); });
     }
+    ~TestPage() { Q_ASSERT(signalsOrder.size() == loadingInfos.size()); }
 
     void reset()
     {
@@ -63,6 +72,7 @@ public:
         navigationRequestCount = 0;
         signalsOrder.clear();
         loadProgress.clear();
+        loadingInfos.clear();
     }
 
 protected:
@@ -174,6 +184,9 @@ void tst_LoadSignals::loadStartedAndFinishedCount()
     QCOMPARE(loadStartedSpy.size(), expectedLoadCount);
     QCOMPARE(loadFinishedSpy.size(), expectedLoadCount);
     QCOMPARE(page.signalsOrder, expectedSignals);
+    QCOMPARE(page.signalsOrder.size(), page.loadingInfos.size());
+    for (int i = 0; i < page.signalsOrder.size(); ++i)
+        QCOMPARE(page.signalsOrder[i], page.loadingInfos[i].status());
 }
 
 /**
