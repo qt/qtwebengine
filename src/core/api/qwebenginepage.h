@@ -240,8 +240,8 @@ public:
     };
     Q_ENUM(LifecycleState)
 
-    explicit QWebEnginePage(QObject *parent = Q_NULLPTR);
-    QWebEnginePage(QWebEngineProfile *profile, QObject *parent = Q_NULLPTR);
+    explicit QWebEnginePage(QObject *parent = nullptr);
+    QWebEnginePage(QWebEngineProfile *profile, QObject *parent = nullptr);
     ~QWebEnginePage();
     QWebEngineHistory *history() const;
 

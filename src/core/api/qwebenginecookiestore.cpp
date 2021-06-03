@@ -66,7 +66,7 @@ QWebEngineCookieStorePrivate::QWebEngineCookieStorePrivate(QWebEngineCookieStore
     , m_deleteSessionCookiesPending(false)
     , m_deleteAllCookiesPending(false)
     , m_getAllCookiesPending(false)
-    , delegate(0)
+    , delegate(nullptr)
 {}
 
 void QWebEngineCookieStorePrivate::processPendingUserCookies()

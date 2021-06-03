@@ -69,7 +69,7 @@ class QWEBENGINEWIDGETS_EXPORT QWebEngineView : public QWidget {
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor)
 
 public:
-    explicit QWebEngineView(QWidget* parent = Q_NULLPTR);
+    explicit QWebEngineView(QWidget *parent = nullptr);
     virtual ~QWebEngineView();
 
     QWebEnginePage* page() const;
