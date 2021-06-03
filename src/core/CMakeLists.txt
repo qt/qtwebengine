@@ -542,7 +542,10 @@ foreach(config ${configs})
     endif()
 
     add_custom_command(
-        OUTPUT ${buildDir}/${config}/QtWebEngineCore.stamp ${sandboxOutput} runAlways # use generator expression in CMAKE 3.20
+        OUTPUT
+            ${buildDir}/${config}/QtWebEngineCore.stamp
+            ${sandboxOutput}
+            ${buildDir}/${config}/runAlways # use generator expression in CMAKE 3.20
         WORKING_DIRECTORY ${buildDir}/${config}
         COMMAND ${CMAKE_COMMAND} -E echo "Ninja ${config} build"
         COMMAND Ninja::ninja
@@ -553,7 +556,6 @@ foreach(config ${configs})
         VERBATIM
         COMMAND_EXPAND_LISTS
     )
-    add_custom_target(ninja_${config} DEPENDS ${buildDir}/${config}/QtWebEngineCore.stamp ${sandboxOutput} runAlways)
 endforeach()
 
 ##
@@ -597,7 +599,7 @@ foreach(config ${configs})
          set_property(TARGET WebEngineCoreSandbox
              PROPERTY IMPORTED_LOCATION_${cfg} ${sandboxLibraryPath})
          set_source_files_properties(${sandboxLibraryPath} PROPERTIES GENERATED TRUE)
-         add_custom_command(OUTPUT ${sandboxLibraryPath} DEPENDS ninja_${config})
+         add_custom_command(OUTPUT ${sandboxLibraryPath} DEPENDS ${sandboxOutput})
          add_custom_target(generate_sandbox_${cfg} DEPENDS ${sandboxLibraryPath})
      endif()
 
