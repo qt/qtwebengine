@@ -80,7 +80,7 @@ class Q_WEBENGINE_EXPORT QQuickWebEngineProfile : public QObject {
     Q_PROPERTY(QString downloadPath READ downloadPath WRITE setDownloadPath NOTIFY downloadPathChanged FINAL REVISION(1,5))
 
 public:
-    QQuickWebEngineProfile(QObject *parent = Q_NULLPTR);
+    QQuickWebEngineProfile(QObject *parent = nullptr);
     ~QQuickWebEngineProfile();
 
     enum HttpCacheType {
@@ -174,7 +174,7 @@ Q_SIGNALS:
 
 private:
     Q_DECLARE_PRIVATE(QQuickWebEngineProfile)
-    QQuickWebEngineProfile(QQuickWebEngineProfilePrivate *, QObject *parent = Q_NULLPTR);
+    QQuickWebEngineProfile(QQuickWebEngineProfilePrivate *, QObject *parent = nullptr);
     QQuickWebEngineSettings *settings() const;
 
     friend class QQuickWebEngineSettings;

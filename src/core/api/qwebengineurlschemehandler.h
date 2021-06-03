@@ -51,7 +51,7 @@ class QWebEngineUrlRequestJob;
 class Q_WEBENGINECORE_EXPORT QWebEngineUrlSchemeHandler : public QObject {
     Q_OBJECT
 public:
-    QWebEngineUrlSchemeHandler(QObject *parent = Q_NULLPTR);
+    QWebEngineUrlSchemeHandler(QObject *parent = nullptr);
     ~QWebEngineUrlSchemeHandler();
 
     virtual void requestStarted(QWebEngineUrlRequestJob *) = 0;

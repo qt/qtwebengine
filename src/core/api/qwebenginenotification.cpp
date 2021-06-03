@@ -90,7 +90,7 @@ public:
     ~QWebEngineNotificationPrivate() override
     {
         if (controller->client() == this)
-            controller->setClient(0);
+            controller->setClient(nullptr);
     }
 
     // UserNotificationController::Client:

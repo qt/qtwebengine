@@ -66,8 +66,8 @@ class QWebEngineUrlSchemeHandler;
 class Q_WEBENGINECORE_EXPORT QWebEngineProfile : public QObject {
     Q_OBJECT
 public:
-    explicit QWebEngineProfile(QObject *parent = Q_NULLPTR);
-    explicit QWebEngineProfile(const QString &name, QObject *parent = Q_NULLPTR);
+    explicit QWebEngineProfile(QObject *parent = nullptr);
+    explicit QWebEngineProfile(const QString &name, QObject *parent = nullptr);
     virtual ~QWebEngineProfile();
 
     enum HttpCacheType {
@@ -153,7 +153,7 @@ Q_SIGNALS:
 private:
     Q_DISABLE_COPY(QWebEngineProfile)
     Q_DECLARE_PRIVATE(QWebEngineProfile)
-    QWebEngineProfile(QWebEngineProfilePrivate *, QObject *parent = Q_NULLPTR);
+    QWebEngineProfile(QWebEngineProfilePrivate *, QObject *parent = nullptr);
 
     friend class QWebEnginePage;
     friend class QWebEnginePagePrivate;

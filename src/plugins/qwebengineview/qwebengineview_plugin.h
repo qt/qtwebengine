@@ -64,7 +64,7 @@ class QWebEngineView : public QWidget {
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor) // Designable
 
 public:
-    explicit QWebEngineView(QWidget *parent = Q_NULLPTR) : QWidget(parent) {}
+    explicit QWebEngineView(QWidget *parent = nullptr) : QWidget(parent) {}
 
     QString title() const { return QString(); }
     QUrl url() const { return QUrl(); }
@@ -84,7 +84,7 @@ class QWebEngineViewPlugin: public QObject, public QDesignerCustomWidgetInterfac
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QDesignerCustomWidgetInterface")
     Q_INTERFACES(QDesignerCustomWidgetInterface)
 public:
-    explicit QWebEngineViewPlugin(QObject *parent = Q_NULLPTR);
+    explicit QWebEngineViewPlugin(QObject *parent = nullptr);
 
     QString name() const override;
     QString group() const override;

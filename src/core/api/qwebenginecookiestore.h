@@ -85,7 +85,7 @@ Q_SIGNALS:
     void cookieRemoved(const QNetworkCookie &cookie);
 
 private:
-    explicit QWebEngineCookieStore(QObject *parent = Q_NULLPTR);
+    explicit QWebEngineCookieStore(QObject *parent = nullptr);
     friend class QtWebEngineCore::ContentBrowserClientQt;
     friend class QtWebEngineCore::CookieMonsterDelegateQt;
     friend class QtWebEngineCore::ProfileAdapter;
