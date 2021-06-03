@@ -72,7 +72,7 @@ public:
     FindTextHelper(content::WebContents *webContents, WebContentsAdapterClient *viewClient);
     ~FindTextHelper();
 
-    void startFinding(const QString &findText, bool caseSensitively, bool findBackward, const QWebEngineCallback<bool> resultCallback);
+    void startFinding(const QString &findText, bool caseSensitively, bool findBackward, const std::function<void(bool)> &resultCallback);
     void startFinding(const QString &findText, bool caseSensitively, bool findBackward, const QJSValue &resultCallback);
     void startFinding(const QString &findText, bool caseSensitively, bool findBackward);
     void stopFinding();
@@ -93,7 +93,7 @@ private:
     QString m_previousFindText;
 
     QMap<int, QJSValue> m_quickCallbacks;
-    CallbackDirectory m_widgetCallbacks;
+    QMap<int, std::function<void(bool)>> m_widgetCallbacks;
 };
 
 } // namespace QtWebEngineCore

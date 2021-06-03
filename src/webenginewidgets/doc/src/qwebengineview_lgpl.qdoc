@@ -249,7 +249,7 @@
 */
 
 /*!
-    \fn void QWebEngineView::findText(const QString &subString, QWebEnginePage::FindFlags options = QWebEnginePage::FindFlags(), const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>())
+    \fn void QWebEngineView::findText(const QString &subString, QWebEnginePage::FindFlags options = {}, const std::function<void(bool)> &resultCallback = std::function<void(bool)>)
     Finds the specified string, \a subString, in the page, using the given \a options.
 
     To clear the selection, just pass an empty string.
