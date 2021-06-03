@@ -924,25 +924,6 @@ QWebChannel *QWebEnginePage::webChannel() const
 }
 
 /*!
- * \overload
- *
- * Sets the web channel instance to be used by this page to \a channel and installs
- * it in the main JavaScript world.
- *
- * With this method the web channel can be accessed by web page content. If the content
- * is not under your control and might be hostile, this could be a security issue and
- * you should consider installing it in a private JavaScript world.
- *
- * \since 5.5
- * \sa QWebEngineScript::MainWorld
- */
-
-void QWebEnginePage::setWebChannel(QWebChannel *channel)
-{
-    setWebChannel(channel, QWebEngineScript::MainWorld);
-}
-
-/*!
  * Sets the web channel instance to be used by this page to \a channel and connects it to
  * web engine's transport using Chromium IPC messages. The transport is exposed in the JavaScript
  * world \a worldId as
@@ -955,7 +936,7 @@ void QWebEnginePage::setWebChannel(QWebChannel *channel)
  * \since 5.7
  * \sa QWebEngineScript::ScriptWorldId
  */
-void QWebEnginePage::setWebChannel(QWebChannel *channel, uint worldId)
+void QWebEnginePage::setWebChannel(QWebChannel *channel, quint32 worldId)
 {
 #if QT_CONFIG(webengine_webchannel)
     Q_D(QWebEnginePage);
@@ -2017,17 +1998,6 @@ void QWebEnginePage::setZoomFactor(qreal factor)
     d->defaultZoomFactor = factor;
     if (d->adapter->isInitialized())
         d->adapter->setZoomFactor(factor);
-}
-
-void QWebEnginePage::runJavaScript(const QString &scriptSource)
-{
-    Q_D(QWebEnginePage);
-    d->ensureInitialized();
-    if (d->adapter->lifecycleState() == WebContentsAdapter::LifecycleState::Discarded) {
-        qWarning("runJavaScript: disabled in Discarded state");
-        return;
-    }
-    d->adapter->runJavaScript(scriptSource, QWebEngineScript::MainWorld);
 }
 
 void QWebEnginePage::runJavaScript(const QString& scriptSource, const std::function<void(const QVariant &)> &resultCallback)

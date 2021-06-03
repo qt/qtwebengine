@@ -742,8 +742,7 @@
 
 /*!
     \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, quint32 worldId, const std::function<void(const QVariant &)> &resultCallback)
-    \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, quint32 worldId)
-    \fn void QWebEnginePage::runJavaScript(const QString &scriptSource)
+    \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, quint32 worldId = 0)
     \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, const std::function<void(const QVariant &)> &resultCallback)
     \since 5.7
 
