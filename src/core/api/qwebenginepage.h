@@ -283,16 +283,14 @@ public:
     QPointF scrollPosition() const;
     QSizeF contentsSize() const;
 
-    void runJavaScript(const QString& scriptSource);
-    void runJavaScript(const QString& scriptSource, quint32 worldId);
-    void runJavaScript(const QString& scriptSource, const std::function<void(const QVariant &)> &resultCallback);
-    void runJavaScript(const QString& scriptSource, quint32 worldId, const std::function<void(const QVariant &)> &resultCallback);
+    void runJavaScript(const QString &scriptSource, quint32 worldId = 0);
+    void runJavaScript(const QString &scriptSource, const std::function<void(const QVariant &)> &resultCallback);
+    void runJavaScript(const QString &scriptSource, quint32 worldId, const std::function<void(const QVariant &)> &resultCallback);
     QWebEngineScriptCollection &scripts();
     QWebEngineSettings *settings() const;
 
     QWebChannel *webChannel() const;
-    void setWebChannel(QWebChannel *);
-    void setWebChannel(QWebChannel *, uint worldId);
+    void setWebChannel(QWebChannel *, quint32 worldId = 0);
     QColor backgroundColor() const;
     void setBackgroundColor(const QColor &color);
 
