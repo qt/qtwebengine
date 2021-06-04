@@ -328,3 +328,23 @@ function(extend_target_with_gn_objects target config cmakeFile stampFile)
          )
      endif()
 endfunction()
+
+function(qt_internal_add_external_project_dependency_to_root_project name)
+    set(independent_args)
+    cmake_policy(PUSH)
+    if(POLICY CMP0114)
+        set(independent_args INDEPENDENT TRUE)
+        cmake_policy(SET CMP0114 NEW)
+    endif()
+
+    # Force configure step to re-run after we configure the root project
+    set(reconfigure_check_file ${CMAKE_CURRENT_BINARY_DIR}/reconfigure_${name}.stamp)
+    file(TOUCH ${reconfigure_check_file})
+    ExternalProject_Add_Step(${name} reconfigure-check
+        DEPENDERS configure
+        DEPENDS   ${reconfigure_check_file}
+        ${independent_args}
+    )
+
+    cmake_policy(POP)
+endfunction()

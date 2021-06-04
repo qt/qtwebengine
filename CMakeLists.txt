@@ -154,6 +154,11 @@ externalproject_add(libs
     COMMAND ${CMAKE_COMMAND} -E remove_directory ../mkspecs
 )
 
+# Ensure the libs project is reconfigured if the root project is reconfigured, so that the
+# correct CMake and qmake support files are used when building examples, rather than
+# using the incomplete support files created by the root project.
+qt_internal_add_external_project_dependency_to_root_project(libs)
+
 if(QT_BUILD_EXAMPLES AND BUILD_SHARED_LIBS)
     externalproject_add(qtwebengine_examples
         SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/examples
