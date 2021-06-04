@@ -43,7 +43,6 @@
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtWebEngineCore/qwebengineclientcertificateselection.h>
 #include <QtWebEngineCore/qwebenginedownloadrequest.h>
-#include <QtWebEngineCore/qwebenginecallback.h>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
 
 #include <QtCore/qobject.h>
@@ -271,8 +270,8 @@ public:
     void setHtml(const QString &html, const QUrl &baseUrl = QUrl());
     void setContent(const QByteArray &data, const QString &mimeType = QString(), const QUrl &baseUrl = QUrl());
 
-    void toHtml(const QWebEngineCallback<const QString &> &resultCallback) const;
-    void toPlainText(const QWebEngineCallback<const QString &> &resultCallback) const;
+    void toHtml(const std::function<void(const QString &)> &resultCallback) const;
+    void toPlainText(const std::function<void(const QString &)> &resultCallback) const;
 
     QString title() const;
     void setUrl(const QUrl &url);
@@ -289,8 +288,8 @@ public:
 
     void runJavaScript(const QString& scriptSource);
     void runJavaScript(const QString& scriptSource, quint32 worldId);
-    void runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback);
-    void runJavaScript(const QString& scriptSource, quint32 worldId, const QWebEngineCallback<const QVariant &> &resultCallback);
+    void runJavaScript(const QString& scriptSource, const std::function<void(const QVariant &)> &resultCallback);
+    void runJavaScript(const QString& scriptSource, quint32 worldId, const std::function<void(const QVariant &)> &resultCallback);
     QWebEngineScriptCollection &scripts();
     QWebEngineSettings *settings() const;
 

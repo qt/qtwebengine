@@ -640,7 +640,7 @@
 */
 
 /*!
-    \fn void QWebEnginePage::toHtml(const QWebEngineCallback<const QString &> &resultCallback) const
+    \fn void QWebEnginePage::toHtml(const std::function<void(const QString &)> &resultCallback) const
     Asynchronous method to retrieve the page's content as HTML, enclosed in HTML and BODY tags.
     Upon successful completion, \a resultCallback is called with the page's content.
 
@@ -654,7 +654,7 @@
 */
 
 /*!
-    \fn void QWebEnginePage::toPlainText(const QWebEngineCallback<const QString &> &resultCallback) const
+    \fn void QWebEnginePage::toPlainText(const std::function<void(const QString &)> &resultCallback) const
     Asynchronous method to retrieve the page's content converted to plain text, completely stripped of all
     HTML formatting.
     Upon successful completion, \a resultCallback is called with the page's content.
@@ -768,10 +768,10 @@
 */
 
 /*!
-    \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, quint32 worldId, const QWebEngineCallback<const QVariant &> &resultCallback)
+    \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, quint32 worldId, const std::function<void(const QVariant &)> &resultCallback)
     \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, quint32 worldId)
-    \fn void QWebEnginePage::runJavaScript(const QString& scriptSource)
-    \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback)
+    \fn void QWebEnginePage::runJavaScript(const QString &scriptSource)
+    \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, const std::function<void(const QVariant &)> &resultCallback)
     \since 5.7
 
     Runs the JavaScript code contained in \a scriptSource without checking

@@ -40,14 +40,8 @@
 #include "qwebenginepage.h"
 #include "qwebenginepage_p.h"
 
-#include "qwebenginedownloadrequest_p.h"
-#include "authentication_dialog_controller.h"
-#include "profile_adapter.h"
-#include "color_chooser_controller.h"
-#include "find_text_helper.h"
-#include "file_picker_controller.h"
-#include "javascript_dialog_controller.h"
 #include "qwebenginecertificateerror.h"
+#include "qwebenginedownloadrequest_p.h"
 #include "qwebenginefindtextresult.h"
 #include "qwebenginefullscreenrequest.h"
 #include "qwebenginehistory.h"
@@ -60,15 +54,23 @@
 #include "qwebengineprofile_p.h"
 #include "qwebenginequotarequest.h"
 #include "qwebengineregisterprotocolhandlerrequest.h"
+#include "qwebenginescript.h"
 #include "qwebenginescriptcollection_p.h"
 #include "qwebenginesettings.h"
-#include "user_notification_controller.h"
+
+#include "authentication_dialog_controller.h"
+#include "color_chooser_controller.h"
+#include "find_text_helper.h"
+#include "file_picker_controller.h"
+#include "javascript_dialog_controller.h"
+#include "profile_adapter.h"
+#include "render_view_context_menu_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
+#include "render_widget_host_view_qt_delegate_client.h"
+#include "user_notification_controller.h"
 #include "web_contents_adapter.h"
 #include "web_engine_settings.h"
-#include "qwebenginescript.h"
-#include "render_view_context_menu_qt.h"
-#include "render_widget_host_view_qt_delegate_client.h"
+
 #include <QAction>
 #include <QGuiApplication>
 #include <QAuthenticator>
@@ -79,7 +81,6 @@
 #include <QMimeData>
 #include <QTimer>
 #include <QUrl>
-
 
 QT_BEGIN_NAMESPACE
 
@@ -456,17 +457,20 @@ void QWebEnginePagePrivate::windowCloseRejected()
 
 void QWebEnginePagePrivate::didRunJavaScript(quint64 requestId, const QVariant& result)
 {
-    m_callbacks.invoke(requestId, result);
+    if (auto callback = m_variantCallbacks.take(requestId))
+        callback(result);
 }
 
 void QWebEnginePagePrivate::didFetchDocumentMarkup(quint64 requestId, const QString& result)
 {
-    m_callbacks.invoke(requestId, result);
+    if (auto callback = m_stringCallbacks.take(requestId))
+        callback(result);
 }
 
 void QWebEnginePagePrivate::didFetchDocumentInnerText(quint64 requestId, const QString& result)
 {
-    m_callbacks.invoke(requestId, result);
+    if (auto callback = m_stringCallbacks.take(requestId))
+        callback(result);
 }
 
 void QWebEnginePagePrivate::didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result)
@@ -883,6 +887,13 @@ QWebEnginePage::~QWebEnginePage()
         // d_ptr might be exceptionally null if profile adapter got deleted first
         setDevToolsPage(nullptr);
         emit _q_aboutToDelete();
+
+        for (auto varFun : qAsConst(d_ptr->m_variantCallbacks))
+            varFun(QVariant());
+        for (auto strFun : qAsConst(d_ptr->m_stringCallbacks))
+            strFun(QString());
+        d_ptr->m_variantCallbacks.clear();
+        d_ptr->m_stringCallbacks.clear();
     }
 }
 
@@ -1902,20 +1913,20 @@ void QWebEnginePage::load(const QWebEngineHttpRequest& request)
     d->adapter->load(request);
 }
 
-void QWebEnginePage::toHtml(const QWebEngineCallback<const QString &> &resultCallback) const
+void QWebEnginePage::toHtml(const std::function<void(const QString &)> &resultCallback) const
 {
     Q_D(const QWebEnginePage);
     d->ensureInitialized();
     quint64 requestId = d->adapter->fetchDocumentMarkup();
-    d->m_callbacks.registerCallback(requestId, resultCallback);
+    d->m_stringCallbacks.insert(requestId, resultCallback);
 }
 
-void QWebEnginePage::toPlainText(const QWebEngineCallback<const QString &> &resultCallback) const
+void QWebEnginePage::toPlainText(const std::function<void(const QString &)> &resultCallback) const
 {
     Q_D(const QWebEnginePage);
     d->ensureInitialized();
     quint64 requestId = d->adapter->fetchDocumentInnerText();
-    d->m_callbacks.registerCallback(requestId, resultCallback);
+    d->m_stringCallbacks.insert(requestId, resultCallback);
 }
 
 void QWebEnginePage::setHtml(const QString &html, const QUrl &baseUrl)
@@ -2019,32 +2030,43 @@ void QWebEnginePage::runJavaScript(const QString &scriptSource)
     d->adapter->runJavaScript(scriptSource, QWebEngineScript::MainWorld);
 }
 
-void QWebEnginePage::runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback)
+void QWebEnginePage::runJavaScript(const QString& scriptSource, const std::function<void(const QVariant &)> &resultCallback)
 {
     Q_D(QWebEnginePage);
     d->ensureInitialized();
     if (d->adapter->lifecycleState() == WebContentsAdapter::LifecycleState::Discarded) {
         qWarning("runJavaScript: disabled in Discarded state");
-        d->m_callbacks.invokeEmpty(resultCallback);
+        if (resultCallback)
+            resultCallback(QVariant());
         return;
     }
     quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, QWebEngineScript::MainWorld);
-    d->m_callbacks.registerCallback(requestId, resultCallback);
+    d->m_variantCallbacks.insert(requestId, resultCallback);
 }
 
 void QWebEnginePage::runJavaScript(const QString &scriptSource, quint32 worldId)
 {
     Q_D(QWebEnginePage);
     d->ensureInitialized();
+    if (d->adapter->lifecycleState() == WebContentsAdapter::LifecycleState::Discarded) {
+        qWarning("runJavaScript: disabled in Discarded state");
+        return;
+    }
     d->adapter->runJavaScript(scriptSource, worldId);
 }
 
-void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId, const QWebEngineCallback<const QVariant &> &resultCallback)
+void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId, const std::function<void(const QVariant &)> &resultCallback)
 {
     Q_D(QWebEnginePage);
     d->ensureInitialized();
+    if (d->adapter->lifecycleState() == WebContentsAdapter::LifecycleState::Discarded) {
+        qWarning("runJavaScript: disabled in Discarded state");
+        if (resultCallback)
+            resultCallback(QVariant());
+        return;
+    }
     quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, worldId);
-    d->m_callbacks.registerCallback(requestId, resultCallback);
+    d->m_variantCallbacks.insert(requestId, resultCallback);
 }
 
 /*!

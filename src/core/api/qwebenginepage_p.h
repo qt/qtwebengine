@@ -53,7 +53,6 @@
 
 #include "qwebenginepage.h"
 
-#include "qwebenginecallback_p.h"
 #include "qwebenginescriptcollection.h"
 #include "web_contents_adapter_client.h"
 
@@ -226,7 +225,8 @@ public:
     QTimer wasShownTimer;
     QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *widget = nullptr;
 
-    mutable QtWebEngineCore::CallbackDirectory m_callbacks;
+    mutable QMap<quint64, std::function<void(const QVariant &)>> m_variantCallbacks;
+    mutable QMap<quint64, std::function<void(const QString &)>> m_stringCallbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];
 };
 
