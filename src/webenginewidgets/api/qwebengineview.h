@@ -45,9 +45,10 @@
 #include <QtWidgets/qwidget.h>
 
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
-#include <QtWebEngineCore/qwebenginepage.h>
-#include <QtWebEngineCore/qwebenginehttprequest.h>
+#include <QtWebEngineCore/qwebenginecallback.h>
 #include <QtWebEngineCore/qwebenginecontextmenurequest.h>
+#include <QtWebEngineCore/qwebenginehttprequest.h>
+#include <QtWebEngineCore/qwebenginepage.h>
 
 QT_BEGIN_NAMESPACE
 class QContextMenuEvent;

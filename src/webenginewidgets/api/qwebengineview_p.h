@@ -52,10 +52,12 @@
 //
 
 #include <QtWebEngineWidgets/qwebengineview.h>
-#include "qwebenginecontextmenurequest.h"
-#include "render_view_context_menu_qt.h"
+#include <QtWebEngineCore/private/qwebenginecallback_p.h>
 #include <QtWebEngineCore/private/qwebenginepage_p.h>
+#include <QtWebEngineCore/qwebenginecontextmenurequest.h>
 #include <QtWidgets/qaccessiblewidget.h>
+
+#include "render_view_context_menu_qt.h"
 
 namespace QtWebEngineCore {
 class QPrinter;
@@ -116,6 +118,7 @@ public:
 #if QT_CONFIG(webengine_printing_and_pdf)
     QPrinter *currentPrinter;
 #endif
+    mutable QtWebEngineCore::CallbackDirectory m_callbacks;
 };
 
 #ifndef QT_NO_ACCESSIBILITY
