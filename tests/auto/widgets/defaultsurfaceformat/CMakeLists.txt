@@ -12,7 +12,7 @@ set(tst_defaultsurfaceformat_resource_files
     "resources/index.html"
 )
 
-qt_add_resource(tst_defaultsurfaceformat "tst_defaultsurfaceformat"
+qt_internal_add_resource(tst_defaultsurfaceformat "tst_defaultsurfaceformat"
     PREFIX
         "/"
     FILES

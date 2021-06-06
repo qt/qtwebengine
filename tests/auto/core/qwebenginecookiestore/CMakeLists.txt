@@ -15,7 +15,7 @@ set(tst_qwebenginecookiestore_resource_files
     "resources/index.html"
 )
 
-qt_add_resource(tst_qwebenginecookiestore "tst_qwebenginecookiestore"
+qt_internal_add_resource(tst_qwebenginecookiestore "tst_qwebenginecookiestore"
     PREFIX
         "/"
     FILES

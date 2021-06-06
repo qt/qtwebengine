@@ -21,7 +21,7 @@ set(tst_favicon_resource_files
     "resources/test1.html"
 )
 
-qt_add_resource(tst_favicon "tst_favicon"
+qt_internal_add_resource(tst_favicon "tst_favicon"
     PREFIX
         "/"
     FILES

@@ -12,7 +12,7 @@ set(tst_qwebengineclientcertificatestore_resource_files
     "resources/privatekey1.key"
 )
 
-qt_add_resource(tst_qwebengineclientcertificatestore "tst_qwebengineclientcertificatestore"
+qt_internal_add_resource(tst_qwebengineclientcertificatestore "tst_qwebengineclientcertificatestore"
     PREFIX
         "/"
     FILES

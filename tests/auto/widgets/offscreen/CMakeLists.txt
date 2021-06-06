@@ -13,7 +13,7 @@ set_tests_properties(tst_offscreen PROPERTIES
     ENVIRONMENT QT_QPA_PLATFORM=offscreen
 )
 
-qt_add_resource(tst_offscreen "tst_offscreen"
+qt_internal_add_resource(tst_offscreen "tst_offscreen"
     PREFIX
         "/"
     FILES

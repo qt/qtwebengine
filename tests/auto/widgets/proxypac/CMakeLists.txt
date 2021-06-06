@@ -39,7 +39,7 @@ set_tests_properties(tst_proxypac_qrc PROPERTIES
     ENVIRONMENT QTWEBENGINE_CHROMIUM_FLAGS=${qrcEnvArg}
 )
 
-qt_add_resource(tst_proxypac_qrc "proxypac"
+qt_internal_add_resource(tst_proxypac_qrc "proxypac"
     PREFIX
         "/"
     FILES

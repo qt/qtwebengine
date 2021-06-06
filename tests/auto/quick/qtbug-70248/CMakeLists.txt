@@ -9,7 +9,7 @@ set(test_resource_files
     "test.qml"
 )
 
-qt_add_resource(tst_qtbug-70248 "test"
+qt_internal_add_resource(tst_qtbug-70248 "test"
     PREFIX
         "/"
     FILES

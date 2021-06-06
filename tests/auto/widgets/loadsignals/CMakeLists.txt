@@ -52,7 +52,7 @@ set(tst_loadsignals_resource_files
     "${sharedData}/loadprogress/page8.html"
 )
 
-qt_add_resource(tst_loadsignals "tst_loadsignals"
+qt_internal_add_resource(tst_loadsignals "tst_loadsignals"
     PREFIX
         "/resources"
     FILES

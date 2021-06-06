@@ -30,14 +30,14 @@ set(tst_origins_resource_files
     "resources/websocket.html"
 )
 
-qt_add_resource(tst_origins "tst_origins"
+qt_internal_add_resource(tst_origins "tst_origins"
     PREFIX
         "/"
     FILES
         ${tst_origins_resource_files}
 )
 
-qt_extend_target(tst_origins CONDITION QT_FEATURE_webengine_webchannel AND TARGET Qt::WebSockets
+qt_internal_extend_target(tst_origins CONDITION QT_FEATURE_webengine_webchannel AND TARGET Qt::WebSockets
     DEFINES
         WEBSOCKETS
     LIBRARIES

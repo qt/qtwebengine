@@ -21,7 +21,7 @@ set(tst_qwebengineview_resource_files
     "resources/scrolltest_page.html"
 )
 
-qt_add_resource(tst_qwebengineview "tst_qwebengineview"
+qt_internal_add_resource(tst_qwebengineview "tst_qwebengineview"
     PREFIX
         "/"
     FILES

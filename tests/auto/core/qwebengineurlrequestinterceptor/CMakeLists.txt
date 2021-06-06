@@ -33,7 +33,7 @@ set(tst_qwebengineurlrequestinterceptor_resource_files
     "resources/sw.js"
 )
 
-qt_add_resource(tst_qwebengineurlrequestinterceptor "tst_qwebengineurlrequestinterceptor"
+qt_internal_add_resource(tst_qwebengineurlrequestinterceptor "tst_qwebengineurlrequestinterceptor"
     PREFIX
         "/"
     FILES

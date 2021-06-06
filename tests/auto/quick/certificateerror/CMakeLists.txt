@@ -18,7 +18,7 @@ set(certificateerror_resource_files
     "WebView.qml"
 )
 
-qt_add_resource(tst_certificateerror_quick "certificateerror"
+qt_internal_add_resource(tst_certificateerror_quick "certificateerror"
     PREFIX
         "/"
     FILES

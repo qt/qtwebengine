@@ -28,7 +28,7 @@ set(tst_printing_resource_files
     "resources/basic_printing_page.html"
 )
 
-qt_add_resource(tst_printing "tst_printing"
+qt_internal_add_resource(tst_printing "tst_printing"
     PREFIX "/"
     FILES ${tst_printing_resource_files}
 )

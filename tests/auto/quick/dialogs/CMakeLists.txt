@@ -17,7 +17,7 @@ set(dialogs_resource_files
     "index.html"
 )
 
-qt_add_resource(tst_dialogs "dialogs"
+qt_internal_add_resource(tst_dialogs "dialogs"
     PREFIX
         "/"
     FILES

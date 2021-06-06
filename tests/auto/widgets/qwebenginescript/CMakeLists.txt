@@ -18,7 +18,7 @@ set(tst_qwebenginescript_resource_files
     "resources/webChannelWithBadString.html"
 )
 
-qt_add_resource(tst_qwebenginescript "tst_qwebenginescript"
+qt_internal_add_resource(tst_qwebenginescript "tst_qwebenginescript"
     PREFIX
         "/"
     FILES
