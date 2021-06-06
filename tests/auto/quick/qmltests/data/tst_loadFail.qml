@@ -29,7 +29,6 @@
 import QtQuick 2.0
 import QtTest 1.0
 import QtWebEngine 1.2
-import QtWebEngine.testsupport 1.0
 import "../../qmltests/data" 1.0
 
 TestWebEngineView {
@@ -38,46 +37,20 @@ TestWebEngineView {
     height: 300
 
     property var unavailableUrl: Qt.resolvedUrl("file_that_does_not_exist.html")
-    property var loadRequestArray: []
 
-    testSupport: WebEngineTestSupport {
-        property var errorPageLoadStatus: null
-
-        function waitForErrorPageLoadSucceeded() {
-            var success = _waitFor(function() { return testSupport.errorPageLoadStatus == WebEngineView.LoadSucceededStatus })
-            testSupport.errorPageLoadStatus = null
-            return success
-        }
-
-        errorPage.onLoadingChanged: function(load) {
-            errorPageLoadStatus = load.status
-
-            loadRequestArray.push({
-               "status": load.status,
-               "url": load.url.toString(),
-               "errorDomain": load.errorDomain,
-               "isErrorPage": true
-            })
-        }
-    }
-
-    onLoadingChanged: function(load) {
-        if (load.status == WebEngineView.LoadFailedStatus) {
-            test.compare(load.url, unavailableUrl)
-            test.compare(load.errorDomain, WebEngineView.InternalErrorDomain)
-        }
-
-        loadRequestArray.push({
-           "status": load.status,
-           "url": load.url.toString(),
-           "errorDomain": load.errorDomain,
-           "isErrorPage": false
-        })
+    SignalSpy {
+        id: loadSpy
+        target: webEngineView
+        signalName: 'loadingChanged'
     }
 
     TestCase {
         id: test
         name: "WebEngineViewLoadFail"
+
+        function cleanup() {
+            loadSpy.clear()
+        }
 
         function test_fail() {
             WebEngine.settings.errorPageEnabled = false
@@ -106,39 +79,21 @@ TestWebEngineView {
             webEngineView.url = unavailableUrl
 
             // Loading of the error page must be successful
-            verify(webEngineView.testSupport.waitForErrorPageLoadSucceeded())
-
-            var loadRequest = null
-            compare(loadRequestArray.length, 4)
+            verify(webEngineView.waitForLoadFailed())
 
             // Start to load unavailableUrl
-            loadRequest = loadRequestArray[0]
-            compare(loadRequest.status, WebEngineView.LoadStartedStatus)
-            compare(loadRequest.errorDomain, WebEngineView.NoErrorDomain)
-            compare(loadRequest.url, unavailableUrl)
-            verify(!loadRequest.isErrorPage)
+            let loadStart = loadSpy.signalArguments[0][0]
+            compare(loadStart.status, WebEngineView.LoadStartedStatus)
+            compare(loadStart.errorDomain, WebEngineView.NoErrorDomain)
+            compare(loadStart.url, unavailableUrl)
+            verify(!loadStart.isErrorPage)
 
             // Loading of the unavailableUrl must fail
-            loadRequest = loadRequestArray[3]
-            compare(loadRequest.status, WebEngineView.LoadFailedStatus)
-            compare(loadRequest.errorDomain, WebEngineView.InternalErrorDomain)
-            compare(loadRequest.url, unavailableUrl)
-            verify(!loadRequest.isErrorPage)
-
-            // error page load is done inside main load through test support
-            // Start to load error page
-            loadRequest = loadRequestArray[1]
-            compare(loadRequest.status, WebEngineView.LoadStartedStatus)
-            compare(loadRequest.errorDomain, WebEngineView.NoErrorDomain)
-            compare(loadRequest.url, "chrome-error://chromewebdata/")
-            verify(loadRequest.isErrorPage)
-
-            // Loading of the error page must be successful
-            loadRequest = loadRequestArray[2]
-            compare(loadRequest.status, WebEngineView.LoadSucceededStatus)
-            compare(loadRequest.errorDomain, WebEngineView.NoErrorDomain)
-            compare(loadRequest.url, "chrome-error://chromewebdata/")
-            verify(loadRequest.isErrorPage)
+            let loadFail = loadSpy.signalArguments[1][0]
+            compare(loadFail.status, WebEngineView.LoadFailedStatus)
+            compare(loadFail.errorDomain, WebEngineView.InternalErrorDomain)
+            compare(loadFail.url, unavailableUrl)
+            verify(loadFail.isErrorPage)
 
             compare(webEngineView.url, unavailableUrl)
             compare(webEngineView.title, unavailableUrl)

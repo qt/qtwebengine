@@ -10,17 +10,6 @@ Module {
     dependencies: ["QtQuick 2.0"]
     Component { name: "QPlatformInputContext"; prototype: "QObject" }
     Component {
-        name: "QQuickWebEngineErrorPage"
-        prototype: "QObject"
-        exports: ["QtWebEngine.testsupport/WebEngineErrorPage 1.0"]
-        isCreatable: false
-        exportMetaObjectRevisions: [0]
-        Signal {
-            name: "loadingChanged"
-            Parameter { name: "loadingInfo"; type: "QWebEngineLoadingInfo" }
-        }
-    }
-    Component {
         name: "QQuickWebEngineTestEvent"
         prototype: "QObject"
         exports: ["QtWebEngine.testsupport/WebEngineTestEvent 1.0"]
@@ -49,12 +38,6 @@ Module {
         prototype: "QObject"
         exports: ["QtWebEngine.testsupport/WebEngineTestSupport 1.0"]
         exportMetaObjectRevisions: [0]
-        Property {
-            name: "errorPage"
-            type: "QQuickWebEngineErrorPage"
-            isReadonly: true
-            isPointer: true
-        }
         Property {
             name: "testInputContext"
             type: "QQuickWebEngineTestInputContext"

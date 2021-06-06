@@ -25,6 +25,7 @@ set(testList
     tst_getUserMedia.qml
     tst_keyboardEvents.qml
     tst_keyboardModifierMapping.qml
+    tst_loadFail.qml
     tst_loadHtml.qml
     tst_loadProgress.qml
     tst_loadRecursionCrash.qml
@@ -58,7 +59,6 @@ if(QT_FEATURE_webengine_testsupport)
         tst_inputMethod.qml
         tst_javaScriptDialogs.qml
         tst_linkHovered.qml
-        tst_loadFail.qml
         tst_mouseClick.qml
         tst_viewSoure.qml
     )

@@ -52,6 +52,7 @@
 #include "qwebenginefullscreenrequest.h"
 #include "qwebenginehistory.h"
 #include "qwebenginehistory_p.h"
+#include "qwebengineloadinginfo.h"
 #include "qwebenginenavigationrequest.h"
 #include "qwebenginenewwindowrequest.h"
 #include "qwebenginenotification.h"
@@ -300,31 +301,19 @@ QColor QWebEnginePagePrivate::backgroundColor() const
     return m_backgroundColor;
 }
 
-void QWebEnginePagePrivate::loadStarted(const QUrl &provisionalUrl, bool isErrorPage)
+void QWebEnginePagePrivate::loadStarted(QWebEngineLoadingInfo /* info */)
 {
-    Q_UNUSED(provisionalUrl);
     Q_Q(QWebEnginePage);
-
-    if (isErrorPage)
-        return;
-
     isLoading = true;
-
     QTimer::singleShot(0, q, &QWebEnginePage::loadStarted);
 }
 
-void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode, const QString &errorDescription)
+void QWebEnginePagePrivate::loadFinished(QWebEngineLoadingInfo info)
 {
     Q_Q(QWebEnginePage);
-    Q_UNUSED(url);
-    Q_UNUSED(errorCode);
-    Q_UNUSED(errorDescription);
-
-    if (isErrorPage)
-        return;
-
     isLoading = false;
-    QTimer::singleShot(0, q, [q, success](){
+    bool success = info.status() == QWebEngineLoadingInfo::LoadSucceededStatus;
+    QTimer::singleShot(0, q, [q, success] () {
         emit q->loadFinished(success);
     });
 }

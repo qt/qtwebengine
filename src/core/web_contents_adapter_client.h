@@ -64,6 +64,7 @@
 QT_FORWARD_DECLARE_CLASS(QKeyEvent)
 QT_FORWARD_DECLARE_CLASS(QVariant)
 QT_FORWARD_DECLARE_CLASS(QWebEngineFindTextResult)
+QT_FORWARD_DECLARE_CLASS(QWebEngineLoadingInfo)
 QT_FORWARD_DECLARE_CLASS(QWebEngineQuotaRequest)
 QT_FORWARD_DECLARE_CLASS(QWebEngineRegisterProtocolHandlerRequest)
 QT_FORWARD_DECLARE_CLASS(QWebEngineUrlRequestInfo)
@@ -192,10 +193,10 @@ public:
     virtual void renderProcessPidChanged(qint64 pid) = 0;
     virtual QRectF viewportRect() const = 0;
     virtual QColor backgroundColor() const = 0;
-    virtual void loadStarted(const QUrl &provisionalUrl, bool isErrorPage = false) = 0;
+    virtual void loadStarted(QWebEngineLoadingInfo info) = 0;
     virtual void loadCommitted() = 0;
     virtual void didFirstVisuallyNonEmptyPaint() = 0;
-    virtual void loadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode, const QString &errorDescription) = 0;
+    virtual void loadFinished(QWebEngineLoadingInfo info) = 0;
     virtual void focusContainer() = 0;
     virtual void unhandledKeyEvent(QKeyEvent *event) = 0;
     virtual QSharedPointer<WebContentsAdapter>

@@ -237,6 +237,7 @@ private:
         int progress = -1;
         bool isLoading() const { return progress >= 0; }
         QUrl url;
+        bool isErrorPage = false;
         int errorCode = 0;
         QString errorDescription;
         bool triggersErrorPage = false;

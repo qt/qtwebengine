@@ -100,7 +100,6 @@ static const QStringList hardcodedTypes = QStringList()
     << "QQmlWebChannel*"
     // Ignore the testSupport types without making a fuss.
     << "QQuickWebEngineTestSupport*"
-    << "QQuickWebEngineErrorPage*"
     << "const QQuickWebEngineContextMenuData*"
     << "QWebEngineCookieStore*"
     << "Qt::LayoutDirection"
@@ -316,6 +315,7 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineLoadingInfo.errorString --> QString"
     << "QWebEngineLoadingInfo.status --> QWebEngineLoadingInfo::LoadStatus"
     << "QWebEngineLoadingInfo.url --> QUrl"
+    << "QWebEngineLoadingInfo.isErrorPage --> bool"
     << "QWebEngineLoadingInfo.LoadFailedStatus --> LoadStatus"
     << "QWebEngineLoadingInfo.LoadStartedStatus --> LoadStatus"
     << "QWebEngineLoadingInfo.LoadStoppedStatus --> LoadStatus"

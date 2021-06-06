@@ -38,22 +38,11 @@ TestWebEngineView {
     height: 400
 
     property var viewRequest: null
-    property var loadRequestArray: []
 
-    testSupport: WebEngineTestSupport {
-        errorPage.onLoadingChanged: function(load) {
-            loadRequestArray.push({
-               "status": load.status,
-               "url": load.url
-            })
-        }
-    }
-
-    onLoadingChanged: function(load) {
-        loadRequestArray.push({
-            "status": load.status,
-            "url": load.url
-        });
+    SignalSpy {
+        id: loadSpy
+        target: webEngineView
+        signalName: 'loadingChanged'
     }
 
     SignalSpy {
@@ -87,6 +76,7 @@ TestWebEngineView {
             tryCompare(webEngineView, "loadStatus", WebEngineView.LoadSucceededStatus);
             webEngineView.loadStatus = null;
 
+            loadSpy.clear()
             newViewRequestedSpy.clear();
             titleChangedSpy.clear();
             viewRequest = null;
@@ -107,21 +97,14 @@ TestWebEngineView {
         }
 
         function test_viewSourceURL(row) {
-            loadRequestArray = [];
             WebEngine.settings.errorPageEnabled = true
             webEngineView.url = row.userInputUrl;
 
-
-            if (row.loadSucceed) {
-                tryVerify(function() { return loadRequestArray.length == 2 });
-                compare(loadRequestArray[1].status, WebEngineView.LoadSucceededStatus);
-            } else {
-                tryVerify(function() { return loadRequestArray.length == 4 }, 90000);
-                // error page load is done inside main load through test support
-                compare(loadRequestArray[2].status, WebEngineView.LoadSucceededStatus);
-                compare(loadRequestArray[2].url, "chrome-error://chromewebdata/")
-                compare(loadRequestArray[3].status, WebEngineView.LoadFailedStatus);
-            }
+            tryCompare(loadSpy, 'count', 2);
+            let load = loadSpy.signalArguments[1][0]
+            let expectedStatus = row.loadSucceed ? WebEngineView.LoadSucceededStatus : WebEngineView.LoadFailedStatus
+            compare(load.status, expectedStatus);
+            compare(load.isErrorPage, !row.loadSucceed);
             tryVerify(function() { return titleChangedSpy.count == 1; });
 
             compare(webEngineView.url, row.url);

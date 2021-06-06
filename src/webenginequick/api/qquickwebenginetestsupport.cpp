@@ -52,25 +52,6 @@ namespace QTest {
     int Q_TESTLIB_EXPORT defaultMouseDelay();
 }
 
-QQuickWebEngineErrorPage::QQuickWebEngineErrorPage()
-{
-}
-
-void QQuickWebEngineErrorPage::loadFinished(bool success, const QUrl &url)
-{
-    Q_UNUSED(success);
-    QTimer::singleShot(0, this, [this, url]() {
-       emit loadingChanged(QWebEngineLoadingInfo(url, QWebEngineLoadingInfo::LoadSucceededStatus));
-    });
-}
-
-void QQuickWebEngineErrorPage::loadStarted(const QUrl &provisionalUrl)
-{
-    QTimer::singleShot(0, this, [this, provisionalUrl]() {
-        emit loadingChanged(QWebEngineLoadingInfo(provisionalUrl, QWebEngineLoadingInfo::LoadStartedStatus));
-    });
-}
-
 QQuickWebEngineTestInputContext::QQuickWebEngineTestInputContext()
     : m_visible(false)
 {
@@ -167,15 +148,9 @@ void QQuickWebEngineTestEvent::mouseEvent(QEvent::Type type, QWindow *window, QO
 
 
 QQuickWebEngineTestSupport::QQuickWebEngineTestSupport()
-    : m_errorPage(new QQuickWebEngineErrorPage)
-    , m_testInputContext(new QQuickWebEngineTestInputContext)
+    : m_testInputContext(new QQuickWebEngineTestInputContext)
     , m_testEvent(new QQuickWebEngineTestEvent)
 {
-}
-
-QQuickWebEngineErrorPage *QQuickWebEngineTestSupport::errorPage() const
-{
-    return m_errorPage.data();
 }
 
 QQuickWebEngineTestInputContext *QQuickWebEngineTestSupport::testInputContext() const

@@ -45,12 +45,18 @@
 #include <QObject>
 #include <QUrl>
 
+namespace QtWebEngineCore {
+class WebContentsAdapter;
+class WebContentsDelegateQt;
+}
+
 QT_BEGIN_NAMESPACE
 
 class Q_WEBENGINECORE_EXPORT QWebEngineLoadingInfo
 {
     Q_GADGET
     Q_PROPERTY(QUrl url READ url CONSTANT FINAL)
+    Q_PROPERTY(bool isErrorPage READ isErrorPage CONSTANT FINAL)
     Q_PROPERTY(LoadStatus status READ status CONSTANT FINAL)
     Q_PROPERTY(QString errorString READ errorString CONSTANT FINAL)
     Q_PROPERTY(ErrorDomain errorDomain READ errorDomain CONSTANT FINAL)
@@ -83,19 +89,22 @@ public:
     ~QWebEngineLoadingInfo();
 
     QUrl url() const;
+    bool isErrorPage() const;
     LoadStatus status() const;
     QString errorString() const;
     ErrorDomain errorDomain() const;
     int errorCode() const;
 
 private:
-    QWebEngineLoadingInfo(const QUrl& url, LoadStatus status, const QString& errorString = QString(),
-                       int errorCode = 0, ErrorDomain errorDomain = NoErrorDomain);
+    QWebEngineLoadingInfo(const QUrl& url, LoadStatus status,
+                          bool isErrorPage = false, const QString& errorString = QString(),
+                          int errorCode = 0, ErrorDomain errorDomain = NoErrorDomain);
     class QWebEngineLoadingInfoPrivate;
     Q_DECLARE_PRIVATE(QWebEngineLoadingInfo)
     QExplicitlySharedDataPointer<QWebEngineLoadingInfoPrivate> d_ptr;
     friend class QQuickWebEngineViewPrivate;
-    friend class QQuickWebEngineErrorPage;
+    friend class QtWebEngineCore::WebContentsAdapter;
+    friend class QtWebEngineCore::WebContentsDelegateQt;
 };
 
 QT_END_NAMESPACE

@@ -49,6 +49,7 @@
 #include "file_picker_controller.h"
 #include "media_capture_devices_dispatcher.h"
 #include "profile_qt.h"
+#include "qwebengineloadinginfo.h"
 #include "qwebengineregisterprotocolhandlerrequest.h"
 #include "register_protocol_handler_request_controller_impl.h"
 #include "render_widget_host_view_qt.h"
@@ -58,6 +59,7 @@
 #include "web_contents_adapter.h"
 #include "web_contents_view_qt.h"
 #include "web_engine_context.h"
+#include "web_engine_error.h"
 #include "web_engine_settings.h"
 #include "certificate_error_controller.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
@@ -344,11 +346,9 @@ void WebContentsDelegateQt::emitLoadStarted(bool isErrorPage)
     m_isDocumentEmpty = true; // reset to default which may only be overridden on actual resource load complete
     if (!isErrorPage) {
         m_loadingInfo.progress = 0;
-        m_viewClient->loadStarted(m_loadingInfo.url, false);
+        m_viewClient->loadStarted(QWebEngineLoadingInfo(m_loadingInfo.url, QWebEngineLoadingInfo::LoadStartedStatus));
         m_viewClient->updateNavigationActions();
         m_viewClient->loadProgressChanged(0);
-    } else {
-        m_viewClient->loadStarted(toQt(GURL(content::kUnreachableWebDataURL)), true);
     }
 }
 
@@ -374,17 +374,25 @@ void WebContentsDelegateQt::emitLoadFinished(bool isErrorPage)
     Q_ASSERT(!isErrorPage || webEngineSettings()->testAttribute(QWebEngineSettings::ErrorPageEnabled));
     Q_ASSERT((m_loadingInfo.triggersErrorPage && webEngineSettings()->testAttribute(QWebEngineSettings::ErrorPageEnabled)) || !m_loadingInfo.triggersErrorPage);
 
-    if (!isErrorPage) {
-        if (m_loadingInfo.progress < 100) {
-            m_loadingInfo.progress = 100;
-            m_viewClient->loadProgressChanged(100);
-        }
-
-        m_viewClient->loadFinished(m_loadingInfo.success, m_loadingInfo.url, false, m_loadingInfo.errorCode, m_loadingInfo.errorDescription);
-        m_viewClient->updateNavigationActions();
-    } else {
-        m_viewClient->loadFinished(false, toQt(GURL(content::kUnreachableWebDataURL)), true, 0, QString());
+    if (isErrorPage) {
+        m_loadingInfo.isErrorPage = isErrorPage;
+        return;
     }
+
+    if (m_loadingInfo.progress < 100) {
+        m_loadingInfo.progress = 100;
+        m_viewClient->loadProgressChanged(100);
+    }
+
+    auto loadStatus = m_loadingInfo.success
+        ? QWebEngineLoadingInfo::LoadSucceededStatus
+        : (m_loadingInfo.errorCode == WebEngineError::UserAbortedError
+                ? QWebEngineLoadingInfo::LoadStoppedStatus : QWebEngineLoadingInfo::LoadFailedStatus);
+    auto errorDomain = static_cast<QWebEngineLoadingInfo::ErrorDomain>(WebEngineError::toQtErrorDomain(m_loadingInfo.errorCode));
+    QWebEngineLoadingInfo info(m_loadingInfo.url, loadStatus, m_loadingInfo.isErrorPage,
+                               m_loadingInfo.errorDescription, m_loadingInfo.errorCode, errorDomain);
+    m_viewClient->loadFinished(std::move(info));
+    m_viewClient->updateNavigationActions();
 }
 
 void WebContentsDelegateQt::emitLoadCommitted()
@@ -422,7 +430,6 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
     // The load will succede as an error-page load later, and we reported the original error above
     if (navigation_handle->IsErrorPage()) {
         // Now report we are starting to load an error-page.
-        emitLoadStarted(true);
 
         // If it is already committed we will not see another DidFinishNavigation call or a DidFinishLoad call.
         if (navigation_handle->HasCommitted())

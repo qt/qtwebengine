@@ -274,9 +274,6 @@ TestWebEngineView {
             var url = Qt.resolvedUrl("http://url.invalid")
             webEngineView.url = url
             verify(webEngineView.waitForLoadFailed(20000))
-            // FIXME: Wait for error page load to finish.
-            // This should be done without testSupport API.
-            wait(500)
 
             compare(iconChangedSpy.count, 0)
 

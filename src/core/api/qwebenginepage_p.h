@@ -134,10 +134,10 @@ public:
     void renderProcessPidChanged(qint64 pid) override;
     QRectF viewportRect() const override;
     QColor backgroundColor() const override;
-    void loadStarted(const QUrl &provisionalUrl, bool isErrorPage = false) override;
+    void loadStarted(QWebEngineLoadingInfo info) override;
     void loadCommitted() override { }
     void didFirstVisuallyNonEmptyPaint() override { }
-    void loadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode, const QString &errorDescription) override;
+    void loadFinished(QWebEngineLoadingInfo info) override;
     void focusContainer() override;
     void unhandledKeyEvent(QKeyEvent *event) override;
     QSharedPointer<QtWebEngineCore::WebContentsAdapter>

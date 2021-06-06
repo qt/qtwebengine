@@ -63,19 +63,6 @@ QT_BEGIN_NAMESPACE
 class QWebEngineLoadingInfo;
 class QWindow;
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineErrorPage : public QObject {
-    Q_OBJECT
-
-public:
-    QQuickWebEngineErrorPage();
-
-    void loadFinished(bool success, const QUrl &url);
-    void loadStarted(const QUrl &provisionalUrl);
-
-Q_SIGNALS:
-    void loadingChanged(const QWebEngineLoadingInfo &loadStatus);
-};
-
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineTestInputContext : public QPlatformInputContext {
     Q_OBJECT
 
@@ -110,13 +97,11 @@ private:
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineTestSupport : public QObject {
     Q_OBJECT
-    Q_PROPERTY(QQuickWebEngineErrorPage *errorPage READ errorPage CONSTANT FINAL)
     Q_PROPERTY(QQuickWebEngineTestInputContext *testInputContext READ testInputContext CONSTANT FINAL)
     Q_PROPERTY(QQuickWebEngineTestEvent *testEvent READ testEvent CONSTANT FINAL)
 
 public:
     QQuickWebEngineTestSupport();
-    QQuickWebEngineErrorPage *errorPage() const;
     QQuickWebEngineTestInputContext *testInputContext() const;
     QQuickWebEngineTestEvent *testEvent() const;
 
@@ -125,7 +110,6 @@ Q_SIGNALS:
     void loadVisuallyCommitted();
 
 private:
-    QScopedPointer<QQuickWebEngineErrorPage> m_errorPage;
     QScopedPointer<QQuickWebEngineTestInputContext> m_testInputContext;
     QScopedPointer<QQuickWebEngineTestEvent> m_testEvent;
 };

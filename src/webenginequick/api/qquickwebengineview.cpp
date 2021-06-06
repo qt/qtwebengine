@@ -73,7 +73,6 @@
 #include "render_widget_host_view_qt_delegate_quickwindow.h"
 #include "ui_delegates_manager.h"
 #include "web_contents_adapter.h"
-#include "web_engine_error.h"
 #include "web_engine_settings.h"
 
 #include <QClipboard>
@@ -455,22 +454,13 @@ QColor QQuickWebEngineViewPrivate::backgroundColor() const
     return m_backgroundColor;
 }
 
-void QQuickWebEngineViewPrivate::loadStarted(const QUrl &provisionalUrl, bool isErrorPage)
+void QQuickWebEngineViewPrivate::loadStarted(QWebEngineLoadingInfo info)
 {
     Q_Q(QQuickWebEngineView);
-    if (isErrorPage) {
-#if QT_CONFIG(webenginequick_testsupport)
-        if (m_testSupport)
-            m_testSupport->errorPage()->loadStarted(provisionalUrl);
-#endif
-        return;
-    }
-
     isLoading = true;
     m_history->reset();
-
-    QTimer::singleShot(0, q, [q, provisionalUrl]() {
-        emit q->loadingChanged(QWebEngineLoadingInfo(provisionalUrl, LoadStatus::LoadStartedStatus));
+    QTimer::singleShot(0, q, [q, info] () {
+        emit q->loadingChanged(info);
     });
 }
 
@@ -505,37 +495,13 @@ void QQuickWebEngineViewPrivate::didCompositorFrameSwap()
 #endif
 }
 
-void QQuickWebEngineViewPrivate::loadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode, const QString &errorDescription)
+void QQuickWebEngineViewPrivate::loadFinished(QWebEngineLoadingInfo info)
 {
     Q_Q(QQuickWebEngineView);
-
-    if (isErrorPage) {
-#if QT_CONFIG(webenginequick_testsupport)
-        if (m_testSupport)
-            m_testSupport->errorPage()->loadFinished(success, url);
-#endif
-        return;
-    }
-
     isLoading = false;
     m_history->reset();
-    if (errorCode == WebEngineError::UserAbortedError) {
-        QTimer::singleShot(0, q, [q, url]() {
-            emit q->loadingChanged(QWebEngineLoadingInfo(url, LoadStatus::LoadStoppedStatus));
-        });
-        return;
-    }
-    if (success) {
-        QTimer::singleShot(0, q, [q, url, errorDescription, errorCode]() {
-            emit q->loadingChanged(QWebEngineLoadingInfo(url, LoadStatus::LoadSucceededStatus, errorDescription, errorCode));
-        });
-        return;
-    }
-
-    Q_ASSERT(errorCode);
-    auto errorDomain = static_cast<ErrorDomain>(WebEngineError::toQtErrorDomain(errorCode));
-    QTimer::singleShot(0, q, [q, url, errorDescription, errorCode, errorDomain]() {
-        emit q->loadingChanged(QWebEngineLoadingInfo(url, LoadStatus::LoadFailedStatus, errorDescription, errorCode, errorDomain));
+    QTimer::singleShot(0, q, [q, info] () {
+        emit q->loadingChanged(info);
     });
     return;
 }

@@ -56,9 +56,11 @@ Q_STATIC_ASSERT(static_cast<int>(WebEngineError::DnsErrorDomain) == static_cast<
 
 class QWebEngineLoadingInfo::QWebEngineLoadingInfoPrivate : public QSharedData {
 public:
-    QWebEngineLoadingInfoPrivate(const QUrl& url, LoadStatus status, const QString& errorString, int errorCode, ErrorDomain errorDomain)
+    QWebEngineLoadingInfoPrivate(const QUrl& url, LoadStatus status, bool isErrorPage,
+                                 const QString& errorString, int errorCode, ErrorDomain errorDomain)
         : url(url)
         , status(status)
+        , isErrorPage(isErrorPage)
         , errorString(errorString)
         , errorCode(errorCode)
         , errorDomain(errorDomain)
@@ -67,6 +69,7 @@ public:
 
     QUrl url;
     LoadStatus status;
+    bool isErrorPage;
     QString errorString;
     int errorCode;
     ErrorDomain errorDomain;
@@ -83,9 +86,9 @@ public:
 
     \sa QWebEnginePage::loadStarted, QWebEnginePage::loadFinished, WebEngineView::loadingChanged
 */
-QWebEngineLoadingInfo::QWebEngineLoadingInfo(const QUrl& url, LoadStatus status, const QString& errorString,
-                                           int errorCode, ErrorDomain errorDomain)
-    : d_ptr(new QWebEngineLoadingInfoPrivate(url, status, errorString, errorCode, errorDomain))
+QWebEngineLoadingInfo::QWebEngineLoadingInfo(const QUrl& url, LoadStatus status, bool isErrorPage,
+                                             const QString& errorString, int errorCode, ErrorDomain errorDomain)
+    : d_ptr(new QWebEngineLoadingInfoPrivate(url, status, isErrorPage, errorString, errorCode, errorDomain))
 {
 }
 
@@ -131,6 +134,18 @@ LoadStatus QWebEngineLoadingInfo::status() const
 {
     Q_D(const QWebEngineLoadingInfo);
     return d->status;
+}
+/*!
+    \property QWebEngineLoadingInfo::isErrorPage
+    \property Indicates if the load's resulted in an error page.
+*/
+/*!
+    Returns true if the load's resulted is an error page.
+*/
+bool QWebEngineLoadingInfo::isErrorPage() const
+{
+    Q_D(const QWebEngineLoadingInfo);
+    return d->isErrorPage;
 }
 /*!
     \property QWebEngineLoadingInfo::errorString
