@@ -82,8 +82,8 @@ void PrintHandler::printDocument(QPrinter *printer)
 {
     QEventLoop loop;
     bool result;
-    auto printPreview = [&](bool success) { result = success; loop.quit(); };
-    m_view->print(printer, std::move(printPreview));
+    connect(m_view, &QWebEngineView::printFinished, [&](bool success) { result = success; loop.quit(); });
+    m_view->print(printer);
     loop.exec();
     if (!result) {
         QPainter painter;

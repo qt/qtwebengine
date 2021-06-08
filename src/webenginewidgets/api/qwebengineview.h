@@ -110,7 +110,7 @@ public:
 
     void printToPdf(const QString &filePath, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
     void printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
-    void print(QPrinter *printer, const QWebEngineCallback<bool> &resultCallback);
+    void print(QPrinter *printer);
 
 public Q_SLOTS:
     void stop();
@@ -131,6 +131,7 @@ Q_SIGNALS:
                              int exitCode);
     void pdfPrintingFinished(const QString &filePath, bool success);
     void printRequested();
+    void printFinished(bool success);
 
 protected:
     virtual QWebEngineView *createWindow(QWebEnginePage::WebWindowType type);
