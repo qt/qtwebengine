@@ -517,7 +517,8 @@ void QWebEngineViewPrivate::didPrintPage(quint64 requestId, QSharedPointer<QByte
     if (!currentPrinter) {
         if (!result.data())
             return;
-        m_callbacks.invoke(requestId, *(result.data()));
+        if (auto callback = m_pdfResultCallbacks.take(requestId))
+            callback(*(result.data()));
         return;
     }
 
@@ -545,7 +546,8 @@ void QWebEngineViewPrivate::didPrintPage(quint64 requestId, QSharedPointer<QByte
 #else
     // we should never enter this branch, but just for safe-keeping...
     Q_UNUSED(result);
-    m_callbacks.invoke(requestId, QByteArray());
+    if (auto callback = m_pdfResultCallbacks.take(requestId))
+        callback(QByteArray());
 #endif
 }
 
@@ -1006,21 +1008,24 @@ void QWebEngineView::printToPdf(const QString &filePath, const QPageLayout &layo
 
     \since 6.2
 */
-void QWebEngineView::printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &layout, const QPageRanges &ranges)
+void QWebEngineView::printToPdf(const std::function<void(const QByteArray&)> &resultCallback, const QPageLayout &layout, const QPageRanges &ranges)
 {
     Q_D(QWebEngineView);
 #if QT_CONFIG(webengine_printing_and_pdf)
     if (d->currentPrinter) {
         qWarning("Cannot print to PDF while printing at the same time.");
-        d->m_callbacks.invokeEmpty(resultCallback);
+        if (resultCallback)
+            resultCallback(QByteArray());
         return;
     }
     page()->d_ptr->ensureInitialized();
     quint64 requestId = page()->d_ptr->adapter->printToPDFCallbackResult(layout, ranges);
-    d->m_callbacks.registerCallback(requestId, resultCallback);
+    d->m_pdfResultCallbacks.insert(requestId, resultCallback);
 #else
     Q_UNUSED(layout);
-    d->m_callbacks.invokeEmpty(resultCallback);
+    Q_UNUSED(ranges);
+    if (resultCallback)
+        resultCallback(QByteArray());
 #endif
 }
 

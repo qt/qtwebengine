@@ -46,7 +46,6 @@
 #include <QtWidgets/qwidget.h>
 
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
-#include <QtWebEngineCore/qwebenginecallback.h>
 #include <QtWebEngineCore/qwebenginecontextmenurequest.h>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
 #include <QtWebEngineCore/qwebenginepage.h>
@@ -113,7 +112,7 @@ public:
     void printToPdf(const QString &filePath,
                     const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()),
                     const QPageRanges &ranges = {});
-    void printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback,
+    void printToPdf(const std::function<void(const QByteArray&)> &resultCallback,
                     const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()),
                     const QPageRanges &ranges = {});
     void print(QPrinter *printer);

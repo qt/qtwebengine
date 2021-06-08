@@ -52,7 +52,6 @@
 //
 
 #include <QtWebEngineWidgets/qwebengineview.h>
-#include <QtWebEngineCore/private/qwebenginecallback_p.h>
 #include <QtWebEngineCore/private/qwebenginepage_p.h>
 #include <QtWebEngineCore/qwebenginecontextmenurequest.h>
 #include <QtWidgets/qaccessiblewidget.h>
@@ -118,7 +117,7 @@ public:
 #if QT_CONFIG(webengine_printing_and_pdf)
     QPrinter *currentPrinter;
 #endif
-    mutable QtWebEngineCore::CallbackDirectory m_callbacks;
+    QMap<quint64, std::function<void(const QByteArray&)>> m_pdfResultCallbacks;
 };
 
 #ifndef QT_NO_ACCESSIBILITY
