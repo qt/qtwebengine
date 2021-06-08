@@ -154,7 +154,7 @@ externalproject_add(libs
 )
 
 if(QT_BUILD_EXAMPLES AND BUILD_SHARED_LIBS)
-    externalproject_add(examples
+    externalproject_add(qtwebengine_examples
         SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/examples
         BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR}/examples
         PREFIX      examples
@@ -163,7 +163,7 @@ if(QT_BUILD_EXAMPLES AND BUILD_SHARED_LIBS)
         CMAKE_ARGS  -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
                     "${featureList}"
     )
-    externalproject_add_stepdependencies(examples install libs)
+    externalproject_add_stepdependencies(qtwebengine_examples install libs)
 endif()
 
 if(FORCE_TEST_RUN OR QT_BUILD_TESTS)
@@ -172,7 +172,7 @@ if(FORCE_TEST_RUN OR QT_BUILD_TESTS)
      if(FORCE_TEST_RUN)
         set(testRunCommand TEST_COMMAND ctest)
      endif()
-     externalproject_add(tests
+     externalproject_add(qtwebengine_tests
          SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/tests
          BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tests
          PREFIX      tests
@@ -184,9 +184,9 @@ if(FORCE_TEST_RUN OR QT_BUILD_TESTS)
          INSTALL_COMMAND ""
          ${testRunCommand}
     )
-    externalproject_add_stepdependencies(tests install libs)
+    externalproject_add_stepdependencies(qtwebengine_tests install libs)
     if(QT_BUILD_EXAMPLES AND BUILD_SHARED_LIBS)
-       externalproject_add_stepdependencies(tests install examples)
+       externalproject_add_stepdependencies(qtwebengine_tests install qtwebengine_examples)
     endif()
 endif()
 
