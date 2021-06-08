@@ -946,6 +946,34 @@ QWebEngineContextMenuRequest *QWebEngineView::lastContextMenuRequest() const
     return d->m_contextRequest;
 }
 
+/*!
+    \fn void QWebEngineView::pdfPrintingFinished(const QString &filePath, bool success)
+    \since 6.2
+
+    This signal is emitted when printing the web page into a PDF file has
+    finished.
+    \a filePath will contain the path the file was requested to be created
+    at, and \a success will be \c true if the file was successfully created and
+    \c false otherwise.
+
+    \sa printToPdf()
+*/
+
+/*!
+    Renders the current content of the page into a PDF document and saves it
+    in the location specified in \a filePath.
+    The page size and orientation of the produced PDF document are taken from
+    the values specified in \a pageLayout.
+
+    This method issues an asynchronous request for printing the web page into
+    a PDF and returns immediately.
+    To be informed about the result of the request, connect to the signal
+    pdfPrintingFinished().
+
+    If a file already exists at the provided file path, it will be overwritten.
+    \since 6.2
+    \sa pdfPrintingFinished()
+*/
 void QWebEngineView::printToPdf(const QString &filePath, const QPageLayout &layout)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
@@ -962,6 +990,20 @@ void QWebEngineView::printToPdf(const QString &filePath, const QPageLayout &layo
 #endif
 }
 
+/*!
+    Renders the current content of the page into a PDF document and returns a byte array containing the PDF data
+    as parameter to \a resultCallback.
+    The page size and orientation of the produced PDF document are taken from the values specified in \a pageLayout.
+
+    The \a resultCallback must take a const reference to a QByteArray as parameter. If printing was successful, this byte array
+    will contain the PDF data, otherwise, the byte array will be empty.
+
+    \warning We guarantee that the callback (\a resultCallback) is always called, but it might be done
+    during page destruction. When QWebEnginePage is deleted, the callback is triggered with an invalid
+    value and it is not safe to use the corresponding QWebEnginePage or QWebEngineView instance inside it.
+
+    \since 6.2
+*/
 void QWebEngineView::printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &layout)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
@@ -985,9 +1027,9 @@ void QWebEngineView::printToPdf(const QWebEngineCallback<const QByteArray&> &res
     \since 6.2
 
     This signal is emitted when the JavaScript \c{window.print()} method is called.
-    Typically, the signal handler can simply call printToPdf().
+    Typically, the signal handler can simply call print().
 
-    \sa printToPdf()
+    \sa print()
 */
 
 /*!
