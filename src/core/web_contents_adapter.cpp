@@ -1326,7 +1326,7 @@ void WebContentsAdapter::wasHidden()
     m_webContents->WasHidden();
 }
 
-void WebContentsAdapter::printToPDF(const QPageLayout &pageLayout, const QString &filePath)
+void WebContentsAdapter::printToPDF(const QPageLayout &pageLayout, const QPageRanges &pageRanges, const QString &filePath)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
     CHECK_INITIALIZED();
@@ -1334,13 +1334,15 @@ void WebContentsAdapter::printToPDF(const QPageLayout &pageLayout, const QString
                                                                 m_adapterClient,
                                                                 filePath);
     PrintViewManagerQt::FromWebContents(m_webContents.get())->PrintToPDFFileWithCallback(pageLayout,
-                                                                                   true,
-                                                                                   filePath,
-                                                                                   callback);
+                                                                                         pageRanges,
+                                                                                         true,
+                                                                                         filePath,
+                                                                                         callback);
 #endif // QT_CONFIG(webengine_printing_and_pdf)
 }
 
 quint64 WebContentsAdapter::printToPDFCallbackResult(const QPageLayout &pageLayout,
+                                                     const QPageRanges &pageRanges,
                                                      bool colorMode,
                                                      bool useCustomMargins)
 {
@@ -1350,9 +1352,10 @@ quint64 WebContentsAdapter::printToPDFCallbackResult(const QPageLayout &pageLayo
                                                                  m_adapterClient,
                                                                  m_nextRequestId);
     PrintViewManagerQt::FromWebContents(m_webContents.get())->PrintToPDFWithCallback(pageLayout,
-                                                                               colorMode,
-                                                                               useCustomMargins,
-                                                                               callback);
+                                                                                     pageRanges,
+                                                                                     colorMode,
+                                                                                     useCustomMargins,
+                                                                                     callback);
     return m_nextRequestId++;
 #else
     Q_UNUSED(pageLayout);

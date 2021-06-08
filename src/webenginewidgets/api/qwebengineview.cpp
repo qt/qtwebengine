@@ -963,7 +963,8 @@ QWebEngineContextMenuRequest *QWebEngineView::lastContextMenuRequest() const
     Renders the current content of the page into a PDF document and saves it
     in the location specified in \a filePath.
     The page size and orientation of the produced PDF document are taken from
-    the values specified in \a pageLayout.
+    the values specified in \a pageLayout, while the range of pages printed is
+    taken from \a ranges with the default being printing all pages.
 
     This method issues an asynchronous request for printing the web page into
     a PDF and returns immediately.
@@ -974,7 +975,7 @@ QWebEngineContextMenuRequest *QWebEngineView::lastContextMenuRequest() const
     \since 6.2
     \sa pdfPrintingFinished()
 */
-void QWebEngineView::printToPdf(const QString &filePath, const QPageLayout &layout)
+void QWebEngineView::printToPdf(const QString &filePath, const QPageLayout &layout, const QPageRanges &ranges)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
     Q_D(QWebEngineView);
@@ -983,7 +984,7 @@ void QWebEngineView::printToPdf(const QString &filePath, const QPageLayout &layo
         return;
     }
     page()->d_ptr->ensureInitialized();
-    page()->d_ptr->adapter->printToPDF(layout, filePath);
+    page()->d_ptr->adapter->printToPDF(layout, ranges, filePath);
 #else
     Q_UNUSED(filePath);
     Q_UNUSED(layout);
@@ -993,7 +994,8 @@ void QWebEngineView::printToPdf(const QString &filePath, const QPageLayout &layo
 /*!
     Renders the current content of the page into a PDF document and returns a byte array containing the PDF data
     as parameter to \a resultCallback.
-    The page size and orientation of the produced PDF document are taken from the values specified in \a pageLayout.
+    The page size and orientation of the produced PDF document are taken from the values specified in \a pageLayout,
+    while the range of pages printed is taken from \a ranges with the default being printing all pages.
 
     The \a resultCallback must take a const reference to a QByteArray as parameter. If printing was successful, this byte array
     will contain the PDF data, otherwise, the byte array will be empty.
@@ -1004,7 +1006,7 @@ void QWebEngineView::printToPdf(const QString &filePath, const QPageLayout &layo
 
     \since 6.2
 */
-void QWebEngineView::printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &layout)
+void QWebEngineView::printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &layout, const QPageRanges &ranges)
 {
     Q_D(QWebEngineView);
 #if QT_CONFIG(webengine_printing_and_pdf)
@@ -1014,7 +1016,7 @@ void QWebEngineView::printToPdf(const QWebEngineCallback<const QByteArray&> &res
         return;
     }
     page()->d_ptr->ensureInitialized();
-    quint64 requestId = page()->d_ptr->adapter->printToPDFCallbackResult(layout);
+    quint64 requestId = page()->d_ptr->adapter->printToPDFCallbackResult(layout, ranges);
     d->m_callbacks.registerCallback(requestId, resultCallback);
 #else
     Q_UNUSED(layout);
@@ -1072,6 +1074,7 @@ void QWebEngineView::print(QPrinter *printer)
     d->currentPrinter = printer;
     page()->d_ptr->ensureInitialized();
     page()->d_ptr->adapter->printToPDFCallbackResult(printer->pageLayout(),
+                                                     printer->pageRanges(),
                                                      printer->colorMode() == QPrinter::Color,
                                                      false);
 #else

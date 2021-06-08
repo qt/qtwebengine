@@ -41,6 +41,7 @@
 #define QWEBENGINEVIEW_H
 
 #include <QtGui/qpainter.h>
+#include <QtGui/qpageranges.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtWidgets/qwidget.h>
 
@@ -109,8 +110,12 @@ public:
 #endif
     QWebEngineContextMenuRequest *lastContextMenuRequest() const;
 
-    void printToPdf(const QString &filePath, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
-    void printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
+    void printToPdf(const QString &filePath,
+                    const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()),
+                    const QPageRanges &ranges = {});
+    void printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback,
+                    const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()),
+                    const QPageRanges &ranges = {});
     void print(QPrinter *printer);
 
 public Q_SLOTS:

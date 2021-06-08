@@ -50,6 +50,7 @@
 #include "web_engine_context.h"
 
 #include <QtGui/qpagelayout.h>
+#include <QtGui/qpageranges.h>
 #include <QtGui/qpagesize.h>
 
 #include "base/values.h"
@@ -185,6 +186,18 @@ static base::DictionaryValue *createPrintSettingsFromQPageLayout(const QPageLayo
     return printSettings;
 }
 
+static base::ListValue *createPageRangeSettings(const QList<QPageRanges::Range> &ranges)
+{
+    base::ListValue *pageRangeArray = new base::ListValue;
+    for (int i = 0; i < ranges.count(); i++) {
+        std::unique_ptr<base::DictionaryValue> pageRange(new base::DictionaryValue);
+        pageRange->SetInteger(printing::kSettingPageRangeFrom, ranges.at(i).from);
+        pageRange->SetInteger(printing::kSettingPageRangeTo, ranges.at(i).to);
+        pageRangeArray->Append(std::move(pageRange));
+    }
+    return pageRangeArray;
+}
+
 } // namespace
 
 namespace QtWebEngineCore {
@@ -207,6 +220,7 @@ PrintViewManagerQt::~PrintViewManagerQt()
 }
 
 void PrintViewManagerQt::PrintToPDFFileWithCallback(const QPageLayout &pageLayout,
+                                                    const QPageRanges &pageRanges,
                                                     bool printInColor,
                                                     const QString &filePath,
                                                     const PrintToPDFFileCallback& callback)
@@ -222,7 +236,7 @@ void PrintViewManagerQt::PrintToPDFFileWithCallback(const QPageLayout &pageLayou
 
     m_pdfOutputPath = toFilePath(filePath);
     m_pdfSaveCallback = callback;
-    if (!PrintToPDFInternal(pageLayout, printInColor)) {
+    if (!PrintToPDFInternal(pageLayout, pageRanges, printInColor)) {
         base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                        base::BindOnce(callback, false));
         resetPdfState();
@@ -230,6 +244,7 @@ void PrintViewManagerQt::PrintToPDFFileWithCallback(const QPageLayout &pageLayou
 }
 
 void PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout,
+                                                const QPageRanges &pageRanges,
                                                 bool printInColor,
                                                 bool useCustomMargins,
                                                 const PrintToPDFCallback& callback)
@@ -245,7 +260,7 @@ void PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout,
     }
 
     m_pdfPrintCallback = callback;
-    if (!PrintToPDFInternal(pageLayout, printInColor, useCustomMargins)) {
+    if (!PrintToPDFInternal(pageLayout, pageRanges, printInColor, useCustomMargins)) {
         base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                        base::BindOnce(callback, QSharedPointer<QByteArray>()));
 
@@ -254,6 +269,7 @@ void PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout,
 }
 
 bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
+                                            const QPageRanges &pageRanges,
                                             const bool printInColor,
                                             const bool useCustomMargins)
 {
@@ -265,6 +281,9 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
                                 web_contents()->GetOrCreateWebPreferences().should_print_backgrounds);
     m_printSettings->SetInteger(printing::kSettingColor,
                                 int(printInColor ? printing::mojom::ColorModel::kColor : printing::mojom::ColorModel::kGrayscale));
+    if (!pageRanges.isEmpty())
+        m_printSettings->Set(printing::kSettingPageRange,
+                             std::unique_ptr<base::ListValue>(createPageRangeSettings(pageRanges.toRangeList())));
 
     if (web_contents()->IsCrashed())
         return false;
