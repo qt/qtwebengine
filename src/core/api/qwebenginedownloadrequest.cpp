@@ -158,8 +158,7 @@ static inline QWebEngineDownloadRequest::DownloadInterruptReason toDownloadInter
 */
 
 QWebEngineDownloadRequestPrivate::QWebEngineDownloadRequestPrivate(QtWebEngineCore::ProfileAdapter *adapter, const QUrl &url)
-    : m_profileAdapter(adapter)
-    , downloadFinished(false)
+    : downloadFinished(false)
     , downloadId(-1)
     , downloadState(QWebEngineDownloadRequest::DownloadCancelled)
     , savePageFormat(QWebEngineDownloadRequest::MimeHtmlSaveFormat)
@@ -170,7 +169,8 @@ QWebEngineDownloadRequestPrivate::QWebEngineDownloadRequestPrivate(QtWebEngineCo
     , totalBytes(-1)
     , receivedBytes(0)
     , isSavePageDownload(false)
-    , m_adapterClient(nullptr)
+    , profileAdapter(adapter)
+    , adapterClient(nullptr)
 {
 }
 
@@ -272,8 +272,8 @@ void QWebEngineDownloadRequest::cancel()
     // We directly cancel the download request if the user cancels
     // before it even started, so no need to notify the profile here.
     if (state == QWebEngineDownloadRequest::DownloadInProgress) {
-        if (d->m_profileAdapter)
-            d->m_profileAdapter->cancelDownload(d->downloadId);
+        if (d->profileAdapter)
+            d->profileAdapter->cancelDownload(d->downloadId);
     } else {
         d->downloadState = QWebEngineDownloadRequest::DownloadCancelled;
         Q_EMIT stateChanged(d->downloadState);
@@ -299,8 +299,8 @@ void QWebEngineDownloadRequest::pause()
     if (state != QWebEngineDownloadRequest::DownloadInProgress)
         return;
 
-    if (d->m_profileAdapter)
-        d->m_profileAdapter->pauseDownload(d->downloadId);
+    if (d->profileAdapter)
+        d->profileAdapter->pauseDownload(d->downloadId);
 }
 
 /*!
@@ -319,8 +319,8 @@ void QWebEngineDownloadRequest::resume()
 
     if (d->downloadFinished || (state != QWebEngineDownloadRequest::DownloadInProgress && state != QWebEngineDownloadRequest::DownloadInterrupted))
         return;
-    if (d->m_profileAdapter)
-        d->m_profileAdapter->resumeDownload(d->downloadId);
+    if (d->profileAdapter)
+        d->profileAdapter->resumeDownload(d->downloadId);
 }
 
 /*!
@@ -521,10 +521,10 @@ void QWebEngineDownloadRequest::setDownloadDirectory(const QString &directory)
         Q_EMIT downloadDirectoryChanged();
     }
 
-    if (!d->isCustomFileName && d->m_profileAdapter) {
-        QString newFileName = QFileInfo(d->m_profileAdapter->determineDownloadPath(d->downloadDirectory,
-                                                                                   d->suggestedFileName,
-                                                                                   d->startTime)).fileName();
+    if (!d->isCustomFileName && d->profileAdapter) {
+        QString newFileName = QFileInfo(d->profileAdapter->determineDownloadPath(d->downloadDirectory,
+                                                                                 d->suggestedFileName,
+                                                                                 d->startTime)).fileName();
         if (d->downloadFileName != newFileName) {
             d->downloadFileName = newFileName;
             Q_EMIT downloadFileNameChanged();

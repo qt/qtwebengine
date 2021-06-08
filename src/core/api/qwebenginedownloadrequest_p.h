@@ -90,8 +90,8 @@ public:
     qint64 receivedBytes;
     bool isSavePageDownload;
     QWebEngineDownloadRequest *q_ptr;
-    QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
-    QtWebEngineCore::WebContentsAdapterClient *m_adapterClient;
+    QPointer<QtWebEngineCore::ProfileAdapter> profileAdapter;
+    QtWebEngineCore::WebContentsAdapterClient *adapterClient;
     Q_DECLARE_PUBLIC(QWebEngineDownloadRequest)
 };
 

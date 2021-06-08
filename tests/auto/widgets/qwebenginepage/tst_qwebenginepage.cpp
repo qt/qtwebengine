@@ -501,7 +501,7 @@ class ConsolePage : public QWebEnginePage
 public:
     ConsolePage(QObject* parent = 0) : QWebEnginePage(parent) {}
 
-    virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
+    void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) override
     {
         levels.append(level);
         messages.append(message);
@@ -710,7 +710,8 @@ public:
     QList<QNetworkRequest> requests;
 
 protected:
-    virtual QNetworkReply* createRequest(Operation op, const QNetworkRequest &request, QIODevice* outgoingData) {
+    QNetworkReply* createRequest(Operation op, const QNetworkRequest &request, QIODevice* outgoingData) override
+    {
         requests.append(request);
         requestedUrls.append(request.url());
         return QNetworkAccessManager::createRequest(op, request, outgoingData);
@@ -977,7 +978,7 @@ public:
     JSPromptPage()
     {}
 
-    bool javaScriptPrompt(const QUrl &securityOrigin, const QString& msg, const QString& defaultValue, QString* result)
+    bool javaScriptPrompt(const QUrl &securityOrigin, const QString& msg, const QString& defaultValue, QString* result) override
     {
         if (msg == QLatin1String("test1")) {
             *result = QString();
@@ -2089,11 +2090,11 @@ public:
     {
         close();
     }
-    virtual void abort() {}
-    virtual void close() {}
+    void abort() override {}
+    void close() override {}
 
 protected:
-    qint64 readData(char*, qint64)
+    qint64 readData(char*, qint64) override
     {
         return 0;
     }
@@ -2121,7 +2122,7 @@ public:
     FakeNetworkManager(QObject* parent) : QNetworkAccessManager(parent) { }
 
 protected:
-    virtual QNetworkReply* createRequest(Operation op, const QNetworkRequest& request, QIODevice* outgoingData)
+    QNetworkReply* createRequest(Operation op, const QNetworkRequest& request, QIODevice* outgoingData) override
     {
         QString url = request.url().toString();
         if (op == QNetworkAccessManager::GetOperation) {
@@ -2293,7 +2294,7 @@ public:
     int alerts;
 
 protected:
-    virtual void javaScriptAlert(const QUrl &securityOrigin, const QString &msg)
+    void javaScriptAlert(const QUrl &securityOrigin, const QString &msg) override
     {
         alerts++;
         QCOMPARE(securityOrigin, QUrl(QStringLiteral("http://test.origin.com/")));
@@ -2431,7 +2432,8 @@ signals:
     void repaintRequested();
 
 protected:
-    bool event(QEvent *event) {
+    bool event(QEvent *event) override
+    {
         if (event->type() == QEvent::UpdateRequest)
             emit repaintRequested();
 
@@ -2503,7 +2505,7 @@ public:
     {
     }
 
-    virtual QNetworkReply* createRequest(Operation, const QNetworkRequest& request, QIODevice*)
+    QNetworkReply* createRequest(Operation, const QNetworkRequest& request, QIODevice*) override
     {
         QVariant cacheLoad = request.attribute(QNetworkRequest::CacheLoadControlAttribute);
         if (cacheLoad.isValid())

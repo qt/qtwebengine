@@ -104,7 +104,9 @@ public:
     bool isVisible() const override { Q_UNREACHABLE(); }
     QWindow *window() const override { return nullptr; }
     void updateCursor(const QCursor &cursor) override
-    { /*setCursor(cursor);*/
+    {
+        Q_UNUSED(cursor);
+        /*setCursor(cursor);*/
     }
     void resize(int width, int height) override
     {
@@ -115,8 +117,8 @@ public:
     void inputMethodStateChanged(bool, bool) override { }
     void setInputMethodHints(Qt::InputMethodHints) override { }
     void setClearColor(const QColor &) override { }
-    void adapterClientChanged(WebContentsAdapterClient *client) override { }
-    bool copySurface(const QRect &rect, const QSize &size, QImage &image)
+    void adapterClientChanged(WebContentsAdapterClient *) override { }
+    bool copySurface(const QRect &, const QSize &, QImage &)
     {
         Q_UNREACHABLE();
         return false;
@@ -2392,7 +2394,7 @@ void QWebEnginePage::setVisible(bool visible)
 }
 
 QWebEnginePage* QWebEnginePage::fromDownloadRequest(QWebEngineDownloadRequest *request) {
-    return static_cast<QWebEnginePagePrivate *>(request->d_ptr->m_adapterClient)->q_ptr;
+    return static_cast<QWebEnginePagePrivate *>(request->d_ptr->adapterClient)->q_ptr;
 }
 
 QDataStream &operator<<(QDataStream &stream, const QWebEngineHistory &history)

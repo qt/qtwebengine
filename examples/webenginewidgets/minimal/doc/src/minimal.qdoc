@@ -57,9 +57,6 @@
     \l{QWebEngineProfile::cachePath} and
     \l{QWebEngineProfile::persistentStoragePath}).
 
-    We also set the Qt::AA_EnableHighDpiScaling attribute. This lets the web
-    view automatically scale on high-dpi displays.
-
     Next, we instantiate a QApplication and a QWebEngineView. The URL
     to load is taken from \c commandLineUrlArgument and
     loaded by calling \l QWebEngineView::setUrl. The view widget is

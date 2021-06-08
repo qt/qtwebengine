@@ -510,15 +510,10 @@ public:
         inputMethodPrivate->testContext = 0;
     }
 
-    virtual void commit() {
-        commitCallCount++;
-    }
+    void commit() override { commitCallCount++; }
+    void reset() override { resetCallCount++; }
 
-    virtual void reset() {
-        resetCallCount++;
-    }
-
-    virtual void update(Qt::InputMethodQueries queries)
+    void update(Qt::InputMethodQueries queries) override
     {
         if (!qApp->focusObject())
             return;

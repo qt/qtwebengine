@@ -207,7 +207,7 @@ class ConsolePage : public QWebEnginePage {
 public:
     ConsolePage(QWebEngineProfile* profile) : QWebEnginePage(profile) {}
 
-    virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
+    void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) override
     {
         levels.append(level);
         messages.append(message);
