@@ -56,7 +56,6 @@ int main(int argc, char* argv[])
     QCoreApplication::setApplicationName("Qt Quick Multi-page PDF Viewer Example");
     QCoreApplication::setOrganizationName("QtProject");
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;

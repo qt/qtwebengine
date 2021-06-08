@@ -1802,20 +1802,11 @@ public:
         inputMethodPrivate->testContext = 0;
     }
 
-    virtual void showInputPanel()
-    {
-        m_visible = true;
-    }
-    virtual void hideInputPanel()
-    {
-        m_visible = false;
-    }
-    virtual bool isInputPanelVisible() const
-    {
-        return m_visible;
-    }
+    void showInputPanel() override { m_visible = true; }
+    void hideInputPanel() override { m_visible = false; }
+    bool isInputPanelVisible() const override { return m_visible; }
 
-    virtual void update(Qt::InputMethodQueries queries)
+    void update(Qt::InputMethodQueries queries) override
     {
         if (!qApp->focusObject())
             return;

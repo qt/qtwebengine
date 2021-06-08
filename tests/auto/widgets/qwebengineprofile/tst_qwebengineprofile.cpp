@@ -276,7 +276,7 @@ void tst_QWebEngineProfile::disableCache()
 class RedirectingUrlSchemeHandler : public QWebEngineUrlSchemeHandler
 {
 public:
-    void requestStarted(QWebEngineUrlRequestJob *job)
+    void requestStarted(QWebEngineUrlRequestJob *job) override
     {
         job->redirect(QUrl(QStringLiteral("data:text/plain;charset=utf-8,")
                            + job->requestUrl().fileName()));
@@ -294,7 +294,7 @@ public:
     {
     }
 
-    void requestStarted(QWebEngineUrlRequestJob *job)
+    void requestStarted(QWebEngineUrlRequestJob *job) override
     {
         QBuffer *buffer = new QBuffer(job);
         buffer->setData(job->requestUrl().toString().toUtf8());
@@ -376,7 +376,7 @@ public:
     {
     }
 
-    void requestStarted(QWebEngineUrlRequestJob *job)
+    void requestStarted(QWebEngineUrlRequestJob *job) override
     {
         job->reply("text/plain;charset=utf-8", new StreamingIODevice(job));
     }
@@ -647,7 +647,7 @@ private:
 class XhrStatusUrlSchemeHandler : public QWebEngineUrlSchemeHandler
 {
 public:
-    void requestStarted(QWebEngineUrlRequestJob *job)
+    void requestStarted(QWebEngineUrlRequestJob *job) override
     {
         QString path = job->requestUrl().path();
         if (path == "/") {
@@ -725,7 +725,7 @@ void tst_QWebEngineProfile::urlSchemeHandlerXhrStatus()
 class ScriptsUrlSchemeHandler : public QWebEngineUrlSchemeHandler
 {
 public:
-    void requestStarted(QWebEngineUrlRequestJob *job)
+    void requestStarted(QWebEngineUrlRequestJob *job) override
     {
         auto *script = new QBuffer(job);
         script->setData(QByteArrayLiteral("window.test = 'SUCCESS';"));
@@ -756,7 +756,7 @@ public:
     LongReplyUrlSchemeHandler(QObject *parent = nullptr) : QWebEngineUrlSchemeHandler(parent) {}
     ~LongReplyUrlSchemeHandler() {}
 
-    void requestStarted(QWebEngineUrlRequestJob *job)
+    void requestStarted(QWebEngineUrlRequestJob *job) override
     {
         QBuffer *buffer = new QBuffer(job);
         buffer->setData(QByteArray(128 * 1024, ' ') +

@@ -56,10 +56,6 @@
     \l{WebEngineProfile::cachePath} and
     \l{WebEngineProfile::persistentStoragePath}).
 
-    We also set the Qt::AA_EnableHighDpiScaling attribute. This lets the web
-    view automatically scale on high-dpi displays. Then we instantiate a
-    QGuiApplication object.
-
     Next, we call \l{QtWebEngine::initialize}, which makes sure that OpenGL
     contexts can be shared between the main process and the dedicated renderer
     process (\c QtWebEngineProcess). This method needs to be called before

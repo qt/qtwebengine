@@ -58,7 +58,6 @@ int main(int argc, char *argv[])
     qRegisterMetaType<StyleSheet>("StyleSheet");
 
     QCoreApplication::setOrganizationName("QtExamples");
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication a(argc, argv);
     MainWindow w(QUrl("http://qt.io"));
     w.show();
