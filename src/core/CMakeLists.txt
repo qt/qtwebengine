@@ -478,6 +478,12 @@ foreach(config ${configs})
             use_external_popup_menu=false
             angle_enable_vulkan=false
        )
+       if (CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64" OR CMAKE_OSX_ARCHITECTURES STREQUAL "arm64")
+            list(APPEND gnArgArg
+                target_cpu="arm64"
+                fatal_linker_warnings=false
+            )
+       endif()
     endif()
 
     if(WIN32)

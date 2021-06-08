@@ -317,15 +317,11 @@ qt_feature("webengine-ozone-x11" PRIVATE
 
 #### Support Checks
 if(APPLE AND NOT IOS AND
-   (
-    (CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64" AND CMAKE_OSX_ARCHITECTURES STREQUAL "")
-    OR
-    ("arm64" IN_LIST CMAKE_OSX_ARCHITECTURES)
-   )
+   (CMAKE_OSX_ARCHITECTURES MATCHES ";")
 )
-   set(MAC_ARM_64 ON)
+   set(MAC_UNIVERSAL ON)
 else()
-   set(MAC_ARM_64 OFF)
+   set(MAC_UNIVERSAL OFF)
 endif()
 
 if(WIN32 AND (CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64" OR CMAKE_CROSSCOMPILING))
@@ -337,7 +333,7 @@ endif()
 assertTargets(webEngineError webEngineSupport Gui Widgets OpenGL OpenGLWidgets Quick Qml)
 add_check_for_support(webEngineError webEngineSupport
    MODULE QtWebEngine
-   CONDITION (LINUX AND NOT CMAKE_CROSSCOMPILING) OR (WIN32 AND NOT WIN_ARM_64) OR (MACOS AND NOT MAC_ARM_64)
+   CONDITION (LINUX AND NOT CMAKE_CROSSCOMPILING) OR (WIN32 AND NOT WIN_ARM_64) OR (MACOS AND NOT MAC_UNIVERSAL)
    MESSAGE "Build can be done only on Linux, Windows or macOS."
 )
 add_check_for_support(webEngineError webEngineSupport
