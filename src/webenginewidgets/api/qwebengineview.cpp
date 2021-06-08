@@ -531,9 +531,9 @@ void QWebEngineViewPrivate::didPrintPage(quint64 requestId, QSharedPointer<QByte
     printerWorker->m_documentCopies = currentPrinter->copyCount();
     printerWorker->m_collateCopies = currentPrinter->collateCopies();
 
-    QObject::connect(printerWorker, &QtWebEngineCore::PrinterWorker::resultReady, q, [requestId, this](bool success) {
+    QObject::connect(printerWorker, &QtWebEngineCore::PrinterWorker::resultReady, q, [this, q](bool success) {
         currentPrinter = nullptr;
-        page->d_ptr->m_callbacks.invoke(requestId, success);
+        Q_EMIT q->printFinished(success);
     });
 
     QObject::connect(printerWorker, &QtWebEngineCore::PrinterWorker::resultReady, printerThread, &QThread::quit);
@@ -980,25 +980,61 @@ void QWebEngineView::printToPdf(const QWebEngineCallback<const QByteArray&> &res
 #endif
 }
 
-void QWebEngineView::print(QPrinter *printer, const QWebEngineCallback<bool> &resultCallback)
+/*!
+    \fn void QWebEngineView::printRequested()
+    \since 6.2
+
+    This signal is emitted when the JavaScript \c{window.print()} method is called.
+    Typically, the signal handler can simply call printToPdf().
+
+    \sa printToPdf()
+*/
+
+/*!
+    \fn void QWebEngineView::printFinished(bool success)
+    \since 6.2
+
+    This signal is emitted when printing requested with print() has finished.
+
+    \sa print()
+*/
+
+/*!
+    Renders the current content of the page into a temporary PDF document, then prints it using \a printer.
+
+    The settings for creating and printing the PDF document will be retrieved from the \a printer
+    object.
+
+    When finished the signal printFinished() is emitted with the \c true for success or \c false for failure.
+
+    It is the users responsibility to ensure the \a printer remains valid until printFinished()
+    has been emitted.
+
+    \note Printing runs on the browser process, which is by default not sandboxed.
+
+    \note This function rasterizes the result when rendering onto \a printer. Please consider raising
+    the default resolution of \a printer to at least 300 DPI or using printToPdf() to produce
+    PDF file output more effectively.
+
+    \since 6.2
+*/
+void QWebEngineView::print(QPrinter *printer)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
     Q_D(QWebEngineView);
     if (d->currentPrinter) {
         qWarning("Cannot print page on printer %ls: Already printing on a device.", qUtf16Printable(printer->printerName()));
-        page()->d_ptr->m_callbacks.invokeDirectly(resultCallback, false);
         return;
     }
 
     d->currentPrinter = printer;
     page()->d_ptr->ensureInitialized();
-    quint64 requestId = page()->d_ptr->adapter->printToPDFCallbackResult(printer->pageLayout(),
-                                                                         printer->colorMode() == QPrinter::Color,
-                                                                         false);
-    page()->d_ptr->m_callbacks.registerCallback(requestId, resultCallback);
+    page()->d_ptr->adapter->printToPDFCallbackResult(printer->pageLayout(),
+                                                     printer->colorMode() == QPrinter::Color,
+                                                     false);
 #else
     Q_UNUSED(printer);
-    page()->d_ptr->m_callbacks.invokeDirectly(resultCallback, false);
+    Q_EMIT printFinished(false);
 #endif
 }
 
