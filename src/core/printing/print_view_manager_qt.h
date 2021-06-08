@@ -60,6 +60,7 @@
 
 QT_BEGIN_NAMESPACE
 class QPageLayout;
+class QPageRanges;
 class QString;
 QT_END_NAMESPACE
 
@@ -75,10 +76,12 @@ public:
 
     // Method to print a page to a Pdf document with page size \a pageSize in location \a filePath.
     void PrintToPDFFileWithCallback(const QPageLayout &pageLayout,
+                                    const QPageRanges &pageRanges,
                                     bool printInColor,
                                     const QString &filePath,
                                     const PrintToPDFFileCallback& callback);
     void PrintToPDFWithCallback(const QPageLayout &pageLayout,
+                                const QPageRanges &pageRanges,
                                 bool printInColor,
                                 bool useCustomMargins,
                                 const PrintToPDFCallback &callback);
@@ -110,7 +113,8 @@ protected:
                           const printing::mojom::PreviewIds& ids);
     void OnShowScriptedPrintPreview(content::RenderFrameHost* rfh,
                                     bool source_is_modifiable);
-    bool PrintToPDFInternal(const QPageLayout &, bool printInColor, bool useCustomMargins = true);
+    bool PrintToPDFInternal(const QPageLayout &, const QPageRanges &,
+                            bool printInColor, bool useCustomMargins = true);
 
 private:
     void resetPdfState();

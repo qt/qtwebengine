@@ -82,6 +82,7 @@
 #include <QMarginsF>
 #include <QMimeData>
 #include <QPageLayout>
+#include <QPageRanges>
 #include <QPageSize>
 #include <QQmlComponent>
 #include <QQmlContext>
@@ -1434,8 +1435,9 @@ void QQuickWebEngineView::printToPdf(const QString& filePath, PrintedPageSizeId 
     QPageSize layoutSize(static_cast<QPageSize::PageSizeId>(pageSizeId));
     QPageLayout::Orientation layoutOrientation = static_cast<QPageLayout::Orientation>(orientation);
     QPageLayout pageLayout(layoutSize, layoutOrientation, QMarginsF(0.0, 0.0, 0.0, 0.0));
+    QPageRanges ranges;
     d->ensureContentsAdapter();
-    d->adapter->printToPDF(pageLayout, filePath);
+    d->adapter->printToPDF(pageLayout, ranges, filePath);
 #else
     Q_UNUSED(filePath);
     Q_UNUSED(pageSizeId);
@@ -1450,12 +1452,13 @@ void QQuickWebEngineView::printToPdf(const QJSValue &callback, PrintedPageSizeId
     QPageSize layoutSize(static_cast<QPageSize::PageSizeId>(pageSizeId));
     QPageLayout::Orientation layoutOrientation = static_cast<QPageLayout::Orientation>(orientation);
     QPageLayout pageLayout(layoutSize, layoutOrientation, QMarginsF(0.0, 0.0, 0.0, 0.0));
+    QPageRanges ranges;
 
     if (callback.isUndefined())
         return;
 
     d->ensureContentsAdapter();
-    quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout);
+    quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout, ranges);
     d->m_callbacks.insert(requestId, callback);
 #else
     Q_UNUSED(pageSizeId);

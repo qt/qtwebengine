@@ -82,6 +82,7 @@ class QDragMoveEvent;
 class QDropEvent;
 class QMimeData;
 class QPageLayout;
+class QPageRanges;
 class QTemporaryDir;
 class QWebChannel;
 class QWebEngineUrlRequestInterceptor;
@@ -222,8 +223,8 @@ public:
     void endDragging(QDropEvent *e, const QPointF &screenPos);
     void leaveDrag();
 #endif // QT_CONFIG(draganddrop)
-    void printToPDF(const QPageLayout&, const QString&);
-    quint64 printToPDFCallbackResult(const QPageLayout &,
+    void printToPDF(const QPageLayout&, const QPageRanges &, const QString&);
+    quint64 printToPDFCallbackResult(const QPageLayout &, const QPageRanges &,
                                      bool colorMode = true,
                                      bool useCustomMargins = true);
 
