@@ -121,5 +121,22 @@ TestWebEngineView {
             verify(error.overridable)
             compare(error.type, WebEngineCertificateError.CertificateAuthorityInvalid)
         }
+
+        function test_fatalError() {
+            var handleCertificateError = function(error) {
+                verify(!error.overrideable);
+                // QQuickWebEngineViewPrivate::allowCertificateError() will implicitly reject
+                // fatal errors and it should not crash if already rejected in handler.
+                error.rejectCertificate();
+            }
+            view.certificateError.connect(handleCertificateError);
+
+            view.url = Qt.resolvedUrl('https://revoked.badssl.com');
+            if (!view.waitForLoadFailed(10000))
+                skip("Couldn't load page from network, skipping test.");
+            compare(spyError.count, 1);
+
+            view.certificateError.disconnect(handleCertificateError);
+        }
     }
 }
