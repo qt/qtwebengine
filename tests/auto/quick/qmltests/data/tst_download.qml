@@ -96,7 +96,7 @@ TestWebEngineView {
     WebEngineProfile {
         id: testDownloadProfile
 
-        onDownloadRequested: {
+        onDownloadRequested: function(download) {
             testDownloadProfile.downloadPath = tempDir.path()
             downloadState.push(download.state)
             downloadItemConnections.target = download
@@ -126,7 +126,7 @@ TestWebEngineView {
             downloadUrl = download.url
             suggestedFileName = download.suggestedFileName
         }
-        onDownloadFinished: {
+        onDownloadFinished: function(download) {
             receivedBytes = download.receivedBytes;
         }
     }
