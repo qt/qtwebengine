@@ -16,6 +16,7 @@ set(testList
     tst_activeFocusOnPress.qml
     tst_audioMuted.qml
     tst_desktopBehaviorLoadHtml.qml
+    tst_download.qml
     tst_favicon.qml
     tst_filePicker.qml
     tst_findText.qml
@@ -67,7 +68,6 @@ endif()
 if(TARGET Qt::QuickControls) #FIXME
    list(APPEND testList
         tst_contextMenu.qml
-        tst_download.qml
    )
 else()
    message("\n!!!! QuickControls target is missing, some tests are not executed !!! FIXME \n")
