@@ -67,6 +67,7 @@ qt_feature("webengine-webchannel" PUBLIC
     CONDITION TARGET Qt::WebChannel
 )
 qt_feature("webengine-proprietary-codecs" PRIVATE
+    SECTION "WebEngine"
     LABEL "Proprietary Codecs"
     PURPOSE "Enables the use of proprietary codecs such as h.264/h.265 and MP3."
     AUTODETECT OFF
