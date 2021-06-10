@@ -37,10 +37,9 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.5
-import QtQuick.Controls 2.0 as Controls
-import QtQuick.Dialogs 1.2
-import QtQuick.Layouts 1.0
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 
 Dialog {
     property alias text: message.text
@@ -48,10 +47,11 @@ Dialog {
     signal accepted(string user, string password)
     signal rejected()
     title: qsTr("Authentication Required")
-    modality: Qt.NonModal
+    modal: false
+    anchors.centerIn: parent
 
     //handle the case where users simply closes the dialog
-    onVisibilityChanged: {
+    onVisibleChanged: {
         if (visible == false && handled == false) {
             handled = true;
             rejected();
@@ -72,7 +72,7 @@ Dialog {
         close();
     }
 
-    contentItem: ColumnLayout {
+    ColumnLayout {
         id: rootLayout
         anchors.fill: parent
         anchors.margins: 4
@@ -82,17 +82,17 @@ Dialog {
         property int doubleMargins: anchors.margins * 2
 
         SystemPalette { id: palette; colorGroup: SystemPalette.Active }
-        Text {
+        Label {
             id: message
             color: palette.windowText
         }
         GridLayout {
             columns: 2
-            Controls.Label {
+            Label {
                 text: qsTr("Username:")
                 color: palette.windowText
             }
-            Controls.TextField {
+            TextField {
                 id: userField
                 focus: true
                 Layout.fillWidth: true
@@ -101,11 +101,11 @@ Dialog {
                         acceptDialog();
                 }
             }
-            Controls.Label {
+            Label {
                 text: qsTr("Password:")
                 color: palette.windowText
             }
-            Controls.TextField {
+            TextField {
                 id: passwordField
                 Layout.fillWidth: true
                 echoMode: TextInput.Password
@@ -121,12 +121,12 @@ Dialog {
         RowLayout {
             Layout.alignment: Qt.AlignRight
             spacing: 8
-            Controls.Button {
+            Button {
                 id: cancelButton
                 text: qsTr("Cancel")
                 onClicked: rejectDialog()
             }
-            Controls.Button {
+            Button {
                 text: qsTr("Log In")
                 onClicked: acceptDialog()
             }
