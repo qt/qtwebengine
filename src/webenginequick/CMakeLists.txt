@@ -7,6 +7,7 @@ add_subdirectory(plugin)
 if(QT_FEATURE_webenginequick_testsupport)
     add_subdirectory(testsupport)
 endif()
+add_subdirectory(ui2)
 qt_internal_add_module(WebEngineQuick
     ${configureMode}
     SOURCES

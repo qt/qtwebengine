@@ -37,10 +37,9 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.5
-import QtQuick.Controls 2.0 as Controls
-import QtQuick.Dialogs 1.2
-import QtQuick.Layouts 1.0
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 
 Dialog {
     property alias text: message.text
@@ -48,10 +47,11 @@ Dialog {
     signal accepted()
     signal rejected()
     title: qsTr("Alert Dialog")
-    modality: Qt.NonModal
+    modal: false
+    anchors.centerIn: parent
 
     //handle the case where users simply closes the dialog
-    onVisibilityChanged: {
+    onVisibleChanged: {
         if (visible == false && handled == false) {
             handled = true;
             rejected();
@@ -66,7 +66,7 @@ Dialog {
         close();
     }
 
-    contentItem: ColumnLayout {
+    ColumnLayout {
         id: rootLayout
         anchors.fill: parent
         anchors.margins: 4
@@ -78,9 +78,9 @@ Dialog {
             Layout.alignment: Qt.AlignRight
             spacing: 8
             Image {
-                source: "information.png"
+                source: "qrc:/qt-project.org/imports/QtWebEngine/Controls2Delegates/information.png"
             }
-            Text {
+            Label {
                 id: message
                 Layout.fillWidth: true
                 color: palette.windowText
@@ -89,7 +89,7 @@ Dialog {
         Item {
             Layout.fillHeight: true
         }
-        Controls.Button {
+        Button {
             Layout.alignment: Qt.AlignHCenter
             text: qsTr("OK")
             onClicked: acceptDialog()

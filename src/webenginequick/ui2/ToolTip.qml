@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-import QtQuick.Controls 2.0
+import QtQuick.Controls
 
 ToolTip {
     delay: 1000

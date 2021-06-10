@@ -37,10 +37,9 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.5
-import QtQuick.Controls 2.0 as Controls
-import QtQuick.Layouts 1.0
-import QtQuick.Dialogs 1.2
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 
 Dialog {
     property alias text: message.text
@@ -50,10 +49,11 @@ Dialog {
     signal accepted()
     signal rejected()
     title: qsTr("Prompt Dialog")
-    modality: Qt.NonModal
+    modal: false
+    anchors.centerIn: parent
 
     //handle the case where users simply closes the dialog
-    onVisibilityChanged: {
+    onVisibleChanged: {
         if (visible == false && handled == false) {
             handled = true;
             rejected();
@@ -75,7 +75,7 @@ Dialog {
         close();
     }
 
-    contentItem: ColumnLayout {
+    ColumnLayout {
         id: rootLayout
         anchors.fill: parent
         anchors.margins: 4
@@ -88,7 +88,7 @@ Dialog {
             Layout.fillWidth: true
             color: palette.windowText
         }
-        Controls.TextField {
+        TextField {
             id:field
             focus: true
             Layout.fillWidth: true
@@ -100,11 +100,11 @@ Dialog {
         RowLayout {
             Layout.alignment: Qt.AlignRight
             spacing: 8
-            Controls.Button {
+            Button {
                 text: qsTr("OK")
                 onClicked: acceptDialog()
             }
-            Controls.Button {
+            Button {
                 text: qsTr("Cancel")
                 onClicked: rejectDialog()
             }
