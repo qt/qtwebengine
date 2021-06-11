@@ -154,6 +154,7 @@ foreach(config ${configs})
             request_controller.h
             resource_bundle_qt.cpp
             resource_context_qt.cpp resource_context_qt.h
+            select_file_dialog_factory_qt.cpp select_file_dialog_factory_qt.h
             touch_handle_drawable_client.h
             touch_handle_drawable_qt.cpp touch_handle_drawable_qt.h
             touch_selection_controller_client_qt.cpp touch_selection_controller_client_qt.h
