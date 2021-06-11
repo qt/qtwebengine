@@ -54,6 +54,7 @@
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 #include <QObject>
 #include <QScopedPointer>
+#include <QtQml/qqmlregistration.h>
 
 namespace QtWebEngineCore {
 class WebEngineSettings;
@@ -95,7 +96,10 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool javascriptCanPaste READ javascriptCanPaste WRITE setJavascriptCanPaste NOTIFY javascriptCanPasteChanged REVISION(1,6) FINAL)
     Q_PROPERTY(bool dnsPrefetchEnabled READ dnsPrefetchEnabled WRITE setDnsPrefetchEnabled NOTIFY dnsPrefetchEnabledChanged REVISION(1,7) FINAL)
     Q_PROPERTY(bool pdfViewerEnabled READ pdfViewerEnabled WRITE setPdfViewerEnabled NOTIFY pdfViewerEnabledChanged REVISION(1,8) FINAL)
-
+    QML_NAMED_ELEMENT(WebEngineSettings)
+    QML_ADDED_IN_VERSION(1, 1)
+    QML_EXTRA_VERSION(2, 0)
+    QML_UNCREATABLE("")
 public:
     enum UnknownUrlSchemePolicy {
         DisallowUnknownUrlSchemes = 1,

@@ -55,7 +55,7 @@
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 #include <QQuickItem>
 #include <QtGui/qcolor.h>
-
+#include <QtQml/qqmlregistration.h>
 #include "qquickwebengineprofile.h"
 
 namespace QtWebEngineCore {
@@ -129,6 +129,9 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(LifecycleState recommendedState READ recommendedState NOTIFY recommendedStateChanged REVISION(1,10) FINAL)
 
     Q_PROPERTY(qint64 renderProcessPid READ renderProcessPid NOTIFY renderProcessPidChanged FINAL REVISION(1,11))
+    QML_NAMED_ELEMENT(WebEngineView)
+    QML_ADDED_IN_VERSION(1, 0)
+    QML_EXTRA_VERSION(2, 0)
 
 public:
     QQuickWebEngineView(QQuickItem *parent = nullptr);

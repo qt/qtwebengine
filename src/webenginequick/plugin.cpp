@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,31 +37,32 @@
 **
 ****************************************************************************/
 
-#include <QtQml>
-
 #include <QtQml/qqmlextensionplugin.h>
-#include <QtWebEngineQuick/private/qquickwebenginetestsupport_p.h>
+#include <QtWebEngineQuick/QQuickWebEngineProfile>
+
+#include <QtWebEngineQuick/private/qquickwebenginefaviconprovider_p_p.h>
+#include <QtWebEngineQuick/private/qquickwebenginetouchhandleprovider_p_p.h>
+
+void Q_WEBENGINE_PRIVATE_EXPORT qml_register_types_QtWebEngine();
 
 QT_BEGIN_NAMESPACE
 
-class QtWebEngineTestSupportPlugin : public QQmlExtensionPlugin
+class QtWebEnginePlugin : public QQmlExtensionPlugin
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID QQmlExtensionInterface_iid)
 public:
-    void registerTypes(const char *uri) override
+    void initializeEngine(QQmlEngine *engine, const char *uri) override
     {
-        qWarning("\nWARNING: This project is using the testsupport QML API extensions for QtWebEngine and is therefore tied to a specific QtWebEngine release.\n"
-                 "WARNING: The testsupport API will change from version to version, or even be removed. You have been warned!\n");
-
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine.testsupport"));
-
-        qmlRegisterType<QQuickWebEngineTestSupport>(uri, 1, 0, "WebEngineTestSupport");
-        qmlRegisterUncreatableType<QQuickWebEngineTestInputContext>(uri, 1, 0, "TestInputContext",
-            tr("Cannot create a separate instance of WebEngineErrorPage"));
-        qmlRegisterUncreatableType<QQuickWebEngineTestEvent>(uri, 1, 0, "WebEngineTestEvent",
-            tr("Cannot create a separate instance of WebEngineTestEvent"));
+        Q_UNUSED(uri);
+        engine->addImageProvider(QQuickWebEngineFaviconProvider::identifier(), new QQuickWebEngineFaviconProvider);
+        engine->addImageProvider(QQuickWebEngineTouchHandleProvider::identifier(), new QQuickWebEngineTouchHandleProvider);
     }
+    void registerTypes(const char *uri) override {
+        volatile auto registration = &qml_register_types_QtWebEngine;
+        Q_UNUSED(registration);
+        Q_UNUSED(uri);
+    };
 };
 
 QT_END_NAMESPACE

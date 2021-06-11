@@ -67,7 +67,7 @@
 #include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
 #include "qwebengineregisterprotocolhandlerrequest.h"
 #if QT_CONFIG(webenginequick_testsupport)
-#include "qquickwebenginetestsupport_p.h"
+#include <QtWebEngineTestSupport/private/qquickwebenginetestsupport_p.h>
 #endif
 
 #include "render_widget_host_view_qt_delegate_quick.h"

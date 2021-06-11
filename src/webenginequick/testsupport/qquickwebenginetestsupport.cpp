@@ -39,7 +39,7 @@
 
 #include "qquickwebenginetestsupport_p.h"
 
-#include "qwebengineloadinginfo.h"
+#include <QtWebEngineCore/qwebengineloadinginfo.h>
 
 #include <QQuickItem>
 #include <QQuickWindow>

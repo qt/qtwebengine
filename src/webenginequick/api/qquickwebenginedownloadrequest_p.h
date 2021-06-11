@@ -53,8 +53,8 @@
 
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 #include <QtWebEngineQuick/private/qquickwebengineview_p.h>
-
 #include <QtWebEngineCore/qwebenginedownloadrequest.h>
+#include <QtQml/qqmlregistration.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -65,6 +65,10 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineDownloadRequest : public QWebEng
     Q_OBJECT
 public:
     Q_PROPERTY(QQuickWebEngineView *view READ view CONSTANT FINAL)
+    QML_NAMED_ELEMENT(WebEngineDownloadRequest)
+    QML_ADDED_IN_VERSION(1, 1)
+    QML_EXTRA_VERSION(2, 0)
+    QML_UNCREATABLE("")
 
     QQuickWebEngineView *view() const;
 private:

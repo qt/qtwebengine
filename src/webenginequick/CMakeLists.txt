@@ -3,13 +3,20 @@ find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS PrintSuppor
 
 get_configure_mode(configureMode)
 
-add_subdirectory(plugin)
+
 if(QT_FEATURE_webenginequick_testsupport)
     add_subdirectory(testsupport)
 endif()
 add_subdirectory(ui2)
-qt_internal_add_module(WebEngineQuick
+
+qt_internal_add_qml_module(WebEngineQuick
     ${configureMode}
+    URI "QtWebEngine"
+    VERSION "${PROJECT_VERSION}"
+    CLASS_NAME QtWebEnginePlugin
+    PLUGIN_TARGET qtwebenginequickplugin
+    NO_GENERATE_PLUGIN_SOURCE
+    NO_PLUGIN_OPTIONAL
     SOURCES
         api/qquickwebengineaction.cpp api/qquickwebengineaction_p.h
         api/qquickwebengineaction_p_p.h
@@ -26,6 +33,7 @@ qt_internal_add_module(WebEngineQuick
         api/qquickwebenginetouchhandleprovider_p_p.h
         api/qquickwebengineview.cpp api/qquickwebengineview_p.h
         api/qquickwebengineview_p_p.h
+        api/qquickwebengineforeigntypes_p.h
         api/qtwebenginequickglobal.cpp api/qtwebenginequickglobal.h
         api/qtwebenginequickglobal_p.h
         render_widget_host_view_qt_delegate_quick.cpp render_widget_host_view_qt_delegate_quick.h
@@ -49,11 +57,18 @@ qt_internal_add_module(WebEngineQuick
         Qt::WebEngineCore
 )
 
-qt_internal_extend_target(WebEngineQuick CONDITION QT_FEATURE_webenginequick_testsupport
+qt_internal_extend_target(qtwebenginequickplugin
     SOURCES
-        api/qquickwebenginetestsupport.cpp api/qquickwebenginetestsupport_p.h
+        plugin.cpp
     LIBRARIES
-        Qt::TestPrivate
+        Qt::CorePrivate
+        Qt::WebEngineQuickPrivate
 )
 
 make_install_only(WebEngineQuick)
+make_install_only(qtwebenginequickplugin)
+
+qt_internal_extend_target(WebEngineQuick CONDITION QT_FEATURE_webenginequick_testsupport
+    LIBRARIES
+       Qt::WebEngineTestSupportPrivate
+)

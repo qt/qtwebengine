@@ -59,6 +59,7 @@
 #include <QtCore/QUrl>
 #include <QtCore/QList>
 #include <QtQml/QQmlListProperty>
+#include <QtQml/qqmlregistration.h>
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
 
@@ -77,6 +78,10 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineClientCertificateOption : public
     Q_PROPERTY(QDateTime effectiveDate READ effectiveDate CONSTANT FINAL)
     Q_PROPERTY(QDateTime expiryDate READ expiryDate CONSTANT FINAL)
     Q_PROPERTY(bool isSelfSigned READ isSelfSigned CONSTANT FINAL)
+    QML_NAMED_ELEMENT(WebEngineClientCertificateOption)
+    QML_ADDED_IN_VERSION(1, 9)
+    QML_EXTRA_VERSION(2, 0)
+    QML_UNCREATABLE("")
 
 public:
     QString issuer() const;
@@ -99,6 +104,10 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineClientCertificateSelection : pub
     Q_OBJECT
     Q_PROPERTY(QUrl host READ host CONSTANT FINAL)
     Q_PROPERTY(QQmlListProperty<QQuickWebEngineClientCertificateOption> certificates READ certificates CONSTANT FINAL)
+    QML_NAMED_ELEMENT(WebEngineClientCertificateSelection)
+    QML_ADDED_IN_VERSION(1, 9)
+    QML_EXTRA_VERSION(2, 0)
+    QML_UNCREATABLE("")
 
 public:
     QQuickWebEngineClientCertificateSelection() = default;
