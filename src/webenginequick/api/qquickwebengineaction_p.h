@@ -55,6 +55,7 @@
 #include <QtQml/qqml.h>
 #include "qtwebenginequickglobal_p.h"
 #include <QVariant>
+#include <QtQml/qqmlregistration.h>
 
 namespace QtWebEngineCore {
     class UIDelegatesManager;
@@ -71,6 +72,10 @@ class Q_WEBENGINE_EXPORT QQuickWebEngineAction : public QObject
     Q_PROPERTY(QString text READ text CONSTANT FINAL)
     Q_PROPERTY(QString iconName READ iconName CONSTANT FINAL)
     Q_PROPERTY(bool enabled READ isEnabled NOTIFY enabledChanged FINAL)
+    QML_NAMED_ELEMENT(WebEngineAction)
+    QML_ADDED_IN_VERSION(1, 8)
+    QML_EXTRA_VERSION(2, 0)
+    QML_UNCREATABLE("")
 
 public:
     QQuickWebEngineAction(const QVariant &data, const QString &text, const QString &iconName, bool enabled, QObject *parent);

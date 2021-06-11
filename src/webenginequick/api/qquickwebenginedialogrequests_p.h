@@ -56,6 +56,7 @@
 #include <QtCore/QWeakPointer>
 #include <QtCore/QRect>
 #include <QtGui/QColor>
+#include <QtQml/qqmlregistration.h>
 
 namespace QtWebEngineCore {
     class AuthenticationDialogController;
@@ -82,6 +83,10 @@ public:
     Q_PROPERTY(QString proxyHost READ proxyHost CONSTANT FINAL)
     Q_PROPERTY(AuthenticationType type READ type CONSTANT FINAL)
     Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted FINAL)
+    QML_NAMED_ELEMENT(AuthenticationDialogRequest)
+    QML_ADDED_IN_VERSION(1, 4)
+    QML_EXTRA_VERSION(2, 0)
+    QML_UNCREATABLE("")
 
     ~QQuickWebEngineAuthenticationDialogRequest();
 
@@ -127,6 +132,10 @@ public:
     Q_PROPERTY(DialogType type READ type CONSTANT FINAL)
     Q_PROPERTY(QUrl securityOrigin READ securityOrigin CONSTANT FINAL)
     Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted FINAL)
+    QML_NAMED_ELEMENT(JavaScriptDialogRequest)
+    QML_ADDED_IN_VERSION(1, 4)
+    QML_EXTRA_VERSION(2, 0)
+    QML_UNCREATABLE("")
 
     ~QQuickWebEngineJavaScriptDialogRequest();
 
@@ -162,6 +171,10 @@ public:
 
     Q_PROPERTY(QColor color READ color CONSTANT FINAL)
     Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted FINAL)
+    QML_NAMED_ELEMENT(ColorDialogRequest)
+    QML_ADDED_IN_VERSION(1, 4)
+    QML_EXTRA_VERSION(2, 0)
+    QML_UNCREATABLE("")
 
     ~QQuickWebEngineColorDialogRequest();
 
@@ -199,6 +212,10 @@ public:
     Q_PROPERTY(QStringList acceptedMimeTypes READ acceptedMimeTypes CONSTANT FINAL)
     Q_PROPERTY(FileMode mode READ mode CONSTANT FINAL)
     Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted FINAL)
+    QML_NAMED_ELEMENT(FileDialogRequest)
+    QML_ADDED_IN_VERSION(1, 4)
+    QML_EXTRA_VERSION(2, 0)
+    QML_UNCREATABLE("")
 
     ~QQuickWebEngineFileDialogRequest();
 
@@ -238,6 +255,10 @@ public:
     Q_PROPERTY(QString subText READ subText CONSTANT FINAL)
     Q_PROPERTY(RequestType type READ type CONSTANT FINAL)
     Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted FINAL)
+    QML_NAMED_ELEMENT(FormValidationMessageRequest)
+    QML_ADDED_IN_VERSION(1, 4)
+    QML_EXTRA_VERSION(2, 0)
+    QML_UNCREATABLE("")
 
     ~QQuickWebEngineFormValidationMessageRequest();
     QRect anchor() const;
@@ -273,6 +294,10 @@ public:
     Q_PROPERTY(QString text READ text CONSTANT FINAL)
     Q_PROPERTY(RequestType type READ type CONSTANT FINAL)
     Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted FINAL)
+    QML_NAMED_ELEMENT(TooltipRequest)
+    QML_ADDED_IN_VERSION(1, 10)
+    QML_EXTRA_VERSION(2, 0)
+    QML_UNCREATABLE("")
 
     ~QQuickWebEngineTooltipRequest();
     int x() const;

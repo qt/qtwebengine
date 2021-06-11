@@ -1,6 +1,7 @@
 %modules = ( # path to module name map
     "QtWebEngineQuick" => "$basedir/webenginequick",
     "QtWebEngineWidgets" => "$basedir/webenginewidgets",
+    "QtWebEngineTestSupport" => "$basedir/webenginequick/testsupport",
     "QtWebEngineCore" => "$basedir/core/api",
     "QtPdf" => "$basedir/pdf",
     "QtPdfWidgets" => "$basedir/pdfwidgets",

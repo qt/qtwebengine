@@ -44,6 +44,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QString>
+#include <QtQml/qqmlregistration.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -78,6 +79,9 @@ class Q_WEBENGINE_EXPORT QQuickWebEngineProfile : public QObject {
                NOTIFY useForGlobalCertificateVerificationChanged
                FINAL REVISION(1,5))
     Q_PROPERTY(QString downloadPath READ downloadPath WRITE setDownloadPath NOTIFY downloadPathChanged FINAL REVISION(1,5))
+    QML_NAMED_ELEMENT(WebEngineProfile)
+    QML_ADDED_IN_VERSION(1, 1)
+    QML_EXTRA_VERSION(2, 0)
 
 public:
     QQuickWebEngineProfile(QObject *parent = nullptr);

@@ -51,8 +51,18 @@
 // We mean it.
 //
 
+#ifndef QT_STATIC
+#  if defined(QT_BUILD_WEBENGINEQUICK_TESTSUPPORT_LIB)
+#      define Q_WEBENGINEQUICK_TESTSUPPORT_EXPORT Q_DECL_EXPORT
+#  else
+#      define Q_WEBENGINEQUICK_TESTSUPPORT_EXPORT Q_DECL_IMPORT
+#  endif
+#else
+#  define Q_WEBENGINEQUICK_TESTSUPPORT_EXPORT
+#endif
+
 #include <QtGui/private/qinputmethod_p.h>
-#include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
+#include <QtQml/qqmlregistration.h>
 
 #include <QEvent>
 #include <QObject>
@@ -63,8 +73,12 @@ QT_BEGIN_NAMESPACE
 class QWebEngineLoadingInfo;
 class QWindow;
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineTestInputContext : public QPlatformInputContext {
+class Q_WEBENGINEQUICK_TESTSUPPORT_EXPORT QQuickWebEngineTestInputContext : public QPlatformInputContext {
     Q_OBJECT
+    QML_NAMED_ELEMENT(TestInputContext)
+    QML_ADDED_IN_VERSION(1, 0)
+    QML_EXTRA_VERSION(2, 0)
+    QML_UNCREATABLE("")
 
 public:
     QQuickWebEngineTestInputContext();
@@ -81,8 +95,12 @@ private:
     bool m_visible;
 };
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineTestEvent : public QObject {
+class Q_WEBENGINEQUICK_TESTSUPPORT_EXPORT QQuickWebEngineTestEvent : public QObject {
     Q_OBJECT
+    QML_NAMED_ELEMENT(WebEngineTestEvent)
+    QML_ADDED_IN_VERSION(1, 0)
+    QML_EXTRA_VERSION(2, 0)
+    QML_UNCREATABLE("")
 
 public:
     QQuickWebEngineTestEvent();
@@ -95,10 +113,13 @@ private:
     void mouseEvent(QEvent::Type type, QWindow *window, QObject *item, const QPointF &_pos);
 };
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineTestSupport : public QObject {
+class Q_WEBENGINEQUICK_TESTSUPPORT_EXPORT QQuickWebEngineTestSupport : public QObject {
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineTestInputContext *testInputContext READ testInputContext CONSTANT FINAL)
     Q_PROPERTY(QQuickWebEngineTestEvent *testEvent READ testEvent CONSTANT FINAL)
+    QML_NAMED_ELEMENT(WebEngineTestSupport)
+    QML_ADDED_IN_VERSION(1, 0)
+    QML_EXTRA_VERSION(2, 0)
 
 public:
     QQuickWebEngineTestSupport();

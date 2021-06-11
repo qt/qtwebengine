@@ -54,6 +54,7 @@
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 #include <QtWebEngineCore/qwebenginescript.h>
 #include <QtCore/qobject.h>
+#include <QtQml/qqml.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,6 +65,10 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSingleton : public QObject {
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineSettings* settings READ settings CONSTANT FINAL)
     Q_PROPERTY(QQuickWebEngineProfile* defaultProfile READ defaultProfile CONSTANT FINAL REVISION(1,1))
+    QML_SINGLETON
+    QML_NAMED_ELEMENT(WebEngine)
+    QML_ADDED_IN_VERSION(1, 1)
+    QML_EXTRA_VERSION(2, 0)
 public:
     QQuickWebEngineSettings *settings() const;
     QQuickWebEngineProfile *defaultProfile() const;
