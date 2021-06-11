@@ -67,6 +67,7 @@
 #include "extensions/plugin_service_filter_qt.h"
 #include "common/extensions/extensions_client_qt.h"
 #endif //BUILDFLAG(ENABLE_EXTENSIONS)
+#include "select_file_dialog_factory_qt.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "ui/display/screen.h"
@@ -248,6 +249,8 @@ void BrowserMainPartsQt::PreMainMessageLoopStart()
 
 void BrowserMainPartsQt::PreMainMessageLoopRun()
 {
+    ui::SelectFileDialog::SetFactory(new SelectFileDialogFactoryQt());
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::ExtensionsClient::Set(new extensions::ExtensionsClientQt());
     extensions::ExtensionsBrowserClient::Set(new extensions::ExtensionsBrowserClientQt());

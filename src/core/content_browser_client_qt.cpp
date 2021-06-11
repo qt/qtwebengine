@@ -106,6 +106,7 @@
 #include "profile_io_data_qt.h"
 #include "quota_permission_context_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
+#include "select_file_dialog_factory_qt.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_adapter.h"
@@ -389,6 +390,12 @@ void ContentBrowserClientQt::GetAdditionalAllowedSchemesForFileSystem(std::vecto
     ContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(additional_schemes);
     additional_schemes->push_back(content::kChromeDevToolsScheme);
     additional_schemes->push_back(content::kChromeUIScheme);
+}
+
+std::unique_ptr<ui::SelectFilePolicy>
+ContentBrowserClientQt::CreateSelectFilePolicy(content::WebContents *web_contents)
+{
+    return std::make_unique<SelectFilePolicyQt>(web_contents);
 }
 
 #if defined(Q_OS_LINUX)

@@ -103,6 +103,8 @@ public:
     void GetAdditionalWebUISchemes(std::vector<std::string>* additional_schemes) override;
     void GetAdditionalAllowedSchemesForFileSystem(std::vector<std::string>* additional_schemes) override;
 
+    std::unique_ptr<ui::SelectFilePolicy>
+    CreateSelectFilePolicy(content::WebContents *web_contents) override;
     void BindHostReceiverForRenderer(content::RenderProcessHost *render_process_host,
                                      mojo::GenericPendingReceiver receiver) override;
     void RegisterBrowserInterfaceBindersForFrame(content::RenderFrameHost *render_frame_host,

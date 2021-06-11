@@ -240,6 +240,7 @@ private Q_SLOTS:
 
     void testChooseFilesParameters_data();
     void testChooseFilesParameters();
+    void fileSystemAccessDialog();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -4726,6 +4727,34 @@ void tst_QWebEnginePage::testChooseFilesParameters()
 
     QTRY_COMPARE(page.chosenFileSelectionMode, expectedFileSelectionMode);
     QTRY_COMPARE(page.chosenAcceptedMimeTypes, expectedMimeType);
+}
+
+void tst_QWebEnginePage::fileSystemAccessDialog()
+{
+    FileSelectionTestPage page;
+    QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
+
+    QWebEngineView view;
+    view.resize(500, 500);
+    view.setPage(&page);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    page.setHtml(QString("<html><body>"
+                         "<button id='triggerDialog' value='trigger' "
+                         "onclick='window.showDirectoryPicker()'>"
+                         "</body></html>"),
+                 QString("qrc:/"));
+    QVERIFY(spyFinished.wait());
+    QTRY_COMPARE(spyFinished.count(), 1);
+
+    evaluateJavaScriptSync(view.page(), "document.getElementById('triggerDialog').focus()");
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(),
+                 QStringLiteral("triggerDialog"));
+    QTest::keyClick(view.focusProxy(), Qt::Key_Enter);
+
+    QTRY_COMPARE(page.chosenFileSelectionMode, QWebEnginePage::FileSelectUploadFolder);
+    QTRY_COMPARE(page.chosenAcceptedMimeTypes, QStringList());
 }
 
 void tst_QWebEnginePage::backgroundColor()
