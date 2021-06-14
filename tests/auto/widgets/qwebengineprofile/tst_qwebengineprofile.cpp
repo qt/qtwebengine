@@ -391,37 +391,37 @@ void tst_QWebEngineProfile::urlSchemeHandlers()
     view.setPage(new QWebEnginePage(&profile, &view));
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     QString emailAddress = QStringLiteral("egon@olsen-banden.dk");
-    QVERIFY(loadSync(&view, QUrl(QStringLiteral("letterto:") + emailAddress)));
+    QVERIFY(loadSync(view.page(), QUrl(QStringLiteral("letterto:") + emailAddress)));
     QCOMPARE(toPlainTextSync(view.page()), emailAddress);
 
     // Install a gopher handler after the view has been fully initialized.
     ReplyingUrlSchemeHandler gopherHandler;
     profile.installUrlSchemeHandler("gopher", &gopherHandler);
     QUrl url = QUrl(QStringLiteral("gopher://olsen-banden.dk/benny"));
-    QVERIFY(loadSync(&view, url));
+    QVERIFY(loadSync(view.page(), url));
     QCOMPARE(toPlainTextSync(view.page()), url.toString());
 
     // Remove the letterto scheme, and check whether it is not handled anymore.
     profile.removeUrlScheme("letterto");
     emailAddress = QStringLiteral("kjeld@olsen-banden.dk");
-    QVERIFY(loadSync(&view, QUrl(QStringLiteral("letterto:") + emailAddress), false));
+    QVERIFY(loadSync(view.page(), QUrl(QStringLiteral("letterto:") + emailAddress), false));
     QVERIFY(toPlainTextSync(view.page()) != emailAddress);
 
     // Check if gopher is still working after removing letterto.
     url = QUrl(QStringLiteral("gopher://olsen-banden.dk/yvonne"));
-    QVERIFY(loadSync(&view, url));
+    QVERIFY(loadSync(view.page(), url));
     QCOMPARE(toPlainTextSync(view.page()), url.toString());
 
     // Does removeAll work?
     profile.removeAllUrlSchemeHandlers();
     url = QUrl(QStringLiteral("gopher://olsen-banden.dk/harry"));
-    QVERIFY(loadSync(&view, url, false));
+    QVERIFY(loadSync(view.page(), url, false));
     QVERIFY(toPlainTextSync(view.page()) != url.toString());
 
     // Install a handler that is owned by the view. Make sure this doesn't crash on shutdown.
     profile.installUrlSchemeHandler("aviancarrier", new ReplyingUrlSchemeHandler(&view));
     url = QUrl(QStringLiteral("aviancarrier:inspector.mortensen@politistyrke.dk"));
-    QVERIFY(loadSync(&view, url));
+    QVERIFY(loadSync(view.page(), url));
     QCOMPARE(toPlainTextSync(view.page()), url.toString());
 
     // Check that all buffers got deleted

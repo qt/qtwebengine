@@ -147,7 +147,7 @@ void tst_QWebEngineSettings::javascriptClipboard()
     QCOMPARE(evaluateJavaScriptSync(&page, "document.queryCommandEnabled('copy')").toBool(),
              copyResult);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.execCommand('copy')").toBool(), copyResult);
-    QTRY_COMPARE(QApplication::clipboard()->text(),
+    QTRY_COMPARE(QGuiApplication::clipboard()->text(),
                  (copyResult ? QString("OriginalText") : QString()));
 
 

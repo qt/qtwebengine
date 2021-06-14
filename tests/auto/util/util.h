@@ -36,7 +36,6 @@
 #include <QSignalSpy>
 #include <QTimer>
 #include <qwebenginepage.h>
-#include <qwebengineview.h>
 
 // Disconnect signal on destruction.
 class ScopedConnection
@@ -175,11 +174,6 @@ static inline bool loadSync(QWebEnginePage *page, const QUrl &url, bool ok = tru
     return (!spy.empty() || spy.wait(20000)) && (spy.front().value(0).toBool() == ok);
 }
 
-static inline bool loadSync(QWebEngineView *view, const QUrl &url, bool ok = true)
-{
-    return loadSync(view->page(), url, ok);
-}
-
 static inline QPoint elementCenter(QWebEnginePage *page, const QString &id)
 {
     const QString jsCode(
@@ -218,21 +212,3 @@ static inline QRect elementGeometry(QWebEnginePage *page, const QString &id)
 
 
 #define W_QSKIP(a, b) QSKIP(a)
-
-#define W_QTEST_MAIN(TestObject, params) \
-int main(int argc, char *argv[]) \
-{ \
-    QList<const char *> w_argv(argc); \
-    for (int i = 0; i < argc; ++i) \
-        w_argv[i] = argv[i]; \
-    for (int i = 0; i < params.size(); ++i) \
-        w_argv.append(params[i].data()); \
-    int w_argc = w_argv.size(); \
-    \
-    QApplication app(w_argc, const_cast<char **>(w_argv.data())); \
-    app.setAttribute(Qt::AA_Use96Dpi, true); \
-    QTEST_DISABLE_KEYPAD_NAVIGATION \
-    TestObject tc; \
-    QTEST_SET_MAIN_SOURCE_PATH \
-    return QTest::qExec(&tc, argc, argv); \
-}

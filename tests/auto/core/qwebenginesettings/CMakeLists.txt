@@ -4,6 +4,6 @@ qt_internal_add_test(tst_qwebenginesettings
     SOURCES
         tst_qwebenginesettings.cpp
     LIBRARIES
-        Qt::WebEngineWidgets
+        Qt::WebEngineCore
         Test::Util
 )

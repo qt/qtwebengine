@@ -5,7 +5,7 @@ qt_internal_add_test(tst_qwebengineurlrequestinterceptor
     SOURCES
         tst_qwebengineurlrequestinterceptor.cpp
     LIBRARIES
-        Qt::WebEngineWidgets
+        Qt::WebEngineCore
         Test::HttpServer
         Test::Util
 )

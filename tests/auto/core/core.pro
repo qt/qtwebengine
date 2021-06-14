@@ -3,7 +3,10 @@ QT_FOR_CONFIG += network-private
 
 SUBDIRS += \
     qwebenginecookiestore \
-    qwebengineurlrequestinterceptor
+    qwebenginesettings \
+    qwebengineurlrequestinterceptor \
+    devtools \
+    origins
 
-qtConfig(ssl): SUBDIRS += qwebengineclientcertificatestore
+qtConfig(ssl): SUBDIRS += certificateerror qwebengineclientcertificatestore
 
