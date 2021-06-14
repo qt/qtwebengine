@@ -2,10 +2,10 @@
     <qresource prefix="/">
         <file>forms/AuthenticationForm.ui.qml</file>
         <file>forms/Authentication.qml</file>
-        <file>forms/Button.qml</file>
         <file>forms/ColorCell.qml</file>
         <file>forms/ColorPickerForm.ui.qml</file>
         <file>forms/ColorPicker.qml</file>
+        <file>forms/CustomButton.qml</file>
         <file>forms/FilePickerForm.ui.qml</file>
         <file>forms/FilePicker.qml</file>
         <file>forms/FileRow.qml</file>

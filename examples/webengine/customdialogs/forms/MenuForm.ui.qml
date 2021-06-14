@@ -48,8 +48,8 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.4
-import QtQuick.Layouts 1.3
+import QtQuick
+import QtQuick.Layouts
 
 Item {
     property alias followLink: followLink
@@ -73,41 +73,40 @@ Item {
             source: "qrc:/icon.svg"
         }
 
-        Button {
+        CustomButton {
             id: followLink
             btnText: qsTr("Follow")
         }
 
-        Button {
+        CustomButton {
             id: back
             btnText: qsTr("Back")
         }
 
-        Button {
+        CustomButton {
             id: forward
             btnText: qsTr("Forward")
         }
 
-        Button {
+        CustomButton {
             id: reload
             btnText: qsTr("Reload")
         }
 
-        Button {
+        CustomButton {
             id: copyLinkUrl
             btnText: qsTr("Copy Link URL")
         }
 
-        Button {
+        CustomButton {
             id: saveLink
             btnText: qsTr("Save Link")
         }
 
-        Button {
+        CustomButton {
             id: close
             btnBlue: false
             btnText: qsTr("Close")
         }
-
     }
 }

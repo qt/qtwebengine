@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtQuick.Controls 1.4 as Controls
-import QtQuick.Layouts 1.3
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 
 Item {
     width: parent.width
@@ -62,7 +62,7 @@ Item {
             text: qsTr("Use default dialogs")
             font.pointSize: 12
         }
-        Controls.Switch {
+        Switch {
             id: switcher
             checked: true
         }

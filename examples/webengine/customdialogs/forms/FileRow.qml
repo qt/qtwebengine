@@ -48,9 +48,8 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.4
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 1.0 as Controls
+import QtQuick
+import QtQuick.Layouts
 
 Item {
     id: root
