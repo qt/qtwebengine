@@ -46,6 +46,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "content/public/browser/browser_thread.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/in_memory_pref_store.h"
@@ -130,6 +131,14 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     // Can't be a random value since every time we run the setup code the
     // default value will be different. We'll need to initialize it later.
     registry->RegisterStringPref(kPrefMediaDeviceIDSalt, std::string());
+
+    registry->RegisterBooleanPref(autofill::prefs::kAutofillEnabledDeprecated, false);
+    registry->RegisterBooleanPref(autofill::prefs::kAutofillProfileEnabled, false);
+    registry->RegisterBooleanPref(autofill::prefs::kAutofillCreditCardEnabled, false);
+    registry->RegisterBooleanPref(autofill::prefs::kAutofillCreditCardFidoAuthEnabled, false);
+    registry->RegisterBooleanPref(autofill::prefs::kAutofillWalletImportEnabled, false);
+    registry->RegisterBooleanPref(autofill::prefs::kAutofillJapanCityFieldMigratedDeprecated,
+                                  false);
 
     {
         base::ScopedAllowBlocking allowBlock;

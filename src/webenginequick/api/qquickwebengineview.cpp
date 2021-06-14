@@ -55,6 +55,7 @@
 #include "qquickwebengineview_p_p.h"
 
 #include "authentication_dialog_controller.h"
+#include "autofill_popup_controller.h"
 #include "profile_adapter.h"
 #include "file_picker_controller.h"
 #include "find_text_helper.h"
@@ -735,6 +736,19 @@ void QQuickWebEngineViewPrivate::findTextFinished(const QWebEngineFindTextResult
 {
     Q_Q(QQuickWebEngineView);
     Q_EMIT q->findTextFinished(result);
+}
+
+void QQuickWebEngineViewPrivate::showAutofillPopup(
+        QtWebEngineCore::AutofillPopupController *controller, const QRect &bounds,
+        bool autoselectFirstSuggestion)
+{
+    ui()->showAutofillPopup(controller, bounds.bottomLeft(), bounds.width() + 2,
+                            autoselectFirstSuggestion);
+}
+
+void QQuickWebEngineViewPrivate::hideAutofillPopup()
+{
+    ui()->hideAutofillPopup();
 }
 
 QWebEngineSettings *QQuickWebEngineViewPrivate::webEngineSettings() const

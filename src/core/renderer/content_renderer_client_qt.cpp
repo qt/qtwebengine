@@ -47,6 +47,10 @@
 #include "components/spellcheck/renderer/spellcheck.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
 #endif
+#include "components/autofill/content/renderer/autofill_agent.h"
+#include "components/autofill/content/renderer/autofill_assistant_agent.h"
+#include "components/autofill/content/renderer/password_autofill_agent.h"
+#include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/cdm/renderer/external_clear_key_key_system_properties.h"
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "components/error_page/common/error.h"
@@ -210,8 +214,10 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_fr
 #if QT_CONFIG(webengine_printing_and_pdf)
     new printing::PrintRenderFrameHelper(render_frame, base::WrapUnique(new PrintWebViewHelperDelegateQt()));
 #endif // QT_CONFIG(webengine_printing_and_pdf)
-#if BUILDFLAG(ENABLE_EXTENSIONS)
+
     blink::AssociatedInterfaceRegistry *associated_interfaces = render_frame_observer->associatedInterfaces();
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     associated_interfaces->AddInterface(base::BindRepeating(
         &extensions::MimeHandlerViewContainerManager::BindReceiver,
         render_frame->GetRoutingID()));
@@ -219,6 +225,17 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_fr
     auto registry = std::make_unique<service_manager::BinderRegistry>();
     ExtensionsRendererClientQt::GetInstance()->RenderFrameCreated(render_frame, render_frame_observer->registry());
 #endif
+
+    autofill::AutofillAssistantAgent *autofill_assistant_agent =
+            new autofill::AutofillAssistantAgent(render_frame);
+    autofill::PasswordAutofillAgent *password_autofill_agent =
+            new autofill::PasswordAutofillAgent(render_frame, associated_interfaces);
+    autofill::PasswordGenerationAgent *password_generation_agent =
+            new autofill::PasswordGenerationAgent(render_frame, password_autofill_agent,
+                                                  associated_interfaces);
+
+    new autofill::AutofillAgent(render_frame, password_autofill_agent, password_generation_agent,
+                                autofill_assistant_agent, associated_interfaces);
 }
 
 void ContentRendererClientQt::RunScriptsAtDocumentStart(content::RenderFrame *render_frame)

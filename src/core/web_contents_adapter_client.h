@@ -80,6 +80,7 @@ struct DropData;
 
 namespace QtWebEngineCore {
 
+class AutofillPopupController;
 class CertificateErrorController;
 class ClientCertSelectController;
 class AuthenticationDialogController;
@@ -245,6 +246,9 @@ public:
     virtual void showTouchSelectionMenu(TouchSelectionMenuController *menuController, const QRect &bounds, const QSize &handleSize) = 0;
     virtual void hideTouchSelectionMenu() = 0;
     virtual void findTextFinished(const QWebEngineFindTextResult &result) = 0;
+    virtual void showAutofillPopup(AutofillPopupController *controller, const QRect &bounds,
+                                   bool autoselectFirstSuggestion) = 0;
+    virtual void hideAutofillPopup() = 0;
 
     virtual ProfileAdapter *profileAdapter() = 0;
     virtual WebContentsAdapter* webContentsAdapter() = 0;

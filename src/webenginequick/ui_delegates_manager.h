@@ -47,19 +47,20 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
 
-#define FOR_EACH_COMPONENT_TYPE(F, SEPARATOR) \
-    F(Menu, menu) SEPARATOR \
-    F(MenuItem, menuItem) SEPARATOR \
-    F(MenuSeparator, menuSeparator) SEPARATOR \
-    F(AlertDialog, alertDialog) SEPARATOR \
-    F(ColorDialog, colorDialog) SEPARATOR \
-    F(ConfirmDialog, confirmDialog) SEPARATOR \
-    F(PromptDialog, promptDialog) SEPARATOR \
-    F(FilePicker, filePicker) SEPARATOR \
-    F(AuthenticationDialog, authenticationDialog) SEPARATOR \
-    F(ToolTip, toolTip) SEPARATOR \
-    F(TouchHandle, touchHandle) SEPARATOR \
-    F(TouchSelectionMenu, touchSelectionMenu) SEPARATOR \
+#define FOR_EACH_COMPONENT_TYPE(F, SEPARATOR)                                                      \
+    F(Menu, menu) SEPARATOR F(MenuItem, menuItem)                                                  \
+    SEPARATOR                                                                                      \
+    F(MenuSeparator, menuSeparator) SEPARATOR F(AlertDialog, alertDialog)                          \
+    SEPARATOR                                                                                      \
+    F(ColorDialog, colorDialog) SEPARATOR F(ConfirmDialog, confirmDialog)                          \
+    SEPARATOR                                                                                      \
+    F(PromptDialog, promptDialog) SEPARATOR F(FilePicker, filePicker)                              \
+    SEPARATOR                                                                                      \
+    F(AuthenticationDialog, authenticationDialog) SEPARATOR F(ToolTip, toolTip)                    \
+    SEPARATOR                                                                                      \
+    F(TouchHandle, touchHandle) SEPARATOR F(TouchSelectionMenu, touchSelectionMenu)                \
+    SEPARATOR                                                                                      \
+    F(AutofillPopup, autofillPopup) SEPARATOR
 
 #define COMMA_SEPARATOR ,
 #define SEMICOLON_SEPARATOR ;
@@ -79,6 +80,7 @@ QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
 class AuthenticationDialogController;
+class AutofillPopupController;
 class ColorChooserController;
 class FilePickerController;
 class JavaScriptDialogController;
@@ -115,19 +117,42 @@ public:
     QQuickItem *createTouchHandle();
     void showTouchSelectionMenu(TouchSelectionMenuController *, const QRect &, const int spacing);
     void hideTouchSelectionMenu();
+    void showAutofillPopup(QtWebEngineCore::AutofillPopupController *controller, QPointF pos,
+                           int width, bool autoselectFirstSuggestion);
+    void hideAutofillPopup();
 
 private:
     bool ensureComponentLoaded(ComponentType);
 
     QQuickWebEngineView *m_view;
-    QScopedPointer<QObject> m_toolTip;
     QStringList m_importDirs;
+    QScopedPointer<QObject> m_toolTip;
     QScopedPointer<QObject> m_touchSelectionMenu;
+    QScopedPointer<QObject> m_autofillPopup;
 
     FOR_EACH_COMPONENT_TYPE(MEMBER_DECLARATION, SEMICOLON_SEPARATOR)
 
     Q_DISABLE_COPY(UIDelegatesManager)
 
+};
+
+class AutofillPopupEventFilter : public QObject
+{
+    Q_OBJECT
+
+public:
+    AutofillPopupEventFilter(QtWebEngineCore::AutofillPopupController *controller,
+                             UIDelegatesManager *manager, QObject *parent)
+        : QObject(parent), m_controller(controller), m_manager(manager)
+    {
+    }
+
+protected:
+    bool eventFilter(QObject *object, QEvent *event) override;
+
+private:
+    QtWebEngineCore::AutofillPopupController *m_controller;
+    UIDelegatesManager *m_manager;
 };
 
 } // namespace QtWebEngineCore

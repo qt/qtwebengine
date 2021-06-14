@@ -113,6 +113,21 @@ WebEngineView {
         return textSelection;
     }
 
+    function getElementValue(element) {
+        var elementValue;
+        runJavaScript("document.getElementById('" + element + "').value", function(result) {
+            elementValue = result;
+        });
+        testCase.tryVerify(function() { return elementValue != undefined; });
+        return elementValue;
+    }
+
+    function compareElementValue(element, expected) {
+        testCase.tryVerify(function() { return expected == getElementValue(element); }, 5000,
+            "Value of element \"" + element + "\" is \"" + expected + "\"");
+    }
+
+
     TestResult { id: testResult }
 
     onLoadingChanged: function(load) {
