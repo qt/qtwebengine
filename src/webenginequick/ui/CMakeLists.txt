@@ -1,6 +1,7 @@
 set(qml_files
     "AlertDialog.qml"
     "AuthenticationDialog.qml"
+    "AutofillPopup.qml"
     "ColorDialog.qml"
     "ConfirmDialog.qml"
     "FilePicker.qml"

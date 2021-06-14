@@ -42,6 +42,7 @@
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/localized_error.h"
@@ -502,6 +503,8 @@ void ContentBrowserClientQt::ExposeInterfacesToRenderer(service_manager::BinderR
 #endif
 }
 
+// TODO: BindAssociatedReceiverForFrame -> RegisterAssociatedInterfaceBindersForRenderFrameHost
+// https://chromium-review.googlesource.com/c/chromium/src/+/3281481
 bool ContentBrowserClientQt::BindAssociatedReceiverFromFrame(content::RenderFrameHost *rfh,
                                                              const std::string &interface_name,
                                                              mojo::ScopedInterfaceEndpointHandle *handle)
@@ -529,6 +532,14 @@ bool ContentBrowserClientQt::BindAssociatedReceiverFromFrame(content::RenderFram
         return true;
     }
 #endif
+
+    if (interface_name == autofill::mojom::AutofillDriver::Name_) {
+        mojo::PendingAssociatedReceiver<autofill::mojom::AutofillDriver> receiver(
+                std::move(*handle));
+        autofill::ContentAutofillDriverFactory::BindAutofillDriver(std::move(receiver), rfh);
+        return true;
+    }
+
     DCHECK(!ContentBrowserClient::BindAssociatedReceiverFromFrame(rfh, interface_name, handle));
     return false;
 }

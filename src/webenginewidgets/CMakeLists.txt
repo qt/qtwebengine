@@ -9,6 +9,7 @@ qt_internal_add_module(WebEngineWidgets
         api/qwebenginenotificationpresenter.cpp api/qwebenginenotificationpresenter_p.h
         api/qwebengineview.cpp api/qwebengineview.h api/qwebengineview_p.h
         qwebengine_accessible.cpp qwebengine_accessible.h
+        ui/autofillpopupwidget.cpp ui/autofillpopupwidget_p.h
     DEFINES
         QT_BUILD_WEBENGINEWIDGETS_LIB
     INCLUDE_DIRECTORIES

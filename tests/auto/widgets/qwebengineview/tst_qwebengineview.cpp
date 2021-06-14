@@ -37,6 +37,7 @@
 #include <QDropEvent>
 #include <QLabel>
 #include <QLineEdit>
+#include <QListView>
 #include <QHBoxLayout>
 #include <QMenu>
 #include <QMimeData>
@@ -44,6 +45,7 @@
 #include <QQuickWidget>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
 #include <QScopeGuard>
+#include <QStringListModel>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QStyle>
@@ -179,6 +181,7 @@ private Q_SLOTS:
     void inspectElement();
     void navigateOnDrop_data();
     void navigateOnDrop();
+    void datalist();
 };
 
 // This will be called before the first test function is executed.
@@ -3595,6 +3598,155 @@ void tst_QWebEngineView::navigateOnDrop()
         QCOMPARE(loadSpy.size(), 1);
         QVERIFY(view.url() != url);
     }
+}
+
+void tst_QWebEngineView::datalist()
+{
+    QString html("<html><body>"
+                 "<input id='browserInput' list='browserDatalist'>"
+                 "<datalist id='browserDatalist'>"
+                 "  <option value='Internet Explorer'>"
+                 "  <option value='Firefox'>"
+                 "  <option value='Chrome'>"
+                 "  <option value='Opera'>"
+                 "  <option value='Safari'>"
+                 "</datalist>"
+                 "</body></html>");
+
+    QWebEngineView view;
+    view.resize(200, 400);
+    view.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    QSignalSpy loadSpy(&view, &QWebEngineView::loadFinished);
+    view.setHtml(html);
+    QTRY_COMPARE(loadSpy.count(), 1);
+
+    QString listValuesJS("(function() {"
+                         "  var browserDatalist = document.getElementById('browserDatalist');"
+                         "  var options = browserDatalist.options;"
+                         "  var result = [];"
+                         "  for (let i = 0; i < options.length; ++i) {"
+                         "    result.push(options[i].value);"
+                         "  }"
+                         "  return result;"
+                         "})();");
+    QStringList values = evaluateJavaScriptSync(view.page(), listValuesJS).toStringList();
+    QCOMPARE(values, QStringList({ "Internet Explorer", "Firefox", "Chrome", "Opera", "Safari" }));
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('browserInput').value;")
+                     .toString(),
+             QStringLiteral(""));
+
+    auto listView = [&view]() -> QListView * {
+        if (QApplication::topLevelWidgets().size() == 1) {
+            // No popup case.
+            return nullptr;
+        }
+
+        QWidget *autofillPopupWidget = nullptr;
+        for (QWidget *w : QApplication::topLevelWidgets()) {
+            if (w != &view) {
+                autofillPopupWidget = w;
+                break;
+            }
+        }
+
+        if (!autofillPopupWidget)
+            return nullptr;
+
+        for (QObject *o : autofillPopupWidget->children()) {
+            if (QListView *listView = qobject_cast<QListView *>(o))
+                return listView;
+        }
+
+        return nullptr;
+    };
+
+    // Make sure there is no open popup yet.
+    QVERIFY(!listView());
+    // Click in the input field.
+    QPoint browserInputCenter = elementCenter(view.page(), "browserInput");
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, browserInputCenter);
+    // Wait for the popup.
+    QTRY_VERIFY(listView());
+
+    // No suggestion is selected.
+    QCOMPARE(listView()->currentIndex(), QModelIndex());
+    QCOMPARE(listView()->model()->rowCount(), 5);
+
+    // Accepting suggestion does nothing.
+    QTest::keyClick(view.windowHandle(), Qt::Key_Enter);
+    QVERIFY(listView());
+    QCOMPARE(listView()->currentIndex(), QModelIndex());
+
+    // Escape should close popup.
+    QTest::keyClick(view.windowHandle(), Qt::Key_Escape);
+    QTRY_VERIFY(!listView());
+
+    // Key Down should open the popup and select the first suggestion.
+    QTest::keyClick(view.windowHandle(), Qt::Key_Down);
+    QTRY_VERIFY(listView());
+    QCOMPARE(listView()->currentIndex().row(), 0);
+
+    // Test keyboard navigation in list.
+    QTest::keyClick(view.windowHandle(), Qt::Key_Up);
+    QCOMPARE(listView()->currentIndex().row(), 4);
+    QTest::keyClick(view.windowHandle(), Qt::Key_Up);
+    QCOMPARE(listView()->currentIndex().row(), 3);
+    QTest::keyClick(view.windowHandle(), Qt::Key_PageDown);
+    QCOMPARE(listView()->currentIndex().row(), 4);
+    QTest::keyClick(view.windowHandle(), Qt::Key_PageUp);
+    QCOMPARE(listView()->currentIndex().row(), 0);
+    QTest::keyClick(view.windowHandle(), Qt::Key_Down);
+    QCOMPARE(listView()->currentIndex().row(), 1);
+    QTest::keyClick(view.windowHandle(), Qt::Key_Down);
+    QCOMPARE(listView()->currentIndex().row(), 2);
+
+    // Test accepting suggestion.
+    QCOMPARE(static_cast<QStringListModel *>(listView()->model())
+                     ->data(listView()->currentIndex())
+                     .toString(),
+             QStringLiteral("Chrome"));
+    QTest::keyClick(view.windowHandle(), Qt::Key_Enter);
+    QTRY_COMPARE(
+            evaluateJavaScriptSync(view.page(), "document.getElementById('browserInput').value")
+                    .toString(),
+            QStringLiteral("Chrome"));
+    // Accept closes popup.
+    QTRY_VERIFY(!listView());
+
+    // Clear input field, should not trigger popup.
+    evaluateJavaScriptSync(view.page(), "document.getElementById('browserInput').value = ''");
+    QVERIFY(!listView());
+
+    // Filter suggestions.
+    QTest::keyClick(view.windowHandle(), Qt::Key_F);
+    QTRY_VERIFY(listView());
+    QCOMPARE(listView()->model()->rowCount(), 2);
+    QCOMPARE(listView()->currentIndex(), QModelIndex());
+    QCOMPARE(static_cast<QStringListModel *>(listView()->model())
+                     ->data(listView()->model()->index(0, 0))
+                     .toString(),
+             QStringLiteral("Firefox"));
+    QCOMPARE(static_cast<QStringListModel *>(listView()->model())
+                     ->data(listView()->model()->index(1, 0))
+                     .toString(),
+             QStringLiteral("Safari"));
+    QTest::keyClick(view.windowHandle(), Qt::Key_I);
+    QTRY_COMPARE(listView()->model()->rowCount(), 1);
+    QCOMPARE(listView()->currentIndex(), QModelIndex());
+    QCOMPARE(static_cast<QStringListModel *>(listView()->model())
+                     ->data(listView()->model()->index(0, 0))
+                     .toString(),
+             QStringLiteral("Firefox"));
+    QTest::keyClick(view.windowHandle(), Qt::Key_L);
+    // Mismatch should close popup.
+    QTRY_VERIFY(!listView());
+    QTRY_COMPARE(
+            evaluateJavaScriptSync(view.page(), "document.getElementById('browserInput').value")
+                    .toString(),
+            QStringLiteral("fil"));
 }
 
 QTEST_MAIN(tst_QWebEngineView)

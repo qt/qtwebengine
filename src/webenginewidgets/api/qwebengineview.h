@@ -47,6 +47,10 @@
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 #include <QtWebEngineCore/qwebenginepage.h>
 
+namespace QtWebEngineWidgetUI {
+class AutofillPopupWidget;
+}
+
 QT_BEGIN_NAMESPACE
 
 class QContextMenuEvent;
@@ -169,6 +173,7 @@ private:
     Q_DECLARE_PRIVATE(QWebEngineView)
     QScopedPointer<QWebEngineViewPrivate> d_ptr;
 
+    friend class QtWebEngineWidgetUI::AutofillPopupWidget;
     friend class QWebEnginePage;
     friend class QWebEnginePagePrivate;
 #if QT_CONFIG(accessibility)

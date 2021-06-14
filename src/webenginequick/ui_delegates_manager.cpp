@@ -43,6 +43,7 @@
 #include "api/qquickwebengineview_p_p.h"
 
 #include <authentication_dialog_controller.h>
+#include <autofill_popup_controller.h>
 #include <color_chooser_controller.h>
 #include <file_picker_controller.h>
 #include <javascript_dialog_controller.h>
@@ -58,6 +59,9 @@
 #include <QtQml/qqmlcontext.h>
 #include <QtQml/qqmlengine.h>
 #include <QtQml/qqmlproperty.h>
+#include <QtQuick/qquickwindow.h>
+
+#include <algorithm>
 
 // Uncomment for QML debugging
 //#define UI_DELEGATES_DEBUG
@@ -129,7 +133,7 @@ UIDelegatesManager::UIDelegatesManager(QQuickWebEngineView *view)
     : m_view(view)
     , m_toolTip(nullptr)
     , m_touchSelectionMenu(nullptr)
-    FOR_EACH_COMPONENT_TYPE(COMPONENT_MEMBER_INIT, NO_SEPARATOR)
+    , m_autofillPopup(nullptr) FOR_EACH_COMPONENT_TYPE(COMPONENT_MEMBER_INIT, NO_SEPARATOR)
 {
 }
 
@@ -565,6 +569,158 @@ void UIDelegatesManager::showTouchSelectionMenu(QtWebEngineCore::TouchSelectionM
 void UIDelegatesManager::hideTouchSelectionMenu()
 {
     QTimer::singleShot(0, m_view, [this] { m_touchSelectionMenu.reset(); });
+}
+
+bool AutofillPopupEventFilter::eventFilter(QObject *object, QEvent *event)
+{
+    if (event->type() == QEvent::ShortcutOverride) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if (keyEvent->key() == Qt::Key_Escape) {
+            m_manager->hideAutofillPopup();
+            return true;
+        }
+
+        // Ignore shortcuts while the popup is open. It may result unwanted
+        // edit commands sent to Chromium that blocks the key press.
+        event->ignore();
+        return true;
+    }
+
+    // AutofillPopupControllerImpl::HandleKeyPressEvent()
+    // chrome/browser/ui/autofill/autofill_popup_controller_impl.cc
+
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        switch (keyEvent->key()) {
+        case Qt::Key_Up:
+            m_controller->selectPreviousSuggestion();
+            return true;
+        case Qt::Key_Down:
+            m_controller->selectNextSuggestion();
+            return true;
+        case Qt::Key_PageUp:
+            m_controller->selectFirstSuggestion();
+            return true;
+        case Qt::Key_PageDown:
+            m_controller->selectLastSuggestion();
+            return true;
+        case Qt::Key_Escape:
+            m_manager->hideAutofillPopup();
+            return true;
+        case Qt::Key_Enter:
+        case Qt::Key_Return:
+            m_controller->acceptSuggestion();
+            return true;
+        case Qt::Key_Delete:
+            // Remove suggestion is not supported for datalist.
+            // Forward delete to view to be able to remove selected text.
+            break;
+        case Qt::Key_Tab:
+            m_controller->acceptSuggestion();
+            break;
+        default:
+            break;
+        }
+    }
+
+    // Do not forward release events of the overridden key presses.
+    if (event->type() == QEvent::KeyRelease) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        switch (keyEvent->key()) {
+        case Qt::Key_Up:
+        case Qt::Key_Down:
+        case Qt::Key_PageUp:
+        case Qt::Key_PageDown:
+        case Qt::Key_Escape:
+        case Qt::Key_Enter:
+        case Qt::Key_Return:
+            return true;
+        default:
+            break;
+        }
+    }
+
+    return QObject::eventFilter(object, event);
+}
+
+void UIDelegatesManager::showAutofillPopup(QtWebEngineCore::AutofillPopupController *controller,
+                                           QPointF pos, int width, bool autoselectFirstSuggestion)
+{
+    static const int padding = 1;
+    static const int itemHeight = 20;
+    const int proposedHeight = itemHeight * (controller->model()->rowCount()) + padding * 2;
+
+    bool popupWasNull = false;
+    if (m_autofillPopup.isNull()) {
+        popupWasNull = true;
+        if (!ensureComponentLoaded(AutofillPopup))
+            return;
+
+        QQmlContext *context = qmlContext(m_view);
+        m_autofillPopup.reset(autofillPopupComponent->beginCreate(context));
+        if (QQuickItem *item = qobject_cast<QQuickItem *>(m_autofillPopup.data()))
+            item->setParentItem(m_view);
+        m_autofillPopup->setParent(m_view);
+    }
+
+    m_autofillPopup->setProperty("controller", QVariant::fromValue(controller));
+    m_autofillPopup->setProperty("x", pos.x());
+    m_autofillPopup->setProperty("y", pos.y());
+    m_autofillPopup->setProperty("width", width);
+    m_autofillPopup->setProperty("height",
+                                 std::min(proposedHeight, qRound(m_view->height() - pos.y())));
+    m_autofillPopup->setProperty("padding", padding);
+    m_autofillPopup->setProperty("itemHeight", itemHeight);
+
+    if (popupWasNull) {
+        QQmlProperty selectedSignal(m_autofillPopup.data(), QStringLiteral("onSelected"));
+        CHECK_QML_SIGNAL_PROPERTY(selectedSignal, autofillPopupComponent->url());
+        static int selectSuggestionIndex =
+                controller->metaObject()->indexOfSlot("selectSuggestion(int)");
+        QObject::connect(m_autofillPopup.data(), selectedSignal.method(), controller,
+                         controller->metaObject()->method(selectSuggestionIndex));
+
+        QQmlProperty acceptedSignal(m_autofillPopup.data(), QStringLiteral("onAccepted"));
+        CHECK_QML_SIGNAL_PROPERTY(acceptedSignal, autofillPopupComponent->url());
+        static int acceptSuggestionIndex =
+                controller->metaObject()->indexOfSlot("acceptSuggestion()");
+        QObject::connect(m_autofillPopup.data(), acceptedSignal.method(), controller,
+                         controller->metaObject()->method(acceptSuggestionIndex));
+
+        QObject::connect(controller, &QtWebEngineCore::AutofillPopupController::currentIndexChanged,
+                         [this](const QModelIndex &index) {
+                             QMetaObject::invokeMethod(m_autofillPopup.data(), "setCurrentIndex",
+                                                       Qt::DirectConnection,
+                                                       Q_ARG(QVariant, index.row()));
+                         });
+
+        autofillPopupComponent->completeCreate();
+
+        m_view->window()->installEventFilter(
+                new AutofillPopupEventFilter(controller, this, m_autofillPopup.data()));
+
+        QMetaObject::invokeMethod(m_autofillPopup.data(), "open");
+        controller->notifyPopupShown();
+    }
+
+    if (autoselectFirstSuggestion)
+        controller->selectFirstSuggestion();
+}
+
+void UIDelegatesManager::hideAutofillPopup()
+{
+    if (!m_autofillPopup)
+        return;
+
+    QTimer::singleShot(0, m_view, [this] {
+        if (m_autofillPopup) {
+            QtWebEngineCore::AutofillPopupController *controller =
+                    m_autofillPopup->property("controller")
+                            .value<QtWebEngineCore::AutofillPopupController *>();
+            m_autofillPopup.reset();
+            controller->notifyPopupHidden();
+        }
+    });
 }
 
 bool UIDelegatesManager::initializeImportDirs(QStringList &dirs, QQmlEngine *engine)

@@ -56,10 +56,15 @@
 #include "render_view_context_menu_qt.h"
 
 namespace QtWebEngineCore {
+class AutofillPopupController;
 class QWebEngineContextMenuRequest;
 class WebEngineQuickWidget;
 class RenderWidgetHostViewQtDelegate;
 class RenderWidgetHostViewQtDelegateClient;
+}
+
+namespace QtWebEngineWidgetUI {
+class AutofillPopupWidget;
 }
 
 QT_BEGIN_NAMESPACE
@@ -99,6 +104,9 @@ public:
     void didPrintPage(QPrinter *&printer, QSharedPointer<QByteArray> result) override;
     void didPrintPageToPdf(const QString &filePath, bool success) override;
     void printRequested() override;
+    void showAutofillPopup(QtWebEngineCore::AutofillPopupController *controller,
+                           const QRect &bounds, bool autoselectFirstSuggestion) override;
+    void hideAutofillPopup() override;
 
     QWebEngineViewPrivate();
     virtual ~QWebEngineViewPrivate();
@@ -117,6 +125,7 @@ public:
     bool m_dragEntered;
     mutable bool m_ownsPage;
     QWebEngineContextMenuRequest *m_contextRequest;
+    QScopedPointer<QtWebEngineWidgetUI::AutofillPopupWidget> m_autofillPopupWidget;
 };
 
 class QContextMenuBuilder : public QtWebEngineCore::RenderViewContextMenuQt

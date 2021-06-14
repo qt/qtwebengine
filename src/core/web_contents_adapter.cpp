@@ -43,6 +43,7 @@
 
 #include "web_contents_adapter.h"
 
+#include "autofill_client_qt.h"
 #include "devtools_frontend_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "favicon_driver_qt.h"
@@ -66,6 +67,8 @@
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/values.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
+#include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/favicon/core/favicon_service.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/text_input_manager.h"
@@ -516,6 +519,11 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     content::BrowserContext *context = webContents()->GetBrowserContext();
     FaviconDriverQt::CreateForWebContents(
             webContents(), FaviconServiceFactoryQt::GetForBrowserContext(context), m_adapterClient);
+
+    AutofillClientQt::CreateForWebContents(webContents());
+    autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
+            webContents(), AutofillClientQt::FromWebContents(webContents()),
+            /* app_locale = */ "", autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 
     // Create an instance of WebEngineVisitedLinksManager to catch the first
     // content::NOTIFICATION_RENDERER_PROCESS_CREATED event. This event will

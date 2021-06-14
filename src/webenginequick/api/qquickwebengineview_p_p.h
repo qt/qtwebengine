@@ -167,6 +167,10 @@ public:
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;
     void printRequested() override;
     void findTextFinished(const QWebEngineFindTextResult &result) override;
+    void showAutofillPopup(QtWebEngineCore::AutofillPopupController *controller,
+                           const QRect &bounds, bool autoselectFirstSuggestion) override;
+    void hideAutofillPopup() override;
+
     void updateAction(QQuickWebEngineView::WebAction) const;
     bool adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
     void setProfile(QQuickWebEngineProfile *profile);

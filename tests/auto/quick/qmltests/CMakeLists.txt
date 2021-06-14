@@ -19,6 +19,7 @@ set(testList
     tst_audioMuted.qml
     tst_contextMenu.qml
     tst_basicProfiles.qml
+    tst_datalist.qml
     tst_desktopBehaviorLoadHtml.qml
     tst_download.qml
     tst_favicon.qml

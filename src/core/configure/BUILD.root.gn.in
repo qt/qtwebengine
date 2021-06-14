@@ -104,6 +104,9 @@ shared_library("QtWebEngineCore") {
   defines = [ "CHROMIUM_VERSION=\"" + chromium_version[0] + "\"" ]
   deps = [
     "//base",
+    "//components/autofill/content/browser",
+    "//components/autofill/content/renderer",
+    "//components/autofill/core/browser",
     "//components/cdm/renderer",
     "//components/error_page/common",
     "//components/favicon/content",

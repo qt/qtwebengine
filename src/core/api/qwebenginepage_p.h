@@ -61,6 +61,7 @@
 #include <QtCore/QTimer>
 
 namespace QtWebEngineCore {
+class AutofillPopupController;
 class RenderWidgetHostViewQtDelegate;
 class RenderWidgetHostViewQtDelegateClient;
 class RenderWidgetHostViewQtDelegateItem;
@@ -109,6 +110,9 @@ public:
     virtual void didPrintPage(QPrinter *&printer, QSharedPointer<QByteArray> result) = 0;
     virtual void didPrintPageToPdf(const QString &filePath, bool success) = 0;
     virtual void printRequested() = 0;
+    virtual void showAutofillPopup(QtWebEngineCore::AutofillPopupController *controller,
+                                   const QRect &bounds, bool autoselectFirstSuggestion) = 0;
+    virtual void hideAutofillPopup() = 0;
 };
 
 class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEnginePagePrivate : public QtWebEngineCore::WebContentsAdapterClient
@@ -195,6 +199,9 @@ public:
     const QObject *holdingQObject() const override;
     ClientType clientType() override { return QtWebEngineCore::WebContentsAdapterClient::WidgetsClient; }
     void findTextFinished(const QWebEngineFindTextResult &result) override;
+    void showAutofillPopup(QtWebEngineCore::AutofillPopupController *controller,
+                           const QRect &bounds, bool autoselectFirstSuggestion) override;
+    void hideAutofillPopup() override;
 
     QtWebEngineCore::ProfileAdapter *profileAdapter() override;
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;

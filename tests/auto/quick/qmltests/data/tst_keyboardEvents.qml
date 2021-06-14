@@ -54,20 +54,6 @@ TestWebEngineView {
                 "Element \"" + element + "\" is " + (expected ? "" : "not") + " checked");
         }
 
-        function getElementValue(element) {
-            var elementValue;
-            runJavaScript("document.getElementById('" + element + "').value", function(result) {
-                elementValue = result;
-            });
-            tryVerify(function() { return elementValue != undefined; });
-            return elementValue;
-        }
-
-        function compareElementValue(element, expected) {
-            tryVerify(function() { return expected == getElementValue(element); }, 5000,
-                "Value of element \"" + element + "\" is \"" + expected + "\"");
-        }
-
         function test_keyboardEvents() {
             webEngineView.url = Qt.resolvedUrl("keyboardEvents.html");
             verify(webEngineView.waitForLoadSucceeded());

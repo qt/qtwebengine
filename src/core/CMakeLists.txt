@@ -76,6 +76,8 @@ foreach(arch ${archs})
                 accessibility_activation_observer.cpp accessibility_activation_observer.h
                 accessibility_tree_formatter_qt.cpp
                 authentication_dialog_controller.cpp authentication_dialog_controller.h authentication_dialog_controller_p.h
+                autofill_client_qt.cpp autofill_client_qt.h
+                autofill_popup_controller.cpp autofill_popup_controller.h autofill_popup_controller_p.h
                 browser_accessibility_manager_qt.cpp browser_accessibility_manager_qt.h
                 browser_accessibility_qt.cpp browser_accessibility_qt.h
                 browser_main_parts_qt.cpp browser_main_parts_qt.h

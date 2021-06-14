@@ -43,12 +43,15 @@
 #include "render_widget_host_view_qt_delegate_client.h"
 #include "render_widget_host_view_qt_delegate_item.h"
 #include "qwebengine_accessible.h"
+#include "ui/autofillpopupwidget_p.h"
 
 #include <QtWebEngineCore/private/qwebenginepage_p.h>
 #include <QtWebEngineCore/qwebenginecontextmenurequest.h>
 #include <QtWebEngineCore/qwebenginehistory.h>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
 #include <QtWebEngineCore/qwebengineprofile.h>
+
+#include "autofill_popup_controller.h"
 #include "color_chooser_controller.h"
 #include "web_contents_adapter.h"
 
@@ -911,6 +914,34 @@ QWebEngineContextMenuRequest *QWebEngineViewPrivate::lastContextMenuRequest() co
 {
     return m_contextRequest;
 }
+
+void QWebEngineViewPrivate::showAutofillPopup(QtWebEngineCore::AutofillPopupController *controller,
+                                              const QRect &bounds, bool autoselectFirstSuggestion)
+{
+    Q_Q(QWebEngineView);
+    if (!m_autofillPopupWidget)
+        m_autofillPopupWidget.reset(new QtWebEngineWidgetUI::AutofillPopupWidget(controller, q));
+    m_autofillPopupWidget->showPopup(q->mapToGlobal(bounds.bottomLeft()), bounds.width() + 2,
+                                     autoselectFirstSuggestion);
+    controller->notifyPopupShown();
+}
+
+void QWebEngineViewPrivate::hideAutofillPopup()
+{
+    if (!m_autofillPopupWidget)
+        return;
+
+    Q_Q(QWebEngineView);
+    QTimer::singleShot(0, q, [this] {
+        if (m_autofillPopupWidget) {
+            QtWebEngineCore::AutofillPopupController *controller =
+                    m_autofillPopupWidget->m_controller;
+            m_autofillPopupWidget.reset();
+            controller->notifyPopupHidden();
+        }
+    });
+}
+
 /*!
     \fn QWebEngineView::renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode)
     \since 5.6
