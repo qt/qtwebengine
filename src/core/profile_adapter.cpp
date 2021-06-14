@@ -115,17 +115,6 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
     if (!storageName.isEmpty())
         extensions::ExtensionSystem::Get(m_profile.data())->InitForRegularProfile(true);
 #endif
-
-    // Allow XMLHttpRequests from qrc to file.
-    // ### consider removing for Qt6
-    url::Origin qrc = url::Origin::Create(GURL("qrc://"));
-    auto pattern = network::mojom::CorsOriginPattern::New("file", "", 0,
-                                                          network::mojom::CorsDomainMatchMode::kAllowSubdomains,
-                                                          network::mojom::CorsPortMatchMode::kAllowAnyPort,
-                                                          network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
-    std::vector<network::mojom::CorsOriginPatternPtr> list;
-    list.push_back(std::move(pattern));
-    m_profile->GetSharedCorsOriginAccessList()->SetForOrigin(qrc, std::move(list), {}, base::BindOnce([]{}));
     m_cancelableTaskTracker.reset(new base::CancelableTaskTracker());
 }
 
