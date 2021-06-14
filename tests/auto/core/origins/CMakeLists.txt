@@ -5,7 +5,7 @@ qt_internal_add_test(tst_origins
     SOURCES
         tst_origins.cpp
     LIBRARIES
-        Qt::WebEngineWidgets
+        Qt::WebEngineCore
         Test::HttpServer
         Test::Util
 )

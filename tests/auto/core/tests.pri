@@ -10,7 +10,7 @@ INCLUDEPATH += $$PWD
 
 exists($$_PRO_FILE_PWD_/$${TARGET}.qrc): RESOURCES += $${TARGET}.qrc
 
-QT += testlib network webenginewidgets widgets
+QT += testlib network webenginecore
 
 # This define is used by some tests to look up resources in the source tree
 DEFINES += TESTS_SOURCE_DIR=\\\"$$PWD/\\\"

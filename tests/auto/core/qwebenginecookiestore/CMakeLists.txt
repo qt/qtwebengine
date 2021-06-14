@@ -5,7 +5,7 @@ qt_internal_add_test(tst_qwebenginecookiestore
     SOURCES
         tst_qwebenginecookiestore.cpp
     LIBRARIES
-        Qt::WebEngineWidgets
+        Qt::WebEngineCore
         Test::HttpServer
         Test::Util
 )

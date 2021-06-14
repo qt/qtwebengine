@@ -19,7 +19,7 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include <util.h>
+#include <widgetutil.h>
 #include <QtWebEngineCore/qtwebenginecore-config.h>
 #include <QByteArray>
 #include <QClipboard>

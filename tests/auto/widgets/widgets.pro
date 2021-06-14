@@ -5,11 +5,9 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     defaultsurfaceformat \
-    devtools \
     faviconmanager \
     loadsignals \
     offscreen \
-    origins \
     proxy \
     proxypac \
     schemes \
@@ -19,7 +17,6 @@ SUBDIRS += \
     qwebenginehistory \
     qwebengineprofile \
     qwebenginescript \
-    qwebenginesettings \
     qwebengineview
 
 # Synthetic touch events are not supported on macOS
@@ -31,10 +28,6 @@ qtConfig(accessibility) {
 
 qtConfig(webengine-printing-and-pdf) {
     SUBDIRS += printing
-}
-
-qtConfig(ssl) {
-    SUBDIRS += certificateerror
 }
 
 qtConfig(webengine-spellchecker):!cross_compile {
