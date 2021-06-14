@@ -28,6 +28,7 @@ set(tst_origins_resource_files
     "resources/subdir_frame1.html"
     "resources/viewSource.html"
     "resources/websocket.html"
+    "resources/websocket2.html"
 )
 
 qt_internal_add_resource(tst_origins "tst_origins"

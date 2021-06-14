@@ -1107,8 +1107,7 @@ void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int
 
     // Install file scheme if necessary:
     // FIXME: "extension -> file" will not be needed after switching to using transferable url loaders and guest views.
-    // FIXME: "qrc -> file" should be reconsidered for Qt6.
-    bool install_file_scheme = url.SchemeIs("qrc");
+    bool install_file_scheme = false;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     install_file_scheme = install_file_scheme || url.SchemeIs(extensions::kExtensionScheme);
 #endif

@@ -150,15 +150,6 @@ void ContentRendererClientQt::RenderThreadStarted()
         InitSpellCheck();
 #endif
 
-    // Allow XMLHttpRequests from qrc to file.
-    // ### consider removing for Qt6
-    blink::WebURL qrc(GURL("qrc:"));
-    blink::WebString file(blink::WebString::FromASCII("file"));
-    blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(
-            qrc, file, blink::WebString(), 0, network::mojom::CorsDomainMatchMode::kAllowSubdomains,
-            network::mojom::CorsPortMatchMode::kAllowAnyPort,
-            network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     // Allow the pdf viewer extension to access chrome resources
     blink::WebURL pdfViewerExtension(GURL("chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai"));

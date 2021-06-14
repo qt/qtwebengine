@@ -185,6 +185,8 @@ private:
         }
 
         QString pathPrefix = QDir(QT_TESTCASE_SOURCEDIR).canonicalPath();
+        if (url.path().startsWith("/qtwebchannel/"))
+            pathPrefix = QSL(":");
         QString pathSuffix = url.path();
         QFile *file = new QFile(pathPrefix + pathSuffix, job);
         if (!file->open(QIODevice::ReadOnly)) {
@@ -676,7 +678,7 @@ void tst_Origins::mixedXHR_data()
                                << QString("sendXHR('file:"
                                           + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
                                           + "/resources/mixedXHR.txt')")
-                               << QVariant(QString("ok"));
+                               << QVariant(QString("error"));
     QTest::newRow("qrc->qrc") << QString("qrc:/resources/mixedXHR.html")
                               << QString("sendXHR('qrc:/resources/mixedXHR.txt')")
                               << QVariant(QString("ok"));
@@ -783,11 +785,11 @@ void tst_Origins::webSocket()
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
 
     // Unregistered schemes can also open WebSockets (since Chromium 71)
-    QVERIFY(verifyLoad(QSL("tst:/resources/websocket.html")));
+    QVERIFY(verifyLoad(QSL("tst:/resources/websocket2.html")));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
 
     // Even an insecure registered scheme can open WebSockets.
-    QVERIFY(verifyLoad(QSL("PathSyntax:/resources/websocket.html")));
+    QVERIFY(verifyLoad(QSL("PathSyntax:/resources/websocket2.html")));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
 }
 #endif

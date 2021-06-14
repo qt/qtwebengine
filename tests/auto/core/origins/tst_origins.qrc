@@ -18,5 +18,6 @@
     <file>resources/subdir_frame1.html</file>
     <file>resources/viewSource.html</file>
     <file>resources/websocket.html</file>
+    <file>resources/websocket2.html</file>
 </qresource>
 </RCC>
