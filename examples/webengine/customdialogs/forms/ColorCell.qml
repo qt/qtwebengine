@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.4
+import QtQuick
 
 Rectangle {
     id: rectangle
@@ -58,6 +58,6 @@ Rectangle {
     MouseArea {
         id: mouseArea
         anchors.fill: parent
-        onClicked: rectangle.clicked(color)
+        onClicked: rectangle.clicked()
     }
 }

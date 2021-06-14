@@ -48,24 +48,25 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtQuick.Controls 1.4 as Controls
-import QtQuick.Layouts 1.3
-import QtQuick.Window 2.0
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Window
 
 Window {
+    id: mainWindow
     width: 350
     height: 550
     visible: true
 
-    Controls.StackView {
+    StackView {
         id: stackView
         anchors.fill: parent
         focus: true
         initialItem: Item {
             id: main
-            width: parent.width
-            height: parent.height
+            width: mainWindow.width
+            height: mainWindow.height
             ColumnLayout {
                 anchors.fill: parent
                 SwitchButton {
@@ -88,7 +89,7 @@ Window {
 
         function openForm(form)
         {
-            push(form);
+            push(form.item, form.properties);
             currentItem.closeForm.connect(closeForm);
         }
 

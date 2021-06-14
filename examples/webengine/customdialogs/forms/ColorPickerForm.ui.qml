@@ -48,8 +48,8 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.4
-import QtQuick.Layouts 1.3
+import QtQuick
+import QtQuick.Layouts
 
 Item {
     property alias cancelButton: cancelButton
@@ -78,10 +78,7 @@ Item {
 
         Rectangle {
             height: 30
-            anchors.rightMargin: 0
-            anchors.leftMargin: 0
-            anchors.right: parent.right
-            anchors.left: parent.left
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             gradient: Gradient {
                 GradientStop {
                     position: 0
@@ -215,7 +212,7 @@ Item {
                 Layout.fillWidth: true
             }
 
-            Button {
+            CustomButton {
                 id: cancelButton
                 width: 90
                 height: 30
@@ -223,7 +220,7 @@ Item {
                 btnBlue: false
             }
 
-            Button {
+            CustomButton {
                 id: okButton
                 width: 90
                 height: 30

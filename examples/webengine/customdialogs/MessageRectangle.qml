@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
+import QtQuick
 
 Rectangle {
     property alias text: messageText.text

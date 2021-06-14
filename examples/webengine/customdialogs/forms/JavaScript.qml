@@ -48,8 +48,8 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.4
-import QtWebEngine 1.4
+import QtQuick
+import QtWebEngine
 
 JavaScriptForm {
     property QtObject request

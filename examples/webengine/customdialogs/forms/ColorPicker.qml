@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.4
+import QtQuick
 
 ColorPickerForm {
     property QtObject request

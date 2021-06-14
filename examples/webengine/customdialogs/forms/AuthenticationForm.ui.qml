@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.4
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 1.0 as Controls
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
 
 Item {
     id: item1
@@ -79,10 +79,7 @@ Item {
         Rectangle {
             id: rectangle
             height: 30
-            anchors.rightMargin: 0
-            anchors.leftMargin: 0
-            anchors.right: parent.right
-            anchors.left: parent.left
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             gradient: Gradient {
                 GradientStop {
                     position: 0
@@ -116,7 +113,7 @@ Item {
             font.pointSize: 12
         }
 
-        Controls.TextField {
+        TextField {
             id: userName
             width: 300
             height: 22
@@ -130,7 +127,7 @@ Item {
             font.pointSize: 12
         }
 
-        Controls.TextField {
+        TextField {
             id: password
             width: 300
             height: 26
@@ -151,7 +148,7 @@ Item {
                 Layout.fillWidth: true
             }
 
-            Button {
+            CustomButton {
                 id: cancelButton
                 width: 90
                 height: 30
@@ -159,7 +156,7 @@ Item {
                 btnBlue: false
             }
 
-            Button {
+            CustomButton {
                 id: loginButton
                 width: 90
                 height: 30
