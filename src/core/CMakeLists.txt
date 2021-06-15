@@ -270,7 +270,7 @@ foreach(config ${configs})
 
     if(${config} STREQUAL "Debug")
         list(APPEND gnArgArg is_debug=true symbol_level=2)
-        if(WIN32 AND NOT CLANG)
+        if(WIN32)
             list(APPEND gnArgArg enable_iterator_debugging=true v8_optimized_debug=false)
         endif()
     elseif(${config} STREQUAL "Release")
@@ -338,9 +338,16 @@ foreach(config ${configs})
         ARGS is_clang
         CONDITION CLANG
     )
-    if(CLANG)
-        list(APPEND gnArgArg clang_use_chrome_plugins=false)
+    if(CLANG AND NOT MACOS)
+        # For some reason this doesn't work for our macOS CIs
+        get_filename_component(clangBasePath ${CMAKE_CXX_COMPILER} DIRECTORY)
+        get_filename_component(clangBasePath ${clangBasePath} DIRECTORY)
+        list(APPEND gnArgArg
+            clang_base_path="${clangBasePath}"
+            clang_use_chrome_plugins=false
+        )
     endif()
+
     extend_gn_list(gnArgArg
         ARGS use_gold
         CONDITION QT_FEATURE_use_gold_linker
