@@ -51,18 +51,18 @@
 #ifndef WEB_CONTENTS_ADAPTER_H
 #define WEB_CONTENTS_ADAPTER_H
 
-#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
-#include <QtWebEngineCore/private/qwebenginecontextmenurequest_p.h>
-#include "web_contents_adapter_client.h"
-#include <memory>
+#include <QtCore/QSharedPointer>
+#include <QtCore/QString>
+#include <QtCore/QUrl>
+#include <QtCore/QPointer>
 #include <QtGui/qtgui-config.h>
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
+#include <QtWebEngineCore/qwebenginecontextmenurequest.h>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
 
-#include <QScopedPointer>
-#include <QSharedPointer>
-#include <QString>
-#include <QUrl>
-#include <QPointer>
+#include "web_contents_adapter_client.h"
+
+#include <memory>
 
 namespace blink {
 namespace web_pref {
@@ -72,7 +72,6 @@ struct WebPreferences;
 
 namespace content {
 class WebContents;
-struct OpenURLParams;
 class SiteInstance;
 }
 
@@ -83,7 +82,6 @@ class QDragMoveEvent;
 class QDropEvent;
 class QMimeData;
 class QPageLayout;
-class QString;
 class QTemporaryDir;
 class QWebChannel;
 class QWebEngineUrlRequestInterceptor;
@@ -92,13 +90,10 @@ QT_END_NAMESPACE
 namespace QtWebEngineCore {
 
 class DevToolsFrontendQt;
-class FaviconManager;
 class FindTextHelper;
-class MessagePassingInterface;
 class ProfileQt;
 class WebEnginePageHost;
 class WebChannelIPCTransportHost;
-class WebEngineContext;
 
 class Q_WEBENGINECORE_PRIVATE_EXPORT WebContentsAdapter : public QEnableSharedFromThis<WebContentsAdapter> {
 public:

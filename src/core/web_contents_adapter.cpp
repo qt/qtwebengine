@@ -48,13 +48,8 @@
 #include "favicon_driver_qt.h"
 #include "favicon_service_factory_qt.h"
 #include "media_capture_devices_dispatcher.h"
-#if QT_CONFIG(webengine_printing_and_pdf)
-#include "printing/print_view_manager_qt.h"
-#endif
-#include "profile_adapter_client.h"
 #include "profile_adapter.h"
 #include "profile_qt.h"
-#include "qwebenginecallback_p.h"
 #include "qwebengineloadinginfo.h"
 #include "renderer_host/web_engine_page_host.h"
 #include "render_widget_host_view_qt.h"
@@ -65,7 +60,6 @@
 
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
-#include "base/run_loop.h"
 #include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
@@ -76,7 +70,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/download_manager.h"
@@ -85,23 +78,22 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/favicon_status.h"
-#include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/drop_data.h"
-#include "content/public/common/page_zoom.h"
-#include "content/public/common/url_constants.h"
 #include "extensions/buildflags/buildflags.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/page_state/page_state.h"
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom.h"
-#include "printing/buildflags/buildflags.h"
-#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/font_render_params.h"
 #include "qtwebengine/browser/qtwebenginepage.mojom.h"
+
+#if QT_CONFIG(webengine_printing_and_pdf)
+#include "printing/print_view_manager_qt.h"
+#endif
 
 #if QT_CONFIG(webengine_webchannel)
 #include "renderer_host/web_channel_ipc_transport_host.h"
@@ -112,19 +104,16 @@
 #include "extensions/extension_web_contents_observer_qt.h"
 #endif
 
-#include <QDir>
-#include <QGuiApplication>
-#include <QPageLayout>
-#include <QStringList>
-#include <QStyleHints>
-#include <QTimer>
-#include <QVariant>
-#include <QtCore/qelapsedtimer.h>
-#include <QtCore/qmimedata.h>
-#include <QtCore/qtemporarydir.h>
-#include <QtGui/qdrag.h>
+#include <QtCore/QVariant>
+#include <QtCore/QElapsedTimer>
+#include <QtCore/QMimeData>
+#include <QtCore/QTemporaryDir>
+#include <QtGui/QDrag>
 #include <QtGui/QDragEnterEvent>
-#include <QtGui/qpixmap.h>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QPageLayout>
+#include <QtGui/QPixmap>
+#include <QtGui/QStyleHints>
 
 // Can't include headers as qaccessible.h conflicts with Chromium headers.
 namespace content {

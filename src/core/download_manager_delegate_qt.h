@@ -103,7 +103,6 @@ private:
     base::WeakPtrFactory<DownloadManagerDelegateQt> m_weakPtrFactory;
 
     friend class DownloadManagerDelegateInstance;
-    friend class ProfileAdapter;
     DISALLOW_COPY_AND_ASSIGN(DownloadManagerDelegateQt);
 };
 
