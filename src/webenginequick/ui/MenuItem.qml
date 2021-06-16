@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.5
-import QtQuick.Controls 1.4 as Controls
+import QtQuick
+import QtQuick.Controls
 
-Controls.MenuItem { }
+MenuItem { }
 

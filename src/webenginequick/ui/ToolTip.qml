@@ -37,57 +37,10 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.5
+import QtQuick.Controls
 
-Item {
-    id: toolTipContainer
-    z: 9999
-    width: content.width
-    height: content.height
-    visible: false
-
-    property alias text: toolTip.text
-    property int delayTimerInterval: 500
-    property int hideTimerInterval: 10000
-    property int toolTipMaxWidth: 400
-
-    Timer {
-        id: delayTimer
-        interval: delayTimerInterval
-        onTriggered: {
-            toolTipContainer.visible = true
-            hideTimer.start()
-        }
-    }
-
-    Timer {
-        id: hideTimer
-        interval: hideTimerInterval
-        onTriggered: toolTipContainer.visible = false
-    }
-
-    Rectangle {
-        id: content
-        color: "#f8eabf"
-        border.color: "black"
-        anchors.centerIn: parent
-        width: toolTip.contentWidth + 10
-        height: toolTip.contentHeight + 10
-        radius: 3
-
-       Text {
-            id: toolTip
-            anchors {fill: parent; margins: 5}
-            wrapMode: Text.Wrap
-            width: Math.min(toolTipMaxWidth, (toolTip.text.length +1) * 8)
-        }
-    }
-
-    function open() {
-        delayTimer.start();
-    }
-
-    function hide() {
-        hideTimer.start();
-    }
+ToolTip {
+    delay: 1000
+    timeout: 1500
+    objectName: "toolTip"
 }

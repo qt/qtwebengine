@@ -134,17 +134,15 @@ OTHER_FILES += \
     $$PWD/data/icons/qt32.ico \
     $$PWD/data/icons/qtmulti.ico \
     $$PWD/data/icons/small-favicon.png \
-    $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/qmldir \
     $$PWD/mock-delegates/TestParams/FilePickerParams.qml \
     $$PWD/mock-delegates/TestParams/JSDialogParams.qml \
     $$PWD/mock-delegates/TestParams/qmldir \
-    $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/AlertDialog.qml \
-    $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/ConfirmDialog.qml \
-    $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/FilePicker.qml \
-    $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/Menu.qml \
-    $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/MenuItem.qml \
-    $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/PromptDialog.qml \
-    $$PWD/mock-delegates/QtWebEngine/Controls2Delegates/qmldir
+    $$PWD/mock-delegates/QtWebEngine/ControlsDelegates/AlertDialog.qml \
+    $$PWD/mock-delegates/QtWebEngine/ControlsDelegates/ConfirmDialog.qml \
+    $$PWD/mock-delegates/QtWebEngine/ControlsDelegates/FilePicker.qml \
+    $$PWD/mock-delegates/QtWebEngine/ControlsDelegates/Menu.qml \
+    $$PWD/mock-delegates/QtWebEngine/ControlsDelegates/MenuItem.qml \
+    $$PWD/mock-delegates/QtWebEngine/ControlsDelegates/PromptDialog.qml
 
 OTHER_FILES += $$QML_TESTS
 

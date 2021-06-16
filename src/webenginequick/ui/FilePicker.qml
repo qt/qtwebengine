@@ -37,6 +37,7 @@
 **
 ****************************************************************************/
 
+/*
 import QtQuick.Dialogs 1.1
 
 FileDialog {
@@ -46,4 +47,11 @@ FileDialog {
     onAccepted: {
         filesSelected(fileUrls);
     }
+}
+*/
+
+import QtQuick.Controls
+
+Dialog {
+    // TODO
 }

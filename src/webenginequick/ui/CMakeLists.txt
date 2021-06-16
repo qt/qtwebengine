@@ -1,7 +1,9 @@
 set(qml_files
     "AlertDialog.qml"
     "AuthenticationDialog.qml"
+    "ColorDialog.qml"
     "ConfirmDialog.qml"
+    "FilePicker.qml"
     "Menu.qml"
     "MenuItem.qml"
     "MenuSeparator.qml"
@@ -15,7 +17,7 @@ set(resource_files
 )
 
 qt_internal_add_qml_module(WebEngineQuickDelegatesQml
-    URI "QtWebEngine.Controls2Delegates"
+    URI "QtWebEngine.ControlsDelegates"
     VERSION "${PROJECT_VERSION}"
     QML_FILES ${qml_files}
     PAST_MAJOR_VERSIONS 1
@@ -26,7 +28,7 @@ qt_internal_add_qml_module(WebEngineQuickDelegatesQml
 
 qt_internal_add_resource(qtwebenginequickdelegatesplugin "qtwebenginequickdelegatesplugin"
     PREFIX
-        "/qt-project.org/imports/QtWebEngine/Controls2Delegates"
+        "/qt-project.org/imports/QtWebEngine/ControlsDelegates"
     FILES
         ${resource_files}
 )

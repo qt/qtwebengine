@@ -37,12 +37,13 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.5
-import QtQuick.Controls 1.4 as Controls
+import QtQuick
+import QtQuick.Controls
 
-Controls.Menu {
+Menu {
     id: menu
     signal done()
+    objectName: "menu"
 
     // Use private API for now
     onAboutToHide: doneTimer.start()

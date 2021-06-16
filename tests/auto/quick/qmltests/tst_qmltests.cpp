@@ -153,8 +153,6 @@ int main(int argc, char **argv)
 
     sigaction(SIGSEGV, &sigAction, 0);
 #endif
-    // TODO: temporary solution. Remove when Quick Controls 1 is removed.
-    qputenv("QTWEBENGINE_DIALOG_SET", QByteArray("QtQuickControls2"));
     QScopedPointer<Application> app;
     // Force to use English language for testing due to error message checks
     QLocale::setDefault(QLocale("en"));

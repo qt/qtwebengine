@@ -146,31 +146,10 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , m_isBeingAdopted(false)
     , m_backgroundColor(Qt::white)
     , m_zoomFactor(1.0)
-    , m_ui2Enabled(false)
     , m_profileInitialized(false)
     , m_contextMenuRequest(nullptr)
 {
     memset(actions, 0, sizeof(actions));
-
-    QString platform = qApp->platformName().toLower();
-    if (platform == QLatin1String("eglfs"))
-        m_ui2Enabled = true;
-
-    const QByteArray dialogSet = qgetenv("QTWEBENGINE_DIALOG_SET");
-
-    if (!dialogSet.isEmpty()) {
-        if (dialogSet == QByteArrayLiteral("QtQuickControls2")) {
-            m_ui2Enabled = true;
-        } else if (dialogSet == QByteArrayLiteral("QtQuickControls1")
-                   && m_ui2Enabled) {
-            m_ui2Enabled = false;
-            qWarning("QTWEBENGINE_DIALOG_SET=QtQuickControls1 forces use of Qt Quick Controls 1 "
-                     "on an eglfs backend. This can crash your application!");
-        } else {
-            qWarning("Ignoring QTWEBENGINE_DIALOG_SET environment variable set to %s. Accepted "
-                     "values are \"QtQuickControls1\" and \"QtQuickControls2\"", dialogSet.data());
-        }
-    }
 
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::installFactory(&webAccessibleFactory);
@@ -222,7 +201,7 @@ UIDelegatesManager *QQuickWebEngineViewPrivate::ui()
 {
     Q_Q(QQuickWebEngineView);
     if (m_uIDelegatesManager.isNull())
-        m_uIDelegatesManager.reset(m_ui2Enabled ? new UI2DelegatesManager(q) : new UIDelegatesManager(q));
+        m_uIDelegatesManager.reset(new UI2DelegatesManager(q));
     return m_uIDelegatesManager.data();
 }
 

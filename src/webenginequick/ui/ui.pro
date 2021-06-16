@@ -1,4 +1,4 @@
-TARGETPATH = QtWebEngine/Controls1Delegates
+TARGETPATH = QtWebEngine/ControlsDelegates
 
 QML_FILES += \
     # Authentication Dialog
@@ -14,7 +14,7 @@ QML_FILES += \
     MenuItem.qml \
     MenuSeparator.qml \
     ToolTip.qml \
-    TouchHandle.qml \
-    TouchSelectionMenu.qml
+    information.png \
+    question.png
 
 load(qml_module)

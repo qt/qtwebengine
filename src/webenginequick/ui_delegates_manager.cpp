@@ -658,22 +658,16 @@ bool UI2DelegatesManager::initializeImportDirs(QStringList &dirs, QQmlEngine *en
 {
     const QStringList paths = engine->importPathList();
     for (const QString &path : paths) {
-        QString controls2ImportPath = path % QLatin1String("/QtWebEngine/Controls2Delegates/");
-        QString controls1ImportPath = path % QLatin1String("/QtWebEngine/Controls1Delegates/");
+        QString controlsImportPath = path % QLatin1String("/QtWebEngine/ControlsDelegates/");
 
         // resource paths have to be tested using the ":/" prefix
-        if (controls2ImportPath.startsWith(QLatin1String("qrc:/"))) {
-            controls2ImportPath.remove(0, 3);
-            controls1ImportPath.remove(0, 3);
+        if (controlsImportPath.startsWith(QLatin1String("qrc:/"))) {
+            controlsImportPath.remove(0, 3);
         }
 
-        QFileInfo fi2(controls2ImportPath);
-        if (fi2.exists())
-            dirs << fi2.absolutePath();
-
-        QFileInfo fi1(controls1ImportPath);
-        if (fi1.exists())
-            dirs << fi1.absolutePath();
+        QFileInfo fi(controlsImportPath);
+        if (fi.exists())
+            dirs << fi.absolutePath();
     }
     return !dirs.isEmpty();
 }
