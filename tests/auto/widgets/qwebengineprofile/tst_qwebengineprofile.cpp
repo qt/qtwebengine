@@ -221,7 +221,7 @@ void tst_QWebEngineProfile::clearDataFromCache()
 
     AutoDir cacheDir("./tst_QWebEngineProfile_clearDataFromCache");
 
-    QWebEngineProfile profile(QStringLiteral("Test"));
+    QWebEngineProfile profile(QStringLiteral("clearDataFromCache"));
     profile.setCachePath(cacheDir.path());
     profile.setHttpCacheType(QWebEngineProfile::DiskHttpCache);
 
@@ -838,11 +838,11 @@ void tst_QWebEngineProfile::changePersistentPath()
     QVERIFY(server.start());
 
     AutoDir dataDir1(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
-                     + QStringLiteral("/QtWebEngine/Test"));
+                     + QStringLiteral("/QtWebEngine/changePersistentPath1"));
     AutoDir dataDir2(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
-                     + QStringLiteral("/QtWebEngine/Test2"));
+                     + QStringLiteral("/QtWebEngine/changePersistentPath2"));
 
-    QWebEngineProfile testProfile(QStringLiteral("Test"));
+    QWebEngineProfile testProfile(QStringLiteral("changePersistentPath1"));
     QCOMPARE(testProfile.persistentStoragePath(), dataDir1.path());
 
     // Make sure the profile has been used:
@@ -869,7 +869,7 @@ void tst_QWebEngineProfile::changeHttpUserAgent()
             userAgents.push_back(rr->requestHeader(QByteArrayLiteral("user-agent")));
     });
 
-    QWebEngineProfile profile(QStringLiteral("Test"));
+    QWebEngineProfile profile(QStringLiteral("changeHttpUserAgent"));
     std::unique_ptr<QWebEnginePage> page;
     page.reset(new QWebEnginePage(&profile));
     QVERIFY(loadSync(page.get(), server.url("/hedgehog.html")));
@@ -896,7 +896,7 @@ void tst_QWebEngineProfile::changeHttpAcceptLanguage()
             languages.push_back(rr->requestHeader(QByteArrayLiteral("accept-language")));
     });
 
-    QWebEngineProfile profile(QStringLiteral("Test"));
+    QWebEngineProfile profile(QStringLiteral("changeHttpAcceptLanguage"));
     std::unique_ptr<QWebEnginePage> page;
     page.reset(new QWebEnginePage(&profile));
     QVERIFY(loadSync(page.get(), server.url("/hedgehog.html")));
@@ -919,7 +919,7 @@ void tst_QWebEngineProfile::changeUseForGlobalCertificateVerification()
 
     // Check that we don't crash
 
-    QWebEngineProfile profile(QStringLiteral("Test"));
+    QWebEngineProfile profile(QStringLiteral("changeUseForGlobalCertifateVerification"));
     std::unique_ptr<QWebEnginePage> page;
     page.reset(new QWebEnginePage(&profile));
     QVERIFY(loadSync(page.get(), server.url("/hedgehog.html")));
@@ -938,7 +938,7 @@ void tst_QWebEngineProfile::changePersistentCookiesPolicy()
 
     AutoDir dataDir("./tst_QWebEngineProfile_dataDir");
 
-    QWebEngineProfile profile(QStringLiteral("Test"));
+    QWebEngineProfile profile(QStringLiteral("changePersistentCookiesPolicy"));
     QWebEnginePage page(&profile);
 
     profile.setPersistentStoragePath(dataDir.path());
