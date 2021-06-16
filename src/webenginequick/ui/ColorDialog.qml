@@ -37,6 +37,7 @@
 **
 ****************************************************************************/
 
+/*
 import QtQuick.Dialogs 1.2
 
 ColorDialog {
@@ -47,4 +48,12 @@ ColorDialog {
     onAccepted: {
         selectedColor(colorDialog.currentColor);
     }
+}
+*/
+
+import QtQuick.Controls
+
+Dialog {
+    objectName: "colorDialog"
+    // TODO
 }

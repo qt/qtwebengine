@@ -37,35 +37,39 @@
 **
 ****************************************************************************/
 
-// FIXME: authentication missing in Qt Quick Dialogs atm. Make our own for now.
-import QtQuick 2.5
-import QtQuick.Controls 1.4
-import QtQuick.Layouts 1.0
-import QtQuick.Window 2.2
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 
-Window {
-    signal accepted(string user, string password)
-    signal rejected
+Dialog {
     property alias text: message.text
-
+    property bool handled: false
+    signal accepted(string user, string password)
+    signal rejected()
     title: qsTr("Authentication Required")
-    flags: Qt.Dialog
-    modality: Qt.WindowModal
+    modal: false
+    anchors.centerIn: parent
+    objectName: "authenticationDialog"
 
-    width: minimumWidth
-    height: minimumHeight
-    minimumWidth: rootLayout.implicitWidth + rootLayout.doubleMargins
-    minimumHeight: rootLayout.implicitHeight + rootLayout.doubleMargins
-
-    SystemPalette { id: palette; colorGroup: SystemPalette.Active }
-    color: palette.window
-
-    function open() {
-        show();
+    //handle the case where users simply closes the dialog
+    onVisibleChanged: {
+        if (visible == false && handled == false) {
+            handled = true;
+            rejected();
+        } else {
+            handled = false;
+        }
     }
 
     function acceptDialog() {
         accepted(userField.text, passwordField.text);
+        handled = true;
+        close();
+    }
+
+    function rejectDialog() {
+        rejected();
+        handled = true;
         close();
     }
 
@@ -73,8 +77,13 @@ Window {
         id: rootLayout
         anchors.fill: parent
         anchors.margins: 4
+        property int minimumWidth: rootLayout.implicitWidth + rootLayout.doubleMargins
+        property int minimumHeight: rootLayout.implicitHeight + rootLayout.doubleMargins
+
         property int doubleMargins: anchors.margins * 2
-        Text {
+
+        SystemPalette { id: palette; colorGroup: SystemPalette.Active }
+        Label {
             id: message
             color: palette.windowText
         }
@@ -115,15 +124,11 @@ Window {
             spacing: 8
             Button {
                 id: cancelButton
-                text: qsTr("&Cancel")
-                onClicked: {
-                    rejected();
-                    close();
-                }
+                text: qsTr("Cancel")
+                onClicked: rejectDialog()
             }
             Button {
-                text: qsTr("&Log In")
-                isDefault: true
+                text: qsTr("Log In")
                 onClicked: acceptDialog()
             }
         }

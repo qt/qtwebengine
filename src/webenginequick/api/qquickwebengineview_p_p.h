@@ -225,7 +225,6 @@ private:
     QScopedPointer<QtWebEngineCore::UIDelegatesManager> m_uIDelegatesManager;
     QColor m_backgroundColor;
     qreal m_zoomFactor;
-    bool m_ui2Enabled;
     bool m_profileInitialized;
     QWebEngineContextMenuRequest *m_contextMenuRequest;
     LoadVisuallyCommittedState m_loadVisuallyCommittedState = NotCommitted;

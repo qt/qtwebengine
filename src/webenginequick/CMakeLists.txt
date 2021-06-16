@@ -7,7 +7,7 @@ get_configure_mode(configureMode)
 if(QT_FEATURE_webenginequick_testsupport)
     add_subdirectory(testsupport)
 endif()
-add_subdirectory(ui2)
+add_subdirectory(ui)
 
 qt_internal_add_qml_module(WebEngineQuick
     ${configureMode}

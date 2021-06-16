@@ -14,6 +14,5 @@ qtConfig(webenginequick-testsupport) {
 }
 
 qtConfig(webenginequick-ui-delegates) {
-    SUBDIRS += ui \
-               ui2
+    SUBDIRS += ui
 }

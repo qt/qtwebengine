@@ -37,8 +37,63 @@
 **
 ****************************************************************************/
 
-import QtQuick.Dialogs 1.2
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 
-MessageDialog {
-    icon: StandardIcon.Information
+Dialog {
+    property alias text: message.text
+    property bool handled: false
+    signal accepted()
+    signal rejected()
+    title: qsTr("Alert Dialog")
+    modal: false
+    anchors.centerIn: parent
+    objectName: "alertDialog"
+
+    //handle the case where users simply closes the dialog
+    onVisibleChanged: {
+        if (visible == false && handled == false) {
+            handled = true;
+            rejected();
+        } else {
+            handled = false;
+        }
+    }
+
+    function acceptDialog() {
+        accepted();
+        handled = true;
+        close();
+    }
+
+    ColumnLayout {
+        id: rootLayout
+        anchors.fill: parent
+        anchors.margins: 4
+        property int minimumWidth: rootLayout.implicitWidth + rootLayout.doubleMargins
+        property int minimumHeight: rootLayout.implicitHeight + rootLayout.doubleMargins
+        property int doubleMargins: anchors.margins * 2
+        SystemPalette { id: palette; colorGroup: SystemPalette.Active }
+        RowLayout {
+            Layout.alignment: Qt.AlignRight
+            spacing: 8
+            Image {
+                source: "qrc:/qt-project.org/imports/QtWebEngine/ControlsDelegates/information.png"
+            }
+            Label {
+                id: message
+                Layout.fillWidth: true
+                color: palette.windowText
+            }
+        }
+        Item {
+            Layout.fillHeight: true
+        }
+        Button {
+            Layout.alignment: Qt.AlignHCenter
+            text: qsTr("OK")
+            onClicked: acceptDialog()
+        }
+    }
 }

@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.5
-import QtQuick.Controls 1.4 as Controls
+import QtQuick
 
-Controls.MenuSeparator { }
+Item { id: dummy }
