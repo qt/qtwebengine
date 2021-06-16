@@ -43,8 +43,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/web_contents/web_contents_view.h"
 
-#include "api/qtwebenginecoreglobal_p.h"
-#include "web_contents_adapter_client.h"
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 
 QT_FORWARD_DECLARE_CLASS(QWebEngineContextMenuRequest)
 

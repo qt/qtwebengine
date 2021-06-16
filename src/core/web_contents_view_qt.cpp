@@ -39,20 +39,13 @@
 
 #include "web_contents_view_qt.h"
 
-#include "profile_adapter.h"
-#include "content_browser_client_qt.h"
 #include "render_widget_host_view_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
-#include "render_widget_host_view_qt.h"
 #include "touch_selection_controller_client_qt.h"
 #include "type_conversion.h"
 #include "web_contents_adapter.h"
-#include "web_engine_context.h"
-#include "web_contents_delegate_qt.h"
+#include "web_contents_adapter_client.h"
 
-#include "components/spellcheck/spellcheck_buildflags.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -60,7 +53,8 @@
 #include "third_party/blink/public/common/context_menu_data/media_type.h"
 #include "ui/gfx/image/image_skia.h"
 
-#include <QtGui/qpixmap.h>
+#include <QtGui/QPixmap>
+#include <QtWebEngineCore/private/qwebenginecontextmenurequest_p.h>
 
 namespace QtWebEngineCore {
 

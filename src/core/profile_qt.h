@@ -122,9 +122,6 @@ public:
     bool ensureDirectoryExists();
 
 private:
-    friend class ContentBrowserClientQt;
-    friend class ProfileIODataQt;
-    friend class WebContentsAdapter;
     std::unique_ptr<BrowsingDataRemoverDelegateQt> m_removerDelegate;
     std::unique_ptr<PermissionManagerQt> m_permissionManager;
     std::unique_ptr<SSLHostStateDelegateQt> m_sslHostStateDelegate;
@@ -134,11 +131,12 @@ private:
     ProfileAdapter *m_profileAdapter;
     PrefServiceAdapter m_prefServiceAdapter;
 
-    friend class ProfileAdapter;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::ExtensionSystemQt *m_extensionSystem;
 #endif //ENABLE_EXTENSIONS
-    friend class BrowserContextAdapter;
+
+    friend class ProfileAdapter;
+    friend class ProfileIODataQt;
 
     DISALLOW_COPY_AND_ASSIGN(ProfileQt);
 };

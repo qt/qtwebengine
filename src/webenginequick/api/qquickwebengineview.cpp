@@ -62,6 +62,7 @@
 #include "qwebenginenewwindowrequest.h"
 #include "qwebenginequotarequest.h"
 #include "qwebenginescriptcollection.h"
+#include <QtWebEngineCore/private/qwebenginecontextmenurequest_p.h>
 #include <QtWebEngineCore/private/qwebenginehistory_p.h>
 #include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
 #include "qwebengineregisterprotocolhandlerrequest.h"
