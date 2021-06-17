@@ -45,6 +45,19 @@
 #include <unistd.h>
 #endif
 
+class Setup : public QObject
+{
+    Q_OBJECT
+public:
+    Setup() { }
+
+public slots:
+    void qmlEngineAvailable(QQmlEngine *engine)
+    {
+        engine->addImportPath(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath() + "/mock-delegates");
+    }
+};
+
 #if defined(Q_OS_LINUX) && defined(QT_DEBUG)
 static bool debuggerPresent()
 {
@@ -127,12 +140,9 @@ int main(int argc, char **argv)
 
     sigaction(SIGSEGV, &sigAction, 0);
 #endif
-
-    qputenv("QML2_IMPORT_PATH", QString(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath() + "/mock-delegates").toUtf8());
     // TODO: temporary solution. Remove when Quick Controls 1 is removed.
     qputenv("QTWEBENGINE_DIALOG_SET", QByteArray("QtQuickControls2"));
     QScopedPointer<Application> app;
-
     // Force to use English language for testing due to error message checks
     QLocale::setDefault(QLocale("en"));
 
@@ -165,8 +175,10 @@ int main(int argc, char **argv)
             "Test.Shared", 1, 0, "HttpsServer",
             [&](QQmlEngine *, QJSEngine *) { return new HttpsServer(":/resources/server.pem",":/resources/server.key"); });
 #endif
-
-    int i = quick_test_main(argc, argv, "qmltests",  qPrintable(QT_TESTCASE_BUILDDIR + QLatin1String("/webengine.qmltests")));
+    Setup setup;
+    int i = quick_test_main_with_setup(
+            argc, argv, "qmltests",
+            qPrintable(QT_TESTCASE_BUILDDIR + QLatin1String("/webengine.qmltests")), &setup);
     return i;
 }
 
