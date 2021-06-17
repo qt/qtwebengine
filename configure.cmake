@@ -349,7 +349,7 @@ add_check_for_support(webEngineError webEngineSupport
 add_check_for_support(webEngineError webEngineSupport
    MODULE QtWebEngine
    CONDITION Python2_FOUND
-   MESSAGE "Python version 2 (2.7.5 or later) is required."
+   MESSAGE "Python2 version 2.7.5 or later is required."
 )
 add_check_for_support(webEngineError webEngineSupport
    MODULE QtWebEngine
@@ -379,7 +379,7 @@ add_check_for_support(webEngineError webEngineSupport
 add_check_for_support(webEngineError webEngineSupport
    MODULE QtWebEngine
    CONDITION NOT LINUX OR TEST_khr
-   MESSAGE "Build requires Khronos development headers for build(see mesa/libegl1-mesa-dev)."
+   MESSAGE "Build requires Khronos development headers for build - see mesa/libegl1-mesa-dev"
 )
 add_check_for_support(webEngineError webEngineSupport
    MODULE QtWebEngine
