@@ -23,7 +23,7 @@ configure_gn_toolchain(host ${TEST_architecture_arch} ${TEST_architecture_arch}
     ${WEBENGINE_ROOT_SOURCE_DIR}/src/host/BUILD.toolchain.gn.in
     ${buildDir}/host_toolchain
 )
-get_v8_arch(GN_V8_HOST_CPU ${GN_TARGET_CPU})
+get_v8_arch(GN_V8_HOST_CPU ${GN_TARGET_CPU} ${TEST_architecture_arch})
 configure_gn_toolchain(v8 ${GN_V8_HOST_CPU} ${GN_TARGET_CPU}
     ${WEBENGINE_ROOT_SOURCE_DIR}/src/host/BUILD.toolchain.gn.in
     ${buildDir}/v8_toolchain)
