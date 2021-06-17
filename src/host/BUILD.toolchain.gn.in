@@ -8,10 +8,10 @@ gcc_toolchain("@GN_TOOLCHAIN@") {
   nm = "@CMAKE_NM@"
   extra_cppflags = ""
   toolchain_args = {
-    current_os = "linux"
+    current_os = "@GN_OS@"
     current_cpu = "@GN_CPU@"
     v8_current_cpu = "@GN_V8_CPU@"
-    is_clang = false
+    is_clang = @GN_IS_CLANG@
     use_gold = false
   }
 }
