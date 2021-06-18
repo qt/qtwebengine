@@ -2415,10 +2415,6 @@ void QWebEnginePage::setVisible(bool visible)
     d->adapter->setVisible(visible);
 }
 
-QWebEnginePage* QWebEnginePage::fromDownloadRequest(QWebEngineDownloadRequest *request) {
-    return static_cast<QWebEnginePagePrivate *>(request->d_ptr->adapterClient)->q_ptr;
-}
-
 QDataStream &operator<<(QDataStream &stream, const QWebEngineHistory &history)
 {
     auto adapter = history.d_func()->adapter();

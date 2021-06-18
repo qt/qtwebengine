@@ -39,6 +39,7 @@
 
 #include "qquickwebengineprofile.h"
 #include "qquickwebengineprofile_p.h"
+#include "qquickwebenginedownloadrequest_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginescriptcollection.h"
 #include "qquickwebengineview_p_p.h"
@@ -51,6 +52,7 @@
 #include <QtWebEngineCore/qwebenginenotification.h>
 #include <QtWebEngineCore/private/qwebenginedownloadrequest_p.h>
 #include <QtWebEngineCore/qwebengineurlscheme.h>
+
 #include <QFileInfo>
 #include <QDir>
 #include <QQmlEngine>
@@ -126,7 +128,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-  \fn QQuickWebEngineProfile::downloadRequested(QWebEngineDownloadRequest *download)
+  \fn QQuickWebEngineProfile::downloadRequested(QQuickWebEngineDownloadRequest *download)
 
   This signal is emitted whenever a download has been triggered.
   The \a download argument holds the state of the download.
@@ -139,7 +141,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-  \fn QQuickWebEngineProfile::downloadFinished(QWebEngineDownloadRequest *download)
+  \fn QQuickWebEngineProfile::downloadFinished(QQuickWebEngineDownloadRequest *download)
 
   This signal is emitted whenever downloading stops, because it finished successfully, was
   cancelled, or was interrupted (for example, because connectivity was lost).
@@ -253,10 +255,10 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     else
         itemPrivate->adapterClient = nullptr;
 
-    QWebEngineDownloadRequest *download = new QWebEngineDownloadRequest(itemPrivate, q);
+    QQuickWebEngineDownloadRequest *download = new QQuickWebEngineDownloadRequest(itemPrivate, q);
 
     m_ongoingDownloads.insert(info.id, download);
-    QObject::connect(download, &QWebEngineDownloadRequest::destroyed, q, [id = info.id, this] () { downloadDestroyed(id); });
+    QObject::connect(download, &QObject::destroyed, q, [id = info.id, this] () { downloadDestroyed(id); });
 
     QQmlEngine::setObjectOwnership(download, QQmlEngine::JavaScriptOwnership);
     Q_EMIT q->downloadRequested(download);
@@ -281,14 +283,14 @@ void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info
 
     Q_Q(QQuickWebEngineProfile);
 
-    QWebEngineDownloadRequest* download = m_ongoingDownloads.value(info.id).data();
+    QQuickWebEngineDownloadRequest* download = m_ongoingDownloads.value(info.id).data();
 
     if (!download) {
         downloadDestroyed(info.id);
         return;
     }
 
-    download->d_func()->update(info);
+    download->d_ptr->update(info);
 
     if (info.state != ProfileAdapterClient::DownloadInProgress) {
         Q_EMIT q->downloadFinished(download);

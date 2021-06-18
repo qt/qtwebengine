@@ -40,10 +40,13 @@
 #include "qwebenginedownloadrequest.h"
 #include "qwebenginedownloadrequest_p.h"
 
+#include "qwebenginepage.h"
+
 #include "profile_adapter.h"
+#include "web_contents_adapter_client.h"
 
 #include <QDir>
-#include "QFileInfo"
+#include <QFileInfo>
 
 QT_BEGIN_NAMESPACE
 
@@ -662,14 +665,17 @@ QString QWebEngineDownloadRequest::interruptReasonString() const
     Returns the page the download was requested on. If the download was not triggered by content in a page,
     \c nullptr is returned.
 */
-QObject *QWebEngineDownloadRequest::page() const
+QWebEnginePage *QWebEngineDownloadRequest::page() const
 {
     Q_D(const QWebEngineDownloadRequest);
-    //TODO: come back here when page is in core
-    Q_UNREACHABLE();
+    if (d->adapterClient->clientType() == QtWebEngineCore::WebContentsAdapterClient::WidgetsClient)
+        return const_cast<QWebEnginePage *>(static_cast<const QWebEnginePage *>(d->adapterClient->holdingQObject()));
     return nullptr;
 }
 
+
+/*! \internal
+*/
 QWebEngineDownloadRequest::QWebEngineDownloadRequest(QWebEngineDownloadRequestPrivate *p, QObject *parent)
     : QObject(parent)
     , d_ptr(p)

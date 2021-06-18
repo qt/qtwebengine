@@ -42,6 +42,7 @@
 
 #include <QtWebEngineQuick/private/qquickwebengineclientcertificateselection_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginedialogrequests_p.h>
+#include <QtWebEngineQuick/private/qquickwebenginedownloadrequest_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginefaviconprovider_p_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginesettings_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginesingleton_p.h>
@@ -59,7 +60,6 @@
 #include <QtWebEngineCore/qwebenginequotarequest.h>
 #include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
 #include <QtWebEngineCore/qwebenginecontextmenurequest.h>
-#include <QtWebEngineCore/qwebenginedownloadrequest.h>
 #include <QtWebEngineCore/qwebenginescript.h>
 
 QT_BEGIN_NAMESPACE
@@ -111,7 +111,7 @@ public:
                 uri, 1, 1, "WebEngineScript", msgUncreatableType("WebEngineScript")); // for enums
         qRegisterMetaType<QWebEngineCertificateError>();
         qmlRegisterUncreatableType<QWebEngineCertificateError>(uri, 1, 1, "WebEngineCertificateError", msgUncreatableType("WebEngineCertificateError"));
-        qmlRegisterUncreatableType<QWebEngineDownloadRequest>(uri, 1, 1, "WebEngineDownloadRequest",
+        qmlRegisterUncreatableType<QQuickWebEngineDownloadRequest>(uri, 1, 1, "WebEngineDownloadRequest",
             msgUncreatableType("WebEngineDownloadRequest"));
         qmlRegisterUncreatableType<QWebEngineNewWindowRequest>(uri, 1, 1, "WebEngineNewViewRequest", msgUncreatableType("WebEngineNewViewRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineSettings>(uri, 1, 1, "WebEngineSettings", msgUncreatableType("WebEngineSettings"));

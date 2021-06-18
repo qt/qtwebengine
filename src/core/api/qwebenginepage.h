@@ -324,8 +324,6 @@ public:
 
     void acceptAsNewWindow(QWebEngineNewWindowRequest &request);
 
-    static QWebEnginePage* fromDownloadRequest(QWebEngineDownloadRequest * request);
-
 Q_SIGNALS:
     void loadStarted();
     void loadProgress(int progress);
