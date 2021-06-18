@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINEPROFILE_P_H
-#define QQUICKWEBENGINEPROFILE_P_H
+#ifndef QQUICKWEBENGINEDOWNLOADREQUEST_P_H
+#define QQUICKWEBENGINEDOWNLOADREQUEST_P_H
 
 //
 //  W A R N I N G
@@ -51,54 +51,28 @@
 // We mean it.
 //
 
-#include "profile_adapter_client.h"
-#include "profile_adapter.h"
-#include "qquickwebengineprofile.h"
+#include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
+#include <QtWebEngineQuick/private/qquickwebengineview_p.h>
 
-#include <QExplicitlySharedDataPointer>
-#include <QMap>
-#include <QPointer>
-#include <QSharedPointer>
+#include <QtWebEngineCore/qwebenginedownloadrequest.h>
 
 QT_BEGIN_NAMESPACE
 
-class QQuickWebEngineDownloadRequest;
-class QQuickWebEngineSettings;
-class QQuickWebEngineViewPrivate;
-class QQuickWebEngineScriptCollection;
+class QQuickWebEngineProfilePrivate;
 
-class QQuickWebEngineProfilePrivate : public QtWebEngineCore::ProfileAdapterClient {
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineDownloadRequest : public QWebEngineDownloadRequest
+{
+    Q_OBJECT
 public:
-    Q_DECLARE_PUBLIC(QQuickWebEngineProfile)
-    QQuickWebEngineProfilePrivate(QtWebEngineCore::ProfileAdapter *profileAdapter);
-    ~QQuickWebEngineProfilePrivate();
-    void addWebContentsAdapterClient(QtWebEngineCore::WebContentsAdapterClient *adapter) override;
-    void removeWebContentsAdapterClient(QtWebEngineCore::WebContentsAdapterClient *adapter) override;
+    Q_PROPERTY(QQuickWebEngineView *view READ view CONSTANT FINAL)
 
-    QtWebEngineCore::ProfileAdapter* profileAdapter() const;
-    QQuickWebEngineSettings *settings() const;
-
-    void cancelDownload(quint32 downloadId);
-    void downloadDestroyed(quint32 downloadId);
-
-    void cleanDownloads();
-
-    void downloadRequested(DownloadItemInfo &info) override;
-    void downloadUpdated(const DownloadItemInfo &info) override;
-
-    void useForGlobalCertificateVerificationChanged() override;
-
-    void showNotification(QSharedPointer<QtWebEngineCore::UserNotificationController> &controller) override;
-
+    QQuickWebEngineView *view() const;
 private:
-    friend class QQuickWebEngineView;
-    QQuickWebEngineProfile *q_ptr;
-    QScopedPointer<QQuickWebEngineSettings> m_settings;
-    QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
-    QMap<quint32, QPointer<QQuickWebEngineDownloadRequest> > m_ongoingDownloads;
-    QScopedPointer<QQuickWebEngineScriptCollection> m_scriptCollection;
+    Q_DISABLE_COPY(QQuickWebEngineDownloadRequest)
+    friend class QQuickWebEngineProfilePrivate;
+    QQuickWebEngineDownloadRequest(QWebEngineDownloadRequestPrivate *, QObject *parent = nullptr);
 };
 
 QT_END_NAMESPACE
 
-#endif // QQUICKWEBENGINEPROFILE_P_H
+#endif // QQUICKWEBENGINEDOWNLOADREQUEST_P_H

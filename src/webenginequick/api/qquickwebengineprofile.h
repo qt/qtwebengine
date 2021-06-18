@@ -47,7 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QWebEngineDownloadRequest;
+class QQuickWebEngineDownloadRequest;
 class QWebEngineScript;
 class QQuickWebEngineSettings;
 class QWebEngineClientCertificateStore;
@@ -167,8 +167,8 @@ Q_SIGNALS:
     Q_REVISION(1,3) void spellCheckEnabledChanged();
     Q_REVISION(1,5) void useForGlobalCertificateVerificationChanged();
     Q_REVISION(1,5) void downloadPathChanged();
-    void downloadRequested(QWebEngineDownloadRequest *download);
-    void downloadFinished(QWebEngineDownloadRequest *download);
+    void downloadRequested(QQuickWebEngineDownloadRequest *download);
+    void downloadFinished(QQuickWebEngineDownloadRequest *download);
 
     Q_REVISION(1,5) void presentNotification(QWebEngineNotification *notification);
 

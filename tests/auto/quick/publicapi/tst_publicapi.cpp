@@ -51,6 +51,7 @@
 #include <private/qquickwebengineaction_p.h>
 #include <private/qquickwebengineclientcertificateselection_p.h>
 #include <private/qquickwebenginedialogrequests_p.h>
+#include <private/qquickwebenginedownloadrequest_p.h>
 #include <private/qquickwebenginesettings_p.h>
 #include <private/qquickwebenginesingleton_p.h>
 
@@ -65,6 +66,7 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QQuickWebEngineAction::staticMetaObject
     << &QQuickWebEngineClientCertificateOption::staticMetaObject
     << &QQuickWebEngineClientCertificateSelection::staticMetaObject
+    << &QQuickWebEngineDownloadRequest::staticMetaObject
     << &QWebEngineDownloadRequest::staticMetaObject
     << &QWebEngineHistory::staticMetaObject
     << &QWebEngineHistoryModel::staticMetaObject
@@ -254,7 +256,6 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineDownloadRequest.stateChanged(QWebEngineDownloadRequest::DownloadState) --> void"
     << "QWebEngineDownloadRequest.totalBytes --> qlonglong"
     << "QWebEngineDownloadRequest.totalBytesChanged() --> void"
-    // FIXME << "QWebEngineDownloadRequest.view --> QQuickWebEngineView*"
     << "QWebEngineDownloadRequest.url --> QUrl"
     << "QWebEngineDownloadRequest.suggestedFileName --> QString"
     << "QWebEngineDownloadRequest.downloadDirectory --> QString"
@@ -262,6 +263,7 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineDownloadRequest.downloadFileName --> QString"
     << "QWebEngineDownloadRequest.downloadFileNameChanged() --> void"
     << "QWebEngineDownloadRequest.downloadProgress(qlonglong,qlonglong) --> void" // FIXME
+    << "QQuickWebEngineDownloadRequest.view --> QQuickWebEngineView*"
     << "QQuickWebEngineFileDialogRequest.FileModeOpen --> FileMode"
     << "QQuickWebEngineFileDialogRequest.FileModeOpenMultiple --> FileMode"
     << "QQuickWebEngineFileDialogRequest.FileModeSave --> FileMode"
@@ -358,8 +360,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineProfile.cachePath --> QString"
     << "QQuickWebEngineProfile.cachePathChanged() --> void"
     << "QQuickWebEngineProfile.clearHttpCache() --> void"
-    << "QQuickWebEngineProfile.downloadFinished(QWebEngineDownloadRequest*) --> void"
-    << "QQuickWebEngineProfile.downloadRequested(QWebEngineDownloadRequest*) --> void"
+    << "QQuickWebEngineProfile.downloadFinished(QQuickWebEngineDownloadRequest*) --> void"
+    << "QQuickWebEngineProfile.downloadRequested(QQuickWebEngineDownloadRequest*) --> void"
     << "QQuickWebEngineProfile.downloadPath --> QString"
     << "QQuickWebEngineProfile.downloadPathChanged() --> void"
     << "QQuickWebEngineProfile.presentNotification(QWebEngineNotification*) --> void"

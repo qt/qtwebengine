@@ -47,8 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
-//TODO: class QWebEnginePage;
 class QWebEngineDownloadRequestPrivate;
+class QWebEnginePage;
 class QWebEngineProfilePrivate;
 
 class Q_WEBENGINECORE_EXPORT QWebEngineDownloadRequest : public QObject
@@ -66,13 +66,12 @@ public:
     Q_PROPERTY(bool isFinished READ isFinished NOTIFY isFinishedChanged FINAL)
     Q_PROPERTY(bool isPaused READ isPaused NOTIFY isPausedChanged FINAL)
     Q_PROPERTY(bool isSavePageDownload READ isSavePageDownload CONSTANT FINAL)
-    //TODO: Q_PROPERTY(QQuickWebEngineView *view READ view CONSTANT REVISION(1,7) FINAL)
     Q_PROPERTY(QUrl url READ url CONSTANT FINAL)
     Q_PROPERTY(QString suggestedFileName READ suggestedFileName CONSTANT FINAL)
     Q_PROPERTY(QString downloadDirectory READ downloadDirectory WRITE setDownloadDirectory NOTIFY downloadDirectoryChanged FINAL)
     Q_PROPERTY(QString downloadFileName READ downloadFileName WRITE setDownloadFileName NOTIFY downloadFileNameChanged FINAL)
 
-    ~QWebEngineDownloadRequest();
+    ~QWebEngineDownloadRequest() override;
 
     enum DownloadState {
         DownloadRequested,
@@ -141,8 +140,7 @@ public:
     QString downloadFileName() const;
     void setDownloadFileName(const QString &fileName);
 
-    //TODO:
-    QObject *page() const;
+    QWebEnginePage *page() const;
 
 public Q_SLOTS:
     void accept();
@@ -168,9 +166,10 @@ private:
     Q_DECLARE_PRIVATE(QWebEngineDownloadRequest)
 
     friend class QWebEngineProfilePrivate;
-    friend class QQuickWebEngineProfilePrivate;
     friend class QWebEnginePage;
-    QWebEngineDownloadRequest(QWebEngineDownloadRequestPrivate*, QObject *parent = nullptr);
+
+protected:
+    QWebEngineDownloadRequest(QWebEngineDownloadRequestPrivate *, QObject *parent = nullptr);
     QScopedPointer<QWebEngineDownloadRequestPrivate> d_ptr;
 };
 
