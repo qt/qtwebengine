@@ -109,9 +109,6 @@ public:
     void setHttpCacheMaximumSize(int maxSize);
 
     QWebEngineCookieStore* cookieStore();
-#if QT_DEPRECATED_SINCE(5, 13)
-    void setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
-#endif
     void setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
 
     void clearAllVisitedLinks();
