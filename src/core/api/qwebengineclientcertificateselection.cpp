@@ -46,7 +46,7 @@ QT_BEGIN_NAMESPACE
     \class QWebEngineClientCertificateSelection
     \brief The QWebEngineClientCertSelection class wraps a client certificate selection.
     \since 5.12
-    \inmodule QtWebEngineWidgets
+    \inmodule QtWebEngineCore
 
     When a web site requests an SSL client certificate, and one or more certificates
     are found in the system's client certificate store, this class provides access to
