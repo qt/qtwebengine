@@ -400,6 +400,24 @@ foreach(config ${configs})
         ARGS use_rollup
         CONDITION TARGET Nodejs::Nodejs
     )
+    if(QT_FEATURE_sanitizer)
+        extend_gn_list(gnArgArg
+            ARGS is_asan
+            CONDITION address IN_LIST ECM_ENABLE_SANITIZERS
+        )
+        extend_gn_list(gnArgArg
+            ARGS is_tsan
+            CONDITION thread IN_LIST ECM_ENABLE_SANITIZERS
+        )
+        extend_gn_list(gnArgArg
+            ARGS is_msan
+            CONDITION memory IN_LIST ECM_ENABLE_SANITIZERS
+        )
+        extend_gn_list(gnArgArg
+            ARGS is_ubsan is_ubsan_vptr
+            CONDITION undefined IN_LIST ECM_ENABLE_SANITIZERS
+        )
+    endif()
     if(LINUX)
         list(APPEND gnArgArg
             use_cups=false
