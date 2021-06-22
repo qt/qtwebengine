@@ -28,7 +28,7 @@
     \class QWebEnginePage
     \brief The QWebEnginePage class provides an object to view and edit web documents.
     \since 5.4
-    \inmodule QtWebEngineWidgets
+    \inmodule QtWebEngineCore
 
     A \e {web engine page} holds the contents of an HTML document, the history of navigated
     links, and actions.
@@ -326,20 +326,6 @@
 /*!
     \fn QWebEngineHistory *QWebEnginePage::history() const
     Returns a pointer to the view's history of navigated web pages.
-*/
-
-/*!
-    \fn void QWebEnginePage::setView(QWidget* view)
-    Sets the \a view that is associated with the web page.
-
-    \sa view()
-*/
-
-/*!
-    \fn QWidget *QWebEnginePage::view() const
-    Returns the view widget that is associated with the web page.
-
-    \sa setView()
 */
 
 /*!

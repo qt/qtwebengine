@@ -68,7 +68,7 @@ using QtWebEngineCore::ProfileAdapter;
     \brief The QWebEngineProfile class provides a web engine profile shared by multiple pages.
     \since 5.5
 
-    \inmodule QtWebEngineWidgets
+    \inmodule QtWebEngineCore
 
     A web engine profile contains settings, scripts, persistent cookie policy, and the list of
     visited links shared by all web engine pages that belong to the profile.
