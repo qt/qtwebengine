@@ -43,6 +43,6 @@
     \section2 Qt WebEngineWidgets Module
     \generatelist {classesbymodule QtWebEngineWidgets}
 
-    \section2 Qt WebEngine Module
-    \generatelist {classesbymodule QtWebEngine}
+    \section2 Qt WebEngineQuick Module
+    \generatelist {classesbymodule QtWebEngineQuick}
 */

@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
     \brief The QQuickWebEngineProfile class provides a web engine profile shared by multiple pages.
     \since 5.6
 
-    \inmodule QtWebEngine
+    \inmodule QtWebEngineQuick
 
     A web engine profile contains settings, scripts, persistent cookie policy, and the list of
     visited links shared by all web engine pages that belong to the profile.
