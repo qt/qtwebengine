@@ -102,6 +102,12 @@ void ProfileIODataQt::shutdownOnUIThread()
         qWarning() << "Could not delete ProfileIODataQt on io thread !";
         delete this;
     }
+    if (m_clearHttpCacheInProgress) {
+        m_clearHttpCacheInProgress = false;
+        content::BrowsingDataRemover *remover =
+                content::BrowserContext::GetBrowsingDataRemover(m_profileAdapter->profile());
+        remover->RemoveObserver(&m_removerObserver);
+    }
 }
 
 content::ResourceContext *ProfileIODataQt::resourceContext()
