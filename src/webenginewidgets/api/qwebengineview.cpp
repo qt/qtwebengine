@@ -215,7 +215,7 @@ QStringList QWebEngineViewPrivate::chooseFiles(QWebEnginePage::FileSelectionMode
                                             QFileDialog::HideNameFilterDetails);
         break;
     case QtWebEngineCore::FilePickerController::UploadFolder:
-        str = QFileDialog::getExistingDirectory(q, QObject::tr("Select folder to upload"));
+        str = QFileDialog::getExistingDirectory(q, QWebEngineView::tr("Select folder to upload"));
         if (!str.isNull())
             ret << str;
         break;

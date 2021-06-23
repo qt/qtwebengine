@@ -46,6 +46,7 @@
 #include "content/public/browser/file_select_listener.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
+#include <QtCore/qcoreapplication.h>
 #include <QDir>
 #include <QFileInfo>
 #include <QMimeDatabase>
@@ -302,7 +303,10 @@ QStringList FilePickerController::nameFilters(const QStringList &acceptedMimeTyp
         }
     }
 
-    nameFilters.prepend(QObject::tr("Accepted types") + " (" + acceptedGlobs.join(" ") + ")");
+    const QString filter =
+        QCoreApplication::translate("FilePickerController",
+                                    "Accepted types (%1)").arg(acceptedGlobs.join(' '));
+    nameFilters.prepend(filter);
 
     return nameFilters;
 }
