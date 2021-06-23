@@ -120,6 +120,12 @@ list(APPEND libsCmakeArgs
         "-DWEBENGINE_REPO_BUILD=TRUE"
         "${featureList}"
 )
+if (CMAKE_C_COMPILER_LAUNCHER)
+    list(APPEND libsCmakeArgs "-DCMAKE_C_COMPILER_LAUNCHER=${CMAKE_C_COMPILER_LAUNCHER}")
+endif()
+if (CMAKE_CXX_COMPILER_LAUNCHER)
+    list(APPEND libsCmakeArgs "-DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}")
+endif()
 
 if(LINUX)
     set(cmd "${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/src")

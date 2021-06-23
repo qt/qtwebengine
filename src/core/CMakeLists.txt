@@ -286,6 +286,9 @@ foreach(config ${configs})
     elseif(${config} STREQUAL "MinSizeRel")
         list(APPEND gnArgArg is_debug=false symbol_level=0 optimize_for_size=true)
     endif()
+    if (CMAKE_CXX_COMPILER_LAUNCHER)
+        list(APPEND gnArgArg cc_wrapper="${CMAKE_CXX_COMPILER_LAUNCHER}")
+    endif()
 
     list(APPEND gnArgArg
         qtwebengine_target="${buildDir}/${config}:QtWebEngineCore"
