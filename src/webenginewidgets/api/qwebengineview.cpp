@@ -935,7 +935,7 @@ QMenu *QWebEngineView::createStandardContextMenu()
 #endif // QT_CONFIG(menu)
 
 /*!
-  \since 6.0
+  \since 6.2
 
   Returns additional data about the current context menu. It is only guaranteed to be valid during
   the call to the contextMenuEvent()

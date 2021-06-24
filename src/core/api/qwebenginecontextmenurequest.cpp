@@ -44,7 +44,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QWebEngineContextMenuRequest
-    \since 6.0
+    \since 6.2
     \brief The QWebEngineContextMenuRequest class provides request for populating or extending a context menu with actions.
 
     \inmodule QtWebEngineCore
@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \enum QWebEngineContextMenuRequest::MediaType
     \readonly
-    \since 6.0
+    \since 6.2
 
     This enum describes the media type of the context menu request if any.
 
@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \enum QWebEngineContextMenuRequest::EditFlag
     \readonly
-    \since 6.0
+    \since 6.2
 
     The available edit operations in the current context menu request.
 
@@ -91,7 +91,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \enum QWebEngineContextMenuRequest::MediaFlag
     \readonly
-    \since 6.0
+    \since 6.2
 
     The current media element's status and its available operations.
     \c MediaNone if the selected web page content is not a media element.
