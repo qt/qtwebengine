@@ -59,20 +59,20 @@ TestWebEngineView {
         signalName: "navigationRequested"
     }
 
-    onNavigationRequested: {
+    onNavigationRequested: function(request) {
         if (request.isMainFrame) {
             attributes.mainUrl = request.url
         } else {
             attributes.iframeUrl = request.url
             if (shouldIgnoreSubFrameRequests) {
-                request.action = WebEngineNavigationRequest.IgnoreRequest
+                request.reject()
             }
         }
 
         if (request.navigationType === WebEngineNavigationRequest.LinkClickedNavigation) {
             attributes.linkClickedNavigationRequested = true
             if (shouldIgnoreLinkClicks) {
-                request.action = WebEngineNavigationRequest.IgnoreRequest
+                request.reject()
                 attributes.linkClickedNavigationIgnored = true
             }
         }

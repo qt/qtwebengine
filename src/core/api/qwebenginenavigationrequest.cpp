@@ -47,15 +47,14 @@ class QWebEngineNavigationRequestPrivate {
 public:
     QWebEngineNavigationRequestPrivate(const QUrl& url, QWebEngineNavigationRequest::NavigationType navigationType, bool mainFrame)
         : url(url)
-        , action(QWebEngineNavigationRequest::AcceptRequest)
         , navigationType(navigationType)
         , isMainFrame(mainFrame)
     {}
 
     QUrl url;
-    QWebEngineNavigationRequest::NavigationRequestAction action;
     QWebEngineNavigationRequest::NavigationType navigationType;
     bool isMainFrame;
+    bool isAccepted = true;
 };
 
 /*!
@@ -67,9 +66,7 @@ public:
 
     Contains information about a navigation request.
 
-    To accept or reject a request, set \l action to
-    \c QWebEngineNavigationRequest::AcceptRequest or
-    \c QWebEngineNavigationRequest::IgnoreRequest.
+    To accept or reject a request, call accept() or reject().
 
     The default if not handled is to accept the navigation.
 
@@ -85,9 +82,7 @@ public:
     \brief Represents a request for navigating to a web page as part of
     \l{WebEngineView::navigationRequested()}.
 
-    To accept or reject a request, set \l action to
-    \c WebEngineNavigationRequest.AcceptRequest or
-    \c WebEngineNavigationRequest.IgnoreRequest.
+    To accept or reject a request, call accept() or reject().
 */
 
 /*! \internal
@@ -102,10 +97,7 @@ QWebEngineNavigationRequest::~QWebEngineNavigationRequest()
 {
 }
 
-/*!
-    \property QWebEngineNavigationRequest::action
-    \brief Whether to accept or ignore the navigation request.
-*/
+#if QT_DEPRECATED_SINCE(6, 2)
 /*!
     \qmlproperty enumeration WebEngineNavigationRequest::action
 
@@ -116,17 +108,40 @@ QWebEngineNavigationRequest::~QWebEngineNavigationRequest()
     \value  WebEngineNavigationRequest.IgnoreRequest
             Ignores a navigation request.
 */
-
-void QWebEngineNavigationRequest::setAction(QWebEngineNavigationRequest::NavigationRequestAction action)
+QWebEngineNavigationRequest::NavigationRequestAction QWebEngineNavigationRequest::action() const
 {
-    Q_D(QWebEngineNavigationRequest);
-    if (d->action == action)
-        return;
-
-    d->action = action;
-    emit actionChanged();
+    qWarning("Navigation request: action/setAction are deprecated. Please, use accept/reject methods instead.");
+    Q_D(const QWebEngineNavigationRequest);
+    return d->isAccepted ? AcceptRequest : IgnoreRequest;
 }
 
+/*! \internal */
+void QWebEngineNavigationRequest::setAction(QWebEngineNavigationRequest::NavigationRequestAction action)
+{
+    qWarning("Navigation request: action/setAction are deprecated. Please, use accept/reject methods instead.");
+    Q_D(QWebEngineNavigationRequest);
+    bool acceptRequest = action == AcceptRequest;
+    if (d->isAccepted == acceptRequest)
+        return;
+
+    acceptRequest ? accept() : reject();
+    emit actionChanged();
+}
+#endif
+/*!
+    Accepts a navigation request.
+*/
+void QWebEngineNavigationRequest::accept()
+{
+    d_ptr->isAccepted = true;
+}
+/*!
+    Rejects a navigation request.
+*/
+void QWebEngineNavigationRequest::reject()
+{
+    d_ptr->isAccepted = false;
+}
 /*!
     \property QWebEngineNavigationRequest::url
     \brief The URL of the web page to go to.
@@ -143,13 +158,6 @@ QUrl QWebEngineNavigationRequest::url() const
     Q_D(const QWebEngineNavigationRequest);
     return d->url;
 }
-
-QWebEngineNavigationRequest::NavigationRequestAction QWebEngineNavigationRequest::action() const
-{
-    Q_D(const QWebEngineNavigationRequest);
-    return d->action;
-}
-
 /*!
     \property QWebEngineNavigationRequest::navigationType
     \brief The method used to navigate to a web page.
@@ -197,6 +205,12 @@ bool QWebEngineNavigationRequest::isMainFrame() const
 {
     Q_D(const QWebEngineNavigationRequest);
     return d->isMainFrame;
+}
+
+/*! \internal */
+bool QWebEngineNavigationRequest::isAccepted() const
+{
+    return d_ptr->isAccepted;
 }
 
 QT_END_NAMESPACE

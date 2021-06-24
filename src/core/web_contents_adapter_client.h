@@ -120,12 +120,6 @@ public:
         InternalAuthorizationDialog = 0x10,
     };
 
-    enum NavigationRequestAction {
-        AcceptRequest,
-        // Make room in the valid range of the enum for extra actions exposed in Experimental.
-        IgnoreRequest = 0xFF
-    };
-
     enum NavigationType {
         LinkNavigation,
         TypedNavigation,
@@ -206,7 +200,7 @@ public:
     virtual void close() = 0;
     virtual void windowCloseRejected() = 0;
     virtual void contextMenuRequested(QWebEngineContextMenuRequest *request) = 0;
-    virtual void navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame) = 0;
+    virtual void navigationRequested(int navigationType, const QUrl &url, bool &accepted, bool isMainFrame) = 0;
     virtual void requestFullScreenMode(const QUrl &origin, bool fullscreen) = 0;
     virtual bool isFullScreenMode() const = 0;
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) = 0;

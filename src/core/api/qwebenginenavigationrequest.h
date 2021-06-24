@@ -53,18 +53,10 @@ class Q_WEBENGINECORE_EXPORT QWebEngineNavigationRequest : public QObject
     Q_OBJECT
     Q_PROPERTY(QUrl url READ url CONSTANT FINAL)
     Q_PROPERTY(bool isMainFrame READ isMainFrame CONSTANT FINAL)
-    Q_PROPERTY(NavigationRequestAction action READ action WRITE setAction NOTIFY actionChanged FINAL)
     Q_PROPERTY(NavigationType navigationType READ navigationType CONSTANT FINAL)
 
 public:
     ~QWebEngineNavigationRequest();
-
-    // must match WebContentsAdapterClient::NavigationRequestAction
-    enum NavigationRequestAction {
-        AcceptRequest,
-        IgnoreRequest = 0xFF
-    };
-    Q_ENUM(NavigationRequestAction)
 
     // must match WebContentsAdapterClient::NavigationType
     enum NavigationType {
@@ -81,20 +73,37 @@ public:
     QUrl url() const;
     bool isMainFrame() const;
     NavigationType navigationType() const;
-    NavigationRequestAction action() const;
 
+    Q_INVOKABLE void accept();
+    Q_INVOKABLE void reject();
+
+#if QT_DEPRECATED_SINCE(6, 2)
+    enum NavigationRequestAction {
+        AcceptRequest,
+        IgnoreRequest = 0xFF
+    };
+    QT_DEPRECATED Q_ENUM(NavigationRequestAction)
+
+private:
+    Q_PROPERTY(NavigationRequestAction action READ action WRITE setAction NOTIFY actionChanged FINAL)
+
+    QT_DEPRECATED NavigationRequestAction action() const;
+    QT_DEPRECATED_X("Use accept/reject methods to handle the request")
     void setAction(NavigationRequestAction action);
 
 Q_SIGNALS:
-    void actionChanged();
+    QT_DEPRECATED void actionChanged();
+#endif
 
 private:
     QWebEngineNavigationRequest(const QUrl& url, NavigationType navigationType, bool mainFrame, QObject *parent = nullptr);
 
-    Q_DECLARE_PRIVATE(QWebEngineNavigationRequest)
-    QScopedPointer<QWebEngineNavigationRequestPrivate> d_ptr;
     friend class QWebEnginePagePrivate;
     friend class QQuickWebEngineViewPrivate;
+    bool isAccepted() const;
+
+    Q_DECLARE_PRIVATE(QWebEngineNavigationRequest)
+    QScopedPointer<QWebEngineNavigationRequestPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE

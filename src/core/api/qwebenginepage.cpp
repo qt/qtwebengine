@@ -83,8 +83,6 @@ QT_BEGIN_NAMESPACE
 
 using namespace QtWebEngineCore;
 
-static const int MaxTooltipLength = 1024;
-
 // add temporary dummy code to cover the case when page is loading and there is no view
 class DummyDelegate : public QObject, public QtWebEngineCore::RenderWidgetHostViewQtDelegate
 {
@@ -1556,20 +1554,19 @@ void QWebEnginePagePrivate::contextMenuRequested(QWebEngineContextMenuRequest *d
     \sa acceptNavigationRequest()
 */
 
-void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame)
+void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &url, bool &accepted, bool isMainFrame)
 {
     Q_Q(QWebEnginePage);
 
-    bool accepted = q->acceptNavigationRequest(url, static_cast<QWebEnginePage::NavigationType>(navigationType), isMainFrame);
+    accepted = q->acceptNavigationRequest(url, static_cast<QWebEnginePage::NavigationType>(navigationType), isMainFrame);
     if (accepted) {
         QWebEngineNavigationRequest navigationRequest(url, static_cast<QWebEngineNavigationRequest::NavigationType>(navigationType), isMainFrame);
         Q_EMIT q->navigationRequested(navigationRequest);
-        accepted = (navigationRequest.action() == QWebEngineNavigationRequest::AcceptRequest);
+        accepted = navigationRequest.isAccepted();
     }
 
     if (accepted && adapter->findTextHelper()->isFindTextInProgress())
         adapter->findTextHelper()->stopFinding();
-    navigationRequestAction = accepted ? WebContentsAdapterClient::AcceptRequest : WebContentsAdapterClient::IgnoreRequest;
 }
 
 void QWebEnginePagePrivate::requestFullScreenMode(const QUrl &origin, bool fullscreen)

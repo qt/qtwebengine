@@ -267,14 +267,15 @@ void QQuickWebEngineViewPrivate::contextMenuRequested(QWebEngineContextMenuReque
     ui()->showMenu(menu);
 }
 
-void QQuickWebEngineViewPrivate::navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame)
+void QQuickWebEngineViewPrivate::navigationRequested(int navigationType, const QUrl &url, bool &accepted, bool isMainFrame)
 {
     Q_Q(QQuickWebEngineView);
-    QWebEngineNavigationRequest navigationRequest(url, static_cast<QWebEngineNavigationRequest::NavigationType>(navigationType), isMainFrame);
-    Q_EMIT q->navigationRequested(&navigationRequest);
+    auto request = new QWebEngineNavigationRequest(url, static_cast<QWebEngineNavigationRequest::NavigationType>(navigationType), isMainFrame);
+    qmlEngine(q)->newQObject(request);
+    Q_EMIT q->navigationRequested(request);
 
-    navigationRequestAction = navigationRequest.action();
-    if ((navigationRequestAction == WebContentsAdapterClient::AcceptRequest) && adapter->findTextHelper()->isFindTextInProgress())
+    accepted = request->isAccepted();
+    if (accepted && adapter->findTextHelper()->isFindTextInProgress())
         adapter->findTextHelper()->stopFinding();
 }
 
