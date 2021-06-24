@@ -328,13 +328,8 @@ foreach(config ${configs})
         blink_symbol_level=0
         remove_v8base_debug_symbols=true
     )
-    extend_gn_list(gnArgArg
-        ARGS use_jumbo_build
-        CONDITION NOT WIN32
-    )
-    if(NOT WIN32)
-        list(APPEND gnArgArg jumbo_file_merge_limit=8 jumbo_build_excluded=["browser"])
-    endif()
+    # FIXME: Make it configurable
+    list(APPEND gnArgArg use_jumbo_build=true jumbo_file_merge_limit=8 jumbo_build_excluded=["browser"])
     extend_gn_list(gnArgArg
         ARGS is_clang
         CONDITION CLANG
