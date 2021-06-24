@@ -145,7 +145,7 @@ public:
     void close() override;
     void windowCloseRejected() override;
     void contextMenuRequested(QWebEngineContextMenuRequest *request) override;
-    void navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame) override;
+    void navigationRequested(int navigationType, const QUrl &url, bool &accepted, bool isMainFrame) override;
     void requestFullScreenMode(const QUrl &origin, bool fullscreen) override;
     bool isFullScreenMode() const override;
     void javascriptDialog(QSharedPointer<QtWebEngineCore::JavaScriptDialogController>) override;

@@ -333,6 +333,8 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineNavigationRequest.RedirectNavigation --> NavigationType"
     << "QWebEngineNavigationRequest.ReloadNavigation --> NavigationType"
     << "QWebEngineNavigationRequest.TypedNavigation --> NavigationType"
+    << "QWebEngineNavigationRequest.accept() --> void"
+    << "QWebEngineNavigationRequest.reject() --> void"
     << "QWebEngineNewWindowRequest.destination --> QWebEngineNewWindowRequest::DestinationType"
     << "QWebEngineNewWindowRequest.requestedUrl --> QUrl"
     << "QWebEngineNewWindowRequest.requestedGeometry --> QRect"

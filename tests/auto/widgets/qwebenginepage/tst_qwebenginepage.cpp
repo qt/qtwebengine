@@ -557,7 +557,7 @@ private Q_SLOTS:
         n.type = request.navigationType();
         n.isMainFrame = request.isMainFrame();
         navigations.append(n);
-        request.setAction(QWebEngineNavigationRequest::AcceptRequest);
+        request.accept();
     }
     void slotNewWindowRequested(QWebEngineNewWindowRequest &request)
     {

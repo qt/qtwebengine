@@ -340,7 +340,7 @@ Q_SIGNALS:
 
     void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode);
     void certificateError(const QWebEngineCertificateError &certificateError);
-    bool navigationRequested(QWebEngineNavigationRequest &request);
+    void navigationRequested(QWebEngineNavigationRequest &request);
     void newWindowRequested(QWebEngineNewWindowRequest &request);
 
     // Ex-QWebFrame signals

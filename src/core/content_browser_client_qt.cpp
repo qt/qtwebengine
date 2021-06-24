@@ -818,7 +818,7 @@ static bool navigationThrottleCallback(content::WebContents *source,
     if (!view->client())
         return false;
 
-    int navigationRequestAction = WebContentsAdapterClient::AcceptRequest;
+    bool navigationAccepted = true;
 
     WebContentsAdapterClient *client =
         WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(source)->GetView())->client();
@@ -832,9 +832,9 @@ static bool navigationThrottleCallback(content::WebContents *source,
 
     client->navigationRequested(pageTransitionToNavigationType(transition_type),
                                 toQt(params.url()),
-                                navigationRequestAction,
+                                navigationAccepted,
                                 params.is_main_frame());
-    return navigationRequestAction == static_cast<int>(WebContentsAdapterClient::IgnoreRequest);
+    return !navigationAccepted;
 }
 
 std::vector<std::unique_ptr<content::NavigationThrottle>> ContentBrowserClientQt::CreateThrottlesForNavigation(

@@ -737,9 +737,7 @@ void WebContentsDelegateQt::launchExternalURL(const QUrl &url, ui::PageTransitio
     }
 
     if (navigationAllowedByPolicy) {
-        int navigationRequestAction = WebContentsAdapterClient::AcceptRequest;
-        m_viewClient->navigationRequested(pageTransitionToNavigationType(page_transition), url, navigationRequestAction, is_main_frame);
-        navigationRequestAccepted = navigationRequestAction == WebContentsAdapterClient::AcceptRequest;
+        m_viewClient->navigationRequested(pageTransitionToNavigationType(page_transition), url, navigationRequestAccepted, is_main_frame);
 #ifndef QT_NO_DESKTOPSERVICES
         if (navigationRequestAccepted)
             QDesktopServices::openUrl(url);
