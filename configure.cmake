@@ -28,6 +28,7 @@ if(PkgConfig_FOUND)
     pkg_check_modules(XCOMPOSITE xcomposite)
     pkg_check_modules(XCURSOR xcursor)
     pkg_check_modules(XI xi)
+    pkg_check_modules(XRANDR xrandr)
     pkg_check_modules(XTST xtst)
     pkg_check_modules(NSS nss>=3.26)
     pkg_check_modules(X11 x11)
@@ -302,7 +303,7 @@ qt_feature("webengine-system-libpci" PRIVATE
 )
 
 qt_feature("webengine-ozone-x11" PRIVATE
-    LABEL "Support qpa-xcb"
+    LABEL "Support GLX on qpa-xcb"
     CONDITION LINUX
         AND TARGET Qt::Gui
         AND QT_FEATURE_xcb
@@ -312,6 +313,7 @@ qt_feature("webengine-ozone-x11" PRIVATE
         AND XCURSOR_FOUND
         AND XI_FOUND
         AND XPROTO_FOUND
+        AND XRANDR_FOUND
         AND XTST_FOUND
 )
 
@@ -396,7 +398,7 @@ add_check_for_support(webEngineError webEngineSupport
    CONDITION NOT LINUX OR DBUS_FOUND
    MESSAGE "Build requires dbus."
 )
-set(xcbSupport X11 LIBDRM XCOMPOSITE XCURSOR XI XPROTO XTST)
+set(xcbSupport X11 LIBDRM XCOMPOSITE XCURSOR XRANDR XI XPROTO XTST)
 foreach(xs ${xcbSupport})
     if(${xs}_FOUND)
        set(xcbErrorMessage "${xcbErrorMessage} ${xs}:YES")

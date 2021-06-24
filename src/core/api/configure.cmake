@@ -5,6 +5,7 @@ if(PkgConfig_FOUND)
     pkg_check_modules(ALSA alsa IMPORTED_TARGET)
     pkg_check_modules(PULSEAUDIO libpulse>=0.9.10 libpulse-mainloop-glib)
     pkg_check_modules(GIO gio-2.0)
+    pkg_check_modules(XDAMAGE xdamage)
 endif()
 
 find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS Positioning WebChannel PrintSupport)
@@ -99,6 +100,7 @@ qt_feature("webengine-webrtc" PRIVATE
     LABEL "WebRTC"
     PURPOSE "Provides WebRTC support."
     AUTODETECT NOT QT_FEATURE_webengine_embedded_build
+    CONDITION XDAMAGE_FOUND OR NOT QT_FEATURE_webengine_ozone_x11
 )
 qt_feature("webengine-webrtc-pipewire" PRIVATE
     LABEL "PipeWire over GIO"
@@ -152,4 +154,9 @@ qt_configure_add_report_entry(
     TYPE WARNING
     MESSAGE "V8 snapshot cannot be built. Most likely, the 32-bit host compiler does not work. Please make sure you have 32-bit devel environment installed."
     CONDITION UNIX AND cross_compile AND NOT QT_FEATURE_webengine_v8_snapshot_support
+)
+qt_configure_add_report_entry(
+    TYPE WARNING
+    MESSAGE "WebRTC requires XDamage with qpa_xcb."
+    CONDITION QT_FEATURE_webengine_ozone_x11 AND NOT XDAMAGE_FOUND
 )
