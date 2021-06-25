@@ -151,6 +151,11 @@ externalproject_add(libs
     COMMAND ${CMAKE_COMMAND} -E remove_directory ../mkspecs
 )
 
+# required for topLevel build
+add_implicit_dependencies(libs Core Gui Widgets Network OpenGL
+    OpenGLWidgets Quick QuickWidgets Qml PrintSupport WebChannel Positioning
+)
+
 # Ensure the libs project is reconfigured if the root project is reconfigured, so that the
 # correct CMake and qmake support files are used when building examples, rather than
 # using the incomplete support files created by the root project.

@@ -16,6 +16,18 @@ function(assertTargets errorResult supportResult)
     endif()
 endfunction()
 
+function(add_implicit_dependencies target)
+    if(TARGET ${target})
+       list(REMOVE_ITEM ARGN ${target})
+       foreach(qtTarget IN ITEMS ${ARGN})
+           if(TARGET Qt::${qtTarget})
+               add_dependencies(${target} Qt::${qtTarget})
+           endif()
+       endforeach()
+    endif()
+endfunction()
+
+
 # TODO: this should be idealy in qtbase
 function(add_check_for_support errorResult supportResult)
     if(NOT DEFINED ${supportResult})
