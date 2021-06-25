@@ -111,15 +111,25 @@ qt_feature("webengine-webrtc-pipewire" PRIVATE
     AUTODETECT false
     CONDITION QT_FEATURE_webengine_webrtc AND GIO_FOUND
 )
-qt_feature_config("webengine-full-debug-info" QMAKE_PRIVATE_CONFIG
-    NAME "v8base_debug"
+qt_feature("webengine-full-debug-info" PRIVATE
+    SECTION "WebEngine"
+    LABEL "Full debug information"
+    PURPOSE "Enables debug information for Blink and V8."
+    AUTODETECT OFF
+    CONDITION CMAKE_BUILD_TYPE STREQUAL Debug OR Debug IN_LIST CMAKE_CONFIGURATION_TYPES OR
+              CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo OR RelWithDebInfo IN_LIST CMAKE_CONFIGURATION_TYPES
 )
-qt_feature_config("webengine-full-debug-info" QMAKE_PRIVATE_CONFIG
-    NAME "webcore_debug"
+qt_feature("webengine-sanitizer" PRIVATE
+    SECTION "WebEngine"
+    LABEL "Sanitizer support"
+    PURPOSE "Enables support for build with sanitizers"
+    AUTODETECT CLANG
+    CONDITION CLANG AND ECM_ENABLE_SANITIZERS
 )
 qt_configure_add_summary_section(NAME "Qt WebEngineCore")
 qt_configure_add_summary_entry(ARGS "webengine-embedded-build")
 qt_configure_add_summary_entry(ARGS "webengine-full-debug-info")
+qt_configure_add_summary_entry(ARGS "webengine-sanitizer")
 qt_configure_add_summary_entry(ARGS "webengine-pepper-plugins")
 qt_configure_add_summary_entry(ARGS "webengine-printing-and-pdf")
 qt_configure_add_summary_entry(ARGS "webengine-proprietary-codecs")

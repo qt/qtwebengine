@@ -665,7 +665,6 @@ macro(append_build_type_setup)
         use_sysroot=false
         forbid_non_component_debug_builds=false
         enable_debugallocation=false
-        remove_v8base_debug_symbols=true
         treat_warnings_as_errors=false
         use_allocator_shim=false
         use_allocator="none"
@@ -688,7 +687,7 @@ macro(append_build_type_setup)
     elseif(${config} STREQUAL "MinSizeRel")
         list(APPEND gnArgArg is_debug=false symbol_level=0 optimize_for_size=true)
     endif()
-    if(FEATURE_developer_build OR (${config} STREQUAL "Debug"))
+    if(FEATURE_developer_build OR (${config} STREQUAL "Debug") OR QT_FEATURE_webengine_sanitizer)
         list(APPEND gnArgArg
              is_official_build=false
              from_here_uses_location_builtins=false
@@ -706,16 +705,25 @@ macro(append_build_type_setup)
         CONDITION FEATURE_developer_build
     )
 
-    # FIXME: Make it configurable
-    list(APPEND gnArgArg
-        use_jumbo_build=true
-        jumbo_file_merge_limit=8
-        jumbo_build_excluded=["browser"]
-    )
+    if(NOT QT_FEATURE_webengine_full_debug_info)
+        list(APPEND gnArgArg blink_symbol_level=0 remove_v8base_debug_symbols=true)
+    endif()
+
+    extend_gn_list(gnArgArg ARGS use_jumbo_build CONDITION QT_FEATURE_webengine_jumbo_build)
+    if(QT_FEATURE_webengine_jumbo_build)
+        list(APPEND gnArgArg jumbo_file_merge_limit=${QT_FEATURE_webengine_jumbo_file_merge_limit})
+        if(QT_FEATURE_webengine_jumbo_file_merge_limit GREATER 8)
+            list(APPEND gnArgArg jumbo_build_excluded=[\"browser\"])
+        endif()
+    endif()
 
     extend_gn_list(gnArgArg
         ARGS enable_precompiled_headers
         CONDITION BUILD_WITH_PCH
+    )
+    extend_gn_list(gnArgArg
+        ARGS dcheck_always_on
+        CONDITION QT_FEATURE_force_asserts
     )
 endmacro()
 
@@ -723,32 +731,34 @@ macro(append_compiler_linker_sdk_setup)
     if(CMAKE_CXX_COMPILER_LAUNCHER)
         list(APPEND gnArgArg cc_wrapper="${CMAKE_CXX_COMPILER_LAUNCHER}")
     endif()
-    extend_gn_list(gnArgArg
-        ARGS is_clang
-        CONDITION CLANG
-    )
-    if(CLANG AND NOT MACOS)
-        # For some reason this doesn't work for our macOS CIs
-        get_filename_component(clangBasePath ${CMAKE_CXX_COMPILER} DIRECTORY)
-        get_filename_component(clangBasePath ${clangBasePath} DIRECTORY)
+
+    extend_gn_list(gnArgArg ARGS is_clang CONDITION CLANG)
+    if(CLANG)
+        if(MACOS)
+            get_darwin_sdk_version(macSdkVersion)
+            # macOS needs to use the objcxx compiler as the cxx compiler is just a link
+            get_filename_component(clangBasePath ${CMAKE_OBJCXX_COMPILER} DIRECTORY)
+            get_filename_component(clangBasePath ${clangBasePath} DIRECTORY)
+        else()
+            get_filename_component(clangBasePath ${CMAKE_CXX_COMPILER} DIRECTORY)
+            get_filename_component(clangBasePath ${clangBasePath} DIRECTORY)
+        endif()
+
         list(APPEND gnArgArg
             clang_base_path="${clangBasePath}"
             clang_use_chrome_plugins=false
-        )
-    endif()
-    if(MACOS)
-        get_darwin_sdk_version(macSdkVersion)
-        get_filename_component(clangBasePath ${CMAKE_OBJCXX_COMPILER} DIRECTORY)
-        get_filename_component(clangBasePath ${clangBasePath} DIRECTORY)
-        list(APPEND gnArgArg
-            use_system_xcode=true
-            clang_base_path="${clangBasePath}"
-            clang_use_chrome_plugins=false
-            mac_deployment_target="${CMAKE_OSX_DEPLOYMENT_TARGET}"
-            mac_sdk_min="${macSdkVersion}"
             fatal_linker_warnings=false
-       )
+        )
+
+        if(MACOS)
+            list(APPEND gnArgArg
+                use_system_xcode=true
+                mac_deployment_target="${CMAKE_OSX_DEPLOYMENT_TARGET}"
+                mac_sdk_min="${macSdkVersion}"
+            )
+        endif()
     endif()
+
     if(WIN32)
         get_filename_component(windowsSdkPath $ENV{WINDOWSSDKDIR} DIRECTORY)
         get_filename_component(visualStudioPath $ENV{VSINSTALLDIR} DIRECTORY)
@@ -807,7 +817,7 @@ macro(append_compiler_linker_sdk_setup)
 endmacro()
 
 macro(append_sanitizer_setup)
-    if(QT_FEATURE_sanitizer)
+    if(QT_FEATURE_webengine_sanitizer)
         extend_gn_list(gnArgArg
             ARGS is_asan
             CONDITION address IN_LIST ECM_ENABLE_SANITIZERS

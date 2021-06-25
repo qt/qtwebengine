@@ -227,6 +227,27 @@ qt_feature("webengine-system-gn" PRIVATE
     AUTODETECT FALSE
     CONDITION Gn_FOUND
 )
+# default assumed merge limit (should match the one in qt_cmdline.cmake)
+set(jumbo_merge_limit 8)
+# check value provided through configure script with -webengine-jumbo-build=(on|off|32)
+if(DEFINED INPUT_webengine_jumbo_file_merge_limit)
+    set(jumbo_merge_limit ${INPUT_webengine_jumbo_file_merge_limit})
+# then also verify if set directly with cmake call and -DFEATURE_webengine_jumbo_build=(ON|OFF|32)
+elseif(DEFINED FEATURE_webengine_jumbo_build)
+    if(FEATURE_webengine_jumbo_build GREATER 0)
+        set(jumbo_merge_limit ${FEATURE_webengine_jumbo_build})
+    elseif (NOT FEATURE_webengine_jumbo_build)
+        set(jumbo_merge_limit 0)
+    endif()
+endif()
+set(QT_FEATURE_webengine_jumbo_file_merge_limit ${jumbo_merge_limit}
+    CACHE STRING "Jumbo merge limit for WebEngineCore" FORCE)
+qt_feature("webengine-jumbo-build" PUBLIC
+    LABEL "Jumbo Build"
+    PURPOSE "Enables support for jumbo build of core library"
+    AUTODETECT FALSE
+    ENABLE jumbo_merge_limit GREATER 0
+)
 qt_feature("webengine-developer-build" PRIVATE
     LABEL "Developer build"
     PURPOSE "Enables the developer build configuration."
@@ -443,9 +464,10 @@ add_check_for_support(
 #### Summary
 
 # > Qt WebEngine Build Features
-qt_configure_add_summary_section(NAME "Build Features")
+qt_configure_add_summary_section(NAME "Qt WebEngine")
 qt_configure_add_summary_entry(ARGS "webengine-system-ninja")
 qt_configure_add_summary_entry(ARGS "webengine-system-gn")
+qt_configure_add_summary_entry(ARGS "webengine-jumbo-build")
 qt_configure_add_summary_entry(ARGS "webengine-developer-build")
 # >> Optional system libraries
 if(UNIX)

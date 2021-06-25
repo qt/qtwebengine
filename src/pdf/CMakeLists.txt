@@ -100,6 +100,7 @@ foreach(arch ${archs})
         list(APPEND gnArgArg
           qtwebengine_target="${buildDir}/${config}/${arch}:QtPdf"
           enable_remoting=false
+          enable_resource_allowlist_generation=false
           enable_web_speech=false
           chrome_pgo_phase=0
         )
