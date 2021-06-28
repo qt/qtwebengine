@@ -48,10 +48,9 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.5
-import QtQuick.Controls 1.4
-import QtQuick.Controls.Styles 1.4
-import QtQuick.Layouts 1.0
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 
 Rectangle {
     id: root
@@ -99,11 +98,8 @@ Rectangle {
             TextField {
                 id: findTextField
                 anchors.fill: parent
-
-                style: TextFieldStyle {
-                    background: Rectangle {
-                        color: "transparent"
-                    }
+                background: Rectangle {
+                    color: "transparent"
                 }
 
                 onAccepted: root.findNext()

@@ -48,11 +48,10 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.1
-import QtQuick.Controls 1.0
-import QtQuick.Controls.Styles 1.0
-import QtWebEngine 1.9
-import QtQuick.Layouts 1.0
+import QtQuick
+import QtQuick.Controls
+import QtWebEngine
+import QtQuick.Layouts
 
 Rectangle {
     id: downloadView
@@ -101,7 +100,7 @@ Rectangle {
                 }
                 Label {
                     id: label
-                    text: downloadDirectory + "/" + downloadFileName
+                    text: downloadModel.downloads[index] ? downloadModel.downloads[index].downloadDirectory + "/" + downloadModel.downloads[index].downloadFileName : qsTr("")
                     anchors {
                         verticalCenter: cancelButton.verticalCenter
                         left: parent.left
@@ -111,7 +110,7 @@ Rectangle {
                 Button {
                     id: cancelButton
                     anchors.right: parent.right
-                    iconSource: "icons/process-stop.png"
+                    icon.source: "qrc:/icons/process-stop.png"
                     onClicked: {
                         var download = downloadModel.downloads[index];
 

@@ -48,22 +48,20 @@
 **
 ****************************************************************************/
 
-import Qt.labs.settings 1.0
-import QtQml 2.2
-import QtQuick 2.2
-import QtQuick.Controls 1.0
-import QtQuick.Controls.Private 1.0 as QQCPrivate
-import QtQuick.Controls.Styles 1.0
-import QtQuick.Dialogs 1.2
-import QtQuick.Layouts 1.0
-import QtQuick.Window 2.1
-import QtWebEngine 1.10
+import Qt.labs.settings
+import QtQml
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Window
+import QtWebEngine
 
 ApplicationWindow {
     id: browserWindow
     property QtObject applicationRoot
-    property Item currentWebView: tabs.currentIndex < tabs.count ? tabs.getTab(tabs.currentIndex).item : null
+    property Item currentWebView: tabBar.currentIndex < tabBar.count ? tabLayout.children[tabBar.currentIndex] : null
     property int previousVisibility: Window.Windowed
+    property int createdTabs: 0
 
     width: 1300
     height: 900
@@ -77,10 +75,8 @@ ApplicationWindow {
         findBar.reset();
     }
 
-    // Create a styleItem to determine the platform.
     // When using style "mac", ToolButtons are not supposed to accept focus.
-    QQCPrivate.StyleItem { id: styleItem }
-    property bool platformIsMac: styleItem.style == "mac"
+    property bool platformIsMac: Qt.platform.os == "osx"
 
     Settings {
         id : appSettings
@@ -120,8 +116,7 @@ ApplicationWindow {
     Action {
         shortcut: StandardKey.AddTab
         onTriggered: {
-            tabs.createEmptyTab(tabs.count != 0 ? currentWebView.profile : defaultProfile);
-            tabs.currentIndex = tabs.count - 1;
+            tabBar.createTab(tabBar.count != 0 ? currentWebView.profile : defaultProfile);
             addressBar.forceActiveFocus();
             addressBar.selectAll();
         }
@@ -214,229 +209,253 @@ ApplicationWindow {
         onTriggered: findBar.findPrevious()
     }
 
-    toolBar: ToolBar {
+    menuBar: ToolBar {
         id: navigationBar
-            RowLayout {
-                anchors.fill: parent
-                ToolButton {
-                    enabled: currentWebView && (currentWebView.canGoBack || currentWebView.canGoForward)
-                    menu:Menu {
-                        id: historyMenu
+        RowLayout {
+            anchors.fill: parent
+            ToolButton {
+                enabled: currentWebView && (currentWebView.canGoBack || currentWebView.canGoForward)
+                onClicked: historyMenu.open()
+                text: qsTr("▼")
+                Menu {
+                    id: historyMenu
+                    Instantiator {
+                        model: currentWebView && currentWebView.history.items
+                        MenuItem {
+                            text: model.title
+                            onTriggered: currentWebView.goBackOrForward(model.offset)
+                            checkable: !enabled
+                            checked: !enabled
+                            enabled: model.offset
+                        }
 
-                        Instantiator {
-                            model: currentWebView && currentWebView.history.items
-                            MenuItem {
-                                text: model.title
-                                onTriggered: currentWebView.goBackOrForward(model.offset)
-                                checkable: !enabled
-                                checked: !enabled
-                                enabled: model.offset
-                            }
-
-                            onObjectAdded: function(index, object) {
-                                historyMenu.insertItem(index, object)
-                            }
-                            onObjectRemoved: function(index, object) {
-                                historyMenu.removeItem(object)
-                            }
+                        onObjectAdded: function(index, object) {
+                            historyMenu.insertItem(index, object)
                         }
-                    }
-                }
-
-                ToolButton {
-                    id: backButton
-                    iconSource: "icons/go-previous.png"
-                    onClicked: currentWebView.goBack()
-                    enabled: currentWebView && currentWebView.canGoBack
-                    activeFocusOnTab: !browserWindow.platformIsMac
-                }
-                ToolButton {
-                    id: forwardButton
-                    iconSource: "icons/go-next.png"
-                    onClicked: currentWebView.goForward()
-                    enabled: currentWebView && currentWebView.canGoForward
-                    activeFocusOnTab: !browserWindow.platformIsMac
-                }
-                ToolButton {
-                    id: reloadButton
-                    iconSource: currentWebView && currentWebView.loading ? "icons/process-stop.png" : "icons/view-refresh.png"
-                    onClicked: currentWebView && currentWebView.loading ? currentWebView.stop() : currentWebView.reload()
-                    activeFocusOnTab: !browserWindow.platformIsMac
-                }
-                TextField {
-                    id: addressBar
-                    Image {
-                        anchors.verticalCenter: addressBar.verticalCenter;
-                        x: 5
-                        z: 2
-                        id: faviconImage
-                        width: 16; height: 16
-                        sourceSize: Qt.size(width, height)
-                        source: currentWebView && currentWebView.icon ? currentWebView.icon : ''
-                    }
-                    style: TextFieldStyle {
-                        padding {
-                            left: 26;
-                        }
-                    }
-                    focus: true
-                    Layout.fillWidth: true
-                    text: currentWebView && currentWebView.url
-                    onAccepted: currentWebView.url = utils.fromUserInput(text)
-                }
-                ToolButton {
-                    id: settingsMenuButton
-                    menu: Menu {
-                        MenuItem {
-                            id: loadImages
-                            text: "Autoload images"
-                            checkable: true
-                            checked: WebEngine.settings.autoLoadImages
-                        }
-                        MenuItem {
-                            id: javaScriptEnabled
-                            text: "JavaScript On"
-                            checkable: true
-                            checked: WebEngine.settings.javascriptEnabled
-                        }
-                        MenuItem {
-                            id: errorPageEnabled
-                            text: "ErrorPage On"
-                            checkable: true
-                            checked: WebEngine.settings.errorPageEnabled
-                        }
-                        MenuItem {
-                            id: pluginsEnabled
-                            text: "Plugins On"
-                            checkable: true
-                            checked: true
-                        }
-                        MenuItem {
-                            id: fullScreenSupportEnabled
-                            text: "FullScreen On"
-                            checkable: true
-                            checked: WebEngine.settings.fullScreenSupportEnabled
-                        }
-                        MenuItem {
-                            id: offTheRecordEnabled
-                            text: "Off The Record"
-                            checkable: true
-                            checked: currentWebView && currentWebView.profile === otrProfile
-                            onToggled: function(checked) {
-                                if (currentWebView) {
-                                    currentWebView.profile = checked ? otrProfile : defaultProfile;
-                                }
-                            }
-                        }
-                        MenuItem {
-                            id: httpDiskCacheEnabled
-                            text: "HTTP Disk Cache"
-                            checkable: currentWebView && !currentWebView.profile.offTheRecord
-                            checked: currentWebView && (currentWebView.profile.httpCacheType === WebEngineProfile.DiskHttpCache)
-                            onToggled: function(checked) {
-                                if (currentWebView) {
-                                    currentWebView.profile.httpCacheType = checked ? WebEngineProfile.DiskHttpCache : WebEngineProfile.MemoryHttpCache;
-                                }
-                            }
-                        }
-                        MenuItem {
-                            id: autoLoadIconsForPage
-                            text: "Icons On"
-                            checkable: true
-                            checked: WebEngine.settings.autoLoadIconsForPage
-                        }
-                        MenuItem {
-                            id: touchIconsEnabled
-                            text: "Touch Icons On"
-                            checkable: true
-                            checked: WebEngine.settings.touchIconsEnabled
-                            enabled: autoLoadIconsForPage.checked
-                        }
-                        MenuItem {
-                            id: webRTCPublicInterfacesOnly
-                            text: "WebRTC Public Interfaces Only"
-                            checkable: true
-                            checked: WebEngine.settings.webRTCPublicInterfacesOnly
-                        }
-                        MenuItem {
-                            id: devToolsEnabled
-                            text: "Open DevTools"
-                            checkable: true
-                            checked: false
-                        }
-                        MenuItem {
-                            id: pdfViewerEnabled
-                            text: "PDF viewer enabled"
-                            checkable: true
-                            checked: WebEngine.settings.pdfViewerEnabled
+                        onObjectRemoved: function(index, object) {
+                            historyMenu.removeItem(object)
                         }
                     }
                 }
             }
-            ProgressBar {
-                id: progressBar
-                height: 3
-                anchors {
-                    left: parent.left
-                    top: parent.bottom
-                    right: parent.right
-                    leftMargin: -parent.leftMargin
-                    rightMargin: -parent.rightMargin
-                }
-                style: ProgressBarStyle {
-                    background: Item {}
-                }
-                z: -2;
-                minimumValue: 0
-                maximumValue: 100
-                value: (currentWebView && currentWebView.loadProgress < 100) ? currentWebView.loadProgress : 0
+
+            ToolButton {
+                id: backButton
+                icon.source: "qrc:/icons/go-previous.png"
+                onClicked: currentWebView.goBack()
+                enabled: currentWebView && currentWebView.canGoBack
+                activeFocusOnTab: !browserWindow.platformIsMac
             }
+            ToolButton {
+                id: forwardButton
+                icon.source: "qrc:/icons/go-next.png"
+                onClicked: currentWebView.goForward()
+                enabled: currentWebView && currentWebView.canGoForward
+                activeFocusOnTab: !browserWindow.platformIsMac
+            }
+            ToolButton {
+                id: reloadButton
+                icon.source: currentWebView && currentWebView.loading ? "qrc:/icons/process-stop.png" : "qrc:/icons/view-refresh.png"
+                onClicked: currentWebView && currentWebView.loading ? currentWebView.stop() : currentWebView.reload()
+                activeFocusOnTab: !browserWindow.platformIsMac
+            }
+            TextField {
+                id: addressBar
+                Image {
+                    anchors.verticalCenter: addressBar.verticalCenter;
+                    x: 5
+                    z: 2
+                    id: faviconImage
+                    width: 16; height: 16
+                    sourceSize: Qt.size(width, height)
+                    source: currentWebView && currentWebView.icon ? currentWebView.icon : ''
+                }
+                MouseArea {
+                    id: textFieldMouseArea
+                    acceptedButtons: Qt.RightButton
+                    anchors.fill: parent
+                    onClicked: {
+                        var textSelectionStartPos = addressBar.selectionStart;
+                        var textSelectionEndPos = addressBar.selectionEnd;
+                        textFieldContextMenu.open();
+                        addressBar.select(textSelectionStartPos, textSelectionEndPos);
+                    }
+                    Menu {
+                        id: textFieldContextMenu
+                        x: textFieldMouseArea.mouseX
+                        y: textFieldMouseArea.mouseY
+                        MenuItem {
+                            text: qsTr("Cut")
+                            onTriggered: addressBar.cut()
+                            enabled: addressBar.selectedText.length > 0
+                        }
+                        MenuItem {
+                            text: qsTr("Copy")
+                            onTriggered: addressBar.copy()
+                            enabled: addressBar.selectedText.length > 0
+                        }
+                        MenuItem {
+                            text: qsTr("Paste")
+                            onTriggered: addressBar.paste()
+                            enabled: addressBar.canPaste
+                        }
+                        MenuItem {
+                            text: qsTr("Delete")
+                            onTriggered: addressBar.text = qsTr("")
+                            enabled: addressBar.selectedText.length > 0
+                        }
+                        MenuSeparator {}
+                        MenuItem {
+                            text: qsTr("Select All")
+                            onTriggered: addressBar.selectAll()
+                            enabled: addressBar.text.length > 0
+                        }
+                    }
+                }
+                leftPadding: 26
+                focus: true
+                Layout.fillWidth: true
+                Binding on text {
+                    when: currentWebView
+                    value: currentWebView.url
+                }
+                onAccepted: currentWebView.url = utils.fromUserInput(text)
+                selectByMouse: true
+            }
+            ToolButton {
+                id: settingsMenuButton
+                text: qsTr("⋮")
+                onClicked: settingsMenu.open()
+                Menu {
+                    id: settingsMenu
+                    y: settingsMenuButton.height
+                    MenuItem {
+                        id: loadImages
+                        text: "Autoload images"
+                        checkable: true
+                        checked: WebEngine.settings.autoLoadImages
+                    }
+                    MenuItem {
+                        id: javaScriptEnabled
+                        text: "JavaScript On"
+                        checkable: true
+                        checked: WebEngine.settings.javascriptEnabled
+                    }
+                    MenuItem {
+                        id: errorPageEnabled
+                        text: "ErrorPage On"
+                        checkable: true
+                        checked: WebEngine.settings.errorPageEnabled
+                    }
+                    MenuItem {
+                        id: pluginsEnabled
+                        text: "Plugins On"
+                        checkable: true
+                        checked: true
+                    }
+                    MenuItem {
+                        id: fullScreenSupportEnabled
+                        text: "FullScreen On"
+                        checkable: true
+                        checked: WebEngine.settings.fullScreenSupportEnabled
+                    }
+                    MenuItem {
+                        id: offTheRecordEnabled
+                        text: "Off The Record"
+                        checkable: true
+                        checked: currentWebView && currentWebView.profile === otrProfile
+                        onToggled: function(checked) {
+                            if (currentWebView) {
+                                currentWebView.profile = checked ? otrProfile : defaultProfile;
+                            }
+                        }
+                    }
+                    MenuItem {
+                        id: httpDiskCacheEnabled
+                        text: "HTTP Disk Cache"
+                        checkable: currentWebView && !currentWebView.profile.offTheRecord
+                        checked: currentWebView && (currentWebView.profile.httpCacheType === WebEngineProfile.DiskHttpCache)
+                        onToggled: function(checked) {
+                            if (currentWebView) {
+                                currentWebView.profile.httpCacheType = checked ? WebEngineProfile.DiskHttpCache : WebEngineProfile.MemoryHttpCache;
+                            }
+                        }
+                    }
+                    MenuItem {
+                        id: autoLoadIconsForPage
+                        text: "Icons On"
+                        checkable: true
+                        checked: WebEngine.settings.autoLoadIconsForPage
+                    }
+                    MenuItem {
+                        id: touchIconsEnabled
+                        text: "Touch Icons On"
+                        checkable: true
+                        checked: WebEngine.settings.touchIconsEnabled
+                        enabled: autoLoadIconsForPage.checked
+                    }
+                    MenuItem {
+                        id: webRTCPublicInterfacesOnly
+                        text: "WebRTC Public Interfaces Only"
+                        checkable: true
+                        checked: WebEngine.settings.webRTCPublicInterfacesOnly
+                    }
+                    MenuItem {
+                        id: devToolsEnabled
+                        text: "Open DevTools"
+                        checkable: true
+                        checked: false
+                    }
+                    MenuItem {
+                        id: pdfViewerEnabled
+                        text: "PDF viewer enabled"
+                        checkable: true
+                        checked: WebEngine.settings.pdfViewerEnabled
+                    }
+                }
+            }
+        }
+        ProgressBar {
+            id: progressBar
+            height: 3
+            anchors {
+                left: parent.left
+                top: parent.bottom
+                right: parent.right
+                leftMargin: parent.leftMargin
+                rightMargin: parent.rightMargin
+            }
+            background: Item {}
+            z: -2
+            from: 0
+            to: 100
+            value: (currentWebView && currentWebView.loadProgress < 100) ? currentWebView.loadProgress : 0
+        }
     }
 
-    TabView {
-        id: tabs
-        function createEmptyTab(profile) {
-            var tab = addTab("", tabComponent);
-            // We must do this first to make sure that tab.active gets set so that tab.item gets instantiated immediately.
-            tab.active = true;
-            tab.title = Qt.binding(function() { return tab.item.title ? tab.item.title : 'New Tab' });
-            tab.item.profile = profile;
-            return tab;
-        }
+    StackLayout {
+        id: tabLayout
+        currentIndex: tabBar.currentIndex
 
-        function indexOfView(view) {
-            for (let i = 0; i < tabs.count; ++i)
-                if (tabs.getTab(i).item == view)
-                    return i
-            return -1
-        }
-
-        function removeView(index) {
-            if (tabs.count > 1)
-                tabs.removeTab(index)
-            else
-                browserWindow.close();
-        }
-
-        anchors.top: parent.top
+        anchors.top: tabBar.bottom
         anchors.bottom: devToolsView.top
         anchors.left: parent.left
         anchors.right: parent.right
-        Component.onCompleted: createEmptyTab(defaultProfile)
+    }
 
-        // Add custom tab view style so we can customize the tabs to include a close button
-        style: TabViewStyle {
+    Component {
+        id: tabButtonComponent
+
+        TabButton {
             property color frameColor: "#999"
             property color fillColor: "#eee"
             property color nonSelectedColor: "#ddd"
-            frameOverlap: 1
-            frame: Rectangle {
-                color: "#eee"
-                border.color: frameColor
-            }
-            tab: Rectangle {
+            property string tabTitle: "New Tab"
+
+            id: tabButton
+            contentItem: Rectangle {
                 id: tabRectangle
-                color: styleData.selected ? fillColor : nonSelectedColor
+                color: tabButton.down ? fillColor : nonSelectedColor
                 border.width: 1
                 border.color: frameColor
                 implicitWidth: Math.max(text.width + 30, 80)
@@ -449,24 +468,61 @@ ApplicationWindow {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.leftMargin: 6
-                    text: styleData.title
+                    text: tabButton.tabTitle
                     elide: Text.ElideRight
-                    color: styleData.selected ? "black" : frameColor
+                    color: tabButton.down ? "black" : frameColor
+                    width: parent.width - button.background.width
                 }
                 Button {
+                    id: button
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.rightMargin: 4
                     height: 12
-                    style: ButtonStyle {
-                        background: Rectangle {
-                            implicitWidth: 12
-                            implicitHeight: 12
-                            color: control.hovered ? "#ccc" : tabRectangle.color
-                            Text {text: "x" ; anchors.centerIn: parent ; color: "gray"}
-                        }}
-                    onClicked: tabs.removeView(styleData.index)
+                    background: Rectangle {
+                        implicitWidth: 12
+                        implicitHeight: 12
+                        color: button.hovered ? "#ccc" : tabRectangle.color
+                        Text {text: "x"; anchors.centerIn: parent; color: "gray"}
+                    }
+                    onClicked: tabButton.closeTab()
                 }
+            }
+
+            onClicked: addressBar.text = tabLayout.itemAt(TabBar.index).url;
+            function closeTab() {
+                tabBar.removeView(TabBar.index);
+            }
+        }
+    }
+
+    TabBar {
+        id: tabBar
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        Component.onCompleted: createTab(defaultProfile)
+
+        function createTab(profile, focusOnNewTab = true, url = undefined) {
+            var webview = tabComponent.createObject(tabLayout, {profile: profile});
+            var newTabButton = tabButtonComponent.createObject(tabBar, {tabTitle: Qt.binding(function () { return webview.title; })});
+            tabBar.addItem(newTabButton);
+            if (focusOnNewTab) {
+                tabBar.setCurrentIndex(tabBar.count - 1);
+            }
+            if (url !== undefined) {
+                webview.url = url;
+            }
+            return webview;
+        }
+
+        function removeView(index) {
+            tabBar.removeItem(index);
+            if (tabBar.count > 1) {
+                tabBar.removeItem(tabBar.itemAt(index));
+                tabLayout.children[index].destroy();
+            } else {
+                browserWindow.close();
             }
         }
 
@@ -490,9 +546,9 @@ ApplicationWindow {
                     State {
                         name: "FullScreen"
                         PropertyChanges {
-                            target: tabs
-                            frameVisible: false
-                            tabsVisible: false
+                            target: tabBar
+                            visible: false
+                            height: 0
                         }
                         PropertyChanges {
                             target: navigationBar
@@ -517,14 +573,13 @@ ApplicationWindow {
 
                 onNewViewRequested: function(request) {
                     if (!request.userInitiated)
-                        print("Warning: Blocked a popup window.");
+                        console.warn("Blocked a popup window.");
                     else if (request.destination === WebEngineNewViewRequest.InNewTab) {
-                        var tab = tabs.createEmptyTab(currentWebView.profile);
-                        tabs.currentIndex = tabs.count - 1;
-                        tab.item.acceptAsNewView(request);
+                        var tab = tabBar.createTab(currentWebView.profile, true, request.requestedUrl);
+                        tab.acceptAsNewView(request);
                     } else if (request.destination === WebEngineNewViewRequest.InNewBackgroundTab) {
-                        var backgroundTab = tabs.createEmptyTab(currentWebView.profile);
-                        backgroundTab.item.acceptAsNewView(request);
+                        var backgroundTab = tabBar.createTab(currentWebView.profile, false);
+                        backgroundTab.acceptAsNewView(request);
                     } else if (request.destination === WebEngineNewViewRequest.InNewDialog) {
                         var dialog = applicationRoot.createDialog(currentWebView.profile);
                         dialog.currentWebView.acceptAsNewView(request);
@@ -582,8 +637,6 @@ ApplicationWindow {
                     reloadTimer.running = true;
                 }
 
-                onWindowCloseRequested: tabs.removeView(tabs.indexOfView(webEngineView))
-
                 onSelectClientCertificate: function(selection) {
                     selection.certificates[0].select();
                 }
@@ -615,14 +668,13 @@ ApplicationWindow {
         id: devToolsView
         visible: devToolsEnabled.checked
         height: visible ? 400 : 0
-        inspectedView: visible && tabs.currentIndex < tabs.count ? tabs.getTab(tabs.currentIndex).item : null
+        inspectedView: visible && tabBar.currentIndex < tabBar.count ? tabLayout.children[tabBar.currentIndex] : null
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         onNewViewRequested: function(request) {
-            var tab = tabs.createEmptyTab(currentWebView.profile);
-            tabs.currentIndex = tabs.count - 1;
-            request.openIn(tab.item);
+            var tab = tabBar.createTab(currentWebView.profile);
+            request.openIn(tab);
         }
 
         Timer {
@@ -637,23 +689,36 @@ ApplicationWindow {
             hideTimer.running = true;
         }
     }
-    MessageDialog {
+    Dialog {
         id: sslDialog
-
+        anchors.centerIn: parent
+        contentWidth: Math.max(mainText.width, detailedText.width)
+        contentHeight: mainText.height + detailedText.height
         property var certErrors: []
-        icon: StandardIcon.Warning
-        standardButtons: StandardButton.No | StandardButton.Yes
+        // fixme: icon!
+        // icon: StandardIcon.Warning
+        standardButtons: Dialog.No | Dialog.Yes
         title: "Server's certificate not trusted"
-        text: "Do you wish to continue?"
-        detailedText: "If you wish so, you may continue with an unverified certificate. " +
-                      "Accepting an unverified certificate means " +
+        contentItem: Item {
+            id: textContentItem
+            Label {
+                id: mainText
+                text: "Do you wish to continue?"
+            }
+            Text {
+                id: detailedText
+                anchors.top: mainText.bottom
+                text: "If you wish so, you may continue with an unverified certificate.\n" +
+                      "Accepting an unverified certificate means\n" +
                       "you may not be connected with the host you tried to connect to.\n" +
                       "Do you wish to override the security check and continue?"
-        onYes: {
-            certErrors.shift().ignoreCertificateError();
+            }
+        }
+
+        onAccepted: {
+            certErrors.shift().acceptCertificate();
             presentError();
         }
-        onNo: reject()
         onRejected: reject()
 
         function reject(){

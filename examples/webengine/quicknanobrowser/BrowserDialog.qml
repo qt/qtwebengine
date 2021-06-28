@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.1
-import QtQuick.Window 2.2
-import QtWebEngine 1.9
+import QtQuick
+import QtQuick.Window
+import QtWebEngine
 
 Window {
     id: window
