@@ -57,7 +57,6 @@
 #include "net/grit/net_resources.h"
 #include "net/base/net_module.h"
 #include "sandbox/policy/switches.h"
-#include "services/service_manager/switches.h"
 #include "url/url_util_qt.h"
 
 #include "content_client_qt.h"
@@ -226,8 +225,8 @@ void ContentMainDelegateQt::PreSandboxStartup()
     }
 #endif
 
-    if (parsedCommandLine->HasSwitch(service_manager::switches::kApplicationName)) {
-        std::string appName = parsedCommandLine->GetSwitchValueASCII(service_manager::switches::kApplicationName);
+    if (parsedCommandLine->HasSwitch(switches::kApplicationName)) {
+        std::string appName = parsedCommandLine->GetSwitchValueASCII(switches::kApplicationName);
         appName = QByteArray::fromPercentEncoding(QByteArray::fromStdString(appName)).toStdString();
         QCoreApplication::setApplicationName(QString::fromStdString(appName));
 #if defined(OS_LINUX)

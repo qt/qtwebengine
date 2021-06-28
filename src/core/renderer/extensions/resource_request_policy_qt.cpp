@@ -85,7 +85,8 @@ void ResourceRequestPolicyQt::OnExtensionUnloaded(const ExtensionId &extension_i
 // than those triggered through UI.
 bool ResourceRequestPolicyQt::CanRequestResource(const GURL &resource_url,
                                                  blink::WebLocalFrame *frame,
-                                                 ui::PageTransition transition_type)
+                                                 ui::PageTransition transition_type,
+                                                 const base::Optional<url::Origin>& initiator_origin)
 {
     CHECK(resource_url.SchemeIs(kExtensionScheme));
 
@@ -165,7 +166,7 @@ bool ResourceRequestPolicyQt::CanRequestResource(const GURL &resource_url,
 
     // Disallow loading of extension resources which are not explicitly listed
     // as web or WebView accessible if the manifest version is 2 or greater.
-    if (!WebAccessibleResourcesInfo::IsResourceWebAccessible(extension, resource_url.path()) &&
+    if (!WebAccessibleResourcesInfo::IsResourceWebAccessible(extension, resource_url.path(), initiator_origin) &&
         !WebviewInfo::IsResourceWebviewAccessible(extension, m_dispatcher->webview_partition_id(), resource_url.path()))
     {
         std::string message = base::StringPrintf(

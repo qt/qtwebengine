@@ -68,7 +68,6 @@
 #include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/user_agent.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
@@ -82,8 +81,6 @@
 #include "ui/base/ui_base_switches.h"
 #include "url/url_util_qt.h"
 
-#include "qtwebengine/browser/qtwebengine_content_browser_overlay_manifest.h"
-#include "qtwebengine/browser/qtwebengine_content_renderer_overlay_manifest.h"
 #include "qtwebengine/common/renderer_configuration.mojom.h"
 #include "qtwebengine/grit/qt_webengine_resources.h"
 
@@ -132,10 +129,6 @@
 #include "content/public/browser/browser_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
 #include "renderer_host/pepper/pepper_host_factory_qt.h"
-#endif
-
-#if QT_CONFIG(webengine_printing_and_pdf)
-#include "printing/printing_message_filter_qt.h"
 #endif
 
 #if QT_CONFIG(webengine_spellchecker)
@@ -258,9 +251,6 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost 
     policy->GrantRequestScheme(id, url::kFileScheme);
     profileAdapter->userResourceController()->renderProcessStartedWithHost(host);
     host->AddFilter(new BrowserMessageFilterQt(id, profile));
-#if QT_CONFIG(webengine_printing_and_pdf)
-    host->AddFilter(new PrintingMessageFilterQt(id));
-#endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     host->AddFilter(new extensions::ExtensionMessageFilter(id, profile));
     host->AddFilter(new extensions::ExtensionsGuestViewMessageFilter(id, profile));
@@ -284,21 +274,19 @@ content::MediaObserver *ContentBrowserClientQt::GetMediaObserver()
     return MediaCaptureDevicesDispatcher::GetInstance();
 }
 
-void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, blink::web_pref::WebPreferences *web_prefs)
+void ContentBrowserClientQt::OverrideWebkitPrefs(content::WebContents *webContents, blink::web_pref::WebPreferences *web_prefs)
 {
-    if (content::WebContents *webContents = rvh->GetDelegate()->GetAsWebContents()) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-        if (guest_view::GuestViewBase::IsGuest(webContents))
-            return;
+    if (guest_view::GuestViewBase::IsGuest(webContents))
+        return;
 
-        WebContentsViewQt *view = WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(webContents)->GetView());
-        if (!view->client())
-            return;
+    WebContentsViewQt *view = WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(webContents)->GetView());
+    if (!view->client())
+        return;
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
-        WebContentsDelegateQt* delegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
-        if (delegate)
-            delegate->overrideWebPreferences(webContents, web_prefs);
-    }
+    WebContentsDelegateQt* delegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
+    if (delegate)
+        delegate->overrideWebPreferences(webContents, web_prefs);
 }
 
 scoped_refptr<content::QuotaPermissionContext> ContentBrowserClientQt::CreateQuotaPermissionContext()
@@ -553,26 +541,8 @@ void ContentBrowserClientQt::ExposeInterfacesToRenderer(service_manager::BinderR
                                                         content::RenderProcessHost *render_process_host)
 {
     Q_UNUSED(associated_registry);
-    performance_manager::PerformanceManagerRegistry::GetInstance()->CreateProcessNodeAndExposeInterfacesToRendererProcess(registry, render_process_host);
-}
-
-void ContentBrowserClientQt::RunServiceInstance(const service_manager::Identity &identity,
-                                                mojo::PendingReceiver<service_manager::mojom::Service> *receiver)
-{
-    content::ContentBrowserClient::RunServiceInstance(identity, receiver);
-}
-
-base::Optional<service_manager::Manifest> ContentBrowserClientQt::GetServiceManifestOverlay(base::StringPiece name)
-{
-    if (name == content::mojom::kBrowserServiceName)
-        return GetQtWebEngineContentBrowserOverlayManifest();
-
-    return base::nullopt;
-}
-
-std::vector<service_manager::Manifest> ContentBrowserClientQt::GetExtraServiceManifests()
-{
-    return { };
+    if (auto *manager = performance_manager::PerformanceManagerRegistry::GetInstance())
+        manager->CreateProcessNodeAndExposeInterfacesToRendererProcess(registry, render_process_host);
 }
 
 bool ContentBrowserClientQt::CanCreateWindow(
@@ -634,8 +604,7 @@ bool ContentBrowserClientQt::ShouldEnableStrictSiteIsolation()
 bool ContentBrowserClientQt::WillCreateRestrictedCookieManager(network::mojom::RestrictedCookieManagerRole role,
         content::BrowserContext *browser_context,
         const url::Origin & /*origin*/,
-        const net::SiteForCookies & /*site_for_cookies*/,
-        const url::Origin & /*top_frame_origin*/,
+        const net::IsolationInfo & /*isolation_info*/,
         bool is_service_worker,
         int process_id,
         int routing_id,
@@ -804,7 +773,7 @@ ContentBrowserClientQt::CreateURLLoaderThrottles(
                          ProtocolHandlerRegistryFactory::GetForBrowserContext(browser_context)));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     result.push_back(std::make_unique<PluginResponseInterceptorURLLoaderThrottle>(
-                         browser_context, request.resource_type, frame_tree_node_id));
+                         browser_context, request.destination, frame_tree_node_id));
 #endif
     return result;
 }
@@ -887,6 +856,17 @@ std::vector<std::unique_ptr<content::NavigationThrottle>> ContentBrowserClientQt
 bool ContentBrowserClientQt::IsHandledURL(const GURL &url)
 {
     return url::IsHandledProtocol(url.scheme());
+}
+
+bool ContentBrowserClientQt::HasCustomSchemeHandler(content::BrowserContext *browser_context,
+                                                    const std::string &scheme)
+{
+    if (ProtocolHandlerRegistry *protocol_handler_registry =
+              ProtocolHandlerRegistryFactory::GetForBrowserContext(browser_context)) {
+        return protocol_handler_registry->IsHandledProtocol(scheme);
+    }
+
+    return false;
 }
 
 bool ContentBrowserClientQt::HasErrorPage(int httpStatusCode, content::WebContents *contents)
@@ -1025,7 +1005,7 @@ void ContentBrowserClientQt::ConfigureNetworkContextParams(
         bool in_memory,
         const base::FilePath &relative_partition_path,
         network::mojom::NetworkContextParams *network_context_params,
-        network::mojom::CertVerifierCreationParams *cert_verifier_creation_params)
+        cert_verifier::mojom::CertVerifierCreationParams *cert_verifier_creation_params)
 {
     ProfileIODataQt::FromBrowserContext(context)->ConfigureNetworkContextParams(in_memory, relative_partition_path,
                                                                                 network_context_params, cert_verifier_creation_params);

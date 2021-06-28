@@ -200,6 +200,7 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/sqlite/sqlite-src-')
             or file_path.startswith('third_party/spirv-cross/spirv-cross/reference/')
             or file_path.startswith('third_party/swiftshader/third_party/')
+            or file_path.startswith('third_party/unrar')
             or file_path.startswith('third_party/wayland')
             or file_path.startswith('third_party/webgl')
             or file_path.startswith('third_party/webrtc/resources/')

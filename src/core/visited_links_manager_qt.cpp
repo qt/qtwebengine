@@ -53,8 +53,8 @@ namespace {
 class BasicUrlIterator : public visitedlink::VisitedLinkWriter::URLIterator {
 public:
     BasicUrlIterator(const QList<QUrl> &urls) : m_urls(urls) {}
-    virtual const GURL& NextURL() { m_currentUrl = toGurl(m_urls.takeFirst()); return m_currentUrl; }
-    virtual bool HasNextURL() const { return !m_urls.isEmpty(); }
+    const GURL &NextURL() override { m_currentUrl = toGurl(m_urls.takeFirst()); return m_currentUrl; }
+    bool HasNextURL() const override { return !m_urls.isEmpty(); }
 private:
     QList<QUrl> m_urls;
     GURL m_currentUrl;
@@ -71,7 +71,7 @@ class VisitedLinkDelegateQt : public visitedlink::VisitedLinkDelegate
 {
 public:
     ~VisitedLinkDelegateQt() {}
-    void RebuildTable(const scoped_refptr<URLEnumerator>& enumerator) { enumerator->OnComplete(true); }
+    void RebuildTable(const scoped_refptr<URLEnumerator> &enumerator) override { enumerator->OnComplete(true); }
 };
 
 void VisitedLinksManagerQt::deleteAllVisitedLinkData()

@@ -472,7 +472,8 @@ void tst_QWebEngineProfile::urlSchemeHandlerFailRequest()
     view.setPage(new QWebEnginePage(&profile, &view));
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     view.load(QUrl(QStringLiteral("foo://bar")));
-    QVERIFY(loadFinishedSpy.wait());
+    view.show();
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
     QCOMPARE(toPlainTextSync(view.page()), QString());
 }
 
@@ -486,7 +487,8 @@ void tst_QWebEngineProfile::urlSchemeHandlerFailOnRead()
     view.setPage(new QWebEnginePage(&profile, &view));
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     view.load(QUrl(QStringLiteral("foo://bar")));
-    QVERIFY(loadFinishedSpy.wait());
+    view.show();
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
     QCOMPARE(toPlainTextSync(view.page()), QString());
 }
 
@@ -500,6 +502,7 @@ void tst_QWebEngineProfile::urlSchemeHandlerStreaming()
     view.setPage(new QWebEnginePage(&profile, &view));
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     view.load(QUrl(QStringLiteral("stream://whatever")));
+    view.show();
     QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
     QByteArray result;
     result.append(1000, 'c');

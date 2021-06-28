@@ -267,14 +267,12 @@ qtConfig(webengine-pepper-plugins) {
 qtConfig(webengine-printing-and-pdf) {
 
     SOURCES += \
-        printing/printing_message_filter_qt.cpp \
         printing/print_view_manager_base_qt.cpp \
         printing/print_view_manager_qt.cpp \
         printing/printer_worker.cpp \
         renderer/print_web_view_helper_delegate_qt.cpp
 
     HEADERS += \
-        printing/printing_message_filter_qt.h \
         printing/print_view_manager_base_qt.h \
         printing/print_view_manager_qt.h \
         printing/printer_worker.h \

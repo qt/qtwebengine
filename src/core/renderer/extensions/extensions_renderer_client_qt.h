@@ -63,6 +63,10 @@ class RenderView;
 struct WebPluginInfo;
 }
 
+namespace net {
+class SiteForCookies;
+}
+
 namespace url {
 class Origin;
 }
@@ -99,9 +103,9 @@ public:
     void WillSendRequest(blink::WebLocalFrame *frame,
                          ui::PageTransition transition_type,
                          const blink::WebURL &url,
+                         const net::SiteForCookies &site_for_cookies,
                          const url::Origin *initiator_origin,
-                         GURL *new_url,
-                         bool *attach_same_site_cookies);
+                         GURL *new_url);
 
     static bool ShouldFork(blink::WebLocalFrame *frame,
                            const GURL &url,

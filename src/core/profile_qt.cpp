@@ -220,11 +220,14 @@ content::StorageNotificationService *ProfileQt::GetStorageNotificationService()
     return nullptr;
 }
 
-void ProfileQt::SetCorsOriginAccessListForOrigin(const url::Origin &source_origin,
+void ProfileQt::SetCorsOriginAccessListForOrigin(TargetBrowserContexts target_mode,
+                                                 const url::Origin &source_origin,
                                                  std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
                                                  std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
                                                  base::OnceClosure closure)
 {
+    Q_UNUSED(target_mode); // We have no related OTR profiles
+
     auto barrier_closure = base::BarrierClosure(2, std::move(closure));
 
     // Keep profile storage partitions' NetworkContexts synchronized.
@@ -233,9 +236,7 @@ void ProfileQt::SetCorsOriginAccessListForOrigin(const url::Origin &source_origi
                 content::CorsOriginPatternSetter::ClonePatterns(allow_patterns),
                 content::CorsOriginPatternSetter::ClonePatterns(block_patterns),
                 barrier_closure);
-    ForEachStoragePartition(this,
-                            base::BindRepeating(&content::CorsOriginPatternSetter::SetLists,
-                                                base::RetainedRef(profile_setter.get())));
+    profile_setter->ApplyToEachStoragePartition(this);
 
     m_sharedCorsOriginAccessList->SetForOrigin(source_origin,
                                                std::move(allow_patterns),

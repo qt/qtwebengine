@@ -89,10 +89,12 @@ public:
     content::BrowsingDataRemoverDelegate *GetBrowsingDataRemoverDelegate() override;
     content::ClientHintsControllerDelegate *GetClientHintsControllerDelegate() override;
     content::StorageNotificationService *GetStorageNotificationService() override;
-    void SetCorsOriginAccessListForOrigin(const url::Origin &source_origin,
+    void SetCorsOriginAccessListForOrigin(TargetBrowserContexts target_mode,
+                                          const url::Origin &source_origin,
                                           std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
                                           std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
                                           base::OnceClosure closure) override;
+
     content::SharedCorsOriginAccessList *GetSharedCorsOriginAccessList() override;
     std::string GetMediaDeviceIDSalt() override;
 

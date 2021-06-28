@@ -230,7 +230,6 @@ foreach(config ${configs})
             printing/print_view_manager_base_qt.cpp printing/print_view_manager_base_qt.h
             printing/print_view_manager_qt.cpp printing/print_view_manager_qt.h
             printing/printer_worker.cpp printing/printer_worker.h
-            printing/printing_message_filter_qt.cpp printing/printing_message_filter_qt.h
             renderer/print_web_view_helper_delegate_qt.cpp renderer/print_web_view_helper_delegate_qt.h
     )
 
@@ -302,6 +301,19 @@ foreach(config ${configs})
     elseif(${config} STREQUAL "MinSizeRel")
         list(APPEND gnArgArg is_debug=false symbol_level=0 optimize_for_size=true)
     endif()
+    if(FEATURE_developer_build OR (${config} STREQUAL "Debug"))
+        list(APPEND gnArgArg
+             is_official_build=false
+             from_here_uses_location_builtins=false
+        )
+    else()
+        list(APPEND gnArgArg is_official_build=true)
+        if(NOT CLANG OR NOT QT_FEATURE_use_lld_linker)
+            list(APPEND gnArgArg
+                use_thin_lto=false
+            )
+        endif()
+    endif()
     if (CMAKE_CXX_COMPILER_LAUNCHER)
         list(APPEND gnArgArg cc_wrapper="${CMAKE_CXX_COMPILER_LAUNCHER}")
     endif()
@@ -334,16 +346,10 @@ foreach(config ${configs})
         use_allocator="none"
         use_custom_libcxx=false
         chrome_pgo_phase=0
-        enable_hangout_services_extension=false
         optimize_webui=false
         enable_js_type_check=false
         v8_use_external_startup_data=false
         strip_absolute_paths_from_debug_symbols=false
-        enable_precompiled_headers=false
-        is_official_build=false
-        is_unsafe_developer_build=false
-        from_here_uses_location_builtins=false
-        use_debug_fission=false
         blink_symbol_level=0
         remove_v8base_debug_symbols=true
     )
@@ -363,6 +369,14 @@ foreach(config ${configs})
         )
     endif()
 
+    extend_gn_list(gnArgArg
+        ARGS enable_precompiled_headers
+        CONDITION BUILD_WITH_PCH
+    )
+    extend_gn_list(gnArgArg
+        ARGS is_unsafe_developer_build
+        CONDITION FEATURE_developer_build
+    )
     extend_gn_list(gnArgArg
         ARGS use_gold
         CONDITION QT_FEATURE_use_gold_linker
@@ -388,6 +402,10 @@ foreach(config ${configs})
         CONDITION QT_FEATURE_webengine_webrtc
     )
     extend_gn_list(gnArgArg
+        ARGS enable_hangout_services_extension
+        CONDITION QT_FEATURE_webengine_webrtc AND QT_FEATURE_webengine_extensions
+    )
+    extend_gn_list(gnArgArg
         ARGS rtc_use_pipewire
         CONDITION QT_FEATURE_webengine_webrtc_pipewire
     )
@@ -409,10 +427,6 @@ foreach(config ${configs})
     extend_gn_list(gnArgArg
         ARGS use_browser_spellchecker
         CONDITION QT_FEATURE_webengine_native_spellchecker
-    )
-    extend_gn_list(gnArgArg
-        ARGS use_rollup
-        CONDITION TARGET Nodejs::Nodejs
     )
     if(QT_FEATURE_sanitizer)
         extend_gn_list(gnArgArg
@@ -512,7 +526,7 @@ foreach(config ${configs})
         )
         extend_gn_list(gnArgArg
             ARGS use_xscrnsaver
-            CONDITION XSCRNSAVER_FOUND
+            CONDITION QT_FEATURE_webengine_ozone_x11 AND XSCRNSAVER_FOUND
         )
 
         if(CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm")
@@ -577,6 +591,7 @@ foreach(config ${configs})
         get_filename_component(visualStudioPath $ENV{VSINSTALLDIR} DIRECTORY)
         list(APPEND gnArgArg
             use_sysroot=false
+            enable_location_source=false
             enable_session_service=false
             ninja_use_custom_environment_files=false
             win_linker_timing=true

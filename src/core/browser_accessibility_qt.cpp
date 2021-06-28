@@ -56,6 +56,16 @@ using QtWebEngineCore::toQt;
 
 namespace content {
 
+// static
+BrowserAccessibility *BrowserAccessibility::Create()
+{
+#if QT_CONFIG(accessibility)
+    return new BrowserAccessibilityQt();
+#else
+    return nullptr;
+#endif // QT_CONFIG(accessibility)
+}
+
 const BrowserAccessibilityQt *ToBrowserAccessibilityQt(const BrowserAccessibility *obj)
 {
     return static_cast<const BrowserAccessibilityQt *>(obj);
@@ -218,7 +228,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
 
     // Used by Chromium to distinguish between the root of the tree
     // for this page, and a web area for a frame within this page.
-    case ax::mojom::Role::kWebArea:
     case ax::mojom::Role::kWebView:
     case ax::mojom::Role::kRootWebArea: // not sure if we need to make a diff here, but this seems common
         return QAccessible::WebDocument;
@@ -457,6 +466,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Paragraph;
     case ax::mojom::Role::kPdfActionableHighlight:
         return QAccessible::Button;
+    case ax::mojom::Role::kPdfRoot:
+        return QAccessible::Document;
     case ax::mojom::Role::kPluginObject:
         return QAccessible::Grouping;
     case ax::mojom::Role::kPopUpButton:
@@ -480,7 +491,7 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ax::mojom::Role::kRowHeader:
         return QAccessible::RowHeader;
     case ax::mojom::Role::kRuby:
-        return QAccessible::StaticText;
+        return QAccessible::Grouping;
     case ax::mojom::Role::kRubyAnnotation:
         return QAccessible::StaticText;
     case ax::mojom::Role::kScrollBar:
@@ -494,7 +505,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ax::mojom::Role::kSection:
         return QAccessible::Section;
     case ax::mojom::Role::kSlider:
-    case ax::mojom::Role::kSliderThumb:
         return QAccessible::Slider;
     case ax::mojom::Role::kSpinButton:
         return QAccessible::SpinBox;
@@ -680,7 +690,7 @@ QStringList BrowserAccessibilityQt::keyBindingsForAction(const QString &actionNa
 
 void BrowserAccessibilityQt::addSelection(int startOffset, int endOffset)
 {
-    manager()->SetSelection(AXPlatformRange(CreatePositionAt(startOffset), CreatePositionAt(endOffset)));
+    manager()->SetSelection(AXRange(CreatePositionAt(startOffset), CreatePositionAt(endOffset)));
 }
 
 QString BrowserAccessibilityQt::attributes(int offset, int *startOffset, int *endOffset) const
@@ -738,19 +748,19 @@ QString BrowserAccessibilityQt::text(int startOffset, int endOffset) const
 
 void BrowserAccessibilityQt::removeSelection(int selectionIndex)
 {
-    manager()->SetSelection(AXPlatformRange(CreatePositionAt(0), CreatePositionAt(0)));
+    manager()->SetSelection(AXRange(CreatePositionAt(0), CreatePositionAt(0)));
 }
 
 void BrowserAccessibilityQt::setCursorPosition(int position)
 {
-    manager()->SetSelection(AXPlatformRange(CreatePositionAt(position), CreatePositionAt(position)));
+    manager()->SetSelection(AXRange(CreatePositionAt(position), CreatePositionAt(position)));
 }
 
 void BrowserAccessibilityQt::setSelection(int selectionIndex, int startOffset, int endOffset)
 {
     if (selectionIndex != 0)
         return;
-    manager()->SetSelection(AXPlatformRange(CreatePositionAt(startOffset), CreatePositionAt(endOffset)));
+    manager()->SetSelection(AXRange(CreatePositionAt(startOffset), CreatePositionAt(endOffset)));
 }
 
 int BrowserAccessibilityQt::characterCount() const

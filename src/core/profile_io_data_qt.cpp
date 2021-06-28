@@ -44,10 +44,14 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/common/content_features.h"
 #include "net/ssl/ssl_config_service_defaults.h"
+#include "services/cert_verifier/cert_verifier_creation.h"
+#include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
+#include "services/network/public/mojom/cert_verifier_service.mojom.h"
 
 #include "net/client_cert_override.h"
 #include "net/client_cert_store_data.h"
@@ -224,11 +228,11 @@ std::unique_ptr<net::ClientCertStore> ProfileIODataQt::CreateClientCertStore()
 void ProfileIODataQt::ConfigureNetworkContextParams(bool in_memory,
                                                     const base::FilePath &relative_partition_path,
                                                     network::mojom::NetworkContextParams *network_context_params,
-                                                    network::mojom::CertVerifierCreationParams *cert_verifier_creation_params)
+                                                    cert_verifier::mojom::CertVerifierCreationParams *cert_verifier_creation_params)
 {
     setFullConfiguration();
 
-    SystemNetworkContextManager::GetInstance()->ConfigureDefaultNetworkContextParams(network_context_params);
+    SystemNetworkContextManager::GetInstance()->ConfigureDefaultNetworkContextParams(network_context_params, cert_verifier_creation_params);
 
     network_context_params->context_name = m_storageName.toStdString();
     network_context_params->user_agent = m_httpUserAgent.toStdString();

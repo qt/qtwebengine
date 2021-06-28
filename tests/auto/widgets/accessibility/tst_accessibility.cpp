@@ -103,7 +103,7 @@ void tst_Accessibility::hierarchy()
     QCOMPARE(view->role(), QAccessible::Client);
     QCOMPARE(view->childCount(), 1);
     // Wait for accessibility to be fully initialized
-    QTRY_VERIFY(view->child(0)->childCount() == 1);
+    QTRY_COMPARE(view->child(0)->childCount(), 1);
     QAccessibleInterface *document = view->child(0);
     QCOMPARE(document->role(), QAccessible::WebDocument);
     QCOMPARE(document->parent(), view);
@@ -238,7 +238,7 @@ void tst_Accessibility::text()
     QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
     // Wait for accessibility to be fully initialized
 
-    QTRY_VERIFY(view->child(0)->childCount() == 5);
+    QTRY_COMPARE(view->child(0)->childCount(), 5);
     QAccessibleInterface *document = view->child(0);
     QVERIFY(document);
 
@@ -462,10 +462,10 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kMath") << QString("<math>a</math>") << 1 << QAccessible::Equation;
     QTest::newRow("ax::mojom::Role::kMenu") << QString("<div role='menu'>a</div>") << 0 << QAccessible::PopupMenu;
     QTest::newRow("ax::mojom::Role::kMenuBar") << QString("<div role='menubar'>a</div>") << 0 << QAccessible::MenuBar;
-    QTest::newRow("ax::mojom::Role::kMenuItem") << QString("<menu role='menu'><input type='button' /></menu>") << 1 << QAccessible::MenuItem;
+    QTest::newRow("ax::mojom::Role::kMenuItem") << QString("<menu role='group'><div role='menuitem'>a</div></menu>") << 1 << QAccessible::MenuItem;
     QTest::newRow("ax::mojom::Role::kMenuItemCheckBox") << QString("<menu role='menu'><input type='checkbox'></input></menu>") << 1 << QAccessible::CheckBox;
     QTest::newRow("ax::mojom::Role::kMenuItemRadio") << QString("<menu role='menu'><input type='radio'></input></menu>") << 1 << QAccessible::RadioButton;
-    QTest::newRow("ax::mojom::Role::kMenuButton") << QString("<menu role='group'><div role='menuitem'>a</div></menu>") << 1 << QAccessible::MenuItem;
+    QTest::newRow("ax::mojom::Role::kMenuButton") << QString("<menu role='menu'><input type='button' /></menu>") << 1 << QAccessible::Button;
     QTest::newRow("ax::mojom::Role::kMenuListOption") << QString("<select role='menu'><option>a</option></select>") << 3 << QAccessible::MenuItem;
     QTest::newRow("ax::mojom::Role::kMenuListPopup") << QString("<select role='menu'><option>a</option></select>") << 2 << QAccessible::PopupMenu;
     QTest::newRow("ax::mojom::Role::kMeter") << QString("<meter>a</meter>") << 1 << QAccessible::Chart;
@@ -483,8 +483,8 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kRow") << QString("<table role=table><tr><td>a</td></tr></table>") << 1 << QAccessible::Row;
     QTest::newRow("ax::mojom::Role::kRowGroup") << QString("<table role=table><tbody role=rowgroup><tr><td>a</td></tr></tbody></table>") << 1 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kRowHeader") << QString("<table role=table><tr><th>a</td><td>b</td></tr></table>") << 2 << QAccessible::RowHeader;
-    QTest::newRow("ax::mojom::Role::kRuby") << QString("<ruby>a</ruby>") << 1 << QAccessible::StaticText;
-    QTest::newRow("ax::mojom::Role::kRubyAnnotation") << QString("<ruby><rt>a</rt></ruby>") << 2 << QAccessible::StaticText;
+    QTest::newRow("ax::mojom::Role::kRuby") << QString("<ruby>a</ruby>") << 1 << QAccessible::Grouping;
+    QTest::newRow("ax::mojom::Role::kRubyAnnotation") << QString("<ruby><rt tabindex=0>a</rt></ruby>") << 2 << QAccessible::StaticText;
     QTest::newRow("ax::mojom::Role::kScrollBar") << QString("<div role='scrollbar'>a</a>") << 0 << QAccessible::ScrollBar;
     //QTest::newRow("ax::mojom::Role::kScrollView"); // No mapping to ARIA role
     QTest::newRow("ax::mojom::Role::kSearch") << QString("<div role='search'>landmark</div>") << 0 << QAccessible::Section;

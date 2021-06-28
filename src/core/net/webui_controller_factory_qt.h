@@ -52,7 +52,6 @@ class WebUIControllerFactoryQt : public content::WebUIControllerFactory
 public:
     content::WebUI::TypeID GetWebUIType(content::BrowserContext *browserContext, const GURL &url) override;
     bool UseWebUIForURL(content::BrowserContext *browserContext, const GURL &url) override;
-    bool UseWebUIBindingsForURL(content::BrowserContext *browserContext, const GURL &url) override;
     std::unique_ptr<content::WebUIController> CreateWebUIControllerForURL(content::WebUI *webUi, const GURL &url) override;
 
     static WebUIControllerFactoryQt *GetInstance();

@@ -52,7 +52,6 @@
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "services/network/public/mojom/network_context.mojom.h"

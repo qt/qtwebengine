@@ -89,7 +89,7 @@ public:
     RuntimeData *runtime_data() override;
     ManagementPolicy *management_policy() override;
     ServiceWorkerManager *service_worker_manager() override;
-    SharedUserScriptManager *shared_user_script_manager() override;
+    UserScriptManager *user_script_manager() override;
     StateStore *state_store() override;
     StateStore *rules_store() override;
     scoped_refptr<ValueStoreFactory> store_factory() override;
@@ -129,7 +129,7 @@ private:
     std::unique_ptr<RuntimeData> runtime_data_;
     std::unique_ptr<QuotaService> quota_service_;
     std::unique_ptr<AppSorting> app_sorting_;
-    std::unique_ptr<SharedUserScriptManager> shared_user_script_manager_;
+    std::unique_ptr<UserScriptManager> user_script_manager_;
 
 
     // For verifying the contents of extensions read from disk.

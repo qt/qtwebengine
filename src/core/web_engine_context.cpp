@@ -64,9 +64,10 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #endif
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
+#include "components/download/public/common/download_task_runner.h"
 #include "components/viz/common/features.h"
 #include "components/web_cache/browser/web_cache_manager.h"
-#include "content/app/service_manager_environment.h"
+#include "content/app/mojo_ipc_support.h"
 #include "content/browser/devtools/devtools_http_handler.h"
 #include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/startup_data_impl.h"
@@ -95,7 +96,6 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_context.mojom.h"
-#include "services/service_manager/switches.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "third_party/blink/public/common/features.h"
@@ -482,7 +482,7 @@ void WebEngineContext::destroy()
 
     // These would normally be in the content-runner, but we allocated them separately:
     m_startupData.reset();
-    m_serviceManagerEnvironment.reset();
+    m_mojoIpcSupport.reset();
     m_discardableSharedMemoryManager.reset();
 
     // Destroying content-runner will force Chromium at_exit calls to run, and
@@ -680,7 +680,7 @@ WebEngineContext::WebEngineContext()
     setupProxyPac(parsedCommandLine);
     parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
 
-    parsedCommandLine->AppendSwitchASCII(service_manager::switches::kApplicationName, QCoreApplication::applicationName().toUtf8().toPercentEncoding().toStdString());
+    parsedCommandLine->AppendSwitchASCII(switches::kApplicationName, QCoreApplication::applicationName().toUtf8().toPercentEncoding().toStdString());
 
     // Enable sandboxing on OS X and Linux (Desktop / Embedded) by default.
     bool disable_sandbox = qEnvironmentVariableIsSet(kDisableSandboxEnv);
@@ -755,7 +755,7 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
         if (enableGLSoftwareRendering) {
             parsedCommandLine->AppendSwitch(switches::kDisableGpuRasterization);
-            parsedCommandLine->AppendSwitch(switches::kIgnoreGpuBlacklist);
+            parsedCommandLine->AppendSwitch(switches::kIgnoreGpuBlocklist);
         }
         const QSurfaceFormat sharedFormat = QOpenGLContext::globalShareContext()->format();
         if (sharedFormat.profile() == QSurfaceFormat::CompatibilityProfile)
@@ -811,8 +811,10 @@ WebEngineContext::WebEngineContext()
     tracing::InitTracingPostThreadPoolStartAndFeatureList();
     m_discardableSharedMemoryManager = std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
     base::PowerMonitor::Initialize(std::make_unique<base::PowerMonitorDeviceSource>());
-    m_serviceManagerEnvironment = std::make_unique<content::ServiceManagerEnvironment>(content::BrowserTaskExecutor::CreateIOThread());
-    m_startupData = m_serviceManagerEnvironment->CreateBrowserStartupData();
+
+    m_mojoIpcSupport = std::make_unique<content::MojoIpcSupport>(content::BrowserTaskExecutor::CreateIOThread());
+    download::SetIOTaskRunner(m_mojoIpcSupport->io_thread()->task_runner());
+    m_startupData = m_mojoIpcSupport->CreateBrowserStartupData();
 
     // Once the MessageLoop has been created, attach a top-level RunLoop.
     m_runLoop.reset(new base::RunLoop);

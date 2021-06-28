@@ -62,9 +62,10 @@
 
 namespace gl {
 
-void* GLSurfaceQt::g_display = nullptr;
-void* GLSurfaceQt::g_config = nullptr;
-const char* GLSurfaceQt::g_extensions = nullptr;
+void *GLSurfaceQt::g_display = nullptr;
+void *GLSurfaceQt::g_config = nullptr;
+const char *GLSurfaceQt::g_client_extensions = nullptr;
+const char *GLSurfaceQt::g_extensions = nullptr;
 
 GLSurfaceQt::~GLSurfaceQt()
 {
@@ -235,6 +236,10 @@ UINT DirectCompositionSurfaceWin::GetOverlaySupportFlags(DXGI_FORMAT format)
 }
 
 void DirectCompositionSurfaceWin::DisableDecodeSwapChain()
+{
+}
+
+void DirectCompositionSurfaceWin::DisableSoftwareOverlays()
 {
 }
 } // namespace gl

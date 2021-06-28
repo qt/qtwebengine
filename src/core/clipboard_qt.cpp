@@ -52,6 +52,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
+#include "ui/base/ui_base_features.h"
 
 #include <QGuiApplication>
 #include <QImage>
@@ -129,6 +130,7 @@ void ClipboardQt::WritePortableRepresentations(ui::ClipboardBuffer type, const O
                                          std::move(data_src));
         }
     }
+    m_dataSrc[type] = std::move(data_src);
 }
 
 void ClipboardQt::WritePlatformRepresentations(ui::ClipboardBuffer buffer,
@@ -138,6 +140,7 @@ void ClipboardQt::WritePlatformRepresentations(ui::ClipboardBuffer buffer,
     DCHECK(CalledOnValidThread());
     DCHECK(IsSupportedClipboardBuffer(buffer));
     DispatchPlatformRepresentations(std::move(platform_representations));
+    m_dataSrc[buffer] = std::move(data_src);
 }
 
 void ClipboardQt::WriteText(const char *text_data, size_t text_len)
@@ -203,7 +206,8 @@ bool ClipboardQt::IsFormatAvailable(const ui::ClipboardFormatType &format,
 void ClipboardQt::Clear(ui::ClipboardBuffer type)
 {
     QGuiApplication::clipboard()->clear(type == ui::ClipboardBuffer::kCopyPaste ? QClipboard::Clipboard
-                                                                              : QClipboard::Selection);
+                                                                                : QClipboard::Selection);
+    m_dataSrc[type].reset();
 }
 
 void ClipboardQt::ReadAvailableTypes(ui::ClipboardBuffer type,
@@ -362,6 +366,38 @@ uint64_t ClipboardQt::GetSequenceNumber(ui::ClipboardBuffer type) const
                                                                                                 : QClipboard::Selection);
 }
 
+const ui::DataTransferEndpoint *ClipboardQt::GetSource(ui::ClipboardBuffer buffer) const
+{
+    auto it = m_dataSrc.find(buffer);
+    return it == m_dataSrc.end() ? nullptr : it->second.get();
+}
+
+void ClipboardQt::ReadFilenames(ui::ClipboardBuffer buffer,
+                                const ui::DataTransferEndpoint *data_dst,
+                                std::vector<ui::FileInfo> *result) const
+{
+    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(
+            buffer == ui::ClipboardBuffer::kCopyPaste ? QClipboard::Clipboard : QClipboard::Selection);
+    if (!mimeData)
+        return;
+    const QList<QUrl> urls = mimeData->urls();
+    for (const QUrl &url : urls) {
+        if (url.isLocalFile()) {
+            base::FilePath filepath = toFilePath(url.toLocalFile());
+            result->push_back(ui::FileInfo(filepath, base::FilePath()));
+        }
+    }
+}
+
+void ClipboardQt::WriteFilenames(std::vector<ui::FileInfo> filenames)
+{
+    QList<QUrl> urls;
+    for (const ui::FileInfo &file : filenames) {
+        QUrl url = QUrl::fromLocalFile(QString::fromStdString(file.path.AsUTF8Unsafe()));
+        urls.append(url);
+    }
+    getUncommittedData()->setUrls(urls);
+}
 
 #if defined(USE_OZONE)
 bool ClipboardQt::IsSelectionBufferAvailable() const
@@ -372,7 +408,7 @@ bool ClipboardQt::IsSelectionBufferAvailable() const
 
 std::vector<base::string16> ClipboardQt::ReadAvailablePlatformSpecificFormatNames(ui::ClipboardBuffer buffer, const ui::DataTransferEndpoint *data_dst) const
 {
-    // based on ClipboardAura
+    // based on ClipboardX11
     std::vector<base::string16> types;
     if (IsFormatAvailable(ui::ClipboardFormatType::GetPlainTextType(), buffer, data_dst))
         types.push_back(base::UTF8ToUTF16(ui::ClipboardFormatType::GetPlainTextType().GetName()));
@@ -384,7 +420,11 @@ std::vector<base::string16> ClipboardQt::ReadAvailablePlatformSpecificFormatName
         types.push_back(base::UTF8ToUTF16(ui::kMimeTypePNG));
     if (IsFormatAvailable(ui::ClipboardFormatType::GetSvgType(), buffer, data_dst))
         types.push_back(base::UTF8ToUTF16(ui::kMimeTypeSvg));
-
+    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(
+            buffer == ui::ClipboardBuffer::kCopyPaste ? QClipboard::Clipboard : QClipboard::Selection);
+    if (base::FeatureList::IsEnabled(features::kClipboardFilenames) && mimeData->hasUrls())
+        types.push_back(base::UTF8ToUTF16(ui::kMimeTypeURIList));
+    // ### Should we add non-standard mime-types?
     return types;
 }
 

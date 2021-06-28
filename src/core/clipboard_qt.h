@@ -69,8 +69,13 @@ public:
 #endif
     void OnPreShutdown() override {}
     void ReadSvg(ui::ClipboardBuffer, const ui::DataTransferEndpoint *, base::string16 *) const override;
-    void WriteSvg(const char *, size_t) override;
     std::vector<base::string16> ReadAvailablePlatformSpecificFormatNames(ui::ClipboardBuffer buffer, const ui::DataTransferEndpoint *data_dst) const override;
+
+
+    const ui::DataTransferEndpoint *GetSource(ui::ClipboardBuffer buffer) const override;
+    void ReadFilenames(ui::ClipboardBuffer buffer,
+                       const ui::DataTransferEndpoint *data_dst,
+                       std::vector<ui::FileInfo> *result) const override;
 
 protected:
     void WritePortableRepresentations(
@@ -88,6 +93,10 @@ protected:
     void WriteWebSmartPaste() override;
     void WriteBitmap(const SkBitmap &bitmap) override;
     void WriteData(const ui::ClipboardFormatType &format, const char *data_data, size_t data_len) override;
+    void WriteSvg(const char *, size_t) override;
+    void WriteFilenames(std::vector<ui::FileInfo> filenames) override;
+
+    base::flat_map<ui::ClipboardBuffer, std::unique_ptr<ui::DataTransferEndpoint>> m_dataSrc;
 };
 
 } // namespace QtWebEngineCore

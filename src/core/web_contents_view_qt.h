@@ -118,7 +118,7 @@ public:
                        const blink::mojom::DragEventSourceInfo &event_info,
                        content::RenderWidgetHostImpl *source_rwh) override;
 
-    void UpdateDragCursor(blink::DragOperation dragOperation) override;
+    void UpdateDragCursor(ui::mojom::DragOperation dragOperation) override;
 
     void ShowContextMenu(content::RenderFrameHost *, const content::ContextMenuParams &params) override;
 

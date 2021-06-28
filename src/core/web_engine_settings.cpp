@@ -54,6 +54,7 @@
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/base/pointer/pointer_device.h"
 #include "ui/events/event_switches.h"
 #include "ui/native_theme/native_theme.h"
 
@@ -290,7 +291,7 @@ void WebEngineSettings::initDefaults()
         s_defaultAttributes.insert(QWebEngineSettings::WebRTCPublicInterfacesOnly, false);
         s_defaultAttributes.insert(QWebEngineSettings::JavascriptCanPaste, false);
         s_defaultAttributes.insert(QWebEngineSettings::DnsPrefetchEnabled, false);
-#if QT_CONFIG(webengine_extensions)
+#if QT_CONFIG(webengine_extensions) && QT_CONFIG(webengine_printing_and_pdf)
         s_defaultAttributes.insert(QWebEngineSettings::PdfViewerEnabled, true);
 #else
         s_defaultAttributes.insert(QWebEngineSettings::PdfViewerEnabled, false);
@@ -357,8 +358,8 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
     // Override for now
     prefs->touch_event_feature_detection_enabled = isTouchEventsAPIEnabled();
 #if !QT_CONFIG(webengine_embedded_build)
-    prefs->available_hover_types = ui::HOVER_TYPE_HOVER;
-    prefs->primary_hover_type = ui::HOVER_TYPE_HOVER;
+    prefs->available_hover_types = (int)blink::mojom::HoverType::kHoverHoverType;
+    prefs->primary_hover_type = blink::mojom::HoverType::kHoverHoverType;
 #endif
     if (prefs->viewport_enabled) {
         // We need to enable the viewport options together as it doesn't really work

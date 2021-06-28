@@ -43,8 +43,10 @@
 #include <set>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "extensions/common/extension_id.h"
 #include "ui/base/page_transition_types.h"
+#include "url/origin.h"
 
 class GURL;
 
@@ -73,7 +75,8 @@ public:
     // than those triggered through UI.
     bool CanRequestResource(const GURL &resource_url,
                             blink::WebLocalFrame *frame,
-                            ui::PageTransition transition_type);
+                            ui::PageTransition transition_type,
+                            const base::Optional<url::Origin> &initiator_origin);
 
 private:
     Dispatcher *m_dispatcher;

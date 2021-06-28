@@ -141,6 +141,8 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     Q_ASSERT(target);
 
     content::NavigationController::LoadURLParams load_url_params(params.url);
+    load_url_params.initiator_frame_token = params.initiator_frame_token;
+    load_url_params.initiator_process_id = params.initiator_process_id;
     load_url_params.initiator_origin = params.initiator_origin;
     load_url_params.source_site_instance = target_site_instance;
     load_url_params.referrer = referrer;
@@ -156,6 +158,7 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     load_url_params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
     load_url_params.href_translate = params.href_translate;
     load_url_params.reload_type = params.reload_type;
+    load_url_params.impression = params.impression;
     if (params.post_data) {
         load_url_params.load_type = content::NavigationController::LOAD_TYPE_HTTP_POST;
         load_url_params.post_data = params.post_data;

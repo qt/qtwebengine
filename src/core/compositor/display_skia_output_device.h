@@ -67,7 +67,7 @@ public:
                  gfx::BufferFormat format,
                  gfx::OverlayTransform transform) override;
     void SwapBuffers(BufferPresentedCallback feedback,
-                     std::vector<ui::LatencyInfo> latencyInfo) override;
+                     viz::OutputSurfaceFrame frame) override;
     void EnsureBackbuffer() override;
     void DiscardBackbuffer() override;
     SkSurface *BeginPaint(std::vector<GrBackendSemaphore> *semaphores) override;
@@ -109,7 +109,7 @@ private:
     std::unique_ptr<Buffer> m_frontBuffer;
     std::unique_ptr<Buffer> m_middleBuffer;
     std::unique_ptr<Buffer> m_backBuffer;
-    std::vector<ui::LatencyInfo> m_latencyInfo;
+    viz::OutputSurfaceFrame m_frame;
     bool m_readyToUpdate = false;
     scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
 };

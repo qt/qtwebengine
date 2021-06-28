@@ -52,8 +52,8 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_names.mojom.h"
 #include "net/net_buildflags.h"
+#include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 #include "services/network/public/cpp/features.h"
@@ -240,7 +240,8 @@ void SystemNetworkContextManager::AddSSLConfigToNetworkContextParams(network::mo
     network_context_params->initial_ssl_config->symantec_enforcement_disabled = true;
 }
 
-void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(network::mojom::NetworkContextParams *network_context_params)
+void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(network::mojom::NetworkContextParams *network_context_params,
+                                                                       cert_verifier::mojom::CertVerifierCreationParams *cert_verifier_creation_params)
 {
     network_context_params->enable_brotli = true;
 
@@ -271,7 +272,9 @@ network::mojom::NetworkContextParamsPtr SystemNetworkContextManager::CreateNetwo
 {
     // TODO(mmenke): Set up parameters here (in memory cookie store, etc).
     network::mojom::NetworkContextParamsPtr network_context_params = network::mojom::NetworkContextParams::New();
-    ConfigureDefaultNetworkContextParams(network_context_params.get());
+    cert_verifier::mojom::CertVerifierCreationParamsPtr
+            cert_verifier_creation_params = cert_verifier::mojom::CertVerifierCreationParams::New();
+    ConfigureDefaultNetworkContextParams(network_context_params.get(), cert_verifier_creation_params.get());
 
     network_context_params->context_name = std::string("system");
 
@@ -286,5 +289,7 @@ network::mojom::NetworkContextParamsPtr SystemNetworkContextManager::CreateNetwo
 
     proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
 
+    network_context_params->cert_verifier_params =
+         content::GetCertVerifierParams(std::move(cert_verifier_creation_params));
     return network_context_params;
 }

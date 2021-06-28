@@ -1971,6 +1971,7 @@ void tst_QWebEnginePage::symmetricUrl()
     QUrl dataUrl("data:text/html,<h1>Test");
 
     view.setUrl(dataUrl);
+    view.show();
     QCOMPARE(view.url(), dataUrl);
     QCOMPARE(view.history()->count(), 0);
 
@@ -3324,7 +3325,8 @@ void tst_QWebEnginePage::registerProtocolHandler()
     });
     QVERIFY(server.start());
 
-    QWebEnginePage page;
+    QWebEngineProfile profile(QStringLiteral("registerProtocolHandler%1").arg(QTest::currentDataTag()));
+    QWebEnginePage page(&profile, nullptr);
     QSignalSpy loadSpy(&page, &QWebEnginePage::loadFinished);
     QSignalSpy permissionSpy(&page, &QWebEnginePage::registerProtocolHandlerRequested);
 

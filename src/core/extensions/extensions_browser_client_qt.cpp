@@ -187,8 +187,9 @@ private:
         head->content_length = data->size();
         head->mime_type = *read_mime_type;
         DetermineCharset(head->mime_type, data.get(), &head->charset);
-        mojo::DataPipe pipe(data->size());
-        if (!pipe.consumer_handle.is_valid()) {
+        mojo::ScopedDataPipeProducerHandle producer_handle;
+        mojo::ScopedDataPipeConsumerHandle consumer_handle;
+        if (mojo::CreateDataPipe(data->size(), producer_handle, consumer_handle) != MOJO_RESULT_OK) {
             client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
             client_.reset();
             MaybeDeleteSelf();
@@ -201,10 +202,10 @@ private:
             head->headers->AddHeader(net::HttpRequestHeaders::kContentType, head->mime_type.c_str());
         }
         client_->OnReceiveResponse(std::move(head));
-        client_->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
+        client_->OnStartLoadingResponseBody(std::move(consumer_handle));
 
         uint32_t write_size = data->size();
-        MojoResult result = pipe.producer_handle->WriteData(data->front(), &write_size, MOJO_WRITE_DATA_FLAG_NONE);
+        MojoResult result = producer_handle->WriteData(data->front(), &write_size, MOJO_WRITE_DATA_FLAG_NONE);
         OnFileWritten(result);
     }
 
@@ -395,8 +396,8 @@ void ExtensionsBrowserClientQt::LoadResourceFromResourceBundle(const network::Re
 }
 
 
-bool ExtensionsBrowserClientQt::AllowCrossRendererResourceLoad(const GURL &url,
-                                                               blink::mojom::ResourceType resource_type,
+bool ExtensionsBrowserClientQt::AllowCrossRendererResourceLoad(const network::ResourceRequest &request,
+                                                               network::mojom::RequestDestination destination,
                                                                ui::PageTransition page_transition,
                                                                int child_id,
                                                                bool is_incognito,
@@ -412,7 +413,7 @@ bool ExtensionsBrowserClientQt::AllowCrossRendererResourceLoad(const GURL &url,
         return true;
 
     bool allowed = false;
-    if (url_request_util::AllowCrossRendererResourceLoad(url, resource_type,
+    if (url_request_util::AllowCrossRendererResourceLoad(request, destination,
                                                          page_transition, child_id,
                                                          is_incognito, extension, extensions,
                                                          process_map, &allowed)) {
