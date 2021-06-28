@@ -51,6 +51,7 @@
 #include "qquickwebengineclientcertificateselection_p.h"
 #include "qquickwebenginedialogrequests_p.h"
 #include "qquickwebenginefaviconprovider_p_p.h"
+#include "qquickwebenginenewviewrequest_p.h"
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginetouchhandleprovider_p_p.h"
@@ -59,7 +60,6 @@
 #include "qwebenginefullscreenrequest.h"
 #include "qwebengineloadinginfo.h"
 #include "qwebenginenavigationrequest.h"
-#include "qwebenginenewwindowrequest.h"
 #include "qwebenginequotarequest.h"
 #include "qwebenginescriptcollection.h"
 #include <QtWebEngineCore/private/qwebenginecontextmenurequest_p.h>
@@ -526,8 +526,8 @@ QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> ne
 {
     Q_Q(QQuickWebEngineView);
     Q_ASSERT(newWebContents);
-    QWebEngineNewWindowRequest request(toDestinationType(disposition), geometry,
-                                       targetUrl, userGesture, newWebContents);
+    QQuickWebEngineNewViewRequest request(toDestinationType(disposition), geometry,
+                                          targetUrl, userGesture, newWebContents);
 
     Q_EMIT q->newViewRequested(&request);
 
@@ -1774,15 +1774,15 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
         break;
     case OpenLinkInNewWindow:
         if (d->m_contextMenuRequest->filteredLinkUrl().isValid()) {
-            QWebEngineNewWindowRequest request(QWebEngineNewWindowRequest::InNewWindow, QRect(),
-                                               d->m_contextMenuRequest->filteredLinkUrl(), true, nullptr);
+            QQuickWebEngineNewViewRequest request(QWebEngineNewWindowRequest::InNewWindow, QRect(),
+                                                  d->m_contextMenuRequest->filteredLinkUrl(), true, nullptr);
             Q_EMIT newViewRequested(&request);
         }
         break;
     case OpenLinkInNewTab:
         if (d->m_contextMenuRequest->filteredLinkUrl().isValid()) {
-            QWebEngineNewWindowRequest request(QWebEngineNewWindowRequest::InNewBackgroundTab, QRect(),
-                                               d->m_contextMenuRequest->filteredLinkUrl(), true, nullptr);
+            QQuickWebEngineNewViewRequest request(QWebEngineNewWindowRequest::InNewBackgroundTab, QRect(),
+                                                  d->m_contextMenuRequest->filteredLinkUrl(), true, nullptr);
             Q_EMIT newViewRequested(&request);
         }
         break;

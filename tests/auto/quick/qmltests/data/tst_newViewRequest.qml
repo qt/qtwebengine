@@ -69,9 +69,11 @@ TestWebEngineView {
             "}", webEngineView);
 
         if (viewType === "dialog")
-            dialog.webEngineView.acceptAsNewView(request);
+            request.openIn(dialog.webEngineView);
+        else if (viewType === "null")
+            request.openIn(0);
         else if (viewType === "webEngineView")
-            webEngineView.acceptAsNewView(request);
+            request.openIn(webEngineView);
     }
 
     TestCase {

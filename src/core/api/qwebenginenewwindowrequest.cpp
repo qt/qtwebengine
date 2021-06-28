@@ -67,8 +67,8 @@ struct QWebEngineNewWindowRequestPrivate
 
 /*!
     \qmltype WebEngineNewViewRequest
-    \instantiates QWebEngineNewWindowRequest
-    \inqmlmodule QtWebEngine
+    \instantiates QQuickWebEngineNewViewRequest
+    \inqmlmodule QtWebEngineQuick
     \since QtWebEngine 1.1
 
     \brief A utility type for the WebEngineView::newViewRequested signal.

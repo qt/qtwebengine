@@ -216,16 +216,6 @@ struct ForeignWebEngineFindTextResult
     QML_UNCREATABLE("")
 };
 
-struct ForeignWebEngineNewViewRequest
-{
-    Q_GADGET
-    QML_FOREIGN(QWebEngineNewWindowRequest)
-    QML_NAMED_ELEMENT(WebEngineNewViewRequest)
-    QML_ADDED_IN_VERSION(1, 1)
-    QML_EXTRA_VERSION(2, 0)
-    QML_UNCREATABLE("")
-};
-
 QT_END_NAMESPACE
 
 #endif // QQUICKWEBENGINEFOREIGNTYPES_H
