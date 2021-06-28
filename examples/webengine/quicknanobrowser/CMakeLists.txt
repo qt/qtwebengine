@@ -52,18 +52,6 @@ qt6_add_resources(quicknanobrowser "resources"
     FILES
         ${resources_resource_files}
 )
-set_source_files_properties("icons/3rdparty/go-next.png"
-    PROPERTIES QT_RESOURCE_ALIAS "go-next.png"
-)
-set_source_files_properties("icons/3rdparty/go-previous.png"
-    PROPERTIES QT_RESOURCE_ALIAS "go-previous.png"
-)
-set_source_files_properties("icons/3rdparty/process-stop.png"
-    PROPERTIES QT_RESOURCE_ALIAS "process-stop.png"
-)
-set_source_files_properties("icons/3rdparty/view-refresh.png"
-    PROPERTIES QT_RESOURCE_ALIAS "view-refresh.png"
-)
 set(resources1_resource_files
     "icons/3rdparty/go-next.png"
     "icons/3rdparty/go-previous.png"
@@ -74,6 +62,8 @@ set(resources1_resource_files
 qt6_add_resources(quicknanobrowser "resources1"
     PREFIX
         "/icons"
+    BASE
+        "icons/3rdparty"
     FILES
         ${resources1_resource_files}
 )

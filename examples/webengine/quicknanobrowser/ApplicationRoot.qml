@@ -48,8 +48,8 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.1
-import QtWebEngine 1.10
+import QtQuick
+import QtWebEngine
 
 QtObject {
     id: root
