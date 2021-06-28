@@ -29,6 +29,7 @@ if(PkgConfig_FOUND)
     pkg_check_modules(XCURSOR xcursor)
     pkg_check_modules(XI xi)
     pkg_check_modules(XRANDR xrandr)
+    pkg_check_modules(XSHMFENCE xshmfence)
     pkg_check_modules(XTST xtst)
     pkg_check_modules(NSS nss>=3.26)
     pkg_check_modules(X11 x11)
@@ -315,6 +316,7 @@ qt_feature("webengine-ozone-x11" PRIVATE
         AND XPROTO_FOUND
         AND XRANDR_FOUND
         AND XTST_FOUND
+        AND XSHMFENCE_FOUND
 )
 
 #### Support Checks
@@ -398,7 +400,8 @@ add_check_for_support(webEngineError webEngineSupport
    CONDITION NOT LINUX OR DBUS_FOUND
    MESSAGE "Build requires dbus."
 )
-set(xcbSupport X11 LIBDRM XCOMPOSITE XCURSOR XRANDR XI XPROTO XTST)
+# FIXME: This prevents non XCB Linux builds from building:
+set(xcbSupport X11 LIBDRM XCOMPOSITE XCURSOR XRANDR XI XPROTO XSHMFENCE XTST)
 foreach(xs ${xcbSupport})
     if(${xs}_FOUND)
        set(xcbErrorMessage "${xcbErrorMessage} ${xs}:YES")

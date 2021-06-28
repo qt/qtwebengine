@@ -48,6 +48,10 @@ qt_internal_add_module(WebEngineCore
         ../
         ../../3rdparty/chromium
         ../../3rdparty/chromium/third_party/abseil-cpp
+        ../../3rdparty/chromium/third_party/perfetto/include
+        ${buildDir}/$<CONFIG>/gen
+        ${buildDir}/$<CONFIG>/gen/third_party/perfetto
+        ${buildDir}/$<CONFIG>/gen/third_party/perfetto/build_config
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
@@ -65,6 +69,10 @@ set_target_properties(WebEngineCore PROPERTIES QTWEBENGINEPROCESS_NAME ${qtWebEn
 qt_skip_warnings_are_errors(WebEngineCore)
 make_install_only(WebEngineCore)
 make_config_for_gn(WebEngineCore gn_config)
+
+if(CLANG OR GCC)
+    target_compile_options(WebEngineCore PRIVATE "-Wno-unused-parameter")
+endif()
 
 qt_internal_extend_target(WebEngineCore CONDITION QT_FEATURE_webengine_webchannel
     PUBLIC_LIBRARIES

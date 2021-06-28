@@ -89,10 +89,10 @@ void ExtensionWebContentsObserverQt::RenderFrameCreated(content::RenderFrameHost
         policy->GrantRequestOrigin(process_id, url::Origin::Create(GURL(content::kChromeUIResourcesURL)));
 }
 
-void ExtensionWebContentsObserverQt::RenderViewCreated(content::RenderViewHost *render_view_host)
+void ExtensionWebContentsObserverQt::RenderViewReady()
 {
     if (web_contents()->IsInnerWebContentsForGuest()) {
-        content::RenderWidgetHost *render_widget_host = render_view_host->GetWidget();
+        content::RenderWidgetHost *render_widget_host = web_contents()->GetRenderViewHost()->GetWidget();
         content::WebContents *parent_web_contents = guest_view::GuestViewBase::GetTopLevelWebContents(web_contents());
         QtWebEngineCore::RenderWidgetHostViewQt *parent_rwhv = static_cast<QtWebEngineCore::RenderWidgetHostViewQt *>(parent_web_contents->GetRenderWidgetHostView());
         parent_rwhv->setGuest(static_cast<content::RenderWidgetHostImpl *>(render_widget_host));

@@ -161,12 +161,12 @@ bool DisplaySkiaOutputDevice::Reshape(const gfx::Size& sizeInPixels,
 }
 
 void DisplaySkiaOutputDevice::SwapBuffers(BufferPresentedCallback feedback,
-                                          std::vector<ui::LatencyInfo> latencyInfo)
+                                          viz::OutputSurfaceFrame frame)
 {
     DCHECK(m_backBuffer);
 
     StartSwapBuffers(std::move(feedback));
-    m_latencyInfo = std::move(latencyInfo);
+    m_frame = std::move(frame);
     m_backBuffer->createFence();
 
     {
@@ -254,7 +254,7 @@ void DisplaySkiaOutputDevice::SwapBuffersFinished()
 
     FinishSwapBuffers(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_ACK),
                       gfx::Size(m_shape.sizeInPixels.width(), m_shape.sizeInPixels.height()),
-                      std::move(m_latencyInfo));
+                      std::move(m_frame));
 }
 
 } // namespace QtWebEngineCore

@@ -145,7 +145,9 @@ source_set("qtwebengine_sources") {
   deps = [
     "//build:branding_buildflags",
     "//chrome/browser:dev_ui_browser_resources_grit",
-    "//chrome/browser/resources/quota_internals:quota_internals_resources",
+    "//chrome/browser/resources/net_internals:resources",
+    "//chrome/browser/resources/quota_internals:resources",
+    "//chrome/browser/resources/pdf:resources",
     "//chrome/common:buildflags",
     "//components/nacl/common:buildflags",
     "//components/performance_manager",
@@ -173,6 +175,8 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/profiles/profile.h",
     "//chrome/browser/tab_contents/form_interaction_tab_helper.cc",
     "//chrome/browser/tab_contents/form_interaction_tab_helper.h",
+    "//chrome/browser/tab_contents/web_contents_collection.cc",
+    "//chrome/browser/tab_contents/web_contents_collection.h",
     "//chrome/browser/ui/webui/device_log_ui.cc",
     "//chrome/browser/ui/webui/device_log_ui.h",
     "//chrome/browser/ui/webui/devtools_ui.cc",
@@ -302,6 +306,7 @@ source_set("qtwebengine_sources") {
 
   if (enable_webrtc && enable_extensions) {
     deps += [
+      "//chrome/browser/resources/media:webrtc_logs_resources",
       "//components/upload_list",
       "//components/webrtc_logging/browser",
       "//components/webrtc_logging/common",
@@ -396,13 +401,13 @@ repack("qtwebengine_repack_resources") {
   output = "$root_out_dir/qtwebengine_resources.pak"
   deps = [
      "//qtwebengine/browser:qt_webengine_resources",
-     "//chrome/browser/resources/net_internals:net_internals_resources",
      "//chrome/browser:dev_ui_browser_resources_grit",
-     "//chrome/browser/resources/quota_internals:quota_internals_resources",
+     "//chrome/browser/resources/net_internals:resources",
+     "//chrome/browser/resources/quota_internals:resources",
      "//chrome/common:resources_grit",
      "//components/resources:components_resources_grit",
      "//components/resources:dev_ui_components_resources_grit",
-     "//content/browser/resources/media:media_internals_resources",
+     "//content/browser/resources/media:resources",
      "//content/browser/tracing:resources",
      "//content:content_resources_grit",
      "//content:dev_ui_content_resources_grit",
@@ -438,6 +443,14 @@ repack("qtwebengine_repack_resources") {
     ]
     deps += [
       "//chrome/browser/resources/media:webrtc_logs_resources",
+    ]
+  }
+  if (enable_pdf) {
+    sources += [
+      "$root_gen_dir/chrome/pdf_resources.pak",
+    ]
+    deps += [
+      "//chrome/browser/resources/pdf:resources",
     ]
   }
 }

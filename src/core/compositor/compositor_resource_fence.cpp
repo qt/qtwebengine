@@ -62,7 +62,8 @@ void CompositorResourceFence::wait()
         return;
 
     QOpenGLContext *context = QOpenGLContext::currentContext();
-    Q_ASSERT(context);
+    if (!context)
+        return;
 
     // Chromium uses its own GL bindings and stores in in thread local storage.
     // For that reason, let chromium_gpu_helper.cpp contain the producing code that will run in the Chromium

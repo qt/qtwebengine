@@ -49,6 +49,7 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/accessibility/web_contents_accessibility.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
@@ -70,6 +71,7 @@ namespace QtWebEngineCore {
 class RenderWidgetHostViewQtDelegateClient;
 class GuestInputEventObserverQt;
 class TouchSelectionControllerClientQt;
+class WebContentsAccessibilityQt;
 class WebContentsAdapterClient;
 
 class RenderWidgetHostViewQt
@@ -92,7 +94,6 @@ public:
 
     void InitAsChild(gfx::NativeView) override;
     void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&) override;
-    void InitAsFullscreen(content::RenderWidgetHostView*) override;
     void SetSize(const gfx::Size& size) override;
     void SetBounds(const gfx::Rect&) override;
     gfx::NativeView GetNativeView() override;
@@ -170,10 +171,10 @@ public:
     void OnTextSelectionChanged(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view) override;
 
     // Overridden from content::BrowserAccessibilityDelegate
-    content::BrowserAccessibilityManager* CreateBrowserAccessibilityManager(content::BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
+    content::WebContentsAccessibility *GetWebContentsAccessibility() override;
 
     // Overridden from content::RenderFrameMetadataProvider::Observer
-    void OnRenderFrameMetadataChangedAfterActivation() override;
+    void OnRenderFrameMetadataChangedAfterActivation(base::TimeTicks activation_time) override;
     void OnRenderFrameMetadataChangedBeforeActivation(const cc::RenderFrameMetadata &) override {}
     void OnRenderFrameSubmission() override {}
     void OnLocalSurfaceIdChanged(const cc::RenderFrameMetadata &) override {}
@@ -204,6 +205,7 @@ public:
 
 private:
     friend class DelegatedFrameHostClientQt;
+    friend class WebContentsAccessibilityQt;
 
     bool isPopup() const;
 
@@ -219,6 +221,7 @@ private:
     viz::FrameSinkId m_frameSinkId;
     std::unique_ptr<RenderWidgetHostViewQtDelegateClient> m_delegateClient;
     std::unique_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
+    std::unique_ptr<WebContentsAccessibilityQt> m_webContentsAccessibility;
     QMetaObject::Connection m_adapterClientDestroyedConnection;
     WebContentsAdapterClient *m_adapterClient = nullptr;
 
@@ -252,6 +255,14 @@ private:
     gfx::SelectionBound m_selectionEnd;
 
     base::WeakPtrFactory<RenderWidgetHostViewQt> m_weakPtrFactory { this };
+};
+
+class WebContentsAccessibilityQt : public content::WebContentsAccessibility
+{
+    RenderWidgetHostViewQt *m_rwhv;
+public:
+    WebContentsAccessibilityQt(RenderWidgetHostViewQt *rwhv) : m_rwhv(rwhv) {}
+    QObject *accessibilityParentObject() const;
 };
 
 } // namespace QtWebEngineCore

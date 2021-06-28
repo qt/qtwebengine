@@ -60,7 +60,7 @@ class ContentMainRunner;
 class GpuProcess;
 class GpuThreadController;
 class InProcessChildThreadParams;
-class ServiceManagerEnvironment;
+class MojoIpcSupport;
 struct StartupData;
 }
 
@@ -141,7 +141,7 @@ private:
     std::unique_ptr<content::BrowserMainRunner> m_browserRunner;
     std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager> m_discardableSharedMemoryManager;
     std::unique_ptr<content::StartupData> m_startupData;
-    std::unique_ptr<content::ServiceManagerEnvironment> m_serviceManagerEnvironment;
+    std::unique_ptr<content::MojoIpcSupport> m_mojoIpcSupport;
     std::unique_ptr<QObject> m_globalQObject;
     std::unique_ptr<ProfileAdapter> m_defaultProfileAdapter;
     std::unique_ptr<DevToolsServerQt> m_devtoolsServer;

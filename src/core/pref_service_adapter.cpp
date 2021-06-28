@@ -101,6 +101,7 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterStringPref(language::prefs::kAcceptLanguages, std::string());
     registry->RegisterListPref(spellcheck::prefs::kSpellCheckDictionaries);
     registry->RegisterListPref(spellcheck::prefs::kSpellCheckForcedDictionaries);
+    registry->RegisterListPref(spellcheck::prefs::kSpellCheckBlacklistedDictionaries);
     registry->RegisterListPref(spellcheck::prefs::kSpellCheckBlocklistedDictionaries);
     registry->RegisterStringPref(spellcheck::prefs::kSpellCheckDictionary, std::string());
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckEnable, false);
@@ -115,7 +116,6 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterListPref(extensions::pref_names::kInstallAllowList);
     registry->RegisterListPref(extensions::pref_names::kInstallDenyList);
     registry->RegisterDictionaryPref(extensions::pref_names::kInstallForceList);
-    registry->RegisterDictionaryPref(extensions::pref_names::kLoginScreenExtensions);
     registry->RegisterListPref(extensions::pref_names::kAllowedTypes);
     registry->RegisterBooleanPref(extensions::pref_names::kStorageGarbageCollect, false);
     registry->RegisterListPref(extensions::pref_names::kAllowedInstallSites);

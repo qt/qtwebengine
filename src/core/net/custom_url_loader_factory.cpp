@@ -43,7 +43,6 @@
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -123,13 +122,13 @@ private:
         // ### We can opt to run the url-loader on the UI thread instead
         : m_taskRunner(base::CreateSingleThreadTaskRunner({ content::BrowserThread::IO }))
         , m_proxy(new URLRequestCustomJobProxy(this, request.url.scheme(), profileAdapter))
-        , m_binding(this, std::move(loader))
+        , m_receiver(this, std::move(loader))
         , m_client(std::move(client_info))
         , m_request(request)
     {
         DCHECK(m_taskRunner->RunsTasksInCurrentSequence());
-        m_binding.set_connection_error_handler(
-                base::BindOnce(&CustomURLLoader::OnConnectionError, m_weakPtrFactory.GetWeakPtr()));
+        m_receiver.set_disconnect_handler(
+                    base::BindOnce(&CustomURLLoader::OnConnectionError, m_weakPtrFactory.GetWeakPtr()));
         m_firstBytePosition = 0;
         m_device = nullptr;
         m_error = 0;
@@ -152,11 +151,13 @@ private:
             if (!m_corsEnabled && !m_request.request_initiator->IsSameOriginWith(url::Origin::Create(m_request.url)))
                 return CompleteWithFailure(network::CorsErrorStatus(network::mojom::CorsError::kCorsDisabledScheme));
         }
+        if (mojo::CreateDataPipe(nullptr, m_pipeProducerHandle, m_pipeConsumerHandle) != MOJO_RESULT_OK)
+            return CompleteWithFailure(net::ERR_FAILED);
 
         m_head = network::mojom::URLResponseHead::New();
         m_head->request_start = base::TimeTicks::Now();
 
-        if (!m_pipe.consumer_handle.is_valid())
+        if (!m_pipeConsumerHandle.is_valid())
             return CompleteWithFailure(net::ERR_FAILED);
 
         std::map<std::string, std::string> headers;
@@ -193,7 +194,7 @@ private:
     void OnConnectionError()
     {
         DCHECK(m_taskRunner->RunsTasksInCurrentSequence());
-        m_binding.Close();
+        m_receiver.reset();
         if (m_client.is_bound())
             ClearProxyAndClient(false);
         else
@@ -226,7 +227,7 @@ private:
 //        m_taskRunner->PostTask(FROM_HERE, base::BindOnce(&URLRequestCustomJobProxy::release, m_proxy));
         base::PostTask(FROM_HERE, { content::BrowserThread::UI },
                        base::BindOnce(&URLRequestCustomJobProxy::release, m_proxy));
-        if (!wait_for_loader_error || !m_binding.is_bound())
+        if (!wait_for_loader_error || !m_receiver.is_bound())
             delete this;
     }
 
@@ -307,7 +308,7 @@ private:
         m_head->charset = m_charset;
         m_headerBytesRead = m_head->headers->raw_headers().length();
         m_client->OnReceiveResponse(std::move(m_head));
-        m_client->OnStartLoadingResponseBody(std::move(m_pipe.consumer_handle));
+        m_client->OnStartLoadingResponseBody(std::move(m_pipeConsumerHandle));
         m_head = nullptr;
 
         if (readAvailableData()) // May delete this
@@ -315,7 +316,7 @@ private:
 
         m_watcher = std::make_unique<mojo::SimpleWatcher>(
                 FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC, m_taskRunner);
-        m_watcher->Watch(m_pipe.producer_handle.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
+        m_watcher->Watch(m_pipeProducerHandle.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
                          MOJO_WATCH_CONDITION_SATISFIED,
                          base::BindRepeating(&CustomURLLoader::notifyReadyWrite,
                                              m_weakPtrFactory.GetWeakPtr()));
@@ -384,7 +385,7 @@ private:
 
             void *buffer = nullptr;
             uint32_t bufferSize = 0;
-            MojoResult beginResult = m_pipe.producer_handle->BeginWriteData(
+            MojoResult beginResult = m_pipeProducerHandle->BeginWriteData(
                     &buffer, &bufferSize, MOJO_BEGIN_WRITE_DATA_FLAG_NONE);
             if (beginResult == MOJO_RESULT_SHOULD_WAIT)
                 return false; // Wait for pipe watcher
@@ -395,7 +396,7 @@ private:
 
             int readResult = m_device->read(static_cast<char *>(buffer), bufferSize);
             uint32_t bytesRead = std::max(readResult, 0);
-            m_pipe.producer_handle->EndWriteData(bytesRead);
+            m_pipeProducerHandle->EndWriteData(bytesRead);
             m_totalBytesRead += bytesRead;
             m_client->OnTransferSizeUpdated(m_totalBytesRead);
 
@@ -437,9 +438,10 @@ private:
     scoped_refptr<base::SequencedTaskRunner> m_taskRunner;
     scoped_refptr<URLRequestCustomJobProxy> m_proxy;
 
-    mojo::Binding<network::mojom::URLLoader> m_binding;
+    mojo::Receiver<network::mojom::URLLoader> m_receiver;
     network::mojom::URLLoaderClientPtr m_client;
-    mojo::DataPipe m_pipe;
+    mojo::ScopedDataPipeProducerHandle m_pipeProducerHandle;
+    mojo::ScopedDataPipeConsumerHandle m_pipeConsumerHandle;
     std::unique_ptr<mojo::SimpleWatcher> m_watcher;
 
     net::HttpByteRange m_byteRange;

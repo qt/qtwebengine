@@ -48,6 +48,7 @@
 #include "base/version.h"
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
 #include "media/base/media_switches.h"
@@ -56,7 +57,6 @@
 #include "ui/base/layout.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "services/service_manager/switches.h"
 #include "type_conversion.h"
 
 #include <QCoreApplication>
@@ -81,13 +81,13 @@ const char kWidevineCdmFileName[] =
     "libwidevinecdm.so";
 #endif
 #endif
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "pdf/pdf.h"
 #include "pdf/pdf_ppapi.h"
 const char kPdfPluginMimeType[] = "application/x-google-chrome-pdf";
 const char kPdfPluginPath[] = "internal-pdf-viewer";
-const char kPdfPluginSrc[] = "src";
 #endif // QT_CONFIG(webengine_printing_and_pdf)
 
 static QString webenginePluginsPath()
@@ -102,7 +102,6 @@ static QString webenginePluginsPath()
     }
     return potentialPluginsPath;
 }
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if defined(Q_OS_WIN)
 #include <shlobj.h>
@@ -136,8 +135,6 @@ static QString getProgramFilesDir(bool x86Dir = false)
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
 namespace switches {
-const char kPpapiFlashPath[]    = "ppapi-flash-path";
-const char kPpapiFlashVersion[] = "ppapi-flash-version";
 const char kPpapiWidevinePath[] = "ppapi-widevine-path";
 }
 
@@ -168,7 +165,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins)
     pdf_info.internal_entry_points.get_interface = chrome_pdf::PPP_GetInterface;
     pdf_info.internal_entry_points.initialize_module = chrome_pdf::PPP_InitializeModule;
     pdf_info.internal_entry_points.shutdown_module = chrome_pdf::PPP_ShutdownModule;
-    pdf_info.permissions = ppapi::PERMISSION_PRIVATE | ppapi::PERMISSION_DEV | ppapi::PERMISSION_PDF;
+    pdf_info.permissions = ppapi::PERMISSION_DEV | ppapi::PERMISSION_PDF;
     plugins->push_back(pdf_info);
 #endif // QT_CONFIG(webengine_printing_and_pdf)
 }
@@ -190,7 +187,7 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
                                 content::CdmCapability *capability)
 {
     QStringList pluginPaths;
-    const base::CommandLine::StringType widevine_argument = base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(service_manager::switches::kCdmWidevinePath);
+    const base::CommandLine::StringType widevine_argument = base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(switches::kCdmWidevinePath);
     if (!widevine_argument.empty())
         pluginPaths << QtWebEngineCore::toQt(widevine_argument);
     else {

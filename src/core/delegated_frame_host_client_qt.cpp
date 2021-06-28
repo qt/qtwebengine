@@ -58,9 +58,9 @@ SkColor DelegatedFrameHostClientQt::DelegatedFrameHostGetGutterColor() const
     return p->GetBackgroundColor().value_or(SK_ColorWHITE);
 }
 
-void DelegatedFrameHostClientQt::OnFrameTokenChanged(uint32_t frame_token)
+void DelegatedFrameHostClientQt::OnFrameTokenChanged(uint32_t frame_token, base::TimeTicks activation_time)
 {
-    p->OnFrameTokenChangedForView(frame_token);
+    p->OnFrameTokenChangedForView(frame_token, activation_time);
 }
 
 float DelegatedFrameHostClientQt::GetDeviceScaleFactor() const

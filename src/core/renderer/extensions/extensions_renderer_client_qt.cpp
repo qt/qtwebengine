@@ -62,9 +62,7 @@
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extensions_render_frame_observer.h"
-#include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container_dispatcher.h"
-#include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
 #include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -127,9 +125,6 @@ bool ExtensionsRendererClientQt::ExtensionAPIEnabledForServiceWorkerScript(const
     if (!script_url.SchemeIs(extensions::kExtensionScheme))
         return false;
 
-    if (!extensions::ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers())
-        return false;
-
     const extensions::Extension* extension =
             extensions::RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(script_url);
 
@@ -179,12 +174,14 @@ bool ExtensionsRendererClientQt::OverrideCreatePlugin(content::RenderFrame *rend
 void ExtensionsRendererClientQt::WillSendRequest(blink::WebLocalFrame *frame,
                                                  ui::PageTransition transition_type,
                                                  const blink::WebURL &url,
+                                                 const net::SiteForCookies &site_for_cookies,
                                                  const url::Origin *initiator_origin,
-                                                 GURL *new_url,
-                                                 bool *attach_same_site_cookies)
+                                                 GURL *new_url)
 {
     if (url.ProtocolIs(extensions::kExtensionScheme) &&
-            !resource_request_policy_->CanRequestResource(url, frame, transition_type)) {
+            !resource_request_policy_->CanRequestResource(url, frame,
+                                                          transition_type,
+                                                          base::OptionalFromPtr(initiator_origin))) {
         *new_url = GURL(chrome::kExtensionInvalidRequestURL);
     }
 }

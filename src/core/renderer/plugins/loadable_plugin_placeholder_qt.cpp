@@ -63,13 +63,10 @@ LoadablePluginPlaceholderQt::LoadablePluginPlaceholderQt(content::RenderFrame* r
                                                          const std::string& html_data,
                                                          const base::string16& title)
     : plugins::LoadablePluginPlaceholder(render_frame, params, html_data)
-    , context_menu_request_id_(0)
 {}
 
 LoadablePluginPlaceholderQt::~LoadablePluginPlaceholderQt()
 {
-    if (context_menu_request_id_ && render_frame())
-        render_frame()->CancelContextMenu(context_menu_request_id_);
 }
 
 // TODO(bauerb): Move this method to NonLoadablePluginPlaceholder?

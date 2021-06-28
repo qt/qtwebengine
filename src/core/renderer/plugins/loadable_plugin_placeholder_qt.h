@@ -74,8 +74,6 @@ private:
     // WebViewPlugin::Delegate (via PluginPlaceholder) methods:
     v8::Local<v8::Value> GetV8Handle(v8::Isolate* isolate) override;
 
-    int context_menu_request_id_;  // Nonzero when request pending.
-
     DISALLOW_COPY_AND_ASSIGN(LoadablePluginPlaceholderQt);
 };
 

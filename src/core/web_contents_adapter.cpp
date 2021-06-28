@@ -422,7 +422,7 @@ QSharedPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavig
     // Unlike WebCore, Chromium only supports Restoring to a new WebContents instance.
     std::unique_ptr<content::WebContents> newWebContents = createBlankWebContents(adapterClient, adapterClient->profileAdapter()->profile());
     content::NavigationController &controller = newWebContents->GetController();
-    controller.Restore(currentIndex, content::RestoreType::LAST_SESSION_EXITED_CLEANLY, &entries);
+    controller.Restore(currentIndex, content::RestoreType::kRestored, &entries);
 
     if (controller.GetActiveEntry()) {
         // Set up the file access rights for the selected navigation entry.
@@ -540,7 +540,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     Q_ASSERT(rvh);
     if (!rvh->IsRenderViewLive())
         static_cast<content::WebContentsImpl*>(m_webContents.get())->CreateRenderViewForRenderManager(
-                rvh, base::nullopt, MSG_ROUTING_NONE);
+                rvh, base::nullopt, nullptr);
 
     m_webContentsDelegate->RenderViewHostChanged(nullptr, rvh);
 
@@ -1113,7 +1113,7 @@ void WebContentsAdapter::updateWebPreferences(const blink::web_pref::WebPreferen
 
     // In case of updating preferences during navigation, there might be a pending RVH what will
     // be active on successful navigation.
-    content::RenderFrameHost *pendingRFH = (static_cast<content::WebContentsImpl*>(m_webContents.get()))->GetPendingMainFrame();
+    content::RenderFrameHost *pendingRFH = (static_cast<content::WebContentsImpl*>(m_webContents.get()))->GetFrameTree()->root()->render_manager()->speculative_frame_host();
     if (pendingRFH) {
         content::RenderViewHost *pendingRVH = pendingRFH->GetRenderViewHost();
         Q_ASSERT(pendingRVH);
@@ -1563,7 +1563,7 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
             if (rvh) {
                 rvh->GetWidget()->DragSourceEndedAt(gfx::PointF(m_lastDragClientPos.x(), m_lastDragClientPos.y()),
                                                     gfx::PointF(m_lastDragScreenPos.x(), m_lastDragScreenPos.y()),
-                                                    blink::DragOperation(m_currentDropAction));
+                                                    ui::mojom::DragOperation(m_currentDropAction));
                 rvh->GetWidget()->DragSourceSystemDragEnded();
             }
         }
@@ -1624,13 +1624,13 @@ static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeDat
     }
 }
 
-Qt::DropAction toQt(blink::DragOperation op)
+Qt::DropAction toQt(ui::mojom::DragOperation op)
 {
-    if (op & blink::kDragOperationCopy)
+    if (int(op) & int(ui::mojom::DragOperation::kCopy))
         return Qt::CopyAction;
-    if (op & blink::kDragOperationLink)
+    if (int(op) & int(ui::mojom::DragOperation::kLink))
         return Qt::LinkAction;
-    if (op & blink::kDragOperationMove || op & blink::kDragOperationDelete)
+    if (int(op) & int(ui::mojom::DragOperation::kMove))
         return Qt::MoveAction;
     return Qt::IgnoreAction;
 }
@@ -1687,7 +1687,7 @@ Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const Q
     rvh->GetWidget()->DragTargetDragOver(toGfx(m_lastDragClientPos), toGfx(m_lastDragScreenPos), toWeb(e->possibleActions()),
                                          toWeb(e->buttons()) | toWeb(e->modifiers()));
     waitForUpdateDragActionCalled();
-    return toQt(blink::DragOperation(m_currentDropAction));
+    return toQt(ui::mojom::DragOperation(m_currentDropAction));
 }
 
 void WebContentsAdapter::waitForUpdateDragActionCalled()
@@ -1720,7 +1720,7 @@ void WebContentsAdapter::updateDragAction(int action)
 {
     CHECK_INITIALIZED();
     m_updateDragActionCalled = true;
-    m_currentDropAction = static_cast<blink::DragOperation>(action);
+    m_currentDropAction = action;
 }
 
 void WebContentsAdapter::endDragging(QDropEvent *e, const QPointF &screenPos)
@@ -2046,7 +2046,7 @@ void WebContentsAdapter::undiscard()
     Q_ASSERT(rvh);
     if (!rvh->IsRenderViewLive())
         static_cast<content::WebContentsImpl *>(m_webContents.get())
-                ->CreateRenderViewForRenderManager(rvh, base::nullopt, MSG_ROUTING_NONE);
+                ->CreateRenderViewForRenderManager(rvh, base::nullopt, nullptr);
     m_webContentsDelegate->RenderViewHostChanged(nullptr, rvh);
     m_adapterClient->initializationFinished();
     m_adapterClient->selectionChanged();

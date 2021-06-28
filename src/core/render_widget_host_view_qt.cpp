@@ -69,7 +69,6 @@
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/cursors/webcursor.h"
-#include "content/common/input_messages.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -291,10 +290,6 @@ void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView*, const g
     m_delegate->initAsPopup(toQt(rect));
 }
 
-void RenderWidgetHostViewQt::InitAsFullscreen(content::RenderWidgetHostView*)
-{
-}
-
 void RenderWidgetHostViewQt::SetSize(const gfx::Size &sizeInDips)
 {
     if (!m_delegate)
@@ -326,17 +321,16 @@ gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
     return 0;
 }
 
-content::BrowserAccessibilityManager* RenderWidgetHostViewQt::CreateBrowserAccessibilityManager(content::BrowserAccessibilityDelegate* delegate, bool for_root_frame)
+content::WebContentsAccessibility *RenderWidgetHostViewQt::GetWebContentsAccessibility()
 {
-    Q_UNUSED(for_root_frame); // FIXME
-#if QT_CONFIG(accessibility)
-    return new content::BrowserAccessibilityManagerQt(
-        m_adapterClient->accessibilityParentObject(),
-        content::BrowserAccessibilityManagerQt::GetEmptyDocument(),
-        delegate);
-#else
-    return 0;
-#endif // QT_CONFIG(accessibility)
+    if (!m_webContentsAccessibility)
+        m_webContentsAccessibility.reset(new WebContentsAccessibilityQt(this));
+    return m_webContentsAccessibility.get();
+}
+
+QObject *WebContentsAccessibilityQt::accessibilityParentObject() const
+{
+    return m_rwhv->m_adapterClient->accessibilityParentObject();
 }
 
 // Set focus to the associated View component.
@@ -1025,8 +1019,9 @@ void RenderWidgetHostViewQt::ResetFallbackToFirstNavigationSurface()
 {
 }
 
-void RenderWidgetHostViewQt::OnRenderFrameMetadataChangedAfterActivation()
+void RenderWidgetHostViewQt::OnRenderFrameMetadataChangedAfterActivation(base::TimeTicks activation_time)
 {
+    Q_UNUSED(activation_time);
     const cc::RenderFrameMetadata &metadata = host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
     if (metadata.selection.start != m_selectionStart || metadata.selection.end != m_selectionEnd) {
         m_selectionStart = metadata.selection.start;

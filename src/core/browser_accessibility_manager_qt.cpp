@@ -40,30 +40,41 @@
 #include "browser_accessibility_manager_qt.h"
 
 #include "ui/accessibility/ax_enums.mojom.h"
+
 #include "browser_accessibility_qt.h"
+#include "render_widget_host_view_qt.h"
 
 using namespace blink;
 
 namespace content {
 
-BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-      const ui::AXTreeUpdate& initialTree,
-      BrowserAccessibilityDelegate* delegate)
+// static
+BrowserAccessibilityManager *BrowserAccessibilityManager::Create(
+        const ui::AXTreeUpdate &initialTree,
+        BrowserAccessibilityDelegate *delegate)
 {
 #if QT_CONFIG(accessibility)
-    return new BrowserAccessibilityManagerQt(nullptr, initialTree, delegate);
+    Q_ASSERT(delegate);
+    QObject *parent = nullptr;
+    if (delegate->AccessibilityIsMainFrame()) {
+        auto *access = static_cast<QtWebEngineCore::WebContentsAccessibilityQt *>(delegate->AccessibilityGetWebContentsAccessibility());
+        parent = access ? access->accessibilityParentObject() : nullptr;
+    }
+    return new BrowserAccessibilityManagerQt(parent, initialTree, delegate);
 #else
     return nullptr;
 #endif // QT_CONFIG(accessibility)
 }
 
-BrowserAccessibility *BrowserAccessibility::Create()
+// static
+BrowserAccessibilityManager *BrowserAccessibilityManager::Create(
+        BrowserAccessibilityDelegate *delegate)
 {
 #if QT_CONFIG(accessibility)
-    return new BrowserAccessibilityQt();
+    return BrowserAccessibilityManager::Create(BrowserAccessibilityManagerQt::GetEmptyDocument(), delegate);
 #else
     return nullptr;
-#endif // QT_CONFIG(accessibility)
+#endif
 }
 
 #if QT_CONFIG(accessibility)

@@ -114,7 +114,7 @@ public:
     bool IsPluginHandledExternally(content::RenderFrame *embedder_frame,
                                    const blink::WebElement &plugin_element,
                                    const GURL &original_url,
-                                   const std::string &original_mime_type);
+                                   const std::string &original_mime_type) override;
     bool OverrideCreatePlugin(content::RenderFrame *render_frame,
                               const blink::WebPluginParams &params,
                               blink::WebPlugin **plugin) override;
@@ -125,8 +125,7 @@ public:
                          const blink::WebURL &url,
                          const net::SiteForCookies &site_for_cookies,
                          const url::Origin *initiator_origin,
-                         GURL *new_url,
-                         bool *attach_same_site_cookies) override;
+                         GURL *new_url) override;
 
 #if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
     chrome::WebRtcLoggingAgentImpl *GetWebRtcLoggingAgent();

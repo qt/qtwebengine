@@ -95,8 +95,8 @@
 #endif //ENABLE_EXTENSIONS
 
 #if BUILDFLAG(ENABLE_PLUGINS)
+#include "content/renderer/render_frame_impl.h"
 #include "plugins/loadable_plugin_placeholder_qt.h"
-#include "content/common/frame_messages.h"
 #endif // ENABLE_PLUGINS
 
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -336,10 +336,11 @@ bool ContentRendererClientQt::IsPluginHandledExternally(content::RenderFrame *re
     content::WebPluginInfo plugin_info;
     std::string mime_type;
 
-    render_frame->Send(new FrameHostMsg_GetPluginInfo(render_frame->GetRoutingID(), original_url,
-                                                      render_frame->GetWebFrame()->Top()->GetSecurityOrigin(),
-                                                      original_mime_type, &found, &plugin_info, &mime_type));
-
+    static_cast<content::RenderFrameImpl *>(render_frame)->GetPepperHost()->GetPluginInfo(
+                original_url, render_frame->GetWebFrame()->Top()->GetSecurityOrigin(),
+                original_mime_type, &found, &plugin_info, &mime_type);
+    if (!found)
+        return false;
     return extensions::MimeHandlerViewContainerManager::Get(
                 content::RenderFrame::FromWebFrame(
                     plugin_element.GetDocument().GetFrame()),
@@ -364,9 +365,9 @@ bool ContentRendererClientQt::OverrideCreatePlugin(content::RenderFrame *render_
     std::string mime_type;
     bool found = false;
 
-    render_frame->Send(new FrameHostMsg_GetPluginInfo(render_frame->GetRoutingID(), params.url,
-                                                      render_frame->GetWebFrame()->Top()->GetSecurityOrigin(),
-                                                      params.mime_type.Utf8(), &found, &info, &mime_type));
+    static_cast<content::RenderFrameImpl *>(render_frame)->GetPepperHost()->GetPluginInfo(
+                params.url, render_frame->GetWebFrame()->Top()->GetSecurityOrigin(),
+                params.mime_type.Utf8(), &found, &info, &mime_type);
     if (!found)
         *plugin = LoadablePluginPlaceholderQt::CreateLoadableMissingPlugin(render_frame, params)->plugin();
     else
@@ -606,12 +607,11 @@ void ContentRendererClientQt::WillSendRequest(blink::WebLocalFrame *frame,
                                               const blink::WebURL &url,
                                               const net::SiteForCookies &site_for_cookies,
                                               const url::Origin *initiator_origin,
-                                              GURL *new_url,
-                                              bool *attach_same_site_cookies)
+                                              GURL *new_url)
 {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    ExtensionsRendererClientQt::GetInstance()->WillSendRequest(frame, transition_type, url, /*site_for_cookies,*/
-                                                               initiator_origin, new_url, attach_same_site_cookies);
+    ExtensionsRendererClientQt::GetInstance()->WillSendRequest(frame, transition_type, url, site_for_cookies,
+                                                               initiator_origin, new_url);
     if (!new_url->is_empty())
         return;
 #endif

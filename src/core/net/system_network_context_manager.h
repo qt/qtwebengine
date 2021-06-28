@@ -54,6 +54,11 @@
 
 #include "net/proxy_config_monitor.h"
 
+namespace cert_verifier {
+namespace mojom {
+class CertVerifierCreationParams;
+}}
+
 namespace network {
 namespace mojom {
 class URLLoaderFactory;
@@ -121,7 +126,8 @@ public:
     void AddSSLConfigToNetworkContextParams(network::mojom::NetworkContextParams *network_context_params);
 
     // Configures the default set of parameters for the network context.
-    void ConfigureDefaultNetworkContextParams(network::mojom::NetworkContextParams *);
+    void ConfigureDefaultNetworkContextParams(network::mojom::NetworkContextParams *,
+                                              cert_verifier::mojom::CertVerifierCreationParams *);
 
 private:
     class URLLoaderFactoryForSystem;

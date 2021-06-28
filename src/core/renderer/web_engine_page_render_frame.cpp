@@ -68,16 +68,16 @@ void WebEnginePageRenderFrame::BindReceiver(
 void WebEnginePageRenderFrame::FetchDocumentMarkup(uint64_t requestId,
                                                    FetchDocumentMarkupCallback callback)
 {
-    blink::WebString markup =
-            blink::WebFrameContentDumper::DumpAsMarkup(render_frame()->GetWebFrame());
+    blink::WebString markup = blink::WebFrameContentDumper::DumpAsMarkup(
+            render_frame()->GetWebFrame()) ;
     std::move(callback).Run(requestId, markup.Utf8());
 }
 
 void WebEnginePageRenderFrame::FetchDocumentInnerText(uint64_t requestId,
                                                       FetchDocumentInnerTextCallback callback)
 {
-    blink::WebString text = blink::WebFrameContentDumper::DumpWebViewAsText(
-            render_frame()->GetWebFrame()->View(), std::numeric_limits<std::size_t>::max());
+    blink::WebString text = blink::WebFrameContentDumper::DumpFrameTreeAsText(
+            render_frame()->GetWebFrame(), std::numeric_limits<std::size_t>::max());
     std::move(callback).Run(requestId, text.Utf8());
 }
 

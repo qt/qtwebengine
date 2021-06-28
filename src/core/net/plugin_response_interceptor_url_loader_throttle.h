@@ -42,6 +42,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
@@ -54,7 +55,8 @@ class PluginResponseInterceptorURLLoaderThrottle : public blink::URLLoaderThrott
 {
 public:
     PluginResponseInterceptorURLLoaderThrottle(content::BrowserContext *browser_context,
-                                               int resource_type, int frame_tree_node_id);
+                                               network::mojom::RequestDestination request_destination,
+                                               int frame_tree_node_id);
     ~PluginResponseInterceptorURLLoaderThrottle() override = default;
 
 private:
@@ -66,7 +68,7 @@ private:
     void ResumeLoad();
 
     content::BrowserContext *m_browser_context = nullptr;
-    const int m_resource_type;
+    const network::mojom::RequestDestination m_request_destination;
     const int m_frame_tree_node_id;
 
     base::WeakPtrFactory<PluginResponseInterceptorURLLoaderThrottle>

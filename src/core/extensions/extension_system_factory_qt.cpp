@@ -44,7 +44,6 @@
 #include "extension_system_factory_qt.h"
 
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "extensions/browser/declarative_user_script_manager_factory.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_registry_factory.h"

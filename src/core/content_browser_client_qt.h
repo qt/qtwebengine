@@ -78,7 +78,7 @@ public:
     gl::GLShareGroup* GetInProcessGpuShareGroup() override;
     content::MediaObserver* GetMediaObserver() override;
     scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext() override;
-    void OverrideWebkitPrefs(content::RenderViewHost *render_view_host,
+    void OverrideWebkitPrefs(content::WebContents *web_contents,
                              blink::web_pref::WebPreferences *prefs) override;
     void AllowCertificateError(content::WebContents *web_contents,
                                int cert_error,
@@ -109,14 +109,10 @@ public:
                                      mojo::GenericPendingReceiver receiver) override;
     void RegisterBrowserInterfaceBindersForFrame(content::RenderFrameHost *render_frame_host,
                                                  mojo::BinderMapWithContext<content::RenderFrameHost *> *map) override;
-    void RunServiceInstance(const service_manager::Identity &identity,
-                            mojo::PendingReceiver<service_manager::mojom::Service> *receiver) override;
     void ExposeInterfacesToRenderer(service_manager::BinderRegistry *registry,
                                     blink::AssociatedInterfaceRegistry *associated_registry,
                                     content::RenderProcessHost *render_process_host) override;
 
-    std::vector<service_manager::Manifest> GetExtraServiceManifests() override;
-    base::Optional<service_manager::Manifest> GetServiceManifestOverlay(base::StringPiece name) override;
     bool CanCreateWindow(content::RenderFrameHost *opener,
                          const GURL &opener_url,
                          const GURL &opener_top_level_frame_url,
@@ -136,8 +132,7 @@ public:
             network::mojom::RestrictedCookieManagerRole role,
             content::BrowserContext *browser_context,
             const url::Origin &origin,
-            const net::SiteForCookies &site_for_cookies,
-            const url::Origin &top_frame_origin,
+            const net::IsolationInfo &isolation_info,
             bool is_service_worker,
             int process_id,
             int routing_id,
@@ -220,6 +215,8 @@ public:
 
     bool IsHandledURL(const GURL &url) override;
     bool HasErrorPage(int http_status_code, content::WebContents *contents) override;
+    bool HasCustomSchemeHandler(content::BrowserContext *browser_context,
+                                const std::string &scheme) override;
 
     bool WillCreateURLLoaderFactory(content::BrowserContext *browser_context,
                                     content::RenderFrameHost *frame,
@@ -240,7 +237,7 @@ public:
                                        bool in_memory,
                                        const base::FilePath &relative_partition_path,
                                        network::mojom::NetworkContextParams *network_context_params,
-                                       network::mojom::CertVerifierCreationParams *cert_verifier_creation_params) override;
+                                       cert_verifier::mojom::CertVerifierCreationParams *cert_verifier_creation_params) override;
 
     std::vector<base::FilePath> GetNetworkContextsParentDirectory() override;
     void RegisterNonNetworkNavigationURLLoaderFactories(int frame_tree_node_id,

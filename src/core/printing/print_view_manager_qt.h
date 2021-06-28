@@ -52,7 +52,6 @@
 #include "base/strings/string16.h"
 #include "components/prefs/pref_member.h"
 #include "components/printing/common/print.mojom.h"
-#include "components/printing/common/print_messages.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 
@@ -89,6 +88,8 @@ public:
 protected:
     explicit PrintViewManagerQt(content::WebContents*);
 
+    bool PrintToPDFInternal(const QPageLayout &, const QPageRanges &, bool printInColor, bool useCustomMargins = true);
+
     // content::WebContentsObserver implementation.
     // Cancels the print job.
     void NavigationStopped() override;
@@ -96,35 +97,21 @@ protected:
     // Terminates or cancels the print job if one was pending.
     void RenderProcessGone(base::TerminationStatus status) override;
 
-    // content::WebContentsObserver implementation.
-    bool OnMessageReceived(const IPC::Message& message,
-                           content::RenderFrameHost* render_frame_host) override;
     void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
-    // IPC handlers
-    void OnRequestPrintPreview(const PrintHostMsg_RequestPrintPreview_Params&);
-    void OnMetafileReadyForPrinting(content::RenderFrameHost* rfh,
-                                    const printing::mojom::DidPreviewDocumentParams& params,
-                                    const printing::mojom::PreviewIds &ids);
-    void OnSetupScriptedPrintPreview(content::RenderFrameHost* rfh,
-                                      IPC::Message* reply_msg);
-    void OnDidPreviewPage(content::RenderFrameHost* rfh,
-                          const printing::mojom::DidPreviewPageParams& params,
-                          const printing::mojom::PreviewIds& ids);
-    void OnShowScriptedPrintPreview(content::RenderFrameHost* rfh,
-                                    bool source_is_modifiable);
-    bool PrintToPDFInternal(const QPageLayout &, const QPageRanges &,
-                            bool printInColor, bool useCustomMargins = true);
+    // mojom::PrintManagerHost:
+    void SetupScriptedPrintPreview(SetupScriptedPrintPreviewCallback callback) override;
+    void ShowScriptedPrintPreview(bool source_is_modifiable) override;
+    void RequestPrintPreview(printing::mojom::RequestPrintPreviewParamsPtr params) override;
+    void CheckForCancel(int32_t preview_ui_id,
+                        int32_t request_id,
+                        CheckForCancelCallback callback) override;
+    void MetafileReadyForPrinting(printing::mojom::DidPreviewDocumentParamsPtr params,
+                                  int32_t preview_ui_id) override;
 
 private:
     void resetPdfState();
 
-    // Helper method to fetch the PrintRenderFrame associated remote interface
-    // pointer.
-    const mojo::AssociatedRemote<printing::mojom::PrintRenderFrame> &GetPrintRenderFrame(content::RenderFrameHost *rfh);
-
-    // content::WebContentsObserver implementation.
-    void DidStartLoading() override;
     void PrintPreviewDone();
 
 private:
@@ -135,11 +122,8 @@ private:
     PrintToPDFFileCallback m_pdfSaveCallback;
     std::unique_ptr<base::DictionaryValue> m_printSettings;
 
-    std::map<content::RenderFrameHost*,mojo::AssociatedRemote<printing::mojom::PrintRenderFrame>> m_printRenderFrames;
-
     friend class content::WebContentsUserData<PrintViewManagerQt>;
     DISALLOW_COPY_AND_ASSIGN(PrintViewManagerQt);
-    struct FrameDispatchHelper;
 };
 
 } // namespace QtWebEngineCore

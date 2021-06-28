@@ -55,7 +55,7 @@ void ExtensionHostDelegateQt::OnExtensionHostCreated(content::WebContents *web_c
     extensions::ExtensionWebContentsObserverQt::CreateForWebContents(web_contents);
 }
 
-void ExtensionHostDelegateQt::OnRenderViewCreatedForBackgroundPage(ExtensionHost *host)
+void ExtensionHostDelegateQt::OnMainFrameCreatedForBackgroundPage(ExtensionHost *host)
 {
     Q_UNUSED(host);
 }

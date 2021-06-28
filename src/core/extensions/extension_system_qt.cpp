@@ -84,8 +84,8 @@
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/browser/runtime_data.h"
-#include "extensions/browser/shared_user_script_manager.h"
 #include "extensions/browser/service_worker_manager.h"
+#include "extensions/browser/user_script_manager.h"
 #include "extensions/browser/value_store/value_store_factory_impl.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_constants.h"
@@ -279,9 +279,9 @@ ManagementPolicy *ExtensionSystemQt::management_policy()
     return nullptr;
 }
 
-SharedUserScriptManager *ExtensionSystemQt::shared_user_script_manager()
+UserScriptManager *ExtensionSystemQt::user_script_manager()
 {
-    return shared_user_script_manager_.get();
+    return user_script_manager_.get();
 }
 
 StateStore *ExtensionSystemQt::state_store()
@@ -350,8 +350,8 @@ void ExtensionSystemQt::Init(bool extensions_enabled)
     quota_service_.reset(new QuotaService);
     app_sorting_.reset(new NullAppSorting);
 
-    shared_user_script_manager_ =
-        std::make_unique<SharedUserScriptManager>(browser_context_);
+    user_script_manager_ =
+        std::make_unique<UserScriptManager>(browser_context_);
 
     // Make the chrome://extension-icon/ resource available.
     // content::URLDataSource::Add(browser_context_, new ExtensionIconSource(browser_context_));

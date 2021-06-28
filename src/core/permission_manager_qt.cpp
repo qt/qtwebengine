@@ -69,8 +69,8 @@ static ProfileAdapter::PermissionType toQt(content::PermissionType type)
         return ProfileAdapter::NotificationPermission;
     case content::PermissionType::ACCESSIBILITY_EVENTS:
     case content::PermissionType::CAMERA_PAN_TILT_ZOOM:
+    case content::PermissionType::WINDOW_PLACEMENT:
         return ProfileAdapter::UnsupportedPermission;
-    case content::PermissionType::FLASH:
     case content::PermissionType::MIDI_SYSEX:
     case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
     case content::PermissionType::MIDI:
@@ -87,8 +87,8 @@ static ProfileAdapter::PermissionType toQt(content::PermissionType type)
     case content::PermissionType::AR:
     case content::PermissionType::VR:
     case content::PermissionType::STORAGE_ACCESS_GRANT:
-    case content::PermissionType::WINDOW_PLACEMENT:
     case content::PermissionType::FONT_ACCESS:
+    case content::PermissionType::DISPLAY_CAPTURE:
     case content::PermissionType::NUM:
         LOG(INFO) << "Unexpected unsupported permission type: " << static_cast<int>(type);
         break;

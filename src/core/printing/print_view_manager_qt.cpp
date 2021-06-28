@@ -59,7 +59,6 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "components/printing/common/print.mojom.h"
-#include "components/printing/common/print_messages.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -202,19 +201,6 @@ static base::ListValue *createPageRangeSettings(const QList<QPageRanges::Range> 
 
 namespace QtWebEngineCore {
 
-struct PrintViewManagerQt::FrameDispatchHelper {
-    PrintViewManagerQt* m_manager;
-    content::RenderFrameHost* m_renderFrameHost;
-
-    bool Send(IPC::Message* msg) {
-        return m_renderFrameHost->Send(msg);
-    }
-
-    void OnSetupScriptedPrintPreview(IPC::Message* reply_msg) {
-        m_manager->OnSetupScriptedPrintPreview(m_renderFrameHost, reply_msg);
-    }
-};
-
 PrintViewManagerQt::~PrintViewManagerQt()
 {
 }
@@ -303,51 +289,6 @@ PrintViewManagerQt::PrintViewManagerQt(content::WebContents *contents)
 
 }
 
-// content::WebContentsObserver implementation.
-bool PrintViewManagerQt::OnMessageReceived(const IPC::Message& message,
-                                           content::RenderFrameHost* render_frame_host)
-{
-    FrameDispatchHelper helper = {this, render_frame_host};
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(PrintViewManagerQt, message, render_frame_host);
-        IPC_MESSAGE_HANDLER(PrintHostMsg_RequestPrintPreview, OnRequestPrintPreview)
-        IPC_MESSAGE_HANDLER(PrintHostMsg_MetafileReadyForPrinting, OnMetafileReadyForPrinting);
-        IPC_MESSAGE_HANDLER(PrintHostMsg_DidPreviewPage, OnDidPreviewPage)
-        IPC_MESSAGE_FORWARD_DELAY_REPLY(
-                PrintHostMsg_SetupScriptedPrintPreview, &helper,
-                FrameDispatchHelper::OnSetupScriptedPrintPreview)
-        IPC_MESSAGE_HANDLER(PrintHostMsg_ShowScriptedPrintPreview,
-                                       OnShowScriptedPrintPreview)
-        IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled || PrintViewManagerBaseQt::OnMessageReceived(message, render_frame_host);
-}
-
-void PrintViewManagerQt::RenderFrameDeleted(content::RenderFrameHost *render_frame_host)
-{
-    if (render_frame_host == m_printPreviewRfh)
-        PrintPreviewDone();
-    PrintViewManagerBaseQt::RenderFrameDeleted(render_frame_host);
-    m_printRenderFrames.erase(render_frame_host);
-}
-
-const mojo::AssociatedRemote<printing::mojom::PrintRenderFrame> &PrintViewManagerQt::GetPrintRenderFrame(content::RenderFrameHost *rfh)
-{
-    auto it = m_printRenderFrames.find(rfh);
-    if (it == m_printRenderFrames.end()) {
-        mojo::AssociatedRemote<printing::mojom::PrintRenderFrame> remote;
-        rfh->GetRemoteAssociatedInterfaces()->GetInterface(&remote);
-        it = m_printRenderFrames.insert(std::make_pair(rfh, std::move(remote))).first;
-    } else if (it->second.is_bound() && !it->second.is_connected()) {
-        // When print preview is closed, the remote is disconnected from the
-        // receiver. Reset and bind the remote before using it again.
-        it->second.reset();
-        rfh->GetRemoteAssociatedInterfaces()->GetInterface(&it->second);
-    }
-
-    return it->second;
-}
-
 void PrintViewManagerQt::resetPdfState()
 {
     m_pdfOutputPath.clear();
@@ -356,44 +297,11 @@ void PrintViewManagerQt::resetPdfState()
     m_printSettings.reset();
 }
 
-// IPC handlers
-
-void PrintViewManagerQt::OnRequestPrintPreview(
-    const PrintHostMsg_RequestPrintPreview_Params & /*params*/)
+void PrintViewManagerQt::PrintPreviewDone()
 {
-    mojo::AssociatedRemote<printing::mojom::PrintRenderFrame> printRenderFrame;
-    m_printPreviewRfh->GetRemoteAssociatedInterfaces()->GetInterface(&printRenderFrame);
-    printRenderFrame->PrintPreview(m_printSettings->Clone());
-    PrintPreviewDone();
-}
-
-void PrintViewManagerQt::OnMetafileReadyForPrinting(content::RenderFrameHost* rfh,
-                                                    const printing::mojom::DidPreviewDocumentParams& params,
-                                                    const printing::mojom::PreviewIds &ids)
-{
-    StopWorker(params.document_cookie);
-
-    // Create local copies so we can reset the state and take a new pdf print job.
-    PrintToPDFCallback pdf_print_callback = std::move(m_pdfPrintCallback);
-    PrintToPDFFileCallback pdf_save_callback = std::move(m_pdfSaveCallback);
-    base::FilePath pdfOutputPath = m_pdfOutputPath;
-
-    resetPdfState();
-
-    if (!pdf_print_callback.is_null()) {
-        QSharedPointer<QByteArray> data_array = GetStdVectorFromHandle(params.content->metafile_data_region);
-        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                       base::BindOnce(pdf_print_callback, data_array));
-    } else {
-        scoped_refptr<base::RefCountedBytes> data_bytes = GetBytesFromHandle(params.content->metafile_data_region);
-        base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                       base::BindOnce(&SavePdfFile, data_bytes, pdfOutputPath, pdf_save_callback));
-    }
-}
-
-// content::WebContentsObserver implementation.
-void PrintViewManagerQt::DidStartLoading()
-{
+    if (IsPrintRenderFrameConnected(m_printPreviewRfh))
+        GetPrintRenderFrame(m_printPreviewRfh)->OnPrintPreviewDialogClosed();
+    m_printPreviewRfh = nullptr;
 }
 
 // content::WebContentsObserver implementation.
@@ -418,40 +326,77 @@ void PrintViewManagerQt::RenderProcessGone(base::TerminationStatus status)
     resetPdfState();
 }
 
-void PrintViewManagerQt::OnDidPreviewPage(content::RenderFrameHost* rfh,
-                                          const printing::mojom::DidPreviewPageParams &params,
-                                          const printing::mojom::PreviewIds& ids)
+void PrintViewManagerQt::RenderFrameDeleted(content::RenderFrameHost *render_frame_host)
 {
-    // just consume the message, this is just for sending 'page-preview-ready' for webui
+    if (render_frame_host == m_printPreviewRfh)
+        PrintPreviewDone();
+    PrintViewManagerBaseQt::RenderFrameDeleted(render_frame_host);
 }
 
-void PrintViewManagerQt::OnSetupScriptedPrintPreview(content::RenderFrameHost* rfh,
-                                                     IPC::Message* reply_msg)
+// mojom::PrintManagerHost:
+void PrintViewManagerQt::SetupScriptedPrintPreview(SetupScriptedPrintPreviewCallback callback)
 {
     // ignore the scripted print
-    rfh->Send(reply_msg);
+    std::move(callback).Run();
 
     content::WebContentsView *view = static_cast<content::WebContentsImpl*>(web_contents())->GetView();
     WebContentsAdapterClient *client = WebContentsViewQt::from(view)->client();
-
+    content::RenderFrameHost *rfh =
+        print_manager_host_receivers_.GetCurrentTargetFrame();
     if (!client)
         return;
 
     // close preview
-    GetPrintRenderFrame(rfh)->OnPrintPreviewDialogClosed();
+    if (rfh)
+        GetPrintRenderFrame(rfh)->OnPrintPreviewDialogClosed();
 
     client->printRequested();
 }
 
-void PrintViewManagerQt::OnShowScriptedPrintPreview(content::RenderFrameHost* rfh,
-                                                    bool source_is_modifiable)
+void PrintViewManagerQt::ShowScriptedPrintPreview(bool /*source_is_modifiable*/)
 {
     // ignore for now
 }
 
-void PrintViewManagerQt::PrintPreviewDone() {
-    GetPrintRenderFrame(m_printPreviewRfh)->OnPrintPreviewDialogClosed();
-    m_printPreviewRfh = nullptr;
+void PrintViewManagerQt::RequestPrintPreview(printing::mojom::RequestPrintPreviewParamsPtr /*params*/)
+{
+    mojo::AssociatedRemote<printing::mojom::PrintRenderFrame> printRenderFrame;
+    m_printPreviewRfh->GetRemoteAssociatedInterfaces()->GetInterface(&printRenderFrame);
+    printRenderFrame->PrintPreview(m_printSettings->Clone());
+    PrintPreviewDone();
+}
+
+void PrintViewManagerQt::CheckForCancel(int32_t preview_ui_id,
+                                        int32_t request_id,
+                                        CheckForCancelCallback callback)
+{
+    Q_UNUSED(preview_ui_id);
+    Q_UNUSED(request_id);
+    std::move(callback).Run(false);
+}
+
+void PrintViewManagerQt::MetafileReadyForPrinting(printing::mojom::DidPreviewDocumentParamsPtr params,
+                                                  int32_t preview_ui_id)
+{
+    Q_UNUSED(preview_ui_id);
+    StopWorker(params->document_cookie);
+
+    // Create local copies so we can reset the state and take a new pdf print job.
+    PrintToPDFCallback pdf_print_callback = std::move(m_pdfPrintCallback);
+    PrintToPDFFileCallback pdf_save_callback = std::move(m_pdfSaveCallback);
+    base::FilePath pdfOutputPath = m_pdfOutputPath;
+
+    resetPdfState();
+
+    if (!pdf_print_callback.is_null()) {
+        QSharedPointer<QByteArray> data_array = GetStdVectorFromHandle(params->content->metafile_data_region);
+        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                       base::BindOnce(pdf_print_callback, data_array));
+    } else {
+        scoped_refptr<base::RefCountedBytes> data_bytes = GetBytesFromHandle(params->content->metafile_data_region);
+        base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+                       base::BindOnce(&SavePdfFile, data_bytes, pdfOutputPath, pdf_save_callback));
+    }
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PrintViewManagerQt)

@@ -37,6 +37,11 @@
 **
 ****************************************************************************/
 
+// based on chrome/browser/plugins/plugin_response_interceptor_url_loader_throttle.cc
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "plugin_response_interceptor_url_loader_throttle.h"
 
 #include "base/bind.h"
@@ -63,8 +68,10 @@
 namespace QtWebEngineCore {
 
 PluginResponseInterceptorURLLoaderThrottle::PluginResponseInterceptorURLLoaderThrottle(
-        content::BrowserContext *browser_context, int resource_type, int frame_tree_node_id)
-    : m_browser_context(browser_context), m_resource_type(resource_type), m_frame_tree_node_id(frame_tree_node_id)
+        content::BrowserContext *browser_context,
+        network::mojom::RequestDestination request_destination,
+        int frame_tree_node_id)
+    : m_browser_context(browser_context), m_request_destination(request_destination), m_frame_tree_node_id(frame_tree_node_id)
 {}
 
 void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL &response_url,
@@ -127,14 +134,17 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
             &PluginResponseInterceptorURLLoaderThrottle::ResumeLoad,
             weak_factory_.GetWeakPtr()));
 
-    mojo::DataPipe data_pipe(data_pipe_size);
+    mojo::ScopedDataPipeProducerHandle producer_handle;
+    mojo::ScopedDataPipeConsumerHandle consumer_handle;
+    CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(data_pipe_size, producer_handle, consumer_handle));
+
     uint32_t len = static_cast<uint32_t>(payload.size());
     CHECK_EQ(MOJO_RESULT_OK,
-                data_pipe.producer_handle->WriteData(
+                producer_handle->WriteData(
                     payload.c_str(), &len, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
 
 
-    new_client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
+    new_client->OnStartLoadingResponseBody(std::move(consumer_handle));
 
     network::URLLoaderCompletionStatus status(net::OK);
     status.decoded_body_length = len;
@@ -163,8 +173,8 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
     transferrable_loader->head = std::move(deep_copied_response);
     transferrable_loader->head->intercepted_by_plugin = true;
 
-    bool embedded = m_resource_type !=
-                        static_cast<int>(blink::mojom::ResourceType::kMainFrame);
+    bool embedded = m_request_destination !=
+            network::mojom::RequestDestination::kDocument;
     content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -174,7 +184,8 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
             std::move(transferrable_loader), response_url));
 }
 
-void PluginResponseInterceptorURLLoaderThrottle::ResumeLoad() {
+void PluginResponseInterceptorURLLoaderThrottle::ResumeLoad()
+{
     delegate_->Resume();
 }
 

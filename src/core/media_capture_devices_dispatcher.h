@@ -51,9 +51,8 @@
 #include "base/containers/circular_deque.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
+#include "chrome/browser/tab_contents/web_contents_collection.h"
 #include "content/public/browser/media_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 
 namespace QtWebEngineCore {
@@ -61,7 +60,7 @@ namespace QtWebEngineCore {
 // This singleton is used to receive updates about media events from the content
 // layer. Based on Chrome's implementation.
 class MediaCaptureDevicesDispatcher : public content::MediaObserver,
-                                      public content::NotificationObserver
+                                      public WebContentsCollection::Observer
 {
 public:
     static MediaCaptureDevicesDispatcher *GetInstance();
@@ -111,8 +110,8 @@ private:
     MediaCaptureDevicesDispatcher();
     virtual ~MediaCaptureDevicesDispatcher();
 
-    // content::NotificationObserver implementation.
-    void Observe(int type, const content::NotificationSource &source, const content::NotificationDetails &details) override;
+    // WebContentsCollection::Observer:
+    void WebContentsDestroyed(content::WebContents *webContents) override;
 
     // Helpers for ProcessMediaAccessRequest().
     void processDesktopCaptureAccessRequest(content::WebContents *, const content::MediaStreamRequest &, content::MediaResponseCallback);
@@ -125,7 +124,7 @@ private:
 
     RequestsQueues m_pendingRequests;
 
-    content::NotificationRegistrar m_notificationsRegistrar;
+    WebContentsCollection m_webContentsCollection;
 
     bool m_loopbackAudioSupported = false;
 

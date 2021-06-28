@@ -51,7 +51,7 @@
 #ifndef PROFILE_ADAPTER_CLIENT_H
 #define PROFILE_ADAPTER_CLIENT_H
 
-#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
+#include "api/qtwebenginecoreglobal_p.h"
 #include <QSharedPointer>
 #include <QString>
 #include <QUrl>

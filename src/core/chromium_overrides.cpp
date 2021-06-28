@@ -42,7 +42,6 @@
 #include "web_contents_view_qt.h"
 
 #include "base/values.h"
-#include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/font_list.h"
@@ -137,16 +136,6 @@ ActivationClient *GetActivationClient(aura::Window *)
 
 } // namespace wm
 #endif // defined(USE_AURA) || defined(USE_OZONE)
-
-namespace content {
-std::vector<AccessibilityTreeFormatter::TestPass> AccessibilityTreeFormatter::GetTestPasses()
-{
-    return {
-        {"blink", &AccessibilityTreeFormatterBlink::CreateBlink, nullptr},
-        {"native", &AccessibilityTreeFormatter::Create, nullptr},
-    };
-}
-} // namespace content
 
 std::unique_ptr<ui::OSExchangeDataProvider> ui::OSExchangeDataProviderFactory::CreateProvider()
 {

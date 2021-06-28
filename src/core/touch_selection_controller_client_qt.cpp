@@ -285,8 +285,9 @@ void TouchSelectionControllerClientQt::OnSelectionEvent(ui::SelectionEventType e
     updateMenu();
 }
 
-void TouchSelectionControllerClientQt::OnDragUpdate(const gfx::PointF& position)
+void TouchSelectionControllerClientQt::OnDragUpdate(const ui::TouchSelectionDraggable::Type type, const gfx::PointF& position)
 {
+    Q_UNUSED(type);
     Q_UNUSED(position);
 }
 

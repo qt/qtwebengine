@@ -58,7 +58,8 @@ source_set("qtwebengine_sources") {
 
   deps = [
     "//build:branding_buildflags",
-    "//chrome/browser/resources/quota_internals:quota_internals_resources",
+    "//chrome/browser/resources/net_internals:resources",
+    "//chrome/browser/resources/quota_internals:resources",
     "//chrome/common:buildflags",
     "//components/nacl/common:buildflags",
     "//components/performance_manager",
@@ -86,6 +87,8 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/profiles/profile.h",
     "//chrome/browser/tab_contents/form_interaction_tab_helper.cc",
     "//chrome/browser/tab_contents/form_interaction_tab_helper.h",
+    "//chrome/browser/tab_contents/web_contents_collection.cc",
+    "//chrome/browser/tab_contents/web_contents_collection.h",
     "//chrome/browser/ui/webui/devtools_ui.cc",
     "//chrome/browser/ui/webui/devtools_ui.h",
     "//chrome/browser/ui/webui/devtools_ui_data_source.cc",

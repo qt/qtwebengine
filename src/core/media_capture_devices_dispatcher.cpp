@@ -55,13 +55,10 @@
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/desktop_streams_registry.h"
 #include "content/public/browser/media_capture_devices.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager_base.h"
-#include "third_party/blink/public/common/loader/network_utils.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if QT_CONFIG(webengine_webrtc)
@@ -281,11 +278,6 @@ private:
         Q_UNUSED(media_id);
     }
 
-    void SetStopCallback(base::OnceClosure stop) override
-    {
-        m_onStop = std::move(stop);
-    }
-
     base::WeakPtr<WebContentsDelegateQt> m_delegate;
     const blink::MediaStreamDevices m_devices;
     bool m_started = false;
@@ -380,36 +372,29 @@ MediaCaptureDevicesDispatcher *MediaCaptureDevicesDispatcher::GetInstance()
 }
 
 MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
+    : m_webContentsCollection(this)
 {
-    // MediaCaptureDevicesDispatcher is a singleton. It should be created on
-    // UI thread. Otherwise, it will not receive
-    // content::NOTIFICATION_WEB_CONTENTS_DESTROYED, and that will result in
-    // possible use after free.
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_WIN)
     // Currently loopback audio capture is supported only on Windows.
     m_loopbackAudioSupported = true;
 #endif
-    m_notificationsRegistrar.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                                 content::NotificationService::AllSources());
 }
 
 MediaCaptureDevicesDispatcher::~MediaCaptureDevicesDispatcher()
 {
 }
 
-void MediaCaptureDevicesDispatcher::Observe(int type, const content::NotificationSource &source, const content::NotificationDetails &details)
+void MediaCaptureDevicesDispatcher::WebContentsDestroyed(content::WebContents *webContents)
 {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
-        content::WebContents *webContents = content::Source<content::WebContents>(source).ptr();
-        m_pendingRequests.erase(webContents);
-    }
+    m_pendingRequests.erase(webContents);
 }
 
 void MediaCaptureDevicesDispatcher::processMediaAccessRequest(content::WebContents *webContents, const content::MediaStreamRequest &request, content::MediaResponseCallback callback)
 {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    // Ensure we are observing the deletion of |webContents|.
+    m_webContentsCollection.StartObserving(webContents);
 
     WebContentsAdapterClient::MediaRequestFlags flags = mediaRequestFlagsForRequest(request);
     if (!flags) {
@@ -423,7 +408,7 @@ void MediaCaptureDevicesDispatcher::processMediaAccessRequest(content::WebConten
     if (flags.testFlag(WebContentsAdapterClient::MediaDesktopVideoCapture)) {
         const bool screenCaptureEnabled = adapterClient->webEngineSettings()->testAttribute(
                 QWebEngineSettings::ScreenCaptureEnabled);
-        const bool originIsSecure = blink::network_utils::IsOriginSecure(request.security_origin);
+        const bool originIsSecure = network::IsUrlPotentiallyTrustworthy(request.security_origin);
         if (!screenCaptureEnabled || !originIsSecure) {
             std::move(callback).Run(blink::MediaStreamDevices(), MediaStreamRequestResult::INVALID_STATE, std::unique_ptr<content::MediaStreamUI>());
             return;

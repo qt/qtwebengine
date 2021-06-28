@@ -61,7 +61,7 @@ public:
     void Show(bool inactive = false) override { }
     void Hide() override { }
     void Close() override { }
-    bool IsVisible() const { return true; }
+    bool IsVisible() const override { return true; }
     void SetTitle(const base::string16&) override { }
     void SetCapture() override { }
     void ReleaseCapture() override { }

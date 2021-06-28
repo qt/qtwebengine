@@ -53,6 +53,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
 #include "pdf/buildflags.h"
+#include "ppapi/buildflags/buildflags.h"
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "chrome/grit/pdf_resources_map.h"
+#endif
 
 #if BUILDFLAG(ENABLE_PDF)
 #include "qtwebengine/browser/pdf/pdf_extension_util.h"
@@ -64,7 +69,9 @@ ComponentExtensionResourceManagerQt::ComponentExtensionResourceManagerQt()
 {
     AddComponentResourceEntries(kComponentExtensionResources,
                                 kComponentExtensionResourcesSize);
-
+#if BUILDFLAG(ENABLE_PLUGINS)
+    AddComponentResourceEntries(kPdfResources, kPdfResourcesSize);
+#endif
 #if BUILDFLAG(ENABLE_PDF)
     base::Value dict(base::Value::Type::DICTIONARY);
     pdf_extension_util::AddStrings(pdf_extension_util::PdfViewerContext::kPdfViewer, &dict);
@@ -109,19 +116,18 @@ const ui::TemplateReplacements *ComponentExtensionResourceManagerQt::GetTemplate
     return it != template_replacements_.end() ? &it->second : nullptr;
 }
 
-void ComponentExtensionResourceManagerQt::AddComponentResourceEntries(const GritResourceMap *entries, size_t size)
+void ComponentExtensionResourceManagerQt::AddComponentResourceEntries(const webui::ResourcePath *entries, size_t size)
 {
     base::FilePath gen_folder_path = base::FilePath().AppendASCII("@out_folder@/gen/chrome/browser/resources/");
     gen_folder_path = gen_folder_path.NormalizePathSeparators();
 
     for (size_t i = 0; i < size; ++i) {
-        base::FilePath resource_path = base::FilePath().AppendASCII(entries[i].name);
+        base::FilePath resource_path = base::FilePath().AppendASCII(entries[i].path);
         resource_path = resource_path.NormalizePathSeparators();
-
 
         if (!gen_folder_path.IsParent(resource_path)) {
             DCHECK(!base::Contains(path_to_resource_id_, resource_path));
-            path_to_resource_id_[resource_path] = entries[i].value;
+            path_to_resource_id_[resource_path] = entries[i].id;
         } else {
             // If the resource is a generated file, strip the generated folder's path,
             // so that it can be served from a normal URL (as if it were not
@@ -130,7 +136,7 @@ void ComponentExtensionResourceManagerQt::AddComponentResourceEntries(const Grit
             base::FilePath().AppendASCII(resource_path.AsUTF8Unsafe().substr(
                     gen_folder_path.value().length()));
             DCHECK(!base::Contains(path_to_resource_id_, effective_path));
-            path_to_resource_id_[effective_path] = entries[i].value;
+            path_to_resource_id_[effective_path] = entries[i].id;
         }
     }
 }
