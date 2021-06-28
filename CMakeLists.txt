@@ -145,7 +145,8 @@ else()
     endif()
 endif()
 
-externalproject_add(libs
+# use qtwebengine as name since it is should visible for topLevel builds
+externalproject_add(qtwebengine
     SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/src
     BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR}/src
     PREFIX      libs
@@ -164,14 +165,14 @@ externalproject_add(libs
 )
 
 # required for topLevel build
-add_implicit_dependencies(libs Core Gui Widgets Network OpenGL
+add_implicit_dependencies(qtwebengine Core Gui Widgets Network OpenGL
     OpenGLWidgets Quick QuickWidgets Qml PrintSupport WebChannel Positioning
 )
 
 # Ensure the libs project is reconfigured if the root project is reconfigured, so that the
 # correct CMake and qmake support files are used when building examples, rather than
 # using the incomplete support files created by the root project.
-qt_internal_add_external_project_dependency_to_root_project(libs)
+qt_internal_add_external_project_dependency_to_root_project(qtwebengine)
 
 if(QT_BUILD_EXAMPLES AND BUILD_SHARED_LIBS)
     externalproject_add(qtwebengine_examples
@@ -183,7 +184,7 @@ if(QT_BUILD_EXAMPLES AND BUILD_SHARED_LIBS)
         CMAKE_ARGS  -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
                     "${featureList}"
     )
-    externalproject_add_stepdependencies(qtwebengine_examples install libs)
+    externalproject_add_stepdependencies(qtwebengine_examples install qtwebengine)
 endif()
 
 if(FORCE_TEST_RUN OR QT_BUILD_TESTS)
@@ -204,14 +205,14 @@ if(FORCE_TEST_RUN OR QT_BUILD_TESTS)
          INSTALL_COMMAND ""
          ${testRunCommand}
     )
-    externalproject_add_stepdependencies(qtwebengine_tests install libs)
+    externalproject_add_stepdependencies(qtwebengine_tests install qtwebengine)
     if(QT_BUILD_EXAMPLES AND BUILD_SHARED_LIBS)
        externalproject_add_stepdependencies(qtwebengine_tests install qtwebengine_examples)
     endif()
 endif()
 
 if(NOT Gn_FOUND)
-    externalproject_add_stepdependencies(libs install gn)
+    externalproject_add_stepdependencies(qtwebengine install gn)
 endif()
 
 if(NOT Ninja_FOUND)
