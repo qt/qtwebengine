@@ -72,6 +72,7 @@ class QQuickWebEngineClientCertificateSelection;
 class QQuickWebEngineColorDialogRequest;
 class QQuickWebEngineFileDialogRequest;
 class QQuickWebEngineJavaScriptDialogRequest;
+class QQuickWebEngineNewViewRequest;
 class QQuickWebEngineSettings;
 class QQuickWebEngineTooltipRequest;
 class QQuickWebEngineFormValidationMessageRequest;
@@ -511,7 +512,7 @@ Q_SIGNALS:
     Q_REVISION(1,1) void fullScreenRequested(const QWebEngineFullScreenRequest &request);
     Q_REVISION(1,1) void isFullScreenChanged();
     Q_REVISION(1,1) void featurePermissionRequested(const QUrl &securityOrigin, Feature feature);
-    Q_REVISION(1,1) void newViewRequested(QWebEngineNewWindowRequest *request);
+    Q_REVISION(1,1) void newViewRequested(QQuickWebEngineNewViewRequest *request);
     Q_REVISION(1,1) void zoomFactorChanged(qreal arg);
     Q_REVISION(1,1) void profileChanged();
     Q_REVISION(1,1) void webChannelChanged();

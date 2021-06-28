@@ -25,6 +25,7 @@ qt_internal_add_qml_module(WebEngineQuick
         api/qquickwebenginedownloadrequest.cpp api/qquickwebenginedownloadrequest_p.h
         api/qquickwebenginefaviconprovider.cpp
         api/qquickwebenginefaviconprovider_p_p.h
+        api/qquickwebenginenewviewrequest.cpp api/qquickwebenginenewviewrequest_p.h
         api/qquickwebengineprofile.cpp api/qquickwebengineprofile.h api/qquickwebengineprofile_p.h
         api/qquickwebenginescriptcollection.cpp api/qquickwebenginescriptcollection.h
         api/qquickwebenginesettings.cpp api/qquickwebenginesettings_p.h

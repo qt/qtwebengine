@@ -37,63 +37,41 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINENEWWINDOWREQUEST_P_H
-#define QWEBENGINENEWWINDOWREQUEST_P_H
+#include "qquickwebenginenewviewrequest_p.h"
+#include "qquickwebengineview_p.h"
 
-#include <QtWebEngineCore/qtwebenginecoreglobal.h>
-#include <QtCore/QObject>
-#include <QtCore/QRect>
-#include <QtCore/QScopedPointer>
-#include <QtCore/QSharedPointer>
-#include <QtCore/QUrl>
-
-namespace QtWebEngineCore {
-class WebContentsAdapter;
-}
+#include "web_contents_adapter_client.h"
 
 QT_BEGIN_NAMESPACE
 
-struct QWebEngineNewWindowRequestPrivate;
-
-class Q_WEBENGINECORE_EXPORT QWebEngineNewWindowRequest : public QObject
+/*!
+    \internal
+*/
+QQuickWebEngineNewViewRequest::QQuickWebEngineNewViewRequest(DestinationType dest, const QRect &rect, const QUrl &url,
+                                                             bool user,
+                                                             QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter,
+                                                             QObject *parent)
+        : QWebEngineNewWindowRequest(dest, rect, url, user, adapter, parent)
 {
-    Q_OBJECT
-    Q_PROPERTY(DestinationType destination READ destination CONSTANT FINAL)
-    Q_PROPERTY(QUrl requestedUrl READ requestedUrl CONSTANT FINAL)
-    Q_PROPERTY(QRect requestedGeometry READ requestedGeometry CONSTANT FINAL)
-    Q_PROPERTY(bool userInitiated READ isUserInitiated CONSTANT FINAL)
-public:
-    ~QWebEngineNewWindowRequest();
+}
 
-    enum DestinationType {
-        InNewWindow,
-        InNewTab,
-        InNewDialog,
-        InNewBackgroundTab
-    };
-    Q_ENUM(DestinationType)
+/*!
+    \qmlmethod WebEngineNewViewRequest::openIn(WebEngineView view)
+    Opens the requested page in the new web engine view \a view. State and history of the
+    view and the page possibly loaded in it will be lost.
+    \sa WebEngineView::newViewRequested
+*/
 
-    DestinationType destination() const;
-    QUrl requestedUrl() const;
-    QRect requestedGeometry() const;
-    bool isUserInitiated() const;
-
-protected:
-    QWebEngineNewWindowRequest(DestinationType, const QRect &, const QUrl &, bool,
-                               QSharedPointer<QtWebEngineCore::WebContentsAdapter>,
-                               QObject * = nullptr);
-
-    QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter();
-    bool isHandled() const;
-    void setHandled();
-
-    QScopedPointer<QWebEngineNewWindowRequestPrivate> d_ptr;
-    friend class QWebEnginePage;
-    friend class QWebEnginePagePrivate;
-    friend class QQuickWebEngineView;
-    friend class QQuickWebEngineViewPrivate;
-};
+/*!
+    \internal
+*/
+void QQuickWebEngineNewViewRequest::openIn(QQuickWebEngineView *view)
+{
+    if (!view) {
+        qWarning("Trying to open a WebEngineNewViewRequest in an invalid WebEngineView.");
+        return;
+    }
+    view->acceptAsNewView(this);
+}
 
 QT_END_NAMESPACE
-
-#endif // QWEBENGINENEWWINDOWREQUEST_P_H
