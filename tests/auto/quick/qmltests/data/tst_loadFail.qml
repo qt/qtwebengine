@@ -85,6 +85,7 @@ TestWebEngineView {
             let loadStart = loadSpy.signalArguments[0][0]
             compare(loadStart.status, WebEngineView.LoadStartedStatus)
             compare(loadStart.errorDomain, WebEngineView.NoErrorDomain)
+            compare(loadStart.errorDomain, WebEngineLoadingInfo.NoErrorDomain)
             compare(loadStart.url, unavailableUrl)
             verify(!loadStart.isErrorPage)
 
@@ -92,6 +93,7 @@ TestWebEngineView {
             let loadFail = loadSpy.signalArguments[1][0]
             compare(loadFail.status, WebEngineView.LoadFailedStatus)
             compare(loadFail.errorDomain, WebEngineView.InternalErrorDomain)
+            compare(loadFail.errorDomain, WebEngineLoadingInfo.InternalErrorDomain)
             compare(loadFail.url, unavailableUrl)
             verify(loadFail.isErrorPage)
 

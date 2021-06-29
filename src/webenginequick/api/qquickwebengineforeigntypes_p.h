@@ -69,6 +69,15 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace ForeignWebEngineLoadingInfoNamespace
+{
+    Q_NAMESPACE
+    QML_FOREIGN_NAMESPACE(QWebEngineLoadingInfo)
+    QML_NAMED_ELEMENT(WebEngineLoadingInfo)
+    QML_ADDED_IN_VERSION(1, 1)
+    QML_EXTRA_VERSION(2, 0)
+}
+
 struct ForeignWebEngineLoadingInfo
 {
     Q_GADGET
@@ -78,6 +87,15 @@ struct ForeignWebEngineLoadingInfo
     QML_EXTRA_VERSION(2, 0)
     QML_UNCREATABLE("")
 };
+
+namespace ForeignWebEngineCertificateErrorNamespace
+{
+    Q_NAMESPACE
+    QML_FOREIGN_NAMESPACE(QWebEngineCertificateError)
+    QML_NAMED_ELEMENT(WebEngineCertificateError)
+    QML_ADDED_IN_VERSION(1, 1)
+    QML_EXTRA_VERSION(2, 0)
+}
 
 struct ForeignWebEngineCertificateError
 {
@@ -106,7 +124,7 @@ namespace ForeignWebEngineScriptNamespace
     QML_NAMED_ELEMENT(WebEngineScript)
     QML_ADDED_IN_VERSION(1, 1)
     QML_EXTRA_VERSION(2, 0)
-};
+}
 
 struct ForeignWebEngineScript
 {

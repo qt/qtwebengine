@@ -91,7 +91,8 @@ TestWebEngineView {
             }
             view.certificateError.connect(handleCertificateError)
 
-            view.url = Shared.HttpsServer.url()
+            const server_url = Shared.HttpsServer.url()
+            view.url = server_url
 
             if (data.deferError) {
                 spyError.wait()
@@ -114,6 +115,12 @@ TestWebEngineView {
             compare(data.expectedContent, view.getBodyText())
 
             view.certificateError.disconnect(handleCertificateError)
+
+            let error = spyError.signalArguments[0][0]
+            compare(error.url, server_url)
+            verify(error.description.length > 0)
+            verify(error.overridable)
+            compare(error.type, WebEngineCertificateError.CertificateAuthorityInvalid)
         }
     }
 }

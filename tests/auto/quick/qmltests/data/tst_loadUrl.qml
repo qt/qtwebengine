@@ -80,8 +80,8 @@ TestWebEngineView {
             var aboutBlank = "about:blank";
             webEngineView.url = aboutBlank;
             verify(webEngineView.waitForLoadSucceeded());
-            compare(loadRequestArray[0].status, WebEngineView.LoadStartedStatus);
-            compare(loadRequestArray[1].status, WebEngineView.LoadSucceededStatus);
+            compare(loadRequestArray[0].status, WebEngineLoadingInfo.LoadStartedStatus);
+            compare(loadRequestArray[1].status, WebEngineLoadingInfo.LoadSucceededStatus);
             compare(loadRequestArray.length, 2);
             compare(webEngineView.url, aboutBlank);
             webEngineView.clear();
@@ -134,6 +134,7 @@ TestWebEngineView {
             compare(loadRequest.activeUrl, bogusSite);
             loadRequest = loadRequestArray[1];
             compare(loadRequest.status, WebEngineView.LoadFailedStatus);
+            compare(loadRequest.status, WebEngineLoadingInfo.LoadFailedStatus);
             compare(loadRequest.activeUrl, url);
             webEngineView.clear();
 
@@ -149,10 +150,10 @@ TestWebEngineView {
             compare(loadRequest.status, WebEngineView.LoadSucceededStatus);
             compare(loadRequest.activeUrl, redirectUrl);
             loadRequest = loadRequestArray[2];
-            compare(loadRequest.status, WebEngineView.LoadStartedStatus);
+            compare(loadRequest.status, WebEngineLoadingInfo.LoadStartedStatus);
             compare(loadRequest.activeUrl, redirectUrl);
             loadRequest = loadRequestArray[3];
-            compare(loadRequest.status, WebEngineView.LoadSucceededStatus);
+            compare(loadRequest.status, WebEngineLoadingInfo.LoadSucceededStatus);
             compare(loadRequest.activeUrl, url);
             webEngineView.clear();
 
@@ -174,11 +175,11 @@ TestWebEngineView {
             tryCompare(loadRequestArray, "length", 2);
 
             loadRequest = loadRequestArray[0];
-            compare(loadRequest.status, WebEngineView.LoadStartedStatus);
+            compare(loadRequest.status, WebEngineLoadingInfo.LoadStartedStatus);
             compare(loadRequest.url, url);
             compare(loadRequest.activeUrl, lastUrl);
             loadRequest = loadRequestArray[1];
-            compare(loadRequest.status, WebEngineView.LoadSucceededStatus);
+            compare(loadRequest.status, WebEngineLoadingInfo.LoadSucceededStatus);
             compare(loadRequest.url, url);
             compare(loadRequest.activeUrl, url);
             webEngineView.clear();
@@ -226,15 +227,16 @@ TestWebEngineView {
             compare(loadRequest.activeUrl, bogusSite);
             loadRequest = loadRequestArray[1];
             compare(loadRequest.status, WebEngineView.LoadFailedStatus);
+            compare(loadRequest.status, WebEngineLoadingInfo.LoadFailedStatus);
             // Since the load did not succeed the active url is the
             // URL of the previous successful load.
             compare(loadRequest.activeUrl, aboutBlank);
             loadRequest = loadRequestArray[2];
-            compare(loadRequest.status, WebEngineView.LoadStartedStatus);
+            compare(loadRequest.status, WebEngineLoadingInfo.LoadStartedStatus);
             compare(loadRequest.activeUrl, bogusSite);
             compare(loadRequest.url, "data:text/html;charset=UTF-8,load failed")
             loadRequest = loadRequestArray[3];
-            compare(loadRequest.status, WebEngineView.LoadSucceededStatus);
+            compare(loadRequest.status, WebEngineLoadingInfo.LoadSucceededStatus);
             compare(loadRequest.activeUrl, bogusSite);
             compare(loadRequest.url, bogusSite)
             webEngineView.clear();
@@ -286,6 +288,7 @@ TestWebEngineView {
             compare(loadRequest.activeUrl, stoppedUrl);
             loadRequest = loadRequestArray[1];
             compare(loadRequest.status, WebEngineView.LoadStoppedStatus);
+            compare(loadRequest.status, WebEngineLoadingInfo.LoadStoppedStatus);
             compare(loadRequest.url, stoppedUrl);
             compare(loadRequest.activeUrl, initialUrl);
             webEngineView.clear();
