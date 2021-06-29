@@ -668,11 +668,14 @@ foreach(res ${resourceList})
     list(APPEND resourceFiles ${resSourcePath})
 endforeach()
 
-get_filename_component(icuFiles ${buildDir}/${config}/icudtl.dat REALPATH)
+if (NOT QT_FEATURE_webengine_system_icu)
+    get_filename_component(icuFile ${buildDir}/${config}/icudtl.dat REALPATH)
+    list(APPEND resourceFiles ${icuFile})
+endif()
 
 if(QT_FEATURE_framework)
-    set(allResourceFiles ${localeFiles} ${resourceFiles} ${icuFiles})
-    target_sources(WebEngineCore PRIVATE ${icuFiles} ${resourceFiles} ${localeFiles})
+    set(allResourceFiles ${localeFiles} ${resourceFiles})
+    target_sources(WebEngineCore PRIVATE ${allResourceFiles})
 
     set_source_files_properties(${localeFiles}
         TARGET_DIRECTORY WebEngineCore
@@ -684,27 +687,15 @@ if(QT_FEATURE_framework)
         PROPERTIES MACOSX_PACKAGE_LOCATION Resources
         GENERATED TRUE
     )
-    set_source_files_properties(${icuFiles}
-        TARGET_DIRECTORY WebEngineCore
-        PROPERTIES MACOSX_PACKAGE_LOCATION Resources
-        GENERATED TRUE
-    )
-    add_custom_command(OUTPUT ${localeFiles} ${resourceFiles} ${icuFiles}
-        DEPENDS ${buildDir}/${config}/QtWebEngineCore.stamp
-    )
-    add_custom_target(generate_resources_${config}
-        DEPENDS ${localeFiles} ${resourcesFiles} ${icuFiles}
-    )
+
+    add_custom_command(OUTPUT ${allResourceFiles} DEPENDS ${buildDir}/${config}/QtWebEngineCore.stamp)
+    add_custom_target(generate_resources_${config} DEPENDS ${allResourceFiles})
 else()
     install(FILES ${localeFiles}
         DESTINATION translations/qtwebengine_locales
         CONFIGURATIONS ${config}
     )
     install(FILES ${resourceFiles}
-        DESTINATION resources
-        CONFIGURATIONS ${config}
-    )
-    install(FILES ${icuFiles}
         DESTINATION resources
         CONFIGURATIONS ${config}
     )
@@ -717,10 +708,6 @@ else()
         DESTINATION ${WEBENGINE_ROOT_BUILD_DIR}/resources
         CONFIGURATIONS ${config}
     )
-    install(FILES ${icuFiles}
-        DESTINATION ${WEBENGINE_ROOT_BUILD_DIR}/resources
-        CONFIGURATIONS ${config}
-    )
     if(NOT QT_WILL_INSTALL)
         # TODO: Could we get rid of ALL?
         add_custom_target(
@@ -730,7 +717,7 @@ else()
                 COMMAND ${CMAKE_COMMAND} -E make_directory
                         ${CMAKE_INSTALL_PREFIX}/resources
                 COMMAND ${CMAKE_COMMAND} -E copy
-                        ${resourceFiles} ${icuFiles}
+                        ${resourceFiles}
                         ${CMAKE_INSTALL_PREFIX}/resources)
         add_custom_target(
                 install_locales_${config}
