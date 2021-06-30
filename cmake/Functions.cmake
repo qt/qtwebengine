@@ -70,7 +70,7 @@ function(get_qt_features outList module)
 endfunction()
 
 function(get_configure_mode configureMode)
-    if (NOT DEFINED WEBENGINE_REPO_BUILD AND NOT DEFINED QT_SUPER_BUILD)
+    if (NOT DEFINED WEBENGINE_REPO_BUILD AND NOT DEFINED QT_SUPERBUILD)
         set(${configureMode} NO_CONFIG_HEADER_FILE NO_SYNC_QT PARENT_SCOPE)
     endif()
 endfunction()
