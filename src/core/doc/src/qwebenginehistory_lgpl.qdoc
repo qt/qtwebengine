@@ -88,7 +88,7 @@
 
 /*!
     \class QWebEngineHistoryModel
-    \inqmlmodule QtWebEngineCore
+    \inmodule QtWebEngineCore
     \since 6.2
 
     \brief A data model that represents the history of a web engine page.
@@ -188,18 +188,18 @@
 */
 
 /*!
-    \fn QWebEngineHistoryModel *QWebEngineHistory::itemsModel
+    \fn QWebEngineHistoryModel *QWebEngineHistory::itemsModel() const
     Returns the data model, which represents URLs of back items, forward items,
     and the current item in the history.
 */
 
 /*!
-    \fn QWebEngineHistoryModel *QWebEngineHistory::backItemsModel
+    \fn QWebEngineHistoryModel *QWebEngineHistory::backItemsModel() const
     Return the data model, which represents URLs of visited pages.
 */
 
 /*!
-    \fn QWebEngineHistoryModel *QWebEngineHistory::forwardItemsModel
+    \fn QWebEngineHistoryModel *QWebEngineHistory::forwardItemsModel() const
     Return the data model, which represents URLs of the pages
     that were visited after visiting the current page.
 */

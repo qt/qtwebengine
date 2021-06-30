@@ -26,13 +26,13 @@
 ****************************************************************************/
 
 /*!
-    \example pdfviewer
+    \example pdfwidgets/pdfviewer
     \ingroup qtpdf-examples
 
     \title PDF Viewer Example
     \brief Renders PDF documents.
 
-    \image pdfviewer.png
+    //! TODO add thumbnail \image pdfviewer.png
 
     \e {PDF Viewer} demonstrates how to use the \l QPdfDocument class to render
     PDF documents and the \l QPdfPageNavigation class to navigate them.
@@ -49,7 +49,7 @@
 
     The MainWindow class inherits the QMainWindow class:
 
-    \quotefromfile pdfviewer/mainwindow.h
+    \quotefromfile pdfwidgets/pdfviewer/mainwindow.h
     \skipto public QMainWindow
     \printuntil ~MainWindow()
 
@@ -73,7 +73,7 @@
     The actual setup of the different objects is done in the MainWindow
     constructor:
 
-    \quotefromfile pdfviewer/mainwindow.cpp
+    \quotefromfile pdfwidgets/pdfviewer/mainwindow.cpp
     \skipto MainWindow::
     \printuntil {
 

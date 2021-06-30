@@ -99,12 +99,14 @@ QWebEngineCertificateError::~QWebEngineCertificateError() = default;
             used for interception by an entity other the device owner. (Added in
             5.15)
     \value SslObsoleteVersion The connection uses an obsolete version of SSL/TLS. (Added in Qt 6.0)
+    \value CertificateSymantecLegacy The certificate is a legacy Symantec one that's no longer valid. (Added in Qt 6.0)
 */
 
 /*!
-    Returns whether this error can be overridden and accepted.
+    \property QWebEngineCertificateError::overridable
+    \brief Whether this error can be overridden and accepted.
 
-    \sa error(), description()
+    \sa description()
 */
 bool QWebEngineCertificateError::isOverridable() const
 {
@@ -114,7 +116,7 @@ bool QWebEngineCertificateError::isOverridable() const
 /*!
     Returns the URL that triggered the error.
 
-    \sa error(), description()
+    \sa description()
 */
 QUrl QWebEngineCertificateError::url() const
 {
@@ -134,7 +136,7 @@ QWebEngineCertificateError::Type QWebEngineCertificateError::type() const
 /*!
     Returns a short localized human-readable description of the error.
 
-    \sa error(), url(), isOverridable()
+    \sa url(), isOverridable()
 */
 QString QWebEngineCertificateError::description() const
 {
@@ -152,7 +154,7 @@ QString QWebEngineCertificateError::description() const
 
     \note It is only possible to defer overridable certificate errors.
 
-    \sa isOverridable(), deferred()
+    \sa isOverridable()
 */
 void QWebEngineCertificateError::defer()
 {

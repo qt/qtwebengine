@@ -65,12 +65,6 @@ using QtWebEngineCore::UserScript;
     Returns \c true if the collection is empty; otherwise returns \c false.
 */
 
-/*!
-    \fn QWebEngineScriptCollection::size() const
-
-    Returns the number of elements in the collection.
-*/
-
 QWebEngineScriptCollection::QWebEngineScriptCollection(QWebEngineScriptCollectionPrivate *collectionPrivate)
     :d(collectionPrivate)
 {

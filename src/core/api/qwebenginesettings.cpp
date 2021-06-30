@@ -52,7 +52,7 @@ QWebEngineSettings::QWebEngineSettings(QWebEngineSettings *parentSettings)
 
 QWebEngineSettings::~QWebEngineSettings() { }
 
-/*!
+/*
     Returns the settings for a web engine page that belongs to the default
     profile. All web pages not specifically created with another profile belong
     to the default profile.

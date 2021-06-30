@@ -58,9 +58,6 @@
     \sa WebEngineView::loadingChanged
 */
 /*!
-    \qmlproperty Indicates if the load's resulted in an error page.
-*/
-/*!
     \qmlproperty string WebEngineLoadingInfo::errorString
     \brief Holds the error message.
 */

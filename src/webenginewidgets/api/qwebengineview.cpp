@@ -920,6 +920,9 @@ void QWebEngineView::dropEvent(QDropEvent *e)
 #endif // QT_CONFIG(draganddrop)
 
 #if QT_CONFIG(menu)
+/*!
+  Creates a standard context menu and returns a pointer to it.
+*/
 QMenu *QWebEngineView::createStandardContextMenu()
 {
     Q_D(QWebEngineView);
@@ -938,7 +941,7 @@ QMenu *QWebEngineView::createStandardContextMenu()
   \since 6.2
 
   Returns additional data about the current context menu. It is only guaranteed to be valid during
-  the call to the contextMenuEvent()
+  the call to the contextMenuEvent().
 
   \sa createStandardContextMenu()
 */
@@ -965,7 +968,7 @@ QWebEngineContextMenuRequest *QWebEngineView::lastContextMenuRequest() const
     Renders the current content of the page into a PDF document and saves it
     in the location specified in \a filePath.
     The page size and orientation of the produced PDF document are taken from
-    the values specified in \a pageLayout, while the range of pages printed is
+    the values specified in \a layout, while the range of pages printed is
     taken from \a ranges with the default being printing all pages.
 
     This method issues an asynchronous request for printing the web page into
@@ -996,7 +999,7 @@ void QWebEngineView::printToPdf(const QString &filePath, const QPageLayout &layo
 /*!
     Renders the current content of the page into a PDF document and returns a byte array containing the PDF data
     as parameter to \a resultCallback.
-    The page size and orientation of the produced PDF document are taken from the values specified in \a pageLayout,
+    The page size and orientation of the produced PDF document are taken from the values specified in \a layout,
     while the range of pages printed is taken from \a ranges with the default being printing all pages.
 
     The \a resultCallback must take a const reference to a QByteArray as parameter. If printing was successful, this byte array
@@ -1044,6 +1047,7 @@ void QWebEngineView::printToPdf(const std::function<void(const QByteArray&)> &re
     \since 6.2
 
     This signal is emitted when printing requested with print() has finished.
+    The parameter \a success is \c true for success or \c false for failure.
 
     \sa print()
 */

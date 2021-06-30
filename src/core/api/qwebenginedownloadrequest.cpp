@@ -234,7 +234,7 @@ void QWebEngineDownloadRequestPrivate::setFinished()
     into the \l DownloadInProgress state and the downloading will begin. If the
     item is in any other state, then nothing will happen.
 
-    \sa finished(), stateChanged()
+    \sa isFinished, stateChanged()
 */
 
 void QWebEngineDownloadRequest::accept()
@@ -259,7 +259,7 @@ void QWebEngineDownloadRequest::accept()
     If the item is in any other state, then it will transition into the \l
     DownloadCancelled state without further effect.
 
-    \sa finished(), stateChanged()
+    \sa isFinished, stateChanged()
 */
 
 void QWebEngineDownloadRequest::cancel()
@@ -337,19 +337,11 @@ quint32 QWebEngineDownloadRequest::id() const
 }
 
 /*!
-    \fn void QWebEngineDownloadRequest::finished()
+    \fn void QWebEngineDownloadRequest::isPausedChanged()
 
-    This signal is emitted when the download finishes.
+    This signal is emitted whenever isPaused changes.
 
-    \sa state(), isFinished()
-*/
-
-/*!
-    \fn void QWebEngineDownloadRequest::isPausedChanged(bool isPaused)
-
-    This signal is emitted whenever \a isPaused changes.
-
-    \sa pause(), isPaused()
+    \sa pause(), isPaused
 */
 
 /*!
@@ -579,9 +571,11 @@ QString QWebEngineDownloadRequest::suggestedFileName() const
 }
 
 /*!
-    Returns whether this download is finished (completed, cancelled, or non-resumable interrupted state).
+    \property QWebEngineDownloadRequest::isFinished
+    \brief Whether this download is finished (completed, cancelled,
+           or non-resumable interrupted state).
 
-    \sa finished(), state(),
+    \sa state()
 */
 
 bool QWebEngineDownloadRequest::isFinished() const
@@ -591,7 +585,8 @@ bool QWebEngineDownloadRequest::isFinished() const
 }
 
 /*!
-    Returns whether this download is paused.
+    \property QWebEngineDownloadRequest::isPaused
+    \brief Whether this download is paused.
 
     \sa pause(), resume()
 */

@@ -83,7 +83,7 @@ QT_BEGIN_NAMESPACE
     \brief The URL to be opened in the fullscreen mode.
 */
 
-/*!
+/*
     Creates a request for opening the \a page from the URL specified by
     \a origin in the fullscreen mode if \a fullscreen is \c true.
 */

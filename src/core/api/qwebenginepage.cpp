@@ -792,8 +792,8 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 */
 
 /*!
-    \fn QWebEnginePage::registerProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest
-   request) \since 5.11
+    \fn QWebEnginePage::registerProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest request)
+    \since 5.11
 
     This signal is emitted when the web page tries to register a custom protocol
     using the \l registerProtocolHandler API.
@@ -841,7 +841,7 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
   \fn void QWebEnginePage::renderProcessPidChanged(qint64 pid);
   \since 5.15
 
-  This signal is emitted when the underlying render process PID, \a renderProcessPid, changes.
+  This signal is emitted when the underlying render process PID, \a pid, changes.
 */
 
 /*!
@@ -1534,7 +1534,6 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
  * The current misspelled word can be found in QWebEngineContextMenuRequest::misspelledWord(),
  * and suggested replacements in QWebEngineContextMenuRequest::spellCheckerSuggestions().
  *
- * \sa contextMenuData(),
  */
 
 void QWebEnginePage::replaceMisspelledWord(const QString &replacement)
@@ -1570,14 +1569,13 @@ void QWebEnginePagePrivate::contextMenuRequested(QWebEngineContextMenuRequest *d
 }
 
 /*!
-    \fn void QWebEnginePage::navigationRequested(QWebEngineNavigationRequest &request)
+    \fn bool QWebEnginePage::navigationRequested(QWebEngineNavigationRequest &request)
     \since 6.2
 
     This signal is emitted on navigation together with the call the acceptNavigationRequest().
-    It can be used to accept or ignore the request. The default is to accept.
+    It can be used to accept or ignore the \a request. The default is to accept.
 
     \sa acceptNavigationRequest()
-
 */
 
 void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame)
@@ -1881,12 +1879,17 @@ void QWebEnginePage::download(const QUrl& url, const QString& filename)
 }
 
 /*!
+    \fn void QWebEnginePage::loadingChanged(const QWebEngineLoadingInfo &loadingInfo)
+    \since 6.2
+    This signal is emitted when loading the page specified by \a loadingInfo begins,
+    ends, or fails.
+*/
+
+/*!
   \property QWebEnginePage::loading
   \since 6.2
 
   \brief Whether the page is currently loading.
-
-  The \l loadingChanged() signal is emitted when loading the page begins, ends, or fails.
 
   \sa QWebEngineLoadingInfo, loadStarted, loadFinished
 */
@@ -2256,7 +2259,7 @@ QSizeF QWebEnginePage::contentsSize() const
 }
 
 /*!
-    \fn void QWebEnginePage::newWindowRequested(WebEngineNewViewRequest &request)
+    \fn void QWebEnginePage::newWindowRequested(QWebEngineNewWindowRequest &request)
     \since 6.2
 
     This signal is emitted when \a request is issued to load a page in a separate
@@ -2276,7 +2279,7 @@ QSizeF QWebEnginePage::contentsSize() const
 /*!
     Handles the newWindowRequested() signal by opening the \a request in this page.
     \since 6.2
-    \sa newWindowRequested
+    \sa newWindowRequested()
 */
 void QWebEnginePage::acceptAsNewWindow(QWebEngineNewWindowRequest &request)
 {
@@ -2383,7 +2386,7 @@ QWebEnginePage::LifecycleState QWebEnginePage::recommendedState() const
   to voluntarily reduce their resource usage if they are not visible to the
   user.
 
-  If the page is connected to a \l{view} then this property will be managed
+  If the page is connected to a \e {view} then this property will be managed
   automatically by the view according to it's own visibility.
 
   \sa lifecycleState

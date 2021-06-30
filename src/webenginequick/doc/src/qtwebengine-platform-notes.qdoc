@@ -39,7 +39,7 @@
     platform:
 
     \list
-        \li \l{Qt for Windows - Requirements}
+        \li \l{Qt for Windows - Building from Source}
         \li \l{Qt for X11 Requirements}
         \li \l{Qt for macOS - Building from Source}
     \endlist

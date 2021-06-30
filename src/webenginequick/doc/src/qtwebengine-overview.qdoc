@@ -225,7 +225,7 @@
     open SSL connections. Instead, \QWE uses the root CA certificates from the operating
     system to validate the peer's certificate.
 
-    The \l{WebEngineCertificateError::error} and \l{QWebEngineCertificateError::Error} enumerations
+    The \l{WebEngineCertificateError::error} and \l{QWebEngineCertificateError::Type} enumerations
     provide information about the types of certificate errors that might occur. The errors can be
     handled by using the WebEngineView::certificateError QML method or by connecting to the
     QWebEnginePage::certificateError signal.
@@ -273,7 +273,7 @@
     files. Depending on the target resolutions, one or both of these files need
     to be deployed.
 
-    For more information, see \l{High DPI Displays}.
+    For more information, see \l{High DPI}.
 
     \section1 Using WebEngine Core
 

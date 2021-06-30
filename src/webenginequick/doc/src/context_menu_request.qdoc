@@ -27,7 +27,7 @@
 
 /*!
     \qmltype ContextMenuRequest
-    \instantiates QQuickWebEngineContextMenuRequest
+    //! \instantiates QQuickWebEngineContextMenuRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.4
 
@@ -35,8 +35,8 @@
 
     A ContextMenuRequest is passed as an argument of the
     WebEngineView::contextMenuRequested signal. It provides further
-    information about the context of the request. The position of the
-    request origin can be found via the \l x and \l y properties.
+    information about the context of the request. The \l position
+    property provides the origin of the request.
 
     The \l accepted property of the request indicates whether the request
     is handled by the user code or the default context menu should

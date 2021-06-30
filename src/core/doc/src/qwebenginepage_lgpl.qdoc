@@ -329,17 +329,6 @@
 */
 
 /*!
-    \fn QMenu *QWebEnginePage::createStandardContextMenu()
-    Creates the standard context menu which is shown when
-    the user clicks on the web page with the right mouse button. It is
-    called from the default \l{QWidget::}{contextMenuEvent()} handler. The popup menu's
-    ownership is transferred to the caller.
-
-    Returns \c nullptr if the context menu data is not initialized, for example when it
-    is called when there is actually no context menu requested.
- */
-
-/*!
     \fn void QWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
     This function is called when a JavaScript program tries to print the \a message to the web
     browser's console.
@@ -431,8 +420,8 @@
     If the view associated with the web page is a QWebEngineView object, then the default implementation forwards
     the request to QWebEngineView::createWindow(); otherwise it returns a null pointer.
 
-    If this call is not implemented or does not return a new page, \l newWindowRequested() is emitted to handle
-    the request.
+    If this call is not implemented or does not return a new page, \l newWindowRequested()
+    is emitted to handle the request.
 
     \note In the cases when the window creation is being triggered by JavaScript, apart from
     reimplementing this method the application must also set
@@ -505,8 +494,6 @@
 /*!
     \fn QWebEngineSettings *QWebEnginePage::settings() const
     Returns a pointer to the page's settings object.
-
-    \sa QWebEngineSettings::defaultSettings()
 */
 
 /*!
