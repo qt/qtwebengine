@@ -149,7 +149,7 @@ QWebEngineScript &QWebEngineScript::operator=(const QWebEngineScript &other)
  * Returns the name of the script. Can be useful to retrieve a particular script from a
  * QWebEngineScriptCollection.
  *
- * \sa QWebEngineScriptCollection::findScript(), QWebEngineScriptCollection::findScripts()
+ * \sa QWebEngineScriptCollection::find()
  */
 
 QString QWebEngineScript::name() const

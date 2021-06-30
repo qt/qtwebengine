@@ -197,22 +197,26 @@
     \printuntil menu->popup
     \printline }
 
-    \section1 Implementing WebPage Functionality
+    \section1 Implementing WebPage and WebView Functionality
 
-    We implement \c WebPage as a subclass of QWebEnginePage to enable HTTP,
-    proxy authentication, and ignoring SSL certificate errors when accessing web
-    pages:
+    We implement \c WebPage as a subclass of QWebEnginePage and \c WebView as
+    as subclass of QWebEngineView to enable HTTP, proxy authentication, as well
+    as ignoring SSL certificate errors when accessing web pages:
 
     \quotefromfile webenginewidgets/simplebrowser/webpage.h
     \skipto WebPage :
+    \printuntil }
+
+    \quotefromfile webenginewidgets/simplebrowser/webview.h
+    \skipto WebView :
     \printuntil }
 
     In all the cases above, we display the appropriate dialog to the user. In
     case of authentication, we need to set the correct credential values on the
     QAuthenticator object:
 
-    \quotefromfile webenginewidgets/simplebrowser/webpage.cpp
-    \skipto WebPage::handleAuthenticationRequired(
+    \quotefromfile webenginewidgets/simplebrowser/webview.cpp
+    \skipto WebView::handleAuthenticationRequired(
     \printuntil }
     \printuntil }
     \printline }
@@ -281,8 +285,8 @@
     \skipto private:
     \printline private:
     \dots
-    \skipto m_otrProfile
-    \printline m_otrProfile
+    \skipto m_profile
+    \printline m_profile
     \printline /^\};$/
 
     Required profile for \e{private browsing} is created together with its
@@ -292,7 +296,7 @@
     \quotefromfile webenginewidgets/simplebrowser/browser.cpp
 
     \skipto Browser::createWindow
-    \printuntil m_otrProfile.reset
+    \printuntil m_profile.reset
     \dots
 
     All that is left to do is to pass the appropriate profile down to the
@@ -302,7 +306,7 @@
     \e{off-the-record} profile instance:
 
     \dots
-    \skipto m_otrProfile.get
+    \skipto m_profile.get
     \printuntil mainWindow = new BrowserWindow
     \skipto return mainWindow
     \printuntil /^\}/

@@ -46,7 +46,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmltype WebEngine
-    \instantiates QQuickWebEngineSingleton
+    //! \instantiates QQuickWebEngineSingleton
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
     \brief Provides access to the default settings and profiles shared by all web engine views.

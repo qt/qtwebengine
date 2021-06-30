@@ -82,7 +82,7 @@
     \skipto PrintHandler::printDocument(
     \printuntil /^\}/
 
-    To do actual painting on a printer, we call the \l{QWebEnginePage::print()}
+    To do actual painting on a printer, we call the \l QWebEngineView::print()
     function. Because this call blocks the main event loop, we need to create
     a local one. We begin the local event loop by calling
     \l{QEventLoop::exec()}. When the local event loop terminates,

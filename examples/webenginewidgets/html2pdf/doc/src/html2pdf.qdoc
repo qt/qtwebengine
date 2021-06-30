@@ -43,9 +43,9 @@
     In order to convert a web page into a PDF document we need to:
 
     \list 1
-        \li Create a \l QWebEnginePage.
-        \li Tell the \l QWebEnginePage to begin loading the target URL and wait for it to finish.
-        \li Tell the \l QWebEnginePage to begin converting the loaded page into a PDF file and again wait for it to finish.
+        \li Create a \l QWebEngineView.
+        \li Tell the \l QWebEngineView to begin loading the target URL and wait for it to finish.
+        \li Tell the \l QWebEngineView to begin converting the loaded page into a PDF file and again wait for it to finish.
         \li Once the conversion is finished, exit the program.
     \endlist
 
@@ -56,8 +56,8 @@
     \printuntil Html2PdfConverter
     \printuntil /^\};/
 
-    In the constructor we create the \l QWebEnginePage and connect to its \l
-    QWebEnginePage::loadFinished and \l QWebEnginePage::pdfPrintingFinished
+    In the constructor we create the \l QWebEngineView and connect to its \l
+    QWebEngineView::loadFinished and \l QWebEngineView::pdfPrintingFinished
     signals:
 
     \skipto Html2PdfConverter::Html2PdfConverter

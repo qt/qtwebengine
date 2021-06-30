@@ -37,6 +37,9 @@ qhp.QtWebEngine.subprojects.examples.sortPages = true
 manifestmeta.highlighted.names += "QtWebEngine/WebEngine Widgets Simple Browser Example" \
                 "QtWebEngine/WebEngine Quick Nano Browser"
 
+# add a generic thumbnail for an example that has no \image in its doc
+manifestmeta.thumbnail.names = "QtWebEngine/PDF Viewer Example"
+
 tagfile                 = ../../../doc/qtwebengine/qtwebengine.tags
 
 # Custom module header for clang that pulls in also QtWebEngineWidgets
@@ -46,13 +49,15 @@ moduleheader = QtWebEngineDoc
 includepaths += -I .
 
 depends += qtcore \
+           qtcore5compat \
+           qtdesigner \
            qtgui \
            qtlocation \
            qtnetwork \
-           qtplatformheaders \
            qtprintsupport \
            qtpositioning \
            qtqml \
+           qtqmlmodels \
            qtquick \
            qtquickcontrols \
            qtdoc \
@@ -64,7 +69,7 @@ headerdirs  += ../../core/api \
                ../../webenginequick/api \
                ../../webenginewidgets/api
 
-sourcedirs   = ../../core/api \
+sourcedirs  += ../../core/api \
                ../../core/doc \
                ../../webenginequick/api \
                ../../webenginequick/doc \
@@ -78,7 +83,9 @@ exampledirs +=  ../../../examples \
 
 examples.fileextensions += *.aff *.dic *.html
 
-imagedirs += images
+imagedirs += \
+             images \
+             ../../webenginequick/doc/images
 
 navigation.landingpage = "Qt WebEngine"
 navigation.cppclassespage = "Qt WebEngine C++ Classes and Namespaces"
@@ -86,5 +93,3 @@ navigation.qmltypespage = "Qt WebEngine QML Types"
 
 # \QWE macro expands to 'Qt WebEngine' without auto-linking anywhere.
 macro.QWE    = "Qt \\WebEngine"
-
-Cpp.ignoretokens += Q_WEBENGINE_EXPORT Q_WEBENGINECORE_EXPORT QWEBENGINEWIDGETS_EXPORT

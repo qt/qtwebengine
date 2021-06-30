@@ -1010,10 +1010,8 @@ QQuickWebEngineSettings *QQuickWebEngineProfile::settings() const
     \qmlproperty list<WebEngineScript> WebEngineProfile::userScripts
     \since 1.5
 
-    Returns the collection of WebEngineScripts that are injected into all pages that share
-    this profile.
-
-    \sa WebEngineScript
+    Returns the collection of WebEngineScript objects that are injected into
+    all pages that share this profile.
 */
 
 QQuickWebEngineScriptCollection *QQuickWebEngineProfile::userScripts() const

@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
     \brief The QWebEngineRegisterProtocolHandlerRequest class enables
     accepting or rejecting requests from the \l registerProtocolHandler API.
 
-    \sa QWebEnginePage::registerProtocolHandlerRequested
+    \sa QWebEnginePage::registerProtocolHandlerRequested()
 */
 
 /*! \fn QWebEngineRegisterProtocolHandlerRequest::QWebEngineRegisterProtocolHandlerRequest()

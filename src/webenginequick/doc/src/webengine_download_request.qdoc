@@ -219,7 +219,7 @@
 */
 
 /*!
-    \qmlproperty bool WebEngineDownloadItem::isSavePageDownload
+    \qmlproperty bool WebEngineDownloadRequest::isSavePageDownload
     \readonly
 
     Whether this is a download request for saving a web page or a file.

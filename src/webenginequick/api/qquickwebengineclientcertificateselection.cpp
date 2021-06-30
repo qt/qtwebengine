@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmltype WebEngineClientCertificateOption
-    \instantiates QQuickWebEngineClientCertificateOption
+    //! \instantiates QQuickWebEngineClientCertificateOption
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.9
     \brief Represents a client certificate option.
@@ -117,7 +117,7 @@ void QQuickWebEngineClientCertificateOption::select()
 
 /*!
     \qmltype WebEngineClientCertificateSelection
-    \instantiates QQuickWebEngineClientCertificateSelection
+    //! \instantiates QQuickWebEngineClientCertificateSelection
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.9
     \brief Provides a selection of client certificates.

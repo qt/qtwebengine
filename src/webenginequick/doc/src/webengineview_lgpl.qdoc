@@ -331,9 +331,7 @@
     \readonly
     \since QtWebEngine 1.1
 
-    List of script objects attached to the view.
-
-    \sa WebEngineScript
+    List of WebEngineScript objects attached to the view.
 */
 
 /*!
@@ -586,7 +584,7 @@
 
     An example implementation:
 
-    \snippet snippets/qtwebengine_webengineview_newviewrequested.qml 0
+    \snippet qtwebengine_webengineview_newviewrequested.qml 0
 
     \sa WebEngineNewViewRequest, {WebEngine Quick Nano Browser}
 */
@@ -1482,7 +1480,7 @@
     \readonly
 
     If no render process is available yet, \c 0 is returned.
-    This signal is emitted when the PID (process ID) of the page's underlying
+    This signal is emitted when \a pid (process ID) of the page's underlying
     render process changed.
 
     \sa renderProcessPid

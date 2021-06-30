@@ -201,6 +201,7 @@
            from JavaScript) are suppressed.
     \value AllowAllUnknownUrlSchemes
            Allows all navigation requests to URLs with unknown schemes.
+    \omitvalue InheritedUnknownUrlSchemePolicy
 
     \sa unknownUrlSchemePolicy setUnknownUrlSchemePolicy resetUnknownUrlSchemePolicy
 */
@@ -237,12 +238,6 @@
     Returns the default text encoding.
 
     \sa setDefaultTextEncoding()
-*/
-
-/*!
-    \fn void QWebEngineSettings::setFontFamily(FontFamily which, const QString& family)
-    Sets the actual font family to \a family for the specified generic family,
-    \a which.
 */
 
 /*!

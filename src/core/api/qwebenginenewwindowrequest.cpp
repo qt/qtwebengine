@@ -55,14 +55,14 @@ struct QWebEngineNewWindowRequestPrivate
 
 /*!
     \class QWebEngineNewWindowRequest
-    \brief A utility type for the QWebEnginePage::newPageRequested signal.
+    \brief A utility type for the QWebEnginePage::newWindowRequested() signal.
     \since 6.2
 
     \inmodule QtWebEngineCore
 
     Contains information about a request to load a page in a separate web engine view.
 
-    \sa QWebEnginePage::newPageRequested
+    \sa QWebEnginePage::newWindowRequested()
 */
 
 /*!

@@ -113,7 +113,7 @@ QUrl QWebEngineLoadingInfo::url() const
     return d->url;
 }
 /*!
-    \enum QWebEngineLoadingInfo::status
+    \enum QWebEngineLoadingInfo::LoadStatus
 
     This enumeration represents the load status of a web page load request:
 
@@ -125,10 +125,8 @@ QUrl QWebEngineLoadingInfo::url() const
     \value  LoadFailedStatus Page could not be loaded.
 */
 /*!
-    \property Holds the page's load status.
-*/
-/*!
-    Returns the page's load status.
+    \property QWebEngineLoadingInfo::status
+    \brief The load status of the page.
 */
 LoadStatus QWebEngineLoadingInfo::status() const
 {
@@ -137,10 +135,7 @@ LoadStatus QWebEngineLoadingInfo::status() const
 }
 /*!
     \property QWebEngineLoadingInfo::isErrorPage
-    \property Indicates if the load's resulted in an error page.
-*/
-/*!
-    Returns true if the load's resulted is an error page.
+    \brief Indicates if the load resulted in an error page.
 */
 bool QWebEngineLoadingInfo::isErrorPage() const
 {
@@ -151,16 +146,13 @@ bool QWebEngineLoadingInfo::isErrorPage() const
     \property QWebEngineLoadingInfo::errorString
     \brief Holds the error message.
 */
-/*
-    Returns the error message.
-*/
 QString QWebEngineLoadingInfo::errorString() const
 {
     Q_D(const QWebEngineLoadingInfo);
     return d->errorString;
 }
 /*!
-    \enum enumeration QWebEngineLoadingInfo::errorDomain
+    \enum QWebEngineLoadingInfo::ErrorDomain
     This enumeration holds the type of a load error:
 
     \value  NoErrorDomain
@@ -180,10 +172,7 @@ QString QWebEngineLoadingInfo::errorString() const
 */
 /*
     \property QWebEngineLoadingInfo::errorDomain
-    \brief Holds the error domain
-*/
-/*
-    Returns the error domain.
+    \brief Holds the error domain.
 */
 ErrorDomain QWebEngineLoadingInfo::errorDomain() const
 {
@@ -192,11 +181,8 @@ ErrorDomain QWebEngineLoadingInfo::errorDomain() const
 }
 
 /*!
-    \property int QWebEngineLoadingInfo::errorCode
+    \property QWebEngineLoadingInfo::errorCode
     \brief Holds the error code.
-*/
-/*
-    Returns the error code.
 */
 int QWebEngineLoadingInfo::errorCode() const
 {

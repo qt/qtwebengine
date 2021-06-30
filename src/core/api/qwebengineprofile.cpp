@@ -654,7 +654,8 @@ void QWebEngineProfile::setNotificationPresenter(std::function<void(std::unique_
 }
 
 /*!
-    Returns presenter responsible for presenting sent notifications
+    \fn QWebEngineProfile::notificationPresenter()
+    Returns the presenter responsible for presenting sent notifications.
     \since 6.2
  */
 std::function<void(std::unique_ptr<QWebEngineNotification>)> QWebEngineProfile::notificationPresenter()

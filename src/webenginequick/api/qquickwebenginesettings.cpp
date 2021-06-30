@@ -54,7 +54,7 @@ QQuickWebEngineSettings::QQuickWebEngineSettings(QQuickWebEngineSettings *parent
 
 /*!
     \qmltype WebEngineSettings
-    \instantiates QQuickWebEngineSettings
+    //! \instantiates QQuickWebEngineSettings
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
     \brief Allows configuration of browser properties and attributes.
@@ -71,22 +71,6 @@ QQuickWebEngineSettings::QQuickWebEngineSettings(QQuickWebEngineSettings *parent
 
 QQuickWebEngineSettings::~QQuickWebEngineSettings()
 { }
-
-/*!
-    \enum QQuickWebEngineSettings::UnknownUrlSchemePolicy
-    \since WebEngine 1.7
-
-    This enum describes how navigation requests to URLs with unknown schemes are handled.
-
-    \value DisallowUnknownUrlSchemes
-           Disallows all navigation requests to URLs with unknown schemes.
-    \value AllowUnknownUrlSchemesFromUserInteraction
-           Allows navigation requests to URLs with unknown schemes that are issued from
-           user-interaction (like a mouse-click), whereas other navigation requests (for example
-           from JavaScript) are suppressed.
-    \value AllowAllUnknownUrlSchemes
-           Allows all navigation requests to URLs with unknown schemes.
-*/
 
 /*!
     \qmlproperty bool WebEngineSettings::autoLoadImages
@@ -493,11 +477,20 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::AllowUnknownUrlSchemesFromUserIntera
 ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::AllowAllUnknownUrlSchemes, QWebEngineSettings::AllowAllUnknownUrlSchemes)
 
 /*!
-  \qmlproperty QWebEngineSettings::UnknownUrlSchemePolicy WebEngineSettings::unknownUrlSchemePolicy
+  \qmlproperty enumeration WebEngineSettings::unknownUrlSchemePolicy
   \since QtWebEngine 1.7
   Specifies how navigation requests to URLs with unknown schemes are handled.
 
-  Default is \l{QWebEngineSettings::UnknownUrlSchemePolicy}{WebEngineSettings.AllowUnknownUrlSchemesFromUserInteraction}.
+    \value WebEngineSettings.DisallowUnknownUrlSchemes
+           Disallows all navigation requests to URLs with unknown schemes.
+    \value WebEngineSettings.AllowUnknownUrlSchemesFromUserInteraction
+           Allows navigation requests to URLs with unknown schemes that are issued from
+           user-interaction (like a mouse-click), whereas other navigation requests (for example
+           from JavaScript) are suppressed.
+    \value WebEngineSettings.AllowAllUnknownUrlSchemes
+           Allows all navigation requests to URLs with unknown schemes.
+
+  Default value is \c {WebEngineSettings.AllowUnknownUrlSchemesFromUserInteraction}.
 */
 QQuickWebEngineSettings::UnknownUrlSchemePolicy QQuickWebEngineSettings::unknownUrlSchemePolicy() const
 {
