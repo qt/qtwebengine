@@ -9,5 +9,6 @@ qt_internal_add_test(tst_qquickwebengineview
         Qt::WebEngineQuick
         Qt::GuiPrivate
         Qt::WebEngineQuickPrivate
+        Qt::TestPrivate
         Test::Util
 )

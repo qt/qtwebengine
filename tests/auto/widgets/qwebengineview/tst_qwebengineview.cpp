@@ -47,6 +47,7 @@
 #include <QStyle>
 #include <QWebEngineProfile>
 #include <QtCore/qregularexpression.h>
+#include <QtTest/private/qemulationdetector_p.h>
 
 #define VERIFY_INPUTMETHOD_HINTS(actual, expect) \
     QVERIFY(actual == (expect | Qt::ImhNoPredictiveText | Qt::ImhNoTextHandles | Qt::ImhNoEditMenu));
@@ -1170,6 +1171,9 @@ void tst_QWebEngineView::doNotBreakLayout()
 
 void tst_QWebEngineView::changeLocale()
 {
+    if (QTestPrivate::isRunningArmOnX86())
+        QSKIP("Does not work with QEMU. (QTBUG-94911)");
+
     QStringList errorLines;
     QUrl url("http://non.existent/");
 
