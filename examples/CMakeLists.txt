@@ -13,7 +13,7 @@ project(QtWebEngineExamples
 set(QT_USE_FIXED_QT_ADD_RESOURCE_BASE TRUE)
 
 find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core)
-find_package(Qt6 ${PROJECT_VERSION} CONFIG OPTIONAL_COMPONENTS WebEngineCore WebEngineWidgets WebEngineQuick)
+find_package(Qt6 ${PROJECT_VERSION} CONFIG OPTIONAL_COMPONENTS WebEngineCore WebEngineWidgets WebEngineQuick QuickControls2)
 qt_build_repo_begin()
 qt_examples_build_begin()
 

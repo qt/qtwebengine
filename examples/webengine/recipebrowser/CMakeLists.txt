@@ -33,7 +33,7 @@ target_link_libraries(recipebrowser PUBLIC
     Qt::Qml
     Qt::Quick
     Qt::QuickControls2
-    Qt::WebEngineQucik
+    Qt::WebEngineQuick
 )
 
 
@@ -115,10 +115,10 @@ set(resources_resource_files
     "resources/pages/pasta.html"
     "resources/pages/pizza.html"
     "resources/pages/skewers.html"
-    "reosurces/pages/soup.html"
-    "reosurces/pages/steak.html"
-    "reosurces/qml/RecipeList.qml"
-    "reosurces/qml/main.qml"
+    "resources/pages/soup.html"
+    "resources/pages/steak.html"
+    "resources/qml/main.qml"
+    "resources/qml/RecipeList.qml"
 )
 
 qt6_add_resources(recipebrowser "resources"
