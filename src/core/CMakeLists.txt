@@ -573,6 +573,8 @@ foreach(config ${configs})
         unset(sandboxTarget)
     endif()
 
+    string(REPLACE " " ";" NINJAFLAGS "$ENV{NINJAFLAGS}")
+
     add_custom_command(
         OUTPUT
             ${buildDir}/${config}/QtWebEngineCore.stamp
@@ -581,7 +583,7 @@ foreach(config ${configs})
         WORKING_DIRECTORY ${buildDir}/${config}
         COMMAND ${CMAKE_COMMAND} -E echo "Ninja ${config} build"
         COMMAND Ninja::ninja
-            $ENV{NINJAFLAGS}
+            ${NINJAFLAGS}
             -C ${buildDir}/${config}
             QtWebEngineCore ${sandboxTarget}
         USES_TERMINAL
