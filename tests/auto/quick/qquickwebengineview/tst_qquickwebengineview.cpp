@@ -44,6 +44,7 @@
 #include <QtWebEngineQuick/private/qquickwebenginesettings_p.h>
 #include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
 #include <qpa/qplatforminputcontext.h>
+#include <QtTest/private/qemulationdetector_p.h>
 
 #include <functional>
 
@@ -369,6 +370,9 @@ QImage tryToGrabWindowUntil(QQuickWindow *window, std::function<bool(const QImag
 
 void tst_QQuickWebEngineView::basicRenderingSanity()
 {
+    if (QTestPrivate::isRunningArmOnX86())
+        QSKIP("Grab does not work with QEMU.");
+
     showWebEngineView();
 
     webEngineView()->setUrl(QUrl(QString::fromUtf8("data:text/html,<html><body bgcolor=\"%2300ff00\"></body></html>")));
@@ -408,6 +412,9 @@ void tst_QQuickWebEngineView::titleUpdate()
 
 void tst_QQuickWebEngineView::transparentWebEngineViews()
 {
+    if (QTestPrivate::isRunningArmOnX86())
+        QSKIP("Grab does not work with QEMU.");
+
     showWebEngineView();
 
     // This should not crash.
@@ -996,6 +1003,9 @@ void tst_QQuickWebEngineView::inputEventForwardingDisabledWhenActiveFocusOnPress
 
 void tst_QQuickWebEngineView::changeLocale()
 {
+    if (QTestPrivate::isRunningArmOnX86())
+        QSKIP("Does not work with QEMU. (QTBUG-94911)");
+
     QStringList errorLines;
     QUrl url("http://non.existent/");
 

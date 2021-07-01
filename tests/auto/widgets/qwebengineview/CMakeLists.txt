@@ -8,6 +8,7 @@ qt_internal_add_test(tst_qwebengineview
         Qt::WebEngineCorePrivate
         Qt::GuiPrivate
         Qt::QuickWidgets
+        Qt::TestPrivate
         Test::Util
 )
 
