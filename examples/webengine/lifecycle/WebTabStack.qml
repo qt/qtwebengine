@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-import QtQml.Models 2.12
-import QtQuick 2.12
-import QtQuick.Controls 2.12
+import QtQml.Models
+import QtQuick
+import QtQuick.Controls
 
 Rectangle {
     id: root

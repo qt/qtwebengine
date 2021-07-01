@@ -48,11 +48,11 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtQuick.Window 2.0
-import QtWebEngine 1.7
-import QtQuick.Controls 2.4
-import QtQuick.Layouts 1.11
+import QtQuick
+import QtQuick.Window
+import QtWebEngine
+import QtQuick.Controls
+import QtQuick.Layouts
 
 ApplicationWindow {
     id: window
