@@ -120,6 +120,7 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
 
 ProfileAdapter::~ProfileAdapter()
 {
+    m_cancelableTaskTracker->TryCancelAll();
     content::BrowserContext::NotifyWillBeDestroyed(m_profile.data());
     while (!m_webContentsAdapterClients.isEmpty()) {
        m_webContentsAdapterClients.first()->releaseProfile();
