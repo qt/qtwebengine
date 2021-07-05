@@ -3,16 +3,21 @@
 <title>Geolocation Permission API Test</title>
 <script>
 
+var errorMessage;
+var handled = false;
+
 function successHandler(location) {
     var message = document.getElementById("message");
     message.innerHTML = "Latitude: " + location.coords.latitude +
     "<br>Longitude: " + location.coords.longitude;
 
-    console.error("Success");
+    errorMessage = "";
+    handled = true;
 }
 
 function errorHandler(error) {
-    console.error(error.message);
+    errorMessage = error.message;
+    handled = true;
 }
 
 <!-- One shot example -->
