@@ -514,6 +514,40 @@ foreach(config ${configs})
             ARGS use_xscrnsaver
             CONDITION XSCRNSAVER_FOUND
         )
+
+        if(CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm")
+           extend_gn_list_cflag(gnArgArg
+               ARG arm_tune
+               CFLAG mtune
+           )
+           extend_gn_list_cflag(gnArgArg
+               ARG arm_float_abi
+               CFLAG mfloat-abi
+           )
+           extend_gn_list_cflag(gnArgArg
+               ARG arm_arch
+               CFLAG march
+           )
+           extract_cflag(cflag "mfpu")
+           get_arm_version(arm_version "${cflag}")
+           extend_gn_list(gnArgArg
+               ARGS arm_use_neon
+               CONDITION (arm_version GREATER_EQUAL 8) OR ("${cflag}" MATCHES ".*neon.*")
+           )
+           if(arm_version EQUAL 7 AND NOT "${cflag}" MATCHES ".*neon.*")
+               # If the toolchain does not explicitly specify to use NEON instructions
+               # we use arm_neon_optional for ARMv7
+               list(APPEND gnArgArg arm_optionally_use_neon=true)
+           endif()
+           check_thumb(armThumb)
+           extend_gn_list(gnArgArg
+               ARGS arm_use_thumb
+               CONDITION armThumb
+           )
+           if(NOT armThumb AND NOT QT_FEATURE_system_ffmpeg)
+               list(APPEND gnArgArg media_use_ffmpeg=false use_webaudio_ffmpeg=false)
+           endif()
+       endif()
     endif()
 
     if(MACOS)

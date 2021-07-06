@@ -145,11 +145,17 @@ qt_configure_add_summary_entry(
     CONDITION UNIX
 )
 qt_configure_end_summary_section() # end of "Qt WebEngineCore" section
-#qt_configure_add_report_entry(
-#    TYPE WARNING
-#    MESSAGE "Thumb instruction set is required to build ffmpeg for QtWebEngine."
-#    CONDITION LINUX AND QT_FEATURE_webengine_embedded_build AND NOT QT_FEATURE_webengine_system_ffmpeg AND ( TEST_architecture_arch STREQUAL arm ) AND NOT QT_FEATURE_webengine_arm_thumb
-#)
+if(CMAKE_CROSSCOMPILING)
+    check_thumb(armThumb)
+    qt_configure_add_report_entry(
+        TYPE WARNING
+        MESSAGE "Thumb instruction set is required to build ffmpeg for QtWebEngine."
+        CONDITION LINUX
+            AND NOT QT_FEATURE_webengine_system_ffmpeg
+            AND TEST_architecture_arch MATCHES arm
+            AND NOT armThumb
+   )
+endif()
 qt_configure_add_report_entry(
     TYPE WARNING
     MESSAGE "V8 snapshot cannot be built. Most likely, the 32-bit host compiler does not work. Please make sure you have 32-bit devel environment installed."
