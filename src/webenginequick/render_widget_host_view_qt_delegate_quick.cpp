@@ -94,11 +94,7 @@ QRectF RenderWidgetHostViewQtDelegateQuick::viewGeometry() const
     const QPointF p2 = mapToGlobal(mapFromScene(QPointF(width(), height())));
     QRectF geometry = QRectF(p1, p2).normalized();
     // But keep the size untransformed to behave like other QQuickItems.
-#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
     geometry.setSize(size());
-#else
-    geometry.setSize(QSizeF(width(), height()));
-#endif
     return geometry;
 }
 

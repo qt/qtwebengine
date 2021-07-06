@@ -406,12 +406,8 @@ QVariant RenderWidgetHostViewQtDelegateClient::inputMethodQuery(Qt::InputMethodQ
         // TODO: Implement this
         return QVariant(); // No limit.
     case Qt::ImHints:
-#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
         return int(toQtInputMethodHints(m_rwhv->getTextInputType()) | Qt::ImhNoPredictiveText
                    | Qt::ImhNoTextHandles | Qt::ImhNoEditMenu);
-#else
-        return int(toQtInputMethodHints(m_rwhv->getTextInputType()) | Qt::ImhNoPredictiveText);
-#endif
     default:
         return QVariant();
     }

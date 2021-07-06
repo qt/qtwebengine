@@ -61,8 +61,6 @@
 #include <QtQml/QQmlListProperty>
 #include <QtQml/qqmlregistration.h>
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
-
 namespace QtWebEngineCore {
 class ClientCertSelectController;
 }
@@ -138,7 +136,5 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QQuickWebEngineClientCertificateOption *)
 Q_DECLARE_METATYPE(QQmlListProperty<QQuickWebEngineClientCertificateOption>)
 Q_DECLARE_METATYPE(QQuickWebEngineClientCertificateSelection *)
-
-#endif
 
 #endif // QQUICKWEBENGINECERTSELECTION_P_H

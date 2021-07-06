@@ -706,11 +706,7 @@ void RenderWidgetHostViewQt::OnUpdateTextInputStateCalled(content::TextInputMana
     }
 
     ui::TextInputType type = getTextInputType();
-#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
     m_delegate->setInputMethodHints(toQtInputMethodHints(getTextInputType()) | Qt::ImhNoPredictiveText | Qt::ImhNoTextHandles | Qt::ImhNoEditMenu);
-#else
-    m_delegate->setInputMethodHints(toQtInputMethodHints(getTextInputType()) | Qt::ImhNoPredictiveText);
-#endif
     QString surroundingText = toQt(state->value);
     // Remove IME composition text from the surrounding text
     if (state->composition.has_value())
