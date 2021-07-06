@@ -159,9 +159,6 @@ void tst_Accessibility::focusChild_data()
 
 void tst_Accessibility::focusChild()
 {
-#if QT_VERSION < QT_VERSION_CHECK(5, 14, 1)
-    QSKIP("Requires newer base Qt");
-#endif
     auto traverseToWebDocumentAccessibleInterface = [](QAccessibleInterface *iface) -> QAccessibleInterface * {
         QFETCH(QList<QAccessible::Role>, ancestorRoles);
         for (int i = 0; i < ancestorRoles.size(); ++i) {

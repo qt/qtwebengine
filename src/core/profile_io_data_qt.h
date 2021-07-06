@@ -142,12 +142,7 @@ private:
     QString m_httpCachePath;
     QString m_storageName;
     bool m_inMemoryOnly;
-#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
-    QMutex m_mutex{QMutex::Recursive};
-    using QRecursiveMutex = QMutex;
-#else
     QRecursiveMutex m_mutex;
-#endif
     int m_httpCacheMaxSize = 0;
     BrowsingDataRemoverObserverQt m_removerObserver;
     QString m_dataPath;

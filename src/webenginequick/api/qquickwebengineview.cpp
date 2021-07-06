@@ -299,15 +299,11 @@ void QQuickWebEngineViewPrivate::allowCertificateError(const QWebEngineCertifica
 void QQuickWebEngineViewPrivate::selectClientCert(
         const QSharedPointer<QtWebEngineCore::ClientCertSelectController> &controller)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
     Q_Q(QQuickWebEngineView);
     QQuickWebEngineClientCertificateSelection *certSelection = new QQuickWebEngineClientCertificateSelection(controller);
     // mark the object for gc by creating temporary jsvalue
     qmlEngine(q)->newQObject(certSelection);
     Q_EMIT q->selectClientCertificate(certSelection);
-#else
-    Q_UNUSED(controller);
-#endif
 }
 
 static QQuickWebEngineView::Feature toFeature(QtWebEngineCore::ProfileAdapter::PermissionType type)

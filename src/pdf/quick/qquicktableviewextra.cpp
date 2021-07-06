@@ -62,132 +62,17 @@ QQuickTableViewExtra::QQuickTableViewExtra(QObject *parent) : QObject(parent)
 QPoint QQuickTableViewExtra::cellAtPos(qreal x, qreal y) const
 {
     QPointF position(x, y);
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     return m_tableView->cellAtPos(position);
-#else
-    if (!m_tableView->boundingRect().contains(position))
-        return QPoint(-1, -1);
-
-    const QQuickItem *contentItem = m_tableView->contentItem();
-
-    for (const QQuickItem *child : contentItem->childItems()) {
-        const QPointF posInChild = m_tableView->mapToItem(child, position);
-        if (child->boundingRect().contains(posInChild)) {
-            const auto context = qmlContext(child);
-            const int column = context->contextProperty("column").toInt();
-            const int row = context->contextProperty("row").toInt();
-            return QPoint(column, row);
-        }
-    }
-
-    return QPoint(-1, -1);
-#endif
 }
 
 QQuickItem *QQuickTableViewExtra::itemAtCell(const QPoint &cell) const
 {
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     return m_tableView->itemAtCell(cell);
-#else
-    const QQuickItem *contentItem = m_tableView->contentItem();
-
-    for (QQuickItem *child : contentItem->childItems()) {
-        const auto context = qmlContext(child);
-        const int column = context->contextProperty("column").toInt();
-        const int row = context->contextProperty("row").toInt();
-        if (QPoint(column, row) == cell)
-            return child;
-    }
-
-    return nullptr;
-#endif
 }
 
 void QQuickTableViewExtra::positionViewAtCell(const QPoint &cell, Qt::Alignment alignment, const QPointF &offset)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     m_tableView->positionViewAtCell(cell, alignment, offset);
-#else
-    // Note: this fallback implementation assumes all cells to be of the same size!
-
-    if (cell.x() < 0 || cell.x() > m_tableView->columns() - 1)
-        return;
-    if (cell.y() < 0 || cell.y() > m_tableView->rows() - 1)
-        return;
-
-    Qt::Alignment verticalAlignment = alignment & (Qt::AlignTop | Qt::AlignVCenter | Qt::AlignBottom);
-    Qt::Alignment horizontalAlignment = alignment & (Qt::AlignLeft | Qt::AlignHCenter | Qt::AlignRight);
-
-    const QQuickItem *contentItem = m_tableView->contentItem();
-    const QQuickItem *randomChild = contentItem->childItems().first();
-    const qreal cellWidth = randomChild->width();
-    const qreal cellHeight = randomChild->height();
-
-    if (!verticalAlignment && !horizontalAlignment) {
-        qmlWarning(this) << "No valid alignment specified";
-        return;
-    }
-
-    if (horizontalAlignment) {
-        qreal newPosX = 0;
-        const qreal columnPosLeft = int(cell.x() * (cellWidth + m_tableView->columnSpacing()));
-        m_tableView->setContentX(0);
-        m_tableView->forceLayout();
-        m_tableView->setContentX(columnPosLeft);
-        m_tableView->forceLayout();
-
-        switch (horizontalAlignment) {
-        case Qt::AlignLeft:
-            newPosX = m_tableView->contentX() + offset.x();
-            break;
-        case Qt::AlignHCenter:
-            newPosX = m_tableView->contentX()
-                    - m_tableView->width() / 2
-                    + (cellWidth / 2)
-                    + offset.x();
-            break;
-        case Qt::AlignRight:
-            newPosX = m_tableView->contentX()
-                    - m_tableView->width()
-                    + cellWidth
-                    + offset.x();
-            break;
-        }
-
-        m_tableView->setContentX(newPosX);
-        m_tableView->forceLayout();
-    }
-
-    if (verticalAlignment) {
-        qreal newPosY = 0;
-        const qreal rowPosTop = int(cell.y() * (cellHeight + m_tableView->rowSpacing()));
-        m_tableView->setContentY(0);
-        m_tableView->forceLayout();
-        m_tableView->setContentY(rowPosTop);
-        m_tableView->forceLayout();
-
-        switch (verticalAlignment) {
-        case Qt::AlignTop:
-            newPosY = m_tableView->contentY() + offset.y();
-            break;
-        case Qt::AlignVCenter:
-            newPosY = m_tableView->contentY()
-                    - m_tableView->height() / 2
-                    + (cellHeight / 2)
-                    + offset.y();
-            break;
-        case Qt::AlignBottom:
-            newPosY = m_tableView->contentY()
-                    - m_tableView->height()
-                    + cellHeight
-                    + offset.y();
-            break;
-        }
-
-        m_tableView->setContentY(newPosY);
-        m_tableView->forceLayout();
-    }
-#endif
 }
 
 QT_END_NAMESPACE
