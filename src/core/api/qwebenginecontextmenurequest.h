@@ -41,10 +41,10 @@
 #define QWEBENGINECONTEXTMENUREQUEST_H
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
-#include <QtCore/QObject>
-#include <QtCore/QUrl>
-#include <QtCore/QPoint>
-#include <QScopedPointer>
+#include <QtCore/qobject.h>
+#include <QtCore/qurl.h>
+#include <QtCore/qpoint.h>
+#include <QtCore/qscopedpointer.h>
 
 namespace extensions {
 class MimeHandlerViewGuestDelegateQt;

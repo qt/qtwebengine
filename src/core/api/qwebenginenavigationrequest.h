@@ -40,9 +40,9 @@
 #ifndef QWEBENGINENAVIGATIONREQUEST_H
 #define QWEBENGINENAVIGATIONREQUEST_H
 
-#include <qtwebenginecoreglobal.h>
-#include <QtCore/QObject>
-#include <QtCore/QUrl>
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
+#include <QtCore/qobject.h>
+#include <QtCore/qurl.h>
 
 QT_BEGIN_NAMESPACE
 

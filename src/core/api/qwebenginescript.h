@@ -41,9 +41,9 @@
 #define QWEBENGINESCRIPT_H
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
-#include <QtCore/QUrl>
-#include <QtCore/QObject>
-#include <QtCore/QSharedDataPointer>
+#include <QtCore/qurl.h>
+#include <QtCore/qobject.h>
+#include <QtCore/qshareddata.h>
 
 namespace QtWebEngineCore {
 class UserScript;

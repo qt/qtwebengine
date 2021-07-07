@@ -40,9 +40,10 @@
 #ifndef QWEBENGINEQUOTAREQUEST_H
 #define QWEBENGINEQUOTAREQUEST_H
 
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
+
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qurl.h>
-#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
 namespace QtWebEngineCore {
 class QuotaPermissionContextQt;

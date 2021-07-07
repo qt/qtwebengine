@@ -41,7 +41,7 @@
 #define QWEBENGINEHISTORY_H
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
-#include <QtCore/QAbstractListModel>
+#include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qdatetime.h>

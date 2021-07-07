@@ -45,8 +45,8 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qset.h>
-#include <QtCore/QObject>
-#include <QtQml/QJSValue>
+#include <QtCore/qobject.h>
+#include <QtQml/qjsvalue.h>
 
 QT_BEGIN_NAMESPACE
 class QWebEngineScriptCollection;
