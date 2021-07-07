@@ -134,7 +134,6 @@ public:
     void setDownloadPath(const QString &path);
 
     void setNotificationPresenter(std::function<void(std::unique_ptr<QWebEngineNotification>)> notificationPresenter);
-    std::function<void(std::unique_ptr<QWebEngineNotification>)> notificationPresenter();
 
     QWebEngineClientCertificateStore *clientCertificateStore();
 
@@ -150,6 +149,9 @@ private:
     Q_DISABLE_COPY(QWebEngineProfile)
     Q_DECLARE_PRIVATE(QWebEngineProfile)
     QWebEngineProfile(QWebEngineProfilePrivate *, QObject *parent = nullptr);
+
+    friend class QWebEngineView;
+    std::function<void(std::unique_ptr<QWebEngineNotification>)> notificationPresenter();
 
     friend class QWebEnginePagePrivate;
     QScopedPointer<QWebEngineProfilePrivate> d_ptr;
