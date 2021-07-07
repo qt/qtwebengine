@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineProfilePrivate;
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineDownloadRequest : public QWebEngineDownloadRequest
+class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineDownloadRequest : public QWebEngineDownloadRequest
 {
     Q_OBJECT
 public:

@@ -51,7 +51,7 @@
 QT_BEGIN_NAMESPACE
 class QWebEngineScriptCollection;
 
-class Q_WEBENGINE_EXPORT QQuickWebEngineScriptCollection : public QObject
+class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineScriptCollection : public QObject
 {
     Q_OBJECT
 public:

@@ -59,7 +59,7 @@ class QWebEngineUrlSchemeHandler;
 class QQuickWebEngineScriptCollection;
 class QQuickWebEngineProfilePrivate;
 
-class Q_WEBENGINE_EXPORT QQuickWebEngineProfile : public QObject {
+class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineProfile : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString storageName READ storageName WRITE setStorageName NOTIFY storageNameChanged FINAL)
     Q_PROPERTY(bool offTheRecord READ isOffTheRecord WRITE setOffTheRecord NOTIFY offTheRecordChanged FINAL)

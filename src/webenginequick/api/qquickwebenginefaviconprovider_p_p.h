@@ -103,7 +103,7 @@ private:
     QImage m_image;
 };
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineFaviconProvider : public QQuickAsyncImageProvider
+class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineFaviconProvider : public QQuickAsyncImageProvider
 {
 public:
     static QString identifier();

@@ -56,7 +56,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineTouchHandleProvider : public QQuickImageProvider {
+class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineTouchHandleProvider : public QQuickImageProvider {
 public:
     static QString identifier();
     static QUrl url(int orientation);

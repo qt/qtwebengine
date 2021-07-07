@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineView;
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineNewViewRequest : public QWebEngineNewWindowRequest
+class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineNewViewRequest : public QWebEngineNewWindowRequest
 {
     Q_OBJECT
 public:
