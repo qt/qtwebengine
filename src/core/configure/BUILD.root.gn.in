@@ -10,6 +10,10 @@ import("//tools/grit/repack.gni")
 import("//build/config/locales.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//extensions/buildflags/buildflags.gni")
+import("//ui/ozone/ozone.gni")
+
+chromium_version = exec_script("//build/util/version.py",
+  [ "-f", rebase_path("//chrome/VERSION"), "-t", "@MAJOR@.@MINOR@.@BUILD@.@PATCH@"],"list lines")
 
 moc_source_h_files = exec_script("@WEBENGINE_ROOT_SOURCE_DIR@/tools/scripts/gn_find_mocables.py",
   [
@@ -83,12 +87,70 @@ config("cpp17_config") {
 
 shared_library("QtWebEngineCore") {
   cmake_config = "@GN_CONFIG@"
-  import("@WEBENGINE_ROOT_SOURCE_DIR@/src/core/qtwebengine.gni")
   configs += [
     ":cpp17_config",
     ":QtWebEngineCore_config",
     "//build/config:precompiled_headers"
   ]
+  include_dirs = [
+    "//skia/config",
+    "//third_party",
+    "//third_party/boringssl/src/include",
+    "//third_party/skia/include/core"
+  ]
+  defines = [ "CHROMIUM_VERSION=\"" + chromium_version[0] + "\"" ]
+  deps = [
+    "//base",
+    "//components/cdm/renderer",
+    "//components/error_page/common",
+    "//components/favicon/content",
+    "//components/history/content/browser",
+    "//components/keyed_service/content",
+    "//components/navigation_interception",
+    "//components/network_hints/browser",
+    "//components/network_hints/common:mojo_bindings",
+    "//components/network_hints/renderer",
+    "//components/visitedlink/browser",
+    "//components/visitedlink/renderer",
+    "//components/web_cache/browser",
+    "//components/web_cache/renderer",
+    "//components/spellcheck:buildflags",
+    "//components/proxy_config",
+    "//components/user_prefs",
+    "//content/public/app",
+    "//content",
+    "//media:media_buildflags",
+    "//net",
+    "//services/proxy_resolver:lib",
+    "//skia",
+    "//third_party/blink/public:blink",
+    "//ui/accessibility",
+    "//ui/gl",
+    "//qtwebengine/browser:interfaces",
+    "//qtwebengine/userscript",
+    "//qtwebengine/browser:service_manifests",
+    "//qtwebengine/common:mojo_bindings",
+    ":qtwebengine_sources",
+    ":qtwebengine_resources",
+  ]
+
+  if (use_ozone) {
+    _ozone_extra_directory = get_path_info(ozone_extra_path, "dir")
+    deps += [ "$_ozone_extra_directory:qt" ]
+  }
+
+  if (enable_webrtc) {
+    deps += [ "//third_party/webrtc_overrides:webrtc_component" ]
+  }
+
+  if (use_xscrnsaver) {
+    deps += [ "//ui/base/x" ]
+  }
+
+  if (is_win) {
+    data_deps = [ ":QtWebEngineCoreSandbox" ]
+  }
+
   sources = [
   @GN_HEADERS@,
   @GN_SOURCES@
