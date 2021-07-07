@@ -146,7 +146,28 @@ public:
     QSizeF contentsSize() const;
     QPointF scrollPosition() const;
 
-    enum LoadStatus {
+#if QT_DEPRECATED_SINCE(6, 2)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
+    enum QT_DEPRECATED NavigationRequestAction {
+        AcceptRequest,
+        // Make room in the valid range of the enum so
+        // we can expose extra actions.
+        IgnoreRequest = 0xFF
+    };
+    Q_ENUM(NavigationRequestAction)
+
+    enum QT_DEPRECATED NavigationType {
+        LinkClickedNavigation,
+        TypedNavigation,
+        FormSubmittedNavigation,
+        BackForwardNavigation,
+        ReloadNavigation,
+        OtherNavigation,
+        RedirectNavigation,
+    };
+    Q_ENUM(NavigationType)
+
+    enum QT_DEPRECATED LoadStatus {
         LoadStartedStatus,
         LoadStoppedStatus,
         LoadSucceededStatus,
@@ -154,7 +175,7 @@ public:
     };
     Q_ENUM(LoadStatus)
 
-    enum ErrorDomain {
+    enum QT_DEPRECATED ErrorDomain {
          NoErrorDomain,
          InternalErrorDomain,
          ConnectionErrorDomain,
@@ -164,6 +185,16 @@ public:
          DnsErrorDomain
     };
     Q_ENUM(ErrorDomain)
+
+    enum QT_DEPRECATED NewViewDestination {
+        NewViewInWindow,
+        NewViewInTab,
+        NewViewInDialog,
+        NewViewInBackgroundTab
+    };
+    Q_ENUM(NewViewDestination)
+QT_WARNING_POP
+#endif
 
     enum Feature {
         MediaAudioCapture,
