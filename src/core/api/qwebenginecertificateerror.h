@@ -44,7 +44,7 @@
 
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qurl.h>
-#include <QtNetwork/QSslCertificate>
+#include <QtNetwork/qsslcertificate.h>
 
 namespace QtWebEngineCore {
 class WebContentsDelegateQt;

@@ -42,8 +42,8 @@
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
-#include <QObject>
-#include <QUrl>
+#include <QtCore/qobject.h>
+#include <QtCore/qurl.h>
 
 namespace QtWebEngineCore {
 class WebContentsAdapter;

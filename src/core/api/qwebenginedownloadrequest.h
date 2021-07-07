@@ -43,7 +43,7 @@
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
 #include <QtCore/qobject.h>
-#include <QtCore/QUrl>
+#include <QtCore/qurl.h>
 
 QT_BEGIN_NAMESPACE
 

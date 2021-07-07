@@ -41,8 +41,8 @@
 #define QWEBENGINEFINDTEXTRESULT_H
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
-#include <QtCore/QObject>
-#include <QtCore/QSharedData>
+#include <QtCore/qobject.h>
+#include <QtCore/qshareddata.h>
 
 namespace QtWebEngineCore {
 class FindTextHelper;

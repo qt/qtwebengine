@@ -40,11 +40,11 @@
 #ifndef DESKTOP_NOTIFICATION_CONTROLLER_H
 #define DESKTOP_NOTIFICATION_CONTROLLER_H
 
-#include "qtwebenginecoreglobal.h"
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
-#include <QtCore/QSharedPointer>
-#include <QtCore/QUrl>
-#include <QtGui/QImage>
+#include <QtCore/qsharedpointer.h>
+#include <QtCore/qurl.h>
+#include <QtGui/qimage.h>
 
 class GURL;
 

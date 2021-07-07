@@ -41,9 +41,9 @@
 #define QQUICKWEBENGINEPROFILE_H
 
 #include <QtWebEngineQuick/qtwebenginequickglobal.h>
-#include <QtCore/QObject>
-#include <QtCore/QScopedPointer>
-#include <QtCore/QString>
+#include <QtCore/qobject.h>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qstring.h>
 #include <QtQml/qqmlregistration.h>
 
 QT_BEGIN_NAMESPACE
