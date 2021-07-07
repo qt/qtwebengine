@@ -1230,14 +1230,6 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::formValidationMessageRequested(FormValidationMessageRequest request)
-    \since QtWebEngine 1.4
-    \obsolete
-
-    No longer used since 5.11, as Blink now renders Validation messages internally.
-*/
-
-/*!
     \qmlsignal WebEngineView::contextMenuRequested(ContextMenuRequest request)
     \since QtWebEngine 1.4
 

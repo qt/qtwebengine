@@ -80,7 +80,6 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QQuickWebEngineJavaScriptDialogRequest::staticMetaObject
     << &QQuickWebEngineColorDialogRequest::staticMetaObject
     << &QQuickWebEngineFileDialogRequest::staticMetaObject
-    << &QQuickWebEngineFormValidationMessageRequest::staticMetaObject
     << &QQuickWebEngineNewViewRequest::staticMetaObject
     << &QQuickWebEngineTooltipRequest::staticMetaObject
     << &QWebEngineContextMenuRequest::staticMetaObject
@@ -278,14 +277,6 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineFileDialogRequest.mode --> QQuickWebEngineFileDialogRequest::FileMode"
     << "QWebEngineFindTextResult.numberOfMatches --> int"
     << "QWebEngineFindTextResult.activeMatch --> int"
-    << "QQuickWebEngineFormValidationMessageRequest.Hide --> RequestType"
-    << "QQuickWebEngineFormValidationMessageRequest.Move --> RequestType"
-    << "QQuickWebEngineFormValidationMessageRequest.Show --> RequestType"
-    << "QQuickWebEngineFormValidationMessageRequest.accepted --> bool"
-    << "QQuickWebEngineFormValidationMessageRequest.anchor --> QRect"
-    << "QQuickWebEngineFormValidationMessageRequest.subText --> QString"
-    << "QQuickWebEngineFormValidationMessageRequest.text --> QString"
-    << "QQuickWebEngineFormValidationMessageRequest.type --> QQuickWebEngineFormValidationMessageRequest::RequestType"
     << "QQuickWebEngineTooltipRequest.Hide --> RequestType"
     << "QQuickWebEngineTooltipRequest.Show --> RequestType"
     << "QQuickWebEngineTooltipRequest.x --> int"
@@ -699,7 +690,6 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.findText(QString,FindFlags) --> void"
     << "QQuickWebEngineView.findText(QString,FindFlags,QJSValue) --> void"
     << "QQuickWebEngineView.findTextFinished(QWebEngineFindTextResult) --> void"
-    << "QQuickWebEngineView.formValidationMessageRequested(QQuickWebEngineFormValidationMessageRequest*) --> void"
     << "QQuickWebEngineView.fullScreenCancelled() --> void"
     << "QQuickWebEngineView.fullScreenRequested(QWebEngineFullScreenRequest) --> void"
     << "QQuickWebEngineView.geometryChangeRequested(QRect,QRect) --> void"
