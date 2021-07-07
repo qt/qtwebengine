@@ -47,17 +47,17 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_STATIC
 #  if defined(QT_BUILD_WEBENGINE_LIB)
-#      define Q_WEBENGINE_EXPORT Q_DECL_EXPORT
+#      define Q_WEBENGINEQUICK_EXPORT Q_DECL_EXPORT
 #  else
-#      define Q_WEBENGINE_EXPORT Q_DECL_IMPORT
+#      define Q_WEBENGINEQUICK_EXPORT Q_DECL_IMPORT
 #  endif
 #else
-#  define Q_WEBENGINE_EXPORT
+#  define Q_WEBENGINEQUICK_EXPORT
 #endif
 
 namespace QtWebEngineQuick
 {
-    Q_WEBENGINE_EXPORT void initialize();
+    Q_WEBENGINEQUICK_EXPORT void initialize();
 }
 
 QT_END_NAMESPACE

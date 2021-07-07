@@ -88,7 +88,7 @@ class QWebEngineHistory;
 class QQuickWebEngineTestSupport;
 #endif
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewPrivate : public QtWebEngineCore::WebContentsAdapterClient
+class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineViewPrivate : public QtWebEngineCore::WebContentsAdapterClient
 {
 public:
     Q_DECLARE_PUBLIC(QQuickWebEngineView)
@@ -270,7 +270,7 @@ private:
     QObject *m_menu;
 };
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineTouchHandle : public QtWebEngineCore::TouchHandleDrawableClient {
+class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineTouchHandle : public QtWebEngineCore::TouchHandleDrawableClient {
 public:
     QQuickWebEngineTouchHandle(QtWebEngineCore::UIDelegatesManager *ui, const QMap<int, QImage> &images);
 
