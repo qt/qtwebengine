@@ -700,11 +700,6 @@ WebEngineContext::WebEngineContext()
 
     std::vector<std::string> disableFeatures;
     std::vector<std::string> enableFeatures;
-    // Needed to allow navigations within pages that were set using setHtml(). One example is
-    // tst_QWebEnginePage::acceptNavigationRequest.
-    // This is deprecated behavior, and will be removed in a future Chromium version, as per
-    // upstream Chromium commit ba52f56207a4b9d70b34880fbff2352e71a06422.
-    enableFeatures.push_back(features::kAllowContentInitiatedDataUrlNavigations.name);
 
     enableFeatures.push_back(features::kTracingServiceInProcess.name);
 

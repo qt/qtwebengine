@@ -61,6 +61,9 @@
 #include <qwebenginescript.h>
 #include <qwebenginescriptcollection.h>
 #include <qwebenginesettings.h>
+#include <qwebengineurlrequestjob.h>
+#include <qwebengineurlscheme.h>
+#include <qwebengineurlschemehandler.h>
 #include <qwebengineview.h>
 #include <qimagewriter.h>
 
@@ -297,12 +300,33 @@ void tst_QWebEnginePage::initTestCase()
 #endif
     searchPath += QStringLiteral("/../../../plugins");
     QCoreApplication::addLibraryPath(searchPath);
+
+    QWebEngineUrlScheme echo("echo");
+    echo.setSyntax(QWebEngineUrlScheme::Syntax::Path);
+    QWebEngineUrlScheme::registerScheme(echo);
 }
 
 void tst_QWebEnginePage::cleanupTestCase()
 {
     cleanupFiles(); // Be nice
 }
+
+class EchoingUrlSchemeHandler : public QWebEngineUrlSchemeHandler
+{
+public:
+    EchoingUrlSchemeHandler(QObject *parent = nullptr)
+        : QWebEngineUrlSchemeHandler(parent)
+    {
+    }
+    ~EchoingUrlSchemeHandler() = default;
+
+    void requestStarted(QWebEngineUrlRequestJob *job) override
+    {
+        QBuffer *buffer = new QBuffer(job);
+        buffer->setData(job->requestUrl().toString(QUrl::RemoveScheme).toUtf8());
+        job->reply("text/plain;charset=utf-8", buffer);
+    }
+};
 
 class NavigationRequestOverride : public QWebEnginePage
 {
@@ -324,12 +348,14 @@ protected:
 void tst_QWebEnginePage::acceptNavigationRequest()
 {
     QWebEngineProfile profile;
+    profile.installUrlSchemeHandler("echo", new EchoingUrlSchemeHandler(&profile));
     NavigationRequestOverride page(&profile, false);
 
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
 
-    page.setHtml(QString("<html><body><form name='tstform' action='data:text/html,foo'method='get'>"
-                            "<input type='text'><input type='submit'></form></body></html>"), QUrl());
+    page.setHtml(QString("<html><body><form name='tstform' action='foo' method='get'>"
+                            "<input type='text'><input type='submit'></form></body></html>"),
+                 QUrl("echo:/"));
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
 
     evaluateJavaScriptSync(&page, "tstform.submit();");
@@ -341,7 +367,7 @@ void tst_QWebEnginePage::acceptNavigationRequest()
     QTRY_COMPARE(loadSpy.count(), 3);
 
     // Now the content has changed
-    QCOMPARE(toPlainTextSync(&page), QString("foo?"));
+    QCOMPARE(toPlainTextSync(&page), QString("/foo?"));
 }
 
 class JSTestPage : public QWebEnginePage
@@ -528,7 +554,7 @@ void tst_QWebEnginePage::consoleOutput()
 class TestPage : public QWebEnginePage {
     Q_OBJECT
 public:
-    TestPage(QObject *parent = nullptr) : QWebEnginePage(parent)
+    TestPage(QObject *parent = nullptr, QWebEngineProfile *profile = nullptr) : QWebEnginePage(profile, parent)
     {
         connect(this, &QWebEnginePage::geometryChangeRequested, this, &TestPage::slotGeometryChangeRequested);
         connect(this, &QWebEnginePage::navigationRequested, this, &TestPage::slotNavigationRequested);
@@ -561,7 +587,7 @@ private Q_SLOTS:
     }
     void slotNewWindowRequested(QWebEngineNewWindowRequest &request)
     {
-        TestPage *page = new TestPage(this);
+        TestPage *page = new TestPage(this, profile());
         createdWindows.append(page);
         emit windowCreated();
         request.openIn(page);
@@ -678,14 +704,16 @@ void tst_QWebEnginePage::acceptNavigationRequestRelativeToNothing()
 
 void tst_QWebEnginePage::popupFormSubmission()
 {
-    TestPage page;
+    QWebEngineProfile profile;
+    profile.installUrlSchemeHandler("echo", new EchoingUrlSchemeHandler(&profile));
+    TestPage page(nullptr, &profile);
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
     QSignalSpy windowCreatedSpy(&page, SIGNAL(windowCreated()));
 
     page.settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
     page.setHtml("<form name='form1' method=get action='' target='myNewWin'>"
                  "  <input type='hidden' name='foo' value='bar'>"
-                 "</form>");
+                 "</form>", QUrl("echo:"));
     QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 20000);
 
     page.runJavaScript("window.open('', 'myNewWin', 'width=500,height=300,toolbar=0');");
@@ -3363,22 +3391,12 @@ void tst_QWebEnginePage::dataURLFragment()
     m_view->resize(800, 600);
     m_view->show();
     QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
-
-    m_page->setHtml("<html><body>"
-                    "<a id='link' href='#anchor'>anchor</a>"
-                    "</body></html>");
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
-
     QSignalSpy urlChangedSpy(m_page, SIGNAL(urlChanged(QUrl)));
-    QTest::mouseClick(m_view->focusProxy(), Qt::LeftButton, {}, elementCenter(m_page, "link"));
-    QVERIFY(urlChangedSpy.wait());
-    QCOMPARE(m_page->url().fragment(), QStringLiteral("anchor"));
-
 
     m_page->setHtml("<html><body>"
                     "<a id='link' href='#anchor'>anchor</a>"
                     "</body></html>", QUrl("http://test.qt.io/mytest.html"));
-    QTRY_COMPARE(loadFinishedSpy.count(), 2);
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
 
     QTest::mouseClick(m_view->focusProxy(), Qt::LeftButton, {}, elementCenter(m_page, "link"));
     QVERIFY(urlChangedSpy.wait());
@@ -3431,6 +3449,8 @@ void tst_QWebEnginePage::openLinkInDifferentProfile()
 {
     QWebEnginePage *targetPage = nullptr;
     QWebEngineProfile profile1, profile2;
+    profile1.installUrlSchemeHandler("echo", new EchoingUrlSchemeHandler(&profile1));
+    profile2.installUrlSchemeHandler("echo", new EchoingUrlSchemeHandler(&profile2));
     QWebEnginePage page1(&profile1), page2(&profile2);
     connect(&page1, &QWebEnginePage::newWindowRequested, [&](QWebEngineNewWindowRequest &request) {
         request.openIn(targetPage);
@@ -3442,8 +3462,8 @@ void tst_QWebEnginePage::openLinkInDifferentProfile()
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QSignalSpy spy1(&page1, &QWebEnginePage::loadFinished), spy2(&page2, &QWebEnginePage::loadFinished);
     page1.setHtml("<html><body>"
-                  "<a id='link' href='data:,hello'>link</a>"
-                  "</body></html>");
+                  "<a id='link' href='hello'>link</a>"
+                  "</body></html>", QUrl("echo:/"));
     QTRY_COMPARE(spy1.count(), 1);
     QVERIFY(spy1.takeFirst().value(0).toBool());
     targetPage = &page2;
@@ -3546,6 +3566,7 @@ void tst_QWebEnginePage::openLinkInNewPage()
     QFETCH(Effect, effect);
 
     QWebEngineProfile profile;
+    profile.installUrlSchemeHandler("echo", new EchoingUrlSchemeHandler(&profile));
     Page page1(&profile);
     Page page2(&profile);
     View view1(&page1);
@@ -3555,8 +3576,8 @@ void tst_QWebEnginePage::openLinkInNewPage()
     QVERIFY(QTest::qWaitForWindowExposed(&view1));
 
     page1.setHtml("<html><body>"
-                  "<a id='link' href='data:,hello' target='_blank'>link</a>"
-                  "</body></html>");
+                  "<a id='link' href='hello' target='_blank'>link</a>"
+                  "</body></html>", QUrl("echo:/"));
     QTRY_COMPARE(page1.spy.count(), 1);
     QVERIFY(page1.spy.takeFirst().value(0).toBool());
 
