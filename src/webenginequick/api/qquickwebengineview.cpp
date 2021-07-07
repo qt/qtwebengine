@@ -102,6 +102,22 @@
 QT_BEGIN_NAMESPACE
 using namespace QtWebEngineCore;
 
+#if QT_DEPRECATED_SINCE(6, 2)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::AcceptRequest)            == static_cast<int>(QWebEngineNavigationRequest::AcceptRequest));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::IgnoreRequest)            == static_cast<int>(QWebEngineNavigationRequest::IgnoreRequest));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::LinkClickedNavigation)    == static_cast<int>(QWebEngineNavigationRequest::LinkClickedNavigation));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::TypedNavigation)          == static_cast<int>(QWebEngineNavigationRequest::TypedNavigation));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::FormSubmittedNavigation)  == static_cast<int>(QWebEngineNavigationRequest::FormSubmittedNavigation));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::BackForwardNavigation)    == static_cast<int>(QWebEngineNavigationRequest::BackForwardNavigation));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::ReloadNavigation)         == static_cast<int>(QWebEngineNavigationRequest::ReloadNavigation));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::OtherNavigation)          == static_cast<int>(QWebEngineNavigationRequest::OtherNavigation));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::RedirectNavigation)       == static_cast<int>(QWebEngineNavigationRequest::RedirectNavigation));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::NewViewInWindow)          == static_cast<int>(QWebEngineNewWindowRequest::InNewWindow));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::NewViewInTab)             == static_cast<int>(QWebEngineNewWindowRequest::InNewTab));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::NewViewInDialog)          == static_cast<int>(QWebEngineNewWindowRequest::InNewDialog));
+Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::NewViewInBackgroundTab)   == static_cast<int>(QWebEngineNewWindowRequest::InNewBackgroundTab));
+
 using LoadStatus = QWebEngineLoadingInfo::LoadStatus;
 using ErrorDomain = QWebEngineLoadingInfo::ErrorDomain;
 Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::NoErrorDomain)          == static_cast<int>(ErrorDomain::NoErrorDomain));
@@ -115,6 +131,8 @@ Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::LoadStartedStatus)   == st
 Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::LoadStoppedStatus)   == static_cast<int>(LoadStatus::LoadStoppedStatus));
 Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::LoadFailedStatus)    == static_cast<int>(LoadStatus::LoadFailedStatus));
 Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::LoadSucceededStatus) == static_cast<int>(LoadStatus::LoadSucceededStatus));
+QT_WARNING_POP
+#endif
 
 #ifndef QT_NO_ACCESSIBILITY
 static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *object)
