@@ -49,9 +49,6 @@ qt_internal_add_module(WebEngineCore
         ../../3rdparty/chromium
         ../../3rdparty/chromium/third_party/abseil-cpp
         ../../3rdparty/chromium/third_party/perfetto/include
-        ${buildDir}/$<CONFIG>/gen
-        ${buildDir}/$<CONFIG>/gen/third_party/perfetto
-        ${buildDir}/$<CONFIG>/gen/third_party/perfetto/build_config
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate

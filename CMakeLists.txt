@@ -255,7 +255,7 @@ endif()
 
 if(CMAKE_CROSSCOMPILING)
     externalproject_add(hostBuild
-        SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/src/core/configure
+        SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/src/host
         BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR}/host
         PREFIX      host
         USES_TERMINAL_BUILD ON
@@ -265,6 +265,7 @@ if(CMAKE_CROSSCOMPILING)
                    -DGN_TARGET_CPU=${TEST_architecture_arch}
                    -DCMAKE_C_FLAGS=
                    -DCMAKE_CXX_FLAGS=
+                   -DQT_FEATURE_qtwebengine_build=${QT_FEATURE_qtwebengine_build}
     )
     externalproject_add_stepdependencies(qtwebengine install hostBuild)
 endif()

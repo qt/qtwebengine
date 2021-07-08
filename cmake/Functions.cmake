@@ -395,7 +395,7 @@ function(configure_gn_toolchain name cpuType v8CpuType toolchainIn toolchainOut)
     configure_file(${toolchainIn} ${toolchainOut}/BUILD.gn @ONLY)
 endfunction()
 
-function(create_pkg_config_host_wrapper wrapperName wrapperCmd)
+function(create_pkg_config_wrapper wrapperName wrapperCmd)
     file(WRITE ${wrapperName}
         "#!/bin/sh\n"
         "unset PKG_CONFIG_LIBDIR\n"
@@ -460,3 +460,277 @@ function(check_thumb result)
      endif()
      set(${result} FALSE PARENT_SCOPE)
 endfunction()
+
+macro(create_pkg_config_host_wrapper)
+    find_package(PkgConfigHost)
+       if(CMAKE_CROSSCOMPILING)
+           create_pkg_config_wrapper("${buildDir}/pkg-config-host_wrapper.sh" "${PKG_CONFIG_HOST_EXECUTABLE}")
+           set(PKG_CONFIG_HOST_EXECUTABLE "${buildDir}/pkg-config-host_wrapper.sh")
+        endif()
+endmacro()
+
+macro(setup_toolchains)
+    if(NOT CMAKE_CROSSCOMPILING) # delivered by hostBuild project
+        configure_gn_toolchain(host ${TEST_architecture_arch} ${TEST_architecture_arch}
+            ${WEBENGINE_ROOT_SOURCE_DIR}/src/host/BUILD.toolchain.gn.in
+            ${buildDir}/host_toolchain)
+        configure_gn_toolchain(v8 ${TEST_architecture_arch} ${TEST_architecture_arch}
+            ${WEBENGINE_ROOT_SOURCE_DIR}/src/host/BUILD.toolchain.gn.in
+            ${buildDir}/v8_toolchain)
+    endif()
+    configure_gn_toolchain(target ${TEST_architecture_arch} ${TEST_architecture_arch}
+        ${WEBENGINE_ROOT_SOURCE_DIR}/src/host/BUILD.toolchain.gn.in
+        ${buildDir}/target_toolchain)
+endmacro()
+
+macro(append_build_type_setup)
+    list(APPEND gnArgArg
+        use_qt=true
+        init_stack_vars=false
+        is_component_build=false
+        is_shared=true
+        use_sysroot=false
+        forbid_non_component_debug_builds=false
+        enable_debugallocation=false
+        remove_v8base_debug_symbols=true
+        treat_warnings_as_errors=false
+        use_allocator_shim=false
+        use_allocator="none"
+        use_custom_libcxx=false
+    )
+    if(${config} STREQUAL "Debug")
+        list(APPEND gnArgArg is_debug=true symbol_level=2)
+        if(WIN32)
+            list(APPEND gnArgArg enable_iterator_debugging=true v8_optimized_debug=false)
+        endif()
+    elseif(${config} STREQUAL "Release")
+        list(APPEND gnArgArg is_debug=false symbol_level=0)
+    elseif(${config} STREQUAL "RelWithDebInfo")
+        list(APPEND gnArgArg is_debug=false)
+        if(WIN32 AND NOT CLANG)
+            list(APPEND gnArgArg symbol_level=2)
+        else()
+            list(APPEND gnArgArg symbol_level=1)
+        endif()
+    elseif(${config} STREQUAL "MinSizeRel")
+        list(APPEND gnArgArg is_debug=false symbol_level=0 optimize_for_size=true)
+    endif()
+    if(FEATURE_developer_build OR (${config} STREQUAL "Debug"))
+        list(APPEND gnArgArg
+             is_official_build=false
+             from_here_uses_location_builtins=false
+        )
+    else()
+        list(APPEND gnArgArg is_official_build=true)
+        if(NOT CLANG OR NOT QT_FEATURE_use_lld_linker)
+            list(APPEND gnArgArg
+                use_thin_lto=false
+            )
+        endif()
+    endif()
+    extend_gn_list(gnArgArg
+        ARGS is_unsafe_developer_build
+        CONDITION FEATURE_developer_build
+    )
+
+    # FIXME: Make it configurable
+    list(APPEND gnArgArg
+        use_jumbo_build=true
+        jumbo_file_merge_limit=8
+        jumbo_build_excluded=["browser"]
+    )
+
+    extend_gn_list(gnArgArg
+        ARGS enable_precompiled_headers
+        CONDITION BUILD_WITH_PCH
+    )
+endmacro()
+
+macro(append_compiler_linker_sdk_setup)
+    if (CMAKE_CXX_COMPILER_LAUNCHER)
+        list(APPEND gnArgArg cc_wrapper="${CMAKE_CXX_COMPILER_LAUNCHER}")
+    endif()
+    extend_gn_list(gnArgArg
+        ARGS is_clang
+        CONDITION CLANG
+    )
+    if(CLANG AND NOT MACOS)
+        # For some reason this doesn't work for our macOS CIs
+        get_filename_component(clangBasePath ${CMAKE_CXX_COMPILER} DIRECTORY)
+        get_filename_component(clangBasePath ${clangBasePath} DIRECTORY)
+        list(APPEND gnArgArg
+            clang_base_path="${clangBasePath}"
+            clang_use_chrome_plugins=false
+        )
+    endif()
+    if(MACOS)
+        get_darwin_sdk_version(macSdkVersion)
+        get_filename_component(clangBasePath ${CMAKE_OBJCXX_COMPILER} DIRECTORY)
+        get_filename_component(clangBasePath ${clangBasePath} DIRECTORY)
+        list(APPEND gnArgArg
+            use_system_xcode=true
+            clang_base_path="${clangBasePath}"
+            clang_use_chrome_plugins=false
+            mac_deployment_target="${CMAKE_OSX_DEPLOYMENT_TARGET}"
+            mac_sdk_min="${macSdkVersion}"
+            fatal_linker_warnings=false
+       )
+    endif()
+    if(WIN32)
+        get_filename_component(windowsSdkPath $ENV{WINDOWSSDKDIR} DIRECTORY)
+        get_filename_component(visualStudioPath $ENV{VSINSTALLDIR} DIRECTORY)
+        list(APPEND gnArgArg
+            win_linker_timing=true
+            use_incremental_linking=false
+            visual_studio_version=2019
+            visual_studio_path=\"${visualStudioPath}\"
+            windows_sdk_path=\"${windowsSdkPath}\"
+        )
+    endif()
+    if(LINUX AND CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm")
+        extend_gn_list_cflag(gnArgArg
+            ARG arm_tune
+            CFLAG mtune
+        )
+        extend_gn_list_cflag(gnArgArg
+            ARG arm_float_abi
+            CFLAG mfloat-abi
+        )
+        extend_gn_list_cflag(gnArgArg
+            ARG arm_arch
+            CFLAG march
+        )
+        extract_cflag(cflag "mfpu")
+        get_arm_version(arm_version "${cflag}")
+        extend_gn_list(gnArgArg
+            ARGS arm_use_neon
+            CONDITION (arm_version GREATER_EQUAL 8) OR ("${cflag}" MATCHES ".*neon.*")
+        )
+        if(arm_version EQUAL 7 AND NOT "${cflag}" MATCHES ".*neon.*")
+            # If the toolchain does not explicitly specify to use NEON instructions
+            # we use arm_neon_optional for ARMv7
+            list(APPEND gnArgArg arm_optionally_use_neon=true)
+        endif()
+        check_thumb(armThumb)
+        extend_gn_list(gnArgArg
+            ARGS arm_use_thumb
+            CONDITION armThumb
+        )
+    endif()
+    extend_gn_list(gnArgArg
+        ARGS use_gold
+        CONDITION QT_FEATURE_use_gold_linker
+    )
+    extend_gn_list(gnArgArg
+        ARGS use_lld
+        CONDITION QT_FEATURE_use_lld_linker
+    )
+endmacro()
+
+macro(append_sanitizer_setup)
+    if(QT_FEATURE_sanitizer)
+        extend_gn_list(gnArgArg
+            ARGS is_asan
+            CONDITION address IN_LIST ECM_ENABLE_SANITIZERS
+        )
+        extend_gn_list(gnArgArg
+            ARGS is_tsan
+            CONDITION thread IN_LIST ECM_ENABLE_SANITIZERS
+        )
+        extend_gn_list(gnArgArg
+            ARGS is_msan
+            CONDITION memory IN_LIST ECM_ENABLE_SANITIZERS
+        )
+        extend_gn_list(gnArgArg
+            ARGS is_ubsan is_ubsan_vptr
+            CONDITION undefined IN_LIST ECM_ENABLE_SANITIZERS
+        )
+    endif()
+endmacro()
+
+macro(append_toolchain_setup)
+    if(LINUX)
+        list(APPEND gnArgArg
+            custom_toolchain="${buildDir}/target_toolchain:target"
+            host_toolchain="${buildDir}/host_toolchain:host"
+            v8_snapshot_toolchain="${buildDir}/v8_toolchain:v8"
+        )
+        get_gn_arch(cpu ${TEST_architecture_arch})
+        if(CMAKE_CROSSCOMPILING)
+            list(APPEND gnArgArg target_cpu="${cpu}")
+        else()
+            list(APPEND gnArgArg host_cpu="${cpu}")
+        endif()
+        if(CMAKE_SYSROOT)
+            list(APPEND gnArgArg target_sysroot="${CMAKE_SYSROOT}")
+        endif()
+    endif()
+    if(WIN32)
+        list(APPEND gnArgArg target_cpu="x64")
+    endif()
+    if(MAC AND (CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64" OR
+        CMAKE_OSX_ARCHITECTURES STREQUAL "arm64"))
+            list(APPEND gnArgArg
+                target_cpu="arm64"
+            )
+    endif()
+endmacro()
+
+
+macro(append_pkg_config_setup)
+    if(LINUX)
+        list(APPEND gnArgArg
+            pkg_config="${PKG_CONFIG_EXECUTABLE}"
+            host_pkg_config="${PKG_CONFIG_HOST_EXECUTABLE}"
+        )
+    endif()
+endmacro()
+
+macro(execute_gn)
+    get_target_property(gnCmd Gn::gn IMPORTED_LOCATION)
+    set(gnArg gen ${buildDir}/${config})
+
+    list(APPEND gnArg
+        --script-executable=${Python2_EXECUTABLE}
+        --root=${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium)
+    list(JOIN gnArgArg " " gnArgArg)
+
+    list(APPEND gnArg "--args=${gnArgArg}")
+
+    list(JOIN gnArg " " printArg)
+    message("-- Running ${config} Configuration for GN \n-- ${gnCmd} ${printArg}")
+    execute_process(
+        COMMAND ${gnCmd} ${gnArg}
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        RESULT_VARIABLE gnResult
+        OUTPUT_VARIABLE gnOutput
+        ERROR_VARIABLE gnError
+    )
+
+    if(NOT gnResult EQUAL 0)
+        message(FATAL_ERROR "\n-- GN FAILED\n${gnOutput}\n${gnError}")
+    else()
+        string(REGEX REPLACE "\n$" "" gnOutput "${gnOutput}")
+        message("-- GN ${gnOutput}")
+    endif()
+endmacro()
+
+macro(execute_ninja ninjaTargets)
+    string(REPLACE " " ";" NINJAFLAGS "$ENV{NINJAFLAGS}")
+    string(REPLACE " " ";" NINJATARGETS "${ninjaTargets} ${ARGN}")
+    add_custom_command(
+        OUTPUT
+            ${buildDir}/${config}/${ninjaTargets}.stamp
+            ${sandboxOutput}
+            ${buildDir}/${config}/runAlways # use generator expression in CMAKE 3.20
+        WORKING_DIRECTORY ${buildDir}/${config}
+        COMMAND ${CMAKE_COMMAND} -E echo "Ninja ${config} build"
+        COMMAND Ninja::ninja
+            ${NINJAFLAGS}
+            -C ${buildDir}/${config}
+            ${NINJATARGETS}
+        USES_TERMINAL
+        VERBATIM
+        COMMAND_EXPAND_LISTS
+    )
+endmacro()
