@@ -41,7 +41,6 @@
 
 #include "net/client_cert_store_data.h"
 
-#include <QByteArray>
 #include <QList>
 
 QT_BEGIN_NAMESPACE

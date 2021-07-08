@@ -55,7 +55,7 @@
 #include "qwebenginescript.h"
 #include "web_contents_adapter.h"
 
-#include <QtCore/QSet>
+#include <QtCore/QList>
 #include <QtCore/QSharedPointer>
 
 namespace QtWebEngineCore {

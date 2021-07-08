@@ -42,8 +42,6 @@
 
 #include "renderer_host/user_resource_controller_host.h"
 
-using QtWebEngineCore::UserScript;
-
 /*!
     \class QWebEngineScriptCollection
     \inmodule QtWebEngineCore

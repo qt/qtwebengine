@@ -44,7 +44,6 @@
 #include <QtWebEngineCore/qwebenginescript.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qlist.h>
-#include <QtCore/qset.h>
 
 QT_BEGIN_NAMESPACE
 class QWebEngineScriptCollectionPrivate;

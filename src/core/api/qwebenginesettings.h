@@ -50,10 +50,6 @@ class WebEngineSettings;
 
 QT_BEGIN_NAMESPACE
 
-class QIcon;
-class QPixmap;
-class QUrl;
-
 class Q_WEBENGINECORE_EXPORT QWebEngineSettings {
 public:
     enum FontFamily {

@@ -51,7 +51,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QObject;
 class QUrl;
 class QWebEngineClientCertificateStore;
 class QWebEngineCookieStore;
@@ -152,9 +151,7 @@ private:
     Q_DECLARE_PRIVATE(QWebEngineProfile)
     QWebEngineProfile(QWebEngineProfilePrivate *, QObject *parent = nullptr);
 
-    friend class QWebEnginePage;
     friend class QWebEnginePagePrivate;
-    friend class QWebEngineUrlSchemeHandler;
     QScopedPointer<QWebEngineProfilePrivate> d_ptr;
 };
 

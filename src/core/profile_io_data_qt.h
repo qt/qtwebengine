@@ -67,6 +67,7 @@ class ExtensionSystemQt;
 namespace QtWebEngineCore {
 
 struct ClientCertificateStoreData;
+class CookieMonsterDelegateQt;
 class ProfileIODataQt;
 class ProfileQt;
 

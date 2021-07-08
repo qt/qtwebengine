@@ -163,8 +163,6 @@ private:
     friend class extensions::MimeHandlerViewGuestDelegateQt;
     friend class QQuickWebEngineViewPrivate;
     friend class QQuickWebEngineView;
-    friend class ContextMenuRequestJSWrapper;
-    friend class QWebEngineViewPrivate;
     friend class QWebEnginePage;
 };
 
