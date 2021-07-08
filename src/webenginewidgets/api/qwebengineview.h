@@ -41,6 +41,7 @@
 #define QWEBENGINEVIEW_H
 
 #include <QtGui/qpainter.h>
+#include <QtGui/QPageLayout>
 #include <QtGui/qpageranges.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtWidgets/qwidget.h>

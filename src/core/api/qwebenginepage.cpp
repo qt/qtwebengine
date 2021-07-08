@@ -41,7 +41,6 @@
 #include "qwebenginepage_p.h"
 
 #include "qwebenginecertificateerror.h"
-#include "qwebenginedownloadrequest_p.h"
 #include "qwebenginefindtextresult.h"
 #include "qwebenginefullscreenrequest.h"
 #include "qwebenginehistory.h"
@@ -49,7 +48,6 @@
 #include "qwebengineloadinginfo.h"
 #include "qwebenginenavigationrequest.h"
 #include "qwebenginenewwindowrequest.h"
-#include "qwebenginenotification.h"
 #include "qwebengineprofile.h"
 #include "qwebengineprofile_p.h"
 #include "qwebenginequotarequest.h"
@@ -67,9 +65,7 @@
 #include "render_view_context_menu_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "render_widget_host_view_qt_delegate_client.h"
-#include "user_notification_controller.h"
 #include "web_contents_adapter.h"
-#include "web_engine_settings.h"
 
 #include <QAction>
 #include <QGuiApplication>

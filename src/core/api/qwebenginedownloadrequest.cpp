@@ -45,7 +45,6 @@
 #include "profile_adapter.h"
 #include "web_contents_adapter_client.h"
 
-#include <QDir>
 #include <QFileInfo>
 
 QT_BEGIN_NAMESPACE

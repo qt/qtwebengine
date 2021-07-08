@@ -166,7 +166,6 @@ private:
     Q_DECLARE_PRIVATE(QWebEngineDownloadRequest)
 
     friend class QWebEngineProfilePrivate;
-    friend class QWebEnginePage;
 
 protected:
     QWebEngineDownloadRequest(QWebEngineDownloadRequestPrivate *, QObject *parent = nullptr);

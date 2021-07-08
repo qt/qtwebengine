@@ -52,8 +52,6 @@
 //
 
 #include "profile_adapter_client.h"
-#include "qwebengineprofile.h"
-#include "qwebenginescriptcollection.h"
 
 #include <QMap>
 #include <QPointer>
@@ -68,9 +66,9 @@ class ProfileAdapter;
 
 QT_BEGIN_NAMESPACE
 
-class QWebEngineBrowserContext;
-class QWebEngineProfilePrivate;
 class QWebEngineNotification;
+class QWebEngineProfile;
+class QWebEngineScriptCollection;
 class QWebEngineSettings;
 
 class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineProfilePrivate : public QtWebEngineCore::ProfileAdapterClient {

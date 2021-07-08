@@ -109,9 +109,7 @@ public:
     void swap(QWebEngineScript &other) { qSwap(d, other.d); }
 
 private:
-    friend class QQuickWebEngineScriptCollectionPrivate;
     friend class QWebEngineScriptCollectionPrivate;
-    friend class QWebEngineScriptCollection;
     QWebEngineScript(const QtWebEngineCore::UserScript &);
 
     QSharedDataPointer<QtWebEngineCore::UserScript> d;

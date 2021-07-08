@@ -39,17 +39,16 @@
 
 #include "qwebengineprofile.h"
 #include "qwebengineprofile_p.h"
-#include "qwebenginenotification.h"
 #include "qwebenginecookiestore.h"
 #include "qwebenginedownloadrequest.h"
 #include "qwebenginedownloadrequest_p.h"
 #include "qwebenginenotification.h"
 #include "qwebenginesettings.h"
+#include "qwebenginescriptcollection.h"
 #include "qwebenginescriptcollection_p.h"
 #include "qtwebenginecoreglobal.h"
 #include "profile_adapter.h"
 #include "visited_links_manager_qt.h"
-#include "web_engine_settings.h"
 
 #include <QDir>
 #include <QtWebEngineCore/qwebengineurlscheme.h>

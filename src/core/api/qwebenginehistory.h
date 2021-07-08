@@ -46,7 +46,6 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qshareddata.h>
-#include <QtGui/qicon.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -54,7 +53,6 @@ class QWebEngineHistory;
 class QWebEngineHistoryPrivate;
 class QWebEngineHistoryItemPrivate;
 class QWebEngineHistoryModelPrivate;
-class QWebEnginePage;
 class QWebEnginePagePrivate;
 class QQuickWebEngineViewPrivate;
 
@@ -164,7 +162,6 @@ private:
 
     friend Q_WEBENGINECORE_EXPORT QDataStream &operator>>(QDataStream &, QWebEngineHistory &);
     friend Q_WEBENGINECORE_EXPORT QDataStream &operator<<(QDataStream &, const QWebEngineHistory &);
-    friend class QWebEnginePage;
     friend class QWebEnginePagePrivate;
     friend class QQuickWebEngineViewPrivate;
     friend void QScopedPointerDeleter<QWebEngineHistory>::cleanup(QWebEngineHistory *) noexcept;

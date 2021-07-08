@@ -43,10 +43,7 @@
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtWebEngineCore/qwebengineurlrequestinfo.h>
 
-#include <QtCore/qbytearray.h>
-#include <QtCore/qhash.h>
 #include <QtCore/qobject.h>
-#include <QtCore/qurl.h>
 
 QT_BEGIN_NAMESPACE
 

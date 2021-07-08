@@ -48,15 +48,13 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qvariant.h>
-#include <QtGui/qpagelayout.h>
 #include <QtGui/qaction.h>
-#include <QtNetwork/qnetworkaccessmanager.h>
 
 #include <functional>
 
 QT_BEGIN_NAMESPACE
-class QMenu;
 
+class QAuthenticator;
 class QContextMenuBuilder;
 class QWebChannel;
 class QWebEngineCertificateError;
@@ -67,7 +65,6 @@ class QWebEngineHistory;
 class QWebEngineLoadingInfo;
 class QWebEngineNavigationRequest;
 class QWebEngineNewWindowRequest;
-class QWebEnginePage;
 class QWebEnginePagePrivate;
 class QWebEngineProfile;
 class QWebEngineQuotaRequest;
@@ -389,7 +386,6 @@ private:
 #endif
 
     friend class QContextMenuBuilder;
-    friend class QWebEngineFullScreenRequest;
     friend class QWebEngineView;
     friend class QWebEngineViewPrivate;
 #ifndef QT_NO_ACCESSIBILITY

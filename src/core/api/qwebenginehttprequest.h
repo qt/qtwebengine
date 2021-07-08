@@ -94,7 +94,6 @@ public:
 
 private:
     QSharedDataPointer<QWebEngineHttpRequestPrivate> d;
-    friend class QWebEngineHttpRequestPrivate;
 };
 
 Q_DECLARE_SHARED(QWebEngineHttpRequest)
