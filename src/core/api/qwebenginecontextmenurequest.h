@@ -76,6 +76,7 @@ class Q_WEBENGINECORE_EXPORT QWebEngineContextMenuRequest : public QObject
 {
     Q_OBJECT
 public:
+    // Must match blink::mojom::ContextMenuDataMediaType:
     enum MediaType {
         MediaTypeNone,
         MediaTypeImage,
@@ -87,7 +88,7 @@ public:
     };
     Q_ENUM(MediaType)
 
-    // Must match QWebEngineCore::WebEngineContextMenuData::MediaFlags:
+    // Must match blink::ContextMenuData::MediaFlags:
     enum MediaFlag {
         MediaInError = 0x1,
         MediaPaused = 0x2,
@@ -103,7 +104,7 @@ public:
     Q_DECLARE_FLAGS(MediaFlags, MediaFlag)
     Q_FLAG(MediaFlags)
 
-    // Must match QWebEngineCore::WebEngineContextMenuData::EditFlags:
+    // Must match blink::ContextMenuDataEditFlags:
     enum EditFlag {
         CanUndo = 0x1,
         CanRedo = 0x2,
