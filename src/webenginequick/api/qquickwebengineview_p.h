@@ -75,7 +75,6 @@ class QQuickWebEngineJavaScriptDialogRequest;
 class QQuickWebEngineNewViewRequest;
 class QQuickWebEngineSettings;
 class QQuickWebEngineTooltipRequest;
-class QQuickWebEngineFormValidationMessageRequest;
 class QQuickWebEngineViewPrivate;
 class QWebEngineCertificateError;
 class QWebEngineContextMenuRequest;
@@ -530,7 +529,6 @@ Q_SIGNALS:
     Q_REVISION(1,4) void javaScriptDialogRequested(QQuickWebEngineJavaScriptDialogRequest *request);
     Q_REVISION(1,4) void colorDialogRequested(QQuickWebEngineColorDialogRequest *request);
     Q_REVISION(1,4) void fileDialogRequested(QQuickWebEngineFileDialogRequest *request);
-    Q_REVISION(1,4) void formValidationMessageRequested(QQuickWebEngineFormValidationMessageRequest *request);
     Q_REVISION(1,5) void pdfPrintingFinished(const QString &filePath, bool success);
     Q_REVISION(1,7) void quotaRequested(const QWebEngineQuotaRequest &request);
     Q_REVISION(1,7) void geometryChangeRequested(const QRect &geometry, const QRect &frameGeometry);

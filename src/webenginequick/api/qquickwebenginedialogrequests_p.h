@@ -241,46 +241,6 @@ private:
     Q_DISABLE_COPY(QQuickWebEngineFileDialogRequest)
 };
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineFormValidationMessageRequest : public QObject {
-    Q_OBJECT
-public:
-    enum RequestType {
-        Show,
-        Hide,
-        Move,
-    };
-    Q_ENUM(RequestType)
-    Q_PROPERTY(QRect anchor READ anchor CONSTANT FINAL)
-    Q_PROPERTY(QString text READ text CONSTANT FINAL)
-    Q_PROPERTY(QString subText READ subText CONSTANT FINAL)
-    Q_PROPERTY(RequestType type READ type CONSTANT FINAL)
-    Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted FINAL)
-    QML_NAMED_ELEMENT(FormValidationMessageRequest)
-    QML_ADDED_IN_VERSION(1, 4)
-    QML_EXTRA_VERSION(2, 0)
-    QML_UNCREATABLE("")
-
-    ~QQuickWebEngineFormValidationMessageRequest();
-    QRect anchor() const;
-    QString text() const;
-    QString subText() const;
-    RequestType type() const;
-    bool isAccepted() const;
-    void setAccepted(bool accepted);
-
-private:
-    QQuickWebEngineFormValidationMessageRequest(RequestType type, const QRect &anchor = QRect(),
-                                      const QString &mainText = QString(),
-                                      const QString &subText = QString(),
-                                      QObject *parent = nullptr);
-    QRect m_anchor;
-    QString m_mainText;
-    QString m_subText;
-    RequestType m_type;
-    bool m_accepted;
-    friend class QQuickWebEngineViewPrivate;
-};
-
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineTooltipRequest : public QObject {
     Q_OBJECT
 public:
