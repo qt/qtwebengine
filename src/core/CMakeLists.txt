@@ -24,21 +24,7 @@ find_package(Nodejs 12.0)
 find_package(PkgConfig)
 if(PkgConfig_FOUND)
     pkg_check_modules(XSCRNSAVER xscrnsaver)
-    find_package(PkgConfigHost)
-    if(CMAKE_CROSSCOMPILING)
-        create_pkg_config_host_wrapper("${buildDir}/pkg-config-host_wrapper.sh" "${PKG_CONFIG_HOST_EXECUTABLE}")
-        set(PKG_CONFIG_HOST_EXECUTABLE "${buildDir}/pkg-config-host_wrapper.sh")
-    endif()
-endif()
-
-get_target_property(qtWebEngineProcessName WebEngineCore QTWEBENGINEPROCESS_NAME)
-get_target_property(gnCmd Gn::gn IMPORTED_LOCATION)
-get_qt_features(featureList webengine)
-
-if(QT_GENERATOR_IS_MULTI_CONFIG)
-    set(configs ${CMAKE_CONFIGURATION_TYPES})
-else()
-    set(configs ${CMAKE_BUILD_TYPE})
+    create_pkg_config_host_wrapper()
 endif()
 
 ##
@@ -46,32 +32,33 @@ endif()
 ##
 
 if(LINUX)
-    if(NOT CMAKE_CROSSCOMPILING) # delivered by hostBuild project
-        configure_gn_toolchain(host ${TEST_architecture_arch} ${TEST_architecture_arch}
-            ${WEBENGINE_ROOT_SOURCE_DIR}/src/core/configure/BUILD.toolchain.gn.in
-            ${buildDir}/host_toolchain)
-        configure_gn_toolchain(v8 ${TEST_architecture_arch} ${TEST_architecture_arch}
-            ${WEBENGINE_ROOT_SOURCE_DIR}/src/core/configure/BUILD.toolchain.gn.in
-            ${buildDir}/v8_toolchain)
-    endif()
-    configure_gn_toolchain(target ${TEST_architecture_arch} ${TEST_architecture_arch}
-        ${WEBENGINE_ROOT_SOURCE_DIR}/src/core/configure/BUILD.toolchain.gn.in
-        ${buildDir}/target_toolchain)
+    setup_toolchains()
 endif()
 
-foreach(config ${configs})
-
 ##
-#   BULID.gn SETUP
+#   MULTICONFIG SETUP
+##
+
+if(QT_GENERATOR_IS_MULTI_CONFIG)
+    set(configs ${CMAKE_CONFIGURATION_TYPES})
+else()
+    set(configs ${CMAKE_BUILD_TYPE})
+endif()
+
+
+foreach(config ${configs})
+##
+#   BUILD.gn SETUP
 ##
 
     unset(buildGn)
-    set(buildGn buildGn_${config})
+    set(buildGn buildGnWebEngineCore_${config})
 
     add_gn_target(${buildGn} SOURCES DEFINES CXX_COMPILE_OPTIONS C_COMPILE_OPTIONS INCLUDES)
 
     resolve_target_includes(gnIncludes WebEngineCore)
     get_forward_declaration_macro(forwardDeclarationMacro)
+    get_target_property(qtWebEngineProcessName WebEngineCore QTWEBENGINEPROCESS_NAME)
 
     extend_gn_target(${buildGn}
         INCLUDES
@@ -274,58 +261,19 @@ foreach(config ${configs})
 
 
 ##
-#   GN CALL PARAMETERS SETUP
+#   GN PARAMETERS SETUP
 ##
 
-    unset(gnArg)
     unset(gnArgArg)
-    set(gnArg gen ${buildDir}/${config})
 
-    list(APPEND gnArg
-        --script-executable=${Python2_EXECUTABLE}
-        --root=${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium)
-
-    if(${config} STREQUAL "Debug")
-        list(APPEND gnArgArg is_debug=true symbol_level=2)
-        if(WIN32)
-            list(APPEND gnArgArg enable_iterator_debugging=true v8_optimized_debug=false)
-        endif()
-    elseif(${config} STREQUAL "Release")
-        list(APPEND gnArgArg is_debug=false symbol_level=0)
-    elseif(${config} STREQUAL "RelWithDebInfo")
-        list(APPEND gnArgArg is_debug=false)
-        if(WIN32 AND NOT CLANG)
-            list(APPEND gnArgArg symbol_level=2)
-        else()
-            list(APPEND gnArgArg symbol_level=1)
-        endif()
-    elseif(${config} STREQUAL "MinSizeRel")
-        list(APPEND gnArgArg is_debug=false symbol_level=0 optimize_for_size=true)
-    endif()
-    if(FEATURE_developer_build OR (${config} STREQUAL "Debug"))
-        list(APPEND gnArgArg
-             is_official_build=false
-             from_here_uses_location_builtins=false
-        )
-    else()
-        list(APPEND gnArgArg is_official_build=true)
-        if(NOT CLANG OR NOT QT_FEATURE_use_lld_linker)
-            list(APPEND gnArgArg
-                use_thin_lto=false
-            )
-        endif()
-    endif()
-    if (CMAKE_CXX_COMPILER_LAUNCHER)
-        list(APPEND gnArgArg cc_wrapper="${CMAKE_CXX_COMPILER_LAUNCHER}")
-    endif()
+    append_build_type_setup(gnArgArg)
+    append_compiler_linker_sdk_setup(gnArgArg)
+    append_sanitizer_setup(gnArgArg)
+    append_toolchain_setup(gnArgArg)
+    append_pkg_config_setup(gnArgArg)
 
     list(APPEND gnArgArg
         qtwebengine_target="${buildDir}/${config}:QtWebEngineCore"
-        use_qt=true
-        init_stack_vars=false
-        is_component_build=false
-        is_shared=true
-        enable_debugallocation=false
         enable_media_remoting=false
         enable_message_center=false
         enable_nacl=false
@@ -337,55 +285,18 @@ foreach(config ${configs})
         angle_enable_swiftshader=false
         enable_web_speech=false
         enable_widevine=true
-        forbid_non_component_debug_builds=false
         has_native_accessibility=false
         safe_browsing_mode=0
         skia_use_dawn=false
         toolkit_views=false
-        treat_warnings_as_errors=false
-        use_allocator_shim=false
-        use_allocator="none"
-        use_custom_libcxx=false
         chrome_pgo_phase=0
         optimize_webui=false
         enable_js_type_check=false
         v8_use_external_startup_data=false
         strip_absolute_paths_from_debug_symbols=false
         blink_symbol_level=0
-        remove_v8base_debug_symbols=true
     )
-    # FIXME: Make it configurable
-    list(APPEND gnArgArg use_jumbo_build=true jumbo_file_merge_limit=8 jumbo_build_excluded=["browser"])
-    extend_gn_list(gnArgArg
-        ARGS is_clang
-        CONDITION CLANG
-    )
-    if(CLANG AND NOT MACOS)
-        # For some reason this doesn't work for our macOS CIs
-        get_filename_component(clangBasePath ${CMAKE_CXX_COMPILER} DIRECTORY)
-        get_filename_component(clangBasePath ${clangBasePath} DIRECTORY)
-        list(APPEND gnArgArg
-            clang_base_path="${clangBasePath}"
-            clang_use_chrome_plugins=false
-        )
-    endif()
 
-    extend_gn_list(gnArgArg
-        ARGS enable_precompiled_headers
-        CONDITION BUILD_WITH_PCH
-    )
-    extend_gn_list(gnArgArg
-        ARGS is_unsafe_developer_build
-        CONDITION FEATURE_developer_build
-    )
-    extend_gn_list(gnArgArg
-        ARGS use_gold
-        CONDITION QT_FEATURE_use_gold_linker
-    )
-    extend_gn_list(gnArgArg
-        ARGS use_lld
-        CONDITION QT_FEATURE_use_lld_linker
-    )
     extend_gn_list(gnArgArg
         ARGS enable_basic_printing enable_print_preview enable_pdf
         CONDITION QT_FEATURE_webengine_printing_and_pdf
@@ -429,41 +340,14 @@ foreach(config ${configs})
         ARGS use_browser_spellchecker
         CONDITION QT_FEATURE_webengine_native_spellchecker
     )
-    if(QT_FEATURE_sanitizer)
-        extend_gn_list(gnArgArg
-            ARGS is_asan
-            CONDITION address IN_LIST ECM_ENABLE_SANITIZERS
-        )
-        extend_gn_list(gnArgArg
-            ARGS is_tsan
-            CONDITION thread IN_LIST ECM_ENABLE_SANITIZERS
-        )
-        extend_gn_list(gnArgArg
-            ARGS is_msan
-            CONDITION memory IN_LIST ECM_ENABLE_SANITIZERS
-        )
-        extend_gn_list(gnArgArg
-            ARGS is_ubsan is_ubsan_vptr
-            CONDITION undefined IN_LIST ECM_ENABLE_SANITIZERS
-        )
-    endif()
+
     if(LINUX)
-        get_gn_arch(cpu ${TEST_architecture_arch})
-        if(CMAKE_CROSSCOMPILING)
-            list(APPEND gnArgArg target_cpu="${cpu}")
-        else()
-            list(APPEND gnArgArg host_cpu="${cpu}")
-        endif()
-        if(CMAKE_SYSROOT)
-            list(APPEND gnArgArg target_sysroot="${CMAKE_SYSROOT}")
-        endif()
         list(APPEND gnArgArg
             use_cups=false
             use_gio=false
             use_gnome_keyring=false
             use_udev=true
             use_bundled_fontconfig=false
-            use_sysroot=false
             enable_session_service=false
             is_cfi=false
             use_ozone=true
@@ -473,11 +357,6 @@ foreach(config ${configs})
             ozone_platform_external=true
             ozone_platform="qt"
             ozone_extra_path="${CMAKE_CURRENT_LIST_DIR}/ozone/ozone_extra.gni"
-            custom_toolchain="${buildDir}/target_toolchain:target"
-            host_toolchain="${buildDir}/host_toolchain:host"
-            v8_snapshot_toolchain="${buildDir}/v8_toolchain:v8"
-            pkg_config="${PKG_CONFIG_EXECUTABLE}"
-            host_pkg_config="${PKG_CONFIG_HOST_EXECUTABLE}"
             use_glib=false
         )
         set(systemLibs libjpeg libpng freetype harfbuzz libevent libwebp libxml
@@ -531,106 +410,37 @@ foreach(config ${configs})
         )
 
         if(CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm")
-           extend_gn_list_cflag(gnArgArg
-               ARG arm_tune
-               CFLAG mtune
-           )
-           extend_gn_list_cflag(gnArgArg
-               ARG arm_float_abi
-               CFLAG mfloat-abi
-           )
-           extend_gn_list_cflag(gnArgArg
-               ARG arm_arch
-               CFLAG march
-           )
-           extract_cflag(cflag "mfpu")
-           get_arm_version(arm_version "${cflag}")
-           extend_gn_list(gnArgArg
-               ARGS arm_use_neon
-               CONDITION (arm_version GREATER_EQUAL 8) OR ("${cflag}" MATCHES ".*neon.*")
-           )
-           if(arm_version EQUAL 7 AND NOT "${cflag}" MATCHES ".*neon.*")
-               # If the toolchain does not explicitly specify to use NEON instructions
-               # we use arm_neon_optional for ARMv7
-               list(APPEND gnArgArg arm_optionally_use_neon=true)
-           endif()
            check_thumb(armThumb)
-           extend_gn_list(gnArgArg
-               ARGS arm_use_thumb
-               CONDITION armThumb
-           )
            if(NOT armThumb AND NOT QT_FEATURE_system_ffmpeg)
                list(APPEND gnArgArg media_use_ffmpeg=false use_webaudio_ffmpeg=false)
            endif()
-       endif()
+        endif()
     endif()
 
     if(MACOS)
-        get_darwin_sdk_version(macSdkVersion)
-        get_filename_component(clangBasePath ${CMAKE_OBJCXX_COMPILER} DIRECTORY)
-        get_filename_component(clangBasePath ${clangBasePath} DIRECTORY)
         list(APPEND gnArgArg
-            use_sysroot=false
-            use_system_xcode=true
-            clang_base_path="${clangBasePath}"
-            clang_use_chrome_plugins=false
-            mac_deployment_target="${CMAKE_OSX_DEPLOYMENT_TARGET}"
-            mac_sdk_min="${macSdkVersion}"
             use_external_popup_menu=false
             angle_enable_vulkan=false
-       )
-       if (CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64" OR CMAKE_OSX_ARCHITECTURES STREQUAL "arm64")
-            list(APPEND gnArgArg
-                target_cpu="arm64"
-                fatal_linker_warnings=false
-            )
-       endif()
-    endif()
-
-    if(WIN32)
-        get_filename_component(windowsSdkPath $ENV{WINDOWSSDKDIR} DIRECTORY)
-        get_filename_component(visualStudioPath $ENV{VSINSTALLDIR} DIRECTORY)
-        list(APPEND gnArgArg
-            use_sysroot=false
-            enable_location_source=false
-            enable_session_service=false
-            ninja_use_custom_environment_files=false
-            win_linker_timing=true
-            com_init_check_hook_disabled=true
-            heterogeneous_executables=true
-            enable_vr=false
-            use_incremental_linking=false
-            visual_studio_version=2019
-            visual_studio_path=\"${visualStudioPath}\"
-            windows_sdk_path=\"${windowsSdkPath}\"
-            target_cpu="x64"
         )
     endif()
 
-    list(JOIN gnArgArg " " gnArgArg)
-    list(APPEND gnArg "--args=${gnArgArg}")
+    if(WIN32)
+        list(APPEND gnArgArg
+            enable_location_source=false
+            enable_session_service=false
+            ninja_use_custom_environment_files=false
+            com_init_check_hook_disabled=true
+            heterogeneous_executables=true
+            enable_vr=false
+        )
+    endif()
+
 
 ##
 #  GN CALL
 ##
 
-    list(JOIN gnArg " " printArg)
-    message("-- Running ${config} Configuration for GN \n-- ${gnCmd} ${printArg}")
-    execute_process(
-        COMMAND ${gnCmd} ${gnArg}
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        RESULT_VARIABLE gnResult
-        OUTPUT_VARIABLE gnOutput
-        ERROR_VARIABLE gnError
-    )
-
-    if(NOT gnResult EQUAL 0)
-        message(FATAL_ERROR "\n-- GN FAILED\n${gnOutput}\n${gnError}")
-    else()
-        string(REGEX REPLACE "\n$" "" gnOutput "${gnOutput}")
-        message("-- GN ${gnOutput}")
-    endif()
-
+    execute_gn(gnArgArg)
 
 ##
 #  NINJA CALL
@@ -648,30 +458,19 @@ foreach(config ${configs})
         unset(sandboxTarget)
     endif()
 
-    string(REPLACE " " ";" NINJAFLAGS "$ENV{NINJAFLAGS}")
+    execute_ninja(QtWebEngineCore ${sandboxTarget})
 
-    add_custom_command(
-        OUTPUT
-            ${buildDir}/${config}/QtWebEngineCore.stamp
-            ${sandboxOutput}
-            ${buildDir}/${config}/runAlways # use generator expression in CMAKE 3.20
-        WORKING_DIRECTORY ${buildDir}/${config}
-        COMMAND ${CMAKE_COMMAND} -E echo "Ninja ${config} build"
-        COMMAND Ninja::ninja
-            ${NINJAFLAGS}
-            -C ${buildDir}/${config}
-            QtWebEngineCore ${sandboxTarget}
-        USES_TERMINAL
-        VERBATIM
-        COMMAND_EXPAND_LISTS
-    )
 endforeach()
 
 ##
 #  WEBENGINECORE SETUP
 ##
 
-target_include_directories(WebEngineCore PRIVATE ${buildDir}/$<CONFIG>/gen)
+target_include_directories(WebEngineCore PRIVATE
+    ${buildDir}/$<CONFIG>/gen
+    ${buildDir}/$<CONFIG>/gen/third_party/perfetto
+    ${buildDir}/$<CONFIG>/gen/third_party/perfetto/build_config
+)
 
 if(WIN32)
     add_library(WebEngineCoreSandbox STATIC IMPORTED GLOBAL)
