@@ -28,7 +28,6 @@ set_target_properties(lifecycle PROPERTIES
 target_link_libraries(lifecycle PUBLIC
     Qt::Core
     Qt::Gui
-    Qt::QuickControls2
     Qt::WebEngineQuick
 )
 
