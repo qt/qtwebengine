@@ -1050,7 +1050,7 @@ void tst_QWebEnginePage::findText()
     // Invoking a stopFinding operation will not change or clear the currently selected text,
     // if nothing was found beforehand.
     {
-        CallbackSpy<bool> callbackSpy;
+        CallbackSpy<QWebEngineFindTextResult> callbackSpy;
         QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
         m_view->findText("", {}, callbackSpy.ref());
         QVERIFY(callbackSpy.wasCalled());
@@ -1061,10 +1061,10 @@ void tst_QWebEnginePage::findText()
     // Invoking a startFinding operation with text that won't be found, will clear the current
     // selection.
     {
-        CallbackSpy<bool> callbackSpy;
+        CallbackSpy<QWebEngineFindTextResult> callbackSpy;
         QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
         m_view->findText("Will not be found", {}, callbackSpy.ref());
-        QCOMPARE(callbackSpy.waitForResult(), false);
+        QCOMPARE(callbackSpy.waitForResult().numberOfMatches(), 0);
         QTRY_COMPARE(signalSpy.count(), 1);
         auto result = signalSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
         QCOMPARE(result.numberOfMatches(), 0);
@@ -1078,10 +1078,10 @@ void tst_QWebEnginePage::findText()
     // Invoking a startFinding operation with text that will be found, will clear the current
     // selection as well.
     {
-        CallbackSpy<bool> callbackSpy;
+        CallbackSpy<QWebEngineFindTextResult> callbackSpy;
         QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
         m_view->findText("foo", {}, callbackSpy.ref());
-        QVERIFY(callbackSpy.waitForResult());
+        QVERIFY(callbackSpy.waitForResult().numberOfMatches() > 0);
         QTRY_COMPARE(signalSpy.count(), 1);
         QTRY_VERIFY(m_view->selectedText().isEmpty());
     }
@@ -1089,7 +1089,7 @@ void tst_QWebEnginePage::findText()
     // Invoking a stopFinding operation after text was found, will set the selected text to the
     // found text.
     {
-        CallbackSpy<bool> callbackSpy;
+        CallbackSpy<QWebEngineFindTextResult> callbackSpy;
         QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
         m_view->findText("", {}, callbackSpy.ref());
         QTRY_VERIFY(callbackSpy.wasCalled());
@@ -1149,11 +1149,11 @@ void tst_QWebEnginePage::findTextResult()
 
 void tst_QWebEnginePage::findTextSuccessiveShouldCallAllCallbacks()
 {
-    CallbackSpy<bool> spy1;
-    CallbackSpy<bool> spy2;
-    CallbackSpy<bool> spy3;
-    CallbackSpy<bool> spy4;
-    CallbackSpy<bool> spy5;
+    CallbackSpy<QWebEngineFindTextResult> spy1;
+    CallbackSpy<QWebEngineFindTextResult> spy2;
+    CallbackSpy<QWebEngineFindTextResult> spy3;
+    CallbackSpy<QWebEngineFindTextResult> spy4;
+    CallbackSpy<QWebEngineFindTextResult> spy5;
     QSignalSpy loadSpy(m_view, SIGNAL(loadFinished(bool)));
     m_view->setHtml(QString("<html><head></head><body><div>abcdefg abcdefg abcdefg abcdefg abcdefg</div></body></html>"));
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
@@ -1182,11 +1182,11 @@ void tst_QWebEnginePage::findTextCalledOnMatch()
 
     // CALLBACK
     bool callbackCalled = false;
-    m_view->page()->findText("foo", {}, [this, &callbackCalled](bool found) {
-        QVERIFY(found);
+    m_view->page()->findText("foo", {}, [this, &callbackCalled](QWebEngineFindTextResult result) {
+        QVERIFY(result.numberOfMatches());
 
-        m_view->page()->findText("bar", {}, [&callbackCalled](bool found) {
-            QVERIFY(found);
+        m_view->page()->findText("bar", {}, [&callbackCalled](QWebEngineFindTextResult result) {
+            QVERIFY(result.numberOfMatches());
             callbackCalled = true;
         });
     });

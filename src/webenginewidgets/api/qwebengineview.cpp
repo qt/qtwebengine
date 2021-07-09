@@ -737,7 +737,7 @@ void QWebEngineView::triggerPageAction(QWebEnginePage::WebAction action, bool ch
     page()->triggerAction(action, checked);
 }
 
-void QWebEngineView::findText(const QString &subString, QWebEnginePage::FindFlags options, const std::function<void(bool)> &resultCallback)
+void QWebEngineView::findText(const QString &subString, QWebEnginePage::FindFlags options, const std::function<void(const QWebEngineFindTextResult &)> &resultCallback)
 {
     page()->findText(subString, options, resultCallback);
 }

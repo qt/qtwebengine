@@ -35,6 +35,7 @@
 #include <QEventLoop>
 #include <QSignalSpy>
 #include <QTimer>
+#include <qwebenginefindtextresult.h>
 #include <qwebenginepage.h>
 
 // Disconnect signal on destruction.
@@ -141,9 +142,9 @@ static inline QString toHtmlSync(QWebEnginePage *page)
 
 static inline bool findTextSync(QWebEnginePage *page, const QString &subString)
 {
-    CallbackSpy<bool> spy;
+    CallbackSpy<QWebEngineFindTextResult> spy;
     page->findText(subString, {}, spy.ref());
-    return spy.waitForResult();
+    return spy.waitForResult().numberOfMatches() > 0;
 }
 
 static inline QVariant evaluateJavaScriptSync(QWebEnginePage *page, const QString &script)

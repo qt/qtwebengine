@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -63,6 +63,8 @@ namespace gfx {
 class Rect;
 }
 
+QT_FORWARD_DECLARE_CLASS(QWebEngineFindTextResult)
+
 namespace QtWebEngineCore {
 
 class WebContentsAdapterClient;
@@ -72,7 +74,7 @@ public:
     FindTextHelper(content::WebContents *webContents, WebContentsAdapterClient *viewClient);
     ~FindTextHelper();
 
-    void startFinding(const QString &findText, bool caseSensitively, bool findBackward, const std::function<void(bool)> &resultCallback);
+    void startFinding(const QString &findText, bool caseSensitively, bool findBackward, const std::function<void(const QWebEngineFindTextResult &)> &resultCallback);
     void startFinding(const QString &findText, bool caseSensitively, bool findBackward, const QJSValue &resultCallback);
     void startFinding(const QString &findText, bool caseSensitively, bool findBackward);
     void stopFinding();
@@ -81,7 +83,7 @@ public:
     void handleLoadCommitted();
 
 private:
-    void invokeResultCallback(int requestId, int numberOfMatches);
+    void invokeResultCallback(int requestId, int numberOfMatches, int activeMatch);
 
     content::WebContents *m_webContents;
     WebContentsAdapterClient *m_viewClient;
@@ -93,7 +95,7 @@ private:
     QString m_previousFindText;
 
     QMap<int, QJSValue> m_quickCallbacks;
-    QMap<int, std::function<void(bool)>> m_widgetCallbacks;
+    QMap<int, std::function<void(const QWebEngineFindTextResult &)>> m_widgetCallbacks;
 };
 
 } // namespace QtWebEngineCore

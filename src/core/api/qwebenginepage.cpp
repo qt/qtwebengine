@@ -1520,12 +1520,12 @@ void QWebEnginePage::replaceMisspelledWord(const QString &replacement)
     d->adapter->replaceMisspelling(replacement);
 }
 
-void QWebEnginePage::findText(const QString &subString, FindFlags options, const std::function<void(bool)> &resultCallback)
+void QWebEnginePage::findText(const QString &subString, FindFlags options, const std::function<void(const QWebEngineFindTextResult &)> &resultCallback)
 {
     Q_D(QWebEnginePage);
     if (!d->adapter->isInitialized()) {
         if (resultCallback)
-            resultCallback(false);
+            resultCallback(QWebEngineFindTextResult());
         return;
     }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -64,13 +64,13 @@ FindTextHelper::~FindTextHelper()
         stopFinding();
 }
 
-void FindTextHelper::startFinding(const QString &findText, bool caseSensitively, bool findBackward, const std::function<void(bool)> &resultCallback)
+void FindTextHelper::startFinding(const QString &findText, bool caseSensitively, bool findBackward, const std::function<void(const QWebEngineFindTextResult &)> &resultCallback)
 {
     if (findText.isEmpty()) {
         stopFinding();
         m_viewClient->findTextFinished(QWebEngineFindTextResult());
         if (resultCallback)
-            resultCallback(false);
+            resultCallback(QWebEngineFindTextResult());
         return;
     }
 
@@ -111,7 +111,7 @@ void FindTextHelper::startFinding(const QString &findText, bool caseSensitively,
         if (!findNext)
             m_webContents->StopFinding(content::STOP_FIND_ACTION_KEEP_SELECTION);
         m_viewClient->findTextFinished(QWebEngineFindTextResult());
-        invokeResultCallback(m_currentFindRequestId, 0);
+        invokeResultCallback(m_currentFindRequestId, 0, 0);
     }
 
     blink::mojom::FindOptionsPtr options = blink::mojom::FindOptions::New();
@@ -149,7 +149,7 @@ void FindTextHelper::handleFindReply(content::WebContents *source, int requestId
     Q_ASSERT(m_currentFindRequestId == requestId);
     m_lastCompletedFindRequestId = requestId;
     m_viewClient->findTextFinished(QWebEngineFindTextResult(numberOfMatches, activeMatch));
-    invokeResultCallback(requestId, numberOfMatches);
+    invokeResultCallback(requestId, numberOfMatches, activeMatch);
 }
 
 void FindTextHelper::handleLoadCommitted()
@@ -158,7 +158,7 @@ void FindTextHelper::handleLoadCommitted()
     m_previousFindText = QString();
 }
 
-void FindTextHelper::invokeResultCallback(int requestId, int numberOfMatches)
+void FindTextHelper::invokeResultCallback(int requestId, int numberOfMatches, int activeMatch)
 {
     if (m_quickCallbacks.contains(requestId)) {
         QJSValue resultCallback = m_quickCallbacks.take(requestId);
@@ -166,7 +166,7 @@ void FindTextHelper::invokeResultCallback(int requestId, int numberOfMatches)
         args.append(QJSValue(numberOfMatches));
         resultCallback.call(args);
     } else if (auto func = m_widgetCallbacks.take(requestId)) {
-        func(numberOfMatches > 0);
+        func(QWebEngineFindTextResult(numberOfMatches, activeMatch));
     }
 }
 
