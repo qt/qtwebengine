@@ -48,15 +48,16 @@
 // We mean it.
 //
 
-#include "qquickpdfdocument_p.h"
-#include "../api/qpdfsearchmodel.h"
+#include <QtPdfQuick/private/qtpdfquickglobal_p.h>
+#include <QtPdfQuick/private/qquickpdfdocument_p.h>
+#include <QtPdf/qpdfsearchmodel.h>
 
 #include <QtCore/qvariant.h>
 #include <QtQml/qqml.h>
 
 QT_BEGIN_NAMESPACE
 
-class QQuickPdfSearchModel : public QPdfSearchModel
+class  Q_PDFQUICK_EXPORT QQuickPdfSearchModel : public QPdfSearchModel
 {
     Q_OBJECT
     Q_PROPERTY(QQuickPdfDocument *document READ document WRITE setDocument NOTIFY documentChanged)

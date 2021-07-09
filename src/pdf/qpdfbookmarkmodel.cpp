@@ -272,6 +272,7 @@ void QPdfBookmarkModel::setStructureMode(StructureMode mode)
 
 int QPdfBookmarkModel::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return 1;
 }
 

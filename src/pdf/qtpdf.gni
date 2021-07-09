@@ -1,7 +1,0 @@
-include_dirs = [
-]
-
-deps = [
-  "//third_party/pdfium"
-]
-

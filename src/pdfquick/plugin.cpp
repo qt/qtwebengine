@@ -48,7 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \qmlmodule QtQuick.Pdf 5.15
+    \qmlmodule QtQuick.Pdf
     \title Qt Quick PDF QML Types
     \ingroup qmlmodules
     \brief Provides QML types for handling PDF documents.
@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
     To use the types in this module, import the module with the following line:
 
     \code
-    import QtQuick.Pdf 5.15
+    import QtQuick.Pdf
     \endcode
 */
 
@@ -91,10 +91,6 @@ public:
         qmlRegisterType<QQuickPdfSearchModel>(uri, 5, 15, "PdfSearchModel");
         qmlRegisterType<QQuickPdfSelection>(uri, 5, 15, "PdfSelection");
         qmlRegisterType<QQuickTableViewExtra>(uri, 5, 15, "TableViewExtra");
-
-        qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfPageView.qml"), uri, 5, 15, "PdfPageView");
-        qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfMultiPageView.qml"), uri, 5, 15, "PdfMultiPageView");
-        qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfScrollablePageView.qml"), uri, 5, 15, "PdfScrollablePageView");
     }
 };
 

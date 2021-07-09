@@ -205,7 +205,7 @@ void QQuickPdfNavigationStack::push(int page, QPointF location, qreal zoom, bool
             QStringList ret;
             for (auto d : m_pageHistory)
                 ret << QString::number(d->page);
-            return ret.join(',');
+            return ret.join(QLatin1Char(','));
         }();
 }
 
@@ -248,7 +248,7 @@ void QQuickPdfNavigationStack::update(int page, QPointF location, qreal zoom)
             QStringList ret;
             for (auto d : m_pageHistory)
                 ret << QString::number(d->page);
-            return ret.join(',');
+            return ret.join(QLatin1Char(','));
         }();
 }
 

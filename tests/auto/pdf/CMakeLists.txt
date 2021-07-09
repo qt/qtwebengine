@@ -1,0 +1,6 @@
+add_subdirectory(qpdfbookmarkmodel)
+add_subdirectory(qpdfpagenavigation)
+add_subdirectory(qpdfpagerenderer)
+if(TARGET Qt::PrintSupport)
+    add_subdirectory(qpdfdocument)
+endif()

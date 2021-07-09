@@ -36,3 +36,12 @@ if(QT_FEATURE_qtwebengine_build)
         DESTINATION ${WEBENGINE_ROOT_BUILD_DIR}/src/core/v8_toolchain
     )
 endif()
+if(QT_FEATURE_qtpdf_build)
+    install(FILES ${buildDir}/host_toolchain/BUILD.gn
+        DESTINATION ${WEBENGINE_ROOT_BUILD_DIR}/src/pdf/host_toolchain
+    )
+    install(FILES ${buildDir}/v8_toolchain/BUILD.gn
+        DESTINATION ${WEBENGINE_ROOT_BUILD_DIR}/src/pdf/v8_toolchain
+    )
+endif()
+

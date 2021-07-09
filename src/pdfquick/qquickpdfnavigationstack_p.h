@@ -34,8 +34,8 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKTABLEVIEWEXTRA_P_H
-#define QQUICKTABLEVIEWEXTRA_P_H
+#ifndef QQUICKPDFNAVIGATIONSTACK_P_H
+#define QQUICKPDFNAVIGATIONSTACK_P_H
 
 //
 //  W A R N I N G
@@ -48,45 +48,56 @@
 // We mean it.
 //
 
-#include <QPointF>
-#include <QPolygonF>
-#include <QVariant>
+#include <QtPdfQuick/private/qtpdfquickglobal_p.h>
+#include <QtPdfQuick/private/qquickpdfdocument_p.h>
+#include <QtPdf/private/qpdfdestination_p.h>
+
 #include <QtQml/qqml.h>
-#include <QtQuick/qquickitem.h>
-#include <QtQuick/private/qquicktableview_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QQuickTableViewExtra : public QObject
+class Q_PDFQUICK_EXPORT QQuickPdfNavigationStack : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QQuickTableView *tableView READ tableView WRITE setTableView)
+    Q_PROPERTY(int currentPage READ currentPage NOTIFY currentPageChanged)
+    Q_PROPERTY(QPointF currentLocation READ currentLocation NOTIFY currentLocationChanged)
+    Q_PROPERTY(qreal currentZoom READ currentZoom NOTIFY currentZoomChanged)
+    Q_PROPERTY(bool backAvailable READ backAvailable NOTIFY backAvailableChanged)
+    Q_PROPERTY(bool forwardAvailable READ forwardAvailable NOTIFY forwardAvailableChanged)
 
 public:
-    QQuickTableViewExtra(QObject *parent = nullptr);
+    explicit QQuickPdfNavigationStack(QObject *parent = nullptr);
 
-    QQuickTableView * tableView() const { return m_tableView; }
-    void setTableView(QQuickTableView * tableView) { m_tableView = tableView; }
+    Q_INVOKABLE void push(int page, QPointF location, qreal zoom, bool emitJumped = true);
+    Q_INVOKABLE void update(int page, QPointF location, qreal zoom);
+    Q_INVOKABLE void forward();
+    Q_INVOKABLE void back();
 
-    Q_INVOKABLE QPoint cellAtPos(qreal x, qreal y) const;
-    Q_INVOKABLE QQuickItem *itemAtCell(int column, int row) const {
-        return itemAtCell(QPoint(column, row));
-    }
-    Q_INVOKABLE QQuickItem *itemAtCell(const QPoint &cell) const;
-    Q_INVOKABLE void positionViewAtCell(int column, int row, Qt::Alignment alignment, const QPointF &offset = QPointF()) {
-        positionViewAtCell(QPoint(column, row), alignment, offset);
-    }
-    Q_INVOKABLE void positionViewAtCell(const QPoint &cell, Qt::Alignment alignment, const QPointF &offset);
-    Q_INVOKABLE void positionViewAtRow(int row, Qt::Alignment alignment, qreal offset = 0) {
-        positionViewAtCell(QPoint(0, row), alignment & Qt::AlignVertical_Mask, QPointF(0, offset));
-    }
+    int currentPage() const;
+    QPointF currentLocation() const;
+    qreal currentZoom() const;
+
+    bool backAvailable() const;
+    bool forwardAvailable() const;
+
+Q_SIGNALS:
+    void currentPageChanged();
+    void currentLocationChanged();
+    void currentZoomChanged();
+    void backAvailableChanged();
+    void forwardAvailableChanged();
+    void jumped(int page, QPointF location, qreal zoom);
 
 private:
-    QQuickTableView *m_tableView = nullptr;
+    QList<QExplicitlySharedDataPointer<QPdfDestinationPrivate>> m_pageHistory;
+    int m_currentHistoryIndex = 0;
+    bool m_changing = false;
+
+    Q_DISABLE_COPY(QQuickPdfNavigationStack)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QQuickTableViewExtra)
+QML_DECLARE_TYPE(QQuickPdfNavigationStack)
 
-#endif // QQUICKTABLEVIEWEXTRA_P_H
+#endif // QQUICKPDFNAVIGATIONSTACK_P_H

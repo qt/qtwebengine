@@ -34,5 +34,55 @@
 **
 ****************************************************************************/
 
-#include "fpdfsdk/javascript/JS_Runtime_Stub.cpp"
+#ifndef QQUICKPDFLINKMODEL_P_H
+#define QQUICKPDFLINKMODEL_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtPdfQuick/private/qtpdfquickglobal_p.h>
+#include <QtPdfQuick/private/qquickpdfdocument_p.h>
+#include <QtPdf/private/qpdflinkmodel_p.h>
+
+#include <QVariant>
+#include <QtQml/qqml.h>
+
+QT_BEGIN_NAMESPACE
+
+class Q_PDFQUICK_EXPORT QQuickPdfLinkModel : public QPdfLinkModel
+{
+    Q_OBJECT
+    Q_PROPERTY(QQuickPdfDocument *document READ document WRITE setDocument NOTIFY documentChanged)
+
+public:
+    explicit QQuickPdfLinkModel(QObject *parent = nullptr);
+
+    QQuickPdfDocument *document() const;
+    void setDocument(QQuickPdfDocument *document);
+
+signals:
+    void documentChanged();
+
+private:
+    void updateResults();
+
+private:
+    QQuickPdfDocument *m_quickDocument;
+    QList<QPolygonF> m_linksGeometry;
+
+    Q_DISABLE_COPY(QQuickPdfLinkModel)
+};
+
+QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QQuickPdfLinkModel)
+
+#endif // QQUICKPDFLINKMODEL_P_H

@@ -48,6 +48,7 @@
 // We mean it.
 //
 
+#include <QtPdfQuick/private/qtpdfquickglobal_p.h>
 #include <QtPdf/QPdfDocument>
 #include <QDateTime>
 #include <QJSValue>
@@ -57,7 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QQuickPdfDocument : public QObject, public QQmlParserStatus
+class Q_PDFQUICK_EXPORT QQuickPdfDocument : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)

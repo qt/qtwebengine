@@ -49,7 +49,7 @@ Q_LOGGING_CATEGORY(qLcIm, "qt.pdf.im")
 
 QT_BEGIN_NAMESPACE
 
-static const QRegularExpression WordDelimiter("\\s");
+static const QRegularExpression WordDelimiter(QStringLiteral("\\s"));
 
 /*!
     \qmltype PdfSelection
@@ -322,6 +322,8 @@ QVariant QQuickPdfSelection::inputMethodQuery(Qt::InputMethodQuery query) const
     case Qt::ImPreferredLanguage:
         break;
     case Qt::ImPlatformData:
+        break;
+    case Qt::ImReadOnly:
         break;
     case Qt::ImQueryInput:
     case Qt::ImQueryAll:
