@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -255,7 +255,7 @@ public:
 
     bool event(QEvent*) override;
 
-    void findText(const QString &subString, FindFlags options = {}, const std::function<void(bool)> &resultCallback = std::function<void(bool)>());
+    void findText(const QString &subString, FindFlags options = {}, const std::function<void(const QWebEngineFindTextResult &)> &resultCallback = std::function<void(const QWebEngineFindTextResult &)>());
 
     void setFeaturePermission(const QUrl &securityOrigin, Feature feature, PermissionPolicy policy);
 

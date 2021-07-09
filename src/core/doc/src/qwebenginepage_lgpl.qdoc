@@ -472,14 +472,13 @@
 */
 
 /*!
-    \fn void QWebEnginePage::findText(const QString &subString, QWebEnginePage::FindFlags options = {}, const std::function<void(bool)> &resultCallback = std::function<void(bool)>)
+    \fn void QWebEnginePage::findText(const QString &subString, QWebEnginePage::FindFlags options = {}, const std::function<void(const QWebEngineFindTextResult &)> &resultCallback = std::function<void(const QWebEngineFindTextResult &)>)
     Finds the specified string, \a subString, in the page, using the given \a options.
     The findTextFinished() signal is emitted when a string search is completed.
 
     To clear the search highlight, just pass an empty string.
 
-    The \a resultCallback must take a boolean parameter. It will be called with a value of \c true
-    if the \a subString was found; otherwise the callback value will be \c false.
+    The \a resultCallback must take a QWebEngineFindTextResult parameter.
 
     \warning We guarantee that the callback (\a resultCallback) is always called, but it might be done
     during page destruction. When QWebEnginePage is deleted, the callback is triggered with an invalid
