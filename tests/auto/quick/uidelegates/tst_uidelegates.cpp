@@ -143,7 +143,6 @@ void tst_UIDelegates::javaScriptDialog()
 
 void tst_UIDelegates::fileDialog()
 {
-    QSKIP("There is no FilePicker Control in Quick Controls 2.");
     m_window->show();
     QTRY_VERIFY(qApp->focusObject());
     QQuickWebEngineView *view = webEngineView();
@@ -152,11 +151,10 @@ void tst_UIDelegates::fileDialog()
                    "<input type='file' id='filePicker'/>"
                    "</body></html>");
     QVERIFY(waitForLoadSucceeded(view));
-    QString filePickerStr = QStringLiteral("filePicker");
 
-    QPoint filePickerCenter = elementCenter(view, filePickerStr);
+    QPoint filePickerCenter = elementCenter(view, QStringLiteral("filePicker"));
     QTest::mouseClick(view->window(), Qt::LeftButton, {}, filePickerCenter);
-    QTRY_VERIFY(view->findChild<QObject *>(filePickerStr));
+    QTRY_VERIFY(view->findChild<QObject *>(QStringLiteral("fileDialog")));
 }
 
 void tst_UIDelegates::contextMenu()

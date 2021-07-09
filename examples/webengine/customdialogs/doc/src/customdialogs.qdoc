@@ -294,7 +294,7 @@
 
     \section2  File Dialog Requests
 
-    Currently, Qt WebEngine does not provide File Dialog, a custom dialog should be implemented.
+    \image customdialogs-file1.png
 
     \l [QML]{FileDialogRequest} is a request object that is passed as a
     parameter of the WebEngineView::fileDialogRequested signal:
@@ -309,8 +309,8 @@
     \printuntil }
 
     We use the \c onFileDialogRequested signal handler to check whether
-    we should use the default file picker dialog (which currently is not provided).
-    If not, we accept the request and switch the view to show the \c FilePickerForm:
+    we should use the default file picker dialog. If not, we accept the request
+    and switch the view to show the \c FilePickerForm:
 
     \image customdialogs-file2.png
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,21 +37,15 @@
 **
 ****************************************************************************/
 
-/*
-import QtQuick.Dialogs 1.1
+import QtQuick.Dialogs
 
 FileDialog {
+    id: fileDialog
+    objectName: "fileDialog"
 
     signal filesSelected(var fileList)
 
     onAccepted: {
-        filesSelected(fileUrls);
+        filesSelected(selectedFiles)
     }
-}
-*/
-
-import QtQuick.Controls
-
-Dialog {
-    // TODO
 }

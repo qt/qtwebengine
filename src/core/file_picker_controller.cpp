@@ -92,6 +92,9 @@ FilePickerController::FilePickerController(FilePickerControllerPrivate *priv, QO
 
 FilePickerController::~FilePickerController()
 {
+    if (!m_isHandled) {
+        rejected();
+    }
     delete d_ptr;
 }
 
@@ -241,6 +244,7 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
         else
             d_ptr->fileSystemAccessDialogListener->MultiFilesSelected(files, nullptr);
     }
+    m_isHandled = true;
 }
 
 QStringList FilePickerController::acceptedMimeTypes() const
