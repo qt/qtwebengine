@@ -85,6 +85,9 @@ public Q_SLOTS:
 private:
     void filesSelectedInChooser(const QStringList &filesList);
     FilePickerControllerPrivate *d_ptr;
+    // Using Quick, the FileSelectListenerImpl destructor may crash in debug mode
+    // if the browser window is closed and the FilePicker is still open
+    bool m_isHandled = false;
 };
 
 } // namespace QtWebEngineCore
