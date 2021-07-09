@@ -39,21 +39,25 @@ set(__QtFeature_only_evaluate_features OFF)
 include(configure.cmake)
 include(src/core/api/configure.cmake)
 include(src/webenginequick/configure.cmake)
+include(src/pdf/configure.cmake)
 qt_feature_module_end(ONLY_EVALUATE_FEATURES)
-
-if(NOT ${webEngineSupport})
+if(NOT ${QtWebEngine_SUPPORT})
     add_custom_target(WebEngineErrorMessage ALL
-        ${CMAKE_COMMAND} -E cmake_echo_color --red "QtWebEngine will not be built: ${webEngineError}"
-        COMMENT "Check QtWebEngine support")
-    message("-- Support check for QtWebEngine failed: ${webEngineError}")
+        ${CMAKE_COMMAND} -E cmake_echo_color --red "QtWebEngine will not be built: ${QtWebEngine_ERROR}"
+        COMMENT "Check QtWebEngine support"
+        VERBATIM
+    )
+    message("-- Support check for QtWebEngine failed: ${QtWebEngine_ERROR}")
     set(QT_FEATURE_qtwebengine_build OFF CACHE BOOL "Build QtWebEngine" FORCE)
 endif()
 
-if(NOT ${pdfSupport})
+if(NOT ${QtPdf_SUPPORT})
     add_custom_target(PdfErrorMessage ALL
-        ${CMAKE_COMMAND} -E cmake_echo_color --red "QtPdf will not be built: ${pdfError}"
-        COMMENT "Check QtPdf support")
-    message("-- Support check for QtPdf failed: ${pdfError}")
+        ${CMAKE_COMMAND} -E cmake_echo_color --red "QtPdf will not be built: ${QtPdf_ERROR}"
+        COMMENT "Check QtPdf support"
+        VERBATIM
+    )
+    message("-- Support check for QtPdf failed: ${QtPdf_ERROR}")
     set(QT_FEATURE_qtpdf_build OFF CACHE BOOL "Build QtPdf" FORCE)
 endif()
 
@@ -63,11 +67,19 @@ if(NOT QT_FEATURE_qtwebengine_build AND NOT QT_FEATURE_qtpdf_build)
     return()
 endif()
 
-add_subdirectory(src/core/api)
-add_subdirectory(src/core/tools)
-add_subdirectory(src/process)
-add_subdirectory(src/webenginewidgets)
-add_subdirectory(src/webenginequick)
+if(QT_FEATURE_qtwebengine_build)
+    add_subdirectory(src/core/api)
+    add_subdirectory(src/core/tools)
+    add_subdirectory(src/process)
+    add_subdirectory(src/webenginewidgets)
+    add_subdirectory(src/webenginequick)
+endif()
+
+if(QT_FEATURE_qtpdf_build)
+    add_subdirectory(src/pdf)
+    add_subdirectory(src/pdfwidgets)
+    add_subdirectory(src/pdfquick)
+endif()
 qt_build_repo_end()
 get_install_config(installConfig)
 
@@ -112,6 +124,7 @@ endif()
 get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
 get_qt_features(featureList webengine)
 get_qt_features(featureList qtwebengine)
+get_qt_features(featureList qtpdf)
 
 if(NOT DEFINED CMAKE_TOOLCHAIN_FILE AND QT_SUPERBUILD)
     set(CMAKE_TOOLCHAIN_FILE "${CMAKE_BINARY_DIR}/qtbase/lib/cmake/Qt6/qt.toolchain.cmake")
@@ -233,7 +246,7 @@ if(NOT Ninja_FOUND)
     externalproject_add_stepdependencies(gn install ninja)
 endif()
 
-if(NOT QT_FEATURE_framework)
+if(QT_FEATURE_qtwebengine_build AND NOT QT_FEATURE_framework)
     # install resources (again), coin calls install with DESTDIR
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/translations/qtwebengine_locales
         DESTINATION ${CMAKE_INSTALL_PREFIX}/translations
@@ -269,6 +282,7 @@ if(CMAKE_CROSSCOMPILING)
                    -DCMAKE_C_FLAGS=
                    -DCMAKE_CXX_FLAGS=
                    -DQT_FEATURE_qtwebengine_build=${QT_FEATURE_qtwebengine_build}
+                   -DQT_FEATURE_qtpdf_build=${QT_FEATURE_qtpdf_build}
     )
     externalproject_add_stepdependencies(qtwebengine install hostBuild)
 endif()

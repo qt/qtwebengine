@@ -1,0 +1,5 @@
+add_subdirectory(pdfviewer)
+add_subdirectory(multipage)
+if(NOT TARGET Qt::Svg)
+    message(WARNING "QtSvg is required as runtime dependency for qtpdfquick examples.")
+endif()

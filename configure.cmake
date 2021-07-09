@@ -9,7 +9,7 @@ if(QT_CONFIGURE_RUNNING)
     endfunction()
 else()
     find_package(Ninja 1.7.2)
-    find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT)
+    find_package(Gn ${QT_REPO_MODULES_VERSION} EXACT)
     find_package(Python2 2.7.5)
     find_package(GPerf)
     find_package(BISON)
@@ -207,7 +207,17 @@ qt_feature("qtwebengine-quick-build" PRIVATE
 )
 qt_feature("qtpdf-build" PRIVATE
     LABEL "Build Qt PDF"
-    PURPOSE "Enables building the Qt PDF rendering module."
+    PURPOSE "Enables building the Qt Pdf modules."
+)
+qt_feature("qtpdf-widgets-build" PRIVATE
+    LABEL "Build Qt PdfWidgets"
+    PURPOSE "Enables building the Qt Pdf module."
+    CONDITION TARGET Qt::Widgets
+)
+qt_feature("qtpdf-quick-build" PRIVATE
+    LABEL "Build Qt PdfQuick"
+    PURPOSE "Enables building the Qt Pdf module."
+    CONDITION TARGET Qt::Quick AND TARGET Qt::Qml
 )
 qt_feature("webengine-system-ninja" PRIVATE
     LABEL "Use system ninja"
@@ -326,77 +336,80 @@ else()
    set(WIN_ARM_64 OFF)
 endif()
 
-assertTargets(webEngineError webEngineSupport Gui Widgets OpenGL OpenGLWidgets Quick Qml)
-add_check_for_support(webEngineError webEngineSupport
-   MODULE QtWebEngine
+assertTargets(
+   MODULES QtWebEngine QtPdf
+   TARGETS Gui Widgets OpenGL OpenGLWidgets Quick Qml
+)
+add_check_for_support(
+   MODULES QtWebEngine QtPdf
    CONDITION LINUX OR (WIN32 AND NOT WIN_ARM_64) OR (MACOS AND NOT CMAKE_CROSSCOMPILING)
    MESSAGE "Build can be done only on Linux, Windows or macOS."
 )
 if(LINUX AND CMAKE_CROSSCOMPILING)
    get_gn_arch(testArch ${TEST_architecture_arch})
-   add_check_for_support(webEngineError webEngineSupport
-       MODULE QtWebEngine
+   add_check_for_support(
+       MODULES QtWebEngine QtPdf
        CONDITION testArch
        MESSAGE "Cross compiling is not supported for ${TEST_architecture_arch}."
    )
 endif()
-add_check_for_support(webEngineError webEngineSupport
-   MODULE QtWebEngine
+add_check_for_support(
+   MODULES QtWebEngine QtPdf
    CONDITION NOT QT_FEATURE_static
    MESSAGE "Static build is not supported."
 )
-add_check_for_support(webEngineError webEngineSupport
-   MODULE QtWebEngine
+add_check_for_support(
+   MODULES QtWebEngine QtPdf
    CONDITION TARGET Nodejs::Nodejs
    MESSAGE "Nodejs is required."
 )
-add_check_for_support(webEngineError webEngineSupport
-   MODULE QtWebEngine
+add_check_for_support(
+   MODULES QtWebEngine QtPdf
    CONDITION Python2_FOUND
    MESSAGE "Python2 version 2.7.5 or later is required."
 )
-add_check_for_support(webEngineError webEngineSupport
-   MODULE QtWebEngine
+add_check_for_support(
+   MODULES QtWebEngine QtPdf
    CONDITION GPerf_FOUND
    MESSAGE "Tool gperf is required."
 )
-add_check_for_support(webEngineError webEngineSupport
-   MODULE QtWebEngine
+add_check_for_support(
+   MODULES QtWebEngine QtPdf
    CONDITION BISON_FOUND
    MESSAGE "Tool bison is required."
 )
-add_check_for_support(webEngineError webEngineSupport
-   MODULE QtWebEngine
+add_check_for_support(
+   MODULES QtWebEngine QtPdf
    CONDITION FLEX_FOUND
    MESSAGE "Tool flex is required."
 )
-add_check_for_support(webEngineError webEngineSupport
-   MODULE QtWebEngine
+add_check_for_support(
+   MODULES QtWebEngine QtPdf
    CONDITION NOT LINUX OR PkgConfig_FOUND
    MESSAGE "A pkg-config support is required."
 )
-add_check_for_support(webEngineError webEngineSupport
-   MODULE QtWebEngine
+add_check_for_support(
+   MODULES QtWebEngine QtPdf
    CONDITION NOT LINUX OR TEST_glibc
    MESSAGE "A suitable version >= 2.17 of glibc is required."
 )
-add_check_for_support(webEngineError webEngineSupport
-   MODULE QtWebEngine
+add_check_for_support(
+   MODULES QtWebEngine QtPdf
    CONDITION NOT LINUX OR TEST_khr
    MESSAGE "Build requires Khronos development headers for build - see mesa/libegl1-mesa-dev"
 )
-add_check_for_support(webEngineError webEngineSupport
-   MODULE QtWebEngine
+add_check_for_support(
+   MODULES QtWebEngine
    CONDITION NOT LINUX OR FONTCONFIG_FOUND
    MESSAGE "Build requires fontconfig."
 )
-add_check_for_support(webEngineError webEngineSupport
-   MODULE QtWebEngine
+add_check_for_support(
+   MODULES QtWebEngine
    CONDITION NOT LINUX OR NSS_FOUND
    MESSAGE "Build requires nss >= 3.26."
 )
-add_check_for_support(webEngineError webEngineSupport
-   MODULE QtWebEngine
+add_check_for_support(
+   MODULES QtWebEngine
    CONDITION NOT LINUX OR DBUS_FOUND
    MESSAGE "Build requires dbus."
 )
@@ -409,19 +422,19 @@ foreach(xs ${xcbSupport})
        set(xcbErrorMessage "${xcbErrorMessage} ${xs}:NO")
     endif()
 endforeach()
-add_check_for_support(webEngineError webEngineSupport
-   MODULE QtWebEngine
+add_check_for_support(
+   MODULES QtWebEngine
    CONDITION NOT LINUX OR NOT QT_FEATURE_xcb OR QT_FEATURE_webengine_ozone_x11
    MESSAGE "Could not find all necessary libraries for qpa-xcb support.\
 ${xcbErrorMessage}"
 )
-add_check_for_support(webEngineError webEngineSupport
-   MODULE QtWebEngine
+add_check_for_support(
+   MODULES QtWebEngine QtPdf
    CONDITION NOT WIN32 OR TEST_winversion
    MESSAGE "Build requires Visual Studio 2019 or higher."
 )
-add_check_for_support(webEngineError webEngineSupport
-   MODULE QtWebEngine
+add_check_for_support(
+   MODULES QtWebEngine QtPdf
    CONDITION
        (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL GNU) OR
        (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL Clang) OR
@@ -430,11 +443,6 @@ add_check_for_support(webEngineError webEngineSupport
           CMAKE_CXX_SIMULATE_ID STREQUAL MSVC) OR
        (MACOS AND CMAKE_CXX_COMPILER_ID STREQUAL AppleClang)
    MESSAGE "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
-)
-add_check_for_support(pdfError pdfSupport
-   MODULE QtPdf
-   CONDITION OFF
-   MESSAGE "QtPdf is missing cmake port."
 )
 
 #### Summary
@@ -475,13 +483,13 @@ qt_configure_end_summary_section()
 qt_configure_add_report_entry(
     TYPE NOTE
     MESSAGE "QtWebEngine build is disabled by user."
-    CONDITION ${webEngineSupport} AND NOT QT_FEATURE_qtwebengine_build
+    CONDITION QtWebEngine_SUPPORT AND NOT QT_FEATURE_qtwebengine_build
 )
 
 qt_configure_add_report_entry(
     TYPE NOTE
     MESSAGE "QtPdf build is disabled by user."
-    CONDITION ${pdfSupport} AND NOT QT_FEATURE_qtpdf_build
+    CONDITION QtPdf_SUPPORT AND NOT QT_FEATURE_qtpdf_build
 )
 
 qt_configure_add_report_entry(

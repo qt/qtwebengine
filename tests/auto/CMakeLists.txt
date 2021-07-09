@@ -12,6 +12,7 @@ if(QT_FEATURE_qtwebengine_widgets_build
     OR (QT_BUILD_STANDALONE_TESTS AND TARGET Qt::WebEngineWidgets))
     add_subdirectory(widgets)
 endif()
-#if(QT_FEATURE_build_qtpdf AND QT_FEATURE_webengine_qtpdf_support)
-#    add_subdirectory(pdf)
-#endif()
+if(QT_FEATURE_qtpdf_build
+    OR (QT_BUILD_STANDALONE_TESTS AND TARGET Qt::Pdf))
+    add_subdirectory(pdf)
+endif()

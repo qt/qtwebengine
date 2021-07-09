@@ -1,0 +1,36 @@
+config("QtPdf_config") {
+  cflags = [
+    @GN_CFLAGS_C@,
+  ]
+  cflags_cc = [
+    @GN_CFLAGS_CC@,
+  ]
+  defines = [
+    @GN_DEFINES@,
+  ]
+  include_dirs = [
+    @GN_INCLUDE_DIRS@,
+    rebase_path("${target_gen_dir}/.moc/")
+  ]
+}
+
+config("cpp17_config") {
+  # static initialized constexpr expressions must be compiled always as c++14 or always as c++17
+  # and our qtwebengine core sources use them as c++17
+  if (is_win) {
+    cflags_cc = [ "/std:c++17" ]
+  } else {
+    cflags_cc = [ "-std=c++17" ]
+  }
+}
+
+shared_library("QtPdf") {
+  cmake_config = "@GN_CONFIG@"
+  configs += [
+    ":cpp17_config",
+    ":QtPdf_config"
+  ]
+  deps = [
+    "//third_party/pdfium"
+  ]
+}

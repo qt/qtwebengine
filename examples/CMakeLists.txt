@@ -13,7 +13,9 @@ project(QtWebEngineExamples
 set(QT_USE_FIXED_QT_ADD_RESOURCE_BASE TRUE)
 
 find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core)
-find_package(Qt6 ${PROJECT_VERSION} CONFIG OPTIONAL_COMPONENTS WebEngineCore WebEngineWidgets WebEngineQuick QuickControls2)
+find_package(Qt6 ${PROJECT_VERSION} CONFIG OPTIONAL_COMPONENTS
+    WebEngineCore WebEngineWidgets WebEngineQuick PdfWidgets QuickControls2 Svg
+)
 qt_build_repo_begin()
 qt_examples_build_begin()
 
@@ -23,10 +25,10 @@ endif()
 if(QT_FEATURE_qtwebengine_build AND QT_FEATURE_qtwebengine_widgets_build)
     add_subdirectory(webenginewidgets)
 endif()
-if(QT_FEATURE_qtpdf_build )
+if(QT_FEATURE_qtpdf_build AND QT_FEATURE_qtpdf_quick_build)
     add_subdirectory(pdf)
 endif()
-if(QT_FEATURE_qtpdf_build AND QT_FEATURE_pdf_widgets)
+if(QT_FEATURE_qtpdf_build AND QT_FEATURE_qtpdf_widgets_build)
     add_subdirectory(pdfwidgets)
 endif()
 

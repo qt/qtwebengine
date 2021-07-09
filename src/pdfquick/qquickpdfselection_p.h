@@ -48,18 +48,18 @@
 // We mean it.
 //
 
+#include <QtPdfQuick/private/qtpdfquickglobal_p.h>
+#include <QtPdfQuick/private/qquickpdfdocument_p.h>
 #include <QPointF>
 #include <QPolygonF>
 #include <QVariant>
 #include <QtQml/qqml.h>
 #include <QtQuick/qquickitem.h>
 
-#include "qquickpdfdocument_p.h"
-
 QT_BEGIN_NAMESPACE
 class QPdfSelection;
 
-class QQuickPdfSelection : public QQuickItem
+class Q_PDFQUICK_EXPORT QQuickPdfSelection : public QQuickItem
 {
     Q_OBJECT
     Q_PROPERTY(QQuickPdfDocument *document READ document WRITE setDocument NOTIFY documentChanged)
