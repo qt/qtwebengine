@@ -993,6 +993,7 @@ void QWebEngineView::printToPdf(const QString &filePath, const QPageLayout &layo
 #else
     Q_UNUSED(filePath);
     Q_UNUSED(layout);
+    Q_UNUSED(ranges);
 #endif
 }
 
