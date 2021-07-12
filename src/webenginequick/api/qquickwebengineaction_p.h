@@ -59,7 +59,6 @@
 
 namespace QtWebEngineCore {
     class UIDelegatesManager;
-    class UI2DelegatesManager;
 }
 
 QT_BEGIN_NAMESPACE
@@ -98,7 +97,6 @@ private:
     friend class QQuickWebEngineView;
     friend class QQuickWebEngineViewPrivate;
     friend class QtWebEngineCore::UIDelegatesManager;
-    friend class QtWebEngineCore::UI2DelegatesManager;
     friend class QQuickContextMenuBuilder;
 
     QScopedPointer<QQuickWebEngineActionPrivate> d_ptr;

@@ -131,22 +131,6 @@ protected:
 
 };
 
-// delegate manager for qtquickcontrols2 with fallback to qtquickcontrols1
-
-class UI2DelegatesManager : public UIDelegatesManager
-{
-public:
-    UI2DelegatesManager(QQuickWebEngineView *);
-    bool initializeImportDirs(QStringList &dirs, QQmlEngine *engine) override;
-    QObject *addMenu(QObject *parentMenu, const QString &title,
-                     const QPoint &pos = QPoint()) override;
-    void addMenuItem(QQuickWebEngineAction *action, QObject *menu,
-                     bool checkable = false, bool checked = false) override;
-    void showMenu(QObject *menu) override;
-    Q_DISABLE_COPY(UI2DelegatesManager)
-
-};
-
 } // namespace QtWebEngineCore
 
 #endif // UI_DELEGATES_MANAGER_H

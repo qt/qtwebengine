@@ -202,7 +202,7 @@ UIDelegatesManager *QQuickWebEngineViewPrivate::ui()
 {
     Q_Q(QQuickWebEngineView);
     if (m_uIDelegatesManager.isNull())
-        m_uIDelegatesManager.reset(new UI2DelegatesManager(q));
+        m_uIDelegatesManager.reset(new UIDelegatesManager(q));
     return m_uIDelegatesManager.data();
 }
 
