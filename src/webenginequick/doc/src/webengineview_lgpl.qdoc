@@ -1042,7 +1042,7 @@
 */
 
 /*!
-    \qmlproperty bool WebEngineView::backgroundColor
+    \qmlproperty color WebEngineView::backgroundColor
     \since QtWebEngine 1.2
 
     Changes the color of the WebEngineView's background, behind the document's
