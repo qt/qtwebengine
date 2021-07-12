@@ -141,23 +141,6 @@ UIDelegatesManager::~UIDelegatesManager()
         component = &COMPONENT##Component; \
         break;
 
-bool UIDelegatesManager::initializeImportDirs(QStringList &dirs, QQmlEngine *engine)
-{
-    const QStringList paths = engine->importPathList();
-    for (const QString &path : paths) {
-        QString importPath = path % QLatin1String("/QtWebEngine/Controls1Delegates/");
-
-        // resource paths have to be tested using the ":/" prefix
-        if (importPath.startsWith(QLatin1String("qrc:/")))
-            importPath.remove(0, 3);
-
-        QFileInfo fi(importPath);
-        if (fi.exists())
-            dirs << fi.absolutePath();
-    }
-    return !dirs.isEmpty();
-}
-
 bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
 {
     QQmlEngine* engine = qmlEngine(m_view);
@@ -210,32 +193,6 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
     if (!prop.isSignalProperty()) \
         qWarning("%s is missing %s signal property.\n", qPrintable(location.toString()), qPrintable(prop.name()));
 
-void UIDelegatesManager::addMenuItem(QQuickWebEngineAction *action, QObject *menu, bool checkable, bool checked)
-{
-    Q_ASSERT(action);
-    if (!ensureComponentLoaded(MenuItem))
-        return;
-    QObject *it = menuItemComponent->beginCreate(qmlContext(m_view));
-
-    QQmlProperty(it, QStringLiteral("text")).write(action->text());
-    QQmlProperty(it, QStringLiteral("iconName")).write(action->iconName());
-    QQmlProperty(it, QStringLiteral("enabled")).write(action->isEnabled());
-    QQmlProperty(it, QStringLiteral("checkable")).write(checkable);
-    QQmlProperty(it, QStringLiteral("checked")).write(checked);
-
-    QQmlProperty signal(it, QStringLiteral("onTriggered"));
-    CHECK_QML_SIGNAL_PROPERTY(signal, menuItemComponent->url());
-    const QMetaObject *actionMeta = action->metaObject();
-    QObject::connect(it, signal.method(), action, actionMeta->method(actionMeta->indexOfSlot("trigger()")));
-    menuItemComponent->completeCreate();
-
-    it->setParent(menu);
-
-    QQmlListReference entries(menu, defaultPropertyName(menu), qmlEngine(m_view));
-    if (entries.isValid())
-        entries.append(it);
-}
-
 void UIDelegatesManager::addMenuSeparator(QObject *menu)
 {
     if (!ensureComponentLoaded(MenuSeparator))
@@ -248,37 +205,6 @@ void UIDelegatesManager::addMenuSeparator(QObject *menu)
     QQmlListReference entries(menu, defaultPropertyName(menu), qmlEngine(m_view));
     if (entries.isValid() && entries.count() > 0)
         entries.append(sep);
-}
-
-QObject *UIDelegatesManager::addMenu(QObject *parentMenu, const QString &title, const QPoint& pos)
-{
-    Q_ASSERT(parentMenu);
-    if (!ensureComponentLoaded(Menu))
-        return nullptr;
-    QQmlContext *context = qmlContext(m_view);
-    QObject *menu = menuComponent->beginCreate(context);
-    // set visual parent for non-Window-based menus
-    if (QQuickItem *item = qobject_cast<QQuickItem*>(menu))
-        item->setParentItem(m_view);
-
-    if (!title.isEmpty())
-        QQmlProperty(menu, QStringLiteral("title")).write(title);
-    if (!pos.isNull())
-        menu->setProperty("pos", pos);
-
-    menu->setParent(parentMenu);
-
-    QQmlProperty doneSignal(menu, QStringLiteral("onDone"));
-    static int deleteLaterIndex = menu->metaObject()->indexOfSlot("deleteLater()");
-    CHECK_QML_SIGNAL_PROPERTY(doneSignal, menuComponent->url());
-    QObject::connect(menu, doneSignal.method(), menu, menu->metaObject()->method(deleteLaterIndex));
-
-    QQmlListReference entries(parentMenu, defaultPropertyName(parentMenu), qmlEngine(m_view));
-    if (entries.isValid())
-        entries.append(menu);
-
-    menuComponent->completeCreate();
-    return menu;
 }
 
 #define ASSIGN_DIALOG_COMPONENT_DATA_CASE_STATEMENT(TYPE, COMPONENT) \
@@ -530,15 +456,6 @@ private:
     QPoint m_oldCursorPos;
 };
 
-void UIDelegatesManager::showMenu(QObject *menu)
-{
-    // QtQuick.Controls.Menu.popup() always shows the menu under the mouse cursor, i.e. the menu's
-    // position we set above is ignored. Work around the problem by moving the mouse cursor
-    // temporarily to the right position.
-    TemporaryCursorMove tcm(m_view, menu->property("pos").toPoint());
-    QMetaObject::invokeMethod(menu, "popup");
-}
-
 void UIDelegatesManager::showToolTip(const QString &text)
 {
     if (text.isEmpty()) {
@@ -649,12 +566,7 @@ void UIDelegatesManager::hideTouchSelectionMenu()
     QTimer::singleShot(0, m_view, [this] { m_touchSelectionMenu.reset(); });
 }
 
-UI2DelegatesManager::UI2DelegatesManager(QQuickWebEngineView *view) : UIDelegatesManager(view)
-{
-
-}
-
-bool UI2DelegatesManager::initializeImportDirs(QStringList &dirs, QQmlEngine *engine)
+bool UIDelegatesManager::initializeImportDirs(QStringList &dirs, QQmlEngine *engine)
 {
     const QStringList paths = engine->importPathList();
     for (const QString &path : paths) {
@@ -672,7 +584,7 @@ bool UI2DelegatesManager::initializeImportDirs(QStringList &dirs, QQmlEngine *en
     return !dirs.isEmpty();
 }
 
-QObject *UI2DelegatesManager::addMenu(QObject *parentMenu, const QString &title, const QPoint &pos)
+QObject *UIDelegatesManager::addMenu(QObject *parentMenu, const QString &title, const QPoint &pos)
 {
     Q_ASSERT(parentMenu);
     if (!ensureComponentLoaded(Menu))
@@ -700,7 +612,7 @@ QObject *UI2DelegatesManager::addMenu(QObject *parentMenu, const QString &title,
     return menu;
 }
 
-void UI2DelegatesManager::addMenuItem(QQuickWebEngineAction *action, QObject *menu, bool checkable, bool checked)
+void UIDelegatesManager::addMenuItem(QQuickWebEngineAction *action, QObject *menu, bool checkable, bool checked)
 {
     Q_ASSERT(action);
     if (!ensureComponentLoaded(MenuItem))
@@ -726,7 +638,7 @@ void UI2DelegatesManager::addMenuItem(QQuickWebEngineAction *action, QObject *me
         entries.append(it);
 }
 
-void UI2DelegatesManager::showMenu(QObject *menu)
+void UIDelegatesManager::showMenu(QObject *menu)
 {
     QMetaObject::invokeMethod(menu, "open");
 }
