@@ -64,6 +64,7 @@
 #include "qwebenginescriptcollection.h"
 #include <QtWebEngineCore/private/qwebenginecontextmenurequest_p.h>
 #include <QtWebEngineCore/private/qwebenginehistory_p.h>
+#include <QtWebEngineCore/private/qwebenginenewwindowrequest_p.h>
 #include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
 #include "qwebengineregisterprotocolhandlerrequest.h"
 #if QT_CONFIG(webenginequick_testsupport)
@@ -527,7 +528,7 @@ QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> ne
 
     Q_EMIT q->newViewRequested(&request);
 
-    if (request.isHandled())
+    if (request.d_ptr->isRequestHandled)
         return newWebContents;
     return nullptr;
 }
@@ -1666,19 +1667,20 @@ void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &va
 void QQuickWebEngineView::acceptAsNewView(QWebEngineNewWindowRequest *request)
 {
     Q_D(QQuickWebEngineView);
-    if (!request || (!request->adapter() && !request->requestedUrl().isValid()) || request->isHandled()) {
+    if (!request || (!request->d_ptr->adapter && !request->requestedUrl().isValid())
+        || request->d_ptr->isRequestHandled) {
         qWarning("Trying to open an empty request, it was either already used or was invalidated."
             "\nYou must complete the request synchronously within the newViewRequested signal handler."
             " If a view hasn't been adopted before returning, the request will be invalidated.");
         return;
     }
 
-    if (auto adapter = request->adapter())
+    if (auto adapter = request->d_ptr->adapter)
         d->adoptWebContents(adapter.data());
     else
         setUrl(request->requestedUrl());
 
-    request->setHandled();
+    request->d_ptr->setHandled();
 }
 
 #if QT_CONFIG(draganddrop)
