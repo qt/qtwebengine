@@ -75,7 +75,6 @@ class QWebEngineHistory;
 class QWebEnginePage;
 class QWebEngineProfile;
 class QWebEngineSettings;
-class QWebEngineView;
 
 class PageView
 {

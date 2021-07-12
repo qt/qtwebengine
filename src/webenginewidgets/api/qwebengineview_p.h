@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -51,21 +51,21 @@
 // We mean it.
 //
 
-#include <QtWebEngineWidgets/qwebengineview.h>
-#include <QtWebEngineCore/private/qwebenginepage_p.h>
-#include <QtWebEngineCore/qwebenginecontextmenurequest.h>
+#include <QtWebEngineCore/private/qwebenginepage_p.h> // PageView
 #include <QtWidgets/qaccessiblewidget.h>
 
 #include "render_view_context_menu_qt.h"
 
 namespace QtWebEngineCore {
-class QPrinter;
+class QWebEngineContextMenuRequest;
 class RenderWidgetHostViewQtDelegateWidget;
 class RenderWidgetHostViewQtDelegate;
 }
 
 QT_BEGIN_NAMESPACE
 
+class QMenu;
+class QPrinter;
 class QWebEngineView;
 
 class QWebEngineViewPrivate : public PageView
@@ -141,7 +141,7 @@ private:
 class QContextMenuBuilder : public QtWebEngineCore::RenderViewContextMenuQt
 {
 public:
-    QContextMenuBuilder(QWebEngineContextMenuRequest *reqeust, QWebEngineView *view, QMenu *menu);
+    QContextMenuBuilder(QWebEngineContextMenuRequest *request, QWebEngineView *view, QMenu *menu);
 
 private:
     virtual bool hasInspector() override;

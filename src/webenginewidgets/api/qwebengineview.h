@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -40,22 +40,21 @@
 #ifndef QWEBENGINEVIEW_H
 #define QWEBENGINEVIEW_H
 
-#include <QtGui/qpainter.h>
 #include <QtGui/QPageLayout>
 #include <QtGui/qpageranges.h>
-#include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtWidgets/qwidget.h>
 
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
-#include <QtWebEngineCore/qwebenginecontextmenurequest.h>
-#include <QtWebEngineCore/qwebenginehttprequest.h>
 #include <QtWebEngineCore/qwebenginepage.h>
 
 QT_BEGIN_NAMESPACE
+
 class QContextMenuEvent;
 class QPrinter;
 class QUrl;
-class QWebEnginePage;
+class QWebEngineContextMenuRequest;
+class QWebEngineHistory;
+class QWebEngineHttpRequest;
 class QWebEngineSettings;
 class QWebEngineViewAccessible;
 class QWebEngineViewPrivate;

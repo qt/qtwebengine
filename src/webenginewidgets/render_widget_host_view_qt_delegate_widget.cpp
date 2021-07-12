@@ -46,9 +46,7 @@
 #include "qwebengineview_p.h"
 
 #include <QGuiApplication>
-#include <QLayout>
 #include <QMouseEvent>
-#include <QOpenGLContext>
 #include <QResizeEvent>
 #include <QSGImageNode>
 #include <QWindow>
