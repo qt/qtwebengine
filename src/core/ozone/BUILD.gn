@@ -20,7 +20,7 @@ source_set("qt") {
 
   defines = [ "OZONE_IMPLEMENTATION" ]
 
-  if (use_xkbcommon && use_x11) {
+  if (use_xkbcommon) {
     libs = [ "xkbfile" ]
   }
 }

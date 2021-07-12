@@ -59,7 +59,7 @@
 #include "surface_factory_qt.h"
 #include "platform_window_qt.h"
 
-#if BUILDFLAG(USE_XKBCOMMON) && defined(USE_X11)
+#if BUILDFLAG(USE_XKBCOMMON)
 #include "ui/events/ozone/layout/xkb/xkb_evdev_codes.h"
 #include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
 
@@ -67,7 +67,7 @@
 #include <X11/extensions/XKBrules.h>
 
 extern void *GetQtXDisplay();
-#endif // BUILDFLAG(USE_XKBCOMMON) && defined(USE_X11)
+#endif // BUILDFLAG(USE_XKBCOMMON)
 
 namespace ui {
 
@@ -99,7 +99,7 @@ private:
     std::unique_ptr<InputController> input_controller_;
     std::unique_ptr<OverlayManagerOzone> overlay_manager_;
 
-#if BUILDFLAG(USE_XKBCOMMON) && defined(USE_X11)
+#if BUILDFLAG(USE_XKBCOMMON)
     XkbEvdevCodes m_xkbEvdevCodeConverter;
 #endif
     std::unique_ptr<KeyboardLayoutEngine> m_keyboardLayoutEngine;
@@ -153,7 +153,7 @@ std::unique_ptr<display::NativeDisplayDelegate> OzonePlatformQt::CreateNativeDis
     return nullptr;
 }
 
-#if BUILDFLAG(USE_XKBCOMMON) && defined(USE_X11)
+#if BUILDFLAG(USE_XKBCOMMON)
 static std::string getCurrentKeyboardLayout()
 {
     Display *dpy = static_cast<Display *>(GetQtXDisplay());
@@ -190,7 +190,7 @@ static std::string getCurrentKeyboardLayout()
     layoutWithVariant = layoutWithVariant.append(variant);
     return layoutWithVariant;
 }
-#endif // BUILDFLAG(USE_XKBCOMMON) && defined(USE_X11)
+#endif // BUILDFLAG(USE_XKBCOMMON)
 
 void OzonePlatformQt::InitializeUI(const ui::OzonePlatform::InitParams &)
 {
@@ -199,7 +199,7 @@ void OzonePlatformQt::InitializeUI(const ui::OzonePlatform::InitParams &)
     gpu_platform_support_host_.reset(ui::CreateStubGpuPlatformSupportHost());
     input_controller_ = CreateStubInputController();
 
-#if BUILDFLAG(USE_XKBCOMMON) && defined(USE_X11)
+#if BUILDFLAG(USE_XKBCOMMON)
     std::string layout = getCurrentKeyboardLayout();
     if (layout.empty()) {
         m_keyboardLayoutEngine = std::make_unique<StubKeyboardLayoutEngine>();
@@ -209,7 +209,7 @@ void OzonePlatformQt::InitializeUI(const ui::OzonePlatform::InitParams &)
     }
 #else
     m_keyboardLayoutEngine = std::make_unique<StubKeyboardLayoutEngine>();
-#endif // BUILDFLAG(USE_XKBCOMMON) && defined(USE_X11)
+#endif // BUILDFLAG(USE_XKBCOMMON)
 
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(m_keyboardLayoutEngine.get());
 }
