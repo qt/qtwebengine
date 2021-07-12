@@ -2015,17 +2015,6 @@ void QWebEnginePage::runJavaScript(const QString& scriptSource, const std::funct
     d->m_variantCallbacks.insert(requestId, resultCallback);
 }
 
-void QWebEnginePage::runJavaScript(const QString &scriptSource, quint32 worldId)
-{
-    Q_D(QWebEnginePage);
-    d->ensureInitialized();
-    if (d->adapter->lifecycleState() == WebContentsAdapter::LifecycleState::Discarded) {
-        qWarning("runJavaScript: disabled in Discarded state");
-        return;
-    }
-    d->adapter->runJavaScript(scriptSource, worldId);
-}
-
 void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId, const std::function<void(const QVariant &)> &resultCallback)
 {
     Q_D(QWebEnginePage);
@@ -2036,8 +2025,12 @@ void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId,
             resultCallback(QVariant());
         return;
     }
-    quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, worldId);
-    d->m_variantCallbacks.insert(requestId, resultCallback);
+    if (resultCallback) {
+        quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, worldId);
+        d->m_variantCallbacks.insert(requestId, resultCallback);
+    } else {
+        d->adapter->runJavaScript(scriptSource, worldId);
+    }
 }
 
 /*!
