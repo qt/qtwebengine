@@ -48,6 +48,7 @@
 #include "qwebengineloadinginfo.h"
 #include "qwebenginenavigationrequest.h"
 #include "qwebenginenewwindowrequest.h"
+#include "qwebenginenewwindowrequest_p.h"
 #include "qwebengineprofile.h"
 #include "qwebengineprofile_p.h"
 #include "qwebenginequotarequest.h"
@@ -378,7 +379,7 @@ QWebEnginePagePrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebC
 
     Q_EMIT q->newWindowRequested(request);
 
-    if (request.isHandled())
+    if (request.d_ptr->isRequestHandled)
         return newWebContents;
     return nullptr;
 }
@@ -2250,9 +2251,9 @@ QSizeF QWebEnginePage::contentsSize() const
 void QWebEnginePage::acceptAsNewWindow(QWebEngineNewWindowRequest &request)
 {
     Q_D(QWebEnginePage);
-    auto adapter = request.adapter();
+    auto adapter = request.d_ptr->adapter;
     QUrl url = request.requestedUrl();
-    if ((!adapter && !url.isValid()) || request.isHandled()) {
+    if ((!adapter && !url.isValid()) || request.d_ptr->isRequestHandled) {
         qWarning("Trying to open an empty request, it was either already used or was invalidated."
             "\nYou must complete the request synchronously within the newWindowRequested signal handler."
             " If a view hasn't been adopted before returning, the request will be invalidated.");
@@ -2268,7 +2269,7 @@ void QWebEnginePage::acceptAsNewWindow(QWebEngineNewWindowRequest &request)
     if (!geometry.isEmpty())
         emit geometryChangeRequested(geometry);
 
-    request.setHandled();
+    request.d_ptr->setHandled();
 }
 
 /*!

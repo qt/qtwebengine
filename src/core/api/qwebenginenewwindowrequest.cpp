@@ -38,20 +38,11 @@
 ****************************************************************************/
 
 #include "qwebenginenewwindowrequest.h"
+#include "qwebenginenewwindowrequest_p.h"
 
 #include "web_contents_adapter.h"
 
 QT_BEGIN_NAMESPACE
-
-struct QWebEngineNewWindowRequestPrivate
-{
-    QWebEngineNewWindowRequest::DestinationType destination;
-    QRect requestedGeometry;
-    QUrl requestedUrl;
-    QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter;
-    bool isUserInitiated;
-    bool isRequestHandled = false;
-};
 
 /*!
     \class QWebEngineNewWindowRequest
@@ -179,28 +170,6 @@ QRect QWebEngineNewWindowRequest::requestedGeometry() const
 bool QWebEngineNewWindowRequest::isUserInitiated() const
 {
     return d_ptr->isUserInitiated;
-}
-
-/*! \internal
-*/
-QSharedPointer<QtWebEngineCore::WebContentsAdapter> QWebEngineNewWindowRequest::adapter()
-{
-    return d_ptr->adapter;
-}
-
-/*! \internal
-*/
-bool QWebEngineNewWindowRequest::isHandled() const
-{
-    return d_ptr->isRequestHandled;
-}
-
-/*! \internal
-*/
-void QWebEngineNewWindowRequest::setHandled()
-{
-    d_ptr->isRequestHandled = true;
-    d_ptr->adapter.reset();
 }
 
 QT_END_NAMESPACE
