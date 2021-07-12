@@ -708,14 +708,6 @@ WebEngineContext::WebEngineContext()
 
     enableFeatures.push_back(features::kTracingServiceInProcess.name);
 
-    // The video-capture service is not functioning at this moment (since 69)
-    disableFeatures.push_back(features::kMojoVideoCapture.name);
-
-#if defined(Q_OS_LINUX)
-    // broken and crashy (even upstream):
-    disableFeatures.push_back(features::kFontSrcLocalMatching.name);
-#endif
-
     disableFeatures.push_back(network::features::kDnsOverHttpsUpgrade.name);
 
     // When enabled, event.movement is calculated in blink instead of in browser.
