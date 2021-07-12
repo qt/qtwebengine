@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,48 +37,52 @@
 **
 ****************************************************************************/
 
+#include "qwebenginenotificationpresenter_p.h"
 #include "qwebengineview.h"
 #include "qwebengineview_p.h"
+#include "render_widget_host_view_qt_delegate_widget.h"
 
 #include <QtWebEngineCore/private/qwebenginepage_p.h>
+#include <QtWebEngineCore/qwebenginecontextmenurequest.h>
+#include <QtWebEngineCore/qwebenginehistory.h>
+#include <QtWebEngineCore/qwebenginehttprequest.h>
 #include <QtWebEngineCore/qwebengineprofile.h>
-#include "render_widget_host_view_qt_delegate_widget.h"
-#include "web_contents_adapter.h"
-#include "file_picker_controller.h"
-#include "qwebenginenotificationpresenter_p.h"
 #include "color_chooser_controller.h"
-#include <QStandardPaths>
-#if QT_CONFIG(action)
-#include <QAction>
-#endif
-#if QT_CONFIG(menu)
-#include <QMenu>
-#endif
+#include "web_contents_adapter.h"
+
 #include <QContextMenuEvent>
 #include <QToolTip>
 #include <QVBoxLayout>
-#if QT_CONFIG(colordialog)
-#    include <QColorDialog>
-#endif
-#include <QContextMenuEvent>
-#if QT_CONFIG(filedialog)
-#    include <QFileDialog>
-#endif
 #include <QKeyEvent>
 #include <QIcon>
-#if QT_CONFIG(inputdialog)
-#    include <QInputDialog>
-#endif
-#include <QLayout>
-#include <QLoggingCategory>
-#if QT_CONFIG(menu)
-#    include <QMenu>
-#endif
-#if QT_CONFIG(messagebox)
-#    include <QMessageBox>
-#endif
 #include <QStyle>
 #include <QGuiApplication>
+
+#if QT_CONFIG(action)
+#include <QAction>
+#endif
+
+#if QT_CONFIG(colordialog)
+#include <QColorDialog>
+#endif
+
+#if QT_CONFIG(filedialog)
+#include <QFileDialog>
+#include <QStandardPaths>
+#include "file_picker_controller.h"
+#endif
+
+#if QT_CONFIG(inputdialog)
+#include <QInputDialog>
+#endif
+
+#if QT_CONFIG(menu)
+#include <QMenu>
+#endif
+
+#if QT_CONFIG(messagebox)
+#include <QMessageBox>
+#endif
 
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "printing/printer_worker.h"
@@ -194,7 +198,7 @@ void QWebEngineViewPrivate::contextMenuRequested(QWebEngineContextMenuRequest *r
 
     Q_UNREACHABLE();
 #else
-    Q_UNUSED(data);
+    Q_UNUSED(request);
 #endif // QT_CONFIG(action)
 }
 

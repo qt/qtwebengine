@@ -28,8 +28,9 @@
 
 #include <util.h>
 #include <QtTest/QtTest>
-#include <QtWebEngineCore/qwebengineprofile.h>
+#include <QtWebEngineCore/qwebenginecontextmenurequest.h>
 #include <QtWebEngineCore/qwebenginepage.h>
+#include <QtWebEngineCore/qwebengineprofile.h>
 #include <QtWebEngineCore/qwebenginesettings.h>
 #include <QtWebEngineWidgets/qwebengineview.h>
 
@@ -52,7 +53,7 @@ signals:
     void menuReady();
 
 protected:
-    void contextMenuEvent(QContextMenuEvent *)
+    void contextMenuEvent(QContextMenuEvent *) override
     {
         m_data = lastContextMenuRequest();
         emit menuReady();
