@@ -52,7 +52,7 @@
 #include <private/qquickwebengineclientcertificateselection_p.h>
 #include <private/qquickwebenginedialogrequests_p.h>
 #include <private/qquickwebenginedownloadrequest_p.h>
-#include <private/qquickwebenginenewviewrequest_p.h>
+#include <private/qquickwebenginenewwindowrequest_p.h>
 #include <private/qquickwebenginesettings_p.h>
 #include <private/qquickwebenginesingleton_p.h>
 
@@ -80,7 +80,7 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QQuickWebEngineJavaScriptDialogRequest::staticMetaObject
     << &QQuickWebEngineColorDialogRequest::staticMetaObject
     << &QQuickWebEngineFileDialogRequest::staticMetaObject
-    << &QQuickWebEngineNewViewRequest::staticMetaObject
+    << &QQuickWebEngineNewWindowRequest::staticMetaObject
     << &QQuickWebEngineTooltipRequest::staticMetaObject
     << &QWebEngineContextMenuRequest::staticMetaObject
     << &QWebEngineCertificateError::staticMetaObject
@@ -343,7 +343,7 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineNewWindowRequest.InNewDialog --> DestinationType"
     << "QWebEngineNewWindowRequest.InNewTab --> DestinationType"
     << "QWebEngineNewWindowRequest.InNewWindow --> DestinationType"
-    << "QQuickWebEngineNewViewRequest.openIn(QQuickWebEngineView*) --> void"
+    << "QQuickWebEngineNewWindowRequest.openIn(QQuickWebEngineView*) --> void"
     << "QQuickWebEngineProfile.AllowPersistentCookies --> PersistentCookiesPolicy"
     << "QQuickWebEngineProfile.DiskHttpCache --> HttpCacheType"
     << "QQuickWebEngineProfile.ForcePersistentCookies --> PersistentCookiesPolicy"
@@ -715,7 +715,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.loading --> bool"
     << "QQuickWebEngineView.loadingChanged(QWebEngineLoadingInfo) --> void"
     << "QQuickWebEngineView.navigationRequested(QWebEngineNavigationRequest*) --> void"
-    << "QQuickWebEngineView.newViewRequested(QQuickWebEngineNewViewRequest*) --> void"
+    << "QQuickWebEngineView.newWindowRequested(QQuickWebEngineNewWindowRequest*) --> void"
     << "QQuickWebEngineView.pdfPrintingFinished(QString,bool) --> void"
     << "QQuickWebEngineView.printRequested() --> void"
     << "QQuickWebEngineView.printToPdf(QJSValue) --> void"
@@ -764,7 +764,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.windowCloseRequested() --> void"
     << "QQuickWebEngineView.zoomFactor --> double"
     << "QQuickWebEngineView.zoomFactorChanged(double) --> void"
-    << "QQuickWebEngineView.acceptAsNewView(QWebEngineNewWindowRequest*) --> void"
+    << "QQuickWebEngineView.acceptAsNewWindow(QWebEngineNewWindowRequest*) --> void"
     << "QWebEngineQuotaRequest.accept() --> void"
     << "QWebEngineQuotaRequest.origin --> QUrl"
     << "QWebEngineQuotaRequest.reject() --> void"

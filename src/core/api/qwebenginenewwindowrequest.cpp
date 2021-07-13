@@ -59,16 +59,16 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmltype WebEngineNewViewRequest
-    \instantiates QWebEngineNewWindowRequest
+    \qmltype WebEngineNewWindowRequest
+    \instantiates QQuickWebEngineNewWindowRequest
     \inqmlmodule QtWebEngineQuick
-    \since QtWebEngine 1.1
+    \since QtWebEngine 1.12
 
-    \brief A utility type for the WebEngineView::newViewRequested signal.
+    \brief A utility type for the WebEngineView::newWindowRequested signal.
 
     Contains information about a request to load a page in a separate web engine view.
 
-    \sa WebEngineView::newViewRequested
+    \sa WebEngineView::newWindowRequested
 */
 
 /*!
@@ -87,17 +87,17 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlproperty enumeration WebEngineNewViewRequest::DestinationType
+    \qmlproperty enumeration WebEngineNewWindowRequest::DestinationType
 
     Describes how to open a new view:
 
-    \value WebEngineNewViewRequest.InNewWindow
+    \value WebEngineNewWindowRequest.InNewWindow
             In a separate window.
-    \value WebEngineNewViewRequest.InNewTab
+    \value WebEngineNewWindowRequest.InNewTab
             In a tab of the same window.
-    \value WebEngineNewViewRequest.InNewDialog
+    \value WebEngineNewWindowRequest.InNewDialog
             In a window without a tab bar, toolbar, or URL bar.
-    \value WebEngineNewViewRequest.InNewBackgroundTab
+    \value WebEngineNewWindowRequest.InNewBackgroundTab
             In a tab of the same window, without hiding the currently visible web engine view.
 */
 
@@ -121,7 +121,7 @@ QWebEngineNewWindowRequest::~QWebEngineNewWindowRequest()
     \brief The type of window that is requested.
 */
 /*!
-    \qmlproperty WebEngineNewViewRequest::DestinationType WebEngineNewViewRequest::destination
+    \qmlproperty WebEngineNewWindowRequest::DestinationType WebEngineNewWindowRequest::destination
     \brief The type of window that is requested.
 */
 QWebEngineNewWindowRequest::DestinationType QWebEngineNewWindowRequest::destination() const
@@ -134,7 +134,7 @@ QWebEngineNewWindowRequest::DestinationType QWebEngineNewWindowRequest::destinat
     \brief The URL that is requested for the new page.
 */
 /*!
-    \qmlproperty QUrl WebEngineNewViewRequest::requestedUrl
+    \qmlproperty QUrl WebEngineNewWindowRequest::requestedUrl
     \brief The URL that is requested for the new page.
     \since QtWebEngine 1.5
  */
@@ -148,7 +148,7 @@ QUrl QWebEngineNewWindowRequest::requestedUrl() const
     \brief The size that is requested for the new page.
 */
 /*!
-    \qmlproperty QRect WebEngineNewViewRequest::requestedGeometry
+    \qmlproperty QRect WebEngineNewWindowRequest::requestedGeometry
     \brief The size that is requested for the new page.
     \since QtWebEngine 2.0
  */
@@ -164,7 +164,7 @@ QRect QWebEngineNewWindowRequest::requestedGeometry() const
     You can use this property to block automatic \e popups.
 */
 /*!
-    \qmlproperty bool WebEngineNewViewRequest::userInitiated
+    \qmlproperty bool WebEngineNewWindowRequest::userInitiated
     Whether this window request was directly triggered as the result of a keyboard or mouse event.
 
     You can use this property to block automatic \e popups.

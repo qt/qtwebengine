@@ -46,7 +46,7 @@ TestWebEngineView {
     SignalSpy {
         id: newViewRequestedSpy
         target: webEngineView
-        signalName: "newViewRequested"
+        signalName: "newWindowRequested"
     }
 
     SignalSpy {
@@ -55,13 +55,13 @@ TestWebEngineView {
         signalName: "titleChanged"
     }
 
-    onNewViewRequested: {
+    onNewWindowRequested: {
         viewRequest = {
             "destination": request.destination,
             "userInitiated": request.userInitiated
         };
 
-        webEngineView.acceptAsNewView(request);
+        webEngineView.acceptAsNewWindow(request);
     }
 
     TestCase {
@@ -93,7 +93,7 @@ TestWebEngineView {
             // The first titleChanged signal is emitted by adoptWebContents()
             tryVerify(function() { return titleChangedSpy.count >= 2; });
 
-            compare(viewRequest.destination, WebEngineNewViewRequest.InNewTab);
+            compare(viewRequest.destination, WebEngineNewWindowRequest.InNewTab);
             verify(viewRequest.userInitiated);
             verify(!webEngineView.action(WebEngineView.ViewSource).enabled);
 
@@ -122,7 +122,7 @@ TestWebEngineView {
 
             // The first titleChanged signal is emitted by adoptWebContents()
             tryVerify(function() { return titleChangedSpy.count >= 2; });
-            compare(viewRequest.destination, WebEngineNewViewRequest.InNewTab);
+            compare(viewRequest.destination, WebEngineNewWindowRequest.InNewTab);
             verify(viewRequest.userInitiated);
 
             tryCompare(webEngineView, "url", "view-source:" + url.replace("user:passwd@", ""));

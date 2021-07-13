@@ -49,10 +49,10 @@ TestWebEngineView {
     SignalSpy {
         id: newViewRequestedSpy
         target: webEngineView
-        signalName: "newViewRequested"
+        signalName: "newWindowRequested"
     }
 
-    onNewViewRequested: function(request) {
+    onNewWindowRequested: function(request) {
         newViewRequest = {
             "destination": request.destination,
             "userInitiated": request.userInitiated,
@@ -78,7 +78,7 @@ TestWebEngineView {
 
     TestCase {
         id: testCase
-        name: "NewViewRequest"
+        name: "NewWindowRequest"
         when: windowShown
 
         function init() {
@@ -96,7 +96,7 @@ TestWebEngineView {
                 dialog.destroy();
         }
 
-        function test_loadNewViewRequest_data() {
+        function test_loadNewWindowRequest_data() {
             return [
                    { tag: "dialog", viewType: "dialog" },
                    { tag: "invalid", viewType: "null" },
@@ -105,7 +105,7 @@ TestWebEngineView {
             ];
         }
 
-        function test_loadNewViewRequest(row) {
+        function test_loadNewWindowRequest(row) {
             viewType = row.viewType;
             var url = 'data:text/html,%3Chtml%3E%3Cbody%3ETest+Page%3C%2Fbody%3E%3C%2Fhtml%3E';
 
@@ -118,7 +118,7 @@ TestWebEngineView {
             verify(webEngineView.waitForLoadSucceeded());
             tryCompare(newViewRequestedSpy, "count", 1);
 
-            compare(newViewRequest.destination, WebEngineNewViewRequest.InNewTab);
+            compare(newViewRequest.destination, WebEngineNewWindowRequest.InNewTab);
             verify(!newViewRequest.userInitiated);
 
             if (viewType === "dialog") {
@@ -139,7 +139,7 @@ TestWebEngineView {
             verify(webEngineView.waitForLoadSucceeded());
             tryCompare(newViewRequestedSpy, "count", 1);
 
-            compare(newViewRequest.destination, WebEngineNewViewRequest.InNewDialog);
+            compare(newViewRequest.destination, WebEngineNewWindowRequest.InNewDialog);
             compare(newViewRequest.requestedUrl, url);
             verify(!newViewRequest.userInitiated);
             if (viewType === "dialog") {
@@ -163,7 +163,7 @@ TestWebEngineView {
                 tryCompare(newViewRequestedSpy, "count", 1);
                 compare(newViewRequest.requestedUrl, url);
 
-                compare(newViewRequest.destination, WebEngineNewViewRequest.InNewDialog);
+                compare(newViewRequest.destination, WebEngineNewWindowRequest.InNewDialog);
                 verify(newViewRequest.userInitiated);
                 if (viewType === "dialog") {
                     tryVerify(dialog.webEngineView.loadSucceeded)
@@ -180,7 +180,7 @@ TestWebEngineView {
             mouseClick(webEngineView, center.x, center.y, Qt.LeftButton, Qt.ControlModifier);
             tryCompare(newViewRequestedSpy, "count", 1);
             compare(newViewRequest.requestedUrl, Qt.resolvedUrl("test1.html"));
-            compare(newViewRequest.destination, WebEngineNewViewRequest.InNewBackgroundTab);
+            compare(newViewRequest.destination, WebEngineNewWindowRequest.InNewBackgroundTab);
             verify(newViewRequest.userInitiated);
             if (viewType === "" || viewType === "null") {
                 compare(loadRequestArray[0].status, WebEngineView.LoadStartedStatus);

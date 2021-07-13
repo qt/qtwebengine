@@ -71,7 +71,7 @@ class QQuickWebEngineClientCertificateSelection;
 class QQuickWebEngineColorDialogRequest;
 class QQuickWebEngineFileDialogRequest;
 class QQuickWebEngineJavaScriptDialogRequest;
-class QQuickWebEngineNewViewRequest;
+class QQuickWebEngineNewWindowRequest;
 class QQuickWebEngineProfile;
 class QQuickWebEngineSettings;
 class QQuickWebEngineTooltipRequest;
@@ -444,7 +444,7 @@ public:
     void setWebChannelWorld(uint);
     Q_REVISION(1,8) Q_INVOKABLE QQuickWebEngineAction *action(WebAction action);
 
-    Q_INVOKABLE void acceptAsNewView(QWebEngineNewWindowRequest *request);
+    Q_INVOKABLE void acceptAsNewWindow(QWebEngineNewWindowRequest *request);
 
     bool isAudioMuted() const;
     void setAudioMuted(bool muted);
@@ -499,7 +499,6 @@ Q_SIGNALS:
     Q_REVISION(1,1) void fullScreenRequested(const QWebEngineFullScreenRequest &request);
     Q_REVISION(1,1) void isFullScreenChanged();
     Q_REVISION(1,1) void featurePermissionRequested(const QUrl &securityOrigin, Feature feature);
-    Q_REVISION(1,1) void newViewRequested(QQuickWebEngineNewViewRequest *request);
     Q_REVISION(1,1) void zoomFactorChanged(qreal arg);
     Q_REVISION(1,1) void profileChanged();
     Q_REVISION(1,1) void webChannelChanged();
@@ -532,6 +531,7 @@ Q_SIGNALS:
     Q_REVISION(1,11) void renderProcessPidChanged(qint64 pid);
     Q_REVISION(1,11) void canGoBackChanged();
     Q_REVISION(1,11) void canGoForwardChanged();
+    Q_REVISION(1,12) void newWindowRequested(QQuickWebEngineNewWindowRequest *request);
 
 protected:
     void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;
