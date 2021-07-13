@@ -42,12 +42,12 @@
 
 #include "render_widget_host_view_qt_delegate.h"
 
-#include "render_widget_host_view_qt_delegate_quick.h"
-
-#include <QQuickWindow>
-#include <QScopedPointer>
+#include <QtCore/qscopedpointer.h>
+#include <QtQuick/qquickwindow.h>
 
 namespace QtWebEngineCore {
+
+class RenderWidgetHostViewQtDelegateQuick;
 
 class RenderWidgetHostViewQtDelegateQuickWindow : public QQuickWindow , public RenderWidgetHostViewQtDelegate {
 

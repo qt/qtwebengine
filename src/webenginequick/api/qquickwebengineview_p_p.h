@@ -52,35 +52,31 @@
 //
 
 #include "qquickwebengineview_p.h"
-#include "qquickwebenginescriptcollection.h"
 #include "render_view_context_menu_qt.h"
 #include "touch_handle_drawable_client.h"
 #include "web_contents_adapter_client.h"
 
-#include <QPointer>
-#include <QScopedPointer>
-#include <QSharedData>
-#include <QString>
 #include <QtCore/qcompilerdetection.h>
+#include <QtCore/qpointer.h>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qsharedpointer.h>
+#include <QtCore/qstring.h>
 #include <QtGui/qaccessibleobject.h>
 
 namespace QtWebEngineCore {
 class RenderWidgetHostViewQtDelegateQuick;
-class TouchHandleDrawableClient;
 class TouchSelectionMenuController;
 class UIDelegatesManager;
 class WebContentsAdapter;
 }
 
 QT_BEGIN_NAMESPACE
-class QQuickWebEngineView;
 class QQmlComponent;
-class QQmlContext;
-class QWebEngineContextMenuRequest;
-class QQuickWebEngineSettings;
 class QQuickWebEngineFaviconProvider;
-class QQuickWebEngineProfilePrivate;
-class QQuickWebEngineTouchHandleProvider;
+class QQuickWebEngineScriptCollection;
+class QQuickWebEngineSettings;
+class QQuickWebEngineView;
+class QWebEngineContextMenuRequest;
 class QWebEngineFindTextResult;
 class QWebEngineHistory;
 

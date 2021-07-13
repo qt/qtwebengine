@@ -49,7 +49,6 @@
 QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineDownloadRequest;
-class QWebEngineScript;
 class QQuickWebEngineSettings;
 class QWebEngineClientCertificateStore;
 class QWebEngineCookieStore;
@@ -173,7 +172,6 @@ private:
     QQuickWebEngineSettings *settings() const;
 
     friend class FaviconImageResponseRunnable;
-    friend class QQuickWebEngineSettings;
     friend class QQuickWebEngineSingleton;
     friend class QQuickWebEngineViewPrivate;
     friend class QQuickWebEngineView;

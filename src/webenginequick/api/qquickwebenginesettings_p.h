@@ -51,14 +51,10 @@
 // We mean it.
 //
 
-#include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
-#include <QObject>
-#include <QScopedPointer>
+#include <QtCore/qobject.h>
+#include <QtCore/qscopedpointer.h>
 #include <QtQml/qqmlregistration.h>
-
-namespace QtWebEngineCore {
-class WebEngineSettings;
-}
+#include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -53,12 +53,12 @@
 
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 
-#include <QtCore/QDateTime>
-#include <QtCore/QObject>
-#include <QtCore/QSharedPointer>
-#include <QtCore/QUrl>
-#include <QtCore/QList>
-#include <QtQml/QQmlListProperty>
+#include <QtCore/qdatetime.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qobject.h>
+#include <QtCore/qsharedpointer.h>
+#include <QtCore/qurl.h>
+#include <QtQml/qqmllist.h>
 #include <QtQml/qqmlregistration.h>
 
 namespace QtWebEngineCore {

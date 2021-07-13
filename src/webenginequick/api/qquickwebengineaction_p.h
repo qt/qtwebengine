@@ -51,10 +51,10 @@
 // We mean it.
 //
 
-#include <QObject>
-#include <QtQml/qqml.h>
 #include "qtwebenginequickglobal_p.h"
-#include <QVariant>
+#include <QtCore/qobject.h>
+#include <QtCore/qvariant.h>
+#include <QtQml/qqml.h>
 #include <QtQml/qqmlregistration.h>
 
 namespace QtWebEngineCore {
@@ -94,9 +94,7 @@ Q_SIGNALS:
 
 private:
     Q_DECLARE_PRIVATE(QQuickWebEngineAction)
-    friend class QQuickWebEngineView;
     friend class QQuickWebEngineViewPrivate;
-    friend class QtWebEngineCore::UIDelegatesManager;
     friend class QQuickContextMenuBuilder;
 
     QScopedPointer<QQuickWebEngineActionPrivate> d_ptr;

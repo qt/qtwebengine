@@ -43,6 +43,7 @@
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginescriptcollection.h"
 #include "qquickwebengineview_p_p.h"
+
 #include "profile_adapter.h"
 #include "web_engine_settings.h"
 
@@ -53,10 +54,9 @@
 #include <QtWebEngineCore/private/qwebenginedownloadrequest_p.h>
 #include <QtWebEngineCore/qwebengineurlscheme.h>
 
-#include <QFileInfo>
-#include <QDir>
-#include <QQmlEngine>
-#include <QtQml/QQmlInfo>
+#include <QtCore/qdir.h>
+#include <QtCore/qfileinfo.h>
+#include <QtQml/qqmlengine.h>
 
 using QtWebEngineCore::ProfileAdapter;
 

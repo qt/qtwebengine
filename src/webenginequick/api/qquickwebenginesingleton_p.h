@@ -51,10 +51,10 @@
 // We mean it.
 //
 
-#include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
-#include <QtWebEngineCore/qwebenginescript.h>
 #include <QtCore/qobject.h>
 #include <QtQml/qqml.h>
+#include <QtWebEngineCore/qwebenginescript.h>
+#include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

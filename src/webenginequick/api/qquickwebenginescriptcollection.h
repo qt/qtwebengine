@@ -40,13 +40,12 @@
 #ifndef QQUICKWEBENGINESCRIPTCOLLECTION_H
 #define QQUICKWEBENGINESCRIPTCOLLECTION_H
 
-#include <QtWebEngineQuick/qtwebenginequickglobal.h>
-#include <QtWebEngineCore/qwebenginescript.h>
-#include <QtCore/qscopedpointer.h>
 #include <QtCore/qlist.h>
-#include <QtCore/qset.h>
 #include <QtCore/qobject.h>
+#include <QtCore/qscopedpointer.h>
 #include <QtQml/qjsvalue.h>
+#include <QtWebEngineCore/qwebenginescript.h>
+#include <QtWebEngineQuick/qtwebenginequickglobal.h>
 
 QT_BEGIN_NAMESPACE
 class QWebEngineScriptCollection;

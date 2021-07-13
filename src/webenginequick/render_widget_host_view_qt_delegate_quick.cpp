@@ -44,16 +44,11 @@
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
 
-#include <QGuiApplication>
-#include <QQuickWindow>
-#include <QSGImageNode>
-#include <QVariant>
-#include <QWindow>
-
-#if defined(Q_OS_MACOS) && QT_CONFIG(opengl)
-#include <QOpenGLContext>
-#include <QSurfaceFormat>
-#endif
+#include <QtCore/qvariant.h>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qwindow.h>
+#include <QtQuick/qquickwindow.h>
+#include <QtQuick/qsgimagenode.h>
 
 namespace QtWebEngineCore {
 

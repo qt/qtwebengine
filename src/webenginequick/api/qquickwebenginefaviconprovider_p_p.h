@@ -52,11 +52,11 @@
 //
 
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
-#include <QtCore/QList>
-#include <QtCore/QRunnable>
-#include <QtCore/QThreadPool>
-#include <QtGui/QImage>
-#include <QtQuick/QQuickImageProvider>
+#include <QtCore/qlist.h>
+#include <QtCore/qrunnable.h>
+#include <QtCore/qthreadpool.h>
+#include <QtGui/qimage.h>
+#include <QtQuick/qquickimageprovider.h>
 
 QT_BEGIN_NAMESPACE
 

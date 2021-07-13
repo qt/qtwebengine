@@ -39,7 +39,9 @@
 
 #include "ui_delegates_manager.h"
 
+#include "api/qquickwebengineaction_p.h"
 #include "api/qquickwebengineview_p.h"
+
 #include <authentication_dialog_controller.h>
 #include <color_chooser_controller.h>
 #include <file_picker_controller.h>
@@ -47,16 +49,15 @@
 #include <touch_selection_menu_controller.h>
 #include <web_contents_adapter_client.h>
 
-#include <QFileInfo>
-#include <QQmlContext>
-#include <QQmlEngine>
-#include <QQmlProperty>
-#include <QQuickWindow>
-#include <QCursor>
-#include <QList>
-#include <QScreen>
-#include <QTimer>
-#include <QGuiApplication>
+#include <QtCore/qfileinfo.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qtimer.h>
+#include <QtGui/qcursor.h>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qscreen.h>
+#include <QtQml/qqmlcontext.h>
+#include <QtQml/qqmlengine.h>
+#include <QtQml/qqmlproperty.h>
 
 // Uncomment for QML debugging
 //#define UI_DELEGATES_DEBUG
