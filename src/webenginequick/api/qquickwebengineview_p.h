@@ -74,7 +74,6 @@ class QQuickWebEngineJavaScriptDialogRequest;
 class QQuickWebEngineNewViewRequest;
 class QQuickWebEngineProfile;
 class QQuickWebEngineSettings;
-class QQuickWebEngineTestSupport;
 class QQuickWebEngineTooltipRequest;
 class QQuickWebEngineViewPrivate;
 class QWebEngineCertificateError;
@@ -118,9 +117,6 @@ class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
 
     Q_PROPERTY(QQuickWebEngineView *inspectedView READ inspectedView WRITE setInspectedView NOTIFY inspectedViewChanged REVISION(1,7) FINAL)
     Q_PROPERTY(QQuickWebEngineView *devToolsView READ devToolsView WRITE setDevToolsView NOTIFY devToolsViewChanged REVISION(1,7) FINAL)
-#if QT_CONFIG(webenginequick_testsupport)
-    Q_PROPERTY(QQuickWebEngineTestSupport *testSupport READ testSupport WRITE setTestSupport NOTIFY testSupportChanged FINAL)
-#endif
 
     Q_PROPERTY(LifecycleState lifecycleState READ lifecycleState WRITE setLifecycleState NOTIFY lifecycleStateChanged REVISION(1,10) FINAL)
     Q_PROPERTY(LifecycleState recommendedState READ recommendedState NOTIFY recommendedStateChanged REVISION(1,10) FINAL)
@@ -456,11 +452,6 @@ public:
 
     qint64 renderProcessPid() const;
 
-#if QT_CONFIG(webenginequick_testsupport)
-    QQuickWebEngineTestSupport *testSupport() const;
-    void setTestSupport(QQuickWebEngineTestSupport *testSupport);
-#endif
-
     bool activeFocusOnPress() const;
 
     void setInspectedView(QQuickWebEngineView *);
@@ -541,10 +532,6 @@ Q_SIGNALS:
     Q_REVISION(1,11) void renderProcessPidChanged(qint64 pid);
     Q_REVISION(1,11) void canGoBackChanged();
     Q_REVISION(1,11) void canGoForwardChanged();
-
-#if QT_CONFIG(webenginequick_testsupport)
-    void testSupportChanged();
-#endif
 
 protected:
     void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;

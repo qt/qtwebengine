@@ -19,11 +19,6 @@
             "label": "UI Delegates",
             "section": "WebEngine",
             "output": [ "privateFeature" ]
-        },
-        "webenginequick-testsupport": {
-            "label": "Test Support",
-            "autoDetect": "features.private_tests || call.isTestsInBuildParts",
-            "output": [ "privateFeature" ]
         }
     },
     "summary": [
@@ -31,8 +26,7 @@
             "section": "Qt WebEngineQuick",
             "entries": [
                 "webengine-quick",
-                "webenginequick-ui-delegates",
-                "webenginequick-testsupport"
+                "webenginequick-ui-delegates"
             ]
         }
     ]

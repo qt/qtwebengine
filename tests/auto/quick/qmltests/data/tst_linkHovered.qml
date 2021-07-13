@@ -26,10 +26,9 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtTest 1.0
-import QtWebEngine 1.2
-import QtWebEngine.testsupport 1.0
+import QtQuick
+import QtTest
+import QtWebEngine
 import "../../qmltests/data" 1.0
 
 TestWebEngineView {
@@ -40,25 +39,29 @@ TestWebEngineView {
 
     property string lastUrl
 
-    testSupport: WebEngineTestSupport { }
-
-    SignalSpy {
-        id: loadVisuallyCommittedSpy
-        target: webEngineView.testSupport
-        signalName: "loadVisuallyCommitted"
-    }
-
     SignalSpy {
         id: linkHoveredSpy
         target: webEngineView
         signalName: "linkHovered"
     }
 
-    onLinkHovered: {
+    onLinkHovered: function(hoveredUrl) {
         webEngineView.lastUrl = hoveredUrl
     }
 
+    function isViewRendered() {
+        var pixel = getItemPixel(webEngineView);
+
+        // The center pixel is expected to be red.
+        if (pixel[0] !== 255) return false;
+        if (pixel[1] !== 0) return false;
+        if (pixel[2] !== 0) return false;
+
+        return true;
+    }
+
     TestCase {
+        id: testCase
         name: "DesktopWebEngineViewLinkHovered"
 
         // Delayed windowShown to workaround problems with Qt5 in debug mode.
@@ -72,7 +75,6 @@ TestWebEngineView {
 
         function init() {
             webEngineView.lastUrl = "";
-            loadVisuallyCommittedSpy.clear();
             linkHoveredSpy.clear();
         }
 
@@ -88,7 +90,7 @@ TestWebEngineView {
             compare(webEngineView.lastUrl, "")
 
             // Wait for the page to be rendered before trying to test based on input events
-            loadVisuallyCommittedSpy.wait();
+            tryVerify(isViewRendered);
 
             mouseMove(webEngineView, 100, 100)
             linkHoveredSpy.wait(12000);
@@ -111,7 +113,7 @@ TestWebEngineView {
             compare(webEngineView.lastUrl, "")
 
             // Wait for the page to be rendered before trying to test based on input events
-            loadVisuallyCommittedSpy.wait();
+            tryVerify(isViewRendered);
 
             for (var i = 0; i < 100; i += 10)
                 mouseMove(webEngineView, 100, 100 + i)

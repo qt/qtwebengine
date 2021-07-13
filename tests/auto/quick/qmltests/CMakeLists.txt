@@ -5,8 +5,10 @@ qt_internal_add_test(tst_qmltests
     SOURCES
         tst_qmltests.cpp
     LIBRARIES
-        Qt::WebEngineQuick
+        Qt::GuiPrivate
         Qt::QuickTest
+        Qt::TestPrivate
+        Qt::WebEngineQuick
         Test::HttpServer
         Test::Util
 )
@@ -26,13 +28,17 @@ set(testList
     tst_fullScreenRequest.qml
     tst_geopermission.qml
     tst_getUserMedia.qml
+    tst_inputMethod.qml
+    tst_javaScriptDialogs.qml
     tst_keyboardEvents.qml
     tst_keyboardModifierMapping.qml
+    tst_linkHovered.qml
     tst_loadFail.qml
     tst_loadHtml.qml
     tst_loadProgress.qml
     tst_loadRecursionCrash.qml
     tst_loadUrl.qml
+    tst_mouseClick.qml
     tst_mouseMove.qml
     tst_navigationHistory.qml
     tst_navigationRequested.qml
@@ -54,16 +60,6 @@ endif()
 
 if(QT_FEATURE_ssl)
     list(APPEND testList tst_certificateError.qml)
-endif()
-
-if(QT_FEATURE_webenginequick_testsupport)
-    list(APPEND testList
-        tst_inputMethod.qml
-        tst_javaScriptDialogs.qml
-        tst_linkHovered.qml
-        tst_mouseClick.qml
-        tst_viewSoure.qml
-    )
 endif()
 
 set(content "")

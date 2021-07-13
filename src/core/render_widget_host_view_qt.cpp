@@ -41,7 +41,6 @@
 #include "render_widget_host_view_qt.h"
 
 #include "browser_accessibility_manager_qt.h"
-#include "common/qt_messages.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "render_widget_host_view_qt_delegate_client.h"
@@ -818,11 +817,6 @@ viz::ScopedSurfaceIdAllocator RenderWidgetHostViewQt::DidUpdateVisualProperties(
 void RenderWidgetHostViewQt::OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata)
 {
     synchronizeVisualProperties(metadata.local_surface_id);
-}
-
-void RenderWidgetHostViewQt::OnDidFirstVisuallyNonEmptyPaint()
-{
-    m_adapterClient->didFirstVisuallyNonEmptyPaint();
 }
 
 Compositor::Id RenderWidgetHostViewQt::compositorId()

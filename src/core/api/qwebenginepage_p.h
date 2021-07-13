@@ -134,7 +134,6 @@ public:
     QColor backgroundColor() const override;
     void loadStarted(QWebEngineLoadingInfo info) override;
     void loadCommitted() override { }
-    void didFirstVisuallyNonEmptyPaint() override { }
     void loadFinished(QWebEngineLoadingInfo info) override;
     void focusContainer() override;
     void unhandledKeyEvent(QKeyEvent *event) override;

@@ -56,12 +56,6 @@ HEADERS = \
         render_widget_host_view_qt_delegate_quickwindow.h \
         ui_delegates_manager.h
 
-qtConfig(webenginequick-testsupport) {
-    QT_PRIVATE += testlib
-    SOURCES += api/qquickwebenginetestsupport.cpp
-    HEADERS += api/qquickwebenginetestsupport_p.h
-}
-
 !build_pass {
     python = $$pythonPathForShell()
     chromium_attributions.commands = \

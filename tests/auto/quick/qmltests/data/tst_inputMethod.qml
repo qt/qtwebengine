@@ -26,10 +26,10 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtTest 1.0
-import QtWebEngine 1.4
-import QtWebEngine.testsupport 1.0
+import QtQuick
+import QtTest
+import QtWebEngine
+import Test.util
 import "../../qmltests/data" 1.0
 
 TestWebEngineView {
@@ -37,7 +37,7 @@ TestWebEngineView {
     width: 200
     height: 400
 
-    testSupport: WebEngineTestSupport { }
+    TestInputContext { id: testInputContext }
 
     TestCase {
         id: testCase
@@ -45,11 +45,11 @@ TestWebEngineView {
         when: windowShown
 
         function init() {
-            testSupport.testInputContext.create();
+            testInputContext.create();
         }
 
         function cleanup() {
-            testSupport.testInputContext.release();
+            testInputContext.release();
         }
 
         function test_softwareInputPanel() {

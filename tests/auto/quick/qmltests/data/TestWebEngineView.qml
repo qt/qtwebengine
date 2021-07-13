@@ -26,9 +26,9 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtTest 1.1
-import QtWebEngine 1.7
+import QtQuick
+import QtTest
+import QtWebEngine
 
 WebEngineView {
     property var loadStatus: null
@@ -118,6 +118,39 @@ WebEngineView {
         runJavaScript('document.body.innerText', function(t) { text = t })
         testCase.tryVerify(function() { return text !== undefined })
         return text
+    }
+
+    function getItemPixel(item) {
+        var grabImage = Qt.createQmlObject("
+                import QtQuick\n
+                Image { }", testCase)
+        var itemCanvas = Qt.createQmlObject("
+                import QtQuick\n
+                Canvas { }", testCase)
+
+        // Mark QML images with objectName: "image" to be able to check if the image is loaded.
+        if (item.objectName === "image") {
+            testCase.tryVerify(function() { return item.status === Image.Ready });
+        }
+
+        item.grabToImage(function(result) {
+                grabImage.source = result.url
+            });
+        testCase.tryVerify(function() { return grabImage.status === Image.Ready });
+
+        itemCanvas.width = item.width;
+        itemCanvas.height = item.height;
+        var ctx = itemCanvas.getContext("2d");
+        ctx.drawImage(grabImage, 0, 0, grabImage.width, grabImage.height);
+        var imageData = ctx.getImageData(Math.round(itemCanvas.width/2),
+                                         Math.round(itemCanvas.height/2),
+                                         itemCanvas.width,
+                                         itemCanvas.height);
+
+        grabImage.destroy();
+        itemCanvas.destroy();
+
+        return imageData.data;
     }
 }
 

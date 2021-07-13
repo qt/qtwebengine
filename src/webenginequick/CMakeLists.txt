@@ -3,10 +3,6 @@ find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS PrintSuppor
 
 get_configure_mode(configureMode)
 
-
-if(QT_FEATURE_webenginequick_testsupport)
-    add_subdirectory(testsupport)
-endif()
 add_subdirectory(ui)
 
 qt_internal_add_qml_module(WebEngineQuick
@@ -68,8 +64,3 @@ qt_internal_extend_target(qtwebenginequickplugin
 
 make_install_only(WebEngineQuick)
 make_install_only(qtwebenginequickplugin)
-
-qt_internal_extend_target(WebEngineQuick CONDITION QT_FEATURE_webenginequick_testsupport
-    LIBRARIES
-       Qt::WebEngineTestSupportPrivate
-)

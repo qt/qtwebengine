@@ -26,10 +26,10 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtTest 1.0
-import QtWebEngine 1.4
-import QtWebEngine.testsupport 1.0
+import QtQuick
+import QtTest
+import QtWebEngine
+import Test.util
 import "../../qmltests/data" 1.0
 
 TestWebEngineView {
@@ -37,8 +37,10 @@ TestWebEngineView {
     width: 200
     height: 200
 
-    testSupport: WebEngineTestSupport {
-        function mouseMultiClick(item, x, y, clickCount) {
+    TestInputEvent {
+        id: testInputEvent
+
+        function __mouseMultiClick(item, x, y, clickCount) {
             if (!item)
                 qtest_fail("No item given to mouseMultiClick", 1);
 
@@ -46,20 +48,20 @@ TestWebEngineView {
                 x = item.width / 2;
             if (y === undefined)
                 y = item.height / 2;
-            if (!testEvent.mouseMultiClick(item, x, y, clickCount))
+            if (!mouseMultiClick(item, x, y, clickCount))
                 qtest_fail("window not shown", 2);
         }
 
         function mouseDoubleClick(item, x, y) {
-            mouseMultiClick(item, x, y, 2);
+            __mouseMultiClick(item, x, y, 2);
         }
 
         function mouseTripleClick(item, x, y) {
-            mouseMultiClick(item, x, y, 3);
+            __mouseMultiClick(item, x, y, 3);
         }
 
         function mouseQuadraClick(item, x, y) {
-            mouseMultiClick(item, x, y, 4);
+            __mouseMultiClick(item, x, y, 4);
         }
     }
 
@@ -91,7 +93,7 @@ TestWebEngineView {
             verify(webEngineView.waitForLoadSucceeded());
 
             var center = getElementCenter("input");
-            webEngineView.testSupport.mouseDoubleClick(webEngineView, center.x, center.y);
+            testInputEvent.mouseDoubleClick(webEngineView, center.x, center.y);
             verifyElementHasFocus("input");
             tryVerify(function() { return getTextSelection() == "Company" });
 
@@ -107,7 +109,7 @@ TestWebEngineView {
             verify(webEngineView.waitForLoadSucceeded());
 
             var center = getElementCenter("input");
-            webEngineView.testSupport.mouseTripleClick(webEngineView, center.x, center.y);
+            testInputEvent.mouseTripleClick(webEngineView, center.x, center.y);
             verifyElementHasFocus("input");
             tryVerify(function() { return getTextSelection() == "The Qt Company" });
 
@@ -123,7 +125,7 @@ TestWebEngineView {
             verify(webEngineView.waitForLoadSucceeded());
 
             var center = getElementCenter("input");
-            webEngineView.testSupport.mouseQuadraClick(webEngineView, center.x, center.y);
+            testInputEvent.mouseQuadraClick(webEngineView, center.x, center.y);
             verifyElementHasFocus("input");
             tryVerify(function() { return getTextSelection() == "" });
         }

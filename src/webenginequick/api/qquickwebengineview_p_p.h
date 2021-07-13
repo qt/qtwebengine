@@ -80,10 +80,6 @@ class QWebEngineContextMenuRequest;
 class QWebEngineFindTextResult;
 class QWebEngineHistory;
 
-#if QT_CONFIG(webenginequick_testsupport)
-class QQuickWebEngineTestSupport;
-#endif
-
 class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineViewPrivate : public QtWebEngineCore::WebContentsAdapterClient
 {
 public:
@@ -113,7 +109,6 @@ public:
     QColor backgroundColor() const override;
     void loadStarted(QWebEngineLoadingInfo info) override;
     void loadCommitted() override;
-    void didFirstVisuallyNonEmptyPaint() override;
     void loadFinished(QWebEngineLoadingInfo info) override;
     void focusContainer() override;
     void unhandledKeyEvent(QKeyEvent *event) override;
@@ -168,9 +163,6 @@ public:
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;
     void printRequested() override;
     void findTextFinished(const QWebEngineFindTextResult &result) override;
-
-    void didCompositorFrameSwap();
-
     void updateAction(QQuickWebEngineView::WebAction) const;
     void adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
     void setProfile(QQuickWebEngineProfile *profile);
@@ -186,9 +178,6 @@ public:
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter;
     QScopedPointer<QWebEngineHistory> m_history;
     QScopedPointer<QQuickWebEngineSettings> m_settings;
-#if QT_CONFIG(webenginequick_testsupport)
-    QQuickWebEngineTestSupport *m_testSupport;
-#endif
     QQmlComponent *contextMenuExtraItems;
     QUrl m_url;
     QString m_html;
@@ -212,18 +201,11 @@ public:
     bool profileInitialized() const;
 
 private:
-    enum LoadVisuallyCommittedState {
-        NotCommitted,
-        DidFirstVisuallyNonEmptyPaint,
-        DidFirstCompositorFrameSwap
-    };
-
     QScopedPointer<QtWebEngineCore::UIDelegatesManager> m_uIDelegatesManager;
     QColor m_backgroundColor;
     qreal m_zoomFactor;
     bool m_profileInitialized;
     QWebEngineContextMenuRequest *m_contextMenuRequest;
-    LoadVisuallyCommittedState m_loadVisuallyCommittedState = NotCommitted;
     QScopedPointer<QQuickWebEngineScriptCollection> m_scriptCollection;
     QQuickWebEngineFaviconProvider *m_faviconProvider = nullptr;
 };

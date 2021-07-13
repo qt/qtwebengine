@@ -9,11 +9,8 @@ SUBDIRS += \
     qmltests \
     publicapi \
     qquickwebenginedefaultsurfaceformat \
+    qquickwebengineviewgraphics \
     qquickwebengineview \
     qtbug-70248
-
-qtConfig(webenginequick-testsupport) {
-    SUBDIRS += qquickwebengineviewgraphics
-}
 
 boot2qt: SUBDIRS -= inspectorserver qquickwebengineview qmltests
