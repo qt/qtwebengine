@@ -39,15 +39,17 @@
 
 #include "qquickwebenginefaviconprovider_p_p.h"
 
-#include "profile_adapter.h"
+#include "qquickwebengineprofile.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebengineview_p_p.h"
+
+#include "profile_adapter.h"
 #include "web_contents_adapter.h"
 
-#include <QtCore/QMimeDatabase>
-#include <QtCore/QTimer>
-#include <QtGui/QIcon>
-#include <QtGui/QPixmap>
+#include <QtCore/qmimedatabase.h>
+#include <QtCore/qtimer.h>
+#include <QtGui/qicon.h>
+#include <QtGui/qpixmap.h>
 
 QT_BEGIN_NAMESPACE
 

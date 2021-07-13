@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <QtQuick/QQuickImageProvider>
+#include <QtQuick/qquickimageprovider.h>
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 
 QT_BEGIN_NAMESPACE

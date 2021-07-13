@@ -37,67 +37,73 @@
 **
 ****************************************************************************/
 
-#include "qquickwebengineview_p.h"
-#include "qquickwebengineview_p_p.h"
-#include "authentication_dialog_controller.h"
-#include "profile_adapter.h"
-#include "file_picker_controller.h"
-#include "find_text_helper.h"
-#include "javascript_dialog_controller.h"
-#include "touch_selection_menu_controller.h"
-
 #include "qquickwebengineaction_p.h"
 #include "qquickwebengineaction_p_p.h"
 #include "qquickwebengineclientcertificateselection_p.h"
 #include "qquickwebenginedialogrequests_p.h"
 #include "qquickwebenginefaviconprovider_p_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
+#include "qquickwebengineprofile.h"
 #include "qquickwebengineprofile_p.h"
+#include "qquickwebenginescriptcollection.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginetouchhandleprovider_p_p.h"
-#include "qwebenginecertificateerror.h"
-#include "qwebenginefindtextresult.h"
-#include "qwebenginefullscreenrequest.h"
-#include "qwebengineloadinginfo.h"
-#include "qwebenginenavigationrequest.h"
-#include "qwebenginequotarequest.h"
-#include "qwebenginescriptcollection.h"
+#include "qquickwebengineview_p.h"
+#include "qquickwebengineview_p_p.h"
+
+#include "authentication_dialog_controller.h"
+#include "profile_adapter.h"
+#include "file_picker_controller.h"
+#include "find_text_helper.h"
+#include "javascript_dialog_controller.h"
+#include "render_widget_host_view_qt_delegate_quick.h"
+#include "render_widget_host_view_qt_delegate_quickwindow.h"
+#include "touch_selection_menu_controller.h"
+#include "ui_delegates_manager.h"
+#include "web_contents_adapter.h"
+
+#include <QtWebEngineCore/qwebenginecertificateerror.h>
+#include <QtWebEngineCore/qwebenginefindtextresult.h>
+#include <QtWebEngineCore/qwebenginefullscreenrequest.h>
+#include <QtWebEngineCore/qwebengineloadinginfo.h>
+#include <QtWebEngineCore/qwebenginenavigationrequest.h>
+#include <QtWebEngineCore/qwebenginequotarequest.h>
+#include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
+#include <QtWebEngineCore/qwebenginescriptcollection.h>
 #include <QtWebEngineCore/private/qwebenginecontextmenurequest_p.h>
 #include <QtWebEngineCore/private/qwebenginehistory_p.h>
 #include <QtWebEngineCore/private/qwebenginenewwindowrequest_p.h>
 #include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
-#include "qwebengineregisterprotocolhandlerrequest.h"
+
+#include <QtCore/qloggingcategory.h>
+#include <QtCore/qmimedata.h>
+#include <QtCore/qurl.h>
+#include <QtCore/qtimer.h>
+#include <QtGui/qclipboard.h>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/qpa/qplatformintegration.h>
+#include <QtQml/qqmlcomponent.h>
+#include <QtQml/qqmlcontext.h>
+#include <QtQml/qqmlengine.h>
+#include <QtQml/qqmlproperty.h>
+
+#if QT_CONFIG(webengine_printing_and_pdf)
+#include <QtCore/qmargins.h>
+#include <QtGui/qpagelayout.h>
+#include <QtGui/qpageranges.h>
+#include <QtGui/qpagesize.h>
+#endif
+
+#if QT_CONFIG(webengine_webchannel)
+#include <QtWebChannel/qqmlwebchannel.h>
+#endif
+
 #if QT_CONFIG(webenginequick_testsupport)
 #include <QtWebEngineTestSupport/private/qquickwebenginetestsupport_p.h>
 #endif
 
-#include "render_widget_host_view_qt_delegate_quick.h"
-#include "render_widget_host_view_qt_delegate_quickwindow.h"
-#include "ui_delegates_manager.h"
-#include "web_contents_adapter.h"
-#include "web_engine_settings.h"
 
-#include <QClipboard>
-#include <QGuiApplication>
-#include <QLoggingCategory>
-#include <QMarginsF>
-#include <QMimeData>
-#include <QPageLayout>
-#include <QPageRanges>
-#include <QPageSize>
-#include <QQmlComponent>
-#include <QQmlContext>
-#include <QQmlEngine>
-#include <QQmlProperty>
-#if QT_CONFIG(webengine_webchannel)
-#include <QQmlWebChannel>
-#endif
-#include <QQuickWebEngineProfile>
-#include <QScreen>
-#include <QUrl>
-#include <QTimer>
-#include <QtGui/private/qguiapplication_p.h>
-#include <QtGui/qpa/qplatformintegration.h>
 QT_BEGIN_NAMESPACE
 using namespace QtWebEngineCore;
 

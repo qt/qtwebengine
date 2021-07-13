@@ -52,19 +52,20 @@
 //
 
 #include "profile_adapter_client.h"
-#include "profile_adapter.h"
 #include "qquickwebengineprofile.h"
 
-#include <QExplicitlySharedDataPointer>
-#include <QMap>
-#include <QPointer>
-#include <QSharedPointer>
+#include <QtCore/qmap.h>
+#include <QtCore/qpointer.h>
+#include <QtCore/qsharedpointer.h>
+
+namespace QtWebEngineCore {
+class ProfileAdapter;
+}
 
 QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineDownloadRequest;
 class QQuickWebEngineSettings;
-class QQuickWebEngineViewPrivate;
 class QQuickWebEngineScriptCollection;
 
 class QQuickWebEngineProfilePrivate : public QtWebEngineCore::ProfileAdapterClient {

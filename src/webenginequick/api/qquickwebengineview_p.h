@@ -53,10 +53,9 @@
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
-#include <QQuickItem>
 #include <QtGui/qcolor.h>
 #include <QtQml/qqmlregistration.h>
-#include "qquickwebengineprofile.h"
+#include <QtQuick/qquickitem.h>
 
 namespace QtWebEngineCore {
 class RenderWidgetHostViewQtDelegateQuick;
@@ -73,7 +72,9 @@ class QQuickWebEngineColorDialogRequest;
 class QQuickWebEngineFileDialogRequest;
 class QQuickWebEngineJavaScriptDialogRequest;
 class QQuickWebEngineNewViewRequest;
+class QQuickWebEngineProfile;
 class QQuickWebEngineSettings;
+class QQuickWebEngineTestSupport;
 class QQuickWebEngineTooltipRequest;
 class QQuickWebEngineViewPrivate;
 class QWebEngineCertificateError;
@@ -87,10 +88,6 @@ class QWebEngineNewWindowRequest;
 class QWebEngineQuotaRequest;
 class QWebEngineRegisterProtocolHandlerRequest;
 class QQuickWebEngineScriptCollection;
-
-#if QT_CONFIG(webenginequick_testsupport)
-class QQuickWebEngineTestSupport;
-#endif
 
 class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT

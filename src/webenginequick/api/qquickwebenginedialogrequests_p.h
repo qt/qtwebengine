@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINDIALOGREQUESTS_H
-#define QQUICKWEBENGINDIALOGREQUESTS_H
+#ifndef QQUICKWEBENGINDIALOGREQUESTS_P_H
+#define QQUICKWEBENGINDIALOGREQUESTS_P_H
 
 //
 //  W A R N I N G
@@ -52,10 +52,10 @@
 //
 
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
-#include <QtCore/QUrl>
-#include <QtCore/QWeakPointer>
-#include <QtCore/QRect>
-#include <QtGui/QColor>
+#include <QtCore/qpoint.h>
+#include <QtCore/qsharedpointer.h>
+#include <QtCore/qurl.h>
+#include <QtGui/qcolor.h>
 #include <QtQml/qqmlregistration.h>
 
 namespace QtWebEngineCore {
@@ -280,4 +280,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QQUICKWEBENGINDIALOGREQUESTS_H
+#endif // QQUICKWEBENGINDIALOGREQUESTS_P_H

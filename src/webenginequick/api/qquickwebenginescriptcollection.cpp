@@ -40,7 +40,7 @@
 #include "qquickwebenginescriptcollection.h"
 #include "qwebenginescriptcollection.h"
 #include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
-#include <QtQml/QQmlInfo>
+#include <QtQml/qqmlinfo.h>
 #include <QtQml/private/qqmlengine_p.h>
 #include <QtQml/private/qv4scopedvalue_p.h>
 #include <QtQml/private/qv4arrayobject_p.h>

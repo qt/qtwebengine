@@ -51,9 +51,9 @@
 // We mean it.
 //
 
-#include <QObject>
 #include "qtwebenginequickglobal_p.h"
-#include <QVariant>
+#include <QtCore/qstring.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 

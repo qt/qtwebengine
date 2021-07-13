@@ -37,9 +37,9 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qcoreapplication.h>
+#include <QtQuick/qquickwindow.h>
 #include <QtWebEngineQuick/qtwebenginequickglobal.h>
-#include <QCoreApplication>
-#include <QQuickWindow>
 
 namespace QtWebEngineCore
 {

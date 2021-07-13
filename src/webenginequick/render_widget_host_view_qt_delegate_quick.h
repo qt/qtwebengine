@@ -43,8 +43,8 @@
 #include "compositor/compositor.h"
 #include "render_widget_host_view_qt_delegate.h"
 
-#include <QAccessibleObject>
-#include <QQuickItem>
+#include <QtGui/qaccessibleobject.h>
+#include <QtQuick/qquickitem.h>
 
 QT_BEGIN_NAMESPACE
 class QQuickWebEngineView;

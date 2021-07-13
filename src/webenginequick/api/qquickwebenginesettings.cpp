@@ -37,16 +37,12 @@
 **
 ****************************************************************************/
 
+#include "qquickwebengineprofile.h"
 #include "qquickwebenginesettings_p.h"
 
 #include "web_engine_settings.h"
 
-#include <QtWebEngineQuick/QQuickWebEngineProfile>
-#include <QtCore/QList>
-
 QT_BEGIN_NAMESPACE
-
-using QtWebEngineCore::WebEngineSettings;
 
 QQuickWebEngineSettings::QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings)
     : d_ptr(new QWebEngineSettings(parentSettings ? parentSettings->d_ptr.data() : nullptr))

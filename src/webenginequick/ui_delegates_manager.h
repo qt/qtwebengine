@@ -40,15 +40,12 @@
 #ifndef UI_DELEGATES_MANAGER_H
 #define UI_DELEGATES_MANAGER_H
 
-#include "api/qquickwebengineaction_p.h"
-#include "qglobal.h"
-#include "web_contents_adapter.h"
-#include "web_contents_adapter_client.h"
-
-#include <QCoreApplication>
-#include <QExplicitlySharedDataPointer>
-#include <QPoint>
-#include <QSharedPointer>
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qpoint.h>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qsharedpointer.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qstringlist.h>
 
 #define FOR_EACH_COMPONENT_TYPE(F, SEPARATOR) \
     F(Menu, menu) SEPARATOR \
@@ -72,17 +69,19 @@
     QQmlComponent *COMPONENT##Component
 
 QT_BEGIN_NAMESPACE
-class QQmlContext;
 class QQmlComponent;
-class QQuickItem;
-class QQuickWebEngineView;
+class QQmlContext;
 class QQmlEngine;
+class QQuickItem;
+class QQuickWebEngineAction;
+class QQuickWebEngineView;
 QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
 class AuthenticationDialogController;
-class JavaScriptDialogController;
+class ColorChooserController;
 class FilePickerController;
+class JavaScriptDialogController;
 class TouchSelectionMenuController;
 
 const char *defaultPropertyName(QObject *obj);
