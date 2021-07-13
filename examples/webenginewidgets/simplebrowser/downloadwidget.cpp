@@ -72,8 +72,8 @@ DownloadWidget::DownloadWidget(QWebEngineDownloadRequest *download, QWidget *par
             emit removeClicked(this);
     });
 
-    connect(m_download, &QWebEngineDownloadRequest::downloadProgress,
-            this, &DownloadWidget::updateWidget);
+    connect(m_download, &QWebEngineDownloadRequest::totalBytesChanged, this, &DownloadWidget::updateWidget);
+    connect(m_download, &QWebEngineDownloadRequest::receivedBytesChanged, this, &DownloadWidget::updateWidget);
 
     connect(m_download, &QWebEngineDownloadRequest::stateChanged,
             this, &DownloadWidget::updateWidget);

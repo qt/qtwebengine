@@ -205,7 +205,6 @@ void QWebEngineDownloadRequestPrivate::update(const ProfileAdapterClient::Downlo
           totalBytes = info.totalBytes;
           Q_EMIT q->totalBytesChanged();
       }
-      Q_EMIT q->downloadProgress(receivedBytes, totalBytes);
     }
 
     if (info.done)
@@ -349,19 +348,6 @@ quint32 QWebEngineDownloadRequest::id() const
     This signal is emitted whenever the download's \a state changes.
 
     \sa state(), DownloadState
-*/
-
-/*!
-    \fn void QWebEngineDownloadRequest::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
-
-    This signal is emitted to indicate the progress of the download request.
-
-    The \a bytesReceived parameter indicates the number of bytes received, while
-    \a bytesTotal indicates the total number of bytes expected to be downloaded.
-    If the size of the file to be downloaded is not known, \c bytesTotal will be
-    0.
-
-    \sa totalBytes(), receivedBytes()
 */
 
 /*!
