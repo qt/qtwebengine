@@ -8,7 +8,10 @@ find_package(Qt6 COMPONENTS Gui)
 get_target_property(qtWebEngineProcessName WebEngineCore QTWEBENGINEPROCESS_NAME)
 get_target_property(isFramework WebEngineCore FRAMEWORK)
 
-qt_internal_add_executable(${qtWebEngineProcessName} SOURCES main.cpp)
+qt_internal_add_executable(${qtWebEngineProcessName}
+    NO_INSTALL
+    SOURCES main.cpp
+)
 
 if(WIN32)
    target_sources(${qtWebEngineProcessName} PRIVATE support_win.cpp)
