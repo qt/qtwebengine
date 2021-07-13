@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "qquickwebenginenewviewrequest_p.h"
+#include "qquickwebenginenewwindowrequest_p.h"
 #include "qquickwebengineview_p.h"
 
 #include "web_contents_adapter_client.h"
@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \internal
 */
-QQuickWebEngineNewViewRequest::QQuickWebEngineNewViewRequest(DestinationType dest, const QRect &rect, const QUrl &url,
+QQuickWebEngineNewWindowRequest::QQuickWebEngineNewWindowRequest(DestinationType dest, const QRect &rect, const QUrl &url,
                                                              bool user,
                                                              QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter,
                                                              QObject *parent)
@@ -56,22 +56,22 @@ QQuickWebEngineNewViewRequest::QQuickWebEngineNewViewRequest(DestinationType des
 }
 
 /*!
-    \qmlmethod WebEngineNewViewRequest::openIn(WebEngineView view)
+    \qmlmethod WebEngineNewWindowRequest::openIn(WebEngineView view)
     Opens the requested page in the new web engine view \a view. State and history of the
     view and the page possibly loaded in it will be lost.
-    \sa WebEngineView::newViewRequested
+    \sa WebEngineView::newWindowRequested
 */
 
 /*!
     \internal
 */
-void QQuickWebEngineNewViewRequest::openIn(QQuickWebEngineView *view)
+void QQuickWebEngineNewWindowRequest::openIn(QQuickWebEngineView *view)
 {
     if (!view) {
-        qWarning("Trying to open a WebEngineNewViewRequest in an invalid WebEngineView.");
+        qWarning("Trying to open a WebEngineNewWindowRequest in an invalid WebEngineView.");
         return;
     }
-    view->acceptAsNewView(this);
+    view->acceptAsNewWindow(this);
 }
 
 QT_END_NAMESPACE

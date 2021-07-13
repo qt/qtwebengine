@@ -74,9 +74,9 @@ QtObject {
 
             // Handle the signal. Dynamically create the window and
             // use its WebEngineView as the destination of our request.
-            onNewViewRequested: function(request) {
+            onNewWindowRequested: function(request) {
                 var newWindow = windowComponent.createObject(windowParent);
-                newWindow.webView.acceptAsNewView(request);
+                newWindow.webView.acceptAsNewWindow(request);
             }
         }
     }

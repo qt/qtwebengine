@@ -42,7 +42,7 @@
 #include "qquickwebengineclientcertificateselection_p.h"
 #include "qquickwebenginedialogrequests_p.h"
 #include "qquickwebenginefaviconprovider_p_p.h"
-#include "qquickwebenginenewviewrequest_p.h"
+#include "qquickwebenginenewwindowrequest_p.h"
 #include "qquickwebengineprofile.h"
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginescriptcollection_p.h"
@@ -496,10 +496,10 @@ QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> ne
 {
     Q_Q(QQuickWebEngineView);
     Q_ASSERT(newWebContents);
-    QQuickWebEngineNewViewRequest request(toDestinationType(disposition), geometry,
+    QQuickWebEngineNewWindowRequest request(toDestinationType(disposition), geometry,
                                           targetUrl, userGesture, newWebContents);
 
-    Q_EMIT q->newViewRequested(&request);
+    Q_EMIT q->newWindowRequested(&request);
 
     if (request.d_ptr->isRequestHandled)
         return newWebContents;
@@ -758,7 +758,7 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
 {
     if (!webContents) {
         qWarning("Trying to open an empty request, it was either already used or was invalidated."
-            "\nYou must complete the request synchronously within the newViewRequested signal handler."
+            "\nYou must complete the request synchronously within the newWindowRequested signal handler."
             " If a view hasn't been adopted before returning, the request will be invalidated.");
         return;
     }
@@ -1622,13 +1622,13 @@ void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &va
     QQuickItem::itemChange(change, value);
 }
 
-void QQuickWebEngineView::acceptAsNewView(QWebEngineNewWindowRequest *request)
+void QQuickWebEngineView::acceptAsNewWindow(QWebEngineNewWindowRequest *request)
 {
     Q_D(QQuickWebEngineView);
     if (!request || (!request->d_ptr->adapter && !request->requestedUrl().isValid())
         || request->d_ptr->isRequestHandled) {
         qWarning("Trying to open an empty request, it was either already used or was invalidated."
-            "\nYou must complete the request synchronously within the newViewRequested signal handler."
+            "\nYou must complete the request synchronously within the newWindowRequested signal handler."
             " If a view hasn't been adopted before returning, the request will be invalidated.");
         return;
     }
@@ -1730,16 +1730,16 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
         break;
     case OpenLinkInNewWindow:
         if (d->m_contextMenuRequest->filteredLinkUrl().isValid()) {
-            QQuickWebEngineNewViewRequest request(QWebEngineNewWindowRequest::InNewWindow, QRect(),
+            QQuickWebEngineNewWindowRequest request(QWebEngineNewWindowRequest::InNewWindow, QRect(),
                                                   d->m_contextMenuRequest->filteredLinkUrl(), true, nullptr);
-            Q_EMIT newViewRequested(&request);
+            Q_EMIT newWindowRequested(&request);
         }
         break;
     case OpenLinkInNewTab:
         if (d->m_contextMenuRequest->filteredLinkUrl().isValid()) {
-            QQuickWebEngineNewViewRequest request(QWebEngineNewWindowRequest::InNewBackgroundTab, QRect(),
+            QQuickWebEngineNewWindowRequest request(QWebEngineNewWindowRequest::InNewBackgroundTab, QRect(),
                                                   d->m_contextMenuRequest->filteredLinkUrl(), true, nullptr);
-            Q_EMIT newViewRequested(&request);
+            Q_EMIT newWindowRequested(&request);
         }
         break;
     case CopyLinkToClipboard:

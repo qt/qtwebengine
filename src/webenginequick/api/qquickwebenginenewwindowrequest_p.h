@@ -59,11 +59,11 @@ QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineView;
 
-class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineNewViewRequest : public QWebEngineNewWindowRequest
+class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineNewWindowRequest : public QWebEngineNewWindowRequest
 {
     Q_OBJECT
 public:
-    QML_NAMED_ELEMENT(WebEngineNewViewRequest)
+    QML_NAMED_ELEMENT(WebEngineNewWindowRequest)
     QML_ADDED_IN_VERSION(1, 1)
     QML_EXTRA_VERSION(2, 0)
     QML_UNCREATABLE("")
@@ -71,7 +71,7 @@ public:
     Q_INVOKABLE void openIn(QQuickWebEngineView *);
 
 private:
-    QQuickWebEngineNewViewRequest(DestinationType, const QRect &, const QUrl &, bool,
+    QQuickWebEngineNewWindowRequest(DestinationType, const QRect &, const QUrl &, bool,
                                   QSharedPointer<QtWebEngineCore::WebContentsAdapter>,
                                   QObject * = nullptr);
 

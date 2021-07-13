@@ -74,10 +74,10 @@
     \section2 Interaction
 
     By default, links to different pages load within the same WebEngineView object, but web sites
-    may request them to be opened as a new tab, window, or dialog. The \l newViewRequested() signal
+    may request them to be opened as a new tab, window, or dialog. The \l newWindowRequested() signal
     is emitted when a request to load the page in a separate web engine view is issued. The
     NewViewDestination property describes how the new view should be opened. In addition, the
-    WebEngineNewViewRequest utility type can be used to load web pages in separate web engine views.
+    WebEngineNewWindowRequest utility type can be used to load web pages in separate web engine views.
 
     The \l findText() method can be used to search for a string on a web page, using the options
     described by \l FindFlags.
@@ -570,8 +570,8 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::newViewRequested(WebEngineNewViewRequest request)
-    \since QtWebEngine 1.1
+    \qmlsignal WebEngineView::newWindowRequested(WebEngineNewWindowRequest request)
+    \since QtWebEngine 2.0
 
     This signal is emitted when \a request is issued to load a page in a separate
     web engine view. This can either be because the current page requested it explicitly
@@ -579,23 +579,23 @@
     while holding Shift, Ctrl, or a built-in combination that triggers the page to open
     in a new window.
 
-    The signal is handled by calling acceptAsNewView() on the destination view.
+    The signal is handled by calling acceptAsNewWindow() on the destination view.
     If this signal is not handled, the requested load will fail.
 
     An example implementation:
 
     \snippet qtwebengine_webengineview_newviewrequested.qml 0
 
-    \sa WebEngineNewViewRequest, {WebEngine Quick Nano Browser}
+    \sa WebEngineNewWindowRequest, {WebEngine Quick Nano Browser}
 */
 
 /*!
-    \qmlmethod void WebEngineView::acceptAsNewView(QWebEngineNewWindowRequest *request)
+    \qmlmethod void WebEngineView::acceptAsNewWindow(QWebEngineNewWindowRequest *request)
     \since QtWebEngine 2.0
 
-    Handle the newViewRequested signal by opening the \a request in this view.
+    Handle the newWindowRequested signal by opening the \a request in this view.
 
-    \sa newViewRequested
+    \sa newWindowRequested
 */
 
 /*!
@@ -765,10 +765,10 @@
             Open the current link in the current window. (Added in Qt 5.6)
     \value  WebEngineView.OpenLinkInNewWindow
             Open the current link in a new window. Requires a handler for the
-            \l newViewRequested() signal. (Added in Qt 5.6)
+            \l newWindowRequested() signal. (Added in Qt 5.6)
     \value  WebEngineView.OpenLinkInNewTab
             Open the current link in a new tab. Requires a handler for the
-            \l newViewRequested() signal. (Added in Qt 5.6)
+            \l newWindowRequested() signal. (Added in Qt 5.6)
     \value  WebEngineView.CopyLinkToClipboard
             Copy the current link to the clipboard. (Added in Qt 5.6)
     \value  WebEngineView.CopyImageToClipboard
@@ -804,7 +804,7 @@
             Save the current web page to disk. (Added in Qt 5.7)
     \value  WebEngineView.ViewSource
             Show the source of the current page in a new tab. Requires a handler for the
-            \l newViewRequested() signal. (Added in Qt 5.8)
+            \l newWindowRequested() signal. (Added in Qt 5.8)
 
     \value  WebEngineView.ToggleBold
             Toggles boldness for the selection or at the cursor position.

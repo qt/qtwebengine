@@ -1,4 +1,4 @@
-[NewViewRequest::test_loadNewViewRequest]
+[NewWindowRequest::test_loadNewWindowRequest]
 macos
 
 [WebEngineViewContextMenu::test_contextMenuLinkAndSelectedText]

@@ -362,7 +362,7 @@ ApplicationWindow {
                         }
                     }
 
-                    onNewViewRequested: {
+                    onNewWindowRequested: {
                         if (!request.userInitiated)
                             print("Warning: Blocked a popup window.")
                         else if (request.destination == WebEngineView.NewViewInTab) {

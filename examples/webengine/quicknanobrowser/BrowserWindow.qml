@@ -571,21 +571,21 @@ ApplicationWindow {
                     sslDialog.enqueue(error);
                 }
 
-                onNewViewRequested: function(request) {
+                onNewWindowRequested: function(request) {
                     if (!request.userInitiated)
                         console.warn("Blocked a popup window.");
-                    else if (request.destination === WebEngineNewViewRequest.InNewTab) {
+                    else if (request.destination === WebEngineNewWindowRequest.InNewTab) {
                         var tab = tabBar.createTab(currentWebView.profile, true, request.requestedUrl);
-                        tab.acceptAsNewView(request);
-                    } else if (request.destination === WebEngineNewViewRequest.InNewBackgroundTab) {
+                        tab.acceptAsNewWindow(request);
+                    } else if (request.destination === WebEngineNewWindowRequest.InNewBackgroundTab) {
                         var backgroundTab = tabBar.createTab(currentWebView.profile, false);
-                        backgroundTab.acceptAsNewView(request);
-                    } else if (request.destination === WebEngineNewViewRequest.InNewDialog) {
+                        backgroundTab.acceptAsNewWindow(request);
+                    } else if (request.destination === WebEngineNewWindowRequest.InNewDialog) {
                         var dialog = applicationRoot.createDialog(currentWebView.profile);
-                        dialog.currentWebView.acceptAsNewView(request);
+                        dialog.currentWebView.acceptAsNewWindow(request);
                     } else {
                         var window = applicationRoot.createWindow(currentWebView.profile);
-                        window.currentWebView.acceptAsNewView(request);
+                        window.currentWebView.acceptAsNewWindow(request);
                     }
                 }
 
@@ -672,7 +672,7 @@ ApplicationWindow {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        onNewViewRequested: function(request) {
+        onNewWindowRequested: function(request) {
             var tab = tabBar.createTab(currentWebView.profile);
             request.openIn(tab);
         }
