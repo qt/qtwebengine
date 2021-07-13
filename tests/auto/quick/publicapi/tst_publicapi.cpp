@@ -261,7 +261,6 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineDownloadRequest.downloadDirectoryChanged() --> void"
     << "QWebEngineDownloadRequest.downloadFileName --> QString"
     << "QWebEngineDownloadRequest.downloadFileNameChanged() --> void"
-    << "QWebEngineDownloadRequest.downloadProgress(qlonglong,qlonglong) --> void" // FIXME
     << "QQuickWebEngineDownloadRequest.view --> QQuickWebEngineView*"
     << "QQuickWebEngineFileDialogRequest.FileModeOpen --> FileMode"
     << "QQuickWebEngineFileDialogRequest.FileModeOpenMultiple --> FileMode"

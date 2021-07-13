@@ -150,8 +150,6 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void stateChanged(QWebEngineDownloadRequest::DownloadState state);
-    //TODO: fix it for qml
-    void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void savePageFormatChanged();
     void receivedBytesChanged();
     void totalBytesChanged();

@@ -334,7 +334,7 @@
     \printuntil /^\}/
 
     The \l QWebEngineDownloadRequest object will periodically emit the \l
-    {QWebEngineDownloadRequest::}{downloadProgress} signal to notify potential
+    {QWebEngineDownloadRequest::}{receivedBytesChanged} signal to notify potential
     observers of the download progress and the \l
     {QWebEngineDownloadRequest::}{stateChanged} signal when the download is
     finished or when an error occurs. See \c downloadmanagerwidget.cpp for an
