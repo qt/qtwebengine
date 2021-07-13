@@ -32,11 +32,16 @@
 #include <httpsserver.h>
 #endif
 
-#include <QtCore/QScopedPointer>
-#include <QTemporaryDir>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qtemporarydir.h>
+#include <QtGui/private/qinputmethod_p.h>
+#include <QtQml/qqmlengine.h>
+#include <QtQuick/qquickitem.h>
+#include <QtQuick/qquickwindow.h>
 #include <QtQuickTest/quicktest.h>
-#include <QtWebEngineQuick/QQuickWebEngineProfile>
-#include <QtQml/QQmlEngine>
+#include <QtTest/qtest.h>
+#include <QtWebEngineQuick/qquickwebengineprofile.h>
+#include <QtWebEngineQuick/qtwebenginequickglobal.h>
 #include <qt_webengine_quicktest.h>
 
 #if defined(Q_OS_LINUX) && defined(QT_DEBUG)
@@ -142,6 +147,99 @@ private:
     QTemporaryDir tempDir;
 };
 
+class TestInputContext : public QPlatformInputContext {
+    Q_OBJECT
+
+public:
+    TestInputContext() = default;
+    ~TestInputContext() { release(); }
+
+    Q_INVOKABLE void create()
+    {
+        QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+        inputMethodPrivate->testContext = this;
+    }
+
+    Q_INVOKABLE void release()
+    {
+        QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+        inputMethodPrivate->testContext = nullptr;
+    }
+
+    void showInputPanel() override { m_visible = true; }
+    void hideInputPanel() override { m_visible = false; }
+    bool isInputPanelVisible() const override { return m_visible; }
+
+private:
+    bool m_visible = false;
+};
+
+QT_BEGIN_NAMESPACE
+namespace QTest {
+    int Q_TESTLIB_EXPORT defaultMouseDelay();
+}
+QT_END_NAMESPACE
+
+class TestInputEvent : public QObject {
+    Q_OBJECT
+
+public:
+    TestInputEvent() = default;
+
+    Q_INVOKABLE bool mouseMultiClick(QObject *item, qreal x, qreal y, int clickCount)
+    {
+        QTEST_ASSERT(item);
+
+        QWindow *view = eventWindow(item);
+        if (!view)
+            return false;
+
+        for (int i = 0; i < clickCount; ++i) {
+            mouseEvent(QMouseEvent::MouseButtonPress, view, item, QPointF(x, y));
+            mouseEvent(QMouseEvent::MouseButtonRelease, view, item, QPointF(x, y));
+        }
+        QTest::lastMouseTimestamp += QTest::mouseDoubleClickInterval;
+
+        return true;
+    }
+
+private:
+    QWindow *eventWindow(QObject *item = nullptr)
+    {
+        QWindow *window = qobject_cast<QWindow *>(item);
+        if (window)
+            return window;
+
+        QQuickItem *quickItem = qobject_cast<QQuickItem *>(item);
+        if (quickItem)
+            return quickItem->window();
+
+        QQuickItem *testParentItem = qobject_cast<QQuickItem *>(parent());
+        if (testParentItem)
+            return testParentItem->window();
+
+        return nullptr;
+    }
+
+    void mouseEvent(QEvent::Type type, QWindow *window, QObject *item, const QPointF &_pos)
+    {
+        QTest::qWait(QTest::defaultMouseDelay());
+        QTest::lastMouseTimestamp += QTest::defaultMouseDelay();
+
+        QPoint pos;
+        QQuickItem *sgitem = qobject_cast<QQuickItem *>(item);
+        if (sgitem)
+            pos = sgitem->mapToScene(_pos).toPoint();
+
+        QMouseEvent me(type, pos, window->mapFromGlobal(pos), Qt::LeftButton, Qt::LeftButton, {});
+        me.setTimestamp(++QTest::lastMouseTimestamp);
+
+        QSpontaneKeyEvent::setSpontaneous(&me);
+        if (!qApp->notify(window, &me))
+            QTest::qWarn("Mouse click event not accepted by receiving window");
+    }
+};
+
 int main(int argc, char **argv)
 {
 #if defined(Q_OS_LINUX) && defined(QT_DEBUG)
@@ -171,6 +269,8 @@ int main(int argc, char **argv)
     QtWebEngineQuick::initialize();
     QQuickWebEngineProfile::defaultProfile()->setOffTheRecord(true);
     qmlRegisterType<TempDir>("Test.util", 1, 0, "TempDir");
+    qmlRegisterType<TestInputContext>("Test.util", 1, 0, "TestInputContext");
+    qmlRegisterType<TestInputEvent>("Test.util", 1, 0, "TestInputEvent");
 
     QTEST_SET_MAIN_SOURCE_PATH
     qmlRegisterSingletonType<HttpServer>("Test.Shared", 1, 0, "HttpServer", [&] (QQmlEngine *, QJSEngine *) {

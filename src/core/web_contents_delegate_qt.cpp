@@ -659,15 +659,6 @@ void WebContentsDelegateQt::OnVisibilityChanged(content::Visibility visibility)
         web_cache::WebCacheManager::GetInstance()->ObserveActivity(web_contents()->GetMainFrame()->GetProcess()->GetID());
 }
 
-void WebContentsDelegateQt::DidFirstVisuallyNonEmptyPaint()
-{
-    RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt*>(web_contents()->GetRenderWidgetHostView());
-    if (!rwhv)
-        return;
-
-    rwhv->OnDidFirstVisuallyNonEmptyPaint();
-}
-
 void WebContentsDelegateQt::ActivateContents(content::WebContents* contents)
 {
     QWebEngineSettings *settings = m_viewClient->webEngineSettings();

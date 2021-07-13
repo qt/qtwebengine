@@ -188,9 +188,6 @@ public:
     void processMotionEvent(const ui::MotionEvent &motionEvent);
     void resetInputManagerState() { m_imState = 0; }
 
-    // Called from WebContentsDelegateQt.
-    void OnDidFirstVisuallyNonEmptyPaint();
-
     // Called from WebContentsAdapter.
     gfx::SizeF lastContentsSize() const { return m_lastContentsSize; }
     gfx::Vector2dF lastScrollOffset() const { return m_lastScrollOffset; }

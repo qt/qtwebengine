@@ -14,17 +14,24 @@ QML_TESTS = \
     $$PWD/data/tst_contextMenu.qml \
     $$PWD/data/tst_desktopBehaviorLoadHtml.qml \
     $$PWD/data/tst_download.qml \
+    $$PWD/data/tst_favicon.qml \
+    $$PWD/data/tst_faviconDatabase.qml \
     $$PWD/data/tst_findText.qml \
     $$PWD/data/tst_focusOnNavigation.qml \
     $$PWD/data/tst_fullScreenRequest.qml \
     $$PWD/data/tst_geopermission.qml \
     $$PWD/data/tst_getUserMedia.qml \
+    $$PWD/data/tst_inputMethod.qml \
+    $$PWD/data/tst_javaScriptDialogs.qml
     $$PWD/data/tst_keyboardEvents.qml \
     $$PWD/data/tst_keyboardModifierMapping.qml \
+    $$PWD/data/tst_linkHovered.qml \
+    $$PWD/data/tst_loadFail.qml \
     $$PWD/data/tst_loadHtml.qml \
     $$PWD/data/tst_loadProgress.qml \
     $$PWD/data/tst_loadRecursionCrash.qml \
     $$PWD/data/tst_loadUrl.qml \
+    $$PWD/data/tst_mouseClick.qml \
     $$PWD/data/tst_mouseMove.qml \
     $$PWD/data/tst_navigationHistory.qml \
     $$PWD/data/tst_navigationRequested.qml \
@@ -49,35 +56,6 @@ qtConfig(ssl) {
     QML_TESTS += $$PWD/data/tst_certificateError.qml
 } else {
     include(../../shared/http.pri)
-}
-
-qtConfig(webenginequick-testsupport) {
-    QML_TESTS += \
-        $$PWD/data/tst_favicon.qml \
-        $$PWD/data/tst_faviconDownload.qml \
-        $$PWD/data/tst_inputMethod.qml \
-        $$PWD/data/tst_javaScriptDialogs.qml \
-        $$PWD/data/tst_linkHovered.qml \
-        $$PWD/data/tst_loadFail.qml \
-        $$PWD/data/tst_mouseClick.qml \
-        $$PWD/data/tst_viewSoure.qml
-} else {
-    PLUGIN_EXTENSION = .so
-    PLUGIN_PREFIX = lib
-    macos: PLUGIN_PREFIX = .dylib
-    win32 {
-        PLUGIN_EXTENSION = .dll
-        PLUGIN_PREFIX =
-    }
-
-    TESTSUPPORT_MODULE = $$shell_path($$[QT_INSTALL_QML]/QtWebEngine/testsupport/$${PLUGIN_PREFIX}qtwebenginetestsupportplugin$${PLUGIN_EXTENSION})
-    BUILD_DIR = $$shell_path($$clean_path($$OUT_PWD/../../../..))
-    SRC_DIR = $$shell_path($$clean_path($$PWD/../../../..))
-
-    warning("QML Test Support API is disabled. This means some QML tests that use Test Support API will fail.")
-    warning("Use the following command to build Test Support module and rebuild WebEngineView API:")
-    warning("cd $$BUILD_DIR && qmake -r $$shell_path($$SRC_DIR/qtwebengine.pro -- --feature-testsupport=yes) && make -C $$shell_path($$BUILD_DIR/src/webengine) clean && make")
-    warning("After performing the command above make sure QML module \"QtWebEngine.testsupport\" is deployed at $$TESTSUPPORT_MODULE")
 }
 
 qtHaveModule(quickcontrols) {

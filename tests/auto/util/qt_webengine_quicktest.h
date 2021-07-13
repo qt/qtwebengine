@@ -37,9 +37,6 @@
 #include <QtGui/QGuiApplication>
 #endif
 
-#include "qopenglcontext.h"
-#include <QtWebEngineQuick/qtwebenginequickglobal.h>
-
 QT_BEGIN_NAMESPACE
 
 #ifdef QT_WIDGETS_LIB

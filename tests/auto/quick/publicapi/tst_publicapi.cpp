@@ -101,8 +101,6 @@ static const QStringList hardcodedTypes = QStringList()
     << "QQmlListProperty<QQuickWebEngineClientCertificateOption>"
     << "const QQuickWebEngineClientCertificateOption*"
     << "QQmlWebChannel*"
-    // Ignore the testSupport types without making a fuss.
-    << "QQuickWebEngineTestSupport*"
     << "const QQuickWebEngineContextMenuData*"
     << "QWebEngineCookieStore*"
     << "Qt::LayoutDirection"
@@ -749,10 +747,6 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.setActiveFocusOnPress(bool) --> void"
     << "QQuickWebEngineView.settings --> QQuickWebEngineSettings*"
     << "QQuickWebEngineView.stop() --> void"
-#if QT_CONFIG(webenginequick_testsupport)
-    << "QQuickWebEngineView.testSupport --> QQuickWebEngineTestSupport*"
-    << "QQuickWebEngineView.testSupportChanged() --> void"
-#endif
     << "QQuickWebEngineView.title --> QString"
     << "QQuickWebEngineView.titleChanged() --> void"
     << "QQuickWebEngineView.tooltipRequested(QQuickWebEngineTooltipRequest*) --> void"

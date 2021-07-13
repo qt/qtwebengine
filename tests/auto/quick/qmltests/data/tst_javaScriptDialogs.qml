@@ -26,29 +26,21 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtTest 1.0
-import QtWebEngine 1.2
-import QtWebEngine.testsupport 1.0
-import "../../qmltests/data" 1.0
-import "../mock-delegates/TestParams" 1.0
+import QtQuick
+import QtTest
+import QtWebEngine
+import "../../qmltests/data"
+import "../mock-delegates/TestParams"
 
 TestWebEngineView {
     id: webEngineView
     anchors.fill: parent
 
-    testSupport: WebEngineTestSupport {
-        property bool windowCloseRejectedSignalEmitted: false
+    property bool windowCloseRejectedCalled: false
 
-        function waitForWindowCloseRejected() {
-            return _waitFor(function () {
-                    return testSupport.windowCloseRejectedSignalEmitted;
-                });
-        }
-
-        onWindowCloseRejected: {
-            windowCloseRejectedSignalEmitted = true;
-        }
+    // Called by QQuickWebEngineViewPrivate::windowCloseRejected()
+    function windowCloseRejected() {
+        windowCloseRejectedCalled = true;
     }
 
     TestCase {
@@ -124,12 +116,12 @@ TestWebEngineView {
         function test_rejectClose() {
             webEngineView.url = Qt.resolvedUrl("confirmclose.html");
             verify(webEngineView.waitForLoadSucceeded());
-            webEngineView.testSupport.windowCloseRejectedSignalEmitted = false;
+            webEngineView.windowCloseRejectedCalled = false;
             JSDialogParams.shouldAcceptDialog = false;
 
             simulateUserGesture()
             webEngineView.triggerWebAction(WebEngineView.RequestClose);
-            verify(webEngineView.testSupport.waitForWindowCloseRejected());
+            tryVerify(function() { return webEngineView.windowCloseRejectedCalled; });
 
             // Navigate away from page with onbeforeunload handler,
             // otherwise it would trigger an extra dialog request when

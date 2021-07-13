@@ -195,7 +195,6 @@ public:
     virtual QColor backgroundColor() const = 0;
     virtual void loadStarted(QWebEngineLoadingInfo info) = 0;
     virtual void loadCommitted() = 0;
-    virtual void didFirstVisuallyNonEmptyPaint() = 0;
     virtual void loadFinished(QWebEngineLoadingInfo info) = 0;
     virtual void focusContainer() = 0;
     virtual void unhandledKeyEvent(QKeyEvent *event) = 0;

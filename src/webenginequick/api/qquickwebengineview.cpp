@@ -99,11 +99,6 @@
 #include <QtWebChannel/qqmlwebchannel.h>
 #endif
 
-#if QT_CONFIG(webenginequick_testsupport)
-#include <QtWebEngineTestSupport/private/qquickwebenginetestsupport_p.h>
-#endif
-
-
 QT_BEGIN_NAMESPACE
 using namespace QtWebEngineCore;
 
@@ -138,9 +133,6 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , m_history(new QWebEngineHistory(new QWebEngineHistoryPrivate(this, [] (const QUrl &url) {
         return QQuickWebEngineFaviconProvider::faviconProviderUrl(url);
     })))
-#if QT_CONFIG(webenginequick_testsupport)
-    , m_testSupport(nullptr)
-#endif
     , contextMenuExtraItems(nullptr)
     , loadProgress(0)
     , m_fullscreenMode(false)
@@ -453,32 +445,6 @@ void QQuickWebEngineViewPrivate::loadCommitted()
     m_history->reset();
 }
 
-void QQuickWebEngineViewPrivate::didFirstVisuallyNonEmptyPaint()
-{
-#if QT_CONFIG(webenginequick_testsupport)
-    if (m_loadVisuallyCommittedState == NotCommitted) {
-        m_loadVisuallyCommittedState = DidFirstVisuallyNonEmptyPaint;
-    } else if (m_loadVisuallyCommittedState == DidFirstCompositorFrameSwap) {
-        if (m_testSupport)
-            Q_EMIT m_testSupport->loadVisuallyCommitted();
-        m_loadVisuallyCommittedState = NotCommitted;
-    }
-#endif
-}
-
-void QQuickWebEngineViewPrivate::didCompositorFrameSwap()
-{
-#if QT_CONFIG(webenginequick_testsupport)
-    if (m_loadVisuallyCommittedState == NotCommitted) {
-        m_loadVisuallyCommittedState = DidFirstCompositorFrameSwap;
-    } else if (m_loadVisuallyCommittedState == DidFirstVisuallyNonEmptyPaint) {
-        if (m_testSupport)
-            Q_EMIT m_testSupport->loadVisuallyCommitted();
-        m_loadVisuallyCommittedState = NotCommitted;
-    }
-#endif
-}
-
 void QQuickWebEngineViewPrivate::loadFinished(QWebEngineLoadingInfo info)
 {
     Q_Q(QQuickWebEngineView);
@@ -552,10 +518,10 @@ void QQuickWebEngineViewPrivate::close()
 
 void QQuickWebEngineViewPrivate::windowCloseRejected()
 {
-#if QT_CONFIG(webenginequick_testsupport)
-    if (m_testSupport)
-        Q_EMIT m_testSupport->windowCloseRejected();
-#endif
+    Q_Q(QQuickWebEngineView);
+
+    if (Q_UNLIKELY(q->metaObject()->indexOfMethod("windowCloseRejected()") != -1))
+        QMetaObject::invokeMethod(q, "windowCloseRejected");
 }
 
 void QQuickWebEngineViewPrivate::requestFullScreenMode(const QUrl &origin, bool fullscreen)
@@ -1167,21 +1133,6 @@ void QQuickWebEngineViewPrivate::updateAdapter()
             adapter->loadDefault();
     }
 }
-
-#if QT_CONFIG(webenginequick_testsupport)
-QQuickWebEngineTestSupport *QQuickWebEngineView::testSupport() const
-{
-    Q_D(const QQuickWebEngineView);
-    return d->m_testSupport;
-}
-
-void QQuickWebEngineView::setTestSupport(QQuickWebEngineTestSupport *testSupport)
-{
-    Q_D(QQuickWebEngineView);
-    d->m_testSupport = testSupport;
-    Q_EMIT testSupportChanged();
-}
-#endif
 
 bool QQuickWebEngineView::activeFocusOnPress() const
 {

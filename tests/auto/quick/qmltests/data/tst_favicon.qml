@@ -52,35 +52,6 @@ TestWebEngineView {
         return url.toString().substring(16)
     }
 
-    function getFaviconPixel(faviconImage) {
-        var grabImage = Qt.createQmlObject("
-                import QtQuick\n
-                Image { }", testCase)
-        var faviconCanvas = Qt.createQmlObject("
-                import QtQuick\n
-                Canvas { }", testCase)
-
-        testCase.tryVerify(function() { return faviconImage.status == Image.Ready });
-        faviconImage.grabToImage(function(result) {
-                grabImage.source = result.url
-            });
-        testCase.tryVerify(function() { return grabImage.status == Image.Ready });
-
-        faviconCanvas.width = faviconImage.width;
-        faviconCanvas.height = faviconImage.height;
-        var ctx = faviconCanvas.getContext("2d");
-        ctx.drawImage(grabImage, 0, 0, grabImage.width, grabImage.height);
-        var imageData = ctx.getImageData(Math.round(faviconCanvas.width/2),
-                                         Math.round(faviconCanvas.height/2),
-                                         faviconCanvas.width,
-                                         faviconCanvas.height);
-
-        grabImage.destroy();
-        faviconCanvas.destroy();
-
-        return imageData.data;
-    }
-
     SignalSpy {
         id: iconChangedSpy
         target: webEngineView
@@ -418,7 +389,7 @@ TestWebEngineView {
 
             var faviconImage = Qt.createQmlObject("
                     import QtQuick\n
-                    Image { width: 16; height: 16; sourceSize: Qt.size(width, height); }", testCase)
+                    Image { width: 16; height: 16; sourceSize: Qt.size(width, height); objectName: 'image' }", testCase)
             faviconImage.source = Qt.binding(function() { return webEngineView.icon; });
 
             var colors = [
@@ -437,7 +408,7 @@ TestWebEngineView {
             verify(webEngineView.waitForLoadSucceeded());
             tryCompare(iconChangedSpy, "count", 1);
 
-            pixel = getFaviconPixel(faviconImage);
+            pixel = getItemPixel(faviconImage);
             compare(pixel[0], 0);
             compare(pixel[1], 0);
             compare(pixel[2], 0);
@@ -448,7 +419,7 @@ TestWebEngineView {
                 tryCompare(faviconImage, "source", "image://favicon/data:image/png;base64," + colors[i]["url"]);
                 compare(iconChangedSpy.count, 1);
 
-                pixel = getFaviconPixel(faviconImage);
+                pixel = getItemPixel(faviconImage);
                 compare(pixel[0], colors[i]["r"]);
                 compare(pixel[1], colors[i]["g"]);
                 compare(pixel[2], colors[i]["b"]);

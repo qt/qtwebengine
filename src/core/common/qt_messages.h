@@ -22,12 +22,6 @@ IPC_MESSAGE_ROUTED2(QtWebEngineMsg_RequestStorageAccessAsyncResponse,
                     bool /* allowed */)
 
 //-----------------------------------------------------------------------------
-// WebContents messages
-// These are messages sent from the renderer back to the browser process.
-
-IPC_MESSAGE_ROUTED0(RenderViewObserverHostQt_DidFirstVisuallyNonEmptyLayout)
-
-//-----------------------------------------------------------------------------
 // Misc messages
 // These are messages sent from the renderer to the browser process.
 
