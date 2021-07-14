@@ -2225,18 +2225,16 @@ QSizeF QWebEnginePage::contentsSize() const
     while holding Shift, Ctrl, or a built-in combination that triggers the page to open
     in a new window.
 
-    The signal is handled by calling acceptAsNewWindow() on the destination page.
+    The signal is handled by calling openIn() with the new page on the request.
     If this signal is not handled, the requested load will fail.
 
     \note This signal is not emitted if \l createWindow() handled the request first.
 
-    \sa createWindow()
+    \sa createWindow(), QWebEngineNewWindowRequest::openIn()
 */
 
 /*!
-    Handles the newWindowRequested() signal by opening the \a request in this page.
-    \since 6.2
-    \sa newWindowRequested()
+    \internal
 */
 void QWebEnginePage::acceptAsNewWindow(QWebEngineNewWindowRequest &request)
 {

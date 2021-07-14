@@ -564,7 +564,7 @@ private Q_SLOTS:
         TestPage *page = new TestPage(this);
         createdWindows.append(page);
         emit windowCreated();
-        page->acceptAsNewWindow(request);
+        request.openIn(page);
     }
 
     void slotGeometryChangeRequested(const QRect &geom)
@@ -3433,8 +3433,7 @@ void tst_QWebEnginePage::openLinkInDifferentProfile()
     QWebEngineProfile profile1, profile2;
     QWebEnginePage page1(&profile1), page2(&profile2);
     connect(&page1, &QWebEnginePage::newWindowRequested, [&](QWebEngineNewWindowRequest &request) {
-        if (targetPage)
-            targetPage->acceptAsNewWindow(request);
+        request.openIn(targetPage);
     });
     QWebEngineView view;
     view.resize(500, 500);

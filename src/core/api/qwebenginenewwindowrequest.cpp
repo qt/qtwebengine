@@ -40,6 +40,8 @@
 #include "qwebenginenewwindowrequest.h"
 #include "qwebenginenewwindowrequest_p.h"
 
+#include "qwebenginepage.h"
+
 #include "web_contents_adapter.h"
 
 QT_BEGIN_NAMESPACE
@@ -170,6 +172,20 @@ QRect QWebEngineNewWindowRequest::requestedGeometry() const
 bool QWebEngineNewWindowRequest::isUserInitiated() const
 {
     return d_ptr->isUserInitiated;
+}
+
+/*!
+    Opens the requested window in the view represented by \a page.
+
+    \sa QWebEnginePage::newWindowRequested
+*/
+void QWebEngineNewWindowRequest::openIn(QWebEnginePage *page)
+{
+    if (!page) {
+        qWarning("Trying to open a QWebEngineNewWindowRequest in an invalid QWebEnginePage.");
+        return;
+    }
+    page->acceptAsNewWindow(*this);
 }
 
 QT_END_NAMESPACE

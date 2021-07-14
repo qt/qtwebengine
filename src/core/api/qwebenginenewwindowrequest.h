@@ -53,6 +53,7 @@ class WebContentsAdapter;
 
 QT_BEGIN_NAMESPACE
 
+class QWebEnginePage;
 struct QWebEngineNewWindowRequestPrivate;
 
 class Q_WEBENGINECORE_EXPORT QWebEngineNewWindowRequest : public QObject
@@ -77,6 +78,8 @@ public:
     QUrl requestedUrl() const;
     QRect requestedGeometry() const;
     bool isUserInitiated() const;
+
+    void openIn(QWebEnginePage *);
 
 protected:
     QWebEngineNewWindowRequest(DestinationType, const QRect &, const QUrl &, bool,
