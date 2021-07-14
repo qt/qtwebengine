@@ -198,7 +198,6 @@ void tst_UIDelegates::tooltip()
 
 void tst_UIDelegates::colorDialog()
 {
-    QSKIP("There is no ColorPicker Control in Quick Controls 2.");
     m_window->show();
     QTRY_VERIFY(qApp->focusObject());
     QQuickWebEngineView *view = webEngineView();
