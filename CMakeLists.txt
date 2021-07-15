@@ -107,11 +107,15 @@ get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" R
 get_qt_features(featureList webengine)
 get_qt_features(featureList qtwebengine)
 
-if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+if(NOT DEFINED CMAKE_TOOLCHAIN_FILE AND QT_SUPERBUILD)
     set(CMAKE_TOOLCHAIN_FILE "${CMAKE_BINARY_DIR}/qtbase/lib/cmake/Qt6/qt.toolchain.cmake")
     list(APPEND libsCmakeArgs
             "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}"
     )
+endif()
+
+if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    message(FATAL_ERROR "QtWebEngine build requires CMAKE_TOOLCHAIN_FILE. Please provide one or use qt-cmake.")
 endif()
 
 list(TRANSFORM featureList PREPEND "-D")
