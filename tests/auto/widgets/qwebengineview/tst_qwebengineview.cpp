@@ -383,7 +383,7 @@ void tst_QWebEngineView::reusePage()
     if (html.contains("</embed>")) {
         // some reasonable time for the PluginStream to feed test.swf to flash and start painting
         QSignalSpy spyFinished(view1, &QWebEngineView::loadFinished);
-        QVERIFY(spyFinished.wait(2000));
+        QVERIFY(spyFinished.wait(20000));
     }
 
     view1->show();
