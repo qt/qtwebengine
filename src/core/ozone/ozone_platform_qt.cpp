@@ -175,6 +175,9 @@ static std::string getCurrentKeyboardLayout()
             return std::string();
     }
 
+    if (!vdr.variant)
+        return layout;
+
     char *variant = strtok(vdr.variant, ",");
     if (!variant)
         return layout;
