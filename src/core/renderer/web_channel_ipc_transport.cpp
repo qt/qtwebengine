@@ -42,8 +42,6 @@
 
 #include "renderer/web_channel_ipc_transport.h"
 
-#include "common/qt_messages.h"
-
 #include "content/public/renderer/render_frame.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"

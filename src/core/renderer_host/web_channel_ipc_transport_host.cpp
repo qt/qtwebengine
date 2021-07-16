@@ -46,7 +46,6 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "qtwebengine/browser/qtwebchannel.mojom.h"
-#include "common/qt_messages.h"
 
 #include <QJsonDocument>
 #include <QJsonObject>

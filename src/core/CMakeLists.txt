@@ -101,7 +101,6 @@ foreach(config ${configs})
             clipboard_qt.cpp clipboard_qt.h
             color_chooser_controller.cpp color_chooser_controller.h color_chooser_controller_p.h
             color_chooser_qt.cpp color_chooser_qt.h
-            common/qt_ipc_logging.cpp
             common/qt_messages.cpp common/qt_messages.h
             compositor/compositor.cpp compositor/compositor.h
             compositor/content_gpu_client_qt.cpp compositor/content_gpu_client_qt.h
