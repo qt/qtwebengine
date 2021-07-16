@@ -50,7 +50,6 @@ SOURCES = \
         clipboard_qt.cpp \
         color_chooser_qt.cpp \
         color_chooser_controller.cpp \
-        common/qt_ipc_logging.cpp \
         common/qt_messages.cpp \
         compositor/compositor.cpp \
         compositor/content_gpu_client_qt.cpp \

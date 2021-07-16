@@ -39,7 +39,6 @@
 
 #include "user_resource_controller_host.h"
 
-#include "common/qt_messages.h"
 #include "type_conversion.h"
 #include "web_contents_adapter.h"
 #include "content/public/browser/render_process_host.h"

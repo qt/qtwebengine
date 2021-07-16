@@ -55,7 +55,6 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 
-#include "common/qt_messages.h"
 #include "qtwebengine/userscript/user_script_data.h"
 #include "type_conversion.h"
 #include "user_script.h"

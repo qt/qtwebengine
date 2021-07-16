@@ -416,7 +416,8 @@ void PrintViewManagerBaseQt::DidStartLoading()
     UpdatePrintingEnabled();
 }
 
-// Note: In PrintViewManagerQt we always initiate printing with PrintMsg_InitiatePrintPreview
+// Note: In PrintViewManagerQt we always initiate printing with
+// printing::mojom::PrintRenderFrame::InitiatePrintPreview()
 // so m_printingRFH is never set and used at the moment.
 void PrintViewManagerBaseQt::RenderFrameDeleted(content::RenderFrameHost *render_frame_host)
 {
