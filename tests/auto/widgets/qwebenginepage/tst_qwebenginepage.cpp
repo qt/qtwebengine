@@ -635,17 +635,17 @@ void tst_QWebEnginePage::acceptNavigationRequestNavigationType()
     QVERIFY(server.start());
     page.load(QUrl(server.url("/redirect1.html")));
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 8, 20000);
-    QTRY_COMPARE(page.navigations.count(), 11);
     expectedList += {
         QWebEngineNavigationRequest::TypedNavigation,
         QWebEngineNavigationRequest::RedirectNavigation,
         QWebEngineNavigationRequest::RedirectNavigation
     };
 
-    QVERIFY(expectedList.count() == page.navigations.count());
     for (int i = 0; i < expectedList.count(); ++i) {
+        QTRY_VERIFY(i < page.navigations.count());
         QCOMPARE(page.navigations[i].type, expectedList[i]);
     }
+    QVERIFY(expectedList.count() == page.navigations.count());
 }
 
 // Relative url without base url.
