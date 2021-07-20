@@ -45,466 +45,499 @@ else()
     set(configs ${CMAKE_BUILD_TYPE})
 endif()
 
+if(NOT QT_IS_MACOS_UNIVERSAL)
+    set(GN_ARCHITECTURES ${CMAKE_SYSTEM_PROCESSOR})
+else()
+    set(GN_ARCHITECTURES ${CMAKE_OSX_ARCHITECTURES})
+endif()
 
-foreach(config ${configs})
-##
-#   BUILD.gn SETUP
-##
+foreach(arch ${GN_ARCHITECTURES})
+    if(QT_IS_MACOS_UNIVERSAL)
+        set(buildDir "${CMAKE_CURRENT_BINARY_DIR}/${arch}")
+    endif()
 
-    unset(buildGn)
-    set(buildGn buildGnWebEngineCore_${config})
+    foreach(config ${configs})
+    ##
+    #   BUILD.gn SETUP
+    ##
 
-    add_gn_target(${buildGn} SOURCES DEFINES CXX_COMPILE_OPTIONS C_COMPILE_OPTIONS INCLUDES)
+        unset(buildGn)
+        set(buildGn buildGnWebEngineCore_${config}_${arch})
 
-    resolve_target_includes(gnIncludes WebEngineCore)
-    get_forward_declaration_macro(forwardDeclarationMacro)
-    get_target_property(qtWebEngineProcessName WebEngineCore QTWEBENGINEPROCESS_NAME)
+        add_gn_target(${buildGn} SOURCES DEFINES CXX_COMPILE_OPTIONS C_COMPILE_OPTIONS INCLUDES)
 
-    set(gnCxxCompileOptions "")
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        # Silence warning in boringssl headers.
-        list(APPEND gnCxxCompileOptions -Wno-ignored-qualifiers)
+        resolve_target_includes(gnIncludes WebEngineCore)
+        get_forward_declaration_macro(forwardDeclarationMacro)
+        get_target_property(qtWebEngineProcessName WebEngineCore QTWEBENGINEPROCESS_NAME)
 
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "11.0.0" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11.2.0")
-            # GCC 11.1 has a regression in the integrated preprocessor, so disable it as a workaround (QTBUG-93360)
-            # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100796
-            list(APPEND gnCxxCompileOptions -no-integrated-cpp)
+        set(gnCxxCompileOptions "")
+        if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+            # Silence warning in boringssl headers.
+            list(APPEND gnCxxCompileOptions -Wno-ignored-qualifiers)
+
+            if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "11.0.0" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11.2.0")
+                # GCC 11.1 has a regression in the integrated preprocessor, so disable it as a workaround (QTBUG-93360)
+                # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100796
+                list(APPEND gnCxxCompileOptions -no-integrated-cpp)
+            endif()
         endif()
-    endif()
 
-    extend_gn_target(${buildGn}
-        INCLUDES
-            ${gnIncludes}
-        DEFINES
-            QT_NO_KEYWORDS
-            QT_USE_QSTRINGBUILDER
-            QTWEBENGINECORE_VERSION_STR=\\\\\"${QT_REPO_MODULE_VERSION}\\\\\"
-            QTWEBENGINEPROCESS_NAME=\\\\\"${qtWebEngineProcessName}\\\\\"
-            BUILDING_CHROMIUM
-            ${forwardDeclarationMacro}
-        CXX_COMPILE_OPTIONS
-            ${gnCxxCompileOptions}
-        SOURCES
-            accessibility_activation_observer.cpp accessibility_activation_observer.h
-            accessibility_tree_formatter_qt.cpp
-            authentication_dialog_controller.cpp authentication_dialog_controller.h authentication_dialog_controller_p.h
-            browser_accessibility_manager_qt.cpp browser_accessibility_manager_qt.h
-            browser_accessibility_qt.cpp browser_accessibility_qt.h
-            browser_main_parts_qt.cpp browser_main_parts_qt.h
-            browser_message_filter_qt.cpp browser_message_filter_qt.h
-            browsing_data_remover_delegate_qt.cpp browsing_data_remover_delegate_qt.h
-            build_config_qt.h
-            certificate_error_controller.cpp certificate_error_controller.h
-            chromium_overrides.cpp
-            client_cert_select_controller.cpp client_cert_select_controller.h
-            clipboard_change_observer.h
-            clipboard_qt.cpp clipboard_qt.h
-            color_chooser_controller.cpp color_chooser_controller.h color_chooser_controller_p.h
-            color_chooser_qt.cpp color_chooser_qt.h
-            common/qt_messages.cpp common/qt_messages.h
-            compositor/compositor.cpp compositor/compositor.h
-            compositor/content_gpu_client_qt.cpp compositor/content_gpu_client_qt.h
-            compositor/display_overrides.cpp
-            compositor/display_software_output_surface.cpp compositor/display_software_output_surface.h
-            compositor/display_skia_output_device.cpp compositor/display_skia_output_device.h
-            content_browser_client_qt.cpp content_browser_client_qt.h
-            content_client_qt.cpp content_client_qt.h
-            content_main_delegate_qt.cpp content_main_delegate_qt.h
-            content_utility_client_qt.cpp content_utility_client_qt.h
-            delegated_frame_host_client_qt.cpp delegated_frame_host_client_qt.h
-            desktop_screen_qt.cpp desktop_screen_qt.h
-            devtools_frontend_qt.cpp devtools_frontend_qt.h
-            devtools_manager_delegate_qt.cpp devtools_manager_delegate_qt.h
-            download_manager_delegate_qt.cpp download_manager_delegate_qt.h
-            favicon_driver_qt.cpp favicon_driver_qt.h
-            favicon_service_factory_qt.cpp favicon_service_factory_qt.h
-            file_picker_controller.cpp file_picker_controller.h
-            find_text_helper.cpp find_text_helper.h
-            global_descriptors_qt.h
-            javascript_dialog_controller.cpp javascript_dialog_controller.h javascript_dialog_controller_p.h
-            javascript_dialog_manager_qt.cpp javascript_dialog_manager_qt.h
-            login_delegate_qt.cpp login_delegate_qt.h
-            media_capture_devices_dispatcher.cpp media_capture_devices_dispatcher.h
-            native_web_keyboard_event_qt.cpp
-            net/client_cert_override.cpp net/client_cert_override.h
-            net/client_cert_store_data.cpp net/client_cert_store_data.h
-            net/cookie_monster_delegate_qt.cpp net/cookie_monster_delegate_qt.h
-            net/custom_url_loader_factory.cpp net/custom_url_loader_factory.h
-            net/proxy_config_monitor.cpp
-            net/proxy_config_service_qt.cpp
-            net/proxying_restricted_cookie_manager_qt.cpp net/proxying_restricted_cookie_manager_qt.h
-            net/proxying_url_loader_factory_qt.cpp net/proxying_url_loader_factory_qt.h
-            net/qrc_url_scheme_handler.cpp net/qrc_url_scheme_handler.h
-            net/ssl_host_state_delegate_qt.cpp net/ssl_host_state_delegate_qt.h
-            net/system_network_context_manager.cpp net/system_network_context_manager.h
-            net/url_request_custom_job_delegate.cpp net/url_request_custom_job_delegate.h
-            net/url_request_custom_job_proxy.cpp net/url_request_custom_job_proxy.h
-            net/webui_controller_factory_qt.cpp net/webui_controller_factory_qt.h
-            ozone/gl_context_qt.cpp ozone/gl_context_qt.h
-            ozone/gl_ozone_egl_qt.cpp ozone/gl_ozone_egl_qt.h
-            ozone/gl_share_context_qt.cpp ozone/gl_share_context_qt.h
-            ozone/gl_surface_egl_qt.cpp ozone/gl_surface_egl_qt.h
-            ozone/gl_surface_qt.cpp ozone/gl_surface_qt.h
-            ozone/gl_surface_wgl_qt.cpp ozone/gl_surface_wgl_qt.h
-            ozone/platform_window_qt.cpp ozone/platform_window_qt.h
-            ozone/surface_factory_qt.cpp ozone/surface_factory_qt.h
-            permission_manager_qt.cpp permission_manager_qt.h
-            platform_notification_service_qt.cpp platform_notification_service_qt.h
-            pref_service_adapter.cpp pref_service_adapter.h
-            process_main.cpp
-            profile_adapter.cpp profile_adapter.h
-            profile_adapter_client.cpp profile_adapter_client.h
-            profile_io_data_qt.cpp profile_io_data_qt.h
-            profile_qt.cpp profile_qt.h
-            proxy_config_monitor.h
-            proxy_config_service_qt.h
-            quota_permission_context_qt.cpp quota_permission_context_qt.h
-            quota_request_controller.h
-            quota_request_controller_impl.cpp quota_request_controller_impl.h
-            register_protocol_handler_request_controller.h
-            register_protocol_handler_request_controller_impl.cpp register_protocol_handler_request_controller_impl.h
-            render_view_context_menu_qt.cpp render_view_context_menu_qt.h
-            render_widget_host_view_qt.cpp render_widget_host_view_qt.h
-            render_widget_host_view_qt_delegate.h
-            render_widget_host_view_qt_delegate_client.cpp render_widget_host_view_qt_delegate_client.h
-            renderer/content_renderer_client_qt.cpp renderer/content_renderer_client_qt.h
-            renderer/content_settings_observer_qt.cpp renderer/content_settings_observer_qt.h
-            renderer/render_configuration.cpp renderer/render_configuration.h
-            renderer/render_frame_observer_qt.cpp renderer/render_frame_observer_qt.h
-            renderer/user_resource_controller.cpp renderer/user_resource_controller.h
-            renderer/web_engine_page_render_frame.cpp renderer/web_engine_page_render_frame.h
-            renderer_host/user_resource_controller_host.cpp renderer_host/user_resource_controller_host.h
-            renderer_host/web_engine_page_host.cpp renderer_host/web_engine_page_host.h
-            request_controller.h
-            resource_bundle_qt.cpp
-            resource_context_qt.cpp resource_context_qt.h
-            select_file_dialog_factory_qt.cpp select_file_dialog_factory_qt.h
-            touch_handle_drawable_client.h
-            touch_handle_drawable_qt.cpp touch_handle_drawable_qt.h
-            touch_selection_controller_client_qt.cpp touch_selection_controller_client_qt.h
-            touch_selection_menu_controller.cpp touch_selection_menu_controller.h
-            type_conversion.cpp type_conversion.h
-            user_notification_controller.cpp user_notification_controller.h
-            user_script.cpp user_script.h
-            visited_links_manager_qt.cpp visited_links_manager_qt.h
-            web_contents_adapter.cpp web_contents_adapter.h
-            web_contents_adapter_client.h
-            web_contents_delegate_qt.cpp web_contents_delegate_qt.h
-            web_contents_view_qt.cpp web_contents_view_qt.h
-            web_engine_context.cpp web_engine_context.h
-            web_engine_context_threads.cpp
-            web_engine_error.cpp web_engine_error.h
-            web_engine_library_info.cpp web_engine_library_info.h
-            web_engine_settings.cpp web_engine_settings.h
-            web_event_factory.cpp web_event_factory.h
-            web_usb_detector_qt.cpp web_usb_detector_qt.h
-    )
+        extend_gn_target(${buildGn}
+            INCLUDES
+                ${gnIncludes}
+            DEFINES
+                QT_NO_KEYWORDS
+                QT_USE_QSTRINGBUILDER
+                QTWEBENGINECORE_VERSION_STR=\\\\\"${QT_REPO_MODULE_VERSION}\\\\\"
+                QTWEBENGINEPROCESS_NAME=\\\\\"${qtWebEngineProcessName}\\\\\"
+                BUILDING_CHROMIUM
+                ${forwardDeclarationMacro}
+            CXX_COMPILE_OPTIONS
+                ${gnCxxCompileOptions}
+            SOURCES
+                accessibility_activation_observer.cpp accessibility_activation_observer.h
+                accessibility_tree_formatter_qt.cpp
+                authentication_dialog_controller.cpp authentication_dialog_controller.h authentication_dialog_controller_p.h
+                browser_accessibility_manager_qt.cpp browser_accessibility_manager_qt.h
+                browser_accessibility_qt.cpp browser_accessibility_qt.h
+                browser_main_parts_qt.cpp browser_main_parts_qt.h
+                browser_message_filter_qt.cpp browser_message_filter_qt.h
+                browsing_data_remover_delegate_qt.cpp browsing_data_remover_delegate_qt.h
+                build_config_qt.h
+                certificate_error_controller.cpp certificate_error_controller.h
+                chromium_overrides.cpp
+                client_cert_select_controller.cpp client_cert_select_controller.h
+                clipboard_change_observer.h
+                clipboard_qt.cpp clipboard_qt.h
+                color_chooser_controller.cpp color_chooser_controller.h color_chooser_controller_p.h
+                color_chooser_qt.cpp color_chooser_qt.h
+                common/qt_messages.cpp common/qt_messages.h
+                compositor/compositor.cpp compositor/compositor.h
+                compositor/content_gpu_client_qt.cpp compositor/content_gpu_client_qt.h
+                compositor/display_overrides.cpp
+                compositor/display_software_output_surface.cpp compositor/display_software_output_surface.h
+                compositor/display_skia_output_device.cpp compositor/display_skia_output_device.h
+                content_browser_client_qt.cpp content_browser_client_qt.h
+                content_client_qt.cpp content_client_qt.h
+                content_main_delegate_qt.cpp content_main_delegate_qt.h
+                content_utility_client_qt.cpp content_utility_client_qt.h
+                delegated_frame_host_client_qt.cpp delegated_frame_host_client_qt.h
+                desktop_screen_qt.cpp desktop_screen_qt.h
+                devtools_frontend_qt.cpp devtools_frontend_qt.h
+                devtools_manager_delegate_qt.cpp devtools_manager_delegate_qt.h
+                download_manager_delegate_qt.cpp download_manager_delegate_qt.h
+                favicon_driver_qt.cpp favicon_driver_qt.h
+                favicon_service_factory_qt.cpp favicon_service_factory_qt.h
+                file_picker_controller.cpp file_picker_controller.h
+                find_text_helper.cpp find_text_helper.h
+                global_descriptors_qt.h
+                javascript_dialog_controller.cpp javascript_dialog_controller.h javascript_dialog_controller_p.h
+                javascript_dialog_manager_qt.cpp javascript_dialog_manager_qt.h
+                login_delegate_qt.cpp login_delegate_qt.h
+                media_capture_devices_dispatcher.cpp media_capture_devices_dispatcher.h
+                native_web_keyboard_event_qt.cpp
+                net/client_cert_override.cpp net/client_cert_override.h
+                net/client_cert_store_data.cpp net/client_cert_store_data.h
+                net/cookie_monster_delegate_qt.cpp net/cookie_monster_delegate_qt.h
+                net/custom_url_loader_factory.cpp net/custom_url_loader_factory.h
+                net/proxy_config_monitor.cpp
+                net/proxy_config_service_qt.cpp
+                net/proxying_restricted_cookie_manager_qt.cpp net/proxying_restricted_cookie_manager_qt.h
+                net/proxying_url_loader_factory_qt.cpp net/proxying_url_loader_factory_qt.h
+                net/qrc_url_scheme_handler.cpp net/qrc_url_scheme_handler.h
+                net/ssl_host_state_delegate_qt.cpp net/ssl_host_state_delegate_qt.h
+                net/system_network_context_manager.cpp net/system_network_context_manager.h
+                net/url_request_custom_job_delegate.cpp net/url_request_custom_job_delegate.h
+                net/url_request_custom_job_proxy.cpp net/url_request_custom_job_proxy.h
+                net/webui_controller_factory_qt.cpp net/webui_controller_factory_qt.h
+                ozone/gl_context_qt.cpp ozone/gl_context_qt.h
+                ozone/gl_ozone_egl_qt.cpp ozone/gl_ozone_egl_qt.h
+                ozone/gl_share_context_qt.cpp ozone/gl_share_context_qt.h
+                ozone/gl_surface_egl_qt.cpp ozone/gl_surface_egl_qt.h
+                ozone/gl_surface_qt.cpp ozone/gl_surface_qt.h
+                ozone/gl_surface_wgl_qt.cpp ozone/gl_surface_wgl_qt.h
+                ozone/platform_window_qt.cpp ozone/platform_window_qt.h
+                ozone/surface_factory_qt.cpp ozone/surface_factory_qt.h
+                permission_manager_qt.cpp permission_manager_qt.h
+                platform_notification_service_qt.cpp platform_notification_service_qt.h
+                pref_service_adapter.cpp pref_service_adapter.h
+                process_main.cpp
+                profile_adapter.cpp profile_adapter.h
+                profile_adapter_client.cpp profile_adapter_client.h
+                profile_io_data_qt.cpp profile_io_data_qt.h
+                profile_qt.cpp profile_qt.h
+                proxy_config_monitor.h
+                proxy_config_service_qt.h
+                quota_permission_context_qt.cpp quota_permission_context_qt.h
+                quota_request_controller.h
+                quota_request_controller_impl.cpp quota_request_controller_impl.h
+                register_protocol_handler_request_controller.h
+                register_protocol_handler_request_controller_impl.cpp register_protocol_handler_request_controller_impl.h
+                render_view_context_menu_qt.cpp render_view_context_menu_qt.h
+                render_widget_host_view_qt.cpp render_widget_host_view_qt.h
+                render_widget_host_view_qt_delegate.h
+                render_widget_host_view_qt_delegate_client.cpp render_widget_host_view_qt_delegate_client.h
+                renderer/content_renderer_client_qt.cpp renderer/content_renderer_client_qt.h
+                renderer/content_settings_observer_qt.cpp renderer/content_settings_observer_qt.h
+                renderer/render_configuration.cpp renderer/render_configuration.h
+                renderer/render_frame_observer_qt.cpp renderer/render_frame_observer_qt.h
+                renderer/user_resource_controller.cpp renderer/user_resource_controller.h
+                renderer/web_engine_page_render_frame.cpp renderer/web_engine_page_render_frame.h
+                renderer_host/user_resource_controller_host.cpp renderer_host/user_resource_controller_host.h
+                renderer_host/web_engine_page_host.cpp renderer_host/web_engine_page_host.h
+                request_controller.h
+                resource_bundle_qt.cpp
+                resource_context_qt.cpp resource_context_qt.h
+                select_file_dialog_factory_qt.cpp select_file_dialog_factory_qt.h
+                touch_handle_drawable_client.h
+                touch_handle_drawable_qt.cpp touch_handle_drawable_qt.h
+                touch_selection_controller_client_qt.cpp touch_selection_controller_client_qt.h
+                touch_selection_menu_controller.cpp touch_selection_menu_controller.h
+                type_conversion.cpp type_conversion.h
+                user_notification_controller.cpp user_notification_controller.h
+                user_script.cpp user_script.h
+                visited_links_manager_qt.cpp visited_links_manager_qt.h
+                web_contents_adapter.cpp web_contents_adapter.h
+                web_contents_adapter_client.h
+                web_contents_delegate_qt.cpp web_contents_delegate_qt.h
+                web_contents_view_qt.cpp web_contents_view_qt.h
+                web_engine_context.cpp web_engine_context.h
+                web_engine_context_threads.cpp
+                web_engine_error.cpp web_engine_error.h
+                web_engine_library_info.cpp web_engine_library_info.h
+                web_engine_settings.cpp web_engine_settings.h
+                web_event_factory.cpp web_event_factory.h
+                web_usb_detector_qt.cpp web_usb_detector_qt.h
+        )
 
-    extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_ozone_x11
-        SOURCES
-            ozone/gl_ozone_glx_qt.cpp ozone/gl_ozone_glx_qt.h
-            ozone/gl_surface_glx_qt.cpp ozone/gl_surface_glx_qt.h
-    )
+        extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_ozone_x11
+            SOURCES
+                ozone/gl_ozone_glx_qt.cpp ozone/gl_ozone_glx_qt.h
+                ozone/gl_surface_glx_qt.cpp ozone/gl_surface_glx_qt.h
+        )
 
-    extend_gn_target(${buildGn} CONDITION QT_FEATURE_opengl
-        SOURCES
-            compositor/compositor_resource_fence.cpp compositor/compositor_resource_fence.h
-            compositor/display_gl_output_surface.cpp compositor/display_gl_output_surface.h
-    )
+        extend_gn_target(${buildGn} CONDITION QT_FEATURE_opengl
+            SOURCES
+                compositor/compositor_resource_fence.cpp compositor/compositor_resource_fence.h
+                compositor/display_gl_output_surface.cpp compositor/display_gl_output_surface.h
+        )
 
-    extend_gn_target(${buildGn} CONDITION MACOS AND QT_FEATURE_opengl
-        SOURCES
-            macos_context_type_helper.mm macos_context_type_helper.h
-    )
+        extend_gn_target(${buildGn} CONDITION MACOS AND QT_FEATURE_opengl
+            SOURCES
+                macos_context_type_helper.mm macos_context_type_helper.h
+        )
 
-    extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_pepper_plugins
-        SOURCES
-            renderer/pepper/pepper_renderer_host_factory_qt.cpp renderer/pepper/pepper_renderer_host_factory_qt.h
-            renderer/plugins/loadable_plugin_placeholder_qt.cpp renderer/plugins/loadable_plugin_placeholder_qt.h
-            renderer_host/pepper/pepper_host_factory_qt.cpp renderer_host/pepper/pepper_host_factory_qt.h
-            renderer_host/pepper/pepper_isolated_file_system_message_filter.cpp renderer_host/pepper/pepper_isolated_file_system_message_filter.h
-    )
+        extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_pepper_plugins
+            SOURCES
+                renderer/pepper/pepper_renderer_host_factory_qt.cpp renderer/pepper/pepper_renderer_host_factory_qt.h
+                renderer/plugins/loadable_plugin_placeholder_qt.cpp renderer/plugins/loadable_plugin_placeholder_qt.h
+                renderer_host/pepper/pepper_host_factory_qt.cpp renderer_host/pepper/pepper_host_factory_qt.h
+                renderer_host/pepper/pepper_isolated_file_system_message_filter.cpp renderer_host/pepper/pepper_isolated_file_system_message_filter.h
+        )
 
-    extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_printing_and_pdf
-        SOURCES
-            printing/pdfium_document_wrapper_qt.cpp printing/pdfium_document_wrapper_qt.h
-            printing/print_view_manager_base_qt.cpp printing/print_view_manager_base_qt.h
-            printing/print_view_manager_qt.cpp printing/print_view_manager_qt.h
-            printing/printer_worker.cpp printing/printer_worker.h
-            renderer/print_web_view_helper_delegate_qt.cpp renderer/print_web_view_helper_delegate_qt.h
-    )
+        extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_printing_and_pdf
+            SOURCES
+                printing/pdfium_document_wrapper_qt.cpp printing/pdfium_document_wrapper_qt.h
+                printing/print_view_manager_base_qt.cpp printing/print_view_manager_base_qt.h
+                printing/print_view_manager_qt.cpp printing/print_view_manager_qt.h
+                printing/printer_worker.cpp printing/printer_worker.h
+                renderer/print_web_view_helper_delegate_qt.cpp renderer/print_web_view_helper_delegate_qt.h
+        )
 
-    extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_geolocation
-        SOURCES
-            location_provider_qt.cpp location_provider_qt.h
-    )
+        extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_geolocation
+            SOURCES
+                location_provider_qt.cpp location_provider_qt.h
+        )
 
-    extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_webchannel
-        SOURCES
-            renderer/web_channel_ipc_transport.cpp renderer/web_channel_ipc_transport.h
-            renderer_host/web_channel_ipc_transport_host.cpp renderer_host/web_channel_ipc_transport_host.h
-    )
+        extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_webchannel
+            SOURCES
+                renderer/web_channel_ipc_transport.cpp renderer/web_channel_ipc_transport.h
+                renderer_host/web_channel_ipc_transport_host.cpp renderer_host/web_channel_ipc_transport_host.h
+        )
 
-    extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_extensions
-        SOURCES
-            common/extensions/extensions_api_provider_qt.cpp common/extensions/extensions_api_provider_qt.h
-            common/extensions/extensions_client_qt.cpp common/extensions/extensions_client_qt.h
-            extensions/component_extension_resource_manager_qt.cpp extensions/component_extension_resource_manager_qt.h
-            extensions/extension_host_delegate_qt.cpp extensions/extension_host_delegate_qt.h
-            extensions/extension_system_factory_qt.cpp extensions/extension_system_factory_qt.h
-            extensions/extension_system_qt.cpp extensions/extension_system_qt.h
-            extensions/extension_web_contents_observer_qt.cpp extensions/extension_web_contents_observer_qt.h
-            extensions/extensions_api_client_qt.cpp extensions/extensions_api_client_qt.h
-            extensions/extensions_browser_client_qt.cpp extensions/extensions_browser_client_qt.h
-            extensions/messaging_delegate_qt.cpp extensions/messaging_delegate_qt.h
-            extensions/mime_handler_view_guest_delegate_qt.cpp extensions/mime_handler_view_guest_delegate_qt.h
-            extensions/pdf_iframe_navigation_throttle_qt.cpp extensions/pdf_iframe_navigation_throttle_qt.h
-            extensions/plugin_service_filter_qt.cpp extensions/plugin_service_filter_qt.h
-            net/plugin_response_interceptor_url_loader_throttle.cpp net/plugin_response_interceptor_url_loader_throttle.h
-            renderer/extensions/extensions_dispatcher_delegate_qt.cpp renderer/extensions/extensions_dispatcher_delegate_qt.h
-            renderer/extensions/extensions_renderer_client_qt.cpp renderer/extensions/extensions_renderer_client_qt.h
-            renderer/extensions/renderer_permissions_policy_delegate_qt.cpp renderer/extensions/renderer_permissions_policy_delegate_qt.h
-            renderer/extensions/resource_request_policy_qt.cpp renderer/extensions/resource_request_policy_qt.h
-    )
+        extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_extensions
+            SOURCES
+                common/extensions/extensions_api_provider_qt.cpp common/extensions/extensions_api_provider_qt.h
+                common/extensions/extensions_client_qt.cpp common/extensions/extensions_client_qt.h
+                extensions/component_extension_resource_manager_qt.cpp extensions/component_extension_resource_manager_qt.h
+                extensions/extension_host_delegate_qt.cpp extensions/extension_host_delegate_qt.h
+                extensions/extension_system_factory_qt.cpp extensions/extension_system_factory_qt.h
+                extensions/extension_system_qt.cpp extensions/extension_system_qt.h
+                extensions/extension_web_contents_observer_qt.cpp extensions/extension_web_contents_observer_qt.h
+                extensions/extensions_api_client_qt.cpp extensions/extensions_api_client_qt.h
+                extensions/extensions_browser_client_qt.cpp extensions/extensions_browser_client_qt.h
+                extensions/messaging_delegate_qt.cpp extensions/messaging_delegate_qt.h
+                extensions/mime_handler_view_guest_delegate_qt.cpp extensions/mime_handler_view_guest_delegate_qt.h
+                extensions/pdf_iframe_navigation_throttle_qt.cpp extensions/pdf_iframe_navigation_throttle_qt.h
+                extensions/plugin_service_filter_qt.cpp extensions/plugin_service_filter_qt.h
+                net/plugin_response_interceptor_url_loader_throttle.cpp net/plugin_response_interceptor_url_loader_throttle.h
+                renderer/extensions/extensions_dispatcher_delegate_qt.cpp renderer/extensions/extensions_dispatcher_delegate_qt.h
+                renderer/extensions/extensions_renderer_client_qt.cpp renderer/extensions/extensions_renderer_client_qt.h
+                renderer/extensions/renderer_permissions_policy_delegate_qt.cpp renderer/extensions/renderer_permissions_policy_delegate_qt.h
+                renderer/extensions/resource_request_policy_qt.cpp renderer/extensions/resource_request_policy_qt.h
+        )
 
-    read_gn_target(${buildGn} ${WEBENGINE_ROOT_BUILD_DIR}/src/core/api/${config}/gn_config.cxx.cmake)
-    read_gn_target(${buildGn} ${WEBENGINE_ROOT_BUILD_DIR}/src/core/api/${config}/gn_config.c.cmake)
-    configure_gn_target(${buildGn} ${config}
-        ${WEBENGINE_ROOT_SOURCE_DIR}/src/core/configure/BUILD.root.gn.in ${buildDir}/${config}/BUILD.gn)
+        read_gn_target(${buildGn} ${WEBENGINE_ROOT_BUILD_DIR}/src/core/api/${config}/gn_config.cxx.cmake)
+        read_gn_target(${buildGn} ${WEBENGINE_ROOT_BUILD_DIR}/src/core/api/${config}/gn_config.c.cmake)
+        configure_gn_target(${buildGn} ${config}
+            ${WEBENGINE_ROOT_SOURCE_DIR}/src/core/configure/BUILD.root.gn.in ${buildDir}/${config}/BUILD.gn)
 
 
-##
-#   GN PARAMETERS SETUP
-##
+    ##
+    #   GN PARAMETERS SETUP
+    ##
 
-    unset(gnArgArg)
+        unset(gnArgArg)
 
-    append_build_type_setup(gnArgArg)
-    append_compiler_linker_sdk_setup(gnArgArg)
-    append_sanitizer_setup(gnArgArg)
-    append_toolchain_setup(gnArgArg)
-    append_pkg_config_setup(gnArgArg)
+        append_build_type_setup(gnArgArg)
+        append_compiler_linker_sdk_setup(gnArgArg)
+        append_sanitizer_setup(gnArgArg)
+        append_toolchain_setup(gnArgArg)
+        append_pkg_config_setup(gnArgArg)
 
-    list(APPEND gnArgArg
-        qtwebengine_target="${buildDir}/${config}:QtWebEngineCore"
-        enable_media_remoting=false
-        enable_message_center=false
-        enable_nacl=false
-        enable_remoting=false
-        enable_reporting=false
-        enable_resource_allowlist_generation=false
-        enable_swiftshader=false
-        enable_swiftshader_vulkan=false
-        angle_enable_swiftshader=false
-        enable_web_speech=false
-        enable_widevine=true
-        has_native_accessibility=false
-        safe_browsing_mode=0
-        skia_use_dawn=false
-        toolkit_views=false
-        chrome_pgo_phase=0
-        optimize_webui=false
-        enable_js_type_check=false
-        v8_use_external_startup_data=false
-        strip_absolute_paths_from_debug_symbols=false
-        blink_symbol_level=0
-    )
-
-    extend_gn_list(gnArgArg
-        ARGS enable_basic_printing enable_print_preview enable_pdf
-        CONDITION QT_FEATURE_webengine_printing_and_pdf
-    )
-    extend_gn_list(gnArgArg
-        ARGS enable_plugins
-        CONDITION QT_FEATURE_webengine_pepper_plugins
-    )
-    extend_gn_list(gnArgArg
-        ARGS enable_spellcheck
-        CONDITION QT_FEATURE_webengine_spellchecker
-    )
-    extend_gn_list(gnArgArg
-        ARGS enable_webrtc
-        CONDITION QT_FEATURE_webengine_webrtc
-    )
-    extend_gn_list(gnArgArg
-        ARGS enable_hangout_services_extension
-        CONDITION QT_FEATURE_webengine_webrtc AND QT_FEATURE_webengine_extensions
-    )
-    extend_gn_list(gnArgArg
-        ARGS rtc_use_pipewire
-        CONDITION QT_FEATURE_webengine_webrtc_pipewire
-    )
-    extend_gn_list(gnArgArg
-        ARGS enable_extensions
-        CONDITION QT_FEATURE_webengine_extensions
-    )
-    extend_gn_list(gnArgArg
-        ARGS use_kerberos
-        CONDITION QT_FEATURE_webengine_kerberos
-    )
-    extend_gn_list(gnArgArg
-        ARGS proprietary_codecs
-        CONDITION QT_FEATURE_webengine_proprietary_codecs
-    )
-    if(QT_FEATURE_webengine_proprietary_codecs)
-        list(APPEND gnArgArg ffmpeg_branding="Chrome")
-    endif()
-    extend_gn_list(gnArgArg
-        ARGS use_browser_spellchecker
-        CONDITION QT_FEATURE_webengine_native_spellchecker
-    )
-
-    if(LINUX)
         list(APPEND gnArgArg
-            use_cups=false
-            use_gio=false
-            use_gnome_keyring=false
-            use_udev=true
-            use_bundled_fontconfig=false
-            enable_session_service=false
-            is_cfi=false
-            use_ozone=true
-            use_x11=false
-            ozone_auto_platforms=false
-            ozone_platform_headless=false
-            ozone_platform_external=true
-            ozone_platform="qt"
-            ozone_extra_path="${CMAKE_CURRENT_LIST_DIR}/ozone/ozone_extra.gni"
-            use_glib=false
+            qtwebengine_target="${buildDir}/${config}:QtWebEngineCore"
+            enable_media_remoting=false
+            enable_message_center=false
+            enable_nacl=false
+            enable_remoting=false
+            enable_reporting=false
+            enable_resource_allowlist_generation=false
+            enable_swiftshader=false
+            enable_swiftshader_vulkan=false
+            angle_enable_swiftshader=false
+            enable_web_speech=false
+            enable_widevine=true
+            has_native_accessibility=false
+            safe_browsing_mode=0
+            skia_use_dawn=false
+            toolkit_views=false
+            chrome_pgo_phase=0
+            optimize_webui=false
+            enable_js_type_check=false
+            v8_use_external_startup_data=false
+            strip_absolute_paths_from_debug_symbols=false
+            blink_symbol_level=0
         )
-        set(systemLibs libjpeg libpng freetype harfbuzz libevent libwebp libxml
-            opus snappy libvpx icu ffmpeg re2 lcms2
+
+        extend_gn_list(gnArgArg
+            ARGS enable_basic_printing enable_print_preview enable_pdf
+            CONDITION QT_FEATURE_webengine_printing_and_pdf
         )
-        foreach(slib ${systemLibs})
-            extend_gn_list(gnArgArg
-                ARGS use_system_${slib}
-                CONDITION QT_FEATURE_webengine_system_${slib}
+        extend_gn_list(gnArgArg
+            ARGS enable_plugins
+            CONDITION QT_FEATURE_webengine_pepper_plugins
+        )
+        extend_gn_list(gnArgArg
+            ARGS enable_spellcheck
+            CONDITION QT_FEATURE_webengine_spellchecker
+        )
+        extend_gn_list(gnArgArg
+            ARGS enable_webrtc
+            CONDITION QT_FEATURE_webengine_webrtc
+        )
+        extend_gn_list(gnArgArg
+            ARGS enable_hangout_services_extension
+            CONDITION QT_FEATURE_webengine_webrtc AND QT_FEATURE_webengine_extensions
+        )
+        extend_gn_list(gnArgArg
+            ARGS rtc_use_pipewire
+            CONDITION QT_FEATURE_webengine_webrtc_pipewire
+        )
+        extend_gn_list(gnArgArg
+            ARGS enable_extensions
+            CONDITION QT_FEATURE_webengine_extensions
+        )
+        extend_gn_list(gnArgArg
+            ARGS use_kerberos
+            CONDITION QT_FEATURE_webengine_kerberos
+        )
+        extend_gn_list(gnArgArg
+            ARGS proprietary_codecs
+            CONDITION QT_FEATURE_webengine_proprietary_codecs
+        )
+        if(QT_FEATURE_webengine_proprietary_codecs)
+            list(APPEND gnArgArg ffmpeg_branding="Chrome")
+        endif()
+        extend_gn_list(gnArgArg
+            ARGS use_browser_spellchecker
+            CONDITION QT_FEATURE_webengine_native_spellchecker
+        )
+
+        if(LINUX)
+            list(APPEND gnArgArg
+                use_cups=false
+                use_gio=false
+                use_gnome_keyring=false
+                use_udev=true
+                use_bundled_fontconfig=false
+                enable_session_service=false
+                is_cfi=false
+                use_ozone=true
+                use_x11=false
+                ozone_auto_platforms=false
+                ozone_platform_headless=false
+                ozone_platform_external=true
+                ozone_platform="qt"
+                ozone_extra_path="${CMAKE_CURRENT_LIST_DIR}/ozone/ozone_extra.gni"
+                use_glib=false
             )
-        endforeach()
-        extend_gn_list(gnArgArg
-            ARGS icu_use_data_file
-            CONDITION NOT QT_FEATURE_webengine_system_icu
-        )
-        extend_gn_list(gnArgArg
-            ARGS use_system_zlib use_system_minizip
-            CONDITION QT_FEATURE_webengine_system_zlib AND QT_FEATURE_webengine_system_minizip
-        )
-        extend_gn_list(gnArgArg
-            ARGS pdfium_use_system_zlib
-            CONDITION QT_FEATURE_webengine_system_zlib
-        )
-        extend_gn_list(gnArgArg
-            ARGS pdfium_use_system_libpng
-            CONDITION QT_FEATURE_webengine_system_libpng
-        )
-        extend_gn_list(gnArgArg
-            ARGS use_libpci
-            CONDITION QT_FEATURE_webengine_system_libpci
-        )
-        extend_gn_list(gnArgArg
-            ARGS use_alsa
-            CONDITION QT_FEATURE_webengine_system_alsa
-        )
-        extend_gn_list(gnArgArg
-            ARGS use_pulseaudio
-            CONDITION QT_FEATURE_webengine_system_pulseaudio
-        )
-        extend_gn_list(gnArgArg
-            ARGS ozone_platform_x11 use_xkbcommon
-            CONDITION QT_FEATURE_webengine_ozone_x11
-        )
-        extend_gn_list(gnArgArg
-            ARGS rtc_use_x11
-            CONDITION QT_FEATURE_webengine_ozone_x11 AND QT_FEATURE_webengine_webrtc
-        )
-        extend_gn_list(gnArgArg
-            ARGS use_xscrnsaver
-            CONDITION QT_FEATURE_webengine_ozone_x11 AND XSCRNSAVER_FOUND
-        )
+            set(systemLibs libjpeg libpng freetype harfbuzz libevent libwebp libxml
+                opus snappy libvpx icu ffmpeg re2 lcms2
+            )
+            foreach(slib ${systemLibs})
+                extend_gn_list(gnArgArg
+                    ARGS use_system_${slib}
+                    CONDITION QT_FEATURE_webengine_system_${slib}
+                )
+            endforeach()
+            extend_gn_list(gnArgArg
+                ARGS icu_use_data_file
+                CONDITION NOT QT_FEATURE_webengine_system_icu
+            )
+            extend_gn_list(gnArgArg
+                ARGS use_system_zlib use_system_minizip
+                CONDITION QT_FEATURE_webengine_system_zlib AND QT_FEATURE_webengine_system_minizip
+            )
+            extend_gn_list(gnArgArg
+                ARGS pdfium_use_system_zlib
+                CONDITION QT_FEATURE_webengine_system_zlib
+            )
+            extend_gn_list(gnArgArg
+                ARGS pdfium_use_system_libpng
+                CONDITION QT_FEATURE_webengine_system_libpng
+            )
+            extend_gn_list(gnArgArg
+                ARGS use_libpci
+                CONDITION QT_FEATURE_webengine_system_libpci
+            )
+            extend_gn_list(gnArgArg
+                ARGS use_alsa
+                CONDITION QT_FEATURE_webengine_system_alsa
+            )
+            extend_gn_list(gnArgArg
+                ARGS use_pulseaudio
+                CONDITION QT_FEATURE_webengine_system_pulseaudio
+            )
+            extend_gn_list(gnArgArg
+                ARGS ozone_platform_x11 use_xkbcommon
+                CONDITION QT_FEATURE_webengine_ozone_x11
+            )
+            extend_gn_list(gnArgArg
+                ARGS rtc_use_x11
+                CONDITION QT_FEATURE_webengine_ozone_x11 AND QT_FEATURE_webengine_webrtc
+            )
+            extend_gn_list(gnArgArg
+                ARGS use_xscrnsaver
+                CONDITION QT_FEATURE_webengine_ozone_x11 AND XSCRNSAVER_FOUND
+            )
 
-        if(CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm")
-           check_thumb(armThumb)
-           if(NOT armThumb AND NOT QT_FEATURE_system_ffmpeg)
-               list(APPEND gnArgArg media_use_ffmpeg=false use_webaudio_ffmpeg=false)
-           endif()
+            if(CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm")
+                check_thumb(armThumb)
+                if(NOT armThumb AND NOT QT_FEATURE_system_ffmpeg)
+                    list(APPEND gnArgArg media_use_ffmpeg=false use_webaudio_ffmpeg=false)
+                endif()
+            endif()
         endif()
-    endif()
 
-    if(MACOS)
-        list(APPEND gnArgArg
-            use_external_popup_menu=false
-            angle_enable_vulkan=false
-        )
-    endif()
+        if(MACOS)
+            list(APPEND gnArgArg
+                use_external_popup_menu=false
+                angle_enable_vulkan=false
+            )
+        endif()
 
-    if(WIN32)
-        list(APPEND gnArgArg
-            enable_location_source=false
-            enable_session_service=false
-            ninja_use_custom_environment_files=false
-            com_init_check_hook_disabled=true
-            heterogeneous_executables=true
-            enable_vr=false
-        )
-    endif()
+        if(WIN32)
+            list(APPEND gnArgArg
+                enable_location_source=false
+                enable_session_service=false
+                ninja_use_custom_environment_files=false
+                com_init_check_hook_disabled=true
+                heterogeneous_executables=true
+                enable_vr=false
+            )
+        endif()
 
 
-##
-#  GN CALL
-##
+    ##
+    #  GN CALL
+    ##
 
-    execute_gn(gnArgArg)
+        execute_gn(gnArgArg)
 
-##
-#  NINJA CALL
-##
+    ##
+    #  NINJA CALL
+    ##
 
-    # config loop is a workaround to be able to add_custom_command per config
-    # note this is fixed in CMAKE.3.20 and should be cleaned up when 3.20 is
-    # the minimum cmake we support
+        # config loop is a workaround to be able to add_custom_command per config
+        # note this is fixed in CMAKE.3.20 and should be cleaned up when 3.20 is
+        # the minimum cmake we support
 
-    if(WIN32)
-        set(sandboxOutput ${buildDir}/${config}/QtWebEngineCoreSandbox.lib)
-        set(sandboxTarget QtWebEngineCoreSandbox)
-    else()
-        unset(sandboxOutput)
-        unset(sandboxTarget)
-    endif()
+        if(WIN32)
+            set(sandboxOutput ${buildDir}/${config}/QtWebEngineCoreSandbox.lib)
+            set(sandboxTarget QtWebEngineCoreSandbox)
+        else()
+            unset(sandboxOutput)
+            unset(sandboxTarget)
+        endif()
 
-    execute_ninja(QtWebEngineCore ${sandboxTarget})
+        execute_ninja(QtWebEngineCore ${sandboxTarget})
 
+    endforeach()
 endforeach()
 
 ##
 #  WEBENGINECORE SETUP
 ##
-
-target_include_directories(WebEngineCore PRIVATE
-    ${buildDir}/$<CONFIG>/gen
-    ${buildDir}/$<CONFIG>/gen/third_party/perfetto
-    ${buildDir}/$<CONFIG>/gen/third_party/perfetto/build_config
-)
-
-if(WIN32)
-    add_library(WebEngineCoreSandbox STATIC IMPORTED GLOBAL)
-    add_dependencies(WebEngineCoreSandbox ninja)
+if (QT_IS_MACOS_UNIVERSAL)
+    target_include_directories(WebEngineCore PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_SYSTEM_PROCESSOR}/$<CONFIG>/gen
+        ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_SYSTEM_PROCESSOR}/$<CONFIG>/gen/third_party/perfetto
+        ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_SYSTEM_PROCESSOR}/$<CONFIG>/gen/third_party/perfetto/build_config
+    )
+else()
+    target_include_directories(WebEngineCore PRIVATE
+        ${buildDir}/$<CONFIG>/gen
+        ${buildDir}/$<CONFIG>/gen/third_party/perfetto
+        ${buildDir}/$<CONFIG>/gen/third_party/perfetto/build_config
+    )
 endif()
 
-foreach(config ${configs})
+if (QT_IS_MACOS_UNIVERSAL)
 
-     extend_target_with_gn_objects(WebEngineCore ${config} QtWebEngineCore.cmake QtWebEngineCore.stamp)
+    set(buildDir "${CMAKE_CURRENT_BINARY_DIR}")
+    foreach(config ${configs})
 
-     if(WIN32)
-         string(TOUPPER ${config} cfg)
-         set(sandboxLibraryPath ${buildDir}/${config}/QtWebEngineCoreSandbox.lib)
-         set_property(TARGET WebEngineCoreSandbox
-             PROPERTY IMPORTED_LOCATION_${cfg} ${sandboxLibraryPath})
-         set_source_files_properties(${sandboxLibraryPath} PROPERTIES GENERATED TRUE)
-         add_custom_command(OUTPUT ${sandboxLibraryPath} DEPENDS ${sandboxOutput})
-         add_custom_target(generate_sandbox_${cfg} DEPENDS ${sandboxLibraryPath})
-     endif()
+        extend_target_with_gn_libs(WebEngineCore ${config} QtWebEngineCore.cmake QtWebEngineCore.stamp)
 
-endforeach()
+    endforeach()
+    # in the end, set the build dir back to one of the archs, to make sure the resources get copied alright
+    set(buildDir "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_SYSTEM_PROCESSOR}")
+
+else()
+
+    if(WIN32)
+        add_library(WebEngineCoreSandbox STATIC IMPORTED GLOBAL)
+        add_dependencies(WebEngineCoreSandbox ninja)
+    endif()
+
+    foreach(config ${configs})
+
+        extend_target_with_gn_objects(WebEngineCore ${config} QtWebEngineCore.cmake QtWebEngineCore.stamp)
+
+        if(WIN32)
+            string(TOUPPER ${config} cfg)
+            set(sandboxLibraryPath ${buildDir}/${config}/QtWebEngineCoreSandbox.lib)
+            set_property(TARGET WebEngineCoreSandbox
+                PROPERTY IMPORTED_LOCATION_${cfg} ${sandboxLibraryPath})
+            set_source_files_properties(${sandboxLibraryPath} PROPERTIES GENERATED TRUE)
+            add_custom_command(OUTPUT ${sandboxLibraryPath} DEPENDS ${sandboxOutput})
+            add_custom_target(generate_sandbox_${cfg} DEPENDS ${sandboxLibraryPath})
+        endif()
+
+    endforeach()
+
+endif()
 
 ##
 #  WEBENGINECORE RESOURCES
@@ -606,8 +639,16 @@ if(QT_FEATURE_webengine_spellchecker)
         ../3rdparty/chromium/third_party/boringssl/src/include
         ${buildDir}/${config}/gen
     )
-    foreach(config ${configs})
-        extend_target_with_gn_objects(${dict_target_name} ${config} convert_dict.cmake "")
-    endforeach()
+    if(QT_IS_MACOS_UNIVERSAL)
+        set(buildDir "${CMAKE_CURRENT_BINARY_DIR}")
+        foreach(config ${configs})
+            extend_target_with_gn_libs(${dict_target_name} ${config} convert_dict.cmake QtWebEngineCore.stamp)
+        endforeach()
+
+    else()
+        foreach(config ${configs})
+            extend_target_with_gn_objects(${dict_target_name} ${config} convert_dict.cmake "")
+        endforeach()
+    endif()
 endif()
 
