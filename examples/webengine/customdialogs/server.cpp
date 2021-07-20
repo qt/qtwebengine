@@ -75,11 +75,20 @@ void Server::handleReadReady()
 {
     QTcpSocket *socket = qobject_cast<QTcpSocket*>(sender());
     Q_ASSERT(socket);
-    QByteArray msg = socket->readAll();
-    if (msg.contains(QByteArrayLiteral("OPEN_AUTH")))
+    m_data.append(socket->readAll());
+
+    // simply wait for whole request
+    if (!m_data.endsWith("\r\n\r\n"))
+        return;
+    if (m_data.contains(QByteArrayLiteral("OPEN_AUTH"))) {
         socket->write("HTTP/1.1 401 Unauthorized\nWWW-Authenticate: "
                       "Basic realm=\"Very Restricted Area\"\r\n\r\n");
-    if (msg.contains(QByteArrayLiteral("OPEN_PROXY")))
-        socket->write("HTTP/1.1 407 Proxy Auth Required\nProxy-Authenticate: "
-                      "Basic realm=\"Proxy requires authentication\"\r\n\r\n");
+        m_data.clear();
+        return;
+    }
+
+    socket->write("HTTP/1.1 407 Proxy Auth Required\nProxy-Authenticate: "
+                  "Basic realm=\"Proxy requires authentication\"\r\n"
+                  "content-length: 0\r\n\r\n");
+    m_data.clear();
 }

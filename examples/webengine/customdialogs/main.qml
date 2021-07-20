@@ -55,8 +55,8 @@ import QtQuick.Window
 
 Window {
     id: mainWindow
-    width: 350
-    height: 550
+    width: 800
+    height: 600
     visible: true
 
     StackView {
@@ -85,6 +85,8 @@ Window {
         function closeForm()
         {
             pop(main);
+            // reset url in case of proxy error
+            webView.url = "qrc:/index.html"
         }
 
         function openForm(form)
