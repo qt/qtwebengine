@@ -70,6 +70,7 @@ private slots:
 
 private:
     QTcpServer m_server;
+    QByteArray m_data;
 };
 
 #endif // SERVER_H

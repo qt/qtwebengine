@@ -52,7 +52,7 @@ import QtQuick
 import QtWebEngine
 
 WebEngineView {
-
+    id: view
     url: "qrc:/index.html"
     property bool useDefaultDialogs: true
     signal openForm(var form)
@@ -115,9 +115,11 @@ WebEngineView {
     }
 
     onAuthenticationDialogRequested: function(request) {
-        if (useDefaultDialogs)
+        if (useDefaultDialogs) {
+            // do not show proxy error page
+            view.url = "qrc:/index.html"
             return;
-
+        }
         request.accepted = true;
         openForm({item: Qt.resolvedUrl("forms/Authentication.qml"),
                      properties: {"request": request}});
