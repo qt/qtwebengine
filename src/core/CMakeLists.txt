@@ -73,6 +73,18 @@ foreach(config ${configs})
     resolve_target_includes(gnIncludes WebEngineCore)
     get_forward_declaration_macro(forwardDeclarationMacro)
 
+    set(gnCxxCompileOptions "")
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        # Silence warning in boringssl headers.
+        list(APPEND gnCxxCompileOptions -Wno-ignored-qualifiers)
+
+        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "11.0.0" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11.2.0")
+            # GCC 11.1 has a regression in the integrated preprocessor, so disable it as a workaround (QTBUG-93360)
+            # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100796
+            list(APPEND gnCxxCompileOptions -no-integrated-cpp)
+        endif()
+    endif()
+
     extend_gn_target(${buildGn}
         INCLUDES
             ${gnIncludes}
@@ -83,6 +95,8 @@ foreach(config ${configs})
             QTWEBENGINEPROCESS_NAME=\\\\\"${qtWebEngineProcessName}\\\\\"
             BUILDING_CHROMIUM
             ${forwardDeclarationMacro}
+        CXX_COMPILE_OPTIONS
+            ${gnCxxCompileOptions}
         SOURCES
             accessibility_activation_observer.cpp accessibility_activation_observer.h
             accessibility_tree_formatter_qt.cpp
