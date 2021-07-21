@@ -94,7 +94,7 @@ public:
     QWebEngineContextMenuRequest *lastContextMenuRequest() const override;
     QWebEnginePage *createPageForWindow(QWebEnginePage::WebWindowType type) override;
     QObject *accessibilityParentObject() override;
-    void didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result) override;
+    void didPrintPage(QPrinter *&printer, QSharedPointer<QByteArray> result) override;
     void didPrintPageToPdf(const QString &filePath, bool success) override;
     void printRequested() override;
 
@@ -114,10 +114,6 @@ public:
     bool m_dragEntered;
     mutable bool m_ownsPage;
     QWebEngineContextMenuRequest *m_contextRequest;
-#if QT_CONFIG(webengine_printing_and_pdf)
-    QPrinter *currentPrinter;
-#endif
-    QMap<quint64, std::function<void(const QByteArray&)>> m_pdfResultCallbacks;
 };
 
 #ifndef QT_NO_ACCESSIBILITY

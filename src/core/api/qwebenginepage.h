@@ -49,6 +49,8 @@
 #include <QtCore/qurl.h>
 #include <QtCore/qvariant.h>
 #include <QtGui/qaction.h>
+#include <QtGui/qpagelayout.h>
+#include <QtGui/qpageranges.h>
 
 #include <functional>
 
@@ -301,6 +303,13 @@ public:
     bool recentlyAudible() const;
     qint64 renderProcessPid() const;
 
+    void printToPdf(const QString &filePath,
+                    const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()),
+                    const QPageRanges &ranges = {});
+    void printToPdf(const std::function<void(const QByteArray&)> &resultCallback,
+                    const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()),
+                    const QPageRanges &ranges = {});
+
     void setInspectedPage(QWebEnginePage *page);
     QWebEnginePage *inspectedPage() const;
     void setDevToolsPage(QWebEnginePage *page);
@@ -354,6 +363,9 @@ Q_SIGNALS:
     void audioMutedChanged(bool muted);
     void recentlyAudibleChanged(bool recentlyAudible);
     void renderProcessPidChanged(qint64 pid);
+
+    void pdfPrintingFinished(const QString &filePath, bool success);
+    void printRequested();
 
     void visibleChanged(bool visible);
 

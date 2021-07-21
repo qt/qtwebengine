@@ -359,9 +359,6 @@ QWebEngineViewPrivate::QWebEngineViewPrivate()
     , m_dragEntered(false)
     , m_ownsPage(false)
     , m_contextRequest(nullptr)
-#if QT_CONFIG(webengine_printing_and_pdf)
-    , currentPrinter(nullptr)
-#endif
 {
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::installFactory(&webAccessibleFactory);
@@ -512,19 +509,12 @@ QObject *QWebEngineViewPrivate::accessibilityParentObject()
     return q;
 }
 
-void QWebEngineViewPrivate::didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result)
+void QWebEngineViewPrivate::didPrintPage(QPrinter *&currentPrinter, QSharedPointer<QByteArray> result)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
     Q_Q(QWebEngineView);
 
-    // If no currentPrinter is set that means that were printing to PDF only.
-    if (!currentPrinter) {
-        if (!result.data())
-            return;
-        if (auto callback = m_pdfResultCallbacks.take(requestId))
-            callback(*(result.data()));
-        return;
-    }
+    Q_ASSERT(currentPrinter);
 
     QThread *printerThread = new QThread;
     QObject::connect(printerThread, &QThread::finished, printerThread, &QThread::deleteLater);
@@ -536,7 +526,7 @@ void QWebEngineViewPrivate::didPrintPage(quint64 requestId, QSharedPointer<QByte
     printerWorker->m_documentCopies = currentPrinter->copyCount();
     printerWorker->m_collateCopies = currentPrinter->collateCopies();
 
-    QObject::connect(printerWorker, &QtWebEngineCore::PrinterWorker::resultReady, q, [this, q](bool success) {
+    QObject::connect(printerWorker, &QtWebEngineCore::PrinterWorker::resultReady, q, [q, &currentPrinter](bool success) {
         currentPrinter = nullptr;
         Q_EMIT q->printFinished(success);
     });
@@ -548,17 +538,15 @@ void QWebEngineViewPrivate::didPrintPage(quint64 requestId, QSharedPointer<QByte
     QMetaObject::invokeMethod(printerWorker, "print");
 
 #else
-    // we should never enter this branch, but just for safe-keeping...
+    Q_UNUSED(currentPrinter);
     Q_UNUSED(result);
-    if (auto callback = m_pdfResultCallbacks.take(requestId))
-        callback(QByteArray());
 #endif
 }
 
 void QWebEngineViewPrivate::didPrintPageToPdf(const QString &filePath, bool success)
 {
     Q_Q(QWebEngineView);
-        Q_EMIT q->pdfPrintingFinished(filePath, success);
+    Q_EMIT q->pdfPrintingFinished(filePath, success);
 }
 
 void QWebEngineViewPrivate::printRequested()
@@ -1000,19 +988,7 @@ QWebEngineContextMenuRequest *QWebEngineView::lastContextMenuRequest() const
 */
 void QWebEngineView::printToPdf(const QString &filePath, const QPageLayout &layout, const QPageRanges &ranges)
 {
-#if QT_CONFIG(webengine_printing_and_pdf)
-    Q_D(QWebEngineView);
-    if (d->currentPrinter) {
-        qWarning("Cannot print to PDF while printing at the same time.");
-        return;
-    }
-    page()->d_ptr->ensureInitialized();
-    page()->d_ptr->adapter->printToPDF(layout, ranges, filePath);
-#else
-    Q_UNUSED(filePath);
-    Q_UNUSED(layout);
-    Q_UNUSED(ranges);
-#endif
+    page()->printToPdf(filePath, layout, ranges);
 }
 
 /*!
@@ -1032,23 +1008,7 @@ void QWebEngineView::printToPdf(const QString &filePath, const QPageLayout &layo
 */
 void QWebEngineView::printToPdf(const std::function<void(const QByteArray&)> &resultCallback, const QPageLayout &layout, const QPageRanges &ranges)
 {
-    Q_D(QWebEngineView);
-#if QT_CONFIG(webengine_printing_and_pdf)
-    if (d->currentPrinter) {
-        qWarning("Cannot print to PDF while printing at the same time.");
-        if (resultCallback)
-            resultCallback(QByteArray());
-        return;
-    }
-    page()->d_ptr->ensureInitialized();
-    quint64 requestId = page()->d_ptr->adapter->printToPDFCallbackResult(layout, ranges);
-    d->m_pdfResultCallbacks.insert(requestId, resultCallback);
-#else
-    Q_UNUSED(layout);
-    Q_UNUSED(ranges);
-    if (resultCallback)
-        resultCallback(QByteArray());
-#endif
+    page()->printToPdf(resultCallback, layout, ranges);
 }
 
 /*!
@@ -1093,13 +1053,12 @@ void QWebEngineView::printToPdf(const std::function<void(const QByteArray&)> &re
 void QWebEngineView::print(QPrinter *printer)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
-    Q_D(QWebEngineView);
-    if (d->currentPrinter) {
+    if (page()->d_ptr->currentPrinter) {
         qWarning("Cannot print page on printer %ls: Already printing on a device.", qUtf16Printable(printer->printerName()));
         return;
     }
 
-    d->currentPrinter = printer;
+    page()->d_ptr->currentPrinter = printer;
     page()->d_ptr->ensureInitialized();
     page()->d_ptr->adapter->printToPDFCallbackResult(printer->pageLayout(),
                                                      printer->pageRanges(),
