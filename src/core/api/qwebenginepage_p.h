@@ -70,6 +70,7 @@ class WebContentsAdapter;
 }
 
 QT_BEGIN_NAMESPACE
+class QPrinter;
 class QWebEngineFindTextResult;
 class QWebEngineHistory;
 class QWebEnginePage;
@@ -102,7 +103,7 @@ public:
     virtual void unhandledKeyEvent(QKeyEvent *event) = 0;
     virtual bool passOnFocus(bool reverse) = 0;
     virtual QObject *accessibilityParentObject() = 0;
-    virtual void didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result) = 0;
+    virtual void didPrintPage(QPrinter *&printer, QSharedPointer<QByteArray> result) = 0;
     virtual void didPrintPageToPdf(const QString &filePath, bool success) = 0;
     virtual void printRequested() = 0;
 };
@@ -222,9 +223,13 @@ public:
     qreal defaultZoomFactor;
     QTimer wasShownTimer;
     QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *widget = nullptr;
+#if QT_CONFIG(webengine_printing_and_pdf)
+    QPrinter *currentPrinter = nullptr;
+#endif
 
     mutable QMap<quint64, std::function<void(const QVariant &)>> m_variantCallbacks;
     mutable QMap<quint64, std::function<void(const QString &)>> m_stringCallbacks;
+    QMap<quint64, std::function<void(const QByteArray&)>> m_pdfResultCallbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];
 };
 
