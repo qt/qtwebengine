@@ -101,16 +101,18 @@ void ProfileIODataQt::shutdownOnUIThread()
     if (m_cookieDelegate)
         m_cookieDelegate->unsetMojoCookieManager();
     m_proxyConfigMonitor.reset();
-    bool posted = content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE, this);
-    if (!posted) {
-        qWarning() << "Could not delete ProfileIODataQt on io thread !";
-        delete this;
-    }
+
     if (m_clearHttpCacheInProgress) {
         m_clearHttpCacheInProgress = false;
         content::BrowsingDataRemover *remover =
                 content::BrowserContext::GetBrowsingDataRemover(m_profileAdapter->profile());
         remover->RemoveObserver(&m_removerObserver);
+    }
+
+    bool posted = content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE, this);
+    if (!posted) {
+        qWarning() << "Could not delete ProfileIODataQt on io thread !";
+        delete this;
     }
 }
 
