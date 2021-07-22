@@ -176,8 +176,9 @@ externalproject_add(qtwebengine
 )
 
 # required for topLevel build
+qt_get_tool_target_name(cacheGenTarget qmlcachegen)
 add_implicit_dependencies(qtwebengine Core Gui Widgets Network OpenGL
-    OpenGLWidgets Quick QuickWidgets Qml PrintSupport WebChannel Positioning
+    OpenGLWidgets Quick QuickWidgets Qml PrintSupport WebChannel Positioning ${cacheGenTarget}
 )
 
 # Ensure the libs project is reconfigured if the root project is reconfigured, so that the
@@ -200,6 +201,7 @@ endif()
 
 if(FORCE_TEST_RUN OR QT_BUILD_TESTS)
      find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS QuickTest Test)
+     find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS WebSockets)
      unset(testRunCommand)
      if(FORCE_TEST_RUN)
         set(testRunCommand TEST_COMMAND ctest)
@@ -217,6 +219,7 @@ if(FORCE_TEST_RUN OR QT_BUILD_TESTS)
          ${testRunCommand}
     )
     externalproject_add_stepdependencies(qtwebengine_tests install qtwebengine)
+    add_implicit_dependencies(qtwebengine_tests Test QuickTest WebSockets)
     if(QT_BUILD_EXAMPLES AND BUILD_SHARED_LIBS)
        externalproject_add_stepdependencies(qtwebengine_tests install qtwebengine_examples)
     endif()
