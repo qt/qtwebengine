@@ -17,7 +17,7 @@ else()
     find_package(Protobuf)
     find_package(PkgConfig)
     find_package(Snappy)
-    find_package(Nodejs)
+    find_package(Nodejs 10.19)
     find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS Gui Widgets Network OpenGL OpenGLWidgets Quick Qml)
 endif()
 
@@ -348,7 +348,7 @@ add_check_for_support(webEngineError webEngineSupport
 add_check_for_support(webEngineError webEngineSupport
    MODULE QtWebEngine
    CONDITION TARGET Nodejs::Nodejs
-   MESSAGE "Nodejs is required."
+   MESSAGE "node.js version 10.19 or later is required."
 )
 add_check_for_support(webEngineError webEngineSupport
    MODULE QtWebEngine

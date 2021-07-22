@@ -20,7 +20,7 @@ find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Co
 find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT REQUIRED)
 find_package(Ninja 1.7.2 REQUIRED)
 find_package(Python2 2.7.5 REQUIRED)
-find_package(Nodejs 12.0)
+find_package(Nodejs 10.19 REQUIRED)
 find_package(PkgConfig)
 if(PkgConfig_FOUND)
     pkg_check_modules(XSCRNSAVER xscrnsaver)
