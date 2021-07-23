@@ -96,9 +96,9 @@ public:
     int errorCode() const;
 
 private:
-    QWebEngineLoadingInfo(const QUrl& url, LoadStatus status,
-                          bool isErrorPage = false, const QString& errorString = QString(),
-                          int errorCode = 0, ErrorDomain errorDomain = NoErrorDomain);
+    QWebEngineLoadingInfo(const QUrl &url, LoadStatus status, bool isErrorPage = false,
+                          const QString &errorString = QString(), int errorCode = 0,
+                          ErrorDomain errorDomain = NoErrorDomain);
     class QWebEngineLoadingInfoPrivate;
     Q_DECLARE_PRIVATE(QWebEngineLoadingInfo)
     QExplicitlySharedDataPointer<QWebEngineLoadingInfoPrivate> d_ptr;

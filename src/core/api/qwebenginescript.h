@@ -51,7 +51,8 @@ class UserScript;
 
 QT_BEGIN_NAMESPACE
 
-class Q_WEBENGINECORE_EXPORT QWebEngineScript {
+class Q_WEBENGINECORE_EXPORT QWebEngineScript
+{
 
     Q_GADGET
     Q_PROPERTY(QString name READ name WRITE setName FINAL)

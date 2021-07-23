@@ -52,7 +52,8 @@ class ClientCertSelectController;
 
 QT_BEGIN_NAMESPACE
 
-class Q_WEBENGINECORE_EXPORT QWebEngineClientCertificateSelection {
+class Q_WEBENGINECORE_EXPORT QWebEngineClientCertificateSelection
+{
 public:
     QWebEngineClientCertificateSelection(const QWebEngineClientCertificateSelection &);
     ~QWebEngineClientCertificateSelection();

@@ -48,7 +48,8 @@
 QT_BEGIN_NAMESPACE
 class QWebEngineScriptCollectionPrivate;
 
-class Q_WEBENGINECORE_EXPORT QWebEngineScriptCollection {
+class Q_WEBENGINECORE_EXPORT QWebEngineScriptCollection
+{
 public:
     ~QWebEngineScriptCollection();
 

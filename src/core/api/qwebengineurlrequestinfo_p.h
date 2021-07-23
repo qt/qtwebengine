@@ -65,7 +65,8 @@ class URLRequest;
 
 QT_BEGIN_NAMESPACE
 
-class QWebEngineUrlRequestInfoPrivate {
+class QWebEngineUrlRequestInfoPrivate
+{
     Q_DECLARE_PUBLIC(QWebEngineUrlRequestInfo)
 public:
     QWebEngineUrlRequestInfoPrivate(QWebEngineUrlRequestInfo::ResourceType resource,
