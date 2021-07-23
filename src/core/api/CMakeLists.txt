@@ -13,7 +13,6 @@ qt_internal_add_module(WebEngineCore
      ${configureMode}
      SOURCES
         qtwebenginecoreglobal.cpp qtwebenginecoreglobal.h qtwebenginecoreglobal_p.h
-        qwebenginecallback.h qwebenginecallback_p.h
         qwebenginecertificateerror.cpp qwebenginecertificateerror.h
         qwebengineclientcertificateselection.cpp qwebengineclientcertificateselection.h
         qwebengineclientcertificatestore.cpp qwebengineclientcertificatestore.h

@@ -62,7 +62,6 @@ using namespace QtWebEngineCore;
 
 QWebEngineCookieStorePrivate::QWebEngineCookieStorePrivate(QWebEngineCookieStore *q)
     : q_ptr(q)
-    , m_nextCallbackId(CallbackDirectory::ReservedCallbackIdsEnd)
     , m_deleteSessionCookiesPending(false)
     , m_deleteAllCookiesPending(false)
     , m_getAllCookiesPending(false)
@@ -76,17 +75,17 @@ void QWebEngineCookieStorePrivate::processPendingUserCookies()
 
     if (m_getAllCookiesPending) {
         m_getAllCookiesPending = false;
-        delegate->getAllCookies(CallbackDirectory::GetAllCookiesCallbackId);
+        delegate->getAllCookies();
     }
 
     if (m_deleteAllCookiesPending) {
         m_deleteAllCookiesPending = false;
-        delegate->deleteAllCookies(CallbackDirectory::DeleteAllCookiesCallbackId);
+        delegate->deleteAllCookies();
     }
 
     if (m_deleteSessionCookiesPending) {
         m_deleteSessionCookiesPending = false;
-        delegate->deleteSessionCookies(CallbackDirectory::DeleteSessionCookiesCallbackId);
+        delegate->deleteSessionCookies();
     }
 
     if (bool(filterCallback))
@@ -96,10 +95,10 @@ void QWebEngineCookieStorePrivate::processPendingUserCookies()
         return;
 
     for (const CookieData &cookieData : qAsConst(m_pendingUserCookies)) {
-        if (cookieData.callbackId == CallbackDirectory::DeleteCookieCallbackId)
+        if (cookieData.wasDelete)
             delegate->deleteCookie(cookieData.cookie, cookieData.origin);
         else
-            delegate->setCookie(cookieData.callbackId, cookieData.cookie, cookieData.origin);
+            delegate->setCookie(cookieData.cookie, cookieData.origin);
     }
 
     m_pendingUserCookies.clear();
@@ -113,26 +112,20 @@ void QWebEngineCookieStorePrivate::rejectPendingUserCookies()
     m_pendingUserCookies.clear();
 }
 
-void QWebEngineCookieStorePrivate::setCookie(const QWebEngineCallback<bool> &callback, const QNetworkCookie &cookie,
-                                             const QUrl &origin)
+void QWebEngineCookieStorePrivate::setCookie(const QNetworkCookie &cookie, const QUrl &origin)
 {
-    const quint64 currentCallbackId = callback ? m_nextCallbackId++ : static_cast<quint64>(CallbackDirectory::NoCallbackId);
-
-    if (currentCallbackId != CallbackDirectory::NoCallbackId)
-        callbackDirectory.registerCallback(currentCallbackId, callback);
-
     if (!delegate || !delegate->hasCookieMonster()) {
-        m_pendingUserCookies.append(CookieData{ currentCallbackId, cookie, origin });
+        m_pendingUserCookies.append(CookieData{ false, cookie, origin });
         return;
     }
 
-    delegate->setCookie(currentCallbackId, cookie, origin);
+    delegate->setCookie(cookie, origin);
 }
 
 void QWebEngineCookieStorePrivate::deleteCookie(const QNetworkCookie &cookie, const QUrl &url)
 {
     if (!delegate || !delegate->hasCookieMonster()) {
-        m_pendingUserCookies.append(CookieData{ CallbackDirectory::DeleteCookieCallbackId, cookie, url });
+        m_pendingUserCookies.append(CookieData{ true, cookie, url });
         return;
     }
 
@@ -146,7 +139,7 @@ void QWebEngineCookieStorePrivate::deleteSessionCookies()
         return;
     }
 
-    delegate->deleteSessionCookies(CallbackDirectory::DeleteSessionCookiesCallbackId);
+    delegate->deleteSessionCookies();
 }
 
 void QWebEngineCookieStorePrivate::deleteAllCookies()
@@ -157,7 +150,7 @@ void QWebEngineCookieStorePrivate::deleteAllCookies()
         return;
     }
 
-    delegate->deleteAllCookies(CallbackDirectory::DeleteAllCookiesCallbackId);
+    delegate->deleteAllCookies();
 }
 
 void QWebEngineCookieStorePrivate::getAllCookies()
@@ -167,22 +160,9 @@ void QWebEngineCookieStorePrivate::getAllCookies()
         return;
     }
 
-    delegate->getAllCookies(CallbackDirectory::GetAllCookiesCallbackId);
+    delegate->getAllCookies();
 }
 
-void QWebEngineCookieStorePrivate::onGetAllCallbackResult(qint64 callbackId, const QByteArray &cookieList)
-{
-    callbackDirectory.invoke(callbackId, cookieList);
-}
-void QWebEngineCookieStorePrivate::onSetCallbackResult(qint64 callbackId, bool success)
-{
-    callbackDirectory.invoke(callbackId, success);
-}
-
-void QWebEngineCookieStorePrivate::onDeleteCallbackResult(qint64 callbackId, int numCookies)
-{
-    callbackDirectory.invoke(callbackId, numCookies);
-}
 
 void QWebEngineCookieStorePrivate::onCookieChanged(const QNetworkCookie &cookie, bool removed)
 {
@@ -266,8 +246,7 @@ QWebEngineCookieStore::~QWebEngineCookieStore() {}
 
 void QWebEngineCookieStore::setCookie(const QNetworkCookie &cookie, const QUrl &origin)
 {
-    //TODO: use callbacks or delete dummy ones
-    d_ptr->setCookie(QWebEngineCallback<bool>(), cookie, origin);
+    d_ptr->setCookie(cookie, origin);
 }
 
 /*!
@@ -294,11 +273,8 @@ void QWebEngineCookieStore::deleteCookie(const QNetworkCookie &cookie, const QUr
 
 void QWebEngineCookieStore::loadAllCookies()
 {
-    //TODO: use callbacks or delete dummy ones
     if (d_ptr->m_getAllCookiesPending)
         return;
-    d_ptr->callbackDirectory.registerCallback(CallbackDirectory::GetAllCookiesCallbackId,
-                                              QWebEngineCallback<const QByteArray &>());
     //this will trigger cookieAdded signal
     d_ptr->getAllCookies();
 }
@@ -313,10 +289,8 @@ void QWebEngineCookieStore::loadAllCookies()
 
 void QWebEngineCookieStore::deleteSessionCookies()
 {
-    //TODO: use callbacks or delete dummy ones
     if (d_ptr->m_deleteAllCookiesPending || d_ptr->m_deleteSessionCookiesPending)
         return;
-    d_ptr->callbackDirectory.registerCallback(CallbackDirectory::DeleteSessionCookiesCallbackId, QWebEngineCallback<int>());
     d_ptr->deleteSessionCookies();
 }
 
@@ -328,10 +302,8 @@ void QWebEngineCookieStore::deleteSessionCookies()
 
 void QWebEngineCookieStore::deleteAllCookies()
 {
-    //TODO: use callbacks or delete dummy ones
     if (d_ptr->m_deleteAllCookiesPending)
         return;
-    d_ptr->callbackDirectory.registerCallback(CallbackDirectory::DeleteAllCookiesCallbackId, QWebEngineCallback<int>());
     d_ptr->deleteAllCookies();
 }
 

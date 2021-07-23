@@ -52,8 +52,12 @@
 #define FIND_TEXT_HELPER_H
 
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
-#include <QtWebEngineCore/private/qwebenginecallback_p.h>
+
 #include <QJSValue>
+#include <QMap>
+#include <QString>
+
+#include <functional>
 
 namespace content {
 class WebContents;

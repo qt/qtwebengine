@@ -438,22 +438,6 @@ QSharedPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavig
     return QSharedPointer<WebContentsAdapter>::create(std::move(newWebContents));
 }
 
-WebContentsAdapter::WebContentsAdapter()
-  : m_profileAdapter(nullptr)
-  , m_webContents(nullptr)
-#if QT_CONFIG(webengine_webchannel)
-  , m_webChannel(nullptr)
-  , m_webChannelWorld(0)
-#endif
-  , m_adapterClient(nullptr)
-  , m_nextRequestId(CallbackDirectory::ReservedCallbackIdsEnd)
-  , m_currentDropAction(blink::kDragOperationNone)
-  , m_devToolsFrontend(nullptr)
-{
-    // This has to be the first thing we create, and the last we destroy.
-    WebEngineContext::current();
-}
-
 WebContentsAdapter::WebContentsAdapter(std::unique_ptr<content::WebContents> webContents)
   : m_profileAdapter(nullptr)
   , m_webContents(std::move(webContents))
@@ -462,12 +446,17 @@ WebContentsAdapter::WebContentsAdapter(std::unique_ptr<content::WebContents> web
   , m_webChannelWorld(0)
 #endif
   , m_adapterClient(nullptr)
-  , m_nextRequestId(CallbackDirectory::ReservedCallbackIdsEnd)
+  , m_nextRequestId(1)
   , m_currentDropAction(blink::kDragOperationNone)
   , m_devToolsFrontend(nullptr)
 {
     // This has to be the first thing we create, and the last we destroy.
     WebEngineContext::current();
+}
+
+WebContentsAdapter::WebContentsAdapter()
+  : WebContentsAdapter(nullptr)
+{
 }
 
 WebContentsAdapter::~WebContentsAdapter()

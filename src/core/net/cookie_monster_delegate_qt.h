@@ -95,11 +95,11 @@ public:
 
     bool hasCookieMonster();
 
-    void setCookie(quint64 callbackId, const QNetworkCookie &cookie, const QUrl &origin);
+    void setCookie(const QNetworkCookie &cookie, const QUrl &origin);
     void deleteCookie(const QNetworkCookie &cookie, const QUrl &origin);
-    void getAllCookies(quint64 callbackId);
-    void deleteSessionCookies(quint64 callbackId);
-    void deleteAllCookies(quint64 callbackId);
+    void getAllCookies();
+    void deleteSessionCookies();
+    void deleteAllCookies();
 
     void setClient(QWebEngineCookieStore *client);
     void setMojoCookieManager(network::mojom::CookieManagerPtrInfo cookie_manager_info);
@@ -111,11 +111,6 @@ public:
 
     void AddStore(net::CookieStore *store);
     void OnCookieChanged(const net::CookieChangeInfo &change);
-
-private:
-    void GetAllCookiesCallbackOnUIThread(qint64 callbackId, const net::CookieList &cookies);
-    void SetCookieCallbackOnUIThread(qint64 callbackId, net::CookieAccessResult status);
-    void DeleteCookiesCallbackOnUIThread(qint64 callbackId, uint numCookies);
 };
 
 }
