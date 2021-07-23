@@ -96,7 +96,8 @@ Q_SIGNALS:
 #endif
 
 private:
-    QWebEngineNavigationRequest(const QUrl& url, NavigationType navigationType, bool mainFrame, QObject *parent = nullptr);
+    QWebEngineNavigationRequest(const QUrl &url, NavigationType navigationType, bool mainFrame,
+                                QObject *parent = nullptr);
 
     friend class QWebEnginePagePrivate;
     friend class QQuickWebEngineViewPrivate;

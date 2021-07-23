@@ -52,7 +52,8 @@ QT_BEGIN_NAMESPACE
 
 class QWebEngineFindTextResultPrivate;
 
-class Q_WEBENGINECORE_EXPORT QWebEngineFindTextResult {
+class Q_WEBENGINECORE_EXPORT QWebEngineFindTextResult
+{
     Q_GADGET
     Q_PROPERTY(int numberOfMatches READ numberOfMatches CONSTANT FINAL)
     Q_PROPERTY(int activeMatch READ activeMatch CONSTANT FINAL)

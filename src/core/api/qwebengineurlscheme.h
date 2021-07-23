@@ -54,7 +54,8 @@ QT_BEGIN_NAMESPACE
 
 class QWebEngineUrlSchemePrivate;
 
-class Q_WEBENGINECORE_EXPORT QWebEngineUrlScheme {
+class Q_WEBENGINECORE_EXPORT QWebEngineUrlScheme
+{
     Q_GADGET
 public:
     enum class Syntax {

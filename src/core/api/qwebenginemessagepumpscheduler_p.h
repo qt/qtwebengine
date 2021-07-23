@@ -59,7 +59,8 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineMessagePumpScheduler : public QObject {
+class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineMessagePumpScheduler : public QObject
+{
     Q_OBJECT
 public:
     QWebEngineMessagePumpScheduler(std::function<void()> callback);

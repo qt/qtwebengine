@@ -62,7 +62,8 @@ QT_BEGIN_NAMESPACE
 
 class QSystemTrayIcon;
 
-class DefaultNotificationPresenter : public QObject {
+class DefaultNotificationPresenter : public QObject
+{
     Q_OBJECT
 public:
     DefaultNotificationPresenter(QObject *parent = nullptr);

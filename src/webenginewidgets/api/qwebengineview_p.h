@@ -130,7 +130,7 @@ public:
     int indexOfChild(const QAccessibleInterface *child) const override;
 
 private:
-    QWebEngineView *view() const { return static_cast<QWebEngineView*>(object()); }
+    QWebEngineView *view() const { return static_cast<QWebEngineView *>(object()); }
 };
 #endif // QT_NO_ACCESSIBILITY
 

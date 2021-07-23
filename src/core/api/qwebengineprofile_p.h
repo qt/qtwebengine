@@ -77,7 +77,7 @@ public:
     QWebEngineProfilePrivate(QtWebEngineCore::ProfileAdapter *profileAdapter);
     ~QWebEngineProfilePrivate();
 
-    QtWebEngineCore::ProfileAdapter* profileAdapter() const;
+    QtWebEngineCore::ProfileAdapter *profileAdapter() const;
     QWebEngineSettings *settings() const { return m_settings; }
 
     void downloadDestroyed(quint32 downloadId);
@@ -97,7 +97,7 @@ private:
     QWebEngineSettings *m_settings;
     QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
     QScopedPointer<QWebEngineScriptCollection> m_scriptCollection;
-    QMap<quint32, QPointer<QWebEngineDownloadRequest> > m_ongoingDownloads;
+    QMap<quint32, QPointer<QWebEngineDownloadRequest>> m_ongoingDownloads;
     std::function<void(std::unique_ptr<QWebEngineNotification>)> m_notificationPresenter;
 };
 

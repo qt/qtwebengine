@@ -62,7 +62,8 @@ class QWebEngineScriptCollection;
 class QWebEngineUrlRequestInterceptor;
 class QWebEngineUrlSchemeHandler;
 
-class Q_WEBENGINECORE_EXPORT QWebEngineProfile : public QObject {
+class Q_WEBENGINECORE_EXPORT QWebEngineProfile : public QObject
+{
     Q_OBJECT
 public:
     explicit QWebEngineProfile(QObject *parent = nullptr);
@@ -107,7 +108,7 @@ public:
     int httpCacheMaximumSize() const;
     void setHttpCacheMaximumSize(int maxSize);
 
-    QWebEngineCookieStore* cookieStore();
+    QWebEngineCookieStore *cookieStore();
     void setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
 
     void clearAllVisitedLinks();

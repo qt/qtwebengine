@@ -58,7 +58,8 @@ class ProfileAdapter;
 QT_BEGIN_NAMESPACE
 
 class QWebEngineCookieStorePrivate;
-class Q_WEBENGINECORE_EXPORT QWebEngineCookieStore : public QObject {
+class Q_WEBENGINECORE_EXPORT QWebEngineCookieStore : public QObject
+{
     Q_OBJECT
 
 public:

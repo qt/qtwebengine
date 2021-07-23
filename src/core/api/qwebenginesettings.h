@@ -50,7 +50,8 @@ class WebEngineSettings;
 
 QT_BEGIN_NAMESPACE
 
-class Q_WEBENGINECORE_EXPORT QWebEngineSettings {
+class Q_WEBENGINECORE_EXPORT QWebEngineSettings
+{
 public:
     enum FontFamily {
         StandardFont,

@@ -64,7 +64,8 @@ class WebContentsAdapterClient;
 
 QT_BEGIN_NAMESPACE
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineDownloadRequestPrivate {
+class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineDownloadRequestPrivate
+{
 public:
     QWebEngineDownloadRequestPrivate(QtWebEngineCore::ProfileAdapter *adapter, const QUrl &url);
     ~QWebEngineDownloadRequestPrivate();
@@ -98,4 +99,3 @@ public:
 QT_END_NAMESPACE
 
 #endif // QWEBENGINEDOWNLOADREQUEST_P_H
-

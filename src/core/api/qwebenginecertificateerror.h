@@ -53,7 +53,8 @@ class CertificateErrorController;
 
 QT_BEGIN_NAMESPACE
 
-class Q_WEBENGINECORE_EXPORT QWebEngineCertificateError {
+class Q_WEBENGINECORE_EXPORT QWebEngineCertificateError
+{
     Q_GADGET
     Q_PROPERTY(QUrl url READ url CONSTANT FINAL)
     Q_PROPERTY(Type type READ type CONSTANT FINAL)
@@ -62,7 +63,7 @@ class Q_WEBENGINECORE_EXPORT QWebEngineCertificateError {
 
 public:
     QWebEngineCertificateError(const QWebEngineCertificateError &other);
-    QWebEngineCertificateError& operator=(const QWebEngineCertificateError &other);
+    QWebEngineCertificateError &operator=(const QWebEngineCertificateError &other);
     ~QWebEngineCertificateError();
 
     // Keep this identical to NET_ERROR in net_error_list.h, or add mapping layer.

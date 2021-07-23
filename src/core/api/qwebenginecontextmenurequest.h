@@ -129,8 +129,8 @@ public:
     Q_PROPERTY(QString misspelledWord READ misspelledWord CONSTANT FINAL)
     Q_PROPERTY(QStringList spellCheckerSuggestions READ spellCheckerSuggestions CONSTANT FINAL)
     Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted FINAL)
-    Q_PROPERTY(MediaFlags mediaFlags READ mediaFlags CONSTANT FINAL REVISION(1,1))
-    Q_PROPERTY(EditFlags editFlags READ editFlags CONSTANT FINAL REVISION(1,1))
+    Q_PROPERTY(MediaFlags mediaFlags READ mediaFlags CONSTANT FINAL REVISION(1, 1))
+    Q_PROPERTY(EditFlags editFlags READ editFlags CONSTANT FINAL REVISION(1, 1))
 
     virtual ~QWebEngineContextMenuRequest();
     QPoint position() const;

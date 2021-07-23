@@ -123,11 +123,11 @@ public:
     void lifecycleStateChanged(LifecycleState state) override;
     void recommendedStateChanged(LifecycleState state) override;
     void visibleChanged(bool visible) override;
-    void titleChanged(const QString&) override;
+    void titleChanged(const QString &) override;
     void urlChanged() override;
-    void iconChanged(const QUrl&) override;
+    void iconChanged(const QUrl &) override;
     void loadProgressChanged(int progress) override;
-    void didUpdateTargetURL(const QUrl&) override;
+    void didUpdateTargetURL(const QUrl &) override;
     void selectionChanged() override;
     void recentlyAudibleChanged(bool recentlyAudible) override;
     void renderProcessPidChanged(qint64 pid) override;
@@ -152,14 +152,16 @@ public:
     void javascriptDialog(QSharedPointer<QtWebEngineCore::JavaScriptDialogController>) override;
     void runFileChooser(QSharedPointer<QtWebEngineCore::FilePickerController>) override;
     void showColorDialog(QSharedPointer<QtWebEngineCore::ColorChooserController>) override;
-    void didRunJavaScript(quint64 requestId, const QVariant& result) override;
-    void didFetchDocumentMarkup(quint64 requestId, const QString& result) override;
-    void didFetchDocumentInnerText(quint64 requestId, const QString& result) override;
+    void didRunJavaScript(quint64 requestId, const QVariant &result) override;
+    void didFetchDocumentMarkup(quint64 requestId, const QString &result) override;
+    void didFetchDocumentInnerText(quint64 requestId, const QString &result) override;
     void didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result) override;
     void didPrintPageToPdf(const QString &filePath, bool success) override;
     bool passOnFocus(bool reverse) override;
-    void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) override;
-    void authenticationRequired(QSharedPointer<QtWebEngineCore::AuthenticationDialogController>) override;
+    void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message,
+                                  int lineNumber, const QString &sourceID) override;
+    void authenticationRequired(
+            QSharedPointer<QtWebEngineCore::AuthenticationDialogController>) override;
     void releaseProfile() override;
     void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) override;
     void runFeaturePermissionRequest(QtWebEngineCore::ProfileAdapter::PermissionType permission, const QUrl &securityOrigin) override;
@@ -229,7 +231,7 @@ public:
 
     mutable QMap<quint64, std::function<void(const QVariant &)>> m_variantCallbacks;
     mutable QMap<quint64, std::function<void(const QString &)>> m_stringCallbacks;
-    QMap<quint64, std::function<void(const QByteArray&)>> m_pdfResultCallbacks;
+    QMap<quint64, std::function<void(const QByteArray &)>> m_pdfResultCallbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];
 };
 

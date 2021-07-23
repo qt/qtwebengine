@@ -75,7 +75,8 @@ class QWebEngineScriptCollection;
 class QWebEngineSettings;
 class QWebEngineUrlRequestInterceptor;
 
-class Q_WEBENGINECORE_EXPORT QWebEnginePage : public QObject {
+class Q_WEBENGINECORE_EXPORT QWebEnginePage : public QObject
+{
     Q_OBJECT
     Q_PROPERTY(QString selectedText READ selectedText)
     Q_PROPERTY(bool hasSelection READ hasSelection)
@@ -335,7 +336,7 @@ Q_SIGNALS:
 
     void linkHovered(const QString &url);
     void selectionChanged();
-    void geometryChangeRequested(const QRect& geom);
+    void geometryChangeRequested(const QRect &geom);
     void windowCloseRequested();
 
     void featurePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature);
@@ -379,11 +380,15 @@ Q_SIGNALS:
 
 protected:
     virtual QWebEnginePage *createWindow(WebWindowType type);
-    virtual QStringList chooseFiles(FileSelectionMode mode, const QStringList &oldFiles, const QStringList &acceptedMimeTypes);
-    virtual void javaScriptAlert(const QUrl &securityOrigin, const QString& msg);
-    virtual bool javaScriptConfirm(const QUrl &securityOrigin, const QString& msg);
-    virtual bool javaScriptPrompt(const QUrl &securityOrigin, const QString& msg, const QString& defaultValue, QString* result);
-    virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID);
+    virtual QStringList chooseFiles(FileSelectionMode mode, const QStringList &oldFiles,
+                                    const QStringList &acceptedMimeTypes);
+    virtual void javaScriptAlert(const QUrl &securityOrigin, const QString &msg);
+    virtual bool javaScriptConfirm(const QUrl &securityOrigin, const QString &msg);
+    virtual bool javaScriptPrompt(const QUrl &securityOrigin, const QString &msg,
+                                  const QString &defaultValue, QString *result);
+    virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level,
+                                          const QString &message, int lineNumber,
+                                          const QString &sourceID);
     virtual bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame);
 
 private:
@@ -405,7 +410,7 @@ private:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::FindFlags)
 
 Q_WEBENGINECORE_EXPORT QDataStream &operator<<(QDataStream &stream,
-                                                 const QWebEngineHistory &history);
+                                               const QWebEngineHistory &history);
 Q_WEBENGINECORE_EXPORT QDataStream &operator>>(QDataStream &stream, QWebEngineHistory &history);
 
 QT_END_NAMESPACE
