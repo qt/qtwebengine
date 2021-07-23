@@ -629,6 +629,20 @@ QWebEngineView::~QWebEngineView()
     QWebEngineViewPrivate::bindPageAndView(nullptr, this);
 }
 
+/*!
+    \since 6.2
+
+    Returns the view if any, associated with the page.
+
+    \sa page(), setPage()
+*/
+QWebEngineView *QWebEngineView::forPage(const QWebEnginePage *page)
+{
+    if (!page)
+        return nullptr;
+    return qobject_cast<QWebEngineView *>(page->d_ptr->accessibilityParentObject());
+}
+
 QWebEnginePage* QWebEngineView::page() const
 {
     Q_D(const QWebEngineView);

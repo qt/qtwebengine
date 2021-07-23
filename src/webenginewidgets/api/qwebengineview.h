@@ -73,6 +73,8 @@ public:
     explicit QWebEngineView(QWidget *parent = nullptr);
     virtual ~QWebEngineView();
 
+    static QWebEngineView *forPage(const QWebEnginePage *page);
+
     QWebEnginePage* page() const;
     void setPage(QWebEnginePage* page);
 

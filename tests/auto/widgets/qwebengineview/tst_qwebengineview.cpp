@@ -301,6 +301,8 @@ void tst_QWebEngineView::changePage()
     }
 
     view->setPage(pageFrom.get());
+    QCOMPARE(view->page(), pageFrom.get());
+    QCOMPARE(QWebEngineView::forPage(pageFrom.get()), view.get());
 
     QTRY_COMPARE(spyUrl.count(), 1);
     QCOMPARE(spyUrl.last().value(0).toUrl(), pageFrom->url());
@@ -328,6 +330,9 @@ void tst_QWebEngineView::changePage()
     }
 
     view->setPage(pageTo.get());
+    QCOMPARE(view->page(), pageTo.get());
+    QCOMPARE(QWebEngineView::forPage(pageTo.get()), view.get());
+    QCOMPARE(QWebEngineView::forPage(pageFrom.get()), nullptr);
 
     QTRY_COMPARE(spyUrl.count(), 2);
     QCOMPARE(spyUrl.last().value(0).toUrl(), pageTo->url());
