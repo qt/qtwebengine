@@ -28,7 +28,6 @@
 
 #include <util.h>
 #include <QtTest/QtTest>
-#include <QtWebEngineCore/qwebenginecallback.h>
 #include <QtWebEngineCore/qwebenginecookiestore.h>
 #include <QtWebEngineCore/qwebengineprofile.h>
 #include <QtWebEngineCore/qwebenginepage.h>

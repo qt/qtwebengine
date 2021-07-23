@@ -125,23 +125,19 @@ bool CookieMonsterDelegateQt::hasCookieMonster()
     return m_mojoCookieManager.is_bound();
 }
 
-void CookieMonsterDelegateQt::getAllCookies(quint64 callbackId)
+void CookieMonsterDelegateQt::getAllCookies()
 {
-    m_mojoCookieManager->GetAllCookies(base::BindOnce(&CookieMonsterDelegateQt::GetAllCookiesCallbackOnUIThread, this, callbackId));
+    m_mojoCookieManager->GetAllCookies(net::CookieStore::GetAllCookiesCallback());
 }
 
-void CookieMonsterDelegateQt::setCookie(quint64 callbackId, const QNetworkCookie &cookie, const QUrl &origin)
+void CookieMonsterDelegateQt::setCookie(const QNetworkCookie &cookie, const QUrl &origin)
 {
     Q_ASSERT(hasCookieMonster());
     Q_ASSERT(m_client);
 
-    net::CookieStore::SetCookiesCallback callback;
-
     GURL gurl = origin.isEmpty() ? sourceUrlForCookie(cookie) : toGurl(origin);
     std::string cookie_line = cookie.toRawForm().toStdString();
 
-    if (callbackId != CallbackDirectory::NoCallbackId)
-        callback = base::BindOnce(&CookieMonsterDelegateQt::SetCookieCallbackOnUIThread, this, callbackId);
     net::CookieInclusionStatus inclusion;
     auto canonCookie = net::CanonicalCookie::Create(gurl, cookie_line, base::Time::Now(), base::nullopt, &inclusion);
     if (!inclusion.IsInclude()) {
@@ -151,7 +147,7 @@ void CookieMonsterDelegateQt::setCookie(quint64 callbackId, const QNetworkCookie
     net::CookieOptions options;
     options.set_include_httponly();
     options.set_same_site_cookie_context(net::CookieOptions::SameSiteCookieContext::MakeInclusiveForSet());
-    m_mojoCookieManager->SetCanonicalCookie(*canonCookie.get(), gurl, options, std::move(callback));
+    m_mojoCookieManager->SetCanonicalCookie(*canonCookie.get(), gurl, options, net::CookieStore::SetCookiesCallback());
 }
 
 void CookieMonsterDelegateQt::deleteCookie(const QNetworkCookie &cookie, const QUrl &origin)
@@ -167,27 +163,23 @@ void CookieMonsterDelegateQt::deleteCookie(const QNetworkCookie &cookie, const Q
     m_mojoCookieManager->DeleteCookies(std::move(filter), network::mojom::CookieManager::DeleteCookiesCallback());
 }
 
-void CookieMonsterDelegateQt::deleteSessionCookies(quint64 callbackId)
+void CookieMonsterDelegateQt::deleteSessionCookies()
 {
     Q_ASSERT(hasCookieMonster());
     Q_ASSERT(m_client);
 
-    network::mojom::CookieManager::DeleteCookiesCallback callback =
-        base::BindOnce(&CookieMonsterDelegateQt::DeleteCookiesCallbackOnUIThread, this, callbackId);
     auto filter = network::mojom::CookieDeletionFilter::New();
     filter->session_control = network::mojom::CookieDeletionSessionControl::SESSION_COOKIES;
-    m_mojoCookieManager->DeleteCookies(std::move(filter), std::move(callback));
+    m_mojoCookieManager->DeleteCookies(std::move(filter), network::mojom::CookieManager::DeleteCookiesCallback());
 }
 
-void CookieMonsterDelegateQt::deleteAllCookies(quint64 callbackId)
+void CookieMonsterDelegateQt::deleteAllCookies()
 {
     Q_ASSERT(hasCookieMonster());
     Q_ASSERT(m_client);
 
-    network::mojom::CookieManager::DeleteCookiesCallback callback =
-        base::BindOnce(&CookieMonsterDelegateQt::DeleteCookiesCallbackOnUIThread, this, callbackId);
     auto filter = network::mojom::CookieDeletionFilter::New();
-    m_mojoCookieManager->DeleteCookies(std::move(filter), std::move(callback));
+    m_mojoCookieManager->DeleteCookies(std::move(filter), network::mojom::CookieManager::DeleteCookiesCallback());
 }
 
 void CookieMonsterDelegateQt::setMojoCookieManager(network::mojom::CookieManagerPtrInfo cookie_manager_info)
@@ -263,25 +255,6 @@ void CookieMonsterDelegateQt::OnCookieChanged(const net::CookieChangeInfo &chang
     if (!m_client)
         return;
     m_client->d_func()->onCookieChanged(toQt(change.cookie), change.cause != net::CookieChangeCause::INSERTED);
-}
-
-void CookieMonsterDelegateQt::GetAllCookiesCallbackOnUIThread(qint64 callbackId, const net::CookieList &cookies)
-{
-    QByteArray rawCookies = QByteArray::fromStdString(net::CanonicalCookie::BuildCookieLine(cookies));
-    if (m_client)
-        m_client->d_func()->onGetAllCallbackResult(callbackId, rawCookies);
-}
-
-void CookieMonsterDelegateQt::SetCookieCallbackOnUIThread(qint64 callbackId, net::CookieAccessResult status)
-{
-    if (m_client)
-        m_client->d_func()->onSetCallbackResult(callbackId, status.status.IsInclude());
-}
-
-void CookieMonsterDelegateQt::DeleteCookiesCallbackOnUIThread(qint64 callbackId, uint numCookies)
-{
-    if (m_client)
-        m_client->d_func()->onDeleteCallbackResult(callbackId, numCookies);
 }
 
 } // namespace QtWebEngineCore
