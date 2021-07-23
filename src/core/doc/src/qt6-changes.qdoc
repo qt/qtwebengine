@@ -1,0 +1,147 @@
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page qtwebengine-changes-qt6.html
+    \title Changes to Qt WebEngine
+    \brief Migrate Qt WebEngine to Qt 6.
+
+    Qt 6 is a result of the conscious effort to make the framework more
+    efficient and easy to use.
+
+    We try to maintain binary and source compatibility for all the public
+    APIs in each release. But some changes were inevitable in an effort to
+    make Qt a better framework
+
+    In this topic we summarize those changes in Qt WebEngine, and provide guidance
+    to handle them.
+
+    \section1 Moved Classes
+
+    \section2 The Qt WebEngine module
+    Has been renamed to the Qt WebEngineQuick module to not collide with the name of
+    the super module, and to be consistent with other Quick modules.
+
+    \section2 Classes moved from Qt WebEngineWidgets to Qt WebEngineCore
+    Several classes have been moved from Qt WebEngineWidgets to Qt WebEngineCore if they
+    did not use the Widgets module. In most cases this change should be source compatible unless
+    you included the module name in the include header, in which case you need to update your
+    includes.
+
+    \section3 Classes moved with minimal changes
+    \list
+    \li QWebEngineHistory
+    \li QWebEngineProfile
+    \li QWebEngineScript
+    \li QWebEngineScriptCollection
+    \li QWebEngineClientCertificateSelection
+    \li QWebEngineSettings
+    \li QWebEngineFullScreenRequest
+    \endlist
+
+    \section3 QWebEngineCertificateError
+    Has been unified between QML and C++ versions, so both are now accepted or rejected via methods
+    on the class.
+
+    \section3 QWebEngineContextMenuData
+    Has been moved to Core and renamed QWebEngineContextMenuRequest.
+
+    \section3 QWebEngineDownloadItem
+    Has been moved to Core and renamed QWebEngineDownloadRequest.
+
+    \section3 QWebEnginePage
+    Has been moved to Core, and API that worked on QWebEngineView or QPrinter has been moved, and can now
+    be accessed only from QWebEngineView. See Changed API.
+
+    \section2 Classes moved from Qt WebEngineQuick to Qt WebEngineCore
+
+    \section3 WebEngineNavigationRequest
+    Is now QWebEngineNavigationRequest, and accessible from C++ API as well, adding a more
+    informative variant of QWebEnginePage::acceptNavigationRequest().
+
+    \section3 WebEngineNewViewRequest
+    Is now WebEngineNewWindowRequest and QWebEngineNewWindowRequest, and accessible from C++ API as well,
+    adding a more informative variant of QWebEnginePage::createWindow().
+
+
+    \section1 Changed API
+
+    \section2 C++
+
+    \section3 QWebEnginePage::certificateError()
+    Is now a signal instead of a derived method. The errors are either accepted or rejected
+    via methods on the QWebEngineCertificateError class.
+
+    \section3 QWebEnginePage::print()
+    Has been moved to QWebEngineView::print() and no longer takes a callback argument but
+    signals finished with QWebEngineView::printFinished() instead. It was never possible
+    to have two active print jobs at the same time.
+
+    \section3 QWebEnginePage::view()
+    Has been removed as QWebEnginePage and QWebEngineView are now in different modules. The view
+    associated with a page can be accessed using the static helper QWebEngineView::forPage().
+
+    \section3 QWebEngineProfile::defaultProfile()
+    Has been removed. The default profile is now an off-the-record profile, and only used if a
+    QWebEnginePage is created without an explicit profile. To maintain Qt 5 like behavior, create
+    a global profile called "Default" and use it when creating every QWebEnginePage.
+
+    \section2 QML
+
+    \section3 WebEngineNavigationRequest
+    The navigation requests are now accepted or rejected like other request objects using accept()
+    or reject() methods.
+
+    \section3 WebEngineNewViewRequest
+    Has been renamed WebEngineNewWindowRequest.
+
+    \section1 Changed Behavior
+
+    \section2 Default Profile
+    The default profile is now \e{off the record}. To have a standard browser profile with
+    disk-cache and cookies, we recommend creating your own profile and using that explicitly.
+
+    \section2 QRC Scheme
+    Can no longer be accessed from custom schemes by default, nor can it access local content
+    directly. If the Qt 5 behavior is needed, it can be restored by registering the qrc scheme
+    like a custom URL scheme, and setting the CorsEnabled and LocalAccessAllowed access flags.
+    \code
+        QWebEngineUrlScheme qrcScheme(QByteArrayLiteral("qrc"));
+        qrcScheme.setFlags(QWebEngineUrlScheme::SecureScheme
+                           | QWebEngineUrlScheme::LocalAccessAllowed
+                           | QWebEngineUrlScheme::CorsEnabled
+                           | QWebEngineUrlScheme::ViewSourceAllowed);
+        QWebEngineUrlScheme::registerScheme(qrcScheme);
+    \endcode
+
+    \section2 OCSP Certificate Revocation Checking
+    In Qt 5 OCSP could be enabled on Linux using QWebEngineProfile::setUseForGlobalCertificateVerification(true)
+    on a QWebEngineProfile. This has been removed in Qt6 as this specific form of OCSP is considered bad. As
+    of Qt 6.2, no new method for revoked certificate checking on Linux has yet been added.
+
+
+*/
