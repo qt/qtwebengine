@@ -82,7 +82,7 @@ public:
         AcceptRequest,
         IgnoreRequest = 0xFF
     };
-    QT_DEPRECATED Q_ENUM(NavigationRequestAction)
+    Q_ENUM(NavigationRequestAction)
 
 private:
     Q_PROPERTY(NavigationRequestAction action READ action WRITE setAction NOTIFY actionChanged FINAL)
