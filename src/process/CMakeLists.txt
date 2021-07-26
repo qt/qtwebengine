@@ -28,7 +28,18 @@ target_link_libraries(${qtWebEngineProcessName}
 )
 
 target_include_directories(${qtWebEngineProcessName} PRIVATE ../core)
-get_install_config(config)
+
+qt_get_cmake_configurations(configs)
+foreach(config ${configs})
+    string(TOUPPER "${config}" config_upper)
+    set_target_properties(${qtWebEngineProcessName} PROPERTIES
+                          RUNTIME_OUTPUT_DIRECTORY_${config_upper} "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}")
+endforeach()
+
+if(QT_FEATURE_debug_and_release)
+    set_target_properties(${qtWebEngineProcessName} PROPERTIES
+                          OUTPUT_NAME_DEBUG ${qtWebEngineProcessName}${CMAKE_DEBUG_POSTFIX})
+endif()
 
 if(isFramework)
     set_target_properties(${qtWebEngineProcessName} PROPERTIES MACOSX_BUNDLE TRUE)
@@ -48,8 +59,14 @@ if(isFramework)
     )
 else()
     install(TARGETS ${qtWebEngineProcessName}
+        CONFIGURATIONS ${configs}
         RUNTIME DESTINATION "${INSTALL_LIBEXECDIR}"
-        CONFIGURATIONS ${config}
+    )
+endif()
+
+if(MSVC)
+    install(FILES "$<TARGET_PDB_FILE:${qtWebEngineProcessName}>" OPTIONAL
+        DESTINATION "${INSTALL_LIBEXECDIR}"
     )
 endif()
 
