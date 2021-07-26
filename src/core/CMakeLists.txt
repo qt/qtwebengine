@@ -70,6 +70,10 @@ foreach(arch ${GN_ARCHITECTURES})
         get_forward_declaration_macro(forwardDeclarationMacro)
         get_target_property(qtWebEngineProcessName WebEngineCore QTWEBENGINEPROCESS_NAME)
 
+        if(QT_FEATURE_debug_and_release AND ("${config}" STREQUAL "Debug"))
+            set(qtWebEngineProcessName "${qtWebEngineProcessName}${CMAKE_DEBUG_POSTFIX}")
+        endif()
+
         set(gnCxxCompileOptions "")
         if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
             # Silence warning in boringssl headers.
