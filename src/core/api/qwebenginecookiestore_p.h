@@ -99,7 +99,7 @@ public:
     void onCookieChanged(const QNetworkCookie &cookie, bool removed);
 };
 
-Q_DECLARE_TYPEINFO(QWebEngineCookieStorePrivate::CookieData, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QWebEngineCookieStorePrivate::CookieData, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 
