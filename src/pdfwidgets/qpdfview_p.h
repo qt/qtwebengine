@@ -113,7 +113,7 @@ public:
     qreal m_screenResolution; // pixels per point
 };
 
-Q_DECLARE_TYPEINFO(QPdfViewPrivate::DocumentLayout, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QPdfViewPrivate::DocumentLayout, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

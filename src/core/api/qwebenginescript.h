@@ -115,7 +115,7 @@ private:
     QSharedDataPointer<QtWebEngineCore::UserScript> d;
 };
 
-Q_DECLARE_TYPEINFO(QWebEngineScript, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QWebEngineScript, Q_RELOCATABLE_TYPE);
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_WEBENGINECORE_EXPORT QDebug operator<<(QDebug, const QWebEngineScript &);
