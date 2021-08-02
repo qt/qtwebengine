@@ -16,6 +16,7 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/webengine/customdialogs")
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS WebEngineQuick)
+find_package(Qt6 OPTIONAL_COMPONENTS Widgets)
 
 qt_add_executable(customdialogs
     main.cpp
@@ -31,8 +32,6 @@ target_link_libraries(customdialogs PUBLIC
     Qt::WebEngineQuick
 )
 
-
-# Resources:
 set(customdialogs_resource_files
     "MessageRectangle.qml"
     "SwitchButton.qml"
