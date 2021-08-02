@@ -216,7 +216,7 @@ qt_feature("webengine-system-ninja" PRIVATE
 qt_feature("webengine-system-gn" PRIVATE
     LABEL "Use system gn"
     AUTODETECT FALSE
-    CONDITION GN_Found
+    CONDITION Gn_FOUND
 )
 qt_feature("webengine-developer-build" PRIVATE
     LABEL "Developer build"
