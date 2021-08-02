@@ -2,6 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import("//ui/base/ui_features.gni")
+import("//build/config/linux/pkg_config.gni")
+
+if (use_xkbcommon) {
+  pkg_config("xkbcommon") {
+    packages = [ "xkbcommon" ]
+  }
+}
 
 source_set("qt") {
   sources = [
@@ -21,6 +28,7 @@ source_set("qt") {
   defines = [ "OZONE_IMPLEMENTATION" ]
 
   if (use_xkbcommon) {
+    configs += [ ":xkbcommon" ]
     libs = [ "xkbfile" ]
   }
 }
