@@ -164,7 +164,7 @@ public:
     void printRequested() override;
     void findTextFinished(const QWebEngineFindTextResult &result) override;
     void updateAction(QQuickWebEngineView::WebAction) const;
-    void adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
+    bool adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
     void setProfile(QQuickWebEngineProfile *profile);
     void updateAdapter();
     void ensureContentsAdapter();

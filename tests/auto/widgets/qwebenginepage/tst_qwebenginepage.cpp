@@ -233,6 +233,8 @@ private Q_SLOTS:
     void editActionsWithoutSelection();
 
     void customUserAgentInNewTab();
+    void openNewTabInDifferentProfile_data();
+    void openNewTabInDifferentProfile();
     void renderProcessCrashed();
     void renderProcessPid();
     void backgroundColor();
@@ -4572,6 +4574,28 @@ void tst_QWebEnginePage::editActionsWithoutSelection()
     QVERIFY(page->action(QWebEnginePage::Unselect)->isEnabled());
 }
 
+struct PageWithNewWindowHandler : QWebEnginePage
+{
+    QScopedPointer<PageWithNewWindowHandler> newPage;
+    bool handleInSignal;
+    QWebEngineProfile *targetProfile = nullptr;
+    QSignalSpy loadSpy { this, &QWebEnginePage::loadFinished };
+    PageWithNewWindowHandler(QWebEngineProfile *p, bool inSignal = false, QWebEngineProfile *tp = nullptr)
+        : QWebEnginePage(p), handleInSignal(inSignal), targetProfile(tp) {
+        if (handleInSignal)
+            connect(this, &QWebEnginePage::newWindowRequested, this, [this] (QWebEngineNewWindowRequest &r) {
+                newPage.reset(new PageWithNewWindowHandler(targetProfile ? targetProfile : profile(), handleInSignal));
+                newPage->acceptAsNewWindow(r);
+            });
+    }
+    QWebEnginePage *createWindow(WebWindowType) override {
+        if (handleInSignal)
+            return nullptr;
+        newPage.reset(new PageWithNewWindowHandler(targetProfile ? targetProfile : profile(), handleInSignal));
+        return newPage.get();
+    }
+};
+
 void tst_QWebEnginePage::customUserAgentInNewTab()
 {
     HttpServer server;
@@ -4584,55 +4608,82 @@ void tst_QWebEnginePage::customUserAgentInNewTab()
     });
     QVERIFY(server.start());
 
-    class Page : public QWebEnginePage {
-    public:
-        QWebEngineProfile *targetProfile = nullptr;
-        QScopedPointer<QWebEnginePage> newPage;
-        Page(QWebEngineProfile *profile) : QWebEnginePage(profile) {}
-    private:
-        QWebEnginePage *createWindow(WebWindowType) override
-        {
-            newPage.reset(new QWebEnginePage(targetProfile ? targetProfile : profile(), nullptr));
-            return newPage.data();
-        }
-    };
-    QWebEngineProfile profile1, profile2;
-    profile1.setHttpUserAgent(QStringLiteral("custom 1"));
-    profile2.setHttpUserAgent(QStringLiteral("custom 2"));
-    Page page(&profile1);
-    QWebEngineView view;
-    view.resize(500, 500);
-    view.setPage(&page);
-    view.show();
+    QString expectedUserAgent("custom 1");
+    QWebEngineProfile profile;
+    profile.setHttpUserAgent(expectedUserAgent);
+
+    PageWithNewWindowHandler page(&profile);
+    QWebEngineView view; view.resize(500, 500); view.setPage(&page); view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
 
     // First check we can get the user-agent passed through normally
     page.setHtml(QString("<html><body><a id='link' target='_blank' href='") +
                  server.url("/test1").toEncoded() +
                  QString("'>link</a></body></html>"));
-    QTRY_COMPARE(spy.count(), 1);
-    QVERIFY(spy.takeFirst().value(0).toBool());
-    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("navigator.userAgent")).toString(), profile1.httpUserAgent());
+    QTRY_COMPARE(page.loadSpy.count(), 1);
+    QVERIFY(page.loadSpy.takeFirst().value(0).toBool());
+    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("navigator.userAgent")).toString(), expectedUserAgent);
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, elementCenter(&page, "link"));
     QTRY_VERIFY(page.newPage);
     QTRY_VERIFY(!lastUserAgent.isEmpty());
-    QCOMPARE(lastUserAgent, profile1.httpUserAgent().toUtf8());
+    QCOMPARE(lastUserAgent, expectedUserAgent);
+    QCOMPARE(evaluateJavaScriptSync(page.newPage.get(), QStringLiteral("navigator.userAgent")).toString(), expectedUserAgent);
 
     // Now check we can get the new user-agent of the profile
     page.newPage.reset();
-    page.targetProfile = &profile2;
-    spy.clear();
+    expectedUserAgent = "custom 2";
+    profile.setHttpUserAgent(expectedUserAgent);
+    page.loadSpy.clear();
     lastUserAgent = { };
     page.setHtml(QString("<html><body><a id='link' target='_blank' href='") +
                  server.url("/test2").toEncoded() +
                  QString("'>link</a></body></html>"));
-    QTRY_COMPARE(spy.count(), 1);
-    QVERIFY(spy.takeFirst().value(0).toBool());
+    QTRY_COMPARE(page.loadSpy.count(), 1);
+    QVERIFY(page.loadSpy.takeFirst().value(0).toBool());
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, elementCenter(&page, "link"));
     QTRY_VERIFY(page.newPage);
     QTRY_VERIFY(!lastUserAgent.isEmpty());
-    QCOMPARE(lastUserAgent, profile2.httpUserAgent().toUtf8());
+    QCOMPARE(lastUserAgent, expectedUserAgent);
+    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("navigator.userAgent")).toString(), expectedUserAgent);
+    QCOMPARE(evaluateJavaScriptSync(page.newPage.get(), QStringLiteral("navigator.userAgent")).toString(), expectedUserAgent);
+}
+
+void tst_QWebEnginePage::openNewTabInDifferentProfile_data()
+{
+    QTest::addColumn<bool>("handleInSignal");
+    QTest::addRow("handleInSignal") << true;
+    QTest::addRow("handleInOverride") << false;
+}
+
+void tst_QWebEnginePage::openNewTabInDifferentProfile()
+{
+    QFETCH(bool, handleInSignal);
+
+    HttpServer server;
+    QStringList receivedRequests;
+    connect(&server, &HttpServer::newRequest, [&] (HttpReqRep *r) {
+        receivedRequests.append(r->requestPath());
+        r->setResponseBody("DUMMY");
+        r->sendResponse();
+    });
+    QVERIFY(server.start());
+
+    QWebEngineProfile profile1, profile2;
+    PageWithNewWindowHandler page(&profile1, handleInSignal, &profile2);
+    QWebEngineView view; view.setPage(&page); view.resize(320, 240); view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    page.setHtml(QString("<html><body><a id='link' target='_blank' href='%1'>link</a></body></html>").arg(server.url("/first.html").toEncoded()));
+    QTRY_COMPARE(page.loadSpy.count(), 1);
+    QVERIFY(page.loadSpy.takeFirst().value(0).toBool());
+
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, elementCenter(&page, "link"));
+    QTRY_VERIFY(page.newPage);
+    QVERIFY(page.profile() == &profile1);
+    QVERIFY(page.newPage->profile() == &profile2);
+    // not load should occur or requests to server issued since web_contents is not expected to be adopted from other profile
+    QTRY_LOOP_IMPL(page.newPage->loadSpy.size() != 0, 1000, 100);
+    QVERIFY2(receivedRequests.isEmpty(), qPrintable(receivedRequests.join(", ")));
 }
 
 void tst_QWebEnginePage::renderProcessCrashed()
