@@ -16,6 +16,7 @@ qt_internal_add_executable(${qtWebEngineProcessName}
 if(WIN32)
    target_sources(${qtWebEngineProcessName} PRIVATE support_win.cpp)
    target_link_libraries(${qtWebEngineProcessName} PRIVATE WebEngineCoreSandbox)
+   set_property(TARGET ${qtWebEngineProcessName} PROPERTY WIN32_EXECUTABLE TRUE)
 endif()
 
 target_link_libraries(${qtWebEngineProcessName}
