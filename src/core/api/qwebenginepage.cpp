@@ -353,20 +353,8 @@ QWebEnginePagePrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebC
         if (!newWebContents->webContents())
             return newPage->d_func()->adapter; // Reuse existing adapter
 
-        // Mark the new page as being in the process of being adopted, so that a second mouse move event
-        // sent by newWebContents->initialize() gets filtered in RenderWidgetHostViewQt::forwardEvent.
-        // The first mouse move event is being sent by q->createWindow(). This is necessary because
-        // Chromium does not get a mouse move acknowledgment message between the two events, and
-        // InputRouterImpl::ProcessMouseAck is not executed, thus all subsequent mouse move events
-        // get coalesced together, and don't get processed at all.
-        // The mouse move events are actually sent as a result of show() being called on
-        // RenderWidgetHostViewQtDelegateWidget, both when creating the window and when initialize is
-        // called.
-        newPage->d_func()->m_isBeingAdopted = true;
-
-        // Overwrite the new page's WebContents with ours.
-        newPage->d_func()->adapter = newWebContents;
-        newWebContents->setClient(newPage->d_func());
+        if (!newPage->d_func()->adoptWebContents(newWebContents.get()))
+            return nullptr;
 
         if (!initialGeometry.isEmpty())
             emit newPage->geometryChangeRequested(initialGeometry);
@@ -411,18 +399,12 @@ private:
     AdapterPtr adapter;
 };
 
-void QWebEnginePagePrivate::adoptWebContents(WebContentsAdapter *webContents)
+bool QWebEnginePagePrivate::adoptWebContents(WebContentsAdapter *webContents)
 {
-    if (!webContents) {
-        qWarning("Trying to open an empty request, it was either already used or was invalidated."
-            "\nYou must complete the request synchronously within the newPageRequested signal handler."
-            " If a view hasn't been adopted before returning, the request will be invalidated.");
-        return;
-    }
-
+    Q_ASSERT(webContents);
     if (webContents->profileAdapter() && profileAdapter() != webContents->profileAdapter()) {
         qWarning("Can not adopt content from a different WebEngineProfile.");
-        return;
+        return false;
     }
 
     m_isBeingAdopted = true;
@@ -434,6 +416,7 @@ void QWebEnginePagePrivate::adoptWebContents(WebContentsAdapter *webContents)
 
     adapter = webContents->sharedFromThis();
     adapter->setClient(this);
+    return true;
 }
 
 bool QWebEnginePagePrivate::isBeingAdopted()
@@ -2342,10 +2325,10 @@ void QWebEnginePage::acceptAsNewWindow(QWebEngineNewWindowRequest &request)
         return;
     }
 
-    if (adapter)
-        d->adoptWebContents(adapter.data());
-    else
+    if (!adapter)
         setUrl(url);
+    else if (!d->adoptWebContents(adapter.data()))
+        return;
 
     QRect geometry = request.requestedGeometry();
     if (!geometry.isEmpty())

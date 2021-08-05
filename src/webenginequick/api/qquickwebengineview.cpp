@@ -772,18 +772,12 @@ private:
     AdapterPtr adapter;
 };
 
-void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContents)
+bool QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContents)
 {
-    if (!webContents) {
-        qWarning("Trying to open an empty request, it was either already used or was invalidated."
-            "\nYou must complete the request synchronously within the newWindowRequested signal handler."
-            " If a view hasn't been adopted before returning, the request will be invalidated.");
-        return;
-    }
-
+    Q_ASSERT(webContents);
     if (webContents->profileAdapter() && profileAdapter() != webContents->profileAdapter()) {
         qWarning("Can not adopt content from a different WebEngineProfile.");
-        return;
+        return false;
     }
 
     m_isBeingAdopted = true;
@@ -795,6 +789,7 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
 
     adapter = webContents->sharedFromThis();
     adapter->setClient(this);
+    return true;
 }
 
 QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
@@ -1651,10 +1646,11 @@ void QQuickWebEngineView::acceptAsNewWindow(QWebEngineNewWindowRequest *request)
         return;
     }
 
-    if (auto adapter = request->d_ptr->adapter)
-        d->adoptWebContents(adapter.data());
-    else
+    auto adapter = request->d_ptr->adapter;
+    if (!adapter)
         setUrl(request->requestedUrl());
+    else if (!d->adoptWebContents(adapter.data()))
+        return;
 
     request->d_ptr->setHandled();
 }
