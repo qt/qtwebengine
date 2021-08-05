@@ -84,8 +84,6 @@ HistoryServiceFactoryQt::GetForBrowserContext(content::BrowserContext *context)
     if (context->IsOffTheRecord())
         return nullptr;
 
-    if (!base::PathExists(context->GetPath()))
-        return nullptr;
 
     return static_cast<history::HistoryService *>(
             GetInstance()->GetServiceForBrowserContext(context, true));
@@ -115,7 +113,6 @@ KeyedService *
 HistoryServiceFactoryQt::BuildServiceInstanceFor(content::BrowserContext *context) const
 {
     Q_ASSERT(!context->IsOffTheRecord());
-    Q_ASSERT(base::PathExists(context->GetPath()));
 
     std::unique_ptr<history::HistoryService> historyService(
             new history::HistoryService(std::make_unique<HistoryClientQt>(), nullptr));
