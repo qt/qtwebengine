@@ -12,8 +12,11 @@ import("//chrome/chrome_repack_locales.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//ui/ozone/ozone.gni")
 
+# Workaround for cmake configure_file command. Words wrapped with @ characters are
+# handled as variables in this file.
+chromium_version_template = string_replace("atMAJORat.atMINORat.atBUILDat.atPATCHat", "at", "@")
 chromium_version = exec_script("//build/util/version.py",
-  [ "-f", rebase_path("//chrome/VERSION"), "-t", "@MAJOR@.@MINOR@.@BUILD@.@PATCH@"],"list lines")
+  [ "-f", rebase_path("//chrome/VERSION"), "-t", chromium_version_template], "list lines")
 
 moc_source_h_files = exec_script("@WEBENGINE_ROOT_SOURCE_DIR@/tools/scripts/gn_find_mocables.py",
   [
