@@ -101,12 +101,17 @@ function(make_install_only target)
     endif()
 endfunction()
 
-function(add_gn_target target)
+function(add_gn_target target config arch)
     add_custom_target(${target})
     list(REMOVE_ITEM ARGN ${target})
+    list(REMOVE_ITEM ARGN ${config})
+    list(REMOVE_ITEM ARGN ${arch})
     set_target_properties(${target} PROPERTIES
         ELEMENTS "${ARGN}"
-        PREFIX "GN")
+        PREFIX "GN"
+        CONFIG ${config}
+        ARCH ${arch}
+    )
 endfunction()
 
 function(read_gn_target target filePath)
@@ -306,152 +311,115 @@ function(get_darwin_sdk_version result)
     endif()
 endfunction()
 
-function(extend_target_with_gn_objects target config cmakeFile stampFile)
-
-    include(${buildDir}/${config}/${cmakeFile})
-
+function(add_gn_target_from_cmake_target gnTarget cmakeTarget ninjaTarget config arch buildDir)
+    include(${buildDir}/${config}/${arch}/${ninjaTarget}.cmake)
     string(TOUPPER ${config} cfg)
-    add_library(GnObjects_${target}_${config} OBJECT IMPORTED GLOBAL)
-    target_link_libraries(${target} PRIVATE $<$<CONFIG:${config}>:GnObjects_${target}_${config}>)
-    add_custom_target(ninja_${target}_${config} DEPENDS ${buildDir}/${config}/${stampFile})
-    add_dependencies(GnObjects_${target}_${config} ninja_${target}_${config})
-    #TODO: remove GnObjects_${target}_${config} with CMAKE 3.20
-    set_property(TARGET GnObjects_${target}_${config}
-        PROPERTY IMPORTED_OBJECTS_${cfg} ${${cfg}_NINJA_OBJECTS}
+    add_custom_target(${gnTarget})
+    set_target_properties(${gnTarget} PROPERTIES
+        CONFIG ${config}
+        ARCH ${arch}
     )
-    set_source_files_properties(${${cfg}_NINJA_OBJECTS} PROPERTIES GENERATED TRUE)
-
-    if(LINUX)
-        target_link_libraries(${target}
-            PRIVATE "-Wl,--start-group" "$<$<CONFIG:${config}>:${${cfg}_NINJA_ARCHIVES}>" "-Wl,--end-group")
-    else()
-        target_link_libraries(${target} PRIVATE "$<$<CONFIG:${config}>:${${cfg}_NINJA_ARCHIVES}>")
-    endif()
-
-    target_link_libraries(${target} PUBLIC  "$<$<CONFIG:${config}>:${${cfg}_NINJA_LIBS}>")
-
-    # we depend on stampFile, but ninja backend generator needs more (create once)
-    if(stampFile)
-        add_custom_command(OUTPUT ${${cfg}_NINJA_OBJECTS} ${${cfg}_NINJA_ARCHIVES}
-            DEPENDS ${buildDir}/${config}/${stampFile}
-        )
-        add_custom_target(generate_${target}_${cfg}
-            DEPENDS ${${cfg}_NINJA_OBJECTS} ${${cfg}_NINJA_ARCHIVES}
-        )
-    endif()
+    set_property(TARGET ${gnTarget} APPEND PROPERTY OBJECTS ${${cfg}_NINJA_OBJECTS})
+    set_property(TARGET ${gnTarget} APPEND PROPERTY ARCHIVES ${${cfg}_NINJA_ARCHIVES})
+    set_property(TARGET ${gnTarget} APPEND PROPERTY LIBS ${${cfg}_NINJA_LIBS})
+    set_property(TARGET ${gnTarget} APPEND PROPERTY STAMP ${${cfg}_NINJA_TARGETDEPS})
 endfunction()
 
-function(extend_target_with_gn_libs target config cmakeFile stampFile)
+function(extend_target_with_gn_target gnTarget cmakeTarget)
+    get_target_property(config ${gnTarget} CONFIG)
+    string(TOUPPER ${cmakeTarget} tg)
     string(TOUPPER ${config} cfg)
+    get_target_property(ninja_objects ${gnTarget} OBJECTS)
+    get_target_property(ninja_archives ${gnTarget} ARCHIVES)
+    get_target_property(ninja_libs ${gnTarget} LIBS)
+    get_target_property(ninja_stamp ${gnTarget} STAMP)
+    add_library(GnObjects_${cmakeTarget}_${config} OBJECT IMPORTED GLOBAL)
+    target_link_libraries(${cmakeTarget} PRIVATE $<$<CONFIG:${config}>:GnObjects_${cmakeTarget}_${config}>)
+    add_custom_target(ninja_${cmakeTarget}_${config} DEPENDS ${ninja_stamp})
+    add_dependencies(GnObjects_${cmakeTarget}_${config} ninja_${cmakeTarget}_${config})
+    #TODO: remove GnObjects_${cmakeTarget}_${config} with CMAKE 3.20
+    set_property(TARGET GnObjects_${cmakeTarget}_${config}
+        PROPERTY IMPORTED_OBJECTS_${cfg} ${ninja_objects}
+    )
+    if(LINUX)
+        target_link_libraries(${cmakeTarget}
+            PRIVATE "-Wl,--start-group" "$<$<CONFIG:${config}>:${ninja_archives}>" "-Wl,--end-group")
+    else()
+        target_link_libraries(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:${ninja_archives}>")
+    endif()
+    target_link_libraries(${cmakeTarget} PUBLIC "$<$<CONFIG:${config}>:${ninja_libs}>")
+endfunction()
 
-    # Do a partial link of all the archives into a single archive:
-    include(${buildDir}/arm64/${config}/${cmakeFile})
-    set_source_files_properties(${${cfg}_NINJA_OBJECTS} PROPERTIES GENERATED TRUE)
+function(create_rsp_cmake_file rspFileIn rspFileOut cmakeFile config target)
+    set(CMAKE_FILE ${cmakeFile})
+    set(CONFIG ${config})
+    set(TARGET ${target})
+    configure_file(${rspFileIn} ${rspFileOut} @ONLY)
+endfunction()
 
-    list(JOIN ${cfg}_NINJA_OBJECTS " " arm64_objects)
-    list(JOIN ${cfg}_NINJA_ARCHIVES " " arm64_archives)
-    file(WRITE ${buildDir}/arm64/${config}/${target}_gnobjects.rsp ${arm64_objects})
-    file(WRITE ${buildDir}/arm64/${config}/${target}_gnarchives.rsp ${arm64_archives})
-    add_custom_command(OUTPUT ${buildDir}/arm64/${config}/${target}_gnobjects.rsp
-                              ${buildDir}/arm64/${config}/${target}_gnarchives.rsp
-                       DEPENDS ${buildDir}/arm64/${config}/${stampFile})
-    add_custom_target(generate_arm64_rsp_${target}_${config}
-        DEPENDS
-            ${buildDir}/arm64/${config}/${target}_gnobjects.rsp
-            ${buildDir}/arm64/${config}/${target}_gnarchives.rsp)
-
+function(add_rsp_command gnTarget cmakeTarget ninjaTarget buildDir)
+    get_target_property(config ${gnTarget} CONFIG)
+    get_target_property(arch ${gnTarget} ARCH)
+    string(TOUPPER ${config} cfg)
+    get_target_property(ninja_stamp ${gnTarget} STAMP)
+    create_rsp_cmake_file(
+        ${WEBENGINE_ROOT_SOURCE_DIR}/src/core/configure/rsp.cmake.in
+        ${buildDir}/${cmakeTarget}_rsp.cmake ${buildDir}/${ninjaTarget}.cmake ${cfg} ${cmakeTarget}
+    )
     add_custom_command(
-        OUTPUT ${buildDir}/${config}/arm64_${target}_${config}.a
-        BYPRODUCTS ${buildDir}/${config}/arm64_${target}_${config}.o
-        COMMAND clang++ -r -nostdlib -arch arm64
-                -o ${buildDir}/${config}/arm64_${target}_${config}.o
-                -Wl,-keep_private_externs
-                @${buildDir}/arm64/${config}/${target}_gnobjects.rsp
-                -Wl,-all_load
-                @${buildDir}/arm64/${config}/${target}_gnarchives.rsp
+        OUTPUT ${buildDir}/${cmakeTarget}.a
+        BYPRODUCTS
+            ${buildDir}/${cmakeTarget}.o
+            ${buildDir}/${cmakeTarget}_gnobjects.rsp
+            ${buildDir}/${cmakeTarget}_gnarchives.rsp
+        COMMAND ${CMAKE_COMMAND} -P ${buildDir}/${cmakeTarget}_rsp.cmake
+        COMMAND clang++ -r -nostdlib -arch ${arch}
+            -o ${buildDir}/${cmakeTarget}.o
+            -Wl,-keep_private_externs
+             @${buildDir}/${cmakeTarget}_gnobjects.rsp
+            -Wl,-all_load
+            @${buildDir}/${cmakeTarget}_gnarchives.rsp
         COMMAND ar -cr
-                ${buildDir}/${config}/arm64_${target}_${config}.a
-                ${buildDir}/${config}/arm64_${target}_${config}.o
+            ${buildDir}/${cmakeTarget}.a
+            ${buildDir}/${cmakeTarget}.o
         DEPENDS
-            ${buildDir}/arm64/${config}/${stampFile}
-            ${buildDir}/arm64/${config}/${target}_gnobjects.rsp
-            ${buildDir}/arm64/${config}/${target}_gnarchives.rsp
+            ${ninja_stamp}
         USES_TERMINAL
         VERBATIM
         COMMAND_EXPAND_LISTS
     )
-    add_custom_command(OUTPUT ${${cfg}_NINJA_OBJECTS} ${${cfg}_NINJA_ARCHIVES}
-        DEPENDS ${buildDir}/arm64/${config}/${stampFile})
-    add_custom_target(generate_arm64_${target}_${config}
-        DEPENDS ${${cfg}_NINJA_OBJECTS} ${${cfg}_NINJA_ARCHIVES})
+endfunction()
 
-    include(${buildDir}/x86_64/${config}/${cmakeFile})
-    set_source_files_properties(${${cfg}_NINJA_OBJECTS} PROPERTIES GENERATED TRUE)
-
-    list(JOIN ${cfg}_NINJA_OBJECTS " " x64_objects)
-    list(JOIN ${cfg}_NINJA_ARCHIVES " " x64_archives)
-    file(WRITE ${buildDir}/x86_64/${config}/${target}_gnobjects.rsp ${x64_objects})
-    file(WRITE ${buildDir}/x86_64/${config}/${target}_gnarchives.rsp ${x64_archives})
-    add_custom_command(OUTPUT ${buildDir}/x86_64/${config}/${target}_gnobjects.rsp
-                              ${buildDir}/x86_64/${config}/${target}_gnarchives.rsp
-                       DEPENDS ${buildDir}/x86_64/${config}/${stampFile})
-    add_custom_target(generate_x64_rsp_${target}_${config}
-        DEPENDS
-            ${buildDir}/x86_64/${config}/${target}_gnobjects.rsp
-            ${buildDir}/x86_64/${config}/${target}_gnarchives.rsp)
-
-    add_custom_command(
-        OUTPUT ${buildDir}/${config}/x64_${target}_${config}.a
-        BYPRODUCTS ${buildDir}/${config}/x64_${target}_${config}.o
-        COMMAND clang++ -r -nostdlib -arch x86_64
-                -o ${buildDir}/${config}/x64_${target}_${config}.o
-                -Wl,-keep_private_externs
-                @${buildDir}/x86_64/${config}/${target}_gnobjects.rsp
-                -Wl,-all_load
-                @${buildDir}/x86_64/${config}/${target}_gnarchives.rsp
-        COMMAND ar -cr
-                ${buildDir}/${config}/x64_${target}_${config}.a
-                ${buildDir}/${config}/x64_${target}_${config}.o
-        DEPENDS
-            ${buildDir}/x86_64/${config}/${stampFile}
-            ${buildDir}/x86_64/${config}/${target}_gnobjects.rsp
-            ${buildDir}/x86_64/${config}/${target}_gnarchives.rsp
-        USES_TERMINAL
-        VERBATIM
-        COMMAND_EXPAND_LISTS
-    )
-    add_custom_command(OUTPUT ${${cfg}_NINJA_OBJECTS} ${${cfg}_NINJA_ARCHIVES}
-        DEPENDS ${buildDir}/x86_64/${config}/${stampFile})
-    add_custom_target(generate_x86_64_${target}_${config}
-        DEPENDS ${${cfg}_NINJA_OBJECTS} ${${cfg}_NINJA_ARCHIVES})
-
-    add_custom_target(generate1_${target}_${config}
-                      DEPENDS ${buildDir}/${config}/arm64_${target}_${config}.a
-                              ${buildDir}/${config}/x64_${target}_${config}.a)
+function(add_lipo_command gnTarget cmakeTarget buildDir)
+    get_target_property(config ${gnTarget} CONFIG)
+    get_target_property(ninja_libs ${gnTarget} LIBS)
 
     # Lipo the object files together to a single fat archive
-    add_library(${target}_${config} STATIC IMPORTED GLOBAL)
+    add_library(${cmakeTarget}_${config} STATIC IMPORTED GLOBAL)
     add_custom_command(
-        OUTPUT ${buildDir}/${config}/lib${target}_${config}.a
+        OUTPUT ${buildDir}/lib${cmakeTarget}.a
         COMMAND lipo -create
-                -output ${buildDir}/${config}/lib${target}_${config}.a
+            -output ${buildDir}/lib${cmakeTarget}.a
         ARGS
-            ${buildDir}/${config}/arm64_${target}_${config}.a
-            ${buildDir}/${config}/x64_${target}_${config}.a
+            ${buildDir}/arm64/${cmakeTarget}.a
+            ${buildDir}/x86_64/${cmakeTarget}.a
         DEPENDS
-            ${buildDir}/${config}/arm64_${target}_${config}.a
-            ${buildDir}/${config}/x64_${target}_${config}.a
+            ${buildDir}/arm64/${cmakeTarget}.a
+            ${buildDir}/x86_64/${cmakeTarget}.a
         USES_TERMINAL
         VERBATIM
     )
-    set_property(TARGET ${target}_${config}
-                 PROPERTY IMPORTED_LOCATION_${cfg} ${buildDir}/${config}/lib${target}_${config}.a)
-    add_custom_target(generate2_${target}_${config}
-                      DEPENDS ${buildDir}/${config}/lib${target}_${config}.a)
-    target_link_libraries(${target} PRIVATE ${target}_${config})
+    set_property(TARGET ${cmakeTarget}_${config}
+        PROPERTY IMPORTED_LOCATION ${buildDir}/lib${cmakeTarget}.a
+    )
+    add_custom_target(lipo_${cmakeTarget}_${config} DEPENDS
+        ${buildDir}/lib${cmakeTarget}.a
+    )
+    add_dependencies(${cmakeTarget}_${config} lipo_${cmakeTarget}_${config})
+    target_link_libraries(${cmakeTarget} PRIVATE ${cmakeTarget}_${config})
 
     # Just link with dynamic libs once
-    target_link_libraries(${target} PUBLIC "$<$<CONFIG:${config}>:${${cfg}_NINJA_LIBS}>")
+    target_link_libraries(${cmakeTarget} PUBLIC "$<$<CONFIG:${config}>:${ninja_libs}>")
 endfunction()
 
 function(qt_internal_add_external_project_dependency_to_root_project name)
@@ -833,7 +801,7 @@ endmacro()
 
 macro(execute_gn)
     get_target_property(gnCmd Gn::gn IMPORTED_LOCATION)
-    set(gnArg gen ${buildDir}/${config})
+    set(gnArg gen ${buildDir}/${config}/${arch})
 
     list(APPEND gnArg
         --script-executable=${Python2_EXECUTABLE}
@@ -843,7 +811,7 @@ macro(execute_gn)
     list(APPEND gnArg "--args=${gnArgArg}")
 
     list(JOIN gnArg " " printArg)
-    message("-- Running ${config} Configuration for GN \n-- ${gnCmd} ${printArg}")
+    message("-- Running gn for ${config} ${arch}\n-- ${gnCmd} ${printArg}")
     execute_process(
         COMMAND ${gnCmd} ${gnArg}
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
@@ -860,22 +828,71 @@ macro(execute_gn)
     endif()
 endmacro()
 
-macro(execute_ninja ninjaTargets)
+function(add_ninja_command gnTarget cmakeTarget ninjaTarget ninjaOutput buildDir)
     string(REPLACE " " ";" NINJAFLAGS "$ENV{NINJAFLAGS}")
-    string(REPLACE " " ";" NINJATARGETS "${ninjaTargets} ${ARGN}")
+    if(gnTarget)
+        get_target_property(ninja_objects ${gnTarget} OBJECTS)
+        get_target_property(ninja_archives ${gnTarget} ARCHIVES)
+    endif()
     add_custom_command(
         OUTPUT
-            ${buildDir}/${config}/${ninjaTargets}.stamp
-            ${sandboxOutput}
-            ${buildDir}/${config}/runAlways # use generator expression in CMAKE 3.20
-        WORKING_DIRECTORY ${buildDir}/${config}
-        COMMENT "Ninja ${arch} ${config} build"
+            ${buildDir}/${ninjaOutput}
+            ${buildDir}/${ninjaTarget} # use generator expression in CMAKE 3.20
+        BYPRODUCTS ${ninja_objects} ${ninja_archives}
+        COMMENT "Ninja ${buildDir}"
         COMMAND Ninja::ninja
             ${NINJAFLAGS}
-            -C ${buildDir}/${config}
-            ${NINJATARGETS}
+            -C ${buildDir}
+            ${ninjaTarget}
         USES_TERMINAL
         VERBATIM
         COMMAND_EXPAND_LISTS
     )
-endmacro()
+endfunction()
+
+function(get_configs result)
+    if(QT_GENERATOR_IS_MULTI_CONFIG)
+        set(${result} ${CMAKE_CONFIGURATION_TYPES} PARENT_SCOPE)
+    else()
+        set(${result} ${CMAKE_BUILD_TYPE} PARENT_SCOPE)
+    endif()
+endfunction()
+
+function(get_architectures result)
+    if(NOT QT_IS_MACOS_UNIVERSAL)
+        set(${result} ${CMAKE_SYSTEM_PROCESSOR} PARENT_SCOPE)
+    else()
+        set(${result} ${CMAKE_OSX_ARCHITECTURES} PARENT_SCOPE)
+    endif()
+endfunction()
+
+function(add_gn_build_aritfacts_to_target cmakeTarget ninjaTarget trackByproducts buildDir)
+    # config loop is a workaround to be able to add_custom_command per config
+    # note this is fixed in CMAKE.3.20 and should be cleaned up when 3.20 is
+    # the minimum cmake we support
+    get_configs(config)
+    get_architectures(archs)
+    foreach(config ${configs})
+        foreach(arch ${archs})
+            set(gnTarget ${ninjaTarget}_${config}_${arch})
+            add_gn_target_from_cmake_target(${gnTarget} ${cmakeTarget} ${ninjaTarget} ${config} ${arch} ${buildDir})
+            # TODO: this is workaround to avoid mulitples generate rules for covert_dict or sandbox
+            if(trackByproducts)
+                add_ninja_command(${gnTarget} ${cmakeTarget} ${ninjaTarget} ${ninjaTarget}.stamp ${buildDir}/${config}/${arch})
+            else()
+                add_ninja_command("" ${cmakeTarget} ${ninjaTarget} ${ninjaTarget}.stamp ${buildDir}/${config}/${arch})
+            endif()
+            if(QT_IS_MACOS_UNIVERSAL)
+                add_rsp_command(${gnTarget} ${cmakeTarget} ${ninjaTarget} ${buildDir}/${config}/${arch})
+            else()
+                extend_target_with_gn_target(${gnTarget} ${cmakeTarget})
+            endif()
+        endforeach()
+        if(QT_IS_MACOS_UNIVERSAL)
+            set(arch ${CMAKE_SYSTEM_PROCESSOR})
+            set(gnTarget ${ninjaTarget}_${config}_${arch})
+            add_lipo_command(${gnTarget} ${cmakeTarget} ${buildDir}/${config})
+        endif()
+    endforeach()
+endfunction()
+

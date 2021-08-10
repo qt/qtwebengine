@@ -39,32 +39,19 @@ endif()
 #   MULTICONFIG SETUP
 ##
 
-if(QT_GENERATOR_IS_MULTI_CONFIG)
-    set(configs ${CMAKE_CONFIGURATION_TYPES})
-else()
-    set(configs ${CMAKE_BUILD_TYPE})
-endif()
+get_configs(configs)
+get_architectures(archs)
 
-if(NOT QT_IS_MACOS_UNIVERSAL)
-    set(GN_ARCHITECTURES ${CMAKE_SYSTEM_PROCESSOR})
-else()
-    set(GN_ARCHITECTURES ${CMAKE_OSX_ARCHITECTURES})
-endif()
-
-foreach(arch ${GN_ARCHITECTURES})
-    if(QT_IS_MACOS_UNIVERSAL)
-        set(buildDir "${CMAKE_CURRENT_BINARY_DIR}/${arch}")
-    endif()
-
+foreach(arch ${archs})
     foreach(config ${configs})
-    ##
-    #   BUILD.gn SETUP
-    ##
+
+        ##
+        # BUILD.gn SETUP
+        ##
 
         unset(buildGn)
-        set(buildGn buildGnWebEngineCore_${config}_${arch})
-
-        add_gn_target(${buildGn} SOURCES DEFINES CXX_COMPILE_OPTIONS C_COMPILE_OPTIONS INCLUDES)
+        set(buildGn core_${config}_${arch})
+        add_gn_target(${buildGn} ${config} ${arch} SOURCES DEFINES CXX_COMPILE_OPTIONS C_COMPILE_OPTIONS INCLUDES)
 
         resolve_target_includes(gnIncludes WebEngineCore)
         get_forward_declaration_macro(forwardDeclarationMacro)
@@ -284,12 +271,12 @@ foreach(arch ${GN_ARCHITECTURES})
         read_gn_target(${buildGn} ${WEBENGINE_ROOT_BUILD_DIR}/src/core/api/${config}/gn_config.cxx.cmake)
         read_gn_target(${buildGn} ${WEBENGINE_ROOT_BUILD_DIR}/src/core/api/${config}/gn_config.c.cmake)
         configure_gn_target(${buildGn} ${config}
-            ${WEBENGINE_ROOT_SOURCE_DIR}/src/core/configure/BUILD.root.gn.in ${buildDir}/${config}/BUILD.gn)
+            ${WEBENGINE_ROOT_SOURCE_DIR}/src/core/configure/BUILD.root.gn.in ${buildDir}/${config}/${arch}/BUILD.gn)
 
 
-    ##
-    #   GN PARAMETERS SETUP
-    ##
+        ##
+        #   GN PARAMETERS SETUP
+        ##
 
         unset(gnArgArg)
 
@@ -300,7 +287,7 @@ foreach(arch ${GN_ARCHITECTURES})
         append_pkg_config_setup(gnArgArg)
 
         list(APPEND gnArgArg
-            qtwebengine_target="${buildDir}/${config}:QtWebEngineCore"
+            qtwebengine_target="${buildDir}/${config}/${arch}:QtWebEngineCore"
             enable_media_remoting=false
             enable_message_center=false
             enable_nacl=false
@@ -462,85 +449,47 @@ foreach(arch ${GN_ARCHITECTURES})
             )
         endif()
 
-
-    ##
-    #  GN CALL
-    ##
+        ##
+        # GN CALL
+        ##
 
         execute_gn(gnArgArg)
-
-    ##
-    #  NINJA CALL
-    ##
-
-        # config loop is a workaround to be able to add_custom_command per config
-        # note this is fixed in CMAKE.3.20 and should be cleaned up when 3.20 is
-        # the minimum cmake we support
-
-        if(WIN32)
-            set(sandboxOutput ${buildDir}/${config}/QtWebEngineCoreSandbox.lib)
-            set(sandboxTarget QtWebEngineCoreSandbox)
-        else()
-            unset(sandboxOutput)
-            unset(sandboxTarget)
-        endif()
-
-        execute_ninja(QtWebEngineCore ${sandboxTarget})
 
     endforeach()
 endforeach()
 
 ##
-#  WEBENGINECORE SETUP
+#  WEBENGINECORE
 ##
-if (QT_IS_MACOS_UNIVERSAL)
-    target_include_directories(WebEngineCore PRIVATE
-        ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_SYSTEM_PROCESSOR}/$<CONFIG>/gen
-        ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_SYSTEM_PROCESSOR}/$<CONFIG>/gen/third_party/perfetto
-        ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_SYSTEM_PROCESSOR}/$<CONFIG>/gen/third_party/perfetto/build_config
-    )
-else()
-    target_include_directories(WebEngineCore PRIVATE
-        ${buildDir}/$<CONFIG>/gen
-        ${buildDir}/$<CONFIG>/gen/third_party/perfetto
-        ${buildDir}/$<CONFIG>/gen/third_party/perfetto/build_config
-    )
-endif()
 
-if (QT_IS_MACOS_UNIVERSAL)
+set(arch ${CMAKE_SYSTEM_PROCESSOR})
+target_include_directories(WebEngineCore PRIVATE
+    ${buildDir}/$<CONFIG>/${arch}/gen
+    ${buildDir}/$<CONFIG>/${arch}/gen/third_party/perfetto
+    ${buildDir}/$<CONFIG>/${arch}/gen/third_party/perfetto/build_config
+)
 
-    set(buildDir "${CMAKE_CURRENT_BINARY_DIR}")
+add_gn_build_aritfacts_to_target(WebEngineCore QtWebEngineCore ON ${buildDir})
+
+##
+#  SANDBOX
+##
+
+if(WIN32)
+    add_library(WebEngineCoreSandbox STATIC IMPORTED GLOBAL)
     foreach(config ${configs})
-
-        extend_target_with_gn_libs(WebEngineCore ${config} QtWebEngineCore.cmake QtWebEngineCore.stamp)
-
+        string(TOUPPER ${config} cfg)
+        add_ninja_command("" WebEngineCoreSandbox QtWebEngineCoreSandbox
+            QtWebEngineCoreSandbox.lib ${buildDir}/${config}/${arch}
+        )
+        set(sandboxLibraryPath ${buildDir}/${config}/${arch}/QtWebEngineCoreSandbox.lib)
+        set_property(TARGET WebEngineCoreSandbox
+            PROPERTY IMPORTED_LOCATION_${cfg} ${sandboxLibraryPath}
+        )
+        add_custom_target(sandboxLibrary_${config}
+            DEPENDS ${buildDir}/${config}/${arch}/QtWebEngineCoreSandbox.lib)
+        add_dependencies(WebEngineCoreSandbox sandboxLibrary_${config})
     endforeach()
-    # in the end, set the build dir back to one of the archs, to make sure the resources get copied alright
-    set(buildDir "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_SYSTEM_PROCESSOR}")
-
-else()
-
-    if(WIN32)
-        add_library(WebEngineCoreSandbox STATIC IMPORTED GLOBAL)
-        add_dependencies(WebEngineCoreSandbox ninja)
-    endif()
-
-    foreach(config ${configs})
-
-        extend_target_with_gn_objects(WebEngineCore ${config} QtWebEngineCore.cmake QtWebEngineCore.stamp)
-
-        if(WIN32)
-            string(TOUPPER ${config} cfg)
-            set(sandboxLibraryPath ${buildDir}/${config}/QtWebEngineCoreSandbox.lib)
-            set_property(TARGET WebEngineCoreSandbox
-                PROPERTY IMPORTED_LOCATION_${cfg} ${sandboxLibraryPath})
-            set_source_files_properties(${sandboxLibraryPath} PROPERTIES GENERATED TRUE)
-            add_custom_command(OUTPUT ${sandboxLibraryPath} DEPENDS ${sandboxOutput})
-            add_custom_target(generate_sandbox_${cfg} DEPENDS ${sandboxLibraryPath})
-        endif()
-
-    endforeach()
-
 endif()
 
 ##
@@ -560,17 +509,17 @@ set(resourceList qtwebengine_resources.pak
 get_install_config(config)
 
 foreach(loc ${localeList})
-    get_filename_component(locSourcePath ${buildDir}/${config}/qtwebengine_locales/${loc}.pak REALPATH)
+    get_filename_component(locSourcePath ${buildDir}/${config}/${arch}/qtwebengine_locales/${loc}.pak REALPATH)
     list(APPEND localeFiles ${locSourcePath})
 endforeach()
 
 foreach(res ${resourceList})
-    get_filename_component(resSourcePath ${buildDir}/${config}/${res} REALPATH)
+    get_filename_component(resSourcePath ${buildDir}/${config}/${arch}/${res} REALPATH)
     list(APPEND resourceFiles ${resSourcePath})
 endforeach()
 
 if (NOT QT_FEATURE_webengine_system_icu)
-    get_filename_component(icuFile ${buildDir}/${config}/icudtl.dat REALPATH)
+    get_filename_component(icuFile ${buildDir}/${config}/${arch}/icudtl.dat REALPATH)
     list(APPEND resourceFiles ${icuFile})
 endif()
 
@@ -589,7 +538,7 @@ if(QT_FEATURE_framework)
         GENERATED TRUE
     )
 
-    add_custom_command(OUTPUT ${allResourceFiles} DEPENDS ${buildDir}/${config}/QtWebEngineCore.stamp)
+    add_custom_command(OUTPUT ${allResourceFiles} DEPENDS ${buildDir}/${config}/${arch}/QtWebEngineCore.stamp)
     add_custom_target(generate_resources_${config} DEPENDS ${allResourceFiles})
 else()
     install(FILES ${localeFiles}
@@ -614,7 +563,7 @@ else()
         add_custom_target(
                 install_resources_${config}
                 ALL
-                DEPENDS ${buildDir}/${config}/QtWebEngineCore.stamp
+                DEPENDS ${buildDir}/${config}/${arch}/QtWebEngineCore.stamp
                 COMMAND ${CMAKE_COMMAND} -E make_directory
                         ${CMAKE_INSTALL_PREFIX}/resources
                 COMMAND ${CMAKE_COMMAND} -E copy
@@ -623,7 +572,7 @@ else()
         add_custom_target(
                 install_locales_${config}
                 ALL
-                DEPENDS ${buildDir}/${config}/QtWebEngineCore.stamp
+                DEPENDS ${buildDir}/${config}/${arch}/QtWebEngineCore.stamp
                 COMMAND ${CMAKE_COMMAND} -E make_directory
                         ${CMAKE_INSTALL_PREFIX}/translations/qtwebengine_locales
                 COMMAND ${CMAKE_COMMAND} -E copy
@@ -641,18 +590,8 @@ if(QT_FEATURE_webengine_spellchecker)
     target_include_directories(${dict_target_name} PRIVATE
         ../3rdparty/chromium
         ../3rdparty/chromium/third_party/boringssl/src/include
-        ${buildDir}/${config}/gen
+        ${buildDir}/${config}/${arch}/gen
     )
-    if(QT_IS_MACOS_UNIVERSAL)
-        set(buildDir "${CMAKE_CURRENT_BINARY_DIR}")
-        foreach(config ${configs})
-            extend_target_with_gn_libs(${dict_target_name} ${config} convert_dict.cmake QtWebEngineCore.stamp)
-        endforeach()
-
-    else()
-        foreach(config ${configs})
-            extend_target_with_gn_objects(${dict_target_name} ${config} convert_dict.cmake "")
-        endforeach()
-    endif()
+    add_gn_build_aritfacts_to_target(${dict_target_name} convert_dict OFF ${buildDir})
 endif()
 
