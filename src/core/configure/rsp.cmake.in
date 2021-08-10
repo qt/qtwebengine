@@ -1,0 +1,5 @@
+include(@CMAKE_FILE@)
+list(JOIN @CONFIG@_NINJA_OBJECTS " " objects)
+list(JOIN @CONFIG@_NINJA_ARCHIVES " " archives)
+file(WRITE ${CMAKE_CURRENT_LIST_DIR}/@TARGET@_gnobjects.rsp ${objects})
+file(WRITE ${CMAKE_CURRENT_LIST_DIR}/@TARGET@_gnarchives.rsp ${archives})
