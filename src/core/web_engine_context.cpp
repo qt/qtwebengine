@@ -657,7 +657,6 @@ WebEngineContext::WebEngineContext()
         // User might have registered "qrc" already with different options.
         QWebEngineUrlScheme qrcScheme(QByteArrayLiteral("qrc"));
         qrcScheme.setFlags(QWebEngineUrlScheme::SecureScheme
-                           | QWebEngineUrlScheme::LocalAccessAllowed
                            | QWebEngineUrlScheme::ViewSourceAllowed);
         QWebEngineUrlScheme::registerScheme(qrcScheme);
     }
