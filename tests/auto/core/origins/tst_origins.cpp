@@ -553,10 +553,10 @@ void tst_Origins::mixedSchemes()
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 
     QVERIFY(verifyLoad(QSL("qrc:/resources/mixedSchemes.html")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Not allowed to load local resource")));
     eval("setIFrameUrl('file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
          + "/resources/mixedSchemes_frame.html')");
-    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("cannotLoad")));
     eval(QSL("setIFrameUrl('qrc:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
     QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
