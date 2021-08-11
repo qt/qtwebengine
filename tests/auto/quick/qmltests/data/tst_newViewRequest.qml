@@ -26,9 +26,9 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtTest 1.0
-import QtWebEngine 1.5
+import QtQuick
+import QtTest
+import QtWebEngine
 
 TestWebEngineView {
     id: webEngineView
@@ -60,7 +60,7 @@ TestWebEngineView {
         };
 
         dialog = Qt.createQmlObject(
-            "import QtQuick.Window 2.0\n" +
+            "import QtQuick.Window\n" +
             "Window {\n" +
             "    width: 100; height: 100\n" +
             "    visible: true; flags: Qt.Dialog\n" +

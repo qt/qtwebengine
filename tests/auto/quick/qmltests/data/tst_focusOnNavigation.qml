@@ -26,9 +26,9 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.5
-import QtTest 1.0
-import QtWebEngine 1.4
+import QtQuick
+import QtTest
+import QtWebEngine
 
 Item {
     id: container

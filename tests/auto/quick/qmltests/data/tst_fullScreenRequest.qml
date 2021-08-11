@@ -1,6 +1,6 @@
-import QtQuick 2.2
-import QtTest 1.0
-import QtWebEngine 1.9
+import QtQuick
+import QtTest
+import QtWebEngine
 
 TestWebEngineView {
     id: view

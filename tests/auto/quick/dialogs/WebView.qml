@@ -26,11 +26,11 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtWebEngine 1.4
-import QtQuick.Window 2.0
-import QtTest 1.0
-import io.qt.tester 1.0
+import QtQuick
+import QtWebEngine
+import QtQuick.Window
+import QtTest
+import io.qt.tester
 
 Window {
     width: 50
