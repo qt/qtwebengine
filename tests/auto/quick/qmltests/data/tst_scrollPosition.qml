@@ -26,10 +26,10 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.2
-import QtQuick.Window 2.0
-import QtTest 1.0
-import QtWebEngine 1.3
+import QtQuick
+import QtQuick.Window
+import QtTest
+import QtWebEngine
 
 TestWebEngineView {
     id: webEngineView

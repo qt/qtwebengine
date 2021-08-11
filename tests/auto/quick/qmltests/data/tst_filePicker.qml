@@ -26,11 +26,11 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtTest 1.0
-import QtWebEngine 1.2
-import "../../qmltests/data" 1.0
-import "../mock-delegates/TestParams" 1.0
+import QtQuick
+import QtTest
+import QtWebEngine
+import "../../qmltests/data"
+import "../mock-delegates/TestParams"
 
 TestWebEngineView {
     id: webEngineView

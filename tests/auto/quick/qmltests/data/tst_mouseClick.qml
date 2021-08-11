@@ -30,7 +30,7 @@ import QtQuick
 import QtTest
 import QtWebEngine
 import Test.util
-import "../../qmltests/data" 1.0
+import "../../qmltests/data"
 
 TestWebEngineView {
     id: webEngineView

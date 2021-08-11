@@ -26,10 +26,10 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.2
-import QtTest 1.0
-import QtWebEngine 1.9
-import Test.Shared 1.0 as Shared
+import QtQuick
+import QtTest
+import QtWebEngine
+import Test.Shared as Shared
 
 TestWebEngineView {
     id: view

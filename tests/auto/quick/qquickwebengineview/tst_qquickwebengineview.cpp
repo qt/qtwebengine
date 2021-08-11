@@ -118,8 +118,8 @@ tst_QQuickWebEngineView::tst_QQuickWebEngineView()
 
     static QQmlEngine *engine = new QQmlEngine(this);
     m_component.reset(new QQmlComponent(engine, this));
-    m_component->setData(QByteArrayLiteral("import QtQuick 2.0\n"
-                                           "import QtWebEngine 1.2\n"
+    m_component->setData(QByteArrayLiteral("import QtQuick\n"
+                                           "import QtWebEngine\n"
                                            "WebEngineView {}")
                          , QUrl());
 }

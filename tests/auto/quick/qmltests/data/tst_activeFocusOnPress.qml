@@ -26,8 +26,8 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.5
-import QtTest 1.0
+import QtQuick
+import QtTest
 
 Item {
     id: root
