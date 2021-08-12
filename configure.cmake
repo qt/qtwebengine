@@ -208,6 +208,7 @@ qt_feature("qtwebengine-quick-build" PRIVATE
 qt_feature("qtpdf-build" PRIVATE
     LABEL "Build Qt PDF"
     PURPOSE "Enables building the Qt Pdf modules."
+    AUTODETECT FALSE
 )
 qt_feature("qtpdf-widgets-build" PRIVATE
     LABEL "Build Qt PdfWidgets"
