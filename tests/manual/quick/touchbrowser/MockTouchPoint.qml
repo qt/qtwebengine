@@ -1,11 +1,11 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtWebEngine module of the Qt Toolkit.
+** This file is part of the Qt WebBrowser application.
 **
-** $QT_BEGIN_LICENSE:GPL-EXCEPT$
+** $QT_BEGIN_LICENSE:GPL$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
@@ -16,8 +16,9 @@
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3 as published by the Free Software
-** Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
+** General Public License version 3 or (at your option) any later version
+** approved by the KDE Free Qt Foundation. The licenses are as published by
+** the Free Software Foundation and appearing in the file LICENSE.GPL3
 ** included in the packaging of this file. Please review the following
 ** information to ensure the GNU General Public License requirements will
 ** be met: https://www.gnu.org/licenses/gpl-3.0.html.
@@ -27,39 +28,26 @@
 ****************************************************************************/
 
 import QtQuick
-import QtQuick.Layouts
-import QtWebEngine
 
 Item {
-    function load(url) {
-        webEngineView.url = url;
-    }
+    id: mockTouchPoint
 
-    ColumnLayout {
-        anchors.fill: parent
+    property bool pressed: false
+    property int pointId: 0
 
-        AddressBar {
-            id: addressBar
+    Image {
+        source: "qrc:/touchpoint.png"
+        x: -(width / 2)
+        y: -(height / 2)
+        opacity: mockTouchPoint.pressed ? 0.6 : 0.0
 
-            Layout.fillWidth: true
-            Layout.margins: 5
-            height: 25
-
-            color: "white"
-            radius: 4
-
-            progress: webEngineView && webEngineView.loadProgress
-            iconUrl: webEngineView && webEngineView.icon
-            pageUrl: webEngineView && webEngineView.url
-
-            onAccepted: webEngineView.url = addressUrl
+        Behavior on opacity {
+            NumberAnimation { duration: 200 }
         }
 
-        WebEngineView {
-            id: webEngineView
-
-            Layout.fillWidth: true
-            Layout.fillHeight: true
+        Text {
+            text: mockTouchPoint.pointId
+            anchors.centerIn: parent
         }
     }
 }

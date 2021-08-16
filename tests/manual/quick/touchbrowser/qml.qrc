@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>AddressBar.qml</file>
+        <file>MockTouchPoint.qml</file>
+        <file>touchpoint.png</file>
     </qresource>
 </RCC>
