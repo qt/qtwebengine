@@ -33,3 +33,8 @@ QT += webenginecore
 //! [1]
 #include <QtWebEngineCore>
 //! [1]
+
+//! [2]
+find_package(Qt6 COMPONENTS WebEngineCore REQUIRED)
+target_link_libraries(target PRIVATE Qt::WebEngineCore)
+//! [2]

@@ -620,7 +620,7 @@ QWebEngineView::~QWebEngineView()
 /*!
     \since 6.2
 
-    Returns the view if any, associated with the page.
+    Returns the view if any, associated with the \a page.
 
     \sa page(), setPage()
 */

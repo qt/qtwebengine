@@ -33,6 +33,8 @@
     \since 5.6
     \ingroup qtwebengine-modules
     \ingroup modules
+    \qtvariable webenginecore
+    \qtcmakepackage WebEngineCore
 
     To include the definitions of the module's classes, use the
     following directive:
@@ -44,10 +46,16 @@
     \l{Qt WebEngine Widgets C++ Classes}{Qt WebEngine Widgets} modules.
 
     \if !defined(qtforpython)
-    To link against the module, add this line to your qmake project file:
+    To link against the module using build with qmake,
+    add this line to your qmake project file:
 
     \snippet qtwebenginecore_build_snippet.qdoc 0
 
-    However, \c webenginecore is implied by adding \c webengine or \c webenginewidgets.
+    However, \c webenginecore is implied by adding \c webenginequick or \c webenginewidgets.
+
+    For build with CMake use the \c find_package() command to locate the needed module components
+    in the Qt6 package and \c target_link_libraries() to link against the module:
+
+    \snippet qtwebenginecore_build_snippet.qdoc 2
     \endif
 */

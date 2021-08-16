@@ -32,6 +32,7 @@
     \ingroup modules
     \ingroup qtwebengine-modules
     \qtvariable webenginewidgets
+    \qtcmakepackage WebEngineWidgets
 
     The \QWEWidgets module provides a web browser engine as well as C++ classes to render
     and interact with web content.
@@ -42,8 +43,14 @@
     \snippet qtwebenginewidgets_build_snippet.qdoc 1
 
     \if !defined(qtforpython)
-    To link against the module, add the following to your qmake project file:
+    To link against the module using build with qmake,
+    add the following QT variable to your qmake .pro file:
 
     \snippet qtwebenginewidgets_build_snippet.qdoc 0
+
+    For build with CMake use the \c find_package() command to locate the needed module components
+    in the Qt6 package and \c target_link_libraries() to link against the module:
+
+    \snippet qtwebenginewidgets_build_snippet.qdoc 2
     \endif
 */

@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtQuick.Window 2.1
-import QtWebEngine 2.0
+import QtQuick
+import QtQuick.Window
+import QtWebEngine
 
 //! [0]
 QtObject {
