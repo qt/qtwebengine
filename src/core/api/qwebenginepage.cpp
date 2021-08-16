@@ -2275,7 +2275,7 @@ QSizeF QWebEnginePage::contentsSize() const
     Renders the current content of the page into a PDF document and saves it
     in the location specified in \a filePath.
     The page size and orientation of the produced PDF document are taken from
-    the values specified in \a pageLayout, while the range of pages printed is
+    the values specified in \a layout, while the range of pages printed is
     taken from \a ranges with the default being printing all pages.
 
     This method issues an asynchronous request for printing the web page into
@@ -2302,7 +2302,7 @@ void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &layo
 /*!
     Renders the current content of the page into a PDF document and returns a byte array containing the PDF data
     as parameter to \a resultCallback.
-    The page size and orientation of the produced PDF document are taken from the values specified in \a pageLayout,
+    The page size and orientation of the produced PDF document are taken from the values specified in \a layout,
     while the range of pages printed is taken from \a ranges with the default being printing all pages.
 
     The \a resultCallback must take a const reference to a QByteArray as parameter. If printing was successful, this byte array

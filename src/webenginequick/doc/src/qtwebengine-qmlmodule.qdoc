@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \qmlmodule QtWebEngine 1.10
+    \qmlmodule QtWebEngine
     \title Qt WebEngine QML Types
     \brief Provides QML types for rendering web content within a QML application.
     \ingroup qtwebengine-modules
@@ -35,14 +35,15 @@
     The QML types can be imported into your application using the following import statements in
     your .qml file:
 
-    \qml
-    import QtWebEngine 1.10
-    \endqml
+    \snippet qtwebengine_build_snippet.qdoc 1
 
-    To link against the module, add the following QT variable to your qmake .pro
-    file:
+    To link against the module using build with qmake,
+    add the following QT variable to your qmake .pro file:
 
-    \badcode
-    QT += webengine
-    \endcode
+    \snippet qtwebengine_build_snippet.qdoc 0
+
+    For build with CMake use the \c find_package() command to locate the needed module components
+    in the Qt6 package and \c target_link_libraries() to link against the module:
+
+    \snippet qtwebengine_build_snippet.qdoc 2
 */

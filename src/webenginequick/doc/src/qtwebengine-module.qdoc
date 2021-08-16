@@ -26,10 +26,13 @@
 ****************************************************************************/
 
 /*!
-    \module QtWebEngine
-    \title Qt WebEngine C++ Classes
+    \module QtWebEngineQuick
+    \title Qt WebEngine Quick C++ Classes
     \brief Exposes C++ functionality to Qt Quick.
     \ingroup modules
+    \ingroup qtwebengine-modules
+    \qtvariable webenginequick
+    \qtcmakepackage WebEngineQuick
 
     The \QWE module exposes C++ functionality to Qt Quick.
 
@@ -42,5 +45,10 @@
     To link against the module, add the following to your qmake project file:
 
     \snippet qtwebengine_build_snippet.qdoc 0
+
+    For build with CMake use the \c find_package() command to locate the needed module components
+    in the Qt6 package and \c target_link_libraries() to link against the module:
+
+    \snippet qtwebengine_build_snippet.qdoc 2
     \endif
 */

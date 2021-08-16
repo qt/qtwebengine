@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmltype WebEngineNewViewRequest
-    \instantiates QQuickWebEngineNewViewRequest
+    \instantiates QWebEngineNewWindowRequest
     \inqmlmodule QtWebEngineQuick
     \since QtWebEngine 1.1
 
