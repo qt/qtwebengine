@@ -26,9 +26,8 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.5
-import QtQuick.Controls 1.4
-import QtQuick.Controls.Styles 1.4
+import QtQuick
+import QtQuick.Controls
 
 Rectangle {
     id: root
@@ -59,6 +58,14 @@ Rectangle {
     TextField {
         id: addressField
         anchors.fill: parent
+        leftPadding: 30
+
+        background: Rectangle {
+            color: "transparent"
+            border.color: "black"
+            border.width: 1
+            radius: root.radius
+        }
 
         Image {
             anchors.verticalCenter: addressField.verticalCenter
@@ -76,17 +83,6 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
 
             visible: root.progress < 100
-        }
-
-        style: TextFieldStyle {
-            padding.left: 30
-
-            background: Rectangle {
-                color: "transparent"
-                border.color: "black"
-                border.width: 1
-                radius: root.radius
-            }
         }
 
         onActiveFocusChanged: {
