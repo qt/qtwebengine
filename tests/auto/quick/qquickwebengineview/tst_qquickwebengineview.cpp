@@ -38,10 +38,10 @@
 #include <QtQml/QQmlEngine>
 #include <QtTest/QtTest>
 #include <QtWebEngineQuick/QQuickWebEngineProfile>
-#include <QtWebEngineQuick/QQuickWebEngineScriptCollection>
 #include <QtGui/private/qinputmethod_p.h>
-#include <QtWebEngineQuick/private/qquickwebengineview_p.h>
+#include <QtWebEngineQuick/private/qquickwebenginescriptcollection_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginesettings_p.h>
+#include <QtWebEngineQuick/private/qquickwebengineview_p.h>
 #include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
 #include <qpa/qplatforminputcontext.h>
 #include <QtTest/private/qemulationdetector_p.h>

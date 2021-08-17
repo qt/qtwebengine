@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "qquickwebenginescriptcollection.h"
+#include "qquickwebenginescriptcollection_p.h"
 #include "qwebenginescriptcollection.h"
 #include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
 #include <QtQml/qqmlinfo.h>

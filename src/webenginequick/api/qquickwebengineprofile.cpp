@@ -41,7 +41,7 @@
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginedownloadrequest_p.h"
 #include "qquickwebenginesettings_p.h"
-#include "qquickwebenginescriptcollection.h"
+#include "qquickwebenginescriptcollection_p.h"
 #include "qquickwebengineview_p_p.h"
 
 #include "profile_adapter.h"
