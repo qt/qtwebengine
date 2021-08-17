@@ -45,12 +45,12 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtQml/qjsvalue.h>
 #include <QtWebEngineCore/qwebenginescript.h>
-#include <QtWebEngineQuick/qtwebenginequickglobal.h>
+#include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 class QWebEngineScriptCollection;
 
-class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineScriptCollection : public QObject
+class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineScriptCollection : public QObject
 {
     Q_OBJECT
 public:

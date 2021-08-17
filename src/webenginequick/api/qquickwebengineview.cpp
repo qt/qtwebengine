@@ -45,7 +45,7 @@
 #include "qquickwebenginenewviewrequest_p.h"
 #include "qquickwebengineprofile.h"
 #include "qquickwebengineprofile_p.h"
-#include "qquickwebenginescriptcollection.h"
+#include "qquickwebenginescriptcollection_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginetouchhandleprovider_p_p.h"
 #include "qquickwebengineview_p.h"

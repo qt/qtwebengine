@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineActionPrivate;
 
-class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineAction : public QObject
+class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineAction : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString text READ text CONSTANT FINAL)
