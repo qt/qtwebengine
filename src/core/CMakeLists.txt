@@ -271,8 +271,9 @@ foreach(arch ${archs})
         read_gn_target(${buildGn} ${WEBENGINE_ROOT_BUILD_DIR}/src/core/api/${config}/gn_config.cxx.cmake)
         read_gn_target(${buildGn} ${WEBENGINE_ROOT_BUILD_DIR}/src/core/api/${config}/gn_config.c.cmake)
         configure_gn_target(${buildGn} ${config}
-            ${WEBENGINE_ROOT_SOURCE_DIR}/src/core/configure/BUILD.root.gn.in ${buildDir}/${config}/${arch}/BUILD.gn)
-
+            ${WEBENGINE_ROOT_SOURCE_DIR}/src/core/configure/BUILD.root.gn.in "${buildDir}/${config}/${arch}/BUILD.gn"
+            core/${config}/${arch}
+        )
 
         ##
         #   GN PARAMETERS SETUP
@@ -469,7 +470,7 @@ target_include_directories(WebEngineCore PRIVATE
     ${buildDir}/$<CONFIG>/${arch}/gen/third_party/perfetto/build_config
 )
 
-add_gn_build_aritfacts_to_target(WebEngineCore QtWebEngineCore ON ${buildDir})
+add_gn_build_aritfacts_to_target(WebEngineCore QtWebEngineCore  ${buildDir})
 
 ##
 #  SANDBOX
@@ -479,8 +480,10 @@ if(WIN32)
     add_library(WebEngineCoreSandbox STATIC IMPORTED GLOBAL)
     foreach(config ${configs})
         string(TOUPPER ${config} cfg)
-        add_ninja_command("" WebEngineCoreSandbox QtWebEngineCoreSandbox
-            QtWebEngineCoreSandbox.lib ${buildDir}/${config}/${arch}
+        add_ninja_command(
+            TARGET QtWebEngineCoreSandbox
+            OUTPUT QtWebEngineCoreSandbox.lib
+            BUILDDIR ${buildDir}/${config}/${arch}
         )
         set(sandboxLibraryPath ${buildDir}/${config}/${arch}/QtWebEngineCoreSandbox.lib)
         set_property(TARGET WebEngineCoreSandbox
@@ -592,6 +595,6 @@ if(QT_FEATURE_webengine_spellchecker)
         ../3rdparty/chromium/third_party/boringssl/src/include
         ${buildDir}/${config}/${arch}/gen
     )
-    add_gn_build_aritfacts_to_target(${dict_target_name} convert_dict OFF ${buildDir})
+    add_gn_build_aritfacts_to_target(${dict_target_name} convert_dict ${buildDir})
 endif()
 

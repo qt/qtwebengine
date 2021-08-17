@@ -89,7 +89,7 @@ config("cpp17_config") {
 }
 
 shared_library("QtWebEngineCore") {
-  cmake_config = "@GN_CONFIG@"
+  rsp_types = [ "objects", "archives", "libs" ]
   configs += [
     ":cpp17_config",
     ":QtWebEngineCore_config",
@@ -617,7 +617,7 @@ if (enable_extensions) {
 
 if (enable_spellcheck) {
   shared_library("convert_dict") {
-    cmake_config = "@GN_CONFIG@"
+    rsp_types = [ "objects", "archives", "libs" ]
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
     deps = [
       "//chrome/tools/convert_dict:lib",
