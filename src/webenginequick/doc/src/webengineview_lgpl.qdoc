@@ -41,7 +41,7 @@
     \l QtWebEngineQuick::initialize in the application main source file, as illustrated by the
     following code snippet:
 
-    \quotefromfile webengine/minimal/main.cpp
+    \quotefromfile webenginequick/minimal/main.cpp
     \skipto main
     \printuntil }
 
@@ -56,7 +56,7 @@
 
     The following sample QML application loads a web page using the \c url property:
 
-    \quotefromfile webengine/minimal/main.qml
+    \quotefromfile webenginequick/minimal/main.qml
     \skipto import
     \printuntil /^\}/
 

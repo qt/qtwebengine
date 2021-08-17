@@ -171,7 +171,7 @@
     The following sample QML application loads a web page using the \l{WebEngineView::}{url}
     property:
 
-    \quotefromfile webengine/minimal/main.qml
+    \quotefromfile webenginequick/minimal/main.qml
     \skipto import
     \printuntil /^\}/
 

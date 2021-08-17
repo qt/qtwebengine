@@ -470,7 +470,7 @@ defineTest(qtwebengine_isMacOsPlatformSupported) {
 }
 
 defineTest(qtwebengine_isGCCVersionSupported) {
-  # Keep in sync with src/webengine/doc/src/qtwebengine-platform-notes.qdoc
+  # Keep in sync with src/webenginequick/doc/src/qtwebengine-platform-notes.qdoc
   lessThan(QMAKE_GCC_MAJOR_VERSION, 5) {
     qtwebengine_platformError("requires at least gcc version 5, but using gcc version $${QMAKE_GCC_MAJOR_VERSION}.$${QMAKE_GCC_MINOR_VERSION}.")
     return(false)
