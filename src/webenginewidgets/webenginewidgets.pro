@@ -9,7 +9,7 @@ DEFINES += QT_BUILD_WEBENGINEWIDGETS_LIB
 QT += webenginecore widgets network quick
 QT_PRIVATE += quick-private gui-private core-private widgets-private quickwidgets webenginecore-private
 
-INCLUDEPATH += $$PWD api ../core ../core/api ../webengine/api
+INCLUDEPATH += $$PWD api ../core ../core/api ../webenginequick/api
 
 SOURCES = \
         api/qwebenginenotificationpresenter.cpp \

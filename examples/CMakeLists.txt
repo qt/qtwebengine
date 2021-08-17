@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 qt_examples_build_begin()
 if(NOT CMAKE_CROSSCOMPILING) #QTBUG-86533
     if(TARGET Qt::WebEngineCore)
-        add_subdirectory(webengine)
+        add_subdirectory(webenginequick)
     endif()
     if(TARGET Qt::WebEngineWidgets)
         add_subdirectory(webenginewidgets)
