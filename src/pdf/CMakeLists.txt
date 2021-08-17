@@ -86,7 +86,9 @@ if(WEBENGINE_REPO_BUILD)
             read_gn_target(${buildGn} ${WEBENGINE_ROOT_BUILD_DIR}/src/pdf/${config}/gn_config.cxx.cmake)
             read_gn_target(${buildGn} ${WEBENGINE_ROOT_BUILD_DIR}/src/pdf/${config}/gn_config.c.cmake)
             configure_gn_target(${buildGn} ${config}
-                ${WEBENGINE_ROOT_SOURCE_DIR}/src/pdf/configure/BUILD.root.gn.in ${buildDir}/${config}/${arch}/BUILD.gn)
+                ${WEBENGINE_ROOT_SOURCE_DIR}/src/pdf/configure/BUILD.root.gn.in "${buildDir}/${config}/${arch}/BUILD.gn"
+                pdf/${config}/${arch}
+            )
 
             ##
             #  GN PARAMETERS
@@ -157,5 +159,5 @@ if(WEBENGINE_REPO_BUILD)
     endforeach()
     set(arch ${CMAKE_SYSTEM_PROCESSOR})
     target_include_directories(Pdf PRIVATE ${buildDir}/$<CONFIG>/${arch}/gen)
-    add_gn_build_aritfacts_to_target(Pdf QtPdf ON ${buildDir})
+    add_gn_build_aritfacts_to_target(Pdf QtPdf ${buildDir})
 endif()

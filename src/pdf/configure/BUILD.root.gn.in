@@ -25,7 +25,7 @@ config("cpp17_config") {
 }
 
 shared_library("QtPdf") {
-  cmake_config = "@GN_CONFIG@"
+  rsp_types = [ "objects", "archives", "libs" ]
   configs += [
     ":cpp17_config",
     ":QtPdf_config"
