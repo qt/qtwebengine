@@ -17,6 +17,9 @@ if(WIN32)
    target_sources(${qtWebEngineProcessName} PRIVATE support_win.cpp)
    target_link_libraries(${qtWebEngineProcessName} PRIVATE WebEngineCoreSandbox)
    set_property(TARGET ${qtWebEngineProcessName} PROPERTY WIN32_EXECUTABLE TRUE)
+   # get libs rsp file, since cmake is not aware of PUBLIC libs for WebEngineCore
+   get_target_property(libs_rsp WebEngineCore LIBS_RSP)
+   target_link_options(${qtWebEngineProcessName} PRIVATE "@${libs_rsp}")
 endif()
 
 target_link_libraries(${qtWebEngineProcessName}

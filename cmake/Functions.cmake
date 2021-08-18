@@ -327,6 +327,27 @@ function(add_gn_target_for_cmake_target gnTarget cmakeTarget ninjaTarget config 
     )
 endfunction()
 
+function(copy_response_files gnTarget)
+    get_target_property(config ${gnTarget} CONFIG)
+    get_target_property(ninjaTarget ${gnTarget} NINJA_TARGET)
+    get_target_property(cmakeTarget ${gnTarget} CMAKE_TARGET)
+    list(REMOVE_ITEM ARGN ${gnTarget})
+    foreach(rsp IN ITEMS ${ARGN})
+        set(rsp_dst "CMakeFiles_${ninjaTarget}_${config}_${rsp}.rsp")
+        set(rsp_src "${${rsp}_rsp}")
+        add_custom_command(
+            OUTPUT ${PROJECT_BINARY_DIR}/${rsp_dst}
+            COMMAND ${CMAKE_COMMAND} -E copy ${rsp_src} ${PROJECT_BINARY_DIR}/${rsp_dst}
+            DEPENDS ${rsp_src}
+        )
+        set(${rsp}_rsp ${rsp_dst} PARENT_SCOPE)
+        add_custom_target(${cmakeTarget}_${rsp}_copy_${config}
+            DEPENDS ${PROJECT_BINARY_DIR}/${rsp_dst}
+        )
+        add_dependencies(${cmakeTarget} ${cmakeTarget}_${rsp}_copy_${config})
+    endforeach()
+endfunction()
+
 function(extend_target_with_gn_target gnTarget buildDir)
     get_target_property(config ${gnTarget} CONFIG)
     get_target_property(ninjaTarget ${gnTarget} NINJA_TARGET)
@@ -355,10 +376,14 @@ function(extend_target_with_gn_target gnTarget buildDir)
         )
     endif()
     if(WIN32)
+        copy_response_files(${gnTarget} objects archives libs)
         target_link_options(${cmakeTarget} PRIVATE
             "$<$<CONFIG:${config}>:@${objects_rsp}>"
             "$<$<CONFIG:${config}>:@${archives_rsp}>"
+            "$<$<CONFIG:${config}>:@${libs_rsp}>"
         )
+        # we need libs rsp also when linking process with sandbox lib
+        set_property(TARGET ${cmakeTarget} PROPERTY LIBS_RSP ${libs_rsp})
     endif()
 endfunction()
 
