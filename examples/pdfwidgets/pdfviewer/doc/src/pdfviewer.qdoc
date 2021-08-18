@@ -34,8 +34,8 @@
 
     //! TODO add thumbnail \image pdfviewer.png
 
-    \e {PDF Viewer} demonstrates how to use the \l QPdfDocument class to render
-    PDF documents and the \l QPdfPageNavigation class to navigate them.
+    \e {PDF Viewer} demonstrates how to use the QPdfDocument class to render
+    PDF documents and the QPdfPageNavigation class to navigate them.
 
     Qt Creator and the integrated Qt Designer were used to create the example
     UI and to connect it to the code. This affects the code, which might be
@@ -83,7 +83,7 @@
 
     \printuntil addWidget(m_pageSelector)
 
-    We use the \l QPdfPageNavigation class to handle the navigation through a
+    We use the QPdfPageNavigation class to handle the navigation through a
     PDF document:
 
     \printuntil setPageNavigation

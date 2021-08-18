@@ -38,9 +38,9 @@
 
     The \l {https://www.w3.org/TR/geolocation-API/}{Geolocation API} is a
     JavaScript API that web applications can use to determine the user's
-    physical location to show on a map, for example. As \QWE relies on
-    \l {Qt Location} to power this API a viable location backend is needed for
-    the target platform.
+    physical location to show on a map, for example. As \QWE relies on the
+    \e {Qt Location} module to power this API, a viable location backend is
+    needed for the target platform.
 
     To avoid accidentally sending location information to third parties
     geolocation requests are denied by default. This example demonstrates the
@@ -94,5 +94,5 @@
 
     \printuntil /^\}/
 
-    \sa {html5-geolocation}{Qt WebEngine HTML5 Geolocation}, {Qt Location}
+    \sa {html5-geolocation}{Qt WebEngine HTML5 Geolocation}
 */
