@@ -492,6 +492,7 @@ if(WIN32)
         add_custom_target(sandboxLibrary_${config}
             DEPENDS ${buildDir}/${config}/${arch}/QtWebEngineCoreSandbox.lib)
         add_dependencies(WebEngineCoreSandbox sandboxLibrary_${config})
+        add_dependencies(WebEngineCoreSandbox WebEngineCore)
     endforeach()
 endif()
 
