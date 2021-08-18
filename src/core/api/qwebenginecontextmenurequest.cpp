@@ -204,16 +204,14 @@ QStringList QWebEngineContextMenuRequest::spellCheckerSuggestions() const
 }
 
 /*!
-  TODO: needs api in page
+    \property QWebEngineContextMenuRequest::accepted
+    \brief Whether the request is accepted.
 */
 bool QWebEngineContextMenuRequest::isAccepted() const
 {
     return d->m_accepted;
 }
 
-/*!
-  TODO: needs api in page
-*/
 void QWebEngineContextMenuRequest::setAccepted(bool accepted)
 {
     d->m_accepted = accepted;

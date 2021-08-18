@@ -232,7 +232,5 @@
     \section1 Popups in Fullscreen Applications on Windows
     Because of a limitation in the Windows compositor, applications that show a fullscreen web
     engine view will not properly display popups or other top-level windows. The reason and
-    workaround for the issue can be found at \l {Fullscreen OpenGL Based Windows} and
-    \l {QWindowsWindowFunctions::setHasBorderInFullScreen}.
-
+    workaround is described in \l {Fullscreen OpenGL Based Windows}.
 */

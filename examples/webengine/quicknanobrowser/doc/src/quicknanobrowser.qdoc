@@ -62,15 +62,18 @@
     \skipto width
     \printuntil title
 
-    We use the TabView Qt Quick control to create an empty tab view that fills the main window. We
-    set the tab active first, to make sure that the tab item is immediately instantiated:
+    We use the TabBar Qt Quick control to create a tab bar anchored to the top of the window, and
+    create a new, empty tab:
 
-    \skipto TabView
-    \printuntil Component.onCompleted
+    \skipto TabBar {
+    \printuntil return webview
+    \printuntil }
 
     The tab contains a web engine view that loads web content:
 
-    \printuntil focus
+    \skipto Component {
+    \printuntil currentWebView.reload
+    \printuntil /^\ {8}\}/
 
     We use the \l Action type to create new tabs:
 
@@ -82,14 +85,15 @@
     We use the \l TextField Qt Quick Control within a \l ToolBar to create an address bar that
     shows the current URL and where users can enter another URL:
 
-    \skipto toolBar
+    \quotefromfile webengine/quicknanobrowser/BrowserWindow.qml
+    \skipto menuBar: ToolBar
     \printuntil anchors.fill
     \dots
     \skipto TextField
     \printuntil addressBar
     \dots
     \skipto focus
-    \printuntil /^\ {16}\}/
+    \printuntil /^\ {12}\}/
 
     \section1 Handling Certificate Errors
 
@@ -101,14 +105,14 @@
     \skipto onCertificateError
     \printuntil }
 
-    We use the MessageDialog type to prompt users to continue or cancel the loading of the web page.
+    We use the Dialog type to prompt users to continue or cancel the loading of the web page.
     If users select \uicontrol Yes, we call the
-    \l{WebEngineCertificateError::}{ignoreCertificateError()} method to ignore the error and
-    continue loading content from the URL. If users select \uicontrol No, we call the
+    \l{WebEngineCertificateError::}{acceptCertificate()} method to continue loading content from
+    the URL. If users select \uicontrol No, we call the
     \l{WebEngineCertificateError::}{rejectCertificate()} method to reject the request and stop
     loading content from the URL:
 
-    \skipto MessageDialog
+    \skipto Dialog {
     \printuntil /^\ {4}\}/
 
     \section1 Entering and Leaving Fullscreen Mode
