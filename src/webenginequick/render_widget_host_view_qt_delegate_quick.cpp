@@ -59,6 +59,7 @@ RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderW
     setFlag(ItemHasContents);
     setAcceptedMouseButtons(Qt::AllButtons);
     setAcceptHoverEvents(true);
+    setAcceptTouchEvents(true);
     if (!isPopup) {
         setFocus(true);
         setActiveFocusOnTab(true);
