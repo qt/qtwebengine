@@ -28,6 +28,7 @@
 /*!
     \page qtwebengine-changes-qt6.html
     \title Changes to Qt WebEngine
+    \ingroup changes-qt-5-to-6
     \brief Migrate Qt WebEngine to Qt 6.
 
     Qt 6 is a result of the conscious effort to make the framework more
