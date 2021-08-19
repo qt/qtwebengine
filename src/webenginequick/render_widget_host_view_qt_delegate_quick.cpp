@@ -59,10 +59,10 @@ RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderW
     setFlag(ItemHasContents);
     setAcceptedMouseButtons(Qt::AllButtons);
     setAcceptHoverEvents(true);
-    if (isPopup)
-        return;
-    setFocus(true);
-    setActiveFocusOnTab(true);
+    if (!isPopup) {
+        setFocus(true);
+        setActiveFocusOnTab(true);
+    }
     bind(client->compositorId());
 }
 
