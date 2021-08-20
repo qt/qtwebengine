@@ -296,7 +296,7 @@ void DevToolsFrontendQt::ReadyToCommitNavigation(content::NavigationHandle *navi
         // If the frontend for some reason goes to some place other than devtools, stop the bindings
         if (navigationHandle->GetURL() != GetFrontendURL())
             m_frontendHost.reset(nullptr);
-        else
+        else if (!m_frontendHost)
             m_frontendHost = content::DevToolsFrontendHost::Create(
                         frame,
                         base::Bind(&DevToolsFrontendQt::HandleMessageFromDevToolsFrontend,
@@ -488,6 +488,8 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
         web_contents()->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16("DevToolsAPI.fileSystemsLoaded([]);"),
                                                           base::NullCallback());
     } else if (method == "reattach") {
+        if (!m_agentHost)
+            return;
         m_agentHost->DetachClient(this);
         m_agentHost->AttachClient(this);
     } else if (method == "inspectedURLChanged" && params && params->GetSize() >= 1) {
