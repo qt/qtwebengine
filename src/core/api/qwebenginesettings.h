@@ -111,8 +111,6 @@ public:
         AllowAllUnknownUrlSchemes
     };
 
-    //TODO: see if we still need it
-    //static QWebEngineSettings *defaultSettings();
 public:
     ~QWebEngineSettings();
     void setFontFamily(FontFamily which, const QString &family);
