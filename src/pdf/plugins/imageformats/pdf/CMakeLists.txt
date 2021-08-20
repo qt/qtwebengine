@@ -8,4 +8,3 @@ qt_internal_add_plugin(QPdfPlugin
         Qt::PdfPrivate
 )
 
-make_install_only(QPdfPlugin)

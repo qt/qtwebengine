@@ -1,6 +1,3 @@
-#### Inputs
-
-#### Libraries
 
 if(QT_CONFIGURE_RUNNING)
     function(assertTargets)
@@ -9,7 +6,7 @@ if(QT_CONFIGURE_RUNNING)
     endfunction()
 else()
     find_package(Ninja 1.7.2)
-    find_package(Gn ${QT_REPO_MODULES_VERSION} EXACT)
+    find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT)
     find_package(Python2 2.7.5)
     find_package(GPerf)
     find_package(BISON)
@@ -18,7 +15,6 @@ else()
     find_package(PkgConfig)
     find_package(Snappy)
     find_package(Nodejs 10.19)
-    find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS Gui Widgets Network OpenGL OpenGLWidgets Quick Qml)
 endif()
 
 if(PkgConfig_FOUND)

@@ -19,6 +19,7 @@ function(assertTargets)
     endforeach()
 endfunction()
 
+#TODO: remove me
 function(add_implicit_dependencies target)
     if(TARGET ${target})
         list(REMOVE_ITEM ARGN ${target})
@@ -74,36 +75,40 @@ function(get_qt_features outList module)
     endif()
 endfunction()
 
-function(get_configure_mode configureMode)
-    if(NOT DEFINED WEBENGINE_REPO_BUILD AND NOT DEFINED QT_SUPERBUILD)
-        set(${configureMode} NO_CONFIG_HEADER_FILE NO_SYNC_QT PARENT_SCOPE)
-    endif()
+function(create_cxx_config cmakeTarget arch configFileName)
+    file(GENERATE
+          OUTPUT $<CONFIG>/${arch}/${configFileName}
+          CONTENT "\
+              set(GN_INCLUDES $<TARGET_PROPERTY:INCLUDE_DIRECTORIES>)\n\
+              set(GN_DEFINES $<TARGET_PROPERTY:COMPILE_DEFINITIONS>)\n\
+              set(GN_LINK_OPTIONS $<TARGET_PROPERTY:LINK_OPTIONS>)\n\
+              set(GN_CXX_COMPILE_OPTIONS $<TARGET_PROPERTY:COMPILE_OPTIONS>)"
+#             set(GN_LIBS $<TARGET_PROPERTY:LINK_LIBRARIES>)
+          CONDITION $<COMPILE_LANGUAGE:CXX>
+          TARGET ${cmakeTarget}
+     )
 endfunction()
 
-function(make_config_for_gn target configFileName)
-    if(NOT DEFINED WEBENGINE_REPO_BUILD)
-        file(GENERATE
-             OUTPUT $<CONFIG>/${configFileName}.cxx.cmake
-             CONTENT [[
-                 set(GN_INCLUDES $<TARGET_PROPERTY:INCLUDE_DIRECTORIES>)
-                 set(GN_DEFINES $<TARGET_PROPERTY:COMPILE_DEFINITIONS>)
-                 set(GN_LIBS $<TARGET_PROPERTY:LINK_LIBRARIES>)
-                 set(GN_LINK_OPTIONS $<TARGET_PROPERTY:LINK_OPTIONS>)
-                 set(GN_CXX_COMPILE_OPTIONS $<TARGET_PROPERTY:COMPILE_OPTIONS>)]]
-             CONDITION $<COMPILE_LANGUAGE:CXX>
-             TARGET ${target})
-        file(GENERATE
-             OUTPUT $<CONFIG>/${configFileName}.c.cmake
-             CONTENT [[ set(GN_C_COMPILE_OPTIONS $<TARGET_PROPERTY:COMPILE_OPTIONS>)]]
-             CONDITION $<COMPILE_LANGUAGE:C>
-             TARGET ${target})
-    endif()
+function(create_c_config cmakeTarget arch configFileName)
+    file(GENERATE
+          OUTPUT $<CONFIG>/${arch}/${configFileName}
+          CONTENT "set(GN_C_COMPILE_OPTIONS $<TARGET_PROPERTY:COMPILE_OPTIONS>)"
+          CONDITION $<COMPILE_LANGUAGE:C>
+          TARGET ${cmakeTarget})
 endfunction()
 
-function(make_install_only target)
-    if(NOT DEFINED WEBENGINE_REPO_BUILD)
-        set_target_properties(${target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
-    endif()
+function(create_gn_target_config target configFile)
+    get_target_property(elementList ${target} ELEMENTS)
+    get_target_property(prefix ${target} PREFIX)
+    file(WRITE ${configFile}
+        "set(PREFIX ${prefix})\nset(ELEMENTS ${elementList})\n"
+    )
+    foreach(element IN LISTS elementList)
+         get_target_property(prop ${target} ${prefix}_${element})
+         if(prop)
+             file(APPEND ${configFile} "set(${prefix}_${element} ${prop})\n")
+         endif()
+    endforeach()
 endfunction()
 
 function(add_gn_target target config arch)
@@ -119,18 +124,30 @@ function(add_gn_target target config arch)
     )
 endfunction()
 
-function(read_gn_target target filePath)
+function(init_gn_config filePath)
     include(${filePath})
-    applyToGnTarget(${target})
+    set_directory_properties(PROPERTIES
+        ELEMENTS "${ELEMENTS}"
+        PREFIX "${PREFIX}"
+    )
+    applyToGnTarget(DIRECTORY)
 endfunction()
 
-macro(applyToGnTarget target)
-    get_target_property(elementList ${target} ELEMENTS)
-    get_target_property(prefix ${target} PREFIX)
+function(read_gn_config filePath)
+    include(${filePath})
+    applyToGnTarget(DIRECTORY)
+endfunction()
+
+# this runs also in script mode, so we use than DIRECTORY
+macro(applyToGnTarget)
+    set(type ${ARGV0})
+    set(target ${ARGV1})
+    get_property(elementList ${type} ${target} PROPERTY ELEMENTS)
+    get_property(prefix ${type} ${target} PROPERTY PREFIX)
     foreach(element IN LISTS elementList)
         if(${prefix}_${element})
             message(DEBUG "${prefix}_${element} = ${${prefix}_${element}}")
-            set_property(TARGET ${target} APPEND PROPERTY ${prefix}_${element} ${${prefix}_${element}})
+            set_property(${type} ${target} APPEND PROPERTY ${prefix}_${element} ${${prefix}_${element}})
         endif()
     endforeach()
 endmacro()
@@ -144,7 +161,7 @@ function(extend_gn_target target)
     qt_evaluate_config_expression(result ${GN_CONDITION})
     if(${result})
         message(DEBUG "extend_gn_target(${target} CONDITION ${GN_CONDITION} ...): Evaluated")
-        applyToGnTarget(${target})
+        applyToGnTarget(TARGET ${target})
     endif()
 endfunction()
 
@@ -166,15 +183,14 @@ function(extend_gn_list outList)
     set(${outList} "${${outList}}" PARENT_SCOPE)
 endfunction()
 
-function(configure_gn_target target config inFilePath outFilePath buildPrefix)
-
-    # GN_CONFIG
-    string(TOUPPER ${config} GN_CONFIG)
+function(configure_gn_target sourceDir inFilePath outFilePath)
+    # FIXME: GN_CONFIG
+    set(GN_CONFIG NOTUSED)
 
     # GN_SOURCES GN_HEADERS
-    get_target_property(gnSources ${target} GN_SOURCES)
+    get_property(gnSources DIRECTORY PROPERTY GN_SOURCES)
     foreach(gnSourceFile ${gnSources})
-        get_filename_component(gnSourcePath ${gnSourceFile} REALPATH)
+        get_filename_component(gnSourcePath ${sourceDir}/${gnSourceFile} REALPATH)
         list(APPEND sourceList \"${gnSourcePath}\")
     endforeach()
     set(GN_HEADERS ${sourceList})
@@ -183,7 +199,7 @@ function(configure_gn_target target config inFilePath outFilePath buildPrefix)
     list(FILTER GN_SOURCES EXCLUDE REGEX "^.+\\.h\"$")
 
     # GN_DEFINES
-    get_target_property(gnDefines ${target} GN_DEFINES)
+    get_property(gnDefines DIRECTORY PROPERTY GN_DEFINES)
     list(REMOVE_DUPLICATES gnDefines)
     foreach(gnDefine ${gnDefines})
         list(APPEND GN_ARGS_DEFINES \"-D${gnDefine}\")
@@ -191,7 +207,7 @@ function(configure_gn_target target config inFilePath outFilePath buildPrefix)
     endforeach()
 
     # GN_INCLUDES
-    get_target_property(gnIncludes ${target} GN_INCLUDES)
+    get_property(gnIncludes DIRECTORY PROPERTY GN_INCLUDES)
     list(REMOVE_DUPLICATES gnIncludes)
     foreach(gnInclude ${gnIncludes})
         get_filename_component(gnInclude ${gnInclude} REALPATH)
@@ -200,27 +216,30 @@ function(configure_gn_target target config inFilePath outFilePath buildPrefix)
     endforeach()
 
     # MOC
-    get_target_property(GN_MOC_BIN_IN Qt6::moc IMPORTED_LOCATION)
-    set(GN_ARGS_MOC_BIN \"${GN_MOC_BIN_IN}\")
+    get_property(mocFilePath DIRECTORY PROPERTY GN_MOC_PATH)
+    set(GN_ARGS_MOC_BIN \"${mocFilePath}\")
 
     # GN_CFLAGS_CC
-    get_target_property(gnCxxCompileOptions ${target} GN_CXX_COMPILE_OPTIONS)
+    get_property(gnCxxCompileOptions DIRECTORY PROPERTY GN_CXX_COMPILE_OPTIONS)
     foreach(gnCxxCompileOption ${gnCxxCompileOptions})
         list(APPEND GN_CFLAGS_CC \"${gnCxxCompileOption}\")
     endforeach()
     list(REMOVE_DUPLICATES GN_CFLAGS_CC)
 
     # GN_CFLAGS_C
-    get_target_property(gnCCompileOptions ${target} GN_C_COMPILE_OPTIONS)
+    get_property(gnCCompileOptions DIRECTORY PROPERTY GN_C_COMPILE_OPTIONS)
     foreach(gnCCompileOption ${gnCCompileOptions})
         list(APPEND GN_CFLAGS_C \"${gnCCompileOption}\")
     endforeach()
     list(REMOVE_DUPLICATES GN_CFLAGS_C)
 
     # GN_SOURCE_ROOT
-    get_filename_component(GN_SOURCE_ROOT "${CMAKE_CURRENT_LIST_DIR}" REALPATH)
-    set(GN_RSP_PREFIX ${buildPrefix})
-    if(MACOS)
+    get_filename_component(GN_SOURCE_ROOT "${sourceDir}" REALPATH)
+
+    # GN_RSP_PREFIX
+    get_property(GN_RSP_PREFIX DIRECTORY PROPERTY GN_RSP_PREFIX)
+
+    if(APPLE) # this runs in scrpit mode without qt-cmake so on MACOS here
         recoverFrameworkBuild(GN_INCLUDE_DIRS GN_CFLAGS_C)
     endif()
 
@@ -260,8 +279,8 @@ function(get_install_config result)
     endif()
 endfunction()
 
-macro(assertRunAsTopLevelBuild condition)
-    if(NOT DEFINED WEBENGINE_REPO_BUILD AND ${condition})
+macro(assertRunAsTopLevelBuild)
+    if(NOT DEFINED WEBENGINE_REPO_BUILD)
         message(FATAL_ERROR "This cmake file should run as top level build.")
         return()
     endif()
@@ -285,7 +304,7 @@ endfunction()
 # forward declarations of NSString.
 function(get_forward_declaration_macro result)
     if(MACOS)
-        set(${result} "Q_FORWARD_DECLARE_OBJC_CLASS(name)=class name;" PARENT_SCOPE)
+        set(${result} " \"Q_FORWARD_DECLARE_OBJC_CLASS(name)=class name;\" " PARENT_SCOPE)
     else()
         set(${result} "Q_FORWARD_DECLARE_OBJC_CLASS=QT_FORWARD_DECLARE_CLASS" PARENT_SCOPE)
     endif()
@@ -316,10 +335,10 @@ function(get_darwin_sdk_version result)
     endif()
 endfunction()
 
-function(add_gn_target_for_cmake_target gnTarget cmakeTarget ninjaTarget config arch)
+function(add_ninja_target target cmakeTarget ninjaTarget config arch buildDir)
     string(TOUPPER ${config} cfg)
-    add_custom_target(${gnTarget})
-    set_target_properties(${gnTarget} PROPERTIES
+    add_custom_target(${target} DEPENDS ${buildDir}/${config}/${arch}/${ninjaTarget}.stamp)
+    set_target_properties(${target} PROPERTIES
         CONFIG ${config}
         ARCH ${arch}
         CMAKE_TARGET ${cmakeTarget}
@@ -327,11 +346,11 @@ function(add_gn_target_for_cmake_target gnTarget cmakeTarget ninjaTarget config 
     )
 endfunction()
 
-function(copy_response_files gnTarget)
-    get_target_property(config ${gnTarget} CONFIG)
-    get_target_property(ninjaTarget ${gnTarget} NINJA_TARGET)
-    get_target_property(cmakeTarget ${gnTarget} CMAKE_TARGET)
-    list(REMOVE_ITEM ARGN ${gnTarget})
+function(copy_response_files target)
+    get_target_property(config ${target} CONFIG)
+    get_target_property(ninjaTarget ${target} NINJA_TARGET)
+    get_target_property(cmakeTarget ${target} CMAKE_TARGET)
+    list(REMOVE_ITEM ARGN ${target})
     foreach(rsp IN ITEMS ${ARGN})
         set(rsp_dst "CMakeFiles_${ninjaTarget}_${config}_${rsp}.rsp")
         set(rsp_src "${${rsp}_rsp}")
@@ -339,6 +358,7 @@ function(copy_response_files gnTarget)
             OUTPUT ${PROJECT_BINARY_DIR}/${rsp_dst}
             COMMAND ${CMAKE_COMMAND} -E copy ${rsp_src} ${PROJECT_BINARY_DIR}/${rsp_dst}
             DEPENDS ${rsp_src}
+            USES_TERMINAL
         )
         set(${rsp}_rsp ${rsp_dst} PARENT_SCOPE)
         add_custom_target(${cmakeTarget}_${rsp}_copy_${config}
@@ -348,25 +368,27 @@ function(copy_response_files gnTarget)
     endforeach()
 endfunction()
 
-function(extend_target_with_gn_target gnTarget buildDir)
-    get_target_property(config ${gnTarget} CONFIG)
-    get_target_property(ninjaTarget ${gnTarget} NINJA_TARGET)
-    get_target_property(cmakeTarget ${gnTarget} CMAKE_TARGET)
+function(extend_cmake_target target buildDir)
+    get_target_property(config ${target} CONFIG)
+    get_target_property(ninjaTarget ${target} NINJA_TARGET)
+    get_target_property(cmakeTarget ${target} CMAKE_TARGET)
     string(TOUPPER ${cmakeTarget} tg)
     string(TOUPPER ${config} cfg)
-    add_custom_target(ninja_${cmakeTarget}_${config} DEPENDS ${buildDir}/${ninjaTarget}.stamp)
-    add_dependencies(${cmakeTarget} ninja_${cmakeTarget}_${config})
     set(objects_rsp "${buildDir}/${ninjaTarget}_objects.rsp")
     set(archives_rsp "${buildDir}/${ninjaTarget}_archives.rsp")
     set(libs_rsp "${buildDir}/${ninjaTarget}_libs.rsp")
     if(LINUX)
          target_link_options(${cmakeTarget} PRIVATE
              "$<$<CONFIG:${config}>:@${objects_rsp}>"
-             "-Wl,--start-group"
-             "$<$<CONFIG:${config}>:@${archives_rsp}>"
-             "-Wl,--end-group"
-             "$<$<CONFIG:${config}>:@${libs_rsp}>"
          )
+         target_link_libraries(${cmakeTarget} PRIVATE
+             "-Wl,--start-group $<$<CONFIG:${config}>:@${archives_rsp}> -Wl,--end-group"
+         )
+         # linker here options are just to prevent processing it by cmake
+         target_link_libraries(${cmakeTarget} PRIVATE
+             "-Wl,--no-fatal-warnings $<$<CONFIG:${config}>:@${libs_rsp}> -Wl,--no-fatal-warnings"
+         )
+
     endif()
     if(MACOS)
         target_link_options(${cmakeTarget} PRIVATE
@@ -376,7 +398,7 @@ function(extend_target_with_gn_target gnTarget buildDir)
         )
     endif()
     if(WIN32)
-        copy_response_files(${gnTarget} objects archives libs)
+        copy_response_files(${target} objects archives libs)
         target_link_options(${cmakeTarget} PRIVATE
             "$<$<CONFIG:${config}>:@${objects_rsp}>"
             "$<$<CONFIG:${config}>:@${archives_rsp}>"
@@ -387,11 +409,11 @@ function(extend_target_with_gn_target gnTarget buildDir)
     endif()
 endfunction()
 
-function(add_rsp_command gnTarget buildDir)
-    get_target_property(config ${gnTarget} CONFIG)
-    get_target_property(arch ${gnTarget} ARCH)
-    get_target_property(ninjaTarget ${gnTarget} NINJA_TARGET)
-    get_target_property(cmakeTarget ${gnTarget} CMAKE_TARGET)
+function(add_rsp_command target buildDir)
+    get_target_property(config ${target} CONFIG)
+    get_target_property(arch ${target} ARCH)
+    get_target_property(ninjaTarget ${target} NINJA_TARGET)
+    get_target_property(cmakeTarget ${target} CMAKE_TARGET)
     string(TOUPPER ${config} cfg)
     add_custom_command(
         OUTPUT ${buildDir}/${cmakeTarget}.a
@@ -415,9 +437,9 @@ function(add_rsp_command gnTarget buildDir)
     )
 endfunction()
 
-function(add_lipo_command gnTarget buildDir)
-    get_target_property(config ${gnTarget} CONFIG)
-    get_target_property(cmakeTarget ${gnTarget} CMAKE_TARGET)
+function(add_lipo_command target buildDir)
+    get_target_property(config ${target} CONFIG)
+    get_target_property(cmakeTarget ${target} CMAKE_TARGET)
     set(libs_rsp "${buildDir}/x86_64/${ninjaTarget}_libs.rsp")
     # Lipo the object files together to a single fat archive
     add_library(${cmakeTarget}_${config} STATIC IMPORTED GLOBAL)
@@ -606,7 +628,7 @@ function(check_thumb result)
     set(${result} FALSE PARENT_SCOPE)
 endfunction()
 
-macro(create_pkg_config_host_wrapper)
+macro(create_pkg_config_host_wrapper buildDir)
     find_package(PkgConfigHost)
         if(CMAKE_CROSSCOMPILING)
             create_pkg_config_wrapper("${buildDir}/pkg-config-host_wrapper.sh" "${PKG_CONFIG_HOST_EXECUTABLE}")
@@ -825,38 +847,9 @@ macro(append_pkg_config_setup)
     endif()
 endmacro()
 
-macro(execute_gn)
-    get_target_property(gnCmd Gn::gn IMPORTED_LOCATION)
-    set(gnArg gen ${buildDir}/${config}/${arch})
-
-    list(APPEND gnArg
-        --script-executable=${Python2_EXECUTABLE}
-        --root=${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium)
-    list(JOIN gnArgArg " " gnArgArg)
-
-    list(APPEND gnArg "--args=${gnArgArg}")
-
-    list(JOIN gnArg " " printArg)
-    message("-- Running gn for ${config} ${arch}\n-- ${gnCmd} ${printArg}")
-    execute_process(
-        COMMAND ${gnCmd} ${gnArg}
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        RESULT_VARIABLE gnResult
-        OUTPUT_VARIABLE gnOutput
-        ERROR_VARIABLE gnError
-    )
-
-    if(NOT gnResult EQUAL 0)
-        message(FATAL_ERROR "\n-- GN FAILED\n${gnOutput}\n${gnError}")
-    else()
-        string(REGEX REPLACE "\n$" "" gnOutput "${gnOutput}")
-        message("-- GN ${gnOutput}")
-    endif()
-endmacro()
-
 function(add_ninja_command)
-    qt_parse_all_arguments(arg "add_ninja_comamnd"
-        "" "TARGET;OUTPUT;BUILDDIR" "BYPRODUCTS" "${ARGN}"
+    qt_parse_all_arguments(arg "add_ninja_command"
+        "" "TARGET;OUTPUT;BUILDDIR;MODULE" "BYPRODUCTS" "${ARGN}"
     )
     string(REPLACE " " ";" NINJAFLAGS "$ENV{NINJAFLAGS}")
     list(TRANSFORM arg_BYPRODUCTS PREPEND "${arg_BUILDDIR}/")
@@ -865,7 +858,7 @@ function(add_ninja_command)
             ${arg_BUILDDIR}/${arg_OUTPUT}
             ${arg_BUILDDIR}/${arg_TARGET} # use generator expression in CMAKE 3.20
         BYPRODUCTS ${arg_BYPRODUCTS}
-        COMMENT "Ninja for ${arg_BUILDDIR}"
+        COMMENT "Running ninja for ${arg_TARGET} in ${arg_BUILDDIR}"
         COMMAND Ninja::ninja
             ${NINJAFLAGS}
             -C ${arg_BUILDDIR}
@@ -873,6 +866,7 @@ function(add_ninja_command)
         USES_TERMINAL
         VERBATIM
         COMMAND_EXPAND_LISTS
+        DEPENDS run_${arg_MODULE}_NinjaReady
     )
 endfunction()
 
@@ -892,7 +886,7 @@ function(get_architectures result)
     endif()
 endfunction()
 
-function(add_gn_build_aritfacts_to_target cmakeTarget ninjaTarget buildDir)
+function(add_gn_build_aritfacts_to_target cmakeTarget ninjaTarget module buildDir)
     # config loop is a workaround to be able to add_custom_command per config
     # note this is fixed in CMAKE.3.20 and should be cleaned up when 3.20 is
     # the minimum cmake we support
@@ -900,28 +894,105 @@ function(add_gn_build_aritfacts_to_target cmakeTarget ninjaTarget buildDir)
     get_architectures(archs)
     foreach(config ${configs})
         foreach(arch ${archs})
-            set(gnTarget ${ninjaTarget}_${config}_${arch})
-            add_gn_target_for_cmake_target(${gnTarget} ${cmakeTarget} ${ninjaTarget} ${config} ${arch})
+            set(target ${ninjaTarget}_${config}_${arch})
+            add_ninja_target(${target} ${cmakeTarget} ${ninjaTarget} ${config} ${arch} ${buildDir})
             add_ninja_command(
                 TARGET ${ninjaTarget}
                 OUTPUT ${ninjaTarget}.stamp
-                BYPRODUCTS
-                    ${ninjaTarget}_objects.rsp
-                    ${ninjaTarget}_archives.rsp
-                    ${ninjaTarget}_libs.rsp
                 BUILDDIR ${buildDir}/${config}/${arch}
+                MODULE ${module}
+            )
+            add_dependencies(run_${module}_NinjaDone ${target})
+            set_target_properties(${cmakeTarget} PROPERTIES
+                LINK_DEPENDS ${buildDir}/${config}/${arch}/${ninjaTarget}.stamp
             )
             if(QT_IS_MACOS_UNIVERSAL)
-                add_rsp_command(${gnTarget} ${buildDir}/${config}/${arch})
+                add_rsp_command(${target} ${buildDir}/${config}/${arch})
             else()
-                extend_target_with_gn_target(${gnTarget} ${buildDir}/${config}/${arch})
+                extend_cmake_target(${target} ${buildDir}/${config}/${arch})
             endif()
         endforeach()
         if(QT_IS_MACOS_UNIVERSAL)
             set(arch ${CMAKE_SYSTEM_PROCESSOR})
-            set(gnTarget ${ninjaTarget}_${config}_${arch})
-            add_lipo_command(${gnTarget} ${buildDir}/${config})
+            set(target ${ninjaTarget}_${config}_${arch})
+            add_lipo_command(${target} ${buildDir}/${config})
         endif()
     endforeach()
 endfunction()
 
+function(get_config_filenames c_config cxx_config target_config)
+    set(${target_config} gn_config_target.cmake PARENT_SCOPE)
+    set(${cxx_config} gn_config_cxx.cmake PARENT_SCOPE)
+    set(${c_config} gn_config_c.cmake PARENT_SCOPE)
+endfunction()
+
+function(add_gn_command)
+    qt_parse_all_arguments(arg "add_gn_command"
+        "" "CMAKE_TARGET;GN_TARGET;MODULE;BUILDDIR" "NINJA_TARGETS;GN_ARGS" "${ARGN}"
+    )
+
+    get_config_filenames(cConfigFileName cxxConfigFileName targetConfigFileName)
+    set(gnArgArgFile ${arg_BUILDDIR}/args.gn)
+
+    list(JOIN arg_GN_ARGS "\n" arg_GN_ARGS)
+    file(WRITE ${gnArgArgFile} ${arg_GN_ARGS})
+
+    foreach(ninjaTarget ${arg_NINJA_TARGETS})
+        list(APPEND output ${ninjaTarget}_objects.rsp ${ninjaTarget}_archives.rsp ${ninjaTarget}_libs.rsp)
+    endforeach()
+    list(TRANSFORM output PREPEND "${arg_BUILDDIR}/")
+
+    if(QT_HOST_PATH)
+      set(QT_HOST_GN_PATH ${QT_HOST_PATH}/${INSTALL_LIBEXECDIR})
+    endif()
+
+    add_custom_command(
+        OUTPUT ${output}
+        COMMAND ${CMAKE_COMMAND}
+             -DBUILD_DIR=${arg_BUILDDIR}
+             -DSOURCE_DIR=${CMAKE_CURRENT_LIST_DIR}
+             -DMODULE=${arg_MODULE}
+             -DQT_HOST_GN_PATH=${QT_HOST_GN_PATH}
+             -P ${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Gn.cmake
+        WORKING_DIRECTORY ${WEBENGINE_ROOT_BUILD_DIR}
+        COMMENT "Run gn for target ${arg_CMAKE_TARGET} in ${arg_BUILDDIR}"
+        DEPENDS ${gnArgArgFile} run_${arg_MODULE}_GnReady
+        USES_TERMINAL
+    )
+    add_custom_target(runGn_${arg_GN_TARGET}
+        DEPENDS #TODO this is fixed in cmake 3.20 so we could simply use GN_TARGET and not create new one
+            ${output}
+            ${arg_BUILDDIR}/${cxxConfigFileName}
+            ${arg_BUILDDIR}/${cConfigFileName}
+            ${arg_BUILDDIR}/${targetConfigFileName}
+    )
+    add_dependencies(run_${arg_MODULE}_GnDone runGn_${arg_GN_TARGET})
+    create_gn_target_config(${arg_GN_TARGET} ${arg_BUILDDIR}/${targetConfigFileName})
+endfunction()
+
+function(create_cxx_configs cmakeTarget arch)
+    get_config_filenames(cConfigFileName cxxConfigFileName targetConfigFileName)
+    create_c_config(${cmakeTarget} ${arch} ${cConfigFileName})
+    create_cxx_config(${cmakeTarget} ${arch} ${cxxConfigFileName})
+endfunction()
+
+# targets to gather per config / architecture targets
+function(addSyncTargets module)
+    add_custom_target(run_${module}_GnReady)
+    add_custom_target(run_${module}_GnDone)
+    add_custom_target(run_${module}_NinjaReady)
+    add_custom_target(run_${module}_NinjaDone)
+    # make nicer log so all gn has to finish before any ninja build starts
+    add_dependencies(run_${module}_NinjaReady run_${module}_GnDone)
+endfunction()
+
+function(addCopyCommand target src dst)
+    add_custom_command(
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${dst}
+        COMMAND ${CMAKE_COMMAND} -E copy ${src} ${dst}
+        TARGET ${target}
+        DEPENDS ${src}
+        USES_TERMINAL
+    )
+endfunction()

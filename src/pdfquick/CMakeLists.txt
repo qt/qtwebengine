@@ -1,7 +1,5 @@
 find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Core Gui Qml Quick)
 
-get_configure_mode(configureMode)
-
 set(qml_files
 # TODO:
 #    "qml/+material/PdfStyle.qml"
@@ -47,9 +45,6 @@ qt_internal_extend_target(qtpdfquickplugin
         Qt::CorePrivate
         Qt::PdfQuickPrivate
 )
-
-make_install_only(PdfQuick)
-make_install_only(qtpdfquickplugin)
 
 
 

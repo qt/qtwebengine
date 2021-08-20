@@ -35,6 +35,4 @@ qt_internal_add_resource(qtwebenginequickdelegatesplugin "qtwebenginequickdelega
         ${resource_files}
 )
 
-make_install_only(WebEngineQuickDelegatesQml)
-make_install_only(qtwebenginequickdelegatesplugin)
 

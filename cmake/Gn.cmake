@@ -1,0 +1,69 @@
+# This is gn wrapper script and it assables final BUILD.gn based on:
+# gn_config_target.cmake gn_config_c.cmake gn_config_cxx.cmake
+
+if(NOT CMAKE_SCRIPT_MODE_FILE)
+    message("This files should run only in script mode")
+    return()
+endif()
+
+get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/.." REALPATH)
+get_filename_component(WEBENGINE_ROOT_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}" REALPATH)
+
+include(${WEBENGINE_ROOT_SOURCE_DIR}/.cmake.conf)
+include(${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Functions.cmake)
+
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
+
+find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT)
+find_package(Python2 2.7.5 REQUIRED)
+
+set(gnCmd ${Gn_EXECUTABLE})
+set(buildDir ${BUILD_DIR})
+set(sourceDir ${SOURCE_DIR})
+set(module ${MODULE})
+set(gnArg gen ${buildDir})
+file(READ ${buildDir}/args.gn gnArgArg)
+
+if(NOT gnCmd)
+    message(FATAL_ERROR "\nCould not find suitable gn to run.\n")
+endif()
+
+init_gn_config(${buildDir}/gn_config_target.cmake)
+read_gn_config(${buildDir}/gn_config_cxx.cmake)
+read_gn_config(${buildDir}/gn_config_c.cmake)
+
+configure_gn_target(
+   "${sourceDir}"
+   "${WEBENGINE_ROOT_SOURCE_DIR}/src/${module}/configure/BUILD.root.gn.in"
+   "${buildDir}/BUILD.gn"
+)
+
+list(APPEND gnArg
+     --script-executable=${Python2_EXECUTABLE}
+     --root=${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium)
+
+STRING(REGEX REPLACE "\n" ";" printArgArg "${gnArgArg}")
+LIST(SORT printArgArg)
+STRING(REGEX REPLACE ";" "\n" printArgArg "${printArgArg}")
+list(JOIN gnArg " " printArg)
+
+message("-- Running gn in ${buildDir}\n"
+        "-- GN command:\n${gnCmd} ${printArg}\n"
+        "-- GN arg file:\n${buildDir}/args.gn\n"
+        "-- GN args: \n${printArgArg}"
+)
+
+execute_process(
+    COMMAND ${gnCmd} ${gnArg}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    RESULT_VARIABLE gnResult
+    OUTPUT_VARIABLE gnOutput
+    ERROR_VARIABLE gnError
+)
+
+if(NOT gnResult EQUAL 0)
+    message(FATAL_ERROR "\n-- GN FAILED\n${gnOutput}\n${gnError}")
+else()
+    string(REGEX REPLACE "\n$" "" gnOutput "${gnOutput}")
+    message("-- GN ${gnOutput}")
+endif()
