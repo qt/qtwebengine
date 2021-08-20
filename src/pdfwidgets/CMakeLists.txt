@@ -12,4 +12,3 @@ qt_internal_add_module(PdfWidgets
         Qt::Widgets
         Qt::Pdf
 )
-make_install_only(PdfWidgets)

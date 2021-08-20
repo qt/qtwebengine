@@ -56,6 +56,7 @@ if(isFramework)
               "$<TARGET_BUNDLE_DIR:WebEngineCore>/Versions/A/Helpers/${qtWebEngineProcessName}.app"
           COMMAND ${CMAKE_COMMAND} -E create_symlink "Versions/Current/Helpers"
               "$<TARGET_BUNDLE_DIR:WebEngineCore>/Helpers"
+          USES_TERMINAL
     )
     install(TARGETS ${qtWebEngineProcessName}
         BUNDLE DESTINATION ./lib/QtWebEngineCore.framework/Versions/A/Helpers
@@ -73,5 +74,3 @@ if(MSVC)
         DESTINATION "${INSTALL_LIBEXECDIR}"
     )
 endif()
-
-make_install_only(${qtWebEngineProcessName})

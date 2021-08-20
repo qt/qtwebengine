@@ -1,28 +1,55 @@
 cmake_minimum_required(VERSION 3.19)
+##
+#  MAIN CONFIGURE
+##
 
-if(NOT DEFINED WEBENGINE_ROOT_SOURCE_DIR)
-    get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/.." REALPATH)
+get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.." REALPATH)
+get_filename_component(WEBENGINE_ROOT_BUILD_DIR "${PROJECT_BINARY_DIR}" REALPATH)
+
+# Note this is configure that does not belong to any module
+qt_feature_module_begin(ONLY_EVALUATE_FEATURES)
+# Enable printing of feature summary by forcing qt_configure_record_command
+# to work in spite of ONLY_EVALUATE_FEATURES.
+set(__QtFeature_only_evaluate_features OFF)
+include(../configure.cmake)
+qt_feature_module_end(ONLY_EVALUATE_FEATURES)
+
+##
+#  SUPPORT CHECK
+##
+
+if(NOT ${QtWebEngine_SUPPORT})
+    add_custom_target(WebEngineErrorMessage ALL
+        ${CMAKE_COMMAND} -E cmake_echo_color --red "QtWebEngine will not be built: ${QtWebEngine_ERROR}"
+        COMMENT "Check QtWebEngine support"
+        VERBATIM
+    )
+    message("-- Support check for QtWebEngine failed: ${QtWebEngine_ERROR}")
+    set(QT_FEATURE_qtwebengine_build OFF CACHE BOOL "Build QtWebEngine" FORCE)
+    set(QT_FEATURE_qtwebengine_widgets_build OFF CACHE BOOL "Build QtWebEngineWidgets" FORCE)
+    set(QT_FEATURE_qtwebengine_quick_build OFF CACHE BOOL "Build QtWebEngineQuick" FORCE)
 endif()
 
-include(${WEBENGINE_ROOT_SOURCE_DIR}/.cmake.conf)
-include(${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Functions.cmake)
+if(NOT ${QtPdf_SUPPORT})
+    add_custom_target(PdfErrorMessage ALL
+        ${CMAKE_COMMAND} -E cmake_echo_color --red "QtPdf will not be built: ${QtPdf_ERROR}"
+        COMMENT "Check QtPdf support"
+        VERBATIM
+    )
+    message("-- Support check for QtPdf failed: ${QtPdf_ERROR}")
+    set(QT_FEATURE_qtpdf_build OFF CACHE BOOL "Build QtPdf" FORCE)
+    set(QT_FEATURE_qtpdf_widgets_build OFF CACHE BOOL "Build QtPdfWidgets" FORCE)
+    set(QT_FEATURE_qtpdf_quick_build OFF CACHE BOOL "Build QtPdfQuick" FORCE)
+endif()
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${WEBENGINE_ROOT_SOURCE_DIR}/cmake")
+if(NOT QT_FEATURE_qtwebengine_build AND NOT QT_FEATURE_qtpdf_build)
+    return()
+endif()
 
-assertRunAsTopLevelBuild(TRUE)
+##
+#  MODULES
+##
 
-project(QtWebEngineRepo
-    VERSION "${QT_REPO_MODULE_VERSION}"
-    DESCRIPTION "QtWebEngineRepo for QtWebEngineCore, QtWebEngine, QtWebEngineWidgets, QtPdf modules"
-    HOMEPAGE_URL "https://qt.io"
-    LANGUAGES CXX C)
-
-# Make sure we use the fixed BASE argument of qt_add_resource.
-set(QT_USE_FIXED_QT_ADD_RESOURCE_BASE TRUE)
-
-find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core)
-
-qt_build_repo_begin()
 if(QT_FEATURE_qtwebengine_build)
    add_subdirectory(core)
    add_subdirectory(process)
@@ -35,6 +62,16 @@ if(QT_FEATURE_qtwebengine_build)
 endif()
 if(QT_FEATURE_qtpdf_build)
    add_subdirectory(pdf)
+   # keep log order, pdf build after webengine
+   if(QT_FEATURE_qtwebengine_build)
+       add_dependencies(run_pdf_GnReady WebEngineCore)
+   endif()
+   if(QT_FEATURE_qtwebengine_widgets_build)
+       add_dependencies(run_pdf_GnReady WebEngineWidgets)
+   endif()
+   if(QT_FEATURE_qtwebengine_quick_build)
+       add_dependencies(run_pdf_GnReady WebEngineQuick)
+   endif()
    if(QT_FEATURE_qtpdf_widgets_build)
        add_subdirectory(pdfwidgets)
    endif()
@@ -42,5 +79,97 @@ if(QT_FEATURE_qtpdf_build)
        add_subdirectory(pdfquick)
    endif()
 endif()
-qt_build_repo_end()
+
+##
+#  NINJA PROJECT
+##
+
+set(installDir ${PROJECT_BINARY_DIR}/install)
+
+if(NOT Ninja_FOUND)
+    externalproject_add(ninja
+        SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/ninja
+        BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR}/ninja
+        INSTALL_DIR ${installDir}
+        PREFIX      ninja
+        USES_TERMINAL_BUILD TRUE
+        EXCLUDE_FROM_ALL TRUE
+        CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release
+                   -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                   -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>
+    )
+    if(QT_FEATURE_qtwebengine_build)
+        add_dependencies(run_core_NinjaReady ninja)
+    endif()
+    if(QT_FEATURE_qtpdf_build)
+        add_dependencies(run_pdf_NinjaReady ninja)
+    endif()
+endif()
+
+##
+#  GN PROJECT
+##
+
+if(NOT Gn_FOUND)
+    externalproject_add(gn
+        SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/gn
+        BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR}/gn
+        INSTALL_DIR ${installDir}
+        PREFIX      gn
+        USES_TERMINAL_BUILD TRUE
+        EXCLUDE_FROM_ALL TRUE
+        CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release
+                   -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                   -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                   -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                   -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>
+                   -DWEBENGINE_ROOT_BUILD_DIR=${PROJECT_BINARY_DIR}
+    )
+    if(QT_FEATURE_qtwebengine_build)
+        add_dependencies(run_core_GnReady gn)
+    endif()
+    if(QT_FEATURE_qtpdf_build)
+        add_dependencies(run_pdf_GnReady gn)
+    endif()
+    set(INSTALL_GN 1 CACHE INTERNAL "")
+endif()
+
+##
+#  HOST PROJECT
+##
+
+if(CMAKE_CROSSCOMPILING)
+
+    if(NOT Gn_FOUND)
+        message(FATAL_ERROR "\nHost gn not found - cross compilation not possible")
+    endif()
+
+    externalproject_add(hostBuild
+        SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/host
+        BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR}/host
+        PREFIX      host
+        USES_TERMINAL_BUILD TRUE
+        EXCLUDE_FROM_ALL TRUE
+        CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=${QT_HOST_PATH}/lib/cmake/Qt6/qt.toolchain.cmake
+                   -DWEBENGINE_ROOT_BUILD_DIR=${PROJECT_BINARY_DIR}
+                   -DWEBENGINE_ROOT_SOURCE_DIR=${WEBENGINE_ROOT_SOURCE_DIR}
+                   -DGN_TARGET_CPU=${TEST_architecture_arch}
+                   -DCMAKE_C_FLAGS=
+                   -DCMAKE_CXX_FLAGS=
+                   -DQT_FEATURE_qtwebengine_build=${QT_FEATURE_qtwebengine_build}
+                   -DQT_FEATURE_qtpdf_build=${QT_FEATURE_qtpdf_build}
+    )
+    add_dependencies(run_core_GnReady hostBuild)
+endif()
+
+# install gn for cross build
+if(LINUX AND INSTALL_GN)
+    get_install_config(installConfig)
+    message(${installConfig})
+    install(
+        PROGRAMS ${installDir}/bin/gn
+        CONFIGURATIONS ${installConfig}
+        RUNTIME DESTINATION "${INSTALL_LIBEXECDIR}"
+    )
+endif()
 

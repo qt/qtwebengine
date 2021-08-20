@@ -1,31 +1,18 @@
 cmake_minimum_required(VERSION 3.19)
 
-if(NOT DEFINED WEBENGINE_ROOT_SOURCE_DIR)
-    get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../.." REALPATH)
-endif()
-if (NOT DEFINED WEBENGINE_ROOT_BUILD_DIR)
-    get_filename_component(WEBENGINE_ROOT_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/../.." REALPATH)
-endif()
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${WEBENGINE_ROOT_SOURCE_DIR}/cmake")
-set(buildDir "${CMAKE_CURRENT_BINARY_DIR}")
-
-include(${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Functions.cmake)
-assertRunAsTopLevelBuild(TRUE)
-
-add_subdirectory(api)
-add_subdirectory(tools)
-
-find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core)
-find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT REQUIRED)
 find_package(Ninja 1.7.2 REQUIRED)
 find_package(Python2 2.7.5 REQUIRED)
 find_package(Nodejs 10.19 REQUIRED)
 find_package(PkgConfig)
 if(PkgConfig_FOUND)
     pkg_check_modules(XSCRNSAVER xscrnsaver)
-    create_pkg_config_host_wrapper()
+    create_pkg_config_host_wrapper(${CMAKE_CURRENT_BINARY_DIR})
 endif()
+
+set(buildDir "${CMAKE_CURRENT_BINARY_DIR}")
+
+add_subdirectory(api)
+add_subdirectory(tools)
 
 ##
 #   TOOLCHAIN SETUP
@@ -36,8 +23,10 @@ if(LINUX)
 endif()
 
 ##
-#   MULTICONFIG SETUP
+#   GN BUILD SETUP
 ##
+
+addSyncTargets(core)
 
 get_configs(configs)
 get_architectures(archs)
@@ -49,13 +38,14 @@ foreach(arch ${archs})
         # BUILD.gn SETUP
         ##
 
-        unset(buildGn)
         set(buildGn core_${config}_${arch})
-        add_gn_target(${buildGn} ${config} ${arch} SOURCES DEFINES CXX_COMPILE_OPTIONS C_COMPILE_OPTIONS INCLUDES)
-
+        add_gn_target(${buildGn} ${config} ${arch}
+            SOURCES DEFINES CXX_COMPILE_OPTIONS C_COMPILE_OPTIONS INCLUDES MOC_PATH RSP_PREFIX
+        )
         resolve_target_includes(gnIncludes WebEngineCore)
         get_forward_declaration_macro(forwardDeclarationMacro)
         get_target_property(qtWebEngineProcessName WebEngineCore QTWEBENGINEPROCESS_NAME)
+        get_target_property(mocFilePath Qt6::moc IMPORTED_LOCATION)
 
         if(QT_FEATURE_debug_and_release AND ("${config}" STREQUAL "Debug"))
             set(qtWebEngineProcessName "${qtWebEngineProcessName}${CMAKE_DEBUG_POSTFIX}")
@@ -74,15 +64,19 @@ foreach(arch ${archs})
         endif()
 
         extend_gn_target(${buildGn}
+            MOC_PATH
+                ${mocFilePath}
+            RSP_PREFIX
+                src/core/${config}/${arch}
             INCLUDES
                 ${gnIncludes}
             DEFINES
                 QT_NO_KEYWORDS
                 QT_USE_QSTRINGBUILDER
-                QTWEBENGINECORE_VERSION_STR=\\\\\"${QT_REPO_MODULE_VERSION}\\\\\"
-                QTWEBENGINEPROCESS_NAME=\\\\\"${qtWebEngineProcessName}\\\\\"
+                QTWEBENGINECORE_VERSION_STR=\\\\\\\\\"${QT_REPO_MODULE_VERSION}\\\\\\\\\"
+                QTWEBENGINEPROCESS_NAME=\\\\\\\\\"${qtWebEngineProcessName}\\\\\\\\\"
                 BUILDING_CHROMIUM
-                ${forwardDeclarationMacro}
+                "${forwardDeclarationMacro}"
             CXX_COMPILE_OPTIONS
                 ${gnCxxCompileOptions}
             SOURCES
@@ -268,13 +262,6 @@ foreach(arch ${archs})
                 renderer/extensions/resource_request_policy_qt.cpp renderer/extensions/resource_request_policy_qt.h
         )
 
-        read_gn_target(${buildGn} ${WEBENGINE_ROOT_BUILD_DIR}/src/core/api/${config}/gn_config.cxx.cmake)
-        read_gn_target(${buildGn} ${WEBENGINE_ROOT_BUILD_DIR}/src/core/api/${config}/gn_config.c.cmake)
-        configure_gn_target(${buildGn} ${config}
-            ${WEBENGINE_ROOT_SOURCE_DIR}/src/core/configure/BUILD.root.gn.in "${buildDir}/${config}/${arch}/BUILD.gn"
-            core/${config}/${arch}
-        )
-
         ##
         #   GN PARAMETERS SETUP
         ##
@@ -450,17 +437,22 @@ foreach(arch ${archs})
             )
         endif()
 
-        ##
-        # GN CALL
-        ##
-
-        execute_gn(gnArgArg)
+        add_gn_command(
+            CMAKE_TARGET WebEngineCore
+            NINJA_TARGETS QtWebEngineCore convert_dict
+            GN_TARGET ${buildGn}
+            GN_ARGS "${gnArgArg}"
+            BUILDDIR ${buildDir}/${config}/${arch}
+            MODULE core
+        )
 
     endforeach()
+    create_cxx_configs(WebEngineCore ${arch})
 endforeach()
 
+
 ##
-#  WEBENGINECORE
+#  WEBENGINECORE SETUP
 ##
 
 set(arch ${CMAKE_SYSTEM_PROCESSOR})
@@ -470,7 +462,8 @@ target_include_directories(WebEngineCore PRIVATE
     ${buildDir}/$<CONFIG>/${arch}/gen/third_party/perfetto/build_config
 )
 
-add_gn_build_aritfacts_to_target(WebEngineCore QtWebEngineCore  ${buildDir})
+add_gn_build_aritfacts_to_target(WebEngineCore QtWebEngineCore core ${buildDir})
+add_dependencies(WebEngineCore run_core_NinjaDone)
 
 ##
 #  SANDBOX
@@ -484,6 +477,7 @@ if(WIN32)
             TARGET QtWebEngineCoreSandbox
             OUTPUT QtWebEngineCoreSandbox.lib
             BUILDDIR ${buildDir}/${config}/${arch}
+            MODULE core
         )
         set(sandboxLibraryPath ${buildDir}/${config}/${arch}/QtWebEngineCoreSandbox.lib)
         set_property(TARGET WebEngineCoreSandbox
@@ -491,98 +485,9 @@ if(WIN32)
         )
         add_custom_target(sandboxLibrary_${config}
             DEPENDS ${buildDir}/${config}/${arch}/QtWebEngineCoreSandbox.lib)
-        add_dependencies(WebEngineCoreSandbox sandboxLibrary_${config})
+        add_dependencies(run_core_NinjaDone sandboxLibrary_${config})
         add_dependencies(WebEngineCoreSandbox WebEngineCore)
     endforeach()
-endif()
-
-##
-#  WEBENGINECORE RESOURCES
-##
-
-#TODO: use simply filter / globbing-expressions
-set(localeList am ar bg bn ca cs da de el en-GB en-US es-419 es et fa fi fil fr
-    gu he hi hr hu id it ja kn ko lt lv ml mr ms nb nl pl pt-BR pt-PT ro ru sk
-    sl sr sv sw ta te th tr uk vi zh-CN zh-TW)
-
-set(resourceList qtwebengine_resources.pak
-    qtwebengine_resources_100p.pak
-    qtwebengine_resources_200p.pak
-    qtwebengine_devtools_resources.pak)
-
-get_install_config(config)
-
-foreach(loc ${localeList})
-    get_filename_component(locSourcePath ${buildDir}/${config}/${arch}/qtwebengine_locales/${loc}.pak REALPATH)
-    list(APPEND localeFiles ${locSourcePath})
-endforeach()
-
-foreach(res ${resourceList})
-    get_filename_component(resSourcePath ${buildDir}/${config}/${arch}/${res} REALPATH)
-    list(APPEND resourceFiles ${resSourcePath})
-endforeach()
-
-if (NOT QT_FEATURE_webengine_system_icu)
-    get_filename_component(icuFile ${buildDir}/${config}/${arch}/icudtl.dat REALPATH)
-    list(APPEND resourceFiles ${icuFile})
-endif()
-
-if(QT_FEATURE_framework)
-    set(allResourceFiles ${localeFiles} ${resourceFiles})
-    target_sources(WebEngineCore PRIVATE ${allResourceFiles})
-
-    set_source_files_properties(${localeFiles}
-        TARGET_DIRECTORY WebEngineCore
-        PROPERTIES MACOSX_PACKAGE_LOCATION Resources/qtwebengine_locales
-        GENERATED TRUE
-    )
-    set_source_files_properties(${resourceFiles}
-        TARGET_DIRECTORY WebEngineCore
-        PROPERTIES MACOSX_PACKAGE_LOCATION Resources
-        GENERATED TRUE
-    )
-
-    add_custom_command(OUTPUT ${allResourceFiles} DEPENDS ${buildDir}/${config}/${arch}/QtWebEngineCore.stamp)
-    add_custom_target(generate_resources_${config} DEPENDS ${allResourceFiles})
-else()
-    install(FILES ${localeFiles}
-        DESTINATION translations/qtwebengine_locales
-        CONFIGURATIONS ${config}
-    )
-    install(FILES ${resourceFiles}
-        DESTINATION resources
-        CONFIGURATIONS ${config}
-    )
-# install (again) for superbuild
-    install(FILES ${localeFiles}
-        DESTINATION ${WEBENGINE_ROOT_BUILD_DIR}/translations/qtwebengine_locales
-        CONFIGURATIONS ${config}
-    )
-    install(FILES ${resourceFiles}
-        DESTINATION ${WEBENGINE_ROOT_BUILD_DIR}/resources
-        CONFIGURATIONS ${config}
-    )
-    if(NOT QT_WILL_INSTALL)
-        # TODO: Could we get rid of ALL?
-        add_custom_target(
-                install_resources_${config}
-                ALL
-                DEPENDS ${buildDir}/${config}/${arch}/QtWebEngineCore.stamp
-                COMMAND ${CMAKE_COMMAND} -E make_directory
-                        ${CMAKE_INSTALL_PREFIX}/resources
-                COMMAND ${CMAKE_COMMAND} -E copy
-                        ${resourceFiles}
-                        ${CMAKE_INSTALL_PREFIX}/resources)
-        add_custom_target(
-                install_locales_${config}
-                ALL
-                DEPENDS ${buildDir}/${config}/${arch}/QtWebEngineCore.stamp
-                COMMAND ${CMAKE_COMMAND} -E make_directory
-                        ${CMAKE_INSTALL_PREFIX}/translations/qtwebengine_locales
-                COMMAND ${CMAKE_COMMAND} -E copy
-                        ${localeFiles}
-                        ${CMAKE_INSTALL_PREFIX}/translations/qtwebengine_locales)
-    endif()
 endif()
 
 ##
@@ -594,8 +499,10 @@ if(QT_FEATURE_webengine_spellchecker)
     target_include_directories(${dict_target_name} PRIVATE
         ../3rdparty/chromium
         ../3rdparty/chromium/third_party/boringssl/src/include
-        ${buildDir}/${config}/${arch}/gen
+        ${buildDir}/$<CONFIG>/${arch}/gen
     )
-    add_gn_build_aritfacts_to_target(${dict_target_name} convert_dict ${buildDir})
+    add_gn_build_aritfacts_to_target(${dict_target_name} convert_dict core ${buildDir})
+    add_dependencies(${dict_target_name} run_core_NinjaDone)
+    add_dependencies(${dict_target_name} WebEngineCore)
 endif()
 

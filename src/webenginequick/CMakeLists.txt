@@ -1,12 +1,6 @@
-find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Gui Qml Quick)
-find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS PrintSupport WebChannel Positioning Test)
-
-get_configure_mode(configureMode)
-
 add_subdirectory(ui)
 
 qt_internal_add_qml_module(WebEngineQuick
-    ${configureMode}
     URI "QtWebEngine"
     VERSION "${PROJECT_VERSION}"
     CLASS_NAME QtWebEnginePlugin
@@ -61,6 +55,3 @@ qt_internal_extend_target(qtwebenginequickplugin
         Qt::CorePrivate
         Qt::WebEngineQuickPrivate
 )
-
-make_install_only(WebEngineQuick)
-make_install_only(qtwebenginequickplugin)

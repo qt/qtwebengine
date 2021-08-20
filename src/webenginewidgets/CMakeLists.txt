@@ -1,10 +1,5 @@
-find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Gui Widgets Quick QuickWidgets)
-find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS PrintSupport WebChannel Positioning)
-
-get_configure_mode(configureMode)
 
 qt_internal_add_module(WebEngineWidgets
-    ${configureMode}
     SOURCES
         api/qtwebenginewidgetsglobal.h
         api/qwebenginenotificationpresenter.cpp api/qwebenginenotificationpresenter_p.h
@@ -28,7 +23,6 @@ qt_internal_add_module(WebEngineWidgets
         Qt::Widgets
         Qt::WebEngineCore
 )
-make_install_only(WebEngineWidgets)
 
 qt_internal_extend_target(WebEngineWidgets CONDITION QT_FEATURE_webengine_printing_and_pdf
     PUBLIC_LIBRARIES

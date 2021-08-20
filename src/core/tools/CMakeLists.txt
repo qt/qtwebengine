@@ -12,7 +12,6 @@ if(QT_FEATURE_webengine_spellchecker)
         SOURCES main.cpp
     )
     qt_skip_warnings_are_errors(${dict_target_name})
-    make_install_only(${dict_target_name})
     add_dependencies(${dict_target_name} WebEngineCore)
     qt_internal_extend_target(${dict_target_name} CONDITION WIN32
         DEFINES WIN32_LEAN_AND_MEAN NOMINMAX

@@ -1,16 +1,9 @@
-if(NOT DEFINED WEBENGINE_ROOT_SOURCE_DIR)
-    get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../../.." REALPATH)
-endif()
 find_package(Qt6 ${PROJECT_VERSION} REQUIRED COMPONENTS Gui Network OpenGL Quick)
 find_package(Qt6 ${PROJECT_VERSION} QUIET OPTIONAL_COMPONENTS WebChannel Positioning)
-include(${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Functions.cmake)
-
-get_configure_mode(configureMode)
 
 set(qtWebEngineProcessName QtWebEngineProcess)
 
 qt_internal_add_module(WebEngineCore
-     ${configureMode}
      SOURCES
         qtwebenginecoreglobal.cpp qtwebenginecoreglobal.h qtwebenginecoreglobal_p.h
         qwebenginecertificateerror.cpp qwebenginecertificateerror.h
@@ -63,8 +56,6 @@ set_target_properties(WebEngineCore PROPERTIES QTWEBENGINEPROCESS_NAME ${qtWebEn
 
 # Chromium included headers are not clean
 qt_skip_warnings_are_errors(WebEngineCore)
-make_install_only(WebEngineCore)
-make_config_for_gn(WebEngineCore gn_config)
 
 if(CLANG OR GCC)
     target_compile_options(WebEngineCore PRIVATE "-Wno-unused-parameter")
@@ -79,6 +70,77 @@ qt_internal_extend_target(WebEngineCore CONDITION QT_FEATURE_webengine_geolocati
         Qt::Positioning
 )
 
+##
+#  DOCS
+##
+
 qt_internal_add_docs(WebEngineCore
     ../doc/qtwebengine.qdocconf
 )
+
+##
+#  WEBENGINECORE RESOURCES
+##
+
+set(arch ${CMAKE_SYSTEM_PROCESSOR})
+#TODO: use simply filter / globbing-expressions
+set(localeList am ar bg bn ca cs da de el en-GB en-US es-419 es et fa fi fil fr
+    gu he hi hr hu id it ja kn ko lt lv ml mr ms nb nl pl pt-BR pt-PT ro ru sk
+    sl sr sv sw ta te th tr uk vi zh-CN zh-TW)
+
+set(resourceList qtwebengine_resources.pak
+    qtwebengine_resources_100p.pak
+    qtwebengine_resources_200p.pak
+    qtwebengine_devtools_resources.pak)
+
+get_install_config(config)
+
+foreach(loc ${localeList})
+    get_filename_component(locSourcePath ${buildDir}/${config}/${arch}/qtwebengine_locales/${loc}.pak REALPATH)
+    list(APPEND localeFiles ${locSourcePath})
+endforeach()
+
+foreach(res ${resourceList})
+    get_filename_component(resSourcePath ${buildDir}/${config}/${arch}/${res} REALPATH)
+    list(APPEND resourceFiles ${resSourcePath})
+endforeach()
+
+if (NOT QT_FEATURE_webengine_system_icu)
+    get_filename_component(icuFile ${buildDir}/${config}/${arch}/icudtl.dat REALPATH)
+    list(APPEND resourceFiles ${icuFile})
+endif()
+
+if(QT_FEATURE_framework)
+    set(allResourceFiles ${localeFiles} ${resourceFiles})
+    target_sources(WebEngineCore PRIVATE ${allResourceFiles})
+
+    set_source_files_properties(${localeFiles}
+        TARGET_DIRECTORY WebEngineCore
+        PROPERTIES MACOSX_PACKAGE_LOCATION Resources/qtwebengine_locales
+        GENERATED TRUE
+    )
+    set_source_files_properties(${resourceFiles}
+        TARGET_DIRECTORY WebEngineCore
+        PROPERTIES MACOSX_PACKAGE_LOCATION Resources
+        GENERATED TRUE
+    )
+
+    add_custom_command(OUTPUT ${allResourceFiles} DEPENDS ${buildDir}/${config}/${arch}/QtWebEngineCore.stamp)
+    add_custom_target(generate_resources_${config} DEPENDS ${allResourceFiles})
+else()
+    install(FILES ${localeFiles}
+        DESTINATION translations/qtwebengine_locales
+        CONFIGURATIONS ${config}
+    )
+    install(FILES ${resourceFiles}
+        DESTINATION resources
+        CONFIGURATIONS ${config}
+    )
+    if(NOT QT_WILL_INSTALL)
+        set(rootPath ${CMAKE_INSTALL_PREFIX})
+    else()
+        set(rootPath ${PROJECT_BINARY_DIR})
+    endif()
+    addCopyCommand(WebEngineCore "${localeFiles}" ${rootPath}/translations/qtwebengine_locales)
+    addCopyCommand(WebEngineCore "${resourceFiles}" ${rootPath}/resources)
+endif()
