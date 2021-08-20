@@ -1,4 +1,8 @@
-
+if(TARGET Qt::Designer)
+    add_subdirectory(plugins/qwebengineview)
+else()
+    message(WARNING "Qt tools Designer is required to compile designer plugin")
+endif()
 qt_internal_add_module(WebEngineWidgets
     SOURCES
         api/qtwebenginewidgetsglobal.h

@@ -14,7 +14,7 @@ project(QtWebEngine
 find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core)
 find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS
     Gui Widgets Network OpenGL OpenGLWidgets Quick Qml PrintSupport
-    WebChannel Positioning QuickControls2 Test QuickWidgets QuickTest WebSockets
+    WebChannel Positioning QuickControls2 Test QuickWidgets QuickTest WebSockets Designer
 )
 set(WEBENGINE_MODULE_BUILD TRUE)
 qt_build_repo()
