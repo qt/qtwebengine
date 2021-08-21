@@ -16,5 +16,5 @@ find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS
     Gui Widgets Network OpenGL OpenGLWidgets Quick Qml PrintSupport
     WebChannel Positioning QuickControls2 Test QuickWidgets QuickTest WebSockets
 )
-
+set(WEBENGINE_MODULE_BUILD TRUE)
 qt_build_repo()
