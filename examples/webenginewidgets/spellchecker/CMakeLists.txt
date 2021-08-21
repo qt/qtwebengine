@@ -65,14 +65,18 @@ else()
     set(spellcheckerDir ${CMAKE_CURRENT_BINARY_DIR}/qtwebengine_dictionaries)
 endif()
 
+# note setting QT_WEBENGINE_ICU_DATA below is not required if this example
+# is not compiled as part of qtwebengine module build
+
 foreach(dictFile ${dicts})
     get_filename_component(dictName ${dictFile} NAME_WE)
     add_custom_command(TARGET spellchecker
         PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${spellcheckerDir}
-        COMMAND $<TARGET_FILE:${QT_CMAKE_EXPORT_NAMESPACE}::qwebengine_convert_dict>
-        ${CMAKE_CURRENT_SOURCE_DIR}/dict/${dictFile}
-        ${spellcheckerDir}/${dictName}.bdic
+        COMMAND ${CMAKE_COMMAND} -E env
+        $<IF:$<BOOL:${WEBENGINE_MODULE_BUILD}>,QT_WEBENGINE_ICU_DATA_DIR=${CMAKE_CURRENT_BINARY_DIR}/../../../resources,CMAKE=AWESOME>
+        $<TARGET_FILE:${QT_CMAKE_EXPORT_NAMESPACE}::qwebengine_convert_dict>
+        ${CMAKE_CURRENT_SOURCE_DIR}/dict/${dictFile} ${spellcheckerDir}/${dictName}.bdic
         COMMENT "Running qwebengine_convert_dict"
     )
 endforeach()

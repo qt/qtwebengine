@@ -16,6 +16,7 @@ if(QT_FEATURE_webengine_printing_and_pdf)
     add_subdirectory(printme)
     add_subdirectory(html2pdf)
 endif()
-if(QT_FEATURE_webengine_spellchecker AND NOT CMAKE_CROSSCOMPILING AND NOT QT_FEATURE_webengine_native_spellchecker)
+if(QT_FEATURE_webengine_spellchecker AND NOT CMAKE_CROSSCOMPILING
+    AND NOT QT_FEATURE_webengine_native_spellchecker AND NOT WIN32)
     add_subdirectory(spellchecker)
 endif()
