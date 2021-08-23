@@ -9,6 +9,8 @@ set(qml_files
     "MenuSeparator.qml"
     "PromptDialog.qml"
     "ToolTip.qml"
+    "TouchHandle.qml"
+    "TouchSelectionMenu.qml"
 )
 
 set(resource_files
