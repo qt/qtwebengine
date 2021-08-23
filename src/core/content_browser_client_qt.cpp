@@ -1088,7 +1088,7 @@ void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int
     // Install file scheme if necessary:
     bool install_file_scheme = false;
     if (web_contents) {
-        const auto *settings = static_cast<WebContentsDelegateQt *>(web_contents->GetDelegate())->webEngineSettings();
+        const auto *settings = static_cast<WebContentsDelegateQt *>(web_contents->GetResponsibleWebContents()->GetDelegate())->webEngineSettings();
         if (settings->testAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls)) {
             for (const auto &local_scheme : url::GetLocalSchemes()) {
                 if (url.SchemeIs(local_scheme)) {
