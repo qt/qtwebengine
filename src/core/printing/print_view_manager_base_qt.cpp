@@ -254,6 +254,11 @@ void PrintViewManagerBaseQt::GetDefaultPrintSettings(GetDefaultPrintSettingsCall
 
 void PrintViewManagerBaseQt::PrintingFailed(int32_t cookie)
 {
+    // Note: Not redundant with cookie checks in the same method in other parts of
+    // the class hierarchy.
+    if (!IsValidCookie(cookie))
+        return;
+
     PrintManager::PrintingFailed(cookie);
 
     ReleasePrinterQuery();
