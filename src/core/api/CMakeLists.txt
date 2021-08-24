@@ -129,11 +129,11 @@ if(QT_FEATURE_framework)
     add_custom_target(generate_resources_${config} DEPENDS ${allResourceFiles})
 else()
     install(FILES ${localeFiles}
-        DESTINATION translations/qtwebengine_locales
+        DESTINATION ${INSTALL_TRANSLATIONSDIR}/qtwebengine_locales
         CONFIGURATIONS ${config}
     )
     install(FILES ${resourceFiles}
-        DESTINATION resources
+        DESTINATION ${INSTALL_DATADIR}/resources
         CONFIGURATIONS ${config}
     )
     if(NOT QT_WILL_INSTALL)
