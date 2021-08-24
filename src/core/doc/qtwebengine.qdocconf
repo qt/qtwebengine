@@ -13,10 +13,6 @@ qhp.QtWebEngine.virtualFolder       = qtwebengine
 qhp.QtWebEngine.indexTitle          = Qt WebEngine
 qhp.QtWebEngine.indexRoot           =
 
-qhp.QtWebEngine.filterAttributes    = qtwebengine $QT_VERSION qtrefdoc
-qhp.QtWebEngine.customFilters.Qt.name = QtWebEngine $QT_VERSION
-qhp.QtWebEngine.customFilters.Qt.filterAttributes = qtwebengine $QT_VERSION
-
 qhp.QtWebEngine.subprojects         = classes qmltypes examples
 
 qhp.QtWebEngine.subprojects.classes.title = C++ Classes and Namespaces
