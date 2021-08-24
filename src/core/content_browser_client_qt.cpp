@@ -1086,12 +1086,8 @@ void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int
         url = web_contents->GetVisibleURL();
 
     // Install file scheme if necessary:
-    // FIXME: "extension -> file" will not be needed after switching to using transferable url loaders and guest views.
     bool install_file_scheme = false;
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    install_file_scheme = install_file_scheme || url.SchemeIs(extensions::kExtensionScheme);
-#endif
-    if (!install_file_scheme && web_contents) {
+    if (web_contents) {
         const auto *settings = static_cast<WebContentsDelegateQt *>(web_contents->GetDelegate())->webEngineSettings();
         if (settings->testAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls)) {
             for (const auto &local_scheme : url::GetLocalSchemes()) {
