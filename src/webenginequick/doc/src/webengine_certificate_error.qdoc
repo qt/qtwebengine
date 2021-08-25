@@ -38,13 +38,13 @@
     short localized description of the error. The \l url property holds the URL that triggered
     the error.
 
-    The certificate can be rejected by calling \l rejectCertificate, which will stop loading the
+    The certificate can be rejected by calling \l rejectCertificate(), which will stop loading the
     web engine request. By default, an invalid certificate will be automatically rejected.
 
-    The certificate error can be ignored by calling \l ignoreCertificateError, which will
+    The certificate error can be ignored by calling \l acceptCertificate(), which will
     resume loading the request.
 
-    It is possible to defer the decision of rejecting a certificate by calling \l defer,
+    It is possible to defer the decision of rejecting a certificate by calling \l defer(),
     which is useful when waiting for user input.
 
     \sa WebEngineView::certificateError
@@ -54,11 +54,10 @@
 
   This function should be called when there is a need to postpone the decision whether to ignore a
   certificate error, for example, while waiting for user input. When called, the function pauses the
-  URL request until WebEngineCertificateError::ignoreCertificateError() or
-  WebEngineCertificateError::rejectCertificate() is called.
+  URL request until acceptCertificate() or rejectCertificate() is called.
  */
 /*!
-  \qmlmethod void WebEngineCertificateError::ignoreCertificateError()
+  \qmlmethod void WebEngineCertificateError::acceptCertificate()
 
   The certificate error is ignored, and the web engine view continues to load the requested URL.
  */
