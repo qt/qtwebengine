@@ -463,6 +463,9 @@ target_include_directories(WebEngineCore PRIVATE
 
 add_gn_build_aritfacts_to_target(WebEngineCore QtWebEngineCore core ${buildDir})
 add_dependencies(WebEngineCore run_core_NinjaDone)
+if(COIN_BUG_699)
+   set_property(TARGET WebEngineCore PROPERTY CXX_LINKER_LAUNCHER ${PROJECT_BINARY_DIR}/linker_ulimit.sh)
+endif()
 
 ##
 #  SANDBOX
