@@ -996,3 +996,24 @@ function(addCopyCommand target src dst)
         USES_TERMINAL
     )
 endfunction()
+
+function(check_for_ulimit)
+    message("-- Checking 'ulimit -n'")
+    execute_process(COMMAND bash -c "ulimit -n"
+        OUTPUT_VARIABLE ulimitOutput
+    )
+    string(REGEX MATCHALL "[0-9]+" limit "${ulimitOutput}")
+    message(" -- Open files limit ${limit}")
+    if(NOT (QT_FEATURE_use_gold_linker OR QT_FEATURE_use_lld_linker) AND ulimitOutput LESS 4096)
+        if(NOT ${CMAKE_VERSION} VERSION_LESS "3.21.0")
+            message(" -- Creating linker launcher")
+            file(GENERATE OUTPUT ${PROJECT_BINARY_DIR}/linker_ulimit.sh
+                CONTENT "#!/bin/bash\nulimit -n 4096\nexec \"$@\""
+                FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+            )
+            set(COIN_BUG_699 ON PARENT_SCOPE)
+        else()
+            set(PRINT_BFD_LINKER_WARNING ON PARENT_SCOPE)
+        endif()
+    endif()
+endfunction()

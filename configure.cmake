@@ -50,6 +50,9 @@ if(PkgConfig_FOUND)
 endif()
 
 #### Tests
+if(LINUX)
+   check_for_ulimit()
+endif()
 
 qt_config_compile_test(re2
     LABEL "re2"
@@ -493,3 +496,9 @@ qt_configure_add_report_entry(
     MESSAGE "Building fat libray with device and simulator architectures will disable NEON."
     CONDITION IOS AND simulator AND device AND QT_FEATURE_qtpdf_build
 )
+if(PRINT_BFD_LINKER_WARNING)
+    qt_configure_add_report_entry(
+        TYPE WARNING
+        MESSAGE "Using bfd linker requires at least 4096 open files limit"
+    )
+endif()
