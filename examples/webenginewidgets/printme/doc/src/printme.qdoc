@@ -66,8 +66,8 @@
 
     \section1 Print Handler
 
-    In the \c{PrintHandler} function, we first implement \c{printPreview()},
-    where we instantiate \l{QPrinter} together with \l{QPrintPreviewDialog}.
+    In the \c{PrintHandler} class, we first implement \c{printPreview()},
+    where we instantiate \l{QPrintPreviewDialog}.
     We need the \l{QPrintPreviewDialog::paintRequested} handle to generate a
     set of preview pages.
 
@@ -77,16 +77,23 @@
 
     Now we can implement the \c{PrintHandler::printDocument()} slot, which is
     called in response to the \l{QPrintPreviewDialog::paintRequested} signal.
+    To do actual painting on a printer, we call the \l QWebEngineView::print()
+    function. Because this call is asynchronous, we need to use
+    a local event loop. We begin the local event loop by calling
+    \l{QEventLoop::exec()}.
 
     \quotefromfile webenginewidgets/printme/printhandler.cpp
     \skipto PrintHandler::printDocument(
     \printuntil /^\}/
 
-    To do actual painting on a printer, we call the \l QWebEngineView::print()
-    function. Because this call blocks the main event loop, we need to create
-    a local one. We begin the local event loop by calling
-    \l{QEventLoop::exec()}. When the local event loop terminates,
-    we check for \c{result} and report any errors that occurred.
+    To get notified about the result of printing job, we implement
+    \c{PrintHandler::printFinished()} slot as handler of
+    \l QWebEngineView::printFinished() signal. We check for \c{success} and
+    report any errors that occurred.
+
+    \quotefromfile webenginewidgets/printme/printhandler.cpp
+    \skipto PrintHandler::printFinished(
+    \printuntil /^\}/
 
     The last function we implement, \c{PrintHandler::print()}, is trivial,
     because it simply opens \l{QPrintDialog} and calls the previously

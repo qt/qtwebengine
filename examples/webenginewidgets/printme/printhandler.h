@@ -51,7 +51,9 @@
 #ifndef PRINTHANDLER_H
 #define PRINTHANDLER_H
 
+#include <QEventLoop>
 #include <QObject>
+#include <QPrinter>
 
 QT_BEGIN_NAMESPACE
 class QPainter;
@@ -70,9 +72,12 @@ public slots:
     void print();
     void printPreview();
     void printDocument(QPrinter *printer);
+    void printFinished(bool success);
 
 private:
     QWebEngineView *m_view = nullptr;
+    QPrinter m_printer;
+    QEventLoop m_waitForResult;
     bool m_inPrintPreview = false;
 };
 
