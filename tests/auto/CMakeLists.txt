@@ -1,18 +1,14 @@
-if(QT_FEATURE_qtwebengine_build
-    OR (QT_BUILD_STANDALONE_TESTS AND TARGET Qt::WebEngineCore))
-    add_subdirectory(core)
+if(TARGET Qt::WebEngineCore)
     add_subdirectory(httpserver)
     add_subdirectory(util)
+    add_subdirectory(core)
 endif()
-if(QT_FEATURE_qtwebengine_quick_build
-    OR (QT_BUILD_STANDALONE_TESTS AND TARGET Qt::WebEngineQuick))
+if(TARGET Qt::WebEngineQuick)
     add_subdirectory(quick)
 endif()
-if(QT_FEATURE_qtwebengine_widgets_build
-    OR (QT_BUILD_STANDALONE_TESTS AND TARGET Qt::WebEngineWidgets))
+if(TARGET Qt::WebEngineWidgets)
     add_subdirectory(widgets)
 endif()
-if(QT_FEATURE_qtpdf_build
-    OR (QT_BUILD_STANDALONE_TESTS AND TARGET Qt::Pdf))
+if(TARGET Qt::Pdf)
     add_subdirectory(pdf)
 endif()
