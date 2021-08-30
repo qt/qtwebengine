@@ -1,4 +1,4 @@
-find_package(Qt6 ${PROJECT_VERSION} REQUIRED COMPONENTS Gui Network OpenGL Quick)
+find_package(Qt6 ${PROJECT_VERSION} REQUIRED COMPONENTS Gui Network Quick)
 find_package(Qt6 ${PROJECT_VERSION} QUIET OPTIONAL_COMPONENTS WebChannel Positioning)
 
 set(qtWebEngineProcessName QtWebEngineProcess)

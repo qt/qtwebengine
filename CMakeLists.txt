@@ -19,7 +19,7 @@ set(QT_USE_FIXED_QT_ADD_RESOURCE_BASE TRUE)
 
 find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core)
 find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS
-    Gui Widgets Network OpenGL OpenGLWidgets Quick Qml PrintSupport
+    Gui Widgets Network OpenGL Quick Qml PrintSupport
     WebChannel Positioning QuickControls2 Test QuickWidgets QuickTest WebSockets Designer
 )
 set(WEBENGINE_MODULE_BUILD TRUE)
