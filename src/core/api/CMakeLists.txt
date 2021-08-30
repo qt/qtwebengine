@@ -128,19 +128,27 @@ if(QT_FEATURE_framework)
     add_custom_command(OUTPUT ${allResourceFiles} DEPENDS ${buildDir}/${config}/${arch}/QtWebEngineCore.stamp)
     add_custom_target(generate_resources_${config} DEPENDS ${allResourceFiles})
 else()
-    install(FILES ${localeFiles}
-        DESTINATION ${INSTALL_TRANSLATIONSDIR}/qtwebengine_locales
-        CONFIGURATIONS ${config}
-    )
-    install(FILES ${resourceFiles}
-        DESTINATION ${INSTALL_DATADIR}/resources
-        CONFIGURATIONS ${config}
-    )
     if(NOT QT_WILL_INSTALL)
         set(rootPath ${CMAKE_INSTALL_PREFIX})
     else()
-        set(rootPath ${PROJECT_BINARY_DIR})
+        if(NOT QT_SUPERBUILD)
+            set(rootPath ${PROJECT_BINARY_DIR})
+        else()
+            set(rootPath ${QT_BUILD_DIR})
+        endif()
+        install(FILES ${localeFiles}
+            DESTINATION ${INSTALL_TRANSLATIONSDIR}/qtwebengine_locales
+            CONFIGURATIONS ${config}
+        )
+        install(FILES ${resourceFiles}
+            DESTINATION ${INSTALL_DATADIR}/resources
+            CONFIGURATIONS ${config}
+        )
     endif()
-    addCopyCommand(WebEngineCore "${localeFiles}" ${rootPath}/translations/qtwebengine_locales)
-    addCopyCommand(WebEngineCore "${resourceFiles}" ${rootPath}/resources)
+    addCopyCommand(WebEngineCore "${localeFiles}"
+        ${rootPath}/${INSTALL_TRANSLATIONSDIR}/qtwebengine_locales
+    )
+    addCopyCommand(WebEngineCore "${resourceFiles}"
+        ${rootPath}/${INSTALL_DATADIR}/resources
+    )
 endif()
