@@ -1,6 +1,6 @@
 include(../../httpserver/httpserver.cmake)
 
-qt_internal_add_test(tst_proxy
+qt_internal_add_test(tst_webengine_proxy
     SOURCES
         tst_proxy.cpp
     LIBRARIES

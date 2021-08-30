@@ -17,14 +17,14 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS WebEngineQuick)
 
-qt_add_executable(minimal-qml
+qt_add_executable(webengine-minimal-qml
     main.cpp
 )
-set_target_properties(minimal-qml PROPERTIES
+set_target_properties(webengine-minimal-qml PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
-target_link_libraries(minimal-qml PUBLIC
+target_link_libraries(webengine-minimal-qml PUBLIC
     Qt::Core
     Qt::Gui
     Qt::WebEngineQuick
@@ -36,14 +36,14 @@ set(qml_resource_files
     "main.qml"
 )
 
-qt6_add_resources(minimal-qml "qml"
+qt6_add_resources(webengine-minimal-qml "qml"
     PREFIX
         "/"
     FILES
         ${qml_resource_files}
 )
 
-install(TARGETS minimal-qml
+install(TARGETS webengine-minimal-qml
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
     LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
