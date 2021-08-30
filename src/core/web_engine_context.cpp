@@ -132,8 +132,8 @@
 #include <QMutex>
 #include <QOffscreenSurface>
 #if QT_CONFIG(opengl)
-# include <QOpenGLContext>
-# include <qopenglcontext_platform.h>
+#include <QOpenGLContext>
+#include <qopenglcontext_platform.h>
 #endif
 #include <QQuickWindow>
 #include <QStringList>
@@ -246,7 +246,7 @@ static const char *getGLType(bool enableGLSoftwareRendering)
     return glType;
 }
 #else
-static cont char *getGLType(bool enableGLSoftwareRendering)
+static const char *getGLType(bool enableGLSoftwareRendering)
 {
     return nullptr;
 }
@@ -262,6 +262,7 @@ static void logContext(const char *glType, base::CommandLine *cmd)
 {
     QLoggingCategory webEngineContextLog("qt.webenginecontext");
     if (webEngineContextLog.isInfoEnabled()) {
+#if QT_CONFIG(opengl)
         const QSurfaceFormat sharedFormat = qt_gl_global_share_context()->format();
         const auto profile = QMetaEnum::fromType<QSurfaceFormat::OpenGLContextProfile>().valueToKey(
                 sharedFormat.profile());
@@ -284,6 +285,9 @@ static void logContext(const char *glType, base::CommandLine *cmd)
                glType, type, profile, sharedFormat.majorVersion(), sharedFormat.minorVersion(),
                usingDefaultSGBackend() ? "yes" : "no", usingSoftwareDynamicGL() ? "yes" : "no",
                usingANGLE() ? "yes" : "no", qPrintable(params.join(" ")));
+#else
+        qCInfo(webEngineContextLog) << "WebEngine compiled with no opengl enabled.";
+#endif //QT_CONFIG(opengl)
     }
 }
 
@@ -737,6 +741,7 @@ WebEngineContext::WebEngineContext()
     const char *glType = getGLType(enableGLSoftwareRendering);
 
     if (glType) {
+#if QT_CONFIG(opengl)
         parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
         parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
         if (enableGLSoftwareRendering) {
@@ -766,6 +771,7 @@ WebEngineContext::WebEngineContext()
         if (!usingANGLE() || isGLES2Context)
             parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
 #endif
+#endif //QT_CONFIG(opengl)
     } else {
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);
     }

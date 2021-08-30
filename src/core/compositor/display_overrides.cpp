@@ -66,10 +66,14 @@ viz::OutputSurfaceProviderImpl::CreateSoftwareOutputSurface()
 std::unique_ptr<viz::SkiaOutputDevice>
 viz::SkiaOutputSurfaceImplOnGpu::CreateOutputDevice()
 {
+#if QT_CONFIG(opengl)
     return std::make_unique<QtWebEngineCore::DisplaySkiaOutputDevice>(
             context_state_,
             shared_gpu_deps_->memory_tracker(),
             GetDidSwapBuffersCompleteCallback());
+#else
+    return nullptr;
+#endif // QT_CONFIG(opengl)
 }
 
 void gpu::InProcessCommandBuffer::GetTextureQt(

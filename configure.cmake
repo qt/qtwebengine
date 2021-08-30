@@ -337,7 +337,7 @@ endif()
 
 assertTargets(
    MODULES QtWebEngine QtPdf
-   TARGETS Gui Widgets OpenGL OpenGLWidgets Quick Qml
+   TARGETS Gui Widgets Quick Qml
 )
 add_check_for_support(
    MODULES QtWebEngine QtPdf

@@ -341,11 +341,15 @@ QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, 
         node->setTexture(win->createTextureFromImage(image));
     } else if (comp->type() == Compositor::Type::OpenGL) {
         QQuickWindow::CreateTextureOptions texOpts;
+#if QT_CONFIG(opengl)
         if (comp->hasAlphaChannel())
             texOpts.setFlag(QQuickWindow::TextureHasAlphaChannel);
         int texId = comp->textureId();
         node->setTexture(QNativeInterface::QSGOpenGLTexture::fromNative(texId, win, texSize, texOpts));
         node->setTextureCoordinatesTransform(QSGImageNode::MirrorVertically);
+#else
+        Q_UNREACHABLE();
+#endif
     } else {
         Q_UNREACHABLE();
     }
