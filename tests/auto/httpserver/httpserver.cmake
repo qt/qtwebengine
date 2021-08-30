@@ -1,8 +1,8 @@
 if (NOT TARGET Test::HttpServer)
 
-   set(CMAKE_AUTOMOC ON)
-   set(CMAKE_AUTORCC ON)
-   set(CMAKE_AUTOUIC ON)
+   if(NOT QT_SUPERBUILD AND NOT QT_CONFIGURE_RUNNING)
+       set(CMAKE_AUTOMOC ON)
+   endif()
 
    add_library(httpserver STATIC
       ${CMAKE_CURRENT_LIST_DIR}/httpreqrep.cpp
