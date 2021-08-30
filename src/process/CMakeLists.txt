@@ -22,11 +22,11 @@ if(WIN32)
    target_link_options(${qtWebEngineProcessName} PRIVATE "@${libs_rsp}")
 endif()
 
-target_link_libraries(${qtWebEngineProcessName}
-   PUBLIC
+qt_internal_extend_target(${qtWebEngineProcessName}
+   PUBLIC_LIBRARIES
        Qt::Gui
        Qt::WebEngineCore
-   PRIVATE
+   LIBRARIES
        Qt::CorePrivate
        Qt::WebEngineCorePrivate
 )
@@ -44,6 +44,8 @@ if(QT_FEATURE_debug_and_release)
     set_target_properties(${qtWebEngineProcessName} PROPERTIES
                           OUTPUT_NAME_DEBUG ${qtWebEngineProcessName}${CMAKE_DEBUG_POSTFIX})
 endif()
+
+qt_apply_rpaths(TARGET ${qtWebEngineProcessName} INSTALL_PATH "${INSTALL_LIBEXECDIR}" RELATIVE_RPATH)
 
 if(isFramework)
     set_target_properties(${qtWebEngineProcessName} PROPERTIES MACOSX_BUNDLE TRUE)
