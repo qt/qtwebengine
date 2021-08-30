@@ -14,21 +14,21 @@ qt_internal_add_executable(${qtWebEngineProcessName}
 )
 
 if(WIN32)
-   target_sources(${qtWebEngineProcessName} PRIVATE support_win.cpp)
-   target_link_libraries(${qtWebEngineProcessName} PRIVATE WebEngineCoreSandbox)
-   set_property(TARGET ${qtWebEngineProcessName} PROPERTY WIN32_EXECUTABLE TRUE)
-   # get libs rsp file, since cmake is not aware of PUBLIC libs for WebEngineCore
-   get_target_property(libs_rsp WebEngineCore LIBS_RSP)
-   target_link_options(${qtWebEngineProcessName} PRIVATE "@${libs_rsp}")
+    target_sources(${qtWebEngineProcessName} PRIVATE support_win.cpp)
+    target_link_libraries(${qtWebEngineProcessName} PRIVATE WebEngineCoreSandbox)
+    set_property(TARGET ${qtWebEngineProcessName} PROPERTY WIN32_EXECUTABLE TRUE)
+    # get libs rsp file, since cmake is not aware of PUBLIC libs for WebEngineCore
+    get_target_property(libs_rsp WebEngineCore LIBS_RSP)
+    target_link_options(${qtWebEngineProcessName} PRIVATE "@${libs_rsp}")
 endif()
 
 qt_internal_extend_target(${qtWebEngineProcessName}
-   PUBLIC_LIBRARIES
-       Qt::Gui
-       Qt::WebEngineCore
-   LIBRARIES
-       Qt::CorePrivate
-       Qt::WebEngineCorePrivate
+    PUBLIC_LIBRARIES
+        Qt::Gui
+        Qt::WebEngineCore
+    LIBRARIES
+        Qt::CorePrivate
+        Qt::WebEngineCorePrivate
 )
 
 target_include_directories(${qtWebEngineProcessName} PRIVATE ../core)
@@ -54,11 +54,11 @@ if(isFramework)
         MACOSX_PACKAGE_LOCATION Resources
     )
     add_custom_command(TARGET ${qtWebEngineProcessName} POST_BUILD
-          COMMAND ${CMAKE_COMMAND} -E make_directory
-              "$<TARGET_BUNDLE_DIR:WebEngineCore>/Versions/A/Helpers/${qtWebEngineProcessName}.app"
-          COMMAND ${CMAKE_COMMAND} -E create_symlink "Versions/Current/Helpers"
-              "$<TARGET_BUNDLE_DIR:WebEngineCore>/Helpers"
-          USES_TERMINAL
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+                "$<TARGET_BUNDLE_DIR:WebEngineCore>/Versions/A/Helpers/${qtWebEngineProcessName}.app"
+        COMMAND ${CMAKE_COMMAND} -E create_symlink "Versions/Current/Helpers"
+                "$<TARGET_BUNDLE_DIR:WebEngineCore>/Helpers"
+        USES_TERMINAL
     )
     install(TARGETS ${qtWebEngineProcessName}
         BUNDLE DESTINATION ./lib/QtWebEngineCore.framework/Versions/A/Helpers
