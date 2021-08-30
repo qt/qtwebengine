@@ -76,16 +76,12 @@ foreach(arch ${archs})
 
         set(buildGn pdf_${config}_${arch})
         add_gn_target(${buildGn} ${config} ${arch}
-            SOURCES DEFINES CXX_COMPILE_OPTIONS C_COMPILE_OPTIONS INCLUDES MOC_PATH RSP_PREFIX
+            SOURCES DEFINES CXX_COMPILE_OPTIONS C_COMPILE_OPTIONS INCLUDES MOC_PATH
         )
         resolve_target_includes(gnIncludes Pdf)
         get_forward_declaration_macro(forwardDeclarationMacro)
 
         extend_gn_target(${buildGn}
-            MOC_PATH
-                ${mocFilePath}
-            RSP_PREFIX
-                src/pdf/${config}/${arch}
             INCLUDES
                 ${gnIncludes}
         )

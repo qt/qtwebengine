@@ -40,12 +40,11 @@ foreach(arch ${archs})
 
         set(buildGn core_${config}_${arch})
         add_gn_target(${buildGn} ${config} ${arch}
-            SOURCES DEFINES CXX_COMPILE_OPTIONS C_COMPILE_OPTIONS INCLUDES MOC_PATH RSP_PREFIX
+            SOURCES DEFINES CXX_COMPILE_OPTIONS C_COMPILE_OPTIONS INCLUDES MOC_PATH
         )
         resolve_target_includes(gnIncludes WebEngineCore)
         get_forward_declaration_macro(forwardDeclarationMacro)
         get_target_property(qtWebEngineProcessName WebEngineCore QTWEBENGINEPROCESS_NAME)
-        get_target_property(mocFilePath Qt6::moc IMPORTED_LOCATION)
 
         if(QT_FEATURE_debug_and_release AND ("${config}" STREQUAL "Debug"))
             set(qtWebEngineProcessName "${qtWebEngineProcessName}${CMAKE_DEBUG_POSTFIX}")
@@ -64,10 +63,6 @@ foreach(arch ${archs})
         endif()
 
         extend_gn_target(${buildGn}
-            MOC_PATH
-                ${mocFilePath}
-            RSP_PREFIX
-                src/core/${config}/${arch}
             INCLUDES
                 ${gnIncludes}
             DEFINES
