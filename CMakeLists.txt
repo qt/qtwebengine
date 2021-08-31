@@ -4,7 +4,7 @@ include(.cmake.conf)
 include(ExternalProject)
 include(cmake/Functions.cmake)
 
-project(QtWebEngineAndQtPdf
+project(QtWebEngine
     VERSION "${QT_REPO_MODULE_VERSION}"
     DESCRIPTION "QtWebEngine and QtPdf modules"
     HOMEPAGE_URL "https://qt.io/"
