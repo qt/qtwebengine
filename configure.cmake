@@ -11,7 +11,6 @@ else()
     find_package(GPerf)
     find_package(BISON)
     find_package(FLEX)
-    find_package(Protobuf)
     find_package(PkgConfig)
     find_package(Snappy)
     find_package(Nodejs 10.19)
@@ -280,10 +279,6 @@ qt_feature("webengine-system-libevent" PRIVATE
     AUTODETECT FALSE # coin bug 711
     CONDITION UNIX AND LIBEVENT_FOUND
 )
-qt_feature("webengine-system-protobuf" PRIVATE
-    LABEL "protobuf"
-    CONDITION UNIX AND Protobuf_FOUND
-)
 qt_feature("webengine-system-libxml" PRIVATE
     LABEL "libxml2 and libxslt"
     CONDITION UNIX AND TEST_libxml2
@@ -466,7 +461,6 @@ if(UNIX)
     qt_configure_add_summary_entry(ARGS "webengine-system-zlib")
     qt_configure_add_summary_entry(ARGS "webengine-system-minizip")
     qt_configure_add_summary_entry(ARGS "webengine-system-libevent")
-    qt_configure_add_summary_entry(ARGS "webengine-system-protobuf")
     qt_configure_add_summary_entry(ARGS "webengine-system-libxml")
     qt_configure_add_summary_entry(ARGS "webengine-system-lcms2")
     qt_configure_add_summary_entry(ARGS "webengine-system-libpng")
