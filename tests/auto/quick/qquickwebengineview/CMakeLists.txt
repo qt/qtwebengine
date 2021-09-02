@@ -5,7 +5,6 @@ qt_internal_add_test(tst_qquickwebengineview
         tst_qquickwebengineview.cpp
     LIBRARIES
         Qt::WebEngineCorePrivate
-        Qt::WebEngineWidgets
         Qt::WebEngineQuick
         Qt::GuiPrivate
         Qt::WebEngineQuickPrivate
