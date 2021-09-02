@@ -4,7 +4,6 @@ qt_internal_add_test(tst_qquickwebengineviewgraphics
         tst_qquickwebengineviewgraphics.cpp
     LIBRARIES
         Qt::CorePrivate
-        Qt::WebEngineWidgets
         Qt::WebEngineQuickPrivate
         Qt::Test
         Test::Util

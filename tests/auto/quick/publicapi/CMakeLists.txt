@@ -4,5 +4,4 @@ qt_internal_add_test(tst_publicapi
     LIBRARIES
         Qt::CorePrivate
         Qt::WebEngineQuickPrivate
-        Qt::WebEngineWidgetsPrivate
 )

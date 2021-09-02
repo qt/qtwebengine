@@ -338,7 +338,7 @@ endif()
 
 assertTargets(
    MODULES QtWebEngine QtPdf
-   TARGETS Gui Widgets Quick Qml
+   TARGETS Gui Quick Qml
 )
 add_check_for_support(
    MODULES QtWebEngine QtPdf
