@@ -1,9 +1,5 @@
 if (NOT TARGET Test::HttpServer)
 
-   if(NOT QT_SUPERBUILD AND NOT QT_CONFIGURE_RUNNING)
-       set(CMAKE_AUTOMOC ON)
-   endif()
-
    add_library(httpserver STATIC
       ${CMAKE_CURRENT_LIST_DIR}/httpreqrep.cpp
       ${CMAKE_CURRENT_LIST_DIR}/httpreqrep.h
@@ -12,6 +8,9 @@ if (NOT TARGET Test::HttpServer)
       ${CMAKE_CURRENT_LIST_DIR}/proxy_server.h
       ${CMAKE_CURRENT_LIST_DIR}/proxy_server.cpp
    )
+
+   # moc binary might not exist in case of top level build
+   qt_autogen_tools(httpserver ENABLE_AUTOGEN_TOOLS "moc")
 
    if(QT_FEATURE_ssl)
       target_sources(httpserver INTERFACE ${CMAKE_CURRENT_LIST_DIR}/httpsserver.h)
