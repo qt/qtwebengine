@@ -664,12 +664,12 @@ void RenderWidgetHostViewQt::Destroy()
     delete this;
 }
 
-void RenderWidgetHostViewQt::SetTooltipText(const base::string16 &tooltip_text)
+void RenderWidgetHostViewQt::SetTooltipText(const std::u16string &tooltip_text)
 {
     DisplayTooltipText(tooltip_text);
 }
 
-void RenderWidgetHostViewQt::DisplayTooltipText(const base::string16 &tooltip_text)
+void RenderWidgetHostViewQt::DisplayTooltipText(const std::u16string &tooltip_text)
 {
     if (host()->delegate() && m_adapterClient)
         m_adapterClient->setToolTip(toQt(tooltip_text));

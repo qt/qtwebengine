@@ -125,8 +125,8 @@ public:
                                            content::RenderWidgetHostViewBase *target_view,
                                            gfx::PointF *transformed_point) override;
     void Destroy() override;
-    void SetTooltipText(const base::string16 &tooltip_text) override;
-    void DisplayTooltipText(const base::string16& tooltip_text) override;
+    void SetTooltipText(const std::u16string &tooltip_text) override;
+    void DisplayTooltipText(const std::u16string& tooltip_text) override;
     void WheelEventAck(const blink::WebMouseWheelEvent &event,
                        blink::mojom::InputEventResultState ack_result) override;
     void GestureEventAck(const blink::WebGestureEvent &event,

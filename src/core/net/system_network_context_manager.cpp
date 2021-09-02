@@ -46,12 +46,14 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/strings/string_split.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/certificate_transparency/ct_known_logs.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_switches.h"
+#include "net/base/port_util.h"
 #include "net/net_buildflags.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/network_service.h"
@@ -103,7 +105,6 @@ public:
     // mojom::URLLoaderFactory implementation:
 
     void CreateLoaderAndStart(mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-                              int32_t routing_id,
                               int32_t request_id,
                               uint32_t options,
                               const network::ResourceRequest &url_request,
@@ -114,7 +115,7 @@ public:
         if (!manager_)
             return;
         manager_->GetURLLoaderFactory()->CreateLoaderAndStart(
-                    std::move(receiver), routing_id, request_id, options, url_request,
+                    std::move(receiver), request_id, options, url_request,
                     std::move(client), traffic_annotation);
     }
 
@@ -226,6 +227,23 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(network::mojom::Networ
         network_service_network_context_.BindNewPipeAndPassReceiver(),
         CreateNetworkContextParams());
 
+    // Handle --explicitly-allowed-ports
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kExplicitlyAllowedPorts)) {
+        std::vector<uint16_t> explicitly_allowed_network_ports;
+        std::string switch_value =
+            base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kExplicitlyAllowedPorts);
+        const auto split = base::SplitStringPiece(switch_value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+        for (const auto &piece : split) {
+            int port;
+            if (!base::StringToInt(piece, &port))
+                continue;
+            if (!net::IsPortValid(port))
+                continue;
+            explicitly_allowed_network_ports.push_back(static_cast<uint16_t>(port));
+        }
+
+        network_service->SetExplicitlyAllowedPorts(explicitly_allowed_network_ports);
+    }
     // Configure the stub resolver. This must be done after the system
     // NetworkContext is created, but before anything has the chance to use it.
     //    bool stub_resolver_enabled;

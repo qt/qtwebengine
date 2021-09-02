@@ -59,7 +59,7 @@ public:
     bool checkPermission(const QUrl &origin, ProfileAdapter::PermissionType type);
 
     // content::PermissionManager implementation:
-    int RequestPermission(
+    void RequestPermission(
         content::PermissionType permission,
         content::RenderFrameHost* render_frame_host,
         const GURL& requesting_origin,
@@ -81,7 +81,7 @@ public:
         const GURL& requesting_origin,
         const GURL& embedding_origin) override;
 
-    int RequestPermissions(
+    void RequestPermissions(
         const std::vector<content::PermissionType>& permission,
         content::RenderFrameHost* render_frame_host,
         const GURL& requesting_origin,

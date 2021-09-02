@@ -125,7 +125,7 @@ private:
                                  const base::Optional<GURL> &manifest_url) override;
     void DidStartNavigation(content::NavigationHandle *navigation_handle) override;
     void DidFinishNavigation(content::NavigationHandle *navigation_handle) override;
-    void DocumentOnLoadCompletedInMainFrame() override;
+    void DocumentOnLoadCompletedInMainFrame(content::RenderFrameHost *render_frame_host) override;
 
     // Informs FaviconService that the favicon for |url| is out of date. If
     // |force_reload| is true, then discard information about favicon download

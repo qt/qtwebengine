@@ -270,7 +270,7 @@ void ProfileIODataQt::ConfigureNetworkContextParams(bool in_memory,
 
     // Should be initialized with existing per-profile CORS access lists.
     network_context_params->cors_origin_access_list =
-        m_profile->GetSharedCorsOriginAccessList()->GetOriginAccessList().CreateCorsOriginAccessPatternsList();
+        content::BrowserContext::GetSharedCorsOriginAccessList(m_profile)->GetOriginAccessList().CreateCorsOriginAccessPatternsList();
 
     m_proxyConfigMonitor->AddToNetworkContextParams(network_context_params);
 }

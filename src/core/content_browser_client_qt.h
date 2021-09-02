@@ -92,7 +92,7 @@ public:
                                               net::ClientCertIdentityList client_certs,
                                               std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
     std::unique_ptr<net::ClientCertStore> CreateClientCertStore(content::BrowserContext *browser_context) override;
-    content::DevToolsManagerDelegate *GetDevToolsManagerDelegate() override;
+    std::unique_ptr<content::DevToolsManagerDelegate> CreateDevToolsManagerDelegate() override;
     content::PlatformNotificationService * GetPlatformNotificationService(content::BrowserContext *browser_context) override;
 
     std::string GetApplicationLocale() override;
@@ -198,6 +198,7 @@ public:
             const GURL &url,
             base::OnceCallback<content::WebContents*()> web_contents_getter,
             int child_id,
+            int frame_tree_node_id,
             content::NavigationUIData *navigation_data,
             bool is_main_frame,
             ui::PageTransition page_transition,

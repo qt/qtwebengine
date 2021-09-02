@@ -61,7 +61,7 @@ protected:
     gl::EGLDisplayPlatform GetNativeDisplay() override;
 
     // Sets up GL bindings for the native surface.
-    bool LoadGLES2Bindings(gl::GLImplementation implementation) override;
+    bool LoadGLES2Bindings(const gl::GLImplementationParts &implementation) override;
 };
 
 } // namespace ui

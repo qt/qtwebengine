@@ -89,6 +89,7 @@ static ProfileAdapter::PermissionType toQt(content::PermissionType type)
     case content::PermissionType::STORAGE_ACCESS_GRANT:
     case content::PermissionType::FONT_ACCESS:
     case content::PermissionType::DISPLAY_CAPTURE:
+    case content::PermissionType::FILE_HANDLING:
     case content::PermissionType::NUM:
         LOG(INFO) << "Unexpected unsupported permission type: " << static_cast<int>(type);
         break;
@@ -199,7 +200,7 @@ bool PermissionManagerQt::checkPermission(const QUrl &origin, ProfileAdapter::Pe
     return m_permissions.contains(key) && m_permissions[key];
 }
 
-int PermissionManagerQt::RequestPermission(content::PermissionType permission,
+void PermissionManagerQt::RequestPermission(content::PermissionType permission,
                                             content::RenderFrameHost *frameHost,
                                             const GURL& requesting_origin,
                                             bool /*user_gesture*/,
@@ -207,7 +208,7 @@ int PermissionManagerQt::RequestPermission(content::PermissionType permission,
 {
     if (requesting_origin.is_empty()) {
         std::move(callback).Run(blink::mojom::PermissionStatus::DENIED);
-        return content::PermissionController::kNoPendingOperation;
+        return;
     }
 
     WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt *>(
@@ -222,28 +223,27 @@ int PermissionManagerQt::RequestPermission(content::PermissionType permission,
             std::move(callback).Run(blink::mojom::PermissionStatus::GRANTED);
         else
             std::move(callback).Run(blink::mojom::PermissionStatus::DENIED);
-        return content::PermissionController::kNoPendingOperation;
+        return;
     } else if (!canRequestPermissionFor(permissionType)) {
         std::move(callback).Run(blink::mojom::PermissionStatus::DENIED);
-        return content::PermissionController::kNoPendingOperation;
+        return;
     }
 
     int request_id = ++m_requestIdCount;
     auto requestOrigin = toQt(requesting_origin);
     m_requests.push_back({ request_id, permissionType, requestOrigin, std::move(callback) });
     contentsDelegate->requestFeaturePermission(permissionType, requestOrigin);
-    return request_id;
 }
 
-int PermissionManagerQt::RequestPermissions(const std::vector<content::PermissionType>& permissions,
-                                            content::RenderFrameHost* frameHost,
-                                            const GURL& requesting_origin,
-                                            bool /*user_gesture*/,
-                                            base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus>&)> callback)
+void PermissionManagerQt::RequestPermissions(const std::vector<content::PermissionType> &permissions,
+                                             content::RenderFrameHost *frameHost,
+                                             const GURL &requesting_origin,
+                                             bool /*user_gesture*/,
+                                             base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus> &)> callback)
 {
     if (requesting_origin.is_empty()) {
         std::move(callback).Run(std::vector<blink::mojom::PermissionStatus>(permissions.size(), blink::mojom::PermissionStatus::DENIED));
-        return content::PermissionController::kNoPendingOperation;
+        return;
     }
 
     WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt *>(
@@ -271,7 +271,7 @@ int PermissionManagerQt::RequestPermissions(const std::vector<content::Permissio
     }
     if (answerable) {
         std::move(callback).Run(result);
-        return content::PermissionController::kNoPendingOperation;
+        return;
     }
 
     int request_id = ++m_requestIdCount;
@@ -282,7 +282,6 @@ int PermissionManagerQt::RequestPermissions(const std::vector<content::Permissio
         if (canRequestPermissionFor(permissionType))
             contentsDelegate->requestFeaturePermission(permissionType, requestOrigin);
     }
-    return request_id;
 }
 
 blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatus(

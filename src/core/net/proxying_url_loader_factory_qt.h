@@ -62,14 +62,14 @@ class ProfileAdapter;
 class ProxyingURLLoaderFactoryQt : public network::mojom::URLLoaderFactory
 {
 public:
-    ProxyingURLLoaderFactoryQt(ProfileAdapter *adapter, int processId,
+    ProxyingURLLoaderFactoryQt(ProfileAdapter *adapter, int frameTreeNodeId,
                                mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
                                mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_target_factory_remote);
 
     ~ProxyingURLLoaderFactoryQt() override;
 
     void CreateLoaderAndStart(mojo::PendingReceiver<network::mojom::URLLoader> loader,
-                              int32_t routing_id, int32_t request_id,
+                              int32_t request_id,
                               uint32_t options, const network::ResourceRequest &request,
                               mojo::PendingRemote<network::mojom::URLLoaderClient> client,
                               const net::MutableNetworkTrafficAnnotationTag &traffic_annotation) override;
@@ -81,7 +81,7 @@ private:
     void OnProxyBindingError();
 
     QPointer<ProfileAdapter> m_profileAdapter;
-    int m_processId;
+    int m_frameTreeNodeId;
     mojo::ReceiverSet<network::mojom::URLLoaderFactory> m_proxyReceivers;
     mojo::Remote<network::mojom::URLLoaderFactory> m_targetFactory;
     base::WeakPtrFactory<ProxyingURLLoaderFactoryQt> m_weakFactory;

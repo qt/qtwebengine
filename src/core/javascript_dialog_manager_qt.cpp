@@ -63,8 +63,8 @@ JavaScriptDialogManagerQt *JavaScriptDialogManagerQt::GetInstance()
 void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webContents,
                                                     content::RenderFrameHost *renderFrameHost,
                                                     content::JavaScriptDialogType dialog_type,
-                                                    const base::string16 &messageText,
-                                                    const base::string16 &defaultPromptText,
+                                                    const std::u16string &messageText,
+                                                    const std::u16string &defaultPromptText,
                                                     content::JavaScriptDialogManager::DialogClosedCallback callback,
                                                     bool *didSuppressMessage)
 {
@@ -87,12 +87,12 @@ void JavaScriptDialogManagerQt::RunBeforeUnloadDialog(content::WebContents *webC
     runDialogForContents(webContents, WebContentsAdapterClient::UnloadDialog, QString(), QString(), toQt(originUrl), std::move(callback));
 }
 
-bool JavaScriptDialogManagerQt::HandleJavaScriptDialog(content::WebContents *contents, bool accept, const base::string16 *promptOverride)
+bool JavaScriptDialogManagerQt::HandleJavaScriptDialog(content::WebContents *contents, bool accept, const std::u16string *promptOverride)
 {
     QSharedPointer<JavaScriptDialogController> dialog = m_activeDialogs.value(contents);
     if (!dialog)
         return false;
-    dialog->d->dialogFinished(accept, promptOverride ? *promptOverride : base::string16());
+    dialog->d->dialogFinished(accept, promptOverride ? *promptOverride : std::u16string());
     takeDialogForContents(contents);
     return true;
 }

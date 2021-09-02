@@ -49,7 +49,6 @@
 #include "qtwebenginecoreglobal_p.h"
 
 #include "base/memory/ref_counted.h"
-#include "base/strings/string16.h"
 #include "components/prefs/pref_member.h"
 #include "components/printing/common/print.mojom.h"
 #include "content/public/browser/web_contents_user_data.h"

@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include "base/strings/string_util.h"
+
 #include "qtwebengine/userscript/user_script_data.h"
 #include "user_script.h"
 #include "type_conversion.h"

@@ -78,7 +78,7 @@ public:
 
     content::RenderWidgetHostViewBase *CreateViewForChildWidget(content::RenderWidgetHost* render_widget_host) override;
 
-    void SetPageTitle(const base::string16& title) override { }
+    void SetPageTitle(const std::u16string& title) override { }
 
     void RenderViewReady() override { }
 

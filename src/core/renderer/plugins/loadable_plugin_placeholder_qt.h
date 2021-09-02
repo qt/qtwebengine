@@ -63,7 +63,7 @@ private:
     LoadablePluginPlaceholderQt(content::RenderFrame* render_frame,
                                 const blink::WebPluginParams& params,
                                 const std::string& html_data,
-                                const base::string16& title);
+                                const std::u16string& title);
     ~LoadablePluginPlaceholderQt() override;
 
     // content::LoadablePluginPlaceholder overrides.

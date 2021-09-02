@@ -347,7 +347,7 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
     return toFilePath(directory.isEmpty() ? fallbackDir() : directory);
 }
 
-base::string16 WebEngineLibraryInfo::getApplicationName()
+std::u16string WebEngineLibraryInfo::getApplicationName()
 {
     return toString16(qApp->applicationName());
 }

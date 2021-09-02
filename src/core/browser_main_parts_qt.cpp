@@ -60,6 +60,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/result_codes.h"
 #include "extensions/buildflags/buildflags.h"
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "content/public/browser/plugin_service.h"
@@ -244,7 +245,7 @@ int BrowserMainPartsQt::PreEarlyInitialization()
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     content::ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(extensions::kExtensionScheme);
 #endif //ENABLE_EXTENSIONS
-    return 0;
+    return content::RESULT_CODE_NORMAL_EXIT;
 }
 
 void BrowserMainPartsQt::PreMainMessageLoopStart()
@@ -257,7 +258,7 @@ void BrowserMainPartsQt::PostMainMessageLoopStart()
         device_event_log::Initialize(0 /* default max entries */);
 }
 
-void BrowserMainPartsQt::PreMainMessageLoopRun()
+int BrowserMainPartsQt::PreMainMessageLoopRun()
 {
     ui::SelectFileDialog::SetFactory(new SelectFileDialogFactoryQt());
 
@@ -277,6 +278,7 @@ void BrowserMainPartsQt::PreMainMessageLoopRun()
                            base::BindOnce(&WebUsbDetectorQt::Initialize,
                                           base::Unretained(m_webUsbDetector.get())));
     }
+    return content::RESULT_CODE_NORMAL_EXIT;
 }
 
 void BrowserMainPartsQt::PostMainMessageLoopRun()
@@ -306,7 +308,7 @@ int BrowserMainPartsQt::PreCreateThreads()
 #else
     display::Screen::SetScreenInstance(new DesktopScreenQt);
 #endif
-    return 0;
+    return content::RESULT_CODE_NORMAL_EXIT;
 }
 
 static void CreatePoliciesAndDecorators(performance_manager::Graph *graph)

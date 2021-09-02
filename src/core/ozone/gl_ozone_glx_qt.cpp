@@ -61,7 +61,8 @@ bool GLOzoneGLXQt::InitializeGLOneOffPlatform() {
 }
 
 bool GLOzoneGLXQt::InitializeStaticGLBindings(
-        gl::GLImplementation implementation) {
+        const gl::GLImplementationParts &implementation) {
+    Q_UNUSED(implementation);
 
     base::NativeLibrary library = dlopen(NULL, RTLD_LAZY);
     if (!library) {

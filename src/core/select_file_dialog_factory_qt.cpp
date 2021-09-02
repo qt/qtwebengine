@@ -98,7 +98,7 @@ public:
     // ui::SelectFileDialog implementation:
     bool IsRunning(gfx::NativeWindow) const override;
     void ListenerDestroyed() override;
-    void SelectFileImpl(Type type, const base::string16 &title, const base::FilePath &default_path,
+    void SelectFileImpl(Type type, const std::u16string &title, const base::FilePath &default_path,
                         const FileTypeInfo *file_types, int file_type_index,
                         const base::FilePath::StringType &default_extension,
                         gfx::NativeWindow owning_window, void *params) override;
@@ -139,7 +139,7 @@ extern FilePickerController *createFilePickerController(FilePickerController::Fi
                                                         const QStringList &acceptedMimeTypes,
                                                         QObject *parent = nullptr);
 
-void SelectFileDialogQt::SelectFileImpl(Type type, const base::string16 &title,
+void SelectFileDialogQt::SelectFileImpl(Type type, const std::u16string &title,
                                         const base::FilePath &default_path,
                                         const FileTypeInfo *file_types, int file_type_index,
                                         const base::FilePath::StringType &default_extension,

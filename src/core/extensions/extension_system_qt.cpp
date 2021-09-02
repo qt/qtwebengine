@@ -167,7 +167,7 @@ void ExtensionSystemQt::LoadExtension(std::string extension_id, std::unique_ptr<
     std::string error;
     scoped_refptr<const Extension> extension = Extension::Create(
             directory,
-            Manifest::COMPONENT,
+            mojom::ManifestLocation::kComponent,
             *manifest,
             flags,
             &error);

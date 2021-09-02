@@ -69,7 +69,7 @@ std::vector<gl::GLImplementation> SurfaceFactoryQt::GetAllowedGLImplementations(
     return m_impl;
 }
 
-ui::GLOzone* SurfaceFactoryQt::GetGLOzone(gl::GLImplementation implementation)
+ui::GLOzone *SurfaceFactoryQt::GetGLOzone(const gl::GLImplementationParts &implementation)
 {
     return m_ozone.get();
 }

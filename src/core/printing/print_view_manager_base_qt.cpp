@@ -303,7 +303,7 @@ void PrintViewManagerBaseQt::NavigationStopped()
     TerminatePrintJob(true);
 }
 
-base::string16 PrintViewManagerBaseQt::RenderSourceName()
+std::u16string PrintViewManagerBaseQt::RenderSourceName()
 {
      return toString16(QLatin1String(""));
 }

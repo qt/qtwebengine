@@ -65,7 +65,7 @@ base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
     return library;
 }
 
-bool GLOzoneEGLQt::LoadGLES2Bindings(gl::GLImplementation /*implementation*/)
+bool GLOzoneEGLQt::LoadGLES2Bindings(const gl::GLImplementationParts & /*implementation*/)
 {
     base::NativeLibrary eglgles2Library = dlopen(NULL, RTLD_LAZY);
     if (!eglgles2Library) {

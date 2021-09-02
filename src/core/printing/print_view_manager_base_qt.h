@@ -45,7 +45,6 @@
 #define PRINT_VIEW_MANAGER_BASE_QT_H
 
 #include "base/memory/ref_counted_memory.h"
-#include "base/strings/string16.h"
 #include "components/prefs/pref_member.h"
 #include "components/printing/browser/print_manager.h"
 #include "components/printing/common/print.mojom-forward.h"
@@ -77,7 +76,7 @@ public:
     // Whether printing is enabled or not.
     void UpdatePrintingEnabled();
 
-    base::string16 RenderSourceName();
+    std::u16string RenderSourceName();
 
     // mojom::PrintManagerHost:
     void DidGetPrintedPagesCount(int32_t cookie, uint32_t number_pages) override;

@@ -182,7 +182,7 @@ void CertificateErrorController::deactivate()
 }
 
 static QString getQStringForMessageId(int message_id) {
-    base::string16 string = l10n_util::GetStringUTF16(message_id);
+    std::u16string string = l10n_util::GetStringUTF16(message_id);
     return toQt(string);
 }
 

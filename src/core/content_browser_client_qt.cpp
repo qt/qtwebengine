@@ -409,9 +409,9 @@ void ContentBrowserClientQt::DidCreatePpapiPlugin(content::BrowserPpapiHost* bro
 }
 #endif
 
-content::DevToolsManagerDelegate* ContentBrowserClientQt::GetDevToolsManagerDelegate()
+std::unique_ptr<content::DevToolsManagerDelegate> ContentBrowserClientQt::CreateDevToolsManagerDelegate()
 {
-    return new DevToolsManagerDelegateQt;
+    return std::make_unique<DevToolsManagerDelegateQt>();
 }
 
 content::PlatformNotificationService *ContentBrowserClientQt::GetPlatformNotificationService(content::BrowserContext *browser_context)
@@ -700,6 +700,7 @@ static void LaunchURL(const GURL& url,
 bool ContentBrowserClientQt::HandleExternalProtocol(const GURL &url,
         base::OnceCallback<content::WebContents*()> web_contents_getter,
         int child_id,
+        int frame_tree_node_id,
         content::NavigationUIData *navigation_data,
         bool is_main_frame,
         ui::PageTransition page_transition,
@@ -708,6 +709,7 @@ bool ContentBrowserClientQt::HandleExternalProtocol(const GURL &url,
         mojo::PendingRemote<network::mojom::URLLoaderFactory> *out_factory)
 {
     Q_UNUSED(child_id);
+    Q_UNUSED(frame_tree_node_id);
     Q_UNUSED(navigation_data);
     Q_UNUSED(initiating_origin);
     Q_UNUSED(out_factory);
@@ -1101,7 +1103,7 @@ void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int
 
     if (install_file_scheme && factories->find(url::kFileScheme) == factories->end()) {
         auto file_factory = content::CreateFileURLLoaderFactory(profile->GetPath(),
-                                                                profile->GetSharedCorsOriginAccessList());
+                                                                content::BrowserContext::GetSharedCorsOriginAccessList(profile));
         factories->emplace(url::kFileScheme, std::move(file_factory));
     }
 
@@ -1180,13 +1182,23 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
         bool *disable_secure_dns,
         network::mojom::URLLoaderFactoryOverridePtr *factory_override)
 {
+    Q_UNUSED(render_process_id);
+    Q_UNUSED(type);
+    Q_UNUSED(request_initiator);
+    Q_UNUSED(navigation_id);
+    Q_UNUSED(ukm_source_id);
+    Q_UNUSED(header_client);
+    Q_UNUSED(bypass_redirect_checks);
+    Q_UNUSED(disable_secure_dns);
+    Q_UNUSED(factory_override);
     auto adapter = static_cast<ProfileQt *>(browser_context)->profileAdapter();
-    int process_id = type == URLLoaderFactoryType::kNavigation ? 0 : render_process_id;
     auto proxied_receiver = std::move(*factory_receiver);
     mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_url_loader_factory;
     *factory_receiver = pending_url_loader_factory.InitWithNewPipeAndPassReceiver();
     // Will manage its own lifetime
-    new ProxyingURLLoaderFactoryQt(adapter, process_id, std::move(proxied_receiver), std::move(pending_url_loader_factory));
+    new ProxyingURLLoaderFactoryQt(adapter,
+                                   frame ? frame->GetFrameTreeNodeId() : content::RenderFrameHost::kNoFrameTreeNodeId,
+                                   std::move(proxied_receiver), std::move(pending_url_loader_factory));
     return true;
 }
 

@@ -262,7 +262,8 @@ void ContentRendererClientQt::PrepareErrorPage(content::RenderFrame *renderFrame
 {
     GetNavigationErrorStringsInternal(
             renderFrame, httpMethod,
-            error_page::Error::NetError((GURL)web_error.url(), web_error.reason(), net::ResolveErrorInfo(), web_error.has_copy_in_cache()),
+            error_page::Error::NetError((GURL)web_error.url(), web_error.reason(), web_error.extended_reason(),
+                                        net::ResolveErrorInfo(), web_error.has_copy_in_cache()),
             errorHtml);
 }
 
@@ -297,7 +298,7 @@ void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderF
                 error_page::LocalizedError::GetPageState(
                         error.reason(), error.domain(), error.url(), isPost, false,
                         error.stale_copy_in_cache(), false,
-                        RenderConfiguration::is_incognito_process(), false, false, false, locale);
+                        RenderConfiguration::is_incognito_process(), false, false, false, locale, false);
 
         resourceId = IDR_NET_ERROR_HTML;
 
@@ -566,7 +567,6 @@ static void AddWidevine(std::vector<std::unique_ptr<media::KeySystemProperties>>
     }
 
     auto persistent_license_support = media::EmeSessionTypeSupport::NOT_SUPPORTED;
-    auto persistent_usage_record_support = media::EmeSessionTypeSupport::NOT_SUPPORTED;
 
     // Others.
     auto persistent_state_support = media::EmeFeatureSupport::REQUESTABLE;
@@ -575,8 +575,8 @@ static void AddWidevine(std::vector<std::unique_ptr<media::KeySystemProperties>>
     concrete_key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
                                            codecs, encryption_schemes, hw_secure_codecs,
                                            hw_secure_encryption_schemes, max_audio_robustness, max_video_robustness,
-                                           persistent_license_support, persistent_usage_record_support,
-                                           persistent_state_support, distinctive_identifier_support));
+                                           persistent_license_support, persistent_state_support,
+                                           distinctive_identifier_support));
 }
 #endif // BUILDFLAG(ENABLE_WIDEVINE)
 #endif // BUILDFLAG(ENABLE_LIBRARY_CDMS)

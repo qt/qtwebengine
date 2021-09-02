@@ -89,13 +89,6 @@ public:
     content::BrowsingDataRemoverDelegate *GetBrowsingDataRemoverDelegate() override;
     content::ClientHintsControllerDelegate *GetClientHintsControllerDelegate() override;
     content::StorageNotificationService *GetStorageNotificationService() override;
-    void SetCorsOriginAccessListForOrigin(TargetBrowserContexts target_mode,
-                                          const url::Origin &source_origin,
-                                          std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
-                                          std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
-                                          base::OnceClosure closure) override;
-
-    content::SharedCorsOriginAccessList *GetSharedCorsOriginAccessList() override;
     std::string GetMediaDeviceIDSalt() override;
 
     // Profile implementation:
@@ -127,7 +120,6 @@ private:
     std::unique_ptr<BrowsingDataRemoverDelegateQt> m_removerDelegate;
     std::unique_ptr<PermissionManagerQt> m_permissionManager;
     std::unique_ptr<SSLHostStateDelegateQt> m_sslHostStateDelegate;
-    scoped_refptr<content::SharedCorsOriginAccessList> m_sharedCorsOriginAccessList;
     std::unique_ptr<ProfileIODataQt> m_profileIOData;
     std::unique_ptr<content::PlatformNotificationService> m_platformNotificationService;
     ProfileAdapter *m_profileAdapter;

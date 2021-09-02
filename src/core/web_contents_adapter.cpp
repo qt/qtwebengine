@@ -165,7 +165,7 @@ static QVariant fromJSValue(const base::Value *result)
     }
     case base::Value::Type::STRING:
     {
-        base::string16 out;
+        std::u16string out;
         if (result->GetAsString(&out))
             ret.setValue(toQt(out));
         break;
@@ -1552,7 +1552,8 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
             if (rvh) {
                 rvh->GetWidget()->DragSourceEndedAt(gfx::PointF(m_lastDragClientPos.x(), m_lastDragClientPos.y()),
                                                     gfx::PointF(m_lastDragScreenPos.x(), m_lastDragScreenPos.y()),
-                                                    ui::mojom::DragOperation(m_currentDropAction));
+                                                    ui::mojom::DragOperation(m_currentDropAction),
+                                                    base::DoNothing());
                 rvh->GetWidget()->DragSourceSystemDragEnded();
             }
         }
@@ -1664,7 +1665,8 @@ void WebContentsAdapter::enterDrag(QDragEnterEvent *e, const QPointF &screenPos)
     rvh->GetWidget()->FilterDropData(m_currentDropData.get());
     rvh->GetWidget()->DragTargetDragEnter(*m_currentDropData, toGfx(e->position()), toGfx(screenPos),
                                           toWeb(e->possibleActions()),
-                                          toWeb(e->buttons()) | toWeb(e->modifiers()));
+                                          toWeb(e->buttons()) | toWeb(e->modifiers()),
+                                          base::DoNothing());
 }
 
 Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const QPointF &screenPos)
@@ -1674,7 +1676,7 @@ Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const Q
     m_lastDragClientPos = e->position();
     m_lastDragScreenPos = screenPos;
     rvh->GetWidget()->DragTargetDragOver(toGfx(m_lastDragClientPos), toGfx(m_lastDragScreenPos), toWeb(e->possibleActions()),
-                                         toWeb(e->buttons()) | toWeb(e->modifiers()));
+                                         toWeb(e->buttons()) | toWeb(e->modifiers()), base::DoNothing());
     waitForUpdateDragActionCalled();
     return toQt(ui::mojom::DragOperation(m_currentDropAction));
 }
@@ -1720,7 +1722,7 @@ void WebContentsAdapter::endDragging(QDropEvent *e, const QPointF &screenPos)
     m_lastDragClientPos = e->position();
     m_lastDragScreenPos = screenPos;
     rvh->GetWidget()->DragTargetDrop(*m_currentDropData, toGfx(m_lastDragClientPos), toGfx(m_lastDragScreenPos),
-                                     toWeb(e->buttons()) | toWeb(e->modifiers()));
+                                     toWeb(e->buttons()) | toWeb(e->modifiers()), base::DoNothing());
 
     m_currentDropData.reset();
 }
@@ -1764,7 +1766,7 @@ void WebContentsAdapter::resetSelection()
     if (auto rwhv = static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView())) {
         if (auto mgr = rwhv->GetTextInputManager())
             if (auto selection = const_cast<content::TextInputManager::TextSelection *>(mgr->GetTextSelection(rwhv)))
-                selection->SetSelection(base::string16(), 0, gfx::Range(), false);
+                selection->SetSelection(std::u16string(), 0, gfx::Range(), false);
     }
 }
 

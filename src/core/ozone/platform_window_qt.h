@@ -62,7 +62,7 @@ public:
     void Hide() override { }
     void Close() override { }
     bool IsVisible() const override { return true; }
-    void SetTitle(const base::string16&) override { }
+    void SetTitle(const std::u16string&) override { }
     void SetCapture() override { }
     void ReleaseCapture() override { }
     bool HasCapture() const override { return false; }

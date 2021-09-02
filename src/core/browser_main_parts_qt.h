@@ -70,7 +70,7 @@ public:
     int PreEarlyInitialization() override;
     void PreMainMessageLoopStart() override;
     void PostMainMessageLoopStart() override;
-    void PreMainMessageLoopRun() override;
+    int PreMainMessageLoopRun() override;
     void PostMainMessageLoopRun() override;
     int PreCreateThreads() override;
     void PostCreateThreads() override;

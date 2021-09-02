@@ -828,11 +828,6 @@ WebEngineContext::WebEngineContext()
 
     base::ThreadRestrictions::SetIOAllowed(true);
 
-    if (parsedCommandLine->HasSwitch(network::switches::kExplicitlyAllowedPorts)) {
-        std::string allowedPorts = parsedCommandLine->GetSwitchValueASCII(network::switches::kExplicitlyAllowedPorts);
-        net::SetExplicitlyAllowedPorts(allowedPorts);
-    }
-
 #if defined(OS_LINUX)
     media::AudioManager::SetGlobalAppName(QCoreApplication::applicationName().toStdString());
 #endif

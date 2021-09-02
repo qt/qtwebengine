@@ -67,7 +67,7 @@ namespace QtWebEngineCore {
 class JavaScriptDialogControllerPrivate {
 
 public:
-    void dialogFinished(bool accepted, const base::string16 &promptValue);
+    void dialogFinished(bool accepted, const std::u16string &promptValue);
     JavaScriptDialogControllerPrivate(WebContentsAdapterClient::JavascriptDialogType, const QString &message, const QString &prompt
                                       , const QString& title, const QUrl &securityOrigin
                                       , content::JavaScriptDialogManager::DialogClosedCallback &&, content::WebContents *);

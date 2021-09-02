@@ -400,8 +400,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Grouping;
     case ax::mojom::Role::kImage:
         return QAccessible::Graphic;
-    case ax::mojom::Role::kImageMap:
-        return QAccessible::Document;
     case ax::mojom::Role::kInlineTextBox:
         return QAccessible::StaticText;
     case ax::mojom::Role::kInputTime:

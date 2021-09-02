@@ -56,6 +56,7 @@
 #include "base/values.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "components/printing/common/print.mojom.h"
@@ -394,8 +395,8 @@ void PrintViewManagerQt::MetafileReadyForPrinting(printing::mojom::DidPreviewDoc
                        base::BindOnce(pdf_print_callback, data_array));
     } else {
         scoped_refptr<base::RefCountedBytes> data_bytes = GetBytesFromHandle(params->content->metafile_data_region);
-        base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                       base::BindOnce(&SavePdfFile, data_bytes, pdfOutputPath, pdf_save_callback));
+        base::ThreadPool::PostTask(FROM_HERE, { base::MayBlock() },
+                                   base::BindOnce(&SavePdfFile, data_bytes, pdfOutputPath, pdf_save_callback));
     }
 }
 

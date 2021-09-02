@@ -74,7 +74,7 @@ public:
     void ExecuteCommand(int command_id, int event_flags) override;
     void RunContextMenu() override;
     bool ShouldShowQuickMenu() override { return false; }
-    base::string16 GetSelectedText() override { return base::string16(); }
+    std::u16string GetSelectedText() override { return std::u16string(); }
 
     // content::TouchSelectionControllerClientManager overrides
     void DidStopFlinging() override;

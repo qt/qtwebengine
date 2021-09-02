@@ -306,7 +306,7 @@ void DevToolsFrontendQt::ReadyToCommitNavigation(content::NavigationHandle *navi
     }
 }
 
-void DevToolsFrontendQt::DocumentAvailableInMainFrame()
+void DevToolsFrontendQt::DocumentAvailableInMainFrame(content::RenderFrameHost * /*render_frame_host*/)
 {
     if (!m_inspectedContents)
         return;
@@ -457,7 +457,7 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
             SendMessageAck(request_id, &response);
             return;
         } else {
-            auto *partition = content::BrowserContext::GetStoragePartitionForSite(
+            auto *partition = content::BrowserContext::GetStoragePartitionForUrl(
                                   web_contents()->GetBrowserContext(), gurl);
             network_url_loader_factory = partition->GetURLLoaderFactoryForBrowserProcess();
             url_loader_factory = network_url_loader_factory.get();
@@ -586,7 +586,7 @@ void DevToolsFrontendQt::DispatchProtocolMessage(content::DevToolsAgentHost *age
         std::string param;
         base::EscapeJSONString(message_sp, true, &param);
         std::string code = "DevToolsAPI.dispatchMessage(" + param + ");";
-        base::string16 javascript = base::UTF8ToUTF16(code);
+        std::u16string javascript = base::UTF8ToUTF16(code);
         web_contents()->GetMainFrame()->ExecuteJavaScript(javascript, base::NullCallback());
         return;
     }
@@ -597,7 +597,7 @@ void DevToolsFrontendQt::DispatchProtocolMessage(content::DevToolsAgentHost *age
         base::EscapeJSONString(message_sp.substr(pos, kMaxMessageChunkSize), true, &param);
         std::string code = "DevToolsAPI.dispatchMessageChunk(" + param + ","
                          + std::to_string(pos ? 0 : total_size) + ");";
-        base::string16 javascript = base::UTF8ToUTF16(code);
+        std::u16string javascript = base::UTF8ToUTF16(code);
         web_contents()->GetMainFrame()->ExecuteJavaScript(javascript, base::NullCallback());
     }
 }

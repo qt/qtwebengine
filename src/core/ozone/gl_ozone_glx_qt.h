@@ -53,7 +53,7 @@ public:
     ~GLOzoneGLXQt() override {}
 
     bool InitializeGLOneOffPlatform() override;
-    bool InitializeStaticGLBindings(gl::GLImplementation implementation) override;
+    bool InitializeStaticGLBindings(const gl::GLImplementationParts &implementation) override;
     bool InitializeExtensionSettingsOneOffPlatform() override;
     void ShutdownGL() override;
     void SetDisabledExtensionsPlatform(

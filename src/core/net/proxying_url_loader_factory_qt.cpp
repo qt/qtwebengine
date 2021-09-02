@@ -111,7 +111,7 @@ class InterceptedRequest : public network::mojom::URLLoader
 {
 public:
     InterceptedRequest(ProfileAdapter *profile_adapter,
-                       int process_id, uint64_t request_id, int32_t routing_id, uint32_t options,
+                       int frame_tree_node_id, int32_t request_id, uint32_t options,
                        const network::ResourceRequest &request,
                        const net::MutableNetworkTrafficAnnotationTag &traffic_annotation,
                        mojo::PendingReceiver<network::mojom::URLLoader> loader,
@@ -129,6 +129,7 @@ public:
     void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
     void OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle body) override;
     void OnComplete(const network::URLLoaderCompletionStatus &status) override;
+    void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr) override {}
 
     // network::mojom::URLLoader
     void FollowRedirect(const std::vector<std::string> &removed_headers,
@@ -163,9 +164,8 @@ private:
     QWebEngineUrlRequestInterceptor* getPageInterceptor();
 
     QPointer<ProfileAdapter> profile_adapter_;
-    const int process_id_;
-    const uint64_t request_id_;
-    const int32_t routing_id_;
+    const int frame_tree_node_id_;
+    const int32_t request_id_;
     const uint32_t options_;
     bool allowed_cors_ = true;
 
@@ -191,16 +191,15 @@ private:
 };
 
 InterceptedRequest::InterceptedRequest(ProfileAdapter *profile_adapter,
-                                       int process_id, uint64_t request_id, int32_t routing_id, uint32_t options,
+                                       int frame_tree_node_id, int32_t request_id, uint32_t options,
                                        const network::ResourceRequest &request,
                                        const net::MutableNetworkTrafficAnnotationTag &traffic_annotation,
                                        mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
                                        mojo::PendingRemote<network::mojom::URLLoaderClient> client,
                                        mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory)
     : profile_adapter_(profile_adapter)
-    , process_id_(process_id)
+    , frame_tree_node_id_(frame_tree_node_id)
     , request_id_(request_id)
-    , routing_id_(routing_id)
     , options_(options)
     , request_(request)
     , traffic_annotation_(traffic_annotation)
@@ -249,12 +248,9 @@ InterceptedRequest::~InterceptedRequest()
 
 content::WebContents* InterceptedRequest::webContents()
 {
-    if (process_id_) {
-        content::RenderFrameHost *frameHost = content::RenderFrameHost::FromID(process_id_, request_.render_frame_id);
-        return content::WebContents::FromRenderFrameHost(frameHost);
-    }
-
-    return content::WebContents::FromFrameTreeNodeId(request_.render_frame_id);
+    if (frame_tree_node_id_ == content::RenderFrameHost::kNoFrameTreeNodeId)
+        return nullptr;
+    return content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
 }
 
 QWebEngineUrlRequestInterceptor* InterceptedRequest::getProfileInterceptor()
@@ -375,7 +371,7 @@ void InterceptedRequest::ContinueAfterIntercept()
     }
 
     if (!target_loader_ && target_factory_) {
-        target_factory_->CreateLoaderAndStart(target_loader_.BindNewPipeAndPassReceiver(), routing_id_, request_id_,
+        target_factory_->CreateLoaderAndStart(target_loader_.BindNewPipeAndPassReceiver(), request_id_,
                                               options_, request_, proxied_client_receiver_.BindNewPipeAndPassRemote(),
                                               traffic_annotation_);
     }
@@ -522,10 +518,10 @@ void InterceptedRequest::SendErrorAndCompleteImmediately(int error_code)
     delete this;
 }
 
-ProxyingURLLoaderFactoryQt::ProxyingURLLoaderFactoryQt(ProfileAdapter *adapter, int process_id,
+ProxyingURLLoaderFactoryQt::ProxyingURLLoaderFactoryQt(ProfileAdapter *adapter, int frame_tree_node_id,
                                                        mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
                                                        mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_info)
-    : m_profileAdapter(adapter), m_processId(process_id), m_weakFactory(this)
+    : m_profileAdapter(adapter), m_frameTreeNodeId(frame_tree_node_id), m_weakFactory(this)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (target_factory_info) {
@@ -543,8 +539,8 @@ ProxyingURLLoaderFactoryQt::~ProxyingURLLoaderFactoryQt()
     m_weakFactory.InvalidateWeakPtrs();
 }
 
-void ProxyingURLLoaderFactoryQt::CreateLoaderAndStart(mojo::PendingReceiver<network::mojom::URLLoader> loader, int32_t routing_id,
-                                                      int32_t request_id, uint32_t options, const network::ResourceRequest &request,
+void ProxyingURLLoaderFactoryQt::CreateLoaderAndStart(mojo::PendingReceiver<network::mojom::URLLoader> loader, int32_t request_id,
+                                                      uint32_t options, const network::ResourceRequest &request,
                                                       mojo::PendingRemote<network::mojom::URLLoaderClient> url_loader_client,
                                                       const net::MutableNetworkTrafficAnnotationTag &traffic_annotation)
 {
@@ -554,7 +550,7 @@ void ProxyingURLLoaderFactoryQt::CreateLoaderAndStart(mojo::PendingReceiver<netw
         m_targetFactory->Clone(target_factory_clone.InitWithNewPipeAndPassReceiver());
 
     // Will manage its own lifetime
-    InterceptedRequest *req = new InterceptedRequest(m_profileAdapter, m_processId, request_id, routing_id, options,
+    InterceptedRequest *req = new InterceptedRequest(m_profileAdapter, m_frameTreeNodeId, request_id, options,
                                                      request, traffic_annotation, std::move(loader),
                                                      std::move(url_loader_client), std::move(target_factory_clone));
     req->Restart();

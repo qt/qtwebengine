@@ -45,7 +45,7 @@
 
 namespace QtWebEngineCore {
 
-void JavaScriptDialogControllerPrivate::dialogFinished(bool accepted, const base::string16 &promptValue)
+void JavaScriptDialogControllerPrivate::dialogFinished(bool accepted, const std::u16string &promptValue)
 {
     // Clear the queue first as this could result in the engine asking us to run another dialog,
     // but hold a shared pointer so the dialog does not get deleted prematurely when running in-process.

@@ -225,7 +225,7 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
         std::vector<blink::mojom::FileChooserFileInfoPtr> chooser_files;
         for (const auto &file : qAsConst(files)) {
             chooser_files.push_back(blink::mojom::FileChooserFileInfo::NewNativeFile(
-                    blink::mojom::NativeFileInfo::New(toFilePath(file), base::string16())));
+                    blink::mojom::NativeFileInfo::New(toFilePath(file), std::u16string())));
         }
 
         if (files.isEmpty())

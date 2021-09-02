@@ -61,14 +61,14 @@ public:
     static JavaScriptDialogManagerQt *GetInstance();
 
     void RunJavaScriptDialog(content::WebContents *, content::RenderFrameHost *, content::JavaScriptDialogType dialog_type,
-                             const base::string16 &messageText, const base::string16 &defaultPromptText,
+                             const std::u16string &messageText, const std::u16string &defaultPromptText,
                              DialogClosedCallback callback,
                              bool *didSuppressMessage) override;
     void RunBeforeUnloadDialog(content::WebContents *web_contents,
                                content::RenderFrameHost *render_frame_host,
                                bool is_reload,
                                DialogClosedCallback callback) override;
-    bool HandleJavaScriptDialog(content::WebContents *, bool accept, const base::string16 *promptOverride) override;
+    bool HandleJavaScriptDialog(content::WebContents *, bool accept, const std::u16string *promptOverride) override;
     void CancelDialogs(content::WebContents *contents, bool /*reset_state*/) override
     {
         takeDialogForContents(contents);

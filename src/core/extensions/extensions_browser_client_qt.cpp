@@ -50,6 +50,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/extensions/api/generated_api_registration.h"
 #include "chrome/browser/profiles/profile.h"
@@ -172,8 +173,8 @@ private:
         auto data = GetResource(resource_id, request.url.host());
 
         std::string *read_mime_type = new std::string;
-        base::PostTaskAndReplyWithResult(
-                FROM_HERE, { base::ThreadPool(), base::MayBlock() },
+        base::ThreadPool::PostTaskAndReplyWithResult(
+                FROM_HERE, { base::MayBlock() },
                 base::BindOnce(&net::GetMimeTypeFromFile, filename, base::Unretained(read_mime_type)),
                 base::BindOnce(&ResourceBundleFileLoader::OnMimeTypeRead, weak_factory_.GetWeakPtr(), std::move(data),
                                base::Owned(read_mime_type)));

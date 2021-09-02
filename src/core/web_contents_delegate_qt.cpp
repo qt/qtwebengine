@@ -513,7 +513,7 @@ void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_h
         return;
     }
     // Qt6: Consider getting rid of the error_description (Chromium already has)
-    base::string16 error_description;
+    std::u16string error_description;
     error_description = error_page::LocalizedError::GetErrorDetails(
                 error_code <= 0 ? error_page::Error::kNetErrorDomain : error_page::Error::kHttpErrorDomain,
                 error_code, false, false);
@@ -603,7 +603,7 @@ void WebContentsDelegateQt::RunFileChooser(content::RenderFrameHost * /*frameHos
 {
     QStringList acceptedMimeTypes;
     acceptedMimeTypes.reserve(params.accept_types.size());
-    for (std::vector<base::string16>::const_iterator it = params.accept_types.begin(); it < params.accept_types.end(); ++it)
+    for (std::vector<std::u16string>::const_iterator it = params.accept_types.begin(); it < params.accept_types.end(); ++it)
         acceptedMimeTypes.append(toQt(*it));
 
     m_filePickerController.reset(createFilePickerController(static_cast<FilePickerController::FileChooserMode>(params.mode),
@@ -616,7 +616,7 @@ void WebContentsDelegateQt::RunFileChooser(content::RenderFrameHost * /*frameHos
 }
 
 bool WebContentsDelegateQt::DidAddMessageToConsole(content::WebContents *source, blink::mojom::ConsoleMessageLevel log_level,
-                                                   const base::string16 &message, int32_t line_no, const base::string16 &source_id)
+                                                   const std::u16string &message, int32_t line_no, const std::u16string &source_id)
 {
     Q_UNUSED(source);
     m_viewClient->javaScriptConsoleMessage(mapToJavascriptConsoleMessageLevel(log_level), toQt(message), static_cast<int>(line_no), toQt(source_id));

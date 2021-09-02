@@ -340,7 +340,7 @@ void FaviconDriverQt::DidFinishNavigation(content::NavigationHandle *navigation_
     FetchFavicon(url, navigation_handle->IsSameDocument());
 }
 
-void FaviconDriverQt::DocumentOnLoadCompletedInMainFrame()
+void FaviconDriverQt::DocumentOnLoadCompletedInMainFrame(content::RenderFrameHost * /*render_frame_host*/)
 {
     m_documentOnLoadCompleted = true;
 }

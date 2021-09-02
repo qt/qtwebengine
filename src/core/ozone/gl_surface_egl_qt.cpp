@@ -237,6 +237,11 @@ bool GLSurfaceEGL::IsAndroidNativeFenceSyncSupported()
      return false;
 }
 
+DisplayType GLSurfaceEGL::GetDisplayType()
+{
+     return DisplayType::DEFAULT;
+}
+
 GLSurfaceEGLQt::GLSurfaceEGLQt(const gfx::Size& size)
     : GLSurfaceQt(size),
       m_surfaceBuffer(0)

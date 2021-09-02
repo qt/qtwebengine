@@ -54,22 +54,22 @@ public:
     void Clear(ui::ClipboardBuffer type) override;
     void ReadAvailableTypes(ui::ClipboardBuffer type,
                             const ui::DataTransferEndpoint *data_dst,
-                            std::vector<base::string16> *types) const override;
-    void ReadText(ui::ClipboardBuffer type, const ui::DataTransferEndpoint *data_dst, base::string16 *result) const override;
+                            std::vector<std::u16string> *types) const override;
+    void ReadText(ui::ClipboardBuffer type, const ui::DataTransferEndpoint *data_dst, std::u16string *result) const override;
     void ReadAsciiText(ui::ClipboardBuffer type, const ui::DataTransferEndpoint *data_dst, std::string *result) const override;
-    void ReadHTML(ui::ClipboardBuffer type, const ui::DataTransferEndpoint *data_dst, base::string16 *markup, std::string *src_url, uint32_t *fragment_start,
+    void ReadHTML(ui::ClipboardBuffer type, const ui::DataTransferEndpoint *data_dst, std::u16string *markup, std::string *src_url, uint32_t *fragment_start,
                   uint32_t *fragment_end) const override;
     void ReadRTF(ui::ClipboardBuffer type, const ui::DataTransferEndpoint *data_dst, std::string *result) const override;
     void ReadImage(ui::ClipboardBuffer buffer, const ui::DataTransferEndpoint *data_dst, ReadImageCallback callback) const override;
-    void ReadCustomData(ui::ClipboardBuffer clipboard_type, const base::string16 &type, const ui::DataTransferEndpoint *data_dst, base::string16 *result) const override;
-    void ReadBookmark(const ui::DataTransferEndpoint *data_dst, base::string16 *title, std::string *url) const override;
+    void ReadCustomData(ui::ClipboardBuffer clipboard_type, const std::u16string &type, const ui::DataTransferEndpoint *data_dst, std::u16string *result) const override;
+    void ReadBookmark(const ui::DataTransferEndpoint *data_dst, std::u16string *title, std::string *url) const override;
     void ReadData(const ui::ClipboardFormatType &format, const ui::DataTransferEndpoint *data_dst, std::string *result) const override;
 #if defined(USE_OZONE)
     bool IsSelectionBufferAvailable() const override;
 #endif
     void OnPreShutdown() override {}
-    void ReadSvg(ui::ClipboardBuffer, const ui::DataTransferEndpoint *, base::string16 *) const override;
-    std::vector<base::string16> ReadAvailablePlatformSpecificFormatNames(ui::ClipboardBuffer buffer, const ui::DataTransferEndpoint *data_dst) const override;
+    void ReadSvg(ui::ClipboardBuffer, const ui::DataTransferEndpoint *, std::u16string *) const override;
+    std::vector<std::u16string> ReadAvailablePlatformSpecificFormatNames(ui::ClipboardBuffer buffer, const ui::DataTransferEndpoint *data_dst) const override;
 
 
     const ui::DataTransferEndpoint *GetSource(ui::ClipboardBuffer buffer) const override;

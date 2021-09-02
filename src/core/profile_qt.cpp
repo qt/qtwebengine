@@ -87,8 +87,7 @@
 namespace QtWebEngineCore {
 
 ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
-    : m_sharedCorsOriginAccessList(content::SharedCorsOriginAccessList::Create())
-    , m_profileIOData(new ProfileIODataQt(this))
+    : m_profileIOData(new ProfileIODataQt(this))
     , m_profileAdapter(profileAdapter)
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     , m_extensionSystem(nullptr)
@@ -218,35 +217,6 @@ content::ClientHintsControllerDelegate *ProfileQt::GetClientHintsControllerDeleg
 content::StorageNotificationService *ProfileQt::GetStorageNotificationService()
 {
     return nullptr;
-}
-
-void ProfileQt::SetCorsOriginAccessListForOrigin(TargetBrowserContexts target_mode,
-                                                 const url::Origin &source_origin,
-                                                 std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
-                                                 std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
-                                                 base::OnceClosure closure)
-{
-    Q_UNUSED(target_mode); // We have no related OTR profiles
-
-    auto barrier_closure = base::BarrierClosure(2, std::move(closure));
-
-    // Keep profile storage partitions' NetworkContexts synchronized.
-    auto profile_setter = base::MakeRefCounted<content::CorsOriginPatternSetter>(
-                source_origin,
-                content::CorsOriginPatternSetter::ClonePatterns(allow_patterns),
-                content::CorsOriginPatternSetter::ClonePatterns(block_patterns),
-                barrier_closure);
-    profile_setter->ApplyToEachStoragePartition(this);
-
-    m_sharedCorsOriginAccessList->SetForOrigin(source_origin,
-                                               std::move(allow_patterns),
-                                               std::move(block_patterns),
-                                               barrier_closure);
-}
-
-content::SharedCorsOriginAccessList *ProfileQt::GetSharedCorsOriginAccessList()
-{
-    return m_sharedCorsOriginAccessList.get();
 }
 
 #if QT_CONFIG(webengine_spellchecker)

@@ -61,7 +61,7 @@ gin::WrapperInfo LoadablePluginPlaceholderQt::kWrapperInfo = {gin::kEmbedderNati
 LoadablePluginPlaceholderQt::LoadablePluginPlaceholderQt(content::RenderFrame* render_frame,
                                                          const blink::WebPluginParams& params,
                                                          const std::string& html_data,
-                                                         const base::string16& title)
+                                                         const std::u16string& title)
     : plugins::LoadablePluginPlaceholder(render_frame, params, html_data)
 {}
 

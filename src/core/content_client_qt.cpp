@@ -373,7 +373,7 @@ gfx::Image &ContentClientQt::GetNativeImageNamed(int resource_id)
     return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
 }
 
-base::string16 ContentClientQt::GetLocalizedString(int message_id)
+std::u16string ContentClientQt::GetLocalizedString(int message_id)
 {
     return l10n_util::GetStringUTF16(message_id);
 }
