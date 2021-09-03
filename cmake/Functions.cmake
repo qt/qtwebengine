@@ -755,7 +755,9 @@ macro(append_compiler_linker_sdk_setup)
             windows_sdk_path=\"${windowsSdkPath}\"
         )
     endif()
+    get_gn_arch(cpu ${TEST_architecture_arch})
     if(LINUX AND CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm")
+
         extend_gn_list_cflag(gnArgArg
             ARG arm_tune
             CFLAG mtune
@@ -767,6 +769,10 @@ macro(append_compiler_linker_sdk_setup)
         extend_gn_list_cflag(gnArgArg
             ARG arm_arch
             CFLAG march
+        )
+        extend_gn_list_cflag(gnArgArg
+            ARG arm_cpu
+            CFLAG mcpu
         )
         extract_cflag(cflag "mfpu")
         get_arm_version(arm_version "${cflag}")
