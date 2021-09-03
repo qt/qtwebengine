@@ -26,8 +26,6 @@ if(NOT ${QtWebEngine_SUPPORT})
     )
     message("-- Support check for QtWebEngine failed: ${QtWebEngine_ERROR}")
     set(QT_FEATURE_qtwebengine_build OFF CACHE BOOL "Build QtWebEngine" FORCE)
-    set(QT_FEATURE_qtwebengine_widgets_build OFF CACHE BOOL "Build QtWebEngineWidgets" FORCE)
-    set(QT_FEATURE_qtwebengine_quick_build OFF CACHE BOOL "Build QtWebEngineQuick" FORCE)
 endif()
 
 if(NOT ${QtPdf_SUPPORT})
@@ -44,6 +42,11 @@ endif()
 
 if(NOT QT_FEATURE_qtwebengine_build AND NOT QT_FEATURE_qtpdf_build)
     return()
+endif()
+
+if(NOT QT_FEATURE_qtwebengine_build)
+    set(QT_FEATURE_qtwebengine_widgets_build OFF CACHE BOOL "Build QtWebEngineWidgets" FORCE)
+    set(QT_FEATURE_qtwebengine_quick_build OFF CACHE BOOL "Build QtWebEngineQuick" FORCE)
 endif()
 
 ##
