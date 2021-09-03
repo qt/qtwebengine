@@ -1,14 +1,17 @@
 #### Libraries
 
-find_package(PkgConfig)
-if(PkgConfig_FOUND)
-    pkg_check_modules(ALSA alsa IMPORTED_TARGET)
-    pkg_check_modules(PULSEAUDIO libpulse>=0.9.10 libpulse-mainloop-glib)
-    pkg_check_modules(GIO gio-2.0)
-    pkg_check_modules(XDAMAGE xdamage)
-endif()
+if(NOT QT_CONFIGURE_RUNNING)
+    find_package(PkgConfig)
+    if(PkgConfig_FOUND)
+        pkg_check_modules(ALSA alsa IMPORTED_TARGET)
+        pkg_check_modules(PULSEAUDIO libpulse>=0.9.10 libpulse-mainloop-glib)
+        pkg_check_modules(GIO gio-2.0)
+        pkg_check_modules(XDAMAGE xdamage)
+    endif()
 
-find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS Positioning WebChannel PrintSupport)
+    find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET
+        OPTIONAL_COMPONENTS Positioning WebChannel PrintSupport)
+endif()
 
 #### Tests
 
