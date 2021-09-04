@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
 
 find_package(Ninja 1.7.2 REQUIRED)
-find_package(Python2 2.7.5 REQUIRED)
 find_package(Nodejs 10.19 REQUIRED)
 find_package(PkgConfig)
 if(PkgConfig_FOUND)
@@ -426,9 +425,13 @@ foreach(arch ${archs})
             )
         endif()
 
+        if(NOT CLANG)
+            list(APPEND gnArgArg
+                enable_location_source=false)
+        endif()
+
         if(WIN32)
             list(APPEND gnArgArg
-                enable_location_source=false
                 enable_session_service=false
                 ninja_use_custom_environment_files=false
                 com_init_check_hook_disabled=true

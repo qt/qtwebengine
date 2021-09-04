@@ -135,7 +135,7 @@ public:
     void FollowRedirect(const std::vector<std::string> &removed_headers,
                         const net::HttpRequestHeaders &modified_headers,
                         const net::HttpRequestHeaders &modified_cors_exempt_headers,
-                        const base::Optional<GURL> &new_url) override;
+                        const absl::optional<GURL> &new_url) override;
     void SetPriority(net::RequestPriority priority, int32_t intra_priority_value) override;
     void PauseReadingBodyFromNet() override;
     void ResumeReadingBodyFromNet() override;
@@ -352,7 +352,7 @@ void InterceptedRequest::ContinueAfterIntercept()
                 net::RedirectInfo redirectInfo = net::RedirectInfo::ComputeRedirectInfo(
                         request_.method, request_.url, request_.site_for_cookies,
                         first_party_url_policy, request_.referrer_policy, request_.referrer.spec(),
-                        net::HTTP_TEMPORARY_REDIRECT, toGurl(info.url), base::nullopt,
+                        net::HTTP_TEMPORARY_REDIRECT, toGurl(info.url), absl::nullopt,
                         false /*insecure_scheme_was_upgraded*/);
 
                 // FIXME: Should probably create a new header.
@@ -431,7 +431,7 @@ void InterceptedRequest::OnComplete(const network::URLLoaderCompletionStatus &st
 void InterceptedRequest::FollowRedirect(const std::vector<std::string> &removed_headers,
                                         const net::HttpRequestHeaders &modified_headers,
                                         const net::HttpRequestHeaders &modified_cors_exempt_headers,
-                                        const base::Optional<GURL> &new_url)
+                                        const absl::optional<GURL> &new_url)
 {
     if (target_loader_)
         target_loader_->FollowRedirect(removed_headers, modified_headers, modified_cors_exempt_headers, new_url);

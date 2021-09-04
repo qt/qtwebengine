@@ -88,7 +88,7 @@ void WebEnginePageRenderFrame::FetchDocumentInnerText(uint64_t requestId,
 
 void WebEnginePageRenderFrame::SetBackgroundColor(uint32_t color)
 {
-    render_frame()->GetWebFrame()->View()->SetBaseBackgroundColorOverride(color);
+    render_frame()->GetWebFrame()->View()->SetBaseBackgroundColorOverrideForInspector(color);
 }
 
 void WebEnginePageRenderFrame::OnDestruct()

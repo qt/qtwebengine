@@ -101,7 +101,7 @@ protected:
     void DispatchProtocolMessage(content::DevToolsAgentHost* agent_host, base::span<const uint8_t> message) override;
 
     void SetPreferences(const std::string& json);
-    virtual void HandleMessageFromDevToolsFrontend(const std::string& message);
+    void HandleMessageFromDevToolsFrontend(base::Value message);
 
 private:
     // WebContentsObserver overrides

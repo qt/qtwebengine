@@ -60,15 +60,6 @@ inline QDebug operator<<(QDebug stream, content::RenderFrameHost *frame)
     return stream << "frame " << frame->GetRoutingID() << " in process " << frame->GetProcess()->GetID();
 }
 
-template<class T>
-inline QDebug operator<<(QDebug stream, const base::Optional<T> &opt)
-{
-    if (opt)
-        return stream << *opt;
-    else
-        return stream << "nullopt";
-}
-
 WebChannelIPCTransportHost::WebChannelIPCTransportHost(content::WebContents *contents, uint worldId, QObject *parent)
     : QWebChannelAbstractTransport(parent)
     , content::WebContentsObserver(contents)

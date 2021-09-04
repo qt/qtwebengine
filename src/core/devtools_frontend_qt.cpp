@@ -301,8 +301,8 @@ void DevToolsFrontendQt::ReadyToCommitNavigation(content::NavigationHandle *navi
         else if (!m_frontendHost)
             m_frontendHost = content::DevToolsFrontendHost::Create(
                         frame,
-                        base::Bind(&DevToolsFrontendQt::HandleMessageFromDevToolsFrontend,
-                                   base::Unretained(this)));
+                        base::BindRepeating(&DevToolsFrontendQt::HandleMessageFromDevToolsFrontend,
+                                            base::Unretained(this)));
     }
 }
 
@@ -374,27 +374,35 @@ void DevToolsFrontendQt::CreateJsonPreferences(bool clear)
     m_prefStore = scoped_refptr<PersistentPrefStore>(jsonPrefStore);
 }
 
-void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &message)
+void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(base::Value message)
 {
-    if (!m_agentHost)
+    const std::string *method_ptr = nullptr;
+    base::Value *params_value = nullptr;
+    if (message.is_dict()) {
+        method_ptr = message.FindStringKey("method");
+        params_value = message.FindKey("params");
+    }
+    if (!method_ptr || (params_value && !params_value->is_list())) {
+        LOG(ERROR) << "Invalid message was sent to embedder: " << message;
         return;
-    std::string method;
-    base::ListValue *params = nullptr;
-    base::DictionaryValue *dict = nullptr;
-    std::unique_ptr<base::Value> parsed_message = base::JSONReader::ReadDeprecated(message);
-    if (!parsed_message || !parsed_message->GetAsDictionary(&dict) || !dict->GetString("method", &method))
-        return;
-    int request_id = 0;
-    dict->GetInteger("id", &request_id);
-    dict->GetList("params", &params);
+    }
+    base::Value empty_params(base::Value::Type::LIST);
+    if (!params_value)
+        params_value = &empty_params;
+
+    int request_id = message.FindIntKey("id").value_or(0);
+    base::ListValue *params;
+    params_value->GetAsList(&params);
+    const std::string &method = *method_ptr;
 
     if (method == "dispatchProtocolMessage" && params && params->GetSize() == 1) {
         std::string protocol_message;
         if (!params->GetString(0, &protocol_message))
             return;
-        m_agentHost->DispatchProtocolMessage(this, base::as_bytes(base::make_span(protocol_message)));
+        if (m_agentHost)
+            m_agentHost->DispatchProtocolMessage(this, base::as_bytes(base::make_span(protocol_message)));
     } else if (method == "loadCompleted") {
-        web_contents()->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16("DevToolsAPI.setUseSoftMenu(true);"),
+        web_contents()->GetMainFrame()->ExecuteJavaScript(u"DevToolsAPI.setUseSoftMenu(true);",
                                                           base::NullCallback());
     } else if (method == "loadNetworkResource" && params->GetSize() == 3) {
         // TODO(pfeldman): handle some of the embedder messages in content.
@@ -457,8 +465,7 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
             SendMessageAck(request_id, &response);
             return;
         } else {
-            auto *partition = content::BrowserContext::GetStoragePartitionForUrl(
-                                  web_contents()->GetBrowserContext(), gurl);
+            auto *partition = web_contents()->GetBrowserContext()->GetStoragePartitionForUrl(gurl);
             network_url_loader_factory = partition->GetURLLoaderFactoryForBrowserProcess();
             url_loader_factory = network_url_loader_factory.get();
         }
@@ -491,7 +498,7 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
     } else if (method == "clearPreferences") {
         ClearPreferences();
     } else if (method == "requestFileSystems") {
-        web_contents()->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16("DevToolsAPI.fileSystemsLoaded([]);"),
+        web_contents()->GetMainFrame()->ExecuteJavaScript(u"DevToolsAPI.fileSystemsLoaded([]);",
                                                           base::NullCallback());
     } else if (method == "reattach") {
         if (!m_agentHost)
@@ -561,8 +568,8 @@ void DevToolsFrontendQt::SetEyeDropperActive(bool active)
     if (active) {
         m_eyeDropper.reset(new DevToolsEyeDropper(
                                m_inspectedContents,
-                               base::Bind(&DevToolsFrontendQt::ColorPickedInEyeDropper,
-                                          base::Unretained(this))));
+                               base::BindRepeating(&DevToolsFrontendQt::ColorPickedInEyeDropper,
+                                                   base::Unretained(this))));
     } else {
         m_eyeDropper.reset();
     }

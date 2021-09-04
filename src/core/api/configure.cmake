@@ -95,9 +95,9 @@ qt_feature("webengine-native-spellchecker" PUBLIC
 qt_feature("webengine-extensions" PUBLIC
     SECTION "WebEngine"
     LABEL "Extensions"
-    PURPOSE "Enables Chromium extensions within certain limits. Currently used for enabling the pdf viewer."
-    AUTODETECT QT_FEATURE_webengine_printing_and_pdf
-    CONDITION QT_FEATURE_webengine_printing_and_pdf
+    PURPOSE "Enables Chromium extensions within certain limits. Currently used by the pdf viewer and hangout webrtc extension."
+    AUTODETECT ON
+    CONDITION QT_FEATURE_webengine_printing_and_pdf OR QT_FEATURE_webengine_printing_and_pdf
 )
 qt_feature("webengine-webrtc" PRIVATE
     LABEL "WebRTC"

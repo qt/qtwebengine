@@ -69,6 +69,7 @@ public:
 #endif
     void OnPreShutdown() override {}
     void ReadSvg(ui::ClipboardBuffer, const ui::DataTransferEndpoint *, std::u16string *) const override;
+    void ReadPng(ui::ClipboardBuffer, const ui::DataTransferEndpoint *, ui::Clipboard::ReadPngCallback) const override;
     std::vector<std::u16string> ReadAvailablePlatformSpecificFormatNames(ui::ClipboardBuffer buffer, const ui::DataTransferEndpoint *data_dst) const override;
 
 

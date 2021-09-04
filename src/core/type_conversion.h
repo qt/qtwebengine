@@ -76,24 +76,23 @@ class X509Certificate;
 
 namespace QtWebEngineCore {
 
+#if defined(OS_WIN)
+inline QString toQt(const std::wstring &string)
+{
+    return QString::fromStdWString(string);
+}
+#endif
+
 inline QString toQt(const std::u16string &string)
 {
-#if defined(OS_WIN)
-    return QString::fromStdWString(string);
-#else
-    return QString::fromUtf16(reinterpret_cast<const char16_t *>(string.data()), string.size());
-#endif
+    return QString::fromStdU16String(string);
 }
 
-inline QString toQt(const base::Optional<std::u16string> &string)
+inline QString toQt(const absl::optional<std::u16string> &string)
 {
     if (!string.has_value())
         return QString();
-#if defined(OS_WIN)
-    return QString::fromStdWString(string->data());
-#else
-    return QString::fromUtf16(string->data());
-#endif
+    return QString::fromStdU16String(*string);
 }
 
 inline QString toQString(const std::string &string)
@@ -114,18 +113,14 @@ inline QString toQt(const std::string &string)
 
 inline std::u16string toString16(const QString &qString)
 {
-#if defined(OS_WIN)
-    return std::u16string(qString.toStdWString());
-#else
-    return std::u16string((const char16_t *)qString.utf16());
-#endif
+    return qString.toStdU16String();
 }
 
-inline base::Optional<std::u16string> toOptionalString16(const QString &qString)
+inline absl::optional<std::u16string> toOptionalString16(const QString &qString)
 {
     if (qString.isNull())
-        return base::nullopt;
-    return base::make_optional(toString16(qString));
+        return absl::nullopt;
+    return absl::make_optional(qString.toStdU16String());
 }
 
 inline QUrl toQt(const GURL &url)

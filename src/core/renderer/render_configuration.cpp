@@ -54,8 +54,8 @@ void RenderConfiguration::RegisterMojoInterfaces(
         blink::AssociatedInterfaceRegistry *associated_interfaces)
 {
     associated_interfaces->AddInterface(
-            base::Bind(&RenderConfiguration::OnRendererConfigurationAssociatedRequest,
-                       base::Unretained(this)));
+            base::BindRepeating(&RenderConfiguration::OnRendererConfigurationAssociatedRequest,
+                                base::Unretained(this)));
 }
 
 void RenderConfiguration::UnregisterMojoInterfaces(

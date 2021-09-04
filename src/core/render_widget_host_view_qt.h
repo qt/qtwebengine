@@ -125,8 +125,8 @@ public:
                                            content::RenderWidgetHostViewBase *target_view,
                                            gfx::PointF *transformed_point) override;
     void Destroy() override;
-    void SetTooltipText(const std::u16string &tooltip_text) override;
-    void DisplayTooltipText(const std::u16string& tooltip_text) override;
+    void UpdateTooltipUnderCursor(const std::u16string &tooltip_text) override;
+    void UpdateTooltip(const std::u16string& tooltip_text) override;
     void WheelEventAck(const blink::WebMouseWheelEvent &event,
                        blink::mojom::InputEventResultState ack_result) override;
     void GestureEventAck(const blink::WebGestureEvent &event,
@@ -153,7 +153,7 @@ public:
     void DidStopFlinging() override;
     std::unique_ptr<content::SyntheticGestureTarget> CreateSyntheticGestureTarget() override;
     ui::Compositor *GetCompositor() override;
-    base::Optional<content::DisplayFeature> GetDisplayFeature() override;
+    absl::optional<content::DisplayFeature> GetDisplayFeature() override;
     void SetDisplayFeatureForTesting(const content::DisplayFeature*) override;
 #if defined(OS_MAC)
     void SetActive(bool active) override { QT_NOT_YET_IMPLEMENTED }
@@ -198,7 +198,7 @@ public:
     ui::TextInputType getTextInputType() const;
 
     void synchronizeVisualProperties(
-            const base::Optional<viz::LocalSurfaceId> &childSurfaceId);
+            const absl::optional<viz::LocalSurfaceId> &childSurfaceId);
 
 private:
     friend class DelegatedFrameHostClientQt;

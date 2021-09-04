@@ -158,7 +158,7 @@ void URLRequestCustomJobProxy::readyRead()
 }
 
 void URLRequestCustomJobProxy::initialize(GURL url, std::string method,
-                                          base::Optional<url::Origin> initiator,
+                                          absl::optional<url::Origin> initiator,
                                           std::map<std::string, std::string> headers)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

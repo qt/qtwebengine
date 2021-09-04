@@ -93,8 +93,8 @@ void ClientCertSelectController::select(int index)
             scoped_refptr<net::X509Certificate> cert = certInfo->certificate();
             net::ClientCertIdentity::SelfOwningAcquirePrivateKey(
                         std::move(certInfo),
-                        base::Bind(&content::ClientCertificateDelegate::ContinueWithCertificate,
-                                   base::Passed(std::move(m_delegate)), std::move(cert)));
+                        base::BindOnce(&content::ClientCertificateDelegate::ContinueWithCertificate,
+                                       std::move(m_delegate), std::move(cert)));
             return;
         }
         std::vector<std::string> pem_encoded;
@@ -119,8 +119,8 @@ void ClientCertSelectController::select(const QSslCertificate &certificate)
             m_selected = true;
             net::ClientCertIdentity::SelfOwningAcquirePrivateKey(
                         std::move(certInfo),
-                        base::Bind(&content::ClientCertificateDelegate::ContinueWithCertificate,
-                                   base::Passed(std::move(m_delegate)), std::move(cert)));
+                        base::BindOnce(&content::ClientCertificateDelegate::ContinueWithCertificate,
+                                       std::move(m_delegate), std::move(cert)));
             return;
         }
     }

@@ -256,22 +256,21 @@ void FaviconDriverQt::DidUpdateFaviconURL(
 
     // We update |m_faviconUrls| even if the list is believed to be partial
     // (checked below), because callers of our getter favicon_urls() expect so.
-    std::vector<blink::mojom::FaviconURL> faviconUrls;
+    std::vector<blink::mojom::FaviconURLPtr> faviconUrls;
     for (const auto &candidate : candidates)
-        faviconUrls.push_back(*candidate);
-    m_faviconUrls = faviconUrls;
+        faviconUrls.push_back(candidate.Clone());
+    m_faviconUrls = std::move(faviconUrls);
 
     if (!m_documentOnLoadCompleted)
         return;
 
     OnUpdateCandidates(entry->GetURL(),
-                       favicon::FaviconURLsFromContentFaviconURLs(
-                               m_faviconUrls.value_or(std::vector<blink::mojom::FaviconURL>())),
+                       favicon::FaviconURLsFromContentFaviconURLs(candidates),
                        m_manifestUrl);
 }
 
 void FaviconDriverQt::DidUpdateWebManifestURL(content::RenderFrameHost *target_frame,
-                                              const base::Optional<GURL> &manifest_url)
+                                              const absl::optional<GURL> &manifest_url)
 {
     Q_UNUSED(target_frame);
 

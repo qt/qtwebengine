@@ -175,12 +175,12 @@ void ExtensionSystemQt::LoadExtension(std::string extension_id, std::unique_ptr<
         LOG(ERROR) << error;
 
     base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-            base::Bind(&InfoMap::AddExtension,
-                       base::Unretained(info_map()),
-                       base::RetainedRef(extension),
-                       base::Time::Now(),
-                       true,
-                       false));
+            base::BindOnce(&InfoMap::AddExtension,
+                           base::Unretained(info_map()),
+                           base::RetainedRef(extension),
+                           base::Time::Now(),
+                           true,
+                           false));
     extension_registry_->AddEnabled(extension.get());
 
     NotifyExtensionLoaded(extension.get());
@@ -204,9 +204,9 @@ void ExtensionSystemQt::NotifyExtensionLoaded(const Extension *extension)
     // extension.
     RegisterExtensionWithRequestContexts(
             extension,
-            base::Bind(&ExtensionSystemQt::OnExtensionRegisteredWithRequestContexts,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       base::WrapRefCounted(extension)));
+            base::BindRepeating(&ExtensionSystemQt::OnExtensionRegisteredWithRequestContexts,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                base::WrapRefCounted(extension)));
 
     // Tell renderers about the loaded extension.
     renderer_helper_->OnExtensionLoaded(*extension);
@@ -361,7 +361,7 @@ void ExtensionSystemQt::Init(bool extensions_enabled)
         ready_.Signal();
 
         {
-            std::string pdf_manifest = ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_PDF_MANIFEST).as_string();
+            std::string pdf_manifest = ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(IDR_PDF_MANIFEST);
             base::ReplaceFirstSubstringAfterOffset(&pdf_manifest, 0, "<NAME>", "chromium-pdf");
 
             std::unique_ptr<base::DictionaryValue> pdfManifestDict = ParseManifest(pdf_manifest);
@@ -374,7 +374,7 @@ void ExtensionSystemQt::Init(bool extensions_enabled)
 
 #if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
         {
-            std::string hangout_manifest = ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_HANGOUT_SERVICES_MANIFEST).as_string();
+            std::string hangout_manifest = ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(IDR_HANGOUT_SERVICES_MANIFEST);
             std::unique_ptr<base::DictionaryValue> hangoutManifestDict = ParseManifest(hangout_manifest);
             base::FilePath path;
             base::PathService::Get(base::DIR_QT_LIBRARY_DATA, &path);
@@ -411,9 +411,9 @@ void ExtensionSystemQt::RegisterExtensionWithRequestContexts(const Extension *ex
 
     base::PostTaskAndReply(
             FROM_HERE, {BrowserThread::IO},
-            base::Bind(&InfoMap::AddExtension, info_map(),
-                       base::RetainedRef(extension), install_time, incognito_enabled,
-                       notifications_disabled),
+            base::BindOnce(&InfoMap::AddExtension, info_map(),
+                           base::RetainedRef(extension), install_time, incognito_enabled,
+                           notifications_disabled),
             std::move(callback));
 }
 
@@ -422,7 +422,7 @@ void ExtensionSystemQt::UnregisterExtensionWithRequestContexts(const std::string
 {
     base::PostTask(
         FROM_HERE, {BrowserThread::IO},
-        base::Bind(&InfoMap::RemoveExtension, info_map(), extension_id, reason));
+        base::BindOnce(&InfoMap::RemoveExtension, info_map(), extension_id, reason));
 }
 
 bool ExtensionSystemQt::is_ready() const

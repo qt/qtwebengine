@@ -207,7 +207,7 @@ void UserResourceController::runScripts(QtWebEngineCore::UserScriptData::Injecti
             continue;
         blink::WebScriptSource source(blink::WebString::FromUTF8(script.source), script.url);
         if (script.worldId)
-            frame->ExecuteScriptInIsolatedWorld(script.worldId, source);
+            frame->ExecuteScriptInIsolatedWorld(script.worldId, source, blink::BackForwardCacheAware::kAllow); // FIXME, check
         else
             frame->ExecuteScript(source);
     }
@@ -390,7 +390,7 @@ void UserResourceController::RegisterMojoInterfaces(
         blink::AssociatedInterfaceRegistry *associated_interfaces)
 {
     associated_interfaces->AddInterface(
-            base::Bind(&UserResourceController::BindReceiver, base::Unretained(this)));
+            base::BindRepeating(&UserResourceController::BindReceiver, base::Unretained(this)));
 }
 
 void UserResourceController::UnregisterMojoInterfaces(

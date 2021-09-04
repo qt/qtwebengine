@@ -58,6 +58,7 @@ public:
     // |cancel_callback| argument. This method must be called on the UI thread.
     void DisplayNotification(const std::string& notification_id,
                              const GURL& origin,
+                             const GURL& document_url,
                              const blink::PlatformNotificationData& notificationData,
                              const blink::NotificationResources& notificationResources) override;
 

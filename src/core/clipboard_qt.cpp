@@ -357,6 +357,12 @@ void ClipboardQt::ReadImage(ui::ClipboardBuffer type,
     return std::move(callback).Run(bitmap);
 }
 
+void ClipboardQt::ReadPng(ui::ClipboardBuffer type, const ui::DataTransferEndpoint *, ui::Clipboard::ReadPngCallback callback) const
+{
+    // TODO(crbug.com/1201018): Implement this.
+    NOTIMPLEMENTED();
+}
+
 void ClipboardQt::ReadCustomData(ui::ClipboardBuffer clipboard_type, const std::u16string &type,
                                  const ui::DataTransferEndpoint *data_dst,
                                  std::u16string *result) const

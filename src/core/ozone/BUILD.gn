@@ -21,6 +21,7 @@ source_set("qt") {
 
   deps = [
     "//base",
+    "//ui/base:buildflags",
     "//ui/ozone:ozone_base",
     "//ui/ozone/common",
   ]

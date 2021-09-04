@@ -189,12 +189,11 @@ std::string AccessibilityTreeFormatterQt::ProcessTreeForOutput(const base::Dicti
         WriteAttribute(true, base::StringPrintf("%s", role_value.c_str()), &line);
 
     const base::ListValue *states_value = nullptr;
-    node.GetList("states", &states_value);
-    if (states_value) {
-        for (const auto &state : *states_value) {
+    if (node.GetList("states", &states_value)) {
+        for (const auto &state : states_value->GetList()) {
             std::string state_value;
             if (state.GetAsString(&state_value))
-                WriteAttribute(true, state_value, &line);
+                WriteAttribute(false, state_value, &line);
         }
     }
 

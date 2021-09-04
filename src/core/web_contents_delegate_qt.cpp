@@ -180,6 +180,10 @@ static bool shouldUseActualURL(content::NavigationEntry *entry)
     if (entry->GetPageType() != content::PAGE_TYPE_NORMAL)
         return false;
 
+    // Show the virtual URL based on custom base, if present
+    if (!entry->GetBaseURLForDataURL().is_empty())
+        return false;
+
     // Show invalid data URL
     std::string mime_type, charset, data;
     if (!net::DataURL::Parse(entry->GetURL(), &mime_type, &charset, &data))
@@ -215,8 +219,8 @@ void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source,
     }
 }
 
-QUrl WebContentsDelegateQt::url(content::WebContents* source) const {
-
+QUrl WebContentsDelegateQt::url(content::WebContents *source) const
+{
     content::NavigationEntry *entry = source->GetController().GetVisibleEntry();
     QUrl newUrl;
     if (entry) {
@@ -227,7 +231,7 @@ QUrl WebContentsDelegateQt::url(content::WebContents* source) const {
             GURL strippedUrl = net::SimplifyUrlForRequest(url);
             newUrl = QUrl(QString("%1:%2").arg(content::kViewSourceScheme, QString::fromStdString(strippedUrl.spec())));
         }
-        // If there is a visible entry there are special cases when we dont wan't to use the actual URL
+        // If there is a visible entry there are special cases where we dont wan't to use the actual URL
         if (newUrl.isEmpty())
             newUrl = shouldUseActualURL(entry) ? toQt(url) : toQt(entry->GetVirtualURL());
     }

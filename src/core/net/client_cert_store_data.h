@@ -40,8 +40,8 @@
 #ifndef CLIENT_CERT_STORE_DATA_H
 #define CLIENT_CERT_STORE_DATA_H
 
-#include "qtwebenginecoreglobal.h"
-#include "qtnetworkglobal.h"
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
+#include <QtNetwork/qtnetworkglobal.h>
 
 #if QT_CONFIG(ssl)
 #include "base/memory/ref_counted.h"

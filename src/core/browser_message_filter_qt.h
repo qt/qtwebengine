@@ -84,7 +84,7 @@ private:
                                 const GURL &origin_url,
                                 const GURL &top_origin_url,
                                 int storage_type,
-                                base::Callback<void(bool)> callback);
+                                base::OnceCallback<void(bool)> callback);
 
     ProfileIODataQt *m_profileData;
 };

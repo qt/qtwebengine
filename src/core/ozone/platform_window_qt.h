@@ -71,7 +71,7 @@ public:
     void Minimize() override { }
     void Restore() override { }
     PlatformWindowState GetPlatformWindowState() const override { return PlatformWindowState::kUnknown; }
-    void SetCursor(PlatformCursor) override { }
+    void SetCursor(scoped_refptr<PlatformCursor>) override { }
     void MoveCursorTo(const gfx::Point&) override { }
     void ConfineCursorToBounds(const gfx::Rect&) override { }
     void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override { }

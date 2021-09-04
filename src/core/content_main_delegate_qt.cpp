@@ -219,7 +219,7 @@ void ContentMainDelegateQt::PreSandboxStartup()
 #endif
 
 #if defined(OS_MAC)
-    if (base::FeatureList::IsEnabled(features::kMacV2GPUSandbox)) {
+    {
         TRACE_EVENT0("gpu", "Initialize VideoToolbox");
         media::InitializeVideoToolbox();
     }

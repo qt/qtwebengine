@@ -221,9 +221,7 @@ QAccessible::Role BrowserAccessibilityQt::role() const
 
     // Internal roles (matching auralinux and win)
     case ax::mojom::Role::kKeyboard:
-    case ax::mojom::Role::kIgnored:
     case ax::mojom::Role::kImeCandidate:
-    case ax::mojom::Role::kPresentational:
         return QAccessible::NoRole;
 
     // Used by Chromium to distinguish between the root of the tree
@@ -837,7 +835,7 @@ QAccessibleInterface *BrowserAccessibilityQt::cellAt(int row, int column) const
     if (row < 0 || row >= rows || column < 0 || column >= columns)
       return 0;
 
-    base::Optional<int> cell_id = GetCellId(row, column);
+    absl::optional<int> cell_id = GetCellId(row, column);
     BrowserAccessibility* cell = cell_id ? manager()->GetFromID(*cell_id) : nullptr;
     if (cell) {
       QAccessibleInterface *iface = static_cast<BrowserAccessibilityQt*>(cell);

@@ -248,11 +248,11 @@ int BrowserMainPartsQt::PreEarlyInitialization()
     return content::RESULT_CODE_NORMAL_EXIT;
 }
 
-void BrowserMainPartsQt::PreMainMessageLoopStart()
+void BrowserMainPartsQt::PreCreateMainMessageLoop()
 {
 }
 
-void BrowserMainPartsQt::PostMainMessageLoopStart()
+void BrowserMainPartsQt::PostCreateMainMessageLoop()
 {
     if (!device_event_log::IsInitialized())
         device_event_log::Initialize(0 /* default max entries */);

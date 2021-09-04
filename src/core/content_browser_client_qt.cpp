@@ -40,7 +40,6 @@
 #include "content_browser_client_qt.h"
 
 #include "base/files/file_util.h"
-#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
@@ -192,9 +191,6 @@ bool IsHandledProtocol(base::StringPiece scheme)
         content::kChromeUIScheme,
         url::kDataScheme,
         url::kAboutScheme,
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-        url::kFtpScheme,
-#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
         url::kBlobScheme,
         url::kFileSystemScheme,
         url::kQrcScheme,
@@ -626,7 +622,7 @@ bool ContentBrowserClientQt::WillCreateRestrictedCookieManager(network::mojom::R
 
 bool ContentBrowserClientQt::AllowAppCache(const GURL &manifest_url,
                                            const GURL &first_party,
-                                           const base::Optional<url::Origin> &top_frame_origin,
+                                           const absl::optional<url::Origin> &top_frame_origin,
                                            content::BrowserContext *context)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -638,7 +634,7 @@ bool ContentBrowserClientQt::AllowAppCache(const GURL &manifest_url,
 content::AllowServiceWorkerResult
 ContentBrowserClientQt::AllowServiceWorker(const GURL &scope,
                                            const GURL &site_for_cookies,
-                                           const base::Optional<url::Origin> & /*top_frame_origin*/,
+                                           const absl::optional<url::Origin> & /*top_frame_origin*/,
                                            const GURL & /*script_url*/,
                                            content::BrowserContext *context)
 {
@@ -705,7 +701,7 @@ bool ContentBrowserClientQt::HandleExternalProtocol(const GURL &url,
         bool is_main_frame,
         ui::PageTransition page_transition,
         bool has_user_gesture,
-        const base::Optional<url::Origin> &initiating_origin,
+        const absl::optional<url::Origin> &initiating_origin,
         mojo::PendingRemote<network::mojom::URLLoaderFactory> *out_factory)
 {
     Q_UNUSED(child_id);
@@ -1103,7 +1099,7 @@ void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int
 
     if (install_file_scheme && factories->find(url::kFileScheme) == factories->end()) {
         auto file_factory = content::CreateFileURLLoaderFactory(profile->GetPath(),
-                                                                content::BrowserContext::GetSharedCorsOriginAccessList(profile));
+                                                                profile->GetSharedCorsOriginAccessList());
         factories->emplace(url::kFileScheme, std::move(file_factory));
     }
 
@@ -1174,7 +1170,7 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
         int render_process_id,
         URLLoaderFactoryType type,
         const url::Origin &request_initiator,
-        base::Optional<int64_t> navigation_id,
+        absl::optional<int64_t> navigation_id,
         ukm::SourceIdObj ukm_source_id,
         mojo::PendingReceiver<network::mojom::URLLoaderFactory> *factory_receiver,
         mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient> *header_client,

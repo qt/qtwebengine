@@ -68,8 +68,8 @@ public:
     ~BrowserMainPartsQt() override = default;
 
     int PreEarlyInitialization() override;
-    void PreMainMessageLoopStart() override;
-    void PostMainMessageLoopStart() override;
+    void PreCreateMainMessageLoop() override;
+    void PostCreateMainMessageLoop() override;
     int PreMainMessageLoopRun() override;
     void PostMainMessageLoopRun() override;
     int PreCreateThreads() override;

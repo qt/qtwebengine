@@ -42,11 +42,13 @@
 #include <math.h>
 
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/run_loop.h"
+#include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -314,26 +316,14 @@ static void setupProxyPac(base::CommandLine *commandLine)
     }
 }
 
-static bool waitForViz = false;
-static void completeVizCleanup()
-{
-    waitForViz = false;
-}
-
 static void cleanupVizProcess()
 {
     auto gpuChildThread = content::GpuChildThread::instance();
     if (!gpuChildThread)
         return;
-    auto vizMain = gpuChildThread->viz_main();
-    auto vizCompositorThreadRunner = vizMain->viz_compositor_thread_runner();
-    if (!vizCompositorThreadRunner)
-        return;
-    waitForViz = true;
     content::GetHostFrameSinkManager()->SetConnectionLostCallback(base::DoNothing());
     auto factory = static_cast<content::VizProcessTransportFactory*>(content::ImageTransportFactory::GetInstance());
     factory->PrepareForShutDown();
-    vizCompositorThreadRunner->CleanupForShutdown(base::BindOnce(&completeVizCleanup));
 }
 
 static QStringList parseEnvCommandLine(const QString &cmdLine)
@@ -446,10 +436,6 @@ void WebEngineContext::destroy()
     // on IO thread (triggered by ~BrowserMainRunner). But by that time the UI
     // task runner is not working anymore so we need to do this earlier.
     cleanupVizProcess();
-    while (waitForViz) {
-        flushMessages();
-        QThread::msleep(50);
-    }
     destroyGpuProcess();
     // Flush the UI message loop before quitting.
     flushMessages();
@@ -773,7 +759,9 @@ WebEngineContext::WebEngineContext()
 #endif
 #endif //QT_CONFIG(opengl)
     } else {
+        parsedCommandLine->AppendSwitchASCII(switches::kUseGL, "disabled");
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);
+        parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
     }
 
     registerMainThreadFactories();
@@ -793,8 +781,8 @@ WebEngineContext::WebEngineContext()
     mojoConfiguration.is_broker_process = true;
     mojo::core::Init(mojoConfiguration);
 
-    // This block mirrors ContentMainRunnerImpl::RunServiceManager():
-    m_mainDelegate->PreCreateMainMessageLoop();
+    // This block mirrors ContentMainRunnerImpl::RunBrowser():
+    m_mainDelegate->PreBrowserMain();
     base::MessagePump::OverrideMessagePumpForUIFactory(messagePumpFactory);
     content::BrowserTaskExecutor::Create();
     m_mainDelegate->PostEarlyInitialization(false);
@@ -839,7 +827,7 @@ WebEngineContext::WebEngineContext()
     // be created from the FILE thread, and that GetPluginInfoArray is synchronous, it
     // can't loads plugins synchronously from the IO thread to serve the render process' request
     // and we need to make sure that it happened beforehand.
-    content::PluginService::GetInstance()->GetPlugins(base::Bind(&dummyGetPluginCallback));
+    content::PluginService::GetInstance()->GetPlugins(base::BindOnce(&dummyGetPluginCallback));
 #endif
 
 #if QT_CONFIG(webengine_printing_and_pdf)
@@ -903,7 +891,7 @@ base::CommandLine* WebEngineContext::commandLine() {
         argv.resize(appArgs.size());
 #if defined(Q_OS_WIN)
         for (int i = 0; i < appArgs.size(); ++i)
-            argv[i] = toString16(appArgs[i]);
+            argv[i] = appArgs[i].toStdWString();
 #else
         for (int i = 0; i < appArgs.size(); ++i)
             argv[i] = appArgs[i].toStdString();

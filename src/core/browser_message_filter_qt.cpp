@@ -85,14 +85,14 @@ void BrowserMessageFilterQt::OnRequestStorageAccessSync(int render_frame_id,
                                                         IPC::Message* reply_msg)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    base::Callback<void(bool)> callback = base::Bind(
+    auto callback = base::BindOnce(
             &BrowserMessageFilterQt::OnRequestStorageAccessSyncResponse,
             base::WrapRefCounted(this), reply_msg);
     OnRequestStorageAccess(render_frame_id,
                            origin_url,
                            top_origin_url,
                            storage_type,
-                           callback);
+                           std::move(callback));
 }
 
 void BrowserMessageFilterQt::OnRequestStorageAccessSyncResponse(IPC::Message *reply_msg, bool allowed)
@@ -108,14 +108,14 @@ void BrowserMessageFilterQt::OnRequestStorageAccessAsync(int render_frame_id,
                                                          int storage_type)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    base::Callback<void(bool)> callback = base::Bind(
+    auto callback = base::BindOnce(
             &BrowserMessageFilterQt::OnRequestStorageAccessAsyncResponse,
             base::WrapRefCounted(this), render_frame_id, request_id);
     OnRequestStorageAccess(render_frame_id,
                            origin_url,
                            top_origin_url,
                            storage_type,
-                           callback);
+                           std::move(callback));
 }
 
 void BrowserMessageFilterQt::OnRequestStorageAccessAsyncResponse(int render_frame_id,
@@ -129,12 +129,12 @@ void BrowserMessageFilterQt::OnRequestStorageAccess(int /*render_frame_id*/,
                                                     const GURL &origin_url,
                                                     const GURL &top_origin_url,
                                                     int /*storage_type*/,
-                                                    base::Callback<void(bool)> callback)
+                                                    base::OnceCallback<void(bool)> callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     bool allowed = m_profileData->canGetCookies(toQt(top_origin_url), toQt(origin_url));
 
-    callback.Run(allowed);
+    std::move(callback).Run(allowed);
 }
 
 } // namespace QtWebEngineCore

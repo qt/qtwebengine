@@ -145,7 +145,7 @@ void LoginDelegateQt::sendAuthToRequester(bool success, const QString &user, con
         if (success && web_contents())
             std::move(m_auth_required_callback).Run(net::AuthCredentials(toString16(user), toString16(password)));
         else
-            std::move(m_auth_required_callback).Run(base::nullopt);
+            std::move(m_auth_required_callback).Run(absl::nullopt);
     }
 }
 

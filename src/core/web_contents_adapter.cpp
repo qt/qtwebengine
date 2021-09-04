@@ -338,7 +338,7 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
         std::unique_ptr<content::NavigationEntry> entry = content::NavigationController::CreateNavigationEntry(
             toGurl(virtualUrl),
             content::Referrer(toGurl(referrerUrl), static_cast<network::mojom::ReferrerPolicy>(referrerPolicy)),
-            base::nullopt, // optional initiator_origin
+            absl::nullopt, // optional initiator_origin
             // Use a transition type of reload so that we don't incorrectly
             // increase the typed count.
             ui::PAGE_TRANSITION_RELOAD,
@@ -529,7 +529,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     Q_ASSERT(rvh);
     if (!rvh->IsRenderViewLive())
         static_cast<content::WebContentsImpl*>(m_webContents.get())->CreateRenderViewForRenderManager(
-                rvh, base::nullopt, nullptr);
+                rvh, absl::nullopt, nullptr);
 
     m_webContentsDelegate->RenderViewHostChanged(nullptr, rvh);
 
@@ -1116,7 +1116,7 @@ void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileN
 {
     CHECK_INITIALIZED();
     content::BrowserContext *bctx = m_webContents->GetBrowserContext();
-    content::DownloadManager *dlm =  content::BrowserContext::GetDownloadManager(bctx);
+    content::DownloadManager *dlm =  bctx->GetDownloadManager();
     DownloadManagerDelegateQt *dlmd = m_profileAdapter->downloadManagerDelegate();
 
     if (!dlm)
@@ -1319,14 +1319,14 @@ void WebContentsAdapter::printToPDF(const QPageLayout &pageLayout, const QPageRa
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
     CHECK_INITIALIZED();
-    PrintViewManagerQt::PrintToPDFFileCallback callback = base::Bind(&callbackOnPdfSavingFinished,
-                                                                m_adapterClient,
-                                                                filePath);
+    PrintViewManagerQt::PrintToPDFFileCallback callback = base::BindOnce(&callbackOnPdfSavingFinished,
+                                                                         m_adapterClient,
+                                                                         filePath);
     PrintViewManagerQt::FromWebContents(m_webContents.get())->PrintToPDFFileWithCallback(pageLayout,
                                                                                          pageRanges,
                                                                                          true,
                                                                                          filePath,
-                                                                                         callback);
+                                                                                         std::move(callback));
 #endif // QT_CONFIG(webengine_printing_and_pdf)
 }
 
@@ -1337,14 +1337,14 @@ quint64 WebContentsAdapter::printToPDFCallbackResult(const QPageLayout &pageLayo
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
     CHECK_INITIALIZED(0);
-    PrintViewManagerQt::PrintToPDFCallback callback = base::Bind(&callbackOnPrintingFinished,
-                                                                 m_adapterClient,
-                                                                 m_nextRequestId);
+    PrintViewManagerQt::PrintToPDFCallback callback = base::BindOnce(&callbackOnPrintingFinished,
+                                                                     m_adapterClient,
+                                                                     m_nextRequestId);
     PrintViewManagerQt::FromWebContents(m_webContents.get())->PrintToPDFWithCallback(pageLayout,
                                                                                      pageRanges,
                                                                                      colorMode,
                                                                                      useCustomMargins,
-                                                                                     callback);
+                                                                                     std::move(callback));
     return m_nextRequestId++;
 #else
     Q_UNUSED(pageLayout);
@@ -1426,8 +1426,10 @@ void WebContentsAdapter::setBackgroundColor(const QColor &color)
 {
     CHECK_INITIALIZED();
     SkColor c = toSk(color);
-    if (content::RenderWidgetHostView *rwhv = m_webContents->GetRenderWidgetHostView())
+    if (content::RenderWidgetHostView *rwhv = m_webContents->GetRenderWidgetHostView()) {
         rwhv->SetBackgroundColor(c);
+        ((content::RenderWidgetHostViewBase *)rwhv)->SetContentBackgroundColor(c);
+    }
     if (color != Qt::transparent)
         m_pageHost->SetBackgroundColor(c);
 }
@@ -2037,7 +2039,7 @@ void WebContentsAdapter::undiscard()
     Q_ASSERT(rvh);
     if (!rvh->IsRenderViewLive())
         static_cast<content::WebContentsImpl *>(m_webContents.get())
-                ->CreateRenderViewForRenderManager(rvh, base::nullopt, nullptr);
+                ->CreateRenderViewForRenderManager(rvh, absl::nullopt, nullptr);
     m_webContentsDelegate->RenderViewHostChanged(nullptr, rvh);
     m_adapterClient->initializationFinished();
     m_adapterClient->selectionChanged();

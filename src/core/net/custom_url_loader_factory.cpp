@@ -91,7 +91,7 @@ public:
     void FollowRedirect(const std::vector<std::string> &removed_headers,
                         const net::HttpRequestHeaders &modified_headers,
                         const net::HttpRequestHeaders &modified_cors_exempt_headers, // FIXME: do something with this?
-                        const base::Optional<GURL> &new_url) override
+                        const absl::optional<GURL> &new_url) override
     {
         // We can be asked for follow our own redirect
         scoped_refptr<URLRequestCustomJobProxy> proxy = new URLRequestCustomJobProxy(this, m_proxy->m_scheme, m_proxy->m_profileAdapter);
@@ -297,7 +297,7 @@ private:
                         m_request.site_for_cookies,
                         first_party_url_policy, m_request.referrer_policy,
                         m_request.referrer.spec(), net::HTTP_SEE_OTHER,
-                        m_redirect, base::nullopt, false /*insecure_scheme_was_upgraded*/);
+                        m_redirect, absl::nullopt, false /*insecure_scheme_was_upgraded*/);
             m_client->OnReceiveRedirect(redirectInfo, std::move(m_head));
             m_head = nullptr;
             // ### should m_request be updated with RedirectInfo? (see FollowRedirect)

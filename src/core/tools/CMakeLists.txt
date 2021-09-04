@@ -10,8 +10,11 @@ if(QT_FEATURE_webengine_spellchecker)
         INSTALL_DIR ${INSTALL_LIBEXECDIR}
         TOOLS_TARGET WebEngineCore
         SOURCES main.cpp
+        INCLUDE_DIRECTORIES
+            ../../3rdparty/chromium/third_party/abseil-cpp
     )
     qt_internal_return_unless_building_tools()
+
     qt_skip_warnings_are_errors(${dict_target_name})
     add_dependencies(${dict_target_name} WebEngineCore)
     qt_internal_extend_target(${dict_target_name} CONDITION WIN32

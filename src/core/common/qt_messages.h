@@ -6,6 +6,7 @@
 
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_message_start.h"
 #include "url/gurl.h"
 
 #define IPC_MESSAGE_START QtMsgStart

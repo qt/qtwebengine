@@ -90,7 +90,7 @@ struct PersistentNotificationDelegate : UserNotificationController::Delegate {
     virtual void clicked() override {
         Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
         if (auto inst = content::NotificationEventDispatcher::GetInstance())
-            inst->DispatchNotificationClickEvent(browser_context, notification_id, origin, base::nullopt, base::nullopt, base::DoNothing());
+            inst->DispatchNotificationClickEvent(browser_context, notification_id, origin, absl::nullopt, absl::nullopt, base::DoNothing());
     }
 
     virtual void closed(bool by_user) override {
@@ -114,6 +114,7 @@ PlatformNotificationServiceQt::~PlatformNotificationServiceQt() {}
 void PlatformNotificationServiceQt::DisplayNotification(
         const std::string &notification_id,
         const GURL &origin,
+        const GURL &document_url,
         const blink::PlatformNotificationData &notificationData,
         const blink::NotificationResources &notificationResources)
 {

@@ -50,8 +50,7 @@
 #include "base/macros.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom-forward.h"
-#include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
-
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "net/proxy_config_monitor.h"
 
 namespace cert_verifier {

@@ -77,7 +77,7 @@ private:
     QGeoPositionInfoSource *m_positionInfoSource;
     base::WeakPtrFactory<LocationProviderQt> m_locationProviderFactory;
 
-    void postToLocationProvider(const base::Closure &task);
+    void postToLocationProvider(base::OnceClosure task);
     friend class LocationProviderQt;
 };
 
@@ -188,7 +188,7 @@ void QtPositioningHelper::updatePosition(const QGeoPositionInfo &pos)
     newPos.heading =  pos.hasAttribute(QGeoPositionInfo::Direction) ? pos.attribute(QGeoPositionInfo::Direction) : -1;
 
     if (m_locationProvider)
-        postToLocationProvider(base::Bind(&LocationProviderQt::updatePosition, m_locationProviderFactory.GetWeakPtr(), newPos));
+        postToLocationProvider(base::BindOnce(&LocationProviderQt::updatePosition, m_locationProviderFactory.GetWeakPtr(), newPos));
 }
 
 void QtPositioningHelper::error(QGeoPositionInfoSource::Error positioningError)
@@ -212,12 +212,12 @@ void QtPositioningHelper::error(QGeoPositionInfoSource::Error positioningError)
         break;
     }
     if (m_locationProvider)
-        postToLocationProvider(base::Bind(&LocationProviderQt::updatePosition, m_locationProviderFactory.GetWeakPtr(), newPos));
+        postToLocationProvider(base::BindOnce(&LocationProviderQt::updatePosition, m_locationProviderFactory.GetWeakPtr(), newPos));
 }
 
-inline void QtPositioningHelper::postToLocationProvider(const base::Closure &task)
+inline void QtPositioningHelper::postToLocationProvider(base::OnceClosure task)
 {
-    static_cast<device::GeolocationProviderImpl*>(device::GeolocationProvider::GetInstance())->task_runner()->PostTask(FROM_HERE, task);
+    static_cast<device::GeolocationProviderImpl*>(device::GeolocationProvider::GetInstance())->task_runner()->PostTask(FROM_HERE, std::move(task));
 }
 
 LocationProviderQt::LocationProviderQt()

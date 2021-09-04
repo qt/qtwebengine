@@ -183,9 +183,10 @@ void PrefServiceAdapter::setSpellCheckLanguages(const QStringList &languages)
 QStringList PrefServiceAdapter::spellCheckLanguages() const
 {
     QStringList spellcheck_dictionaries;
-    for (const auto &value : *m_prefService->GetList(spellcheck::prefs::kSpellCheckDictionaries)) {
+    const auto &list = m_prefService->GetList(spellcheck::prefs::kSpellCheckDictionaries);
+    for (size_t i = 0; i < list->GetSize(); ++i) {
         std::string dictionary;
-        if (value.GetAsString(&dictionary))
+        if (list->GetString(i, &dictionary))
             spellcheck_dictionaries.append(QString::fromStdString(dictionary));
     }
 

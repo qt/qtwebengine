@@ -118,13 +118,13 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
 ProfileAdapter::~ProfileAdapter()
 {
     m_cancelableTaskTracker->TryCancelAll();
-    content::BrowserContext::NotifyWillBeDestroyed(m_profile.data());
+    m_profile->NotifyWillBeDestroyed();
     while (!m_webContentsAdapterClients.isEmpty()) {
        m_webContentsAdapterClients.first()->releaseProfile();
     }
     WebEngineContext::current()->removeProfileAdapter(this);
     if (m_downloadManagerDelegate) {
-        m_profile->GetDownloadManager(m_profile.data())->Shutdown();
+        m_profile->GetDownloadManager()->Shutdown();
         m_downloadManagerDelegate.reset();
     }
 #if QT_CONFIG(ssl)
@@ -337,10 +337,10 @@ void ProfileAdapter::setHttpUserAgent(const QString &userAgent)
         if (web_contents->GetBrowserContext() == m_profile.data())
             web_contents->SetUserAgentOverride(blink::UserAgentOverride::UserAgentOnly(stdUserAgent), true);
 
-    content::BrowserContext::ForEachStoragePartition(
-        m_profile.get(), base::BindRepeating([](const std::string &user_agent, content::StoragePartition *storage_partition) {
-                                                 storage_partition->GetNetworkContext()->SetUserAgent(user_agent);
-                                             }, stdUserAgent));
+    m_profile->ForEachStoragePartition(
+                base::BindRepeating([](const std::string &user_agent, content::StoragePartition *storage_partition) {
+                    storage_partition->GetNetworkContext()->SetUserAgent(user_agent);
+                }, stdUserAgent));
 }
 
 ProfileAdapter::HttpCacheType ProfileAdapter::httpCacheType() const
@@ -479,10 +479,10 @@ const QList<QByteArray> ProfileAdapter::customUrlSchemes() const
 
 void ProfileAdapter::updateCustomUrlSchemeHandlers()
 {
-    content::BrowserContext::ForEachStoragePartition(
-        m_profile.get(), base::BindRepeating([](content::StoragePartition *storage_partition) {
-                                                 storage_partition->ResetURLLoaderFactories();
-                                             }));
+    m_profile->ForEachStoragePartition(
+        base::BindRepeating([](content::StoragePartition *storage_partition) {
+            storage_partition->ResetURLLoaderFactories();
+        }));
 }
 
 void ProfileAdapter::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
@@ -601,10 +601,10 @@ void ProfileAdapter::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
         }
     }
 
-    content::BrowserContext::ForEachStoragePartition(
-        m_profile.get(), base::BindRepeating([](std::string accept_language, content::StoragePartition *storage_partition) {
-                                                 storage_partition->GetNetworkContext()->SetAcceptLanguage(accept_language);
-                                             }, http_accept_language));
+    m_profile->ForEachStoragePartition(
+        base::BindRepeating([](std::string accept_language, content::StoragePartition *storage_partition) {
+            storage_partition->GetNetworkContext()->SetAcceptLanguage(accept_language);
+        }, http_accept_language));
 }
 
 void ProfileAdapter::clearHttpCache()

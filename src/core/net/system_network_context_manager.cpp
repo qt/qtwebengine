@@ -53,6 +53,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_switches.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/port_util.h"
 #include "net/net_buildflags.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
@@ -60,8 +61,8 @@
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/mojom/host_resolver.mojom.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/cert_verifier_service.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 namespace {
@@ -247,7 +248,7 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(network::mojom::Networ
     // Configure the stub resolver. This must be done after the system
     // NetworkContext is created, but before anything has the chance to use it.
     //    bool stub_resolver_enabled;
-    //    base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>> dns_over_https_servers;
+    //    absl::optional<std::vector<network::mojom::DnsOverHttpsServerPtr>> dns_over_https_servers;
     //    GetStubResolverConfig(local_state_, &stub_resolver_enabled, &dns_over_https_servers);
     //    content::GetNetworkService()->ConfigureStubHostResolver(stub_resolver_enabled, std::move(dns_over_https_servers));
 }

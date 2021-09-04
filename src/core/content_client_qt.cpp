@@ -90,6 +90,8 @@ const char kPdfPluginMimeType[] = "application/x-google-chrome-pdf";
 const char kPdfPluginPath[] = "internal-pdf-viewer";
 #endif // QT_CONFIG(webengine_printing_and_pdf)
 
+using Robustness = content::CdmInfo::Robustness;
+
 static QString webenginePluginsPath()
 {
     // Look for plugins in /plugins/webengine or application dir.
@@ -184,7 +186,7 @@ namespace QtWebEngineCore {
 
 #if defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
 static bool IsWidevineAvailable(base::FilePath *cdm_path,
-                                content::CdmCapability *capability)
+                                media::CdmCapability *capability)
 {
     QStringList pluginPaths;
     const base::CommandLine::StringType widevine_argument = base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(switches::kCdmWidevinePath);
@@ -298,12 +300,12 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
     if (cdms) {
 #if defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
         base::FilePath cdm_path;
-        content::CdmCapability capability;
+        media::CdmCapability capability;
         if (IsWidevineAvailable(&cdm_path, &capability)) {
             const base::Version version;
-            cdms->push_back(content::CdmInfo(kWidevineCdmDisplayName, kWidevineCdmGuid, version, cdm_path,
-                                             kWidevineCdmFileSystemId, std::move(capability),
-                                             kWidevineKeySystem, false));
+            cdms->push_back(content::CdmInfo(kWidevineKeySystem, Robustness::kSoftwareSecure, std::move(capability),
+                                             /*supports_sub_key_systems=*/false, kWidevineCdmDisplayName,
+                                             kWidevineCdmGuid, version, cdm_path, kWidevineCdmFileSystemId));
         }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
 
@@ -321,8 +323,8 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
                     "org.chromium.externalclearkey.differentguid";
 
             // Supported codecs are hard-coded in ExternalClearKeyProperties.
-            content::CdmCapability capability(
-                {}, {media::EncryptionScheme::kCenc, media::EncryptionScheme::kCbcs},
+            media::CdmCapability capability(
+                {}, {}, {media::EncryptionScheme::kCenc, media::EncryptionScheme::kCbcs},
                 {media::CdmSessionType::kTemporary,
                  media::CdmSessionType::kPersistentLicense});
 
@@ -330,16 +332,17 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
             // Otherwise, it'll be treated as a sub-key-system of normal
             // kExternalClearKeyKeySystem. See MultipleCdmTypes test in
             // ECKEncryptedMediaTest.
-            cdms->push_back(content::CdmInfo(media::kClearKeyCdmDisplayName, media::kClearKeyCdmDifferentGuid,
-                                             base::Version("0.1.0.0"), clear_key_cdm_path,
-                                             media::kClearKeyCdmFileSystemId, capability,
-                                             kExternalClearKeyDifferentGuidTestKeySystem, false));
+            cdms->push_back(content::CdmInfo(kExternalClearKeyDifferentGuidTestKeySystem,
+                                             Robustness::kSoftwareSecure, capability,
+                                             /*supports_sub_key_systems=*/false, media::kClearKeyCdmDisplayName,
+                                             media::kClearKeyCdmDifferentGuid, base::Version("0.1.0.0"),
+                                             clear_key_cdm_path, media::kClearKeyCdmFileSystemId));
 
-            // Supported codecs are hard-coded in ExternalClearKeyProperties.
-            cdms->push_back(content::CdmInfo(media::kClearKeyCdmDisplayName, media::kClearKeyCdmGuid,
-                                             base::Version("0.1.0.0"), clear_key_cdm_path,
-                                             media::kClearKeyCdmFileSystemId, capability,
-                                             kExternalClearKeyKeySystem, true));
+            cdms->push_back(content::CdmInfo(kExternalClearKeyKeySystem,
+                                             Robustness::kSoftwareSecure, capability,
+                                             /*supports_sub_key_systems=*/true, media::kClearKeyCdmDisplayName,
+                                             media::kClearKeyCdmGuid, base::Version("0.1.0.0"),
+                                             clear_key_cdm_path, media::kClearKeyCdmFileSystemId));
         }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
     }

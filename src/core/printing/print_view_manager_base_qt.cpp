@@ -293,8 +293,8 @@ void PrintViewManagerBaseQt::UpdatePrintingEnabled()
     enabled = true;
 #endif
     web_contents()->ForEachFrame(
-            base::Bind(&PrintViewManagerBaseQt::SendPrintingEnabled,
-                    base::Unretained(this), enabled));
+            base::BindRepeating(&PrintViewManagerBaseQt::SendPrintingEnabled,
+                                base::Unretained(this), enabled));
 }
 
 void PrintViewManagerBaseQt::NavigationStopped()

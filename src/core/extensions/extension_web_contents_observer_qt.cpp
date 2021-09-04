@@ -48,9 +48,9 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/manifest.h"
+#include "third_party/blink/public/common/chrome_debug_urls.h"
 
 #include "render_widget_host_view_qt.h"
 
@@ -86,7 +86,7 @@ void ExtensionWebContentsObserverQt::RenderFrameCreated(content::RenderFrameHost
     auto *policy = content::ChildProcessSecurityPolicy::GetInstance();
 
     if (extension->is_extension() && Manifest::IsComponentLocation(extension->location()))
-        policy->GrantRequestOrigin(process_id, url::Origin::Create(GURL(content::kChromeUIResourcesURL)));
+        policy->GrantRequestOrigin(process_id, url::Origin::Create(GURL(blink::kChromeUIResourcesURL)));
 }
 
 void ExtensionWebContentsObserverQt::RenderViewReady()

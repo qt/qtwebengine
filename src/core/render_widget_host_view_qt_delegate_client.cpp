@@ -235,7 +235,7 @@ void RenderWidgetHostViewQtDelegateClient::visualPropertiesChanged()
         m_rwhv->host()->SendScreenRects();
 
     if (m_viewRectInDips.size() != oldViewRect.size() || screenInfoChanged)
-        m_rwhv->synchronizeVisualProperties(base::nullopt);
+        m_rwhv->synchronizeVisualProperties(absl::nullopt);
 }
 
 bool RenderWidgetHostViewQtDelegateClient::forwardEvent(QEvent *event)

@@ -122,7 +122,7 @@ private:
     void DidUpdateFaviconURL(content::RenderFrameHost *render_frame_host,
                              const std::vector<blink::mojom::FaviconURLPtr> &candidates) override;
     void DidUpdateWebManifestURL(content::RenderFrameHost *target_frame,
-                                 const base::Optional<GURL> &manifest_url) override;
+                                 const absl::optional<GURL> &manifest_url) override;
     void DidStartNavigation(content::NavigationHandle *navigation_handle) override;
     void DidFinishNavigation(content::NavigationHandle *navigation_handle) override;
     void DocumentOnLoadCompletedInMainFrame(content::RenderFrameHost *render_frame_host) override;
@@ -152,7 +152,7 @@ private:
     bool m_documentOnLoadCompleted = false;
 
     // nullopt until the actual list is reported via DidUpdateFaviconURL().
-    base::Optional<std::vector<blink::mojom::FaviconURL>> m_faviconUrls;
+    absl::optional<std::vector<blink::mojom::FaviconURLPtr>> m_faviconUrls;
     // Web Manifest URL or empty URL if none.
     GURL m_manifestUrl;
 
