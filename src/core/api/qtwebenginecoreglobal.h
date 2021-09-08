@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
 
 Q_WEBENGINECORE_EXPORT Q_DECL_CONST_FUNCTION const char *qWebEngineVersion() noexcept;
 Q_WEBENGINECORE_EXPORT Q_DECL_CONST_FUNCTION const char *qWebEngineChromiumVersion() noexcept;
+Q_WEBENGINECORE_EXPORT Q_DECL_CONST_FUNCTION const char *qWebEngineChromiumSecurityPatchVersion() noexcept;
 
 QT_END_NAMESPACE
 

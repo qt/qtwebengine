@@ -948,4 +948,16 @@ const char *qWebEngineChromiumVersion() noexcept
 {
     return CHROMIUM_VERSION;
 }
+
+/*!
+    \relates <qtwebenginecoreglobal.h>
+    \since 6.3
+
+    Returns the version number of last Chromium version security patches have been
+    merged from.
+*/
+const char *qWebEngineChromiumSecurityPatchVersion() noexcept
+{
+    return "92.0.4515.166"; // FIXME: Remember to update
+}
 QT_END_NAMESPACE
