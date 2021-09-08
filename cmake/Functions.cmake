@@ -355,15 +355,20 @@ function(copy_response_files target)
     foreach(rsp IN ITEMS ${ARGN})
         set(rsp_dst "CMakeFiles_${ninjaTarget}_${config}_${rsp}.rsp")
         set(rsp_src "${${rsp}_rsp}")
+        if(NOT QT_SUPERBUILD)
+            set(rsp_output ${PROJECT_BINARY_DIR}/${rsp_dst})
+        else()
+            set(rsp_output ${PROJECT_BINARY_DIR}/../${rsp_dst})
+        endif()
         add_custom_command(
-            OUTPUT ${PROJECT_BINARY_DIR}/${rsp_dst}
-            COMMAND ${CMAKE_COMMAND} -E copy ${rsp_src} ${PROJECT_BINARY_DIR}/${rsp_dst}
+            OUTPUT ${rsp_output}
+            COMMAND ${CMAKE_COMMAND} -E copy ${rsp_src} ${rsp_output}
             DEPENDS ${rsp_src}
             USES_TERMINAL
         )
         set(${rsp}_rsp ${rsp_dst} PARENT_SCOPE)
         add_custom_target(${cmakeTarget}_${rsp}_copy_${config}
-            DEPENDS ${PROJECT_BINARY_DIR}/${rsp_dst}
+            DEPENDS ${rsp_output}
         )
         add_dependencies(${cmakeTarget} ${cmakeTarget}_${rsp}_copy_${config})
     endforeach()
