@@ -6,3 +6,6 @@ windows
 
 [navigateOnDrop:file_no_navigate]
 windows
+
+[horizontalScrollbarTest]
+b2qt # different scrollbar

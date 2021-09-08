@@ -78,6 +78,14 @@ config("QtWebEngineCore_config") {
   ]
 }
 
+declare_args() {
+  use_embedded_config = false
+}
+
+config("embedded_config") {
+  defines = [ "QTWEBENGINE_EMBEDDED_SWITCHES=1" ]
+}
+
 config("cpp17_config") {
   # static initialized constexpr expressions must be compiled always as c++14 or always as c++17
   # and our qtwebengine core sources use them as c++17
@@ -153,6 +161,9 @@ shared_library("QtWebEngineCore") {
   if (is_win) {
     configs += [ "//build/config/compiler:rtti" ]
     data_deps = [ ":QtWebEngineCoreSandbox" ]
+  }
+  if (use_embedded_config) {
+    configs += [ ":embedded_config" ]
   }
 
   sources = [
