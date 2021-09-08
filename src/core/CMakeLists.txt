@@ -292,6 +292,7 @@ foreach(arch ${archs})
             v8_use_external_startup_data=false
             strip_absolute_paths_from_debug_symbols=false
             blink_symbol_level=0
+            disable_ftp_support=true
         )
 
         extend_gn_list(gnArgArg
