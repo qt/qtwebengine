@@ -79,11 +79,11 @@ function(create_cxx_config cmakeTarget arch configFileName)
     file(GENERATE
           OUTPUT $<CONFIG>/${arch}/${configFileName}
           CONTENT "\
-              set(GN_INCLUDES $<TARGET_PROPERTY:INCLUDE_DIRECTORIES>)\n\
-              set(GN_DEFINES $<TARGET_PROPERTY:COMPILE_DEFINITIONS>)\n\
-              set(GN_LINK_OPTIONS $<TARGET_PROPERTY:LINK_OPTIONS>)\n\
-              set(GN_CXX_COMPILE_OPTIONS $<TARGET_PROPERTY:COMPILE_OPTIONS>)\n\
-              set(GN_MOC_PATH $<TARGET_FILE:Qt::moc>)"
+              set(GN_INCLUDES \"$<TARGET_PROPERTY:INCLUDE_DIRECTORIES>\")\n\
+              set(GN_DEFINES \"$<TARGET_PROPERTY:COMPILE_DEFINITIONS>\")\n\
+              set(GN_LINK_OPTIONS \"$<TARGET_PROPERTY:LINK_OPTIONS>\")\n\
+              set(GN_CXX_COMPILE_OPTIONS \"$<TARGET_PROPERTY:COMPILE_OPTIONS>\")\n\
+              set(GN_MOC_PATH \"$<TARGET_FILE:Qt::moc>\")"
 #             set(GN_LIBS $<TARGET_PROPERTY:LINK_LIBRARIES>)
           CONDITION $<COMPILE_LANGUAGE:CXX>
           TARGET ${cmakeTarget}
