@@ -364,6 +364,10 @@ foreach(arch ${archs})
             ARGS use_browser_spellchecker
             CONDITION QT_FEATURE_webengine_native_spellchecker
         )
+        extend_gn_list(gnArgArg
+            ARGS use_embedded_config
+            CONDITION QT_FEATURE_webengine_embedded_build
+        )
 
         if(LINUX)
             list(APPEND gnArgArg

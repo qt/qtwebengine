@@ -12,3 +12,6 @@ macos
 
 [WebViewFindText::test_findTextInterruptedByLoad]
 b2qt arm 64bit
+
+[WebEngineViewLoadUrl::test_loadStartedAfterInPageNavigation]
+b2qt
