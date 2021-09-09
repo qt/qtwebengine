@@ -281,8 +281,7 @@
     WebEngineSettings::pluginsEnabled or QWebEngineSettings::PluginsEnabled
     is set.
 
-    Except for the Adobe Flash Player plugin, the plugins must be loaded
-    manually using the Chromium command line syntax with the
+    The plugins must be loaded manually using the Chromium command line syntax with the
     \c --register-pepper-plugins argument. The argument value is a list of
     entries, separated by commas, that contain the file path and one or several
     MIME types, separated by semicolons:
@@ -301,51 +300,6 @@
     used for.
 
     Support for this feature was added in Qt 5.6.0.
-
-    \section2 Pepper Flash Player Plugin Support
-
-    The Pepper Flash player plugin can be loaded automatically if it is
-    installed in one of the following locations, depending on the platform:
-
-    \list
-        \li Windows
-            \code
-            C:\Windows\SysWOW64\Macromed\Flash\pepflashplayer*.dll
-            C:\Windows\System32\Macromed\Flash\pepflashplayer*.dll
-            \endcode
-        \li OS X
-            \code
-            /Library/Internet Plug-Ins/PepperFlashPlayer/PepperFlashPlayer.plugin
-            \endcode
-        \li Linux
-            \code
-            /usr/lib/pepperflashplugin-nonfree/libpepflashplayer.so
-            /usr/lib/adobe-flashplugin/libpepflashplayer.so
-            /usr/lib/PepperFlash/libpepflashplayer.so
-            /usr/lib64/chromium/PepperFlash/libpepflashplayer.so
-            \endcode
-    \endlist
-
-    You can also load the Pepper Flash player from a specific location by using
-    command line arguments:
-
-    \code
-    --ppapi-flash-path=./libpepflashplayer.so
-    \endcode
-
-    By default, the Flash version is set to \c{11.2.999.999}. You can use the
-    \c{ppapi-flash-version=} argument to set another Flash version in the
-    format \c{major.minor.build.revision}:
-
-    \code
-    --ppapi-flash-version=16.0.0.235
-    \endcode
-
-    This feature can be tested in \l{WebEngine Widgets Simple Browser Example}{Simple Browser}
-    or \l{WebEngine Quick Nano Browser}{Nano Browser} if the Adobe Flash PPAPI
-    plugin is installed and plugins are enabled in the browser. To test the
-    feature, the \c https://helpx.adobe.com/flash-player.html page can be opened
-    in the browser.
 
     \section1 PDF File Viewing
 
