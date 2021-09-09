@@ -1208,11 +1208,11 @@ QObject *QQuickWebEngineViewPrivate::dragSource() const
 {
     // QTBUG-57516
     // Fixme: This is just a band-aid workaround.
-#if !QT_CONFIG(draganddrop)
-  return QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MultipleWindows) ?
-    q_ptr->window : nullptr;
+#if QT_CONFIG(draganddrop)
+    return QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MultipleWindows) ?
+                q_ptr : nullptr;
 #else
-  return nullptr;
+    return nullptr;
 #endif
 }
 
