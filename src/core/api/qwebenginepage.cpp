@@ -1671,8 +1671,8 @@ void QWebEnginePagePrivate::requestGeometryChange(const QRect &geometry, const Q
 
 QObject *QWebEnginePagePrivate::dragSource() const
 {
-#if !QT_CONFIG(draganddrop)
-    return view;
+#if QT_CONFIG(draganddrop)
+    return view->accessibilityParentObject();
 #else
     return nullptr;
 #endif // QT_CONFIG(draganddrop)
