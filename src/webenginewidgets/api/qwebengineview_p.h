@@ -111,6 +111,7 @@ public:
     bool isVisible() const override;
     QRect viewportRect() const override;
     QWebEnginePage *page;
+    QMetaObject::Connection m_pageConnection;
     bool m_dragEntered;
     mutable bool m_ownsPage;
     QWebEngineContextMenuRequest *m_contextRequest;

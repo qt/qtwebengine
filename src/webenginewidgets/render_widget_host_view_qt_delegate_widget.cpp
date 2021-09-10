@@ -469,9 +469,11 @@ void RenderWidgetHostViewQtDelegateWidget::onWindowPosChanged()
 
 void RenderWidgetHostViewQtDelegateWidget::adapterClientChanged(WebContentsAdapterClient *client)
 {
+    if (m_pageDestroyedConnection)
+        disconnect(m_pageDestroyedConnection);
     QWebEnginePage *page = static_cast<QWebEnginePagePrivate *>(client)->q_func();
     QWebEngineViewPrivate::bindPageAndWidget(page, this);
-    connect(page, &QWebEnginePage::_q_aboutToDelete, this,
+    m_pageDestroyedConnection = connect(page, &QWebEnginePage::_q_aboutToDelete, this,
             [this]() { QWebEngineViewPrivate::bindPageAndWidget(nullptr, this); });
 }
 
