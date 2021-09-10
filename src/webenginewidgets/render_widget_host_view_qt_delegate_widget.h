@@ -112,6 +112,7 @@ private:
     QList<QMetaObject::Connection> m_windowConnections;
     QWebEnginePage *m_page = nullptr;
     QMetaObject::Connection m_parentDestroyedConnection;
+    QMetaObject::Connection m_pageDestroyedConnection;
 };
 
 #if QT_CONFIG(accessibility)

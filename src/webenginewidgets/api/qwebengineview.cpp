@@ -644,9 +644,14 @@ QWebEnginePage* QWebEngineView::page() const
 
 void QWebEngineView::setPage(QWebEnginePage *newPage)
 {
+    Q_D(QWebEngineView);
+    if (d->page) {
+        disconnect(d->m_pageConnection);
+        d->m_pageConnection = {};
+    }
     QWebEngineViewPrivate::bindPageAndView(newPage, this);
-    connect(newPage, &QWebEnginePage::_q_aboutToDelete, this,
-            [newPage]() { QWebEngineViewPrivate::bindPageAndView(newPage, nullptr); });
+    d->m_pageConnection = connect(newPage, &QWebEnginePage::_q_aboutToDelete, this,
+                                  [newPage]() { QWebEngineViewPrivate::bindPageAndView(newPage, nullptr); });
     auto profile = newPage->profile();
     if (!profile->notificationPresenter())
         profile->setNotificationPresenter(&defaultNotificationPresenter);
