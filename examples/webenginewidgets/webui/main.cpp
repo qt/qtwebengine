@@ -69,10 +69,9 @@ int main(int argc, char *argv[])
     profile.installUrlSchemeHandler(WebUiHandler::schemeName, &handler);
 
     QWebEnginePage page(&profile);
-    page.load(WebUiHandler::aboutUrl);
-
     QWebEngineView view;
     view.setPage(&page);
+    page.load(WebUiHandler::aboutUrl);
     view.setContextMenuPolicy(Qt::NoContextMenu);
     view.resize(500, 600);
     view.show();
