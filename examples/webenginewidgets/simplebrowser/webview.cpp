@@ -133,17 +133,18 @@ inline QString questionForFeature(QWebEnginePage::Feature feature)
 
 void WebView::setPage(WebPage *page)
 {
-    WebPage *oldPage = qobject_cast<WebPage *>(QWebEngineView::page());
-    disconnect(oldPage, &WebPage::createCertificateErrorDialog, this,
-               &WebView::handleCertificateError);
-    disconnect(oldPage, &QWebEnginePage::authenticationRequired, this,
-               &WebView::handleAuthenticationRequired);
-    disconnect(oldPage, &QWebEnginePage::featurePermissionRequested, this,
-               &WebView::handleFeaturePermissionRequested);
-    disconnect(oldPage, &QWebEnginePage::proxyAuthenticationRequired, this,
-               &WebView::handleProxyAuthenticationRequired);
-    disconnect(oldPage, &QWebEnginePage::registerProtocolHandlerRequested, this,
-               &WebView::handleRegisterProtocolHandlerRequested);
+    if (auto oldPage = qobject_cast<WebPage *>(QWebEngineView::page())) {
+        disconnect(oldPage, &WebPage::createCertificateErrorDialog, this,
+                   &WebView::handleCertificateError);
+        disconnect(oldPage, &QWebEnginePage::authenticationRequired, this,
+                   &WebView::handleAuthenticationRequired);
+        disconnect(oldPage, &QWebEnginePage::featurePermissionRequested, this,
+                   &WebView::handleFeaturePermissionRequested);
+        disconnect(oldPage, &QWebEnginePage::proxyAuthenticationRequired, this,
+                   &WebView::handleProxyAuthenticationRequired);
+        disconnect(oldPage, &QWebEnginePage::registerProtocolHandlerRequested, this,
+                   &WebView::handleRegisterProtocolHandlerRequested);
+    }
     createWebActionTrigger(page,QWebEnginePage::Forward);
     createWebActionTrigger(page,QWebEnginePage::Back);
     createWebActionTrigger(page,QWebEnginePage::Reload);
