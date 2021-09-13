@@ -162,7 +162,12 @@ if(CMAKE_CROSSCOMPILING)
                    -DQT_FEATURE_qtwebengine_build=${QT_FEATURE_qtwebengine_build}
                    -DQT_FEATURE_qtpdf_build=${QT_FEATURE_qtpdf_build}
     )
-    add_dependencies(run_core_GnReady hostBuild)
+    if(QT_FEATURE_qtwebengine_build)
+        add_dependencies(run_core_GnReady hostBuild)
+    endif()
+    if(QT_FEATURE_qtpdf_build)
+        add_dependencies(run_pdf_GnReady hostBuild)
+    endif()
 endif()
 
 # install gn for cross build
