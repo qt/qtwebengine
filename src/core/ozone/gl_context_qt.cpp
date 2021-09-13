@@ -42,6 +42,7 @@
 #include <QGuiApplication>
 #include <QOpenGLContext>
 #include <QThread>
+#include <QtGui/private/qtgui-config_p.h>
 #include <qpa/qplatformnativeinterface.h>
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_implementation.h"
@@ -154,7 +155,7 @@ void* GLContextHelper::getNativeDisplay()
 QFunctionPointer GLContextHelper::getGlXGetProcAddress()
 {
      QFunctionPointer get_proc_address = nullptr;
-#if QT_CONFIG(opengl)
+#if QT_CONFIG(xcb_glx)
     if (QOpenGLContext *context = qt_gl_global_share_context()) {
         get_proc_address = context->getProcAddress("glXGetProcAddress");
     }
@@ -175,7 +176,7 @@ QFunctionPointer GLContextHelper::getEglGetProcAddress()
 
 void *GLContextHelper::getGlxPlatformInterface()
 {
-#if QT_CONFIG(opengl) && defined(USE_GLX)
+#if QT_CONFIG(xcb_glx)
     if (QOpenGLContext *context = qt_gl_global_share_context())
         return context->nativeInterface<QNativeInterface::QGLXContext>();
 #endif
