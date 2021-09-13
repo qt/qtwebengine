@@ -1054,3 +1054,35 @@ function(check_for_ulimit)
         endif()
     endif()
 endfunction()
+
+function(add_build feature value)
+    list(APPEND cmakeArgs
+        "-DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}"
+        "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
+        "-DMATRIX_SUBBUILD=ON"
+        "-DFEATURE_${feature}=${value}"
+    )
+    if(CMAKE_C_COMPILER_LAUNCHER)
+        list(APPEND cmakeArgs "-DCMAKE_C_COMPILER_LAUNCHER=${CMAKE_C_COMPILER_LAUNCHER}")
+    endif()
+    if(CMAKE_CXX_COMPILER_LAUNCHER)
+        list(APPEND cmakeArgs "-DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}")
+    endif()
+
+    externalproject_add(${feature}
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
+        BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/${feature}-${value}
+        PREFIX ${feature}-${value}
+        CMAKE_ARGS ${cmakeArgs}
+        USES_TERMINAL_BUILD ON
+        USES_TERMINAL_CONFIGURE ON
+        BUILD_ALWAYS TRUE
+        INSTALL_COMMAND ""
+    )
+    get_property(depTracker GLOBAL PROPERTY MATRIX_DEPENDENCY_TRACKER)
+    foreach(dep ${depTracker})
+        add_dependencies(${feature} ${dep})
+    endforeach()
+    set(depTracker "${depTracker}" ${feature})
+    set_property(GLOBAL PROPERTY MATRIX_DEPENDENCY_TRACKER "${depTracker}")
+endfunction()
