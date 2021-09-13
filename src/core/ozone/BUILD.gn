@@ -26,9 +26,13 @@ source_set("qt") {
   ]
 
   defines = [ "OZONE_IMPLEMENTATION" ]
-
+  libs = []
   if (use_xkbcommon) {
     configs += [ ":xkbcommon" ]
-    libs = [ "xkbfile" ]
+    libs += [ "xkbfile" ]
+  }
+
+  if (ozone_platform_x11) {
+    libs += [ "X11" ]
   }
 }
