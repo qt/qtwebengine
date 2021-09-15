@@ -4625,6 +4625,7 @@ void tst_QWebEnginePage::customUserAgentInNewTab()
     QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("navigator.userAgent")).toString(), expectedUserAgent);
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, elementCenter(&page, "link"));
     QTRY_VERIFY(page.newPage);
+    QTRY_COMPARE(page.newPage->loadSpy.count(), 1);
     QTRY_VERIFY(!lastUserAgent.isEmpty());
     QCOMPARE(lastUserAgent, expectedUserAgent);
     QCOMPARE(evaluateJavaScriptSync(page.newPage.get(), QStringLiteral("navigator.userAgent")).toString(), expectedUserAgent);
@@ -4642,6 +4643,7 @@ void tst_QWebEnginePage::customUserAgentInNewTab()
     QVERIFY(page.loadSpy.takeFirst().value(0).toBool());
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, elementCenter(&page, "link"));
     QTRY_VERIFY(page.newPage);
+    QTRY_COMPARE(page.newPage->loadSpy.count(), 1);
     QTRY_VERIFY(!lastUserAgent.isEmpty());
     QCOMPARE(lastUserAgent, expectedUserAgent);
     QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("navigator.userAgent")).toString(), expectedUserAgent);
