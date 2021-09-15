@@ -491,8 +491,8 @@ void tst_QWebEngineView::microFocusCoordinates()
 
 void tst_QWebEngineView::focusInputTypes()
 {
-    const QPlatformInputContext *context = QGuiApplicationPrivate::platformIntegration()->inputContext();
-    bool imeHasHiddenTextCapability = context && context->hasCapability(QPlatformInputContext::HiddenTextCapability);
+    const QPlatformInputContext *platformInputContext = QGuiApplicationPrivate::platformIntegration()->inputContext();
+    bool imeHasHiddenTextCapability = platformInputContext && platformInputContext->hasCapability(QPlatformInputContext::HiddenTextCapability);
 
     QWebEngineView webView;
     webView.resize(640, 480);
@@ -523,7 +523,8 @@ void tst_QWebEngineView::focusInputTypes()
     QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("passwordInput"));
     VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(), (Qt::ImhSensitiveData | Qt::ImhNoPredictiveText | Qt::ImhNoAutoUppercase | Qt::ImhHiddenText));
     QVERIFY(!webView.focusProxy()->testAttribute(Qt::WA_InputMethodEnabled));
-    QTRY_COMPARE(inputMethodQuery(Qt::ImEnabled).toBool(), imeHasHiddenTextCapability);
+    QTRY_VERIFY(inputMethodQuery(Qt::ImEnabled).toBool());
+    QTRY_COMPARE(platformInputContext->inputMethodAccepted(), imeHasHiddenTextCapability);
 
     // 'tel' field
     QPoint telInputCenter = elementCenter(webView.page(), "telInput");
@@ -562,7 +563,8 @@ void tst_QWebEngineView::focusInputTypes()
     QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("passwordInput"));
     VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(), (Qt::ImhSensitiveData | Qt::ImhNoPredictiveText | Qt::ImhNoAutoUppercase | Qt::ImhHiddenText));
     QVERIFY(!webView.focusProxy()->testAttribute(Qt::WA_InputMethodEnabled));
-    QTRY_COMPARE(inputMethodQuery(Qt::ImEnabled).toBool(), imeHasHiddenTextCapability);
+    QTRY_VERIFY(inputMethodQuery(Qt::ImEnabled).toBool());
+    QTRY_COMPARE(platformInputContext->inputMethodAccepted(), imeHasHiddenTextCapability);
 
     // 'text' type
     QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, {}, textInputCenter);
@@ -576,7 +578,8 @@ void tst_QWebEngineView::focusInputTypes()
     QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("passwordInput"));
     VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(), (Qt::ImhSensitiveData | Qt::ImhNoPredictiveText | Qt::ImhNoAutoUppercase | Qt::ImhHiddenText));
     QVERIFY(!webView.focusProxy()->testAttribute(Qt::WA_InputMethodEnabled));
-    QTRY_COMPARE(inputMethodQuery(Qt::ImEnabled).toBool(), imeHasHiddenTextCapability);
+    QTRY_VERIFY(inputMethodQuery(Qt::ImEnabled).toBool());
+    QTRY_COMPARE(platformInputContext->inputMethodAccepted(), imeHasHiddenTextCapability);
 
     // 'text area' field
     QPoint textAreaCenter = elementCenter(webView.page(), "textArea");

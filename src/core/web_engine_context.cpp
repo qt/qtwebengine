@@ -170,7 +170,7 @@ static bool usingDefaultSGBackend()
 
     const QStringList args = QGuiApplication::arguments();
 
-    //folow logic from contextFactory in src/quick/scenegraph/qsgcontextplugin.cpp
+    // follow the logic from contextFactory in src/quick/scenegraph/qsgcontextplugin.cpp
     QString device = QQuickWindow::sceneGraphBackend();
 
     for (int index = 0; index < args.count(); ++index) {
