@@ -52,10 +52,12 @@ if(QT_FEATURE_debug_and_release)
                           OUTPUT_NAME_DEBUG ${qtWebEngineProcessName}${CMAKE_DEBUG_POSTFIX})
 endif()
 
-qt_apply_rpaths(TARGET ${qtWebEngineProcessName} INSTALL_PATH "${INSTALL_LIBEXECDIR}" RELATIVE_RPATH)
-
 if(isFramework)
-    set_target_properties(${qtWebEngineProcessName} PROPERTIES MACOSX_BUNDLE TRUE)
+    set_target_properties(${qtWebEngineProcessName} PROPERTIES
+        MACOSX_BUNDLE TRUE
+        INSTALL_RPATH "@loader_path/../../../../../../../"
+    )
+
     target_sources(${qtWebEngineProcessName} PRIVATE QtWebEngineProcess.entitlements)
     set_source_files_properties(QtWebEngineProcess.entitlements PROPERTIES
         MACOSX_PACKAGE_LOCATION Resources
@@ -72,6 +74,7 @@ if(isFramework)
         COMPONENT Runtime
     )
 else()
+    qt_apply_rpaths(TARGET ${qtWebEngineProcessName} INSTALL_PATH "${INSTALL_LIBEXECDIR}" RELATIVE_RPATH)
     install(TARGETS ${qtWebEngineProcessName}
         CONFIGURATIONS ${configs}
         RUNTIME DESTINATION "${INSTALL_LIBEXECDIR}"
