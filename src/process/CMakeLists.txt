@@ -73,16 +73,14 @@ if(isFramework)
         BUNDLE DESTINATION ./lib/QtWebEngineCore.framework/Versions/A/Helpers
         COMPONENT Runtime
     )
+    qt_enable_separate_debug_info(${qtWebEngineProcessName} ./lib/QtWebEngineCore.framework/Versions/A/Helpers QT_EXECUTABLE)
 else()
     qt_apply_rpaths(TARGET ${qtWebEngineProcessName} INSTALL_PATH "${INSTALL_LIBEXECDIR}" RELATIVE_RPATH)
     install(TARGETS ${qtWebEngineProcessName}
         CONFIGURATIONS ${configs}
         RUNTIME DESTINATION "${INSTALL_LIBEXECDIR}"
     )
+    qt_enable_separate_debug_info(${qtWebEngineProcessName} "${INSTALL_LIBEXECDIR}" QT_EXECUTABLE)
+    qt_internal_install_pdb_files(${qtWebEngineProcessName} "${INSTALL_LIBEXECDIR}")
 endif()
 
-if(MSVC)
-    install(FILES "$<TARGET_PDB_FILE:${qtWebEngineProcessName}>" OPTIONAL
-        DESTINATION "${INSTALL_LIBEXECDIR}"
-    )
-endif()
