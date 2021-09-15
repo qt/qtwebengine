@@ -181,12 +181,11 @@ void QWebEngineScript::setSourceUrl(const QUrl &url)
     d->setSourceUrl(url);
 
     QFile file;
-    if (url.scheme().compare(QLatin1String("qrc"), Qt::CaseInsensitive) == 0) {
+    if (url.isLocalFile()) {
+        file.setFileName(url.toLocalFile());
+    } else if (url.scheme().compare(QLatin1String("qrc"), Qt::CaseInsensitive) == 0) {
         if (url.authority().isEmpty())
             file.setFileName(QLatin1Char(':') + url.path());
-        return;
-    } else {
-        file.setFileName(url.toLocalFile());
     }
 
     if (!file.open(QIODevice::ReadOnly)) {

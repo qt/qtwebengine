@@ -81,6 +81,12 @@ Item {
         }
 
         function test_basic() {
+            webView.userScripts.collection = [ {
+                name: "qtwebchanneljs",
+                sourceUrl: Qt.resolvedUrl("qrc:/qtwebchannel/qwebchannel.js"),
+                injectionPoint: WebEngineScript.DocumentCreation,
+                worldId: WebEngineScript.MainWorld
+            }]
             webView.url = testUrl;
             verify(webView.waitForLoadSucceeded());
 
