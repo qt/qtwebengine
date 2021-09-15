@@ -131,7 +131,6 @@ private:
     RenderWidgetHostViewQt *m_rwhv;
 
     // Mouse
-    bool m_imeHasHiddenTextCapability;
     uint m_mouseButtonPressed = 0;
     QPoint m_previousMousePosition;
     MultipleMouseClickHelper m_clickHelper;

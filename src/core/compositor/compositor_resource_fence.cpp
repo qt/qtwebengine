@@ -41,7 +41,6 @@
 #include "ozone/gl_surface_qt.h"
 #include "ui/gl/gl_context.h"
 
-#include <QtGui/private/qtguiglobal_p.h>
 #include <QtGui/qopenglcontext.h>
 
 #ifndef GL_TIMEOUT_IGNORED

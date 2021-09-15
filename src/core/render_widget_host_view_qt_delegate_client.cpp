@@ -58,9 +58,7 @@
 #include <QTextFormat>
 #include <QVariant>
 
-#include <private/qguiapplication_p.h>
-#include <qpa/qplatforminputcontext.h>
-#include <qpa/qplatformintegration.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qinputcontrol_p.h>
 
 namespace QtWebEngineCore {
@@ -202,11 +200,6 @@ RenderWidgetHostViewQtDelegateClient::RenderWidgetHostViewQtDelegateClient(
     : m_rwhv(rwhv)
 {
     Q_ASSERT(rwhv);
-
-    const QPlatformInputContext *context =
-            QGuiApplicationPrivate::platformIntegration()->inputContext();
-    m_imeHasHiddenTextCapability =
-            context && context->hasCapability(QPlatformInputContext::HiddenTextCapability);
 }
 
 Compositor::Id RenderWidgetHostViewQtDelegateClient::compositorId()
@@ -365,17 +358,8 @@ bool RenderWidgetHostViewQtDelegateClient::forwardEvent(QEvent *event)
 QVariant RenderWidgetHostViewQtDelegateClient::inputMethodQuery(Qt::InputMethodQuery query)
 {
     switch (query) {
-    case Qt::ImEnabled: {
-        ui::TextInputType type = m_rwhv->getTextInputType();
-        bool editorVisible = type != ui::TEXT_INPUT_TYPE_NONE;
-        // IME manager should disable composition on input fields with ImhHiddenText hint if
-        // supported
-        if (m_imeHasHiddenTextCapability)
-            return QVariant(editorVisible);
-
-        bool passwordInput = type == ui::TEXT_INPUT_TYPE_PASSWORD;
-        return QVariant(editorVisible && !passwordInput);
-    }
+    case Qt::ImEnabled:
+        return QVariant(m_rwhv->getTextInputType() != ui::TEXT_INPUT_TYPE_NONE);
     case Qt::ImFont:
         // TODO: Implement this
         return QVariant();
