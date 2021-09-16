@@ -70,6 +70,7 @@ private:
     friend class QWebEngineProfilePrivate;
     friend class QQuickWebEngineProfilePrivate;
     friend class QQuickWebEngineViewPrivate;
+    friend class QQuickWebEngineScriptCollectionPrivate;
     QWebEngineScriptCollection(QWebEngineScriptCollectionPrivate *);
 
     QScopedPointer<QWebEngineScriptCollectionPrivate> d;

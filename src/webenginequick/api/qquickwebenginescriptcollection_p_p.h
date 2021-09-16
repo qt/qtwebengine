@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINESCRIPTCOLLECTION_H
-#define QQUICKWEBENGINESCRIPTCOLLECTION_H
+#ifndef QQUICKWEBENGINESCRIPTCOLLECTIONPRIVATE_H
+#define QQUICKWEBENGINESCRIPTCOLLECTIONPRIVATE_H
 
 //
 //  W A R N I N G
@@ -51,49 +51,24 @@
 // We mean it.
 //
 
-#include <QtCore/qlist.h>
-#include <QtCore/qobject.h>
-#include <QtCore/qscopedpointer.h>
-#include <QtQml/qjsvalue.h>
-#include <QtWebEngineCore/qwebenginescript.h>
-#include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
+#include <QtWebEngineCore/qwebenginescriptcollection.h>
+
+#include <QPointer>
 
 QT_BEGIN_NAMESPACE
+
 class QQmlEngine;
-class QQuickWebEngineScriptCollectionPrivate;
 
-class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineScriptCollection : public QObject
+class QQuickWebEngineScriptCollectionPrivate : public QWebEngineScriptCollection
 {
-    Q_OBJECT
 public:
-    Q_PROPERTY(QJSValue collection READ collection WRITE setCollection NOTIFY collectionChanged)
-    ~QQuickWebEngineScriptCollection();
+    QQuickWebEngineScriptCollectionPrivate(QWebEngineScriptCollectionPrivate *d);
+    ~QQuickWebEngineScriptCollectionPrivate();
 
-    Q_INVOKABLE bool contains(const QWebEngineScript &value) const;
-    Q_INVOKABLE QList<QWebEngineScript> find(const QString &name) const;
-    Q_INVOKABLE void insert(const QWebEngineScript &);
-    Q_INVOKABLE void insert(const QList<QWebEngineScript> &list);
-    Q_INVOKABLE bool remove(const QWebEngineScript &);
-    Q_INVOKABLE void clear();
-
-    QJSValue collection() const;
-    void setCollection(const QJSValue &scripts);
-
-Q_SIGNALS:
-    void collectionChanged();
-
-private:
-    Q_DISABLE_COPY(QQuickWebEngineScriptCollection)
-    QQuickWebEngineScriptCollection(QQuickWebEngineScriptCollectionPrivate *d);
-    QScopedPointer<QQuickWebEngineScriptCollectionPrivate> d;
-    friend class QQuickWebEngineProfilePrivate;
-    friend class QQuickWebEngineViewPrivate;
-    QQmlEngine* qmlEngine();
-    void setQmlEngine(QQmlEngine *engine);
+    Q_DISABLE_COPY(QQuickWebEngineScriptCollectionPrivate)
+    QPointer<QQmlEngine> m_qmlEngine;
 };
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QQuickWebEngineScriptCollection *)
-
-#endif // QWEBENGINESCRIPTCOLLECTION_H
+#endif

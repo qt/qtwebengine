@@ -95,7 +95,9 @@ private:
     QScopedPointer<QQuickWebEngineSettings> m_settings;
     QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
     QMap<quint32, QPointer<QQuickWebEngineDownloadRequest> > m_ongoingDownloads;
+
     QScopedPointer<QQuickWebEngineScriptCollection> m_scriptCollection;
+    QQuickWebEngineScriptCollection *getUserScripts();
 };
 
 QT_END_NAMESPACE

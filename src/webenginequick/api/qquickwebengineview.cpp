@@ -46,6 +46,7 @@
 #include "qquickwebengineprofile.h"
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginescriptcollection_p.h"
+#include "qquickwebenginescriptcollection_p_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginetouchhandleprovider_p_p.h"
 #include "qquickwebenginetouchselectionmenurequest_p.h"
@@ -191,14 +192,18 @@ void QQuickWebEngineViewPrivate::initializeProfile()
     if (!m_profileInitialized) {
         Q_ASSERT(!adapter->isInitialized());
         m_profileInitialized = true;
-        if (!m_profile)
+
+        if (!m_profile) {
             m_profile = QQuickWebEngineProfile::defaultProfile();
+
+            // MEMO first ever call to default profile will create one without context
+            // it needs something to get qml engine from (and view is created in qml land)
+            m_profile->ensureQmlContext(q_ptr);
+        }
+
         m_profile->d_ptr->addWebContentsAdapterClient(this);
         m_settings.reset(new QQuickWebEngineSettings(m_profile->settings()));
         adapter->setClient(this);
-        m_scriptCollection.reset(new QQuickWebEngineScriptCollection(
-                new QWebEngineScriptCollection(new QWebEngineScriptCollectionPrivate(
-                        profileAdapter()->userResourceController(), adapter))));
     }
 }
 
@@ -863,7 +868,8 @@ void QQuickWebEngineViewPrivate::initializationFinished()
     if (devToolsView && devToolsView->d_ptr->adapter)
         adapter->openDevToolsFrontend(devToolsView->d_ptr->adapter);
 
-    m_scriptCollection->d->d->initializationFinished(adapter);
+    if (m_scriptCollection)
+        m_scriptCollection->d->d->initializationFinished(adapter);
 
     if (q->window())
         adapter->setVisible(q->isVisible());
@@ -1013,6 +1019,22 @@ void QQuickWebEngineViewPrivate::updateEditActions()
     updateAction(QQuickWebEngineView::Unselect);
 }
 
+QQuickWebEngineScriptCollection *QQuickWebEngineViewPrivate::getUserScripts()
+{
+    Q_Q(QQuickWebEngineView);
+    if (!m_scriptCollection)
+        m_scriptCollection.reset(
+            new QQuickWebEngineScriptCollection(
+                new QQuickWebEngineScriptCollectionPrivate(
+                    new QWebEngineScriptCollectionPrivate(
+                        profileAdapter()->userResourceController(), adapter))));
+
+    if (!m_scriptCollection->qmlEngine())
+        m_scriptCollection->setQmlEngine(qmlEngine(q));
+
+    return m_scriptCollection.data();
+}
+
 QUrl QQuickWebEngineView::url() const
 {
     Q_D(const QQuickWebEngineView);
@@ -1134,7 +1156,7 @@ QQuickWebEngineSettings *QQuickWebEngineView::settings()
 QQuickWebEngineScriptCollection *QQuickWebEngineView::userScripts()
 {
     Q_D(QQuickWebEngineView);
-    return d->m_scriptCollection.data();
+    return d->getUserScripts();
 }
 
 void QQuickWebEngineViewPrivate::updateAdapter()
