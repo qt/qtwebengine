@@ -60,6 +60,8 @@ Item {
         return script
     }
 
+    WebEngineProfile { id: testProfile }
+
     TestWebEngineView {
         id: webEngineView
         width: 400
@@ -89,13 +91,28 @@ Item {
     }
 
     TestCase {
-        name: "WebEngineViewUserScripts"
+        name: "UserScripts"
 
-
-        function init() {
+        function cleanup() {
             webEngineView.url = "";
             webEngineView.userScripts.collection = [];
+            compare(webEngineView.userScripts.collection.length, 0)
             webEngineView.profile.userScripts.collection = [];
+            compare(webEngineView.profile.userScripts.collection.length, 0)
+        }
+
+        function test_profileScripts() {
+            // assusme it is the same type as in View
+            let t1 = String(testProfile.userScripts), t2 = String(webEngineView.userScripts)
+            compare(t1.substr(0, t1.indexOf('(')), t2.substr(0, t2.indexOf('(')))
+
+            // ... and just test basic things like access
+            compare(testProfile.userScripts.collection, [])
+            let script = changeDocumentTitleScript()
+            testProfile.userScripts.collection = [ script ]
+
+            compare(testProfile.userScripts.collection.length, 1)
+            compare(testProfile.userScripts.collection[0].name, script.name)
         }
 
         function test_oneScript() {
@@ -103,8 +120,10 @@ Item {
             webEngineView.waitForLoadSucceeded();
             tryCompare(webEngineView, "title", "Test page 1");
 
-            webEngineView.userScripts.collection = [ changeDocumentTitleScript() ]
-            
+            let script = changeDocumentTitleScript()
+            webEngineView.userScripts.collection = [ script ]
+            compare(webEngineView.userScripts.collection.length, 1)
+            compare(webEngineView.userScripts.collection[0].name, script.name)
             compare(webEngineView.title, "Test page 1");
 
             webEngineView.reload();
@@ -116,6 +135,7 @@ Item {
             tryCompare(webEngineView, "title", "New title");
 
             webEngineView.userScripts.collection = [];
+            compare(webEngineView.userScripts.collection.length, 0)
             compare(webEngineView.title, "New title");
 
             webEngineView.reload();
@@ -131,6 +151,7 @@ Item {
             var script2 = appendDocumentTitleScript();
             script2.injectionPoint = WebEngineScript.Deferred;
             webEngineView.userScripts.collection = [ script1, script2 ];
+            compare(webEngineView.userScripts.collection.length, 2)
 
             // Make sure the scripts are loaded in order.
             webEngineView.reload();
@@ -140,12 +161,14 @@ Item {
             script2.injectionPoint = WebEngineScript.DocumentReady
             script1.injectionPoint = WebEngineScript.Deferred
             webEngineView.userScripts.collection = [ script1, script2 ];
+            compare(webEngineView.userScripts.collection.length, 2)
             webEngineView.reload();
             webEngineView.waitForLoadSucceeded();
             tryCompare(webEngineView, "title", "New title");
 
             // Make sure we can remove scripts from the preload list.
             webEngineView.userScripts.collection = [ script2 ];
+            compare(webEngineView.userScripts.collection.length, 1)
             webEngineView.reload();
             webEngineView.waitForLoadSucceeded();
             tryCompare(webEngineView, "title", "Test page 1 with appendix");
@@ -169,6 +192,7 @@ Item {
 
         function test_bigScript() {
             webEngineView.userScripts.collection = [ bigUserScript() ];
+            compare(webEngineView.userScripts.collection.length, 1)
             webEngineView.url = Qt.resolvedUrl("test1.html");
             webEngineView.waitForLoadSucceeded();
             tryCompare(webEngineView , "title", "Big user script changed title");
@@ -180,6 +204,8 @@ Item {
             compare(script.injectionPoint, WebEngineScript.DocumentReady);
 
             webEngineView.userScripts.collection = [ script ];
+            compare(webEngineView.userScripts.collection.length, 1)
+            compare(webEngineView.userScripts.collection[0].name, script.name)
 
             // @include *data/test*.html
             webEngineView.url = Qt.resolvedUrl("test1.html");
@@ -208,6 +234,7 @@ Item {
             compare(script.injectionPoint, WebEngineScript.DocumentReady);
 
             webEngineView.userScripts.collection = [ script ];
+            compare(webEngineView.userScripts.collection.length, 1)
 
             // @match some:junk
             webEngineView.url = Qt.resolvedUrl("test2.html");
@@ -216,7 +243,10 @@ Item {
         }
 
         function test_profileWideScript() {
-            webEngineView.profile.userScripts.collection = [ changeDocumentTitleScript() ];
+            let script = changeDocumentTitleScript()
+            webEngineView.profile.userScripts.collection = [ script ];
+            compare(webEngineView.profile.userScripts.collection.length, 1)
+            compare(webEngineView.profile.userScripts.collection[0].name, script.name)
 
             webEngineView.url = Qt.resolvedUrl("test1.html");
             webEngineView.waitForLoadSucceeded();

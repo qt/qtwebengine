@@ -41,6 +41,9 @@
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginesingleton_p.h"
 
+#include <QtQml/qqmlcontext.h>
+#include <QtQml/qqmlengine.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -87,7 +90,13 @@ QQuickWebEngineSettings *QQuickWebEngineSingleton::settings() const
 */
 QQuickWebEngineProfile *QQuickWebEngineSingleton::defaultProfile() const
 {
-    return QQuickWebEngineProfile::defaultProfile();
+    auto profile = QQuickWebEngineProfile::defaultProfile();
+
+    // MEMO first ever call to default profile will create one without context
+    // it needs something to get qml engine from (WebEngine singleton is created in qml land)
+    profile->ensureQmlContext(this);
+
+    return profile;
 }
 
 QWebEngineScript QQuickWebEngineSingleton::script() const

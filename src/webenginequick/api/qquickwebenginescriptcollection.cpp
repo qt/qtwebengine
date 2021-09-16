@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qquickwebenginescriptcollection_p.h"
+#include "qquickwebenginescriptcollection_p_p.h"
 #include "qwebenginescriptcollection.h"
 #include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
 #include <QtQml/qqmlinfo.h>
@@ -79,9 +80,18 @@ QWebEngineScript parseScript(const QJSValue &value, bool *ok)
     return s;
 }
 
-QQuickWebEngineScriptCollection::QQuickWebEngineScriptCollection(
-        QWebEngineScriptCollection *collection)
-    : d(collection)
+QQuickWebEngineScriptCollectionPrivate::QQuickWebEngineScriptCollectionPrivate(QWebEngineScriptCollectionPrivate *p)
+    : QWebEngineScriptCollection(p)
+{
+
+}
+
+QQuickWebEngineScriptCollectionPrivate::~QQuickWebEngineScriptCollectionPrivate()
+{
+}
+
+QQuickWebEngineScriptCollection::QQuickWebEngineScriptCollection(QQuickWebEngineScriptCollectionPrivate *p)
+    : d(p)
 {
 }
 
@@ -119,10 +129,13 @@ void QQuickWebEngineScriptCollection::clear()
 
 QJSValue QQuickWebEngineScriptCollection::collection() const
 {
+    if (!d->m_qmlEngine) {
+        qmlWarning(this) << "Scripts collection doesn't have QML engine set! Undefined value is returned.";
+        return QJSValue();
+    }
+
     const QList<QWebEngineScript> &list = d->toList();
-    QQmlContext *context = QQmlEngine::contextForObject(this);
-    QQmlEngine *engine = context->engine();
-    QV4::ExecutionEngine *v4 = QQmlEnginePrivate::getV4Engine(engine);
+    QV4::ExecutionEngine *v4 = QQmlEnginePrivate::getV4Engine(d->m_qmlEngine);
     QV4::Scope scope(v4);
     QV4::Scoped<QV4::ArrayObject> scriptArray(scope, v4->newArrayObject(list.length()));
     int i = 0;
@@ -154,4 +167,15 @@ void QQuickWebEngineScriptCollection::setCollection(const QJSValue &scripts)
         insert(scriptList);
         Q_EMIT collectionChanged();
     }
+}
+
+QQmlEngine* QQuickWebEngineScriptCollection::qmlEngine()
+{
+    return d->m_qmlEngine;
+}
+
+void QQuickWebEngineScriptCollection::setQmlEngine(QQmlEngine *engine)
+{
+    Q_ASSERT(engine);
+    d->m_qmlEngine = engine;
 }
