@@ -42,6 +42,7 @@
 #include "qquickwebenginedownloadrequest_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginescriptcollection_p.h"
+#include "qquickwebenginescriptcollection_p_p.h"
 #include "qquickwebengineview_p_p.h"
 
 #include "profile_adapter.h"
@@ -56,6 +57,7 @@
 
 #include <QtCore/qdir.h>
 #include <QtCore/qfileinfo.h>
+#include <QtQml/qqmlcontext.h>
 #include <QtQml/qqmlengine.h>
 
 using QtWebEngineCore::ProfileAdapter;
@@ -161,8 +163,6 @@ QT_BEGIN_NAMESPACE
 QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(ProfileAdapter *profileAdapter)
     : m_settings(new QQuickWebEngineSettings())
     , m_profileAdapter(profileAdapter)
-    , m_scriptCollection(new QQuickWebEngineScriptCollection(new QWebEngineScriptCollection(
-              new QWebEngineScriptCollectionPrivate(profileAdapter->userResourceController()))))
 {
     profileAdapter->addClient(this);
     // Fullscreen API was implemented before the supported setting, so we must
@@ -305,6 +305,21 @@ void QQuickWebEngineProfilePrivate::showNotification(QSharedPointer<QtWebEngineC
     Q_EMIT q->presentNotification(notification);
 }
 
+QQuickWebEngineScriptCollection *QQuickWebEngineProfilePrivate::getUserScripts()
+{
+    Q_Q(QQuickWebEngineProfile);
+    if (!m_scriptCollection)
+        m_scriptCollection.reset(
+            new QQuickWebEngineScriptCollection(
+                new QQuickWebEngineScriptCollectionPrivate(
+                    new QWebEngineScriptCollectionPrivate(
+                        m_profileAdapter->userResourceController()))));
+
+    if (!m_scriptCollection->qmlEngine())
+        m_scriptCollection->setQmlEngine(qmlEngine(q));
+
+    return m_scriptCollection.data();
+}
 /*!
     \qmltype WebEngineProfile
     \instantiates QQuickWebEngineProfile
@@ -947,8 +962,7 @@ QQuickWebEngineSettings *QQuickWebEngineProfile::settings() const
 
 QQuickWebEngineScriptCollection *QQuickWebEngineProfile::userScripts() const
 {
-    const Q_D(QQuickWebEngineProfile);
-    return d->m_scriptCollection.data();
+    return d_ptr->getUserScripts();
 }
 
 /*!
@@ -964,6 +978,14 @@ QWebEngineClientCertificateStore *QQuickWebEngineProfile::clientCertificateStore
 #else
     return nullptr;
 #endif
+}
+
+void QQuickWebEngineProfile::ensureQmlContext(const QObject *object)
+{
+    if (!qmlContext(this)) {
+        auto engine = qmlEngine(object);
+        QQmlEngine::setContextForObject(this, new QQmlContext(engine, engine));
+    }
 }
 
 QT_END_NAMESPACE

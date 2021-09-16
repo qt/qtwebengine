@@ -199,6 +199,7 @@ public:
     QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick *widget = nullptr;
 
     bool profileInitialized() const;
+    QQuickWebEngineScriptCollection *getUserScripts();
 
 private:
     QScopedPointer<QtWebEngineCore::UIDelegatesManager> m_uIDelegatesManager;
