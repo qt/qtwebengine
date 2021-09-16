@@ -93,18 +93,15 @@ void WebChannelTransport::Install(blink::WebLocalFrame *frame, uint worldId)
     gin::Handle<WebChannelTransport> transport = gin::CreateHandle(isolate, new WebChannelTransport);
 
     v8::Local<v8::Object> global = context->Global();
-    v8::MaybeLocal<v8::Value> qtObjectValue = global->Get(context, gin::StringToV8(isolate, "qt"));
+    v8::Local<v8::Value> qtObjectValue;
     v8::Local<v8::Object> qtObject;
-    if (qtObjectValue.IsEmpty() || !qtObjectValue.ToLocalChecked()->IsObject()) {
+    if (!global->Get(context, gin::StringToV8(isolate, "qt")).ToLocal(&qtObjectValue) || !qtObjectValue->IsObject()) {
         qtObject = v8::Object::New(isolate);
-        auto whocares = global->Set(context, gin::StringToV8(isolate, "qt"), qtObject);
-        // FIXME: Perhaps error out, but the return value is V8 internal...
-        Q_UNUSED(whocares);
+        global->Set(context, gin::StringToV8(isolate, "qt"), qtObject).Check();
     } else {
-        qtObject = v8::Local<v8::Object>::Cast(qtObjectValue.ToLocalChecked());
+        qtObject = v8::Local<v8::Object>::Cast(qtObjectValue);
     }
-    auto whocares = qtObject->Set(context, gin::StringToV8(isolate, "webChannelTransport"), transport.ToV8());
-    Q_UNUSED(whocares);
+    qtObject->Set(context, gin::StringToV8(isolate, "webChannelTransport"), transport.ToV8()).Check();
 }
 
 void WebChannelTransport::Uninstall(blink::WebLocalFrame *frame, uint worldId)
@@ -119,13 +116,11 @@ void WebChannelTransport::Uninstall(blink::WebLocalFrame *frame, uint worldId)
     v8::Context::Scope contextScope(context);
 
     v8::Local<v8::Object> global(context->Global());
-    v8::MaybeLocal<v8::Value> qtObjectValue = global->Get(context, gin::StringToV8(isolate, "qt"));
-    if (qtObjectValue.IsEmpty() || !qtObjectValue.ToLocalChecked()->IsObject())
+    v8::Local<v8::Value> qtObjectValue;
+    if (!global->Get(context, gin::StringToV8(isolate, "qt")).ToLocal(&qtObjectValue) || !qtObjectValue->IsObject())
         return;
-    v8::Local<v8::Object> qtObject = v8::Local<v8::Object>::Cast(qtObjectValue.ToLocalChecked());
-    // FIXME: We can't do anything about a failure, so why the .. is it nodiscard?
-    auto whocares = qtObject->Delete(context, gin::StringToV8(isolate, "webChannelTransport"));
-    Q_UNUSED(whocares);
+    v8::Local<v8::Object> qtObject = v8::Local<v8::Object>::Cast(qtObjectValue);
+    qtObject->Delete(context, gin::StringToV8(isolate, "webChannelTransport")).Check();
 }
 
 void WebChannelTransport::NativeQtSendMessage(gin::Arguments *args)
