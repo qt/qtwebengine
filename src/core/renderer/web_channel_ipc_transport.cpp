@@ -259,19 +259,19 @@ void WebChannelIPCTransport::DispatchWebChannelMessage(const std::vector<uint8_t
     frame->CallFunctionEvenIfScriptDisabled(callback, webChannelObject, 1, argv);
 }
 
-void WebChannelIPCTransport::WillReleaseScriptContext(v8::Local<v8::Context> context, int worldId)
+void WebChannelIPCTransport::DidCreateScriptContext(v8::Local<v8::Context> context, int32_t worldId)
 {
-    if (static_cast<uint>(worldId) == m_worldId)
-        m_canUseContext = false;
-}
-
-void WebChannelIPCTransport::DidClearWindowObject()
-{
-    if (!m_canUseContext) {
+    if (static_cast<uint>(worldId) == m_worldId && !m_canUseContext) {
         m_canUseContext = true;
         if (m_worldInitialized)
             WebChannelTransport::Install(render_frame()->GetWebFrame(), m_worldId);
     }
+}
+
+void WebChannelIPCTransport::WillReleaseScriptContext(v8::Local<v8::Context> context, int worldId)
+{
+    if (static_cast<uint>(worldId) == m_worldId)
+        m_canUseContext = false;
 }
 
 void WebChannelIPCTransport::OnDestruct()
