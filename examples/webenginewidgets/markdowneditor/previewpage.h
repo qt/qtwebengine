@@ -57,10 +57,10 @@ class PreviewPage : public QWebEnginePage
 {
     Q_OBJECT
 public:
-    explicit PreviewPage(QObject *parent = nullptr) : QWebEnginePage(parent) {}
+    using QWebEnginePage::QWebEnginePage;
 
 protected:
-    bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame);
+    bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame) override;
 };
 
 #endif // PREVIEWPAGE_H
