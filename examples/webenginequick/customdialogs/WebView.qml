@@ -152,4 +152,13 @@ WebEngineView {
                      properties: {"request": request}});
 
     }
+
+    onTouchSelectionMenuRequested: function(request) {
+        if (useDefaultDialogs)
+            return;
+
+        request.accepted = true;
+        openForm({item: Qt.resolvedUrl("forms/TouchSelectionMenu.qml"),
+                     properties: {"request": request}});
+    }
 }

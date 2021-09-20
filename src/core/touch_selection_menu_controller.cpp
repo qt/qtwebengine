@@ -53,17 +53,11 @@ TouchSelectionMenuController::~TouchSelectionMenuController()
 
 int TouchSelectionMenuController::buttonCount()
 {
-    int buttonCount = 1;
-
-    for (int commandId = 0; commandId <= static_cast<int>(Paste); ++commandId) {
-        if (m_touchSelectionControllerClient->IsCommandIdEnabled(commandId))
-            buttonCount++;
-    }
-
-    return buttonCount;
+    // Context menu should be always available
+    return qPopulationCount(static_cast<quint8>(availableActions())) + 1;
 }
 
-bool TouchSelectionMenuController::isCommandEnabled(TouchSelectionCommand command)
+bool TouchSelectionMenuController::isCommandEnabled(TouchSelectionMenuController::TouchSelectionCommandFlag command)
 {
     return m_touchSelectionControllerClient->IsCommandIdEnabled(static_cast<int>(command));
 }
@@ -86,6 +80,23 @@ void TouchSelectionMenuController::paste()
 void TouchSelectionMenuController::runContextMenu()
 {
     return m_touchSelectionControllerClient->RunContextMenu();
+}
+
+TouchSelectionMenuController::TouchSelectionCommandFlags TouchSelectionMenuController::availableActions()
+{
+    TouchSelectionCommandFlags availableActions;
+
+    if (m_touchSelectionControllerClient->IsCommandIdEnabled(Cut)) {
+        availableActions |= TouchSelectionMenuController::Cut;
+    }
+    if (m_touchSelectionControllerClient->IsCommandIdEnabled(Copy)) {
+        availableActions |= TouchSelectionMenuController::Copy;
+    }
+    if (m_touchSelectionControllerClient->IsCommandIdEnabled(Paste)) {
+        availableActions |= TouchSelectionMenuController::Paste;
+    }
+
+    return availableActions;
 }
 
 } // namespace QtWebEngineCore

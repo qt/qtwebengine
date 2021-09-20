@@ -87,6 +87,7 @@ class QWebEngineNewWindowRequest;
 class QWebEngineQuotaRequest;
 class QWebEngineRegisterProtocolHandlerRequest;
 class QQuickWebEngineScriptCollection;
+class QQuickWebEngineTouchSelectionMenuRequest;
 
 class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
@@ -563,6 +564,7 @@ Q_SIGNALS:
     Q_REVISION(1,11) void canGoBackChanged();
     Q_REVISION(1,11) void canGoForwardChanged();
     Q_REVISION(1,12) void newWindowRequested(QQuickWebEngineNewWindowRequest *request);
+    Q_REVISION(6,3) void touchSelectionMenuRequested(QQuickWebEngineTouchSelectionMenuRequest *request);
 
 protected:
     void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;

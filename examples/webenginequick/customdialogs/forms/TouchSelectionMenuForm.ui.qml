@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -49,55 +49,38 @@
 ****************************************************************************/
 
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Window
 
-Window {
-    id: mainWindow
-    width: 800
-    height: 610
-    visible: true
+Item {
+    property alias cut: cut
+    property alias copy: copy
+    property alias paste: paste
+    property alias contextMenu: contextMenu
 
-    StackView {
-        id: stackView
-        anchors.fill: parent
-        focus: true
-        initialItem: Item {
-            id: main
-            width: mainWindow.width
-            height: mainWindow.height
-            ColumnLayout {
-                anchors.fill: parent
-                SwitchButton {
-                    id: switcher
-                    Layout.fillWidth: true
-                }
-                WebView {
-                    id: webView
-                    useDefaultDialogs: switcher.checked
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                }
-            }
+    ColumnLayout {
+        id: columnLayout
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        CustomButton {
+            id: cut
+            btnText: qsTr("Cut")
         }
 
-        function closeForm()
-        {
-            pop(main);
-            // reset url in case of proxy error
-            webView.url = "qrc:/index.html"
+        CustomButton {
+            id: copy
+            btnText: qsTr("Copy")
         }
 
-        function openForm(form)
-        {
-            push(form.item, form.properties);
-            currentItem.closeForm.connect(closeForm);
+        CustomButton {
+            id: paste
+            btnText: qsTr("Paste")
         }
 
-    }
+        CustomButton {
+            id: contextMenu
+            btnText: qsTr("...")
+        }
 
-    Component.onCompleted: {
-        webView.openForm.connect(stackView.openForm);
     }
 }

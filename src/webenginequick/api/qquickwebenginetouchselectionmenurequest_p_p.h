@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,43 +37,43 @@
 **
 ****************************************************************************/
 
-#ifndef TOUCH_SELECTION_MENU_CONTROLLER_H
-#define TOUCH_SELECTION_MENU_CONTROLLER_H
+#ifndef QQUICKWEBENGINETOUCHSELECTIONMENUREQUEST_P_P_H
+#define QQUICKWEBENGINETOUCHSELECTIONMENUREQUEST_P_P_H
 
-#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
-#include <QtCore/QObject>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtWebEngineQuick/private/qquickwebengineview_p.h>
+#include "qquickwebenginetouchselectionmenurequest_p.h"
 
 namespace QtWebEngineCore {
+class TouchSelectionMenuController;
+}
 
-class TouchSelectionControllerClientQt;
+QT_BEGIN_NAMESPACE
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT TouchSelectionMenuController : public QObject {
-    Q_OBJECT
+class QQuickWebEngineTouchSelectionMenuRequest;
+
+class QQuickWebEngineTouchSelectionMenuRequestPrivate
+{
 public:
-    enum TouchSelectionCommandFlag {
-        Cut = 0x1,
-        Copy = 0x2,
-        Paste = 0x4
-    };
-    Q_DECLARE_FLAGS(TouchSelectionCommandFlags, TouchSelectionCommandFlag);
-    Q_FLAG(TouchSelectionCommandFlag)
+    QQuickWebEngineTouchSelectionMenuRequestPrivate(
+            QRect bounds, QtWebEngineCore::TouchSelectionMenuController *touchSelectionMenuController);
 
-    TouchSelectionMenuController(TouchSelectionControllerClientQt *touchSelectionControllerClient);
-    ~TouchSelectionMenuController();
-    int buttonCount();
-    bool isCommandEnabled(TouchSelectionCommandFlag);
-    TouchSelectionCommandFlags availableActions();
-
-public Q_SLOTS:
-    void cut();
-    void copy();
-    void paste();
-    void runContextMenu();
-
-private:
-    TouchSelectionControllerClientQt *m_touchSelectionControllerClient;
+    bool accepted = false;
+    QRect selectionBounds;
+    uint touchSelectionCommandFlags;
+    int buttonCount;
 };
 
-} // namespace QtWebEngineCore
+QT_END_NAMESPACE
 
-#endif // TOUCH_SELECTION_CONTROLLER_CLIENT_QT_H
+#endif // QQUICKWEBENGINETOUCHSELECTIONMENUREQUEST_P_P_H

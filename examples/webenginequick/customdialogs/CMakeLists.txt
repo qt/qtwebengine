@@ -48,6 +48,8 @@ set(customdialogs_resource_files
     "forms/JavaScriptForm.ui.qml"
     "forms/Menu.qml"
     "forms/MenuForm.ui.qml"
+    "forms/TouchSelectionMenu.qml"
+    "forms/TouchSelectionMenuForm.ui.qml"
     "icon.svg"
     "index.html"
     "main.qml"

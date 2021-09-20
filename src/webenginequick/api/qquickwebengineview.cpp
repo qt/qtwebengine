@@ -48,6 +48,7 @@
 #include "qquickwebenginescriptcollection_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginetouchhandleprovider_p_p.h"
+#include "qquickwebenginetouchselectionmenurequest_p.h"
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
 
@@ -1241,10 +1242,20 @@ QtWebEngineCore::TouchHandleDrawableClient *QQuickWebEngineViewPrivate::createTo
 void QQuickWebEngineViewPrivate::showTouchSelectionMenu(QtWebEngineCore::TouchSelectionMenuController *menuController, const QRect &selectionBounds, const QSize &handleSize)
 {
     Q_UNUSED(handleSize);
+    Q_Q(QQuickWebEngineView);
 
     const int kSpacingBetweenButtons = 2;
     const int kMenuButtonMinWidth = 63;
     const int kMenuButtonMinHeight = 38;
+
+    QQuickWebEngineTouchSelectionMenuRequest *request = new QQuickWebEngineTouchSelectionMenuRequest(
+                selectionBounds, menuController);
+    qmlEngine(q)->newQObject(request);
+    Q_EMIT q->touchSelectionMenuRequested(request);
+
+    if (request->isAccepted()) {
+        return;
+    }
 
     int buttonCount = menuController->buttonCount();
     if (buttonCount == 1) {
