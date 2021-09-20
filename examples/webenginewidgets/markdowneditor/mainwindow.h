@@ -72,12 +72,14 @@ public:
 
     void openFile(const QString &path);
 
+protected:
+    void closeEvent(QCloseEvent *e) override;
+
 private slots:
     void onFileNew();
     void onFileOpen();
     void onFileSave();
     void onFileSaveAs();
-    void onExit();
 
 private:
     bool isModified() const;

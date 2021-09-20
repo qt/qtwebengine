@@ -56,6 +56,7 @@
 #include <QFileDialog>
 #include <QFontDatabase>
 #include <QMessageBox>
+#include <QStatusBar>
 #include <QTextStream>
 #include <QWebChannel>
 
@@ -83,7 +84,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::onFileOpen);
     connect(ui->actionSave, &QAction::triggered, this, &MainWindow::onFileSave);
     connect(ui->actionSaveAs, &QAction::triggered, this, &MainWindow::onFileSaveAs);
-    connect(ui->actionExit, &QAction::triggered, this, &MainWindow::onExit);
+    connect(ui->actionExit, &QAction::triggered, this, &QWidget::close);
 
     connect(ui->editor->document(), &QTextDocument::modificationChanged,
             ui->actionSave, &QAction::setEnabled);
@@ -109,6 +110,7 @@ void MainWindow::openFile(const QString &path)
     }
     m_filePath = path;
     ui->editor->setPlainText(f.readAll());
+    statusBar()->showMessage(tr("Opened %1").arg(QDir::toNativeSeparators(path)));
 }
 
 bool MainWindow::isModified() const
@@ -139,12 +141,11 @@ void MainWindow::onFileOpen()
             return;
     }
 
-    QString path = QFileDialog::getOpenFileName(this,
-        tr("Open MarkDown File"), "", tr("MarkDown File (*.md)"));
-    if (path.isEmpty())
-        return;
-
-    openFile(path);
+    QFileDialog dialog(this, tr("Open MarkDown File"));
+    dialog.setMimeTypeFilters({"text/markdown"});
+    dialog.setAcceptMode(QFileDialog::AcceptOpen);
+    if (dialog.exec() == QDialog::Accepted)
+        openFile(dialog.selectedFiles().constFirst());
 }
 
 void MainWindow::onFileSave()
@@ -165,25 +166,29 @@ void MainWindow::onFileSave()
     str << ui->editor->toPlainText();
 
     ui->editor->document()->setModified(false);
+
+    statusBar()->showMessage(tr("Wrote %1").arg(QDir::toNativeSeparators(m_filePath)));
 }
 
 void MainWindow::onFileSaveAs()
 {
-    QString path = QFileDialog::getSaveFileName(this,
-        tr("Save MarkDown File"), "", tr("MarkDown File (*.md *.markdown)"));
-    if (path.isEmpty())
+    QFileDialog dialog(this, tr("Save MarkDown File"));
+    dialog.setMimeTypeFilters({"text/markdown"});
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setDefaultSuffix("md");
+    if (dialog.exec() != QDialog::Accepted)
         return;
-    m_filePath = path;
+
+    m_filePath = dialog.selectedFiles().constFirst();
     onFileSave();
 }
 
-void MainWindow::onExit()
+void MainWindow::closeEvent(QCloseEvent *e)
 {
     if (isModified()) {
         QMessageBox::StandardButton button = QMessageBox::question(this, windowTitle(),
                              tr("You have unsaved changes. Do you want to exit anyway?"));
         if (button != QMessageBox::Yes)
-            return;
+            e->ignore();
     }
-    close();
 }
