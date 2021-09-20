@@ -70,6 +70,7 @@ private Q_SLOTS:
     void webChannelWithExistingQtObject();
     void navigation();
     void webChannelWithBadString();
+    void webChannelWithJavaScriptDisabled();
 #endif
     void noTransportWithoutWebChannel();
     void scriptsInNestedIframes();
@@ -591,6 +592,36 @@ void tst_QWebEngineScript::webChannelWithBadString()
     // expect 0xD800 see https://chromium-review.googlesource.com/c/1282993
     QChar data(0xd800);
     QCOMPARE(host.text(), data);
+}
+
+void tst_QWebEngineScript::webChannelWithJavaScriptDisabled()
+{
+    QWebEnginePage page;
+    QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
+    // JavaScript disabled in main world
+    page.settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, false);
+
+    TestObject testObject;
+    QScopedPointer<QWebChannel> channel(new QWebChannel(this));
+    channel->registerObject(QStringLiteral("object"), &testObject);
+    page.setWebChannel(channel.data(), QWebEngineScript::ApplicationWorld);
+
+    QWebEngineScript script = webChannelScript();
+    script.setWorldId(QWebEngineScript::ApplicationWorld);
+    page.scripts().insert(script);
+
+    page.setHtml(QStringLiteral("<html><body></body></html>"));
+    QVERIFY(spyFinished.wait());
+
+    QSignalSpy spyTextChanged(&testObject, &TestObject::textChanged);
+    page.runJavaScript(QLatin1String(
+                                "new QWebChannel(qt.webChannelTransport,"
+                                "  function(channel) {"
+                                "    channel.objects.object.text = 'test';"
+                                "  }"
+                                ");"), QWebEngineScript::ApplicationWorld);
+    QVERIFY(spyTextChanged.wait());
+    QCOMPARE(testObject.text(), QStringLiteral("test"));
 }
 #endif
 

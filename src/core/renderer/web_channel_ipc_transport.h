@@ -64,8 +64,8 @@ private:
     void DispatchWebChannelMessage(const std::vector<uint8_t> &json, uint32_t worldId) override;
 
     // RenderFrameObserver
+    void DidCreateScriptContext(v8::Local<v8::Context> context, int32_t worldId) override;
     void WillReleaseScriptContext(v8::Local<v8::Context> context, int worldId) override;
-    void DidClearWindowObject() override;
     void OnDestruct() override;
     void BindReceiver(mojo::PendingAssociatedReceiver<qtwebchannel::mojom::WebChannelTransportRender> receiver);
 
