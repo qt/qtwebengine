@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -236,7 +236,7 @@ private:
 
         QSpontaneKeyEvent::setSpontaneous(&me);
         if (!qApp->notify(window, &me))
-            QTest::qWarn("Mouse click event not accepted by receiving window");
+            qWarning("Mouse click event not accepted by receiving window");
     }
 };
 
