@@ -78,6 +78,19 @@ qt_internal_add_docs(WebEngineCore
     ../doc/qtwebengine.qdocconf
 )
 
+add_custom_command(
+    OUTPUT chromium_attributions.qdoc
+    COMMAND ${Python2_EXECUTABLE} chromium/tools/licenses.py
+        --file-template ../core/doc/about_credits.tmpl
+        --entry-template ../core/doc/about_credits_entry.tmpl
+        credits ${CMAKE_CURRENT_BINARY_DIR}/chromium_attributions.qdoc
+    DEPENDS ../doc/about_credits.tmpl ../doc/about_credits_entry.tmpl
+    WORKING_DIRECTORY ${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty
+    USES_TERMINAL
+)
+add_custom_target(generate_chromium_attributions DEPENDS chromium_attributions.qdoc)
+add_dependencies(generate_docs_WebEngineCore generate_chromium_attributions)
+
 ##
 #  WEBENGINECORE RESOURCES
 ##
