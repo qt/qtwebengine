@@ -125,6 +125,12 @@ int main(int argc, const char **argv)
 
     QCoreApplication qtApplication(argc, argv_.get());
 
-    return QtWebEngineCore::processMain(argc, argv);
+    if (argc == 1) {
+        qInfo("%s(%s/%s)", qPrintable(qtApplication.applicationName()), qWebEngineVersion(),
+              qWebEngineChromiumVersion());
+        return 0;
+    } else {
+        return QtWebEngineCore::processMain(argc, argv);
+    }
 }
 
