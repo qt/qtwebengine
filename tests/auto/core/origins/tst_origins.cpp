@@ -672,7 +672,7 @@ void tst_Origins::mixedXHR_data()
     QTest::newRow("file->cors") << QString("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
                                            + "/resources/mixedXHR.html")
                                 << QString("sendXHR('cors:/resources/mixedXHR.txt')")
-                                << QVariant(QString("ok"));
+                                << QVariant(QString("error"));
 
     QTest::newRow("qrc->file") << QString("qrc:/resources/mixedXHR.html")
                                << QString("sendXHR('file:"
