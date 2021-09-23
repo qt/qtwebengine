@@ -47,8 +47,11 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/cpp/cors/cors.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
+#include "url/url_util.h"
 
 #include "api/qwebengineurlrequestinfo_p.h"
 #include "type_conversion.h"
@@ -164,6 +167,7 @@ private:
     const uint64_t request_id_;
     const int32_t routing_id_;
     const uint32_t options_;
+    bool allowed_cors_ = true;
 
     // If the |target_loader_| called OnComplete with an error this stores it.
     // That way the destructor can send it to OnReceivedError if safe browsing
@@ -205,12 +209,37 @@ InterceptedRequest::InterceptedRequest(ProfileAdapter *profile_adapter,
     , target_factory_(std::move(target_factory))
     , weak_factory_(this)
 {
+    const bool disable_web_security = base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableWebSecurity);
     current_response_ = network::mojom::URLResponseHead::New();
+    current_response_->response_type = network::cors::CalculateResponseType(
+        request_.mode,
+        disable_web_security || (
+            request_.request_initiator && request_.request_initiator->IsSameOriginWith(url::Origin::Create(request_.url))));
     // If there is a client error, clean up the request.
     target_client_.set_disconnect_handler(
             base::BindOnce(&InterceptedRequest::OnURLLoaderClientError, base::Unretained(this)));
     proxied_loader_receiver_.set_disconnect_with_reason_handler(
             base::BindOnce(&InterceptedRequest::OnURLLoaderError, base::Unretained(this)));
+    if (!disable_web_security && request_.request_initiator) {
+        const std::vector<std::string> &localSchemes = url::GetLocalSchemes();
+        std::string fromScheme = request_.request_initiator->GetTupleOrPrecursorTupleIfOpaque().scheme();
+        if (base::Contains(localSchemes, fromScheme)) {
+            content::WebContents *wc = webContents();
+            std::string toScheme = request_.url.scheme();
+            // local schemes must have universal access, or be accessing something local and have local access.
+            if (fromScheme != toScheme) {
+                // note allow_file_access_from_file_urls maps to LocalContentCanAccessFileUrls in our API
+                // and allow_universal_access_from_file_urls to LocalContentCanAccessRemoteUrls, so we are
+                // using them as proxies for our API here.
+                if (toScheme == "file")
+                    allowed_cors_ = wc && wc->GetOrCreateWebPreferences().allow_file_access_from_file_urls;
+                else if (!base::Contains(localSchemes, toScheme))
+                    allowed_cors_ = wc && wc->GetOrCreateWebPreferences().allow_universal_access_from_file_urls;
+                else
+                    allowed_cors_ = true; // We should think about this for future patches
+            }
+        }
+    }
 }
 
 InterceptedRequest::~InterceptedRequest()
@@ -246,6 +275,14 @@ QWebEngineUrlRequestInterceptor* InterceptedRequest::getPageInterceptor()
 void InterceptedRequest::Restart()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    // This is a CORS check on the from URL, the normal check on the to URL is applied later
+    if (!allowed_cors_ && current_response_->response_type == network::mojom::FetchResponseType::kCors) {
+        target_client_->OnComplete(network::URLLoaderCompletionStatus(
+                                       network::CorsErrorStatus(network::mojom::CorsError::kCorsDisabledScheme)));
+        delete this;
+        return;
+    }
 
     // MEMO since all codepatch leading to Restart scheduled and executed as asynchronous tasks in main thread,
     //      interceptors may change in meantime and also during intercept call, so they should be resolved anew.
