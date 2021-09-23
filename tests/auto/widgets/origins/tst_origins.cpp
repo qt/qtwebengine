@@ -657,7 +657,7 @@ void tst_Origins::mixedXHR_data()
                                 << QVariant(QString("ok"));
     QTest::newRow("file->cors") << QString("file:" THIS_DIR "resources/mixedXHR.html")
                                 << QString("sendXHR('cors:/resources/mixedXHR.txt')")
-                                << QVariant(QString("ok"));
+                                << QVariant(QString("error"));
 
     QTest::newRow("qrc->file") << QString("qrc:/resources/mixedXHR.html")
                                << QString("sendXHR('file:" THIS_DIR "resources/mixedXHR.txt')")
