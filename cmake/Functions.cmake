@@ -757,6 +757,15 @@ macro(append_compiler_linker_sdk_setup)
                 mac_sdk_min="${macSdkVersion}"
             )
         endif()
+    else()
+        if(QT_FEATURE_use_lld_linker)
+            get_filename_component(clangBasePath ${CMAKE_LINKER} DIRECTORY)
+            get_filename_component(clangBasePath ${clangBasePath} DIRECTORY)
+            list(APPEND gnArgArg
+                clang_base_path="${clangBasePath}"
+                fatal_linker_warnings=false
+            )
+        endif()
     endif()
 
     if(WIN32)
