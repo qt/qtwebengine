@@ -50,13 +50,7 @@
 
 #include "utils.h"
 
-#ifndef QT_NO_WIDGETS
-#include <QtWidgets/QApplication>
-typedef QApplication Application;
-#else
 #include <QtGui/QGuiApplication>
-typedef QGuiApplication Application;
-#endif
 #include <QtQml/QQmlApplicationEngine>
 #include <QtQml/QQmlContext>
 #include <QtWebEngineQuick/qtwebenginequickglobal.h>
@@ -81,7 +75,7 @@ int main(int argc, char **argv)
     QCoreApplication::setOrganizationName("QtExamples");
     QtWebEngineQuick::initialize();
 
-    Application app(argc, argv);
+    QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine appEngine;
     Utils utils;

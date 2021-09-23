@@ -53,22 +53,14 @@
 #include <QNetworkProxy>
 #include <QQmlApplicationEngine>
 #include <QTimer>
-
-#ifndef QT_NO_WIDGETS
-#include <QtWidgets/QApplication>
-// QApplication is required to get native styling with QtQuickControls
-typedef QApplication Application;
-#else
 #include <QtGui/QGuiApplication>
-typedef QGuiApplication Application;
-#endif
 
 int main(int argc, char *argv[])
 {
     QCoreApplication::setOrganizationName("QtExamples");
     QtWebEngineQuick::initialize();
 
-    Application app(argc, argv);
+    QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
     Server *server = new Server(&engine);
