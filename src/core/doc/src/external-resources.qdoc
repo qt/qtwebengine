@@ -144,3 +144,19 @@
     \externalpage https://developers.google.com/web/updates/2017/09/autoplay-policy-changes
     \title Autoplay Policy Changes
 */
+
+// Workarounds for broken links introduced by README.chromium license files
+/*!
+    \externalpage #
+    \title This is the canonical public repository
+*/
+
+/*!
+    \externalpage #
+    \title NA
+*/
+
+/*!
+    \externalpage https://source.chromium.org/chromium/chromium/src/+/master:v8/src/base/ieee754.cc
+    \title source.chromium.org/chromium/chromium/src/+/master:v8/src/base/ieee754.cc
+*/
