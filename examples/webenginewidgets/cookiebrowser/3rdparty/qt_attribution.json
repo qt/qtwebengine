@@ -9,7 +9,7 @@
     "Homepage": "http://tango.freedesktop.org/Tango_Icon_Library",
     "Version": "0.8.90",
     "DownloadLocation": "http://tango.freedesktop.org/releases/tango-icon-theme-0.8.90.tar.gz",
-    "LicenseId": "DocumentRef-PublicDomain",
+    "LicenseId": "urn:dje:license:public-domain",
     "License": "Public Domain",
     "LicenseFile": "COPYING",
     "Copyright": "Ulisse Perusin <uli.peru@gmail.com>
