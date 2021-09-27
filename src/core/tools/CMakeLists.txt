@@ -11,6 +11,7 @@ if(QT_FEATURE_webengine_spellchecker)
         TOOLS_TARGET WebEngineCore
         SOURCES main.cpp
     )
+    qt_internal_return_unless_building_tools()
     qt_skip_warnings_are_errors(${dict_target_name})
     add_dependencies(${dict_target_name} WebEngineCore)
     qt_internal_extend_target(${dict_target_name} CONDITION WIN32
