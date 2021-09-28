@@ -189,43 +189,47 @@ int main(void){
 
 #### Features
 
-qt_feature("qtwebengine-build" PRIVATE
-    LABEL "Build Qt WebEngine"
+qt_feature("qtwebengine-build" PUBLIC
+    LABEL "Build QtWebEngine Modules"
     PURPOSE "Enables building the Qt WebEngine modules."
 )
+qt_feature("qtwebengine-core-build" PRIVATE
+    LABEL "Build QtWebEngineCore"
+    PURPOSE "Enables building the Qt WebEngineCore module."
+    CONDITION QT_FEATURE_qtwebengine_build
+)
 qt_feature("qtwebengine-widgets-build" PRIVATE
-    LABEL "Build Qt WebEngineWidgets"
+    LABEL "Build QtWebEngineWidgets"
     PURPOSE "Enables building the Qt WebEngineWidgets module."
-    CONDITION TARGET Qt::Widgets
+    CONDITION TARGET Qt::Widgets AND QT_FEATURE_qtwebengine_build
 )
 qt_feature("qtwebengine-quick-build" PRIVATE
-    LABEL "Build Qt WebEngineQuick"
+    LABEL "Build QtWebEngineQuick"
     PURPOSE "Enables building the Qt WebEngineQuick module."
-    CONDITION TARGET Qt::Quick AND TARGET Qt::Qml
+    CONDITION TARGET Qt::Quick AND TARGET Qt::Qml AND QT_FEATURE_qtwebengine_build
 )
-qt_feature("qtpdf-build" PRIVATE
+qt_feature("qtpdf-build" PUBLIC
     LABEL "Build Qt PDF"
     PURPOSE "Enables building the Qt Pdf modules."
     AUTODETECT FALSE
 )
 qt_feature("qtpdf-widgets-build" PRIVATE
-    LABEL "Build Qt PdfWidgets"
+    LABEL "Build QtPdfWidgets"
     PURPOSE "Enables building the Qt Pdf module."
-    CONDITION TARGET Qt::Widgets
+    CONDITION TARGET Qt::Widgets AND QT_FEATURE_qtpdf_build
 )
 qt_feature("qtpdf-quick-build" PRIVATE
-    LABEL "Build Qt PdfQuick"
-    PURPOSE "Enables building the Qt Pdf module."
-    CONDITION TARGET Qt::Quick AND TARGET Qt::Qml
+    LABEL "Build QtPdfQuick"
+    PURPOSE "Enables building the QtPdfQuick module."
+    CONDITION TARGET Qt::Quick AND TARGET Qt::Qml AND QT_FEATURE_qtpdf_build
 )
 qt_feature("webengine-system-ninja" PRIVATE
-    LABEL "Use system ninja"
-    CONDITION Ninja_FOUND
+    LABEL "Build Ninja"
+    AUTODETECT NOT Ninja_FOUND OR Ninja_EXECUTABLE MATCHES ${WEBENGINE_ROOT_BUILD_DIR}
 )
 qt_feature("webengine-system-gn" PRIVATE
-    LABEL "Use system gn"
-    AUTODETECT FALSE
-    CONDITION Gn_FOUND
+    LABEL "Build Gn"
+    AUTODETECT NOT Gn_FOUND OR Gn_EXECUTABLE MATCHES ${WEBENGINE_ROOT_BUILD_DIR}
 )
 # default assumed merge limit (should match the one in qt_cmdline.cmake)
 set(jumbo_merge_limit 8)
@@ -464,11 +468,20 @@ add_check_for_support(
 #### Summary
 
 # > Qt WebEngine Build Features
-qt_configure_add_summary_section(NAME "Qt WebEngine")
+qt_configure_add_summary_section(NAME "WebEngine Repository Build Options")
 qt_configure_add_summary_entry(ARGS "webengine-system-ninja")
 qt_configure_add_summary_entry(ARGS "webengine-system-gn")
 qt_configure_add_summary_entry(ARGS "webengine-jumbo-build")
 qt_configure_add_summary_entry(ARGS "webengine-developer-build")
+qt_configure_add_summary_section(NAME "Build QtWebEngine Modules")
+qt_configure_add_summary_entry(ARGS "qtwebengine-core-build")
+qt_configure_add_summary_entry(ARGS "qtwebengine-widgets-build")
+qt_configure_add_summary_entry(ARGS "qtwebengine-quick-build")
+qt_configure_end_summary_section()
+qt_configure_add_summary_section(NAME "Build QtPdf Modules")
+qt_configure_add_summary_entry(ARGS "qtpdf-widgets-build")
+qt_configure_add_summary_entry(ARGS "qtpdf-quick-build")
+qt_configure_end_summary_section()
 # >> Optional system libraries
 if(UNIX)
     qt_configure_add_summary_section(NAME "Optional system libraries")

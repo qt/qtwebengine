@@ -55,3 +55,4 @@ qt_internal_extend_target(qtwebenginequickplugin
         Qt::CorePrivate
         Qt::WebEngineQuickPrivate
 )
+
