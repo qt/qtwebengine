@@ -18,6 +18,10 @@ qt_feature_module_end(ONLY_EVALUATE_FEATURES)
 #  SUPPORT CHECK
 ##
 
+# TODO: here we should return FATAL_ERROR and ask user to define
+# FEATURE_qtwebenignebuild=OFF if one wants to only build qtpdf,
+# however our ci setup is not flexible enough and configure step must succeed
+
 if(NOT ${QtWebEngine_SUPPORT})
     add_custom_target(WebEngineErrorMessage ALL
         ${CMAKE_COMMAND} -E cmake_echo_color --red "QtWebEngine will not be built: ${QtWebEngine_ERROR}"
@@ -25,7 +29,11 @@ if(NOT ${QtWebEngine_SUPPORT})
         VERBATIM
     )
     message("-- Support check for QtWebEngine failed: ${QtWebEngine_ERROR}")
-    set(QT_FEATURE_qtwebengine_build OFF CACHE BOOL "Build QtWebEngine" FORCE)
+    set(QT_FEATURE_qtwebengine_build OFF CACHE BOOL "Build QtWebEngine Modules" FORCE)
+    set(QT_FEATURE_qtwebengine_core_build OFF CACHE BOOL "Build QtWebEngineCore" FORCE)
+    set(QT_FEATURE_qtwebengine_widgets_build OFF CACHE BOOL "Build QtWebEngineWidgets" FORCE)
+    set(QT_FEATURE_qtwebengine_quick_build OFF CACHE BOOL "Build QtWebEngineQuick" FORCE)
+
 endif()
 
 if(NOT ${QtPdf_SUPPORT})
@@ -44,29 +52,25 @@ if(NOT QT_FEATURE_qtwebengine_build AND NOT QT_FEATURE_qtpdf_build)
     return()
 endif()
 
-if(NOT QT_FEATURE_qtwebengine_build)
-    set(QT_FEATURE_qtwebengine_widgets_build OFF CACHE BOOL "Build QtWebEngineWidgets" FORCE)
-    set(QT_FEATURE_qtwebengine_quick_build OFF CACHE BOOL "Build QtWebEngineQuick" FORCE)
-endif()
-
 ##
 #  MODULES
 ##
 
-if(QT_FEATURE_qtwebengine_build)
+if(QT_FEATURE_qtwebengine_core_build)
    add_subdirectory(core)
    add_subdirectory(process)
-   if(QT_FEATURE_qtwebengine_widgets_build)
-       add_subdirectory(webenginewidgets)
-   endif()
-   if(QT_FEATURE_qtwebengine_quick_build)
-       add_subdirectory(webenginequick)
-   endif()
 endif()
+if(QT_FEATURE_qtwebengine_widgets_build)
+   add_subdirectory(webenginewidgets)
+endif()
+if(QT_FEATURE_qtwebengine_quick_build)
+   add_subdirectory(webenginequick)
+endif()
+
 if(QT_FEATURE_qtpdf_build)
    add_subdirectory(pdf)
    # keep log order, pdf build after webengine
-   if(QT_FEATURE_qtwebengine_build)
+   if(QT_FEATURE_qtwebengine_core_build)
        add_dependencies(run_pdf_GnReady WebEngineCore)
    endif()
    if(QT_FEATURE_qtwebengine_widgets_build)
@@ -101,7 +105,7 @@ if(NOT Ninja_FOUND)
                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                    -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>
     )
-    if(QT_FEATURE_qtwebengine_build)
+    if(QT_FEATURE_qtwebengine_core_build)
         add_dependencies(run_core_NinjaReady ninja)
     endif()
     if(QT_FEATURE_qtpdf_build)
@@ -128,7 +132,7 @@ if(NOT Gn_FOUND)
                    -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>
                    -DWEBENGINE_ROOT_BUILD_DIR=${PROJECT_BINARY_DIR}
     )
-    if(QT_FEATURE_qtwebengine_build)
+    if(QT_FEATURE_qtwebengine_core_build)
         add_dependencies(run_core_GnReady gn)
     endif()
     if(QT_FEATURE_qtpdf_build)
@@ -173,7 +177,6 @@ endif()
 # install gn for cross build
 if(LINUX AND INSTALL_GN)
     get_install_config(installConfig)
-    message(${installConfig})
     install(
         PROGRAMS ${installDir}/bin/gn
         CONFIGURATIONS ${installConfig}
