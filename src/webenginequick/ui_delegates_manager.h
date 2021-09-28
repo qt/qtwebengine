@@ -116,7 +116,7 @@ public:
     void showTouchSelectionMenu(TouchSelectionMenuController *, const QRect &, const int spacing);
     void hideTouchSelectionMenu();
 
-protected:
+private:
     bool ensureComponentLoaded(ComponentType);
 
     QQuickWebEngineView *m_view;
