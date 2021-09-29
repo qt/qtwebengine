@@ -208,9 +208,9 @@ InterceptedRequest::InterceptedRequest(ProfileAdapter *profile_adapter,
     current_response_ = network::mojom::URLResponseHead::New();
     // If there is a client error, clean up the request.
     target_client_.set_disconnect_handler(
-            base::BindOnce(&InterceptedRequest::OnURLLoaderClientError, weak_factory_.GetWeakPtr()));
+            base::BindOnce(&InterceptedRequest::OnURLLoaderClientError, base::Unretained(this)));
     proxied_loader_receiver_.set_disconnect_with_reason_handler(
-            base::BindOnce(&InterceptedRequest::OnURLLoaderError, weak_factory_.GetWeakPtr()));
+            base::BindOnce(&InterceptedRequest::OnURLLoaderError, base::Unretained(this)));
 }
 
 InterceptedRequest::~InterceptedRequest()
