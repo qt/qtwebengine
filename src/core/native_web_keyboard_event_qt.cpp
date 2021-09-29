@@ -95,7 +95,10 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(const NativeWebKeyboardEvent& oth
 {
 }
 
-NativeWebKeyboardEvent& NativeWebKeyboardEvent::operator=(const NativeWebKeyboardEvent& other) {
+NativeWebKeyboardEvent &NativeWebKeyboardEvent::operator=(const NativeWebKeyboardEvent &other)
+{
+    if (this == &other)
+        return *this;
     WebKeyboardEvent::operator=(other);
     DestroyEvent(os_event);
     os_event = CopyEvent(other.os_event);
