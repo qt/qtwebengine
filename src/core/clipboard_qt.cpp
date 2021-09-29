@@ -127,7 +127,7 @@ void ClipboardQt::WritePortableRepresentations(ui::ClipboardBuffer type, const O
             // Copy text and SourceTag to the selection clipboard.
             WritePortableRepresentations(ui::ClipboardBuffer::kSelection,
                                          ObjectMap(text_iter, text_iter + 1),
-                                         std::move(data_src));
+                                         nullptr);
         }
     }
     m_dataSrc[type] = std::move(data_src);
