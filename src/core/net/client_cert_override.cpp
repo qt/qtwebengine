@@ -141,22 +141,19 @@ void ClientCertOverrideStore::GetClientCerts(const net::SSLCertRequestInfo &cert
 {
 #if QT_CONFIG(ssl)
     // Access the user-provided data from the UI thread, but return on whatever thread this is.
-    if (base::PostTaskAndReplyWithResult(
+    bool ok = base::PostTaskAndReplyWithResult(
             FROM_HERE, { content::BrowserThread::UI },
             base::BindOnce(&ClientCertOverrideStore::GetClientCertsOnUIThread,
                            base::Unretained(this), std::cref(cert_request_info)),
             base::BindOnce(&ClientCertOverrideStore::GetClientCertsReturn,
-                           base::Unretained(this), std::cref(cert_request_info), std::move(callback)))
-       ) {
-        return;
-    }
-#endif // QT_CONFIG(ssl)
-
-    // Continue with native cert store if we failed to post task
+                           base::Unretained(this), std::cref(cert_request_info), std::move(callback)));
+    DCHECK(ok); // callback is already moved and we can't really recover here.
+#else
     if (m_nativeStore)
         m_nativeStore->GetClientCerts(cert_request_info, std::move(callback));
     else
         std::move(callback).Run(net::ClientCertIdentityList());
+#endif // QT_CONFIG(ssl)
 }
 
 // static
