@@ -204,8 +204,16 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
         QFileInfo suggestedFile(info.path);
 
         if (info.accepted && !suggestedFile.absoluteDir().mkpath(suggestedFile.absolutePath())) {
+#if defined(OS_WIN)
+            // TODO: Remove this when https://bugreports.qt.io/browse/QTBUG-85997 is fixed.
+            QDir suggestedDir = QDir(suggestedFile.absolutePath());
+            if (!suggestedDir.isRoot() || !suggestedDir.exists()) {
+#endif
             qWarning("Creating download path failed, download cancelled: %s", suggestedFile.absolutePath().toUtf8().data());
             info.accepted = false;
+#if defined(OS_WIN)
+            }
+#endif
         }
 
         if (!info.accepted) {
