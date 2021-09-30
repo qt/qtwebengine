@@ -44,7 +44,7 @@ TestWebEngineView {
         signalName: "linkHovered"
     }
 
-    onLinkHovered: {
+    onLinkHovered: function(hoveredUrl) {
         webEngineView.lastUrl = hoveredUrl
     }
 

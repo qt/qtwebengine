@@ -37,8 +37,12 @@ Item {
 
     property var pressEvents: []
     property var releaseEvents: []
-    Keys.onPressed: pressEvents.push(event.key)
-    Keys.onReleased: releaseEvents.push(event.key)
+    Keys.onPressed: function(event) {
+        pressEvents.push(event.key)
+    }
+    Keys.onReleased: function(event) {
+        releaseEvents.push(event.key)
+    }
 
     TestWebEngineView {
         id: webEngineView

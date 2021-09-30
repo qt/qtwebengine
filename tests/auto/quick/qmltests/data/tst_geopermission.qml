@@ -44,7 +44,7 @@ TestWebEngineView {
         signalName: "featurePermissionRequested"
     }
 
-    onFeaturePermissionRequested: {
+    onFeaturePermissionRequested: function(securityOrigin, feature) {
         if (feature === WebEngineView.Geolocation) {
             geoPermissionRequested = true
             if (deniedGeolocation) {
