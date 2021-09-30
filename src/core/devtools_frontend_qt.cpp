@@ -87,6 +87,8 @@ using namespace QtWebEngineCore;
 
 namespace {
 
+constexpr char kScreencastEnabled[] = "screencastEnabled";
+
 std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(const net::HttpResponseHeaders *rh,
                                                               bool success,
                                                               int net_error)
@@ -468,6 +470,10 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
         m_loaders.insert(std::move(resource_loader));
         return;
     } else if (method == "getPreferences") {
+        // Screencast is enabled by default if it's not present in the preference store.
+        if (!m_prefStore->GetValue(kScreencastEnabled, NULL))
+            SetPreference(kScreencastEnabled, "false");
+
         m_preferences = std::move(*m_prefStore->GetValues());
         SendMessageAck(request_id, &m_preferences);
         return;
