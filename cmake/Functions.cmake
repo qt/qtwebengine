@@ -76,7 +76,7 @@ function(get_qt_features outList module)
 endfunction()
 
 function(create_cxx_config cmakeTarget arch configFileName)
-    if(NOT QT_SUPERBUILD)
+    if(NOT QT_SUPERBUILD AND QT_WILL_INSTALL)
         get_target_property(mocFilePath Qt6::moc IMPORTED_LOCATION)
     else()
         set(mocFilePath "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/moc${CMAKE_EXECUTABLE_SUFFIX}")
@@ -1028,6 +1028,16 @@ function(addCopyCommand target src dst)
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${dst}
         COMMAND ${CMAKE_COMMAND} -E copy ${src} ${dst}
+        TARGET ${target}
+        DEPENDS ${src}
+        USES_TERMINAL
+    )
+endfunction()
+
+function(addCopyDirCommand target src dst)
+    add_custom_command(
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${src} ${dst}
         TARGET ${target}
         DEPENDS ${src}
         USES_TERMINAL
