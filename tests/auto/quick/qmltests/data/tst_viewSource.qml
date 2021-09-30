@@ -55,7 +55,7 @@ TestWebEngineView {
         signalName: "titleChanged"
     }
 
-    onNewWindowRequested: {
+    onNewWindowRequested: function(request) {
         viewRequest = {
             "destination": request.destination,
             "userInitiated": request.userInitiated

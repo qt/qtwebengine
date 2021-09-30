@@ -143,7 +143,7 @@ TestWebEngineView {
     property variant requestedFeature
     property variant requestedSecurityOrigin
 
-    onFeaturePermissionRequested: {
+    onFeaturePermissionRequested: function(securityOrigin, feature) {
         requestedFeature = feature
         requestedSecurityOrigin = securityOrigin
     }

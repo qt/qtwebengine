@@ -77,7 +77,7 @@ Item {
         width: 400
         height: 300
 
-        onNavigationRequested: {
+        onNavigationRequested: function(request) {
             var urlString = request.url.toString();
             if (urlString.indexOf("test1.html") !== -1)
                 userScripts.collection = [ changeDocumentTitleScript() ];

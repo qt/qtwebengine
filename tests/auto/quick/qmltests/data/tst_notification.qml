@@ -48,7 +48,7 @@ TestWebEngineView {
         signalName: 'featurePermissionRequested'
     }
 
-    onFeaturePermissionRequested: {
+    onFeaturePermissionRequested: function(securityOrigin, feature) {
         if (feature === WebEngineView.Notifications) {
             view.permissionRequested = true
             view.securityOrigin = securityOrigin
