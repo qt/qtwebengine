@@ -164,7 +164,17 @@ static std::string getCurrentKeyboardLayout()
     if (XkbGetState(dpy, XkbUseCoreKbd, &state) != 0)
         return std::string();
 
-    XkbRF_VarDefsRec vdr;
+    XkbRF_VarDefsRec vdr {}; // zero initialize it
+    struct Cleanup {
+        XkbRF_VarDefsRec &vdr;
+        Cleanup(XkbRF_VarDefsRec &vdr) : vdr(vdr) { }
+        ~Cleanup() {
+            free (vdr.model);
+            free (vdr.layout);
+            free (vdr.variant);
+            free (vdr.options);
+        }
+    } cleanup(vdr);
     if (XkbRF_GetNamesProp(dpy, nullptr, &vdr) == 0)
         return std::string();
 
