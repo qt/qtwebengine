@@ -70,6 +70,7 @@
 #endif
 
 #include <QtCore/qcoreapplication.h>
+#include <QtCore/qscopeguard.h>
 
 #if defined(WEBRTC_USE_X11)
 #include <dlfcn.h>
@@ -197,6 +198,7 @@ content::DesktopMediaID getDefaultScreenId()
 
     int numMonitors = 0;
     XRRMonitorInfo *monitors = getMonitors(display, rootWindow, true, &numMonitors);
+    auto cleanup = qScopeGuard([&] () { freeMonitors(monitors); });
     if (numMonitors > 0)
         return content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, monitors[0].name);
 #endif // !defined(WEBRTC_USE_X11)
