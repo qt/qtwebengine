@@ -60,7 +60,7 @@ public:
     void SetBounds(const gfx::Rect& bounds) override;
     void Show(bool inactive = false) override { }
     void Hide() override { }
-    void Close() override { }
+    void Close() override;
     bool IsVisible() const override { return true; }
     void SetTitle(const std::u16string&) override { }
     void SetCapture() override { }

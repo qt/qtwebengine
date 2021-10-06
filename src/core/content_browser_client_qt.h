@@ -112,6 +112,9 @@ public:
     void ExposeInterfacesToRenderer(service_manager::BinderRegistry *registry,
                                     blink::AssociatedInterfaceRegistry *associated_registry,
                                     content::RenderProcessHost *render_process_host) override;
+    bool BindAssociatedReceiverFromFrame(content::RenderFrameHost *render_frame_host,
+                                         const std::string &interface_name,
+                                         mojo::ScopedInterfaceEndpointHandle *handle) override;
 
     bool CanCreateWindow(content::RenderFrameHost *opener,
                          const GURL &opener_url,
@@ -151,12 +154,12 @@ public:
 
     void AllowWorkerFileSystem(const GURL &url,
                                content::BrowserContext *context,
-                               const std::vector<content::GlobalFrameRoutingId> &render_frames,
+                               const std::vector<content::GlobalRenderFrameHostId> &render_frames,
                                base::OnceCallback<void(bool)> callback) override;
 
     bool AllowWorkerIndexedDB(const GURL &url,
                               content::BrowserContext *context,
-                              const std::vector<content::GlobalFrameRoutingId> &render_frames) override;
+                              const std::vector<content::GlobalRenderFrameHostId> &render_frames) override;
     AllowWebBluetoothResult AllowWebBluetooth(content::BrowserContext *browser_context,
                                               const url::Origin &requesting_origin,
                                               const url::Origin &embedding_origin) override;
@@ -196,7 +199,7 @@ public:
 
     bool HandleExternalProtocol(
             const GURL &url,
-            base::OnceCallback<content::WebContents*()> web_contents_getter,
+            base::RepeatingCallback<content::WebContents*()> web_contents_getter,
             int child_id,
             int frame_tree_node_id,
             content::NavigationUIData *navigation_data,

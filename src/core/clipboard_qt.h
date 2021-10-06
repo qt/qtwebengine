@@ -47,7 +47,7 @@ namespace QtWebEngineCore {
 class ClipboardQt : public ui::Clipboard
 {
 public:
-    uint64_t GetSequenceNumber(ui::ClipboardBuffer type) const override;
+    const ui::ClipboardSequenceNumberToken &GetSequenceNumber(ui::ClipboardBuffer type) const override;
     bool IsFormatAvailable(const ui::ClipboardFormatType &format,
                            ui::ClipboardBuffer buffer,
                            const ui::DataTransferEndpoint *data_dst) const override;
@@ -79,12 +79,9 @@ public:
                        std::vector<ui::FileInfo> *result) const override;
 
 protected:
-    void WritePortableRepresentations(
+    void WritePortableAndPlatformRepresentations(
         ui::ClipboardBuffer buffer,
         const ObjectMap &objects,
-        std::unique_ptr<ui::DataTransferEndpoint> data_src) override;
-    void WritePlatformRepresentations(
-        ui::ClipboardBuffer buffer,
         std::vector<Clipboard::PlatformRepresentation> platform_representations,
         std::unique_ptr<ui::DataTransferEndpoint> data_src) override;
     void WriteText(const char *text_data, size_t text_len) override;

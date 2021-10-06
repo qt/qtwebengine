@@ -43,6 +43,7 @@
 
 #include "content/public/browser/device_service.h"
 #include "device/base/features.h"
+#include "services/device/public/mojom/usb_device.mojom.h"
 
 WebUsbDetectorQt::WebUsbDetectorQt() = default;
 

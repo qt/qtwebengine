@@ -97,6 +97,8 @@ static void verifyGreenSquare(QQuickWindow *window)
     bool ok = QTest::qWaitFor([&](){
         actual = window->grabWindow();
         expected = getGreenSquare(actual.format());
+        if (actual.height() > 150)
+            actual = actual.scaledToHeight(150);
         return actual == expected;
     }, 10000);
     if (!ok) {
@@ -109,7 +111,9 @@ static void verifyGreenSquare(QQuickWindow *window)
 void tst_QQuickWebEngineViewGraphics::simpleGraphics()
 {
     setHtml(greenSquare);
+    m_view->show();
     verifyGreenSquare(m_view.data());
+    m_view->hide();
 }
 
 void tst_QQuickWebEngineViewGraphics::showHideShow()
@@ -125,12 +129,15 @@ void tst_QQuickWebEngineViewGraphics::showHideShow()
     m_view->show();
     QVERIFY(exposeSpy.wait());
     verifyGreenSquare(m_view.data());
+    m_view->hide();
 }
 
 void tst_QQuickWebEngineViewGraphics::simpleAcceleratedLayer()
 {
+    m_view->show();
     setHtml(acLayerGreenSquare);
     verifyGreenSquare(m_view.data());
+    m_view->hide();
 }
 
 void tst_QQuickWebEngineViewGraphics::reparentToOtherWindow()
@@ -141,6 +148,7 @@ void tst_QQuickWebEngineViewGraphics::reparentToOtherWindow()
     window.create();
 
     m_view->rootObject()->setParentItem(window.contentItem());
+    window.show();
     verifyGreenSquare(&window);
 }
 

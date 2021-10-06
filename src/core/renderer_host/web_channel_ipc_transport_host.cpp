@@ -146,6 +146,14 @@ void WebChannelIPCTransportHost::RenderFrameDeleted(content::RenderFrameHost *rf
     m_renderFrames.erase(rfh);
 }
 
+void WebChannelIPCTransportHost::BindReceiver(
+        mojo::PendingAssociatedReceiver<qtwebchannel::mojom::WebChannelTransportHost> receiver,
+        content::RenderFrameHost *rfh)
+{
+     m_receiver.Bind(rfh, std::move(receiver));
+}
+
+
 const mojo::AssociatedRemote<qtwebchannel::mojom::WebChannelTransportRender> &
 WebChannelIPCTransportHost::GetWebChannelIPCTransportRemote(content::RenderFrameHost *rfh)
 {

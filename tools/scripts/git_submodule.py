@@ -36,12 +36,12 @@ import version_resolver as resolver
 extra_os = ['mac', 'win']
 
 def subprocessCall(args):
-    print args
+    print(args)
     return subprocess.call(args)
 
 def subprocessCheckOutput(args):
-    print args
-    return subprocess.check_output(args)
+    print(args)
+    return subprocess.check_output(args).decode()
 
 class DEPSParser:
     def __init__(self):
@@ -96,7 +96,7 @@ class DEPSParser:
                 submodule.os = os
 
                 if not submodule.matchesOS():
-                    print '-- skipping ' + submodule.pathRelativeToTopMostSupermodule() + ' for this operating system. --'
+                    print('-- skipping ' + submodule.pathRelativeToTopMostSupermodule() + ' for this operating system. --')
                     continue
 
                 if len(rev) == 40: # Length of a git shasum
@@ -201,7 +201,7 @@ class Submodule:
     def findGitDir(self):
         try:
             return subprocessCheckOutput(['git', 'rev-parse', '--git-dir']).strip()
-        except subprocess.CalledProcessError, e:
+        except subprocess.CalledProcessError as e:
             sys.exit("git dir could not be determined! - Initialization failed! " + e.output)
 
     def reset(self):
@@ -210,27 +210,27 @@ class Submodule:
         gitdir = self.findGitDir()
         if os.path.isdir(os.path.join(gitdir, 'rebase-merge')):
             if os.path.isfile(os.path.join(gitdir, 'MERGE_HEAD')):
-                print 'merge in progress... aborting merge.'
+                print('merge in progress... aborting merge.')
                 subprocessCall(['git', 'merge', '--abort'])
             else:
-                print 'rebase in progress... aborting merge.'
+                print('rebase in progress... aborting merge.')
                 subprocessCall(['git', 'rebase', '--abort'])
         if os.path.isdir(os.path.join(gitdir, 'rebase-apply')):
-            print 'am in progress... aborting am.'
+            print('am in progress... aborting am.')
             subprocessCall(['git', 'am', '--abort'])
         subprocessCall(['git', 'reset', '--hard'])
         os.chdir(currentDir)
 
     def initialize(self):
         if self.matchesOS():
-            print '\n\n-- initializing ' + self.pathRelativeToTopMostSupermodule() + ' --'
+            print('\n\n-- initializing ' + self.pathRelativeToTopMostSupermodule() + ' --')
             oldCwd = os.getcwd()
 
             # The submodule operations should be done relative to the current submodule's
             # supermodule.
             if self.topmost_supermodule_path_prefix:
                 if not os.path.isdir(self.path):
-                    print '-- creating ' + self.path + ' as dir is missing. --'
+                    print('-- creating ' + self.path + ' as dir is missing. --')
                     os.makedirs(self.path)
                 os.chdir(self.topmost_supermodule_path_prefix)
 
@@ -254,7 +254,7 @@ class Submodule:
 
             os.chdir(oldCwd)
         else:
-            print '-- skipping ' + self.path + ' for this operating system. --'
+            print('-- skipping ' + self.path + ' for this operating system. --')
 
     def listFiles(self):
         if self.matchesOS() and os.path.isdir(self.pathRelativeToTopMostSupermodule()):
@@ -264,7 +264,7 @@ class Submodule:
             os.chdir(currentDir)
             return files
         else:
-            print '-- skipping ' + self.path + ' for this operating system. --'
+            print('-- skipping ' + self.path + ' for this operating system. --')
             return []
 
     def parseGitModulesFileContents(self, gitmodules_lines):
@@ -320,9 +320,9 @@ class Submodule:
         submodules = []
         if use_deps:
             submodules = resolver.readSubmodules()
-            print 'DEPS file provides the following submodules:'
+            print('DEPS file provides the following submodules:')
             for submodule in submodules:
-                print '{:<80}'.format(submodule.pathRelativeToTopMostSupermodule()) + '{:<120}'.format(submodule.url) + submodule.ref
+                print('{:<80}'.format(submodule.pathRelativeToTopMostSupermodule()) + '{:<120}'.format(submodule.url) + submodule.ref)
         else: # Try .gitmodules instead
             gitmodules_file_name = '.gitmodules'
             submodules = self.readSubmodulesFromGitModules(self, gitmodules_file_name, self.path)

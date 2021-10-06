@@ -122,7 +122,7 @@ private:
     void DidUpdateFaviconURL(content::RenderFrameHost *render_frame_host,
                              const std::vector<blink::mojom::FaviconURLPtr> &candidates) override;
     void DidUpdateWebManifestURL(content::RenderFrameHost *target_frame,
-                                 const absl::optional<GURL> &manifest_url) override;
+                                 const GURL &manifest_url) override;
     void DidStartNavigation(content::NavigationHandle *navigation_handle) override;
     void DidFinishNavigation(content::NavigationHandle *navigation_handle) override;
     void DocumentOnLoadCompletedInMainFrame(content::RenderFrameHost *render_frame_host) override;

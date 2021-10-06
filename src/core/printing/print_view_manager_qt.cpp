@@ -66,6 +66,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "printing/metafile_skia.h"
+#include "printing/mojom/print.mojom-shared.h"
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -123,7 +124,7 @@ static base::DictionaryValue *createPrintSettings()
     printSettings->SetInteger(printing::kPreviewRequestID, internalRequestId);
 
     // The following are standard settings that Chromium expects to be set.
-    printSettings->SetInteger(printing::kSettingPrinterType, static_cast<int>(printing::PrinterType::kPdf));
+    printSettings->SetInteger(printing::kSettingPrinterType, static_cast<int>(printing::mojom::PrinterType::kPdf));
 
     printSettings->SetInteger(printing::kSettingDpiHorizontal, printing::kPointsPerInch);
     printSettings->SetInteger(printing::kSettingDpiVertical, printing::kPointsPerInch);
@@ -288,6 +289,19 @@ PrintViewManagerQt::PrintViewManagerQt(content::WebContents *contents)
     , m_printPreviewRfh(nullptr)
 {
 
+}
+
+// static
+void PrintViewManagerQt::BindPrintManagerHost(mojo::PendingAssociatedReceiver<printing::mojom::PrintManagerHost> receiver,
+                                              content::RenderFrameHost *rfh)
+{
+    auto *web_contents = content::WebContents::FromRenderFrameHost(rfh);
+    if (!web_contents)
+        return;
+    auto *print_manager = PrintViewManagerQt::FromWebContents(web_contents);
+    if (!print_manager)
+        return;
+    print_manager->BindReceiver(std::move(receiver), rfh);
 }
 
 void PrintViewManagerQt::resetPdfState()

@@ -10,7 +10,7 @@ project(Ninja
 set(NINJA_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/ninja)
 set(NINJA_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
-find_package(Python2 REQUIRED)
+find_package(Python3 REQUIRED)
 
 if(WIN32)
     set(NINJA_EXECUTABLE ninja.exe)
@@ -25,7 +25,7 @@ add_custom_command(
     WORKING_DIRECTORY ${NINJA_BINARY_DIR}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${NINJA_BINARY_DIR}/$<CONFIG>
     COMMAND ${CMAKE_COMMAND} -E chdir ${NINJA_BINARY_DIR}/$<CONFIG>
-        ${Python2_EXECUTABLE} ${NINJA_SOURCE_DIR}/configure.py --bootstrap
+        ${Python3_EXECUTABLE} ${NINJA_SOURCE_DIR}/configure.py --bootstrap
     USES_TERMINAL
     VERBATIM
 )

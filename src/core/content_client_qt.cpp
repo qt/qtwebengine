@@ -271,10 +271,12 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         if (base::PathExists(*cdm_path)) {
             // Add the supported codecs as if they came from the component manifest.
             // This list must match the CDM that is being bundled with Chrome.
-            capability->video_codecs.push_back(media::VideoCodec::kCodecVP8);
-            capability->video_codecs.push_back(media::VideoCodec::kCodecVP9);
+            const std::vector<media::VideoCodecProfile> kAllProfiles = {};
+            capability->video_codecs.emplace(media::VideoCodec::kCodecVP8, kAllProfiles);
+            capability->video_codecs.emplace(media::VideoCodec::kCodecVP9, kAllProfiles);
+            capability->video_codecs.emplace(media::VideoCodec::kCodecAV1, kAllProfiles);
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-            capability->video_codecs.push_back(media::VideoCodec::kCodecH264);
+            capability->video_codecs.emplace(media::VideoCodec::kCodecH264, kAllProfiles);
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
             // Add the supported encryption schemes as if they came from the
@@ -361,7 +363,7 @@ void ContentClientQt::AddAdditionalSchemes(Schemes* schemes)
 #endif
 }
 
-base::StringPiece ContentClientQt::GetDataResource(int resource_id, ui::ScaleFactor scale_factor)
+base::StringPiece ContentClientQt::GetDataResource(int resource_id, ui::ResourceScaleFactor scale_factor)
 {
     return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(resource_id, scale_factor);
 }

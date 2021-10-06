@@ -75,6 +75,7 @@ public:
     void RunContextMenu() override;
     bool ShouldShowQuickMenu() override { return false; }
     std::u16string GetSelectedText() override { return std::u16string(); }
+    const char *GetType() override { return nullptr; } //FIXME?
 
     // content::TouchSelectionControllerClientManager overrides
     void DidStopFlinging() override;

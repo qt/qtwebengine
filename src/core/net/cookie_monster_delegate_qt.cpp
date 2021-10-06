@@ -139,7 +139,7 @@ void CookieMonsterDelegateQt::setCookie(const QNetworkCookie &cookie, const QUrl
     std::string cookie_line = cookie.toRawForm().toStdString();
 
     net::CookieInclusionStatus inclusion;
-    auto canonCookie = net::CanonicalCookie::Create(gurl, cookie_line, base::Time::Now(), absl::nullopt, &inclusion);
+    auto canonCookie = net::CanonicalCookie::Create(gurl, cookie_line, base::Time::Now(), absl::nullopt, absl::nullopt, &inclusion);
     if (!inclusion.IsInclude()) {
         LOG(WARNING) << "QWebEngineCookieStore::setCookie() - Tried to set invalid cookie";
         return;

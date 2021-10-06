@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
 find_package(Ninja 1.7.2 REQUIRED)
-find_package(Python2 2.7.5 REQUIRED)
-find_package(Nodejs 10.19 REQUIRED)
+find_package(Nodejs 12 REQUIRED)
 find_package(PkgConfig)
 if(PkgConfig_FOUND)
     create_pkg_config_host_wrapper(${CMAKE_CURRENT_BINARY_DIR})
@@ -99,10 +98,12 @@ foreach(arch ${archs})
 
         list(APPEND gnArgArg
           qtwebengine_target="${buildDir}/${config}/${arch}:QtPdf"
+          enable_ipc_fuzzer=false
           enable_remoting=false
           enable_resource_allowlist_generation=false
           enable_web_speech=false
           chrome_pgo_phase=0
+          strip_absolute_paths_from_debug_symbols=false
         )
 
         if(LINUX)

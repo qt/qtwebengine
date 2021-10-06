@@ -338,7 +338,7 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kAbbr") << QString("<abbr>a</abbr>") << 1 << QAccessible::StaticText;
     QTest::newRow("ax::mojom::Role::kAlert") << QString("<div role='alert'>alert</div>") << 0 << QAccessible::AlertMessage;
     QTest::newRow("ax::mojom::Role::kAlertDialog") << QString("<div role='alertdialog'>alert</div>") << 0 << QAccessible::AlertMessage;
-    QTest::newRow("ax::mojom::Role::kAnchor") << QString("<a id='a'>Chapter a</a>") << 1 << QAccessible::Link;
+    QTest::newRow("ax::mojom::Role::kAnchor") << QString("<a id='a'>Chapter a</a>") << 1 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kApplication") << QString("<div role='application'>landmark</div>") << 0 << QAccessible::Document;
     QTest::newRow("ax::mojom::Role::kArticle") << QString("<article>a</article>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kAudio") << QString("<audio controls><source src='test.mp3' type='audio/mpeg'></audio>") << 1 << QAccessible::Sound;
@@ -484,7 +484,7 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kRowGroup") << QString("<table role=table><tbody role=rowgroup><tr><td>a</td></tr></tbody></table>") << 1 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kRowHeader") << QString("<table role=table><tr><th>a</td><td>b</td></tr></table>") << 2 << QAccessible::RowHeader;
     QTest::newRow("ax::mojom::Role::kRuby") << QString("<ruby>a</ruby>") << 1 << QAccessible::Grouping;
-    QTest::newRow("ax::mojom::Role::kRubyAnnotation") << QString("<ruby><rt tabindex=0>a</rt></ruby>") << 2 << QAccessible::StaticText;
+    //QTest::newRow("ax::mojom::Role::kRubyAnnotation") // No mapping to ARIA role (presents as property on enclosing ruby element)
     QTest::newRow("ax::mojom::Role::kScrollBar") << QString("<div role='scrollbar'>a</a>") << 0 << QAccessible::ScrollBar;
     //QTest::newRow("ax::mojom::Role::kScrollView"); // No mapping to ARIA role
     QTest::newRow("ax::mojom::Role::kSearch") << QString("<div role='search'>landmark</div>") << 0 << QAccessible::Section;

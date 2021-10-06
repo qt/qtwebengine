@@ -188,8 +188,10 @@ void DisplaySkiaOutputDevice::DiscardBackbuffer()
 {
 }
 
-SkSurface *DisplaySkiaOutputDevice::BeginPaint(std::vector<GrBackendSemaphore> *)
+SkSurface *DisplaySkiaOutputDevice::BeginPaint(bool allocate_frame_buffer,
+                                               std::vector<GrBackendSemaphore> *)
 {
+    Q_UNUSED(allocate_frame_buffer); // FIXME?
     if (!m_backBuffer || m_backBuffer->shape() != m_shape)
         m_backBuffer = std::make_unique<Buffer>(this);
     return m_backBuffer->surface();

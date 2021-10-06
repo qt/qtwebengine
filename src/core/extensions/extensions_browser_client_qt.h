@@ -127,9 +127,8 @@ public:
                                         mojo::PendingReceiver<network::mojom::URLLoader> loader,
                                         const base::FilePath &resource_relative_path,
                                         int resource_id,
-                                        const std::string &content_security_policy,
-                                        mojo::PendingRemote<network::mojom::URLLoaderClient> client,
-                                        bool send_cors_header) override;
+                                        scoped_refptr<net::HttpResponseHeaders> headers,
+                                        mojo::PendingRemote<network::mojom::URLLoaderClient> client) override;
 
     // Returns the locale used by the application.
     std::string GetApplicationLocale() override;

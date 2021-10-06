@@ -50,10 +50,10 @@ class SurfaceFactoryQt : public ui::SurfaceFactoryOzone
 {
 public:
     SurfaceFactoryQt();
-    std::vector<gl::GLImplementation> GetAllowedGLImplementations() override;
+    std::vector<gl::GLImplementationParts> GetAllowedGLImplementations() override;
     ui::GLOzone *GetGLOzone(const gl::GLImplementationParts &implementation) override;
 private:
-    std::vector<gl::GLImplementation> m_impl;
+    std::vector<gl::GLImplementationParts> m_impl;
     std::unique_ptr<ui::GLOzone> m_ozone;
 };
 

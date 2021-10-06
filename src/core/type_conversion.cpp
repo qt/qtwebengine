@@ -39,6 +39,7 @@
 
 #include "type_conversion.h"
 
+#include "base/containers/contains.h"
 #include <components/favicon_base/favicon_util.h>
 #include <net/cert/x509_certificate.h>
 #include <net/cert/x509_util.h>
@@ -48,7 +49,6 @@
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 
 #include <QtCore/qcoreapplication.h>
-#include <QtGui/qmatrix4x4.h>
 #include <QtNetwork/qsslcertificate.h>
 
 namespace QtWebEngineCore {
@@ -274,17 +274,6 @@ int flagsFromModifiers(Qt::KeyboardModifiers modifiers)
     if ((modifiers & Qt::AltModifier) != 0)
         modifierFlags |= ui::EF_ALT_DOWN;
     return modifierFlags;
-}
-
-void convertToQt(const SkMatrix44 &m, QMatrix4x4 &c)
-{
-    QMatrix4x4 qtMatrix(
-        m.get(0, 0), m.get(0, 1), m.get(0, 2), m.get(0, 3),
-        m.get(1, 0), m.get(1, 1), m.get(1, 2), m.get(1, 3),
-        m.get(2, 0), m.get(2, 1), m.get(2, 2), m.get(2, 3),
-        m.get(3, 0), m.get(3, 1), m.get(3, 2), m.get(3, 3));
-    qtMatrix.optimize();
-    c = qtMatrix;
 }
 
 static QSslCertificate toCertificate(CRYPTO_BUFFER *buffer)

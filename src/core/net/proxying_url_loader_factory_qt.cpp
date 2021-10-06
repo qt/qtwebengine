@@ -50,6 +50,7 @@
 #include "content/public/common/content_switches.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/cors/cors.h"
+#include "services/network/public/mojom/early_hints.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/url_util.h"
 

@@ -213,6 +213,7 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/resources/net_internals:resources",
     "//chrome/browser/resources/quota_internals:resources",
     "//chrome/common:buildflags",
+    "//chromeos/components/chromebox_for_meetings/buildflags",
     "//components/nacl/common:buildflags",
     "//components/performance_manager",
     "//components/plugins/renderer/",
@@ -334,12 +335,15 @@ source_set("qtwebengine_sources") {
     ]
   }
   if (enable_plugins) {
-      sources += [
-        "//chrome/renderer/pepper/pepper_flash_font_file_host.cc",
-        "//chrome/renderer/pepper/pepper_flash_font_file_host.h",
-        "//chrome/renderer/pepper/pepper_shared_memory_message_filter.cc",
-        "//chrome/renderer/pepper/pepper_shared_memory_message_filter.h",
-      ]
+    sources += [
+      "//chrome/renderer/pepper/pepper_flash_font_file_host.cc",
+      "//chrome/renderer/pepper/pepper_flash_font_file_host.h",
+      "//chrome/renderer/pepper/pepper_shared_memory_message_filter.cc",
+      "//chrome/renderer/pepper/pepper_shared_memory_message_filter.h",
+    ]
+    if (is_linux) {
+      deps += [ "//pdf:font_table_linux" ]
+    }
   }
   if (enable_basic_printing || enable_print_preview) {
     sources += [
@@ -357,16 +361,17 @@ source_set("qtwebengine_sources") {
     ]
   }
   if (enable_pdf) {
-      deps += [
-         "//pdf",
-         "//pdf:buildflags",
-         "//pdf:pdf_ppapi",
-         "//chrome/browser/resources/pdf:resources",
-         "//components/pdf/browser:browser",
-         "//components/pdf/renderer:renderer",
-         "//components/printing/browser",
-         "//components/printing/renderer",
-      ]
+    deps += [
+      "//pdf",
+      "//pdf:buildflags",
+      "//pdf:pdf_ppapi",
+      "//chrome/browser/resources/pdf:resources",
+      "//components/pdf/browser",
+      "//components/pdf/common",
+      "//components/pdf/renderer",
+      "//components/printing/browser",
+      "//components/printing/renderer",
+    ]
   }
 
   if (enable_webrtc && enable_extensions) {

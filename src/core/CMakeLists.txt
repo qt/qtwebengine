@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 
 find_package(Ninja 1.7.2 REQUIRED)
-find_package(Nodejs 10.19 REQUIRED)
+find_package(Nodejs 12 REQUIRED)
 find_package(PkgConfig)
 if(PkgConfig_FOUND)
     pkg_check_modules(XSCRNSAVER xscrnsaver)
@@ -275,6 +275,7 @@ foreach(arch ${archs})
 
         list(APPEND gnArgArg
             qtwebengine_target="${buildDir}/${config}/${arch}:QtWebEngineCore"
+            enable_ipc_fuzzer=false
             enable_media_remoting=false
             enable_message_center=false
             enable_nacl=false
@@ -286,6 +287,7 @@ foreach(arch ${archs})
             angle_enable_swiftshader=false
             enable_web_speech=false
             enable_widevine=true
+            fatal_linker_warnings=false
             has_native_accessibility=false
             safe_browsing_mode=0
             skia_use_dawn=false

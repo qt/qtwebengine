@@ -68,6 +68,7 @@
 #include "extensions/common/file_util.h"
 #include "net/base/mime_util.h"
 #include "qtwebengine/browser/extensions/api/generated_api_registration.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/zlib/google/compression_utils.h"
@@ -129,12 +130,12 @@ public:
                                mojo::PendingReceiver<network::mojom::URLLoader> loader,
                                mojo::PendingRemote<network::mojom::URLLoaderClient> client_info,
                                const base::FilePath &filename, int resource_id,
-                               const std::string &content_security_policy, bool send_cors_header)
+                               scoped_refptr<net::HttpResponseHeaders> headers)
     {
         // Owns itself. Will live as long as its URLLoader and URLLoaderClientPtr
         // bindings are alive - essentially until either the client gives up or all
         // file data has been sent to it.
-        auto *bundle_loader = new ResourceBundleFileLoader(content_security_policy, send_cors_header);
+        auto *bundle_loader = new ResourceBundleFileLoader(std::move(headers));
         bundle_loader->Start(request, std::move(loader), std::move(client_info), filename, resource_id);
     }
 
@@ -153,9 +154,9 @@ public:
     void ResumeReadingBodyFromNet() override {}
 
 private:
-    ResourceBundleFileLoader(const std::string &content_security_policy, bool send_cors_header)
+    ResourceBundleFileLoader(scoped_refptr<net::HttpResponseHeaders> headers)
+        : response_headers_(std::move(headers))
     {
-        response_headers_ = extensions::BuildHttpHeaders(content_security_policy, send_cors_header, base::Time());
     }
     ~ResourceBundleFileLoader() override = default;
 
@@ -388,12 +389,11 @@ void ExtensionsBrowserClientQt::LoadResourceFromResourceBundle(const network::Re
                                                                mojo::PendingReceiver<network::mojom::URLLoader> loader,
                                                                const base::FilePath &resource_relative_path,
                                                                int resource_id,
-                                                               const std::string &content_security_policy,
-                                                               mojo::PendingRemote<network::mojom::URLLoaderClient> client,
-                                                               bool send_cors_header)
+                                                               scoped_refptr<net::HttpResponseHeaders> headers,
+                                                               mojo::PendingRemote<network::mojom::URLLoaderClient> client)
 {
     ResourceBundleFileLoader::CreateAndStart(request, std::move(loader), std::move(client), resource_relative_path,
-                                             resource_id, content_security_policy, send_cors_header);
+                                             resource_id, headers);
 }
 
 

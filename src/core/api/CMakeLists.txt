@@ -80,7 +80,7 @@ qt_internal_add_docs(WebEngineCore
 
 add_custom_command(
     OUTPUT chromium_attributions.qdoc
-    COMMAND ${Python2_EXECUTABLE} chromium/tools/licenses.py
+    COMMAND ${Python3_EXECUTABLE} chromium/tools/licenses.py
         --file-template ../core/doc/about_credits.tmpl
         --entry-template ../core/doc/about_credits_entry.tmpl
         credits ${CMAKE_CURRENT_BINARY_DIR}/chromium_attributions.qdoc

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -53,6 +53,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_switches.h"
+#include "crypto/sha2.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/port_util.h"
 #include "net/net_buildflags.h"
@@ -222,6 +223,29 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(network::mojom::Networ
     network_service->SetUpHttpAuth(CreateHttpAuthStaticParams());
     network_service->ConfigureHttpAuthPrefs(CreateHttpAuthDynamicParams());
 
+    // Configure the Certificate Transparency logs.
+    std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs =
+        certificate_transparency::GetDisqualifiedLogs();
+    std::vector<network::mojom::CTLogInfoPtr> log_list_mojo;
+    for (const auto &ct_log : certificate_transparency::GetKnownLogs()) {
+        network::mojom::CTLogInfoPtr log_info = network::mojom::CTLogInfo::New();
+        log_info->public_key = std::string(ct_log.log_key, ct_log.log_key_length);
+        log_info->name = ct_log.log_name;
+
+        std::string log_id = crypto::SHA256HashString(log_info->public_key);
+        auto it = std::lower_bound(
+            std::begin(disqualified_logs), std::end(disqualified_logs), log_id,
+            [](const auto& disqualified_log, const std::string& log_id) {
+                return disqualified_log.first < log_id;
+            });
+        if (it != std::end(disqualified_logs) && it->first == log_id)
+            log_info->disqualified_at = it->second;
+        log_list_mojo.push_back(std::move(log_info));
+    }
+    network_service->UpdateCtLogList(
+        std::move(log_list_mojo),
+        certificate_transparency::GetLogListTimestamp());
+
     // The system NetworkContext is created first
     network_service_network_context_.reset();
     network_service->CreateNetworkContext(
@@ -275,16 +299,6 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(network::
     // BrowserProcess itself, so will only be destroyed on shutdown, at which
     // point, all NetworkContexts will be destroyed as well.
     AddSSLConfigToNetworkContextParams(network_context_params);
-
-    // CT is only enabled on Desktop platforms for now.
-    network_context_params->enforce_chrome_ct_policy = true;
-    for (const auto &ct_log : certificate_transparency::GetKnownLogs()) {
-        // TODO(rsleevi): https://crbug.com/702062 - Remove this duplication.
-        network::mojom::CTLogInfoPtr log_info = network::mojom::CTLogInfo::New();
-        log_info->public_key = std::string(ct_log.log_key, ct_log.log_key_length);
-        log_info->name = ct_log.log_name;
-        network_context_params->ct_logs.push_back(std::move(log_info));
-    }
 }
 
 network::mojom::NetworkContextParamsPtr SystemNetworkContextManager::CreateNetworkContextParams()

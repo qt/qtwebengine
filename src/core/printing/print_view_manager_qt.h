@@ -69,6 +69,10 @@ class PrintViewManagerQt
 {
 public:
     ~PrintViewManagerQt() override;
+
+    static void BindPrintManagerHost(mojo::PendingAssociatedReceiver<printing::mojom::PrintManagerHost> receiver,
+                                     content::RenderFrameHost *rfh);
+
     typedef base::OnceCallback<void(QSharedPointer<QByteArray> result)> PrintToPDFCallback;
     typedef base::OnceCallback<void(bool success)> PrintToPDFFileCallback;
 

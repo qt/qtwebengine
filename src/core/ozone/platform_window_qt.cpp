@@ -41,6 +41,7 @@
 
 #include "base/bind.h"
 #include "ozone/platform_window_qt.h"
+#include "ui/base/cursor/platform_cursor.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -62,6 +63,11 @@ PlatformWindowQt::~PlatformWindowQt()
 gfx::Rect PlatformWindowQt::GetBounds() const
 {
     return bounds_;
+}
+
+void PlatformWindowQt::Close()
+{
+    delegate_->OnClosed();
 }
 
 void PlatformWindowQt::SetBounds(const gfx::Rect& bounds)

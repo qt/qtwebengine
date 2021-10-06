@@ -562,10 +562,10 @@ void WebContentsDelegateQt::WebContentsCreated(content::WebContents * /*source_c
         static_cast<WebContentsViewQt *>(view)->setFactoryClient(m_viewClient);
 }
 
-content::ColorChooser *WebContentsDelegateQt::OpenColorChooser(content::WebContents *source, SkColor color, const std::vector<blink::mojom::ColorSuggestionPtr> &suggestion)
+std::unique_ptr<content::ColorChooser> WebContentsDelegateQt::OpenColorChooser(content::WebContents *source, SkColor color, const std::vector<blink::mojom::ColorSuggestionPtr> &suggestion)
 {
     Q_UNUSED(suggestion);
-    ColorChooserQt *colorChooser = new ColorChooserQt(source, toQt(color));
+    auto colorChooser = std::make_unique<ColorChooserQt>(source, toQt(color));
     m_viewClient->showColorDialog(colorChooser->controller());
 
     return colorChooser;

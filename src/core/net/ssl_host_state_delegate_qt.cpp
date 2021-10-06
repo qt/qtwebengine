@@ -121,6 +121,16 @@ bool SSLHostStateDelegateQt::DidHostRunInsecureContent(const std::string &host, 
     return false;
 }
 
+void SSLHostStateDelegateQt::AllowHttpForHost(const std::string &host, content::WebContents *web_contents)
+{
+    // Intentional no-op see aw_ssl_host_state_delegate
+}
+
+bool SSLHostStateDelegateQt::IsHttpAllowedForHost(const std::string &host, content::WebContents *web_contents)
+{
+    return false;
+}
+
 // Revokes all SSL certificate error allow exceptions made by the user for
 // |host|.
 void SSLHostStateDelegateQt::RevokeUserAllowExceptions(const std::string &host)

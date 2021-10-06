@@ -48,17 +48,19 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "third_party/blink/public/common/manifest/manifest.h"
+#include "content/public/browser/page.h"
+#include "content/public/browser/render_frame_host.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 
 namespace QtWebEngineCore {
 
 namespace {
 
 void ExtractManifestIcons(FaviconDriverQt::ManifestDownloadCallback callback,
-                          const GURL &manifest_url, const blink::Manifest &manifest)
+                          const GURL &manifest_url, blink::mojom::ManifestPtr manifest)
 {
     std::vector<favicon::FaviconURL> candidates;
-    for (const auto &icon : manifest.icons) {
+    for (const auto &icon : manifest->icons) {
         candidates.emplace_back(icon.src, favicon_base::IconType::kWebManifestIcon, icon.sizes);
     }
     std::move(callback).Run(candidates);
@@ -186,7 +188,7 @@ int FaviconDriverQt::DownloadImage(const GURL &url, int max_image_size,
 
 void FaviconDriverQt::DownloadManifest(const GURL &url, ManifestDownloadCallback callback)
 {
-    web_contents()->GetManifest(base::BindOnce(&ExtractManifestIcons, std::move(callback)));
+    web_contents()->GetMainFrame()->GetPage().GetManifest(base::BindOnce(&ExtractManifestIcons, std::move(callback)));
 }
 
 bool FaviconDriverQt::IsOffTheRecord()
@@ -270,7 +272,7 @@ void FaviconDriverQt::DidUpdateFaviconURL(
 }
 
 void FaviconDriverQt::DidUpdateWebManifestURL(content::RenderFrameHost *target_frame,
-                                              const absl::optional<GURL> &manifest_url)
+                                              const GURL &manifest_url)
 {
     Q_UNUSED(target_frame);
 
@@ -280,7 +282,7 @@ void FaviconDriverQt::DidUpdateWebManifestURL(content::RenderFrameHost *target_f
     if (!entry || !m_documentOnLoadCompleted)
         return;
 
-    m_manifestUrl = manifest_url.value_or(GURL());
+    m_manifestUrl = manifest_url;
 
     // On regular page loads, DidUpdateManifestURL() is guaranteed to be called
     // before DidUpdateFaviconURL(). However, a page can update the favicons via

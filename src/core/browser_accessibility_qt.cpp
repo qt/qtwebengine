@@ -237,8 +237,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ax::mojom::Role::kAlert:
     case ax::mojom::Role::kAlertDialog:
         return QAccessible::AlertMessage;
-    case ax::mojom::Role::kAnchor:
-        return QAccessible::Link;
     case ax::mojom::Role::kApplication:
         return QAccessible::Document; // returning Application here makes Qt return the top level app object
     case ax::mojom::Role::kArticle:

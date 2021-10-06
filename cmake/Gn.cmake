@@ -15,7 +15,7 @@ include(${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Functions.cmake)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 
 find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT)
-find_package(Python2 2.7.5 REQUIRED)
+find_package(Python3 3.7 REQUIRED)
 
 set(gnCmd ${Gn_EXECUTABLE})
 set(buildDir ${BUILD_DIR})
@@ -39,7 +39,7 @@ configure_gn_target(
 )
 
 list(APPEND gnArg
-     --script-executable=${Python2_EXECUTABLE}
+     --script-executable=${Python3_EXECUTABLE}
      --root=${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium)
 
 STRING(REGEX REPLACE "\n" ";" printArgArg "${gnArgArg}")

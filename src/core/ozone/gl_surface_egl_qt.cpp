@@ -60,71 +60,6 @@ using ui::GetLastEGLErrorString;
 
 namespace gl {
 
-bool GLSurfaceEGLQt::g_egl_surfaceless_context_supported = false;
-bool GLSurfaceEGLQt::s_initialized = false;
-
-GLSurfaceEGLQt::~GLSurfaceEGLQt()
-{
-    Destroy();
-}
-
-bool GLSurfaceEGLQt::InitializeOneOff()
-{
-    if (s_initialized)
-        return true;
-
-    // Must be called before initializing the display.
-    g_driver_egl.InitializeClientExtensionBindings();
-
-    g_display = GLContextHelper::getEGLDisplay();
-    if (!g_display) {
-        LOG(ERROR) << "GLContextHelper::getEGLDisplay() failed.";
-        return false;
-    }
-
-    g_config = GLContextHelper::getEGLConfig();
-    if (!g_config) {
-        LOG(ERROR) << "GLContextHelper::getEGLConfig() failed.";
-        return false;
-    }
-
-    if (!eglInitialize(g_display, NULL, NULL)) {
-        LOG(ERROR) << "eglInitialize failed with error " << GetLastEGLErrorString();
-        return false;
-    }
-
-    g_client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
-    g_extensions = eglQueryString(g_display, EGL_EXTENSIONS);
-    g_egl_surfaceless_context_supported = ExtensionsContain(g_extensions, "EGL_KHR_surfaceless_context");
-    if (g_egl_surfaceless_context_supported) {
-        scoped_refptr<GLSurface> surface = new GLSurfacelessQtEGL(gfx::Size(1, 1));
-        gl::GLContextAttribs attribs;
-        scoped_refptr<GLContext> context = init::CreateGLContext(
-            NULL, surface.get(), attribs);
-
-        if (!context->MakeCurrent(surface.get()))
-            g_egl_surfaceless_context_supported = false;
-
-        // Ensure context supports GL_OES_surfaceless_context.
-        if (g_egl_surfaceless_context_supported) {
-            g_egl_surfaceless_context_supported = context->HasExtension(
-                "GL_OES_surfaceless_context");
-            context->ReleaseCurrent(surface.get());
-        }
-    }
-
-    // Must be called after initializing the display.
-    g_driver_egl.InitializeExtensionBindings();
-
-    s_initialized = true;
-    return true;
-}
-
-bool GLSurfaceEGLQt::InitializeExtensionSettingsOneOff()
-{
-    return s_initialized;
-}
-
 bool GLSurfaceEGL::InitializeExtensionSettingsOneOff()
 {
     return GLSurfaceEGLQt::InitializeExtensionSettingsOneOff();
@@ -242,10 +177,80 @@ DisplayType GLSurfaceEGL::GetDisplayType()
      return DisplayType::DEFAULT;
 }
 
+GLSurface *GLSurfaceEGL::createSurfaceless(const gfx::Size& size)
+{
+    return new GLSurfacelessQtEGL(size);
+}
+
+bool GLSurfaceEGLQt::g_egl_surfaceless_context_supported = false;
+bool GLSurfaceEGLQt::s_initialized = false;
+
 GLSurfaceEGLQt::GLSurfaceEGLQt(const gfx::Size& size)
     : GLSurfaceQt(size),
       m_surfaceBuffer(0)
 {
+}
+
+GLSurfaceEGLQt::~GLSurfaceEGLQt()
+{
+    Destroy();
+}
+
+bool GLSurfaceEGLQt::InitializeOneOff()
+{
+    if (s_initialized)
+        return true;
+
+    // Must be called before initializing the display.
+    g_driver_egl.InitializeClientExtensionBindings();
+
+    g_display = GLContextHelper::getEGLDisplay();
+    if (!g_display) {
+        LOG(ERROR) << "GLContextHelper::getEGLDisplay() failed.";
+        return false;
+    }
+
+    g_config = GLContextHelper::getEGLConfig();
+    if (!g_config) {
+        LOG(ERROR) << "GLContextHelper::getEGLConfig() failed.";
+        return false;
+    }
+
+    if (!eglInitialize(g_display, NULL, NULL)) {
+        LOG(ERROR) << "eglInitialize failed with error " << GetLastEGLErrorString();
+        return false;
+    }
+
+    g_client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+    g_extensions = eglQueryString(g_display, EGL_EXTENSIONS);
+    g_egl_surfaceless_context_supported = ExtensionsContain(g_extensions, "EGL_KHR_surfaceless_context");
+    if (g_egl_surfaceless_context_supported) {
+        scoped_refptr<GLSurface> surface = new GLSurfacelessQtEGL(gfx::Size(1, 1));
+        gl::GLContextAttribs attribs;
+        scoped_refptr<GLContext> context = init::CreateGLContext(
+            NULL, surface.get(), attribs);
+
+        if (!context->MakeCurrent(surface.get()))
+            g_egl_surfaceless_context_supported = false;
+
+        // Ensure context supports GL_OES_surfaceless_context.
+        if (g_egl_surfaceless_context_supported) {
+            g_egl_surfaceless_context_supported = context->HasExtension(
+                "GL_OES_surfaceless_context");
+            context->ReleaseCurrent(surface.get());
+        }
+    }
+
+    // Must be called after initializing the display.
+    g_driver_egl.InitializeExtensionBindings();
+
+    s_initialized = true;
+    return true;
+}
+
+bool GLSurfaceEGLQt::InitializeExtensionSettingsOneOff()
+{
+    return s_initialized;
 }
 
 bool GLSurfaceEGLQt::Initialize(GLSurfaceFormat format)

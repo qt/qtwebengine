@@ -199,8 +199,8 @@ void tst_QWebEngineDownloadRequest::downloadLink_data()
         /* anchorHasDownloadAttribute */ << false
         /* fileName                   */ << QByteArrayLiteral("foo.txt")
         /* fileContents               */ << QByteArrayLiteral("")
-        /* fileMimeTypeDeclared       */ << QByteArrayLiteral("")
-        /* fileMimeTypeDetected       */ << QByteArrayLiteral("")
+        /* fileMimeTypeDeclared       */ << QByteArrayLiteral("text/plain")
+        /* fileMimeTypeDetected       */ << QByteArrayLiteral("text/plain")
         /* fileDisposition            */ << QByteArrayLiteral("")
         /* fileHasReferer             */ << true
         /* fileAction                 */ << FileIsDownloaded;

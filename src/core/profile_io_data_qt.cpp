@@ -259,7 +259,7 @@ void ProfileIODataQt::ConfigureNetworkContextParams(bool in_memory,
     }
     if (!m_inMemoryOnly && !in_memory) {
         network_context_params->http_server_properties_path = toFilePath(m_dataPath).AppendASCII("Network Persistent State");
-        network_context_params->transport_security_persister_path = toFilePath(m_dataPath);
+        network_context_params->transport_security_persister_file_path = toFilePath(m_dataPath).AppendASCII("TransportSecurity");
     }
 
     network_context_params->enforce_chrome_ct_policy = false;

@@ -35,11 +35,11 @@ import shutil
 import subprocess
 import sys
 import json
-import urllib2
+import urllib3
 import git_submodule as GitSubmodule
 
-chromium_version = '90.0.4430.228'
-chromium_branch = '4430'
+chromium_version = '94.0.4606.126'
+chromium_branch = '4606'
 ninja_version = 'v1.8.2'
 
 json_url = 'http://omahaproxy.appspot.com/all.json'
@@ -171,7 +171,7 @@ def resetUpstream():
 
     chromium = GitSubmodule.Submodule()
     chromium.path = "."
-    submodules = chromium.readSubmodules()
+    submodules = chromium.readSubmodules(True)
     submodules.append(chromium)
 
     print('-- resetting upstream submodules in ' + os.path.relpath(target_dir) + ' to baseline --')

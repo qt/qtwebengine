@@ -41,14 +41,11 @@
 #ifndef MEDIA_CAPTURE_DEVICES_DISPATCHER_H
 #define MEDIA_CAPTURE_DEVICES_DISPATCHER_H
 
-#include <deque>
-#include <list>
-#include <map>
-
 #include "web_contents_adapter_client.h"
 
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "chrome/browser/tab_contents/web_contents_collection.h"
@@ -92,20 +89,15 @@ private:
 
     friend struct base::DefaultSingletonTraits<MediaCaptureDevicesDispatcher>;
 
-    typedef base::RepeatingCallback<void(const blink::MediaStreamDevices &devices,
-                                         blink::mojom::MediaStreamRequestResult result,
-                                         std::unique_ptr<content::MediaStreamUI> ui)>
-            RepeatingMediaResponseCallback;
-
     struct PendingAccessRequest {
-        PendingAccessRequest(const content::MediaStreamRequest &request, const RepeatingMediaResponseCallback &callback);
+        PendingAccessRequest(const content::MediaStreamRequest &request, content::MediaResponseCallback callback);
         ~PendingAccessRequest();
 
         content::MediaStreamRequest request;
-        RepeatingMediaResponseCallback callback;
+        content::MediaResponseCallback callback;
     };
-    typedef base::circular_deque<PendingAccessRequest> RequestsQueue;
-    typedef std::map<content::WebContents *, RequestsQueue> RequestsQueues;
+    typedef base::circular_deque<std::unique_ptr<PendingAccessRequest>> RequestsQueue;
+    typedef base::flat_map<content::WebContents *, RequestsQueue> RequestsQueues;
 
     MediaCaptureDevicesDispatcher();
     virtual ~MediaCaptureDevicesDispatcher();

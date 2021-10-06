@@ -56,7 +56,7 @@ public:
                                      std::vector<media::CdmHostFilePath> *cdm_host_file_paths) override;
     void AddAdditionalSchemes(Schemes* schemes) override;
 
-    base::StringPiece GetDataResource(int, ui::ScaleFactor) override;
+    base::StringPiece GetDataResource(int, ui::ResourceScaleFactor) override;
     base::RefCountedMemory* GetDataResourceBytes(int resource_id) override;
     gfx::Image &GetNativeImageNamed(int resource_id) override;
     std::u16string GetLocalizedString(int message_id) override;

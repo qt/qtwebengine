@@ -51,6 +51,7 @@
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "url/url_util.h"
 
 #include "api/qwebengineurlscheme.h"

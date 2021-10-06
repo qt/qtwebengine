@@ -56,7 +56,6 @@
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
-#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/cursor_manager.h"
@@ -71,6 +70,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/display/display_util.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -129,13 +129,13 @@ static inline ui::GestureProvider::Config QtGestureProviderConfig() {
 
 extern display::Display toDisplayDisplay(int id, const QScreen *screen);
 
-static blink::ScreenInfo screenInfoFromQScreen(QScreen *screen)
+static display::ScreenInfo screenInfoFromQScreen(QScreen *screen)
 {
-    blink::ScreenInfo r;
+    display::ScreenInfo r;
     if (!screen)
         screen = qApp->primaryScreen();
     if (screen)
-        content::DisplayUtil::DisplayToScreenInfo(&r, toDisplayDisplay(0, screen));
+        display::DisplayUtil::DisplayToScreenInfo(&r, toDisplayDisplay(0, screen));
     else
         r.device_scale_factor = qGuiApp->devicePixelRatio();
     return r;
@@ -680,7 +680,7 @@ void RenderWidgetHostViewQt::UpdateTooltip(const std::u16string &tooltip_text)
         m_adapterClient->setToolTip(toQt(tooltip_text));
 }
 
-void RenderWidgetHostViewQt::GetScreenInfo(blink::ScreenInfo *results)
+void RenderWidgetHostViewQt::GetScreenInfo(display::ScreenInfo *results)
 {
     *results = m_screenInfo;
 }
@@ -889,7 +889,7 @@ bool RenderWidgetHostViewQt::isPopup() const
 
 bool RenderWidgetHostViewQt::updateScreenInfo()
 {
-    blink::ScreenInfo oldScreenInfo = m_screenInfo;
+    display::ScreenInfo oldScreenInfo = m_screenInfo;
     QScreen *screen = m_delegate->window() ? m_delegate->window()->screen() : nullptr;
     m_screenInfo = screenInfoFromQScreen(screen);
 

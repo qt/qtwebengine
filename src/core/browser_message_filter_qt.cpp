@@ -40,7 +40,6 @@
 #include "browser_message_filter_qt.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/plugin_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 

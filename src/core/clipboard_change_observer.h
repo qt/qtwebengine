@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -41,8 +41,9 @@
 #define CLIPBOARD_CHANGE_OBSERVER_H
 
 #include <QClipboard>
-#include <QMap>
 #include <QObject>
+
+#include "ui/base/clipboard/clipboard_sequence_number_token.h"
 
 namespace QtWebEngineCore {
 
@@ -50,13 +51,15 @@ class ClipboardChangeObserver : public QObject {
     Q_OBJECT
 public:
     ClipboardChangeObserver();
-    quint64 getSequenceNumber(QClipboard::Mode mode) { return sequenceNumber.value(mode); }
+    const ui::ClipboardSequenceNumberToken &getPrimarySequenceNumber() { return m_primarySequenceNumber; }
+    const ui::ClipboardSequenceNumberToken &getSelectionSequenceNumber() { return m_selectionSequenceNumber; }
 
 private Q_SLOTS:
     void trackChange(QClipboard::Mode mode);
 
 private:
-    QMap<QClipboard::Mode, quint64> sequenceNumber;
+    ui::ClipboardSequenceNumberToken m_primarySequenceNumber;
+    ui::ClipboardSequenceNumberToken m_selectionSequenceNumber;
 };
 
 } // namespace QtWebEngineCore

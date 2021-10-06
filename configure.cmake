@@ -7,13 +7,13 @@ if(QT_CONFIGURE_RUNNING)
 else()
     find_package(Ninja 1.7.2)
     find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT)
-    find_package(Python2 2.7.5)
+    find_package(Python3 3.7)
     find_package(GPerf)
     find_package(BISON)
     find_package(FLEX)
     find_package(PkgConfig)
     find_package(Snappy)
-    find_package(Nodejs 10.19)
+    find_package(Nodejs 12.0)
 endif()
 
 if(PkgConfig_FOUND)
@@ -46,6 +46,14 @@ if(PkgConfig_FOUND)
     pkg_check_modules(OPUS opus>=1.3.1)
     pkg_check_modules(VPX vpx>=1.10.0 IMPORTED_TARGET)
     pkg_check_modules(LIBPCI libpci)
+endif()
+
+if(Python3_FOUND)
+    execute_process(
+        COMMAND ${Python3_EXECUTABLE} -c "import html5lib"
+        RESULT_VARIABLE html5lib_NOT_FOUND
+        OUTPUT_QUIET
+    )
 endif()
 
 #### Tests
@@ -380,12 +388,17 @@ add_check_for_support(
 add_check_for_support(
    MODULES QtWebEngine QtPdf
    CONDITION TARGET Nodejs::Nodejs
-   MESSAGE "node.js version 10.19 or later is required."
+   MESSAGE "node.js version 12 or later is required."
 )
 add_check_for_support(
    MODULES QtWebEngine QtPdf
-   CONDITION Python2_FOUND
-   MESSAGE "Python2 version 2.7.5 or later is required."
+   CONDITION Python3_FOUND
+   MESSAGE "Python version 3.7 or later is required."
+)
+add_check_for_support(
+   MODULES QtWebEngine QtPdf
+   CONDITION Python3_FOUND AND NOT html5lib_NOT_FOUND
+   MESSAGE "Python3 html5lib is missing."
 )
 add_check_for_support(
    MODULES QtWebEngine QtPdf

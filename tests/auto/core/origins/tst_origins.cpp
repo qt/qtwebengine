@@ -932,12 +932,12 @@ void tst_Origins::serviceWorker()
     QVERIFY(verifyLoad(QSL("tst:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QVERIFY(eval(QSL("error")).toString()
-            .contains(QSL("Cannot read property 'register' of undefined")));
+             .contains(QSL("Cannot read properties of undefined")));
 
     QVERIFY(verifyLoad(QSL("PathSyntax:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QVERIFY(eval(QSL("error")).toString()
-            .contains(QSL("Cannot read property 'register' of undefined")));
+            .contains(QSL("Cannot read properties of undefined")));
 
     QVERIFY(verifyLoad(QSL("PathSyntax-Secure:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
@@ -947,7 +947,7 @@ void tst_Origins::serviceWorker()
     QVERIFY(verifyLoad(QSL("PathSyntax-ServiceWorkersAllowed:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QVERIFY(eval(QSL("error")).toString()
-            .contains(QSL("Cannot read property 'register' of undefined")));
+            .contains(QSL("Cannot read properties of undefined")));
 
     QVERIFY(verifyLoad(QSL("PathSyntax-Secure-ServiceWorkersAllowed:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
@@ -956,7 +956,7 @@ void tst_Origins::serviceWorker()
     QVERIFY(verifyLoad(QSL("PathSyntax-NoAccessAllowed:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QVERIFY(eval(QSL("error")).toString()
-            .contains(QSL("Cannot read property 'register' of undefined")));
+            .contains(QSL("Cannot read properties of undefined")));
 }
 
 // Support for view-source must be enabled explicitly.

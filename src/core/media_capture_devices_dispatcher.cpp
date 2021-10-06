@@ -290,9 +290,9 @@ private:
 } // namespace
 
 MediaCaptureDevicesDispatcher::PendingAccessRequest::PendingAccessRequest(const content::MediaStreamRequest &request,
-                                                                          const RepeatingMediaResponseCallback &callback)
+                                                                          content::MediaResponseCallback callback)
         : request(request)
-        , callback(callback)
+        , callback(std::move(callback))
 {
 }
 
@@ -310,7 +310,7 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
         return;
 
     RequestsQueue &queue(it->second);
-    content::MediaStreamRequest &request = queue.front().request;
+    content::MediaStreamRequest &request = queue.front()->request;
 
     const QUrl requestSecurityOrigin(toQt(request.security_origin));
     bool securityOriginsMatch = (requestSecurityOrigin.host() == securityOrigin.host()
@@ -347,7 +347,7 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
         }
     }
 
-    content::MediaResponseCallback callback = std::move(queue.front().callback);
+    content::MediaResponseCallback callback = std::move(queue.front()->callback);
     queue.pop_front();
 
     if (!queue.empty()) {
@@ -475,7 +475,7 @@ void MediaCaptureDevicesDispatcher::enqueueMediaAccessRequest(content::WebConten
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     RequestsQueue &queue = m_pendingRequests[webContents];
-    queue.push_back(PendingAccessRequest(request, base::AdaptCallbackForRepeating(std::move(callback))));
+    queue.push_back(std::make_unique<PendingAccessRequest>(request, std::move(callback)));
 }
 
 void MediaCaptureDevicesDispatcher::ProcessQueuedAccessRequest(content::WebContents *webContents)
@@ -487,7 +487,7 @@ void MediaCaptureDevicesDispatcher::ProcessQueuedAccessRequest(content::WebConte
         return;
 
     RequestsQueue &queue(it->second);
-    content::MediaStreamRequest &request = queue.front().request;
+    content::MediaStreamRequest &request = queue.front()->request;
 
     WebContentsAdapterClient *adapterClient = WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(webContents)->GetView())->client();
     adapterClient->runMediaAccessPermissionRequest(toQt(request.security_origin), mediaRequestFlagsForRequest(request));
@@ -541,9 +541,9 @@ void MediaCaptureDevicesDispatcher::updateMediaRequestStateOnUIThread(int render
         for (auto &pair : m_pendingRequests) {
             RequestsQueue &queue = pair.second;
             for (auto it = queue.begin(); it != queue.end(); ++it) {
-                if (it->request.render_process_id == render_process_id
-                        && it->request.render_frame_id == render_frame_id
-                        && it->request.page_request_id == page_request_id) {
+                if ((*it)->request.render_process_id == render_process_id
+                        && (*it)->request.render_frame_id == render_frame_id
+                        && (*it)->request.page_request_id == page_request_id) {
                     queue.erase(it);
                     return;
                 }

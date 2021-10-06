@@ -490,6 +490,32 @@ static void AddExternalClearKey(std::vector<std::unique_ptr<media::KeySystemProp
 }
 
 #if BUILDFLAG(ENABLE_WIDEVINE)
+media::SupportedCodecs GetVP9Codecs(const std::vector<media::VideoCodecProfile> &profiles)
+{
+    if (profiles.empty()) {
+        // If no profiles are specified, then all are supported.
+        return media::EME_CODEC_VP9_PROFILE0 | media::EME_CODEC_VP9_PROFILE2;
+    }
+
+    media::SupportedCodecs supported_vp9_codecs = media::EME_CODEC_NONE;
+    for (const auto& profile : profiles) {
+        switch (profile) {
+        case media::VP9PROFILE_PROFILE0:
+            supported_vp9_codecs |= media::EME_CODEC_VP9_PROFILE0;
+            break;
+        case media::VP9PROFILE_PROFILE2:
+            supported_vp9_codecs |= media::EME_CODEC_VP9_PROFILE2;
+            break;
+        default:
+            DVLOG(1) << "Unexpected " << GetCodecName(media::VideoCodec::kCodecVP9)
+                     << " profile: " << GetProfileName(profile);
+            break;
+        }
+    }
+
+    return supported_vp9_codecs;
+}
+
 static media::SupportedCodecs GetSupportedCodecs(const media::CdmCapability& capability,
                                                  bool is_secure)
 {
@@ -518,13 +544,12 @@ static media::SupportedCodecs GetSupportedCodecs(const media::CdmCapability& cap
     }
 
     for (const auto &codec : capability.video_codecs) {
-        switch (codec) {
+        switch (codec.first) {
         case media::VideoCodec::kCodecVP8:
             supported_codecs |= media::EME_CODEC_VP8;
             break;
         case media::VideoCodec::kCodecVP9:
-            supported_codecs |= media::EME_CODEC_VP9_PROFILE0;
-            supported_codecs |= media::EME_CODEC_VP9_PROFILE2;
+            supported_codecs |= GetVP9Codecs(codec.second);
             break;
         case media::VideoCodec::kCodecAV1:
             supported_codecs |= media::EME_CODEC_AV1;
@@ -535,7 +560,7 @@ static media::SupportedCodecs GetSupportedCodecs(const media::CdmCapability& cap
             break;
 #endif // BUILDFLAG(USE_PROPRIETARY_CODECS)
         default:
-            DVLOG(1) << "Unexpected supported codec: " << GetCodecName(codec);
+            DVLOG(1) << "Unexpected supported codec: " << GetCodecName(codec.first);
             break;
         }
     }

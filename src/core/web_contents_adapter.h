@@ -208,6 +208,7 @@ public:
 #if QT_CONFIG(webengine_webchannel)
     QWebChannel *webChannel() const;
     void setWebChannel(QWebChannel *, uint worldId);
+    WebChannelIPCTransportHost *webChannelTransport() { return m_webChannelTransport.get(); }
 #endif
     FindTextHelper *findTextHelper();
 

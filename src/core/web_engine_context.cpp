@@ -79,7 +79,9 @@
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#if QT_CONFIG(webengine_pepper_plugins)
 #include "content/public/browser/plugin_service.h"
+#endif
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
@@ -946,7 +948,7 @@ const char *qWebEngineChromiumVersion() noexcept
 */
 const char *qWebEngineChromiumSecurityPatchVersion() noexcept
 {
-    return "92.0.4515.166"; // FIXME: Remember to update
+    return "94.0.4606.126"; // FIXME: Remember to update
 }
 
 QT_END_NAMESPACE

@@ -391,11 +391,6 @@ void PrintViewManagerBaseQt::PrintingFailed(int32_t cookie)
     PrintManager::PrintingFailed(cookie);
 
     ReleasePrinterQuery();
-
-    content::NotificationService::current()->Notify(
-                chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-                content::Source<content::WebContents>(web_contents()),
-                content::NotificationService::NoDetails());
 }
 
 void PrintViewManagerBaseQt::ScriptedPrint(printing::mojom::ScriptedPrintParamsPtr params,
@@ -462,23 +457,12 @@ void PrintViewManagerBaseQt::OnNotifyPrintJobEvent(const printing::JobEventDetai
     switch (event_details.type()) {
     case printing::JobEventDetails::FAILED: {
         TerminatePrintJob(true);
-
-        content::NotificationService::current()->Notify(
-                chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-                content::Source<content::WebContents>(web_contents()),
-                content::NotificationService::NoDetails());
         break;
     }
-    case printing::JobEventDetails::USER_INIT_DONE:
-    case printing::JobEventDetails::DEFAULT_INIT_DONE:
-    case printing::JobEventDetails::USER_INIT_CANCELED: {
-        NOTREACHED();
-        break;
-    }
-    case printing::JobEventDetails::ALL_PAGES_REQUESTED: {
-        ShouldQuitFromInnerMessageLoop();
-        break;
-    }
+//    case printing::JobEventDetails::ALL_PAGES_REQUESTED: {
+//        ShouldQuitFromInnerMessageLoop();
+//        break;
+//    }
     case printing::JobEventDetails::NEW_DOC:
 #if defined(OS_WIN)
     case printing::JobEventDetails::PAGE_DONE:
@@ -493,11 +477,6 @@ void PrintViewManagerBaseQt::OnNotifyPrintJobEvent(const printing::JobEventDetai
         // of object registration.
         m_didPrintingSucceed = true;
         ReleasePrintJob();
-
-        content::NotificationService::current()->Notify(
-                chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-                content::Source<content::WebContents>(web_contents()),
-                content::NotificationService::NoDetails());
         break;
     }
     default:
@@ -532,11 +511,9 @@ bool PrintViewManagerBaseQt::RenderAllMissingPagesNow()
     // pages in an hurry if a print_job_ is still pending. No need to wait for it
     // to actually spool the pages, only to have the renderer generate them. Run
     // a message loop until we get our signal that the print job is satisfied.
-    // PrintJob will send a ALL_PAGES_REQUESTED after having received all the
-    // pages it needs. MessageLoop::current()->Quit() will be called as soon as
-    // print_job_->document()->IsComplete() is true on either ALL_PAGES_REQUESTED
-    // or in DidPrintPage(). The check is done in
-    // ShouldQuitFromInnerMessageLoop().
+    // |quit_inner_loop_| will be called as soon as
+    // print_job_->document()->IsComplete() is true in DidPrintDocument(). The
+    // check is done in ShouldQuitFromInnerMessageLoop().
     // BLOCKS until all the pages are received. (Need to enable recursive task)
     if (!RunInnerMessageLoop()) {
       // This function is always called from DisconnectFromCurrentPrintJob() so we

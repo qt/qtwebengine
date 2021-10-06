@@ -56,13 +56,11 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
-#include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
 
-QT_FORWARD_DECLARE_CLASS(QMatrix4x4)
 QT_FORWARD_DECLARE_CLASS(QSslCertificate)
 
 namespace gfx {
@@ -213,8 +211,6 @@ SkBitmap toSkBitmap(const QImage &image);
 
 QIcon toQIcon(const gfx::Image &image);
 QIcon toQIcon(const std::vector<SkBitmap> &bitmaps);
-
-void convertToQt(const SkMatrix44 &m, QMatrix4x4 &c);
 
 inline QDateTime toQt(base::Time time)
 {

@@ -112,7 +112,7 @@ void ClientCertSelectController::select(const QSslCertificate &certificate)
     }
     QByteArray derCertificate = certificate.toDer();
     scoped_refptr<net::X509Certificate> selectedCert =
-            net::X509Certificate::CreateFromBytes(derCertificate.constData(), derCertificate.length());
+            net::X509Certificate::CreateFromBytes(base::make_span((const unsigned char *)derCertificate.constData(), derCertificate.length()));
     for (auto &certInfo : m_clientCerts) {
         scoped_refptr<net::X509Certificate> cert = certInfo->certificate();
         if (cert->EqualsExcludingChain(selectedCert.get())) {

@@ -76,6 +76,7 @@
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_entry_restore_context.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/common/content_switches.h"
@@ -151,16 +152,14 @@ static QVariant fromJSValue(const base::Value *result)
     }
     case base::Value::Type::INTEGER:
     {
-        int out;
-        if (result->GetAsInteger(&out))
-            ret.setValue(out);
+        if (auto out = result->GetIfInt())
+            ret.setValue(*out);
         break;
     }
     case base::Value::Type::DOUBLE:
     {
-        double out;
-        if (result->GetAsDouble(&out))
-            ret.setValue(out);
+        if (auto out = result->GetIfDouble())
+            ret.setValue(*out);
         break;
     }
     case base::Value::Type::STRING:
@@ -299,6 +298,8 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
     int count;
     input >> count >> *currentIndex;
 
+    std::unique_ptr<content::NavigationEntryRestoreContext> context = content::NavigationEntryRestoreContext::Create(); // FIXME?
+
     entries->reserve(count);
     // Logic taken from SerializedNavigationEntry::ReadFromPickle and ToNavigationEntries.
     for (int i = 0; i < count; ++i) {
@@ -349,7 +350,7 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
             nullptr);
 
         entry->SetTitle(toString16(title));
-        entry->SetPageState(blink::PageState::CreateFromEncodedData(std::string(pageState.data(), pageState.size())));
+        entry->SetPageState(blink::PageState::CreateFromEncodedData(std::string(pageState.data(), pageState.size())), context.get());
         entry->SetHasPostData(hasPostData);
         entry->SetOriginalRequestURL(toGurl(originalRequestUrl));
         entry->SetIsOverridingUserAgent(isOverridingUserAgent);

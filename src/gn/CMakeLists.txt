@@ -17,7 +17,7 @@ set(GN_SOURCE_DIR ${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/gn)
 set(GN_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${WEBENGINE_ROOT_SOURCE_DIR}/cmake")
 
-find_package(Python2 REQUIRED)
+find_package(Python3 REQUIRED)
 find_package(Ninja 1.7.2 REQUIRED)
 
 if(WIN32)
@@ -30,7 +30,7 @@ file(MAKE_DIRECTORY ${GN_BINARY_DIR})
 add_custom_command(
     OUTPUT ${GN_EXECUTABLE}
     WORKING_DIRECTORY ${GN_BINARY_DIR}
-    COMMAND ${Python2_EXECUTABLE} ${GN_SOURCE_DIR}/build/gen.py
+    COMMAND ${Python3_EXECUTABLE} ${GN_SOURCE_DIR}/build/gen.py
         --no-last-commit-position
         --out-path ${GN_BINARY_DIR}/$<CONFIG>
         --cc ${CMAKE_C_COMPILER}
