@@ -1662,7 +1662,8 @@ void RenderWidgetHostViewQt::handleGestureEvent(QNativeGestureEvent *ev)
 {
     const Qt::NativeGestureType type = ev->gestureType();
     // These are the only supported gestures by Chromium so far.
-    if (type == Qt::ZoomNativeGesture || type == Qt::SmartZoomNativeGesture) {
+    if (type == Qt::ZoomNativeGesture || type == Qt::SmartZoomNativeGesture
+            || type == Qt::BeginNativeGesture || type == Qt::EndNativeGesture) {
         if (host()->delegate() && host()->delegate()->GetInputEventRouter()) {
             auto webEvent = WebEventFactory::toWebGestureEvent(ev);
             host()->delegate()->GetInputEventRouter()->RouteGestureEvent(this, &webEvent, ui::LatencyInfo());

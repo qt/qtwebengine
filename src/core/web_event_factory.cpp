@@ -1540,7 +1540,13 @@ WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev)
         webKitEvent.data.tap.tap_count = 1;
         break;
     case Qt::BeginNativeGesture:
+        webKitEvent.SetType(WebInputEvent::Type::kGesturePinchBegin);
+        webKitEvent.SetNeedsWheelEvent(true);
+        break;
     case Qt::EndNativeGesture:
+        webKitEvent.SetType(WebInputEvent::Type::kGesturePinchEnd);
+        webKitEvent.SetNeedsWheelEvent(true);
+        break;
     case Qt::RotateNativeGesture:
     case Qt::PanNativeGesture:
     case Qt::SwipeNativeGesture:
