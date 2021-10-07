@@ -96,10 +96,7 @@
     \value  LocalStorageEnabled
             Enables support for the HTML 5 local storage feature. Enabled by default.
     \value  LocalContentCanAccessRemoteUrls
-            Allows locally loaded documents to ignore cross-origin rules so that they can access
-            remote resources that would normally be blocked, since remote resources are
-            considered cross-origin for a local document. Remote access that would not be blocked by
-            cross-origin rules is still possible when this setting is disabled (default).
+            Allows local origin documents to access remote resources that would normally be blocked.
             Note that disabling this setting does not prevent media elements in local files from
             accessing remote content. Disabled by default.
     \value  XSSAuditingEnabled

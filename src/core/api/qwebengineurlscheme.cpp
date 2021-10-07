@@ -171,12 +171,12 @@ public:
   Indicates that the URL scheme provides access to local resources. The purpose
   of this flag is to prevent network content from accessing local resources.
   Only schemes with the \c LocalAccessAllowed flag may load resources from a
-  scheme with the \c Local flag. The only builtin schemes with this flag are \c
-  file and \c qrc.
+  scheme with the \c LocalScheme flag. The only builtin scheme with this flag is \c
+  file.
 
   \value LocalAccessAllowed
   Indicates that content from this scheme should be allowed to load resources
-  from schemes with the \c Local flag.
+  from schemes with the \c LocalScheme flag.
 
   \value NoAccessAllowed
   Indicates that all content from this scheme should be forced to have unique
@@ -194,10 +194,10 @@ public:
 
   \value CorsEnabled
   Enables cross-origin resource sharing (CORS) for this scheme. This flag is
-  required in order to, for example, use the scheme with the \l
-  {https://fetch.spec.whatwg.org/}{Fetch API}, or to deliver CSS fonts to a
-  different origin. The appropriate CORS headers are generated automatically by
-  the QWebEngineUrlRequestJob class. (Added in Qt 5.14)
+  required in order for content to be loaded by documents of a different origin,
+  this includes access from other schemes. The appropriate CORS headers are
+  generated automatically by the QWebEngineUrlRequestJob class. By default only
+  \c http and \c https are CORS enabled. (Added in Qt 5.14)
 */
 
 QWebEngineUrlScheme::QWebEngineUrlScheme(QWebEngineUrlSchemePrivate *d) : d(d) {}

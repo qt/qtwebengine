@@ -53,6 +53,7 @@
 #include "services/network/public/mojom/early_hints.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/url_util.h"
+#include "url/url_util_qt.h"
 
 #include "api/qwebengineurlrequestinfo_p.h"
 #include "type_conversion.h"
@@ -168,7 +169,10 @@ private:
     const int frame_tree_node_id_;
     const int32_t request_id_;
     const uint32_t options_;
-    bool allowed_cors_ = true;
+    bool allow_local_ = false;
+    bool allow_remote_ = true;
+    bool local_access_ = false;
+    bool remote_access_ = true;
 
     // If the |target_loader_| called OnComplete with an error this stores it.
     // That way the destructor can send it to OnReceivedError if safe browsing
@@ -222,22 +226,20 @@ InterceptedRequest::InterceptedRequest(ProfileAdapter *profile_adapter,
             base::BindOnce(&InterceptedRequest::OnURLLoaderError, base::Unretained(this)));
     if (!disable_web_security && request_.request_initiator) {
         const std::vector<std::string> &localSchemes = url::GetLocalSchemes();
-        std::string fromScheme = request_.request_initiator->GetTupleOrPrecursorTupleIfOpaque().scheme();
-        if (base::Contains(localSchemes, fromScheme)) {
+        const std::string fromScheme = request_.request_initiator->GetTupleOrPrecursorTupleIfOpaque().scheme();
+        const std::string toScheme = request_.url.scheme();
+        const bool fromLocal = base::Contains(localSchemes, fromScheme);
+        const bool toLocal = base::Contains(localSchemes, toScheme);
+        bool hasLocalAccess = false;
+        local_access_ = toLocal;
+        remote_access_ = !toLocal && (toScheme != "data") && (toScheme != "qrc");
+        if (const url::CustomScheme *cs = url::CustomScheme::FindScheme(fromScheme))
+            hasLocalAccess = cs->flags & url::CustomScheme::LocalAccessAllowed;
+        if (fromLocal || toLocal) {
             content::WebContents *wc = webContents();
-            std::string toScheme = request_.url.scheme();
             // local schemes must have universal access, or be accessing something local and have local access.
-            if (fromScheme != toScheme) {
-                // note allow_file_access_from_file_urls maps to LocalContentCanAccessFileUrls in our API
-                // and allow_universal_access_from_file_urls to LocalContentCanAccessRemoteUrls, so we are
-                // using them as proxies for our API here.
-                if (toScheme == "file")
-                    allowed_cors_ = wc && wc->GetOrCreateWebPreferences().allow_file_access_from_file_urls;
-                else if (!base::Contains(localSchemes, toScheme))
-                    allowed_cors_ = wc && wc->GetOrCreateWebPreferences().allow_universal_access_from_file_urls;
-                else
-                    allowed_cors_ = true; // We should think about this for future patches
-            }
+            allow_local_ = hasLocalAccess || (fromLocal && wc && wc->GetOrCreateWebPreferences().allow_file_access_from_file_urls);
+            allow_remote_ = !fromLocal || (wc && wc->GetOrCreateWebPreferences().allow_remote_access_from_local_urls);
         }
     }
 }
@@ -273,10 +275,15 @@ void InterceptedRequest::Restart()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    // This is a CORS check on the from URL, the normal check on the to URL is applied later
-    if (!allowed_cors_ && current_response_->response_type == network::mojom::FetchResponseType::kCors) {
-        target_client_->OnComplete(network::URLLoaderCompletionStatus(
-                                       network::CorsErrorStatus(network::mojom::CorsError::kCorsDisabledScheme)));
+    // Check if non-local access is allowed
+    if (!allow_remote_ && remote_access_) {
+        target_client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_NETWORK_ACCESS_DENIED));
+        delete this;
+        return;
+    }
+    // Check if local access is allowed
+    if (!allow_local_ && local_access_) {
+        target_client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_ACCESS_DENIED));
         delete this;
         return;
     }

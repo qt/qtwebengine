@@ -12,7 +12,7 @@
              document.getElementById("iframe").setAttribute("src", url);
              // Early fire is OK unless the test is expecting cannotLoad.
              // If timeout is too short then a false positive is possible.
-             setTimeout(() => { result = result || "cannotLoad"; }, 500);
+             setTimeout(() => { result = result || "cannotLoad"; }, 1000);
          }
 
          addEventListener("load", function() {

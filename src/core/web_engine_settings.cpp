@@ -377,7 +377,7 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
     prefs->tabs_to_links = testAttribute(QWebEngineSettings::LinksIncludedInFocusChain);
     prefs->local_storage_enabled = testAttribute(QWebEngineSettings::LocalStorageEnabled);
     prefs->databases_enabled = testAttribute(QWebEngineSettings::LocalStorageEnabled);
-    prefs->allow_universal_access_from_file_urls =
+    prefs->allow_remote_access_from_local_urls =
             testAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls);
     prefs->spatial_navigation_enabled = testAttribute(QWebEngineSettings::SpatialNavigationEnabled);
     prefs->allow_file_access_from_file_urls =
