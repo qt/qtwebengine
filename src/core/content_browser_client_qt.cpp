@@ -1100,15 +1100,10 @@ void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int
     // Install file scheme if necessary:
     bool install_file_scheme = false;
     if (web_contents) {
-        const auto *settings = static_cast<WebContentsDelegateQt *>(web_contents->GetResponsibleWebContents()->GetDelegate())->webEngineSettings();
-        if (settings->testAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls)) {
-            for (const auto &local_scheme : url::GetLocalSchemes()) {
-                if (url.SchemeIs(local_scheme)) {
-                    install_file_scheme = true;
-                    break;
-                }
-            }
-        }
+        const std::string scheme = url.scheme();
+        install_file_scheme = base::Contains(url::GetLocalSchemes(), scheme);
+        if (const url::CustomScheme *cs = url::CustomScheme::FindScheme(scheme))
+            install_file_scheme = cs->flags & (url::CustomScheme::LocalAccessAllowed | url::CustomScheme::Local);
     }
 
     if (install_file_scheme && factories->find(url::kFileScheme) == factories->end()) {

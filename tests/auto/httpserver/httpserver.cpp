@@ -110,6 +110,7 @@ void HttpServer::handleNewConnection()
                     if (f.open(QFile::ReadOnly)) {
                         QMimeType mime = QMimeDatabase().mimeTypeForFileNameAndData(f.fileName(), &f);
                         rr->setResponseHeader(QByteArrayLiteral("Content-Type"), mime.name().toUtf8());
+                        rr->setResponseHeader(QByteArrayLiteral("Access-Control-Allow-Origin"), QByteArrayLiteral("*"));
                         rr->setResponseBody(f.readAll());
                         rr->sendResponse();
                     } else {

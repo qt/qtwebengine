@@ -54,6 +54,8 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "url/url_util.h"
+#include "url/url_util_qt.h"
 
 #include "api/qwebengineurlscheme.h"
 #include "net/url_request_custom_job_proxy.h"
@@ -134,6 +136,7 @@ private:
         m_error = 0;
         QWebEngineUrlScheme scheme = QWebEngineUrlScheme::schemeByName(QByteArray::fromStdString(request.url.scheme()));
         m_corsEnabled = scheme.flags().testFlag(QWebEngineUrlScheme::CorsEnabled);
+        m_isLocal = scheme.flags().testFlag(QWebEngineUrlScheme::LocalScheme);
     }
 
     ~CustomURLLoader() override = default;
@@ -147,10 +150,21 @@ private:
             if (!m_request.request_initiator)
                 return CompleteWithFailure(net::ERR_INVALID_ARGUMENT);
 
-            // Custom schemes are not covered by CorsURLLoader, so we need to reject CORS requests manually.
-            if (!m_corsEnabled && !m_request.request_initiator->IsSameOriginWith(url::Origin::Create(m_request.url)))
-                return CompleteWithFailure(network::CorsErrorStatus(network::mojom::CorsError::kCorsDisabledScheme));
+            if (m_isLocal) {
+                std::string fromScheme = m_request.request_initiator->GetTupleOrPrecursorTupleIfOpaque().scheme();
+                const std::vector<std::string> &localSchemes = url::GetLocalSchemes();
+                bool fromLocal = base::Contains(localSchemes, fromScheme);
+                bool hasLocalAccess = fromLocal;
+                if (const url::CustomScheme *cs = url::CustomScheme::FindScheme(fromScheme))
+                    hasLocalAccess = cs->flags & (url::CustomScheme::LocalAccessAllowed | url::CustomScheme::Local);
+                if (!hasLocalAccess)
+                    return CompleteWithFailure(net::ERR_ACCESS_DENIED);
+            } else if (!m_corsEnabled && !m_request.request_initiator->IsSameOriginWith(url::Origin::Create(m_request.url))) {
+                // Custom schemes are not covered by CorsURLLoader, so we need to reject CORS requests manually.
+                 return CompleteWithFailure(network::CorsErrorStatus(network::mojom::CorsError::kCorsDisabledScheme));
+            }
         }
+
         if (mojo::CreateDataPipe(nullptr, m_pipeProducerHandle, m_pipeConsumerHandle) != MOJO_RESULT_OK)
             return CompleteWithFailure(net::ERR_FAILED);
 
@@ -452,6 +466,7 @@ private:
     qint64 m_headerBytesRead = 0;
     qint64 m_totalBytesRead = 0;
     bool m_corsEnabled;
+    bool m_isLocal;
 
     base::WeakPtrFactory<CustomURLLoader> m_weakPtrFactory{this};
 
