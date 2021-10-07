@@ -142,7 +142,17 @@ void registerSchemes()
         QWebEngineUrlScheme::registerScheme(scheme);
     }
     {
+        QWebEngineUrlScheme scheme(QBAL("localaccess"));
+        scheme.setFlags(QWebEngineUrlScheme::LocalAccessAllowed);
+        QWebEngineUrlScheme::registerScheme(scheme);
+    }
+    {
         QWebEngineUrlScheme scheme(QBAL("local"));
+        scheme.setFlags(QWebEngineUrlScheme::LocalScheme);
+        QWebEngineUrlScheme::registerScheme(scheme);
+    }
+    {
+        QWebEngineUrlScheme scheme(QBAL("local-localaccess"));
         scheme.setFlags(QWebEngineUrlScheme::LocalScheme | QWebEngineUrlScheme::LocalAccessAllowed);
         QWebEngineUrlScheme::registerScheme(scheme);
     }
@@ -178,7 +188,9 @@ public:
         profile->installUrlSchemeHandler(QBAL("redirect1"), this);
         profile->installUrlSchemeHandler(QBAL("redirect2"), this);
         profile->installUrlSchemeHandler(QBAL("cors"), this);
+        profile->installUrlSchemeHandler(QBAL("localaccess"), this);
         profile->installUrlSchemeHandler(QBAL("local"), this);
+        profile->installUrlSchemeHandler(QBAL("local-localaccess"), this);
         profile->installUrlSchemeHandler(QBAL("local-cors"), this);
     }
 
@@ -217,6 +229,21 @@ private:
     QList<QUrl> m_requests;
 };
 
+class TestPage : public QWebEnginePage
+{
+public:
+    TestPage(QWebEngineProfile *profile) : QWebEnginePage(profile, nullptr)
+    {
+    }
+    void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel,
+                                  const QString &message, int,
+                                  const QString &) override
+    {
+        messages << message;
+    }
+    QStringList messages;
+};
+
 class tst_Origins final : public QObject {
     Q_OBJECT
 
@@ -237,6 +264,8 @@ private Q_SLOTS:
     void mixedSchemesWithCsp();
     void mixedXHR_data();
     void mixedXHR();
+    void mixedContent_data();
+    void mixedContent();
 #if defined(WEBSOCKETS)
     void webSocket();
 #endif
@@ -262,7 +291,7 @@ private:
     }
 
     QWebEngineProfile m_profile;
-    QWebEnginePage *m_page = nullptr;
+    TestPage *m_page = nullptr;
     TstUrlSchemeHandler *m_handler = nullptr;
 };
 
@@ -283,7 +312,7 @@ void tst_Origins::cleanupTestCase()
 
 void tst_Origins::init()
 {
-    m_page = new QWebEnginePage(&m_profile, nullptr);
+    m_page = new TestPage(&m_profile);
 }
 
 void tst_Origins::cleanup()
@@ -501,8 +530,6 @@ void tst_Origins::subdirWithoutAccess()
 {
     ScopedAttribute sa(m_page->settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, false);
 
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     QVERIFY(verifyLoad("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
                        + "/resources/subdir/index.html"));
     QCOMPARE(eval(QSL("msg[0]")), QVariant());
@@ -532,9 +559,8 @@ void tst_Origins::fileAccessRemoteUrl()
     server.setResourceDirs({ QDir(QT_TESTCASE_SOURCEDIR).canonicalPath() + "/resources" });
     QVERIFY(server.start());
 
-    ScopedAttribute sa(m_page->settings(), QWebEngineSettings::LocalContentCanAccessRemoteUrls, EnableAccess);
-    if (!EnableAccess)
-        QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("blocked by CORS policy")));
+    ScopedAttribute sa1(m_page->settings(), QWebEngineSettings::LocalContentCanAccessRemoteUrls, EnableAccess);
+    ScopedAttribute sa2(m_page->settings(), QWebEngineSettings::ErrorPageEnabled, false);
 
     QVERIFY(verifyLoad("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
                        + "/resources/mixedXHR.html"));
@@ -553,35 +579,31 @@ void tst_Origins::fileAccessRemoteUrl()
 // file: scheme.
 void tst_Origins::mixedSchemes()
 {
+    ScopedAttribute sa(m_page->settings(), QWebEngineSettings::ErrorPageEnabled, false);
+
     QVERIFY(verifyLoad("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
                        + "/resources/mixedSchemes.html"));
     eval("setIFrameUrl('file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
          + "/resources/mixedSchemes_frame.html')");
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('qrc:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('tst:/resources/mixedSchemes_frame.html')"));
-    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("cannotLoad")));
 
     QVERIFY(verifyLoad(QSL("qrc:/resources/mixedSchemes.html")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Not allowed to load local resource")));
     eval("setIFrameUrl('file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
          + "/resources/mixedSchemes_frame.html')");
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("cannotLoad")));
     eval(QSL("setIFrameUrl('qrc:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('tst:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 
     QVERIFY(verifyLoad(QSL("tst:/resources/mixedSchemes.html")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Not allowed to load local resource")));
     eval("setIFrameUrl('file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
          + "/resources/mixedSchemes_frame.html')");
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("cannotLoad")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('qrc:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
     eval(QSL("setIFrameUrl('tst:/resources/mixedSchemes_frame.html')"));
@@ -590,48 +612,53 @@ void tst_Origins::mixedSchemes()
     QVERIFY(verifyLoad(QSL("PathSyntax:/resources/mixedSchemes.html")));
     eval(QSL("setIFrameUrl('PathSyntax:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Not allowed to load local resource")));
     eval(QSL("setIFrameUrl('PathSyntax-Local:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("cannotLoad")));
     eval(QSL("setIFrameUrl('PathSyntax-LocalAccessAllowed:/resources/mixedSchemes_frame.html')"));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('PathSyntax-NoAccessAllowed:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 
     QVERIFY(verifyLoad(QSL("PathSyntax-LocalAccessAllowed:/resources/mixedSchemes.html")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('PathSyntax:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('PathSyntax-Local:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
     eval(QSL("setIFrameUrl('PathSyntax-LocalAccessAllowed:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('PathSyntax-NoAccessAllowed:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 
     QVERIFY(verifyLoad(QSL("PathSyntax-NoAccessAllowed:/resources/mixedSchemes.html")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('PathSyntax:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Not allowed to load local resource")));
     eval(QSL("setIFrameUrl('PathSyntax-Local:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("cannotLoad")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('PathSyntax-LocalAccessAllowed:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('PathSyntax-NoAccessAllowed:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 
     QVERIFY(verifyLoad(QSL("HostSyntax://a/resources/mixedSchemes.html")));
     eval(QSL("setIFrameUrl('HostSyntax://a/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('HostSyntax://b/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+
+    QVERIFY(verifyLoad(QSL("local-localaccess:/resources/mixedSchemes.html")));
+    eval("setIFrameUrl('local-cors:/resources/mixedSchemes_frame.html')");
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+    eval(QSL("setIFrameUrl('local-localaccess:/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
+    eval(QSL("setIFrameUrl('local:/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+
+    QVERIFY(verifyLoad(QSL("local-cors:/resources/mixedSchemes.html")));
+    eval("setIFrameUrl('local:/resources/mixedSchemes_frame.html')");
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+    eval(QSL("setIFrameUrl('local-cors:/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
+    eval(QSL("setIFrameUrl('local:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 }
 
@@ -639,17 +666,14 @@ void tst_Origins::mixedSchemes()
 void tst_Origins::mixedSchemesWithCsp()
 {
     QVERIFY(verifyLoad(QSL("HostSyntax://a/resources/mixedSchemesWithCsp.html")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("violates the following Content Security Policy")));
     eval(QSL("setIFrameUrl('HostSyntax://a/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("violates the following Content Security Policy")));
     eval(QSL("setIFrameUrl('HostSyntax://b/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 
     QVERIFY(verifyLoad(QSL("HostSyntax-ContentSecurityPolicyIgnored://a/resources/mixedSchemesWithCsp.html")));
     eval(QSL("setIFrameUrl('HostSyntax-ContentSecurityPolicyIgnored://a/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
-    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('HostSyntax-ContentSecurityPolicyIgnored://b/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 }
@@ -683,55 +707,90 @@ void tst_Origins::mixedXHR_data()
         std::pair<const char *, std::vector<
             std::pair<const char *, std::vector<QVariant>>>>> data = {
         { "file", {
-            { "file",       {  OK,  OK, ERR,  OK } },
-            { "qrc",        { ERR, ERR, ERR, ERR } },
-            { "tst",        { ERR, ERR, ERR, ERR } },
-            { "data",       {  OK,  OK,  OK,  OK } },
-            { "cors",       { ERR,  OK, ERR,  OK } },
-            { "local",      { ERR, ERR, ERR, ERR } },
-            { "local-cors", {  OK,  OK,  OK,  OK } }, } },
+            { "file",               {  OK,  OK, ERR, ERR } },
+            { "qrc",                { ERR, ERR, ERR, ERR } },
+            { "tst",                { ERR, ERR, ERR, ERR } },
+            { "data",               {  OK,  OK,  OK,  OK } },
+            { "cors",               { ERR,  OK, ERR,  OK } },
+            { "local-localaccess",  {  OK,  OK, ERR, ERR } },
+            { "local-cors",         {  OK,  OK, ERR, ERR } }, } },
 
         { "qrc",  {
-            { "file",       { ERR, ERR, ERR, ERR } },
-            { "qrc",        {  OK,  OK,  OK,  OK } },
-            { "tst",        { ERR, ERR, ERR, ERR } },
-            { "data",       {  OK,  OK,  OK,  OK } },
-            { "cors",       {  OK,  OK,  OK,  OK } },
-            { "local",      { ERR, ERR, ERR, ERR } },
-            { "local-cors", { ERR, ERR, ERR, ERR } }, } },
+            { "file",               { ERR, ERR, ERR, ERR } },
+            { "qrc",                {  OK,  OK,  OK,  OK } },
+            { "tst",                { ERR, ERR, ERR, ERR } },
+            { "data",               {  OK,  OK,  OK,  OK } },
+            { "cors",               {  OK,  OK,  OK,  OK } },
+            { "local-localaccess",  { ERR, ERR, ERR, ERR } },
+            { "local-cors",         { ERR, ERR, ERR, ERR } }, } },
 
         { "tst",  {
-            { "file",       { ERR, ERR, ERR, ERR } },
-            { "qrc",        { ERR, ERR, ERR, ERR } },
-            { "tst",        {  OK,  OK,  OK,  OK } },
-            { "data",       {  OK,  OK,  OK,  OK } },
-            { "cors",       {  OK,  OK,  OK,  OK } },
-            { "local",      { ERR, ERR, ERR, ERR } },
-            { "local-cors", { ERR, ERR, ERR, ERR } }, } },
+            { "file",               { ERR, ERR, ERR, ERR } },
+            { "qrc",                { ERR, ERR, ERR, ERR } },
+            { "tst",                {  OK,  OK,  OK,  OK } },
+            { "data",               {  OK,  OK,  OK,  OK } },
+            { "cors",               {  OK,  OK,  OK,  OK } },
+            { "local-localaccess",  { ERR, ERR, ERR, ERR } },
+            { "local-cors",         { ERR, ERR, ERR, ERR } }, } },
 
-        { "local", {
-            { "file",       { ERR, ERR, ERR, ERR } },
-            { "qrc",        { ERR, ERR, ERR, ERR } },
-            { "tst",        { ERR, ERR, ERR, ERR } },
-            { "data",       {  OK,  OK,  OK,  OK } },
-            { "cors",       { ERR,  OK, ERR,  OK } },
-            { "local",      {  OK,  OK, ERR,  OK } },
-            { "local-cors", {  OK,  OK,  OK,  OK } }, } },
+        { "cors", {                 // -local +cors -local-access
+            { "file",               { ERR, ERR, ERR, ERR } },
+            { "qrc",                { ERR, ERR, ERR, ERR } },
+            { "tst",                { ERR, ERR, ERR, ERR } },
+            { "data",               {  OK,  OK,  OK,  OK } },
+            { "cors",               {  OK,  OK,  OK,  OK } },
+            { "local-localaccess",  { ERR, ERR, ERR, ERR } },
+            { "local-cors",         { ERR, ERR, ERR, ERR } }, } },
+
+        { "local", {                // +local -cors -local-access
+            { "file",               {  OK,  OK, ERR, ERR } },
+            { "qrc",                { ERR, ERR, ERR, ERR } },
+            { "tst",                { ERR, ERR, ERR, ERR } },
+            { "data",               {  OK,  OK,  OK,  OK } },
+            { "cors",               { ERR,  OK, ERR,  OK } },
+            { "local-localaccess",  {  OK,  OK, ERR, ERR } },
+            { "local-cors",         {  OK,  OK, ERR, ERR } }, } },
+
+        { "local-cors", {           // +local +cors -local-access
+            { "file",               {  OK,  OK, ERR, ERR } },
+            { "qrc",                { ERR, ERR, ERR, ERR } },
+            { "tst",                { ERR, ERR, ERR, ERR } },
+            { "data",               {  OK,  OK,  OK,  OK } },
+            { "cors",               { ERR,  OK, ERR,  OK } },
+            { "local-localaccess",  {  OK,  OK, ERR, ERR } },
+            { "local-cors",         {  OK,  OK, ERR, ERR } }, } },
+
+        { "local-localaccess", {    // +local -cors +local-access
+            { "file",               {  OK,  OK,  OK,  OK } },
+            { "qrc",                { ERR, ERR, ERR, ERR } },
+            { "tst",                { ERR, ERR, ERR, ERR } },
+            { "data",               {  OK,  OK,  OK,  OK } },
+            { "cors",               { ERR,  OK, ERR,  OK } },
+            { "local-localaccess",  {  OK,  OK,  OK,  OK } },
+            { "local-cors",         {  OK,  OK,  OK,  OK } }, } },
+
+        { "localaccess", {          // -local -cors +local-access
+            { "file",               {  OK,  OK,  OK,  OK } },
+            { "qrc",                { ERR, ERR, ERR, ERR } },
+            { "tst",                { ERR, ERR, ERR, ERR } },
+            { "data",               {  OK,  OK,  OK,  OK } },
+            { "cors",               {  OK,  OK,  OK,  OK } },
+            { "local-localaccess",  {  OK,  OK,  OK,  OK } },
+            { "local-cors",         {  OK,  OK,  OK,  OK } }, } },
     };
 
     for (auto &&d : data) {
         auto schemeFrom = d.first;
 
         for (int i = 0; i < 4; ++i) {
-            auto it = settingCombinations.begin() + i;
-            bool canAccessFileUrls = it->first, canAccessRemoteUrl = it->second;
+            const auto &it = settingCombinations[i];
+            bool canAccessFileUrls = it.first, canAccessRemoteUrl = it.second;
 
             QVariantMap testPairs;
             for (auto &&destSchemes : d.second) {
                 auto &&destScheme = destSchemes.first;
                 auto &&expectedResults = destSchemes.second;
-                auto rit = expectedResults.begin() + i;
-                testPairs[destScheme] = *rit;
+                testPairs[destScheme] = expectedResults[i];
             }
 
             QTest::addRow("%s_%s_%s", schemeFrom, (canAccessFileUrls ? "local" : "nolocal"), (canAccessRemoteUrl ? "remote" : "noremote"))
@@ -777,6 +836,174 @@ void tst_Origins::mixedXHR()
     }
     QVERIFY2(results == expected,
         qPrintable(QString("From '%1' to:\n\tScheme: %2\n\tActual: %3\n\tExpect: %4")
+            .arg(schemeFrom).arg(schemesTo.join(' ')).arg(results.join(' ')).arg(expected.join(' '))));
+}
+
+// Load the main page over one scheme, then load an iframe over a different scheme. This load is not considered CORS.
+void tst_Origins::mixedContent_data()
+{
+    QTest::addColumn<QString>("schemeFrom");
+    QTest::addColumn<bool>("canAccessFileUrls");
+    QTest::addColumn<bool>("canAccessRemoteUrl");
+    QTest::addColumn<QVariantMap>("testPairs");
+
+    bool defaultFileAccess = true;
+    bool defaultRemoteAccess = false;
+    std::vector<std::pair<bool, bool>> settingCombinations = {
+        { defaultFileAccess, defaultRemoteAccess },  // tag: *schemeFrom*_local_noremote
+        { defaultFileAccess, !defaultRemoteAccess }, // tag: *schemeFrom*_local_remote
+        { !defaultFileAccess, defaultRemoteAccess }, // tag: *schemeFrom*_nolocal_noremote
+        { !defaultFileAccess, !defaultRemoteAccess } // tag: *schemeFrom*_nolocal_remote
+    };
+
+    QVariant SLF = QVariant(QSL("canLoadAndAccess")), OK = QVariant(QSL("canLoadButNotAccess")), ERR = QVariant(QSL("cannotLoad"));
+    std::vector<
+        std::pair<const char *, std::vector<
+            std::pair<const char *, std::vector<QVariant>>>>> data = {
+        { "file", {
+            { "file",               { SLF, SLF, ERR, ERR } },
+            { "qrc",                {  OK,  OK,  OK,  OK } },
+            { "tst",                { ERR,  OK, ERR,  OK } },
+            { "data",               {  OK,  OK,  OK,  OK } },
+            { "cors",               { ERR,  OK, ERR,  OK } },
+            { "local-localaccess",  {  OK,  OK, ERR, ERR } },
+            { "local-cors",         {  OK,  OK, ERR, ERR } },
+        } },
+
+        { "qrc",  {
+            { "file",               { ERR, ERR, ERR, ERR } },
+            { "qrc",                { SLF, SLF, SLF, SLF } },
+            { "tst",                {  OK,  OK,  OK,  OK } },
+            { "data",               {  OK,  OK,  OK,  OK } },
+            { "cors",               {  OK,  OK,  OK,  OK } },
+            { "local-localaccess",  { ERR, ERR, ERR, ERR } },
+            { "local-cors",         { ERR, ERR, ERR, ERR } }, } },
+
+        { "tst",  {
+            { "file",               { ERR, ERR, ERR, ERR } },
+            { "qrc",                {  OK,  OK,  OK,  OK } },
+            { "tst",                { SLF, SLF, SLF, SLF } },
+            { "data",               {  OK,  OK,  OK,  OK } },
+            { "cors",               {  OK,  OK,  OK,  OK } },
+            { "local-localaccess",  { ERR, ERR, ERR, ERR } },
+            { "local-cors",         { ERR, ERR, ERR, ERR } }, } },
+
+        { "cors", {                 // -local +cors -local-access
+            { "file",               { ERR, ERR, ERR, ERR } },
+            { "qrc",                {  OK,  OK,  OK,  OK } },
+            { "tst",                {  OK,  OK,  OK,  OK } },
+            { "data",               {  OK,  OK,  OK,  OK } },
+            { "cors",               { SLF, SLF, SLF, SLF } },
+            { "local-localaccess",  { ERR, ERR, ERR, ERR } },
+            { "local-cors",         { ERR, ERR, ERR, ERR } }, } },
+
+        { "local", {                // +local -cors -local-access
+            { "file",               {  OK,  OK, ERR, ERR } },
+            { "qrc",                {  OK,  OK,  OK,  OK } },
+            { "tst",                { ERR,  OK, ERR,  OK } },
+            { "data",               {  OK,  OK,  OK,  OK } },
+            { "cors",               { ERR,  OK, ERR,  OK } },
+            { "local-localaccess",  {  OK,  OK, ERR, ERR } },
+            { "local-cors",         {  OK,  OK, ERR, ERR } },
+        } },
+
+        { "local-cors", {           // +local +cors -local-access
+            { "file",               {  OK,  OK, ERR, ERR } },
+            { "qrc",                {  OK,  OK,  OK,  OK } },
+            { "tst",                { ERR,  OK, ERR,  OK } },
+            { "data",               {  OK,  OK,  OK,  OK } },
+            { "cors",               { ERR,  OK, ERR,  OK } },
+            { "local-localaccess",  {  OK,  OK, ERR, ERR } },
+            { "local-cors",         { SLF, SLF, ERR, ERR } },
+        } },
+
+        { "local-localaccess", {    // +local -cors + OK-access
+            { "file",               {  OK,  OK,  OK,  OK } },
+            { "qrc",                {  OK,  OK,  OK,  OK } },
+            { "tst",                { ERR,  OK, ERR,  OK } },
+            { "data",               {  OK,  OK,  OK,  OK } },
+            { "cors",               { ERR,  OK, ERR,  OK } },
+            { "local-localaccess",  { SLF, SLF,  OK,  OK } }, // ### should probably be: SLF, SLF, SLF, SLF
+            { "local-cors",         {  OK,  OK,  OK,  OK } },
+        } },
+
+        { "localaccess", {          // -local -cors +local-access
+            { "file",               {  OK,  OK,  OK,  OK } },
+            { "qrc",                {  OK,  OK,  OK,  OK } },
+            { "tst",                {  OK,  OK,  OK,  OK } },
+            { "data",               {  OK,  OK,  OK,  OK } },
+            { "cors",               {  OK,  OK,  OK,  OK } },
+            { "local-localaccess",  {  OK,  OK,  OK,  OK } },
+            { "local-cors",         {  OK,  OK,  OK,  OK } }, } },
+    };
+
+    for (auto &&d : data) {
+        auto schemeFrom = d.first;
+
+        for (int i = 0; i < 4; ++i) {
+            const auto &it = settingCombinations[i];
+            bool canAccessFileUrls = it.first, canAccessRemoteUrl = it.second;
+
+            QVariantMap testPairs;
+            for (auto &&destSchemes : d.second) {
+                auto &&destScheme = destSchemes.first;
+                auto &&expectedResults = destSchemes.second;
+                testPairs[destScheme] = expectedResults[i];
+            }
+
+            QTest::addRow("%s_%s_%s", schemeFrom, (canAccessFileUrls ? "local" : "nolocal"), (canAccessRemoteUrl ? "remote" : "noremote"))
+                << schemeFrom << canAccessFileUrls << canAccessRemoteUrl << testPairs;
+        }
+    }
+}
+
+void tst_Origins::mixedContent()
+{
+    QFETCH(QString, schemeFrom);
+    QFETCH(bool, canAccessFileUrls);
+    QFETCH(bool, canAccessRemoteUrl);
+    QFETCH(QVariantMap, testPairs);
+
+    QString srcDir(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath());
+    auto loadUrl = QString("%1:%2/resources/mixedSchemes.html").arg(schemeFrom).arg(schemeFrom == "file" ? srcDir : "");
+
+    QCOMPARE(testPairs.size(), 7);
+    ScopedAttribute sa2(m_page->settings(), QWebEngineSettings::ErrorPageEnabled, false);
+    ScopedAttribute sa0(m_page->settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, canAccessFileUrls);
+    ScopedAttribute sa1(m_page->settings(), QWebEngineSettings::LocalContentCanAccessRemoteUrls, canAccessRemoteUrl);
+    QVERIFY(verifyLoad(loadUrl));
+
+    auto setIFrameUrl = [&] (const QString &scheme) {
+        if (scheme == "data")
+            return QString("setIFrameUrl('data:,<script>var canary = true; parent.canary = true</script>')");
+        auto frameUrl = QString("%1:%2/resources/mixedSchemes_frame.html").arg(scheme).arg(scheme == "file" ? srcDir : "");
+        return QString("setIFrameUrl('%1')").arg(frameUrl);
+    };
+
+    m_page->messages.clear();
+    QStringList schemesTo, expected, results;
+    for (auto it = testPairs.begin(), end = testPairs.end(); it != end; ++it) {
+
+        auto schemeTo = it.key();
+        auto expectedResult = it.value().toString();
+
+        eval(setIFrameUrl(schemeTo));
+
+        QTRY_COMPARE(eval(QSL("result !== undefined")), QVariant(true));
+        auto result = eval(QSL("result")).toString();
+        // Work-around some combinations missing JS loaded signals:
+        if (m_page->messages.count() > 0) {
+            if (m_page->messages[0] == QSL("Frame Loaded") && result == QSL("cannotLoad"))
+                result = QSL("canLoadButNotAccess");
+            m_page->messages.clear();
+        }
+
+        schemesTo.append(schemeTo.rightJustified(20));
+        results.append(result.rightJustified(20));
+        expected.append(expectedResult.rightJustified(20));
+    }
+    QVERIFY2(results == expected,
+        qPrintable(QString("\nFrom '%1' to:\n\tScheme: %2\n\tActual: %3\n\tExpect: %4")
             .arg(schemeFrom).arg(schemesTo.join(' ')).arg(results.join(' ')).arg(expected.join(' '))));
 }
 
