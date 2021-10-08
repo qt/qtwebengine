@@ -141,6 +141,16 @@ void registerSchemes()
         scheme.setFlags(QWebEngineUrlScheme::CorsEnabled);
         QWebEngineUrlScheme::registerScheme(scheme);
     }
+    {
+        QWebEngineUrlScheme scheme(QBAL("local"));
+        scheme.setFlags(QWebEngineUrlScheme::LocalScheme | QWebEngineUrlScheme::LocalAccessAllowed);
+        QWebEngineUrlScheme::registerScheme(scheme);
+    }
+    {
+        QWebEngineUrlScheme scheme(QBAL("local-cors"));
+        scheme.setFlags(QWebEngineUrlScheme::LocalScheme | QWebEngineUrlScheme::CorsEnabled);
+        QWebEngineUrlScheme::registerScheme(scheme);
+    }
 
 }
 Q_CONSTRUCTOR_FUNCTION(registerSchemes)
@@ -168,6 +178,8 @@ public:
         profile->installUrlSchemeHandler(QBAL("redirect1"), this);
         profile->installUrlSchemeHandler(QBAL("redirect2"), this);
         profile->installUrlSchemeHandler(QBAL("cors"), this);
+        profile->installUrlSchemeHandler(QBAL("local"), this);
+        profile->installUrlSchemeHandler(QBAL("local-cors"), this);
     }
 
     QList<QUrl> &requests() { return m_requests; }
@@ -649,79 +661,122 @@ void tst_Origins::mixedSchemesWithCsp()
 // schemes with the CorsEnabled flag.
 void tst_Origins::mixedXHR_data()
 {
-    QTest::addColumn<QString>("url");
-    QTest::addColumn<QString>("command");
-    QTest::addColumn<QVariant>("result");
-    QTest::newRow("file->file") << QString("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
-                                           + "/resources/mixedXHR.html")
-                                << QString("sendXHR('file:"
-                                           + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
-                                           + "/resources/mixedXHR.txt')")
-                                << QVariant(QString("ok"));
-    QTest::newRow("file->qrc") << QString("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
-                                          + "/resources/mixedXHR.html")
-                               << QString("sendXHR('qrc:/resources/mixedXHR.txt')")
-                               << QVariant(QString("error"));
-    QTest::newRow("file->tst") << QString("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
-                                          + "/resources/mixedXHR.html")
-                               << QString("sendXHR('tst:/resources/mixedXHR.txt')")
-                               << QVariant(QString("error"));
-    QTest::newRow("file->data") << QString("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
-                                           + "/resources/mixedXHR.html")
-                                << QString("sendXHR('data:,ok')") << QVariant(QString("ok"));
-    QTest::newRow("file->cors") << QString("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
-                                           + "/resources/mixedXHR.html")
-                                << QString("sendXHR('cors:/resources/mixedXHR.txt')")
-                                << QVariant(QString("error"));
+    QTest::addColumn<QString>("schemeFrom");
+    QTest::addColumn<bool>("canAccessFileUrls");
+    QTest::addColumn<bool>("canAccessRemoteUrl");
+    QTest::addColumn<QVariantMap>("testPairs");
 
-    QTest::newRow("qrc->file") << QString("qrc:/resources/mixedXHR.html")
-                               << QString("sendXHR('file:"
-                                          + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
-                                          + "/resources/mixedXHR.txt')")
-                               << QVariant(QString("error"));
-    QTest::newRow("qrc->qrc") << QString("qrc:/resources/mixedXHR.html")
-                              << QString("sendXHR('qrc:/resources/mixedXHR.txt')")
-                              << QVariant(QString("ok"));
-    QTest::newRow("qrc->tst") << QString("qrc:/resources/mixedXHR.html")
-                              << QString("sendXHR('tst:/resources/mixedXHR.txt')")
-                              << QVariant(QString("error"));
-    QTest::newRow("qrc->data") << QString("qrc:/resources/mixedXHR.html")
-                               << QString("sendXHR('data:,ok')")
-                               << QVariant(QString("ok"));
-    QTest::newRow("qrc->cors") << QString("qrc:/resources/mixedXHR.html")
-                               << QString("sendXHR('cors:/resources/mixedXHR.txt')")
-                               << QVariant(QString("ok"));
+    bool defaultFileAccess = QWebEnginePage().settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls);
+    bool defaultRemoteAccess = QWebEnginePage().settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls);
+    Q_ASSERT(defaultFileAccess);
+    Q_ASSERT(!defaultRemoteAccess);
+    std::vector<std::pair<bool, bool>> settingCombinations = {
+        { defaultFileAccess, defaultRemoteAccess },  // tag: *schemeFrom*_local_noremote
+        { defaultFileAccess, !defaultRemoteAccess }, // tag: *schemeFrom*_local_remote
+        { !defaultFileAccess, defaultRemoteAccess }, // tag: *schemeFrom*_nolocal_noremote
+        { !defaultFileAccess, !defaultRemoteAccess } // tag: *schemeFrom*_nolocal_remote
+    };
 
-    QTest::newRow("tst->file") << QString("tst:/resources/mixedXHR.html")
-                               << QString("sendXHR('file:"
-                                          + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
-                                          + "/resources/mixedXHR.txt')")
-                               << QVariant(QString("error"));
-    QTest::newRow("tst->qrc") << QString("tst:/resources/mixedXHR.html")
-                              << QString("sendXHR('qrc:/resources/mixedXHR.txt')")
-                              << QVariant(QString("error"));
-    QTest::newRow("tst->tst") << QString("tst:/resources/mixedXHR.html")
-                              << QString("sendXHR('tst:/resources/mixedXHR.txt')")
-                              << QVariant(QString("ok"));
-    QTest::newRow("tst->data") << QString("tst:/resources/mixedXHR.html")
-                               << QString("sendXHR('data:,ok')")
-                               << QVariant(QString("ok"));
-    QTest::newRow("tst->cors") << QString("tst:/resources/mixedXHR.html")
-                               << QString("sendXHR('cors:/resources/mixedXHR.txt')")
-                               << QVariant(QString("ok"));
+    QVariant OK = QString("ok"), ERR = QString("error");
+    std::vector<
+        std::pair<const char *, std::vector<
+            std::pair<const char *, std::vector<QVariant>>>>> data = {
+        { "file", {
+            { "file",       {  OK,  OK, ERR,  OK } },
+            { "qrc",        { ERR, ERR, ERR, ERR } },
+            { "tst",        { ERR, ERR, ERR, ERR } },
+            { "data",       {  OK,  OK,  OK,  OK } },
+            { "cors",       { ERR,  OK, ERR,  OK } },
+            { "local",      { ERR, ERR, ERR, ERR } },
+            { "local-cors", {  OK,  OK,  OK,  OK } }, } },
 
+        { "qrc",  {
+            { "file",       { ERR, ERR, ERR, ERR } },
+            { "qrc",        {  OK,  OK,  OK,  OK } },
+            { "tst",        { ERR, ERR, ERR, ERR } },
+            { "data",       {  OK,  OK,  OK,  OK } },
+            { "cors",       {  OK,  OK,  OK,  OK } },
+            { "local",      { ERR, ERR, ERR, ERR } },
+            { "local-cors", { ERR, ERR, ERR, ERR } }, } },
+
+        { "tst",  {
+            { "file",       { ERR, ERR, ERR, ERR } },
+            { "qrc",        { ERR, ERR, ERR, ERR } },
+            { "tst",        {  OK,  OK,  OK,  OK } },
+            { "data",       {  OK,  OK,  OK,  OK } },
+            { "cors",       {  OK,  OK,  OK,  OK } },
+            { "local",      { ERR, ERR, ERR, ERR } },
+            { "local-cors", { ERR, ERR, ERR, ERR } }, } },
+
+        { "local", {
+            { "file",       { ERR, ERR, ERR, ERR } },
+            { "qrc",        { ERR, ERR, ERR, ERR } },
+            { "tst",        { ERR, ERR, ERR, ERR } },
+            { "data",       {  OK,  OK,  OK,  OK } },
+            { "cors",       { ERR,  OK, ERR,  OK } },
+            { "local",      {  OK,  OK, ERR,  OK } },
+            { "local-cors", {  OK,  OK,  OK,  OK } }, } },
+    };
+
+    for (auto &&d : data) {
+        auto schemeFrom = d.first;
+
+        for (int i = 0; i < 4; ++i) {
+            auto it = settingCombinations.begin() + i;
+            bool canAccessFileUrls = it->first, canAccessRemoteUrl = it->second;
+
+            QVariantMap testPairs;
+            for (auto &&destSchemes : d.second) {
+                auto &&destScheme = destSchemes.first;
+                auto &&expectedResults = destSchemes.second;
+                auto rit = expectedResults.begin() + i;
+                testPairs[destScheme] = *rit;
+            }
+
+            QTest::addRow("%s_%s_%s", schemeFrom, (canAccessFileUrls ? "local" : "nolocal"), (canAccessRemoteUrl ? "remote" : "noremote"))
+                << schemeFrom << canAccessFileUrls << canAccessRemoteUrl << testPairs;
+        }
+    }
 }
-
 
 void tst_Origins::mixedXHR()
 {
-    QFETCH(QString, url);
-    QFETCH(QString, command);
-    QFETCH(QVariant, result);
+    QFETCH(QString, schemeFrom);
+    QFETCH(bool, canAccessFileUrls);
+    QFETCH(bool, canAccessRemoteUrl);
+    QFETCH(QVariantMap, testPairs);
 
-    QVERIFY(verifyLoad(url));
-    eval(command);
-    QTRY_COMPARE(eval(QString("result")), result);
+    QString srcDir(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath());
+    auto loadUrl = QString("%1:%2/resources/mixedXHR.html").arg(schemeFrom).arg(schemeFrom == "file" ? srcDir : "");
+    auto sendXHR = [&] (const QString &scheme) {
+        if (scheme == "data")
+            return QString("sendXHR('data:,ok')");
+        return QString("sendXHR('%1:%2/resources/mixedXHR.txt')").arg(scheme).arg(scheme == "file" ? srcDir : "");
+    };
+
+    QCOMPARE(testPairs.size(), 7);
+    ScopedAttribute sa0(m_page->settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, canAccessFileUrls);
+    ScopedAttribute sa1(m_page->settings(), QWebEngineSettings::LocalContentCanAccessRemoteUrls, canAccessRemoteUrl);
+    QVERIFY(verifyLoad(loadUrl));
+
+    QStringList schemesTo, expected, results;
+    for (auto it = testPairs.begin(), end = testPairs.end(); it != end; ++it) {
+        auto schemeTo = it.key();
+        auto expectedResult = it.value().toString();
+        auto command = sendXHR(schemeTo);
+
+        eval(command);
+
+        QTRY_COMPARE(eval(QSL("result !== undefined")), QVariant(true));
+        auto result = eval(QSL("result")).toString();
+
+        schemesTo.append(schemeTo.rightJustified(10));
+        results.append(result.rightJustified(10));
+        expected.append(expectedResult.rightJustified(10));
+    }
+    QVERIFY2(results == expected,
+        qPrintable(QString("From '%1' to:\n\tScheme: %2\n\tActual: %3\n\tExpect: %4")
+            .arg(schemeFrom).arg(schemesTo.join(' ')).arg(results.join(' ')).arg(expected.join(' '))));
 }
 
 #if defined(WEBSOCKETS)
