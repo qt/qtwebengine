@@ -3,3 +3,6 @@ macos
 
 [WebEngineViewContextMenu::test_contextMenuLinkAndSelectedText]
 macos
+
+[CertificateError::test_fatalError]
+*
