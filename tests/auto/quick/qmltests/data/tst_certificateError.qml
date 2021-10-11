@@ -138,7 +138,7 @@ TestWebEngineView {
             const failed = view.loadStatus == WebEngineView.LoadFailedStatus, hasError = Boolean(error)
             compare(hasError, failed)
             if (failed) {
-                verify(!error.overrideable);
+                verify(!error.overridable);
                 // Fatal certificate errors are implicitly rejected. But second call should not cause crash.
                 error.rejectCertificate();
             }
