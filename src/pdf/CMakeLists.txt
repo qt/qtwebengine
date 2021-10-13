@@ -134,6 +134,10 @@ foreach(arch ${archs})
               ninja_use_custom_environment_files=false
               safe_browsing_mode=0
           )
+          extend_gn_list(gnArgArg
+              ARGS qt_uses_static_runtime
+              CONDITION QT_FEATURE_pdf_static_runtime
+          )
         endif()
 
         extend_gn_list(gnArgArg
