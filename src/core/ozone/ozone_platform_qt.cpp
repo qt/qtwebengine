@@ -160,6 +160,12 @@ static std::string getCurrentKeyboardLayout()
     if (dpy == nullptr)
         return std::string();
 
+    int d;
+    if (!XkbQueryExtension(dpy, &d, &d, &d, &d, &d)) {
+        // no Xkb extension
+        return std::string();
+    }
+
     XkbStateRec state;
     if (XkbGetState(dpy, XkbUseCoreKbd, &state) != 0)
         return std::string();
