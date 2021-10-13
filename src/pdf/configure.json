@@ -50,6 +50,12 @@
               "purpose": "Enables bitcode",
               "condition": "config.ios",
               "output": ["privateFeature"]
+         },
+         "pdf-static-runtime": {
+              "label": "Use static runtime",
+              "purpose": "Enables static runtime",
+              "condition": "config.static && config.static_runtime",
+              "output": ["privateFeature"]
          }
     },
     "report": [
@@ -64,7 +70,8 @@
                 "pdf-xfa-gif",
                 "pdf-xfa-png",
                 "pdf-xfa-tiff",
-                "pdf-bitcode"
+                "pdf-bitcode",
+                "pdf-static-runtime"
             ]
         }
     ]

@@ -79,3 +79,6 @@ qtConfig(pdf-xfa-tiff) {
 qtConfig(pdf-bitcode) {
     gn_args += enable_ios_bitcode=true
 }
+qtConfig(pdf-static-runtime) {
+    gn_args += qt_uses_static_runtime=true
+}
