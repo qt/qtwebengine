@@ -120,7 +120,13 @@ foreach(arch ${archs})
               use_gnome_keyring=false)
         endif()
         if(MACOS)
-          list(APPEND gnArgArg angle_enable_vulkan=false)
+            list(APPEND gnArgArg angle_enable_vulkan=false)
+        endif()
+        if(IOS)
+            extend_gn_list(gnArgArg
+                ARGS enable_ios_bitcode
+                CONDITION QT_FEATURE_pdf_bitcode
+            )
         endif()
         if(WIN32)
           list(APPEND gnArgArg

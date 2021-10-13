@@ -28,6 +28,12 @@ qt_feature("pdf-xfa-tiff" PRIVATE
     PURPOSE "Enables XFA-TIFF support."
     CONDITION QT_FEATURE_pdf_xfa
 )
+qt_feature("pdf-bitcode" PRIVATE
+    LABEL "Bitcode support"
+    PURPOSE "Enables bitcode"
+    CONDITION IOS
+)
+
 qt_configure_add_summary_section(NAME "Qt PDF")
 qt_configure_add_summary_entry(ARGS "pdf-v8")
 qt_configure_add_summary_entry(ARGS "pdf-xfa")
@@ -35,4 +41,5 @@ qt_configure_add_summary_entry(ARGS "pdf-xfa-bmp")
 qt_configure_add_summary_entry(ARGS "pdf-xfa-gif")
 qt_configure_add_summary_entry(ARGS "pdf-xfa-png")
 qt_configure_add_summary_entry(ARGS "pdf-xfa-tiff")
+qt_configure_add_summary_entry(ARGS "pdf-bitcode")
 qt_configure_end_summary_section()
