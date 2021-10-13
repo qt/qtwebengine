@@ -44,7 +44,13 @@
              "purpose": "Enables XFA-TIFF support.",
              "condition": "features.pdf-xfa",
              "output": ["privateFeature" ]
-          }
+          },
+         "pdf-bitcode": {
+              "label": "Bitcode support",
+              "purpose": "Enables bitcode",
+              "condition": "config.ios",
+              "output": ["privateFeature"]
+         }
     },
     "report": [
     ],
@@ -57,7 +63,8 @@
                 "pdf-xfa-bmp",
                 "pdf-xfa-gif",
                 "pdf-xfa-png",
-                "pdf-xfa-tiff"
+                "pdf-xfa-tiff",
+                "pdf-bitcode"
             ]
         }
     ]
