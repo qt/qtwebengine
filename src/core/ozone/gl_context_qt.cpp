@@ -141,10 +141,12 @@ void* GLContextHelper::getEGLDisplay()
 
 void* GLContextHelper::getXDisplay()
 {
-    QPlatformNativeInterface *pni = QGuiApplication::platformNativeInterface();
-    if (pni)
-        return pni->nativeResourceForScreen(QByteArrayLiteral("display"), qApp->primaryScreen());
+#if QT_CONFIG(xcb)
+    auto *x11app = qGuiApp->nativeInterface<QNativeInterface::QX11Application>();
+    return x11app ? x11app->display() : nullptr;
+#else
     return nullptr;
+#endif
 }
 
 void* GLContextHelper::getNativeDisplay()
