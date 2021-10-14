@@ -255,7 +255,7 @@ int main(int argc, char **argv)
     // Force to use English language for testing due to error message checks
     QLocale::setDefault(QLocale("en"));
 
-    static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
+    static QByteArrayList params = {QByteArrayLiteral("--webEngineArgs"),QByteArrayLiteral("--use-fake-device-for-media-stream")};
     QList<const char *> w_argv(argc);
     for (int i = 0; i < argc; ++i) w_argv[i] = argv[i];
     for (int i = 0; i < params.size(); ++i) w_argv.append(params[i].data());

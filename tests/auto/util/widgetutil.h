@@ -36,8 +36,10 @@
 int main(int argc, char *argv[]) \
 { \
     QList<const char *> w_argv(argc); \
+    QLatin1String arg("--webEngineArgs"); \
     for (int i = 0; i < argc; ++i) \
         w_argv[i] = argv[i]; \
+    w_argv.append(arg.data()); \
     for (int i = 0; i < params.size(); ++i) \
         w_argv.append(params[i].data()); \
     int w_argc = w_argv.size(); \

@@ -851,6 +851,13 @@ base::CommandLine* WebEngineContext::commandLine() {
         if (qEnvironmentVariableIsSet(kChromiumFlagsEnv)) {
             appArgs = appArgs.mid(0, 1); // Take application name and drop the rest
             appArgs.append(parseEnvCommandLine(qEnvironmentVariable(kChromiumFlagsEnv)));
+        } else {
+            int index = appArgs.indexOf(QLatin1String("--webEngineArgs"));
+            if (index > -1) {
+                appArgs.erase(appArgs.begin() + 1, appArgs.begin() + index + 1);
+            } else {
+                appArgs = appArgs.mid(0, 1);
+            }
         }
 #ifdef Q_OS_WIN
         appArgs.removeAll(QStringLiteral("--enable-webgl-software-rendering"));
