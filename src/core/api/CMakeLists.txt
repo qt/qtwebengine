@@ -121,6 +121,7 @@ endforeach()
 if (NOT QT_FEATURE_webengine_system_icu)
     get_filename_component(icuFile ${buildDir}/${config}/${arch}/icudtl.dat REALPATH)
     list(APPEND resourceFiles ${icuFile})
+    set_target_properties(WebEngineCore PROPERTIES ICUDTL_FILE ${icuFile})
 endif()
 
 if(QT_FEATURE_framework)
