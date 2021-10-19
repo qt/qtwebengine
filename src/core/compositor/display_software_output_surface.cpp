@@ -99,9 +99,12 @@ void DisplaySoftwareOutputSurface::Device::Resize(const gfx::Size &sizeInPixels,
 
 void DisplaySoftwareOutputSurface::Device::OnSwapBuffers(SwapBuffersCallback swap_ack_callback)
 {
-    QMutexLocker locker(&m_mutex);
-    m_taskRunner = base::ThreadTaskRunnerHandle::Get();
-    m_swapCompletionCallback = std::move(swap_ack_callback);
+    { // MEMO don't hold a lock together with an 'observer', as the call from Qt's scene graph may come at the same time
+        QMutexLocker locker(&m_mutex);
+        m_taskRunner = base::ThreadTaskRunnerHandle::Get();
+        m_swapCompletionCallback = std::move(swap_ack_callback);
+    }
+
     if (auto obs = observer())
         obs->readyToSwap();
 }
