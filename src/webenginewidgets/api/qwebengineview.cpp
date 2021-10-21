@@ -153,11 +153,14 @@ void QWebEngineViewPrivate::widgetChanged(QtWebEngineCore::RenderWidgetHostViewQ
         q->layout()->removeWidget(oldWidget);
         oldWidget->hide();
 #if QT_CONFIG(accessibility)
-        QAccessible::deleteAccessibleInterface(QAccessible::uniqueId(QAccessible::queryAccessibleInterface(oldWidget)));
+        if (!QtWebEngineCore::closingDown())
+            QAccessible::deleteAccessibleInterface(
+                    QAccessible::uniqueId(QAccessible::queryAccessibleInterface(oldWidget)));
 #endif
     }
 
     if (newWidget) {
+        Q_ASSERT(!QtWebEngineCore::closingDown());
 #if QT_CONFIG(accessibility)
         // An earlier QAccessible::queryAccessibleInterface() call may have already registered a default
         // QAccessibleInterface for newWidget: remove it first to avoid assert in QAccessibleCache::insert().

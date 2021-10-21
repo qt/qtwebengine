@@ -51,6 +51,7 @@
 #endif
 #include <QThread>
 #include <QQuickWindow>
+#include "web_engine_context.h"
 
 #if QT_CONFIG(opengl)
 QT_BEGIN_NAMESPACE
@@ -206,6 +207,12 @@ Q_WEBENGINECORE_PRIVATE_EXPORT void initialize()
 
 #endif // QT_CONFIG(opengl)
 }
+
+bool closingDown()
+{
+    return WebEngineContext::closingDown();
+}
+
 } // namespace QtWebEngineCore
 
 #if defined(Q_OS_WIN)
