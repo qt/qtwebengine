@@ -67,6 +67,7 @@
 
 namespace QtWebEngineCore {
 Q_WEBENGINECORE_PRIVATE_EXPORT int processMain(int argc, const char **argv);
+Q_WEBENGINECORE_PRIVATE_EXPORT bool closingDown();
 } // namespace
 #if defined(Q_OS_WIN)
 namespace sandbox {
