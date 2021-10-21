@@ -50,6 +50,7 @@
 #endif
 #endif
 #include <QThread>
+#include "web_engine_context.h"
 
 #if QT_CONFIG(opengl)
 QT_BEGIN_NAMESPACE
@@ -184,4 +185,10 @@ Q_WEBENGINECORE_PRIVATE_EXPORT void initialize()
     app->setAttribute(Qt::AA_ShareOpenGLContexts);
 #endif // QT_CONFIG(opengl)
 }
+
+bool closingDown()
+{
+    return WebEngineContext::closingDown();
+}
+
 } // namespace QtWebEngineCore

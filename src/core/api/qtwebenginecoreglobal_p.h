@@ -65,4 +65,7 @@
 
 #define Q_WEBENGINECORE_PRIVATE_EXPORT Q_WEBENGINECORE_EXPORT
 
+namespace QtWebEngineCore {
+Q_WEBENGINECORE_PRIVATE_EXPORT bool closingDown();
+} // namespace
 #endif // QTWEBENGINECOREGLOBAL_P_H

@@ -315,7 +315,7 @@ static QStringList parseEnvCommandLine(const QString &cmdLine)
 
 scoped_refptr<QtWebEngineCore::WebEngineContext> WebEngineContext::m_handle;
 bool WebEngineContext::m_destroyed = false;
-
+bool WebEngineContext::m_closingDown = false;
 void WebEngineContext::destroyProfileAdapter()
 {
     if (content::RenderProcessHost::run_renderer_in_process()) {
@@ -484,6 +484,7 @@ void WebEngineContext::destroyContextPostRoutine()
     // Destroy WebEngineContext before its static pointer is zeroed and destructor called.
     // Before destroying MessageLoop via destroying BrowserMainRunner destructor
     // WebEngineContext's pointer is used.
+    m_closingDown = true;
     m_handle->destroy();
 #if !defined(NDEBUG)
     if (!m_handle->HasOneRef())
@@ -930,6 +931,11 @@ base::CommandLine* WebEngineContext::commandLine() {
     } else {
         return base::CommandLine::ForCurrentProcess();
     }
+}
+
+bool WebEngineContext::closingDown()
+{
+    return m_closingDown;
 }
 
 } // namespace

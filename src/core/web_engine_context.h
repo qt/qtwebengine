@@ -109,7 +109,7 @@ public:
     static void destroyContextPostRoutine();
     static ProxyAuthentication qProxyNetworkAuthentication(QString host, int port);
     static void flushMessages();
-
+    static bool closingDown();
     ProfileAdapter *createDefaultProfileAdapter();
     ProfileAdapter *defaultProfileAdapter();
 
@@ -162,6 +162,7 @@ private:
 #endif
     static scoped_refptr<QtWebEngineCore::WebEngineContext> m_handle;
     static bool m_destroyed;
+    static bool m_closingDown;
     static QAtomicPointer<gpu::SyncPointManager> s_syncPointManager;
 };
 

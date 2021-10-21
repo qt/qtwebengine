@@ -991,11 +991,14 @@ void QQuickWebEngineViewPrivate::widgetChanged(RenderWidgetHostViewQtDelegateQui
     if (oldWidget) {
         oldWidget->setParentItem(nullptr);
 #if QT_CONFIG(accessibility)
-        QAccessible::deleteAccessibleInterface(QAccessible::uniqueId(QAccessible::queryAccessibleInterface(oldWidget)));
+        if (!QtWebEngineCore::closingDown())
+            QAccessible::deleteAccessibleInterface(
+                    QAccessible::uniqueId(QAccessible::queryAccessibleInterface(oldWidget)));
 #endif
     }
 
     if (newWidget) {
+        Q_ASSERT(!QtWebEngineCore::closingDown());
 #if QT_CONFIG(accessibility)
         QAccessible::registerAccessibleInterface(new QtWebEngineCore::RenderWidgetHostViewQtDelegateQuickAccessible(newWidget, q));
 #endif
