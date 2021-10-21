@@ -75,6 +75,7 @@
 #include <QtWebEngineCore/private/qwebenginehistory_p.h>
 #include <QtWebEngineCore/private/qwebenginenewwindowrequest_p.h>
 #include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qmimedata.h>
@@ -927,11 +928,14 @@ void QQuickWebEngineViewPrivate::widgetChanged(RenderWidgetHostViewQtDelegateQui
     if (oldWidget) {
         oldWidget->setParentItem(nullptr);
 #if QT_CONFIG(accessibility)
-        QAccessible::deleteAccessibleInterface(QAccessible::uniqueId(QAccessible::queryAccessibleInterface(oldWidget)));
+        if (!QtWebEngineCore::closingDown())
+            QAccessible::deleteAccessibleInterface(
+                    QAccessible::uniqueId(QAccessible::queryAccessibleInterface(oldWidget)));
 #endif
     }
 
     if (newWidget) {
+        Q_ASSERT(!QtWebEngineCore::closingDown());
 #if QT_CONFIG(accessibility)
         QAccessible::registerAccessibleInterface(new QtWebEngineCore::RenderWidgetHostViewQtDelegateQuickAccessible(newWidget, q));
 #endif
