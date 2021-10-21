@@ -2,8 +2,8 @@ dependencies:
   ../qtdeclarative:
     ref: 50196b622fb4714778e0a33daf0337e2130f08cd
     required: true
-  ../qtlocation:
-    ref: 7f6ee8fa23a92660c4728b950bb14a46d1ec6a5b
+  ../qtpositioning:
+    ref: 9d7c224e731632ea0fb7c9d2160e2e6546c191db
     required: false
   ../qttools:
     ref: f9e60737e5e6c98c920b686fff02e88f5e707383
