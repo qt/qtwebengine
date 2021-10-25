@@ -1,0 +1,75 @@
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qt_add_webengine_dictionary.html
+\ingroup cmake-commands
+
+\title qt_add_webengine_dictionary
+\target qt6_add_webengine_dictionary
+
+\brief Converts the hunspell dictionary format into \e bdict binary format.
+
+\section1 Synopsis
+
+\badcode
+qt_add_webengine_dictionary(
+    [TARGET]
+    [SOURCE]
+    [OUTPUT_DIRECTORY]
+)
+
+\endcode
+
+\versionlessCMakeCommandsNote qt6_webengine_add_dictionary()
+
+\section1 Description
+
+    A spell checker in Qt Web Engine needs dictionaries in a specific binary format.
+    This CMake command converts dictionaries from the \l{Hunspell project}. into the \c bdict
+    binary format. It creates a \c webengine_dictionaries target, which your project can
+    use as a dependency. This way your project can easily add dictionaries for the spell
+    checker. Refer to the \l{WebEngine Widgets Spellchecker Example}{spell checker example}
+    for more details.
+
+\section1 Arguments
+
+    \c TARGET is an optinal argument and specifies the name of the application target that should
+    depend on \c webengine_dictionaries target. In other words it is used to define a build
+    dependency to create the binary format of dictionaries before building \c TARGET.
+
+    \c SOURCE is the absolute path to the \l{Hunspell project} dictionary for which
+    a corresponding binary format (\c.bdict) will be created.
+
+    \c OUTPUT_DIRECTORY is an optional argument and specifies the directory where the binary format
+    of the dictionary will be created. If not specified, \c CMAKE_CURRENT_BINARY_DIR will be used
+    as \c OUTPUT_DIRECTORY.
+
+    \note The \c webengine_dictionaries directory or \c <CONFIG>/webengine_dictionaries directories
+    in the case of the multi-config generator is appended to OUTPUT_DIRECTORY. This helps to
+    utilize dictionaries, as the \c webengine_dictionaries directory is the default search location.
+*/

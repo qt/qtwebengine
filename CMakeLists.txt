@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.19)
 include(.cmake.conf)
 include(ExternalProject)
 include(cmake/Functions.cmake)
+include(src/core/api/Qt6WebEngineCoreMacros.cmake)
 
 project(QtWebEngine
     VERSION "${QT_REPO_MODULE_VERSION}"
