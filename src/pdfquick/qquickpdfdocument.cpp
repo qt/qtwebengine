@@ -43,7 +43,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmltype PdfDocument
-    \instantiates QQuickPdfDocument
+//!    \instantiates QQuickPdfDocument
     \inqmlmodule QtQuick.Pdf
     \ingroup pdf
     \brief A representation of a PDF document.
@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
     \l Image with source set to the URL of the PDF.
 */
 
-/*!
+/*
     Constructs a PDF document.
 */
 QQuickPdfDocument::QQuickPdfDocument(QObject *parent)

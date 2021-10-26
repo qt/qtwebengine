@@ -43,7 +43,7 @@ Q_LOGGING_CATEGORY(qLcSearch, "qt.pdf.search")
 
 /*!
     \qmltype PdfSearchModel
-    \instantiates QQuickPdfSearchModel
+//!    \instantiates QQuickPdfSearchModel
     \inqmlmodule QtQuick.Pdf
     \ingroup pdf
     \brief A representation of text search results within a PDF Document.
@@ -178,11 +178,11 @@ QList<QPolygonF> QQuickPdfSearchModel::currentPageBoundingPolygons() const
 }
 
 /*!
-    \qmlfunction list<list<point>> PdfSearchModel::boundingPolygonsOnPage(int page)
+    \qmlmethod list<list<point>> PdfSearchModel::boundingPolygonsOnPage(int page)
 
     Returns a set of paths in a form that can be bound to the \c paths property of a
-    \l {QtQuick::PathMultiline}{PathMultiline} instance to render a batch of
-    rectangles around all the locations where search results are found:
+    \l {QtQuick::PathMultiline}{PathMultiline} instance, which is used to render a
+    batch of rectangles around all the matching locations on the \a page:
 
     \qml
     PdfDocument {
@@ -223,7 +223,8 @@ QList<QPolygonF> QQuickPdfSearchModel::boundingPolygonsOnPage(int page)
 /*!
     \qmlproperty int PdfSearchModel::currentPage
 
-    The page on which \l currentMatchGeometry should provide filtered search results.
+    The page on which \l currentResultBoundingPolygons should provide filtered
+    search results.
 */
 void QQuickPdfSearchModel::setCurrentPage(int currentPage)
 {

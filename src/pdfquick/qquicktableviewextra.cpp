@@ -45,7 +45,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \internal
     \qmltype TableViewExtra
-    \instantiates QQuickTableViewExtra
+//!    \instantiates QQuickTableViewExtra
     \inqmlmodule QtQuick.Pdf
     \ingroup pdf
     \brief A helper class with missing TableView functions

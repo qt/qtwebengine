@@ -51,17 +51,19 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineTouchSelectionMenuRequest::Paste,
                    QtWebEngineCore::TouchSelectionMenuController::TouchSelectionCommandFlag::Paste)
 
 /*!
-    \class QWebEngineTouchSelectionMenuRequest
+    \class QQuickWebEngineTouchSelectionMenuRequest
     \since 6.3
     \brief The QQuickWebEngineTouchSelectionMenuRequest class provides request for a touch selection menu.
     \inmodule QtWebEngineQuick
     QQuickWebEngineTouchSelectionMenuRequest is returned after a touch selection event,
     and contains information about where the bounding box of touch selection is and what
     actions are available.
+
+    \internal
 */
 
 /*!
-    \enum QWebEngineTouchSelectionMenuRequest::TouchSelectionCommandFlag
+    \enum QQuickWebEngineTouchSelectionMenuRequest::TouchSelectionCommandFlag
     \readonly
     \since 6.3
 
@@ -99,8 +101,6 @@ int QQuickWebEngineTouchSelectionMenuRequest::buttonCount()
 }
 
 /*!
-    \qmlproperty bool QQuickWebEngineTouchSelectionMenuRequest::accepted
-
     Indicates whether the touch selection menu request has been
     accepted by the signal handler.
 

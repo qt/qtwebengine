@@ -38,17 +38,22 @@ depends += qtcore \
            qtquick \
            qtcmake
 
-headerdirs  += ../api \
-               ../quick
+headerdirs  += ../
 
-sourcedirs  += .. \
-               ../quick
+sourcedirs  += ../ \
+               ../../pdfquick
 
 exampledirs += ../../../examples/pdfwidgets \
                snippets/
+
+# add a generic thumbnail for an example that has no \image in its doc
+manifestmeta.thumbnail.names = "QtPdf/PDF Viewer Example"
 
 imagedirs   += images
 
 navigation.landingpage = "Qt PDF"
 navigation.cppclassespage = "Qt PDF C++ Classes"
-navigation.qmltypespage = "Qt WebEngine QML Types"
+navigation.qmltypespage = "Qt Quick PDF QML Types"
+
+# Fail the documentation build if there are more warnings than the limit
+warninglimit = 0

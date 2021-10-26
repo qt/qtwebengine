@@ -55,12 +55,6 @@
 
     \snippet qtpdf_build_snippet.qdoc 0
 
-    \section1 Articles and Guides
-
-    \list
-        \li \l{Qt PDF Overview}
-    \endlist
-
     \section1 Examples
 
     \list

@@ -43,7 +43,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmltype PdfLinkModel
-    \instantiates QQuickPdfLinkModel
+//!    \instantiates QQuickPdfLinkModel
     \inqmlmodule QtQuick.Pdf
     \ingroup pdf
     \brief A representation of links within a PDF document.
@@ -95,7 +95,7 @@ QT_BEGIN_NAMESPACE
     \endqml
 
     \note General-purpose PDF viewing capabilities are provided by
-    \l PdfScrollablePageView and \l PdfMultiPageView. PdfLinkModel is only needed
+    \c PdfScrollablePageView and \c PdfMultiPageView. PdfLinkModel is only needed
     when building PDF view components from scratch.
 */
 

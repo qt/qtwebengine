@@ -836,7 +836,7 @@ QPdfSelection QPdfDocument::getSelection(int page, QPointF start, QPointF end)
 
 /*!
     Returns information about the text on the given \a page that can be found
-    beginning at the given \a startIndex with at most \l maxLength characters.
+    beginning at the given \a startIndex with at most \a maxLength characters.
 */
 QPdfSelection QPdfDocument::getSelectionAtIndex(int page, int startIndex, int maxLength)
 {

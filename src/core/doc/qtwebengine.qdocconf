@@ -33,9 +33,6 @@ qhp.QtWebEngine.subprojects.examples.sortPages = true
 manifestmeta.highlighted.names += "QtWebEngine/WebEngine Widgets Simple Browser Example" \
                 "QtWebEngine/WebEngine Quick Nano Browser"
 
-# add a generic thumbnail for an example that has no \image in its doc
-manifestmeta.thumbnail.names = "QtWebEngine/PDF Viewer Example"
-
 tagfile                 = ../../../doc/qtwebengine/qtwebengine.tags
 
 # Custom module header for clang that pulls in also QtWebEngineWidgets
@@ -77,6 +74,10 @@ exampledirs +=  ../../../examples \
                 ../../webenginequick/doc/snippets \
                 ../../webenginewidgets/doc/snippets
 
+#exclude Qt PDF example directories
+excludedirs += ../../../examples/pdfwidgets \
+               ../../../examples/pdf
+
 examples.fileextensions += *.aff *.dic *.html
 
 imagedirs += \
@@ -89,3 +90,6 @@ navigation.qmltypespage = "Qt WebEngine QML Types"
 
 # \QWE macro expands to 'Qt WebEngine' without auto-linking anywhere.
 macro.QWE    = "Qt \\WebEngine"
+
+# Fail the documentation build if there are more warnings than the limit
+warninglimit = 0

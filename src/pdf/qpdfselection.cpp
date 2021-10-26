@@ -135,7 +135,7 @@ QString QPdfSelection::text() const
 }
 
 /*!
-    \property rect QPdfSelection::boundingRectangle
+    \property QPdfSelection::boundingRectangle
 
     This property holds the overall bounding rectangle (convex hull) around \l bounds.
 */
@@ -145,7 +145,7 @@ QRectF QPdfSelection::boundingRectangle() const
 }
 
 /*!
-    \property int QPdfSelection::startIndex
+    \property QPdfSelection::startIndex
 
     This property holds the index at the beginning of \l text within the full text on the page.
 */
@@ -155,7 +155,7 @@ int QPdfSelection::startIndex() const
 }
 
 /*!
-    \property int QPdfSelection::endIndex
+    \property QPdfSelection::endIndex
 
     This property holds the index at the end of \l text within the full text on the page.
 */
@@ -166,7 +166,8 @@ int QPdfSelection::endIndex() const
 
 #if QT_CONFIG(clipboard)
 /*!
-    Copies \l text to the \l {QGuiApplication::clipboard()}{system clipboard}.
+    Copies \l text to the \l {QGuiApplication::clipboard()}{system clipboard}
+    depending on the \a mode selected.
 */
 void QPdfSelection::copyToClipboard(QClipboard::Mode mode) const
 {

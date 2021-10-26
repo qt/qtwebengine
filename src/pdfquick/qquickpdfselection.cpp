@@ -53,7 +53,7 @@ static const QRegularExpression WordDelimiter(QStringLiteral("\\s"));
 
 /*!
     \qmltype PdfSelection
-    \instantiates QQuickPdfSelection
+//!    \instantiates QQuickPdfSelection
     \inqmlmodule QtQuick.Pdf
     \ingroup pdf
     \brief A representation of a text selection within a PDF Document.
@@ -73,9 +73,6 @@ static const QRegularExpression WordDelimiter(QStringLiteral("\\s"));
     it must have keyboard focus.
 */
 
-/*!
-    Constructs a SearchModel.
-*/
 QQuickPdfSelection::QQuickPdfSelection(QQuickItem *parent)
     : QQuickItem(parent)
 {

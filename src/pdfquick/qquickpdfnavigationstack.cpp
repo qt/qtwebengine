@@ -43,7 +43,7 @@ Q_LOGGING_CATEGORY(qLcNav, "qt.pdf.navigationstack")
 
 /*!
     \qmltype PdfNavigationStack
-    \instantiates QQuickPdfNavigationStack
+//!    \instantiates QQuickPdfNavigationStack
     \inqmlmodule QtQuick.Pdf
     \ingroup pdf
     \brief History of the destinations visited within a PDF Document.
@@ -164,13 +164,13 @@ qreal QQuickPdfNavigationStack::currentZoom() const
 }
 
 /*!
-    \qmlmethod void PdfNavigationStack::push(int page, point location, qreal zoom)
+    \qmlmethod void PdfNavigationStack::push(int page, point location, qreal zoom, bool emitJumped)
 
-    Adds the given destination, consisting of \a page, \a location and \a zoom,
+    Adds the given destination, consisting of \a page, \a location, and \a zoom,
     to the history of visited locations.  If \a emitJumped is \c false, the
     \l jumped() signal will not be emitted.
 
-    If forwardAvailable is \c true, calling this function represents a branch
+    If forwardAvailable() is \c true, calling this function represents a branch
     in the timeline which causes the "future" to be lost, and therefore
     forwardAvailable will change to \c false.
 */
@@ -252,10 +252,24 @@ void QQuickPdfNavigationStack::update(int page, QPointF location, qreal zoom)
         }();
 }
 
+/*!
+    \qmlproperty bool PdfNavigationStack::backAvailable
+    \readonly
+
+    Holds \c true if a \e back destination is available in the history.
+*/
+
 bool QQuickPdfNavigationStack::backAvailable() const
 {
     return m_currentHistoryIndex > 0;
 }
+
+/*!
+    \qmlproperty bool PdfNavigationStack::forwardAvailable
+    \readonly
+
+    Holds \c true if a \e forward destination is available in the history.
+*/
 
 bool QQuickPdfNavigationStack::forwardAvailable() const
 {
@@ -265,8 +279,10 @@ bool QQuickPdfNavigationStack::forwardAvailable() const
 /*!
     \qmlsignal PdfNavigationStack::jumped(int page, point location, qreal zoom)
 
-    This signal is emitted when forward(), back() or push() is called, but not
-    when update() is called.
+    This signal is emitted for the given \a page, \a location, and \a zoom,
+    It is emitted on calling forward(), back(), or push() only.
+
+    \note The signal is emitted on calling update().
 */
 
 QT_END_NAMESPACE

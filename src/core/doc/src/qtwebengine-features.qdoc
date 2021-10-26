@@ -220,12 +220,12 @@
 
     \section1 HTML5 Geolocation
 
-    \QWE supports JavaScript Geolocation API with \l {Qt Location} as a
+    \QWE supports JavaScript Geolocation API with \l {Qt Positioning} as a
     backend. The application has to explicitly allow the feature by using
     QWebEnginePage::Geolocation or \l{WebEngineView::Feature}
     {WebEngineView.Feature}.
 
-    If Qt Location has been built before \QWE then this feature can be
+    If Qt Positioning has been built before \QWE then this feature can be
     tested by using \l{WebEngine Widgets Maps Example}{Maps} and allowing it to
     find the current position of the user. Note that on Windows an external GPS
     receiver must be connected to the application. For more information, see
