@@ -46,7 +46,7 @@ set(resources_resource_files
     "FullScreenNotification.qml"
 )
 
-qt6_add_resources(quicknanobrowser "resources"
+qt_add_resources(quicknanobrowser "resources"
     PREFIX
         "/"
     FILES
@@ -59,7 +59,7 @@ set(resources1_resource_files
     "icons/3rdparty/view-refresh.png"
 )
 
-qt6_add_resources(quicknanobrowser "resources1"
+qt_add_resources(quicknanobrowser "resources1"
     PREFIX
         "/icons"
     BASE

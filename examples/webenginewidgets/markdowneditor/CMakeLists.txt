@@ -44,7 +44,7 @@ set(markdowneditor_resource_files
     "resources/index.html"
 )
 
-qt6_add_resources(markdowneditor "markdowneditor"
+qt_add_resources(markdowneditor "markdowneditor"
     PREFIX
         "/"
     BASE

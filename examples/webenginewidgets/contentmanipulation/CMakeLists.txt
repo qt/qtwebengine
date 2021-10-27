@@ -37,7 +37,7 @@ set(jquery_resource_files
     "jquery.min.js"
 )
 
-qt6_add_resources(contentmanipulation "jquery"
+qt_add_resources(contentmanipulation "jquery"
     PREFIX
         "/"
     FILES

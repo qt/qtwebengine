@@ -38,7 +38,7 @@ set(stylesheetbrowser_resource_files
     "3rdparty/view-refresh.png"
 )
 
-qt6_add_resources(stylesheetbrowser "stylesheetbrowser"
+qt_add_resources(stylesheetbrowser "stylesheetbrowser"
     PREFIX
         "/"
     BASE

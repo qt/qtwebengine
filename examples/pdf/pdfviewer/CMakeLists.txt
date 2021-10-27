@@ -48,7 +48,7 @@ set(viewer_resource_files
     "viewer.qml"
 )
 
-qt6_add_resources(pdfviewerquick "viewer"
+qt_add_resources(pdfviewerquick "viewer"
     PREFIX
         "/pdfviewer"
     FILES

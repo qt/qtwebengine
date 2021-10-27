@@ -39,7 +39,7 @@ set(videoplayer_resource_files
     "data/index.html"
 )
 
-qt6_add_resources(videoplayer "videoplayer"
+qt_add_resources(videoplayer "videoplayer"
     PREFIX
         "/"
     BASE

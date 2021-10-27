@@ -49,7 +49,7 @@ set(resources_resource_files
     "images/zoom-out-32.png"
 )
 
-qt6_add_resources(pdfviewerwidgets "resources"
+qt_add_resources(pdfviewerwidgets "resources"
     PREFIX
         "/icons"
     FILES

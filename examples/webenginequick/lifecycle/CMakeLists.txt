@@ -43,7 +43,7 @@ set(resources_resource_files
     "qtquickcontrols2.conf"
 )
 
-qt6_add_resources(lifecycle "resources"
+qt_add_resources(lifecycle "resources"
     PREFIX
         "/"
     FILES

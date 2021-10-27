@@ -36,7 +36,7 @@ set(qml_resource_files
     "main.qml"
 )
 
-qt6_add_resources(webengine-minimal-qml "qml"
+qt_add_resources(webengine-minimal-qml "qml"
     PREFIX
         "/"
     FILES
