@@ -41,7 +41,7 @@ set(data_resource_files
     "data/style.css"
 )
 
-qt6_add_resources(printme "data"
+qt_add_resources(printme "data"
     PREFIX
         "/"
     BASE

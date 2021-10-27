@@ -47,7 +47,7 @@ set(simplebrowser_resource_files
     "data/ninja.png"
 )
 
-qt6_add_resources(simplebrowser "simplebrowser"
+qt_add_resources(simplebrowser "simplebrowser"
     PREFIX
         "/"
     BASE
@@ -66,7 +66,7 @@ set(simplebrowser1_resource_files
     "data/3rdparty/view-refresh.png"
 )
 
-qt6_add_resources(simplebrowser "simplebrowser1"
+qt_add_resources(simplebrowser "simplebrowser1"
     PREFIX
         "/"
     BASE

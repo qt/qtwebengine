@@ -37,7 +37,7 @@ set(webui_resource_files
     "about.html"
 )
 
-qt6_add_resources(webui "webui"
+qt_add_resources(webui "webui"
     PREFIX
         "/"
     FILES

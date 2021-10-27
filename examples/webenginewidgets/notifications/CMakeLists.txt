@@ -38,7 +38,7 @@ set(data_resource_files
     "data/index.html"
 )
 
-qt6_add_resources(notifications "data"
+qt_add_resources(notifications "data"
     PREFIX
         "/"
     BASE

@@ -121,7 +121,7 @@ set(resources_resource_files
     "resources/qml/RecipeList.qml"
 )
 
-qt6_add_resources(recipebrowser "resources"
+qt_add_resources(recipebrowser "resources"
     PREFIX
         "/"
     BASE

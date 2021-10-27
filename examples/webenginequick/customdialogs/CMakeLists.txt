@@ -56,7 +56,7 @@ set(customdialogs_resource_files
     "style.css"
 )
 
-qt6_add_resources(customdialogs "customdialogs"
+qt_add_resources(customdialogs "customdialogs"
     PREFIX
         "/"
     FILES
