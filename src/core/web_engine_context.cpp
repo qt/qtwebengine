@@ -671,6 +671,7 @@ WebEngineContext::WebEngineContext()
     // upstream Chromium commit ba52f56207a4b9d70b34880fbff2352e71a06422.
     enableFeatures.push_back(features::kAllowContentInitiatedDataUrlNavigations.name);
 
+    enableFeatures.push_back(features::kNetworkServiceInProcess.name);
     enableFeatures.push_back(features::kTracingServiceInProcess.name);
 
     // The video-capture service is not functioning at this moment (since 69)
