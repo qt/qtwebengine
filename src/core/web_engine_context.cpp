@@ -704,6 +704,7 @@ WebEngineContext::WebEngineContext()
     std::vector<std::string> disableFeatures;
     std::vector<std::string> enableFeatures;
 
+    enableFeatures.push_back(features::kNetworkServiceInProcess.name);
     enableFeatures.push_back(features::kTracingServiceInProcess.name);
 
     disableFeatures.push_back(network::features::kDnsOverHttpsUpgrade.name);
