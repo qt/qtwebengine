@@ -464,6 +464,18 @@ add_check_for_support(
    MESSAGE "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
 )
 
+if(WIN32)
+    set(windowsSdkVersion $ENV{WindowsSDKVersion})
+    string(REGEX REPLACE "([0-9.]+).*" "\\1" windowsSdkVersion "${windowsSdkVersion}")
+    string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+)\\.[0-9]+" "\\1" sdkMinor "${windowsSdkVersion}")
+    message("-- Windows 10 SDK version: ${windowsSdkVersion}")
+    add_check_for_support(
+        MODULES QtWebEngine QtPdf
+        CONDITION sdkMinor GREATER_EQUAL 19041
+        MESSAGE "Build requires Windows 10 SDK at least version 10.0.19041.0"
+    )
+endif()
+
 #### Summary
 
 # > Qt WebEngine Build Features
