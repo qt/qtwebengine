@@ -47,6 +47,13 @@
     Has been renamed to the Qt WebEngineQuick module to not collide with the name of
     the super module, and to be consistent with other Quick modules.
 
+    If you port your Qt Quick application, please remember to use the new module
+    name in your qmake project file.
+
+    \code
+        QT += webenginequick
+    \endcode
+
     \section2 Classes moved from Qt WebEngineWidgets to Qt WebEngineCore
     Several classes have been moved from Qt WebEngineWidgets to Qt WebEngineCore if they
     did not use the Widgets module. In most cases this change should be source compatible unless
