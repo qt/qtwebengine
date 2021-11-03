@@ -77,12 +77,13 @@
 
     For more information, see \l{Qt Configure Options}.
 
-    When using qmake to build just the \QWE module, the following
-    command can be used (in this example, the \QWE source code is
+    When using cmake to build just the \QWE module, the following
+    command can be used to configure and build (in this example, the \QWE source code is
     located in \c {C:\qt\qtwebengine}):
 
     \code
-    qmake C:\qt\qtwebengine -- -webengine-proprietary-codecs
+    qt-configure-module C:\qt\qtwebengine -webengine-proprietary-codecs
+    cmake --build . --parallel
     \endcode
 
     \warning When distributing proprietary codec libraries, you must acquire
