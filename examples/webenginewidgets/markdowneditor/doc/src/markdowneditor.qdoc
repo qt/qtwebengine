@@ -152,7 +152,7 @@
     \quotefile webenginewidgets/markdowneditor/resources/index.html
 
     In the \e index.html, we load a custom stylesheet and two JavaScript
-    libraries. \l{http://kevinburke.bitbucket.org/markdowncss/}{markdown.css} is
+    libraries. \l{https://bitbucket.org/kevinburke/markdowncss/src/master/}{markdown.css} is
     a markdown-friendly stylesheet created by Kevin Burke.
     \l{https://github.com/chjj/marked}{marked.js} is a markdown parser and
     compiler designed for speed written by Christopher Jeffrey and

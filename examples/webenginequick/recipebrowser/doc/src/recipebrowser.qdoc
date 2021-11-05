@@ -204,7 +204,7 @@
     An example of a recipe page can be seen below. The page uses two stylesheets and
     two JavaScript files:
     \list
-        \li \l{http://kevinburke.bitbucket.org/markdowncss/}{markdown.css} is
+        \li \l{https://bitbucket.org/kevinburke/markdowncss/src/master/}{markdown.css} is
             a markdown-friendly stylesheet created by Kevin Burke
         \li \l{https://github.com/chjj/marked}{marked.min.js} is a markdown parser and
             compiler designed for speed written by Christopher Jeffrey
