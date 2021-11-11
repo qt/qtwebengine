@@ -256,6 +256,11 @@ foreach(arch ${archs})
                 renderer/extensions/resource_request_policy_qt.cpp renderer/extensions/resource_request_policy_qt.h
         )
 
+        extend_gn_target(${buildGn} CONDITION WIN32
+            SOURCES
+                clipboard_util_win.cpp
+        )
+
         ##
         #   GN PARAMETERS SETUP
         ##

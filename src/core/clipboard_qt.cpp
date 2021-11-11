@@ -46,6 +46,7 @@
 #include "type_conversion.h"
 
 #include "base/logging.h"
+#include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/custom_data_helper.h"
@@ -107,6 +108,12 @@ Clipboard *Clipboard::Create()
 
 namespace QtWebEngineCore {
 
+#if defined(Q_OS_WIN)
+extern std::string HtmlToCFHtml(const std::string &html, const std::string &base_url);
+extern void CFHtmlExtractMetadata(const std::string &cf_html, std::string *base_url,
+                                  size_t *html_start, size_t *fragment_start, size_t *fragment_end);
+#endif // defined(Q_OS_WIN)
+
 void ClipboardQt::WritePortableRepresentations(ui::ClipboardBuffer type, const ObjectMap &objects, std::unique_ptr<ui::DataTransferEndpoint> data_src)
 {
     DCHECK(CalledOnValidThread());
@@ -157,7 +164,17 @@ void ClipboardQt::WriteHTML(const char *markup_data, size_t markup_len, const ch
     // Mirrors the behavior in ui/base/clipboard/clipboard_mac.mm in Chromium.
     markup_string.prepend(QLatin1String("<meta charset='utf-8'>"));
 #endif
+
+#if !defined(Q_OS_WIN)
     getUncommittedData()->setHtml(markup_string);
+#else
+    std::string url;
+    if (url_len > 0)
+        url.assign(url_data, url_len);
+
+    std::string cf_html = HtmlToCFHtml(markup_string.toStdString(), url);
+    getUncommittedData()->setHtml(QString::fromStdString(cf_html));
+#endif // !defined(Q_OS_WIN)
 }
 
 void ClipboardQt::WriteRTF(const char *rtf_data, size_t data_len)
@@ -269,8 +286,35 @@ void ClipboardQt::ReadHTML(ui::ClipboardBuffer type,
             type == ui::ClipboardBuffer::kCopyPaste ? QClipboard::Clipboard : QClipboard::Selection);
     if (!mimeData)
         return;
+
+#if !defined(Q_OS_WIN)
     *markup = toString16(mimeData->html());
     *fragment_end = static_cast<uint32_t>(markup->length());
+#else
+    const std::string cf_html = mimeData->html().toStdString();
+    size_t html_start = std::string::npos;
+    size_t start_index = std::string::npos;
+    size_t end_index = std::string::npos;
+    CFHtmlExtractMetadata(cf_html, src_url, &html_start, &start_index, &end_index);
+
+    // This might happen if the contents of the clipboard changed and CF_HTML is
+    // no longer available.
+    if (start_index == std::string::npos || end_index == std::string::npos
+        || html_start == std::string::npos)
+        return;
+
+    if (start_index < html_start || end_index < start_index)
+        return;
+
+    std::vector<size_t> offsets;
+    offsets.push_back(start_index - html_start);
+    offsets.push_back(end_index - html_start);
+    markup->assign(base::UTF8ToUTF16AndAdjustOffsets(cf_html.data() + html_start, &offsets));
+    // Ensure the Fragment points within the string; see https://crbug.com/607181.
+    size_t end = std::min(offsets[1], markup->length());
+    *fragment_start = base::checked_cast<uint32_t>(std::min(offsets[0], end));
+    *fragment_end = base::checked_cast<uint32_t>(end);
+#endif // !defined(Q_OS_WIN)
 }
 
 void ClipboardQt::ReadRTF(ui::ClipboardBuffer type,
