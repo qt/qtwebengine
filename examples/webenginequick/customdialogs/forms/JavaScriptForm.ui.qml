@@ -53,7 +53,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 
 Item {
-    id: item
+    id: root
     property alias cancelButton: cancelButton
     property alias okButton: okButton
     property string message: "Message"
