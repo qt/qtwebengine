@@ -707,8 +707,6 @@ WebEngineContext::WebEngineContext()
     enableFeatures.push_back(features::kNetworkServiceInProcess.name);
     enableFeatures.push_back(features::kTracingServiceInProcess.name);
 
-    disableFeatures.push_back(network::features::kDnsOverHttpsUpgrade.name);
-
     // When enabled, event.movement is calculated in blink instead of in browser.
     disableFeatures.push_back(features::kConsolidatedMovementXY.name);
 
