@@ -181,7 +181,7 @@ void FaviconImageResponseRunnable::requestIconOnUIThread(QQuickWebEngineView *vi
     QTimer *timer = new QTimer();
     timer->moveToThread(qApp->thread());
     timer->setSingleShot(true);
-    QObject::connect(timer, &QTimer::timeout, [=]() {
+    QObject::connect(timer, &QTimer::timeout, [this, view, timer]() {
         QtWebEngineCore::ProfileAdapter *profileAdapter = view->d_ptr->profileAdapter();
         bool touchIconsEnabled = view->profile()->settings()->touchIconsEnabled();
         if (isIconURL(QUrl(m_id))) {
@@ -212,7 +212,7 @@ FaviconImageResponse::FaviconImageResponse(const QString &id, const QSize &reque
         QTimer *timer = new QTimer();
         timer->moveToThread(qApp->thread());
         timer->setSingleShot(true);
-        QObject::connect(timer, &QTimer::timeout, [=]() {
+        QObject::connect(timer, &QTimer::timeout, [this, id, requestedSize, views, pool, view, timer]() {
             QIcon icon = view->d_ptr->adapter->icon();
             if (icon.isNull())
                 startRunnable(id, requestedSize, views, pool);
