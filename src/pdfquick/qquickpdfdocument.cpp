@@ -62,7 +62,7 @@ QQuickPdfDocument::QQuickPdfDocument(QObject *parent)
 {
     connect(&m_doc, &QPdfDocument::passwordChanged, this, &QQuickPdfDocument::passwordChanged);
     connect(&m_doc, &QPdfDocument::passwordRequired, this, &QQuickPdfDocument::passwordRequired);
-    connect(&m_doc, &QPdfDocument::statusChanged, [=] (QPdfDocument::Status status) {
+    connect(&m_doc, &QPdfDocument::statusChanged, [this] (QPdfDocument::Status status) {
         emit statusChanged();
         if (status == QPdfDocument::Ready)
             emit metaDataChanged();
