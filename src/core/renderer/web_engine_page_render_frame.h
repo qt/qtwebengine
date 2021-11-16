@@ -63,12 +63,16 @@ private:
                                 FetchDocumentInnerTextCallback callback) override;
     void SetBackgroundColor(uint32_t color) override;
     void OnDestruct() override;
+    void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
+    void WasShown() override;
+    void WasHidden() override;
     void
     BindReceiver(mojo::PendingAssociatedReceiver<qtwebenginepage::mojom::WebEnginePageRenderFrame>
                          receiver);
 
 private:
     mojo::AssociatedReceiver<qtwebenginepage::mojom::WebEnginePageRenderFrame> m_binding;
+    bool m_needsLayout;
 };
 } // namespace
 
