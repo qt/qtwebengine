@@ -211,6 +211,7 @@ ASSERT_ENUMS_MATCH(FilePickerController::Save, blink::mojom::FileChooserParams_M
 
 void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
 {
+    m_isHandled = true;
     if (d_ptr->fileDialogListener) {
         QStringList files(filesList);
         base::FilePath baseDir;
@@ -244,7 +245,6 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
         else
             d_ptr->fileSystemAccessDialogListener->MultiFilesSelected(files, nullptr);
     }
-    m_isHandled = true;
 }
 
 QStringList FilePickerController::acceptedMimeTypes() const
