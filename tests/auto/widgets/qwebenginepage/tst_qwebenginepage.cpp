@@ -4758,6 +4758,8 @@ void tst_QWebEnginePage::testChooseFilesParameters_data()
                                           << QWebEnginePage::FileSelectOpenMultiple << QStringList();
     QTest::addRow("Folder upload") << QString("multiple webkitdirectory") << QString()
                                    << QWebEnginePage::FileSelectUploadFolder << QStringList();
+    QTest::addRow("Save file") << QString("") << QString()
+                                   << QWebEnginePage::FileSelectSave << QStringList();
     mimeTypes = QStringList() << "audio/*";
     QTest::addRow("MIME type: audio") << QString() << QString("accept='%1'").arg(mimeTypes.join(','))
                                       << QWebEnginePage::FileSelectOpen << mimeTypes;
@@ -4791,9 +4793,16 @@ void tst_QWebEnginePage::testChooseFilesParameters()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    page.setHtml(QString("<html><body>"
-                         "<input id='filePicker' type='file' name='filePicker' %1 %2 />"
-                         "</body></html>").arg(uploadAttribute, mimeTypeAttribute));
+    if (expectedFileSelectionMode != QWebEnginePage::FileSelectSave) {
+        page.setHtml(QString("<html><body>"
+                             "<input id='filePicker' type='file' name='filePicker' %1 %2 />"
+                             "</body></html>").arg(uploadAttribute, mimeTypeAttribute));
+    } else {
+        page.setHtml(QString("<html><body>"
+                             "<button id='filePicker' value='trigger' "
+                             "onclick='window.showSaveFilePicker()'"
+                             "</body></html>"), QString("qrc:/"));
+    }
     QVERIFY(spyFinished.wait());
     QTRY_COMPARE(spyFinished.count(), 1);
 
