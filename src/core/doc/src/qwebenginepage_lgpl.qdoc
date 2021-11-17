@@ -252,6 +252,8 @@
             Return multiple file names.
     \value  FileSelectUploadFolder
             Allows users to specify a single existing folder for upload.
+    \value  FileSelectSave
+            Specify a new file to be created.
 
     \sa chooseFiles()
 */

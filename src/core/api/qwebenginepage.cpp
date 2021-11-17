@@ -2148,6 +2148,7 @@ void QWebEnginePage::setDevToolsPage(QWebEnginePage *devToolsPage)
 ASSERT_ENUMS_MATCH(FilePickerController::Open, QWebEnginePage::FileSelectOpen)
 ASSERT_ENUMS_MATCH(FilePickerController::OpenMultiple, QWebEnginePage::FileSelectOpenMultiple)
 ASSERT_ENUMS_MATCH(FilePickerController::UploadFolder, QWebEnginePage::FileSelectUploadFolder)
+ASSERT_ENUMS_MATCH(FilePickerController::Save, QWebEnginePage::FileSelectSave)
 
 // TODO: remove virtuals
 QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringList &oldFiles, const QStringList &acceptedMimeTypes)

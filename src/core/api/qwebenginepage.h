@@ -211,6 +211,7 @@ public:
         FileSelectOpen,
         FileSelectOpenMultiple,
         FileSelectUploadFolder,
+        FileSelectSave
     };
     Q_ENUM(FileSelectionMode)
 
