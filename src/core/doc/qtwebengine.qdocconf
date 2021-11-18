@@ -54,6 +54,7 @@ depends += qtcore \
            qtquick \
            qtquickcontrols \
            qtdoc \
+           qtcmake \
            qtwebchannel \
            qtwebview \
            qtwidgets
