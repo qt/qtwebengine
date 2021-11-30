@@ -136,10 +136,6 @@ static QString getProgramFilesDir(bool x86Dir = false)
 #include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
-namespace switches {
-const char kPpapiWidevinePath[] = "ppapi-widevine-path";
-}
-
 static QString ppapiPluginsPath()
 {
     // Look for plugins in /plugins/ppapi or application dir.

@@ -56,9 +56,6 @@ public:
     // Expects to be called on the UI thread.
     static void CreateAndBind(ProfileIODataQt *profileIoData,
                               mojo::PendingRemote<network::mojom::RestrictedCookieManager> underlying_rcm,
-                              bool is_service_worker,
-                              int process_id,
-                              int frame_id,
                               mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver);
 
     ~ProxyingRestrictedCookieManagerQt() override;
@@ -98,24 +95,15 @@ public:
 
 private:
     ProxyingRestrictedCookieManagerQt(base::WeakPtr<ProfileIODataQt> profileIoData,
-                                      mojo::PendingRemote<network::mojom::RestrictedCookieManager> underlying_rcm,
-                                      bool is_service_worker,
-                                      int32_t process_id,
-                                      int32_t frame_id);
+                                      mojo::PendingRemote<network::mojom::RestrictedCookieManager> underlying_rcm);
 
     static void CreateAndBindOnIoThread(ProfileIODataQt *profileIoData,
                                         mojo::PendingRemote<network::mojom::RestrictedCookieManager> underlying_rcm,
-                                        bool is_service_worker,
-                                        int process_id,
-                                        int frame_id,
                                         mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver);
 
     base::WeakPtr<ProfileIODataQt> m_profileIoData;
 
     mojo::Remote<network::mojom::RestrictedCookieManager> underlying_restricted_cookie_manager_;
-    bool is_service_worker_;
-    int process_id_;
-    int frame_id_;
 
     base::WeakPtrFactory<ProxyingRestrictedCookieManagerQt> weak_factory_;
 

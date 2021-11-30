@@ -133,8 +133,6 @@ namespace QtWebEngineCore {
         return; \
     }
 
-static const int kTestWindowWidth = 800;
-static const int kTestWindowHeight = 600;
 static const int kHistoryStreamVersion = 4;
 
 static QVariant fromJSValue(const base::Value *result)
