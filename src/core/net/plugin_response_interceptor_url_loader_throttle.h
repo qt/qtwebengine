@@ -54,8 +54,7 @@ namespace QtWebEngineCore {
 class PluginResponseInterceptorURLLoaderThrottle : public blink::URLLoaderThrottle
 {
 public:
-    PluginResponseInterceptorURLLoaderThrottle(content::BrowserContext *browser_context,
-                                               network::mojom::RequestDestination request_destination,
+    PluginResponseInterceptorURLLoaderThrottle(network::mojom::RequestDestination request_destination,
                                                int frame_tree_node_id);
     ~PluginResponseInterceptorURLLoaderThrottle() override = default;
 
@@ -67,7 +66,6 @@ private:
     // layer chance to initialize its browser side state.
     void ResumeLoad();
 
-    content::BrowserContext *m_browser_context = nullptr;
     const network::mojom::RequestDestination m_request_destination;
     const int m_frame_tree_node_id;
 

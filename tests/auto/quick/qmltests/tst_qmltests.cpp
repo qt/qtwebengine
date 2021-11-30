@@ -251,22 +251,17 @@ int main(int argc, char **argv)
 
     sigaction(SIGSEGV, &sigAction, 0);
 #endif
-    QScopedPointer<Application> app;
+    QtWebEngineQuick::initialize();
     // Force to use English language for testing due to error message checks
     QLocale::setDefault(QLocale("en"));
 
     static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
-    QList<const char *> w_argv(argc); \
-    for (int i = 0; i < argc; ++i) \
-        w_argv[i] = argv[i]; \
-    for (int i = 0; i < params.size(); ++i) \
-        w_argv.append(params[i].data()); \
-    int w_argc = w_argv.size(); \
+    QList<const char *> w_argv(argc);
+    for (int i = 0; i < argc; ++i) w_argv[i] = argv[i];
+    for (int i = 0; i < params.size(); ++i) w_argv.append(params[i].data());
+    int w_argc = w_argv.size();
+    Application app(w_argc, const_cast<char **>(w_argv.data()));
 
-    if (!QCoreApplication::instance()) {
-        app.reset(new Application(w_argc, const_cast<char **>(w_argv.data())));
-    }
-    QtWebEngineQuick::initialize();
     QQuickWebEngineProfile::defaultProfile()->setOffTheRecord(true);
     qmlRegisterType<TempDir>("Test.util", 1, 0, "TempDir");
     qmlRegisterType<TestInputContext>("Test.util", 1, 0, "TestInputContext");

@@ -592,6 +592,7 @@ void tst_QWebEngineView::focusInputTypes()
 
 class KeyEventRecordingWidget : public QWidget {
 public:
+    ~KeyEventRecordingWidget() { qDeleteAll(pressEvents); qDeleteAll(releaseEvents); }
     QList<QKeyEvent *> pressEvents;
     QList<QKeyEvent *> releaseEvents;
     void keyPressEvent(QKeyEvent *e) override { pressEvents << e->clone(); }
@@ -1676,11 +1677,10 @@ void tst_QWebEngineView::postData()
 
 void tst_QWebEngineView::inputFieldOverridesShortcuts()
 {
-    bool actionTriggered = false;
-    QAction *action = new QAction;
-    connect(action, &QAction::triggered, [&actionTriggered] () { actionTriggered = true; });
-
     QWebEngineView view;
+    bool actionTriggered = false;
+    QAction *action = new QAction(&view);
+    connect(action, &QAction::triggered, [&actionTriggered] () { actionTriggered = true; });
     view.addAction(action);
 
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
