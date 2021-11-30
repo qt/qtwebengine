@@ -50,22 +50,22 @@ QT_BEGIN_NAMESPACE
 class QPdfDocumentRenderOptions
 {
 public:
-    Q_DECL_CONSTEXPR QPdfDocumentRenderOptions() noexcept : m_renderFlags(0), m_rotation(0), m_reserved(0) {}
+    constexpr QPdfDocumentRenderOptions() noexcept : m_renderFlags(0), m_rotation(0), m_reserved(0) {}
 
-    Q_DECL_CONSTEXPR QPdf::Rotation rotation() const noexcept { return static_cast<QPdf::Rotation>(m_rotation); }
-    Q_DECL_RELAXED_CONSTEXPR void setRotation(QPdf::Rotation r) noexcept { m_rotation = r; }
+    constexpr QPdf::Rotation rotation() const noexcept { return static_cast<QPdf::Rotation>(m_rotation); }
+    constexpr void setRotation(QPdf::Rotation r) noexcept { m_rotation = r; }
 
-    Q_DECL_CONSTEXPR QPdf::RenderFlags renderFlags() const noexcept { return static_cast<QPdf::RenderFlags>(m_renderFlags); }
-    Q_DECL_RELAXED_CONSTEXPR void setRenderFlags(QPdf::RenderFlags r) noexcept { m_renderFlags = r; }
+    constexpr QPdf::RenderFlags renderFlags() const noexcept { return static_cast<QPdf::RenderFlags>(m_renderFlags); }
+    constexpr void setRenderFlags(QPdf::RenderFlags r) noexcept { m_renderFlags = r; }
 
-    Q_DECL_CONSTEXPR QRect scaledClipRect() const noexcept { return m_clipRect; }
-    Q_DECL_RELAXED_CONSTEXPR void setScaledClipRect(const QRect &r) noexcept { m_clipRect = r; }
+    constexpr QRect scaledClipRect() const noexcept { return m_clipRect; }
+    constexpr void setScaledClipRect(const QRect &r) noexcept { m_clipRect = r; }
 
-    Q_DECL_CONSTEXPR QSize scaledSize() const noexcept { return m_scaledSize; }
-    Q_DECL_RELAXED_CONSTEXPR void setScaledSize(const QSize &s) noexcept { m_scaledSize = s; }
+    constexpr QSize scaledSize() const noexcept { return m_scaledSize; }
+    constexpr void setScaledSize(const QSize &s) noexcept { m_scaledSize = s; }
 
 private:
-    friend Q_DECL_CONSTEXPR inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) noexcept;
+    friend constexpr inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) noexcept;
 
     QRect m_clipRect;
     QSize m_scaledSize;
@@ -78,14 +78,14 @@ private:
 
 Q_DECLARE_TYPEINFO(QPdfDocumentRenderOptions, Q_PRIMITIVE_TYPE);
 
-Q_DECL_CONSTEXPR inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) noexcept
+constexpr inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) noexcept
 {
     return lhs.m_clipRect == rhs.m_clipRect && lhs.m_scaledSize == rhs.m_scaledSize &&
             lhs.m_renderFlags == rhs.m_renderFlags && lhs.m_rotation == rhs.m_rotation &&
             lhs.m_reserved == rhs.m_reserved && lhs.m_reserved2 == rhs.m_reserved2; // fix -Wunused-private-field
 }
 
-Q_DECL_CONSTEXPR inline bool operator!=(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) noexcept
+constexpr inline bool operator!=(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) noexcept
 {
     return !operator==(lhs, rhs);
 }
