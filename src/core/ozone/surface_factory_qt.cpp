@@ -52,16 +52,19 @@ SurfaceFactoryQt::SurfaceFactoryQt()
 {
 #if defined(USE_GLX)
     if (GLContextHelper::getGlxPlatformInterface()) {
-        m_impl = { gl::GLImplementationParts(gl::kGLImplementationDesktopGL) };
+        m_impl = { gl::GLImplementationParts(gl::kGLImplementationDesktopGL),
+                   gl::GLImplementationParts(gl::kGLImplementationDisabled) };
         m_ozone.reset(new ui::GLOzoneGLXQt());
     } else
 #endif
     if (GLContextHelper::getEglPlatformInterface()) {
         m_impl = { gl::GLImplementationParts(gl::kGLImplementationDesktopGL),
-                   gl::GLImplementationParts(gl::kGLImplementationEGLGLES2) };
+                   gl::GLImplementationParts(gl::kGLImplementationEGLGLES2),
+                   gl::GLImplementationParts(gl::kGLImplementationDisabled) };
         m_ozone.reset(new ui::GLOzoneEGLQt());
     } else {
-        qFatal("No suitable graphics backend found\n");
+        qWarning("No suitable graphics backend found\n");
+        m_impl = { gl::GLImplementationParts(gl::kGLImplementationDisabled) };
     }
 }
 
