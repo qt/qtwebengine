@@ -589,13 +589,13 @@ void RenderWidgetHostViewQtDelegateClient::handleTouchEvent(QTouchEvent *event)
     // Check first if the touch event should be routed to the selectionController
     if (!touchPoints.isEmpty()) {
         switch (touchPoints[0].second.state()) {
-        case Qt::TouchPointPressed:
+        case QEventPoint::Pressed:
             action = ui::MotionEvent::Action::DOWN;
             break;
-        case Qt::TouchPointMoved:
+        case QEventPoint::Updated:
             action = ui::MotionEvent::Action::MOVE;
             break;
-        case Qt::TouchPointReleased:
+        case QEventPoint::Released:
             action = ui::MotionEvent::Action::UP;
             break;
         default:

@@ -120,8 +120,6 @@
 
 namespace QtWebEngineCore {
 
-static const char kHttpErrorDomain[] = "http";
-
 ContentRendererClientQt::ContentRendererClientQt()
 {
 #if BUILDFLAG(ENABLE_EXTENSIONS)

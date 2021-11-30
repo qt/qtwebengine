@@ -194,7 +194,6 @@ int main(int argc, char *argv[])
     }
 #endif // USE_ICU_FILE
 
-    base::AtExitManager exit_manager;
     base::i18n::InitializeICU();
 
     base::FilePath file_in_path = toFilePath(argv[1]);

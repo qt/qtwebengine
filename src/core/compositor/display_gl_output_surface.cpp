@@ -231,7 +231,7 @@ void DisplayGLOutputSurface::swapBuffersOnVizThread()
     }
 
     const auto now = base::TimeTicks::Now();
-    m_client->DidReceiveSwapBuffersAck(gfx::SwapTimings{now, now});
+    m_client->DidReceiveSwapBuffersAck(gfx::SwapTimings{now, now, {}, {}});
     m_client->DidReceivePresentationFeedback(
             gfx::PresentationFeedback(now, base::TimeDelta(),
                                       gfx::PresentationFeedback::Flags::kVSync));

@@ -200,8 +200,9 @@ private:
         if (url.path().startsWith("/qtwebchannel/"))
             pathPrefix = QSL(":");
         QString pathSuffix = url.path();
-        QFile *file = new QFile(pathPrefix + pathSuffix, job);
+        auto file = std::make_unique<QFile>(pathPrefix + pathSuffix, job);
         if (!file->open(QIODevice::ReadOnly)) {
+            qWarning() << "Failed to read data for:" << url << file->errorString();
             job->fail(QWebEngineUrlRequestJob::RequestFailed);
             return;
         }
@@ -210,7 +211,7 @@ private:
             mimeType = QBAL("application/javascript");
         else if (pathSuffix.endsWith(QSL(".css")))
             mimeType = QBAL("text/css");
-        job->reply(mimeType, file);
+        job->reply(mimeType, file.release());
     }
 
     QList<QUrl> m_requests;

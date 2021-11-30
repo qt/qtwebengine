@@ -456,8 +456,6 @@ void QWebEnginePagePrivate::didFetchDocumentInnerText(quint64 requestId, const Q
 void QWebEnginePagePrivate::didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
-    Q_Q(QWebEnginePage);
-
     // If no currentPrinter is set that means that were printing to PDF only.
     if (!currentPrinter) {
         if (!result.data())

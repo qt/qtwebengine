@@ -618,9 +618,9 @@ bool ContentBrowserClientQt::WillCreateRestrictedCookieManager(network::mojom::R
         content::BrowserContext *browser_context,
         const url::Origin & /*origin*/,
         const net::IsolationInfo & /*isolation_info*/,
-        bool is_service_worker,
-        int process_id,
-        int routing_id,
+        bool /*is_service_worker*/,
+        int /*process_id*/,
+        int /*routing_id*/,
         mojo::PendingReceiver<network::mojom::RestrictedCookieManager> *receiver)
 {
     mojo::PendingReceiver<network::mojom::RestrictedCookieManager> orig_receiver = std::move(*receiver);
@@ -631,7 +631,6 @@ bool ContentBrowserClientQt::WillCreateRestrictedCookieManager(network::mojom::R
     ProxyingRestrictedCookieManagerQt::CreateAndBind(
                 ProfileIODataQt::FromBrowserContext(browser_context),
                 std::move(target_rcm_remote),
-                is_service_worker, process_id, routing_id,
                 std::move(orig_receiver));
 
     return false;  // only made a proxy, still need the actual impl to be made.
@@ -786,7 +785,7 @@ ContentBrowserClientQt::CreateURLLoaderThrottles(
                          ProtocolHandlerRegistryFactory::GetForBrowserContext(browser_context)));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     result.push_back(std::make_unique<PluginResponseInterceptorURLLoaderThrottle>(
-                         browser_context, request.destination, frame_tree_node_id));
+                         request.destination, frame_tree_node_id));
 #endif
     return result;
 }

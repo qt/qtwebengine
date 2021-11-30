@@ -68,10 +68,9 @@
 namespace QtWebEngineCore {
 
 PluginResponseInterceptorURLLoaderThrottle::PluginResponseInterceptorURLLoaderThrottle(
-        content::BrowserContext *browser_context,
         network::mojom::RequestDestination request_destination,
         int frame_tree_node_id)
-    : m_browser_context(browser_context), m_request_destination(request_destination), m_frame_tree_node_id(frame_tree_node_id)
+    : m_request_destination(request_destination), m_frame_tree_node_id(frame_tree_node_id)
 {}
 
 void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL &response_url,

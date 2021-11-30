@@ -40,7 +40,7 @@
 #ifndef DELEGATED_FRAME_HOST_CLIENT_QT_H
 #define DELEGATED_FRAME_HOST_CLIENT_QT_H
 
-#include "qtwebenginecoreglobal_p.h"
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"

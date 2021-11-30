@@ -44,12 +44,10 @@ const int WebEngineError::UserAbortedError = net::ERR_ABORTED;
 
 namespace {
 const int noError = 0;
-const int systemRelatedErrors = -1;
 const int connectionRelatedErrors = -100;
 const int certificateErrors = -200;
 const int httpErrors = -300;
 const int cacheErrors = -400;
-const int internalErrors = -500;
 const int ftpErrors = -600;
 const int certificateManagerErrors = -700;
 const int dnsResolverErrors = -800;

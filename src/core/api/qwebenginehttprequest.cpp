@@ -182,16 +182,16 @@ QWebEngineHttpRequest QWebEngineHttpRequest::postRequest(const QUrl &url,
     QWebEngineHttpRequest result(url);
     result.setMethod(QWebEngineHttpRequest::Post);
 
-    QString buffer;
+    QByteArray buffer;
     for (QMap<QString, QString>::const_iterator it = postData.begin(); it != postData.end(); it++) {
         QByteArray key = QUrl::toPercentEncoding(it.key());
         QByteArray value = QUrl::toPercentEncoding(it.value());
 
         if (buffer.length() > 0)
-            buffer += QLatin1Char('&');
-        buffer += key + QLatin1Char('=') + value;
+            buffer += '&';
+        buffer.append(key).append('=').append(value);
     }
-    result.setPostData(buffer.toLatin1());
+    result.setPostData(buffer);
 
     result.setHeader(QByteArrayLiteral("Content-Type"),
                      QByteArrayLiteral("application/x-www-form-urlencoded"));

@@ -218,7 +218,7 @@ void tst_QWebEngineScript::loadEvents()
     // Using window.open from JS
     QVERIFY(profile.pages.size() == 1);
     page.load(QUrl("qrc:/resources/test_window_open.html"));
-    QTRY_COMPARE(profile.pages.size(), 2);
+    QTRY_COMPARE(profile.pages.size(), 2u);
     QTRY_COMPARE(profile.pages.front().spy.count(), 1);
     QTRY_COMPARE(profile.pages.back().spy.count(), 1);
     QVERIFY(verifyOrder(profile.pages.front().eval("window.log", QWebEngineScript::MainWorld).toStringList()));

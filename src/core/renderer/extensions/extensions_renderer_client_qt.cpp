@@ -70,7 +70,6 @@
 
 namespace chrome {
 const char kExtensionInvalidRequestURL[] = "chrome-extension://invalid/";
-const char kExtensionResourceInvalidRequestURL[] = "chrome-extension-resource://invalid/";
 }
 
 namespace QtWebEngineCore {
