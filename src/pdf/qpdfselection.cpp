@@ -80,25 +80,10 @@ QPdfSelection::QPdfSelection(QPdfSelectionPrivate *d)
 {
 }
 
-QPdfSelection::QPdfSelection(const QPdfSelection &other)
-  : d(other.d)
-{
-}
-
-QPdfSelection::QPdfSelection(QPdfSelection &&other) noexcept
-  : d(std::move(other.d))
-{
-}
-
-QPdfSelection::~QPdfSelection()
-{
-}
-
-QPdfSelection &QPdfSelection::operator=(const QPdfSelection &other)
-{
-    d = other.d;
-    return *this;
-}
+QPdfSelection::~QPdfSelection() = default;
+QPdfSelection::QPdfSelection(const QPdfSelection &other) = default;
+QPdfSelection::QPdfSelection(QPdfSelection &&other) noexcept = default;
+QPdfSelection &QPdfSelection::operator=(const QPdfSelection &other) = default;
 
 /*!
     \property QPdfSelection::valid

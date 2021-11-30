@@ -65,8 +65,10 @@ public:
     ~QPdfSelection();
     QPdfSelection(const QPdfSelection &other);
     QPdfSelection &operator=(const QPdfSelection &other);
+
     QPdfSelection(QPdfSelection &&other) noexcept;
-    QPdfSelection &operator=(QPdfSelection &&other) noexcept { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QPdfSelection)
+
     void swap(QPdfSelection &other) noexcept { d.swap(other.d); }
     bool isValid() const;
     QList<QPolygonF> bounds() const;

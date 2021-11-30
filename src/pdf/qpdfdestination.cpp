@@ -71,25 +71,10 @@ QPdfDestination::QPdfDestination(QPdfDestinationPrivate *d)
 {
 }
 
-QPdfDestination::QPdfDestination(const QPdfDestination &other)
-  : d(other.d)
-{
-}
-
-QPdfDestination::QPdfDestination(QPdfDestination &&other) noexcept
-  : d(std::move(other.d))
-{
-}
-
-QPdfDestination::~QPdfDestination()
-{
-}
-
-QPdfDestination &QPdfDestination::operator=(const QPdfDestination &other)
-{
-    d = other.d;
-    return *this;
-}
+QPdfDestination::~QPdfDestination() = default;
+QPdfDestination::QPdfDestination(const QPdfDestination &other) = default;
+QPdfDestination::QPdfDestination(QPdfDestination &&other) noexcept = default;
+QPdfDestination &QPdfDestination::operator=(const QPdfDestination &other) = default;
 
 /*!
     \property QPdfDestination::valid

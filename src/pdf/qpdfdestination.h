@@ -62,8 +62,10 @@ public:
     ~QPdfDestination();
     QPdfDestination(const QPdfDestination &other);
     QPdfDestination &operator=(const QPdfDestination &other);
+
     QPdfDestination(QPdfDestination &&other) noexcept;
-    QPdfDestination &operator=(QPdfDestination &&other) noexcept { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QPdfDestination)
+
     void swap(QPdfDestination &other) noexcept { d.swap(other.d); }
     bool isValid() const;
     int page() const;
