@@ -42,6 +42,7 @@
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
+#include <QExplicitlySharedDataPointer>
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
 
