@@ -68,9 +68,8 @@ namespace QPdf {
     };
     Q_FLAG_NS(RenderFlag)
     Q_DECLARE_FLAGS(RenderFlags, RenderFlag)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(RenderFlags)
 }
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(QPdf::RenderFlags)
 
 QT_END_NAMESPACE
 #endif
