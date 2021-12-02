@@ -41,12 +41,13 @@
 #ifndef QPDFNAMESPACE_H
 #define QPDFNAMESPACE_H
 
+#include <QtPdf/qtpdfglobal.h>
 #include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE
 
 namespace QPdf {
-    Q_NAMESPACE
+    Q_NAMESPACE_EXPORT(Q_PDF_EXPORT)
 
     enum Rotation {
         Rotate0,
