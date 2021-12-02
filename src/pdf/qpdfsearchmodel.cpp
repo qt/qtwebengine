@@ -126,7 +126,7 @@ QString QPdfSearchModel::searchString() const
     return d->searchString;
 }
 
-void QPdfSearchModel::setSearchString(QString searchString)
+void QPdfSearchModel::setSearchString(const QString &searchString)
 {
     Q_D(QPdfSearchModel);
     if (d->searchString == searchString)

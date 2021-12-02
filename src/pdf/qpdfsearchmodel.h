@@ -80,7 +80,7 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
 
 public Q_SLOTS:
-    void setSearchString(QString searchString);
+    void setSearchString(const QString &searchString);
     void setDocument(QPdfDocument *document);
 
 Q_SIGNALS:
