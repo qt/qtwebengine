@@ -71,7 +71,8 @@ public:
     };
     Q_ENUM(Role)
 
-    explicit QPdfBookmarkModel(QObject *parent = nullptr);
+    QPdfBookmarkModel() : QPdfBookmarkModel(nullptr) {}
+    explicit QPdfBookmarkModel(QObject *parent);
     ~QPdfBookmarkModel() override;
 
     QPdfDocument* document() const;

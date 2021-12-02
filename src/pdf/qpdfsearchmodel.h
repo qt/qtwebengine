@@ -66,7 +66,8 @@ public:
         _Count
     };
     Q_ENUM(Role)
-    explicit QPdfSearchModel(QObject *parent = nullptr);
+    QPdfSearchModel() : QPdfSearchModel(nullptr) {}
+    explicit QPdfSearchModel(QObject *parent);
     ~QPdfSearchModel();
 
     QList<QPdfSearchResult> resultsOnPage(int page) const;

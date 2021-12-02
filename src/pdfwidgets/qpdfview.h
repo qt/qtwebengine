@@ -78,7 +78,8 @@ public:
     };
     Q_ENUM(ZoomMode)
 
-    explicit QPdfView(QWidget *parent = nullptr);
+    QPdfView() : QPdfView(nullptr) {}
+    explicit QPdfView(QWidget *parent);
     ~QPdfView();
 
     void setDocument(QPdfDocument *document);

@@ -67,7 +67,8 @@ public:
     };
     Q_ENUM(RenderMode)
 
-    explicit QPdfPageRenderer(QObject *parent = nullptr);
+    QPdfPageRenderer() : QPdfPageRenderer(nullptr) {}
+    explicit QPdfPageRenderer(QObject *parent);
     ~QPdfPageRenderer() override;
 
     RenderMode renderMode() const;

@@ -61,7 +61,8 @@ class Q_PDF_EXPORT QPdfPageNavigation : public QObject
     Q_PROPERTY(bool canGoToNextPage READ canGoToNextPage NOTIFY canGoToNextPageChanged)
 
 public:
-    explicit QPdfPageNavigation(QObject *parent = nullptr);
+    QPdfPageNavigation() : QPdfPageNavigation(nullptr) {}
+    explicit QPdfPageNavigation(QObject *parent);
     ~QPdfPageNavigation();
 
     QPdfDocument* document() const;
