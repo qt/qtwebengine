@@ -72,6 +72,7 @@ class  Q_PDFQUICK_EXPORT QQuickPdfSearchModel : public QPdfSearchModel
 
 public:
     explicit QQuickPdfSearchModel(QObject *parent = nullptr);
+    ~QQuickPdfSearchModel() override;
 
     QQuickPdfDocument *document() const;
     void setDocument(QQuickPdfDocument * document);

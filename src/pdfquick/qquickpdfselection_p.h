@@ -77,6 +77,7 @@ class Q_PDFQUICK_EXPORT QQuickPdfSelection : public QQuickItem
 
 public:
     explicit QQuickPdfSelection(QQuickItem *parent = nullptr);
+    ~QQuickPdfSelection() override;
 
     QQuickPdfDocument *document() const;
     void setDocument(QQuickPdfDocument * document);

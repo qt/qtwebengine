@@ -108,6 +108,11 @@ QQuickPdfLinkModel::QQuickPdfLinkModel(QObject *parent)
 }
 
 /*!
+    \internal
+*/
+QQuickPdfLinkModel::~QQuickPdfLinkModel() = default;
+
+/*!
     \qmlproperty PdfDocument PdfLinkModel::document
 
     This property holds the PDF document in which links are to be found.

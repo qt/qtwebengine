@@ -70,6 +70,7 @@ class Q_PDFQUICK_EXPORT QQuickPdfNavigationStack : public QObject
 
 public:
     explicit QQuickPdfNavigationStack(QObject *parent = nullptr);
+    ~QQuickPdfNavigationStack() override;
 
     Q_INVOKABLE void push(int page, QPointF location, qreal zoom, bool emitJumped = true);
     Q_INVOKABLE void update(int page, QPointF location, qreal zoom);

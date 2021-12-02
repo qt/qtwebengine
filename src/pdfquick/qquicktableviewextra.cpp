@@ -62,6 +62,11 @@ QQuickTableViewExtra::QQuickTableViewExtra(QObject *parent) : QObject(parent)
 {
 }
 
+/*!
+    \internal
+*/
+QQuickTableViewExtra::~QQuickTableViewExtra() = default;
+
 QPoint QQuickTableViewExtra::cellAtPos(qreal x, qreal y) const
 {
     QPointF position(x, y);

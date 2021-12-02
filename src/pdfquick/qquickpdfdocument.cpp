@@ -73,6 +73,11 @@ QQuickPdfDocument::QQuickPdfDocument(QObject *parent)
     connect(&m_doc, &QPdfDocument::pageCountChanged, this, &QQuickPdfDocument::pageCountChanged);
 }
 
+/*!
+    \internal
+*/
+QQuickPdfDocument::~QQuickPdfDocument() = default;
+
 void QQuickPdfDocument::componentComplete()
 {
     if (m_doc.error() == QPdfDocument::IncorrectPasswordError)

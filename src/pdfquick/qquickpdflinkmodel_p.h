@@ -67,6 +67,7 @@ class Q_PDFQUICK_EXPORT QQuickPdfLinkModel : public QPdfLinkModel
 
 public:
     explicit QQuickPdfLinkModel(QObject *parent = nullptr);
+    ~QQuickPdfLinkModel() override;
 
     QQuickPdfDocument *document() const;
     void setDocument(QQuickPdfDocument *document);

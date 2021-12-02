@@ -63,6 +63,11 @@ QQuickPdfNavigationStack::QQuickPdfNavigationStack(QObject *parent)
 }
 
 /*!
+    \internal
+*/
+QQuickPdfNavigationStack::~QQuickPdfNavigationStack() = default;
+
+/*!
     \qmlmethod void PdfNavigationStack::forward()
 
     Goes back to the page, location and zoom level that was being viewed before

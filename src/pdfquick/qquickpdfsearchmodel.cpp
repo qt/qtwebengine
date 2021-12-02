@@ -63,6 +63,11 @@ QQuickPdfSearchModel::QQuickPdfSearchModel(QObject *parent)
             this, &QQuickPdfSearchModel::onResultsChanged);
 }
 
+/*!
+    \internal
+*/
+QQuickPdfSearchModel::~QQuickPdfSearchModel() = default;
+
 QQuickPdfDocument *QQuickPdfSearchModel::document() const
 {
     return m_quickDocument;

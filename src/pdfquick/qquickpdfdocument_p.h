@@ -83,6 +83,7 @@ class Q_PDFQUICK_EXPORT QQuickPdfDocument : public QObject, public QQmlParserSta
 
 public:
     explicit QQuickPdfDocument(QObject *parent = nullptr);
+    ~QQuickPdfDocument() override;
 
     void classBegin() override {}
     void componentComplete() override;

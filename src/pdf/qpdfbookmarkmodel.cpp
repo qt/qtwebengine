@@ -227,6 +227,8 @@ QPdfBookmarkModel::QPdfBookmarkModel(QObject *parent)
 {
 }
 
+QPdfBookmarkModel::~QPdfBookmarkModel() = default;
+
 QPdfDocument* QPdfBookmarkModel::document() const
 {
     Q_D(const QPdfBookmarkModel);

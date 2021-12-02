@@ -86,6 +86,11 @@ QQuickPdfSelection::QQuickPdfSelection(QQuickItem *parent)
 #endif
 }
 
+/*!
+    \internal
+*/
+QQuickPdfSelection::~QQuickPdfSelection() = default;
+
 QQuickPdfDocument *QQuickPdfSelection::document() const
 {
     return m_document;
