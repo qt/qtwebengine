@@ -53,7 +53,7 @@
 namespace QtWebEngineCore {
 
 WebEnginePageRenderFrame::WebEnginePageRenderFrame(content::RenderFrame *render_frame)
-    : content::RenderFrameObserver(render_frame), m_binding(this), m_needsLayout(false)
+    : content::RenderFrameObserver(render_frame), m_binding(this), m_ready(false)
 {
     render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
             base::BindRepeating(&WebEnginePageRenderFrame::BindReceiver, base::Unretained(this)));
@@ -70,8 +70,10 @@ void WebEnginePageRenderFrame::FetchDocumentMarkup(uint64_t requestId,
 {
     blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
     blink::WebString markup;
-    if (!m_needsLayout)
+    if (m_ready)
         markup = blink::WebFrameContentDumper::DumpAsMarkup(frame);
+    else
+        markup = blink::WebString::FromUTF8("<html><head></head><body></body></html>");
     std::move(callback).Run(requestId, markup.Utf8());
 }
 
@@ -80,9 +82,10 @@ void WebEnginePageRenderFrame::FetchDocumentInnerText(uint64_t requestId,
 {
     blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
     blink::WebString text;
-    if (!m_needsLayout)
+    if (m_ready) {
         text = blink::WebFrameContentDumper::DumpFrameTreeAsText(
                 frame, std::numeric_limits<int32_t>::max());
+    }
     std::move(callback).Run(requestId, text.Utf8());
 }
 
@@ -96,25 +99,8 @@ void WebEnginePageRenderFrame::OnDestruct()
     delete this;
 }
 
-void WebEnginePageRenderFrame::DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type)
+void WebEnginePageRenderFrame::DidFinishLoad()
 {
-    switch (layout_type) {
-    case blink::WebMeaningfulLayout::kFinishedParsing:
-    case blink::WebMeaningfulLayout::kFinishedLoading:
-        m_needsLayout = false;
-        break;
-    default:
-        break;
-    }
-}
-
-void WebEnginePageRenderFrame::WasShown()
-{
-    m_needsLayout = true;
-}
-
-void WebEnginePageRenderFrame::WasHidden()
-{
-    m_needsLayout = false;
+    m_ready = true;
 }
 }
