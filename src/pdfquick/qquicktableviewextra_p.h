@@ -67,7 +67,7 @@ class Q_PDFQUICK_EXPORT QQuickTableViewExtra : public QObject
     Q_PROPERTY(QQuickTableView *tableView READ tableView WRITE setTableView)
 
 public:
-    QQuickTableViewExtra(QObject *parent = nullptr);
+    explicit QQuickTableViewExtra(QObject *parent = nullptr);
     ~QQuickTableViewExtra() override;
 
     QQuickTableView * tableView() const { return m_tableView; }
