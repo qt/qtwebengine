@@ -80,6 +80,7 @@ protected:
 protected:
     QExplicitlySharedDataPointer<QPdfDestinationPrivate> d;
 };
+Q_DECLARE_SHARED(QPdfDestination)
 
 Q_PDF_EXPORT QDebug operator<<(QDebug, const QPdfDestination &);
 

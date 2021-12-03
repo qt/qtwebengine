@@ -88,6 +88,7 @@ private:
 private:
     QExplicitlySharedDataPointer<QPdfSelectionPrivate> d;
 };
+Q_DECLARE_SHARED(QPdfSelection)
 
 QT_END_NAMESPACE
 

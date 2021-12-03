@@ -71,6 +71,7 @@ private:
     friend class QPdfSearchModelPrivate;
     friend class QQuickPdfNavigationStack;
 };
+Q_DECLARE_SHARED(QPdfSearchResult)
 
 Q_PDF_EXPORT QDebug operator<<(QDebug, const QPdfSearchResult &);
 
