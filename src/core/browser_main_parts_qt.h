@@ -50,6 +50,10 @@ namespace content {
 class ServiceManagerConnection;
 }
 
+namespace device {
+class GeolocationSystemPermissionManager;
+}
+
 namespace performance_manager {
 class PerformanceManager;
 class PerformanceManagerRegistry;
@@ -72,10 +76,17 @@ public:
     int PreCreateThreads() override;
     void PostCreateThreads() override;
 
+#if defined(OS_MAC)
+    device::GeolocationSystemPermissionManager *GetLocationPermissionManager();
+#endif
+
 private:
     DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsQt);
     std::unique_ptr<performance_manager::PerformanceManager> performance_manager_;
     std::unique_ptr<performance_manager::PerformanceManagerRegistry> performance_manager_registry_;
+#if defined(OS_MAC)
+    std::unique_ptr<device::GeolocationSystemPermissionManager> m_locationPermissionManager;
+#endif
 };
 
 } // namespace QtWebEngineCore

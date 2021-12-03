@@ -58,7 +58,11 @@ class ResourceContext;
 class WebContents;
 struct MainFunctionParams;
 struct Referrer;
-}
+} // namespace content
+
+namespace device {
+class GeolocationSystemPermissionManager;
+} // namespace device
 
 namespace gl {
 class GLShareGroup;
@@ -66,6 +70,7 @@ class GLShareGroup;
 
 namespace QtWebEngineCore {
 
+class BrowserMainPartsQt;
 class ShareGroupQt;
 
 class ContentBrowserClientQt : public content::ContentBrowserClient
@@ -164,6 +169,8 @@ public:
 #if QT_CONFIG(webengine_geolocation)
     std::unique_ptr<device::LocationProvider> OverrideSystemLocationProvider() override;
 #endif
+    device::GeolocationSystemPermissionManager *GetLocationPermissionManager() override;
+
     bool ShouldIsolateErrorPage(bool in_main_frame) override;
     bool ShouldUseProcessPerSite(content::BrowserContext *browser_context, const GURL &effective_url) override;
     bool DoesSiteRequireDedicatedProcess(content::BrowserContext *browser_context,
@@ -262,6 +269,7 @@ public:
 
 private:
     scoped_refptr<ShareGroupQt> m_shareGroupQt;
+    BrowserMainPartsQt *m_browserMainParts = nullptr;
 };
 
 } // namespace QtWebEngineCore

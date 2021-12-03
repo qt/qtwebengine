@@ -73,6 +73,7 @@
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/client_cert_store.h"
+#include "services/device/public/cpp/geolocation/geolocation_system_permission_mac.h"
 #include "services/network/network_service.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -229,7 +230,10 @@ ContentBrowserClientQt::~ContentBrowserClientQt()
 
 std::unique_ptr<content::BrowserMainParts> ContentBrowserClientQt::CreateBrowserMainParts(const content::MainFunctionParams&)
 {
-    return std::make_unique<BrowserMainPartsQt>();
+    Q_ASSERT(!m_browserMainParts);
+    auto browserMainParts = std::make_unique<BrowserMainPartsQt>();
+    m_browserMainParts = browserMainParts.get();
+    return browserMainParts;
 }
 
 void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost *host)
@@ -593,6 +597,15 @@ std::unique_ptr<device::LocationProvider> ContentBrowserClientQt::OverrideSystem
     return base::WrapUnique(new LocationProviderQt());
 }
 #endif
+
+device::GeolocationSystemPermissionManager *ContentBrowserClientQt::GetLocationPermissionManager()
+{
+#if defined(OS_MAC)
+    return m_browserMainParts->GetLocationPermissionManager();
+#else
+    return nullptr;
+#endif
+}
 
 bool ContentBrowserClientQt::ShouldEnableStrictSiteIsolation()
 {
