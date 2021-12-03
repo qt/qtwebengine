@@ -6,7 +6,7 @@ dependencies:
     ref: c5dd6c524b464916fa8db9931024b91fc0e10b51
     required: false
   ../qttools:
-    ref: 61d6d6714ab1808df154b417484f994ff00711b1
+    ref: 4a38f3be9c06c42690cf39e3f89c44f1c279fed3
     required: false
   ../qtwebchannel:
     ref: 52f12fde4cdf0ddefa2eba60849f041c6f1d1c24
