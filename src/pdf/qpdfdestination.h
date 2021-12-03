@@ -50,27 +50,28 @@ QT_BEGIN_NAMESPACE
 
 class QPdfDestinationPrivate;
 
-class Q_PDF_EXPORT QPdfDestination
+class QPdfDestination
 {
-    Q_GADGET
+    Q_GADGET_EXPORT(Q_PDF_EXPORT)
     Q_PROPERTY(bool valid READ isValid)
     Q_PROPERTY(int page READ page)
     Q_PROPERTY(QPointF location READ location)
     Q_PROPERTY(qreal zoom READ zoom)
 
 public:
-    ~QPdfDestination();
-    QPdfDestination(const QPdfDestination &other);
-    QPdfDestination &operator=(const QPdfDestination &other);
+    Q_PDF_EXPORT ~QPdfDestination();
+    Q_PDF_EXPORT QPdfDestination(const QPdfDestination &other);
+    Q_PDF_EXPORT QPdfDestination &operator=(const QPdfDestination &other);
 
-    QPdfDestination(QPdfDestination &&other) noexcept;
+    Q_PDF_EXPORT QPdfDestination(QPdfDestination &&other) noexcept;
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QPdfDestination)
 
     void swap(QPdfDestination &other) noexcept { d.swap(other.d); }
-    bool isValid() const;
-    int page() const;
-    QPointF location() const;
-    qreal zoom() const;
+
+    Q_PDF_EXPORT bool isValid() const;
+    Q_PDF_EXPORT int page() const;
+    Q_PDF_EXPORT QPointF location() const;
+    Q_PDF_EXPORT qreal zoom() const;
 
 protected:
     QPdfDestination();

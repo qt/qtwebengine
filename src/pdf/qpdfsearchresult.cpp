@@ -56,6 +56,8 @@ QPdfSearchResult::QPdfSearchResult(int page, QList<QRectF> rects,
 QPdfSearchResult::QPdfSearchResult(QPdfSearchResultPrivate *d) :
     QPdfDestination(static_cast<QPdfDestinationPrivate *>(d)) { }
 
+QPdfSearchResult::~QPdfSearchResult() = default;
+
 QString QPdfSearchResult::contextBefore() const
 {
     return static_cast<QPdfSearchResultPrivate *>(d.data())->contextBefore;
