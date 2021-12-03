@@ -51,9 +51,9 @@ QT_BEGIN_NAMESPACE
 
 class QPdfSelectionPrivate;
 
-class Q_PDF_EXPORT QPdfSelection
+class QPdfSelection
 {
-    Q_GADGET
+    Q_GADGET_EXPORT(Q_PDF_EXPORT)
     Q_PROPERTY(bool valid READ isValid)
     Q_PROPERTY(QList<QPolygonF> bounds READ bounds)
     Q_PROPERTY(QRectF boundingRectangle READ boundingRectangle)
@@ -62,22 +62,23 @@ class Q_PDF_EXPORT QPdfSelection
     Q_PROPERTY(int endIndex READ endIndex)
 
 public:
-    ~QPdfSelection();
-    QPdfSelection(const QPdfSelection &other);
-    QPdfSelection &operator=(const QPdfSelection &other);
+    Q_PDF_EXPORT ~QPdfSelection();
+    Q_PDF_EXPORT QPdfSelection(const QPdfSelection &other);
+    Q_PDF_EXPORT QPdfSelection &operator=(const QPdfSelection &other);
 
-    QPdfSelection(QPdfSelection &&other) noexcept;
+    Q_PDF_EXPORT QPdfSelection(QPdfSelection &&other) noexcept;
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QPdfSelection)
 
     void swap(QPdfSelection &other) noexcept { d.swap(other.d); }
-    bool isValid() const;
-    QList<QPolygonF> bounds() const;
-    QString text() const;
-    QRectF boundingRectangle() const;
-    int startIndex() const;
-    int endIndex() const;
+
+    Q_PDF_EXPORT bool isValid() const;
+    Q_PDF_EXPORT QList<QPolygonF> bounds() const;
+    Q_PDF_EXPORT QString text() const;
+    Q_PDF_EXPORT QRectF boundingRectangle() const;
+    Q_PDF_EXPORT int startIndex() const;
+    Q_PDF_EXPORT int endIndex() const;
 #if QT_CONFIG(clipboard)
-    void copyToClipboard(QClipboard::Mode mode = QClipboard::Clipboard) const;
+    Q_PDF_EXPORT void copyToClipboard(QClipboard::Mode mode = QClipboard::Clipboard) const;
 #endif
 
 private:

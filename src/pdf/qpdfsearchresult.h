@@ -49,20 +49,20 @@ QT_BEGIN_NAMESPACE
 
 class QPdfSearchResultPrivate;
 
-class Q_PDF_EXPORT QPdfSearchResult : public QPdfDestination
+class QPdfSearchResult : public QPdfDestination
 {
-    Q_GADGET
+    Q_GADGET_EXPORT(Q_PDF_EXPORT)
     Q_PROPERTY(QString contextBefore READ contextBefore)
     Q_PROPERTY(QString contextAfter READ contextAfter)
     Q_PROPERTY(QList<QRectF> rectangles READ rectangles)
 
 public:
-    QPdfSearchResult();
-    ~QPdfSearchResult() {}
+    Q_PDF_EXPORT QPdfSearchResult();
+    Q_PDF_EXPORT ~QPdfSearchResult();
 
-    QString contextBefore() const;
-    QString contextAfter() const;
-    QList<QRectF> rectangles() const;
+    Q_PDF_EXPORT QString contextBefore() const;
+    Q_PDF_EXPORT QString contextAfter() const;
+    Q_PDF_EXPORT QList<QRectF> rectangles() const;
 
 private:
     QPdfSearchResult(int page, QList<QRectF> rects, QString contextBefore, QString contextAfter);
