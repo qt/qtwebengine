@@ -88,7 +88,7 @@
 
 #if defined(OS_MAC)
 #include "base/message_loop/message_pump_mac.h"
-#include "services/device/public/cpp/geolocation/geolocation_system_permission_mac.h"
+#include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #include "ui/base/idle/idle.h"
 #endif
 
@@ -228,14 +228,16 @@ private:
 };
 
 #if defined(OS_MAC)
-class FakeSystemGeolocationPermissionManager : public device::GeolocationSystemPermissionManager
+class FakeGeolocationManager : public device::GeolocationManager
 {
 public:
-    FakeSystemGeolocationPermissionManager() = default;
-    ~FakeSystemGeolocationPermissionManager() override = default;
+    FakeGeolocationManager() = default;
+    ~FakeGeolocationManager() override = default;
 
-    // GeolocationSystemPermissionManager implementation:
-    device::LocationSystemPermissionStatus GetSystemPermission() override
+    // GeolocationManager implementation:
+    void StartWatchingPosition(bool) override {}
+    void StopWatchingPosition() override {}
+    device::LocationSystemPermissionStatus GetSystemPermission() const override
     {
         return device::LocationSystemPermissionStatus::kDenied;
     }
@@ -267,7 +269,7 @@ int BrowserMainPartsQt::PreEarlyInitialization()
 void BrowserMainPartsQt::PreCreateMainMessageLoop()
 {
 #if defined(OS_MAC)
-    m_locationPermissionManager = std::make_unique<FakeSystemGeolocationPermissionManager>();
+    m_geolocationManager = std::make_unique<FakeGeolocationManager>();
 #endif
 }
 
@@ -344,9 +346,9 @@ void BrowserMainPartsQt::PostCreateThreads()
 }
 
 #if defined(OS_MAC)
-device::GeolocationSystemPermissionManager *BrowserMainPartsQt::GetLocationPermissionManager()
+device::GeolocationManager *BrowserMainPartsQt::GetGeolocationManager()
 {
-    return m_locationPermissionManager.get();
+    return m_geolocationManager.get();
 }
 #endif
 

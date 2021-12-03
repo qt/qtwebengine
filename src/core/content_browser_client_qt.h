@@ -61,7 +61,7 @@ struct Referrer;
 } // namespace content
 
 namespace device {
-class GeolocationSystemPermissionManager;
+class GeolocationManager;
 } // namespace device
 
 namespace gl {
@@ -172,7 +172,7 @@ public:
 #if QT_CONFIG(webengine_geolocation)
     std::unique_ptr<device::LocationProvider> OverrideSystemLocationProvider() override;
 #endif
-    device::GeolocationSystemPermissionManager *GetLocationPermissionManager() override;
+    device::GeolocationManager *GetGeolocationManager() override;
 
     bool ShouldIsolateErrorPage(bool in_main_frame) override;
     bool ShouldUseProcessPerSite(content::BrowserContext *browser_context, const GURL &effective_url) override;

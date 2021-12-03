@@ -72,7 +72,7 @@
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/client_cert_store.h"
-#include "services/device/public/cpp/geolocation/geolocation_system_permission_mac.h"
+#include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #include "services/network/network_service.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -592,10 +592,10 @@ std::unique_ptr<device::LocationProvider> ContentBrowserClientQt::OverrideSystem
 }
 #endif
 
-device::GeolocationSystemPermissionManager *ContentBrowserClientQt::GetLocationPermissionManager()
+device::GeolocationManager *ContentBrowserClientQt::GetGeolocationManager()
 {
 #if defined(OS_MAC)
-    return m_browserMainParts->GetLocationPermissionManager();
+    return m_browserMainParts->GetGeolocationManager();
 #else
     return nullptr;
 #endif
