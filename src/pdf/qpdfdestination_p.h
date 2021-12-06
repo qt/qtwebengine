@@ -51,6 +51,8 @@
 // We mean it.
 //
 
+#include "qpdfdestination.h"
+
 #include <QPointF>
 
 QT_BEGIN_NAMESPACE

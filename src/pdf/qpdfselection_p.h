@@ -51,6 +51,8 @@
 // We mean it.
 //
 
+#include "qpdfselection.h"
+
 #include <QList>
 #include <QPolygonF>
 

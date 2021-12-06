@@ -51,6 +51,8 @@
 // We mean it.
 //
 
+#include "qpdfsearchresult.h"
+
 #include "qpdfdestination_p.h"
 
 QT_BEGIN_NAMESPACE
