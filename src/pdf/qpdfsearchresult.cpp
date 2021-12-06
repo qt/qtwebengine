@@ -45,8 +45,13 @@ QT_BEGIN_NAMESPACE
 QPdfSearchResult::QPdfSearchResult() :
     QPdfSearchResult(new QPdfSearchResultPrivate()) { }
 
-QPdfSearchResult::QPdfSearchResult(int page, QList<QRectF> rects, QString contextBefore, QString contextAfter) :
-    QPdfSearchResult(new QPdfSearchResultPrivate(page, rects, contextBefore, contextAfter)) { }
+QPdfSearchResult::QPdfSearchResult(int page, QList<QRectF> rects,
+                                   QString contextBefore, QString contextAfter)
+    : QPdfSearchResult(new QPdfSearchResultPrivate(page, std::move(rects),
+                                                   std::move(contextBefore),
+                                                   std::move(contextAfter)))
+{
+}
 
 QPdfSearchResult::QPdfSearchResult(QPdfSearchResultPrivate *d) :
     QPdfDestination(static_cast<QPdfDestinationPrivate *>(d)) { }

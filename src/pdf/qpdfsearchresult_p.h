@@ -63,9 +63,9 @@ public:
     QPdfSearchResultPrivate() = default;
     QPdfSearchResultPrivate(int page, QList<QRectF> rects, QString contextBefore, QString contextAfter) :
         QPdfDestinationPrivate(page, rects.first().topLeft(), 0),
-        contextBefore(contextBefore),
-        contextAfter(contextAfter),
-        rects(rects) {}
+        contextBefore{std::move(contextBefore)},
+        contextAfter{std::move(contextAfter)},
+        rects{std::move(rects)} {}
 
     QString contextBefore;
     QString contextAfter;
