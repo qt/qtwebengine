@@ -1090,8 +1090,6 @@
     Also if the audio is paused, this signal is emitted with an approximate \b{two-second
     delay}, from the moment the audio is paused.
 
-    This signal is also emitted for Flash plugin audio.
-
     If a web page contains two videos that are started in sequence, this signal
     gets emitted only once, for the first video to generate sound. After both
     videos are stopped, the signal is emitted upon the last sound generated.
@@ -1167,8 +1165,6 @@
     \a wasRecentlyAudible, is changed, due to audio being played or stopped.
 
     \note The signal is also emitted when calling the setAudioMuted method.
-    Also if the audio is paused, this signal is emitted with an approximate \b{2 second
-    delay}, from the moment the audio is paused.
 */
 
 /*!

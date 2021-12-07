@@ -833,8 +833,6 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
     the audio is played or stopped.
 
     \note The signal is also emitted when calling the setAudioMuted() method.
-    Also, if the audio is paused, this signal is emitted with an approximate \b{two-second
-    delay}, from the moment the audio is paused.
 */
 
 /*!
