@@ -7,7 +7,10 @@ if(QT_CONFIGURE_RUNNING)
 else()
     find_package(Ninja 1.7.2)
     find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT)
-    find_package(Python3 3.6)
+    find_program(Python3_EXECUTABLE NAMES python3 HINTS $ENV{PYTHON3_PATH})
+    if(NOT Python3_EXECUTABLE)
+        find_package(Python3 3.6)
+    endif()
     find_package(GPerf)
     find_package(BISON)
     find_package(FLEX)
@@ -48,7 +51,7 @@ if(PkgConfig_FOUND)
     pkg_check_modules(LIBPCI libpci)
 endif()
 
-if(Python3_FOUND)
+if(Python3_EXECUTABLE)
     execute_process(
         COMMAND ${Python3_EXECUTABLE} -c "import html5lib"
         RESULT_VARIABLE html5lib_NOT_FOUND
@@ -392,12 +395,12 @@ add_check_for_support(
 )
 add_check_for_support(
    MODULES QtWebEngine QtPdf
-   CONDITION Python3_FOUND
+   CONDITION Python3_EXECUTABLE
    MESSAGE "Python version 3.6 or later is required."
 )
 add_check_for_support(
    MODULES QtWebEngine QtPdf
-   CONDITION Python3_FOUND AND NOT html5lib_NOT_FOUND
+   CONDITION Python3_EXECUTABLE AND NOT html5lib_NOT_FOUND
    MESSAGE "Python3 html5lib is missing."
 )
 add_check_for_support(
