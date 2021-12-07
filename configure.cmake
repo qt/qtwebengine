@@ -7,7 +7,7 @@ if(QT_CONFIGURE_RUNNING)
 else()
     find_package(Ninja 1.7.2)
     find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT)
-    find_package(Python3 3.7)
+    find_package(Python3 3.6)
     find_package(GPerf)
     find_package(BISON)
     find_package(FLEX)
@@ -393,7 +393,7 @@ add_check_for_support(
 add_check_for_support(
    MODULES QtWebEngine QtPdf
    CONDITION Python3_FOUND
-   MESSAGE "Python version 3.7 or later is required."
+   MESSAGE "Python version 3.6 or later is required."
 )
 add_check_for_support(
    MODULES QtWebEngine QtPdf
