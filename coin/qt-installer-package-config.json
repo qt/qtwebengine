@@ -2,16 +2,19 @@
     "version": "1",
     "module-split": {
         "qtpdf": [
+            "**/bin/*Pdf*",
             "**/include/*QtPdf*/**/*",
-            "**/lib/cmake/Qt5Gui/*",
-            "**/lib/cmake/Qt5Pdf/*",
-            "**/lib/cmake/Qt5PdfWidgets/*",
-            "**/lib/pkgconfig/Qt5Pdf*",
-            "**/lib/libQt5Pdf*",
+            "**/lib/cmake/Qt*Gui/*Pdf*",
+            "**/lib/cmake/Qt*Pdf*/*",
+            "**/lib/cmake/Qt*Qml/QmlPlugins/*pdf*",
+            "**/lib/metatypes/*pdf*",
+            "**/lib/pkgconfig/*Pdf*",
+            "**/lib/*Pdf*",
             "**/lib/static_chrome/*",
-            "**/lib/QtPdf.framework/*",
+            "**/lib/QtPdf*.framework/**",
             "**/mkspecs/modules/qt_lib_pdf*",
             "**/mkspecs/modules/qt_plugin_qpdf.pri",
+            "**/modules/Pdf*",
             "**/plugins/imageformats/*",
             "**/qml/QtQuick/**/*"
         ]
