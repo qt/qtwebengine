@@ -778,6 +778,8 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);
     }
 
+    logContext(glType, parsedCommandLine);
+
     registerMainThreadFactories();
 
     content::ContentMainParams contentMainParams(m_mainDelegate.get());
@@ -859,8 +861,6 @@ WebEngineContext::WebEngineContext()
 #endif
 
     content::WebUIControllerFactory::RegisterFactory(WebUIControllerFactoryQt::GetInstance());
-
-    logContext(glType, parsedCommandLine);
 }
 
 #if QT_CONFIG(webengine_printing_and_pdf)
