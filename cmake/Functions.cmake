@@ -780,8 +780,8 @@ macro(append_compiler_linker_sdk_setup)
     endif()
 
     if(WIN32)
-        get_filename_component(windowsSdkPath $ENV{WINDOWSSDKDIR} DIRECTORY)
-        get_filename_component(visualStudioPath $ENV{VSINSTALLDIR} DIRECTORY)
+        get_filename_component(windowsSdkPath $ENV{WINDOWSSDKDIR} ABSOLUTE)
+        get_filename_component(visualStudioPath $ENV{VSINSTALLDIR} ABSOLUTE)
         list(APPEND gnArgArg
             win_linker_timing=true
             use_incremental_linking=false
