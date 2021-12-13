@@ -119,8 +119,8 @@ foreach(arch ${archs})
                 net/client_cert_store_data.cpp net/client_cert_store_data.h
                 net/cookie_monster_delegate_qt.cpp net/cookie_monster_delegate_qt.h
                 net/custom_url_loader_factory.cpp net/custom_url_loader_factory.h
-                net/proxy_config_monitor.cpp
-                net/proxy_config_service_qt.cpp
+                net/proxy_config_monitor.cpp net/proxy_config_monitor.h
+                net/proxy_config_service_qt.cpp net/proxy_config_service_qt.h
                 net/proxying_restricted_cookie_manager_qt.cpp net/proxying_restricted_cookie_manager_qt.h
                 net/proxying_url_loader_factory_qt.cpp net/proxying_url_loader_factory_qt.h
                 net/qrc_url_scheme_handler.cpp net/qrc_url_scheme_handler.h
@@ -145,8 +145,6 @@ foreach(arch ${archs})
                 profile_adapter_client.cpp profile_adapter_client.h
                 profile_io_data_qt.cpp profile_io_data_qt.h
                 profile_qt.cpp profile_qt.h
-                proxy_config_monitor.h
-                proxy_config_service_qt.h
                 quota_permission_context_qt.cpp quota_permission_context_qt.h
                 quota_request_controller.h
                 quota_request_controller_impl.cpp quota_request_controller_impl.h
