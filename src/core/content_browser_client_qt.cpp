@@ -157,6 +157,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/url_loader_factory_manager.h"
+#include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/extension_web_contents_observer_qt.h"
@@ -1094,9 +1095,14 @@ void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int
     if (web_contents)
         url = web_contents->GetVisibleURL();
 
+    bool is_background_page = false;
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    is_background_page = extensions::GetViewType(web_contents) == extensions::mojom::ViewType::kExtensionBackgroundPage;
+#endif // BUILDFLAG(ENABLE_EXTENSIONS)
+
     // Install file scheme if necessary:
     bool install_file_scheme = false;
-    if (web_contents) {
+    if (web_contents && !is_background_page) {
         const auto *settings = static_cast<WebContentsDelegateQt *>(web_contents->GetResponsibleWebContents()->GetDelegate())->webEngineSettings();
         if (settings->testAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls)) {
             for (const auto &local_scheme : url::GetLocalSchemes()) {
