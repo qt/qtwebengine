@@ -69,12 +69,23 @@ private slots:
     void status();
     void passwordClearedOnClose();
     void metaData();
+
+private:
+    void consistencyCheck(QPdfDocument &doc) const;
 };
 
 struct TemporaryPdf: public QTemporaryFile
 {
     TemporaryPdf();
     QPageLayout pageLayout;
+
+    static QString pageText(int page) {
+        switch (page) {
+        case 0: return QStringLiteral("Hello Page 1");
+        case 1: return QStringLiteral("Hello Page 2");
+        default: return {};
+        }
+    }
 };
 
 
@@ -91,9 +102,9 @@ TemporaryPdf::TemporaryPdf()
 
         {
             QPainter painter(&printer);
-            painter.drawText(100, 100, QStringLiteral("Hello Page 1"));
+            painter.drawText(100, 100, pageText(0));
             printer.newPage();
-            painter.drawText(100, 100, QStringLiteral("Hello Page 2"));
+            painter.drawText(100, 100, pageText(1));
         }
     }
 
@@ -130,6 +141,19 @@ void tst_QPdfDocument::loadFromIODevice()
     QCOMPARE(doc.pageCount(), 2);
     QCOMPARE(pageCountChangedSpy.count(), 1);
     QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
+
+    consistencyCheck(doc);
+}
+
+void tst_QPdfDocument::consistencyCheck(QPdfDocument &doc) const
+{
+    for (int i = 0; i < doc.pageCount(); ++i) {
+        const QString expected = TemporaryPdf::pageText(i);
+        QPdfSelection page = doc.getAllText(i);
+        QCOMPARE(page.text(), expected);
+        auto pageMoved = std::move(page);
+        QCOMPARE(pageMoved.text(), expected);
+    }
 }
 
 void tst_QPdfDocument::loadAsync()
@@ -153,6 +177,8 @@ void tst_QPdfDocument::loadAsync()
     QCOMPARE(doc.pageCount(), 2);
     QCOMPARE(pageCountChangedSpy.count(), 1);
     QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
+
+    consistencyCheck(doc);
 }
 
 void tst_QPdfDocument::password()
@@ -191,6 +217,10 @@ void tst_QPdfDocument::close()
 
     statusChangedSpy.clear();
     pageCountChangedSpy.clear();
+
+    consistencyCheck(doc);
+    if (QTest::currentTestFailed())
+        return;
 
     doc.close();
     QCOMPARE(statusChangedSpy.count(), 2);
@@ -235,6 +265,8 @@ void tst_QPdfDocument::loadAfterClose()
     QCOMPARE(doc.pageCount(), 2);
     QCOMPARE(pageCountChangedSpy.count(), 1);
     QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
+
+    consistencyCheck(doc);
 }
 
 void tst_QPdfDocument::closeOnDestroy()
