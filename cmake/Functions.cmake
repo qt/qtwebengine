@@ -86,17 +86,31 @@ function(create_cxx_config cmakeTarget arch configFileName)
         endif()
     endif()
     file(GENERATE
-          OUTPUT $<CONFIG>/${arch}/${configFileName}
-          CONTENT "\
-              set(GN_INCLUDES \"$<TARGET_PROPERTY:INCLUDE_DIRECTORIES>\")\n\
-              set(GN_DEFINES \"$<TARGET_PROPERTY:COMPILE_DEFINITIONS>\")\n\
-              set(GN_LINK_OPTIONS \"$<TARGET_PROPERTY:LINK_OPTIONS>\")\n\
-              set(GN_CXX_COMPILE_OPTIONS \"$<TARGET_PROPERTY:COMPILE_OPTIONS>\")\n\
-              set(GN_MOC_PATH \"${mocFilePath}\")"
-#             set(GN_LIBS $<TARGET_PROPERTY:LINK_LIBRARIES>)
-          CONDITION $<COMPILE_LANGUAGE:CXX>
-          TARGET ${cmakeTarget}
-     )
+        OUTPUT $<CONFIG>/${arch}/${configFileName}
+        CONTENT "\
+            set(GN_INCLUDES \"$<TARGET_PROPERTY:INCLUDE_DIRECTORIES>\")\n\
+            set(GN_DEFINES \"$<TARGET_PROPERTY:COMPILE_DEFINITIONS>\")\n\
+            set(GN_LINK_OPTIONS \"$<TARGET_PROPERTY:LINK_OPTIONS>\")\n\
+            set(GN_CXX_COMPILE_OPTIONS \"$<TARGET_PROPERTY:COMPILE_OPTIONS>\")\n\
+            set(GN_MOC_PATH \"${mocFilePath}\")"
+#           set(GN_LIBS $<TARGET_PROPERTY:LINK_LIBRARIES>)
+        CONDITION $<COMPILE_LANGUAGE:CXX>
+        TARGET ${cmakeTarget}
+    )
+endfunction()
+
+function(create_static_config cmakeTarget arch configFileName)
+    list(APPEND libs Png Jpeg Harfbuzz Freetype Zlib)
+    foreach(lib IN LISTS libs)
+        string(TOUPPER ${lib} out)
+        set(lib Qt::${lib}Private)
+        list(APPEND contents "set(GN_${out}_INCLUDES \"$<$<STREQUAL:$<TARGET_NAME_IF_EXISTS:${lib}>,${lib}>:$<TARGET_PROPERTY:${lib},INTERFACE_INCLUDE_DIRECTORIES>>\")")
+    endforeach()
+    list(JOIN contents "\n" contents)
+    file(GENERATE
+        OUTPUT $<CONFIG>/${arch}/${configFileName}
+        CONTENT "${contents}"
+    )
 endfunction()
 
 function(create_c_config cmakeTarget arch configFileName)
@@ -246,15 +260,21 @@ function(configure_gn_target sourceDir inFilePath outFilePath)
     # GN_SOURCE_ROOT
     get_filename_component(GN_SOURCE_ROOT "${sourceDir}" REALPATH)
 
-    # GN_RSP_PREFIX
-    get_property(GN_RSP_PREFIX DIRECTORY PROPERTY GN_RSP_PREFIX)
-
     if(APPLE) # this runs in scrpit mode without qt-cmake so on MACOS here
         recoverFrameworkBuild(GN_INCLUDE_DIRS GN_CFLAGS_C)
     endif()
 
+    # Static setup
+    set(libs PNG JPEG FREETYPE HARFBUZZ ZLIB)
+    foreach(lib ${libs})
+        get_property(staticIncludes DIRECTORY PROPERTY GN_${lib}_INCLUDES)
+        foreach(is ${staticIncludes})
+            list(APPEND GN_${lib}_INCLUDES \"${is}\")
+        endforeach()
+    endforeach()
     foreach(item GN_HEADERS GN_SOURCES GN_ARGS_DEFINES GN_DEFINES GN_ARGS_INCLUDES
-        GN_INCLUDE_DIRS GN_CFLAGS_CC GN_CFLAGS_C)
+        GN_INCLUDE_DIRS GN_CFLAGS_CC GN_CFLAGS_C GN_PNG_INCLUDES GN_JPEG_INCLUDES
+        GN_FREETYPE_INCLUDES GN_HARFBUZZ_INCLUDES GN_ZLIB_INCLUDES)
         string(REPLACE ";" ",\n  " ${item} "${${item}}")
     endforeach()
     configure_file(${inFilePath} ${outFilePath} @ONLY)
@@ -397,16 +417,17 @@ function(extend_cmake_target target buildDir completeStatic)
     set(objects_rsp "${buildDir}/${ninjaTarget}_objects.rsp")
     set(archives_rsp "${buildDir}/${ninjaTarget}_archives.rsp")
     set(libs_rsp "${buildDir}/${ninjaTarget}_libs.rsp")
+    set_target_properties(${cmakeTarget} PROPERTIES STATIC_LIBRARY_OPTIONS "@${objects_rsp}")
     if(LINUX)
          target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${objects_rsp}>")
          if(NOT completeStatic)
              target_link_libraries(${cmakeTarget} PRIVATE
-                 "-Wl,--start-group $<$<CONFIG:${config}>:@${archives_rsp}> -Wl,--end-group"
+                 "$<1:-Wl,--start-group $<$<CONFIG:${config}>:@${archives_rsp}> -Wl,--end-group>"
              )
          endif()
          # linker here options are just to prevent processing it by cmake
          target_link_libraries(${cmakeTarget} PRIVATE
-             "-Wl,--no-fatal-warnings $<$<CONFIG:${config}>:@${libs_rsp}> -Wl,--no-fatal-warnings"
+             "$<1:-Wl,--no-fatal-warnings $<$<CONFIG:${config}>:@${libs_rsp}> -Wl,--no-fatal-warnings>"
          )
 
     endif()
@@ -1070,10 +1091,11 @@ function(add_gn_build_aritfacts_to_target cmakeTarget ninjaTarget module buildDi
     endforeach()
 endfunction()
 
-function(get_config_filenames c_config cxx_config target_config)
+function(get_config_filenames c_config cxx_config static_config target_config)
     set(${target_config} gn_config_target.cmake PARENT_SCOPE)
     set(${cxx_config} gn_config_cxx.cmake PARENT_SCOPE)
     set(${c_config} gn_config_c.cmake PARENT_SCOPE)
+    set(${static_config} gn_static.cmake PARENT_SCOPE)
 endfunction()
 
 function(add_gn_command)
@@ -1081,7 +1103,7 @@ function(add_gn_command)
         "" "CMAKE_TARGET;GN_TARGET;MODULE;BUILDDIR" "NINJA_TARGETS;GN_ARGS" "${ARGN}"
     )
 
-    get_config_filenames(cConfigFileName cxxConfigFileName targetConfigFileName)
+    get_config_filenames(cConfigFileName cxxConfigFileName staticConfigFileName targetConfigFileName)
     set(gnArgArgFile ${arg_BUILDDIR}/args.gn)
 
     list(JOIN arg_GN_ARGS "\n" arg_GN_ARGS)
@@ -1123,9 +1145,10 @@ function(add_gn_command)
 endfunction()
 
 function(create_cxx_configs cmakeTarget arch)
-    get_config_filenames(cConfigFileName cxxConfigFileName targetConfigFileName)
+    get_config_filenames(cConfigFileName cxxConfigFileName staticConfigFileName targetConfigFileName)
     create_c_config(${cmakeTarget} ${arch} ${cConfigFileName})
     create_cxx_config(${cmakeTarget} ${arch} ${cxxConfigFileName})
+    create_static_config(${cmakeTarget} ${arch} ${staticConfigFileName})
 endfunction()
 
 # targets to gather per config / architecture targets

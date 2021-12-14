@@ -67,7 +67,6 @@ addSyncTargets(pdf)
 
 get_configs(configs)
 get_architectures(archs)
-
 foreach(arch ${archs})
     foreach(config ${configs})
 
@@ -77,7 +76,9 @@ foreach(arch ${archs})
 
         set(buildGn pdf_${config}_${arch})
         add_gn_target(${buildGn} ${config} ${arch}
-            SOURCES DEFINES CXX_COMPILE_OPTIONS C_COMPILE_OPTIONS INCLUDES MOC_PATH
+            SOURCES DEFINES CXX_COMPILE_OPTIONS C_COMPILE_OPTIONS
+            INCLUDES MOC_PATH PNG_INCLUDES JPEG_INCLUDES HARFBUZZ_INCLUDES
+            FREETYPE_INCLUDES ZLIB_INCLUDES
         )
         resolve_target_includes(gnIncludes Pdf)
         get_forward_declaration_macro(forwardDeclarationMacro)
@@ -100,6 +101,11 @@ foreach(arch ${archs})
 
         list(APPEND gnArgArg
           qtwebengine_target="${buildDir}/${config}/${arch}:QtPdf"
+          qt_libpng_config="${buildDir}/${config}/${arch}:qt_libpng_config"
+          qt_libjpeg_config="${buildDir}/${config}/${arch}:qt_libjpeg_config"
+          qt_harfbuzz_config="${buildDir}/${config}/${arch}:qt_harfbuzz_config"
+          qt_freetype_config="${buildDir}/${config}/${arch}:qt_freetype_config"
+          enable_ipc_fuzzer=false
           enable_remoting=false
           enable_resource_allowlist_generation=false
           enable_web_speech=false
@@ -146,6 +152,22 @@ foreach(arch ${archs})
         extend_gn_list(gnArgArg
             ARGS pdf_enable_xfa_tiff
             CONDITION QT_FEATURE_pdf_xfa_tiff
+        )
+        extend_gn_list(gnArgArg
+            ARGS pdfium_use_qt_libpng
+            CONDITION QT_FEATURE_webengine_qt_libpng
+        )
+        extend_gn_list(gnArgArg
+            ARGS use_qt_libjpeg
+            CONDITION QT_FEATURE_webengine_qt_libjpeg
+        )
+        extend_gn_list(gnArgArg
+            ARGS use_qt_harfbuzz
+            CONDITION QT_FEATURE_webengine_qt_harfbuzz
+        )
+        extend_gn_list(gnArgArg
+            ARGS use_qt_freetype
+            CONDITION QT_FEATURE_webengine_qt_freetype
         )
 
         add_gn_command(
