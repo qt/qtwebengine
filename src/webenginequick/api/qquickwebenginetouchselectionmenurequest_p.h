@@ -79,13 +79,13 @@ public:
     Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted FINAL)
     Q_PROPERTY(QRect selectionBounds READ selectionBounds CONSTANT FINAL REVISION(1))
     Q_PROPERTY(TouchSelectionCommandFlags touchSelectionCommandFlags READ touchSelectionCommandFlags CONSTANT FINAL REVISION(1))
-    QML_NAMED_ELEMENT(QQuickWebEngineTouchSelectionMenuRequest)
+    QML_NAMED_ELEMENT(TouchSelectionMenuRequest)
     QML_ADDED_IN_VERSION(6, 3)
     QML_UNCREATABLE("")
 
     QQuickWebEngineTouchSelectionMenuRequest(QRect bounds,
                                              QtWebEngineCore::TouchSelectionMenuController *touchSelectionMenuController);
-    virtual ~QQuickWebEngineTouchSelectionMenuRequest();
+    ~QQuickWebEngineTouchSelectionMenuRequest();
 
     int buttonCount();
     bool isAccepted() const;
