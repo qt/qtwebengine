@@ -1473,3 +1473,19 @@
 
     \sa renderProcessPid
 */
+
+/*!
+    \qmlsignal WebEngineView::touchSelectionMenuRequested(TouchSelectionMenuRequest *request)
+    \since QtWebEngine 6.3
+    \readonly
+
+    This signal is emitted when a touch selection menu is requested at a specified position.
+
+    The \a request can be handled by using the methods of the TouchSelectionMenuRequest
+    type.
+
+    \note Signal handlers need to call \c{request.accepted = true} to prevent a default touch
+    selection menu from showing up.
+
+    \sa TouchSelectionMenuRequest
+*/

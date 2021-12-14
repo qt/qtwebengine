@@ -90,7 +90,9 @@ QQuickWebEngineTouchSelectionMenuRequestPrivate::QQuickWebEngineTouchSelectionMe
 /*!
     Destroys the touch selection menu request.
 */
-QQuickWebEngineTouchSelectionMenuRequest::~QQuickWebEngineTouchSelectionMenuRequest() = default;
+QQuickWebEngineTouchSelectionMenuRequest::~QQuickWebEngineTouchSelectionMenuRequest()
+{
+}
 
 /*!
     Returns the number of buttons that must be displayed, based on the available actions.
