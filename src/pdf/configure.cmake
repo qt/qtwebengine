@@ -1,7 +1,6 @@
 qt_feature("pdf-v8" PRIVATE
     LABEL "Support V8"
     PURPOSE "Enables javascript support."
-    AUTODETECT false
     CONDITION NOT IOS
 )
 qt_feature("pdf-xfa" PRIVATE

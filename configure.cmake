@@ -305,6 +305,12 @@ qt_feature("webengine-system-zlib" PRIVATE
     LABEL "zlib"
     CONDITION UNIX AND QT_FEATURE_system_zlib AND ZLIB_FOUND
 )
+qt_feature("webengine-qt-zlib" PRIVATE
+    LABEL "qtzlib"
+    CONDITION QT_FEATURE_static
+        AND TARGET Qt::Gui
+        AND NOT QT_FEATURE_system_zlib
+)
 qt_feature("webengine-system-minizip" PRIVATE
     LABEL "minizip"
     CONDITION UNIX AND MINIZIP_FOUND
@@ -326,17 +332,46 @@ qt_feature("webengine-system-libpng" PRIVATE
     LABEL "png"
     CONDITION UNIX AND TARGET Qt::Gui AND PNG_FOUND AND QT_FEATURE_system_png
 )
+qt_feature("webengine-qt-libpng" PRIVATE
+    LABEL "qtpng"
+    CONDITION QT_FEATURE_static
+        AND TARGET Qt::Gui
+        AND QT_FEATURE_png
+        AND NOT QT_FEATURE_system_png
+)
 qt_feature("webengine-system-libjpeg" PRIVATE
     LABEL "jpeg"
     CONDITION UNIX AND TARGET Qt::Gui AND TEST_jpeg AND QT_FEATURE_system_jpeg
+)
+qt_feature("webengine-qt-libjpeg" PRIVATE
+    LABEL "qtjpeg"
+    CONDITION QT_FEATURE_static
+        AND TARGET Qt::Gui
+        AND QT_FEATURE_jpeg
+        AND NOT QT_FEATURE_system_jpeg
+        AND FALSE # FIXME requires qtbase dep update
 )
 qt_feature("webengine-system-harfbuzz" PRIVATE
     LABEL "harfbuzz"
     CONDITION UNIX AND TARGET Qt::Gui AND HARFBUZZ_FOUND AND QT_FEATURE_system_harfbuzz
 )
+qt_feature("webengine-qt-harfbuzz" PRIVATE
+    LABEL "qtpng"
+    CONDITION QT_FEATURE_static
+        AND TARGET Qt::Gui
+        AND QT_FEATURE_harfbuzz
+        AND NOT QT_FEATURE_system_harfbuzz
+)
 qt_feature("webengine-system-freetype" PRIVATE
     LABEL "freetype"
     CONDITION UNIX AND TARGET Qt::Gui AND TEST_freetype AND QT_FEATURE_system_freetype
+)
+qt_feature("webengine-qt-freetype" PRIVATE
+    LABEL "qtfreetype"
+    CONDITION QT_FEATURE_static
+        AND TARGET Qt::Gui
+        AND QT_FEATURE_freetype
+        AND NOT QT_FEATURE_system_freetype
 )
 qt_feature("webengine-system-libpci" PRIVATE
     LABEL "libpci"
@@ -548,6 +583,16 @@ if(UNIX)
     qt_configure_add_summary_entry(ARGS "webengine-system-libpci")
     qt_configure_end_summary_section()
 endif()
+
+if(QT_FEATURE_static)
+    qt_configure_add_summary_section(NAME "Qt 3rdparty libs")
+    qt_configure_add_summary_entry(ARGS "webengine-qt-freetype")
+    qt_configure_add_summary_entry(ARGS "webengine-qt-harfbuzz")
+    qt_configure_add_summary_entry(ARGS "webengine-qt-libpng")
+    qt_configure_add_summary_entry(ARGS "webengine-qt-libjpeg")
+    qt_configure_add_summary_entry(ARGS "webengine-qt-zlib")
+endif()
+
 # << Optional system libraries
 qt_configure_end_summary_section()
 # < Qt WebEngine Build Features
