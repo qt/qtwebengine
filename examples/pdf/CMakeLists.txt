@@ -1,5 +1,5 @@
-add_subdirectory(pdfviewer)
-add_subdirectory(multipage)
+qt_internal_add_example(pdfviewer)
+qt_internal_add_example(multipage)
 if(NOT TARGET Qt::Svg)
     message(WARNING "QtSvg is required as runtime dependency for qtpdfquick examples.")
 endif()

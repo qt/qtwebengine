@@ -1,1 +1,1 @@
-add_subdirectory(pdfviewer)
+qt_internal_add_example(pdfviewer)
