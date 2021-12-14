@@ -33,6 +33,7 @@ endif()
 init_gn_config(${buildDir}/gn_config_target.cmake)
 read_gn_config(${buildDir}/gn_config_cxx.cmake)
 read_gn_config(${buildDir}/gn_config_c.cmake)
+read_gn_config(${buildDir}/gn_static.cmake)
 
 configure_gn_target(
    "${sourceDir}"

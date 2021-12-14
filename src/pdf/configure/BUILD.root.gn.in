@@ -1,5 +1,27 @@
 import("//build/config/features.gni")
 
+config("qt_libpng_config") {
+    include_dirs =  [ @GN_PNG_INCLUDES@ ]
+    defines = [ "USE_SYSTEM_LIBPNG" ]
+}
+config ("qt_libjpeg_config") {
+    include_dirs = [ @GN_JPEG_INCLUDES@ ]
+}
+config("qt_harfbuzz_config") {
+    visibility = [
+      "//third_party:freetype_harfbuzz",
+      "//third_party/freetype:freetype_source",
+    ]
+    include_dirs = [ @GN_HARFBUZZ_INCLUDES@ ]
+}
+config("qt_freetype_config") {
+     visibility = [
+       "//third_party:freetype_harfbuzz",
+       "//third_party/harfbuzz-ng:harfbuzz_source",
+     ]
+     include_dirs = [ @GN_FREETYPE_INCLUDES@ ]
+}
+
 config("QtPdf_config") {
   cflags = [
     @GN_CFLAGS_C@,
