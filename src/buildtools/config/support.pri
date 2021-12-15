@@ -110,6 +110,10 @@ defineTest(qtwebengine_checkForPlatform) {
 defineTest(qtwebengine_checkForArch) {
     module = $$1
     !qtConfig(webengine-arch-support) {
+        macos:contains(QT_ARCHS, "arm64") {
+            qtwebengine_skipBuild("$${module} can not be built for Apple Silicon yet.")
+            return(false)
+        }
         qtwebengine_skipBuild("$${module} can only be built for x86, x86-64, ARM, Aarch64, and MIPSel architectures.")
         return(false)
     }

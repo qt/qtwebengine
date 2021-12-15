@@ -140,6 +140,10 @@ defineTest(qtConfTest_detectPlatform) {
 }
 
 defineTest(qtConfTest_detectArch) {
+    macos {
+        qtLog("Apple Silicon not supported yet.")
+        contains(QT_ARCHS, "arm64"): return(false)
+    }
     contains(QT_ARCH, "i386")|contains(QT_ARCH, "x86_64"): return(true)
     contains(QT_ARCH, "arm")|contains(QT_ARCH, "arm64"): return(true)
     contains(QT_ARCH, "mips"): return(true)
