@@ -145,6 +145,7 @@
 #include <QNetworkProxy>
 #include <QtGui/qpa/qplatformintegration.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtQuick/private/qsgrhisupport_p.h>
 #include <QLoggingCategory>
 
 #if QT_CONFIG(opengl)
@@ -156,40 +157,10 @@ QT_END_NAMESPACE
 namespace QtWebEngineCore {
 
 #if QT_CONFIG(opengl)
-static bool usingANGLE()
+
+static bool usingSupportedSGBackend()
 {
-#if defined(Q_OS_WIN)
-    if (qt_gl_global_share_context())
-        return qt_gl_global_share_context()->isOpenGLES();
-    return QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES;
-#else
-    return false;
-#endif
-}
-
-static bool usingDefaultSGBackend()
-{
-    if (QQuickWindow::graphicsApi() != QSGRendererInterface::OpenGL)
-        return false;
-
-    const QStringList args = QGuiApplication::arguments();
-
-    // follow the logic from contextFactory in src/quick/scenegraph/qsgcontextplugin.cpp
-    QString device = QQuickWindow::sceneGraphBackend();
-
-    for (int index = 0; index < args.count(); ++index) {
-        if (args.at(index).startsWith(QLatin1String("--device="))) {
-            device = args.at(index).mid(9);
-            break;
-        }
-    }
-
-    if (device.isEmpty())
-        device = qEnvironmentVariable("QT_QUICK_BACKEND");
-    if (device.isEmpty())
-        device = qEnvironmentVariable("QMLSCENE_DEVICE");
-
-    return device.isEmpty();
+    return QQuickWindow::graphicsApi() == QSGRendererInterface::OpenGL;
 }
 
 bool usingSoftwareDynamicGL()
@@ -210,7 +181,7 @@ bool usingSoftwareDynamicGL()
 static const char *getGLType(bool enableGLSoftwareRendering)
 {
     const char *glType = nullptr;
-    const bool tryGL = (usingDefaultSGBackend() && !usingSoftwareDynamicGL()
+    const bool tryGL = (usingSupportedSGBackend() && !usingSoftwareDynamicGL()
                         && QGuiApplicationPrivate::platformIntegration()->hasCapability(
                                 QPlatformIntegration::OpenGL))
             || enableGLSoftwareRendering;
@@ -225,7 +196,7 @@ static const char *getGLType(bool enableGLSoftwareRendering)
                 glType = gl::kGLImplementationDesktopName;
                 // Check if Core profile was requested and is supported.
                 if (sharedFormat.profile() == QSurfaceFormat::CoreProfile) {
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS) || defined(Q_OS_WIN)
                     glType = gl::kGLImplementationCoreProfileName;
 #else
                     qWarning("An OpenGL Core Profile was requested, but it is not supported "
@@ -235,8 +206,7 @@ static const char *getGLType(bool enableGLSoftwareRendering)
                 }
                 break;
             case QSurfaceFormat::OpenGLES:
-                glType = usingANGLE() ? gl::kGLImplementationANGLEName
-                                      : gl::kGLImplementationEGLName;
+                glType = gl::kGLImplementationEGLName;
                 break;
             case QSurfaceFormat::OpenVG:
             case QSurfaceFormat::DefaultRenderableType:
@@ -282,13 +252,16 @@ static void logContext(const char *glType, base::CommandLine *cmd)
                "Surface Type: %s\n"
                "Surface Profile: %s\n"
                "Surface Version: %d.%d\n"
-               "Using Default SG Backend: %s\n"
+               "QSG RHI Backend: %s\n"
+               "Using Supported QSG Backend: %s\n"
                "Using Software Dynamic GL: %s\n"
-               "Using Angle: %s\n\n"
+               "Using Multithreaded OpenGL: %s\n\n"
                "Init Parameters:\n %s",
                glType, type, profile, sharedFormat.majorVersion(), sharedFormat.minorVersion(),
-               usingDefaultSGBackend() ? "yes" : "no", usingSoftwareDynamicGL() ? "yes" : "no",
-               usingANGLE() ? "yes" : "no", qPrintable(params.join(" ")));
+               qUtf8Printable(QSGRhiSupport::instance()->rhiBackendName()),
+               usingSupportedSGBackend() ? "yes" : "no", usingSoftwareDynamicGL() ? "yes" : "no",
+               !WebEngineContext::isGpuServiceOnUIThread() ? "yes" : "no",
+               qPrintable(params.join(" ")));
 #else
         qCInfo(webEngineContextLog) << "WebEngine compiled with no opengl enabled.";
 #endif //QT_CONFIG(opengl)
@@ -730,7 +703,13 @@ WebEngineContext::WebEngineContext()
 
     if (glType) {
 #if QT_CONFIG(opengl)
-        parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
+#if defined(Q_OS_WIN)
+        // See below
+        if (glType == gl::kGLImplementationCoreProfileName)
+            parsedCommandLine->AppendSwitchASCII(switches::kUseGL, gl::kGLImplementationDesktopName);
+        else
+#endif
+            parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
         parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
         if (enableGLSoftwareRendering) {
             parsedCommandLine->AppendSwitch(switches::kDisableGpuRasterization);
@@ -745,18 +724,7 @@ WebEngineContext::WebEngineContext()
         // Core Profile context, even if Qt uses a legacy profile, which causes
         // "Could not share GL contexts" warnings, because it's not possible to share between Core and
         // legacy profiles. See GLContextWGL::Initialize().
-        // Given that Desktop GL Core profile is not currently supported on Windows anyway, pass this
-        // switch to get rid of the warnings.
-        //
-        // The switch is also used to determine which version of OpenGL ES to use (2 or 3) when using
-        // ANGLE.
-        // If the switch is not set, Chromium will always try to create an ES3 context, even if Qt uses
-        // an ES2 context, which causes resource sharing issues (black screen),
-        // see gpu::gles2::GenerateGLContextAttribs().
-        // Make sure to disable ES3 context creation when using ES2.
-        const bool isGLES2Context = QOpenGLContext::globalShareContext()->isOpenGLES()
-            && QOpenGLContext::globalShareContext()->format().majorVersion() == 2;
-        if (!usingANGLE() || isGLES2Context)
+        if (glType != gl::kGLImplementationCoreProfileName)
             parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
 #endif
 #endif //QT_CONFIG(opengl)
