@@ -121,7 +121,7 @@ void tst_InspectorServer::testPageList()
                                                  + QLatin1String("/html/basic_page.html"));
     QSignalSpy loadSpy(webView(), SIGNAL(loadingChanged(QWebEngineLoadingInfo)));
     webView()->setUrl(testPageUrl);
-    QTRY_VERIFY(loadSpy.size() && !webView()->isLoading());
+    QTRY_VERIFY_WITH_TIMEOUT(loadSpy.size() && !webView()->isLoading(), 10000);
 
     // Our page has developerExtrasEnabled and should be the only one in the list.
     QJsonArray pageList = fetchPageList();
@@ -135,7 +135,7 @@ void tst_InspectorServer::testRemoteDebuggingMessage()
                                                  + QLatin1String("/html/basic_page.html"));
     QSignalSpy loadSpy(webView(), SIGNAL(loadingChanged(QWebEngineLoadingInfo)));
     webView()->setUrl(testPageUrl);
-    QTRY_VERIFY(loadSpy.size() && !webView()->isLoading());
+    QTRY_VERIFY_WITH_TIMEOUT(loadSpy.size() && !webView()->isLoading(), 10000);
 
     QJsonArray pageList = fetchPageList();
     QCOMPARE(pageList.size(), 1);
@@ -170,7 +170,7 @@ void tst_InspectorServer::openRemoteDebuggingSession()
                                                  + QLatin1String("/html/basic_page.html"));
     QSignalSpy loadSpy(webView(), SIGNAL(loadingChanged(QWebEngineLoadingInfo)));
     webView()->setUrl(testPageUrl);
-    QTRY_VERIFY(loadSpy.size() && !webView()->isLoading());
+    QTRY_VERIFY_WITH_TIMEOUT(loadSpy.size() && !webView()->isLoading(), 10000);
 
     QJsonArray pageList = fetchPageList();
     QCOMPARE(pageList.size(), 1);
