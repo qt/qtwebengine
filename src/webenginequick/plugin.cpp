@@ -43,9 +43,9 @@
 #include <QtWebEngineQuick/private/qquickwebenginefaviconprovider_p_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginetouchhandleprovider_p_p.h>
 
-void Q_WEBENGINEQUICK_PRIVATE_EXPORT qml_register_types_QtWebEngine();
-
 QT_BEGIN_NAMESPACE
+
+void Q_WEBENGINEQUICK_PRIVATE_EXPORT qml_register_types_QtWebEngine();
 
 class QtWebEnginePlugin : public QQmlExtensionPlugin
 {
