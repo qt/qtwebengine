@@ -80,6 +80,7 @@ public:
     QAccessible::State state() const override;
 
     // BrowserAccessible
+    void Init(BrowserAccessibilityManager *manager, ui::AXNode *node) override;
     void Destroy() override;
 
     // QAccessibleActionInterface
@@ -142,6 +143,10 @@ public:
     QAccessibleInterface* table() const override;
 
     void modelChange(QAccessibleTableModelChangeEvent *event) override;
+
+private:
+    QObject *m_object = nullptr;
+    QAccessible::Id m_id;
 };
 
 const BrowserAccessibilityQt *ToBrowserAccessibilityQt(const BrowserAccessibility *obj);

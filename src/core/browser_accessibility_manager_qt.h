@@ -49,12 +49,16 @@
 
 QT_FORWARD_DECLARE_CLASS(QAccessibleInterface)
 
+namespace QtWebEngineCore {
+class WebContentsAccessibilityQt;
+}
+
 namespace content {
 
 class BrowserAccessibilityManagerQt : public BrowserAccessibilityManager
 {
 public:
-    BrowserAccessibilityManagerQt(QObject *parentObject,
+    BrowserAccessibilityManagerQt(QtWebEngineCore::WebContentsAccessibilityQt *webContentsAccessibility,
                                   const ui::AXTreeUpdate &initialTree,
                                   BrowserAccessibilityDelegate *delegate);
     ~BrowserAccessibilityManagerQt() override;
@@ -68,7 +72,7 @@ public:
 
 private:
     Q_DISABLE_COPY(BrowserAccessibilityManagerQt)
-    QObject *m_parentObject;
+    QtWebEngineCore::WebContentsAccessibilityQt *m_webContentsAccessibility;
     bool m_valid = false;
 };
 

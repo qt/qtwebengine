@@ -59,11 +59,7 @@ namespace content {
 // static
 BrowserAccessibility *BrowserAccessibility::Create()
 {
-#if QT_CONFIG(accessibility)
     return new BrowserAccessibilityQt();
-#else
-    return nullptr;
-#endif // QT_CONFIG(accessibility)
 }
 
 const BrowserAccessibilityQt *ToBrowserAccessibilityQt(const BrowserAccessibility *obj)
@@ -78,7 +74,6 @@ QAccessibleInterface *toQAccessibleInterface(BrowserAccessibility *obj)
 
 BrowserAccessibilityQt::BrowserAccessibilityQt()
 {
-    QAccessible::registerAccessibleInterface(this);
 }
 
 bool BrowserAccessibilityQt::isValid() const
@@ -89,7 +84,7 @@ bool BrowserAccessibilityQt::isValid() const
 
 QObject *BrowserAccessibilityQt::object() const
 {
-    return nullptr;
+    return m_object;
 }
 
 QAccessibleInterface *BrowserAccessibilityQt::childAt(int x, int y) const
@@ -655,11 +650,24 @@ QAccessible::State BrowserAccessibilityQt::state() const
     return state;
 }
 
+void BrowserAccessibilityQt::Init(BrowserAccessibilityManager *manager, ui::AXNode *node)
+{
+    BrowserAccessibility::Init(manager, node);
+
+    Q_ASSERT(parent());
+    Q_ASSERT(parent()->object());
+    m_object = new QObject(parent()->object());
+    QString name = toQt(GetAuthorUniqueId());
+    if (!name.isEmpty())
+        m_object->setObjectName(name);
+
+    m_id = QAccessible::registerAccessibleInterface(this);
+}
+
 void BrowserAccessibilityQt::Destroy()
 {
     // delete this
-    QAccessible::Id interfaceId = QAccessible::uniqueId(this);
-    QAccessible::deleteAccessibleInterface(interfaceId);
+    QAccessible::deleteAccessibleInterface(m_id);
 }
 
 QStringList BrowserAccessibilityQt::actionNames() const
