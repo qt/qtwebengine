@@ -48,6 +48,8 @@ private Q_SLOTS:
     void value();
     void roles_data();
     void roles();
+    void objectName();
+    void crossTreeParent();
 };
 
 // This will be called before the first test function is executed.
@@ -550,6 +552,57 @@ void tst_Accessibility::roles()
     }
 
     QCOMPARE(element->role(), role);
+}
+
+void tst_Accessibility::objectName()
+{
+    QWebEngineView webView;
+    QSignalSpy spyFinished(&webView, &QWebEngineView::loadFinished);
+    webView.setHtml("<html><body><p id='my_id'></p></body></html>");
+    webView.show();
+    QVERIFY(spyFinished.wait());
+    QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
+    QAccessibleInterface *document = view->child(0);
+    QTRY_COMPARE(document->childCount(), 1);
+    QAccessibleInterface *p = document->child(0);
+    QVERIFY(p);
+    QVERIFY(p->object());
+    QCOMPARE(p->role(), QAccessible::Paragraph);
+    QCOMPARE(p->object()->objectName(), QStringLiteral("my_id"));
+}
+
+void tst_Accessibility::crossTreeParent()
+{
+    QWebEngineView webView;
+    QSignalSpy spyFinished(&webView, &QWebEngineView::loadFinished);
+    webView.setHtml("<html><body><iframe src='data:text/html,<html><body><p id=my_id></p></body></html>'>Fallback text</iframe></body></html>");
+    webView.show();
+    QVERIFY(spyFinished.wait());
+    QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
+    QAccessibleInterface *document = view->child(0);
+    QCOMPARE(document->role(), QAccessible::WebDocument);
+    QTRY_COMPARE(document->childCount(), 1);
+    QAccessibleInterface *p = document->child(0);
+    QVERIFY(p);
+    QCOMPARE(p->parent(), document);
+    p = p->child(0);
+    QVERIFY(p);
+    QCOMPARE(p->role(), QAccessible::WebDocument);
+    QCOMPARE(p->parent()->parent(), document);
+    QTRY_COMPARE(p->childCount(), 1);
+    p = p->child(0);
+    QVERIFY(p);
+    QAccessibleInterface *subdocument = p;
+    QCOMPARE(p->role(), QAccessible::WebDocument);
+    QCOMPARE(p->parent()->parent()->parent(), document);
+    p = p->child(0);
+    QVERIFY(p);
+    QVERIFY(p->object());
+    QCOMPARE(p->role(), QAccessible::Paragraph);
+    QCOMPARE(p->parent(), subdocument);
+    QCOMPARE(p->parent()->parent()->parent()->parent(), document);
+    QCOMPARE(p->parent()->parent()->parent()->parent()->parent(), view);
+    QCOMPARE(p->object()->objectName(), QStringLiteral("my_id"));
 }
 
 static QByteArrayList params = QByteArrayList()
