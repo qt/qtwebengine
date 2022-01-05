@@ -218,6 +218,7 @@ source_set("qtwebengine_sources") {
     "//components/performance_manager",
     "//components/plugins/renderer/",
     "//extensions/buildflags:buildflags",
+    "//printing/buildflags:buildflags",
     "//qtwebengine/common:mojo_bindings",
     "//rlz/buildflags:buildflags",
     "//third_party/blink/public/mojom:mojom_platform",
@@ -355,9 +356,6 @@ source_set("qtwebengine_sources") {
       "//chrome/browser/printing/print_job_manager.h",
       "//chrome/browser/printing/print_job_worker.cc",
       "//chrome/browser/printing/print_job_worker.h",
-    ]
-    deps += [
-      "//printing/buildflags:buildflags",
     ]
   }
   if (enable_pdf) {
