@@ -82,10 +82,12 @@ public:
 
     void DisconnectFromTarget();
 
-    void CallClientFunction(const std::string& function_name,
-                            const base::Value* arg1,
-                            const base::Value* arg2,
-                            const base::Value* arg3);
+    void CallClientFunction(const std::string &object_name,
+                            const std::string &method_name,
+                            base::Value arg1 = {},
+                            base::Value arg2 = {},
+                            base::Value arg3 = {},
+                            base::OnceCallback<void(base::Value)> cb = base::NullCallback());
 
     WebContentsDelegateQt *frontendDelegate() const
     {
@@ -109,7 +111,7 @@ private:
     void DocumentAvailableInMainFrame(content::RenderFrameHost *render_frame_host) override;
     void WebContentsDestroyed() override;
 
-    void SendMessageAck(int request_id, const base::Value* arg1);
+    void SendMessageAck(int request_id, base::Value arg1);
     void SetPreference(const std::string &name, const std::string &value);
     void RemovePreference(const std::string &name);
     void ClearPreferences();

@@ -89,11 +89,10 @@ namespace {
 
 constexpr char kScreencastEnabled[] = "screencastEnabled";
 
-std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(const net::HttpResponseHeaders *rh,
-                                                              bool success,
-                                                              int net_error)
+base::DictionaryValue BuildObjectForResponse(const net::HttpResponseHeaders *rh,
+                                             bool success, int net_error)
 {
-    auto response = std::make_unique<base::DictionaryValue>();
+    base::DictionaryValue response;
     int responseCode = 200;
     if (rh) {
         responseCode = rh->response_code();
@@ -101,9 +100,9 @@ std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(const net::HttpRes
         // In case of no headers, assume file:// URL and failed to load
         responseCode = 404;
     }
-    response->SetInteger("statusCode", responseCode);
-    response->SetInteger("netError", net_error);
-    response->SetString("netErrorName", net::ErrorToString(net_error));
+    response.SetInteger("statusCode", responseCode);
+    response.SetInteger("netError", net_error);
+    response.SetString("netErrorName", net::ErrorToString(net_error));
 
     auto headers = std::make_unique<base::DictionaryValue>();
     size_t iterator = 0;
@@ -114,7 +113,7 @@ std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(const net::HttpRes
     while (rh && rh->EnumerateHeaderLines(&iterator, &name, &value))
         headers->SetString(name, value);
 
-    response->Set("headers", std::move(headers));
+    response.Set("headers", std::move(headers));
     return response;
 }
 
@@ -167,14 +166,14 @@ private:
         base::Value id(stream_id_);
         base::Value encodedValue(encoded);
 
-        bindings_->CallClientFunction("DevToolsAPI.streamWrite", &id, &chunkValue, &encodedValue);
+        bindings_->CallClientFunction("DevToolsAPI", "streamWrite", std::move(id), std::move(chunkValue), std::move(encodedValue));
         std::move(resume).Run();
     }
 
     void OnComplete(bool success) override
     {
         auto response = BuildObjectForResponse(response_headers_.get(), success, loader_->NetError());
-        bindings_->SendMessageAck(request_id_, response.get());
+        bindings_->SendMessageAck(request_id_, std::move(response));
         bindings_->m_loaders.erase(bindings_->m_loaders.find(this));
     }
 
@@ -419,7 +418,7 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(base::Value message)
             base::DictionaryValue response;
             response.SetInteger("statusCode", 404);
             response.SetBoolean("urlValid", false);
-            SendMessageAck(request_id, &response);
+            SendMessageAck(request_id, std::move(response));
             return;
         }
 
@@ -464,7 +463,7 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(base::Value message)
         } else if (content::HasWebUIScheme(gurl)) {
             base::DictionaryValue response;
             response.SetInteger("statusCode", 403);
-            SendMessageAck(request_id, &response);
+            SendMessageAck(request_id, std::move(response));
             return;
         } else {
             auto *partition = web_contents()->GetBrowserContext()->GetStoragePartitionForUrl(gurl);
@@ -484,7 +483,7 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(base::Value message)
             SetPreference(kScreencastEnabled, "false");
 
         m_preferences = std::move(*m_prefStore->GetValues());
-        SendMessageAck(request_id, &m_preferences);
+        SendMessageAck(request_id, m_preferences.Clone());
         return;
     } else if (method == "setPreference" && params.size() >= 2) {
         const std::string *name = params[0].GetIfString();
@@ -560,7 +559,7 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(base::Value message)
     }
 
     if (request_id)
-        SendMessageAck(request_id, nullptr);
+        SendMessageAck(request_id, base::Value());
 }
 
 void DevToolsFrontendQt::SetEyeDropperActive(bool active)
@@ -584,60 +583,56 @@ void DevToolsFrontendQt::ColorPickedInEyeDropper(int r, int g, int b, int a)
     color.SetInteger("g", g);
     color.SetInteger("b", b);
     color.SetInteger("a", a);
-    CallClientFunction("DevToolsAPI.eyeDropperPickedColor", &color, nullptr, nullptr);
+    CallClientFunction("DevToolsAPI", "eyeDropperPickedColor", std::move(color));
 }
 
 void DevToolsFrontendQt::DispatchProtocolMessage(content::DevToolsAgentHost *agentHost, base::span<const uint8_t> message)
 {
     Q_UNUSED(agentHost);
-    base::StringPiece message_sp(reinterpret_cast<const char*>(message.data()), message.size());
-    if (message_sp.length() < kMaxMessageChunkSize) {
-        std::string param;
-        base::EscapeJSONString(message_sp, true, &param);
-        std::string code = "DevToolsAPI.dispatchMessage(" + param + ");";
-        std::u16string javascript = base::UTF8ToUTF16(code);
-        web_contents()->GetMainFrame()->ExecuteJavaScript(javascript, base::NullCallback());
-        return;
-    }
+    base::StringPiece str_message(reinterpret_cast<const char*>(message.data()), message.size());
 
-    size_t total_size = message_sp.length();
-    for (size_t pos = 0; pos < message_sp.length(); pos += kMaxMessageChunkSize) {
-        std::string param;
-        base::EscapeJSONString(message_sp.substr(pos, kMaxMessageChunkSize), true, &param);
-        std::string code = "DevToolsAPI.dispatchMessageChunk(" + param + ","
-                         + std::to_string(pos ? 0 : total_size) + ");";
-        std::u16string javascript = base::UTF8ToUTF16(code);
-        web_contents()->GetMainFrame()->ExecuteJavaScript(javascript, base::NullCallback());
+    if (str_message.length() < kMaxMessageChunkSize) {
+        CallClientFunction("DevToolsAPI", "dispatchMessage",
+                           base::Value(std::string(str_message)));
+    } else {
+        size_t total_size = str_message.length();
+        for (size_t pos = 0; pos < str_message.length(); pos += kMaxMessageChunkSize) {
+            base::StringPiece str_message_chunk = str_message.substr(pos, kMaxMessageChunkSize);
+
+            CallClientFunction("DevToolsAPI", "dispatchMessageChunk",
+                               base::Value(std::string(str_message_chunk)),
+                               base::Value(base::NumberToString(pos ? 0 : total_size)));
+        }
     }
 }
 
-void DevToolsFrontendQt::CallClientFunction(const std::string &function_name,
-                                            const base::Value *arg1,
-                                            const base::Value *arg2,
-                                            const base::Value *arg3)
+void DevToolsFrontendQt::CallClientFunction(const std::string &object_name,
+                                            const std::string &method_name,
+                                            base::Value arg1, base::Value arg2, base::Value arg3,
+                                            base::OnceCallback<void(base::Value)> cb)
+
 {
-    std::string javascript = function_name + "(";
-    if (arg1) {
-        std::string json;
-        base::JSONWriter::Write(*arg1, &json);
-        javascript.append(json);
-        if (arg2) {
-            base::JSONWriter::Write(*arg2, &json);
-            javascript.append(", ").append(json);
-            if (arg3) {
-                base::JSONWriter::Write(*arg3, &json);
-                javascript.append(", ").append(json);
+    base::Value arguments(base::Value::Type::LIST);
+    if (!arg1.is_none()) {
+        arguments.Append(std::move(arg1));
+        if (!arg2.is_none()) {
+            arguments.Append(std::move(arg2));
+            if (!arg3.is_none()) {
+                arguments.Append(std::move(arg3));
             }
         }
     }
-    javascript.append(");");
-    web_contents()->GetMainFrame()->ExecuteJavaScript(base::UTF8ToUTF16(javascript), base::NullCallback());
+    web_contents()->GetMainFrame()->ExecuteJavaScriptMethod(base::ASCIIToUTF16(object_name),
+                                                            base::ASCIIToUTF16(method_name),
+                                                            std::move(arguments),
+                                                            std::move(cb));
+
 }
 
-void DevToolsFrontendQt::SendMessageAck(int request_id, const base::Value *arg)
+void DevToolsFrontendQt::SendMessageAck(int request_id, base::Value arg)
 {
     base::Value id_value(request_id);
-    CallClientFunction("DevToolsAPI.embedderMessageAck", &id_value, arg, nullptr);
+    CallClientFunction("DevToolsAPI", "embedderMessageAck", std::move(id_value), std::move(arg));
 }
 
 void DevToolsFrontendQt::AgentHostClosed(content::DevToolsAgentHost *agentHost)
