@@ -999,6 +999,7 @@ function(add_gn_command)
         WORKING_DIRECTORY ${WEBENGINE_ROOT_BUILD_DIR}
         COMMENT "Run gn for target ${arg_CMAKE_TARGET} in ${arg_BUILDDIR}"
         DEPENDS ${gnArgArgFile} run_${arg_MODULE}_GnReady
+        "${WEBENGINE_ROOT_SOURCE_DIR}/src/${arg_MODULE}/configure/BUILD.root.gn.in"
         USES_TERMINAL
     )
     add_custom_target(runGn_${arg_GN_TARGET}
