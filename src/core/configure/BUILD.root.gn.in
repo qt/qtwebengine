@@ -578,10 +578,12 @@ repack("qtwebengine_repack_resources_200") {
 repack("qtwebengine_repack_resources_devtools") {
   sources = [
     "$root_gen_dir/content/browser/devtools/devtools_resources.pak",
+    "$root_gen_dir/third_party/blink/public/resources/inspector_overlay_resources.pak",
   ]
   output = "$root_out_dir/qtwebengine_devtools_resources.pak"
   deps = [
     "//content/browser/devtools:devtools_resources_grit",
+    "//third_party/blink/public:devtools_inspector_resources_grit",
   ]
 }
 
