@@ -796,6 +796,7 @@ WebEngineContext::WebEngineContext()
     registerMainThreadFactories();
 
     content::ContentMainParams contentMainParams(m_mainDelegate.get());
+    contentMainParams.setup_signal_handlers = false;
 #if defined(OS_WIN)
     contentMainParams.sandbox_info = staticSandboxInterfaceInfo();
     sandbox::SandboxInterfaceInfo sandbox_info = {0};
