@@ -936,8 +936,14 @@ function(add_gn_build_aritfacts_to_target cmakeTarget ninjaTarget module buildDi
     # config loop is a workaround to be able to add_custom_command per config
     # note this is fixed in CMAKE.3.20 and should be cleaned up when 3.20 is
     # the minimum cmake we support
-    get_configs(config)
+    get_configs(configs)
     get_architectures(archs)
+    if(NOT configs)
+        message(FATAL_ERROR "No valid configurations found !")
+    endif()
+    if(NOT archs)
+        message(FATAL_ERROR "No valid architectures found. In case of cross-compiling make sure you have CMAKE_SYSTEM_PROCESSOR in your toolchain file.")
+    endif()
     foreach(config ${configs})
         foreach(arch ${archs})
             set(target ${ninjaTarget}_${config}_${arch})
