@@ -240,6 +240,7 @@ public:
     // meant to be used within WebEngineCore only
     void initialize(content::SiteInstance *site);
     content::WebContents *webContents() const;
+    content::WebContents *guestWebContents() const;
     void updateRecommendedState();
     void setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
     QWebEngineUrlRequestInterceptor* requestInterceptor() const;
