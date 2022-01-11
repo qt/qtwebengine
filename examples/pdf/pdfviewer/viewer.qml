@@ -50,12 +50,12 @@
 import QtQml // workaround for QTBUG-82873
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 import QtQuick.Layouts
 import QtQuick.Pdf
 import QtQuick.Shapes
 import QtQuick.Window
 import Qt.labs.animation
-import Qt.labs.platform as Platform
 
 ApplicationWindow {
     id: root
@@ -189,11 +189,11 @@ ApplicationWindow {
         }
     }
 
-    Platform.FileDialog {
+    FileDialog {
         id: fileDialog
         title: "Open a PDF file"
         nameFilters: [ "PDF files (*.pdf)" ]
-        onAccepted: document.source = file
+        onAccepted: document.source = selectedFile
     }
 
     Dialog {
