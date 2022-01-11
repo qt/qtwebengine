@@ -79,7 +79,11 @@ function(create_cxx_config cmakeTarget arch configFileName)
     if(NOT QT_SUPERBUILD AND QT_WILL_INSTALL)
         get_target_property(mocFilePath Qt6::moc IMPORTED_LOCATION)
     else()
-        set(mocFilePath "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/moc${CMAKE_EXECUTABLE_SUFFIX}")
+        if(CMAKE_CROSSCOMPILING)
+            set(mocFilePath "${QT_HOST_PATH}/${INSTALL_LIBEXECDIR}/moc${CMAKE_EXECUTABLE_SUFFIX}")
+        else()
+            set(mocFilePath "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/moc${CMAKE_EXECUTABLE_SUFFIX}")
+        endif()
     endif()
     file(GENERATE
           OUTPUT $<CONFIG>/${arch}/${configFileName}
