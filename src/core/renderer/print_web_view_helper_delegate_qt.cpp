@@ -43,10 +43,16 @@
 
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
+#include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/common/webui_url_constants.h"
+#include "extensions/common/constants.h"
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #include "print_web_view_helper_delegate_qt.h"
 #include "web_engine_library_info.h"
@@ -56,14 +62,23 @@ PrintWebViewHelperDelegateQt::~PrintWebViewHelperDelegateQt() {}
 
 blink::WebElement PrintWebViewHelperDelegateQt::GetPdfElement(blink::WebLocalFrame *frame)
 {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     GURL url = frame->GetDocument().Url();
-    if (url.SchemeIs(extensions::kExtensionScheme) && url.host() == extension_misc::kPdfExtensionId) {
+    bool inside_print_preview = url.GetOrigin() == chrome::kChromeUIPrintURL;
+    bool inside_pdf_extension = url.SchemeIs(extensions::kExtensionScheme) &&
+                                url.host_piece() == extension_misc::kPdfExtensionId;
+    if (inside_print_preview || inside_pdf_extension) {
         // <object> with id="plugin" is created in
-        // chrome/browser/resources/pdf/pdf.js.
-        auto plugin_element = frame->GetDocument().GetElementById("plugin");
-        CHECK(!plugin_element.IsNull());
-        return plugin_element;
+        // chrome/browser/resources/pdf/pdf_viewer_base.js.
+        auto viewer_element = frame->GetDocument().GetElementById("viewer");
+        if (!viewer_element.IsNull() && !viewer_element.ShadowRoot().IsNull()) {
+            auto plugin_element = viewer_element.ShadowRoot().QuerySelector("#plugin");
+            if (!plugin_element.IsNull())
+                return plugin_element;
+        }
+        NOTREACHED();
     }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
     return blink::WebElement();
 }
 

@@ -1332,10 +1332,13 @@ void WebContentsAdapter::printToPDF(const QPageLayout &pageLayout, const QString
     PrintViewManagerQt::PrintToPDFFileCallback callback = base::Bind(&callbackOnPdfSavingFinished,
                                                                 m_adapterClient,
                                                                 filePath);
-    PrintViewManagerQt::FromWebContents(m_webContents.get())->PrintToPDFFileWithCallback(pageLayout,
-                                                                                   true,
-                                                                                   filePath,
-                                                                                   callback);
+    content::WebContents *webContents = m_webContents.get();
+    if (content::WebContents *guest = guestWebContents())
+        webContents = guest;
+    PrintViewManagerQt::FromWebContents(webContents)->PrintToPDFFileWithCallback(pageLayout,
+                                                                                 true,
+                                                                                 filePath,
+                                                                                 callback);
 #endif // QT_CONFIG(webengine_printing_and_pdf)
 }
 
@@ -1348,10 +1351,13 @@ quint64 WebContentsAdapter::printToPDFCallbackResult(const QPageLayout &pageLayo
     PrintViewManagerQt::PrintToPDFCallback callback = base::Bind(&callbackOnPrintingFinished,
                                                                  m_adapterClient,
                                                                  m_nextRequestId);
-    PrintViewManagerQt::FromWebContents(m_webContents.get())->PrintToPDFWithCallback(pageLayout,
-                                                                               colorMode,
-                                                                               useCustomMargins,
-                                                                               callback);
+    content::WebContents *webContents = m_webContents.get();
+    if (content::WebContents *guest = guestWebContents())
+        webContents = guest;
+    PrintViewManagerQt::FromWebContents(webContents)->PrintToPDFWithCallback(pageLayout,
+                                                                             colorMode,
+                                                                             useCustomMargins,
+                                                                             callback);
     return m_nextRequestId++;
 #else
     Q_UNUSED(pageLayout);
@@ -1442,6 +1448,12 @@ void WebContentsAdapter::setBackgroundColor(const QColor &color)
 content::WebContents *WebContentsAdapter::webContents() const
 {
     return m_webContents.get();
+}
+
+content::WebContents *WebContentsAdapter::guestWebContents() const
+{
+    std::vector<content::WebContents *> innerWebContents = m_webContents->GetInnerWebContents();
+    return !innerWebContents.empty() ? innerWebContents[0] : nullptr;
 }
 
 #if QT_CONFIG(webengine_webchannel)
@@ -1551,9 +1563,8 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
             // dropping data into them. We don't even try to support dropping into PDF input fields,
             // since it's not working in Chrome right now.
             content::WebContents *targetWebContents = m_webContents.get();
-            std::vector<content::WebContents *> innerWebContents = m_webContents->GetInnerWebContents();
-            if (!innerWebContents.empty())
-                targetWebContents = innerWebContents[0];
+            if (content::WebContents *guest = guestWebContents())
+                targetWebContents = guest;
 
             content::RenderViewHost *rvh = targetWebContents->GetRenderViewHost();
             if (rvh) {
