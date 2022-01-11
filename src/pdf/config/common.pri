@@ -41,6 +41,10 @@ qtConfig(webengine-qt-zlib) {
     gn_args += "qt_zlib=\"$$system_path($$[QT_INSTALL_LIBS]/$$qtzlib)\""
 }
 
+linux:!qtConfig(webengine-ozone-x11) {
+    gn_args += use_xkbcommon=false
+}
+
 qtConfig(pdf-v8) {
     gn_args += pdf_enable_v8=true
 } else {

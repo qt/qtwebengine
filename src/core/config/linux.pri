@@ -27,6 +27,8 @@ qtConfig(webengine-embedded-build) {
         gn_args += use_xkbcommon=true
         packagesExist(xscrnsaver): gn_args += use_xscrnsaver=true
         qtConfig(webengine-webrtc): gn_args += rtc_use_x11=true
+    } else {
+        gn_args += use_xkbcommon=false
     }
 
     qtConfig(webengine-webrtc): qtConfig(webengine-webrtc-pipewire): gn_args += rtc_use_pipewire=true
