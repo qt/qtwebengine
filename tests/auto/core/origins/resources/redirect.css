@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'MyWebFont';
-    src: url('redirect1:/resources/Akronim-Regular.woff2') format('woff2');
+    src: url('redirect:redirect-secure/resources/Akronim-Regular.woff2') format('woff2');
 }
 
 body {

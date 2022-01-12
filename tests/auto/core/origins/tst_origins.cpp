@@ -31,6 +31,7 @@
 
 #include <QtCore/qfile.h>
 #include <QtTest/QtTest>
+#include <QtWebEngineCore/qwebengineurlrequestinterceptor.h>
 #include <QtWebEngineCore/qwebengineurlrequestjob.h>
 #include <QtWebEngineCore/qwebengineurlscheme.h>
 #include <QtWebEngineCore/qwebengineurlschemehandler.h>
@@ -47,6 +48,8 @@
 
 #define QSL QStringLiteral
 #define QBAL QByteArrayLiteral
+
+Q_LOGGING_CATEGORY(lc, "qt.webengine.tests")
 
 void registerSchemes()
 {
@@ -125,14 +128,14 @@ void registerSchemes()
     }
 
     {
-        QWebEngineUrlScheme scheme(QBAL("redirect1"));
+        QWebEngineUrlScheme scheme(QBAL("redirect"));
         scheme.setFlags(QWebEngineUrlScheme::CorsEnabled);
         QWebEngineUrlScheme::registerScheme(scheme);
     }
 
     {
-        QWebEngineUrlScheme scheme(QBAL("redirect2"));
-        scheme.setFlags(QWebEngineUrlScheme::CorsEnabled);
+        QWebEngineUrlScheme scheme(QBAL("redirect-secure"));
+        scheme.setFlags(QWebEngineUrlScheme::SecureScheme);
         QWebEngineUrlScheme::registerScheme(scheme);
     }
 
@@ -175,8 +178,9 @@ public:
         profile->installUrlSchemeHandler(QBAL("HostSyntax-ContentSecurityPolicyIgnored"), this);
         profile->installUrlSchemeHandler(QBAL("HostAndPortSyntax"), this);
         profile->installUrlSchemeHandler(QBAL("HostPortAndUserInformationSyntax"), this);
-        profile->installUrlSchemeHandler(QBAL("redirect1"), this);
-        profile->installUrlSchemeHandler(QBAL("redirect2"), this);
+        profile->installUrlSchemeHandler(QBAL("redirect"), this);
+        profile->installUrlSchemeHandler(QBAL("redirect-local"), this);
+        profile->installUrlSchemeHandler(QBAL("redirect-secure"), this);
         profile->installUrlSchemeHandler(QBAL("cors"), this);
         profile->installUrlSchemeHandler(QBAL("local"), this);
         profile->installUrlSchemeHandler(QBAL("local-cors"), this);
@@ -190,10 +194,15 @@ private:
         QUrl url = job->requestUrl();
         m_requests << url;
 
-        if (url.scheme() == QBAL("redirect1")) {
-            url.setScheme(QBAL("redirect2"));
-            job->redirect(url);
-            return;
+        if (url.scheme().startsWith("redirect")) {
+            QString path = url.path();
+            int idx = path.indexOf(QChar('/'));
+            if (idx > 0) {
+                url.setScheme(path.first(idx));
+                url.setPath(path.mid(idx, -1));
+                job->redirect(url);
+                return;
+            }
         }
 
         QString pathPrefix = QDir(QT_TESTCASE_SOURCEDIR).canonicalPath();
@@ -215,6 +224,30 @@ private:
     }
 
     QList<QUrl> m_requests;
+};
+
+class TestRequestInterceptor : public QWebEngineUrlRequestInterceptor
+{
+public:
+    TestRequestInterceptor() = default;
+    void interceptRequest(QWebEngineUrlRequestInfo &info) override
+    {
+        qCDebug(lc) << this << "Type:" << info.resourceType() << info.requestMethod() << "Navigation:" << info.navigationType()
+                    << info.requestUrl() << "Initiator:" << info.initiator();
+
+        QUrl url = info.requestUrl();
+        requests << url;
+        if (url.scheme().startsWith("redirect")) {
+            QString path = url.path();
+            int idx = path.indexOf(QChar('/'));
+            if (idx > 0) {
+                url.setScheme(path.first(idx));
+                url.setPath(path.mid(idx, -1));
+                info.redirect(url);
+            }
+        }
+    }
+    QList<QUrl> requests;
 };
 
 class tst_Origins final : public QObject {
@@ -245,7 +278,8 @@ private Q_SLOTS:
     void serviceWorker();
     void viewSource();
     void createObjectURL();
-    void redirect();
+    void redirectScheme();
+    void redirectInterceptor();
 
 private:
     bool verifyLoad(const QUrl &url)
@@ -999,17 +1033,38 @@ void tst_Origins::createObjectURL()
     QVERIFY(eval(QSL("result")).toString().startsWith(QSL("blob:tst:")));
 }
 
-void tst_Origins::redirect()
+void tst_Origins::redirectScheme()
 {
-    QVERIFY(verifyLoad(QSL("redirect1:/resources/redirect.html")));
+    QVERIFY(verifyLoad(QSL("redirect:redirect-secure/resources/redirect.html")));
     QTRY_COMPARE(m_handler->requests().size(), 7);
-    QCOMPARE(m_handler->requests()[0], QUrl(QStringLiteral("redirect1:/resources/redirect.html")));
-    QCOMPARE(m_handler->requests()[1], QUrl(QStringLiteral("redirect2:/resources/redirect.html")));
-    QCOMPARE(m_handler->requests()[2], QUrl(QStringLiteral("redirect1:/resources/redirect.css")));
-    QCOMPARE(m_handler->requests()[3], QUrl(QStringLiteral("redirect2:/resources/redirect.css")));
-    QCOMPARE(m_handler->requests()[4], QUrl(QStringLiteral("redirect1:/resources/Akronim-Regular.woff2")));
-    QCOMPARE(m_handler->requests()[5], QUrl(QStringLiteral("redirect1:/resources/Akronim-Regular.woff2")));
-    QCOMPARE(m_handler->requests()[6], QUrl(QStringLiteral("redirect2:/resources/Akronim-Regular.woff2")));
+    QCOMPARE(m_handler->requests()[0], QUrl(QStringLiteral("redirect:redirect-secure/resources/redirect.html")));
+    QCOMPARE(m_handler->requests()[1], QUrl(QStringLiteral("redirect-secure:/resources/redirect.html")));
+    QCOMPARE(m_handler->requests()[2], QUrl(QStringLiteral("redirect:redirect-secure/resources/redirect.css")));
+    QCOMPARE(m_handler->requests()[3], QUrl(QStringLiteral("redirect-secure:/resources/redirect.css")));
+    QCOMPARE(m_handler->requests()[4], QUrl(QStringLiteral("redirect:redirect-secure/resources/Akronim-Regular.woff2")));
+    QCOMPARE(m_handler->requests()[5], QUrl(QStringLiteral("redirect:redirect-secure/resources/Akronim-Regular.woff2")));
+    QCOMPARE(m_handler->requests()[6], QUrl(QStringLiteral("redirect-secure:/resources/Akronim-Regular.woff2")));
+}
+
+void tst_Origins::redirectInterceptor()
+{
+    TestRequestInterceptor interceptor;
+    m_profile.setUrlRequestInterceptor(&interceptor);
+
+    QVERIFY(verifyLoad(QSL("redirect:redirect-secure/resources/redirect.html")));
+    QTRY_COMPARE(interceptor.requests.size(), 7);
+    QTRY_COMPARE(m_handler->requests().size(), 3);
+    QCOMPARE(m_handler->requests()[0], QUrl(QStringLiteral("redirect-secure:/resources/redirect.html")));
+    QCOMPARE(m_handler->requests()[1], QUrl(QStringLiteral("redirect-secure:/resources/redirect.css")));
+    QCOMPARE(m_handler->requests()[2], QUrl(QStringLiteral("redirect-secure:/resources/Akronim-Regular.woff2")));
+
+    QCOMPARE(interceptor.requests[0], QUrl(QStringLiteral("redirect:redirect-secure/resources/redirect.html")));
+    QCOMPARE(interceptor.requests[1], QUrl(QStringLiteral("redirect-secure:/resources/redirect.html")));
+    QCOMPARE(interceptor.requests[2], QUrl(QStringLiteral("redirect:redirect-secure/resources/redirect.css")));
+    QCOMPARE(interceptor.requests[3], QUrl(QStringLiteral("redirect-secure:/resources/redirect.css")));
+    QCOMPARE(interceptor.requests[4], QUrl(QStringLiteral("redirect:redirect-secure/resources/Akronim-Regular.woff2")));
+    QCOMPARE(interceptor.requests[5], QUrl(QStringLiteral("redirect:redirect-secure/resources/Akronim-Regular.woff2")));
+    QCOMPARE(interceptor.requests[6], QUrl(QStringLiteral("redirect-secure:/resources/Akronim-Regular.woff2")));
 }
 
 QTEST_MAIN(tst_Origins)
