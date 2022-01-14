@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -53,17 +53,19 @@
 
 #include <QtPdfQuick/private/qtpdfquickglobal_p.h>
 #include <QtPdf/QPdfDocument>
-#include <QDateTime>
-#include <QJSValue>
-#include <QQmlParserStatus>
-#include <QUrl>
-#include <QVariant>
+
+#include <QtQml/QQmlEngine>
+#include <QtQml/QQmlParserStatus>
+#include <QtCore/QDateTime>
+#include <QtCore/QUrl>
 
 QT_BEGIN_NAMESPACE
 
 class Q_PDFQUICK_EXPORT QQuickPdfDocument : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
+    Q_INTERFACES(QQmlParserStatus)
+
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(int pageCount READ pageCount NOTIFY pageCountChanged FINAL)
     Q_PROPERTY(qreal maxPageWidth READ maxPageWidth NOTIFY metaDataChanged)
@@ -80,6 +82,8 @@ class Q_PDFQUICK_EXPORT QQuickPdfDocument : public QObject, public QQmlParserSta
     Q_PROPERTY(QString creator READ creator NOTIFY metaDataChanged)
     Q_PROPERTY(QDateTime creationDate READ creationDate NOTIFY metaDataChanged)
     Q_PROPERTY(QDateTime modificationDate READ modificationDate NOTIFY metaDataChanged)
+    QML_NAMED_ELEMENT(PdfDocument)
+    QML_ADDED_IN_VERSION(5, 15)
 
 public:
     explicit QQuickPdfDocument(QObject *parent = nullptr);

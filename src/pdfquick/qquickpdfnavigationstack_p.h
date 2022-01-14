@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -55,7 +55,7 @@
 #include <QtPdfQuick/private/qquickpdfdocument_p.h>
 #include <QtPdf/private/qpdfdestination_p.h>
 
-#include <QtQml/qqml.h>
+#include <QQmlEngine>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,6 +67,8 @@ class Q_PDFQUICK_EXPORT QQuickPdfNavigationStack : public QObject
     Q_PROPERTY(qreal currentZoom READ currentZoom NOTIFY currentZoomChanged)
     Q_PROPERTY(bool backAvailable READ backAvailable NOTIFY backAvailableChanged)
     Q_PROPERTY(bool forwardAvailable READ forwardAvailable NOTIFY forwardAvailableChanged)
+    QML_NAMED_ELEMENT(PdfNavigationStack)
+    QML_ADDED_IN_VERSION(5, 15)
 
 public:
     explicit QQuickPdfNavigationStack(QObject *parent = nullptr);

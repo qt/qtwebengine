@@ -13,11 +13,10 @@ set(qml_files
 qt_internal_add_qml_module(PdfQuick
     URI "QtQuick.Pdf"
     VERSION "${PROJECT_VERSION}"
-    CLASS_NAME QtQuick2PdfPlugin
-    NO_GENERATE_PLUGIN_SOURCE
+    CLASS_NAME QtQuickPdfPlugin
     NO_PLUGIN_OPTIONAL
-    NO_GENERATE_QMLTYPES
     PLUGIN_TARGET qtpdfquickplugin
+    PAST_MAJOR_VERSIONS 5
     QML_FILES ${qml_files}
     DEPENDENCIES QtQuickControls2
     SOURCES
@@ -36,14 +35,4 @@ qt_internal_add_qml_module(PdfQuick
         Qt::Gui
         Qt::Qml
 )
-
-qt_internal_extend_target(qtpdfquickplugin
-    SOURCES
-        plugin.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::PdfQuickPrivate
-)
-
-
 

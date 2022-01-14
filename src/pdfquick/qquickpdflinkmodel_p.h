@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -55,8 +55,7 @@
 #include <QtPdfQuick/private/qquickpdfdocument_p.h>
 #include <QtPdf/private/qpdflinkmodel_p.h>
 
-#include <QVariant>
-#include <QtQml/qqml.h>
+#include <QtQml/QQmlEngine>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,6 +63,8 @@ class Q_PDFQUICK_EXPORT QQuickPdfLinkModel : public QPdfLinkModel
 {
     Q_OBJECT
     Q_PROPERTY(QQuickPdfDocument *document READ document WRITE setDocument NOTIFY documentChanged)
+    QML_NAMED_ELEMENT(PdfLinkModel)
+    QML_ADDED_IN_VERSION(5, 15)
 
 public:
     explicit QQuickPdfLinkModel(QObject *parent = nullptr);

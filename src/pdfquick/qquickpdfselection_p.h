@@ -53,11 +53,12 @@
 
 #include <QtPdfQuick/private/qtpdfquickglobal_p.h>
 #include <QtPdfQuick/private/qquickpdfdocument_p.h>
-#include <QPointF>
-#include <QPolygonF>
-#include <QVariant>
-#include <QtQml/qqml.h>
-#include <QtQuick/qquickitem.h>
+
+#include <QtCore/QPointF>
+#include <QtCore/QVariant>
+#include <QtGui/QPolygonF>
+#include <QtQml/QQmlEngine>
+#include <QtQuick/QQuickItem>
 
 QT_BEGIN_NAMESPACE
 class QPdfSelection;
@@ -74,6 +75,8 @@ class Q_PDFQUICK_EXPORT QQuickPdfSelection : public QQuickItem
 
     Q_PROPERTY(QString text READ text NOTIFY textChanged)
     Q_PROPERTY(QList<QPolygonF> geometry READ geometry NOTIFY selectedAreaChanged)
+    QML_NAMED_ELEMENT(PdfSelection)
+    QML_ADDED_IN_VERSION(5, 15)
 
 public:
     explicit QQuickPdfSelection(QQuickItem *parent = nullptr);

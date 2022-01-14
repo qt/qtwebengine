@@ -53,10 +53,9 @@
 
 #include <QtPdfQuick/private/qtpdfquickglobal_p.h>
 #include <QtPdfQuick/private/qquickpdfdocument_p.h>
-#include <QtPdf/qpdfsearchmodel.h>
 
-#include <QtCore/qvariant.h>
-#include <QtQml/qqml.h>
+#include <QtPdf/qpdfsearchmodel.h>
+#include <QtQml/QQmlEngine>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,6 +68,8 @@ class  Q_PDFQUICK_EXPORT QQuickPdfSearchModel : public QPdfSearchModel
     Q_PROPERTY(QList<QPolygonF> currentPageBoundingPolygons READ currentPageBoundingPolygons NOTIFY currentPageBoundingPolygonsChanged)
     Q_PROPERTY(QList<QPolygonF> currentResultBoundingPolygons READ currentResultBoundingPolygons NOTIFY currentResultBoundingPolygonsChanged)
     Q_PROPERTY(QRectF currentResultBoundingRect READ currentResultBoundingRect NOTIFY currentResultBoundingRectChanged)
+    QML_NAMED_ELEMENT(PdfSearchModel)
+    QML_ADDED_IN_VERSION(5, 15)
 
 public:
     explicit QQuickPdfSearchModel(QObject *parent = nullptr);
