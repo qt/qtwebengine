@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -36,27 +36,26 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-import QtQuick 2.14
-import QtQuick.Controls 2.14
-import QtQuick.Layouts 1.14
-import QtQuick.Pdf 5.15
-import QtQuick.Shapes 1.14
-import QtQuick.Window 2.14
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Pdf
+import QtQuick.Shapes
+import QtQuick.Window
 
 Item {
     // public API
-    // TODO 5.15: required property
-    property var document: undefined
+    required property var document
     property bool debug: false
 
     property string selectedText
     function selectAll() {
-        var currentItem = tableHelper.itemAtCell(tableHelper.cellAtPos(root.width / 2, root.height / 2))
+        var currentItem = tableView.itemAtCell(tableView.cellAtPos(root.width / 2, root.height / 2))
         if (currentItem)
             currentItem.selection.selectAll()
     }
     function copySelectionToClipboard() {
-        var currentItem = tableHelper.itemAtCell(tableHelper.cellAtPos(root.width / 2, root.height / 2))
+        var currentItem = tableView.itemAtCell(tableView.cellAtPos(root.width / 2, root.height / 2))
         if (debug)
             console.log("currentItem", currentItem, "sel", currentItem.selection.text)
         if (currentItem)
@@ -140,10 +139,6 @@ Item {
                                          (rot90 ? document.maxPageHeight : document.maxPageWidth) * root.renderScale)
         contentWidth: document === undefined ? 0 : pageHolderWidth + vscroll.width + 2
         rowHeightProvider: function(row) { return (rot90 ? document.pagePointSize(row).width : document.pagePointSize(row).height) * root.renderScale }
-        TableViewExtra {
-            id: tableHelper
-            tableView: tableView
-        }
         delegate: Rectangle {
             id: pageHolder
             color: root.debug ? "beige" : "transparent"
@@ -355,8 +350,8 @@ Item {
             property bool moved: false
             onPositionChanged: moved = true
             onActiveChanged: {
-                var cell = tableHelper.cellAtPos(root.width / 2, root.height / 2)
-                var currentItem = tableHelper.itemAtCell(cell)
+                var cell = tableView.cellAtPos(root.width / 2, root.height / 2)
+                var currentItem = tableView.itemAtCell(cell)
                 var currentLocation = Qt.point(0, 0)
                 if (currentItem) { // maybe the delegate wasn't loaded yet
                     currentLocation = Qt.point((tableView.contentX - currentItem.x + jumpLocationMargin.x) / root.renderScale,
@@ -380,8 +375,8 @@ Item {
             return
         // make TableView rebuild from scratch, because otherwise it doesn't know the delegates are changing size
         tableView.rebuild()
-        var cell = tableHelper.cellAtPos(root.width / 2, root.height / 2)
-        var currentItem = tableHelper.itemAtCell(cell)
+        var cell = tableView.cellAtPos(root.width / 2, root.height / 2)
+        var currentItem = tableView.itemAtCell(cell)
         if (currentItem) {
             var currentLocation = Qt.point((tableView.contentX - currentItem.x + jumpLocationMargin.x) / root.renderScale,
                                            (tableView.contentY - currentItem.y + jumpLocationMargin.y) / root.renderScale)
@@ -399,10 +394,10 @@ Item {
                 // invalid to indicate that a specific location was not needed,
                 // so attempt to position the new page just as the current page is
                 var currentYOffset = 0
-                var previousPageDelegate = tableHelper.itemAtCell(0, previousPage)
+                var previousPageDelegate = tableView.itemAtCell(0, previousPage)
                 if (previousPageDelegate)
                     currentYOffset = tableView.contentY - previousPageDelegate.y
-                tableHelper.positionViewAtRow(page, Qt.AlignTop, currentYOffset)
+                tableView.positionViewAtRow(page, Qt.AlignTop, currentYOffset)
                 if (root.debug) {
                     console.log("going from page", previousPage, "to", page, "offset", currentYOffset,
                                 "ended up @", tableView.contentX.toFixed(1) + ", " + tableView.contentY.toFixed(1))
@@ -416,7 +411,7 @@ Item {
                 var offset = Qt.point(Math.max(-xOffsetLimit, Math.min(xOffsetLimit,
                                         location.x * root.renderScale - jumpLocationMargin.x)),
                                       Math.max(0, location.y * root.renderScale - jumpLocationMargin.y))
-                tableHelper.positionViewAtCell(0, page, Qt.AlignLeft | Qt.AlignTop, offset)
+                tableView.positionViewAtCell(0, page, Qt.AlignLeft | Qt.AlignTop, offset)
                 if (root.debug) {
                     console.log("going to zoom", zoom, "loc", location, "on page", page,
                                 "ended up @", tableView.contentX.toFixed(1) + ", " + tableView.contentY.toFixed(1))

@@ -26,7 +26,6 @@ qt_internal_add_qml_module(PdfQuick
         qquickpdfnavigationstack.cpp qquickpdfnavigationstack_p.h
         qquickpdfsearchmodel.cpp qquickpdfsearchmodel_p.h
         qquickpdfselection.cpp qquickpdfselection_p.h
-        qquicktableviewextra.cpp qquicktableviewextra_p.h
         qtpdfquickglobal_p.h
     INCLUDE_DIRECTORIES
         ../3rdparty/chromium
