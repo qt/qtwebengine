@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -36,16 +36,15 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-import QtQuick 2.14
-import QtQuick.Controls 2.14
-import QtQuick.Pdf 5.15
-import QtQuick.Shapes 1.14
-import Qt.labs.animation 1.0
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Pdf
+import QtQuick.Shapes
+import Qt.labs.animation
 
 Rectangle {
     // public API
-    // TODO 5.15: required property
-    property var document: undefined
+    required property var document
     property alias status: image.status
 
     property alias selectedText: selection.text
@@ -226,10 +225,9 @@ Rectangle {
             y: rect.y * image.pageScale
             width: rect.width * image.pageScale
             height: rect.height * image.pageScale
-            MouseArea { // TODO switch to TapHandler / HoverHandler in 5.15
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: {
+            HoverHandler { cursorShape: Qt.PointingHandCursor }
+            TapHandler {
+                onTapped: {
                     if (page >= 0)
                         navigationStack.push(page, Qt.point(0, 0), root.renderScale)
                     else

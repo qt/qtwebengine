@@ -309,12 +309,12 @@ Item {
                             startX: 0; startY: height
                             PathLine { x: width; y: height }
                         }
-                        MouseArea { // TODO switch to TapHandler / HoverHandler in 5.15
-                            id: linkMA
-                            anchors.fill: parent
+                        HoverHandler {
+                            id: linkHH
                             cursorShape: Qt.PointingHandCursor
-                            hoverEnabled: true
-                            onClicked: {
+                        }
+                        TapHandler {
+                            onTapped: {
                                 if (page >= 0)
                                     root.goToLocation(page, location, zoom)
                                 else
@@ -322,7 +322,7 @@ Item {
                             }
                         }
                         ToolTip {
-                            visible: linkMA.containsMouse
+                            visible: linkHH.hovered
                             delay: 1000
                             text: page >= 0 ?
                                       ("page " + (page + 1) +
