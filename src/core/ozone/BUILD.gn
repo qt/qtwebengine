@@ -5,8 +5,8 @@ import("//ui/base/ui_features.gni")
 import("//build/config/linux/pkg_config.gni")
 
 if (use_xkbcommon) {
-  pkg_config("xkbcommon") {
-    packages = [ "xkbcommon" ]
+  pkg_config("xkb") {
+    packages = [ "xkbcommon", "xkbfile" ]
   }
 }
 
@@ -28,8 +28,7 @@ source_set("qt") {
   defines = [ "OZONE_IMPLEMENTATION" ]
   libs = []
   if (use_xkbcommon) {
-    configs += [ ":xkbcommon" ]
-    libs += [ "xkbfile" ]
+    configs += [ ":xkb" ]
   }
 
   if (ozone_platform_x11) {
