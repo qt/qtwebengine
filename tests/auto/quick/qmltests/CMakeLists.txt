@@ -18,6 +18,7 @@ set(testList
     tst_activeFocusOnPress.qml
     tst_audioMuted.qml
     tst_contextMenu.qml
+    tst_basicProfiles.qml
     tst_desktopBehaviorLoadHtml.qml
     tst_download.qml
     tst_favicon.qml
