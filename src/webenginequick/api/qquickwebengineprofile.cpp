@@ -447,7 +447,7 @@ void QQuickWebEngineProfile::setStorageName(const QString &name)
 
     Whether the web engine profile is \e off-the-record.
     An off-the-record profile forces cookies, the HTTP cache, and other normally persistent data
-    to be stored only in memory.
+    to be stored only in memory. Profile is off-the-record by default.
 */
 
 
@@ -456,7 +456,7 @@ void QQuickWebEngineProfile::setStorageName(const QString &name)
 
     Whether the web engine profile is \e off-the-record.
     An off-the-record profile forces cookies, the HTTP cache, and other normally persistent data
-    to be stored only in memory.
+    to be stored only in memory. Profile is off-the-record by default.
 */
 
 bool QQuickWebEngineProfile::isOffTheRecord() const
@@ -487,7 +487,7 @@ void QQuickWebEngineProfile::setOffTheRecord(bool offTheRecord)
     stored. Persistent data includes persistent cookies, HTML5 local storage, and visited links.
 
     By default, the storage is located below
-    QStandardPaths::writableLocation(QStandardPaths::DataLocation) in a directory named using
+    QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) in a directory named using
     storageName.
 */
 
@@ -498,7 +498,7 @@ void QQuickWebEngineProfile::setOffTheRecord(bool offTheRecord)
     stored. Persistent data includes persistent cookies, HTML5 local storage, and visited links.
 
     By default, the storage is located below
-    QStandardPaths::writableLocation(QStandardPaths::DataLocation) in a directory named using
+    QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) in a directory named using
     storageName.
 */
 
@@ -591,9 +591,9 @@ void QQuickWebEngineProfile::setHttpUserAgent(const QString &userAgent)
 
     \value  WebEngineProfile.MemoryHttpCache
             Uses an in-memory cache. This is the only setting possible if offTheRecord is set or
-            no persistentStoragePath is available.
+            no storageName is available, which is the default.
     \value  WebEngineProfile.DiskHttpCache
-            Uses a disk cache. This is the default value.
+            Uses a disk cache. This is the default value for non off-the-record profile with storageName.
     \value  WebEngineProfile.NoCache
             Disables caching. (Added in 5.7)
 */
@@ -603,7 +603,7 @@ void QQuickWebEngineProfile::setHttpUserAgent(const QString &userAgent)
 
     This enumeration describes the type of the HTTP cache.
 
-    If the profile is off-the-record, MemoryHttpCache is returned.
+    If the profile is off-the-record or has no storageName set, MemoryHttpCache is returned.
 */
 
 QQuickWebEngineProfile::HttpCacheType QQuickWebEngineProfile::httpCacheType() const
@@ -628,10 +628,11 @@ void QQuickWebEngineProfile::setHttpCacheType(QQuickWebEngineProfile::HttpCacheT
 
     \value  WebEngineProfile.NoPersistentCookies
             Both session and persistent cookies are stored in memory. This is the only setting
-            possible if offTheRecord is set or no persistentStoragePath is available.
+            possible if offTheRecord is set or no storageName is available, which is the default.
     \value  WebEngineProfile.AllowPersistentCookies
             Cookies marked persistent are saved to and restored from disk, whereas session cookies
-            are only stored to disk for crash recovery. This is the default setting.
+            are only stored to disk for crash recovery.
+            This is the default value for non off-the-record profile with storageName.
     \value WebEngineProfile.ForcePersistentCookies
             Both session and persistent cookies are saved to and restored from disk.
 */
@@ -723,7 +724,7 @@ void QQuickWebEngineProfile::setHttpAcceptLanguage(const QString &httpAcceptLang
 /*!
     Returns the default profile.
 
-    The default profile uses the storage name "Default".
+    The default profile is off-the-record.
 
     \sa storageName()
 */
