@@ -360,7 +360,7 @@ void WebContentsDelegateQt::DidStartNavigation(content::NavigationHandle *naviga
     if (!webEngineSettings()->testAttribute(QWebEngineSettings::ErrorPageEnabled))
         navigation_handle->SetSilentlyIgnoreErrors();
 
-    if (!navigation_handle->IsInMainFrame() || !web_contents()->IsLoadingToDifferentDocument())
+    if (!navigation_handle->IsInMainFrame() || navigation_handle->IsSameDocument())
         return;
 
     m_loadingInfo.url = toQt(navigation_handle->GetURL());
