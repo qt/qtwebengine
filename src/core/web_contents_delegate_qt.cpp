@@ -354,7 +354,7 @@ void WebContentsDelegateQt::DidStartNavigation(content::NavigationHandle *naviga
     if (!webEngineSettings()->testAttribute(WebEngineSettings::ErrorPageEnabled))
         navigation_handle->SetSilentlyIgnoreErrors();
 
-    if (!navigation_handle->IsInMainFrame() || !web_contents()->IsLoadingToDifferentDocument())
+    if (!navigation_handle->IsInMainFrame() || navigation_handle->IsSameDocument())
         return;
 
     m_faviconManager->resetCandidates();
