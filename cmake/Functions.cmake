@@ -345,6 +345,14 @@ function(get_darwin_sdk_version result)
     endif()
 endfunction()
 
+function(get_ios_target_triple_and_sysroot result arch)
+    get_ios_sysroot(sysroot ${arch})
+    set(${result}
+        -target ${arch}-apple-ios${CMAKE_OSX_DEPLOYMENT_TARGET}
+        -isysroot ${sysroot} PARENT_SCOPE
+    )
+endfunction()
+
 function(add_ninja_target target cmakeTarget ninjaTarget config arch buildDir)
     string(TOUPPER ${config} cfg)
     add_custom_target(${target} DEPENDS ${buildDir}/${config}/${arch}/${ninjaTarget}.stamp)
@@ -464,36 +472,86 @@ function(add_rsp_command target buildDir completeStatic)
     )
 endfunction()
 
+function(add_ios_rsp_command target buildDir completeStatic)
+    get_target_property(config ${target} CONFIG)
+    get_target_property(arch ${target} ARCH)
+    get_target_property(ninjaTarget ${target} NINJA_TARGET)
+    get_target_property(cmakeTarget ${target} CMAKE_TARGET)
+    string(TOUPPER ${config} cfg)
+    get_ios_target_triple_and_sysroot(args ${arch})
+    set(objects_rsp "${buildDir}/${ninjaTarget}_objects.rsp")
+    set(objects_out "${buildDir}/${cmakeTarget}_objects.o")
+    add_custom_command(
+        OUTPUT ${objects_out}
+        COMMAND clang++ -r -nostdlib
+            ${args}
+            -o ${objects_out}
+            -Wl,-keep_private_externs
+            @${objects_rsp}
+        DEPENDS
+            ${buildDir}/${ninjaTarget}.stamp
+        WORKING_DIRECTORY "${buildDir}/../../.."
+        COMMENT "Creating intermediate object files for ${cmakeTarget}/${config}/${arch}"
+        USES_TERMINAL
+        VERBATIM
+        COMMAND_EXPAND_LISTS
+    )
+endfunction()
+
+# Lipo the object files together to a single fat archive
+function(create_lipo_command target buildDir fileName)
+    get_target_property(config ${target} CONFIG)
+    get_architectures(archs)
+    foreach(arch ${archs})
+        list(APPEND lipo_objects ${buildDir}/${arch}/${fileName})
+    endforeach()
+    add_custom_command(
+        OUTPUT ${buildDir}/${fileName}
+        COMMAND lipo -create
+            -output ${buildDir}/${fileName}
+        ARGS ${lipo_objects}
+        DEPENDS ${lipo_objects}
+        USES_TERMINAL
+        COMMENT "Running lipo for ${target}/${config}/${arch}"
+        VERBATIM
+    )
+endfunction()
+
+# this function only deals with objects as it is only
+# used by qtpdf and we do not need anything more
+function(add_ios_lipo_command target buildDir)
+    get_target_property(config ${target} CONFIG)
+    get_target_property(cmakeTarget ${target} CMAKE_TARGET)
+    set(fileName ${cmakeTarget}_objects.o)
+    create_lipo_command(${target} ${buildDir} ${fileName})
+    add_custom_target(lipo_${cmakeTarget}_${config} DEPENDS
+        ${buildDir}/${fileName}
+    )
+    add_dependencies(${cmakeTarget} lipo_${cmakeTarget}_${config})
+    qt_internal_get_target_property(options ${cmakeTarget} STATIC_LIBRARY_OPTIONS)
+    set_target_properties(${cmakeTarget} PROPERTIES STATIC_LIBRARY_OPTIONS
+        "${options}$<$<CONFIG:${config}>:${buildDir}/${fileName}>"
+    )
+endfunction()
+
 function(add_lipo_command target buildDir)
     get_target_property(config ${target} CONFIG)
     get_target_property(cmakeTarget ${target} CMAKE_TARGET)
-    set(libs_rsp "${buildDir}/x86_64/${ninjaTarget}_libs.rsp")
-    # Lipo the object files together to a single fat archive
+    set(fileName ${cmakeTarget}.a)
+    create_lipo_command(${target} ${buildDir} ${fileName})
     add_library(${cmakeTarget}_${config} STATIC IMPORTED GLOBAL)
-    add_custom_command(
-        OUTPUT ${buildDir}/lib${cmakeTarget}.a
-        COMMAND lipo -create
-            -output ${buildDir}/lib${cmakeTarget}.a
-        ARGS
-            ${buildDir}/arm64/${cmakeTarget}.a
-            ${buildDir}/x86_64/${cmakeTarget}.a
-        DEPENDS
-            ${buildDir}/arm64/${cmakeTarget}.a
-            ${buildDir}/x86_64/${cmakeTarget}.a
-        USES_TERMINAL
-        VERBATIM
-    )
     set_property(TARGET ${cmakeTarget}_${config}
-        PROPERTY IMPORTED_LOCATION ${buildDir}/lib${cmakeTarget}.a
+        PROPERTY IMPORTED_LOCATION ${buildDir}/${fileName}
     )
     add_custom_target(lipo_${cmakeTarget}_${config} DEPENDS
-        ${buildDir}/lib${cmakeTarget}.a
+        ${buildDir}/${fileName}
     )
     add_dependencies(${cmakeTarget}_${config} lipo_${cmakeTarget}_${config})
     target_link_libraries(${cmakeTarget} PRIVATE ${cmakeTarget}_${config})
 
     # Just link with dynamic libs once
     # TODO: this is evil hack, since cmake has no idea about libs
+    set(libs_rsp "${buildDir}/x86_64/${ninjaTarget}_libs.rsp")
     target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${libs_rsp}>")
 endfunction()
 
@@ -578,6 +636,19 @@ function(get_gn_is_clang result)
     else()
         set(${result} "false" PARENT_SCOPE)
     endif()
+endfunction()
+
+function(get_ios_sysroot result arch)
+    if(NOT CMAKE_APPLE_ARCH_SYSROOTS)
+      message(FATAL_ERROR "CMAKE_APPLE_ARCH_SYSROOTS not set.")
+    endif()
+    get_architectures(archs)
+    list(FIND archs ${arch} known_arch)
+    if (known_arch EQUAL "-1")
+        message(FATAL_ERROR "Unknown iOS architecture ${arch}.")
+    endif()
+    list(GET CMAKE_APPLE_ARCH_SYSROOTS ${known_arch} sysroot)
+    set(${result} ${sysroot} PARENT_SCOPE)
 endfunction()
 
 function(configure_gn_toolchain name binTargetCpu v8TargetCpu toolchainIn toolchainOut)
@@ -727,7 +798,8 @@ macro(append_build_type_setup)
         CONDITION FEATURE_developer_build
     )
 
-    if(NOT QT_FEATURE_webengine_full_debug_info)
+    #TODO: refactor to not check for IOS here
+    if(NOT QT_FEATURE_webengine_full_debug_info AND NOT IOS)
         list(APPEND gnArgArg blink_symbol_level=0 remove_v8base_debug_symbols=true)
     endif()
 
@@ -777,6 +849,14 @@ macro(append_compiler_linker_sdk_setup)
                 use_system_xcode=true
                 mac_deployment_target="${CMAKE_OSX_DEPLOYMENT_TARGET}"
                 mac_sdk_min="${macSdkVersion}"
+            )
+        endif()
+        if(IOS)
+            list(APPEND gnArgArg
+                use_system_xcode=true
+                enable_ios_bitcode=true
+                ios_deployment_target="${CMAKE_OSX_DEPLOYMENT_TARGET}"
+                ios_enable_code_signing=false
             )
         endif()
     else()
@@ -887,6 +967,10 @@ macro(append_toolchain_setup)
     else()
         get_gn_arch(cpu ${arch})
         list(APPEND gnArgArg target_cpu="${cpu}")
+        if(IOS)
+            get_ios_sysroot(sysroot ${arch})
+            list(APPEND gnArgArg target_sysroot="${sysroot}" target_os="ios")
+        endif()
     endif()
 endmacro()
 
@@ -932,10 +1016,10 @@ function(get_configs result)
 endfunction()
 
 function(get_architectures result)
-    if(NOT QT_IS_MACOS_UNIVERSAL)
-        set(${result} ${CMAKE_SYSTEM_PROCESSOR} PARENT_SCOPE)
-    else()
+    if(QT_IS_MACOS_UNIVERSAL OR IOS)
         set(${result} ${CMAKE_OSX_ARCHITECTURES} PARENT_SCOPE)
+    else()
+        set(${result} ${CMAKE_SYSTEM_PROCESSOR} PARENT_SCOPE)
     endif()
 endfunction()
 
@@ -967,6 +1051,8 @@ function(add_gn_build_aritfacts_to_target cmakeTarget ninjaTarget module buildDi
             )
             if(QT_IS_MACOS_UNIVERSAL)
                 add_rsp_command(${target} ${buildDir}/${config}/${arch} ${completeStatic})
+            elseif(IOS)
+                add_ios_rsp_command(${target} ${buildDir}/${config}/${arch} ${completeStatic})
             else()
                 extend_cmake_target(${target} ${buildDir}/${config}/${arch} ${completeStatic})
             endif()
@@ -975,6 +1061,11 @@ function(add_gn_build_aritfacts_to_target cmakeTarget ninjaTarget module buildDi
             set(arch ${CMAKE_SYSTEM_PROCESSOR})
             set(target ${ninjaTarget}_${config}_${arch})
             add_lipo_command(${target} ${buildDir}/${config})
+        endif()
+        if(IOS)
+            list(GET archs 0 arch)
+            set(target ${ninjaTarget}_${config}_${arch})
+            add_ios_lipo_command(${target} ${buildDir}/${config})
         endif()
     endforeach()
 endfunction()

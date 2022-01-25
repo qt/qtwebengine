@@ -8,7 +8,6 @@ if(PkgConfig_FOUND)
 endif()
 
 set(buildDir "${CMAKE_CURRENT_BINARY_DIR}")
-add_subdirectory(plugins/imageformats/pdf)
 
 ##
 #  PDF MODULE
@@ -40,6 +39,8 @@ qt_internal_add_module(Pdf
         Qt::Core
         Qt::Gui
 )
+
+add_subdirectory(plugins/imageformats/pdf)
 
 ##
 #  PDF DOCS

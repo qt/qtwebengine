@@ -361,9 +361,14 @@ assertTargets(
    TARGETS Gui Quick Qml
 )
 add_check_for_support(
-   MODULES QtWebEngine QtPdf
+   MODULES QtWebEngine
    CONDITION LINUX OR (WIN32 AND NOT WIN_ARM_64) OR (MACOS AND NOT CMAKE_CROSSCOMPILING)
    MESSAGE "Build can be done only on Linux, Windows or macOS."
+)
+add_check_for_support(
+   MODULES QtPdf
+   CONDITION LINUX OR (WIN32 AND NOT WIN_ARM_64) OR (MACOS AND NOT CMAKE_CROSSCOMPILING) OR IOS
+   MESSAGE "Build can be done only on Linux, Windows, macOS or iOS."
 )
 if(LINUX AND CMAKE_CROSSCOMPILING)
    get_gn_arch(testArch ${TEST_architecture_arch})
@@ -374,7 +379,7 @@ if(LINUX AND CMAKE_CROSSCOMPILING)
    )
 endif()
 add_check_for_support(
-   MODULES QtWebEngine QtPdf
+   MODULES QtWebEngine
    CONDITION NOT QT_FEATURE_static
    MESSAGE "Static build is not supported."
 )
@@ -461,7 +466,8 @@ add_check_for_support(
        (WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL MSVC) OR
        (WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL Clang AND
           CMAKE_CXX_SIMULATE_ID STREQUAL MSVC) OR
-       (MACOS AND CMAKE_CXX_COMPILER_ID STREQUAL AppleClang)
+       (MACOS AND CMAKE_CXX_COMPILER_ID STREQUAL AppleClang) OR
+       (APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL AppleClang)
    MESSAGE "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
 )
 
