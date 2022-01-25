@@ -117,6 +117,10 @@ endif()
 #  GN PROJECT
 ##
 
+if(CMAKE_CROSSCOMPILING AND NOT Gn_FOUND)
+   message(FATAL_ERROR "No gn found for cross-compilation")
+endif()
+
 if(NOT Gn_FOUND)
     externalproject_add(gn
         SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/gn
@@ -145,7 +149,7 @@ endif()
 #  HOST PROJECT
 ##
 
-if(CMAKE_CROSSCOMPILING)
+if(CMAKE_CROSSCOMPILING AND NOT IOS)
 
     if(NOT Gn_FOUND)
         message(FATAL_ERROR "\nHost gn not found - cross compilation not possible")
@@ -175,7 +179,7 @@ if(CMAKE_CROSSCOMPILING)
 endif()
 
 # install gn for cross build
-if(LINUX AND INSTALL_GN)
+if((LINUX OR MACOS) AND INSTALL_GN)
     get_install_config(installConfig)
     install(
         PROGRAMS ${installDir}/bin/gn
