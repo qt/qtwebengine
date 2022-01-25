@@ -2194,10 +2194,11 @@ QQuickContextMenuBuilder::QQuickContextMenuBuilder(QWebEngineContextMenuRequest 
 
 void QQuickContextMenuBuilder::appendExtraItems(QQmlEngine *engine)
 {
+    Q_UNUSED(engine);
     m_view->d_ptr->ui()->addMenuSeparator(m_menu);
     if (QObject *menuExtras = m_view->d_ptr->contextMenuExtraItems->create(qmlContext(m_view))) {
         menuExtras->setParent(m_menu);
-        QQmlListReference entries(m_menu, defaultPropertyName(m_menu), engine);
+        QQmlListReference entries(m_menu, defaultPropertyName(m_menu));
         if (entries.isValid())
             entries.append(menuExtras);
     }

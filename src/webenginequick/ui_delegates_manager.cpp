@@ -203,7 +203,7 @@ void UIDelegatesManager::addMenuSeparator(QObject *menu)
     QObject *sep = menuSeparatorComponent->create(itemContext);
     sep->setParent(menu);
 
-    QQmlListReference entries(menu, defaultPropertyName(menu), qmlEngine(m_view));
+    QQmlListReference entries(menu, defaultPropertyName(menu));
     if (entries.isValid() && entries.count() > 0)
         entries.append(sep);
 }
@@ -634,7 +634,7 @@ void UIDelegatesManager::addMenuItem(QQuickWebEngineAction *action, QObject *men
 
     it->setParent(menu);
 
-    QQmlListReference entries(menu, defaultPropertyName(menu), qmlEngine(m_view));
+    QQmlListReference entries(menu, defaultPropertyName(menu));
     if (entries.isValid())
         entries.append(it);
 }
