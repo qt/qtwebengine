@@ -207,7 +207,7 @@ private:
     bool m_profileInitialized;
     QWebEngineContextMenuRequest *m_contextMenuRequest;
     QScopedPointer<QQuickWebEngineScriptCollection> m_scriptCollection;
-    QQuickWebEngineFaviconProvider *m_faviconProvider = nullptr;
+    QPointer<QQuickWebEngineFaviconProvider> m_faviconProvider;
 };
 
 #ifndef QT_NO_ACCESSIBILITY
