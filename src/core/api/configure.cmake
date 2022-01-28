@@ -2,6 +2,7 @@
 
 if(NOT QT_CONFIGURE_RUNNING)
     find_package(GLIB2 COMPONENTS gio)
+    find_package(GSSAPI)
     find_package(PkgConfig)
     if(PkgConfig_FOUND)
         pkg_check_modules(ALSA alsa IMPORTED_TARGET)
@@ -81,6 +82,7 @@ qt_feature("webengine-kerberos" PRIVATE
     LABEL "Kerberos Authentication"
     PURPOSE "Enables Kerberos Authentication Support"
     AUTODETECT WIN32
+    CONDITION NOT LINUX OR GSSAPI_FOUND
 )
 qt_feature("webengine-spellchecker" PUBLIC
     LABEL "Spellchecker"
