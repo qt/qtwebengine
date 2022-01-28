@@ -410,6 +410,12 @@ foreach(arch ${archs})
                 CONDITION QT_FEATURE_webengine_ozone_x11 AND XSCRNSAVER_FOUND
             )
 
+            if(QT_FEATURE_webengine_kerberos)
+                list(APPEND gnArgArg
+                     external_gssapi_include_dir="${GSSAPI_INCLUDE_DIRS}/gssapi"
+                )
+            endif()
+
             if(CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm")
                 check_thumb(armThumb)
                 if(NOT armThumb AND NOT QT_FEATURE_system_ffmpeg)
