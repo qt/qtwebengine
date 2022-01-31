@@ -459,7 +459,7 @@ target_include_directories(WebEngineCore PRIVATE
     ${buildDir}/$<CONFIG>/${arch}/gen/third_party/perfetto/build_config
 )
 
-add_gn_build_aritfacts_to_target(WebEngineCore QtWebEngineCore core ${buildDir})
+add_gn_build_aritfacts_to_target(WebEngineCore QtWebEngineCore core ${buildDir} FALSE)
 add_dependencies(WebEngineCore run_core_NinjaDone)
 if(COIN_BUG_699)
    set_property(TARGET WebEngineCore PROPERTY CXX_LINKER_LAUNCHER ${PROJECT_BINARY_DIR}/linker_ulimit.sh)
@@ -501,7 +501,7 @@ if(QT_FEATURE_webengine_spellchecker)
         ../3rdparty/chromium/third_party/boringssl/src/include
         ${buildDir}/$<CONFIG>/${arch}/gen
     )
-    add_gn_build_aritfacts_to_target(${dict_target_name} convert_dict core ${buildDir})
+    add_gn_build_aritfacts_to_target(${dict_target_name} convert_dict core ${buildDir} FALSE)
     add_dependencies(${dict_target_name} run_core_NinjaDone)
     add_dependencies(${dict_target_name} WebEngineCore)
 endif()
