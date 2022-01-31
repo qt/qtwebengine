@@ -440,7 +440,7 @@ function(add_linker_options target buildDir completeStatic)
     set(archives_rsp "${buildDir}/${ninjaTarget}_archives.rsp")
     set(libs_rsp "${buildDir}/${ninjaTarget}_libs.rsp")
     set_target_properties(${cmakeTarget} PROPERTIES STATIC_LIBRARY_OPTIONS "@${objects_rsp}")
-    if(LINUX)
+    if(LINUX OR ANDROID)
          get_gn_arch(cpu ${TEST_architecture_arch})
          if(CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm" AND ${config} STREQUAL "Debug")
              target_link_options(${cmakeTarget} PRIVATE "LINKER:--long-plt")
@@ -946,6 +946,14 @@ macro(append_compiler_linker_sdk_setup)
                 CONDITION QT_FEATURE_stdlib_libcpp
             )
         endif()
+        if(ANDROID)
+            list(APPEND gnArgArg
+                android_ndk_root="${CMAKE_ANDROID_NDK}"
+                android_ndk_version="${CMAKE_ANDROID_NDK_VERSION}"
+                clang_use_default_sample_profile=false
+                #android_ndk_major_version=22
+            )
+        endif()
     else()
         if(QT_FEATURE_use_lld_linker)
             get_filename_component(clangBasePath ${CMAKE_LINKER} DIRECTORY)
@@ -1058,6 +1066,9 @@ macro(append_toolchain_setup)
             get_ios_sysroot(sysroot ${arch})
             list(APPEND gnArgArg target_sysroot="${sysroot}" target_os="ios")
         endif()
+    endif()
+    if(ANDROID)
+        list(APPEND gnArgArg target_os="android")
     endif()
 endmacro()
 

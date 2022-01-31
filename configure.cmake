@@ -474,8 +474,8 @@ add_check_for_support(
 )
 add_check_for_support(
    MODULES QtPdf
-   CONDITION LINUX OR (WIN32 AND NOT WIN_ARM_64) OR MACOS OR IOS
-   MESSAGE "Build can be done only on Linux, Windows, macOS or iOS."
+   CONDITION LINUX OR (WIN32 AND NOT WIN_ARM_64) OR MACOS OR IOS OR ANDROID
+   MESSAGE "Build can be done only on Linux, Windows, macO, iOS and Android."
 )
 if(LINUX AND CMAKE_CROSSCOMPILING)
    get_gn_arch(testArch ${TEST_architecture_arch})
@@ -584,7 +584,8 @@ add_check_for_support(
        (WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL Clang AND
           CMAKE_CXX_SIMULATE_ID STREQUAL MSVC) OR
        (MACOS AND CMAKE_CXX_COMPILER_ID STREQUAL AppleClang) OR
-       (APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL AppleClang)
+       (APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL AppleClang) OR
+       (ANDROID AND CMAKE_CXX_COMPILER_ID STREQUAL Clang)
    MESSAGE "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
 )
 
