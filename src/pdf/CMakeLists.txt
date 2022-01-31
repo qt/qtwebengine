@@ -114,11 +114,13 @@ foreach(arch ${archs})
           strip_absolute_paths_from_debug_symbols=false
         )
 
-        if(LINUX)
+        if(LINUX OR ANDROID)
             list(APPEND gnArgArg
                 is_cfi=false
                 ozone_auto_platforms=false
-                use_gnome_keyring=false)
+                use_gnome_keyring=false
+                enable_vr=false
+            )
             extend_gn_list(gnArgArg
                 ARGS use_system_icu
                 CONDITION QT_FEATURE_webengine_system_icu
