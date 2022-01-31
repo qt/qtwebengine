@@ -8,6 +8,7 @@ if(NOT QT_CONFIGURE_RUNNING)
         pkg_check_modules(GIO gio-2.0)
         pkg_check_modules(XDAMAGE xdamage)
     endif()
+    find_package(Cups)
 
     find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET
         OPTIONAL_COMPONENTS Positioning WebChannel PrintSupport)
@@ -62,7 +63,7 @@ qt_feature("webengine-printing-and-pdf" PRIVATE
     LABEL "Printing and PDF"
     PURPOSE "Provides printing and output to PDF."
     AUTODETECT NOT QT_FEATURE_webengine_embedded_build
-    CONDITION TARGET Qt::PrintSupport AND QT_FEATURE_printer
+    CONDITION TARGET Qt::PrintSupport AND QT_FEATURE_printer AND (CUPS_FOUND OR NOT LINUX)
 )
 qt_feature("webengine-webchannel" PUBLIC
     SECTION "WebEngine"
