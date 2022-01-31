@@ -168,6 +168,6 @@ endforeach()
 
 set(arch ${CMAKE_SYSTEM_PROCESSOR})
 target_include_directories(Pdf PRIVATE ${buildDir}/$<CONFIG>/${arch}/gen)
-add_gn_build_aritfacts_to_target(Pdf QtPdf pdf ${buildDir})
+add_gn_build_aritfacts_to_target(Pdf QtPdf pdf ${buildDir} TRUE)
 add_dependencies(Pdf run_pdf_NinjaDone)
 

@@ -356,34 +356,31 @@ function(add_ninja_target target cmakeTarget ninjaTarget config arch buildDir)
     )
 endfunction()
 
-function(copy_response_files target)
+function(get_copy_of_response_file result target rsp)
     get_target_property(config ${target} CONFIG)
     get_target_property(ninjaTarget ${target} NINJA_TARGET)
     get_target_property(cmakeTarget ${target} CMAKE_TARGET)
-    list(REMOVE_ITEM ARGN ${target})
-    foreach(rsp IN ITEMS ${ARGN})
-        set(rsp_dst "CMakeFiles_${ninjaTarget}_${config}_${rsp}.rsp")
-        set(rsp_src "${${rsp}_rsp}")
-        if(NOT QT_SUPERBUILD)
-            set(rsp_output ${PROJECT_BINARY_DIR}/${rsp_dst})
-        else()
-            set(rsp_output ${PROJECT_BINARY_DIR}/../${rsp_dst})
-        endif()
-        add_custom_command(
-            OUTPUT ${rsp_output}
-            COMMAND ${CMAKE_COMMAND} -E copy ${rsp_src} ${rsp_output}
-            DEPENDS ${rsp_src}
-            USES_TERMINAL
-        )
-        set(${rsp}_rsp ${rsp_dst} PARENT_SCOPE)
-        add_custom_target(${cmakeTarget}_${rsp}_copy_${config}
-            DEPENDS ${rsp_output}
-        )
-        add_dependencies(${cmakeTarget} ${cmakeTarget}_${rsp}_copy_${config})
-    endforeach()
+    set(rsp_dst "CMakeFiles_${ninjaTarget}_${config}_${rsp}.rsp")
+    set(rsp_src "${${result}}")
+    if(NOT QT_SUPERBUILD)
+       set(rsp_output ${PROJECT_BINARY_DIR}/${rsp_dst})
+    else()
+       set(rsp_output ${PROJECT_BINARY_DIR}/../${rsp_dst})
+    endif()
+    add_custom_command(
+        OUTPUT ${rsp_output}
+        COMMAND ${CMAKE_COMMAND} -E copy ${rsp_src} ${rsp_output}
+        DEPENDS ${rsp_src}
+        USES_TERMINAL
+    )
+    set(${result} ${rsp_dst} PARENT_SCOPE)
+    add_custom_target(${cmakeTarget}_${rsp}_copy_${config}
+        DEPENDS ${rsp_output}
+    )
+    add_dependencies(${cmakeTarget} ${cmakeTarget}_${rsp}_copy_${config})
 endfunction()
 
-function(extend_cmake_target target buildDir)
+function(extend_cmake_target target buildDir completeStatic)
     get_target_property(config ${target} CONFIG)
     get_target_property(ninjaTarget ${target} NINJA_TARGET)
     get_target_property(cmakeTarget ${target} CMAKE_TARGET)
@@ -393,12 +390,12 @@ function(extend_cmake_target target buildDir)
     set(archives_rsp "${buildDir}/${ninjaTarget}_archives.rsp")
     set(libs_rsp "${buildDir}/${ninjaTarget}_libs.rsp")
     if(LINUX)
-         target_link_options(${cmakeTarget} PRIVATE
-             "$<$<CONFIG:${config}>:@${objects_rsp}>"
-         )
-         target_link_libraries(${cmakeTarget} PRIVATE
-             "-Wl,--start-group $<$<CONFIG:${config}>:@${archives_rsp}> -Wl,--end-group"
-         )
+         target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${objects_rsp}>")
+         if(NOT completeStatic)
+             target_link_libraries(${cmakeTarget} PRIVATE
+                 "-Wl,--start-group $<$<CONFIG:${config}>:@${archives_rsp}> -Wl,--end-group"
+             )
+         endif()
          # linker here options are just to prevent processing it by cmake
          target_link_libraries(${cmakeTarget} PRIVATE
              "-Wl,--no-fatal-warnings $<$<CONFIG:${config}>:@${libs_rsp}> -Wl,--no-fatal-warnings"
@@ -406,51 +403,61 @@ function(extend_cmake_target target buildDir)
 
     endif()
     if(MACOS)
-        target_link_options(${cmakeTarget} PRIVATE
-            "$<$<CONFIG:${config}>:@${objects_rsp}>"
-            "$<$<CONFIG:${config}>:@${archives_rsp}>"
-            "$<$<CONFIG:${config}>:@${libs_rsp}>"
-        )
+        target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${objects_rsp}>")
+        if(NOT completeStatic)
+            target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${archives_rsp}>")
+        endif()
+        target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${libs_rsp}>")
     endif()
     if(WIN32)
-        copy_response_files(${target} objects archives libs)
-        target_link_options(${cmakeTarget} PRIVATE
-            "$<$<CONFIG:${config}>:@${objects_rsp}>"
-            "$<$<CONFIG:${config}>:@${archives_rsp}>"
-            "$<$<CONFIG:${config}>:@${libs_rsp}>"
-        )
+        get_copy_of_response_file(objects_rsp ${target} objects)
+        target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${objects_rsp}>")
+        if(NOT completeStatic)
+            get_copy_of_response_file(archives_rsp ${target} archives)
+            target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${archives_rsp}>")
+        endif()
+        get_copy_of_response_file(libs_rsp ${target} libs)
+        target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${libs_rsp}>")
         # we need libs rsp also when linking process with sandbox lib
         set_property(TARGET ${cmakeTarget} PROPERTY LIBS_RSP ${libs_rsp})
     endif()
 endfunction()
 
-function(add_rsp_command target buildDir)
+function(add_rsp_command target buildDir completeStatic)
     get_target_property(config ${target} CONFIG)
     get_target_property(arch ${target} ARCH)
     get_target_property(ninjaTarget ${target} NINJA_TARGET)
     get_target_property(cmakeTarget ${target} CMAKE_TARGET)
     string(TOUPPER ${config} cfg)
-    add_custom_command(
-        OUTPUT ${buildDir}/${cmakeTarget}.a
-        BYPRODUCTS
-            ${buildDir}/${cmakeTarget}_objs.o
-            ${buildDir}/${cmakeTarget}_arcs.o
-        COMMAND clang++ -r -nostdlib -arch ${arch}
-            -o ${buildDir}/${cmakeTarget}_objs.o
-            -Wl,-keep_private_externs
-            @${buildDir}/${ninjaTarget}_objects.rsp
-        COMMAND clang++ -r -nostdlib -arch ${arch}
-            -o ${buildDir}/${cmakeTarget}_arcs.o
+    set(objects_rsp "${buildDir}/${ninjaTarget}_objects.rsp")
+    set(objects_out "${buildDir}/${cmakeTarget}_objects.o")
+    if(NOT completeStatic)
+        set(archives_rsp "${buildDir}/${ninjaTarget}_archives.rsp")
+        set(archives_out "${buildDir}/${cmakeTarget}_archives.o")
+        set(archives_command
+            COMMAND clang++ -r -nostdlib -arch ${arch}
+            -o ${archives_out}
             -Wl,-keep_private_externs
             -Wl,-all_load
-            @${buildDir}/${ninjaTarget}_archives.rsp
+            @${archives_rsp}
+        )
+    endif()
+    add_custom_command(
+        OUTPUT ${buildDir}/${cmakeTarget}.a
+        BYPRODUCTS ${objects_out} ${archives_out}
+        COMMAND clang++ -r -nostdlib -arch ${arch}
+            -o ${objects_out}
+            -Wl,-keep_private_externs
+            @${objects_rsp}
+        ${archives_command}
         COMMAND ar -crs
             ${buildDir}/${cmakeTarget}.a
-            ${buildDir}/${cmakeTarget}_objs.o
-            ${buildDir}/${cmakeTarget}_arcs.o
+            ${objects_out}
+            ${archives_out}
         DEPENDS
             ${buildDir}/${ninjaTarget}.stamp
         WORKING_DIRECTORY "${buildDir}/../../.."
+        COMMENT "Creating intermediate archives for ${cmakeTarget}/${config}/${arch}"
         USES_TERMINAL
         VERBATIM
         COMMAND_EXPAND_LISTS
@@ -932,7 +939,7 @@ function(get_architectures result)
     endif()
 endfunction()
 
-function(add_gn_build_aritfacts_to_target cmakeTarget ninjaTarget module buildDir)
+function(add_gn_build_aritfacts_to_target cmakeTarget ninjaTarget module buildDir completeStatic)
     # config loop is a workaround to be able to add_custom_command per config
     # note this is fixed in CMAKE.3.20 and should be cleaned up when 3.20 is
     # the minimum cmake we support
@@ -959,9 +966,9 @@ function(add_gn_build_aritfacts_to_target cmakeTarget ninjaTarget module buildDi
                 LINK_DEPENDS ${buildDir}/${config}/${arch}/${ninjaTarget}.stamp
             )
             if(QT_IS_MACOS_UNIVERSAL)
-                add_rsp_command(${target} ${buildDir}/${config}/${arch})
+                add_rsp_command(${target} ${buildDir}/${config}/${arch} ${completeStatic})
             else()
-                extend_cmake_target(${target} ${buildDir}/${config}/${arch})
+                extend_cmake_target(${target} ${buildDir}/${config}/${arch} ${completeStatic})
             endif()
         endforeach()
         if(QT_IS_MACOS_UNIVERSAL)
