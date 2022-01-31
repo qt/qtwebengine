@@ -272,6 +272,7 @@ public:
                                   const QString &) override
     {
         messages << message;
+        qCDebug(lc) << message;
     }
     QStringList messages;
 };
@@ -298,6 +299,8 @@ private Q_SLOTS:
     void mixedXHR();
     void mixedContent_data();
     void mixedContent();
+    void localMediaBlock_data();
+    void localMediaBlock();
 #if defined(WEBSOCKETS)
     void webSocket();
 #endif
@@ -1291,6 +1294,36 @@ void tst_Origins::redirectInterceptor()
     QCOMPARE(interceptor.requests[4], QUrl(QStringLiteral("redirect:redirect-secure/resources/Akronim-Regular.woff2")));
     QCOMPARE(interceptor.requests[5], QUrl(QStringLiteral("redirect:redirect-secure/resources/Akronim-Regular.woff2")));
     QCOMPARE(interceptor.requests[6], QUrl(QStringLiteral("redirect-secure:/resources/Akronim-Regular.woff2")));
+}
+
+void tst_Origins::localMediaBlock_data()
+{
+    QTest::addColumn<bool>("enableAccess");
+    QTest::addRow("enabled") << true;
+    QTest::addRow("disabled") << false;
+}
+
+void tst_Origins::localMediaBlock()
+{
+    QFETCH(bool, enableAccess);
+
+    std::atomic<bool> accessed = false;
+    HttpServer server;
+    server.setResourceDirs({ QDir(QT_TESTCASE_SOURCEDIR).canonicalPath() + "/resources" });
+    connect(&server, &HttpServer::newRequest, [&](HttpReqRep *) { accessed.store(true); });
+    QVERIFY(server.start());
+
+    ScopedAttribute sa1(m_page->settings(), QWebEngineSettings::LocalContentCanAccessRemoteUrls, enableAccess);
+
+    QVERIFY(verifyLoad("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                       + "/resources/media.html"));
+    eval("addAudio('" + server.url("/mixedXHR.txt").toString() + "')");
+
+    // Give it a chance to avoid a false positive on the default value of accessed.
+    if (!enableAccess)
+        QTest::qSleep(500);
+    QTRY_COMPARE(accessed.load(), enableAccess);
+
 }
 
 QTEST_MAIN(tst_Origins)

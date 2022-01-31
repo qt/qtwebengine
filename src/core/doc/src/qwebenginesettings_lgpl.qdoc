@@ -97,8 +97,7 @@
             Enables support for the HTML 5 local storage feature. Enabled by default.
     \value  LocalContentCanAccessRemoteUrls
             Allows local origin documents to access remote resources that would normally be blocked.
-            Note that disabling this setting does not prevent media elements in local files from
-            accessing remote content. Disabled by default.
+            Disabled by default.
     \value  XSSAuditingEnabled
             Obsolete and has no effect.
     \value  SpatialNavigationEnabled
