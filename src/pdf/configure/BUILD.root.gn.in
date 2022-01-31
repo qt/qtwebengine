@@ -1,3 +1,5 @@
+import("//build/config/features.gni")
+
 config("QtPdf_config") {
   cflags = [
     @GN_CFLAGS_C@,
@@ -24,7 +26,8 @@ config("cpp17_config") {
   }
 }
 
-shared_library("QtPdf") {
+static_library("QtPdf") {
+  complete_static_lib = true
   rsp_types = [ "objects", "archives", "libs" ]
   configs += [
     ":cpp17_config",
