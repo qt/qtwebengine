@@ -90,7 +90,7 @@ qt_feature("webengine-native-spellchecker" PUBLIC
     LABEL "Native Spellchecker"
     PURPOSE "Use the system's native spellchecking engine."
     AUTODETECT OFF
-    CONDITION MACOS AND QT_FEATURE_webengine_spellchecker
+    CONDITION QT_FEATURE_webengine_spellchecker AND NOT LINUX
 )
 qt_feature("webengine-extensions" PUBLIC
     SECTION "WebEngine"
@@ -134,7 +134,10 @@ qt_configure_add_summary_entry(ARGS "webengine-pepper-plugins")
 qt_configure_add_summary_entry(ARGS "webengine-printing-and-pdf")
 qt_configure_add_summary_entry(ARGS "webengine-proprietary-codecs")
 qt_configure_add_summary_entry(ARGS "webengine-spellchecker")
-qt_configure_add_summary_entry(ARGS "webengine-native-spellchecker")
+qt_configure_add_summary_entry(
+    ARGS "webengine-native-spellchecker"
+    CONDITION NOT LINUX
+)
 qt_configure_add_summary_entry(ARGS "webengine-webrtc")
 qt_configure_add_summary_entry(ARGS "webengine-webrtc-pipewire")
 qt_configure_add_summary_entry(ARGS "webengine-geolocation")
