@@ -57,7 +57,6 @@ class DisplaySoftwareOutputSurface::Device final : public viz::SoftwareOutputDev
 {
 public:
     Device();
-    ~Device();
 
     // Overridden from viz::SoftwareOutputDevice.
     void Resize(const gfx::Size &sizeInPixels, float devicePixelRatio) override;
@@ -82,11 +81,6 @@ private:
 DisplaySoftwareOutputSurface::Device::Device()
     : Compositor(Type::Software)
 {}
-
-DisplaySoftwareOutputSurface::Device::~Device()
-{
-    unbind();
-}
 
 void DisplaySoftwareOutputSurface::Device::Resize(const gfx::Size &sizeInPixels, float devicePixelRatio)
 {
