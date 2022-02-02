@@ -69,7 +69,6 @@ RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderW
 
 RenderWidgetHostViewQtDelegateQuick::~RenderWidgetHostViewQtDelegateQuick()
 {
-    unbind();
     QQuickWebEngineViewPrivate::bindViewAndWidget(nullptr, this);
 }
 

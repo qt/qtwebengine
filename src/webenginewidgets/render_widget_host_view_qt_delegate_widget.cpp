@@ -64,7 +64,6 @@ public:
 
         bind(client->compositorId());
     }
-    ~RenderWidgetHostViewQuickItem() { unbind(); }
 
 protected:
     bool event(QEvent *event) override
