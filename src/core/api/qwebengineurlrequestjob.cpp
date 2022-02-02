@@ -148,7 +148,10 @@ QMap<QByteArray, QByteArray> QWebEngineUrlRequestJob::requestHeaders() const
 }
 
 /*!
-    Replies to the request with \a device and the MIME type \a contentType.
+    Replies to the request with \a device and the content type \a contentType.
+    Content type is similar to the HTTP Content-Type header, and can either be
+    a MIME type, or a MIME type and charset encoding combined like this:
+    "text/html; charset=utf-8".
 
     The user has to be aware that \a device will be used on another thread
     until the job is deleted. In case simultaneous access from the main thread
