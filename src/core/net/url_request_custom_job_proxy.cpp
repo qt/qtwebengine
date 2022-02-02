@@ -76,22 +76,23 @@ void URLRequestCustomJobProxy::release()
     }
 }
 
-// Fix me: this is  never used
-/*
-void URLRequestCustomJobProxy::setReplyCharset(const std::string &charset)
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    if (!m_job)
-        return;
-    m_job->m_charset = charset;
-}
-*/
-void URLRequestCustomJobProxy::reply(std::string mimeType, QIODevice *device)
+void URLRequestCustomJobProxy::reply(std::string contentType, QIODevice *device)
 {
     if (!m_client)
         return;
     DCHECK (!m_ioTaskRunner || m_ioTaskRunner->RunsTasksInCurrentSequence());
-    m_client->m_mimeType = mimeType;
+    QByteArray qcontentType = QByteArray::fromStdString(contentType).toLower();
+    const int sidx = qcontentType.indexOf(';');
+    if (sidx > 0) {
+        const int cidx = qcontentType.indexOf("charset=", sidx);
+        if (cidx > 0) {
+            m_client->m_charset = qcontentType.mid(cidx + 8).toStdString();
+            qcontentType = qcontentType.first(sidx);
+        } else {
+            qWarning() << "QWebEngineUrlRequestJob::reply(): Unrecognized content-type format with ';'" << qcontentType;
+        }
+    }
+    m_client->m_mimeType = qcontentType.toStdString();
     m_client->m_device = device;
     if (m_client->m_device && !m_client->m_device->isReadable())
         m_client->m_device->open(QIODevice::ReadOnly);
