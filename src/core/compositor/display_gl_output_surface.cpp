@@ -67,7 +67,6 @@ DisplayGLOutputSurface::DisplayGLOutputSurface(
 
 DisplayGLOutputSurface::~DisplayGLOutputSurface()
 {
-    unbind();
     m_vizContextProvider->SetUpdateVSyncParametersCallback(viz::UpdateVSyncParametersCallback());
     m_gl->DeleteFramebuffers(1, &m_fboId);
 }
