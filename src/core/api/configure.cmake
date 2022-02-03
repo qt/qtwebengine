@@ -1,11 +1,11 @@
 #### Libraries
 
 if(NOT QT_CONFIGURE_RUNNING)
-    find_package(GLIB2 COMPONENTS gio)
     find_package(PkgConfig)
     if(PkgConfig_FOUND)
         pkg_check_modules(ALSA alsa IMPORTED_TARGET)
         pkg_check_modules(PULSEAUDIO libpulse>=0.9.10 libpulse-mainloop-glib)
+        pkg_check_modules(GIO gio-2.0)
         pkg_check_modules(XDAMAGE xdamage)
     endif()
 
@@ -109,7 +109,7 @@ qt_feature("webengine-webrtc-pipewire" PRIVATE
     LABEL "PipeWire over GIO"
     PURPOSE "Provides PipeWire support in WebRTC using GIO."
     AUTODETECT false
-    CONDITION QT_FEATURE_webengine_webrtc AND TARGET GLIB2::GIO
+    CONDITION QT_FEATURE_webengine_webrtc AND GIO_FOUND
 )
 qt_feature("webengine-full-debug-info" PRIVATE
     SECTION "WebEngine"
