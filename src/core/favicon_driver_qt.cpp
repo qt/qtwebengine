@@ -181,7 +181,7 @@ int FaviconDriverQt::DownloadImage(const GURL &url, int max_image_size,
     bool bypass_cache = (m_bypassCachePageURL == GetActiveURL());
     m_bypassCachePageURL = GURL();
 
-    return web_contents()->DownloadImage(url, true, /*preferred_size=*/max_image_size,
+    return web_contents()->DownloadImage(url, true, /*preferred_size=*/ {max_image_size, max_image_size},
                                          /*max_bitmap_size=*/max_image_size, bypass_cache,
                                          std::move(callback));
 }
@@ -403,6 +403,6 @@ void FaviconDriverQt::emitIconChangedIfNeeded()
     m_viewClient->iconChanged(toQt(m_latestFavicon.url));
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(FaviconDriverQt)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(FaviconDriverQt);
 
 } // namespace QtWebEngineCore

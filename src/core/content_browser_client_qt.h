@@ -98,7 +98,6 @@ public:
                                               std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
     std::unique_ptr<net::ClientCertStore> CreateClientCertStore(content::BrowserContext *browser_context) override;
     std::unique_ptr<content::DevToolsManagerDelegate> CreateDevToolsManagerDelegate() override;
-    content::PlatformNotificationService * GetPlatformNotificationService(content::BrowserContext *browser_context) override;
 
     std::string GetApplicationLocale() override;
     std::string GetAcceptLangs(content::BrowserContext* context) override;
@@ -147,12 +146,13 @@ public:
             mojo::PendingReceiver<network::mojom::RestrictedCookieManager> *receiver) override;
 
     bool AllowAppCache(const GURL &manifest_url,
-                       const GURL &first_party,
+                       const net::SiteForCookies &site_for_cookies,
                        const absl::optional<url::Origin> &top_frame_origin,
                        content::BrowserContext *context) override;
+
     content::AllowServiceWorkerResult AllowServiceWorker(
             const GURL &scope,
-            const GURL &site_for_cookies,
+            const net::SiteForCookies &site_for_cookies,
             const absl::optional<url::Origin> &top_frame_origin,
             const GURL &script_url,
             content::BrowserContext *context) override;
@@ -211,6 +211,7 @@ public:
             int frame_tree_node_id,
             content::NavigationUIData *navigation_data,
             bool is_main_frame,
+            network::mojom::WebSandboxFlags sandbox_flags,
             ui::PageTransition page_transition,
             bool has_user_gesture,
             const absl::optional<url::Origin> &initiating_origin,

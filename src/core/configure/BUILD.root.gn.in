@@ -263,8 +263,6 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/ui/webui/user_actions/user_actions_ui.h",
     "//chrome/browser/ui/webui/user_actions/user_actions_ui_handler.cc",
     "//chrome/browser/ui/webui/user_actions/user_actions_ui_handler.h",
-    "//chrome/common/custom_handlers/protocol_handler.cc",
-    "//chrome/common/custom_handlers/protocol_handler.h",
     "//chrome/browser/ui/webui/webui_util.cc",
     "//chrome/browser/ui/webui/webui_util.h",
     "//chrome/common/chrome_switches.cc",

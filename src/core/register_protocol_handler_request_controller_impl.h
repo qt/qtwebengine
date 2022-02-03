@@ -43,8 +43,8 @@
 #include "register_protocol_handler_request_controller.h"
 
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "chrome/common/custom_handlers/protocol_handler.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/custom_handlers/protocol_handler.h"
 
 class ProtocolHandlerRegistry;
 
@@ -55,7 +55,7 @@ class RegisterProtocolHandlerRequestControllerImpl final : public RegisterProtoc
 public:
     RegisterProtocolHandlerRequestControllerImpl(
         content::WebContents *webContents,
-        ProtocolHandler handler);
+        content::ProtocolHandler handler);
 
     ~RegisterProtocolHandlerRequestControllerImpl();
 
@@ -65,7 +65,7 @@ protected:
 
 private:
     ProtocolHandlerRegistry *protocolHandlerRegistry();
-    ProtocolHandler m_handler;
+    content::ProtocolHandler m_handler;
 };
 
 } // namespace QtWebEngineCore

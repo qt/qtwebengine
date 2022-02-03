@@ -738,7 +738,7 @@ void tst_QWebEngineUrlRequestInterceptor::jsServiceWorker()
     QTRY_COMPARE_WITH_TIMEOUT(page->messages.count(), 1, 20000);
     QCOMPARE(page->levels.at(0), QWebEnginePage::InfoMessageLevel);
 
-    QUrl firstPartyUrl = QUrl(server.url().toString() + "sw.js");
+    QUrl firstPartyUrl = QUrl(server.url().toString() + "sw.html");
     QList<RequestInfo> infos;
     // Service Worker
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeServiceWorker));

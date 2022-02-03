@@ -110,6 +110,7 @@ public:
     void removeDownload(quint32 downloadId);
 
     ProfileQt *profile();
+    bool ensureDataPathExists();
 
     QString storageName() const { return m_name; }
     void setStorageName(const QString &storageName);

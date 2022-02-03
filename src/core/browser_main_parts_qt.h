@@ -57,8 +57,7 @@ class GeolocationManager;
 }
 
 namespace performance_manager {
-class PerformanceManager;
-class PerformanceManagerRegistry;
+class PerformanceManagerLifetime;
 }
 
 namespace QtWebEngineCore {
@@ -85,8 +84,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsQt);
-    std::unique_ptr<performance_manager::PerformanceManager> performance_manager_;
-    std::unique_ptr<performance_manager::PerformanceManagerRegistry> performance_manager_registry_;
+    std::unique_ptr<performance_manager::PerformanceManagerLifetime> performance_manager_lifetime_;
     std::unique_ptr<WebUsbDetectorQt> m_webUsbDetector;
 #if defined(OS_MAC)
     std::unique_ptr<device::GeolocationManager> m_geolocationManager;

@@ -54,10 +54,13 @@
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
+#include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 #include "ui/base/ui_base_features.h"
 
+#include <QBuffer>
 #include <QGuiApplication>
 #include <QImage>
+#include <QImageWriter>
 #include <QMimeData>
 
 namespace QtWebEngineCore {
@@ -221,6 +224,9 @@ bool ClipboardQt::IsFormatAvailable(const ui::ClipboardFormatType &format,
 {
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(
             type == ui::ClipboardBuffer::kCopyPaste ? QClipboard::Clipboard : QClipboard::Selection);
+
+    if (format == ui::ClipboardFormatType::BitmapType())
+        return mimeData && mimeData->hasImage();
     return mimeData && mimeData->hasFormat(QString::fromStdString(format.GetName()));
 }
 
@@ -338,38 +344,21 @@ void ClipboardQt::ReadRTF(ui::ClipboardBuffer type,
     *result = std::string(byteArray.constData(), byteArray.length());
 }
 
-void ClipboardQt::ReadImage(ui::ClipboardBuffer type,
-                            const ui::DataTransferEndpoint *data_dst,
-                            ReadImageCallback callback) const
+void ClipboardQt::ReadPng(ui::ClipboardBuffer type, const ui::DataTransferEndpoint *, ui::Clipboard::ReadPngCallback callback) const
 {
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(
             type == ui::ClipboardBuffer::kCopyPaste ? QClipboard::Clipboard : QClipboard::Selection);
     if (!mimeData)
-        return std::move(callback).Run(SkBitmap());
+        return std::move(callback).Run({});
     QImage image = qvariant_cast<QImage>(mimeData->imageData());
 
-    image = image.convertToFormat(QImage::Format_ARGB32);
-    SkBitmap bitmap;
-
-    bitmap.allocN32Pixels(image.width(), image.height(), true);
-    const size_t bytesPerRowDst = bitmap.rowBytes();
-    const size_t bytesPerLineSrc = static_cast<size_t>(image.bytesPerLine());
-    const size_t dataBytes = std::min(bytesPerRowDst, bytesPerLineSrc);
-    uchar *dst = static_cast<uchar *>(bitmap.getPixels());
-    const uchar *src = image.constBits();
-    for (int y = 0; y < image.height(); ++y) {
-        memcpy(dst, src, dataBytes);
-        dst += bytesPerRowDst;
-        src += bytesPerLineSrc;
-    }
-
-    return std::move(callback).Run(bitmap);
-}
-
-void ClipboardQt::ReadPng(ui::ClipboardBuffer type, const ui::DataTransferEndpoint *, ui::Clipboard::ReadPngCallback callback) const
-{
-    // TODO(crbug.com/1201018): Implement this.
-    NOTIMPLEMENTED();
+    QBuffer buffer;
+    QImageWriter writer(&buffer, "png");
+    writer.write(image);
+    std::vector<uint8_t> pngData;
+    pngData.resize(buffer.size());
+    memcpy(pngData.data(), buffer.data().data(), buffer.size());
+    return std::move(callback).Run(std::move(pngData));
 }
 
 void ClipboardQt::ReadCustomData(ui::ClipboardBuffer clipboard_type, const std::u16string &type,
@@ -466,17 +455,23 @@ bool ClipboardQt::IsSelectionBufferAvailable() const
 }
 #endif
 
-std::vector<std::u16string> ClipboardQt::ReadAvailablePlatformSpecificFormatNames(ui::ClipboardBuffer buffer, const ui::DataTransferEndpoint *data_dst) const
+// This is the same as ReadAvailableTypes minus dealing with custom-data
+std::vector<std::u16string> ClipboardQt::GetStandardFormats(ui::ClipboardBuffer buffer, const ui::DataTransferEndpoint *data_dst) const
 {
     Q_UNUSED(data_dst);
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(
             buffer == ui::ClipboardBuffer::kCopyPaste ? QClipboard::Clipboard : QClipboard::Selection);
     if (!mimeData)
         return {};
+
     std::vector<std::u16string> types;
     const QStringList formats = mimeData->formats();
-    for (const QString &mimeType : formats)
-        types.push_back(toString16(mimeType));
+    if (mimeData->hasImage() && !formats.contains(QStringLiteral("image/png")))
+        types.push_back(toString16(QStringLiteral("image/png")));
+    for (const QString &mimeType : formats) {
+        if (mimeType != QString::fromLatin1(ui::kMimeTypeWebCustomData))
+            types.push_back(toString16(mimeType));
+    }
     return types;
 }
 

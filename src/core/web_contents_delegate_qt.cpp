@@ -321,7 +321,7 @@ void WebContentsDelegateQt::RenderFrameHostChanged(content::RenderFrameHost *old
         m_frameFocusedObserver.addNode(new_node);
 
         // Is this a main frame?
-        if (new_host->GetFrameOwnerElementType() == blink::mojom::FrameOwnerElementType::kNone) {
+        if (new_host->GetFrameOwnerElementType() == blink::FrameOwnerElementType::kNone) {
             content::RenderProcessHost *renderProcessHost = new_host->GetProcess();
             const base::Process &process = renderProcessHost->GetProcess();
             if (process.IsValid())

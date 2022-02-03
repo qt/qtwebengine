@@ -262,29 +262,11 @@ const PrefServiceAdapter &ProfileQt::prefServiceAdapter() const
     return m_prefServiceAdapter;
 }
 
-
-content::PlatformNotificationService *ProfileQt::platformNotificationService()
+content::PlatformNotificationService *ProfileQt::GetPlatformNotificationService()
 {
     if (!m_platformNotificationService)
         m_platformNotificationService = std::make_unique<PlatformNotificationServiceQt>(this);
     return m_platformNotificationService.get();
-}
-
-bool ProfileQt::ensureDirectoryExists()
-{
-    const base::FilePath &path = GetPath();
-
-    if (base::PathExists(path))
-        return true;
-
-    base::File::Error error;
-    if (base::CreateDirectoryAndGetError(path, &error))
-        return true;
-
-    std::string errorstr = base::File::ErrorToString(error);
-    qWarning("Cannot create directory %s. Error: %s.", path.AsUTF8Unsafe().c_str(),
-             errorstr.c_str());
-    return false;
 }
 
 } // namespace QtWebEngineCore

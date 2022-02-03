@@ -92,7 +92,7 @@ private:
     WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(PdfWebContentsLifetimeHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PdfWebContentsLifetimeHelper);
 
 bool IsPDFPluginEnabled(content::NavigationHandle *navigation_handle, bool *is_stale)
 {

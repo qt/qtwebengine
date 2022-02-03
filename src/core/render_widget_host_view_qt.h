@@ -93,7 +93,7 @@ public:
     void setGuest(content::RenderWidgetHostImpl *);
 
     void InitAsChild(gfx::NativeView) override;
-    void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&) override;
+    void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&, const gfx::Rect&) override;
     void SetSize(const gfx::Size& size) override;
     void SetBounds(const gfx::Rect&) override;
     gfx::NativeView GetNativeView() override;

@@ -88,6 +88,7 @@ QImage toQImage(const SkBitmap &bitmap)
             break;
         }
         break;
+    case kSRGBA_8888_SkColorType:
     case kRGB_888x_SkColorType:
     case kRGBA_8888_SkColorType:
         switch (bitmap.alphaType()) {

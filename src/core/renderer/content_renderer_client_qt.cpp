@@ -505,14 +505,43 @@ media::SupportedCodecs GetVP9Codecs(const std::vector<media::VideoCodecProfile> 
             supported_vp9_codecs |= media::EME_CODEC_VP9_PROFILE2;
             break;
         default:
-            DVLOG(1) << "Unexpected " << GetCodecName(media::VideoCodec::kCodecVP9)
-                     << " profile: " << GetProfileName(profile);
+            DVLOG(1) << "Unexpected " << media::GetCodecName(media::VideoCodec::kVP9)
+                     << " profile: " << media::GetProfileName(profile);
             break;
         }
     }
 
     return supported_vp9_codecs;
 }
+
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+SupportedCodecs GetHevcCodecs(const std::vector<media::VideoCodecProfile> &profiles)
+{
+    // If no profiles are specified, then all are supported.
+    if (profiles.empty()) {
+        return media::EME_CODEC_HEVC_PROFILE_MAIN |
+               media::EME_CODEC_HEVC_PROFILE_MAIN10;
+    }
+
+    media::SupportedCodecs supported_hevc_codecs = media::EME_CODEC_NONE;
+    for (const auto& profile : profiles) {
+        switch (profile) {
+        case media::HEVCPROFILE_MAIN:
+            supported_hevc_codecs |= media::EME_CODEC_HEVC_PROFILE_MAIN;
+            break;
+        case media::HEVCPROFILE_MAIN10:
+            supported_hevc_codecs |= media::EME_CODEC_HEVC_PROFILE_MAIN10;
+            break;
+        default:
+            DVLOG(1) << "Unexpected " << media::GetCodecName(media::VideoCodec::kHEVC)
+                     << " profile: " << media::GetProfileName(profile);
+            break;
+        }
+    }
+
+    return supported_hevc_codecs;
+}
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 
 static media::SupportedCodecs GetSupportedCodecs(const media::CdmCapability& capability,
                                                  bool is_secure)
@@ -521,17 +550,17 @@ static media::SupportedCodecs GetSupportedCodecs(const media::CdmCapability& cap
 
     for (const auto& codec : capability.audio_codecs) {
         switch (codec) {
-        case media::AudioCodec::kCodecOpus:
+        case media::AudioCodec::kOpus:
             supported_codecs |= media::EME_CODEC_OPUS;
             break;
-        case media::AudioCodec::kCodecVorbis:
+        case media::AudioCodec::kVorbis:
             supported_codecs |= media::EME_CODEC_VORBIS;
             break;
-        case media::AudioCodec::kCodecFLAC:
+        case media::AudioCodec::kFLAC:
             supported_codecs |= media::EME_CODEC_FLAC;
             break;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-        case media::AudioCodec::kCodecAAC:
+        case media::AudioCodec::kAAC:
             supported_codecs |= media::EME_CODEC_AAC;
             break;
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -543,20 +572,25 @@ static media::SupportedCodecs GetSupportedCodecs(const media::CdmCapability& cap
 
     for (const auto &codec : capability.video_codecs) {
         switch (codec.first) {
-        case media::VideoCodec::kCodecVP8:
+        case media::VideoCodec::kVP8:
             supported_codecs |= media::EME_CODEC_VP8;
             break;
-        case media::VideoCodec::kCodecVP9:
+        case media::VideoCodec::kVP9:
             supported_codecs |= GetVP9Codecs(codec.second);
             break;
-        case media::VideoCodec::kCodecAV1:
+        case media::VideoCodec::kAV1:
             supported_codecs |= media::EME_CODEC_AV1;
             break;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-        case media::VideoCodec::kCodecH264:
+        case media::VideoCodec::kH264:
             supported_codecs |= media::EME_CODEC_AVC1;
             break;
 #endif // BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+        case media::VideoCodec::kHEVC:
+            supported_codecs |= GetHevcCodecs(codec.second);
+            break;
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
         default:
             DVLOG(1) << "Unexpected supported codec: " << GetCodecName(codec.first);
             break;

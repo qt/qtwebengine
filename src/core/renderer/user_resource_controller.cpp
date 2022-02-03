@@ -149,7 +149,7 @@ public:
 private:
     // RenderFrameObserver implementation.
     void DidCommitProvisionalLoad(ui::PageTransition transition) override;
-    void DidFinishDocumentLoad() override;
+    void DidDispatchDOMContentLoadedEvent() override;
     void DidFinishLoad() override;
     void WillDetach() override;
     void OnDestruct() override;
@@ -251,7 +251,7 @@ void UserResourceController::RenderFrameObserverHelper::DidCommitProvisionalLoad
                            QtWebEngineCore::UserScriptData::DocumentElementCreation));
 }
 
-void UserResourceController::RenderFrameObserverHelper::DidFinishDocumentLoad()
+void UserResourceController::RenderFrameObserverHelper::DidDispatchDOMContentLoadedEvent()
 {
     // Don't run scripts if provisional load failed (DidFailProvisionalLoad
     // called instead of DidCommitProvisionalLoad).

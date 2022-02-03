@@ -51,8 +51,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "components/device_event_log/device_event_log.h"
+#include "components/performance_manager/embedder/graph_features.h"
 #include "components/performance_manager/embedder/performance_manager_lifetime.h"
-#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/public/graph/graph.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "content/public/browser/browser_main_parts.h"
@@ -304,9 +304,7 @@ int BrowserMainPartsQt::PreMainMessageLoopRun()
 
 void BrowserMainPartsQt::PostMainMessageLoopRun()
 {
-    performance_manager_registry_->TearDown();
-    performance_manager_registry_.reset();
-    performance_manager::DestroyPerformanceManager(std::move(performance_manager_));
+    performance_manager_lifetime_.reset();
 
     m_webUsbDetector.reset();
 
@@ -317,8 +315,6 @@ void BrowserMainPartsQt::PostMainMessageLoopRun()
 
 int BrowserMainPartsQt::PreCreateThreads()
 {
-    base::ThreadRestrictions::SetIOAllowed(true);
-
 #if defined(OS_MAC)
     ui::InitIdleMonitor();
 #endif
@@ -339,10 +335,10 @@ static void CreatePoliciesAndDecorators(performance_manager::Graph *graph)
 
 void BrowserMainPartsQt::PostCreateThreads()
 {
-    performance_manager_ =
-          performance_manager::CreatePerformanceManagerWithDefaultDecorators(
-              base::BindOnce(&QtWebEngineCore::CreatePoliciesAndDecorators));
-    performance_manager_registry_ = performance_manager::PerformanceManagerRegistry::Create();
+    performance_manager_lifetime_ =
+        std::make_unique<performance_manager::PerformanceManagerLifetime>(
+            performance_manager::GraphFeatures::WithDefault(),
+            base::BindOnce(&QtWebEngineCore::CreatePoliciesAndDecorators));
 }
 
 #if defined(OS_MAC)

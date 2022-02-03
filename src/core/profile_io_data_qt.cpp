@@ -236,7 +236,6 @@ void ProfileIODataQt::ConfigureNetworkContextParams(bool in_memory,
 
     SystemNetworkContextManager::GetInstance()->ConfigureDefaultNetworkContextParams(network_context_params, cert_verifier_creation_params);
 
-    network_context_params->context_name = m_storageName.toStdString();
     network_context_params->user_agent = m_httpUserAgent.toStdString();
     network_context_params->accept_language = m_httpAcceptLanguage.toStdString();
 
@@ -249,17 +248,19 @@ void ProfileIODataQt::ConfigureNetworkContextParams(bool in_memory,
     if (m_httpCacheType == ProfileAdapter::DiskHttpCache && !m_httpCachePath.isEmpty() && !m_inMemoryOnly && !in_memory)
         network_context_params->http_cache_path = toFilePath(m_httpCachePath);
 
-    if (m_persistentCookiesPolicy != ProfileAdapter::NoPersistentCookies && !m_inMemoryOnly && !in_memory) {
-        base::FilePath cookie_path = toFilePath(m_dataPath);
-        cookie_path = cookie_path.AppendASCII("Cookies");
-        network_context_params->cookie_path = cookie_path;
-
-        network_context_params->restore_old_session_cookies = m_persistentCookiesPolicy == ProfileAdapter::ForcePersistentCookies;
-        network_context_params->persist_session_cookies = m_persistentCookiesPolicy != ProfileAdapter::NoPersistentCookies;
-    }
+    network_context_params->persist_session_cookies = false;
     if (!m_inMemoryOnly && !in_memory) {
-        network_context_params->http_server_properties_path = toFilePath(m_dataPath).AppendASCII("Network Persistent State");
-        network_context_params->transport_security_persister_file_path = toFilePath(m_dataPath).AppendASCII("TransportSecurity");
+        network_context_params->file_paths =
+            network::mojom::NetworkContextFilePaths::New();
+        network_context_params->file_paths->data_path = toFilePath(m_dataPath);
+        network_context_params->file_paths->http_server_properties_file_name = base::FilePath::FromASCII("Network Persistent State");
+        network_context_params->file_paths->transport_security_persister_file_name = base::FilePath::FromASCII("TransportSecurity");
+        network_context_params->file_paths->trust_token_database_name = base::FilePath::FromASCII("Trust Tokens");
+        if (m_persistentCookiesPolicy != ProfileAdapter::NoPersistentCookies) {
+            network_context_params->file_paths->cookie_database_name = base::FilePath::FromASCII("Cookies");
+            network_context_params->restore_old_session_cookies = m_persistentCookiesPolicy == ProfileAdapter::ForcePersistentCookies;
+            network_context_params->persist_session_cookies = m_persistentCookiesPolicy != ProfileAdapter::NoPersistentCookies;
+        }
     }
 
     network_context_params->enforce_chrome_ct_policy = false;

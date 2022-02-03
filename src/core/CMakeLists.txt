@@ -294,7 +294,7 @@ foreach(arch ${archs})
             enable_js_type_check=false
             v8_use_external_startup_data=false
             strip_absolute_paths_from_debug_symbols=false
-            disable_ftp_support=true
+            enable_oop_printing=false
         )
 
         extend_gn_list(gnArgArg
@@ -358,6 +358,8 @@ foreach(arch ${archs})
                 ozone_platform="qt"
                 ozone_extra_path="${CMAKE_CURRENT_LIST_DIR}/ozone/ozone_extra.gni"
                 use_glib=false
+                use_bluez=false
+                use_vaapi=false
             )
             set(systemLibs libjpeg libpng freetype harfbuzz libevent libwebp libxml
                 opus snappy libvpx icu ffmpeg re2 lcms2

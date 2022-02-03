@@ -41,6 +41,7 @@
 
 #include "base/files/file_util.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time_to_iso8601.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/content/browser/history_database_helper.h"
@@ -170,6 +171,26 @@ void ProfileAdapter::setOffTheRecord(bool offTheRecord)
 ProfileQt *ProfileAdapter::profile()
 {
     return m_profile.data();
+}
+
+bool ProfileAdapter::ensureDataPathExists()
+{
+    Q_ASSERT(!m_offTheRecord);
+    base::ScopedAllowBlocking allowBlock;
+    const base::FilePath &path = toFilePath(dataPath());
+    if (path.empty())
+        return false;
+    if (base::DirectoryExists(path))
+        return true;
+
+    base::File::Error error;
+    if (base::CreateDirectoryAndGetError(path, &error))
+        return true;
+
+    std::string errorstr = base::File::ErrorToString(error);
+    qWarning("Cannot create directory %s. Error: %s.", path.AsUTF8Unsafe().c_str(),
+             errorstr.c_str());
+    return false;
 }
 
 VisitedLinksManagerQt *ProfileAdapter::visitedLinksManager()
@@ -658,8 +679,8 @@ void ProfileAdapter::resetVisitedLinksManager()
 
 void ProfileAdapter::reinitializeHistoryService()
 {
-    Q_ASSERT(!m_profile->IsOffTheRecord());
-    if (m_profile->ensureDirectoryExists()) {
+    Q_ASSERT(!m_offTheRecord);
+    if (ensureDataPathExists()) {
         favicon::FaviconService *faviconService =
                 FaviconServiceFactoryQt::GetForBrowserContext(m_profile.data());
         history::HistoryService *historyService = static_cast<history::HistoryService *>(

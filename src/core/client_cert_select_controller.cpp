@@ -45,6 +45,7 @@
 #include <net/ssl/client_cert_identity.h>
 #include <net/ssl/ssl_cert_request_info.h>
 #include <net/ssl/ssl_info.h>
+#include "net/ssl/ssl_private_key.h"
 
 #include "type_conversion.h"
 

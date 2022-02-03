@@ -43,6 +43,7 @@
 #include "type_conversion.h"
 #include "web_engine_context.h"
 
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "content/public/browser/browser_thread.h"
 #include "components/language/core/browser/pref_names.h"
@@ -85,12 +86,13 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
             WebEngineContext::commandLine()));
 
     QString userPrefStorePath = profileAdapter.dataPath();
-    if (profileAdapter.isOffTheRecord() || profileAdapter.storageName().isEmpty()) {
-        factory.set_user_prefs(new InMemoryPrefStore);
-    } else {
+    if (!profileAdapter.isOffTheRecord() && !userPrefStorePath.isEmpty() &&
+            const_cast<ProfileAdapter *>(&profileAdapter)->ensureDataPathExists()) {
         userPrefStorePath += QDir::separator();
         userPrefStorePath += QStringLiteral("user_prefs.json");
         factory.set_user_prefs(base::MakeRefCounted<JsonPrefStore>(toFilePath(userPrefStorePath)));
+    } else {
+        factory.set_user_prefs(new InMemoryPrefStore);
     }
 
     auto registry = base::MakeRefCounted<PrefRegistrySimple>();
@@ -129,7 +131,10 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     // default value will be different. We'll need to initialize it later.
     registry->RegisterStringPref(kPrefMediaDeviceIDSalt, std::string());
 
-    m_prefService = factory.Create(registry);
+    {
+        base::ScopedAllowBlocking allowBlock;
+        m_prefService = factory.Create(registry);
+    }
 
     // Initialize salt value if none was stored before
     if (m_prefService->GetString(kPrefMediaDeviceIDSalt).empty()) {
@@ -183,10 +188,8 @@ QStringList PrefServiceAdapter::spellCheckLanguages() const
 {
     QStringList spellcheck_dictionaries;
     const auto &list = m_prefService->GetList(spellcheck::prefs::kSpellCheckDictionaries);
-    for (size_t i = 0; i < list->GetSize(); ++i) {
-        std::string dictionary;
-        if (list->GetString(i, &dictionary))
-            spellcheck_dictionaries.append(QString::fromStdString(dictionary));
+    for (const auto &dictionary : list->GetList()) {
+        spellcheck_dictionaries.append(QString::fromStdString(dictionary.GetString()));
     }
 
     return spellcheck_dictionaries;

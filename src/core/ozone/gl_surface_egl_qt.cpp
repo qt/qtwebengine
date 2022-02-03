@@ -167,6 +167,11 @@ bool GLSurfaceEGL::InitializeOneOff(gl::EGLDisplayPlatform /*native_display*/)
     return GLSurfaceEGLQt::InitializeOneOff();
 }
 
+bool GLSurfaceEGL::IsEGLNoConfigContextSupported()
+{
+    return false;
+}
+
 bool GLSurfaceEGL::IsAndroidNativeFenceSyncSupported()
 {
      return false;

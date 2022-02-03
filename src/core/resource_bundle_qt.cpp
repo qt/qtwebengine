@@ -61,10 +61,10 @@ namespace ui {
 void ResourceBundle::LoadCommonResources()
 {
     // We repacked the resources we need and installed them. now let chromium mmap that file.
-    AddDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_100P_PAK), SCALE_FACTOR_100P);
-    AddDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_200P_PAK), SCALE_FACTOR_200P);
-    AddDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_PAK), SCALE_FACTOR_NONE);
-    AddOptionalDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_DEVTOOLS_PAK), SCALE_FACTOR_NONE);
+    AddDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_100P_PAK), ui::k100Percent);
+    AddDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_200P_PAK), ui::k200Percent);
+    AddDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_PAK), ui::kScaleFactorNone);
+    AddOptionalDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_DEVTOOLS_PAK), ui::kScaleFactorNone);
 }
 
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id)
@@ -103,7 +103,7 @@ std::string ResourceBundle::LoadLocaleResources(const std::string &pref_locale, 
 #if defined(OS_LINUX)
     int locale_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(kWebEngineLocale);
     if (locale_fd > -1) {
-        std::unique_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
+        std::unique_ptr<DataPack> data_pack(new DataPack(ui::k100Percent));
         data_pack->LoadFromFile(base::File(locale_fd));
         locale_resources_data_.reset(data_pack.release());
         return app_locale;
@@ -120,7 +120,7 @@ std::string ResourceBundle::LoadLocaleResources(const std::string &pref_locale, 
         return std::string();
     }
 
-    std::unique_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
+    std::unique_ptr<DataPack> data_pack(new DataPack(ui::k100Percent));
     if (!data_pack->LoadFromPath(locale_file_path)) {
         UMA_HISTOGRAM_ENUMERATION("ResourceBundle.LoadLocaleResourcesError",
                                   logging::GetLastSystemErrorCode(), 16000);

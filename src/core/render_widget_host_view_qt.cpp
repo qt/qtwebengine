@@ -284,8 +284,9 @@ void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView)
 {
 }
 
-void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect& rect)
+void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect& rect, const gfx::Rect& anchorRect)
 {
+    Q_UNUSED(anchorRect);
     m_delegate->initAsPopup(toQt(rect));
 }
 

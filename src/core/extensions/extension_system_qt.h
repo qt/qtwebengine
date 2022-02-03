@@ -56,6 +56,10 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
 
+namespace value_store {
+class ValueStoreFactory;
+}
+
 namespace extensions {
 
 class ExtensionRegistry;
@@ -63,8 +67,6 @@ class InfoMap;
 class RendererStartupHelper;
 class ServiceWorkerManager;
 class StateStoreNotificationObserver;
-class ValueStoreFactory;
-class ValueStoreFactoryImpl;
 
 // The ExtensionSystem for ProfileImpl and OffTheRecordProfileImpl.
 // Implementation details: non-shared services are owned by
@@ -86,13 +88,13 @@ public:
     // ExtensionSystem implementation:
     void InitForRegularProfile(bool extensions_enabled) override;
     ExtensionService *extension_service() override;
-    RuntimeData *runtime_data() override;
     ManagementPolicy *management_policy() override;
     ServiceWorkerManager *service_worker_manager() override;
     UserScriptManager *user_script_manager() override;
     StateStore *state_store() override;
     StateStore *rules_store() override;
-    scoped_refptr<ValueStoreFactory> store_factory() override;
+    StateStore *dynamic_user_scripts_store() override;
+    scoped_refptr<value_store::ValueStoreFactory> store_factory() override;
     InfoMap *info_map() override;
     QuotaService *quota_service() override;
     AppSorting *app_sorting() override;
@@ -126,7 +128,6 @@ private:
     scoped_refptr<InfoMap> info_map_;
 
     std::unique_ptr<ServiceWorkerManager> service_worker_manager_;
-    std::unique_ptr<RuntimeData> runtime_data_;
     std::unique_ptr<QuotaService> quota_service_;
     std::unique_ptr<AppSorting> app_sorting_;
     std::unique_ptr<UserScriptManager> user_script_manager_;
@@ -137,7 +138,7 @@ private:
     base::OneShotEvent ready_;
 
     content::BrowserContext *browser_context_;
-    scoped_refptr<ValueStoreFactory> store_factory_;
+    scoped_refptr<value_store::ValueStoreFactory> store_factory_;
     ExtensionRegistry *extension_registry_;
     extensions::RendererStartupHelper *renderer_helper_;
     bool initialized_;

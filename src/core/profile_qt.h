@@ -89,6 +89,7 @@ public:
     content::BrowsingDataRemoverDelegate *GetBrowsingDataRemoverDelegate() override;
     content::ClientHintsControllerDelegate *GetClientHintsControllerDelegate() override;
     content::StorageNotificationService *GetStorageNotificationService() override;
+    content::PlatformNotificationService *GetPlatformNotificationService() override;
     std::string GetMediaDeviceIDSalt() override;
 
     // Profile implementation:
@@ -97,8 +98,6 @@ public:
 
     void Initialize();
     ProfileAdapter *profileAdapter() { return m_profileAdapter; }
-
-    content::PlatformNotificationService *platformNotificationService();
 
 #if QT_CONFIG(webengine_spellchecker)
     void FailedToLoadDictionary(const std::string &language) override;
@@ -114,7 +113,6 @@ public:
     PrefServiceAdapter &prefServiceAdapter();
 
     const PrefServiceAdapter &prefServiceAdapter() const;
-    bool ensureDirectoryExists();
 
 private:
     std::unique_ptr<BrowsingDataRemoverDelegateQt> m_removerDelegate;

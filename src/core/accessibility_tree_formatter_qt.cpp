@@ -65,10 +65,6 @@ public:
     ~AccessibilityTreeFormatterQt() override;
 
    base::Value BuildTree(ui::AXPlatformNodeDelegate *start) const override;
-   base::Value BuildTreeForWindow(gfx::AcceleratedWidget hwnd) const override
-   {
-       return base::Value{};
-   }
    base::Value BuildTreeForSelector(const AXTreeSelector &selector) const override
    {
        return base::Value{};

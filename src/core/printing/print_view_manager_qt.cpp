@@ -419,6 +419,6 @@ void PrintViewManagerQt::MetafileReadyForPrinting(printing::mojom::DidPreviewDoc
     }
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(PrintViewManagerQt)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PrintViewManagerQt);
 
 } // namespace QtWebEngineCore

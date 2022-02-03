@@ -792,8 +792,6 @@ WebEngineContext::WebEngineContext()
     // Initialize WebCacheManager here to ensure its subscription to render process creation events.
     web_cache::WebCacheManager::GetInstance();
 
-    base::ThreadRestrictions::SetIOAllowed(true);
-
 #if defined(OS_LINUX)
     media::AudioManager::SetGlobalAppName(QCoreApplication::applicationName().toStdString());
 #endif

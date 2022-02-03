@@ -90,7 +90,7 @@ void GetDefaultPrintSettingsReplyOnIO(scoped_refptr<printing::PrintQueriesQueue>
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     printing::mojom::PrintParamsPtr params = printing::mojom::PrintParams::New();
-    if (printer_query && printer_query->last_status() == printing::PrintingContext::OK) {
+    if (printer_query && printer_query->last_status() == printing::mojom::ResultCode::kSuccess) {
         RenderParamsFromPrintSettings(printer_query->settings(), params.get());
         params->document_cookie = printer_query->cookie();
     }
@@ -154,12 +154,12 @@ void UpdatePrintSettingsReplyOnIO(scoped_refptr<printing::PrintQueriesQueue> que
     DCHECK(printer_query);
     auto params = printing::mojom::PrintPagesParams::New();
     params->params = printing::mojom::PrintParams::New();
-    if (printer_query->last_status() == printing::PrintingContext::OK) {
+    if (printer_query->last_status() == printing::mojom::ResultCode::kSuccess) {
         RenderParamsFromPrintSettings(printer_query->settings(), params->params.get());
         params->params->document_cookie = printer_query->cookie();
         params->pages = printing::PageRange::GetPages(printer_query->settings().ranges());
     }
-    bool canceled = printer_query->last_status() == printing::PrintingContext::CANCEL;
+    bool canceled = printer_query->last_status() == printing::mojom::ResultCode::kAccessDenied;
 
     content::GetUIThreadTaskRunner({})->PostTask(
                 FROM_HERE,
@@ -220,7 +220,7 @@ void ScriptedPrintReplyOnIO(scoped_refptr<printing::PrintQueriesQueue> queue,
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     auto params = printing::mojom::PrintPagesParams::New();
     params->params = printing::mojom::PrintParams::New();
-    if (printer_query->last_status() == printing::PrintingContext::OK &&
+    if (printer_query->last_status() == printing::mojom::ResultCode::kSuccess &&
             printer_query->settings().dpi()) {
         RenderParamsFromPrintSettings(printer_query->settings(), params->params.get());
         params->params->document_cookie = printer_query->cookie();
@@ -718,7 +718,8 @@ void PrintViewManagerBaseQt::StopWorker(int documentCookie)
 
 void PrintViewManagerBaseQt::SendPrintingEnabled(bool enabled, content::RenderFrameHost* rfh)
 {
-    GetPrintRenderFrame(rfh)->SetPrintingEnabled(enabled);
+    if (rfh->IsRenderFrameLive())
+        GetPrintRenderFrame(rfh)->SetPrintingEnabled(enabled);
 }
 
 void PrintViewManagerBaseQt::UpdatePrintSettings(int32_t cookie, base::Value job_settings,

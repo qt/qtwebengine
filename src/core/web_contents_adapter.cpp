@@ -171,9 +171,10 @@ static QVariant fromJSValue(const base::Value *result)
     {
         const base::ListValue *out;
         if (result->GetAsList(&out)) {
+            size_t size = out->GetList().size();
             QVariantList list;
-            list.reserve(out->GetSize());
-            for (size_t i = 0; i < out->GetSize(); ++i) {
+            list.reserve(size);
+            for (size_t i = 0; i < size; ++i) {
                 const base::Value *outVal = 0;
                 if (out->Get(i, &outVal) && outVal)
                     list.insert(i, fromJSValue(outVal));
@@ -1040,9 +1041,7 @@ QWebEngineUrlRequestInterceptor* WebContentsAdapter::requestInterceptor() const
 QAccessibleInterface *WebContentsAdapter::browserAccessible()
 {
     CHECK_INITIALIZED(nullptr);
-    content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
-    Q_ASSERT(rvh);
-    content::RenderFrameHostImpl *rfh = static_cast<content::RenderFrameHostImpl *>(rvh->GetMainFrame());
+    content::RenderFrameHostImpl *rfh = static_cast<content::RenderFrameHostImpl *>(m_webContents->GetMainFrame());
     if (!rfh)
         return nullptr;
     content::BrowserAccessibilityManager *manager = rfh->GetOrCreateBrowserAccessibilityManager();
@@ -1057,26 +1056,24 @@ QAccessibleInterface *WebContentsAdapter::browserAccessible()
 void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldId)
 {
     CHECK_INITIALIZED();
-    content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
-    Q_ASSERT(rvh);
-//    static_cast<content::RenderFrameHostImpl *>(rvh->GetMainFrame())->NotifyUserActivation();
+    content::RenderFrameHost *rfh =  m_webContents->GetMainFrame();
+    Q_ASSERT(rfh);
     if (worldId == 0)
-        rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript), base::NullCallback());
+        rfh->ExecuteJavaScript(toString16(javaScript), base::NullCallback());
     else
-        rvh->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), base::NullCallback(), worldId);
+        rfh->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), base::NullCallback(), worldId);
 }
 
 quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScript, quint32 worldId)
 {
     CHECK_INITIALIZED(0);
-    content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
-    Q_ASSERT(rvh);
-//    static_cast<content::RenderFrameHostImpl *>(rvh->GetMainFrame())->NotifyUserActivation();
+    content::RenderFrameHost *rfh =  m_webContents->GetMainFrame();
+    Q_ASSERT(rfh);
     content::RenderFrameHost::JavaScriptResultCallback callback = base::BindOnce(&callbackOnEvaluateJS, m_adapterClient, m_nextRequestId);
     if (worldId == 0)
-        rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript), std::move(callback));
+        rfh->ExecuteJavaScript(toString16(javaScript), std::move(callback));
     else
-        rvh->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), std::move(callback), worldId);
+        rfh->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), std::move(callback), worldId);
     return m_nextRequestId++;
 }
 
@@ -1190,7 +1187,7 @@ qint64 WebContentsAdapter::renderProcessPid() const
 void WebContentsAdapter::copyImageAt(const QPoint &location)
 {
     CHECK_INITIALIZED();
-    m_webContents->GetRenderViewHost()->GetMainFrame()->CopyImageAt(location.x(), location.y());
+    m_webContents->GetMainFrame()->CopyImageAt(location.x(), location.y());
 }
 
 static blink::mojom::MediaPlayerActionType toBlinkMediaPlayerActionType(WebContentsAdapter::MediaPlayerAction action)
@@ -1217,7 +1214,7 @@ void WebContentsAdapter::executeMediaPlayerActionAt(const QPoint &location, Medi
     if (action == MediaPlayerNoAction)
         return;
     blink::mojom::MediaPlayerAction blinkAction(toBlinkMediaPlayerActionType(action), enable);
-    m_webContents->GetRenderViewHost()->GetMainFrame()->ExecuteMediaPlayerActionAtLocation(toGfx(location), blinkAction);
+    m_webContents->GetMainFrame()->ExecuteMediaPlayerActionAtLocation(toGfx(location), blinkAction);
 }
 
 void WebContentsAdapter::inspectElementAt(const QPoint &location)

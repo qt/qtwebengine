@@ -309,16 +309,9 @@ network::mojom::NetworkContextParamsPtr SystemNetworkContextManager::CreateNetwo
             cert_verifier_creation_params = cert_verifier::mojom::CertVerifierCreationParams::New();
     ConfigureDefaultNetworkContextParams(network_context_params.get(), cert_verifier_creation_params.get());
 
-    network_context_params->context_name = std::string("system");
-
     network_context_params->enable_referrers = false;
 
     network_context_params->http_cache_enabled = false;
-
-    // These are needed for PAC scripts that use FTP URLs.
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-    network_context_params->enable_ftp_url_support = true;
-#endif
 
     proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
 

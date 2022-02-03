@@ -40,6 +40,7 @@
 #include "visited_links_manager_qt.h"
 
 #include "content_browser_client_qt.h"
+#include "profile_adapter.h"
 #include "profile_qt.h"
 #include "type_conversion.h"
 
@@ -95,7 +96,7 @@ VisitedLinksManagerQt::VisitedLinksManagerQt(ProfileQt *profile, bool persistVis
 {
     Q_ASSERT(profile);
     if (persistVisitedLinks)
-        profile->ensureDirectoryExists();
+        profile->profileAdapter()->ensureDataPathExists();
     m_visitedLinkWriter.reset(new visitedlink::VisitedLinkWriter(profile, m_delegate.data(), persistVisitedLinks));
     m_visitedLinkWriter->Init();
 }

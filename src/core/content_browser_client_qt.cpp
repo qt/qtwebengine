@@ -49,6 +49,7 @@
 #include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/navigation_interception/navigation_params.h"
 #include "components/network_hints/browser/simple_network_hints_handler_impl.h"
+#include "components/performance_manager/embedder/performance_manager_lifetime.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -72,8 +73,10 @@
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/client_cert_store.h"
+#include "net/ssl/ssl_private_key.h"
 #include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #include "services/network/network_service.h"
+#include "services/network/public/cpp/web_sandbox_flags.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -424,14 +427,6 @@ std::unique_ptr<content::DevToolsManagerDelegate> ContentBrowserClientQt::Create
     return std::make_unique<DevToolsManagerDelegateQt>();
 }
 
-content::PlatformNotificationService *ContentBrowserClientQt::GetPlatformNotificationService(content::BrowserContext *browser_context)
-{
-    ProfileQt *profile = static_cast<ProfileQt *>(browser_context);
-    if (!profile)
-        return nullptr;
-    return profile->platformNotificationService();
-}
-
 void ContentBrowserClientQt::BindHostReceiverForRenderer(content::RenderProcessHost *render_process_host,
                                                          mojo::GenericPendingReceiver receiver)
 {
@@ -632,19 +627,19 @@ bool ContentBrowserClientQt::WillCreateRestrictedCookieManager(network::mojom::R
 }
 
 bool ContentBrowserClientQt::AllowAppCache(const GURL &manifest_url,
-                                           const GURL &first_party,
-                                           const absl::optional<url::Origin> &top_frame_origin,
+                                           const net::SiteForCookies &site_for_cookies,
+                                           const absl::optional<url::Origin> & /*top_frame_origin*/,
                                            content::BrowserContext *context)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (!context || context->ShutdownStarted())
         return false;
-    return static_cast<ProfileQt *>(context)->profileAdapter()->cookieStore()->d_func()->canAccessCookies(toQt(first_party), toQt(manifest_url));
+    return static_cast<ProfileQt *>(context)->profileAdapter()->cookieStore()->d_func()->canAccessCookies(toQt(site_for_cookies.first_party_url()), toQt(manifest_url));
 }
 
 content::AllowServiceWorkerResult
 ContentBrowserClientQt::AllowServiceWorker(const GURL &scope,
-                                           const GURL &site_for_cookies,
+                                           const net::SiteForCookies &site_for_cookies,
                                            const absl::optional<url::Origin> & /*top_frame_origin*/,
                                            const GURL & /*script_url*/,
                                            content::BrowserContext *context)
@@ -654,7 +649,7 @@ ContentBrowserClientQt::AllowServiceWorker(const GURL &scope,
         return content::AllowServiceWorkerResult::No();
     // FIXME: Chrome also checks if javascript is enabled here to check if has been disabled since the service worker
     // was started.
-    return static_cast<ProfileQt *>(context)->profileAdapter()->cookieStore()->d_func()->canAccessCookies(toQt(site_for_cookies), toQt(scope))
+    return static_cast<ProfileQt *>(context)->profileAdapter()->cookieStore()->d_func()->canAccessCookies(toQt(site_for_cookies.first_party_url()), toQt(scope))
          ? content::AllowServiceWorkerResult::Yes()
          : content::AllowServiceWorkerResult::No();
 }
@@ -685,7 +680,9 @@ bool ContentBrowserClientQt::AllowWorkerIndexedDB(const GURL &url,
 
 static void LaunchURL(const GURL& url,
                       base::RepeatingCallback<content::WebContents*()> web_contents_getter,
-                      ui::PageTransition page_transition, bool is_main_frame, bool has_user_gesture)
+                      ui::PageTransition page_transition,
+                      network::mojom::WebSandboxFlags sandbox_flags,
+                      bool is_main_frame, bool has_user_gesture)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     content::WebContents* webContents = std::move(web_contents_getter).Run();
@@ -699,6 +696,27 @@ static void LaunchURL(const GURL& url,
         protocolHandlerRegistry->IsHandledProtocol(url.scheme()))
         return;
 
+    // Sandbox flag logic from chrome/browser/chrome_content_browser_client.cc:
+    if (!is_main_frame) {
+        using SandboxFlags = network::mojom::WebSandboxFlags;
+        auto allow = [&](SandboxFlags flag) {
+          return (sandbox_flags & flag) == SandboxFlags::kNone;
+        };
+        bool allowed = (allow(SandboxFlags::kPopups)) ||
+                       (allow(SandboxFlags::kTopNavigation)) ||
+                       (allow(SandboxFlags::kTopNavigationByUserActivation) &&
+                        has_user_gesture);
+
+        if (!allowed) {
+            content::RenderFrameHost *rfh = webContents->GetMainFrame();
+            if (!base::CommandLine::ForCurrentProcess()->HasSwitch("disable-sandbox-external-protocols")) {
+                rfh->AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kError,
+                                         "Navigation to external protocol blocked by sandbox.");
+                return;
+            }
+        }
+    }
+
     WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
     contentsDelegate->launchExternalURL(toQt(url), page_transition, is_main_frame, has_user_gesture);
 }
@@ -710,6 +728,7 @@ bool ContentBrowserClientQt::HandleExternalProtocol(const GURL &url,
         int frame_tree_node_id,
         content::NavigationUIData *navigation_data,
         bool is_main_frame,
+        network::mojom::WebSandboxFlags sandbox_flags,
         ui::PageTransition page_transition,
         bool has_user_gesture,
         const absl::optional<url::Origin> &initiating_origin,
@@ -726,6 +745,7 @@ bool ContentBrowserClientQt::HandleExternalProtocol(const GURL &url,
                                   url,
                                   std::move(web_contents_getter),
                                   page_transition,
+                                  sandbox_flags,
                                   is_main_frame,
                                   has_user_gesture));
     return true;

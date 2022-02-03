@@ -63,6 +63,8 @@
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "components/crx_file/id_util.h"
+#include "components/value_store/value_store_factory.h"
+#include "components/value_store/value_store_factory_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -83,10 +85,8 @@
 #include "extensions/browser/null_app_sorting.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/renderer_startup_helper.h"
-#include "extensions/browser/runtime_data.h"
 #include "extensions/browser/service_worker_manager.h"
 #include "extensions/browser/user_script_manager.h"
-#include "extensions/browser/value_store/value_store_factory_impl.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
@@ -269,11 +269,6 @@ ExtensionService *ExtensionSystemQt::extension_service()
     return nullptr;
 }
 
-RuntimeData *ExtensionSystemQt::runtime_data()
-{
-    return runtime_data_.get();
-}
-
 ManagementPolicy *ExtensionSystemQt::management_policy()
 {
     return nullptr;
@@ -294,7 +289,12 @@ StateStore *ExtensionSystemQt::rules_store()
     return nullptr;
 }
 
-scoped_refptr<ValueStoreFactory> ExtensionSystemQt::store_factory()
+StateStore *ExtensionSystemQt::dynamic_user_scripts_store()
+{
+    return nullptr;
+}
+
+scoped_refptr<value_store::ValueStoreFactory> ExtensionSystemQt::store_factory()
 {
     return store_factory_;
 }
@@ -326,7 +326,7 @@ ContentVerifier *ExtensionSystemQt::content_verifier()
 
 ExtensionSystemQt::ExtensionSystemQt(content::BrowserContext *browserContext)
     : browser_context_(browserContext)
-    , store_factory_(new ValueStoreFactoryImpl(browserContext->GetPath()))
+    , store_factory_(new value_store::ValueStoreFactoryImpl(browserContext->GetPath()))
     , extension_registry_(ExtensionRegistry::Get(browserContext))
     , renderer_helper_(extensions::RendererStartupHelperFactory::GetForBrowserContext(browserContext))
     , initialized_(false)
@@ -345,13 +345,10 @@ void ExtensionSystemQt::Init(bool extensions_enabled)
 
     initialized_ = true;
 
-    service_worker_manager_.reset(new ServiceWorkerManager(browser_context_));
-    runtime_data_.reset(new RuntimeData(extension_registry_));
-    quota_service_.reset(new QuotaService);
-    app_sorting_.reset(new NullAppSorting);
-
-    user_script_manager_ =
-        std::make_unique<UserScriptManager>(browser_context_);
+    service_worker_manager_ = std::make_unique<ServiceWorkerManager>(browser_context_);
+    user_script_manager_ = std::make_unique<UserScriptManager>(browser_context_);
+    quota_service_ = std::make_unique<QuotaService>();
+    app_sorting_ = std::make_unique<NullAppSorting>();
 
     // Make the chrome://extension-icon/ resource available.
     // content::URLDataSource::Add(browser_context_, new ExtensionIconSource(browser_context_));

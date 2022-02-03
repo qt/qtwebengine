@@ -268,13 +268,15 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
             // Add the supported codecs as if they came from the component manifest.
             // This list must match the CDM that is being bundled with Chrome.
             const std::vector<media::VideoCodecProfile> kAllProfiles = {};
-            capability->video_codecs.emplace(media::VideoCodec::kCodecVP8, kAllProfiles);
-            capability->video_codecs.emplace(media::VideoCodec::kCodecVP9, kAllProfiles);
-            capability->video_codecs.emplace(media::VideoCodec::kCodecAV1, kAllProfiles);
+            capability->video_codecs.emplace(media::VideoCodec::kVP8, kAllProfiles);
+            capability->video_codecs.emplace(media::VideoCodec::kVP9, kAllProfiles);
+            capability->video_codecs.emplace(media::VideoCodec::kAV1, kAllProfiles);
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-            capability->video_codecs.emplace(media::VideoCodec::kCodecH264, kAllProfiles);
+            capability->video_codecs.emplace(media::VideoCodec::kH264, kAllProfiles);
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
-
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+            capability->video_codecs.emplace(media::VideoCodec::kHEVC, kAllProfiles);
+#endif
             // Add the supported encryption schemes as if they came from the
             // component manifest. This list must match the CDM that is being
             // bundled with Chrome.
