@@ -91,10 +91,10 @@ bool TouchMockingApplication::notify(QObject* target, QEvent* event)
     if (event->type() == QEvent::KeyRelease && static_cast<QKeyEvent*>(event)->key() == Qt::Key_Control) {
         foreach (int id, m_heldTouchPoints)
             if (m_touchPoints.contains(id) && !QGuiApplication::mouseButtons().testFlag(Qt::MouseButton(id))) {
-                QMutableEventPoint::from(m_touchPoints[id]).setState(QEventPoint::Released);
+                QMutableEventPoint::setState(m_touchPoints[id], QEventPoint::Released);
                 m_heldTouchPoints.remove(id);
             } else
-                QMutableEventPoint::from(m_touchPoints[id]).setState(QEventPoint::Stationary);
+                QMutableEventPoint::setState(m_touchPoints[id], QEventPoint::Stationary);
 
         sendTouchEvent(window, m_heldTouchPoints.isEmpty() ? QEvent::TouchEnd : QEvent::TouchUpdate, static_cast<QKeyEvent*>(event)->timestamp());
     }
@@ -103,18 +103,18 @@ bool TouchMockingApplication::notify(QObject* target, QEvent* event)
         const QMouseEvent* const mouseEvent = static_cast<QMouseEvent*>(event);
 
         QEventPoint touchPoint;
-        QMutableEventPoint::from(touchPoint).setPressure(1);
+        QMutableEventPoint::setPressure(touchPoint, 1);
 
         QEvent::Type touchType = QEvent::None;
 
         switch (mouseEvent->type()) {
         case QEvent::MouseButtonPress:
-            QMutableEventPoint::from(touchPoint).setId(mouseEvent->button());
+            QMutableEventPoint::setId(touchPoint, mouseEvent->button());
             if (m_touchPoints.contains(touchPoint.id())) {
-                QMutableEventPoint::from(touchPoint).setState(QEventPoint::Updated);
+                QMutableEventPoint::setState(touchPoint, QEventPoint::Updated);
                 touchType = QEvent::TouchUpdate;
             } else {
-                QMutableEventPoint::from(touchPoint).setState(QEventPoint::Pressed);
+                QMutableEventPoint::setState(touchPoint, QEventPoint::Pressed);
                 // Check if more buttons are held down than just the event triggering one.
                 if (mouseEvent->buttons() > mouseEvent->button())
                     touchType = QEvent::TouchUpdate;
@@ -132,8 +132,8 @@ bool TouchMockingApplication::notify(QObject* target, QEvent* event)
                 return true;
             }
             touchType = QEvent::TouchUpdate;
-            QMutableEventPoint::from(touchPoint).setId(mouseEvent->buttons());
-            QMutableEventPoint::from(touchPoint).setState(QEventPoint::Updated);
+            QMutableEventPoint::setId(touchPoint, mouseEvent->buttons());
+            QMutableEventPoint::setState(touchPoint, QEventPoint::Updated);
             break;
         case QEvent::MouseButtonRelease:
             // Check if any buttons are still held down after this event.
@@ -141,8 +141,8 @@ bool TouchMockingApplication::notify(QObject* target, QEvent* event)
                 touchType = QEvent::TouchUpdate;
             else
                 touchType = QEvent::TouchEnd;
-            QMutableEventPoint::from(touchPoint).setId(mouseEvent->button());
-            QMutableEventPoint::from(touchPoint).setState(QEventPoint::Released);
+            QMutableEventPoint::setId(touchPoint, mouseEvent->button());
+            QMutableEventPoint::setState(touchPoint, QEventPoint::Released);
             break;
         case QEvent::MouseButtonDblClick:
             // Eat double-clicks, their accompanying press event is all we need.
@@ -171,7 +171,7 @@ bool TouchMockingApplication::notify(QObject* target, QEvent* event)
         // Update states for all other touch-points
         for (QHash<int, QEventPoint>::iterator it = m_touchPoints.begin(), end = m_touchPoints.end(); it != end; ++it) {
             if (!(it.value().id() & touchPoint.id()))
-                QMutableEventPoint::from(it.value()).setState(QEventPoint::Stationary);
+                QMutableEventPoint::setState(it.value(), QEventPoint::Stationary);
         }
 
         Q_ASSERT(touchType != QEvent::None);
@@ -202,18 +202,18 @@ void TouchMockingApplication::updateTouchPoint(const QMouseEvent* mouseEvent, QE
     // but since the canvas translates touch events we actually need to pass
     // the screen position as the scene position to deliver the appropriate
     // coordinates to the target.
-    QMutableEventPoint::from(touchPoint).setPosition(mouseEvent->position());
-    QMutableEventPoint::from(touchPoint).setScenePosition(mouseEvent->globalPosition());
+    QMutableEventPoint::setPosition(touchPoint, mouseEvent->position());
+    QMutableEventPoint::setScenePosition(touchPoint, mouseEvent->globalPosition());
 
     if (touchPoint.state() == QEventPoint::Pressed)
-        QMutableEventPoint::from(touchPoint).setScenePosition(mouseEvent->scenePosition());
+        QMutableEventPoint::setScenePosition(touchPoint, mouseEvent->scenePosition());
     else {
         const QEventPoint& oldTouchPoint = m_touchPoints[mouseButton];
-        QMutableEventPoint::from(touchPoint).setGlobalLastPosition(oldTouchPoint.globalPosition());
+        QMutableEventPoint::setGlobalLastPosition(touchPoint, oldTouchPoint.globalPosition());
     }
 
     // Update current touch-point.
-    QMutableEventPoint::from(touchPoint).setId(mouseButton);
+    QMutableEventPoint::setId(touchPoint, mouseButton);
     m_touchPoints.insert(mouseButton, touchPoint);
 }
 
