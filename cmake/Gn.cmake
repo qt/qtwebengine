@@ -59,10 +59,11 @@ execute_process(
     RESULT_VARIABLE gnResult
     OUTPUT_VARIABLE gnOutput
     ERROR_VARIABLE gnError
+    TIMEOUT 300
 )
 
 if(NOT gnResult EQUAL 0)
-    message(FATAL_ERROR "\n-- GN FAILED\n${gnOutput}\n${gnError}")
+    message(FATAL_ERROR "\n-- GN FAILED\n${gnOutput}\n${gnError}\n${gnResult}\n")
 else()
     string(REGEX REPLACE "\n$" "" gnOutput "${gnOutput}")
     message("-- GN ${gnOutput}")
