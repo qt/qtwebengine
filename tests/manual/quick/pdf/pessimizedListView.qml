@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -47,11 +47,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-import QtQuick 2.14
-import QtQuick.Controls 2.14
-import QtQuick.Layouts 1.14
-import QtQuick.Pdf 5.15
-import Qt.labs.platform 1.1 as P
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Dialogs
+import QtQuick.Layouts
+import QtQuick.Pdf
 
 ApplicationWindow {
     width: 900
@@ -127,11 +127,11 @@ ApplicationWindow {
         source: "test.pdf"
     }
 
-    P.FileDialog {
+    FileDialog {
         id: fileDialog
         title: "Open a PDF file"
         nameFilters: [ "PDF files (*.pdf)" ]
-        onAccepted: doc.source = file
+        onAccepted: doc.source = selectedFile
     }
 
     ListView {
@@ -150,15 +150,15 @@ ApplicationWindow {
                 anchors.centerIn: parent
                 running: image.status === Image.Loading
             }
-            Image {
+            PdfPageImage {
                 id: image
+                document: doc
                 scale: imageScale
                 anchors.centerIn: parent
                 sourceSize.width: doc.pagePointSize(index).width * oversamplingSB.value
                 height: 100
                 fillMode: Image.PreserveAspectFit
                 objectName: "PDF page " + index
-                source: doc.source
                 currentFrame: index
                 asynchronous: asyncCB.checked
                 cache: cacheCB.checked

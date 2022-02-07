@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -47,12 +47,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-import QtQuick 2.14
-import QtQuick.Controls 2.14
-import Qt.labs.platform 1.1 as Platform
-import QtQuick.Pdf 5.15
-import QtQuick.Shapes 1.14
-import QtQuick.Window 2.14
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Dialogs
+import QtQuick.Pdf
+import QtQuick.Shapes
 
 Window {
     width: 800
@@ -67,11 +66,11 @@ Window {
         onPasswordRequired: function() { passwordDialog.open() }
     }
 
-    Platform.FileDialog {
+    FileDialog {
         id: fileDialog
         title: "Open a PDF file"
         nameFilters: [ "PDF files (*.pdf)" ]
-        onAccepted: doc.source = file
+        onAccepted: doc.source = selectedFile
     }
 
     Dialog {
@@ -130,9 +129,9 @@ Window {
                 id: paper
                 width: image.width
                 height: image.height
-                Image {
+                PdfPageImage {
                     id: image
-                    source: doc.status === PdfDocument.Ready ? doc.source : ""
+                    document: doc
 
                     property real zoomFactor: Math.sqrt(2)
 
@@ -206,7 +205,7 @@ Window {
                         y: rect.y
                         width: rect.width
                         height: rect.height
-//                        HoverHandler { cursorShape: Qt.PointingHandCursor } // 5.15 onward (QTBUG-68073)
+                        HoverHandler { cursorShape: Qt.PointingHandCursor }
                         TapHandler {
                             onTapped: {
                                 if (page >= 0)
