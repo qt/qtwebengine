@@ -153,6 +153,8 @@ void QPdfDocumentPrivate::updateLastError()
     default:
         Q_UNREACHABLE();
     }
+    if (lastError != QPdfDocument::NoError)
+        qCDebug(qLcDoc) << "FPDF error" << error << "->" << lastError;
 }
 
 void QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnership)
@@ -284,10 +286,9 @@ void QPdfDocumentPrivate::tryLoadDocument()
         case PDF_DATA_NOTAVAIL:
             qCDebug(qLcDoc) << "data not yet available";
             lastError = QPdfDocument::DataNotYetAvailableError;
-            setStatus(QPdfDocument::Error);
             break;
         case PDF_DATA_AVAIL:
-            // all good
+            lastError = QPdfDocument::NoError;
             break;
     }
 
@@ -297,6 +298,8 @@ void QPdfDocumentPrivate::tryLoadDocument()
     lock.unlock();
 
     updateLastError();
+    if (lastError != QPdfDocument::NoError)
+        setStatus(QPdfDocument::Error);
 
     if (lastError == QPdfDocument::IncorrectPasswordError) {
         FPDF_CloseDocument(doc);
