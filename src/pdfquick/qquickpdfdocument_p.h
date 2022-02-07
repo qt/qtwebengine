@@ -90,6 +90,7 @@ public:
 
     QUrl source() const { return m_source; }
     void setSource(QUrl source);
+    QUrl resolvedSource() const { return m_resolvedSource; }
 
     int pageCount() const { return m_doc.pageCount(); }
     QPdfDocument::Status status() const { return m_doc.status(); }
@@ -127,6 +128,7 @@ private:
 
 private:
     QUrl m_source;
+    QUrl m_resolvedSource;
     QPdfDocument m_doc;
     QSizeF m_maxPageWidthHeight;
 

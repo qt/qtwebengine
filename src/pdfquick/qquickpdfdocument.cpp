@@ -38,9 +38,10 @@
 ****************************************************************************/
 
 #include "qquickpdfdocument_p.h"
-#include <QQuickItem>
-#include <QQmlEngine>
-#include <QStandardPaths>
+#include <QtCore/qstandardpaths.h>
+#include <QtQml/qqmlcontext.h>
+#include <QtQml/qqmlengine.h>
+#include <QtQuick/qquickitem.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -99,10 +100,12 @@ void QQuickPdfDocument::setSource(QUrl source)
     m_source = source;
     m_maxPageWidthHeight = QSizeF();
     emit sourceChanged();
+    const QQmlContext *context = qmlContext(this);
+    m_resolvedSource = context ? context->resolvedUrl(source) : source;
     if (source.scheme() == QLatin1String("qrc"))
-        m_doc.load(QLatin1Char(':') + source.path());
+        m_doc.load(QLatin1Char(':') + m_resolvedSource.path());
     else
-        m_doc.load(source.toLocalFile());
+        m_doc.load(m_resolvedSource.toLocalFile());
 }
 
 /*!
@@ -152,8 +155,8 @@ void QQuickPdfDocument::setPassword(const QString &password)
     if (m_doc.password() == password)
         return;
     m_doc.setPassword(password);
-    if (source().isValid() && source().isLocalFile())
-        m_doc.load(source().path());
+    if (resolvedSource().isValid() && resolvedSource().isLocalFile())
+        m_doc.load(resolvedSource().path());
 }
 
 /*!
