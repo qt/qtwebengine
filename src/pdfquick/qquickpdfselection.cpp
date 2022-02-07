@@ -396,6 +396,11 @@ qreal QQuickPdfSelection::renderScale() const
 
 void QQuickPdfSelection::setRenderScale(qreal scale)
 {
+    if (qFuzzyIsNull(scale)) {
+        qWarning() << "PdfSelection.renderScale cannot be set to 0.";
+        return;
+    }
+
     if (qFuzzyCompare(scale, m_renderScale))
         return;
 
