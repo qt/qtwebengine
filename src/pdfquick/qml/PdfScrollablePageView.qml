@@ -261,7 +261,7 @@ Flickable {
             anchors.fill: parent
             document: root.document
             page: navigationStack.currentPage
-            renderScale: image.pageScale
+            renderScale: image.pageScale == 0 ? 1.0 : image.pageScale
             fromPoint: textSelectionDrag.centroid.pressPosition
             toPoint: textSelectionDrag.centroid.position
             hold: !textSelectionDrag.active && !mouseClickHandler.pressed
