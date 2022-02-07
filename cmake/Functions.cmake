@@ -433,16 +433,21 @@ function(add_rsp_command target buildDir)
     add_custom_command(
         OUTPUT ${buildDir}/${cmakeTarget}.a
         BYPRODUCTS
-            ${buildDir}/${cmakeTarget}.o
+            ${buildDir}/${cmakeTarget}_objs.o
+            ${buildDir}/${cmakeTarget}_arcs.o
         COMMAND clang++ -r -nostdlib -arch ${arch}
-            -o ${buildDir}/${cmakeTarget}.o
+            -o ${buildDir}/${cmakeTarget}_objs.o
             -Wl,-keep_private_externs
             @${buildDir}/${ninjaTarget}_objects.rsp
+        COMMAND clang++ -r -nostdlib -arch ${arch}
+            -o ${buildDir}/${cmakeTarget}_arcs.o
+            -Wl,-keep_private_externs
             -Wl,-all_load
             @${buildDir}/${ninjaTarget}_archives.rsp
-        COMMAND ar -cr
+        COMMAND ar -crs
             ${buildDir}/${cmakeTarget}.a
-            ${buildDir}/${cmakeTarget}.o
+            ${buildDir}/${cmakeTarget}_objs.o
+            ${buildDir}/${cmakeTarget}_arcs.o
         DEPENDS
             ${buildDir}/${ninjaTarget}.stamp
         WORKING_DIRECTORY "${buildDir}/../../.."
