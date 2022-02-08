@@ -146,7 +146,7 @@ Flickable {
 
     PdfNavigationStack {
         id: navigationStack
-        onJumped: {
+        onJumped: function(page, location, zoom) {
             root.renderScale = zoom
             var dx = Math.max(0, location.x * root.renderScale - root.width / 2) - root.contentX
             var dy = Math.max(0, location.y * root.renderScale - root.height / 2) - root.contentY
