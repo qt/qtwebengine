@@ -59,7 +59,7 @@ int processMain(int argc, const char **argv)
 #if defined(OS_WIN)
     HINSTANCE instance_handle = NULL;
     params.sandbox_info = QtWebEngineSandbox::staticSandboxInterfaceInfo();
-    sandbox::SandboxInterfaceInfo sandbox_info = {0};
+    sandbox::SandboxInterfaceInfo sandbox_info = {nullptr};
     if (!params.sandbox_info) {
         content::InitializeSandboxInfo(&sandbox_info);
         params.sandbox_info = &sandbox_info;
@@ -77,7 +77,7 @@ int processMain(int argc, const char **argv)
   }
 #endif  // defined(OS_MAC)
 
-    return content::ContentMain(params);
+    return content::ContentMain(std::move(params));
 }
 
 } // namespace QtWebEngineCore

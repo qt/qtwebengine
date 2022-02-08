@@ -107,6 +107,7 @@ public:
     gfx::Rect GetViewBounds() const override { return gfx::Rect(); }
 
     void FocusThroughTabTraversal(bool reverse) override;
+    void OnCapturerCountChanged() override { QT_NOT_YET_IMPLEMENTED }
 
 #if defined(OS_MAC)
     bool CloseTabAfterEventTrackingIfNeeded() override { QT_NOT_YET_IMPLEMENTED return false; }
@@ -120,7 +121,7 @@ public:
 
     void UpdateDragCursor(ui::mojom::DragOperation dragOperation) override;
 
-    void ShowContextMenu(content::RenderFrameHost *, const content::ContextMenuParams &params) override;
+    void ShowContextMenu(content::RenderFrameHost &, const content::ContextMenuParams &params) override;
 
     void GotFocus(content::RenderWidgetHostImpl *render_widget_host) override;
     void LostFocus(content::RenderWidgetHostImpl *render_widget_host) override;

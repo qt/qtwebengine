@@ -160,7 +160,6 @@ private:
     FaviconStatusQt m_latestFavicon;
 
     WEB_CONTENTS_USER_DATA_KEY_DECL();
-    DISALLOW_COPY_AND_ASSIGN(FaviconDriverQt);
 };
 
 } // namespace QtWebEngineCore

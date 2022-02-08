@@ -129,8 +129,6 @@ private:
 
     friend class ProfileAdapter;
     friend class ProfileIODataQt;
-
-    DISALLOW_COPY_AND_ASSIGN(ProfileQt);
 };
 
 } // namespace QtWebEngineCore

@@ -93,7 +93,6 @@ private:
     const std::string m_address;
     int m_port;
     int m_backlog;
-    DISALLOW_COPY_AND_ASSIGN(TCPServerSocketFactory);
 };
 
 }  // namespace

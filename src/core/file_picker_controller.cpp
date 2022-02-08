@@ -287,7 +287,7 @@ QStringList FilePickerController::nameFilters(const QStringList &acceptedMimeTyp
             const QMimeType &mimeType = mimeDatabase.mimeTypeForName(type);
             if (mimeType.isValid() && !mimeType.globPatterns().isEmpty()) {
                 QString globs = mimeType.globPatterns().join(" ");
-                acceptedGlobs.append(globs);
+                acceptedGlobs.append(mimeType.globPatterns());
                 nameFilters.append(mimeType.comment() + " (" + globs + ")");
             }
         } else if (type.endsWith("/*")) {
@@ -298,7 +298,7 @@ QStringList FilePickerController::nameFilters(const QStringList &acceptedMimeTyp
             for (const QMimeType &m : allMimeTypes) {
                 if (m.name().startsWith(type) && !m.globPatterns().isEmpty()) {
                     QString globs = m.globPatterns().join(" ");
-                    acceptedGlobs.append(globs);
+                    acceptedGlobs.append(m.globPatterns());
                     nameFilters.append(m.comment() + " (" + globs + ")");
                 }
             }

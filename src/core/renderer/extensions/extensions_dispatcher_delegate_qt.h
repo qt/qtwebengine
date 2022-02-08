@@ -40,7 +40,6 @@
 #ifndef EXTENSIONSDISPATCHERDELEGATEQT_H
 #define EXTENSIONSDISPATCHERDELEGATEQT_H
 
-#include "base/macros.h"
 #include "extensions/renderer/dispatcher_delegate.h"
 
 namespace QtWebEngineCore {
@@ -54,8 +53,6 @@ public:
 private:
     // extensions::DispatcherDelegate implementation.
     void PopulateSourceMap(extensions::ResourceBundleSourceMap *source_map) override;
-
-    DISALLOW_COPY_AND_ASSIGN(ExtensionsDispatcherDelegateQt);
 };
 
 } // namespace QtWebEngineCore

@@ -78,7 +78,7 @@ class ContentBrowserClientQt : public content::ContentBrowserClient
 public:
     ContentBrowserClientQt();
     ~ContentBrowserClientQt();
-    std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(const content::MainFunctionParams&) override;
+    std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(content::MainFunctionParams) override;
     void RenderProcessWillLaunch(content::RenderProcessHost *host) override;
     gl::GLShareGroup* GetInProcessGpuShareGroup() override;
     content::MediaObserver* GetMediaObserver() override;
@@ -145,11 +145,6 @@ public:
             int routing_id,
             mojo::PendingReceiver<network::mojom::RestrictedCookieManager> *receiver) override;
 
-    bool AllowAppCache(const GURL &manifest_url,
-                       const net::SiteForCookies &site_for_cookies,
-                       const absl::optional<url::Origin> &top_frame_origin,
-                       content::BrowserContext *context) override;
-
     content::AllowServiceWorkerResult AllowServiceWorker(
             const GURL &scope,
             const net::SiteForCookies &site_for_cookies,
@@ -188,10 +183,6 @@ public:
                                         network::mojom::URLLoaderFactoryParams *factory_params) override;
 #if defined(Q_OS_LINUX)
     void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::PosixFileDescriptorInfo* mappings) override;
-#endif
-
-#if QT_CONFIG(webengine_pepper_plugins)
-    void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) override;
 #endif
 
     std::unique_ptr<content::LoginDelegate> CreateLoginDelegate(

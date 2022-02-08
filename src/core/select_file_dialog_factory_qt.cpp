@@ -107,8 +107,6 @@ public:
 private:
     WebContentsAdapterClient *m_client;
     QSharedPointer<FilePickerController> m_filePickerController;
-
-    DISALLOW_COPY_AND_ASSIGN(SelectFileDialogQt);
 };
 
 SelectFileDialogQt::SelectFileDialogQt(Listener *listener,

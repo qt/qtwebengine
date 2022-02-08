@@ -42,11 +42,12 @@
 
 #include "register_protocol_handler_request_controller.h"
 
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/custom_handlers/protocol_handler.h"
 
+namespace custom_handlers {
 class ProtocolHandlerRegistry;
+}
 
 namespace QtWebEngineCore {
 
@@ -64,7 +65,7 @@ protected:
     void rejected() override;
 
 private:
-    ProtocolHandlerRegistry *protocolHandlerRegistry();
+    custom_handlers::ProtocolHandlerRegistry *protocolHandlerRegistry();
     content::ProtocolHandler m_handler;
 };
 

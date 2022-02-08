@@ -245,8 +245,6 @@ private:
     mojo::Remote<network::mojom::URLLoaderClient> client_;
     scoped_refptr<net::HttpResponseHeaders> response_headers_;
     base::WeakPtrFactory<ResourceBundleFileLoader> weak_factory_{this};
-
-    DISALLOW_COPY_AND_ASSIGN(ResourceBundleFileLoader);
 };
 
 } // namespace
@@ -266,8 +264,6 @@ public:
         api::ChromeGeneratedFunctionRegistry::RegisterAll(registry);
     }
 
-private:
-    DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsBrowserAPIProvider);
 };
 
 class QtWebEngineExtensionsBrowserAPIProvider : public ExtensionsBrowserAPIProvider
@@ -281,9 +277,6 @@ public:
         // Generated APIs from QtWebEngine.
         api::QtWebEngineGeneratedFunctionRegistry::RegisterAll(registry);
     }
-
-private:
-    DISALLOW_COPY_AND_ASSIGN(QtWebEngineExtensionsBrowserAPIProvider);
 };
 
 ExtensionsBrowserClientQt::ExtensionsBrowserClientQt()

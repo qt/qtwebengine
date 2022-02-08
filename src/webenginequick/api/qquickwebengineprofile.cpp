@@ -205,6 +205,11 @@ QQuickWebEngineSettings *QQuickWebEngineProfilePrivate::settings() const
     return m_settings.data();
 }
 
+QtWebEngineCore::WebEngineSettings *QQuickWebEngineProfilePrivate::coreSettings() const
+{
+    return QtWebEngineCore::WebEngineSettings::get(m_settings->d_ptr.data());
+}
+
 void QQuickWebEngineProfilePrivate::cancelDownload(quint32 downloadId)
 {
     if (m_profileAdapter)

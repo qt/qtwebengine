@@ -44,7 +44,6 @@
 #ifndef EXTENSION_SYSTEM_FACTORY_QT_H_
 #define EXTENSION_SYSTEM_FACTORY_QT_H_
 
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "extensions/browser/extension_system_provider.h"
@@ -73,8 +72,6 @@ private:
     KeyedService *BuildServiceInstanceFor(content::BrowserContext *context) const override;
     content::BrowserContext *GetBrowserContextToUse(content::BrowserContext *context) const override;
     bool ServiceIsCreatedWithBrowserContext() const override;
-
-    DISALLOW_COPY_AND_ASSIGN(ExtensionSystemFactoryQt);
 };
 
 } // namespace extensions

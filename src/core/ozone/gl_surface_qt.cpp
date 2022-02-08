@@ -130,7 +130,7 @@ bool InitializeGLOneOffPlatform()
     if (GetGLImplementation() == kGLImplementationEGLGLES2 || GetGLImplementation() == kGLImplementationEGLANGLE)
         return GLSurfaceEGLQt::InitializeOneOff();
 
-    if (GetGLImplementation() == kGLImplementationDesktopGL)
+    if (GetGLImplementation() == kGLImplementationDesktopGL || GetGLImplementation() == kGLImplementationDesktopGLCoreProfile)
         return GLSurfaceWGLQt::InitializeOneOff();
 
     return false;

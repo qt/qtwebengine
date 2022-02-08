@@ -66,7 +66,6 @@ public:
 private:
     friend class content::WebContentsUserData<ExtensionWebContentsObserverQt>;
     WEB_CONTENTS_USER_DATA_KEY_DECL();
-    DISALLOW_COPY_AND_ASSIGN(ExtensionWebContentsObserverQt);
 };
 
 } // namespace extensions

@@ -192,7 +192,6 @@ private:
     mojo::Remote<network::mojom::URLLoaderFactory> target_factory_;
 
     base::WeakPtrFactory<InterceptedRequest> weak_factory_;
-    DISALLOW_COPY_AND_ASSIGN(InterceptedRequest);
 };
 
 InterceptedRequest::InterceptedRequest(ProfileAdapter *profile_adapter,

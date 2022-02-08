@@ -331,9 +331,9 @@ void PrintViewManagerQt::NavigationStopped()
     PrintViewManagerBaseQt::NavigationStopped();
 }
 
-void PrintViewManagerQt::RenderProcessGone(base::TerminationStatus status)
+void PrintViewManagerQt::PrimaryMainFrameRenderProcessGone(base::TerminationStatus status)
 {
-    PrintViewManagerBaseQt::RenderProcessGone(status);
+    PrintViewManagerBaseQt::PrimaryMainFrameRenderProcessGone(status);
     if (!m_pdfPrintCallback.is_null()) {
         base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                        base::BindOnce(std::move(m_pdfPrintCallback), QSharedPointer<QByteArray>()));

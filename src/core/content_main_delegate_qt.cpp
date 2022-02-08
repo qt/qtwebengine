@@ -120,9 +120,6 @@ struct LazyDirectoryListerCacher
         dict.SetString("headerDateModified",
                        l10n_util::GetStringUTF16(IDS_DIRECTORY_LISTING_DATE_MODIFIED));
         dict.SetString("language", l10n_util::GetLanguage(base::i18n::GetConfiguredLocale()));
-        dict.SetString("listingParsingErrorBoxText",
-                       l10n_util::GetStringFUTF16(IDS_DIRECTORY_LISTING_PARSING_ERROR_BOX_TEXT,
-                                                  toString16(QCoreApplication::applicationName())));
         dict.SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
         std::string html =
                 webui::GetI18nTemplateHtml(

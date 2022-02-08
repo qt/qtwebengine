@@ -60,6 +60,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 QT_FORWARD_DECLARE_CLASS(QSslCertificate)
 
@@ -134,9 +135,24 @@ inline GURL toGurl(const QUrl& url)
     return GURL(url.toEncoded().toStdString());
 }
 
+inline QUrl toQt(const url::Origin &origin)
+{
+    return QUrl::fromEncoded(toQByteArray(origin.Serialize()));
+}
+
+inline url::Origin toOrigin(const QUrl &url)
+{
+    return url::Origin::Create(toGurl(url));
+}
+
 inline QPoint toQt(const gfx::Point &point)
 {
     return QPoint(point.x(), point.y());
+}
+
+inline QPointF toQt(const gfx::PointF &point)
+{
+    return QPointF(point.x(), point.y());
 }
 
 inline QPointF toQt(const gfx::Vector2dF &point)

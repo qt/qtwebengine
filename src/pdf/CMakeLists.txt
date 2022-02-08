@@ -114,7 +114,6 @@ foreach(arch ${archs})
 
         if(LINUX)
           list(APPEND gnArgArg
-              use_x11=false
               is_cfi=false
               ozone_auto_platforms=false
               use_gnome_keyring=false)

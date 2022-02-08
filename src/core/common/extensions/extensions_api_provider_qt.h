@@ -41,8 +41,6 @@
 
 #include "extensions/common/extensions_api_provider.h"
 
-#include "base/macros.h"
-
 namespace extensions {
 
 class ExtensionsAPIProviderQt : public ExtensionsAPIProvider
@@ -64,8 +62,6 @@ public:
 
     // Registers permissions for any associated API features.
     void RegisterPermissions(PermissionsInfo* permissions_info) override;
-
-DISALLOW_COPY_AND_ASSIGN(ExtensionsAPIProviderQt);
 };
 
 }

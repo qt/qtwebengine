@@ -283,8 +283,6 @@ private:
     const blink::MediaStreamDevices m_devices;
     bool m_started = false;
     base::OnceClosure m_onStop; // currently unused
-
-    DISALLOW_COPY_AND_ASSIGN(MediaStreamUIQt);
 };
 
 } // namespace

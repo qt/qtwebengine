@@ -40,7 +40,6 @@
 #ifndef PROXYING_RESTRICTED_COOKIE_MANAGER_QT_H
 #define PROXYING_RESTRICTED_COOKIE_MANAGER_QT_H
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
@@ -106,8 +105,6 @@ private:
     mojo::Remote<network::mojom::RestrictedCookieManager> underlying_restricted_cookie_manager_;
 
     base::WeakPtrFactory<ProxyingRestrictedCookieManagerQt> weak_factory_;
-
-    DISALLOW_COPY_AND_ASSIGN(ProxyingRestrictedCookieManagerQt);
 };
 
 } // namespace QtWebEngineCore

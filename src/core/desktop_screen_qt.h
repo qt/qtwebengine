@@ -53,6 +53,8 @@ public:
     ~DesktopScreenQt() override;
 
     display::Display GetDisplayNearestWindow(gfx::NativeWindow /*window*/) const override;
+    bool SetScreenSaverSuspended(bool suspend) override;
+    bool IsScreenSaverActive() const override;
 
 private:
     void initializeScreens();

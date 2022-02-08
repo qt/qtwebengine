@@ -65,12 +65,11 @@ public:
     explicit MimeHandlerViewGuestDelegateQt(MimeHandlerViewGuest *guest);
     ~MimeHandlerViewGuestDelegateQt() override;
 
-    bool HandleContextMenu(content::WebContents *web_contents,
+    bool HandleContextMenu(content::RenderFrameHost &render_frame_host,
                            const content::ContextMenuParams &params) override;
 
 private:
     QWebEngineContextMenuRequest *m_contextMenuRequest;
-    DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewGuestDelegateQt);
 };
 
 } // namespace extensions

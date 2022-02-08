@@ -73,9 +73,6 @@ public:
     static void* g_display;
     static const char* g_extensions;
     static const char* g_client_extensions;
-
-private:
-    DISALLOW_COPY_AND_ASSIGN(GLSurfaceQt);
 };
 
 }

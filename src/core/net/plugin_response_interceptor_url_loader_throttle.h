@@ -40,7 +40,6 @@
 #ifndef PLUGIN_RESPONSE_INTERCEPTOR_URL_LOADER_THROTTLE_H_
 #define PLUGIN_RESPONSE_INTERCEPTOR_URL_LOADER_THROTTLE_H_
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -71,8 +70,6 @@ private:
 
     base::WeakPtrFactory<PluginResponseInterceptorURLLoaderThrottle>
         weak_factory_{this};
-
-    DISALLOW_COPY_AND_ASSIGN(PluginResponseInterceptorURLLoaderThrottle);
 };
 
 } // namespace QtWebEngineCore

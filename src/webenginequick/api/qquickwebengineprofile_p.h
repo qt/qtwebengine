@@ -78,6 +78,7 @@ public:
 
     QtWebEngineCore::ProfileAdapter* profileAdapter() const;
     QQuickWebEngineSettings *settings() const;
+    QtWebEngineCore::WebEngineSettings *coreSettings() const override;
 
     void cancelDownload(quint32 downloadId);
     void downloadDestroyed(quint32 downloadId);

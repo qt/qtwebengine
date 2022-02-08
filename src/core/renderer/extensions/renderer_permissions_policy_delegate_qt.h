@@ -40,7 +40,6 @@
 #ifndef RENDERERPERMISSIONSPOLICYDELEGATEQT_H
 #define RENDERERPERMISSIONSPOLICYDELEGATEQT_H
 
-#include "base/macros.h"
 #include "extensions/common/permissions/permissions_data.h"
 
 namespace extensions {
@@ -56,9 +55,6 @@ public:
     ~RendererPermissionsPolicyDelegateQt() override;
 
     bool IsRestrictedUrl(const GURL &, std::string *) override;
-
-private:
-    DISALLOW_COPY_AND_ASSIGN(RendererPermissionsPolicyDelegateQt);
 };
 
 } // namespace QtWebEngineCore

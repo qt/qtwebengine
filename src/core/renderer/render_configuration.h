@@ -71,8 +71,6 @@ private:
 
     mojo::AssociatedReceiverSet<qtwebengine::mojom::RendererConfiguration>
             m_rendererConfigurationReceivers;
-
-    DISALLOW_COPY_AND_ASSIGN(RenderConfiguration);
 };
 
 } // namespace QtWebEngineCore

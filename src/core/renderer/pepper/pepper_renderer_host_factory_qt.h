@@ -65,8 +65,6 @@ public:
 private:
     // Not owned by this object.
     content::RendererPpapiHost* host_;
-
-    DISALLOW_COPY_AND_ASSIGN(PepperRendererHostFactoryQt);
 };
 
 } // namespace QtWebEngineCore

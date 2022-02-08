@@ -44,7 +44,6 @@
 #ifndef LOADALBLE_PLUGIN_PLACEHOLDER_QT_H
 #define LOADALBLE_PLUGIN_PLACEHOLDER_QT_H
 
-#include "base/macros.h"
 #include "components/plugins/renderer/loadable_plugin_placeholder.h"
 
 namespace QtWebEngineCore {
@@ -73,8 +72,6 @@ private:
 
     // WebViewPlugin::Delegate (via PluginPlaceholder) methods:
     v8::Local<v8::Value> GetV8Handle(v8::Isolate* isolate) override;
-
-    DISALLOW_COPY_AND_ASSIGN(LoadablePluginPlaceholderQt);
 };
 
 }  // namespace QtWebEngineCore

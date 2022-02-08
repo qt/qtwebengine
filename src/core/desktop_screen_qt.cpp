@@ -46,6 +46,15 @@
 #include <QGuiApplication>
 #include <QScreen>
 
+#if defined(USE_OZONE)
+#include "ui/ozone/buildflags.h"
+#if BUILDFLAG(OZONE_PLATFORM_X11)
+#define USE_XSCREENSAVER
+#include "ui/base/x/x11_screensaver.h"
+#include "ui/base/x/x11_util.h"
+#endif
+#endif
+
 #include <cmath>
 
 namespace QtWebEngineCore {
@@ -135,6 +144,24 @@ bool DesktopScreenQt::updateAllScreens()
 display::Display DesktopScreenQt::GetDisplayNearestWindow(gfx::NativeWindow /*window*/) const
 {
     return GetPrimaryDisplay();
+}
+
+bool DesktopScreenQt::SetScreenSaverSuspended(bool suspend)
+{
+#if defined(USE_XSCREENSAVER)
+    return ui::SuspendX11ScreenSaver(suspend);
+#else
+    return false;
+#endif
+}
+
+bool DesktopScreenQt::IsScreenSaverActive() const
+{
+#if defined(USE_XSCREENSAVER)
+    return ui::IsXScreensaverActive();
+#else
+    return false;
+#endif
 }
 
 } // namespace QtWebEngineCore

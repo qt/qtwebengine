@@ -61,7 +61,6 @@ class GpuProcess;
 class GpuThreadController;
 class InProcessChildThreadParams;
 class MojoIpcSupport;
-struct StartupData;
 }
 
 namespace discardable_memory {
@@ -140,7 +139,6 @@ private:
     std::unique_ptr<content::ContentMainRunner> m_contentRunner;
     std::unique_ptr<content::BrowserMainRunner> m_browserRunner;
     std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager> m_discardableSharedMemoryManager;
-    std::unique_ptr<content::StartupData> m_startupData;
     std::unique_ptr<content::MojoIpcSupport> m_mojoIpcSupport;
     std::unique_ptr<QObject> m_globalQObject;
     std::unique_ptr<ProfileAdapter> m_defaultProfileAdapter;

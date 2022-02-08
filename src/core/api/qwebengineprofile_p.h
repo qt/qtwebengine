@@ -62,6 +62,7 @@
 
 namespace QtWebEngineCore {
 class ProfileAdapter;
+class WebEngineSettings;
 }
 
 QT_BEGIN_NAMESPACE
@@ -79,6 +80,7 @@ public:
 
     QtWebEngineCore::ProfileAdapter *profileAdapter() const;
     QWebEngineSettings *settings() const { return m_settings; }
+    QtWebEngineCore::WebEngineSettings *coreSettings() const override;
 
     void downloadDestroyed(quint32 downloadId);
 

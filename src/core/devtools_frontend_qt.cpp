@@ -52,7 +52,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -184,8 +183,6 @@ private:
     DevToolsFrontendQt *const bindings_;
     std::unique_ptr<network::SimpleURLLoader> loader_;
     scoped_refptr<net::HttpResponseHeaders> response_headers_;
-
-    DISALLOW_COPY_AND_ASSIGN(NetworkResourceLoader);
 };
 
 // This constant should be in sync with

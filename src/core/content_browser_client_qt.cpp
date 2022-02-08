@@ -41,9 +41,9 @@
 
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
+#include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/navigation_interception/intercept_navigation_throttle.h"
@@ -130,7 +130,6 @@
 #if QT_CONFIG(webengine_pepper_plugins)
 #include "content/public/browser/browser_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
-#include "renderer_host/pepper/pepper_host_factory_qt.h"
 #endif
 
 #if QT_CONFIG(webengine_spellchecker)
@@ -237,7 +236,7 @@ ContentBrowserClientQt::~ContentBrowserClientQt()
 {
 }
 
-std::unique_ptr<content::BrowserMainParts> ContentBrowserClientQt::CreateBrowserMainParts(const content::MainFunctionParams&)
+std::unique_ptr<content::BrowserMainParts> ContentBrowserClientQt::CreateBrowserMainParts(content::MainFunctionParams)
 {
     Q_ASSERT(!m_browserMainParts);
     auto browserMainParts = std::make_unique<BrowserMainPartsQt>();
@@ -411,14 +410,6 @@ void ContentBrowserClientQt::GetAdditionalMappedFilesForChildProcess(const base:
     int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
     base::File locale_file = base::File(locale_file_path, flags);
     mappings->Transfer(kWebEngineLocale, base::ScopedFD(locale_file.TakePlatformFile()));
-}
-#endif
-
-#if QT_CONFIG(webengine_pepper_plugins)
-void ContentBrowserClientQt::DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host)
-{
-    browser_host->GetPpapiHost()->AddHostFactoryFilter(
-                std::make_unique<QtWebEngineCore::PepperHostFactoryQt>(browser_host));
 }
 #endif
 
@@ -626,17 +617,6 @@ bool ContentBrowserClientQt::WillCreateRestrictedCookieManager(network::mojom::R
     return false;  // only made a proxy, still need the actual impl to be made.
 }
 
-bool ContentBrowserClientQt::AllowAppCache(const GURL &manifest_url,
-                                           const net::SiteForCookies &site_for_cookies,
-                                           const absl::optional<url::Origin> & /*top_frame_origin*/,
-                                           content::BrowserContext *context)
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (!context || context->ShutdownStarted())
-        return false;
-    return static_cast<ProfileQt *>(context)->profileAdapter()->cookieStore()->d_func()->canAccessCookies(toQt(site_for_cookies.first_party_url()), toQt(manifest_url));
-}
-
 content::AllowServiceWorkerResult
 ContentBrowserClientQt::AllowServiceWorker(const GURL &scope,
                                            const net::SiteForCookies &site_for_cookies,
@@ -689,11 +669,9 @@ static void LaunchURL(const GURL& url,
     if (!webContents)
         return;
 
-    ProtocolHandlerRegistry* protocolHandlerRegistry =
-            ProtocolHandlerRegistryFactory::GetForBrowserContext(
-                    webContents->GetBrowserContext());
-    if (protocolHandlerRegistry &&
-        protocolHandlerRegistry->IsHandledProtocol(url.scheme()))
+    custom_handlers::ProtocolHandlerRegistry *protocolHandlerRegistry =
+            ProtocolHandlerRegistryFactory::GetForBrowserContext(webContents->GetBrowserContext());
+    if (protocolHandlerRegistry && protocolHandlerRegistry->IsHandledProtocol(url.scheme()))
         return;
 
     // Sandbox flag logic from chrome/browser/chrome_content_browser_client.cc:
@@ -756,7 +734,7 @@ namespace {
 class ProtocolHandlerThrottle : public blink::URLLoaderThrottle
 {
 public:
-    explicit ProtocolHandlerThrottle(ProtocolHandlerRegistry *protocol_handler_registry)
+    explicit ProtocolHandlerThrottle(custom_handlers::ProtocolHandlerRegistry *protocol_handler_registry)
         : protocol_handler_registry_(protocol_handler_registry)
     {
     }
@@ -787,7 +765,7 @@ private:
             *url = translated_url;
     }
 
-    ProtocolHandlerRegistry *protocol_handler_registry_;
+    custom_handlers::ProtocolHandlerRegistry *protocol_handler_registry_;
 };
 } // namespace
 
@@ -890,7 +868,7 @@ bool ContentBrowserClientQt::IsHandledURL(const GURL &url)
 bool ContentBrowserClientQt::HasCustomSchemeHandler(content::BrowserContext *browser_context,
                                                     const std::string &scheme)
 {
-    if (ProtocolHandlerRegistry *protocol_handler_registry =
+    if (custom_handlers::ProtocolHandlerRegistry *protocol_handler_registry =
               ProtocolHandlerRegistryFactory::GetForBrowserContext(browser_context)) {
         return protocol_handler_registry->IsHandledProtocol(scheme);
     }
@@ -1089,8 +1067,16 @@ void ContentBrowserClientQt::RegisterNonNetworkWorkerMainResourceURLLoaderFactor
 void ContentBrowserClientQt::RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(content::BrowserContext* browser_context,
                                                                                      NonNetworkURLLoaderFactoryMap* factories)
 {
-    DCHECK(browser_context);
-    DCHECK(factories);
+    Profile *profile = Profile::FromBrowserContext(browser_context);
+    ProfileAdapter *profileAdapter = static_cast<ProfileQt *>(profile)->profileAdapter();
+
+    for (const QByteArray &scheme : profileAdapter->customUrlSchemes()) {
+        if (const url::CustomScheme *cs = url::CustomScheme::FindScheme(scheme.toStdString())) {
+            if (cs->flags & url::CustomScheme::ServiceWorkersAllowed)
+                factories->emplace(scheme.toStdString(), CreateCustomURLLoaderFactory(profileAdapter));
+        }
+    }
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     factories->emplace(
         extensions::kExtensionScheme,

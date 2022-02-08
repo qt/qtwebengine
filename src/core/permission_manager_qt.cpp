@@ -89,7 +89,6 @@ static ProfileAdapter::PermissionType toQt(content::PermissionType type)
     case content::PermissionType::STORAGE_ACCESS_GRANT:
     case content::PermissionType::FONT_ACCESS:
     case content::PermissionType::DISPLAY_CAPTURE:
-    case content::PermissionType::FILE_HANDLING:
     case content::PermissionType::NUM:
         LOG(INFO) << "Unexpected unsupported permission type: " << static_cast<int>(type);
         break;
@@ -132,8 +131,8 @@ PermissionManagerQt::~PermissionManagerQt()
 
 void PermissionManagerQt::permissionRequestReply(const QUrl &url, ProfileAdapter::PermissionType type, ProfileAdapter::PermissionState reply)
 {
-    // Normalize the QUrl to GURL origin form.
-    const GURL gorigin = toGurl(url).GetOrigin();
+    // Normalize the QUrl to Chromium origin form.
+    const GURL gorigin = toGurl(url).DeprecatedGetOriginAsURL();
     const QUrl origin = gorigin.is_empty() ? url : toQt(gorigin);
     if (origin.isEmpty())
         return;
@@ -323,7 +322,7 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForFrame(
     return GetPermissionStatus(
                 permission,
                 requesting_origin,
-                content::WebContents::FromRenderFrameHost(render_frame_host)->GetLastCommittedURL().GetOrigin());
+                render_frame_host->GetLastCommittedOrigin().GetURL());
 }
 
 void PermissionManagerQt::ResetPermission(

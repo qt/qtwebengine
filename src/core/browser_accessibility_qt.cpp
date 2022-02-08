@@ -63,10 +63,8 @@ class BrowserAccessibilityQt
     : public BrowserAccessibility
 {
 public:
-    BrowserAccessibilityQt();
+    BrowserAccessibilityQt(BrowserAccessibilityManager *manager, ui::AXNode *node);
     ~BrowserAccessibilityQt();
-
-    void Init(BrowserAccessibilityManager *manager, ui::AXNode *node) override;
 
     QtWebEngineCore::BrowserAccessibilityInterface *interface() const { return m_interface; }
 
@@ -87,7 +85,6 @@ class BrowserAccessibilityInterface
 public:
     BrowserAccessibilityInterface(content::BrowserAccessibilityQt *chromiumInterface);
 
-    void init();
     void destroy();
 
     // QAccessibleInterface
@@ -149,7 +146,7 @@ public:
     int selectedCellCount() const override;
     int selectedColumnCount() const override;
     int selectedRowCount() const override;
-    QList<QAccessibleInterface*> selectedCells() const override;
+    QList<QAccessibleInterface *> selectedCells() const override;
     QList<int> selectedColumns() const override;
     QList<int> selectedRows() const override;
     bool isColumnSelected(int column) const override;
@@ -161,13 +158,13 @@ public:
 
     // QAccessibleTableCellInterface
     int columnExtent() const override;
-    QList<QAccessibleInterface*> columnHeaderCells() const override;
+    QList<QAccessibleInterface *> columnHeaderCells() const override;
     int columnIndex() const override;
     int rowExtent() const override;
-    QList<QAccessibleInterface*> rowHeaderCells() const override;
+    QList<QAccessibleInterface *> rowHeaderCells() const override;
     int rowIndex() const override;
     bool isSelected() const override;
-    QAccessibleInterface* table() const override;
+    QAccessibleInterface *table() const override;
 
     void modelChange(QAccessibleTableModelChangeEvent *event) override;
 
@@ -181,9 +178,9 @@ private:
 namespace content {
 
 // static
-BrowserAccessibility *BrowserAccessibility::Create()
+std::unique_ptr<BrowserAccessibility> BrowserAccessibility::Create(BrowserAccessibilityManager *man, ui::AXNode *node)
 {
-    return new BrowserAccessibilityQt();
+    return std::unique_ptr<BrowserAccessibility>(new BrowserAccessibilityQt(man, node));
 }
 
 QAccessibleInterface *toQAccessibleInterface(BrowserAccessibility *obj)
@@ -196,15 +193,10 @@ const QAccessibleInterface *toQAccessibleInterface(const BrowserAccessibility *o
     return static_cast<const BrowserAccessibilityQt *>(obj)->interface();
 }
 
-BrowserAccessibilityQt::BrowserAccessibilityQt()
-    : m_interface(new QtWebEngineCore::BrowserAccessibilityInterface(this))
+BrowserAccessibilityQt::BrowserAccessibilityQt(BrowserAccessibilityManager *manager, ui::AXNode *node)
+    : content::BrowserAccessibility(manager, node),
+      m_interface(new QtWebEngineCore::BrowserAccessibilityInterface(this))
 {
-}
-
-void BrowserAccessibilityQt::Init(BrowserAccessibilityManager *manager, ui::AXNode *node)
-{
-    BrowserAccessibility::Init(manager, node);
-    m_interface->init();
 }
 
 BrowserAccessibilityQt::~BrowserAccessibilityQt()
@@ -221,7 +213,21 @@ using namespace content;
 
 BrowserAccessibilityInterface::BrowserAccessibilityInterface(content::BrowserAccessibilityQt *chromiumInterface)
     : q(chromiumInterface)
-{}
+{
+    Q_ASSERT(parent());
+    Q_ASSERT(parent()->object());
+    m_object = new QObject(parent()->object());
+    QString name = toQt(q->GetAuthorUniqueId());
+    if (!name.isEmpty())
+        m_object->setObjectName(name);
+
+    m_id = QAccessible::registerAccessibleInterface(this);
+}
+
+void BrowserAccessibilityInterface::destroy()
+{
+    QAccessible::deleteAccessibleInterface(m_id);
+}
 
 bool BrowserAccessibilityInterface::isValid() const
 {
@@ -576,7 +582,50 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
     case ax::mojom::Role::kMarquee:
         return QAccessible::Section;
     case ax::mojom::Role::kMath:
+    case ax::mojom::Role::kMathMLMath:
         return QAccessible::Equation;
+    case ax::mojom::Role::kMathMLFraction:
+        return QAccessible::Grouping;
+    case ax::mojom::Role::kMathMLIdentifier:
+        return QAccessible::StaticText;
+    case ax::mojom::Role::kMathMLMultiscripts:
+        return QAccessible::Section;
+    case ax::mojom::Role::kMathMLNoneScript:
+        return QAccessible::Section;
+    case ax::mojom::Role::kMathMLNumber:
+        return QAccessible::StaticText;
+    case ax::mojom::Role::kMathMLOperator:
+        return QAccessible::StaticText;
+    case ax::mojom::Role::kMathMLOver:
+        return QAccessible::Section;
+    case ax::mojom::Role::kMathMLPrescriptDelimiter:
+        return QAccessible::Section;
+    case ax::mojom::Role::kMathMLRoot:
+        return QAccessible::Section;
+    case ax::mojom::Role::kMathMLRow:
+        return QAccessible::Section;
+    case ax::mojom::Role::kMathMLSquareRoot:
+        return QAccessible::Section;
+    case ax::mojom::Role::kMathMLStringLiteral:
+        return QAccessible::StaticText;
+    case ax::mojom::Role::kMathMLSub:
+        return QAccessible::Section;
+    case ax::mojom::Role::kMathMLSubSup:
+        return QAccessible::Section;
+    case ax::mojom::Role::kMathMLSup:
+        return QAccessible::Section;
+    case ax::mojom::Role::kMathMLTable:
+        return QAccessible::Table;
+    case ax::mojom::Role::kMathMLTableCell:
+        return QAccessible::Cell;
+    case ax::mojom::Role::kMathMLTableRow:
+        return QAccessible::Row;
+    case ax::mojom::Role::kMathMLText:
+        return QAccessible::StaticText;
+    case ax::mojom::Role::kMathMLUnder:
+        return QAccessible::Section;
+    case ax::mojom::Role::kMathMLUnderOver:
+        return QAccessible::Section;
     case ax::mojom::Role::kMenu:
         return QAccessible::PopupMenu;
     case ax::mojom::Role::kMenuBar:
@@ -653,10 +702,14 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
         return QAccessible::Indicator;
     case ax::mojom::Role::kStrong:
         return QAccessible::StaticText;
+    case ax::mojom::Role::kSubscript:
+        return QAccessible::Grouping;
     case ax::mojom::Role::kSuggestion:
         return QAccessible::Section;
+    case ax::mojom::Role::kSuperscript:
+        return QAccessible::Grouping;
     case ax::mojom::Role::kSvgRoot:
-        return QAccessible::Graphic;
+        return QAccessible::WebDocument;
     case ax::mojom::Role::kSwitch:
         return QAccessible::Button;
     case ax::mojom::Role::kTable:
@@ -796,26 +849,6 @@ QAccessible::State BrowserAccessibilityInterface::state() const
         }
     }
     return state;
-}
-
-void BrowserAccessibilityInterface::init()
-{
-    if (m_id)
-        return;
-    Q_ASSERT(parent());
-    Q_ASSERT(parent()->object());
-    m_object = new QObject(parent()->object());
-    QString name = toQt(q->GetAuthorUniqueId());
-    if (!name.isEmpty())
-        m_object->setObjectName(name);
-
-    m_id = QAccessible::registerAccessibleInterface(this);
-}
-
-void BrowserAccessibilityInterface::destroy()
-{
-    // delete this
-    QAccessible::deleteAccessibleInterface(m_id);
 }
 
 QStringList BrowserAccessibilityInterface::actionNames() const

@@ -63,8 +63,6 @@ public:
 
 private:
     content::WebContents *m_webContents;
-
-    DISALLOW_COPY_AND_ASSIGN(SelectFilePolicyQt);
 };
 
 // Implements a file Open / Save dialog for File System Access API.
@@ -77,9 +75,6 @@ public:
     // Overridden from ui::SelectFileDialogFactory:
     ui::SelectFileDialog *Create(ui::SelectFileDialog::Listener *listener,
                                  std::unique_ptr<ui::SelectFilePolicy> policy) override;
-
-private:
-    DISALLOW_COPY_AND_ASSIGN(SelectFileDialogFactoryQt);
 };
 
 } // namespace QtWebEngineCore

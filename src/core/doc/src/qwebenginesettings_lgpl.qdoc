@@ -56,7 +56,7 @@
     \value CursiveFont
     \value FantasyFont
     \value PictographFont
-           (added in Qt 5.7)
+           (added in Qt 5.7, deprecated Qt 6.4)
 */
 
 /*!

@@ -305,7 +305,7 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
             const base::Version version;
             cdms->push_back(content::CdmInfo(kWidevineKeySystem, Robustness::kSoftwareSecure, std::move(capability),
                                              /*supports_sub_key_systems=*/false, kWidevineCdmDisplayName,
-                                             kWidevineCdmGuid, version, cdm_path, kWidevineCdmFileSystemId));
+                                             kWidevineCdmType, version, cdm_path, kWidevineCdmFileSystemId));
         }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
 
@@ -335,13 +335,13 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
             cdms->push_back(content::CdmInfo(kExternalClearKeyDifferentGuidTestKeySystem,
                                              Robustness::kSoftwareSecure, capability,
                                              /*supports_sub_key_systems=*/false, media::kClearKeyCdmDisplayName,
-                                             media::kClearKeyCdmDifferentGuid, base::Version("0.1.0.0"),
+                                             media::kClearKeyCdmDifferentCdmType, base::Version("0.1.0.0"),
                                              clear_key_cdm_path, media::kClearKeyCdmFileSystemId));
 
             cdms->push_back(content::CdmInfo(kExternalClearKeyKeySystem,
                                              Robustness::kSoftwareSecure, capability,
                                              /*supports_sub_key_systems=*/true, media::kClearKeyCdmDisplayName,
-                                             media::kClearKeyCdmGuid, base::Version("0.1.0.0"),
+                                             media::kClearKeyCdmType, base::Version("0.1.0.0"),
                                              clear_key_cdm_path, media::kClearKeyCdmFileSystemId));
         }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

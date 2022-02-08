@@ -65,9 +65,7 @@ void DelegatedFrameHostClientQt::OnFrameTokenChanged(uint32_t frame_token, base:
 
 float DelegatedFrameHostClientQt::GetDeviceScaleFactor() const
 {
-    display::ScreenInfo screen_info;
-    p->GetScreenInfo(&screen_info);
-    return screen_info.device_scale_factor;
+    return p->GetScreenInfo().device_scale_factor;
 }
 
 void DelegatedFrameHostClientQt::InvalidateLocalSurfaceIdOnEviction()

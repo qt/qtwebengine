@@ -728,10 +728,9 @@ void tst_QWebEnginePage::popupFormSubmission()
     QVERIFY(page.createdWindows.size() == 1);
 
     QTRY_VERIFY(!page.createdWindows[0]->url().isEmpty());
-    QString url = page.createdWindows[0]->url().toString();
 
     // Check if the form submission was OK.
-    QVERIFY(url.contains("?foo=bar"));
+    QTRY_VERIFY(page.createdWindows[0]->url().toString().contains("?foo=bar"));
 }
 
 class TestNetworkManager : public QNetworkAccessManager
@@ -1999,14 +1998,14 @@ void tst_QWebEnginePage::symmetricUrl()
 
     QVERIFY(view.url().isEmpty());
 
-    QCOMPARE(view.history()->count(), 0);
+    QCOMPARE(view.history()->count(), 1);
 
     QUrl dataUrl("data:text/html,<h1>Test");
 
     view.setUrl(dataUrl);
     view.show();
     QCOMPARE(view.url(), dataUrl);
-    QCOMPARE(view.history()->count(), 0);
+    QCOMPARE(view.history()->count(), 1);
 
     // loading is _not_ immediate, so the text isn't set just yet.
     QVERIFY(toPlainTextSync(view.page()).isEmpty());
@@ -2319,7 +2318,7 @@ void tst_QWebEnginePage::setHtmlWithBaseURL()
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].height").toInt(), 128);
 
     // no history item has to be added.
-    QCOMPARE(m_view->page()->history()->count(), 0);
+    QCOMPARE(m_view->page()->history()->count(), 1);
 }
 
 class MyPage : public QWebEnginePage
@@ -2749,7 +2748,7 @@ void tst_QWebEnginePage::setUrlHistory()
     int expectedLoadFinishedCount = 0;
     QSignalSpy spy(m_page, SIGNAL(loadFinished(bool)));
 
-    QCOMPARE(m_page->history()->count(), 0);
+    QCOMPARE(m_page->history()->count(), 1);
 
     m_page->setUrl(QUrl());
     expectedLoadFinishedCount++;
@@ -2820,16 +2819,19 @@ void tst_QWebEnginePage::setUrlUsingStateObject()
 {
     QUrl url;
     QSignalSpy urlChangedSpy(m_page, SIGNAL(urlChanged(QUrl)));
+    QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
     int expectedUrlChangeCount = 0;
 
-    QCOMPARE(m_page->history()->count(), 0);
+    QCOMPARE(m_page->history()->count(), 1);
 
     url = QUrl("qrc:/resources/test1.html");
     m_page->setUrl(url);
     expectedUrlChangeCount++;
     QTRY_COMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
     QCOMPARE(m_page->url(), url);
-    QTRY_COMPARE(m_page->history()->count(), 1);
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QCOMPARE(m_page->url(), url);
+    QCOMPARE(m_page->history()->count(), 1);
 
     evaluateJavaScriptSync(m_page, "window.history.pushState(null, 'push', 'navigate/to/here')");
     expectedUrlChangeCount++;
@@ -3625,7 +3627,7 @@ void tst_QWebEnginePage::openLinkInNewPage()
             QCOMPARE(page1.history()->count(), 1);
         else
             QCOMPARE(page1.history()->count(), 2);
-        QCOMPARE(page2.history()->count(), 0);
+        QCOMPARE(page2.history()->count(), 1);
         break;
     case Effect::LoadInOther:
         QTRY_COMPARE(page2.spy.count(), 1);
@@ -4941,7 +4943,7 @@ void tst_QWebEnginePage::isSafeRedirect_data()
 #endif
 
     QString tempDir(fileScheme + QDir::tempPath());
-    QTest::newRow(qPrintable(tempDir)) << QUrl(tempDir) << QUrl(tempDir + "/");
+    QTest::newRow(qPrintable(tempDir)) << QUrl(tempDir) << QUrl(tempDir);
     QTest::newRow(qPrintable(tempDir + QString("/foo/bar"))) << QUrl(tempDir + "/foo/bar") << QUrl(tempDir + "/foo/bar");
     QTest::newRow("filesystem:http://foo.com/bar") << QUrl("filesystem:http://foo.com/bar") << QUrl("filesystem:http://foo.com/bar/");
 }

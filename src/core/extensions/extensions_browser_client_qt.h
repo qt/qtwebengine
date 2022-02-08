@@ -146,8 +146,6 @@ private:
     std::unique_ptr<ComponentExtensionResourceManager> resource_manager_;
 
     //scoped_refptr<EventRouterForwarder> event_router_forwarder_;
-
-    DISALLOW_COPY_AND_ASSIGN(ExtensionsBrowserClientQt);
 };
 
 } // namespace extensions

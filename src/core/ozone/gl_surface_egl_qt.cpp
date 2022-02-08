@@ -138,6 +138,21 @@ bool GLSurfaceEGL::IsRobustnessVideoMemoryPurgeSupported()
     return false;
 }
 
+bool GLSurfaceEGL::IsANGLEContextVirtualizationSupported()
+{
+    return false;
+}
+
+bool GLSurfaceEGL::IsANGLEVulkanImageClientBufferSupported()
+{
+    return false;
+}
+
+bool GLSurfaceEGL::IsEGLQueryDeviceSupported()
+{
+    return false;
+}
+
 void GLSurfaceEGL::ShutdownOneOff()
 {
 }

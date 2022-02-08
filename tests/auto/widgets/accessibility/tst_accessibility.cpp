@@ -426,7 +426,7 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kFigure") << QString("<figure>a</figure>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kFooter") << QString("<footer>a</footer>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kFooterAsNonLandmark") << QString("<article><footer>a</footer><article>") << 1 << QAccessible::Section;
-    QTest::newRow("ax::mojom::Role::kForm") << QString("<form></form>") << 0 << QAccessible::Form;
+    QTest::newRow("ax::mojom::Role::kForm") << QString("<form aria-label=Name></form>") << 0 << QAccessible::Form;
     QTest::newRow("ax::mojom::Role::kGraphicsDocument") << QString("<div role='graphics-document'></div>") << 0 << QAccessible::Document;
     QTest::newRow("ax::mojom::Role::kGraphicsObject") << QString("<div role='graphics-object'></div>") << 0 << QAccessible::Pane;
     QTest::newRow("ax::mojom::Role::kGraphicsSymbol") << QString("<div role='graphics-symbol'></div>") << 0 << QAccessible::Graphic;
@@ -500,7 +500,7 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kStatus") << QString("<output>a</output>") << 1 << QAccessible::Indicator;
     QTest::newRow("ax::mojom::Role::kStrong") << QString("<strong>a</strong>") << 1 << QAccessible::StaticText;
     QTest::newRow("ax::mojom::Role::kSuggestion") << QString("<div role='suggestion'></div>") << 0 << QAccessible::Section;
-    QTest::newRow("ax::mojom::Role::kSvgRoot") << QString("<svg width='10' height='10'></svg>") << 1 << QAccessible::Graphic;
+    QTest::newRow("ax::mojom::Role::kSvgRoot") << QString("<svg width='10' height='10'><text font-size='10'>SVG</text></svg>") << 1 << QAccessible::WebDocument;
     QTest::newRow("ax::mojom::Role::kSwitch") << QString("<button aria-checked='false'>a</button>") << 1 << QAccessible::Button;
     QTest::newRow("ax::mojom::Role::kTable") << QString("<table role=table><td>a</td></table>") << 0 << QAccessible::Table;
     //QTest::newRow("ax::mojom::Role::kTableHeaderContainer"); // No mapping to ARIA role

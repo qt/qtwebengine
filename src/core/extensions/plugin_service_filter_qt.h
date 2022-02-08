@@ -51,10 +51,7 @@ public:
     static PluginServiceFilterQt* GetInstance();
 
     bool IsPluginAvailable(int render_process_id,
-                           int render_frame_id,
-                           const GURL &url,
-                           const url::Origin &main_frame_origin,
-                           content::WebPluginInfo *plugin) override;
+                           const content::WebPluginInfo &plugin) override;
 
     bool CanLoadPlugin(int render_process_id,
                        const base::FilePath &path) override;

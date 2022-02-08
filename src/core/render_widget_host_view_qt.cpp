@@ -83,8 +83,8 @@
 #endif
 
 #if defined(USE_AURA)
+#include "ui/aura/cursor/cursors_aura.h"
 #include "ui/base/cursor/cursor_size.h"
-#include "ui/base/cursor/cursors_aura.h"
 #endif
 
 #if defined(Q_OS_MACOS)
@@ -227,7 +227,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
 
     m_touchSelectionControllerClient.reset(new TouchSelectionControllerClientQt(this));
     ui::TouchSelectionController::Config config;
-    config.max_tap_duration = base::TimeDelta::FromMilliseconds(ui::GestureConfiguration::GetInstance()->long_press_time_in_ms());
+    config.max_tap_duration = base::Milliseconds(ui::GestureConfiguration::GetInstance()->long_press_time_in_ms());
     config.tap_slop = ui::GestureConfiguration::GetInstance()->max_touch_move_in_pixels_for_click();
     config.enable_longpress_drag_selection = false;
     m_touchSelectionController.reset(new ui::TouchSelectionController(m_touchSelectionControllerClient.get(), config));
@@ -368,8 +368,9 @@ void RenderWidgetHostViewQt::CopyFromSurface(const gfx::Rect &src_rect,
     m_delegatedFrameHost->CopyFromCompositingSurface(src_rect, output_size, std::move(callback));
 }
 
-void RenderWidgetHostViewQt::Show()
+void RenderWidgetHostViewQt::ShowWithVisibility(content::PageVisibilityState page_visibility)
 {
+    Q_ASSERT(page_visibility != content::PageVisibilityState::kHidden);
     if (m_delegate)
         m_delegate->show();
     else
@@ -442,13 +443,13 @@ bool RenderWidgetHostViewQt::updateCursorFromResource(ui::mojom::CursorType type
 {
     int resourceId;
     // GetCursorDataFor only knows hotspots for 1x and 2x cursor images, in physical pixels.
-    qreal hotspotDpr = m_screenInfo.device_scale_factor <= 1.0f ? 1.0f : 2.0f;
+    qreal hotspotDpr = GetScreenInfo().device_scale_factor <= 1.0f ? 1.0f : 2.0f;
     qreal hotX;
     qreal hotY;
 
 #if defined(USE_AURA)
     gfx::Point hotspot;
-    if (!ui::GetCursorDataFor(ui::CursorSize::kNormal, type, hotspotDpr, &resourceId, &hotspot))
+    if (!aura::GetCursorDataFor(ui::CursorSize::kNormal, type, hotspotDpr, &resourceId, &hotspot))
         return false;
     hotX = hotspot.x();
     hotY = hotspot.y();
@@ -489,7 +490,7 @@ bool RenderWidgetHostViewQt::updateCursorFromResource(ui::mojom::CursorType type
     if (!imageSkia)
         return false;
 
-    QImage imageQt = toQImage(imageSkia->GetRepresentation(m_screenInfo.device_scale_factor));
+    QImage imageQt = toQImage(imageSkia->GetRepresentation(GetScreenInfo().device_scale_factor));
 
     // Convert hotspot coordinates into device-independent pixels.
     hotX /= hotspotDpr;
@@ -681,9 +682,15 @@ void RenderWidgetHostViewQt::UpdateTooltip(const std::u16string &tooltip_text)
         m_adapterClient->setToolTip(toQt(tooltip_text));
 }
 
-void RenderWidgetHostViewQt::GetScreenInfo(display::ScreenInfo *results)
+display::ScreenInfo RenderWidgetHostViewQt::GetScreenInfo() const
 {
-    *results = m_screenInfo;
+    return m_screenInfo;
+}
+
+display::ScreenInfos RenderWidgetHostViewQt::GetScreenInfos() const
+{
+    // FIXME: Return more than the current screen.
+    return display::ScreenInfos(GetScreenInfo());
 }
 
 gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
@@ -1031,7 +1038,7 @@ void RenderWidgetHostViewQt::OnRenderFrameMetadataChangedAfterActivation(base::T
         m_touchSelectionControllerClient->UpdateClientSelectionBounds(m_selectionStart, m_selectionEnd);
     }
 
-    gfx::Vector2dF scrollOffset = metadata.root_scroll_offset.value_or(gfx::Vector2dF());
+    gfx::PointF scrollOffset = metadata.root_scroll_offset.value_or(gfx::PointF());
     gfx::SizeF contentsSize = metadata.root_layer_size;
     std::swap(m_lastScrollOffset, scrollOffset);
     std::swap(m_lastContentsSize, contentsSize);
@@ -1053,7 +1060,7 @@ void RenderWidgetHostViewQt::synchronizeVisualProperties(const absl::optional<vi
     m_rootLayer->SetBounds(gfx::Rect(gfx::Point(), viewSizeInPixels));
     m_uiCompositorLocalSurfaceIdAllocator.GenerateId();
     m_uiCompositor->SetScaleAndSize(
-            m_screenInfo.device_scale_factor,
+            GetScreenInfo().device_scale_factor,
             viewSizeInPixels,
             m_uiCompositorLocalSurfaceIdAllocator.GetCurrentLocalSurfaceId());
     m_delegatedFrameHost->EmbedSurface(

@@ -152,8 +152,6 @@ private:
 #if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
     std::unique_ptr<chrome::WebRtcLoggingAgentImpl> m_webrtcLoggingAgentImpl;
 #endif
-
-    DISALLOW_COPY_AND_ASSIGN(ContentRendererClientQt);
 };
 
 } // namespace

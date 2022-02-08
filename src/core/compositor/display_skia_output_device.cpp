@@ -42,7 +42,7 @@
 #include "type_conversion.h"
 
 #include "gpu/command_buffer/service/skia_utils.h"
-#include "skia/ext/legacy_display_globals.h"
+#include "third_party/skia/include/core/SkSurfaceProps.h"
 
 namespace QtWebEngineCore {
 
@@ -64,10 +64,14 @@ public:
         DCHECK(m_texture.isValid());
 
         if (m_texture.backend() == GrBackendApi::kVulkan) {
+#if BUILDFLAG(ENABLE_VULKAN)
             GrVkImageInfo info;
             bool result = m_texture.getVkImageInfo(&info);
             DCHECK(result);
             m_estimatedSize = info.fAlloc.fSize;
+#else
+            NOTREACHED();
+#endif
         } else {
             auto info = SkImageInfo::Make(m_shape.sizeInPixels.width(), m_shape.sizeInPixels.height(),
                                           colorType, kUnpremul_SkAlphaType);
@@ -75,7 +79,7 @@ public:
         }
         m_parent->memory_type_tracker_->TrackMemAlloc(m_estimatedSize);
 
-        SkSurfaceProps surfaceProps = skia::LegacyDisplayGlobals::GetSkSurfaceProps();
+        SkSurfaceProps surfaceProps = SkSurfaceProps{0, kUnknown_SkPixelGeometry};
         m_surface = SkSurface::MakeFromBackendTexture(
                 m_parent->m_contextState->gr_context(), m_texture,
                 m_parent->capabilities_.output_surface_origin == gfx::SurfaceOrigin::kTopLeft
@@ -129,6 +133,7 @@ DisplaySkiaOutputDevice::DisplaySkiaOutputDevice(
     , m_contextState(contextState)
 {
     capabilities_.uses_default_gl_framebuffer = false;
+    capabilities_.supports_surfaceless = true;
 
     capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBA_8888)] =
             kRGBA_8888_SkColorType;

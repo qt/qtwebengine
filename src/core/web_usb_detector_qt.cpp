@@ -37,6 +37,11 @@
 **
 ****************************************************************************/
 
+// based on chrome/browser/usb/web_usb_detector.cc
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "web_usb_detector_qt.h"
 
 #include "qtwebenginecoreglobal_p.h"
@@ -51,22 +56,12 @@ WebUsbDetectorQt::~WebUsbDetectorQt() = default;
 
 void WebUsbDetectorQt::Initialize()
 {
-#if defined(OS_WIN)
-    // The WebUSB device detector is disabled on Windows due to jank and hangs
-    // caused by enumerating devices. The new USB backend is designed to resolve
-    // these issues so enable it for testing. https://crbug.com/656702
-    if (!base::FeatureList::IsEnabled(device::kNewUsbBackend))
-        return;
-#endif // defined(OS_WIN)
-
     if (!m_deviceManager) {
         // Receive mojo::Remote<UsbDeviceManager> from DeviceService.
         content::GetDeviceService().BindUsbDeviceManager(
                 m_deviceManager.BindNewPipeAndPassReceiver());
     }
     DCHECK(m_deviceManager);
-    m_deviceManager.set_disconnect_handler(base::BindOnce(
-            &WebUsbDetectorQt::OnDeviceManagerConnectionError, base::Unretained(this)));
 
     // Listen for added/removed device events.
     DCHECK(!m_clientReceiver.is_bound());
@@ -83,13 +78,4 @@ void WebUsbDetectorQt::OnDeviceRemoved(device::mojom::UsbDeviceInfoPtr device_in
 {
     Q_UNUSED(device_info);
     QT_NOT_YET_IMPLEMENTED
-}
-
-void WebUsbDetectorQt::OnDeviceManagerConnectionError()
-{
-    m_deviceManager.reset();
-    m_clientReceiver.reset();
-
-    // Try to reconnect the device manager.
-    Initialize();
 }

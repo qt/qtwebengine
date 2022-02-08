@@ -48,7 +48,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "build/buildflag.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -96,8 +95,6 @@ private:
 
     mojo::ReceiverSet<network::mojom::ProxyConfigPollerClient> poller_receiver_set_;
     mojo::RemoteSet<network::mojom::ProxyConfigClient> proxy_config_client_set_;
-
-    DISALLOW_COPY_AND_ASSIGN(ProxyConfigMonitor);
 };
 
 #endif // !PROXY_CONFIG_MONITOR_H

@@ -63,6 +63,7 @@
 #include "web_engine_settings.h"
 #include "certificate_error_controller.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+#include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/web_cache/browser/web_cache_manager.h"
@@ -105,7 +106,6 @@ WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, 
     : m_viewClient(adapterClient)
     , m_findTextHelper(new FindTextHelper(webContents, adapterClient))
     , m_loadingState(determineLoadingState(webContents))
-    , m_didStartLoadingSeen(m_loadingState == LoadingState::Loading)
     , m_frameFocusedObserver(adapterClient)
 {
     webContents->SetDelegate(this);
@@ -290,7 +290,7 @@ void WebContentsDelegateQt::RenderFrameCreated(content::RenderFrameHost *render_
     m_frameFocusedObserver.addNode(node);
 }
 
-void WebContentsDelegateQt::RenderProcessGone(base::TerminationStatus status)
+void WebContentsDelegateQt::PrimaryMainFrameRenderProcessGone(base::TerminationStatus status)
 {
     // RenderProcessHost::FastShutdownIfPossible results in TERMINATION_STATUS_STILL_RUNNING
     if (status != base::TERMINATION_STATUS_STILL_RUNNING) {
@@ -444,34 +444,18 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
     }
 }
 
-void WebContentsDelegateQt::DidStartLoading()
+void WebContentsDelegateQt::PrimaryPageChanged(content::Page &)
 {
-    // Based on TabLoadTracker::DidStartLoading
+    // Based on TabLoadTracker::PrimaryPageChanged
 
-    if (!web_contents()->IsLoadingToDifferentDocument())
+    if (!web_contents()->ShouldShowLoadingUI())
         return;
-    if (m_loadingState == LoadingState::Loading) {
-        DCHECK(m_didStartLoadingSeen);
-        return;
-    }
-    m_didStartLoadingSeen = true;
-}
-
-void WebContentsDelegateQt::DidReceiveResponse()
-{
-    // Based on TabLoadTracker::DidReceiveResponse
-
-    if (m_loadingState == LoadingState::Loading) {
-        DCHECK(m_didStartLoadingSeen);
-        return;
-    }
 
     // A transition to loading requires both DidStartLoading (navigation
     // committed) and DidReceiveResponse (data has been transmitted over the
     // network) events to occur. This is because NavigationThrottles can block
     // actual network requests, but not the rest of the state machinery.
-    if (m_didStartLoadingSeen)
-        setLoadingState(LoadingState::Loading);
+    setLoadingState(LoadingState::Loading);
 }
 
 void WebContentsDelegateQt::DidStopLoading()
@@ -480,8 +464,7 @@ void WebContentsDelegateQt::DidStopLoading()
 
     // NOTE: PageAlmostIdle feature not implemented
 
-    if (m_loadingState == LoadingState::Loading)
-        setLoadingState(LoadingState::Loaded);
+    setLoadingState(LoadingState::Loaded);
 
     emitLoadFinished();
     m_loadingInfo.clear();
@@ -503,8 +486,7 @@ void WebContentsDelegateQt::didFailLoad(const QUrl &url, int errorCode, const QS
 
 void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code)
 {
-    if (m_loadingState == LoadingState::Loading)
-        setLoadingState(LoadingState::Loaded);
+    setLoadingState(LoadingState::Loaded);
 
     if (render_frame_host != web_contents()->GetMainFrame())
         return;
@@ -579,13 +561,13 @@ void WebContentsDelegateQt::EnterFullscreenModeForTab(content::RenderFrameHost *
 {
     Q_UNUSED(options);
     if (!m_viewClient->isFullScreenMode())
-        m_viewClient->requestFullScreenMode(toQt(requesting_frame->GetLastCommittedURL()), true);
+        m_viewClient->requestFullScreenMode(toQt(requesting_frame->GetLastCommittedURL().DeprecatedGetOriginAsURL()), true);
 }
 
 void WebContentsDelegateQt::ExitFullscreenModeForTab(content::WebContents *web_contents)
 {
     if (m_viewClient->isFullScreenMode())
-        m_viewClient->requestFullScreenMode(toQt(web_contents->GetLastCommittedURL().GetOrigin()), false);
+        m_viewClient->requestFullScreenMode(toQt(web_contents->GetLastCommittedURL().DeprecatedGetOriginAsURL()), false);
 }
 
 bool WebContentsDelegateQt::IsFullscreenForTabOrPending(const content::WebContents* web_contents)
@@ -677,7 +659,7 @@ void WebContentsDelegateQt::RequestToLockMouse(content::WebContents *web_content
     if (last_unlocked_by_target)
         web_contents->GotResponseToLockMouseRequest(blink::mojom::PointerLockResult::kSuccess);
     else
-        m_viewClient->runMouseLockPermissionRequest(toQt(web_contents->GetLastCommittedURL().GetOrigin()));
+        m_viewClient->runMouseLockPermissionRequest(toQt(web_contents->GetLastCommittedURL().DeprecatedGetOriginAsURL()));
 }
 
 void WebContentsDelegateQt::overrideWebPreferences(content::WebContents *webContents, blink::web_pref::WebPreferences *webPreferences)
@@ -791,10 +773,10 @@ void WebContentsDelegateQt::RegisterProtocolHandler(content::RenderFrameHost *fr
 {
     content::BrowserContext *context = frameHost->GetBrowserContext();
 
-    ProtocolHandler handler =
-        ProtocolHandler::CreateProtocolHandler(protocol, url);
+    content::ProtocolHandler handler =
+        content::ProtocolHandler::CreateProtocolHandler(protocol, url);
 
-    ProtocolHandlerRegistry *registry =
+    custom_handlers::ProtocolHandlerRegistry *registry =
         ProtocolHandlerRegistryFactory::GetForBrowserContext(context);
     if (registry->SilentlyHandleRegisterHandlerRequest(handler))
         return;
@@ -808,10 +790,10 @@ void WebContentsDelegateQt::UnregisterProtocolHandler(content::RenderFrameHost *
 {
     content::BrowserContext* context = frameHost->GetBrowserContext();
 
-    ProtocolHandler handler =
-        ProtocolHandler::CreateProtocolHandler(protocol, url);
+    content::ProtocolHandler handler =
+        content::ProtocolHandler::CreateProtocolHandler(protocol, url);
 
-    ProtocolHandlerRegistry* registry =
+    custom_handlers::ProtocolHandlerRegistry* registry =
         ProtocolHandlerRegistryFactory::GetForBrowserContext(context);
     registry->RemoveHandler(handler);
 }
@@ -867,7 +849,7 @@ WebContentsDelegateQt::LoadingState WebContentsDelegateQt::determineLoadingState
 {
     // Based on TabLoadTracker::DetermineLoadingState
 
-    if (contents->IsLoadingToDifferentDocument() && !contents->IsWaitingForResponse())
+    if (contents->ShouldShowLoadingUI() && !contents->IsWaitingForResponse())
         return LoadingState::Loading;
 
     content::NavigationController &controller = contents->GetController();

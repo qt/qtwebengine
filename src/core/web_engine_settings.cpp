@@ -417,8 +417,6 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
             toString16(fontFamily(QWebEngineSettings::CursiveFont));
     prefs->fantasy_font_family_map[blink::web_pref::kCommonScript] =
             toString16(fontFamily(QWebEngineSettings::FantasyFont));
-    prefs->pictograph_font_family_map[blink::web_pref::kCommonScript] =
-            toString16(fontFamily(QWebEngineSettings::PictographFont));
     prefs->default_font_size = fontSize(QWebEngineSettings::DefaultFontSize);
     prefs->default_fixed_font_size = fontSize(QWebEngineSettings::DefaultFixedFontSize);
     prefs->minimum_font_size = fontSize(QWebEngineSettings::MinimumFontSize);

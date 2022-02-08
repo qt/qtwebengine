@@ -260,7 +260,7 @@ void UserResourceController::RenderFrameObserverHelper::DidDispatchDOMContentLoa
                 FROM_HERE,
                 base::BindOnce(&Runner::run, m_runner->AsWeakPtr(),
                                QtWebEngineCore::UserScriptData::AfterLoad),
-                base::TimeDelta::FromMilliseconds(afterLoadTimeout));
+                base::Milliseconds(afterLoadTimeout));
 }
 
 void UserResourceController::RenderFrameObserverHelper::DidFinishLoad()

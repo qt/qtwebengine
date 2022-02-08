@@ -82,8 +82,6 @@ public:
     }
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(RenderFrameObserverQt);
-
     void ReadyToCommitNavigation(blink::WebDocumentLoader *) override;
 
     bool m_isFrameDetached;

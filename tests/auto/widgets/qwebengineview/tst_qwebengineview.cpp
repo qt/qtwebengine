@@ -3118,7 +3118,6 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::addColumn<bool>("supported");
     QTest::newRow("about") << QUrl("chrome://about") << false;
     QTest::newRow("accessibility") << QUrl("chrome://accessibility") << true;
-    QTest::newRow("appcache-internals") << QUrl("chrome://appcache-internals") << true;
     QTest::newRow("apps") << QUrl("chrome://apps") << false;
     QTest::newRow("autofill-internals") << QUrl("chrome://autofill-internals") << false;
     QTest::newRow("blob-internals") << QUrl("chrome://blob-internals") << true;

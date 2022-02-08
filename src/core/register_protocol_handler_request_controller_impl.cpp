@@ -39,6 +39,7 @@
 #include "register_protocol_handler_request_controller_impl.h"
 
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+#include "components/custom_handlers/protocol_handler_registry.h"
 #include "content/public/browser/web_contents.h"
 #include "type_conversion.h"
 
@@ -59,7 +60,7 @@ RegisterProtocolHandlerRequestControllerImpl::~RegisterProtocolHandlerRequestCon
     reject();
 }
 
-ProtocolHandlerRegistry *RegisterProtocolHandlerRequestControllerImpl::protocolHandlerRegistry()
+custom_handlers::ProtocolHandlerRegistry *RegisterProtocolHandlerRequestControllerImpl::protocolHandlerRegistry()
 {
     content::WebContents *webContents = web_contents();
     if (!webContents)
@@ -70,13 +71,13 @@ ProtocolHandlerRegistry *RegisterProtocolHandlerRequestControllerImpl::protocolH
 
 void RegisterProtocolHandlerRequestControllerImpl::accepted()
 {
-    if (ProtocolHandlerRegistry *registry = protocolHandlerRegistry())
+    if (custom_handlers::ProtocolHandlerRegistry *registry = protocolHandlerRegistry())
         registry->OnAcceptRegisterProtocolHandler(m_handler);
 }
 
 void RegisterProtocolHandlerRequestControllerImpl::rejected()
 {
-    if (ProtocolHandlerRegistry *registry = protocolHandlerRegistry())
+    if (custom_handlers::ProtocolHandlerRegistry *registry = protocolHandlerRegistry())
         registry->OnIgnoreRegisterProtocolHandler(m_handler);
 }
 

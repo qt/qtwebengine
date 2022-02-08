@@ -47,7 +47,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -149,8 +148,6 @@ private:
     mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
 
     ProxyConfigMonitor proxy_config_monitor_;
-
-    DISALLOW_COPY_AND_ASSIGN(SystemNetworkContextManager);
 };
 
 #endif // SYSTEM_NETWORK_CONTEXT_MANAGER_H_

@@ -49,7 +49,6 @@
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
@@ -464,9 +463,6 @@ void PrintViewManagerBaseQt::OnNotifyPrintJobEvent(const printing::JobEventDetai
 //        break;
 //    }
     case printing::JobEventDetails::NEW_DOC:
-#if defined(OS_WIN)
-    case printing::JobEventDetails::PAGE_DONE:
-#endif
     case printing::JobEventDetails::DOC_DONE: {
         // Don't care about the actual printing process.
         break;
@@ -635,7 +631,7 @@ bool PrintViewManagerBaseQt::RunInnerMessageLoop()
   base::OneShotTimer quit_timer;
   base::RunLoop run_loop;
   quit_timer.Start(FROM_HERE,
-                   base::TimeDelta::FromMilliseconds(kPrinterSettingsTimeout),
+                   base::Milliseconds(kPrinterSettingsTimeout),
                    run_loop.QuitWhenIdleClosure());
 
   m_quitInnerLoop = run_loop.QuitClosure();

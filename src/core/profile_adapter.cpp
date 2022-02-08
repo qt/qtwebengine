@@ -698,7 +698,11 @@ QString ProfileAdapter::determineDownloadPath(const QString &downloadDirectory, 
     QString suggestedFilePath = suggestedFile.absoluteFilePath();
     base::FilePath tmpFilePath(toFilePath(suggestedFilePath).NormalizePathSeparatorsTo('/'));
 
-    int uniquifier = base::GetUniquePathNumber(tmpFilePath);
+    int uniquifier = 0;
+    {
+        base::ScopedAllowBlocking allowBlock;
+        uniquifier = base::GetUniquePathNumber(tmpFilePath);
+    }
     if (uniquifier > 0)
         suggestedFilePath = toQt(tmpFilePath.InsertBeforeExtensionASCII(base::StringPrintf(" (%d)", uniquifier)).AsUTF8Unsafe());
     else if (uniquifier == -1) {

@@ -89,8 +89,6 @@ private:
 
     int m_currentRequestId;
     base::flat_map<int, base::OnceCallback<void(bool)>> m_permissionRequests;
-
-    DISALLOW_COPY_AND_ASSIGN(ContentSettingsObserverQt);
 };
 
 } // namespace QtWebEngineCore

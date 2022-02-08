@@ -98,7 +98,7 @@ protected:
     void NavigationStopped() override;
 
     // Terminates or cancels the print job if one was pending.
-    void RenderProcessGone(base::TerminationStatus status) override;
+    void PrimaryMainFrameRenderProcessGone(base::TerminationStatus status) override;
 
     void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
@@ -126,7 +126,6 @@ private:
     std::unique_ptr<base::DictionaryValue> m_printSettings;
 
     friend class content::WebContentsUserData<PrintViewManagerQt>;
-    DISALLOW_COPY_AND_ASSIGN(PrintViewManagerQt);
 };
 
 } // namespace QtWebEngineCore

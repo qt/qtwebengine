@@ -237,7 +237,7 @@ void WebContentsViewQt::update(QWebEngineContextMenuRequest *request,
 #endif
 }
 
-void WebContentsViewQt::ShowContextMenu(content::RenderFrameHost *,
+void WebContentsViewQt::ShowContextMenu(content::RenderFrameHost &,
                                         const content::ContextMenuParams &params)
 {
     if (auto rwhv =

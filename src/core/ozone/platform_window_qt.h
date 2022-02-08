@@ -42,6 +42,7 @@
 
 #if defined(USE_OZONE)
 
+#include "ui/base/cursor/platform_cursor.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -92,8 +93,6 @@ public:
 private:
     PlatformWindowDelegate* delegate_;
     gfx::Rect bounds_;
-
-    DISALLOW_COPY_AND_ASSIGN(PlatformWindowQt);
 };
 
 }

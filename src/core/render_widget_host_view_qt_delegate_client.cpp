@@ -560,10 +560,10 @@ void RenderWidgetHostViewQtDelegateClient::handleTouchEvent(QTouchEvent *event)
     // Calculate a delta between event timestamps and Now() on the first received event, and
     // apply this delta to all successive events. This delta is most likely smaller than it
     // should by calculating it here but this will hopefully cause less than one frame of delay.
-    base::TimeTicks eventTimestamp = base::TimeTicks() + base::TimeDelta::FromMilliseconds(event->timestamp());
+    base::TimeTicks eventTimestamp = base::TimeTicks() + base::Milliseconds(event->timestamp());
     if (m_eventsToNowDelta == 0)
         m_eventsToNowDelta = (base::TimeTicks::Now() - eventTimestamp).InMicroseconds();
-    eventTimestamp += base::TimeDelta::FromMicroseconds(m_eventsToNowDelta);
+    eventTimestamp += base::Microseconds(m_eventsToNowDelta);
 
     auto touchPoints = mapTouchPointIds(event->touchPoints());
     // Make sure that POINTER_DOWN action is delivered before MOVE, and MOVE before POINTER_UP

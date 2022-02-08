@@ -42,7 +42,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service.h"
@@ -61,7 +61,7 @@ public:
     static net::ProxyServer fromQNetworkProxy(const QNetworkProxy &);
 
     explicit ProxyConfigServiceQt(PrefService *prefService,
-                                  const scoped_refptr<base::SingleThreadTaskRunner> &taskRunner);
+                                  const scoped_refptr<base::SequencedTaskRunner> &taskRunner);
     ~ProxyConfigServiceQt() override;
 
     // ProxyConfigService implementation:
@@ -97,8 +97,6 @@ private:
     ProxyPrefs::ConfigState m_prefState;
 
     SEQUENCE_CHECKER(m_sequenceChecker);
-
-    DISALLOW_COPY_AND_ASSIGN(ProxyConfigServiceQt);
 };
 
 #endif // PROXY_CONFIG_SERVICE_QT_H

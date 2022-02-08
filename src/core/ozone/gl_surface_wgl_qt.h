@@ -65,7 +65,6 @@ protected:
 
 private:
     scoped_refptr<PbufferGLSurfaceWGL> m_surfaceBuffer;
-    DISALLOW_COPY_AND_ASSIGN(GLSurfaceWGLQt);
 };
 
 }

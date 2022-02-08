@@ -71,7 +71,7 @@ net::ProxyServer ProxyConfigServiceQt::fromQNetworkProxy(const QNetworkProxy &qt
 }
 
 ProxyConfigServiceQt::ProxyConfigServiceQt(PrefService *prefService,
-                                           const scoped_refptr<base::SingleThreadTaskRunner> &taskRunner)
+                                           const scoped_refptr<base::SequencedTaskRunner> &taskRunner)
     : m_baseService(net::ConfiguredProxyResolutionService::CreateSystemProxyConfigService(taskRunner))
     , m_usesSystemConfiguration(false)
     , m_registeredObserver(false)

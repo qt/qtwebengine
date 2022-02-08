@@ -41,7 +41,6 @@
 #define PROXYING_URL_LOADER_FACTORY_QT_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -85,8 +84,6 @@ private:
     mojo::ReceiverSet<network::mojom::URLLoaderFactory> m_proxyReceivers;
     mojo::Remote<network::mojom::URLLoaderFactory> m_targetFactory;
     base::WeakPtrFactory<ProxyingURLLoaderFactoryQt> m_weakFactory;
-
-    DISALLOW_COPY_AND_ASSIGN(ProxyingURLLoaderFactoryQt);
 };
 
 } // namespace QtWebEngineCore

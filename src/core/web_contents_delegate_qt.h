@@ -154,13 +154,12 @@ public:
 
     // WebContentsObserver overrides
     void RenderFrameCreated(content::RenderFrameHost *render_frame_host) override;
-    void RenderProcessGone(base::TerminationStatus status) override;
+    void PrimaryMainFrameRenderProcessGone(base::TerminationStatus status) override;
     void RenderFrameHostChanged(content::RenderFrameHost *old_host, content::RenderFrameHost *new_host) override;
     void RenderViewHostChanged(content::RenderViewHost *old_host, content::RenderViewHost *new_host) override;
     void DidStartNavigation(content::NavigationHandle *navigation_handle) override;
     void DidFinishNavigation(content::NavigationHandle *navigation_handle) override;
-    void DidStartLoading() override;
-    void DidReceiveResponse() override;
+    void PrimaryPageChanged(content::Page &page) override;
     void DidStopLoading() override;
     void DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code) override;
     void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) override;
@@ -221,7 +220,6 @@ private:
     SavePageInfo m_savePageInfo;
     QSharedPointer<FilePickerController> m_filePickerController;
     LoadingState m_loadingState;
-    bool m_didStartLoadingSeen;
     FrameFocusedObserver m_frameFocusedObserver;
 
     QString m_title;

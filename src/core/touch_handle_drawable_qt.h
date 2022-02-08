@@ -78,8 +78,6 @@ private:
     ui::TouchHandleOrientation m_orientation;
     gfx::RectF m_relativeBounds;
     gfx::PointF m_originPosition;
-
-    DISALLOW_COPY_AND_ASSIGN(TouchHandleDrawableQt);
 };
 
 } // namespace QtWebEngineCore

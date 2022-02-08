@@ -4,7 +4,6 @@ find_package(Ninja 1.7.2 REQUIRED)
 find_package(Nodejs 12 REQUIRED)
 find_package(PkgConfig)
 if(PkgConfig_FOUND)
-    pkg_check_modules(XSCRNSAVER xscrnsaver)
     create_pkg_config_host_wrapper(${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
@@ -207,8 +206,6 @@ foreach(arch ${archs})
             SOURCES
                 renderer/pepper/pepper_renderer_host_factory_qt.cpp renderer/pepper/pepper_renderer_host_factory_qt.h
                 renderer/plugins/loadable_plugin_placeholder_qt.cpp renderer/plugins/loadable_plugin_placeholder_qt.h
-                renderer_host/pepper/pepper_host_factory_qt.cpp renderer_host/pepper/pepper_host_factory_qt.h
-                renderer_host/pepper/pepper_isolated_file_system_message_filter.cpp renderer_host/pepper/pepper_isolated_file_system_message_filter.h
         )
 
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_printing_and_pdf
@@ -351,7 +348,6 @@ foreach(arch ${archs})
                 enable_session_service=false
                 is_cfi=false
                 use_ozone=true
-                use_x11=false
                 ozone_auto_platforms=false
                 ozone_platform_headless=false
                 ozone_platform_external=true
@@ -409,10 +405,6 @@ foreach(arch ${archs})
             extend_gn_list(gnArgArg
                 ARGS rtc_use_x11
                 CONDITION QT_FEATURE_webengine_ozone_x11 AND QT_FEATURE_webengine_webrtc
-            )
-            extend_gn_list(gnArgArg
-                ARGS use_xscrnsaver
-                CONDITION QT_FEATURE_webengine_ozone_x11 AND XSCRNSAVER_FOUND
             )
 
             if(QT_FEATURE_webengine_kerberos)

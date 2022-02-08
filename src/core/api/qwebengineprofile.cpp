@@ -49,6 +49,7 @@
 #include "qtwebenginecoreglobal.h"
 #include "profile_adapter.h"
 #include "visited_links_manager_qt.h"
+#include "web_engine_settings.h"
 
 #include <QDir>
 #include <QtWebEngineCore/qwebengineurlscheme.h>
@@ -281,6 +282,11 @@ void QWebEngineProfilePrivate::removeWebContentsAdapterClient(QtWebEngineCore::W
 {
     Q_ASSERT(m_profileAdapter);
     m_profileAdapter->removeWebContentsAdapterClient(adapter);
+}
+
+QtWebEngineCore::WebEngineSettings *QWebEngineProfilePrivate::coreSettings() const
+{
+    return QtWebEngineCore::WebEngineSettings::get(settings());
 }
 
 /*!

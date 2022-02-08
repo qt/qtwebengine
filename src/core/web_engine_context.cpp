@@ -456,7 +456,6 @@ void WebEngineContext::destroy()
     GLContextHelper::destroy();
 
     // These would normally be in the content-runner, but we allocated them separately:
-    m_startupData.reset();
     m_mojoIpcSupport.reset();
     m_discardableSharedMemoryManager.reset();
 
@@ -747,13 +746,13 @@ WebEngineContext::WebEngineContext()
     contentMainParams.setup_signal_handlers = false;
 #if defined(OS_WIN)
     contentMainParams.sandbox_info = QtWebEngineSandbox::staticSandboxInterfaceInfo();
-    sandbox::SandboxInterfaceInfo sandbox_info = {0};
+    sandbox::SandboxInterfaceInfo sandbox_info = {nullptr};
     if (!contentMainParams.sandbox_info) {
         content::InitializeSandboxInfo(&sandbox_info);
         contentMainParams.sandbox_info = &sandbox_info;
     }
 #endif
-    m_contentRunner->Initialize(contentMainParams);
+    m_contentRunner->Initialize(std::move(contentMainParams));
 
     mojo::core::Configuration mojoConfiguration;
     mojoConfiguration.is_broker_process = true;
@@ -766,21 +765,21 @@ WebEngineContext::WebEngineContext()
     m_mainDelegate->PostEarlyInitialization(false);
     content::StartBrowserThreadPool();
     content::BrowserTaskExecutor::PostFeatureListSetup();
-    tracing::InitTracingPostThreadPoolStartAndFeatureList();
+    tracing::InitTracingPostThreadPoolStartAndFeatureList(false);
     m_discardableSharedMemoryManager = std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
     base::PowerMonitor::Initialize(std::make_unique<base::PowerMonitorDeviceSource>());
 
     m_mojoIpcSupport = std::make_unique<content::MojoIpcSupport>(content::BrowserTaskExecutor::CreateIOThread());
     download::SetIOTaskRunner(m_mojoIpcSupport->io_thread()->task_runner());
-    m_startupData = m_mojoIpcSupport->CreateBrowserStartupData();
+    std::unique_ptr<content::StartupData> startupData = m_mojoIpcSupport->CreateBrowserStartupData();
 
     // Once the MessageLoop has been created, attach a top-level RunLoop.
     m_runLoop.reset(new base::RunLoop);
     m_runLoop->BeforeRun();
 
-    content::MainFunctionParams mainParams(*base::CommandLine::ForCurrentProcess());
-    mainParams.startup_data = m_startupData.get();
-    m_browserRunner->Initialize(mainParams);
+    content::MainFunctionParams mainParams(base::CommandLine::ForCurrentProcess());
+    mainParams.startup_data = std::move(startupData);
+    m_browserRunner->Initialize(std::move(mainParams));
 
     m_devtoolsServer.reset(new DevToolsServerQt());
     m_devtoolsServer->start();

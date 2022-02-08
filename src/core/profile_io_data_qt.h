@@ -147,7 +147,6 @@ private:
     QString m_dataPath;
     bool m_clearHttpCacheInProgress = false;
     base::WeakPtrFactory<ProfileIODataQt> m_weakPtrFactory; // this should be always the last member
-    DISALLOW_COPY_AND_ASSIGN(ProfileIODataQt);
 
     friend class BrowsingDataRemoverObserverQt;
 };

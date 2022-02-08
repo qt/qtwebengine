@@ -67,8 +67,6 @@ public:
 
 private:
     CookieMonsterDelegateQt *m_delegate;
-
-    DISALLOW_COPY_AND_ASSIGN(CookieChangeListener);
 };
 
 class CookieAccessFilter : public network::mojom::CookieRemoteAccessFilter
@@ -85,8 +83,6 @@ public:
 
 private:
     CookieMonsterDelegateQt *m_delegate;
-
-    DISALLOW_COPY_AND_ASSIGN(CookieAccessFilter);
 };
 
 

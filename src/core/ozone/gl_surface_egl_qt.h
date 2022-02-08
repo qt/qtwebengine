@@ -69,7 +69,6 @@ public:
 private:
    EGLSurface m_surfaceBuffer;
    static bool s_initialized;
-   DISALLOW_COPY_AND_ASSIGN(GLSurfaceEGLQt);
 };
 
 // The following comment is cited from chromium/ui/gl/gl_surface_egl.cc:
@@ -89,9 +88,6 @@ public:
                 const gfx::ColorSpace &color_space, bool has_alpha) override;
     EGLSurface GetHandle() override;
     void* GetShareHandle() override;
-
-private:
-    DISALLOW_COPY_AND_ASSIGN(GLSurfacelessQtEGL);
 };
 }
 

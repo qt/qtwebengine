@@ -83,7 +83,6 @@ public:
 #endif
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsQt);
     std::unique_ptr<performance_manager::PerformanceManagerLifetime> performance_manager_lifetime_;
     std::unique_ptr<WebUsbDetectorQt> m_webUsbDetector;
 #if defined(OS_MAC)

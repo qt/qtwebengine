@@ -106,7 +106,7 @@ public:
     void CopyFromSurface(const gfx::Rect &src_rect,
                          const gfx::Size &output_size,
                          base::OnceCallback<void(const SkBitmap &)> callback) override;
-    void Show() override;
+    void ShowWithVisibility(content::PageVisibilityState page_visibility) override;
     void Hide() override;
     bool IsShowing() override;
     gfx::Rect GetViewBounds() override;
@@ -136,7 +136,8 @@ public:
     void OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata);
 
     // Overridden from RenderWidgetHostViewBase:
-    void GetScreenInfo(display::ScreenInfo *screen_info) override;
+    display::ScreenInfo GetScreenInfo() const override;
+    display::ScreenInfos GetScreenInfos() const override;
     gfx::Rect GetBoundsInRootWindow() override;
     void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch,
                                 blink::mojom::InputEventResultState ack_result) override;
@@ -167,6 +168,10 @@ public:
     void ShowDefinitionForSelection() override { QT_NOT_YET_IMPLEMENTED }
     void SetWindowFrameInScreen(const gfx::Rect&) override { QT_NOT_YET_IMPLEMENTED }
 #endif // defined(OS_MAC)
+    void NotifyHostAndDelegateOnWasShown(blink::mojom::RecordContentToVisibleTimeRequestPtr) override { QT_NOT_YET_IMPLEMENTED }
+    void RequestPresentationTimeFromHostOrDelegate(blink::mojom::RecordContentToVisibleTimeRequestPtr) override { QT_NOT_YET_IMPLEMENTED }
+    void CancelPresentationTimeRequestForHostAndDelegate() override { QT_NOT_YET_IMPLEMENTED }
+
 
     // Overridden from ui::GestureProviderClient.
     void OnGestureEvent(const ui::GestureEventData& gesture) override;
@@ -196,7 +201,7 @@ public:
 
     // Called from WebContentsAdapter.
     gfx::SizeF lastContentsSize() const { return m_lastContentsSize; }
-    gfx::Vector2dF lastScrollOffset() const { return m_lastScrollOffset; }
+    gfx::PointF lastScrollOffset() const { return m_lastScrollOffset; }
 
     ui::TouchSelectionController *getTouchSelectionController() const { return m_touchSelectionController.get(); }
     TouchSelectionControllerClientQt *getTouchSelectionControllerClient() const { return m_touchSelectionControllerClient.get(); }
@@ -231,7 +236,7 @@ private:
     bool m_isMouseLocked = false;
     bool m_visible = false;
     bool m_deferredShow = false;
-    gfx::Vector2dF m_lastScrollOffset;
+    gfx::PointF m_lastScrollOffset;
     gfx::SizeF m_lastContentsSize;
     DelegatedFrameHostClientQt m_delegatedFrameHostClient { this };
 

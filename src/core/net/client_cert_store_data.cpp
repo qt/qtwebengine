@@ -41,7 +41,6 @@
 
 #if QT_CONFIG(ssl)
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
@@ -113,8 +112,6 @@ public:
 private:
     EVP_PKEY *m_key;
     BIO *m_mem;
-
-    DISALLOW_COPY_AND_ASSIGN(SSLPlatformKeyOverride);
 };
 
 scoped_refptr<net::SSLPrivateKey> wrapOpenSSLPrivateKey(const QByteArray &sslKeyInBytes)

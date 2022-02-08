@@ -50,7 +50,6 @@
 #include <string>
 
 #include "base/one_shot_event.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "extensions/browser/extension_system.h"
@@ -144,7 +143,6 @@ private:
     bool initialized_;
 
     base::WeakPtrFactory<ExtensionSystemQt> weak_ptr_factory_;
-    DISALLOW_COPY_AND_ASSIGN(ExtensionSystemQt);
 };
 
 } // namespace extensions

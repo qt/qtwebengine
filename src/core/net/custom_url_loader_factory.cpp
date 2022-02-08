@@ -470,8 +470,6 @@ private:
     bool m_isLocal;
 
     base::WeakPtrFactory<CustomURLLoader> m_weakPtrFactory{this};
-
-    DISALLOW_COPY_AND_ASSIGN(CustomURLLoader);
 };
 
 class CustomURLLoaderFactory : public network::mojom::URLLoaderFactory {
@@ -527,7 +525,6 @@ public:
     const scoped_refptr<base::SequencedTaskRunner> m_taskRunner;
     mojo::ReceiverSet<network::mojom::URLLoaderFactory> m_receivers;
     QPointer<ProfileAdapter> m_profileAdapter;
-    DISALLOW_COPY_AND_ASSIGN(CustomURLLoaderFactory);
 };
 
 } // namespace

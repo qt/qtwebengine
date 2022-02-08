@@ -60,13 +60,23 @@
 namespace QtWebEngineCore {
 PrintWebViewHelperDelegateQt::~PrintWebViewHelperDelegateQt() {}
 
+bool IsPdfExtensionOrigin(const url::Origin& origin)
+{
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    return origin.scheme() == extensions::kExtensionScheme
+        && origin.host() == extension_misc::kPdfExtensionId;
+#else
+    Q_UNUSED(origin);
+    return false;
+#endif
+}
+
 blink::WebElement PrintWebViewHelperDelegateQt::GetPdfElement(blink::WebLocalFrame *frame)
 {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    GURL url = frame->GetDocument().Url();
-    bool inside_print_preview = url.GetOrigin() == chrome::kChromeUIPrintURL;
-    bool inside_pdf_extension = url.SchemeIs(extensions::kExtensionScheme) &&
-                                url.host_piece() == extension_misc::kPdfExtensionId;
+    const url::Origin origin = frame->GetDocument().GetSecurityOrigin();
+    bool inside_print_preview = origin == url::Origin::Create(GURL(chrome::kChromeUIPrintURL));
+    bool inside_pdf_extension = IsPdfExtensionOrigin(origin);
     if (inside_print_preview || inside_pdf_extension) {
         // <object> with id="plugin" is created in
         // chrome/browser/resources/pdf/pdf_viewer_base.js.

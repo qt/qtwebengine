@@ -322,6 +322,8 @@ int BrowserMainPartsQt::PreCreateThreads()
     // Like ChromeBrowserMainExtraPartsViews::PreCreateThreads does.
 #if defined(Q_OS_WIN)
     display::Screen::SetScreenInstance(new display::win::ScreenWin);
+#elif defined(Q_OS_DARWIN)
+    display::Screen::SetScreenInstance(display::CreateNativeScreen());
 #else
     display::Screen::SetScreenInstance(new DesktopScreenQt);
 #endif

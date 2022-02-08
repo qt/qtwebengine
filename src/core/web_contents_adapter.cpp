@@ -143,9 +143,8 @@ static QVariant fromJSValue(const base::Value *result)
         break;
     case base::Value::Type::BOOLEAN:
     {
-        bool out;
-        if (result->GetAsBoolean(&out))
-            ret.setValue(out);
+        if (auto out = result->GetIfBool())
+            ret.setValue(*out);
         break;
     }
     case base::Value::Type::INTEGER:
@@ -544,7 +543,7 @@ void WebContentsAdapter::initializeRenderPrefs()
     // seconds
     const int qtCursorFlashTime = QGuiApplication::styleHints()->cursorFlashTime();
     rendererPrefs->caret_blink_interval =
-            base::TimeDelta::FromMillisecondsD(0.5 * static_cast<double>(qtCursorFlashTime));
+            base::Milliseconds(0.5 * static_cast<double>(qtCursorFlashTime));
     rendererPrefs->user_agent_override = blink::UserAgentOverride::UserAgentOnly(m_profileAdapter->httpUserAgent().toStdString());
     rendererPrefs->accept_languages = m_profileAdapter->httpAcceptLanguageWithoutQualities().toStdString();
 #if QT_CONFIG(webengine_webrtc)
@@ -1098,7 +1097,9 @@ void WebContentsAdapter::updateWebPreferences(const blink::web_pref::WebPreferen
 
     // In case of updating preferences during navigation, there might be a pending RVH what will
     // be active on successful navigation.
-    content::RenderFrameHost *pendingRFH = (static_cast<content::WebContentsImpl*>(m_webContents.get()))->GetFrameTree()->root()->render_manager()->speculative_frame_host();
+    content::RenderFrameHost *pendingRFH =
+            (static_cast<content::WebContentsImpl*>(m_webContents.get()))
+                ->GetPrimaryFrameTree().root()->render_manager()->speculative_frame_host();
     if (pendingRFH) {
         content::RenderViewHost *pendingRVH = pendingRFH->GetRenderViewHost();
         Q_ASSERT(pendingRVH);
@@ -1391,7 +1392,7 @@ void WebContentsAdapter::grantFeaturePermission(const QUrl &securityOrigin, Prof
 void WebContentsAdapter::grantMouseLockPermission(const QUrl &securityOrigin, bool granted)
 {
     CHECK_INITIALIZED();
-    if (securityOrigin != toQt(m_webContents->GetLastCommittedURL().GetOrigin()))
+    if (securityOrigin != toQt(m_webContents->GetLastCommittedURL().DeprecatedGetOriginAsURL()))
         return;
 
     if (granted) {
@@ -1416,7 +1417,7 @@ void WebContentsAdapter::grantMouseLockPermission(const QUrl &securityOrigin, bo
 void WebContentsAdapter::handlePendingMouseLockPermission()
 {
     CHECK_INITIALIZED();
-    auto it = m_pendingMouseLockPermissions.find(toQt(m_webContents->GetLastCommittedURL().GetOrigin()));
+    auto it = m_pendingMouseLockPermissions.find(toQt(m_webContents->GetLastCommittedURL().DeprecatedGetOriginAsURL()));
     if (it != m_pendingMouseLockPermissions.end()) {
         m_webContents->GotResponseToLockMouseRequest(it.value() ? blink::mojom::PointerLockResult::kSuccess
                                                                 : blink::mojom::PointerLockResult::kPermissionDenied);
@@ -1712,7 +1713,7 @@ void WebContentsAdapter::waitForUpdateDragActionCalled()
                      static_cast<int>(timeout));
             return;
         }
-        base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
+        base::PlatformThread::Sleep(base::Milliseconds(1));
     }
 }
 

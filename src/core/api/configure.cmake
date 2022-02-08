@@ -57,16 +57,16 @@ qt_feature("webengine-system-pulseaudio" PRIVATE
     AUTODETECT UNIX
     CONDITION PULSEAUDIO_FOUND
 )
-qt_feature("webengine-pepper-plugins" PRIVATE
-    LABEL "Pepper Plugins"
-    PURPOSE "Enables use of Pepper Flash plugins."
-    AUTODETECT NOT QT_FEATURE_webengine_embedded_build
-)
 qt_feature("webengine-printing-and-pdf" PRIVATE
     LABEL "Printing and PDF"
     PURPOSE "Provides printing and output to PDF."
     AUTODETECT NOT QT_FEATURE_webengine_embedded_build
     CONDITION TARGET Qt::PrintSupport AND QT_FEATURE_printer
+)
+qt_feature("webengine-pepper-plugins" PRIVATE
+    LABEL "Pepper Plugins"
+    PURPOSE "Enables use of Pepper plugins."
+    AUTODETECT QT_FEATURE_webengine_printing_and_pdf
 )
 qt_feature("webengine-webchannel" PUBLIC
     SECTION "WebEngine"
@@ -102,7 +102,7 @@ qt_feature("webengine-extensions" PUBLIC
     LABEL "Extensions"
     PURPOSE "Enables Chromium extensions within certain limits. Currently used by the pdf viewer and hangout webrtc extension."
     AUTODETECT ON
-    CONDITION QT_FEATURE_webengine_printing_and_pdf OR QT_FEATURE_webengine_printing_and_pdf
+    CONDITION QT_FEATURE_webengine_printing_and_pdf OR QT_FEATURE_webengine_webrtc
 )
 qt_feature("webengine-webrtc" PRIVATE
     LABEL "WebRTC"

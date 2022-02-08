@@ -183,8 +183,6 @@ private:
     // rendered or the print settings are being loaded.
     base::OnceClosure m_quitInnerLoop;
     scoped_refptr<printing::PrintQueriesQueue> m_printerQueriesQueue;
-
-    DISALLOW_COPY_AND_ASSIGN(PrintViewManagerBaseQt);
 };
 
 } // namespace QtWebEngineCore

@@ -103,7 +103,6 @@ private:
     base::WeakPtrFactory<DownloadManagerDelegateQt> m_weakPtrFactory;
 
     friend class DownloadManagerDelegateInstance;
-    DISALLOW_COPY_AND_ASSIGN(DownloadManagerDelegateQt);
 };
 
 } // namespace QtWebEngineCore

@@ -143,8 +143,6 @@ private:
 
     SEQUENCE_CHECKER(sequence_checker_);
     SystemNetworkContextManager *manager_;
-
-    DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryForSystem);
 };
 
 network::mojom::NetworkContext *SystemNetworkContextManager::GetContext()

@@ -119,8 +119,6 @@ private:
     WebContentsCollection m_webContentsCollection;
 
     bool m_loopbackAudioSupported = false;
-
-    DISALLOW_COPY_AND_ASSIGN(MediaCaptureDevicesDispatcher);
 };
 
 } // namespace QtWebEngineCore

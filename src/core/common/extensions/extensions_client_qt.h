@@ -48,7 +48,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/features/json_feature_provider_source.h"
@@ -131,7 +130,6 @@ private:
     const ChromePermissionMessageProvider permission_message_provider_;
     mutable GURL update_url_;
     mutable GURL base_url_;
-    DISALLOW_COPY_AND_ASSIGN(ExtensionsClientQt);
 };
 
 } // namespace extensions

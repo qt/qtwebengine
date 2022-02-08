@@ -40,7 +40,6 @@
 #ifndef WEB_UI_CONTROLLER_FACTORY_QT_H_
 #define WEB_UI_CONTROLLER_FACTORY_QT_H_
 
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller_factory.h"
@@ -62,8 +61,6 @@ protected:
 
 private:
     friend struct base::DefaultSingletonTraits<WebUIControllerFactoryQt>;
-
-    DISALLOW_COPY_AND_ASSIGN(WebUIControllerFactoryQt);
 };
 
 } // namespace QtWebEngineCore

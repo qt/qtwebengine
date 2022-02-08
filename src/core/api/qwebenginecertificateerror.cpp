@@ -98,7 +98,7 @@ QWebEngineCertificateError::~QWebEngineCertificateError() = default;
     \value CertificateKnownInterceptionBlocked The certificate is known to be
             used for interception by an entity other the device owner. (Added in
             5.15)
-    \value SslObsoleteVersion The connection uses an obsolete version of SSL/TLS. (Added in Qt 6.2)
+    \value SslObsoleteVersion The connection uses an obsolete version of SSL/TLS. (Added in Qt 6.2, deprecated in Qt 6.4)
     \value CertificateSymantecLegacy The certificate is a legacy Symantec one that's no longer valid. (Added in Qt 6.2)
 */
 

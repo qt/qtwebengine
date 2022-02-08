@@ -42,7 +42,6 @@
 
 #include <set>
 
-#include "base/macros.h"
 #include "extensions/common/extension_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/page_transition_types.h"
@@ -84,8 +83,6 @@ private:
     // The set of extension IDs with any potentially web- or webview-accessible
     // resources.
     std::set<ExtensionId> m_web_accessible_ids;
-
-    DISALLOW_COPY_AND_ASSIGN(ResourceRequestPolicyQt);
 };
 } // namespace extensions
 

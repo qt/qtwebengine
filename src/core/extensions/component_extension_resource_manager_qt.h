@@ -47,7 +47,6 @@
 #include <map>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "extensions/browser/component_extension_resource_manager.h"
 #include "ui/base/webui/resource_path.h"
 
@@ -74,8 +73,6 @@ private:
 
     // A map from an extension ID to its i18n template replacements.
     std::map<std::string, ui::TemplateReplacements> template_replacements_;
-
-    DISALLOW_COPY_AND_ASSIGN(ComponentExtensionResourceManagerQt);
 };
 
 } // namespace extensions

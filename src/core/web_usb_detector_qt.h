@@ -40,7 +40,6 @@
 #ifndef WEB_USB_DETECTOR_QT_H
 #define WEB_USB_DETECTOR_QT_H
 
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -61,15 +60,11 @@ private:
     void OnDeviceAdded(device::mojom::UsbDeviceInfoPtr device_info) override;
     void OnDeviceRemoved(device::mojom::UsbDeviceInfoPtr device_info) override;
 
-    void OnDeviceManagerConnectionError();
-
     // Connection to |device_manager_instance_|.
     mojo::Remote<device::mojom::UsbDeviceManager> m_deviceManager;
     mojo::AssociatedReceiver<device::mojom::UsbDeviceManagerClient> m_clientReceiver { this };
 
     base::WeakPtrFactory<WebUsbDetectorQt> m_weakFactory { this };
-
-    DISALLOW_COPY_AND_ASSIGN(WebUsbDetectorQt);
 };
 
 #endif // WEB_USB_DETECTOR_QT_H

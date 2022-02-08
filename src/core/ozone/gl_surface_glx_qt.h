@@ -61,7 +61,6 @@ protected:
 private:
     static bool s_initialized;
     int m_surfaceBuffer;
-    DISALLOW_COPY_AND_ASSIGN(GLSurfaceGLXQt);
 };
 
 }

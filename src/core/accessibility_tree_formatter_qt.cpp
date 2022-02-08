@@ -217,7 +217,7 @@ std::string AccessibilityTreeFormatterQt::ProcessTreeForOutput(const base::Dicti
 std::unique_ptr<ui::AXTreeFormatter>
 AXInspectFactory::CreatePlatformFormatter()
 {
-    return AXInspectFactory::CreateFormatter(kQt);
+    return AXInspectFactory::CreateFormatter(ui::AXApiType::kQt);
 }
 
 // static
@@ -225,16 +225,16 @@ std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreatePlatformRecorder(Br
                                                                               base::ProcessId pid,
                                                                               const ui::AXTreeSelector &selector)
 {
-    return AXInspectFactory::CreateRecorder(kQt, manager, pid, selector);
+    return AXInspectFactory::CreateRecorder(ui::AXApiType::kQt, manager, pid, selector);
 }
 
 // static
-std::unique_ptr<ui::AXTreeFormatter> AXInspectFactory::CreateFormatter(AXInspectFactory::Type type)
+std::unique_ptr<ui::AXTreeFormatter> AXInspectFactory::CreateFormatter(ui::AXApiType::Type type)
 {
     switch (type) {
-    case kBlink:
+    case ui::AXApiType::kBlink:
         return std::make_unique<AccessibilityTreeFormatterBlink>();
-    case kQt:
+    case ui::AXApiType::kQt:
 #if QT_CONFIG(accessibility)
         return std::make_unique<AccessibilityTreeFormatterQt>();
 #else
@@ -247,13 +247,13 @@ std::unique_ptr<ui::AXTreeFormatter> AXInspectFactory::CreateFormatter(AXInspect
 }
 
 // static
-std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreateRecorder(AXInspectFactory::Type type,
+std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreateRecorder(ui::AXApiType::Type type,
                                                                       BrowserAccessibilityManager *manager,
                                                                       base::ProcessId pid,
                                                                       const ui::AXTreeSelector &selector)
 {
     switch (type) {
-    case kQt:
+    case ui::AXApiType::kQt:
         return std::make_unique<AccessibilityEventRecorder>(manager);
     default:
         NOTREACHED() << "Unsupported inspect type " << type;

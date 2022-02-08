@@ -74,7 +74,6 @@ private:
     gin::ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate *isolate) override;
     mojo::AssociatedRemote<qtwebchannel::mojom::WebChannelTransportHost> m_remote;
     content::RenderFrame *m_renderFrame = nullptr;
-    DISALLOW_COPY_AND_ASSIGN(WebChannelTransport);
 };
 
 gin::WrapperInfo WebChannelTransport::kWrapperInfo = { gin::kEmbedderNativeGin };

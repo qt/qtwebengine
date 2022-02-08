@@ -70,8 +70,9 @@ MimeHandlerViewGuestDelegateQt::~MimeHandlerViewGuestDelegateQt()
     delete m_contextMenuRequest;
 }
 
-bool MimeHandlerViewGuestDelegateQt::HandleContextMenu(content::WebContents *web_contents, const content::ContextMenuParams &params)
+bool MimeHandlerViewGuestDelegateQt::HandleContextMenu(content::RenderFrameHost &render_frame_host, const content::ContextMenuParams &params)
 {
+    content::WebContents *web_contents = content::WebContents::FromRenderFrameHost(&render_frame_host);
     content::WebContents *parent_web_contents = guest_view::GuestViewBase::GetTopLevelWebContents(web_contents);
     if (auto rwhv = static_cast<QtWebEngineCore::RenderWidgetHostViewQt *>(parent_web_contents->GetRenderWidgetHostView())) {
         if (rwhv->getTouchSelectionControllerClient()->handleContextMenu(params))
