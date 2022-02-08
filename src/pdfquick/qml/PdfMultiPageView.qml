@@ -387,7 +387,7 @@ Item {
         id: navigationStack
         property bool jumping: false
         property int previousPage: 0
-        onJumped: {
+        onJumped: function(page, location, zoom) {
             jumping = true
             root.renderScale = zoom
             if (location.y < 0) {
