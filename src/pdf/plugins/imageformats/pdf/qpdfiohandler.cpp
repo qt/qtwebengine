@@ -84,7 +84,7 @@ int QPdfIOHandler::imageCount() const
     int ret = 0;
     if (const_cast<QPdfIOHandler *>(this)->load(device()))
         ret = m_doc.pageCount();
-    qCDebug(qLcPdf) << "imageCount" << ret;
+    qCDebug(qLcPdf) << ret;
     return ret;
 }
 
@@ -123,7 +123,7 @@ bool QPdfIOHandler::read(QImage *image)
             t.translate(tr1.x(), tr1.y());
             bounds = t.mapRect(bounds);
         }
-        qCDebug(qLcPdf) << Q_FUNC_INFO << m_page << finalSize;
+        qCDebug(qLcPdf) << m_page << finalSize;
         if (image->size() != finalSize || !image->reinterpretAsFormat(QImage::Format_ARGB32_Premultiplied)) {
             *image = QImage(finalSize, QImage::Format_ARGB32_Premultiplied);
             if (!finalSize.isEmpty() && image->isNull()) {
@@ -213,7 +213,7 @@ bool QPdfIOHandler::supportsOption(ImageOption option) const
 
 bool QPdfIOHandler::jumpToImage(int frame)
 {
-    qCDebug(qLcPdf) << Q_FUNC_INFO << frame;
+    qCDebug(qLcPdf) << frame;
     if (frame < 0 || frame >= imageCount())
         return false;
     m_page = frame;
