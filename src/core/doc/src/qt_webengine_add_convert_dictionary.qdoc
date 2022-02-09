@@ -34,6 +34,8 @@
 
 \brief Converts the hunspell dictionary format into \e bdict binary format.
 
+\cmakecommandsince 6.3
+
 \section1 Synopsis
 
 \badcode
