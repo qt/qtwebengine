@@ -905,7 +905,7 @@ void tst_publicapi::publicAPI()
     // Make sure that nothing slips in the public API unintentionally.
     for (const QString &actual : qAsConst(actualAPI)) {
         if (!expectedAPI.contains(actual)) {
-            QWARN(qPrintable("Expected list is not up-to-date: " + actual));
+            qWarning("Expected list is not up-to-date: %ls", qUtf16Printable(actual));
             apiMatch = false;
         }
     }
@@ -913,7 +913,7 @@ void tst_publicapi::publicAPI()
     for (const QString &expected : expectedAPI) {
         if (!actualAPI.contains(expected)) {
             apiMatch = false;
-            QWARN(qPrintable("Not implemented: " + expected));
+            qWarning("Not implemented: %ls", qUtf16Printable(expected));
         }
     }
 
