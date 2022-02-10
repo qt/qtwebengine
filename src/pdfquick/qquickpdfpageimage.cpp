@@ -52,7 +52,7 @@ Q_LOGGING_CATEGORY(qLcImg, "qt.pdf.image")
     \instantiates QQuickPdfPageImage
     \inqmlmodule QtPdf
     \ingroup pdf
-    \inherits Item
+    \inherits Image
     \brief Displays one page from a PDF document.
     \since 6.4
 

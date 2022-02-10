@@ -44,6 +44,7 @@ sourcedirs  += ../ \
                ../../pdfquick
 
 exampledirs += ../../../examples/pdfwidgets \
+               ../../../examples/pdf \
                snippets/
 
 # add a generic thumbnail for an example that has no \image in its doc

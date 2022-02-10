@@ -41,16 +41,69 @@ import QtQuick.Controls
 import QtQuick.Pdf
 import QtQuick.Shapes
 
+/*!
+    \qmltype PdfMultiPageView
+    \inqmlmodule QtQuick.Pdf
+    \brief A complete PDF viewer component for scrolling through multiple pages.
+
+    PdfMultiPageView provides a PDF viewer component that offers a user
+    experience similar to many common PDF viewer applications. It supports
+    flicking through the pages in the entire document, with narrow gaps between
+    the page images.
+
+    PdfMultiPageView also supports selecting text and copying it to the
+    clipboard, zooming in and out, clicking an internal link to jump to another
+    section in the document, rotating the view, and searching for text. The
+    \l {PDF Multipage Viewer Example} demonstrates how to use these features
+    in an application.
+
+    The implementation is a QML assembly of smaller building blocks that are
+    available separately. In case you want to make changes in your own version
+    of this component, you can copy the QML, which is installed into the
+    \c QtQuick/Pdf/qml module directory, and modify it as needed.
+
+    \sa PdfPageView, PdfScrollablePageView, PdfStyle
+*/
 Item {
-    // public API
+    /*!
+        \qmlproperty PdfDocument PdfMultiPageView::document
+
+        A PdfDocument object with a valid \c source URL is required:
+
+        \snippet multipageview.qml 0
+    */
     required property PdfDocument document
 
+    /*!
+        \qmlproperty PdfDocument PdfMultiPageView::selectedText
+
+        The selected text.
+    */
     property string selectedText
+
+    /*!
+        \qmlmethod void PdfMultiPageView::selectAll()
+
+        Selects all the text on the \l {currentPage}{current page}, and makes it
+        available as the system \l {QClipboard::Selection}{selection} on systems
+        that support that feature.
+
+        \sa copySelectionToClipboard()
+    */
     function selectAll() {
         const currentItem = tableView.itemAtCell(tableView.cellAtPos(root.width / 2, root.height / 2))
         if (currentItem)
             currentItem.selection.selectAll()
     }
+
+    /*!
+        \qmlmethod void PdfMultiPageView::copySelectionToClipboard()
+
+        Copies the selected text (if any) to the
+        \l {QClipboard::Clipboard}{system clipboard}.
+
+        \sa selectAll()
+    */
     function copySelectionToClipboard() {
         const currentItem = tableView.itemAtCell(tableView.cellAtPos(root.width / 2, root.height / 2))
         console.log(lcMPV, "currentItem", currentItem, "sel", currentItem.selection.text)
@@ -58,17 +111,89 @@ Item {
             currentItem.selection.copyToClipboard()
     }
 
+    // --------------------------------
     // page navigation
+
+    /*!
+        \qmlproperty int PdfMultiPageView::currentPage
+        \readonly
+
+        This property holds the zero-based page number of the page visible in the
+        scrollable view. If there is no current page, it holds -1.
+
+        This property is read-only, and is typically used in a binding (or
+        \c onCurrentPageChanged script) to update the part of the user interface
+        that shows the current page number, such as a \l SpinBox.
+
+        \sa PdfNavigationStack::currentPage
+    */
     property alias currentPage: navigationStack.currentPage
+
+    /*!
+        \qmlproperty bool PdfMultiPageView::backEnabled
+        \readonly
+
+        This property indicates if it is possible to go back in the navigation
+        history to a previous-viewed page.
+
+        \sa PdfNavigationStack::backAvailable, back()
+    */
     property alias backEnabled: navigationStack.backAvailable
+
+    /*!
+        \qmlproperty bool PdfMultiPageView::forwardEnabled
+        \readonly
+
+        This property indicates if it is possible to go to next location in the
+        navigation history.
+
+        \sa PdfNavigationStack::forwardAvailable, forward()
+    */
     property alias forwardEnabled: navigationStack.forwardAvailable
+
+    /*!
+        \qmlmethod void PdfMultiPageView::back()
+
+        Scrolls the view back to the previous page that the user visited most
+        recently; or does nothing if there is no previous location on the
+        navigation stack.
+
+        \sa PdfNavigationStack::back(), currentPage, backEnabled
+    */
     function back() { navigationStack.back() }
+
+    /*!
+        \qmlmethod void PdfMultiPageView::forward()
+
+        Scrolls the view to the page that the user was viewing when the back()
+        method was called; or does nothing if there is no "next" location on the
+        navigation stack.
+
+        \sa PdfNavigationStack::forward(), currentPage
+    */
     function forward() { navigationStack.forward() }
+
+    /*!
+        \qmlmethod void PdfMultiPageView::goToPage(int page)
+
+        Scrolls the view to the given \a page number, if possible.
+
+        \sa PdfNavigationStack::push(), currentPage
+    */
     function goToPage(page) {
         if (page === navigationStack.currentPage)
             return
         goToLocation(page, Qt.point(-1, -1), 0)
     }
+
+    /*!
+        \qmlmethod void PdfMultiPageView::goToLocation(int page, point location, real zoom)
+
+        Scrolls the view to the \a location on the \a page, if possible,
+        and sets the \a zoom level.
+
+        \sa PdfNavigationStack::push(), currentPage
+    */
     function goToLocation(page, location, zoom) {
         if (zoom > 0) {
             navigationStack.jumping = true // don't call navigationStack.update() because we will push() instead
@@ -78,16 +203,69 @@ Item {
         }
         navigationStack.push(page, location, zoom) // actually jump
     }
-    property vector2d jumpLocationMargin: Qt.vector2d(10, 10)  // px from top-left corner
+
+    /*!
+        \qmlproperty int PdfMultiPageView::currentPageRenderingStatus
+
+        This property holds the \l {QtQuick::Image::status}{rendering status} of
+        the \l {currentPage}{current page}.
+
+        \sa PdfPageImage::status
+    */
     property int currentPageRenderingStatus: Image.Null
 
-    // page scaling
+    // --------------------------------
+    // page navigation
+
+    /*!
+        \qmlproperty real PdfMultiPageView::renderScale
+
+        This property holds the ratio of pixels to points. The default is \c 1,
+        meaning one point (1/72 of an inch) equals 1 logical pixel.
+
+        \sa PdfPageImage::status
+    */
     property real renderScale: 1
+
+    /*!
+        \qmlproperty real PdfMultiPageView::pageRotation
+
+        This property holds the clockwise rotation of the pages.
+
+        The default value is \c 0 degrees (that is, no rotation relative to the
+        orientation of the pages as stored in the PDF file).
+
+        \sa PdfPageImage::rotation
+    */
     property real pageRotation: 0
+
+    /*!
+        \qmlmethod void PdfMultiPageView::resetScale()
+
+        Sets \l renderScale back to its default value of \c 1.
+    */
     function resetScale() { root.renderScale = 1 }
+
+    /*!
+        \qmlmethod void PdfMultiPageView::scaleToWidth(real width, real height)
+
+        Sets \l renderScale such that the width of the first page will fit into a
+        viewport with the given \a width and \a height. If the page is not rotated,
+        it will be scaled so that its width fits \a width. If it is rotated +/- 90
+        degrees, it will be scaled so that its width fits \a height.
+    */
     function scaleToWidth(width, height) {
         root.renderScale = width / (tableView.rot90 ? tableView.firstPagePointSize.height : tableView.firstPagePointSize.width)
     }
+
+    /*!
+        \qmlmethod void PdfMultiPageView::scaleToPage(real width, real height)
+
+        Sets \l renderScale such that the whole first page will fit into a viewport
+        with the given \a width and \a height. The resulting \l renderScale depends
+        on \l pageRotation: the page will fit into the viewport at a larger size if
+        it is first rotated to have a matching aspect ratio.
+    */
     function scaleToPage(width, height) {
         const windowAspect = width / height
         const pageAspect = tableView.firstPagePointSize.width / tableView.firstPagePointSize.height
@@ -106,10 +284,46 @@ Item {
         }
     }
 
+    // --------------------------------
     // text search
+
+    /*!
+        \qmlproperty PdfSearchModel PdfMultiPageView::searchModel
+
+        This property holds a PdfSearchModel containing the list of search results
+        for a given \l searchString.
+
+        \sa PdfSearchModel
+    */
     property alias searchModel: searchModel
+
+    /*!
+        \qmlproperty string PdfMultiPageView::searchString
+
+        This property holds the search string that the user may choose to search
+        for. It is typically used in a binding to the
+        \l {QtQuick.Controls::TextField::text}{text} property of a TextField.
+
+        \sa searchModel
+    */
     property alias searchString: searchModel.searchString
+
+    /*!
+        \qmlmethod void PdfMultiPageView::searchBack()
+
+        Decrements the
+        \l{PdfSearchModel::currentResult}{searchModel's current result}
+        so that the view will jump to the previous search result.
+    */
     function searchBack() { --searchModel.currentResult }
+
+    /*!
+        \qmlmethod void PdfMultiPageView::searchForward()
+
+        Increments the
+        \l{PdfSearchModel::currentResult}{searchModel's current result}
+        so that the view will jump to the next search result.
+    */
     function searchForward() { ++searchModel.currentResult }
 
     LoggingCategory {
@@ -122,6 +336,7 @@ Item {
     TableView {
         id: tableView
         property bool debug: false
+        property vector2d jumpLocationMargin: Qt.vector2d(10, 10)  // px from top-left corner
         anchors.fill: parent
         anchors.leftMargin: 2
         model: modelInUse && root.document ? root.document.pageCount : 0
@@ -380,8 +595,8 @@ Item {
         const cell = tableView.cellAtPos(root.width / 2, root.height / 2)
         const currentItem = tableView.itemAtCell(cell)
         if (currentItem) {
-            const currentLocation = Qt.point((tableView.contentX - currentItem.x + jumpLocationMargin.x) / root.renderScale,
-                                             (tableView.contentY - currentItem.y + jumpLocationMargin.y) / root.renderScale)
+            const currentLocation = Qt.point((tableView.contentX - currentItem.x + tableView.jumpLocationMargin.x) / root.renderScale,
+                                             (tableView.contentY - currentItem.y + tableView.jumpLocationMargin.y) / root.renderScale)
             navigationStack.update(cell.y, currentLocation, renderScale)
         }
     }
@@ -409,8 +624,8 @@ Item {
                 pageSize.height *= root.renderScale
                 const xOffsetLimit = Math.max(0, pageSize.width - root.width) / 2
                 const offset = Qt.point(Math.max(-xOffsetLimit, Math.min(xOffsetLimit,
-                                            location.x * root.renderScale - jumpLocationMargin.x)),
-                                        Math.max(0, location.y * root.renderScale - jumpLocationMargin.y))
+                                            location.x * root.renderScale - tableView.jumpLocationMargin.x)),
+                                        Math.max(0, location.y * root.renderScale - tableView.jumpLocationMargin.y))
                 tableView.positionViewAtCell(0, page, Qt.AlignLeft | Qt.AlignTop, offset)
                 console.log(lcMPV, "going to zoom", zoom, "loc", location, "on page", page,
                             "ended up @", tableView.contentX.toFixed(1) + ", " + tableView.contentY.toFixed(1))
