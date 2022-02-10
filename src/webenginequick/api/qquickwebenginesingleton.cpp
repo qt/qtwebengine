@@ -99,6 +99,19 @@ QQuickWebEngineProfile *QQuickWebEngineSingleton::defaultProfile() const
     return profile;
 }
 
+/*!
+    \qmlmethod WebEngineScript WebEngine::script
+    //! \instantiates QWebEngineScript
+    \since QtWebEngine 6.2
+
+    Constructs WebEngineScript, which can be set up and inserted into user scripts' collection
+    for \l{WebEngineView::userScripts}{WebEngineView.userScripts} or
+    \l{WebEngineProfile::userScripts}{WebEngineProfile.userScripts}
+    using \l{WebEngineScriptCollection}.
+
+    \sa WebEngineScript WebEngineScriptCollection
+*/
+
 QWebEngineScript QQuickWebEngineSingleton::script() const
 {
     return QWebEngineScript();
