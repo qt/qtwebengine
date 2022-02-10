@@ -954,7 +954,7 @@ QQuickWebEngineSettings *QQuickWebEngineProfile::settings() const
 }
 
 /*!
-    \qmlproperty list<WebEngineScript> WebEngineProfile::userScripts
+    \qmlproperty WebEngineScriptCollection WebEngineProfile::userScripts
     \since 1.5
 
     Returns the collection of WebEngineScript objects that are injected into

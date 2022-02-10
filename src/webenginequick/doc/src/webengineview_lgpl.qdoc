@@ -327,11 +327,13 @@
 
 
 /*!
-    \qmlproperty list<WebEngineScript> WebEngineView::userScripts
+    \qmlproperty WebEngineScriptCollection WebEngineView::userScripts
     \readonly
     \since QtWebEngine 1.1
 
-    List of WebEngineScript objects attached to the view.
+    The user scripts' collection associated with the view.
+
+    \sa WebEngineScriptCollection
 */
 
 /*!
