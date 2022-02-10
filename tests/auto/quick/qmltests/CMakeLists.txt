@@ -52,6 +52,7 @@ set(testList
     tst_titleChanged.qml
     tst_unhandledKeyEventPropagation.qml
     tst_userScripts.qml
+    tst_userScriptCollection.qml
     tst_viewSource.qml
 )
 
