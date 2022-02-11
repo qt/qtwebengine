@@ -27,10 +27,10 @@
 
 /*!
 \page qt_add_webengine_dictionary.html
-\ingroup cmake-commands
+\ingroup cmake-commands-qtwebenginecore
 
 \title qt_add_webengine_dictionary
-\target qt6_add_webengine_dictionary
+\keyword qt6_add_webengine_dictionary
 
 \brief Converts the hunspell dictionary format into \e bdict binary format.
 
