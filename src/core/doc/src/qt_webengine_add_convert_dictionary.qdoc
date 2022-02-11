@@ -53,7 +53,7 @@ qt_add_webengine_dictionary(
 
     A spell checker in Qt Web Engine needs dictionaries in a specific binary format.
     This CMake command converts dictionaries from the \l{Hunspell project}. into the \c bdict
-    binary format. It creates a \c webengine_dictionaries target, which your project can
+    binary format. It creates a \c qtwebengine_dictionaries target, which your project can
     use as a dependency. This way your project can easily add dictionaries for the spell
     checker. Refer to the \l{WebEngine Widgets Spellchecker Example}{spell checker example}
     for more details.
@@ -61,7 +61,7 @@ qt_add_webengine_dictionary(
 \section1 Arguments
 
     \c TARGET is an optinal argument and specifies the name of the application target that should
-    depend on \c webengine_dictionaries target. In other words it is used to define a build
+    depend on \c qtwebengine_dictionaries target. In other words it is used to define a build
     dependency to create the binary format of dictionaries before building \c TARGET.
 
     \c SOURCE is the absolute path to the \l{Hunspell project} dictionary for which
@@ -71,7 +71,8 @@ qt_add_webengine_dictionary(
     of the dictionary will be created. If not specified, \c CMAKE_CURRENT_BINARY_DIR will be used
     as \c OUTPUT_DIRECTORY.
 
-    \note The \c webengine_dictionaries directory or \c <CONFIG>/webengine_dictionaries directories
-    in the case of the multi-config generator is appended to OUTPUT_DIRECTORY. This helps to
-    utilize dictionaries, as the \c webengine_dictionaries directory is the default search location.
+    \note The \c qtwebengine_dictionaries directory or \c <CONFIG>/qtwebengine_dictionaries
+    directories in the case of the multi-config generator is appended to OUTPUT_DIRECTORY. This
+    helps to utilize dictionaries, as the \c webengine_dictionaries directory is the default
+    search location.
 */

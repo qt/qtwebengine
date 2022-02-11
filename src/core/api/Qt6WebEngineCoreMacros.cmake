@@ -34,18 +34,19 @@ function(qt6_add_webengine_dictionary)
         ${ARGS_SOURCE} ${spellcheckerDir}/${dictName}.bdic
         ${copyCommand}
     )
-    if(NOT TARGET webengine_dictionaries)
-        add_custom_target(webengine_dictionaries)
+    set(global_dict_target "qtwebengine_dictionaries")
+    if(NOT TARGET ${global_dict_target})
+        add_custom_target(${global_dict_target})
     endif()
 
     # in case of large project gen target should have unique name since it can collide, use TARGET
     if (ARGS_TARGET)
         add_custom_target(gen-${ARGS_TARGET}-${dictName} DEPENDS ${spellcheckerDir}/${dictName}.bdic)
         add_dependencies(${ARGS_TARGET} gen-${ARGS_TARGET}-${dictName})
-        add_dependencies(webengine_dictionaries gen-${ARGS_TARGET}-${dictName})
+        add_dependencies(${global_dict_target} gen-${ARGS_TARGET}-${dictName})
     else()
         add_custom_target(gen-${dictName} DEPENDS ${spellcheckerDir}/${dictName}.bdic)
-        add_dependencies(webengine_dictionaries gen-${dictName})
+        add_dependencies(${global_dict_target} gen-${dictName})
     endif()
 
 endfunction()
