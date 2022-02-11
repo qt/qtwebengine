@@ -368,6 +368,10 @@ foreach(arch ${archs})
                 )
             endforeach()
             extend_gn_list(gnArgArg
+                ARGS use_system_libxslt
+                CONDITION QT_FEATURE_webengine_system_libxml
+            )
+            extend_gn_list(gnArgArg
                 ARGS icu_use_data_file
                 CONDITION NOT QT_FEATURE_webengine_system_icu
             )
