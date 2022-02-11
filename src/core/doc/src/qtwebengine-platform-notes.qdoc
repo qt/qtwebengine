@@ -62,7 +62,7 @@
     On all platforms, the following tools are required at build time:
 
     \list
-        \li \l Python 3.
+        \li \l Python 3 with html5lib library
         \li Bison, Flex
         \li GPerf
         \li Node.js version 12 or later
