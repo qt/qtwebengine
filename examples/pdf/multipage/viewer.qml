@@ -218,6 +218,7 @@ ApplicationWindow {
         closePolicy: Popup.CloseOnEscape
         anchors.centerIn: parent
         width: 300
+        visible: document.status === PdfDocument.Error
 
         contentItem: Label {
             id: errorField
@@ -229,7 +230,6 @@ ApplicationWindow {
         id: document
         source: Qt.resolvedUrl(root.source)
         onStatusChanged: {
-            if (status === PdfDocument.Error) errorDialog.open()
             view.document = (status === PdfDocument.Ready ? document : null)
         }
         onPasswordRequired: function() { passwordDialog.open() }
