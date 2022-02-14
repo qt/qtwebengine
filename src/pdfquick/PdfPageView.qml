@@ -157,7 +157,7 @@ Rectangle {
         property size centerInSize
         property real pageScale: image.paintedWidth / document.pagePointSize(navigationStack.currentPage).width
         function reRenderIfNecessary() {
-            const newSourceWidth = image.sourceSize.width * root.scale
+            const newSourceWidth = image.sourceSize.width * root.scale * Screen.devicePixelRatio
             const ratio = newSourceWidth / image.sourceSize.width
             if (ratio > 1.1 || ratio < 0.9) {
                 image.sourceSize.width = newSourceWidth

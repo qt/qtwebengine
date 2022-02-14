@@ -165,7 +165,7 @@ Item {
                     property real renderScale: root.renderScale
                     property real oldRenderScale: 1
                     onRenderScaleChanged: {
-                        image.sourceSize.width = paper.pagePointSize.width * renderScale
+                        image.sourceSize.width = paper.pagePointSize.width * renderScale * Screen.devicePixelRatio
                         image.sourceSize.height = 0
                         paper.scale = 1
                         searchHighlights.update()

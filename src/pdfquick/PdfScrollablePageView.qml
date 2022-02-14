@@ -126,7 +126,8 @@ Flickable {
     }
 
     onRenderScaleChanged: {
-        image.sourceSize.width = document.pagePointSize(navigationStack.currentPage).width * renderScale
+        image.sourceSize.width = document.pagePointSize(navigationStack.currentPage).width *
+                renderScale * Screen.devicePixelRatio
         image.sourceSize.height = 0
         paper.scale = 1
         const currentLocation = Qt.point((root.contentX + root.width / 2) / root.renderScale,
