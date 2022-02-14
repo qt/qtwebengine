@@ -79,7 +79,7 @@ Rectangle {
         root.scale = 1
     }
     function scaleToWidth(width, height) {
-        var halfRotation = Math.abs(root.rotation % 180)
+        const halfRotation = Math.abs(root.rotation % 180)
         image.sourceSize = Qt.size((halfRotation > 45 && halfRotation < 135) ? height : width, 0)
         root.x = 0
         root.y = 0
@@ -89,19 +89,18 @@ Rectangle {
         root.scale = 1
     }
     function scaleToPage(width, height) {
-        var windowAspect = width / height
-        var halfRotation = Math.abs(root.rotation % 180)
-        var pagePointSize = document.pagePointSize(navigationStack.currentPage)
+        const windowAspect = width / height
+        const halfRotation = Math.abs(root.rotation % 180)
+        const pagePointSize = document.pagePointSize(navigationStack.currentPage)
+        const pageAspect = pagePointSize.height / pagePointSize.width
         if (halfRotation > 45 && halfRotation < 135) {
             // rotated 90 or 270º
-            var pageAspect = pagePointSize.height / pagePointSize.width
             if (windowAspect > pageAspect) {
                 image.sourceSize = Qt.size(height, 0)
             } else {
                 image.sourceSize = Qt.size(0, width)
             }
         } else {
-            var pageAspect = pagePointSize.width / pagePointSize.height
             if (windowAspect > pageAspect) {
                 image.sourceSize = Qt.size(0, height)
             } else {
@@ -159,8 +158,8 @@ Rectangle {
         property size centerInSize
         property real pageScale: image.paintedWidth / document.pagePointSize(navigationStack.currentPage).width
         function reRenderIfNecessary() {
-            var newSourceWidth = image.sourceSize.width * root.scale
-            var ratio = newSourceWidth / image.sourceSize.width
+            const newSourceWidth = image.sourceSize.width * root.scale
+            const ratio = newSourceWidth / image.sourceSize.width
             if (ratio > 1.1 || ratio < 0.9) {
                 image.sourceSize.width = newSourceWidth
                 image.sourceSize.height = 0

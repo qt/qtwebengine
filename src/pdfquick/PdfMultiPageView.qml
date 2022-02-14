@@ -50,12 +50,12 @@ Item {
 
     property string selectedText
     function selectAll() {
-        var currentItem = tableView.itemAtCell(tableView.cellAtPos(root.width / 2, root.height / 2))
+        const currentItem = tableView.itemAtCell(tableView.cellAtPos(root.width / 2, root.height / 2))
         if (currentItem)
             currentItem.selection.selectAll()
     }
     function copySelectionToClipboard() {
-        var currentItem = tableView.itemAtCell(tableView.cellAtPos(root.width / 2, root.height / 2))
+        const currentItem = tableView.itemAtCell(tableView.cellAtPos(root.width / 2, root.height / 2))
         if (debug)
             console.log("currentItem", currentItem, "sel", currentItem.selection.text)
         if (currentItem)
@@ -93,8 +93,8 @@ Item {
         root.renderScale = width / (tableView.rot90 ? tableView.firstPagePointSize.height : tableView.firstPagePointSize.width)
     }
     function scaleToPage(width, height) {
-        var windowAspect = width / height
-        var pageAspect = tableView.firstPagePointSize.width / tableView.firstPagePointSize.height
+        const windowAspect = width / height
+        const pageAspect = tableView.firstPagePointSize.width / tableView.firstPagePointSize.height
         if (tableView.rot90) {
             if (windowAspect > pageAspect) {
                 root.renderScale = height / tableView.firstPagePointSize.width
@@ -236,17 +236,17 @@ Item {
                             paper.z = 10
                         } else {
                             paper.z = 0
-                            var centroidInPoints = Qt.point(pinch.centroid.position.x / root.renderScale,
+                            const centroidInPoints = Qt.point(pinch.centroid.position.x / root.renderScale,
                                                             pinch.centroid.position.y / root.renderScale)
-                            var centroidInFlickable = tableView.mapFromItem(paper, pinch.centroid.position.x, pinch.centroid.position.y)
-                            var newSourceWidth = image.sourceSize.width * paper.scale
-                            var ratio = newSourceWidth / image.sourceSize.width
+                            const centroidInFlickable = tableView.mapFromItem(paper, pinch.centroid.position.x, pinch.centroid.position.y)
+                            const newSourceWidth = image.sourceSize.width * paper.scale
+                            const ratio = newSourceWidth / image.sourceSize.width
                             if (root.debug)
                                 console.log("pinch ended on page", index, "with centroid", pinch.centroid.position, centroidInPoints, "wrt flickable", centroidInFlickable,
                                             "page at", pageHolder.x.toFixed(2), pageHolder.y.toFixed(2),
                                             "contentX/Y were", tableView.contentX.toFixed(2), tableView.contentY.toFixed(2))
                             if (ratio > 1.1 || ratio < 0.9) {
-                                var centroidOnPage = Qt.point(centroidInPoints.x * root.renderScale * ratio, centroidInPoints.y * root.renderScale * ratio)
+                                const centroidOnPage = Qt.point(centroidInPoints.x * root.renderScale * ratio, centroidInPoints.y * root.renderScale * ratio)
                                 paper.scale = 1
                                 paper.x = 0
                                 paper.y = 0
@@ -350,13 +350,12 @@ Item {
             property bool moved: false
             onPositionChanged: moved = true
             onActiveChanged: {
-                var cell = tableView.cellAtPos(root.width / 2, root.height / 2)
-                var currentItem = tableView.itemAtCell(cell)
-                var currentLocation = Qt.point(0, 0)
-                if (currentItem) { // maybe the delegate wasn't loaded yet
-                    currentLocation = Qt.point((tableView.contentX - currentItem.x + jumpLocationMargin.x) / root.renderScale,
-                                               (tableView.contentY - currentItem.y + jumpLocationMargin.y) / root.renderScale)
-                }
+                const cell = tableView.cellAtPos(root.width / 2, root.height / 2)
+                const currentItem = tableView.itemAtCell(cell)
+                const currentLocation = currentItem
+                                      ? Qt.point((tableView.contentX - currentItem.x + jumpLocationMargin.x) / root.renderScale,
+                                                 (tableView.contentY - currentItem.y + jumpLocationMargin.y) / root.renderScale)
+                                      : Qt.point(0, 0) // maybe the delegate wasn't loaded yet
                 if (active) {
                     moved = false
                     // emitJumped false to avoid interrupting a pinch if TableView thinks it should scroll at the same time
@@ -375,11 +374,11 @@ Item {
             return
         // make TableView rebuild from scratch, because otherwise it doesn't know the delegates are changing size
         tableView.rebuild()
-        var cell = tableView.cellAtPos(root.width / 2, root.height / 2)
-        var currentItem = tableView.itemAtCell(cell)
+        const cell = tableView.cellAtPos(root.width / 2, root.height / 2)
+        const currentItem = tableView.itemAtCell(cell)
         if (currentItem) {
-            var currentLocation = Qt.point((tableView.contentX - currentItem.x + jumpLocationMargin.x) / root.renderScale,
-                                           (tableView.contentY - currentItem.y + jumpLocationMargin.y) / root.renderScale)
+            const currentLocation = Qt.point((tableView.contentX - currentItem.x + jumpLocationMargin.x) / root.renderScale,
+                                             (tableView.contentY - currentItem.y + jumpLocationMargin.y) / root.renderScale)
             navigationStack.update(cell.y, currentLocation, renderScale)
         }
     }
@@ -393,10 +392,10 @@ Item {
             if (location.y < 0) {
                 // invalid to indicate that a specific location was not needed,
                 // so attempt to position the new page just as the current page is
-                var currentYOffset = 0
-                var previousPageDelegate = tableView.itemAtCell(0, previousPage)
-                if (previousPageDelegate)
-                    currentYOffset = tableView.contentY - previousPageDelegate.y
+                const previousPageDelegate = tableView.itemAtCell(0, previousPage)
+                const currentYOffset = previousPageDelegate
+                                     ? tableView.contentY - previousPageDelegate.y
+                                     : 0
                 tableView.positionViewAtRow(page, Qt.AlignTop, currentYOffset)
                 if (root.debug) {
                     console.log("going from page", previousPage, "to", page, "offset", currentYOffset,
@@ -407,10 +406,10 @@ Item {
                 var pageSize = root.document.pagePointSize(page)
                 pageSize.width *= root.renderScale
                 pageSize.height *= root.renderScale
-                var xOffsetLimit = Math.max(0, pageSize.width - root.width) / 2
-                var offset = Qt.point(Math.max(-xOffsetLimit, Math.min(xOffsetLimit,
-                                        location.x * root.renderScale - jumpLocationMargin.x)),
-                                      Math.max(0, location.y * root.renderScale - jumpLocationMargin.y))
+                const xOffsetLimit = Math.max(0, pageSize.width - root.width) / 2
+                const offset = Qt.point(Math.max(-xOffsetLimit, Math.min(xOffsetLimit,
+                                            location.x * root.renderScale - jumpLocationMargin.x)),
+                                        Math.max(0, location.y * root.renderScale - jumpLocationMargin.y))
                 tableView.positionViewAtCell(0, page, Qt.AlignLeft | Qt.AlignTop, offset)
                 if (root.debug) {
                     console.log("going to zoom", zoom, "loc", location, "on page", page,

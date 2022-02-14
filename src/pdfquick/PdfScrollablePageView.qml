@@ -83,7 +83,7 @@ Flickable {
         root.renderScale = 1
     }
     function scaleToWidth(width, height) {
-        var pagePointSize = document.pagePointSize(navigationStack.currentPage)
+        const pagePointSize = document.pagePointSize(navigationStack.currentPage)
         root.renderScale = root.width / (paper.rot90 ? pagePointSize.height : pagePointSize.width)
         if (debug)
             console.log("scaling", pagePointSize, "to fit", root.width, "rotated?", paper.rot90, "scale", root.renderScale)
@@ -91,7 +91,7 @@ Flickable {
         root.contentY = 0
     }
     function scaleToPage(width, height) {
-        var pagePointSize = document.pagePointSize(navigationStack.currentPage)
+        const pagePointSize = document.pagePointSize(navigationStack.currentPage)
         root.renderScale = Math.min(
                     root.width / (paper.rot90 ? pagePointSize.height : pagePointSize.width),
                     root.height / (paper.rot90 ? pagePointSize.width : pagePointSize.height) )
@@ -113,16 +113,16 @@ Flickable {
     ScrollBar.vertical: ScrollBar {
         onActiveChanged:
             if (!active ) {
-                var currentLocation = Qt.point((root.contentX + root.width / 2) / root.renderScale,
-                                               (root.contentY + root.height / 2) / root.renderScale)
+                const currentLocation = Qt.point((root.contentX + root.width / 2) / root.renderScale,
+                                                 (root.contentY + root.height / 2) / root.renderScale)
                 navigationStack.update(navigationStack.currentPage, currentLocation, root.renderScale)
             }
     }
     ScrollBar.horizontal: ScrollBar {
         onActiveChanged:
             if (!active ) {
-                var currentLocation = Qt.point((root.contentX + root.width / 2) / root.renderScale,
-                                               (root.contentY + root.height / 2) / root.renderScale)
+                const currentLocation = Qt.point((root.contentX + root.width / 2) / root.renderScale,
+                                                 (root.contentY + root.height / 2) / root.renderScale)
                 navigationStack.update(navigationStack.currentPage, currentLocation, root.renderScale)
             }
     }
@@ -131,8 +131,8 @@ Flickable {
         image.sourceSize.width = document.pagePointSize(navigationStack.currentPage).width * renderScale
         image.sourceSize.height = 0
         paper.scale = 1
-        var currentLocation = Qt.point((root.contentX + root.width / 2) / root.renderScale,
-                                       (root.contentY + root.height / 2) / root.renderScale)
+        const currentLocation = Qt.point((root.contentX + root.width / 2) / root.renderScale,
+                                         (root.contentY + root.height / 2) / root.renderScale)
         navigationStack.update(navigationStack.currentPage, currentLocation, root.renderScale)
     }
 
@@ -148,8 +148,8 @@ Flickable {
         id: navigationStack
         onJumped: function(page, location, zoom) {
             root.renderScale = zoom
-            var dx = Math.max(0, location.x * root.renderScale - root.width / 2) - root.contentX
-            var dy = Math.max(0, location.y * root.renderScale - root.height / 2) - root.contentY
+            const dx = Math.max(0, location.x * root.renderScale - root.width / 2) - root.contentX
+            const dy = Math.max(0, location.y * root.renderScale - root.height / 2) - root.contentY
             // don't jump if location is in the viewport already, i.e. if the "error" between desired and actual contentX/Y is small
             if (Math.abs(dx) > root.width / 3)
                 root.contentX += dx
@@ -280,17 +280,17 @@ Flickable {
             enabled: image.sourceSize.width < 5000
             onActiveChanged:
                 if (!active) {
-                    var centroidInPoints = Qt.point(pinch.centroid.position.x / root.renderScale,
-                                                    pinch.centroid.position.y / root.renderScale)
-                    var centroidInFlickable = root.mapFromItem(paper, pinch.centroid.position.x, pinch.centroid.position.y)
-                    var newSourceWidth = image.sourceSize.width * paper.scale
-                    var ratio = newSourceWidth / image.sourceSize.width
+                    const centroidInPoints = Qt.point(pinch.centroid.position.x / root.renderScale,
+                                                      pinch.centroid.position.y / root.renderScale)
+                    const centroidInFlickable = root.mapFromItem(paper, pinch.centroid.position.x, pinch.centroid.position.y)
+                    const newSourceWidth = image.sourceSize.width * paper.scale
+                    const ratio = newSourceWidth / image.sourceSize.width
                     if (root.debug)
                         console.log("pinch ended with centroid", pinch.centroid.position, centroidInPoints, "wrt flickable", centroidInFlickable,
                                     "page at", paper.x.toFixed(2), paper.y.toFixed(2),
                                     "contentX/Y were", root.contentX.toFixed(2), root.contentY.toFixed(2))
                     if (ratio > 1.1 || ratio < 0.9) {
-                        var centroidOnPage = Qt.point(centroidInPoints.x * root.renderScale * ratio, centroidInPoints.y * root.renderScale * ratio)
+                        const centroidOnPage = Qt.point(centroidInPoints.x * root.renderScale * ratio, centroidInPoints.y * root.renderScale * ratio)
                         paper.scale = 1
                         paper.x = 0
                         paper.y = 0
