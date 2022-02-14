@@ -1,32 +1,25 @@
 cmake_minimum_required(VERSION 3.16)
 project(recipebrowser LANGUAGES CXX)
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/webenginequick/recipebrowser")
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Gui)
-find_package(Qt6 COMPONENTS Quick)
-find_package(Qt6 COMPONENTS Qml)
-find_package(Qt6 COMPONENTS QuickControls2)
-find_package(Qt6 COMPONENTS WebEngineQuick)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 WebEngineQuick)
 
 qt_add_executable(recipebrowser
     main.cpp
 )
+
 set_target_properties(recipebrowser PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(recipebrowser PUBLIC
     Qt::Core
     Qt::Gui
@@ -36,68 +29,87 @@ target_link_libraries(recipebrowser PUBLIC
     Qt::WebEngineQuick
 )
 
-
 # Resources:
 set_source_files_properties("resources/pages/assets/3rdparty/markdown.css"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set_source_files_properties("resources/pages/assets/3rdparty/marked.js"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set_source_files_properties("resources/pages/assets/custom.css"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set_source_files_properties("resources/pages/assets/custom.js"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set_source_files_properties("resources/pages/burger.html"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set_source_files_properties("resources/pages/cupcakes.html"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set_source_files_properties("resources/pages/images/burger.jpg"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set_source_files_properties("resources/pages/images/cupcakes.jpg"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set_source_files_properties("resources/pages/images/pasta.jpg"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set_source_files_properties("resources/pages/images/pizza.jpg"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set_source_files_properties("resources/pages/images/skewers.jpg"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set_source_files_properties("resources/pages/images/soup.jpg"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set_source_files_properties("resources/pages/images/steak.jpg"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set_source_files_properties("resources/pages/pasta.html"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set_source_files_properties("resources/pages/pizza.html"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set_source_files_properties("resources/pages/skewers.html"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set_source_files_properties("resources/pages/soup.html"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set_source_files_properties("resources/pages/steak.html"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set_source_files_properties("resources/qml/RecipeList.qml"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set_source_files_properties("resources/qml/main.qml"
     PROPERTIES QT_SKIP_QUICKCOMPILER 1
 )
+
 set(resources_resource_files
     "resources/pages/assets/3rdparty/markdown.css"
     "resources/pages/assets/3rdparty/marked.js"
