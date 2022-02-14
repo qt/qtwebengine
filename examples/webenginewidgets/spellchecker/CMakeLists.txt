@@ -1,36 +1,31 @@
 cmake_minimum_required(VERSION 3.16)
 project(spellchecker LANGUAGES CXX)
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/webenginewidgets/spellchecker")
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Gui)
-find_package(Qt6 COMPONENTS WebEngineWidgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui WebEngineWidgets)
 
 qt_add_executable(spellchecker
     main.cpp
     webview.cpp webview.h
 )
+
 set_target_properties(spellchecker PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(spellchecker PUBLIC
     Qt::Core
     Qt::Gui
     Qt::WebEngineWidgets
 )
-
 
 # Resources:
 set(spellchecker_resource_files
@@ -66,4 +61,3 @@ foreach(dictFile ${dicts})
         OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
 endforeach()
-

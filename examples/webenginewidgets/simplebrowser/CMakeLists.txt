@@ -1,21 +1,16 @@
 cmake_minimum_required(VERSION 3.16)
 project(simplebrowser LANGUAGES CXX)
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/webenginewidgets/simplebrowser")
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Gui)
-find_package(Qt6 COMPONENTS WebEngineWidgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui WebEngineWidgets)
 
 qt_add_executable(simplebrowser
     browser.cpp browser.h
@@ -30,16 +25,17 @@ qt_add_executable(simplebrowser
     webpopupwindow.cpp webpopupwindow.h
     webview.cpp webview.h
 )
+
 set_target_properties(simplebrowser PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(simplebrowser PUBLIC
     Qt::Core
     Qt::Gui
     Qt::WebEngineWidgets
 )
-
 
 # Resources:
 set(simplebrowser_resource_files
@@ -55,6 +51,7 @@ qt_add_resources(simplebrowser "simplebrowser"
     FILES
         ${simplebrowser_resource_files}
 )
+
 set(simplebrowser1_resource_files
     "data/3rdparty/dialog-error.png"
     "data/3rdparty/edit-clear.png"

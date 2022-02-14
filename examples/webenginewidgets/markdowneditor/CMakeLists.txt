@@ -1,22 +1,16 @@
 cmake_minimum_required(VERSION 3.16)
 project(markdowneditor LANGUAGES CXX)
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/webenginewidgets/markdowneditor")
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Gui)
-find_package(Qt6 COMPONENTS WebEngineWidgets)
-find_package(Qt6 COMPONENTS WebChannel)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui WebChannel WebEngineWidgets)
 
 qt_add_executable(markdowneditor
     document.cpp document.h
@@ -24,17 +18,18 @@ qt_add_executable(markdowneditor
     mainwindow.cpp mainwindow.h mainwindow.ui
     previewpage.cpp previewpage.h
 )
+
 set_target_properties(markdowneditor PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(markdowneditor PUBLIC
     Qt::Core
     Qt::Gui
     Qt::WebChannel
     Qt::WebEngineWidgets
 )
-
 
 # Resources:
 set(markdowneditor_resource_files
