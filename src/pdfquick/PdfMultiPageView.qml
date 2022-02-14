@@ -38,14 +38,12 @@
 ****************************************************************************/
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
 import QtQuick.Pdf
 import QtQuick.Shapes
-import QtQuick.Window
 
 Item {
     // public API
-    required property var document
+    required property PdfDocument document
     property bool debug: false
 
     property string selectedText
@@ -122,7 +120,7 @@ Item {
         id: tableView
         anchors.fill: parent
         anchors.leftMargin: 2
-        model: modelInUse && root.document !== undefined ? root.document.pageCount : 0
+        model: modelInUse && root.document ? root.document.pageCount : 0
         // workaround to make TableView do scheduleRebuildTable(RebuildOption::All) in cases when forceLayout() doesn't
         property bool modelInUse: true
         function rebuild() {
@@ -134,10 +132,9 @@ Item {
         property real rotationNorm: Math.round((360 + (root.pageRotation % 360)) % 360)
         property bool rot90: rotationNorm == 90 || rotationNorm == 270
         onRot90Changed: forceLayout()
-        property size firstPagePointSize: document === undefined ? Qt.size(0, 0) : document.pagePointSize(0)
-        property real pageHolderWidth: Math.max(root.width, document === undefined ? 0 :
-                                         (rot90 ? document.maxPageHeight : document.maxPageWidth) * root.renderScale)
-        contentWidth: document === undefined ? 0 : pageHolderWidth + vscroll.width + 2
+        property size firstPagePointSize: document?.pagePointSize(0) ?? Qt.size(0, 0)
+        property real pageHolderWidth: Math.max(root.width, (rot90 ? document?.maxPageHeight : document?.maxPageWidth) ?? 0 * root.renderScale)
+        contentWidth: document ? pageHolderWidth + vscroll.width + 2 : 0
         rowHeightProvider: function(row) { return (rot90 ? document.pagePointSize(row).width : document.pagePointSize(row).height) * root.renderScale }
         delegate: Rectangle {
             id: pageHolder
@@ -296,6 +293,11 @@ Item {
                         page: image.currentFrame
                     }
                     delegate: Shape {
+                        required property rect rect
+                        required property url url
+                        required property int page
+                        required property point location
+                        required property real zoom
                         x: rect.x * paper.pageScale
                         y: rect.y * paper.pageScale
                         width: rect.width * paper.pageScale

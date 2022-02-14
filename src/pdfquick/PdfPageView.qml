@@ -37,14 +37,13 @@
 **
 ****************************************************************************/
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Pdf
 import QtQuick.Shapes
 import Qt.labs.animation
 
 Rectangle {
     // public API
-    required property var document
+    required property PdfDocument document
     property alias status: image.status
 
     property alias selectedText: selection.text

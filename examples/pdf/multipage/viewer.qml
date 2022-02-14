@@ -47,14 +47,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-import QtQml // workaround for QTBUG-82873
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts
 import QtQuick.Pdf
-import QtQuick.Shapes
-import QtQuick.Window
 
 ApplicationWindow {
     id: root
@@ -128,7 +125,7 @@ ApplicationWindow {
             ToolButton {
                 action: Action {
                     icon.source: "qrc:/pdfviewer/resources/go-previous-view-page.svg"
-                    enabled: view.backEnbled
+                    enabled: view.backEnabled
                     onTriggered: view.back()
                 }
                 ToolTip.visible: enabled && hovered
@@ -232,7 +229,7 @@ ApplicationWindow {
         source: Qt.resolvedUrl(root.source)
         onStatusChanged: {
             if (status === PdfDocument.Error) errorDialog.open()
-            view.document = (status === PdfDocument.Ready ? document : undefined)
+            view.document = (status === PdfDocument.Ready ? document : null)
         }
         onPasswordRequired: {
             passwordDialog.open()
@@ -244,7 +241,7 @@ ApplicationWindow {
         id: view
         anchors.fill: parent
         anchors.leftMargin: searchDrawer.position * searchDrawer.width
-        document: root.document
+        document: document
         searchString: searchField.text
         onCurrentPageChanged: currentPageSB.value = view.currentPage + 1
     }
@@ -265,6 +262,12 @@ ApplicationWindow {
             model: view.searchModel
             ScrollBar.vertical: ScrollBar { }
             delegate: ItemDelegate {
+                required property int index
+                required property int page
+                required property int indexOnPage
+                required property point location
+                required property string contextBefore
+                required property string contextAfter
                 width: parent ? parent.width : 0
                 RowLayout {
                     anchors.fill: parent

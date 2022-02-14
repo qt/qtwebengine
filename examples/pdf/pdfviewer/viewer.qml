@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -47,15 +47,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-import QtQml // workaround for QTBUG-82873
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts
 import QtQuick.Pdf
-import QtQuick.Shapes
-import QtQuick.Window
-import Qt.labs.animation
 
 ApplicationWindow {
     id: root

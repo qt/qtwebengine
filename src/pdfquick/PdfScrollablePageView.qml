@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -36,16 +36,14 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-import QtQuick 2.14
-import QtQuick.Controls 2.14
-import QtQuick.Pdf 5.15
-import QtQuick.Shapes 1.14
-import Qt.labs.animation 1.0
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Pdf
+import QtQuick.Shapes
 
 Flickable {
     // public API
-    // TODO 5.15: required property
-    property var document: undefined
+    required property PdfDocument document
     property bool debug: false
     property alias status: image.status
 
@@ -216,10 +214,16 @@ Flickable {
                     page: navigationStack.currentPage
                 }
                 delegate: Shape {
+                    required property rect rect
+                    required property url url
+                    required property int page
+                    required property point location
+                    required property real zoom
                     x: rect.x * image.pageScale
                     y: rect.y * image.pageScale
                     width: rect.width * image.pageScale
                     height: rect.height * image.pageScale
+                    visible: image.status === Image.Ready
                     ShapePath {
                         strokeWidth: style.linkUnderscoreStrokeWidth
                         strokeColor: style.linkUnderscoreColor
@@ -228,15 +232,25 @@ Flickable {
                         startX: 0; startY: height
                         PathLine { x: width; y: height }
                     }
-                    MouseArea { // TODO switch to TapHandler / HoverHandler in 5.15
-                        anchors.fill: parent
+                    HoverHandler {
+                        id: linkHH
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: {
+                    }
+                    TapHandler {
+                        onTapped: {
                             if (page >= 0)
                                 navigationStack.push(page, Qt.point(0, 0), root.renderScale)
                             else
                                 Qt.openUrlExternally(url)
                         }
+                    }
+                    ToolTip {
+                        visible: linkHH.hovered
+                        delay: 1000
+                        text: page >= 0 ?
+                                  ("page " + (page + 1) +
+                                   " location " + location.x.toFixed(1) + ", " + location.y.toFixed(1) +
+                                   " zoom " + zoom) : url
                     }
                 }
             }
