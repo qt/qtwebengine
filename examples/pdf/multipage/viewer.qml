@@ -128,7 +128,7 @@ ApplicationWindow {
             ToolButton {
                 action: Action {
                     icon.source: "qrc:/pdfviewer/resources/go-previous-view-page.svg"
-                    enabled: view.backEnbled
+                    enabled: view.backEnabled
                     onTriggered: view.back()
                 }
                 ToolTip.visible: enabled && hovered
