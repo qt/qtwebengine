@@ -86,11 +86,11 @@ void QQuickPdfPageImage::setDocument(QQuickPdfDocument *document)
         return;
 
     if (d->doc)
-        disconnect(d->doc, &QQuickPdfDocument::statusChanged, this, &QQuickPdfPageImage::documentStatusChanged);
+        disconnect(d->doc->document(), &QPdfDocument::statusChanged, this, &QQuickPdfPageImage::documentStatusChanged);
     d->doc = document;
     if (document) {
-        connect(document, &QQuickPdfDocument::statusChanged, this, &QQuickPdfPageImage::documentStatusChanged);
-        if (document->status() == QPdfDocument::Status::Ready)
+        connect(document->document(), &QPdfDocument::statusChanged, this, &QQuickPdfPageImage::documentStatusChanged);
+        if (document->document()->status() == QPdfDocument::Status::Ready)
             setSource(document->resolvedSource()); // calls load()
     }
     emit documentChanged();
@@ -147,8 +147,9 @@ void QQuickPdfPageImage::load()
 void QQuickPdfPageImage::documentStatusChanged()
 {
     Q_D(QQuickPdfPageImage);
-    qCDebug(qLcImg) << "document status" << d->doc->status();
-    if (d->doc->status() == QPdfDocument::Status::Ready)
+    const auto status = d->doc->document()->status();
+    qCDebug(qLcImg) << "document status" << status;
+    if (status == QPdfDocument::Status::Ready)
         setSource(d->doc->resolvedSource()); // calls load()
 }
 

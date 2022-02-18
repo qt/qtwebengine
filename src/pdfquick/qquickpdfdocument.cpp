@@ -39,6 +39,7 @@
 
 #include "qquickpdfdocument_p.h"
 #include <private/qpdffile_p.h>
+#include <QtCore/qmetatype.h>
 #include <QtCore/qstandardpaths.h>
 #include <QtQml/qqmlcontext.h>
 #include <QtQml/qqmlengine.h>
@@ -65,14 +66,6 @@ QT_BEGIN_NAMESPACE
 QQuickPdfDocument::QQuickPdfDocument(QObject *parent)
     : QObject(parent)
 {
-    connect(&m_doc, &QPdfDocument::passwordChanged, this, &QQuickPdfDocument::passwordChanged);
-    connect(&m_doc, &QPdfDocument::passwordRequired, this, &QQuickPdfDocument::passwordRequired);
-    connect(&m_doc, &QPdfDocument::statusChanged, [this] (QPdfDocument::Status status) {
-        emit statusChanged();
-        if (status == QPdfDocument::Ready)
-            emit metaDataChanged();
-    });
-    connect(&m_doc, &QPdfDocument::pageCountChanged, this, &QQuickPdfDocument::pageCountChanged);
 }
 
 /*!
@@ -80,10 +73,21 @@ QQuickPdfDocument::QQuickPdfDocument(QObject *parent)
 */
 QQuickPdfDocument::~QQuickPdfDocument() = default;
 
-void QQuickPdfDocument::componentComplete()
+void QQuickPdfDocument::classBegin()
 {
-    if (m_doc.error() == QPdfDocument::IncorrectPasswordError)
-        emit passwordRequired();
+    m_doc = static_cast<QPdfDocument *>(qmlExtendedObject(this));
+    Q_ASSERT(m_doc);
+    connect(m_doc, &QPdfDocument::passwordChanged, this, [this]() {
+        if (resolvedSource().isValid() && resolvedSource().isLocalFile())
+            m_doc->load(resolvedSource().path());
+    });
+    connect(m_doc, &QPdfDocument::statusChanged, this, [this] (QPdfDocument::Status status) {
+        emit errorChanged();
+        if (status == QPdfDocument::Ready)
+            emit metaDataChanged();
+    });
+    if (m_doc->error() == QPdfDocument::IncorrectPasswordError)
+        emit m_doc->passwordRequired();
 }
 
 /*!
@@ -104,9 +108,9 @@ void QQuickPdfDocument::setSource(QUrl source)
     const QQmlContext *context = qmlContext(this);
     m_resolvedSource = context ? context->resolvedUrl(source) : source;
     if (source.scheme() == QLatin1String("qrc"))
-        m_doc.load(QLatin1Char(':') + m_resolvedSource.path());
+        m_doc->load(QLatin1Char(':') + m_resolvedSource.path());
     else
-        m_doc.load(m_resolvedSource.toLocalFile());
+        m_doc->load(m_resolvedSource.toLocalFile());
 }
 
 /*!
@@ -119,7 +123,7 @@ void QQuickPdfDocument::setSource(QUrl source)
 */
 QString QQuickPdfDocument::error() const
 {
-    switch (m_doc.error()) {
+    switch (m_doc->error()) {
     case QPdfDocument::NoError:
         return tr("no error");
         break;
@@ -151,14 +155,6 @@ QString QQuickPdfDocument::error() const
     signal is emitted, the UI should prompt the user and then set this
     property so that document opening can continue.
 */
-void QQuickPdfDocument::setPassword(const QString &password)
-{
-    if (m_doc.password() == password)
-        return;
-    m_doc.setPassword(password);
-    if (resolvedSource().isValid() && resolvedSource().isLocalFile())
-        m_doc.load(resolvedSource().path());
-}
 
 /*!
     \qmlproperty int PdfDocument::pageCount
@@ -181,19 +177,24 @@ void QQuickPdfDocument::setPassword(const QString &password)
 */
 QSizeF QQuickPdfDocument::pagePointSize(int page) const
 {
-    return m_doc.pageSize(page);
+    return m_doc->pageSize(page);
 }
 
 qreal QQuickPdfDocument::maxPageWidth() const
 {
-    const_cast<QQuickPdfDocument *>(this)->updateMaxPageSize();
+    updateMaxPageSize();
     return m_maxPageWidthHeight.width();
 }
 
 qreal QQuickPdfDocument::maxPageHeight() const
 {
-    const_cast<QQuickPdfDocument *>(this)->updateMaxPageSize();
+    updateMaxPageSize();
     return m_maxPageWidthHeight.height();
+}
+
+QPdfDocument *QQuickPdfDocument::document() const
+{
+    return m_doc;
 }
 
 /*!
@@ -204,17 +205,17 @@ qreal QQuickPdfDocument::maxPageHeight() const
 QPdfFile *QQuickPdfDocument::carrierFile()
 {
     if (!m_carrierFile)
-        m_carrierFile = new QPdfFile(&m_doc);
+        m_carrierFile = new QPdfFile(m_doc);
     return m_carrierFile;
 }
 
-void QQuickPdfDocument::updateMaxPageSize()
+void QQuickPdfDocument::updateMaxPageSize() const
 {
     if (m_maxPageWidthHeight.isValid())
         return;
     qreal w = 0;
     qreal h = 0;
-    const int count = pageCount();
+    const int count = m_doc->pageCount();
     for (int i = 0; i < count; ++i) {
         auto size = pagePointSize(i);
         w = qMax(w, size.width());

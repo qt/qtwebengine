@@ -171,7 +171,7 @@ void QQuickPdfSelection::clear()
 
 void QQuickPdfSelection::selectAll()
 {
-    QPdfSelection sel = m_document->m_doc.getAllText(m_page);
+    QPdfSelection sel = m_document->document()->getAllText(m_page);
     if (sel.text() != m_text) {
         m_text = sel.text();
         if (QGuiApplication::clipboard()->supportsSelection())
@@ -211,14 +211,14 @@ void QQuickPdfSelection::keyReleaseEvent(QKeyEvent *ev)
             i = 0;
         else
             i += 1; // don't select the space before the word
-        auto sel = m_document->m_doc.getSelectionAtIndex(m_page, i, m_text.length() + m_fromCharIndex - i);
+        auto sel = m_document->document()->getSelectionAtIndex(m_page, i, m_text.length() + m_fromCharIndex - i);
         update(sel);
         QGuiApplication::inputMethod()->update(Qt::ImAnchorRectangle);
     } else if (ev == QKeySequence::SelectNextWord) {
         int i = allText.indexOf(WordDelimiter, m_toCharIndex);
         if (i < 0)
             i = allText.length(); // go to the end of m_textAfter
-        auto sel = m_document->m_doc.getSelectionAtIndex(m_page, m_fromCharIndex, m_text.length() + i - m_toCharIndex);
+        auto sel = m_document->document()->getSelectionAtIndex(m_page, m_fromCharIndex, m_text.length() + i - m_toCharIndex);
         update(sel);
         QGuiApplication::inputMethod()->update(Qt::ImCursorRectangle);
     } else if (ev == QKeySequence::Copy) {
@@ -234,7 +234,7 @@ void QQuickPdfSelection::inputMethodEvent(QInputMethodEvent *event)
             qCDebug(qLcIm) << "QInputMethodEvent::Cursor: moved to" << attr.start << "len" << attr.length;
             break;
         case QInputMethodEvent::Selection: {
-            auto sel = m_document->m_doc.getSelectionAtIndex(m_page, attr.start, attr.length);
+            auto sel = m_document->document()->getSelectionAtIndex(m_page, attr.start, attr.length);
             update(sel);
             qCDebug(qLcIm) << "QInputMethodEvent::Selection: from" << attr.start << "len" << attr.length
                            << "result:" << m_fromCharIndex << "->" << m_toCharIndex << sel.boundingRectangle();
@@ -259,7 +259,7 @@ QVariant QQuickPdfSelection::inputMethodQuery(Qt::InputMethodQuery query, const 
             if (m_hitPoint == argument.toPointF())
                 return inputMethodQuery(query);
             m_hitPoint = argument.toPointF();
-            auto tp = m_document->m_doc.d->hitTest(m_page, m_hitPoint / m_renderScale);
+            auto tp = m_document->document()->d->hitTest(m_page, m_hitPoint / m_renderScale);
             qCDebug(qLcIm) << "ImCursorPosition hit testing in px" << m_hitPoint << "pt" << (m_hitPoint / m_renderScale)
                            << "got char index" << tp.charIndex << "@" << tp.position << "pt," << tp.position * m_renderScale << "px";
             if (tp.charIndex >= 0) {
@@ -343,7 +343,7 @@ QVariant QQuickPdfSelection::inputMethodQuery(Qt::InputMethodQuery query) const
 const QString &QQuickPdfSelection::pageText() const
 {
     if (m_pageTextDirty) {
-        m_pageText = m_document->m_doc.getAllText(m_page).text();
+        m_pageText = m_document->document()->getAllText(m_page).text();
         m_pageTextDirty = false;
     }
     return m_pageText;
@@ -504,7 +504,7 @@ void QQuickPdfSelection::updateResults()
 {
     if (!m_document)
         return;
-    QPdfSelection sel = m_document->document().getSelection(m_page,
+    QPdfSelection sel = m_document->document()->getSelection(m_page,
             m_fromPoint / m_renderScale, m_toPoint / m_renderScale);
     update(sel, true);
 }

@@ -128,7 +128,7 @@ void QQuickPdfLinkModel::setDocument(QQuickPdfDocument *document)
         return;
     m_quickDocument = document;
     if (document)
-        QPdfLinkModel::setDocument(&document->m_doc);
+        QPdfLinkModel::setDocument(document->document());
 }
 
 /*!

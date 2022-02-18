@@ -79,7 +79,7 @@ void QQuickPdfSearchModel::setDocument(QQuickPdfDocument *document)
         return;
 
     m_quickDocument = document;
-    QPdfSearchModel::setDocument(&document->m_doc);
+    QPdfSearchModel::setDocument(document->document());
 }
 
 /*!
@@ -213,7 +213,7 @@ QList<QPolygonF> QQuickPdfSearchModel::currentPageBoundingPolygons() const
 */
 QList<QPolygonF> QQuickPdfSearchModel::boundingPolygonsOnPage(int page)
 {
-    if (!document() || searchString().isEmpty() || page < 0 || page > document()->pageCount())
+    if (!document() || searchString().isEmpty() || page < 0 || page > document()->document()->pageCount())
         return {};
 
     updatePage(page);
@@ -239,9 +239,10 @@ void QQuickPdfSearchModel::setCurrentPage(int currentPage)
     if (m_currentPage == currentPage)
         return;
 
+    const auto pageCount = document()->document()->pageCount();
     if (currentPage < 0)
-        currentPage = document()->pageCount() - 1;
-    else if (currentPage >= document()->pageCount())
+        currentPage = pageCount - 1;
+    else if (currentPage >= pageCount)
         currentPage = 0;
 
     m_currentPage = currentPage;
