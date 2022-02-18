@@ -40,7 +40,7 @@
 #include "ui_delegates_manager.h"
 
 #include "api/qquickwebengineaction_p.h"
-#include "api/qquickwebengineview_p.h"
+#include "api/qquickwebengineview_p_p.h"
 
 #include <authentication_dialog_controller.h>
 #include <color_chooser_controller.h>

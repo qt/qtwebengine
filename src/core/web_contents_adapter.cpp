@@ -1787,6 +1787,14 @@ void WebContentsAdapter::resetSelection()
     }
 }
 
+void WebContentsAdapter::resetTouchSelectionController()
+{
+    CHECK_INITIALIZED();
+    unselect();
+    if (auto rwhv = static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView()))
+        rwhv->resetTouchSelectionController();
+}
+
 WebContentsAdapterClient::RenderProcessTerminationStatus
 WebContentsAdapterClient::renderProcessExitStatus(int terminationStatus) {
     auto status = WebContentsAdapterClient::RenderProcessTerminationStatus(-1);

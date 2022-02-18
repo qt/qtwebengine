@@ -49,7 +49,6 @@
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
 
-#include "ui/gfx/image/image.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
 
@@ -68,27 +67,6 @@ const int kSelectionHandlePadding = 0;
 // Epsilon value used to compare float values to zero.
 const float kEpsilon = 1e-8f;
 
-// Returns the appropriate handle image based on the handle orientation.
-gfx::Image* GetHandleImage(ui::TouchHandleOrientation orientation)
-{
-    int resource_id = 0;
-    switch (orientation) {
-    case ui::TouchHandleOrientation::LEFT:
-        resource_id = IDR_TEXT_SELECTION_HANDLE_LEFT;
-        break;
-    case ui::TouchHandleOrientation::CENTER:
-        resource_id = IDR_TEXT_SELECTION_HANDLE_CENTER;
-        break;
-    case ui::TouchHandleOrientation::RIGHT:
-        resource_id = IDR_TEXT_SELECTION_HANDLE_RIGHT;
-        break;
-    case ui::TouchHandleOrientation::UNDEFINED:
-        NOTREACHED() << "Invalid touch handle bound type.";
-        return nullptr;
-    };
-    return &ui::ResourceBundle::GetSharedInstance().GetImageNamed(resource_id);
-}
-
 bool IsNearlyZero(float value)
 {
     return std::abs(value) < kEpsilon;
@@ -96,21 +74,12 @@ bool IsNearlyZero(float value)
 
 } // namespace
 
-TouchHandleDrawableQt::TouchHandleDrawableQt(RenderWidgetHostViewQt *rwhv)
-    : m_rwhv(rwhv)
+TouchHandleDrawableQt::TouchHandleDrawableQt(TouchHandleDrawableDelegate *delegate)
+    : m_delegate(delegate)
     , m_enabled(false)
     , m_alpha(0)
     , m_orientation(ui::TouchHandleOrientation::UNDEFINED)
 {
-    QMap<int, QImage> images;
-    for (int orientation = 0; orientation < static_cast<int>(ui::TouchHandleOrientation::UNDEFINED); ++orientation) {
-        gfx::Image* image = GetHandleImage(static_cast<ui::TouchHandleOrientation>(orientation));
-        images.insert(orientation, toQImage(image->AsBitmap()));
-    }
-
-    Q_ASSERT(m_rwhv);
-    Q_ASSERT(m_rwhv->adapterClient());
-    m_client.reset(m_rwhv->adapterClient()->createTouchHandle(images));
 }
 
 TouchHandleDrawableQt::~TouchHandleDrawableQt()
@@ -119,12 +88,12 @@ TouchHandleDrawableQt::~TouchHandleDrawableQt()
 
 void TouchHandleDrawableQt::UpdateBounds()
 {
-    if (!m_client)
+    if (!m_delegate)
         return;
 
     gfx::RectF newBounds = m_relativeBounds;
     newBounds.Offset(m_originPosition.x(), m_originPosition.y());
-    m_client->setBounds(toQt(gfx::ToEnclosingRect(newBounds)));
+    m_delegate->setBounds(toQt(gfx::ToEnclosingRect(newBounds)));
 }
 
 bool TouchHandleDrawableQt::IsVisible() const
@@ -134,19 +103,19 @@ bool TouchHandleDrawableQt::IsVisible() const
 
 void TouchHandleDrawableQt::SetEnabled(bool enabled)
 {
-    if (!m_client)
+    if (!m_delegate)
         return;
 
     if (enabled == m_enabled)
         return;
 
     m_enabled = enabled;
-    m_client->setVisible(enabled);
+    m_delegate->setVisible(enabled);
 }
 
 void TouchHandleDrawableQt::SetOrientation(ui::TouchHandleOrientation orientation, bool mirror_vertical, bool mirror_horizontal)
 {
-    if (!m_client)
+    if (!m_delegate)
         return;
 
     // TODO: Implement adaptive handle orientation logic
@@ -157,7 +126,7 @@ void TouchHandleDrawableQt::SetOrientation(ui::TouchHandleOrientation orientatio
         return;
     m_orientation = orientation;
     gfx::Image* image = GetHandleImage(orientation);
-    m_client->setImage(static_cast<int>(orientation));
+    m_delegate->setImage(static_cast<int>(orientation));
 
     // Calculate the relative bounds.
     gfx::Size image_size = image->Size();
@@ -178,15 +147,15 @@ void TouchHandleDrawableQt::SetOrigin(const gfx::PointF& position)
 
 void TouchHandleDrawableQt::SetAlpha(float alpha)
 {
-    if (!m_client)
+    if (!m_delegate)
         return;
 
     if (alpha == m_alpha)
         return;
 
     m_alpha = alpha;
-    m_client->setOpacity(m_alpha);
-    m_client->setVisible(IsVisible());
+    m_delegate->setOpacity(m_alpha);
+    m_delegate->setVisible(IsVisible());
 }
 
 gfx::RectF TouchHandleDrawableQt::GetVisibleBounds() const
@@ -206,6 +175,27 @@ float TouchHandleDrawableQt::GetDrawableHorizontalPaddingRatio() const
 {
     // Qt does not have any transparent padding for its handle drawable.
     return 0.0;
+}
+
+// Returns the appropriate handle image based on the handle orientation.
+gfx::Image *TouchHandleDrawableQt::GetHandleImage(ui::TouchHandleOrientation orientation)
+{
+    int resource_id = 0;
+    switch (orientation) {
+    case ui::TouchHandleOrientation::LEFT:
+        resource_id = IDR_TEXT_SELECTION_HANDLE_LEFT;
+        break;
+    case ui::TouchHandleOrientation::CENTER:
+        resource_id = IDR_TEXT_SELECTION_HANDLE_CENTER;
+        break;
+    case ui::TouchHandleOrientation::RIGHT:
+        resource_id = IDR_TEXT_SELECTION_HANDLE_RIGHT;
+        break;
+    case ui::TouchHandleOrientation::UNDEFINED:
+        NOTREACHED() << "Invalid touch handle bound type.";
+        return nullptr;
+    };
+    return &ui::ResourceBundle::GetSharedInstance().GetImageNamed(resource_id);
 }
 
 } // namespace QtWebEngineCore

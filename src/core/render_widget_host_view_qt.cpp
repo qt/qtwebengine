@@ -226,11 +226,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     m_cursorManager.reset(new content::CursorManager(this));
 
     m_touchSelectionControllerClient.reset(new TouchSelectionControllerClientQt(this));
-    ui::TouchSelectionController::Config config;
-    config.max_tap_duration = base::Milliseconds(ui::GestureConfiguration::GetInstance()->long_press_time_in_ms());
-    config.tap_slop = ui::GestureConfiguration::GetInstance()->max_touch_move_in_pixels_for_click();
-    config.enable_longpress_drag_selection = false;
-    m_touchSelectionController.reset(new ui::TouchSelectionController(m_touchSelectionControllerClient.get(), config));
+    resetTouchSelectionController();
 
     host()->render_frame_metadata_provider()->AddObserver(this);
     host()->render_frame_metadata_provider()->ReportAllFrameSubmissionsForTesting(true);
@@ -1069,6 +1065,17 @@ void RenderWidgetHostViewQt::synchronizeVisualProperties(const absl::optional<vi
             cc::DeadlinePolicy::UseDefaultDeadline());
 
     host()->SynchronizeVisualProperties();
+}
+
+void RenderWidgetHostViewQt::resetTouchSelectionController()
+{
+    Q_ASSERT(m_touchSelectionControllerClient);
+    m_touchSelectionControllerClient->resetControls();
+    ui::TouchSelectionController::Config config;
+    config.max_tap_duration = base::Milliseconds(ui::GestureConfiguration::GetInstance()->long_press_time_in_ms());
+    config.tap_slop = ui::GestureConfiguration::GetInstance()->max_touch_move_in_pixels_for_click();
+    config.enable_longpress_drag_selection = false;
+    m_touchSelectionController.reset(new ui::TouchSelectionController(m_touchSelectionControllerClient.get(), config));
 }
 
 std::unique_ptr<content::SyntheticGestureTarget> RenderWidgetHostViewQt::CreateSyntheticGestureTarget()

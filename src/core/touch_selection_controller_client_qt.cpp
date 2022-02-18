@@ -39,6 +39,7 @@
 
 #include "render_widget_host_view_qt.h"
 #include "touch_handle_drawable_qt.h"
+#include "touch_handle_drawable_client.h"
 #include "touch_selection_controller_client_qt.h"
 #include "touch_selection_menu_controller.h"
 #include "type_conversion.h"
@@ -293,11 +294,29 @@ void TouchSelectionControllerClientQt::OnDragUpdate(const ui::TouchSelectionDrag
 
 std::unique_ptr<ui::TouchHandleDrawable> TouchSelectionControllerClientQt::CreateDrawable()
 {
-    return std::unique_ptr<ui::TouchHandleDrawable>(new TouchHandleDrawableQt(m_rwhv));
+    Q_ASSERT(m_rwhv);
+    Q_ASSERT(m_rwhv->adapterClient());
+    QMap<int, QImage> images;
+    for (int orientation = 0; orientation < static_cast<int>(ui::TouchHandleOrientation::UNDEFINED);
+         ++orientation) {
+        gfx::Image *image = TouchHandleDrawableQt::GetHandleImage(
+                static_cast<ui::TouchHandleOrientation>(orientation));
+        images.insert(orientation, toQImage(image->AsBitmap()));
+    }
+    auto delegate = m_rwhv->adapterClient()->createTouchHandleDelegate(images);
+    return std::unique_ptr<ui::TouchHandleDrawable>(new TouchHandleDrawableQt(delegate));
 }
 
 void TouchSelectionControllerClientQt::DidScroll()
 {
+}
+
+void TouchSelectionControllerClientQt::resetControls()
+{
+    if (m_menuShowing) {
+        hideMenu();
+        GetTouchSelectionController()->HideAndDisallowShowingAutomatically();
+    }
 }
 
 void TouchSelectionControllerClientQt::showMenu()

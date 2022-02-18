@@ -46,6 +46,7 @@
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
+#include "api/qquickwebenginecustomtouchhandle_p.h"
 
 #define FOR_EACH_COMPONENT_TYPE(F, SEPARATOR) \
     F(Menu, menu) SEPARATOR \

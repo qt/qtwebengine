@@ -64,6 +64,7 @@ class RenderWidgetHostViewQtDelegateQuick;
 QT_BEGIN_NAMESPACE
 
 class QQmlWebChannel;
+class QQmlComponent;
 class QQuickContextMenuBuilder;
 class QQuickWebEngineAction;
 class QQuickWebEngineAuthenticationDialogRequest;
@@ -123,6 +124,8 @@ class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(LifecycleState recommendedState READ recommendedState NOTIFY recommendedStateChanged REVISION(1,10) FINAL)
 
     Q_PROPERTY(qint64 renderProcessPid READ renderProcessPid NOTIFY renderProcessPidChanged FINAL REVISION(1,11))
+    Q_PROPERTY(QQmlComponent *touchHandleDelegate READ touchHandleDelegate WRITE
+                       setTouchHandleDelegate NOTIFY touchHandleDelegateChanged REVISION(0) FINAL)
     QML_NAMED_ELEMENT(WebEngineView)
     QML_ADDED_IN_VERSION(1, 0)
     QML_EXTRA_VERSION(2, 0)
@@ -496,6 +499,9 @@ QT_WARNING_POP
 
     LifecycleState recommendedState() const;
 
+    QQmlComponent *touchHandleDelegate() const;
+    void setTouchHandleDelegate(QQmlComponent *delegagte);
+
 public Q_SLOTS:
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
     Q_REVISION(1,3) void runJavaScript(const QString&, quint32 worldId, const QJSValue & = QJSValue());
@@ -565,6 +571,7 @@ Q_SIGNALS:
     Q_REVISION(1,11) void canGoForwardChanged();
     Q_REVISION(1,12) void newWindowRequested(QQuickWebEngineNewWindowRequest *request);
     Q_REVISION(6,3) void touchSelectionMenuRequested(QQuickWebEngineTouchSelectionMenuRequest *request);
+    Q_REVISION(6,4) void touchHandleDelegateChanged();
 
 protected:
     void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;

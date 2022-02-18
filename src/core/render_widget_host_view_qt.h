@@ -211,6 +211,8 @@ public:
     void synchronizeVisualProperties(
             const absl::optional<viz::LocalSurfaceId> &childSurfaceId);
 
+    void resetTouchSelectionController();
+
 private:
     friend class DelegatedFrameHostClientQt;
     friend class WebContentsAccessibilityQt;

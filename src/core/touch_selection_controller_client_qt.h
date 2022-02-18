@@ -51,6 +51,7 @@ namespace QtWebEngineCore {
 
 class RenderWidgetHostViewQt;
 class TouchSelectionMenuController;
+class TouchHandleDrawableDelegate;
 
 class TouchSelectionControllerClientQt
     : public ui::TouchSelectionControllerClient
@@ -97,6 +98,8 @@ public:
     void OnDragUpdate(const ui::TouchSelectionDraggable::Type type, const gfx::PointF& position) override;
     std::unique_ptr<ui::TouchHandleDrawable> CreateDrawable() override;
     void DidScroll() override;
+
+    void resetControls();
 
 private:
     void showMenu();

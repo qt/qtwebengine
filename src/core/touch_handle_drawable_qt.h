@@ -42,19 +42,20 @@
 
 #include "ui/touch_selection/touch_handle.h"
 #include "ui/touch_selection/touch_handle_orientation.h"
+#include "ui/gfx/image/image.h"
 
 #include <QtCore/QScopedPointer>
 
 namespace QtWebEngineCore {
 
-class RenderWidgetHostViewQt;
-class TouchHandleDrawableClient;
+class TouchHandleDrawableDelegate;
 
 class TouchHandleDrawableQt : public ui::TouchHandleDrawable
 {
 public:
-    explicit TouchHandleDrawableQt(RenderWidgetHostViewQt *rwhv);
+    explicit TouchHandleDrawableQt(TouchHandleDrawableDelegate *delegate);
     ~TouchHandleDrawableQt() override;
+    static gfx::Image *GetHandleImage(ui::TouchHandleOrientation orientation);
 
 private:
     void UpdateBounds();
@@ -71,7 +72,7 @@ private:
     float GetDrawableHorizontalPaddingRatio() const override;
 
     RenderWidgetHostViewQt *m_rwhv;
-    QScopedPointer<TouchHandleDrawableClient> m_client;
+    QScopedPointer<TouchHandleDrawableDelegate> m_delegate;
 
     bool m_enabled;
     float m_alpha;

@@ -2,6 +2,7 @@ TEMPLATE=subdirs
 
 SUBDIRS += \
     customdialogs \
+    customtouchhandle \
     minimal \
     quicknanobrowser \
     webengineaction

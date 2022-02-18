@@ -236,6 +236,7 @@ public:
     bool isFindTextInProgress() const;
     bool hasFocusedFrame() const;
     void resetSelection();
+    void resetTouchSelectionController();
 
     // meant to be used within WebEngineCore only
     void initialize(content::SiteInstance *site);

@@ -88,7 +88,7 @@ class JavaScriptDialogController;
 class RenderWidgetHostViewQt;
 class RenderWidgetHostViewQtDelegate;
 class RenderWidgetHostViewQtDelegateClient;
-class TouchHandleDrawableClient;
+class TouchHandleDrawableDelegate;
 class TouchSelectionMenuController;
 class WebContentsAdapter;
 class WebContentsDelegateQt;
@@ -238,7 +238,7 @@ public:
     virtual void setToolTip(const QString& toolTipText) = 0;
     virtual ClientType clientType() = 0;
     virtual void printRequested() = 0;
-    virtual TouchHandleDrawableClient *createTouchHandle(const QMap<int, QImage> &images) = 0;
+    virtual TouchHandleDrawableDelegate * createTouchHandleDelegate(const QMap<int, QImage> &images) = 0;
     virtual void showTouchSelectionMenu(TouchSelectionMenuController *menuController, const QRect &bounds, const QSize &handleSize) = 0;
     virtual void hideTouchSelectionMenu() = 0;
     virtual void findTextFinished(const QWebEngineFindTextResult &result) = 0;

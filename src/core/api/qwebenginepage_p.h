@@ -64,7 +64,7 @@ namespace QtWebEngineCore {
 class RenderWidgetHostViewQtDelegate;
 class RenderWidgetHostViewQtDelegateWidget;
 class RenderWidgetHostViewQtDelegateClient;
-class TouchHandleDrawableClient;
+class TouchHandleDrawableDelegate;
 class TouchSelectionMenuController;
 class WebContentsAdapter;
 }
@@ -183,7 +183,8 @@ public:
     bool isEnabled() const override;
     void setToolTip(const QString &toolTipText) override;
     void printRequested() override;
-    QtWebEngineCore::TouchHandleDrawableClient *createTouchHandle(const QMap<int, QImage> &) override { return nullptr; }
+    QtWebEngineCore::TouchHandleDrawableDelegate *
+    createTouchHandleDelegate(const QMap<int, QImage> &) override { return nullptr; }
     void showTouchSelectionMenu(QtWebEngineCore::TouchSelectionMenuController *, const QRect &, const QSize &) override { }
     void hideTouchSelectionMenu() override { }
     const QObject *holdingQObject() const override;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,24 +37,53 @@
 **
 ****************************************************************************/
 
-#ifndef TOUCH_HANDLE_DRAWABLE_CLIENT_H
-#define TOUCH_HANDLE_DRAWABLE_CLIENT_H
+#ifndef QQUICKWEBENGINECUSTOMTOUCHHANDLE_P_H
+#define QQUICKWEBENGINECUSTOMTOUCHHANDLE_P_H
 
-#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
-#include <QRect>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+#include "touch_handle_drawable_client.h"
+
+#include <QtWebEngineQuick/qtwebenginequickglobal.h>
+#include <QtCore/qobject.h>
+#include <QtQml/qqmlregistration.h>
+#include <QtCore/qrect.h>
 
 namespace QtWebEngineCore {
+class WebContentsAdapterClient;
+}
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT TouchHandleDrawableDelegate {
+QT_BEGIN_NAMESPACE
+
+class QQuickItem;
+
+class QQuickWebEngineCustomTouchHandle
+    : public QObject
+    , public QtWebEngineCore::TouchHandleDrawableDelegate
+{
+    Q_OBJECT
+    QML_NAMED_ELEMENT(CustomTouchHandle)
+    QML_ADDED_IN_VERSION(6, 4)
+
 public:
-    virtual ~TouchHandleDrawableDelegate() { }
+    QQuickWebEngineCustomTouchHandle();
 
-    virtual void setImage(int orientation) = 0;
-    virtual void setBounds(const QRect &bounds) = 0;
-    virtual void setVisible(bool visible) = 0;
-    virtual void setOpacity(float opacity) = 0;
+    QScopedPointer<QQuickItem> item;
+
+    void setBounds(const QRect &bounds) override;
+    void setVisible(bool visible) override;
+    void setOpacity(float opacity) override;
+    void setImage(int orientation) override;
 };
 
-} // namespace QtWebEngineCore
+QT_END_NAMESPACE
 
-#endif // TOUCH_HANDLE_DRAWABLE_CLIENT_H
+#endif // QQUICKWEBENGINECUSTOMTOUCHHANDLE_P_H

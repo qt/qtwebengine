@@ -1491,3 +1491,13 @@
 
     \sa TouchSelectionMenuRequest
 */
+
+/*!
+    \qmlproperty CustomTouchHandle WebEngineView::touchHandleDelegate
+    \since QtWebEngine 6.4
+
+    If a QML Item is set, the default touch handles will not be shown and
+    this item will be displayed as touch handles.
+
+    \sa {WebEngine Qt Quick Custom Touch Handle Example}
+*/

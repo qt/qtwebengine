@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,24 +37,47 @@
 **
 ****************************************************************************/
 
-#ifndef TOUCH_HANDLE_DRAWABLE_CLIENT_H
-#define TOUCH_HANDLE_DRAWABLE_CLIENT_H
+#include "qquickwebenginecustomtouchhandle_p.h"
+#include "web_contents_adapter_client.h"
+#include <QtQuick/qquickitem.h>
 
-#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
-#include <QRect>
+QT_BEGIN_NAMESPACE
 
-namespace QtWebEngineCore {
+/*!
+    \class QQuickWebEngineCustomTouchHandle
+    \since 6.4
+    \brief The QQuickWebEngineCustomTouchHandle class provides information about the touch handle.
+    \inmodule QtWebEngineQuick
+    QQuickWebEngineCustomTouchHandle is returned after a touch selection event,
+    and contains information about the touch handle.
+*/
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT TouchHandleDrawableDelegate {
-public:
-    virtual ~TouchHandleDrawableDelegate() { }
+QQuickWebEngineCustomTouchHandle::QQuickWebEngineCustomTouchHandle()
+    : QObject(nullptr)
+{
+}
 
-    virtual void setImage(int orientation) = 0;
-    virtual void setBounds(const QRect &bounds) = 0;
-    virtual void setVisible(bool visible) = 0;
-    virtual void setOpacity(float opacity) = 0;
-};
+void QQuickWebEngineCustomTouchHandle::setBounds(const QRect &bounds)
+{
+    item->setX(bounds.x());
+    item->setY(bounds.y());
+    item->setWidth(bounds.width());
+    item->setHeight(bounds.height());
+}
 
-} // namespace QtWebEngineCore
+void QQuickWebEngineCustomTouchHandle::setOpacity(float opacity)
+{
+    item->setOpacity(opacity);
+}
 
-#endif // TOUCH_HANDLE_DRAWABLE_CLIENT_H
+void QQuickWebEngineCustomTouchHandle::setImage(int orientation)
+{
+    Q_UNUSED(orientation);
+}
+
+void QQuickWebEngineCustomTouchHandle::setVisible(bool visible)
+{
+    item->setVisible(visible);
+}
+
+QT_END_NAMESPACE

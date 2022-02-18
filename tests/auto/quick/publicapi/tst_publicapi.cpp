@@ -106,7 +106,8 @@ static const QStringList hardcodedTypes = QStringList()
     << "const QQuickWebEngineContextMenuData*"
     << "QWebEngineCookieStore*"
     << "Qt::LayoutDirection"
-    << "QQuickWebEngineScriptCollection*";
+    << "QQuickWebEngineScriptCollection*"
+    << "QQmlComponent*";
 
 static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineAction.text --> QString"
@@ -773,6 +774,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.title --> QString"
     << "QQuickWebEngineView.titleChanged() --> void"
     << "QQuickWebEngineView.tooltipRequested(QQuickWebEngineTooltipRequest*) --> void"
+    << "QQuickWebEngineView.touchHandleDelegate --> QQmlComponent*"
+    << "QQuickWebEngineView.touchHandleDelegateChanged() --> void"
     << "QQuickWebEngineView.touchSelectionMenuRequested(QQuickWebEngineTouchSelectionMenuRequest*) --> void"
     << "QQuickWebEngineView.triggerWebAction(WebAction) --> void"
     << "QQuickWebEngineView.url --> QUrl"

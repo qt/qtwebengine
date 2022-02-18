@@ -51,9 +51,11 @@
 // We mean it.
 //
 
+#include "qquickwebenginecustomtouchhandle_p.h"
 #include "qquickwebengineview_p.h"
 #include "render_view_context_menu_qt.h"
 #include "touch_handle_drawable_client.h"
+#include "ui_delegates_manager.h"
 #include "web_contents_adapter_client.h"
 
 #include <QtCore/qcompilerdetection.h>
@@ -153,7 +155,7 @@ public:
     QObject *dragSource() const override;
     bool isEnabled() const override;
     void setToolTip(const QString &toolTipText) override;
-    QtWebEngineCore::TouchHandleDrawableClient *createTouchHandle(const QMap<int, QImage> &images) override;
+    QtWebEngineCore::TouchHandleDrawableDelegate *createTouchHandleDelegate(const QMap<int, QImage> &images) override;
     void showTouchSelectionMenu(QtWebEngineCore::TouchSelectionMenuController *, const QRect &, const QSize &) override;
     void hideTouchSelectionMenu() override;
     const QObject *holdingQObject() const override;
@@ -209,6 +211,7 @@ private:
     QWebEngineContextMenuRequest *m_contextMenuRequest;
     QScopedPointer<QQuickWebEngineScriptCollection> m_scriptCollection;
     QPointer<QQuickWebEngineFaviconProvider> m_faviconProvider;
+    QQmlComponent *m_touchHandleDelegate;
 };
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -249,9 +252,11 @@ private:
     QObject *m_menu;
 };
 
-class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineTouchHandle : public QtWebEngineCore::TouchHandleDrawableClient {
+class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineTouchHandle
+    : public QtWebEngineCore::TouchHandleDrawableDelegate
+{
 public:
-    QQuickWebEngineTouchHandle(QtWebEngineCore::UIDelegatesManager *ui, const QMap<int, QImage> &images);
+    QQuickWebEngineTouchHandle(QQuickItem *item = nullptr);
 
     void setImage(int orientation) override;
     void setBounds(const QRect &bounds) override;
