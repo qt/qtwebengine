@@ -178,51 +178,61 @@ bool usingSoftwareDynamicGL()
 #endif
 }
 
-static const char *getGLType(bool enableGLSoftwareRendering)
+static bool openGLPlatformSupport()
 {
-    const char *glType = nullptr;
-    const bool tryGL = (usingSupportedSGBackend() && !usingSoftwareDynamicGL()
-                        && QGuiApplicationPrivate::platformIntegration()->hasCapability(
-                                QPlatformIntegration::OpenGL))
-            || enableGLSoftwareRendering;
-    if (tryGL) {
-        if (!qt_gl_global_share_context() || !qt_gl_global_share_context()->isValid()) {
-            qWarning("WebEngineContext used before QtWebEngineCore::initialize() or OpenGL context "
-                     "creation failed.");
-        } else {
-            const QSurfaceFormat sharedFormat = qt_gl_global_share_context()->format();
-            switch (sharedFormat.renderableType()) {
-            case QSurfaceFormat::OpenGL:
-                glType = gl::kGLImplementationDesktopName;
-                // Check if Core profile was requested and is supported.
-                if (sharedFormat.profile() == QSurfaceFormat::CoreProfile) {
-#if defined(Q_OS_MACOS) || defined(Q_OS_WIN)
-                    glType = gl::kGLImplementationCoreProfileName;
+    return QGuiApplicationPrivate::platformIntegration()->hasCapability(
+            QPlatformIntegration::OpenGL);
+}
+
+static const char *getGLType(bool enableGLSoftwareRendering, bool disableGpu)
+{
+    const char *glType = gl::kGLImplementationDisabledName;
+    const bool tryGL =
+            usingSupportedSGBackend() && !usingSoftwareDynamicGL() && openGLPlatformSupport();
+
+    if (disableGpu || (!tryGL && !enableGLSoftwareRendering))
+        return glType;
+
+    if (!qt_gl_global_share_context() || !qt_gl_global_share_context()->isValid()) {
+        qWarning("WebEngineContext used before QtWebEngineCore::initialize() or OpenGL context "
+                 "creation failed.");
+        return glType;
+    }
+
+    const QSurfaceFormat sharedFormat = qt_gl_global_share_context()->format();
+
+    switch (sharedFormat.renderableType()) {
+    case QSurfaceFormat::OpenGL:
+        if (sharedFormat.profile() == QSurfaceFormat::CoreProfile) {
+#if defined(Q_OS_MACOS)
+            // Chromium supports core profile only on mac
+            glType = gl::kGLImplementationCoreProfileName;
 #else
-                    qWarning("An OpenGL Core Profile was requested, but it is not supported "
-                             "on the current platform. Falling back to a non-Core profile. "
-                             "Note that this might cause rendering issues.");
+            glType = gl::kGLImplementationDesktopName;
+            qWarning("An OpenGL Core Profile was requested, but it is not supported "
+                     "on the current platform. Falling back to a non-Core profile. "
+                     "Note that this might cause rendering issues.");
 #endif
-                }
-                break;
-            case QSurfaceFormat::OpenGLES:
-                glType = gl::kGLImplementationEGLName;
-                break;
-            case QSurfaceFormat::OpenVG:
-            case QSurfaceFormat::DefaultRenderableType:
-            default:
-                // Shared contex created but no rederable type set.
-                qWarning("Unsupported rendering surface format. Please open bug report at "
-                         "https://bugreports.qt.io");
-            }
+        } else {
+            glType = gl::kGLImplementationDesktopName;
         }
+        break;
+    case QSurfaceFormat::OpenGLES:
+        glType = gl::kGLImplementationEGLName;
+        break;
+    case QSurfaceFormat::OpenVG:
+    case QSurfaceFormat::DefaultRenderableType:
+    default:
+        // Shared contex created but no rederable type set.
+        qWarning("Unsupported rendering surface format. Please open bug report at "
+                 "https://bugreports.qt.io");
     }
     return glType;
 }
 #else
 static const char *getGLType(bool enableGLSoftwareRendering)
 {
-    return nullptr;
+    return gl::kGLImplementationDisabledName;
 }
 #endif // QT_CONFIG(opengl)
 
@@ -248,7 +258,7 @@ static void logContext(const char *glType, base::CommandLine *cmd)
             params << " * " << toQt(pair.first)
                    << toQt(pair.second) << "\n";
         qCInfo(webEngineContextLog,
-               "\n\nGLImplementation: %s\n"
+               "\n\nGL Type: %s\n"
                "Surface Type: %s\n"
                "Surface Profile: %s\n"
                "Surface Version: %d.%d\n"
@@ -699,22 +709,18 @@ WebEngineContext::WebEngineContext()
     // performant, but at least provides WebGL support.
     // TODO(miklocek), check if this still works with latest chromium
     const bool enableGLSoftwareRendering = appArgs.contains(QStringLiteral("--enable-webgl-software-rendering"));
-    const char *glType = getGLType(enableGLSoftwareRendering);
+    const bool disableGpu = parsedCommandLine->HasSwitch(switches::kDisableGpu);
+    const char *glType = getGLType(enableGLSoftwareRendering, disableGpu);
 
-    if (glType) {
-#if QT_CONFIG(opengl)
-#if defined(Q_OS_WIN)
-        // See below
-        if (glType == gl::kGLImplementationCoreProfileName)
-            parsedCommandLine->AppendSwitchASCII(switches::kUseGL, gl::kGLImplementationDesktopName);
-        else
-#endif
-            parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
-        parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
+    parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
+    parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
+
+    if (glType != gl::kGLImplementationDisabledName) {
         if (enableGLSoftwareRendering) {
             parsedCommandLine->AppendSwitch(switches::kDisableGpuRasterization);
             parsedCommandLine->AppendSwitch(switches::kIgnoreGpuBlocklist);
         }
+#if QT_CONFIG(opengl)
         const QSurfaceFormat sharedFormat = QOpenGLContext::globalShareContext()->format();
         if (sharedFormat.profile() == QSurfaceFormat::CompatibilityProfile)
             parsedCommandLine->AppendSwitch(switches::kCreateDefaultGLContext);
@@ -724,14 +730,13 @@ WebEngineContext::WebEngineContext()
         // Core Profile context, even if Qt uses a legacy profile, which causes
         // "Could not share GL contexts" warnings, because it's not possible to share between Core and
         // legacy profiles. See GLContextWGL::Initialize().
-        if (glType != gl::kGLImplementationCoreProfileName)
+        if (sharedFormat.renderableType() == QSurfaceFormat::OpenGL
+            && sharedFormat.profile() != QSurfaceFormat::CoreProfile)
             parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
 #endif
 #endif //QT_CONFIG(opengl)
-    } else {
-        parsedCommandLine->AppendSwitchASCII(switches::kUseGL, "disabled");
+    } else if (!disableGpu) {
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);
-        parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
     }
 
     logContext(glType, parsedCommandLine);
