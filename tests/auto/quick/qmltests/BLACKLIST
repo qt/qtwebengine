@@ -6,3 +6,6 @@ macos
 
 [CertificateError::test_fatalError]
 *
+
+[CertificateError::test_error]
+*
