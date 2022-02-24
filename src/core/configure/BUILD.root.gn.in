@@ -223,11 +223,6 @@ source_set("qtwebengine_sources") {
   sources = [
     "//chrome/browser/accessibility/accessibility_ui.cc",
     "//chrome/browser/accessibility/accessibility_ui.h",
-    "//chrome/browser/custom_handlers/chrome_protocol_handler_registry_delegate.cc",
-    "//chrome/browser/custom_handlers/chrome_protocol_handler_registry_delegate.h",
-    "//chrome/browser/custom_handlers/protocol_handler_registry_factory.h",
-    "//chrome/browser/custom_handlers/protocol_handler_registry_factory.cc",
-    "//chrome/browser/custom_handlers/protocol_handler_registry_factory.h",
     "//chrome/browser/devtools/devtools_eye_dropper.cc",
     "//chrome/browser/devtools/devtools_eye_dropper.h",
     "//chrome/browser/media/webrtc/desktop_media_list.h",

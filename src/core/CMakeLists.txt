@@ -98,6 +98,10 @@ foreach(arch ${archs})
                 content_client_qt.cpp content_client_qt.h
                 content_main_delegate_qt.cpp content_main_delegate_qt.h
                 content_utility_client_qt.cpp content_utility_client_qt.h
+                custom_handlers/protocol_handler_registry_delegate_qt.h custom_handlers/protocol_handler_registry_delegate_qt.cpp
+                custom_handlers/protocol_handler_registry_factory.h custom_handlers/protocol_handler_registry_factory.cpp
+                custom_handlers/register_protocol_handler_request_controller.h
+                custom_handlers/register_protocol_handler_request_controller_impl.cpp custom_handlers/register_protocol_handler_request_controller_impl.h
                 delegated_frame_host_client_qt.cpp delegated_frame_host_client_qt.h
                 desktop_screen_qt.cpp desktop_screen_qt.h
                 devtools_frontend_qt.cpp devtools_frontend_qt.h
@@ -146,8 +150,6 @@ foreach(arch ${archs})
                 quota_permission_context_qt.cpp quota_permission_context_qt.h
                 quota_request_controller.h
                 quota_request_controller_impl.cpp quota_request_controller_impl.h
-                register_protocol_handler_request_controller.h
-                register_protocol_handler_request_controller_impl.cpp register_protocol_handler_request_controller_impl.h
                 render_view_context_menu_qt.cpp render_view_context_menu_qt.h
                 render_widget_host_view_qt.cpp render_widget_host_view_qt.h
                 render_widget_host_view_qt_delegate.h

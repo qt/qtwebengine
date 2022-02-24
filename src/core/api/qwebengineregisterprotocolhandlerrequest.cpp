@@ -39,7 +39,7 @@
 
 #include "qwebengineregisterprotocolhandlerrequest.h"
 
-#include "register_protocol_handler_request_controller.h"
+#include "custom_handlers/register_protocol_handler_request_controller.h"
 
 QT_BEGIN_NAMESPACE
 

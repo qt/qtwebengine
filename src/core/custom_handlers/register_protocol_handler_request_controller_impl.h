@@ -40,7 +40,7 @@
 #ifndef REGISTER_PROTOCOL_HANDLER_REQUEST_CONTROLLER_IMPL_H
 #define REGISTER_PROTOCOL_HANDLER_REQUEST_CONTROLLER_IMPL_H
 
-#include "register_protocol_handler_request_controller.h"
+#include "custom_handlers/register_protocol_handler_request_controller.h"
 
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/custom_handlers/protocol_handler.h"

@@ -41,7 +41,6 @@
 
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/error_page/common/error.h"
@@ -91,6 +90,7 @@
 #include "browser_message_filter_qt.h"
 #include "certificate_error_controller.h"
 #include "client_cert_select_controller.h"
+#include "custom_handlers/protocol_handler_registry_factory.h"
 #include "devtools_manager_delegate_qt.h"
 #include "login_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"

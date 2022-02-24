@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -36,49 +36,37 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "register_protocol_handler_request_controller_impl.h"
 
-#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
-#include "components/custom_handlers/protocol_handler_registry.h"
-#include "content/public/browser/web_contents.h"
-#include "type_conversion.h"
+// based on chrome/browser/custom_handlers/chrome_protocol_handler_registry_delegate.cc:
+// Copyright 2021 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "protocol_handler_registry_delegate_qt.h"
+
+#include "content/public/browser/child_process_security_policy.h"
+#include "url/url_util_qt.h"
 
 namespace QtWebEngineCore {
 
-RegisterProtocolHandlerRequestControllerImpl::RegisterProtocolHandlerRequestControllerImpl(
-    content::WebContents *webContents,
-    content::ProtocolHandler handler)
-    : RegisterProtocolHandlerRequestController(
-        toQt(handler.url()),
-        toQt(handler.protocol()))
-    , content::WebContentsObserver(webContents)
-    , m_handler(handler)
-{}
+using content::ChildProcessSecurityPolicy;
 
-RegisterProtocolHandlerRequestControllerImpl::~RegisterProtocolHandlerRequestControllerImpl()
+ProtocolHandlerRegistryDelegateQt::ProtocolHandlerRegistryDelegateQt() = default;
+
+ProtocolHandlerRegistryDelegateQt::~ProtocolHandlerRegistryDelegateQt() = default;
+
+// ProtocolHandlerRegistry::Delegate:
+void ProtocolHandlerRegistryDelegateQt::RegisterExternalHandler(const std::string &protocol)
 {
-    reject();
+    ChildProcessSecurityPolicy *policy = ChildProcessSecurityPolicy::GetInstance();
+    if (!policy->IsWebSafeScheme(protocol)) {
+        policy->RegisterWebSafeScheme(protocol);
+    }
 }
 
-custom_handlers::ProtocolHandlerRegistry *RegisterProtocolHandlerRequestControllerImpl::protocolHandlerRegistry()
+bool ProtocolHandlerRegistryDelegateQt::IsExternalHandlerRegistered(const std::string &protocol)
 {
-    content::WebContents *webContents = web_contents();
-    if (!webContents)
-        return nullptr;
-    content::BrowserContext *context = webContents->GetBrowserContext();
-    return ProtocolHandlerRegistryFactory::GetForBrowserContext(context);
-}
-
-void RegisterProtocolHandlerRequestControllerImpl::accepted()
-{
-    if (custom_handlers::ProtocolHandlerRegistry *registry = protocolHandlerRegistry())
-        registry->OnAcceptRegisterProtocolHandler(m_handler);
-}
-
-void RegisterProtocolHandlerRequestControllerImpl::rejected()
-{
-    if (custom_handlers::ProtocolHandlerRegistry *registry = protocolHandlerRegistry())
-        registry->OnIgnoreRegisterProtocolHandler(m_handler);
+    return url::IsHandledProtocol(protocol);
 }
 
 } // namespace QtWebEngineCore
