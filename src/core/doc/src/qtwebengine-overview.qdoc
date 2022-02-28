@@ -90,7 +90,10 @@
     that is part of the documentation in the \l {Chromium Project} upstream source tree.
 
     This version of \QWE is based on Chromium version 94.0.4606, with additional security
-    fixes from newer versions.
+    fixes from newer versions. The Chromium version can also be read at runtime using the
+    \l qWebEngineChromiumVersion() method, and \l qWebEngineChromiumSecurityPatchVersion()
+    to read the current patch level. You can also find the versions in the QtWebEngine
+    sources in the CHROMIUM_VERSION file.
 
     \section2 Qt WebEngine Process
 
