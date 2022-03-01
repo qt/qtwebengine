@@ -39,10 +39,13 @@
 
 #include "browser_accessibility_manager_qt.h"
 
+#include "content/browser/accessibility/browser_accessibility.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
 #include "browser_accessibility_qt.h"
 #include "render_widget_host_view_qt.h"
+
+#include <QtGui/qaccessible.h>
 
 using namespace blink;
 
@@ -107,7 +110,7 @@ QAccessibleInterface *BrowserAccessibilityManagerQt::rootParentAccessible()
 void BrowserAccessibilityManagerQt::FireBlinkEvent(ax::mojom::Event event_type,
                                                    BrowserAccessibility* node)
 {
-    BrowserAccessibilityQt *iface = static_cast<BrowserAccessibilityQt*>(node);
+    auto *iface = toQAccessibleInterface(node);
 
     switch (event_type) {
     case ax::mojom::Event::kFocus: {
@@ -165,7 +168,7 @@ void BrowserAccessibilityManagerQt::FireBlinkEvent(ax::mojom::Event event_type,
 void BrowserAccessibilityManagerQt::FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
                                                        BrowserAccessibility* node)
 {
-    BrowserAccessibilityQt *iface = static_cast<BrowserAccessibilityQt*>(node);
+    auto *iface = toQAccessibleInterface(node);
 
     switch (event_type) {
     case ui::AXEventGenerator::Event::VALUE_IN_TEXT_FIELD_CHANGED:

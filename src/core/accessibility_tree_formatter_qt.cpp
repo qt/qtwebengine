@@ -49,9 +49,12 @@
 #include "base/values.h"
 #include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
+#include "content/browser/accessibility/browser_accessibility.h"
 #include "content/public/browser/ax_inspect_factory.h"
 
 #include "browser_accessibility_qt.h"
+
+#include <QtGui/qaccessible.h>
 
 namespace content {
 
@@ -113,11 +116,11 @@ void AccessibilityTreeFormatterQt::RecursiveBuildAccessibilityTree(const Browser
 void AccessibilityTreeFormatterQt::AddProperties(const BrowserAccessibility &node, base::DictionaryValue *dict) const
 {
     dict->SetInteger("id", node.GetId());
-    const BrowserAccessibilityQt *acc_node = ToBrowserAccessibilityQt(&node);
+    const QAccessibleInterface *iface = toQAccessibleInterface(&node);
 
-    dict->SetString("role", qAccessibleRoleString(acc_node->role()));
+    dict->SetString("role", qAccessibleRoleString(iface->role()));
 
-    QAccessible::State state = acc_node->state();
+    QAccessible::State state = iface->state();
 
     std::vector<base::Value> states;
     if (state.busy)
@@ -126,7 +129,7 @@ void AccessibilityTreeFormatterQt::AddProperties(const BrowserAccessibility &nod
         states.push_back(base::Value("checkable"));
     if (state.checked)
         states.push_back(base::Value("checked"));
-    if (acc_node->IsClickable())
+    if (node.IsClickable())
         states.push_back(base::Value("clickable"));
     if (state.collapsed)
         states.push_back(base::Value("collapsed"));
@@ -172,8 +175,8 @@ void AccessibilityTreeFormatterQt::AddProperties(const BrowserAccessibility &nod
         states.push_back(base::Value("traversed"));
     dict->SetKey("states", base::Value(states));
 
-    dict->SetString("name", acc_node->text(QAccessible::Name).toStdString());
-    dict->SetString("description", acc_node->text(QAccessible::Description).toStdString());
+    dict->SetString("name", iface->text(QAccessible::Name).toStdString());
+    dict->SetString("description", iface->text(QAccessible::Description).toStdString());
 }
 
 std::string AccessibilityTreeFormatterQt::ProcessTreeForOutput(const base::DictionaryValue &node) const

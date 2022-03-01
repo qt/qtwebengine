@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -45,14 +45,138 @@
 
 #if QT_CONFIG(accessibility)
 
+#include "content/browser/accessibility/browser_accessibility.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
 #include "browser_accessibility_manager_qt.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "type_conversion.h"
 
-using namespace blink;
-using QtWebEngineCore::toQt;
+#include <QtGui/qaccessible.h>
+
+namespace QtWebEngineCore {
+class BrowserAccessibilityInterface;
+}
+
+namespace content {
+class BrowserAccessibilityQt
+    : public BrowserAccessibility
+{
+public:
+    BrowserAccessibilityQt();
+    ~BrowserAccessibilityQt();
+
+    void Init(BrowserAccessibilityManager *manager, ui::AXNode *node) override;
+
+    QtWebEngineCore::BrowserAccessibilityInterface *interface() const { return m_interface; }
+
+private:
+    QtWebEngineCore::BrowserAccessibilityInterface *m_interface = nullptr;
+};
+} // namespace content
+
+namespace QtWebEngineCore {
+class BrowserAccessibilityInterface
+    : public QAccessibleInterface
+    , public QAccessibleActionInterface
+    , public QAccessibleTextInterface
+    , public QAccessibleValueInterface
+    , public QAccessibleTableInterface
+    , public QAccessibleTableCellInterface
+{
+public:
+    BrowserAccessibilityInterface(content::BrowserAccessibilityQt *chromiumInterface);
+
+    void init();
+    void destroy();
+
+    // QAccessibleInterface
+    bool isValid() const override;
+    QObject *object() const override;
+    QAccessibleInterface *childAt(int x, int y) const override;
+    void *interface_cast(QAccessible::InterfaceType type) override;
+
+    // navigation, hierarchy
+    QAccessibleInterface *parent() const override;
+    QAccessibleInterface *child(int index) const override;
+    QAccessibleInterface *focusChild() const override;
+    int childCount() const override;
+    int indexOfChild(const QAccessibleInterface *) const override;
+
+    // properties and state
+    QString text(QAccessible::Text t) const override;
+    void setText(QAccessible::Text t, const QString &text) override;
+    QRect rect() const override;
+    QAccessible::Role role() const override;
+    QAccessible::State state() const override;
+
+    // QAccessibleActionInterface
+    QStringList actionNames() const override;
+    void doAction(const QString &actionName) override;
+    QStringList keyBindingsForAction(const QString &actionName) const override;
+
+    // QAccessibleTextInterface
+    void addSelection(int startOffset, int endOffset) override;
+    QString attributes(int offset, int *startOffset, int *endOffset) const override;
+    int cursorPosition() const override;
+    QRect characterRect(int offset) const override;
+    int selectionCount() const override;
+    int offsetAtPoint(const QPoint &point) const override;
+    void selection(int selectionIndex, int *startOffset, int *endOffset) const override;
+    QString text(int startOffset, int endOffset) const override;
+    void removeSelection(int selectionIndex) override;
+    void setCursorPosition(int position) override;
+    void setSelection(int selectionIndex, int startOffset, int endOffset) override;
+    int characterCount() const override;
+    void scrollToSubstring(int startIndex, int endIndex) override;
+
+    // QAccessibleValueInterface
+    QVariant currentValue() const override;
+    void setCurrentValue(const QVariant &value) override;
+    QVariant maximumValue() const override;
+    QVariant minimumValue() const override;
+    QVariant minimumStepSize() const override;
+
+    // QAccessibleTableInterface
+    QAccessibleInterface *cellAt(int row, int column) const override;
+    QAccessibleInterface *caption() const override;
+    QAccessibleInterface *summary() const override;
+    QString columnDescription(int column) const override;
+    QString rowDescription(int row) const override;
+    int columnCount() const override;
+    int rowCount() const override;
+    // selection
+    int selectedCellCount() const override;
+    int selectedColumnCount() const override;
+    int selectedRowCount() const override;
+    QList<QAccessibleInterface*> selectedCells() const override;
+    QList<int> selectedColumns() const override;
+    QList<int> selectedRows() const override;
+    bool isColumnSelected(int column) const override;
+    bool isRowSelected(int row) const override;
+    bool selectRow(int row) override;
+    bool selectColumn(int column) override;
+    bool unselectRow(int row) override;
+    bool unselectColumn(int column) override;
+
+    // QAccessibleTableCellInterface
+    int columnExtent() const override;
+    QList<QAccessibleInterface*> columnHeaderCells() const override;
+    int columnIndex() const override;
+    int rowExtent() const override;
+    QList<QAccessibleInterface*> rowHeaderCells() const override;
+    int rowIndex() const override;
+    bool isSelected() const override;
+    QAccessibleInterface* table() const override;
+
+    void modelChange(QAccessibleTableModelChangeEvent *event) override;
+
+private:
+    QObject *m_object = nullptr;
+    QAccessible::Id m_id = 0;
+    content::BrowserAccessibilityQt *q;
+};
+} // namespace QtWebEngineCore
 
 namespace content {
 
@@ -62,32 +186,55 @@ BrowserAccessibility *BrowserAccessibility::Create()
     return new BrowserAccessibilityQt();
 }
 
-const BrowserAccessibilityQt *ToBrowserAccessibilityQt(const BrowserAccessibility *obj)
-{
-    return static_cast<const BrowserAccessibilityQt *>(obj);
-}
-
 QAccessibleInterface *toQAccessibleInterface(BrowserAccessibility *obj)
 {
-    return static_cast<BrowserAccessibilityQt *>(obj);
+    return static_cast<BrowserAccessibilityQt *>(obj)->interface();
+}
+
+const QAccessibleInterface *toQAccessibleInterface(const BrowserAccessibility *obj)
+{
+    return static_cast<const BrowserAccessibilityQt *>(obj)->interface();
 }
 
 BrowserAccessibilityQt::BrowserAccessibilityQt()
+    : m_interface(new QtWebEngineCore::BrowserAccessibilityInterface(this))
 {
 }
 
-bool BrowserAccessibilityQt::isValid() const
+void BrowserAccessibilityQt::Init(BrowserAccessibilityManager *manager, ui::AXNode *node)
 {
-    auto managerQt = static_cast<BrowserAccessibilityManagerQt *>(manager_);
+    BrowserAccessibility::Init(manager, node);
+    m_interface->init();
+}
+
+BrowserAccessibilityQt::~BrowserAccessibilityQt()
+{
+    m_interface->destroy();
+}
+
+} // namespace content
+
+namespace QtWebEngineCore {
+
+using namespace blink;
+using namespace content;
+
+BrowserAccessibilityInterface::BrowserAccessibilityInterface(content::BrowserAccessibilityQt *chromiumInterface)
+    : q(chromiumInterface)
+{}
+
+bool BrowserAccessibilityInterface::isValid() const
+{
+    auto managerQt = static_cast<BrowserAccessibilityManagerQt *>(q->manager());
     return managerQt && managerQt->isValid();
 }
 
-QObject *BrowserAccessibilityQt::object() const
+QObject *BrowserAccessibilityInterface::object() const
 {
     return m_object;
 }
 
-QAccessibleInterface *BrowserAccessibilityQt::childAt(int x, int y) const
+QAccessibleInterface *BrowserAccessibilityInterface::childAt(int x, int y) const
 {
     for (int i = 0; i < childCount(); ++i) {
         QAccessibleInterface *childIface = child(i);
@@ -98,7 +245,7 @@ QAccessibleInterface *BrowserAccessibilityQt::childAt(int x, int y) const
     return nullptr;
 }
 
-void *BrowserAccessibilityQt::interface_cast(QAccessible::InterfaceType type)
+void *BrowserAccessibilityInterface::interface_cast(QAccessible::InterfaceType type)
 {
     switch (type) {
     case QAccessible::ActionInterface:
@@ -106,7 +253,7 @@ void *BrowserAccessibilityQt::interface_cast(QAccessible::InterfaceType type)
             return static_cast<QAccessibleActionInterface*>(this);
         break;
     case QAccessible::TextInterface:
-        if (HasState(ax::mojom::State::kEditable))
+        if (q->HasState(ax::mojom::State::kEditable))
             return static_cast<QAccessibleTextInterface*>(this);
         break;
     case QAccessible::ValueInterface: {
@@ -140,23 +287,24 @@ void *BrowserAccessibilityQt::interface_cast(QAccessible::InterfaceType type)
     return nullptr;
 }
 
-QAccessibleInterface *BrowserAccessibilityQt::parent() const
+QAccessibleInterface *BrowserAccessibilityInterface::parent() const
 {
-    BrowserAccessibility *p = PlatformGetParent();
-    if (p)
-        return static_cast<BrowserAccessibilityQt*>(p);
-    return static_cast<BrowserAccessibilityManagerQt*>(manager())->rootParentAccessible();
+    BrowserAccessibility *chromiumParent = q->PlatformGetParent();
+    if (chromiumParent)
+        return toQAccessibleInterface(chromiumParent);
+    return static_cast<BrowserAccessibilityManagerQt*>(q->manager())->rootParentAccessible();
 }
 
-QAccessibleInterface *BrowserAccessibilityQt::child(int index) const
+QAccessibleInterface *BrowserAccessibilityInterface::child(int index) const
 {
-    return static_cast<BrowserAccessibilityQt*>(BrowserAccessibility::PlatformGetChild(index));
+    BrowserAccessibility *chromiumChild = q->PlatformGetChild(index);
+    return chromiumChild ? toQAccessibleInterface(chromiumChild) : nullptr;
 }
 
-QAccessibleInterface *BrowserAccessibilityQt::focusChild() const
+QAccessibleInterface *BrowserAccessibilityInterface::focusChild() const
 {
     if (state().focused)
-        return const_cast<BrowserAccessibilityQt *>(this);
+        return const_cast<BrowserAccessibilityInterface *>(this);
 
     for (int i = 0; i < childCount(); ++i) {
         if (QAccessibleInterface *iface = child(i)->focusChild())
@@ -166,50 +314,50 @@ QAccessibleInterface *BrowserAccessibilityQt::focusChild() const
     return nullptr;
 }
 
-int BrowserAccessibilityQt::childCount() const
+int BrowserAccessibilityInterface::childCount() const
 {
-    return PlatformChildCount();
+    return q->PlatformChildCount();
 }
 
-int BrowserAccessibilityQt::indexOfChild(const QAccessibleInterface *iface) const
+int BrowserAccessibilityInterface::indexOfChild(const QAccessibleInterface *iface) const
 {
 
-    const BrowserAccessibilityQt *child = static_cast<const BrowserAccessibilityQt*>(iface);
-    return const_cast<BrowserAccessibilityQt *>(child)->GetIndexInParent();
+    const BrowserAccessibilityInterface *child = static_cast<const BrowserAccessibilityInterface *>(iface);
+    return const_cast<BrowserAccessibilityInterface *>(child)->q->GetIndexInParent();
 }
 
-QString BrowserAccessibilityQt::text(QAccessible::Text t) const
+QString BrowserAccessibilityInterface::text(QAccessible::Text t) const
 {
     switch (t) {
     case QAccessible::Name:
-        return toQt(GetStringAttribute(ax::mojom::StringAttribute::kName));
+        return toQt(q->GetStringAttribute(ax::mojom::StringAttribute::kName));
     case QAccessible::Description:
-        return toQt(GetStringAttribute(ax::mojom::StringAttribute::kDescription));
+        return toQt(q->GetStringAttribute(ax::mojom::StringAttribute::kDescription));
     case QAccessible::Value:
-        return toQt(GetStringAttribute(ax::mojom::StringAttribute::kValue));
+        return toQt(q->GetStringAttribute(ax::mojom::StringAttribute::kValue));
     case QAccessible::Accelerator:
-        return toQt(GetStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts));
+        return toQt(q->GetStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts));
     default:
         break;
     }
     return QString();
 }
 
-void BrowserAccessibilityQt::setText(QAccessible::Text t, const QString &text)
+void BrowserAccessibilityInterface::setText(QAccessible::Text t, const QString &text)
 {
 }
 
-QRect BrowserAccessibilityQt::rect() const
+QRect BrowserAccessibilityInterface::rect() const
 {
-    if (!manager()) // needed implicitly by GetScreenBoundsRect()
+    if (!q->manager()) // needed implicitly by GetScreenBoundsRect()
         return QRect();
-    gfx::Rect bounds = GetUnclippedScreenBoundsRect();
+    gfx::Rect bounds = q->GetUnclippedScreenBoundsRect();
     return QRect(bounds.x(), bounds.y(), bounds.width(), bounds.height());
 }
 
-QAccessible::Role BrowserAccessibilityQt::role() const
+QAccessible::Role BrowserAccessibilityInterface::role() const
 {
-    switch (GetRole()) {
+    switch (q->GetRole()) {
     case ax::mojom::Role::kNone:
     case ax::mojom::Role::kUnknown:
         return QAccessible::NoRole;
@@ -550,63 +698,63 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     return QAccessible::NoRole;
 }
 
-QAccessible::State BrowserAccessibilityQt::state() const
+QAccessible::State BrowserAccessibilityInterface::state() const
 {
     QAccessible::State state = QAccessible::State();
-    if (HasState(ax::mojom::State::kCollapsed))
+    if (q->HasState(ax::mojom::State::kCollapsed))
         state.collapsed = true;
-    if (HasState(ax::mojom::State::kDefault))
+    if (q->HasState(ax::mojom::State::kDefault))
         state.defaultButton = true;
-    if (HasState(ax::mojom::State::kEditable))
+    if (q->HasState(ax::mojom::State::kEditable))
         state.editable = true;
-    if (HasState(ax::mojom::State::kExpanded))
+    if (q->HasState(ax::mojom::State::kExpanded))
         state.expanded = true;
-    if (HasState(ax::mojom::State::kFocusable))
+    if (q->HasState(ax::mojom::State::kFocusable))
         state.focusable = true;
-    if (HasState(ax::mojom::State::kHorizontal))
+    if (q->HasState(ax::mojom::State::kHorizontal))
     {} // FIXME
-    if (HasState(ax::mojom::State::kHovered))
+    if (q->HasState(ax::mojom::State::kHovered))
         state.hotTracked = true;
-    if (HasState(ax::mojom::State::kIgnored))
+    if (q->HasState(ax::mojom::State::kIgnored))
     {} // FIXME
-    if (HasState(ax::mojom::State::kInvisible))
+    if (q->HasState(ax::mojom::State::kInvisible))
         state.invisible = true;
-    if (HasState(ax::mojom::State::kLinked))
+    if (q->HasState(ax::mojom::State::kLinked))
         state.linked = true;
-    if (HasState(ax::mojom::State::kMultiline))
+    if (q->HasState(ax::mojom::State::kMultiline))
         state.multiLine = true;
-    if (HasState(ax::mojom::State::kMultiselectable))
+    if (q->HasState(ax::mojom::State::kMultiselectable))
         state.multiSelectable = true;
-    if (HasState(ax::mojom::State::kProtected))
+    if (q->HasState(ax::mojom::State::kProtected))
         state.passwordEdit = true;
-    if (HasState(ax::mojom::State::kRequired))
+    if (q->HasState(ax::mojom::State::kRequired))
     {} // FIXME
-    if (HasState(ax::mojom::State::kRichlyEditable))
+    if (q->HasState(ax::mojom::State::kRichlyEditable))
     {} // FIXME
-    if (HasState(ax::mojom::State::kVertical))
+    if (q->HasState(ax::mojom::State::kVertical))
     {} // FIXME
-    if (HasState(ax::mojom::State::kVisited))
+    if (q->HasState(ax::mojom::State::kVisited))
         state.traversed = true;
 
-    if (IsOffscreen())
+    if (q->IsOffscreen())
         state.offscreen = true;
-    if (manager()->GetFocus() == this)
+    if (q->manager()->GetFocus() == q)
         state.focused = true;
-    if (GetBoolAttribute(ax::mojom::BoolAttribute::kBusy))
+    if (q->GetBoolAttribute(ax::mojom::BoolAttribute::kBusy))
         state.busy = true;
-    if (GetBoolAttribute(ax::mojom::BoolAttribute::kModal))
+    if (q->GetBoolAttribute(ax::mojom::BoolAttribute::kModal))
         state.modal = true;
-    if (HasBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
+    if (q->HasBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
         state.selectable = true;
-        state.selected = GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+        state.selected = q->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
     }
-    if (HasIntAttribute(ax::mojom::IntAttribute::kCheckedState)) {
+    if (q->HasIntAttribute(ax::mojom::IntAttribute::kCheckedState)) {
         state.checkable = true;
         const ax::mojom::CheckedState checkedState =
-                static_cast<ax::mojom::CheckedState>(GetIntAttribute(ax::mojom::IntAttribute::kCheckedState));
+                static_cast<ax::mojom::CheckedState>(q->GetIntAttribute(ax::mojom::IntAttribute::kCheckedState));
         switch (checkedState) {
         case ax::mojom::CheckedState::kTrue:
-            if (GetRole() == ax::mojom::Role::kToggleButton)
+            if (q->GetRole() == ax::mojom::Role::kToggleButton)
                 state.pressed = true;
             else
                 state.checked = true;
@@ -619,8 +767,8 @@ QAccessible::State BrowserAccessibilityQt::state() const
             break;
         }
     }
-    if (HasIntAttribute(ax::mojom::IntAttribute::kRestriction)) {
-        const ax::mojom::Restriction restriction = static_cast<ax::mojom::Restriction>(GetIntAttribute(ax::mojom::IntAttribute::kRestriction));
+    if (q->HasIntAttribute(ax::mojom::IntAttribute::kRestriction)) {
+        const ax::mojom::Restriction restriction = static_cast<ax::mojom::Restriction>(q->GetIntAttribute(ax::mojom::IntAttribute::kRestriction));
         switch (restriction) {
         case ax::mojom::Restriction::kReadOnly:
             state.readOnly = true;
@@ -632,8 +780,8 @@ QAccessible::State BrowserAccessibilityQt::state() const
             break;
         }
     }
-    if (HasIntAttribute(ax::mojom::IntAttribute::kHasPopup)) {
-        const ax::mojom::HasPopup hasPopup = static_cast<ax::mojom::HasPopup>(GetIntAttribute(ax::mojom::IntAttribute::kHasPopup));
+    if (q->HasIntAttribute(ax::mojom::IntAttribute::kHasPopup)) {
+        const ax::mojom::HasPopup hasPopup = static_cast<ax::mojom::HasPopup>(q->GetIntAttribute(ax::mojom::IntAttribute::kHasPopup));
         switch (hasPopup) {
         case ax::mojom::HasPopup::kFalse:
             break;
@@ -650,358 +798,354 @@ QAccessible::State BrowserAccessibilityQt::state() const
     return state;
 }
 
-void BrowserAccessibilityQt::Init(BrowserAccessibilityManager *manager, ui::AXNode *node)
+void BrowserAccessibilityInterface::init()
 {
-    BrowserAccessibility::Init(manager, node);
-
+    if (m_id)
+        return;
     Q_ASSERT(parent());
     Q_ASSERT(parent()->object());
     m_object = new QObject(parent()->object());
-    QString name = toQt(GetAuthorUniqueId());
+    QString name = toQt(q->GetAuthorUniqueId());
     if (!name.isEmpty())
         m_object->setObjectName(name);
 
     m_id = QAccessible::registerAccessibleInterface(this);
 }
 
-void BrowserAccessibilityQt::Destroy()
+void BrowserAccessibilityInterface::destroy()
 {
     // delete this
     QAccessible::deleteAccessibleInterface(m_id);
 }
 
-QStringList BrowserAccessibilityQt::actionNames() const
+QStringList BrowserAccessibilityInterface::actionNames() const
 {
     QStringList actions;
-    if (HasState(ax::mojom::State::kFocusable))
+    if (q->HasState(ax::mojom::State::kFocusable))
         actions << QAccessibleActionInterface::setFocusAction();
     return actions;
 }
 
-void BrowserAccessibilityQt::doAction(const QString &actionName)
+void BrowserAccessibilityInterface::doAction(const QString &actionName)
 {
     if (actionName == QAccessibleActionInterface::setFocusAction())
-        manager()->SetFocus(*this);
+        q->manager()->SetFocus(*q);
 }
 
-QStringList BrowserAccessibilityQt::keyBindingsForAction(const QString &actionName) const
+QStringList BrowserAccessibilityInterface::keyBindingsForAction(const QString &actionName) const
 {
     QT_NOT_YET_IMPLEMENTED
     return QStringList();
 }
 
-void BrowserAccessibilityQt::addSelection(int startOffset, int endOffset)
+void BrowserAccessibilityInterface::addSelection(int startOffset, int endOffset)
 {
-    manager()->SetSelection(AXRange(CreatePositionAt(startOffset), CreatePositionAt(endOffset)));
+    q->manager()->SetSelection(BrowserAccessibility::AXRange(q->CreatePositionAt(startOffset), q->CreatePositionAt(endOffset)));
 }
 
-QString BrowserAccessibilityQt::attributes(int offset, int *startOffset, int *endOffset) const
+QString BrowserAccessibilityInterface::attributes(int offset, int *startOffset, int *endOffset) const
 {
     *startOffset = offset;
     *endOffset = offset;
     return QString();
 }
 
-int BrowserAccessibilityQt::cursorPosition() const
+int BrowserAccessibilityInterface::cursorPosition() const
 {
     int pos = 0;
-    GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart, &pos);
+    q->GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart, &pos);
     return pos;
 }
 
-QRect BrowserAccessibilityQt::characterRect(int /*offset*/) const
+QRect BrowserAccessibilityInterface::characterRect(int /*offset*/) const
 {
     QT_NOT_YET_IMPLEMENTED
     return QRect();
 }
 
-int BrowserAccessibilityQt::selectionCount() const
+int BrowserAccessibilityInterface::selectionCount() const
 {
     int start = 0;
     int end = 0;
-    GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart, &start);
-    GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, &end);
+    q->GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart, &start);
+    q->GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, &end);
     if (start != end)
         return 1;
     return 0;
 }
 
-int BrowserAccessibilityQt::offsetAtPoint(const QPoint &/*point*/) const
+int BrowserAccessibilityInterface::offsetAtPoint(const QPoint &/*point*/) const
 {
     QT_NOT_YET_IMPLEMENTED
     return 0;
 }
 
-void BrowserAccessibilityQt::selection(int selectionIndex, int *startOffset, int *endOffset) const
+void BrowserAccessibilityInterface::selection(int selectionIndex, int *startOffset, int *endOffset) const
 {
     Q_ASSERT(startOffset && endOffset);
     *startOffset = 0;
     *endOffset = 0;
     if (selectionIndex != 0)
         return;
-    GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart, startOffset);
-    GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, endOffset);
+    q->GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart, startOffset);
+    q->GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, endOffset);
 }
 
-QString BrowserAccessibilityQt::text(int startOffset, int endOffset) const
+QString BrowserAccessibilityInterface::text(int startOffset, int endOffset) const
 {
     return text(QAccessible::Value).mid(startOffset, endOffset - startOffset);
 }
 
-void BrowserAccessibilityQt::removeSelection(int selectionIndex)
+void BrowserAccessibilityInterface::removeSelection(int selectionIndex)
 {
-    manager()->SetSelection(AXRange(CreatePositionAt(0), CreatePositionAt(0)));
+    q->manager()->SetSelection(BrowserAccessibility::AXRange(q->CreatePositionAt(0), q->CreatePositionAt(0)));
 }
 
-void BrowserAccessibilityQt::setCursorPosition(int position)
+void BrowserAccessibilityInterface::setCursorPosition(int position)
 {
-    manager()->SetSelection(AXRange(CreatePositionAt(position), CreatePositionAt(position)));
+    q->manager()->SetSelection(BrowserAccessibility::AXRange(q->CreatePositionAt(position), q->CreatePositionAt(position)));
 }
 
-void BrowserAccessibilityQt::setSelection(int selectionIndex, int startOffset, int endOffset)
+void BrowserAccessibilityInterface::setSelection(int selectionIndex, int startOffset, int endOffset)
 {
     if (selectionIndex != 0)
         return;
-    manager()->SetSelection(AXRange(CreatePositionAt(startOffset), CreatePositionAt(endOffset)));
+    q->manager()->SetSelection(BrowserAccessibility::AXRange(q->CreatePositionAt(startOffset), q->CreatePositionAt(endOffset)));
 }
 
-int BrowserAccessibilityQt::characterCount() const
+int BrowserAccessibilityInterface::characterCount() const
 {
     return text(QAccessible::Value).length();
 }
 
-void BrowserAccessibilityQt::scrollToSubstring(int startIndex, int endIndex)
+void BrowserAccessibilityInterface::scrollToSubstring(int startIndex, int endIndex)
 {
     int count = characterCount();
     if (startIndex < endIndex && endIndex < count)
-        manager()->ScrollToMakeVisible(*this,
-                                       GetRootFrameHypertextRangeBoundsRect(
-                                           startIndex,
-                                           endIndex - startIndex,
-                                           ui::AXClippingBehavior::kUnclipped));
+        q->manager()->ScrollToMakeVisible(*q,
+                                          q->GetRootFrameHypertextRangeBoundsRect(
+                                              startIndex,
+                                              endIndex - startIndex,
+                                              ui::AXClippingBehavior::kUnclipped));
 }
 
-QVariant BrowserAccessibilityQt::currentValue() const
+QVariant BrowserAccessibilityInterface::currentValue() const
 {
     QVariant result;
     float value;
-    if (GetFloatAttribute(ax::mojom::FloatAttribute::kValueForRange, &value)) {
+    if (q->GetFloatAttribute(ax::mojom::FloatAttribute::kValueForRange, &value)) {
         result = (double) value;
     }
     return result;
 }
 
-void BrowserAccessibilityQt::setCurrentValue(const QVariant &value)
+void BrowserAccessibilityInterface::setCurrentValue(const QVariant &value)
 {
     // not yet implemented anywhere in blink
     QT_NOT_YET_IMPLEMENTED
 }
 
-QVariant BrowserAccessibilityQt::maximumValue() const
+QVariant BrowserAccessibilityInterface::maximumValue() const
 {
     QVariant result;
     float value;
-    if (GetFloatAttribute(ax::mojom::FloatAttribute::kMaxValueForRange, &value)) {
+    if (q->GetFloatAttribute(ax::mojom::FloatAttribute::kMaxValueForRange, &value)) {
         result = (double) value;
     }
     return result;
 }
 
-QVariant BrowserAccessibilityQt::minimumValue() const
+QVariant BrowserAccessibilityInterface::minimumValue() const
 {
     QVariant result;
     float value;
-    if (GetFloatAttribute(ax::mojom::FloatAttribute::kMinValueForRange, &value)) {
+    if (q->GetFloatAttribute(ax::mojom::FloatAttribute::kMinValueForRange, &value)) {
         result = (double) value;
     }
     return result;
 }
 
-QVariant BrowserAccessibilityQt::minimumStepSize() const
+QVariant BrowserAccessibilityInterface::minimumStepSize() const
 {
     QVariant result;
     float value;
-    if (GetFloatAttribute(ax::mojom::FloatAttribute::kStepValueForRange, &value)) {
+    if (q->GetFloatAttribute(ax::mojom::FloatAttribute::kStepValueForRange, &value)) {
         result = (double) value;
     }
     return result;
 }
 
-QAccessibleInterface *BrowserAccessibilityQt::cellAt(int row, int column) const
+QAccessibleInterface *BrowserAccessibilityInterface::cellAt(int row, int column) const
 {
     int columns = 0;
     int rows = 0;
-    if (!GetIntAttribute(ax::mojom::IntAttribute::kTableColumnCount, &columns) ||
-        !GetIntAttribute(ax::mojom::IntAttribute::kTableRowCount, &rows) ||
-        columns <= 0 ||
-        rows <= 0) {
-      return 0;
+    if (!q->GetIntAttribute(ax::mojom::IntAttribute::kTableColumnCount, &columns)
+        || !q->GetIntAttribute(ax::mojom::IntAttribute::kTableRowCount, &rows)
+        || columns <= 0
+        || rows <= 0) {
+        return nullptr;
     }
 
     if (row < 0 || row >= rows || column < 0 || column >= columns)
-      return 0;
+        return nullptr;
 
-    absl::optional<int> cell_id = GetCellId(row, column);
-    BrowserAccessibility* cell = cell_id ? manager()->GetFromID(*cell_id) : nullptr;
-    if (cell) {
-      QAccessibleInterface *iface = static_cast<BrowserAccessibilityQt*>(cell);
-      return iface;
-    }
+    absl::optional<int> cell_id = q->GetCellId(row, column);
+    BrowserAccessibility *cell = cell_id ? q->manager()->GetFromID(*cell_id) : nullptr;
+    if (cell)
+        return toQAccessibleInterface(cell);
 
     return nullptr;
 }
 
-QAccessibleInterface *BrowserAccessibilityQt::caption() const
+QAccessibleInterface *BrowserAccessibilityInterface::caption() const
 {
     return nullptr;
 }
 
-QAccessibleInterface *BrowserAccessibilityQt::summary() const
+QAccessibleInterface *BrowserAccessibilityInterface::summary() const
 {
     return nullptr;
 }
 
-QString BrowserAccessibilityQt::columnDescription(int column) const
+QString BrowserAccessibilityInterface::columnDescription(int column) const
 {
     return QString();
 }
 
-QString BrowserAccessibilityQt::rowDescription(int row) const
+QString BrowserAccessibilityInterface::rowDescription(int row) const
 {
     return QString();
 }
 
-int BrowserAccessibilityQt::columnCount() const
+int BrowserAccessibilityInterface::columnCount() const
 {
     int columns = 0;
-    if (GetIntAttribute(ax::mojom::IntAttribute::kTableColumnCount, &columns))
+    if (q->GetIntAttribute(ax::mojom::IntAttribute::kTableColumnCount, &columns))
         return columns;
-
     return 0;
 }
 
-int BrowserAccessibilityQt::rowCount() const
+int BrowserAccessibilityInterface::rowCount() const
 {
     int rows = 0;
-    if (GetIntAttribute(ax::mojom::IntAttribute::kTableRowCount, &rows))
-      return rows;
+    if (q->GetIntAttribute(ax::mojom::IntAttribute::kTableRowCount, &rows))
+        return rows;
     return 0;
 }
 
-int BrowserAccessibilityQt::selectedCellCount() const
+int BrowserAccessibilityInterface::selectedCellCount() const
 {
     return 0;
 }
 
-int BrowserAccessibilityQt::selectedColumnCount() const
+int BrowserAccessibilityInterface::selectedColumnCount() const
 {
     return 0;
 }
 
-int BrowserAccessibilityQt::selectedRowCount() const
+int BrowserAccessibilityInterface::selectedRowCount() const
 {
     return 0;
 }
 
-QList<QAccessibleInterface *> BrowserAccessibilityQt::selectedCells() const
+QList<QAccessibleInterface *> BrowserAccessibilityInterface::selectedCells() const
 {
     return QList<QAccessibleInterface *>();
 }
 
-QList<int> BrowserAccessibilityQt::selectedColumns() const
+QList<int> BrowserAccessibilityInterface::selectedColumns() const
 {
     return QList<int>();
 }
 
-QList<int> BrowserAccessibilityQt::selectedRows() const
+QList<int> BrowserAccessibilityInterface::selectedRows() const
 {
     return QList<int>();
 }
 
-bool BrowserAccessibilityQt::isColumnSelected(int /*column*/) const
+bool BrowserAccessibilityInterface::isColumnSelected(int /*column*/) const
 {
     return false;
 }
 
-bool BrowserAccessibilityQt::isRowSelected(int /*row*/) const
+bool BrowserAccessibilityInterface::isRowSelected(int /*row*/) const
 {
     return false;
 }
 
-bool BrowserAccessibilityQt::selectRow(int /*row*/)
+bool BrowserAccessibilityInterface::selectRow(int /*row*/)
 {
     return false;
 }
 
-bool BrowserAccessibilityQt::selectColumn(int /*column*/)
+bool BrowserAccessibilityInterface::selectColumn(int /*column*/)
 {
     return false;
 }
 
-bool BrowserAccessibilityQt::unselectRow(int /*row*/)
+bool BrowserAccessibilityInterface::unselectRow(int /*row*/)
 {
     return false;
 }
 
-bool BrowserAccessibilityQt::unselectColumn(int /*column*/)
+bool BrowserAccessibilityInterface::unselectColumn(int /*column*/)
 {
     return false;
 }
 
-int BrowserAccessibilityQt::columnExtent() const
+int BrowserAccessibilityInterface::columnExtent() const
 {
     return 1;
 }
 
-QList<QAccessibleInterface *> BrowserAccessibilityQt::columnHeaderCells() const
+QList<QAccessibleInterface *> BrowserAccessibilityInterface::columnHeaderCells() const
 {
     return QList<QAccessibleInterface*>();
 }
 
-int BrowserAccessibilityQt::columnIndex() const
+int BrowserAccessibilityInterface::columnIndex() const
 {
     int column = 0;
-    if (GetIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex, &column))
-      return column;
+    if (q->GetIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex, &column))
+        return column;
     return 0;
 }
 
-int BrowserAccessibilityQt::rowExtent() const
+int BrowserAccessibilityInterface::rowExtent() const
 {
     return 1;
 }
 
-QList<QAccessibleInterface *> BrowserAccessibilityQt::rowHeaderCells() const
+QList<QAccessibleInterface *> BrowserAccessibilityInterface::rowHeaderCells() const
 {
     return QList<QAccessibleInterface*>();
 }
 
-int BrowserAccessibilityQt::rowIndex() const
+int BrowserAccessibilityInterface::rowIndex() const
 {
     int row = 0;
-    if (GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex, &row))
-      return row;
+    if (q->GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex, &row))
+        return row;
     return 0;
 }
 
-bool BrowserAccessibilityQt::isSelected() const
+bool BrowserAccessibilityInterface::isSelected() const
 {
     return false;
 }
 
-QAccessibleInterface *BrowserAccessibilityQt::table() const
+QAccessibleInterface *BrowserAccessibilityInterface::table() const
 {
-    BrowserAccessibility* find_table = PlatformGetParent();
+    BrowserAccessibility *find_table = q->PlatformGetParent();
     while (find_table && find_table->GetRole() != ax::mojom::Role::kTable)
         find_table = find_table->PlatformGetParent();
     if (!find_table)
         return nullptr;
-    return static_cast<BrowserAccessibilityQt*>(find_table);
+    return toQAccessibleInterface(find_table);
 }
 
-void BrowserAccessibilityQt::modelChange(QAccessibleTableModelChangeEvent *)
+void BrowserAccessibilityInterface::modelChange(QAccessibleTableModelChangeEvent *)
 {
-
 }
 
 } // namespace content
