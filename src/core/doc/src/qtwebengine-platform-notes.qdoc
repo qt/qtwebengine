@@ -53,15 +53,12 @@
         \li \l {macOS}
     \endlist
 
-    The tests for skipping the \QWE build are located in the
-    \c qtwebengine repository, in the \c tools\qmake\mkspecs subdirectory.
-    They can be found by searching for \c skipBuild.
-
     \section2 All Platforms
 
     On all platforms, the following tools are required at build time:
 
     \list
+        \li CMake 3.19 or newer
         \li \l Python 3 with html5lib library
         \li Bison, Flex
         \li GPerf
@@ -87,8 +84,8 @@
 
     \section2 Linux
 
-    On Linux, Clang or GCC version 5 or later is required.
-    Supported configurations are \c linux-g++, \c{linux-clang} and \c{linux-clang-libc++}
+    On Linux, Clang or GCC version 9 or later is required.
+    Supported QMake configurations are \c linux-g++, \c{linux-clang} and \c{linux-clang-libc++}
 
     \QWE requires \c pkg-config to detect most of its dependencies. The
     following \c pkg-config files are required:
@@ -111,16 +108,14 @@
         \li \c xtst
     \endlist
 
-    Further, development packages for \c khr and \c libcap need to be installed.
-
     \section2 \macos
 
     On \macos, the following are required:
 
     \list
-        \li \macos 10.13 or later
-        \li Xcode 10.0 or later
-        \li \macos 10.13 SDK or later
+        \li \macos 10.14 or later
+        \li Xcode 12.0 or later
+        \li \macos 11 SDK or later
     \endlist
 
     \note \QWE cannot be built for the 32-bit mode of \macos (using the
@@ -129,8 +124,8 @@
     \section1 Using Earlier Qt Versions to Build \QWE
 
     Building \QWE with earlier Qt versions (down to the last LTS
-    version) is supported. It means that \QWE 5.15 can be built with
-    Qt 5.12.x, Qt 5.14.x, and Qt 5.15.
+    version) is supported. It means that \QWE 6.3 can be built with
+    Qt 6.2.x, and Qt 6.3.
 
     To use an earlier Qt version to build Qt Webengine:
 
