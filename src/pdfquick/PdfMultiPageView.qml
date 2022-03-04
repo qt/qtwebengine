@@ -134,7 +134,7 @@ Item {
         onRot90Changed: forceLayout()
         property size firstPagePointSize: document?.pagePointSize(0) ?? Qt.size(0, 0)
         property real pageHolderWidth: Math.max(root.width, ((rot90 ? document?.maxPageHeight : document?.maxPageWidth) ?? 0) * root.renderScale)
-        contentWidth: document ? pageHolderWidth + vscroll.width + 2 : 0
+        columnWidthProvider: function(col) { return document ? pageHolderWidth + vscroll.width + 2 : 0 }
         rowHeightProvider: function(row) { return (rot90 ? document.pagePointSize(row).width : document.pagePointSize(row).height) * root.renderScale }
         delegate: Rectangle {
             id: pageHolder
@@ -145,8 +145,6 @@ Item {
                 rotation: -90; text: pageHolder.width.toFixed(1) + "x" + pageHolder.height.toFixed(1) + "\n" +
                                      image.width.toFixed(1) + "x" + image.height.toFixed(1)
             }
-            implicitWidth: tableView.pageHolderWidth
-            implicitHeight: tableView.rot90 ? image.width : image.height
             property alias selection: selection
             Rectangle {
                 id: paper
@@ -171,6 +169,7 @@ Item {
                         image.sourceSize.height = 0
                         paper.scale = 1
                         searchHighlights.update()
+                        tableView.forceLayout()
                     }
                     onStatusChanged: {
                         if (index === navigationStack.currentPage)
