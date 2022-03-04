@@ -1,4 +1,7 @@
-cmake_minimum_required(VERSION 3.19)
+# Require the Qt (not WebEngine) minimum supported CMake version.
+# Another WebEngine-specific version check will be done in configure.cmake
+# and reported in the configure summary.
+cmake_minimum_required(VERSION 3.16)
 
 include(.cmake.conf)
 include(ExternalProject)
