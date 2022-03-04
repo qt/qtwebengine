@@ -366,6 +366,16 @@ else()
    set(WIN_ARM_64 OFF)
 endif()
 
+add_check_for_support(
+    MODULES QtWebEngine QtPdf
+    CONDITION
+        CMAKE_VERSION
+        VERSION_GREATER_EQUAL
+        ${QT_SUPPORTED_MIN_CMAKE_VERSION_FOR_BUILDING_WEBENGINE}
+    MESSAGE
+        "Build requires CMake ${QT_SUPPORTED_MIN_CMAKE_VERSION_FOR_BUILDING_WEBENGINE} or higher."
+)
+
 assertTargets(
    MODULES QtWebEngine QtPdf
    TARGETS Gui Quick Qml

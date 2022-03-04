@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.19)
 ##
 #  MAIN CONFIGURE
 ##
@@ -51,6 +50,9 @@ endif()
 if(NOT QT_FEATURE_qtwebengine_build AND NOT QT_FEATURE_qtpdf_build)
     return()
 endif()
+
+# Upgrade CMake policies to the minimum supported version.
+cmake_minimum_required(VERSION ${QT_SUPPORTED_MIN_CMAKE_VERSION_FOR_BUILDING_WEBENGINE})
 
 ##
 #  MODULES
