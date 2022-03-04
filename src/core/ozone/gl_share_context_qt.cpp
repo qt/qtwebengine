@@ -51,11 +51,10 @@
 
 namespace QtWebEngineCore {
 
-QtShareGLContext::QtShareGLContext(QOpenGLContext *qtContext)
+QtShareGLContext::QtShareGLContext(QOpenGLContext *context)
     : gl::GLContext(nullptr), m_handle(nullptr)
 {
 #if QT_CONFIG(opengl)
-    QOpenGLContext *context = QOpenGLContext::globalShareContext();
 #if defined(Q_OS_MACOS)
     auto *mac_ctx = context->nativeInterface<QNativeInterface::QCocoaGLContext>();
     if (mac_ctx)
