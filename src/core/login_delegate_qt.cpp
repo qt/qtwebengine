@@ -64,7 +64,6 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/extension_system_qt.h"
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
-#include "resource_context_qt.h"
 #include "type_conversion.h"
 #include "web_contents_view_qt.h"
 #include "web_engine_context.h"

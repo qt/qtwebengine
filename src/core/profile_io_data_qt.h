@@ -117,7 +117,6 @@ public:
 #endif
     std::unique_ptr<net::ClientCertStore> CreateClientCertStore();
     static ProfileIODataQt *FromBrowserContext(content::BrowserContext *browser_context);
-    static ProfileIODataQt *FromResourceContext(content::ResourceContext *resource_context);
 
     base::WeakPtr<ProfileIODataQt> getWeakPtrOnIOThread();
 

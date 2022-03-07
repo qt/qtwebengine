@@ -50,7 +50,6 @@
 #include "profile_adapter_client.h"
 #include "profile_qt.h"
 #include "user_notification_controller.h"
-#include "resource_context_qt.h"
 #include "type_conversion.h"
 
 #include <QSharedPointer>

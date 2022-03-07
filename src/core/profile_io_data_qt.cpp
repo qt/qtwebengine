@@ -45,6 +45,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/resource_context.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/common/content_features.h"
 #include "net/ssl/ssl_config_service_defaults.h"
@@ -58,7 +59,6 @@
 #include "net/cookie_monster_delegate_qt.h"
 #include "net/system_network_context_manager.h"
 #include "profile_qt.h"
-#include "resource_context_qt.h"
 #include "type_conversion.h"
 
 #include <QDebug>
@@ -138,7 +138,7 @@ void ProfileIODataQt::initializeOnUIThread()
 {
     m_profileAdapter = m_profile->profileAdapter();
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    m_resourceContext.reset(new ResourceContextQt(this));
+    m_resourceContext.reset(new content::ResourceContext());
     m_cookieDelegate = new CookieMonsterDelegateQt();
     m_cookieDelegate->setClient(m_profile->profileAdapter()->cookieStore());
     m_proxyConfigMonitor.reset(new ProxyConfigMonitor(m_profile->GetPrefs()));
@@ -276,13 +276,6 @@ ProfileIODataQt *ProfileIODataQt::FromBrowserContext(content::BrowserContext *br
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     return static_cast<ProfileQt *>(browser_context)->m_profileIOData.get();
-}
-
-// static
-ProfileIODataQt *ProfileIODataQt::FromResourceContext(content::ResourceContext *resource_context)
-{
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    return static_cast<ResourceContextQt *>(resource_context)->m_io_data;
 }
 
 } // namespace QtWebEngineCore
