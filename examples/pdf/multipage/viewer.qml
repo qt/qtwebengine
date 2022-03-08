@@ -206,7 +206,7 @@ ApplicationWindow {
             width: parent.width
             onAccepted: passwordDialog.accept()
         }
-        onOpened: function() { passwordField.forceActiveFocus() }
+        onOpened: passwordField.forceActiveFocus()
         onAccepted: document.password = passwordField.text
     }
 
@@ -229,10 +229,7 @@ ApplicationWindow {
     PdfDocument {
         id: document
         source: Qt.resolvedUrl(root.source)
-        onStatusChanged: {
-            view.document = (status === PdfDocument.Ready ? document : null)
-        }
-        onPasswordRequired: function() { passwordDialog.open() }
+        onPasswordRequired: passwordDialog.open()
     }
 
     PdfMultiPageView {
@@ -260,6 +257,7 @@ ApplicationWindow {
             model: view.searchModel
             ScrollBar.vertical: ScrollBar { }
             delegate: ItemDelegate {
+                id: resultDelegate
                 required property int index
                 required property int page
                 required property int indexOnPage
@@ -271,10 +269,10 @@ ApplicationWindow {
                     anchors.fill: parent
                     spacing: 0
                     Label {
-                        text: "Page " + (page + 1) + ": "
+                        text: "Page " + (resultDelegate.page + 1) + ": "
                     }
                     Label {
-                        text: contextBefore
+                        text: resultDelegate.contextBefore
                         elide: Text.ElideLeft
                         horizontalAlignment: Text.AlignRight
                         Layout.fillWidth: true
@@ -286,7 +284,7 @@ ApplicationWindow {
                         width: implicitWidth
                     }
                     Label {
-                        text: contextAfter
+                        text: resultDelegate.contextAfter
                         elide: Text.ElideRight
                         Layout.fillWidth: true
                         Layout.preferredWidth: parent.width / 2
@@ -294,16 +292,16 @@ ApplicationWindow {
                 }
                 highlighted: ListView.isCurrentItem
                 onClicked: {
-                    searchResultsList.currentIndex = index
-                    view.goToLocation(page, location, 0)
-                    view.searchModel.currentResult = indexOnPage
+                    searchResultsList.currentIndex = resultDelegate.index
+                    view.goToLocation(resultDelegate.page, resultDelegate.location, 0)
+                    view.searchModel.currentResult = resultDelegate.indexOnPage
                 }
             }
         }
     }
 
     footer: ToolBar {
-        height: footerRow.implicitHeight
+        height: footerRow.implicitHeight + 6
         RowLayout {
             id: footerRow
             anchors.fill: parent
@@ -322,16 +320,16 @@ ApplicationWindow {
                 placeholderText: "search"
                 Layout.minimumWidth: 150
                 Layout.fillWidth: true
+                Layout.bottomMargin: 3
                 onAccepted: searchDrawer.open()
                 Image {
                     visible: searchField.text !== ""
                     source: "qrc:/pdfviewer/resources/edit-clear.svg"
+                    sourceSize.height: searchField.height - 6
                     anchors {
                         right: parent.right
-                        top: parent.top
-                        bottom: parent.bottom
+                        verticalCenter: parent.verticalCenter
                         margins: 3
-                        rightMargin: 5
                     }
                     TapHandler {
                         onTapped: searchField.clear()

@@ -132,7 +132,7 @@ Item {
         property real rotationNorm: Math.round((360 + (root.pageRotation % 360)) % 360)
         property bool rot90: rotationNorm == 90 || rotationNorm == 270
         onRot90Changed: forceLayout()
-        property size firstPagePointSize: document?.pagePointSize(0) ?? Qt.size(0, 0)
+        property size firstPagePointSize: document?.status === PdfDocument.Ready ? document.pagePointSize(0) : Qt.size(1, 1)
         property real pageHolderWidth: Math.max(root.width, ((rot90 ? document?.maxPageHeight : document?.maxPageWidth) ?? 0) * root.renderScale)
         columnWidthProvider: function(col) { return document ? pageHolderWidth + vscroll.width + 2 : 0 }
         rowHeightProvider: function(row) { return (rot90 ? document.pagePointSize(row).width : document.pagePointSize(row).height) * root.renderScale }
