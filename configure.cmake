@@ -424,7 +424,7 @@ if(LINUX AND CMAKE_CROSSCOMPILING)
    )
 endif()
 add_check_for_support(
-   MODULES QtWebEngine
+   MODULES QtWebEngine QtPdf
    CONDITION NOT QT_FEATURE_static
    MESSAGE "Static build is not supported."
 )
