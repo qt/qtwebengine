@@ -482,6 +482,9 @@ QPdfDocument::~QPdfDocument()
 {
 }
 
+/*!
+    Loads the document contents from \a fileName.
+*/
 QPdfDocument::DocumentError QPdfDocument::load(const QString &fileName)
 {
     qCDebug(qLcDoc) << "loading" << fileName;
@@ -500,6 +503,10 @@ QPdfDocument::DocumentError QPdfDocument::load(const QString &fileName)
     return d->lastError;
 }
 
+/*! \internal
+    Returns the filename of the document that has been opened,
+    or an empty string if no document is open.
+*/
 QString QPdfDocument::fileName() const
 {
     const QFile *f = qobject_cast<QFile *>(d->device.data());
@@ -524,13 +531,18 @@ QString QPdfDocument::fileName() const
 */
 
 /*!
-    Returns the current status of the document.
+    \property QPdfDocument::status
+
+    This property holds the current status of the document.
 */
 QPdfDocument::Status QPdfDocument::status() const
 {
     return d->status;
 }
 
+/*!
+    Loads the document contents from \a device.
+*/
 void QPdfDocument::load(QIODevice *device)
 {
     close();
@@ -540,6 +552,14 @@ void QPdfDocument::load(QIODevice *device)
     d->load(device, /*transfer ownership*/false);
 }
 
+/*!
+    \property QPdfDocument::password
+
+    This property holds the document password.
+
+    If the document is protected by a password, the user must provide it, and
+    the application must set this property. Otherwise, it's not needed.
+*/
 void QPdfDocument::setPassword(const QString &password)
 {
     const QByteArray newPassword = password.toUtf8();
@@ -649,13 +669,33 @@ QVariant QPdfDocument::metaData(MetaDataField field) const
     return QVariant();
 }
 
+/*!
+    \enum QPdfDocument::DocumentError
+
+    This enum describes the error while attempting the last operation on the document.
+
+    \value NoError No error occurred.
+    \value UnknownError Unknown type of error.
+    \value DataNotYetAvailableError The document is still loading, it's too early to attempt the operation.
+    \value FileNotFoundError The file given to load() was not found.
+    \value InvalidFileFormatError The file given to load() is not a valid PDF file.
+    \value IncorrectPasswordError The password given to setPassword() is not correct for this file.
+    \value UnsupportedSecuritySchemeError QPdfDocument is not able to unlock this kind of PDF file.
+
+    \sa QPdfDocument::error()
+*/
+
+/*!
+    Returns the type of error if \l status is \c Error, or \c NoError if there
+    is no error.
+*/
 QPdfDocument::DocumentError QPdfDocument::error() const
 {
     return d->lastError;
 }
 
 /*!
-  Closes the document.
+    Closes the document.
 */
 void QPdfDocument::close()
 {
@@ -675,14 +715,19 @@ void QPdfDocument::close()
 }
 
 /*!
-  Returns the amount of pages for the loaded document or \c 0 if
-  no document is loaded.
+    \property QPdfDocument::pageCount
+
+    This property holds the number of pages in the loaded document or \c 0 if
+    no document is loaded.
 */
 int QPdfDocument::pageCount() const
 {
     return d->pageCount;
 }
 
+/*!
+    Returns the size of page \a page in points (1/72 of an inch).
+*/
 QSizeF QPdfDocument::pageSize(int page) const
 {
     QSizeF result;
