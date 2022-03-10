@@ -35,6 +35,9 @@
 #include "components/user_prefs/user_prefs.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
+#include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
+#include "chrome/browser/push_messaging/push_messaging_service_factory.h"
+#include "chrome/browser/push_messaging/push_messaging_service_impl.h"
 #include "chrome/common/pref_names.h"
 #if QT_CONFIG(webengine_spellchecker)
 #include "chrome/browser/spellchecker/spellcheck_service.h"
@@ -50,6 +53,10 @@
 #include "extensions/extension_system_qt.h"
 #endif
 
+#if defined(Q_OS_WIN)
+#include "components/os_crypt/os_crypt.h"
+#endif
+
 namespace QtWebEngineCore {
 
 ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
@@ -59,7 +66,15 @@ ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
     , m_extensionSystem(nullptr)
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 {
+    profile_metrics::SetBrowserProfileType(this, IsOffTheRecord()
+        ? profile_metrics::BrowserProfileType::kIncognito
+        : profile_metrics::BrowserProfileType::kRegular);
+
     setupPrefService();
+
+#if defined(Q_OS_WIN)
+    OSCrypt::Init(m_prefServiceAdapter.prefService());
+#endif
 
     // Mark the context as live. This prevents the use-after-free DCHECK in
     // AssertBrowserContextWasntDestroyed from being triggered when a new
@@ -78,10 +93,18 @@ ProfileQt::~ProfileQt()
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     m_prefServiceAdapter.commit();
     BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(this);
+    // Remembering push subscriptions and not persisting notification permissions would
+    // confuse most of web applications.
+    PushMessagingAppIdentifier::DeleteAllFromPrefs(this);
     ShutdownStoragePartitions();
     m_profileIOData->shutdownOnUIThread();
     //Should be deleted by IO Thread
     m_profileIOData.release();
+}
+
+void ProfileQt::DoFinalInit()
+{
+    PushMessagingServiceImpl::InitializeForProfile(this);
 }
 
 PrefService* ProfileQt::GetPrefs()
@@ -139,9 +162,17 @@ storage::SpecialStoragePolicy *ProfileQt::GetSpecialStoragePolicy()
     return nullptr;
 }
 
+std::string ProfileQt::GetPushMessagingEndpoint() const
+{
+    return m_profileAdapter->pushServiceEndpoint().toString().toStdString();
+}
+
 content::PushMessagingService *ProfileQt::GetPushMessagingService()
 {
-    return nullptr;
+    if (!m_profileAdapter->pushServiceEndpoint().isEmpty())
+        return PushMessagingServiceFactory::GetForProfile(this);
+    else
+        return nullptr;
 }
 
 content::SSLHostStateDelegate* ProfileQt::GetSSLHostStateDelegate()

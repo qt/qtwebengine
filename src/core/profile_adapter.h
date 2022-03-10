@@ -101,6 +101,9 @@ public:
     void setSpellCheckEnabled(bool enabled);
     bool isSpellCheckEnabled() const;
 
+    QUrl pushServiceEndpoint() const;
+    void setPushServiceEndpoint(const QUrl &endpoint);
+
     void addWebContentsAdapterClient(WebContentsAdapterClient *client);
     void removeWebContentsAdapterClient(WebContentsAdapterClient *client);
     void releaseAllWebContentsAdapterClients();
@@ -213,6 +216,7 @@ private:
     QString m_httpUserAgent;
     HttpCacheType m_httpCacheType;
     QString m_httpAcceptLanguage;
+    QUrl m_pushServiceEndpoint;
     PersistentCookiesPolicy m_persistentCookiesPolicy;
     VisitedLinksPolicy m_visitedLinksPolicy;
     QHash<QByteArray, QPointer<QWebEngineUrlSchemeHandler>> m_customUrlSchemeHandlers;

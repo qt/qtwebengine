@@ -98,6 +98,9 @@ public:
     QString downloadPath() const;
     void setDownloadPath(const QString &path);
 
+    QUrl pushServiceEndpoint() const;
+    void setPushServiceEndpoint(const QUrl &endpoint);
+
     void setNotificationPresenter(std::function<void(std::unique_ptr<QWebEngineNotification>)> notificationPresenter);
 
     QWebEngineClientCertificateStore *clientCertificateStore();

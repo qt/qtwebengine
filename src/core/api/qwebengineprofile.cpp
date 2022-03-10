@@ -390,6 +390,41 @@ void QWebEngineProfile::setDownloadPath(const QString &path)
 }
 
 /*!
+    \since 6.5
+
+    The address used to create subscriptions for a push messaging service.
+
+    \note By default, the endpoint is an empty URL and push messaging is disabled.
+
+    \sa setPushServiceEndpoint()
+*/
+QUrl QWebEngineProfile::pushServiceEndpoint() const
+{
+    const Q_D(QWebEngineProfile);
+    return d->profileAdapter()->pushServiceEndpoint();
+}
+
+/*!
+    \since 6.5
+
+    Enables push messaging feature by setting \a endpoint to a valid address used as a
+    push messaging service endpoint. Subscription requests for the push service will be
+    sent to the concatenation of \a endpoint and a subscription ID (which is provided
+    by the browser engine).
+
+    \note Default endpoint used by Google Chrome browser is \c {https://fcm.googleapis.com/fcm/send/}
+
+    If set back to the default empty URL, push messaging is disabled.
+
+    \sa pushServiceEndpoint()
+*/
+void QWebEngineProfile::setPushServiceEndpoint(const QUrl &endpoint)
+{
+    Q_D(QWebEngineProfile);
+    d->profileAdapter()->setPushServiceEndpoint(endpoint);
+}
+
+/*!
     Returns the path used for caches.
 
     By default, this is below StandardPaths::CacheLocation in a QtWebengine/StorageName specific

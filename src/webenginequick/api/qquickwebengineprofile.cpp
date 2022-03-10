@@ -821,6 +821,49 @@ QString QQuickWebEngineProfile::downloadPath() const
 }
 
 /*!
+    \qmlproperty string WebEngineProfile::pushServiceEndpoint
+    \since  QtWebEngine 6.5
+
+    The address used to create subscriptions for a push messaging service.
+
+    Subscription requests for the push service will be sent to the concatenation
+    of \a endpoint and a subscription ID (which is provided by the browser engine).
+
+    \note Default endpoint used by Google Chrome browser is \c {https://fcm.googleapis.com/fcm/send/}
+
+    \note By default, the endpoint is an empty URL and push messaging is disabled.
+*/
+
+/*!
+    \property QQuickWebEngineProfile::pushServiceEndpoint
+    \since QtWebEngine 6.5
+
+    The address used to create subscriptions for a push messaging service.
+
+    Subscription requests for the push service will be sent to the concatenation
+    of \a endpoint and a subscription ID (which is provided by the browser engine).
+
+    \note Default endpoint used by Google Chrome browser is \c {https://fcm.googleapis.com/fcm/send/}
+
+    \note By default, the endpoint is an empty URL and push messaging is disabled.
+*/
+
+QUrl QQuickWebEngineProfile::pushServiceEndpoint() const
+{
+    const Q_D(QQuickWebEngineProfile);
+    return d->profileAdapter()->pushServiceEndpoint();
+}
+
+void QQuickWebEngineProfile::setPushServiceEndpoint(const QUrl &endpoint)
+{
+    Q_D(QQuickWebEngineProfile);
+    if (pushServiceEndpoint() == endpoint)
+        return;
+    d->profileAdapter()->setPushServiceEndpoint(endpoint);
+    emit pushServiceEndpointChanged();
+}
+
+/*!
 
     Returns the cookie store for this profile.
 */

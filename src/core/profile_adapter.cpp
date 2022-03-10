@@ -76,6 +76,8 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
         extensions::ExtensionSystem::Get(m_profile.data())->InitForRegularProfile(true);
 #endif
     m_cancelableTaskTracker.reset(new base::CancelableTaskTracker());
+
+    m_profile->DoFinalInit();
 }
 
 ProfileAdapter::~ProfileAdapter()
@@ -624,6 +626,16 @@ bool ProfileAdapter::isSpellCheckEnabled() const
 #else
     return false;
 #endif
+}
+
+QUrl ProfileAdapter::pushServiceEndpoint() const
+{
+    return m_pushServiceEndpoint;
+}
+
+void ProfileAdapter::setPushServiceEndpoint(const QUrl &endpoint)
+{
+    m_pushServiceEndpoint = endpoint;
 }
 
 void ProfileAdapter::addWebContentsAdapterClient(WebContentsAdapterClient *client)

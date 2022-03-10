@@ -363,6 +363,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineProfile.persistentCookiesPolicyChanged() --> void"
     << "QQuickWebEngineProfile.persistentStoragePath --> QString"
     << "QQuickWebEngineProfile.persistentStoragePathChanged() --> void"
+    << "QQuickWebEngineProfile.pushServiceEndpoint --> QUrl"
+    << "QQuickWebEngineProfile.pushServiceEndpointChanged() --> void"
     << "QQuickWebEngineProfile.spellCheckEnabled --> bool"
     << "QQuickWebEngineProfile.spellCheckEnabledChanged() --> void"
     << "QQuickWebEngineProfile.spellCheckLanguages --> QStringList"

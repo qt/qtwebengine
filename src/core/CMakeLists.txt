@@ -289,10 +289,15 @@ foreach(arch ${archs})
 
         list(APPEND gnArgArg
             qtwebengine_target="${buildDir}/${config}/${arch}:QtWebEngineCore"
+            enable_background_contents=false
+            enable_background_mode=false
             enable_ipc_fuzzer=false
+            enable_js_type_check=false
             enable_media_remoting=false
             enable_message_center=false
             enable_nacl=false
+            enable_one_click_signin=false
+            enable_oop_printing=false
             enable_remoting=false
             enable_reporting=false
             enable_resource_allowlist_generation=false
@@ -309,10 +314,8 @@ foreach(arch ${archs})
             toolkit_views=false
             chrome_pgo_phase=0
             optimize_webui=false
-            enable_js_type_check=false
             v8_use_external_startup_data=false
             strip_absolute_paths_from_debug_symbols=false
-            enable_oop_printing=false
             devtools_fast_bundle=false
             devtools_skip_typecheck=false
         )

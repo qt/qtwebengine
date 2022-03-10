@@ -37,6 +37,7 @@ class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineProfile : public QObject {
     Q_PROPERTY(bool spellCheckEnabled READ isSpellCheckEnabled WRITE setSpellCheckEnabled NOTIFY spellCheckEnabledChanged FINAL REVISION(1,3))
     Q_PROPERTY(QQuickWebEngineScriptCollection *userScripts READ userScripts)
     Q_PROPERTY(QString downloadPath READ downloadPath WRITE setDownloadPath NOTIFY downloadPathChanged FINAL REVISION(1,5))
+    Q_PROPERTY(QUrl pushServiceEndpoint READ pushServiceEndpoint WRITE setPushServiceEndpoint NOTIFY pushServiceEndpointChanged FINAL REVISION(6,5))
     QML_NAMED_ELEMENT(WebEngineProfile)
     QML_ADDED_IN_VERSION(1, 1)
     QML_EXTRA_VERSION(2, 0)
@@ -108,6 +109,9 @@ public:
     QString downloadPath() const;
     void setDownloadPath(const QString &path);
 
+    QUrl pushServiceEndpoint() const;
+    void setPushServiceEndpoint(const QUrl &endpoint);
+
     QWebEngineClientCertificateStore *clientCertificateStore();
 
     static QQuickWebEngineProfile *defaultProfile();
@@ -125,6 +129,7 @@ Q_SIGNALS:
     Q_REVISION(1,3) void spellCheckLanguagesChanged();
     Q_REVISION(1,3) void spellCheckEnabledChanged();
     Q_REVISION(1,5) void downloadPathChanged();
+    Q_REVISION(6,5) void pushServiceEndpointChanged();
     void downloadRequested(QQuickWebEngineDownloadRequest *download);
     void downloadFinished(QQuickWebEngineDownloadRequest *download);
 
