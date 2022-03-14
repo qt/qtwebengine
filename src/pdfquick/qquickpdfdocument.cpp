@@ -195,32 +195,6 @@ qreal QQuickPdfDocument::maxPageHeight() const
     return m_maxPageWidthHeight.height();
 }
 
-/*!
-    \internal
-    \qmlmethod size PdfDocument::heightSumBeforePage(int page)
-
-    Returns the sum of the heights, in points, of all sets of \a facingPages
-    pages from 0 to the given \a page, exclusive.
-
-    That is, if the pages were laid out end-to-end in adjacent sets of
-    \a facingPages, what would be the distance in points from the top of the
-    first page to the top of the given page.
-*/
-// Workaround for lack of something analogous to ListView.positionViewAtIndex() in TableView
-qreal QQuickPdfDocument::heightSumBeforePage(int page, qreal spacing, int facingPages) const
-{
-    qreal ret = 0;
-    for (int i = 0; i < page; i+= facingPages) {
-        if (i + facingPages > page)
-            break;
-        qreal facingPagesHeight = 0;
-        for (int j = i; j < i + facingPages; ++j)
-            facingPagesHeight = qMax(facingPagesHeight, pagePointSize(j).height());
-        ret += facingPagesHeight + spacing;
-    }
-    return ret;
-}
-
 void QQuickPdfDocument::updateMaxPageSize()
 {
     if (m_maxPageWidthHeight.isValid())

@@ -112,7 +112,6 @@ public:
     Q_INVOKABLE QSizeF pagePointSize(int page) const;
     qreal maxPageWidth() const;
     qreal maxPageHeight() const;
-    Q_INVOKABLE qreal heightSumBeforePage(int page, qreal spacing = 0, int facingPages = 1) const;
 
 Q_SIGNALS:
     void sourceChanged();
