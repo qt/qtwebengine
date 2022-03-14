@@ -144,7 +144,7 @@ QString QQuickPdfDocument::error() const
 }
 
 /*!
-    \qmlproperty bool PdfDocument::password
+    \qmlproperty string PdfDocument::password
 
     This property holds the document password. If the passwordRequired()
     signal is emitted, the UI should prompt the user and then set this
@@ -262,13 +262,13 @@ void QQuickPdfDocument::updateMaxPageSize()
 */
 
 /*!
-    \qmlproperty string PdfDocument::creationDate
+    \qmlproperty date PdfDocument::creationDate
 
     This property holds the date and time the document was created.
 */
 
 /*!
-    \qmlproperty string PdfDocument::modificationDate
+    \qmlproperty date PdfDocument::modificationDate
 
     This property holds the date and time the document was most recently
     modified.
