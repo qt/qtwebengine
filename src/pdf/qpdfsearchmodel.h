@@ -44,7 +44,7 @@
 
 #include <QtCore/qabstractitemmodel.h>
 #include <QtPdf/qpdfdocument.h>
-#include <QtPdf/qpdfsearchresult.h>
+#include <QtPdf/qpdflink.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -70,8 +70,8 @@ public:
     explicit QPdfSearchModel(QObject *parent);
     ~QPdfSearchModel() override;
 
-    QList<QPdfSearchResult> resultsOnPage(int page) const;
-    QPdfSearchResult resultAtIndex(int index) const;
+    QList<QPdfLink> resultsOnPage(int page) const;
+    QPdfLink resultAtIndex(int index) const;
 
     QPdfDocument *document() const;
     QString searchString() const;

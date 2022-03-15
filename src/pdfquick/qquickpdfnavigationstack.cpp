@@ -193,7 +193,7 @@ void QQuickPdfNavigationStack::push(int page, QPointF location, qreal zoom, bool
     if (!m_changing) {
         if (m_currentHistoryIndex >= 0 && forwardAvailableWas)
             m_pageHistory.remove(m_currentHistoryIndex + 1, m_pageHistory.count() - m_currentHistoryIndex - 1);
-        m_pageHistory.append(QExplicitlySharedDataPointer<QPdfDestinationPrivate>(new QPdfDestinationPrivate(page, location, zoom)));
+        m_pageHistory.append(QExplicitlySharedDataPointer<QPdfLinkPrivate>(new QPdfLinkPrivate(page, location, zoom)));
         m_currentHistoryIndex = m_pageHistory.count() - 1;
     }
     emit currentZoomChanged();

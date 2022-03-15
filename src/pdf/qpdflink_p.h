@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPDFSEARCHRESULT_P_H
-#define QPDFSEARCHRESULT_P_H
+#ifndef QPDFLINK_P_H
+#define QPDFLINK_P_H
 
 //
 //  W A R N I N G
@@ -51,22 +51,32 @@
 // We mean it.
 //
 
-#include "qpdfsearchresult.h"
+#include "qpdflink.h"
 
-#include "qpdfdestination_p.h"
+#include <QPointF>
+#include <QRectF>
 
 QT_BEGIN_NAMESPACE
 
-class QPdfSearchResultPrivate : public QPdfDestinationPrivate
+class QPdfLinkPrivate : public QSharedData
 {
 public:
-    QPdfSearchResultPrivate() = default;
-    QPdfSearchResultPrivate(int page, QList<QRectF> rects, QString contextBefore, QString contextAfter) :
-        QPdfDestinationPrivate(page, rects.first().topLeft(), 0),
-        contextBefore{std::move(contextBefore)},
-        contextAfter{std::move(contextAfter)},
-        rects{std::move(rects)} {}
+    QPdfLinkPrivate() = default;
+    QPdfLinkPrivate(int page, QPointF location, qreal zoom)
+        : page(page),
+          location(location),
+          zoom(zoom) { }
+    QPdfLinkPrivate(int page, QList<QRectF> rects, QString contextBefore, QString contextAfter)
+        : page(page),
+          location(rects.first().topLeft()),
+          zoom(0),
+          contextBefore{std::move(contextBefore)},
+          contextAfter{std::move(contextAfter)},
+          rects{std::move(rects)} {}
 
+    int page = -1;
+    QPointF location;
+    qreal zoom = 1;
     QString contextBefore;
     QString contextAfter;
     QList<QRectF> rects;
@@ -74,4 +84,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QPDFSEARCHRESULT_P_H
+#endif // QPDFLINK_P_H

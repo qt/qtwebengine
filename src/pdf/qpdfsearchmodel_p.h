@@ -52,7 +52,6 @@
 //
 
 #include "qpdfsearchmodel.h"
-#include "qpdfsearchresult_p.h"
 #include <private/qabstractitemmodel_p.h>
 
 #include "third_party/pdfium/public/fpdfview.h"
@@ -78,7 +77,7 @@ public:
     QPdfDocument *document = nullptr;
     QString searchString;
     QList<bool> pagesSearched;
-    QList<QList<QPdfSearchResult>> searchResults;
+    QList<QList<QPdfLink>> searchResults;
     int rowCountSoFar = 0;
     int updateTimerId = -1;
     int nextPageToUpdate = 0;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -37,54 +37,67 @@
 **
 ****************************************************************************/
 
-#include "qpdfsearchresult.h"
-#include "qpdfsearchresult_p.h"
+#ifndef QPDFLINK_H
+#define QPDFLINK_H
+
+#include <QtPdf/qtpdfglobal.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qobject.h>
+#include <QtCore/qpoint.h>
+#include <QtCore/qrect.h>
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
 
-QPdfSearchResult::QPdfSearchResult() :
-    QPdfSearchResult(new QPdfSearchResultPrivate()) { }
+class QPdfLinkPrivate;
 
-QPdfSearchResult::QPdfSearchResult(int page, QList<QRectF> rects,
-                                   QString contextBefore, QString contextAfter)
-    : QPdfSearchResult(new QPdfSearchResultPrivate(page, std::move(rects),
-                                                   std::move(contextBefore),
-                                                   std::move(contextAfter)))
+class QPdfLink
 {
-}
+    Q_GADGET_EXPORT(Q_PDF_EXPORT)
+    Q_PROPERTY(bool valid READ isValid)
+    Q_PROPERTY(int page READ page)
+    Q_PROPERTY(QPointF location READ location)
+    Q_PROPERTY(qreal zoom READ zoom)
+    Q_PROPERTY(QString contextBefore READ contextBefore)
+    Q_PROPERTY(QString contextAfter READ contextAfter)
+    Q_PROPERTY(QList<QRectF> rectangles READ rectangles)
 
-QPdfSearchResult::QPdfSearchResult(QPdfSearchResultPrivate *d) :
-    QPdfDestination(static_cast<QPdfDestinationPrivate *>(d)) { }
+public:
+    Q_PDF_EXPORT QPdfLink();
+    Q_PDF_EXPORT ~QPdfLink();
+    Q_PDF_EXPORT QPdfLink &operator=(const QPdfLink &other);
 
-QPdfSearchResult::~QPdfSearchResult() = default;
+    Q_PDF_EXPORT QPdfLink(const QPdfLink &other) noexcept;
+    Q_PDF_EXPORT QPdfLink(QPdfLink &&other) noexcept;
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QPdfLink)
 
-QString QPdfSearchResult::contextBefore() const
-{
-    return static_cast<QPdfSearchResultPrivate *>(d.data())->contextBefore;
-}
+    void swap(QPdfLink &other) noexcept { d.swap(other.d); }
 
-QString QPdfSearchResult::contextAfter() const
-{
-    return static_cast<QPdfSearchResultPrivate *>(d.data())->contextAfter;
-}
+    Q_PDF_EXPORT bool isValid() const;
+    Q_PDF_EXPORT int page() const;
+    Q_PDF_EXPORT QPointF location() const;
+    Q_PDF_EXPORT qreal zoom() const;
+    Q_PDF_EXPORT QString contextBefore() const;
+    Q_PDF_EXPORT QString contextAfter() const;
+    Q_PDF_EXPORT QList<QRectF> rectangles() const;
 
-QList<QRectF> QPdfSearchResult::rectangles() const
-{
-    return static_cast<QPdfSearchResultPrivate *>(d.data())->rects;
-}
+private: // methods
+    QPdfLink(int page, QPointF location, qreal zoom);
+    QPdfLink(int page, QList<QRectF> rects, QString contextBefore, QString contextAfter);
+    QPdfLink(QPdfLinkPrivate *d);
+    friend class QPdfDocument;
+    friend class QPdfSearchModelPrivate;
+    friend class QQuickPdfNavigationStack;
 
-QDebug operator<<(QDebug dbg, const QPdfSearchResult &searchResult)
-{
-    QDebugStateSaver saver(dbg);
-    dbg.nospace();
-    dbg << "QPdfSearchResult(page=" << searchResult.page()
-        << " contextBefore=" << searchResult.contextBefore()
-        << " contextAfter=" << searchResult.contextAfter()
-        << " rects=" << searchResult.rectangles();
-    dbg << ')';
-    return dbg;
-}
+private: // storage
+    QExplicitlySharedDataPointer<QPdfLinkPrivate> d;
+
+};
+Q_DECLARE_SHARED(QPdfLink)
+
+Q_PDF_EXPORT QDebug operator<<(QDebug, const QPdfLink &);
 
 QT_END_NAMESPACE
 
-#include "moc_qpdfsearchresult.cpp"
+#endif // QPDFLINK_H

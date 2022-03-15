@@ -53,7 +53,7 @@
 
 #include <QtPdfQuick/private/qtpdfquickglobal_p.h>
 #include <QtPdfQuick/private/qquickpdfdocument_p.h>
-#include <QtPdf/private/qpdfdestination_p.h>
+#include <QtPdf/private/qpdflink_p.h>
 
 #include <QQmlEngine>
 
@@ -95,7 +95,7 @@ Q_SIGNALS:
     void jumped(int page, QPointF location, qreal zoom);
 
 private:
-    QList<QExplicitlySharedDataPointer<QPdfDestinationPrivate>> m_pageHistory;
+    QList<QExplicitlySharedDataPointer<QPdfLinkPrivate>> m_pageHistory;
     int m_currentHistoryIndex = 0;
     bool m_changing = false;
 

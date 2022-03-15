@@ -37,11 +37,11 @@
 **
 ****************************************************************************/
 
-#include "qpdfdestination.h"
 #include "qpdfdocument_p.h"
+#include "qpdflink.h"
+#include "qpdflink_p.h"
 #include "qpdfsearchmodel.h"
 #include "qpdfsearchmodel_p.h"
-#include "qpdfsearchresult_p.h"
 
 #include "third_party/pdfium/public/fpdf_doc.h"
 #include "third_party/pdfium/public/fpdf_text.h"
@@ -139,7 +139,7 @@ void QPdfSearchModel::setSearchString(const QString &searchString)
     endResetModel();
 }
 
-QList<QPdfSearchResult> QPdfSearchModel::resultsOnPage(int page) const
+QList<QPdfLink> QPdfSearchModel::resultsOnPage(int page) const
 {
     Q_D(const QPdfSearchModel);
     const_cast<QPdfSearchModelPrivate *>(d)->doSearch(page);
@@ -148,12 +148,12 @@ QList<QPdfSearchResult> QPdfSearchModel::resultsOnPage(int page) const
     return d->searchResults[page];
 }
 
-QPdfSearchResult QPdfSearchModel::resultAtIndex(int index) const
+QPdfLink QPdfSearchModel::resultAtIndex(int index) const
 {
     Q_D(const QPdfSearchModel);
     const auto pi = const_cast<QPdfSearchModelPrivate*>(d)->pageAndIndexForResult(index);
     if (pi.page < 0)
-        return QPdfSearchResult();
+        return {};
     return d->searchResults[pi.page][pi.index];
 }
 
@@ -230,7 +230,7 @@ bool QPdfSearchModelPrivate::doSearch(int page)
         return false;
     }
     FPDF_SCHHANDLE sh = FPDFText_FindStart(textPage, searchString.utf16(), 0, 0);
-    QList<QPdfSearchResult> newSearchResults;
+    QList<QPdfLink> newSearchResults;
     while (FPDFText_FindNext(sh)) {
         int idx = FPDFText_GetSchResultIndex(sh);
         int count = FPDFText_GetSchCount(sh);
@@ -276,7 +276,7 @@ bool QPdfSearchModelPrivate::doSearch(int page)
             }
         }
         if (!rects.isEmpty())
-            newSearchResults << QPdfSearchResult(page, rects, contextBefore, contextAfter);
+            newSearchResults << QPdfLink(page, rects, contextBefore, contextAfter);
     }
     FPDFText_FindClose(sh);
     FPDFText_ClosePage(textPage);
