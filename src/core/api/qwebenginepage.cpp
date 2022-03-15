@@ -1286,26 +1286,26 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         d->adapter->unselect();
         break;
     case OpenLinkInThisWindow:
-        if (d->view && d->view->lastContextMenuRequest()->filteredLinkUrl().isValid())
+        if (d->view && d->view->lastContextMenuRequest() && d->view->lastContextMenuRequest()->filteredLinkUrl().isValid())
             setUrl(d->view->lastContextMenuRequest()->filteredLinkUrl());
         break;
     case OpenLinkInNewWindow:
-        if (d->view && d->view->lastContextMenuRequest()->filteredLinkUrl().isValid())
+        if (d->view && d->view->lastContextMenuRequest() && d->view->lastContextMenuRequest()->filteredLinkUrl().isValid())
             d->createNewWindow(WebContentsAdapterClient::NewWindowDisposition, true,
                                d->view->lastContextMenuRequest()->filteredLinkUrl());
         break;
     case OpenLinkInNewTab:
-        if (d->view && d->view->lastContextMenuRequest()->filteredLinkUrl().isValid())
+        if (d->view && d->view->lastContextMenuRequest() && d->view->lastContextMenuRequest()->filteredLinkUrl().isValid())
             d->createNewWindow(WebContentsAdapterClient::NewForegroundTabDisposition, true,
                                d->view->lastContextMenuRequest()->filteredLinkUrl());
         break;
     case OpenLinkInNewBackgroundTab:
-        if (d->view && d->view->lastContextMenuRequest()->filteredLinkUrl().isValid())
+        if (d->view && d->view->lastContextMenuRequest() && d->view->lastContextMenuRequest()->filteredLinkUrl().isValid())
             d->createNewWindow(WebContentsAdapterClient::NewBackgroundTabDisposition, true,
                                d->view->lastContextMenuRequest()->filteredLinkUrl());
         break;
     case CopyLinkToClipboard:
-        if (d->view && !d->view->lastContextMenuRequest()->linkUrl().isEmpty()) {
+        if (d->view && d->view->lastContextMenuRequest() && !d->view->lastContextMenuRequest()->linkUrl().isEmpty()) {
             QString urlString = d->view->lastContextMenuRequest()->linkUrl().toString(
                     QUrl::FullyEncoded);
             QString linkText = d->view->lastContextMenuRequest()->linkText().toHtmlEscaped();
@@ -1322,7 +1322,7 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         }
         break;
     case DownloadLinkToDisk:
-        if (d->view && d->view->lastContextMenuRequest()->filteredLinkUrl().isValid())
+        if (d->view && d->view->lastContextMenuRequest() && d->view->lastContextMenuRequest()->filteredLinkUrl().isValid())
             d->adapter->download(d->view->lastContextMenuRequest()->filteredLinkUrl(),
                                  d->view->lastContextMenuRequest()->suggestedFileName(),
                                  d->view->lastContextMenuRequest()->referrerUrl(),
@@ -1330,7 +1330,7 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
 
         break;
     case CopyImageToClipboard:
-        if (d->view && d->view->lastContextMenuRequest()->hasImageContent()
+        if (d->view && d->view->lastContextMenuRequest() && d->view->lastContextMenuRequest()->hasImageContent()
             && (d->view->lastContextMenuRequest()->mediaType()
                         == QWebEngineContextMenuRequest::MediaTypeImage
                 || d->view->lastContextMenuRequest()->mediaType()
@@ -1339,7 +1339,7 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         }
         break;
     case CopyImageUrlToClipboard:
-        if (d->view && d->view->lastContextMenuRequest()->mediaUrl().isValid()
+        if (d->view && d->view->lastContextMenuRequest() && d->view->lastContextMenuRequest()->mediaUrl().isValid()
             && d->view->lastContextMenuRequest()->mediaType()
                     == QWebEngineContextMenuRequest::MediaTypeImage) {
             QString urlString =
@@ -1360,14 +1360,14 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         break;
     case DownloadImageToDisk:
     case DownloadMediaToDisk:
-        if (d->view && d->view->lastContextMenuRequest()->mediaUrl().isValid())
+        if (d->view && d->view->lastContextMenuRequest() && d->view->lastContextMenuRequest()->mediaUrl().isValid())
             d->adapter->download(d->view->lastContextMenuRequest()->mediaUrl(),
                                  d->view->lastContextMenuRequest()->suggestedFileName(),
                                  d->view->lastContextMenuRequest()->referrerUrl(),
                                  d->view->lastContextMenuRequest()->referrerPolicy());
         break;
     case CopyMediaUrlToClipboard:
-        if (d->view && d->view->lastContextMenuRequest()->mediaUrl().isValid()
+        if (d->view && d->view->lastContextMenuRequest() && d->view->lastContextMenuRequest()->mediaUrl().isValid()
             && (d->view->lastContextMenuRequest()->mediaType()
                         == QWebEngineContextMenuRequest::MediaTypeAudio
                 || d->view->lastContextMenuRequest()->mediaType()
@@ -1391,7 +1391,7 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         }
         break;
     case ToggleMediaControls:
-        if (d->view && d->view->lastContextMenuRequest()->mediaUrl().isValid()
+        if (d->view && d->view->lastContextMenuRequest() && d->view->lastContextMenuRequest()->mediaUrl().isValid()
             && d->view->lastContextMenuRequest()->mediaFlags()
                     & QWebEngineContextMenuRequest::MediaCanToggleControls) {
             bool enable = !(d->view->lastContextMenuRequest()->mediaFlags()
@@ -1401,7 +1401,7 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         }
         break;
     case ToggleMediaLoop:
-        if (d->view && d->view->lastContextMenuRequest()->mediaUrl().isValid()
+        if (d->view && d->view->lastContextMenuRequest() && d->view->lastContextMenuRequest()->mediaUrl().isValid()
             && (d->view->lastContextMenuRequest()->mediaType()
                         == QWebEngineContextMenuRequest::MediaTypeAudio
                 || d->view->lastContextMenuRequest()->mediaType()
@@ -1413,7 +1413,7 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         }
         break;
     case ToggleMediaPlayPause:
-        if (d->view && d->view->lastContextMenuRequest()->mediaUrl().isValid()
+        if (d->view && d->view->lastContextMenuRequest() && d->view->lastContextMenuRequest()->mediaUrl().isValid()
             && (d->view->lastContextMenuRequest()->mediaType()
                         == QWebEngineContextMenuRequest::MediaTypeAudio
                 || d->view->lastContextMenuRequest()->mediaType()
@@ -1425,7 +1425,7 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         }
         break;
     case ToggleMediaMute:
-        if (d->view && d->view->lastContextMenuRequest()->mediaUrl().isValid()
+        if (d->view && d->view->lastContextMenuRequest() && d->view->lastContextMenuRequest()->mediaUrl().isValid()
             && d->view->lastContextMenuRequest()->mediaFlags()
                     & QWebEngineContextMenuRequest::MediaHasAudio) {
             // Make sure to negate the value, so that toggling actually works.
@@ -1436,7 +1436,7 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         }
         break;
     case InspectElement:
-        if (d->view)
+        if (d->view && d->view->lastContextMenuRequest())
             d->adapter->inspectElementAt(d->view->lastContextMenuRequest()->position());
         break;
     case ExitFullScreen:
