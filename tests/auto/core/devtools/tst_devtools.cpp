@@ -48,6 +48,9 @@ void tst_DevTools::attachAndDestroyPageFirst()
     page->load(QUrl("data:text/plain,foobarbaz"));
     QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 12000);
 
+    // shouldn't do anything until page is set
+    page->triggerAction(QWebEnginePage::InspectElement);
+
     inspector->setInspectedPage(page);
     page->triggerAction(QWebEnginePage::InspectElement);
 
@@ -62,6 +65,10 @@ void tst_DevTools::attachAndDestroyInspectorFirst()
 {
     // External inspector + manual destruction of inspector first
     QWebEnginePage* page = new QWebEnginePage();
+
+    // shouldn't do anything until page is set
+    page->triggerAction(QWebEnginePage::InspectElement);
+
     QWebEnginePage* inspector = new QWebEnginePage();
     inspector->setInspectedPage(page);
 

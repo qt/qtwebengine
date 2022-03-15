@@ -173,6 +173,7 @@ private Q_SLOTS:
     void setViewPreservesExplicitPage();
     void closeDiscardsPage();
     void loadAfterRendererCrashed();
+    void inspectElement();
 };
 
 // This will be called before the first test function is executed.
@@ -3479,6 +3480,37 @@ void tst_QWebEngineView::loadAfterRendererCrashed()
     view.load(QUrl("qrc:///resources/dummy.html"));
     QTRY_COMPARE(loadSpy.count(), 1);
     QVERIFY(loadSpy.first().first().toBool());
+}
+
+void tst_QWebEngineView::inspectElement()
+{
+    QWebEngineView view;
+    view.resize(640, 480);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    auto page = view.page();
+    // shouldn't do anything until page is set
+    page->triggerAction(QWebEnginePage::InspectElement);
+    QTest::qWait(100);
+
+    QSignalSpy spy(&view, &QWebEngineView::loadFinished);
+    view.load(QUrl("data:text/plain,foobarbaz"));
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 12000);
+
+    // shouldn't do anything since inspector is not attached
+    page->triggerAction(QWebEnginePage::InspectElement);
+    QTest::qWait(100);
+
+    QWebEngineView inspectorView;
+    inspectorView.resize(640, 480);
+    inspectorView.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&inspectorView));
+    inspectorView.page()->setInspectedPage(page);
+
+    page->triggerAction(QWebEnginePage::InspectElement);
+    // TODO verify somehow
+    QTest::qWait(100);
 }
 
 QTEST_MAIN(tst_QWebEngineView)
