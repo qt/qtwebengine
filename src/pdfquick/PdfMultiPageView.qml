@@ -44,7 +44,6 @@ import QtQuick.Shapes
 Item {
     // public API
     required property PdfDocument document
-    property bool debug: false
 
     property string selectedText
     function selectAll() {
@@ -54,8 +53,7 @@ Item {
     }
     function copySelectionToClipboard() {
         const currentItem = tableView.itemAtCell(tableView.cellAtPos(root.width / 2, root.height / 2))
-        if (debug)
-            console.log("currentItem", currentItem, "sel", currentItem.selection.text)
+        console.log(lcMPV, "currentItem", currentItem, "sel", currentItem.selection.text)
         if (currentItem)
             currentItem.selection.copyToClipboard()
     }
@@ -114,10 +112,16 @@ Item {
     function searchBack() { --searchModel.currentResult }
     function searchForward() { ++searchModel.currentResult }
 
+    LoggingCategory {
+        id: lcMPV
+        name: "qt.pdf.multipageview"
+    }
+
     id: root
     PdfStyle { id: style }
     TableView {
         id: tableView
+        property bool debug: false
         anchors.fill: parent
         anchors.leftMargin: 2
         model: modelInUse && root.document ? root.document.pageCount : 0
@@ -138,9 +142,9 @@ Item {
         rowHeightProvider: function(row) { return (rot90 ? document.pagePointSize(row).width : document.pagePointSize(row).height) * root.renderScale }
         delegate: Rectangle {
             id: pageHolder
-            color: root.debug ? "beige" : "transparent"
+            color: tableView.debug ? "beige" : "transparent"
             Text {
-                visible: root.debug
+                visible: tableView.debug
                 anchors { right: parent.right; verticalCenter: parent.verticalCenter }
                 rotation: -90; text: pageHolder.width.toFixed(1) + "x" + pageHolder.height.toFixed(1) + "\n" +
                                      image.width.toFixed(1) + "x" + image.height.toFixed(1)
@@ -237,10 +241,9 @@ Item {
                             const centroidInFlickable = tableView.mapFromItem(paper, pinch.centroid.position.x, pinch.centroid.position.y)
                             const newSourceWidth = image.sourceSize.width * paper.scale
                             const ratio = newSourceWidth / image.sourceSize.width
-                            if (root.debug)
-                                console.log("pinch ended on page", index, "with centroid", pinch.centroid.position, centroidInPoints, "wrt flickable", centroidInFlickable,
-                                            "page at", pageHolder.x.toFixed(2), pageHolder.y.toFixed(2),
-                                            "contentX/Y were", tableView.contentX.toFixed(2), tableView.contentY.toFixed(2))
+                            console.log(lcMPV, "pinch ended on page", index, "with centroid", pinch.centroid.position, centroidInPoints, "wrt flickable", centroidInFlickable,
+                                        "page at", pageHolder.x.toFixed(2), pageHolder.y.toFixed(2),
+                                        "contentX/Y were", tableView.contentX.toFixed(2), tableView.contentY.toFixed(2))
                             if (ratio > 1.1 || ratio < 0.9) {
                                 const centroidOnPage = Qt.point(centroidInPoints.x * root.renderScale * ratio, centroidInPoints.y * root.renderScale * ratio)
                                 paper.scale = 1
@@ -261,8 +264,7 @@ Item {
                                     tableView.contentX = pageHolder.x + tableView.originX + centroidOnPage.y - centroidInFlickable.x
                                     tableView.contentY = pageHolder.y + tableView.originY + image.width - centroidOnPage.x - centroidInFlickable.y
                                 }
-                                if (root.debug)
-                                    console.log("contentX/Y adjusted to", tableView.contentX.toFixed(2), tableView.contentY.toFixed(2), "y @top", pageHolder.y)
+                                console.log(lcMPV, "contentX/Y adjusted to", tableView.contentX.toFixed(2), tableView.contentY.toFixed(2), "y @top", pageHolder.y)
                                 tableView.returnToBounds()
                             }
                         }
@@ -398,10 +400,8 @@ Item {
                                      ? tableView.contentY - previousPageDelegate.y
                                      : 0
                 tableView.positionViewAtRow(page, Qt.AlignTop, currentYOffset)
-                if (root.debug) {
-                    console.log("going from page", previousPage, "to", page, "offset", currentYOffset,
-                                "ended up @", tableView.contentX.toFixed(1) + ", " + tableView.contentY.toFixed(1))
-                }
+                console.log(lcMPV, "going from page", previousPage, "to", page, "offset", currentYOffset,
+                            "ended up @", tableView.contentX.toFixed(1) + ", " + tableView.contentY.toFixed(1))
             } else {
                 // jump to a page and position the given location relative to the top-left corner of the viewport
                 var pageSize = root.document.pagePointSize(page)
@@ -412,10 +412,8 @@ Item {
                                             location.x * root.renderScale - jumpLocationMargin.x)),
                                         Math.max(0, location.y * root.renderScale - jumpLocationMargin.y))
                 tableView.positionViewAtCell(0, page, Qt.AlignLeft | Qt.AlignTop, offset)
-                if (root.debug) {
-                    console.log("going to zoom", zoom, "loc", location, "on page", page,
-                                "ended up @", tableView.contentX.toFixed(1) + ", " + tableView.contentY.toFixed(1))
-                }
+                console.log(lcMPV, "going to zoom", zoom, "loc", location, "on page", page,
+                            "ended up @", tableView.contentX.toFixed(1) + ", " + tableView.contentY.toFixed(1))
             }
             jumping = false
             previousPage = page

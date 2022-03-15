@@ -44,7 +44,6 @@ import QtQuick.Shapes
 Flickable {
     // public API
     required property PdfDocument document
-    property bool debug: false
     property alias status: image.status
 
     property alias selectedText: selection.text
@@ -83,8 +82,7 @@ Flickable {
     function scaleToWidth(width, height) {
         const pagePointSize = document.pagePointSize(navigationStack.currentPage)
         root.renderScale = root.width / (paper.rot90 ? pagePointSize.height : pagePointSize.width)
-        if (debug)
-            console.log("scaling", pagePointSize, "to fit", root.width, "rotated?", paper.rot90, "scale", root.renderScale)
+        console.log(lcSPV, "scaling", pagePointSize, "to fit", root.width, "rotated?", paper.rot90, "scale", root.renderScale)
         root.contentX = 0
         root.contentY = 0
     }
@@ -154,12 +152,15 @@ Flickable {
                 root.contentX += dx
             if (Math.abs(dy) > root.height / 3)
                 root.contentY += dy
-            if (root.debug) {
-                console.log("going to zoom", zoom, "loc", location,
-                            "on page", page, "ended up @", root.contentX + ", " + root.contentY)
-            }
+            console.log(lcSPV, "going to zoom", zoom, "loc", location,
+                        "on page", page, "ended up @", root.contentX + ", " + root.contentY)
         }
         onCurrentPageChanged: searchModel.currentPage = currentPage
+    }
+
+    LoggingCategory {
+        id: lcSPV
+        name: "qt.pdf.singlepageview"
     }
 
     Rectangle {
@@ -300,10 +301,9 @@ Flickable {
                     const centroidInFlickable = root.mapFromItem(paper, pinch.centroid.position.x, pinch.centroid.position.y)
                     const newSourceWidth = image.sourceSize.width * paper.scale
                     const ratio = newSourceWidth / image.sourceSize.width
-                    if (root.debug)
-                        console.log("pinch ended with centroid", pinch.centroid.position, centroidInPoints, "wrt flickable", centroidInFlickable,
-                                    "page at", paper.x.toFixed(2), paper.y.toFixed(2),
-                                    "contentX/Y were", root.contentX.toFixed(2), root.contentY.toFixed(2))
+                    console.log(lcSPV, "pinch ended with centroid", pinch.centroid.position, centroidInPoints, "wrt flickable", centroidInFlickable,
+                                "page at", paper.x.toFixed(2), paper.y.toFixed(2),
+                                "contentX/Y were", root.contentX.toFixed(2), root.contentY.toFixed(2))
                     if (ratio > 1.1 || ratio < 0.9) {
                         const centroidOnPage = Qt.point(centroidInPoints.x * root.renderScale * ratio, centroidInPoints.y * root.renderScale * ratio)
                         paper.scale = 1
@@ -312,8 +312,7 @@ Flickable {
                         root.contentX = centroidOnPage.x - centroidInFlickable.x
                         root.contentY = centroidOnPage.y - centroidInFlickable.y
                         root.renderScale *= ratio // onRenderScaleChanged calls navigationStack.update() so we don't need to here
-                        if (root.debug)
-                            console.log("contentX/Y adjusted to", root.contentX.toFixed(2), root.contentY.toFixed(2))
+                        console.log(lcSPV, "contentX/Y adjusted to", root.contentX.toFixed(2), root.contentY.toFixed(2))
                     } else {
                         paper.x = 0
                         paper.y = 0
