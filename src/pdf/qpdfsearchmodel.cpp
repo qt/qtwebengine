@@ -58,6 +58,39 @@ static const int UpdateTimerInterval = 100;
 static const int ContextChars = 64;
 static const double CharacterHitTolerance = 6.0;
 
+/*!
+    \class QPdfSearchModel
+    \since 5.15
+    \inmodule QtPdf
+    \inherits QAbstractListModel
+
+    \brief The QPdfSearchModel class searches for a string in a PDF document
+    and holds the results.
+
+    This is used in the \l {Model/View Programming} paradigm to display
+    a list of search results, to highlight them on the rendered PDF pages,
+    and to iterate through them using the "search forward" / "search backward"
+    buttons and shortcuts that would be found in a typical document-viewing UI:
+
+    \image search-results.png
+*/
+
+/*!
+    \enum QPdfSearchModel::Role
+
+    \value Page The page number where the search result is found (int).
+    \value IndexOnPage The index of the search result on the page (int).
+    \value Location The position of the search result on the page (QPointF).
+    \value ContextBefore The adjacent text on the page, before the search string (QString).
+    \value ContextAfter The adjacent text on the page, after the search string (QString).
+    \omitvalue _Count
+
+    \sa QPdfLink
+*/
+
+/*!
+    Constructs a new search model with parent object \a parent.
+*/
 QPdfSearchModel::QPdfSearchModel(QObject *parent)
     : QAbstractListModel(*(new QPdfSearchModelPrivate()), parent)
 {
@@ -71,13 +104,24 @@ QPdfSearchModel::QPdfSearchModel(QObject *parent)
     }
 }
 
+/*!
+    Destroys the model.
+*/
 QPdfSearchModel::~QPdfSearchModel() {}
 
+/*!
+    \reimp
+*/
 QHash<int, QByteArray> QPdfSearchModel::roleNames() const
 {
     return m_roleNames;
 }
 
+/*!
+    \reimp
+
+    The number of rows in the model is equal to the number of search results found.
+*/
 int QPdfSearchModel::rowCount(const QModelIndex &parent) const
 {
     Q_D(const QPdfSearchModel);
@@ -85,6 +129,9 @@ int QPdfSearchModel::rowCount(const QModelIndex &parent) const
     return d->rowCountSoFar;
 }
 
+/*!
+    \reimp
+*/
 QVariant QPdfSearchModel::data(const QModelIndex &index, int role) const
 {
     Q_D(const QPdfSearchModel);
@@ -120,6 +167,10 @@ void QPdfSearchModel::updatePage(int page)
     d->doSearch(page);
 }
 
+/*!
+    \property QPdfSearchModel::searchString
+    \brief the string to search for
+*/
 QString QPdfSearchModel::searchString() const
 {
     Q_D(const QPdfSearchModel);
@@ -139,6 +190,9 @@ void QPdfSearchModel::setSearchString(const QString &searchString)
     endResetModel();
 }
 
+/*!
+    Returns the list of all results found on the given \a page.
+*/
 QList<QPdfLink> QPdfSearchModel::resultsOnPage(int page) const
 {
     Q_D(const QPdfSearchModel);
@@ -148,6 +202,10 @@ QList<QPdfLink> QPdfSearchModel::resultsOnPage(int page) const
     return d->searchResults[page];
 }
 
+/*!
+    Returns a result found by \a index in the \l document, regardless of the
+    page on which it was found.  \a index must be less than \l rowCount.
+*/
 QPdfLink QPdfSearchModel::resultAtIndex(int index) const
 {
     Q_D(const QPdfSearchModel);
@@ -157,6 +215,10 @@ QPdfLink QPdfSearchModel::resultAtIndex(int index) const
     return d->searchResults[pi.page][pi.index];
 }
 
+/*!
+    \property QPdfSearchModel::document
+    \brief the document to search
+*/
 QPdfDocument *QPdfSearchModel::document() const
 {
     Q_D(const QPdfSearchModel);
