@@ -459,9 +459,9 @@ void QPdfView::paintEvent(QPaintEvent *event)
             const auto pageIt = d->m_pageCache.constFind(page);
             if (pageIt != d->m_pageCache.cend()) {
                 const QImage &img = pageIt.value();
-                painter.drawImage(pageGeometry.topLeft(), img);
+                painter.drawImage(pageGeometry, img);
             } else {
-                d->m_pageRenderer->requestPage(page, pageGeometry.size());
+                d->m_pageRenderer->requestPage(page, pageGeometry.size() * devicePixelRatioF());
             }
         }
     }
