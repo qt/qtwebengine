@@ -63,7 +63,7 @@ class Q_PDF_EXPORT QPdfPageNavigation : public QObject
 public:
     QPdfPageNavigation() : QPdfPageNavigation(nullptr) {}
     explicit QPdfPageNavigation(QObject *parent);
-    ~QPdfPageNavigation();
+    ~QPdfPageNavigation() override;
 
     QPdfDocument* document() const;
     void setDocument(QPdfDocument *document);

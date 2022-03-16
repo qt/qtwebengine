@@ -68,7 +68,7 @@ class Q_PDFQUICK_EXPORT QQuickPdfPageImage : public QQuickImage
 
 public:
     QQuickPdfPageImage(QQuickItem *parent = nullptr);
-    ~QQuickPdfPageImage();
+    ~QQuickPdfPageImage() override;
 
     void setDocument(QQuickPdfDocument *document);
     QQuickPdfDocument *document() const;

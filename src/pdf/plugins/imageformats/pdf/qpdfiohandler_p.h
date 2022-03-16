@@ -60,7 +60,7 @@ class QPdfIOHandler : public QImageIOHandler
 {
 public:
     QPdfIOHandler();
-    virtual ~QPdfIOHandler();
+    ~QPdfIOHandler() override;
     bool canRead() const override;
     static bool canRead(QIODevice *device);
     int currentImageNumber() const override;

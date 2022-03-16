@@ -95,7 +95,7 @@ public:
 
     QPdfDocument() : QPdfDocument(nullptr) {}
     explicit QPdfDocument(QObject *parent);
-    ~QPdfDocument();
+    ~QPdfDocument() override;
 
     DocumentError load(const QString &fileName);
 

@@ -68,7 +68,7 @@ public:
     Q_ENUM(Role)
     QPdfSearchModel() : QPdfSearchModel(nullptr) {}
     explicit QPdfSearchModel(QObject *parent);
-    ~QPdfSearchModel();
+    ~QPdfSearchModel() override;
 
     QList<QPdfSearchResult> resultsOnPage(int page) const;
     QPdfSearchResult resultAtIndex(int index) const;
