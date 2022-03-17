@@ -329,9 +329,13 @@ bool RenderWidgetHostViewQtDelegateClient::forwardEvent(QEvent *event)
         handleHoverEvent(static_cast<QHoverEvent *>(event));
         break;
     case QEvent::FocusIn:
-    case QEvent::FocusOut:
-        handleFocusEvent(static_cast<QFocusEvent *>(event));
-        break;
+    case QEvent::FocusOut: {
+        // Focus in/out events for popup event do not mean 'parent' focus change
+        // and should not be handled by Chromium
+        QFocusEvent *e = static_cast<QFocusEvent *>(event);
+        if (e->reason() != Qt::PopupFocusReason)
+            handleFocusEvent(e);
+    } break;
     case QEvent::InputMethod:
         handleInputMethodEvent(static_cast<QInputMethodEvent *>(event));
         break;

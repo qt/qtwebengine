@@ -75,16 +75,11 @@ protected:
     }
     void focusInEvent(QFocusEvent *event) override
     {
-        Q_ASSERT(event->reason() != Qt::PopupFocusReason);
         m_client->forwardEvent(event);
     }
     void focusOutEvent(QFocusEvent *event) override
     {
-        // The keyboard events are supposed to go to the parent RenderHostView and WebUI
-        // popups should never have focus, therefore ignore focusOutEvent as losing focus
-        // will trigger pop close request from blink
-        if (event->reason() != Qt::PopupFocusReason)
-            m_client->forwardEvent(event);
+        m_client->forwardEvent(event);
     }
     void inputMethodEvent(QInputMethodEvent *event) override
     {
