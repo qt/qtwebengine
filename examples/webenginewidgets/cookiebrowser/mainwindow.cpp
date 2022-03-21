@@ -107,7 +107,7 @@ CookieWidget::CookieWidget(const QNetworkCookie &cookie, QWidget *parent): QWidg
 void CookieWidget::setHighlighted(bool enabled)
 {
     QPalette p = palette();
-    p.setColor(backgroundRole(), enabled ? QColor(0xF0, 0xF8, 0xFF) : Qt::white);
+    p.setColor(backgroundRole(), enabled ? p.alternateBase().color() : p.base().color());
     setPalette(p);
 }
 
