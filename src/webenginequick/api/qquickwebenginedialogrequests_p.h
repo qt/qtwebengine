@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -52,6 +52,7 @@
 //
 
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
+#include <QtCore/qobject.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qurl.h>

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -53,7 +53,8 @@
 
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 
-#include <QSharedPointer>
+#include <QtCore/qobject.h>
+#include <QtCore/qsharedpointer.h>
 
 QT_BEGIN_NAMESPACE
 class QPagedPaintDevice;
