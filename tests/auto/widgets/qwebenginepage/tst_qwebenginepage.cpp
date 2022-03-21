@@ -66,6 +66,7 @@
 #include <qwebengineurlschemehandler.h>
 #include <qwebengineview.h>
 #include <qimagewriter.h>
+#include <QColorSpace>
 
 static void removeRecursive(const QString& dirname)
 {
@@ -520,6 +521,7 @@ void tst_QWebEnginePage::pasteImage()
     QByteArray data = evaluateJavaScriptSync(page, "window.myImageDataURL").toByteArray();
     data.remove(0, data.indexOf(";base64,") + 8);
     QImage image = QImage::fromData(QByteArray::fromBase64(data), "PNG");
+    image.setColorSpace(origImage.colorSpace());
     if (image.format() == QImage::Format_RGB32)
         image.reinterpretAsFormat(QImage::Format_ARGB32);
     QCOMPARE(image, origImage);
