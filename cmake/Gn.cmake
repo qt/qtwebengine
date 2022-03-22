@@ -15,7 +15,6 @@ include(${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Functions.cmake)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 
 find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT)
-find_program(Python3_EXECUTABLE NAMES python3 HINTS $ENV{PYTHON3_PATH})
 if(NOT Python3_EXECUTABLE)
     find_package(Python3 3.6 REQUIRED)
 endif()
