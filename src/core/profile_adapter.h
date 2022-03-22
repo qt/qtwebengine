@@ -53,10 +53,11 @@
 
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 
-#include <QEnableSharedFromThis>
+#include <QHash>
 #include <QList>
 #include <QPointer>
 #include <QScopedPointer>
+#include <QSharedPointer>
 #include <QString>
 
 #include <QtWebEngineCore/qwebengineclientcertificatestore.h>
