@@ -1103,6 +1103,7 @@ function(add_gn_command)
              -DSOURCE_DIR=${CMAKE_CURRENT_LIST_DIR}
              -DMODULE=${arg_MODULE}
              -DQT_HOST_GN_PATH=${QT_HOST_GN_PATH}
+             -DPython2_EXECUTABLE=${Python2_EXECUTABLE}
              -P ${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Gn.cmake
         WORKING_DIRECTORY ${WEBENGINE_ROOT_BUILD_DIR}
         COMMENT "Run gn for target ${arg_CMAKE_TARGET} in ${arg_BUILDDIR}"

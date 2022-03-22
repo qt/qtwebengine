@@ -15,7 +15,6 @@ include(${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Functions.cmake)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 
 find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT)
-find_package(Python2 2.7.5 REQUIRED)
 
 set(gnCmd ${Gn_EXECUTABLE})
 set(buildDir ${BUILD_DIR})
