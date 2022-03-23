@@ -56,7 +56,7 @@ public:
     constexpr void setRotation(QPdf::Rotation r) noexcept { m_rotation = r; }
 
     constexpr QPdf::RenderFlags renderFlags() const noexcept { return static_cast<QPdf::RenderFlags>(m_renderFlags); }
-    constexpr void setRenderFlags(QPdf::RenderFlags r) noexcept { m_renderFlags = r; }
+    constexpr void setRenderFlags(QPdf::RenderFlags r) noexcept { m_renderFlags = quint32(r.toInt()); }
 
     constexpr QRect scaledClipRect() const noexcept { return m_clipRect; }
     constexpr void setScaledClipRect(const QRect &r) noexcept { m_clipRect = r; }
