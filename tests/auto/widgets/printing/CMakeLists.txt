@@ -17,9 +17,7 @@ qt_internal_add_test(tst_printing
 )
 
 qt_internal_extend_target(tst_printing
-    CONDITION POPPLER_CPP_FOUND
-    DEFINES
-        POPPLER_CPP
+    CONDITION POPPLER_CPP_FOUND AND QT_FEATURE_webengine_system_poppler
     LIBRARIES
         PkgConfig::POPPLER_CPP
 )
