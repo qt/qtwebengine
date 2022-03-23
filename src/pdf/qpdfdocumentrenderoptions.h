@@ -65,7 +65,7 @@ public:
     constexpr void setScaledSize(const QSize &s) noexcept { m_scaledSize = s; }
 
 private:
-    friend constexpr inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) noexcept;
+    friend constexpr inline bool operator==(const QPdfDocumentRenderOptions &lhs, const QPdfDocumentRenderOptions &rhs) noexcept;
 
     QRect m_clipRect;
     QSize m_scaledSize;
@@ -78,14 +78,14 @@ private:
 
 Q_DECLARE_TYPEINFO(QPdfDocumentRenderOptions, Q_PRIMITIVE_TYPE);
 
-constexpr inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) noexcept
+constexpr inline bool operator==(const QPdfDocumentRenderOptions &lhs, const QPdfDocumentRenderOptions &rhs) noexcept
 {
     return lhs.m_clipRect == rhs.m_clipRect && lhs.m_scaledSize == rhs.m_scaledSize &&
             lhs.m_renderFlags == rhs.m_renderFlags && lhs.m_rotation == rhs.m_rotation &&
             lhs.m_reserved == rhs.m_reserved && lhs.m_reserved2 == rhs.m_reserved2; // fix -Wunused-private-field
 }
 
-constexpr inline bool operator!=(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) noexcept
+constexpr inline bool operator!=(const QPdfDocumentRenderOptions &lhs, const QPdfDocumentRenderOptions &rhs) noexcept
 {
     return !operator==(lhs, rhs);
 }
