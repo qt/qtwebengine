@@ -880,6 +880,9 @@ macro(append_compiler_linker_sdk_setup)
                 ios_enable_code_signing=false
             )
         endif()
+        extend_gn_list(gnArgArg ARGS use_libcxx
+            CONDITION QT_FEATURE_stdlib_libcpp OR MACOS
+        )
     else()
         if(QT_FEATURE_use_lld_linker)
             get_filename_component(clangBasePath ${CMAKE_LINKER} DIRECTORY)

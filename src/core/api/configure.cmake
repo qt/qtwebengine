@@ -8,6 +8,7 @@ if(NOT QT_CONFIGURE_RUNNING)
         pkg_check_modules(ALSA alsa IMPORTED_TARGET)
         pkg_check_modules(PULSEAUDIO libpulse>=0.9.10 libpulse-mainloop-glib)
         pkg_check_modules(XDAMAGE xdamage)
+        pkg_check_modules(POPPLER_CPP poppler-cpp IMPORTED_TARGET)
         if(NOT GIO_FOUND)
             pkg_check_modules(GIO gio-2.0)
         endif()
@@ -18,6 +19,19 @@ if(NOT QT_CONFIGURE_RUNNING)
 endif()
 
 #### Tests
+
+qt_config_compile_test(poppler
+    LABEL "poppler"
+    LIBRARIES
+        PkgConfig::POPPLER_CPP
+    CODE
+"
+#include <poppler-document.h>
+
+int main() {
+   auto *pdf = poppler::document::load_from_raw_data(\"file\",100,std::string(\"user\"));
+}"
+)
 
 qt_config_compile_test(alsa
     LABEL "alsa"
@@ -130,6 +144,11 @@ qt_feature("webengine-sanitizer" PRIVATE
     PURPOSE "Enables support for build with sanitizers"
     AUTODETECT CLANG
     CONDITION CLANG AND ECM_ENABLE_SANITIZERS
+)
+# internal testing feature
+qt_feature("webengine-system-poppler" PRIVATE
+    LABEL "popler"
+    CONDITION UNIX AND TEST_poppler
 )
 qt_configure_add_summary_section(NAME "Qt WebEngineCore")
 qt_configure_add_summary_entry(ARGS "webengine-embedded-build")

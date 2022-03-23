@@ -71,11 +71,14 @@ qt_config_compile_test(re2
     CODE
 "
 #include \"re2/filtered_re2.h\"
+#include <vector>
 int main() {
     std::string s;
     re2::FilteredRE2 fre2(1);
     int id = 0;
     fre2.Add(s, {}, &id);
+    std::vector<std::string> pattern = {\"match\"};
+    fre2.Compile(&pattern);
     const RE2 &re2 = fre2.GetRE2(id);
 }"
 )
@@ -269,7 +272,7 @@ qt_feature("webengine-developer-build" PRIVATE
 )
 qt_feature("webengine-system-re2" PRIVATE
     LABEL "re2"
-    AUTODETECT UNIX AND TEST_re2
+    CONDITION UNIX AND TEST_re2
 )
 qt_feature("webengine-system-icu" PRIVATE
     LABEL "icu"

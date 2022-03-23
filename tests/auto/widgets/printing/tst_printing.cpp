@@ -27,13 +27,14 @@
 ****************************************************************************/
 
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
+#include <QtWebEngineCore/qtwebenginecore-config.h>
 #include <QWebEngineView>
 #include <QTemporaryDir>
 #include <QTest>
 #include <QSignalSpy>
 #include <util.h>
 
-#if defined(POPPLER_CPP)
+#if QT_CONFIG(webengine_system_poppler)
 #include <poppler-document.h>
 #include <poppler-page.h>
 #endif
@@ -44,7 +45,7 @@ class tst_Printing : public QObject
 private slots:
     void printToPdfBasic();
     void printRequest();
-#if defined(POPPLER_CPP) && defined(Q_OS_LINUX) && defined(__GLIBCXX__)
+#if QT_CONFIG(webengine_system_poppler)
     void printToPdfPoppler();
 #endif
 };
@@ -110,7 +111,7 @@ void tst_Printing::printRequest()
      QVERIFY(data.length() > 0);
 }
 
-#if defined(POPPLER_CPP) && defined(Q_OS_LINUX) && defined(__GLIBCXX__)
+#if QT_CONFIG(webengine_system_poppler)
 void tst_Printing::printToPdfPoppler()
 {
     // check if generated pdf is correct by searching for a know string on the page
