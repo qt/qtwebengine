@@ -77,6 +77,7 @@ Item {
         }
 
         Rectangle {
+            width: parent.width
             height: 30
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             gradient: Gradient {

@@ -79,6 +79,7 @@ Item {
 
         Rectangle {
             id: rectangle
+            width: parent.width
             height: 30
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             gradient: Gradient {
@@ -111,7 +112,7 @@ Item {
 
         Text {
             id: message
-            text: item.message
+            text: root.message
             font.pointSize: 12
         }
 
