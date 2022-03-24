@@ -79,6 +79,8 @@
             Error is related to the FTP connection.
     \value  WebEngineLoadingInfo.DnsErrorDomain
             Error is related to the DNS connection.
+    \value  WebEngineLoadingInfo.HttpStatusCodeDomain
+            Error is the HTTP response status code, even in case of success e.g. the server replied with status 200.
 */
 /*!
     \qmlproperty int WebEngineLoadingInfo::errorCode

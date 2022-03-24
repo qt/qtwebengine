@@ -65,6 +65,10 @@ const int endErrors = -900;
 
 WebEngineError::ErrorDomain WebEngineError::toQtErrorDomain(int error_code)
 {
+    // net errors are always negative values, and https response codes are positive
+    if (error_code > 0)
+        return HttpStatusCodeDomain;
+
     // Chromium's ranges from net/base/net_error_list.h:
     //         0 No error
     //     1- 99 System related errors

@@ -314,6 +314,7 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineLoadingInfo.LoadStartedStatus --> LoadStatus"
     << "QWebEngineLoadingInfo.LoadStoppedStatus --> LoadStatus"
     << "QWebEngineLoadingInfo.LoadSucceededStatus --> LoadStatus"
+    << "QWebEngineLoadingInfo.HttpStatusCodeDomain --> ErrorDomain"
     << "QWebEngineLoadingInfo.CertificateErrorDomain --> ErrorDomain"
     << "QWebEngineLoadingInfo.ConnectionErrorDomain --> ErrorDomain"
     << "QWebEngineLoadingInfo.DnsErrorDomain --> ErrorDomain"

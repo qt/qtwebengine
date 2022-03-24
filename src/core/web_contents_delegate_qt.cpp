@@ -393,9 +393,9 @@ void WebContentsDelegateQt::emitLoadFinished(bool isErrorPage)
         ? QWebEngineLoadingInfo::LoadSucceededStatus
         : (m_loadingInfo.errorCode == WebEngineError::UserAbortedError
                 ? QWebEngineLoadingInfo::LoadStoppedStatus : QWebEngineLoadingInfo::LoadFailedStatus);
-    auto errorDomain = static_cast<QWebEngineLoadingInfo::ErrorDomain>(WebEngineError::toQtErrorDomain(m_loadingInfo.errorCode));
     QWebEngineLoadingInfo info(m_loadingInfo.url, loadStatus, m_loadingInfo.isErrorPage,
-                               m_loadingInfo.errorDescription, m_loadingInfo.errorCode, errorDomain);
+                               m_loadingInfo.errorDescription, m_loadingInfo.errorCode,
+                               QWebEngineLoadingInfo::ErrorDomain(m_loadingInfo.errorDomain));
     m_viewClient->loadFinished(std::move(info));
     m_viewClient->updateNavigationActions();
 }
@@ -480,6 +480,7 @@ void WebContentsDelegateQt::didFailLoad(const QUrl &url, int errorCode, const QS
     m_loadingInfo.success = false;
     m_loadingInfo.url = url;
     m_loadingInfo.errorCode = errorCode;
+    m_loadingInfo.errorDomain = WebEngineError::toQtErrorDomain(errorCode);
     m_loadingInfo.errorDescription = errorDescription;
     m_loadingInfo.triggersErrorPage = errorPageEnabled && !aborted;
 }
@@ -527,6 +528,7 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
     m_loadingInfo.success = http_statuscode < 400;
     m_loadingInfo.url = toQt(validated_url);
     m_loadingInfo.errorCode = http_statuscode;
+    m_loadingInfo.errorDomain = WebEngineError::toQtErrorDomain(http_statuscode);
     m_loadingInfo.errorDescription = WebEngineError::toQtErrorDescription(http_statuscode);
     m_loadingInfo.triggersErrorPage = triggersErrorPage;
 }

@@ -53,6 +53,7 @@ Q_STATIC_ASSERT(static_cast<int>(WebEngineError::CertificateErrorDomain) == stat
 Q_STATIC_ASSERT(static_cast<int>(WebEngineError::HttpErrorDomain) == static_cast<int>(ErrorDomain::HttpErrorDomain));
 Q_STATIC_ASSERT(static_cast<int>(WebEngineError::FtpErrorDomain) == static_cast<int>(ErrorDomain::FtpErrorDomain));
 Q_STATIC_ASSERT(static_cast<int>(WebEngineError::DnsErrorDomain) == static_cast<int>(ErrorDomain::DnsErrorDomain));
+Q_STATIC_ASSERT(static_cast<int>(WebEngineError::HttpStatusCodeDomain) == static_cast<int>(ErrorDomain::HttpStatusCodeDomain));
 
 class QWebEngineLoadingInfo::QWebEngineLoadingInfoPrivate : public QSharedData {
 public:
@@ -169,6 +170,8 @@ QString QWebEngineLoadingInfo::errorString() const
             Error is related to the FTP connection.
     \value  DnsErrorDomain
             Error is related to the DNS connection.
+    \value  HttpStatusCodeDomain
+            Error is the HTTP response status code, even in case of success e.g. the server replied with status 200.
 */
 /*
     \property QWebEngineLoadingInfo::errorDomain

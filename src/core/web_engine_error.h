@@ -64,7 +64,8 @@ public:
          CertificateErrorDomain,
          HttpErrorDomain,
          FtpErrorDomain,
-         DnsErrorDomain
+         DnsErrorDomain,
+         HttpStatusCodeDomain
     };
 
     static const int UserAbortedError;
