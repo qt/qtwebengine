@@ -105,7 +105,7 @@ std::string ResourceBundle::LoadLocaleResources(const std::string &pref_locale, 
     if (locale_fd > -1) {
         std::unique_ptr<DataPack> data_pack(new DataPack(ui::k100Percent));
         data_pack->LoadFromFile(base::File(locale_fd));
-        locale_resources_data_.reset(data_pack.release());
+        locale_resources_data_ = std::move(data_pack);
         return app_locale;
     }
 #endif
@@ -129,7 +129,7 @@ std::string ResourceBundle::LoadLocaleResources(const std::string &pref_locale, 
         return std::string();
     }
 
-    locale_resources_data_.reset(data_pack.release());
+    locale_resources_data_ = std::move(data_pack);
     return app_locale;
 }
 

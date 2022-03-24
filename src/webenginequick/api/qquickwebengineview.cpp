@@ -218,7 +218,7 @@ void QQuickWebEngineViewPrivate::releaseProfile()
     // garbage collected, delete WebContents first and
     // let the QQuickWebEngineView be collected later by gc.
     bindViewAndWidget(q_ptr, nullptr);
-    delete q_ptr->d_ptr.take();
+    q_ptr->d_ptr.reset();
 }
 
 UIDelegatesManager *QQuickWebEngineViewPrivate::ui()

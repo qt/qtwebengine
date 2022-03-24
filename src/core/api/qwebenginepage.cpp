@@ -506,7 +506,7 @@ void QWebEnginePagePrivate::releaseProfile()
 {
     qWarning("Release of profile requested but WebEnginePage still not deleted. Expect troubles !");
     // this is not the way to go, but might avoid the crash if user code does not make any calls to page.
-    delete q_ptr->d_ptr.take();
+    q_ptr->d_ptr.reset();
 }
 
 void QWebEnginePagePrivate::showColorDialog(QSharedPointer<ColorChooserController> controller)
