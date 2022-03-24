@@ -233,26 +233,28 @@ void tst_LoadSignals::rejectNavigationRequest_data()
     QTest::addColumn<QUrl>("rejectedUrl");
     QTest::addColumn<int>("expectedNavigations");
     QTest::addColumn<QList<int>>("expectedSignals");
+    QTest::addColumn<int>("errorCode");
+    QTest::addColumn<QWebEngineLoadingInfo::ErrorDomain>("errorDomain");
     QTest::newRow("Simple")
             << QUrl("qrc:///resources/page1.html")
             << QUrl("qrc:///resources/page1.html")
-            << 1 << SignalsOrderOnceFailure;
+            << 1 << SignalsOrderOnceFailure << -3 << QWebEngineLoadingInfo::InternalErrorDomain;
     QTest::newRow("SamePageImmediate")
             << QUrl("qrc:///resources/page5.html")
             << QUrl("qrc:///resources/page5.html#anchor")
-            << 1 << SignalsOrderOnce;
+            << 1 << SignalsOrderOnce << 200 << QWebEngineLoadingInfo::InternalErrorDomain; // FIXME wrong error domain
     QTest::newRow("SamePageDeferred")
             << QUrl("qrc:///resources/page3.html")
             << QUrl("qrc:///resources/page3.html#anchor")
-            << 1 << SignalsOrderOnce;
+            << 1 << SignalsOrderOnce << 200 << QWebEngineLoadingInfo::InternalErrorDomain; // FIXME wrong error domain
     QTest::newRow("OtherPageImmediate")
             << QUrl("qrc:///resources/page6.html")
             << QUrl("qrc:///resources/page2.html#anchor")
-            << 2 << SignalsOrderOnceFailure;
+            << 2 << SignalsOrderOnceFailure << -3 << QWebEngineLoadingInfo::InternalErrorDomain;
     QTest::newRow("OtherPageDeferred")
             << QUrl("qrc:///resources/page7.html")
             << QUrl("qrc:///resources/page2.html#anchor")
-            << 2 << SignalsOrderTwiceWithFailure;
+            << 2 << SignalsOrderTwiceWithFailure << -3 << QWebEngineLoadingInfo::InternalErrorDomain;
 }
 
 /**
@@ -267,6 +269,8 @@ void tst_LoadSignals::rejectNavigationRequest()
     QFETCH(QUrl, rejectedUrl);
     QFETCH(int, expectedNavigations);
     QFETCH(QList<int>, expectedSignals);
+    QFETCH(int, errorCode);
+    QFETCH(QWebEngineLoadingInfo::ErrorDomain, errorDomain);
 
     page.blacklist.insert(rejectedUrl);
     page.load(initialUrl);
@@ -281,6 +285,8 @@ void tst_LoadSignals::rejectNavigationRequest()
     // No further loadStarted should have occurred within this time
     QCOMPARE(loadStartedSpy.size(), expectedLoadCount);
     QCOMPARE(loadFinishedSpy.size(), expectedLoadCount);
+    QCOMPARE(page.loadingInfos.last().errorCode(), errorCode);
+    QCOMPARE(page.loadingInfos.last().errorDomain(), errorDomain);
 }
 
 /**
@@ -368,6 +374,8 @@ void tst_LoadSignals::fileDownload()
     QTRY_LOOP_IMPL(loadStartedSpy.size() != 2 || loadFinishedSpy.size() != 2, 1000, 100);
 
     QCOMPARE(page.signalsOrder, SignalsOrderTwiceWithFailure);
+    QCOMPARE(page.loadingInfos[3].errorCode(), -3);
+    QCOMPARE(page.loadingInfos[3].errorDomain(), QWebEngineLoadingInfo::InternalErrorDomain);
 }
 
 void tst_LoadSignals::numberOfStartedAndFinishedSignalsIsSame_data()
@@ -406,21 +414,27 @@ void tst_LoadSignals::numberOfStartedAndFinishedSignalsIsSame()
     resetSpies();
     QTRY_LOOP_IMPL(loadStartedSpy.size() || loadFinishedSpy.size(), 1000, 100);
     QCOMPARE(page.signalsOrder, SignalsOrderOnce);
+    QCOMPARE(page.loadingInfos[1].errorCode(), 200);
+    QCOMPARE(page.loadingInfos[1].errorDomain(), QWebEngineLoadingInfo::InternalErrorDomain); // FIXME should be no error or separate domain?
 }
 
 void tst_LoadSignals::loadFinishedAfterNotFoundError_data()
 {
     QTest::addColumn<bool>("rfcInvalid");
     QTest::addColumn<bool>("withServer");
-    QTest::addRow("rfc_invalid")  << true  << false;
-    QTest::addRow("non_existent") << false << false;
-    QTest::addRow("server_404")   << false << true;
+    QTest::addColumn<int>("errorCode");
+    QTest::addColumn<int>("errorDomain");
+    QTest::addRow("rfc_invalid")  << true  << false << -105 << int(QWebEngineLoadingInfo::ConnectionErrorDomain);
+    QTest::addRow("non_existent") << false << false << -105 << int(QWebEngineLoadingInfo::ConnectionErrorDomain);
+    QTest::addRow("server_404")   << false << true  <<  404 << int(QWebEngineLoadingInfo::InternalErrorDomain); // FIXME should be no error or separate domain?
 }
 
 void tst_LoadSignals::loadFinishedAfterNotFoundError()
 {
-    QFETCH(bool, withServer);
     QFETCH(bool, rfcInvalid);
+    QFETCH(bool, withServer);
+    QFETCH(int, errorCode);
+    QFETCH(int, errorDomain);
 
     QScopedPointer<HttpServer> server;
     if (withServer) {
@@ -440,6 +454,19 @@ void tst_LoadSignals::loadFinishedAfterNotFoundError()
     QVERIFY(std::is_sorted(page.loadProgress.begin(), page.loadProgress.end()));
     page.loadProgress.clear();
 
+    { auto &&loadStart = page.loadingInfos[0], &&loadFinish = page.loadingInfos[1];
+        QCOMPARE(loadStart.status(), QWebEngineLoadingInfo::LoadStartedStatus);
+        QCOMPARE(loadStart.isErrorPage(), false);
+        QCOMPARE(loadStart.errorCode(), 0);
+        QCOMPARE(loadStart.errorDomain(), QWebEngineLoadingInfo::NoErrorDomain);
+        QCOMPARE(loadStart.errorString(), QString());
+        QCOMPARE(loadFinish.status(), QWebEngineLoadingInfo::LoadFailedStatus);
+        QCOMPARE(loadFinish.isErrorPage(), false);
+        QCOMPARE(loadFinish.errorCode(), errorCode);
+        QCOMPARE(loadFinish.errorDomain(), errorDomain);
+        QVERIFY(!loadFinish.errorString().isEmpty());
+    }
+
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, true);
     url = server
         ? server->url("/another-missing-one.html")
@@ -453,6 +480,19 @@ void tst_LoadSignals::loadFinishedAfterNotFoundError()
     QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 3, 1000);
     QCOMPARE(loadStartedSpy.count(), 2);
     QVERIFY(std::is_sorted(page.loadProgress.begin(), page.loadProgress.end()));
+
+    { auto &&loadStart = page.loadingInfos[2], &&loadFinish = page.loadingInfos[3];
+        QCOMPARE(loadStart.status(), QWebEngineLoadingInfo::LoadStartedStatus);
+        QCOMPARE(loadStart.isErrorPage(), false);
+        QCOMPARE(loadStart.errorCode(), 0);
+        QCOMPARE(loadStart.errorDomain(), QWebEngineLoadingInfo::NoErrorDomain);
+        QCOMPARE(loadStart.errorString(), QString());
+        QCOMPARE(loadFinish.status(), QWebEngineLoadingInfo::LoadFailedStatus);
+        QCOMPARE(loadFinish.isErrorPage(), true);
+        QCOMPARE(loadFinish.errorCode(), errorCode);
+        QCOMPARE(loadFinish.errorDomain(), errorDomain);
+        QVERIFY(!loadFinish.errorString().isEmpty());
+    }
 }
 
 void tst_LoadSignals::errorPageTriggered_data()
@@ -460,10 +500,12 @@ void tst_LoadSignals::errorPageTriggered_data()
     QTest::addColumn<QString>("urlPath");
     QTest::addColumn<bool>("loadSucceed");
     QTest::addColumn<bool>("triggersErrorPage");
-    QTest::newRow("/content/200") << QStringLiteral("/content/200") << true << false;
-    QTest::newRow("/empty/200") << QStringLiteral("/content/200") << true << false;
-    QTest::newRow("/content/404") << QStringLiteral("/content/404") << false << false;
-    QTest::newRow("/empty/404") << QStringLiteral("/empty/404") << false << true;
+    QTest::addColumn<int>("errorCode");
+    QTest::addColumn<QWebEngineLoadingInfo::ErrorDomain>("errorDomain");
+    QTest::newRow("/content/200") << QStringLiteral("/content/200") << true << false << 200 << QWebEngineLoadingInfo::InternalErrorDomain;  // FIXME ?
+    QTest::newRow("/empty/200") << QStringLiteral("/content/200") << true << false << 200 << QWebEngineLoadingInfo::InternalErrorDomain;    // no error
+    QTest::newRow("/content/404") << QStringLiteral("/content/404") << false << false << 404 << QWebEngineLoadingInfo::InternalErrorDomain; // or
+    QTest::newRow("/empty/404") << QStringLiteral("/empty/404") << false << true << 404 << QWebEngineLoadingInfo::InternalErrorDomain;      // separate domain?
 }
 
 void tst_LoadSignals::errorPageTriggered()
@@ -490,6 +532,8 @@ void tst_LoadSignals::errorPageTriggered()
     QFETCH(QString, urlPath);
     QFETCH(bool, loadSucceed);
     QFETCH(bool, triggersErrorPage);
+    QFETCH(int, errorCode);
+    QFETCH(QWebEngineLoadingInfo::ErrorDomain, errorDomain);
 
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, true);
     view.load(server.url(urlPath));
@@ -499,6 +543,8 @@ void tst_LoadSignals::errorPageTriggered()
         QVERIFY(toPlainTextSync(view.page()).contains("HTTP ERROR 404"));
     else
         QVERIFY(toPlainTextSync(view.page()).isEmpty());
+    QCOMPARE(page.loadingInfos[1].errorCode(), errorCode);
+    QCOMPARE(page.loadingInfos[1].errorDomain(), errorDomain);
     loadFinishedSpy.clear();
 
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
@@ -506,6 +552,8 @@ void tst_LoadSignals::errorPageTriggered()
     QTRY_COMPARE(loadFinishedSpy.size(), 1);
     QCOMPARE(loadFinishedSpy[0][0].toBool(), loadSucceed);
     QVERIFY(toPlainTextSync(view.page()).isEmpty());
+    QCOMPARE(page.loadingInfos[3].errorCode(), errorCode);
+    QCOMPARE(page.loadingInfos[3].errorDomain(), errorDomain);
     loadFinishedSpy.clear();
 }
 
