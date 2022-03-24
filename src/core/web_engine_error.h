@@ -70,7 +70,7 @@ public:
     static const int UserAbortedError;
 
     static ErrorDomain toQtErrorDomain(int error_code);
-
+    static QString toQtErrorDescription(int errorCode);
 };
 
 #endif // WEB_ENGINE_ERROR_H

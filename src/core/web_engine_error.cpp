@@ -38,7 +38,16 @@
 ****************************************************************************/
 
 #include "web_engine_error.h"
+
+#include "components/error_page/common/error.h"
+#include "components/error_page/common/localized_error.h"
 #include "net/base/net_errors.h"
+
+#include "type_conversion.h"
+
+#include <QString>
+
+using namespace QtWebEngineCore;
 
 const int WebEngineError::UserAbortedError = net::ERR_ABORTED;
 
@@ -83,4 +92,14 @@ WebEngineError::ErrorDomain WebEngineError::toQtErrorDomain(int error_code)
         return WebEngineError::DnsErrorDomain;
     else
         return WebEngineError::InternalErrorDomain;
+}
+
+QString WebEngineError::toQtErrorDescription(int errorCode)
+{
+    if (errorCode < 0)
+        return toQt(net::ErrorToString(errorCode));
+    else if (errorCode > 0)
+        return toQt(error_page::LocalizedError::GetErrorDetails(
+            error_page::Error::kHttpErrorDomain, errorCode, false, false));
+    return QString();
 }
