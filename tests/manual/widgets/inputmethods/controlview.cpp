@@ -69,7 +69,7 @@ ControlView::ControlView(QWidget *parent)
     layout->addRow(m_sendEventButton);
     setLayout(layout);
 
-    connect(m_sendEventButton, &QPushButton::clicked, this, &ControlView::createAndSendInputMethodEvent);
+    connect(m_sendEventButton, &QPushButton::clicked, this, &ControlView::requestInputMethodEvent);
 }
 
 void ControlView::receiveInputMethodData(int start,
@@ -87,7 +87,12 @@ void ControlView::receiveInputMethodData(int start,
     m_inputLine->setText(input);
 }
 
-void ControlView::createAndSendInputMethodEvent()
+const QString ControlView::getText() const
+{
+    return m_inputLine->text();
+}
+
+const QList<QInputMethodEvent::Attribute> ControlView::getAtrributes() const
 {
     int start = m_startSpin->value();
     int length = m_lengthSpin->value();
@@ -102,7 +107,6 @@ void ControlView::createAndSendInputMethodEvent()
 
     QList<QInputMethodEvent::Attribute> attrs;
     attrs.append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, start, length, format));
-    QInputMethodEvent im(m_inputLine->text(), attrs);
 
-    emit sendInputMethodEvent(im);
+    return attrs;
 }

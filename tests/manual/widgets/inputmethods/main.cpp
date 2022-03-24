@@ -49,7 +49,12 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
 
+private slots:
+    void sendInputMethodEvents();
+
 private:
+    void closeEvent(QCloseEvent *event) override;
+
     ControlView *m_controlView;
     ReferenceView *m_referenceView;
     WebView *m_webView;
@@ -109,27 +114,42 @@ MainWindow::MainWindow(QWidget *parent)
     centralLayout->addLayout(leftLayout);
     centralLayout->addWidget(m_testView);
 
-    connect(m_testView, &TestView::sendInputMethodData, m_controlView, &ControlView::receiveInputMethodData);
-    connect(m_testView, &TestView::requestInputMethodEvent, m_controlView, &ControlView::createAndSendInputMethodEvent);
-
-    connect(m_controlView, &ControlView::sendInputMethodEvent, [=](QInputMethodEvent im) {
-        bool processed;
-        QString resultText;
-
-        processed = QApplication::sendEvent(m_referenceView->referenceInput(), &im);
-        resultText = processed ? QStringLiteral("<font color='green'>TRUE</font>")
-                               : QStringLiteral("<font color='red'>FALSE</font>");
-        m_referenceProcessed->setText(resultText);
-
-        processed = QApplication::sendEvent(m_webView->focusProxy(), &im);
-        resultText = processed ? QStringLiteral("<font color='green'>TRUE</font>")
-                               : QStringLiteral("<font color='red'>FALSE</font>");
-        m_webProcessed->setText(resultText);
-    });
+    connect(m_testView, &TestView::sendInputMethodData, m_controlView,
+            &ControlView::receiveInputMethodData);
+    connect(m_testView, &TestView::requestInputMethodEvent, this,
+            &MainWindow::sendInputMethodEvents);
+    connect(m_controlView, &ControlView::requestInputMethodEvent, this,
+            &MainWindow::sendInputMethodEvents);
 
     centralWidget->setLayout(centralLayout);
     setCentralWidget(centralWidget);
     setWindowTitle(tr("Input Methods Format Manual Test"));
+}
+
+void MainWindow::sendInputMethodEvents()
+{
+    bool processed;
+    QString resultText;
+
+    QString text = m_controlView->getText();
+    QList<QInputMethodEvent::Attribute> attrs = m_controlView->getAtrributes();
+    QInputMethodEvent im(text, attrs);
+
+    processed = QApplication::sendEvent(m_referenceView->referenceInput(), &im);
+    resultText = processed ? QStringLiteral("<font color='green'>TRUE</font>")
+                           : QStringLiteral("<font color='red'>FALSE</font>");
+    m_referenceProcessed->setText(resultText);
+
+    processed = QApplication::sendEvent(m_webView->focusProxy(), &im);
+    resultText = processed ? QStringLiteral("<font color='green'>TRUE</font>")
+                           : QStringLiteral("<font color='red'>FALSE</font>");
+    m_webProcessed->setText(resultText);
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    m_testView->cancelTest();
+    QMainWindow::closeEvent(event);
 }
 
 int main(int argc, char *argv[])

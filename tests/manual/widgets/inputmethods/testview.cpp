@@ -94,11 +94,19 @@ void TestView::loadTestData(const QString &testDataPath)
     testDataFile.close();
 }
 
+void TestView::cancelTest()
+{
+    if (!m_testRunning)
+        return;
+
+    m_testRunning = false;
+    m_testButton->setText(tr("Start Test"));
+}
+
 void TestView::startOrCancelTest()
 {
     if (m_testRunning) {
-        m_testRunning = false;
-        m_testButton->setText(tr("Start Test"));
+        cancelTest();
         return;
     }
 
@@ -120,10 +128,7 @@ void TestView::startOrCancelTest()
         QTest::qWait(1000);
     }
 
-    if (m_testRunning) {
-        m_testRunning = false;
-        m_testButton->setText(tr("Start Test"));
-    }
+    cancelTest();
 }
 
 void TestView::collectAndSendData()

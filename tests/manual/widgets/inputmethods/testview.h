@@ -41,6 +41,8 @@ class TestView : public QWidget
 public:
     explicit TestView(QWidget *parent = 0);
 
+    void cancelTest();
+
 public slots:
     void loadTestData(const QString &);
     void startOrCancelTest();
