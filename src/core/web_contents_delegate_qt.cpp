@@ -63,8 +63,6 @@
 #include "web_engine_settings.h"
 #include "certificate_error_controller.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
-#include "components/error_page/common/error.h"
-#include "components/error_page/common/localized_error.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -426,9 +424,11 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
         return;
 
     // WebContentsObserver::DidFailLoad is not called any longer so we have to report the failure here.
-    const net::Error error_code = navigation_handle->GetNetErrorCode();
-    const std::string error_description = net::ErrorToString(error_code);
-    didFailLoad(toQt(navigation_handle->GetURL()), error_code, toQt(error_description));
+    int error_code = navigation_handle->GetNetErrorCode();
+    if (error_code == net::ERR_HTTP_RESPONSE_CODE_FAILURE)
+        if (auto entry = web_contents()->GetController().GetActiveEntry())
+            error_code = entry->GetHttpStatusCode();
+    didFailLoad(toQt(navigation_handle->GetURL()), error_code, WebEngineError::toQtErrorDescription(error_code));
 
     // The load will succede as an error-page load later, and we reported the original error above
     if (navigation_handle->IsErrorPage()) {
@@ -512,12 +512,8 @@ void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_h
         emitLoadFinished(/* isErrorPage = */true);
         return;
     }
-    // Qt6: Consider getting rid of the error_description (Chromium already has)
-    base::string16 error_description;
-    error_description = error_page::LocalizedError::GetErrorDetails(
-                error_code <= 0 ? error_page::Error::kNetErrorDomain : error_page::Error::kHttpErrorDomain,
-                error_code, false, false);
-    didFailLoad(toQt(validated_url), error_code, toQt(error_description));
+
+    didFailLoad(toQt(validated_url), error_code, WebEngineError::toQtErrorDescription(error_code));
 }
 
 void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url)
@@ -546,6 +542,7 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
     m_loadingInfo.success = http_statuscode < 400;
     m_loadingInfo.url = toQt(validated_url);
     m_loadingInfo.errorCode = http_statuscode;
+    m_loadingInfo.errorDescription = WebEngineError::toQtErrorDescription(http_statuscode);
     m_loadingInfo.triggersErrorPage = triggersErrorPage;
 }
 
@@ -749,7 +746,7 @@ void WebContentsDelegateQt::launchExternalURL(const QUrl &url, ui::PageTransitio
         if (!navigationAllowedByPolicy)
             errorDescription = QStringLiteral("Launching external protocol forbidden by WebEngineSettings::UnknownUrlSchemePolicy");
         else
-            errorDescription = QStringLiteral("Launching external protocol suppressed by WebContentsAdapterClient::navigationRequested");
+            errorDescription = QStringLiteral("Launching external protocol suppressed by 'navigationRequested' API");
         didFailLoad(url, net::Error::ERR_ABORTED, errorDescription);
     }
 }
