@@ -124,6 +124,7 @@ Item {
             height: 22
             Layout.fillWidth: true
             font.pointSize: 12
+            textColor: "black"
         }
 
         Item {

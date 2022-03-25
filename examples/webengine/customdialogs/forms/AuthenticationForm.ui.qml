@@ -122,6 +122,7 @@ Item {
             height: 22
             Layout.fillWidth: true
             font.pointSize: 12
+            textColor: "black"
         }
 
         Text {
@@ -136,6 +137,8 @@ Item {
             height: 26
             Layout.fillWidth: true
             font.pointSize: 12
+            textColor: "black"
+            echoMode: TextInput.Password
         }
 
         Item {
