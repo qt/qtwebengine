@@ -122,6 +122,13 @@ Item {
             height: 22
             Layout.fillWidth: true
             font.pointSize: 12
+            color: "black"
+
+            background: Rectangle {
+                color: "white"
+                border.color: "black"
+                border.width: 1
+            }
         }
 
         Item {

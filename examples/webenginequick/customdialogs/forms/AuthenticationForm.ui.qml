@@ -120,6 +120,13 @@ Item {
             height: 22
             Layout.fillWidth: true
             font.pointSize: 12
+            color: "black"
+
+            background: Rectangle {
+                color: "white"
+                border.color: "black"
+                border.width: 1
+            }
         }
 
         Text {
@@ -134,6 +141,14 @@ Item {
             height: 26
             Layout.fillWidth: true
             font.pointSize: 12
+            color: "black"
+            echoMode: TextInput.Password
+
+            background: Rectangle {
+                color: "white"
+                border.color: "black"
+                border.width: 1
+            }
         }
 
         Item {
