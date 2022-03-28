@@ -33,14 +33,17 @@ target_link_libraries(pdfviewerwidgets PUBLIC
 
 # Resources:
 set(resources_resource_files
-    "images/busy.png"
-    "images/fileopen.png"
-    "images/go-next-24.png"
-    "images/go-previous-24.png"
-    "images/zoom-in-24.png"
-    "images/zoom-in-32.png"
-    "images/zoom-out-24.png"
-    "images/zoom-out-32.png"
+    "images/zoom-fit-width.svgz"
+    "images/zoom-in.svgz"
+    "images/go-previous-view-page.svgz"
+    "images/zoom-original.svgz"
+    "images/go-previous-view.svgz"
+    "images/go-next-view-page.svgz"
+    "images/zoom-fit-best.svgz"
+    "images/zoom-out.svgz"
+    "images/zoom-previous.svgz"
+    "images/document-open.svgz"
+    "images/go-next-view.svgz"
 )
 
 qt_add_resources(pdfviewerwidgets "resources"
