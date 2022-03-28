@@ -15,7 +15,6 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets PdfWidgets)
 qt_add_executable(pdfviewerwidgets
     main.cpp
     mainwindow.cpp mainwindow.h mainwindow.ui
-    pageselector.cpp pageselector.h
     zoomselector.cpp zoomselector.h
 )
 

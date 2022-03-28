@@ -46,7 +46,7 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include <QPdfDocument>
-#include <QPdfPageNavigation>
+#include <QPdfNavigationStack>
 #include <QScreen>
 #include <QScrollBar>
 #include <QScroller>
@@ -73,7 +73,7 @@ void QPdfViewPrivate::init()
 {
     Q_Q(QPdfView);
 
-    m_pageNavigation = new QPdfPageNavigation(q);
+    m_pageNavigation = new QPdfNavigationStack(q);
     m_pageRenderer = new QPdfPageRenderer(q);
     m_pageRenderer->setRenderMode(QPdfPageRenderer::RenderMode::MultiThreaded);
 }
@@ -129,7 +129,7 @@ void QPdfViewPrivate::setViewport(QRect viewport)
     if (m_pageMode == QPdfView::MultiPage) {
         // An imaginary, 2px height line at the upper half of the viewport, which is used to
         // determine which page is currently located there -> we propagate that as 'current' page
-        // to the QPdfPageNavigation object
+        // to the QPdfNavigationStack object
         const QRect currentPageLine(m_viewport.x(), m_viewport.y() + m_viewport.height() * 0.4, m_viewport.width(), 2);
 
         int currentPage = 0;
@@ -143,7 +143,8 @@ void QPdfViewPrivate::setViewport(QRect viewport)
 
         if (currentPage != m_pageNavigation->currentPage()) {
             m_blockPageScrolling = true;
-            m_pageNavigation->setCurrentPage(currentPage);
+            // ΤODO give location on the page
+            m_pageNavigation->jump(currentPage, {}, m_zoomFactor);
             m_blockPageScrolling = false;
         }
     }
@@ -289,7 +290,7 @@ QPdfView::QPdfView(QWidget *parent)
 
     d->init();
 
-    connect(d->m_pageNavigation, &QPdfPageNavigation::currentPageChanged, this, [d](int page){ d->currentPageChanged(page); });
+    connect(d->m_pageNavigation, &QPdfNavigationStack::currentPageChanged, this, [d](int page){ d->currentPageChanged(page); });
 
     connect(d->m_pageRenderer, &QPdfPageRenderer::pageRendered,
             this, [d](int pageNumber, QSize imageSize, const QImage &image, QPdfDocumentRenderOptions, quint64 requestId){ d->pageRendered(pageNumber, imageSize, image, requestId); });
@@ -322,7 +323,6 @@ void QPdfView::setDocument(QPdfDocument *document)
     if (d->m_document)
         d->m_documentStatusChangedConnection = connect(d->m_document.data(), &QPdfDocument::statusChanged, this, [d](){ d->documentStatusChanged(); });
 
-    d->m_pageNavigation->setDocument(d->m_document);
     d->m_pageRenderer->setDocument(d->m_document);
 
     d->documentStatusChanged();
@@ -335,7 +335,7 @@ QPdfDocument *QPdfView::document() const
     return d->m_document;
 }
 
-QPdfPageNavigation *QPdfView::pageNavigation() const
+QPdfNavigationStack *QPdfView::pageNavigation() const
 {
     Q_D(const QPdfView);
 

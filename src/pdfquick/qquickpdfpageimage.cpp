@@ -40,7 +40,6 @@
 #include "qquickpdfpageimage_p.h"
 #include "qquickpdfdocument_p.h"
 #include <private/qpdffile_p.h>
-#include <QtPdf/QPdfPageNavigation>
 #include <QtQuick/private/qquickimage_p_p.h>
 
 QT_BEGIN_NAMESPACE

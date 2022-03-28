@@ -196,12 +196,12 @@ Item {
     */
     function goToLocation(page, location, zoom) {
         if (zoom > 0) {
-            navigationStack.jumping = true // don't call navigationStack.update() because we will push() instead
+            navigationStack.jumping = true // don't call navigationStack.update() because we will jump() instead
             root.renderScale = zoom
             tableView.forceLayout() // but do ensure that the table layout is correct before we try to jump
             navigationStack.jumping = false
         }
-        navigationStack.push(page, location, zoom) // actually jump
+        navigationStack.jump(page, location, zoom) // actually jump
     }
 
     /*!
@@ -567,20 +567,25 @@ Item {
             id: vscroll
             property bool moved: false
             onPositionChanged: moved = true
-            onActiveChanged: {
+            onPressedChanged: if (pressed) {
+                // When the user starts scrolling, push the location where we came from so the user can go "back" there
                 const cell = tableView.cellAtPos(root.width / 2, root.height / 2)
                 const currentItem = tableView.itemAtCell(cell)
                 const currentLocation = currentItem
-                                      ? Qt.point((tableView.contentX - currentItem.x + jumpLocationMargin.x) / root.renderScale,
-                                                 (tableView.contentY - currentItem.y + jumpLocationMargin.y) / root.renderScale)
+                                      ? Qt.point((tableView.contentX - currentItem.x + tableView.jumpLocationMargin.x) / root.renderScale,
+                                                 (tableView.contentY - currentItem.y + tableView.jumpLocationMargin.y) / root.renderScale)
                                       : Qt.point(0, 0) // maybe the delegate wasn't loaded yet
-                if (active) {
-                    moved = false
-                    // emitJumped false to avoid interrupting a pinch if TableView thinks it should scroll at the same time
-                    navigationStack.push(cell.y, currentLocation, root.renderScale, false)
-                } else if (moved) {
-                    navigationStack.update(cell.y, currentLocation, root.renderScale)
-                }
+                navigationStack.jump(cell.y, currentLocation, root.renderScale)
+            }
+            onActiveChanged: if (!active ) {
+                // When the scrollbar stops moving, tell navstack where we are, so as to update currentPage etc.
+                const cell = tableView.cellAtPos(root.width / 2, root.height / 2)
+                const currentItem = tableView.itemAtCell(cell)
+                const currentLocation = currentItem
+                                      ? Qt.point((tableView.contentX - currentItem.x + tableView.jumpLocationMargin.x) / root.renderScale,
+                                                 (tableView.contentY - currentItem.y + tableView.jumpLocationMargin.y) / root.renderScale)
+                                      : Qt.point(0, 0) // maybe the delegate wasn't loaded yet
+                navigationStack.update(cell.y, currentLocation, root.renderScale)
             }
         }
         ScrollBar.horizontal: ScrollBar { }

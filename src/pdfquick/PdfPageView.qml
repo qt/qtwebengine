@@ -64,7 +64,7 @@ Rectangle {
     function goToLocation(page, location, zoom) {
         if (zoom > 0)
             root.renderScale = zoom
-        navigationStack.push(page, location, zoom)
+        navigationStack.jump(page, location, zoom)
     }
 
     // page scaling
@@ -227,7 +227,7 @@ Rectangle {
             TapHandler {
                 onTapped: {
                     if (page >= 0)
-                        navigationStack.push(page, Qt.point(0, 0), root.renderScale)
+                        navigationStack.jump(page, Qt.point(0, 0), root.renderScale)
                     else
                         Qt.openUrlExternally(url)
                 }

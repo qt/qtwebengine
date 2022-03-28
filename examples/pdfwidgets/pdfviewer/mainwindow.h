@@ -63,9 +63,9 @@ class MainWindow;
 
 class QPdfDocument;
 class QPdfView;
+class QSpinBox;
 QT_END_NAMESPACE
 
-class PageSelector;
 class ZoomSelector;
 
 class MainWindow : public QMainWindow
@@ -81,6 +81,7 @@ public slots:
 
 private slots:
     void bookmarkSelected(const QModelIndex &index);
+    void pageSelected(int page);
 
     // action handlers
     void on_actionOpen_triggered();
@@ -92,11 +93,13 @@ private slots:
     void on_actionPrevious_Page_triggered();
     void on_actionNext_Page_triggered();
     void on_actionContinuous_triggered();
+    void on_actionBack_triggered();
+    void on_actionForward_triggered();
 
 private:
     Ui::MainWindow *ui;
     ZoomSelector *m_zoomSelector;
-    PageSelector *m_pageSelector;
+    QSpinBox *m_pageSelector;
 
     QPdfDocument *m_document;
 };
