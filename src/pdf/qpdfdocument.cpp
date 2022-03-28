@@ -493,12 +493,12 @@ QPdfDocument::DocumentError QPdfDocument::load(const QString &fileName)
 
     d->setStatus(QPdfDocument::Loading);
 
-    QScopedPointer<QFile> f(new QFile(fileName));
+    std::unique_ptr<QFile> f(new QFile(fileName));
     if (!f->open(QIODevice::ReadOnly)) {
         d->lastError = FileNotFoundError;
         d->setStatus(QPdfDocument::Error);
     } else {
-        d->load(f.take(), /*transfer ownership*/true);
+        d->load(f.release(), /*transfer ownership*/true);
     }
     return d->lastError;
 }
