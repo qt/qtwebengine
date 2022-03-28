@@ -639,6 +639,14 @@ Item {
             previousPage = page
         }
         onCurrentPageChanged: searchModel.currentPage = currentPage
+
+        property url documentSource: root.document.source
+        onDocumentSourceChanged: {
+            navigationStack.clear()
+            root.resetScale()
+            tableView.contentX = 0
+            tableView.contentY = 0
+        }
     }
     PdfSearchModel {
         id: searchModel

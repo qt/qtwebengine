@@ -78,6 +78,7 @@ QPdfNavigationStack::QPdfNavigationStack(QObject *parent)
     : QObject(parent), d(new QPdfNavigationStackPrivate)
 {
     d->q = this;
+    clear();
 }
 
 /*!
@@ -187,6 +188,19 @@ qreal QPdfNavigationStack::currentZoom() const
     if (d->currentHistoryIndex < 0 || d->currentHistoryIndex >= d->pageHistory.count())
         return 1;
     return d->pageHistory.at(d->currentHistoryIndex)->zoom;
+}
+
+/*!
+    Clear the history and restore \l currentPage, \l currentLocation and
+    \l currentZoom to their default values.
+*/
+void QPdfNavigationStack::clear()
+{
+    d->pageHistory.clear();
+    d->currentHistoryIndex = 0;
+    // Begin with an implicit jump to page 0, so that
+    // backAvailable() will become true after jump() is called one more time.
+    d->pageHistory.append(QExplicitlySharedDataPointer<QPdfLinkPrivate>(new QPdfLinkPrivate(0, {}, 1)));
 }
 
 /*!

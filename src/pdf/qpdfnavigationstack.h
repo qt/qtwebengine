@@ -70,6 +70,7 @@ public:
     bool forwardAvailable() const;
 
 public Q_SLOTS:
+    void clear();
     void jump(int page, const QPointF &location, qreal zoom);
     void update(int page, const QPointF &location, qreal zoom);
     void forward();

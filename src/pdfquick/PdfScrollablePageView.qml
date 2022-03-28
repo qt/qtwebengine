@@ -156,6 +156,14 @@ Flickable {
                         "on page", page, "ended up @", root.contentX + ", " + root.contentY)
         }
         onCurrentPageChanged: searchModel.currentPage = currentPage
+
+        property url documentSource: root.document.source
+        onDocumentSourceChanged: {
+            navigationStack.clear()
+            root.resetScale()
+            root.contentX = 0
+            root.contentY = 0
+        }
     }
 
     LoggingCategory {

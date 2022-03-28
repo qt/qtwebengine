@@ -144,6 +144,12 @@ Rectangle {
         // TODO onCurrentLocationChanged: position currentLocation.x and .y in middle // currentPageChanged() MUST occur first!
         onCurrentZoomChanged: root.renderScale = currentZoom
         // TODO deal with horizontal location (need WheelHandler or Flickable probably)
+
+        property url documentSource: root.document.source
+        onDocumentSourceChanged: {
+            navigationStack.clear()
+            root.goToPage(0)
+        }
     }
 
     PdfPageImage {

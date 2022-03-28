@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -104,6 +104,8 @@ void QQuickPdfDocument::setSource(QUrl source)
 
     m_source = source;
     m_maxPageWidthHeight = QSizeF();
+    m_carrierFile->deleteLater();
+    m_carrierFile = nullptr;
     emit sourceChanged();
     const QQmlContext *context = qmlContext(this);
     m_resolvedSource = context ? context->resolvedUrl(source) : source;
