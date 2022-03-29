@@ -113,10 +113,14 @@ foreach(arch ${archs})
         )
 
         if(LINUX)
-          list(APPEND gnArgArg
-              is_cfi=false
-              ozone_auto_platforms=false
-              use_gnome_keyring=false)
+            list(APPEND gnArgArg
+                is_cfi=false
+                ozone_auto_platforms=false
+                use_gnome_keyring=false)
+            extend_gn_list(gnArgArg
+                ARGS use_system_icu
+                CONDITION QT_FEATURE_webengine_system_icu
+            )
         endif()
         if(MACOS)
             list(APPEND gnArgArg angle_enable_vulkan=false)
