@@ -1,4 +1,3 @@
-include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri) # workaround for QTBUG-68093
 QT_FOR_CONFIG += webenginecore
 
 TEMPLATE = app
@@ -10,7 +9,7 @@ QT += webenginewidgets
 }
 
 qtConfig(webengine-native-spellchecker) {
-    error("Spellcheck example can not be built when using native OS dictionaries.")
+    error("Spellchecker example can not be built when using native OS dictionaries.")
 }
 
 HEADERS += \
@@ -34,7 +33,7 @@ DISTFILES += \
 target.path = $$[QT_INSTALL_EXAMPLES]/webenginewidgets/spellchecker
 INSTALLS += target
 
-qtPrepareTool(CONVERT_TOOL, qwebengine_convert_dict)
+qtPrepareTool(CONVERT_TOOL, qwebengine_convert_dict, "", "", $$[QT_INSTALL_LIBEXECS])
 
 debug_and_release {
     CONFIG(debug, debug|release): DICTIONARIES_DIR = debug/qtwebengine_dictionaries
