@@ -3380,10 +3380,8 @@ void tst_QWebEngineView::switchPage()
       QSignalSpy loadFinishedSpy2(&page2, SIGNAL(loadFinished(bool)));
       // TODO fixme: page without the view has no real widget behind, so
       // reading graphical content will fail, add view for now.
-      QWebEngineView webView1;
-      QWebEngineView webView2;
-      webView1.setPage(&page1);
-      webView2.setPage(&page2);
+      QWebEngineView webView1(&page1, nullptr);
+      QWebEngineView webView2(&page2, nullptr);
       page1.setHtml("<html><body bgcolor=\"#000000\"></body></html>");
       page2.setHtml("<html><body bgcolor=\"#ffffff\"></body></html>");
       QTRY_VERIFY(loadFinishedSpy1.count() && loadFinishedSpy2.count());
@@ -3457,17 +3455,15 @@ void tst_QWebEngineView::setViewPreservesExplicitPage()
 void tst_QWebEngineView::closeDiscardsPage()
 {
     QWebEngineProfile profile;
-    QWebEnginePage page(&profile);
-    QWebEngineView view;
-    view.setPage(&page);
+    QWebEngineView view(&profile, nullptr);
     view.resize(300, 300);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QCOMPARE(page.isVisible(), true);
-    QCOMPARE(page.lifecycleState(), QWebEnginePage::LifecycleState::Active);
+    QCOMPARE(view.page()->isVisible(), true);
+    QCOMPARE(view.page()->lifecycleState(), QWebEnginePage::LifecycleState::Active);
     view.close();
-    QCOMPARE(page.isVisible(), false);
-    QCOMPARE(page.lifecycleState(), QWebEnginePage::LifecycleState::Discarded);
+    QCOMPARE(view.page()->isVisible(), false);
+    QCOMPARE(view.page()->lifecycleState(), QWebEnginePage::LifecycleState::Discarded);
 }
 
 

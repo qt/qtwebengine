@@ -625,6 +625,40 @@ QWebEngineView::QWebEngineView(QWidget *parent)
     setLayout(layout);
 }
 
+/*!
+    \since 6.4
+
+    Constructs an empty web view using \a profile with the parent \a parent.
+
+    \note The \a profile object ownership is not taken and it should outlive the view.
+
+    \sa load()
+*/
+
+QWebEngineView::QWebEngineView(QWebEngineProfile *profile, QWidget *parent)
+    : QWebEngineView(parent)
+{
+    Q_D(QWebEngineView);
+    setPage(new QWebEnginePage(profile, this));
+    d->m_ownsPage = true;
+}
+
+/*!
+    \since 6.4
+
+    Constructs a web view containing \a page with the parent \a parent.
+
+    \note Ownership of \a page is not taken, and it is up to the caller to ensure it is deleted.
+
+    \sa load(), setPage()
+*/
+
+QWebEngineView::QWebEngineView(QWebEnginePage *page, QWidget *parent)
+    : QWebEngineView(parent)
+{
+    setPage(page);
+}
+
 QWebEngineView::~QWebEngineView()
 {
     blockSignals(true);

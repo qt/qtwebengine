@@ -72,6 +72,8 @@ class QWEBENGINEWIDGETS_EXPORT QWebEngineView : public QWidget
 
 public:
     explicit QWebEngineView(QWidget *parent = nullptr);
+    explicit QWebEngineView(QWebEngineProfile *profile, QWidget *parent = nullptr);
+    explicit QWebEngineView(QWebEnginePage *page, QWidget *parent = nullptr);
     virtual ~QWebEngineView();
 
     static QWebEngineView *forPage(const QWebEnginePage *page);
