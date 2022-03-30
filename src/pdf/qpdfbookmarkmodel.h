@@ -46,7 +46,7 @@
 QT_BEGIN_NAMESPACE
 
 class QPdfDocument;
-class QPdfBookmarkModelPrivate;
+struct QPdfBookmarkModelPrivate;
 
 class Q_PDF_EXPORT QPdfBookmarkModel : public QAbstractItemModel
 {
@@ -93,9 +93,11 @@ Q_SIGNALS:
     void structureModeChanged(QPdfBookmarkModel::StructureMode structureMode);
 
 private:
-    Q_DECLARE_PRIVATE(QPdfBookmarkModel)
+    std::unique_ptr<QPdfBookmarkModelPrivate> d;
 
-    Q_PRIVATE_SLOT(d_func(), void _q_documentStatusChanged())
+    Q_PRIVATE_SLOT(d, void _q_documentStatusChanged())
+
+    friend struct QPdfBookmarkModelPrivate;
 };
 
 QT_END_NAMESPACE

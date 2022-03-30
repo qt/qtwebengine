@@ -140,12 +140,10 @@ private:
 };
 
 
-class QPdfBookmarkModelPrivate : public QAbstractItemModelPrivate
+struct QPdfBookmarkModelPrivate
 {
-public:
     QPdfBookmarkModelPrivate()
-        : QAbstractItemModelPrivate()
-        , m_rootNode(new BookmarkNode(nullptr))
+        : m_rootNode(new BookmarkNode(nullptr))
         , m_document(nullptr)
         , m_structureMode(QPdfBookmarkModel::TreeMode)
     {
@@ -153,8 +151,6 @@ public:
 
     void rebuild()
     {
-        Q_Q(QPdfBookmarkModel);
-
         const bool documentAvailable = (m_document && m_document->status() == QPdfDocument::Ready);
 
         if (documentAvailable) {
@@ -214,7 +210,7 @@ public:
         rebuild();
     }
 
-    Q_DECLARE_PUBLIC(QPdfBookmarkModel)
+    QPdfBookmarkModel *q = nullptr;
 
     QScopedPointer<BookmarkNode> m_rootNode;
     QPointer<QPdfDocument> m_document;
@@ -223,23 +219,20 @@ public:
 
 
 QPdfBookmarkModel::QPdfBookmarkModel(QObject *parent)
-    : QAbstractItemModel(*new QPdfBookmarkModelPrivate, parent)
+    : QAbstractItemModel(parent), d(new QPdfBookmarkModelPrivate)
 {
+    d->q = this;
 }
 
 QPdfBookmarkModel::~QPdfBookmarkModel() = default;
 
 QPdfDocument* QPdfBookmarkModel::document() const
 {
-    Q_D(const QPdfBookmarkModel);
-
     return d->m_document;
 }
 
 void QPdfBookmarkModel::setDocument(QPdfDocument *document)
 {
-    Q_D(QPdfBookmarkModel);
-
     if (d->m_document == document)
         return;
 
@@ -257,15 +250,11 @@ void QPdfBookmarkModel::setDocument(QPdfDocument *document)
 
 QPdfBookmarkModel::StructureMode QPdfBookmarkModel::structureMode() const
 {
-    Q_D(const QPdfBookmarkModel);
-
     return d->m_structureMode;
 }
 
 void QPdfBookmarkModel::setStructureMode(StructureMode mode)
 {
-    Q_D(QPdfBookmarkModel);
-
     if (d->m_structureMode == mode)
         return;
 
@@ -312,8 +301,6 @@ QVariant QPdfBookmarkModel::data(const QModelIndex &index, int role) const
 
 QModelIndex QPdfBookmarkModel::index(int row, int column, const QModelIndex &parent) const
 {
-    Q_D(const QPdfBookmarkModel);
-
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
@@ -333,8 +320,6 @@ QModelIndex QPdfBookmarkModel::index(int row, int column, const QModelIndex &par
 
 QModelIndex QPdfBookmarkModel::parent(const QModelIndex &index) const
 {
-    Q_D(const QPdfBookmarkModel);
-
     if (!index.isValid())
         return QModelIndex();
 
@@ -349,8 +334,6 @@ QModelIndex QPdfBookmarkModel::parent(const QModelIndex &index) const
 
 int QPdfBookmarkModel::rowCount(const QModelIndex &parent) const
 {
-    Q_D(const QPdfBookmarkModel);
-
     if (parent.column() > 0)
         return 0;
 
