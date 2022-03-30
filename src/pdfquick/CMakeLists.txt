@@ -17,6 +17,7 @@ qt_internal_add_qml_module(PdfQuick
     QML_FILES ${qml_files}
     DEPENDENCIES QtQuick/auto
     SOURCES
+        qquickpdfbookmarkmodel.cpp qquickpdfbookmarkmodel_p.h
         qquickpdfdocument.cpp qquickpdfdocument_p.h
         qquickpdflinkmodel.cpp qquickpdflinkmodel_p.h
         qquickpdfnavigationstack.cpp qquickpdfnavigationstack_p.h

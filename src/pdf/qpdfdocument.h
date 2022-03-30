@@ -128,7 +128,7 @@ Q_SIGNALS:
     void pageCountChanged(int pageCount);
 
 private:
-    friend class QPdfBookmarkModelPrivate;
+    friend struct QPdfBookmarkModelPrivate;
     friend class QPdfFile;
     friend class QPdfLinkModelPrivate;
     friend class QPdfSearchModel;

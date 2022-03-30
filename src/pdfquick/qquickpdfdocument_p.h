@@ -128,6 +128,7 @@ private:
     QPdfFile *m_carrierFile = nullptr;
     mutable QSizeF m_maxPageWidthHeight;
 
+    friend class QQuickPdfBookmarkModel;
     friend class QQuickPdfLinkModel;
     friend class QQuickPdfPageImage;
     friend class QQuickPdfSearchModel;

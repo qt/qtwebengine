@@ -272,7 +272,7 @@ int QPdfBookmarkModel::columnCount(const QModelIndex &parent) const
 
 QHash<int, QByteArray> QPdfBookmarkModel::roleNames() const
 {
-    QHash<int, QByteArray> names;
+    QHash<int, QByteArray> names = QAbstractItemModel::roleNames();
 
     names[TitleRole] = "title";
     names[LevelRole] = "level";
@@ -288,6 +288,7 @@ QVariant QPdfBookmarkModel::data(const QModelIndex &index, int role) const
 
     const BookmarkNode *node = static_cast<BookmarkNode*>(index.internalPointer());
     switch (role) {
+    case Qt::DisplayRole:
     case TitleRole:
         return node->title();
     case LevelRole:

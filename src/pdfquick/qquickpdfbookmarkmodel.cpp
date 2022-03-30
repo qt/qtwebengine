@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -37,69 +37,53 @@
 **
 ****************************************************************************/
 
-#ifndef QPDFBOOKMARKMODEL_H
-#define QPDFBOOKMARKMODEL_H
-
-#include <QtPdf/qtpdfglobal.h>
-#include <QtCore/qabstractitemmodel.h>
+#include "qquickpdfbookmarkmodel_p.h"
+#include <QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
 
-class QPdfDocument;
-struct QPdfBookmarkModelPrivate;
+/*!
+    \qmltype PdfBookmarkModel
+//!    \instantiates QQuickPdfBookmarkModel
+    \inqmlmodule QtQuick.Pdf
+    \ingroup pdf
+    \brief A tree of links (anchors) within a PDF document, such as the table of contents.
+    \since 6.4
 
-class Q_PDF_EXPORT QPdfBookmarkModel : public QAbstractItemModel
+    A PDF document can contain a hierarchy of link destinations, usually
+    representing the table of contents, to be shown in a sidebar in a PDF
+    viewer, so that the user can quickly jump to those locations in the
+    document. This QAbstractItemModel holds the information in a form
+    suitable for display with TreeView, ListView, QTreeView or QListView.
+*/
+
+QQuickPdfBookmarkModel::QQuickPdfBookmarkModel(QObject *parent)
+    : QPdfBookmarkModel(parent)
 {
-    Q_OBJECT
+}
 
-    Q_PROPERTY(QPdfDocument* document READ document WRITE setDocument NOTIFY documentChanged)
-    Q_PROPERTY(StructureMode structureMode READ structureMode WRITE setStructureMode NOTIFY structureModeChanged)
+/*!
+    \internal
+*/
+QQuickPdfBookmarkModel::~QQuickPdfBookmarkModel() = default;
 
-public:
-    enum StructureMode
-    {
-        TreeMode = 1,
-        ListMode
-    };
-    Q_ENUM(StructureMode)
+/*!
+    \qmlproperty PdfDocument PdfBookmarkModel::document
 
-    enum Role
-    {
-        TitleRole = Qt::UserRole,
-        LevelRole,
-        PageNumberRole
-    };
-    Q_ENUM(Role)
+    This property holds the PDF document in which bookmarks are to be found.
+*/
+QQuickPdfDocument *QQuickPdfBookmarkModel::document() const
+{
+    return m_quickDocument;
+}
 
-    QPdfBookmarkModel() : QPdfBookmarkModel(nullptr) {}
-    explicit QPdfBookmarkModel(QObject *parent);
-    ~QPdfBookmarkModel() override;
-
-    QPdfDocument* document() const;
-    void setDocument(QPdfDocument *document);
-
-    StructureMode structureMode() const;
-    void setStructureMode(StructureMode mode);
-
-    QVariant data(const QModelIndex &index, int role) const override;
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
-    QModelIndex parent(const QModelIndex &index) const override;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-    QHash<int, QByteArray> roleNames() const override;
-
-Q_SIGNALS:
-    void documentChanged(QPdfDocument *document);
-    void structureModeChanged(QPdfBookmarkModel::StructureMode structureMode);
-
-private:
-    std::unique_ptr<QPdfBookmarkModelPrivate> d;
-
-    Q_PRIVATE_SLOT(d, void _q_documentStatusChanged())
-
-    friend struct QPdfBookmarkModelPrivate;
-};
+void QQuickPdfBookmarkModel::setDocument(QQuickPdfDocument *document)
+{
+    if (document == m_quickDocument)
+        return;
+    m_quickDocument = document;
+    QPdfBookmarkModel::setDocument(document->document());
+    emit documentChanged();
+}
 
 QT_END_NAMESPACE
-
-#endif

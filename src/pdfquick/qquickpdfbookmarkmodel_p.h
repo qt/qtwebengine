@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -37,69 +37,53 @@
 **
 ****************************************************************************/
 
-#ifndef QPDFBOOKMARKMODEL_H
-#define QPDFBOOKMARKMODEL_H
+#ifndef QQUICKPDFBOOKMARKMODEL_P_H
+#define QQUICKPDFBOOKMARKMODEL_P_H
 
-#include <QtPdf/qtpdfglobal.h>
-#include <QtCore/qabstractitemmodel.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtPdfQuick/private/qtpdfquickglobal_p.h>
+#include <QtPdfQuick/private/qquickpdfdocument_p.h>
+#include <QtPdf/qpdfbookmarkmodel.h>
+
+#include <QQmlEngine>
 
 QT_BEGIN_NAMESPACE
 
-class QPdfDocument;
-struct QPdfBookmarkModelPrivate;
-
-class Q_PDF_EXPORT QPdfBookmarkModel : public QAbstractItemModel
+class Q_PDFQUICK_EXPORT QQuickPdfBookmarkModel : public QPdfBookmarkModel
 {
     Q_OBJECT
-
-    Q_PROPERTY(QPdfDocument* document READ document WRITE setDocument NOTIFY documentChanged)
-    Q_PROPERTY(StructureMode structureMode READ structureMode WRITE setStructureMode NOTIFY structureModeChanged)
+    Q_PROPERTY(QQuickPdfDocument* document READ document WRITE setDocument NOTIFY documentChanged)
+    QML_NAMED_ELEMENT(PdfBookmarkModel)
+    QML_ADDED_IN_VERSION(6, 4)
 
 public:
-    enum StructureMode
-    {
-        TreeMode = 1,
-        ListMode
-    };
-    Q_ENUM(StructureMode)
+    explicit QQuickPdfBookmarkModel(QObject *parent = nullptr);
+    ~QQuickPdfBookmarkModel() override;
 
-    enum Role
-    {
-        TitleRole = Qt::UserRole,
-        LevelRole,
-        PageNumberRole
-    };
-    Q_ENUM(Role)
-
-    QPdfBookmarkModel() : QPdfBookmarkModel(nullptr) {}
-    explicit QPdfBookmarkModel(QObject *parent);
-    ~QPdfBookmarkModel() override;
-
-    QPdfDocument* document() const;
-    void setDocument(QPdfDocument *document);
-
-    StructureMode structureMode() const;
-    void setStructureMode(StructureMode mode);
-
-    QVariant data(const QModelIndex &index, int role) const override;
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
-    QModelIndex parent(const QModelIndex &index) const override;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-    QHash<int, QByteArray> roleNames() const override;
+    QQuickPdfDocument *document() const;
+    void setDocument(QQuickPdfDocument *document);
 
 Q_SIGNALS:
-    void documentChanged(QPdfDocument *document);
-    void structureModeChanged(QPdfBookmarkModel::StructureMode structureMode);
+    void documentChanged();
 
 private:
-    std::unique_ptr<QPdfBookmarkModelPrivate> d;
+    QQuickPdfDocument *m_quickDocument;
 
-    Q_PRIVATE_SLOT(d, void _q_documentStatusChanged())
-
-    friend struct QPdfBookmarkModelPrivate;
+    Q_DISABLE_COPY(QQuickPdfBookmarkModel)
 };
 
 QT_END_NAMESPACE
 
-#endif
+QML_DECLARE_TYPE(QQuickPdfBookmarkModel)
+
+#endif // QQUICKPDFBOOKMARKMODEL_P_H
