@@ -75,6 +75,7 @@
 
 #include <QCoreApplication>
 #include <QDir>
+#include <QSet>
 #include <QString>
 #include <QStandardPaths>
 

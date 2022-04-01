@@ -53,6 +53,7 @@
 #include <QEvent>
 #include <QInputMethodEvent>
 #include <QScopeGuard>
+#include <QSet>
 #include <QSGNode>
 #include <QStyleHints>
 #include <QTextFormat>

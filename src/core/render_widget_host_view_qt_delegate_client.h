@@ -53,6 +53,7 @@
 
 #include "compositor/compositor.h"
 
+#include <QMap>
 #include <QtGui/QCursor>
 #include <QtGui/QTouchEvent>
 
