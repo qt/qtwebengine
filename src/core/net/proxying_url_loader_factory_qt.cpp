@@ -48,6 +48,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "net/base/filename_util.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
@@ -282,9 +283,21 @@ void InterceptedRequest::Restart()
     }
     // Check if local access is allowed
     if (!allow_local_ && local_access_) {
-        target_client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_ACCESS_DENIED));
-        delete this;
-        return;
+        bool granted_special_access = false;
+        // Check for specifically granted file access:
+        if (auto *frame_tree = content::FrameTreeNode::GloballyFindByID(frame_tree_node_id_)) {
+            const int renderer_id = frame_tree->current_frame_host()->GetProcess()->GetID();
+            base::FilePath file_path;
+            if (net::FileURLToFilePath(request_.url, &file_path)) {
+                if (content::ChildProcessSecurityPolicy::GetInstance()->CanReadFile(renderer_id, file_path))
+                    granted_special_access = true;
+            }
+        }
+        if (!granted_special_access) {
+            target_client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_ACCESS_DENIED));
+            delete this;
+            return;
+        }
     }
 
     // MEMO since all codepatch leading to Restart scheduled and executed as asynchronous tasks in main thread,

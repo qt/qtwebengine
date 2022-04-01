@@ -34,10 +34,12 @@
 #include <qtemporarydir.h>
 #include <QClipboard>
 #include <QCompleter>
+#include <QDropEvent>
 #include <QLabel>
 #include <QLineEdit>
 #include <QHBoxLayout>
 #include <QMenu>
+#include <QMimeData>
 #include <QQuickItem>
 #include <QQuickWidget>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
@@ -174,6 +176,7 @@ private Q_SLOTS:
     void closeDiscardsPage();
     void loadAfterRendererCrashed();
     void inspectElement();
+    void navigateOnDrop();
 };
 
 // This will be called before the first test function is executed.
@@ -3514,6 +3517,33 @@ void tst_QWebEngineView::inspectElement()
     page->triggerAction(QWebEnginePage::InspectElement);
     // TODO verify somehow
     QTest::qWait(100);
+}
+
+void tst_QWebEngineView::navigateOnDrop()
+{
+    struct WebEngineView : QWebEngineView {
+        QWebEngineView* createWindow(QWebEnginePage::WebWindowType /* type */) override { return this; }
+    } view;
+    view.resize(640, 480);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    QSignalSpy loadSpy(&view, &QWebEngineView::loadFinished);
+    auto url = QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).absoluteFilePath("resources/dummy.html"));
+    QMimeData mimeData;
+    mimeData.setUrls({ url });
+
+    auto sendEvents = [&] () {
+        QDragEnterEvent dee(view.rect().center(), Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
+        QApplication::sendEvent(&view, &dee);
+        QDropEvent de(view.rect().center(), Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
+        QApplication::sendEvent(&view, &de);
+    };
+
+    sendEvents();
+    QTRY_COMPARE(loadSpy.count(), 1);
+    QVERIFY(loadSpy.first().first().toBool());
+    QCOMPARE(view.url(), url);
 }
 
 QTEST_MAIN(tst_QWebEngineView)

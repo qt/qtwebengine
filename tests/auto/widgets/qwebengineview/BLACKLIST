@@ -12,3 +12,6 @@ osx
 
 [reusePage]
 b2qt arm
+
+[navigateOnDrop]
+windows
