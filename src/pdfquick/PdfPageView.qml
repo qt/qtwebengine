@@ -68,20 +68,17 @@ Rectangle {
     }
 
     // page scaling
+    property bool zoomEnabled: true
     property real renderScale: 1
     property alias sourceSize: image.sourceSize
     function resetScale() {
         image.sourceSize.width = 0
         image.sourceSize.height = 0
-        root.x = 0
-        root.y = 0
         root.scale = 1
     }
     function scaleToWidth(width, height) {
         const halfRotation = Math.abs(root.rotation % 180)
         image.sourceSize = Qt.size((halfRotation > 45 && halfRotation < 135) ? height : width, 0)
-        root.x = 0
-        root.y = 0
         image.centerInSize = Qt.size(width, height)
         image.centerOnLoad = true
         image.vCenterOnLoad = (halfRotation > 45 && halfRotation < 135)
@@ -141,9 +138,7 @@ Rectangle {
     PdfNavigationStack {
         id: navigationStack
         onCurrentPageChanged: searchModel.currentPage = currentPage
-        // TODO onCurrentLocationChanged: position currentLocation.x and .y in middle // currentPageChanged() MUST occur first!
         onCurrentZoomChanged: root.renderScale = currentZoom
-        // TODO deal with horizontal location (need WheelHandler or Flickable probably)
 
         property url documentSource: root.document.source
         onDocumentSourceChanged: {
@@ -243,6 +238,7 @@ Rectangle {
 
     PinchHandler {
         id: pinch
+        enabled: root.zoomEnabled && root.scale * root.renderScale <= 10 && root.scale * root.renderScale >= 0.1
         minimumScale: 0.1
         maximumScale: 10
         minimumRotation: 0
@@ -250,15 +246,11 @@ Rectangle {
         onActiveChanged: if (!active) image.reRenderIfNecessary()
         grabPermissions: PinchHandler.TakeOverForbidden // don't allow takeover if pinch has started
     }
-    DragHandler {
-        id: pageMovingTouchDrag
-        acceptedDevices: PointerDevice.TouchScreen
-    }
-    DragHandler {
-        id: pageMovingMiddleMouseDrag
-        acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
-        acceptedButtons: Qt.MiddleButton
-        snapMode: DragHandler.NoSnap
+    WheelHandler {
+        enabled: pinch.enabled
+        acceptedModifiers: Qt.ControlModifier
+        property: "scale"
+        onActiveChanged: if (!active) image.reRenderIfNecessary()
     }
     DragHandler {
         id: textSelectionDrag
@@ -268,14 +260,5 @@ Rectangle {
     TapHandler {
         id: tapHandler
         acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
-    }
-    // prevent it from being scrolled out of view
-    BoundaryRule on x {
-        minimum: 100 - root.width
-        maximum: root.parent.width - 100
-    }
-    BoundaryRule on y {
-        minimum: 100 - root.height
-        maximum: root.parent.height - 100
     }
 }
