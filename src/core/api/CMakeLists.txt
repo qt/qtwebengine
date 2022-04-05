@@ -141,6 +141,14 @@ if(QT_FEATURE_framework)
 
     add_custom_command(OUTPUT ${allResourceFiles} DEPENDS ${buildDir}/${config}/${arch}/QtWebEngineCore.stamp)
     add_custom_target(generate_resources_${config} DEPENDS ${allResourceFiles})
+
+    addCopyCommand(WebEngineCore "${localeFiles}"
+        "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/QtWebEngineCore.framework/Versions/A/Resources/qtwebengine_locales/"
+    )
+    addCopyCommand(WebEngineCore "${resourceFiles}"
+        "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/QtWebEngineCore.framework/Versions/A/Resources/"
+    )
+
 else()
     install(FILES ${localeFiles}
         DESTINATION ${INSTALL_TRANSLATIONSDIR}/qtwebengine_locales

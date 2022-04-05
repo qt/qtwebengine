@@ -41,10 +41,18 @@ qt_internal_extend_target(${qtWebEngineProcessName}
 target_include_directories(${qtWebEngineProcessName} PRIVATE ../core)
 
 qt_get_cmake_configurations(configs)
+
 foreach(config ${configs})
     string(TOUPPER "${config}" config_upper)
+    if(isFramework)
+       set(outputPath
+           "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/QtWebEngineCore.framework/Versions/A/Helpers"
+       )
+    else()
+       set(outputPath "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}")
+    endif()
     set_target_properties(${qtWebEngineProcessName} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY_${config_upper} "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}"
+        RUNTIME_OUTPUT_DIRECTORY_${config_upper} "${outputPath}"
     )
 endforeach()
 
@@ -75,11 +83,6 @@ if(isFramework)
         BUNDLE DESTINATION "${INSTALL_LIBDIR}/QtWebEngineCore.framework/Versions/A/Helpers"
         COMPONENT Runtime
     )
-    if(QT_SUPERBUILD OR NOT QT_WILL_INSTALL)
-        addCopyDirCommand(${qtWebEngineProcessName} "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${qtWebEngineProcessName}.app"
-           "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/QtWebEngineCore.framework/Versions/A/Helpers/${qtWebEngineProcessName}.app/"
-        )
-    endif()
     qt_enable_separate_debug_info(${qtWebEngineProcessName}
          "${INSTALL_LIBDIR}/QtWebEngineCore.framework/Versions/A/Helpers" QT_EXECUTABLE
     )
