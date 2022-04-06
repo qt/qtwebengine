@@ -9,3 +9,6 @@ osx
 
 [mixLangLocale:eu_ES]
 *
+
+[navigateOnDrop:file]
+windows

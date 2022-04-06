@@ -38,6 +38,7 @@
 #include <QLineEdit>
 #include <QHBoxLayout>
 #include <QMenu>
+#include <QMimeData>
 #include <QQuickItem>
 #include <QQuickWidget>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
@@ -173,6 +174,8 @@ private Q_SLOTS:
     void setViewPreservesExplicitPage();
     void closeDiscardsPage();
     void loadAfterRendererCrashed();
+    void navigateOnDrop_data();
+    void navigateOnDrop();
 };
 
 // This will be called before the first test function is executed.
@@ -3477,6 +3480,40 @@ void tst_QWebEngineView::loadAfterRendererCrashed()
     view.load(QUrl("qrc:///resources/dummy.html"));
     QTRY_COMPARE(loadSpy.count(), 1);
     QVERIFY(loadSpy.first().first().toBool());
+}
+
+void tst_QWebEngineView::navigateOnDrop_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::newRow("file") << QUrl::fromLocalFile(QDir(TESTS_SOURCE_DIR).absoluteFilePath("qwebengineview/resources/dummy.html"));
+    QTest::newRow("qrc") << QUrl("qrc:///resources/dummy.html");
+}
+
+void tst_QWebEngineView::navigateOnDrop()
+{
+    QFETCH(QUrl, url);
+    struct WebEngineView : QWebEngineView {
+        QWebEngineView* createWindow(QWebEnginePage::WebWindowType /* type */) override { return this; }
+    } view;
+    view.resize(640, 480);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    QSignalSpy loadSpy(&view, &QWebEngineView::loadFinished);
+    QMimeData mimeData;
+    mimeData.setUrls({ url });
+
+    auto sendEvents = [&] () {
+        QDragEnterEvent dee(view.rect().center(), Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
+        QApplication::sendEvent(&view, &dee);
+        QDropEvent de(view.rect().center(), Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
+        QApplication::sendEvent(&view, &de);
+    };
+
+    sendEvents();
+    QTRY_COMPARE(loadSpy.count(), 1);
+    QVERIFY(loadSpy.first().first().toBool());
+    QCOMPARE(view.url(), url);
 }
 
 QTEST_MAIN(tst_QWebEngineView)
