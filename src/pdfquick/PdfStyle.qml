@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -36,22 +36,21 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-import QtQml 2.14
-import QtQuick 2.14
-import QtQuick.Controls 2.14
-import QtQuick.Shapes 1.14
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Shapes
 
 QtObject {
-    property Control prototypeControl: Control { }
+    property SystemPalette palette: SystemPalette { }
     function withAlpha(color, alpha) {
         return Qt.hsla(color.hslHue, color.hslSaturation, color.hslLightness, alpha)
     }
-    property color selectionColor: withAlpha(prototypeControl.palette.highlight, 0.5)
+    property color selectionColor: withAlpha(palette.highlight, 0.5)
     property color pageSearchResultsColor: "#80B0C4DE"
     property color currentSearchResultStrokeColor: "cyan"
     property real currentSearchResultStrokeWidth: 2
-    property color linkUnderscoreColor: prototypeControl.palette.link
-    property real linkUnderscoreStrokeWidth: 1
-    property var linkUnderscoreStrokeStyle: ShapePath.DashLine
+    property color linkUnderscoreColor: palette.link
+    property real linkUnderscoreStrokeWidth: -1 // no underlines under hyperlinks
+    property int linkUnderscoreStrokeStyle: ShapePath.DashLine
     property var linkUnderscoreDashPattern: [ 1, 4 ]
 }

@@ -217,9 +217,7 @@ Rectangle {
             document: root.document
             page: navigationStack.currentPage
         }
-        delegate: Rectangle {
-            color: "transparent"
-            border.color: "lightgrey"
+        delegate: Item {
             x: rect.x * image.pageScale
             y: rect.y * image.pageScale
             width: rect.width * image.pageScale

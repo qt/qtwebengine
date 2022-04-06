@@ -1,9 +1,8 @@
 find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Core Gui Qml Quick)
 
 set(qml_files
-# TODO:
-#    "+Material/PdfStyle.qml"
-#    "+Universal/PdfStyle.qml"
+    "+Material/PdfStyle.qml"
+    "+Universal/PdfStyle.qml"
     "PdfMultiPageView.qml"
     "PdfPageView.qml"
     "PdfScrollablePageView.qml"
