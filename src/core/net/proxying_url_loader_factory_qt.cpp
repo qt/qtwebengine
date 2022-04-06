@@ -175,6 +175,8 @@ private:
     bool local_access_ = false;
     bool remote_access_ = true;
 
+    bool loader_error_seen_ = false;
+
     // If the |target_loader_| called OnComplete with an error this stores it.
     // That way the destructor can send it to OnReceivedError if safe browsing
     // error didn't occur.
@@ -391,6 +393,7 @@ void InterceptedRequest::ContinueAfterIntercept()
     }
 
     if (!target_loader_ && target_factory_) {
+        loader_error_seen_ = false;
         target_factory_->CreateLoaderAndStart(target_loader_.BindNewPipeAndPassReceiver(), request_id_,
                                               options_, request_, proxied_client_receiver_.BindNewPipeAndPassRemote(),
                                               traffic_annotation_);
@@ -496,6 +499,8 @@ void InterceptedRequest::OnURLLoaderError(uint32_t custom_reason, const std::str
     // If CallOnComplete was already called, then this object is ready to be deleted.
     if (!target_client_)
         delete this;
+    else
+        loader_error_seen_ = true;
 }
 
 void InterceptedRequest::CallOnComplete(const network::URLLoaderCompletionStatus &status, bool wait_for_loader_error)
@@ -509,7 +514,7 @@ void InterceptedRequest::CallOnComplete(const network::URLLoaderCompletionStatus
     if (target_client_)
         target_client_->OnComplete(status);
 
-    if (proxied_loader_receiver_.is_bound() && wait_for_loader_error) {
+    if (proxied_loader_receiver_.is_bound() && wait_for_loader_error && !loader_error_seen_) {
         // Since the original client is gone no need to continue loading the
         // request.
         proxied_client_receiver_.reset();
