@@ -37,10 +37,11 @@
 **
 ****************************************************************************/
 
+#include "type_conversion.h"
 #include "ozone/gl_context_qt.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "web_contents_view_qt.h"
-
+#include "web_engine_library_info.h"
 #include "base/values.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -92,14 +93,20 @@ WebContentsView* CreateWebContentsView(WebContentsImpl *web_contents,
     return rv;
 }
 
-#if defined(Q_OS_MACOS)
-std::string getQtPrefix()
+#if defined(OS_MAC)
+#if defined(QT_MAC_FRAMEWORK_BUILD)
+base::FilePath getSandboxPath()
+{
+    return WebEngineLibraryInfo::getPath(QT_FRAMEWORK_BUNDLE);
+}
+#else
+base::FilePath getSandboxPath()
 {
     const QString prefix = QLibraryInfo::location(QLibraryInfo::PrefixPath);
-    return prefix.toStdString();
+    return QtWebEngineCore::toFilePath(prefix);
 }
 #endif
-
+#endif
 } // namespace content
 
 #if defined(USE_AURA) || defined(USE_OZONE)
