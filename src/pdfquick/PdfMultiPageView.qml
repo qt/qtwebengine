@@ -178,7 +178,7 @@ Item {
 
         Scrolls the view to the given \a page number, if possible.
 
-        \sa PdfNavigationStack::push(), currentPage
+        \sa PdfNavigationStack::jump(), currentPage
     */
     function goToPage(page) {
         if (page === navigationStack.currentPage)
@@ -192,7 +192,7 @@ Item {
         Scrolls the view to the \a location on the \a page, if possible,
         and sets the \a zoom level.
 
-        \sa PdfNavigationStack::push(), currentPage
+        \sa PdfNavigationStack::jump(), currentPage
     */
     function goToLocation(page, location, zoom) {
         if (zoom > 0) {
@@ -215,7 +215,7 @@ Item {
     property int currentPageRenderingStatus: Image.Null
 
     // --------------------------------
-    // page navigation
+    // page scaling
 
     /*!
         \qmlproperty real PdfMultiPageView::renderScale

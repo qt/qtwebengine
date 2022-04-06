@@ -36,7 +36,7 @@
     and renders pages from it according to the options provided by
     the \l QPdfDocumentRenderOptions class. The \l QPdfPageRenderer
     class manages a queue that collects all render requests. The
-    \l QPdfPageNavigation class handles the navigation through a
+    \l QPdfNavigationStack class handles the navigation through a
     PDF document.
 
     \include module-use.qdocinc using qt module

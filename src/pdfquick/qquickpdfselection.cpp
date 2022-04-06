@@ -59,6 +59,7 @@ static const QRegularExpression WordDelimiter(QStringLiteral("\\s"));
 //!    \instantiates QQuickPdfSelection
     \inqmlmodule QtQuick.Pdf
     \ingroup pdf
+    \inherits Item
     \brief A representation of a text selection within a PDF Document.
     \since 5.15
 

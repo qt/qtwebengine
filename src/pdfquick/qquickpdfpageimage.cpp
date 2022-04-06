@@ -48,7 +48,7 @@ Q_LOGGING_CATEGORY(qLcImg, "qt.pdf.image")
 
 /*!
     \qmltype PdfPageImage
-    \instantiates QQuickPdfPageImage
+//!    \instantiates QQuickPdfPageImage
     \inqmlmodule QtPdf
     \ingroup pdf
     \inherits Image

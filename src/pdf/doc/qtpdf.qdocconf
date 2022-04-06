@@ -36,6 +36,7 @@ depends += qtcore \
            qmake \
            qtdesigner \
            qtquick \
+           qtquickcontrols \
            qtcmake
 
 headerdirs  += ../

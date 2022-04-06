@@ -61,7 +61,7 @@ struct QPdfNavigationStackPrivate
     \class QPdfNavigationStack
     \since 6.4
     \inmodule QtPdf
-    \brief Navigation history within a PDF document
+    \brief Navigation history within a PDF document.
 
     The QPdfNavigationStack class remembers which destinations the user
     has visited in a PDF document, and provides the ability to traverse
@@ -191,8 +191,7 @@ qreal QPdfNavigationStack::currentZoom() const
 
 /*!
     Adds the given destination, consisting of \a page, \a location, and \a zoom,
-    to the history of visited locations.  If \a emitJumped is \c false, the
-    \l jumped() signal will not be emitted.
+    to the history of visited locations.
 
     The \a zoom argument represents magnification (where \c 1 is the default
     scale, 1 logical pixel = 1 point). If \a zoom is given as \c 0, currentZoom

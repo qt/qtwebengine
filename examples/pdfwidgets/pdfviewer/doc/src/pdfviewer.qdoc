@@ -37,7 +37,7 @@
     \endomit
 
     \e {PDF Viewer} demonstrates how to use the QPdfDocument class to render
-    PDF documents and the QPdfPageNavigation class to navigate them.
+    PDF documents and the QPdfNavigationStack class to navigate them.
 
     Qt Creator and the integrated Qt Designer were used to create the example
     UI and to connect it to the code. This affects the code, which might be
@@ -58,7 +58,7 @@
     The class declares public and private slots that match the actions of the
     selectors:
 
-    \printuntil on_actionContinuous_triggered()
+    \printuntil on_actionForward_triggered()
 
     The actual layout of the main window is specified in a \c{.ui} file. The
     widgets and actions are available at runtime in the \c ui member variable.
@@ -79,16 +79,17 @@
     \skipto MainWindow
     \printuntil {
 
-    The constructor first calls \c setupUi() to construct the zoom and page
-    selectors according to the UI file. We set the maximum width of the
-    selectors.
+    The constructor first calls \c setupUi() to construct most of the main window
+    according to the UI file. The zoom and page selectors need to be added to
+    the toolbar via \l QToolBar::insertWidget(), because that cannot be done
+    in a UI file:
 
-    \printuntil addWidget(m_pageSelector)
+    \printuntil insertWidget(ui->actionForward, m_pageSelector);
 
-    We use the QPdfPageNavigation class to handle the navigation through a
-    PDF document:
+    We connect relevant signals to the page selector spinbox and the browser-style
+    back and forward buttons:
 
-    \printuntil setPageNavigation
+    \printuntil forwardAvailableChanged
 
     We connect the \c zoomModeChanged and \c zoomFactor changed signals of the
     PDF view to the functions that reset the zoom selector:
