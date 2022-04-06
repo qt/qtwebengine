@@ -92,6 +92,11 @@ QQuickPdfSelection::QQuickPdfSelection(QQuickItem *parent)
 */
 QQuickPdfSelection::~QQuickPdfSelection() = default;
 
+/*!
+    \qmlproperty PdfDocument PdfSelection::document
+
+    This property holds the PDF document in which to select text.
+*/
 QQuickPdfDocument *QQuickPdfSelection::document() const
 {
     return m_document;
@@ -152,6 +157,11 @@ QList<QPolygonF> QQuickPdfSelection::geometry() const
     return m_geometry;
 }
 
+/*!
+    \qmlmethod void PdfSelection::clear()
+
+    Clears the current selection.
+*/
 void QQuickPdfSelection::clear()
 {
     m_hitPoint = QPointF();
@@ -170,6 +180,11 @@ void QQuickPdfSelection::clear()
     QGuiApplication::inputMethod()->update(Qt::ImQueryInput);
 }
 
+/*!
+    \qmlmethod void PdfSelection::selectAll()
+
+    Selects all text on the current \l page.
+*/
 void QQuickPdfSelection::selectAll()
 {
     QPdfSelection sel = m_document->document()->getAllText(m_page);

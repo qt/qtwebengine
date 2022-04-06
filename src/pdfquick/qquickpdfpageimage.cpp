@@ -71,6 +71,9 @@ QQuickPdfPageImage::QQuickPdfPageImage(QQuickItem *parent)
 {
 }
 
+/*!
+    \internal
+*/
 QQuickPdfPageImage::~QQuickPdfPageImage()
 {
     Q_D(QQuickPdfPageImage);
@@ -78,6 +81,11 @@ QQuickPdfPageImage::~QQuickPdfPageImage()
     d->pix.clear();
 }
 
+/*!
+    \qmlproperty PdfDocument PdfPageImage::document
+
+    This property holds the PDF document from which to render an image.
+*/
 void QQuickPdfPageImage::setDocument(QQuickPdfDocument *document)
 {
     Q_D(QQuickPdfPageImage);
