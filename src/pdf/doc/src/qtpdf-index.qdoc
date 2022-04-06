@@ -39,6 +39,28 @@
     \l QPdfNavigationStack class handles the navigation through a
     PDF document.
 
+    For Qt Quick applications, three kinds of full-featured viewer
+    components are provided. \l PdfMultiPageView should be your
+    first choice for the most common user experience: flicking
+    through the pages in the entire document.
+    \l PdfScrollablePageView shows one page at a time, with scrolling;
+    and \l PdfPageView shows one full page at a time, without scrolling.
+
+    The full-featured viewer components are composed of lower-level
+    QML components that can be used separately if you need to write a
+    more customized PDF viewing application: \l PdfDocument,
+    \l PdfPageImage, \l PdfNavigationStack, \l PdfSelection,
+    \l PdfSearchModel, \l PdfLinkModel, and \l PdfBookmarkModel.
+
+    If you only need to render page images, without features such as
+    text selection, search and navigation, this module includes a
+    \l QImageIOHandler plugin that treats PDF as a scalable
+    \l {Qt Image Formats}{image format}, similar to \l {Qt SVG}{SVG}.
+    You can simply use \l Image, and set the
+    \l {Image::currentFrame}{currentFrame} property to the page index
+    that you wish to display. If the PDF file does not render its own
+    background, the image has a transparent background.
+
     \include module-use.qdocinc using qt module
     \quotefile qtpdf-build.cmake
 

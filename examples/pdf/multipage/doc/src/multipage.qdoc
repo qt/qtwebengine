@@ -30,7 +30,7 @@
     \ingroup qtpdf-examples
 
     \title PDF Multipage Viewer Example
-    \brief A PDF viewer that allows scrolling through the pages.
+    \brief A Qt Quick PDF viewer that allows scrolling through the pages.
 
     \image multipageviewer.png
 

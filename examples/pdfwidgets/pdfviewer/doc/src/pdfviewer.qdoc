@@ -30,7 +30,7 @@
     \ingroup qtpdf-examples
 
     \title PDF Viewer Example
-    \brief Renders PDF documents.
+    \brief A widget-based PDF viewer that allows scrolling through the pages.
 
     \omit
     //! TODO add thumbnail \image pdfviewer.png
