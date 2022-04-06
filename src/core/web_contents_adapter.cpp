@@ -1490,8 +1490,10 @@ static QMimeData *mimeDataFromDropData(const content::DropData &dropData)
         mimeData->setText(toQt(*dropData.text));
     if (dropData.html.has_value())
         mimeData->setHtml(toQt(*dropData.html));
-    if (dropData.url.is_valid())
+    if (dropData.url.is_valid()) {
         mimeData->setUrls(QList<QUrl>() << toQt(dropData.url));
+        mimeData->setText(toQt(dropData.url_title));
+    }
     if (!dropData.custom_data.empty()) {
         base::Pickle pickle;
         ui::WriteCustomDataToPickle(dropData.custom_data, &pickle);
@@ -1616,6 +1618,11 @@ static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeDat
     }
     if (!dropData->filenames.empty())
         return;
+    if (mimeData->hasUrls()) {
+        dropData->url = toGurl(urls.first());
+        if (mimeData->hasText())
+            dropData->url_title = toString16(mimeData->text());
+    }
     if (mimeData->hasHtml())
         dropData->html = toOptionalString16(mimeData->html());
     if (mimeData->hasText())

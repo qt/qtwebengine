@@ -13,5 +13,5 @@ osx
 [reusePage]
 b2qt arm
 
-[navigateOnDrop]
+[navigateOnDrop:file]
 windows
