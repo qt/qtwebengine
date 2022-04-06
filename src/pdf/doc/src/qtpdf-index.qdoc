@@ -37,7 +37,9 @@
     the \l QPdfDocumentRenderOptions class. The \l QPdfPageRenderer
     class manages a queue that collects all render requests. The
     \l QPdfNavigationStack class handles the navigation through a
-    PDF document.
+    PDF document. The \l QPdfSearchModel class searches for a string
+    and holds the search results.  The \l QPdfView widget is a complete
+    PDF viewer, and the \l {PDF Viewer Example} shows how to use it.
 
     For Qt Quick applications, three kinds of full-featured viewer
     components are provided. \l PdfMultiPageView should be your

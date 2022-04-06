@@ -36,7 +36,7 @@
     //! TODO add thumbnail \image pdfviewer.png
     \endomit
 
-    \e {PDF Viewer} demonstrates how to use the QPdfDocument class to render
+    \e {PDF Viewer} demonstrates how to use the QPdfView class to render
     PDF documents and the QPdfNavigationStack class to navigate them.
 
     Qt Creator and the integrated Qt Designer were used to create the example

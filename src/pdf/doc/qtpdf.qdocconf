@@ -39,10 +39,12 @@ depends += qtcore \
            qtquickcontrols \
            qtcmake
 
-headerdirs  += ../
+headerdirs  += ../ \
+               ../../pdfwidgets
 
 sourcedirs  += ../ \
-               ../../pdfquick
+               ../../pdfquick \
+               ../../pdfwidgets
 
 exampledirs += ../../../examples/pdfwidgets \
                ../../../examples/pdf \
