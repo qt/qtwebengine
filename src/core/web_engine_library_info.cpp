@@ -84,7 +84,7 @@ static inline CFBundleRef frameworkBundle()
     return CFBundleGetBundleWithIdentifier(CFSTR("org.qt-project.QtWebEngineCore"));
 }
 
-static QString getPath(CFBundleRef frameworkBundle)
+static QString getBundlePath(CFBundleRef frameworkBundle)
 {
     QString path;
     // The following is a fix for QtWebEngineProcess crashes on OS X 10.7 and before.
@@ -109,11 +109,11 @@ static QString getResourcesPath(CFBundleRef frameworkBundle)
     // We use it for the other OS X versions as well to make sure it works and because
     // the directory structure should be the same.
     if (qApp->applicationName() == QLatin1String(QTWEBENGINEPROCESS_NAME)) {
-        path = getPath(frameworkBundle) % QLatin1String("/Resources");
+        path = getBundlePath(frameworkBundle) % QLatin1String("/Resources");
     } else if (frameworkBundle) {
         CFURLRef resourcesRelativeUrl = CFBundleCopyResourcesDirectoryURL(frameworkBundle);
         CFStringRef resourcesRelativePath = CFURLCopyFileSystemPath(resourcesRelativeUrl, kCFURLPOSIXPathStyle);
-        path = getPath(frameworkBundle) % QLatin1Char('/') % QString::fromCFString(resourcesRelativePath);
+        path = getBundlePath(frameworkBundle) % QLatin1Char('/') % QString::fromCFString(resourcesRelativePath);
         CFRelease(resourcesRelativePath);
         CFRelease(resourcesRelativeUrl);
     }
@@ -166,7 +166,7 @@ QString subProcessPath()
             candidatePaths << fromEnv;
         } else {
 #if defined(OS_MAC) && defined(QT_MAC_FRAMEWORK_BUILD)
-            candidatePaths << getPath(frameworkBundle())
+            candidatePaths << getBundlePath(frameworkBundle())
                               % QStringLiteral("/Helpers/" QTWEBENGINEPROCESS_NAME ".app/Contents/MacOS/" QTWEBENGINEPROCESS_NAME);
 #else
             candidatePaths << QLibraryInfo::path(QLibraryInfo::LibraryExecutablesPath)
@@ -315,6 +315,10 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
         return toFilePath(resourcesDataPath() % QLatin1String("/qtwebengine_resources_200p.pak"));
     case QT_RESOURCES_DEVTOOLS_PAK:
         return toFilePath(resourcesDataPath() % QLatin1String("/qtwebengine_devtools_resources.pak"));
+#if defined(OS_MAC) && defined(QT_MAC_FRAMEWORK_BUILD)
+    case QT_FRAMEWORK_BUNDLE:
+        return toFilePath(getBundlePath(frameworkBundle()));
+#endif
     case base::FILE_EXE:
     case content::CHILD_PROCESS_EXE:
         return toFilePath(subProcessPath());
