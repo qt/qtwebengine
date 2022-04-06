@@ -41,41 +41,211 @@ import QtQuick.Pdf
 import QtQuick.Shapes
 import Qt.labs.animation
 
+/*!
+    \qmltype PdfPageView
+    \inqmlmodule QtQuick.Pdf
+    \brief A PDF viewer component to show one page a time.
+
+    PdfPageView provides a PDF viewer component that shows one whole page at a
+    time, without scrolling. It supports selecting text and copying it to the
+    clipboard, zooming in and out, clicking an internal link to jump to another
+    section in the document, rotating the view, and searching for text.
+
+    The implementation is a QML assembly of smaller building blocks that are
+    available separately. In case you want to make changes in your own version
+    of this component, you can copy the QML, which is installed into the
+    \c QtQuick/Pdf/qml module directory, and modify it as needed.
+
+    \sa PdfScrollablePageView, PdfMultiPageView, PdfStyle
+*/
 Rectangle {
-    // public API
+    /*!
+        \qmlproperty PdfDocument PdfPageView::document
+
+        A PdfDocument object with a valid \c source URL is required:
+
+        \snippet multipageview.qml 0
+    */
     required property PdfDocument document
+
+    /*!
+        \qmlproperty int PdfPageView::status
+
+        This property holds the \l {QtQuick::Image::status}{rendering status} of
+        the \l {currentPage}{current page}.
+
+        \sa PdfPageImage::status
+    */
     property alias status: image.status
 
+    /*!
+        \qmlproperty PdfDocument PdfPageView::selectedText
+
+        The selected text.
+    */
     property alias selectedText: selection.text
+
+    /*!
+        \qmlmethod void PdfPageView::selectAll()
+
+        Selects all the text on the \l {currentPage}{current page}, and makes it
+        available as the system \l {QClipboard::Selection}{selection} on systems
+        that support that feature.
+
+        \sa copySelectionToClipboard()
+    */
     function selectAll() {
         selection.selectAll()
     }
+
+    /*!
+        \qmlmethod void PdfPageView::copySelectionToClipboard()
+
+        Copies the selected text (if any) to the
+        \l {QClipboard::Clipboard}{system clipboard}.
+
+        \sa selectAll()
+    */
     function copySelectionToClipboard() {
         selection.copyToClipboard()
     }
 
+    // --------------------------------
     // page navigation
+
+    /*!
+        \qmlproperty int PdfPageView::currentPage
+        \readonly
+
+        This property holds the zero-based page number of the page visible in the
+        scrollable view. If there is no current page, it holds -1.
+
+        This property is read-only, and is typically used in a binding (or
+        \c onCurrentPageChanged script) to update the part of the user interface
+        that shows the current page number, such as a \l SpinBox.
+
+        \sa PdfNavigationStack::currentPage
+    */
     property alias currentPage: navigationStack.currentPage
+
+    /*!
+        \qmlproperty bool PdfPageView::backEnabled
+        \readonly
+
+        This property indicates if it is possible to go back in the navigation
+        history to a previous-viewed page.
+
+        \sa PdfNavigationStack::backAvailable, back()
+    */
     property alias backEnabled: navigationStack.backAvailable
+
+    /*!
+        \qmlproperty bool PdfPageView::forwardEnabled
+        \readonly
+
+        This property indicates if it is possible to go to next location in the
+        navigation history.
+
+        \sa PdfNavigationStack::forwardAvailable, forward()
+    */
     property alias forwardEnabled: navigationStack.forwardAvailable
+
+    /*!
+        \qmlmethod void PdfPageView::back()
+
+        Scrolls the view back to the previous page that the user visited most
+        recently; or does nothing if there is no previous location on the
+        navigation stack.
+
+        \sa PdfNavigationStack::back(), currentPage, backEnabled
+    */
     function back() { navigationStack.back() }
+
+    /*!
+        \qmlmethod void PdfPageView::forward()
+
+        Scrolls the view to the page that the user was viewing when the back()
+        method was called; or does nothing if there is no "next" location on the
+        navigation stack.
+
+        \sa PdfNavigationStack::forward(), currentPage
+    */
     function forward() { navigationStack.forward() }
+
+    /*!
+        \qmlmethod void PdfPageView::goToPage(int page)
+
+        Changes the view to the \a page, if possible.
+
+        \sa PdfNavigationStack::jump(), currentPage
+    */
     function goToPage(page) { goToLocation(page, Qt.point(0, 0), 0) }
+
+    /*!
+        \qmlmethod void PdfPageView::goToLocation(int page, point location, real zoom)
+
+        Scrolls the view to the \a location on the \a page, if possible,
+        and sets the \a zoom level.
+
+        \sa PdfNavigationStack::jump(), currentPage
+    */
     function goToLocation(page, location, zoom) {
         if (zoom > 0)
             root.renderScale = zoom
         navigationStack.jump(page, location, zoom)
     }
 
+    // --------------------------------
     // page scaling
+
+    /*!
+        \qmlproperty bool PdfPageView::zoomEnabled
+
+        This property holds whether the user can use the pinch gesture or
+        Control + mouse wheel to zoom. The default is \c true.
+
+        When the user zooms the page, the size of PdfPageView changes.
+    */
     property bool zoomEnabled: true
+
+    /*!
+        \qmlproperty real PdfPageView::renderScale
+
+        This property holds the ratio of pixels to points. The default is \c 1,
+        meaning one point (1/72 of an inch) equals 1 logical pixel.
+
+        \sa PdfPageImage::status
+    */
     property real renderScale: 1
+
+    /*!
+        \qmlproperty size PdfPageView::sourceSize
+
+        This property holds the scaled width and height of the full-frame image.
+
+        \sa PdfPageImage::sourceSize
+    */
     property alias sourceSize: image.sourceSize
+
+    /*!
+        \qmlmethod void PdfPageView::resetScale()
+
+        Sets \l renderScale back to its default value of \c 1.
+    */
     function resetScale() {
         image.sourceSize.width = 0
         image.sourceSize.height = 0
         root.scale = 1
     }
+
+    /*!
+        \qmlmethod void PdfPageView::scaleToWidth(real width, real height)
+
+        Sets \l renderScale such that the width of the first page will fit into a
+        viewport with the given \a width and \a height. If the page is not rotated,
+        it will be scaled so that its width fits \a width. If it is rotated +/- 90
+        degrees, it will be scaled so that its width fits \a height.
+    */
     function scaleToWidth(width, height) {
         const halfRotation = Math.abs(root.rotation % 180)
         image.sourceSize = Qt.size((halfRotation > 45 && halfRotation < 135) ? height : width, 0)
@@ -84,6 +254,15 @@ Rectangle {
         image.vCenterOnLoad = (halfRotation > 45 && halfRotation < 135)
         root.scale = 1
     }
+
+    /*!
+        \qmlmethod void PdfPageView::scaleToPage(real width, real height)
+
+        Sets \l renderScale such that the whole first page will fit into a viewport
+        with the given \a width and \a height. The resulting \l renderScale depends
+        on \l pageRotation: the page will fit into the viewport at a larger size if
+        it is first rotated to have a matching aspect ratio.
+    */
     function scaleToPage(width, height) {
         const windowAspect = width / height
         const halfRotation = Math.abs(root.rotation % 180)
@@ -109,12 +288,49 @@ Rectangle {
         root.scale = 1
     }
 
+    // --------------------------------
     // text search
+
+    /*!
+        \qmlproperty PdfSearchModel PdfPageView::searchModel
+
+        This property holds a PdfSearchModel containing the list of search results
+        for a given \l searchString.
+
+        \sa PdfSearchModel
+    */
     property alias searchModel: searchModel
+
+    /*!
+        \qmlproperty string PdfPageView::searchString
+
+        This property holds the search string that the user may choose to search
+        for. It is typically used in a binding to the
+        \l {QtQuick.Controls::TextField::text}{text} property of a TextField.
+
+        \sa searchModel
+    */
     property alias searchString: searchModel.searchString
+
+    /*!
+        \qmlmethod void PdfPageView::searchBack()
+
+        Decrements the
+        \l{PdfSearchModel::currentResult}{searchModel's current result}
+        so that the view will jump to the previous search result.
+    */
     function searchBack() { --searchModel.currentResult }
+
+    /*!
+        \qmlmethod void PdfPageView::searchForward()
+
+        Increments the
+        \l{PdfSearchModel::currentResult}{searchModel's current result}
+        so that the view will jump to the next search result.
+    */
     function searchForward() { ++searchModel.currentResult }
 
+    // --------------------------------
     // implementation
     id: root
     width: image.width
