@@ -176,6 +176,7 @@ private Q_SLOTS:
     void closeDiscardsPage();
     void loadAfterRendererCrashed();
     void inspectElement();
+    void navigateOnDrop_data();
     void navigateOnDrop();
 };
 
@@ -3519,8 +3520,16 @@ void tst_QWebEngineView::inspectElement()
     QTest::qWait(100);
 }
 
+void tst_QWebEngineView::navigateOnDrop_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::newRow("file") << QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).absoluteFilePath("resources/dummy.html"));
+    QTest::newRow("qrc") << QUrl("qrc:///resources/dummy.html");
+}
+
 void tst_QWebEngineView::navigateOnDrop()
 {
+    QFETCH(QUrl, url);
     struct WebEngineView : QWebEngineView {
         QWebEngineView* createWindow(QWebEnginePage::WebWindowType /* type */) override { return this; }
     } view;
@@ -3529,7 +3538,6 @@ void tst_QWebEngineView::navigateOnDrop()
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QSignalSpy loadSpy(&view, &QWebEngineView::loadFinished);
-    auto url = QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).absoluteFilePath("resources/dummy.html"));
     QMimeData mimeData;
     mimeData.setUrls({ url });
 
