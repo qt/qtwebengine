@@ -173,7 +173,16 @@ void ClipboardQt::WriteHTML(const char *markup_data, size_t markup_len, const ch
         url.assign(url_data, url_len);
 
     std::string cf_html = HtmlToCFHtml(markup_string.toStdString(), url);
-    getUncommittedData()->setHtml(QString::fromStdString(cf_html));
+    size_t html_start = std::string::npos;
+    size_t fragment_start = std::string::npos;
+    size_t fragment_end = std::string::npos;
+    CFHtmlExtractMetadata(cf_html, nullptr, &html_start, &fragment_start, &fragment_end);
+
+    DCHECK(fragment_start != std::string::npos && fragment_end != std::string::npos
+            && html_start != std::string::npos);
+    DCHECK(fragment_start >= html_start && fragment_end >= fragment_start);
+
+    getUncommittedData()->setHtml(QString::fromStdString(cf_html.substr(html_start)));
 #endif // !defined(Q_OS_WIN)
 }
 
