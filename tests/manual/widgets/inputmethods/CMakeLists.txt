@@ -1,38 +1,25 @@
-cmake_minimum_required(VERSION 3.16)
-project(inputmethods LANGUAGES CXX)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-set(CMAKE_AUTOMOC ON)
-
-if(NOT DEFINED INSTALL_MANUAL_TESTSDIR)
-    set(INSTALL_MANUAL_TESTSDIR "manual")
+if (NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
+    cmake_minimum_required(VERSION 3.16)
+    project(inputmethods LANGUAGES CXX)
+    find_package(Qt6BuildInternals COMPONENTS STANDALONE_TEST)
 endif()
 
-set(INSTALL_MANUAL_TESTDIR "${INSTALL_MANUAL_TESTSDIR}/widgets/inputmethods")
-
-find_package(Qt6 REQUIRED COMPONENTS Core Gui WebEngineWidgets Test)
-
-qt_add_executable(inputmethods
-    colorpicker.cpp
-    controlview.cpp
-    main.cpp
-    referenceview.cpp
-    testview.cpp
-    webview.cpp
-)
-
-set_target_properties(inputmethods PROPERTIES
-    WIN32_EXECUTABLE TRUE
-    MACOSX_BUNDLE TRUE
-)
-
-target_link_libraries(inputmethods PRIVATE
-    Qt::Core
-    Qt::Gui
-    Qt::Test
-    Qt::WebEngineWidgets
+qt_internal_add_manual_test(inputmethods
+    GUI
+    SOURCES
+        colorpicker.cpp
+        controlview.cpp
+        main.cpp
+        referenceview.cpp
+        testview.cpp
+        webview.cpp
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::Gui
+        Qt::Test
+        Qt::WebEngineWidgets
+    ENABLE_AUTOGEN_TOOLS
+        moc
 )
 
 set(inputmethods_resource_files
@@ -44,10 +31,4 @@ qt_add_resources(inputmethods "inputmethods"
     "/"
     FILES
     ${inputmethods_resource_files}
-)
-
-install(TARGETS inputmethods
-    RUNTIME DESTINATION "${INSTALL_MANUAL_TESTDIR}"
-    BUNDLE DESTINATION "${INSTALL_MANUAL_TESTDIR}"
-    LIBRARY DESTINATION "${INSTALL_MANUAL_TESTDIR}"
 )
