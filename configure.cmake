@@ -1,4 +1,3 @@
-
 if(QT_CONFIGURE_RUNNING)
     function(assertTargets)
     endfunction()
@@ -236,13 +235,34 @@ qt_feature("qtpdf-quick-build" PRIVATE
     PURPOSE "Enables building the QtPdfQuick module."
     CONDITION TARGET Qt::Quick AND TARGET Qt::Qml AND QT_FEATURE_qtpdf_build
 )
-qt_feature("webengine-system-ninja" PRIVATE
+
+function(qtwebengine_internal_is_file_inside_root_build_dir out_var file)
+    set(result ON)
+    if(NOT QT_CONFIGURE_RUNNING)
+        file(RELATIVE_PATH relpath "${WEBENGINE_ROOT_BUILD_DIR}" "${file}")
+        if(IS_ABSOLUTE "${relpath}" OR relpath MATCHES "^\\.\\./")
+            set(result OFF)
+        endif()
+    endif()
+    set(${out_var} ${result} PARENT_SCOPE)
+endfunction()
+
+if(Ninja_FOUND)
+    qtwebengine_internal_is_file_inside_root_build_dir(
+        Ninja_INSIDE_WEBENGINE_ROOT_BUILD_DIR "${Ninja_EXECUTABLE}")
+endif()
+qt_feature("webengine-build-ninja" PRIVATE
     LABEL "Build Ninja"
-    AUTODETECT NOT Ninja_FOUND OR Ninja_EXECUTABLE MATCHES ${WEBENGINE_ROOT_BUILD_DIR}
+    AUTODETECT NOT Ninja_FOUND OR Ninja_INSIDE_WEBENGINE_ROOT_BUILD_DIR
 )
-qt_feature("webengine-system-gn" PRIVATE
+
+if(Gn_FOUND)
+    qtwebengine_internal_is_file_inside_root_build_dir(
+        Gn_INSIDE_WEBENGINE_ROOT_BUILD_DIR "${Gn_EXECUTABLE}")
+endif()
+qt_feature("webengine-build-gn" PRIVATE
     LABEL "Build Gn"
-    AUTODETECT NOT Gn_FOUND OR Gn_EXECUTABLE MATCHES ${WEBENGINE_ROOT_BUILD_DIR}
+    AUTODETECT NOT Gn_FOUND OR Gn_INSIDE_WEBENGINE_ROOT_BUILD_DIR
 )
 # default assumed merge limit (should match the one in qt_cmdline.cmake)
 set(jumbo_merge_limit 8)
@@ -550,8 +570,8 @@ endif()
 
 # > Qt WebEngine Build Features
 qt_configure_add_summary_section(NAME "WebEngine Repository Build Options")
-qt_configure_add_summary_entry(ARGS "webengine-system-ninja")
-qt_configure_add_summary_entry(ARGS "webengine-system-gn")
+qt_configure_add_summary_entry(ARGS "webengine-build-ninja")
+qt_configure_add_summary_entry(ARGS "webengine-build-gn")
 qt_configure_add_summary_entry(ARGS "webengine-jumbo-build")
 qt_configure_add_summary_entry(ARGS "webengine-developer-build")
 qt_configure_add_summary_section(NAME "Build QtWebEngine Modules")
