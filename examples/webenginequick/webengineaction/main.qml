@@ -50,7 +50,7 @@ ApplicationWindow {
 
                 text: webEngineView.url
                 selectByMouse: true
-                onEditingFinished: webEngineView.url = text
+                onEditingFinished: webEngineView.url = utils.fromUserInput(text)
             }
 
             ToolButton {

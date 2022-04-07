@@ -16,6 +16,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui QuickControls2 WebEngineQuick)
 
 qt_add_executable(lifecycle
     main.cpp
+    utils.h
 )
 
 set_target_properties(lifecycle PROPERTIES
