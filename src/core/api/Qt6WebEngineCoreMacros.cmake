@@ -14,11 +14,18 @@ function(qt6_add_webengine_dictionary)
     endif()
 
     get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+    get_target_property(isBundle ${ARGS_TARGET} MACOSX_BUNDLE)
     if(isMultiConfig)
         set(spellcheckerDir ${ARGS_OUTPUT_DIRECTORY}/dict/qtwebengine_dictionaries)
         set(copyCommand COMMAND ${CMAKE_COMMAND} -E copy_directory ${ARGS_OUTPUT_DIRECTORY}/dict
            ${ARGS_OUTPUT_DIRECTORY}/$<CONFIG>
         )
+    elseif(isBundle)
+        get_target_property(outputName ${ARGS_TARGET} OUTPUT_NAME)
+        if(NOT outputName)
+           set(outputName ${ARGS_TARGET})
+        endif()
+        set(spellcheckerDir "${ARGS_OUTPUT_DIRECTORY}/${outputName}.app/Contents/Resources/qtwebengine_dictionaries")
     else()
         set(spellcheckerDir ${ARGS_OUTPUT_DIRECTORY}/qtwebengine_dictionaries)
     endif()
