@@ -41,4 +41,7 @@
     Assigning a \l{WebEngineAction} to multiple UI elements will keep them in sync.
     As it can be seen in the picture above, if the browser engine disables a
     navigation action, both corresponding menu items will be disabled.
+
+    \note Note that incomplete URLs in the navigation bar are handled by
+    \l {QUrl::} {fromUserInput}.
 */

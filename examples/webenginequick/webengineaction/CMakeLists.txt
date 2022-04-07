@@ -16,6 +16,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui WebEngineQuick)
 
 qt_add_executable(webengineaction
     main.cpp
+    utils.h
 )
 
 set_target_properties(webengineaction PROPERTIES
