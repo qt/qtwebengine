@@ -8,14 +8,16 @@ include(ExternalProject)
 include(cmake/Functions.cmake)
 include(src/core/api/Qt6WebEngineCoreMacros.cmake)
 
+project(QtWebEngineDummy)
+find_package(Qt6 6.2 CONFIG REQUIRED COMPONENTS BuildInternals Core)
+
 project(QtWebEngine
-    VERSION "${QT_REPO_MODULE_VERSION}"
+    VERSION ${Qt6Core_VERSION}
     DESCRIPTION "QtWebEngine and QtPdf modules"
     HOMEPAGE_URL "https://qt.io/"
     LANGUAGES CXX C
 )
 
-find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core)
 find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS
     Gui Widgets Network OpenGL Quick Qml PrintSupport
     WebChannel Positioning QuickControls2 Test QuickWidgets QuickTest WebSockets Designer
