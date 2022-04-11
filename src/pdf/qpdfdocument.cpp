@@ -77,8 +77,12 @@ QPdfDocumentPrivate::QPdfDocumentPrivate()
 
     const QPdfMutexLocker lock;
 
-    if (libraryRefCount == 0)
+    if (libraryRefCount == 0) {
+        QElapsedTimer timer;
+        timer.start();
         FPDF_InitLibrary();
+        qCDebug(qLcDoc) << "FPDF_InitLibrary took" << timer.elapsed() << "ms";
+    }
     ++libraryRefCount;
 
     // FPDF_FILEACCESS setup
@@ -100,8 +104,10 @@ QPdfDocumentPrivate::~QPdfDocumentPrivate()
 
     const QPdfMutexLocker lock;
 
-    if (!--libraryRefCount)
+    if (!--libraryRefCount) {
+        qCDebug(qLcDoc) << "FPDF_DestroyLibrary";
         FPDF_DestroyLibrary();
+    }
 }
 
 void QPdfDocumentPrivate::clear()
