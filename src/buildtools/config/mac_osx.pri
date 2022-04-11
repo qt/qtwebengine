@@ -36,3 +36,6 @@ gn_args += \
     use_external_popup_menu=false \
     angle_enable_vulkan=false
 
+cross_compile:!host_build {
+    gn_args += target_cpu=\"$$gnArch($$QT_ARCH)\"
+}
