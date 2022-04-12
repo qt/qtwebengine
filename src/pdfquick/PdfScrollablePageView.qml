@@ -441,45 +441,19 @@ Flickable {
                     document: root.document
                     page: pageNavigator.currentPage
                 }
-                delegate: Shape {
-                    required property rect rectangle
-                    required property url url
-                    required property int page
-                    required property point location
-                    required property real zoom
+                delegate: PdfLinkDelegate {
                     x: rectangle.x * image.pageScale
                     y: rectangle.y * image.pageScale
                     width: rectangle.width * image.pageScale
                     height: rectangle.height * image.pageScale
                     visible: image.status === Image.Ready
-                    ShapePath {
-                        strokeWidth: style.linkUnderscoreStrokeWidth
-                        strokeColor: style.linkUnderscoreColor
-                        strokeStyle: style.linkUnderscoreStrokeStyle
-                        dashPattern: style.linkUnderscoreDashPattern
-                        startX: 0; startY: height
-                        PathLine { x: width; y: height }
-                    }
-                    HoverHandler {
-                        id: linkHH
-                        cursorShape: Qt.PointingHandCursor
-                    }
-                    TapHandler {
-                        onTapped: {
-                            if (page >= 0)
-                                pageNavigator.jump(page, Qt.point(0, 0), root.renderScale)
+                    onTapped:
+                        (link) => {
+                            if (link.page >= 0)
+                                pageNavigator.jump(link.page, link.location, link.zoom)
                             else
                                 Qt.openUrlExternally(url)
                         }
-                    }
-                    ToolTip {
-                        visible: linkHH.hovered
-                        delay: 1000
-                        text: page >= 0 ?
-                                  ("page " + (page + 1) +
-                                   " location " + location.x.toFixed(1) + ", " + location.y.toFixed(1) +
-                                   " zoom " + zoom) : url
-                    }
                 }
             }
             DragHandler {

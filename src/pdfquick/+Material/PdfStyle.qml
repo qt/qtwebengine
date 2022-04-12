@@ -49,8 +49,4 @@ QtObject {
     property color pageSearchResultsColor: withAlpha(Qt.lighter(Material.accentColor, 1.5), 0.5)
     property color currentSearchResultStrokeColor: Material.accentColor
     property real currentSearchResultStrokeWidth: 2
-    property color linkUnderscoreColor: palette.link
-    property real linkUnderscoreStrokeWidth: -1 // no underlines under hyperlinks
-    property int linkUnderscoreStrokeStyle: ShapePath.DashLine
-    property var linkUnderscoreDashPattern: [ 1, 4 ]
 }

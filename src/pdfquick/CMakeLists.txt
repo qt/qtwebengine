@@ -3,6 +3,7 @@ find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Core Gui Qml Quic
 set(qml_files
     "+Material/PdfStyle.qml"
     "+Universal/PdfStyle.qml"
+    "PdfLinkDelegate.qml"
     "PdfMultiPageView.qml"
     "PdfPageView.qml"
     "PdfScrollablePageView.qml"

@@ -433,20 +433,19 @@ Rectangle {
             document: root.document
             page: pageNavigator.currentPage
         }
-        delegate: Item {
+        delegate: PdfLinkDelegate {
             x: rectangle.x * image.pageScale
             y: rectangle.y * image.pageScale
             width: rectangle.width * image.pageScale
             height: rectangle.height * image.pageScale
-            HoverHandler { cursorShape: Qt.PointingHandCursor }
-            TapHandler {
-                onTapped: {
-                    if (page >= 0)
-                        pageNavigator.jump(page, Qt.point(0, 0), root.renderScale)
+            visible: image.status === Image.Ready
+            onTapped:
+                (link) => {
+                    if (link.page >= 0)
+                        pageNavigator.jump(link)
                     else
                         Qt.openUrlExternally(url)
                 }
-            }
         }
     }
 

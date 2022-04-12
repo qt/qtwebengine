@@ -508,45 +508,19 @@ Item {
                         document: root.document
                         page: image.currentFrame
                     }
-                    delegate: Shape {
-                        required property rect rectangle
-                        required property url url
-                        required property int page
-                        required property point location
-                        required property real zoom
+                    delegate: PdfLinkDelegate {
                         x: rectangle.x * paper.pageScale
                         y: rectangle.y * paper.pageScale
                         width: rectangle.width * paper.pageScale
                         height: rectangle.height * paper.pageScale
                         visible: image.status === Image.Ready
-                        ShapePath {
-                            strokeWidth: style.linkUnderscoreStrokeWidth
-                            strokeColor: style.linkUnderscoreColor
-                            strokeStyle: style.linkUnderscoreStrokeStyle
-                            dashPattern: style.linkUnderscoreDashPattern
-                            startX: 0; startY: height
-                            PathLine { x: width; y: height }
-                        }
-                        HoverHandler {
-                            id: linkHH
-                            cursorShape: Qt.PointingHandCursor
-                        }
-                        TapHandler {
-                            onTapped: {
-                                if (page >= 0)
-                                    root.goToLocation(page, location, zoom)
+                        onTapped:
+                            (link) => {
+                                if (link.page >= 0)
+                                    root.goToLocation(link.page, link.location, link.zoom)
                                 else
                                     Qt.openUrlExternally(url)
                             }
-                        }
-                        ToolTip {
-                            visible: linkHH.hovered
-                            delay: 1000
-                            text: page >= 0 ?
-                                      ("page " + (page + 1) +
-                                       " location " + location.x.toFixed(1) + ", " + location.y.toFixed(1) +
-                                       " zoom " + zoom) : url
-                        }
                     }
                 }
                 PdfSelection {

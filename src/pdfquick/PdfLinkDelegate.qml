@@ -38,15 +38,67 @@
 ****************************************************************************/
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Shapes
 
-QtObject {
-    property SystemPalette palette: SystemPalette { }
-    function withAlpha(color, alpha) {
-        return Qt.hsla(color.hslHue, color.hslSaturation, color.hslLightness, alpha)
+/*!
+    \qmltype PdfLinkDelegate
+    \inqmlmodule QtQuick.Pdf
+    \brief A component to decorate hyperlinks on a PDF page.
+
+    PdfLinkDelegate provides the component that QML-based PDF viewers
+    instantiate on top of each hyperlink that is found on each PDF page.
+
+    This component does not provide any visual decoration, because often the
+    hyperlinks will already be formatted in a distinctive way; but when the
+    mouse cursor hovers, it changes to Qt::PointingHandCursor, and a tooltip
+    appears after a delay. Clicking emits the goToLocation() signal if the link
+    is internal, or calls Qt.openUrlExternally() if the link contains a URL.
+
+    \sa PdfPageView, PdfScrollablePageView, PdfMultiPageView
+*/
+Item {
+    id: root
+    required property var link
+    required property rect rectangle
+    required property url url
+    required property int page
+    required property point location
+    required property real zoom
+
+    /*!
+        \qmlsignal PdfLinkDelegate::tapped(link)
+
+        Emitted on mouse click or touch tap.
+    */
+    signal tapped(var link)
+
+    /*!
+        \qmlsignal PdfLinkDelegate::contextMenuRequested(link)
+
+        Emitted on mouse right-click or touch long-press.
+    */
+    signal contextMenuRequested(var link)
+
+    HoverHandler {
+        id: linkHH
+        cursorShape: Qt.PointingHandCursor
     }
-    property color selectionColor: withAlpha(palette.highlight, 0.5)
-    property color pageSearchResultsColor: "#80B0C4DE"
-    property color currentSearchResultStrokeColor: "cyan"
-    property real currentSearchResultStrokeWidth: 2
+    TapHandler {
+        onTapped: root.tapped(link)
+    }
+    TapHandler {
+        acceptedButtons: Qt.RightButton
+        onTapped: root.contextMenuRequested(link)
+    }
+    TapHandler {
+        acceptedDevices: PointerDevice.TouchScreen
+        onTapped: root.contextMenuRequested(link)
+    }
+    ToolTip {
+        visible: linkHH.hovered
+        delay: 1000
+        property string destFormat: qsTr("Page %1 location %2, %3 zoom %4")
+        text: page >= 0 ?
+                  destFormat.arg(page + 1).arg(location.x.toFixed(1)).arg(location.y.toFixed(1)).arg(zoom) :
+                  url
+    }
 }
