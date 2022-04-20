@@ -29,7 +29,7 @@
 /*!
     \module QtWebEngineCore
     \title Qt WebEngine Core C++ Classes
-    \brief Provides public API shared by both QtWebEngine and QtWebEngineWidgets.
+    \brief Provides public API shared by both QtWebEngineQuick and QtWebEngineWidgets.
     \since 5.6
     \ingroup qtwebengine-modules
     \ingroup modules
@@ -42,7 +42,7 @@
     \snippet qtwebenginecore_build_snippet.qdoc 1
 
     If you use qmake to build your projects, \QWE Core is usually
-    indirectly included through the \l{Qt WebEngine QML Types}{Qt WebEngine} or
+    indirectly included through the \l{Qt WebEngine QML Types}{Qt WebEngine Quick} or
     \l{Qt WebEngine Widgets C++ Classes}{Qt WebEngine Widgets} modules.
 
     \if !defined(qtforpython)

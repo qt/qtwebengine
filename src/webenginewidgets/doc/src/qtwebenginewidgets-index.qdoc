@@ -37,16 +37,16 @@
     To include the definitions of the module's classes, use the
     following directive:
 
-    \snippet qtwebengine_build_snippet.qdoc 1
+    \snippet qtwebenginewidgets_build_snippet.qdoc 1
 
     To link against the module, add this line to your qmake project file:
 
-    \snippet qtwebengine_build_snippet.qdoc 0
+    \snippet qtwebenginewidgets_build_snippet.qdoc 0
 
     For build with CMake use the \c find_package() command to locate the needed module components
     in the Qt6 package and \c target_link_libraries() to link against the module:
 
-    \snippet qtwebengine_build_snippet.qdoc 2
+    \snippet qtwebenginewidgets_build_snippet.qdoc 2
 
     \section1 Articles and Guides
 

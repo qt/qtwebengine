@@ -29,9 +29,9 @@
     \page qtwebenginecore-index.html
     \title Qt WebEngine Core
 
-    \brief Provides common API shared by \QWE and \QWE Widgets.
+    \brief Provides common API shared by \QWE Quick and \QWE Widgets.
 
-    \QWE Core provides API shared by \l {Qt WebEngine} and \l {Qt WebEngine Widgets}.
+    \QWE Core provides API shared by \l {Qt WebEngine Quick} and \l {Qt WebEngine Widgets}.
 
     \section1 Getting Started
 
