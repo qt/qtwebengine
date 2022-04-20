@@ -307,6 +307,10 @@ foreach(arch ${archs})
             CONDITION QT_FEATURE_webengine_printing_and_pdf
         )
         extend_gn_list(gnArgArg
+            ARGS use_cups
+            CONDITION QT_FEATURE_webengine_printing_and_pdf AND NOT WIN32
+        )
+        extend_gn_list(gnArgArg
             ARGS enable_plugins
             CONDITION QT_FEATURE_webengine_pepper_plugins
         )

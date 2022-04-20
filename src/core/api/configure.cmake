@@ -76,7 +76,8 @@ qt_feature("webengine-printing-and-pdf" PRIVATE
     LABEL "Printing and PDF"
     PURPOSE "Provides printing and output to PDF."
     AUTODETECT NOT QT_FEATURE_webengine_embedded_build
-    CONDITION TARGET Qt::PrintSupport AND QT_FEATURE_printer AND (CUPS_FOUND OR NOT LINUX)
+    CONDITION TARGET Qt::PrintSupport AND QT_FEATURE_printer AND
+    (CUPS_FOUND OR WIN32)
 )
 qt_feature("webengine-pepper-plugins" PRIVATE
     LABEL "Pepper Plugins"
