@@ -870,6 +870,7 @@ macro(append_compiler_linker_sdk_setup)
                 use_system_xcode=true
                 mac_deployment_target="${CMAKE_OSX_DEPLOYMENT_TARGET}"
                 mac_sdk_min="${macSdkVersion}"
+                use_libcxx=true
             )
         endif()
         if(IOS)
@@ -878,11 +879,14 @@ macro(append_compiler_linker_sdk_setup)
                 enable_ios_bitcode=true
                 ios_deployment_target="${CMAKE_OSX_DEPLOYMENT_TARGET}"
                 ios_enable_code_signing=false
+                use_libcxx=true
             )
         endif()
-        extend_gn_list(gnArgArg ARGS use_libcxx
-            CONDITION QT_FEATURE_stdlib_libcpp OR MACOS
-        )
+        if(DEFINED QT_FEATURE_stdlib_libcpp AND LINUX)
+            extend_gn_list(gnArgArg ARGS use_libcxx
+                CONDITION QT_FEATURE_stdlib_libcpp
+            )
+        endif()
     else()
         if(QT_FEATURE_use_lld_linker)
             get_filename_component(clangBasePath ${CMAKE_LINKER} DIRECTORY)
