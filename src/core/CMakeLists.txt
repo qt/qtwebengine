@@ -456,7 +456,7 @@ endforeach()
 #  WEBENGINECORE SETUP
 ##
 
-set(arch ${CMAKE_SYSTEM_PROCESSOR})
+list(GET archs 0 arch)
 target_include_directories(WebEngineCore PRIVATE
     ${buildDir}/$<CONFIG>/${arch}/gen
     ${buildDir}/$<CONFIG>/${arch}/gen/third_party/perfetto
@@ -498,7 +498,7 @@ endif()
 #  WEBENGINECORE DICT TOOL SETUP
 ##
 
-if(QT_FEATURE_webengine_spellchecker)
+if(QT_FEATURE_webengine_spellchecker AND NOT CMAKE_CROSSCOMPILING)
     qt_get_tool_target_name(dict_target_name qwebengine_convert_dict)
     target_include_directories(${dict_target_name} PRIVATE
         ../3rdparty/chromium

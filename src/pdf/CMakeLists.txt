@@ -188,7 +188,8 @@ endforeach()
 #  PDF SETUP
 ##
 
-set(arch ${CMAKE_SYSTEM_PROCESSOR})
+get_architectures(archs)
+list(GET archs 0 arch)
 target_include_directories(Pdf PRIVATE ${buildDir}/$<CONFIG>/${arch}/gen)
 add_gn_build_aritfacts_to_target(Pdf QtPdf pdf ${buildDir} TRUE)
 add_dependencies(Pdf run_pdf_NinjaDone)

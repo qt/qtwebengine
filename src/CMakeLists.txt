@@ -151,7 +151,7 @@ endif()
 #  HOST PROJECT
 ##
 
-if(CMAKE_CROSSCOMPILING AND NOT IOS)
+if(CMAKE_CROSSCOMPILING AND NOT IOS AND NOT MACOS)
 
     if(NOT Gn_FOUND)
         message(FATAL_ERROR "\nHost gn not found - cross compilation not possible")
