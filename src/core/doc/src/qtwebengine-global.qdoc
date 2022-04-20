@@ -1,0 +1,66 @@
+/****************************************************************************
+**
+** Copyright (C) 2022 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \headerfile <qtwebenginecoreglobal.h>
+    \inmodule QtWebEngineCore
+    \title Global Qt WebEngine Core Declarations
+    \ingroup funclists
+
+    \brief Helper functions for the \QWE Core module.
+
+*/
+
+
+/*!
+    \fn const char *qWebEngineVersion() noexcept
+    \relates <qtwebenginecoreglobal.h>
+    \since 6.2
+
+    Returns the version number of \QWE at run-time as a string
+    (for example, "6.2.0"). This may be a different version than the
+    version the application was compiled against, and a different version
+    than Qt.
+*/
+
+/*!
+    \fn const char *qWebEngineChromiumVersion() noexcept
+    \relates <qtwebenginecoreglobal.h>
+    \since 6.2
+
+    Returns the version number of Chromium used by \QWE at run-time
+    as a string (for example, "83.0.4103.122").
+*/
+
+/*!
+    \fn const char *qWebEngineChromiumSecurityPatchVersion() noexcept
+    \relates <qtwebenginecoreglobal.h>
+    \since 6.3
+
+    Returns the version number of last Chromium version security patches have been
+    merged from.
+*/
