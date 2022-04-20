@@ -63,11 +63,12 @@ public:
     };
     Q_ENUM(StructureMode)
 
-    enum Role
+    enum class Role : int
     {
-        TitleRole = Qt::UserRole,
-        LevelRole,
-        PageNumberRole
+        Title = Qt::DisplayRole,
+        Level = Qt::UserRole,
+        Page,
+        _Count
     };
     Q_ENUM(Role)
 
@@ -93,6 +94,7 @@ Q_SIGNALS:
     void structureModeChanged(QPdfBookmarkModel::StructureMode structureMode);
 
 private:
+    QHash<int, QByteArray> m_roleNames;
     std::unique_ptr<QPdfBookmarkModelPrivate> d;
 
     Q_PRIVATE_SLOT(d, void _q_documentStatusChanged())

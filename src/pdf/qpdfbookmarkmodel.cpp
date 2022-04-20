@@ -45,6 +45,7 @@
 #include "third_party/pdfium/public/fpdf_doc.h"
 #include "third_party/pdfium/public/fpdfview.h"
 
+#include <QMetaEnum>
 #include <QPointer>
 #include <QScopedPointer>
 #include <private/qabstractitemmodel_p.h>
@@ -222,6 +223,10 @@ QPdfBookmarkModel::QPdfBookmarkModel(QObject *parent)
     : QAbstractItemModel(parent), d(new QPdfBookmarkModelPrivate)
 {
     d->q = this;
+    m_roleNames = QAbstractItemModel::roleNames();
+    QMetaEnum rolesMetaEnum = metaObject()->enumerator(metaObject()->indexOfEnumerator("Role"));
+    for (int r = Qt::UserRole; r < int(Role::_Count); ++r)
+        m_roleNames.insert(r, QByteArray(rolesMetaEnum.valueToKey(r)).toLower());
 }
 
 QPdfBookmarkModel::~QPdfBookmarkModel() = default;
@@ -272,13 +277,7 @@ int QPdfBookmarkModel::columnCount(const QModelIndex &parent) const
 
 QHash<int, QByteArray> QPdfBookmarkModel::roleNames() const
 {
-    QHash<int, QByteArray> names = QAbstractItemModel::roleNames();
-
-    names[TitleRole] = "title";
-    names[LevelRole] = "level";
-    names[PageNumberRole] = "pageNumber";
-
-    return names;
+    return m_roleNames;
 }
 
 QVariant QPdfBookmarkModel::data(const QModelIndex &index, int role) const
@@ -287,17 +286,17 @@ QVariant QPdfBookmarkModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     const BookmarkNode *node = static_cast<BookmarkNode*>(index.internalPointer());
-    switch (role) {
-    case Qt::DisplayRole:
-    case TitleRole:
+    switch (Role(role)) {
+    case Role::Title:
         return node->title();
-    case LevelRole:
+    case Role::Level:
         return node->level();
-    case PageNumberRole:
+    case Role::Page:
         return node->pageNumber();
-    default:
-        return QVariant();
+    case Role::_Count:
+        break;
     }
+    return QVariant();
 }
 
 QModelIndex QPdfBookmarkModel::index(int row, int column, const QModelIndex &parent) const

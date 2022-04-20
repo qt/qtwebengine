@@ -157,43 +157,43 @@ void tst_QPdfBookmarkModel::testTreeStructure()
     QCOMPARE(model.rowCount(), 3);
 
     const QModelIndex index1 = model.index(0, 0);
-    QCOMPARE(index1.data(QPdfBookmarkModel::TitleRole).toString(), QLatin1String("Section 1"));
-    QCOMPARE(index1.data(QPdfBookmarkModel::LevelRole).toInt(), 0);
+    QCOMPARE(index1.data(int(QPdfBookmarkModel::Role::Title)).toString(), QLatin1String("Section 1"));
+    QCOMPARE(index1.data(int(QPdfBookmarkModel::Role::Level)).toInt(), 0);
     QCOMPARE(model.rowCount(index1), 2);
 
     const QModelIndex index1_1 = model.index(0, 0, index1);
-    QCOMPARE(index1_1.data(QPdfBookmarkModel::TitleRole).toString(), QLatin1String("Section 1.1"));
-    QCOMPARE(index1_1.data(QPdfBookmarkModel::LevelRole).toInt(), 1);
+    QCOMPARE(index1_1.data(int(QPdfBookmarkModel::Role::Title)).toString(), QLatin1String("Section 1.1"));
+    QCOMPARE(index1_1.data(int(QPdfBookmarkModel::Role::Level)).toInt(), 1);
     QCOMPARE(model.rowCount(index1_1), 0);
 
     const QModelIndex index1_2 = model.index(1, 0, index1);
-    QCOMPARE(index1_2.data(QPdfBookmarkModel::TitleRole).toString(), QLatin1String("Section 1.2"));
-    QCOMPARE(index1_2.data(QPdfBookmarkModel::LevelRole).toInt(), 1);
+    QCOMPARE(index1_2.data(int(QPdfBookmarkModel::Role::Title)).toString(), QLatin1String("Section 1.2"));
+    QCOMPARE(index1_2.data(int(QPdfBookmarkModel::Role::Level)).toInt(), 1);
     QCOMPARE(model.rowCount(index1_2), 0);
 
     const QModelIndex index2 = model.index(1, 0);
-    QCOMPARE(index2.data(QPdfBookmarkModel::TitleRole).toString(), QLatin1String("Section 2"));
-    QCOMPARE(index2.data(QPdfBookmarkModel::LevelRole).toInt(), 0);
+    QCOMPARE(index2.data(int(QPdfBookmarkModel::Role::Title)).toString(), QLatin1String("Section 2"));
+    QCOMPARE(index2.data(int(QPdfBookmarkModel::Role::Level)).toInt(), 0);
     QCOMPARE(model.rowCount(index2), 2);
 
     const QModelIndex index2_1 = model.index(0, 0, index2);
-    QCOMPARE(index2_1.data(QPdfBookmarkModel::TitleRole).toString(), QLatin1String("Section 2.1"));
-    QCOMPARE(index2_1.data(QPdfBookmarkModel::LevelRole).toInt(), 1);
+    QCOMPARE(index2_1.data(int(QPdfBookmarkModel::Role::Title)).toString(), QLatin1String("Section 2.1"));
+    QCOMPARE(index2_1.data(int(QPdfBookmarkModel::Role::Level)).toInt(), 1);
     QCOMPARE(model.rowCount(index2_1), 1);
 
     const QModelIndex index2_1_1 = model.index(0, 0, index2_1);
-    QCOMPARE(index2_1_1.data(QPdfBookmarkModel::TitleRole).toString(), QLatin1String("Section 2.1.1"));
-    QCOMPARE(index2_1_1.data(QPdfBookmarkModel::LevelRole).toInt(), 2);
+    QCOMPARE(index2_1_1.data(int(QPdfBookmarkModel::Role::Title)).toString(), QLatin1String("Section 2.1.1"));
+    QCOMPARE(index2_1_1.data(int(QPdfBookmarkModel::Role::Level)).toInt(), 2);
     QCOMPARE(model.rowCount(index2_1_1), 0);
 
     const QModelIndex index2_2 = model.index(1, 0, index2);
-    QCOMPARE(index2_2.data(QPdfBookmarkModel::TitleRole).toString(), QLatin1String("Section 2.2"));
-    QCOMPARE(index2_2.data(QPdfBookmarkModel::LevelRole).toInt(), 1);
+    QCOMPARE(index2_2.data(int(QPdfBookmarkModel::Role::Title)).toString(), QLatin1String("Section 2.2"));
+    QCOMPARE(index2_2.data(int(QPdfBookmarkModel::Role::Level)).toInt(), 1);
     QCOMPARE(model.rowCount(index2_2), 0);
 
     const QModelIndex index3 = model.index(2, 0);
-    QCOMPARE(index3.data(QPdfBookmarkModel::TitleRole).toString(), QLatin1String("Section 3"));
-    QCOMPARE(index3.data(QPdfBookmarkModel::LevelRole).toInt(), 0);
+    QCOMPARE(index3.data(int(QPdfBookmarkModel::Role::Title)).toString(), QLatin1String("Section 3"));
+    QCOMPARE(index3.data(int(QPdfBookmarkModel::Role::Level)).toInt(), 0);
     QCOMPARE(model.rowCount(index3), 0);
 
     const QModelIndex index4 = model.index(3, 0);
@@ -219,43 +219,43 @@ void tst_QPdfBookmarkModel::testListStructure()
     QCOMPARE(model.rowCount(), 8);
 
     const QModelIndex index1 = model.index(0, 0);
-    QCOMPARE(index1.data(QPdfBookmarkModel::TitleRole).toString(), QLatin1String("Section 1"));
-    QCOMPARE(index1.data(QPdfBookmarkModel::LevelRole).toInt(), 0);
+    QCOMPARE(index1.data(int(QPdfBookmarkModel::Role::Title)).toString(), QLatin1String("Section 1"));
+    QCOMPARE(index1.data(int(QPdfBookmarkModel::Role::Level)).toInt(), 0);
     QCOMPARE(model.rowCount(index1), 0);
 
     const QModelIndex index1_1 = model.index(1, 0);
-    QCOMPARE(index1_1.data(QPdfBookmarkModel::TitleRole).toString(), QLatin1String("Section 1.1"));
-    QCOMPARE(index1_1.data(QPdfBookmarkModel::LevelRole).toInt(), 1);
+    QCOMPARE(index1_1.data(int(QPdfBookmarkModel::Role::Title)).toString(), QLatin1String("Section 1.1"));
+    QCOMPARE(index1_1.data(int(QPdfBookmarkModel::Role::Level)).toInt(), 1);
     QCOMPARE(model.rowCount(index1_1), 0);
 
     const QModelIndex index1_2 = model.index(2, 0);
-    QCOMPARE(index1_2.data(QPdfBookmarkModel::TitleRole).toString(), QLatin1String("Section 1.2"));
-    QCOMPARE(index1_2.data(QPdfBookmarkModel::LevelRole).toInt(), 1);
+    QCOMPARE(index1_2.data(int(QPdfBookmarkModel::Role::Title)).toString(), QLatin1String("Section 1.2"));
+    QCOMPARE(index1_2.data(int(QPdfBookmarkModel::Role::Level)).toInt(), 1);
     QCOMPARE(model.rowCount(index1_2), 0);
 
     const QModelIndex index2 = model.index(3, 0);
-    QCOMPARE(index2.data(QPdfBookmarkModel::TitleRole).toString(), QLatin1String("Section 2"));
-    QCOMPARE(index2.data(QPdfBookmarkModel::LevelRole).toInt(), 0);
+    QCOMPARE(index2.data(int(QPdfBookmarkModel::Role::Title)).toString(), QLatin1String("Section 2"));
+    QCOMPARE(index2.data(int(QPdfBookmarkModel::Role::Level)).toInt(), 0);
     QCOMPARE(model.rowCount(index2), 0);
 
     const QModelIndex index2_1 = model.index(4, 0);
-    QCOMPARE(index2_1.data(QPdfBookmarkModel::TitleRole).toString(), QLatin1String("Section 2.1"));
-    QCOMPARE(index2_1.data(QPdfBookmarkModel::LevelRole).toInt(), 1);
+    QCOMPARE(index2_1.data(int(QPdfBookmarkModel::Role::Title)).toString(), QLatin1String("Section 2.1"));
+    QCOMPARE(index2_1.data(int(QPdfBookmarkModel::Role::Level)).toInt(), 1);
     QCOMPARE(model.rowCount(index2_1), 0);
 
     const QModelIndex index2_1_1 = model.index(5, 0);
-    QCOMPARE(index2_1_1.data(QPdfBookmarkModel::TitleRole).toString(), QLatin1String("Section 2.1.1"));
-    QCOMPARE(index2_1_1.data(QPdfBookmarkModel::LevelRole).toInt(), 2);
+    QCOMPARE(index2_1_1.data(int(QPdfBookmarkModel::Role::Title)).toString(), QLatin1String("Section 2.1.1"));
+    QCOMPARE(index2_1_1.data(int(QPdfBookmarkModel::Role::Level)).toInt(), 2);
     QCOMPARE(model.rowCount(index2_1_1), 0);
 
     const QModelIndex index2_2 = model.index(6, 0);
-    QCOMPARE(index2_2.data(QPdfBookmarkModel::TitleRole).toString(), QLatin1String("Section 2.2"));
-    QCOMPARE(index2_2.data(QPdfBookmarkModel::LevelRole).toInt(), 1);
+    QCOMPARE(index2_2.data(int(QPdfBookmarkModel::Role::Title)).toString(), QLatin1String("Section 2.2"));
+    QCOMPARE(index2_2.data(int(QPdfBookmarkModel::Role::Level)).toInt(), 1);
     QCOMPARE(model.rowCount(index2_2), 0);
 
     const QModelIndex index3 = model.index(7, 0);
-    QCOMPARE(index3.data(QPdfBookmarkModel::TitleRole).toString(), QLatin1String("Section 3"));
-    QCOMPARE(index3.data(QPdfBookmarkModel::LevelRole).toInt(), 0);
+    QCOMPARE(index3.data(int(QPdfBookmarkModel::Role::Title)).toString(), QLatin1String("Section 3"));
+    QCOMPARE(index3.data(int(QPdfBookmarkModel::Role::Level)).toInt(), 0);
     QCOMPARE(model.rowCount(index3), 0);
 
     const QModelIndex index4 = model.index(8, 0);
@@ -273,16 +273,16 @@ void tst_QPdfBookmarkModel::testPageNumberRole()
     QCOMPARE(model.rowCount(), 3);
 
     const QModelIndex index1 = model.index(0, 0);
-    QCOMPARE(index1.data(QPdfBookmarkModel::PageNumberRole).toInt(), 0);
+    QCOMPARE(index1.data(int(QPdfBookmarkModel::Role::Page)).toInt(), 0);
 
     const QModelIndex index2 = model.index(1, 0);
-    QCOMPARE(index2.data(QPdfBookmarkModel::PageNumberRole).toInt(), 1);
+    QCOMPARE(index2.data(int(QPdfBookmarkModel::Role::Page)).toInt(), 1);
 
     const QModelIndex index2_1 = model.index(0, 0, index2);
-    QCOMPARE(index2_1.data(QPdfBookmarkModel::PageNumberRole).toInt(), 1);
+    QCOMPARE(index2_1.data(int(QPdfBookmarkModel::Role::Page)).toInt(), 1);
 
     const QModelIndex index3 = model.index(2, 0);
-    QCOMPARE(index3.data(QPdfBookmarkModel::PageNumberRole).toInt(), 2);
+    QCOMPARE(index3.data(int(QPdfBookmarkModel::Role::Page)).toInt(), 2);
 }
 
 QTEST_MAIN(tst_QPdfBookmarkModel)

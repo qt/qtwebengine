@@ -127,8 +127,8 @@ void MainWindow::bookmarkSelected(const QModelIndex &index)
     if (!index.isValid())
         return;
 
-    const int page = index.data(QPdfBookmarkModel::PageNumberRole).toInt();
-    const qreal zoomLevel = index.data(QPdfBookmarkModel::LevelRole).toReal();
+    const int page = index.data(int(QPdfBookmarkModel::Role::Page)).toInt();
+    const qreal zoomLevel = index.data(int(QPdfBookmarkModel::Role::Level)).toReal();
     ui->pdfView->pageNavigation()->jump(page, {}, zoomLevel);
 }
 
