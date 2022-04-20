@@ -235,14 +235,14 @@ ApplicationWindow {
     PdfMultiPageView {
         id: view
         anchors.fill: parent
-        anchors.leftMargin: searchDrawer.position * searchDrawer.width
+        anchors.leftMargin: sidebar.position * sidebar.width
         document: document
         searchString: searchField.text
         onCurrentPageChanged: currentPageSB.value = view.currentPage + 1
     }
 
     Drawer {
-        id: searchDrawer
+        id: sidebar
         edge: Qt.LeftEdge
         modal: false
         width: 300
@@ -250,51 +250,89 @@ ApplicationWindow {
         height: view.height
         dim: false
         clip: true
-        ListView {
-            id: searchResultsList
+
+        TabBar {
+            id: sidebarTabs
+            x: -width
+            rotation: -90
+            transformOrigin: Item.TopRight
+            currentIndex: 1 // bookmarks by default
+            TabButton {
+                text: qsTr("Search Results")
+            }
+            TabButton {
+                text: qsTr("Bookmarks")
+            }
+        }
+
+        GroupBox {
             anchors.fill: parent
-            anchors.margins: 2
-            model: view.searchModel
-            ScrollBar.vertical: ScrollBar { }
-            delegate: ItemDelegate {
-                id: resultDelegate
-                required property int index
-                required property int page
-                required property int indexOnPage
-                required property point location
-                required property string contextBefore
-                required property string contextAfter
-                width: parent ? parent.width : 0
-                RowLayout {
-                    anchors.fill: parent
-                    spacing: 0
-                    Label {
-                        text: "Page " + (resultDelegate.page + 1) + ": "
-                    }
-                    Label {
-                        text: resultDelegate.contextBefore
-                        elide: Text.ElideLeft
-                        horizontalAlignment: Text.AlignRight
-                        Layout.fillWidth: true
-                        Layout.preferredWidth: parent.width / 2
-                    }
-                    Label {
-                        font.bold: true
-                        text: view.searchString
-                        width: implicitWidth
-                    }
-                    Label {
-                        text: resultDelegate.contextAfter
-                        elide: Text.ElideRight
-                        Layout.fillWidth: true
-                        Layout.preferredWidth: parent.width / 2
+            anchors.leftMargin: sidebarTabs.height
+
+            StackLayout {
+                anchors.fill: parent
+                currentIndex: sidebarTabs.currentIndex
+                ListView {
+                    id: searchResultsList
+                    implicitHeight: parent.height
+                    model: view.searchModel
+                    ScrollBar.vertical: ScrollBar { }
+                    delegate: ItemDelegate {
+                        id: resultDelegate
+                        required property int index
+                        required property int page
+                        required property int indexOnPage
+                        required property point location
+                        required property string contextBefore
+                        required property string contextAfter
+                        width: parent ? parent.width : 0
+                        RowLayout {
+                            anchors.fill: parent
+                            spacing: 0
+                            Label {
+                                text: "Page " + (resultDelegate.page + 1) + ": "
+                            }
+                            Label {
+                                text: resultDelegate.contextBefore
+                                elide: Text.ElideLeft
+                                horizontalAlignment: Text.AlignRight
+                                Layout.fillWidth: true
+                                Layout.preferredWidth: parent.width / 2
+                            }
+                            Label {
+                                font.bold: true
+                                text: view.searchString
+                                width: implicitWidth
+                            }
+                            Label {
+                                text: resultDelegate.contextAfter
+                                elide: Text.ElideRight
+                                Layout.fillWidth: true
+                                Layout.preferredWidth: parent.width / 2
+                            }
+                        }
+                        highlighted: ListView.isCurrentItem
+                        onClicked: {
+                            searchResultsList.currentIndex = resultDelegate.index
+                            view.goToLocation(resultDelegate.page, resultDelegate.location, 0)
+                            view.searchModel.currentResult = resultDelegate.indexOnPage
+                        }
                     }
                 }
-                highlighted: ListView.isCurrentItem
-                onClicked: {
-                    searchResultsList.currentIndex = resultDelegate.index
-                    view.goToLocation(resultDelegate.page, resultDelegate.location, 0)
-                    view.searchModel.currentResult = resultDelegate.indexOnPage
+                TreeView {
+                    id: bookmarksTree
+                    implicitHeight: parent.height
+                    columnWidthProvider: function() { return width }
+                    delegate: TreeViewDelegate {
+                        required property int page
+                        required property point location
+                        required property real zoom
+                        onClicked: view.goToLocation(page, location, zoom)
+                    }
+                    model: PdfBookmarkModel {
+                        document: document
+                    }
+                    ScrollBar.vertical: ScrollBar { }
                 }
             }
         }
@@ -321,7 +359,10 @@ ApplicationWindow {
                 Layout.minimumWidth: 150
                 Layout.fillWidth: true
                 Layout.bottomMargin: 3
-                onAccepted: searchDrawer.open()
+                onAccepted: {
+                    sidebar.open()
+                    sidebarTabs.setCurrentIndex(0)
+                }
                 Image {
                     visible: searchField.text !== ""
                     source: "qrc:/pdfviewer/resources/edit-clear.svg"
