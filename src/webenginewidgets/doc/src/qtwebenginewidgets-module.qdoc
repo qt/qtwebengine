@@ -34,7 +34,7 @@
     \qtvariable webenginewidgets
     \qtcmakepackage WebEngineWidgets
 
-    The \QWEWidgets module provides a web browser engine as well as C++ classes to render
+    The \QWE Widgets module provides a web browser engine as well as C++ classes to render
     and interact with web content.
 
     To include the definitions of the module's classes, use the

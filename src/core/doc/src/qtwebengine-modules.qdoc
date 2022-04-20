@@ -30,19 +30,20 @@
     \title Qt WebEngine C++ Classes and Namespaces
     \brief Provides functionality for rendering regions of dynamic web content.
 
-    \e {Qt WebEngine} provides functionality for rendering regions of dynamic web content.
+    \QWE provides functionality for rendering regions of dynamic web content.
 
     \section1 Namespaces
     \annotatedlist qtwebengine-namespaces
 
     \section1 Classes
 
-    \section2 Qt WebEngineCore Module
+    \section2 Qt WebEngine Core Module
     \generatelist {classesbymodule QtWebEngineCore}
 
-    \section2 Qt WebEngineWidgets Module
+    \section2 Qt WebEngine Widgets Module
     \generatelist {classesbymodule QtWebEngineWidgets}
 
-    \section2 Qt WebEngineQuick Module
+    \section2 Qt WebEngine Quick Module
     \generatelist {classesbymodule QtWebEngineQuick}
+
 */

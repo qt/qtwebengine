@@ -34,7 +34,7 @@
     \qtvariable webenginequick
     \qtcmakepackage WebEngineQuick
 
-    The \QWE module exposes C++ functionality to Qt Quick.
+    The \QWE Quick module exposes C++ functionality to Qt Quick.
 
     To include the definitions of the module's classes, use the
     following directive:
