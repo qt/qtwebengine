@@ -198,7 +198,6 @@ Item {
         if (zoom > 0) {
             navigationStack.jumping = true // don't call navigationStack.update() because we will jump() instead
             root.renderScale = zoom
-            tableView.forceLayout() // but do ensure that the table layout is correct before we try to jump
             navigationStack.jumping = false
         }
         navigationStack.jump(page, location, zoom) // actually jump
@@ -390,7 +389,6 @@ Item {
                         image.sourceSize.height = 0
                         paper.scale = 1
                         searchHighlights.update()
-                        tableView.forceLayout()
                     }
                     onStatusChanged: {
                         if (index === navigationStack.currentPage)
@@ -629,7 +627,7 @@ Item {
                 var pageSize = root.document.pagePointSize(page)
                 pageSize.width *= root.renderScale
                 pageSize.height *= root.renderScale
-                const xOffsetLimit = Math.max(0, pageSize.width - root.width) / 2
+                const xOffsetLimit = Math.max(0, pageSize.width - root.width)
                 const offset = Qt.point(Math.max(-xOffsetLimit, Math.min(xOffsetLimit,
                                             location.x * root.renderScale - tableView.jumpLocationMargin.x)),
                                         Math.max(0, location.y * root.renderScale - tableView.jumpLocationMargin.y))
