@@ -652,7 +652,10 @@ void QWebEngineView::setPage(QWebEnginePage *newPage)
         disconnect(d->m_pageConnection);
         d->m_pageConnection = {};
     }
+
     QWebEngineViewPrivate::bindPageAndView(newPage, this);
+    if (!newPage)
+        return;
     d->m_pageConnection = connect(newPage, &QWebEnginePage::_q_aboutToDelete, this,
                                   [newPage]() { QWebEngineViewPrivate::bindPageAndView(newPage, nullptr); });
     auto profile = newPage->profile();
