@@ -308,13 +308,12 @@ ApplicationWindow {
                     id: searchResultsList
                     implicitHeight: parent.height
                     model: view.searchModel
+                    currentIndex: view.searchModel.currentResult
                     ScrollBar.vertical: ScrollBar { }
                     delegate: ItemDelegate {
                         id: resultDelegate
                         required property int index
                         required property int page
-                        required property int indexOnPage
-                        required property point location
                         required property string contextBefore
                         required property string contextAfter
                         width: parent ? parent.width : 0
@@ -344,11 +343,7 @@ ApplicationWindow {
                             }
                         }
                         highlighted: ListView.isCurrentItem
-                        onClicked: {
-                            searchResultsList.currentIndex = resultDelegate.index
-                            view.goToLocation(resultDelegate.page, resultDelegate.location)
-                            view.searchModel.currentResult = resultDelegate.indexOnPage
-                        }
+                        onClicked: view.searchModel.currentResult = resultDelegate.index
                     }
                 }
                 TreeView {

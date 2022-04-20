@@ -360,6 +360,8 @@ bool QPdfSearchModelPrivate::doSearch(int page)
 
 QPdfSearchModelPrivate::PageAndIndex QPdfSearchModelPrivate::pageAndIndexForResult(int resultIndex)
 {
+    if (pagesSearched.isEmpty())
+        return {-1, -1};
     const int pageCount = document->pageCount();
     int totalSoFar = 0;
     int previousTotalSoFar = 0;

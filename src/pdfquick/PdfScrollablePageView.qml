@@ -356,9 +356,7 @@ Flickable {
     PdfSearchModel {
         id: searchModel
         document: root.document === undefined ? null : root.document
-        // TODO maybe avoid jumping if the result is already fully visible in the viewport
-        onCurrentResultBoundingRectChanged: root.goToLocation(currentPage,
-            Qt.point(currentResultBoundingRect.x, currentResultBoundingRect.y), 0)
+        onCurrentResultChanged: pageNavigator.jump(currentResultLink)
     }
 
     PdfPageNavigator {

@@ -254,17 +254,23 @@ ApplicationWindow {
             anchors.fill: parent
             anchors.margins: 2
             model: view.searchModel
+            currentIndex: view.searchModel.currentResult
             ScrollBar.vertical: ScrollBar { }
             delegate: ItemDelegate {
+                id: resultDelegate
+                required property int index
+                required property int page
+                required property string contextBefore
+                required property string contextAfter
                 width: parent ? parent.width : 0
                 RowLayout {
                     anchors.fill: parent
                     spacing: 0
                     Label {
-                        text: "Page " + (page + 1) + ": "
+                        text: "Page " + (resultDelegate.page + 1) + ": "
                     }
                     Label {
-                        text: contextBefore
+                        text: resultDelegate.contextBefore
                         elide: Text.ElideLeft
                         horizontalAlignment: Text.AlignRight
                         Layout.fillWidth: true
@@ -276,18 +282,14 @@ ApplicationWindow {
                         width: implicitWidth
                     }
                     Label {
-                        text: contextAfter
+                        text: resultDelegate.contextAfter
                         elide: Text.ElideRight
                         Layout.fillWidth: true
                         Layout.preferredWidth: parent.width / 2
                     }
                 }
                 highlighted: ListView.isCurrentItem
-                onClicked: {
-                    searchResultsList.currentIndex = index
-                    view.goToLocation(page, location, 0)
-                    view.searchModel.currentResult = indexOnPage
-                }
+                onClicked: view.searchModel.currentResult = resultDelegate.index
             }
         }
     }

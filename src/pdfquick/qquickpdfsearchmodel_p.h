@@ -65,6 +65,7 @@ class  Q_PDFQUICK_EXPORT QQuickPdfSearchModel : public QPdfSearchModel
     Q_PROPERTY(QQuickPdfDocument *document READ document WRITE setDocument NOTIFY documentChanged)
     Q_PROPERTY(int currentPage READ currentPage WRITE setCurrentPage NOTIFY currentPageChanged)
     Q_PROPERTY(int currentResult READ currentResult WRITE setCurrentResult NOTIFY currentResultChanged)
+    Q_PROPERTY(QPdfLink currentResultLink READ currentResultLink NOTIFY currentResultLinkChanged)
     Q_PROPERTY(QList<QPolygonF> currentPageBoundingPolygons READ currentPageBoundingPolygons NOTIFY currentPageBoundingPolygonsChanged)
     Q_PROPERTY(QList<QPolygonF> currentResultBoundingPolygons READ currentResultBoundingPolygons NOTIFY currentResultBoundingPolygonsChanged)
     Q_PROPERTY(QRectF currentResultBoundingRect READ currentResultBoundingRect NOTIFY currentResultBoundingRectChanged)
@@ -86,14 +87,15 @@ public:
     int currentResult() const { return m_currentResult; }
     void setCurrentResult(int currentResult);
 
+    QPdfLink currentResultLink() const;
     QList<QPolygonF> currentPageBoundingPolygons() const;
     QList<QPolygonF> currentResultBoundingPolygons() const;
     QRectF currentResultBoundingRect() const;
 
 signals:
-    void documentChanged();
     void currentPageChanged();
     void currentResultChanged();
+    void currentResultLinkChanged();
     void currentPageBoundingPolygonsChanged();
     void currentResultBoundingPolygonsChanged();
     void currentResultBoundingRectChanged();

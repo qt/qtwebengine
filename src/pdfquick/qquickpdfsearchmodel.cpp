@@ -110,15 +110,16 @@ void QQuickPdfSearchModel::setDocument(QQuickPdfDocument *document)
     }
     \endqml
 
+    It becomes empty whenever \c {currentPage != currentResultLink.page}.
+
     \sa PathMultiline
 */
 QList<QPolygonF> QQuickPdfSearchModel::currentResultBoundingPolygons() const
 {
     QList<QPolygonF> ret;
-    const auto &results = const_cast<QQuickPdfSearchModel *>(this)->resultsOnPage(m_currentPage);
-    if (m_currentResult < 0 || m_currentResult >= results.count())
+    const auto result = currentResultLink();
+    if (result.page() != m_currentPage)
         return ret;
-    const auto result = results[m_currentResult];
     for (auto rect : result.rectangles())
         ret << QPolygonF(rect);
     return ret;
@@ -127,23 +128,21 @@ QList<QPolygonF> QQuickPdfSearchModel::currentResultBoundingPolygons() const
 /*!
     \qmlproperty point PdfSearchModel::currentResultBoundingRect
 
-    The bounding box containing all \l currentResultBoundingPolygons.
-
-    When this property changes, a scrollable view should automatically scroll
-    itself in such a way as to ensure that this region is visible; for example,
-    it could try to position the upper-left corner near the upper-left of its
-    own viewport, subject to the constraints of the scrollable area.
+    The bounding box containing all \l currentResultBoundingPolygons,
+    if \c {currentPage == currentResultLink.page}; otherwise, an invalid rectangle.
 */
 QRectF QQuickPdfSearchModel::currentResultBoundingRect() const
 {
     QRectF ret;
-    const auto &results = const_cast<QQuickPdfSearchModel *>(this)->resultsOnPage(m_currentPage);
-    if (m_currentResult < 0 || m_currentResult >= results.count())
+    const auto result = currentResultLink();
+    if (result.page() != m_currentPage)
         return ret;
-    auto rects = results[m_currentResult].rectangles();
-    ret = rects.takeFirst();
-    for (auto rect : rects)
-        ret = ret.united(rect);
+    auto rects = result.rectangles();
+    if (!rects.isEmpty()) {
+        ret = rects.takeFirst();
+        for (auto rect : rects)
+            ret = ret.united(rect);
+    }
     return ret;
 }
 
@@ -219,9 +218,9 @@ QList<QPolygonF> QQuickPdfSearchModel::boundingPolygonsOnPage(int page)
     updatePage(page);
 
     QList<QPolygonF> ret;
-    auto m = QPdfSearchModel::resultsOnPage(page);
-    for (auto result : m) {
-        for (auto rect : result.rectangles())
+    const auto m = QPdfSearchModel::resultsOnPage(page);
+    for (const auto &result : m) {
+        for (const auto &rect : result.rectangles())
             ret << QPolygonF(rect);
     }
 
@@ -255,51 +254,50 @@ void QQuickPdfSearchModel::setCurrentPage(int currentPage)
 /*!
     \qmlproperty int PdfSearchModel::currentResult
 
-    The result index on \l currentPage for which \l currentResultBoundingPolygons
-    should provide the regions to highlight.
+    The result index within the whole set of search results, for which
+    \l currentResultBoundingPolygons should provide the regions to highlight
+    if currentPage matches \c currentResultLink.page.
 */
 void QQuickPdfSearchModel::setCurrentResult(int currentResult)
 {
     if (m_currentResult == currentResult)
         return;
 
-    int currentResultWas = currentResult;
-    int currentPageWas = m_currentPage;
-    if (currentResult < 0) {
-        setCurrentPage(m_currentPage - 1);
-        while (resultsOnPage(m_currentPage).count() == 0 && m_currentPage != currentPageWas) {
-            m_suspendSignals = true;
-            setCurrentPage(m_currentPage - 1);
-        }
-        if (m_suspendSignals) {
-            emit currentPageChanged();
-            m_suspendSignals = false;
-        }
-        const auto results = resultsOnPage(m_currentPage);
-        currentResult = results.count() - 1;
-    } else {
-        const auto results = resultsOnPage(m_currentPage);
-        if (currentResult >= results.count()) {
-            setCurrentPage(m_currentPage + 1);
-            while (resultsOnPage(m_currentPage).count() == 0 && m_currentPage != currentPageWas) {
-                m_suspendSignals = true;
-                setCurrentPage(m_currentPage + 1);
-            }
-            if (m_suspendSignals) {
-                emit currentPageChanged();
-                m_suspendSignals = false;
-            }
-            currentResult = 0;
-        }
-    }
-    qCDebug(qLcSearch) << "currentResult was" << m_currentResult
-                  << "requested" << currentResultWas << "on page" << currentPageWas
-                  << "->" << currentResult << "on page" << m_currentPage;
+    const int currentResultWas = m_currentResult;
+    const int currentPageWas = m_currentPage;
+    const int resultCount = rowCount({});
 
-    m_currentResult = currentResult;
-    emit currentResultChanged();
-    emit currentResultBoundingPolygonsChanged();
-    emit currentResultBoundingRectChanged();
+    // wrap around at the ends
+    if (currentResult >= resultCount) {
+        currentResult = 0;
+    } else if (currentResult < 0) {
+        currentResult = resultCount - 1;
+    }
+
+    const QPdfLink link = resultAtIndex(currentResult);
+    if (link.isValid()) {
+        setCurrentPage(link.page());
+        m_currentResult = currentResult;
+        emit currentResultChanged();
+        emit currentResultLinkChanged();
+        emit currentResultBoundingPolygonsChanged();
+        emit currentResultBoundingRectChanged();
+        qCDebug(qLcSearch) << "currentResult was" << currentResultWas
+                      << "requested" << currentResult << "on page" << currentPageWas
+                      << "->" << m_currentResult << "on page" << m_currentPage;
+    } else {
+        qWarning() << "failed to find result" << currentResult << "in range 0 ->" << resultCount;
+    }
+}
+
+/*!
+    \qmlproperty QPdfLink PdfSearchModel::currentResultLink
+
+    The result at index \l currentResult.
+*/
+QPdfLink QQuickPdfSearchModel::currentResultLink() const
+{
+    return resultAtIndex(m_currentResult);
 }
 
 /*!
