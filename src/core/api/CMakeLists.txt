@@ -95,7 +95,6 @@ add_dependencies(generate_docs_WebEngineCore generate_chromium_attributions)
 #  WEBENGINECORE RESOURCES
 ##
 
-set(arch ${CMAKE_SYSTEM_PROCESSOR})
 #TODO: use simply filter / globbing-expressions
 set(localeList am ar bg bn ca cs da de el en-GB en-US es-419 es et fa fi fil fr
     gu he hi hr hu id it ja kn ko lt lv ml mr ms nb nl pl pt-BR pt-PT ro ru sk
@@ -107,6 +106,8 @@ set(resourceList qtwebengine_resources.pak
     qtwebengine_devtools_resources.pak)
 
 get_install_config(config)
+get_architectures(archs)
+list(GET archs 0 arch)
 
 foreach(loc ${localeList})
     get_filename_component(locSourcePath ${buildDir}/${config}/${arch}/qtwebengine_locales/${loc}.pak REALPATH)

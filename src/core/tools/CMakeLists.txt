@@ -3,7 +3,7 @@
 #  WEBENGINECORE DICT CONVERT TOOL
 ##
 
-if(QT_FEATURE_webengine_spellchecker)
+if(QT_FEATURE_webengine_spellchecker AND NOT CMAKE_CROSSCOMPILING)
     qt_get_tool_target_name(dict_target_name qwebengine_convert_dict)
     qt_internal_add_tool(${dict_target_name}
         TARGET_DESCRIPTION "QtWebEngine Dictionary Conversion Tool"
