@@ -68,6 +68,8 @@ public:
         Title = Qt::DisplayRole,
         Level = Qt::UserRole,
         Page,
+        Location,
+        Zoom,
         _Count
     };
     Q_ENUM(Role)

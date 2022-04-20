@@ -45,6 +45,7 @@
 #include "third_party/pdfium/public/fpdf_doc.h"
 #include "third_party/pdfium/public/fpdfview.h"
 
+#include <QLoggingCategory>
 #include <QMetaEnum>
 #include <QPointer>
 #include <QScopedPointer>
@@ -52,13 +53,13 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(qLcBM, "qt.pdf.bookmarks")
+
 class BookmarkNode
 {
 public:
     explicit BookmarkNode(BookmarkNode *parentNode = nullptr)
         : m_parentNode(parentNode)
-        , m_level(0)
-        , m_pageNumber(0)
     {
     }
 
@@ -131,13 +132,35 @@ public:
         m_pageNumber = pageNumber;
     }
 
+    QPointF location() const
+    {
+        return m_location;
+    }
+
+    void setLocation(qreal x, qreal y)
+    {
+        m_location = QPointF(x, y);
+    }
+
+    qreal zoom() const
+    {
+        return m_zoom;
+    }
+
+    void setZoom(qreal zoom)
+    {
+        m_zoom = zoom;
+    }
+
 private:
     QList<BookmarkNode*> m_childNodes;
     BookmarkNode *m_parentNode;
 
     QString m_title;
-    int m_level;
-    int m_pageNumber;
+    int m_level = 0;
+    int m_pageNumber = 0;
+    QPointF m_location;
+    qreal m_zoom = 0;
 };
 
 
@@ -186,6 +209,7 @@ struct QPdfBookmarkModelPrivate
                 childBookmarkNode = new BookmarkNode(m_rootNode.data());
                 m_rootNode->appendChild(childBookmarkNode);
             }
+            Q_ASSERT(childBookmarkNode);
 
             const int titleLength = int(FPDFBookmark_GetTitle(bookmark, nullptr, 0));
 
@@ -194,6 +218,28 @@ struct QPdfBookmarkModelPrivate
 
             const FPDF_DEST dest = FPDFBookmark_GetDest(document, bookmark);
             const int pageNumber = FPDFDest_GetDestPageIndex(document, dest);
+            double pageHeight = 11.69 * 72; // A4 height
+            {
+                // get actual page height
+                const QPdfMutexLocker lock;
+                FPDF_PAGE pdfPage = FPDF_LoadPage(document, pageNumber);
+                if (pdfPage)
+                    pageHeight = FPDF_GetPageHeight(pdfPage);
+                else
+                    qCWarning(qLcBM) << "failed to load page" << pageNumber;
+            }
+
+            FPDF_BOOL hasX, hasY, hasZoom;
+            FS_FLOAT x, y, zoom;
+            bool ok = FPDFDest_GetLocationInPage(dest, &hasX, &hasY, &hasZoom, &x, &y, &zoom);
+            if (ok) {
+                if (hasX && hasY)
+                    childBookmarkNode->setLocation(x, pageHeight - y);
+                if (hasZoom)
+                    childBookmarkNode->setZoom(zoom);
+            } else {
+                qCWarning(qLcBM) << "bookmark with invalid location and/or zoom" << x << y << zoom;
+            }
 
             childBookmarkNode->setTitle(QString::fromUtf16(titleBuffer.data()));
             childBookmarkNode->setLevel(level);
@@ -293,6 +339,10 @@ QVariant QPdfBookmarkModel::data(const QModelIndex &index, int role) const
         return node->level();
     case Role::Page:
         return node->pageNumber();
+    case Role::Location:
+        return node->location();
+    case Role::Zoom:
+        return node->zoom();
     case Role::_Count:
         break;
     }

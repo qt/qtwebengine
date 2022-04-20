@@ -62,6 +62,7 @@ private slots:
     void testTreeStructure();
     void testListStructure();
     void testPageNumberRole();
+    void testLocationAndZoomRoles();
 };
 
 void tst_QPdfBookmarkModel::emptyModel()
@@ -283,6 +284,33 @@ void tst_QPdfBookmarkModel::testPageNumberRole()
 
     const QModelIndex index3 = model.index(2, 0);
     QCOMPARE(index3.data(int(QPdfBookmarkModel::Role::Page)).toInt(), 2);
+}
+
+void tst_QPdfBookmarkModel::testLocationAndZoomRoles()
+{
+    QPdfDocument document;
+    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.bookmarks_pages.pdf")), QPdfDocument::NoError);
+
+    QPdfBookmarkModel model;
+    model.setDocument(&document);
+
+    QCOMPARE(model.rowCount(), 3);
+
+    const QModelIndex index1 = model.index(0, 0);
+    QCOMPARE(index1.data(int(QPdfBookmarkModel::Role::Location)).toPoint(), QPoint(57, 69));
+    QCOMPARE(index1.data(int(QPdfBookmarkModel::Role::Zoom)).toInt(), 0);
+
+    const QModelIndex index2 = model.index(1, 0);
+    QCOMPARE(index2.data(int(QPdfBookmarkModel::Role::Location)).toPoint(), QPoint(57, 57));
+    QCOMPARE(index2.data(int(QPdfBookmarkModel::Role::Zoom)).toInt(), 0);
+
+    const QModelIndex index2_1 = model.index(0, 0, index2);
+    QCOMPARE(index2_1.data(int(QPdfBookmarkModel::Role::Location)).toPoint(), QPoint(57, 526));
+    QCOMPARE(index2_1.data(int(QPdfBookmarkModel::Role::Zoom)).toInt(), 0);
+
+    const QModelIndex index3 = model.index(2, 0);
+    QCOMPARE(index3.data(int(QPdfBookmarkModel::Role::Location)).toPoint(), QPoint(57, 402));
+    QCOMPARE(index3.data(int(QPdfBookmarkModel::Role::Zoom)).toInt(), 0);
 }
 
 QTEST_MAIN(tst_QPdfBookmarkModel)
