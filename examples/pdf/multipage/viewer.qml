@@ -422,6 +422,18 @@ ApplicationWindow {
             anchors.fill: parent
             ToolButton {
                 action: Action {
+                    id: sidebarOpenAction
+                    checkable: true
+                    checked: sidebar.opened
+                    icon.source: checked ? "qrc:/pdfviewer/resources/sidebar-collapse-left.svg" : "qrc:/pdfviewer/resources/sidebar-expand-left.svg"
+                    onTriggered: sidebar.open()
+                }
+                ToolTip.visible: enabled && hovered
+                ToolTip.delay: 2000
+                ToolTip.text: "open sidebar"
+            }
+            ToolButton {
+                action: Action {
                     icon.source: "qrc:/pdfviewer/resources/go-up-search.svg"
                     shortcut: StandardKey.FindPrevious
                     onTriggered: view.searchBack()

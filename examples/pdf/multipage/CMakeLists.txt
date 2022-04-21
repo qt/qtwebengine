@@ -36,6 +36,8 @@ set(viewer_resource_files
     "resources/go-up-search.svg"
     "resources/rotate-left.svg"
     "resources/rotate-right.svg"
+    "resources/sidebar-collapse-left.svg"
+    "resources/sidebar-expand-left.svg"
     "resources/test.pdf"
     "resources/zoom-fit-best.svg"
     "resources/zoom-fit-width.svg"

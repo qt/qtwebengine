@@ -11,6 +11,8 @@
         <file>resources/go-up-search.svg</file>
         <file>resources/rotate-left.svg</file>
         <file>resources/rotate-right.svg</file>
+        <file>resources/sidebar-collapse-left.svg</file>
+        <file>resources/sidebar-expand-left.svg</file>
         <file>resources/test.pdf</file>
         <file>resources/zoom-in.svg</file>
         <file>resources/zoom-fit-best.svg</file>
