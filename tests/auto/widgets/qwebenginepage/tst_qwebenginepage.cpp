@@ -95,7 +95,9 @@ public Q_SLOTS:
 private Q_SLOTS:
     void initTestCase();
     void cleanupTestCase();
+    void comboBoxPopupPositionAfterMove_data();
     void comboBoxPopupPositionAfterMove();
+    void comboBoxPopupPositionAfterChildMove_data();
     void comboBoxPopupPositionAfterChildMove();
     void acceptNavigationRequest();
     void acceptNavigationRequestNavigationType();
@@ -261,6 +263,18 @@ private:
             + QDateTime::currentDateTime().toString(QLatin1String("yyyyMMddhhmmss"));
         return tmpd;
     }
+
+    QScopedPointer<QPointingDevice> s_touchDevice;
+    void makeClick(QWindow *window, bool withTouch = false, const QPoint &p = QPoint()) {
+        if (!withTouch) {
+            QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(), p);
+        } else {
+            if (!s_touchDevice)
+                s_touchDevice.reset(QTest::createTouchDevice());
+            QTest::touchEvent(window, s_touchDevice.get()).press(1, p);
+            QTest::touchEvent(window, s_touchDevice.get()).release(1, p);
+        }
+    };
 };
 
 tst_QWebEnginePage::tst_QWebEnginePage()
@@ -1296,6 +1310,13 @@ static QWindow *findNewTopLevelWindow(const QWindowList &oldTopLevelWindows)
     return nullptr;
 }
 
+void tst_QWebEnginePage::comboBoxPopupPositionAfterMove_data()
+{
+    QTest::addColumn<bool>("withTouch");
+    QTest::addRow("mouse") << false;
+    QTest::addRow("touch") << true;
+}
+
 void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
 {
     QWebEngineView view;
@@ -1309,9 +1330,10 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
                                "</select></body></html>"));
     QTRY_COMPARE(loadSpy.count(), 1);
     const auto oldTlws = QGuiApplication::topLevelWindows();
+
+    QFETCH(bool, withTouch);
     QWindow *window = view.windowHandle();
-    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(),
-                      elementCenter(view.page(), "foo"));
+    makeClick(window, withTouch, elementCenter(view.page(), "foo"));
 
     QWindow *popup = nullptr;
     QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
@@ -1320,7 +1342,7 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
     QPoint popupPos = popup->position();
 
     // Close the popup by clicking somewhere into the page.
-    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(), QPoint(1, 1));
+    makeClick(window, withTouch, QPoint(1, 1));
     QTRY_VERIFY(!QGuiApplication::topLevelWindows().contains(popup));
 
     auto jsViewPosition = [&view]() {
@@ -1339,14 +1361,20 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
     const QPoint offset(12, 13);
     view.move(view.pos() + offset);
     QTRY_COMPARE(jsViewPosition(), view.pos());
-    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(),
-                      elementCenter(view.page(), "foo"));
+    makeClick(window, withTouch, elementCenter(view.page(), "foo"));
     QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
     QTRY_VERIFY(QGuiApplication::topLevelWindows().contains(popup));
     QTRY_VERIFY(!popup->position().isNull());
     QCOMPARE(popupPos + offset, popup->position());
-    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(), QPoint(1, 1));
+    makeClick(window, withTouch, QPoint(1, 1));
     QTRY_VERIFY(!QGuiApplication::topLevelWindows().contains(popup));
+}
+
+void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove_data()
+{
+    QTest::addColumn<bool>("withTouch");
+    QTest::addRow("mouse") << false;
+    QTest::addRow("touch") << true;
 }
 
 void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
@@ -1371,9 +1399,10 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
                                "</select></body></html>"));
     QTRY_COMPARE(loadSpy.count(), 1);
     const auto oldTlws = QGuiApplication::topLevelWindows();
+
+    QFETCH(bool, withTouch);
     QWindow *window = view.window()->windowHandle();
-    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(),
-                      view.mapTo(view.window(), elementCenter(view.page(), "foo")));
+    makeClick(window, withTouch, view.mapTo(view.window(), elementCenter(view.page(), "foo")));
 
     QWindow *popup = nullptr;
     QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
@@ -1382,8 +1411,7 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
     QPoint popupPos = popup->position();
 
     // Close the popup by clicking somewhere into the page.
-    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(),
-                      view.mapTo(view.window(), QPoint(1, 1)));
+    makeClick(window, withTouch, view.mapTo(view.window(), QPoint(1, 1)));
     QTRY_VERIFY(!QGuiApplication::topLevelWindows().contains(popup));
 
     int originalViewWidth = view.size().width();
@@ -1398,8 +1426,7 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
     spacer.setMinimumWidth(spacer.size().width() + offset);
     QTRY_COMPARE(jsViewWidth(), originalViewWidth - offset);
 
-    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(),
-                      view.mapTo(view.window(), elementCenter(view.page(), "foo")));
+    makeClick(window, withTouch, view.mapTo(view.window(), elementCenter(view.page(), "foo")));
     QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
     QTRY_VERIFY(!popup->position().isNull());
     QCOMPARE(popupPos + QPoint(50, 0), popup->position());
