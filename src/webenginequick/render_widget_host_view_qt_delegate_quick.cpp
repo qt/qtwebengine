@@ -250,12 +250,14 @@ void RenderWidgetHostViewQtDelegateQuick::wheelEvent(QWheelEvent *event)
 void RenderWidgetHostViewQtDelegateQuick::touchEvent(QTouchEvent *event)
 {
     QQuickItem *parent = parentItem();
-    if (event->type() == QEvent::TouchBegin && !m_isPopup
-            && (parent && parent->property("activeFocusOnPress").toBool()))
-        forceActiveFocus();
-    if (parent && !parent->property("activeFocusOnPress").toBool() && !parent->hasActiveFocus()) {
-        event->ignore();
-        return;
+    if (!m_isPopup && parent) {
+        if (event->type() == QEvent::TouchBegin && parent->property("activeFocusOnPress").toBool())
+            forceActiveFocus();
+
+        if (!parent->property("activeFocusOnPress").toBool() && !parent->hasActiveFocus()) {
+            event->ignore();
+            return;
+        }
     }
     m_client->forwardEvent(event);
 }
