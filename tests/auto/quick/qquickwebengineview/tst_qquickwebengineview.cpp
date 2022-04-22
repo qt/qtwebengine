@@ -96,6 +96,7 @@ private Q_SLOTS:
     void setProfile();
     void focusChild();
     void focusChild_data();
+    void htmlSelectPopup();
 
 private:
     inline QQuickWebEngineView *newWebEngineView();
@@ -105,6 +106,11 @@ private:
     QString m_testSourceDirPath;
     QScopedPointer<TestWindow> m_window;
     QScopedPointer<QQmlComponent> m_component;
+
+     QPointingDevice *touchDevice() {
+         static auto d = QScopedPointer<QPointingDevice>(QTest::createTouchDevice());
+         return d.get();
+     }
 };
 
 tst_QQuickWebEngineView::tst_QQuickWebEngineView()
@@ -587,9 +593,8 @@ void tst_QQuickWebEngineView::interruptImeTextComposition()
         QTest::mouseClick(view->window(), Qt::LeftButton, {}, textInputCenter);
     } else if (eventType == "Touch") {
         QPoint textInputCenter = elementCenter(view, QStringLiteral("input2"));
-        QPointingDevice *touchDevice = QTest::createTouchDevice();
-        QTest::touchEvent(view->window(), touchDevice).press(0, textInputCenter, view->window());
-        QTest::touchEvent(view->window(), touchDevice).release(0, textInputCenter, view->window());
+        QTest::touchEvent(view->window(), touchDevice()).press(0, textInputCenter, view->window());
+        QTest::touchEvent(view->window(), touchDevice()).release(0, textInputCenter, view->window());
     }
     QTRY_COMPARE(evaluateJavaScriptSync(view, "document.activeElement.id").toString(), QStringLiteral("input2"));
 #ifndef Q_OS_WIN
@@ -987,11 +992,9 @@ void tst_QQuickWebEngineView::inputEventForwardingDisabledWhenActiveFocusOnPress
     QTest::mousePress(view->window(), Qt::LeftButton);
     QTest::mouseRelease(view->window(), Qt::LeftButton);
 
-    QPointingDevice *device = QTest::createTouchDevice();
-
-    QTest::touchEvent(view->window(), device).press(0, QPoint(0,0), view->window());
-    QTest::touchEvent(view->window(), device).move(0, QPoint(1, 1), view->window());
-    QTest::touchEvent(view->window(), device).release(0, QPoint(1, 1), view->window());
+    QTest::touchEvent(view->window(), touchDevice()).press(0, QPoint(0,0), view->window());
+    QTest::touchEvent(view->window(), touchDevice()).move(0, QPoint(1, 1), view->window());
+    QTest::touchEvent(view->window(), touchDevice()).release(0, QPoint(1, 1), view->window());
 
     // We expect to catch 7 events - click = 2, press + release = 2, touches = 3.
     QCOMPARE(item.eventCount(), 7);
@@ -1170,6 +1173,8 @@ void tst_QQuickWebEngineView::setProfile() {
     QVERIFY(waitForLoadSucceeded(webEngineView()));
     QCOMPARE(loadSpy.size(), 4);
     QQuickWebEngineProfile *profile = new QQuickWebEngineProfile();
+    auto oldProfile = webEngineView()->profile();
+    auto sc = qScopeGuard([&] () { webEngineView()->setProfile(oldProfile); delete profile; });
     webEngineView()->setProfile(profile);
     QTRY_COMPARE(webEngineView()->url() ,urlFromTestPath("html/basic_page2.html"));
 }
@@ -1235,6 +1240,33 @@ void tst_QQuickWebEngineView::focusChild()
     QTRY_COMPARE(iface->focusChild()->role(), QAccessible::EditableText);
     // <html> -> <body> -> <input>
     QCOMPARE(traverseToWebDocumentAccessibleInterface(iface)->child(0)->child(0), iface->focusChild());
+}
+
+void tst_QQuickWebEngineView::htmlSelectPopup()
+{
+    m_window->show();
+    QQuickWebEngineView &view = *webEngineView();
+    view.settings()->setFocusOnNavigationEnabled(true);
+    view.setSize(QSizeF(640, 480));
+    view.loadHtml("<html><body>"
+                   "<select id='select' onchange='console.log(\"option changed to: \" + this.value)'>"
+                   "<option value='O1'>O1</option><option value='O2'>O2</option><option value='O3'>O3</option></select>"
+                   "</body></html>");
+    QVERIFY(waitForLoadSucceeded(&view));
+
+    auto makeTouch = [this] (QWindow *w, const QPoint &p) {
+        QTest::touchEvent(w, touchDevice()).press(1, p);
+        QTest::touchEvent(w, touchDevice()).release(1, p);
+    };
+
+    makeTouch(view.window(), elementCenter(&view, "select"));
+    QPointer<QQuickWindow> popup;
+    QTRY_VERIFY((popup = m_window->findChild<QQuickWindow *>()));
+    QCOMPARE(activeElementId(&view), QStringLiteral("select"));
+
+    makeTouch(popup, QPoint(popup->width() / 2, popup->height() / 2));
+    QTRY_VERIFY(!popup);
+    QCOMPARE(evaluateJavaScriptSync(&view, "document.getElementById('select').value").toString(), QStringLiteral("O2"));
 }
 
 static QByteArrayList params = QByteArrayList()
