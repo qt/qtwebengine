@@ -58,7 +58,7 @@ ApplicationWindow {
     width: 800
     height: 1024
     color: "lightgrey"
-    title: document.title
+    title: doc.title
     visible: true
     property string source // for main.cpp
 
@@ -135,7 +135,7 @@ ApplicationWindow {
             SpinBox {
                 id: currentPageSB
                 from: 1
-                to: document.pageCount
+                to: doc.pageCount
                 editable: true
                 onValueModified: view.goToPage(value - 1)
                 Shortcut {
@@ -187,7 +187,7 @@ ApplicationWindow {
         id: fileDialog
         title: "Open a PDF file"
         nameFilters: [ "PDF files (*.pdf)" ]
-        onAccepted: document.source = selectedFile
+        onAccepted: doc.source = selectedFile
     }
 
     Dialog {
@@ -207,27 +207,27 @@ ApplicationWindow {
             onAccepted: passwordDialog.accept()
         }
         onOpened: passwordField.forceActiveFocus()
-        onAccepted: document.password = passwordField.text
+        onAccepted: doc.password = passwordField.text
     }
 
     Dialog {
         id: errorDialog
-        title: "Error loading " + document.source
+        title: "Error loading " + doc.source
         standardButtons: Dialog.Close
         modal: true
         closePolicy: Popup.CloseOnEscape
         anchors.centerIn: parent
         width: 300
-        visible: document.status === PdfDocument.Error
+        visible: doc.status === PdfDocument.Error
 
         contentItem: Label {
             id: errorField
-            text: document.error
+            text: doc.error
         }
     }
 
     PdfDocument {
-        id: document
+        id: doc
         source: Qt.resolvedUrl(root.source)
         onPasswordRequired: passwordDialog.open()
     }
@@ -236,7 +236,7 @@ ApplicationWindow {
         id: view
         anchors.fill: parent
         anchors.leftMargin: sidebar.position * sidebar.width
-        document: document
+        document: doc
         searchString: searchField.text
         onCurrentPageChanged: currentPageSB.value = view.currentPage + 1
     }
@@ -262,6 +262,9 @@ ApplicationWindow {
             }
             TabButton {
                 text: qsTr("Bookmarks")
+            }
+            TabButton {
+                text: qsTr("Pages")
             }
         }
 
@@ -322,6 +325,7 @@ ApplicationWindow {
                 TreeView {
                     id: bookmarksTree
                     implicitHeight: parent.height
+                    implicitWidth: parent.width
                     columnWidthProvider: function() { return width }
                     delegate: TreeViewDelegate {
                         required property int page
@@ -330,9 +334,53 @@ ApplicationWindow {
                         onClicked: view.goToLocation(page, location, zoom)
                     }
                     model: PdfBookmarkModel {
-                        document: document
+                        document: doc
                     }
                     ScrollBar.vertical: ScrollBar { }
+                }
+                GridView {
+                    id: thumbnailsView
+                    implicitWidth: parent.width
+                    implicitHeight: parent.height
+                    model: doc.pageCount
+                    cellWidth: width / 2
+                    cellHeight: cellWidth + 10
+                    delegate: Item {
+                        required property int index
+                        width: thumbnailsView.cellWidth
+                        height: thumbnailsView.cellHeight
+                        Rectangle {
+                            id: paper
+                            width: image.width
+                            height: image.height
+                            x: (parent.width - width) / 2
+                            y: (parent.height - height - pageNumber.height) / 2
+                            PdfPageImage {
+                                id: image
+                                document: doc
+                                currentPage: index
+                                asynchronous: true
+                                fillMode: Image.PreserveAspectFit
+                                property size naturalSize: doc.pagePointSize(index)
+                                property bool landscape: naturalSize.width > naturalSize.height
+                                width: landscape ? thumbnailsView.cellWidth - 6
+                                                 : height * naturalSize.width / naturalSize.height
+                                height: landscape ? width * naturalSize.height / naturalSize.width
+                                                  : thumbnailsView.cellHeight - 14
+                                sourceSize.width: width
+                                sourceSize.height: height
+                            }
+                        }
+                        Text {
+                            id: pageNumber
+                            anchors.bottom: parent.bottom
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: "Page " + (image.currentFrame + 1)
+                        }
+                        TapHandler {
+                            onTapped: view.goToPage(index)
+                        }
+                    }
                 }
             }
         }
@@ -389,11 +437,11 @@ ApplicationWindow {
             }
             Label {
                 id: statusLabel
-                property size implicitPointSize: document.pagePointSize(view.currentPage)
-                text: "page " + (currentPageSB.value) + " of " + document.pageCount +
+                property size implicitPointSize: doc.pagePointSize(view.currentPage)
+                text: "page " + (currentPageSB.value) + " of " + doc.pageCount +
                       " scale " + view.renderScale.toFixed(2) +
                       " original " + implicitPointSize.width.toFixed(1) + "x" + implicitPointSize.height.toFixed(1) + " pt"
-                visible: document.pageCount > 0
+                visible: doc.pageCount > 0
             }
         }
     }
