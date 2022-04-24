@@ -36,7 +36,7 @@
     and renders pages from it according to the options provided by
     the \l QPdfDocumentRenderOptions class. The \l QPdfPageRenderer
     class manages a queue that collects all render requests. The
-    \l QPdfNavigationStack class handles the navigation through a
+    \l QPdfPageNavigator class handles the navigation through a
     PDF document. The \l QPdfSearchModel class searches for a string
     and holds the search results.  The \l QPdfView widget is a complete
     PDF viewer, and the \l {PDF Viewer Example} shows how to use it.
@@ -51,7 +51,7 @@
     The full-featured viewer components are composed of lower-level
     QML components that can be used separately if you need to write a
     more customized PDF viewing application: \l PdfDocument,
-    \l PdfPageImage, \l PdfNavigationStack, \l PdfSelection,
+    \l PdfPageImage, \l PdfPageNavigator, \l PdfSelection,
     \l PdfSearchModel, \l PdfLinkModel, and \l PdfBookmarkModel.
 
     If you only need to render page images, without features such as

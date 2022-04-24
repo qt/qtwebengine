@@ -58,7 +58,7 @@
 #include <QSpinBox>
 #include <QPdfBookmarkModel>
 #include <QPdfDocument>
-#include <QPdfNavigationStack>
+#include <QPdfPageNavigator>
 #include <QtMath>
 
 const qreal zoomMultiplier = qSqrt(2.0);
@@ -79,10 +79,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->mainToolBar->insertWidget(ui->actionForward, m_pageSelector);
     connect(m_pageSelector, &QSpinBox::valueChanged, this, &MainWindow::pageSelected);
-    auto nav = ui->pdfView->pageNavigation();
-    connect(nav, &QPdfNavigationStack::currentPageChanged, m_pageSelector, &QSpinBox::setValue);
-    connect(nav, &QPdfNavigationStack::backAvailableChanged, ui->actionBack, &QAction::setEnabled);
-    connect(nav, &QPdfNavigationStack::forwardAvailableChanged, ui->actionForward, &QAction::setEnabled);
+    auto nav = ui->pdfView->pageNavigator();
+    connect(nav, &QPdfPageNavigator::currentPageChanged, m_pageSelector, &QSpinBox::setValue);
+    connect(nav, &QPdfPageNavigator::backAvailableChanged, ui->actionBack, &QAction::setEnabled);
+    connect(nav, &QPdfPageNavigator::forwardAvailableChanged, ui->actionForward, &QAction::setEnabled);
 
     connect(m_zoomSelector, &ZoomSelector::zoomModeChanged, ui->pdfView, &QPdfView::setZoomMode);
     connect(m_zoomSelector, &ZoomSelector::zoomFactorChanged, ui->pdfView, &QPdfView::setZoomFactor);
@@ -129,12 +129,12 @@ void MainWindow::bookmarkSelected(const QModelIndex &index)
 
     const int page = index.data(int(QPdfBookmarkModel::Role::Page)).toInt();
     const qreal zoomLevel = index.data(int(QPdfBookmarkModel::Role::Level)).toReal();
-    ui->pdfView->pageNavigation()->jump(page, {}, zoomLevel);
+    ui->pdfView->pageNavigator()->jump(page, {}, zoomLevel);
 }
 
 void MainWindow::pageSelected(int page)
 {
-    auto nav = ui->pdfView->pageNavigation();
+    auto nav = ui->pdfView->pageNavigator();
     nav->jump(page, {}, nav->currentZoom());
 }
 
@@ -173,13 +173,13 @@ void MainWindow::on_actionZoom_Out_triggered()
 
 void MainWindow::on_actionPrevious_Page_triggered()
 {
-    auto nav = ui->pdfView->pageNavigation();
+    auto nav = ui->pdfView->pageNavigator();
     nav->jump(nav->currentPage() - 1, {}, nav->currentZoom());
 }
 
 void MainWindow::on_actionNext_Page_triggered()
 {
-    auto nav = ui->pdfView->pageNavigation();
+    auto nav = ui->pdfView->pageNavigator();
     nav->jump(nav->currentPage() + 1, {}, nav->currentZoom());
 }
 
@@ -192,10 +192,10 @@ void MainWindow::on_actionContinuous_triggered()
 
 void MainWindow::on_actionBack_triggered()
 {
-    ui->pdfView->pageNavigation()->back();
+    ui->pdfView->pageNavigator()->back();
 }
 
 void MainWindow::on_actionForward_triggered()
 {
-    ui->pdfView->pageNavigation()->forward();
+    ui->pdfView->pageNavigator()->forward();
 }

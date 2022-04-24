@@ -19,7 +19,7 @@ qt_internal_add_qml_module(PdfQuick
         qquickpdfbookmarkmodel.cpp qquickpdfbookmarkmodel_p.h
         qquickpdfdocument.cpp qquickpdfdocument_p.h
         qquickpdflinkmodel.cpp qquickpdflinkmodel_p.h
-        qquickpdfnavigationstack.cpp qquickpdfnavigationstack_p.h
+        qquickpdfpagenavigator.cpp qquickpdfpagenavigator_p.h
         qquickpdfpageimage.cpp qquickpdfpageimage_p.h
         qquickpdfsearchmodel.cpp qquickpdfsearchmodel_p.h
         qquickpdfselection.cpp qquickpdfselection_p.h

@@ -91,7 +91,7 @@ public:
 
     QPdfView *q_ptr;
     QPointer<QPdfDocument> m_document;
-    QPdfNavigationStack* m_pageNavigation;
+    QPdfPageNavigator* m_pageNavigator;
     QPdfPageRenderer *m_pageRenderer;
 
     QPdfView::PageMode m_pageMode;

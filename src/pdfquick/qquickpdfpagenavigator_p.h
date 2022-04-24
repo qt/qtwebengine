@@ -37,57 +37,47 @@
 **
 ****************************************************************************/
 
-#ifndef QPDFNAVIGATIONSTACK_H
-#define QPDFNAVIGATIONSTACK_H
+#ifndef QQUICKPDFPAGENAVIGATOR_P_H
+#define QQUICKPDFPAGENAVIGATOR_P_H
 
-#include <QtPdf/qtpdfglobal.h>
-#include <QtCore/qobject.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtPdfQuick/private/qtpdfquickglobal_p.h>
+#include <QtPdf/qpdfpagenavigator.h>
+#include <QtPdf/private/qpdflink_p.h>
+
+#include <QQmlEngine>
 
 QT_BEGIN_NAMESPACE
 
-struct QPdfNavigationStackPrivate;
-
-class Q_PDF_EXPORT QPdfNavigationStack : public QObject
+class Q_PDFQUICK_EXPORT QQuickPdfPageNavigator : public QObject
 {
     Q_OBJECT
-
-    Q_PROPERTY(int currentPage READ currentPage NOTIFY currentPageChanged)
-    Q_PROPERTY(QPointF currentLocation READ currentLocation NOTIFY currentLocationChanged)
-    Q_PROPERTY(qreal currentZoom READ currentZoom NOTIFY currentZoomChanged)
-    Q_PROPERTY(bool backAvailable READ backAvailable NOTIFY backAvailableChanged)
-    Q_PROPERTY(bool forwardAvailable READ forwardAvailable NOTIFY forwardAvailableChanged)
+    QML_EXTENDED(QPdfPageNavigator)
+    QML_NAMED_ELEMENT(PdfPageNavigator)
+    QML_ADDED_IN_VERSION(5, 15)
 
 public:
-    QPdfNavigationStack() : QPdfNavigationStack(nullptr) {}
-    explicit QPdfNavigationStack(QObject *parent);
-    ~QPdfNavigationStack() override;
-
-    int currentPage() const;
-    QPointF currentLocation() const;
-    qreal currentZoom() const;
-
-    bool backAvailable() const;
-    bool forwardAvailable() const;
-
-public Q_SLOTS:
-    void clear();
-    void jump(int page, const QPointF &location, qreal zoom);
-    void update(int page, const QPointF &location, qreal zoom);
-    void forward();
-    void back();
-
-Q_SIGNALS:
-    void currentPageChanged(int page);
-    void currentLocationChanged(QPointF location);
-    void currentZoomChanged(qreal zoom);
-    void backAvailableChanged(bool available);
-    void forwardAvailableChanged(bool available);
-    void jumped(int page, const QPointF &location, qreal zoom);
+    explicit QQuickPdfPageNavigator(QObject *parent = nullptr);
+    ~QQuickPdfPageNavigator() override;
 
 private:
-    QScopedPointer<QPdfNavigationStackPrivate> d;
+    QPdfPageNavigator *navStack();
+
+    Q_DISABLE_COPY(QQuickPdfPageNavigator)
 };
 
 QT_END_NAMESPACE
 
-#endif // QPDFNAVIGATIONSTACK_H
+QML_DECLARE_TYPE(QQuickPdfPageNavigator)
+
+#endif // QQUICKPDFPAGENAVIGATOR_P_H

@@ -126,9 +126,9 @@ Flickable {
         \c onCurrentPageChanged script) to update the part of the user interface
         that shows the current page number, such as a \l SpinBox.
 
-        \sa PdfNavigationStack::currentPage
+        \sa PdfPageNavigator::currentPage
     */
-    property alias currentPage: navigationStack.currentPage
+    property alias currentPage: pageNavigator.currentPage
 
     /*!
         \qmlproperty bool PdfScrollablePageView::backEnabled
@@ -137,9 +137,9 @@ Flickable {
         This property indicates if it is possible to go back in the navigation
         history to a previous-viewed page.
 
-        \sa PdfNavigationStack::backAvailable, back()
+        \sa PdfPageNavigator::backAvailable, back()
     */
-    property alias backEnabled: navigationStack.backAvailable
+    property alias backEnabled: pageNavigator.backAvailable
 
     /*!
         \qmlproperty bool PdfScrollablePageView::forwardEnabled
@@ -148,9 +148,9 @@ Flickable {
         This property indicates if it is possible to go to next location in the
         navigation history.
 
-        \sa PdfNavigationStack::forwardAvailable, forward()
+        \sa PdfPageNavigator::forwardAvailable, forward()
     */
-    property alias forwardEnabled: navigationStack.forwardAvailable
+    property alias forwardEnabled: pageNavigator.forwardAvailable
 
     /*!
         \qmlmethod void PdfScrollablePageView::back()
@@ -159,9 +159,9 @@ Flickable {
         recently; or does nothing if there is no previous location on the
         navigation stack.
 
-        \sa PdfNavigationStack::back(), currentPage, backEnabled
+        \sa PdfPageNavigator::back(), currentPage, backEnabled
     */
-    function back() { navigationStack.back() }
+    function back() { pageNavigator.back() }
 
     /*!
         \qmlmethod void PdfScrollablePageView::forward()
@@ -170,19 +170,19 @@ Flickable {
         method was called; or does nothing if there is no "next" location on the
         navigation stack.
 
-        \sa PdfNavigationStack::forward(), currentPage
+        \sa PdfPageNavigator::forward(), currentPage
     */
-    function forward() { navigationStack.forward() }
+    function forward() { pageNavigator.forward() }
 
     /*!
         \qmlmethod void PdfScrollablePageView::goToPage(int page)
 
         Changes the view to the \a page, if possible.
 
-        \sa PdfNavigationStack::jump(), currentPage
+        \sa PdfPageNavigator::jump(), currentPage
     */
     function goToPage(page) {
-        if (page === navigationStack.currentPage)
+        if (page === pageNavigator.currentPage)
             return
         goToLocation(page, Qt.point(0, 0), 0)
     }
@@ -193,12 +193,12 @@ Flickable {
         Scrolls the view to the \a location on the \a page, if possible,
         and sets the \a zoom level.
 
-        \sa PdfNavigationStack::jump(), currentPage
+        \sa PdfPageNavigator::jump(), currentPage
     */
     function goToLocation(page, location, zoom) {
         if (zoom > 0)
             root.renderScale = zoom
-        navigationStack.jump(page, location, zoom)
+        pageNavigator.jump(page, location, zoom)
     }
 
     // --------------------------------
@@ -254,7 +254,7 @@ Flickable {
         degrees, it will be scaled so that its width fits \a height.
     */
     function scaleToWidth(width, height) {
-        const pagePointSize = document.pagePointSize(navigationStack.currentPage)
+        const pagePointSize = document.pagePointSize(pageNavigator.currentPage)
         root.renderScale = root.width / (paper.rot90 ? pagePointSize.height : pagePointSize.width)
         console.log(lcSPV, "scaling", pagePointSize, "to fit", root.width, "rotated?", paper.rot90, "scale", root.renderScale)
         root.contentX = 0
@@ -270,7 +270,7 @@ Flickable {
         it is first rotated to have a matching aspect ratio.
     */
     function scaleToPage(width, height) {
-        const pagePointSize = document.pagePointSize(navigationStack.currentPage)
+        const pagePointSize = document.pagePointSize(pageNavigator.currentPage)
         root.renderScale = Math.min(
                     root.width / (paper.rot90 ? pagePointSize.height : pagePointSize.width),
                     root.height / (paper.rot90 ? pagePointSize.width : pagePointSize.height) )
@@ -331,7 +331,7 @@ Flickable {
             if (!active ) {
                 const currentLocation = Qt.point((root.contentX + root.width / 2) / root.renderScale,
                                                  (root.contentY + root.height / 2) / root.renderScale)
-                navigationStack.update(navigationStack.currentPage, currentLocation, root.renderScale)
+                pageNavigator.update(pageNavigator.currentPage, currentLocation, root.renderScale)
             }
     }
     ScrollBar.horizontal: ScrollBar {
@@ -339,18 +339,18 @@ Flickable {
             if (!active ) {
                 const currentLocation = Qt.point((root.contentX + root.width / 2) / root.renderScale,
                                                  (root.contentY + root.height / 2) / root.renderScale)
-                navigationStack.update(navigationStack.currentPage, currentLocation, root.renderScale)
+                pageNavigator.update(pageNavigator.currentPage, currentLocation, root.renderScale)
             }
     }
 
     onRenderScaleChanged: {
-        image.sourceSize.width = document.pagePointSize(navigationStack.currentPage).width *
+        image.sourceSize.width = document.pagePointSize(pageNavigator.currentPage).width *
                 renderScale * Screen.devicePixelRatio
         image.sourceSize.height = 0
         paper.scale = 1
         const currentLocation = Qt.point((root.contentX + root.width / 2) / root.renderScale,
                                          (root.contentY + root.height / 2) / root.renderScale)
-        navigationStack.update(navigationStack.currentPage, currentLocation, root.renderScale)
+        pageNavigator.update(pageNavigator.currentPage, currentLocation, root.renderScale)
     }
 
     PdfSearchModel {
@@ -361,8 +361,8 @@ Flickable {
             Qt.point(currentResultBoundingRect.x, currentResultBoundingRect.y), 0)
     }
 
-    PdfNavigationStack {
-        id: navigationStack
+    PdfPageNavigator {
+        id: pageNavigator
         onJumped: function(page, location, zoom) {
             root.renderScale = zoom
             const dx = Math.max(0, location.x * root.renderScale - root.width / 2) - root.contentX
@@ -379,7 +379,7 @@ Flickable {
 
         property url documentSource: root.document.source
         onDocumentSourceChanged: {
-            navigationStack.clear()
+            pageNavigator.clear()
             root.resetScale()
             root.contentX = 0
             root.contentY = 0
@@ -401,12 +401,12 @@ Flickable {
         PdfPageImage {
             id: image
             document: root.document
-            currentPage: navigationStack.currentPage
+            currentPage: pageNavigator.currentPage
             asynchronous: true
             fillMode: Image.PreserveAspectFit
             rotation: root.pageRotation
             anchors.centerIn: parent
-            property real pageScale: image.paintedWidth / document.pagePointSize(navigationStack.currentPage).width
+            property real pageScale: image.paintedWidth / document.pagePointSize(pageNavigator.currentPage).width
 
             Shape {
                 anchors.fill: parent
@@ -441,7 +441,7 @@ Flickable {
                 model: PdfLinkModel {
                     id: linkModel
                     document: root.document
-                    page: navigationStack.currentPage
+                    page: pageNavigator.currentPage
                 }
                 delegate: Shape {
                     required property rect rect
@@ -469,7 +469,7 @@ Flickable {
                     TapHandler {
                         onTapped: {
                             if (page >= 0)
-                                navigationStack.jump(page, Qt.point(0, 0), root.renderScale)
+                                pageNavigator.jump(page, Qt.point(0, 0), root.renderScale)
                             else
                                 Qt.openUrlExternally(url)
                         }
@@ -507,7 +507,7 @@ Flickable {
             id: selection
             anchors.fill: parent
             document: root.document
-            page: navigationStack.currentPage
+            page: pageNavigator.currentPage
             renderScale: image.pageScale == 0 ? 1.0 : image.pageScale
             fromPoint: textSelectionDrag.centroid.pressPosition
             toPoint: textSelectionDrag.centroid.position
@@ -539,7 +539,7 @@ Flickable {
                         paper.y = 0
                         root.contentX = centroidOnPage.x - centroidInFlickable.x
                         root.contentY = centroidOnPage.y - centroidInFlickable.y
-                        root.renderScale *= ratio // onRenderScaleChanged calls navigationStack.update() so we don't need to here
+                        root.renderScale *= ratio // onRenderScaleChanged calls pageNavigator.update() so we don't need to here
                         console.log(lcSPV, "contentX/Y adjusted to", root.contentX.toFixed(2), root.contentY.toFixed(2))
                     } else {
                         paper.x = 0

@@ -37,7 +37,7 @@
     \endomit
 
     \e {PDF Viewer} demonstrates how to use the QPdfView class to render
-    PDF documents and the QPdfNavigationStack class to navigate them.
+    PDF documents and the QPdfPageNavigator class to navigate them.
 
     Qt Creator and the integrated Qt Designer were used to create the example
     UI and to connect it to the code. This affects the code, which might be

@@ -124,9 +124,9 @@ Rectangle {
         \c onCurrentPageChanged script) to update the part of the user interface
         that shows the current page number, such as a \l SpinBox.
 
-        \sa PdfNavigationStack::currentPage
+        \sa PdfPageNavigator::currentPage
     */
-    property alias currentPage: navigationStack.currentPage
+    property alias currentPage: pageNavigator.currentPage
 
     /*!
         \qmlproperty bool PdfPageView::backEnabled
@@ -135,9 +135,9 @@ Rectangle {
         This property indicates if it is possible to go back in the navigation
         history to a previous-viewed page.
 
-        \sa PdfNavigationStack::backAvailable, back()
+        \sa PdfPageNavigator::backAvailable, back()
     */
-    property alias backEnabled: navigationStack.backAvailable
+    property alias backEnabled: pageNavigator.backAvailable
 
     /*!
         \qmlproperty bool PdfPageView::forwardEnabled
@@ -146,9 +146,9 @@ Rectangle {
         This property indicates if it is possible to go to next location in the
         navigation history.
 
-        \sa PdfNavigationStack::forwardAvailable, forward()
+        \sa PdfPageNavigator::forwardAvailable, forward()
     */
-    property alias forwardEnabled: navigationStack.forwardAvailable
+    property alias forwardEnabled: pageNavigator.forwardAvailable
 
     /*!
         \qmlmethod void PdfPageView::back()
@@ -157,9 +157,9 @@ Rectangle {
         recently; or does nothing if there is no previous location on the
         navigation stack.
 
-        \sa PdfNavigationStack::back(), currentPage, backEnabled
+        \sa PdfPageNavigator::back(), currentPage, backEnabled
     */
-    function back() { navigationStack.back() }
+    function back() { pageNavigator.back() }
 
     /*!
         \qmlmethod void PdfPageView::forward()
@@ -168,16 +168,16 @@ Rectangle {
         method was called; or does nothing if there is no "next" location on the
         navigation stack.
 
-        \sa PdfNavigationStack::forward(), currentPage
+        \sa PdfPageNavigator::forward(), currentPage
     */
-    function forward() { navigationStack.forward() }
+    function forward() { pageNavigator.forward() }
 
     /*!
         \qmlmethod void PdfPageView::goToPage(int page)
 
         Changes the view to the \a page, if possible.
 
-        \sa PdfNavigationStack::jump(), currentPage
+        \sa PdfPageNavigator::jump(), currentPage
     */
     function goToPage(page) { goToLocation(page, Qt.point(0, 0), 0) }
 
@@ -187,12 +187,12 @@ Rectangle {
         Scrolls the view to the \a location on the \a page, if possible,
         and sets the \a zoom level.
 
-        \sa PdfNavigationStack::jump(), currentPage
+        \sa PdfPageNavigator::jump(), currentPage
     */
     function goToLocation(page, location, zoom) {
         if (zoom > 0)
             root.renderScale = zoom
-        navigationStack.jump(page, location, zoom)
+        pageNavigator.jump(page, location, zoom)
     }
 
     // --------------------------------
@@ -266,7 +266,7 @@ Rectangle {
     function scaleToPage(width, height) {
         const windowAspect = width / height
         const halfRotation = Math.abs(root.rotation % 180)
-        const pagePointSize = document.pagePointSize(navigationStack.currentPage)
+        const pagePointSize = document.pagePointSize(pageNavigator.currentPage)
         const pageAspect = pagePointSize.height / pagePointSize.width
         if (halfRotation > 45 && halfRotation < 135) {
             // rotated 90 or 270º
@@ -339,7 +339,7 @@ Rectangle {
     PdfSelection {
         id: selection
         document: root.document
-        page: navigationStack.currentPage
+        page: pageNavigator.currentPage
         fromPoint: Qt.point(textSelectionDrag.centroid.pressPosition.x / image.pageScale, textSelectionDrag.centroid.pressPosition.y / image.pageScale)
         toPoint: Qt.point(textSelectionDrag.centroid.position.x / image.pageScale, textSelectionDrag.centroid.position.y / image.pageScale)
         hold: !textSelectionDrag.active && !tapHandler.pressed
@@ -351,14 +351,14 @@ Rectangle {
         onCurrentPageChanged: root.goToPage(currentPage)
     }
 
-    PdfNavigationStack {
-        id: navigationStack
+    PdfPageNavigator {
+        id: pageNavigator
         onCurrentPageChanged: searchModel.currentPage = currentPage
         onCurrentZoomChanged: root.renderScale = currentZoom
 
         property url documentSource: root.document.source
         onDocumentSourceChanged: {
-            navigationStack.clear()
+            pageNavigator.clear()
             root.goToPage(0)
         }
     }
@@ -366,13 +366,13 @@ Rectangle {
     PdfPageImage {
         id: image
         document: root.document
-        currentPage: navigationStack.currentPage
+        currentPage: pageNavigator.currentPage
         asynchronous: true
         fillMode: Image.PreserveAspectFit
         property bool centerOnLoad: false
         property bool vCenterOnLoad: false
         property size centerInSize
-        property real pageScale: image.paintedWidth / document.pagePointSize(navigationStack.currentPage).width
+        property real pageScale: image.paintedWidth / document.pagePointSize(pageNavigator.currentPage).width
         function reRenderIfNecessary() {
             const newSourceWidth = image.sourceSize.width * root.scale * Screen.devicePixelRatio
             const ratio = newSourceWidth / image.sourceSize.width
@@ -391,7 +391,7 @@ Rectangle {
             }
     }
     onRenderScaleChanged: {
-        image.sourceSize.width = document.pagePointSize(navigationStack.currentPage).width * renderScale
+        image.sourceSize.width = document.pagePointSize(pageNavigator.currentPage).width * renderScale
         image.sourceSize.height = 0
         root.scale = 1
     }
@@ -431,7 +431,7 @@ Rectangle {
         model: PdfLinkModel {
             id: linkModel
             document: root.document
-            page: navigationStack.currentPage
+            page: pageNavigator.currentPage
         }
         delegate: Item {
             x: rect.x * image.pageScale
@@ -442,7 +442,7 @@ Rectangle {
             TapHandler {
                 onTapped: {
                     if (page >= 0)
-                        navigationStack.jump(page, Qt.point(0, 0), root.renderScale)
+                        pageNavigator.jump(page, Qt.point(0, 0), root.renderScale)
                     else
                         Qt.openUrlExternally(url)
                 }

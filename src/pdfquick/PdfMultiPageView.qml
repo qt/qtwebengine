@@ -125,9 +125,9 @@ Item {
         \c onCurrentPageChanged script) to update the part of the user interface
         that shows the current page number, such as a \l SpinBox.
 
-        \sa PdfNavigationStack::currentPage
+        \sa PdfPageNavigator::currentPage
     */
-    property alias currentPage: navigationStack.currentPage
+    property alias currentPage: pageNavigator.currentPage
 
     /*!
         \qmlproperty bool PdfMultiPageView::backEnabled
@@ -136,9 +136,9 @@ Item {
         This property indicates if it is possible to go back in the navigation
         history to a previous-viewed page.
 
-        \sa PdfNavigationStack::backAvailable, back()
+        \sa PdfPageNavigator::backAvailable, back()
     */
-    property alias backEnabled: navigationStack.backAvailable
+    property alias backEnabled: pageNavigator.backAvailable
 
     /*!
         \qmlproperty bool PdfMultiPageView::forwardEnabled
@@ -147,9 +147,9 @@ Item {
         This property indicates if it is possible to go to next location in the
         navigation history.
 
-        \sa PdfNavigationStack::forwardAvailable, forward()
+        \sa PdfPageNavigator::forwardAvailable, forward()
     */
-    property alias forwardEnabled: navigationStack.forwardAvailable
+    property alias forwardEnabled: pageNavigator.forwardAvailable
 
     /*!
         \qmlmethod void PdfMultiPageView::back()
@@ -158,9 +158,9 @@ Item {
         recently; or does nothing if there is no previous location on the
         navigation stack.
 
-        \sa PdfNavigationStack::back(), currentPage, backEnabled
+        \sa PdfPageNavigator::back(), currentPage, backEnabled
     */
-    function back() { navigationStack.back() }
+    function back() { pageNavigator.back() }
 
     /*!
         \qmlmethod void PdfMultiPageView::forward()
@@ -169,19 +169,19 @@ Item {
         method was called; or does nothing if there is no "next" location on the
         navigation stack.
 
-        \sa PdfNavigationStack::forward(), currentPage
+        \sa PdfPageNavigator::forward(), currentPage
     */
-    function forward() { navigationStack.forward() }
+    function forward() { pageNavigator.forward() }
 
     /*!
         \qmlmethod void PdfMultiPageView::goToPage(int page)
 
         Scrolls the view to the given \a page number, if possible.
 
-        \sa PdfNavigationStack::jump(), currentPage
+        \sa PdfPageNavigator::jump(), currentPage
     */
     function goToPage(page) {
-        if (page === navigationStack.currentPage)
+        if (page === pageNavigator.currentPage)
             return
         goToLocation(page, Qt.point(-1, -1), 0)
     }
@@ -192,15 +192,15 @@ Item {
         Scrolls the view to the \a location on the \a page, if possible,
         and sets the \a zoom level.
 
-        \sa PdfNavigationStack::jump(), currentPage
+        \sa PdfPageNavigator::jump(), currentPage
     */
     function goToLocation(page, location, zoom) {
         if (zoom > 0) {
-            navigationStack.jumping = true // don't call navigationStack.update() because we will jump() instead
+            pageNavigator.jumping = true // don't call pageNavigator.update() because we will jump() instead
             root.renderScale = zoom
-            navigationStack.jumping = false
+            pageNavigator.jumping = false
         }
-        navigationStack.jump(page, location, zoom) // actually jump
+        pageNavigator.jump(page, location, zoom) // actually jump
     }
 
     /*!
@@ -391,7 +391,7 @@ Item {
                         searchHighlights.update()
                     }
                     onStatusChanged: {
-                        if (index === navigationStack.currentPage)
+                        if (index === pageNavigator.currentPage)
                             root.currentPageRenderingStatus = status
                     }
                 }
@@ -575,7 +575,7 @@ Item {
                                       ? Qt.point((tableView.contentX - currentItem.x + tableView.jumpLocationMargin.x) / root.renderScale,
                                                  (tableView.contentY - currentItem.y + tableView.jumpLocationMargin.y) / root.renderScale)
                                       : Qt.point(0, 0) // maybe the delegate wasn't loaded yet
-                navigationStack.jump(cell.y, currentLocation, root.renderScale)
+                pageNavigator.jump(cell.y, currentLocation, root.renderScale)
             }
             onActiveChanged: if (!active ) {
                 // When the scrollbar stops moving, tell navstack where we are, so as to update currentPage etc.
@@ -585,15 +585,15 @@ Item {
                                       ? Qt.point((tableView.contentX - currentItem.x + tableView.jumpLocationMargin.x) / root.renderScale,
                                                  (tableView.contentY - currentItem.y + tableView.jumpLocationMargin.y) / root.renderScale)
                                       : Qt.point(0, 0) // maybe the delegate wasn't loaded yet
-                navigationStack.update(cell.y, currentLocation, root.renderScale)
+                pageNavigator.update(cell.y, currentLocation, root.renderScale)
             }
         }
         ScrollBar.horizontal: ScrollBar { }
     }
     onRenderScaleChanged: {
-        // if navigationStack.jumped changes the scale, don't turn around and update the stack again;
+        // if pageNavigator.jumped changes the scale, don't turn around and update the stack again;
         // and don't force layout either, because positionViewAtCell() will do that
-        if (navigationStack.jumping)
+        if (pageNavigator.jumping)
             return
         // make TableView rebuild from scratch, because otherwise it doesn't know the delegates are changing size
         tableView.rebuild()
@@ -602,11 +602,11 @@ Item {
         if (currentItem) {
             const currentLocation = Qt.point((tableView.contentX - currentItem.x + tableView.jumpLocationMargin.x) / root.renderScale,
                                              (tableView.contentY - currentItem.y + tableView.jumpLocationMargin.y) / root.renderScale)
-            navigationStack.update(cell.y, currentLocation, renderScale)
+            pageNavigator.update(cell.y, currentLocation, renderScale)
         }
     }
-    PdfNavigationStack {
-        id: navigationStack
+    PdfPageNavigator {
+        id: pageNavigator
         property bool jumping: false
         property int previousPage: 0
         onJumped: function(page, location, zoom) {
@@ -642,7 +642,7 @@ Item {
 
         property url documentSource: root.document.source
         onDocumentSourceChanged: {
-            navigationStack.clear()
+            pageNavigator.clear()
             root.resetScale()
             tableView.contentX = 0
             tableView.contentY = 0

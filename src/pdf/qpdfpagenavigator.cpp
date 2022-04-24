@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "qpdfnavigationstack.h"
+#include "qpdfpagenavigator.h"
 #include "qpdfdocument.h"
 #include "qpdflink_p.h"
 
@@ -46,11 +46,11 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(qLcNav, "qt.pdf.navigationstack")
+Q_LOGGING_CATEGORY(qLcNav, "qt.pdf.pagenavigator")
 
-struct QPdfNavigationStackPrivate
+struct QPdfPageNavigatorPrivate
 {
-    QPdfNavigationStack *q = nullptr;
+    QPdfPageNavigator *q = nullptr;
 
     QList<QExplicitlySharedDataPointer<QPdfLinkPrivate>> pageHistory;
     int currentHistoryIndex = 0;
@@ -58,12 +58,12 @@ struct QPdfNavigationStackPrivate
 };
 
 /*!
-    \class QPdfNavigationStack
+    \class QPdfPageNavigator
     \since 6.4
     \inmodule QtPdf
     \brief Navigation history within a PDF document.
 
-    The QPdfNavigationStack class remembers which destinations the user
+    The QPdfPageNavigator class remembers which destinations the user
     has visited in a PDF document, and provides the ability to traverse
     backward and forward. It is used to implement back and forward actions
     similar to the back and forward buttons in a web browser.
@@ -74,8 +74,8 @@ struct QPdfNavigationStackPrivate
 /*!
     Constructs a page navigation stack with parent object \a parent.
 */
-QPdfNavigationStack::QPdfNavigationStack(QObject *parent)
-    : QObject(parent), d(new QPdfNavigationStackPrivate)
+QPdfPageNavigator::QPdfPageNavigator(QObject *parent)
+    : QObject(parent), d(new QPdfPageNavigatorPrivate)
 {
     d->q = this;
     clear();
@@ -84,7 +84,7 @@ QPdfNavigationStack::QPdfNavigationStack(QObject *parent)
 /*!
     Destroys the page navigation stack.
 */
-QPdfNavigationStack::~QPdfNavigationStack()
+QPdfPageNavigator::~QPdfPageNavigator()
 {
 }
 
@@ -96,7 +96,7 @@ QPdfNavigationStack::~QPdfNavigationStack()
     the forward() function does nothing, because there is a branch in the
     timeline which causes the "future" to be lost.
 */
-void QPdfNavigationStack::forward()
+void QPdfPageNavigator::forward()
 {
     if (d->currentHistoryIndex >= d->pageHistory.count() - 1)
         return;
@@ -126,7 +126,7 @@ void QPdfNavigationStack::forward()
     \l currentZoom properties to the most-recently-viewed destination, and then
     emits the \l jumped() signal.
 */
-void QPdfNavigationStack::back()
+void QPdfPageNavigator::back()
 {
     if (d->currentHistoryIndex <= 0)
         return;
@@ -151,12 +151,12 @@ void QPdfNavigationStack::back()
                     << "@" << currentLocation() << "zoom" << currentZoom();
 }
 /*!
-    \property QPdfNavigationStack::currentPage
+    \property QPdfPageNavigator::currentPage
 
     This property holds the current page that is being viewed.
     The default is \c 0.
 */
-int QPdfNavigationStack::currentPage() const
+int QPdfPageNavigator::currentPage() const
 {
     if (d->currentHistoryIndex < 0 || d->currentHistoryIndex >= d->pageHistory.count())
         return -1; // only until ctor or clear() runs
@@ -164,13 +164,13 @@ int QPdfNavigationStack::currentPage() const
 }
 
 /*!
-    \property QPdfNavigationStack::currentLocation
+    \property QPdfPageNavigator::currentLocation
 
     This property holds the current location on the page that is being viewed
     (the location that was last given to jump() or update()). The default is
     \c {0, 0}.
 */
-QPointF QPdfNavigationStack::currentLocation() const
+QPointF QPdfPageNavigator::currentLocation() const
 {
     if (d->currentHistoryIndex < 0 || d->currentHistoryIndex >= d->pageHistory.count())
         return QPointF();
@@ -178,12 +178,12 @@ QPointF QPdfNavigationStack::currentLocation() const
 }
 
 /*!
-    \property QPdfNavigationStack::currentZoom
+    \property QPdfPageNavigator::currentZoom
 
     This property holds the magnification scale (1 logical pixel = 1 point)
     on the page that is being viewed. The default is \c 1.
 */
-qreal QPdfNavigationStack::currentZoom() const
+qreal QPdfPageNavigator::currentZoom() const
 {
     if (d->currentHistoryIndex < 0 || d->currentHistoryIndex >= d->pageHistory.count())
         return 1;
@@ -194,7 +194,7 @@ qreal QPdfNavigationStack::currentZoom() const
     Clear the history and restore \l currentPage, \l currentLocation and
     \l currentZoom to their default values.
 */
-void QPdfNavigationStack::clear()
+void QPdfPageNavigator::clear()
 {
     d->pageHistory.clear();
     d->currentHistoryIndex = 0;
@@ -220,7 +220,7 @@ void QPdfNavigationStack::clear()
     in the timeline which causes the "future" to be lost, and therefore
     forwardAvailable will change to \c false.
 */
-void QPdfNavigationStack::jump(int page, const QPointF &location, qreal zoom)
+void QPdfPageNavigator::jump(int page, const QPointF &location, qreal zoom)
 {
     if (page == currentPage() && location == currentLocation() && zoom == currentZoom())
         return;
@@ -273,7 +273,7 @@ void QPdfNavigationStack::jump(int page, const QPointF &location, qreal zoom)
     The \l jumped signal is not emitted, because this operation represents
     smooth movement rather than a navigational jump.
 */
-void QPdfNavigationStack::update(int page, const QPointF &location, qreal zoom)
+void QPdfPageNavigator::update(int page, const QPointF &location, qreal zoom)
 {
     if (d->currentHistoryIndex < 0 || d->currentHistoryIndex >= d->pageHistory.count())
         return;
@@ -302,31 +302,31 @@ void QPdfNavigationStack::update(int page, const QPointF &location, qreal zoom)
 }
 
 /*!
-    \property QPdfNavigationStack::backAvailable
+    \property QPdfPageNavigator::backAvailable
     \readonly
 
     Holds \c true if a \e back destination is available in the history:
     that is, if push() or forward() has been called.
 */
-bool QPdfNavigationStack::backAvailable() const
+bool QPdfPageNavigator::backAvailable() const
 {
     return d->currentHistoryIndex > 0;
 }
 
 /*!
-    \property QPdfNavigationStack::forwardAvailable
+    \property QPdfPageNavigator::forwardAvailable
     \readonly
 
     Holds \c true if a \e forward destination is available in the history:
     that is, if back() has been previously called.
 */
-bool QPdfNavigationStack::forwardAvailable() const
+bool QPdfPageNavigator::forwardAvailable() const
 {
     return d->currentHistoryIndex < d->pageHistory.count() - 1;
 }
 
 /*!
-    \fn void QPdfNavigationStack::jumped(int page, const QPointF &location, qreal zoom)
+    \fn void QPdfPageNavigator::jumped(int page, const QPointF &location, qreal zoom)
 
     This signal is emitted when an abrupt jump occurs, to the specified \a page
     index, \a location on the page, and \a zoom level; but \e not when simply
@@ -336,4 +336,4 @@ bool QPdfNavigationStack::forwardAvailable() const
 
 QT_END_NAMESPACE
 
-#include "moc_qpdfnavigationstack.cpp"
+#include "moc_qpdfpagenavigator.cpp"

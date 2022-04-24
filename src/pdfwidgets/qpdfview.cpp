@@ -47,7 +47,7 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include <QPdfDocument>
-#include <QPdfNavigationStack>
+#include <QPdfPageNavigator>
 #include <QScreen>
 #include <QScrollBar>
 #include <QScroller>
@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 QPdfViewPrivate::QPdfViewPrivate(QPdfView *q)
     : q_ptr(q)
     , m_document(nullptr)
-    , m_pageNavigation(nullptr)
+    , m_pageNavigator(nullptr)
     , m_pageRenderer(nullptr)
     , m_pageMode(QPdfView::PageMode::SinglePage)
     , m_zoomMode(QPdfView::ZoomMode::Custom)
@@ -74,7 +74,7 @@ void QPdfViewPrivate::init()
 {
     Q_Q(QPdfView);
 
-    m_pageNavigation = new QPdfNavigationStack(q);
+    m_pageNavigator = new QPdfPageNavigator(q);
     m_pageRenderer = new QPdfPageRenderer(q);
     m_pageRenderer->setRenderMode(QPdfPageRenderer::RenderMode::MultiThreaded);
 }
@@ -130,7 +130,7 @@ void QPdfViewPrivate::setViewport(QRect viewport)
     if (m_pageMode == QPdfView::PageMode::MultiPage) {
         // An imaginary, 2px height line at the upper half of the viewport, which is used to
         // determine which page is currently located there -> we propagate that as 'current' page
-        // to the QPdfNavigationStack object
+        // to the QPdfPageNavigator object
         const QRect currentPageLine(m_viewport.x(), m_viewport.y() + m_viewport.height() * 0.4, m_viewport.width(), 2);
 
         int currentPage = 0;
@@ -142,10 +142,10 @@ void QPdfViewPrivate::setViewport(QRect viewport)
             }
         }
 
-        if (currentPage != m_pageNavigation->currentPage()) {
+        if (currentPage != m_pageNavigator->currentPage()) {
             m_blockPageScrolling = true;
             // ΤODO give location on the page
-            m_pageNavigation->jump(currentPage, {}, m_zoomFactor);
+            m_pageNavigator->jump(currentPage, {}, m_zoomFactor);
             m_blockPageScrolling = false;
         }
     }
@@ -216,8 +216,8 @@ QPdfViewPrivate::DocumentLayout QPdfViewPrivate::calculateDocumentLayout() const
 
     int totalWidth = 0;
 
-    const int startPage = (m_pageMode == QPdfView::PageMode::SinglePage ? m_pageNavigation->currentPage() : 0);
-    const int endPage = (m_pageMode == QPdfView::PageMode::SinglePage ? m_pageNavigation->currentPage() + 1 : pageCount);
+    const int startPage = (m_pageMode == QPdfView::PageMode::SinglePage ? m_pageNavigator->currentPage() : 0);
+    const int endPage = (m_pageMode == QPdfView::PageMode::SinglePage ? m_pageNavigator->currentPage() + 1 : pageCount);
 
     // calculate page sizes
     for (int page = startPage; page < endPage; ++page) {
@@ -307,7 +307,7 @@ QPdfView::QPdfView(QWidget *parent)
 
     d->init();
 
-    connect(d->m_pageNavigation, &QPdfNavigationStack::currentPageChanged, this,
+    connect(d->m_pageNavigator, &QPdfPageNavigator::currentPageChanged, this,
             [d](int page){ d->currentPageChanged(page); });
 
     connect(d->m_pageRenderer, &QPdfPageRenderer::pageRendered, this,
@@ -367,11 +367,11 @@ QPdfDocument *QPdfView::document() const
 /*!
     This accessor returns the navigation stack that will handle back/forward navigation.
 */
-QPdfNavigationStack *QPdfView::pageNavigation() const
+QPdfPageNavigator *QPdfView::pageNavigator() const
 {
     Q_D(const QPdfView);
 
-    return d->m_pageNavigation;
+    return d->m_pageNavigator;
 }
 
 /*!

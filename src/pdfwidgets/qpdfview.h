@@ -46,7 +46,7 @@
 QT_BEGIN_NAMESPACE
 
 class QPdfDocument;
-class QPdfNavigationStack;
+class QPdfPageNavigator;
 class QPdfViewPrivate;
 
 class Q_PDF_WIDGETS_EXPORT QPdfView : public QAbstractScrollArea
@@ -85,7 +85,7 @@ public:
     void setDocument(QPdfDocument *document);
     QPdfDocument *document() const;
 
-    QPdfNavigationStack *pageNavigation() const;
+    QPdfPageNavigator *pageNavigator() const;
 
     PageMode pageMode() const;
     ZoomMode zoomMode() const;

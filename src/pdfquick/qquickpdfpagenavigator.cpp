@@ -37,26 +37,26 @@
 **
 ****************************************************************************/
 
-#include "qquickpdfnavigationstack_p.h"
+#include "qquickpdfpagenavigator_p.h"
 #include <QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(qLcNav, "qt.pdf.navigationstack")
+Q_LOGGING_CATEGORY(qLcNav, "qt.pdf.pagenavigator")
 
 /*!
-    \qmltype PdfNavigationStack
-//!    \instantiates QQuickPdfNavigationStack
+    \qmltype PdfPageNavigator
+//!    \instantiates QQuickPdfPageNavigator
     \inqmlmodule QtQuick.Pdf
     \ingroup pdf
     \brief History of the destinations visited within a PDF Document.
     \since 5.15
 
-    PdfNavigationStack remembers which destinations the user has visited in a PDF
+    PdfPageNavigator remembers which destinations the user has visited in a PDF
     document, and provides the ability to traverse backward and forward.
 */
 
-QQuickPdfNavigationStack::QQuickPdfNavigationStack(QObject *parent)
+QQuickPdfPageNavigator::QQuickPdfPageNavigator(QObject *parent)
     : QObject(parent)
 {
 }
@@ -64,18 +64,18 @@ QQuickPdfNavigationStack::QQuickPdfNavigationStack(QObject *parent)
 /*!
     \internal
 */
-QQuickPdfNavigationStack::~QQuickPdfNavigationStack() = default;
+QQuickPdfPageNavigator::~QQuickPdfPageNavigator() = default;
 
 /*!
     \internal
 */
-QPdfNavigationStack *QQuickPdfNavigationStack::navStack()
+QPdfPageNavigator *QQuickPdfPageNavigator::navStack()
 {
-    return static_cast<QPdfNavigationStack *>(qmlExtendedObject(this));
+    return static_cast<QPdfPageNavigator *>(qmlExtendedObject(this));
 }
 
 /*!
-    \qmlmethod void PdfNavigationStack::forward()
+    \qmlmethod void PdfPageNavigator::forward()
 
     Goes back to the page, location and zoom level that was being viewed before
     back() was called, and then emits the \l jumped() signal.
@@ -86,7 +86,7 @@ QPdfNavigationStack *QQuickPdfNavigationStack::navStack()
 */
 
 /*!
-    \qmlmethod void PdfNavigationStack::back()
+    \qmlmethod void PdfPageNavigator::back()
 
     Pops the stack, updates the \l currentPage, \l currentLocation and
     \l currentZoom properties to the most-recently-viewed destination, and then
@@ -94,26 +94,26 @@ QPdfNavigationStack *QQuickPdfNavigationStack::navStack()
 */
 
 /*!
-    \qmlproperty int PdfNavigationStack::currentPage
+    \qmlproperty int PdfPageNavigator::currentPage
 
     This property holds the current page that is being viewed.
     If there is no current page, it holds \c -1.
 */
 
 /*!
-    \qmlproperty point PdfNavigationStack::currentLocation
+    \qmlproperty point PdfPageNavigator::currentLocation
 
     This property holds the current location on the page that is being viewed.
 */
 
 /*!
-    \qmlproperty real PdfNavigationStack::currentZoom
+    \qmlproperty real PdfPageNavigator::currentZoom
 
     This property holds the magnification scale on the page that is being viewed.
 */
 
 /*!
-    \qmlmethod void PdfNavigationStack::jump(int page, point location, qreal zoom, bool emitJumped)
+    \qmlmethod void PdfPageNavigator::jump(int page, point location, qreal zoom, bool emitJumped)
 
     Adds the given destination, consisting of \a page, \a location, and \a zoom,
     to the history of visited locations.  If \a emitJumped is \c false, the
@@ -125,7 +125,7 @@ QPdfNavigationStack *QQuickPdfNavigationStack::navStack()
 */
 
 /*!
-    \qmlmethod void PdfNavigationStack::update(int page, point location, qreal zoom)
+    \qmlmethod void PdfPageNavigator::update(int page, point location, qreal zoom)
 
     Modifies the current destination, consisting of \a page, \a location and \a zoom.
 
@@ -141,21 +141,21 @@ QPdfNavigationStack *QQuickPdfNavigationStack::navStack()
 */
 
 /*!
-    \qmlproperty bool PdfNavigationStack::backAvailable
+    \qmlproperty bool PdfPageNavigator::backAvailable
     \readonly
 
     Holds \c true if a \e back destination is available in the history.
 */
 
 /*!
-    \qmlproperty bool PdfNavigationStack::forwardAvailable
+    \qmlproperty bool PdfPageNavigator::forwardAvailable
     \readonly
 
     Holds \c true if a \e forward destination is available in the history.
 */
 
 /*!
-    \qmlsignal PdfNavigationStack::jumped(int page, point location, qreal zoom)
+    \qmlsignal PdfPageNavigator::jumped(int page, point location, qreal zoom)
 
     This signal is emitted when an abrupt jump occurs, to the specified \a page
     index, \a location on the page, and \a zoom level; but \e not when simply

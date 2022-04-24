@@ -88,7 +88,7 @@ private: // methods
     QPdfLink(QPdfLinkPrivate *d);
     friend class QPdfDocument;
     friend class QPdfSearchModelPrivate;
-    friend class QQuickPdfNavigationStack;
+    friend class QQuickPdfPageNavigator;
 
 private: // storage
     QExplicitlySharedDataPointer<QPdfLinkPrivate> d;
