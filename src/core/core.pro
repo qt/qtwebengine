@@ -7,9 +7,13 @@ TEMPLATE = subdirs
 core_headers.file = core_headers.pro
 core_api.file = api/core_api.pro
 
+core_lipo.file = core_lipo.pro
+core_lipo.depends = gn_run
+
 # This will take the compile output of ninja, and link+deploy the final binary.
 core_module.file = core_module.pro
 core_module.depends = core_api
+isUniversal(): core_module.depends += core_lipo
 
 core_generator.file = core_generator.pro
 core_generator.depends = core_headers
@@ -43,6 +47,8 @@ core_project.depends = gn_run
         gn_run \
         core_api \
         core_module
+
+    isUniversal(): SUBDIRS += core_lipo
 
     false: SUBDIRS += core_project
 }

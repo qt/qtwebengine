@@ -1,3 +1,5 @@
+load(functions)
+
 include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri) # workaround for QTBUG-68093
 QT_FOR_CONFIG += webenginecore webenginecore-private
 
@@ -37,7 +39,7 @@ qtConfig(ssl) {
     SUBDIRS += certificateerror
 }
 
-qtConfig(webengine-spellchecker):!cross_compile {
+qtConfig(webengine-spellchecker):!cross_compile:!isUniversal() {
     !qtConfig(webengine-native-spellchecker) {
         SUBDIRS += spellchecking
     } else {

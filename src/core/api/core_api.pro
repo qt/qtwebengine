@@ -23,7 +23,12 @@ DEFINES += \
     NOMINMAX
 
 CHROMIUM_SRC_DIR = $$QTWEBENGINE_ROOT/$$getChromiumSrcDir()
-CHROMIUM_GEN_DIR = $$OUT_PWD/../$$getConfigDir()/gen
+
+isUniversal() {
+    CHROMIUM_GEN_DIR = $$OUT_PWD/../$$QT_ARCH/$$getConfigDir()/gen
+} else {
+    CHROMIUM_GEN_DIR = $$OUT_PWD/../$$getConfigDir()/gen
+}
 INCLUDEPATH += $$QTWEBENGINE_ROOT/src/core \
                $$CHROMIUM_GEN_DIR \
                $$CHROMIUM_SRC_DIR/third_party/abseil-cpp \

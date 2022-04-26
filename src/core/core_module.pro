@@ -1,7 +1,11 @@
 MODULE = webenginecore
 
 include(core_common.pri)
-include($${QTWEBENGINE_ROOT}/src/buildtools/config/linking.pri)
+isUniversal() {
+    include($${QTWEBENGINE_ROOT}/src/buildtools/config/lipo_linking.pri)
+} else {
+    include($${QTWEBENGINE_ROOT}/src/buildtools/config/linking.pri)
+}
 
 api_library_name = qtwebenginecoreapi$$qtPlatformTargetSuffix()
 api_library_path = $$OUT_PWD/api/$$getConfigDir()
@@ -49,7 +53,11 @@ linux {
     qtConfig(separate_debug_info): QMAKE_POST_LINK="cd $(DESTDIR) && $(STRIP) --strip-unneeded $(TARGET)"
 }
 
-REPACK_DIR = $$OUT_PWD/$$getConfigDir()
+isUniversal() {
+   REPACK_DIR = $$OUT_PWD/$$QT_ARCH/$$getConfigDir()
+} else {
+   REPACK_DIR = $$OUT_PWD/$$getConfigDir()
+}
 
 # Duplicated from resources/resources.gyp
 LOCALE_LIST = am ar bg bn ca cs da de el en-GB en-US es-419 es et fa fi fil fr gu he hi hr hu id it ja kn ko lt lv ml mr ms nb nl pl pt-BR pt-PT ro ru sk sl sr sv sw ta te th tr uk vi zh-CN zh-TW
@@ -61,7 +69,7 @@ resources.files = $$REPACK_DIR/qtwebengine_resources.pak \
     $$REPACK_DIR/qtwebengine_resources_200p.pak \
     $$REPACK_DIR/qtwebengine_devtools_resources.pak
 
-icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
+icu.files = $$REPACK_DIR/icudtl.dat
 
 !qtConfig(debug_and_release)|!qtConfig(build_all)|CONFIG(release, debug|release) {
     qtConfig(framework) {

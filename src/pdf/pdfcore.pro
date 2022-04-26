@@ -27,11 +27,15 @@ msvc {
     QMAKE_CXXFLAGS_WARN_ON += -wd"4100"
 }
 
-include($${QTWEBENGINE_ROOT}/src/buildtools/config/linking.pri)
+isUniversal() {
+    include($${QTWEBENGINE_ROOT}/src/buildtools/config/lipo_linking.pri)
+} else {
+    include($${QTWEBENGINE_ROOT}/src/buildtools/config/linking.pri)
+}
 
 # install static dependencies and handle prl files for static builds
 
-static:!isEmpty(NINJA_ARCHIVES) {
+static:!isEmpty(NINJA_ARCHIVES):!isUniversal() {
     static_dep_pri = $$OUT_PWD/$$getConfigDir()/$${TARGET}_static_dep.pri
     !include($${static_dep_pri}) {
         error("Could not find the prl information.")

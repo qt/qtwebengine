@@ -27,39 +27,55 @@ build_pass|!debug_and_release {
     gn_binary = gn
 
     runninja.target = run_ninja
+    QMAKE_EXTRA_TARGETS += runninja
 
     # fixme: refine args
     gn_args = $$gnPdfArgs()
-
-    # fixme: qtwebengine_target
-    gn_args += "qtwebengine_target=\"$$system_path($$OUT_PWD/$$getConfigDir()):QtPdf\""
 
     # fixme:
     !qtConfig(webengine-system-gn) {
         gn_binary = $$system_quote($$system_path($$gnPath()))
     }
 
-    gn_args = $$system_quote($$gn_args)
     gn_src_root = $$system_quote($$system_path($$QTWEBENGINE_ROOT/$$getChromiumSrcDir()))
-    gn_build_root = $$system_quote($$system_path($$OUT_PWD/$$getConfigDir()))
     gn_python = "--script-executable=$$pythonPathForSystem()"
-    gn_run = $$gn_binary gen $$gn_build_root $$gn_python --args=$$gn_args --root=$$gn_src_root
-
-    message("Running: $$gn_run ")
-    !system($$gn_run) {
-        error("GN run error!")
-    }
 
     ninjaflags = $$(NINJAFLAGS)
     isEmpty(ninjaflags):!silent: ninjaflags = "-v"
-
-    runninja.commands = $$NINJA $$ninjaflags -C $$gn_build_root QtPdf
-    QMAKE_EXTRA_TARGETS += runninja
 
     build_pass:build_all: default_target.target = all
     else: default_target.target = first
     default_target.depends = runninja
     QMAKE_EXTRA_TARGETS += default_target
+
+    isUniversal(){
+        for(arch, QT_ARCHS) {
+            # fixme: qtwebengine_target
+            gn_target = "qtwebengine_target=\"$$system_path($$OUT_PWD/$$arch/$$getConfigDir()):QtPdf\""
+            gn_args_per_arch = $$system_quote($$gn_args $$gn_target target_cpu=\"$$gnArch($$arch)\")
+            gn_build_root = $$system_quote($$system_path($$OUT_PWD/$$arch/$$getConfigDir()))
+            gn_run = $$gn_binary gen $$gn_build_root $$gn_python --args=$$gn_args_per_arch --root=$$gn_src_root
+            message("Running for $$arch: $$gn_run")
+            !system($$gn_run) {
+                 error("GN run error for $$arch!")
+            }
+            runninja_$${arch}.target = run_ninja_$${arch}
+            runninja_$${arch}.commands = $$NINJA $$ninjaflags -C $$gn_build_root QtPdf
+            QMAKE_EXTRA_TARGETS += runninja_$${arch}
+            runninja.depends += runninja_$${arch}
+        }
+    } else {
+        gn_args+= "qtwebengine_target=\"$$system_path($$OUT_PWD/$$getConfigDir()):QtPdf\""
+        gn_args = $$system_quote($$gn_args)
+        gn_build_root = $$system_quote($$system_path($$OUT_PWD/$$getConfigDir()))
+        gn_run = $$gn_binary gen $$gn_build_root $$gn_python --args=$$gn_args --root=$$gn_src_root
+        message("Running: $$gn_run for $$arch")
+        !system($$gn_run) {
+            error("GN run error!")
+        }
+        runninja.commands = $$NINJA $$ninjaflags -C $$gn_build_root QtPdf
+    }
+
 }
 
 !build_pass:debug_and_release {

@@ -29,7 +29,7 @@ qtConfig(build-qtwebengine-core):qtConfig(webengine-core-support) {
 
     SUBDIRS += buildtools core process
 
-    qtConfig(webengine-spellchecker):!qtConfig(webengine-native-spellchecker):!cross_compile {
+    qtConfig(webengine-spellchecker):!qtConfig(webengine-native-spellchecker):!cross_compile:!isUniversal() {
         SUBDIRS += qwebengine_convert_dict
         qwebengine_convert_dict.subdir = tools/qwebengine_convert_dict
         qwebengine_convert_dict.depends = core

@@ -5,6 +5,11 @@ defineReplace(getConfigDir) {
   return("debug")
 }
 
+defineTest(isUniversal) {
+   macos:count(QT_ARCHS, 1, >):return(true)
+   return(false)
+}
+
 defineReplace(getChromiumSrcDir) {
   exists($$QTWEBENGINE_ROOT/.git): git_chromium_src_dir = $$system("git config qtwebengine.chromiumsrcdir")
   # Fall back to the snapshot path if git does not know about chromium sources (i.e. init-repository.py has not been used)
