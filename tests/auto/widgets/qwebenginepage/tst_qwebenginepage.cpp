@@ -80,6 +80,13 @@ static void removeRecursive(const QString& dirname)
     QDir().rmdir(dirname);
 }
 
+struct TestBasePage : QWebEnginePage
+{
+    explicit TestBasePage(QWebEngineProfile *profile, QObject *parent = nullptr) : QWebEnginePage(profile, parent) { }
+    explicit TestBasePage(QObject *parent = nullptr) : QWebEnginePage(parent) { }
+    QSignalSpy loadSpy { this, &QWebEnginePage::loadFinished };
+};
+
 class tst_QWebEnginePage : public QObject
 {
     Q_OBJECT
@@ -3128,25 +3135,42 @@ void tst_QWebEnginePage::toPlainTextLoadFinishedRace()
 
 void tst_QWebEnginePage::setZoomFactor()
 {
-    QWebEnginePage page;
+    TestBasePage page, page2;
 
-    QVERIFY(qFuzzyCompare(page.zoomFactor(), 1.0));
+    QCOMPARE(page.zoomFactor(), 1.0);
     page.setZoomFactor(2.5);
-    QVERIFY(qFuzzyCompare(page.zoomFactor(), 2.5));
+    QCOMPARE(page.zoomFactor(), 2.5);
 
-    const QUrl urlToLoad("qrc:/resources/test1.html");
+    const QUrl url1("qrc:/resources/test1.html"), url2(QUrl("qrc:/resources/test2.html"));
 
-    QSignalSpy finishedSpy(&page, SIGNAL(loadFinished(bool)));
-    page.load(urlToLoad);
-    QTRY_COMPARE(finishedSpy.count(), 1);
-    QVERIFY(finishedSpy.at(0).first().toBool());
-    QVERIFY(qFuzzyCompare(page.zoomFactor(), 2.5));
+    page.load(url1);
+    QTRY_COMPARE(page.loadSpy.count(), 1);
+    QVERIFY(page.loadSpy.at(0).first().toBool());
+    QCOMPARE(page.zoomFactor(), 2.5);
 
-    page.setZoomFactor(5.5);
-    QVERIFY(qFuzzyCompare(page.zoomFactor(), 2.5));
+    page.setZoomFactor(5.5); // max accepted zoom: kMaximumPageZoomFactor = 5.0
+    QCOMPARE(page.zoomFactor(), 2.5);
 
-    page.setZoomFactor(0.1);
-    QVERIFY(qFuzzyCompare(page.zoomFactor(), 2.5));
+    page.setZoomFactor(0.1); // min accepted zoom: kMinimumPageZoomFactor = 0.25
+    QCOMPARE(page.zoomFactor(), 2.5);
+
+    // try loading different url and check new values after load
+    page.loadSpy.clear();
+    for (auto &&p : {
+            qMakePair(&page, 2.5), // navigating away to different url should keep zoom
+            qMakePair(&page2, 1.0), // same url navigation in diffent page shouldn't be affected
+        }) {
+        auto &&page = *p.first; auto zoomFactor = p.second;
+        page.load(url2);
+        QTRY_COMPARE(page.loadSpy.count(), 1);
+        QVERIFY(page.loadSpy.last().first().toBool());
+        QCOMPARE(page.zoomFactor(), zoomFactor);
+    }
+
+    // should have no influence on first page
+    page2.setZoomFactor(3.5);
+    for (auto &&p : { qMakePair(&page, 2.5), qMakePair(&page2, 3.5), })
+        QCOMPARE(p.first->zoomFactor(), p.second);
 }
 
 void tst_QWebEnginePage::mouseButtonTranslation()
