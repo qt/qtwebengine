@@ -109,6 +109,7 @@ public:
     void loadProgressChanged(int progress) override;
     void didUpdateTargetURL(const QUrl&) override;
     void selectionChanged() override;
+    void zoomUpdateIsNeeded() override;
     void recentlyAudibleChanged(bool recentlyAudible) override;
     void renderProcessPidChanged(qint64 pid) override;
     QRectF viewportRect() const override;

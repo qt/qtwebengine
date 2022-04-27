@@ -434,6 +434,12 @@ void QQuickWebEngineViewPrivate::selectionChanged()
     updateEditActions();
 }
 
+void QQuickWebEngineViewPrivate::zoomUpdateIsNeeded()
+{
+    Q_Q(QQuickWebEngineView);
+    q->setZoomFactor(m_zoomFactor);
+}
+
 void QQuickWebEngineViewPrivate::recentlyAudibleChanged(bool recentlyAudible)
 {
     Q_Q(QQuickWebEngineView);
@@ -908,10 +914,8 @@ void QQuickWebEngineViewPrivate::initializationFinished()
         emit q->backgroundColorChanged();
     }
 
-    if (!qFuzzyCompare(adapter->currentZoomFactor(), m_zoomFactor)) {
-        adapter->setZoomFactor(m_zoomFactor);
-        emit q->zoomFactorChanged(m_zoomFactor);
-    }
+    // apply if it was set before first ever navigation already
+    q->setZoomFactor(m_zoomFactor);
 
 #if QT_CONFIG(webengine_webchannel)
     if (m_webChannel)
@@ -1149,9 +1153,11 @@ void QQuickWebEngineView::stop()
 void QQuickWebEngineView::setZoomFactor(qreal arg)
 {
     Q_D(QQuickWebEngineView);
-    if (d->adapter->isInitialized() &&  !qFuzzyCompare(d->m_zoomFactor, d->adapter->currentZoomFactor())) {
+    if (d->adapter->isInitialized() && !qFuzzyCompare(arg, zoomFactor())) {
         d->adapter->setZoomFactor(arg);
-        emit zoomFactorChanged(arg);
+        // MEMO: should reset if factor was not applied due to being invalid
+        d->m_zoomFactor = zoomFactor();
+        emit zoomFactorChanged(d->m_zoomFactor);
     } else {
         d->m_zoomFactor = arg;
     }

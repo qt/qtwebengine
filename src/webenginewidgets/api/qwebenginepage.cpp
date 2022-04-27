@@ -247,6 +247,12 @@ void QWebEnginePagePrivate::selectionChanged()
     });
 }
 
+void QWebEnginePagePrivate::zoomUpdateIsNeeded()
+{
+    Q_Q(QWebEnginePage);
+    q->setZoomFactor(defaultZoomFactor);
+}
+
 void QWebEnginePagePrivate::recentlyAudibleChanged(bool recentlyAudible)
 {
     Q_Q(QWebEnginePage);
@@ -2142,8 +2148,12 @@ void QWebEnginePage::setZoomFactor(qreal factor)
 {
     Q_D(QWebEnginePage);
     d->defaultZoomFactor = factor;
-    if (d->adapter->isInitialized())
+
+    if (d->adapter->isInitialized()) {
         d->adapter->setZoomFactor(factor);
+        // MEMO: should reset if factor was not applied due to being invalid
+        d->defaultZoomFactor = zoomFactor();
+    }
 }
 
 void QWebEnginePage::runJavaScript(const QString &scriptSource)

@@ -459,6 +459,7 @@ public:
     virtual void loadProgressChanged(int progress) = 0;
     virtual void didUpdateTargetURL(const QUrl&) = 0;
     virtual void selectionChanged() = 0;
+    virtual void zoomUpdateIsNeeded() = 0;
     virtual void recentlyAudibleChanged(bool recentlyAudible) = 0;
     virtual void renderProcessPidChanged(qint64 pid) = 0;
     virtual QRectF viewportRect() const = 0;
