@@ -318,8 +318,10 @@ void WebContentsDelegateQt::RenderFrameHostChanged(content::RenderFrameHost *old
         if (new_host->GetFrameOwnerElementType() == blink::mojom::FrameOwnerElementType::kNone) {
             content::RenderProcessHost *renderProcessHost = new_host->GetProcess();
             const base::Process &process = renderProcessHost->GetProcess();
-            if (process.IsValid())
+            if (process.IsValid()) {
                 m_viewClient->renderProcessPidChanged(process.Pid());
+                m_viewClient->zoomUpdateIsNeeded();
+            }
         }
     }
 }
@@ -330,6 +332,7 @@ void WebContentsDelegateQt::RenderViewHostChanged(content::RenderViewHost *, con
         auto rwhv = static_cast<RenderWidgetHostViewQt *>(newHost->GetWidget()->GetView());
         Q_ASSERT(rwhv->delegate());
         rwhv->delegate()->adapterClientChanged(m_viewClient);
+        m_viewClient->zoomUpdateIsNeeded();
     }
 }
 
