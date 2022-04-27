@@ -52,6 +52,33 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(qLcLink, "qt.pdf.links")
 
+/*!
+    \class QPdfLinkModel
+    \since 5.15
+    \inmodule QtPdf
+    \inherits QAbstractListModel
+
+    \brief The QPdfLinkModel class holds the geometry and the destination for
+    each link that the specified \l page contains.
+
+    This is used in PDF viewers to implement the hyperlink mechanism.
+*/
+
+/*!
+    \enum QPdfLinkModel::Role
+
+    \value Link A QPdfLink object.
+    \value Rectangle Bounding rectangle around the link.
+    \value Url If the link is a web link, the URL for that; otherwise an empty URL.
+    \value Page If the link is an internal link, the page number to which the link should jump; otherwise \c {-1}.
+    \value Location If the link is an internal link, the location on the page to which the link should jump.
+    \value Zoom If the link is an internal link, the suggested zoom level on the destination page.
+    \omitvalue _Count
+*/
+
+/*!
+    Constructs a new link model with parent object \a parent.
+*/
 QPdfLinkModel::QPdfLinkModel(QObject *parent)
     : QAbstractListModel(*(new QPdfLinkModelPrivate()), parent)
 {
@@ -60,6 +87,9 @@ QPdfLinkModel::QPdfLinkModel(QObject *parent)
         m_roleNames.insert(r, QByteArray(rolesMetaEnum.valueToKey(r)).toLower());
 }
 
+/*!
+    Destroys the model.
+*/
 QPdfLinkModel::~QPdfLinkModel() {}
 
 QHash<int, QByteArray> QPdfLinkModel::roleNames() const
@@ -67,6 +97,9 @@ QHash<int, QByteArray> QPdfLinkModel::roleNames() const
     return m_roleNames;
 }
 
+/*!
+    \reimp
+*/
 int QPdfLinkModel::rowCount(const QModelIndex &parent) const
 {
     Q_D(const QPdfLinkModel);
@@ -74,6 +107,9 @@ int QPdfLinkModel::rowCount(const QModelIndex &parent) const
     return d->links.count();
 }
 
+/*!
+    \reimp
+*/
 QVariant QPdfLinkModel::data(const QModelIndex &index, int role) const
 {
     Q_D(const QPdfLinkModel);
@@ -99,6 +135,10 @@ QVariant QPdfLinkModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
+/*!
+    \property QPdfLinkModel::document
+    \brief the document to load links from
+*/
 QPdfDocument *QPdfLinkModel::document() const
 {
     Q_D(const QPdfLinkModel);
@@ -121,6 +161,10 @@ void QPdfLinkModel::setDocument(QPdfDocument *document)
         d->update();
 }
 
+/*!
+    \property QPdfLinkModel::page
+    \brief the page to load links from
+*/
 int QPdfLinkModel::page() const
 {
     Q_D(const QPdfLinkModel);

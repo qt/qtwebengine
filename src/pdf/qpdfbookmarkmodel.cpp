@@ -258,6 +258,33 @@ struct QPdfBookmarkModelPrivate
 };
 
 
+/*!
+    \class QPdfBookmarkModel
+    \since 5.10
+    \inmodule QtPdf
+    \inherits QAbstractItemModel
+
+    \brief The QPdfBookmarkModel class holds a tree of of links (anchors)
+    within a PDF document, such as the table of contents.
+
+    This is used in the \l {Model/View Programming} paradigm to display a
+    table of contents in the form of a tree or list.
+*/
+
+/*!
+    \enum QPdfBookmarkModel::Role
+
+    \value Title The name of the bookmark for display.
+    \value Level The level of indentation.
+    \value Page The page number of the destination (int).
+    \value Location The position of the destination (QPointF).
+    \value Zoom The suggested zoom level (qreal).
+    \omitvalue _Count
+*/
+
+/*!
+    Constructs a new bookmark model with parent object \a parent.
+*/
 QPdfBookmarkModel::QPdfBookmarkModel(QObject *parent)
     : QAbstractItemModel(parent), d(new QPdfBookmarkModelPrivate)
 {
@@ -268,6 +295,9 @@ QPdfBookmarkModel::QPdfBookmarkModel(QObject *parent)
         m_roleNames.insert(r, QByteArray(rolesMetaEnum.valueToKey(r)).toLower());
 }
 
+/*!
+    Destroys the model.
+*/
 QPdfBookmarkModel::~QPdfBookmarkModel() = default;
 
 QPdfDocument* QPdfBookmarkModel::document() const
@@ -292,17 +322,26 @@ void QPdfBookmarkModel::setDocument(QPdfDocument *document)
     d->rebuild();
 }
 
+/*!
+    \reimp
+*/
 int QPdfBookmarkModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
     return 1;
 }
 
+/*!
+    \reimp
+*/
 QHash<int, QByteArray> QPdfBookmarkModel::roleNames() const
 {
     return m_roleNames;
 }
 
+/*!
+    \reimp
+*/
 QVariant QPdfBookmarkModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
@@ -328,6 +367,9 @@ QVariant QPdfBookmarkModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
+/*!
+    \reimp
+*/
 QModelIndex QPdfBookmarkModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
@@ -347,6 +389,9 @@ QModelIndex QPdfBookmarkModel::index(int row, int column, const QModelIndex &par
         return QModelIndex();
 }
 
+/*!
+    \reimp
+*/
 QModelIndex QPdfBookmarkModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid())
@@ -361,6 +406,9 @@ QModelIndex QPdfBookmarkModel::parent(const QModelIndex &index) const
     return createIndex(parentNode->row(), 0, parentNode);
 }
 
+/*!
+    \reimp
+*/
 int QPdfBookmarkModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.column() > 0)
