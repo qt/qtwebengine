@@ -38,7 +38,9 @@
     class manages a queue that collects all render requests. The
     \l QPdfPageNavigator class handles the navigation through a
     PDF document. The \l QPdfSearchModel class searches for a string
-    and holds the search results.  The \l QPdfView widget is a complete
+    and holds the search results. The QPdfBookmarkModel class holds the
+    table of contents, if present. The QPdfLinkModel holds information
+    about hyperlinks on a page. The \l QPdfView widget is a complete
     PDF viewer, and the \l {PDF Viewer Example} shows how to use it.
 
     For Qt Quick applications, three kinds of full-featured viewer
