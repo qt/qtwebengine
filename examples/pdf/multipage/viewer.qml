@@ -256,7 +256,10 @@ ApplicationWindow {
             x: -width
             rotation: -90
             transformOrigin: Item.TopRight
-            currentIndex: 1 // bookmarks by default
+            currentIndex: 2 // bookmarks by default
+            TabButton {
+                text: qsTr("Info")
+            }
             TabButton {
                 text: qsTr("Search Results")
             }
@@ -275,6 +278,32 @@ ApplicationWindow {
             StackLayout {
                 anchors.fill: parent
                 currentIndex: sidebarTabs.currentIndex
+                component InfoField: TextInput {
+                    width: parent.width
+                    selectByMouse: true
+                    readOnly: true
+                    wrapMode: Text.WordWrap
+                }
+                Column {
+                    spacing: 6
+                    width: parent.width - 6
+                    Label { font.bold: true; text: qsTr("Title") }
+                    InfoField { text: doc.title }
+                    Label { font.bold: true; text: qsTr("Author") }
+                    InfoField { text: doc.author }
+                    Label { font.bold: true; text: qsTr("Subject") }
+                    InfoField { text: doc.subject }
+                    Label { font.bold: true; text: qsTr("Keywords") }
+                    InfoField { text: doc.keywords }
+                    Label { font.bold: true; text: qsTr("Producer") }
+                    InfoField { text: doc.producer }
+                    Label { font.bold: true; text: qsTr("Creator") }
+                    InfoField { text: doc.creator }
+                    Label { font.bold: true; text: qsTr("Creation date") }
+                    InfoField { text: doc.creationDate }
+                    Label { font.bold: true; text: qsTr("Modification date") }
+                    InfoField { text: doc.modificationDate }
+                }
                 ListView {
                     id: searchResultsList
                     implicitHeight: parent.height
