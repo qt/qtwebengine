@@ -233,7 +233,8 @@ qt_feature("qtpdf-widgets-build" PRIVATE
 qt_feature("qtpdf-quick-build" PRIVATE
     LABEL "Build QtPdfQuick"
     PURPOSE "Enables building the QtPdfQuick module."
-    CONDITION TARGET Qt::Quick AND TARGET Qt::Qml AND QT_FEATURE_qtpdf_build
+    CONDITION TARGET Qt::Quick AND TARGET Qt::Qml AND QT_FEATURE_qtpdf_build AND
+        Qt6Quick_VERSION VERSION_GREATER_EQUAL "6.4.0"
 )
 
 function(qtwebengine_internal_is_file_inside_root_build_dir out_var file)
