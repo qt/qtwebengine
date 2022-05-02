@@ -78,7 +78,7 @@ bool g_initializedEGL = false;
 
 void* GLSurfaceQt::g_display = nullptr;
 void* GLSurfaceQt::g_config = nullptr;
-const char* GLSurfaceQt::g_extensions = nullptr;
+std::string GLSurfaceQt::g_extensions;
 
 GLSurfaceQt::~GLSurfaceQt()
 {
@@ -99,7 +99,7 @@ GLSurfaceQt::GLSurfaceQt(const gfx::Size& size)
 
 bool GLSurfaceQt::HasEGLExtension(const char* name)
 {
-    return ExtensionsContain(g_extensions, name);
+    return ExtensionsContain(g_extensions.c_str(), name);
 }
 
 bool GLSurfaceQt::IsOffscreen()
