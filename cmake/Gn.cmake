@@ -44,6 +44,10 @@ list(APPEND gnArg
      --script-executable=${Python3_EXECUTABLE}
      --root=${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium)
 
+if(GN_THREADS)
+   list(APPEND gnArg --threads=${GN_THREADS})
+endif()
+
 STRING(REGEX REPLACE "\n" ";" printArgArg "${gnArgArg}")
 LIST(SORT printArgArg)
 STRING(REGEX REPLACE ";" "\n" printArgArg "${printArgArg}")
