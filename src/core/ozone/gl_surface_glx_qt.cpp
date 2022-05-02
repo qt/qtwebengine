@@ -62,7 +62,7 @@ void GLSurfaceGLX::ShutdownOneOff()
 
 bool GLSurfaceGLX::IsCreateContextSupported()
 {
-    return ExtensionsContain(GLSurfaceQt::g_extensions, "GLX_ARB_create_context");
+    return HasGLXExtension("GLX_ARB_create_context");
 }
 
 bool GLSurfaceGLX::IsCreateContextRobustnessSupported()
@@ -87,7 +87,7 @@ bool GLSurfaceGLX::IsCreateContextProfileSupported()
 
 bool GLSurfaceGLX::IsCreateContextES2ProfileSupported()
 {
-    return ExtensionsContain(GLSurfaceQt::g_extensions, "GLX_ARB_create_context_es2_profile");
+    return HasGLXExtension("GLX_ARB_create_context_es2_profile");
 }
 
 bool GLSurfaceGLX::IsOMLSyncControlSupported()
@@ -97,12 +97,12 @@ bool GLSurfaceGLX::IsOMLSyncControlSupported()
 
 bool GLSurfaceGLX::HasGLXExtension(const char *name)
 {
-    return ExtensionsContain(GLSurfaceQt::g_extensions, name);
+    return ExtensionsContain(GLSurfaceQt::g_extensions.c_str(), name);
 }
 
 bool GLSurfaceGLX::IsTextureFromPixmapSupported()
 {
-    return ExtensionsContain(GLSurfaceQt::g_extensions, "GLX_EXT_texture_from_pixmap");
+    return HasGLXExtension("GLX_EXT_texture_from_pixmap");
 }
 
 bool GLSurfaceGLX::IsRobustnessVideoMemoryPurgeSupported()
@@ -112,7 +112,7 @@ bool GLSurfaceGLX::IsRobustnessVideoMemoryPurgeSupported()
 
 const char* GLSurfaceGLX::GetGLXExtensions()
 {
-    return GLSurfaceQt::g_extensions;
+    return GLSurfaceQt::g_extensions.c_str();
 }
 
 bool GLSurfaceGLXQt::InitializeOneOff()
@@ -158,7 +158,7 @@ bool GLSurfaceGLXQt::InitializeExtensionSettingsOneOff()
 
     Display* display = static_cast<Display*>(g_display);
     GLSurfaceQt::g_extensions = glXQueryExtensionsString(display, 0);
-    g_driver_glx.InitializeExtensionBindings(g_extensions);
+    g_driver_glx.InitializeExtensionBindings(g_extensions.c_str());
     return true;
 }
 
