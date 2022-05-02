@@ -37,10 +37,10 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef GL_SURFACE_QT_H_
 #define GL_SURFACE_QT_H_
+
+#include <string>
 
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_surface.h"
@@ -71,8 +71,8 @@ protected:
 public:
     static void* g_config;
     static void* g_display;
-    static const char* g_extensions;
-    static const char* g_client_extensions;
+    static std::string g_extensions;
+    static std::string g_client_extensions;
 };
 
 }

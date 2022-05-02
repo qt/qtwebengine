@@ -159,12 +159,12 @@ void GLSurfaceEGL::ShutdownOneOff()
 
 const char *GLSurfaceEGL::GetEGLClientExtensions()
 {
-    return GLSurfaceQt::g_client_extensions;
+    return GLSurfaceQt::g_client_extensions.c_str();
 }
 
 const char *GLSurfaceEGL::GetEGLExtensions()
 {
-    return GLSurfaceQt::g_extensions;
+    return GLSurfaceQt::g_extensions.c_str();
 }
 
 bool GLSurfaceEGL::HasEGLClientExtension(const char *name)
@@ -243,7 +243,7 @@ bool GLSurfaceEGLQt::InitializeOneOff()
 
     g_client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
     g_extensions = eglQueryString(g_display, EGL_EXTENSIONS);
-    g_egl_surfaceless_context_supported = ExtensionsContain(g_extensions, "EGL_KHR_surfaceless_context");
+    g_egl_surfaceless_context_supported = ExtensionsContain(g_extensions.c_str(), "EGL_KHR_surfaceless_context");
     if (g_egl_surfaceless_context_supported) {
         scoped_refptr<GLSurface> surface = new GLSurfacelessQtEGL(gfx::Size(1, 1));
         gl::GLContextAttribs attribs;
