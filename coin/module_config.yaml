@@ -12,6 +12,13 @@ instructions:
     - type: EnvironmentVariable
       variableName: CMAKE_BUILD_OUTPUT_TIMEOUT
       variableValue: "3600"
+    - type: EnvironmentVariable
+      variableName: QTWEBENGINE_GN_THREADS
+      variableValue: "1"
+      enable_if:
+        condition: property
+        property: host.os
+        equals_value: MacOS
     - !include "{{qt/qtbase}}/coin_module_build_template_v2.yaml"
   Test:
     - type: EnvironmentVariable
