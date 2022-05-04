@@ -4,6 +4,8 @@ qt_internal_add_qml_module(WebEngineQuick
     URI "QtWebEngine"
     VERSION "${PROJECT_VERSION}"
     CLASS_NAME QtWebEnginePlugin
+    DEPENDENCIES
+        QtQuick/auto
     PLUGIN_TARGET qtwebenginequickplugin
     NO_GENERATE_PLUGIN_SOURCE
     NO_PLUGIN_OPTIONAL
