@@ -1,7 +1,7 @@
 TEMPLATE = app
 
-DEFINES += QUICK_TOUCHBROWSER
-QT += core gui quick webenginequick
+DEFINES += WIDGET_TOUCHBROWSER
+QT += core gui webenginewidgets
 
 INCLUDEPATH += ../../touchmocking
 

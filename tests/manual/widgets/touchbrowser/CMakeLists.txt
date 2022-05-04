@@ -1,5 +1,5 @@
 # Copyright (C) 2022 The Qt Company Ltd.
-# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 if (NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
     cmake_minimum_required(VERSION 3.19)
@@ -11,7 +11,7 @@ set(CMAKE_AUTORCC ON)
 set(TOUCHMOCKING_DIR "../../touchmocking")
 
 include_directories(${TOUCHMOCKING_DIR})
-add_definitions(-DQUICK_TOUCHBROWSER)
+add_definitions(-DWIDGET_TOUCHBROWSER)
 
 qt_internal_add_manual_test(touchbrowser
     GUI
@@ -23,9 +23,8 @@ qt_internal_add_manual_test(touchbrowser
         ${TOUCHMOCKING_DIR}/utils.h
     PUBLIC_LIBRARIES
         Qt::Core
-        Qt::Quick
-        Qt::WebEngineQuick
+        Qt::Gui
+        Qt::WebEngineWidgets
     ENABLE_AUTOGEN_TOOLS
         moc
 )
-
