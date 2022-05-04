@@ -38,9 +38,9 @@
 ****************************************************************************/
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls as C
 
-Menu {
+C.Menu {
     id: menu
     signal done()
     objectName: "menu"
