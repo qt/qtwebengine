@@ -37,9 +37,9 @@
 **
 ****************************************************************************/
 
-import QtQuick.Controls
+import QtQuick.Controls as C
 
-ToolTip {
+C.ToolTip {
     delay: 1000
     timeout: 1500
     objectName: "toolTip"

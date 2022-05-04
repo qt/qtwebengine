@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls as C
 
-MenuItem { }
-
+C.MenuItem { }
