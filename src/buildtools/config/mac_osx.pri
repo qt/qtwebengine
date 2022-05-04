@@ -34,7 +34,8 @@ gn_args += \
     mac_deployment_target=\"$${QMAKE_MACOSX_DEPLOYMENT_TARGET}\" \
     mac_sdk_min=\"$${QMAKE_MAC_SDK_VERSION_MAJOR_MINOR}\" \
     use_external_popup_menu=false \
-    angle_enable_vulkan=false
+    angle_enable_vulkan=false \
+    fatal_linker_warnings=false
 
 cross_compile:!host_build {
     gn_args += target_cpu=\"$$gnArch($$QT_ARCH)\"
