@@ -49,7 +49,7 @@
 #include "qquickwebenginescriptcollection_p_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginetouchhandleprovider_p_p.h"
-#include "qquickwebenginecustomtouchhandle_p.h"
+#include "qquickwebenginetouchhandle_p.h"
 #include "qquickwebenginetouchselectionmenurequest_p.h"
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
@@ -1266,18 +1266,17 @@ QtWebEngineCore::TouchHandleDrawableDelegate *
 QQuickWebEngineViewPrivate::createTouchHandleDelegate(const QMap<int, QImage> &images)
 {
     Q_Q(QQuickWebEngineView);
+    // lifecycle managed by Chromium's TouchHandleDrawable
+    QQuickWebEngineTouchHandle *handle = new QQuickWebEngineTouchHandle();
     if (m_touchHandleDelegate) {
-        // lifecycle managed by Chromium's TouchHandleDrawable
         QQmlContext *qmlContext = QQmlEngine::contextForObject(q);
-        QQuickWebEngineCustomTouchHandle *handle = new QQuickWebEngineCustomTouchHandle();
         QQmlContext *context = new QQmlContext(qmlContext, handle);
         context->setContextObject(handle);
         QObject *delegate = m_touchHandleDelegate->create(context);
         Q_ASSERT(delegate);
         QQuickItem *item = qobject_cast<QQuickItem *>(delegate);
         item->setParentItem(q);
-        handle->item.reset(item);
-        return handle;
+        handle->setItem(item, false);
     } else {
         QQuickItem *item = ui()->createTouchHandle();
         Q_ASSERT(item);
@@ -1288,9 +1287,9 @@ QQuickWebEngineViewPrivate::createTouchHandleDelegate(const QMap<int, QImage> &i
                         engine->imageProvider(QQuickWebEngineTouchHandleProvider::identifier()));
         Q_ASSERT(touchHandleProvider);
         touchHandleProvider->init(images);
-        return new QQuickWebEngineTouchHandle(item);
+        handle->setItem(item, true);
     }
-    return nullptr;
+    return handle;
 }
 
 void QQuickWebEngineViewPrivate::showTouchSelectionMenu(QtWebEngineCore::TouchSelectionMenuController *menuController, const QRect &selectionBounds, const QSize &handleSize)
@@ -2409,35 +2408,6 @@ bool QQuickContextMenuBuilder::isMenuItemEnabled(ContextMenuItem menuItem)
         return true;
     }
     Q_UNREACHABLE();
-}
-
-QQuickWebEngineTouchHandle::QQuickWebEngineTouchHandle(QQuickItem *item) : m_item(item)
-{
-    m_item->setProperty("visible", false);
-}
-
-void QQuickWebEngineTouchHandle::setImage(int orientation)
-{
-    QUrl url = QQuickWebEngineTouchHandleProvider::url(orientation);
-    m_item->setProperty("source", url);
-}
-
-void QQuickWebEngineTouchHandle::setBounds(const QRect &bounds)
-{
-    m_item->setX(bounds.x());
-    m_item->setY(bounds.y());
-    m_item->setWidth(bounds.width());
-    m_item->setHeight(bounds.height());
-}
-
-void QQuickWebEngineTouchHandle::setVisible(bool visible)
-{
-    m_item->setVisible(visible);
-}
-
-void QQuickWebEngineTouchHandle::setOpacity(float opacity)
-{
-    m_item->setOpacity(opacity);
 }
 
 void QQuickWebEngineView::setTouchHandleDelegate(QQmlComponent *delegate)

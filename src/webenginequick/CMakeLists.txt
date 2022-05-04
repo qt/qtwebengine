@@ -24,7 +24,7 @@ qt_internal_add_qml_module(WebEngineQuick
         api/qquickwebenginesingleton.cpp api/qquickwebenginesingleton_p.h
         api/qquickwebenginetouchhandleprovider.cpp
         api/qquickwebenginetouchhandleprovider_p_p.h
-        api/qquickwebenginecustomtouchhandle.cpp api/qquickwebenginecustomtouchhandle_p.h
+        api/qquickwebenginetouchhandle.cpp api/qquickwebenginetouchhandle_p.h
         api/qquickwebenginetouchselectionmenurequest.cpp
         api/qquickwebenginetouchselectionmenurequest_p.h
         api/qquickwebenginetouchselectionmenurequest_p_p.h

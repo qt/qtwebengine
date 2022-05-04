@@ -1493,11 +1493,29 @@
 */
 
 /*!
-    \qmlproperty CustomTouchHandle WebEngineView::touchHandleDelegate
+    \qmlproperty Component WebEngineView::touchHandleDelegate
     \since QtWebEngine 6.4
 
-    If a QML Item is set, the default touch handles will not be shown and
-    this item will be displayed as touch handles.
+    The \a touchHandleDelegate provides a template defining visual touch handles instantiated by the view
+    whenever touch selection handling is required.
+
+    The handle's position, opacity, and visibility are updated automatically.
+    The delegate should be a QML Item or any QML type which inherits it.
+
+    \note If no QML Item is set, the default touch handles will be shown.
+
+    The following code uses a custom touch handle delegate:
+
+    \code
+    WebEngineView {
+    // ...
+        touchHandleDelegate: Rectangle {
+            color: "red"
+        }
+        // ...
+    }
+    \endcode
+*/
 
     \sa {WebEngine Qt Quick Custom Touch Handle Example}
 */

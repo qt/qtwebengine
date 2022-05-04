@@ -37,47 +37,47 @@
 **
 ****************************************************************************/
 
-#include "qquickwebenginecustomtouchhandle_p.h"
-#include "web_contents_adapter_client.h"
-#include <QtQuick/qquickitem.h>
+#ifndef QQUICKWEBENGINETOUCHHANDLE_P_H
+#define QQUICKWEBENGINETOUCHHANDLE_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+#include "touch_handle_drawable_client.h"
+#include <QtQml/qqmlregistration.h>
+#include <QtCore/qrect.h>
+#include <QtCore/qobject.h>
+
+namespace QtWebEngineCore {
+class WebContentsAdapterClient;
+}
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QQuickWebEngineCustomTouchHandle
-    \since 6.4
-    \brief The QQuickWebEngineCustomTouchHandle class provides information about the touch handle.
-    \inmodule QtWebEngineQuick
-    QQuickWebEngineCustomTouchHandle is returned after a touch selection event,
-    and contains information about the touch handle.
-*/
-
-QQuickWebEngineCustomTouchHandle::QQuickWebEngineCustomTouchHandle()
-    : QObject(nullptr)
+class QQuickItem;
+class QQuickWebEngineTouchHandle : public QtWebEngineCore::TouchHandleDrawableDelegate,
+                                   public QObject
 {
-}
+public:
+    QQuickWebEngineTouchHandle();
+    void setImage(int orintation) override;
+    void setBounds(const QRect &bounds) override;
+    void setVisible(bool visible) override;
+    void setOpacity(float opacity) override;
+    void setItem(QQuickItem *item, bool hasImage);
 
-void QQuickWebEngineCustomTouchHandle::setBounds(const QRect &bounds)
-{
-    item->setX(bounds.x());
-    item->setY(bounds.y());
-    item->setWidth(bounds.width());
-    item->setHeight(bounds.height());
-}
-
-void QQuickWebEngineCustomTouchHandle::setOpacity(float opacity)
-{
-    item->setOpacity(opacity);
-}
-
-void QQuickWebEngineCustomTouchHandle::setImage(int orientation)
-{
-    Q_UNUSED(orientation);
-}
-
-void QQuickWebEngineCustomTouchHandle::setVisible(bool visible)
-{
-    item->setVisible(visible);
-}
+private:
+    QScopedPointer<QQuickItem> m_item;
+    bool m_hasImage;
+};
 
 QT_END_NAMESPACE
+
+#endif // QQUICKWEBENGINETOUCHHANDLE_P_H

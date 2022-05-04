@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include "qquickwebenginecustomtouchhandle_p.h"
+#include "qquickwebenginetouchhandle_p.h"
 #include "qquickwebengineview_p.h"
 #include "render_view_context_menu_qt.h"
 #include "touch_handle_drawable_client.h"
@@ -250,21 +250,6 @@ private:
 
     QQuickWebEngineView *m_view;
     QObject *m_menu;
-};
-
-class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineTouchHandle
-    : public QtWebEngineCore::TouchHandleDrawableDelegate
-{
-public:
-    QQuickWebEngineTouchHandle(QQuickItem *item = nullptr);
-
-    void setImage(int orientation) override;
-    void setBounds(const QRect &bounds) override;
-    void setVisible(bool visible) override;
-    void setOpacity(float opacity) override;
-
-private:
-    QScopedPointer<QQuickItem> m_item;
 };
 
 QT_END_NAMESPACE
