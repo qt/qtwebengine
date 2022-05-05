@@ -436,6 +436,26 @@ bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
         break;
     }
 
+    switch (event->type()) {
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease:
+        case QEvent::MouseButtonDblClick:
+        case QEvent::MouseMove:
+            // Don't forward mouse events synthesized by the system, which are caused by genuine touch
+            // events. Chromium would then process for e.g. a mouse click handler twice, once due to the
+            // system synthesized mouse event, and another time due to a touch-to-gesture-to-mouse
+            // transformation done by Chromium.
+            // Only allow them for popup type, since QWidgetWindow will ignore them for Qt::Popup flag,
+            // which is expected to get input through synthesized mouse events (either by system or Qt)
+            if (!m_isPopup && static_cast<QMouseEvent *>(event)->source() == Qt::MouseEventSynthesizedBySystem) {
+                Q_ASSERT(!windowFlags().testFlag(Qt::Popup));
+                return true;
+            }
+            break;
+        default:
+            break;
+    }
+
     if (event->type() == QEvent::MouseButtonDblClick) {
         // QWidget keeps the Qt4 behavior where the DblClick event would replace the Press event.
         // QtQuick is different by sending both the Press and DblClick events for the second press
