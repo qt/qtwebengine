@@ -35,7 +35,7 @@
 
     Static builds are not supported.
 
-    The requirements for building Qt 5 modules from source are listed separately for each supported
+    The requirements for building Qt modules from source are listed separately for each supported
     platform:
 
     \list
@@ -78,14 +78,13 @@
 
     \QWE can only be built on 64-bit Windows, with a x64-bit toolchain.
     For building \QWE for x86 applications, you need to configure
-    and compile Qt with the Visual Studio 2017 x64 to x86 cross-compile
+    and compile Qt with the Visual Studio x64 to x86 cross-compile
     toolchain. This toolchain can be set up on the command line by running
     \c{vcvarsall.bat amd64_x86}.
 
     \section2 Linux
 
     On Linux, Clang or GCC version 9 or later is required.
-    Supported QMake configurations are \c linux-g++, \c{linux-clang} and \c{linux-clang-libc++}
 
     \QWE requires \c pkg-config to detect most of its dependencies. The
     following \c pkg-config files are required:
@@ -219,7 +218,7 @@
     Due to some limitations, the Linux QPA plugin almost always reports that accessibility should
     be activated. On big HTML pages, this can cause a significant slowdown in rendering speed.
 
-    Because of that, from Qt 5.9 onwards, \QWE accessibility support is disabled by default
+    Because of that, \QWE accessibility support is disabled by default
     on Linux.
     It can be re-enabled by setting the \c QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY environment
     variable to a non-empty value.
