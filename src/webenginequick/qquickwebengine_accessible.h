@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,42 +37,60 @@
 **
 ****************************************************************************/
 
-#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICKWINDOW_H
-#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICKWINDOW_H
-
-#include "render_widget_host_view_qt_delegate.h"
-#include "render_widget_host_view_qt_delegate_item.h"
+#ifndef QQUICKWEBENGINE_ACCESSIBLE_H
+#define QQUICKWEBENGINE_ACCESSIBLE_H
 
 #include <QtCore/qpointer.h>
-#include <QtQuick/qquickwindow.h>
+#include <QtGui/qaccessibleobject.h>
 
-namespace QtWebEngineCore {
+#if QT_CONFIG(accessibility)
 
-class RenderWidgetHostViewQtDelegateQuickWindow : public QQuickWindow , public WidgetDelegate {
+QT_BEGIN_NAMESPACE
+class QQuickWebEngineView;
 
+class QQuickWebEngineViewAccessible : public QAccessibleObject
+{
 public:
-    RenderWidgetHostViewQtDelegateQuickWindow(RenderWidgetHostViewQtDelegateItem *realDelegate,
-                                              QWindow *parent);
-    ~RenderWidgetHostViewQtDelegateQuickWindow();
-
-    void InitAsPopup(const QRect &screenRect) override;
-    void SetClearColor(const QColor &) override;
-    bool ActiveFocusOnPress() override;
-    void MoveWindow(const QPoint &) override;
-    void Bind(WebContentsAdapterClient *) override;
-    void Unbind() override;
-    void Destroy() override;
-    void Resize(int width, int height) override;
-
-    void setVirtualParent(QQuickItem *virtualParent);
+    QQuickWebEngineViewAccessible(QQuickWebEngineView *o);
+    bool isValid() const override;
+    QAccessibleInterface *parent() const override;
+    QAccessibleInterface *focusChild() const override;
+    int childCount() const override;
+    QAccessibleInterface *child(int index) const override;
+    int indexOfChild(const QAccessibleInterface *) const override;
+    QString text(QAccessible::Text) const override;
+    QAccessible::Role role() const override;
+    QAccessible::State state() const override;
 
 private:
-    QPointer<RenderWidgetHostViewQtDelegateItem> m_realDelegate;
-    QQuickItem *m_virtualParent;
-    QRect m_rect;
-    bool m_rotated;
+    QQuickWebEngineView *engineView() const;
 };
 
+QT_END_NAMESPACE
+
+namespace QtWebEngineCore {
+class RenderWidgetHostViewQtDelegateQuickAccessible : public QAccessibleObject
+{
+public:
+    RenderWidgetHostViewQtDelegateQuickAccessible(QObject *o, QQuickWebEngineView *view);
+
+    bool isValid() const override;
+    QAccessibleInterface *parent() const override;
+    QString text(QAccessible::Text t) const override;
+    QAccessible::Role role() const override;
+    QAccessible::State state() const override;
+
+    QAccessibleInterface *focusChild() const override;
+    int childCount() const override;
+    QAccessibleInterface *child(int index) const override;
+    int indexOfChild(const QAccessibleInterface *) const override;
+
+private:
+    QQuickWebEngineViewAccessible *viewAccessible() const;
+    QPointer<QQuickWebEngineView> m_view;
+};
 } // namespace QtWebEngineCore
 
-#endif // RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICKWINDOW_H
+#endif // QT_CONFIG(accessibility)
+
+#endif // QQUICKWEBENGINE_ACCESSIBLE_H

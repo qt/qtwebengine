@@ -170,6 +170,7 @@ void tst_Spellchecking::spellcheck()
     QVariantList list = evaluateJavaScriptSync(m_view->page(), "findWordPosition('I lowe Qt ....','lowe');").toList();
     QRect rect(list[0].value<int>(),list[1].value<int>(),list[2].value<int>(),list[3].value<int>());
 
+    QTRY_VERIFY(m_view->focusWidget());
     //type text, spellchecker needs time
     QTest::mouseMove(m_view->focusWidget(), QPoint(20,20));
     QTest::mousePress(m_view->focusWidget(), Qt::LeftButton, {}, QPoint(20,20));
@@ -182,7 +183,7 @@ void tst_Spellchecking::spellcheck()
 
     // make sure text is there
     QString result = evaluateJavaScriptSync(m_view->page(), "text();").toString();
-    QVERIFY(result == text);
+    QCOMPARE(result, text);
 
     bool gotMisspelledWord = false; // clumsy QTRY_VERIFY still execs expr after first success
     QString detail;

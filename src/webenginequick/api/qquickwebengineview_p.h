@@ -57,10 +57,6 @@
 #include <QtQml/qqmlregistration.h>
 #include <QtQuick/qquickitem.h>
 
-namespace QtWebEngineCore {
-class RenderWidgetHostViewQtDelegateQuick;
-}
-
 QT_BEGIN_NAMESPACE
 
 class QQmlWebChannel;
@@ -589,7 +585,6 @@ private:
     Q_DECLARE_PRIVATE(QQuickWebEngineView)
     QScopedPointer<QQuickWebEngineViewPrivate> d_ptr;
 
-    friend class QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick;
     friend class QQuickContextMenuBuilder;
     friend class FaviconImageResponse;
     friend class FaviconImageResponseRunnable;

@@ -78,7 +78,7 @@ public:
     virtual void show() = 0;
     virtual void hide() = 0;
     virtual bool isVisible() const = 0;
-    virtual QWindow* window() const = 0;
+    virtual QWindow *Window() const = 0;
     virtual void updateCursor(const QCursor &) = 0;
     virtual void resize(int width, int height) = 0;
     virtual void move(const QPoint &) = 0;

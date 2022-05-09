@@ -52,14 +52,14 @@
 //
 
 #include <QtWebEngineCore/private/qwebenginepage_p.h> // PageView
-#include <QtWidgets/qaccessiblewidget.h>
 
 #include "render_view_context_menu_qt.h"
 
 namespace QtWebEngineCore {
 class QWebEngineContextMenuRequest;
-class RenderWidgetHostViewQtDelegateWidget;
+class WebEngineQuickWidget;
 class RenderWidgetHostViewQtDelegate;
+class RenderWidgetHostViewQtDelegateClient;
 }
 
 QT_BEGIN_NAMESPACE
@@ -75,8 +75,8 @@ public:
     QWebEngineView *q_ptr;
 
     void pageChanged(QWebEnginePage *oldPage, QWebEnginePage *newPage);
-    void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *oldWidget,
-                       QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *newWidget);
+    void widgetChanged(QtWebEngineCore::WebEngineQuickWidget *oldWidget,
+                       QtWebEngineCore::WebEngineQuickWidget *newWidget);
 
     void contextMenuRequested(QWebEngineContextMenuRequest *request) override;
     QStringList chooseFiles(QWebEnginePage::FileSelectionMode mode, const QStringList &oldFiles,
@@ -91,6 +91,8 @@ public:
     void setToolTip(const QString &toolTipText) override;
     QtWebEngineCore::RenderWidgetHostViewQtDelegate *CreateRenderWidgetHostViewQtDelegate(
             QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override;
+    QtWebEngineCore::RenderWidgetHostViewQtDelegate *CreateRenderWidgetHostViewQtDelegateForPopup(
+            QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override;
     QWebEngineContextMenuRequest *lastContextMenuRequest() const override;
     QWebEnginePage *createPageForWindow(QWebEnginePage::WebWindowType type) override;
     QObject *accessibilityParentObject() override;
@@ -102,7 +104,7 @@ public:
     virtual ~QWebEngineViewPrivate();
     static void bindPageAndView(QWebEnginePage *page, QWebEngineView *view);
     static void bindPageAndWidget(QWebEnginePage *page,
-                                  QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *widget);
+                                  QtWebEngineCore::WebEngineQuickWidget *widget);
     QIcon webActionIcon(QWebEnginePage::WebAction action);
     void unhandledKeyEvent(QKeyEvent *event) override;
     void focusContainer() override;
@@ -116,24 +118,6 @@ public:
     mutable bool m_ownsPage;
     QWebEngineContextMenuRequest *m_contextRequest;
 };
-
-#ifndef QT_NO_ACCESSIBILITY
-class QWebEngineViewAccessible : public QAccessibleWidget
-{
-public:
-    QWebEngineViewAccessible(QWebEngineView *o) : QAccessibleWidget(o)
-    {}
-
-    bool isValid() const override;
-    QAccessibleInterface *focusChild() const override;
-    int childCount() const override;
-    QAccessibleInterface *child(int index) const override;
-    int indexOfChild(const QAccessibleInterface *child) const override;
-
-private:
-    QWebEngineView *view() const { return static_cast<QWebEngineView *>(object()); }
-};
-#endif // QT_NO_ACCESSIBILITY
 
 class QContextMenuBuilder : public QtWebEngineCore::RenderViewContextMenuQt
 {

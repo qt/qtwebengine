@@ -1441,15 +1441,18 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
         return viewWidth;
     };
 
+    QCOMPARE(jsViewWidth(), originalViewWidth);
+
     // Resize the "spacer" widget, and implicitly change the global position of the QWebEngineView.
     const int offset = 50;
     spacer.setMinimumWidth(spacer.size().width() + offset);
+
     QTRY_COMPARE(jsViewWidth(), originalViewWidth - offset);
 
     makeClick(window, withTouch, view.mapTo(view.window(), elementCenter(view.page(), "foo")));
     QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
     QTRY_VERIFY(!popup->position().isNull());
-    QCOMPARE(popupPos + QPoint(50, 0), popup->position());
+    QCOMPARE(popupPos + QPoint(offset, 0), popup->position());
 }
 
 #ifdef Q_OS_MAC

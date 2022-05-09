@@ -106,6 +106,7 @@ private Q_SLOTS:
     void changePage();
     void reusePage_data();
     void reusePage();
+    void setLoadedPage();
     void microFocusCoordinates();
     void focusInputTypes();
     void unhandledKeyEventPropagation();
@@ -399,7 +400,7 @@ void tst_QWebEngineView::reusePage()
     view1->show();
     QVERIFY(QTest::qWaitForWindowExposed(view1));
     delete view1;
-    QVERIFY(page != 0); // deleting view must not have deleted the page, since it's not a child of view
+    QVERIFY(page != nullptr); // deleting view must not have deleted the page, since it's not a child of view
 
     QWebEngineView *view2 = new QWebEngineView;
     view2->setPage(page.data());
@@ -410,6 +411,23 @@ void tst_QWebEngineView::reusePage()
     delete page.data(); // must not crash
 
     QDir::setCurrent(QApplication::applicationDirPath());
+}
+
+void tst_QWebEngineView::setLoadedPage()
+{
+    // MEMO load page first to make sure that just simple attach to view would draw its content
+    QWebEnginePage page;
+    QSignalSpy loadSpy(&page, &QWebEnginePage::loadFinished);
+    page.setHtml(QString("<html><body bgcolor=\"%1\"></body></html>").arg(QColor(Qt::yellow).name()));
+    QTRY_VERIFY(loadSpy.count() == 1 && loadSpy.first().first().toBool());
+
+    QWebEngineView view;
+    view.resize(480, 320);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    view.setPage(&page);
+    QTRY_COMPARE(view.grab().toImage().pixelColor(QPoint(view.width() / 2, view.height() / 2)), Qt::yellow);
 }
 
 // Class used in crashTests

@@ -67,6 +67,7 @@
 #include "render_view_context_menu_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "render_widget_host_view_qt_delegate_client.h"
+#include "render_widget_host_view_qt_delegate_item.h"
 #include "web_contents_adapter.h"
 
 #include <QAction>
@@ -83,51 +84,6 @@
 QT_BEGIN_NAMESPACE
 
 using namespace QtWebEngineCore;
-
-// add temporary dummy code to cover the case when page is loading and there is no view
-class DummyDelegate : public QObject, public QtWebEngineCore::RenderWidgetHostViewQtDelegate
-{
-public:
-    DummyDelegate(RenderWidgetHostViewQtDelegateClient *client) : m_delegateClient(client) {};
-    ~DummyDelegate() = default;
-    void initAsPopup(const QRect &) override { Q_UNREACHABLE(); }
-    QRectF viewGeometry() const override { return QRectF(m_pos, m_size); }
-    void setKeyboardFocus() override { }
-    bool hasKeyboardFocus() override { return false; }
-    void lockMouse() override { Q_UNREACHABLE(); }
-    void unlockMouse() override { Q_UNREACHABLE(); }
-    void show() override { m_delegateClient->notifyShown(); }
-    void hide() override { m_delegateClient->notifyHidden(); }
-    bool isVisible() const override { Q_UNREACHABLE(); }
-    QWindow *window() const override { return nullptr; }
-    void updateCursor(const QCursor &cursor) override
-    {
-        Q_UNUSED(cursor);
-        /*setCursor(cursor);*/
-    }
-    void resize(int width, int height) override
-    {
-        m_size = QSize(width, height);
-        m_delegateClient->visualPropertiesChanged();
-    }
-    void move(const QPoint &) override { Q_UNREACHABLE(); }
-    void inputMethodStateChanged(bool, bool) override { }
-    void setInputMethodHints(Qt::InputMethodHints) override { }
-    void setClearColor(const QColor &) override { }
-    void adapterClientChanged(WebContentsAdapterClient *) override { }
-    bool copySurface(const QRect &, const QSize &, QImage &)
-    {
-        Q_UNREACHABLE();
-        return false;
-    }
-    QRect windowGeometry() const override { return QRect(m_pos, m_size); }
-    bool forwardEvent(QEvent *ev) { return m_delegateClient->forwardEvent(ev); }
-
-private:
-    RenderWidgetHostViewQtDelegateClient *m_delegateClient;
-    QPoint m_pos;
-    QSize m_size;
-};
 
 static QWebEnginePage::WebWindowType toWindowType(WebContentsAdapterClient::WindowOpenDisposition disposition)
 {
@@ -202,6 +158,14 @@ QWebEnginePagePrivate::~QWebEnginePagePrivate()
 
 RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client)
 {
+    item = view
+         ? (QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *)view->CreateRenderWidgetHostViewQtDelegate(client)
+         : new QtWebEngineCore::RenderWidgetHostViewQtDelegateItem(client, false);
+    return item;
+}
+
+RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client)
+{
     // Set the QWebEngineView as the parent for a popup delegate, so that the new popup window
     // responds properly to clicks in case the QWebEngineView is inside a modal QDialog. Setting the
     // parent essentially notifies the OS that the popup window is part of the modal session, and
@@ -209,7 +173,9 @@ RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostVie
     // The new delegate will not be deleted by the parent view though, because we unset the parent
     // when the parent is destroyed. The delegate will be destroyed by Chromium when the popup is
     // dismissed.
-    return view ? view->CreateRenderWidgetHostViewQtDelegate(client) : new DummyDelegate(client);
+    return view
+         ? view->CreateRenderWidgetHostViewQtDelegateForPopup(client)
+         : new QtWebEngineCore::RenderWidgetHostViewQtDelegateItem(client, true);
 }
 
 void QWebEnginePagePrivate::initializationFinished()

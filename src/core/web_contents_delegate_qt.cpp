@@ -629,8 +629,8 @@ void WebContentsDelegateQt::SetContentsBounds(content::WebContents *source, cons
     QRect frameGeometry(toQt(bounds));
     QRect geometry;
     if (RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt*>(web_contents()->GetRenderWidgetHostView())) {
-        if (rwhv->delegate() && rwhv->delegate()->window())
-            geometry = frameGeometry.marginsRemoved(rwhv->delegate()->window()->frameMargins());
+        if (rwhv->delegate() && rwhv->delegate()->Window())
+            geometry = frameGeometry.marginsRemoved(rwhv->delegate()->Window()->frameMargins());
     }
     m_viewClient->requestGeometryChange(geometry, frameGeometry);
 }

@@ -463,7 +463,6 @@ void tst_QQuickWebEngineView::transparentWebEngineViews()
 void tst_QQuickWebEngineView::inputMethod()
 {
     m_window->show();
-    QTRY_VERIFY(qApp->focusObject());
     QQuickItem *input;
 
     QQuickWebEngineView *view = webEngineView();
@@ -471,18 +470,21 @@ void tst_QQuickWebEngineView::inputMethod()
     view->setUrl(urlFromTestPath("html/inputmethod.html"));
     QVERIFY(waitForLoadSucceeded(view));
 
+    QTRY_VERIFY(qobject_cast<QQuickItem *>(qApp->focusObject()));
     input = qobject_cast<QQuickItem *>(qApp->focusObject());
     QVERIFY(!input->flags().testFlag(QQuickItem::ItemAcceptsInputMethod));
     QVERIFY(!view->flags().testFlag(QQuickItem::ItemAcceptsInputMethod));
 
     runJavaScript("document.getElementById('inputField').focus();");
     QTRY_COMPARE(activeElementId(view), QStringLiteral("inputField"));
+    QTRY_VERIFY(qobject_cast<QQuickItem *>(qApp->focusObject()));
     input = qobject_cast<QQuickItem *>(qApp->focusObject());
     QTRY_VERIFY(input->flags().testFlag(QQuickItem::ItemAcceptsInputMethod));
     QVERIFY(view->flags().testFlag(QQuickItem::ItemAcceptsInputMethod));
 
     runJavaScript("document.getElementById('inputField').blur();");
     QTRY_VERIFY(activeElementId(view).isEmpty());
+    QTRY_VERIFY(qobject_cast<QQuickItem *>(qApp->focusObject()));
     input = qobject_cast<QQuickItem *>(qApp->focusObject());
     QTRY_VERIFY(!input->flags().testFlag(QQuickItem::ItemAcceptsInputMethod));
     QVERIFY(!view->flags().testFlag(QQuickItem::ItemAcceptsInputMethod));

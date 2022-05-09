@@ -37,42 +37,52 @@
 **
 ****************************************************************************/
 
-#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICKWINDOW_H
-#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICKWINDOW_H
+#ifndef QWEBENGINE_ACCESSIBLE_H
+#define QWEBENGINE_ACCESSIBLE_H
 
-#include "render_widget_host_view_qt_delegate.h"
-#include "render_widget_host_view_qt_delegate_item.h"
+#include <QAccessibleWidget>
+#include <QPointer>
 
-#include <QtCore/qpointer.h>
-#include <QtQuick/qquickwindow.h>
+#if QT_CONFIG(accessibility)
+
+QT_BEGIN_NAMESPACE
+class QWebEngineView;
+
+class QWebEngineViewAccessible : public QAccessibleWidget
+{
+public:
+    QWebEngineViewAccessible(QWebEngineView *o);
+
+    bool isValid() const override;
+    QAccessibleInterface *focusChild() const override;
+    int childCount() const override;
+    QAccessibleInterface *child(int index) const override;
+    int indexOfChild(const QAccessibleInterface *child) const override;
+
+private:
+    QWebEngineView *view() const;
+};
+
+QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
 
-class RenderWidgetHostViewQtDelegateQuickWindow : public QQuickWindow , public WidgetDelegate {
-
+class RenderWidgetHostViewQtDelegateWidgetAccessible : public QAccessibleWidget
+{
 public:
-    RenderWidgetHostViewQtDelegateQuickWindow(RenderWidgetHostViewQtDelegateItem *realDelegate,
-                                              QWindow *parent);
-    ~RenderWidgetHostViewQtDelegateQuickWindow();
+    RenderWidgetHostViewQtDelegateWidgetAccessible(QWidget *o, QWebEngineView *view);
 
-    void InitAsPopup(const QRect &screenRect) override;
-    void SetClearColor(const QColor &) override;
-    bool ActiveFocusOnPress() override;
-    void MoveWindow(const QPoint &) override;
-    void Bind(WebContentsAdapterClient *) override;
-    void Unbind() override;
-    void Destroy() override;
-    void Resize(int width, int height) override;
-
-    void setVirtualParent(QQuickItem *virtualParent);
+    bool isValid() const override;
+    QAccessibleInterface *focusChild() const override;
+    int childCount() const override;
+    QAccessibleInterface *child(int index) const override;
+    int indexOfChild(const QAccessibleInterface *child) const override;
 
 private:
-    QPointer<RenderWidgetHostViewQtDelegateItem> m_realDelegate;
-    QQuickItem *m_virtualParent;
-    QRect m_rect;
-    bool m_rotated;
+    QWebEngineViewAccessible *viewAccessible() const;
+    QPointer<QWebEngineView> m_view;
 };
-
 } // namespace QtWebEngineCore
+#endif // QT_CONFIG(accessibility)
 
-#endif // RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICKWINDOW_H
+#endif // QWEBENGINE_ACCESSIBLE_H
