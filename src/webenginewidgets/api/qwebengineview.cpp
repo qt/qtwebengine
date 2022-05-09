@@ -40,7 +40,9 @@
 #include "qwebenginenotificationpresenter_p.h"
 #include "qwebengineview.h"
 #include "qwebengineview_p.h"
-#include "render_widget_host_view_qt_delegate_widget.h"
+#include "render_widget_host_view_qt_delegate_client.h"
+#include "render_widget_host_view_qt_delegate_item.h"
+#include "qwebengine_accessible.h"
 
 #include <QtWebEngineCore/private/qwebenginepage_p.h>
 #include <QtWebEngineCore/qwebenginecontextmenurequest.h>
@@ -57,6 +59,7 @@
 #include <QIcon>
 #include <QStyle>
 #include <QGuiApplication>
+#include <QQuickWidget>
 
 #if QT_CONFIG(action)
 #include <QAction>
@@ -90,6 +93,286 @@
 #include <QPrinter>
 #include <QThread>
 #endif
+
+namespace QtWebEngineCore {
+class WebEngineQuickWidget : public QQuickWidget, public WidgetDelegate
+{
+public:
+    WebEngineQuickWidget(RenderWidgetHostViewQtDelegateItem *widget, QWidget *parent)
+        : QQuickWidget(parent)
+        , m_contentItem(widget)
+    {
+        setFocusPolicy(Qt::StrongFocus);
+        setMouseTracking(true);
+        setAttribute(Qt::WA_AcceptTouchEvents);
+        setAttribute(Qt::WA_OpaquePaintEvent);
+        setAttribute(Qt::WA_AlwaysShowToolTips);
+
+        QQuickItem *root = new QQuickItem(); // Indirection so we don't delete m_contentItem
+        setContent(QUrl(), nullptr, root);
+        root->setFlags(QQuickItem::ItemHasContents);
+        root->setFocus(true);
+        root->setVisible(true);
+        m_contentItem->setParentItem(root);
+
+        connectRemoveParentBeforeParentDelete();
+    }
+    ~WebEngineQuickWidget() override
+    {
+        if (m_contentItem) {
+            m_contentItem->setWidgetDelegate(nullptr);
+            m_contentItem->setParentItem(nullptr);
+        }
+    }
+
+    void InitAsPopup(const QRect &screenRect) override
+    {
+        setAttribute(Qt::WA_ShowWithoutActivating);
+        setFocusPolicy(Qt::NoFocus);
+        setWindowFlags(Qt::Popup | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
+
+        setGeometry(screenRect);
+        raise();
+        m_contentItem->show();
+        show();
+    }
+
+    void Bind(WebContentsAdapterClient *client) override
+    {
+        if (m_pageDestroyedConnection)
+            QObject::disconnect(m_pageDestroyedConnection);
+        QWebEnginePage *page = static_cast<QWebEnginePagePrivate *>(client)->q_func();
+        QWebEngineViewPrivate::bindPageAndWidget(page, this);
+        m_pageDestroyedConnection = QObject::connect(page, &QWebEnginePage::_q_aboutToDelete, this, &WebEngineQuickWidget::Unbind);
+    }
+
+    void Unbind() override
+    {
+        if (m_pageDestroyedConnection)
+            QObject::disconnect(m_pageDestroyedConnection);
+        QWebEngineViewPrivate::bindPageAndWidget(nullptr, this);
+    }
+
+    void Destroy() override
+    {
+        deleteLater();
+    }
+
+    bool ActiveFocusOnPress() override
+    {
+        return true;
+    }
+
+    void SetInputMethodEnabled(bool enabled) override
+    {
+        QQuickWidget::setAttribute(Qt::WA_InputMethodEnabled, enabled);
+    }
+    void SetInputMethodHints(Qt::InputMethodHints hints) override
+    {
+        QQuickWidget::setInputMethodHints(hints);
+    }
+    void SetClearColor(const QColor &color) override
+    {
+        QQuickWidget::setClearColor(color);
+        // QQuickWidget is usually blended by punching holes into widgets
+        // above it to simulate the visual stacking order. If we want it to be
+        // transparent we have to throw away the proper stacking order and always
+        // blend the complete normal widgets backing store under it.
+        bool isTranslucent = color.alpha() < 255;
+        setAttribute(Qt::WA_AlwaysStackOnTop, isTranslucent);
+        setAttribute(Qt::WA_OpaquePaintEvent, !isTranslucent);
+        update();
+    }
+    void MoveWindow(const QPoint &screenPos) override
+    {
+        QQuickWidget::move(screenPos);
+    }
+    void Resize(int width, int height) override
+    {
+        QQuickWidget::resize(width, height);
+    }
+    QWindow *Window() override
+    {
+        if (const QWidget *root = QQuickWidget::window())
+            return root->windowHandle();
+        return nullptr;
+    }
+
+protected:
+    void closeEvent(QCloseEvent *event) override
+    {
+        QQuickWidget::closeEvent(event);
+
+        // If a close event was received from the window manager (e.g. when moving the parent window,
+        // clicking outside the popup area)
+        // make sure to notify the Chromium WebUI popup and its underlying
+        // RenderWidgetHostViewQtDelegate instance to be closed.
+        if (m_contentItem && m_contentItem->m_isPopup)
+            m_contentItem->m_client->closePopup();
+    }
+    void showEvent(QShowEvent *event) override
+    {
+        QQuickWidget::showEvent(event);
+        // We don't have a way to catch a top-level window change with QWidget
+        // but a widget will most likely be shown again if it changes, so do
+        // the reconnection at this point.
+        for (const QMetaObject::Connection &c : qAsConst(m_windowConnections))
+            disconnect(c);
+        m_windowConnections.clear();
+        if (QWindow *w = Window()) {
+            m_windowConnections.append(connect(w, SIGNAL(xChanged(int)), m_contentItem, SLOT(onWindowPosChanged())));
+            m_windowConnections.append(connect(w, SIGNAL(yChanged(int)), m_contentItem, SLOT(onWindowPosChanged())));
+        }
+    }
+    void resizeEvent(QResizeEvent *event) override
+    {
+        QQuickWidget::resizeEvent(event);
+        if (m_contentItem) { // FIXME: Not sure why we need to set m_contentItem size manually
+            m_contentItem->setSize(event->size());
+            m_contentItem->onWindowPosChanged();
+        }
+    }
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const override
+    {
+        if (m_contentItem)
+            return m_contentItem->inputMethodQuery(query);
+        return QVariant();
+    }
+    bool event(QEvent *event) override;
+
+    void connectRemoveParentBeforeParentDelete();
+    void removeParentBeforeParentDelete();
+
+private:
+    friend QWebEngineViewPrivate;
+    QPointer<RenderWidgetHostViewQtDelegateItem> m_contentItem; // deleted by core
+    QMetaObject::Connection m_parentDestroyedConnection;
+    QMetaObject::Connection m_pageDestroyedConnection;
+    QList<QMetaObject::Connection> m_windowConnections;
+};
+
+void WebEngineQuickWidget::connectRemoveParentBeforeParentDelete()
+{
+    disconnect(m_parentDestroyedConnection);
+
+    if (QWidget *parent = parentWidget()) {
+        m_parentDestroyedConnection = connect(parent, &QObject::destroyed,
+                                              this,
+                                              &WebEngineQuickWidget::removeParentBeforeParentDelete);
+    } else {
+        m_parentDestroyedConnection = QMetaObject::Connection();
+    }
+}
+
+void WebEngineQuickWidget::removeParentBeforeParentDelete()
+{
+    // Unset the parent, because parent is being destroyed, but the owner of this
+    // WebEngineQuickWidget is actually a RenderWidgetHostViewQt instance.
+    setParent(nullptr);
+
+    // If this widget represents a popup window, make sure to close it, so that if the popup was the
+    // last visible top level window, the application event loop can quit if it deems it necessarry.
+    if (m_contentItem && m_contentItem->m_isPopup)
+        close();
+}
+
+bool WebEngineQuickWidget::event(QEvent *event)
+{
+    bool handled = false;
+
+    // Track parent to make sure we don't get deleted.
+    if (event->type() == QEvent::ParentChange)
+        connectRemoveParentBeforeParentDelete();
+
+    if (!m_contentItem)
+        return QQuickWidget::event(event);
+
+    // Mimic QWidget::event() by ignoring mouse, keyboard, touch and tablet events if the widget is
+    // disabled.
+    if (!isEnabled()) {
+        switch (event->type()) {
+        case QEvent::TabletPress:
+        case QEvent::TabletRelease:
+        case QEvent::TabletMove:
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease:
+        case QEvent::MouseButtonDblClick:
+        case QEvent::MouseMove:
+        case QEvent::TouchBegin:
+        case QEvent::TouchUpdate:
+        case QEvent::TouchEnd:
+        case QEvent::TouchCancel:
+        case QEvent::ContextMenu:
+        case QEvent::KeyPress:
+        case QEvent::KeyRelease:
+#ifndef QT_NO_WHEELEVENT
+        case QEvent::Wheel:
+#endif
+            return false;
+        default:
+            break;
+        }
+    }
+
+    switch (event->type()) {
+    case QEvent::FocusIn:
+    case QEvent::FocusOut:
+        // We forward focus events later, once they have made it to the content item.
+        return QQuickWidget::event(event);
+    case QEvent::DragEnter:
+    case QEvent::DragLeave:
+    case QEvent::DragMove:
+    case QEvent::Drop:
+    case QEvent::HoverEnter:
+    case QEvent::HoverLeave:
+    case QEvent::HoverMove:
+        // Let the parent handle these events.
+        return false;
+    default:
+        break;
+    }
+
+    switch (event->type()) {
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease:
+        case QEvent::MouseButtonDblClick:
+        case QEvent::MouseMove:
+            // Don't forward mouse events synthesized by the system, which are caused by genuine touch
+            // events. Chromium would then process for e.g. a mouse click handler twice, once due to the
+            // system synthesized mouse event, and another time due to a touch-to-gesture-to-mouse
+            // transformation done by Chromium.
+            // Only allow them for popup type, since QWidgetWindow will ignore them for Qt::Popup flag,
+            // which is expected to get input through synthesized mouse events (either by system or Qt)
+            if (!m_contentItem->m_isPopup &&
+                    static_cast<QMouseEvent *>(event)->source() == Qt::MouseEventSynthesizedBySystem) {
+                Q_ASSERT(!windowFlags().testFlag(Qt::Popup));
+                return true;
+            }
+            break;
+        default:
+            break;
+    }
+
+    if (event->type() == QEvent::MouseButtonDblClick) {
+        // QWidget keeps the Qt4 behavior where the DblClick event would replace the Press event.
+        // QtQuick is different by sending both the Press and DblClick events for the second press
+        // where we can simply ignore the DblClick event.
+        QMouseEvent *dblClick = static_cast<QMouseEvent *>(event);
+        QMouseEvent press(QEvent::MouseButtonPress, dblClick->position(), dblClick->scenePosition(),
+                          dblClick->globalPosition(), dblClick->button(), dblClick->buttons(),
+                          dblClick->modifiers(), dblClick->source());
+        press.setTimestamp(dblClick->timestamp());
+        handled = m_contentItem->m_client->forwardEvent(&press);
+    } else
+        handled = m_contentItem->m_client->forwardEvent(event);
+
+    if (!handled)
+        return QQuickWidget::event(event);
+    event->accept();
+    return true;
+}
+
+} // namespace QtWebEngineCore
 
 QT_BEGIN_NAMESPACE
 
@@ -144,8 +427,8 @@ void QWebEngineViewPrivate::pageChanged(QWebEnginePage *oldPage, QWebEnginePage 
         Q_EMIT q->selectionChanged();
 }
 
-void QWebEngineViewPrivate::widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *oldWidget,
-                                          QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *newWidget)
+void QWebEngineViewPrivate::widgetChanged(QtWebEngineCore::WebEngineQuickWidget *oldWidget,
+                                          QtWebEngineCore::WebEngineQuickWidget *newWidget)
 {
     Q_Q(QWebEngineView);
 
@@ -162,8 +445,6 @@ void QWebEngineViewPrivate::widgetChanged(QtWebEngineCore::RenderWidgetHostViewQ
     if (newWidget) {
         Q_ASSERT(!QtWebEngineCore::closingDown());
 #if QT_CONFIG(accessibility)
-        // An earlier QAccessible::queryAccessibleInterface() call may have already registered a default
-        // QAccessibleInterface for newWidget: remove it first to avoid assert in QAccessibleCache::insert().
         QAccessible::deleteAccessibleInterface(QAccessible::uniqueId(QAccessible::queryAccessibleInterface(newWidget)));
         QAccessible::registerAccessibleInterface(new QtWebEngineCore::RenderWidgetHostViewQtDelegateWidgetAccessible(newWidget, q));
 #endif
@@ -403,20 +684,24 @@ void QWebEngineViewPrivate::bindPageAndView(QWebEnginePage *page, QWebEngineView
 
     // Then notify.
 
-    auto widget = page ? page->d_func()->widget : nullptr;
-    auto oldWidget = (oldPage && oldPage->d_func()) ? oldPage->d_func()->widget : nullptr;
+    auto widget = page ? static_cast<QtWebEngineCore::WebEngineQuickWidget *>(page->d_func()->widget) : nullptr;
+    auto oldWidget = (oldPage && oldPage->d_func()) ? static_cast<QtWebEngineCore::WebEngineQuickWidget *>(oldPage->d_func()->widget) : nullptr;
 
+    // New page/widget moving away from oldView
     if (page && oldView != view && oldView) {
         oldView->d_func()->pageChanged(page, nullptr);
         if (widget)
             oldView->d_func()->widgetChanged(widget, nullptr);
     }
 
+    // New page/widget moving into new view
     if (view && oldPage != page) {
         if (oldPage && oldPage->d_func())
             view->d_func()->pageChanged(oldPage, page);
         else
             view->d_func()->pageChanged(nullptr, page);
+        if (!widget && page && page->d_func()->item)
+            widget = new QtWebEngineCore::WebEngineQuickWidget(page->d_func()->item, nullptr);
         if (oldWidget != widget)
             view->d_func()->widgetChanged(oldWidget, widget);
     }
@@ -425,23 +710,27 @@ void QWebEngineViewPrivate::bindPageAndView(QWebEnginePage *page, QWebEngineView
 }
 
 void QWebEngineViewPrivate::bindPageAndWidget(
-        QWebEnginePage *page, QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *widget)
+        QWebEnginePage *page, QtWebEngineCore::WebEngineQuickWidget *widget)
 {
-    auto oldPage = widget ? widget->m_page : nullptr;
-    auto oldWidget = page ? page->d_func()->widget : nullptr;
+    auto oldPage = (widget && widget->m_contentItem) ? widget->m_contentItem->m_page : nullptr;
+    auto oldWidget = page ? static_cast<QtWebEngineCore::WebEngineQuickWidget *>(page->d_func()->widget) : nullptr;
 
     // Change pointers first.
 
     if (widget && oldPage != page) {
-        if (oldPage && oldPage->d_func())
+        if (oldPage && oldPage->d_func()) {
             oldPage->d_func()->widget = nullptr;
-        widget->m_page = page;
+            oldPage->d_func()->item = nullptr;
+        }
+        if (widget->m_contentItem)
+            widget->m_contentItem->m_page = page;
     }
 
     if (page && oldWidget != widget) {
-        if (oldWidget)
-            oldWidget->m_page = nullptr;
+        if (oldWidget && oldWidget->m_contentItem)
+            oldWidget->m_contentItem->m_page = nullptr;
         page->d_func()->widget = widget;
+        page->d_func()->item = widget->m_contentItem;
     }
 
     // Then notify.
@@ -585,8 +874,21 @@ QtWebEngineCore::RenderWidgetHostViewQtDelegate *
 QWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate(
         QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client)
 {
+    auto *item = new QtWebEngineCore::RenderWidgetHostViewQtDelegateItem(client, false);
+    auto *widget = new QtWebEngineCore::WebEngineQuickWidget(item, nullptr);
+    item->setWidgetDelegate(widget);
+    return item;
+}
+
+QtWebEngineCore::RenderWidgetHostViewQtDelegate *
+QWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegateForPopup(
+        QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client)
+{
     Q_Q(QWebEngineView);
-    return new QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget(client, q);
+    auto *item = new QtWebEngineCore::RenderWidgetHostViewQtDelegateItem(client, true);
+    auto *widget = new QtWebEngineCore::WebEngineQuickWidget(item, q);
+    item->setWidgetDelegate(widget);
+    return item;
 }
 
 QWebEngineContextMenuRequest *QWebEngineViewPrivate::lastContextMenuRequest() const
@@ -1114,45 +1416,6 @@ void QWebEngineView::print(QPrinter *printer)
     Q_EMIT printFinished(false);
 #endif
 }
-
-#ifndef QT_NO_ACCESSIBILITY
-bool QWebEngineViewAccessible::isValid() const
-{
-    if (!QAccessibleWidget::isValid())
-        return false;
-
-    if (!view() || !view()->d_func() || !view()->d_func()->page || !view()->d_func()->page->d_func())
-        return false;
-
-    return true;
-}
-
-QAccessibleInterface *QWebEngineViewAccessible::focusChild() const
-{
-    if (child(0) && child(0)->focusChild())
-        return child(0)->focusChild();
-    return const_cast<QWebEngineViewAccessible *>(this);
-}
-
-int QWebEngineViewAccessible::childCount() const
-{
-    return child(0) ? 1 : 0;
-}
-
-QAccessibleInterface *QWebEngineViewAccessible::child(int index) const
-{
-    if (index == 0 && isValid())
-        return view()->page()->d_func()->adapter->browserAccessible();
-    return nullptr;
-}
-
-int QWebEngineViewAccessible::indexOfChild(const QAccessibleInterface *c) const
-{
-    if (child(0) && c == child(0))
-        return 0;
-    return -1;
-}
-#endif // QT_NO_ACCESSIBILITY
 
 #if QT_CONFIG(action)
 QContextMenuBuilder::QContextMenuBuilder(QWebEngineContextMenuRequest *request,

@@ -8,7 +8,7 @@ qt_internal_add_module(WebEngineWidgets
         api/qtwebenginewidgetsglobal.h
         api/qwebenginenotificationpresenter.cpp api/qwebenginenotificationpresenter_p.h
         api/qwebengineview.cpp api/qwebengineview.h api/qwebengineview_p.h
-        render_widget_host_view_qt_delegate_widget.cpp render_widget_host_view_qt_delegate_widget.h
+        qwebengine_accessible.cpp qwebengine_accessible.h
     DEFINES
         QT_BUILD_WEBENGINEWIDGETS_LIB
     INCLUDE_DIRECTORIES

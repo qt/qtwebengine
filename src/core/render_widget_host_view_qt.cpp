@@ -894,7 +894,7 @@ bool RenderWidgetHostViewQt::isPopup() const
 bool RenderWidgetHostViewQt::updateScreenInfo()
 {
     display::ScreenInfo oldScreenInfo = m_screenInfo;
-    QScreen *screen = m_delegate->window() ? m_delegate->window()->screen() : nullptr;
+    QScreen *screen = m_delegate->Window() ? m_delegate->Window()->screen() : nullptr;
     m_screenInfo = screenInfoFromQScreen(screen);
 
     return (m_screenInfo != oldScreenInfo);

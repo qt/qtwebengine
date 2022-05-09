@@ -66,7 +66,7 @@
 #include <QtGui/qaccessibleobject.h>
 
 namespace QtWebEngineCore {
-class RenderWidgetHostViewQtDelegateQuick;
+class RenderWidgetHostViewQtDelegateItem;
 class TouchSelectionMenuController;
 class UIDelegatesManager;
 class WebContentsAdapter;
@@ -174,9 +174,9 @@ public:
     void ensureContentsAdapter();
     void setFullScreenMode(bool);
 
-    static void bindViewAndWidget(QQuickWebEngineView *view, QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick *widget);
-    void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick *oldWidget,
-                       QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick *newWidget);
+    static void bindViewAndWidget(QQuickWebEngineView *view, QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *widget);
+    void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *oldWidget,
+                       QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *newWidget);
 
     QQuickWebEngineProfile *m_profile;
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter;
@@ -200,7 +200,7 @@ public:
     bool m_defaultAudioMuted;
     bool m_isBeingAdopted;
     mutable QQuickWebEngineAction *actions[QQuickWebEngineView::WebActionCount];
-    QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick *widget = nullptr;
+    QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *widget = nullptr;
 
     bool profileInitialized() const;
     QQuickWebEngineScriptCollection *getUserScripts();
@@ -215,26 +215,6 @@ private:
     QPointer<QQuickWebEngineFaviconProvider> m_faviconProvider;
     QQmlComponent *m_touchHandleDelegate;
 };
-
-#ifndef QT_NO_ACCESSIBILITY
-class QQuickWebEngineViewAccessible : public QAccessibleObject
-{
-public:
-    QQuickWebEngineViewAccessible(QQuickWebEngineView *o);
-    bool isValid() const override;
-    QAccessibleInterface *parent() const override;
-    QAccessibleInterface *focusChild() const override;
-    int childCount() const override;
-    QAccessibleInterface *child(int index) const override;
-    int indexOfChild(const QAccessibleInterface*) const override;
-    QString text(QAccessible::Text) const override;
-    QAccessible::Role role() const override;
-    QAccessible::State state() const override;
-
-private:
-    QQuickWebEngineView *engineView() const { return static_cast<QQuickWebEngineView*>(object()); }
-};
-#endif // QT_NO_ACCESSIBILITY
 
 class QQuickContextMenuBuilder : public QtWebEngineCore::RenderViewContextMenuQt
 {

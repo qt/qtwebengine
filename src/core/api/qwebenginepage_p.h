@@ -62,11 +62,12 @@
 
 namespace QtWebEngineCore {
 class RenderWidgetHostViewQtDelegate;
-class RenderWidgetHostViewQtDelegateWidget;
 class RenderWidgetHostViewQtDelegateClient;
+class RenderWidgetHostViewQtDelegateItem;
 class TouchHandleDrawableDelegate;
 class TouchSelectionMenuController;
 class WebContentsAdapter;
+class WidgetDelegate;
 }
 
 QT_BEGIN_NAMESPACE
@@ -94,6 +95,8 @@ public:
     virtual void setToolTip(const QString &toolTipText) = 0;
     virtual QtWebEngineCore::RenderWidgetHostViewQtDelegate *CreateRenderWidgetHostViewQtDelegate(
             QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) = 0;
+    virtual QtWebEngineCore::RenderWidgetHostViewQtDelegate *CreateRenderWidgetHostViewQtDelegateForPopup(
+            QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) = 0;
     virtual QWebEngineContextMenuRequest *lastContextMenuRequest() const = 0;
     virtual QWebEnginePage *createPageForWindow(QWebEnginePage::WebWindowType type) = 0;
     virtual bool isEnabled() const = 0;
@@ -118,7 +121,7 @@ public:
     ~QWebEnginePagePrivate();
 
     QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override;
-    QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override { return CreateRenderWidgetHostViewQtDelegate(client); }
+    QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override;
     void initializationFinished() override;
     void lifecycleStateChanged(LifecycleState state) override;
     void recommendedStateChanged(LifecycleState state) override;
@@ -227,7 +230,8 @@ public:
     bool defaultAudioMuted;
     qreal defaultZoomFactor;
     QTimer wasShownTimer;
-    QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *widget = nullptr;
+    QtWebEngineCore::WidgetDelegate *widget = nullptr;
+    QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *item = nullptr;
 #if QT_CONFIG(webengine_printing_and_pdf)
     QPrinter *currentPrinter = nullptr;
 #endif

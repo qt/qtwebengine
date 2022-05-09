@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,33 +37,59 @@
 **
 ****************************************************************************/
 
-#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICK_H
-#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICK_H
+#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_ITEM_H
+#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_ITEM_H
 
 #include "compositor/compositor.h"
 #include "render_widget_host_view_qt_delegate.h"
 
-#include <QtGui/qaccessibleobject.h>
-#include <QtQuick/qquickitem.h>
+#include <QtQuick/QQuickItem>
 
 QT_BEGIN_NAMESPACE
 class QQuickWebEngineView;
-class QQuickWebEngineViewAccessible;
 class QQuickWebEngineViewPrivate;
+class QWebEnginePage;
+class QWebEngineViewPrivate;
 QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
 
 class RenderWidgetHostViewQtDelegateClient;
+class WebContentsAdapterClient;
+class WebEngineQuickWidget;
 
-class RenderWidgetHostViewQtDelegateQuick : public QQuickItem,
-                                            public RenderWidgetHostViewQtDelegate,
-                                            public Compositor::Observer
+class WidgetDelegate
+{
+public:
+    virtual ~WidgetDelegate() = default;
+    virtual void InitAsPopup(const QRect &screenRect) = 0;
+    virtual void SetInputMethodEnabled(bool) { }
+    virtual void SetInputMethodHints(Qt::InputMethodHints) { }
+    virtual void SetClearColor(const QColor &)  { }
+    virtual bool ActiveFocusOnPress() = 0;
+    virtual void MoveWindow(const QPoint & ) { }
+    virtual void Bind(WebContentsAdapterClient *) = 0;
+    virtual void Unbind() = 0;
+    virtual void Destroy() = 0;
+    virtual void Resize(int, int) { }
+    virtual QWindow *Window() { return nullptr; }
+};
+
+// Useful information keyboard and mouse QEvent propagation.
+// A RenderWidgetHostViewQtDelegateItem instance initialized as a popup will receive
+// no keyboard focus (so all keyboard QEvents will be sent to the parent RWHVQD instance),
+// but will still receive mouse input (all mouse QEvent moves and clicks will be given to the popup
+// RWHVQD instance, and the mouse interaction area covers the surface of the whole parent
+// QWebEngineView, and not only the smaller surface that an HTML select popup would occupy).
+class Q_WEBENGINECORE_PRIVATE_EXPORT RenderWidgetHostViewQtDelegateItem
+        : public QQuickItem
+        , public RenderWidgetHostViewQtDelegate
+        , public Compositor::Observer
 {
     Q_OBJECT
 public:
-    RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup);
-    ~RenderWidgetHostViewQtDelegateQuick();
+    RenderWidgetHostViewQtDelegateItem(RenderWidgetHostViewQtDelegateClient *client, bool isPopup);
+    ~RenderWidgetHostViewQtDelegateItem();
 
     void initAsPopup(const QRect&) override;
     QRectF viewGeometry() const override;
@@ -75,16 +101,18 @@ public:
     void show() override;
     void hide() override;
     bool isVisible() const override;
-    QWindow* window() const override;
+    QWindow *Window() const override;
     void updateCursor(const QCursor &) override;
     void resize(int width, int height) override;
-    void move(const QPoint&) override { }
-    void inputMethodStateChanged(bool editorVisible, bool isPasswordInput) override;
-    void setInputMethodHints(Qt::InputMethodHints) override { }
-    // The QtQuick view doesn't have a backbuffer of its own and doesn't need this
-    void setClearColor(const QColor &) override { }
+    void move(const QPoint &screenPos) override;
+    void inputMethodStateChanged(bool editorVisible, bool passwordInput) override;
+    void setInputMethodHints(Qt::InputMethodHints) override;
+    void setClearColor(const QColor &color) override;
+    void unhandledWheelEvent(QWheelEvent *ev) override;
+
     void readyToSwap() override;
-    void adapterClientChanged(WebContentsAdapterClient *client) override;
+
+    void setWidgetDelegate(WidgetDelegate *delegate);
 
 protected:
     bool event(QEvent *event) override;
@@ -105,43 +133,29 @@ protected:
     void itemChange(ItemChange change, const ItemChangeData &value) override;
     QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) override;
 
+    void adapterClientChanged(WebContentsAdapterClient *client) override;
+
 private Q_SLOTS:
     void onBeforeRendering();
     void onWindowPosChanged();
     void onHide();
 
 private:
+    friend QWebEngineViewPrivate;
     friend QQuickWebEngineViewPrivate;
+    friend WebEngineQuickWidget;
 
     RenderWidgetHostViewQtDelegateClient *m_client;
-    QList<QMetaObject::Connection> m_windowConnections;
     bool m_isPopup;
+    QColor m_clearColor;
+    Qt::InputMethodHints m_inputMethodHints = {};
+    QList<QMetaObject::Connection> m_windowConnections;
+    WebContentsAdapterClient *m_adapterClient = nullptr;
+    QWebEnginePage *m_page = nullptr;
     QQuickWebEngineView *m_view = nullptr;
+    WidgetDelegate *m_widgetDelegate = nullptr;
 };
-
-#if QT_CONFIG(accessibility)
-class RenderWidgetHostViewQtDelegateQuickAccessible : public QAccessibleObject
-{
-public:
-    RenderWidgetHostViewQtDelegateQuickAccessible(RenderWidgetHostViewQtDelegateQuick *o, QQuickWebEngineView *view);
-
-    bool isValid() const override;
-    QAccessibleInterface *parent() const override;
-    QString text(QAccessible::Text t) const override;
-    QAccessible::Role role() const override;
-    QAccessible::State state() const override;
-
-    QAccessibleInterface *focusChild() const override;
-    int childCount() const override;
-    QAccessibleInterface *child(int index) const override;
-    int indexOfChild(const QAccessibleInterface *) const override;
-
-private:
-    QQuickWebEngineViewAccessible *viewAccessible() const;
-    QQuickWebEngineView *m_view;
-};
-#endif // QT_CONFIG(accessibility)
 
 } // namespace QtWebEngineCore
 
-#endif
+#endif // RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_ITEM_H
