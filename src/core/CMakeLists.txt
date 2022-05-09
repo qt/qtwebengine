@@ -110,6 +110,12 @@ foreach(arch ${archs})
                 favicon_driver_qt.cpp favicon_driver_qt.h
                 favicon_service_factory_qt.cpp favicon_service_factory_qt.h
                 file_picker_controller.cpp file_picker_controller.h
+                file_system_access/file_system_access_permission_context_factory_qt.cpp file_system_access/file_system_access_permission_context_factory_qt.h
+                file_system_access/file_system_access_permission_context_qt.cpp file_system_access/file_system_access_permission_context_qt.h
+                file_system_access/file_system_access_permission_grant_qt.cpp file_system_access/file_system_access_permission_grant_qt.h
+                file_system_access/file_system_access_permission_request_controller.h
+                file_system_access/file_system_access_permission_request_controller_impl.cpp file_system_access/file_system_access_permission_request_controller_impl.h
+                file_system_access/file_system_access_permission_request_manager_qt.cpp file_system_access/file_system_access_permission_request_manager_qt.h
                 find_text_helper.cpp find_text_helper.h
                 global_descriptors_qt.h
                 javascript_dialog_controller.cpp javascript_dialog_controller.h javascript_dialog_controller_p.h

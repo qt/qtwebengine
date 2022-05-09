@@ -66,6 +66,7 @@
 #include "web_contents_adapter.h"
 
 #include <QtWebEngineCore/qwebenginecertificateerror.h>
+#include <QtWebEngineCore/qwebenginefilesystemaccessrequest.h>
 #include <QtWebEngineCore/qwebenginefindtextresult.h>
 #include <QtWebEngineCore/qwebenginefullscreenrequest.h>
 #include <QtWebEngineCore/qwebengineloadinginfo.h>
@@ -645,6 +646,13 @@ void QQuickWebEngineViewPrivate::runRegisterProtocolHandlerRequest(QWebEngineReg
 {
     Q_Q(QQuickWebEngineView);
     Q_EMIT q->registerProtocolHandlerRequested(request);
+}
+
+void QQuickWebEngineViewPrivate::runFileSystemAccessRequest(
+        QWebEngineFileSystemAccessRequest request)
+{
+    Q_Q(QQuickWebEngineView);
+    Q_EMIT q->fileSystemAccessRequested(request);
 }
 
 QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()

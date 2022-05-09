@@ -79,6 +79,7 @@ class QQuickWebEngineTooltipRequest;
 class QQuickWebEngineViewPrivate;
 class QWebEngineCertificateError;
 class QWebEngineContextMenuRequest;
+class QWebEngineFileSystemAccessRequest;
 class QWebEngineFindTextResult;
 class QWebEngineFullScreenRequest;
 class QWebEngineHistory;
@@ -572,6 +573,7 @@ Q_SIGNALS:
     Q_REVISION(1,12) void newWindowRequested(QQuickWebEngineNewWindowRequest *request);
     Q_REVISION(6,3) void touchSelectionMenuRequested(QQuickWebEngineTouchSelectionMenuRequest *request);
     Q_REVISION(6,4) void touchHandleDelegateChanged();
+    Q_REVISION(6,4) void fileSystemAccessRequested(const QWebEngineFileSystemAccessRequest &request);
 
 protected:
     void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;

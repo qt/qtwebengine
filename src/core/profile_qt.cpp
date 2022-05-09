@@ -42,6 +42,7 @@
 #include "profile_adapter.h"
 #include "browsing_data_remover_delegate_qt.h"
 #include "download_manager_delegate_qt.h"
+#include "file_system_access/file_system_access_permission_context_factory_qt.h"
 #include "net/ssl_host_state_delegate_qt.h"
 #include "permission_manager_qt.h"
 #include "platform_notification_service_qt.h"
@@ -238,6 +239,11 @@ extensions::ExtensionSystemQt* ProfileQt::GetExtensionSystem()
 std::string ProfileQt::GetMediaDeviceIDSalt()
 {
     return m_prefServiceAdapter.mediaDeviceIdSalt();
+}
+
+content::FileSystemAccessPermissionContext *ProfileQt::GetFileSystemAccessPermissionContext()
+{
+    return FileSystemAccessPermissionContextFactoryQt::GetForProfile(this);
 }
 
 void ProfileQt::setupPrefService()

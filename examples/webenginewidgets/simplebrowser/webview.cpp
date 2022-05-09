@@ -144,6 +144,8 @@ void WebView::setPage(WebPage *page)
                    &WebView::handleProxyAuthenticationRequired);
         disconnect(oldPage, &QWebEnginePage::registerProtocolHandlerRequested, this,
                    &WebView::handleRegisterProtocolHandlerRequested);
+        disconnect(oldPage, &QWebEnginePage::fileSystemAccessRequested, this,
+                   &WebView::handleFileSystemAccessRequested);
     }
     createWebActionTrigger(page,QWebEnginePage::Forward);
     createWebActionTrigger(page,QWebEnginePage::Back);
@@ -159,6 +161,8 @@ void WebView::setPage(WebPage *page)
             &WebView::handleProxyAuthenticationRequired);
     connect(page, &QWebEnginePage::registerProtocolHandlerRequested, this,
             &WebView::handleRegisterProtocolHandlerRequested);
+    connect(page, &QWebEnginePage::fileSystemAccessRequested, this,
+            &WebView::handleFileSystemAccessRequested);
 }
 
 int WebView::loadProgress() const
@@ -347,3 +351,31 @@ void WebView::handleRegisterProtocolHandlerRequested(
         request.reject();
 }
 //! [registerProtocolHandlerRequested]
+
+void WebView::handleFileSystemAccessRequested(QWebEngineFileSystemAccessRequest request)
+{
+    QString accessType;
+    switch (request.accessFlags()) {
+    case QWebEngineFileSystemAccessRequest::Read:
+        accessType = "read";
+        break;
+    case QWebEngineFileSystemAccessRequest::Write:
+        accessType = "write";
+        break;
+    case QWebEngineFileSystemAccessRequest::Read | QWebEngineFileSystemAccessRequest::Write:
+        accessType = "read and write";
+        break;
+    default:
+        Q_UNREACHABLE();
+    }
+
+    auto answer = QMessageBox::question(window(), tr("File system access reques"),
+                                        tr("Give %1 %2 access to %3?")
+                                                .arg(request.origin().host())
+                                                .arg(accessType)
+                                                .arg(request.filePath().toString()));
+    if (answer == QMessageBox::Yes)
+        request.accept();
+    else
+        request.reject();
+}

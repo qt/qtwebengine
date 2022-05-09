@@ -48,6 +48,7 @@
 #include <qnetworkreply.h>
 #include <qnetworkrequest.h>
 #include <qwebenginedownloadrequest.h>
+#include <qwebenginefilesystemaccessrequest.h>
 #include <qwebenginefindtextresult.h>
 #include <qwebenginefullscreenrequest.h>
 #include <qwebenginehistory.h>
@@ -4794,17 +4795,17 @@ void tst_QWebEnginePage::renderProcessPid()
 
 class FileSelectionTestPage : public QWebEnginePage {
 public:
-    FileSelectionTestPage()
-    { }
+    FileSelectionTestPage() : m_tempDir(QDir::tempPath() + "/tst_qwebenginepage-XXXXXX") { }
 
     QStringList chooseFiles(FileSelectionMode mode, const QStringList &oldFiles, const QStringList &acceptedMimeTypes) override
     {
         Q_UNUSED(oldFiles);
         chosenFileSelectionMode = mode;
         chosenAcceptedMimeTypes = acceptedMimeTypes;
-        return QStringList();
+        return QStringList() << (m_tempDir.path() + "/file.txt");
     }
 
+    QTemporaryDir m_tempDir;
     int chosenFileSelectionMode = -1;
     QStringList chosenAcceptedMimeTypes;
 };
@@ -4890,9 +4891,27 @@ void tst_QWebEnginePage::fileSystemAccessDialog()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    page.setHtml(QString("<html><body>"
+    connect(&page, &QWebEnginePage::fileSystemAccessRequested,
+            [](QWebEngineFileSystemAccessRequest request) {
+                QCOMPARE(request.accessFlags(),
+                         QWebEngineFileSystemAccessRequest::Read
+                                 | QWebEngineFileSystemAccessRequest::Write);
+                request.accept();
+            });
+
+    page.setHtml(QString("<html><head><script>"
+                         "async function getTemporaryDir() {"
+                         "  const newHandle = await window.showSaveFilePicker();"
+                         "  const writable = await newHandle.createWritable();"
+                         "  await writable.write(new Blob(['New value']));"
+                         "  await writable.close();"
+                         ""
+                         "  const fileData = await newHandle.getFile();"
+                         "  document.title = await fileData.text();"
+                         "}"
+                         "</script></head><body>"
                          "<button id='triggerDialog' value='trigger' "
-                         "onclick='window.showDirectoryPicker()'>"
+                         "onclick='getTemporaryDir()'"
                          "</body></html>"),
                  QString("qrc:/"));
     QVERIFY(spyFinished.wait());
@@ -4903,7 +4922,9 @@ void tst_QWebEnginePage::fileSystemAccessDialog()
                  QStringLiteral("triggerDialog"));
     QTest::keyClick(view.focusProxy(), Qt::Key_Enter);
 
-    QTRY_COMPARE(page.chosenFileSelectionMode, QWebEnginePage::FileSelectUploadFolder);
+    QTRY_COMPARE(page.title(), "New value");
+
+    QTRY_COMPARE(page.chosenFileSelectionMode, QWebEnginePage::FileSelectSave);
     QTRY_COMPARE(page.chosenAcceptedMimeTypes, QStringList());
 }
 

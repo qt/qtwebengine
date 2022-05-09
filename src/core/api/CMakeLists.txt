@@ -12,6 +12,7 @@ qt_internal_add_module(WebEngineCore
         qwebenginecontextmenurequest.cpp qwebenginecontextmenurequest.h qwebenginecontextmenurequest_p.h
         qwebenginecookiestore.cpp qwebenginecookiestore.h qwebenginecookiestore_p.h
         qwebenginedownloadrequest.cpp qwebenginedownloadrequest.h qwebenginedownloadrequest_p.h
+        qwebenginefilesystemaccessrequest.cpp qwebenginefilesystemaccessrequest.h
         qwebenginefindtextresult.cpp qwebenginefindtextresult.h
         qwebenginefullscreenrequest.cpp qwebenginefullscreenrequest.h
         qwebenginehistory.cpp qwebenginehistory.h qwebenginehistory_p.h

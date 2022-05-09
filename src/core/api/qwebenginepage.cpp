@@ -41,6 +41,7 @@
 #include "qwebenginepage_p.h"
 
 #include "qwebenginecertificateerror.h"
+#include "qwebenginefilesystemaccessrequest.h"
 #include "qwebenginefindtextresult.h"
 #include "qwebenginefullscreenrequest.h"
 #include "qwebenginehistory.h"
@@ -180,6 +181,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
 
     qRegisterMetaType<QWebEngineQuotaRequest>();
     qRegisterMetaType<QWebEngineRegisterProtocolHandlerRequest>();
+    qRegisterMetaType<QWebEngineFileSystemAccessRequest>();
     qRegisterMetaType<QWebEngineFindTextResult>();
 
     // See setVisible().
@@ -576,6 +578,12 @@ void QWebEnginePagePrivate::runRegisterProtocolHandlerRequest(QWebEngineRegister
 {
     Q_Q(QWebEnginePage);
     Q_EMIT q->registerProtocolHandlerRequested(request);
+}
+
+void QWebEnginePagePrivate::runFileSystemAccessRequest(QWebEngineFileSystemAccessRequest request)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->fileSystemAccessRequested(request);
 }
 
 QObject *QWebEnginePagePrivate::accessibilityParentObject()

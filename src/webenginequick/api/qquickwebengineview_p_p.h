@@ -141,6 +141,7 @@ public:
     void runMouseLockPermissionRequest(const QUrl &securityOrigin) override;
     void runQuotaRequest(QWebEngineQuotaRequest) override;
     void runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest) override;
+    void runFileSystemAccessRequest(QWebEngineFileSystemAccessRequest) override;
     QObject *accessibilityParentObject() override;
     QWebEngineSettings *webEngineSettings() const override;
     void allowCertificateError(const QWebEngineCertificateError &error) override;

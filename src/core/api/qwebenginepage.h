@@ -61,6 +61,7 @@ class QContextMenuBuilder;
 class QWebChannel;
 class QWebEngineCertificateError;
 class QWebEngineClientCertificateSelection;
+class QWebEngineFileSystemAccessRequest;
 class QWebEngineFindTextResult;
 class QWebEngineFullScreenRequest;
 class QWebEngineHistory;
@@ -345,6 +346,7 @@ Q_SIGNALS:
     void fullScreenRequested(QWebEngineFullScreenRequest fullScreenRequest);
     void quotaRequested(QWebEngineQuotaRequest quotaRequest);
     void registerProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest request);
+    void fileSystemAccessRequested(QWebEngineFileSystemAccessRequest request);
     void selectClientCertificate(QWebEngineClientCertificateSelection clientCertSelection);
     void authenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator);
     void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator, const QString &proxyHost);

@@ -91,6 +91,7 @@ public:
     content::StorageNotificationService *GetStorageNotificationService() override;
     content::PlatformNotificationService *GetPlatformNotificationService() override;
     std::string GetMediaDeviceIDSalt() override;
+    content::FileSystemAccessPermissionContext *GetFileSystemAccessPermissionContext() override;
 
     // Profile implementation:
     PrefService *GetPrefs() override;

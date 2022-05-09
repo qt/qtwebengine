@@ -63,6 +63,7 @@
 
 QT_FORWARD_DECLARE_CLASS(QKeyEvent)
 QT_FORWARD_DECLARE_CLASS(QVariant)
+QT_FORWARD_DECLARE_CLASS(QWebEngineFileSystemAccessRequest)
 QT_FORWARD_DECLARE_CLASS(QWebEngineFindTextResult)
 QT_FORWARD_DECLARE_CLASS(QWebEngineLoadingInfo)
 QT_FORWARD_DECLARE_CLASS(QWebEngineQuotaRequest)
@@ -223,6 +224,7 @@ public:
     virtual void runMouseLockPermissionRequest(const QUrl &securityOrigin) = 0;
     virtual void runQuotaRequest(QWebEngineQuotaRequest) = 0;
     virtual void runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest) = 0;
+    virtual void runFileSystemAccessRequest(QWebEngineFileSystemAccessRequest) = 0;
     virtual QWebEngineSettings *webEngineSettings() const = 0;
     RenderProcessTerminationStatus renderProcessExitStatus(int);
     virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) = 0;

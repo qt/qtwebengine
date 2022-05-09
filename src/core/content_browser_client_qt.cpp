@@ -92,6 +92,7 @@
 #include "client_cert_select_controller.h"
 #include "custom_handlers/protocol_handler_registry_factory.h"
 #include "devtools_manager_delegate_qt.h"
+#include "file_system_access/file_system_access_permission_request_manager_qt.h"
 #include "login_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #include "net/cookie_monster_delegate_qt.h"
@@ -1250,6 +1251,7 @@ void ContentBrowserClientQt::SiteInstanceDeleting(content::SiteInstance *site_in
 content::WebContentsViewDelegate *ContentBrowserClientQt::GetWebContentsViewDelegate(content::WebContents *web_contents)
 {
     FormInteractionTabHelper::CreateForWebContents(web_contents);
+    FileSystemAccessPermissionRequestManagerQt::CreateForWebContents(web_contents);
     if (auto *registry = performance_manager::PerformanceManagerRegistry::GetInstance())
         registry->MaybeCreatePageNodeForWebContents(web_contents);
 

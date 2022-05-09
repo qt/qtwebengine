@@ -35,6 +35,7 @@
 #include <QtTest/QtTest>
 #include <QtWebEngineQuick/QQuickWebEngineProfile>
 #include <QtWebEngineCore/QWebEngineCertificateError>
+#include <QtWebEngineCore/QWebEngineFileSystemAccessRequest>
 #include <QtWebEngineCore/QWebEngineFindTextResult>
 #include <QtWebEngineCore/QWebEngineFullScreenRequest>
 #include <QtWebEngineCore/QWebEngineHistory>
@@ -85,6 +86,7 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QQuickWebEngineTooltipRequest::staticMetaObject
     << &QWebEngineContextMenuRequest::staticMetaObject
     << &QWebEngineCertificateError::staticMetaObject
+    << &QWebEngineFileSystemAccessRequest::staticMetaObject
     << &QWebEngineFindTextResult::staticMetaObject
     << &QWebEngineLoadingInfo::staticMetaObject
     << &QWebEngineNavigationRequest::staticMetaObject
@@ -288,6 +290,16 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineFullScreenRequest.origin --> QUrl"
     << "QWebEngineFullScreenRequest.reject() --> void"
     << "QWebEngineFullScreenRequest.toggleOn --> bool"
+    << "QWebEngineFileSystemAccessRequest.File --> HandleType"
+    << "QWebEngineFileSystemAccessRequest.Directory --> HandleType"
+    << "QWebEngineFileSystemAccessRequest.Read --> AccessFlags"
+    << "QWebEngineFileSystemAccessRequest.Write --> AccessFlags"
+    << "QWebEngineFileSystemAccessRequest.origin --> QUrl"
+    << "QWebEngineFileSystemAccessRequest.filePath --> QUrl"
+    << "QWebEngineFileSystemAccessRequest.handleType --> QWebEngineFileSystemAccessRequest::HandleType"
+    << "QWebEngineFileSystemAccessRequest.accessFlags --> QFlags<QWebEngineFileSystemAccessRequest::AccessFlag>"
+    << "QWebEngineFileSystemAccessRequest.accept() --> void"
+    << "QWebEngineFileSystemAccessRequest.reject() --> void"
     << "QWebEngineHistory.backItems --> QWebEngineHistoryModel*"
     << "QWebEngineHistory.clear() --> void"
     << "QWebEngineHistory.forwardItems --> QWebEngineHistoryModel*"
@@ -697,6 +709,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.devToolsViewChanged() --> void"
     << "QQuickWebEngineView.featurePermissionRequested(QUrl,Feature) --> void"
     << "QQuickWebEngineView.fileDialogRequested(QQuickWebEngineFileDialogRequest*) --> void"
+    << "QQuickWebEngineView.fileSystemAccessRequested(QWebEngineFileSystemAccessRequest) --> void"
     << "QQuickWebEngineView.findText(QString) --> void"
     << "QQuickWebEngineView.findText(QString,FindFlags) --> void"
     << "QQuickWebEngineView.findText(QString,FindFlags,QJSValue) --> void"

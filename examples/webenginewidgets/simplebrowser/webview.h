@@ -54,6 +54,7 @@
 #include <QIcon>
 #include <QWebEngineView>
 #include <QWebEngineCertificateError>
+#include <QWebEngineFileSystemAccessRequest>
 #include <QWebEnginePage>
 #include <QWebEngineRegisterProtocolHandlerRequest>
 
@@ -87,6 +88,7 @@ private slots:
     void handleProxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth,
                                            const QString &proxyHost);
     void handleRegisterProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest request);
+    void handleFileSystemAccessRequested(QWebEngineFileSystemAccessRequest request);
 
 private:
     void createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction);
