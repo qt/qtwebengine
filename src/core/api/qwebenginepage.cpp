@@ -1658,6 +1658,12 @@ void QWebEnginePagePrivate::printRequested()
         view->printRequested();
 }
 
+QtWebEngineCore::TouchHandleDrawableDelegate *
+QWebEnginePagePrivate::createTouchHandleDelegate(const QMap<int, QImage> &images)
+{
+    return view->createTouchHandleDelegate(images);
+}
+
 void QWebEnginePagePrivate::lifecycleStateChanged(LifecycleState state)
 {
     Q_Q(QWebEnginePage);

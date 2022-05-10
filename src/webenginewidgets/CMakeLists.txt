@@ -13,11 +13,13 @@ qt_internal_add_module(WebEngineWidgets
         api/qwebengineview.cpp api/qwebengineview.h api/qwebengineview_p.h
         qwebengine_accessible.cpp qwebengine_accessible.h
         ui/autofillpopupwidget.cpp ui/autofillpopupwidget_p.h
+        ui/touchhandlewidget.cpp ui/touchhandlewidget_p.h
     DEFINES
         QT_BUILD_WEBENGINEWIDGETS_LIB
     INCLUDE_DIRECTORIES
         ../core
         api
+        ui
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate

@@ -29,6 +29,7 @@ class RenderWidgetHostViewQtDelegateClient;
 
 namespace QtWebEngineWidgetUI {
 class AutofillPopupWidget;
+class TouchHandleDrawableDelegate;
 }
 
 QT_BEGIN_NAMESPACE
@@ -71,6 +72,8 @@ public:
     void showAutofillPopup(QtWebEngineCore::AutofillPopupController *controller,
                            const QRect &bounds, bool autoselectFirstSuggestion) override;
     void hideAutofillPopup() override;
+    QtWebEngineCore::TouchHandleDrawableDelegate *
+    createTouchHandleDelegate(const QMap<int, QImage> &images) override;
 
     QWebEngineViewPrivate();
     virtual ~QWebEngineViewPrivate();

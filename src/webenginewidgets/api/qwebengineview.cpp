@@ -8,6 +8,7 @@
 #include "render_widget_host_view_qt_delegate_item.h"
 #include "qwebengine_accessible.h"
 #include "ui/autofillpopupwidget_p.h"
+#include "touchhandlewidget_p.h"
 
 #include <QtWebEngineCore/private/qwebenginepage_p.h>
 #include <QtWebEngineCore/qwebenginecontextmenurequest.h>
@@ -1582,6 +1583,13 @@ bool QContextMenuBuilder::isMenuItemEnabled(ContextMenuItem menuItem)
     Q_UNREACHABLE();
 }
 #endif // QT_CONFIG(action)
+
+QtWebEngineCore::TouchHandleDrawableDelegate *
+QWebEngineViewPrivate::createTouchHandleDelegate(const QMap<int, QImage> &images)
+{
+    Q_Q(QWebEngineView);
+    return new QtWebEngineWidgetUI::TouchHandleWidget(q, images);
+}
 
 QT_END_NAMESPACE
 
