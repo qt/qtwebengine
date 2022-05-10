@@ -217,6 +217,9 @@ RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
     if (text_input_manager_)
         text_input_manager_->RemoveObserver(this);
 
+    if (host()->delegate())
+        m_touchSelectionControllerClient->resetControls();
+
     m_touchSelectionController.reset();
     m_touchSelectionControllerClient.reset();
 

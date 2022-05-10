@@ -14,6 +14,7 @@ qt_internal_add_module(WebEngineWidgets
         qwebengine_accessible.cpp qwebengine_accessible.h
         ui/autofillpopupwidget.cpp ui/autofillpopupwidget_p.h
         ui/touchhandlewidget.cpp ui/touchhandlewidget_p.h
+        ui/touchselectionmenuwidget.cpp ui/touchselectionmenuwidget_p.h
     DEFINES
         QT_BUILD_WEBENGINEWIDGETS_LIB
     INCLUDE_DIRECTORIES

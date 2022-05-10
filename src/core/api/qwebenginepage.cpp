@@ -33,6 +33,7 @@
 #include "render_widget_host_view_qt_delegate.h"
 #include "render_widget_host_view_qt_delegate_client.h"
 #include "render_widget_host_view_qt_delegate_item.h"
+#include "touch_selection_menu_controller.h"
 #include "web_contents_adapter.h"
 
 #include <QAction>
@@ -1656,6 +1657,25 @@ QtWebEngineCore::TouchHandleDrawableDelegate *
 QWebEnginePagePrivate::createTouchHandleDelegate(const QMap<int, QImage> &images)
 {
     return view->createTouchHandleDelegate(images);
+}
+
+void QWebEnginePagePrivate::showTouchSelectionMenu(
+        QtWebEngineCore::TouchSelectionMenuController *controller, const QRect &selectionBounds,
+        const QSize &handleSize)
+{
+    Q_UNUSED(handleSize);
+
+    if (controller->buttonCount() == 1) {
+        controller->runContextMenu();
+        return;
+    }
+
+    view->showTouchSelectionMenu(controller, selectionBounds);
+}
+
+void QWebEnginePagePrivate::hideTouchSelectionMenu()
+{
+    view->hideTouchSelectionMenu();
 }
 
 void QWebEnginePagePrivate::lifecycleStateChanged(LifecycleState state)

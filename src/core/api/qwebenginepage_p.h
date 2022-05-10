@@ -79,6 +79,9 @@ public:
     virtual void hideAutofillPopup() = 0;
     virtual QtWebEngineCore::TouchHandleDrawableDelegate *
     createTouchHandleDelegate(const QMap<int, QImage> &) = 0;
+    virtual void showTouchSelectionMenu(QtWebEngineCore::TouchSelectionMenuController *,
+                                        const QRect &) = 0;
+    virtual void hideTouchSelectionMenu() = 0;
 };
 
 class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEnginePagePrivate : public QtWebEngineCore::WebContentsAdapterClient
@@ -159,8 +162,9 @@ public:
     void printRequested() override;
     QtWebEngineCore::TouchHandleDrawableDelegate *
     createTouchHandleDelegate(const QMap<int, QImage> &) override;
-    void showTouchSelectionMenu(QtWebEngineCore::TouchSelectionMenuController *, const QRect &, const QSize &) override { }
-    void hideTouchSelectionMenu() override { }
+    void showTouchSelectionMenu(QtWebEngineCore::TouchSelectionMenuController *, const QRect &,
+                                const QSize &) override;
+    void hideTouchSelectionMenu() override;
     const QObject *holdingQObject() const override;
     ClientType clientType() override { return QtWebEngineCore::WebContentsAdapterClient::WidgetsClient; }
     void findTextFinished(const QWebEngineFindTextResult &result) override;

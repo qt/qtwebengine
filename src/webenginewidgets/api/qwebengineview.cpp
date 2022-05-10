@@ -9,6 +9,7 @@
 #include "qwebengine_accessible.h"
 #include "ui/autofillpopupwidget_p.h"
 #include "touchhandlewidget_p.h"
+#include "touchselectionmenuwidget_p.h"
 
 #include <QtWebEngineCore/private/qwebenginepage_p.h>
 #include <QtWebEngineCore/qwebenginecontextmenurequest.h>
@@ -18,6 +19,7 @@
 
 #include "autofill_popup_controller.h"
 #include "color_chooser_controller.h"
+#include "touch_selection_menu_controller.h"
 #include "web_contents_adapter.h"
 
 #include <QContextMenuEvent>
@@ -1602,6 +1604,42 @@ QWebEngineViewPrivate::createTouchHandleDelegate(const QMap<int, QImage> &images
 {
     Q_Q(QWebEngineView);
     return new QtWebEngineWidgetUI::TouchHandleWidget(q, images);
+}
+
+void QWebEngineViewPrivate::hideTouchSelectionMenu()
+{
+    if (m_touchSelectionMenu)
+        m_touchSelectionMenu->close();
+}
+
+void QWebEngineViewPrivate::showTouchSelectionMenu(
+        QtWebEngineCore::TouchSelectionMenuController *controller, const QRect &selectionBounds)
+{
+    Q_ASSERT(m_touchSelectionMenu == nullptr);
+    Q_Q(QWebEngineView);
+
+    // Do not show outside of view
+    QSize parentSize = q->nativeParentWidget() ? q->nativeParentWidget()->size() : q->size();
+    if (selectionBounds.x() < 0 || selectionBounds.x() > parentSize.width()
+        || selectionBounds.y() < 0 || selectionBounds.y() > parentSize.height())
+        return;
+
+    m_touchSelectionMenu = new QtWebEngineWidgetUI::TouchSelectionMenuWidget(q, controller);
+
+    const int kSpacingBetweenButtons = 2;
+    const int kMenuButtonMinWidth = 80;
+    const int kMenuButtonMinHeight = 40;
+
+    int buttonCount = controller->buttonCount();
+    int width = (kSpacingBetweenButtons * (buttonCount + 1)) + (kMenuButtonMinWidth * buttonCount);
+    int height = kMenuButtonMinHeight + kSpacingBetweenButtons;
+    int x = (selectionBounds.x() + selectionBounds.x() + selectionBounds.width() - width) / 2;
+    int y = selectionBounds.y() - height - 2;
+
+    QPoint pos = q->mapToGlobal(QPoint(x, y));
+
+    m_touchSelectionMenu->setGeometry(pos.x(), pos.y(), width, height);
+    m_touchSelectionMenu->show();
 }
 
 QT_END_NAMESPACE
