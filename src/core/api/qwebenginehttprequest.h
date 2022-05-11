@@ -73,7 +73,7 @@ public:
     QWebEngineHttpRequest &operator=(const QWebEngineHttpRequest &other);
 
     static QWebEngineHttpRequest postRequest(const QUrl &url, const QMap<QString, QString> &postData);
-    void swap(QWebEngineHttpRequest &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    void swap(QWebEngineHttpRequest &other) noexcept { d.swap(other.d); }
 
     bool operator==(const QWebEngineHttpRequest &other) const;
     inline bool operator!=(const QWebEngineHttpRequest &other) const { return !operator==(other); }
