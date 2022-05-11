@@ -35,6 +35,6 @@ QT += webenginewidgets
 //! [1]
 
 //! [2]
-find_package(Qt6 COMPONENTS WebEngineWidgets REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS WebEngineWidgets)
 target_link_libraries(target PRIVATE Qt::WebEngineWidgets)
 //! [2]
