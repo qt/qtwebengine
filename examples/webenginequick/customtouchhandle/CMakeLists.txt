@@ -9,7 +9,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/webenginequick/customtouchhandle")
 
-find_package(Qt6 COMPONENTS Core Gui WebEngineQuick)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui WebEngineQuick)
 
 qt_add_executable(customtouchhandle
     main.cpp
