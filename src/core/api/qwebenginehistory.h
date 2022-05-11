@@ -74,7 +74,7 @@ public:
 
     bool isValid() const;
 
-    void swap(QWebEngineHistoryItem &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    void swap(QWebEngineHistoryItem &other) noexcept { d.swap(other.d); }
 
 private:
     QWebEngineHistoryItem(QWebEngineHistoryItemPrivate *priv);
