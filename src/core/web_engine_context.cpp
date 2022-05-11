@@ -160,7 +160,27 @@ namespace QtWebEngineCore {
 
 static bool usingSupportedSGBackend()
 {
-    return QQuickWindow::graphicsApi() == QSGRendererInterface::OpenGL;
+    if (QQuickWindow::graphicsApi() != QSGRendererInterface::OpenGL)
+        return false;
+
+    const QStringList args = QGuiApplication::arguments();
+
+    // follow the logic from contextFactory in src/quick/scenegraph/qsgcontextplugin.cpp
+    QString device = QQuickWindow::sceneGraphBackend();
+
+    for (int index = 0; index < args.count(); ++index) {
+        if (args.at(index).startsWith(QLatin1String("--device="))) {
+            device = args.at(index).mid(9);
+            break;
+        }
+    }
+
+    if (device.isEmpty())
+        device = qEnvironmentVariable("QT_QUICK_BACKEND");
+    if (device.isEmpty())
+        device = qEnvironmentVariable("QMLSCENE_DEVICE");
+
+    return device.isEmpty() || device == QLatin1String("rhi");
 }
 
 bool usingSoftwareDynamicGL()
