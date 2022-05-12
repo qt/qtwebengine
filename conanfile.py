@@ -33,10 +33,29 @@ from typing import Dict, Any
 
 _qtwebengine_features = [
     "qtpdf-build",
+    "qtpdf-quick-build",
+    "qtpdf-widgets-build",
     "qtwebengine-build",
+    "qtwebengine-core-build",
     "qtwebengine-quick-build",
     "qtwebengine-widgets-build",
     "webengine-developer-build",
+    "webengine-embedded-build",
+    "webengine-extensions",
+    "webengine-full-debug-info",
+    "webengine-jumbo-build",
+    "webengine-kerberos",
+    "webengine-native-spellchecker",
+    "webengine-pepper-plugins",
+    "webengine-printing-and-pdf",
+    "webengine-proprietary-codecs",
+    "webengine-sanitizer",
+    "webengine-spellchecker",
+    "webengine-webchannel",
+    "webengine-webrtc",
+    "webengine-webrtc-pipewire",
+    "system-webengine-ffmpeg",
+    "system-webengine-icu",
 ]
 
 
