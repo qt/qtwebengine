@@ -71,8 +71,8 @@ class QtWebEngine(ConanFile):
 
     def get_qt_leaf_module_options(self) -> Dict[str, Any]:
         """Implements abstractmethod from qt-conan-common.QtLeafModule"""
-        return {item.replace("-", "_"): ["yes", "no", None] for item in _qtwebengine_features}
+        return self._shared.convert_qt_features_to_conan_options(_qtwebengine_features)
 
     def get_qt_leaf_module_default_options(self) -> Dict[str, Any]:
         """Implements abstractmethod from qt-conan-common.QtLeafModule"""
-        return {item.replace("-", "_"): None for item in _qtwebengine_features}
+        return self._shared.convert_qt_features_to_default_conan_options(_qtwebengine_features)
