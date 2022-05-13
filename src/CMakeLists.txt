@@ -144,6 +144,9 @@ if(NOT Gn_FOUND)
     if(QT_FEATURE_qtpdf_build)
         add_dependencies(run_pdf_GnReady gn)
     endif()
+endif()
+
+if(NOT Gn_FOUND OR Gn_EXECUTABLE MATCHES "^${installDir}")
     set(INSTALL_GN 1 CACHE INTERNAL "")
 endif()
 
