@@ -154,7 +154,7 @@ private Q_SLOTS:
 #endif
     void openWindowDefaultSize();
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     void macCopyUnicodeToClipboard();
 #endif
 
@@ -1456,7 +1456,7 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
     QCOMPARE(popupPos + QPoint(offset, 0), popup->position());
 }
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 void tst_QWebEnginePage::macCopyUnicodeToClipboard()
 {
     QString unicodeText = QString::fromUtf8("αβγδεζηθικλμπ");
@@ -2047,14 +2047,14 @@ void tst_QWebEnginePage::symmetricUrl()
 
     QVERIFY(view.url().isEmpty());
 
-    QCOMPARE(view.history()->count(), 1);
+    QCOMPARE(view.history()->count(), 0);
 
     QUrl dataUrl("data:text/html,<h1>Test");
 
     view.setUrl(dataUrl);
     view.show();
     QCOMPARE(view.url(), dataUrl);
-    QCOMPARE(view.history()->count(), 1);
+    QCOMPARE(view.history()->count(), 0);
 
     // loading is _not_ immediate, so the text isn't set just yet.
     QVERIFY(toPlainTextSync(view.page()).isEmpty());
@@ -2367,7 +2367,7 @@ void tst_QWebEnginePage::setHtmlWithBaseURL()
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].height").toInt(), 128);
 
     // no history item has to be added.
-    QCOMPARE(m_view->page()->history()->count(), 1);
+    QCOMPARE(m_view->page()->history()->count(), 0);
 }
 
 class MyPage : public QWebEnginePage
@@ -2797,7 +2797,7 @@ void tst_QWebEnginePage::setUrlHistory()
     int expectedLoadFinishedCount = 0;
     QSignalSpy spy(m_page, SIGNAL(loadFinished(bool)));
 
-    QCOMPARE(m_page->history()->count(), 1);
+    QCOMPARE(m_page->history()->count(), 0);
 
     m_page->setUrl(QUrl());
     expectedLoadFinishedCount++;
@@ -2871,7 +2871,7 @@ void tst_QWebEnginePage::setUrlUsingStateObject()
     QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
     int expectedUrlChangeCount = 0;
 
-    QCOMPARE(m_page->history()->count(), 1);
+    QCOMPARE(m_page->history()->count(), 0);
 
     url = QUrl("qrc:/resources/test1.html");
     m_page->setUrl(url);
@@ -3693,7 +3693,7 @@ void tst_QWebEnginePage::openLinkInNewPage()
             QCOMPARE(page1.history()->count(), 1);
         else
             QCOMPARE(page1.history()->count(), 2);
-        QCOMPARE(page2.history()->count(), 1);
+        QCOMPARE(page2.history()->count(), 0);
         break;
     case Effect::LoadInOther:
         QTRY_COMPARE(page2.spy.count(), 1);

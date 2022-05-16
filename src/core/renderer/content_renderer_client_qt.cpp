@@ -238,6 +238,7 @@ void ContentRendererClientQt::RunScriptsAtDocumentIdle(content::RenderFrame *ren
 void ContentRendererClientQt::PrepareErrorPage(content::RenderFrame *renderFrame,
                                                const blink::WebURLError &web_error,
                                                const std::string &httpMethod,
+                                               content::mojom::AlternativeErrorPageOverrideInfoPtr alternative_error_page_info,
                                                std::string *errorHtml)
 {
     GetNavigationErrorStringsInternal(
@@ -251,6 +252,7 @@ void ContentRendererClientQt::PrepareErrorPageForHttpStatusError(content::Render
                                                                  const blink::WebURLError &error,
                                                                  const std::string &httpMethod,
                                                                  int http_status,
+                                                                 content::mojom::AlternativeErrorPageOverrideInfoPtr alternative_error_page_info,
                                                                  std::string *errorHtml)
 {
     GetNavigationErrorStringsInternal(renderFrame, httpMethod,
@@ -381,18 +383,19 @@ void ContentRendererClientQt::GetInterface(const std::string &interface_name, mo
 // found in the LICENSE.Chromium file.
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-// External Clear Key (used for testing).
-static void AddExternalClearKey(std::vector<std::unique_ptr<media::KeySystemProperties>> *key_systems)
-{
-    static const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
+static const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
 
-    // TODO(xhwang): Actually use `capability` to determine capabilities.
-    media::mojom::KeySystemCapabilityPtr capability;
-    if (!content::IsKeySystemSupported(kExternalClearKeyKeySystem, &capability)) {
-        DVLOG(1) << "External Clear Key not supported";
+// External Clear Key (used for testing).
+static void AddExternalClearKey(const media::mojom::KeySystemCapabilityPtr &capability,
+                                media::KeySystemPropertiesVector *key_systems)
+{
+    Q_UNUSED(capability);
+    if (!base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting)) {
+        DLOG(ERROR) << "ExternalClearKey supported despite not enabled.";
         return;
     }
 
+    // TODO(xhwang): Actually use `capability` to determine capabilities.
     key_systems->push_back(std::make_unique<cdm::ExternalClearKeyProperties>());
 }
 
@@ -509,14 +512,9 @@ static media::SupportedCodecs GetSupportedCodecs(const media::CdmCapability& cap
     return supported_codecs;
 }
 
-static void AddWidevine(std::vector<std::unique_ptr<media::KeySystemProperties>> *key_systems)
+static void AddWidevine(const media::mojom::KeySystemCapabilityPtr &capability,
+                        media::KeySystemPropertiesVector *key_systems)
 {
-    media::mojom::KeySystemCapabilityPtr capability;
-    if (!content::IsKeySystemSupported(kWidevineKeySystem, &capability)) {
-        DVLOG(1) << "Widevine CDM is not currently available.";
-        return;
-    }
-
     // Codecs and encryption schemes.
     media::SupportedCodecs codecs = media::EME_CODEC_NONE;
     media::SupportedCodecs hw_secure_codecs = media::EME_CODEC_NONE;
@@ -565,17 +563,35 @@ static void AddWidevine(std::vector<std::unique_ptr<media::KeySystemProperties>>
 #endif // BUILDFLAG(ENABLE_WIDEVINE)
 #endif // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-void ContentRendererClientQt::AddSupportedKeySystems(std::vector<std::unique_ptr<media::KeySystemProperties>> *key_systems)
+void OnKeySystemSupportUpdated(media::GetSupportedKeySystemsCB cb,
+                               content::KeySystemCapabilityPtrMap key_system_capabilities)
 {
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-    if (base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting))
-        AddExternalClearKey(key_systems);
-
+    media::KeySystemPropertiesVector key_systems;
+    for (const auto &entry : key_system_capabilities) {
+        const auto &key_system = entry.first;
+        const auto &capability = entry.second;
 #if BUILDFLAG(ENABLE_WIDEVINE)
-    AddWidevine(key_systems);
-#endif // BUILDFLAG(ENABLE_WIDEVINE)
+        if (key_system == kWidevineKeySystem) {
+            AddWidevine(capability, &key_systems);
+            continue;
+        }
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
 
-#endif // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+        if (key_system == kExternalClearKeyKeySystem) {
+            AddExternalClearKey(capability, &key_systems);
+            continue;
+        }
+
+        DLOG(ERROR) << "Unrecognized key system: " << key_system;
+    }
+
+    cb.Run(std::move(key_systems));
+}
+
+void ContentRendererClientQt::GetSupportedKeySystems(media::GetSupportedKeySystemsCB cb)
+{
+    content::ObserveKeySystemSupportUpdate(
+        base::BindRepeating(&OnKeySystemSupportUpdated, std::move(cb)));
 }
 
 #if QT_CONFIG(webengine_spellchecker)

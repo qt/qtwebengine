@@ -332,6 +332,7 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
         // to enable them separately. With viewport-enabled we match Android defaults.
         prefs->viewport_meta_enabled = true;
         prefs->shrinks_viewport_contents_to_fit = true;
+        prefs->main_frame_resizes_are_orientation_changes = true;
     }
 
     // Attributes mapping.

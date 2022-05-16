@@ -56,18 +56,18 @@ public:
     void PrepareErrorPage(content::RenderFrame *render_frame,
                           const blink::WebURLError &error,
                           const std::string &http_method,
+                          content::mojom::AlternativeErrorPageOverrideInfoPtr alternative_error_page_info,
                           std::string *error_html) override;
     void PrepareErrorPageForHttpStatusError(content::RenderFrame *render_frame,
                                             const blink::WebURLError &error,
                                             const std::string &http_method,
                                             int http_status,
+                                            content::mojom::AlternativeErrorPageOverrideInfoPtr alternative_error_page_info,
                                             std::string *error_html)  override;
-
     uint64_t VisitedLinkHash(const char *canonical_url, size_t length) override;
     bool IsLinkVisited(uint64_t linkHash) override;
     std::unique_ptr<blink::WebPrescientNetworking> CreatePrescientNetworking(content::RenderFrame *render_frame) override;
-    void AddSupportedKeySystems(std::vector<std::unique_ptr<media::KeySystemProperties>> *key_systems) override;
-
+    void GetSupportedKeySystems(media::GetSupportedKeySystemsCB cb) override;
     void RunScriptsAtDocumentStart(content::RenderFrame *render_frame) override;
     void RunScriptsAtDocumentEnd(content::RenderFrame *render_frame) override;
     void RunScriptsAtDocumentIdle(content::RenderFrame *render_frame) override;

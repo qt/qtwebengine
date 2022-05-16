@@ -27,7 +27,8 @@ public:
                                   BrowserAccessibilityDelegate *delegate);
     ~BrowserAccessibilityManagerQt() override;
     void FireBlinkEvent(ax::mojom::Event event_type,
-                        BrowserAccessibility* node) override;
+                        BrowserAccessibility *node,
+                        int action_request_id) override;
     void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
                             BrowserAccessibility* node) override;
 

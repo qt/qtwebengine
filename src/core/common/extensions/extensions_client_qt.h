@@ -72,7 +72,7 @@ public:
 
     // Returns a flag indicating whether or not a given URL is a valid
     // extension blacklist URL.
-    bool IsBlacklistUpdateURL(const GURL &url) const override;
+    bool IsBlocklistUpdateURL(const GURL &url) const override;
 
     // Returns the set of file paths corresponding to any images within an
     // extension's contents that may be displayed directly within the browser UI

@@ -129,22 +129,19 @@ static QVariant fromJSValue(const base::Value *result)
     }
     case base::Value::Type::STRING:
     {
-        std::u16string out;
-        if (result->GetAsString(&out))
-            ret.setValue(toQt(out));
+        if (auto out = result->GetIfString())
+            ret.setValue(toQt(*out));
         break;
     }
     case base::Value::Type::LIST:
     {
-        const base::ListValue *out;
-        if (result->GetAsList(&out)) {
-            size_t size = out->GetList().size();
+        if (const auto out = result->GetIfList()) {
+            size_t size = out->size();
             QVariantList list;
             list.reserve(size);
             for (size_t i = 0; i < size; ++i) {
-                const base::Value *outVal = 0;
-                if (out->Get(i, &outVal) && outVal)
-                    list.insert(i, fromJSValue(outVal));
+                auto &outVal = (*out)[i];
+                list.insert(i, fromJSValue(&outVal));
             }
             ret.setValue(list);
         }
@@ -1779,13 +1776,10 @@ WebContentsAdapterClient::renderProcessExitStatus(int terminationStatus) {
         status = WebContentsAdapterClient::AbnormalTerminationStatus;
         break;
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
-#if defined(OS_CHROMEOS)
-    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
-#endif
         status = WebContentsAdapterClient::KilledTerminationStatus;
         break;
     case base::TERMINATION_STATUS_PROCESS_CRASHED:
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     case base::TERMINATION_STATUS_OOM_PROTECTED:
 #endif
         status = WebContentsAdapterClient::CrashedTerminationStatus;

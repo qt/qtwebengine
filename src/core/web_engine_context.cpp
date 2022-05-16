@@ -70,10 +70,10 @@
 #include "ui/events/event_switches.h"
 #include "ui/native_theme/native_theme_features.h"
 #include "ui/gl/gl_switches.h"
-#if defined(OS_WIN)
+#if defined(Q_OS_WIN)
 #include "sandbox/win/src/sandbox_types.h"
 #include "content/public/app/sandbox_helper_win.h"
-#endif // OS_WIN
+#endif // Q_OS_WIN
 
 #if defined(Q_OS_MACOS)
 #include "base/mac/foundation_util.h"
@@ -680,7 +680,6 @@ WebEngineContext::WebEngineContext()
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
         enableFeatures.push_back(features::kOverlayScrollbar.name);
         parsedCommandLine->AppendSwitch(switches::kEnableViewport);
-        parsedCommandLine->AppendSwitch(switches::kMainFrameResizesAreOrientationChanges);
         parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
     }
 
@@ -729,7 +728,7 @@ WebEngineContext::WebEngineContext()
 
     content::ContentMainParams contentMainParams(m_mainDelegate.get());
     contentMainParams.setup_signal_handlers = false;
-#if defined(OS_WIN)
+#if defined(Q_OS_WIN)
     contentMainParams.sandbox_info = QtWebEngineSandbox::staticSandboxInterfaceInfo();
     sandbox::SandboxInterfaceInfo sandbox_info = {nullptr};
     if (!contentMainParams.sandbox_info) {
@@ -776,7 +775,7 @@ WebEngineContext::WebEngineContext()
     // Initialize WebCacheManager here to ensure its subscription to render process creation events.
     web_cache::WebCacheManager::GetInstance();
 
-#if defined(OS_LINUX)
+#if defined(Q_OS_LINUX)
     media::AudioManager::SetGlobalAppName(QCoreApplication::applicationName().toStdString());
 #endif
 

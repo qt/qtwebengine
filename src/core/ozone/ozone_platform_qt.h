@@ -4,16 +4,12 @@
 #ifndef OZONE_PLATFORM_QT_H
 #define OZONE_PLATFORM_QT_H
 
-#if defined(USE_OZONE)
-
-#include "ui/ozone/public/ozone_platform.h"
-
 namespace ui {
+class OzonePlatform;
 
 // Constructor hook for use in ozone_platform_list.cc
-OzonePlatform* CreateOzonePlatformQt();
+OzonePlatform *CreateOzonePlatformQt();
 
 }  // namespace ui
 
-#endif // defined(USE_OZONE)
 #endif // OZONE_PLATFORM_QT_H

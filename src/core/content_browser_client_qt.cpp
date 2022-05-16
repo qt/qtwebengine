@@ -116,7 +116,7 @@
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
-#include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
+#include "extensions/browser/guest_view/extensions_guest_view.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/process_map.h"
@@ -227,7 +227,6 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost 
     host->AddFilter(new BrowserMessageFilterQt(id, profile));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     host->AddFilter(new extensions::ExtensionMessageFilter(id, profile));
-    host->AddFilter(new extensions::ExtensionsGuestViewMessageFilter(id, profile));
 #endif //ENABLE_EXTENSIONS
 
     bool is_incognito_process = profile->IsOffTheRecord();
@@ -457,50 +456,53 @@ void ContentBrowserClientQt::ExposeInterfacesToRenderer(service_manager::BinderR
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     associated_registry->AddInterface(base::BindRepeating(&extensions::EventRouter::BindForRenderer,
                                                           render_process_host->GetID()));
+    associated_registry->AddInterface(base::BindRepeating(&extensions::ExtensionsGuestView::CreateForComponents,
+                                                          render_process_host->GetID()));
+    associated_registry->AddInterface(base::BindRepeating(&extensions::ExtensionsGuestView::CreateForExtensions,
+                                                          render_process_host->GetID()));
 #else
     Q_UNUSED(associated_registry);
 #endif
 }
 
-// TODO: BindAssociatedReceiverForFrame -> RegisterAssociatedInterfaceBindersForRenderFrameHost
-// https://chromium-review.googlesource.com/c/chromium/src/+/3281481
-bool ContentBrowserClientQt::BindAssociatedReceiverFromFrame(content::RenderFrameHost *rfh,
-                                                             const std::string &interface_name,
-                                                             mojo::ScopedInterfaceEndpointHandle *handle)
+void ContentBrowserClientQt::RegisterAssociatedInterfaceBindersForRenderFrameHost(
+        content::RenderFrameHost &rfh,
+        blink::AssociatedInterfaceRegistry &associated_registry)
 {
 #if QT_CONFIG(webengine_webchannel)
-    if (interface_name == qtwebchannel::mojom::WebChannelTransportHost::Name_) {
-        auto *web_contents = content::WebContents::FromRenderFrameHost(rfh);
-        auto *adapter = static_cast<WebContentsDelegateQt *>(web_contents->GetDelegate())->webContentsAdapter();
-        adapter->webChannelTransport()->BindReceiver(
-            mojo::PendingAssociatedReceiver<qtwebchannel::mojom::WebChannelTransportHost>(std::move(*handle)), rfh);
-        return true;
-    }
+    associated_registry.AddInterface(
+                base::BindRepeating(
+                    [](content::RenderFrameHost *render_frame_host,
+                       mojo::PendingAssociatedReceiver<qtwebchannel::mojom::WebChannelTransportHost> receiver) {
+                        auto *web_contents = content::WebContents::FromRenderFrameHost(render_frame_host);
+                        auto *adapter = static_cast<WebContentsDelegateQt *>(web_contents->GetDelegate())->webContentsAdapter();
+                        adapter->webChannelTransport()->BindReceiver(std::move(receiver), render_frame_host);
+                    }, &rfh));
 #endif
 #if BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
-    if (interface_name == printing::mojom::PrintManagerHost::Name_) {
-        mojo::PendingAssociatedReceiver<printing::mojom::PrintManagerHost> receiver(std::move(*handle));
-        PrintViewManagerQt::BindPrintManagerHost(std::move(receiver), rfh);
-        return true;
-    }
+    associated_registry.AddInterface(
+                base::BindRepeating(
+                    [](content::RenderFrameHost* render_frame_host,
+                       mojo::PendingAssociatedReceiver<printing::mojom::PrintManagerHost> receiver) {
+                        PrintViewManagerQt::BindPrintManagerHost(std::move(receiver), render_frame_host);
+                    }, &rfh));
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    if (interface_name == extensions::mojom::LocalFrameHost::Name_) {
-        extensions::ExtensionWebContentsObserverQt::BindLocalFrameHost(
-            mojo::PendingAssociatedReceiver<extensions::mojom::LocalFrameHost>(std::move(*handle)), rfh);
-        return true;
-    }
+    associated_registry.AddInterface(
+                base::BindRepeating(
+                    [](content::RenderFrameHost *render_frame_host,
+                       mojo::PendingAssociatedReceiver<extensions::mojom::LocalFrameHost> receiver) {
+                        extensions::ExtensionWebContentsObserverQt::BindLocalFrameHost(std::move(receiver), render_frame_host);
+                    }, &rfh));
 #endif
+    associated_registry.AddInterface(
+                base::BindRepeating(
+                    [](content::RenderFrameHost *render_frame_host,
+                       mojo::PendingAssociatedReceiver<autofill::mojom::AutofillDriver> receiver) {
+                        autofill::ContentAutofillDriverFactory::BindAutofillDriver(std::move(receiver), render_frame_host);
+                    }, &rfh));
 
-    if (interface_name == autofill::mojom::AutofillDriver::Name_) {
-        mojo::PendingAssociatedReceiver<autofill::mojom::AutofillDriver> receiver(
-                std::move(*handle));
-        autofill::ContentAutofillDriverFactory::BindAutofillDriver(std::move(receiver), rfh);
-        return true;
-    }
-
-    DCHECK(!ContentBrowserClient::BindAssociatedReceiverFromFrame(rfh, interface_name, handle));
-    return false;
+    ContentBrowserClient::RegisterAssociatedInterfaceBindersForRenderFrameHost(rfh, associated_registry);
 }
 
 bool ContentBrowserClientQt::CanCreateWindow(
@@ -554,7 +556,7 @@ std::unique_ptr<device::LocationProvider> ContentBrowserClientQt::OverrideSystem
 
 device::GeolocationManager *ContentBrowserClientQt::GetGeolocationManager()
 {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     return m_browserMainParts->GetGeolocationManager();
 #else
     return nullptr;
@@ -683,12 +685,14 @@ bool ContentBrowserClientQt::HandleExternalProtocol(const GURL &url,
         ui::PageTransition page_transition,
         bool has_user_gesture,
         const absl::optional<url::Origin> &initiating_origin,
+        content::RenderFrameHost *initiator_document,
         mojo::PendingRemote<network::mojom::URLLoaderFactory> *out_factory)
 {
     Q_UNUSED(child_id);
     Q_UNUSED(frame_tree_node_id);
     Q_UNUSED(navigation_data);
     Q_UNUSED(initiating_origin);
+    Q_UNUSED(initiator_document);
     Q_UNUSED(out_factory);
 
     base::PostTask(FROM_HERE, {content::BrowserThread::UI},
@@ -1054,8 +1058,10 @@ void ContentBrowserClientQt::RegisterNonNetworkServiceWorkerUpdateURLLoaderFacto
 }
 
 void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int render_process_id, int render_frame_id,
+                                                                             const absl::optional<url::Origin> &request_initiator_origin,
                                                                              NonNetworkURLLoaderFactoryMap *factories)
 {
+    Q_UNUSED(request_initiator_origin);
     content::RenderProcessHost *process_host = content::RenderProcessHost::FromID(render_process_id);
     Profile *profile = Profile::FromBrowserContext(process_host->GetBrowserContext());
     ProfileAdapter *profileAdapter = static_cast<ProfileQt *>(profile)->profileAdapter();

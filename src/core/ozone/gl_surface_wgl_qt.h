@@ -6,7 +6,7 @@
 
 #include "gl_surface_qt.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 
 namespace gl {
 
@@ -32,6 +32,6 @@ private:
 };
 
 }
-#endif // defined(OS_WIN)
+#endif // BUILDFLAG(IS_WIN)
 #endif // GL_SURFACE_WGL_QT_H
 

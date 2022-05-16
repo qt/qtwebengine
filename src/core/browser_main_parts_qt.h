@@ -42,14 +42,14 @@ public:
     int PreCreateThreads() override;
     void PostCreateThreads() override;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     device::GeolocationManager *GetGeolocationManager();
 #endif
 
 private:
     std::unique_ptr<performance_manager::PerformanceManagerLifetime> performance_manager_lifetime_;
     std::unique_ptr<WebUsbDetectorQt> m_webUsbDetector;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     std::unique_ptr<device::GeolocationManager> m_geolocationManager;
 #endif
 };

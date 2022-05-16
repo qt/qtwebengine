@@ -250,6 +250,7 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
 
 PrintViewManagerQt::PrintViewManagerQt(content::WebContents *contents)
     : PrintViewManagerBaseQt(contents)
+    , content::WebContentsUserData<PrintViewManagerQt>(*contents)
     , m_printPreviewRfh(nullptr)
 {
 

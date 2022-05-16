@@ -117,7 +117,7 @@ const GURL &ExtensionsClientQt::GetWebstoreUpdateURL() const
 
 // Returns a flag indicating whether or not a given URL is a valid
 // extension blacklist URL.
-bool ExtensionsClientQt::IsBlacklistUpdateURL(const GURL &url) const
+bool ExtensionsClientQt::IsBlocklistUpdateURL(const GURL &url) const
 {
     return true;
 }

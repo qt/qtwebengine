@@ -86,7 +86,7 @@ public:
     void Restart();
 
     // network::mojom::URLLoaderClient
-    void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override;
+    void OnReceiveResponse(network::mojom::URLResponseHeadPtr head, mojo::ScopedDataPipeConsumerHandle) override;
     void OnReceiveRedirect(const net::RedirectInfo &redirect_info, network::mojom::URLResponseHeadPtr head) override;
     void OnUploadProgress(int64_t current_position, int64_t total_size, OnUploadProgressCallback callback) override;
     void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
@@ -376,11 +376,11 @@ void InterceptedRequest::ContinueAfterIntercept()
 
 // URLLoaderClient methods.
 
-void InterceptedRequest::OnReceiveResponse(network::mojom::URLResponseHeadPtr head)
+void InterceptedRequest::OnReceiveResponse(network::mojom::URLResponseHeadPtr head, mojo::ScopedDataPipeConsumerHandle handle)
 {
     current_response_ = head.Clone();
 
-    target_client_->OnReceiveResponse(std::move(head));
+    target_client_->OnReceiveResponse(std::move(head), std::move(handle));
 }
 
 void InterceptedRequest::OnReceiveRedirect(const net::RedirectInfo &redirect_info, network::mojom::URLResponseHeadPtr head)

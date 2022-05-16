@@ -69,13 +69,9 @@ bool ExtensionHostDelegateQt::CheckMediaAccessPermission(content::RenderFrameHos
     return false;
 }
 
-content::PictureInPictureResult ExtensionHostDelegateQt::EnterPictureInPicture(content::WebContents *web_contents,
-                                                                               const viz::SurfaceId &surface_id,
-                                                                               const gfx::Size &natural_size)
+content::PictureInPictureResult ExtensionHostDelegateQt::EnterPictureInPicture(content::WebContents *web_contents)
 {
     Q_UNUSED(web_contents);
-    Q_UNUSED(surface_id);
-    Q_UNUSED(natural_size);
 
     Q_UNREACHABLE();
     return content::PictureInPictureResult::kNotSupported;

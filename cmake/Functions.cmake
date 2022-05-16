@@ -794,7 +794,6 @@ macro(append_build_type_setup)
         is_shared=true
         use_sysroot=false
         forbid_non_component_debug_builds=false
-        enable_debugallocation=false
         treat_warnings_as_errors=false
         use_allocator_shim=false
         use_allocator="none"

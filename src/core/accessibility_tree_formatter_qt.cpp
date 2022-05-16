@@ -7,10 +7,10 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/public/browser/ax_inspect_factory.h"
+#include "ui/accessibility/platform/inspect/ax_event_recorder.h"
 
 #include "browser_accessibility_qt.h"
 
@@ -150,9 +150,8 @@ std::string AccessibilityTreeFormatterQt::ProcessTreeForOutput(const base::Dicti
     const base::ListValue *states_value = nullptr;
     if (node.GetList("states", &states_value)) {
         for (const auto &state : states_value->GetList()) {
-            std::string state_value;
-            if (state.GetAsString(&state_value))
-                WriteAttribute(false, state_value, &line);
+            if (auto *state_value = state.GetIfString())
+                WriteAttribute(false, *state_value, &line);
         }
     }
 
@@ -214,7 +213,7 @@ std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreateRecorder(ui::AXApiT
 {
     switch (type) {
     case ui::AXApiType::kQt:
-        return std::make_unique<AccessibilityEventRecorder>(manager);
+        return std::make_unique<ui::AXEventRecorder>();
     default:
         NOTREACHED() << "Unsupported inspect type " << type;
     }

@@ -5,12 +5,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE.Chromium file.
 
-#if !defined(OS_MAC)
-
-#include "gl_surface_qt.h"
 #include "qtwebenginecoreglobal_p.h"
 
-#if defined(OS_WIN)
+#if !defined(Q_OS_MACOS)
+
+#include "gl_surface_qt.h"
+
+#include "base/logging.h"
+
+#if BUILDFLAG(IS_WIN)
 #include "web_engine_context.h"
 #include "ozone/gl_surface_wgl_qt.h"
 #include "ozone/gl_surface_egl_qt.h"
@@ -83,7 +86,7 @@ void* GLSurfaceQt::GetConfig()
     return g_config;
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 namespace init {
 bool InitializeGLOneOffPlatform()
 {
@@ -153,10 +156,10 @@ CreateViewGLSurface(gfx::AcceleratedWidget window)
 }
 
 } // namespace init
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 } // namespace gl
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 namespace gpu {
 class GpuCommandBufferStub;
 class GpuChannelManager;
@@ -209,5 +212,5 @@ void DirectCompositionSurfaceWin::DisableSoftwareOverlays()
 {
 }
 } // namespace gl
-#endif
-#endif // !defined(OS_MAC)
+#endif // BUILDFLAG(IS_WIN)
+#endif // !defined(Q_OS_MACOS)

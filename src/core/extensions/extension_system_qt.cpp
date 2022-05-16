@@ -378,12 +378,11 @@ void ExtensionSystemQt::RegisterExtensionWithRequestContexts(const Extension *ex
             std::move(callback));
 }
 
-void ExtensionSystemQt::UnregisterExtensionWithRequestContexts(const std::string &extension_id,
-                                                               const UnloadedExtensionReason reason)
+void ExtensionSystemQt::UnregisterExtensionWithRequestContexts(const std::string &extension_id)
 {
     base::PostTask(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&InfoMap::RemoveExtension, info_map(), extension_id, reason));
+        base::BindOnce(&InfoMap::RemoveExtension, info_map(), extension_id));
 }
 
 bool ExtensionSystemQt::is_ready() const

@@ -73,9 +73,9 @@ public:
     void FocusThroughTabTraversal(bool reverse) override;
     void OnCapturerCountChanged() override { QT_NOT_YET_IMPLEMENTED }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     bool CloseTabAfterEventTrackingIfNeeded() override { QT_NOT_YET_IMPLEMENTED return false; }
-#endif // defined(OS_MAC)
+#endif
 
     // content::RenderViewHostDelegateView overrides:
     void StartDragging(const content::DropData& drop_data, blink::DragOperationsMask allowed_ops,

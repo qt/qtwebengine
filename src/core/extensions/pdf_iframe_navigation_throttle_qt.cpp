@@ -36,7 +36,8 @@ class PdfWebContentsLifetimeHelper : public content::WebContentsUserData<PdfWebC
 {
 public:
     explicit PdfWebContentsLifetimeHelper(content::WebContents *web_contents)
-        : web_contents_(web_contents)
+        : content::WebContentsUserData<PdfWebContentsLifetimeHelper>(*web_contents)
+        , web_contents_(web_contents)
     {}
 
     base::WeakPtr<PdfWebContentsLifetimeHelper> GetWeakPtr()

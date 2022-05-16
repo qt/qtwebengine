@@ -286,7 +286,7 @@ private:
         m_head->mime_type = m_mimeType;
         m_head->charset = m_charset;
         m_headerBytesRead = m_head->headers->raw_headers().length();
-        m_client->OnReceiveResponse(std::move(m_head));
+        m_client->OnReceiveResponse(std::move(m_head), mojo::ScopedDataPipeConsumerHandle());
         m_client->OnStartLoadingResponseBody(std::move(m_pipeConsumerHandle));
         m_head = nullptr;
 
@@ -338,7 +338,7 @@ private:
         m_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(net::HttpUtil::AssembleRawHeaders(headers));
         m_head->encoded_data_length = m_head->headers->raw_headers().length();
         m_head->content_length = m_head->encoded_body_length = -1;
-        m_client->OnReceiveResponse(std::move(m_head));
+        m_client->OnReceiveResponse(std::move(m_head), mojo::ScopedDataPipeConsumerHandle());
         CompleteWithFailure(net::Error(error));
     }
     void notifyReadyRead() override

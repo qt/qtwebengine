@@ -29,11 +29,11 @@
 #include "web_engine_context.h"
 #include "web_engine_library_info.h"
 
-#if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
+#if defined(ARCH_CPU_ARM_FAMILY) && (BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX))
 #include "base/cpu.h"
 #endif
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #include "media/audio/audio_manager.h"
 #include "ui/base/ui_base_switches.h"
 #endif
@@ -41,12 +41,12 @@
 // must be included before vaapi_wrapper.h
 #include <QtCore/qcoreapplication.h>
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "media/gpu/windows/dxva_video_decode_accelerator_win.h"
 #include "media/gpu/windows/media_foundation_video_encode_accelerator_win.h"
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/trace_event/trace_event.h"
 #include "content/public/common/content_features.h"
 #include "media/gpu/mac/vt_video_decode_accelerator_mac.h"
@@ -133,7 +133,7 @@ static logging::LoggingDestination DetermineLogMode(const base::CommandLine& com
 
 void ContentMainDelegateQt::PreSandboxStartup()
 {
-#if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
+#if defined(ARCH_CPU_ARM_FAMILY) && (BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX))
     // Create an instance of the CPU class to parse /proc/cpuinfo and cache
     // cpu_brand info.
     base::CPU cpu_info;
@@ -166,7 +166,7 @@ void ContentMainDelegateQt::PreSandboxStartup()
         }
     }
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID)
     if (parsedCommandLine->HasSwitch(switches::kSingleProcess))
         setlocale(LC_NUMERIC, "C");
 #endif
@@ -175,12 +175,12 @@ void ContentMainDelegateQt::PreSandboxStartup()
 #if BUILDFLAG(USE_VAAPI)
     media::VaapiWrapper::PreSandboxInitialization();
 #endif
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     media::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
     media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     {
         TRACE_EVENT0("gpu", "Initialize VideoToolbox");
         media::InitializeVideoToolbox();
@@ -191,7 +191,7 @@ void ContentMainDelegateQt::PreSandboxStartup()
         std::string appName = parsedCommandLine->GetSwitchValueASCII(switches::kApplicationName);
         appName = QByteArray::fromPercentEncoding(QByteArray::fromStdString(appName)).toStdString();
         QCoreApplication::setApplicationName(QString::fromStdString(appName));
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
         media::AudioManager::SetGlobalAppName(appName);
 #endif
     }
@@ -221,7 +221,7 @@ content::ContentGpuClient *ContentMainDelegateQt::CreateContentGpuClient()
 
 content::ContentRendererClient *ContentMainDelegateQt::CreateContentRendererClient()
 {
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
     base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
     std::string process_type = parsedCommandLine->GetSwitchValueASCII(switches::kProcessType);
     bool no_sandbox = parsedCommandLine->HasSwitch(sandbox::policy::switches::kNoSandbox);

@@ -35,10 +35,6 @@ class Dispatcher;
 class ResourceRequestPolicyQt;
 }
 
-namespace guest_view {
-class GuestViewContainerDispatcher;
-}
-
 namespace QtWebEngineCore {
 
 class ExtensionsDispatcherDelegateQt;
@@ -90,7 +86,6 @@ private:
     std::unique_ptr<ExtensionsDispatcherDelegateQt> extension_dispatcher_delegate_;
     std::unique_ptr<RendererPermissionsPolicyDelegateQt> permissions_policy_delegate_;
     std::unique_ptr<extensions::Dispatcher> extension_dispatcher_;
-    std::unique_ptr<guest_view::GuestViewContainerDispatcher> guest_view_container_dispatcher_;
     std::unique_ptr<extensions::ResourceRequestPolicyQt> resource_request_policy_;
 };
 

@@ -24,11 +24,11 @@
 #include "net/ssl/client_cert_store_nss.h"
 #endif
 
-#if defined(OS_WIN)
+#if defined(Q_OS_WIN)
 #include "net/ssl/client_cert_store_win.h"
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "net/ssl/client_cert_store_mac.h"
 #endif
 
@@ -46,7 +46,7 @@ public:
         std::move(private_key_callback).Run(m_key);
     }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     SecIdentityRef sec_identity_ref() const override
     {
         return nullptr;
@@ -125,9 +125,9 @@ std::unique_ptr<net::ClientCertStore> ClientCertOverrideStore::createNativeStore
 {
 #if defined(USE_NSS_CERTS)
     return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreNSS(net::ClientCertStoreNSS::PasswordDelegateFactory()));
-#elif defined(OS_WIN)
+#elif defined(Q_OS_WIN)
     return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreWin());
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
     return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreMac());
 #else
     return nullptr;

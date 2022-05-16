@@ -16,7 +16,6 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
-#include "components/guest_view/renderer/guest_view_container_dispatcher.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
@@ -111,10 +110,8 @@ void ExtensionsRendererClientQt::RenderThreadStarted()
     extension_dispatcher_->OnRenderThreadStarted(thread);
     permissions_policy_delegate_.reset(new RendererPermissionsPolicyDelegateQt(extension_dispatcher_.get()));
     resource_request_policy_.reset(new extensions::ResourceRequestPolicyQt(extension_dispatcher_.get()));
-    guest_view_container_dispatcher_.reset(new guest_view::GuestViewContainerDispatcher());
 
     thread->AddObserver(extension_dispatcher_.get());
-    thread->AddObserver(guest_view_container_dispatcher_.get());
 }
 
 void ExtensionsRendererClientQt::RenderFrameCreated(content::RenderFrame *render_frame,

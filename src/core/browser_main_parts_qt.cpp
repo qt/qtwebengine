@@ -50,7 +50,7 @@
 #include <QOpenGLContext>
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/message_loop/message_pump_mac.h"
 #include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #include "ui/base/idle/idle.h"
@@ -191,7 +191,7 @@ private:
     QWebEngineMessagePumpScheduler m_scheduler;
 };
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 class FakeGeolocationManager : public device::GeolocationManager
 {
 public:
@@ -206,7 +206,7 @@ public:
         return device::LocationSystemPermissionStatus::kDenied;
     }
 };
-#endif // defined(OS_MAC)
+#endif // BUILDFLAG(IS_MAC)
 
 std::unique_ptr<base::MessagePump> messagePumpFactory()
 {
@@ -215,7 +215,7 @@ std::unique_ptr<base::MessagePump> messagePumpFactory()
         madePrimaryPump = true;
         return std::make_unique<MessagePumpForUIQt>();
     }
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     return base::MessagePumpMac::Create();
 #else
     return std::make_unique<base::MessagePumpForUI>();
@@ -232,7 +232,7 @@ int BrowserMainPartsQt::PreEarlyInitialization()
 
 void BrowserMainPartsQt::PreCreateMainMessageLoop()
 {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     m_geolocationManager = std::make_unique<FakeGeolocationManager>();
 #endif
 }
@@ -279,7 +279,7 @@ void BrowserMainPartsQt::PostMainMessageLoopRun()
 
 int BrowserMainPartsQt::PreCreateThreads()
 {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     ui::InitIdleMonitor();
 #endif
 
@@ -307,7 +307,7 @@ void BrowserMainPartsQt::PostCreateThreads()
             base::BindOnce(&QtWebEngineCore::CreatePoliciesAndDecorators));
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 device::GeolocationManager *BrowserMainPartsQt::GetGeolocationManager()
 {
     return m_geolocationManager.get();

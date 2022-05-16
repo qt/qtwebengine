@@ -28,6 +28,7 @@
 #include "web_engine_settings.h"
 
 #include <string>
+#include <tuple>
 
 namespace QtWebEngineCore {
 
@@ -81,7 +82,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
     std::string payload = view_id;
 
     mojo::PendingRemote<network::mojom::URLLoader> dummy_new_loader;
-    ignore_result(dummy_new_loader.InitWithNewPipeAndPassReceiver());
+    std::ignore = dummy_new_loader.InitWithNewPipeAndPassReceiver();
     mojo::Remote<network::mojom::URLLoaderClient> new_client;
     mojo::PendingReceiver<network::mojom::URLLoaderClient> new_client_receiver =
         new_client.BindNewPipeAndPassReceiver();
@@ -115,9 +116,11 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
 
     mojo::PendingRemote<network::mojom::URLLoader> original_loader;
     mojo::PendingReceiver<network::mojom::URLLoaderClient> original_client;
+    mojo::ScopedDataPipeConsumerHandle body;
     delegate_->InterceptResponse(std::move(dummy_new_loader),
-                                std::move(new_client_receiver), &original_loader,
-                                &original_client);
+                                 std::move(new_client_receiver),
+                                 &original_loader, &original_client,
+                                 &body);
 
     // Make a deep copy of URLResponseHead before passing it cross-thread.
     auto deep_copied_response = response_head->Clone();
@@ -135,6 +138,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
     transferrable_loader->url_loader_client = std::move(original_client);
     transferrable_loader->head = std::move(deep_copied_response);
     transferrable_loader->head->intercepted_by_plugin = true;
+    transferrable_loader->body = std::move(body);
 
     bool embedded = m_request_destination !=
             network::mojom::RequestDestination::kDocument;

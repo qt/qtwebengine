@@ -37,9 +37,9 @@
 
 // File name of the CDM on different platforms.
 const char kWidevineCdmFileName[] =
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     "widevinecdm.plugin";
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
     "widevinecdm.dll";
 #else  // OS_LINUX, etc.
     "libwidevinecdm.so";
@@ -312,7 +312,7 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
             const base::Version version;
             cdms->push_back(content::CdmInfo(kWidevineKeySystem, Robustness::kSoftwareSecure, std::move(capability),
                                              /*supports_sub_key_systems=*/false, kWidevineCdmDisplayName,
-                                             kWidevineCdmType, version, cdm_path, kWidevineCdmFileSystemId));
+                                             kWidevineCdmType, version, cdm_path));
         }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
 
@@ -343,13 +343,13 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
                                              Robustness::kSoftwareSecure, capability,
                                              /*supports_sub_key_systems=*/false, media::kClearKeyCdmDisplayName,
                                              media::kClearKeyCdmDifferentCdmType, base::Version("0.1.0.0"),
-                                             clear_key_cdm_path, media::kClearKeyCdmFileSystemId));
+                                             clear_key_cdm_path));
 
             cdms->push_back(content::CdmInfo(kExternalClearKeyKeySystem,
                                              Robustness::kSoftwareSecure, capability,
                                              /*supports_sub_key_systems=*/true, media::kClearKeyCdmDisplayName,
                                              media::kClearKeyCdmType, base::Version("0.1.0.0"),
-                                             clear_key_cdm_path, media::kClearKeyCdmFileSystemId));
+                                             clear_key_cdm_path));
         }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
     }
