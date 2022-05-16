@@ -359,7 +359,6 @@ qt_feature("webengine-qt-libjpeg" PRIVATE
         AND TARGET Qt::Gui
         AND QT_FEATURE_jpeg
         AND NOT QT_FEATURE_system_jpeg
-        AND FALSE # FIXME requires qtbase dep update
 )
 qt_feature("webengine-system-harfbuzz" PRIVATE
     LABEL "harfbuzz"
