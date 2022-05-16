@@ -28,3 +28,16 @@ if(TARGET Qt6::Pdf)
 endif()
 
 _qt_internal_test_module_includes(${module_includes})
+
+find_package(Qt6 REQUIRED COMPONENTS Core Test)
+
+include("${_Qt6CTestMacros}")
+
+set(build_options
+     -DWEBENGINE_VERSION=${QT_REPO_MODULE_VERSION}
+     "-DQT_ADDITIONAL_PACKAGES_PREFIX_PATH=${QT_BUILD_DIR}[[;]]${QT6_INSTALL_PREFIX}"
+)
+
+if(TARGET Qt6::WebEngineCore AND TARGET Qt6::WebEngineWidgets)
+    _qt_internal_test_expect_pass(webengine_mixed_version BUILD_OPTIONS ${build_options})
+endif()

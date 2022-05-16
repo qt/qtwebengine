@@ -27,8 +27,7 @@ if(DEFINED BUILD_ONLY_GN)
 endif()
 
 project(QtWebEngine
-    # TODO: Change this version to QT_REPO_MODULE_VERSION when ready
-    VERSION ${Qt6BuildInternals_VERSION}
+    VERSION ${QT_REPO_MODULE_VERSION}
     DESCRIPTION "QtWebEngine and QtPdf modules"
     HOMEPAGE_URL "https://qt.io/"
     LANGUAGES CXX C

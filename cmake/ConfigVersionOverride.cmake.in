@@ -1,0 +1,40 @@
+# Copyright (C) 2026 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
+# Try to override config version only for WebEngine and Pdf components. It
+# simply loads own version impl to override qt6 config.
+if("${${CMAKE_FIND_PACKAGE_NAME}_FIND_COMPONENTS}"
+   MATCHES
+   "^(WebEngineCore;?|WebEngineWidgets;?|WebEngineQuick;?|Pdf;?|PdfWidgets;?|PdfQuick;?)+$"
+)
+    set(__qt_prefixes "${CMAKE_CURRENT_LIST_DIR}/../../../../..")
+    if(QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
+        list(PREPEND __qt_prefixes ${QT_ADDITIONAL_PACKAGES_PREFIX_PATH})
+    endif()
+    if(DEFINED ENV{QT_ADDITIONAL_PACKAGES_PREFIX_PATH}
+       AND NOT "$ENV{QT_ADDITIONAL_PACKAGES_PREFIX_PATH}" STREQUAL "")
+        set(__qt_env_prefixes $ENV{QT_ADDITIONAL_PACKAGES_PREFIX_PATH})
+        if(NOT CMAKE_HOST_WIN32)
+            string(REPLACE ":" ";" __qt_env_prefixes "${__qt_env_prefixes}")
+        endif()
+        list(PREPEND __qt_prefixes ${__qt_env_prefixes})
+        unset(__qt_env_prefixes)
+    endif()
+
+    foreach(__qt_prefix ${__qt_prefixes})
+        if(EXISTS "${__qt_prefix}/@override_version_file@")
+            set(__qt_config_override_impl_file
+                "${__qt_prefix}/@override_version_file@")
+            break()
+        endif()
+    endforeach()
+
+    if(NOT __qt_config_override_impl_file)
+        set(__qt_version_should_include_base_impl_file TRUE)
+    else()
+        set(__qt_version_should_include_base_impl_file FALSE)
+        include(${__qt_config_override_impl_file})
+    endif()
+    unset(__qt_config_override_impl_file)
+    unset(__qt_prefixes)
+endif()
