@@ -215,7 +215,7 @@ public:
     }
 
 private:
-    gfx::NativeViewId OnStarted(base::OnceClosure stop, SourceCallback source,
+    gfx::NativeViewId OnStarted(base::RepeatingClosure stop, SourceCallback source,
                                 const std::string& label,
                                 std::vector<content::DesktopMediaID> screen_capture_ids,
                                 StateChangeCallback state_change) override
@@ -241,7 +241,7 @@ private:
     base::WeakPtr<WebContentsDelegateQt> m_delegate;
     const blink::MediaStreamDevices m_devices;
     bool m_started = false;
-    base::OnceClosure m_onStop; // currently unused
+    base::RepeatingClosure m_onStop; // currently unused
 };
 
 } // namespace
@@ -332,7 +332,7 @@ MediaCaptureDevicesDispatcher *MediaCaptureDevicesDispatcher::GetInstance()
 MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
     : m_webContentsCollection(this)
 {
-#if defined(OS_WIN)
+#if defined(Q_OS_WIN)
     // Currently loopback audio capture is supported only on Windows.
     m_loopbackAudioSupported = true;
 #endif

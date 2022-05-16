@@ -39,7 +39,7 @@ WebContentsView* CreateWebContentsView(WebContentsImpl *web_contents,
     return rv;
 }
 
-#if defined(OS_MAC)
+#if defined(Q_OS_DARWIN)
 #if defined(QT_MAC_FRAMEWORK_BUILD)
 base::FilePath getSandboxPath()
 {

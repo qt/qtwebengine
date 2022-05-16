@@ -11,7 +11,7 @@
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_implementation.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/gl/gl_context_wgl.h"
 #endif
 
@@ -94,7 +94,7 @@ void* GLContextHelper::getGlXConfig()
 
 void* GLContextHelper::getEGLDisplay()
 {
-#ifdef Q_OS_WIN
+#if BUILDFLAG(IS_WIN)
     // Windows QPA plugin does not implement resourceForIntegration for "egldisplay".
     // Use resourceForContext instead.
     return resourceForContext(QByteArrayLiteral("egldisplay"));
@@ -165,7 +165,7 @@ bool GLContextHelper::isCreateContextRobustnessSupported()
 
 QT_END_NAMESPACE
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 namespace gl {
 namespace init {
 
@@ -192,4 +192,4 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
 }  // namespace init
 }  // namespace gl
 
-#endif // defined(OS_WIN)
+#endif // BUILDFLAG(IS_WIN)

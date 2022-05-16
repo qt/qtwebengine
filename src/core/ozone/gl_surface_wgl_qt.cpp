@@ -3,7 +3,7 @@
 
 #include "gl_surface_wgl_qt.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/gl/gl_surface_wgl.h"
 
 namespace gl {
@@ -53,4 +53,4 @@ void *GLSurfaceWGLQt::GetConfig()
 
 } //namespace gl
 
-#endif // defined(OS_WIN)
+#endif // BUILDFLAG(IS_WIN)

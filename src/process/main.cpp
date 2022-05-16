@@ -49,7 +49,7 @@ struct tm* localtime64_r_proxy(const time_t* timep, struct tm* result)
     return sandbox::localtime64_r_override(timep, result);
 }
 
-#endif // defined(OS_LINUX)
+#endif // defined(Q_OS_LINUX)
 
 #if defined(Q_OS_WIN32)
 namespace QtWebEngineProcess {

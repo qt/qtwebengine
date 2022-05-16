@@ -72,7 +72,8 @@ QAccessibleInterface *BrowserAccessibilityManagerQt::rootParentAccessible()
 }
 
 void BrowserAccessibilityManagerQt::FireBlinkEvent(ax::mojom::Event event_type,
-                                                   BrowserAccessibility* node)
+                                                   BrowserAccessibility *node,
+                                                   int action_request_id)
 {
     auto *iface = toQAccessibleInterface(node);
 

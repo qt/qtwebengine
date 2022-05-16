@@ -65,8 +65,7 @@ public:
     void RegisterExtensionWithRequestContexts(const Extension *extension,
                                               base::OnceClosure callback) override;
 
-    void UnregisterExtensionWithRequestContexts(const std::string &extension_id,
-                                                const UnloadedExtensionReason reason) override;
+    void UnregisterExtensionWithRequestContexts(const std::string &extension_id) override;
 
     ContentVerifier *content_verifier() override;
     std::unique_ptr<ExtensionSet> GetDependentExtensions(const Extension *extension) override;

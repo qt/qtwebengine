@@ -22,6 +22,7 @@ namespace extensions {
 
 ExtensionWebContentsObserverQt::ExtensionWebContentsObserverQt(content::WebContents *web_contents)
     : ExtensionWebContentsObserver(web_contents)
+    , content::WebContentsUserData<ExtensionWebContentsObserverQt>(*web_contents)
 {
 }
 

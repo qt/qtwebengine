@@ -290,6 +290,7 @@ foreach(arch ${archs})
             enable_swiftshader=false
             enable_swiftshader_vulkan=false
             angle_enable_swiftshader=false
+            dawn_use_swiftshader=false
             enable_web_speech=false
             enable_widevine=true
             fatal_linker_warnings=false
@@ -303,6 +304,8 @@ foreach(arch ${archs})
             v8_use_external_startup_data=false
             strip_absolute_paths_from_debug_symbols=false
             enable_oop_printing=false
+            devtools_fast_bundle=false
+            devtools_skip_typecheck=false
         )
 
         extend_gn_list(gnArgArg

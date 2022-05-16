@@ -267,7 +267,7 @@ void DevToolsFrontendQt::ReadyToCommitNavigation(content::NavigationHandle *navi
     }
 }
 
-void DevToolsFrontendQt::DocumentAvailableInMainFrame(content::RenderFrameHost * /*render_frame_host*/)
+void DevToolsFrontendQt::DocumentOnLoadCompletedInPrimaryMainFrame()
 {
     if (!m_inspectedContents)
         return;
@@ -354,9 +354,10 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(base::Value message)
 
     int request_id = message.FindIntKey("id").value_or(0);
     const std::string &method = *method_ptr;
-    base::Value::ListView params;
+    base::Value::List *paramsPtr;
     if (params_value)
-        params = params_value->GetList();
+        paramsPtr = params_value->GetIfList();
+    base::Value::List &params = *paramsPtr;
 
     if (method == "dispatchProtocolMessage" && params.size() == 1) {
         const std::string *protocol_message = params[0].GetIfString();

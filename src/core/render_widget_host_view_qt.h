@@ -120,7 +120,7 @@ public:
     ui::Compositor *GetCompositor() override;
     absl::optional<content::DisplayFeature> GetDisplayFeature() override;
     void SetDisplayFeatureForTesting(const content::DisplayFeature*) override;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     void ShowSharePicker(
         const std::string &title,
         const std::string &text,
@@ -131,7 +131,7 @@ public:
     void SpeakSelection() override { QT_NOT_YET_IMPLEMENTED }
     void ShowDefinitionForSelection() override { QT_NOT_YET_IMPLEMENTED }
     void SetWindowFrameInScreen(const gfx::Rect&) override { QT_NOT_YET_IMPLEMENTED }
-#endif // defined(OS_MAC)
+#endif // BUILDFLAG(IS_MAC)
     void NotifyHostAndDelegateOnWasShown(blink::mojom::RecordContentToVisibleTimeRequestPtr) override { QT_NOT_YET_IMPLEMENTED }
     void RequestPresentationTimeFromHostOrDelegate(blink::mojom::RecordContentToVisibleTimeRequestPtr) override { QT_NOT_YET_IMPLEMENTED }
     void CancelPresentationTimeRequestForHostAndDelegate() override { QT_NOT_YET_IMPLEMENTED }

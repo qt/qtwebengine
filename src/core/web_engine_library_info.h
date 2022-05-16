@@ -23,7 +23,7 @@ public:
     static std::u16string getApplicationName();
     static std::string getResolvedLocale();
     static std::string getApplicationLocale();
-#if defined(OS_WIN)
+#if defined(Q_OS_WIN)
     static bool isRemoteDrivePath(const QString &path);
     static bool isUNCPath(const QString &path);
 #endif

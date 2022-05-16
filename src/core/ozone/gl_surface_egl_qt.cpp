@@ -8,7 +8,7 @@
 #include "gl_context_qt.h"
 #include "ozone/gl_surface_egl_qt.h"
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -107,9 +107,9 @@ bool GLSurfaceEGL::IsANGLEContextVirtualizationSupported()
     return false;
 }
 
-bool GLSurfaceEGL::IsANGLEVulkanImageClientBufferSupported()
+bool GLSurfaceEGL::IsANGLEVulkanImageSupported()
 {
-    return false;
+     return false;
 }
 
 bool GLSurfaceEGL::IsEGLQueryDeviceSupported()
@@ -367,4 +367,4 @@ std::string DriverEGL::GetPlatformExtensions()
     return "";
 }
 } // namespace gl
-#endif // !defined(OS_MAC)
+#endif // !BUILDFLAG(IS_MAC)

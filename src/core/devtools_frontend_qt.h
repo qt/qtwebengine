@@ -67,7 +67,7 @@ protected:
 private:
     // WebContentsObserver overrides
     void ReadyToCommitNavigation(content::NavigationHandle* navigation_handle) override;
-    void DocumentAvailableInMainFrame(content::RenderFrameHost *render_frame_host) override;
+    void DocumentOnLoadCompletedInPrimaryMainFrame() override;
     void WebContentsDestroyed() override;
 
     void SendMessageAck(int request_id, base::Value arg1);

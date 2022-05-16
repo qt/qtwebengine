@@ -15,7 +15,7 @@
 
 #include "web_engine_library_info.h"
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #include "base/posix/global_descriptors.h"
 #include "global_descriptors_qt.h"
 #endif
@@ -39,7 +39,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id)
 // static
 bool ResourceBundle::LocaleDataPakExists(const std::string& locale)
 {
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
     base::CommandLine *parsed_command_line = base::CommandLine::ForCurrentProcess();
     std::string process_type = parsed_command_line->GetSwitchValueASCII(switches::kProcessType);
     bool no_sandbox = parsed_command_line->HasSwitch(sandbox::policy::switches::kNoSandbox);
@@ -64,7 +64,7 @@ std::string ResourceBundle::LoadLocaleResources(const std::string &pref_locale, 
 
     std::string app_locale = l10n_util::GetApplicationLocale(pref_locale, false /* set_icu_locale */);
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
     int locale_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(kWebEngineLocale);
     if (locale_fd > -1) {
         std::unique_ptr<DataPack> data_pack(new DataPack(ui::k100Percent));

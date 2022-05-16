@@ -53,7 +53,7 @@ public:
     std::unique_ptr<InputMethod> CreateInputMethod(internal::InputMethodDelegate *delegate, gfx::AcceleratedWidget widget) override;
     std::unique_ptr<ui::PlatformScreen> CreateScreen() override { return nullptr; }
 private:
-    void InitializeUI(const ui::OzonePlatform::InitParams &) override;
+    bool InitializeUI(const ui::OzonePlatform::InitParams &) override;
     void InitializeGPU(const ui::OzonePlatform::InitParams &) override;
 
     void InitScreen(ui::PlatformScreen *) override {}
@@ -162,7 +162,7 @@ static std::string getCurrentKeyboardLayout()
 }
 #endif // BUILDFLAG(USE_XKBCOMMON)
 
-void OzonePlatformQt::InitializeUI(const ui::OzonePlatform::InitParams &)
+bool OzonePlatformQt::InitializeUI(const ui::OzonePlatform::InitParams &)
 {
 #if BUILDFLAG(USE_XKBCOMMON)
     std::string layout = getCurrentKeyboardLayout();
@@ -182,6 +182,7 @@ void OzonePlatformQt::InitializeUI(const ui::OzonePlatform::InitParams &)
     input_controller_ = CreateStubInputController();
     cursor_factory_.reset(new BitmapCursorFactory());
     gpu_platform_support_host_.reset(ui::CreateStubGpuPlatformSupportHost());
+    return true;
 }
 
 void OzonePlatformQt::InitializeGPU(const ui::OzonePlatform::InitParams &)

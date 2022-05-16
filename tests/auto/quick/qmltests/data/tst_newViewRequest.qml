@@ -98,7 +98,7 @@ TestWebEngineView {
 
             if (viewType === "dialog") {
                 tryVerify(dialog.webEngineView.loadSucceeded)
-                compare(dialog.webEngineView.url, Qt.url("about:blank"));
+                compare(dialog.webEngineView.url, "");
                 dialog.destroy();
             }
             // https://chromium-review.googlesource.com/c/chromium/src/+/1300395

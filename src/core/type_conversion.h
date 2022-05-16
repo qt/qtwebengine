@@ -39,7 +39,7 @@ class X509Certificate;
 
 namespace QtWebEngineCore {
 
-#if defined(OS_WIN)
+#if defined(Q_OS_WIN)
 inline QString toQt(const std::wstring &string)
 {
     return QString::fromStdWString(string);
@@ -215,7 +215,7 @@ inline QNetworkCookie toQt(const net::CanonicalCookie & cookie)
 
 inline base::FilePath::StringType toFilePathString(const QString &str)
 {
-#if defined(OS_WIN)
+#if defined(Q_OS_WIN)
     return QDir::toNativeSeparators(str).toStdWString();
 #else
     return str.toStdString();

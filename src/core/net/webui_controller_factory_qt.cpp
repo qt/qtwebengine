@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/webui/device_log_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
-#include "chrome/browser/ui/webui/quota_internals/quota_internals_ui.h"
 #include "chrome/browser/ui/webui/user_actions/user_actions_ui.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
@@ -27,7 +26,7 @@
 #include "printing/buildflags/buildflags.h"
 #include "url/gurl.h"
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
 #include "chrome/browser/ui/webui/sandbox/sandbox_internals_ui.h"
 #endif
 
@@ -93,9 +92,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
     if (url.host() == chrome::kChromeUINetInternalsHost)
         return &NewWebUI<NetInternalsUI>;
 
-    if (url.host() == chrome::kChromeUIQuotaInternalsHost)
-        return &NewWebUI<QuotaInternalsUI>;
-
     if (url.SchemeIs(content::kChromeDevToolsScheme)) {
         //        if (!DevToolsUIBindings::IsValidFrontendURL(url))
         //            return nullptr;
@@ -131,7 +127,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
     if (url.host_piece() == chrome::kChromeUIWebRtcLogsHost)
         return &NewWebUI<WebRtcLogsUI>;
 #endif
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) // Consider enabling for BUILDFLAG(IS_WIN)
     if (url.host_piece() == chrome::kChromeUISandboxHost)
         return &NewWebUI<SandboxInternalsUI>;
 #endif
