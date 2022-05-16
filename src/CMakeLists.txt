@@ -80,6 +80,8 @@ if(QT_FEATURE_qtpdf_build)
     qt_internal_sbom_end_qt_repo_project()
 endif()
 
+qt_webengine_install_version_overrides()
+
 set(installDir ${PROJECT_BINARY_DIR}/install)
 
 ##

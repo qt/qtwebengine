@@ -704,3 +704,36 @@ macro(qt_webengine_externalproject_add)
     )
     unset(OSX_ARCH_STR)
 endmacro()
+
+macro(qt_webengine_install_version_override_for_module feature module)
+    if(QT_FEATURE_${feature})
+        set(staging_file
+            "${buildDir}/ConfigVersionOverrides/${module}/Override_1000_qtproject.cmake")
+        string(CONCAT override_version_file
+            "${INSTALL_LIBDIR}/cmake/"
+            "${INSTALL_CMAKE_NAMESPACE}${module}/"
+            "${INSTALL_CMAKE_NAMESPACE}${module}ConfigVersionImpl.cmake")
+        configure_file(
+            "${WEBENGINE_ROOT_SOURCE_DIR}/cmake/ConfigVersionOverride.cmake.in"
+            "${staging_file}"
+            @ONLY
+        )
+        qt_install(FILES
+            "${staging_file}"
+            DESTINATION "${installDir}/ConfigVersionOverrides/${module}"
+        )
+        unset(override_version_file)
+    endif()
+endmacro()
+
+function(qt_webengine_install_version_overrides)
+    qt_path_join(installDir ${QT_CONFIG_INSTALL_DIR} "${INSTALL_CMAKE_NAMESPACE}")
+    qt_path_join(buildDir ${QT_CONFIG_BUILD_DIR} "${INSTALL_CMAKE_NAMESPACE}")
+
+    qt_webengine_install_version_override_for_module(qtwebengine_core_build WebEngineCore)
+    qt_webengine_install_version_override_for_module(qtwebengine_widgets_build WebEngineWidgets)
+    qt_webengine_install_version_override_for_module(qtwebengine_quick_build WebEngineQuick)
+    qt_webengine_install_version_override_for_module(qtpdf_build Pdf)
+    qt_webengine_install_version_override_for_module(qtpdf_widgets_build PdfWidgets)
+    qt_webengine_install_version_override_for_module(qtpdf_quick_build PdfQuick)
+endfunction()
