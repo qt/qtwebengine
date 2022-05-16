@@ -224,6 +224,7 @@ qt_feature("qtwebengine-quick-build" PRIVATE
 qt_feature("qtpdf-build" PUBLIC
     LABEL "Build Qt PDF"
     PURPOSE "Enables building the Qt Pdf modules."
+    CONDITION Qt6Core_VERSION VERSION_GREATER_EQUAL "6.3.0"
 )
 qt_feature("qtpdf-widgets-build" PRIVATE
     LABEL "Build QtPdfWidgets"
