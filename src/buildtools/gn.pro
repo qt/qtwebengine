@@ -21,6 +21,7 @@ build_pass|!debug_and_release {
             gn_gen_args = --no-last-commit-position --out-path $$out_path \
                           --cc \"$$which($$QMAKE_CC)\" --cxx \"$$which($$QMAKE_CXX)\" \
                           --ld \"$$which($$QMAKE_LINK)\"
+            !isEmpty(QMAKE_AR): gn_gen_args += --ar \"$$which($$first(QMAKE_AR))\"
 
             msvc:!clang_cl: gn_gen_args += --use-lto
 
