@@ -36,6 +36,7 @@ add_custom_command(
         --cc ${CMAKE_C_COMPILER}
         --cxx ${CMAKE_CXX_COMPILER}
         --ld ${CMAKE_CXX_COMPILER}
+        --ar ${CMAKE_AR}
         --qt-version "${QT_REPO_MODULE_VERSION}.qtwebengine.qt.io"
         $<$<PLATFORM_ID:Darwin>:--isysroot>
         $<$<PLATFORM_ID:Darwin>:${CMAKE_OSX_SYSROOT}>
