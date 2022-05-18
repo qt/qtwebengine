@@ -61,8 +61,7 @@
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
 
-#include "web_contents_delegate_qt.h"
-#include "web_engine_settings.h"
+#include <QtGlobal>
 
 namespace extensions {
 
@@ -105,17 +104,12 @@ bool IsPDFPluginEnabled(content::NavigationHandle *navigation_handle, bool *is_s
     if (web_contents->IsInnerWebContentsForGuest())
         web_contents = web_contents->GetOuterWebContents();
 
-    if (auto *delegate = static_cast<QtWebEngineCore::WebContentsDelegateQt *>(web_contents->GetDelegate())) {
-        const QtWebEngineCore::WebEngineSettings *settings = delegate->webEngineSettings();
-        if (!settings->testAttribute(QWebEngineSettings::PdfViewerEnabled)
-            || !settings->testAttribute(QWebEngineSettings::PluginsEnabled))
-            return false;
-    }
-
     int process_id = web_contents->GetMainFrame()->GetProcess()->GetID();
+    int routing_id = web_contents->GetMainFrame()->GetRoutingID();
     content::WebPluginInfo plugin_info;
+    // Will check WebEngineSettings by PluginServiceFilterQt
     return content::PluginService::GetInstance()->GetPluginInfo(
-                process_id, navigation_handle->GetURL(),
+                process_id, routing_id, navigation_handle->GetURL(),
                 kPDFMimeType,
                 false /* allow_wildcard */, is_stale, &plugin_info,
                 nullptr /* actual_mime_type */);

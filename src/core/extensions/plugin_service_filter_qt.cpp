@@ -41,9 +41,7 @@
 
 #include "content/public/browser/render_process_host.h"
 
-#include "profile_adapter.h"
-#include "profile_adapter_client.h"
-#include "profile_qt.h"
+#include "web_contents_delegate_qt.h"
 #include "web_engine_settings.h"
 
 using namespace QtWebEngineCore;
@@ -57,18 +55,25 @@ PluginServiceFilterQt *PluginServiceFilterQt::GetInstance()
 }
 
 bool PluginServiceFilterQt::IsPluginAvailable(int render_process_id,
+                                              int render_frame_id,
                                               const content::WebPluginInfo &plugin)
 {
     Q_UNUSED(plugin);
-    content::RenderProcessHost *rph = content::RenderProcessHost::FromID(render_process_id);
-    if (!rph)
-      return false;
+    content::RenderFrameHost *frame_host = content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+    content::WebContents *web_contents = content::WebContents::FromRenderFrameHost(frame_host);
+    if (!web_contents) {
+        // Availability checked somewhere before/during WebContents initialization. Let it load and enable
+        // all the plugins at this phase. This information will be queried again when receiving the response
+        // for the requested content. Postponing our decision and enabling/blocking there makes WebEngineSettings
+        // modifiable in runtime without reconstructing WebContents.
+        return true;
+    }
 
-    ProfileQt *profile = static_cast<ProfileQt *>(rph->GetBrowserContext());
-    for (auto *client : profile->profileAdapter()->clients()) {
-        const WebEngineSettings *settings = client->coreSettings();
-        if (!settings)
-            return false;
+    if (web_contents->IsInnerWebContentsForGuest())
+        web_contents = web_contents->GetOuterWebContents();
+
+    if (auto *delegate = static_cast<WebContentsDelegateQt *>(web_contents->GetDelegate())) {
+        const WebEngineSettings *settings = delegate->webEngineSettings();
         if (!settings->testAttribute(QWebEngineSettings::PdfViewerEnabled)
             || !settings->testAttribute(QWebEngineSettings::PluginsEnabled))
             return false;
