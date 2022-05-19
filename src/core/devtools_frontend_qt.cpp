@@ -576,7 +576,7 @@ void DevToolsFrontendQt::CallClientFunction(const std::string &object_name,
                                             base::OnceCallback<void(base::Value)> cb)
 
 {
-    base::Value arguments(base::Value::Type::LIST);
+    base::Value::List arguments;
     if (!arg1.is_none()) {
         arguments.Append(std::move(arg1));
         if (!arg2.is_none()) {

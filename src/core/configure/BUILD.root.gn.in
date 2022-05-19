@@ -151,6 +151,7 @@ shared_library("QtWebEngineCore") {
   }
 
   if (is_win) {
+    configs += [ "//build/config/compiler:rtti" ]
     data_deps = [ ":QtWebEngineCoreSandbox" ]
   }
 
@@ -185,10 +186,9 @@ source_set("qtwebengine_spellcheck_sources") {
     "//chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h",
     "//chrome/browser/spellchecker/spellcheck_service.cc",
     "//chrome/browser/spellchecker/spellcheck_service.h",
-    "//components/language/core/browser/pref_names.cc",
-    "//components/language/core/browser/pref_names.h",
   ]
   deps = [
+    "//components/language/core/browser",
     "//components/spellcheck/browser",
     "//components/spellcheck/renderer",
     "//third_party/blink/public:blink",
@@ -300,9 +300,6 @@ source_set("qtwebengine_sources") {
       "//chrome/common/extensions/permissions/chrome_permission_message_rules.h",
     ]
   } else {
-    deps += [
-      "//extensions/common:common_constants",
-    ]
     sources += [
       "//extensions/common/url_pattern.cc",
       "//extensions/common/url_pattern.h",
@@ -326,15 +323,6 @@ source_set("qtwebengine_sources") {
       "//chrome/renderer/pepper/pepper_shared_memory_message_filter.cc",
       "//chrome/renderer/pepper/pepper_shared_memory_message_filter.h",
     ]
-    if (enable_pdf) {
-      sources += [
-        "//chrome/renderer/pepper/pepper_flash_font_file_host.cc",
-        "//chrome/renderer/pepper/pepper_flash_font_file_host.h",
-      ]
-      if (is_linux) {
-        deps += [ "//pdf:font_table_linux" ]
-      }
-    }
   }
   if (enable_basic_printing || enable_print_preview) {
     sources += [
@@ -352,7 +340,6 @@ source_set("qtwebengine_sources") {
     deps += [
       "//pdf",
       "//pdf:buildflags",
-      "//pdf:pdf_ppapi",
       "//chrome/browser/resources/pdf:resources",
       "//components/pdf/browser",
       "//components/pdf/common",
@@ -453,7 +440,6 @@ repack("qtwebengine_repack_resources") {
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
-    "$root_gen_dir/ui/resources/webui_resources.pak",
     "$root_gen_dir/ui/resources/webui_generated_resources.pak",
   ]
   output = "$root_out_dir/qtwebengine_resources.pak"
@@ -472,7 +458,6 @@ repack("qtwebengine_repack_resources") {
      "//mojo/public/js:resources",
      "//net:net_resources_grit",
      "//third_party/blink/public:resources_grit",
-     "//ui/resources:webui_resources_grd_grit",
      "//ui/resources:webui_generated_resources_grd",
   ]
   if (enable_extensions) {

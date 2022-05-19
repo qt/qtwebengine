@@ -83,6 +83,7 @@ void FileSystemAccessPermissionRequestManagerQt::AddRequest(
 FileSystemAccessPermissionRequestManagerQt::FileSystemAccessPermissionRequestManagerQt(
         content::WebContents *web_contents)
     : content::WebContentsObserver(web_contents)
+    , content::WebContentsUserData<FileSystemAccessPermissionRequestManagerQt>(*web_contents)
 {
 }
 
@@ -90,7 +91,7 @@ bool FileSystemAccessPermissionRequestManagerQt::CanShowRequest() const
 {
     // Delay showing requests until the main frame is fully loaded.
     // ScheduleShowRequest() will be called again when that happens.
-    return web_contents()->IsDocumentOnLoadCompletedInMainFrame() && !m_queuedRequests.empty()
+    return web_contents()->IsDocumentOnLoadCompletedInPrimaryMainFrame() && !m_queuedRequests.empty()
             && !m_currentRequest;
 }
 
@@ -134,8 +135,7 @@ void FileSystemAccessPermissionRequestManagerQt::DequeueAndShowRequest()
     client->runFileSystemAccessRequest(std::move(request));
 }
 
-void FileSystemAccessPermissionRequestManagerQt::DocumentOnLoadCompletedInMainFrame(
-        content::RenderFrameHost *)
+void FileSystemAccessPermissionRequestManagerQt::DocumentOnLoadCompletedInPrimaryMainFrame()
 {
     // This is scheduled because while all calls to the browser have been
     // issued at DOMContentLoaded, they may be bouncing around in scheduled

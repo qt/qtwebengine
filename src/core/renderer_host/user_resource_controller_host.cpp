@@ -5,12 +5,14 @@
 
 #include "type_conversion.h"
 #include "web_contents_adapter.h"
+
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "qtwebengine/userscript/userscript.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 

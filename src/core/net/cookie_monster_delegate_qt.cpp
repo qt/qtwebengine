@@ -140,7 +140,7 @@ void CookieMonsterDelegateQt::deleteAllCookies()
     m_mojoCookieManager->DeleteCookies(std::move(filter), network::mojom::CookieManager::DeleteCookiesCallback());
 }
 
-void CookieMonsterDelegateQt::setMojoCookieManager(network::mojom::CookieManagerPtrInfo cookie_manager_info)
+void CookieMonsterDelegateQt::setMojoCookieManager(mojo::PendingRemote<network::mojom::CookieManager> cookie_manager_info)
 {
     if (m_mojoCookieManager.is_bound())
         unsetMojoCookieManager();

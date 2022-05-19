@@ -18,7 +18,7 @@ public:
     static bool HasEGLExtension(const char* name);
 
     // Implement GLSurface.
-    void *GetDisplay() override;
+    GLDisplay *GetGLDisplay() override;
     void *GetConfig() override;
     bool IsOffscreen() override;
     gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
@@ -34,7 +34,7 @@ protected:
 
 public:
     static void* g_config;
-    static void* g_display;
+    static GLDisplay *g_display;
     static std::string g_extensions;
     static std::string g_client_extensions;
 };

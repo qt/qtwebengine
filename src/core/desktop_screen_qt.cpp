@@ -110,6 +110,7 @@ display::Display DesktopScreenQt::GetDisplayNearestWindow(gfx::NativeWindow /*wi
     return GetPrimaryDisplay();
 }
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
 bool DesktopScreenQt::SetScreenSaverSuspended(bool suspend)
 {
 #if defined(USE_XSCREENSAVER)
@@ -118,6 +119,7 @@ bool DesktopScreenQt::SetScreenSaverSuspended(bool suspend)
     return false;
 #endif
 }
+#endif
 
 bool DesktopScreenQt::IsScreenSaverActive() const
 {

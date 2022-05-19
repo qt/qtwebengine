@@ -58,7 +58,7 @@ private:
     void DequeueAndShowRequest();
 
     // content::WebContentsObserver
-    void DocumentOnLoadCompletedInMainFrame(content::RenderFrameHost *) override;
+    void DocumentOnLoadCompletedInPrimaryMainFrame() override;
     void DidFinishNavigation(content::NavigationHandle *navigation_handle) override;
     void WebContentsDestroyed() override;
 

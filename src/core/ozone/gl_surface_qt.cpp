@@ -27,7 +27,7 @@
 
 namespace gl {
 
-void *GLSurfaceQt::g_display = nullptr;
+GLDisplay *GLSurfaceQt::g_display = nullptr;
 void *GLSurfaceQt::g_config = nullptr;
 std::string GLSurfaceQt::g_client_extensions;
 std::string GLSurfaceQt::g_extensions;
@@ -76,7 +76,7 @@ GLSurfaceFormat GLSurfaceQt::GetFormat()
     return m_format;
 }
 
-void* GLSurfaceQt::GetDisplay()
+GLDisplay *GLSurfaceQt::GetGLDisplay()
 {
     return g_display;
 }
@@ -88,7 +88,7 @@ void* GLSurfaceQt::GetConfig()
 
 #if BUILDFLAG(IS_WIN)
 namespace init {
-bool InitializeGLOneOffPlatform()
+bool InitializeGLOneOffPlatform(uint64_t system_device_id)
 {
     VSyncProviderWin::InitializeOneOff();
 
@@ -211,6 +211,11 @@ void DirectCompositionSurfaceWin::DisableDecodeSwapChain()
 void DirectCompositionSurfaceWin::DisableSoftwareOverlays()
 {
 }
+
+void DirectCompositionSurfaceWin::ShutdownOneOff()
+{
+}
+
 } // namespace gl
 #endif // BUILDFLAG(IS_WIN)
 #endif // !defined(Q_OS_MACOS)

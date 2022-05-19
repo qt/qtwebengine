@@ -11,7 +11,6 @@
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/navigation_interception/intercept_navigation_throttle.h"
-#include "components/navigation_interception/navigation_params.h"
 #include "components/network_hints/browser/simple_network_hints_handler_impl.h"
 #include "components/performance_manager/embedder/performance_manager_lifetime.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
@@ -23,6 +22,7 @@
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/file_url_loader.h"
 #include "content/public/browser/media_observer.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -677,10 +677,10 @@ static void LaunchURL(const GURL& url,
 
 bool ContentBrowserClientQt::HandleExternalProtocol(const GURL &url,
         base::RepeatingCallback<content::WebContents*()> web_contents_getter,
-        int child_id,
         int frame_tree_node_id,
         content::NavigationUIData *navigation_data,
-        bool is_main_frame,
+        bool is_primary_main_frame,
+        bool is_in_fenced_frame_tree,
         network::mojom::WebSandboxFlags sandbox_flags,
         ui::PageTransition page_transition,
         bool has_user_gesture,
@@ -688,8 +688,8 @@ bool ContentBrowserClientQt::HandleExternalProtocol(const GURL &url,
         content::RenderFrameHost *initiator_document,
         mojo::PendingRemote<network::mojom::URLLoaderFactory> *out_factory)
 {
-    Q_UNUSED(child_id);
     Q_UNUSED(frame_tree_node_id);
+    Q_UNUSED(is_in_fenced_frame_tree);
     Q_UNUSED(navigation_data);
     Q_UNUSED(initiating_origin);
     Q_UNUSED(initiator_document);
@@ -701,7 +701,7 @@ bool ContentBrowserClientQt::HandleExternalProtocol(const GURL &url,
                                   std::move(web_contents_getter),
                                   page_transition,
                                   sandbox_flags,
-                                  is_main_frame,
+                                  is_primary_main_frame,
                                   has_user_gesture));
     return true;
 }
@@ -788,14 +788,14 @@ WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(ui::Page
     }
 }
 
-static bool navigationThrottleCallback(content::WebContents *source,
-                                       const navigation_interception::NavigationParams &params)
+static bool navigationThrottleCallback(content::NavigationHandle *handle)
 {
     // We call navigationRequested later in launchExternalUrl for external protocols.
     // The is_external_protocol parameter here is not fully accurate though,
     // and doesn't know about profile specific custom URL schemes.
+    content::WebContents *source = handle->GetWebContents();
     ProfileQt *profile = static_cast<ProfileQt *>(source->GetBrowserContext());
-    if (params.is_external_protocol() && !profile->profileAdapter()->urlSchemeHandler(toQByteArray(params.url().scheme())))
+    if (handle->IsExternalProtocol() && !profile->profileAdapter()->urlSchemeHandler(toQByteArray(handle->GetURL().scheme())))
         return false;
 
     bool navigationAccepted = true;
@@ -806,14 +806,14 @@ static bool navigationThrottleCallback(content::WebContents *source,
         return false;
 
     // Redirects might not be reflected in transition_type at this point (see also chrome/.../web_navigation_api_helpers.cc)
-    auto transition_type = params.transition_type();
-    if (params.is_redirect())
+    auto transition_type = handle->GetPageTransition();
+    if (handle->WasServerRedirect())
         transition_type = ui::PageTransitionFromInt(transition_type | ui::PAGE_TRANSITION_SERVER_REDIRECT);
 
     client->navigationRequested(pageTransitionToNavigationType(transition_type),
-                                toQt(params.url()),
+                                toQt(handle->GetURL()),
                                 navigationAccepted,
-                                params.is_main_frame());
+                                handle->IsInPrimaryMainFrame());
     return !navigationAccepted;
 }
 

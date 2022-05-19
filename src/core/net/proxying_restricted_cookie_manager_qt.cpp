@@ -86,12 +86,13 @@ void ProxyingRestrictedCookieManagerQt::SetCanonicalCookie(const net::CanonicalC
                                                            const GURL &url,
                                                            const net::SiteForCookies &site_for_cookies,
                                                            const url::Origin &top_frame_origin,
+                                                           net::CookieInclusionStatus status,
                                                            SetCanonicalCookieCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     if (allowCookies(url, site_for_cookies)) {
-        underlying_restricted_cookie_manager_->SetCanonicalCookie(cookie, url, site_for_cookies, top_frame_origin, std::move(callback));
+        underlying_restricted_cookie_manager_->SetCanonicalCookie(cookie, url, site_for_cookies, top_frame_origin, status, std::move(callback));
     } else {
         std::move(callback).Run(false);
     }

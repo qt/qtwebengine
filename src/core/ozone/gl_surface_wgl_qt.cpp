@@ -41,9 +41,9 @@ void *GLSurfaceWGLQt::GetHandle()
     return m_surfaceBuffer->GetHandle();
 }
 
-void *GLSurfaceWGLQt::GetDisplay()
+GLDisplay *GLSurfaceWGLQt::GetGLDisplay()
 {
-    return m_surfaceBuffer->GetDisplay();
+    return m_surfaceBuffer->GetGLDisplay();
 }
 
 void *GLSurfaceWGLQt::GetConfig()

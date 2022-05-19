@@ -37,6 +37,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/common/webplugininfo.h"
+#include "extensions/browser/app_sorting.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/content_verifier_delegate.h"
 #include "extensions/browser/extension_pref_store.h"
@@ -46,7 +47,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/notification_types.h"
-#include "extensions/browser/null_app_sorting.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/browser/service_worker_manager.h"
@@ -277,7 +277,7 @@ QuotaService *ExtensionSystemQt::quota_service()
 
 AppSorting *ExtensionSystemQt::app_sorting()
 {
-    return app_sorting_.get();
+    return nullptr;
 }
 
 ContentVerifier *ExtensionSystemQt::content_verifier()
@@ -312,7 +312,6 @@ void ExtensionSystemQt::Init(bool extensions_enabled)
     service_worker_manager_ = std::make_unique<ServiceWorkerManager>(browser_context_);
     user_script_manager_ = std::make_unique<UserScriptManager>(browser_context_);
     quota_service_ = std::make_unique<QuotaService>();
-    app_sorting_ = std::make_unique<NullAppSorting>();
 
     // Make the chrome://extension-icon/ resource available.
     // content::URLDataSource::Add(browser_context_, new ExtensionIconSource(browser_context_));

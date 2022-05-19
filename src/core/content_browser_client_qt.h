@@ -169,16 +169,17 @@ public:
     bool HandleExternalProtocol(
             const GURL &url,
             base::RepeatingCallback<content::WebContents*()> web_contents_getter,
-            int child_id,
             int frame_tree_node_id,
             content::NavigationUIData *navigation_data,
-            bool is_main_frame,
+            bool is_primary_main_frame,
+            bool is_in_fenced_frame_tree,
             network::mojom::WebSandboxFlags sandbox_flags,
             ui::PageTransition page_transition,
             bool has_user_gesture,
             const absl::optional<url::Origin> &initiating_origin,
             content::RenderFrameHost *initiator_document,
             mojo::PendingRemote<network::mojom::URLLoaderFactory> *out_factory) override;
+
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> CreateURLLoaderThrottles(
             const network::ResourceRequest &request, content::BrowserContext *browser_context,
             const base::RepeatingCallback<content::WebContents *()> &wc_getter,

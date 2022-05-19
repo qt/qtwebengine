@@ -34,6 +34,7 @@ public:
                             const GURL &url,
                             const net::SiteForCookies &site_for_cookies,
                             const url::Origin &top_frame_origin,
+                            net::CookieInclusionStatus status,
                             SetCanonicalCookieCallback callback) override;
     void AddChangeListener(const GURL &url,
                            const net::SiteForCookies &site_for_cookies,

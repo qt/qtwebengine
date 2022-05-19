@@ -95,8 +95,8 @@ namespace QtWebEngineCore {
     if (!isInitialized())                       \
         return return_value
 
-#define CHECK_VALID_RENDER_WIDGET_HOST_VIEW(render_view_host) \
-    if (!render_view_host->IsRenderViewLive() && render_view_host->GetWidget()->GetView()) { \
+#define CHECK_VALID_RENDER_WIDGET_HOST_VIEW(render_frame_host) \
+    if (!render_frame_host->IsRenderFrameLive() && render_frame_host->GetView()) { \
         LOG(WARNING) << "Ignore navigation due to terminated render process with invalid RenderWidgetHostView."; \
         return; \
     }
@@ -496,7 +496,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     // Create a RenderView with the initial empty document
     content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
-    if (!rvh->IsRenderViewLive())
+    if (!m_webContents->GetMainFrame()->IsRenderFrameLive())
         static_cast<content::WebContentsImpl*>(m_webContents.get())->CreateRenderViewForRenderManager(
                 rvh, absl::nullopt, nullptr);
 
@@ -579,7 +579,7 @@ void WebContentsAdapter::reload()
 
     bool wasDiscarded = (m_lifecycleState == LifecycleState::Discarded);
     setLifecycleState(LifecycleState::Active);
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
     WebEngineSettings *settings = WebEngineSettings::get(m_adapterClient->webEngineSettings());
     settings->doApply();
     if (!wasDiscarded) // undiscard() already triggers a reload
@@ -594,7 +594,7 @@ void WebContentsAdapter::reloadAndBypassCache()
 
     bool wasDiscarded = (m_lifecycleState == LifecycleState::Discarded);
     setLifecycleState(LifecycleState::Active);
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
     WebEngineSettings *settings = WebEngineSettings::get(m_adapterClient->webEngineSettings());
     settings->doApply();
     if (!wasDiscarded) // undiscard() already triggers a reload
@@ -626,7 +626,7 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
         setLifecycleState(LifecycleState::Active);
     }
 
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
 
     WebEngineSettings::get(m_adapterClient->webEngineSettings())->doApply();
 
@@ -714,7 +714,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     else
         setLifecycleState(LifecycleState::Active);
 
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
 
     WebEngineSettings::get(m_adapterClient->webEngineSettings())->doApply();
 
@@ -865,7 +865,7 @@ void WebContentsAdapter::navigateBack()
 {
     CHECK_INITIALIZED();
     base::RecordAction(base::UserMetricsAction("Back"));
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
     if (!m_webContents->GetController().CanGoBack())
         return;
     m_webContents->GetController().GoBack();
@@ -876,7 +876,7 @@ void WebContentsAdapter::navigateForward()
 {
     CHECK_INITIALIZED();
     base::RecordAction(base::UserMetricsAction("Forward"));
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
     if (!m_webContents->GetController().CanGoForward())
         return;
     m_webContents->GetController().GoForward();
@@ -886,7 +886,7 @@ void WebContentsAdapter::navigateForward()
 void WebContentsAdapter::navigateToIndex(int offset)
 {
     CHECK_INITIALIZED();
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
     m_webContents->GetController().GoToIndex(offset);
     focusIfNecessary();
 }
@@ -894,7 +894,7 @@ void WebContentsAdapter::navigateToIndex(int offset)
 void WebContentsAdapter::navigateToOffset(int offset)
 {
     CHECK_INITIALIZED();
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
     m_webContents->GetController().GoToOffset(offset);
     focusIfNecessary();
 }
@@ -2027,7 +2027,7 @@ void WebContentsAdapter::undiscard()
     // Create a RenderView with the initial empty document
     content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
-    if (!rvh->IsRenderViewLive())
+    if (!m_webContents->GetMainFrame()->IsRenderFrameLive())
         static_cast<content::WebContentsImpl *>(m_webContents.get())
                 ->CreateRenderViewForRenderManager(rvh, absl::nullopt, nullptr);
     m_webContentsDelegate->RenderViewHostChanged(nullptr, rvh);

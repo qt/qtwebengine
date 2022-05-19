@@ -12,7 +12,7 @@ namespace QtWebEngineCore {
 
 RegisterProtocolHandlerRequestControllerImpl::RegisterProtocolHandlerRequestControllerImpl(
     content::WebContents *webContents,
-    content::ProtocolHandler handler)
+    custom_handlers::ProtocolHandler handler)
     : RegisterProtocolHandlerRequestController(
         toQt(handler.url()),
         toQt(handler.protocol()))

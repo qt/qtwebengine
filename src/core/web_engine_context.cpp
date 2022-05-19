@@ -649,8 +649,6 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(sandbox::policy::switches::kNoSandbox);
         qInfo() << "Sandboxing disabled by user.";
     }
-    // Do not try to be clever with device-scale-factor, it messes up scaling in accessibility for us
-    parsedCommandLine->AppendSwitchASCII(switches::kEnableUseZoomForDSF, "false");
 
     parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
 

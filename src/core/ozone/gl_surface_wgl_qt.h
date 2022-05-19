@@ -21,7 +21,7 @@ public:
     bool Initialize(GLSurfaceFormat format) override;
     void Destroy() override;
     void *GetHandle() override;
-    void *GetDisplay() override;
+    GLDisplay *GetGLDisplay() override;
     void *GetConfig() override;
 
 protected:

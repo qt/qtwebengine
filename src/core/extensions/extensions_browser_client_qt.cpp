@@ -502,7 +502,6 @@ ExtensionWebContentsObserver *ExtensionsBrowserClientQt::GetExtensionWebContents
 
 KioskDelegate *ExtensionsBrowserClientQt::GetKioskDelegate()
 {
-    NOTREACHED();
     return nullptr;
 }
 

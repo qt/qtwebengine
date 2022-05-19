@@ -17,13 +17,11 @@ public:
         : m_parent(parent)
         , m_shape(m_parent->m_shape)
     {
-        auto formatIndex = static_cast<int>(m_shape.format);
-        const auto &colorType = m_parent->capabilities_.sk_color_types[formatIndex];
-        DCHECK(colorType != kUnknown_SkColorType)
-                << "SkColorType is invalid for format: " << formatIndex;
+        const auto &colorType = m_shape.characterization.colorType();
+        DCHECK(colorType != kUnknown_SkColorType);
 
         m_texture = m_parent->m_contextState->gr_context()->createBackendTexture(
-                m_shape.sizeInPixels.width(), m_shape.sizeInPixels.height(), colorType,
+                m_shape.characterization.width(), m_shape.characterization.height(), colorType,
                 GrMipMapped::kNo, GrRenderable::kYes);
         DCHECK(m_texture.isValid());
 
@@ -37,7 +35,7 @@ public:
             NOTREACHED();
 #endif
         } else {
-            auto info = SkImageInfo::Make(m_shape.sizeInPixels.width(), m_shape.sizeInPixels.height(),
+            auto info = SkImageInfo::Make(m_shape.characterization.width(), m_shape.characterization.height(),
                                           colorType, kUnpremul_SkAlphaType);
             m_estimatedSize = info.computeMinByteSize();
         }
@@ -118,13 +116,12 @@ void DisplaySkiaOutputDevice::SetFrameSinkId(const viz::FrameSinkId &id)
     bind(id);
 }
 
-bool DisplaySkiaOutputDevice::Reshape(const gfx::Size& sizeInPixels,
-                                      float devicePixelRatio,
-                                      const gfx::ColorSpace& colorSpace,
-                                      gfx::BufferFormat format,
+bool DisplaySkiaOutputDevice::Reshape(const SkSurfaceCharacterization &characterization,
+                                      const gfx::ColorSpace &colorSpace,
+                                      float device_scale_factor,
                                       gfx::OverlayTransform transform)
 {
-    m_shape = Shape{sizeInPixels, devicePixelRatio, colorSpace, format};
+    m_shape = Shape{characterization, device_scale_factor, colorSpace};
     DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
     return true;
 }
@@ -157,10 +154,8 @@ void DisplaySkiaOutputDevice::DiscardBackbuffer()
 {
 }
 
-SkSurface *DisplaySkiaOutputDevice::BeginPaint(bool allocate_frame_buffer,
-                                               std::vector<GrBackendSemaphore> *)
+SkSurface *DisplaySkiaOutputDevice::BeginPaint(std::vector<GrBackendSemaphore> *)
 {
-    Q_UNUSED(allocate_frame_buffer); // FIXME?
     if (!m_backBuffer || m_backBuffer->shape() != m_shape)
         m_backBuffer = std::make_unique<Buffer>(this);
     return m_backBuffer->surface();
@@ -203,7 +198,7 @@ int DisplaySkiaOutputDevice::textureId()
 
 QSize DisplaySkiaOutputDevice::size()
 {
-    return m_frontBuffer ? toQt(m_frontBuffer->shape().sizeInPixels) : QSize();
+    return m_frontBuffer ? toQt(m_frontBuffer->shape().characterization.dimensions()) : QSize();
 }
 
 bool DisplaySkiaOutputDevice::hasAlphaChannel()
@@ -224,7 +219,7 @@ void DisplaySkiaOutputDevice::SwapBuffersFinished()
     }
 
     FinishSwapBuffers(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_ACK),
-                      gfx::Size(m_shape.sizeInPixels.width(), m_shape.sizeInPixels.height()),
+                      gfx::Size(m_shape.characterization.width(), m_shape.characterization.height()),
                       std::move(m_frame));
 }
 

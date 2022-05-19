@@ -210,13 +210,13 @@ void ProfileIODataQt::ConfigureNetworkContextParams(bool in_memory,
     network_context_params->http_cache_enabled = m_httpCacheType != ProfileAdapter::NoCache;
     network_context_params->http_cache_max_size = m_httpCacheMaxSize;
     if (m_httpCacheType == ProfileAdapter::DiskHttpCache && !m_httpCachePath.isEmpty() && !m_inMemoryOnly && !in_memory)
-        network_context_params->http_cache_path = toFilePath(m_httpCachePath);
+        network_context_params->http_cache_directory = toFilePath(m_httpCachePath);
 
     network_context_params->persist_session_cookies = false;
     if (!m_inMemoryOnly && !in_memory) {
         network_context_params->file_paths =
             network::mojom::NetworkContextFilePaths::New();
-        network_context_params->file_paths->data_path = toFilePath(m_dataPath);
+        network_context_params->file_paths->data_directory = toFilePath(m_dataPath);
         network_context_params->file_paths->http_server_properties_file_name = base::FilePath::FromASCII("Network Persistent State");
         network_context_params->file_paths->transport_security_persister_file_name = base::FilePath::FromASCII("TransportSecurity");
         network_context_params->file_paths->trust_token_database_name = base::FilePath::FromASCII("Trust Tokens");

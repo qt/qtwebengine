@@ -85,7 +85,7 @@ void FindTextHelper::startFinding(const QString &findText, bool caseSensitively,
     m_previousFindText = findText;
 
     m_currentFindRequestId = m_findRequestIdCounter++;
-    m_webContents->Find(m_currentFindRequestId, toString16(findText), std::move(options));
+    m_webContents->Find(m_currentFindRequestId, toString16(findText), std::move(options), /*skip_delay=*/true);
 }
 
 void FindTextHelper::stopFinding()

@@ -6,6 +6,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "renderer/content_settings_observer_qt.h"
+#include "base/i18n/rtl.h"
 #include "base/strings/string_split.h"
 #if QT_CONFIG(webengine_spellchecker)
 #include "components/spellcheck/renderer/spellcheck.h"

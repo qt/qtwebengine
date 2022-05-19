@@ -6,9 +6,12 @@
 #include "qtwebenginecoreglobal_p.h"
 #include "web_contents_view_qt.h"
 #include "web_engine_library_info.h"
+
 #include "base/values.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/font_list.h"
+#include "extensions/buildflags/buildflags.h"
+#include "extensions/common/constants.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 
@@ -94,6 +97,12 @@ std::unique_ptr<ui::OSExchangeDataProvider> ui::OSExchangeDataProviderFactory::C
 {
     return nullptr;
 }
+
+#if !BUILDFLAG(ENABLE_EXTENSIONS)
+namespace extensions {
+  const char kExtensionScheme[] = "chrome-extension";
+}
+#endif
 
 #if !QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
 namespace extensions {

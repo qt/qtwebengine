@@ -44,13 +44,13 @@ class CustomURLLoader : public network::mojom::URLLoader
 {
 public:
     static void CreateAndStart(const network::ResourceRequest &request,
-                               network::mojom::URLLoaderRequest loader,
-                               network::mojom::URLLoaderClientPtrInfo client_info,
+                               mojo::PendingReceiver<network::mojom::URLLoader> loader,
+                               mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote,
                                QPointer<ProfileAdapter> profileAdapter)
     {
         // CustomURLLoader will handle its own life-cycle, and delete when
         // the client lets go.
-        auto *customUrlLoader = new CustomURLLoader(request, std::move(loader), std::move(client_info), profileAdapter);
+        auto *customUrlLoader = new CustomURLLoader(request, std::move(loader), std::move(client_remote), profileAdapter);
         customUrlLoader->Start();
     }
 
@@ -83,14 +83,14 @@ public:
 
 private:
     CustomURLLoader(const network::ResourceRequest &request,
-                    network::mojom::URLLoaderRequest loader,
-                    network::mojom::URLLoaderClientPtrInfo client_info,
+                    mojo::PendingReceiver<network::mojom::URLLoader> loader,
+                    mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote,
                     QPointer<ProfileAdapter> profileAdapter)
         // ### We can opt to run the url-loader on the UI thread instead
         : m_taskRunner(base::CreateSingleThreadTaskRunner({ content::BrowserThread::IO }))
         , m_proxy(new URLRequestCustomJobProxy(this, request.url.scheme(), profileAdapter))
         , m_receiver(this, std::move(loader))
-        , m_client(std::move(client_info))
+        , m_client(std::move(client_remote))
         , m_request(request)
     {
         DCHECK(m_taskRunner->RunsTasksInCurrentSequence());
@@ -418,7 +418,7 @@ private:
     scoped_refptr<URLRequestCustomJobProxy> m_proxy;
 
     mojo::Receiver<network::mojom::URLLoader> m_receiver;
-    network::mojom::URLLoaderClientPtr m_client;
+    mojo::Remote<network::mojom::URLLoaderClient> m_client;
     mojo::ScopedDataPipeProducerHandle m_pipeProducerHandle;
     mojo::ScopedDataPipeConsumerHandle m_pipeConsumerHandle;
     std::unique_ptr<mojo::SimpleWatcher> m_watcher;

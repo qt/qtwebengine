@@ -434,6 +434,8 @@ function(add_linker_options target buildDir completeStatic)
     set_target_properties(${cmakeTarget} PROPERTIES STATIC_LIBRARY_OPTIONS "@${objects_rsp}")
     if(LINUX)
          target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${objects_rsp}>")
+         # Chromium is meant for linking with gc-sections, which seems to not always get applied otherwise
+         target_link_options(${cmakeTarget} PRIVATE "-Wl,--gc-sections")
          if(NOT completeStatic)
              target_link_libraries(${cmakeTarget} PRIVATE
                  "$<1:-Wl,--start-group $<$<CONFIG:${config}>:@${archives_rsp}> -Wl,--end-group>"
@@ -836,7 +838,7 @@ macro(append_build_type_setup)
 
     #TODO: refactor to not check for IOS here
     if(NOT QT_FEATURE_webengine_full_debug_info AND NOT IOS)
-        list(APPEND gnArgArg blink_symbol_level=0 remove_v8base_debug_symbols=true)
+        list(APPEND gnArgArg blink_symbol_level=0 v8_symbol_level=0)
     endif()
 
     extend_gn_list(gnArgArg ARGS use_jumbo_build CONDITION QT_FEATURE_webengine_jumbo_build)
