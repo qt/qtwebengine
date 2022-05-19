@@ -40,6 +40,10 @@ public:
         content::RenderFrameHost *render_frame_host,
         const GURL& requesting_origin) override;
 
+    blink::mojom::PermissionStatus GetPermissionStatusForCurrentDocument(content::PermissionType, content::RenderFrameHost *) override;
+
+    blink::mojom::PermissionStatus GetPermissionStatusForWorker(content::PermissionType, content::RenderProcessHost *, const GURL &) override;
+
     void ResetPermission(
         content::PermissionType permission,
         const GURL& requesting_origin,
@@ -55,6 +59,7 @@ public:
 
     content::PermissionControllerDelegate::SubscriptionId SubscribePermissionStatusChange(
         content::PermissionType permission,
+        content::RenderProcessHost* render_process_host,
         content::RenderFrameHost* render_frame_host,
         const GURL& requesting_origin,
         const base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback) override;

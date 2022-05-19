@@ -11,6 +11,7 @@
 #if !BUILDFLAG(IS_MAC)
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_display.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/init/gl_factory.h"
 
@@ -31,7 +32,7 @@ bool GLSurfaceEGL::InitializeExtensionSettingsOneOff()
 
 EGLDisplay GLSurfaceEGL::GetHardwareDisplay()
 {
-    return static_cast<EGLDisplay>(GLSurfaceQt::g_display);
+    return GLSurfaceQt::g_display ? static_cast<EGLDisplay>(GLSurfaceQt::g_display->GetDisplay()) : EGL_NO_DISPLAY;
 }
 
 bool GLSurfaceEGL::IsCreateContextRobustnessSupported()
@@ -141,7 +142,7 @@ bool GLSurfaceEGL::HasEGLExtension(const char *name)
     return ExtensionsContain(GetEGLExtensions(), name);
 }
 
-bool GLSurfaceEGL::InitializeOneOff(gl::EGLDisplayPlatform /*native_display*/)
+bool GLSurfaceEGL::InitializeOneOff(gl::EGLDisplayPlatform /*native_display*/, uint64_t)
 {
     return GLSurfaceEGLQt::InitializeOneOff();
 }
@@ -188,8 +189,10 @@ bool GLSurfaceEGLQt::InitializeOneOff()
     // Must be called before initializing the display.
     g_driver_egl.InitializeClientExtensionBindings();
 
-    g_display = GLContextHelper::getEGLDisplay();
-    if (!g_display) {
+    auto *egl_display = new GLDisplayEGL();
+    g_display = egl_display;
+    egl_display->SetDisplay(GLContextHelper::getEGLDisplay());
+    if (!g_display->GetDisplay()) {
         LOG(ERROR) << "GLContextHelper::getEGLDisplay() failed.";
         return false;
     }
@@ -200,13 +203,13 @@ bool GLSurfaceEGLQt::InitializeOneOff()
         return false;
     }
 
-    if (!eglInitialize(g_display, NULL, NULL)) {
+    if (!eglInitialize(g_display->GetDisplay(), NULL, NULL)) {
         LOG(ERROR) << "eglInitialize failed with error " << GetLastEGLErrorString();
         return false;
     }
 
     g_client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
-    g_extensions = eglQueryString(g_display, EGL_EXTENSIONS);
+    g_extensions = eglQueryString(g_display->GetDisplay(), EGL_EXTENSIONS);
     g_egl_surfaceless_context_supported = ExtensionsContain(g_extensions.c_str(), "EGL_KHR_surfaceless_context");
     if (g_egl_surfaceless_context_supported) {
         scoped_refptr<GLSurface> surface = new GLSurfacelessQtEGL(gfx::Size(1, 1));
@@ -242,7 +245,7 @@ bool GLSurfaceEGLQt::Initialize(GLSurfaceFormat format)
     Q_ASSERT(!m_surfaceBuffer);
     m_format = format;
 
-    EGLDisplay display = g_display;
+    EGLDisplay display = g_display->GetDisplay();
     if (!display) {
         LOG(ERROR) << "Trying to create surface with invalid display.";
         return false;
@@ -270,7 +273,7 @@ bool GLSurfaceEGLQt::Initialize(GLSurfaceFormat format)
 void GLSurfaceEGLQt::Destroy()
 {
     if (m_surfaceBuffer) {
-        if (!eglDestroySurface(g_display, m_surfaceBuffer))
+        if (!eglDestroySurface(g_display->GetDisplay(), m_surfaceBuffer))
             LOG(ERROR) << "eglDestroySurface failed with error " << GetLastEGLErrorString();
 
         m_surfaceBuffer = 0;

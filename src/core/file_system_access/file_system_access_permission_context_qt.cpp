@@ -168,8 +168,7 @@ bool ShouldBlockAccessToPath(const base::FilePath &check_path, HandleType handle
         base::FilePath diff;
         nearest_ancestor.AppendRelativePath(check_path, &diff);
 
-        std::vector<base::FilePath::StringType> diff_components;
-        diff.GetComponents(&diff_components);
+        auto diff_components = diff.GetComponents();
         if (diff_components.size() > 0 && toQt(diff_components[0]).contains(QCoreApplication::applicationName())) {
             // The relative path contains the application name. Grant access.
             return false;

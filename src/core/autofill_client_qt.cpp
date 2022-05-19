@@ -19,7 +19,8 @@
 namespace QtWebEngineCore {
 
 AutofillClientQt::AutofillClientQt(content::WebContents *webContents)
-    : content::WebContentsObserver(webContents)
+    : content::WebContentsUserData<AutofillClientQt>(*webContents)
+    , content::WebContentsObserver(webContents)
     , m_popupController(new AutofillPopupController(new AutofillPopupControllerPrivate))
 {
 }
@@ -105,6 +106,11 @@ void AutofillClientQt::HideAutofillPopup(autofill::PopupHidingReason)
 bool AutofillClientQt::IsAutocompleteEnabled()
 {
     return autofill::prefs::IsAutocompleteEnabled(GetPrefs());
+}
+
+bool AutofillClientQt::IsPasswordManagerEnabled()
+{
+    return false;
 }
 
 void AutofillClientQt::PropagateAutofillPredictions(content::RenderFrameHost *,

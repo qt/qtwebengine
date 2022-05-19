@@ -37,9 +37,8 @@ SystemNetworkContextManager *g_system_network_context_manager = nullptr;
 
 network::mojom::HttpAuthStaticParamsPtr CreateHttpAuthStaticParams()
 {
-    network::mojom::HttpAuthStaticParamsPtr auth_static_params = network::mojom::HttpAuthStaticParams::New();
-
-    auth_static_params->allowed_schemes = { "basic", "digest", "ntlm", "negotiate" };
+    network::mojom::HttpAuthStaticParamsPtr auth_static_params =
+        network::mojom::HttpAuthStaticParams::New();
 
     return auth_static_params;
 }
@@ -47,6 +46,8 @@ network::mojom::HttpAuthStaticParamsPtr CreateHttpAuthStaticParams()
 network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams()
 {
     network::mojom::HttpAuthDynamicParamsPtr auth_dynamic_params = network::mojom::HttpAuthDynamicParams::New();
+
+    auth_dynamic_params->allowed_schemes = { "basic", "digest", "ntlm", "negotiate" };
 
     auto *command_line = base::CommandLine::ForCurrentProcess();
     auth_dynamic_params->server_allowlist = command_line->GetSwitchValueASCII(switches::kAuthServerAllowlist);
@@ -216,8 +217,9 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(network::mojom::Networ
         log_list_mojo.push_back(std::move(log_info));
     }
     network_service->UpdateCtLogList(
-        std::move(log_list_mojo),
-        certificate_transparency::GetLogListTimestamp());
+            std::move(log_list_mojo),
+            certificate_transparency::GetLogListTimestamp(),
+            base::DoNothing());
 
     // The system NetworkContext is created first
     network_service_network_context_.reset();

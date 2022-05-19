@@ -8,8 +8,9 @@
 #include <net/cert/x509_certificate.h>
 #include <net/cert/x509_util.h>
 #include <ui/events/event_constants.h>
-#include <ui/gfx/image/image.h>
-#include <ui/gfx/image/image_skia.h>
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 
 #include <QtCore/qcoreapplication.h>

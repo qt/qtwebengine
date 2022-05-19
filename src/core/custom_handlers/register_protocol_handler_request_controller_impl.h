@@ -4,10 +4,10 @@
 #ifndef REGISTER_PROTOCOL_HANDLER_REQUEST_CONTROLLER_IMPL_H
 #define REGISTER_PROTOCOL_HANDLER_REQUEST_CONTROLLER_IMPL_H
 
-#include "custom_handlers/register_protocol_handler_request_controller.h"
+#include "register_protocol_handler_request_controller.h"
 
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/custom_handlers/protocol_handler.h"
+#include "components/custom_handlers/protocol_handler.h"
 
 namespace custom_handlers {
 class ProtocolHandlerRegistry;
@@ -20,7 +20,7 @@ class RegisterProtocolHandlerRequestControllerImpl final : public RegisterProtoc
 public:
     RegisterProtocolHandlerRequestControllerImpl(
         content::WebContents *webContents,
-        content::ProtocolHandler handler);
+        custom_handlers::ProtocolHandler handler);
 
     ~RegisterProtocolHandlerRequestControllerImpl();
 
@@ -30,7 +30,7 @@ protected:
 
 private:
     custom_handlers::ProtocolHandlerRegistry *protocolHandlerRegistry();
-    content::ProtocolHandler m_handler;
+    custom_handlers::ProtocolHandler m_handler;
 };
 
 } // namespace QtWebEngineCore

@@ -147,7 +147,6 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
       base::BindOnce(
             &extensions::StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent,
             extension_id, view_id, embedded, m_frame_tree_node_id,
-            -1 /* render_process_id */, -1 /* render_frame_id */,
             std::move(transferrable_loader), response_url));
 }
 

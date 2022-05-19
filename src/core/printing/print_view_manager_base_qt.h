@@ -47,7 +47,7 @@ public:
     void DidPrintDocument(printing::mojom::DidPrintDocumentParamsPtr params,
                           DidPrintDocumentCallback callback) override;
     void GetDefaultPrintSettings(GetDefaultPrintSettingsCallback callback) override;
-    void UpdatePrintSettings(int32_t cookie, base::Value job_settings,
+    void UpdatePrintSettings(int32_t cookie, base::Value::Dict job_settings,
                              UpdatePrintSettingsCallback callback) override;
     void ScriptedPrint(printing::mojom::ScriptedPrintParamsPtr,
                        printing::mojom::PrintManagerHost::ScriptedPrintCallback) override;
@@ -93,6 +93,11 @@ private:
     // No-op if no print job is pending. Returns true if at least one page has
     // been requested to the renderer.
     bool RenderAllMissingPagesNow();
+
+    // Runs `callback` with `params` to reply to ScriptedPrint().
+    void ScriptedPrintReply(ScriptedPrintCallback callback,
+                            int process_id,
+                            printing::mojom::PrintPagesParamsPtr params);
 
     // Checks that synchronization is correct with |print_job_| based on |cookie|.
     bool PrintJobHasDocument(int cookie);
@@ -147,6 +152,8 @@ private:
     // rendered or the print settings are being loaded.
     base::OnceClosure m_quitInnerLoop;
     scoped_refptr<printing::PrintQueriesQueue> m_printerQueriesQueue;
+
+    base::WeakPtrFactory<PrintViewManagerBaseQt> weak_ptr_factory_{this};
 };
 
 } // namespace QtWebEngineCore

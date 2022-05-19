@@ -53,8 +53,10 @@ public:
     void UpdatePopup(const std::vector<autofill::Suggestion> &, autofill::PopupType) override;
     void HideAutofillPopup(autofill::PopupHidingReason reason) override;
     bool IsAutocompleteEnabled() override;
+    bool IsPasswordManagerEnabled() override;
     void PropagateAutofillPredictions(content::RenderFrameHost *,
                                       const std::vector<autofill::FormStructure *> &) override;
+
 
 private:
     explicit AutofillClientQt(content::WebContents *webContents);

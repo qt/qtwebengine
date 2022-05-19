@@ -742,8 +742,8 @@ void WebContentsDelegateQt::RegisterProtocolHandler(content::RenderFrameHost *fr
 {
     content::BrowserContext *context = frameHost->GetBrowserContext();
 
-    content::ProtocolHandler handler =
-        content::ProtocolHandler::CreateProtocolHandler(protocol, url);
+    custom_handlers::ProtocolHandler handler =
+        custom_handlers::ProtocolHandler::CreateProtocolHandler(protocol, url);
 
     custom_handlers::ProtocolHandlerRegistry *registry =
         ProtocolHandlerRegistryFactory::GetForBrowserContext(context);
@@ -759,8 +759,8 @@ void WebContentsDelegateQt::UnregisterProtocolHandler(content::RenderFrameHost *
 {
     content::BrowserContext* context = frameHost->GetBrowserContext();
 
-    content::ProtocolHandler handler =
-        content::ProtocolHandler::CreateProtocolHandler(protocol, url);
+    custom_handlers::ProtocolHandler handler =
+        custom_handlers::ProtocolHandler::CreateProtocolHandler(protocol, url);
 
     custom_handlers::ProtocolHandlerRegistry* registry =
         ProtocolHandlerRegistryFactory::GetForBrowserContext(context);

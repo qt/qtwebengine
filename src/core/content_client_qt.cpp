@@ -49,7 +49,6 @@ const char kWidevineCdmFileName[] =
 
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "pdf/pdf.h"
-#include "pdf/pdf_ppapi.h"
 const char kPdfPluginMimeType[] = "application/x-google-chrome-pdf";
 const char kPdfPluginPath[] = "internal-pdf-viewer";
 #endif // QT_CONFIG(webengine_printing_and_pdf)
@@ -124,10 +123,6 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins)
     pdf_info.path = base::FilePath::FromUTF8Unsafe(kPdfPluginPath);
     content::WebPluginMimeType pdf_mime_type(kPdfPluginMimeType, "pdf", "Portable Document Format");
     pdf_info.mime_types.push_back(pdf_mime_type);
-    pdf_info.internal_entry_points.get_interface = chrome_pdf::PPP_GetInterface;
-    pdf_info.internal_entry_points.initialize_module = chrome_pdf::PPP_InitializeModule;
-    pdf_info.internal_entry_points.shutdown_module = chrome_pdf::PPP_ShutdownModule;
-    pdf_info.permissions = ppapi::PERMISSION_DEV | ppapi::PERMISSION_PDF;
     plugins->push_back(pdf_info);
 #endif // QT_CONFIG(webengine_printing_and_pdf)
 }

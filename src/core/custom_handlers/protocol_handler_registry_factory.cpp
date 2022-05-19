@@ -63,7 +63,7 @@ bool ProtocolHandlerRegistryFactory::ServiceIsNULLWhileTesting() const
 KeyedService *ProtocolHandlerRegistryFactory::BuildServiceInstanceFor(content::BrowserContext *context) const
 {
     custom_handlers::ProtocolHandlerRegistry *registry =
-        new custom_handlers::ProtocolHandlerRegistry(context,
+        new custom_handlers::ProtocolHandlerRegistry(/*prefs*/ nullptr,
                                                      std::make_unique<ProtocolHandlerRegistryDelegateQt>());
 
     // Must be called as a part of the creation process.

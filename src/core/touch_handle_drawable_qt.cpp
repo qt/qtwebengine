@@ -128,10 +128,11 @@ gfx::RectF TouchHandleDrawableQt::GetVisibleBounds() const
     bounds.Offset(m_originPosition.x(), m_originPosition.y());
 
     gfx::RectF visibleBounds(bounds);
-    visibleBounds.Inset(kSelectionHandlePadding,
-                        kSelectionHandlePadding + kSelectionHandleVerticalVisualOffset,
-                        kSelectionHandlePadding,
-                        kSelectionHandlePadding);
+    visibleBounds.Inset(gfx::InsetsF::TLBR(
+                            kSelectionHandlePadding,
+                            kSelectionHandlePadding + kSelectionHandleVerticalVisualOffset,
+                            kSelectionHandlePadding,
+                            kSelectionHandlePadding));
     return visibleBounds;
 }
 

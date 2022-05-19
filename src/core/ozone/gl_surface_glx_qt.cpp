@@ -8,6 +8,7 @@
 #include "gl_context_qt.h"
 #include "ozone/gl_surface_glx_qt.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_display.h"
 #include "ui/gl/gl_surface_glx.h"
 
 namespace gl {
@@ -90,8 +91,8 @@ bool GLSurfaceGLXQt::InitializeOneOff()
     if (s_initialized)
         return true;
 
-    g_display = GLContextHelper::getXDisplay();
-    if (!g_display) {
+    g_display = new GLDisplayX11();
+    if (!g_display->GetDisplay()) {
         LOG(ERROR) << "GLContextHelper::getXDisplay() failed.";
         return false;
     }
@@ -102,7 +103,7 @@ bool GLSurfaceGLXQt::InitializeOneOff()
         return false;
     }
 
-    Display* display = static_cast<Display*>(g_display);
+    Display* display = static_cast<Display*>(g_display->GetDisplay());
     int major, minor;
     if (!glXQueryVersion(display, &major, &minor)) {
         LOG(ERROR) << "glxQueryVersion failed.";
@@ -124,7 +125,7 @@ bool GLSurfaceGLXQt::InitializeExtensionSettingsOneOff()
     if (!s_initialized)
         return false;
 
-    Display* display = static_cast<Display*>(g_display);
+    Display* display = static_cast<Display*>(g_display->GetDisplay());
     GLSurfaceQt::g_extensions = glXQueryExtensionsString(display, 0);
     g_driver_glx.InitializeExtensionBindings(g_extensions.c_str());
     return true;
@@ -139,7 +140,7 @@ bool GLSurfaceGLXQt::Initialize(GLSurfaceFormat format)
 {
     Q_ASSERT(!m_surfaceBuffer);
 
-    Display* display = static_cast<Display*>(g_display);
+    Display* display = static_cast<Display*>(g_display->GetDisplay());
     const int pbuffer_attributes[] = {
         GLX_PBUFFER_WIDTH, m_size.width(),
         GLX_PBUFFER_HEIGHT, m_size.height(),
@@ -162,7 +163,7 @@ bool GLSurfaceGLXQt::Initialize(GLSurfaceFormat format)
 void GLSurfaceGLXQt::Destroy()
 {
     if (m_surfaceBuffer) {
-        glXDestroyPbuffer(static_cast<Display*>(g_display), m_surfaceBuffer);
+        glXDestroyPbuffer(static_cast<Display*>(g_display->GetDisplay()), m_surfaceBuffer);
         m_surfaceBuffer = 0;
     }
 }

@@ -12,6 +12,7 @@
 #include "web_contents_view_qt.h"
 #include "web_engine_settings.h"
 
+#include "base/task/post_task.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
@@ -293,6 +294,7 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
             case blink::MEDIA_DEVICE_ACCESS:
             case blink::MEDIA_DEVICE_UPDATE:
             case blink::MEDIA_GENERATE_STREAM:
+            case blink::MEDIA_GET_OPEN_DEVICE:
                 getDefaultDevices(request.requested_audio_device_id, request.requested_video_device_id,
                                   microphoneRequested, webcamRequested, &devices);
                 break;

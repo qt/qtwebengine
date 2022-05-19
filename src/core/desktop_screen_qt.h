@@ -17,7 +17,9 @@ public:
     ~DesktopScreenQt() override;
 
     display::Display GetDisplayNearestWindow(gfx::NativeWindow /*window*/) const override;
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
     bool SetScreenSaverSuspended(bool suspend) override;
+#endif
     bool IsScreenSaverActive() const override;
 
 private:

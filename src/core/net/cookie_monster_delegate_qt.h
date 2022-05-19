@@ -24,6 +24,7 @@
 #endif
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/cookie_store.h"
 #include "services/network/public/mojom/cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -46,7 +47,7 @@ class Q_WEBENGINECORE_PRIVATE_EXPORT CookieMonsterDelegateQt : public base::RefC
     QPointer<QWebEngineCookieStore> m_client;
     std::vector<std::unique_ptr<net::CookieChangeSubscription>> m_subscriptions;
 
-    network::mojom::CookieManagerPtr m_mojoCookieManager;
+    mojo::Remote<network::mojom::CookieManager> m_mojoCookieManager;
     std::unique_ptr<network::mojom::CookieChangeListener> m_listener;
     std::unique_ptr<network::mojom::CookieRemoteAccessFilter> m_filter;
     mojo::Receiver<network::mojom::CookieChangeListener> m_receiver;
@@ -65,7 +66,7 @@ public:
     void deleteAllCookies();
 
     void setClient(QWebEngineCookieStore *client);
-    void setMojoCookieManager(network::mojom::CookieManagerPtrInfo cookie_manager_info);
+    void setMojoCookieManager(mojo::PendingRemote<network::mojom::CookieManager> cookie_manager_info);
     void unsetMojoCookieManager();
     void setHasFilter(bool b);
 

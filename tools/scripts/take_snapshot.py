@@ -146,6 +146,8 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/colorama')
             or file_path.startswith('third_party/depot_tools')
             or (file_path.startswith('third_party/node/node_modules/')
+              and not file_path.startswith('third_party/node/node_modules/@types/d3')
+              and not file_path.startswith('third_party/node/node_modules/@types/trusted-types/')
               and not file_path.startswith('third_party/node/node_modules/cancel-token/')
               and not file_path.startswith('third_party/node/node_modules/cssbeautify/')
               and not file_path.startswith('third_party/node/node_modules/has-ansi/')

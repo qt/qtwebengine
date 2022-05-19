@@ -5,6 +5,7 @@
 
 #include "api/qwebenginemessagepumpscheduler_p.h"
 
+#include "base/message_loop/message_pump.h"
 #include "base/message_loop/message_pump_for_ui.h"
 #include "base/process/process.h"
 #include "base/task/current_thread.h"
@@ -111,9 +112,14 @@ public:
         m_scheduler.scheduleWork();
     }
 
-    void ScheduleDelayedWork(const base::TimeTicks &delayed_work_time) override
+    void ScheduleDelayedWork(const Delegate::NextWorkInfo &next_work_info) override
     {
         // NOTE: This method may called from any thread at any time.
+        ScheduleDelayedWork(next_work_info.delayed_run_time);
+    }
+
+    void ScheduleDelayedWork(const base::TimeTicks &delayed_work_time)
+    {
         ensureDelegate();
         m_scheduler.scheduleDelayedWork(GetTimeIntervalMilliseconds(delayed_work_time));
     }

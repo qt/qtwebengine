@@ -292,6 +292,7 @@ QRect BrowserAccessibilityInterface::rect() const
     if (!q->manager()) // needed implicitly by GetScreenBoundsRect()
         return QRect();
     gfx::Rect bounds = q->GetUnclippedScreenBoundsRect();
+    bounds = gfx::ScaleToRoundedRect(bounds, 1.f / q->manager()->device_scale_factor()); // FIXME: check
     return QRect(bounds.x(), bounds.y(), bounds.width(), bounds.height());
 }
 

@@ -46,13 +46,6 @@ public:
         std::move(private_key_callback).Run(m_key);
     }
 
-#if BUILDFLAG(IS_MAC)
-    SecIdentityRef sec_identity_ref() const override
-    {
-        return nullptr;
-    }
-#endif
-
 private:
     scoped_refptr<net::SSLPrivateKey> m_key;
 };

@@ -51,7 +51,7 @@ static ProfileAdapter::PermissionType toQt(content::PermissionType type)
     case content::PermissionType::AR:
     case content::PermissionType::VR:
     case content::PermissionType::STORAGE_ACCESS_GRANT:
-    case content::PermissionType::FONT_ACCESS:
+    case content::PermissionType::LOCAL_FONTS:
     case content::PermissionType::DISPLAY_CAPTURE:
     case content::PermissionType::NUM:
         LOG(INFO) << "Unexpected unsupported permission type: " << static_cast<int>(type);
@@ -289,6 +289,24 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForFrame(
                 render_frame_host->GetLastCommittedOrigin().GetURL());
 }
 
+blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForCurrentDocument(
+        content::PermissionType permission,
+        content::RenderFrameHost *render_frame_host)
+{
+    return GetPermissionStatusForFrame(
+                permission,
+                render_frame_host,
+                render_frame_host->GetLastCommittedOrigin().GetURL());
+}
+
+blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForWorker(
+        content::PermissionType permission,
+        content::RenderProcessHost *render_process_host,
+        const GURL &url)
+{
+    return GetPermissionStatus(permission, url, url);
+}
+
 void PermissionManagerQt::ResetPermission(
     content::PermissionType permission,
     const GURL& requesting_origin,
@@ -304,6 +322,7 @@ void PermissionManagerQt::ResetPermission(
 
 content::PermissionControllerDelegate::SubscriptionId PermissionManagerQt::SubscribePermissionStatusChange(
     content::PermissionType permission,
+    content::RenderProcessHost * /*render_process_host*/,
     content::RenderFrameHost * /* render_frame_host */,
     const GURL& requesting_origin,
     base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback)

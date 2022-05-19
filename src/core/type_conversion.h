@@ -169,6 +169,11 @@ inline QSizeF toQt(const gfx::SizeF &size)
     return QSizeF(size.width(), size.height());
 }
 
+inline QSize toQt(const SkISize &size)
+{
+    return QSize(size.width(), size.height());
+}
+
 inline QColor toQt(const SkColor &c)
 {
     return QColor(SkColorGetR(c), SkColorGetG(c), SkColorGetB(c), SkColorGetA(c));
