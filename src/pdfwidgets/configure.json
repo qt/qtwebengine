@@ -13,7 +13,7 @@
        "pdf-widgets": {
             "label": "Support Qt PDF Widgets",
             "purpose": "Provides Qt PDF Widgets support.",
-            "condition": "module.widgets",
+            "condition": "features.widgets",
             "output": [ "privateFeature" ]
         }
     },
