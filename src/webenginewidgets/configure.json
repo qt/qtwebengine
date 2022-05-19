@@ -13,7 +13,7 @@
        "webengine-widgets": {
             "label": "Support Qt WebEngine Widgets",
             "purpose": "Provides WebEngine Widgets support.",
-            "condition": "module.widgets",
+            "condition": "features.widgets",
             "output": [ "privateFeature" ]
         }
     },
