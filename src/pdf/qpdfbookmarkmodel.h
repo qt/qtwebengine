@@ -53,16 +53,8 @@ class Q_PDF_EXPORT QPdfBookmarkModel : public QAbstractItemModel
     Q_OBJECT
 
     Q_PROPERTY(QPdfDocument* document READ document WRITE setDocument NOTIFY documentChanged)
-    Q_PROPERTY(StructureMode structureMode READ structureMode WRITE setStructureMode NOTIFY structureModeChanged)
 
 public:
-    enum class StructureMode
-    {
-        Tree = 1,
-        List
-    };
-    Q_ENUM(StructureMode)
-
     enum class Role : int
     {
         Title = Qt::DisplayRole,
@@ -81,9 +73,6 @@ public:
     QPdfDocument* document() const;
     void setDocument(QPdfDocument *document);
 
-    StructureMode structureMode() const;
-    void setStructureMode(StructureMode mode);
-
     QVariant data(const QModelIndex &index, int role) const override;
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex &index) const override;
@@ -93,7 +82,6 @@ public:
 
 Q_SIGNALS:
     void documentChanged(QPdfDocument *document);
-    void structureModeChanged(QPdfBookmarkModel::StructureMode structureMode);
 
 private:
     QHash<int, QByteArray> m_roleNames;

@@ -169,7 +169,6 @@ struct QPdfBookmarkModelPrivate
     QPdfBookmarkModelPrivate()
         : m_rootNode(new BookmarkNode(nullptr))
         , m_document(nullptr)
-        , m_structureMode(QPdfBookmarkModel::StructureMode::Tree)
     {
     }
 
@@ -202,13 +201,8 @@ struct QPdfBookmarkModelPrivate
         while (bookmark) {
             BookmarkNode *childBookmarkNode = nullptr;
 
-            if (m_structureMode == QPdfBookmarkModel::StructureMode::Tree) {
-                childBookmarkNode = new BookmarkNode(parentBookmarkNode);
-                parentBookmarkNode->appendChild(childBookmarkNode);
-            } else if (m_structureMode == QPdfBookmarkModel::StructureMode::List) {
-                childBookmarkNode = new BookmarkNode(m_rootNode.data());
-                m_rootNode->appendChild(childBookmarkNode);
-            }
+            childBookmarkNode = new BookmarkNode(parentBookmarkNode);
+            parentBookmarkNode->appendChild(childBookmarkNode);
             Q_ASSERT(childBookmarkNode);
 
             const int titleLength = int(FPDFBookmark_GetTitle(bookmark, nullptr, 0));
@@ -261,7 +255,6 @@ struct QPdfBookmarkModelPrivate
 
     QScopedPointer<BookmarkNode> m_rootNode;
     QPointer<QPdfDocument> m_document;
-    QPdfBookmarkModel::StructureMode m_structureMode;
 };
 
 
@@ -295,22 +288,6 @@ void QPdfBookmarkModel::setDocument(QPdfDocument *document)
 
     if (d->m_document)
         connect(d->m_document, SIGNAL(statusChanged(QPdfDocument::Status)), this, SLOT(_q_documentStatusChanged()));
-
-    d->rebuild();
-}
-
-QPdfBookmarkModel::StructureMode QPdfBookmarkModel::structureMode() const
-{
-    return d->m_structureMode;
-}
-
-void QPdfBookmarkModel::setStructureMode(StructureMode mode)
-{
-    if (d->m_structureMode == mode)
-        return;
-
-    d->m_structureMode = mode;
-    emit structureModeChanged(d->m_structureMode);
 
     d->rebuild();
 }
