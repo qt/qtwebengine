@@ -139,6 +139,7 @@ public:
 
     void addWebContentsAdapterClient(WebContentsAdapterClient *client);
     void removeWebContentsAdapterClient(WebContentsAdapterClient *client);
+    void releaseAllWebContentsAdapterClients();
 
     // KEEP IN SYNC with API or add mapping layer
     enum HttpCacheType {

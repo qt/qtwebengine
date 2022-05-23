@@ -181,6 +181,8 @@ QQuickWebEngineProfilePrivate::~QQuickWebEngineProfilePrivate()
 
     if (m_profileAdapter != QtWebEngineCore::ProfileAdapter::defaultProfileAdapter())
         delete m_profileAdapter;
+    else if (m_profileAdapter)
+        m_profileAdapter->releaseAllWebContentsAdapterClients();
 }
 
 void QQuickWebEngineProfilePrivate::addWebContentsAdapterClient(QtWebEngineCore::WebContentsAdapterClient *adapter)
