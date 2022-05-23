@@ -25,7 +25,6 @@ qt_internal_add_module(Pdf
         qpdfsearchmodel.cpp qpdfsearchmodel.h qpdfsearchmodel_p.h
         qpdfselection.cpp qpdfselection.h qpdfselection_p.h
         qtpdfglobal.h
-        qpdfnamespace.h
     INCLUDE_DIRECTORIES
         ../3rdparty/chromium
     DEFINES

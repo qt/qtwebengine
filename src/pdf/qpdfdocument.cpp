@@ -760,35 +760,35 @@ QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions
 
     int rotation = 0;
     switch (renderOptions.rotation()) {
-    case QPdf::Rotate0:
+    case QPdfDocumentRenderOptions::Rotation::Rotate0:
         rotation = 0;
         break;
-    case QPdf::Rotate90:
+    case QPdfDocumentRenderOptions::Rotation::Rotate90:
         rotation = 1;
         break;
-    case QPdf::Rotate180:
+    case QPdfDocumentRenderOptions::Rotation::Rotate180:
         rotation = 2;
         break;
-    case QPdf::Rotate270:
+    case QPdfDocumentRenderOptions::Rotation::Rotate270:
         rotation = 3;
         break;
     }
 
-    const QPdf::RenderFlags renderFlags = renderOptions.renderFlags();
+    const QPdfDocumentRenderOptions::RenderFlags renderFlags = renderOptions.renderFlags();
     int flags = 0;
-    if (renderFlags & QPdf::RenderAnnotations)
+    if (renderFlags & QPdfDocumentRenderOptions::RenderFlag::Annotations)
         flags |= FPDF_ANNOT;
-    if (renderFlags & QPdf::RenderOptimizedForLcd)
+    if (renderFlags & QPdfDocumentRenderOptions::RenderFlag::OptimizedForLcd)
         flags |= FPDF_LCD_TEXT;
-    if (renderFlags & QPdf::RenderGrayscale)
+    if (renderFlags & QPdfDocumentRenderOptions::RenderFlag::Grayscale)
         flags |= FPDF_GRAYSCALE;
-    if (renderFlags & QPdf::RenderForceHalftone)
+    if (renderFlags & QPdfDocumentRenderOptions::RenderFlag::ForceHalftone)
         flags |= FPDF_RENDER_FORCEHALFTONE;
-    if (renderFlags & QPdf::RenderTextAliased)
+    if (renderFlags & QPdfDocumentRenderOptions::RenderFlag::TextAliased)
         flags |= FPDF_RENDER_NO_SMOOTHTEXT;
-    if (renderFlags & QPdf::RenderImageAliased)
+    if (renderFlags & QPdfDocumentRenderOptions::RenderFlag::ImageAliased)
         flags |= FPDF_RENDER_NO_SMOOTHIMAGE;
-    if (renderFlags & QPdf::RenderPathAliased)
+    if (renderFlags & QPdfDocumentRenderOptions::RenderFlag::PathAliased)
         flags |= FPDF_RENDER_NO_SMOOTHPATH;
 
     if (renderOptions.scaledClipRect().isValid()) {

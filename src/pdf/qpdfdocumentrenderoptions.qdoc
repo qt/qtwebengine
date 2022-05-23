@@ -52,13 +52,42 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QPdfDocumentRenderOptions::Rotation
+
+    This enum describes the rotation of the page for rendering.
+
+    \value Rotate0 Do not rotate (the default)
+    \value Rotate90 Rotate 90 degrees clockwise
+    \value Rotate180 Rotate 180 degrees
+    \value Rotate270 Rotate 270 degrees clockwise
+
+    \sa QPdfDocument::render()
+*/
+/*!
+    \enum QPdfDocumentRenderOptions::RenderFlag
+
+    This enum is used to describe how a page should be rendered.
+
+    \value None The default value, representing no flags.
+    \value Annotations The page is rendered with annotations.
+    \value OptimizedForLcd The text of the page is rendered optimized for LCD display.
+    \value Grayscale The page is rendered grayscale.
+    \value ForceHalftone Always use halftones for rendering if the output image is stretched.
+    \value TextAliased Anti-aliasing is disabled for rendering text.
+    \value ImageAliased Anti-aliasing is disabled for rendering images.
+    \value PathAliased Anti-aliasing is disabled for rendering paths.
+
+    \sa QPdfDocument::render()
+*/
+
+/*!
     \fn QPdfDocumentRenderOptions::QPdfDocumentRenderOptions()
 
     Constructs a QPdfDocumentRenderOptions object.
 */
 
 /*!
-    \fn  QPdf::Rotation QPdfDocumentRenderOptions::rotation() const
+    \fn  QPdfDocumentRenderOptions::Rotation QPdfDocumentRenderOptions::rotation() const
 
     Returns the rotation used for rendering a page from a PDF document.
 
@@ -66,7 +95,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QPdfDocumentRenderOptions::setRotation(QPdf::Rotation rotation)
+    \fn void QPdfDocumentRenderOptions::setRotation(QPdfDocumentRenderOptions::Rotation rotation)
 
     Sets the \a rotation used for rendering a page from a PDF document.
 
@@ -74,7 +103,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QPdf::RenderFlags QPdfDocumentRenderOptions::renderFlags() const
+    \fn QPdfDocumentRenderOptions::RenderFlags QPdfDocumentRenderOptions::renderFlags() const
 
     Returns the special flags used for rendering a page from a PDF document.
 
@@ -82,7 +111,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QPdfDocumentRenderOptions::setRenderFlags(QPdf::RenderFlags flags)
+    \fn void QPdfDocumentRenderOptions::setRenderFlags(QPdfDocumentRenderOptions::RenderFlags flags)
 
     Sets the special \a flags used for rendering a page from a PDF document.
 

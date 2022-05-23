@@ -41,7 +41,7 @@
 #ifndef QPDFDOCUMENTRENDEROPTIONS_H
 #define QPDFDOCUMENTRENDEROPTIONS_H
 
-#include <QtPdf/qpdfnamespace.h>
+#include <QtPdf/qtpdfglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
 
@@ -50,13 +50,32 @@ QT_BEGIN_NAMESPACE
 class QPdfDocumentRenderOptions
 {
 public:
+    enum class Rotation {
+        Rotate0,
+        Rotate90,
+        Rotate180,
+        Rotate270
+    };
+
+    enum class RenderFlag {
+        None = 0x000,
+        Annotations = 0x001,
+        OptimizedForLcd = 0x002,
+        Grayscale = 0x004,
+        ForceHalftone = 0x008,
+        TextAliased = 0x010,
+        ImageAliased = 0x020,
+        PathAliased = 0x040
+    };
+    Q_DECLARE_FLAGS(RenderFlags, RenderFlag)
+
     constexpr QPdfDocumentRenderOptions() noexcept : m_renderFlags(0), m_rotation(0), m_reserved(0) {}
 
-    constexpr QPdf::Rotation rotation() const noexcept { return static_cast<QPdf::Rotation>(m_rotation); }
-    constexpr void setRotation(QPdf::Rotation r) noexcept { m_rotation = r; }
+    constexpr Rotation rotation() const noexcept { return static_cast<Rotation>(m_rotation); }
+    constexpr void setRotation(Rotation r) noexcept { m_rotation = quint32(r); }
 
-    constexpr QPdf::RenderFlags renderFlags() const noexcept { return static_cast<QPdf::RenderFlags>(m_renderFlags); }
-    constexpr void setRenderFlags(QPdf::RenderFlags r) noexcept { m_renderFlags = quint32(r.toInt()); }
+    constexpr RenderFlags renderFlags() const noexcept { return static_cast<RenderFlags>(m_renderFlags); }
+    constexpr void setRenderFlags(RenderFlags r) noexcept { m_renderFlags = quint32(r.toInt()); }
 
     constexpr QRect scaledClipRect() const noexcept { return m_clipRect; }
     constexpr void setScaledClipRect(const QRect &r) noexcept { m_clipRect = r; }
@@ -77,6 +96,7 @@ private:
 };
 
 Q_DECLARE_TYPEINFO(QPdfDocumentRenderOptions, Q_PRIMITIVE_TYPE);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QPdfDocumentRenderOptions::RenderFlags)
 
 constexpr inline bool operator==(const QPdfDocumentRenderOptions &lhs, const QPdfDocumentRenderOptions &rhs) noexcept
 {
