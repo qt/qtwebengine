@@ -169,7 +169,7 @@ struct QPdfBookmarkModelPrivate
     QPdfBookmarkModelPrivate()
         : m_rootNode(new BookmarkNode(nullptr))
         , m_document(nullptr)
-        , m_structureMode(QPdfBookmarkModel::TreeMode)
+        , m_structureMode(QPdfBookmarkModel::StructureMode::Tree)
     {
     }
 
@@ -202,10 +202,10 @@ struct QPdfBookmarkModelPrivate
         while (bookmark) {
             BookmarkNode *childBookmarkNode = nullptr;
 
-            if (m_structureMode == QPdfBookmarkModel::TreeMode) {
+            if (m_structureMode == QPdfBookmarkModel::StructureMode::Tree) {
                 childBookmarkNode = new BookmarkNode(parentBookmarkNode);
                 parentBookmarkNode->appendChild(childBookmarkNode);
-            } else if (m_structureMode == QPdfBookmarkModel::ListMode) {
+            } else if (m_structureMode == QPdfBookmarkModel::StructureMode::List) {
                 childBookmarkNode = new BookmarkNode(m_rootNode.data());
                 m_rootNode->appendChild(childBookmarkNode);
             }

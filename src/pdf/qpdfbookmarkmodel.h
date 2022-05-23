@@ -56,10 +56,10 @@ class Q_PDF_EXPORT QPdfBookmarkModel : public QAbstractItemModel
     Q_PROPERTY(StructureMode structureMode READ structureMode WRITE setStructureMode NOTIFY structureModeChanged)
 
 public:
-    enum StructureMode
+    enum class StructureMode
     {
-        TreeMode = 1,
-        ListMode
+        Tree = 1,
+        List
     };
     Q_ENUM(StructureMode)
 

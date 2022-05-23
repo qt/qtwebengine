@@ -70,7 +70,7 @@ void tst_QPdfBookmarkModel::emptyModel()
     QPdfBookmarkModel model;
 
     QVERIFY(!model.document());
-    QCOMPARE(model.structureMode(), QPdfBookmarkModel::TreeMode);
+    QCOMPARE(model.structureMode(), QPdfBookmarkModel::StructureMode::Tree);
     QCOMPARE(model.rowCount(), 0);
     QCOMPARE(model.columnCount(), 1);
     QCOMPARE(model.index(0, 0).isValid(), false);
@@ -84,7 +84,7 @@ void tst_QPdfBookmarkModel::setEmptyDocument()
     model.setDocument(&document);
 
     QCOMPARE(model.document(), &document);
-    QCOMPARE(model.structureMode(), QPdfBookmarkModel::TreeMode);
+    QCOMPARE(model.structureMode(), QPdfBookmarkModel::StructureMode::Tree);
     QCOMPARE(model.rowCount(), 0);
     QCOMPARE(model.columnCount(), 1);
     QCOMPARE(model.index(0, 0).isValid(), false);
@@ -212,7 +212,7 @@ void tst_QPdfBookmarkModel::testListStructure()
     QSignalSpy modelAboutToBeResetSpy(&model, SIGNAL(modelAboutToBeReset()));
     QSignalSpy modelResetSpy(&model, SIGNAL(modelReset()));
 
-    model.setStructureMode(QPdfBookmarkModel::ListMode);
+    model.setStructureMode(QPdfBookmarkModel::StructureMode::List);
 
     QCOMPARE(modelAboutToBeResetSpy.count(), 1);
     QCOMPARE(modelResetSpy.count(), 1);
