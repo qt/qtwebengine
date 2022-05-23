@@ -183,6 +183,8 @@ QWebEngineProfilePrivate::~QWebEngineProfilePrivate()
 
     if (m_profileAdapter != QtWebEngineCore::ProfileAdapter::defaultProfileAdapter())
         delete m_profileAdapter;
+    else if (m_profileAdapter)
+        m_profileAdapter->releaseAllWebContentsAdapterClients();
 
     delete m_settings;
 }
