@@ -277,7 +277,7 @@ void QPdfLinkModel::onStatusChanged(QPdfDocument::Status status)
 {
     Q_D(QPdfLinkModel);
     qCDebug(qLcLink) << "sees document statusChanged" << status;
-    if (status == QPdfDocument::Ready)
+    if (status == QPdfDocument::Status::Ready)
         d->update();
 }
 

@@ -111,7 +111,7 @@ void MainWindow::open(const QUrl &docLocation)
 {
     if (docLocation.isLocalFile()) {
         m_document->load(docLocation.toLocalFile());
-        const auto documentTitle = m_document->metaData(QPdfDocument::Title).toString();
+        const auto documentTitle = m_document->metaData(QPdfDocument::MetaDataField::Title).toString();
         setWindowTitle(!documentTitle.isEmpty() ? documentTitle : QStringLiteral("PDF Viewer"));
         pageSelected(0);
         m_pageSelector->setMaximum(m_document->pageCount() - 1);

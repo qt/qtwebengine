@@ -100,7 +100,7 @@ void tst_QPdfBookmarkModel::setEmptyDocumentAndLoad()
     QSignalSpy modelAboutToBeResetSpy(&model, SIGNAL(modelAboutToBeReset()));
     QSignalSpy modelResetSpy(&model, SIGNAL(modelReset()));
 
-    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.bookmarks.pdf")), QPdfDocument::NoError);
+    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.bookmarks.pdf")), QPdfDocument::Error::None);
 
     QCOMPARE(modelAboutToBeResetSpy.count(), 1);
     QCOMPARE(modelResetSpy.count(), 1);
@@ -111,7 +111,7 @@ void tst_QPdfBookmarkModel::setEmptyDocumentAndLoad()
 void tst_QPdfBookmarkModel::setLoadedDocument()
 {
     QPdfDocument document;
-    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.bookmarks.pdf")), QPdfDocument::NoError);
+    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.bookmarks.pdf")), QPdfDocument::Error::None);
 
     QPdfBookmarkModel model;
 
@@ -129,7 +129,7 @@ void tst_QPdfBookmarkModel::setLoadedDocument()
 void tst_QPdfBookmarkModel::unloadDocument()
 {
     QPdfDocument document;
-    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.bookmarks.pdf")), QPdfDocument::NoError);
+    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.bookmarks.pdf")), QPdfDocument::Error::None);
 
     QPdfBookmarkModel model;
     model.setDocument(&document);
@@ -150,7 +150,7 @@ void tst_QPdfBookmarkModel::unloadDocument()
 void tst_QPdfBookmarkModel::testTreeStructure()
 {
     QPdfDocument document;
-    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.bookmarks.pdf")), QPdfDocument::NoError);
+    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.bookmarks.pdf")), QPdfDocument::Error::None);
 
     QPdfBookmarkModel model;
     model.setDocument(&document);
@@ -204,7 +204,7 @@ void tst_QPdfBookmarkModel::testTreeStructure()
 void tst_QPdfBookmarkModel::testListStructure()
 {
     QPdfDocument document;
-    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.bookmarks.pdf")), QPdfDocument::NoError);
+    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.bookmarks.pdf")), QPdfDocument::Error::None);
 
     QPdfBookmarkModel model;
     model.setDocument(&document);
@@ -266,7 +266,7 @@ void tst_QPdfBookmarkModel::testListStructure()
 void tst_QPdfBookmarkModel::testPageNumberRole()
 {
     QPdfDocument document;
-    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.bookmarks_pages.pdf")), QPdfDocument::NoError);
+    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.bookmarks_pages.pdf")), QPdfDocument::Error::None);
 
     QPdfBookmarkModel model;
     model.setDocument(&document);
@@ -289,7 +289,7 @@ void tst_QPdfBookmarkModel::testPageNumberRole()
 void tst_QPdfBookmarkModel::testLocationAndZoomRoles()
 {
     QPdfDocument document;
-    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.bookmarks_pages.pdf")), QPdfDocument::NoError);
+    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.bookmarks_pages.pdf")), QPdfDocument::Error::None);
 
     QPdfBookmarkModel model;
     model.setDocument(&document);

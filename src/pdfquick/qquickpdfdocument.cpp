@@ -83,10 +83,10 @@ void QQuickPdfDocument::classBegin()
     });
     connect(m_doc, &QPdfDocument::statusChanged, this, [this] (QPdfDocument::Status status) {
         emit errorChanged();
-        if (status == QPdfDocument::Ready)
+        if (status == QPdfDocument::Status::Ready)
             emit metaDataChanged();
     });
-    if (m_doc->error() == QPdfDocument::IncorrectPasswordError)
+    if (m_doc->error() == QPdfDocument::Error::IncorrectPassword)
         emit m_doc->passwordRequired();
 }
 
@@ -126,24 +126,24 @@ void QQuickPdfDocument::setSource(QUrl source)
 QString QQuickPdfDocument::error() const
 {
     switch (m_doc->error()) {
-    case QPdfDocument::NoError:
+    case QPdfDocument::Error::None:
         return tr("no error");
         break;
-    case QPdfDocument::UnknownError:
+    case QPdfDocument::Error::Unknown:
         break;
-    case QPdfDocument::DataNotYetAvailableError:
+    case QPdfDocument::Error::DataNotYetAvailable:
         return tr("data not yet available");
         break;
-    case QPdfDocument::FileNotFoundError:
+    case QPdfDocument::Error::FileNotFound:
         return tr("file not found");
         break;
-    case QPdfDocument::InvalidFileFormatError:
+    case QPdfDocument::Error::InvalidFileFormat:
         return tr("invalid file format");
         break;
-    case QPdfDocument::IncorrectPasswordError:
+    case QPdfDocument::Error::IncorrectPassword:
         return tr("incorrect password");
         break;
-    case QPdfDocument::UnsupportedSecuritySchemeError:
+    case QPdfDocument::Error::UnsupportedSecurityScheme:
         return tr("unsupported security scheme");
         break;
     }

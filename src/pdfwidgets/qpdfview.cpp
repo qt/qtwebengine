@@ -207,7 +207,7 @@ QPdfViewPrivate::DocumentLayout QPdfViewPrivate::calculateDocumentLayout() const
 
     DocumentLayout documentLayout;
 
-    if (!m_document || m_document->status() != QPdfDocument::Ready)
+    if (!m_document || m_document->status() != QPdfDocument::Status::Ready)
         return documentLayout;
 
     QHash<int, QRect> pageGeometries;

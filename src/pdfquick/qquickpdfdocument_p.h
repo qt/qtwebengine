@@ -98,14 +98,14 @@ public:
 
     QString error() const;
 
-    QString title() { return m_doc->metaData(QPdfDocument::Title).toString(); }
-    QString author() { return m_doc->metaData(QPdfDocument::Author).toString(); }
-    QString subject() { return m_doc->metaData(QPdfDocument::Subject).toString(); }
-    QString keywords() { return m_doc->metaData(QPdfDocument::Keywords).toString(); }
-    QString producer() { return m_doc->metaData(QPdfDocument::Producer).toString(); }
-    QString creator() { return m_doc->metaData(QPdfDocument::Creator).toString(); }
-    QDateTime creationDate() { return m_doc->metaData(QPdfDocument::CreationDate).toDateTime(); }
-    QDateTime modificationDate() { return m_doc->metaData(QPdfDocument::ModificationDate).toDateTime(); }
+    QString title() { return m_doc->metaData(QPdfDocument::MetaDataField::Title).toString(); }
+    QString author() { return m_doc->metaData(QPdfDocument::MetaDataField::Author).toString(); }
+    QString subject() { return m_doc->metaData(QPdfDocument::MetaDataField::Subject).toString(); }
+    QString keywords() { return m_doc->metaData(QPdfDocument::MetaDataField::Keywords).toString(); }
+    QString producer() { return m_doc->metaData(QPdfDocument::MetaDataField::Producer).toString(); }
+    QString creator() { return m_doc->metaData(QPdfDocument::MetaDataField::Creator).toString(); }
+    QDateTime creationDate() { return m_doc->metaData(QPdfDocument::MetaDataField::CreationDate).toDateTime(); }
+    QDateTime modificationDate() { return m_doc->metaData(QPdfDocument::MetaDataField::ModificationDate).toDateTime(); }
 
     Q_INVOKABLE QSizeF pagePointSize(int page) const;
     qreal maxPageWidth() const;

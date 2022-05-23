@@ -90,7 +90,7 @@ public:
     QByteArray password;
 
     QPdfDocument::Status status;
-    QPdfDocument::DocumentError lastError;
+    QPdfDocument::Error lastError;
     int pageCount;
 
     void clear();

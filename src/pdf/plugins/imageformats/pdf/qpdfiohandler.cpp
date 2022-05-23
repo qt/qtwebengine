@@ -173,7 +173,7 @@ QVariant QPdfIOHandler::option(ImageOption option) const
     case BackgroundColor:
         return m_backColor;
     case Name:
-        return m_doc->metaData(QPdfDocument::Title);
+        return m_doc->metaData(QPdfDocument::MetaDataField::Title);
     default:
         break;
     }
@@ -251,7 +251,7 @@ bool QPdfIOHandler::load(QIODevice *device)
         m_doc->load(device);
         qCDebug(qLcPdf) << "loading via new document instance" << m_doc;
     }
-    m_loaded = (m_doc->error() == QPdfDocument::DocumentError::NoError);
+    m_loaded = (m_doc->error() == QPdfDocument::Error::None);
 
     return m_loaded;
 }

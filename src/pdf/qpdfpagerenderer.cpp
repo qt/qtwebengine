@@ -125,7 +125,7 @@ void RenderWorker::requestPage(quint64 requestId, int pageNumber, QSize imageSiz
 {
     const QMutexLocker locker(&m_mutex);
 
-    if (!m_document || m_document->status() != QPdfDocument::Ready)
+    if (!m_document || m_document->status() != QPdfDocument::Status::Ready)
         return;
 
     const QImage image = m_document->render(pageNumber, imageSize, options);
@@ -315,7 +315,7 @@ void QPdfPageRenderer::setDocument(QPdfDocument *document)
 quint64 QPdfPageRenderer::requestPage(int pageNumber, QSize imageSize,
                                       QPdfDocumentRenderOptions options)
 {
-    if (!d_ptr->m_document || d_ptr->m_document->status() != QPdfDocument::Ready)
+    if (!d_ptr->m_document || d_ptr->m_document->status() != QPdfDocument::Status::Ready)
         return 0;
 
     for (const auto &request : qAsConst(d_ptr->m_pendingRequests)) {

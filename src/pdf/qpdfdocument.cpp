@@ -49,6 +49,7 @@
 #include <QFile>
 #include <QHash>
 #include <QLoggingCategory>
+#include <QMetaEnum>
 #include <QMutex>
 #include <QVector2D>
 
@@ -68,8 +69,8 @@ QPdfDocumentPrivate::QPdfDocumentPrivate()
     : avail(nullptr)
     , doc(nullptr)
     , loadComplete(false)
-    , status(QPdfDocument::Null)
-    , lastError(QPdfDocument::NoError)
+    , status(QPdfDocument::Status::Null)
+    , lastError(QPdfDocument::Error::None)
     , pageCount(0)
 {
     asyncBuffer.setData(QByteArray());
@@ -141,7 +142,7 @@ void QPdfDocumentPrivate::clear()
 void QPdfDocumentPrivate::updateLastError()
 {
     if (doc) {
-        lastError = QPdfDocument::NoError;
+        lastError = QPdfDocument::Error::None;
         return;
     }
 
@@ -150,16 +151,16 @@ void QPdfDocumentPrivate::updateLastError()
     lock.unlock();
 
     switch (error) {
-    case FPDF_ERR_SUCCESS: lastError = QPdfDocument::NoError; break;
-    case FPDF_ERR_UNKNOWN: lastError = QPdfDocument::UnknownError; break;
-    case FPDF_ERR_FILE: lastError = QPdfDocument::FileNotFoundError; break;
-    case FPDF_ERR_FORMAT: lastError = QPdfDocument::InvalidFileFormatError; break;
-    case FPDF_ERR_PASSWORD: lastError = QPdfDocument::IncorrectPasswordError; break;
-    case FPDF_ERR_SECURITY: lastError = QPdfDocument::UnsupportedSecuritySchemeError; break;
+    case FPDF_ERR_SUCCESS: lastError = QPdfDocument::Error::None; break;
+    case FPDF_ERR_UNKNOWN: lastError = QPdfDocument::Error::Unknown; break;
+    case FPDF_ERR_FILE: lastError = QPdfDocument::Error::FileNotFound; break;
+    case FPDF_ERR_FORMAT: lastError = QPdfDocument::Error::InvalidFileFormat; break;
+    case FPDF_ERR_PASSWORD: lastError = QPdfDocument::Error::IncorrectPassword; break;
+    case FPDF_ERR_SECURITY: lastError = QPdfDocument::Error::UnsupportedSecurityScheme; break;
     default:
         Q_UNREACHABLE();
     }
-    if (lastError != QPdfDocument::NoError)
+    if (lastError != QPdfDocument::Error::None)
         qCDebug(qLcDoc) << "FPDF error" << error << "->" << lastError;
 }
 
@@ -176,19 +177,19 @@ void QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnershi
         QNetworkReply *reply = qobject_cast<QNetworkReply*>(sequentialSourceDevice);
 
         if (!reply) {
-            setStatus(QPdfDocument::Error);
+            setStatus(QPdfDocument::Status::Error);
             qWarning() << "QPdfDocument: Loading from sequential devices only supported with QNetworkAccessManager.";
             return;
         }
 
         if (reply->isFinished() && reply->error() != QNetworkReply::NoError) {
-            setStatus(QPdfDocument::Error);
+            setStatus(QPdfDocument::Status::Error);
             return;
         }
 
         QObject::connect(reply, &QNetworkReply::finished, q, [this, reply](){
             if (reply->error() != QNetworkReply::NoError || reply->bytesAvailable() == 0) {
-                this->setStatus(QPdfDocument::Error);
+                this->setStatus(QPdfDocument::Status::Error);
             }
         });
 
@@ -200,7 +201,7 @@ void QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnershi
         device = newDevice;
         initiateAsyncLoadWithTotalSizeKnown(device->size());
         if (!avail) {
-            setStatus(QPdfDocument::Error);
+            setStatus(QPdfDocument::Status::Error);
             return;
         }
 
@@ -209,7 +210,7 @@ void QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnershi
 
         if (!doc) {
             updateLastError();
-            setStatus(QPdfDocument::Error);
+            setStatus(QPdfDocument::Status::Error);
             return;
         }
 
@@ -224,10 +225,10 @@ void QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnershi
         // If it's a local file, and the first couple of pages are available,
         // probably the whole document is available.
         if (checkPageComplete(0) && (pageCount < 2 || checkPageComplete(1))) {
-            setStatus(QPdfDocument::Ready);
+            setStatus(QPdfDocument::Status::Ready);
         } else {
             updateLastError();
-            setStatus(QPdfDocument::Error);
+            setStatus(QPdfDocument::Status::Error);
         }
     }
 }
@@ -239,13 +240,13 @@ void QPdfDocumentPrivate::_q_tryLoadingWithSizeFromContentHeader()
 
     const QNetworkReply *networkReply = qobject_cast<QNetworkReply*>(sequentialSourceDevice);
     if (!networkReply) {
-        setStatus(QPdfDocument::Error);
+        setStatus(QPdfDocument::Status::Error);
         return;
     }
 
     const QVariant contentLength = networkReply->header(QNetworkRequest::ContentLengthHeader);
     if (!contentLength.isValid()) {
-        setStatus(QPdfDocument::Error);
+        setStatus(QPdfDocument::Status::Error);
         return;
     }
 
@@ -291,10 +292,10 @@ void QPdfDocumentPrivate::tryLoadDocument()
             break;
         case PDF_DATA_NOTAVAIL:
             qCDebug(qLcDoc) << "data not yet available";
-            lastError = QPdfDocument::DataNotYetAvailableError;
+            lastError = QPdfDocument::Error::DataNotYetAvailable;
             break;
         case PDF_DATA_AVAIL:
-            lastError = QPdfDocument::NoError;
+            lastError = QPdfDocument::Error::None;
             break;
     }
 
@@ -304,14 +305,14 @@ void QPdfDocumentPrivate::tryLoadDocument()
     lock.unlock();
 
     updateLastError();
-    if (lastError != QPdfDocument::NoError)
-        setStatus(QPdfDocument::Error);
+    if (lastError != QPdfDocument::Error::None)
+        setStatus(QPdfDocument::Status::Error);
 
-    if (lastError == QPdfDocument::IncorrectPasswordError) {
+    if (lastError == QPdfDocument::Error::IncorrectPassword) {
         FPDF_CloseDocument(doc);
         doc = nullptr;
 
-        setStatus(QPdfDocument::Error);
+        setStatus(QPdfDocument::Status::Error);
         emit q->passwordRequired();
     }
 }
@@ -350,7 +351,7 @@ void QPdfDocumentPrivate::checkComplete()
             emit q->pageCountChanged(pageCount);
         }
 
-        setStatus(QPdfDocument::Ready);
+        setStatus(QPdfDocument::Status::Ready);
     }
 }
 
@@ -491,18 +492,18 @@ QPdfDocument::~QPdfDocument()
 /*!
     Loads the document contents from \a fileName.
 */
-QPdfDocument::DocumentError QPdfDocument::load(const QString &fileName)
+QPdfDocument::Error QPdfDocument::load(const QString &fileName)
 {
     qCDebug(qLcDoc) << "loading" << fileName;
 
     close();
 
-    d->setStatus(QPdfDocument::Loading);
+    d->setStatus(QPdfDocument::Status::Loading);
 
     std::unique_ptr<QFile> f(new QFile(fileName));
     if (!f->open(QIODevice::ReadOnly)) {
-        d->lastError = FileNotFoundError;
-        d->setStatus(QPdfDocument::Error);
+        d->lastError = Error::FileNotFound;
+        d->setStatus(QPdfDocument::Status::Error);
     } else {
         d->load(f.release(), /*transfer ownership*/true);
     }
@@ -553,7 +554,7 @@ void QPdfDocument::load(QIODevice *device)
 {
     close();
 
-    d->setStatus(QPdfDocument::Loading);
+    d->setStatus(QPdfDocument::Status::Loading);
 
     d->load(device, /*transfer ownership*/false);
 }
@@ -610,31 +611,14 @@ QVariant QPdfDocument::metaData(MetaDataField field) const
     if (!d->doc)
         return QString();
 
+    static QMetaEnum fieldsMetaEnum = metaObject()->enumerator(metaObject()->indexOfEnumerator("MetaDataField"));
     QByteArray fieldName;
     switch (field) {
-    case Title:
-        fieldName = "Title";
-        break;
-    case Subject:
-        fieldName = "Subject";
-        break;
-    case Author:
-        fieldName = "Author";
-        break;
-    case Keywords:
-        fieldName = "Keywords";
-        break;
-    case Producer:
-        fieldName = "Producer";
-        break;
-    case Creator:
-        fieldName = "Creator";
-        break;
-    case CreationDate:
-        fieldName = "CreationDate";
-        break;
-    case ModificationDate:
+    case MetaDataField::ModificationDate:
         fieldName = "ModDate";
+        break;
+    default:
+        fieldName = QByteArray(fieldsMetaEnum.valueToKey(int(field)));
         break;
     }
 
@@ -648,15 +632,15 @@ QVariant QPdfDocument::metaData(MetaDataField field) const
     QString text = QString::fromUtf16(reinterpret_cast<const char16_t *>(buf.data()));
 
     switch (field) {
-    case Title: // fall through
-    case Subject:
-    case Author:
-    case Keywords:
-    case Producer:
-    case Creator:
+    case MetaDataField::Title: // fall through
+    case MetaDataField::Subject:
+    case MetaDataField::Author:
+    case MetaDataField::Keywords:
+    case MetaDataField::Producer:
+    case MetaDataField::Creator:
         return text;
-    case CreationDate: // fall through
-    case ModificationDate:
+    case MetaDataField::CreationDate: // fall through
+    case MetaDataField::ModificationDate:
         // convert a "D:YYYYMMDDHHmmSSOHH'mm'" into "YYYY-MM-DDTHH:mm:ss+HH:mm"
         if (text.startsWith(QLatin1String("D:")))
             text = text.mid(2);
@@ -676,17 +660,17 @@ QVariant QPdfDocument::metaData(MetaDataField field) const
 }
 
 /*!
-    \enum QPdfDocument::DocumentError
+    \enum QPdfDocument::Error
 
     This enum describes the error while attempting the last operation on the document.
 
-    \value NoError No error occurred.
-    \value UnknownError Unknown type of error.
-    \value DataNotYetAvailableError The document is still loading, it's too early to attempt the operation.
-    \value FileNotFoundError The file given to load() was not found.
-    \value InvalidFileFormatError The file given to load() is not a valid PDF file.
-    \value IncorrectPasswordError The password given to setPassword() is not correct for this file.
-    \value UnsupportedSecuritySchemeError QPdfDocument is not able to unlock this kind of PDF file.
+    \value None No error occurred.
+    \value Unknown Unknown type of error.
+    \value DataNotYetAvailable The document is still loading, it's too early to attempt the operation.
+    \value FileNotFound The file given to load() was not found.
+    \value InvalidFileFormat The file given to load() is not a valid PDF file.
+    \value IncorrectPassword The password given to setPassword() is not correct for this file.
+    \value UnsupportedSecurityScheme QPdfDocument is not able to unlock this kind of PDF file.
 
     \sa QPdfDocument::error()
 */
@@ -695,7 +679,7 @@ QVariant QPdfDocument::metaData(MetaDataField field) const
     Returns the type of error if \l status is \c Error, or \c NoError if there
     is no error.
 */
-QPdfDocument::DocumentError QPdfDocument::error() const
+QPdfDocument::Error QPdfDocument::error() const
 {
     return d->lastError;
 }
@@ -708,7 +692,7 @@ void QPdfDocument::close()
     if (!d->doc)
         return;
 
-    d->setStatus(Unloading);
+    d->setStatus(Status::Unloading);
 
     d->clear();
 
@@ -717,7 +701,7 @@ void QPdfDocument::close()
         emit passwordChanged();
     }
 
-    d->setStatus(Null);
+    d->setStatus(Status::Null);
 }
 
 /*!

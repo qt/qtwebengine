@@ -61,7 +61,7 @@ class Q_PDF_EXPORT QPdfDocument : public QObject
     Q_PROPERTY(Status status READ status NOTIFY statusChanged FINAL)
 
 public:
-    enum Status {
+    enum class Status {
         Null,
         Loading,
         Ready,
@@ -70,18 +70,18 @@ public:
     };
     Q_ENUM(Status)
 
-    enum DocumentError {
-        NoError,
-        UnknownError,
-        DataNotYetAvailableError,
-        FileNotFoundError,
-        InvalidFileFormatError,
-        IncorrectPasswordError,
-        UnsupportedSecuritySchemeError
+    enum class Error {
+        None,
+        Unknown,
+        DataNotYetAvailable,
+        FileNotFound,
+        InvalidFileFormat,
+        IncorrectPassword,
+        UnsupportedSecurityScheme
     };
-    Q_ENUM(DocumentError)
+    Q_ENUM(Error)
 
-    enum MetaDataField {
+    enum class MetaDataField {
         Title,
         Subject,
         Author,
@@ -97,7 +97,7 @@ public:
     explicit QPdfDocument(QObject *parent);
     ~QPdfDocument() override;
 
-    DocumentError load(const QString &fileName);
+    Error load(const QString &fileName);
 
     Status status() const;
 
@@ -107,7 +107,7 @@ public:
 
     QVariant metaData(MetaDataField field) const;
 
-    DocumentError error() const;
+    Error error() const;
 
     void close();
 

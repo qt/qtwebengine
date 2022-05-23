@@ -92,7 +92,7 @@ void tst_QPdfPageRenderer::withLoadedDocumentSingleThreaded()
     QPdfPageRenderer pageRenderer;
     pageRenderer.setDocument(&document);
 
-    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.pagerenderer.pdf")), QPdfDocument::NoError);
+    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.pagerenderer.pdf")), QPdfDocument::Error::None);
 
     QSignalSpy pageRenderedSpy(&pageRenderer, &QPdfPageRenderer::pageRendered);
 
@@ -115,7 +115,7 @@ void tst_QPdfPageRenderer::withLoadedDocumentMultiThreaded()
     pageRenderer.setDocument(&document);
     pageRenderer.setRenderMode(QPdfPageRenderer::RenderMode::MultiThreaded);
 
-    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.pagerenderer.pdf")), QPdfDocument::NoError);
+    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.pagerenderer.pdf")), QPdfDocument::Error::None);
 
     QSignalSpy pageRenderedSpy(&pageRenderer, &QPdfPageRenderer::pageRendered);
 
@@ -136,7 +136,7 @@ void tst_QPdfPageRenderer::switchingRenderMode()
     QPdfPageRenderer pageRenderer;
     pageRenderer.setDocument(&document);
 
-    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.pagerenderer.pdf")), QPdfDocument::NoError);
+    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.pagerenderer.pdf")), QPdfDocument::Error::None);
 
     QSignalSpy pageRenderedSpy(&pageRenderer, &QPdfPageRenderer::pageRendered);
 

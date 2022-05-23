@@ -175,7 +175,7 @@ struct QPdfBookmarkModelPrivate
 
     void rebuild()
     {
-        const bool documentAvailable = (m_document && m_document->status() == QPdfDocument::Ready);
+        const bool documentAvailable = (m_document && m_document->status() == QPdfDocument::Status::Ready);
 
         if (documentAvailable) {
             q->beginResetModel();
