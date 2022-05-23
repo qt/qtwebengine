@@ -59,8 +59,8 @@ QPdfViewPrivate::QPdfViewPrivate(QPdfView *q)
     , m_document(nullptr)
     , m_pageNavigation(nullptr)
     , m_pageRenderer(nullptr)
-    , m_pageMode(QPdfView::SinglePage)
-    , m_zoomMode(QPdfView::CustomZoom)
+    , m_pageMode(QPdfView::PageMode::SinglePage)
+    , m_zoomMode(QPdfView::ZoomMode::Custom)
     , m_zoomFactor(1.0)
     , m_pageSpacing(3)
     , m_documentMargins(6, 6, 6, 6)
@@ -94,7 +94,7 @@ void QPdfViewPrivate::currentPageChanged(int currentPage)
 
     q->verticalScrollBar()->setValue(yPositionForPage(currentPage));
 
-    if (m_pageMode == QPdfView::SinglePage)
+    if (m_pageMode == QPdfView::PageMode::SinglePage)
         invalidateDocumentLayout();
 }
 
@@ -122,12 +122,12 @@ void QPdfViewPrivate::setViewport(QRect viewport)
     if (oldSize != m_viewport.size()) {
         updateDocumentLayout();
 
-        if (m_zoomMode != QPdfView::CustomZoom) {
+        if (m_zoomMode != QPdfView::ZoomMode::Custom) {
             invalidatePageCache();
         }
     }
 
-    if (m_pageMode == QPdfView::MultiPage) {
+    if (m_pageMode == QPdfView::PageMode::MultiPage) {
         // An imaginary, 2px height line at the upper half of the viewport, which is used to
         // determine which page is currently located there -> we propagate that as 'current' page
         // to the QPdfNavigationStack object
@@ -216,20 +216,20 @@ QPdfViewPrivate::DocumentLayout QPdfViewPrivate::calculateDocumentLayout() const
 
     int totalWidth = 0;
 
-    const int startPage = (m_pageMode == QPdfView::SinglePage ? m_pageNavigation->currentPage() : 0);
-    const int endPage = (m_pageMode == QPdfView::SinglePage ? m_pageNavigation->currentPage() + 1 : pageCount);
+    const int startPage = (m_pageMode == QPdfView::PageMode::SinglePage ? m_pageNavigation->currentPage() : 0);
+    const int endPage = (m_pageMode == QPdfView::PageMode::SinglePage ? m_pageNavigation->currentPage() + 1 : pageCount);
 
     // calculate page sizes
     for (int page = startPage; page < endPage; ++page) {
         QSize pageSize;
-        if (m_zoomMode == QPdfView::CustomZoom) {
+        if (m_zoomMode == QPdfView::ZoomMode::Custom) {
             pageSize = QSizeF(m_document->pageSize(page) * m_screenResolution * m_zoomFactor).toSize();
-        } else if (m_zoomMode == QPdfView::FitToWidth) {
+        } else if (m_zoomMode == QPdfView::ZoomMode::FitToWidth) {
             pageSize = QSizeF(m_document->pageSize(page) * m_screenResolution).toSize();
             const qreal factor = (qreal(m_viewport.width() - m_documentMargins.left() - m_documentMargins.right()) /
                                   qreal(pageSize.width()));
             pageSize *= factor;
-        } else if (m_zoomMode == QPdfView::FitInView) {
+        } else if (m_zoomMode == QPdfView::ZoomMode::FitInView) {
             const QSize viewportSize(m_viewport.size() +
                                      QSize(-m_documentMargins.left() - m_documentMargins.right(), -m_pageSpacing));
 
@@ -414,7 +414,7 @@ void QPdfView::setPageMode(PageMode mode)
 
     This enum describes the magnification behavior of the PDF viewer:
 
-    \value CustomZoom   Use \l zoomFactor only.
+    \value Custom       Use \l zoomFactor only.
     \value FitToWidth   Automatically choose a zoom factor so that
                         the width of the page fits in the view.
     \value FitInView    Automatically choose a zoom factor so that

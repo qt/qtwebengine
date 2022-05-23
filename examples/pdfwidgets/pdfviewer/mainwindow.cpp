@@ -185,7 +185,9 @@ void MainWindow::on_actionNext_Page_triggered()
 
 void MainWindow::on_actionContinuous_triggered()
 {
-    ui->pdfView->setPageMode(ui->actionContinuous->isChecked() ? QPdfView::MultiPage : QPdfView::SinglePage);
+    ui->pdfView->setPageMode(ui->actionContinuous->isChecked() ?
+                                 QPdfView::PageMode::MultiPage :
+                                 QPdfView::PageMode::SinglePage);
 }
 
 void MainWindow::on_actionBack_triggered()

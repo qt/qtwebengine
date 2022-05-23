@@ -91,9 +91,9 @@ void ZoomSelector::reset()
 void ZoomSelector::onCurrentTextChanged(const QString &text)
 {
     if (text == QLatin1String("Fit Width")) {
-        emit zoomModeChanged(QPdfView::FitToWidth);
+        emit zoomModeChanged(QPdfView::ZoomMode::FitToWidth);
     } else if (text == QLatin1String("Fit Page")) {
-        emit zoomModeChanged(QPdfView::FitInView);
+        emit zoomModeChanged(QPdfView::ZoomMode::FitInView);
     } else {
         qreal factor = 1.0;
 
@@ -105,7 +105,7 @@ void ZoomSelector::onCurrentTextChanged(const QString &text)
         if (ok)
             factor = zoomLevel / 100.0;
 
-        emit zoomModeChanged(QPdfView::CustomZoom);
+        emit zoomModeChanged(QPdfView::ZoomMode::Custom);
         emit zoomFactorChanged(factor);
     }
 }

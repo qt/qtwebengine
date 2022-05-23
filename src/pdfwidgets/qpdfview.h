@@ -63,16 +63,16 @@ class Q_PDF_WIDGETS_EXPORT QPdfView : public QAbstractScrollArea
     Q_PROPERTY(QMargins documentMargins READ documentMargins WRITE setDocumentMargins NOTIFY documentMarginsChanged)
 
 public:
-    enum PageMode
+    enum class PageMode
     {
         SinglePage,
         MultiPage
     };
     Q_ENUM(PageMode)
 
-    enum ZoomMode
+    enum class ZoomMode
     {
-        CustomZoom,
+        Custom,
         FitToWidth,
         FitInView
     };
@@ -98,14 +98,14 @@ public:
     void setDocumentMargins(QMargins margins);
 
 public Q_SLOTS:
-    void setPageMode(PageMode mode);
-    void setZoomMode(ZoomMode mode);
+    void setPageMode(QPdfView::PageMode mode);
+    void setZoomMode(QPdfView::ZoomMode mode);
     void setZoomFactor(qreal factor);
 
 Q_SIGNALS:
     void documentChanged(QPdfDocument *document);
-    void pageModeChanged(PageMode pageMode);
-    void zoomModeChanged(ZoomMode zoomMode);
+    void pageModeChanged(QPdfView::PageMode pageMode);
+    void zoomModeChanged(QPdfView::ZoomMode zoomMode);
     void zoomFactorChanged(qreal zoomFactor);
     void pageSpacingChanged(int pageSpacing);
     void documentMarginsChanged(QMargins documentMargins);
