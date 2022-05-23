@@ -57,8 +57,8 @@ class Q_PDF_EXPORT QPdfBookmarkModel : public QAbstractItemModel
 public:
     enum class Role : int
     {
-        Title = Qt::DisplayRole,
-        Level = Qt::UserRole,
+        Title = Qt::UserRole,
+        Level,
         Page,
         Location,
         Zoom,

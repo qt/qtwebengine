@@ -323,6 +323,8 @@ QVariant QPdfBookmarkModel::data(const QModelIndex &index, int role) const
     case Role::_Count:
         break;
     }
+    if (role == Qt::DisplayRole)
+        return node->title();
     return QVariant();
 }
 
