@@ -284,10 +284,23 @@ void InterceptedRequest::Restart()
 
     // Check if non-local access is allowed
     if (!allow_remote_ && remote_access_) {
-        target_client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_NETWORK_ACCESS_DENIED));
-        delete this;
-        return;
+        bool granted_special_access = false;
+        switch (ui::PageTransition(request_.transition_type)) {
+        case ui::PAGE_TRANSITION_LINK:
+        case ui::PAGE_TRANSITION_TYPED:
+            if (blink::mojom::ResourceType(request_.resource_type) == blink::mojom::ResourceType::kMainFrame && request_.has_user_gesture)
+                granted_special_access = true; // allow normal explicit navigation
+            break;
+        default:
+            break;
+        }
+        if (!granted_special_access) {
+            target_client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_NETWORK_ACCESS_DENIED));
+            delete this;
+            return;
+        }
     }
+
     // Check if local access is allowed
     if (!allow_local_ && local_access_) {
         bool granted_special_access = false;

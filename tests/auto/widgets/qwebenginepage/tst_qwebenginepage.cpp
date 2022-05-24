@@ -256,6 +256,8 @@ private Q_SLOTS:
     void testChooseFilesParameters();
     void fileSystemAccessDialog();
 
+    void localToRemoteNavigation();
+
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
     static bool isFalseJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
@@ -327,6 +329,14 @@ void tst_QWebEnginePage::initTestCase()
     QWebEngineUrlScheme echo("echo");
     echo.setSyntax(QWebEngineUrlScheme::Syntax::Path);
     QWebEngineUrlScheme::registerScheme(echo);
+
+    QWebEngineUrlScheme local("local");
+    local.setFlags(QWebEngineUrlScheme::LocalScheme);
+    QWebEngineUrlScheme::registerScheme(local);
+
+    QWebEngineUrlScheme remote("remote");
+    remote.setFlags(QWebEngineUrlScheme::CorsEnabled);
+    QWebEngineUrlScheme::registerScheme(remote);
 }
 
 void tst_QWebEnginePage::cleanupTestCase()
@@ -4996,6 +5006,61 @@ void tst_QWebEnginePage::isSafeRedirect()
     QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 20000);
     QCOMPARE(page.url(), expectedUrl);
     spy.clear();
+}
+
+class LocalRemoteUrlSchemeHandler : public QWebEngineUrlSchemeHandler
+{
+public:
+    LocalRemoteUrlSchemeHandler(QObject *parent = nullptr)
+        : QWebEngineUrlSchemeHandler(parent)
+    {
+    }
+    ~LocalRemoteUrlSchemeHandler() = default;
+
+    void requestStarted(QWebEngineUrlRequestJob *job) override
+    {
+        QBuffer *buffer = new QBuffer(job);
+        buffer->setData("<html><body><a href='remote://test.html' id='link'>Click link</a></body></html>");
+        job->reply("text/html", buffer);
+        loaded = true;
+    }
+    bool loaded = false;
+};
+
+void tst_QWebEnginePage::localToRemoteNavigation()
+{
+    LocalRemoteUrlSchemeHandler local;
+    LocalRemoteUrlSchemeHandler remote;
+    QWebEngineProfile profile;
+    profile.installUrlSchemeHandler("local", &local);
+    profile.installUrlSchemeHandler("remote", &remote);
+
+    QWebEnginePage page(&profile);
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+    QWebEngineView view;
+    view.resize(640, 480);
+    view.show();
+    view.setPage(&page);
+    page.setUrl(QUrl("local://test.html"));
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
+    QVERIFY(local.loaded);
+
+    // Should navigate:
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, elementCenter(&page, "link"));
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 2, 20000);
+    QVERIFY(remote.loaded);
+    local.loaded = false;
+    remote.loaded = false;
+
+    page.setUrl(QUrl("local://test.html"));
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 3, 20000);
+    QVERIFY(local.loaded && !remote.loaded);
+
+    // Should not navigate:
+    page.runJavaScript(QStringLiteral("document.getElementById(\"link\").click()"));
+    QTest::qWait(500);
+    QVERIFY(!remote.loaded);
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
