@@ -65,6 +65,52 @@ QPdfMutexLocker::QPdfMutexLocker()
 {
 }
 
+class Q_PDF_EXPORT QPdfPageModel : public QAbstractListModel
+{
+    Q_OBJECT
+public:
+    QPdfPageModel(QPdfDocument *doc) : QAbstractListModel(doc)
+    {
+        m_roleNames = QAbstractItemModel::roleNames();
+        QMetaEnum rolesMetaEnum = doc->metaObject()->enumerator(doc->metaObject()->indexOfEnumerator("PageModelRole"));
+        for (int r = Qt::UserRole; r < int(QPdfDocument::PageModelRole::_Count); ++r) {
+            auto name = QByteArray(rolesMetaEnum.valueToKey(r));
+            name[0] = tolower(name[0]);
+            m_roleNames.insert(r, name);
+        }
+        connect(doc, &QPdfDocument::statusChanged, this, [this](QPdfDocument::Status s) {
+            if (s == QPdfDocument::Status::Loading)
+                beginResetModel();
+            else if (s == QPdfDocument::Status::Ready)
+                endResetModel();
+        });
+    }
+
+    QVariant data(const QModelIndex &index, int role) const override
+    {
+        if (!index.isValid())
+            return QVariant();
+        switch (QPdfDocument::PageModelRole(role)) {
+        case QPdfDocument::PageModelRole::Label:
+            return document()->pageLabel(index.row());
+        case QPdfDocument::PageModelRole::PointSize:
+            return document()->pagePointSize(index.row());
+        case QPdfDocument::PageModelRole::_Count:
+            break;
+        }
+        return QVariant();
+    }
+
+    int rowCount(const QModelIndex & = QModelIndex()) const override { return document()->pageCount(); }
+
+    QHash<int, QByteArray> roleNames() const override { return m_roleNames; }
+
+private:
+    QPdfDocument *document() const { return static_cast<QPdfDocument *>(parent()); }
+
+    QHash<int, QByteArray> m_roleNames;
+};
+
 QPdfDocumentPrivate::QPdfDocumentPrivate()
     : avail(nullptr)
     , doc(nullptr)
@@ -127,6 +173,7 @@ void QPdfDocumentPrivate::clear()
     if (pageCount != 0) {
         pageCount = 0;
         emit q->pageCountChanged(pageCount);
+        emit q->pageModelChanged();
     }
 
     loadComplete = false;
@@ -220,6 +267,7 @@ void QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnershi
         if (newPageCount != pageCount) {
             pageCount = newPageCount;
             emit q->pageCountChanged(pageCount);
+            emit q->pageModelChanged();
         }
 
         // If it's a local file, and the first couple of pages are available,
@@ -349,6 +397,7 @@ void QPdfDocumentPrivate::checkComplete()
         if (newPageCount != pageCount) {
             pageCount = newPageCount;
             emit q->pageCountChanged(pageCount);
+            emit q->pageModelChanged();
         }
 
         setStatus(QPdfDocument::Status::Ready);
@@ -731,6 +780,57 @@ QSizeF QPdfDocument::pagePointSize(int page) const
 }
 
 /*!
+    \enum QPdfDocument::PageModelRole
+
+    Roles in pageModel().
+
+    \value Label The page number to be used for display purposes (QString).
+    \value PointSize The page size in points (1/72 of an inch) (QSizeF).
+    \omitvalue _Count
+*/
+
+/*!
+    \property QPdfDocument::pageModel
+
+    This property holds an instance of QAbstractListModel to provide
+    page-specific metadata, containing one row for each page in the document.
+
+    \sa QPdfDocument::PageModelRole
+*/
+QAbstractListModel *QPdfDocument::pageModel()
+{
+    if (!d->pageModel)
+        d->pageModel = new QPdfPageModel(this);
+    return d->pageModel;
+}
+
+/*!
+    Returns the \a page number to be used for display purposes.
+
+    For example, a document may have multiple sections with different numbering.
+    Perhaps the preface uses roman numerals, the body starts on page 1, and the
+    appendix starts at A1. Whenever a PDF viewer shows a page number, to avoid
+    confusing the user it should be the same "number" as is printed on the
+    corner of the page, rather than the zero-based page index that we use in
+    APIs (assuming the document author has made the page labels match the
+    printed numbers).
+
+    If the document does not have custom page numbering, this function returns
+    \c {page + 1}.
+*/
+QString QPdfDocument::pageLabel(int page)
+{
+    const unsigned long len = FPDF_GetPageLabel(d->doc, page, nullptr, 0);
+    if (len == 0)
+        return QString::number(page + 1);
+    QList<char16_t> buf(len);
+    QPdfMutexLocker lock;
+    FPDF_GetPageLabel(d->doc, page, buf.data(), len);
+    lock.unlock();
+    return QString::fromUtf16(buf.constData());
+}
+
+/*!
     Renders the \a page into a QImage of size \a imageSize according to the
     provided \a renderOptions.
 
@@ -964,4 +1064,5 @@ QPdfSelection QPdfDocument::getAllText(int page)
 
 QT_END_NAMESPACE
 
+#include "qpdfdocument.moc"
 #include "moc_qpdfdocument.cpp"

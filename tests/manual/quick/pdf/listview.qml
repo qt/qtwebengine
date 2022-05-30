@@ -81,7 +81,7 @@ Window {
                 }
             }
             Text {
-                text: "Page " + (image.currentFrame + 1)
+                text: "Page " + doc.pageLabel(image.currentFrame)
             }
         }
     }

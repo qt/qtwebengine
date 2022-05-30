@@ -71,6 +71,8 @@ public:
     QPdfMutexLocker();
 };
 
+class QPdfPageModel;
+
 class Q_PDF_PRIVATE_EXPORT QPdfDocumentPrivate: public FPDF_FILEACCESS, public FX_FILEAVAIL, public FX_DOWNLOADHINTS
 {
 public:
@@ -78,6 +80,7 @@ public:
     ~QPdfDocumentPrivate();
 
     QPdfDocument *q;
+    QPdfPageModel *pageModel = nullptr;
 
     FPDF_AVAIL avail;
     FPDF_DOCUMENT doc;

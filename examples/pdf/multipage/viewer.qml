@@ -371,11 +371,13 @@ ApplicationWindow {
                     id: thumbnailsView
                     implicitWidth: parent.width
                     implicitHeight: parent.height
-                    model: doc.pageCount
+                    model: doc.pageModel
                     cellWidth: width / 2
                     cellHeight: cellWidth + 10
                     delegate: Item {
                         required property int index
+                        required property string label
+                        required property size pointSize
                         width: thumbnailsView.cellWidth
                         height: thumbnailsView.cellHeight
                         Rectangle {
@@ -390,11 +392,10 @@ ApplicationWindow {
                                 currentFrame: index
                                 asynchronous: true
                                 fillMode: Image.PreserveAspectFit
-                                property size naturalSize: doc.pagePointSize(index)
-                                property bool landscape: naturalSize.width > naturalSize.height
+                                property bool landscape: pointSize.width > pointSize.height
                                 width: landscape ? thumbnailsView.cellWidth - 6
-                                                 : height * naturalSize.width / naturalSize.height
-                                height: landscape ? width * naturalSize.height / naturalSize.width
+                                                 : height * pointSize.width / pointSize.height
+                                height: landscape ? width * pointSize.height / pointSize.width
                                                   : thumbnailsView.cellHeight - 14
                                 sourceSize.width: width
                                 sourceSize.height: height
@@ -404,7 +405,7 @@ ApplicationWindow {
                             id: pageNumber
                             anchors.bottom: parent.bottom
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: "Page " + (image.currentFrame + 1)
+                            text: label
                         }
                         TapHandler {
                             onTapped: view.goToPage(index)

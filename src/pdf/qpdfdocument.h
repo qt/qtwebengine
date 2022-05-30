@@ -43,6 +43,7 @@
 #include <QtPdf/qtpdfglobal.h>
 
 #include <QtCore/qobject.h>
+#include <QtCore/QAbstractListModel>
 #include <QtGui/qimage.h>
 #include <QtPdf/qpdfdocumentrenderoptions.h>
 #include <QtPdf/qpdfselection.h>
@@ -59,6 +60,7 @@ class Q_PDF_EXPORT QPdfDocument : public QObject
     Q_PROPERTY(int pageCount READ pageCount NOTIFY pageCountChanged FINAL)
     Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged FINAL)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged FINAL)
+    Q_PROPERTY(QAbstractListModel* pageModel READ pageModel NOTIFY pageModelChanged FINAL)
 
 public:
     enum class Status {
@@ -93,6 +95,13 @@ public:
     };
     Q_ENUM(MetaDataField)
 
+    enum class PageModelRole {
+        Label = Qt::UserRole,
+        PointSize,
+        _Count
+    };
+    Q_ENUM(PageModelRole)
+
     QPdfDocument() : QPdfDocument(nullptr) {}
     explicit QPdfDocument(QObject *parent);
     ~QPdfDocument() override;
@@ -115,6 +124,10 @@ public:
 
     Q_INVOKABLE QSizeF pagePointSize(int page) const;
 
+    Q_INVOKABLE QString pageLabel(int page);
+
+    QAbstractListModel *pageModel();
+
     QImage render(int page, QSize imageSize, QPdfDocumentRenderOptions options = QPdfDocumentRenderOptions());
 
     Q_INVOKABLE QPdfSelection getSelection(int page, QPointF start, QPointF end);
@@ -126,11 +139,13 @@ Q_SIGNALS:
     void passwordRequired();
     void statusChanged(QPdfDocument::Status status);
     void pageCountChanged(int pageCount);
+    void pageModelChanged();
 
 private:
     friend struct QPdfBookmarkModelPrivate;
     friend class QPdfFile;
     friend class QPdfLinkModelPrivate;
+    friend class QPdfPageModel;
     friend class QPdfSearchModel;
     friend class QPdfSearchModelPrivate;
     friend class QQuickPdfSelection;

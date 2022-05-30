@@ -136,18 +136,28 @@ ApplicationWindow {
             }
             SpinBox {
                 id: currentPageSB
-                from: 1
+                from: 0
                 to: document.pageCount
                 editable: true
-                value: pageView.currentPage + 1
-                onValueModified: pageView.goToPage(value - 1)
+                value: pageView.currentPage
+                onValueModified: pageView.goToPage(value)
+
+                textFromValue: function(value) { return document.pageLabel(value) }
+                valueFromText: function(text) {
+                    for (var i = 0; i < document.pageCount; ++i) {
+                        if (document.pageLabel(i).toLowerCase().indexOf(text.toLowerCase()) === 0)
+                            return i
+                    }
+                    return spinBox.value
+                }
+
                 Shortcut {
                     sequence: StandardKey.MoveToPreviousPage
-                    onActivated: pageView.goToPage(currentPageSB.value - 2)
+                    onActivated: pageView.goToPage(currentPageSB.value - 1)
                 }
                 Shortcut {
                     sequence: StandardKey.MoveToNextPage
-                    onActivated: pageView.goToPage(currentPageSB.value)
+                    onActivated: pageView.goToPage(currentPageSB.value + 1)
                 }
             }
             ToolButton {
@@ -331,7 +341,7 @@ ApplicationWindow {
                 ScrollBar.vertical: ScrollBar { }
                 delegate: ItemDelegate {
                     width: parent ? parent.width : 0
-                    text: "page " + (page + 1) + ": " + contextBefore + pageView.searchString + contextAfter
+                    text: "page " + document.pageLabel(page) + ": " + contextBefore + pageView.searchString + contextAfter
                     highlighted: ListView.isCurrentItem
                     onClicked: {
                         searchResultsList.currentIndex = index

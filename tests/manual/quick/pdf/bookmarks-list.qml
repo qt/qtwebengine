@@ -87,11 +87,10 @@ ApplicationWindow {
                     width: parent.width
                     text: model.title
                     background: Item { }
-                    onClicked: image.currentFrame = pageNumber
+                    onClicked: image.currentFrame = page
                 }
                 model: PdfBookmarkModel {
                     document: root.doc
-                    structureMode: PdfBookmarkModel.ListMode
                 }
             }
         }
@@ -179,6 +178,6 @@ ApplicationWindow {
     }
     Text {
         anchors { bottom: parent.bottom; right: parent.right; margins: 6 }
-        text: "page " + (image.currentFrame + 1) + " of " + doc.pageCount
+        text: "page " + doc.pageLabel(image.currentFrame) + " of " + doc.pageCount
     }
 }

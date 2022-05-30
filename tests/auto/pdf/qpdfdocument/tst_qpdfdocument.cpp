@@ -69,6 +69,7 @@ private slots:
     void status();
     void passwordClearedOnClose();
     void metaData();
+    void pageLabels();
 
 private:
     void consistencyCheck(QPdfDocument &doc) const;
@@ -413,6 +414,16 @@ void tst_QPdfDocument::metaData()
     QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::Creator).toString(), QString::fromLatin1("Writer"));
     QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::CreationDate).toDateTime(), QDateTime(QDate(2016, 8, 7), QTime(7, 3, 6), Qt::UTC));
     QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::ModificationDate).toDateTime(), QDateTime(QDate(2016, 8, 8), QTime(8, 3, 6), Qt::UTC));
+}
+
+void tst_QPdfDocument::pageLabels()
+{
+    QPdfDocument doc;
+    QCOMPARE(doc.load(QFINDTESTDATA("test.pdf")), QPdfDocument::Error::None);
+    QCOMPARE(doc.pageCount(), 3);
+    QCOMPARE(doc.pageLabel(0), "Qt");
+    QCOMPARE(doc.pageLabel(1), "1");
+    QCOMPARE(doc.pageLabel(2), "i"); // i of the tiger!
 }
 
 QTEST_MAIN(tst_QPdfDocument)

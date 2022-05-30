@@ -68,10 +68,13 @@ Window {
         id: view
         anchors.fill: parent
         anchors.margins: 10
-        model: doc.pageCount
+        model: doc.pageModel
         cellWidth: cellSize
         cellHeight: cellSize
         delegate: Item {
+            required property int index
+            required property string label
+            required property size pointSize
             width: view.cellWidth
             height: view.cellHeight
             Rectangle {
@@ -86,10 +89,11 @@ Window {
                     currentFrame: index
                     asynchronous: true
                     fillMode: Image.PreserveAspectFit
-                    property size naturalSize: doc.pagePointSize(index)
-                    property bool landscape: naturalSize.width > naturalSize.height
-                    width: landscape ? Math.min(view.cellWidth, naturalSize.width) : height * naturalSize.width / naturalSize.height
-                    height: landscape ? width * naturalSize.height / naturalSize.width : Math.min(view.cellHeight - pageNumber.height, naturalSize.height)
+                    property bool landscape: pointSize.width > pointSize.height
+                    width: landscape ? Math.min(view.cellWidth, pointSize.width)
+                                     : height * pointSize.width / pointSize.height
+                    height: landscape ? width * pointSize.height / pointSize.width
+                                      : Math.min(view.cellHeight - pageNumber.height, pointSize.height)
                     sourceSize.width: width
                     sourceSize.height: height
                 }
@@ -98,7 +102,7 @@ Window {
                 id: pageNumber
                 anchors.bottom: parent.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Page " + (image.currentFrame + 1)
+                text: "Page " + label
             }
         }
     }

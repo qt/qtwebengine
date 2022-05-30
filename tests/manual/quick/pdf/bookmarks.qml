@@ -88,7 +88,7 @@ ApplicationWindow {
                 clip: true
                 delegate: TreeViewDelegate {
                     width: parent.width
-                    onClicked: image.currentFrame = pageNumber
+                    onClicked: image.currentFrame = page
                 }
                 model: PdfBookmarkModel {
                     document: root.doc
@@ -189,6 +189,6 @@ ApplicationWindow {
     }
     Label {
         anchors { bottom: parent.bottom; right: parent.right; margins: 6 }
-        text: "page " + (image.currentFrame + 1) + " of " + doc.pageCount
+        text: "page " + doc.pageLabel(image.currentFrame) + " of " + doc.pageCount
     }
 }
