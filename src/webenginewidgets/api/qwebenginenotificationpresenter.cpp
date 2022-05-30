@@ -107,3 +107,5 @@ void defaultNotificationPresenter(std::unique_ptr<QWebEngineNotification> notifi
 
 
 QT_END_NAMESPACE
+
+#include "moc_qwebenginenotificationpresenter_p.cpp"

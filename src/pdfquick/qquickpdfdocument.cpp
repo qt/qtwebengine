@@ -304,3 +304,5 @@ void QQuickPdfDocument::updateMaxPageSize() const
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qquickpdfdocument_p.cpp"

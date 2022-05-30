@@ -903,3 +903,6 @@ void QWebEngineProfile::requestIconForIconURL(const QUrl &url, int desiredSizeIn
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwebengineprofile.cpp"
+#include "moc_qwebengineurlrequestinterceptor.cpp"

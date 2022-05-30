@@ -309,3 +309,5 @@ void QQuickPdfSearchModel::setCurrentResult(int currentResult)
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qquickpdfsearchmodel_p.cpp"

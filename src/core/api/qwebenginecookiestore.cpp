@@ -410,3 +410,5 @@ void QWebEngineCookieStore::setCookieFilter(std::function<bool(const FilterReque
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qwebenginecookiestore.cpp"

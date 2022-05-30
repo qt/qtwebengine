@@ -161,3 +161,5 @@ void QQuickPdfPageImage::documentStatusChanged()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qquickpdfpageimage_p.cpp"

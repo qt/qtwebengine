@@ -343,3 +343,4 @@ quint64 QPdfPageRenderer::requestPage(int pageNumber, QSize imageSize,
 QT_END_NAMESPACE
 
 #include "qpdfpagerenderer.moc"
+#include "moc_qpdfpagerenderer.cpp"

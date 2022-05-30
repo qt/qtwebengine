@@ -192,3 +192,5 @@ void QWebEngineUrlRequestJob::redirect(const QUrl &url)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwebengineurlrequestjob.cpp"

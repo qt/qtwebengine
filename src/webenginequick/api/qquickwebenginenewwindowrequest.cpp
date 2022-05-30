@@ -75,3 +75,5 @@ void QQuickWebEngineNewWindowRequest::openIn(QQuickWebEngineView *view)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qquickwebenginenewwindowrequest_p.cpp"

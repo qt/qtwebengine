@@ -138,3 +138,5 @@ void QQuickPdfLinkModel::setDocument(QQuickPdfDocument *document)
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qquickpdflinkmodel_p.cpp"

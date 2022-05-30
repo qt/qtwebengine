@@ -538,3 +538,5 @@ QWebEngineViewAccessible *RenderWidgetHostViewQtDelegateWidgetAccessible::viewAc
 #endif // QT_CONFIG(accessibility)
 
 } // namespace QtWebEngineCore
+
+#include "moc_render_widget_host_view_qt_delegate_widget.cpp"

@@ -189,3 +189,5 @@ void QWebEngineNewWindowRequest::openIn(QWebEnginePage *page)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwebenginenewwindowrequest.cpp"

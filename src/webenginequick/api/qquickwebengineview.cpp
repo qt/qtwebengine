@@ -2441,3 +2441,4 @@ QQmlComponent *QQuickWebEngineView::touchHandleDelegate() const
 QT_END_NAMESPACE
 
 #include "moc_qquickwebengineview_p.cpp"
+#include "moc_qquickwebengineforeigntypes_p.cpp"

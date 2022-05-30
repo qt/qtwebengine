@@ -70,3 +70,5 @@ void QWebEngineMessagePumpScheduler::timerEvent(QTimerEvent *ev)
     m_timerId = 0;
     m_callback();
 }
+
+#include "moc_qwebenginemessagepumpscheduler_p.cpp"

@@ -214,3 +214,5 @@ bool QWebEngineNavigationRequest::isAccepted() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwebenginenavigationrequest.cpp"

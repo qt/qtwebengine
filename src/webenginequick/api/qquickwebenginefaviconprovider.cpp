@@ -289,3 +289,5 @@ QQuickWebEngineFaviconProvider::requestImageResponse(const QString &id, const QS
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qquickwebenginefaviconprovider_p_p.cpp"

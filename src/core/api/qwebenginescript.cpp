@@ -315,3 +315,5 @@ QDebug operator<<(QDebug d, const QWebEngineScript &script)
 #endif
 
 QT_END_NAMESPACE
+
+#include "moc_qwebenginescript.cpp"

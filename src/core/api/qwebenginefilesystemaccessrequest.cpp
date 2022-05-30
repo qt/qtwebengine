@@ -153,3 +153,5 @@ AccessFlags QWebEngineFileSystemAccessRequest::accessFlags() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwebenginefilesystemaccessrequest.cpp"

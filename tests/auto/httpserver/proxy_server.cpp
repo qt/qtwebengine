@@ -106,3 +106,5 @@ void ProxyServer::handleReadReady()
     m_data.clear();
     emit requestReceived();
 }
+
+#include "moc_proxy_server.cpp"

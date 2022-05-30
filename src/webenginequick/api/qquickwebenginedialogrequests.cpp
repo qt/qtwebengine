@@ -820,3 +820,5 @@ void QQuickWebEngineTooltipRequest::setAccepted(bool accepted)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qquickwebenginedialogrequests_p.cpp"

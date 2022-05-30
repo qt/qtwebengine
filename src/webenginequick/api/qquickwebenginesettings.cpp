@@ -774,3 +774,5 @@ void QQuickWebEngineSettings::setParentSettings(QQuickWebEngineSettings *parentS
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qquickwebenginesettings_p.cpp"

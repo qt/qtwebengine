@@ -194,3 +194,5 @@ QList<QSslCertificate> QWebEngineCertificateError::certificateChain() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwebenginecertificateerror.cpp"

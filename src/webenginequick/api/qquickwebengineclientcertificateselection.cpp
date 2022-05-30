@@ -221,3 +221,5 @@ QUrl QQuickWebEngineClientCertificateSelection::host() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qquickwebengineclientcertificateselection_p.cpp"

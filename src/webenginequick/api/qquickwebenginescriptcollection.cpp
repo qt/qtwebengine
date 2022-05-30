@@ -277,3 +277,4 @@ void QQuickWebEngineScriptCollection::setQmlEngine(QQmlEngine *engine)
     Q_ASSERT(engine);
     d->m_qmlEngine = engine;
 }
+#include "moc_qquickwebenginescriptcollection_p.cpp"

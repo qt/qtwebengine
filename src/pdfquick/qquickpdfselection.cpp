@@ -567,3 +567,5 @@ void QQuickPdfSelection::update(const QPdfSelection &sel, bool textAndGeometryOn
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qquickpdfselection_p.cpp"

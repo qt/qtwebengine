@@ -147,3 +147,5 @@ QString HttpServer::sharedDataDir() const
 {
     return SERVER_SOURCE_DIR + QLatin1String("/data");
 }
+
+#include "moc_httpserver.cpp"

@@ -164,3 +164,5 @@ QPdfPageNavigator *QQuickPdfPageNavigator::navStack()
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qquickpdfpagenavigator_p.cpp"

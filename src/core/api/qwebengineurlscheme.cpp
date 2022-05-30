@@ -415,3 +415,5 @@ void QWebEngineUrlScheme::lockSchemes()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwebengineurlscheme.cpp"

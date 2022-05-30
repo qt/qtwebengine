@@ -292,3 +292,5 @@ bool QWebEngineContextMenuRequest::hasImageContent() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwebenginecontextmenurequest.cpp"

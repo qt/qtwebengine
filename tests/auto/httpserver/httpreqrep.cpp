@@ -141,3 +141,5 @@ void HttpReqRep::handleDisconnected()
     m_state = State::DISCONNECTED;
     Q_EMIT closed();
 }
+
+#include "moc_httpreqrep.cpp"

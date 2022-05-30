@@ -428,3 +428,5 @@ void QWebEngineHistory::reset()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwebenginehistory.cpp"

@@ -674,3 +674,5 @@ QWebEngineDownloadRequest::~QWebEngineDownloadRequest()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwebenginedownloadrequest.cpp"

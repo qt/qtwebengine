@@ -194,3 +194,5 @@ int QWebEngineLoadingInfo::errorCode() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwebengineloadinginfo.cpp"

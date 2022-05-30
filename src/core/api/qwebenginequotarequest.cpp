@@ -111,3 +111,4 @@ qint64 QWebEngineQuotaRequest::requestedSize() const
 */
 
 QT_END_NAMESPACE
+#include "moc_qwebenginequotarequest.cpp"

@@ -125,3 +125,5 @@ QWebEngineUrlSchemeHandler::~QWebEngineUrlSchemeHandler()
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qwebengineurlschemehandler.cpp"

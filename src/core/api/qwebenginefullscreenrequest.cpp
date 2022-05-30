@@ -145,3 +145,5 @@ QUrl QWebEngineFullScreenRequest::origin() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwebenginefullscreenrequest.cpp"

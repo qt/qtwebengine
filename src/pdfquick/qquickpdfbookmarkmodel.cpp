@@ -87,3 +87,5 @@ void QQuickPdfBookmarkModel::setDocument(QQuickPdfDocument *document)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qquickpdfbookmarkmodel_p.cpp"

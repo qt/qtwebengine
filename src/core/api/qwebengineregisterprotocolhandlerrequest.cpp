@@ -114,3 +114,5 @@ QString QWebEngineRegisterProtocolHandlerRequest::scheme() const
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qwebengineregisterprotocolhandlerrequest.cpp"

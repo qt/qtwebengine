@@ -140,3 +140,5 @@ QQuickWebEngineTouchSelectionMenuRequest::TouchSelectionCommandFlags QQuickWebEn
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qquickwebenginetouchselectionmenurequest_p.cpp"

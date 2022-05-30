@@ -171,3 +171,4 @@ void QQuickWebEngineAction::trigger()
 
 QT_END_NAMESPACE
 
+#include "moc_qquickwebengineaction_p.cpp"

@@ -64,3 +64,5 @@ QQuickWebEngineView *QQuickWebEngineDownloadRequest::view() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qquickwebenginedownloadrequest_p.cpp"
