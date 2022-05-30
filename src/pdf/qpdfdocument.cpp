@@ -783,6 +783,8 @@ QAbstractListModel *QPdfDocument::pageModel()
 
     If the document does not have custom page numbering, this function returns
     \c {page + 1}.
+
+    \sa pageIndexForLabel()
 */
 QString QPdfDocument::pageLabel(int page)
 {
@@ -794,6 +796,21 @@ QString QPdfDocument::pageLabel(int page)
     FPDF_GetPageLabel(d->doc, page, buf.data(), len);
     lock.unlock();
     return QString::fromUtf16(buf.constData());
+}
+
+/*!
+    Returns the index of the page that has the \a label, or \c -1 if not found.
+
+    \sa pageLabel()
+*/
+int QPdfDocument::pageIndexForLabel(const QString &label)
+{
+    const auto trimmed = label.trimmed();
+    for (int i = 0; i < d->pageCount; ++i) {
+        if (pageLabel(i) == trimmed)
+            return i;
+    }
+    return -1;
 }
 
 /*!

@@ -89,6 +89,7 @@ public:
     Q_INVOKABLE QSizeF pagePointSize(int page) const;
 
     Q_INVOKABLE QString pageLabel(int page);
+    Q_INVOKABLE int pageIndexForLabel(const QString &label);
 
     QAbstractListModel *pageModel();
 

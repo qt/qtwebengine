@@ -8,10 +8,10 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QSpinBox>
 #include <QPdfBookmarkModel>
 #include <QPdfDocument>
 #include <QPdfPageNavigator>
+#include <QPdfPageSelector>
 #include <QStandardPaths>
 #include <QtMath>
 
@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , m_zoomSelector(new ZoomSelector(this))
-    , m_pageSelector(new QSpinBox(this))
+    , m_pageSelector(new QPdfPageSelector(this))
     , m_document(new QPdfDocument(this))
 {
     ui->setupUi(this);
@@ -32,9 +32,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->mainToolBar->insertWidget(ui->actionZoom_In, m_zoomSelector);
 
     ui->mainToolBar->insertWidget(ui->actionForward, m_pageSelector);
-    connect(m_pageSelector, &QSpinBox::valueChanged, this, &MainWindow::pageSelected);
+    connect(m_pageSelector, &QPdfPageSelector::valueChanged, this, &MainWindow::pageSelected);
+    m_pageSelector->setDocument(m_document);
     auto nav = ui->pdfView->pageNavigator();
-    connect(nav, &QPdfPageNavigator::currentPageChanged, m_pageSelector, &QSpinBox::setValue);
+    connect(nav, &QPdfPageNavigator::currentPageChanged, m_pageSelector, &QPdfPageSelector::setValue);
     connect(nav, &QPdfPageNavigator::backAvailableChanged, ui->actionBack, &QAction::setEnabled);
     connect(nav, &QPdfPageNavigator::forwardAvailableChanged, ui->actionForward, &QAction::setEnabled);
 
@@ -65,10 +66,7 @@ void MainWindow::open(const QUrl &docLocation)
 {
     if (docLocation.isLocalFile()) {
         m_document->load(docLocation.toLocalFile());
-        const auto documentTitle = m_document->metaData(QPdfDocument::MetaDataField::Title).toString();
-        setWindowTitle(!documentTitle.isEmpty() ? documentTitle : QStringLiteral("PDF Viewer"));
         pageSelected(0);
-        m_pageSelector->setMaximum(m_document->pageCount() - 1);
     } else {
         const QString message = tr("%1 is not a valid local file").arg(docLocation.toString());
         qCDebug(lcExample).noquote() << message;
@@ -91,6 +89,11 @@ void MainWindow::pageSelected(int page)
 {
     auto nav = ui->pdfView->pageNavigator();
     nav->jump(page, {}, nav->currentZoom());
+    const auto documentTitle = m_document->metaData(QPdfDocument::MetaDataField::Title).toString();
+    setWindowTitle(!documentTitle.isEmpty() ? documentTitle : QStringLiteral("PDF Viewer"));
+    setWindowTitle(tr("%1: page %2 (%3 of %4)")
+                   .arg(documentTitle.isEmpty() ? u"PDF Viewer"_qs : documentTitle,
+                        m_pageSelector->text(), QString::number(page + 1), QString::number(m_document->pageCount())));
 }
 
 void MainWindow::on_actionOpen_triggered()

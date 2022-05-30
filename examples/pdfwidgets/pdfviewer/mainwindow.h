@@ -16,6 +16,7 @@ class MainWindow;
 
 class QFileDialog;
 class QPdfDocument;
+class QPdfPageSelector;
 class QPdfView;
 class QSpinBox;
 QT_END_NAMESPACE
@@ -53,7 +54,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     ZoomSelector *m_zoomSelector;
-    QSpinBox *m_pageSelector;
+    QPdfPageSelector *m_pageSelector;
     QFileDialog *m_fileDialog = nullptr;
 
     QPdfDocument *m_document;
