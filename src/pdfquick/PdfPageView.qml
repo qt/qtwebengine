@@ -366,7 +366,7 @@ Rectangle {
     PdfPageImage {
         id: image
         document: root.document
-        currentPage: pageNavigator.currentPage
+        currentFrame: pageNavigator.currentPage
         asynchronous: true
         fillMode: Image.PreserveAspectFit
         property bool centerOnLoad: false

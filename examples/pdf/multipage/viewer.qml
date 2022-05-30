@@ -387,7 +387,7 @@ ApplicationWindow {
                             PdfPageImage {
                                 id: image
                                 document: doc
-                                currentPage: index
+                                currentFrame: index
                                 asynchronous: true
                                 fillMode: Image.PreserveAspectFit
                                 property size naturalSize: doc.pagePointSize(index)

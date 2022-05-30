@@ -62,7 +62,6 @@ class Q_PDFQUICK_EXPORT QQuickPdfPageImage : public QQuickImage
 {
     Q_OBJECT
     Q_PROPERTY(QQuickPdfDocument* document READ document WRITE setDocument NOTIFY documentChanged FINAL)
-    Q_PROPERTY(int currentPage READ currentFrame WRITE setCurrentFrame NOTIFY currentFrameChanged FINAL)
     QML_NAMED_ELEMENT(PdfPageImage)
     QML_ADDED_IN_VERSION(6, 4)
 

@@ -377,7 +377,7 @@ Item {
                 PdfPageImage {
                     id: image
                     document: root.document
-                    currentPage: index
+                    currentFrame: index
                     asynchronous: true
                     fillMode: Image.PreserveAspectFit
                     width: paper.pagePointSize.width * root.renderScale
