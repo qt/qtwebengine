@@ -718,7 +718,7 @@ int QPdfDocument::pageCount() const
 /*!
     Returns the size of page \a page in points (1/72 of an inch).
 */
-QSizeF QPdfDocument::pageSize(int page) const
+QSizeF QPdfDocument::pagePointSize(int page) const
 {
     QSizeF result;
     if (!d->doc || !d->checkPageComplete(page))
@@ -801,7 +801,7 @@ QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions
         float y1 = clipRect.bottom();
         float x2 = clipRect.right();
         float y2 = clipRect.top();
-        QSizeF origSize = pageSize(page);
+        QSizeF origSize = pagePointSize(page);
         QVector2D pageScale(1, 1);
         if (!renderOptions.scaledSize().isNull()) {
             pageScale = QVector2D(renderOptions.scaledSize().width() / float(origSize.width()),

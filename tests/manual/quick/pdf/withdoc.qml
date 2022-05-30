@@ -221,6 +221,6 @@ Window {
     }
     Text {
         anchors.bottom: parent.bottom
-        text: "page " + (image.currentFrame + 1) + " of " + doc.pageCount
+        text: "page " + (image.currentFrame + 1) + " of " + doc.pageCount + " label: " + doc.pageLabel(image.currentFrame)
     }
 }

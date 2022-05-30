@@ -113,7 +113,7 @@ public:
 
     int pageCount() const;
 
-    QSizeF pageSize(int page) const;
+    Q_INVOKABLE QSizeF pagePointSize(int page) const;
 
     QImage render(int page, QSize imageSize, QPdfDocumentRenderOptions options = QPdfDocumentRenderOptions());
 

@@ -83,7 +83,7 @@ int QPdfIOHandler::currentImageNumber() const
 
 QRect QPdfIOHandler::currentImageRect() const
 {
-    return QRect(QPoint(0, 0), m_doc->pageSize(m_page).toSize());
+    return QRect(QPoint(0, 0), m_doc->pagePointSize(m_page).toSize());
 }
 
 int QPdfIOHandler::imageCount() const
@@ -103,7 +103,7 @@ bool QPdfIOHandler::read(QImage *image)
         if (m_page < 0)
             m_page = 0;
         const bool xform = (m_clipRect.isValid() || m_scaledSize.isValid() || m_scaledClipRect.isValid());
-        QSize pageSize = m_doc->pageSize(m_page).toSize();
+        QSize pageSize = m_doc->pagePointSize(m_page).toSize();
         QSize finalSize = pageSize;
         QRectF bounds;
         if (xform && !finalSize.isEmpty()) {
@@ -163,7 +163,7 @@ QVariant QPdfIOHandler::option(ImageOption option) const
         return QImage::Format_ARGB32_Premultiplied;
     case Size:
         const_cast<QPdfIOHandler *>(this)->load(device());
-        return m_doc->pageSize(qMax(0, m_page));
+        return m_doc->pagePointSize(qMax(0, m_page));
     case ClipRect:
         return m_clipRect;
     case ScaledSize:

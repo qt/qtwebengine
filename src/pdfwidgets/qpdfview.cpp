@@ -223,9 +223,9 @@ QPdfViewPrivate::DocumentLayout QPdfViewPrivate::calculateDocumentLayout() const
     for (int page = startPage; page < endPage; ++page) {
         QSize pageSize;
         if (m_zoomMode == QPdfView::ZoomMode::Custom) {
-            pageSize = QSizeF(m_document->pageSize(page) * m_screenResolution * m_zoomFactor).toSize();
+            pageSize = QSizeF(m_document->pagePointSize(page) * m_screenResolution * m_zoomFactor).toSize();
         } else if (m_zoomMode == QPdfView::ZoomMode::FitToWidth) {
-            pageSize = QSizeF(m_document->pageSize(page) * m_screenResolution).toSize();
+            pageSize = QSizeF(m_document->pagePointSize(page) * m_screenResolution).toSize();
             const qreal factor = (qreal(m_viewport.width() - m_documentMargins.left() - m_documentMargins.right()) /
                                   qreal(pageSize.width()));
             pageSize *= factor;
@@ -233,7 +233,7 @@ QPdfViewPrivate::DocumentLayout QPdfViewPrivate::calculateDocumentLayout() const
             const QSize viewportSize(m_viewport.size() +
                                      QSize(-m_documentMargins.left() - m_documentMargins.right(), -m_pageSpacing));
 
-            pageSize = QSizeF(m_document->pageSize(page) * m_screenResolution).toSize();
+            pageSize = QSizeF(m_document->pagePointSize(page) * m_screenResolution).toSize();
             pageSize = pageSize.scaled(viewportSize, Qt::KeepAspectRatio);
         }
 

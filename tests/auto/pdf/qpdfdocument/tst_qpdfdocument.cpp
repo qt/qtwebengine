@@ -124,7 +124,7 @@ void tst_QPdfDocument::pageCount()
     QCOMPARE(pageCountChangedSpy.count(), 1);
     QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
 
-    QCOMPARE(doc.pageSize(0).toSize(), tempPdf.pageLayout.fullRectPoints().size());
+    QCOMPARE(doc.pagePointSize(0).toSize(), tempPdf.pageLayout.fullRectPoints().size());
 }
 
 void tst_QPdfDocument::loadFromIODevice()

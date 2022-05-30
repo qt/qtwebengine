@@ -177,10 +177,6 @@ QString QQuickPdfDocument::error() const
 
     Returns the size of the given \a page in points.
 */
-QSizeF QQuickPdfDocument::pagePointSize(int page) const
-{
-    return m_doc->pageSize(page);
-}
 
 qreal QQuickPdfDocument::maxPageWidth() const
 {
@@ -219,7 +215,7 @@ void QQuickPdfDocument::updateMaxPageSize() const
     qreal h = 0;
     const int count = m_doc->pageCount();
     for (int i = 0; i < count; ++i) {
-        auto size = pagePointSize(i);
+        auto size = m_doc->pagePointSize(i);
         w = qMax(w, size.width());
         h = qMax(w, size.height());
     }

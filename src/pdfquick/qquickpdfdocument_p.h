@@ -107,7 +107,6 @@ public:
     QDateTime creationDate() { return m_doc->metaData(QPdfDocument::MetaDataField::CreationDate).toDateTime(); }
     QDateTime modificationDate() { return m_doc->metaData(QPdfDocument::MetaDataField::ModificationDate).toDateTime(); }
 
-    Q_INVOKABLE QSizeF pagePointSize(int page) const;
     qreal maxPageWidth() const;
     qreal maxPageHeight() const;
 
