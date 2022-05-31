@@ -29,6 +29,7 @@
 #include <QtTest/QtTest>
 #include <util.h>
 
+#include <QWebEngineHistory>
 #include <QWebEnginePage>
 #include <QWebEngineProfile>
 #include <QWebEngineSettings>
@@ -49,6 +50,7 @@ private Q_SLOTS:
     void faviconLoadFromResources();
     void faviconLoadEncodedUrl();
     void faviconLoadAfterHistoryNavigation();
+    void faviconLoadPushState();
     void noFavicon();
     void aboutBlank();
     void unavailableFavicon();
@@ -220,6 +222,41 @@ void tst_Favicon::faviconLoadAfterHistoryNavigation()
     QTRY_COMPARE(iconUrlChangedSpy.count(), 7);
     QTRY_COMPARE(iconChangedSpy.count(), 7);
     QCOMPARE(m_page->iconUrl(), QUrl("qrc:/resources/icons/qtmulti.ico"));
+}
+
+void tst_Favicon::faviconLoadPushState()
+{
+    QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
+    QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));
+    QSignalSpy iconChangedSpy(m_page, SIGNAL(iconChanged(QIcon)));
+
+    QUrl url("qrc:/resources/favicon-single.html");
+    m_page->load(url);
+
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
+    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
+    QTRY_COMPARE(iconChangedSpy.count(), 1);
+
+    QUrl iconUrl = iconUrlChangedSpy.at(0).at(0).toString();
+    QCOMPARE(iconUrl, m_page->iconUrl());
+    QCOMPARE(iconUrl, QUrl("qrc:/resources/icons/qt32.ico"));
+
+    const QIcon &icon = m_page->icon();
+    QVERIFY(!icon.isNull());
+
+    iconUrlChangedSpy.clear();
+    iconChangedSpy.clear();
+
+    // pushState() is a same document navigation and should not reset or
+    // update favicon.
+    QCOMPARE(m_page->history()->count(), 1);
+    evaluateJavaScriptSync(m_page, "history.pushState('', '')");
+    QTRY_COMPARE(m_page->history()->count(), 2);
+
+    // Favicon change is not expected.
+    QCOMPARE(iconUrlChangedSpy.count(), 0);
+    QCOMPARE(iconChangedSpy.count(), 0);
+    QCOMPARE(m_page->iconUrl(), QUrl("qrc:/resources/icons/qt32.ico"));
 }
 
 void tst_Favicon::noFavicon()
