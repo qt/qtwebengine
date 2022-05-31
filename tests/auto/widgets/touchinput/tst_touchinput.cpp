@@ -81,17 +81,17 @@ private:
         auto target = view.focusProxy();
         QPoint p(target->width() / 2, target->height() / 4 * (down ? 3 : 1));
 
-        QTest::touchEvent(target, s_touchDevice).press(42, p, target);
+        QTest::touchEvent(target, s_touchDevice).press(1, p, target);
 
         QSignalSpy spy(view.page(), &QWebEnginePage::scrollPositionChanged);
         for (int i = 0; i < 3; ++i) {
             down ? p -= QPoint(5, 15) : p += QPoint(5, 15);
             QTest::qWait(100); // too fast and events are recognized as fling gesture
-            QTest::touchEvent(target, s_touchDevice).move(42, p, target);
+            QTest::touchEvent(target, s_touchDevice).move(1, p, target);
             spy.wait();
         }
 
-        QTest::touchEvent(target, s_touchDevice).release(42, p, target);
+        QTest::touchEvent(target, s_touchDevice).release(1, p, target);
     }
 
     void gesturePinch(bool zoomIn, bool tapOneByOne = false) {
@@ -100,10 +100,10 @@ private:
         auto t1 = p - QPoint(zoomIn ? 50 : 150, 10), t2 = p + QPoint(zoomIn ? 50 : 150, 10);
 
         if (tapOneByOne) {
-            QTest::touchEvent(target, s_touchDevice).press(42, t1, target);
-            QTest::touchEvent(target, s_touchDevice).stationary(42).press(24, t2, target);
+            QTest::touchEvent(target, s_touchDevice).press(0, t1, target);
+            QTest::touchEvent(target, s_touchDevice).stationary(0).press(1, t2, target);
         } else {
-            QTest::touchEvent(target, s_touchDevice).press(42, t1, target).press(24, t2, target);
+            QTest::touchEvent(target, s_touchDevice).press(0, t1, target).press(1, t2, target);
         }
 
         for (int i = 0; i < 3; ++i) {
@@ -115,14 +115,14 @@ private:
                 t2 -= QPoint(35, 5);
             }
             QTest::qWait(100); // too fast and events are recognized as fling gesture
-            QTest::touchEvent(target, s_touchDevice).move(24, t1, target).move(42, t2, target);
+            QTest::touchEvent(target, s_touchDevice).move(1, t1, target).move(0, t2, target);
         }
 
         if (tapOneByOne) {
-            QTest::touchEvent(target, s_touchDevice).stationary(42).release(24, t2, target);
-            QTest::touchEvent(target, s_touchDevice).release(42, t1, target);
+            QTest::touchEvent(target, s_touchDevice).stationary(0).release(1, t2, target);
+            QTest::touchEvent(target, s_touchDevice).release(0, t1, target);
         } else {
-            QTest::touchEvent(target, s_touchDevice).release(42, t1, target).release(24, t2, target);
+            QTest::touchEvent(target, s_touchDevice).release(0, t1, target).release(1, t2, target);
         }
     }
 
