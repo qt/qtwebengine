@@ -506,7 +506,7 @@ Item {
                     model: PdfLinkModel {
                         id: linkModel
                         document: root.document
-                        page: image.currentPage
+                        page: image.currentFrame
                     }
                     delegate: Shape {
                         required property rect rect
@@ -553,7 +553,7 @@ Item {
                     id: selection
                     anchors.fill: parent
                     document: root.document
-                    page: image.currentPage
+                    page: image.currentFrame
                     renderScale: image.renderScale
                     fromPoint: textSelectionDrag.centroid.pressPosition
                     toPoint: textSelectionDrag.centroid.position
