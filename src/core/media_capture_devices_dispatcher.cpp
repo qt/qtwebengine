@@ -185,7 +185,7 @@ content::DesktopMediaID getDefaultScreenId()
     GetMonitorsFunc getMonitors = reinterpret_cast<GetMonitorsFunc>(dlsym(RTLD_DEFAULT, "XRRGetMonitors"));
     typedef void (*FreeMonitorsFunc)(XRRMonitorInfo*);
     FreeMonitorsFunc freeMonitors = reinterpret_cast<FreeMonitorsFunc>(dlsym(RTLD_DEFAULT, "XRRFreeMonitors"));
-    if (!getMonitors && !freeMonitors) {
+    if (!getMonitors || !freeMonitors) {
         qWarning("Unable to link XRandR monitor functions.");
         return content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0);
     }
