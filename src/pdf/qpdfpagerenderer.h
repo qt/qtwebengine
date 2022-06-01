@@ -82,7 +82,7 @@ public:
 
 Q_SIGNALS:
     void documentChanged(QPdfDocument *document);
-    void renderModeChanged(RenderMode renderMode);
+    void renderModeChanged(QPdfPageRenderer::RenderMode renderMode);
 
     void pageRendered(int pageNumber, QSize imageSize, const QImage &image,
                       QPdfDocumentRenderOptions options, quint64 requestId);
