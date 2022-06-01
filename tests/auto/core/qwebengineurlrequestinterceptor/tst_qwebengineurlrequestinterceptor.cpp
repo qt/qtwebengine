@@ -727,7 +727,7 @@ void tst_QWebEngineUrlRequestInterceptor::jsServiceWorker()
     server.setResourceDirs({ QDir(QT_TESTCASE_SOURCEDIR).canonicalPath() + "/resources" });
     QVERIFY(server.start());
 
-    QWebEngineProfile profile(QStringLiteral("Test"));
+    QWebEngineProfile profile;
     std::unique_ptr<ConsolePage> page;
     page.reset(new ConsolePage(&profile));
     TestRequestInterceptor interceptor(/* intercept */ false);
