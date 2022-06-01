@@ -15,6 +15,7 @@
 #include <QLoggingCategory>
 #include <QMetaEnum>
 #include <QMutex>
+#include <QPixmap>
 #include <QVector2D>
 
 #include <QtCore/private/qtools_p.h>
@@ -56,6 +57,7 @@ public:
     {
         if (!index.isValid())
             return QVariant();
+
         switch (QPdfDocument::PageModelRole(role)) {
         case QPdfDocument::PageModelRole::Label:
             return document()->pageLabel(index.row());
@@ -64,6 +66,14 @@ public:
         case QPdfDocument::PageModelRole::NRoles:
             break;
         }
+
+        switch (role) {
+        case Qt::DecorationRole:
+            return pageThumbnail(index.row());
+        case Qt::DisplayRole:
+            return document()->pageLabel(index.row());
+        }
+
         return QVariant();
     }
 
@@ -73,8 +83,24 @@ public:
 
 private:
     QPdfDocument *document() const { return static_cast<QPdfDocument *>(parent()); }
+    QPixmap pageThumbnail(int page) const
+    {
+        auto it = m_thumbnails.constFind(page);
+        if (it == m_thumbnails.constEnd()) {
+            auto doc = document();
+            auto size = doc->pagePointSize(page);
+            size.scale(128, 128, Qt::KeepAspectRatio);
+            // TODO use QPdfPageRenderer for threading?
+            auto image = document()->render(page, size.toSize());
+            QPixmap ret = QPixmap::fromImage(image);
+            m_thumbnails.insert(page, ret);
+            return ret;
+        }
+        return it.value();
+    }
 
     QHash<int, QByteArray> m_roleNames;
+    mutable QHash<int, QPixmap> m_thumbnails;
 };
 
 QPdfDocumentPrivate::QPdfDocumentPrivate()

@@ -49,7 +49,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->bookmarkView->setModel(bookmarkModel);
     connect(ui->bookmarkView, &QAbstractItemView::activated, this, &MainWindow::bookmarkSelected);
 
-    ui->tabWidget->setTabEnabled(1, false); // disable 'Pages' tab for now
+    ui->thumbnailsView->setModel(m_document->pageModel());
 
     ui->pdfView->setDocument(m_document);
 
@@ -148,6 +148,12 @@ void MainWindow::on_actionNext_Page_triggered()
 {
     auto nav = ui->pdfView->pageNavigator();
     nav->jump(nav->currentPage() + 1, {}, nav->currentZoom());
+}
+
+void MainWindow::on_thumbnailsView_activated(const QModelIndex &index)
+{
+    auto nav = ui->pdfView->pageNavigator();
+    nav->jump(index.row(), {}, nav->currentZoom());
 }
 
 void MainWindow::on_actionContinuous_triggered()
