@@ -208,8 +208,8 @@ void QPdfPageNavigator::clear()
     to the history of visited locations.
 
     The \a zoom argument represents magnification (where \c 1 is the default
-    scale, 1 logical pixel = 1 point). If \a zoom is given as \c 0, currentZoom
-    keeps its existing value, and currentZoomChanged is not emitted.
+    scale, 1 logical pixel = 1 point). If \a zoom is not given or is \c 0,
+    currentZoom keeps its existing value, and currentZoomChanged is not emitted.
 
     The \a location should be the same as QPdfLink::location() if the user is
     following a link; and since that is specified as the upper-left corner of

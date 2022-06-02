@@ -346,7 +346,7 @@ ApplicationWindow {
                         highlighted: ListView.isCurrentItem
                         onClicked: {
                             searchResultsList.currentIndex = resultDelegate.index
-                            view.goToLocation(resultDelegate.page, resultDelegate.location, 0)
+                            view.goToLocation(resultDelegate.page, resultDelegate.location)
                             view.searchModel.currentResult = resultDelegate.indexOnPage
                         }
                     }

@@ -71,7 +71,7 @@ public:
 
 public Q_SLOTS:
     void clear();
-    void jump(int page, const QPointF &location, qreal zoom);
+    void jump(int page, const QPointF &location, qreal zoom = 0);
     void update(int page, const QPointF &location, qreal zoom);
     void forward();
     void back();
