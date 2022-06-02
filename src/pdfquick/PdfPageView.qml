@@ -340,8 +340,8 @@ Rectangle {
         id: selection
         document: root.document
         page: pageNavigator.currentPage
-        fromPoint: Qt.point(textSelectionDrag.centroid.pressPosition.x / image.pageScale, textSelectionDrag.centroid.pressPosition.y / image.pageScale)
-        toPoint: Qt.point(textSelectionDrag.centroid.position.x / image.pageScale, textSelectionDrag.centroid.position.y / image.pageScale)
+        from: Qt.point(textSelectionDrag.centroid.pressPosition.x / image.pageScale, textSelectionDrag.centroid.pressPosition.y / image.pageScale)
+        to: Qt.point(textSelectionDrag.centroid.position.x / image.pageScale, textSelectionDrag.centroid.position.y / image.pageScale)
         hold: !textSelectionDrag.active && !tapHandler.pressed
     }
 

@@ -97,8 +97,8 @@ Window {
         id: selection
         document: doc
         page: image.currentFrame
-        fromPoint: dragHandler.centroid.pressPosition
-        toPoint: dragHandler.centroid.position
+        from: dragHandler.centroid.pressPosition
+        to: dragHandler.centroid.position
         hold: !dragHandler.active
     }
 

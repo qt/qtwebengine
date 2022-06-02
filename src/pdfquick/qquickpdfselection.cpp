@@ -66,7 +66,7 @@ static const QRegularExpression WordDelimiter(QStringLiteral("\\s"));
     PdfSelection provides the text string and its geometry within a bounding box
     from one point to another.
 
-    To modify the selection using the mouse, bind \l fromPoint and \l toPoint
+    To modify the selection using the mouse, bind \l from and \l to
     to the suitable properties of an input handler so that they will be set to
     the positions where the drag gesture begins and ends, respectively; and
     bind the \l hold property so that it will be set to \c true during the drag
@@ -132,8 +132,8 @@ void QQuickPdfSelection::setDocument(QQuickPdfDocument *document)
     PdfSelection {
         id: selection
         document: doc
-        fromPoint: textSelectionDrag.centroid.pressPosition
-        toPoint: textSelectionDrag.centroid.position
+        from: textSelectionDrag.centroid.pressPosition
+        to: textSelectionDrag.centroid.position
         hold: !textSelectionDrag.active
     }
     Shape {
@@ -165,16 +165,16 @@ QList<QPolygonF> QQuickPdfSelection::geometry() const
 void QQuickPdfSelection::clear()
 {
     m_hitPoint = QPointF();
-    m_fromPoint = QPointF();
-    m_toPoint = QPointF();
+    m_from = QPointF();
+    m_to = QPointF();
     m_heightAtAnchor = 0;
     m_heightAtCursor = 0;
     m_fromCharIndex = -1;
     m_toCharIndex = -1;
     m_text.clear();
     m_geometry.clear();
-    emit fromPointChanged();
-    emit toPointChanged();
+    emit fromChanged();
+    emit toChanged();
     emit textChanged();
     emit selectedAreaChanged();
     QGuiApplication::inputMethod()->update(Qt::ImQueryInput);
@@ -203,11 +203,11 @@ void QQuickPdfSelection::selectAll()
     m_fromCharIndex = sel.startIndex();
     m_toCharIndex = sel.endIndex();
     if (sel.bounds().isEmpty()) {
-        m_fromPoint = QPointF();
-        m_toPoint = QPointF();
+        m_from = QPointF();
+        m_to = QPointF();
     } else {
-        m_fromPoint = sel.bounds().first().boundingRect().topLeft() * m_renderScale;
-        m_toPoint = sel.bounds().last().boundingRect().bottomRight() * m_renderScale - QPointF(0, m_heightAtCursor);
+        m_from = sel.bounds().first().boundingRect().topLeft() * m_renderScale;
+        m_to = sel.bounds().last().boundingRect().bottomRight() * m_renderScale - QPointF(0, m_heightAtCursor);
     }
 
     QGuiApplication::inputMethod()->update(Qt::ImCursorRectangle | Qt::ImAnchorRectangle);
@@ -280,7 +280,7 @@ QVariant QQuickPdfSelection::inputMethodQuery(Qt::InputMethodQuery query, const 
                            << "got char index" << tp.charIndex << "@" << tp.position << "pt," << tp.position * m_renderScale << "px";
             if (tp.charIndex >= 0) {
                 m_toCharIndex = tp.charIndex;
-                m_toPoint = tp.position * m_renderScale - QPointF(0, m_heightAtCursor);
+                m_to = tp.position * m_renderScale - QPointF(0, m_heightAtCursor);
                 m_heightAtCursor = tp.height * m_renderScale;
                 if (qFuzzyIsNull(m_heightAtAnchor))
                     m_heightAtAnchor = m_heightAtCursor;
@@ -313,10 +313,10 @@ QVariant QQuickPdfSelection::inputMethodQuery(Qt::InputMethodQuery query) const
         ret = m_toCharIndex;
         break;
     case Qt::ImAnchorRectangle:
-        ret = QRectF(m_fromPoint, QSizeF(1, m_heightAtAnchor));
+        ret = QRectF(m_from, QSizeF(1, m_heightAtAnchor));
         break;
     case Qt::ImCursorRectangle:
-        ret = QRectF(m_toPoint, QSizeF(1, m_heightAtCursor));
+        ret = QRectF(m_to, QSizeF(1, m_heightAtCursor));
         break;
     case Qt::ImSurroundingText:
         ret = QVariant(pageText());
@@ -369,8 +369,8 @@ void QQuickPdfSelection::resetPoints()
 {
     bool wasHolding = m_hold;
     m_hold = false;
-    setFromPoint(QPointF());
-    setToPoint(QPointF());
+    setFrom(QPointF());
+    setTo(QPointF());
     m_hold = wasHolding;
 }
 
@@ -401,7 +401,7 @@ void QQuickPdfSelection::setPage(int page)
     \qmlproperty real PdfSelection::renderScale
     \brief The ratio from points to pixels at which the page is rendered.
 
-    This is used to scale \l fromPoint and \l toPoint to find ranges of
+    This is used to scale \l from and \l to to find ranges of
     selected characters in the document, because positions within the document
     are always given in points.
 */
@@ -426,7 +426,7 @@ void QQuickPdfSelection::setRenderScale(qreal scale)
 }
 
 /*!
-    \qmlproperty point PdfSelection::fromPoint
+    \qmlproperty point PdfSelection::from
 
     The beginning location, in pixels from the upper-left corner of the page,
     from which to find selected text. This can be bound to the
@@ -434,41 +434,41 @@ void QQuickPdfSelection::setRenderScale(qreal scale)
     the position where the user presses the mouse button and begins dragging,
     for example.
 */
-QPointF QQuickPdfSelection::fromPoint() const
+QPointF QQuickPdfSelection::from() const
 {
-    return m_fromPoint;
+    return m_from;
 }
 
-void QQuickPdfSelection::setFromPoint(QPointF fromPoint)
+void QQuickPdfSelection::setFrom(QPointF from)
 {
-    if (m_hold || m_fromPoint == fromPoint)
+    if (m_hold || m_from == from)
         return;
 
-    m_fromPoint = fromPoint;
-    emit fromPointChanged();
+    m_from = from;
+    emit fromChanged();
     updateResults();
 }
 
 /*!
-    \qmlproperty point PdfSelection::toPoint
+    \qmlproperty point PdfSelection::to
 
     The ending location, in pixels from the upper-left corner of the page,
     from which to find selected text. This can be bound to the
     \c centroid.position of a \l DragHandler to end selection of text at the
     position where the user is currently dragging the mouse, for example.
 */
-QPointF QQuickPdfSelection::toPoint() const
+QPointF QQuickPdfSelection::to() const
 {
-    return m_toPoint;
+    return m_to;
 }
 
-void QQuickPdfSelection::setToPoint(QPointF toPoint)
+void QQuickPdfSelection::setTo(QPointF to)
 {
-    if (m_hold || m_toPoint == toPoint)
+    if (m_hold || m_to == to)
         return;
 
-    m_toPoint = toPoint;
-    emit toPointChanged();
+    m_to = to;
+    emit toChanged();
     updateResults();
 }
 
@@ -476,7 +476,7 @@ void QQuickPdfSelection::setToPoint(QPointF toPoint)
     \qmlproperty bool PdfSelection::hold
 
     Controls whether to hold the existing selection regardless of changes to
-    \l fromPoint and \l toPoint. This property can be set to \c true when the mouse
+    \l from and \l to. This property can be set to \c true when the mouse
     or touchpoint is released, so that the selection is not lost due to the
     point bindings changing.
 */
@@ -521,7 +521,7 @@ void QQuickPdfSelection::updateResults()
     if (!m_document)
         return;
     QPdfSelection sel = m_document->document()->getSelection(m_page,
-            m_fromPoint / m_renderScale, m_toPoint / m_renderScale);
+            m_from / m_renderScale, m_to / m_renderScale);
     update(sel, true);
 }
 
@@ -545,12 +545,12 @@ void QQuickPdfSelection::update(const QPdfSelection &sel, bool textAndGeometryOn
     m_fromCharIndex = sel.startIndex();
     m_toCharIndex = sel.endIndex();
     if (sel.bounds().isEmpty()) {
-        m_fromPoint = sel.boundingRectangle().topLeft() * m_renderScale;
-        m_toPoint = m_fromPoint;
+        m_from = sel.boundingRectangle().topLeft() * m_renderScale;
+        m_to = m_from;
     } else {
         Qt::InputMethodQueries toUpdate = {};
         QRectF firstLineBounds = sel.bounds().first().boundingRect();
-        m_fromPoint = firstLineBounds.topLeft() * m_renderScale;
+        m_from = firstLineBounds.topLeft() * m_renderScale;
         if (!qFuzzyCompare(m_heightAtAnchor, firstLineBounds.height())) {
             m_heightAtAnchor = firstLineBounds.height() * m_renderScale;
             toUpdate.setFlag(Qt::ImAnchorRectangle);
@@ -560,7 +560,7 @@ void QQuickPdfSelection::update(const QPdfSelection &sel, bool textAndGeometryOn
             m_heightAtCursor = lastLineBounds.height() * m_renderScale;
             toUpdate.setFlag(Qt::ImCursorRectangle);
         }
-        m_toPoint = lastLineBounds.topRight() * m_renderScale;
+        m_to = lastLineBounds.topRight() * m_renderScale;
         if (toUpdate)
             QGuiApplication::inputMethod()->update(toUpdate);
     }

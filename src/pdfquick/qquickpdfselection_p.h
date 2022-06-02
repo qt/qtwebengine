@@ -69,8 +69,8 @@ class Q_PDFQUICK_EXPORT QQuickPdfSelection : public QQuickItem
     Q_PROPERTY(QQuickPdfDocument *document READ document WRITE setDocument NOTIFY documentChanged)
     Q_PROPERTY(int page READ page WRITE setPage NOTIFY pageChanged)
     Q_PROPERTY(qreal renderScale READ renderScale WRITE setRenderScale NOTIFY renderScaleChanged)
-    Q_PROPERTY(QPointF fromPoint READ fromPoint WRITE setFromPoint NOTIFY fromPointChanged)
-    Q_PROPERTY(QPointF toPoint READ toPoint WRITE setToPoint NOTIFY toPointChanged)
+    Q_PROPERTY(QPointF from READ from WRITE setFrom NOTIFY fromChanged)
+    Q_PROPERTY(QPointF to READ to WRITE setTo NOTIFY toChanged)
     Q_PROPERTY(bool hold READ hold WRITE setHold NOTIFY holdChanged)
 
     Q_PROPERTY(QString text READ text NOTIFY textChanged)
@@ -88,10 +88,10 @@ public:
     void setPage(int page);
     qreal renderScale() const;
     void setRenderScale(qreal scale);
-    QPointF fromPoint() const;
-    void setFromPoint(QPointF fromPoint);
-    QPointF toPoint() const;
-    void setToPoint(QPointF toPoint);
+    QPointF from() const;
+    void setFrom(QPointF from);
+    QPointF to() const;
+    void setTo(QPointF to);
     bool hold() const;
     void setHold(bool hold);
 
@@ -108,8 +108,8 @@ signals:
     void documentChanged();
     void pageChanged();
     void renderScaleChanged();
-    void fromPointChanged();
-    void toPointChanged();
+    void fromChanged();
+    void toChanged();
     void holdChanged();
     void textChanged();
     void selectedAreaChanged();
@@ -131,8 +131,8 @@ private:
 private:
     QQuickPdfDocument *m_document = nullptr;
     mutable QPointF m_hitPoint;
-    QPointF m_fromPoint;
-    mutable QPointF m_toPoint;
+    QPointF m_from;
+    mutable QPointF m_to;
     qreal m_renderScale = 1;
     mutable qreal m_heightAtAnchor = 0;
     mutable qreal m_heightAtCursor = 0;

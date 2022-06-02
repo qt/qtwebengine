@@ -509,8 +509,8 @@ Flickable {
             document: root.document
             page: pageNavigator.currentPage
             renderScale: image.pageScale == 0 ? 1.0 : image.pageScale
-            fromPoint: textSelectionDrag.centroid.pressPosition
-            toPoint: textSelectionDrag.centroid.position
+            from: textSelectionDrag.centroid.pressPosition
+            to: textSelectionDrag.centroid.position
             hold: !textSelectionDrag.active && !mouseClickHandler.pressed
             focus: true
         }

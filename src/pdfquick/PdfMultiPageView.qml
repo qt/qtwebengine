@@ -555,8 +555,8 @@ Item {
                     document: root.document
                     page: image.currentFrame
                     renderScale: image.renderScale
-                    fromPoint: textSelectionDrag.centroid.pressPosition
-                    toPoint: textSelectionDrag.centroid.position
+                    from: textSelectionDrag.centroid.pressPosition
+                    to: textSelectionDrag.centroid.position
                     hold: !textSelectionDrag.active && !mouseClickHandler.pressed
                     onTextChanged: root.selectedText = text
                     focus: true
