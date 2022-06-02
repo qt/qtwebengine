@@ -106,7 +106,7 @@ void QPdfPageNavigator::forward()
     qreal currentZoomWas = currentZoom();
     ++d->currentHistoryIndex;
     d->changing = true;
-    emit jumped(currentPage(), currentLocation(), currentZoom());
+    emit jumped(currentLink());
     if (currentZoomWas != currentZoom())
         emit currentZoomChanged(currentZoom());
     emit currentPageChanged(currentPage());
@@ -136,7 +136,7 @@ void QPdfPageNavigator::back()
     qreal currentZoomWas = currentZoom();
     --d->currentHistoryIndex;
     d->changing = true;
-    emit jumped(currentPage(), currentLocation(), currentZoom());
+    emit jumped(currentLink());
     if (currentZoomWas != currentZoom())
         emit currentZoomChanged(currentZoom());
     emit currentPageChanged(currentPage());
@@ -190,6 +190,13 @@ qreal QPdfPageNavigator::currentZoom() const
     return d->pageHistory.at(d->currentHistoryIndex)->zoom;
 }
 
+QPdfLink QPdfPageNavigator::currentLink() const
+{
+    if (d->currentHistoryIndex < 0 || d->currentHistoryIndex >= d->pageHistory.count())
+        return QPdfLink();
+    return QPdfLink(d->pageHistory.at(d->currentHistoryIndex).data());
+}
+
 /*!
     Clear the history and restore \l currentPage, \l currentLocation and
     \l currentZoom to their default values.
@@ -201,6 +208,53 @@ void QPdfPageNavigator::clear()
     // Begin with an implicit jump to page 0, so that
     // backAvailable() will become true after jump() is called one more time.
     d->pageHistory.append(QExplicitlySharedDataPointer<QPdfLinkPrivate>(new QPdfLinkPrivate(0, {}, 1)));
+}
+
+/*!
+    Adds the given \a destination to the history of visited locations.
+
+    In this case, PDF views respond to the \l jumped signal by scrolling to
+    place \c destination.rectangles in the viewport, as opposed to placing
+    \c destination.location in the viewport. So it's appropriate to call this
+    method to jump to a search result from QPdfSearchModel (because the
+    rectangles cover the region of text found). To jump to a hyperlink
+    destination, call jump(page, location, zoom) instead, because in that
+    case the QPdfLink object's \c rectangles cover the hyperlink origin
+    location rather than the destination.
+*/
+void QPdfPageNavigator::jump(QPdfLink destination)
+{
+    const bool zoomChange = !qFuzzyCompare(destination.zoom(), currentZoom());
+    const bool pageChange = (destination.page() != currentPage());
+    const bool locationChange = (destination.location() != currentLocation());
+    const bool backAvailableWas = backAvailable();
+    const bool forwardAvailableWas = forwardAvailable();
+    if (!d->changing) {
+        if (d->currentHistoryIndex >= 0 && forwardAvailableWas)
+            d->pageHistory.remove(d->currentHistoryIndex + 1, d->pageHistory.count() - d->currentHistoryIndex - 1);
+        d->pageHistory.append(destination.d);
+        d->currentHistoryIndex = d->pageHistory.count() - 1;
+    }
+    if (zoomChange)
+        emit currentZoomChanged(currentZoom());
+    if (pageChange)
+        emit currentPageChanged(currentPage());
+    if (locationChange)
+        emit currentLocationChanged(currentLocation());
+    if (d->changing)
+        return;
+    if (!backAvailableWas)
+        emit backAvailableChanged(backAvailable());
+    if (forwardAvailableWas)
+        emit forwardAvailableChanged(forwardAvailable());
+    emit jumped(currentLink());
+    qCDebug(qLcNav) << "push: index" << d->currentHistoryIndex << destination << "-> history" <<
+        [this]() {
+            QStringList ret;
+            for (auto d : d->pageHistory)
+                ret << QString::number(d->page);
+            return ret.join(QLatin1Char(','));
+        }();
 }
 
 /*!
@@ -249,7 +303,7 @@ void QPdfPageNavigator::jump(int page, const QPointF &location, qreal zoom)
         emit backAvailableChanged(backAvailable());
     if (forwardAvailableWas)
         emit forwardAvailableChanged(forwardAvailable());
-    emit jumped(page, location, zoom);
+    emit jumped(currentLink());
     qCDebug(qLcNav) << "push: index" << d->currentHistoryIndex << "page" << page
                     << "@" << location << "zoom" << zoom << "-> history" <<
         [this]() {
@@ -326,12 +380,17 @@ bool QPdfPageNavigator::forwardAvailable() const
 }
 
 /*!
-    \fn void QPdfPageNavigator::jumped(int page, const QPointF &location, qreal zoom)
+    \fn void QPdfPageNavigator::jumped(QPdfLink current)
 
-    This signal is emitted when an abrupt jump occurs, to the specified \a page
-    index, \a location on the page, and \a zoom level; but \e not when simply
+    This signal is emitted when an abrupt jump occurs, to the \a current
+    page index, location on the page, and zoom level; but \e not when simply
     scrolling through the document one page at a time. That is, jump(),
     forward() and back() emit this signal, but update() does not.
+
+    If \c {current.rectangles.length > 0}, they are rectangles that cover
+    a specific destination area: a search result that should be made
+    visible; otherwise, \c {current.location} is the destination location on
+    the \c page (a hyperlink destination, or during forward/back navigation).
 */
 
 QT_END_NAMESPACE

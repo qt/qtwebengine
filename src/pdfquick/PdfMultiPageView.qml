@@ -335,7 +335,7 @@ Item {
     TableView {
         id: tableView
         property bool debug: false
-        property vector2d jumpLocationMargin: Qt.vector2d(10, 10)  // px from top-left corner
+        property point jumpLocationMargin: Qt.point(10, 10)  // px away from viewport edges
         anchors.fill: parent
         anchors.leftMargin: 2
         model: modelInUse && root.document ? root.document.pageCount : 0
@@ -609,34 +609,46 @@ Item {
         id: pageNavigator
         property bool jumping: false
         property int previousPage: 0
-        onJumped: function(page, location, zoom) {
+        onJumped: function(current) {
             jumping = true
-            root.renderScale = zoom
-            if (location.y < 0) {
+            if (current.zoom > 0)
+                root.renderScale = current.zoom
+            const pageSize = root.document.pagePointSize(current.page)
+            if (current.location.y < 0) {
                 // invalid to indicate that a specific location was not needed,
                 // so attempt to position the new page just as the current page is
                 const previousPageDelegate = tableView.itemAtCell(0, previousPage)
                 const currentYOffset = previousPageDelegate
                                      ? tableView.contentY - previousPageDelegate.y
                                      : 0
-                tableView.positionViewAtRow(page, Qt.AlignTop, currentYOffset)
-                console.log(lcMPV, "going from page", previousPage, "to", page, "offset", currentYOffset,
+                tableView.positionViewAtRow(current.page, Qt.AlignTop, currentYOffset)
+                console.log(lcMPV, "going from page", previousPage, "to", current.page, "offset", currentYOffset,
+                            "ended up @", tableView.contentX.toFixed(1) + ", " + tableView.contentY.toFixed(1))
+            } else if (current.rectangles.length > 0) {
+                // jump to a search result and position the covered area within the viewport
+                pageSize.width *= root.renderScale
+                pageSize.height *= root.renderScale
+                const rectPts = current.rectangles[0]
+                const rectPx = Qt.rect(rectPts.x * root.renderScale - tableView.jumpLocationMargin.x,
+                                       rectPts.y * root.renderScale - tableView.jumpLocationMargin.y,
+                                       rectPts.width * root.renderScale + tableView.jumpLocationMargin.x * 2,
+                                       rectPts.height * root.renderScale + tableView.jumpLocationMargin.y * 2)
+                tableView.positionViewAtCell(0, current.page, TableView.Contain, Qt.point(0, 0), rectPx)
+                console.log(lcMPV, "going to zoom", root.renderScale, "rect", rectPx, "on page", current.page,
                             "ended up @", tableView.contentX.toFixed(1) + ", " + tableView.contentY.toFixed(1))
             } else {
                 // jump to a page and position the given location relative to the top-left corner of the viewport
-                var pageSize = root.document.pagePointSize(page)
                 pageSize.width *= root.renderScale
                 pageSize.height *= root.renderScale
-                const xOffsetLimit = Math.max(0, pageSize.width - root.width)
-                const offset = Qt.point(Math.max(-xOffsetLimit, Math.min(xOffsetLimit,
-                                            location.x * root.renderScale - tableView.jumpLocationMargin.x)),
-                                        Math.max(0, location.y * root.renderScale - tableView.jumpLocationMargin.y))
-                tableView.positionViewAtCell(0, page, Qt.AlignLeft | Qt.AlignTop, offset)
-                console.log(lcMPV, "going to zoom", zoom, "loc", location, "on page", page,
+                const rectPx = Qt.rect(current.location.x * root.renderScale - tableView.jumpLocationMargin.x,
+                                       current.location.y * root.renderScale - tableView.jumpLocationMargin.y,
+                                       tableView.jumpLocationMargin.x * 2, tableView.jumpLocationMargin.y * 2)
+                tableView.positionViewAtCell(0, current.page, TableView.AlignLeft | TableView.AlignTop, Qt.point(0, 0), rectPx)
+                console.log(lcMPV, "going to zoom", root.renderScale, "loc", current.location, "on page", current.page,
                             "ended up @", tableView.contentX.toFixed(1) + ", " + tableView.contentY.toFixed(1))
             }
             jumping = false
-            previousPage = page
+            previousPage = current.page
         }
         onCurrentPageChanged: searchModel.currentPage = currentPage
 

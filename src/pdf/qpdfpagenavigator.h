@@ -41,6 +41,7 @@
 #define QPDFPAGENAVIGATOR_H
 
 #include <QtPdf/qtpdfglobal.h>
+#include <QtPdf/qpdflink.h>
 #include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE
@@ -71,6 +72,7 @@ public:
 
 public Q_SLOTS:
     void clear();
+    void jump(QPdfLink destination);
     void jump(int page, const QPointF &location, qreal zoom = 0);
     void update(int page, const QPointF &location, qreal zoom);
     void forward();
@@ -82,7 +84,10 @@ Q_SIGNALS:
     void currentZoomChanged(qreal zoom);
     void backAvailableChanged(bool available);
     void forwardAvailableChanged(bool available);
-    void jumped(int page, const QPointF &location, qreal zoom);
+    void jumped(QPdfLink current);
+
+protected:
+    QPdfLink currentLink() const;
 
 private:
     QScopedPointer<QPdfPageNavigatorPrivate> d;

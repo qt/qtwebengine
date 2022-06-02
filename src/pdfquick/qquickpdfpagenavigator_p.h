@@ -59,6 +59,14 @@
 
 QT_BEGIN_NAMESPACE
 
+struct Q_PDFQUICK_EXPORT QPdfLinkForeign
+{
+    Q_GADGET
+    QML_FOREIGN(QPdfLink)
+    QML_VALUE_TYPE(pdfLink)
+    QML_ADDED_IN_VERSION(6, 4)
+};
+
 class Q_PDFQUICK_EXPORT QQuickPdfPageNavigator : public QObject
 {
     Q_OBJECT

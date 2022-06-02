@@ -88,6 +88,7 @@ private: // methods
     QPdfLink(QPdfLinkPrivate *d);
     friend class QPdfDocument;
     friend class QPdfSearchModelPrivate;
+    friend class QPdfPageNavigator;
     friend class QQuickPdfPageNavigator;
 
 private: // storage
@@ -99,5 +100,7 @@ Q_DECLARE_SHARED(QPdfLink)
 Q_PDF_EXPORT QDebug operator<<(QDebug, const QPdfLink &);
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QPdfLink)
 
 #endif // QPDFLINK_H
