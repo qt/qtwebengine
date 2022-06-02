@@ -36,9 +36,11 @@ public:
 
     void documentStatusChanged(QPdfDocument::Status status);
     void currentPageChanged(int currentPage);
+    void currentZoomChanged(qreal currentZoom);
     void calculateViewport();
     void setViewport(QRect viewport);
     void updateScrollBars();
+    void scrollTo(const QPdfLink &link);
 
     void pageRendered(int pageNumber, QSize imageSize, const QImage &image, quint64 requestId);
     void invalidateDocumentLayout();

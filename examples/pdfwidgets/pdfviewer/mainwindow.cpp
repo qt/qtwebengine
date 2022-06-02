@@ -117,7 +117,8 @@ void MainWindow::bookmarkSelected(const QModelIndex &index)
 void MainWindow::pageSelected(int page)
 {
     auto nav = ui->pdfView->pageNavigator();
-    nav->jump(page, {}, nav->currentZoom());
+    if (nav->currentPage() != page)
+        nav->jump(page, {}, nav->currentZoom());
     const auto documentTitle = m_document->metaData(QPdfDocument::MetaDataField::Title).toString();
     setWindowTitle(!documentTitle.isEmpty() ? documentTitle : QStringLiteral("PDF Viewer"));
     setWindowTitle(tr("%1: page %2 (%3 of %4)")

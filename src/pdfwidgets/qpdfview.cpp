@@ -71,6 +71,12 @@ void QPdfViewPrivate::currentPageChanged(int currentPage)
         invalidateDocumentLayout();
 }
 
+void QPdfViewPrivate::currentZoomChanged(qreal currentZoom)
+{
+    Q_Q(QPdfView);
+    q->setZoomFactor(currentZoom);
+}
+
 void QPdfViewPrivate::calculateViewport()
 {
     Q_Q(QPdfView);
@@ -136,6 +142,58 @@ void QPdfViewPrivate::updateScrollBars()
     q->horizontalScrollBar()->setPageStep(p.width());
     q->verticalScrollBar()->setRange(0, v.height() - p.height());
     q->verticalScrollBar()->setPageStep(p.height());
+}
+
+/*! \internal
+    Scroll lazily (the minimal distance) such that \a link's destination
+    becomes completely visible within the viewport.
+*/
+void QPdfViewPrivate::scrollTo(const QPdfLink &link)
+{
+    Q_Q(QPdfView);
+
+    // If the link represents a search result, we will scroll to show its beginning.
+    // If the link has a destination location, scroll there instead.
+    const QRect subRect = link.location().isNull() ? link.rectangles().constFirst().toRect()
+                                                   : QRect(link.location().toPoint(), QSize(1, 1));
+    const auto &pageGeometryAndScale = m_documentLayout.pageGeometryAndScale.value(link.page());
+    const QRect scaledSubRect(subRect.topLeft() * pageGeometryAndScale.second,
+                              subRect.size() * pageGeometryAndScale.second);
+    const QRect oldViewport = m_viewport;
+
+    // If the region we want to show is already fully visible in the m_viewport, there's nothing to do.
+    if (m_viewport.contains(scaledSubRect))
+        return;
+
+    // Calculate new scrollbar positions that move the minimum amount
+    // to get scaledSubRect to be fully visible, if possible.
+    int sx = -1;
+    int sy = -1;
+    if (scaledSubRect.left() < m_viewport.left())
+        sx = scaledSubRect.left();
+    else if (scaledSubRect.right() > m_viewport.right())
+        sx = scaledSubRect.right();
+    if (scaledSubRect.top() < m_viewport.top())
+        sy = scaledSubRect.top();
+    else if (scaledSubRect.bottom() > m_viewport.bottom())
+        sy = scaledSubRect.bottom();
+
+    // In multi-page mode, assume that the view is already aligned
+    // at the top-left corner of the page (because mouseReleaseEvent()
+    // called QPdfPageNavigator::jump() first), and scroll down from there.
+    if (m_pageMode == QPdfView::PageMode::MultiPage) {
+        sx = m_viewport.x() + (sx >= 0 ? sx : 0);
+        sy = m_viewport.y() + (sy >= 0 ? sy : 0);
+    }
+
+    if (sx >= 0)
+        q->horizontalScrollBar()->setValue(sx);
+    if (sy >= 0)
+        q->verticalScrollBar()->setValue(sy);
+
+    qCDebug(qLcWLink) << "scrolled to page" << link.page() << "@" << link.location()
+                      << "scaled target region" << scaledSubRect << "scrollbars" << sx << sy
+                      << "viewport" << oldViewport << "->" << m_viewport;
 }
 
 void QPdfViewPrivate::pageRendered(int pageNumber, QSize imageSize, const QImage &image, quint64 requestId)
@@ -302,6 +360,8 @@ QPdfView::QPdfView(QWidget *parent)
 
     connect(d->m_pageNavigator, &QPdfPageNavigator::currentPageChanged, this,
             [d](int page){ d->currentPageChanged(page); });
+    connect(d->m_pageNavigator, &QPdfPageNavigator::currentZoomChanged,
+            this, &QPdfView::setZoomFactor);
 
     connect(d->m_pageRenderer, &QPdfPageRenderer::pageRendered, this,
             [d](int pageNumber, QSize imageSize, const QImage &image, QPdfDocumentRenderOptions, quint64 requestId) {
@@ -704,7 +764,7 @@ void QPdfView::mouseReleaseEvent(QMouseEvent *event)
             if (dest.isValid()) {
                 qCDebug(qLcWLink) << event << ": jumping to" << dest;
                 d->m_pageNavigator->jump(dest.page(), dest.location(), dest.zoom());
-                // TODO scroll and zoom to where the link tells us to
+                d->scrollTo(dest);
             }
             return;
         }
