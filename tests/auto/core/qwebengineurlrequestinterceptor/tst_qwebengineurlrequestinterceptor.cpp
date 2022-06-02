@@ -726,7 +726,6 @@ void tst_QWebEngineUrlRequestInterceptor::jsServiceWorker()
     HttpServer server;
     server.setResourceDirs({ QDir(QT_TESTCASE_SOURCEDIR).canonicalPath() + "/resources" });
     QVERIFY(server.start());
-
     QWebEngineProfile profile;
     std::unique_ptr<ConsolePage> page;
     page.reset(new ConsolePage(&profile));
@@ -735,9 +734,16 @@ void tst_QWebEngineUrlRequestInterceptor::jsServiceWorker()
     QVERIFY(loadSync(page.get(), server.url("/sw.html")));
 
     // We expect only one message here, because logging of services workers is not exposed in our API.
-    QTRY_COMPARE_WITH_TIMEOUT(page->messages.count(), 1, 20000);
-    QCOMPARE(page->levels.at(0), QWebEnginePage::InfoMessageLevel);
+    // Note this is very fragile setup , you need fresh profile otherwise install event might not get triggered
+    // and this in turn can lead to incorrect intercepted requests, therefore we should keep this off the record.
+    QTRY_COMPARE_WITH_TIMEOUT(page->messages.count(), 5, 20000);
 
+    QCOMPARE(page->levels.at(0), QWebEnginePage::InfoMessageLevel);
+    QCOMPARE(page->messages.at(0),QLatin1String("Service worker installing"));
+    QCOMPARE(page->messages.at(1),QLatin1String("Service worker installed"));
+    QCOMPARE(page->messages.at(2),QLatin1String("Service worker activating"));
+    QCOMPARE(page->messages.at(3),QLatin1String("Service worker activated"));
+    QCOMPARE(page->messages.at(4),QLatin1String("Service worker done"));
     QUrl firstPartyUrl = QUrl(server.url().toString() + "sw.html");
     QList<RequestInfo> infos;
     // Service Worker
