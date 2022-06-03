@@ -118,6 +118,7 @@ shared_library("QtWebEngineCore") {
     "//components/web_cache/browser",
     "//components/web_cache/renderer",
     "//components/spellcheck:buildflags",
+    "//components/profile_metrics",
     "//components/proxy_config",
     "//components/user_prefs",
     "//content/public/app",

@@ -96,6 +96,7 @@ public:
     // Profile implementation:
     PrefService *GetPrefs() override;
     const PrefService *GetPrefs() const override;
+    bool IsNewProfile() const override;
 
     void Initialize();
     ProfileAdapter *profileAdapter() { return m_profileAdapter; }
