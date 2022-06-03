@@ -67,14 +67,16 @@ Item {
     /*!
         \qmlsignal PdfLinkDelegate::tapped(link)
 
-        Emitted on mouse click or touch tap.
+        Emitted on mouse click or touch tap. The \a link argument is an
+        instance of QPdfLink with information about the hyperlink.
     */
     signal tapped(var link)
 
     /*!
         \qmlsignal PdfLinkDelegate::contextMenuRequested(link)
 
-        Emitted on mouse right-click or touch long-press.
+        Emitted on mouse right-click or touch long-press. The \a link argument
+        is an instance of QPdfLink with information about the hyperlink.
     */
     signal contextMenuRequested(var link)
 
@@ -83,15 +85,18 @@ Item {
         cursorShape: Qt.PointingHandCursor
     }
     TapHandler {
+        gesturePolicy: TapHandler.ReleaseWithinBounds
         onTapped: root.tapped(link)
     }
     TapHandler {
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad | PointerDevice.Stylus
         acceptedButtons: Qt.RightButton
+        gesturePolicy: TapHandler.ReleaseWithinBounds
         onTapped: root.contextMenuRequested(link)
     }
     TapHandler {
         acceptedDevices: PointerDevice.TouchScreen
-        onTapped: root.contextMenuRequested(link)
+        onLongPressed: root.contextMenuRequested(link)
     }
     ToolTip {
         visible: linkHH.hovered

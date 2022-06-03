@@ -153,10 +153,10 @@ ApplicationWindow {
                     page: image.currentFrame
                 }
                 delegate: PdfLinkDelegate {
-                    x: rect.x
-                    y: rect.y
-                    width: rect.width
-                    height: rect.height
+                    x: rectangle.x
+                    y: rectangle.y
+                    width: rectangle.width
+                    height: rectangle.height
                     onTapped:
                         (link) => {
                             if (link.page >= 0)
