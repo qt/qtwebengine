@@ -442,15 +442,15 @@ Flickable {
                     page: pageNavigator.currentPage
                 }
                 delegate: Shape {
-                    required property rect rect
+                    required property rect rectangle
                     required property url url
                     required property int page
                     required property point location
                     required property real zoom
-                    x: rect.x * image.pageScale
-                    y: rect.y * image.pageScale
-                    width: rect.width * image.pageScale
-                    height: rect.height * image.pageScale
+                    x: rectangle.x * image.pageScale
+                    y: rectangle.y * image.pageScale
+                    width: rectangle.width * image.pageScale
+                    height: rectangle.height * image.pageScale
                     visible: image.status === Image.Ready
                     ShapePath {
                         strokeWidth: style.linkUnderscoreStrokeWidth

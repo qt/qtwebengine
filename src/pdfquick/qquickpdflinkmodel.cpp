@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 
     The available model roles are:
 
-    \value rect
+    \value rectangle
         Bounding rectangle around the link.
     \value url
         If the link is a web link, the URL for that; otherwise an empty URL.
@@ -78,12 +78,15 @@ QT_BEGIN_NAMESPACE
             page: image.currentFrame
         }
         delegate: Rectangle {
+            required property rect rectangle
+            required property url url
+            required property int page
             color: "transparent"
             border.color: "lightgrey"
-            x: rect.x
-            y: rect.y
-            width: rect.width
-            height: rect.height
+            x: rectangle.x
+            y: rectangle.y
+            width: rectangle.width
+            height: rectangle.height
             HoverHandler { cursorShape: Qt.PointingHandCursor }
             TapHandler {
                 onTapped: {

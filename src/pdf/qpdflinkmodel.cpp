@@ -81,7 +81,7 @@ QVariant QPdfLinkModel::data(const QModelIndex &index, int role) const
     switch (Role(role)) {
     case Role::Link:
         return QVariant::fromValue(link);
-    case Role::Rect:
+    case Role::Rectangle:
         return link.rectangles().empty() ? QVariant() : link.rectangles().constFirst();
     case Role::Url:
         return link.url();

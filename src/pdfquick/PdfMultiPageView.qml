@@ -509,15 +509,15 @@ Item {
                         page: image.currentFrame
                     }
                     delegate: Shape {
-                        required property rect rect
+                        required property rect rectangle
                         required property url url
                         required property int page
                         required property point location
                         required property real zoom
-                        x: rect.x * paper.pageScale
-                        y: rect.y * paper.pageScale
-                        width: rect.width * paper.pageScale
-                        height: rect.height * paper.pageScale
+                        x: rectangle.x * paper.pageScale
+                        y: rectangle.y * paper.pageScale
+                        width: rectangle.width * paper.pageScale
+                        height: rectangle.height * paper.pageScale
                         visible: image.status === Image.Ready
                         ShapePath {
                             strokeWidth: style.linkUnderscoreStrokeWidth

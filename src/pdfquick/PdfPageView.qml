@@ -434,10 +434,10 @@ Rectangle {
             page: pageNavigator.currentPage
         }
         delegate: Item {
-            x: rect.x * image.pageScale
-            y: rect.y * image.pageScale
-            width: rect.width * image.pageScale
-            height: rect.height * image.pageScale
+            x: rectangle.x * image.pageScale
+            y: rectangle.y * image.pageScale
+            width: rectangle.width * image.pageScale
+            height: rectangle.height * image.pageScale
             HoverHandler { cursorShape: Qt.PointingHandCursor }
             TapHandler {
                 onTapped: {
