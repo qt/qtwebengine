@@ -69,6 +69,7 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/user_prefs/user_prefs.h"
+#include "components/profile_metrics/browser_profile_type.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "chrome/common/pref_names.h"
 #if QT_CONFIG(webengine_spellchecker)
@@ -127,6 +128,11 @@ PrefService* ProfileQt::GetPrefs()
 const PrefService* ProfileQt::GetPrefs() const
 {
     return m_prefServiceAdapter.prefService();
+}
+
+bool ProfileQt::IsNewProfile() const
+{
+    return GetPrefs()->GetInitializationStatus() == PrefService::INITIALIZATION_STATUS_CREATED_NEW_PREF_STORE;
 }
 
 base::FilePath ProfileQt::GetPath()
@@ -248,6 +254,11 @@ content::FileSystemAccessPermissionContext *ProfileQt::GetFileSystemAccessPermis
 
 void ProfileQt::setupPrefService()
 {
+    profile_metrics::SetBrowserProfileType(this,
+                                           IsOffTheRecord()
+                                               ? profile_metrics::BrowserProfileType::kIncognito
+                                               : profile_metrics::BrowserProfileType::kRegular);
+
     // Remove previous handler before we set a new one or we will assert
     // TODO: Remove in Qt6
     if (m_prefServiceAdapter.prefService() != nullptr) {

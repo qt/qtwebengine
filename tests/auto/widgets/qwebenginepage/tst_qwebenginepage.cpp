@@ -5028,7 +5028,7 @@ void tst_QWebEnginePage::isSafeRedirect_data()
     fileScheme += "/";
 #endif
 
-    QString tempDir(fileScheme + QDir::tempPath());
+    QString tempDir(fileScheme + QDir::tempPath() + "/");
     QTest::newRow(qPrintable(tempDir)) << QUrl(tempDir) << QUrl(tempDir);
     QTest::newRow(qPrintable(tempDir + QString("/foo/bar"))) << QUrl(tempDir + "/foo/bar") << QUrl(tempDir + "/foo/bar");
     QTest::newRow("filesystem:http://foo.com/bar") << QUrl("filesystem:http://foo.com/bar") << QUrl("filesystem:http://foo.com/bar/");
