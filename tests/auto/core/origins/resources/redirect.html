@@ -2,7 +2,14 @@
 <html>
     <head>
         <title>redirect</title>
-        <link rel="stylesheet" href="redirect:redirect-secure/resources/redirect.css">
+        <script>
+            function addStylesheetLink(src) {
+                let link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = src;
+                document.getElementsByTagName("head")[0].appendChild(link);
+             }
+        </script>
     </head>
     <body>
         Text
