@@ -39,6 +39,8 @@
 
 #include "qpdflink.h"
 #include "qpdflink_p.h"
+#include "qpdflinkmodel_p.h"
+#include <QGuiApplication>
 
 QT_BEGIN_NAMESPACE
 
@@ -126,6 +128,17 @@ qreal QPdfLink::zoom() const
 }
 
 /*!
+    \property QPdfLink::url
+
+    This property holds the destination URL if the link is an external hyperlink;
+    otherwise, it's empty.
+*/
+QUrl QPdfLink::url() const
+{
+    return d->url;
+}
+
+/*!
     \property QPdfLink::contextBefore
 
     This property holds adjacent text found on the page before the search string.
@@ -165,6 +178,30 @@ QString QPdfLink::contextAfter() const
 QList<QRectF> QPdfLink::rectangles() const
 {
     return d->rects;
+}
+
+/*!
+    Returns a translated representation for display.
+
+    \sa copyToClipboard()
+*/
+QString QPdfLink::toString() const
+{
+    static const QString format = QPdfLinkModel::tr("page %1 location %2,%3 zoom %4");
+    return d->page > 0 ? format.arg(QString::number(d->page),
+                                    QString::number(d->location.x()),
+                                    QString::number(d->location.y()),
+                                    QString::number(d->zoom))
+                       : d->url.toString();
+}
+
+/*!
+    Copies the toString() representation of the link to the
+    \l {QGuiApplication::clipboard()}{system clipboard} depending on the \a mode given.
+*/
+void QPdfLink::copyToClipboard(QClipboard::Mode mode) const
+{
+    QGuiApplication::clipboard()->setText(toString(), mode);
 }
 
 QDebug operator<<(QDebug dbg, const QPdfLink &link)

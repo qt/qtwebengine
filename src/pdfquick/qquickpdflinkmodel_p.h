@@ -73,16 +73,8 @@ public:
     QQuickPdfDocument *document() const;
     void setDocument(QQuickPdfDocument *document);
 
-signals:
-    void documentChanged();
-
-private:
-    void updateResults();
-
 private:
     QQuickPdfDocument *m_quickDocument;
-    QList<QPolygonF> m_linksGeometry;
-
     Q_DISABLE_COPY(QQuickPdfLinkModel)
 };
 

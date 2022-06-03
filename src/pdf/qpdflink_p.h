@@ -55,6 +55,7 @@
 
 #include <QPointF>
 #include <QRectF>
+#include <QUrl>
 
 QT_BEGIN_NAMESPACE
 
@@ -79,6 +80,7 @@ public:
     qreal zoom = 1;
     QString contextBefore;
     QString contextAfter;
+    QUrl url;
     QList<QRectF> rects;
 };
 

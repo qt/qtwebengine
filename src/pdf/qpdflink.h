@@ -47,6 +47,7 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qshareddata.h>
+#include <QtGui/qclipboard.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -59,6 +60,7 @@ class QPdfLink
     Q_PROPERTY(int page READ page)
     Q_PROPERTY(QPointF location READ location)
     Q_PROPERTY(qreal zoom READ zoom)
+    Q_PROPERTY(QUrl url READ url)
     Q_PROPERTY(QString contextBefore READ contextBefore)
     Q_PROPERTY(QString contextAfter READ contextAfter)
     Q_PROPERTY(QList<QRectF> rectangles READ rectangles)
@@ -78,15 +80,19 @@ public:
     Q_PDF_EXPORT int page() const;
     Q_PDF_EXPORT QPointF location() const;
     Q_PDF_EXPORT qreal zoom() const;
+    Q_PDF_EXPORT QUrl url() const;
     Q_PDF_EXPORT QString contextBefore() const;
     Q_PDF_EXPORT QString contextAfter() const;
     Q_PDF_EXPORT QList<QRectF> rectangles() const;
+    Q_PDF_EXPORT Q_INVOKABLE QString toString() const;
+    Q_PDF_EXPORT Q_INVOKABLE void copyToClipboard(QClipboard::Mode mode = QClipboard::Clipboard) const;
 
 private: // methods
     QPdfLink(int page, QPointF location, qreal zoom);
     QPdfLink(int page, QList<QRectF> rects, QString contextBefore, QString contextAfter);
     QPdfLink(QPdfLinkPrivate *d);
     friend class QPdfDocument;
+    friend class QPdfLinkModelPrivate;
     friend class QPdfSearchModelPrivate;
     friend class QPdfPageNavigator;
     friend class QQuickPdfPageNavigator;

@@ -69,7 +69,8 @@ class Q_PDF_EXPORT QPdfLinkModel : public QAbstractListModel
 
 public:
     enum class Role : int {
-        Rect = Qt::UserRole,
+        Link = Qt::UserRole,
+        Rect,
         Url,
         Page,
         Location,

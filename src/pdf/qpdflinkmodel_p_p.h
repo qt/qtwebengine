@@ -52,6 +52,7 @@
 //
 
 #include "qpdflinkmodel_p.h"
+#include "qpdflink.h"
 #include <private/qabstractitemmodel_p.h>
 
 #include "third_party/pdfium/public/fpdfview.h"
@@ -69,23 +70,8 @@ public:
 
     void update();
 
-    struct Link {
-        // where it is on the current page
-        QRectF rect;
-        int textStart = -1;
-        int textCharCount = 0;
-        // destination inside PDF
-        int page = -1; // -1 means look at the url instead
-        QPointF location;
-        qreal zoom = 0; // 0 means no specified zoom: don't change when clicking
-        // web destination
-        QUrl url;
-
-        QString toString() const;
-    };
-
     QPdfDocument *document = nullptr;
-    QList<Link> links;
+    QList<QPdfLink> links;
     int page = 0;
 };
 
