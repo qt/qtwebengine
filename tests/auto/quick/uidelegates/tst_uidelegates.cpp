@@ -159,9 +159,6 @@ void tst_UIDelegates::fileDialog()
 
 void tst_UIDelegates::contextMenu()
 {
-#ifdef Q_OS_MACOS
-    QSKIP("Failing on macOS (QTBUG-103354)");
-#endif
     m_window->show();
     QTRY_VERIFY(qApp->focusObject());
     QQuickWebEngineView *view = webEngineView();
