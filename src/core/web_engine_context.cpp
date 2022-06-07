@@ -250,7 +250,7 @@ static const char *getGLType(bool enableGLSoftwareRendering, bool disableGpu)
     return glType;
 }
 #else
-static const char *getGLType(bool enableGLSoftwareRendering)
+static const char *getGLType(bool enableGLSoftwareRendering, bool disableGpu)
 {
     return gl::kGLImplementationDisabledName;
 }
