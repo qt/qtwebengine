@@ -1,11 +1,16 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+if (Qt6Quick_VERSION VERSION_GREATER_EQUAL "6.4.0")
+set(colorDialog "ColorDialog.qml")
+else()
+set(colorDialog "custom/ColorDialog.qml")
+endif()
+
 set(qml_files
     "AlertDialog.qml"
     "AuthenticationDialog.qml"
     "AutofillPopup.qml"
-    "ColorDialog.qml"
     "ConfirmDialog.qml"
     "DirectoryPicker.qml"
     "FilePicker.qml"
@@ -16,6 +21,7 @@ set(qml_files
     "ToolTip.qml"
     "TouchHandle.qml"
     "TouchSelectionMenu.qml"
+    ${colorDialog}
 )
 
 set(resource_files
