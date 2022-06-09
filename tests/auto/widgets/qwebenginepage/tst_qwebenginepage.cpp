@@ -47,6 +47,7 @@
 #include <qnetworkcookiejar.h>
 #include <qnetworkreply.h>
 #include <qnetworkrequest.h>
+#include <QtNetwork/private/qtnetwork-config_p.h>
 #include <qwebenginedownloadrequest.h>
 #include <qwebenginefilesystemaccessrequest.h>
 #include <qwebenginefindtextresult.h>
@@ -2151,7 +2152,7 @@ public:
             setAttribute(QNetworkRequest::RedirectionTargetAttribute, QUrl("qrc:/test2.html"));
             QTimer::singleShot(0, this, SLOT(continueRedirect()));
         }
-#ifndef QT_NO_OPENSSL
+#if QT_CONFIG(openssl)
         else if (request.url() == QUrl("qrc:/fake-ssl-error.html")) {
             setError(QNetworkReply::SslHandshakeFailedError, tr("Fake error!"));
             QTimer::singleShot(0, this, SLOT(continueError()));
@@ -2208,7 +2209,7 @@ protected:
     {
         QString url = request.url().toString();
         if (op == QNetworkAccessManager::GetOperation) {
-#ifndef QT_NO_OPENSSL
+#if QT_CONFIG(openssl)
             if (url == "qrc:/fake-ssl-error.html") {
                 FakeReply* reply = new FakeReply(request, this);
                 QList<QSslError> errors;

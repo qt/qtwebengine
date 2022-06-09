@@ -559,7 +559,7 @@ QObject *QWebEnginePagePrivate::accessibilityParentObject()
 
 void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
 {
-#ifdef QT_NO_ACTION
+#if !QT_CONFIG(action)
     Q_UNUSED(action);
 #else
     QAction *a = actions[action];
@@ -602,7 +602,7 @@ void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
     }
 
     a->setEnabled(enabled);
-#endif // QT_NO_ACTION
+#endif // QT_CONFIG(action)
 }
 
 void QWebEnginePagePrivate::updateNavigationActions()
@@ -627,7 +627,7 @@ void QWebEnginePagePrivate::updateEditActions()
     updateAction(QWebEnginePage::Unselect);
 }
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
 void QWebEnginePagePrivate::_q_webActionTriggered(bool checked)
 {
     Q_Q(QWebEnginePage);
@@ -637,7 +637,7 @@ void QWebEnginePagePrivate::_q_webActionTriggered(bool checked)
     QWebEnginePage::WebAction action = static_cast<QWebEnginePage::WebAction>(a->data().toInt());
     q->triggerAction(action, checked);
 }
-#endif // QT_NO_ACTION
+#endif // QT_CONFIG(action)
 
 void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
 {
@@ -1057,7 +1057,7 @@ QString QWebEnginePage::selectedText() const
     return d->adapter->selectedText();
 }
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
 QAction *QWebEnginePage::action(WebAction action) const
 {
     Q_D(const QWebEnginePage);
@@ -1219,7 +1219,7 @@ QAction *QWebEnginePage::action(WebAction action) const
     d->updateAction(action);
     return a;
 }
-#endif // QT_NO_ACTION
+#endif // QT_CONFIG(action)
 
 void QWebEnginePage::triggerAction(WebAction action, bool)
 {

@@ -251,7 +251,7 @@ public:
 
     QWebEngineProfile *profile() const;
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     QAction *action(WebAction action) const;
 #endif
     virtual void triggerAction(WebAction action, bool checked = false);
@@ -398,16 +398,16 @@ private:
     Q_DISABLE_COPY(QWebEnginePage)
     Q_DECLARE_PRIVATE(QWebEnginePage)
     QScopedPointer<QWebEnginePagePrivate> d_ptr;
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     Q_PRIVATE_SLOT(d_func(), void _q_webActionTriggered(bool checked))
 #endif
 
     friend class QContextMenuBuilder;
     friend class QWebEngineView;
     friend class QWebEngineViewPrivate;
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     friend class QWebEngineViewAccessible;
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::FindFlags)

@@ -46,7 +46,7 @@ QT_BEGIN_NAMESPACE
 
 DefaultNotificationPresenter::DefaultNotificationPresenter(QObject *parent) : QObject(parent)
 {
-#ifndef QT_NO_SYSTEMTRAYICON
+#if QT_CONFIG(systemtrayicon)
     m_systemTrayIcon = new QSystemTrayIcon(this);
     connect(m_systemTrayIcon, &QSystemTrayIcon::messageClicked, this, &DefaultNotificationPresenter::messageClicked);
 #endif
@@ -66,7 +66,7 @@ void DefaultNotificationPresenter::show(std::unique_ptr<QWebEngineNotification> 
 
     m_activeNotification = std::move(notification);
 
-#ifndef QT_NO_SYSTEMTRAYICON
+#if QT_CONFIG(systemtrayicon)
     if (m_activeNotification && m_systemTrayIcon) {
         m_systemTrayIcon->setIcon(qApp->windowIcon());
         m_systemTrayIcon->show();
@@ -90,7 +90,7 @@ void DefaultNotificationPresenter::messageClicked()
 
 void DefaultNotificationPresenter::closeNotification()
 {
-#ifndef QT_NO_SYSTEMTRAYICON
+#if QT_CONFIG(systemtrayicon)
     const QWebEngineNotification *canceled = static_cast<const QWebEngineNotification *>(QObject::sender());
     if (m_systemTrayIcon && canceled->matches(m_activeNotification.get()))
         m_systemTrayIcon->hide();

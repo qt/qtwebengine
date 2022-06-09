@@ -305,7 +305,7 @@ bool WebEngineQuickWidget::event(QEvent *event)
         case QEvent::ContextMenu:
         case QEvent::KeyPress:
         case QEvent::KeyRelease:
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
         case QEvent::Wheel:
 #endif
             return false;
@@ -629,14 +629,14 @@ bool QWebEngineViewPrivate::passOnFocus(bool reverse)
     return q->focusNextPrevChild(!reverse);
 }
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *object)
 {
     if (QWebEngineView *v = qobject_cast<QWebEngineView*>(object))
         return new QWebEngineViewAccessible(v);
     return nullptr;
 }
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 QWebEngineViewPrivate::QWebEngineViewPrivate()
     : page(0)
@@ -644,9 +644,9 @@ QWebEngineViewPrivate::QWebEngineViewPrivate()
     , m_ownsPage(false)
     , m_contextRequest(nullptr)
 {
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessible::installFactory(&webAccessibleFactory);
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 }
 
 QWebEngineViewPrivate::~QWebEngineViewPrivate() = default;
@@ -1085,7 +1085,7 @@ QString QWebEngineView::selectedText() const
     return page()->selectedText();
 }
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
 QAction* QWebEngineView::pageAction(QWebEnginePage::WebAction action) const
 {
     return page()->action(action);

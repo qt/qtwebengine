@@ -1516,7 +1516,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QEvent *ev)
     return webKitEvent;
 }
 
-#ifndef QT_NO_GESTURES
+#if QT_CONFIG(gestures)
 WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev)
 {
     WebGestureEvent webKitEvent;

@@ -98,7 +98,7 @@ public:
     bool hasSelection() const;
     QString selectedText() const;
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     QAction *pageAction(QWebEnginePage::WebAction action) const;
 #endif
     void triggerPageAction(QWebEnginePage::WebAction action, bool checked = false);

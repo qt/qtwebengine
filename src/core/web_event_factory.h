@@ -40,25 +40,25 @@
 #ifndef WEB_EVENT_FACTORY_H
 #define WEB_EVENT_FACTORY_H
 
+#include "QtGui/qtguiglobal.h"
+
 #include "content/public/browser/native_web_keyboard_event.h"
-#ifndef QT_NO_GESTURES
+#if QT_CONFIG(gestures)
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #endif
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
-
-#include <QtGlobal>
 
 QT_BEGIN_NAMESPACE
 class QEvent;
 class QHoverEvent;
 class QKeyEvent;
 class QMouseEvent;
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
 class QTabletEvent;
 #endif
 class QWheelEvent;
-#ifndef QT_NO_GESTURES
+#if QT_CONFIG(gestures)
 class QNativeGestureEvent;
 #endif
 QT_END_NAMESPACE
@@ -72,11 +72,11 @@ class WebEventFactory {
 public:
     static blink::WebMouseEvent toWebMouseEvent(QMouseEvent *);
     static blink::WebMouseEvent toWebMouseEvent(QHoverEvent *);
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
     static blink::WebMouseEvent toWebMouseEvent(QTabletEvent *);
 #endif
     static blink::WebMouseEvent toWebMouseEvent(QEvent *);
-#ifndef QT_NO_GESTURES
+#if QT_CONFIG(gestures)
     static blink::WebGestureEvent toWebGestureEvent(QNativeGestureEvent *);
 #endif
     static blink::WebMouseWheelEvent toWebWheelEvent(QWheelEvent *);

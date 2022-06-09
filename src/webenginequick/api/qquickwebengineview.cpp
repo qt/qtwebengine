@@ -2197,14 +2197,14 @@ void QQuickWebEngineView::componentComplete()
     QQuickItem::componentComplete();
     Q_D(QQuickWebEngineView);
     d->initializeProfile();
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     // Enable accessibility via a dynamic QQmlProperty, instead of using private API call
     // QQuickAccessibleAttached::qmlAttachedProperties(this). The qmlContext is required, otherwise
     // it is not possible to reference attached properties.
     QQmlContext *qmlContext = QQmlEngine::contextForObject(this);
     QQmlProperty role(this, QStringLiteral("Accessible.role"), qmlContext);
     role.write(QAccessible::Grouping);
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
     QTimer::singleShot(0, this, &QQuickWebEngineView::lazyInitialize);
 }
