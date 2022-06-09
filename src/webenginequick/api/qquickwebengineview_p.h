@@ -588,9 +588,9 @@ private:
     friend class QQuickContextMenuBuilder;
     friend class FaviconImageResponse;
     friend class FaviconImageResponseRunnable;
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     friend class QQuickWebEngineViewAccessible;
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 };
 
 QT_END_NAMESPACE

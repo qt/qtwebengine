@@ -152,7 +152,7 @@ private Q_SLOTS:
 
     void mouseLeave();
 
-#ifndef QT_NO_CLIPBOARD
+#if QT_CONFIG(clipboard)
     void globalMouseSelection();
 #endif
     void noContextMenu();
@@ -927,7 +927,7 @@ public:
         case QEvent::ContextMenu:
         case QEvent::KeyPress:
         case QEvent::KeyRelease:
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
         case QEvent::Wheel:
 #endif
             ++m_eventCounter;
@@ -2967,7 +2967,7 @@ void tst_QWebEngineView::imeCompositionQueryEvent()
     QTRY_COMPARE(anchorPosQuery.value(Qt::ImAnchorPosition).toInt(), 11);
 }
 
-#ifndef QT_NO_CLIPBOARD
+#if QT_CONFIG(clipboard)
 void tst_QWebEngineView::globalMouseSelection()
 {
     if (!QApplication::clipboard()->supportsSelection()) {
