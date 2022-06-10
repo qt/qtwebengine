@@ -139,17 +139,31 @@ public:
 
     void Bind(WebContentsAdapterClient *client) override
     {
+        BindPage(static_cast<QWebEnginePagePrivate *>(client)->q_func());
+    }
+
+    void BindPage(QWebEnginePage *page)
+    {
         if (m_pageDestroyedConnection)
             QObject::disconnect(m_pageDestroyedConnection);
-        QWebEnginePage *page = static_cast<QWebEnginePagePrivate *>(client)->q_func();
         QWebEngineViewPrivate::bindPageAndWidget(page, this);
-        m_pageDestroyedConnection = QObject::connect(page, &QWebEnginePage::_q_aboutToDelete, this, &WebEngineQuickWidget::Unbind);
+        m_pageDestroyedConnection = QObject::connect(page, &QObject::destroyed, this, &WebEngineQuickWidget::UnbindPage);
+    }
+
+    void UnbindPage()
+    {
+        Unbind();
+        // In case we are not bound to a WebContentsAdapterClient that would destroy us:
+        if (!parent())
+            Destroy();
     }
 
     void Unbind() override
     {
-        if (m_pageDestroyedConnection)
+        if (m_pageDestroyedConnection) {
             QObject::disconnect(m_pageDestroyedConnection);
+            m_pageDestroyedConnection = {};
+        }
         QWebEngineViewPrivate::bindPageAndWidget(nullptr, this);
     }
 
@@ -639,7 +653,7 @@ static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *obje
 #endif // QT_CONFIG(accessibility)
 
 QWebEngineViewPrivate::QWebEngineViewPrivate()
-    : page(0)
+    : page(nullptr)
     , m_dragEntered(false)
     , m_ownsPage(false)
     , m_contextRequest(nullptr)
@@ -700,8 +714,10 @@ void QWebEngineViewPrivate::bindPageAndView(QWebEnginePage *page, QWebEngineView
             view->d_func()->pageChanged(oldPage, page);
         else
             view->d_func()->pageChanged(nullptr, page);
-        if (!widget && page && page->d_func()->item)
+        if (!widget && page && page->d_func()->item) {
             widget = new QtWebEngineCore::WebEngineQuickWidget(page->d_func()->item, nullptr);
+            widget->BindPage(page);
+        }
         if (oldWidget != widget)
             view->d_func()->widgetChanged(oldWidget, widget);
     }
