@@ -201,6 +201,7 @@ void tst_QWebEngineView::init()
 // This will be called after every test function.
 void tst_QWebEngineView::cleanup()
 {
+    QTRY_COMPARE(QApplication::topLevelWidgets().size(), 0);
 }
 
 void tst_QWebEngineView::renderHints()
