@@ -50,6 +50,7 @@ public:
     virtual void setInputMethodHints(Qt::InputMethodHints hints) = 0;
     virtual void setClearColor(const QColor &color) = 0;
     virtual void adapterClientChanged(WebContentsAdapterClient *client) = 0;
+    virtual void updateAdapterClientIfNeeded(WebContentsAdapterClient *client) = 0;
     virtual void unhandledWheelEvent(QWheelEvent *) {}
 };
 

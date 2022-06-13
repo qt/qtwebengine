@@ -395,6 +395,13 @@ void RenderWidgetHostViewQtDelegateItem::adapterClientChanged(WebContentsAdapter
         m_widgetDelegate->Bind(client);
 }
 
+void RenderWidgetHostViewQtDelegateItem::updateAdapterClientIfNeeded(WebContentsAdapterClient *client)
+{
+    if (client == m_adapterClient)
+        return;
+    adapterClientChanged(client);
+}
+
 void RenderWidgetHostViewQtDelegateItem::unhandledWheelEvent(QWheelEvent *ev)
 {
     if (QWindow *w = Window()) {
