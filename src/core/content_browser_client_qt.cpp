@@ -835,10 +835,6 @@ static bool navigationThrottleCallback(content::WebContents *source,
     if (params.is_external_protocol() && !profile->profileAdapter()->urlSchemeHandler(toQByteArray(params.url().scheme())))
         return false;
 
-    WebContentsViewQt *view = WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(source)->GetView());
-    if (!view->client())
-        return false;
-
     bool navigationAccepted = true;
 
     WebContentsAdapterClient *client =
