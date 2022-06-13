@@ -308,6 +308,17 @@ void WebContentsDelegateQt::RenderViewHostChanged(content::RenderViewHost *, con
     }
 }
 
+void WebContentsDelegateQt::RenderViewReady()
+{
+    // The render view might have returned after a crash without us getting a RenderViewHostChanged call
+    content::RenderWidgetHostView *newHostView = web_contents()->GetRenderWidgetHostView();
+    if (newHostView) {
+        auto *rwhv = static_cast<RenderWidgetHostViewQt *>(newHostView);
+        Q_ASSERT(rwhv->delegate());
+        rwhv->delegate()->updateAdapterClientIfNeeded(m_viewClient);
+    }
+}
+
 void WebContentsDelegateQt::emitLoadStarted(bool isErrorPage)
 {
     for (auto &&wc : m_certificateErrorControllers)

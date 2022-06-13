@@ -476,6 +476,9 @@ void RenderWidgetHostViewQtDelegateClient::handleKeyEvent(QKeyEvent *event)
     if (event->type() == QEvent::KeyRelease && event->isAutoRepeat())
         return;
 
+    if (!m_rwhv->GetFocusedWidget())
+        return;
+
     content::NativeWebKeyboardEvent webEvent = WebEventFactory::toWebKeyboardEvent(event);
     if (webEvent.GetType() == blink::WebInputEvent::Type::kRawKeyDown && !m_editCommand.empty()) {
         ui::LatencyInfo latency;

@@ -116,6 +116,7 @@ public:
     void PrimaryMainFrameRenderProcessGone(base::TerminationStatus status) override;
     void RenderFrameHostChanged(content::RenderFrameHost *old_host, content::RenderFrameHost *new_host) override;
     void RenderViewHostChanged(content::RenderViewHost *old_host, content::RenderViewHost *new_host) override;
+    void RenderViewReady() override;
     void DidStartNavigation(content::NavigationHandle *navigation_handle) override;
     void DidFinishNavigation(content::NavigationHandle *navigation_handle) override;
     void PrimaryPageChanged(content::Page &page) override;

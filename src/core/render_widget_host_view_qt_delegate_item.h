@@ -96,6 +96,7 @@ protected:
     QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) override;
 
     void adapterClientChanged(WebContentsAdapterClient *client) override;
+    void updateAdapterClientIfNeeded(WebContentsAdapterClient *client) override;
 
 private Q_SLOTS:
     void onBeforeRendering();
