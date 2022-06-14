@@ -313,10 +313,18 @@ QMenu *BrowserWindow::createWindowMenu(TabWidget *tabWidget)
     previousTabAction->setShortcuts(shortcuts);
     connect(previousTabAction, &QAction::triggered, tabWidget, &TabWidget::previousTab);
 
-    connect(menu, &QMenu::aboutToShow, [this, menu, nextTabAction, previousTabAction]() {
+    QAction *inspectorAction = new QAction(tr("Open inspector in new window"), this);
+    shortcuts.clear();
+    shortcuts.append(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_I));
+    inspectorAction->setShortcuts(shortcuts);
+    connect(inspectorAction, &QAction::triggered, [this]() { emit currentTab()->devToolsRequested(currentTab()->page()); });
+
+    connect(menu, &QMenu::aboutToShow, [this, menu, nextTabAction, previousTabAction, inspectorAction]() {
         menu->clear();
         menu->addAction(nextTabAction);
         menu->addAction(previousTabAction);
+        menu->addSeparator();
+        menu->addAction(inspectorAction);
         menu->addSeparator();
 
         QList<BrowserWindow*> windows = m_browser->windows();
