@@ -53,6 +53,7 @@
 #include "extensions/common/constants.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
+#include "media/cdm/supported_audio_codecs.h"
 #include "media/media_buildflags.h"
 #include "ui/base/layout.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -250,15 +251,56 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         }
     }
 #elif defined(Q_OS_LINUX)
-        pluginPaths << QStringLiteral("/opt/google/chrome/libwidevinecdm.so") // Old Google Chrome
+        QList<QDir> potentialWidevineVersionDirs;
+
+        // Google Chrome widevine modules
+        QDir chromeWidevineDir(QDir::homePath() + "/.config/google-chrome/WidevineCdm");
+        if (chromeWidevineDir.exists())
+            potentialWidevineVersionDirs << chromeWidevineDir;
+
+        // Firefox widevine modules
+        QDir firefoxPotentialProfilesDir(QDir::homePath() + "/.mozilla/firefox");
+        if (firefoxPotentialProfilesDir.exists()) {
+            QFileInfoList firefoxProfileDirs = firefoxPotentialProfilesDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
+            for (const QFileInfo &info : firefoxProfileDirs) {
+                QDir widevinePluginsDir(info.absoluteFilePath() + "/gmp-widevinecdm");
+                if (widevinePluginsDir.exists())
+                    potentialWidevineVersionDirs << widevinePluginsDir;
+            }
+        }
+
+        // Chromium widevine modules (might not work with proprietary codecs)
+        QDir chromiumWidevineDir(QDir::homePath() + "/.config/chromium/WidevineCdm");
+        if (chromiumWidevineDir.exists())
+            potentialWidevineVersionDirs << chromiumWidevineDir;
+
+        // Search for widewine versions
+        for (const QDir &dir : potentialWidevineVersionDirs) {
+            QFileInfoList widevineVersionDirs = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
+            // ### alternatively look up in the manifest.json and take the path from there.
 #if Q_PROCESSOR_WORDSIZE == 8
-                    << QStringLiteral("/opt/google/chrome/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so")
+            const QString library = QLatin1String("/_platform_specific/linux_x64/libwidevinecdm.so");
 #else
-                    << QStringLiteral("/opt/google/chrome/WidevineCdm/_platform_specific/linux_x86/libwidevinecdm.so")
+            const QString library = QLatin1String("/_platform_specific/linux_x86/libwidevinecdm.so");
 #endif
-                    << QStringLiteral("/usr/lib/chromium/libwidevinecdm.so") // Arch
+            for (const QFileInfo &info : widevineVersionDirs) {
+                pluginPaths << info.absoluteFilePath() + "/libwidevinecdm.so";
+                pluginPaths << info.absoluteFilePath() + library;
+            }
+        }
+
+        // Fixed paths:
+        pluginPaths << QStringLiteral("/usr/lib/chromium/libwidevinecdm.so") // Arch
                     << QStringLiteral("/usr/lib/chromium-browser/libwidevinecdm.so") // Ubuntu/neon
-                    << QStringLiteral("/usr/lib64/chromium/libwidevinecdm.so"); // OpenSUSE style
+                    << QStringLiteral("/usr/lib64/chromium/libwidevinecdm.so") // OpenSUSE style
+#if Q_PROCESSOR_WORDSIZE == 8
+                    << QStringLiteral("/usr/lib64/chromium-browser/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so") // Gentoo
+                    << QStringLiteral("/opt/google/chrome/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so") // Old Google Chrome
+#else
+                    << QStringLiteral("/usr/lib/chromium-browser/WidevineCdm/_platform_specific/linux_x86/libwidevinecdm.so") // Gentoo
+                    << QStringLiteral("/opt/google/chrome/WidevineCdm/_platform_specific/linux_x86/libwidevinecdm.so") // Old Google Chrome
+#endif
+                    << QStringLiteral("/opt/google/chrome/libwidevinecdm.so"); // Older Google Chrome
 #endif
     }
 
@@ -277,6 +319,8 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
             capability->video_codecs.emplace(media::VideoCodec::kHEVC, kAllProfiles);
 #endif
+            capability->audio_codecs = media::GetCdmSupportedAudioCodecs();
+
             // Add the supported encryption schemes as if they came from the
             // component manifest. This list must match the CDM that is being
             // bundled with Chrome.
