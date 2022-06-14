@@ -364,6 +364,7 @@ void DevToolsFrontendQt::CreateJsonPreferences(bool clear)
     JsonPrefStore *jsonPrefStore = new JsonPrefStore(
                 browserContext->GetPath().Append(FILE_PATH_LITERAL("devtoolsprefs.json")));
     // We effectively clear the preferences by not calling ReadPrefs
+    base::ScopedAllowBlockingForTesting allowBlocking;
     if (!clear)
         jsonPrefStore->ReadPrefs();
 
