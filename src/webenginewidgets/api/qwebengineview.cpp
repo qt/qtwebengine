@@ -267,6 +267,10 @@ void QWebEngineViewPrivate::showColorDialog(
     QColorDialog::connect(dialog, SIGNAL(colorSelected(QColor)), dialog, SLOT(deleteLater()));
     QColorDialog::connect(dialog, SIGNAL(rejected()), dialog, SLOT(deleteLater()));
 
+#if defined(Q_OS_MACOS)
+    dialog->setOption(QColorDialog::DontUseNativeDialog);
+#endif
+
     dialog->open();
 #else
     Q_UNUSED(controller);
