@@ -47,6 +47,6 @@ private:
     friend class ColorChooserQt;
 };
 
-} // namespace
+} // namespace QtWebEngineCore
 
 #endif // COLOR_CHOOSER_CONTROLLER_H

@@ -4,16 +4,14 @@
 #include "cookie_monster_delegate_qt.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
-#include "base/task/post_task.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
 #include "api/qwebenginecookiestore.h"
 #include "api/qwebenginecookiestore_p.h"
 #include "type_conversion.h"
+
+#include <QNetworkCookie>
 
 namespace QtWebEngineCore {
 

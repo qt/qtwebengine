@@ -12,6 +12,7 @@
 #include "download_manager_delegate_qt.h"
 #include "favicon_driver_qt.h"
 #include "favicon_service_factory_qt.h"
+#include "find_text_helper.h"
 #include "media_capture_devices_dispatcher.h"
 #include "profile_adapter.h"
 #include "profile_qt.h"

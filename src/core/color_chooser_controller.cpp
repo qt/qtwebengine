@@ -65,5 +65,4 @@ void ColorChooserController::reject()
     didEndColorDialog();
 }
 
-
-} // namespace
+} // namespace QtWebEngineCore

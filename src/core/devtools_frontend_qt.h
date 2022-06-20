@@ -9,13 +9,9 @@
 
 #include "web_contents_delegate_qt.h"
 
-#include "base/compiler_specific.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/values.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace base {
@@ -23,8 +19,8 @@ class Value;
 }
 
 namespace content {
+class DevToolsFrontendHost;
 class NavigationHandle;
-class RenderViewHost;
 class WebContents;
 }  // namespace content
 

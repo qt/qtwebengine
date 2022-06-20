@@ -7,31 +7,14 @@
 #include "web_contents_view_qt.h"
 #include "web_engine_library_info.h"
 #include "base/values.h"
-#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/font_list.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
-#include "ui/events/devices/device_data_manager.h"
-#include "ui/events/platform/platform_event_source.h"
-#include "ppapi/buildflags/buildflags.h"
 
 #include <QGuiApplication>
-#include <QScreen>
-#include <QWindow>
 #include <QFontDatabase>
-#include <QStringList>
 #include <QLibraryInfo>
-
-#if defined(USE_AURA) && !defined(USE_OZONE)
-#include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/gfx/render_text.h"
-#include "ui/gfx/platform_font.h"
-#endif
-
-#if defined(USE_OPENSSL_CERTS)
-#include "net/ssl/openssl_client_key_store.h"
-#endif
 
 #if !QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
 #include "chrome/browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h"
@@ -43,7 +26,6 @@ void *GetQtXDisplay()
 }
 
 namespace content {
-class WebContentsImpl;
 class WebContentsView;
 class WebContentsViewDelegate;
 class RenderViewHostDelegateView;

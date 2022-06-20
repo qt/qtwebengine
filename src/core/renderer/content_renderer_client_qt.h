@@ -8,13 +8,13 @@
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/local_interface_provider.h"
-#include "ppapi/buildflags/buildflags.h"
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-#include "third_party/blink/public/web/web_plugin_params.h"
-#endif
 
 #include <QScopedPointer>
+
+namespace blink {
+class WebPlugin;
+struct WebPluginParams;
+}
 
 namespace chrome {
 class WebRtcLoggingAgentImpl;
@@ -35,10 +35,6 @@ class WebCacheImpl;
 #if QT_CONFIG(webengine_spellchecker)
 class SpellCheck;
 #endif
-
-namespace content {
-struct WebPluginInfo;
-}
 
 namespace QtWebEngineCore {
 

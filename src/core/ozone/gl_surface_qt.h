@@ -39,6 +39,6 @@ public:
     static std::string g_client_extensions;
 };
 
-}
+} // namespace gl
 
-#endif
+#endif // GL_SURFACE_QT_H_

@@ -24,7 +24,6 @@
 #endif
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_store.h"
 #include "services/network/public/mojom/cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -33,9 +32,9 @@
 #undef StAsH_signals
 #endif
 
-#include <QNetworkCookie>
 #include <QPointer>
 
+QT_FORWARD_DECLARE_CLASS(QNetworkCookie)
 QT_FORWARD_DECLARE_CLASS(QWebEngineCookieStore)
 
 namespace QtWebEngineCore {
@@ -77,6 +76,6 @@ public:
     void OnCookieChanged(const net::CookieChangeInfo &change);
 };
 
-}
+} // namespace QtWebEngineCore
 
 #endif // COOKIE_MONSTER_DELEGATE_QT_H

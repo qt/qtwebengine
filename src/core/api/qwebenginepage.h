@@ -7,28 +7,29 @@
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtWebEngineCore/qwebengineclientcertificateselection.h>
 #include <QtWebEngineCore/qwebenginedownloadrequest.h>
-#include <QtWebEngineCore/qwebenginehttprequest.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
-#include <QtCore/qvariant.h>
-#include <QtGui/qaction.h>
 #include <QtGui/qpagelayout.h>
 #include <QtGui/qpageranges.h>
+#include <QtGui/qtgui-config.h>
 
 #include <functional>
 
 QT_BEGIN_NAMESPACE
 
+class QAction;
 class QAuthenticator;
 class QContextMenuBuilder;
+class QRect;
+class QVariant;
 class QWebChannel;
 class QWebEngineCertificateError;
-class QWebEngineClientCertificateSelection;
 class QWebEngineFileSystemAccessRequest;
 class QWebEngineFindTextResult;
 class QWebEngineFullScreenRequest;
 class QWebEngineHistory;
+class QWebEngineHttpRequest;
 class QWebEngineLoadingInfo;
 class QWebEngineNavigationRequest;
 class QWebEngineNewWindowRequest;

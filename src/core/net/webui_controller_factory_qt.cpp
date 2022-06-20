@@ -24,7 +24,6 @@
 #include "content/public/common/url_utils.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
-#include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "url/gurl.h"
 

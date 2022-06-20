@@ -24,8 +24,6 @@ class DownloadItem;
 
 namespace QtWebEngineCore {
 class ProfileAdapter;
-class DownloadManagerDelegateInstance;
-class DownloadTargetHelper;
 
 class DownloadManagerDelegateQt
         : public content::DownloadManagerDelegate
@@ -65,10 +63,8 @@ private:
 
     uint32_t m_currentId;
     base::WeakPtrFactory<DownloadManagerDelegateQt> m_weakPtrFactory;
-
-    friend class DownloadManagerDelegateInstance;
 };
 
 } // namespace QtWebEngineCore
 
-#endif //DOWNLOAD_MANAGER_DELEGATE_QT_H
+#endif // DOWNLOAD_MANAGER_DELEGATE_QT_H

@@ -6,15 +6,14 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/filename_util.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/cors/cors.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/url_util.h"
@@ -25,8 +24,6 @@
 #include "web_contents_adapter.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_view_qt.h"
-
-#include <QVariant>
 
 // originally based on aw_proxying_url_loader_factory.cc:
 // Copyright 2018 The Chromium Authors. All rights reserved.

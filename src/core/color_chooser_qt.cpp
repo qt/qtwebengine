@@ -5,9 +5,7 @@
 #include "color_chooser_controller.h"
 #include "color_chooser_controller_p.h"
 
-namespace content {
-    class WebContents;
-}
+#include <QColor>
 
 namespace QtWebEngineCore {
 
@@ -21,4 +19,4 @@ QSharedPointer<ColorChooserController> ColorChooserQt::controller()
     return m_controller;
 }
 
-} // namespace
+} // namespace QtWebEngineCore

@@ -5,10 +5,8 @@
 #define RENDER_FRAME_OBSERVER_QT_H
 
 #include "qtwebenginecoreglobal_p.h"
-#include "base/compiler_specific.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
-#include "ppapi/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 

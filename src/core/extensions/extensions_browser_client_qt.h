@@ -9,7 +9,6 @@
 #ifndef EXTENSIONS_BROWSER_CLIENT_QT_H_
 #define EXTENSIONS_BROWSER_CLIENT_QT_H_
 
-#include "base/compiler_specific.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"

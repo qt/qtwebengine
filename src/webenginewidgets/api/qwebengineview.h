@@ -138,8 +138,6 @@ private:
     QScopedPointer<QWebEngineViewPrivate> d_ptr;
 
     friend class QtWebEngineWidgetUI::AutofillPopupWidget;
-    friend class QWebEnginePage;
-    friend class QWebEnginePagePrivate;
 #if QT_CONFIG(accessibility)
     friend class QWebEngineViewAccessible;
 #endif

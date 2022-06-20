@@ -4,8 +4,6 @@
 #include "net/client_cert_store_data.h"
 
 #if QT_CONFIG(ssl)
-#include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_platform_key_util.h"

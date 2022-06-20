@@ -10,8 +10,6 @@
 #include "gl_surface_qt.h"
 #include "qtwebenginecoreglobal_p.h"
 
-#include "base/logging.h"
-
 #if defined(OS_WIN)
 #include "web_engine_context.h"
 #include "ozone/gl_surface_wgl_qt.h"
