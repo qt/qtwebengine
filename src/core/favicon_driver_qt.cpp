@@ -1,6 +1,11 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
+// Based on components/favicon/content/content_favicon_driver.cc:
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "favicon_driver_qt.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
@@ -20,16 +25,6 @@ namespace QtWebEngineCore {
 
 namespace {
 
-void ExtractManifestIcons(FaviconDriverQt::ManifestDownloadCallback callback,
-                          const GURL &manifest_url, blink::mojom::ManifestPtr manifest)
-{
-    std::vector<favicon::FaviconURL> candidates;
-    for (const auto &icon : manifest->icons) {
-        candidates.emplace_back(icon.src, favicon_base::IconType::kWebManifestIcon, icon.sizes);
-    }
-    std::move(callback).Run(candidates);
-}
-
 int activeHandlersCount(QWebEngineSettings *settings)
 {
     bool touchIconsEnabled = settings->testAttribute(QWebEngineSettings::TouchIconsEnabled);
@@ -45,7 +40,7 @@ FaviconStatusQt::FaviconStatusQt()
 
 // static
 void FaviconDriverQt::CreateForWebContents(content::WebContents *webContents,
-                                           favicon::FaviconService *faviconService,
+                                           favicon::CoreFaviconService *faviconService,
                                            WebContentsAdapterClient *viewClient)
 {
     if (FromWebContents(webContents))
@@ -57,9 +52,10 @@ void FaviconDriverQt::CreateForWebContents(content::WebContents *webContents,
 }
 
 FaviconDriverQt::FaviconDriverQt(content::WebContents *webContents,
-                                 favicon::FaviconService *faviconService,
+                                 favicon::CoreFaviconService *faviconService,
                                  WebContentsAdapterClient *viewClient)
     : content::WebContentsObserver(webContents)
+    , content::WebContentsUserData<FaviconDriverQt>(*webContents)
     , m_faviconService(faviconService)
     , m_viewClient(viewClient)
 {
@@ -129,6 +125,13 @@ GURL FaviconDriverQt::GetActiveURL()
     return entry ? entry->GetURL() : GURL();
 }
 
+GURL FaviconDriverQt::GetManifestURL(content::RenderFrameHost *rfh)
+{
+    DocumentManifestData *document_data = DocumentManifestData::GetOrCreateForCurrentDocument(rfh);
+    return document_data->has_manifest_url ? rfh->GetPage().GetManifestUrl().value_or(GURL())
+                                           : GURL();
+}
+
 GURL FaviconDriverQt::GetFaviconURL() const
 {
     content::NavigationController &controller = web_contents()->GetController();
@@ -139,20 +142,62 @@ GURL FaviconDriverQt::GetFaviconURL() const
     return GURL();
 }
 
+FaviconDriverQt::DocumentManifestData::DocumentManifestData(content::RenderFrameHost *rfh)
+    : content::DocumentUserData<DocumentManifestData>(rfh)
+{
+}
+
+FaviconDriverQt::DocumentManifestData::~DocumentManifestData() = default;
+
+FaviconDriverQt::NavigationManifestData::NavigationManifestData(
+        content::NavigationHandle &navigation_handle)
+{
+}
+
+FaviconDriverQt::NavigationManifestData::~NavigationManifestData() = default;
+
+void FaviconDriverQt::OnDidDownloadManifest(ManifestDownloadCallback callback,
+                                            const GURL &manifest_url,
+                                            blink::mojom::ManifestPtr manifest)
+{
+    Q_UNUSED(manifest_url);
+
+    // ~WebContentsImpl triggers running any pending callbacks for manifests.
+    // As we're about to be destroyed ignore the request. To do otherwise may
+    // result in calling back to this and attempting to use the WebContents, which
+    // will crash.
+    if (!web_contents())
+        return;
+
+    std::vector<favicon::FaviconURL> candidates;
+    if (manifest) {
+        for (const auto &icon : manifest->icons) {
+            candidates.emplace_back(icon.src, favicon_base::IconType::kWebManifestIcon, icon.sizes);
+        }
+    }
+    std::move(callback).Run(candidates);
+}
+
 int FaviconDriverQt::DownloadImage(const GURL &url, int max_image_size,
                                    ImageDownloadCallback callback)
 {
     bool bypass_cache = (m_bypassCachePageURL == GetActiveURL());
     m_bypassCachePageURL = GURL();
 
-    return web_contents()->DownloadImage(url, true, /*preferred_size=*/ {max_image_size, max_image_size},
-                                         /*max_bitmap_size=*/max_image_size, bypass_cache,
-                                         std::move(callback));
+    const gfx::Size preferred_size(max_image_size, max_image_size);
+    return web_contents()->DownloadImage(url, true, preferred_size,
+                                         /*max_bitmap_size=*/max_image_size,
+                                         bypass_cache, std::move(callback));
 }
 
 void FaviconDriverQt::DownloadManifest(const GURL &url, ManifestDownloadCallback callback)
 {
-    web_contents()->GetMainFrame()->GetPage().GetManifest(base::BindOnce(&ExtractManifestIcons, std::move(callback)));
+    // TODO(crbug.com/1201237): This appears to be reachable from pages other
+    // than the primary page. This code should likely be refactored so that either
+    // this is unreachable from other pages, or the correct page is plumbed in
+    // here.
+    web_contents()->GetPrimaryPage().GetManifest(base::BindOnce(
+            &FaviconDriverQt::OnDidDownloadManifest, base::Unretained(this), std::move(callback)));
 }
 
 bool FaviconDriverQt::IsOffTheRecord()
@@ -209,14 +254,12 @@ void FaviconDriverQt::OnHandlerCompleted(favicon::FaviconHandler *handler)
 }
 
 void FaviconDriverQt::DidUpdateFaviconURL(
-        content::RenderFrameHost *render_frame_host,
-        const std::vector<blink::mojom::FaviconURLPtr> &candidates)
+        content::RenderFrameHost *rfh, const std::vector<blink::mojom::FaviconURLPtr> &candidates)
 {
-    Q_UNUSED(render_frame_host);
-
     // Ignore the update if there is no last committed navigation entry. This can
     // occur when loading an initially blank page.
     content::NavigationEntry *entry = web_contents()->GetController().GetLastCommittedEntry();
+
     if (!entry)
         return;
 
@@ -227,50 +270,45 @@ void FaviconDriverQt::DidUpdateFaviconURL(
         faviconUrls.push_back(candidate.Clone());
     m_faviconUrls = std::move(faviconUrls);
 
-    if (!m_documentOnLoadCompleted)
+    if (!rfh->IsDocumentOnLoadCompletedInMainFrame())
         return;
 
-    OnUpdateCandidates(entry->GetURL(),
-                       favicon::FaviconURLsFromContentFaviconURLs(candidates),
-                       m_manifestUrl);
+    OnUpdateCandidates(rfh->GetLastCommittedURL(),
+                       favicon::FaviconURLsFromContentFaviconURLs(candidates), GetManifestURL(rfh));
 }
 
-void FaviconDriverQt::DidUpdateWebManifestURL(content::RenderFrameHost *target_frame,
+void FaviconDriverQt::DidUpdateWebManifestURL(content::RenderFrameHost *rfh,
                                               const GURL &manifest_url)
 {
-    Q_UNUSED(target_frame);
+    Q_UNUSED(manifest_url);
 
     // Ignore the update if there is no last committed navigation entry. This can
     // occur when loading an initially blank page.
     content::NavigationEntry *entry = web_contents()->GetController().GetLastCommittedEntry();
-    if (!entry || !m_documentOnLoadCompleted)
+    if (!entry || !rfh->IsDocumentOnLoadCompletedInMainFrame())
         return;
 
-    m_manifestUrl = manifest_url;
+    DocumentManifestData *document_data = DocumentManifestData::GetOrCreateForCurrentDocument(rfh);
+    document_data->has_manifest_url = true;
 
     // On regular page loads, DidUpdateManifestURL() is guaranteed to be called
     // before DidUpdateFaviconURL(). However, a page can update the favicons via
     // javascript.
-    if (m_faviconUrls.has_value()) {
-        OnUpdateCandidates(entry->GetURL(),
-                           favicon::FaviconURLsFromContentFaviconURLs(*m_faviconUrls),
-                           m_manifestUrl);
+    if (!rfh->FaviconURLs().empty()) {
+        OnUpdateCandidates(rfh->GetLastCommittedURL(),
+                           favicon::FaviconURLsFromContentFaviconURLs(rfh->FaviconURLs()),
+                           GetManifestURL(rfh));
     }
 }
 
 void FaviconDriverQt::DidStartNavigation(content::NavigationHandle *navigation_handle)
 {
-    if (!navigation_handle->IsInMainFrame())
+    if (!navigation_handle->IsInPrimaryMainFrame())
         return;
-
-    m_faviconUrls.reset();
 
     if (!navigation_handle->IsSameDocument()) {
         m_completedHandlersCount = 0;
         m_latestFavicon = FaviconStatusQt();
-        m_documentOnLoadCompleted = false;
-        m_manifestUrl = GURL();
-
         m_viewClient->iconChanged(QUrl());
     }
 
@@ -278,17 +316,32 @@ void FaviconDriverQt::DidStartNavigation(content::NavigationHandle *navigation_h
     if (reload_type == content::ReloadType::NONE || IsOffTheRecord())
         return;
 
-    m_bypassCachePageURL = navigation_handle->GetURL();
+    if (!navigation_handle->IsSameDocument()) {
+        NavigationManifestData *navigation_data =
+                NavigationManifestData::GetOrCreateForNavigationHandle(*navigation_handle);
+        navigation_data->has_manifest_url = false;
+    }
+
+    if (reload_type == content::ReloadType::BYPASSING_CACHE)
+        m_bypassCachePageURL = navigation_handle->GetURL();
+
     SetFaviconOutOfDateForPage(navigation_handle->GetURL(),
                                reload_type == content::ReloadType::BYPASSING_CACHE);
 }
 
 void FaviconDriverQt::DidFinishNavigation(content::NavigationHandle *navigation_handle)
 {
-    if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted()
+    if (!navigation_handle->IsInPrimaryMainFrame() || !navigation_handle->HasCommitted()
         || navigation_handle->IsErrorPage()) {
         return;
     }
+
+    // Transfer in-flight navigation data to the document user data.
+    NavigationManifestData *navigation_data =
+            NavigationManifestData::GetOrCreateForNavigationHandle(*navigation_handle);
+    DocumentManifestData *document_data = DocumentManifestData::GetOrCreateForCurrentDocument(
+            navigation_handle->GetRenderFrameHost());
+    document_data->has_manifest_url = navigation_data->has_manifest_url;
 
     // Wait till the user navigates to a new URL to start checking the cache
     // again. The cache may be ignored for non-reload navigations (e.g.
@@ -303,11 +356,6 @@ void FaviconDriverQt::DidFinishNavigation(content::NavigationHandle *navigation_
 
     // Get the favicon, either from history or request it from the net.
     FetchFavicon(url, navigation_handle->IsSameDocument());
-}
-
-void FaviconDriverQt::DocumentOnLoadCompletedInMainFrame(content::RenderFrameHost * /*render_frame_host*/)
-{
-    m_documentOnLoadCompleted = true;
 }
 
 void FaviconDriverQt::SetFaviconOutOfDateForPage(const GURL &url, bool force_reload)
@@ -367,6 +415,8 @@ void FaviconDriverQt::emitIconChangedIfNeeded()
     m_viewClient->iconChanged(toQt(m_latestFavicon.url));
 }
 
+NAVIGATION_HANDLE_USER_DATA_KEY_IMPL(FaviconDriverQt::NavigationManifestData);
+DOCUMENT_USER_DATA_KEY_IMPL(FaviconDriverQt::DocumentManifestData);
 WEB_CONTENTS_USER_DATA_KEY_IMPL(FaviconDriverQt);
 
 } // namespace QtWebEngineCore
