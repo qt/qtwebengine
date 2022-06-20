@@ -43,6 +43,11 @@ build_pass|!debug_and_release {
     ninjaflags = $$(NINJAFLAGS)
     isEmpty(ninjaflags):!silent: ninjaflags = "-v"
 
+    enableThreads = $$(GN_MORE_THREADS)
+    isEmpty(enableThreads):macos {
+        gn_threads = "--threads=1"
+    }
+
     build_pass:build_all: default_target.target = all
     else: default_target.target = first
     default_target.depends = runninja
@@ -54,7 +59,7 @@ build_pass|!debug_and_release {
             gn_target = "qtwebengine_target=\"$$system_path($$OUT_PWD/$$arch/$$getConfigDir()):QtPdf\""
             gn_args_per_arch = $$system_quote($$gn_args $$gn_target target_cpu=\"$$gnArch($$arch)\")
             gn_build_root = $$system_quote($$system_path($$OUT_PWD/$$arch/$$getConfigDir()))
-            gn_run = $$gn_binary gen $$gn_build_root $$gn_python --args=$$gn_args_per_arch --root=$$gn_src_root
+            gn_run = $$gn_binary gen $$gn_build_root $$gn_python $$gn_threads --args=$$gn_args_per_arch --root=$$gn_src_root
             message("Running for $$arch: $$gn_run")
             !system($$gn_run) {
                  error("GN run error for $$arch!")
@@ -68,8 +73,8 @@ build_pass|!debug_and_release {
         gn_args+= "qtwebengine_target=\"$$system_path($$OUT_PWD/$$getConfigDir()):QtPdf\""
         gn_args = $$system_quote($$gn_args)
         gn_build_root = $$system_quote($$system_path($$OUT_PWD/$$getConfigDir()))
-        gn_run = $$gn_binary gen $$gn_build_root $$gn_python --args=$$gn_args --root=$$gn_src_root
-        message("Running: $$gn_run for $$arch")
+        gn_run = $$gn_binary gen $$gn_build_root $$gn_python $$gn_threads --args=$$gn_args --root=$$gn_src_root
+        message("Running: $$gn_run")
         !system($$gn_run) {
             error("GN run error!")
         }
