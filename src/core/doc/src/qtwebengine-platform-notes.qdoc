@@ -82,6 +82,8 @@
     toolchain. This toolchain can be set up on the command line by running
     \c{vcvarsall.bat amd64_x86}.
 
+    \note It is not recommended to use tools form  \c msys2 or \c cygwin to build \QWE as it may result in build errors.
+
     \section2 Linux
 
     On Linux, Clang or GCC version 9 or later is required.
