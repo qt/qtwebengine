@@ -3,8 +3,6 @@
 
 #include "download_manager_delegate_qt.h"
 
-#include "base/files/file_util.h"
-#include "base/time/time_to_iso8601.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/save_page_type.h"
@@ -13,9 +11,7 @@
 #include "net/http/http_content_disposition.h"
 
 #include <QDir>
-#include <QFile>
 #include <QFileInfo>
-#include <QMap>
 #include <QMimeDatabase>
 #include <QStandardPaths>
 

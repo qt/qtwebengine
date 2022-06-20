@@ -7,30 +7,18 @@
 // found in the LICENSE.Chromium file.
 
 #include "devtools_manager_delegate_qt.h"
+#include "qtwebengine/grit/qt_webengine_resources.h"
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "content/browser/devtools/devtools_http_handler.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/devtools_socket_factory.h"
-#include "content/public/browser/favicon_status.h"
-#include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/socket/tcp_server_socket.h"
 #include "ui/base/resource/resource_bundle.h"
-
-#include "qtwebengine/grit/qt_webengine_resources.h"
-
-#include "type_conversion.h"
 
 using content::DevToolsAgentHost;
 
@@ -152,4 +140,4 @@ bool DevToolsManagerDelegateQt::HasBundledFrontendResources()
     return true;
 }
 
-} //namespace QtWebEngineCore
+} // namespace QtWebEngineCore

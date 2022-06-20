@@ -3,7 +3,6 @@
 #ifndef JAVASCRIPT_DIALOG_MANAGER_QT_H
 #define JAVASCRIPT_DIALOG_MANAGER_QT_H
 
-#include "base/callback.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 
 #include "web_contents_adapter_client.h"

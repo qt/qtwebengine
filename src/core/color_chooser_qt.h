@@ -7,11 +7,12 @@
 #include "content/public/browser/color_chooser.h"
 #include "type_conversion.h"
 
-#include <QColor>
 #include <QSharedPointer>
 
+QT_FORWARD_DECLARE_CLASS(QColor)
+
 namespace content {
-    class WebContents;
+class WebContents;
 }
 
 namespace QtWebEngineCore {
@@ -32,7 +33,6 @@ private:
     QSharedPointer<ColorChooserController> m_controller;
 };
 
-
-} // namespace
+} // namespace QtWebEngineCore
 
 #endif // COLOR_CHOOSER_QT_H

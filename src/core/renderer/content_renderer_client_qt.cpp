@@ -34,6 +34,7 @@
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "net/base/net_errors.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/web_url_error.h"

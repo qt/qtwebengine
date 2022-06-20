@@ -8,6 +8,8 @@
 #endif
 
 #include <QEventLoop>
+#include <QPoint>
+#include <QRect>
 #include <QSignalSpy>
 #include <QTimer>
 #include <qwebenginefindtextresult.h>

@@ -8,14 +8,17 @@
 
 #include "render_frame_observer_qt.h"
 
-#include "base/memory/ptr_util.h"
-#include "chrome/renderer/pepper/pepper_shared_memory_message_filter.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/renderer/render_frame.h"
+
+#if QT_CONFIG(webengine_pepper_plugins)
+#include "base/memory/ptr_util.h"
+#include "chrome/renderer/pepper/pepper_shared_memory_message_filter.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
 
 #include "renderer/pepper/pepper_renderer_host_factory_qt.h"
+#endif
 
 namespace QtWebEngineCore {
 

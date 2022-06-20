@@ -10,7 +10,6 @@
 
 #include "extensions/common/extensions_client.h"
 
-#include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
 #include "extensions/common/features/feature_provider.h"

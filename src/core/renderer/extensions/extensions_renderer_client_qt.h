@@ -5,7 +5,6 @@
 #define EXTENSIONSRENDERERCLIENTQT_H
 
 #include <memory>
-#include <string>
 
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -20,10 +19,7 @@ class WebURL;
 }
 
 namespace content {
-class BrowserPluginDelegate;
 class RenderFrame;
-class RenderView;
-struct WebPluginInfo;
 }
 
 namespace net {

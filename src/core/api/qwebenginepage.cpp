@@ -10,6 +10,7 @@
 #include "qwebenginefullscreenrequest.h"
 #include "qwebenginehistory.h"
 #include "qwebenginehistory_p.h"
+#include "qwebenginehttprequest.h"
 #include "qwebengineloadinginfo.h"
 #include "qwebenginenavigationrequest.h"
 #include "qwebenginenewwindowrequest.h"
@@ -43,8 +44,10 @@
 #include <QIcon>
 #include <QLoggingCategory>
 #include <QMimeData>
+#include <QRect>
 #include <QTimer>
 #include <QUrl>
+#include <QVariant>
 
 QT_BEGIN_NAMESPACE
 
@@ -1040,7 +1043,7 @@ QAction *QWebEnginePage::action(WebAction action) const
 {
     Q_D(const QWebEnginePage);
     if (action == QWebEnginePage::NoWebAction)
-        return 0;
+        return nullptr;
     if (d->actions[action])
         return d->actions[action];
 

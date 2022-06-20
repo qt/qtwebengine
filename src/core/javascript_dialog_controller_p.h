@@ -21,6 +21,7 @@
 #include "web_contents_adapter_client.h"
 
 #include <QString>
+#include <QUrl>
 
 namespace content {
 class WebContents;

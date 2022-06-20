@@ -5,18 +5,13 @@
 #define WEB_CONTENTS_DELEGATE_QT_H
 
 #include "content/browser/renderer_host/frame_tree_node.h"
-#include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-#include "base/callback.h"
+#include "web_contents_adapter_client.h"
 
-#include "color_chooser_controller.h"
-#include "find_text_helper.h"
-#include "javascript_dialog_manager_qt.h"
 #include <QtCore/qlist.h>
-#include <QWebEngineCertificateError>
 
 namespace blink {
     namespace web_pref {
@@ -25,15 +20,15 @@ namespace blink {
 }
 
 namespace content {
-    class ColorChooser;
-    class SiteInstance;
-    class JavaScriptDialogManager;
-    class WebContents;
-    struct ColorSuggestion;
+class ColorChooser;
+class JavaScriptDialogManager;
+class WebContents;
+struct MediaStreamRequest;
 }
 
 namespace QtWebEngineCore {
 
+class FindTextHelper;
 class WebContentsAdapter;
 class WebContentsAdapterClient;
 class WebEngineSettings;

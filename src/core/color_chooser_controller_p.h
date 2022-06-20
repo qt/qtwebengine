@@ -18,7 +18,7 @@
 #include <QColor>
 
 namespace content {
-    class WebContents;
+class WebContents;
 }
 
 namespace QtWebEngineCore {
@@ -31,7 +31,7 @@ public:
     QColor m_initialColor;
 };
 
-} // namespace
+} // namespace QtWebEngineCore
 
 #endif // COLOR_CHOOSER_CONTROLLER_P_H
 

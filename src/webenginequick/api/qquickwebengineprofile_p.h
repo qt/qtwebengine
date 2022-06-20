@@ -55,7 +55,6 @@ public:
     void showNotification(QSharedPointer<QtWebEngineCore::UserNotificationController> &controller) override;
 
 private:
-    friend class QQuickWebEngineView;
     QQuickWebEngineProfile *q_ptr;
     QScopedPointer<QQuickWebEngineSettings> m_settings;
     QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;

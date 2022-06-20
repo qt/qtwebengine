@@ -7,14 +7,12 @@
 
 #include "web_contents_adapter_client.h"
 
-#include "base/callback.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/singleton.h"
-#include "base/observer_list.h"
 #include "chrome/browser/tab_contents/web_contents_collection.h"
 #include "content/public/browser/media_observer.h"
-#include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/media_stream_request.h"
 
 namespace QtWebEngineCore {
 

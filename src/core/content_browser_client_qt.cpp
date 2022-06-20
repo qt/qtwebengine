@@ -49,7 +49,6 @@
 #include "url/url_util_qt.h"
 
 #include "qtwebengine/common/renderer_configuration.mojom.h"
-#include "qtwebengine/grit/qt_webengine_resources.h"
 
 #include "profile_adapter.h"
 #include "browser_main_parts_qt.h"
@@ -93,11 +92,6 @@
 #if QT_CONFIG(webengine_geolocation)
 #include "base/memory/ptr_util.h"
 #include "location_provider_qt.h"
-#endif
-
-#if QT_CONFIG(webengine_pepper_plugins)
-#include "content/public/browser/browser_ppapi_host.h"
-#include "ppapi/host/ppapi_host.h"
 #endif
 
 #if QT_CONFIG(webengine_spellchecker)
@@ -433,7 +427,6 @@ void ContentBrowserClientQt::RegisterBrowserInterfaceBindersForFrame(
         content::RenderFrameHost *render_frame_host,
         mojo::BinderMapWithContext<content::RenderFrameHost *> *map)
 {
-    Q_UNUSED(render_frame_host);
     map->Add<network_hints::mojom::NetworkHintsHandler>(base::BindRepeating(&BindNetworkHintsHandler));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     map->Add<extensions::mime_handler::MimeHandlerService>(base::BindRepeating(&BindMimeHandlerService));
@@ -450,6 +443,8 @@ void ContentBrowserClientQt::RegisterBrowserInterfaceBindersForFrame(
     extensions::ExtensionsBrowserClient::Get()->RegisterBrowserInterfaceBindersForFrame(map,
                                                                                         render_frame_host,
                                                                                         extension);
+#else
+    Q_UNUSED(render_frame_host);
 #endif
 }
 

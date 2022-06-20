@@ -7,13 +7,11 @@
 
 #include "media_capture_devices_dispatcher.h"
 
-#include "javascript_dialog_manager_qt.h"
 #include "type_conversion.h"
 #include "web_contents_delegate_qt.h"
 #include "web_contents_view_qt.h"
 #include "web_engine_settings.h"
 
-#include "base/strings/utf_string_conversions.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
@@ -23,14 +21,11 @@
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager_base.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if QT_CONFIG(webengine_webrtc)
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #endif
-
-#include <QtCore/qcoreapplication.h>
 
 #if defined(WEBRTC_USE_X11)
 #include <dlfcn.h>
@@ -54,7 +49,7 @@ const blink::MediaStreamDevice *findDeviceWithId(const blink::MediaStreamDevices
             return &(*iter);
         }
     }
-    return 0;
+    return nullptr;
 }
 
 // Based on chrome/browser/media/webrtc/desktop_capture_devices_util.cc:

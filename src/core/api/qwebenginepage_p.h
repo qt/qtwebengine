@@ -23,6 +23,7 @@
 #include <QtCore/qcompilerdetection.h>
 #include <QtCore/QPointer>
 #include <QtCore/QTimer>
+#include <QtGui/QColor>
 
 namespace QtWebEngineCore {
 class AutofillPopupController;

@@ -4,7 +4,8 @@
 #ifndef UI_DELEGATES_MANAGER_H
 #define UI_DELEGATES_MANAGER_H
 
-#include <QtCore/qcoreapplication.h>
+#include <QtCore/qcoreapplication.h> // Q_DECLARE_TR_FUNCTIONS
+#include <QtCore/qobject.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qsharedpointer.h>
@@ -34,6 +35,7 @@
     QQmlComponent *COMPONENT##Component
 
 QT_BEGIN_NAMESPACE
+class QEvent;
 class QQmlComponent;
 class QQmlContext;
 class QQmlEngine;
