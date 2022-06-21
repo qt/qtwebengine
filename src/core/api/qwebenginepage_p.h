@@ -68,7 +68,6 @@ class RenderWidgetHostViewQtDelegateItem;
 class TouchHandleDrawableDelegate;
 class TouchSelectionMenuController;
 class WebContentsAdapter;
-class WidgetDelegate;
 }
 
 QT_BEGIN_NAMESPACE
@@ -237,8 +236,7 @@ public:
     bool defaultAudioMuted;
     qreal defaultZoomFactor;
     QTimer wasShownTimer;
-    QtWebEngineCore::WidgetDelegate *widget = nullptr;
-    QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *item = nullptr;
+    QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *delegateItem = nullptr;
 #if QT_CONFIG(webengine_printing_and_pdf)
     QPrinter *currentPrinter = nullptr;
 #endif
