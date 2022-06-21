@@ -46,9 +46,7 @@
 #include <QtQuick/QQuickItem>
 
 QT_BEGIN_NAMESPACE
-class QQuickWebEngineView;
 class QQuickWebEngineViewPrivate;
-class QWebEnginePage;
 class QWebEngineViewPrivate;
 QT_END_NAMESPACE
 
@@ -151,8 +149,6 @@ private:
     Qt::InputMethodHints m_inputMethodHints = {};
     QList<QMetaObject::Connection> m_windowConnections;
     WebContentsAdapterClient *m_adapterClient = nullptr;
-    QWebEnginePage *m_page = nullptr;
-    QQuickWebEngineView *m_view = nullptr;
     WidgetDelegate *m_widgetDelegate = nullptr;
 };
 

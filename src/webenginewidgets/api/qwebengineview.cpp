@@ -142,15 +142,15 @@ public:
 
     void Bind(WebContentsAdapterClient *client) override
     {
-        BindPage(static_cast<QWebEnginePagePrivate *>(client)->q_func());
+        BindPage(static_cast<QWebEnginePagePrivate *>(client));
     }
 
-    void BindPage(QWebEnginePage *page)
+    void BindPage(QWebEnginePagePrivate *page)
     {
         if (m_pageDestroyedConnection)
             QObject::disconnect(m_pageDestroyedConnection);
         QWebEngineViewPrivate::bindPageAndWidget(page, this);
-        m_pageDestroyedConnection = QObject::connect(page, &QObject::destroyed, this, &WebEngineQuickWidget::UnbindPage);
+        m_pageDestroyedConnection = QObject::connect(page->q_ptr, &QObject::destroyed, this, &WebEngineQuickWidget::UnbindPage);
     }
 
     void UnbindPage()
@@ -723,7 +723,7 @@ void QWebEngineViewPrivate::bindPageAndView(QWebEnginePage *page, QWebEngineView
             view->d_func()->pageChanged(nullptr, page);
         if (!widget && page && page->d_func()->item) {
             widget = new QtWebEngineCore::WebEngineQuickWidget(page->d_func()->item, nullptr);
-            widget->BindPage(page);
+            widget->BindPage(page->d_func());
         }
         if (oldWidget != widget)
             view->d_func()->widgetChanged(oldWidget, widget);
@@ -732,39 +732,35 @@ void QWebEngineViewPrivate::bindPageAndView(QWebEnginePage *page, QWebEngineView
         delete oldPage;
 }
 
-void QWebEngineViewPrivate::bindPageAndWidget(
-        QWebEnginePage *page, QtWebEngineCore::WebEngineQuickWidget *widget)
+void QWebEngineViewPrivate::bindPageAndWidget(QWebEnginePagePrivate *pagePrivate,
+                                              QtWebEngineCore::WebEngineQuickWidget *widget)
 {
-    auto oldPage = (widget && widget->m_contentItem) ? widget->m_contentItem->m_page : nullptr;
-    auto oldWidget = page ? static_cast<QtWebEngineCore::WebEngineQuickWidget *>(page->d_func()->widget) : nullptr;
+    auto oldAdapterClient = (widget && widget->m_contentItem) ? widget->m_contentItem->m_adapterClient : nullptr;
+    auto oldWidget = pagePrivate ? static_cast<QtWebEngineCore::WebEngineQuickWidget *>(pagePrivate->widget) : nullptr;
+
+    auto *oldPagePrivate = static_cast<QWebEnginePagePrivate *>(oldAdapterClient);
 
     // Change pointers first.
 
-    if (widget && oldPage != page) {
-        if (oldPage && oldPage->d_func()) {
-            oldPage->d_func()->widget = nullptr;
-            oldPage->d_func()->item = nullptr;
-        }
-        if (widget->m_contentItem)
-            widget->m_contentItem->m_page = page;
+    if (oldPagePrivate && oldPagePrivate != pagePrivate) {
+        oldPagePrivate->widget = nullptr;
+        oldPagePrivate->item = nullptr;
     }
 
-    if (page && oldWidget != widget) {
-        if (oldWidget && oldWidget->m_contentItem)
-            oldWidget->m_contentItem->m_page = nullptr;
-        page->d_func()->widget = widget;
-        page->d_func()->item = widget->m_contentItem;
+    if (pagePrivate && oldWidget != widget) {
+        pagePrivate->widget = widget;
+        pagePrivate->item = widget->m_contentItem;
     }
 
     // Then notify.
 
-    if (widget && oldPage != page && oldPage && oldPage->d_func()) {
-        if (auto oldView = oldPage->d_func()->view)
+    if (oldPagePrivate && oldPagePrivate != pagePrivate) {
+        if (auto oldView = oldPagePrivate->view)
             static_cast<QWebEngineViewPrivate *>(oldView)->widgetChanged(widget, nullptr);
     }
 
-    if (page && oldWidget != widget) {
-        if (auto view = page->d_func()->view)
+    if (pagePrivate && oldWidget != widget) {
+        if (auto view = pagePrivate->view)
             static_cast<QWebEngineViewPrivate *>(view)->widgetChanged(oldWidget, widget);
     }
 }

@@ -178,9 +178,9 @@ public:
     void ensureContentsAdapter();
     void setFullScreenMode(bool);
 
-    static void bindViewAndWidget(QQuickWebEngineView *view, QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *widget);
-    void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *oldWidget,
-                       QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *newWidget);
+    static void bindViewAndDelegateItem(QQuickWebEngineViewPrivate *viewPrivate, QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *delegateItem);
+    void delegateItemChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *oldDelegateItem,
+                             QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *newDelegateItem);
 
     QQuickWebEngineProfile *m_profile;
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter;
@@ -204,7 +204,7 @@ public:
     bool m_defaultAudioMuted;
     bool m_isBeingAdopted;
     mutable QQuickWebEngineAction *actions[QQuickWebEngineView::WebActionCount];
-    QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *widget = nullptr;
+    QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *delegateItem = nullptr;
 
     bool profileInitialized() const;
     QQuickWebEngineScriptCollection *getUserScripts();
