@@ -151,13 +151,13 @@ bool RenderWidgetHostViewQtDelegateQuickWindow::ActiveFocusOnPress()
 
 void RenderWidgetHostViewQtDelegateQuickWindow::Bind(QtWebEngineCore::WebContentsAdapterClient *client)
 {
-    QQuickWebEngineViewPrivate::bindViewAndWidget(
-            static_cast<QQuickWebEngineViewPrivate *>(client)->q_func(), m_realDelegate.data());
+    QQuickWebEngineViewPrivate::bindViewAndDelegateItem(
+            static_cast<QQuickWebEngineViewPrivate *>(client), m_realDelegate.data());
 }
 
 void RenderWidgetHostViewQtDelegateQuickWindow::Unbind()
 {
-    QQuickWebEngineViewPrivate::bindViewAndWidget(nullptr, m_realDelegate.data());
+    QQuickWebEngineViewPrivate::bindViewAndDelegateItem(nullptr, m_realDelegate.data());
 }
 
 void RenderWidgetHostViewQtDelegateQuickWindow::Destroy()

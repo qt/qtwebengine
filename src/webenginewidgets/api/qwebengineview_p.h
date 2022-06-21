@@ -111,7 +111,7 @@ public:
     QWebEngineViewPrivate();
     virtual ~QWebEngineViewPrivate();
     static void bindPageAndView(QWebEnginePage *page, QWebEngineView *view);
-    static void bindPageAndWidget(QWebEnginePage *page,
+    static void bindPageAndWidget(QWebEnginePagePrivate *pagePrivate,
                                   QtWebEngineCore::WebEngineQuickWidget *widget);
     QIcon webActionIcon(QWebEnginePage::WebAction action);
     void unhandledKeyEvent(QKeyEvent *event) override;

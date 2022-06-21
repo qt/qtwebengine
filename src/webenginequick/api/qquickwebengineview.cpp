@@ -164,13 +164,13 @@ public:
 
     void Bind(WebContentsAdapterClient *client) override
     {
-        QQuickWebEngineViewPrivate::bindViewAndWidget(
-                static_cast<QQuickWebEngineViewPrivate *>(client)->q_func(), m_contentItem);
+        QQuickWebEngineViewPrivate::bindViewAndDelegateItem(
+                static_cast<QQuickWebEngineViewPrivate *>(client), m_contentItem);
     }
 
     void Unbind() override
     {
-        QQuickWebEngineViewPrivate::bindViewAndWidget(nullptr, m_contentItem);
+        QQuickWebEngineViewPrivate::bindViewAndDelegateItem(nullptr, m_contentItem);
     }
 
     void Destroy() override
@@ -234,9 +234,7 @@ QQuickWebEngineViewPrivate::~QQuickWebEngineViewPrivate()
     m_profile->d_ptr->removeWebContentsAdapterClient(this);
     if (m_faviconProvider)
         m_faviconProvider->detach(q_ptr);
-    // q_ptr->d_ptr might be null due to destroy()
-    if (q_ptr->d_ptr)
-        bindViewAndWidget(q_ptr, nullptr);
+    bindViewAndDelegateItem(this, nullptr);
 }
 
 void QQuickWebEngineViewPrivate::initializeProfile()
@@ -269,7 +267,7 @@ void QQuickWebEngineViewPrivate::releaseProfile()
     // The profile for this web contents is about to be
     // garbage collected, delete WebContents first and
     // let the QQuickWebEngineView be collected later by gc.
-    bindViewAndWidget(q_ptr, nullptr);
+    bindViewAndDelegateItem(this, nullptr);
     q_ptr->d_ptr.reset();
 }
 
@@ -909,59 +907,57 @@ void QQuickWebEngineViewPrivate::setFullScreenMode(bool fullscreen)
     }
 }
 
-void QQuickWebEngineViewPrivate::bindViewAndWidget(QQuickWebEngineView *view,
-                                                   RenderWidgetHostViewQtDelegateItem *widget)
+// static
+void QQuickWebEngineViewPrivate::bindViewAndDelegateItem(QQuickWebEngineViewPrivate *viewPrivate,
+                                                         RenderWidgetHostViewQtDelegateItem *delegateItem)
 {
-    auto oldWidget = view ? view->d_func()->widget : nullptr;
-    auto oldView = widget ? widget->m_view : nullptr;
+    auto oldDelegateItem = viewPrivate ? viewPrivate->delegateItem : nullptr;
+    auto oldAdapterClient = delegateItem ? delegateItem->m_adapterClient : nullptr;
+
+    auto *oldViewPrivate = static_cast<QQuickWebEngineViewPrivate *>(oldAdapterClient);
 
     // Change pointers first.
 
-    if (widget && oldView != view) {
-        if (oldView)
-            oldView->d_func()->widget = nullptr;
-        widget->m_view = view;
-    }
+    if (oldViewPrivate && oldViewPrivate != viewPrivate)
+        oldViewPrivate->delegateItem = nullptr;
 
-    if (view && oldWidget != widget) {
-        if (oldWidget)
-            oldWidget->m_view = nullptr;
-        view->d_func()->widget = widget;
-    }
+    if (viewPrivate && oldDelegateItem != delegateItem)
+        viewPrivate->delegateItem = delegateItem;
 
     // Then notify.
 
-    if (widget && oldView != view && oldView)
-        oldView->d_func()->widgetChanged(widget, nullptr);
+    if (oldViewPrivate && oldViewPrivate != viewPrivate)
+        oldViewPrivate->delegateItemChanged(delegateItem, nullptr);
 
-    if (view && oldWidget != widget)
-        view->d_func()->widgetChanged(oldWidget, widget);
+    if (viewPrivate && oldDelegateItem != delegateItem)
+        viewPrivate->delegateItemChanged(oldDelegateItem, delegateItem);
 }
 
-void QQuickWebEngineViewPrivate::widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *oldWidget,
-                                               QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *newWidget)
+void QQuickWebEngineViewPrivate::delegateItemChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *oldDelegateItem,
+                                                     QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *newDelegateItem)
 {
     Q_Q(QQuickWebEngineView);
 
-    if (oldWidget) {
-        oldWidget->setParentItem(nullptr);
+    if (oldDelegateItem) {
+        oldDelegateItem->setParentItem(nullptr);
 #if QT_CONFIG(accessibility)
-        if (!QtWebEngineCore::closingDown())
-            QAccessible::deleteAccessibleInterface(
-                    QAccessible::uniqueId(QAccessible::queryAccessibleInterface(oldWidget)));
+        if (!QtWebEngineCore::closingDown()) {
+            if (auto iface = QAccessible::queryAccessibleInterface(oldDelegateItem))
+                QAccessible::deleteAccessibleInterface(QAccessible::uniqueId(iface));
+        }
 #endif
     }
 
-    if (newWidget) {
+    if (newDelegateItem) {
         Q_ASSERT(!QtWebEngineCore::closingDown());
 #if QT_CONFIG(accessibility)
-        QAccessible::registerAccessibleInterface(new QtWebEngineCore::RenderWidgetHostViewQtDelegateQuickAccessible(newWidget, q));
+        QAccessible::registerAccessibleInterface(new QtWebEngineCore::RenderWidgetHostViewQtDelegateQuickAccessible(newDelegateItem, q));
 #endif
-        newWidget->setParentItem(q);
-        newWidget->setSize(q->boundingRect().size());
+        newDelegateItem->setParentItem(q);
+        newDelegateItem->setSize(q->boundingRect().size());
         // Focus on creation if the view accepts it
         if (q->activeFocusOnPress())
-            newWidget->setFocus(true);
+            newDelegateItem->setFocus(true);
     }
 }
 
@@ -1696,8 +1692,8 @@ void QQuickWebEngineView::geometryChange(const QRectF &newGeometry, const QRectF
 {
     QQuickItem::geometryChange(newGeometry, oldGeometry);
     Q_D(QQuickWebEngineView);
-    if (d->widget)
-        d->widget->setSize(newGeometry.size());
+    if (d->delegateItem)
+        d->delegateItem->setSize(newGeometry.size());
 }
 
 void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &value)
