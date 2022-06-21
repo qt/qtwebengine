@@ -47,19 +47,20 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
 
-#define FOR_EACH_COMPONENT_TYPE(F, SEPARATOR)                                                      \
-    F(Menu, menu) SEPARATOR F(MenuItem, menuItem)                                                  \
-    SEPARATOR                                                                                      \
-    F(MenuSeparator, menuSeparator) SEPARATOR F(AlertDialog, alertDialog)                          \
-    SEPARATOR                                                                                      \
-    F(ColorDialog, colorDialog) SEPARATOR F(ConfirmDialog, confirmDialog)                          \
-    SEPARATOR                                                                                      \
-    F(PromptDialog, promptDialog) SEPARATOR F(FilePicker, filePicker)                              \
-    SEPARATOR                                                                                      \
-    F(AuthenticationDialog, authenticationDialog) SEPARATOR F(ToolTip, toolTip)                    \
-    SEPARATOR                                                                                      \
-    F(TouchHandle, touchHandle) SEPARATOR F(TouchSelectionMenu, touchSelectionMenu)                \
-    SEPARATOR                                                                                      \
+// clang-format off
+#define FOR_EACH_COMPONENT_TYPE(F, SEPARATOR) \
+    F(Menu, menu) SEPARATOR \
+    F(MenuItem, menuItem) SEPARATOR \
+    F(MenuSeparator, menuSeparator) SEPARATOR \
+    F(AlertDialog, alertDialog) SEPARATOR \
+    F(ColorDialog, colorDialog) SEPARATOR \
+    F(ConfirmDialog, confirmDialog) SEPARATOR \
+    F(PromptDialog, promptDialog) SEPARATOR \
+    F(FilePicker, filePicker) SEPARATOR \
+    F(AuthenticationDialog, authenticationDialog) SEPARATOR \
+    F(ToolTip, toolTip) SEPARATOR \
+    F(TouchHandle, touchHandle) SEPARATOR \
+    F(TouchSelectionMenu, touchSelectionMenu) SEPARATOR \
     F(AutofillPopup, autofillPopup) SEPARATOR
 
 #define COMMA_SEPARATOR ,
@@ -68,6 +69,7 @@
     TYPE
 #define MEMBER_DECLARATION(TYPE, COMPONENT) \
     QQmlComponent *COMPONENT##Component
+// clang-format on
 
 QT_BEGIN_NAMESPACE
 class QQmlComponent;
