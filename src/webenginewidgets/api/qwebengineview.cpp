@@ -142,23 +142,11 @@ public:
 
     void Bind(WebContentsAdapterClient *client) override
     {
-        BindPage(static_cast<QWebEnginePagePrivate *>(client));
-    }
-
-    void BindPage(QWebEnginePagePrivate *page)
-    {
+        QWebEnginePagePrivate *page = static_cast<QWebEnginePagePrivate *>(client);
         if (m_pageDestroyedConnection)
             QObject::disconnect(m_pageDestroyedConnection);
         QWebEngineViewPrivate::bindPageAndWidget(page, this);
-        m_pageDestroyedConnection = QObject::connect(page->q_ptr, &QObject::destroyed, this, &WebEngineQuickWidget::UnbindPage);
-    }
-
-    void UnbindPage()
-    {
-        Unbind();
-        // In case we are not bound to a WebContentsAdapterClient that would destroy us:
-        if (!parent())
-            Destroy();
+        m_pageDestroyedConnection = QObject::connect(page->q_ptr, &QObject::destroyed, this, &WebEngineQuickWidget::Unbind);
     }
 
     void Unbind() override
@@ -672,6 +660,7 @@ QWebEngineViewPrivate::QWebEngineViewPrivate()
 
 QWebEngineViewPrivate::~QWebEngineViewPrivate() = default;
 
+// static
 void QWebEngineViewPrivate::bindPageAndView(QWebEnginePage *page, QWebEngineView *view)
 {
     QWebEngineViewPrivate *v =
@@ -705,8 +694,10 @@ void QWebEngineViewPrivate::bindPageAndView(QWebEnginePage *page, QWebEngineView
 
     // Then notify.
 
-    auto widget = page ? static_cast<QtWebEngineCore::WebEngineQuickWidget *>(page->d_func()->widget) : nullptr;
-    auto oldWidget = (oldPage && oldPage->d_func()) ? static_cast<QtWebEngineCore::WebEngineQuickWidget *>(oldPage->d_func()->widget) : nullptr;
+    auto item = page ? page->d_func()->delegateItem : nullptr;
+    auto oldItem = (oldPage && oldPage->d_func()) ? oldPage->d_func()->delegateItem : nullptr;
+    auto widget = item ? static_cast<QtWebEngineCore::WebEngineQuickWidget *>(item->m_widgetDelegate) : nullptr;
+    auto oldWidget = oldItem ? static_cast<QtWebEngineCore::WebEngineQuickWidget *>(oldItem->m_widgetDelegate) : nullptr;
 
     // New page/widget moving away from oldView
     if (page && oldView != view && oldView) {
@@ -721,9 +712,9 @@ void QWebEngineViewPrivate::bindPageAndView(QWebEnginePage *page, QWebEngineView
             view->d_func()->pageChanged(oldPage, page);
         else
             view->d_func()->pageChanged(nullptr, page);
-        if (!widget && page && page->d_func()->item) {
-            widget = new QtWebEngineCore::WebEngineQuickWidget(page->d_func()->item, nullptr);
-            widget->BindPage(page->d_func());
+        if (!widget && item) {
+            widget = new QtWebEngineCore::WebEngineQuickWidget(item, nullptr);
+            item->setWidgetDelegate(widget);
         }
         if (oldWidget != widget)
             view->d_func()->widgetChanged(oldWidget, widget);
@@ -732,25 +723,22 @@ void QWebEngineViewPrivate::bindPageAndView(QWebEnginePage *page, QWebEngineView
         delete oldPage;
 }
 
+// static
 void QWebEngineViewPrivate::bindPageAndWidget(QWebEnginePagePrivate *pagePrivate,
                                               QtWebEngineCore::WebEngineQuickWidget *widget)
 {
-    auto oldAdapterClient = (widget && widget->m_contentItem) ? widget->m_contentItem->m_adapterClient : nullptr;
-    auto oldWidget = pagePrivate ? static_cast<QtWebEngineCore::WebEngineQuickWidget *>(pagePrivate->widget) : nullptr;
-
+    auto *oldAdapterClient = (widget && widget->m_contentItem) ? widget->m_contentItem->m_adapterClient : nullptr;
     auto *oldPagePrivate = static_cast<QWebEnginePagePrivate *>(oldAdapterClient);
+    auto *oldItem = pagePrivate ? pagePrivate->delegateItem : nullptr;
+    auto *oldWidget = oldItem ? static_cast<QtWebEngineCore::WebEngineQuickWidget *>(oldItem->m_widgetDelegate) : nullptr;
 
     // Change pointers first.
 
-    if (oldPagePrivate && oldPagePrivate != pagePrivate) {
-        oldPagePrivate->widget = nullptr;
-        oldPagePrivate->item = nullptr;
-    }
+    if (oldPagePrivate && oldPagePrivate != pagePrivate)
+        oldPagePrivate->delegateItem = nullptr;
 
-    if (pagePrivate && oldWidget != widget) {
-        pagePrivate->widget = widget;
-        pagePrivate->item = widget->m_contentItem;
-    }
+    if (pagePrivate && oldWidget != widget)
+        pagePrivate->delegateItem = widget->m_contentItem;
 
     // Then notify.
 

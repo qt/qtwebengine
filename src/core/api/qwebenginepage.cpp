@@ -159,10 +159,10 @@ QWebEnginePagePrivate::~QWebEnginePagePrivate()
 
 RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client)
 {
-    item = view
-         ? (QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *)view->CreateRenderWidgetHostViewQtDelegate(client)
-         : new QtWebEngineCore::RenderWidgetHostViewQtDelegateItem(client, false);
-    return item;
+    if (view)
+        return view->CreateRenderWidgetHostViewQtDelegate(client);
+    delegateItem = new QtWebEngineCore::RenderWidgetHostViewQtDelegateItem(client, false);
+    return delegateItem;
 }
 
 RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client)
