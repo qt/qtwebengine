@@ -93,11 +93,14 @@ const char *defaultPropertyName(QObject *obj)
 #define COMPONENT_MEMBER_INIT(TYPE, COMPONENT) \
     , COMPONENT##Component(0)
 
+// clang-format off
 UIDelegatesManager::UIDelegatesManager(QQuickWebEngineView *view)
     : m_view(view)
     , m_toolTip(nullptr)
     , m_touchSelectionMenu(nullptr)
-    , m_autofillPopup(nullptr) FOR_EACH_COMPONENT_TYPE(COMPONENT_MEMBER_INIT, NO_SEPARATOR)
+    , m_autofillPopup(nullptr)
+    FOR_EACH_COMPONENT_TYPE(COMPONENT_MEMBER_INIT, NO_SEPARATOR)
+// clang-format on
 {
 }
 
