@@ -24,6 +24,22 @@ set_tests_properties(tst_proxypac_file PROPERTIES
     ENVIRONMENT QTWEBENGINE_CHROMIUM_FLAGS=${fileEnvArg}
 )
 
+if(NOT (LINUX AND CMAKE_CROSSCOMPILING))
+    set(fileEnvArg "--single-process ${fileEnvArg}")
+
+    qt_internal_add_test(tst_proxypac_single_process
+        SOURCES
+            tst_proxypac.cpp
+        LIBRARIES
+            Qt::WebEngineCore
+            Test::HttpServer
+    )
+
+    set_tests_properties(tst_proxypac_single_process PROPERTIES
+        ENVIRONMENT QTWEBENGINE_CHROMIUM_FLAGS=${fileEnvArg}
+    )
+endif()
+
 qt_internal_add_test(tst_proxypac_qrc
     SOURCES
         tst_proxypac.cpp
@@ -43,8 +59,6 @@ set_tests_properties(tst_proxypac_qrc PROPERTIES
 )
 
 qt_internal_add_resource(tst_proxypac_qrc "proxypac"
-    PREFIX
-        "/"
-    FILES
-        "proxy.pac"
+    PREFIX "/"
+    FILES "proxy.pac"
 )
