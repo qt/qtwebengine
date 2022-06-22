@@ -8,7 +8,6 @@
 #include <QWebEnginePage>
 #include <QNetworkProxy>
 
-
 class tst_ProxyPac : public QObject {
     Q_OBJECT
 public:
@@ -39,11 +38,20 @@ void tst_ProxyPac::proxypac()
 
     QWebEngineProfile profile;
     QWebEnginePage page(&profile);
+
+    const bool v8_proxy_resolver_enabled = !fromEnv.contains("--single-process");
     page.load(QUrl("http://test.proxy1.com"));
-    QTRY_COMPARE(proxySpy1.count() >= 1, true);
+    QTRY_COMPARE(proxySpy1.count() >= 1, v8_proxy_resolver_enabled);
     QVERIFY(proxySpy2.count() == 0);
     page.load(QUrl("http://test.proxy2.com"));
-    QTRY_COMPARE(proxySpy2.count() >= 1 , true);
+    QTRY_COMPARE(proxySpy2.count() >= 1, v8_proxy_resolver_enabled);
+
+    // check for crash
+    QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
+    page.load(QUrl("https://contribute.qt-project.org"));
+
+    QTRY_VERIFY_WITH_TIMEOUT(!spyFinished.isEmpty(), 100000);
+
 }
 
 #include "tst_proxypac.moc"
