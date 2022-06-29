@@ -8,11 +8,6 @@
     \ingroup qtwebengine-modules
     \ingroup qmlmodules
 
-    The QML types can be imported into your application using the following import statements in
-    your .qml file:
-
-    \snippet qtwebengine_build_snippet.qdoc 1
-
     To link against the module using build with qmake,
     add the following QT variable to your qmake .pro file:
 
