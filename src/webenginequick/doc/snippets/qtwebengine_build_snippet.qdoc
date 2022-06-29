@@ -5,11 +5,6 @@
 QT += webenginequick
 //! [0]
 
-
-//! [1]
-#include <QtWebEngineQuick>
-//! [1]
-
 //! [2]
 find_package(Qt6 REQUIRED COMPONENTS WebEngineQuick)
 target_link_libraries(target PRIVATE Qt::WebEngineQuick)

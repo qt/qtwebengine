@@ -10,11 +10,6 @@
 
     \section1 Getting Started
 
-    To include the definitions of the module's classes, use the
-    following directive:
-
-    \snippet qtwebenginewidgets_build_snippet.qdoc 1
-
     To link against the module, add this line to your qmake project file:
 
     \snippet qtwebenginewidgets_build_snippet.qdoc 0
