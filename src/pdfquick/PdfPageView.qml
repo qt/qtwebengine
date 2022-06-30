@@ -37,8 +37,6 @@ Rectangle {
 
         This property holds the \l {QtQuick::Image::status}{rendering status} of
         the \l {currentPage}{current page}.
-
-        \sa PdfPageImage::status
     */
     property alias status: image.status
 
@@ -177,8 +175,6 @@ Rectangle {
 
         This property holds the ratio of pixels to points. The default is \c 1,
         meaning one point (1/72 of an inch) equals 1 logical pixel.
-
-        \sa PdfPageImage::status
     */
     property real renderScale: 1
 
@@ -187,7 +183,7 @@ Rectangle {
 
         This property holds the scaled width and height of the full-frame image.
 
-        \sa PdfPageImage::sourceSize
+        \sa {QtQuick::Image::sourceSize}{Image.sourceSize}
     */
     property alias sourceSize: image.sourceSize
 
@@ -224,8 +220,8 @@ Rectangle {
 
         Sets \l renderScale such that the whole first page will fit into a viewport
         with the given \a width and \a height. The resulting \l renderScale depends
-        on \l pageRotation: the page will fit into the viewport at a larger size if
-        it is first rotated to have a matching aspect ratio.
+        on page rotation: the page will fit into the viewport at a larger size if it
+        is first rotated to have a matching aspect ratio.
     */
     function scaleToPage(width, height) {
         const windowAspect = width / height
@@ -269,8 +265,8 @@ Rectangle {
         \qmlproperty string PdfPageView::searchString
 
         This property holds the search string that the user may choose to search
-        for. It is typically used in a binding to the
-        \l {QtQuick.Controls::TextField::text}{text} property of a TextField.
+        for. It is typically used in a binding to the \c text property of a
+        TextField.
 
         \sa searchModel
     */
