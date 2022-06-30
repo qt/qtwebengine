@@ -3,6 +3,7 @@
 
 /*!
     \example pdfviewer
+    \meta installpath pdfwidgets
     \ingroup qtpdf-examples
 
     \title PDF Viewer Example

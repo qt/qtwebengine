@@ -3,6 +3,7 @@
 
 /*!
     \example multipage
+    \meta installpath pdf
     \ingroup qtpdf-examples
 
     \title PDF Multipage Viewer Example
