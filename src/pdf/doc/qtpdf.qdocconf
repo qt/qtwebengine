@@ -29,6 +29,8 @@ qhp.QtPdf.subprojects.examples.indexTitle = Qt PDF Examples
 qhp.QtPdf.subprojects.examples.selectors = doc:example
 qhp.QtPdf.subprojects.examples.sortPages = true
 
+manifestmeta.highlighted.names += "QtPdf/PDF Multipage Viewer Example"
+
 depends += qtcore \
            qtwidgets \
            qtgui \
