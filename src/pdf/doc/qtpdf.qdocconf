@@ -39,7 +39,8 @@ depends += qtcore \
            qtdesigner \
            qtquick \
            qtquickcontrols \
-           qtcmake
+           qtcmake \
+           qtsvg
 
 headerdirs  += ../ \
                ../../pdfwidgets

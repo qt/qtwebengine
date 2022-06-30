@@ -13,7 +13,7 @@ Q_LOGGING_CATEGORY(qLcImg, "qt.pdf.image")
 /*!
     \qmltype PdfPageImage
 //!    \instantiates QQuickPdfPageImage
-    \inqmlmodule QtPdf
+    \inqmlmodule QtQuick.Pdf
     \ingroup pdf
     \inherits Image
     \brief Displays one page from a PDF document.

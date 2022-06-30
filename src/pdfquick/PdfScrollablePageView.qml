@@ -39,8 +39,6 @@ Flickable {
 
         This property holds the \l {QtQuick::Image::status}{rendering status} of
         the \l {currentPage}{current page}.
-
-        \sa PdfPageImage::status
     */
     property alias status: image.status
 
@@ -173,8 +171,6 @@ Flickable {
 
         This property holds the ratio of pixels to points. The default is \c 1,
         meaning one point (1/72 of an inch) equals 1 logical pixel.
-
-        \sa PdfPageImage::status
     */
     property real renderScale: 1
 
@@ -185,8 +181,6 @@ Flickable {
 
         The default value is \c 0 degrees (that is, no rotation relative to the
         orientation of the pages as stored in the PDF file).
-
-        \sa PdfPageImage::rotation
     */
     property real pageRotation: 0
 
@@ -195,7 +189,7 @@ Flickable {
 
         This property holds the scaled width and height of the full-frame image.
 
-        \sa PdfPageImage::sourceSize
+        \sa {QtQuick::Image::sourceSize}{Image.sourceSize}
     */
     property alias sourceSize: image.sourceSize
 
@@ -259,8 +253,8 @@ Flickable {
         \qmlproperty string PdfScrollablePageView::searchString
 
         This property holds the search string that the user may choose to search
-        for. It is typically used in a binding to the
-        \l {QtQuick.Controls::TextField::text}{text} property of a TextField.
+        for. It is typically used in a binding to the \c text property of a
+        TextField.
 
         \sa searchModel
     */
