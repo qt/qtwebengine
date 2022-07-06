@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 cmake_minimum_required(VERSION 3.19)
 find_package(Ninja 1.7.2 REQUIRED)
 find_package(Nodejs 12 REQUIRED)
