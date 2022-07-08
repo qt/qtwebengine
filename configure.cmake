@@ -564,8 +564,8 @@ if(WIN32)
     message("-- Windows 10 SDK version: ${windowsSdkVersion}")
     add_check_for_support(
         MODULES QtWebEngine QtPdf
-        CONDITION sdkMinor GREATER_EQUAL 19041
-        MESSAGE "Build requires Windows 10 SDK at least version 10.0.19041.0"
+        CONDITION sdkMinor GREATER_EQUAL 20348
+        MESSAGE "Build requires Windows 10 SDK at least version 10.0.20348.0"
     )
 endif()
 
