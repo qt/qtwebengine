@@ -192,7 +192,10 @@ public:
     bool HasErrorPage(int http_status_code, content::WebContents *contents) override;
     bool HasCustomSchemeHandler(content::BrowserContext *browser_context,
                                 const std::string &scheme) override;
-
+    std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
+    WillCreateURLLoaderRequestInterceptors(content::NavigationUIData *navigation_ui_data,
+                                           int frame_tree_node_id,
+                                           const scoped_refptr<network::SharedURLLoaderFactory> &network_loader_factory) override;
     bool WillCreateURLLoaderFactory(content::BrowserContext *browser_context,
                                     content::RenderFrameHost *frame,
                                     int render_process_id,

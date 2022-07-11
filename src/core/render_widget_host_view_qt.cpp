@@ -234,7 +234,7 @@ void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterC
                                                             m_adapterClient = nullptr; });
 }
 
-void RenderWidgetHostViewQt::setGuest(content::RenderWidgetHostImpl *rwh)
+void RenderWidgetHostViewQt::addGuest(content::RenderWidgetHost *rwh)
 {
     rwh->AddInputEventObserver(m_guestInputEventObserver.get());
 }
