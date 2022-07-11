@@ -45,6 +45,8 @@
 #include "ui/base/webui/jstemplate_builder.h"
 
 #if QT_CONFIG(webengine_printing_and_pdf)
+#include "components/pdf/renderer/internal_plugin_renderer_helpers.h"
+#include "components/pdf/renderer/pdf_internal_plugin_delegate.h"
 #include "renderer/print_web_view_helper_delegate_qt.h"
 #endif
 
@@ -58,6 +60,7 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "common/extensions/extensions_client_qt.h"
+#include "extensions/common/constants.h"
 #include "extensions/extensions_renderer_client_qt.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_manager.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -309,6 +312,66 @@ std::unique_ptr<blink::WebPrescientNetworking> ContentRendererClientQt::CreatePr
     return std::make_unique<network_hints::WebPrescientNetworkingImpl>(render_frame);
 }
 
+namespace {
+bool IsPdfExtensionOrigin(const url::Origin &origin)
+{
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    return origin.scheme() == extensions::kExtensionScheme &&
+           origin.host() == extension_misc::kPdfExtensionId;
+#else
+    return false;
+#endif
+}
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+void AppendParams(const std::vector<content::WebPluginMimeType::Param> &additional_params,
+                  blink::WebVector<blink::WebString> *existing_names,
+                  blink::WebVector<blink::WebString> *existing_values)
+{
+    DCHECK(existing_names->size() == existing_values->size());
+    size_t existing_size = existing_names->size();
+    size_t total_size = existing_size + additional_params.size();
+
+    blink::WebVector<blink::WebString> names(total_size);
+    blink::WebVector<blink::WebString> values(total_size);
+
+    for (size_t i = 0; i < existing_size; ++i) {
+        names[i] = (*existing_names)[i];
+        values[i] = (*existing_values)[i];
+    }
+
+    for (size_t i = 0; i < additional_params.size(); ++i) {
+        names[existing_size + i] = blink::WebString::FromUTF16(additional_params[i].name);
+        values[existing_size + i] = blink::WebString::FromUTF16(additional_params[i].value);
+    }
+
+    existing_names->Swap(names);
+    existing_values->Swap(values);
+}
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
+
+#if QT_CONFIG(webengine_printing_and_pdf)
+// based on chrome/renderer/pdf/chrome_pdf_internal_plugin_delegate.cc:
+class PdfInternalPluginDelegateQt final
+    : public pdf::PdfInternalPluginDelegate
+{
+public:
+    PdfInternalPluginDelegateQt() = default;
+    PdfInternalPluginDelegateQt(const PdfInternalPluginDelegateQt &) = delete;
+    PdfInternalPluginDelegateQt& operator=(const PdfInternalPluginDelegateQt &) = delete;
+    ~PdfInternalPluginDelegateQt() override = default;
+
+    // `pdf::PdfInternalPluginDelegate`:
+    bool IsAllowedOrigin(const url::Origin &origin) const override;
+};
+
+bool PdfInternalPluginDelegateQt::IsAllowedOrigin(const url::Origin &origin) const
+{
+    return IsPdfExtensionOrigin(origin);
+}
+#endif
+} // namespace
+
 bool ContentRendererClientQt::IsPluginHandledExternally(content::RenderFrame *render_frame,
                                    const blink::WebElement &plugin_element,
                                    const GURL &original_url,
@@ -323,6 +386,8 @@ bool ContentRendererClientQt::IsPluginHandledExternally(content::RenderFrame *re
                 original_url, original_mime_type, &found, &plugin_info, &mime_type);
     if (!found)
         return false;
+    if (IsPdfExtensionOrigin(render_frame->GetWebFrame()->GetSecurityOrigin()))
+        return true;
     return extensions::MimeHandlerViewContainerManager::Get(
                 content::RenderFrame::FromWebFrame(
                     plugin_element.GetDocument().GetFrame()),
@@ -349,10 +414,24 @@ bool ContentRendererClientQt::OverrideCreatePlugin(content::RenderFrame *render_
 
     static_cast<content::RenderFrameImpl *>(render_frame)->GetPepperHost()->GetPluginInfo(
                 params.url, params.mime_type.Utf8(), &found, &info, &mime_type);
-    if (!found)
+    if (!found) {
         *plugin = LoadablePluginPlaceholderQt::CreateLoadableMissingPlugin(render_frame, params)->plugin();
-    else
-        *plugin = render_frame->CreatePlugin(info, params);
+        return true;
+    }
+    if (info.name == u"Chromium PDF Viewer") {
+        blink::WebPluginParams new_params(params);
+        for (const auto& mime_type : info.mime_types) {
+          if (mime_type.mime_type == params.mime_type.Utf8()) {
+            AppendParams(mime_type.additional_params, &new_params.attribute_names,
+                         &new_params.attribute_values);
+            break;
+          }
+        }
+
+        *plugin = pdf::CreateInternalPlugin(std::move(new_params), render_frame, std::make_unique<PdfInternalPluginDelegateQt>());
+        return true;
+    }
+    *plugin = render_frame->CreatePlugin(info, params);
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
     return true;
 }

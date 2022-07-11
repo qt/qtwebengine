@@ -225,6 +225,8 @@ foreach(arch ${archs})
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_printing_and_pdf
             SOURCES
                 printing/pdfium_document_wrapper_qt.cpp printing/pdfium_document_wrapper_qt.h
+                printing/pdf_web_contents_helper_client_qt.cpp printing/pdf_web_contents_helper_client_qt.h
+                printing/pdf_stream_delegate_qt.cpp printing/pdf_stream_delegate_qt.h
                 printing/print_view_manager_base_qt.cpp printing/print_view_manager_base_qt.h
                 printing/print_view_manager_qt.cpp printing/print_view_manager_qt.h
                 printing/printer_worker.cpp printing/printer_worker.h

@@ -54,7 +54,7 @@ public:
     WebContentsAdapterClient *adapterClient() { return m_adapterClient; }
     void setAdapterClient(WebContentsAdapterClient *adapterClient);
     RenderWidgetHostViewQtDelegateClient *delegateClient() const { return m_delegateClient.get(); }
-    void setGuest(content::RenderWidgetHostImpl *);
+    void addGuest(content::RenderWidgetHost *);
 
     void InitAsChild(gfx::NativeView) override;
     void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&, const gfx::Rect&) override;

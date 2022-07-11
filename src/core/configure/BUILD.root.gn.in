@@ -219,6 +219,7 @@ source_set("qtwebengine_sources") {
     "//components/plugins/renderer/",
     "//content/browser/resources/quota:resources",
     "//extensions/buildflags:buildflags",
+    "//pdf:buildflags",
     "//printing/buildflags:buildflags",
     "//qtwebengine/common:mojo_bindings",
     "//rlz/buildflags:buildflags",
@@ -339,9 +340,9 @@ source_set("qtwebengine_sources") {
   if (enable_pdf) {
     deps += [
       "//pdf",
-      "//pdf:buildflags",
       "//chrome/browser/resources/pdf:resources",
       "//components/pdf/browser",
+      "//components/pdf/browser:interceptors",
       "//components/pdf/common",
       "//components/pdf/renderer",
       "//components/printing/browser",

@@ -7,9 +7,8 @@
 
 #include "extension_web_contents_observer_qt.h"
 
-#include "components/guest_view/browser/guest_view_base.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "extensions/browser/extension_registry.h"
@@ -43,6 +42,17 @@ void ExtensionWebContentsObserverQt::RenderFrameCreated(content::RenderFrameHost
 {
     ExtensionWebContentsObserver::RenderFrameCreated(render_frame_host);
 
+    if (web_contents()->IsInnerWebContentsForGuest() && static_cast<content::RenderFrameHostImpl *>(render_frame_host)->is_local_root_subframe()) {
+        content::WebContents *parent = web_contents()->GetOutermostWebContents();
+        QtWebEngineCore::RenderWidgetHostViewQt *main_rwhv = static_cast<QtWebEngineCore::RenderWidgetHostViewQt *>(parent->GetRenderWidgetHostView());
+        // Main frame of guest WebContents
+        content::RenderWidgetHost *guest_render_widget_host = web_contents()->GetRenderViewHost()->GetWidget();
+        main_rwhv->addGuest(guest_render_widget_host);
+        // The frame which holds the actual PDF content inside the guest
+        content::RenderWidgetHost *pdf_render_widget_host = render_frame_host->GetRenderWidgetHost();
+        main_rwhv->addGuest(pdf_render_widget_host);
+    }
+
     const Extension *extension = GetExtensionFromFrame(render_frame_host, false);
     if (!extension)
         return;
@@ -52,16 +62,6 @@ void ExtensionWebContentsObserverQt::RenderFrameCreated(content::RenderFrameHost
 
     if (extension->is_extension() && Manifest::IsComponentLocation(extension->location()))
         policy->GrantRequestOrigin(process_id, url::Origin::Create(GURL(blink::kChromeUIResourcesURL)));
-}
-
-void ExtensionWebContentsObserverQt::RenderViewReady()
-{
-    if (web_contents()->IsInnerWebContentsForGuest()) {
-        content::RenderWidgetHost *render_widget_host = web_contents()->GetRenderViewHost()->GetWidget();
-        content::WebContents *parent_web_contents = guest_view::GuestViewBase::GetTopLevelWebContents(web_contents());
-        QtWebEngineCore::RenderWidgetHostViewQt *parent_rwhv = static_cast<QtWebEngineCore::RenderWidgetHostViewQt *>(parent_web_contents->GetRenderWidgetHostView());
-        parent_rwhv->setGuest(static_cast<content::RenderWidgetHostImpl *>(render_widget_host));
-    }
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ExtensionWebContentsObserverQt);

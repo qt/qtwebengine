@@ -30,6 +30,50 @@
 #include <string>
 #include <tuple>
 
+namespace {
+void ClearAllButFrameAncestors(network::mojom::URLResponseHead *response_head)
+{
+    response_head->headers->RemoveHeader("Content-Security-Policy");
+    response_head->headers->RemoveHeader("Content-Security-Policy-Report-Only");
+
+    if (!response_head->parsed_headers)
+        return;
+
+    std::vector<network::mojom::ContentSecurityPolicyPtr> &csp =
+        response_head->parsed_headers->content_security_policy;
+    std::vector<network::mojom::ContentSecurityPolicyPtr> cleared;
+
+    for (auto &policy : csp) {
+        auto frame_ancestors = policy->directives.find(network::mojom::CSPDirectiveName::FrameAncestors);
+        if (frame_ancestors == policy->directives.end())
+            continue;
+
+        auto cleared_policy = network::mojom::ContentSecurityPolicy::New();
+        cleared_policy->self_origin = std::move(policy->self_origin);
+        cleared_policy->header = std::move(policy->header);
+        cleared_policy->header->header_value = "";
+        cleared_policy->directives[network::mojom::CSPDirectiveName::FrameAncestors] = std::move(frame_ancestors->second);
+
+        auto raw_frame_ancestors = policy->raw_directives.find(network::mojom::CSPDirectiveName::FrameAncestors);
+        DCHECK(raw_frame_ancestors != policy->raw_directives.end());
+
+        cleared_policy->header->header_value = "frame-ancestors " + raw_frame_ancestors->second;
+        response_head->headers->AddHeader(
+            cleared_policy->header->type == network::mojom::ContentSecurityPolicyType::kEnforce
+                ? "Content-Security-Policy"
+                : "Content-Security-Policy-Report-Only",
+            cleared_policy->header->header_value);
+        cleared_policy->raw_directives[network::mojom::CSPDirectiveName::FrameAncestors] =
+            std::move(raw_frame_ancestors->second);
+
+        cleared.push_back(std::move(cleared_policy));
+    }
+
+    csp.swap(cleared);
+}
+}  // namespace
+
+
 namespace QtWebEngineCore {
 
 PluginResponseInterceptorURLLoaderThrottle::PluginResponseInterceptorURLLoaderThrottle(
@@ -73,7 +117,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
     // Content-Security-Policy, and does not currently respect the policy anyway.
     // Ignore CSP served on a PDF response. https://crbug.com/271452
     if (extension_id == extension_misc::kPdfExtensionId && response_head->headers)
-        response_head->headers->RemoveHeader("Content-Security-Policy");
+        ClearAllButFrameAncestors(response_head);
 
     MimeTypesHandler::ReportUsedHandler(extension_id);
 

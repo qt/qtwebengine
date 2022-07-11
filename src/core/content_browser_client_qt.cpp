@@ -27,6 +27,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
+#include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/browser/web_ui_url_loader_factory.h"
@@ -35,6 +36,7 @@
 #include "content/public/common/user_agent.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
+#include "pdf/buildflags.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_private_key.h"
@@ -137,6 +139,14 @@
 
 #if BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "printing/print_view_manager_qt.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PDF)
+#include "printing/pdf_stream_delegate_qt.h"
+
+#include "components/pdf/browser/pdf_navigation_throttle.h"
+#include "components/pdf/browser/pdf_url_loader_request_interceptor.h"
+#include "components/pdf/browser/pdf_web_contents_helper.h"
 #endif
 
 #include <QGuiApplication>
@@ -501,7 +511,14 @@ void ContentBrowserClientQt::RegisterAssociatedInterfaceBindersForRenderFrameHos
                        mojo::PendingAssociatedReceiver<autofill::mojom::AutofillDriver> receiver) {
                         autofill::ContentAutofillDriverFactory::BindAutofillDriver(std::move(receiver), render_frame_host);
                     }, &rfh));
-
+#if BUILDFLAG(ENABLE_PDF)
+    associated_registry.AddInterface(
+                base::BindRepeating(
+                    [](content::RenderFrameHost *render_frame_host,
+                       mojo::PendingAssociatedReceiver<pdf::mojom::PdfService> receiver) {
+                        pdf::PDFWebContentsHelper::BindPdfService(std::move(receiver), render_frame_host);
+                    }, &rfh));
+#endif  // BUILDFLAG(ENABLE_PDF)
     ContentBrowserClient::RegisterAssociatedInterfaceBindersForRenderFrameHost(rfh, associated_registry);
 }
 
@@ -829,6 +846,9 @@ std::vector<std::unique_ptr<content::NavigationThrottle>> ContentBrowserClientQt
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     MaybeAddThrottle(extensions::PDFIFrameNavigationThrottleQt::MaybeCreateThrottleFor(navigation_handle), &throttles);
 #endif
+#if BUILDFLAG(ENABLE_PDF)
+    MaybeAddThrottle(pdf::PdfNavigationThrottle::MaybeCreateThrottleFor(navigation_handle, std::make_unique<PdfStreamDelegateQt>()), &throttles);
+#endif  // BUILDFLAG(ENABLE_PDF)
 
     return throttles;
 }
@@ -1153,6 +1173,9 @@ base::flat_set<std::string> ContentBrowserClientQt::GetPluginMimeTypesWithExtern
         }
     }
 #endif
+#if BUILDFLAG(ENABLE_PDF)
+    mime_types.insert("application/x-google-chrome-pdf");
+#endif
     return mime_types;
 }
 
@@ -1188,6 +1211,25 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
                                    frame ? frame->GetFrameTreeNodeId() : content::RenderFrameHost::kNoFrameTreeNodeId,
                                    std::move(proxied_receiver), std::move(pending_url_loader_factory));
     return true;
+}
+
+std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
+ContentBrowserClientQt::WillCreateURLLoaderRequestInterceptors(content::NavigationUIData* navigation_ui_data,
+                                       int frame_tree_node_id,
+                                       const scoped_refptr<network::SharedURLLoaderFactory>& network_loader_factory)
+{
+    std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>> interceptors;
+#if BUILDFLAG(ENABLE_PDF)
+    {
+        std::unique_ptr<content::URLLoaderRequestInterceptor> pdf_interceptor =
+                pdf::PdfURLLoaderRequestInterceptor::MaybeCreateInterceptor(
+                    frame_tree_node_id, std::make_unique<PdfStreamDelegateQt>());
+        if (pdf_interceptor)
+            interceptors.push_back(std::move(pdf_interceptor));
+    }
+#endif
+
+    return interceptors;
 }
 
 bool ContentBrowserClientQt::WillInterceptWebSocket(content::RenderFrameHost *frame)
