@@ -28,8 +28,10 @@ public:
     QWebEngineFileSystemAccessRequest(const QWebEngineFileSystemAccessRequest &other);
     QWebEngineFileSystemAccessRequest &operator=(const QWebEngineFileSystemAccessRequest &other);
     QWebEngineFileSystemAccessRequest(QWebEngineFileSystemAccessRequest &&other);
-    QWebEngineFileSystemAccessRequest &operator=(QWebEngineFileSystemAccessRequest &&other);
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QWebEngineFileSystemAccessRequest)
     ~QWebEngineFileSystemAccessRequest();
+
+    void swap(QWebEngineFileSystemAccessRequest &other) noexcept { d_ptr.swap(other.d_ptr); }
 
     enum HandleType { File, Directory };
     Q_ENUM(HandleType)
