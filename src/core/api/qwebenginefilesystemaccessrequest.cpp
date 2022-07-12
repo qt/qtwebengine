@@ -33,8 +33,6 @@ QWebEngineFileSystemAccessRequest &QWebEngineFileSystemAccessRequest::operator=(
         const QWebEngineFileSystemAccessRequest &other) = default;
 QWebEngineFileSystemAccessRequest::QWebEngineFileSystemAccessRequest(
         QWebEngineFileSystemAccessRequest &&other) = default;
-QWebEngineFileSystemAccessRequest &
-QWebEngineFileSystemAccessRequest::operator=(QWebEngineFileSystemAccessRequest &&other) = default;
 QWebEngineFileSystemAccessRequest::~QWebEngineFileSystemAccessRequest() = default;
 
 /*! \fn bool QWebEngineFileSystemAccessRequest::operator==(const QWebEngineFileSystemAccessRequest &that) const
