@@ -942,7 +942,7 @@ void tst_QWebEngineProfile::initiator()
     // Directly calling load/setUrl should have initiator QUrl(), meaning
     // browser-initiated, trusted.
     page.load(QUrl("foo:bar"));
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 10000);
     QCOMPARE(handler.initiator, QUrl());
 }
 

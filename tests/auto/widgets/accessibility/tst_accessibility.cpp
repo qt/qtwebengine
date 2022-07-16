@@ -529,10 +529,10 @@ void tst_Accessibility::roles()
     QFETCH(QAccessible::Role, role);
 
     QWebEngineView webView;
+    QSignalSpy spyFinished(&webView, &QWebEngineView::loadFinished);
     webView.setHtml("<html><body>" + html + "</body></html>");
     webView.show();
-    QSignalSpy spyFinished(&webView, &QWebEngineView::loadFinished);
-    QVERIFY(spyFinished.wait());
+    QTRY_COMPARE_WITH_TIMEOUT(spyFinished.count(), 1, 20000);
 
     QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
 
@@ -542,7 +542,7 @@ void tst_Accessibility::roles()
         return;
     }
 
-    QTRY_COMPARE(view->child(0)->childCount(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(view->child(0)->childCount(), 1, 20000);
     QAccessibleInterface *document = view->child(0);
     QAccessibleInterface *element = document->child(0);
 

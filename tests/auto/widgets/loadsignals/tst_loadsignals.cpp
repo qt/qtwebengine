@@ -277,7 +277,7 @@ void tst_LoadSignals::monotonicity()
     QVERIFY(server.start());
 
     view.load(server.url("/loadprogress/main.html"));
-    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 10000);
     QVERIFY(loadFinishedSpy[0][0].toBool());
 
     QVERIFY(page.loadProgress.size() >= 3);

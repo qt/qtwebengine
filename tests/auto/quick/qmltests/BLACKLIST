@@ -9,3 +9,6 @@ macos
 
 [CertificateError::test_error]
 *
+
+[WebViewFindText::test_findTextInterruptedByLoad]
+b2qt arm 64bit

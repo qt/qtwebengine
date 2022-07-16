@@ -40,7 +40,7 @@ WebEngineView {
     }
     function _waitFor(predicate, timeout) {
         if (timeout === undefined)
-            timeout = 12000;
+            timeout = 30000;
         var i = 0
         while (i < timeout && !predicate()) {
             testResult.wait(50)

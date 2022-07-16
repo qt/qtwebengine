@@ -122,7 +122,7 @@ TestWebEngineView {
             WebEngine.settings.errorPageEnabled = true
             webEngineView.url = row.userInputUrl;
 
-            tryCompare(loadSpy, 'count', 2);
+            tryCompare(loadSpy, 'count', 2, 12000);
             let load = loadSpy.signalArguments[1][0]
             let expectedStatus = row.loadSucceed ? WebEngineView.LoadSucceededStatus : WebEngineView.LoadFailedStatus
             compare(load.status, expectedStatus);
