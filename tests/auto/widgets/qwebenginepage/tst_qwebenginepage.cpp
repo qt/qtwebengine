@@ -3085,7 +3085,7 @@ void tst_QWebEnginePage::loadFromQrc()
 
     // Resource not found, loading fails.
     page.load(QStringLiteral("qrc:///nope"));
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 10000);
     QCOMPARE(spy.takeFirst().value(0).toBool(), false);
 }
 

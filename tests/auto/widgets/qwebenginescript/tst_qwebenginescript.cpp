@@ -457,7 +457,7 @@ void tst_QWebEngineScript::scriptsInNestedIframes()
     QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
     page.load(QUrl("qrc:/resources/test_iframe_main.html"));
     view.show();
-    QVERIFY(spyFinished.wait());
+    QTRY_VERIFY_WITH_TIMEOUT(spyFinished.count() > 0, 20000);
 
     // Check that main frame has modified content.
     QCOMPARE(

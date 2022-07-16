@@ -636,7 +636,7 @@ void tst_QWebEngineView::unhandledKeyEventPropagation()
 
     QSignalSpy loadFinishedSpy(&webView, SIGNAL(loadFinished(bool)));
     webView.load(QUrl("qrc:///resources/keyboardEvents.html"));
-    QVERIFY(loadFinishedSpy.wait());
+    QTRY_VERIFY_WITH_TIMEOUT(loadFinishedSpy.count() > 0, 20000);
 
     evaluateJavaScriptSync(webView.page(), "document.getElementById('first_div').focus()");
     QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("first_div"));
@@ -1367,7 +1367,7 @@ void tst_QWebEngineView::keyboardEvents()
     view.show();
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
     view.load(QUrl("qrc:///resources/keyboardEvents.html"));
-    QVERIFY(loadFinishedSpy.wait());
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
 
     QStringList elements;
     elements << "first_div" << "second_div";
@@ -3237,7 +3237,7 @@ void tst_QWebEngineView::webUIURLs()
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
     view.load(url);
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 90000);
     QCOMPARE(loadFinishedSpy.takeFirst().at(0).toBool(), supported);
 }
 
