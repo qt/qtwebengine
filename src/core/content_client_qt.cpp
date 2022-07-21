@@ -5,9 +5,11 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/values.h"
 #include "base/version.h"
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/content_constants.h"
@@ -140,6 +142,37 @@ void ContentClientQt::AddPepperPlugins(std::vector<content::PepperPluginInfo>* p
 namespace QtWebEngineCore {
 
 #if defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
+#if defined(Q_OS_LINUX)
+static const QDir widevineCdmDirHint(const QDir &widevineDir)
+{
+    const QString hintFilePath = widevineDir.absolutePath() % QDir::separator()
+            % QLatin1String("latest-component-updated-widevine-cdm");
+    if (!QFileInfo::exists(hintFilePath)) {
+        // CDM hint file does not exist.
+        return widevineDir;
+    }
+
+    std::string jsonString;
+    if (!base::ReadFileToString(toFilePath(hintFilePath), &jsonString)) {
+        // Could not read the CDM hint file.
+        return widevineDir;
+    }
+
+    JSONStringValueDeserializer deserializer(jsonString);
+    std::unique_ptr<base::Value> dict = deserializer.Deserialize(nullptr, nullptr);
+    if (!dict || !dict->is_dict()) {
+        // Could not deserialize the CDM hint file.
+        return widevineDir;
+    }
+
+    std::string *widevineCdmDirPath = dict->FindStringKey("Path");
+    if (!widevineCdmDirPath)
+        return widevineDir;
+
+    return QDir(QString::fromStdString(*widevineCdmDirPath));
+}
+#endif // defined(Q_OS_LINUX)
+
 static bool IsWidevineAvailable(base::FilePath *cdm_path,
                                 media::CdmCapability *capability)
 {
@@ -214,7 +247,7 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         // Google Chrome widevine modules
         QDir chromeWidevineDir(QDir::homePath() + "/.config/google-chrome/WidevineCdm");
         if (chromeWidevineDir.exists())
-            potentialWidevineVersionDirs << chromeWidevineDir;
+            potentialWidevineVersionDirs << widevineCdmDirHint(chromeWidevineDir);
 
         // Firefox widevine modules
         QDir firefoxPotentialProfilesDir(QDir::homePath() + "/.mozilla/firefox");
@@ -230,11 +263,12 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         // Chromium widevine modules (might not work with proprietary codecs)
         QDir chromiumWidevineDir(QDir::homePath() + "/.config/chromium/WidevineCdm");
         if (chromiumWidevineDir.exists())
-            potentialWidevineVersionDirs << chromiumWidevineDir;
+            potentialWidevineVersionDirs << widevineCdmDirHint(chromiumWidevineDir);
 
         // Search for widewine versions
         for (const QDir &dir : potentialWidevineVersionDirs) {
             QFileInfoList widevineVersionDirs = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
+            widevineVersionDirs.prepend(QFileInfo(dir.absolutePath()));
             // ### alternatively look up in the manifest.json and take the path from there.
 #if Q_PROCESSOR_WORDSIZE == 8
             const QString library = QLatin1String("/_platform_specific/linux_x64/libwidevinecdm.so");
