@@ -2,9 +2,15 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "browser_accessibility_manager_qt.h"
+#include "qtwebenginecoreglobal_p.h"
 
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+
+#if QT_CONFIG(webengine_extensions)
+#include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/public/browser/web_contents.h"
+#endif // QT_CONFIG(webengine_extensions)
 
 #include "browser_accessibility_qt.h"
 #include "render_widget_host_view_qt.h"
@@ -24,6 +30,17 @@ BrowserAccessibilityManager *BrowserAccessibilityManager::Create(
     Q_ASSERT(delegate);
     QtWebEngineCore::WebContentsAccessibilityQt *access = nullptr;
     access = static_cast<QtWebEngineCore::WebContentsAccessibilityQt *>(delegate->AccessibilityGetWebContentsAccessibility());
+
+#if QT_CONFIG(webengine_extensions)
+    // Accessibility is not supported for guest views.
+    if (!access) {
+        Q_ASSERT(content::WebContents::FromRenderFrameHost(
+                         static_cast<content::RenderFrameHostImpl *>(delegate))
+                         ->GetOuterWebContents());
+        return nullptr;
+    }
+#endif // QT_CONFIG(webengine_extensions)
+
     return new BrowserAccessibilityManagerQt(access, initialTree, delegate);
 #else
     return nullptr;
