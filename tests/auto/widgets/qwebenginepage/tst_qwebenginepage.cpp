@@ -69,6 +69,8 @@
 #include <qwebengineview.h>
 #include <qimagewriter.h>
 #include <QColorSpace>
+#include <QQuickRenderControl>
+#include <QQuickWindow>
 
 static void removeRecursive(const QString& dirname)
 {
@@ -1324,7 +1326,9 @@ static QWindow *findNewTopLevelWindow(const QWindowList &oldTopLevelWindows)
 {
     const auto tlws = QGuiApplication::topLevelWindows();
     for (auto w : tlws) {
-        if (!oldTopLevelWindows.contains(w)) {
+        // note 'offscreen' window is a top-level window
+        if (!oldTopLevelWindows.contains(w)
+            && !QQuickRenderControl::renderWindowFor(qobject_cast<QQuickWindow *>(w))) {
             return w;
         }
     }
@@ -1344,28 +1348,29 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
     view.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft());
     view.resize(640, 480);
     view.show();
-
-    QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QSignalSpy spyLoadFinished(&view, SIGNAL(loadFinished(bool)));
     view.setHtml(QLatin1String("<html><head></head><body><select id='foo'>"
                                "<option>fran</option><option>troz</option>"
                                "</select></body></html>"));
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(spyLoadFinished.count(), 1);
     const auto oldTlws = QGuiApplication::topLevelWindows();
-
     QFETCH(bool, withTouch);
     QWindow *window = view.windowHandle();
-    makeClick(window, withTouch, elementCenter(view.page(), "foo"));
-
+    auto pos = elementCenter(view.page(), "foo");
+    makeClick(window, withTouch, pos);
     QWindow *popup = nullptr;
     QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QVERIFY(QTest::qWaitForWindowExposed(popup));
+    QTRY_VERIFY(popup->width() > 0 && popup->height() > 0);
     QTRY_VERIFY(QGuiApplication::topLevelWindows().contains(popup));
     QTRY_VERIFY(!popup->position().isNull());
     QPoint popupPos = popup->position();
-
+    QPointer<QWindow> pw(popup);
     // Close the popup by clicking somewhere into the page.
     makeClick(window, withTouch, QPoint(1, 1));
     QTRY_VERIFY(!QGuiApplication::topLevelWindows().contains(popup));
-
+    QTRY_VERIFY(!pw);
     auto jsViewPosition = [&view]() {
         QLatin1String script("(function() { return [window.screenX, window.screenY]; })()");
         QVariantList posList = evaluateJavaScriptSync(view.page(), script).toList();
@@ -1384,6 +1389,7 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
     QTRY_COMPARE(jsViewPosition(), view.pos());
     makeClick(window, withTouch, elementCenter(view.page(), "foo"));
     QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QTRY_VERIFY(popup->width() > 0 && popup->height() > 0);
     QTRY_VERIFY(QGuiApplication::topLevelWindows().contains(popup));
     QTRY_VERIFY(!popup->position().isNull());
     QCOMPARE(popupPos + offset, popup->position());
@@ -1413,6 +1419,7 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
     mainWidget.move(screen->availableGeometry().topLeft());
     mainWidget.resize(640, 480);
     mainWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&mainWidget));
 
     QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
     view.setHtml(QLatin1String("<html><head></head><body><select autofocus id='foo'>"
@@ -1427,6 +1434,8 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
 
     QWindow *popup = nullptr;
     QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QVERIFY(QTest::qWaitForWindowExposed(popup));
+    QTRY_VERIFY(popup->width() > 0 && popup->height() > 0);
     QTRY_VERIFY(QGuiApplication::topLevelWindows().contains(popup));
     QTRY_VERIFY(!popup->position().isNull());
     QPoint popupPos = popup->position();
@@ -1452,8 +1461,12 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
 
     makeClick(window, withTouch, view.mapTo(view.window(), elementCenter(view.page(), "foo")));
     QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QVERIFY(QTest::qWaitForWindowExposed(popup));
+    QTRY_VERIFY(popup->width() > 0 && popup->height() > 0);
     QTRY_VERIFY(!popup->position().isNull());
     QCOMPARE(popupPos + QPoint(offset, 0), popup->position());
+    makeClick(window, withTouch, QPoint(1, 1));
+    QTRY_VERIFY(!QGuiApplication::topLevelWindows().contains(popup));
 }
 
 #ifdef Q_OS_MACOS
