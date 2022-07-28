@@ -18,7 +18,7 @@ qt_internal_add_manual_test(touchbrowser
         main.cpp
         utils.h
         ${SOURCES}
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::GuiPrivate
         Qt::Quick
         Qt::WebEngineQuick

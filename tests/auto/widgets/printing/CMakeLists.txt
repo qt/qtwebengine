@@ -11,10 +11,9 @@ endif()
 qt_internal_add_test(tst_printing
     SOURCES
         tst_printing.cpp
-    PUBLIC_LIBRARIES
-        Qt::WebEngineWidgets
     LIBRARIES
         Qt::CorePrivate
+        Qt::WebEngineWidgets
         Qt::WebEngineCorePrivate
         Test::Util
 )
