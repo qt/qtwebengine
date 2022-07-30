@@ -5,6 +5,7 @@
 #define QTWEBENGINECOREGLOBAL_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qurl.h>
 #include <QtWebEngineCore/qtwebenginecore-config.h>
 
 QT_BEGIN_NAMESPACE
@@ -21,6 +22,8 @@ Q_WEBENGINECORE_EXPORT Q_DECL_CONST_FUNCTION const char *qWebEngineVersion() noe
 Q_WEBENGINECORE_EXPORT Q_DECL_CONST_FUNCTION const char *qWebEngineProcessName() noexcept;
 Q_WEBENGINECORE_EXPORT Q_DECL_CONST_FUNCTION const char *qWebEngineChromiumVersion() noexcept;
 Q_WEBENGINECORE_EXPORT Q_DECL_CONST_FUNCTION const char *qWebEngineChromiumSecurityPatchVersion() noexcept;
+
+Q_WEBENGINECORE_EXPORT QString qWebEngineGetDomainAndRegistry(const QUrl &url);
 
 QT_END_NAMESPACE
 

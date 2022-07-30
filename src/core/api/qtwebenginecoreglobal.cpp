@@ -17,6 +17,8 @@
 #include <QQuickWindow>
 #include "web_engine_context.h"
 
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+
 #if QT_CONFIG(opengl)
 QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT void qt_gl_set_global_share_context(QOpenGLContext *context);
@@ -217,5 +219,15 @@ static void initialize()
         QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
 #endif // QT_CONFIG(opengl)
 }
+
+QT_BEGIN_NAMESPACE
+
+QString qWebEngineGetDomainAndRegistry(const QUrl &url) {
+    const QString host = url.host();
+    const std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(host.toStdString(), net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    return QString::fromStdString(domain);
+}
+
+QT_END_NAMESPACE
 
 Q_CONSTRUCTOR_FUNCTION(initialize)
