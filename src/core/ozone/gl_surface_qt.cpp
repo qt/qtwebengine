@@ -103,7 +103,11 @@ bool InitializeGLOneOffPlatform(uint64_t system_device_id)
 
 bool usingSoftwareDynamicGL()
 {
+#if QT_CONFIG(opengl)
     return QtWebEngineCore::usingSoftwareDynamicGL();
+#else
+    return false;
+#endif // QT_CONFIG(opengl)
 }
 
 scoped_refptr<GLSurface>
