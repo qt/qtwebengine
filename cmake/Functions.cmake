@@ -433,6 +433,10 @@ function(add_linker_options target buildDir completeStatic)
     set(libs_rsp "${buildDir}/${ninjaTarget}_libs.rsp")
     set_target_properties(${cmakeTarget} PROPERTIES STATIC_LIBRARY_OPTIONS "@${objects_rsp}")
     if(LINUX)
+         get_gn_arch(cpu ${TEST_architecture_arch})
+         if(CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm" AND ${config} STREQUAL "Debug")
+             target_link_options(${cmakeTarget} PRIVATE "LINKER:--long-plt")
+         endif()
          target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${objects_rsp}>")
          # Chromium is meant for linking with gc-sections, which seems to not always get applied otherwise
          target_link_options(${cmakeTarget} PRIVATE "-Wl,--gc-sections")
@@ -445,7 +449,6 @@ function(add_linker_options target buildDir completeStatic)
          target_link_libraries(${cmakeTarget} PRIVATE
              "$<1:-Wl,--no-fatal-warnings $<$<CONFIG:${config}>:@${libs_rsp}> -Wl,--no-fatal-warnings>"
          )
-
     endif()
     if(MACOS)
         target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${objects_rsp}>")
