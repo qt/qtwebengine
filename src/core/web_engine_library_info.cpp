@@ -165,7 +165,7 @@ QString subProcessPath()
                         QStringLiteral("You may override the default search path by using "
                                        "QTWEBENGINEPROCESS_PATH environment variable."));
             }
-            qFatal(qPrintable(errorMessage.join('\n')));
+            qFatal("%s", qPrintable(errorMessage.join('\n')));
         }
 
 #if defined(Q_OS_WIN)
@@ -228,7 +228,7 @@ QString localesPath()
                                        "QTWEBENGINE_LOCALES_PATH environment variable."));
             }
             warningMessage.append(QStringLiteral("Translations WILL NOT be correct."));
-            qWarning(qPrintable(warningMessage.join('\n')));
+            qWarning("%s", qPrintable(warningMessage.join('\n')));
         }
     }
 
@@ -327,7 +327,7 @@ QString resourcesPath()
                         QStringLiteral("You may override the default search paths by using "
                                        "QTWEBENGINE_RESOURCES_PATH environment variable."));
             }
-            qFatal(qPrintable(errorMessage.join('\n')));
+            qFatal("%s", qPrintable(errorMessage.join('\n')));
         }
     }
 
