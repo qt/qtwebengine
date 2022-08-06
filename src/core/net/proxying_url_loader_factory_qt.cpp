@@ -68,6 +68,18 @@ static QWebEngineUrlRequestInfo::NavigationType toQt(WebContentsAdapterClient::N
     return static_cast<QWebEngineUrlRequestInfo::NavigationType>(navigationType);
 }
 
+static QHash<QByteArray, QByteArray> toQt(const net::HttpRequestHeaders &headers)
+{
+    const auto vector = headers.GetHeaderVector();
+    QHash<QByteArray, QByteArray> hash;
+
+    for (const auto &header : vector) {
+        hash.insert(QByteArray::fromStdString(header.key), QByteArray::fromStdString(header.value));
+    }
+
+    return hash;
+}
+
 // Handles intercepted, in-progress requests/responses, so that they can be
 // controlled and modified accordingly.
 class InterceptedRequest : public network::mojom::URLLoader
@@ -298,8 +310,14 @@ void InterceptedRequest::Restart()
     else
         firstPartyUrl = toQt(request_.site_for_cookies.first_party_url()); // m_topDocumentUrl can be empty for the main-frame.
 
-    auto info = new QWebEngineUrlRequestInfoPrivate(resourceType, navigationType, originalUrl, firstPartyUrl,
-                                                    initiator, QByteArray::fromStdString(request_.method));
+    QHash<QByteArray, QByteArray> headers = toQt(request_.headers);
+
+    if (!request_.referrer.is_empty())
+        headers.insert("Referer", toQt(request_.referrer).toEncoded());
+
+    auto info = new QWebEngineUrlRequestInfoPrivate(
+            resourceType, navigationType, originalUrl, firstPartyUrl, initiator,
+            QByteArray::fromStdString(request_.method), headers);
     Q_ASSERT(!request_info_);
     request_info_.reset(new QWebEngineUrlRequestInfo(info));
 

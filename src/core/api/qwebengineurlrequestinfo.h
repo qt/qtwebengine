@@ -72,6 +72,7 @@ public:
     void block(bool shouldBlock);
     void redirect(const QUrl &url);
     void setHttpHeader(const QByteArray &name, const QByteArray &value);
+    QHash<QByteArray, QByteArray> httpHeaders() const;
 
 private:
     friend class QtWebEngineCore::ContentBrowserClientQt;

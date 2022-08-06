@@ -8,6 +8,7 @@
 #include <QtWebEngineCore/qwebenginesettings.h>
 #include <QtWebEngineCore/qwebengineprofile.h>
 #include <QtWebEngineCore/qwebenginepage.h>
+#include <QtWebEngineCore/qwebenginehttprequest.h>
 
 #include <httpserver.h>
 #include <httpreqrep.h>
@@ -39,6 +40,7 @@ private Q_SLOTS:
     void requestInterceptorByResourceType_data();
     void requestInterceptorByResourceType();
     void firstPartyUrlHttp();
+    void headers();
     void customHeaders();
     void initiator();
     void jsServiceWorker();
@@ -77,12 +79,14 @@ struct RequestInfo {
         , firstPartyUrl(info.firstPartyUrl())
         , initiator(info.initiator())
         , resourceType(info.resourceType())
+        , headers(info.httpHeaders())
     {}
 
     QUrl requestUrl;
     QUrl firstPartyUrl;
     QUrl initiator;
     int resourceType;
+    QHash<QByteArray, QByteArray> headers;
 };
 
 static const QUrl kRedirectUrl = QUrl("qrc:///resources/content.html");
@@ -575,6 +579,40 @@ void tst_QWebEngineUrlRequestInterceptor::firstPartyUrlHttp()
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeXhr);
     foreach (auto info, infos)
         QCOMPARE(info.firstPartyUrl, firstPartyUrl);
+}
+
+void tst_QWebEngineUrlRequestInterceptor::headers()
+{
+    HttpServer httpServer;
+    httpServer.setResourceDirs({ QDir(QT_TESTCASE_SOURCEDIR).canonicalPath() + "/resources" });
+    QVERIFY(httpServer.start());
+    QWebEngineProfile profile;
+    TestRequestInterceptor interceptor(false);
+    profile.setUrlRequestInterceptor(&interceptor);
+
+    QWebEnginePage page(&profile);
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+
+    QWebEngineHttpRequest request(httpServer.url("/content.html"));
+    request.setHeader("X-HEADERNAME", "HEADERVALUE");
+    page.load(request);
+    QVERIFY(spy.wait());
+    QVERIFY(interceptor.requestInfos.last().headers.contains("X-HEADERNAME"));
+    QCOMPARE(interceptor.requestInfos.last().headers.value("X-HEADERNAME"),
+             QByteArray("HEADERVALUE"));
+
+    bool jsFinished = false;
+
+    page.runJavaScript(R"(
+var request = new XMLHttpRequest();
+request.open('GET', 'resource.html', /* async = */ false);
+request.setRequestHeader('X-FOO', 'BAR');
+request.send();
+)",
+                       [&](const QVariant &) { jsFinished = true; });
+    QTRY_VERIFY(jsFinished);
+    QVERIFY(interceptor.requestInfos.last().headers.contains("X-FOO"));
+    QCOMPARE(interceptor.requestInfos.last().headers.value("X-FOO"), QByteArray("BAR"));
 }
 
 void tst_QWebEngineUrlRequestInterceptor::customHeaders()
