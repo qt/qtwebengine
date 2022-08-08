@@ -31,8 +31,6 @@ QWebEngineFileSystemAccessRequest::QWebEngineFileSystemAccessRequest(
         const QWebEngineFileSystemAccessRequest &other) = default;
 QWebEngineFileSystemAccessRequest &QWebEngineFileSystemAccessRequest::operator=(
         const QWebEngineFileSystemAccessRequest &other) = default;
-QWebEngineFileSystemAccessRequest::QWebEngineFileSystemAccessRequest(
-        QWebEngineFileSystemAccessRequest &&other) = default;
 QWebEngineFileSystemAccessRequest::~QWebEngineFileSystemAccessRequest() = default;
 
 /*! \fn bool QWebEngineFileSystemAccessRequest::operator==(const QWebEngineFileSystemAccessRequest &that) const
@@ -55,8 +53,8 @@ bool QWebEngineFileSystemAccessRequest::operator!=(
 
 /*! \internal */
 QWebEngineFileSystemAccessRequest::QWebEngineFileSystemAccessRequest(
-        QSharedPointer<QtWebEngineCore::FileSystemAccessPermissionRequestController> controller)
-    : d_ptr(controller)
+        std::shared_ptr<QtWebEngineCore::FileSystemAccessPermissionRequestController> controller)
+    : d_ptr(std::move(controller))
 {
 }
 

@@ -127,7 +127,7 @@ void FileSystemAccessPermissionRequestManagerQt::DequeueAndShowRequest()
     }
 
     QWebEngineFileSystemAccessRequest request(
-            QSharedPointer<FileSystemAccessPermissionRequestControllerImpl>::create(
+            std::make_shared<FileSystemAccessPermissionRequestControllerImpl>(
                     m_currentRequest->data,
                     base::BindOnce(
                             &FileSystemAccessPermissionRequestManagerQt::OnPermissionDialogResult,
