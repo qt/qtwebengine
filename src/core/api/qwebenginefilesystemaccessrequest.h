@@ -46,8 +46,12 @@ public:
     HandleType handleType() const;
     AccessFlags accessFlags() const;
 
-    bool operator==(const QWebEngineFileSystemAccessRequest &that) const;
-    bool operator!=(const QWebEngineFileSystemAccessRequest &that) const;
+    inline friend bool operator==(const QWebEngineFileSystemAccessRequest &lhs,
+                                  const QWebEngineFileSystemAccessRequest &rhs) noexcept
+    { return lhs.d_ptr == rhs.d_ptr; }
+    inline friend bool operator!=(const QWebEngineFileSystemAccessRequest &lhs,
+                                  const QWebEngineFileSystemAccessRequest &rhs) noexcept
+    { return lhs.d_ptr != rhs.d_ptr; }
 
 private:
     QWebEngineFileSystemAccessRequest(
@@ -56,6 +60,8 @@ private:
 
     std::shared_ptr<QtWebEngineCore::FileSystemAccessPermissionRequestController> d_ptr;
 };
+
+Q_DECLARE_SHARED(QWebEngineFileSystemAccessRequest)
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEngineFileSystemAccessRequest::AccessFlags)
 

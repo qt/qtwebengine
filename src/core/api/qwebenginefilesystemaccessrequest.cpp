@@ -33,23 +33,13 @@ QWebEngineFileSystemAccessRequest &QWebEngineFileSystemAccessRequest::operator=(
         const QWebEngineFileSystemAccessRequest &other) = default;
 QWebEngineFileSystemAccessRequest::~QWebEngineFileSystemAccessRequest() = default;
 
-/*! \fn bool QWebEngineFileSystemAccessRequest::operator==(const QWebEngineFileSystemAccessRequest &that) const
-    Returns \c true if \a that points to the same object as this request.
+/*! \fn bool QWebEngineFileSystemAccessRequest::operator==(const QWebEngineFileSystemAccessRequest &lhs, const QWebEngineFileSystemAccessRequest &rhs)
+    Returns \c true if \a lhs and \a rhs both point to the same request.
 */
-bool QWebEngineFileSystemAccessRequest::operator==(
-        const QWebEngineFileSystemAccessRequest &that) const
-{
-    return d_ptr == that.d_ptr;
-}
 
-/*! \fn bool QWebEngineFileSystemAccessRequest::operator!=(const QWebEngineFileSystemAccessRequest &that) const
-    Returns \c true if \a that points to a different object than this request.
+/*! \fn bool QWebEngineFileSystemAccessRequest::operator!=(const QWebEngineFileSystemAccessRequest &lhs, const QWebEngineFileSystemAccessRequest &rhs)
+    Returns \c true if \a lhs and \a rhs point to different requests.
 */
-bool QWebEngineFileSystemAccessRequest::operator!=(
-        const QWebEngineFileSystemAccessRequest &that) const
-{
-    return d_ptr != that.d_ptr;
-}
 
 /*! \internal */
 QWebEngineFileSystemAccessRequest::QWebEngineFileSystemAccessRequest(
