@@ -824,16 +824,16 @@ QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions
 
     int rotation = 0;
     switch (renderOptions.rotation()) {
-    case QPdfDocumentRenderOptions::Rotation::Rotate0:
+    case QPdfDocumentRenderOptions::Rotation::None:
         rotation = 0;
         break;
-    case QPdfDocumentRenderOptions::Rotation::Rotate90:
+    case QPdfDocumentRenderOptions::Rotation::Clockwise90:
         rotation = 1;
         break;
-    case QPdfDocumentRenderOptions::Rotation::Rotate180:
+    case QPdfDocumentRenderOptions::Rotation::Clockwise180:
         rotation = 2;
         break;
-    case QPdfDocumentRenderOptions::Rotation::Rotate270:
+    case QPdfDocumentRenderOptions::Rotation::Clockwise270:
         rotation = 3;
         break;
     }
