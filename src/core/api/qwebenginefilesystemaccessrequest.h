@@ -5,9 +5,8 @@
 #define QWEBENGINEFILESYSTEMACCESSREQUEST_H
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
-
-#include <QtCore/qsharedpointer.h>
 #include <QtCore/qurl.h>
+#include <memory>
 
 namespace QtWebEngineCore {
 class FileSystemAccessPermissionRequestController;
@@ -27,7 +26,7 @@ class Q_WEBENGINECORE_EXPORT QWebEngineFileSystemAccessRequest
 public:
     QWebEngineFileSystemAccessRequest(const QWebEngineFileSystemAccessRequest &other);
     QWebEngineFileSystemAccessRequest &operator=(const QWebEngineFileSystemAccessRequest &other);
-    QWebEngineFileSystemAccessRequest(QWebEngineFileSystemAccessRequest &&other);
+    QWebEngineFileSystemAccessRequest(QWebEngineFileSystemAccessRequest &&other) noexcept = default;
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QWebEngineFileSystemAccessRequest)
     ~QWebEngineFileSystemAccessRequest();
 
@@ -52,10 +51,10 @@ public:
 
 private:
     QWebEngineFileSystemAccessRequest(
-            QSharedPointer<QtWebEngineCore::FileSystemAccessPermissionRequestController>);
+            std::shared_ptr<QtWebEngineCore::FileSystemAccessPermissionRequestController>);
     friend QtWebEngineCore::FileSystemAccessPermissionRequestManagerQt;
 
-    QSharedPointer<QtWebEngineCore::FileSystemAccessPermissionRequestController> d_ptr;
+    std::shared_ptr<QtWebEngineCore::FileSystemAccessPermissionRequestController> d_ptr;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEngineFileSystemAccessRequest::AccessFlags)
