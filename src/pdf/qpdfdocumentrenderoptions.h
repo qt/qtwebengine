@@ -15,10 +15,10 @@ class QPdfDocumentRenderOptions
 {
 public:
     enum class Rotation {
-        Rotate0,
-        Rotate90,
-        Rotate180,
-        Rotate270
+        None,
+        Clockwise90,
+        Clockwise180,
+        Clockwise270
     };
 
     enum class RenderFlag {

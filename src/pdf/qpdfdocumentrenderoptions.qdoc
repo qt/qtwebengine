@@ -20,10 +20,10 @@ QT_BEGIN_NAMESPACE
 
     This enum describes the rotation of the page for rendering.
 
-    \value Rotate0 Do not rotate (the default)
-    \value Rotate90 Rotate 90 degrees clockwise
-    \value Rotate180 Rotate 180 degrees
-    \value Rotate270 Rotate 270 degrees clockwise
+    \value None Do not rotate (the default)
+    \value Clockwise90 Rotate 90 degrees clockwise
+    \value Clockwise180 Rotate 180 degrees
+    \value Clockwise270 Rotate 270 degrees clockwise
 
     \sa QPdfDocument::render()
 */
