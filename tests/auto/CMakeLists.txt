@@ -1,6 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
-if(LINUX AND CMAKE_CROSSCOMPILING)
+if(LINUX AND CMAKE_CROSSCOMPILING AND (${TEST_architecture_arch} STREQUAL "arm64"))
     return()# FIXME
 endif()
 if(TARGET Qt::WebEngineCore)
