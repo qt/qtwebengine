@@ -27,7 +27,7 @@ public:
         Location,
         ContextBefore,
         ContextAfter,
-        _Count
+        NRoles
     };
     Q_ENUM(Role)
     QPdfSearchModel() : QPdfSearchModel(nullptr) {}

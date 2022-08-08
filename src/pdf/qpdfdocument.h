@@ -62,7 +62,7 @@ public:
     enum class PageModelRole {
         Label = Qt::UserRole,
         PointSize,
-        _Count
+        NRoles
     };
     Q_ENUM(PageModelRole)
 

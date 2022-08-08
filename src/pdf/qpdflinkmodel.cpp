@@ -37,7 +37,7 @@ Q_LOGGING_CATEGORY(qLcLink, "qt.pdf.links")
     \value Page If the link is an internal link, the page number to which the link should jump; otherwise \c {-1}.
     \value Location If the link is an internal link, the location on the page to which the link should jump.
     \value Zoom If the link is an internal link, the suggested zoom level on the destination page.
-    \omitvalue _Count
+    \omitvalue NRoles
 */
 
 /*!
@@ -47,7 +47,7 @@ QPdfLinkModel::QPdfLinkModel(QObject *parent)
     : QAbstractListModel(*(new QPdfLinkModelPrivate()), parent)
 {
     QMetaEnum rolesMetaEnum = metaObject()->enumerator(metaObject()->indexOfEnumerator("Role"));
-    for (int r = Qt::UserRole; r < int(Role::_Count); ++r)
+    for (int r = Qt::UserRole; r < int(Role::NRoles); ++r)
         m_roleNames.insert(r, QByteArray(rolesMetaEnum.valueToKey(r)).toLower());
 }
 
@@ -91,7 +91,7 @@ QVariant QPdfLinkModel::data(const QModelIndex &index, int role) const
         return link.location();
     case Role::Zoom:
         return link.zoom();
-    case Role::_Count:
+    case Role::NRoles:
         break;
     }
     if (role == Qt::DisplayRole)
