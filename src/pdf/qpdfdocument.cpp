@@ -37,7 +37,7 @@ public:
     {
         m_roleNames = QAbstractItemModel::roleNames();
         QMetaEnum rolesMetaEnum = doc->metaObject()->enumerator(doc->metaObject()->indexOfEnumerator("PageModelRole"));
-        for (int r = Qt::UserRole; r < int(QPdfDocument::PageModelRole::_Count); ++r) {
+        for (int r = Qt::UserRole; r < int(QPdfDocument::PageModelRole::NRoles); ++r) {
             auto name = QByteArray(rolesMetaEnum.valueToKey(r));
             name[0] = tolower(name[0]);
             m_roleNames.insert(r, name);
@@ -59,7 +59,7 @@ public:
             return document()->pageLabel(index.row());
         case QPdfDocument::PageModelRole::PointSize:
             return document()->pagePointSize(index.row());
-        case QPdfDocument::PageModelRole::_Count:
+        case QPdfDocument::PageModelRole::NRoles:
             break;
         }
         return QVariant();
@@ -750,7 +750,7 @@ QSizeF QPdfDocument::pagePointSize(int page) const
 
     \value Label The page number to be used for display purposes (QString).
     \value PointSize The page size in points (1/72 of an inch) (QSizeF).
-    \omitvalue _Count
+    \omitvalue NRoles
 */
 
 /*!

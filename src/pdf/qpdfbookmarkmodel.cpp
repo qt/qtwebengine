@@ -243,7 +243,7 @@ struct QPdfBookmarkModelPrivate
     \value Page The page number of the destination (int).
     \value Location The position of the destination (QPointF).
     \value Zoom The suggested zoom level (qreal).
-    \omitvalue _Count
+    \omitvalue NRoles
 */
 
 /*!
@@ -255,7 +255,7 @@ QPdfBookmarkModel::QPdfBookmarkModel(QObject *parent)
     d->q = this;
     m_roleNames = QAbstractItemModel::roleNames();
     QMetaEnum rolesMetaEnum = metaObject()->enumerator(metaObject()->indexOfEnumerator("Role"));
-    for (int r = Qt::UserRole; r < int(Role::_Count); ++r)
+    for (int r = Qt::UserRole; r < int(Role::NRoles); ++r)
         m_roleNames.insert(r, QByteArray(rolesMetaEnum.valueToKey(r)).toLower());
 }
 
@@ -323,7 +323,7 @@ QVariant QPdfBookmarkModel::data(const QModelIndex &index, int role) const
         return node->location();
     case Role::Zoom:
         return node->zoom();
-    case Role::_Count:
+    case Role::NRoles:
         break;
     }
     if (role == Qt::DisplayRole)

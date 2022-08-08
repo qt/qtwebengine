@@ -47,7 +47,7 @@ static const double CharacterHitTolerance = 6.0;
     \value Location The position of the search result on the page (QPointF).
     \value ContextBefore The adjacent text on the page, before the search string (QString).
     \value ContextAfter The adjacent text on the page, after the search string (QString).
-    \omitvalue _Count
+    \omitvalue NRoles
 
     \sa QPdfLink
 */
@@ -59,7 +59,7 @@ QPdfSearchModel::QPdfSearchModel(QObject *parent)
     : QAbstractListModel(*(new QPdfSearchModelPrivate()), parent)
 {
     QMetaEnum rolesMetaEnum = metaObject()->enumerator(metaObject()->indexOfEnumerator("Role"));
-    for (int r = Qt::UserRole; r < int(Role::_Count); ++r) {
+    for (int r = Qt::UserRole; r < int(Role::NRoles); ++r) {
         QByteArray roleName = QByteArray(rolesMetaEnum.valueToKey(r));
         if (roleName.isEmpty())
             continue;
@@ -113,7 +113,7 @@ QVariant QPdfSearchModel::data(const QModelIndex &index, int role) const
         return d->searchResults[pi.page][pi.index].contextBefore();
     case Role::ContextAfter:
         return d->searchResults[pi.page][pi.index].contextAfter();
-    case Role::_Count:
+    case Role::NRoles:
         break;
     }
     if (role == Qt::DisplayRole) {

@@ -26,7 +26,7 @@ public:
         Page,
         Location,
         Zoom,
-        _Count
+        NRoles
     };
     Q_ENUM(Role)
 
