@@ -219,6 +219,7 @@ struct QPdfBookmarkModelPrivate
 
     QScopedPointer<BookmarkNode> m_rootNode;
     QPointer<QPdfDocument> m_document;
+    QHash<int, QByteArray> m_roleNames;
 };
 
 
@@ -253,10 +254,10 @@ QPdfBookmarkModel::QPdfBookmarkModel(QObject *parent)
     : QAbstractItemModel(parent), d(new QPdfBookmarkModelPrivate)
 {
     d->q = this;
-    m_roleNames = QAbstractItemModel::roleNames();
+    d->m_roleNames = QAbstractItemModel::roleNames();
     QMetaEnum rolesMetaEnum = metaObject()->enumerator(metaObject()->indexOfEnumerator("Role"));
     for (int r = Qt::UserRole; r < int(Role::NRoles); ++r)
-        m_roleNames.insert(r, QByteArray(rolesMetaEnum.valueToKey(r)).toLower());
+        d->m_roleNames.insert(r, QByteArray(rolesMetaEnum.valueToKey(r)).toLower());
 }
 
 /*!
@@ -300,7 +301,7 @@ int QPdfBookmarkModel::columnCount(const QModelIndex &parent) const
 */
 QHash<int, QByteArray> QPdfBookmarkModel::roleNames() const
 {
-    return m_roleNames;
+    return d->m_roleNames;
 }
 
 /*!

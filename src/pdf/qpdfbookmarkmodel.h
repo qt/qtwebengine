@@ -48,7 +48,6 @@ Q_SIGNALS:
     void documentChanged(QPdfDocument *document);
 
 private:
-    QHash<int, QByteArray> m_roleNames;
     std::unique_ptr<QPdfBookmarkModelPrivate> d;
 
     Q_PRIVATE_SLOT(d, void _q_documentStatusChanged())
