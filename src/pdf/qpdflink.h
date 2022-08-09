@@ -5,7 +5,6 @@
 #define QPDFLINK_H
 
 #include <QtPdf/qtpdfglobal.h>
-#include <QtCore/qdebug.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qpoint.h>
@@ -15,6 +14,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QDebug;
 class QPdfLinkPrivate;
 
 class QPdfLink
@@ -67,7 +67,9 @@ private: // storage
 };
 Q_DECLARE_SHARED(QPdfLink)
 
+#ifndef QT_NO_DEBUG_STREAM
 Q_PDF_EXPORT QDebug operator<<(QDebug, const QPdfLink &);
+#endif
 
 QT_END_NAMESPACE
 

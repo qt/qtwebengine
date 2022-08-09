@@ -5,6 +5,7 @@
 #include "qpdflink_p.h"
 #include "qpdflinkmodel_p.h"
 #include <QGuiApplication>
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -168,6 +169,7 @@ void QPdfLink::copyToClipboard(QClipboard::Mode mode) const
     QGuiApplication::clipboard()->setText(toString(), mode);
 }
 
+#ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QPdfLink &link)
 {
     QDebugStateSaver saver(dbg);
@@ -181,6 +183,7 @@ QDebug operator<<(QDebug dbg, const QPdfLink &link)
     dbg << ')';
     return dbg;
 }
+#endif
 
 QT_END_NAMESPACE
 
