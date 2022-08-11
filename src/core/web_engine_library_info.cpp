@@ -188,7 +188,11 @@ QString localesPath()
     if (potentialLocalesPath.isEmpty()) {
         QStringList candidatePaths;
         const QString translationPakFilename =
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
                 QLatin1String(WebEngineLibraryInfo::getResolvedLocale() + ".pak");
+#else
+                QLatin1String((WebEngineLibraryInfo::getResolvedLocale() + ".pak").c_str());
+#endif
         const QString fromEnv = qEnvironmentVariable("QTWEBENGINE_LOCALES_PATH");
         if (!fromEnv.isEmpty()) {
             // Only search in QTWEBENGINE_LOCALES_PATH if set
