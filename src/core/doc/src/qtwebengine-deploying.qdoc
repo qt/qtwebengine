@@ -129,7 +129,11 @@
         \li On Linux and Windows: the \c resources directory in the directory
             specified by QLibraryInfo::location(QLibraryInfo::DataPath)
         \li On \macos: \c .app/Content/Resources
+        \li The application directory specified by QCoreApplication::applicationDirPath()
     \endlist
+
+    Alternatively, a resources directory path can be set as a value of the
+    \c QTWEBENGINE_RESOURCES_PATH environment variable.
 
     \section2 Translations
 
@@ -141,6 +145,9 @@
             directory specified by
             QLibraryInfo::location(QLibraryInfo::TranslationsPath)
     \endlist
+
+    Alternatively, a locales directory path can be set as a value of the
+    \c QTWEBENGINE_LOCALES_PATH environment variable.
 
     \section2 JavaScript Files in Qt Resource Files
 

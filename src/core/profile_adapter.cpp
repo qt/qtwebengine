@@ -120,9 +120,8 @@ ProfileAdapter::~ProfileAdapter()
 {
     m_cancelableTaskTracker->TryCancelAll();
     m_profile->NotifyWillBeDestroyed();
-    while (!m_webContentsAdapterClients.isEmpty()) {
-       m_webContentsAdapterClients.first()->releaseProfile();
-    }
+    releaseAllWebContentsAdapterClients();
+
     WebEngineContext::current()->removeProfileAdapter(this);
     if (m_downloadManagerDelegate) {
         m_profile->GetDownloadManager()->Shutdown();
@@ -653,6 +652,12 @@ void ProfileAdapter::addWebContentsAdapterClient(WebContentsAdapterClient *clien
 void ProfileAdapter::removeWebContentsAdapterClient(WebContentsAdapterClient *client)
 {
     m_webContentsAdapterClients.removeAll(client);
+}
+
+void ProfileAdapter::releaseAllWebContentsAdapterClients()
+{
+    while (!m_webContentsAdapterClients.isEmpty())
+        m_webContentsAdapterClients.first()->releaseProfile();
 }
 
 void ProfileAdapter::resetVisitedLinksManager()

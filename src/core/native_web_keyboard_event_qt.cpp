@@ -70,28 +70,31 @@ using blink::WebKeyboardEvent;
 
 namespace content {
 
-NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebKeyboardEvent const&, gfx::NativeView)
-    : os_event(0)
+NativeWebKeyboardEvent::NativeWebKeyboardEvent(const blink::WebKeyboardEvent &web_event, gfx::NativeView)
+    : WebKeyboardEvent(web_event)
+    , os_event(nullptr)
     , skip_in_browser(false)
 {
 }
 
-NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type, int, base::TimeTicks)
-    : os_event(0)
+NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type type, int modifiers,
+                                               base::TimeTicks timestamp)
+    : WebKeyboardEvent(type, modifiers, timestamp)
+    , os_event(nullptr)
     , skip_in_browser(false)
 {
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(gfx::NativeEvent native_event)
-    : os_event(CopyEvent(native_event)),
-      skip_in_browser(false)
+    : os_event(CopyEvent(native_event))
+    , skip_in_browser(false)
 {
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(const NativeWebKeyboardEvent& other)
-    : WebKeyboardEvent(other),
-    os_event(CopyEvent(other.os_event)),
-    skip_in_browser(other.skip_in_browser)
+    : WebKeyboardEvent(other)
+    , os_event(CopyEvent(other.os_event))
+    , skip_in_browser(other.skip_in_browser)
 {
 }
 
