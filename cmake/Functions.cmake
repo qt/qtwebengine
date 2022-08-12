@@ -300,7 +300,7 @@ function(get_install_config result)
             set(${result} "Release" PARENT_SCOPE)
         elseif("RelWithDebInfo" IN_LIST CMAKE_CONFIGURATION_TYPES)
             set(${result} "RelWithDebInfo" PARENT_SCOPE)
-        elseif("Debug" IN_LIST CMAKE_CONFIGURATION_TYPE)
+        elseif("Debug" IN_LIST CMAKE_CONFIGURATION_TYPES)
             set(${result} "Debug" PARENT_SCOPE)
         else()
             # assume MinSizeRel ?

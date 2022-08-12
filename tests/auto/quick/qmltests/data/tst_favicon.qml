@@ -165,6 +165,38 @@ TestWebEngineView {
             compare(iconUrl, Qt.resolvedUrl("icons/qt32.ico"))
         }
 
+        function test_faviconLoadPushState_data() {
+            return [
+                   { tag: "OTR", profile: defaultProfile },
+                   { tag: "non-OTR", profile: nonOTRProfile },
+            ];
+        }
+
+        function test_faviconLoadPushState(row) {
+            webEngineView.profile = row.profile;
+            compare(iconChangedSpy.count, 0);
+
+            var iconUrl;
+
+            webEngineView.url = Qt.resolvedUrl("favicon.html");
+            verify(webEngineView.waitForLoadSucceeded());
+            tryCompare(iconChangedSpy, "count", 1);
+            iconUrl = removeFaviconProviderPrefix(webEngineView.icon);
+            compare(iconUrl, Qt.resolvedUrl("icons/favicon.png"));
+
+            iconChangedSpy.clear();
+
+            // pushState() is a same document navigation and should not reset or
+            // update favicon.
+            compare(webEngineView.history.items.rowCount(), 1);
+            runJavaScript("history.pushState('', '')");
+            tryVerify(function() { return webEngineView.history.items.rowCount() === 2; });
+
+            // Favicon change is not expected.
+            compare(iconChangedSpy.count, 0);
+            iconUrl = removeFaviconProviderPrefix(webEngineView.icon);
+            compare(iconUrl, Qt.resolvedUrl("icons/favicon.png"));
+        }
 
         function test_noFavicon_data() {
             return [
