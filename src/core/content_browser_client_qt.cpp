@@ -98,7 +98,11 @@
 
 #if QT_CONFIG(webengine_spellchecker)
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
+#include "chrome/browser/spellchecker/spellcheck_factory.h"
+#include "chrome/browser/spellchecker/spellcheck_service.h"
+#include "components/spellcheck/browser/pref_names.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
+#include "components/spellcheck/common/spellcheck_features.h"
 #endif
 
 #if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
@@ -220,6 +224,10 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost 
 {
     const int id = host->GetID();
     Profile *profile = Profile::FromBrowserContext(host->GetBrowserContext());
+
+    if (spellcheck::UseBrowserSpellChecker() && !profile->GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckEnable))
+        SpellcheckServiceFactory::GetForContext(profile)->InitForRenderer(host);
+
 
 #if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
     WebRtcLoggingController::AttachToRenderProcessHost(host, WebEngineContext::current()->webRtcLogUploader());
