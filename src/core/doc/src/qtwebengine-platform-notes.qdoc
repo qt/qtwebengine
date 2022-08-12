@@ -101,8 +101,8 @@
     \section1 Using Earlier Qt Versions to Build \QWE
 
     Building \QWE with earlier Qt versions (down to the last LTS
-    version) is supported. It means that \QWE 6.3 can be built with
-    Qt 6.2.x, and Qt 6.3.
+    version) is supported. It means that \QWE 6.4 can be built with
+    Qt 6.2.x, Qt 6.3.x, and Qt 6.4.
 
     To use an earlier Qt version to build Qt Webengine:
 
