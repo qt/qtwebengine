@@ -70,3 +70,20 @@ class QtWebEngine(ConanFile):
     def get_qt_leaf_module_default_options(self) -> Dict[str, Any]:
         """Implements abstractmethod from qt-conan-common.QtLeafModule"""
         return self._shared.convert_qt_features_to_default_conan_options(_qtwebengine_features)
+
+    def package_env_info(self) -> Dict[str, Any]:
+        """Implements abstractmethod from qt-conan-common.QtLeafModule"""
+        # this will be called only after a successful build
+        _f = lambda p: True
+        if tools.os_info.is_windows:
+            ptrn = "**/QtWebEngineProcess.exe"
+        elif tools.os_info.is_macos:
+            ptrn = "**/QtWebEngineProcess.app/**/QtWebEngineProcess"
+            _f = lambda p: not any(".dSYM" in item for item in p.parts)
+        else:
+            ptrn = "**/QtWebEngineProcess"
+        ret = [str(p) for p in Path(self.package_folder).rglob(ptrn) if p.is_file() and _f(p)]
+        if len(ret) != 1:
+            print("Expected to find one 'QtWebEngineProcess'. Found: {0}".format(ret))
+        return {"QTWEBENGINEPROCESS_PATH": ret.pop() if ret else ""}
+
