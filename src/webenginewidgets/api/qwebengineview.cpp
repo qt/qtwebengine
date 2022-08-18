@@ -78,7 +78,6 @@ public:
         QQuickItem *root = new QQuickItem(); // Indirection so we don't delete m_contentItem
         setContent(QUrl(), nullptr, root);
         root->setFlags(QQuickItem::ItemHasContents);
-        root->setFocus(true);
         root->setVisible(true);
         m_contentItem->setParentItem(root);
 

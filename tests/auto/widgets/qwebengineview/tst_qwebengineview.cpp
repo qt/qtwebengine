@@ -1146,20 +1146,22 @@ void tst_QWebEngineView::focusInternalRenderWidgetHostViewQuickItem()
     QWebEngineView *webView = new QWebEngineView;
     QWebEngineSettings *settings = webView->page()->settings();
     settings->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, false);
-    webView->resize(300, 300);
+    webView->resize(300, 100);
 
-    QHBoxLayout *layout = new QHBoxLayout;
+    QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(label);
     layout->addWidget(webView);
 
+    containerWidget->resize(300, 200);
     containerWidget->setLayout(layout);
     containerWidget->show();
     QVERIFY(QTest::qWaitForWindowExposed(containerWidget.data()));
 
     // Load the content, and check that focus is not set.
     QSignalSpy loadSpy(webView, SIGNAL(loadFinished(bool)));
-    webView->setHtml("<html><head><title>Title</title></head><body>Hello"
-                    "<input id=\"input\" type=\"text\"></body></html>");
+    webView->setHtml("<html><body>"
+                     "  <input id='input1' type='text'/>"
+                     "</body></html>");
     QTRY_COMPARE(loadSpy.count(), 1);
     QTRY_COMPARE(webView->hasFocus(), false);
 
@@ -1169,15 +1171,43 @@ void tst_QWebEngineView::focusInternalRenderWidgetHostViewQuickItem()
     // Check that focus is set in QWebEngineView and all internal classes.
     QTRY_COMPARE(webView->hasFocus(), true);
 
-    QQuickWidget *renderWidgetHostViewQtDelegateWidget =
-            qobject_cast<QQuickWidget *>(webView->focusProxy());
-    QVERIFY(renderWidgetHostViewQtDelegateWidget);
-    QTRY_COMPARE(renderWidgetHostViewQtDelegateWidget->hasFocus(), true);
+    QQuickWidget *webEngineQuickWidget = qobject_cast<QQuickWidget *>(webView->focusProxy());
+    QVERIFY(webEngineQuickWidget);
+    QTRY_COMPARE(webEngineQuickWidget->hasFocus(), true);
 
-    QQuickItem *renderWidgetHostViewQuickItem =
-            renderWidgetHostViewQtDelegateWidget->rootObject();
-    QVERIFY(renderWidgetHostViewQuickItem);
-    QTRY_COMPARE(renderWidgetHostViewQuickItem->hasFocus(), true);
+    QQuickItem *root = webEngineQuickWidget->rootObject();
+    // The root item should not has focus, otherwise it would handle input events
+    // instead of the RenderWidgetHostViewQtDelegateItem.
+    QVERIFY(!root->hasFocus());
+
+    QCOMPARE(root->childItems().size(), 1);
+    QQuickItem *renderWidgetHostViewQtDelegateItem = root->childItems().at(0);
+    QVERIFY(renderWidgetHostViewQtDelegateItem);
+    QTRY_COMPARE(renderWidgetHostViewQtDelegateItem->hasFocus(), true);
+    // Test if QWebEngineView handles key events.
+    QTRY_COMPARE(renderWidgetHostViewQtDelegateItem->hasActiveFocus(), true);
+
+    // Key events should not be forwarded to the unfocused input field.
+    QTRY_COMPARE(evaluateJavaScriptSync(webView->page(),
+                                        "document.getElementById('input1').value").toString(),
+                                        QStringLiteral(""));
+    QTest::keyClick(webView->focusProxy(), Qt::Key_X);
+    QTest::qWait(100);
+    QTRY_COMPARE(evaluateJavaScriptSync(webView->page(),
+                 "document.getElementById('input1').value").toString(),
+                 QStringLiteral(""));
+
+    // Focus the input field. Focus rectangle is expected to appear around the input field.
+    evaluateJavaScriptSync(webView->page(), "document.getElementById('input1').focus()");
+    QTRY_COMPARE(evaluateJavaScriptSync(webView->page(),
+                                        "document.activeElement.id").toString(),
+                                        QStringLiteral("input1"));
+
+    // Test the focused input field with a key event.
+    QTest::keyClick(webView->focusProxy(), Qt::Key_X);
+    QTRY_COMPARE(evaluateJavaScriptSync(webView->page(),
+                                        "document.getElementById('input1').value").toString(),
+                                        QStringLiteral("x"));
 }
 
 void tst_QWebEngineView::doNotBreakLayout()
