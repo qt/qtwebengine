@@ -97,8 +97,10 @@ void WebView::setPage(WebPage *page)
                    &WebView::handleProxyAuthenticationRequired);
         disconnect(oldPage, &QWebEnginePage::registerProtocolHandlerRequested, this,
                    &WebView::handleRegisterProtocolHandlerRequested);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
         disconnect(oldPage, &QWebEnginePage::fileSystemAccessRequested, this,
                    &WebView::handleFileSystemAccessRequested);
+#endif
     }
     createWebActionTrigger(page,QWebEnginePage::Forward);
     createWebActionTrigger(page,QWebEnginePage::Back);
@@ -114,8 +116,10 @@ void WebView::setPage(WebPage *page)
             &WebView::handleProxyAuthenticationRequired);
     connect(page, &QWebEnginePage::registerProtocolHandlerRequested, this,
             &WebView::handleRegisterProtocolHandlerRequested);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
     connect(page, &QWebEnginePage::fileSystemAccessRequested, this,
             &WebView::handleFileSystemAccessRequested);
+#endif
 }
 
 int WebView::loadProgress() const
@@ -305,6 +309,7 @@ void WebView::handleRegisterProtocolHandlerRequested(
 }
 //! [registerProtocolHandlerRequested]
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
 void WebView::handleFileSystemAccessRequested(QWebEngineFileSystemAccessRequest request)
 {
     QString accessType;
@@ -332,3 +337,4 @@ void WebView::handleFileSystemAccessRequested(QWebEngineFileSystemAccessRequest 
     else
         request.reject();
 }
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)

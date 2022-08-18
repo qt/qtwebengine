@@ -7,7 +7,9 @@
 #include <QIcon>
 #include <QWebEngineView>
 #include <QWebEngineCertificateError>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
 #include <QWebEngineFileSystemAccessRequest>
+#endif
 #include <QWebEnginePage>
 #include <QWebEngineRegisterProtocolHandlerRequest>
 
@@ -41,7 +43,9 @@ private slots:
     void handleProxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth,
                                            const QString &proxyHost);
     void handleRegisterProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest request);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
     void handleFileSystemAccessRequested(QWebEngineFileSystemAccessRequest request);
+#endif
 
 private:
     void createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction);
