@@ -1,7 +1,7 @@
 #### Libraries
 
 if(NOT QT_CONFIGURE_RUNNING)
-    find_package(GLIB2 COMPONENTS gio)
+    find_package(GLIB2 COMPONENTS GIO)
     find_package(GSSAPI)
     find_package(PkgConfig)
     if(PkgConfig_FOUND)
