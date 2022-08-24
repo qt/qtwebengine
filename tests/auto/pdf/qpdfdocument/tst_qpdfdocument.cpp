@@ -54,7 +54,7 @@ struct TemporaryPdf: public QTemporaryFile
 };
 
 
-TemporaryPdf::TemporaryPdf()
+TemporaryPdf::TemporaryPdf():QTemporaryFile(QStringLiteral("qpdfdocument"))
 {
     open();
     pageLayout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF());
