@@ -33,7 +33,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/common/webplugininfo.h"
@@ -56,8 +55,14 @@
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "net/base/mime_util.h"
+#include "pdf/buildflags.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "qtwebengine/grit/qt_webengine_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "content/public/browser/plugin_service.h"
+#endif
 
 using content::BrowserThread;
 
@@ -184,6 +189,7 @@ void ExtensionSystemQt::NotifyExtensionLoaded(const Extension *extension)
     // know about it.
     extension_registry_->TriggerOnLoaded(extension);
 
+#if BUILDFLAG(ENABLE_PLUGINS)
     // Register plugins included with the extension.
     // Implementation based on PluginManager::OnExtensionLoaded.
     const MimeTypesHandler *handler = MimeTypesHandler::GetHandler(extension);
@@ -209,6 +215,7 @@ void ExtensionSystemQt::NotifyExtensionLoaded(const Extension *extension)
         plugin_service->RefreshPlugins();
         plugin_service->RegisterInternalPlugin(info, true);
     }
+#endif // BUILDFLAG(ENABLE_PLUGINS)
 }
 
 bool ExtensionSystemQt::FinishDelayedInstallationIfReady(const std::string &extension_id, bool install_immediately)
@@ -320,6 +327,7 @@ void ExtensionSystemQt::Init(bool extensions_enabled)
         // Inform the rest of the extensions system to start.
         ready_.Signal();
 
+#if BUILDFLAG(ENABLE_PDF)
         {
             std::string pdf_manifest = ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(IDR_PDF_MANIFEST);
             base::ReplaceFirstSubstringAfterOffset(&pdf_manifest, 0, "<NAME>", "chromium-pdf");
@@ -331,6 +339,7 @@ void ExtensionSystemQt::Init(bool extensions_enabled)
             std::string id = GenerateId(pdfManifestDict.get(), path);
             LoadExtension(id, std::move(pdfManifestDict), path);
         }
+#endif // BUILDFLAG(ENABLE_PDF)
 
 #if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
         {

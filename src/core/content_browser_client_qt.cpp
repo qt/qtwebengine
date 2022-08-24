@@ -40,6 +40,7 @@
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_private_key.h"
+#include "printing/buildflags/buildflags.h"
 #include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
@@ -132,7 +133,6 @@
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/extension_web_contents_observer_qt.h"
 #include "extensions/extensions_browser_client_qt.h"
-#include "extensions/pdf_iframe_navigation_throttle_qt.h"
 #include "net/plugin_response_interceptor_url_loader_throttle.h"
 #endif
 
@@ -142,15 +142,18 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#include "printing/pdf_stream_delegate_qt.h"
 #include "printing/print_view_manager_qt.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PDF)
-#include "printing/pdf_stream_delegate_qt.h"
-
 #include "components/pdf/browser/pdf_navigation_throttle.h"
 #include "components/pdf/browser/pdf_url_loader_request_interceptor.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/pdf_iframe_navigation_throttle_qt.h"
 #endif
 
 #include <QGuiApplication>
@@ -851,12 +854,12 @@ std::vector<std::unique_ptr<content::NavigationThrottle>> ContentBrowserClientQt
                             base::BindRepeating(&navigationThrottleCallback),
                             navigation_interception::SynchronyMode::kSync));
 
+#if BUILDFLAG(ENABLE_PDF)
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     MaybeAddThrottle(extensions::PDFIFrameNavigationThrottleQt::MaybeCreateThrottleFor(navigation_handle), &throttles);
-#endif
-#if BUILDFLAG(ENABLE_PDF)
+#endif // BUILDFLAG(ENABLE_EXTENSIONS)
     MaybeAddThrottle(pdf::PdfNavigationThrottle::MaybeCreateThrottleFor(navigation_handle, std::make_unique<PdfStreamDelegateQt>()), &throttles);
-#endif  // BUILDFLAG(ENABLE_PDF)
+#endif // BUILDFLAG(ENABLE_PDF)
 
     return throttles;
 }

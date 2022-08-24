@@ -10,12 +10,21 @@
 #include "messaging_delegate_qt.h"
 
 #include <memory>
-#include "components/pdf/browser/pdf_web_contents_helper.h"
+
 #include "extension_web_contents_observer_qt.h"
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
 #include "mime_handler_view_guest_delegate_qt.h"
+#include "pdf/buildflags.h"
+#include "printing/buildflags/buildflags.h"
+
+#if BUILDFLAG(ENABLE_PDF)
+#include "components/pdf/browser/pdf_web_contents_helper.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "printing/print_view_manager_qt.h"
+#endif
 
 namespace extensions {
 
@@ -43,7 +52,9 @@ std::unique_ptr<MimeHandlerViewGuestDelegate> ExtensionsAPIClientQt::CreateMimeH
 void ExtensionsAPIClientQt::AttachWebContentsHelpers(content::WebContents *web_contents) const
 {
     // PrefsTabHelper::CreateForWebContents(web_contents);
+#if BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
     QtWebEngineCore::PrintViewManagerQt::CreateForWebContents(web_contents);
+#endif
     ExtensionWebContentsObserverQt::CreateForWebContents(web_contents);
 }
 
