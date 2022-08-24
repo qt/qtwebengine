@@ -254,13 +254,17 @@ foreach(arch ${archs})
                 extensions/extensions_browser_client_qt.cpp extensions/extensions_browser_client_qt.h
                 extensions/messaging_delegate_qt.cpp extensions/messaging_delegate_qt.h
                 extensions/mime_handler_view_guest_delegate_qt.cpp extensions/mime_handler_view_guest_delegate_qt.h
-                extensions/pdf_iframe_navigation_throttle_qt.cpp extensions/pdf_iframe_navigation_throttle_qt.h
                 extensions/plugin_service_filter_qt.cpp extensions/plugin_service_filter_qt.h
                 net/plugin_response_interceptor_url_loader_throttle.cpp net/plugin_response_interceptor_url_loader_throttle.h
                 renderer/extensions/extensions_dispatcher_delegate_qt.cpp renderer/extensions/extensions_dispatcher_delegate_qt.h
                 renderer/extensions/extensions_renderer_client_qt.cpp renderer/extensions/extensions_renderer_client_qt.h
                 renderer/extensions/renderer_permissions_policy_delegate_qt.cpp renderer/extensions/renderer_permissions_policy_delegate_qt.h
                 renderer/extensions/resource_request_policy_qt.cpp renderer/extensions/resource_request_policy_qt.h
+        )
+
+        extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_extensions AND QT_FEATURE_webengine_printing_and_pdf
+            SOURCES
+                extensions/pdf_iframe_navigation_throttle_qt.cpp extensions/pdf_iframe_navigation_throttle_qt.h
         )
 
         extend_gn_target(${buildGn} CONDITION WIN32

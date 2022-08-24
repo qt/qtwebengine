@@ -27,19 +27,24 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/result_codes.h"
 #include "extensions/buildflags/buildflags.h"
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "content/public/browser/plugin_service.h"
-#include "extensions/common/constants.h"
-#include "extensions/common/extensions_client.h"
-#include "extensions/extensions_browser_client_qt.h"
-#include "extensions/extension_system_factory_qt.h"
-#include "extensions/plugin_service_filter_qt.h"
-#include "common/extensions/extensions_client_qt.h"
-#endif //BUILDFLAG(ENABLE_EXTENSIONS)
+#include "ppapi/buildflags/buildflags.h"
 #include "select_file_dialog_factory_qt.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "ui/display/screen.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/common/constants.h"
+#include "extensions/common/extensions_client.h"
+#include "extensions/extensions_browser_client_qt.h"
+#include "extensions/extension_system_factory_qt.h"
+#include "common/extensions/extensions_client_qt.h"
+#endif // BUILDFLAG(ENABLE_EXTENSIONS)
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "content/public/browser/plugin_service.h"
+#include "extensions/plugin_service_filter_qt.h"
+#endif // BUILDFLAG(ENABLE_PLUGINS)
 
 #include "web_engine_context.h"
 #include "web_usb_detector_qt.h"
@@ -257,10 +262,12 @@ int BrowserMainPartsQt::PreMainMessageLoopRun()
     extensions::ExtensionsClient::Set(new extensions::ExtensionsClientQt());
     extensions::ExtensionsBrowserClient::Set(new extensions::ExtensionsBrowserClientQt());
     extensions::ExtensionSystemFactoryQt::GetInstance();
+#endif // BUILDFLAG(ENABLE_EXTENSIONS)
 
+#if BUILDFLAG(ENABLE_PLUGINS)
     content::PluginService *plugin_service = content::PluginService::GetInstance();
     plugin_service->SetFilter(extensions::PluginServiceFilterQt::GetInstance());
-#endif //ENABLE_EXTENSIONS
+#endif // BUILDFLAG(ENABLE_PLUGINS)
 
     if (base::FeatureList::IsEnabled(features::kWebUsb)) {
         m_webUsbDetector.reset(new WebUsbDetectorQt());
