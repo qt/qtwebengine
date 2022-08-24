@@ -42,12 +42,21 @@ display::Display toDisplayDisplay(int id, const QScreen *screen)
 {
     auto display = display::Display(id, toGfx(screen->geometry()));
     display.set_work_area(toGfx(screen->availableGeometry()));
-    display.set_device_scale_factor(screen->devicePixelRatio());
     display.set_is_monochrome(screen->depth() == 1);
     display.set_color_depth(screen->depth());
     display.set_depth_per_component(8); // FIXME: find the real value
     display.set_display_frequency(std::ceil(screen->refreshRate()));
     display.set_rotation(toDisplayRotation(screen->orientation()));
+
+    // FIXME: support lower scale factor
+    float pixelRatio = screen->devicePixelRatio();
+    if (pixelRatio < 1) {
+        qWarning("Unsupported scale factor (%f) detected on Display%d", pixelRatio, id);
+        display.set_device_scale_factor(qGuiApp->devicePixelRatio());
+    } else {
+        display.set_device_scale_factor(pixelRatio);
+    }
+
     if (screen->nativeOrientation() != Qt::PrimaryOrientation)
         display.set_panel_rotation(toDisplayRotation(screen->nativeOrientation()));
     return display;

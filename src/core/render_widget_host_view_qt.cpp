@@ -92,16 +92,27 @@ static inline ui::GestureProvider::Config QtGestureProviderConfig() {
 
 extern display::Display toDisplayDisplay(int id, const QScreen *screen);
 
-static display::ScreenInfo screenInfoFromQScreen(QScreen *screen)
+static display::ScreenInfos screenInfosFromQtForUpdate(QScreen *currentScreen)
 {
-    display::ScreenInfo r;
-    if (!screen)
-        screen = qApp->primaryScreen();
-    if (screen)
-        display::DisplayUtil::DisplayToScreenInfo(&r, toDisplayDisplay(0, screen));
-    else
-        r.device_scale_factor = qGuiApp->devicePixelRatio();
-    return r;
+    display::ScreenInfo screenInfo;
+    const auto &screens = qApp->screens();
+    if (screens.isEmpty()) {
+        screenInfo.device_scale_factor = qGuiApp->devicePixelRatio();
+        return display::ScreenInfos(screenInfo);
+    }
+
+    Q_ASSERT(qApp->primaryScreen() == screens.first());
+    display::ScreenInfos result;
+    for (int i = 0; i < screens.length(); ++i) {
+        display::DisplayUtil::DisplayToScreenInfo(&screenInfo, toDisplayDisplay(i, screens.at(i)));
+        result.screen_infos.push_back(screenInfo);
+        if (currentScreen == screens.at(i))
+            result.current_display_id = i;
+    }
+
+    Q_ASSERT(result.current_display_id != display::kInvalidDisplayId);
+
+    return result;
 }
 
 // An minimal override to support progressing flings
@@ -641,17 +652,6 @@ void RenderWidgetHostViewQt::UpdateTooltip(const std::u16string &tooltip_text)
         m_adapterClient->setToolTip(toQt(tooltip_text));
 }
 
-display::ScreenInfo RenderWidgetHostViewQt::GetScreenInfo() const
-{
-    return m_screenInfo;
-}
-
-display::ScreenInfos RenderWidgetHostViewQt::GetScreenInfos() const
-{
-    // FIXME: Return more than the current screen.
-    return display::ScreenInfos(GetScreenInfo());
-}
-
 gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
 {
     return toGfx(delegateClient()->windowRectInDips());
@@ -856,11 +856,17 @@ bool RenderWidgetHostViewQt::isPopup() const
 
 bool RenderWidgetHostViewQt::updateScreenInfo()
 {
-    display::ScreenInfo oldScreenInfo = m_screenInfo;
-    QScreen *screen = m_delegate->Window() ? m_delegate->Window()->screen() : nullptr;
-    m_screenInfo = screenInfoFromQScreen(screen);
 
-    return (m_screenInfo != oldScreenInfo);
+    QWindow *window = m_delegate->Window();
+    if (!window)
+        return false;
+
+    display::ScreenInfos newScreenInfos = screenInfosFromQtForUpdate(window->screen());
+    if (screen_infos_ == newScreenInfos)
+        return false;
+
+    screen_infos_ = std::move(newScreenInfos);
+    return true;
 }
 
 void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *event)

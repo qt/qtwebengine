@@ -100,8 +100,6 @@ public:
     void OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata);
 
     // Overridden from RenderWidgetHostViewBase:
-    display::ScreenInfo GetScreenInfo() const override;
-    display::ScreenInfos GetScreenInfos() const override;
     gfx::Rect GetBoundsInRootWindow() override;
     void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch,
                                 blink::mojom::InputEventResultState ack_result) override;
@@ -207,7 +205,6 @@ private:
     DelegatedFrameHostClientQt m_delegatedFrameHostClient { this };
 
     // VIZ
-    display::ScreenInfo m_screenInfo;
     std::unique_ptr<content::DelegatedFrameHost> m_delegatedFrameHost;
     std::unique_ptr<ui::Layer> m_rootLayer;
     std::unique_ptr<ui::Compositor> m_uiCompositor;
