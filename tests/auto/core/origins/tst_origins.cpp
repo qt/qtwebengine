@@ -1005,9 +1005,14 @@ void tst_Origins::mixedContent()
 
     auto setIFrameUrl = [&] (const QString &scheme) {
         if (scheme == "data")
-            return QString("setIFrameUrl('data:,<script>var canary = true; parent.canary = true</script>')");
+            return QString("setIFrameUrl('data:,<script>var canary = true; parent.canary = "
+                           "true</script>','data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAUA"
+                           "AAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/"
+                           "w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==')");
         auto frameUrl = QString("%1:%2/resources/mixedSchemes_frame.html").arg(scheme).arg(scheme == "file" ? srcDir : "");
-        return QString("setIFrameUrl('%1')").arg(frameUrl);
+        auto imgUrl =
+                QString("%1:%2/resources/red.png").arg(scheme).arg(scheme == "file" ? srcDir : "");
+        return QString("setIFrameUrl('%1','%2')").arg(frameUrl).arg(imgUrl);
     };
 
     m_page->messages.clear();
@@ -1019,15 +1024,18 @@ void tst_Origins::mixedContent()
 
         eval(setIFrameUrl(schemeTo));
 
-        QTRY_COMPARE(eval(QSL("result !== undefined")), QVariant(true));
-        auto result = eval(QSL("result")).toString();
-        // Work-around some combinations missing JS loaded signals:
-        if (m_page->messages.size() > 0) {
-            if (m_page->messages[0] == QSL("Frame Loaded") && result == QSL("cannotLoad"))
-                result = QSL("canLoadButNotAccess");
-            m_page->messages.clear();
+        // wait for token in the log
+        QTRY_VERIFY(m_page->messages.contains("TEST:done"));
+        QString result;
+        // make sure we do not have some extra logs from blink
+        for (auto message : m_page->messages) {
+            QStringList s = message.split(':');
+            if (s.size() > 1 && s[0] == "TEST") {
+                result = s[1];
+                break;
+            }
         }
-
+        m_page->messages.clear();
         schemesTo.append(schemeTo.rightJustified(20));
         results.append(result.rightJustified(20));
         expected.append(expectedResult.rightJustified(20));
