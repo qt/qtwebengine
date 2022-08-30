@@ -882,11 +882,17 @@ void QQuickWebEngineViewPrivate::bindViewAndDelegateItem(QQuickWebEngineViewPriv
 
     // Change pointers first.
 
-    if (oldViewPrivate && oldViewPrivate != viewPrivate)
-        oldViewPrivate->delegateItem = nullptr;
+    if (delegateItem && oldViewPrivate != viewPrivate) {
+        if (oldViewPrivate)
+            oldViewPrivate->delegateItem = nullptr;
+        delegateItem->m_adapterClient = viewPrivate;
+    }
 
-    if (viewPrivate && oldDelegateItem != delegateItem)
+    if (viewPrivate && oldDelegateItem != delegateItem) {
+        if (oldDelegateItem)
+            oldDelegateItem->m_adapterClient = nullptr;
         viewPrivate->delegateItem = delegateItem;
+    }
 
     // Then notify.
 
