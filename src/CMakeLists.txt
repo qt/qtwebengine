@@ -191,5 +191,22 @@ if((LINUX OR MACOS) AND INSTALL_GN)
         CONFIGURATIONS ${installConfig}
         RUNTIME DESTINATION "${INSTALL_LIBEXECDIR}"
     )
+    if(NOT QT_WILL_INSTALL)
+        add_custom_target(copy-gn ALL DEPENDS
+            ${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/gn
+        )
+        if(Gn_FOUND)
+            set(copyDep ${installDir/bin/gn})
+        else()
+            set(copyDep gn)
+        endif()
+        add_custom_command(
+            OUTPUT ${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/gn
+            COMMAND ${CMAKE_COMMAND} -E copy ${installDir}/bin/gn
+            ${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}
+            DEPENDS ${copyDep}
+            USES_TERMINAL
+        )
+    endif()
 endif()
 
