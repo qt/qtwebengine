@@ -155,7 +155,7 @@ bool usingSoftwareDynamicGL()
     wchar_t path[MAX_PATH];
     DWORD size = GetModuleFileName(handle, path, MAX_PATH);
     QFileInfo openGLModule(QString::fromWCharArray(path, size));
-    return !openGLModule.fileName().compare(QLatin1String("opengl32sw.dll"),Qt::CaseInsensitive);
+    return openGLModule.fileName().contains(QLatin1String("opengl32sw"),Qt::CaseInsensitive);
 #else
     return false;
 #endif
