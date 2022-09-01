@@ -148,8 +148,15 @@ static bool usingSupportedSGBackend()
 
 bool usingSoftwareDynamicGL()
 {
+    const char openGlVar[] = "QT_OPENGL";
     if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
         return true;
+
+    if (qEnvironmentVariableIsSet(openGlVar)) {
+        const QByteArray requested = qgetenv(openGlVar);
+        if (requested == "software")
+            return true;
+    }
 #if defined(Q_OS_WIN)
     HMODULE handle = QNativeInterface::QWGLContext::openGLModuleHandle();
     wchar_t path[MAX_PATH];
