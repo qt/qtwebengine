@@ -353,6 +353,8 @@ Flickable {
         height: rot90 ? image.width : image.height
         property real rotationModulus: Math.abs(root.pageRotation % 180)
         property bool rot90: rotationModulus > 45 && rotationModulus < 135
+        property real minScale: 0.1
+        property real maxScale: 10
 
         PdfPageImage {
             id: image
@@ -447,11 +449,10 @@ Flickable {
 
         PinchHandler {
             id: pinch
-            minimumScale: 0.1
-            maximumScale: root.renderScale < 4 ? 2 : 1
+            minimumScale: paper.minScale / root.renderScale
+            maximumScale: Math.max(1, paper.maxScale / root.renderScale)
             minimumRotation: 0
             maximumRotation: 0
-            enabled: image.sourceSize.width < 5000
             onActiveChanged:
                 if (!active) {
                     const centroidInPoints = Qt.point(pinch.centroid.position.x / root.renderScale,
