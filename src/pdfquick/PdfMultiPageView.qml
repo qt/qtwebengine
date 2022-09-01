@@ -293,6 +293,8 @@ Item {
     TableView {
         id: tableView
         property bool debug: false
+        property real minScale: 0.1
+        property real maxScale: 10
         property point jumpLocationMargin: Qt.point(10, 10)  // px away from viewport edges
         anchors.fill: parent
         anchors.leftMargin: 2
@@ -399,11 +401,10 @@ Item {
                 }
                 PinchHandler {
                     id: pinch
-                    minimumScale: 0.1
-                    maximumScale: root.renderScale < 4 ? 2 : 1
+                    minimumScale: tableView.minScale / root.renderScale
+                    maximumScale: Math.max(1, tableView.maxScale / root.renderScale)
                     minimumRotation: root.pageRotation
                     maximumRotation: root.pageRotation
-                    enabled: image.sourceSize.width < 5000
                     onActiveChanged:
                         if (active) {
                             paper.z = 10
