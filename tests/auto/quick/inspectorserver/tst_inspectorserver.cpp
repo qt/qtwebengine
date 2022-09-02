@@ -136,7 +136,7 @@ void tst_InspectorServer::testRemoteDebuggingMessage()
         .arg(pageList.at(0).toObject().value("webSocketDebuggerUrl").toString())
         .arg(jsExpression));
 
-    QTRY_COMPARE(webSocketQueryWebView->title(), jsExpressionResult);
+    QTRY_COMPARE_WITH_TIMEOUT(webSocketQueryWebView->title(), jsExpressionResult, 10000);
 }
 
 void tst_InspectorServer::openRemoteDebuggingSession()

@@ -34,8 +34,7 @@ TestWebEngineView {
                     compare(result, testTitle2);
                     callbackCalled = true;
                 });
-            wait(100);
-            verify(callbackCalled);
+            tryVerify(function() { return callbackCalled; });
         }
     }
 }
