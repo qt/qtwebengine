@@ -151,6 +151,8 @@ void QQuickPdfSelection::clear()
 */
 void QQuickPdfSelection::selectAll()
 {
+    if (!m_document)
+        return;
     QPdfSelection sel = m_document->document()->getAllText(m_page);
     if (sel.text() != m_text) {
         m_text = sel.text();
@@ -184,6 +186,8 @@ void QQuickPdfSelection::keyReleaseEvent(QKeyEvent *ev)
     qCDebug(qLcIm) << "release" << ev;
     const auto &allText = pageText();
     if (ev == QKeySequence::MoveToPreviousWord) {
+        if (!m_document)
+            return;
         // iOS sends MoveToPreviousWord first to get to the beginning of the word,
         // and then SelectNextWord to select the whole word.
         int i = allText.lastIndexOf(WordDelimiter, m_fromCharIndex - allText.length());
@@ -195,6 +199,8 @@ void QQuickPdfSelection::keyReleaseEvent(QKeyEvent *ev)
         update(sel);
         QGuiApplication::inputMethod()->update(Qt::ImAnchorRectangle);
     } else if (ev == QKeySequence::SelectNextWord) {
+        if (!m_document)
+            return;
         int i = allText.indexOf(WordDelimiter, m_toCharIndex);
         if (i < 0)
             i = allText.length(); // go to the end of m_textAfter
@@ -214,6 +220,8 @@ void QQuickPdfSelection::inputMethodEvent(QInputMethodEvent *event)
             qCDebug(qLcIm) << "QInputMethodEvent::Cursor: moved to" << attr.start << "len" << attr.length;
             break;
         case QInputMethodEvent::Selection: {
+            if (!m_document)
+                return;
             auto sel = m_document->document()->getSelectionAtIndex(m_page, attr.start, attr.length);
             update(sel);
             qCDebug(qLcIm) << "QInputMethodEvent::Selection: from" << attr.start << "len" << attr.length
@@ -235,6 +243,8 @@ QVariant QQuickPdfSelection::inputMethodQuery(Qt::InputMethodQuery query, const 
     if (!argument.isNull()) {
         qCDebug(qLcIm) << "IM query" << query << "with arg" << argument;
         if (query == Qt::ImCursorPosition) {
+            if (!m_document)
+                return {};
             // If it didn't move since last time, return the same result.
             if (m_hitPoint == argument.toPointF())
                 return inputMethodQuery(query);
@@ -323,6 +333,8 @@ QVariant QQuickPdfSelection::inputMethodQuery(Qt::InputMethodQuery query) const
 const QString &QQuickPdfSelection::pageText() const
 {
     if (m_pageTextDirty) {
+        if (!m_document)
+            return m_pageText;
         m_pageText = m_document->document()->getAllText(m_page).text();
         m_pageTextDirty = false;
     }
