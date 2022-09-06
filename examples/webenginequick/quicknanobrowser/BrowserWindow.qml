@@ -1,4 +1,4 @@
-// Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 import Qt.labs.settings
@@ -8,6 +8,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
 import QtWebEngine
+import BrowserUtils
 
 ApplicationWindow {
     id: browserWindow
@@ -272,7 +273,7 @@ ApplicationWindow {
                     when: currentWebView
                     value: currentWebView.url
                 }
-                onAccepted: currentWebView.url = utils.fromUserInput(text)
+                onAccepted: currentWebView.url = Utils.fromUserInput(text)
                 selectByMouse: true
             }
             ToolButton {
