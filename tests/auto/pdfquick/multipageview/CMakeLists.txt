@@ -8,7 +8,7 @@ qt_internal_add_test(tst_multipageview
     SOURCES
         tst_multipageview.cpp
         ../shared/util.cpp ../shared/util.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Quick
         Qt::PdfQuickPrivate
