@@ -16,7 +16,7 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(qLcLink, "qt.pdf.links")
 
-/*!
+/*! \internal
     \class QPdfLinkModel
     \since 5.15
     \inmodule QtPdf
@@ -28,7 +28,7 @@ Q_LOGGING_CATEGORY(qLcLink, "qt.pdf.links")
     This is used in PDF viewers to implement the hyperlink mechanism.
 */
 
-/*!
+/*! \internal
     \enum QPdfLinkModel::Role
 
     \value Link A QPdfLink object.
@@ -40,7 +40,7 @@ Q_LOGGING_CATEGORY(qLcLink, "qt.pdf.links")
     \omitvalue NRoles
 */
 
-/*!
+/*! \internal
     Constructs a new link model with parent object \a parent.
 */
 QPdfLinkModel::QPdfLinkModel(QObject *parent)
@@ -51,7 +51,7 @@ QPdfLinkModel::QPdfLinkModel(QObject *parent)
         m_roleNames.insert(r, QByteArray(rolesMetaEnum.valueToKey(r)).toLower());
 }
 
-/*!
+/*! \internal
     Destroys the model.
 */
 QPdfLinkModel::~QPdfLinkModel() {}
@@ -61,7 +61,7 @@ QHash<int, QByteArray> QPdfLinkModel::roleNames() const
     return m_roleNames;
 }
 
-/*!
+/*! \internal
     \reimp
 */
 int QPdfLinkModel::rowCount(const QModelIndex &parent) const
@@ -71,7 +71,7 @@ int QPdfLinkModel::rowCount(const QModelIndex &parent) const
     return d->links.count();
 }
 
-/*!
+/*! \internal
     \reimp
 */
 QVariant QPdfLinkModel::data(const QModelIndex &index, int role) const
@@ -99,7 +99,7 @@ QVariant QPdfLinkModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-/*!
+/*! \internal
     \property QPdfLinkModel::document
     \brief the document to load links from
 */
@@ -125,7 +125,7 @@ void QPdfLinkModel::setDocument(QPdfDocument *document)
         d->update();
 }
 
-/*!
+/*! \internal
     \property QPdfLinkModel::page
     \brief the page to load links from
 */
