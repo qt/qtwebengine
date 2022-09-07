@@ -3,16 +3,27 @@
 
 #include "mainwindow.h"
 #include <QApplication>
+#include <QCommandLineParser>
+#include <QCommandLineOption>
 #include <QUrl>
 
 int main(int argc, char *argv[])
 {
+    QCoreApplication::setApplicationName("Qt PDF Viewer");
+    QCoreApplication::setOrganizationName("QtProject");
+
     QApplication a(argc, argv);
+
+    QCommandLineParser parser;
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addPositionalArgument("file", "The file to open.");
+    parser.process(a);
+
     MainWindow w;
-    QStringList args = a.arguments();
     w.show();
-    if (args.length() > 1)
-        w.open(QUrl::fromLocalFile(args[1]));
+    if (!parser.positionalArguments().isEmpty())
+        w.open(QUrl::fromLocalFile(parser.positionalArguments().constFirst()));
 
     return a.exec();
 }
