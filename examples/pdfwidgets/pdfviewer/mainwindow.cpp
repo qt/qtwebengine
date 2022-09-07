@@ -12,6 +12,7 @@
 #include <QPdfBookmarkModel>
 #include <QPdfDocument>
 #include <QPdfPageNavigator>
+#include <QStandardPaths>
 #include <QtMath>
 
 const qreal zoomMultiplier = qSqrt(2.0);
@@ -45,7 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
     bookmarkModel->setDocument(m_document);
 
     ui->bookmarkView->setModel(bookmarkModel);
-    connect(ui->bookmarkView, SIGNAL(activated(QModelIndex)), this, SLOT(bookmarkSelected(QModelIndex)));
+    connect(ui->bookmarkView, &QAbstractItemView::activated, this, &MainWindow::bookmarkSelected);
 
     ui->tabWidget->setTabEnabled(1, false); // disable 'Pages' tab for now
 
@@ -69,8 +70,9 @@ void MainWindow::open(const QUrl &docLocation)
         pageSelected(0);
         m_pageSelector->setMaximum(m_document->pageCount() - 1);
     } else {
-        qCDebug(lcExample) << docLocation << "is not a valid local file";
-        QMessageBox::critical(this, tr("Failed to open"), tr("%1 is not a valid local file").arg(docLocation.toString()));
+        const QString message = tr("%1 is not a valid local file").arg(docLocation.toString());
+        qCDebug(lcExample).noquote() << message;
+        QMessageBox::critical(this, tr("Failed to open"), message);
     }
     qCDebug(lcExample) << docLocation;
 }
@@ -93,9 +95,18 @@ void MainWindow::pageSelected(int page)
 
 void MainWindow::on_actionOpen_triggered()
 {
-    QUrl toOpen = QFileDialog::getOpenFileUrl(this, tr("Choose a PDF"), QUrl(), "Portable Documents (*.pdf)");
-    if (toOpen.isValid())
-        open(toOpen);
+    if (m_fileDialog == nullptr) {
+        m_fileDialog = new QFileDialog(this, tr("Choose a PDF"),
+                                       QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
+        m_fileDialog->setAcceptMode(QFileDialog::AcceptOpen);
+        m_fileDialog->setMimeTypeFilters({"application/pdf"});
+    }
+
+    if (m_fileDialog->exec() == QDialog::Accepted) {
+        const QUrl toOpen = m_fileDialog->selectedUrls().constFirst();
+        if (toOpen.isValid())
+            open(toOpen);
+    }
 }
 
 void MainWindow::on_actionQuit_triggered()

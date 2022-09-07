@@ -14,6 +14,7 @@ namespace Ui {
 class MainWindow;
 }
 
+class QFileDialog;
 class QPdfDocument;
 class QPdfView;
 class QSpinBox;
@@ -53,6 +54,7 @@ private:
     Ui::MainWindow *ui;
     ZoomSelector *m_zoomSelector;
     QSpinBox *m_pageSelector;
+    QFileDialog *m_fileDialog = nullptr;
 
     QPdfDocument *m_document;
 };
