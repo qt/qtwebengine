@@ -6,8 +6,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(qLcNav, "qt.pdf.pagenavigator")
-
 /*!
     \qmltype PdfPageNavigator
 //!    \instantiates QQuickPdfPageNavigator
