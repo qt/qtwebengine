@@ -46,8 +46,6 @@ QQuickPdfSelection::QQuickPdfSelection(QQuickItem *parent)
 {
 #if QT_CONFIG(im)
     setFlags(ItemIsFocusScope | ItemAcceptsInputMethod);
-    // workaround to get Copy instead of Paste on the popover menu (QTBUG-83811)
-    setProperty("qt_im_readonly", QVariant(true));
 #endif
 }
 
@@ -319,6 +317,7 @@ QVariant QQuickPdfSelection::inputMethodQuery(Qt::InputMethodQuery query) const
     case Qt::ImPlatformData:
         break;
     case Qt::ImReadOnly:
+        ret = true;
         break;
     case Qt::ImQueryInput:
     case Qt::ImQueryAll:
