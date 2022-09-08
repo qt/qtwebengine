@@ -13,7 +13,7 @@ ApplicationWindow {
     color: "lightgrey"
     title: document.title
     visible: true
-    property string source // for main.cpp
+    required property url source // for main.cpp
     property real scaleStep: Math.sqrt(2)
 
     header: ToolBar {
