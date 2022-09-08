@@ -196,7 +196,7 @@ if((LINUX OR MACOS) AND INSTALL_GN)
             ${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/gn
         )
         if(Gn_FOUND)
-            set(copyDep ${installDir/bin/gn})
+            set(copyDep ${Gn_EXECUTABLE})
         else()
             set(copyDep gn)
         endif()
