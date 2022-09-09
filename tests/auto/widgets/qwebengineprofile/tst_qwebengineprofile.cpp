@@ -41,6 +41,7 @@ private Q_SLOTS:
     void urlSchemeHandlerFailRequest();
     void urlSchemeHandlerFailOnRead();
     void urlSchemeHandlerStreaming();
+    void urlSchemeHandlerStreaming2();
     void urlSchemeHandlerRequestHeaders();
     void urlSchemeHandlerInstallation();
     void urlSchemeHandlerXhrStatus();
@@ -264,10 +265,12 @@ public:
     QList<QPointer<QBuffer>> m_buffers;
 };
 
-class StreamingIODevice : public QIODevice {
+// an evil version constantly claiming to be at end, similar to QNetworkReply
+class StreamingIODeviceBasic : public QIODevice
+{
     Q_OBJECT
 public:
-    StreamingIODevice(QObject *parent) : QIODevice(parent), m_bytesRead(0), m_bytesAvailable(0)
+    StreamingIODeviceBasic(QObject *parent) : QIODevice(parent), m_bytesRead(0), m_bytesAvailable(0)
     {
         setOpenMode(QIODevice::ReadOnly);
         m_timer.start(100, this);
@@ -278,12 +281,11 @@ public:
         const std::lock_guard<QRecursiveMutex> lock(m_mutex);
         return m_bytesAvailable;
     }
-    bool atEnd() const override
+protected:
+    bool internalAtEnd() const
     {
-        const std::lock_guard<QRecursiveMutex> lock(m_mutex);
         return (m_data.size() >= 1000 && m_bytesRead >= 1000);
     }
-protected:
     void timerEvent(QTimerEvent *) override
     {
         const std::lock_guard<QRecursiveMutex> lock(m_mutex);
@@ -304,7 +306,7 @@ protected:
             memcpy(data, m_data.constData() + m_bytesRead, len);
             m_bytesAvailable -= len;
             m_bytesRead += len;
-        } else if (atEnd())
+        } else if (internalAtEnd())
             return -1;
 
         return len;
@@ -314,12 +316,24 @@ protected:
         return 0;
     }
 
-private:
     mutable QRecursiveMutex m_mutex;
+private:
     QByteArray m_data;
     QBasicTimer m_timer;
     int m_bytesRead;
     int m_bytesAvailable;
+};
+
+// A nicer version implementing atEnd
+class StreamingIODevice : public StreamingIODeviceBasic
+{
+public:
+    StreamingIODevice(QObject *parent) : StreamingIODeviceBasic(parent) {}
+    bool atEnd() const override
+    {
+        const std::lock_guard<QRecursiveMutex> lock(m_mutex);
+        return internalAtEnd();
+    }
 };
 
 class StreamingUrlSchemeHandler : public QWebEngineUrlSchemeHandler
@@ -333,6 +347,20 @@ public:
     void requestStarted(QWebEngineUrlRequestJob *job) override
     {
         job->reply("text/plain;charset=utf-8", new StreamingIODevice(job));
+    }
+};
+
+class StreamingUrlSchemeHandler2 : public QWebEngineUrlSchemeHandler
+{
+public:
+    StreamingUrlSchemeHandler2(QObject *parent = nullptr)
+        : QWebEngineUrlSchemeHandler(parent)
+    {
+    }
+
+    void requestStarted(QWebEngineUrlRequestJob *job) override
+    {
+        job->reply("text/plain;charset=utf-8", new StreamingIODeviceBasic(job));
     }
 };
 
@@ -463,6 +491,23 @@ void tst_QWebEngineProfile::urlSchemeHandlerFailOnRead()
 void tst_QWebEngineProfile::urlSchemeHandlerStreaming()
 {
     StreamingUrlSchemeHandler handler;
+    QWebEngineProfile profile;
+    profile.installUrlSchemeHandler("stream", &handler);
+    QWebEngineView view;
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.setPage(new QWebEnginePage(&profile, &view));
+    view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
+    view.load(QUrl(QStringLiteral("stream://whatever")));
+    view.show();
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
+    QByteArray result;
+    result.append(1000, 'c');
+    QCOMPARE(toPlainTextSync(view.page()), QString::fromLatin1(result));
+}
+
+void tst_QWebEngineProfile::urlSchemeHandlerStreaming2()
+{
+    StreamingUrlSchemeHandler2 handler;
     QWebEngineProfile profile;
     profile.installUrlSchemeHandler("stream", &handler);
     QWebEngineView view;

@@ -380,13 +380,20 @@ private:
             m_totalBytesRead += bytesRead;
             m_client->OnTransferSizeUpdated(m_totalBytesRead);
 
-            if (m_device->atEnd() || (m_maxBytesToRead > 0 && m_totalBytesRead >= m_maxBytesToRead)) {
+            const bool deviceAtEnd = m_device->atEnd();
+            if ((deviceAtEnd && !m_device->isSequential())
+                || (m_maxBytesToRead > 0 && m_totalBytesRead >= m_maxBytesToRead)) {
                 OnTransferComplete(MOJO_RESULT_OK);
                 return true; // Done with reading
             }
 
             if (readResult == 0)
                 return false; // Wait for readyRead
+            if (readResult < 0 && deviceAtEnd && m_device->isSequential()) {
+                // Failure on read, and sequential device claiming to be at end, so treat it as a successful end-of-data.
+                OnTransferComplete(MOJO_RESULT_OK);
+                return true; // Done with reading
+            }
             if (readResult < 0)
                 break;
         }
