@@ -13,7 +13,18 @@ find_package(Qt6 REQUIRED COMPONENTS Gui Qml)
 
 qt_add_executable(multipage
     main.cpp
+    pdfapplication.h
+    pdfapplication.cpp
 )
+
+if (APPLE AND NOT IOS)
+    set(MACOSX_BUNDLE_ICON_FILE multipage.icns)
+    set(app_icon_macos "${CMAKE_CURRENT_SOURCE_DIR}/resources/multipage.icns")
+    set_source_files_properties(${app_icon_macos} PROPERTIES
+           MACOSX_PACKAGE_LOCATION "Resources")
+    target_sources(multipage PRIVATE ${app_icon_macos})
+    set(MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/resources/macos/Info.plist")
+endif()
 
 set_target_properties(multipage PROPERTIES
     WIN32_EXECUTABLE TRUE
