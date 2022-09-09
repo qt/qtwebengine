@@ -310,15 +310,14 @@ private:
         m_client->OnStartLoadingResponseBody(std::move(m_pipe.consumer_handle));
         m_head = nullptr;
 
-        if (readAvailableData()) // May delete this
-            return;
-
         m_watcher = std::make_unique<mojo::SimpleWatcher>(
-                FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC, m_taskRunner);
+                FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL, m_taskRunner);
         m_watcher->Watch(m_pipe.producer_handle.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
                          MOJO_WATCH_CONDITION_SATISFIED,
                          base::BindRepeating(&CustomURLLoader::notifyReadyWrite,
                                              m_weakPtrFactory.GetWeakPtr()));
+
+        readAvailableData(); // May delete this
     }
     void notifyCanceled() override
     {
@@ -386,8 +385,10 @@ private:
             uint32_t bufferSize = 0;
             MojoResult beginResult = m_pipe.producer_handle->BeginWriteData(
                     &buffer, &bufferSize, MOJO_BEGIN_WRITE_DATA_FLAG_NONE);
-            if (beginResult == MOJO_RESULT_SHOULD_WAIT)
+            if (beginResult == MOJO_RESULT_SHOULD_WAIT) {
+                m_watcher->ArmOrNotify();
                 return false; // Wait for pipe watcher
+            }
             if (beginResult != MOJO_RESULT_OK)
                 break;
             if (m_maxBytesToRead > 0 && m_maxBytesToRead <= int64_t{std::numeric_limits<uint32_t>::max()})
