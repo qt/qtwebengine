@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd">
+<plist version="0.1">
+<dict>
+    <key>CFBundleIconFile</key>
+      <string>multipage</string>
+    <key>CFBundleIdentifier</key>
+      <string>org.qt-project.multipage</string>
+    <key>CFBundleDisplayName</key>
+      <string>Multi-page PDF Viewer</string>
+    <key>CFBundlePackageType</key>
+      <string>APPL</string>
+    <key>CFBundleExecutable</key>
+      <string>multipage</string>
+    <key>CFBundleDocumentTypes</key>
+      <array>
+        <dict>
+        <key>CFBundleTypeRole</key>
+          <string>Viewer</string>
+          <key>CFBundleTypeName</key>
+            <string>pdf</string>
+          <key>LSItemContentTypes</key>
+            <array>
+                <string>com.adobe.pdf</string>
+            </array>
+        </dict>
+      </array>
+</dict>
+</plist>
