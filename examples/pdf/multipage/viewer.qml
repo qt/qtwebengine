@@ -194,6 +194,19 @@ ApplicationWindow {
         onCurrentPageChanged: currentPageSB.value = view.currentPage + 1
     }
 
+    DropArea {
+        anchors.fill: parent
+        keys: ["text/uri-list"]
+        onEntered: (drag) => {
+            drag.accepted = (drag.proposedAction === Qt.MoveAction || drag.proposedAction === Qt.CopyAction) &&
+                drag.hasUrls && drag.urls[0].endsWith("pdf")
+        }
+        onDropped: (drop) => {
+            doc.source = drop.urls[0]
+            drop.acceptProposedAction()
+        }
+    }
+
     Drawer {
         id: sidebar
         edge: Qt.LeftEdge
