@@ -58,6 +58,7 @@
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "printing/printer_worker.h"
 
+#include <QPrintEngine>
 #include <QPrinter>
 #include <QThread>
 #endif
@@ -800,7 +801,11 @@ void QWebEngineViewPrivate::didPrintPage(QPrinter *&currentPrinter, QSharedPoint
     printerWorker->m_documentCopies = currentPrinter->copyCount();
     printerWorker->m_collateCopies = currentPrinter->collateCopies();
 
-    QObject::connect(printerWorker, &QtWebEngineCore::PrinterWorker::resultReady, q, [q, &currentPrinter](bool success) {
+    int oldCopyCount = currentPrinter->copyCount();
+    currentPrinter->printEngine()->setProperty(QPrintEngine::PPK_CopyCount, 1);
+
+    QObject::connect(printerWorker, &QtWebEngineCore::PrinterWorker::resultReady, q, [q, &currentPrinter, oldCopyCount](bool success) {
+        currentPrinter->printEngine()->setProperty(QPrintEngine::PPK_CopyCount, oldCopyCount);
         currentPrinter = nullptr;
         Q_EMIT q->printFinished(success);
     });
