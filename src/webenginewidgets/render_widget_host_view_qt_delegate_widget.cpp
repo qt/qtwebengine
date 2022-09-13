@@ -282,6 +282,10 @@ void RenderWidgetHostViewQtDelegateWidget::show()
     // want to show anything else than popups as top-level.
     if (parent() || m_isPopup) {
         QQuickWidget::show();
+
+        QWebEngineView *view = static_cast<QWebEngineView *>(parent());
+        if (view && view->isWindow())
+            update();
     }
 }
 
