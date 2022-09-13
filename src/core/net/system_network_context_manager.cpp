@@ -30,7 +30,7 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
-#if defined(Q_OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "components/os_crypt/os_crypt.h"
 #include "content/public/common/network_service_util.h"
 #endif
@@ -191,7 +191,7 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(network::mojom::Networ
     network_service->SetUpHttpAuth(CreateHttpAuthStaticParams());
     network_service->ConfigureHttpAuthPrefs(CreateHttpAuthDynamicParams());
 
-#if defined(Q_OS_WIN)
+#if BUILDFLAG(IS_WIN)
     if (content::IsOutOfProcessNetworkService())
         network_service->SetEncryptionKey(OSCrypt::GetRawEncryptionKey());
 #endif
