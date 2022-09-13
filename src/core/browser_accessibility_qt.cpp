@@ -148,12 +148,12 @@ BrowserAccessibilityQt::~BrowserAccessibilityQt()
 BrowserAccessibilityInterface::BrowserAccessibilityInterface(BrowserAccessibilityQt *chromiumInterface)
     : q(chromiumInterface)
 {
-    Q_ASSERT(parent());
-    Q_ASSERT(parent()->object());
-    m_object = new QObject(parent()->object());
-    QString name = toQt(q->GetAuthorUniqueId());
-    if (!name.isEmpty())
-        m_object->setObjectName(name);
+    if (parent() && parent()->object()) {
+        m_object = new QObject(parent()->object());
+        QString name = toQt(q->GetAuthorUniqueId());
+        if (!name.isEmpty())
+            m_object->setObjectName(name);
+    }
 
     m_id = QAccessible::registerAccessibleInterface(this);
 }
