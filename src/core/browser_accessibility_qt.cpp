@@ -802,12 +802,13 @@ void BrowserAccessibilityInterface::init()
 {
     if (m_id)
         return;
-    Q_ASSERT(parent());
-    Q_ASSERT(parent()->object());
-    m_object = new QObject(parent()->object());
-    QString name = toQt(q->GetAuthorUniqueId());
-    if (!name.isEmpty())
-        m_object->setObjectName(name);
+
+    if (parent() && parent()->object()) {
+        m_object = new QObject(parent()->object());
+        QString name = toQt(q->GetAuthorUniqueId());
+        if (!name.isEmpty())
+            m_object->setObjectName(name);
+    }
 
     m_id = QAccessible::registerAccessibleInterface(this);
 }
