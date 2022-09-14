@@ -31,6 +31,7 @@
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 #if BUILDFLAG(IS_WIN)
+#include "chrome/browser/net/chrome_mojo_proxy_resolver_win.h"
 #include "components/os_crypt/os_crypt.h"
 #include "content/public/common/network_service_util.h"
 #endif
@@ -280,13 +281,20 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(network::
     const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-    if (command_line.HasSwitch(switches::kSingleProcess)) {
-      LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
-    } else {
-      network_context_params->proxy_resolver_factory =
-          ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver();
+    if (!command_line.HasSwitch(switches::kWinHttpProxyResolver)) {
+        if (command_line.HasSwitch(switches::kSingleProcess)) {
+            LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
+        } else {
+            network_context_params->proxy_resolver_factory =
+                    ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver();
+        }
     }
-
+#if BUILDFLAG(IS_WIN)
+    if (command_line.HasSwitch(switches::kUseSystemProxyResolver)) {
+        network_context_params->windows_system_proxy_resolver =
+                ChromeMojoProxyResolverWin::CreateWithSelfOwnedReceiver();
+    }
+#endif
     // Use the SystemNetworkContextManager to populate and update SSL
     // configuration. The SystemNetworkContextManager is owned by the
     // BrowserProcess itself, so will only be destroyed on shutdown, at which

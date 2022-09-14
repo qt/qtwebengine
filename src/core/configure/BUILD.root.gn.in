@@ -361,6 +361,15 @@ source_set("qtwebengine_sources") {
       "//chrome/browser/ui/webui/sandbox/sandbox_internals_ui.h",
     ]
   }
+  if (is_win) {
+    sources += [
+      "//chrome/browser/net/chrome_mojo_proxy_resolver_win.cc",
+      "//chrome/browser/net/chrome_mojo_proxy_resolver_win.h",
+    ]
+    deps += [ "//services/proxy_resolver_win",
+              "//services/proxy_resolver_win/public/mojom",
+    ]
+  }
   if (enable_spellcheck) {
     deps += [
       ":qtwebengine_spellcheck_sources",
