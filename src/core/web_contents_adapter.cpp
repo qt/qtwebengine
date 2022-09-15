@@ -28,7 +28,6 @@
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/task/current_thread.h"
-#include "base/task/post_task.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/values.h"
@@ -51,6 +50,7 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/drop_data.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/buildflags/buildflags.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/page_state/page_state.h"
@@ -489,7 +489,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     AutofillClientQt::CreateForWebContents(webContents());
     autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
             webContents(), AutofillClientQt::FromWebContents(webContents()),
-            /* app_locale = */ "", autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+             base::BindRepeating(&autofill::BrowserDriverInitHook, AutofillClientQt::FromWebContents(webContents()), ""));
 
 #if QT_CONFIG(webengine_printing_and_pdf) && QT_CONFIG(webengine_extensions)
     pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
@@ -710,7 +710,7 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
 
     if (resizeNeeded) {
         // Schedule navigation on the event loop.
-        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+        content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
                        base::BindOnce(&NavigateTask, sharedFromThis().toWeakRef(), std::move(params)));
     } else {
         Navigate(this, params);

@@ -12,8 +12,8 @@ namespace ui {
 
 class GLOzoneEGLQt : public GLOzoneEGL {
 public:
-    bool InitializeGLOneOffPlatform() override;
-    bool InitializeExtensionSettingsOneOffPlatform() override;
+    gl::GLDisplay *InitializeGLOneOffPlatform(uint64_t system_device_id) override;
+    bool InitializeExtensionSettingsOneOffPlatform(gl::GLDisplay *display) override;
     scoped_refptr<gl::GLSurface> CreateViewGLSurface(
             gfx::AcceleratedWidget window) override;
     scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(

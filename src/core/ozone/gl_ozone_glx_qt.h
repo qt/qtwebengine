@@ -15,10 +15,10 @@ public:
     GLOzoneGLXQt() {}
     ~GLOzoneGLXQt() override {}
 
-    bool InitializeGLOneOffPlatform() override;
+    gl::GLDisplay *InitializeGLOneOffPlatform(uint64_t system_device_id) override;
     bool InitializeStaticGLBindings(const gl::GLImplementationParts &implementation) override;
-    bool InitializeExtensionSettingsOneOffPlatform() override;
-    void ShutdownGL() override;
+    bool InitializeExtensionSettingsOneOffPlatform(gl::GLDisplay *display) override;
+    void ShutdownGL(gl::GLDisplay *display) override;
     void SetDisabledExtensionsPlatform(
         const std::string& disabled_extensions) override;
     bool GetGLWindowSystemBindingInfo(

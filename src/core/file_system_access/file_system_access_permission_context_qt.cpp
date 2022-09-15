@@ -214,7 +214,7 @@ FileSystemAccessPermissionContextQt::GetReadPermissionGrant(const url::Origin &o
         // |path| changed from being a directory to being a file or vice versa,
         // don't just re-use the existing grant but revoke the old grant before
         // creating a new grant.
-        existing_grant->SetStatus(PermissionStatus::DENIED);
+        existing_grant->SetStatus(blink::mojom::PermissionStatus::DENIED);
         existing_grant = nullptr;
     }
 
@@ -243,7 +243,7 @@ FileSystemAccessPermissionContextQt::GetWritePermissionGrant(const url::Origin &
         // |path| changed from being a directory to being a file or vice versa,
         // don't just re-use the existing grant but revoke the old grant before
         // creating a new grant.
-        existing_grant->SetStatus(PermissionStatus::DENIED);
+        existing_grant->SetStatus(blink::mojom::PermissionStatus::DENIED);
         existing_grant = nullptr;
     }
 
@@ -371,9 +371,9 @@ void FileSystemAccessPermissionContextQt::NavigatedAwayFromOrigin(const url::Ori
 
     OriginState &origin_state = it->second;
     for (auto &grant : origin_state.read_grants)
-        grant.second->SetStatus(PermissionStatus::ASK);
+        grant.second->SetStatus(blink::mojom::PermissionStatus::ASK);
     for (auto &grant : origin_state.write_grants)
-        grant.second->SetStatus(PermissionStatus::ASK);
+        grant.second->SetStatus(blink::mojom::PermissionStatus::ASK);
 }
 
 void FileSystemAccessPermissionContextQt::DidConfirmSensitiveDirectoryAccess(
@@ -390,6 +390,11 @@ void FileSystemAccessPermissionContextQt::DidConfirmSensitiveDirectoryAccess(
         std::move(callback).Run(SensitiveDirectoryResult::kAbort);
     else
         std::move(callback).Run(SensitiveDirectoryResult::kAllowed);
+}
+
+std::u16string FileSystemAccessPermissionContextQt::GetPickerTitle(const blink::mojom::FilePickerOptionsPtr &)
+{
+    return {};
 }
 
 } // namespace QtWebEngineCore

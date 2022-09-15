@@ -103,7 +103,6 @@ public:
     void OnUploadProgress(int64_t current_position, int64_t total_size, OnUploadProgressCallback callback) override;
     void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
     void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
-    void OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle body) override;
     void OnComplete(const network::URLLoaderCompletionStatus &status) override;
     void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr) override {}
 
@@ -352,7 +351,7 @@ void InterceptedRequest::ContinueAfterIntercept()
 
             for (auto header = info.extraHeaders.constBegin(); header != info.extraHeaders.constEnd(); ++header) {
                 std::string h = header.key().toStdString();
-                if (base::LowerCaseEqualsASCII(h, "referer")) {
+                if (base::EqualsCaseInsensitiveASCII(h, "referer")) {
                     request_.referrer = GURL(header.value().toStdString());
                 } else {
                     request_.headers.SetHeader(h, header.value().toStdString());
@@ -426,11 +425,6 @@ void InterceptedRequest::OnReceiveCachedMetadata(mojo_base::BigBuffer data)
 void InterceptedRequest::OnTransferSizeUpdated(int32_t transfer_size_diff)
 {
     target_client_->OnTransferSizeUpdated(transfer_size_diff);
-}
-
-void InterceptedRequest::OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle body)
-{
-    target_client_->OnStartLoadingResponseBody(std::move(body));
 }
 
 void InterceptedRequest::OnComplete(const network::URLLoaderCompletionStatus &status)

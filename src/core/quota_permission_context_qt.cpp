@@ -3,7 +3,6 @@
 
 #include "quota_permission_context_qt.h"
 
-#include "base/task/post_task.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -30,8 +29,7 @@ void QuotaPermissionContextQt::RequestQuotaPermission(const StorageQuotaParams &
     }
 
     if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-        base::PostTask(
-            FROM_HERE, {content::BrowserThread::UI},
+        content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
             base::BindOnce(&QuotaPermissionContextQt::RequestQuotaPermission, this,
                            params, render_process_id, std::move(callback)));
         return;
@@ -71,8 +69,7 @@ void QuotaPermissionContextQt::dispatchCallbackOnIOThread(PermissionCallback cal
         return;
 
     if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
-        base::PostTask(
-            FROM_HERE, {content::BrowserThread::IO},
+        content::GetIOThreadTaskRunner({})->PostTask(FROM_HERE,
             base::BindOnce(&QuotaPermissionContextQt::dispatchCallbackOnIOThread,
                            this, std::move(callback), response));
         return;

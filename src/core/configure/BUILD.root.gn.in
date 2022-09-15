@@ -417,7 +417,7 @@ source_set("qtwebengine_sources") {
 
   if (enable_webrtc && enable_extensions) {
     deps += [
-      "//chrome/browser/resources/media:webrtc_logs_resources",
+      "//chrome/browser/resources/media:resources",
       "//components/upload_list",
       "//components/webrtc_logging/browser",
       "//components/webrtc_logging/common",
@@ -548,10 +548,10 @@ repack("qtwebengine_repack_resources") {
   }
   if (enable_webrtc && enable_extensions) {
     sources += [
-      "$root_gen_dir/chrome/webrtc_logs_resources.pak",
+        "$root_gen_dir/chrome/media_resources.pak",
     ]
     deps += [
-      "//chrome/browser/resources/media:webrtc_logs_resources",
+        "//chrome/browser/resources/media:resources",
     ]
   }
   if (enable_pdf) {
@@ -568,7 +568,6 @@ repack("qtwebengine_repack_resources_100") {
   sources = [
     "$root_gen_dir/chrome/renderer_resources_100_percent.pak",
     "$root_gen_dir/components/components_resources_100_percent.pak",
-    "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
   ]
@@ -576,7 +575,6 @@ repack("qtwebengine_repack_resources_100") {
   deps = [
     "//chrome/renderer:resources_grit",
     "//components/resources:components_scaled_resources_grit",
-    "//content/app/resources:resources_grit",
     "//third_party/blink/public:scaled_resources_100_percent",
     "//ui/resources:ui_resources_grd_grit"
   ]
@@ -594,7 +592,6 @@ repack("qtwebengine_repack_resources_200") {
   sources = [
     "$root_gen_dir/chrome/renderer_resources_200_percent.pak",
     "$root_gen_dir/components/components_resources_200_percent.pak",
-    "$root_gen_dir/content/app/resources/content_resources_200_percent.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_200_percent.pak",
     "$root_gen_dir/ui/resources/ui_resources_200_percent.pak",
   ]
@@ -602,7 +599,6 @@ repack("qtwebengine_repack_resources_200") {
   deps = [
     "//chrome/renderer:resources_grit",
     "//components/resources:components_scaled_resources_grit",
-    "//content/app/resources:resources_grit",
     "//third_party/blink/public:scaled_resources_200_percent",
     "//ui/resources:ui_resources_grd_grit"
   ]

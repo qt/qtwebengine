@@ -31,8 +31,8 @@ public:
    }
 
 private:
-    void RecursiveBuildAccessibilityTree(const BrowserAccessibility &node, base::DictionaryValue *dict) const;
-    void AddProperties(const BrowserAccessibility &node, base::DictionaryValue *dict) const;
+    void RecursiveBuildAccessibilityTree(const BrowserAccessibility &node, base::Value::Dict *dict) const;
+    void AddProperties(const BrowserAccessibility &node, base::Value::Dict *dict) const;
     std::string ProcessTreeForOutput(const base::DictionaryValue &node) const override;
 };
 
@@ -48,33 +48,33 @@ base::Value AccessibilityTreeFormatterQt::BuildTree(ui::AXPlatformNodeDelegate *
 {
     BrowserAccessibility *root_internal =
         BrowserAccessibility::FromAXPlatformNodeDelegate(start);
-    base::Value dict(base::Value::Type::DICTIONARY);
-    RecursiveBuildAccessibilityTree(*root_internal, static_cast<base::DictionaryValue *>(&dict));
-    return dict;
+    base::Value::Dict dict;
+    RecursiveBuildAccessibilityTree(*root_internal, &dict);
+    return base::Value(std::move(dict));
 }
 
-void AccessibilityTreeFormatterQt::RecursiveBuildAccessibilityTree(const BrowserAccessibility &node, base::DictionaryValue *dict) const
+void AccessibilityTreeFormatterQt::RecursiveBuildAccessibilityTree(const BrowserAccessibility &node, base::Value::Dict *dict) const
 {
     AddProperties(node, dict);
 
-    auto children = std::make_unique<base::ListValue>();
+    base::Value::List children;
     for (size_t i = 0; i < node.PlatformChildCount(); ++i) {
-        std::unique_ptr<base::DictionaryValue> child_dict(new base::DictionaryValue);
+        base::Value::Dict child_dict;
 
         content::BrowserAccessibility *child_node = node.PlatformGetChild(i);
 
-        RecursiveBuildAccessibilityTree(*child_node, child_dict.get());
-        children->Append(std::move(child_dict));
+        RecursiveBuildAccessibilityTree(*child_node, &child_dict);
+        children.Append(std::move(child_dict));
     }
     dict->Set(kChildrenDictAttr, std::move(children));
 }
 
-void AccessibilityTreeFormatterQt::AddProperties(const BrowserAccessibility &node, base::DictionaryValue *dict) const
+void AccessibilityTreeFormatterQt::AddProperties(const BrowserAccessibility &node, base::Value::Dict *dict) const
 {
-    dict->SetInteger("id", node.GetId());
+    dict->Set("id", node.GetId());
     const QAccessibleInterface *iface = toQAccessibleInterface(&node);
 
-    dict->SetString("role", qAccessibleRoleString(iface->role()));
+    dict->Set("role", qAccessibleRoleString(iface->role()));
 
     QAccessible::State state = iface->state();
 
@@ -129,10 +129,10 @@ void AccessibilityTreeFormatterQt::AddProperties(const BrowserAccessibility &nod
         states.push_back(base::Value("selected"));
     if (state.traversed)
         states.push_back(base::Value("traversed"));
-    dict->SetKey("states", base::Value(states));
+    dict->Set("states", base::Value(states));
 
-    dict->SetString("name", iface->text(QAccessible::Name).toStdString());
-    dict->SetString("description", iface->text(QAccessible::Description).toStdString());
+    dict->Set("name", iface->text(QAccessible::Name).toStdString());
+    dict->Set("description", iface->text(QAccessible::Description).toStdString());
 }
 
 std::string AccessibilityTreeFormatterQt::ProcessTreeForOutput(const base::DictionaryValue &node) const

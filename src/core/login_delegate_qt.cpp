@@ -7,7 +7,6 @@
 
 #include "login_delegate_qt.h"
 
-#include "base/task/post_task.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -45,8 +44,7 @@ LoginDelegateQt::LoginDelegateQt(const net::AuthChallengeInfo &authInfo,
     , m_auth_required_callback(std::move(auth_required_callback))
     , m_weakFactory(this)
 {
-    base::PostTask(
-            FROM_HERE, { content::BrowserThread::UI },
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
             base::BindOnce(&LoginDelegateQt::triggerDialog, m_weakFactory.GetWeakPtr()));
 }
 

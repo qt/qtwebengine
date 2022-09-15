@@ -48,6 +48,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/data_url.h"
 #include "net/base/url_util.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
 #include <QDesktopServices>
 #include <QTimer>
@@ -879,20 +880,34 @@ int &WebContentsDelegateQt::streamCount(blink::mojom::MediaStreamType type)
     return m_videoStreamCount;
 }
 
-void WebContentsDelegateQt::addDevices(const blink::MediaStreamDevices &devices)
+void WebContentsDelegateQt::addDevices(const blink::mojom::StreamDevices &devices)
 {
-    for (const auto &device : devices)
-        ++streamCount(device.type);
+    if (devices.audio_device.has_value())
+        addDevice(devices.audio_device.value());
+    if (devices.video_device.has_value())
+        addDevice(devices.video_device.value());
 
     webContentsAdapter()->updateRecommendedState();
 }
 
-void WebContentsDelegateQt::removeDevices(const blink::MediaStreamDevices &devices)
+void WebContentsDelegateQt::removeDevices(const blink::mojom::StreamDevices &devices)
 {
-    for (const auto &device : devices)
-        ++streamCount(device.type);
+    if (devices.audio_device.has_value())
+        removeDevice(devices.audio_device.value());
+    if (devices.video_device.has_value())
+        removeDevice(devices.video_device.value());
 
     webContentsAdapter()->updateRecommendedState();
+}
+
+void WebContentsDelegateQt::addDevice(const blink::MediaStreamDevice &device)
+{
+    ++streamCount(device.type);
+}
+
+void WebContentsDelegateQt::removeDevice(const blink::MediaStreamDevice &device)
+{
+    --streamCount(device.type);
 }
 
 FrameFocusedObserver::FrameFocusedObserver(WebContentsAdapterClient *adapterClient)

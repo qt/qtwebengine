@@ -212,7 +212,6 @@ foreach(arch ${archs})
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_opengl
             SOURCES
                 compositor/compositor_resource_fence.cpp compositor/compositor_resource_fence.h
-                compositor/display_gl_output_surface.cpp compositor/display_gl_output_surface.h
                 compositor/display_skia_output_device.cpp compositor/display_skia_output_device.h
         )
 

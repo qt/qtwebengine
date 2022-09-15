@@ -6,7 +6,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/notification_event_dispatcher.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 

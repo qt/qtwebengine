@@ -13,7 +13,6 @@
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
-#include "base/task/post_task.h"
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_restrictions.h"
@@ -756,7 +755,7 @@ WebEngineContext::WebEngineContext()
     m_mainDelegate->PreBrowserMain();
     base::MessagePump::OverrideMessagePumpForUIFactory(messagePumpFactory);
     content::BrowserTaskExecutor::Create();
-    m_mainDelegate->PostEarlyInitialization(false);
+    m_mainDelegate->PostEarlyInitialization({});
     content::StartBrowserThreadPool();
     content::BrowserTaskExecutor::PostFeatureListSetup();
     tracing::InitTracingPostThreadPoolStartAndFeatureList(false);

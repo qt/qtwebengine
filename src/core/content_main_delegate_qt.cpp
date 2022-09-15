@@ -198,11 +198,6 @@ void ContentMainDelegateQt::PreSandboxStartup()
     }
 }
 
-void ContentMainDelegateQt::PostEarlyInitialization(bool)
-{
-    PostFieldTrialInitialization();
-}
-
 content::ContentClient *ContentMainDelegateQt::CreateContentClient()
 {
     return &m_contentClient;

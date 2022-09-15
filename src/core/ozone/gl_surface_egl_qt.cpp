@@ -25,139 +25,144 @@ using ui::GetLastEGLErrorString;
 
 namespace gl {
 
-bool GLSurfaceEGL::InitializeExtensionSettingsOneOff()
+bool GLSurfaceEGL::InitializeExtensionSettingsOneOff(GLDisplayEGL* display)
 {
     return GLSurfaceEGLQt::InitializeExtensionSettingsOneOff();
 }
 
-EGLDisplay GLSurfaceEGL::GetHardwareDisplay()
+EGLDisplay GLDisplayEGL::GetHardwareDisplay()
 {
     return GLSurfaceQt::g_display ? static_cast<EGLDisplay>(GLSurfaceQt::g_display->GetDisplay()) : EGL_NO_DISPLAY;
 }
 
-bool GLSurfaceEGL::IsCreateContextRobustnessSupported()
+bool GLDisplayEGL::IsCreateContextRobustnessSupported()
 {
     return GLContextHelper::isCreateContextRobustnessSupported() && HasEGLExtension("EGL_EXT_create_context_robustness");
 }
 
-bool GLSurfaceEGL::IsCreateContextBindGeneratesResourceSupported()
+bool GLDisplayEGL::IsCreateContextBindGeneratesResourceSupported()
 {
     return false;
 }
 
-bool GLSurfaceEGL::IsCreateContextWebGLCompatabilitySupported()
+bool GLDisplayEGL::IsCreateContextWebGLCompatabilitySupported()
 {
     return false;
 }
-bool GLSurfaceEGL::IsEGLSurfacelessContextSupported()
+bool GLDisplayEGL::IsEGLSurfacelessContextSupported()
 {
     return GLSurfaceEGLQt::g_egl_surfaceless_context_supported;
 }
-bool GLSurfaceEGL::IsEGLContextPrioritySupported()
+bool GLDisplayEGL::IsEGLContextPrioritySupported()
 {
     return false;
 }
 
-bool GLSurfaceEGL::IsRobustResourceInitSupported()
+bool GLDisplayEGL::IsRobustResourceInitSupported()
 {
     return false;
 }
 
-bool GLSurfaceEGL::IsDisplayTextureShareGroupSupported()
+bool GLDisplayEGL::IsDisplayTextureShareGroupSupported()
 {
     return false;
 }
 
-bool GLSurfaceEGL::IsCreateContextClientArraysSupported()
+bool GLDisplayEGL::IsCreateContextClientArraysSupported()
 {
     return false;
 }
 
-bool GLSurfaceEGL::IsPixelFormatFloatSupported()
+bool GLDisplayEGL::IsPixelFormatFloatSupported()
 {
     return false;
 }
 
-bool GLSurfaceEGL::IsANGLEFeatureControlSupported()
+bool GLDisplayEGL::IsANGLEFeatureControlSupported()
 {
     return false;
 }
 
-bool GLSurfaceEGL::IsANGLEPowerPreferenceSupported()
+bool GLDisplayEGL::IsANGLEPowerPreferenceSupported()
 {
     return false;
 }
 
-bool GLSurfaceEGL::IsANGLEExternalContextAndSurfaceSupported()
+bool GLDisplayEGL::IsANGLEExternalContextAndSurfaceSupported()
 {
     return false;
 }
 
-bool GLSurfaceEGL::IsDisplaySemaphoreShareGroupSupported()
+bool GLDisplayEGL::IsDisplaySemaphoreShareGroupSupported()
 {
     return false;
 }
 
-bool GLSurfaceEGL::IsRobustnessVideoMemoryPurgeSupported()
+bool GLDisplayEGL::IsRobustnessVideoMemoryPurgeSupported()
 {
     return false;
 }
 
-bool GLSurfaceEGL::IsANGLEContextVirtualizationSupported()
+bool GLDisplayEGL::IsANGLEContextVirtualizationSupported()
 {
     return false;
 }
 
-bool GLSurfaceEGL::IsANGLEVulkanImageSupported()
+bool GLDisplayEGL::IsANGLEVulkanImageSupported()
 {
      return false;
 }
 
-bool GLSurfaceEGL::IsEGLQueryDeviceSupported()
+bool GLDisplayEGL::IsEGLQueryDeviceSupported()
 {
     return false;
 }
 
-void GLSurfaceEGL::ShutdownOneOff()
+void GLSurfaceEGL::ShutdownOneOff(GLDisplayEGL *)
 {
 }
 
-const char *GLSurfaceEGL::GetEGLClientExtensions()
+const char *GetEGLClientExtensions()
 {
     return GLSurfaceQt::g_client_extensions.c_str();
 }
 
-const char *GLSurfaceEGL::GetEGLExtensions()
+const char *GetEGLExtensions()
 {
     return GLSurfaceQt::g_extensions.c_str();
 }
 
-bool GLSurfaceEGL::HasEGLClientExtension(const char *name)
+bool GLDisplayEGL::HasEGLClientExtension(const char *name)
 {
-    return ExtensionsContain(GetEGLClientExtensions(), name);
+    return GLSurface::ExtensionsContain(GetEGLClientExtensions(), name);
 }
 
-bool GLSurfaceEGL::HasEGLExtension(const char *name)
+bool GLDisplayEGL::HasEGLExtension(const char *name)
 {
-    return ExtensionsContain(GetEGLExtensions(), name);
+    return GLSurface::ExtensionsContain(GetEGLExtensions(), name);
 }
 
-bool GLSurfaceEGL::InitializeOneOff(gl::EGLDisplayPlatform /*native_display*/, uint64_t)
+GLDisplayEGL *GLSurfaceEGL::InitializeOneOff(gl::EGLDisplayPlatform /*native_display*/, uint64_t system_id)
 {
-    return GLSurfaceEGLQt::InitializeOneOff();
+    return static_cast<GLDisplayEGL *>(GLSurfaceEGLQt::InitializeOneOff(system_id));
 }
 
-bool GLSurfaceEGL::IsEGLNoConfigContextSupported()
+bool GLDisplayEGL::IsEGLNoConfigContextSupported()
 {
     return false;
 }
 
-bool GLSurfaceEGL::IsAndroidNativeFenceSyncSupported()
+bool GLDisplayEGL::IsAndroidNativeFenceSyncSupported()
 {
      return false;
 }
 
-DisplayType GLSurfaceEGL::GetDisplayType()
+GLDisplayEGL *GLSurfaceEGL::GetGLDisplayEGL()
+{
+     return static_cast<GLDisplayEGL *>(GLSurfaceEGLQt::g_display);
+}
+
+DisplayType GLDisplayEGL::GetDisplayType()
 {
      return DisplayType::DEFAULT;
 }
@@ -181,31 +186,28 @@ GLSurfaceEGLQt::~GLSurfaceEGLQt()
     Destroy();
 }
 
-bool GLSurfaceEGLQt::InitializeOneOff()
+gl::GLDisplay *GLSurfaceEGLQt::InitializeOneOff(uint64_t system_device_id)
 {
     if (s_initialized)
-        return true;
+        return g_display;
 
-    // Must be called before initializing the display.
-    g_driver_egl.InitializeClientExtensionBindings();
-
-    auto *egl_display = new GLDisplayEGL();
+    auto *egl_display = new GLDisplayEGL(system_device_id);
     g_display = egl_display;
     egl_display->SetDisplay(GLContextHelper::getEGLDisplay());
     if (!g_display->GetDisplay()) {
         LOG(ERROR) << "GLContextHelper::getEGLDisplay() failed.";
-        return false;
+        return nullptr;
     }
 
     g_config = GLContextHelper::getEGLConfig();
     if (!g_config) {
         LOG(ERROR) << "GLContextHelper::getEGLConfig() failed.";
-        return false;
+        return nullptr;
     }
 
     if (!eglInitialize(g_display->GetDisplay(), NULL, NULL)) {
         LOG(ERROR) << "eglInitialize failed with error " << GetLastEGLErrorString();
-        return false;
+        return nullptr;
     }
 
     g_client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
@@ -228,11 +230,8 @@ bool GLSurfaceEGLQt::InitializeOneOff()
         }
     }
 
-    // Must be called after initializing the display.
-    g_driver_egl.InitializeExtensionBindings();
-
     s_initialized = true;
-    return true;
+    return g_display;
 }
 
 bool GLSurfaceEGLQt::InitializeExtensionSettingsOneOff()
@@ -348,26 +347,18 @@ void* GLSurfacelessQtEGL::GetShareHandle()
     return NULL;
 }
 
-std::string DriverEGL::GetPlatformExtensions()
+} // namespace gl
+#endif // !BUILDFLAG(IS_MAC)
+
+namespace gl {
+
+std::string DisplayExtensionsEGL::GetPlatformExtensions(void*)
 {
     EGLDisplay display = GLContextHelper::getEGLDisplay();
     if (display == EGL_NO_DISPLAY)
         return "";
 
-    DCHECK(g_driver_egl.fn.eglQueryStringFn);
-    const char* str = g_driver_egl.fn.eglQueryStringFn(display, EGL_EXTENSIONS);
+    const char* str = eglQueryString(display, EGL_EXTENSIONS);
     return str ? std::string(str) : "";
 }
 } // namespace gl
-#else
-namespace gl {
-struct GL_EXPORT DriverEGL {
-    static std::string GetPlatformExtensions();
-};
-
-std::string DriverEGL::GetPlatformExtensions()
-{
-    return "";
-}
-} // namespace gl
-#endif // !BUILDFLAG(IS_MAC)

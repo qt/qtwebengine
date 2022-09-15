@@ -16,12 +16,8 @@
 
 namespace ui {
 
-bool GLOzoneGLXQt::InitializeGLOneOffPlatform() {
-    if (!gl::GLSurfaceGLXQt::InitializeOneOff()) {
-        LOG(ERROR) << "GLSurfaceGLXQt::InitializeOneOff failed.";
-        return false;
-    }
-    return true;
+gl::GLDisplay *GLOzoneGLXQt::InitializeGLOneOffPlatform(uint64_t system_device_id) {
+    return gl::GLSurfaceGLXQt::InitializeOneOff(system_device_id);
 }
 
 bool GLOzoneGLXQt::InitializeStaticGLBindings(
@@ -65,7 +61,7 @@ void GLOzoneGLXQt::SetDisabledExtensionsPlatform(
     gl::SetDisabledExtensionsGLX(disabled_extensions);
 }
 
-void GLOzoneGLXQt::ShutdownGL() {
+void GLOzoneGLXQt::ShutdownGL(gl::GLDisplay *) {
     gl::ClearBindingsGL();
     gl::ClearBindingsGLX();
 }
@@ -104,7 +100,7 @@ scoped_refptr<gl::GLSurface> GLOzoneGLXQt::CreateOffscreenGLSurface(
     return nullptr;
 }
 
-bool GLOzoneGLXQt::InitializeExtensionSettingsOneOffPlatform()
+bool GLOzoneGLXQt::InitializeExtensionSettingsOneOffPlatform(gl::GLDisplay *)
 {
     return gl::GLSurfaceGLXQt::InitializeExtensionSettingsOneOff();
 }

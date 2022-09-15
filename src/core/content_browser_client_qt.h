@@ -42,7 +42,7 @@ class ContentBrowserClientQt : public content::ContentBrowserClient
 public:
     ContentBrowserClientQt();
     ~ContentBrowserClientQt();
-    std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(content::MainFunctionParams) override;
+    std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(bool is_integration_test) override;
     void RenderProcessWillLaunch(content::RenderProcessHost *host) override;
     gl::GLShareGroup* GetInProcessGpuShareGroup() override;
     content::MediaObserver* GetMediaObserver() override;
@@ -232,7 +232,7 @@ public:
     void SiteInstanceDeleting(content::SiteInstance *site_instance) override;
     base::flat_set<std::string> GetPluginMimeTypesWithExternalHandlers(content::BrowserContext *browser_context) override;
 
-    content::WebContentsViewDelegate* GetWebContentsViewDelegate(content::WebContents* web_contents) override;
+    std::unique_ptr<content::WebContentsViewDelegate> GetWebContentsViewDelegate(content::WebContents *web_contents) override;
 
     static std::string getUserAgent();
     static blink::UserAgentMetadata getUserAgentMetadata();

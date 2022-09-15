@@ -4,7 +4,6 @@
 #include "content_browser_client_qt.h"
 
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
@@ -31,9 +30,11 @@
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
@@ -217,7 +218,7 @@ ContentBrowserClientQt::~ContentBrowserClientQt()
 {
 }
 
-std::unique_ptr<content::BrowserMainParts> ContentBrowserClientQt::CreateBrowserMainParts(content::MainFunctionParams)
+std::unique_ptr<content::BrowserMainParts> ContentBrowserClientQt::CreateBrowserMainParts(bool)
 {
     Q_ASSERT(!m_browserMainParts);
     auto browserMainParts = std::make_unique<BrowserMainPartsQt>();
@@ -727,7 +728,7 @@ bool ContentBrowserClientQt::HandleExternalProtocol(const GURL &url,
     Q_UNUSED(initiator_document);
     Q_UNUSED(out_factory);
 
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
                    base::BindOnce(&LaunchURL,
                                   url,
                                   std::move(web_contents_getter),
@@ -1310,7 +1311,7 @@ void ContentBrowserClientQt::CreateWebSocket(
             to_url = toGurl(infoPrivate->url);
         for (auto header = infoPrivate->extraHeaders.constBegin(); header != infoPrivate->extraHeaders.constEnd(); ++header) {
             std::string h = header.key().toStdString();
-            if (base::LowerCaseEqualsASCII(h, net::HttpRequestHeaders::kUserAgent))
+            if (base::EqualsCaseInsensitiveASCII(h, net::HttpRequestHeaders::kUserAgent))
                 addedUserAgent = true;
             headers.push_back(network::mojom::HttpHeader::New(h, header.value().toStdString()));
         }
@@ -1353,7 +1354,7 @@ void ContentBrowserClientQt::SiteInstanceDeleting(content::SiteInstance *site_in
 #endif
 }
 
-content::WebContentsViewDelegate *ContentBrowserClientQt::GetWebContentsViewDelegate(content::WebContents *web_contents)
+std::unique_ptr<content::WebContentsViewDelegate> ContentBrowserClientQt::GetWebContentsViewDelegate(content::WebContents *web_contents)
 {
     FormInteractionTabHelper::CreateForWebContents(web_contents);
     FileSystemAccessPermissionRequestManagerQt::CreateForWebContents(web_contents);

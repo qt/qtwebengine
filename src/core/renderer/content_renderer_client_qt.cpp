@@ -499,7 +499,7 @@ media::SupportedCodecs GetVP9Codecs(const std::vector<media::VideoCodecProfile> 
 }
 
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
-SupportedCodecs GetHevcCodecs(const std::vector<media::VideoCodecProfile> &profiles)
+media::SupportedCodecs GetHevcCodecs(const base::flat_set<media::VideoCodecProfile> &profiles)
 {
     // If no profiles are specified, then all are supported.
     if (profiles.empty()) {
@@ -592,6 +592,8 @@ static void AddWidevine(const media::mojom::KeySystemCapabilityPtr &capability,
     media::SupportedCodecs hw_secure_codecs = media::EME_CODEC_NONE;
     base::flat_set<media::EncryptionScheme> encryption_schemes;
     base::flat_set<media::EncryptionScheme> hw_secure_encryption_schemes;
+    base::flat_set<media::CdmSessionType> session_types;
+    base::flat_set<media::CdmSessionType> hw_secure_session_types;
     if (capability->sw_secure_capability) {
         codecs = GetSupportedCodecs(capability->sw_secure_capability.value(), /*is_secure=*/false);
         encryption_schemes = capability->sw_secure_capability->encryption_schemes;
@@ -620,16 +622,16 @@ static void AddWidevine(const media::mojom::KeySystemCapabilityPtr &capability,
         max_video_robustness = Robustness::HW_SECURE_ALL;
     }
 
-    auto persistent_license_support = media::EmeSessionTypeSupport::NOT_SUPPORTED;
-
     // Others.
     auto persistent_state_support = media::EmeFeatureSupport::REQUESTABLE;
     auto distinctive_identifier_support = media::EmeFeatureSupport::NOT_SUPPORTED;
 
     key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
-                                  codecs, encryption_schemes, hw_secure_codecs,
-                                  hw_secure_encryption_schemes, max_audio_robustness, max_video_robustness,
-                                  persistent_license_support, persistent_state_support,
+                                  codecs, std::move(encryption_schemes), std::move(session_types),
+                                  hw_secure_codecs, std::move(hw_secure_encryption_schemes),
+                                  std::move(hw_secure_session_types),
+                                  max_audio_robustness, max_video_robustness,
+                                  persistent_state_support,
                                   distinctive_identifier_support));
 }
 #endif // BUILDFLAG(ENABLE_WIDEVINE)

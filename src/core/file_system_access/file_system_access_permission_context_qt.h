@@ -50,6 +50,7 @@ public:
     FileSystemAccessPermissionContextQt::PathInfo
     GetLastPickedDirectory(const url::Origin &origin, const std::string &id) override;
     base::FilePath GetWellKnownDirectoryPath(blink::mojom::WellKnownDirectory directory) override;
+    std::u16string GetPickerTitle(const blink::mojom::FilePickerOptionsPtr &) override;
 
     void NavigatedAwayFromOrigin(const url::Origin &origin);
     content::BrowserContext *profile() const { return m_profile; }

@@ -18,7 +18,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/webplugininfo.h"
-#include "net/base/escape.h"
+#include "base/strings/escape.h"
 #include "net/http/http_response_headers.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -167,7 +167,7 @@ void PDFIFrameNavigationThrottleQt::LoadPlaceholderHTML()
 {
     // Prepare the params to navigate to the placeholder.
     std::string html = GetPDFPlaceholderHTML(navigation_handle()->GetURL());
-    GURL data_url("data:text/html," + net::EscapePath(html));
+    GURL data_url("data:text/html," + base::EscapePath(html));
     content::OpenURLParams params = content::OpenURLParams::FromNavigationHandle(navigation_handle());
     params.url = data_url;
     params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;

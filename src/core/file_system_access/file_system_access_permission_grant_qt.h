@@ -14,8 +14,6 @@ namespace QtWebEngineCore {
 
 using HandleType = content::FileSystemAccessPermissionContext::HandleType;
 using GrantType = FileSystemAccessPermissionContextQt::GrantType;
-using blink::mojom::PermissionStatus;
-using permissions::PermissionAction;
 
 class FileSystemAccessPermissionGrantQt : public content::FileSystemAccessPermissionGrant
 {
@@ -25,7 +23,7 @@ public:
                                       HandleType handle_type, GrantType type);
 
     // content::FileSystemAccessPermissionGrant:
-    PermissionStatus GetStatus() override { return m_status; }
+    blink::mojom::PermissionStatus GetStatus() override { return m_status; }
     base::FilePath GetPath() override { return m_path; }
     void RequestPermission(content::GlobalRenderFrameHostId frame_id,
                            UserActivationState user_activation_state,
@@ -36,11 +34,11 @@ public:
     const base::FilePath &path() const { return m_path; }
     GrantType type() const { return m_type; }
 
-    void SetStatus(PermissionStatus status);
+    void SetStatus(blink::mojom::PermissionStatus status);
 
 private:
     void OnPermissionRequestResult(base::OnceCallback<void(PermissionRequestOutcome)> callback,
-                                   PermissionAction result);
+                                   permissions::PermissionAction result);
 
     base::WeakPtr<FileSystemAccessPermissionContextQt> const m_context;
     const url::Origin m_origin;
@@ -50,7 +48,7 @@ private:
 
     // This member should only be updated via SetStatus(), to make sure
     // observers are properly notified about any change in status.
-    PermissionStatus m_status = PermissionStatus::ASK;
+    blink::mojom::PermissionStatus m_status = blink::mojom::PermissionStatus::ASK;
 };
 
 } // namespace QtWebEngineCore

@@ -48,16 +48,12 @@ bool GLOzoneEGLQt::LoadGLES2Bindings(const gl::GLImplementationParts & /*impleme
     return true;
 }
 
-bool GLOzoneEGLQt::InitializeGLOneOffPlatform()
+gl::GLDisplay *GLOzoneEGLQt::InitializeGLOneOffPlatform(uint64_t system_device_id)
 {
-    if (!gl::GLSurfaceEGLQt::InitializeOneOff()) {
-        LOG(ERROR) << "GLOzoneEGLQt::InitializeOneOff failed.";
-        return false;
-    }
-    return true;
+    return gl::GLSurfaceEGLQt::InitializeOneOff(system_device_id);
 }
 
-bool GLOzoneEGLQt::InitializeExtensionSettingsOneOffPlatform()
+bool GLOzoneEGLQt::InitializeExtensionSettingsOneOffPlatform(gl::GLDisplay *display)
 {
     return gl::GLSurfaceEGLQt::InitializeExtensionSettingsOneOff();
 }

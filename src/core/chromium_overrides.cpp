@@ -45,13 +45,13 @@ class WebContentsView;
 class WebContentsViewDelegate;
 class RenderViewHostDelegateView;
 
-WebContentsView* CreateWebContentsView(WebContentsImpl *web_contents,
-    WebContentsViewDelegate *,
+std::unique_ptr<WebContentsView> CreateWebContentsView(WebContentsImpl *web_contents,
+    std::unique_ptr<WebContentsViewDelegate> delegate,
     RenderViewHostDelegateView **render_view_host_delegate_view)
 {
     QtWebEngineCore::WebContentsViewQt* rv = new QtWebEngineCore::WebContentsViewQt(web_contents);
     *render_view_host_delegate_view = rv;
-    return rv;
+    return std::unique_ptr<WebContentsView>(rv);
 }
 
 #if defined(Q_OS_DARWIN)
@@ -79,9 +79,9 @@ std::unique_ptr<base::ListValue> GetFontList_SlowBlocking()
     std::unique_ptr<base::ListValue> font_list(new base::ListValue);
 
     for (auto family : QFontDatabase::families()){
-        std::unique_ptr<base::ListValue> font_item(new base::ListValue());
-        font_item->Append(family.toStdString());
-        font_item->Append(family.toStdString());  // localized name.
+        base::Value::List font_item;
+        font_item.Append(family.toStdString());
+        font_item.Append(family.toStdString());  // localized name.
         // TODO(yusukes): Support localized family names.
         font_list->Append(std::move(font_item));
     }
