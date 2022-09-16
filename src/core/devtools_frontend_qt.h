@@ -11,6 +11,7 @@
 
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/devtools/devtools_file_helper.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -29,8 +30,10 @@ class PersistentPrefStore;
 
 namespace QtWebEngineCore {
 
-class DevToolsFrontendQt : public content::WebContentsObserver
-                         , public content::DevToolsAgentHostClient {
+class DevToolsFrontendQt : public content::WebContentsObserver,
+                           public content::DevToolsAgentHostClient,
+                           public DevToolsFileHelper::Delegate
+{
 public:
     static DevToolsFrontendQt *Show(QSharedPointer<WebContentsAdapter> frontendAdapter, content::WebContents *inspectedContents);
 
@@ -53,6 +56,8 @@ public:
         return m_frontendDelegate;
     }
 
+    static bool IsValidFrontendURL(const GURL &url);
+
 protected:
     DevToolsFrontendQt(QSharedPointer<WebContentsAdapter> webContentsAdapter, content::WebContents *inspectedContents);
     ~DevToolsFrontendQt() override;
@@ -70,6 +75,14 @@ private:
     void DocumentOnLoadCompletedInPrimaryMainFrame() override;
     void WebContentsDestroyed() override;
 
+    // DevToolsFileHelper::Delegate overrides.
+    void FileSystemAdded(const std::string &error,
+                         const DevToolsFileHelper::FileSystem *file_system) override;
+    void FileSystemRemoved(const std::string &file_system_path) override;
+    void FilePathsChanged(const std::vector<std::string> &changed_paths,
+                          const std::vector<std::string> &added_paths,
+                          const std::vector<std::string> &removed_paths) override;
+
     void SendMessageAck(int request_id, base::Value arg1);
     void SetPreference(const std::string &name, const std::string &value);
     void RemovePreference(const std::string &name);
@@ -77,6 +90,15 @@ private:
     void CreateJsonPreferences(bool clear);
     void SetEyeDropperActive(bool active);
     void ColorPickedInEyeDropper(int r, int g, int b, int a);
+
+    void SaveToFile(const std::string &url, const std::string &content, bool saveAs);
+    void FileSavedAs(const std::string &url, const std::string &fileSystemPath);
+    void CanceledFileSaveAs(const std::string &url);
+    void AppendToFile(const std::string &url, const std::string &content);
+    void AppendedTo(const std::string &url);
+    void AddFileSystem(const std::string &type);
+    void UpgradeDraggedFileSystemPermissions(const std::string &fileSystem);
+    void RemoveFileSystem(const std::string &fileSystemPath);
 
     // We shouldn't be keeping it alive
     QWeakPointer<WebContentsAdapter> m_frontendAdapter;
@@ -88,6 +110,7 @@ private:
     int m_inspect_element_at_y;
     std::unique_ptr<content::DevToolsFrontendHost> m_frontendHost;
     std::unique_ptr<DevToolsEyeDropper> m_eyeDropper;
+    std::unique_ptr<DevToolsFileHelper> m_fileHelper;
 
     class NetworkResourceLoader;
     std::set<std::unique_ptr<NetworkResourceLoader>, base::UniquePtrComparator> m_loaders;

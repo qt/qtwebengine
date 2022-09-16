@@ -23,6 +23,7 @@
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/devtools_eye_dropper.h"
+#include "chrome/browser/devtools/devtools_file_helper.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/json_pref_store.h"
@@ -53,8 +54,18 @@ namespace {
 
 constexpr char kScreencastEnabled[] = "screencastEnabled";
 
-base::DictionaryValue BuildObjectForResponse(const net::HttpResponseHeaders *rh,
-                                             bool success, int net_error)
+base::DictionaryValue CreateFileSystemValue(DevToolsFileHelper::FileSystem fileSystem)
+{
+    base::DictionaryValue fileSystemValue;
+    fileSystemValue.SetStringKey("type", fileSystem.type);
+    fileSystemValue.SetStringKey("fileSystemName", fileSystem.file_system_name);
+    fileSystemValue.SetStringKey("rootURL", fileSystem.root_url);
+    fileSystemValue.SetStringKey("fileSystemPath", fileSystem.file_system_path);
+    return fileSystemValue;
+}
+
+base::DictionaryValue BuildObjectForResponse(const net::HttpResponseHeaders *rh, bool success,
+                                             int netError)
 {
     base::DictionaryValue response;
     int responseCode = 200;
@@ -65,8 +76,8 @@ base::DictionaryValue BuildObjectForResponse(const net::HttpResponseHeaders *rh,
         responseCode = 404;
     }
     response.SetInteger("statusCode", responseCode);
-    response.SetInteger("netError", net_error);
-    response.SetString("netErrorName", net::ErrorToString(net_error));
+    response.SetInteger("netError", netError);
+    response.SetString("netErrorName", net::ErrorToString(netError));
 
     auto headers = std::make_unique<base::DictionaryValue>();
     size_t iterator = 0;
@@ -207,8 +218,10 @@ DevToolsFrontendQt::DevToolsFrontendQt(QSharedPointer<WebContentsAdapter> webCon
         CreateJsonPreferences(false);
 
     m_frontendDelegate = static_cast<WebContentsDelegateQt *>(webContentsAdapter->webContents()->GetDelegate());
+    m_fileHelper = std::make_unique<DevToolsFileHelper>(
+            webContentsAdapter->webContents(),
+            static_cast<Profile *>(webContentsAdapter->webContents()->GetBrowserContext()), this);
 }
-
 
 DevToolsFrontendQt::~DevToolsFrontendQt()
 {
@@ -463,8 +476,10 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(base::Value message)
     } else if (method == "clearPreferences") {
         ClearPreferences();
     } else if (method == "requestFileSystems") {
-        web_contents()->GetMainFrame()->ExecuteJavaScript(u"DevToolsAPI.fileSystemsLoaded([]);",
-                                                          base::NullCallback());
+        base::ListValue fileSystemsValue;
+        for (auto const &fileSystem : m_fileHelper->GetFileSystems())
+            fileSystemsValue.Append(CreateFileSystemValue(fileSystem));
+        CallClientFunction("DevToolsAPI", "fileSystemsLoaded", std::move(fileSystemsValue));
     } else if (method == "reattach") {
         if (!m_agentHost)
             return;
@@ -517,6 +532,34 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(base::Value message)
         if (!active)
             return;
         SetEyeDropperActive(*active);
+    } else if (method == "save" && params.size() == 3) {
+        const std::string *url = params[0].GetIfString();
+        const std::string *content = params[1].GetIfString();
+        absl::optional<bool> saveAs = params[2].GetIfBool();
+        if (!url || !content || !saveAs)
+            return;
+        SaveToFile(*url, *content, *saveAs);
+    } else if (method == "append" && params.size() == 2) {
+        const std::string *url = params[0].GetIfString();
+        const std::string *content = params[1].GetIfString();
+        if (!url || !content)
+            return;
+        AppendToFile(*url, *content);
+    } else if (method == "addFileSystem" && params.size() == 1) {
+        const std::string *type = params[0].GetIfString();
+        if (!type)
+            return;
+        AddFileSystem(*type);
+    } else if (method == "removeFileSystem" && params.size() == 1) {
+        const std::string *fileSystemPath = params[0].GetIfString();
+        if (!fileSystemPath)
+            return;
+        RemoveFileSystem(*fileSystemPath);
+    } else if (method == "upgradeDraggedFileSystemPermissions" && params.size() == 1) {
+        const std::string *fileSystemUrl = params[0].GetIfString();
+        if (!fileSystemUrl)
+            return;
+        UpgradeDraggedFileSystemPermissions(*fileSystemUrl);
     } else {
         VLOG(1) << "Unimplemented devtools method: " << message;
         return;
@@ -593,6 +636,15 @@ void DevToolsFrontendQt::CallClientFunction(const std::string &object_name,
 
 }
 
+// static
+bool DevToolsFrontendQt::IsValidFrontendURL(const GURL &url)
+{
+    // NOTE: the inspector app does not change the frontend url.
+    // If we bring back the devtools_app, the url must be sanitized
+    // according to chrome/browser/devtools/devtools_ui_bindings.cc.
+    return url.spec() == GetFrontendURL();
+}
+
 void DevToolsFrontendQt::SendMessageAck(int request_id, base::Value arg)
 {
     base::Value id_value(request_id);
@@ -606,6 +658,104 @@ void DevToolsFrontendQt::AgentHostClosed(content::DevToolsAgentHost *agentHost)
     m_inspectedContents = nullptr;
     m_inspectedAdapter = nullptr;
     Close();
+}
+
+void DevToolsFrontendQt::SaveToFile(const std::string &url, const std::string &content, bool saveAs)
+{
+    m_fileHelper->Save(
+            url, content, saveAs,
+            base::BindOnce(&DevToolsFrontendQt::FileSavedAs, m_weakFactory.GetWeakPtr(), url),
+            base::BindOnce(&DevToolsFrontendQt::CanceledFileSaveAs, m_weakFactory.GetWeakPtr(),
+                           url));
+}
+
+void DevToolsFrontendQt::FileSavedAs(const std::string &url, const std::string &fileSystemPath)
+{
+    CallClientFunction("DevToolsAPI", "savedURL", base::Value(url), base::Value(fileSystemPath));
+}
+
+void DevToolsFrontendQt::CanceledFileSaveAs(const std::string &url)
+{
+    CallClientFunction("DevToolsAPI", "canceledSaveURL", base::Value(url));
+}
+
+void DevToolsFrontendQt::AppendToFile(const std::string &url, const std::string &content)
+{
+    m_fileHelper->Append(
+            url, content,
+            base::BindOnce(&DevToolsFrontendQt::AppendedTo, m_weakFactory.GetWeakPtr(), url));
+}
+
+void DevToolsFrontendQt::AppendedTo(const std::string &url)
+{
+    CallClientFunction("DevToolsAPI", "appendedToURL", base::Value(url));
+}
+
+void DevToolsFrontendQt::AddFileSystem(const std::string &type)
+{
+    CHECK(IsValidFrontendURL(web_contents()->GetLastCommittedURL()) && m_frontendHost);
+    m_fileHelper->AddFileSystem(type, base::NullCallback());
+}
+
+void DevToolsFrontendQt::UpgradeDraggedFileSystemPermissions(const std::string &fileSystemUrl)
+{
+    CHECK(IsValidFrontendURL(web_contents()->GetLastCommittedURL()) && m_frontendHost);
+    m_fileHelper->UpgradeDraggedFileSystemPermissions(fileSystemUrl, base::NullCallback());
+}
+
+void DevToolsFrontendQt::RemoveFileSystem(const std::string &fileSystemPath)
+{
+    CHECK(IsValidFrontendURL(web_contents()->GetLastCommittedURL()) && m_frontendHost);
+    m_fileHelper->RemoveFileSystem(fileSystemPath);
+}
+
+// DevToolsFileHelper::Delegate implementation
+// based on chrome/browser/devtools/devtools_ui_bindings.cc
+void DevToolsFrontendQt::FileSystemAdded(const std::string &error,
+                                         const DevToolsFileHelper::FileSystem *file_system)
+{
+    if (file_system) {
+        CallClientFunction("DevToolsAPI", "fileSystemAdded", base::Value(error),
+                           CreateFileSystemValue(*file_system));
+    } else {
+        CallClientFunction("DevToolsAPI", "fileSystemAdded", base::Value(error));
+    }
+}
+
+void DevToolsFrontendQt::FileSystemRemoved(const std::string &file_system_path)
+{
+    CallClientFunction("DevToolsAPI", "fileSystemRemoved", base::Value(file_system_path));
+}
+
+void DevToolsFrontendQt::FilePathsChanged(const std::vector<std::string> &changed_paths,
+                                          const std::vector<std::string> &added_paths,
+                                          const std::vector<std::string> &removed_paths)
+{
+    const int kMaxPathsPerMessage = 1000;
+    size_t changed_index = 0;
+    size_t added_index = 0;
+    size_t removed_index = 0;
+    // Dispatch limited amount of file paths in a time to avoid
+    // IPC max message size limit. See https://crbug.com/797817.
+    while (changed_index < changed_paths.size() || added_index < added_paths.size()
+           || removed_index < removed_paths.size()) {
+        int budget = kMaxPathsPerMessage;
+        base::ListValue changed, added, removed;
+        while (budget > 0 && changed_index < changed_paths.size()) {
+            changed.Append(changed_paths[changed_index++]);
+            --budget;
+        }
+        while (budget > 0 && added_index < added_paths.size()) {
+            added.Append(added_paths[added_index++]);
+            --budget;
+        }
+        while (budget > 0 && removed_index < removed_paths.size()) {
+            removed.Append(removed_paths[removed_index++]);
+            --budget;
+        }
+        CallClientFunction("DevToolsAPI", "fileSystemFilesChangedAddedRemoved", std::move(changed),
+                           std::move(added), std::move(removed));
+    }
 }
 
 } // namespace QtWebEngineCore

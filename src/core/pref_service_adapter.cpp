@@ -127,6 +127,10 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterBooleanPref(autofill::prefs::kAutofillJapanCityFieldMigratedDeprecated,
                                   false);
 
+    // devtools
+    registry->RegisterDictionaryPref(prefs::kDevToolsFileSystemPaths);
+    registry->RegisterDictionaryPref(prefs::kDevToolsEditedFiles);
+
     {
         base::ScopedAllowBlocking allowBlock;
         m_prefService = factory.Create(registry);
