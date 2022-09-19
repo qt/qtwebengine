@@ -72,7 +72,6 @@ net::ClientCertIdentityList ClientCertOverrideStore::GetClientCertsOnUIThread(co
 
     // Look for certificates in memory store
     net::ClientCertIdentityList selected_identities;
-
     for (int i = 0; i < clientCertOverrideData.length(); i++) {
         scoped_refptr<net::X509Certificate> cert = clientCertOverrideData[i]->certPtr;
         if (cert) {
@@ -94,11 +93,22 @@ void ClientCertOverrideStore::GetClientCertsReturn(const net::SSLCertRequestInfo
                                                    ClientCertListCallback callback,
                                                    net::ClientCertIdentityList &&result)
 {
-    // Continue with native cert store if matching certificatse were not found in memory
-    if (result.empty() && m_nativeStore)
-        m_nativeStore->GetClientCerts(cert_request_info, std::move(callback));
-    else
+    // Continue with native cert store and append them after memory certificates
+    if (m_nativeStore) {
+        ClientCertListCallback callback2 = base::BindOnce(
+                [](ClientCertOverrideStore::ClientCertListCallback callback,
+                   net::ClientCertIdentityList result1, net::ClientCertIdentityList result2) {
+                    while (!result2.empty()) {
+                        result1.push_back(std::move(result2.back()));
+                        result2.pop_back();
+                    }
+                    std::move(callback).Run(std::move(result1));
+                },
+                std::move(callback), std::move(result));
+        m_nativeStore->GetClientCerts(cert_request_info, std::move(callback2));
+    } else {
         std::move(callback).Run(std::move(result));
+    }
 }
 
 #endif // QT_CONFIG(ssl)
