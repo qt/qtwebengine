@@ -7,6 +7,7 @@
 #include "base/task/post_task.h"
 #include "base/callback_forward.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "crypto/crypto_buildflags.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_private_key.h"
@@ -20,7 +21,7 @@
 
 #include <QtNetwork/qtnetworkglobal.h>
 
-#if defined(USE_NSS_CERTS)
+#if BUILDFLAG(USE_NSS_CERTS)
 #include "net/ssl/client_cert_store_nss.h"
 #endif
 
@@ -116,7 +117,7 @@ void ClientCertOverrideStore::GetClientCerts(const net::SSLCertRequestInfo &cert
 // static
 std::unique_ptr<net::ClientCertStore> ClientCertOverrideStore::createNativeStore()
 {
-#if defined(USE_NSS_CERTS)
+#if BUILDFLAG(USE_NSS_CERTS)
     return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreNSS(net::ClientCertStoreNSS::PasswordDelegateFactory()));
 #elif defined(Q_OS_WIN)
     return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreWin());
