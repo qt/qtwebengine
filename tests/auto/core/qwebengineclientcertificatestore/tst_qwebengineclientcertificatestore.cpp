@@ -19,8 +19,11 @@ public:
     ~tst_QWebEngineClientCertificateStore();
 
 private Q_SLOTS:
+    void init();
+    void cleanup();
     void addAndListCertificates();
     void removeAndClearCertificates();
+    void clientAuthentication_data();
     void clientAuthentication();
 };
 
@@ -30,6 +33,19 @@ tst_QWebEngineClientCertificateStore::tst_QWebEngineClientCertificateStore()
 
 tst_QWebEngineClientCertificateStore::~tst_QWebEngineClientCertificateStore()
 {
+}
+
+void tst_QWebEngineClientCertificateStore::init()
+{
+    QCOMPARE(0,
+             QWebEngineProfile::defaultProfile()->clientCertificateStore()->certificates().size());
+}
+
+void tst_QWebEngineClientCertificateStore::cleanup()
+{
+    QWebEngineProfile::defaultProfile()->clientCertificateStore()->clear();
+    QCOMPARE(0,
+             QWebEngineProfile::defaultProfile()->clientCertificateStore()->certificates().size());
 }
 
 void tst_QWebEngineClientCertificateStore::addAndListCertificates()
@@ -63,6 +79,7 @@ void tst_QWebEngineClientCertificateStore::addAndListCertificates()
 
 void tst_QWebEngineClientCertificateStore::removeAndClearCertificates()
 {
+    addAndListCertificates();
     QCOMPARE(2, QWebEngineProfile::defaultProfile()->clientCertificateStore()->certificates().size());
 
     // Remove one certificate from in-memory store
@@ -75,8 +92,29 @@ void tst_QWebEngineClientCertificateStore::removeAndClearCertificates()
     QCOMPARE(0, QWebEngineProfile::defaultProfile()->clientCertificateStore()->certificates().size());
 }
 
+void tst_QWebEngineClientCertificateStore::clientAuthentication_data()
+{
+    QTest::addColumn<QString>("client_certificate");
+    QTest::addColumn<QString>("client_key");
+    QTest::addColumn<bool>("in_memory");
+    QTest::addColumn<bool>("add_more_in_memory_certificates");
+    QTest::newRow("in_memory") << ":/resources/client.pem"
+                               << ":/resources/client.key" << true << false;
+#if defined(TEST_NSS)
+    QTest::newRow("nss") << ":/resources/client2.pem"
+                         << ":/resources/client2.key" << false << false;
+    QTest::newRow("in_memory + nss") << ":/resources/client2.pem"
+                                     << ":/resources/client2.key" << false << true;
+#endif
+}
+
 void tst_QWebEngineClientCertificateStore::clientAuthentication()
 {
+    QFETCH(QString, client_certificate);
+    QFETCH(QString, client_key);
+    QFETCH(bool, in_memory);
+    QFETCH(bool, add_more_in_memory_certificates);
+
     HttpsServer server(":/resources/server.pem", ":/resources/server.key", ":resources/ca.pem");
     server.setExpectError(false);
     QVERIFY(server.start());
@@ -86,17 +124,21 @@ void tst_QWebEngineClientCertificateStore::clientAuthentication()
         rr->sendResponse();
     });
 
-    QFile certFile(":/resources/client.pem");
+    QFile certFile(client_certificate);
     certFile.open(QIODevice::ReadOnly);
     const QSslCertificate cert(certFile.readAll(), QSsl::Pem);
 
-    QFile keyFile(":/resources/client.key");
+    QFile keyFile(client_key);
     keyFile.open(QIODevice::ReadOnly);
     const QSslKey sslKey(keyFile.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey, "");
 
-    QWebEngineProfile profile("clientAuthentication");
-    profile.clientCertificateStore()->add(cert, sslKey);
-    QWebEnginePage page(&profile);
+    if (in_memory)
+        QWebEngineProfile::defaultProfile()->clientCertificateStore()->add(cert, sslKey);
+
+    if (add_more_in_memory_certificates)
+        addAndListCertificates();
+
+    QWebEnginePage page;
     connect(&page, &QWebEnginePage::certificateError, [](QWebEngineCertificateError e) {
         // ca is self signed in this test simply accept the certificate error
         e.acceptCertificate();
@@ -104,9 +146,13 @@ void tst_QWebEngineClientCertificateStore::clientAuthentication()
     connect(&page, &QWebEnginePage::selectClientCertificate, &page,
             [&cert](QWebEngineClientCertificateSelection selection) {
                 QVERIFY(!selection.certificates().isEmpty());
-                const QSslCertificate &sCert = selection.certificates().at(0);
-                QVERIFY(cert == sCert);
-                selection.select(sCert);
+                for (const QSslCertificate &sCert : selection.certificates()) {
+                    if (cert == sCert) {
+                        selection.select(sCert);
+                        return;
+                    }
+                }
+                QFAIL("No certificate found.");
             });
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
     page.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
