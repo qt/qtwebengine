@@ -31,7 +31,10 @@ void QrcUrlSchemeHandler::requestStarted(QWebEngineUrlRequestJob *job)
     QFileInfo fileInfo(*file);
     QMimeDatabase mimeDatabase;
     QMimeType mimeType = mimeDatabase.mimeTypeForFile(fileInfo);
-    job->reply(mimeType.name().toUtf8(), file.take());
+    if (mimeType.name() == QStringLiteral("application/x-extension-html"))
+        job->reply("text/html", file.take());
+    else
+        job->reply(mimeType.name().toUtf8(), file.take());
 }
 
 } // namespace QtWebEngineCore
