@@ -129,6 +129,10 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterDictionaryPref(prefs::kDevToolsFileSystemPaths);
     registry->RegisterDictionaryPref(prefs::kDevToolsEditedFiles);
 
+    registry->RegisterStringPref(prefs::kGoogleServicesSigninScopedDeviceId, std::string());
+    registry->RegisterStringPref(prefs::kGaiaCookieLastListAccountsData, std::string());
+    registry->RegisterStringPref(prefs::kGCMProductCategoryForSubtypes, std::string());
+
     {
         base::ScopedAllowBlocking allowBlock;
         m_prefService = factory.Create(registry);
