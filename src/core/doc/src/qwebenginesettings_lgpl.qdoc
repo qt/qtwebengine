@@ -81,7 +81,8 @@
             Enables support for the HTML 5 local storage feature. Enabled by default.
     \value  LocalContentCanAccessRemoteUrls
             Allows local origin documents to access remote resources that would normally be blocked.
-            Disabled by default.
+            Disabled by default. Note DnsPrefetchEnabled below operates independently of this setting,
+            and can if enabled, cause remote accesses from local content.
     \value  XSSAuditingEnabled
             Obsolete and has no effect.
     \value  SpatialNavigationEnabled
