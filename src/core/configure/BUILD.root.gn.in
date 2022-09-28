@@ -216,6 +216,32 @@ source_set("qtwebengine_spellcheck_sources") {
   }
 }
 
+source_set("devtools_sources") {
+  configs += [ ":cpp17_config" ]
+  deps = [
+    "//components/zoom",
+    "//third_party/blink/public/mojom:mojom_platform",
+    ]
+  sources = [
+     "//chrome/browser/devtools/devtools_eye_dropper.cc",
+     "//chrome/browser/devtools/devtools_eye_dropper.h",
+     "//chrome/browser/devtools/devtools_file_helper.cc",
+     "//chrome/browser/devtools/devtools_file_helper.h",
+     "//chrome/browser/devtools/devtools_file_system_indexer.cc",
+     "//chrome/browser/devtools/devtools_file_system_indexer.h",
+     "//chrome/browser/devtools/devtools_file_watcher.cc",
+     "//chrome/browser/devtools/devtools_file_watcher.h",
+     "//chrome/browser/devtools/url_constants.cc",
+     "//chrome/browser/devtools/url_constants.h",
+     "//chrome/browser/devtools/devtools_ui_bindings.cc",
+     "//chrome/browser/devtools/devtools_ui_bindings.h",
+     "//chrome/browser/devtools/devtools_settings.cc",
+     "//chrome/browser/devtools/devtools_settings.h",
+     "//chrome/browser/devtools/devtools_embedder_message_dispatcher.cc",
+     "//chrome/browser/devtools/devtools_embedder_message_dispatcher.h",
+  ]
+}
+
 source_set("qtwebengine_sources") {
   configs += [
     ":cpp17_config",
@@ -223,6 +249,7 @@ source_set("qtwebengine_sources") {
     "//third_party/boringssl:external_config",
   ]
   deps = [
+    ":devtools_sources",
     "//build:branding_buildflags",
     "//build/config/chromebox_for_meetings:buildflags",
     "//chrome/browser:dev_ui_browser_resources_grit",
@@ -246,12 +273,6 @@ source_set("qtwebengine_sources") {
   sources = [
     "//chrome/browser/accessibility/accessibility_ui.cc",
     "//chrome/browser/accessibility/accessibility_ui.h",
-    "//chrome/browser/devtools/devtools_eye_dropper.cc",
-    "//chrome/browser/devtools/devtools_eye_dropper.h",
-    "//chrome/browser/devtools/devtools_file_helper.cc",
-    "//chrome/browser/devtools/devtools_file_helper.h",
-    "//chrome/browser/devtools/devtools_file_watcher.cc",
-    "//chrome/browser/devtools/devtools_file_watcher.h",
     "//chrome/browser/gcm/gcm_product_util.cc",
     "//chrome/browser/gcm/gcm_product_util.h",
     "//chrome/browser/gcm/gcm_profile_service_factory.cc",
