@@ -26,6 +26,9 @@
 #include "extensions/buildflags/buildflags.h"
 #include "content/public/browser/browser_context.h"
 
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "chrome/browser/devtools/devtools_settings.h"
+
 #if QT_CONFIG(webengine_spellchecker)
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "components/spellcheck/browser/pref_names.h"
@@ -126,6 +129,12 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     // devtools
     registry->RegisterDictionaryPref(prefs::kDevToolsFileSystemPaths);
     registry->RegisterDictionaryPref(prefs::kDevToolsEditedFiles);
+    registry->RegisterDictionaryPref(prefs::kDevToolsPreferences);
+    registry->RegisterBooleanPref(prefs::kDevToolsSyncPreferences, false);
+    // even if kDevToolsSyncPreferences is disabled, the js frontend tries to access
+    // these two. E.g.: 'clearPreferences', that is overridden by devtools_compatibility.js
+    registry->RegisterDictionaryPref(prefs::kDevToolsSyncedPreferencesSyncDisabled);
+    registry->RegisterDictionaryPref(prefs::kDevToolsSyncedPreferencesSyncEnabled);
 
     registry->RegisterStringPref(prefs::kGoogleServicesSigninScopedDeviceId, std::string());
     registry->RegisterStringPref(prefs::kGaiaCookieLastListAccountsData, std::string());
