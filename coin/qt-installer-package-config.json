@@ -16,7 +16,9 @@
             "**/mkspecs/modules/qt_plugin_qpdf.pri",
             "**/modules/Pdf*",
             "**/plugins/imageformats/**/*",
-            "**/qml/QtQuick/**/*"
+            "**/qml/QtQuick/**/*",
+            "**/qml/QtQuick/Pdf/**/.rcc/*",
+            "**/qml/QtQuick/Pdf/**/.rcc/qmlcache/*"
         ]
     }
 }
