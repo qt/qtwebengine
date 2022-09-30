@@ -21,6 +21,7 @@
 
 #include <widgetutil.h>
 #include <QtWebEngineCore/qtwebenginecore-config.h>
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 #include <QByteArray>
 #include <QClipboard>
 #include <QDir>
@@ -47,7 +48,6 @@
 #include <qnetworkcookiejar.h>
 #include <qnetworkreply.h>
 #include <qnetworkrequest.h>
-#include <QtNetwork/private/qtnetwork-config_p.h>
 #include <qwebenginedownloadrequest.h>
 #include <qwebenginefilesystemaccessrequest.h>
 #include <qwebenginefindtextresult.h>
