@@ -1245,8 +1245,7 @@ ContentBrowserClientQt::WillCreateURLLoaderRequestInterceptors(content::Navigati
 
 bool ContentBrowserClientQt::WillInterceptWebSocket(content::RenderFrameHost *frame)
 {
-    Q_UNUSED(frame);
-    return true; // It is probably not worth it to only intercept when interceptors are installed
+    return frame != nullptr;
 }
 
 QWebEngineUrlRequestInterceptor *getProfileInterceptorFromFrame(content::RenderFrameHost *frame)
