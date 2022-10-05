@@ -209,6 +209,10 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
         else
             d_ptr->fileSystemAccessDialogListener->MultiFilesSelected(files, nullptr);
     }
+
+    // release the fileSelectListener manually because it blocks fullscreen requests in chromium
+    // see QTBUG-106975
+    d_ptr->fileDialogListener.reset();
 }
 
 QStringList FilePickerController::acceptedMimeTypes() const
