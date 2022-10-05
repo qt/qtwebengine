@@ -4,8 +4,8 @@
 #ifndef QWEBENGINE_ACCESSIBLE_H
 #define QWEBENGINE_ACCESSIBLE_H
 
-#include <QAccessibleWidget>
-#include <QPointer>
+#include <QtCore/QPointer>
+#include <QtWidgets/QAccessibleWidget>
 
 #if QT_CONFIG(accessibility)
 
