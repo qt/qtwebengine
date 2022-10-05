@@ -3224,13 +3224,16 @@ void tst_QWebEnginePage::mouseButtonTranslation()
 
     QVERIFY(view.focusProxy() != nullptr);
 
-    QMouseEvent evpres(QEvent::MouseButtonPress, view.rect().center(), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    const QPoint mousePos = view.rect().center();
+    QMouseEvent evpres(QEvent::MouseButtonPress, mousePos, view.mapToGlobal(mousePos),
+                       Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
     QGuiApplication::sendEvent(view.focusProxy(), &evpres);
 
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "lastEvent.button").toInt(), 0);
     QCOMPARE(evaluateJavaScriptSync(view.page(), "lastEvent.buttons").toInt(), 1);
 
-    QMouseEvent evpres2(QEvent::MouseButtonPress, view.rect().center(), Qt::RightButton, Qt::LeftButton | Qt::RightButton, Qt::NoModifier);
+    QMouseEvent evpres2(QEvent::MouseButtonPress, mousePos, view.mapToGlobal(mousePos),
+                        Qt::RightButton, Qt::LeftButton | Qt::RightButton, Qt::NoModifier);
     QGuiApplication::sendEvent(view.focusProxy(), &evpres2);
 
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "lastEvent.button").toInt(), 2);
