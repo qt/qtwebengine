@@ -62,7 +62,7 @@ QPdfPageNavigator::~QPdfPageNavigator()
 */
 void QPdfPageNavigator::forward()
 {
-    if (d->currentHistoryIndex >= d->pageHistory.count() - 1)
+    if (d->currentHistoryIndex >= d->pageHistory.size() - 1)
         return;
     const bool backAvailableWas = backAvailable();
     const bool forwardAvailableWas = forwardAvailable();
@@ -122,7 +122,7 @@ void QPdfPageNavigator::back()
 */
 int QPdfPageNavigator::currentPage() const
 {
-    if (d->currentHistoryIndex < 0 || d->currentHistoryIndex >= d->pageHistory.count())
+    if (d->currentHistoryIndex < 0 || d->currentHistoryIndex >= d->pageHistory.size())
         return -1; // only until ctor or clear() runs
     return d->pageHistory.at(d->currentHistoryIndex)->page;
 }
@@ -136,7 +136,7 @@ int QPdfPageNavigator::currentPage() const
 */
 QPointF QPdfPageNavigator::currentLocation() const
 {
-    if (d->currentHistoryIndex < 0 || d->currentHistoryIndex >= d->pageHistory.count())
+    if (d->currentHistoryIndex < 0 || d->currentHistoryIndex >= d->pageHistory.size())
         return QPointF();
     return d->pageHistory.at(d->currentHistoryIndex)->location;
 }
@@ -149,14 +149,14 @@ QPointF QPdfPageNavigator::currentLocation() const
 */
 qreal QPdfPageNavigator::currentZoom() const
 {
-    if (d->currentHistoryIndex < 0 || d->currentHistoryIndex >= d->pageHistory.count())
+    if (d->currentHistoryIndex < 0 || d->currentHistoryIndex >= d->pageHistory.size())
         return 1;
     return d->pageHistory.at(d->currentHistoryIndex)->zoom;
 }
 
 QPdfLink QPdfPageNavigator::currentLink() const
 {
-    if (d->currentHistoryIndex < 0 || d->currentHistoryIndex >= d->pageHistory.count())
+    if (d->currentHistoryIndex < 0 || d->currentHistoryIndex >= d->pageHistory.size())
         return QPdfLink();
     return QPdfLink(d->pageHistory.at(d->currentHistoryIndex).data());
 }
@@ -195,9 +195,9 @@ void QPdfPageNavigator::jump(QPdfLink destination)
     const bool forwardAvailableWas = forwardAvailable();
     if (!d->changing) {
         if (d->currentHistoryIndex >= 0 && forwardAvailableWas)
-            d->pageHistory.remove(d->currentHistoryIndex + 1, d->pageHistory.count() - d->currentHistoryIndex - 1);
+            d->pageHistory.remove(d->currentHistoryIndex + 1, d->pageHistory.size() - d->currentHistoryIndex - 1);
         d->pageHistory.append(destination.d);
-        d->currentHistoryIndex = d->pageHistory.count() - 1;
+        d->currentHistoryIndex = d->pageHistory.size() - 1;
     }
     if (zoomChange)
         emit currentZoomChanged(currentZoom());
@@ -251,9 +251,9 @@ void QPdfPageNavigator::jump(int page, const QPointF &location, qreal zoom)
     const bool forwardAvailableWas = forwardAvailable();
     if (!d->changing) {
         if (d->currentHistoryIndex >= 0 && forwardAvailableWas)
-            d->pageHistory.remove(d->currentHistoryIndex + 1, d->pageHistory.count() - d->currentHistoryIndex - 1);
+            d->pageHistory.remove(d->currentHistoryIndex + 1, d->pageHistory.size() - d->currentHistoryIndex - 1);
         d->pageHistory.append(QExplicitlySharedDataPointer<QPdfLinkPrivate>(new QPdfLinkPrivate(page, location, zoom)));
-        d->currentHistoryIndex = d->pageHistory.count() - 1;
+        d->currentHistoryIndex = d->pageHistory.size() - 1;
     }
     if (zoomChange)
         emit currentZoomChanged(currentZoom());
@@ -293,7 +293,7 @@ void QPdfPageNavigator::jump(int page, const QPointF &location, qreal zoom)
 */
 void QPdfPageNavigator::update(int page, const QPointF &location, qreal zoom)
 {
-    if (d->currentHistoryIndex < 0 || d->currentHistoryIndex >= d->pageHistory.count())
+    if (d->currentHistoryIndex < 0 || d->currentHistoryIndex >= d->pageHistory.size())
         return;
     int currentPageWas = currentPage();
     QPointF currentLocationWas = currentLocation();
@@ -340,7 +340,7 @@ bool QPdfPageNavigator::backAvailable() const
 */
 bool QPdfPageNavigator::forwardAvailable() const
 {
-    return d->currentHistoryIndex < d->pageHistory.count() - 1;
+    return d->currentHistoryIndex < d->pageHistory.size() - 1;
 }
 
 /*!

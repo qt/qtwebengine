@@ -199,7 +199,7 @@ QJSValue QQuickWebEngineScriptCollection::collection() const
     const QList<QWebEngineScript> &list = d->toList();
     QV4::ExecutionEngine *v4 = QQmlEnginePrivate::getV4Engine(d->m_qmlEngine);
     QV4::Scope scope(v4);
-    QV4::Scoped<QV4::ArrayObject> scriptArray(scope, v4->newArrayObject(list.length()));
+    QV4::Scoped<QV4::ArrayObject> scriptArray(scope, v4->newArrayObject(list.size()));
     int i = 0;
     for (const auto &val : list) {
         QV4::ScopedValue sv(scope, v4->fromVariant(QVariant::fromValue(val)));

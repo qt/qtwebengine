@@ -1022,7 +1022,7 @@ void tst_Origins::mixedContent()
         QTRY_COMPARE(eval(QSL("result !== undefined")), QVariant(true));
         auto result = eval(QSL("result")).toString();
         // Work-around some combinations missing JS loaded signals:
-        if (m_page->messages.count() > 0) {
+        if (m_page->messages.size() > 0) {
             if (m_page->messages[0] == QSL("Frame Loaded") && result == QSL("cannotLoad"))
                 result = QSL("canLoadButNotAccess");
             m_page->messages.clear();

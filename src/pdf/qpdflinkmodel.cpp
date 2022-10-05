@@ -68,7 +68,7 @@ int QPdfLinkModel::rowCount(const QModelIndex &parent) const
 {
     Q_D(const QPdfLinkModel);
     Q_UNUSED(parent);
-    return d->links.count();
+    return d->links.size();
 }
 
 /*! \internal

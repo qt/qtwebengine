@@ -439,7 +439,7 @@ void QWebEngineViewPrivate::contextMenuRequested(QWebEngineContextMenuRequest *r
         Q_EMIT q_ptr->customContextMenuRequested(request->position());
         return;
     case Qt::ActionsContextMenu:
-        if (q_ptr->actions().count()) {
+        if (q_ptr->actions().size()) {
             QContextMenuEvent event(QContextMenuEvent::Mouse, request->position(),
                                     q_ptr->mapToGlobal(request->position()));
             QMenu::exec(q_ptr->actions(), event.globalPos(), 0, q_ptr);
@@ -1521,7 +1521,7 @@ void QContextMenuBuilder::addMenuItem(ContextMenuItem menuItem)
         action = thisRef->action(QWebEnginePage::ViewSource);
         break;
     case ContextMenuItem::SpellingSuggestions:
-        for (int i = 0; i < m_contextData->spellCheckerSuggestions().count() && i < 4; i++) {
+        for (int i = 0; i < m_contextData->spellCheckerSuggestions().size() && i < 4; i++) {
             action = new QAction(m_menu);
             QString replacement = m_contextData->spellCheckerSuggestions().at(i);
             QObject::connect(action, &QAction::triggered, [thisRef, replacement] {

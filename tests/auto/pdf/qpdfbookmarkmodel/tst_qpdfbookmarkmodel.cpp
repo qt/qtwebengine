@@ -63,8 +63,8 @@ void tst_QPdfBookmarkModel::setEmptyDocumentAndLoad()
 
     QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.bookmarks.pdf")), QPdfDocument::Error::None);
 
-    QCOMPARE(modelAboutToBeResetSpy.count(), 1);
-    QCOMPARE(modelResetSpy.count(), 1);
+    QCOMPARE(modelAboutToBeResetSpy.size(), 1);
+    QCOMPARE(modelResetSpy.size(), 1);
 
     QCOMPARE(model.rowCount(), 3);
 }
@@ -81,8 +81,8 @@ void tst_QPdfBookmarkModel::setLoadedDocument()
 
     model.setDocument(&document);
 
-    QCOMPARE(modelAboutToBeResetSpy.count(), 1);
-    QCOMPARE(modelResetSpy.count(), 1);
+    QCOMPARE(modelAboutToBeResetSpy.size(), 1);
+    QCOMPARE(modelResetSpy.size(), 1);
 
     QCOMPARE(model.rowCount(), 3);
 }
@@ -102,8 +102,8 @@ void tst_QPdfBookmarkModel::unloadDocument()
 
     document.close();
 
-    QCOMPARE(modelAboutToBeResetSpy.count(), 1);
-    QCOMPARE(modelResetSpy.count(), 1);
+    QCOMPARE(modelAboutToBeResetSpy.size(), 1);
+    QCOMPARE(modelResetSpy.size(), 1);
 
     QCOMPARE(model.rowCount(), 0);
 }

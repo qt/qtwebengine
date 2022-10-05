@@ -259,25 +259,25 @@ void tst_MultiPageView::password()
 
     QVERIFY(pdfView->setProperty("source", u"pdf-sample.protected.pdf"_qs));
 
-    QTRY_COMPARE(passwordRequiredSpy.count(), 1);
+    QTRY_COMPARE(passwordRequiredSpy.size(), 1);
     qCDebug(lcTests) << "error while awaiting password" << doc->error()
-                     << "passwordRequired count" << passwordRequiredSpy.count()
-                     << "statusChanged count" << statusChangedSpy.count();
+                     << "passwordRequired count" << passwordRequiredSpy.size()
+                     << "statusChanged count" << statusChangedSpy.size();
     QCOMPARE(doc->property("status").toInt(), int(QPdfDocument::Status::Error));
-    QCOMPARE(pageCountChangedSpy.count(), 0);
-    QCOMPARE(extPageCountChangedSpy.count(), 0);
-    QCOMPARE(statusChangedSpy.count(), 2); // Loading and then Error
+    QCOMPARE(pageCountChangedSpy.size(), 0);
+    QCOMPARE(extPageCountChangedSpy.size(), 0);
+    QCOMPARE(statusChangedSpy.size(), 2); // Loading and then Error
     statusChangedSpy.clear();
     QVERIFY(doc->setProperty("password", u"Qt"_qs));
-    QCOMPARE(passwordChangedSpy.count(), 1);
+    QCOMPARE(passwordChangedSpy.size(), 1);
     QTRY_COMPARE(doc->property("status").toInt(), int(QPdfDocument::Status::Ready));
     qCDebug(lcTests) << "after setPassword" << doc->error()
-                     << "passwordChanged count" << passwordChangedSpy.count()
-                     << "statusChanged count" << statusChangedSpy.count()
-                     << "pageCountChanged count" << pageCountChangedSpy.count();
-    QCOMPARE(statusChangedSpy.count(), 2); // Loading and then Ready
-    QCOMPARE(pageCountChangedSpy.count(), 1);
-    QCOMPARE(extPageCountChangedSpy.count(), pageCountChangedSpy.count());
+                     << "passwordChanged count" << passwordChangedSpy.size()
+                     << "statusChanged count" << statusChangedSpy.size()
+                     << "pageCountChanged count" << pageCountChangedSpy.size();
+    QCOMPARE(statusChangedSpy.size(), 2); // Loading and then Ready
+    QCOMPARE(pageCountChangedSpy.size(), 1);
+    QCOMPARE(extPageCountChangedSpy.size(), pageCountChangedSpy.size());
 }
 
 void tst_MultiPageView::selectionAndClipboard()
@@ -294,7 +294,7 @@ void tst_MultiPageView::selectionAndClipboard()
 
     QVERIFY(QMetaObject::invokeMethod(pdfView, "selectAll"));
     QString sel = pdfView->property("selectedText").toString();
-    QCOMPARE(sel.length(), 1073);
+    QCOMPARE(sel.size(), 1073);
 
 #if QT_CONFIG(clipboard)
     QClipboard *clip = qApp->clipboard();
@@ -332,13 +332,13 @@ void tst_MultiPageView::search()
     QTRY_COMPARE(searchModel->rowCount(QModelIndex()), 7); // occurrences of the word "PDF" in this file
     const int count = searchModel->rowCount(QModelIndex());
     QList<QList<QPointF>> resultOutlines = multiline->property("paths").value<QList<QList<QPointF>>>();
-    QCOMPARE(resultOutlines.count(), 7);
+    QCOMPARE(resultOutlines.size(), 7);
     QPoint contentPos = tableViewContentPos(table);
     int movements = 0;
     for (int i = 0; i < count; ++i) {
         // only one page, so IndexOnPage data is the same as overall index
         QCOMPARE(i, searchModel->data(searchModel->index(i), int(QPdfSearchModel::Role::IndexOnPage)).toInt());
-        QCOMPARE(resultOutlines.at(i).count(), 5); // 5-point polygon is a rectangle (including drawing back to the start, to close it)
+        QCOMPARE(resultOutlines.at(i).size(), 5); // 5-point polygon is a rectangle (including drawing back to the start, to close it)
         QCOMPARE(resultOutlines.at(i).first(), searchModel->data(searchModel->index(i), int(QPdfSearchModel::Role::Location)).toPointF());
 
         QVERIFY(QMetaObject::invokeMethod(pdfView, "searchForward"));

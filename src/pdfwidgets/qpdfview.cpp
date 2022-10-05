@@ -136,7 +136,7 @@ void QPdfViewPrivate::pageRendered(int pageNumber, QSize imageSize, const QImage
     Q_UNUSED(requestId);
 
     if (!m_cachedPagesLRU.contains(pageNumber)) {
-        if (m_cachedPagesLRU.length() > m_pageCacheLimit)
+        if (m_cachedPagesLRU.size() > m_pageCacheLimit)
             m_pageCache.remove(m_cachedPagesLRU.takeFirst());
 
         m_cachedPagesLRU.append(pageNumber);

@@ -43,7 +43,7 @@ public:
 
     bool ensureSignalEmitted()
     {
-        bool result = count() > 0;
+        bool result = size() > 0;
         if (!result)
             result = wait();
         clear();
@@ -162,7 +162,7 @@ static inline QRect elementGeometry(QWebEnginePage *page, const QString &id)
                 "})()");
     QVariantList coords = evaluateJavaScriptSync(page, jsCode).toList();
 
-    if (coords.count() != 4) {
+    if (coords.size() != 4) {
         qWarning("elementGeometry faield.");
         return QRect();
     }

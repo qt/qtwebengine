@@ -92,7 +92,7 @@ void tst_CertificateError::handleError()
     QCOMPARE(chain[1].serialNumber(), "3c:16:83:83:59:c4:2a:65:8f:7a:b2:07:10:14:4e:2d:70:9a:3e:23");
 
     if (deferError) {
-        QCOMPARE(page.loadSpy.count(), 0);
+        QCOMPARE(page.loadSpy.size(), 0);
         QCOMPARE(toPlainTextSync(&page), QString());
 
         if (acceptCertificate)
@@ -102,7 +102,7 @@ void tst_CertificateError::handleError()
 
         page.error.reset();
     }
-    QTRY_COMPARE_WITH_TIMEOUT(page.loadSpy.count(), 1, 30000);
+    QTRY_COMPARE_WITH_TIMEOUT(page.loadSpy.size(), 1, 30000);
     QCOMPARE(page.loadSpy.takeFirst().value(0).toBool(), acceptCertificate);
     QCOMPARE(toPlainTextSync(&page), expectedContent);
 }
