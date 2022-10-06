@@ -845,9 +845,9 @@ QWebEnginePage::~QWebEnginePage()
         setDevToolsPage(nullptr);
         emit _q_aboutToDelete();
 
-        for (auto varFun : qAsConst(d_ptr->m_variantCallbacks))
+        for (auto varFun : std::as_const(d_ptr->m_variantCallbacks))
             varFun(QVariant());
-        for (auto strFun : qAsConst(d_ptr->m_stringCallbacks))
+        for (auto strFun : std::as_const(d_ptr->m_stringCallbacks))
             strFun(QString());
         d_ptr->m_variantCallbacks.clear();
         d_ptr->m_stringCallbacks.clear();

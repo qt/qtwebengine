@@ -306,7 +306,7 @@ void tst_QWebEngineCookieStore::basicFilterOverHTTP()
     (void) httpServer.stop();
 
     QCOMPARE(resourceFirstParty.size(), accessTested.loadAcquire());
-    for (auto &&p : qAsConst(resourceFirstParty))
+    for (auto &&p : std::as_const(resourceFirstParty))
         QVERIFY2(p.second == firstPartyUrl,
                  qPrintable(QString("Resource [%1] has wrong firstPartyUrl: %2").arg(p.first.toString(), p.second.toString())));
 }

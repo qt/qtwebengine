@@ -282,7 +282,7 @@ quint64 QPdfPageRenderer::requestPage(int pageNumber, QSize imageSize,
     if (!d_ptr->m_document || d_ptr->m_document->status() != QPdfDocument::Status::Ready)
         return 0;
 
-    for (const auto &request : qAsConst(d_ptr->m_pendingRequests)) {
+    for (const auto &request : std::as_const(d_ptr->m_pendingRequests)) {
         if (request.pageNumber == pageNumber
             && request.imageSize == imageSize
             && request.options == options)

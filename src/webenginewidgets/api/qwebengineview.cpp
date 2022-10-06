@@ -186,7 +186,7 @@ protected:
         // We don't have a way to catch a top-level window change with QWidget
         // but a widget will most likely be shown again if it changes, so do
         // the reconnection at this point.
-        for (const QMetaObject::Connection &c : qAsConst(m_windowConnections))
+        for (const QMetaObject::Connection &c : std::as_const(m_windowConnections))
             disconnect(c);
         m_windowConnections.clear();
         if (QWindow *w = Window()) {

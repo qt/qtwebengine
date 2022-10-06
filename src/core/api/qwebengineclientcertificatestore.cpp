@@ -54,7 +54,7 @@ void QWebEngineClientCertificateStore::add(const QSslCertificate &certificate, c
 QList<QSslCertificate> QWebEngineClientCertificateStore::certificates() const
 {
     QList<QSslCertificate> certificateList;
-    for (auto data : qAsConst(m_storeData->extraCerts))
+    for (auto data : std::as_const(m_storeData->extraCerts))
         certificateList.append(data->certificate);
     return certificateList;
 }
