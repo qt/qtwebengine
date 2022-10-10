@@ -631,16 +631,11 @@ WebEngineContext::WebEngineContext()
     // Allow us to inject javascript like any webview toolkit.
     content::RenderFrameHost::AllowInjectingJavaScript();
 
-    QStringList appArgs = QCoreApplication::arguments();
-
     bool useEmbeddedSwitches = false;
-#if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
-    useEmbeddedSwitches = !appArgs.contains(QStringLiteral("--disable-embedded-switches"));
-#else
-    useEmbeddedSwitches  = appArgs.contains(QStringLiteral("--enable-embedded-switches"));
-#endif
+    bool enableGLSoftwareRendering = false;
+    base::CommandLine *parsedCommandLine =
+            initCommandLine(useEmbeddedSwitches, enableGLSoftwareRendering);
 
-    base::CommandLine* parsedCommandLine = commandLine();
     setupProxyPac(parsedCommandLine);
     parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
 
@@ -696,7 +691,6 @@ WebEngineContext::WebEngineContext()
     // bitmaps, use software rendering via software OpenGL. This might be less
     // performant, but at least provides WebGL support.
     // TODO(miklocek), check if this still works with latest chromium
-    const bool enableGLSoftwareRendering = appArgs.contains(QStringLiteral("--enable-webgl-software-rendering"));
     const bool disableGpu = parsedCommandLine->HasSwitch(switches::kDisableGpu);
     const char *glType = getGLType(enableGLSoftwareRendering, disableGpu);
 
@@ -835,7 +829,9 @@ gpu::SyncPointManager *WebEngineContext::syncPointManager()
     return s_syncPointManager.loadRelaxed();
 }
 
-base::CommandLine* WebEngineContext::commandLine() {
+base::CommandLine *WebEngineContext::initCommandLine(bool &useEmbeddedSwitches,
+                                                     bool &enableGLSoftwareRendering)
+{
     if (base::CommandLine::CreateEmpty()) {
         base::CommandLine* parsedCommandLine = base::CommandLine::ForCurrentProcess();
         QStringList appArgs = QCoreApplication::arguments();
@@ -850,9 +846,13 @@ base::CommandLine* WebEngineContext::commandLine() {
                 appArgs = appArgs.mid(0, 1);
             }
         }
-#ifdef Q_OS_WIN
-        appArgs.removeAll(QStringLiteral("--enable-webgl-software-rendering"));
+#if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
+        useEmbeddedSwitches = !appArgs.contains(QStringLiteral("--disable-embedded-switches"));
+#else
+        useEmbeddedSwitches = appArgs.contains(QStringLiteral("--enable-embedded-switches"));
 #endif
+        enableGLSoftwareRendering =
+            appArgs.removeAll(QStringLiteral("--enable-webgl-software-rendering"));
         appArgs.removeAll(QStringLiteral("--disable-embedded-switches"));
         appArgs.removeAll(QStringLiteral("--enable-embedded-switches"));
 

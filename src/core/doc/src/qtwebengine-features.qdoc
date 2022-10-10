@@ -40,14 +40,14 @@
     (MP3), have been enabled. Proprietary codecs can be enabled by passing the
     following option to the \c configure tool when configuring Qt:
 
-    \code
+    \badcode
     -webengine-proprietary-codecs
     \endcode
 
     For example, the following option could be passed when configuring Qt for
     building it at the top level:
 
-    \code
+    \badcode
     configure -webengine-proprietary-codecs
     \endcode
 
@@ -57,7 +57,7 @@
     command can be used to configure and build (in this example, the \QWE source code is
     located in \c {C:\qt\qtwebengine}):
 
-    \code
+    \badcode
     qt-configure-module C:\qt\qtwebengine -webengine-proprietary-codecs
     cmake --build . --parallel
     \endcode
@@ -82,6 +82,14 @@
     Chromium based browser (such as \l{WebEngine Widgets Simple Browser Example}
     {Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}) to connect
     to \c {http://localhost:[your-port]}.
+
+    \note Any WebEngine command line options should be specified after the
+    \c {--webEngineArgs} option, which is used to separate the user's application
+    specific options from the WebEngine's ones.
+
+    \badcode
+    --webEngineArgs --remote-debugging-port=5000
+    \endcode
 
     The Chromium DevTools page can also be shown within the application. To set
     this up, you can call either QWebEnginePage::setInspectedPage() to the page
@@ -169,17 +177,17 @@
     location can be also passed with \c {QTWEBENGINE_CHROMIUM_FLAGS} using \c {widevine-path}.
 
     On Windows:
-    \code
+    \badcode
     set QTWEBENGINE_CHROMIUM_FLAGS=--widevine-path="C:/some path/widevinecdm.dll"
     \endcode
 
     On Linux:
-    \code
+    \badcode
     export QTWEBENGINE_CHROMIUM_FLAGS=--widevine-path="/some path/libwidevinecdm.so"
     \endcode
 
     On macOS:
-    \code
+    \badcode
     export QTWEBENGINE_CHROMIUM_FLAGS=--widevine-path="/some path/libwidevinecdm.dylib"
     \endcode
 
@@ -263,14 +271,14 @@
     entries, separated by commas, that contain the file path and one or several
     MIME types, separated by semicolons:
 
-    \code
+    \badcode
     <file-path-plugin1>;<mime-type-plugin1>,<file-path-plugin2>;<mime-type1-plugin2>;<mime-type2-plugin2>
     \endcode
 
     For example:
 
-    \code
-    --register-pepper-plugins="libppapi_example.so;application/x-ppapi-example"
+    \badcode
+    --webEngineArgs --register-pepper-plugins="libppapi_example.so;application/x-ppapi-example"
     \endcode
 
     The MIME type is important because it determines which embeds the plugin is
@@ -541,14 +549,14 @@
     For opening the source view in the current tab, URLs with \l{view-source URI scheme}
     are also supported. For example, you can type the following URL to the URL bar
     to view the HTML source of the qt.io web page:
-    \code
+    \badcode
     view-source:https://www.qt.io/
     \endcode
 
     Auto-completion of incomplete URLs with \l{view-source URI scheme} makes the usage of
     this feature more comfortable. For example, the following incomplete URL also loads
     the source view of the qt.io web page:
-    \code
+    \badcode
     view-source:qt.io
     \endcode
 
