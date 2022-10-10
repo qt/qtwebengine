@@ -83,7 +83,8 @@ public:
     void addProfileAdapter(ProfileAdapter *profileAdapter);
     void removeProfileAdapter(ProfileAdapter *profileAdapter);
     void destroy();
-    static base::CommandLine* commandLine();
+    static base::CommandLine *initCommandLine(bool &useEmbeddedSwitches,
+                                              bool &enableGLSoftwareRendering);
 
     static gpu::SyncPointManager *syncPointManager();
 

@@ -48,7 +48,7 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     PrefServiceFactory factory;
     factory.set_command_line_prefs(base::MakeRefCounted<ChromeCommandLinePrefStore>(
-            WebEngineContext::commandLine()));
+            base::CommandLine::ForCurrentProcess()));
 
     QString userPrefStorePath = profileAdapter.dataPath();
     if (!profileAdapter.isOffTheRecord() && !userPrefStorePath.isEmpty() &&

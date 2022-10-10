@@ -28,10 +28,14 @@
     \QWE based browser, such as the Chrome browser.
 
     To activate the developer tools, start an application that uses \QWE
-    with the command-line arguments:
+    with the command-line argument \c {--remote-debugging-port=<portnumber>}.
+
+    \note Any WebEngine command line options should be specified after the
+    \c {--webEngineArgs} option, which is used to separate the user's application
+    specific options from the WebEngine's ones.
 
     \badcode
-    --remote-debugging-port=<port_number>
+    --webEngineArgs --remote-debugging-port=<portnumber>
     \endcode
 
     Where \c <port_number> refers to a local network port. The web developer
