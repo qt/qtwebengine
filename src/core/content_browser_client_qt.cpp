@@ -8,6 +8,7 @@
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
+#include "components/embedder_support/user_agent_utils.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/navigation_interception/intercept_navigation_throttle.h"
@@ -980,6 +981,12 @@ std::string ContentBrowserClientQt::getUserAgent()
 {
     // Mention the Chromium version we're based on to get passed stupid UA-string-based feature detection (several WebRTC demos need this)
     return content::BuildUserAgentFromProduct("QtWebEngine/" QTWEBENGINECORE_VERSION_STR " Chrome/" CHROMIUM_VERSION);
+}
+
+blink::UserAgentMetadata ContentBrowserClientQt::getUserAgentMetadata()
+{
+    static blink::UserAgentMetadata userAgentMetadata(embedder_support::GetUserAgentMetadata());
+    return userAgentMetadata;
 }
 
 std::string ContentBrowserClientQt::GetProduct()

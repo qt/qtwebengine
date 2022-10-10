@@ -8,6 +8,7 @@
 #include "web_contents_adapter.h"
 
 #include "autofill_client_qt.h"
+#include "content_browser_client_qt.h"
 #include "devtools_frontend_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "favicon_driver_qt.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/embedder_support/user_agent_utils.h"
 #include "components/favicon/core/favicon_service.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/text_input_manager.h"
@@ -522,6 +524,7 @@ void WebContentsAdapter::initializeRenderPrefs()
     rendererPrefs->caret_blink_interval =
             base::Milliseconds(0.5 * static_cast<double>(qtCursorFlashTime));
     rendererPrefs->user_agent_override = blink::UserAgentOverride::UserAgentOnly(m_profileAdapter->httpUserAgent().toStdString());
+    rendererPrefs->user_agent_override.ua_metadata_override = ContentBrowserClientQt::getUserAgentMetadata();
     rendererPrefs->accept_languages = m_profileAdapter->httpAcceptLanguageWithoutQualities().toStdString();
 #if QT_CONFIG(webengine_webrtc)
     base::CommandLine* commandLine = base::CommandLine::ForCurrentProcess();
