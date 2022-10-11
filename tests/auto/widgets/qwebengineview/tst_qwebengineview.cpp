@@ -72,7 +72,8 @@ namespace QTest {
     {
         QTest::qWait(QTest::defaultMouseDelay());
         lastMouseTimestamp += QTest::defaultMouseDelay();
-        QMouseEvent me(type, pos, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+        QMouseEvent me(type, pos, widget->mapToGlobal(pos), Qt::LeftButton, Qt::LeftButton,
+                       Qt::NoModifier);
         me.setTimestamp(++lastMouseTimestamp);
         QSpontaneKeyEvent::setSpontaneous(&me);
         qApp->sendEvent(widget, &me);
