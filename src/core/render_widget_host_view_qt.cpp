@@ -46,12 +46,12 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/aura/cursor/cursors_aura.h"
+#include "ui/wm/core/cursors_aura.h"
 #include "ui/base/cursor/cursor_size.h"
 #endif
 
 #if defined(Q_OS_MACOS)
-#include "content/app/resources/grit/content_resources.h"
+#include "ui/resources/grit/ui_resources.h"
 #endif
 
 #include <QGuiApplication>
@@ -419,7 +419,7 @@ bool RenderWidgetHostViewQt::updateCursorFromResource(ui::mojom::CursorType type
 
 #if defined(USE_AURA)
     gfx::Point hotspot;
-    if (!aura::GetCursorDataFor(ui::CursorSize::kNormal, type, hotspotDpr, &resourceId, &hotspot))
+    if (!wm::GetCursorDataFor(ui::CursorSize::kNormal, type, hotspotDpr, &resourceId, &hotspot))
         return false;
     hotX = hotspot.x();
     hotY = hotspot.y();
@@ -903,7 +903,9 @@ void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &even
     }
 }
 
-void RenderWidgetHostViewQt::GestureEventAck(const blink::WebGestureEvent &event, blink::mojom::InputEventResultState ack_result)
+void RenderWidgetHostViewQt::GestureEventAck(const blink::WebGestureEvent &event,
+                                             blink::mojom::InputEventResultState ack_result,
+                                             blink::mojom::ScrollResultDataPtr scroll_result_data)
 {
     // Forward unhandled scroll events back as wheel events
     if (event.GetType() != blink::WebInputEvent::Type::kGestureScrollUpdate)

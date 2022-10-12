@@ -256,13 +256,14 @@ FileSystemAccessPermissionContextQt::GetWritePermissionGrant(const url::Origin &
     return existing_grant;
 }
 
-void FileSystemAccessPermissionContextQt::ConfirmSensitiveDirectoryAccess(
+void FileSystemAccessPermissionContextQt::ConfirmSensitiveEntryAccess(
         const url::Origin &origin, PathType path_type, const base::FilePath &path,
-        HandleType handle_type, content::GlobalRenderFrameHostId frame_id,
-        base::OnceCallback<void(SensitiveDirectoryResult)> callback)
+        HandleType handle_type, ui::SelectFileDialog::Type dialog_type,
+        content::GlobalRenderFrameHostId frame_id,
+        base::OnceCallback<void(SensitiveEntryResult)> callback)
 {
     if (path_type == PathType::kExternal) {
-        std::move(callback).Run(SensitiveDirectoryResult::kAllowed);
+        std::move(callback).Run(SensitiveEntryResult::kAllowed);
         return;
     }
 
@@ -270,7 +271,7 @@ void FileSystemAccessPermissionContextQt::ConfirmSensitiveDirectoryAccess(
             FROM_HERE, { base::MayBlock(), base::TaskPriority::USER_VISIBLE },
             base::BindOnce(&ShouldBlockAccessToPath, path, handle_type),
             base::BindOnce(&FileSystemAccessPermissionContextQt::DidConfirmSensitiveDirectoryAccess,
-                           m_weakFactory.GetWeakPtr(), origin, path, handle_type, frame_id,
+                           m_weakFactory.GetWeakPtr(), origin, path, handle_type, dialog_type, frame_id,
                            std::move(callback)));
 }
 
@@ -377,19 +378,20 @@ void FileSystemAccessPermissionContextQt::NavigatedAwayFromOrigin(const url::Ori
 }
 
 void FileSystemAccessPermissionContextQt::DidConfirmSensitiveDirectoryAccess(
-        const url::Origin &origin, const base::FilePath &path, HandleType handle_type,
+        const url::Origin &origin, const base::FilePath &path, HandleType handle_type, ui::SelectFileDialog::Type dialog_type,
         content::GlobalRenderFrameHostId frame_id,
-        base::OnceCallback<void(SensitiveDirectoryResult)> callback, bool should_block)
+        base::OnceCallback<void(SensitiveEntryResult)> callback, bool should_block)
 {
     Q_UNUSED(origin);
     Q_UNUSED(path);
     Q_UNUSED(handle_type);
+    Q_UNUSED(dialog_type);
     Q_UNUSED(frame_id);
 
     if (should_block)
-        std::move(callback).Run(SensitiveDirectoryResult::kAbort);
+        std::move(callback).Run(SensitiveEntryResult::kAbort);
     else
-        std::move(callback).Run(SensitiveDirectoryResult::kAllowed);
+        std::move(callback).Run(SensitiveEntryResult::kAllowed);
 }
 
 std::u16string FileSystemAccessPermissionContextQt::GetPickerTitle(const blink::mojom::FilePickerOptionsPtr &)

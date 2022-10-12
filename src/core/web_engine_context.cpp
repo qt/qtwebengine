@@ -677,6 +677,13 @@ WebEngineContext::WebEngineContext()
     disableFeatures.push_back(features::kWebUsb.name);
     disableFeatures.push_back(media::kPictureInPicture.name);
 
+    // Disable webkitPersistentStorage alias to webkitTemporaryStorage.
+    // Persistent quota is depreceted and this flag will be removed:
+    // https://chromium-review.googlesource.com/c/chromium/src/+/3888541
+    // TODO: Implement support for webkitTemporaryStorage.
+    // Also see: https://bugs.chromium.org/p/chromium/issues/detail?id=1233525
+    disableFeatures.push_back(blink::features::kPersistentQuotaIsTemporaryQuota.name);
+
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
         enableFeatures.push_back(features::kOverlayScrollbar.name);
@@ -687,7 +694,6 @@ WebEngineContext::WebEngineContext()
 #if QT_CONFIG(webengine_vulkan)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan) {
         enableFeatures.push_back(features::kVulkan.name);
-        enableFeatures.push_back(features::kUseSkiaRenderer.name);
         parsedCommandLine->AppendSwitchASCII(switches::kUseVulkan,
                                              switches::kVulkanImplementationNameNative);
     }

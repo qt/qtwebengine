@@ -293,6 +293,7 @@ foreach(arch ${archs})
 
         list(APPEND gnArgArg
             qtwebengine_target="${buildDir}/${config}/${arch}:QtWebEngineCore"
+            build_with_tflite_lib=false
             enable_background_contents=false
             enable_background_mode=false
             enable_ipc_fuzzer=false
@@ -300,17 +301,20 @@ foreach(arch ${archs})
             enable_media_remoting=false
             enable_message_center=false
             enable_nacl=false
-            enable_one_click_signin=false
             enable_oop_printing=false
             enable_remoting=false
             enable_reporting=false
             enable_resource_allowlist_generation=false
+            enable_screen_ai_service=false
             enable_swiftshader=false
             enable_swiftshader_vulkan=false
             angle_enable_swiftshader=false
             dawn_use_swiftshader=false
+            use_dawn=false
+            enable_vr=false
             enable_web_speech=false
             enable_widevine=true
+            enable_library_cdms=true
             fatal_linker_warnings=false
             has_native_accessibility=false
             safe_browsing_mode=0
@@ -322,6 +326,7 @@ foreach(arch ${archs})
             strip_absolute_paths_from_debug_symbols=false
             devtools_fast_bundle=false
             devtools_skip_typecheck=false
+            enable_jxl_decoder=false # temporarily because libjxl causes internal compiler error on armv7
         )
 
         extend_gn_list(gnArgArg

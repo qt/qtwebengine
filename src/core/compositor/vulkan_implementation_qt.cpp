@@ -136,6 +136,7 @@ VkExternalMemoryHandleTypeFlagBits VulkanImplementationQt::GetExternalImageHandl
 }
 
 bool VulkanImplementationQt::CanImportGpuMemoryBuffer(
+        VulkanDeviceQueue* /*device_queue*/,
         gfx::GpuMemoryBufferType /*memory_buffer_type*/)
 {
     return false;

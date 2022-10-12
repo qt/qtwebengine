@@ -72,10 +72,6 @@ ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
 
     setupPrefService();
 
-#if defined(Q_OS_WIN)
-    OSCrypt::Init(m_prefServiceAdapter.prefService());
-#endif
-
     // Mark the context as live. This prevents the use-after-free DCHECK in
     // AssertBrowserContextWasntDestroyed from being triggered when a new
     // ProfileQt object is allocated at the same address as a previously
@@ -217,6 +213,11 @@ content::ClientHintsControllerDelegate *ProfileQt::GetClientHintsControllerDeleg
 }
 
 content::StorageNotificationService *ProfileQt::GetStorageNotificationService()
+{
+    return nullptr;
+}
+
+content::ReduceAcceptLanguageControllerDelegate *ProfileQt::GetReduceAcceptLanguageControllerDelegate()
 {
     return nullptr;
 }

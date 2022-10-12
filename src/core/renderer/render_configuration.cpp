@@ -16,7 +16,7 @@ bool RenderConfiguration::m_isIncognitoProcess = false;
 void RenderConfiguration::RegisterMojoInterfaces(
         blink::AssociatedInterfaceRegistry *associated_interfaces)
 {
-    associated_interfaces->AddInterface(
+    associated_interfaces->AddInterface<qtwebengine::mojom::RendererConfiguration>(
             base::BindRepeating(&RenderConfiguration::OnRendererConfigurationAssociatedRequest,
                                 base::Unretained(this)));
 }

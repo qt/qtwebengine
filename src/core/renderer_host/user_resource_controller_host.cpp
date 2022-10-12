@@ -117,7 +117,7 @@ void UserResourceControllerHost::addUserScript(const UserScript &script, WebCont
                 m_perContentsScripts.insert(contents, currentScripts);
             }
         }
-        GetUserResourceControllerRenderFrame(contents->GetMainFrame())
+        GetUserResourceControllerRenderFrame(contents->GetPrimaryMainFrame())
                 ->AddScript(script.data());
     }
 }
@@ -140,7 +140,7 @@ bool UserResourceControllerHost::removeUserScript(const UserScript &script, WebC
         QList<UserScript>::iterator it = std::find(list.begin(), list.end(), script);
         if (it == list.end())
             return false;
-        GetUserResourceControllerRenderFrame(contents->GetMainFrame())
+        GetUserResourceControllerRenderFrame(contents->GetPrimaryMainFrame())
                 ->RemoveScript((*it).data());
         list.erase(it);
     }
@@ -159,7 +159,7 @@ void UserResourceControllerHost::clearAllScripts(WebContentsAdapter *adapter)
         m_perContentsScripts.remove(contents);
         mojo::AssociatedRemote<qtwebengine::mojom::UserResourceControllerRenderFrame>
                 userResourceController;
-        GetUserResourceControllerRenderFrame(contents->GetMainFrame())
+        GetUserResourceControllerRenderFrame(contents->GetPrimaryMainFrame())
                 ->ClearScripts();
     }
 }

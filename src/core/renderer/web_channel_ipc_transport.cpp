@@ -139,7 +139,7 @@ WebChannelIPCTransport::WebChannelIPCTransport(content::RenderFrame *renderFrame
     , m_worldInitialized(false)
     , m_binding(this)
 {
-    renderFrame->GetAssociatedInterfaceRegistry()->AddInterface(
+    renderFrame->GetAssociatedInterfaceRegistry()->AddInterface<qtwebchannel::mojom::WebChannelTransportRender>(
             base::BindRepeating(&WebChannelIPCTransport::BindReceiver, base::Unretained(this)));
 }
 

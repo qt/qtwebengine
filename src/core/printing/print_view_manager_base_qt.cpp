@@ -188,9 +188,9 @@ void PrintViewManagerBaseQt::UpdatePrintingEnabled()
 #if QT_CONFIG(webengine_printing_and_pdf)
     enabled = true;
 #endif
-    web_contents()->ForEachFrame(
-            base::BindRepeating(&PrintViewManagerBaseQt::SendPrintingEnabled,
-                                base::Unretained(this), enabled));
+    web_contents()->ForEachRenderFrameHost(
+           base::BindRepeating(&PrintViewManagerBaseQt::SendPrintingEnabled,
+                               base::Unretained(this), enabled));
 }
 
 void PrintViewManagerBaseQt::NavigationStopped()
@@ -395,8 +395,8 @@ bool PrintViewManagerBaseQt::RenderAllMissingPagesNow()
 
     // We can't print if there is no renderer.
     if (!web_contents() ||
-        !web_contents()->GetMainFrame() ||
-        !web_contents()->GetMainFrame()->IsRenderFrameLive()) {
+        !web_contents()->GetPrimaryMainFrame() ||
+        !web_contents()->GetPrimaryMainFrame()->IsRenderFrameLive()) {
       return false;
     }
 

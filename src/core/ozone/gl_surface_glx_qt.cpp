@@ -7,8 +7,10 @@
 
 #include "gl_context_qt.h"
 #include "ozone/gl_surface_glx_qt.h"
+
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_display.h"
+#include "ui/gl/gl_display_manager.h"
 #include "ui/gl/gl_surface_glx.h"
 
 namespace gl {
@@ -91,7 +93,7 @@ GLDisplay *GLSurfaceGLXQt::InitializeOneOff(uint64_t system_device_id)
     if (s_initialized)
         return g_display;
 
-    g_display = new GLDisplayX11(system_device_id);
+    g_display = GLDisplayManagerX11::GetInstance()->GetDisplay(system_device_id);
     if (!g_display->GetDisplay()) {
         LOG(ERROR) << "GLContextHelper::getXDisplay() failed.";
         return nullptr;

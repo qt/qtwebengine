@@ -304,6 +304,16 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForWorker
     return GetPermissionStatus(permission, url, url);
 }
 
+content::PermissionResult PermissionManagerQt::GetPermissionResultForOriginWithoutContext(
+        blink::PermissionType permission,
+        const url::Origin &origin)
+{
+    blink::mojom::PermissionStatus status =
+            GetPermissionStatus(permission, origin.GetURL(), origin.GetURL());
+
+    return content::PermissionResult(status, content::PermissionStatusSource::UNSPECIFIED);
+}
+
 void PermissionManagerQt::ResetPermission(
     blink::PermissionType permission,
     const GURL& requesting_origin,

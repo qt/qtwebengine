@@ -94,7 +94,8 @@ public:
     void WheelEventAck(const blink::WebMouseWheelEvent &event,
                        blink::mojom::InputEventResultState ack_result) override;
     void GestureEventAck(const blink::WebGestureEvent &event,
-                         blink::mojom::InputEventResultState ack_result) override;
+                         blink::mojom::InputEventResultState ack_result,
+                         blink::mojom::ScrollResultDataPtr scroll_result_data) override;
     content::MouseWheelPhaseHandler *GetMouseWheelPhaseHandler() override;
     viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(const cc::RenderFrameMetadata &metadata) override;
     void OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata);

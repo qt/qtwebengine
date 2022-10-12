@@ -78,58 +78,58 @@ void AccessibilityTreeFormatterQt::AddProperties(const BrowserAccessibility &nod
 
     QAccessible::State state = iface->state();
 
-    std::vector<base::Value> states;
+    base::Value::List states;
     if (state.busy)
-        states.push_back(base::Value("busy"));
+        states.Append(base::Value("busy"));
     if (state.checkable)
-        states.push_back(base::Value("checkable"));
+        states.Append(base::Value("checkable"));
     if (state.checked)
-        states.push_back(base::Value("checked"));
+        states.Append(base::Value("checked"));
     if (node.IsClickable())
-        states.push_back(base::Value("clickable"));
+        states.Append(base::Value("clickable"));
     if (state.collapsed)
-        states.push_back(base::Value("collapsed"));
+        states.Append(base::Value("collapsed"));
     if (state.disabled)
-        states.push_back(base::Value("disabled"));
+        states.Append(base::Value("disabled"));
     if (state.editable)
-        states.push_back(base::Value("editable"));
+        states.Append(base::Value("editable"));
     if (state.expandable)
-        states.push_back(base::Value("expandable"));
+        states.Append(base::Value("expandable"));
     if (state.expanded)
-        states.push_back(base::Value("expanded"));
+        states.Append(base::Value("expanded"));
     if (state.focusable)
-        states.push_back(base::Value("focusable"));
+        states.Append(base::Value("focusable"));
     if (state.focused)
-        states.push_back(base::Value("focused"));
+        states.Append(base::Value("focused"));
     if (state.hasPopup)
-        states.push_back(base::Value("hasPopup"));
+        states.Append(base::Value("hasPopup"));
     if (state.hotTracked)
-        states.push_back(base::Value("hotTracked"));
+        states.Append(base::Value("hotTracked"));
     if (state.invisible)
-        states.push_back(base::Value("invisible"));
+        states.Append(base::Value("invisible"));
     if (state.linked)
-        states.push_back(base::Value("linked"));
+        states.Append(base::Value("linked"));
     if (state.multiLine)
-        states.push_back(base::Value("multiLine"));
+        states.Append(base::Value("multiLine"));
     if (state.multiSelectable)
-        states.push_back(base::Value("multiSelectable"));
+        states.Append(base::Value("multiSelectable"));
     if (state.modal)
-        states.push_back(base::Value("modal"));
+        states.Append(base::Value("modal"));
     if (state.offscreen)
-        states.push_back(base::Value("offscreen"));
+        states.Append(base::Value("offscreen"));
     if (state.passwordEdit)
-        states.push_back(base::Value("password"));
+        states.Append(base::Value("password"));
     if (state.pressed)
-        states.push_back(base::Value("pressed"));
+        states.Append(base::Value("pressed"));
     if (state.readOnly)
-        states.push_back(base::Value("readOnly"));
+        states.Append(base::Value("readOnly"));
     if (state.selectable)
-        states.push_back(base::Value("selectable"));
+        states.Append(base::Value("selectable"));
     if (state.selected)
-        states.push_back(base::Value("selected"));
+        states.Append(base::Value("selected"));
     if (state.traversed)
-        states.push_back(base::Value("traversed"));
-    dict->Set("states", base::Value(states));
+        states.Append(base::Value("traversed"));
+    dict->Set("states", std::move(states));
 
     dict->Set("name", iface->text(QAccessible::Name).toStdString());
     dict->Set("description", iface->text(QAccessible::Description).toStdString());

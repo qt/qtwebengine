@@ -82,21 +82,36 @@ scoped_refptr<gl::GLContext> GLOzoneGLXQt::CreateGLContext(
 }
 
 scoped_refptr<gl::GLSurface> GLOzoneGLXQt::CreateViewGLSurface(
+        gl::GLDisplay* display,
         gfx::AcceleratedWidget window) {
     return nullptr;
 }
 
 scoped_refptr<gl::GLSurface> GLOzoneGLXQt::CreateSurfacelessViewGLSurface(
+        gl::GLDisplay* display,
         gfx::AcceleratedWidget window) {
     return nullptr;
 }
 
 scoped_refptr<gl::GLSurface> GLOzoneGLXQt::CreateOffscreenGLSurface(
+        gl::GLDisplay* display,
         const gfx::Size& size) {
     scoped_refptr<gl::GLSurface> surface = new gl::GLSurfaceGLXQt(size);
     if (surface->Initialize(gl::GLSurfaceFormat()))
         return surface;
     LOG(WARNING) << "Failed to create offscreen GL surface";
+    return nullptr;
+}
+
+bool GLOzoneGLXQt::CanImportNativePixmap()
+{
+    return false;
+}
+
+std::unique_ptr<ui::NativePixmapGLBinding> GLOzoneGLXQt::ImportNativePixmap(
+        scoped_refptr<gfx::NativePixmap>, gfx::BufferFormat, gfx::BufferPlane,
+        gfx::Size, const gfx::ColorSpace&, GLenum, GLuint)
+{
     return nullptr;
 }
 

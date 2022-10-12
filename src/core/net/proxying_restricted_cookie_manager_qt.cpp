@@ -120,7 +120,7 @@ void ProxyingRestrictedCookieManagerQt::SetCookieFromString(const GURL &url,
         underlying_restricted_cookie_manager_->SetCookieFromString(url, site_for_cookies, top_frame_origin, cookie,
                                                                    partitioned_cookies_runtime_feature_enabled, std::move(callback));
     } else {
-        std::move(callback).Run();
+        std::move(callback).Run(false, false); // FIXME: is true, true in aw_proxying_restricted_cookie_manager.cc though..
     }
 }
 

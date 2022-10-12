@@ -348,15 +348,13 @@ void DevToolsFrontendQt::CreateJsonPreferences(bool clear)
     m_prefStore = scoped_refptr<PersistentPrefStore>(jsonPrefStore);
 }
 
-void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(base::Value message)
+void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(base::Value::Dict message)
 {
-    const std::string *method_ptr = nullptr;
+    const base::Value *method_ptr = nullptr;
     base::Value *params_value = nullptr;
-    if (message.is_dict()) {
-        method_ptr = message.FindStringKey("method");
-        params_value = message.FindKey("params");
-    }
-    if (!method_ptr || (params_value && !params_value->is_list())) {
+    method_ptr = message.Find("method");
+    params_value = message.Find("params");
+    if (!method_ptr || !method_ptr->is_string() || (params_value && !params_value->is_list())) {
         LOG(ERROR) << "Invalid message was sent to embedder: " << message;
         return;
     }
@@ -364,8 +362,8 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(base::Value message)
     if (!params_value)
         params_value = &empty_params;
 
-    int request_id = message.FindIntKey("id").value_or(0);
-    const std::string &method = *method_ptr;
+    int request_id = message.Find("id")->GetIfInt().value_or(0);
+    const std::string &method = *method_ptr->GetIfString();
     base::Value::List *paramsPtr;
     if (params_value)
         paramsPtr = params_value->GetIfList();
@@ -378,7 +376,7 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(base::Value message)
         if (m_agentHost)
             m_agentHost->DispatchProtocolMessage(this, base::as_bytes(base::make_span(*protocol_message)));
     } else if (method == "loadCompleted") {
-        web_contents()->GetMainFrame()->ExecuteJavaScript(u"DevToolsAPI.setUseSoftMenu(true);",
+        web_contents()->GetPrimaryMainFrame()->ExecuteJavaScript(u"DevToolsAPI.setUseSoftMenu(true);",
                                                           base::NullCallback());
     } else if (method == "loadNetworkResource" && params.size() == 3) {
         // TODO(pfeldman): handle some of the embedder messages in content.
@@ -458,8 +456,8 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(base::Value message)
         if (!m_prefStore->GetValue(kScreencastEnabled, NULL))
             SetPreference(kScreencastEnabled, "false");
 
-        m_preferences = std::move(*m_prefStore->GetValues());
-        SendMessageAck(request_id, m_preferences.Clone());
+        m_preferences = std::move(m_prefStore->GetValues());
+        SendMessageAck(request_id, base::Value(m_preferences.Clone()));
         return;
     } else if (method == "setPreference" && params.size() >= 2) {
         const std::string *name = params[0].GetIfString();
@@ -628,7 +626,7 @@ void DevToolsFrontendQt::CallClientFunction(const std::string &object_name,
             }
         }
     }
-    web_contents()->GetMainFrame()->ExecuteJavaScriptMethod(base::ASCIIToUTF16(object_name),
+    web_contents()->GetPrimaryMainFrame()->ExecuteJavaScriptMethod(base::ASCIIToUTF16(object_name),
                                                             base::ASCIIToUTF16(method_name),
                                                             std::move(arguments),
                                                             std::move(cb));

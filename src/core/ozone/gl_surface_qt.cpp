@@ -88,17 +88,18 @@ void* GLSurfaceQt::GetConfig()
 
 #if BUILDFLAG(IS_WIN)
 namespace init {
-bool InitializeGLOneOffPlatform(uint64_t system_device_id)
+
+gl::GLDisplay *InitializeGLOneOffPlatform(uint64_t system_device_id)
 {
     VSyncProviderWin::InitializeOneOff();
 
     if (GetGLImplementation() == kGLImplementationEGLGLES2 || GetGLImplementation() == kGLImplementationEGLANGLE)
-        return GLSurfaceEGLQt::InitializeOneOff();
+        return GLSurfaceEGLQt::InitializeOneOff(system_device_id);
 
     if (GetGLImplementation() == kGLImplementationDesktopGL || GetGLImplementation() == kGLImplementationDesktopGLCoreProfile)
-        return GLSurfaceWGLQt::InitializeOneOff();
+        return GLSurfaceWGLQt::InitializeOneOff(system_device_id);
 
-    return false;
+    return nullptr;
 }
 
 bool usingSoftwareDynamicGL()
@@ -111,7 +112,7 @@ bool usingSoftwareDynamicGL()
 }
 
 scoped_refptr<GLSurface>
-CreateOffscreenGLSurfaceWithFormat(const gfx::Size& size, GLSurfaceFormat format)
+CreateOffscreenGLSurfaceWithFormat(GLDisplay *display, const gfx::Size& size, GLSurfaceFormat format)
 {
     scoped_refptr<GLSurface> surface;
     switch (GetGLImplementation()) {
@@ -124,7 +125,7 @@ CreateOffscreenGLSurfaceWithFormat(const gfx::Size& size, GLSurfaceFormat format
     }
     case kGLImplementationEGLANGLE:
     case kGLImplementationEGLGLES2: {
-        surface = new GLSurfaceEGLQt(size);
+        surface = new GLSurfaceEGLQt(static_cast<gl::GLDisplayEGL*>(display), size);
         if (surface->Initialize(format))
             return surface;
 
@@ -132,7 +133,7 @@ CreateOffscreenGLSurfaceWithFormat(const gfx::Size& size, GLSurfaceFormat format
         // is not available since some implementations of surfaceless context
         // have problems. (e.g. QTBUG-57290)
         if (GLSurfaceEGLQt::g_egl_surfaceless_context_supported) {
-            surface = new GLSurfacelessQtEGL(size);
+            surface = new GLSurfacelessQtEGL(static_cast<gl::GLDisplayEGL*>(display), size);
             if (surface->Initialize(format))
                 return surface;
         }
@@ -163,59 +164,14 @@ CreateViewGLSurface(gfx::AcceleratedWidget window)
 namespace gpu {
 class GpuCommandBufferStub;
 class GpuChannelManager;
-scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(base::WeakPtr<ImageTransportSurfaceDelegate>,
+scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(gl::GLDisplay *,
+                                                                        base::WeakPtr<ImageTransportSurfaceDelegate>,
                                                                         SurfaceHandle, gl::GLSurfaceFormat)
 {
     QT_NOT_USED
     return scoped_refptr<gl::GLSurface>();
 }
 } // namespace gpu
-
-namespace gl {
-
-bool DirectCompositionSurfaceWin::IsDirectCompositionSupported()
-{
-    return false;
-}
-
-bool DirectCompositionSurfaceWin::IsDecodeSwapChainSupported()
-{
-    return false;
-}
-
-bool DirectCompositionSurfaceWin::IsHDRSupported()
-{
-    return false;
-}
-
-bool DirectCompositionSurfaceWin::IsSwapChainTearingSupported()
-{
-    return false;
-}
-
-bool DirectCompositionSurfaceWin::AreOverlaysSupported()
-{
-    return false;
-}
-
-UINT DirectCompositionSurfaceWin::GetOverlaySupportFlags(DXGI_FORMAT format)
-{
-    Q_UNUSED(format);
-    return 0;
-}
-
-void DirectCompositionSurfaceWin::DisableDecodeSwapChain()
-{
-}
-
-void DirectCompositionSurfaceWin::DisableSoftwareOverlays()
-{
-}
-
-void DirectCompositionSurfaceWin::ShutdownOneOff()
-{
-}
-
-} // namespace gl
 #endif // BUILDFLAG(IS_WIN)
+
 #endif // !defined(Q_OS_MACOS)

@@ -472,7 +472,7 @@ void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_h
 {
     setLoadingState(LoadingState::Loaded);
 
-    if (render_frame_host != web_contents()->GetMainFrame())
+    if (render_frame_host != web_contents()->GetPrimaryMainFrame())
         return;
 
     if (validated_url.spec() == content::kUnreachableWebDataURL) {
@@ -623,7 +623,7 @@ void WebContentsDelegateQt::UpdateTargetURL(content::WebContents* source, const 
 void WebContentsDelegateQt::OnVisibilityChanged(content::Visibility visibility)
 {
     if (visibility != content::Visibility::HIDDEN)
-        web_cache::WebCacheManager::GetInstance()->ObserveActivity(web_contents()->GetMainFrame()->GetProcess()->GetID());
+        web_cache::WebCacheManager::GetInstance()->ObserveActivity(web_contents()->GetPrimaryMainFrame()->GetProcess()->GetID());
 }
 
 void WebContentsDelegateQt::ActivateContents(content::WebContents* contents)
@@ -869,6 +869,7 @@ int &WebContentsDelegateQt::streamCount(blink::mojom::MediaStreamType type)
     case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE:
     case blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE:
     case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB:
+    case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET:
         return m_desktopStreamCount;
 
     case blink::mojom::MediaStreamType::NO_SERVICE:

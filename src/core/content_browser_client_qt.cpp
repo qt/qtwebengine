@@ -480,12 +480,12 @@ void ContentBrowserClientQt::ExposeInterfacesToRenderer(service_manager::BinderR
     if (auto *manager = performance_manager::PerformanceManagerRegistry::GetInstance())
         manager->CreateProcessNodeAndExposeInterfacesToRendererProcess(registry, render_process_host);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    associated_registry->AddInterface(base::BindRepeating(&extensions::EventRouter::BindForRenderer,
-                                                          render_process_host->GetID()));
-    associated_registry->AddInterface(base::BindRepeating(&extensions::ExtensionsGuestView::CreateForComponents,
-                                                          render_process_host->GetID()));
-    associated_registry->AddInterface(base::BindRepeating(&extensions::ExtensionsGuestView::CreateForExtensions,
-                                                          render_process_host->GetID()));
+    associated_registry->AddInterface<extensions::mojom::EventRouter>(
+                base::BindRepeating(&extensions::EventRouter::BindForRenderer, render_process_host->GetID()));
+    associated_registry->AddInterface<guest_view::mojom::GuestViewHost>(
+                base::BindRepeating(&extensions::ExtensionsGuestView::CreateForComponents, render_process_host->GetID()));
+    associated_registry->AddInterface<extensions::mojom::GuestView>(
+                base::BindRepeating(&extensions::ExtensionsGuestView::CreateForExtensions, render_process_host->GetID()));
 #else
     Q_UNUSED(associated_registry);
 #endif
@@ -496,7 +496,7 @@ void ContentBrowserClientQt::RegisterAssociatedInterfaceBindersForRenderFrameHos
         blink::AssociatedInterfaceRegistry &associated_registry)
 {
 #if QT_CONFIG(webengine_webchannel)
-    associated_registry.AddInterface(
+    associated_registry.AddInterface<qtwebchannel::mojom::WebChannelTransportHost>(
                 base::BindRepeating(
                     [](content::RenderFrameHost *render_frame_host,
                        mojo::PendingAssociatedReceiver<qtwebchannel::mojom::WebChannelTransportHost> receiver) {
@@ -506,7 +506,7 @@ void ContentBrowserClientQt::RegisterAssociatedInterfaceBindersForRenderFrameHos
                     }, &rfh));
 #endif
 #if BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
-    associated_registry.AddInterface(
+    associated_registry.AddInterface<printing::mojom::PrintManagerHost>(
                 base::BindRepeating(
                     [](content::RenderFrameHost* render_frame_host,
                        mojo::PendingAssociatedReceiver<printing::mojom::PrintManagerHost> receiver) {
@@ -514,21 +514,21 @@ void ContentBrowserClientQt::RegisterAssociatedInterfaceBindersForRenderFrameHos
                     }, &rfh));
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    associated_registry.AddInterface(
+    associated_registry.AddInterface<extensions::mojom::LocalFrameHost>(
                 base::BindRepeating(
                     [](content::RenderFrameHost *render_frame_host,
                        mojo::PendingAssociatedReceiver<extensions::mojom::LocalFrameHost> receiver) {
                         extensions::ExtensionWebContentsObserverQt::BindLocalFrameHost(std::move(receiver), render_frame_host);
                     }, &rfh));
 #endif
-    associated_registry.AddInterface(
+    associated_registry.AddInterface<autofill::mojom::AutofillDriver>(
                 base::BindRepeating(
                     [](content::RenderFrameHost *render_frame_host,
                        mojo::PendingAssociatedReceiver<autofill::mojom::AutofillDriver> receiver) {
                         autofill::ContentAutofillDriverFactory::BindAutofillDriver(std::move(receiver), render_frame_host);
                     }, &rfh));
 #if BUILDFLAG(ENABLE_PDF)
-    associated_registry.AddInterface(
+    associated_registry.AddInterface<pdf::mojom::PdfService>(
                 base::BindRepeating(
                     [](content::RenderFrameHost *render_frame_host,
                        mojo::PendingAssociatedReceiver<pdf::mojom::PdfService> receiver) {
@@ -694,7 +694,7 @@ static void LaunchURL(const GURL& url,
                         has_user_gesture);
 
         if (!allowed) {
-            content::RenderFrameHost *rfh = webContents->GetMainFrame();
+            content::RenderFrameHost *rfh = webContents->GetPrimaryMainFrame();
             if (!base::CommandLine::ForCurrentProcess()->HasSwitch("disable-sandbox-external-protocols")) {
                 rfh->AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kError,
                                          "Navigation to external protocol blocked by sandbox.");

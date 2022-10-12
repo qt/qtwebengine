@@ -26,7 +26,7 @@ public:
     content::ContentGpuClient* CreateContentGpuClient() override;
     content::ContentRendererClient* CreateContentRendererClient() override;
     content::ContentUtilityClient* CreateContentUtilityClient() override;
-    bool BasicStartupComplete(int* /*exit_code*/) override;
+    absl::optional<int> BasicStartupComplete() override;
 
 private:
     ContentClientQt m_contentClient;

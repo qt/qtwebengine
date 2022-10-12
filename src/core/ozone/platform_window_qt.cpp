@@ -38,8 +38,10 @@ void PlatformWindowQt::SetBoundsInPixels(const gfx::Rect& bounds)
 {
     if (bounds == bounds_)
         return;
+    const bool origin_changed = (bounds_.origin() != bounds.origin());
+
     bounds_ = bounds;
-    delegate_->OnBoundsChanged(bounds);
+    delegate_->OnBoundsChanged({origin_changed});
 }
 
 bool PlatformWindowQt::CanDispatchEvent(const ui::PlatformEvent& /*ne*/)

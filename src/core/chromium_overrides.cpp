@@ -9,7 +9,9 @@
 
 #include "base/values.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/font_list.h"
+#include "content/public/browser/web_contents_view_delegate.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
 #include "gpu/vulkan/buildflags.h"
@@ -41,8 +43,6 @@ void *GetQtXDisplay()
 }
 
 namespace content {
-class WebContentsView;
-class WebContentsViewDelegate;
 class RenderViewHostDelegateView;
 
 std::unique_ptr<WebContentsView> CreateWebContentsView(WebContentsImpl *web_contents,
@@ -74,35 +74,21 @@ base::FilePath getSandboxPath()
 namespace content {
 
 // content/common/font_list.h
-std::unique_ptr<base::ListValue> GetFontList_SlowBlocking()
+base::Value::List GetFontList_SlowBlocking()
 {
-    std::unique_ptr<base::ListValue> font_list(new base::ListValue);
+    base::Value::List font_list;
 
     for (auto family : QFontDatabase::families()){
         base::Value::List font_item;
         font_item.Append(family.toStdString());
         font_item.Append(family.toStdString());  // localized name.
         // TODO(yusukes): Support localized family names.
-        font_list->Append(std::move(font_item));
+        font_list.Append(std::move(font_item));
     }
     return font_list;
 }
 
 } // namespace content
-
-namespace aura {
-class Window;
-}
-
-namespace wm {
-class ActivationClient;
-
-ActivationClient *GetActivationClient(aura::Window *)
-{
-    return nullptr;
-}
-
-} // namespace wm
 #endif // defined(USE_AURA) || defined(USE_OZONE)
 
 #if BUILDFLAG(ENABLE_VULKAN)

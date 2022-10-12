@@ -25,18 +25,26 @@ public:
         const gl::GLVersionInfo &gl_info,
         gl::GLWindowSystemBindingInfo *info) override;
 
+    bool CanImportNativePixmap() override;
+    std::unique_ptr<ui::NativePixmapGLBinding> ImportNativePixmap(
+            scoped_refptr<gfx::NativePixmap>, gfx::BufferFormat, gfx::BufferPlane,
+            gfx::Size, const gfx::ColorSpace&, GLenum, GLuint) override;
+
     scoped_refptr<gl::GLContext> CreateGLContext(
             gl::GLShareGroup* share_group,
             gl::GLSurface* compatible_surface,
             const gl::GLContextAttribs& attribs) override;
 
     scoped_refptr<gl::GLSurface> CreateViewGLSurface(
+            gl::GLDisplay* display,
             gfx::AcceleratedWidget window) override;
 
     scoped_refptr<gl::GLSurface> CreateSurfacelessViewGLSurface(
+            gl::GLDisplay* display,
             gfx::AcceleratedWidget window) override;
 
     scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
+            gl::GLDisplay* display,
             const gfx::Size& size) override;
 };
 

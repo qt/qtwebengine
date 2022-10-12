@@ -127,14 +127,17 @@ void ContentRendererClientQt::RenderThreadStarted()
 
 void ContentRendererClientQt::ExposeInterfacesToBrowser(mojo::BinderMap* binders)
 {
-    binders->Add(m_visitedLinkReader->GetBindCallback(), base::SequencedTaskRunnerHandle::Get());
+    binders->Add<visitedlink::mojom::VisitedLinkNotificationSink>(
+                m_visitedLinkReader->GetBindCallback(), base::SequencedTaskRunnerHandle::Get());
 
-    binders->Add(base::BindRepeating(&web_cache::WebCacheImpl::BindReceiver,
-                                     base::Unretained(m_webCacheImpl.get())),
-                 base::SequencedTaskRunnerHandle::Get());
+    binders->Add<web_cache::mojom::WebCache>(
+                base::BindRepeating(&web_cache::WebCacheImpl::BindReceiver,
+                                    base::Unretained(m_webCacheImpl.get())),
+                base::SequencedTaskRunnerHandle::Get());
 
 #if QT_CONFIG(webengine_spellchecker)
-    binders->Add(base::BindRepeating(
+    binders->Add<spellcheck::mojom::SpellChecker>(
+                 base::BindRepeating(
                          [](ContentRendererClientQt *client,
                             mojo::PendingReceiver<spellcheck::mojom::SpellChecker> receiver) {
                              if (!client->m_spellCheck)
@@ -145,7 +148,8 @@ void ContentRendererClientQt::ExposeInterfacesToBrowser(mojo::BinderMap* binders
 #endif
 
 #if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
-    binders->Add(base::BindRepeating(
+    binders->Add<chrome::mojom::WebRtcLoggingAgent>(
+                 base::BindRepeating(
                          [](ContentRendererClientQt *client,
                             mojo::PendingReceiver<chrome::mojom::WebRtcLoggingAgent> receiver) {
                                 client->GetWebRtcLoggingAgent()->AddReceiver(std::move(receiver));
@@ -179,9 +183,10 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_fr
     blink::AssociatedInterfaceRegistry *associated_interfaces = render_frame_observer->associatedInterfaces();
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    associated_interfaces->AddInterface(base::BindRepeating(
-        &extensions::MimeHandlerViewContainerManager::BindReceiver,
-        render_frame->GetRoutingID()));
+    associated_interfaces->AddInterface<extensions::mojom::MimeHandlerViewContainerManager>(
+                base::BindRepeating(
+                    &extensions::MimeHandlerViewContainerManager::BindReceiver,
+                    render_frame->GetRoutingID()));
 
     auto registry = std::make_unique<service_manager::BinderRegistry>();
     ExtensionsRendererClientQt::GetInstance()->RenderFrameCreated(render_frame, render_frame_observer->registry());
@@ -285,7 +290,7 @@ void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderF
         if (template_html.empty())
             NOTREACHED() << "unable to load template. ID: " << resourceId;
         else // "t" is the id of the templates root node.
-            *errorHtml = webui::GetTemplatesHtml(template_html, &errorPageState.strings, "t");
+            *errorHtml = webui::GetTemplatesHtml(template_html, errorPageState.strings, "t");
     }
 }
 
@@ -472,7 +477,7 @@ static void AddExternalClearKey(const media::mojom::KeySystemCapabilityPtr &capa
 }
 
 #if BUILDFLAG(ENABLE_WIDEVINE)
-media::SupportedCodecs GetVP9Codecs(const std::vector<media::VideoCodecProfile> &profiles)
+media::SupportedCodecs GetVP9Codecs(const base::flat_set<media::VideoCodecProfile> &profiles)
 {
     if (profiles.empty()) {
         // If no profiles are specified, then all are supported.
@@ -560,7 +565,7 @@ static media::SupportedCodecs GetSupportedCodecs(const media::CdmCapability& cap
             supported_codecs |= media::EME_CODEC_VP8;
             break;
         case media::VideoCodec::kVP9:
-            supported_codecs |= GetVP9Codecs(codec.second);
+            supported_codecs |= GetVP9Codecs(codec.second.supported_profiles);
             break;
         case media::VideoCodec::kAV1:
             supported_codecs |= media::EME_CODEC_AV1;
@@ -572,7 +577,7 @@ static media::SupportedCodecs GetSupportedCodecs(const media::CdmCapability& cap
 #endif // BUILDFLAG(USE_PROPRIETARY_CODECS)
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
         case media::VideoCodec::kHEVC:
-            supported_codecs |= GetHevcCodecs(codec.second);
+            supported_codecs |= GetHevcCodecs(codec.second.supported_profiles);
             break;
 #endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
         default:

@@ -51,7 +51,7 @@ public:
     ui::InputController* GetInputController() override;
     std::unique_ptr<ui::SystemInputInjector> CreateSystemInputInjector() override;
     ui::OverlayManagerOzone* GetOverlayManager() override;
-    std::unique_ptr<InputMethod> CreateInputMethod(internal::InputMethodDelegate *delegate, gfx::AcceleratedWidget widget) override;
+    std::unique_ptr<InputMethod> CreateInputMethod(ImeKeyEventDispatcher *ime_key_event_dispatcher, gfx::AcceleratedWidget widget) override;
     std::unique_ptr<ui::PlatformScreen> CreateScreen() override { return nullptr; }
     const PlatformProperties &GetPlatformProperties() override;
 
@@ -207,7 +207,7 @@ void OzonePlatformQt::InitializeGPU(const ui::OzonePlatform::InitParams &)
     surface_factory_ozone_.reset(new QtWebEngineCore::SurfaceFactoryQt());
 }
 
-std::unique_ptr<InputMethod> OzonePlatformQt::CreateInputMethod(internal::InputMethodDelegate *, gfx::AcceleratedWidget)
+std::unique_ptr<InputMethod> OzonePlatformQt::CreateInputMethod(ImeKeyEventDispatcher *, gfx::AcceleratedWidget)
 {
     NOTREACHED();
     return nullptr;

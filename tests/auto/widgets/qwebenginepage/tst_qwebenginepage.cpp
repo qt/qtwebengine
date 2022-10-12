@@ -20,6 +20,7 @@
 */
 
 #include <widgetutil.h>
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include <QtWebEngineCore/qtwebenginecore-config.h>
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 #include <QByteArray>
@@ -2060,14 +2061,14 @@ void tst_QWebEnginePage::symmetricUrl()
 
     QVERIFY(view.url().isEmpty());
 
-    QCOMPARE(view.history()->count(), 0);
+    QCOMPARE(view.history()->count(), 1);
 
     QUrl dataUrl("data:text/html,<h1>Test");
 
     view.setUrl(dataUrl);
     view.show();
     QCOMPARE(view.url(), dataUrl);
-    QCOMPARE(view.history()->count(), 0);
+    QCOMPARE(view.history()->count(), 1);
 
     // loading is _not_ immediate, so the text isn't set just yet.
     QVERIFY(toPlainTextSync(view.page()).isEmpty());
@@ -2380,7 +2381,7 @@ void tst_QWebEnginePage::setHtmlWithBaseURL()
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].height").toInt(), 128);
 
     // no history item has to be added.
-    QCOMPARE(m_view->page()->history()->count(), 0);
+    QCOMPARE(m_view->page()->history()->count(), 1);
 }
 
 class MyPage : public QWebEnginePage
@@ -2810,7 +2811,7 @@ void tst_QWebEnginePage::setUrlHistory()
     int expectedLoadFinishedCount = 0;
     QSignalSpy spy(m_page, SIGNAL(loadFinished(bool)));
 
-    QCOMPARE(m_page->history()->count(), 0);
+    QCOMPARE(m_page->history()->count(), 1);
 
     m_page->setUrl(QUrl());
     expectedLoadFinishedCount++;
@@ -2884,7 +2885,7 @@ void tst_QWebEnginePage::setUrlUsingStateObject()
     QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
     int expectedUrlChangeCount = 0;
 
-    QCOMPARE(m_page->history()->count(), 0);
+    QCOMPARE(m_page->history()->count(), 1);
 
     url = QUrl("qrc:/resources/test1.html");
     m_page->setUrl(url);
@@ -3709,7 +3710,7 @@ void tst_QWebEnginePage::openLinkInNewPage()
             QCOMPARE(page1.history()->count(), 1);
         else
             QCOMPARE(page1.history()->count(), 2);
-        QCOMPARE(page2.history()->count(), 0);
+        QCOMPARE(page2.history()->count(), 1);
         break;
     case Effect::LoadInOther:
         QTRY_COMPARE(page2.spy.size(), 1);
