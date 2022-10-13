@@ -16,7 +16,7 @@ Browser::Browser()
         &m_downloadManagerWidget, &DownloadManagerWidget::downloadRequested);
 }
 
-BrowserWindow *Browser::createWindow(bool offTheRecord)
+BrowserWindow *Browser::createHiddenWindow(bool offTheRecord)
 {
     if (!offTheRecord && !m_profile) {
         m_profile.reset(new QWebEngineProfile(
@@ -32,6 +32,12 @@ BrowserWindow *Browser::createWindow(bool offTheRecord)
     QObject::connect(mainWindow, &QObject::destroyed, [this, mainWindow]() {
         m_windows.removeOne(mainWindow);
     });
+    return mainWindow;
+}
+
+BrowserWindow *Browser::createWindow(bool offTheRecord)
+{
+    auto *mainWindow = createHiddenWindow(offTheRecord);
     mainWindow->show();
     return mainWindow;
 }

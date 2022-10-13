@@ -31,8 +31,8 @@ int main(int argc, char **argv)
     QUrl url = commandLineUrlArgument();
 
     Browser browser;
-    BrowserWindow *window = browser.createWindow();
+    BrowserWindow *window = browser.createHiddenWindow();
     window->tabWidget()->setUrl(url);
-
+    window->show();
     return app.exec();
 }

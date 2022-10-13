@@ -18,6 +18,7 @@ public:
 
     QList<BrowserWindow*> windows() { return m_windows; }
 
+    BrowserWindow *createHiddenWindow(bool offTheRecord = false);
     BrowserWindow *createWindow(bool offTheRecord = false);
     BrowserWindow *createDevToolsWindow();
 

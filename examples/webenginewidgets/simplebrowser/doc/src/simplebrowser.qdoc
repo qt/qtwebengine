@@ -67,6 +67,9 @@
     \skipto main
     \printuntil }
 
+    To suppress flicker when switching the window to OpenGL rendering, we call
+    show after the first browser tab has been added.
+
     \section1 Creating Tabs
 
     The \c BrowserWindow constructor initializes all the necessary user interface
@@ -256,6 +259,8 @@
     \skipto /^class Browser$/
     \printuntil public:
     \dots
+    \skipto createHiddenWindow
+    \printline createHiddenWindow
     \skipto createWindow
     \printline createWindow
     \skipto private:
@@ -271,7 +276,7 @@
 
     \quotefromfile webenginewidgets/simplebrowser/browser.cpp
 
-    \skipto Browser::createWindow
+    \skipto Browser::createHiddenWindow
     \printuntil m_profile.reset
     \dots
 
