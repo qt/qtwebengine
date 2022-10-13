@@ -697,11 +697,19 @@ void QWebEngineViewPrivate::bindPageAndWidget(QWebEnginePagePrivate *pagePrivate
 
     // Change pointers first.
 
-    if (oldPagePrivate && oldPagePrivate != pagePrivate)
-        oldPagePrivate->delegateItem = nullptr;
+    if (widget && oldPagePrivate != pagePrivate) {
+        if (oldPagePrivate)
+            oldPagePrivate->delegateItem = nullptr;
+        if (widget->m_contentItem)
+            widget->m_contentItem->m_adapterClient = pagePrivate;
+    }
 
-    if (pagePrivate && oldWidget != widget)
-        pagePrivate->delegateItem = widget->m_contentItem;
+    if (pagePrivate && oldWidget != widget) {
+        if (oldWidget && oldWidget->m_contentItem)
+            oldWidget->m_contentItem->m_adapterClient = nullptr;
+        if (widget)
+            pagePrivate->delegateItem = widget->m_contentItem;
+    }
 
     // Then notify.
 
