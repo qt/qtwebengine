@@ -36,8 +36,7 @@ void ExtensionHostDelegateQt::OnMainFrameCreatedForBackgroundPage(ExtensionHost 
 
 content::JavaScriptDialogManager *ExtensionHostDelegateQt::GetJavaScriptDialogManager()
 {
-    Q_UNREACHABLE();
-    return nullptr;
+    Q_UNREACHABLE_RETURN(nullptr);
 }
 
 void ExtensionHostDelegateQt::CreateTab(std::unique_ptr<content::WebContents> web_contents,
@@ -95,16 +94,14 @@ bool ExtensionHostDelegateQt::CheckMediaAccessPermission(
     Q_UNUSED(type);
     Q_UNUSED(extension);
 
-    Q_UNREACHABLE();
-    return false;
+    Q_UNREACHABLE_RETURN(false);
 }
 
 content::PictureInPictureResult ExtensionHostDelegateQt::EnterPictureInPicture(content::WebContents *web_contents)
 {
     Q_UNUSED(web_contents);
 
-    Q_UNREACHABLE();
-    return content::PictureInPictureResult::kNotSupported;
+    Q_UNREACHABLE_RETURN(content::PictureInPictureResult::kNotSupported);
 }
 
 void ExtensionHostDelegateQt::ExitPictureInPicture()

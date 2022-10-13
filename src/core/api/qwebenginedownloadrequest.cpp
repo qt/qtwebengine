@@ -56,8 +56,7 @@ static inline QWebEngineDownloadRequest::DownloadState toDownloadState(int state
     case ProfileAdapterClient::DownloadInterrupted:
         return QWebEngineDownloadRequest::DownloadInterrupted;
     default:
-        Q_UNREACHABLE();
-        return QWebEngineDownloadRequest::DownloadCancelled;
+        Q_UNREACHABLE_RETURN(QWebEngineDownloadRequest::DownloadCancelled);
     }
 }
 

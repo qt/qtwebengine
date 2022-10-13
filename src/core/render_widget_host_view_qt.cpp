@@ -460,12 +460,10 @@ bool RenderWidgetHostViewQt::updateCursorFromResource(ui::mojom::CursorType type
         hotY = 7;
         break;
     default:
-        Q_UNREACHABLE();
-        return false;
+        Q_UNREACHABLE_RETURN(false);
     }
 #else
-    Q_UNREACHABLE();
-    return false;
+    Q_UNREACHABLE_RETURN(false);
 #endif
 
     const gfx::ImageSkia *imageSkia = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resourceId);

@@ -258,8 +258,7 @@ public:
         if (it != vendorNameMap.end())
             return it->second;
 
-        Q_UNREACHABLE();
-        return "Unknown";
+        Q_UNREACHABLE_RETURN("Unknown");
     }
 
     Vendor vendor() const { return m_vendor; }

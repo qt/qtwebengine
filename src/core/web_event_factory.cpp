@@ -1566,8 +1566,7 @@ blink::WebMouseWheelEvent::Phase toBlinkPhase(QWheelEvent *ev)
     case Qt::ScrollEnd:
         return blink::WebMouseWheelEvent::kPhaseEnded;
     }
-    Q_UNREACHABLE();
-    return blink::WebMouseWheelEvent::kPhaseNone;
+    Q_UNREACHABLE_RETURN(blink::WebMouseWheelEvent::kPhaseNone);
 }
 
 blink::WebMouseWheelEvent::Phase getMomentumPhase(QWheelEvent *ev)
@@ -1582,8 +1581,7 @@ blink::WebMouseWheelEvent::Phase getMomentumPhase(QWheelEvent *ev)
     case Qt::ScrollUpdate:
         return blink::WebMouseWheelEvent::kPhaseNone;
     }
-    Q_UNREACHABLE();
-    return blink::WebMouseWheelEvent::kPhaseNone;
+    Q_UNREACHABLE_RETURN(blink::WebMouseWheelEvent::kPhaseNone);
 }
 
 blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev)

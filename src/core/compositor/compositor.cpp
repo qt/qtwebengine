@@ -152,14 +152,12 @@ void Compositor::releaseTexture()
 
 QSGTexture *Compositor::texture(QQuickWindow *, uint32_t textureOptions)
 {
-    Q_UNREACHABLE();
-    return nullptr;
+    Q_UNREACHABLE_RETURN(nullptr);
 }
 
 bool Compositor::textureIsFlipped()
 {
-    Q_UNREACHABLE();
-    return false;
+    Q_UNREACHABLE_RETURN(false);
 }
 
 void Compositor::releaseResources() { }

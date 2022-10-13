@@ -516,8 +516,7 @@ static QQuickWebEngineView::Feature toDeprecatedFeature(QWebEnginePermission::Pe
         break;
     }
 
-    Q_UNREACHABLE();
-    return QQuickWebEngineView::Feature(-1);
+    Q_UNREACHABLE_RETURN(QQuickWebEngineView::Feature(-1));
 }
 QT_WARNING_POP
 #endif // QT_DEPRECATED_SINCE(6, 8)

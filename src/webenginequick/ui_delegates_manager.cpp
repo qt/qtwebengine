@@ -122,8 +122,7 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
     switch (type) {
     FOR_EACH_COMPONENT_TYPE(COMPONENT_MEMBER_CASE_STATEMENT, NO_SEPARATOR)
     default:
-        Q_UNREACHABLE();
-        return false;
+        Q_UNREACHABLE_RETURN(false);
     }
     QString fileName(fileNameForComponent(type));
 #ifndef UI_DELEGATES_DEBUG

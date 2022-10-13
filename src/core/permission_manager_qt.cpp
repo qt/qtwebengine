@@ -115,8 +115,7 @@ static blink::PermissionType toBlink(QWebEnginePermission::PermissionType permis
         return blink::PermissionType::NUM;
     }
 
-    Q_UNREACHABLE();
-    return blink::PermissionType::NUM;
+    Q_UNREACHABLE_RETURN(blink::PermissionType::NUM);
 }
 
 static QWebEnginePermission::State toQt(blink::mojom::PermissionStatus state)
@@ -167,8 +166,7 @@ std::string permissionTypeString(QWebEnginePermission::PermissionType permission
     case QWebEnginePermission::PermissionType::LocalFontsAccess:
         return "LocalFontsAccess";
     default:
-        Q_UNREACHABLE();
-        return nullptr;
+        Q_UNREACHABLE_RETURN(nullptr);
     }
 }
 
