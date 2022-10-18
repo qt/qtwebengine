@@ -3,81 +3,75 @@
 
 #include "renderer/content_renderer_client_qt.h"
 
-#include "extensions/buildflags/buildflags.h"
-#include "printing/buildflags/buildflags.h"
 #include "renderer/content_settings_observer_qt.h"
-#include "base/i18n/rtl.h"
-#include "base/strings/string_split.h"
-#if QT_CONFIG(webengine_spellchecker)
-#include "components/spellcheck/renderer/spellcheck.h"
-#include "components/spellcheck/renderer/spellcheck_provider.h"
-#endif
+#include "renderer/render_configuration.h"
+#include "renderer/render_frame_observer_qt.h"
+#include "renderer/user_resource_controller.h"
+#include "renderer/web_engine_page_render_frame.h"
+#include "web_engine_library_info.h"
+
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/autofill_assistant_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
-#include "components/cdm/renderer/external_clear_key_key_system_properties.h"
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/localized_error.h"
+#include "components/grit/components_resources.h"
 #include "components/network_hints/renderer/web_prescient_networking_impl.h"
-#if QT_CONFIG(webengine_printing_and_pdf)
-#include "components/printing/renderer/print_render_frame_helper.h"
-#endif
 #include "components/visitedlink/renderer/visitedlink_reader.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/child/child_thread.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/render_view.h"
+#include "extensions/buildflags/buildflags.h"
 #include "media/base/key_system_properties.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "net/base/net_errors.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "printing/buildflags/buildflags.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/platform/web_url_error.h"
-#include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/public/web/web_security_policy.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 
-#if QT_CONFIG(webengine_printing_and_pdf)
-#include "components/pdf/renderer/internal_plugin_renderer_helpers.h"
-#include "components/pdf/renderer/pdf_internal_plugin_delegate.h"
-#include "renderer/print_web_view_helper_delegate_qt.h"
+#if QT_CONFIG(webengine_spellchecker)
+#include "components/spellcheck/renderer/spellcheck.h"
+#include "components/spellcheck/renderer/spellcheck_provider.h"
 #endif
 
-#include "renderer/render_frame_observer_qt.h"
-#include "renderer/web_engine_page_render_frame.h"
-#include "renderer/render_configuration.h"
-#include "renderer/user_resource_controller.h"
+#if QT_CONFIG(webengine_printing_and_pdf)
+#include "renderer/print_web_view_helper_delegate_qt.h"
+
+#include "components/pdf/renderer/internal_plugin_renderer_helpers.h"
+#include "components/pdf/renderer/pdf_internal_plugin_delegate.h"
+#include "components/printing/renderer/print_render_frame_helper.h"
+#endif
+
 #if QT_CONFIG(webengine_webchannel)
 #include "renderer/web_channel_ipc_transport.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "common/extensions/extensions_client_qt.h"
-#include "extensions/common/constants.h"
 #include "extensions/extensions_renderer_client_qt.h"
+
+#include "extensions/common/constants.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_manager.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#endif //ENABLE_EXTENSIONS
+#include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/blink/public/web/web_security_policy.h"
+#endif // ENABLE_EXTENSIONS
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/renderer/render_frame_impl.h"
 #include "plugins/loadable_plugin_placeholder_qt.h"
 #endif // ENABLE_PLUGINS
 
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/connector.h"
-
-#include "components/grit/components_resources.h"
-
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "base/feature_list.h"
+#include "components/cdm/renderer/external_clear_key_key_system_properties.h"
 #include "content/public/renderer/key_system_support.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
@@ -88,8 +82,6 @@
 #if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
 #include "chrome/renderer/media/webrtc_logging_agent_impl.h"
 #endif
-
-#include "web_engine_library_info.h"
 
 namespace QtWebEngineCore {
 
@@ -405,7 +397,7 @@ bool ContentRendererClientQt::OverrideCreatePlugin(content::RenderFrame *render_
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     if (!ExtensionsRendererClientQt::GetInstance()->OverrideCreatePlugin(render_frame, params))
         return false;
-#endif //ENABLE_EXTENSIONS
+#endif // ENABLE_EXTENSIONS
 
 #if BUILDFLAG(ENABLE_PLUGINS)
     content::WebPluginInfo info;
@@ -432,7 +424,7 @@ bool ContentRendererClientQt::OverrideCreatePlugin(content::RenderFrame *render_
         return true;
     }
     *plugin = render_frame->CreatePlugin(info, params);
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
+#endif // BUILDFLAG(ENABLE_PLUGINS)
     return true;
 }
 
@@ -650,17 +642,19 @@ void OnKeySystemSupportUpdated(media::GetSupportedKeySystemsCB cb,
     for (const auto &entry : key_system_capabilities) {
         const auto &key_system = entry.first;
         const auto &capability = entry.second;
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #if BUILDFLAG(ENABLE_WIDEVINE)
         if (key_system == kWidevineKeySystem) {
             AddWidevine(capability, &key_systems);
             continue;
         }
-#endif  // BUILDFLAG(ENABLE_WIDEVINE)
+#endif // BUILDFLAG(ENABLE_WIDEVINE)
 
         if (key_system == kExternalClearKeyKeySystem) {
             AddExternalClearKey(capability, &key_systems);
             continue;
         }
+#endif // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
         DLOG(ERROR) << "Unrecognized key system: " << key_system;
     }

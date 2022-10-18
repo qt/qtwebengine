@@ -10,8 +10,8 @@
 
 #include "components/printing/renderer/print_render_frame_helper.h"
 
-namespace content {
-class RenderView;
+namespace blink {
+class WebLocalFrame;
 }
 
 namespace QtWebEngineCore {
@@ -26,7 +26,8 @@ public:
     bool IsPrintPreviewEnabled() override;
 
     bool OverridePrint(blink::WebLocalFrame *frame) override;
-}; // class PrintWebViewHelperDelegateQt
-}
+};
+
+} // namespace QtWebEngineCore
 
 #endif // PRINT_WEB_VIEW_HELPER_DELEGATE_QT_H

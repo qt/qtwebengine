@@ -57,4 +57,4 @@ private:
 
 } // namespace QtWebEngineCore
 
-#endif // RENDERER_CONTENT_SETTINGS_OBSERVER_QT_H
+#endif // CONTENT_SETTINGS_OBSERVER_QT_H

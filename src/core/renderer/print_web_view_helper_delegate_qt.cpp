@@ -5,23 +5,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE.Chromium file.
 
-#include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_view.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
-#include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/common/webui_url_constants.h"
 #include "extensions/common/constants.h"
+#include "third_party/blink/public/web/web_document.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #include "print_web_view_helper_delegate_qt.h"
 #include "web_engine_library_info.h"
 
 namespace QtWebEngineCore {
+
 PrintWebViewHelperDelegateQt::~PrintWebViewHelperDelegateQt() {}
 
 bool IsPdfExtensionOrigin(const url::Origin& origin)
@@ -66,7 +66,7 @@ bool PrintWebViewHelperDelegateQt::OverridePrint(blink::WebLocalFrame *frame)
     return false;
 }
 
-}
+} // namespace QtWebEngineCore
 
 namespace printing {
 // std::string PrintingContextDelegate::GetAppLocale()
