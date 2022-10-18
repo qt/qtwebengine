@@ -229,9 +229,10 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost 
     const int id = host->GetID();
     Profile *profile = Profile::FromBrowserContext(host->GetBrowserContext());
 
+#if QT_CONFIG(webengine_spellchecker)
     if (spellcheck::UseBrowserSpellChecker() && !profile->GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckEnable))
         SpellcheckServiceFactory::GetForContext(profile)->InitForRenderer(host);
-
+#endif
 
 #if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
     WebRtcLoggingController::AttachToRenderProcessHost(host, WebEngineContext::current()->webRtcLogUploader());
