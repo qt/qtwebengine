@@ -31,6 +31,7 @@
         \li \l{webrtc_feature}{WebRTC}
         \li \l{Web Notifications}
         \li \l{Favicon Handling}
+        \li \l{HTML5 WebSockets}
     \endlist
 
     \section1 Audio and Video Codecs
@@ -619,4 +620,19 @@
     to be stored in the database.
 
     \note The icon database is not available for off-the-record profiles.
+
+    \section1 HTML5 WebSockets
+
+    \QWE supports the WebSocket JavaScript API to communicate with WebSocket servers
+    using the \c {ws://} or \c {wss://} protocols. Moreover, integration with Qt WebChannel
+    and Qt WebSockets enables communication between JavaScript and the native side of
+    the application.
+
+    The Qt WebChannel module has a great example for a
+    \l[QtWebChannel]{Qt WebChannel ChatServer Example}{chat server}
+    and its web based
+    \l[QtWebChannel]{Qt WebChannel ChatClient HTML Example}{chat client}.
+    The client works out of the box in the example browsers of \QWE
+    (such as \l{WebEngine Widgets Simple Browser Example}
+    {Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}).
 */
