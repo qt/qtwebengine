@@ -153,6 +153,7 @@ foreach(arch ${archs})
                 ozone/surface_factory_qt.cpp ozone/surface_factory_qt.h
                 permission_manager_qt.cpp permission_manager_qt.h
                 platform_notification_service_qt.cpp platform_notification_service_qt.h
+                pointer_device_qt.cpp
                 pref_service_adapter.cpp pref_service_adapter.h
                 process_main.cpp
                 profile_adapter.cpp profile_adapter.h
