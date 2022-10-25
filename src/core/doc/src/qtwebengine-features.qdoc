@@ -17,6 +17,7 @@
         \li \l{Drag and Drop}
         \li \l{Favicon Handling}
         \li \l{Fullscreen}
+        \li \l{Hardware Acceleration}
         \li \l{HTML5 DRM}
         \li \l{HTML5 Geolocation}
         \li \l{HTML5 WebSockets}
@@ -203,6 +204,20 @@
     mode.
 
     Support for this feature was added in Qt 5.6.0.
+
+    \section1 Hardware Acceleration
+
+    QtWebEngine tries to use hardware acceleration for rendering the content. It uses
+    \c OpenGL or \c OpenGLES APIs to execute rendering calls on the GPU. As a fallback,
+    software rendering is used whenever the hardware does not meet the required set of
+    OpenGL functionality. A user can check the current hardware acceleration state by
+    loading the \c {chrome://gpu} internal page. Moreover, the acceleration can be explicitly
+    disabled with \c {QTWEBENGINE_CHROMIUM_FLAGS} using the \c {disable-gpu} switch.
+    For example on Linux:
+
+    \badcode
+    export QTWEBENGINE_CHROMIUM_FLAGS=--disable-gpu
+    \endcode
 
     \section1 HTML5 DRM
 
