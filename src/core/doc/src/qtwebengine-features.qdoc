@@ -15,9 +15,11 @@
         \li \l{Client Certificates}
         \li \l{Custom Schemes}
         \li \l{Drag and Drop}
+        \li \l{Favicon Handling}
         \li \l{Fullscreen}
         \li \l{HTML5 DRM}
         \li \l{HTML5 Geolocation}
+        \li \l{HTML5 WebSockets}
         \li \l{HTTP/2 Protocol}
         \li \l{Native Dialogs}
         \li \l{Pepper Plugin API}
@@ -28,10 +30,8 @@
         \li \l{Spellchecker}
         \li \l{Touch}
         \li \l{View Source}
-        \li \l{webrtc_feature}{WebRTC}
         \li \l{Web Notifications}
-        \li \l{Favicon Handling}
-        \li \l{HTML5 WebSockets}
+        \li \l{webrtc_feature}{WebRTC}
     \endlist
 
     \section1 Audio and Video Codecs
@@ -150,6 +150,44 @@
 
     Support for this feature was added in Qt 5.7.0.
 
+    \section1 Favicon Handling
+
+    For accessing icons a \c QQuickImageProvider is registered. This provider can be
+    accessed by a special URL where the scheme is "image:" and the host is "favicon".
+    For example,
+    \qml
+    Image {
+        source: "image://favicon/url"
+    }
+    \endqml
+
+    The \c url can be  the URL of the favicon. For example,
+    \qml
+    Image {
+        source: "image://favicon/https://www.qt.io/hubfs/2016_Qt_Logo/qt_logo_green_rgb_16x16.png"
+    }
+    \endqml
+
+    The \c url also can be a page URL to access its icon. For example,
+    \qml
+    Image {
+        source: "image://favicon/https://www.qt.io/"
+    }
+    \endqml
+
+    If more than one icon is available, the \l {Image::sourceSize} property can be
+    specified to choose the icon with the desired size. If \l {Image::sourceSize}
+    is not specified or 0, the largest available icon will be chosen.
+
+    The image provider looks up the requested icon in the existing \l {WebEngineView}
+    instances. First, it tries to match the currently displayed icons. If no match
+    has been found it requests the icon from the database. Each profile has its
+    own icon database and it is stored in the persistent storage thus the stored icons
+    can be accessed without network connection too. The icon must be previously loaded
+    to be stored in the database.
+
+    \note The icon database is not available for off-the-record profiles.
+
     \section1 Fullscreen
 
     \QWE supports viewing web content in fullscreen mode. For more
@@ -217,6 +255,21 @@
     \l{Qt Positioning}.
 
     Support for this feature was added in Qt 5.5.0.
+
+    \section1 HTML5 WebSockets
+
+    \QWE supports the WebSocket JavaScript API to communicate with WebSocket servers
+    using the \c {ws://} or \c {wss://} protocols. Moreover, integration with Qt WebChannel
+    and Qt WebSockets enables communication between JavaScript and the native side of
+    the application.
+
+    The Qt WebChannel module has a great example for a
+    \l[QtWebChannel]{Qt WebChannel ChatServer Example}{chat server}
+    and its web based
+    \l[QtWebChannel]{Qt WebChannel ChatClient HTML Example}{chat client}.
+    The client works out of the box in the example browsers of \QWE
+    (such as \l{WebEngine Widgets Simple Browser Example}
+    {Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}).
 
     \section1 HTTP/2 Protocol
 
@@ -563,17 +616,6 @@
 
     Support for this feature was added in Qt 5.8.0.
 
-    \target webrtc_feature
-    \section1 WebRTC
-
-    WebRTC provides browsers with Real-Time Communications (RTC) capabilities
-    via simple APIs. For more information, see \l{WebEngineView::Feature}
-    {WebEngineView.Feature} and QWebEnginePage::Feature.
-
-    This feature can be tested by setting up a webcam or microphone and then
-    opening \c https://test.webrtc.org/ in \l{WebEngine Widgets Simple Browser
-    Example}{Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}.
-
     \section1 Web Notifications
 
     Qt WebEngine supports JavaScript \l{Web Notifications API}.
@@ -583,56 +625,15 @@
 
     Support for this feature was added in Qt 5.13.0.
 
-    \section1 Favicon Handling
+    \target webrtc_feature
+    \section1 WebRTC
 
-    For accessing icons a \c QQuickImageProvider is registered. This provider can be
-    accessed by a special URL where the scheme is "image:" and the host is "favicon".
-    For example,
-    \qml
-    Image {
-        source: "image://favicon/url"
-    }
-    \endqml
+    WebRTC provides browsers with Real-Time Communications (RTC) capabilities
+    via simple APIs. For more information, see \l{WebEngineView::Feature}
+    {WebEngineView.Feature}, and QWebEnginePage::Feature.
 
-    The \c url can be  the URL of the favicon. For example,
-    \qml
-    Image {
-        source: "image://favicon/https://www.qt.io/hubfs/2016_Qt_Logo/qt_logo_green_rgb_16x16.png"
-    }
-    \endqml
+    This feature can be tested by setting up a webcam or microphone and then
+    opening \c https://test.webrtc.org/ in \l{WebEngine Widgets Simple Browser
+    Example}{Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}.
 
-    The \c url also can be a page URL to access its icon. For example,
-    \qml
-    Image {
-        source: "image://favicon/https://www.qt.io/"
-    }
-    \endqml
-
-    If more than one icon is available, the \l {Image::sourceSize} property can be
-    specified to choose the icon with the desired size. If \l {Image::sourceSize}
-    is not specified or 0, the largest available icon will be chosen.
-
-    The image provider looks up the requested icon in the existing \l {WebEngineView}
-    instances. First, it tries to match the currently displayed icons. If no match
-    has been found it requests the icon from the database. Each profile has its
-    own icon database and it is stored in the persistent storage thus the stored icons
-    can be accessed without network connection too. The icon must be previously loaded
-    to be stored in the database.
-
-    \note The icon database is not available for off-the-record profiles.
-
-    \section1 HTML5 WebSockets
-
-    \QWE supports the WebSocket JavaScript API to communicate with WebSocket servers
-    using the \c {ws://} or \c {wss://} protocols. Moreover, integration with Qt WebChannel
-    and Qt WebSockets enables communication between JavaScript and the native side of
-    the application.
-
-    The Qt WebChannel module has a great example for a
-    \l[QtWebChannel]{Qt WebChannel ChatServer Example}{chat server}
-    and its web based
-    \l[QtWebChannel]{Qt WebChannel ChatClient HTML Example}{chat client}.
-    The client works out of the box in the example browsers of \QWE
-    (such as \l{WebEngine Widgets Simple Browser Example}
-    {Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}).
 */
