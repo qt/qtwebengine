@@ -123,6 +123,11 @@
     recommended to always give the user a choice before uniquely identifying them
     to a remote server.
 
+    To manage a client certificate in-memory store, the QWebEngineClientCertificateStore
+    instance can be obtained with the QWebEngineProfile::clientCertificateStore() method.
+    An application can use this class to add a new certificate with a
+    QWebEngineClientCertificateStore::add() call.
+
     \section1 Custom Schemes
 
     \QWE makes it possible for the application to define its own custom
