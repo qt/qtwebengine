@@ -210,7 +210,7 @@ bool RenderWidgetHostViewQtDelegateClient::forwardEvent(QEvent *event)
     switch (event->type()) {
     case QEvent::ShortcutOverride: {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-
+        event->ignore();
         auto acceptKeyOutOfInputField = [](QKeyEvent *keyEvent) -> bool {
 #ifdef Q_OS_MACOS
             // Check if a shortcut is registered for this key sequence.
