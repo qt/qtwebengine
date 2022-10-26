@@ -264,15 +264,17 @@
     \section1 HTML5 Geolocation
 
     \QWE supports JavaScript Geolocation API with \l {Qt Positioning} as a
-    backend. The application has to explicitly allow the feature by using
-    QWebEnginePage::Geolocation or \l{WebEngineView::Feature}
-    {WebEngineView.Feature}.
+    backend. HTML5 geolocation is disabled by default. To explicitly allow it, the application
+    needs to listen to QWebEnginePage::featurePermissionRequested. Use QWebEnginePage::Geolocation
+    with a QWebEnginePage::setFeaturePermission() call or \l{WebEngineView::Feature}
+    with a \l{WebEngineView::grantFeaturePermission} {WebEngineView.grantFeaturePermission}() call
+    to grant the required permission.
 
-    If Qt Positioning has been built before \QWE then this feature can be
+    If \QWE was built with Qt Positioning support then this feature can be
     tested by using \l{WebEngine Widgets Maps Example}{Maps} and allowing it to
-    find the current position of the user. Note that on Windows an external GPS
-    receiver must be connected to the application. For more information, see
-    \l{Qt Positioning}.
+    find the current position of the user.
+
+    See \l{Qt Positioning} for a possible backend setup like the GPS or IP based positioning.
 
     Support for this feature was added in Qt 5.5.0.
 
