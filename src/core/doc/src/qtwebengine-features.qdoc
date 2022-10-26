@@ -592,6 +592,15 @@
     This feature can be tested by building and running the
     \l{WebEngine Widgets Spellchecker Example}{Spellchecker Example}.
 
+    \QWE can be compiled also without spellchecker support with the use of
+    a \c {webengine-spellchecker} configure switch.
+
+    \badcode
+    qt-configure-module path\to\qtwebengine\sources -no-webengine-spellchecker
+    \endcode
+
+    For more information, see \l{Qt Configure Options}.
+
     Support for this feature was added in Qt 5.8.0.
 
     \section1 Touch
