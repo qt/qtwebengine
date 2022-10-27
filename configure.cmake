@@ -555,6 +555,13 @@ add_check_for_support(
 )
 
 if(WIN32)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL MSVC)
+        add_check_for_support(
+            MODULES QtWebEngine QtPdf
+            CONDITION NOT MSVC_VERSION LESS 1929
+            MESSAGE "MSVC compiler version must be at least 14.29."
+        )
+    endif()
     set(windowsSdkVersion $ENV{WindowsSDKVersion})
     string(REGEX REPLACE "([0-9.]+).*" "\\1" windowsSdkVersion "${windowsSdkVersion}")
     string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+)\\.[0-9]+" "\\1" sdkMinor "${windowsSdkVersion}")
