@@ -55,6 +55,7 @@
 #include "content/public/common/network_service_util.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/media_switches.h"
 #include "mojo/core/embedder/embedder.h"
@@ -123,7 +124,8 @@ namespace QtWebEngineCore {
 
 static bool usingSupportedSGBackend()
 {
-    if (QQuickWindow::graphicsApi() != QSGRendererInterface::OpenGL)
+    if (QQuickWindow::graphicsApi() != QSGRendererInterface::OpenGL
+        && QQuickWindow::graphicsApi() != QSGRendererInterface::Vulkan)
         return false;
 
     const QStringList args = QGuiApplication::arguments();
@@ -682,6 +684,15 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(switches::kEnableViewport);
         parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
     }
+
+#if QT_CONFIG(webengine_vulkan)
+    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan) {
+        enableFeatures.push_back(features::kVulkan.name);
+        enableFeatures.push_back(features::kUseSkiaRenderer.name);
+        parsedCommandLine->AppendSwitchASCII(switches::kUseVulkan,
+                                             switches::kVulkanImplementationNameNative);
+    }
+#endif
 
     initializeFeatureList(parsedCommandLine, enableFeatures, disableFeatures);
 

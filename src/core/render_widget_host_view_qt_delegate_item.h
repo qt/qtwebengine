@@ -101,6 +101,7 @@ protected:
 private Q_SLOTS:
     void onBeforeRendering();
     void onWindowPosChanged();
+    void releaseVulkanResources();
     void onHide();
 
 private:

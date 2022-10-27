@@ -204,6 +204,11 @@ foreach(arch ${archs})
                 ozone/gl_surface_glx_qt.cpp ozone/gl_surface_glx_qt.h
         )
 
+        extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_vulkan
+            SOURCES
+                compositor/vulkan_implementation_qt.cpp compositor/vulkan_implementation_qt.h
+        )
+
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_opengl
             SOURCES
                 compositor/compositor_resource_fence.cpp compositor/compositor_resource_fence.h

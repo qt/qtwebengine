@@ -10,6 +10,12 @@
 #include "ozone/gl_ozone_glx_qt.h"
 #endif
 
+#include "qtwebenginecoreglobal_p.h"
+
+#if QT_CONFIG(webengine_vulkan)
+#include "compositor/vulkan_implementation_qt.h"
+#endif
+
 namespace QtWebEngineCore {
 
 SurfaceFactoryQt::SurfaceFactoryQt()
@@ -27,7 +33,6 @@ SurfaceFactoryQt::SurfaceFactoryQt()
                    gl::GLImplementationParts(gl::kGLImplementationDisabled) };
         m_ozone.reset(new ui::GLOzoneEGLQt());
     } else {
-        qWarning("No suitable graphics backend found\n");
         m_impl = { gl::GLImplementationParts(gl::kGLImplementationDisabled) };
     }
 }
@@ -41,6 +46,18 @@ ui::GLOzone *SurfaceFactoryQt::GetGLOzone(const gl::GLImplementationParts &imple
 {
     return m_ozone.get();
 }
+#if BUILDFLAG(ENABLE_VULKAN)
+std::unique_ptr<gpu::VulkanImplementation>
+SurfaceFactoryQt::CreateVulkanImplementation(bool /*allow_protected_memory*/,
+                                             bool /*enforce_protected_memory*/)
+{
+#if QT_CONFIG(webengine_vulkan)
+    return std::make_unique<gpu::VulkanImplementationQt>();
+#else
+    return nullptr;
+#endif
+}
+#endif
 
 } // namespace QtWebEngineCore
 #endif // defined(USE_OZONE)

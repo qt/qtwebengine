@@ -13,6 +13,10 @@
 
 #include <QMutex>
 
+QT_BEGIN_NAMESPACE
+class QQuickWindow;
+QT_END_NAMESPACE
+
 namespace QtWebEngineCore {
 
 class DisplaySkiaOutputDevice final : public viz::SkiaOutputDevice, public Compositor
@@ -43,6 +47,11 @@ public:
     QSize size() override;
     bool hasAlphaChannel() override;
     float devicePixelRatio() override;
+#if QT_CONFIG(webengine_vulkan)
+    VkImage vkImage(QQuickWindow *win) override;
+    VkImageLayout vkImageLayout() override;
+    void releaseVulkanResources(QQuickWindow *win) override;
+#endif
 
 private:
     struct Shape
@@ -73,6 +82,11 @@ private:
     viz::OutputSurfaceFrame m_frame;
     bool m_readyToUpdate = false;
     scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
+
+#if QT_CONFIG(webengine_vulkan)
+    VkImage m_importedImage = VK_NULL_HANDLE;
+    VkDeviceMemory m_importedImageMemory = VK_NULL_HANDLE;
+#endif // QT_CONFIG(webengine_vulkan)
 };
 
 } // namespace QtWebEngineCore

@@ -12,6 +12,7 @@
 #include "content/common/font_list.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
+#include "gpu/vulkan/buildflags.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 
@@ -22,6 +23,17 @@
 #if !QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
 #include "chrome/browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h"
 #endif
+
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "compositor/vulkan_implementation_qt.h"
+
+#include "gpu/vulkan/init/vulkan_factory.h"
+
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
+#endif // defined(USE_OZONE)
+#endif // defined(ENABLE_VULKAN)
 
 void *GetQtXDisplay()
 {
@@ -92,6 +104,37 @@ ActivationClient *GetActivationClient(aura::Window *)
 
 } // namespace wm
 #endif // defined(USE_AURA) || defined(USE_OZONE)
+
+#if BUILDFLAG(ENABLE_VULKAN)
+namespace gpu {
+std::unique_ptr<VulkanImplementation> CreateVulkanImplementation(bool use_swiftshader,
+                                                                 bool allow_protected_memory)
+{
+#if BUILDFLAG(IS_APPLE)
+    // TODO: Investigate if we can support MoltenVK.
+    NOTIMPLEMENTED();
+    return nullptr;
+#else
+#if defined(USE_OZONE)
+    return ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone()->CreateVulkanImplementation(
+            use_swiftshader, allow_protected_memory);
+#endif
+
+#if !BUILDFLAG(IS_WIN)
+    // TODO(samans): Support Swiftshader on more platforms.
+    // https://crbug.com/963988
+    DCHECK(!use_swiftshader) << "Vulkan Swiftshader is not supported on this platform.";
+#endif // !BUILDFLAG(IS_WIN)
+
+    // Protected memory is supported only on Fuchsia, which uses Ozone, i.e.
+    // VulkanImplementation is initialized above.
+    DCHECK(!allow_protected_memory) << "Protected memory is not supported on this platform.";
+
+    return std::make_unique<VulkanImplementationQt>();
+#endif // BUILDFLAG(IS_APPLE)
+}
+} // namespace gpu
+#endif // BUILDFLAG(ENABLE_VULKAN)
 
 std::unique_ptr<ui::OSExchangeDataProvider> ui::OSExchangeDataProviderFactory::CreateProvider()
 {

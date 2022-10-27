@@ -16,6 +16,10 @@ public:
     SurfaceFactoryQt();
     std::vector<gl::GLImplementationParts> GetAllowedGLImplementations() override;
     ui::GLOzone *GetGLOzone(const gl::GLImplementationParts &implementation) override;
+#if BUILDFLAG(ENABLE_VULKAN)
+    std::unique_ptr<gpu::VulkanImplementation>
+    CreateVulkanImplementation(bool allow_protected_memory, bool enforce_protected_memory) override;
+#endif
 private:
     std::vector<gl::GLImplementationParts> m_impl;
     std::unique_ptr<ui::GLOzone> m_ozone;

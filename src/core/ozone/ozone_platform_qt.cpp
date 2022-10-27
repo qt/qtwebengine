@@ -4,6 +4,7 @@
 #include "ozone_platform_qt.h"
 
 #if defined(USE_OZONE)
+#include "base/no_destructor.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/display/types/native_display_delegate.h"
@@ -52,6 +53,8 @@ public:
     ui::OverlayManagerOzone* GetOverlayManager() override;
     std::unique_ptr<InputMethod> CreateInputMethod(internal::InputMethodDelegate *delegate, gfx::AcceleratedWidget widget) override;
     std::unique_ptr<ui::PlatformScreen> CreateScreen() override { return nullptr; }
+    const PlatformProperties &GetPlatformProperties() override;
+
 private:
     bool InitializeUI(const ui::OzonePlatform::InitParams &) override;
     void InitializeGPU(const ui::OzonePlatform::InitParams &) override;
@@ -75,6 +78,20 @@ private:
 OzonePlatformQt::OzonePlatformQt() {}
 
 OzonePlatformQt::~OzonePlatformQt() {}
+
+const ui::OzonePlatform::PlatformProperties &OzonePlatformQt::GetPlatformProperties()
+{
+    static base::NoDestructor<ui::OzonePlatform::PlatformProperties> properties;
+    static bool initialized = false;
+    if (!initialized) {
+        properties->uses_external_vulkan_image_factory = true;
+        properties->fetch_buffer_formats_for_gmb_on_gpu = true;
+
+        initialized = true;
+    }
+
+    return *properties;
+}
 
 ui::SurfaceFactoryOzone* OzonePlatformQt::GetSurfaceFactoryOzone()
 {
