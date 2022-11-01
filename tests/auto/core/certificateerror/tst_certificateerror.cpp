@@ -68,7 +68,7 @@ void tst_CertificateError::handleError_data()
 void tst_CertificateError::handleError()
 {
     HttpsServer server(":/resources/server.pem",":/resources/server.key");
-    server.setExpectError(true);
+    server.setExpectError(false);
     QVERIFY(server.start());
 
     connect(&server, &HttpsServer::newRequest, [&] (HttpReqRep *rr) {
@@ -105,6 +105,7 @@ void tst_CertificateError::handleError()
     QTRY_COMPARE_WITH_TIMEOUT(page.loadSpy.size(), 1, 30000);
     QCOMPARE(page.loadSpy.takeFirst().value(0).toBool(), acceptCertificate);
     QCOMPARE(toPlainTextSync(&page), expectedContent);
+    QVERIFY(server.stop());
 }
 
 void tst_CertificateError::fatalError()

@@ -7,52 +7,44 @@
 #include "httpserver.h"
 
 #include <QDebug>
-#include <QFile>
-#include <QSslKey>
-#include <QSslSocket>
-#include <QSslConfiguration>
-#include <QTcpServer>
+#include <QtCore/qfile.h>
+#include <QtNetwork/qsslkey.h>
+#include <QtNetwork/qsslsocket.h>
+#include <QtNetwork/qsslconfiguration.h>
+#include <QtNetwork/qsslserver.h>
 
-struct SslTcpServer : QTcpServer
+static QSslServer *createServer(const QString &certificateFileName, const QString &keyFileName)
 {
-    SslTcpServer(const QString &certPath, const QString &keyPath) {
-        sslconf.setLocalCertificateChain(QSslCertificate::fromPath(certPath));
-        sslconf.setPrivateKey(readKey(keyPath));
-    }
+    QSslConfiguration configuration(QSslConfiguration::defaultConfiguration());
 
-    void incomingConnection(qintptr d) override {
-        auto socket = new QSslSocket(this);
-        socket->setSslConfiguration(sslconf);
-
-        if (!socket->setSocketDescriptor(d)) {
-            qWarning() << "Failed to setup ssl socket!";
-            delete socket;
-            return;
+    QFile keyFile(keyFileName);
+    if (keyFile.open(QIODevice::ReadOnly)) {
+        QSslKey key(keyFile.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
+        if (!key.isNull()) {
+            configuration.setPrivateKey(key);
+        } else {
+            qCritical() << "Could not parse key: " << keyFileName;
         }
-
-        connect(socket, QOverload<QSslSocket::SocketError>::of(&QSslSocket::errorOccurred),
-                [] (QSslSocket::SocketError e) { qWarning() << "! Socket Error:" << e; });
-        connect(socket, QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors),
-                [] (const QList<QSslError> &le) { qWarning() << "! SSL Errors:\n" << le; });
-
-        addPendingConnection(socket);
-        socket->startServerEncryption();
+    } else {
+        qCritical() << "Could not find key: " << keyFileName;
     }
 
-    QSslKey readKey(const QString &path) const {
-        QFile file(path);
-        file.open(QIODevice::ReadOnly);
-        return QSslKey(file.readAll(), QSsl::Rsa, QSsl::Pem);
+    QList<QSslCertificate> localCerts = QSslCertificate::fromPath(certificateFileName);
+    if (!localCerts.isEmpty()) {
+        configuration.setLocalCertificateChain(localCerts);
+    } else {
+        qCritical() << "Could not find certificate: " << certificateFileName;
     }
 
-    QSslConfiguration sslconf;
-};
+    QSslServer *server = new QSslServer();
+    server->setSslConfiguration(configuration);
+    return server;
+}
 
 struct HttpsServer : HttpServer
 {
     HttpsServer(const QString &certPath, const QString &keyPath, QObject *parent = nullptr)
-        : HttpServer(new SslTcpServer(certPath, keyPath), "https", QHostAddress::LocalHost, 0,
-                     parent)
+        : HttpServer(createServer(certPath, keyPath), "https", QHostAddress::LocalHost, 0, parent)
     {
     }
 };
