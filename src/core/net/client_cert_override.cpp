@@ -69,16 +69,25 @@ net::ClientCertIdentityList ClientCertOverrideStore::GetClientCertsOnUIThread(co
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     const auto &clientCertOverrideData = m_storeData->extraCerts;
+
     // Look for certificates in memory store
+    net::ClientCertIdentityList selected_identities;
+
     for (int i = 0; i < clientCertOverrideData.length(); i++) {
         scoped_refptr<net::X509Certificate> cert = clientCertOverrideData[i]->certPtr;
-        if (cert != NULL && cert->IsIssuedByEncoded(cert_request_info.cert_authorities)) {
-            net::ClientCertIdentityList selected_identities;
-            selected_identities.push_back(std::make_unique<ClientCertIdentityOverride>(cert, clientCertOverrideData[i]->keyPtr));
-            return selected_identities;
+        if (cert) {
+            if (cert->HasExpired()) {
+                qWarning() << "Expired certificate" << clientCertOverrideData[i];
+                continue;
+            }
+            if (cert_request_info.cert_authorities.empty()
+                || cert->IsIssuedByEncoded(cert_request_info.cert_authorities)) {
+                selected_identities.push_back(std::make_unique<ClientCertIdentityOverride>(
+                        cert, clientCertOverrideData[i]->keyPtr));
+            }
         }
     }
-    return net::ClientCertIdentityList();
+    return selected_identities;
 }
 
 void ClientCertOverrideStore::GetClientCertsReturn(const net::SSLCertRequestInfo &cert_request_info,
