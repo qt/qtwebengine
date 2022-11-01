@@ -407,8 +407,8 @@ void tst_QWebEngineProfile::urlSchemeHandlers()
     QCOMPARE(toPlainTextSync(view.page()), url.toString());
 
     // Check that all buffers got deleted
-    QCOMPARE(gopherHandler.m_buffers.count(), 2);
-    for (int i = 0; i < gopherHandler.m_buffers.count(); ++i)
+    QCOMPARE(gopherHandler.m_buffers.size(), 2);
+    for (int i = 0; i < gopherHandler.m_buffers.size(); ++i)
         QVERIFY(gopherHandler.m_buffers.at(i).isNull());
 }
 
@@ -469,7 +469,7 @@ void tst_QWebEngineProfile::urlSchemeHandlerFailRequest()
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     view.load(QUrl(QStringLiteral("foo://bar")));
     view.show();
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
     QCOMPARE(toPlainTextSync(view.page()), QString());
 }
 
@@ -484,7 +484,7 @@ void tst_QWebEngineProfile::urlSchemeHandlerFailOnRead()
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     view.load(QUrl(QStringLiteral("foo://bar")));
     view.show();
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
     QCOMPARE(toPlainTextSync(view.page()), QString());
 }
 
@@ -499,7 +499,7 @@ void tst_QWebEngineProfile::urlSchemeHandlerStreaming()
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     view.load(QUrl(QStringLiteral("stream://whatever")));
     view.show();
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
     QByteArray result;
     result.append(1000, 'c');
     QCOMPARE(toPlainTextSync(view.page()), QString::fromLatin1(result));
@@ -516,7 +516,7 @@ void tst_QWebEngineProfile::urlSchemeHandlerStreaming2()
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     view.load(QUrl(QStringLiteral("stream://whatever")));
     view.show();
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
     QByteArray result;
     result.append(1000, 'c');
     QCOMPARE(toPlainTextSync(view.page()), QString::fromLatin1(result));
@@ -577,7 +577,7 @@ void tst_QWebEngineProfile::urlSchemeHandlerRequestHeaders()
     QWebEnginePage page(&profile);
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
     page.load(QUrl(QStringLiteral("myscheme://whatever")));
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
 }
 
 void tst_QWebEngineProfile::urlSchemeHandlerInstallation()
@@ -743,12 +743,12 @@ void tst_QWebEngineProfile::urlSchemeHandlerScriptModule()
     QWebEnginePage page(&profile);
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
     page.setHtml(QStringLiteral("<html><head><script src=\"aviancarrier:///\"></script></head><body>Test1</body></html>"));
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
     QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("test")).toString(), QStringLiteral("SUCCESS"));
 
     loadFinishedSpy.clear();
     page.setHtml(QStringLiteral("<html><head><script type=\"module\" src=\"aviancarrier:///\"></script></head><body>Test2</body></html>"));
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
     QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("test")).toString(), QStringLiteral("SUCCESS"));
 }
 
@@ -783,7 +783,7 @@ void tst_QWebEngineProfile::customUserAgent()
     QWebEnginePage page;
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
     page.setHtml(QStringLiteral("<html><body>Hello world!</body></html>"));
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
 
     // First test the user-agent is default
     QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("navigator.userAgent")).toString(), defaultUserAgent);
@@ -796,7 +796,7 @@ void tst_QWebEngineProfile::customUserAgent()
     QWebEnginePage page2(&testProfile);
     QSignalSpy loadFinishedSpy2(&page2, SIGNAL(loadFinished(bool)));
     page2.setHtml(QStringLiteral("<html><body>Hello again!</body></html>"));
-    QTRY_COMPARE(loadFinishedSpy2.count(), 1);
+    QTRY_COMPARE(loadFinishedSpy2.size(), 1);
     QCOMPARE(evaluateJavaScriptSync(&page2, QStringLiteral("navigator.userAgent")).toString(), testUserAgent);
     QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("navigator.userAgent")).toString(), defaultUserAgent);
 
@@ -810,7 +810,7 @@ void tst_QWebEngineProfile::httpAcceptLanguage()
     QWebEnginePage page;
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
     page.setHtml(QStringLiteral("<html><body>Hello world!</body></html>"));
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
 
     QStringList defaultLanguages = evaluateJavaScriptSync(&page, QStringLiteral("navigator.languages")).toStringList();
 
@@ -822,7 +822,7 @@ void tst_QWebEngineProfile::httpAcceptLanguage()
     QWebEnginePage page2(&testProfile);
     QSignalSpy loadFinishedSpy2(&page2, SIGNAL(loadFinished(bool)));
     page2.setHtml(QStringLiteral("<html><body>Hello again!</body></html>"));
-    QTRY_COMPARE(loadFinishedSpy2.count(), 1);
+    QTRY_COMPARE(loadFinishedSpy2.size(), 1);
     QCOMPARE(evaluateJavaScriptSync(&page2, QStringLiteral("navigator.languages")).toStringList(), QStringList(testLang));
     // Test the old one wasn't affected
     QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("navigator.languages")).toStringList(), defaultLanguages);
@@ -839,7 +839,7 @@ void tst_QWebEngineProfile::downloadItem()
     QWebEnginePage page(&testProfile);
     QSignalSpy downloadSpy(&testProfile, SIGNAL(downloadRequested(QWebEngineDownloadRequest *)));
     page.load(QUrl::fromLocalFile(QCoreApplication::applicationFilePath()));
-    QTRY_COMPARE(downloadSpy.count(), 1);
+    QTRY_COMPARE(downloadSpy.size(), 1);
 }
 
 void tst_QWebEngineProfile::changePersistentPath()
@@ -965,29 +965,29 @@ void tst_QWebEngineProfile::initiator()
     QWebEnginePage page(&profile, nullptr);
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
     page.load(QUrl("about:blank"));
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
     loadFinishedSpy.clear();
 
     // about:blank has a unique origin, so initiator should be QUrl("null")
     evaluateJavaScriptSync(&page, "window.location = 'foo:bar'");
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
     loadFinishedSpy.clear();
     QCOMPARE(handler.initiator, QUrl("null"));
 
     page.setHtml("", QUrl("http://test:123/foo%20bar"));
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
     loadFinishedSpy.clear();
 
     // baseUrl determines the origin, so QUrl("http://test:123")
     evaluateJavaScriptSync(&page, "window.location = 'foo:bar'");
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
     loadFinishedSpy.clear();
     QCOMPARE(handler.initiator, QUrl("http://test:123"));
 
     // Directly calling load/setUrl should have initiator QUrl(), meaning
     // browser-initiated, trusted.
     page.load(QUrl("foo:bar"));
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 10000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 10000);
     QCOMPARE(handler.initiator, QUrl());
 }
 
@@ -1003,7 +1003,7 @@ void tst_QWebEngineProfile::badDeleteOrder()
 
     QSignalSpy spyLoadFinished(page, SIGNAL(loadFinished(bool)));
     page->setHtml(QStringLiteral("<html><body><h1>Badly handled page!</h1></body></html>"));
-    QTRY_COMPARE(spyLoadFinished.count(), 1);
+    QTRY_COMPARE(spyLoadFinished.size(), 1);
 
     delete profile;
     delete view;
@@ -1019,7 +1019,7 @@ void tst_QWebEngineProfile::qtbug_71895()
     view.page()->profile()->setHttpCacheType(QWebEngineProfile::NoCache);
     view.page()->profile()->cookieStore()->deleteAllCookies();
     view.page()->profile()->setPersistentCookiesPolicy(QWebEngineProfile::NoPersistentCookies);
-    bool gotSignal = loadSpy.count() || loadSpy.wait(20000);
+    bool gotSignal = loadSpy.size() || loadSpy.wait(20000);
     if (!gotSignal)
         QSKIP("Couldn't load page from network, skipping test.");
 }
