@@ -22,6 +22,7 @@
         \li \l{HTML5 Geolocation}
         \li \l{HTML5 WebSockets}
         \li \l{HTTP/2 Protocol}
+        \li \l{Local Storage}
         \li \l{Native Dialogs}
         \li \l{Pepper Plugin API}
         \li \l{PDF File Viewing}
@@ -301,6 +302,31 @@
     This feature can be tested by opening an HTTP/2 demo, such as the
     \l{Akamai HTTP/2 Demo}, in \l{WebEngine Widgets Simple Browser Example}
     {Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}.
+
+    \section1 Local Storage
+
+    \QWE supports saving key-value pairs in a \c {Local Storage} with no expiration date.
+    This is a part of the \l
+    {https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API}
+    {Web Storage API}, where a user can access a \c Storage object for the given domains
+    using the \c Window.localStorage JavaScript property. The stored data will persist even
+    after the page or the browser application is closed.
+
+    Note that the \c Local Storage can be also disabled with a
+    \l QWebEngineSettings::LocalStorageEnabled
+    setting. Moreover, the storage path can be adjusted with a
+    \l QWebEngineProfile::setPersistentStoragePath
+    call.
+
+    \code
+     QWebEngineProfile profile("MyProfile");
+     profile.settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, isEnabled);
+     profile.setPersistentStoragePath("/path/to/storage");
+    \endcode
+
+    \QWE offers also an easy way of investigating the content of the \c {Local Storage}
+    with \l {Qt WebEngine Developer Tools} by visiting the \uicontrol Application panel
+    and expanding the \uicontrol {Local Storage} menu.
 
     \section1 Native Dialogs
 
