@@ -13,7 +13,8 @@
 #include <QtNetwork/qsslconfiguration.h>
 #include <QtNetwork/qsslserver.h>
 
-static QSslServer *createServer(const QString &certificateFileName, const QString &keyFileName)
+static QSslServer *createServer(const QString &certificateFileName, const QString &keyFileName,
+                                const QString &ca)
 {
     QSslConfiguration configuration(QSslConfiguration::defaultConfiguration());
 
@@ -36,6 +37,16 @@ static QSslServer *createServer(const QString &certificateFileName, const QStrin
         qCritical() << "Could not find certificate: " << certificateFileName;
     }
 
+    if (!ca.isEmpty()) {
+        QList<QSslCertificate> caCerts = QSslCertificate::fromPath(ca);
+        if (!caCerts.isEmpty()) {
+            configuration.addCaCertificates(caCerts);
+            configuration.setPeerVerifyMode(QSslSocket::VerifyPeer);
+        } else {
+            qCritical() << "Could not find certificate: " << certificateFileName;
+        }
+    }
+
     QSslServer *server = new QSslServer();
     server->setSslConfiguration(configuration);
     return server;
@@ -43,8 +54,10 @@ static QSslServer *createServer(const QString &certificateFileName, const QStrin
 
 struct HttpsServer : HttpServer
 {
-    HttpsServer(const QString &certPath, const QString &keyPath, QObject *parent = nullptr)
-        : HttpServer(createServer(certPath, keyPath), "https", QHostAddress::LocalHost, 0, parent)
+    HttpsServer(const QString &certPath, const QString &keyPath, const QString &ca,
+                QObject *parent = nullptr)
+        : HttpServer(createServer(certPath, keyPath, ca), "https", QHostAddress::LocalHost, 0,
+                     parent)
     {
     }
 };

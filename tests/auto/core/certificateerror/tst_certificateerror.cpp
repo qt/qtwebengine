@@ -67,7 +67,7 @@ void tst_CertificateError::handleError_data()
 
 void tst_CertificateError::handleError()
 {
-    HttpsServer server(":/resources/server.pem",":/resources/server.key");
+    HttpsServer server(":/resources/server.pem", ":/resources/server.key", "");
     server.setExpectError(false);
     QVERIFY(server.start());
 
