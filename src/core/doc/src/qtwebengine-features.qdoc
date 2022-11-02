@@ -33,6 +33,7 @@
         \li \l{Touch}
         \li \l{View Source}
         \li \l{Web Notifications}
+        \li \l{WebGL}
         \li \l{webrtc_feature}{WebRTC}
     \endlist
 
@@ -681,6 +682,16 @@
     {WebEngineView.Notifications}.
 
     Support for this feature was added in Qt 5.13.0.
+
+    \section1 WebGL
+
+    \QWE supports WebGL for some graphics stacks setups. A user can visit the
+    chrome://gpu page using the QtWebEngine powered application. The \e {Graphics Feature Status}
+    overview states if WebGL is supported for the current platform setup. A user can also
+    check the \l {https://webglreport.com}{WebGL Report}.
+
+    The WebGL support is enabled by default. You can disable it with the
+    \l QWebEngineSettings::WebGLEnabled setting.
 
     \target webrtc_feature
     \section1 WebRTC
