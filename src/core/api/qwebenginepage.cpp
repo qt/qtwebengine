@@ -6,6 +6,7 @@
 #include "qwebenginepage_p.h"
 
 #include "qwebenginecertificateerror.h"
+#include "qwebenginedesktopmediarequest.h"
 #include "qwebenginefilesystemaccessrequest.h"
 #include "qwebenginefindtextresult.h"
 #include "qwebenginefullscreenrequest.h"
@@ -1484,6 +1485,15 @@ void QWebEnginePage::findText(const QString &subString, FindFlags options, const
 bool QWebEnginePage::event(QEvent *e)
 {
     return QObject::event(e);
+}
+
+void QWebEnginePagePrivate::desktopMediaRequested(
+        QtWebEngineCore::DesktopMediaController *controller)
+{
+    Q_Q(QWebEnginePage);
+    QTimer::singleShot(0, q, [q, controller]() {
+        Q_EMIT q->desktopMediaRequested(QWebEngineDesktopMediaRequest(controller));
+    });
 }
 
 void QWebEnginePagePrivate::contextMenuRequested(QWebEngineContextMenuRequest *data)

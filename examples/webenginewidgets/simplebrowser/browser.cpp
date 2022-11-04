@@ -27,6 +27,7 @@ BrowserWindow *Browser::createHiddenWindow(bool offTheRecord)
         m_profile->settings()->setAttribute(QWebEngineSettings::DnsPrefetchEnabled, true);
         m_profile->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
         m_profile->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls, false);
+        m_profile->settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
         QObject::connect(m_profile.get(), &QWebEngineProfile::downloadRequested,
                          &m_downloadManagerWidget, &DownloadManagerWidget::downloadRequested);
     }

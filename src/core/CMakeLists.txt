@@ -110,6 +110,7 @@ foreach(arch ${archs})
                 custom_handlers/register_protocol_handler_request_controller.h
                 custom_handlers/register_protocol_handler_request_controller_impl.cpp custom_handlers/register_protocol_handler_request_controller_impl.h
                 delegated_frame_host_client_qt.cpp delegated_frame_host_client_qt.h
+                desktop_media_controller.cpp desktop_media_controller.h desktop_media_controller_p.h
                 desktop_screen_qt.cpp desktop_screen_qt.h
                 devtools_frontend_qt.cpp devtools_frontend_qt.h
                 devtools_manager_delegate_qt.cpp devtools_manager_delegate_qt.h

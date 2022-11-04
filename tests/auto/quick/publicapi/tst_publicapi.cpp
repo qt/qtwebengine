@@ -10,6 +10,7 @@
 #include <QtTest/QtTest>
 #include <QtWebEngineQuick/QQuickWebEngineProfile>
 #include <QtWebEngineCore/QWebEngineCertificateError>
+#include <QtWebEngineCore/QWebEngineDesktopMediaRequest>
 #include <QtWebEngineCore/QWebEngineFileSystemAccessRequest>
 #include <QtWebEngineCore/QWebEngineFindTextResult>
 #include <QtWebEngineCore/QWebEngineFullScreenRequest>
@@ -62,9 +63,11 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QQuickWebEngineTooltipRequest::staticMetaObject
     << &QWebEngineContextMenuRequest::staticMetaObject
     << &QWebEngineCertificateError::staticMetaObject
+    << &QWebEngineDesktopMediaRequest::staticMetaObject
     << &QWebEngineFileSystemAccessRequest::staticMetaObject
     << &QWebEngineFindTextResult::staticMetaObject
     << &QWebEngineLoadingInfo::staticMetaObject
+    << &QWebEngineMediaSourceModel::staticMetaObject
     << &QWebEngineNavigationRequest::staticMetaObject
     << &QWebEngineNewWindowRequest::staticMetaObject
     << &QWebEngineNotification::staticMetaObject
@@ -267,6 +270,11 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineTooltipRequest.text --> QString"
     << "QQuickWebEngineTooltipRequest.type --> QQuickWebEngineTooltipRequest::RequestType"
     << "QQuickWebEngineTooltipRequest.accepted --> bool"
+    << "QWebEngineDesktopMediaRequest.screensModel --> QWebEngineMediaSourceModel*"
+    << "QWebEngineDesktopMediaRequest.windowsModel --> QWebEngineMediaSourceModel*"
+    << "QWebEngineDesktopMediaRequest.selectScreen(QModelIndex) --> void"
+    << "QWebEngineDesktopMediaRequest.selectWindow(QModelIndex) --> void"
+    << "QWebEngineDesktopMediaRequest.cancel() --> void"
     << "QWebEngineFullScreenRequest.accept() --> void"
     << "QWebEngineFullScreenRequest.origin --> QUrl"
     << "QWebEngineFullScreenRequest.reject() --> void"
@@ -697,6 +705,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.contentsSize --> QSizeF"
     << "QQuickWebEngineView.contentsSizeChanged(QSizeF) --> void"
     << "QQuickWebEngineView.contextMenuRequested(QWebEngineContextMenuRequest*) --> void"
+    << "QQuickWebEngineView.desktopMediaRequested(QWebEngineDesktopMediaRequest) --> void"
     << "QQuickWebEngineView.devToolsId --> QString"
     << "QQuickWebEngineView.devToolsView --> QQuickWebEngineView*"
     << "QQuickWebEngineView.devToolsViewChanged() --> void"

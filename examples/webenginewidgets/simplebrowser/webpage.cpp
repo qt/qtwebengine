@@ -13,6 +13,8 @@ WebPage::WebPage(QWebEngineProfile *profile, QObject *parent)
 {
     connect(this, &QWebEnginePage::selectClientCertificate, this, &WebPage::handleSelectClientCertificate);
     connect(this, &QWebEnginePage::certificateError, this, &WebPage::handleCertificateError);
+    connect(this, &QWebEnginePage::desktopMediaRequested, this,
+            &WebPage::handleDesktopMediaRequest);
 }
 
 void WebPage::handleCertificateError(QWebEngineCertificateError error)
@@ -26,4 +28,10 @@ void WebPage::handleSelectClientCertificate(QWebEngineClientCertificateSelection
 {
     // Just select one.
     selection.select(selection.certificates().at(0));
+}
+
+void WebPage::handleDesktopMediaRequest(const QWebEngineDesktopMediaRequest &request)
+{
+    // select the primary screen
+    request.selectScreen(request.screensModel()->index(0));
 }
