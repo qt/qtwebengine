@@ -17,6 +17,7 @@
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtWebEngineCore/qwebenginequotarequest.h>
+#include <QtWebEngineCore/qwebenginedesktopmediarequest.h>
 #include <QtWebEngineCore/qwebenginedownloadrequest.h>
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 #include <QtGui/qcolor.h>
@@ -554,6 +555,7 @@ Q_SIGNALS:
     Q_REVISION(6,4) void touchHandleDelegateChanged();
     Q_REVISION(6,4) void fileSystemAccessRequested(const QWebEngineFileSystemAccessRequest &request);
     Q_REVISION(6, 7) void webAuthUXRequested(QWebEngineWebAuthUXRequest *request);
+    Q_REVISION(6,7) void desktopMediaRequested(const QWebEngineDesktopMediaRequest &request);
 
 protected:
     void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;

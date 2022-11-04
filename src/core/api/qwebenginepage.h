@@ -6,6 +6,7 @@
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtWebEngineCore/qwebengineclientcertificateselection.h>
+#include <QtWebEngineCore/qwebenginedesktopmediarequest.h>
 #include <QtWebEngineCore/qwebenginedownloadrequest.h>
 #include <QtWebEngineCore/qwebenginequotarequest.h>
 
@@ -325,6 +326,7 @@ Q_SIGNALS:
     void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator, const QString &proxyHost);
 
     void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode);
+    void desktopMediaRequested(const QWebEngineDesktopMediaRequest &request);
     void certificateError(const QWebEngineCertificateError &certificateError);
     void navigationRequested(QWebEngineNavigationRequest &request);
     void newWindowRequested(QWebEngineNewWindowRequest &request);

@@ -580,6 +580,15 @@ void QQuickWebEngineViewPrivate::windowCloseRejected()
         QMetaObject::invokeMethod(q, "windowCloseRejected");
 }
 
+void QQuickWebEngineViewPrivate::desktopMediaRequested(
+        QtWebEngineCore::DesktopMediaController *controller)
+{
+    Q_Q(QQuickWebEngineView);
+    QTimer::singleShot(0, q, [q, controller]() {
+        Q_EMIT q->desktopMediaRequested(QWebEngineDesktopMediaRequest(controller));
+    });
+}
+
 void QQuickWebEngineViewPrivate::requestFullScreenMode(const QUrl &origin, bool fullscreen)
 {
     Q_Q(QQuickWebEngineView);

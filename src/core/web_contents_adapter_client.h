@@ -49,6 +49,7 @@ class CertificateErrorController;
 class ClientCertSelectController;
 class AuthenticationDialogController;
 class ColorChooserController;
+class DesktopMediaController;
 class FilePickerController;
 class JavaScriptDialogController;
 class RenderWidgetHostViewQt;
@@ -167,6 +168,7 @@ public:
     virtual void close() = 0;
     virtual void windowCloseRejected() = 0;
     virtual void contextMenuRequested(QWebEngineContextMenuRequest *request) = 0;
+    virtual void desktopMediaRequested(DesktopMediaController *) = 0;
     virtual void navigationRequested(int navigationType, const QUrl &url, bool &accepted, bool isMainFrame) = 0;
     virtual void requestFullScreenMode(const QUrl &origin, bool fullscreen) = 0;
     virtual bool isFullScreenMode() const = 0;

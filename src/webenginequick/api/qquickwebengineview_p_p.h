@@ -91,6 +91,7 @@ public:
     void navigationRequested(int navigationType, const QUrl &url, bool &accepted, bool isMainFrame) override;
     void javascriptDialog(QSharedPointer<QtWebEngineCore::JavaScriptDialogController>) override;
     void runFileChooser(QSharedPointer<QtWebEngineCore::FilePickerController>) override;
+    void desktopMediaRequested(QtWebEngineCore::DesktopMediaController *) override;
     void showColorDialog(QSharedPointer<QtWebEngineCore::ColorChooserController>) override;
     void didRunJavaScript(quint64, const QVariant&) override;
     void didFetchDocumentMarkup(quint64, const QString&) override { }
