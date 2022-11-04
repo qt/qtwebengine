@@ -1,29 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2020 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the documentation of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:FDL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Free Documentation License Usage
-** Alternatively, this file may be used under the terms of the GNU Free
-** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of
-** this file. Please review the following information to ensure
-** the GNU Free Documentation License version 1.3 requirements
-** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2020 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
     \page qtwebengine-platform-notes.html
@@ -73,7 +49,7 @@
         \li Visual Studio 2019 or later, or clang-cl version 10 or later
         \li Active Template Library (ATL), usually included in the Visual Studio
             installation
-        \li Windows 10 SDK version 10.0.19041 or later
+        \li Windows 10 SDK version 10.0.20348.0 or later
     \endlist
 
     \QWE can only be built on 64-bit Windows, with a x64-bit toolchain.
@@ -125,8 +101,8 @@
     \section1 Using Earlier Qt Versions to Build \QWE
 
     Building \QWE with earlier Qt versions (down to the last LTS
-    version) is supported. It means that \QWE 6.3 can be built with
-    Qt 6.2.x, and Qt 6.3.
+    version) is supported. It means that \QWE 6.4 can be built with
+    Qt 6.2.x, Qt 6.3.x, and Qt 6.4.
 
     To use an earlier Qt version to build Qt Webengine:
 

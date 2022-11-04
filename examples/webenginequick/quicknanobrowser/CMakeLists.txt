@@ -29,6 +29,11 @@ target_link_libraries(quicknanobrowser PUBLIC
     Qt::WebEngineQuick
 )
 
+qt_add_qml_module(quicknanobrowser
+    URI BrowserUtils
+    VERSION 1.0
+)
+
 # Resources:
 set(resources_resource_files
     "ApplicationRoot.qml"

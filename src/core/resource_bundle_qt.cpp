@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -51,7 +15,7 @@
 
 #include "web_engine_library_info.h"
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #include "base/posix/global_descriptors.h"
 #include "global_descriptors_qt.h"
 #endif
@@ -61,10 +25,10 @@ namespace ui {
 void ResourceBundle::LoadCommonResources()
 {
     // We repacked the resources we need and installed them. now let chromium mmap that file.
-    AddDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_100P_PAK), SCALE_FACTOR_100P);
-    AddDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_200P_PAK), SCALE_FACTOR_200P);
-    AddDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_PAK), SCALE_FACTOR_NONE);
-    AddOptionalDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_DEVTOOLS_PAK), SCALE_FACTOR_NONE);
+    AddDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_100P_PAK), ui::k100Percent);
+    AddDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_200P_PAK), ui::k200Percent);
+    AddDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_PAK), ui::kScaleFactorNone);
+    AddOptionalDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_DEVTOOLS_PAK), ui::kScaleFactorNone);
 }
 
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id)
@@ -75,7 +39,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id)
 // static
 bool ResourceBundle::LocaleDataPakExists(const std::string& locale)
 {
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
     base::CommandLine *parsed_command_line = base::CommandLine::ForCurrentProcess();
     std::string process_type = parsed_command_line->GetSwitchValueASCII(switches::kProcessType);
     bool no_sandbox = parsed_command_line->HasSwitch(sandbox::policy::switches::kNoSandbox);
@@ -100,12 +64,12 @@ std::string ResourceBundle::LoadLocaleResources(const std::string &pref_locale, 
 
     std::string app_locale = l10n_util::GetApplicationLocale(pref_locale, false /* set_icu_locale */);
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
     int locale_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(kWebEngineLocale);
     if (locale_fd > -1) {
-        std::unique_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
+        std::unique_ptr<DataPack> data_pack(new DataPack(ui::k100Percent));
         data_pack->LoadFromFile(base::File(locale_fd));
-        locale_resources_data_.reset(data_pack.release());
+        locale_resources_data_ = std::move(data_pack);
         return app_locale;
     }
 #endif
@@ -120,7 +84,7 @@ std::string ResourceBundle::LoadLocaleResources(const std::string &pref_locale, 
         return std::string();
     }
 
-    std::unique_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
+    std::unique_ptr<DataPack> data_pack(new DataPack(ui::k100Percent));
     if (!data_pack->LoadFromPath(locale_file_path)) {
         UMA_HISTOGRAM_ENUMERATION("ResourceBundle.LoadLocaleResourcesError",
                                   logging::GetLastSystemErrorCode(), 16000);
@@ -129,7 +93,7 @@ std::string ResourceBundle::LoadLocaleResources(const std::string &pref_locale, 
         return std::string();
     }
 
-    locale_resources_data_.reset(data_pack.release());
+    locale_resources_data_ = std::move(data_pack);
     return app_locale;
 }
 

@@ -30,6 +30,8 @@ qhp.QtPdf.subprojects.examples.indexTitle = Qt PDF Examples
 qhp.QtPdf.subprojects.examples.selectors = doc:example
 qhp.QtPdf.subprojects.examples.sortPages = true
 
+manifestmeta.highlighted.names += "QtPdf/PDF Multipage Viewer Example"
+
 depends += qtcore \
            qtwidgets \
            qtgui \
@@ -37,12 +39,16 @@ depends += qtcore \
            qmake \
            qtdesigner \
            qtquick \
-           qtcmake
+           qtquickcontrols \
+           qtcmake \
+           qtsvg
 
-headerdirs  += ../
+headerdirs  += ../ \
+               ../../pdfwidgets
 
 sourcedirs  += ../ \
-               ../../pdfquick
+               ../../pdfquick \
+               ../../pdfwidgets
 
 exampledirs += ../../../examples/pdfwidgets \
                ../../../examples/pdf \

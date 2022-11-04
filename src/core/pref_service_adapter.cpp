@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2019 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2019 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "pref_service_adapter.h"
 
@@ -43,8 +7,10 @@
 #include "type_conversion.h"
 #include "web_engine_context.h"
 
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "content/public/browser/browser_thread.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/in_memory_pref_store.h"
@@ -82,15 +48,16 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     PrefServiceFactory factory;
     factory.set_command_line_prefs(base::MakeRefCounted<ChromeCommandLinePrefStore>(
-            WebEngineContext::commandLine()));
+            base::CommandLine::ForCurrentProcess()));
 
     QString userPrefStorePath = profileAdapter.dataPath();
-    if (profileAdapter.isOffTheRecord() || profileAdapter.storageName().isEmpty()) {
-        factory.set_user_prefs(new InMemoryPrefStore);
-    } else {
+    if (!profileAdapter.isOffTheRecord() && !userPrefStorePath.isEmpty() &&
+            const_cast<ProfileAdapter *>(&profileAdapter)->ensureDataPathExists()) {
         userPrefStorePath += QDir::separator();
         userPrefStorePath += QStringLiteral("user_prefs.json");
         factory.set_user_prefs(base::MakeRefCounted<JsonPrefStore>(toFilePath(userPrefStorePath)));
+    } else {
+        factory.set_user_prefs(new InMemoryPrefStore);
     }
 
     auto registry = base::MakeRefCounted<PrefRegistrySimple>();
@@ -129,7 +96,18 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     // default value will be different. We'll need to initialize it later.
     registry->RegisterStringPref(kPrefMediaDeviceIDSalt, std::string());
 
-    m_prefService = factory.Create(registry);
+    registry->RegisterBooleanPref(autofill::prefs::kAutofillEnabledDeprecated, false);
+    registry->RegisterBooleanPref(autofill::prefs::kAutofillProfileEnabled, false);
+    registry->RegisterBooleanPref(autofill::prefs::kAutofillCreditCardEnabled, false);
+    registry->RegisterBooleanPref(autofill::prefs::kAutofillCreditCardFidoAuthEnabled, false);
+    registry->RegisterBooleanPref(autofill::prefs::kAutofillWalletImportEnabled, false);
+    registry->RegisterBooleanPref(autofill::prefs::kAutofillJapanCityFieldMigratedDeprecated,
+                                  false);
+
+    {
+        base::ScopedAllowBlocking allowBlock;
+        m_prefService = factory.Create(registry);
+    }
 
     // Initialize salt value if none was stored before
     if (m_prefService->GetString(kPrefMediaDeviceIDSalt).empty()) {
@@ -183,10 +161,8 @@ QStringList PrefServiceAdapter::spellCheckLanguages() const
 {
     QStringList spellcheck_dictionaries;
     const auto &list = m_prefService->GetList(spellcheck::prefs::kSpellCheckDictionaries);
-    for (size_t i = 0; i < list->GetSize(); ++i) {
-        std::string dictionary;
-        if (list->GetString(i, &dictionary))
-            spellcheck_dictionaries.append(QString::fromStdString(dictionary));
+    for (const auto &dictionary : list->GetList()) {
+        spellcheck_dictionaries.append(QString::fromStdString(dictionary.GetString()));
     }
 
     return spellcheck_dictionaries;

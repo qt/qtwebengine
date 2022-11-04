@@ -2,13 +2,40 @@
 <html>
   <body>
     <script>
+      function logState(state) {
+         console.log("Service worker " + state)
+      }
+
+      const registerServiceWorker = async () => {
+          try {
+            var serviceWorker;
+            const registration = await navigator.serviceWorker.register('/sw.js');
+            if (registration.installing) {
+              serviceWorker = registration.installing;
+            } else if (registration.waiting) {
+              serviceWorker = registration.waiting;
+            } else if (registration.active) {
+              serviceWorker = registration.active;
+            }
+          } catch (error) {
+            console.error("Service worker registration error: ${error}");
+          }
+          if (serviceWorker) {
+            logState(serviceWorker.state);
+            serviceWorker.addEventListener('statechange', function(e) {
+            logState(e.target.state);
+            });
+          }
+      };
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js').then(function(registration) {
-            console.log('ServiceWorker registration successful with scope: ', registration.scope);
-          }, function(err) {
-            console.error('ServiceWorker registration failed: ', err);
-          });
+        registerServiceWorker();
+        navigator.serviceWorker.ready.then((registration) => {
+          navigator.serviceWorker.onmessage = (event) => {
+            if (event.data && event.data.type === 'PONG') {
+                console.log("Service worker done");
+            }
+          };
+          registration.active.postMessage({type: 'PING'});
         });
       }
     </script>

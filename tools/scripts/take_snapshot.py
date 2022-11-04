@@ -1,32 +1,6 @@
 #!/usr/bin/env python3
-
-#############################################################################
-##
-## Copyright (C) 2016 The Qt Company Ltd.
-## Contact: https://www.qt.io/licensing/
-##
-## This file is part of the QtWebEngine module of the Qt Toolkit.
-##
-## $QT_BEGIN_LICENSE:GPL-EXCEPT$
-## Commercial License Usage
-## Licensees holding valid commercial Qt licenses may use this file in
-## accordance with the commercial license agreement provided with the
-## Software or, alternatively, in accordance with the terms contained in
-## a written agreement between you and The Qt Company. For licensing terms
-## and conditions see https://www.qt.io/terms-conditions. For further
-## information use the contact form at https://www.qt.io/contact-us.
-##
-## GNU General Public License Usage
-## Alternatively, this file may be used under the terms of the GNU
-## General Public License version 3 as published by the Free Software
-## Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
-## included in the packaging of this file. Please review the following
-## information to ensure the GNU General Public License requirements will
-## be met: https://www.gnu.org/licenses/gpl-3.0.html.
-##
-## $QT_END_LICENSE$
-##
-#############################################################################
+# Copyright (C) 2016 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 import glob
 import os
@@ -75,13 +49,17 @@ def isInChromiumBlacklist(file_path):
           and not file_path.startswith('chrome/browser/custom_handlers/')
           and not file_path.startswith('chrome/browser/devtools/')
           and not file_path.startswith('chrome/browser/extensions/api/')
+          and not file_path.startswith('chrome/browser/gcm/')
           and not file_path.startswith('chrome/browser/media/webrtc/')
           and not file_path.startswith('chrome/browser/net/')
           and not file_path.startswith('chrome/browser/prefs/')
           and not file_path.startswith('chrome/browser/printing/')
+          and not file_path.startswith('chrome/browser/profiles/incognito_helpers')
+          and not file_path.startswith('chrome/browser/push_messaging/')
           and not file_path.startswith('chrome/browser/renderer_host/')
           and not file_path.startswith('chrome/browser/share/core/')
           and not file_path.startswith('chrome/browser/share/proto/')
+          and not file_path.startswith('chrome/browser/signin/')
           and not file_path.startswith('chrome/browser/spellchecker')
           and not file_path.startswith('chrome/browser/tab_contents/')
           and not file_path.startswith('chrome/browser/ui/webui/')
@@ -106,10 +84,9 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('components/cronet/')
             or file_path.startswith('components/drive/')
             or file_path.startswith('components/invalidation/')
-            or file_path.startswith('components/gcm_driver/')
             or file_path.startswith('components/nacl/')
             or file_path.startswith('components/omnibox/')
-            or file_path.startswith('components/policy/')
+            or file_path.startswith('components/policy/resources/')
             or file_path.startswith('components/proximity_auth/')
             or (file_path.startswith('components/resources/terms/')
               and not file_path.endswith('terms_chromium.html'))
@@ -121,10 +98,10 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('components/translate/')
         ))
         or file_path.startswith('content/public/android/java')
-        or (file_path.startswith('content/shell')
-          and not file_path.startswith('content/shell/common')
-          and not file_path.endswith('.grd'))
+        or file_path.startswith('content/shell/android/')
+        or file_path.startswith('content/shell/browser/')
         or file_path.startswith('courgette')
+        or file_path.startswith('docs/website/')
         or file_path.startswith('google_update')
         or file_path.startswith('ios')
         or file_path.startswith('media/base/android/java')
@@ -170,9 +147,28 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/colorama')
             or file_path.startswith('third_party/depot_tools')
             or (file_path.startswith('third_party/node/node_modules/')
+              and not file_path.startswith('third_party/node/node_modules/@types/d3')
+              and not file_path.startswith('third_party/node/node_modules/@types/trusted-types/')
+              and not file_path.startswith('third_party/node/node_modules/cancel-token/')
+              and not file_path.startswith('third_party/node/node_modules/cssbeautify/')
+              and not file_path.startswith('third_party/node/node_modules/has-ansi/')
+              and not file_path.startswith('third_party/node/node_modules/indent/')
+              and not file_path.startswith('third_party/node/node_modules/is-windows/')
+              and not file_path.startswith('third_party/node/node_modules/jsonschema/')
+              and not file_path.startswith('third_party/node/node_modules/lodash.camelcase/')
+              and not file_path.startswith('third_party/node/node_modules/lodash.sortby/')
+              and not file_path.startswith('third_party/node/node_modules/polymer-analyzer/')
+              and not file_path.startswith('third_party/node/node_modules/polymer-css-build/')
+              and not file_path.startswith('third_party/node/node_modules/rollup/')
+              and not file_path.startswith('third_party/node/node_modules/shady-css-parser/')
               and not file_path.startswith('third_party/node/node_modules/source-map/')
+              and not file_path.startswith('third_party/node/node_modules/stable/')
               and not file_path.startswith('third_party/node/node_modules/terser/')
-              and not file_path.startswith('third_party/node/node_modules/typescript/'))
+              and not file_path.startswith('third_party/node/node_modules/tr46/')
+              and not file_path.startswith('third_party/node/node_modules/typescript/')
+              and not file_path.startswith('third_party/node/node_modules/vscode-uri/')
+              and not file_path.startswith('third_party/node/node_modules/webidl-conversions/')
+              and not file_path.startswith('third_party/node/node_modules/whatwg-url/'))
             or file_path.startswith('third_party/fuschsia-sdk/')
             or file_path.startswith('third_party/glslang/src/Test/')
             or file_path.startswith('third_party/google_')

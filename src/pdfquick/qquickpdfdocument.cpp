@@ -1,43 +1,9 @@
-/****************************************************************************
-**
-** Copyright (C) 2020 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtPDF module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qquickpdfdocument_p.h"
+#include <private/qpdffile_p.h>
+#include <QtCore/qmetatype.h>
 #include <QtCore/qstandardpaths.h>
 #include <QtQml/qqmlcontext.h>
 #include <QtQml/qqmlengine.h>
@@ -64,14 +30,6 @@ QT_BEGIN_NAMESPACE
 QQuickPdfDocument::QQuickPdfDocument(QObject *parent)
     : QObject(parent)
 {
-    connect(&m_doc, &QPdfDocument::passwordChanged, this, &QQuickPdfDocument::passwordChanged);
-    connect(&m_doc, &QPdfDocument::passwordRequired, this, &QQuickPdfDocument::passwordRequired);
-    connect(&m_doc, &QPdfDocument::statusChanged, [this] (QPdfDocument::Status status) {
-        emit statusChanged();
-        if (status == QPdfDocument::Ready)
-            emit metaDataChanged();
-    });
-    connect(&m_doc, &QPdfDocument::pageCountChanged, this, &QQuickPdfDocument::pageCountChanged);
 }
 
 /*!
@@ -79,10 +37,21 @@ QQuickPdfDocument::QQuickPdfDocument(QObject *parent)
 */
 QQuickPdfDocument::~QQuickPdfDocument() = default;
 
-void QQuickPdfDocument::componentComplete()
+void QQuickPdfDocument::classBegin()
 {
-    if (m_doc.error() == QPdfDocument::IncorrectPasswordError)
-        emit passwordRequired();
+    m_doc = static_cast<QPdfDocument *>(qmlExtendedObject(this));
+    Q_ASSERT(m_doc);
+    connect(m_doc, &QPdfDocument::passwordChanged, this, [this]() {
+        if (resolvedSource().isValid() && resolvedSource().isLocalFile())
+            m_doc->load(resolvedSource().path());
+    });
+    connect(m_doc, &QPdfDocument::statusChanged, this, [this] (QPdfDocument::Status status) {
+        emit errorChanged();
+        if (status == QPdfDocument::Status::Ready)
+            emit metaDataChanged();
+    });
+    if (m_doc->error() == QPdfDocument::Error::IncorrectPassword)
+        emit m_doc->passwordRequired();
 }
 
 /*!
@@ -99,13 +68,15 @@ void QQuickPdfDocument::setSource(QUrl source)
 
     m_source = source;
     m_maxPageWidthHeight = QSizeF();
+    m_carrierFile->deleteLater();
+    m_carrierFile = nullptr;
     emit sourceChanged();
     const QQmlContext *context = qmlContext(this);
     m_resolvedSource = context ? context->resolvedUrl(source) : source;
     if (source.scheme() == QLatin1String("qrc"))
-        m_doc.load(QLatin1Char(':') + m_resolvedSource.path());
+        m_doc->load(QLatin1Char(':') + m_resolvedSource.path());
     else
-        m_doc.load(m_resolvedSource.toLocalFile());
+        m_doc->load(m_resolvedSource.toLocalFile());
 }
 
 /*!
@@ -118,25 +89,25 @@ void QQuickPdfDocument::setSource(QUrl source)
 */
 QString QQuickPdfDocument::error() const
 {
-    switch (m_doc.error()) {
-    case QPdfDocument::NoError:
+    switch (m_doc->error()) {
+    case QPdfDocument::Error::None:
         return tr("no error");
         break;
-    case QPdfDocument::UnknownError:
+    case QPdfDocument::Error::Unknown:
         break;
-    case QPdfDocument::DataNotYetAvailableError:
+    case QPdfDocument::Error::DataNotYetAvailable:
         return tr("data not yet available");
         break;
-    case QPdfDocument::FileNotFoundError:
+    case QPdfDocument::Error::FileNotFound:
         return tr("file not found");
         break;
-    case QPdfDocument::InvalidFileFormatError:
+    case QPdfDocument::Error::InvalidFileFormat:
         return tr("invalid file format");
         break;
-    case QPdfDocument::IncorrectPasswordError:
+    case QPdfDocument::Error::IncorrectPassword:
         return tr("incorrect password");
         break;
-    case QPdfDocument::UnsupportedSecuritySchemeError:
+    case QPdfDocument::Error::UnsupportedSecurityScheme:
         return tr("unsupported security scheme");
         break;
     }
@@ -150,14 +121,6 @@ QString QQuickPdfDocument::error() const
     signal is emitted, the UI should prompt the user and then set this
     property so that document opening can continue.
 */
-void QQuickPdfDocument::setPassword(const QString &password)
-{
-    if (m_doc.password() == password)
-        return;
-    m_doc.setPassword(password);
-    if (resolvedSource().isValid() && resolvedSource().isLocalFile())
-        m_doc.load(resolvedSource().path());
-}
 
 /*!
     \qmlproperty int PdfDocument::pageCount
@@ -178,32 +141,45 @@ void QQuickPdfDocument::setPassword(const QString &password)
 
     Returns the size of the given \a page in points.
 */
-QSizeF QQuickPdfDocument::pagePointSize(int page) const
-{
-    return m_doc.pageSize(page);
-}
 
 qreal QQuickPdfDocument::maxPageWidth() const
 {
-    const_cast<QQuickPdfDocument *>(this)->updateMaxPageSize();
+    updateMaxPageSize();
     return m_maxPageWidthHeight.width();
 }
 
 qreal QQuickPdfDocument::maxPageHeight() const
 {
-    const_cast<QQuickPdfDocument *>(this)->updateMaxPageSize();
+    updateMaxPageSize();
     return m_maxPageWidthHeight.height();
 }
 
-void QQuickPdfDocument::updateMaxPageSize()
+QPdfDocument *QQuickPdfDocument::document() const
+{
+    return m_doc;
+}
+
+/*!
+    \internal
+    Returns a QPdfFile instance that can carry this document down into
+    QPdfIOHandler::load(QIODevice *). It should not be used for other purposes.
+*/
+QPdfFile *QQuickPdfDocument::carrierFile()
+{
+    if (!m_carrierFile)
+        m_carrierFile = new QPdfFile(m_doc);
+    return m_carrierFile;
+}
+
+void QQuickPdfDocument::updateMaxPageSize() const
 {
     if (m_maxPageWidthHeight.isValid())
         return;
     qreal w = 0;
     qreal h = 0;
-    const int count = pageCount();
+    const int count = m_doc->pageCount();
     for (int i = 0; i < count; ++i) {
-        auto size = pagePointSize(i);
+        auto size = m_doc->pagePointSize(i);
         w = qMax(w, size.width());
         h = qMax(w, size.height());
     }
@@ -288,3 +264,5 @@ void QQuickPdfDocument::updateMaxPageSize()
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qquickpdfdocument_p.cpp"

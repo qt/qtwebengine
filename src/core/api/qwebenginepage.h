@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2021 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2021 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #ifndef QWEBENGINEPAGE_H
 #define QWEBENGINEPAGE_H
@@ -43,27 +7,29 @@
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtWebEngineCore/qwebengineclientcertificateselection.h>
 #include <QtWebEngineCore/qwebenginedownloadrequest.h>
-#include <QtWebEngineCore/qwebenginehttprequest.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
-#include <QtCore/qvariant.h>
-#include <QtGui/qaction.h>
 #include <QtGui/qpagelayout.h>
 #include <QtGui/qpageranges.h>
+#include <QtGui/qtgui-config.h>
 
 #include <functional>
 
 QT_BEGIN_NAMESPACE
 
+class QAction;
 class QAuthenticator;
 class QContextMenuBuilder;
+class QRect;
+class QVariant;
 class QWebChannel;
 class QWebEngineCertificateError;
-class QWebEngineClientCertificateSelection;
+class QWebEngineFileSystemAccessRequest;
 class QWebEngineFindTextResult;
 class QWebEngineFullScreenRequest;
 class QWebEngineHistory;
+class QWebEngineHttpRequest;
 class QWebEngineLoadingInfo;
 class QWebEngineNavigationRequest;
 class QWebEngineNewWindowRequest;
@@ -250,7 +216,7 @@ public:
 
     QWebEngineProfile *profile() const;
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     QAction *action(WebAction action) const;
 #endif
     virtual void triggerAction(WebAction action, bool checked = false);
@@ -345,6 +311,7 @@ Q_SIGNALS:
     void fullScreenRequested(QWebEngineFullScreenRequest fullScreenRequest);
     void quotaRequested(QWebEngineQuotaRequest quotaRequest);
     void registerProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest request);
+    void fileSystemAccessRequested(QWebEngineFileSystemAccessRequest request);
     void selectClientCertificate(QWebEngineClientCertificateSelection clientCertSelection);
     void authenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator);
     void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator, const QString &proxyHost);
@@ -396,16 +363,16 @@ private:
     Q_DISABLE_COPY(QWebEnginePage)
     Q_DECLARE_PRIVATE(QWebEnginePage)
     QScopedPointer<QWebEnginePagePrivate> d_ptr;
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     Q_PRIVATE_SLOT(d_func(), void _q_webActionTriggered(bool checked))
 #endif
 
     friend class QContextMenuBuilder;
     friend class QWebEngineView;
     friend class QWebEngineViewPrivate;
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     friend class QWebEngineViewAccessible;
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::FindFlags)

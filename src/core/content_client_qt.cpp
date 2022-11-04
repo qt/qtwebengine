@@ -1,50 +1,15 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "content_client_qt.h"
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "base/version.h"
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/content_constants.h"
@@ -74,9 +39,9 @@
 
 // File name of the CDM on different platforms.
 const char kWidevineCdmFileName[] =
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     "widevinecdm.plugin";
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
     "widevinecdm.dll";
 #else  // OS_LINUX, etc.
     "libwidevinecdm.so";
@@ -86,7 +51,6 @@ const char kWidevineCdmFileName[] =
 
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "pdf/pdf.h"
-#include "pdf/pdf_ppapi.h"
 const char kPdfPluginMimeType[] = "application/x-google-chrome-pdf";
 const char kPdfPluginPath[] = "internal-pdf-viewer";
 #endif // QT_CONFIG(webengine_printing_and_pdf)
@@ -161,10 +125,6 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins)
     pdf_info.path = base::FilePath::FromUTF8Unsafe(kPdfPluginPath);
     content::WebPluginMimeType pdf_mime_type(kPdfPluginMimeType, "pdf", "Portable Document Format");
     pdf_info.mime_types.push_back(pdf_mime_type);
-    pdf_info.internal_entry_points.get_interface = chrome_pdf::PPP_GetInterface;
-    pdf_info.internal_entry_points.initialize_module = chrome_pdf::PPP_InitializeModule;
-    pdf_info.internal_entry_points.shutdown_module = chrome_pdf::PPP_ShutdownModule;
-    pdf_info.permissions = ppapi::PERMISSION_DEV | ppapi::PERMISSION_PDF;
     plugins->push_back(pdf_info);
 #endif // QT_CONFIG(webengine_printing_and_pdf)
 }
@@ -182,6 +142,37 @@ void ContentClientQt::AddPepperPlugins(std::vector<content::PepperPluginInfo>* p
 namespace QtWebEngineCore {
 
 #if defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
+#if defined(Q_OS_LINUX)
+static const QDir widevineCdmDirHint(const QDir &widevineDir)
+{
+    const QString hintFilePath = widevineDir.absolutePath() % QDir::separator()
+            % QLatin1String("latest-component-updated-widevine-cdm");
+    if (!QFileInfo::exists(hintFilePath)) {
+        // CDM hint file does not exist.
+        return widevineDir;
+    }
+
+    std::string jsonString;
+    if (!base::ReadFileToString(toFilePath(hintFilePath), &jsonString)) {
+        // Could not read the CDM hint file.
+        return widevineDir;
+    }
+
+    JSONStringValueDeserializer deserializer(jsonString);
+    std::unique_ptr<base::Value> dict = deserializer.Deserialize(nullptr, nullptr);
+    if (!dict || !dict->is_dict()) {
+        // Could not deserialize the CDM hint file.
+        return widevineDir;
+    }
+
+    std::string *widevineCdmDirPath = dict->FindStringKey("Path");
+    if (!widevineCdmDirPath)
+        return widevineDir;
+
+    return QDir(QString::fromStdString(*widevineCdmDirPath));
+}
+#endif // defined(Q_OS_LINUX)
+
 static bool IsWidevineAvailable(base::FilePath *cdm_path,
                                 media::CdmCapability *capability)
 {
@@ -256,7 +247,7 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         // Google Chrome widevine modules
         QDir chromeWidevineDir(QDir::homePath() + "/.config/google-chrome/WidevineCdm");
         if (chromeWidevineDir.exists())
-            potentialWidevineVersionDirs << chromeWidevineDir;
+            potentialWidevineVersionDirs << widevineCdmDirHint(chromeWidevineDir);
 
         // Firefox widevine modules
         QDir firefoxPotentialProfilesDir(QDir::homePath() + "/.mozilla/firefox");
@@ -272,11 +263,12 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         // Chromium widevine modules (might not work with proprietary codecs)
         QDir chromiumWidevineDir(QDir::homePath() + "/.config/chromium/WidevineCdm");
         if (chromiumWidevineDir.exists())
-            potentialWidevineVersionDirs << chromiumWidevineDir;
+            potentialWidevineVersionDirs << widevineCdmDirHint(chromiumWidevineDir);
 
         // Search for widewine versions
         for (const QDir &dir : potentialWidevineVersionDirs) {
             QFileInfoList widevineVersionDirs = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
+            widevineVersionDirs.prepend(QFileInfo(dir.absolutePath()));
             // ### alternatively look up in the manifest.json and take the path from there.
 #if Q_PROCESSOR_WORDSIZE == 8
             const QString library = QLatin1String("/_platform_specific/linux_x64/libwidevinecdm.so");
@@ -310,12 +302,15 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
             // Add the supported codecs as if they came from the component manifest.
             // This list must match the CDM that is being bundled with Chrome.
             const std::vector<media::VideoCodecProfile> kAllProfiles = {};
-            capability->video_codecs.emplace(media::VideoCodec::kCodecVP8, kAllProfiles);
-            capability->video_codecs.emplace(media::VideoCodec::kCodecVP9, kAllProfiles);
-            capability->video_codecs.emplace(media::VideoCodec::kCodecAV1, kAllProfiles);
+            capability->video_codecs.emplace(media::VideoCodec::kVP8, kAllProfiles);
+            capability->video_codecs.emplace(media::VideoCodec::kVP9, kAllProfiles);
+            capability->video_codecs.emplace(media::VideoCodec::kAV1, kAllProfiles);
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-            capability->video_codecs.emplace(media::VideoCodec::kCodecH264, kAllProfiles);
+            capability->video_codecs.emplace(media::VideoCodec::kH264, kAllProfiles);
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+            capability->video_codecs.emplace(media::VideoCodec::kHEVC, kAllProfiles);
+#endif
             capability->audio_codecs = media::GetCdmSupportedAudioCodecs();
 
             // Add the supported encryption schemes as if they came from the
@@ -346,7 +341,7 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
             const base::Version version;
             cdms->push_back(content::CdmInfo(kWidevineKeySystem, Robustness::kSoftwareSecure, std::move(capability),
                                              /*supports_sub_key_systems=*/false, kWidevineCdmDisplayName,
-                                             kWidevineCdmGuid, version, cdm_path, kWidevineCdmFileSystemId));
+                                             kWidevineCdmType, version, cdm_path));
         }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
 
@@ -376,14 +371,14 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
             cdms->push_back(content::CdmInfo(kExternalClearKeyDifferentGuidTestKeySystem,
                                              Robustness::kSoftwareSecure, capability,
                                              /*supports_sub_key_systems=*/false, media::kClearKeyCdmDisplayName,
-                                             media::kClearKeyCdmDifferentGuid, base::Version("0.1.0.0"),
-                                             clear_key_cdm_path, media::kClearKeyCdmFileSystemId));
+                                             media::kClearKeyCdmDifferentCdmType, base::Version("0.1.0.0"),
+                                             clear_key_cdm_path));
 
             cdms->push_back(content::CdmInfo(kExternalClearKeyKeySystem,
                                              Robustness::kSoftwareSecure, capability,
                                              /*supports_sub_key_systems=*/true, media::kClearKeyCdmDisplayName,
-                                             media::kClearKeyCdmGuid, base::Version("0.1.0.0"),
-                                             clear_key_cdm_path, media::kClearKeyCdmFileSystemId));
+                                             media::kClearKeyCdmType, base::Version("0.1.0.0"),
+                                             clear_key_cdm_path));
         }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
     }

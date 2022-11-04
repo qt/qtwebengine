@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2020 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtPDF module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2020 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qpdfdocument.h"
 #include "qpdfdocument_p.h"
@@ -49,6 +13,7 @@
 #include <QFile>
 #include <QHash>
 #include <QLoggingCategory>
+#include <QMetaEnum>
 #include <QMutex>
 #include <QVector2D>
 
@@ -64,12 +29,58 @@ QPdfMutexLocker::QPdfMutexLocker()
 {
 }
 
+class Q_PDF_EXPORT QPdfPageModel : public QAbstractListModel
+{
+    Q_OBJECT
+public:
+    QPdfPageModel(QPdfDocument *doc) : QAbstractListModel(doc)
+    {
+        m_roleNames = QAbstractItemModel::roleNames();
+        QMetaEnum rolesMetaEnum = doc->metaObject()->enumerator(doc->metaObject()->indexOfEnumerator("PageModelRole"));
+        for (int r = Qt::UserRole; r < int(QPdfDocument::PageModelRole::NRoles); ++r) {
+            auto name = QByteArray(rolesMetaEnum.valueToKey(r));
+            name[0] = tolower(name[0]);
+            m_roleNames.insert(r, name);
+        }
+        connect(doc, &QPdfDocument::statusChanged, this, [this](QPdfDocument::Status s) {
+            if (s == QPdfDocument::Status::Loading)
+                beginResetModel();
+            else if (s == QPdfDocument::Status::Ready)
+                endResetModel();
+        });
+    }
+
+    QVariant data(const QModelIndex &index, int role) const override
+    {
+        if (!index.isValid())
+            return QVariant();
+        switch (QPdfDocument::PageModelRole(role)) {
+        case QPdfDocument::PageModelRole::Label:
+            return document()->pageLabel(index.row());
+        case QPdfDocument::PageModelRole::PointSize:
+            return document()->pagePointSize(index.row());
+        case QPdfDocument::PageModelRole::NRoles:
+            break;
+        }
+        return QVariant();
+    }
+
+    int rowCount(const QModelIndex & = QModelIndex()) const override { return document()->pageCount(); }
+
+    QHash<int, QByteArray> roleNames() const override { return m_roleNames; }
+
+private:
+    QPdfDocument *document() const { return static_cast<QPdfDocument *>(parent()); }
+
+    QHash<int, QByteArray> m_roleNames;
+};
+
 QPdfDocumentPrivate::QPdfDocumentPrivate()
     : avail(nullptr)
     , doc(nullptr)
     , loadComplete(false)
-    , status(QPdfDocument::Null)
-    , lastError(QPdfDocument::NoError)
+    , status(QPdfDocument::Status::Null)
+    , lastError(QPdfDocument::Error::None)
     , pageCount(0)
 {
     asyncBuffer.setData(QByteArray());
@@ -77,8 +88,12 @@ QPdfDocumentPrivate::QPdfDocumentPrivate()
 
     const QPdfMutexLocker lock;
 
-    if (libraryRefCount == 0)
+    if (libraryRefCount == 0) {
+        QElapsedTimer timer;
+        timer.start();
         FPDF_InitLibrary();
+        qCDebug(qLcDoc) << "FPDF_InitLibrary took" << timer.elapsed() << "ms";
+    }
     ++libraryRefCount;
 
     // FPDF_FILEACCESS setup
@@ -100,8 +115,10 @@ QPdfDocumentPrivate::~QPdfDocumentPrivate()
 
     const QPdfMutexLocker lock;
 
-    if (!--libraryRefCount)
+    if (!--libraryRefCount) {
+        qCDebug(qLcDoc) << "FPDF_DestroyLibrary";
         FPDF_DestroyLibrary();
+    }
 }
 
 void QPdfDocumentPrivate::clear()
@@ -120,6 +137,7 @@ void QPdfDocumentPrivate::clear()
     if (pageCount != 0) {
         pageCount = 0;
         emit q->pageCountChanged(pageCount);
+        emit q->pageModelChanged();
     }
 
     loadComplete = false;
@@ -135,7 +153,7 @@ void QPdfDocumentPrivate::clear()
 void QPdfDocumentPrivate::updateLastError()
 {
     if (doc) {
-        lastError = QPdfDocument::NoError;
+        lastError = QPdfDocument::Error::None;
         return;
     }
 
@@ -144,15 +162,17 @@ void QPdfDocumentPrivate::updateLastError()
     lock.unlock();
 
     switch (error) {
-    case FPDF_ERR_SUCCESS: lastError = QPdfDocument::NoError; break;
-    case FPDF_ERR_UNKNOWN: lastError = QPdfDocument::UnknownError; break;
-    case FPDF_ERR_FILE: lastError = QPdfDocument::FileNotFoundError; break;
-    case FPDF_ERR_FORMAT: lastError = QPdfDocument::InvalidFileFormatError; break;
-    case FPDF_ERR_PASSWORD: lastError = QPdfDocument::IncorrectPasswordError; break;
-    case FPDF_ERR_SECURITY: lastError = QPdfDocument::UnsupportedSecuritySchemeError; break;
+    case FPDF_ERR_SUCCESS: lastError = QPdfDocument::Error::None; break;
+    case FPDF_ERR_UNKNOWN: lastError = QPdfDocument::Error::Unknown; break;
+    case FPDF_ERR_FILE: lastError = QPdfDocument::Error::FileNotFound; break;
+    case FPDF_ERR_FORMAT: lastError = QPdfDocument::Error::InvalidFileFormat; break;
+    case FPDF_ERR_PASSWORD: lastError = QPdfDocument::Error::IncorrectPassword; break;
+    case FPDF_ERR_SECURITY: lastError = QPdfDocument::Error::UnsupportedSecurityScheme; break;
     default:
         Q_UNREACHABLE();
     }
+    if (lastError != QPdfDocument::Error::None)
+        qCDebug(qLcDoc) << "FPDF error" << error << "->" << lastError;
 }
 
 void QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnership)
@@ -168,19 +188,19 @@ void QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnershi
         QNetworkReply *reply = qobject_cast<QNetworkReply*>(sequentialSourceDevice);
 
         if (!reply) {
-            setStatus(QPdfDocument::Error);
+            setStatus(QPdfDocument::Status::Error);
             qWarning() << "QPdfDocument: Loading from sequential devices only supported with QNetworkAccessManager.";
             return;
         }
 
         if (reply->isFinished() && reply->error() != QNetworkReply::NoError) {
-            setStatus(QPdfDocument::Error);
+            setStatus(QPdfDocument::Status::Error);
             return;
         }
 
         QObject::connect(reply, &QNetworkReply::finished, q, [this, reply](){
             if (reply->error() != QNetworkReply::NoError || reply->bytesAvailable() == 0) {
-                this->setStatus(QPdfDocument::Error);
+                this->setStatus(QPdfDocument::Status::Error);
             }
         });
 
@@ -192,7 +212,7 @@ void QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnershi
         device = newDevice;
         initiateAsyncLoadWithTotalSizeKnown(device->size());
         if (!avail) {
-            setStatus(QPdfDocument::Error);
+            setStatus(QPdfDocument::Status::Error);
             return;
         }
 
@@ -201,7 +221,7 @@ void QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnershi
 
         if (!doc) {
             updateLastError();
-            setStatus(QPdfDocument::Error);
+            setStatus(QPdfDocument::Status::Error);
             return;
         }
 
@@ -211,15 +231,16 @@ void QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnershi
         if (newPageCount != pageCount) {
             pageCount = newPageCount;
             emit q->pageCountChanged(pageCount);
+            emit q->pageModelChanged();
         }
 
         // If it's a local file, and the first couple of pages are available,
         // probably the whole document is available.
         if (checkPageComplete(0) && (pageCount < 2 || checkPageComplete(1))) {
-            setStatus(QPdfDocument::Ready);
+            setStatus(QPdfDocument::Status::Ready);
         } else {
             updateLastError();
-            setStatus(QPdfDocument::Error);
+            setStatus(QPdfDocument::Status::Error);
         }
     }
 }
@@ -231,13 +252,13 @@ void QPdfDocumentPrivate::_q_tryLoadingWithSizeFromContentHeader()
 
     const QNetworkReply *networkReply = qobject_cast<QNetworkReply*>(sequentialSourceDevice);
     if (!networkReply) {
-        setStatus(QPdfDocument::Error);
+        setStatus(QPdfDocument::Status::Error);
         return;
     }
 
     const QVariant contentLength = networkReply->header(QNetworkRequest::ContentLengthHeader);
     if (!contentLength.isValid()) {
-        setStatus(QPdfDocument::Error);
+        setStatus(QPdfDocument::Status::Error);
         return;
     }
 
@@ -283,11 +304,10 @@ void QPdfDocumentPrivate::tryLoadDocument()
             break;
         case PDF_DATA_NOTAVAIL:
             qCDebug(qLcDoc) << "data not yet available";
-            lastError = QPdfDocument::DataNotYetAvailableError;
-            setStatus(QPdfDocument::Error);
+            lastError = QPdfDocument::Error::DataNotYetAvailable;
             break;
         case PDF_DATA_AVAIL:
-            // all good
+            lastError = QPdfDocument::Error::None;
             break;
     }
 
@@ -297,12 +317,14 @@ void QPdfDocumentPrivate::tryLoadDocument()
     lock.unlock();
 
     updateLastError();
+    if (lastError != QPdfDocument::Error::None)
+        setStatus(QPdfDocument::Status::Error);
 
-    if (lastError == QPdfDocument::IncorrectPasswordError) {
+    if (lastError == QPdfDocument::Error::IncorrectPassword) {
         FPDF_CloseDocument(doc);
         doc = nullptr;
 
-        setStatus(QPdfDocument::Error);
+        setStatus(QPdfDocument::Status::Error);
         emit q->passwordRequired();
     }
 }
@@ -339,9 +361,10 @@ void QPdfDocumentPrivate::checkComplete()
         if (newPageCount != pageCount) {
             pageCount = newPageCount;
             emit q->pageCountChanged(pageCount);
+            emit q->pageModelChanged();
         }
 
-        setStatus(QPdfDocument::Ready);
+        setStatus(QPdfDocument::Status::Ready);
     }
 }
 
@@ -482,22 +505,34 @@ QPdfDocument::~QPdfDocument()
 /*!
     Loads the document contents from \a fileName.
 */
-QPdfDocument::DocumentError QPdfDocument::load(const QString &fileName)
+QPdfDocument::Error QPdfDocument::load(const QString &fileName)
 {
     qCDebug(qLcDoc) << "loading" << fileName;
 
     close();
 
-    d->setStatus(QPdfDocument::Loading);
+    d->setStatus(QPdfDocument::Status::Loading);
 
-    QScopedPointer<QFile> f(new QFile(fileName));
+    std::unique_ptr<QFile> f(new QFile(fileName));
     if (!f->open(QIODevice::ReadOnly)) {
-        d->lastError = FileNotFoundError;
-        d->setStatus(QPdfDocument::Error);
+        d->lastError = Error::FileNotFound;
+        d->setStatus(QPdfDocument::Status::Error);
     } else {
-        d->load(f.take(), /*transfer ownership*/true);
+        d->load(f.release(), /*transfer ownership*/true);
     }
     return d->lastError;
+}
+
+/*! \internal
+    Returns the filename of the document that has been opened,
+    or an empty string if no document is open.
+*/
+QString QPdfDocument::fileName() const
+{
+    const QFile *f = qobject_cast<QFile *>(d->device.data());
+    if (f)
+        return f->fileName();
+    return QString();
 }
 
 /*!
@@ -532,7 +567,7 @@ void QPdfDocument::load(QIODevice *device)
 {
     close();
 
-    d->setStatus(QPdfDocument::Loading);
+    d->setStatus(QPdfDocument::Status::Loading);
 
     d->load(device, /*transfer ownership*/false);
 }
@@ -589,31 +624,14 @@ QVariant QPdfDocument::metaData(MetaDataField field) const
     if (!d->doc)
         return QString();
 
+    static QMetaEnum fieldsMetaEnum = metaObject()->enumerator(metaObject()->indexOfEnumerator("MetaDataField"));
     QByteArray fieldName;
     switch (field) {
-    case Title:
-        fieldName = "Title";
-        break;
-    case Subject:
-        fieldName = "Subject";
-        break;
-    case Author:
-        fieldName = "Author";
-        break;
-    case Keywords:
-        fieldName = "Keywords";
-        break;
-    case Producer:
-        fieldName = "Producer";
-        break;
-    case Creator:
-        fieldName = "Creator";
-        break;
-    case CreationDate:
-        fieldName = "CreationDate";
-        break;
-    case ModificationDate:
+    case MetaDataField::ModificationDate:
         fieldName = "ModDate";
+        break;
+    default:
+        fieldName = QByteArray(fieldsMetaEnum.valueToKey(int(field)));
         break;
     }
 
@@ -627,15 +645,15 @@ QVariant QPdfDocument::metaData(MetaDataField field) const
     QString text = QString::fromUtf16(reinterpret_cast<const char16_t *>(buf.data()));
 
     switch (field) {
-    case Title: // fall through
-    case Subject:
-    case Author:
-    case Keywords:
-    case Producer:
-    case Creator:
+    case MetaDataField::Title: // fall through
+    case MetaDataField::Subject:
+    case MetaDataField::Author:
+    case MetaDataField::Keywords:
+    case MetaDataField::Producer:
+    case MetaDataField::Creator:
         return text;
-    case CreationDate: // fall through
-    case ModificationDate:
+    case MetaDataField::CreationDate: // fall through
+    case MetaDataField::ModificationDate:
         // convert a "D:YYYYMMDDHHmmSSOHH'mm'" into "YYYY-MM-DDTHH:mm:ss+HH:mm"
         if (text.startsWith(QLatin1String("D:")))
             text = text.mid(2);
@@ -655,17 +673,17 @@ QVariant QPdfDocument::metaData(MetaDataField field) const
 }
 
 /*!
-    \enum QPdfDocument::DocumentError
+    \enum QPdfDocument::Error
 
     This enum describes the error while attempting the last operation on the document.
 
-    \value NoError No error occurred.
-    \value UnknownError Unknown type of error.
-    \value DataNotYetAvailableError The document is still loading, it's too early to attempt the operation.
-    \value FileNotFoundError The file given to load() was not found.
-    \value InvalidFileFormatError The file given to load() is not a valid PDF file.
-    \value IncorrectPasswordError The password given to setPassword() is not correct for this file.
-    \value UnsupportedSecuritySchemeError QPdfDocument is not able to unlock this kind of PDF file.
+    \value None No error occurred.
+    \value Unknown Unknown type of error.
+    \value DataNotYetAvailable The document is still loading, it's too early to attempt the operation.
+    \value FileNotFound The file given to load() was not found.
+    \value InvalidFileFormat The file given to load() is not a valid PDF file.
+    \value IncorrectPassword The password given to setPassword() is not correct for this file.
+    \value UnsupportedSecurityScheme QPdfDocument is not able to unlock this kind of PDF file.
 
     \sa QPdfDocument::error()
 */
@@ -674,7 +692,7 @@ QVariant QPdfDocument::metaData(MetaDataField field) const
     Returns the type of error if \l status is \c Error, or \c NoError if there
     is no error.
 */
-QPdfDocument::DocumentError QPdfDocument::error() const
+QPdfDocument::Error QPdfDocument::error() const
 {
     return d->lastError;
 }
@@ -687,7 +705,7 @@ void QPdfDocument::close()
     if (!d->doc)
         return;
 
-    d->setStatus(Unloading);
+    d->setStatus(Status::Unloading);
 
     d->clear();
 
@@ -696,7 +714,7 @@ void QPdfDocument::close()
         emit passwordChanged();
     }
 
-    d->setStatus(Null);
+    d->setStatus(Status::Null);
 }
 
 /*!
@@ -713,7 +731,7 @@ int QPdfDocument::pageCount() const
 /*!
     Returns the size of page \a page in points (1/72 of an inch).
 */
-QSizeF QPdfDocument::pageSize(int page) const
+QSizeF QPdfDocument::pagePointSize(int page) const
 {
     QSizeF result;
     if (!d->doc || !d->checkPageComplete(page))
@@ -723,6 +741,57 @@ QSizeF QPdfDocument::pageSize(int page) const
 
     FPDF_GetPageSizeByIndex(d->doc, page, &result.rwidth(), &result.rheight());
     return result;
+}
+
+/*!
+    \enum QPdfDocument::PageModelRole
+
+    Roles in pageModel().
+
+    \value Label The page number to be used for display purposes (QString).
+    \value PointSize The page size in points (1/72 of an inch) (QSizeF).
+    \omitvalue NRoles
+*/
+
+/*!
+    \property QPdfDocument::pageModel
+
+    This property holds an instance of QAbstractListModel to provide
+    page-specific metadata, containing one row for each page in the document.
+
+    \sa QPdfDocument::PageModelRole
+*/
+QAbstractListModel *QPdfDocument::pageModel()
+{
+    if (!d->pageModel)
+        d->pageModel = new QPdfPageModel(this);
+    return d->pageModel;
+}
+
+/*!
+    Returns the \a page number to be used for display purposes.
+
+    For example, a document may have multiple sections with different numbering.
+    Perhaps the preface uses roman numerals, the body starts on page 1, and the
+    appendix starts at A1. Whenever a PDF viewer shows a page number, to avoid
+    confusing the user it should be the same "number" as is printed on the
+    corner of the page, rather than the zero-based page index that we use in
+    APIs (assuming the document author has made the page labels match the
+    printed numbers).
+
+    If the document does not have custom page numbering, this function returns
+    \c {page + 1}.
+*/
+QString QPdfDocument::pageLabel(int page)
+{
+    const unsigned long len = FPDF_GetPageLabel(d->doc, page, nullptr, 0);
+    if (len == 0)
+        return QString::number(page + 1);
+    QList<char16_t> buf(len);
+    QPdfMutexLocker lock;
+    FPDF_GetPageLabel(d->doc, page, buf.data(), len);
+    lock.unlock();
+    return QString::fromUtf16(buf.constData());
 }
 
 /*!
@@ -755,35 +824,35 @@ QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions
 
     int rotation = 0;
     switch (renderOptions.rotation()) {
-    case QPdf::Rotate0:
+    case QPdfDocumentRenderOptions::Rotation::None:
         rotation = 0;
         break;
-    case QPdf::Rotate90:
+    case QPdfDocumentRenderOptions::Rotation::Clockwise90:
         rotation = 1;
         break;
-    case QPdf::Rotate180:
+    case QPdfDocumentRenderOptions::Rotation::Clockwise180:
         rotation = 2;
         break;
-    case QPdf::Rotate270:
+    case QPdfDocumentRenderOptions::Rotation::Clockwise270:
         rotation = 3;
         break;
     }
 
-    const QPdf::RenderFlags renderFlags = renderOptions.renderFlags();
+    const QPdfDocumentRenderOptions::RenderFlags renderFlags = renderOptions.renderFlags();
     int flags = 0;
-    if (renderFlags & QPdf::RenderAnnotations)
+    if (renderFlags & QPdfDocumentRenderOptions::RenderFlag::Annotations)
         flags |= FPDF_ANNOT;
-    if (renderFlags & QPdf::RenderOptimizedForLcd)
+    if (renderFlags & QPdfDocumentRenderOptions::RenderFlag::OptimizedForLcd)
         flags |= FPDF_LCD_TEXT;
-    if (renderFlags & QPdf::RenderGrayscale)
+    if (renderFlags & QPdfDocumentRenderOptions::RenderFlag::Grayscale)
         flags |= FPDF_GRAYSCALE;
-    if (renderFlags & QPdf::RenderForceHalftone)
+    if (renderFlags & QPdfDocumentRenderOptions::RenderFlag::ForceHalftone)
         flags |= FPDF_RENDER_FORCEHALFTONE;
-    if (renderFlags & QPdf::RenderTextAliased)
+    if (renderFlags & QPdfDocumentRenderOptions::RenderFlag::TextAliased)
         flags |= FPDF_RENDER_NO_SMOOTHTEXT;
-    if (renderFlags & QPdf::RenderImageAliased)
+    if (renderFlags & QPdfDocumentRenderOptions::RenderFlag::ImageAliased)
         flags |= FPDF_RENDER_NO_SMOOTHIMAGE;
-    if (renderFlags & QPdf::RenderPathAliased)
+    if (renderFlags & QPdfDocumentRenderOptions::RenderFlag::PathAliased)
         flags |= FPDF_RENDER_NO_SMOOTHPATH;
 
     if (renderOptions.scaledClipRect().isValid()) {
@@ -796,7 +865,7 @@ QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions
         float y1 = clipRect.bottom();
         float x2 = clipRect.right();
         float y2 = clipRect.top();
-        QSizeF origSize = pageSize(page);
+        QSizeF origSize = pagePointSize(page);
         QVector2D pageScale(1, 1);
         if (!renderOptions.scaledSize().isNull()) {
             pageScale = QVector2D(renderOptions.scaledSize().width() / float(origSize.width()),
@@ -959,4 +1028,5 @@ QPdfSelection QPdfDocument::getAllText(int page)
 
 QT_END_NAMESPACE
 
+#include "qpdfdocument.moc"
 #include "moc_qpdfdocument.cpp"

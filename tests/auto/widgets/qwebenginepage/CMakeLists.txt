@@ -5,6 +5,7 @@ qt_internal_add_test(tst_qwebenginepage
     SOURCES
         tst_qwebenginepage.cpp
     LIBRARIES
+        Qt::NetworkPrivate
         Qt::WebEngineWidgets
         Test::HttpServer
         Test::Util

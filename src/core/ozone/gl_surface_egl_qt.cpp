@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2018 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2018 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -44,9 +8,10 @@
 #include "gl_context_qt.h"
 #include "ozone/gl_surface_egl_qt.h"
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_display.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/init/gl_factory.h"
 
@@ -67,7 +32,7 @@ bool GLSurfaceEGL::InitializeExtensionSettingsOneOff()
 
 EGLDisplay GLSurfaceEGL::GetHardwareDisplay()
 {
-    return static_cast<EGLDisplay>(GLSurfaceQt::g_display);
+    return GLSurfaceQt::g_display ? static_cast<EGLDisplay>(GLSurfaceQt::g_display->GetDisplay()) : EGL_NO_DISPLAY;
 }
 
 bool GLSurfaceEGL::IsCreateContextRobustnessSupported()
@@ -138,6 +103,21 @@ bool GLSurfaceEGL::IsRobustnessVideoMemoryPurgeSupported()
     return false;
 }
 
+bool GLSurfaceEGL::IsANGLEContextVirtualizationSupported()
+{
+    return false;
+}
+
+bool GLSurfaceEGL::IsANGLEVulkanImageSupported()
+{
+     return false;
+}
+
+bool GLSurfaceEGL::IsEGLQueryDeviceSupported()
+{
+    return false;
+}
+
 void GLSurfaceEGL::ShutdownOneOff()
 {
 }
@@ -162,9 +142,14 @@ bool GLSurfaceEGL::HasEGLExtension(const char *name)
     return ExtensionsContain(GetEGLExtensions(), name);
 }
 
-bool GLSurfaceEGL::InitializeOneOff(gl::EGLDisplayPlatform /*native_display*/)
+bool GLSurfaceEGL::InitializeOneOff(gl::EGLDisplayPlatform /*native_display*/, uint64_t)
 {
     return GLSurfaceEGLQt::InitializeOneOff();
+}
+
+bool GLSurfaceEGL::IsEGLNoConfigContextSupported()
+{
+    return false;
 }
 
 bool GLSurfaceEGL::IsAndroidNativeFenceSyncSupported()
@@ -204,8 +189,10 @@ bool GLSurfaceEGLQt::InitializeOneOff()
     // Must be called before initializing the display.
     g_driver_egl.InitializeClientExtensionBindings();
 
-    g_display = GLContextHelper::getEGLDisplay();
-    if (!g_display) {
+    auto *egl_display = new GLDisplayEGL();
+    g_display = egl_display;
+    egl_display->SetDisplay(GLContextHelper::getEGLDisplay());
+    if (!g_display->GetDisplay()) {
         LOG(ERROR) << "GLContextHelper::getEGLDisplay() failed.";
         return false;
     }
@@ -216,13 +203,13 @@ bool GLSurfaceEGLQt::InitializeOneOff()
         return false;
     }
 
-    if (!eglInitialize(g_display, NULL, NULL)) {
+    if (!eglInitialize(g_display->GetDisplay(), NULL, NULL)) {
         LOG(ERROR) << "eglInitialize failed with error " << GetLastEGLErrorString();
         return false;
     }
 
     g_client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
-    g_extensions = eglQueryString(g_display, EGL_EXTENSIONS);
+    g_extensions = eglQueryString(g_display->GetDisplay(), EGL_EXTENSIONS);
     g_egl_surfaceless_context_supported = ExtensionsContain(g_extensions.c_str(), "EGL_KHR_surfaceless_context");
     if (g_egl_surfaceless_context_supported) {
         scoped_refptr<GLSurface> surface = new GLSurfacelessQtEGL(gfx::Size(1, 1));
@@ -258,7 +245,7 @@ bool GLSurfaceEGLQt::Initialize(GLSurfaceFormat format)
     Q_ASSERT(!m_surfaceBuffer);
     m_format = format;
 
-    EGLDisplay display = g_display;
+    EGLDisplay display = g_display->GetDisplay();
     if (!display) {
         LOG(ERROR) << "Trying to create surface with invalid display.";
         return false;
@@ -286,7 +273,7 @@ bool GLSurfaceEGLQt::Initialize(GLSurfaceFormat format)
 void GLSurfaceEGLQt::Destroy()
 {
     if (m_surfaceBuffer) {
-        if (!eglDestroySurface(g_display, m_surfaceBuffer))
+        if (!eglDestroySurface(g_display->GetDisplay(), m_surfaceBuffer))
             LOG(ERROR) << "eglDestroySurface failed with error " << GetLastEGLErrorString();
 
         m_surfaceBuffer = 0;
@@ -383,4 +370,4 @@ std::string DriverEGL::GetPlatformExtensions()
     return "";
 }
 } // namespace gl
-#endif // !defined(OS_MAC)
+#endif // !BUILDFLAG(IS_MAC)

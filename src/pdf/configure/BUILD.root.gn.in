@@ -16,6 +16,7 @@ config("qt_harfbuzz_config") {
 }
 config("qt_freetype_config") {
      visibility = [
+       "//build/config/freetype:freetype",
        "//third_party:freetype_harfbuzz",
        "//third_party/harfbuzz-ng:harfbuzz_source",
      ]

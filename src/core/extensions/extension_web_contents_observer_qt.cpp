@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2018 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2018 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -43,9 +7,8 @@
 
 #include "extension_web_contents_observer_qt.h"
 
-#include "components/guest_view/browser/guest_view_base.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "extensions/browser/extension_registry.h"
@@ -58,6 +21,7 @@ namespace extensions {
 
 ExtensionWebContentsObserverQt::ExtensionWebContentsObserverQt(content::WebContents *web_contents)
     : ExtensionWebContentsObserver(web_contents)
+    , content::WebContentsUserData<ExtensionWebContentsObserverQt>(*web_contents)
 {
 }
 
@@ -78,6 +42,17 @@ void ExtensionWebContentsObserverQt::RenderFrameCreated(content::RenderFrameHost
 {
     ExtensionWebContentsObserver::RenderFrameCreated(render_frame_host);
 
+    if (web_contents()->IsInnerWebContentsForGuest() && static_cast<content::RenderFrameHostImpl *>(render_frame_host)->is_local_root_subframe()) {
+        content::WebContents *parent = web_contents()->GetOutermostWebContents();
+        QtWebEngineCore::RenderWidgetHostViewQt *main_rwhv = static_cast<QtWebEngineCore::RenderWidgetHostViewQt *>(parent->GetRenderWidgetHostView());
+        // Main frame of guest WebContents
+        content::RenderWidgetHost *guest_render_widget_host = web_contents()->GetRenderViewHost()->GetWidget();
+        main_rwhv->addGuest(guest_render_widget_host);
+        // The frame which holds the actual PDF content inside the guest
+        content::RenderWidgetHost *pdf_render_widget_host = render_frame_host->GetRenderWidgetHost();
+        main_rwhv->addGuest(pdf_render_widget_host);
+    }
+
     const Extension *extension = GetExtensionFromFrame(render_frame_host, false);
     if (!extension)
         return;
@@ -89,16 +64,6 @@ void ExtensionWebContentsObserverQt::RenderFrameCreated(content::RenderFrameHost
         policy->GrantRequestOrigin(process_id, url::Origin::Create(GURL(blink::kChromeUIResourcesURL)));
 }
 
-void ExtensionWebContentsObserverQt::RenderViewReady()
-{
-    if (web_contents()->IsInnerWebContentsForGuest()) {
-        content::RenderWidgetHost *render_widget_host = web_contents()->GetRenderViewHost()->GetWidget();
-        content::WebContents *parent_web_contents = guest_view::GuestViewBase::GetTopLevelWebContents(web_contents());
-        QtWebEngineCore::RenderWidgetHostViewQt *parent_rwhv = static_cast<QtWebEngineCore::RenderWidgetHostViewQt *>(parent_web_contents->GetRenderWidgetHostView());
-        parent_rwhv->setGuest(static_cast<content::RenderWidgetHostImpl *>(render_widget_host));
-    }
-}
-
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ExtensionWebContentsObserverQt)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ExtensionWebContentsObserverQt);
 
 } // namespace extensions

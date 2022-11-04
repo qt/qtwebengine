@@ -1,29 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2019 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the documentation of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:FDL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Free Documentation License Usage
-** Alternatively, this file may be used under the terms of the GNU Free
-** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of
-** this file. Please review the following information to ensure
-** the GNU Free Documentation License version 1.3 requirements
-** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2019 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
     \page qtpdf-index.html
@@ -36,8 +12,34 @@
     and renders pages from it according to the options provided by
     the \l QPdfDocumentRenderOptions class. The \l QPdfPageRenderer
     class manages a queue that collects all render requests. The
-    \l QPdfPageNavigation class handles the navigation through a
-    PDF document.
+    \l QPdfPageNavigator class handles the navigation through a
+    PDF document. The \l QPdfSearchModel class searches for a string
+    and holds the search results. The QPdfBookmarkModel class holds the
+    table of contents, if present. The QPdfLinkModel holds information
+    about hyperlinks on a page. The \l QPdfView widget is a complete
+    PDF viewer, and the \l {PDF Viewer Example} shows how to use it.
+
+    For Qt Quick applications, three kinds of full-featured viewer
+    components are provided. \l PdfMultiPageView should be your
+    first choice for the most common user experience: flicking
+    through the pages in the entire document.
+    \l PdfScrollablePageView shows one page at a time, with scrolling;
+    and \l PdfPageView shows one full page at a time, without scrolling.
+
+    The full-featured viewer components are composed of lower-level
+    QML components that can be used separately if you need to write a
+    more customized PDF viewing application: \l PdfDocument,
+    \l PdfPageImage, \l PdfPageNavigator, \l PdfSelection,
+    \l PdfSearchModel, \l PdfLinkModel, and \l PdfBookmarkModel.
+
+    If you only need to render page images, without features such as
+    text selection, search and navigation, this module includes a
+    \l QImageIOHandler plugin that treats PDF as a scalable
+    \l {Qt Image Formats}{image format}, similar to \l {Qt SVG}{SVG}.
+    You can simply use \l Image, and set the
+    \l {Image::currentFrame}{currentFrame} property to the page index
+    that you wish to display. If the PDF file does not render its own
+    background, the image has a transparent background.
 
     \include module-use.qdocinc using qt module
     \quotefile qtpdf-build.cmake
@@ -45,11 +47,6 @@
     See also the \l{Build with CMake} overview.
 
     \section2 Building with qmake
-
-    To include the definitions of the module's classes, use the
-    following directive:
-
-    \snippet qtpdf_build_snippet.qdoc 1
 
     To link against the module, add this line to your qmake project file:
 

@@ -1,50 +1,16 @@
-/****************************************************************************
-**
-** Copyright (C) 2021 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2021 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qwebenginepage.h"
 #include "qwebenginepage_p.h"
 
 #include "qwebenginecertificateerror.h"
+#include "qwebenginefilesystemaccessrequest.h"
 #include "qwebenginefindtextresult.h"
 #include "qwebenginefullscreenrequest.h"
 #include "qwebenginehistory.h"
 #include "qwebenginehistory_p.h"
+#include "qwebenginehttprequest.h"
 #include "qwebengineloadinginfo.h"
 #include "qwebenginenavigationrequest.h"
 #include "qwebenginenewwindowrequest.h"
@@ -58,6 +24,7 @@
 #include "qwebenginesettings.h"
 
 #include "authentication_dialog_controller.h"
+#include "autofill_popup_controller.h"
 #include "color_chooser_controller.h"
 #include "find_text_helper.h"
 #include "file_picker_controller.h"
@@ -66,6 +33,7 @@
 #include "render_view_context_menu_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "render_widget_host_view_qt_delegate_client.h"
+#include "render_widget_host_view_qt_delegate_item.h"
 #include "web_contents_adapter.h"
 
 #include <QAction>
@@ -76,57 +44,14 @@
 #include <QIcon>
 #include <QLoggingCategory>
 #include <QMimeData>
+#include <QRect>
 #include <QTimer>
 #include <QUrl>
+#include <QVariant>
 
 QT_BEGIN_NAMESPACE
 
 using namespace QtWebEngineCore;
-
-// add temporary dummy code to cover the case when page is loading and there is no view
-class DummyDelegate : public QObject, public QtWebEngineCore::RenderWidgetHostViewQtDelegate
-{
-public:
-    DummyDelegate(RenderWidgetHostViewQtDelegateClient *client) : m_delegateClient(client) {};
-    ~DummyDelegate() = default;
-    void initAsPopup(const QRect &) override { Q_UNREACHABLE(); }
-    QRectF viewGeometry() const override { return QRectF(m_pos, m_size); }
-    void setKeyboardFocus() override { }
-    bool hasKeyboardFocus() override { return false; }
-    void lockMouse() override { Q_UNREACHABLE(); }
-    void unlockMouse() override { Q_UNREACHABLE(); }
-    void show() override { m_delegateClient->notifyShown(); }
-    void hide() override { m_delegateClient->notifyHidden(); }
-    bool isVisible() const override { Q_UNREACHABLE(); }
-    QWindow *window() const override { return nullptr; }
-    void updateCursor(const QCursor &cursor) override
-    {
-        Q_UNUSED(cursor);
-        /*setCursor(cursor);*/
-    }
-    void resize(int width, int height) override
-    {
-        m_size = QSize(width, height);
-        m_delegateClient->visualPropertiesChanged();
-    }
-    void move(const QPoint &) override { Q_UNREACHABLE(); }
-    void inputMethodStateChanged(bool, bool) override { }
-    void setInputMethodHints(Qt::InputMethodHints) override { }
-    void setClearColor(const QColor &) override { }
-    void adapterClientChanged(WebContentsAdapterClient *) override { }
-    bool copySurface(const QRect &, const QSize &, QImage &)
-    {
-        Q_UNREACHABLE();
-        return false;
-    }
-    QRect windowGeometry() const override { return QRect(m_pos, m_size); }
-    bool forwardEvent(QEvent *ev) { return m_delegateClient->forwardEvent(ev); }
-
-private:
-    RenderWidgetHostViewQtDelegateClient *m_delegateClient;
-    QPoint m_pos;
-    QSize m_size;
-};
 
 static QWebEnginePage::WebWindowType toWindowType(WebContentsAdapterClient::WindowOpenDisposition disposition)
 {
@@ -180,6 +105,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
 
     qRegisterMetaType<QWebEngineQuotaRequest>();
     qRegisterMetaType<QWebEngineRegisterProtocolHandlerRequest>();
+    qRegisterMetaType<QWebEngineFileSystemAccessRequest>();
     qRegisterMetaType<QWebEngineFindTextResult>();
 
     // See setVisible().
@@ -200,6 +126,14 @@ QWebEnginePagePrivate::~QWebEnginePagePrivate()
 
 RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client)
 {
+    if (view)
+        return view->CreateRenderWidgetHostViewQtDelegate(client);
+    delegateItem = new QtWebEngineCore::RenderWidgetHostViewQtDelegateItem(client, false);
+    return delegateItem;
+}
+
+RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client)
+{
     // Set the QWebEngineView as the parent for a popup delegate, so that the new popup window
     // responds properly to clicks in case the QWebEngineView is inside a modal QDialog. Setting the
     // parent essentially notifies the OS that the popup window is part of the modal session, and
@@ -207,7 +141,9 @@ RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostVie
     // The new delegate will not be deleted by the parent view though, because we unset the parent
     // when the parent is destroyed. The delegate will be destroyed by Chromium when the popup is
     // dismissed.
-    return view ? view->CreateRenderWidgetHostViewQtDelegate(client) : new DummyDelegate(client);
+    return view
+         ? view->CreateRenderWidgetHostViewQtDelegateForPopup(client)
+         : new QtWebEngineCore::RenderWidgetHostViewQtDelegateItem(client, true);
 }
 
 void QWebEnginePagePrivate::initializationFinished()
@@ -512,7 +448,7 @@ void QWebEnginePagePrivate::releaseProfile()
 {
     qWarning("Release of profile requested but WebEnginePage still not deleted. Expect troubles !");
     // this is not the way to go, but might avoid the crash if user code does not make any calls to page.
-    delete q_ptr->d_ptr.take();
+    q_ptr->d_ptr.reset();
 }
 
 void QWebEnginePagePrivate::showColorDialog(QSharedPointer<ColorChooserController> controller)
@@ -578,6 +514,12 @@ void QWebEnginePagePrivate::runRegisterProtocolHandlerRequest(QWebEngineRegister
     Q_EMIT q->registerProtocolHandlerRequested(request);
 }
 
+void QWebEnginePagePrivate::runFileSystemAccessRequest(QWebEngineFileSystemAccessRequest request)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->fileSystemAccessRequested(request);
+}
+
 QObject *QWebEnginePagePrivate::accessibilityParentObject()
 {
     return view ? view->accessibilityParentObject() : nullptr;
@@ -585,7 +527,7 @@ QObject *QWebEnginePagePrivate::accessibilityParentObject()
 
 void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
 {
-#ifdef QT_NO_ACTION
+#if !QT_CONFIG(action)
     Q_UNUSED(action);
 #else
     QAction *a = actions[action];
@@ -628,7 +570,7 @@ void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
     }
 
     a->setEnabled(enabled);
-#endif // QT_NO_ACTION
+#endif // QT_CONFIG(action)
 }
 
 void QWebEnginePagePrivate::updateNavigationActions()
@@ -653,7 +595,7 @@ void QWebEnginePagePrivate::updateEditActions()
     updateAction(QWebEnginePage::Unselect);
 }
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
 void QWebEnginePagePrivate::_q_webActionTriggered(bool checked)
 {
     Q_Q(QWebEnginePage);
@@ -663,7 +605,7 @@ void QWebEnginePagePrivate::_q_webActionTriggered(bool checked)
     QWebEnginePage::WebAction action = static_cast<QWebEnginePage::WebAction>(a->data().toInt());
     q->triggerAction(action, checked);
 }
-#endif // QT_NO_ACTION
+#endif // QT_CONFIG(action)
 
 void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
 {
@@ -716,6 +658,19 @@ void QWebEnginePagePrivate::findTextFinished(const QWebEngineFindTextResult &res
 {
     Q_Q(QWebEnginePage);
     Q_EMIT q->findTextFinished(result);
+}
+
+void QWebEnginePagePrivate::showAutofillPopup(QtWebEngineCore::AutofillPopupController *controller,
+                                              const QRect &bounds, bool autoselectFirstSuggestion)
+{
+    if (view)
+        view->showAutofillPopup(controller, bounds, autoselectFirstSuggestion);
+}
+
+void QWebEnginePagePrivate::hideAutofillPopup()
+{
+    if (view)
+        view->hideAutofillPopup();
 }
 
 void QWebEnginePagePrivate::ensureInitialized() const
@@ -1083,12 +1038,12 @@ QString QWebEnginePage::selectedText() const
     return d->adapter->selectedText();
 }
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
 QAction *QWebEnginePage::action(WebAction action) const
 {
     Q_D(const QWebEnginePage);
     if (action == QWebEnginePage::NoWebAction)
-        return 0;
+        return nullptr;
     if (d->actions[action])
         return d->actions[action];
 
@@ -1245,7 +1200,7 @@ QAction *QWebEnginePage::action(WebAction action) const
     d->updateAction(action);
     return a;
 }
-#endif // QT_NO_ACTION
+#endif // QT_CONFIG(action)
 
 void QWebEnginePage::triggerAction(WebAction action, bool)
 {

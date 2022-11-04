@@ -6,6 +6,7 @@ qt_internal_add_qml_module(WebEngineQuick
     CLASS_NAME QtWebEnginePlugin
     DEPENDENCIES
         QtQuick/auto
+        QtWebChannel/auto
     PLUGIN_TARGET qtwebenginequickplugin
     NO_GENERATE_PLUGIN_SOURCE
     NO_PLUGIN_OPTIONAL
@@ -24,6 +25,7 @@ qt_internal_add_qml_module(WebEngineQuick
         api/qquickwebenginesingleton.cpp api/qquickwebenginesingleton_p.h
         api/qquickwebenginetouchhandleprovider.cpp
         api/qquickwebenginetouchhandleprovider_p_p.h
+        api/qquickwebenginetouchhandle.cpp api/qquickwebenginetouchhandle_p.h
         api/qquickwebenginetouchselectionmenurequest.cpp
         api/qquickwebenginetouchselectionmenurequest_p.h
         api/qquickwebenginetouchselectionmenurequest_p_p.h
@@ -32,7 +34,7 @@ qt_internal_add_qml_module(WebEngineQuick
         api/qquickwebengineforeigntypes_p.h
         api/qtwebenginequickglobal.cpp api/qtwebenginequickglobal.h
         api/qtwebenginequickglobal_p.h
-        render_widget_host_view_qt_delegate_quick.cpp render_widget_host_view_qt_delegate_quick.h
+        qquickwebengine_accessible.cpp qquickwebengine_accessible.h
         render_widget_host_view_qt_delegate_quickwindow.cpp render_widget_host_view_qt_delegate_quickwindow.h
         ui_delegates_manager.cpp ui_delegates_manager.h
     DEFINES

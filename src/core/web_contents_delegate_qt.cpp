@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -43,15 +7,19 @@
 
 #include "web_contents_delegate_qt.h"
 
-#include "profile_adapter.h"
+#include "certificate_error_controller.h"
 #include "color_chooser_controller.h"
 #include "color_chooser_qt.h"
+#include "custom_handlers/protocol_handler_registry_factory.h"
+#include "custom_handlers/register_protocol_handler_request_controller_impl.h"
 #include "file_picker_controller.h"
+#include "find_text_helper.h"
+#include "javascript_dialog_manager_qt.h"
 #include "media_capture_devices_dispatcher.h"
+#include "profile_adapter.h"
 #include "profile_qt.h"
 #include "qwebengineloadinginfo.h"
 #include "qwebengineregisterprotocolhandlerrequest.h"
-#include "register_protocol_handler_request_controller_impl.h"
 #include "render_widget_host_view_qt.h"
 #include "type_conversion.h"
 #include "visited_links_manager_qt.h"
@@ -62,14 +30,15 @@
 #include "web_engine_error.h"
 #include "web_engine_settings.h"
 #include "certificate_error_controller.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+
+#include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/invalidate_type.h"
+#include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
@@ -103,7 +72,6 @@ WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, 
     : m_viewClient(adapterClient)
     , m_findTextHelper(new FindTextHelper(webContents, adapterClient))
     , m_loadingState(determineLoadingState(webContents))
-    , m_didStartLoadingSeen(m_loadingState == LoadingState::Loading)
     , m_frameFocusedObserver(adapterClient)
 {
     webContents->SetDelegate(this);
@@ -288,7 +256,7 @@ void WebContentsDelegateQt::RenderFrameCreated(content::RenderFrameHost *render_
     m_frameFocusedObserver.addNode(node);
 }
 
-void WebContentsDelegateQt::RenderProcessGone(base::TerminationStatus status)
+void WebContentsDelegateQt::PrimaryMainFrameRenderProcessGone(base::TerminationStatus status)
 {
     // RenderProcessHost::FastShutdownIfPossible results in TERMINATION_STATUS_STILL_RUNNING
     if (status != base::TERMINATION_STATUS_STILL_RUNNING) {
@@ -319,7 +287,7 @@ void WebContentsDelegateQt::RenderFrameHostChanged(content::RenderFrameHost *old
         m_frameFocusedObserver.addNode(new_node);
 
         // Is this a main frame?
-        if (new_host->GetFrameOwnerElementType() == blink::mojom::FrameOwnerElementType::kNone) {
+        if (new_host->GetFrameOwnerElementType() == blink::FrameOwnerElementType::kNone) {
             content::RenderProcessHost *renderProcessHost = new_host->GetProcess();
             const base::Process &process = renderProcessHost->GetProcess();
             if (process.IsValid()) {
@@ -337,6 +305,17 @@ void WebContentsDelegateQt::RenderViewHostChanged(content::RenderViewHost *, con
         Q_ASSERT(rwhv->delegate());
         rwhv->delegate()->adapterClientChanged(m_viewClient);
         m_viewClient->zoomUpdateIsNeeded();
+    }
+}
+
+void WebContentsDelegateQt::RenderViewReady()
+{
+    // The render view might have returned after a crash without us getting a RenderViewHostChanged call
+    content::RenderWidgetHostView *newHostView = web_contents()->GetRenderWidgetHostView();
+    if (newHostView) {
+        auto *rwhv = static_cast<RenderWidgetHostViewQt *>(newHostView);
+        Q_ASSERT(rwhv->delegate());
+        rwhv->delegate()->updateAdapterClientIfNeeded(m_viewClient);
     }
 }
 
@@ -396,9 +375,9 @@ void WebContentsDelegateQt::emitLoadFinished(bool isErrorPage)
         ? QWebEngineLoadingInfo::LoadSucceededStatus
         : (m_loadingInfo.errorCode == WebEngineError::UserAbortedError
                 ? QWebEngineLoadingInfo::LoadStoppedStatus : QWebEngineLoadingInfo::LoadFailedStatus);
-    auto errorDomain = static_cast<QWebEngineLoadingInfo::ErrorDomain>(WebEngineError::toQtErrorDomain(m_loadingInfo.errorCode));
     QWebEngineLoadingInfo info(m_loadingInfo.url, loadStatus, m_loadingInfo.isErrorPage,
-                               m_loadingInfo.errorDescription, m_loadingInfo.errorCode, errorDomain);
+                               m_loadingInfo.errorDescription, m_loadingInfo.errorCode,
+                               QWebEngineLoadingInfo::ErrorDomain(m_loadingInfo.errorDomain));
     m_viewClient->loadFinished(std::move(info));
     m_viewClient->updateNavigationActions();
 }
@@ -447,34 +426,18 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
     }
 }
 
-void WebContentsDelegateQt::DidStartLoading()
+void WebContentsDelegateQt::PrimaryPageChanged(content::Page &)
 {
-    // Based on TabLoadTracker::DidStartLoading
+    // Based on TabLoadTracker::PrimaryPageChanged
 
-    if (!web_contents()->IsLoadingToDifferentDocument())
+    if (!web_contents()->ShouldShowLoadingUI())
         return;
-    if (m_loadingState == LoadingState::Loading) {
-        DCHECK(m_didStartLoadingSeen);
-        return;
-    }
-    m_didStartLoadingSeen = true;
-}
-
-void WebContentsDelegateQt::DidReceiveResponse()
-{
-    // Based on TabLoadTracker::DidReceiveResponse
-
-    if (m_loadingState == LoadingState::Loading) {
-        DCHECK(m_didStartLoadingSeen);
-        return;
-    }
 
     // A transition to loading requires both DidStartLoading (navigation
     // committed) and DidReceiveResponse (data has been transmitted over the
     // network) events to occur. This is because NavigationThrottles can block
     // actual network requests, but not the rest of the state machinery.
-    if (m_didStartLoadingSeen)
-        setLoadingState(LoadingState::Loading);
+    setLoadingState(LoadingState::Loading);
 }
 
 void WebContentsDelegateQt::DidStopLoading()
@@ -483,8 +446,7 @@ void WebContentsDelegateQt::DidStopLoading()
 
     // NOTE: PageAlmostIdle feature not implemented
 
-    if (m_loadingState == LoadingState::Loading)
-        setLoadingState(LoadingState::Loaded);
+    setLoadingState(LoadingState::Loaded);
 
     emitLoadFinished();
     m_loadingInfo.clear();
@@ -500,14 +462,14 @@ void WebContentsDelegateQt::didFailLoad(const QUrl &url, int errorCode, const QS
     m_loadingInfo.success = false;
     m_loadingInfo.url = url;
     m_loadingInfo.errorCode = errorCode;
+    m_loadingInfo.errorDomain = WebEngineError::toQtErrorDomain(errorCode);
     m_loadingInfo.errorDescription = errorDescription;
     m_loadingInfo.triggersErrorPage = errorPageEnabled && !aborted;
 }
 
 void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code)
 {
-    if (m_loadingState == LoadingState::Loading)
-        setLoadingState(LoadingState::Loaded);
+    setLoadingState(LoadingState::Loaded);
 
     if (render_frame_host != web_contents()->GetMainFrame())
         return;
@@ -548,6 +510,7 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
     m_loadingInfo.success = http_statuscode < 400;
     m_loadingInfo.url = toQt(validated_url);
     m_loadingInfo.errorCode = http_statuscode;
+    m_loadingInfo.errorDomain = WebEngineError::toQtErrorDomain(http_statuscode);
     m_loadingInfo.errorDescription = WebEngineError::toQtErrorDescription(http_statuscode);
     m_loadingInfo.triggersErrorPage = triggersErrorPage;
 }
@@ -578,13 +541,13 @@ void WebContentsDelegateQt::EnterFullscreenModeForTab(content::RenderFrameHost *
 {
     Q_UNUSED(options);
     if (!m_viewClient->isFullScreenMode())
-        m_viewClient->requestFullScreenMode(toQt(requesting_frame->GetLastCommittedURL()), true);
+        m_viewClient->requestFullScreenMode(toQt(requesting_frame->GetLastCommittedURL().DeprecatedGetOriginAsURL()), true);
 }
 
 void WebContentsDelegateQt::ExitFullscreenModeForTab(content::WebContents *web_contents)
 {
     if (m_viewClient->isFullScreenMode())
-        m_viewClient->requestFullScreenMode(toQt(web_contents->GetLastCommittedURL().GetOrigin()), false);
+        m_viewClient->requestFullScreenMode(toQt(web_contents->GetLastCommittedURL().DeprecatedGetOriginAsURL()), false);
 }
 
 bool WebContentsDelegateQt::IsFullscreenForTabOrPending(const content::WebContents* web_contents)
@@ -644,8 +607,8 @@ void WebContentsDelegateQt::SetContentsBounds(content::WebContents *source, cons
     QRect frameGeometry(toQt(bounds));
     QRect geometry;
     if (RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt*>(web_contents()->GetRenderWidgetHostView())) {
-        if (rwhv->delegate() && rwhv->delegate()->window())
-            geometry = frameGeometry.marginsRemoved(rwhv->delegate()->window()->frameMargins());
+        if (rwhv->delegate() && rwhv->delegate()->Window())
+            geometry = frameGeometry.marginsRemoved(rwhv->delegate()->Window()->frameMargins());
     }
     m_viewClient->requestGeometryChange(geometry, frameGeometry);
 }
@@ -676,7 +639,7 @@ void WebContentsDelegateQt::RequestToLockMouse(content::WebContents *web_content
     if (last_unlocked_by_target)
         web_contents->GotResponseToLockMouseRequest(blink::mojom::PointerLockResult::kSuccess);
     else
-        m_viewClient->runMouseLockPermissionRequest(toQt(web_contents->GetLastCommittedURL().GetOrigin()));
+        m_viewClient->runMouseLockPermissionRequest(toQt(web_contents->GetLastCommittedURL().DeprecatedGetOriginAsURL()));
 }
 
 void WebContentsDelegateQt::overrideWebPreferences(content::WebContents *webContents, blink::web_pref::WebPreferences *webPreferences)
@@ -741,7 +704,7 @@ void WebContentsDelegateQt::launchExternalURL(const QUrl &url, ui::PageTransitio
 
     if (navigationAllowedByPolicy) {
         m_viewClient->navigationRequested(pageTransitionToNavigationType(page_transition), url, navigationRequestAccepted, is_main_frame);
-#ifndef QT_NO_DESKTOPSERVICES
+#if QT_CONFIG(desktopservices)
         if (navigationRequestAccepted)
             QDesktopServices::openUrl(url);
 #endif
@@ -790,10 +753,10 @@ void WebContentsDelegateQt::RegisterProtocolHandler(content::RenderFrameHost *fr
 {
     content::BrowserContext *context = frameHost->GetBrowserContext();
 
-    ProtocolHandler handler =
-        ProtocolHandler::CreateProtocolHandler(protocol, url);
+    custom_handlers::ProtocolHandler handler =
+        custom_handlers::ProtocolHandler::CreateProtocolHandler(protocol, url);
 
-    ProtocolHandlerRegistry *registry =
+    custom_handlers::ProtocolHandlerRegistry *registry =
         ProtocolHandlerRegistryFactory::GetForBrowserContext(context);
     if (registry->SilentlyHandleRegisterHandlerRequest(handler))
         return;
@@ -807,10 +770,10 @@ void WebContentsDelegateQt::UnregisterProtocolHandler(content::RenderFrameHost *
 {
     content::BrowserContext* context = frameHost->GetBrowserContext();
 
-    ProtocolHandler handler =
-        ProtocolHandler::CreateProtocolHandler(protocol, url);
+    custom_handlers::ProtocolHandler handler =
+        custom_handlers::ProtocolHandler::CreateProtocolHandler(protocol, url);
 
-    ProtocolHandlerRegistry* registry =
+    custom_handlers::ProtocolHandlerRegistry* registry =
         ProtocolHandlerRegistryFactory::GetForBrowserContext(context);
     registry->RemoveHandler(handler);
 }
@@ -866,7 +829,7 @@ WebContentsDelegateQt::LoadingState WebContentsDelegateQt::determineLoadingState
 {
     // Based on TabLoadTracker::DetermineLoadingState
 
-    if (contents->IsLoadingToDifferentDocument() && !contents->IsWaitingForResponse())
+    if (contents->ShouldShowLoadingUI() && !contents->IsWaitingForResponse())
         return LoadingState::Loading;
 
     content::NavigationController &controller = contents->GetController();

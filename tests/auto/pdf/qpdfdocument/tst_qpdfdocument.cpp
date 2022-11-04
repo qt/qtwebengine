@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the test suite of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 
 #include <QtTest/QtTest>
@@ -69,6 +33,7 @@ private slots:
     void status();
     void passwordClearedOnClose();
     void metaData();
+    void pageLabels();
 
 private:
     void consistencyCheck(QPdfDocument &doc) const;
@@ -89,7 +54,7 @@ struct TemporaryPdf: public QTemporaryFile
 };
 
 
-TemporaryPdf::TemporaryPdf()
+TemporaryPdf::TemporaryPdf():QTemporaryFile(QStringLiteral("qpdfdocument"))
 {
     open();
     pageLayout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF());
@@ -119,12 +84,12 @@ void tst_QPdfDocument::pageCount()
     QSignalSpy pageCountChangedSpy(&doc, SIGNAL(pageCountChanged(int)));
 
     QCOMPARE(doc.pageCount(), 0);
-    QCOMPARE(doc.load(tempPdf.fileName()), QPdfDocument::NoError);
+    QCOMPARE(doc.load(tempPdf.fileName()), QPdfDocument::Error::None);
     QCOMPARE(doc.pageCount(), 2);
     QCOMPARE(pageCountChangedSpy.count(), 1);
     QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
 
-    QCOMPARE(doc.pageSize(0).toSize(), tempPdf.pageLayout.fullRectPoints().size());
+    QCOMPARE(doc.pagePointSize(0).toSize(), tempPdf.pageLayout.fullRectPoints().size());
 }
 
 void tst_QPdfDocument::loadFromIODevice()
@@ -135,9 +100,9 @@ void tst_QPdfDocument::loadFromIODevice()
     QSignalSpy pageCountChangedSpy(&doc, SIGNAL(pageCountChanged(int)));
     doc.load(&tempPdf);
     QCOMPARE(statusChangedSpy.count(), 2);
-    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
-    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Ready);
-    QCOMPARE(doc.error(), QPdfDocument::NoError);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Loading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Ready);
+    QCOMPARE(doc.error(), QPdfDocument::Error::None);
     QCOMPARE(doc.pageCount(), 2);
     QCOMPARE(pageCountChangedSpy.count(), 1);
     QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
@@ -172,8 +137,8 @@ void tst_QPdfDocument::loadAsync()
     doc.load(reply.data());
 
     QCOMPARE(statusChangedSpy.count(), 2);
-    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
-    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Ready);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Loading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Ready);
     QCOMPARE(doc.pageCount(), 2);
     QCOMPARE(pageCountChangedSpy.count(), 1);
     QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
@@ -187,15 +152,15 @@ void tst_QPdfDocument::password()
     QSignalSpy passwordChangedSpy(&doc, SIGNAL(passwordChanged()));
 
     QCOMPARE(doc.pageCount(), 0);
-    QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf")), QPdfDocument::IncorrectPasswordError);
+    QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf")), QPdfDocument::Error::IncorrectPassword);
     QCOMPARE(passwordChangedSpy.count(), 0);
     doc.setPassword(QStringLiteral("WrongPassword"));
     QCOMPARE(passwordChangedSpy.count(), 1);
-    QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf")), QPdfDocument::IncorrectPasswordError);
-    QCOMPARE(doc.status(), QPdfDocument::Error);
+    QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf")), QPdfDocument::Error::IncorrectPassword);
+    QCOMPARE(doc.status(), QPdfDocument::Status::Error);
     doc.setPassword(QStringLiteral("Qt"));
     QCOMPARE(passwordChangedSpy.count(), 2);
-    QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf")), QPdfDocument::NoError);
+    QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf")), QPdfDocument::Error::None);
     QCOMPARE(doc.pageCount(), 1);
 }
 
@@ -210,8 +175,8 @@ void tst_QPdfDocument::close()
     doc.load(&tempPdf);
 
     QCOMPARE(statusChangedSpy.count(), 2);
-    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
-    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Ready);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Loading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Ready);
     QCOMPARE(pageCountChangedSpy.count(), 1);
     QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
 
@@ -224,8 +189,8 @@ void tst_QPdfDocument::close()
 
     doc.close();
     QCOMPARE(statusChangedSpy.count(), 2);
-    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Unloading);
-    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Null);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Unloading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Null);
     QCOMPARE(doc.pageCount(), 0);
     QCOMPARE(pageCountChangedSpy.count(), 1);
     QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
@@ -241,8 +206,8 @@ void tst_QPdfDocument::loadAfterClose()
 
     doc.load(&tempPdf);
     QCOMPARE(statusChangedSpy.count(), 2);
-    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
-    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Ready);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Loading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Ready);
     QCOMPARE(pageCountChangedSpy.count(), 1);
     QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
     statusChangedSpy.clear();
@@ -250,8 +215,8 @@ void tst_QPdfDocument::loadAfterClose()
 
     doc.close();
     QCOMPARE(statusChangedSpy.count(), 2);
-    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Unloading);
-    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Null);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Unloading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Null);
     QCOMPARE(pageCountChangedSpy.count(), 1);
     QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
     statusChangedSpy.clear();
@@ -259,9 +224,9 @@ void tst_QPdfDocument::loadAfterClose()
 
     doc.load(&tempPdf);
     QCOMPARE(statusChangedSpy.count(), 2);
-    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
-    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Ready);
-    QCOMPARE(doc.error(), QPdfDocument::NoError);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Loading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Ready);
+    QCOMPARE(doc.error(), QPdfDocument::Error::None);
     QCOMPARE(doc.pageCount(), 2);
     QCOMPARE(pageCountChangedSpy.count(), 1);
     QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
@@ -285,8 +250,8 @@ void tst_QPdfDocument::closeOnDestroy()
         delete doc;
 
         QCOMPARE(statusChangedSpy.count(), 2);
-        QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Unloading);
-        QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Null);
+        QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Unloading);
+        QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Null);
         QCOMPARE(pageCountChangedSpy.count(), 1);
         QCOMPARE(pageCountChangedSpy[0][0].toInt(), 0);
     }
@@ -312,35 +277,35 @@ void tst_QPdfDocument::status()
     TemporaryPdf tempPdf;
 
     QPdfDocument doc;
-    QCOMPARE(doc.status(), QPdfDocument::Null);
+    QCOMPARE(doc.status(), QPdfDocument::Status::Null);
 
     QSignalSpy statusChangedSpy(&doc, SIGNAL(statusChanged(QPdfDocument::Status)));
 
     // open existing document
     doc.load(&tempPdf);
     QCOMPARE(statusChangedSpy.count(), 2);
-    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
-    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Ready);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Loading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Ready);
     statusChangedSpy.clear();
 
-    QCOMPARE(doc.status(), QPdfDocument::Ready);
+    QCOMPARE(doc.status(), QPdfDocument::Status::Ready);
 
     // close document
     doc.close();
 
     QCOMPARE(statusChangedSpy.count(), 2);
-    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Unloading);
-    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Null);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Unloading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Null);
     statusChangedSpy.clear();
 
-    QCOMPARE(doc.status(), QPdfDocument::Null);
+    QCOMPARE(doc.status(), QPdfDocument::Status::Null);
 
     // try to open non-existing document
     doc.load(QFINDTESTDATA("does-not-exist.pdf"));
     QCOMPARE(statusChangedSpy.count(), 2);
-    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
-    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Error);
-    QCOMPARE(doc.status(), QPdfDocument::Error);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Loading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Error);
+    QCOMPARE(doc.status(), QPdfDocument::Status::Error);
     statusChangedSpy.clear();
 
     // try to open non-existing document asynchronously
@@ -362,8 +327,8 @@ void tst_QPdfDocument::status()
     }
 
     QCOMPARE(statusChangedSpy.count(), 2);
-    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
-    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Error);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Loading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Error);
     statusChangedSpy.clear();
 }
 
@@ -376,7 +341,7 @@ void tst_QPdfDocument::passwordClearedOnClose()
 
     doc.setPassword(QStringLiteral("Qt"));
     QCOMPARE(passwordChangedSpy.count(), 1);
-    QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf")), QPdfDocument::NoError);
+    QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf")), QPdfDocument::Error::None);
     passwordChangedSpy.clear();
 
     doc.close(); // password is cleared on close
@@ -393,26 +358,36 @@ void tst_QPdfDocument::metaData()
     QPdfDocument doc;
 
     // a closed document does not return any meta data
-    QCOMPARE(doc.metaData(QPdfDocument::Title).toString(), QString());
-    QCOMPARE(doc.metaData(QPdfDocument::Subject).toString(), QString());
-    QCOMPARE(doc.metaData(QPdfDocument::Author).toString(), QString());
-    QCOMPARE(doc.metaData(QPdfDocument::Keywords).toString(), QString());
-    QCOMPARE(doc.metaData(QPdfDocument::Producer).toString(), QString());
-    QCOMPARE(doc.metaData(QPdfDocument::Creator).toString(), QString());
-    QCOMPARE(doc.metaData(QPdfDocument::CreationDate).toDateTime(), QDateTime());
-    QCOMPARE(doc.metaData(QPdfDocument::ModificationDate).toDateTime(), QDateTime());
+    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::Title).toString(), QString());
+    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::Subject).toString(), QString());
+    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::Author).toString(), QString());
+    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::Keywords).toString(), QString());
+    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::Producer).toString(), QString());
+    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::Creator).toString(), QString());
+    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::CreationDate).toDateTime(), QDateTime());
+    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::ModificationDate).toDateTime(), QDateTime());
 
-    QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.metadata.pdf")), QPdfDocument::NoError);
+    QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.metadata.pdf")), QPdfDocument::Error::None);
 
     // check for proper meta data from sample document
-    QCOMPARE(doc.metaData(QPdfDocument::Title).toString(), QString::fromLatin1("Qt PDF Unit Test Document"));
-    QCOMPARE(doc.metaData(QPdfDocument::Subject).toString(), QString::fromLatin1("A test for meta data access"));
-    QCOMPARE(doc.metaData(QPdfDocument::Author).toString(), QString::fromLatin1("John Doe"));
-    QCOMPARE(doc.metaData(QPdfDocument::Keywords).toString(), QString::fromLatin1("meta data keywords"));
-    QCOMPARE(doc.metaData(QPdfDocument::Producer).toString(), QString::fromLatin1("LibreOffice 5.1"));
-    QCOMPARE(doc.metaData(QPdfDocument::Creator).toString(), QString::fromLatin1("Writer"));
-    QCOMPARE(doc.metaData(QPdfDocument::CreationDate).toDateTime(), QDateTime(QDate(2016, 8, 7), QTime(7, 3, 6), Qt::UTC));
-    QCOMPARE(doc.metaData(QPdfDocument::ModificationDate).toDateTime(), QDateTime(QDate(2016, 8, 8), QTime(8, 3, 6), Qt::UTC));
+    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::Title).toString(), QString::fromLatin1("Qt PDF Unit Test Document"));
+    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::Subject).toString(), QString::fromLatin1("A test for meta data access"));
+    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::Author).toString(), QString::fromLatin1("John Doe"));
+    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::Keywords).toString(), QString::fromLatin1("meta data keywords"));
+    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::Producer).toString(), QString::fromLatin1("LibreOffice 5.1"));
+    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::Creator).toString(), QString::fromLatin1("Writer"));
+    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::CreationDate).toDateTime(), QDateTime(QDate(2016, 8, 7), QTime(7, 3, 6), Qt::UTC));
+    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::ModificationDate).toDateTime(), QDateTime(QDate(2016, 8, 8), QTime(8, 3, 6), Qt::UTC));
+}
+
+void tst_QPdfDocument::pageLabels()
+{
+    QPdfDocument doc;
+    QCOMPARE(doc.load(QFINDTESTDATA("test.pdf")), QPdfDocument::Error::None);
+    QCOMPARE(doc.pageCount(), 3);
+    QCOMPARE(doc.pageLabel(0), "Qt");
+    QCOMPARE(doc.pageLabel(1), "1");
+    QCOMPARE(doc.pageLabel(2), "i"); // i of the tiger!
 }
 
 QTEST_MAIN(tst_QPdfDocument)

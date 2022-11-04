@@ -1,46 +1,11 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "profile_adapter.h"
 
 #include "base/files/file_util.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time_to_iso8601.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/content/browser/history_database_helper.h"
@@ -74,6 +39,7 @@
 
 #include <QCoreApplication>
 #include <QDir>
+#include <QSet>
 #include <QString>
 #include <QStandardPaths>
 
@@ -169,6 +135,26 @@ void ProfileAdapter::setOffTheRecord(bool offTheRecord)
 ProfileQt *ProfileAdapter::profile()
 {
     return m_profile.data();
+}
+
+bool ProfileAdapter::ensureDataPathExists()
+{
+    Q_ASSERT(!m_offTheRecord);
+    base::ScopedAllowBlocking allowBlock;
+    const base::FilePath &path = toFilePath(dataPath());
+    if (path.empty())
+        return false;
+    if (base::DirectoryExists(path))
+        return true;
+
+    base::File::Error error;
+    if (base::CreateDirectoryAndGetError(path, &error))
+        return true;
+
+    std::string errorstr = base::File::ErrorToString(error);
+    qWarning("Cannot create directory %s. Error: %s.", path.AsUTF8Unsafe().c_str(),
+             errorstr.c_str());
+    return false;
 }
 
 VisitedLinksManagerQt *ProfileAdapter::visitedLinksManager()
@@ -663,8 +649,8 @@ void ProfileAdapter::resetVisitedLinksManager()
 
 void ProfileAdapter::reinitializeHistoryService()
 {
-    Q_ASSERT(!m_profile->IsOffTheRecord());
-    if (m_profile->ensureDirectoryExists()) {
+    Q_ASSERT(!m_offTheRecord);
+    if (ensureDataPathExists()) {
         favicon::FaviconService *faviconService =
                 FaviconServiceFactoryQt::GetForBrowserContext(m_profile.data());
         history::HistoryService *historyService = static_cast<history::HistoryService *>(
@@ -682,7 +668,11 @@ QString ProfileAdapter::determineDownloadPath(const QString &downloadDirectory, 
     QString suggestedFilePath = suggestedFile.absoluteFilePath();
     base::FilePath tmpFilePath(toFilePath(suggestedFilePath).NormalizePathSeparatorsTo('/'));
 
-    int uniquifier = base::GetUniquePathNumber(tmpFilePath);
+    int uniquifier = 0;
+    {
+        base::ScopedAllowBlocking allowBlock;
+        uniquifier = base::GetUniquePathNumber(tmpFilePath);
+    }
     if (uniquifier > 0)
         suggestedFilePath = toQt(tmpFilePath.InsertBeforeExtensionASCII(base::StringPrintf(" (%d)", uniquifier)).AsUTF8Unsafe());
     else if (uniquifier == -1) {

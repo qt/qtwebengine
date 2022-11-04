@@ -1,22 +1,6 @@
-/*
-    Copyright (C) 2015 The Qt Company Ltd.
-    Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
-
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
-    License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
-
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
-
-    You should have received a copy of the GNU Library General Public License
-    along with this library; see the file COPYING.LIB.  If not, write to
-    the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-    Boston, MA 02110-1301, USA.
-*/
+// Copyright (C) 2022 The Qt Company Ltd.
+// Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 // The documentation in this file was imported from QtWebKit and is thus constrained
 // by its LGPL license. Documentation written from scratch for new methods should be
@@ -56,7 +40,7 @@
     \value CursiveFont
     \value FantasyFont
     \value PictographFont
-           (added in Qt 5.7)
+           (added in Qt 5.7, deprecated Qt 6.4)
 */
 
 /*!
@@ -97,7 +81,8 @@
             Enables support for the HTML 5 local storage feature. Enabled by default.
     \value  LocalContentCanAccessRemoteUrls
             Allows local origin documents to access remote resources that would normally be blocked.
-            Disabled by default.
+            Disabled by default. Note DnsPrefetchEnabled below operates independently of this setting,
+            and can if enabled, cause remote accesses from local content.
     \value  XSSAuditingEnabled
             Obsolete and has no effect.
     \value  SpatialNavigationEnabled
@@ -180,6 +165,9 @@
     \value PdfViewerEnabled Specifies that PDF documents will be opened in the internal PDF viewer
            instead of being downloaded.
            Enabled by default. (Added in Qt 5.13)
+    \value NavigateOnDropEnabled Specifies that navigations can be triggered by dropping URLs on
+           the view.
+           Enabled by default. (Added in Qt 6.4)
 */
 
 /*!

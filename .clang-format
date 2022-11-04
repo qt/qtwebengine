@@ -1,7 +1,5 @@
 # Copyright (C) 2016 Olivier Goffart <ogoffart@woboq.com>
-#
-# You may use this file under the terms of the 3-clause BSD license.
-# See the file LICENSE from this package for details.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 # This is the clang-format configuration style to be used by Qt,
 # based on the rules from https://wiki.qt.io/Qt_Coding_Style and
@@ -11,7 +9,7 @@
 # Webkit style was loosely based on the Qt style
 BasedOnStyle: WebKit
 
-Standard: Cpp11
+Standard: c++17
 
 # Column width is limited to 100 in accordance with Qt Coding Style.
 # https://wiki.qt.io/Qt_Coding_Style
@@ -20,9 +18,10 @@ ColumnLimit: 100
 # How much weight do extra characters after the line length limit have.
 # PenaltyExcessCharacter: 4
 
-# Disable reflow of qdoc comments: indentation rules are different.
-# Translation comments are also excluded.
-CommentPragmas: "^!|^:"
+# Disable reflow of some specific comments
+# qdoc comments: indentation rules are different.
+# Translation comments and SPDX license identifiers are also excluded.
+CommentPragmas: "^!|^:|^ SPDX-License-Identifier:"
 
 # We want a space between the type and the star for pointer types.
 PointerBindsToType: false
@@ -84,11 +83,18 @@ ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH, forever, Q_FOREVER, QBENCH
 # Break constructor initializers before the colon and after the commas.
 BreakConstructorInitializers: BeforeColon
 
+# Avoids the addition of a space between an identifier and the
+# initializer list in list-initialization.
+SpaceBeforeCpp11BracedList: false
+
 ################################################################################
 # QtWebEngine specific changes to Qt style
 
 # We are using BeforeComma consistently so don't change it
 BreakConstructorInitializers: BeforeComma
+
+# Disable indentation for preprocessing directives. Looks confusing at includes.
+IndentPPDirectives: None
 
 # Chromium macros
 MacroBlockBegin: "^\
