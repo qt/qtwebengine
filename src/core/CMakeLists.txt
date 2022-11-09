@@ -128,7 +128,7 @@ foreach(arch ${archs})
                 login_delegate_qt.cpp login_delegate_qt.h
                 media_capture_devices_dispatcher.cpp media_capture_devices_dispatcher.h
                 native_web_keyboard_event_qt.cpp
-                net/client_cert_override.cpp net/client_cert_override.h
+                net/client_cert_qt.cpp net/client_cert_qt.h
                 net/client_cert_store_data.cpp net/client_cert_store_data.h
                 net/cookie_monster_delegate_qt.cpp net/cookie_monster_delegate_qt.h
                 net/custom_url_loader_factory.cpp net/custom_url_loader_factory.h

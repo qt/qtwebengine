@@ -1,7 +1,7 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "client_cert_override.h"
+#include "client_cert_qt.h"
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
@@ -35,12 +35,12 @@
 
 namespace {
 
-class ClientCertIdentityOverride : public net::ClientCertIdentity
+class ClientCertIdentityQt : public net::ClientCertIdentity
 {
 public:
-    ClientCertIdentityOverride(scoped_refptr<net::X509Certificate> cert, scoped_refptr<net::SSLPrivateKey> key)
+    ClientCertIdentityQt(scoped_refptr<net::X509Certificate> cert, scoped_refptr<net::SSLPrivateKey> key)
             : net::ClientCertIdentity(std::move(cert)), m_key(std::move(key)) {}
-    ~ClientCertIdentityOverride() override = default;
+    ~ClientCertIdentityQt() override = default;
 
     void AcquirePrivateKey(base::OnceCallback<void(scoped_refptr<net::SSLPrivateKey>)> private_key_callback) override
     {
@@ -55,17 +55,17 @@ private:
 
 namespace QtWebEngineCore {
 
-ClientCertOverrideStore::ClientCertOverrideStore(ClientCertificateStoreData *storeData)
+ClientCertStoreQt::ClientCertStoreQt(ClientCertificateStoreData *storeData)
     : ClientCertStore()
     , m_storeData(storeData)
     , m_nativeStore(createNativeStore())
 {
 }
 
-ClientCertOverrideStore::~ClientCertOverrideStore() = default;
+ClientCertStoreQt::~ClientCertStoreQt() = default;
 
 #if QT_CONFIG(ssl)
-net::ClientCertIdentityList ClientCertOverrideStore::GetClientCertsOnUIThread(const net::SSLCertRequestInfo &cert_request_info)
+net::ClientCertIdentityList ClientCertStoreQt::GetClientCertsOnUIThread(const net::SSLCertRequestInfo &cert_request_info)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     const auto &clientCertOverrideData = m_storeData->extraCerts;
@@ -81,7 +81,7 @@ net::ClientCertIdentityList ClientCertOverrideStore::GetClientCertsOnUIThread(co
             }
             if (cert_request_info.cert_authorities.empty()
                 || cert->IsIssuedByEncoded(cert_request_info.cert_authorities)) {
-                selected_identities.push_back(std::make_unique<ClientCertIdentityOverride>(
+                selected_identities.push_back(std::make_unique<ClientCertIdentityQt>(
                         cert, clientCertOverrideData[i]->keyPtr));
             }
         }
@@ -89,14 +89,14 @@ net::ClientCertIdentityList ClientCertOverrideStore::GetClientCertsOnUIThread(co
     return selected_identities;
 }
 
-void ClientCertOverrideStore::GetClientCertsReturn(const net::SSLCertRequestInfo &cert_request_info,
+void ClientCertStoreQt::GetClientCertsReturn(const net::SSLCertRequestInfo &cert_request_info,
                                                    ClientCertListCallback callback,
                                                    net::ClientCertIdentityList &&result)
 {
     // Continue with native cert store and append them after memory certificates
     if (m_nativeStore) {
         ClientCertListCallback callback2 = base::BindOnce(
-                [](ClientCertOverrideStore::ClientCertListCallback callback,
+                [](ClientCertStoreQt::ClientCertListCallback callback,
                    net::ClientCertIdentityList result1, net::ClientCertIdentityList result2) {
                     while (!result2.empty()) {
                         result1.push_back(std::move(result2.back()));
@@ -113,16 +113,16 @@ void ClientCertOverrideStore::GetClientCertsReturn(const net::SSLCertRequestInfo
 
 #endif // QT_CONFIG(ssl)
 
-void ClientCertOverrideStore::GetClientCerts(const net::SSLCertRequestInfo &cert_request_info,
+void ClientCertStoreQt::GetClientCerts(const net::SSLCertRequestInfo &cert_request_info,
                                              ClientCertListCallback callback)
 {
 #if QT_CONFIG(ssl)
     // Access the user-provided data from the UI thread, but return on whatever thread this is.
     bool ok = base::PostTaskAndReplyWithResult(
             FROM_HERE, { content::BrowserThread::UI },
-            base::BindOnce(&ClientCertOverrideStore::GetClientCertsOnUIThread,
+            base::BindOnce(&ClientCertStoreQt::GetClientCertsOnUIThread,
                            base::Unretained(this), std::cref(cert_request_info)),
-            base::BindOnce(&ClientCertOverrideStore::GetClientCertsReturn,
+            base::BindOnce(&ClientCertStoreQt::GetClientCertsReturn,
                            base::Unretained(this), std::cref(cert_request_info), std::move(callback)));
     DCHECK(ok); // callback is already moved and we can't really recover here.
 #else
@@ -134,7 +134,7 @@ void ClientCertOverrideStore::GetClientCerts(const net::SSLCertRequestInfo &cert
 }
 
 // static
-std::unique_ptr<net::ClientCertStore> ClientCertOverrideStore::createNativeStore()
+std::unique_ptr<net::ClientCertStore> ClientCertStoreQt::createNativeStore()
 {
 #if BUILDFLAG(USE_NSS_CERTS)
     return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreNSS(net::ClientCertStoreNSS::PasswordDelegateFactory()));
