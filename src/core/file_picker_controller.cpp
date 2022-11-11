@@ -187,7 +187,7 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
         }
 
         std::vector<blink::mojom::FileChooserFileInfoPtr> chooser_files;
-        for (const auto &file : qAsConst(files)) {
+        for (const auto &file : std::as_const(files)) {
             chooser_files.push_back(blink::mojom::FileChooserFileInfo::NewNativeFile(
                     blink::mojom::NativeFileInfo::New(toFilePath(file), std::u16string())));
         }
@@ -200,7 +200,7 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
                     static_cast<blink::mojom::FileChooserParams::Mode>(d_ptr->mode));
     } else if (d_ptr->fileSystemAccessDialogListener) {
         std::vector<base::FilePath> files;
-        for (const auto &file : qAsConst(filesList)) {
+        for (const auto &file : std::as_const(filesList)) {
             files.push_back(toFilePath(file));
         }
 

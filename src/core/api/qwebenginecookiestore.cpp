@@ -58,7 +58,7 @@ void QWebEngineCookieStorePrivate::processPendingUserCookies()
     if (m_pendingUserCookies.isEmpty())
         return;
 
-    for (const CookieData &cookieData : qAsConst(m_pendingUserCookies)) {
+    for (const CookieData &cookieData : std::as_const(m_pendingUserCookies)) {
         if (cookieData.wasDelete)
             delegate->deleteCookie(cookieData.cookie, cookieData.origin);
         else

@@ -148,7 +148,7 @@ QList<QWebEngineScript> QWebEngineScriptCollectionPrivate::toList(const QString 
         return m_scripts;
 
     QList<QWebEngineScript> ret;
-    for (const QWebEngineScript &script : qAsConst(m_scripts))
+    for (const QWebEngineScript &script : std::as_const(m_scripts))
         if (scriptName == script.name())
             ret.append(script);
     return ret;
@@ -173,7 +173,7 @@ void QWebEngineScriptCollectionPrivate::initializationFinished(QSharedPointer<Qt
     Q_ASSERT(m_contents);
     Q_ASSERT(contents);
 
-    for (const QWebEngineScript &script : qAsConst(m_scripts))
+    for (const QWebEngineScript &script : std::as_const(m_scripts))
         m_scriptController->addUserScript(*script.d, contents.data());
     m_contents = contents;
 }

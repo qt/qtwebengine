@@ -145,7 +145,7 @@ QString subProcessPath()
                               % QLatin1Char('/') % processBinary;
         }
 
-        for (const QString &candidate : qAsConst(candidatePaths)) {
+        for (const QString &candidate : std::as_const(candidatePaths)) {
             if (QFileInfo::exists(candidate)) {
                 processPath = candidate;
                 qCDebug(webEngineLibraryInfoLog, "Qt WebEngine process path: %s",
@@ -157,7 +157,7 @@ QString subProcessPath()
             QStringList errorMessage;
             errorMessage.append(
                     QStringLiteral("The following paths were searched for Qt WebEngine Process:"));
-            for (const QString &candidate : qAsConst(candidatePaths))
+            for (const QString &candidate : std::as_const(candidatePaths))
                 errorMessage.append(QStringLiteral("  ") % candidate);
             errorMessage.append(QStringLiteral("but could not find it."));
             if (fromEnv.isEmpty()) {
@@ -207,7 +207,7 @@ QString localesPath()
             candidatePaths << fallbackDir();
         }
 
-        for (const QString &candidate : qAsConst(candidatePaths)) {
+        for (const QString &candidate : std::as_const(candidatePaths)) {
             if (QFileInfo::exists(candidate % QDir::separator() % translationPakFilename)) {
                 potentialLocalesPath = candidate;
                 qCDebug(webEngineLibraryInfoLog, "Qt WebEngine locales path: %s",
@@ -220,7 +220,7 @@ QString localesPath()
             QStringList warningMessage;
             warningMessage.append(
                     QStringLiteral("The following paths were searched for Qt WebEngine locales:"));
-            for (const QString &candidate : qAsConst(candidatePaths))
+            for (const QString &candidate : std::as_const(candidatePaths))
                 warningMessage.append(QStringLiteral("  ") % candidate);
             warningMessage.append(
                     QStringLiteral(
@@ -275,7 +275,7 @@ QString dictionariesPath()
             candidatePaths << libraryDictionariesPath;
         }
 
-        for (const QString &candidate : qAsConst(candidatePaths)) {
+        for (const QString &candidate : std::as_const(candidatePaths)) {
             if (QFileInfo::exists(candidate)) {
                 potentialDictionariesPath = candidate;
                 qCDebug(webEngineLibraryInfoLog, "Qt WebEngine dictionaries path: %s",
@@ -310,7 +310,7 @@ QString resourcesPath()
             candidatePaths << fallbackDir();
         }
 
-        for (const QString &candidate : qAsConst(candidatePaths)) {
+        for (const QString &candidate : std::as_const(candidatePaths)) {
             if (QFileInfo::exists(candidate % QDir::separator() % resourcesPakFilename)) {
                 potentialResourcesPath = candidate;
                 qCDebug(webEngineLibraryInfoLog, "Qt WebEngine resources path: %s",
@@ -323,7 +323,7 @@ QString resourcesPath()
             QStringList errorMessage;
             errorMessage.append(QStringLiteral(
                     "The following paths were searched for Qt WebEngine resources:"));
-            for (const QString &candidate : qAsConst(candidatePaths))
+            for (const QString &candidate : std::as_const(candidatePaths))
                 errorMessage.append(QStringLiteral("  ") % candidate);
             errorMessage.append(QStringLiteral("but could not find any."));
             if (fromEnv.isEmpty()) {

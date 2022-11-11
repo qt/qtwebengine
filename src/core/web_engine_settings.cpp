@@ -78,7 +78,7 @@ WebEngineSettings::~WebEngineSettings()
     if (parentSettings)
         parentSettings->childSettings.remove(this);
     // In QML the profile and its settings may be garbage collected before the page and its settings.
-    for (WebEngineSettings *settings : qAsConst(childSettings))
+    for (WebEngineSettings *settings : std::as_const(childSettings))
         settings->parentSettings = nullptr;
 }
 
@@ -448,7 +448,7 @@ bool WebEngineSettings::applySettingsToRendererPreferences(blink::RendererPrefer
 void WebEngineSettings::scheduleApplyRecursively()
 {
     scheduleApply();
-    for (WebEngineSettings *settings : qAsConst(childSettings)) {
+    for (WebEngineSettings *settings : std::as_const(childSettings)) {
         settings->scheduleApply();
     }
 }

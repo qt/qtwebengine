@@ -136,7 +136,7 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
     if (!engine)
         return false;
 
-    for (const QString &importDir : qAsConst(m_importDirs)) {
+    for (const QString &importDir : std::as_const(m_importDirs)) {
         const QString componentFilePath = importDir % QLatin1Char('/') % fileName;
 
         if (!QFileInfo(componentFilePath).exists())
