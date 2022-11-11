@@ -26,7 +26,7 @@ void tst_OffScreen::offscreen()
     page.load(QUrl("qrc:/test.html"));
     view.show();
     QTRY_COMPARE(view.isVisible(), true);
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count() > 0, true, 20000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size() > 0, true, 20000);
     QCOMPARE(loadFinishedSpy.takeFirst().at(0).toBool(), true);
 }
 

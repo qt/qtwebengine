@@ -151,7 +151,7 @@ void tst_Spellchecking::spellcheck()
     QTest::mousePress(m_view->focusWidget(), Qt::LeftButton, {}, QPoint(20,20));
     QTest::mouseRelease(m_view->focusWidget(), Qt::LeftButton, {}, QPoint(20,20));
     QString text("I lowe Qt ....");
-    for (int i = 0; i < text.length(); i++) {
+    for (int i = 0; i < text.size(); i++) {
         QTest::keyClicks(m_view->focusWidget(), text.at(i));
         QTest::qWait(60);
     }

@@ -304,10 +304,10 @@ void tst_QWebEngineView::changePage()
     QSignalSpy pageFromLoadSpy(pageFrom.get(), &QWebEnginePage::loadFinished);
     QSignalSpy pageFromIconLoadSpy(pageFrom.get(), &QWebEnginePage::iconChanged);
     pageFrom->load(urlFrom);
-    QTRY_COMPARE(pageFromLoadSpy.count(), 1);
+    QTRY_COMPARE(pageFromLoadSpy.size(), 1);
     QCOMPARE(pageFromLoadSpy.last().value(0).toBool(), true);
     if (!fromIsNullPage) {
-        QTRY_COMPARE(pageFromIconLoadSpy.count(), 1);
+        QTRY_COMPARE(pageFromIconLoadSpy.size(), 1);
         QVERIFY(!pageFromIconLoadSpy.last().value(0).isNull());
     }
 
@@ -315,13 +315,13 @@ void tst_QWebEngineView::changePage()
     QCOMPARE(view->page(), pageFrom.get());
     QCOMPARE(QWebEngineView::forPage(pageFrom.get()), view.get());
 
-    QTRY_COMPARE(spyUrl.count(), 1);
+    QTRY_COMPARE(spyUrl.size(), 1);
     QCOMPARE(spyUrl.last().value(0).toUrl(), pageFrom->url());
-    QTRY_COMPARE(spyTitle.count(), 1);
+    QTRY_COMPARE(spyTitle.size(), 1);
     QCOMPARE(spyTitle.last().value(0).toString(), pageFrom->title());
 
-    QTRY_COMPARE(spyIconUrl.count(), fromIsNullPage ? 0 : 1);
-    QTRY_COMPARE(spyIcon.count(), fromIsNullPage ? 0 : 1);
+    QTRY_COMPARE(spyIconUrl.size(), fromIsNullPage ? 0 : 1);
+    QTRY_COMPARE(spyIcon.size(), fromIsNullPage ? 0 : 1);
     if (!fromIsNullPage) {
         QVERIFY(!pageFrom->iconUrl().isEmpty());
         QCOMPARE(spyIconUrl.last().value(0).toUrl(), pageFrom->iconUrl());
@@ -333,10 +333,10 @@ void tst_QWebEngineView::changePage()
     QSignalSpy pageToLoadSpy(pageTo.get(), &QWebEnginePage::loadFinished);
     QSignalSpy pageToIconLoadSpy(pageTo.get(), &QWebEnginePage::iconChanged);
     pageTo->load(urlTo);
-    QTRY_COMPARE(pageToLoadSpy.count(), 1);
+    QTRY_COMPARE(pageToLoadSpy.size(), 1);
     QCOMPARE(pageToLoadSpy.last().value(0).toBool(), true);
     if (!toIsNullPage) {
-        QTRY_COMPARE(pageToIconLoadSpy.count(), 1);
+        QTRY_COMPARE(pageToIconLoadSpy.size(), 1);
         QVERIFY(!pageToIconLoadSpy.last().value(0).isNull());
     }
 
@@ -345,16 +345,16 @@ void tst_QWebEngineView::changePage()
     QCOMPARE(QWebEngineView::forPage(pageTo.get()), view.get());
     QCOMPARE(QWebEngineView::forPage(pageFrom.get()), nullptr);
 
-    QTRY_COMPARE(spyUrl.count(), 2);
+    QTRY_COMPARE(spyUrl.size(), 2);
     QCOMPARE(spyUrl.last().value(0).toUrl(), pageTo->url());
-    QTRY_COMPARE(spyTitle.count(), 2);
+    QTRY_COMPARE(spyTitle.size(), 2);
     QCOMPARE(spyTitle.last().value(0).toString(), pageTo->title());
 
     bool iconIsSame = fromIsNullPage == toIsNullPage;
     int iconChangeNotifyCount = fromIsNullPage ? (iconIsSame ? 0 : 1) : (iconIsSame ? 1 : 2);
 
-    QTRY_COMPARE(spyIconUrl.count(), iconChangeNotifyCount);
-    QTRY_COMPARE(spyIcon.count(), iconChangeNotifyCount);
+    QTRY_COMPARE(spyIconUrl.size(), iconChangeNotifyCount);
+    QTRY_COMPARE(spyIcon.size(), iconChangeNotifyCount);
     QCOMPARE(pageFrom->iconUrl() == pageTo->iconUrl(), iconIsSame);
     if (!iconIsSame) {
         QCOMPARE(spyIconUrl.last().value(0).toUrl(), pageTo->iconUrl());
@@ -365,10 +365,10 @@ void tst_QWebEngineView::changePage()
     // verify no emits on destroy with the same number of signals in spy
     view.reset();
     qApp->processEvents();
-    QTRY_COMPARE(spyUrl.count(), 2);
-    QTRY_COMPARE(spyTitle.count(), 2);
-    QTRY_COMPARE(spyIconUrl.count(), iconChangeNotifyCount);
-    QTRY_COMPARE(spyIcon.count(), iconChangeNotifyCount);
+    QTRY_COMPARE(spyUrl.size(), 2);
+    QTRY_COMPARE(spyTitle.size(), 2);
+    QTRY_COMPARE(spyIconUrl.size(), iconChangeNotifyCount);
+    QTRY_COMPARE(spyIcon.size(), iconChangeNotifyCount);
 }
 
 void tst_QWebEngineView::reusePage_data()
@@ -424,7 +424,7 @@ void tst_QWebEngineView::setLoadedPage()
     QWebEnginePage page;
     QSignalSpy loadSpy(&page, &QWebEnginePage::loadFinished);
     page.setHtml(QString("<html><body bgcolor=\"%1\"></body></html>").arg(QColor(Qt::yellow).name()));
-    QTRY_VERIFY(loadSpy.count() == 1 && loadSpy.first().first().toBool());
+    QTRY_VERIFY(loadSpy.size() == 1 && loadSpy.first().first().toBool());
 
     QWebEngineView view;
     view.resize(480, 320);
@@ -509,7 +509,7 @@ void tst_QWebEngineView::microFocusCoordinates()
     QVariant initialMicroFocus = webView.focusProxy()->inputMethodQuery(Qt::ImCursorRectangle);
 
     evaluateJavaScriptSync(webView.page(), "window.scrollBy(0, 50)");
-    QTRY_VERIFY(scrollSpy.count() > 0);
+    QTRY_VERIFY(scrollSpy.size() > 0);
 
     QTRY_VERIFY(webView.focusProxy()->inputMethodQuery(Qt::ImCursorRectangle).isValid());
     QVariant currentMicroFocus = webView.focusProxy()->inputMethodQuery(Qt::ImCursorRectangle);
@@ -637,7 +637,7 @@ void tst_QWebEngineView::unhandledKeyEventPropagation()
 
     QSignalSpy loadFinishedSpy(&webView, SIGNAL(loadFinished(bool)));
     webView.load(QUrl("qrc:///resources/keyboardEvents.html"));
-    QTRY_VERIFY_WITH_TIMEOUT(loadFinishedSpy.count() > 0, 20000);
+    QTRY_VERIFY_WITH_TIMEOUT(loadFinishedSpy.size() > 0, 20000);
 
     evaluateJavaScriptSync(webView.page(), "document.getElementById('first_div').focus()");
     QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("first_div"));
@@ -695,7 +695,7 @@ void tst_QWebEngineView::horizontalScrollbarTest()
 
     QSignalSpy loadSpy(view.page(), SIGNAL(loadFinished(bool)));
     view.setHtml(html);
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(loadSpy.size(), 1);
 
     QVERIFY(view.page()->scrollPosition() == QPoint(0, 0));
     QSignalSpy scrollSpy(view.page(), SIGNAL(scrollPositionChanged(QPointF)));
@@ -987,7 +987,7 @@ void tst_QWebEngineView::doNotSendMouseKeyboardEventsWhenDisabled()
     QSignalSpy loadSpy(&webView, SIGNAL(loadFinished(bool)));
     webView.setHtml("<html><head><title>Title</title></head><body>Hello"
                     "<input id=\"input\" type=\"text\"></body></html>");
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(loadSpy.size(), 1);
 
     // When the webView is enabled, the events are swallowed by it, and the parent widget
     // does not receive any events, otherwise all events are processed by the parent widget.
@@ -1034,7 +1034,7 @@ void tst_QWebEngineView::stopSettingFocusWhenDisabled()
     QSignalSpy loadSpy(&webView, SIGNAL(loadFinished(bool)));
     webView.setHtml("<html><head><title>Title</title></head><body>Hello"
                     "<input id=\"input\" type=\"text\"></body></html>");
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(loadSpy.size(), 1);
 
     QTRY_COMPARE_WITH_TIMEOUT(webView.hasFocus(), focusResult, 1000);
     evaluateJavaScriptSync(webView.page(), "document.getElementById(\"input\").focus()");
@@ -1163,7 +1163,7 @@ void tst_QWebEngineView::focusInternalRenderWidgetHostViewQuickItem()
     webView->setHtml("<html><body>"
                      "  <input id='input1' type='text'/>"
                      "</body></html>");
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(loadSpy.size(), 1);
     QTRY_COMPARE(webView->hasFocus(), false);
 
     // Manually trigger focus.
@@ -1248,7 +1248,7 @@ void tst_QWebEngineView::changeLocale()
     QWebEngineView viewDE;
     QSignalSpy loadFinishedSpyDE(&viewDE, SIGNAL(loadFinished(bool)));
     viewDE.load(url);
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyDE.count(), 1, 20000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyDE.size(), 1, 20000);
 
     QTRY_VERIFY(!toPlainTextSync(viewDE.page()).isEmpty());
     errorLines = toPlainTextSync(viewDE.page()).split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
@@ -1258,7 +1258,7 @@ void tst_QWebEngineView::changeLocale()
     QWebEngineView viewEN;
     QSignalSpy loadFinishedSpyEN(&viewEN, SIGNAL(loadFinished(bool)));
     viewEN.load(url);
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyEN.count(), 1, 20000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyEN.size(), 1, 20000);
 
     QTRY_VERIFY(!toPlainTextSync(viewEN.page()).isEmpty());
     errorLines = toPlainTextSync(viewEN.page()).split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
@@ -1271,7 +1271,7 @@ void tst_QWebEngineView::changeLocale()
 
     // Check whether an existing QWebEngineView keeps the language settings after changing the default locale
     viewDE.load(url);
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyDE.count(), 1, 20000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyDE.size(), 1, 20000);
 
     QTRY_VERIFY(!toPlainTextSync(viewDE.page()).isEmpty());
     errorLines = toPlainTextSync(viewDE.page()).split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
@@ -1303,10 +1303,10 @@ void tst_QWebEngineView::mixLangLocale()
     auto sc = connect(view.page(), &QWebEnginePage::renderProcessTerminated, [&] () { terminated = true; });
 
     view.load(QUrl("qrc:///resources/dummy.html"));
-    QTRY_VERIFY(terminated || loadSpy.count() == 1);
+    QTRY_VERIFY(terminated || loadSpy.size() == 1);
 
     QVERIFY2(!terminated,
-        qPrintable(QString("Locale [%1] terminated: %2, loaded: %3").arg(locale).arg(terminated).arg(loadSpy.count())));
+        qPrintable(QString("Locale [%1] terminated: %2, loaded: %3").arg(locale).arg(terminated).arg(loadSpy.size())));
     QVERIFY(loadSpy.first().first().toBool());
 
     QString content = toPlainTextSync(view.page());
@@ -1360,7 +1360,7 @@ void tst_QWebEngineView::inputMethodsTextFormat()
     view.setHtml("<html><body>"
                  " <input type='text' id='input1' style='font-family: serif' value='' maxlength='20'/>"
                  "</body></html>");
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
 
     evaluateJavaScriptSync(view.page(), "document.getElementById('input1').focus()");
     view.show();
@@ -1398,7 +1398,7 @@ void tst_QWebEngineView::keyboardEvents()
     view.show();
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
     view.load(QUrl("qrc:///resources/keyboardEvents.html"));
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
 
     QStringList elements;
     elements << "first_div" << "second_div";
@@ -1529,7 +1529,7 @@ void tst_QWebEngineView::keyboardFocusAfterPopup()
     QTRY_COMPARE(QApplication::focusWidget(), window.webView->focusProxy());
 
     // Keyboard events sent to the window should go to the <input> element.
-    QVERIFY(loadFinishedSpy.count() || loadFinishedSpy.wait());
+    QVERIFY(loadFinishedSpy.size() || loadFinishedSpy.wait());
     QTest::keyPress(QApplication::focusWindow(), Qt::Key_X);
     QTest::keyRelease(QApplication::focusWindow(), Qt::Key_X);
     QTRY_COMPARE(evaluateJavaScriptSync(window.webView->page(), "document.getElementById('input1').value").toString(),
@@ -1560,7 +1560,7 @@ void tst_QWebEngineView::mouseClick()
     textInputCenter = elementCenter(view.page(), "input");
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, textInputCenter);
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input"));
-    QCOMPARE(selectionChangedSpy.count(), 0);
+    QCOMPARE(selectionChangedSpy.size(), 0);
     QVERIFY(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString().isEmpty());
 
     // Double click
@@ -1575,13 +1575,13 @@ void tst_QWebEngineView::mouseClick()
     textInputCenter = elementCenter(view.page(), "input");
     QTest::mouseMultiClick(view.focusProxy(), textInputCenter, 2);
     QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.count(), 1);
+    QCOMPARE(selectionChangedSpy.size(), 1);
     QCOMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input"));
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QStringLiteral("Company"));
 
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, textInputCenter);
     QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.count(), 2);
+    QCOMPARE(selectionChangedSpy.size(), 2);
     QVERIFY(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString().isEmpty());
 
     // Triple click
@@ -1596,13 +1596,13 @@ void tst_QWebEngineView::mouseClick()
     textInputCenter = elementCenter(view.page(), "input");
     QTest::mouseMultiClick(view.focusProxy(), textInputCenter, 3);
     QVERIFY(selectionChangedSpy.wait());
-    QTRY_COMPARE(selectionChangedSpy.count(), 2);
+    QTRY_COMPARE(selectionChangedSpy.size(), 2);
     QCOMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input"));
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QStringLiteral("The Qt Company"));
 
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, textInputCenter);
     QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.count(), 3);
+    QCOMPARE(selectionChangedSpy.size(), 3);
     QVERIFY(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString().isEmpty());
 }
 
@@ -1630,12 +1630,12 @@ void tst_QWebEngineView::postData()
 
             // examine request
             QStringList request = lines[0].split(" ", Qt::SkipEmptyParts);
-            bool requestOk = request.length() > 2
+            bool requestOk = request.size() > 2
                           && request[2].toUpper().startsWith("HTTP/")
                           && request[0].toUpper() == "POST"
                           && request[1] == "/";
             if (!requestOk) // POST and HTTP/... can be switched(?)
-                requestOk =  request.length() > 2
+                requestOk =  request.size() > 2
                           && request[0].toUpper().startsWith("HTTP/")
                           && request[2].toUpper() == "POST"
                           && request[1] == "/";
@@ -1643,16 +1643,16 @@ void tst_QWebEngineView::postData()
             // examine headers
             int line = 1;
             bool headersOk = true;
-            for (; headersOk && line < lines.length(); line++) {
+            for (; headersOk && line < lines.size(); line++) {
                 QStringList headerParts = lines[line].split(":");
-                if (headerParts.length() < 2)
+                if (headerParts.size() < 2)
                     break;
                 QString headerKey = headerParts[0].trimmed().toLower();
                 QString headerValue = headerParts[1].trimmed().toLower();
 
                 if (headerKey == "host")
                     headersOk = headersOk && (headerValue == "127.0.0.1")
-                                          && (headerParts.length() == 3)
+                                          && (headerParts.size() == 3)
                                           && (headerParts[2].trimmed()
                                               == QString::number(server.serverPort()));
                 if (headerKey == "content-type")
@@ -1661,12 +1661,12 @@ void tst_QWebEngineView::postData()
 
             // examine body
             bool bodyOk = true;
-            if (lines.length() == line+2) {
+            if (lines.size() == line+2) {
                 QStringList postedFields = lines[line+1].split("&");
                 QMap<QString, QString> postedData;
-                for (int i = 0; bodyOk && i < postedFields.length(); i++) {
+                for (int i = 0; bodyOk && i < postedFields.size(); i++) {
                     QStringList postedField = postedFields[i].split("=");
-                    if (postedField.length() == 2)
+                    if (postedField.size() == 2)
                         postedData[QUrl::fromPercentEncoding(postedField[0].toLocal8Bit())]
                                  = QUrl::fromPercentEncoding(postedField[1].toLocal8Bit());
                     else
@@ -1960,14 +1960,14 @@ void tst_QWebEngineView::inputContextQueryInput()
     view.setHtml("<html><body>"
                  "  <input type='text' id='input1' value='' size='50'/>"
                  "</body></html>");
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QCOMPARE(testContext.infos.count(), 0);
+    QCOMPARE(testContext.infos.size(), 0);
 
     // Set focus on an input field.
     QPoint textInputCenter = elementCenter(view.page(), "input1");
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, textInputCenter);
-    QTRY_COMPARE(testContext.infos.count(), 2);
+    QTRY_COMPARE(testContext.infos.size(), 2);
     QCOMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
     foreach (const InputMethodInfo &info, testContext.infos) {
         QCOMPARE(info.cursorPosition, 0);
@@ -1979,7 +1979,7 @@ void tst_QWebEngineView::inputContextQueryInput()
 
     // Change content of an input field from JavaScript.
     evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value='QtWebEngine';");
-    QTRY_COMPARE(testContext.infos.count(), 1);
+    QTRY_COMPARE(testContext.infos.size(), 1);
     QCOMPARE(testContext.infos[0].cursorPosition, 11);
     QCOMPARE(testContext.infos[0].anchorPosition, 11);
     QCOMPARE(testContext.infos[0].surroundingText, QStringLiteral("QtWebEngine"));
@@ -1988,7 +1988,7 @@ void tst_QWebEngineView::inputContextQueryInput()
 
     // Change content of an input field by key press.
     QTest::keyClick(view.focusProxy(), Qt::Key_Exclam);
-    QTRY_COMPARE(testContext.infos.count(), 1);
+    QTRY_COMPARE(testContext.infos.size(), 1);
     QCOMPARE(testContext.infos[0].cursorPosition, 12);
     QCOMPARE(testContext.infos[0].anchorPosition, 12);
     QCOMPARE(testContext.infos[0].surroundingText, QStringLiteral("QtWebEngine!"));
@@ -1997,7 +1997,7 @@ void tst_QWebEngineView::inputContextQueryInput()
 
     // Change cursor position.
     QTest::keyClick(view.focusProxy(), Qt::Key_Left);
-    QTRY_COMPARE(testContext.infos.count(), 1);
+    QTRY_COMPARE(testContext.infos.size(), 1);
     QCOMPARE(testContext.infos[0].cursorPosition, 11);
     QCOMPARE(testContext.infos[0].anchorPosition, 11);
     QCOMPARE(testContext.infos[0].surroundingText, QStringLiteral("QtWebEngine!"));
@@ -2012,8 +2012,8 @@ void tst_QWebEngineView::inputContextQueryInput()
         QInputMethodEvent event("", attributes);
         QApplication::sendEvent(view.focusProxy(), &event);
     }
-    QTRY_COMPARE(testContext.infos.count(), 2);
-    QTRY_COMPARE(selectionChangedSpy.count(), 1);
+    QTRY_COMPARE(testContext.infos.size(), 2);
+    QTRY_COMPARE(selectionChangedSpy.size(), 1);
 
     // As a first step, Chromium moves the cursor to the start of the selection.
     // We don't filter this in QtWebEngine because we don't know yet if this is part of a selection.
@@ -2038,8 +2038,8 @@ void tst_QWebEngineView::inputContextQueryInput()
         QInputMethodEvent event("", attributes);
         QApplication::sendEvent(view.focusProxy(), &event);
     }
-    QTRY_COMPARE(testContext.infos.count(), 1);
-    QTRY_COMPARE(selectionChangedSpy.count(), 1);
+    QTRY_COMPARE(testContext.infos.size(), 1);
+    QTRY_COMPARE(selectionChangedSpy.size(), 1);
     QCOMPARE(testContext.infos[0].cursorPosition, 0);
     QCOMPARE(testContext.infos[0].anchorPosition, 0);
     QCOMPARE(testContext.infos[0].surroundingText, QStringLiteral("QtWebEngine!"));
@@ -2053,7 +2053,7 @@ void tst_QWebEngineView::inputContextQueryInput()
         QInputMethodEvent event("123", attributes);
         QApplication::sendEvent(view.focusProxy(), &event);
     }
-    QTRY_COMPARE(testContext.infos.count(), 1);
+    QTRY_COMPARE(testContext.infos.size(), 1);
     QCOMPARE(testContext.infos[0].cursorPosition, 3);
     QCOMPARE(testContext.infos[0].anchorPosition, 3);
     QCOMPARE(testContext.infos[0].surroundingText, QStringLiteral("QtWebEngine!"));
@@ -2067,7 +2067,7 @@ void tst_QWebEngineView::inputContextQueryInput()
         QInputMethodEvent event("", attributes);
         QApplication::sendEvent(view.focusProxy(), &event);
     }
-    QTRY_COMPARE(testContext.infos.count(), 2);
+    QTRY_COMPARE(testContext.infos.size(), 2);
     foreach (const InputMethodInfo &info, testContext.infos) {
         QCOMPARE(info.cursorPosition, 0);
         QCOMPARE(info.anchorPosition, 0);
@@ -2084,7 +2084,7 @@ void tst_QWebEngineView::inputContextQueryInput()
         event.setCommitString(QStringLiteral("123"), 0, 0);
         QApplication::sendEvent(view.focusProxy(), &event);
     }
-    QTRY_COMPARE(testContext.infos.count(), 1);
+    QTRY_COMPARE(testContext.infos.size(), 1);
     QCOMPARE(testContext.infos[0].cursorPosition, 3);
     QCOMPARE(testContext.infos[0].anchorPosition, 3);
     QCOMPARE(testContext.infos[0].surroundingText, QStringLiteral("123QtWebEngine!"));
@@ -2094,7 +2094,7 @@ void tst_QWebEngineView::inputContextQueryInput()
 
     // Focus out.
     QTest::keyPress(view.focusProxy(), Qt::Key_Tab);
-    QTRY_COMPARE(testContext.infos.count(), 1);
+    QTRY_COMPARE(testContext.infos.size(), 1);
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral(""));
     testContext.infos.clear();
 }
@@ -2138,7 +2138,7 @@ void tst_QWebEngineView::inputMethods()
         QInputMethodEvent eventText(text, inputAttributes);
         QApplication::sendEvent(view.focusProxy(), &eventText);
         QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), text);
-        QCOMPARE(selectionChangedSpy.count(), 0);
+        QCOMPARE(selectionChangedSpy.size(), 0);
     }
 
     {
@@ -2147,7 +2147,7 @@ void tst_QWebEngineView::inputMethods()
         eventText.setCommitString(text, 0, 0);
         QApplication::sendEvent(view.focusProxy(), &eventText);
         QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), text);
-        QCOMPARE(selectionChangedSpy.count(), 0);
+        QCOMPARE(selectionChangedSpy.size(), 0);
     }
 
     // ImMaximumTextLength
@@ -2223,24 +2223,24 @@ void tst_QWebEngineView::textSelectionInInputField()
     QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 11);
     QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 11);
     // There was no selection to be changed by the click
-    QCOMPARE(selectionChangedSpy.count(), 0);
+    QCOMPARE(selectionChangedSpy.size(), 0);
 
     QList<QInputMethodEvent::Attribute> attributes;
     QInputMethodEvent event(QString(), attributes);
     event.setCommitString("XXX", 0, 0);
     QApplication::sendEvent(view.focusProxy(), &event);
     QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("QtWebEngineXXX"));
-    QCOMPARE(selectionChangedSpy.count(), 0);
+    QCOMPARE(selectionChangedSpy.size(), 0);
 
     event.setCommitString(QString(), -2, 2); // Erase two characters.
     QApplication::sendEvent(view.focusProxy(), &event);
     QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("QtWebEngineX"));
-    QCOMPARE(selectionChangedSpy.count(), 0);
+    QCOMPARE(selectionChangedSpy.size(), 0);
 
     event.setCommitString(QString(), -1, 1); // Erase one character.
     QApplication::sendEvent(view.focusProxy(), &event);
     QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("QtWebEngine"));
-    QCOMPARE(selectionChangedSpy.count(), 0);
+    QCOMPARE(selectionChangedSpy.size(), 0);
 
     // Move to the start of the line
     QTest::keyClick(view.focusProxy(), Qt::Key_Home);
@@ -2252,7 +2252,7 @@ void tst_QWebEngineView::textSelectionInInputField()
     // Select to the end of the line
     QTest::keyClick(view.focusProxy(), Qt::Key_End, Qt::ShiftModifier);
     QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.count(), 1);
+    QCOMPARE(selectionChangedSpy.size(), 1);
 
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 2);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 11);
@@ -2262,7 +2262,7 @@ void tst_QWebEngineView::textSelectionInInputField()
     // Deselect the selection (this moves the current cursor to the end of the text)
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, textInputCenter);
     QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.count(), 2);
+    QCOMPARE(selectionChangedSpy.size(), 2);
 
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 11);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 11);
@@ -2275,7 +2275,7 @@ void tst_QWebEngineView::textSelectionInInputField()
     // Select to the start of the line
     QTest::keyClick(view.focusProxy(), Qt::Key_Home, Qt::ShiftModifier);
     QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.count(), 3);
+    QCOMPARE(selectionChangedSpy.size(), 3);
 
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 9);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 0);
@@ -2297,34 +2297,34 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
     QVERIFY(loadFinishedSpy.wait());
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    QCOMPARE(selectionChangedSpy.count(), 0);
+    QCOMPARE(selectionChangedSpy.size(), 0);
     QVERIFY(!view.hasSelection());
     QVERIFY(view.page()->selectedText().isEmpty());
 
     // Simple click should not update text selection, however it updates selection bounds in Chromium
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, view.geometry().center());
-    QCOMPARE(selectionChangedSpy.count(), 0);
+    QCOMPARE(selectionChangedSpy.size(), 0);
     QVERIFY(!view.hasSelection());
     QVERIFY(view.page()->selectedText().isEmpty());
 
     // Select text by ctrl+a
     QTest::keyClick(view.windowHandle(), Qt::Key_A, Qt::ControlModifier);
     QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.count(), 1);
+    QCOMPARE(selectionChangedSpy.size(), 1);
     QVERIFY(view.hasSelection());
     QCOMPARE(view.page()->selectedText(), QString("This is a text"));
 
     // Deselect text by mouse click
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, view.geometry().center());
     QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.count(), 2);
+    QCOMPARE(selectionChangedSpy.size(), 2);
     QVERIFY(!view.hasSelection());
     QVERIFY(view.page()->selectedText().isEmpty());
 
     // Select text by ctrl+a
     QTest::keyClick(view.windowHandle(), Qt::Key_A, Qt::ControlModifier);
     QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.count(), 3);
+    QCOMPARE(selectionChangedSpy.size(), 3);
     QVERIFY(view.hasSelection());
     QCOMPARE(view.page()->selectedText(), QString("This is a text"));
 
@@ -2333,7 +2333,7 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
     view.page()->setLifecycleState(QWebEnginePage::LifecycleState::Discarded);
     view.show();
     QVERIFY(loadFinishedSpy.wait());
-    QCOMPARE(selectionChangedSpy.count(), 4);
+    QCOMPARE(selectionChangedSpy.size(), 4);
     QVERIFY(!view.hasSelection());
     QVERIFY(view.page()->selectedText().isEmpty());
 
@@ -2346,7 +2346,7 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
     QVERIFY(loadFinishedSpy.wait());
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    QCOMPARE(selectionChangedSpy.count(), 0);
+    QCOMPARE(selectionChangedSpy.size(), 0);
     QVERIFY(!view.hasSelection());
     QVERIFY(view.page()->selectedText().isEmpty());
 
@@ -2357,7 +2357,7 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
     // Select the whole page by ctrl+a
     QTest::keyClick(view.windowHandle(), Qt::Key_A, Qt::ControlModifier);
     QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.count(), 1);
+    QCOMPARE(selectionChangedSpy.size(), 1);
     QVERIFY(view.hasSelection());
     QVERIFY(view.page()->selectedText().startsWith(QString("This is a text")));
 
@@ -2366,21 +2366,21 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, textInputCenter);
     QVERIFY(selectionChangedSpy.wait());
     QCOMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
-    QCOMPARE(selectionChangedSpy.count(), 2);
+    QCOMPARE(selectionChangedSpy.size(), 2);
     QVERIFY(!view.hasSelection());
     QVERIFY(view.page()->selectedText().isEmpty());
 
     // Select the content of the input field by ctrl+a
     QTest::keyClick(view.windowHandle(), Qt::Key_A, Qt::ControlModifier);
     QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.count(), 3);
+    QCOMPARE(selectionChangedSpy.size(), 3);
     QVERIFY(view.hasSelection());
     QCOMPARE(view.page()->selectedText(), QString("QtWebEngine"));
 
     // Deselect input field's text by mouse click
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, view.geometry().center());
     QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.count(), 4);
+    QCOMPARE(selectionChangedSpy.size(), 4);
     QVERIFY(!view.hasSelection());
     QVERIFY(view.page()->selectedText().isEmpty());
 }
@@ -2427,7 +2427,7 @@ void tst_QWebEngineView::emptyInputMethodEvent()
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.focus(); inputEle.select();");
-    QTRY_COMPARE(selectionChangedSpy.count(), 1);
+    QTRY_COMPARE(selectionChangedSpy.size(), 1);
 
     // 1. Empty input method event does not clear text
     QInputMethodEvent emptyEvent;
@@ -2476,7 +2476,7 @@ void tst_QWebEngineView::imeComposition()
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.focus(); inputEle.select();");
-    QTRY_COMPARE(selectionChangedSpy.count(), 1);
+    QTRY_COMPARE(selectionChangedSpy.size(), 1);
 
     // Clear the selection, also cancel the ongoing composition if there is one.
     {
@@ -2486,7 +2486,7 @@ void tst_QWebEngineView::imeComposition()
         QInputMethodEvent event("", attributes);
         QApplication::sendEvent(view.focusProxy(), &event);
         selectionChangedSpy.wait();
-        QCOMPARE(selectionChangedSpy.count(), 2);
+        QCOMPARE(selectionChangedSpy.size(), 2);
     }
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("QtWebEngine inputMethod"));
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 0);
@@ -2507,7 +2507,7 @@ void tst_QWebEngineView::imeComposition()
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 0);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 0);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
-    QCOMPARE(selectionChangedSpy.count(), 0);
+    QCOMPARE(selectionChangedSpy.size(), 0);
 
     // Send temporary text, which makes the editor has composition 'n'.
     {
@@ -2519,7 +2519,7 @@ void tst_QWebEngineView::imeComposition()
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 0);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 0);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
-    QCOMPARE(selectionChangedSpy.count(), 0);
+    QCOMPARE(selectionChangedSpy.size(), 0);
 
     // Send commit text, which makes the editor conforms composition.
     {
@@ -2532,7 +2532,7 @@ void tst_QWebEngineView::imeComposition()
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 1);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 1);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
-    QCOMPARE(selectionChangedSpy.count(), 0);
+    QCOMPARE(selectionChangedSpy.size(), 0);
 
 
     // 2. insert a character to the middle of the line.
@@ -2546,7 +2546,7 @@ void tst_QWebEngineView::imeComposition()
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 1);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 1);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
-    QCOMPARE(selectionChangedSpy.count(), 0);
+    QCOMPARE(selectionChangedSpy.size(), 0);
 
     // Send commit text, which makes the editor conforms composition.
     {
@@ -2559,7 +2559,7 @@ void tst_QWebEngineView::imeComposition()
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 2);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 2);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
-    QCOMPARE(selectionChangedSpy.count(), 0);
+    QCOMPARE(selectionChangedSpy.size(), 0);
 
 
     // 3. Insert a character to the end of the line.
@@ -2577,7 +2577,7 @@ void tst_QWebEngineView::imeComposition()
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 25);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 25);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
-    QCOMPARE(selectionChangedSpy.count(), 0);
+    QCOMPARE(selectionChangedSpy.size(), 0);
 
     // Send commit text, which makes the editor conforms composition.
     {
@@ -2590,7 +2590,7 @@ void tst_QWebEngineView::imeComposition()
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 26);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 26);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
-    QCOMPARE(selectionChangedSpy.count(), 0);
+    QCOMPARE(selectionChangedSpy.size(), 0);
 
 
     // 4. Replace the selection.
@@ -2600,7 +2600,7 @@ void tst_QWebEngineView::imeComposition()
     QTest::keyClick(view.focusProxy(), Qt::Key_Left, Qt::ShiftModifier | Qt::AltModifier);
 #endif
     QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.count(), 1);
+    QCOMPARE(selectionChangedSpy.size(), 1);
 
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("oeQtWebEngine inputMethodt"));
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 14);
@@ -2614,7 +2614,7 @@ void tst_QWebEngineView::imeComposition()
         QApplication::sendEvent(view.focusProxy(), &event);
         // The new composition should clear the previous selection
         QVERIFY(selectionChangedSpy.wait());
-        QCOMPARE(selectionChangedSpy.count(), 2);
+        QCOMPARE(selectionChangedSpy.size(), 2);
     }
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("oeQtWebEngine "));
     // The cursor should be positioned at the end of the composition text
@@ -2634,7 +2634,7 @@ void tst_QWebEngineView::imeComposition()
     QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 15);
     QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 15);
     QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
-    QCOMPARE(selectionChangedSpy.count(), 2);
+    QCOMPARE(selectionChangedSpy.size(), 2);
     selectionChangedSpy.clear();
 
 
@@ -2676,7 +2676,7 @@ void tst_QWebEngineView::imeComposition()
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 11);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
     QCOMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QString("QtWebEngine"));
-    QCOMPARE(selectionChangedSpy.count(), 0);
+    QCOMPARE(selectionChangedSpy.size(), 0);
 }
 
 void tst_QWebEngineView::newlineInTextarea()
@@ -2831,7 +2831,7 @@ void tst_QWebEngineView::imeJSInputEvents()
     }
 
     // Simply committing text should not trigger any JS composition event.
-    QTRY_COMPARE(logLines().count(), 3);
+    QTRY_COMPARE(logLines().size(), 3);
     QCOMPARE(logLines()[0], QStringLiteral("[object InputEvent] beforeinput commit"));
     QCOMPARE(logLines()[1], QStringLiteral("[object TextEvent] textInput commit"));
     QCOMPARE(logLines()[2], QStringLiteral("[object InputEvent] input commit"));
@@ -2847,7 +2847,7 @@ void tst_QWebEngineView::imeJSInputEvents()
         qApp->processEvents();
     }
 
-    QTRY_COMPARE(logLines().count(), 4);
+    QTRY_COMPARE(logLines().size(), 4);
     QCOMPARE(logLines()[0], QStringLiteral("[object CompositionEvent] compositionstart "));
     QCOMPARE(logLines()[1], QStringLiteral("[object InputEvent] beforeinput preedit"));
     QCOMPARE(logLines()[2], QStringLiteral("[object CompositionEvent] compositionupdate preedit"));
@@ -2861,7 +2861,7 @@ void tst_QWebEngineView::imeJSInputEvents()
         qApp->processEvents();
     }
 
-    QTRY_COMPARE(logLines().count(), 9);
+    QTRY_COMPARE(logLines().size(), 9);
     QCOMPARE(logLines()[4], QStringLiteral("[object InputEvent] beforeinput commit"));
     QCOMPARE(logLines()[5], QStringLiteral("[object CompositionEvent] compositionupdate commit"));
     QCOMPARE(logLines()[6], QStringLiteral("[object TextEvent] textInput commit"));
@@ -2879,7 +2879,7 @@ void tst_QWebEngineView::imeJSInputEvents()
         qApp->processEvents();
     }
 
-    QTRY_COMPARE(logLines().count(), 4);
+    QTRY_COMPARE(logLines().size(), 4);
     QCOMPARE(logLines()[0], QStringLiteral("[object CompositionEvent] compositionstart "));
     QCOMPARE(logLines()[1], QStringLiteral("[object InputEvent] beforeinput preedit"));
     QCOMPARE(logLines()[2], QStringLiteral("[object CompositionEvent] compositionupdate preedit"));
@@ -2892,7 +2892,7 @@ void tst_QWebEngineView::imeJSInputEvents()
         qApp->processEvents();
     }
 
-    QTRY_COMPARE(logLines().count(), 9);
+    QTRY_COMPARE(logLines().size(), 9);
     QCOMPARE(logLines()[4], QStringLiteral("[object InputEvent] beforeinput "));
     QCOMPARE(logLines()[5], QStringLiteral("[object CompositionEvent] compositionupdate "));
     QCOMPARE(logLines()[6], QStringLiteral("[object TextEvent] textInput "));
@@ -3024,20 +3024,20 @@ void tst_QWebEngineView::globalMouseSelection()
 
     // Select text via JavaScript
     evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.focus(); inputEle.select();");
-    QTRY_COMPARE(selectionChangedSpy.count(), 1);
+    QTRY_COMPARE(selectionChangedSpy.size(), 1);
     QVERIFY(QApplication::clipboard()->text(QClipboard::Selection).isEmpty());
 
     // Deselect the selection (this moves the current cursor to the end of the text)
     QPoint textInputCenter = elementCenter(view.page(), "input1");
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, textInputCenter);
     QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.count(), 2);
+    QCOMPARE(selectionChangedSpy.size(), 2);
     QVERIFY(QApplication::clipboard()->text(QClipboard::Selection).isEmpty());
 
     // Select to the start of the line
     QTest::keyClick(view.focusProxy(), Qt::Key_Home, Qt::ShiftModifier);
     QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.count(), 3);
+    QCOMPARE(selectionChangedSpy.size(), 3);
     QCOMPARE(QApplication::clipboard()->text(QClipboard::Selection), QStringLiteral("QtWebEngine"));
 }
 #endif
@@ -3063,7 +3063,7 @@ void tst_QWebEngineView::noContextMenu()
     QTest::mouseMove(wrapper.windowHandle(), QPoint(10,10));
     QTest::mouseClick(wrapper.windowHandle(), Qt::RightButton);
 
-    QTRY_COMPARE(wrapper.findChildren<QMenu *>().count(), 1);
+    QTRY_COMPARE(wrapper.findChildren<QMenu *>().size(), 1);
     QVERIFY(view.findChildren<QMenu *>().isEmpty());
 }
 
@@ -3103,7 +3103,7 @@ void tst_QWebEngineView::contextMenu()
     view.load(QUrl("about:blank"));
     view.resize(640, 480);
     view.show();
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(loadSpy.size(), 1);
 
     QVERIFY(view.findChildren<QMenu *>().isEmpty());
     QTest::mouseMove(view.windowHandle(), QPoint(10,10));
@@ -3111,9 +3111,9 @@ void tst_QWebEngineView::contextMenu()
 
     // verify for zero children will always succeed, so should be tested with at least minor timeout
     if (childrenCount <= 0) {
-        QVERIFY(!QTest::qWaitFor([&view] () { return view.findChildren<QMenu *>().count() > 0; }, 500));
+        QVERIFY(!QTest::qWaitFor([&view] () { return view.findChildren<QMenu *>().size() > 0; }, 500));
     } else {
-        QTRY_COMPARE(view.findChildren<QMenu *>().count(), childrenCount);
+        QTRY_COMPARE(view.findChildren<QMenu *>().size(), childrenCount);
         if (isCustomMenu) {
             QCOMPARE(view.findChildren<QMenu *>().first(), customMenu);
         }
@@ -3268,7 +3268,7 @@ void tst_QWebEngineView::webUIURLs()
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
     view.load(url);
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 90000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 90000);
     QCOMPARE(loadFinishedSpy.takeFirst().at(0).toBool(), supported);
 }
 
@@ -3277,7 +3277,7 @@ void tst_QWebEngineView::visibilityState()
     QWebEngineView view;
     QSignalSpy spy(&view, &QWebEngineView::loadFinished);
     view.load(QStringLiteral("about:blank"));
-    QVERIFY(spy.count() || spy.wait());
+    QVERIFY(spy.size() || spy.wait());
     QVERIFY(spy.takeFirst().takeFirst().toBool());
     QCOMPARE(evaluateJavaScriptSync(view.page(), "document.visibilityState").toString(), QStringLiteral("hidden"));
     view.show();
@@ -3292,7 +3292,7 @@ void tst_QWebEngineView::visibilityState2()
     view.show();
     view.load(QStringLiteral("about:blank"));
     view.hide();
-    QVERIFY(spy.count() || spy.wait());
+    QVERIFY(spy.size() || spy.wait());
     QVERIFY(spy.takeFirst().takeFirst().toBool());
     QCOMPARE(evaluateJavaScriptSync(view.page(), "document.visibilityState").toString(), QStringLiteral("hidden"));
 }
@@ -3305,8 +3305,8 @@ void tst_QWebEngineView::visibilityState3()
     QSignalSpy spy2(&page2, &QWebEnginePage::loadFinished);
     page1.load(QStringLiteral("about:blank"));
     page2.load(QStringLiteral("about:blank"));
-    QVERIFY(spy1.count() || spy1.wait());
-    QVERIFY(spy2.count() || spy2.wait());
+    QVERIFY(spy1.size() || spy1.wait());
+    QVERIFY(spy2.size() || spy2.wait());
     QWebEngineView view;
     view.setPage(&page1);
     view.show();
@@ -3370,7 +3370,7 @@ void tst_QWebEngineView::deletePage()
     QVERIFY(view.page());
     QSignalSpy spy(view.page(), &QWebEnginePage::loadFinished);
     view.page()->load(QStringLiteral("about:blank"));
-    QTRY_VERIFY(spy.count());
+    QTRY_VERIFY(spy.size());
 }
 
 void tst_QWebEngineView::autoDeleteOnExternalPageDelete()
@@ -3384,7 +3384,7 @@ void tst_QWebEngineView::autoDeleteOnExternalPageDelete()
     view->show();
     view->resize(320, 240);
     page->load(QUrl("about:blank"));
-    QTRY_VERIFY(spy.count());
+    QTRY_VERIFY(spy.size());
     QVERIFY(page->parent() != view);
 
     auto sc = QObject::connect(page, &QWebEnginePage::destroyed, view, &QWebEngineView::deleteLater);
@@ -3417,7 +3417,7 @@ void tst_QWebEngineView::closeOpenerTab()
     testView->settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
     QSignalSpy loadFinishedSpy(testView, SIGNAL(loadFinished(bool)));
     testView->setUrl(QStringLiteral("about:blank"));
-    QTRY_VERIFY(loadFinishedSpy.count());
+    QTRY_VERIFY(loadFinishedSpy.size());
     testView->page()->runJavaScript(QStringLiteral("window.open('about:blank','_blank')"));
     QTRY_COMPARE(testView->createdWindows.size(), 1);
     auto *newView = testView->createdWindows.at(0);
@@ -3442,7 +3442,7 @@ void tst_QWebEngineView::switchPage()
       QWebEngineView webView2(&page2, nullptr);
       page1.setHtml("<html><body bgcolor=\"#000000\"></body></html>");
       page2.setHtml("<html><body bgcolor=\"#ffffff\"></body></html>");
-      QTRY_VERIFY(loadFinishedSpy1.count() && loadFinishedSpy2.count());
+      QTRY_VERIFY(loadFinishedSpy1.size() && loadFinishedSpy2.size());
       QWebEngineView webView;
       webView.resize(300,300);
       webView.show();
@@ -3539,7 +3539,7 @@ void tst_QWebEngineView::loadAfterRendererCrashed()
 
     QSignalSpy loadSpy(&view, &QWebEngineView::loadFinished);
     view.load(QUrl("qrc:///resources/dummy.html"));
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(loadSpy.size(), 1);
     QVERIFY(loadSpy.first().first().toBool());
 }
 
@@ -3557,7 +3557,7 @@ void tst_QWebEngineView::inspectElement()
 
     QSignalSpy spy(&view, &QWebEngineView::loadFinished);
     view.load(QUrl("data:text/plain,foobarbaz"));
-    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 12000);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.size(), 1, 12000);
 
     // shouldn't do anything since inspector is not attached
     page->triggerAction(QWebEnginePage::InspectElement);
@@ -3609,7 +3609,7 @@ void tst_QWebEngineView::navigateOnDrop()
 
     sendEvents();
     if (navigateOnDrop) {
-        QTRY_COMPARE(loadSpy.count(), 1);
+        QTRY_COMPARE(loadSpy.size(), 1);
         QVERIFY(loadSpy.last().first().toBool());
         QCOMPARE(view.url(), url);
     } else {
@@ -3622,11 +3622,11 @@ void tst_QWebEngineView::navigateOnDrop()
     loadSpy.clear();
     view.page()->settings()->setAttribute(QWebEngineSettings::NavigateOnDropEnabled, !navigateOnDrop);
     view.setUrl(QUrl("about:blank"));
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(loadSpy.size(), 1);
 
     sendEvents();
     if (!navigateOnDrop) {
-        QTRY_COMPARE(loadSpy.count(), 2);
+        QTRY_COMPARE(loadSpy.size(), 2);
         QVERIFY(loadSpy.last().first().toBool());
         QCOMPARE(view.url(), url);
     } else {
@@ -3657,7 +3657,7 @@ void tst_QWebEngineView::datalist()
 
     QSignalSpy loadSpy(&view, &QWebEngineView::loadFinished);
     view.setHtml(html);
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(loadSpy.size(), 1);
 
     QString listValuesJS("(function() {"
                          "  var browserDatalist = document.getElementById('browserDatalist');"

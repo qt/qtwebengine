@@ -64,7 +64,7 @@ void tst_QPdfPageRenderer::withLoadedDocumentSingleThreaded()
     const quint64 requestId = pageRenderer.requestPage(0, imageSize);
 
     QCOMPARE(requestId, quint64(1));
-    QTRY_COMPARE(pageRenderedSpy.count(), 1);
+    QTRY_COMPARE(pageRenderedSpy.size(), 1);
     QCOMPARE(pageRenderedSpy[0][0].toInt(), 0);
     QCOMPARE(pageRenderedSpy[0][1].toSize(), imageSize);
     QCOMPARE(pageRenderedSpy[0][2].value<QImage>().size(), imageSize);
@@ -87,7 +87,7 @@ void tst_QPdfPageRenderer::withLoadedDocumentMultiThreaded()
     const quint64 requestId = pageRenderer.requestPage(0, imageSize);
 
     QCOMPARE(requestId, quint64(1));
-    QTRY_COMPARE(pageRenderedSpy.count(), 1);
+    QTRY_COMPARE(pageRenderedSpy.size(), 1);
     QCOMPARE(pageRenderedSpy[0][0].toInt(), 0);
     QCOMPARE(pageRenderedSpy[0][1].toSize(), imageSize);
     QCOMPARE(pageRenderedSpy[0][2].value<QImage>().size(), imageSize);
@@ -108,7 +108,7 @@ void tst_QPdfPageRenderer::switchingRenderMode()
     const QSize imageSize(100, 100);
     const quint64 firstRequestId = pageRenderer.requestPage(0, imageSize);
 
-    QTRY_COMPARE(pageRenderedSpy.count(), 1);
+    QTRY_COMPARE(pageRenderedSpy.size(), 1);
     QCOMPARE(pageRenderedSpy[0][0].toInt(), 0);
     QCOMPARE(pageRenderedSpy[0][1].toSize(), imageSize);
     QCOMPARE(pageRenderedSpy[0][2].value<QImage>().size(), imageSize);
@@ -124,7 +124,7 @@ void tst_QPdfPageRenderer::switchingRenderMode()
     const quint64 secondRequestId = pageRenderer.requestPage(0, imageSize);
 
     QVERIFY(firstRequestId != secondRequestId);
-    QTRY_COMPARE(pageRenderedSpy.count(), 1);
+    QTRY_COMPARE(pageRenderedSpy.size(), 1);
     QCOMPARE(pageRenderedSpy[0][0].toInt(), 0);
     QCOMPARE(pageRenderedSpy[0][1].toSize(), imageSize);
     QCOMPARE(pageRenderedSpy[0][2].value<QImage>(), image);
@@ -138,7 +138,7 @@ void tst_QPdfPageRenderer::switchingRenderMode()
 
     const quint64 thirdRequestId = pageRenderer.requestPage(0, imageSize);
 
-    QTRY_COMPARE(pageRenderedSpy.count(), 1);
+    QTRY_COMPARE(pageRenderedSpy.size(), 1);
     QCOMPARE(pageRenderedSpy[0][0].toInt(), 0);
     QCOMPARE(pageRenderedSpy[0][1].toSize(), imageSize);
     QCOMPARE(pageRenderedSpy[0][2].value<QImage>(), image);

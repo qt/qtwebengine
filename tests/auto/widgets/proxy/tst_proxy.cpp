@@ -49,7 +49,7 @@ void tst_Proxy::proxyAuthentication()
     QWebEnginePage page;
     QSignalSpy successSpy(&server, &ProxyServer::authenticationSuccess);
     page.load(QUrl("http://www.qt.io"));
-    QTRY_VERIFY2(successSpy.count() > 0, "Could not get authentication token");
+    QTRY_VERIFY2(successSpy.size() > 0, "Could not get authentication token");
 }
 
 void tst_Proxy::forwardCookie()
@@ -69,7 +69,7 @@ void tst_Proxy::forwardCookie()
     page.setUrlRequestInterceptor(&interceptor);
     QSignalSpy cookieSpy(&server, &ProxyServer::cookieMatch);
     page.load(QUrl("http://www.qt.io"));
-    QTRY_VERIFY2(cookieSpy.count() > 0, "Could not get cookie");
+    QTRY_VERIFY2(cookieSpy.size() > 0, "Could not get cookie");
 }
 
 #include "tst_proxy.moc"

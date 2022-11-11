@@ -21,7 +21,7 @@ void tst_DevTools::attachAndDestroyPageFirst()
 
     QSignalSpy spy(page, &QWebEnginePage::loadFinished);
     page->load(QUrl("data:text/plain,foobarbaz"));
-    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 12000);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.size(), 1, 12000);
 
     // shouldn't do anything until page is set
     page->triggerAction(QWebEnginePage::InspectElement);
@@ -49,7 +49,7 @@ void tst_DevTools::attachAndDestroyInspectorFirst()
 
     QSignalSpy spy(page, &QWebEnginePage::loadFinished);
     page->setHtml(QStringLiteral("<body><h1>FOO BAR!</h1></body>"));
-    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 12000);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.size(), 1, 12000);
 
     page->triggerAction(QWebEnginePage::InspectElement);
 

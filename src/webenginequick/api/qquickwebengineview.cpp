@@ -2324,7 +2324,7 @@ void QQuickContextMenuBuilder::addMenuItem(ContextMenuItem menuItem)
     case ContextMenuItem::SpellingSuggestions:
     {
         QPointer<QQuickWebEngineView> thisRef(m_view);
-        for (int i = 0; i < m_contextData->spellCheckerSuggestions().count() && i < 4; i++) {
+        for (int i = 0; i < m_contextData->spellCheckerSuggestions().size() && i < 4; i++) {
             action = new QQuickWebEngineAction(m_menu);
             QString replacement = m_contextData->spellCheckerSuggestions().at(i);
             QObject::connect(action, &QQuickWebEngineAction::triggered, [thisRef, replacement] { thisRef->replaceMisspelledWord(replacement); });

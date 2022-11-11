@@ -109,7 +109,7 @@ public:
     {
         QDir dir(dirname);
         QFileInfoList entries(dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot));
-        for (int i = 0; i < entries.count(); ++i) {
+        for (int i = 0; i < entries.size(); ++i) {
             if (entries[i].isDir())
                 removeRecursive(entries[i].filePath());
             else

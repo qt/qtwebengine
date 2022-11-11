@@ -108,8 +108,8 @@ void tst_QWebEngineDownloadRequest::cleanup()
     for (QWebEngineDownloadRequest *item : m_finishedDownloads) {
         item->deleteLater();
     }
-    QTRY_COMPARE(m_requestedDownloads.count(), 0);
-    QCOMPARE(m_finishedDownloads.count(), 0);
+    QTRY_COMPARE(m_requestedDownloads.size(), 0);
+    QCOMPARE(m_finishedDownloads.size(), 0);
     QVERIFY(m_server->stop());
     // Set download path to default.
     m_profile->setDownloadPath("");
@@ -139,7 +139,7 @@ void tst_QWebEngineDownloadRequest::saveLink(QPoint linkPos)
     QCoreApplication::postEvent(renderWidget, event1);
     QCoreApplication::postEvent(renderWidget, event2);
     QCoreApplication::postEvent(renderWidget, event3);
-    QTRY_COMPARE(menuSpy.count(), 1);
+    QTRY_COMPARE(menuSpy.size(), 1);
     m_page->triggerAction(QWebEnginePage::DownloadLinkToDisk);
 }
 
@@ -453,7 +453,7 @@ void tst_QWebEngineDownloadRequest::downloadLink()
     // attribute or not.
     QSignalSpy loadSpy(m_page, &QWebEnginePage::loadFinished);
     m_view->load(m_server->url());
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(loadSpy.size(), 1);
     QCOMPARE(loadSpy.takeFirst().value(0).toBool(), true);
     QCOMPARE(indexRequestCount, 1);
 
@@ -461,7 +461,7 @@ void tst_QWebEngineDownloadRequest::downloadLink()
 
     // If file is expected to be displayed and not downloaded then end test
     if (fileAction == FileIsDisplayed) {
-        QTRY_COMPARE(loadSpy.count(), 1);
+        QTRY_COMPARE(loadSpy.size(), 1);
         QCOMPARE(loadSpy.takeFirst().value(0).toBool(), true);
         QCOMPARE(acceptedCount, 0);
         return;
@@ -551,7 +551,7 @@ void tst_QWebEngineDownloadRequest::downloadTwoLinks()
 
     QSignalSpy loadSpy(m_page, &QWebEnginePage::loadFinished);
     m_view->load(m_server->url());
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(loadSpy.size(), 1);
     QCOMPARE(loadSpy.takeFirst().value(0).toBool(), true);
 
     // Trigger downloads
@@ -643,7 +643,7 @@ void tst_QWebEngineDownloadRequest::downloadPage()
     // Load some HTML
     QSignalSpy loadSpy(m_page, &QWebEnginePage::loadFinished);
     m_page->load(m_server->url());
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(loadSpy.size(), 1);
     QCOMPARE(loadSpy.takeFirst().value(0).toBool(), true);
     QCOMPARE(indexRequestCount, 1);
 
@@ -688,8 +688,8 @@ void tst_QWebEngineDownloadRequest::downloadViaSetUrl()
     QSignalSpy urlSpy(m_page, &QWebEnginePage::urlChanged);
     const QUrl indexUrl = m_server->url();
     m_page->setUrl(indexUrl);
-    QTRY_COMPARE(loadSpy.count(), 1);
-    QTRY_COMPARE(urlSpy.count(), 1);
+    QTRY_COMPARE(loadSpy.size(), 1);
+    QTRY_COMPARE(urlSpy.size(), 1);
     QCOMPARE(loadSpy.takeFirst().value(0).toBool(), true);
     QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), indexUrl);
 
@@ -699,9 +699,9 @@ void tst_QWebEngineDownloadRequest::downloadViaSetUrl()
     for (int i = 0; i != 3; ++i) {
         m_page->setUrl(fileUrl);
         QCOMPARE(m_page->url(), fileUrl);
-        QTRY_COMPARE(loadSpy.count(), 1);
-        QTRY_COMPARE(urlSpy.count(), 2);
-        QTRY_COMPARE(downloadUrls.count(), 1);
+        QTRY_COMPARE(loadSpy.size(), 1);
+        QTRY_COMPARE(urlSpy.size(), 2);
+        QTRY_COMPARE(downloadUrls.size(), 1);
         QCOMPARE(loadSpy.takeFirst().value(0).toBool(), false);
         QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), fileUrl);
         QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), indexUrl);
@@ -1132,21 +1132,21 @@ void tst_QWebEngineDownloadRequest::downloadToDirectoryWithFileName()
             const QString &originalFileName = item->downloadFileName();
             item->setDownloadDirectory(downloadDirectory);
             QCOMPARE(item->downloadDirectory(), downloadDirectory);
-            QCOMPARE(directorySpy.count(), 1);
+            QCOMPARE(directorySpy.size(), 1);
             isUniquifiedFileName = (originalFileName != item->downloadFileName());
-            QCOMPARE(fileNameSpy.count(), isUniquifiedFileName ? 1 : 0);
+            QCOMPARE(fileNameSpy.size(), isUniquifiedFileName ? 1 : 0);
         }
 
         if (!downloadFileName.isEmpty()) {
             item->setDownloadFileName(downloadFileName);
             QCOMPARE(item->downloadFileName(), downloadFileName);
-            QCOMPARE(fileNameSpy.count(), isUniquifiedFileName ? 2 : 1);
+            QCOMPARE(fileNameSpy.size(), isUniquifiedFileName ? 2 : 1);
         }
 
         if (!downloadDirectory.isEmpty() && !setDirectoryFirst) {
             item->setDownloadDirectory(downloadDirectory);
             QCOMPARE(item->downloadDirectory(), downloadDirectory);
-            QCOMPARE(directorySpy.count(), 1);
+            QCOMPARE(directorySpy.size(), 1);
         }
 
         item->accept();
@@ -1274,7 +1274,7 @@ void tst_QWebEngineDownloadRequest::downloadDataUrls()
 
     QSignalSpy loadSpy(m_page, &QWebEnginePage::loadFinished);
     m_view->load(m_server->url());
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(loadSpy.size(), 1);
     QCOMPARE(loadSpy.takeFirst().value(0).toBool(), true);
 
     // Trigger download

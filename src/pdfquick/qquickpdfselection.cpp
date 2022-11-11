@@ -188,12 +188,12 @@ void QQuickPdfSelection::keyReleaseEvent(QKeyEvent *ev)
             return;
         // iOS sends MoveToPreviousWord first to get to the beginning of the word,
         // and then SelectNextWord to select the whole word.
-        int i = allText.lastIndexOf(WordDelimiter, m_fromCharIndex - allText.length());
+        int i = allText.lastIndexOf(WordDelimiter, m_fromCharIndex - allText.size());
         if (i < 0)
             i = 0;
         else
             i += 1; // don't select the space before the word
-        auto sel = m_document->document()->getSelectionAtIndex(m_page, i, m_text.length() + m_fromCharIndex - i);
+        auto sel = m_document->document()->getSelectionAtIndex(m_page, i, m_text.size() + m_fromCharIndex - i);
         update(sel);
         QGuiApplication::inputMethod()->update(Qt::ImAnchorRectangle);
     } else if (ev == QKeySequence::SelectNextWord) {
@@ -201,8 +201,8 @@ void QQuickPdfSelection::keyReleaseEvent(QKeyEvent *ev)
             return;
         int i = allText.indexOf(WordDelimiter, m_toCharIndex);
         if (i < 0)
-            i = allText.length(); // go to the end of m_textAfter
-        auto sel = m_document->document()->getSelectionAtIndex(m_page, m_fromCharIndex, m_text.length() + i - m_toCharIndex);
+            i = allText.size(); // go to the end of m_textAfter
+        auto sel = m_document->document()->getSelectionAtIndex(m_page, m_fromCharIndex, m_text.size() + i - m_toCharIndex);
         update(sel);
         QGuiApplication::inputMethod()->update(Qt::ImCursorRectangle);
     } else if (ev == QKeySequence::Copy) {

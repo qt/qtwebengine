@@ -120,7 +120,7 @@ QWebEngineScriptCollectionPrivate::QWebEngineScriptCollectionPrivate(QtWebEngine
 
 int QWebEngineScriptCollectionPrivate::count() const
 {
-    return m_scripts.count();
+    return m_scripts.size();
 }
 
 bool QWebEngineScriptCollectionPrivate::contains(const QWebEngineScript &s) const
