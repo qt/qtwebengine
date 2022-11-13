@@ -1,43 +1,20 @@
-/****************************************************************************
-**
-** Copyright (C) 2020 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the documentation of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:FDL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Free Documentation License Usage
-** Alternatively, this file may be used under the terms of the GNU Free
-** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of
-** this file. Please review the following information to ensure
-** the GNU Free Documentation License version 1.3 requirements
-** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2020 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
     \example pdfviewer
+    \meta installpath pdfwidgets
     \ingroup qtpdf-examples
 
     \title PDF Viewer Example
-    \brief Renders PDF documents.
+    \brief A widget-based PDF viewer that allows scrolling through the pages.
 
     \omit
     //! TODO add thumbnail \image pdfviewer.png
     \endomit
 
-    \e {PDF Viewer} demonstrates how to use the QPdfDocument class to render
-    PDF documents and the QPdfPageNavigation class to navigate them.
+    \e {PDF Viewer} demonstrates how to use the QPdfView class to render
+    PDF documents and the QPdfPageNavigator class to navigate them.
 
     Qt Creator and the integrated Qt Designer were used to create the example
     UI and to connect it to the code. This affects the code, which might be
@@ -58,7 +35,7 @@
     The class declares public and private slots that match the actions of the
     selectors:
 
-    \printuntil on_actionContinuous_triggered()
+    \printuntil on_actionForward_triggered()
 
     The actual layout of the main window is specified in a \c{.ui} file. The
     widgets and actions are available at runtime in the \c ui member variable.
@@ -79,16 +56,17 @@
     \skipto MainWindow
     \printuntil {
 
-    The constructor first calls \c setupUi() to construct the zoom and page
-    selectors according to the UI file. We set the maximum width of the
-    selectors.
+    The constructor first calls \c setupUi() to construct most of the main window
+    according to the UI file. The zoom and page selectors need to be added to
+    the toolbar via \l QToolBar::insertWidget(), because that cannot be done
+    in a UI file:
 
-    \printuntil addWidget(m_pageSelector)
+    \printuntil insertWidget(ui->actionForward, m_pageSelector);
 
-    We use the QPdfPageNavigation class to handle the navigation through a
-    PDF document:
+    We connect relevant signals to the page selector spinbox and the browser-style
+    back and forward buttons:
 
-    \printuntil setPageNavigation
+    \printuntil forwardAvailableChanged
 
     We connect the \c zoomModeChanged and \c zoomFactor changed signals of the
     PDF view to the functions that reset the zoom selector:

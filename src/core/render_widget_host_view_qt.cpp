@@ -1,42 +1,5 @@
-
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "render_widget_host_view_qt.h"
 
@@ -83,8 +46,8 @@
 #endif
 
 #if defined(USE_AURA)
+#include "ui/aura/cursor/cursors_aura.h"
 #include "ui/base/cursor/cursor_size.h"
-#include "ui/base/cursor/cursors_aura.h"
 #endif
 
 #if defined(Q_OS_MACOS)
@@ -129,16 +92,27 @@ static inline ui::GestureProvider::Config QtGestureProviderConfig() {
 
 extern display::Display toDisplayDisplay(int id, const QScreen *screen);
 
-static display::ScreenInfo screenInfoFromQScreen(QScreen *screen)
+static display::ScreenInfos screenInfosFromQtForUpdate(QScreen *currentScreen)
 {
-    display::ScreenInfo r;
-    if (!screen)
-        screen = qApp->primaryScreen();
-    if (screen)
-        display::DisplayUtil::DisplayToScreenInfo(&r, toDisplayDisplay(0, screen));
-    else
-        r.device_scale_factor = qGuiApp->devicePixelRatio();
-    return r;
+    display::ScreenInfo screenInfo;
+    const auto &screens = qApp->screens();
+    if (screens.isEmpty()) {
+        screenInfo.device_scale_factor = qGuiApp->devicePixelRatio();
+        return display::ScreenInfos(screenInfo);
+    }
+
+    Q_ASSERT(qApp->primaryScreen() == screens.first());
+    display::ScreenInfos result;
+    for (int i = 0; i < screens.length(); ++i) {
+        display::DisplayUtil::DisplayToScreenInfo(&screenInfo, toDisplayDisplay(i, screens.at(i)));
+        result.screen_infos.push_back(screenInfo);
+        if (currentScreen == screens.at(i))
+            result.current_display_id = i;
+    }
+
+    Q_ASSERT(result.current_display_id != display::kInvalidDisplayId);
+
+    return result;
 }
 
 // An minimal override to support progressing flings
@@ -226,11 +200,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     m_cursorManager.reset(new content::CursorManager(this));
 
     m_touchSelectionControllerClient.reset(new TouchSelectionControllerClientQt(this));
-    ui::TouchSelectionController::Config config;
-    config.max_tap_duration = base::TimeDelta::FromMilliseconds(ui::GestureConfiguration::GetInstance()->long_press_time_in_ms());
-    config.tap_slop = ui::GestureConfiguration::GetInstance()->max_touch_move_in_pixels_for_click();
-    config.enable_longpress_drag_selection = false;
-    m_touchSelectionController.reset(new ui::TouchSelectionController(m_touchSelectionControllerClient.get(), config));
+    resetTouchSelectionController();
 
     host()->render_frame_metadata_provider()->AddObserver(this);
     host()->render_frame_metadata_provider()->ReportAllFrameSubmissionsForTesting(true);
@@ -275,7 +245,7 @@ void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterC
                                                             m_adapterClient = nullptr; });
 }
 
-void RenderWidgetHostViewQt::setGuest(content::RenderWidgetHostImpl *rwh)
+void RenderWidgetHostViewQt::addGuest(content::RenderWidgetHost *rwh)
 {
     rwh->AddInputEventObserver(m_guestInputEventObserver.get());
 }
@@ -284,8 +254,9 @@ void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView)
 {
 }
 
-void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect& rect)
+void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect& rect, const gfx::Rect& anchorRect)
 {
+    Q_UNUSED(anchorRect);
     m_delegate->initAsPopup(toQt(rect));
 }
 
@@ -367,8 +338,9 @@ void RenderWidgetHostViewQt::CopyFromSurface(const gfx::Rect &src_rect,
     m_delegatedFrameHost->CopyFromCompositingSurface(src_rect, output_size, std::move(callback));
 }
 
-void RenderWidgetHostViewQt::Show()
+void RenderWidgetHostViewQt::ShowWithVisibility(content::PageVisibilityState page_visibility)
 {
+    Q_ASSERT(page_visibility != content::PageVisibilityState::kHidden);
     if (m_delegate)
         m_delegate->show();
     else
@@ -441,13 +413,13 @@ bool RenderWidgetHostViewQt::updateCursorFromResource(ui::mojom::CursorType type
 {
     int resourceId;
     // GetCursorDataFor only knows hotspots for 1x and 2x cursor images, in physical pixels.
-    qreal hotspotDpr = m_screenInfo.device_scale_factor <= 1.0f ? 1.0f : 2.0f;
+    qreal hotspotDpr = GetScreenInfo().device_scale_factor <= 1.0f ? 1.0f : 2.0f;
     qreal hotX;
     qreal hotY;
 
 #if defined(USE_AURA)
     gfx::Point hotspot;
-    if (!ui::GetCursorDataFor(ui::CursorSize::kNormal, type, hotspotDpr, &resourceId, &hotspot))
+    if (!aura::GetCursorDataFor(ui::CursorSize::kNormal, type, hotspotDpr, &resourceId, &hotspot))
         return false;
     hotX = hotspot.x();
     hotY = hotspot.y();
@@ -488,7 +460,7 @@ bool RenderWidgetHostViewQt::updateCursorFromResource(ui::mojom::CursorType type
     if (!imageSkia)
         return false;
 
-    QImage imageQt = toQImage(imageSkia->GetRepresentation(m_screenInfo.device_scale_factor));
+    QImage imageQt = toQImage(imageSkia->GetRepresentation(GetScreenInfo().device_scale_factor));
 
     // Convert hotspot coordinates into device-independent pixels.
     hotX /= hotspotDpr;
@@ -678,11 +650,6 @@ void RenderWidgetHostViewQt::UpdateTooltip(const std::u16string &tooltip_text)
 {
     if (host()->delegate() && m_adapterClient)
         m_adapterClient->setToolTip(toQt(tooltip_text));
-}
-
-void RenderWidgetHostViewQt::GetScreenInfo(display::ScreenInfo *results)
-{
-    *results = m_screenInfo;
 }
 
 gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
@@ -889,11 +856,17 @@ bool RenderWidgetHostViewQt::isPopup() const
 
 bool RenderWidgetHostViewQt::updateScreenInfo()
 {
-    display::ScreenInfo oldScreenInfo = m_screenInfo;
-    QScreen *screen = m_delegate->window() ? m_delegate->window()->screen() : nullptr;
-    m_screenInfo = screenInfoFromQScreen(screen);
 
-    return (m_screenInfo != oldScreenInfo);
+    QWindow *window = m_delegate->Window();
+    if (!window)
+        return false;
+
+    display::ScreenInfos newScreenInfos = screenInfosFromQtForUpdate(window->screen());
+    if (screen_infos_ == newScreenInfos)
+        return false;
+
+    screen_infos_ = std::move(newScreenInfos);
+    return true;
 }
 
 void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *event)
@@ -1030,7 +1003,7 @@ void RenderWidgetHostViewQt::OnRenderFrameMetadataChangedAfterActivation(base::T
         m_touchSelectionControllerClient->UpdateClientSelectionBounds(m_selectionStart, m_selectionEnd);
     }
 
-    gfx::Vector2dF scrollOffset = metadata.root_scroll_offset.value_or(gfx::Vector2dF());
+    gfx::PointF scrollOffset = metadata.root_scroll_offset.value_or(gfx::PointF());
     gfx::SizeF contentsSize = metadata.root_layer_size;
     std::swap(m_lastScrollOffset, scrollOffset);
     std::swap(m_lastContentsSize, contentsSize);
@@ -1052,7 +1025,7 @@ void RenderWidgetHostViewQt::synchronizeVisualProperties(const absl::optional<vi
     m_rootLayer->SetBounds(gfx::Rect(gfx::Point(), viewSizeInPixels));
     m_uiCompositorLocalSurfaceIdAllocator.GenerateId();
     m_uiCompositor->SetScaleAndSize(
-            m_screenInfo.device_scale_factor,
+            GetScreenInfo().device_scale_factor,
             viewSizeInPixels,
             m_uiCompositorLocalSurfaceIdAllocator.GetCurrentLocalSurfaceId());
     m_delegatedFrameHost->EmbedSurface(
@@ -1061,6 +1034,17 @@ void RenderWidgetHostViewQt::synchronizeVisualProperties(const absl::optional<vi
             cc::DeadlinePolicy::UseDefaultDeadline());
 
     host()->SynchronizeVisualProperties();
+}
+
+void RenderWidgetHostViewQt::resetTouchSelectionController()
+{
+    Q_ASSERT(m_touchSelectionControllerClient);
+    m_touchSelectionControllerClient->resetControls();
+    ui::TouchSelectionController::Config config;
+    config.max_tap_duration = base::Milliseconds(ui::GestureConfiguration::GetInstance()->long_press_time_in_ms());
+    config.tap_slop = ui::GestureConfiguration::GetInstance()->max_touch_move_in_pixels_for_click();
+    config.enable_longpress_drag_selection = false;
+    m_touchSelectionController.reset(new ui::TouchSelectionController(m_touchSelectionControllerClient.get(), config));
 }
 
 std::unique_ptr<content::SyntheticGestureTarget> RenderWidgetHostViewQt::CreateSyntheticGestureTarget()

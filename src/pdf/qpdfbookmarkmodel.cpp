@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2020 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtPDF module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2020 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qpdfbookmarkmodel.h"
 
@@ -45,19 +9,21 @@
 #include "third_party/pdfium/public/fpdf_doc.h"
 #include "third_party/pdfium/public/fpdfview.h"
 
+#include <QLoggingCategory>
+#include <QMetaEnum>
 #include <QPointer>
 #include <QScopedPointer>
 #include <private/qabstractitemmodel_p.h>
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(qLcBM, "qt.pdf.bookmarks")
+
 class BookmarkNode
 {
 public:
     explicit BookmarkNode(BookmarkNode *parentNode = nullptr)
         : m_parentNode(parentNode)
-        , m_level(0)
-        , m_pageNumber(0)
     {
     }
 
@@ -130,32 +96,49 @@ public:
         m_pageNumber = pageNumber;
     }
 
+    QPointF location() const
+    {
+        return m_location;
+    }
+
+    void setLocation(qreal x, qreal y)
+    {
+        m_location = QPointF(x, y);
+    }
+
+    qreal zoom() const
+    {
+        return m_zoom;
+    }
+
+    void setZoom(qreal zoom)
+    {
+        m_zoom = zoom;
+    }
+
 private:
     QList<BookmarkNode*> m_childNodes;
     BookmarkNode *m_parentNode;
 
     QString m_title;
-    int m_level;
-    int m_pageNumber;
+    int m_level = 0;
+    int m_pageNumber = 0;
+    QPointF m_location;
+    qreal m_zoom = 0;
 };
 
 
-class QPdfBookmarkModelPrivate : public QAbstractItemModelPrivate
+struct QPdfBookmarkModelPrivate
 {
-public:
     QPdfBookmarkModelPrivate()
-        : QAbstractItemModelPrivate()
-        , m_rootNode(new BookmarkNode(nullptr))
+        : m_rootNode(new BookmarkNode(nullptr))
         , m_document(nullptr)
-        , m_structureMode(QPdfBookmarkModel::TreeMode)
     {
     }
 
     void rebuild()
     {
-        Q_Q(QPdfBookmarkModel);
-
-        const bool documentAvailable = (m_document && m_document->status() == QPdfDocument::Ready);
+        const bool documentAvailable = (m_document && m_document->status() == QPdfDocument::Status::Ready);
 
         if (documentAvailable) {
             q->beginResetModel();
@@ -182,13 +165,9 @@ public:
         while (bookmark) {
             BookmarkNode *childBookmarkNode = nullptr;
 
-            if (m_structureMode == QPdfBookmarkModel::TreeMode) {
-                childBookmarkNode = new BookmarkNode(parentBookmarkNode);
-                parentBookmarkNode->appendChild(childBookmarkNode);
-            } else if (m_structureMode == QPdfBookmarkModel::ListMode) {
-                childBookmarkNode = new BookmarkNode(m_rootNode.data());
-                m_rootNode->appendChild(childBookmarkNode);
-            }
+            childBookmarkNode = new BookmarkNode(parentBookmarkNode);
+            parentBookmarkNode->appendChild(childBookmarkNode);
+            Q_ASSERT(childBookmarkNode);
 
             const int titleLength = int(FPDFBookmark_GetTitle(bookmark, nullptr, 0));
 
@@ -197,6 +176,28 @@ public:
 
             const FPDF_DEST dest = FPDFBookmark_GetDest(document, bookmark);
             const int pageNumber = FPDFDest_GetDestPageIndex(document, dest);
+            double pageHeight = 11.69 * 72; // A4 height
+            {
+                // get actual page height
+                const QPdfMutexLocker lock;
+                FPDF_PAGE pdfPage = FPDF_LoadPage(document, pageNumber);
+                if (pdfPage)
+                    pageHeight = FPDF_GetPageHeight(pdfPage);
+                else
+                    qCWarning(qLcBM) << "failed to load page" << pageNumber;
+            }
+
+            FPDF_BOOL hasX, hasY, hasZoom;
+            FS_FLOAT x, y, zoom;
+            bool ok = FPDFDest_GetLocationInPage(dest, &hasX, &hasY, &hasZoom, &x, &y, &zoom);
+            if (ok) {
+                if (hasX && hasY)
+                    childBookmarkNode->setLocation(x, pageHeight - y);
+                if (hasZoom)
+                    childBookmarkNode->setZoom(zoom);
+            } else {
+                qCWarning(qLcBM) << "bookmark with invalid location and/or zoom" << x << y << zoom;
+            }
 
             childBookmarkNode->setTitle(QString::fromUtf16(titleBuffer.data()));
             childBookmarkNode->setLevel(level);
@@ -214,32 +215,63 @@ public:
         rebuild();
     }
 
-    Q_DECLARE_PUBLIC(QPdfBookmarkModel)
+    QPdfBookmarkModel *q = nullptr;
 
     QScopedPointer<BookmarkNode> m_rootNode;
     QPointer<QPdfDocument> m_document;
-    QPdfBookmarkModel::StructureMode m_structureMode;
+    QHash<int, QByteArray> m_roleNames;
 };
 
 
+/*!
+    \class QPdfBookmarkModel
+    \since 5.10
+    \inmodule QtPdf
+    \inherits QAbstractItemModel
+
+    \brief The QPdfBookmarkModel class holds a tree of of links (anchors)
+    within a PDF document, such as the table of contents.
+
+    This is used in the \l {Model/View Programming} paradigm to display a
+    table of contents in the form of a tree or list.
+*/
+
+/*!
+    \enum QPdfBookmarkModel::Role
+
+    \value Title The name of the bookmark for display.
+    \value Level The level of indentation.
+    \value Page The page number of the destination (int).
+    \value Location The position of the destination (QPointF).
+    \value Zoom The suggested zoom level (qreal).
+    \omitvalue NRoles
+*/
+
+/*!
+    Constructs a new bookmark model with parent object \a parent.
+*/
 QPdfBookmarkModel::QPdfBookmarkModel(QObject *parent)
-    : QAbstractItemModel(*new QPdfBookmarkModelPrivate, parent)
+    : QAbstractItemModel(parent), d(new QPdfBookmarkModelPrivate)
 {
+    d->q = this;
+    d->m_roleNames = QAbstractItemModel::roleNames();
+    QMetaEnum rolesMetaEnum = metaObject()->enumerator(metaObject()->indexOfEnumerator("Role"));
+    for (int r = Qt::UserRole; r < int(Role::NRoles); ++r)
+        d->m_roleNames.insert(r, QByteArray(rolesMetaEnum.valueToKey(r)).toLower());
 }
 
+/*!
+    Destroys the model.
+*/
 QPdfBookmarkModel::~QPdfBookmarkModel() = default;
 
 QPdfDocument* QPdfBookmarkModel::document() const
 {
-    Q_D(const QPdfBookmarkModel);
-
     return d->m_document;
 }
 
 void QPdfBookmarkModel::setDocument(QPdfDocument *document)
 {
-    Q_D(QPdfBookmarkModel);
-
     if (d->m_document == document)
         return;
 
@@ -255,65 +287,56 @@ void QPdfBookmarkModel::setDocument(QPdfDocument *document)
     d->rebuild();
 }
 
-QPdfBookmarkModel::StructureMode QPdfBookmarkModel::structureMode() const
-{
-    Q_D(const QPdfBookmarkModel);
-
-    return d->m_structureMode;
-}
-
-void QPdfBookmarkModel::setStructureMode(StructureMode mode)
-{
-    Q_D(QPdfBookmarkModel);
-
-    if (d->m_structureMode == mode)
-        return;
-
-    d->m_structureMode = mode;
-    emit structureModeChanged(d->m_structureMode);
-
-    d->rebuild();
-}
-
+/*!
+    \reimp
+*/
 int QPdfBookmarkModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
     return 1;
 }
 
+/*!
+    \reimp
+*/
 QHash<int, QByteArray> QPdfBookmarkModel::roleNames() const
 {
-    QHash<int, QByteArray> names;
-
-    names[TitleRole] = "title";
-    names[LevelRole] = "level";
-    names[PageNumberRole] = "pageNumber";
-
-    return names;
+    return d->m_roleNames;
 }
 
+/*!
+    \reimp
+*/
 QVariant QPdfBookmarkModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
 
     const BookmarkNode *node = static_cast<BookmarkNode*>(index.internalPointer());
-    switch (role) {
-    case TitleRole:
+    switch (Role(role)) {
+    case Role::Title:
         return node->title();
-    case LevelRole:
+    case Role::Level:
         return node->level();
-    case PageNumberRole:
+    case Role::Page:
         return node->pageNumber();
-    default:
-        return QVariant();
+    case Role::Location:
+        return node->location();
+    case Role::Zoom:
+        return node->zoom();
+    case Role::NRoles:
+        break;
     }
+    if (role == Qt::DisplayRole)
+        return node->title();
+    return QVariant();
 }
 
+/*!
+    \reimp
+*/
 QModelIndex QPdfBookmarkModel::index(int row, int column, const QModelIndex &parent) const
 {
-    Q_D(const QPdfBookmarkModel);
-
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
@@ -331,10 +354,11 @@ QModelIndex QPdfBookmarkModel::index(int row, int column, const QModelIndex &par
         return QModelIndex();
 }
 
+/*!
+    \reimp
+*/
 QModelIndex QPdfBookmarkModel::parent(const QModelIndex &index) const
 {
-    Q_D(const QPdfBookmarkModel);
-
     if (!index.isValid())
         return QModelIndex();
 
@@ -347,10 +371,11 @@ QModelIndex QPdfBookmarkModel::parent(const QModelIndex &index) const
     return createIndex(parentNode->row(), 0, parentNode);
 }
 
+/*!
+    \reimp
+*/
 int QPdfBookmarkModel::rowCount(const QModelIndex &parent) const
 {
-    Q_D(const QPdfBookmarkModel);
-
     if (parent.column() > 0)
         return 0;
 

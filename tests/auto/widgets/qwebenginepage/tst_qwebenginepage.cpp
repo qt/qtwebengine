@@ -47,7 +47,9 @@
 #include <qnetworkcookiejar.h>
 #include <qnetworkreply.h>
 #include <qnetworkrequest.h>
+#include <QtNetwork/private/qtnetwork-config_p.h>
 #include <qwebenginedownloadrequest.h>
+#include <qwebenginefilesystemaccessrequest.h>
 #include <qwebenginefindtextresult.h>
 #include <qwebenginefullscreenrequest.h>
 #include <qwebenginehistory.h>
@@ -67,6 +69,8 @@
 #include <qwebengineview.h>
 #include <qimagewriter.h>
 #include <QColorSpace>
+#include <QQuickRenderControl>
+#include <QQuickWindow>
 
 static void removeRecursive(const QString& dirname)
 {
@@ -152,7 +156,7 @@ private Q_SLOTS:
 #endif
     void openWindowDefaultSize();
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     void macCopyUnicodeToClipboard();
 #endif
 
@@ -759,10 +763,9 @@ void tst_QWebEnginePage::popupFormSubmission()
     QVERIFY(page.createdWindows.size() == 1);
 
     QTRY_VERIFY(!page.createdWindows[0]->url().isEmpty());
-    QString url = page.createdWindows[0]->url().toString();
 
     // Check if the form submission was OK.
-    QVERIFY(url.contains("?foo=bar"));
+    QTRY_VERIFY(page.createdWindows[0]->url().toString().contains("?foo=bar"));
 }
 
 class TestNetworkManager : public QNetworkAccessManager
@@ -1323,7 +1326,9 @@ static QWindow *findNewTopLevelWindow(const QWindowList &oldTopLevelWindows)
 {
     const auto tlws = QGuiApplication::topLevelWindows();
     for (auto w : tlws) {
-        if (!oldTopLevelWindows.contains(w)) {
+        // note 'offscreen' window is a top-level window
+        if (!oldTopLevelWindows.contains(w)
+            && !QQuickRenderControl::renderWindowFor(qobject_cast<QQuickWindow *>(w))) {
             return w;
         }
     }
@@ -1343,28 +1348,29 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
     view.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft());
     view.resize(640, 480);
     view.show();
-
-    QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QSignalSpy spyLoadFinished(&view, SIGNAL(loadFinished(bool)));
     view.setHtml(QLatin1String("<html><head></head><body><select id='foo'>"
                                "<option>fran</option><option>troz</option>"
                                "</select></body></html>"));
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(spyLoadFinished.count(), 1);
     const auto oldTlws = QGuiApplication::topLevelWindows();
-
     QFETCH(bool, withTouch);
     QWindow *window = view.windowHandle();
-    makeClick(window, withTouch, elementCenter(view.page(), "foo"));
-
+    auto pos = elementCenter(view.page(), "foo");
+    makeClick(window, withTouch, pos);
     QWindow *popup = nullptr;
-    QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QTRY_VERIFY((popup = findNewTopLevelWindow(oldTlws)));
+    QVERIFY(QTest::qWaitForWindowExposed(popup));
+    QTRY_VERIFY(popup->width() > 0 && popup->height() > 0);
     QTRY_VERIFY(QGuiApplication::topLevelWindows().contains(popup));
     QTRY_VERIFY(!popup->position().isNull());
     QPoint popupPos = popup->position();
-
+    QPointer<QWindow> pw(popup);
     // Close the popup by clicking somewhere into the page.
     makeClick(window, withTouch, QPoint(1, 1));
     QTRY_VERIFY(!QGuiApplication::topLevelWindows().contains(popup));
-
+    QTRY_VERIFY(!pw);
     auto jsViewPosition = [&view]() {
         QLatin1String script("(function() { return [window.screenX, window.screenY]; })()");
         QVariantList posList = evaluateJavaScriptSync(view.page(), script).toList();
@@ -1382,7 +1388,8 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
     view.move(view.pos() + offset);
     QTRY_COMPARE(jsViewPosition(), view.pos());
     makeClick(window, withTouch, elementCenter(view.page(), "foo"));
-    QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QTRY_VERIFY((popup = findNewTopLevelWindow(oldTlws)));
+    QTRY_VERIFY(popup->width() > 0 && popup->height() > 0);
     QTRY_VERIFY(QGuiApplication::topLevelWindows().contains(popup));
     QTRY_VERIFY(!popup->position().isNull());
     QCOMPARE(popupPos + offset, popup->position());
@@ -1412,6 +1419,7 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
     mainWidget.move(screen->availableGeometry().topLeft());
     mainWidget.resize(640, 480);
     mainWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&mainWidget));
 
     QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
     view.setHtml(QLatin1String("<html><head></head><body><select autofocus id='foo'>"
@@ -1425,7 +1433,9 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
     makeClick(window, withTouch, view.mapTo(view.window(), elementCenter(view.page(), "foo")));
 
     QWindow *popup = nullptr;
-    QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QTRY_VERIFY((popup = findNewTopLevelWindow(oldTlws)));
+    QVERIFY(QTest::qWaitForWindowExposed(popup));
+    QTRY_VERIFY(popup->width() > 0 && popup->height() > 0);
     QTRY_VERIFY(QGuiApplication::topLevelWindows().contains(popup));
     QTRY_VERIFY(!popup->position().isNull());
     QPoint popupPos = popup->position();
@@ -1441,18 +1451,25 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
         return viewWidth;
     };
 
+    QCOMPARE(jsViewWidth(), originalViewWidth);
+
     // Resize the "spacer" widget, and implicitly change the global position of the QWebEngineView.
     const int offset = 50;
     spacer.setMinimumWidth(spacer.size().width() + offset);
+
     QTRY_COMPARE(jsViewWidth(), originalViewWidth - offset);
 
     makeClick(window, withTouch, view.mapTo(view.window(), elementCenter(view.page(), "foo")));
-    QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QTRY_VERIFY((popup = findNewTopLevelWindow(oldTlws)));
+    QVERIFY(QTest::qWaitForWindowExposed(popup));
+    QTRY_VERIFY(popup->width() > 0 && popup->height() > 0);
     QTRY_VERIFY(!popup->position().isNull());
-    QCOMPARE(popupPos + QPoint(50, 0), popup->position());
+    QCOMPARE(popupPos + QPoint(offset, 0), popup->position());
+    makeClick(window, withTouch, QPoint(1, 1));
+    QTRY_VERIFY(!QGuiApplication::topLevelWindows().contains(popup));
 }
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 void tst_QWebEnginePage::macCopyUnicodeToClipboard()
 {
     QString unicodeText = QString::fromUtf8("αβγδεζηθικλμπ");
@@ -2148,7 +2165,7 @@ public:
             setAttribute(QNetworkRequest::RedirectionTargetAttribute, QUrl("qrc:/test2.html"));
             QTimer::singleShot(0, this, SLOT(continueRedirect()));
         }
-#ifndef QT_NO_OPENSSL
+#if QT_CONFIG(openssl)
         else if (request.url() == QUrl("qrc:/fake-ssl-error.html")) {
             setError(QNetworkReply::SslHandshakeFailedError, tr("Fake error!"));
             QTimer::singleShot(0, this, SLOT(continueError()));
@@ -2205,7 +2222,7 @@ protected:
     {
         QString url = request.url().toString();
         if (op == QNetworkAccessManager::GetOperation) {
-#ifndef QT_NO_OPENSSL
+#if QT_CONFIG(openssl)
             if (url == "qrc:/fake-ssl-error.html") {
                 FakeReply* reply = new FakeReply(request, this);
                 QList<QSslError> errors;
@@ -2864,6 +2881,7 @@ void tst_QWebEnginePage::setUrlUsingStateObject()
 {
     QUrl url;
     QSignalSpy urlChangedSpy(m_page, SIGNAL(urlChanged(QUrl)));
+    QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
     int expectedUrlChangeCount = 0;
 
     QCOMPARE(m_page->history()->count(), 0);
@@ -2873,7 +2891,9 @@ void tst_QWebEnginePage::setUrlUsingStateObject()
     expectedUrlChangeCount++;
     QTRY_COMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
     QCOMPARE(m_page->url(), url);
-    QTRY_COMPARE(m_page->history()->count(), 1);
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QCOMPARE(m_page->url(), url);
+    QCOMPARE(m_page->history()->count(), 1);
 
     evaluateJavaScriptSync(m_page, "window.history.pushState(null, 'push', 'navigate/to/here')");
     expectedUrlChangeCount++;
@@ -3078,7 +3098,7 @@ void tst_QWebEnginePage::loadFromQrc()
 
     // Resource not found, loading fails.
     page.load(QStringLiteral("qrc:///nope"));
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 10000);
     QCOMPARE(spy.takeFirst().value(0).toBool(), false);
 }
 
@@ -3204,13 +3224,16 @@ void tst_QWebEnginePage::mouseButtonTranslation()
 
     QVERIFY(view.focusProxy() != nullptr);
 
-    QMouseEvent evpres(QEvent::MouseButtonPress, view.rect().center(), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    const QPoint mousePos = view.rect().center();
+    QMouseEvent evpres(QEvent::MouseButtonPress, mousePos, view.mapToGlobal(mousePos),
+                       Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
     QGuiApplication::sendEvent(view.focusProxy(), &evpres);
 
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "lastEvent.button").toInt(), 0);
     QCOMPARE(evaluateJavaScriptSync(view.page(), "lastEvent.buttons").toInt(), 1);
 
-    QMouseEvent evpres2(QEvent::MouseButtonPress, view.rect().center(), Qt::RightButton, Qt::LeftButton | Qt::RightButton, Qt::NoModifier);
+    QMouseEvent evpres2(QEvent::MouseButtonPress, mousePos, view.mapToGlobal(mousePos),
+                        Qt::RightButton, Qt::LeftButton | Qt::RightButton, Qt::NoModifier);
     QGuiApplication::sendEvent(view.focusProxy(), &evpres2);
 
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "lastEvent.button").toInt(), 2);
@@ -3659,7 +3682,7 @@ void tst_QWebEnginePage::openLinkInNewPage()
         break;
     }
 
-    Qt::MouseButton button;
+    Qt::MouseButton button = Qt::NoButton;
     switch (cause) {
     case Cause::TargetBlank:
         button = Qt::LeftButton;
@@ -4792,17 +4815,17 @@ void tst_QWebEnginePage::renderProcessPid()
 
 class FileSelectionTestPage : public QWebEnginePage {
 public:
-    FileSelectionTestPage()
-    { }
+    FileSelectionTestPage() : m_tempDir(QDir::tempPath() + "/tst_qwebenginepage-XXXXXX") { }
 
     QStringList chooseFiles(FileSelectionMode mode, const QStringList &oldFiles, const QStringList &acceptedMimeTypes) override
     {
         Q_UNUSED(oldFiles);
         chosenFileSelectionMode = mode;
         chosenAcceptedMimeTypes = acceptedMimeTypes;
-        return QStringList();
+        return QStringList() << (m_tempDir.path() + "/file.txt");
     }
 
+    QTemporaryDir m_tempDir;
     int chosenFileSelectionMode = -1;
     QStringList chosenAcceptedMimeTypes;
 };
@@ -4888,9 +4911,27 @@ void tst_QWebEnginePage::fileSystemAccessDialog()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    page.setHtml(QString("<html><body>"
+    connect(&page, &QWebEnginePage::fileSystemAccessRequested,
+            [](QWebEngineFileSystemAccessRequest request) {
+                QCOMPARE(request.accessFlags(),
+                         QWebEngineFileSystemAccessRequest::Read
+                                 | QWebEngineFileSystemAccessRequest::Write);
+                request.accept();
+            });
+
+    page.setHtml(QString("<html><head><script>"
+                         "async function getTemporaryDir() {"
+                         "  const newHandle = await window.showSaveFilePicker();"
+                         "  const writable = await newHandle.createWritable();"
+                         "  await writable.write(new Blob(['New value']));"
+                         "  await writable.close();"
+                         ""
+                         "  const fileData = await newHandle.getFile();"
+                         "  document.title = await fileData.text();"
+                         "}"
+                         "</script></head><body>"
                          "<button id='triggerDialog' value='trigger' "
-                         "onclick='window.showDirectoryPicker()'>"
+                         "onclick='getTemporaryDir()'"
                          "</body></html>"),
                  QString("qrc:/"));
     QVERIFY(spyFinished.wait());
@@ -4901,7 +4942,9 @@ void tst_QWebEnginePage::fileSystemAccessDialog()
                  QStringLiteral("triggerDialog"));
     QTest::keyClick(view.focusProxy(), Qt::Key_Enter);
 
-    QTRY_COMPARE(page.chosenFileSelectionMode, QWebEnginePage::FileSelectUploadFolder);
+    QTRY_COMPARE(page.title(), "New value");
+
+    QTRY_COMPARE(page.chosenFileSelectionMode, QWebEnginePage::FileSelectSave);
     QTRY_COMPARE(page.chosenAcceptedMimeTypes, QStringList());
 }
 
@@ -5001,8 +5044,8 @@ void tst_QWebEnginePage::isSafeRedirect_data()
     fileScheme += "/";
 #endif
 
-    QString tempDir(fileScheme + QDir::tempPath());
-    QTest::newRow(qPrintable(tempDir)) << QUrl(tempDir) << QUrl(tempDir + "/");
+    QString tempDir(fileScheme + QDir::tempPath() + "/");
+    QTest::newRow(qPrintable(tempDir)) << QUrl(tempDir) << QUrl(tempDir);
     QTest::newRow(qPrintable(tempDir + QString("/foo/bar"))) << QUrl(tempDir + "/foo/bar") << QUrl(tempDir + "/foo/bar");
     QTest::newRow("filesystem:http://foo.com/bar") << QUrl("filesystem:http://foo.com/bar") << QUrl("filesystem:http://foo.com/bar/");
 }

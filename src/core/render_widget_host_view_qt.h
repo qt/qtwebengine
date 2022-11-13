@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #ifndef RENDER_WIDGET_HOST_VIEW_QT_H
 #define RENDER_WIDGET_HOST_VIEW_QT_H
@@ -90,10 +54,10 @@ public:
     WebContentsAdapterClient *adapterClient() { return m_adapterClient; }
     void setAdapterClient(WebContentsAdapterClient *adapterClient);
     RenderWidgetHostViewQtDelegateClient *delegateClient() const { return m_delegateClient.get(); }
-    void setGuest(content::RenderWidgetHostImpl *);
+    void addGuest(content::RenderWidgetHost *);
 
     void InitAsChild(gfx::NativeView) override;
-    void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&) override;
+    void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&, const gfx::Rect&) override;
     void SetSize(const gfx::Size& size) override;
     void SetBounds(const gfx::Rect&) override;
     gfx::NativeView GetNativeView() override;
@@ -106,7 +70,7 @@ public:
     void CopyFromSurface(const gfx::Rect &src_rect,
                          const gfx::Size &output_size,
                          base::OnceCallback<void(const SkBitmap &)> callback) override;
-    void Show() override;
+    void ShowWithVisibility(content::PageVisibilityState page_visibility) override;
     void Hide() override;
     bool IsShowing() override;
     gfx::Rect GetViewBounds() override;
@@ -136,7 +100,6 @@ public:
     void OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata);
 
     // Overridden from RenderWidgetHostViewBase:
-    void GetScreenInfo(display::ScreenInfo *screen_info) override;
     gfx::Rect GetBoundsInRootWindow() override;
     void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch,
                                 blink::mojom::InputEventResultState ack_result) override;
@@ -155,7 +118,7 @@ public:
     ui::Compositor *GetCompositor() override;
     absl::optional<content::DisplayFeature> GetDisplayFeature() override;
     void SetDisplayFeatureForTesting(const content::DisplayFeature*) override;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     void ShowSharePicker(
         const std::string &title,
         const std::string &text,
@@ -166,7 +129,11 @@ public:
     void SpeakSelection() override { QT_NOT_YET_IMPLEMENTED }
     void ShowDefinitionForSelection() override { QT_NOT_YET_IMPLEMENTED }
     void SetWindowFrameInScreen(const gfx::Rect&) override { QT_NOT_YET_IMPLEMENTED }
-#endif // defined(OS_MAC)
+#endif // BUILDFLAG(IS_MAC)
+    void NotifyHostAndDelegateOnWasShown(blink::mojom::RecordContentToVisibleTimeRequestPtr) override { QT_NOT_YET_IMPLEMENTED }
+    void RequestPresentationTimeFromHostOrDelegate(blink::mojom::RecordContentToVisibleTimeRequestPtr) override { QT_NOT_YET_IMPLEMENTED }
+    void CancelPresentationTimeRequestForHostAndDelegate() override { QT_NOT_YET_IMPLEMENTED }
+
 
     // Overridden from ui::GestureProviderClient.
     void OnGestureEvent(const ui::GestureEventData& gesture) override;
@@ -196,7 +163,7 @@ public:
 
     // Called from WebContentsAdapter.
     gfx::SizeF lastContentsSize() const { return m_lastContentsSize; }
-    gfx::Vector2dF lastScrollOffset() const { return m_lastScrollOffset; }
+    gfx::PointF lastScrollOffset() const { return m_lastScrollOffset; }
 
     ui::TouchSelectionController *getTouchSelectionController() const { return m_touchSelectionController.get(); }
     TouchSelectionControllerClientQt *getTouchSelectionControllerClient() const { return m_touchSelectionControllerClient.get(); }
@@ -205,6 +172,8 @@ public:
 
     void synchronizeVisualProperties(
             const absl::optional<viz::LocalSurfaceId> &childSurfaceId);
+
+    void resetTouchSelectionController();
 
 private:
     friend class DelegatedFrameHostClientQt;
@@ -231,12 +200,11 @@ private:
     bool m_isMouseLocked = false;
     bool m_visible = false;
     bool m_deferredShow = false;
-    gfx::Vector2dF m_lastScrollOffset;
+    gfx::PointF m_lastScrollOffset;
     gfx::SizeF m_lastContentsSize;
     DelegatedFrameHostClientQt m_delegatedFrameHostClient { this };
 
     // VIZ
-    display::ScreenInfo m_screenInfo;
     std::unique_ptr<content::DelegatedFrameHost> m_delegatedFrameHost;
     std::unique_ptr<ui::Layer> m_rootLayer;
     std::unique_ptr<ui::Compositor> m_uiCompositor;

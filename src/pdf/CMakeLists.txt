@@ -15,17 +15,16 @@ set(buildDir "${CMAKE_CURRENT_BINARY_DIR}")
 qt_internal_add_module(Pdf
     SOURCES
         qpdfbookmarkmodel.cpp qpdfbookmarkmodel.h
-        qpdfdestination.cpp qpdfdestination.h qpdfdestination_p.h
         qpdfdocument.cpp qpdfdocument.h qpdfdocument_p.h
         qpdfdocumentrenderoptions.h
+        qpdffile.cpp qpdffile_p.h
+        qpdflink.cpp qpdflink.h qpdflink_p.h
         qpdflinkmodel.cpp qpdflinkmodel_p.h qpdflinkmodel_p_p.h
-        qpdfpagenavigation.cpp qpdfpagenavigation.h
+        qpdfpagenavigator.cpp qpdfpagenavigator.h
         qpdfpagerenderer.cpp qpdfpagerenderer.h
         qpdfsearchmodel.cpp qpdfsearchmodel.h qpdfsearchmodel_p.h
-        qpdfsearchresult.cpp qpdfsearchresult.h qpdfsearchresult_p.h
         qpdfselection.cpp qpdfselection.h qpdfselection_p.h
         qtpdfglobal.h
-        qpdfnamespace.h
     INCLUDE_DIRECTORIES
         ../3rdparty/chromium
     DEFINES
@@ -113,11 +112,14 @@ foreach(arch ${archs})
         )
 
         if(LINUX)
-          list(APPEND gnArgArg
-              use_x11=false
-              is_cfi=false
-              ozone_auto_platforms=false
-              use_gnome_keyring=false)
+            list(APPEND gnArgArg
+                is_cfi=false
+                ozone_auto_platforms=false
+                use_gnome_keyring=false)
+            extend_gn_list(gnArgArg
+                ARGS use_system_icu
+                CONDITION QT_FEATURE_webengine_system_icu
+            )
         endif()
         if(MACOS)
             list(APPEND gnArgArg angle_enable_vulkan=false)

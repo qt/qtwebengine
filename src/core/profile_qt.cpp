@@ -1,47 +1,12 @@
-/****************************************************************************
-**
-** Copyright (C) 2018 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2018 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "profile_qt.h"
 
 #include "profile_adapter.h"
 #include "browsing_data_remover_delegate_qt.h"
 #include "download_manager_delegate_qt.h"
+#include "file_system_access/file_system_access_permission_context_factory_qt.h"
 #include "net/ssl_host_state_delegate_qt.h"
 #include "permission_manager_qt.h"
 #include "platform_notification_service_qt.h"
@@ -68,6 +33,7 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/user_prefs/user_prefs.h"
+#include "components/profile_metrics/browser_profile_type.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "chrome/common/pref_names.h"
 #if QT_CONFIG(webengine_spellchecker)
@@ -126,6 +92,11 @@ PrefService* ProfileQt::GetPrefs()
 const PrefService* ProfileQt::GetPrefs() const
 {
     return m_prefServiceAdapter.prefService();
+}
+
+bool ProfileQt::IsNewProfile() const
+{
+    return GetPrefs()->GetInitializationStatus() == PrefService::INITIALIZATION_STATUS_CREATED_NEW_PREF_STORE;
 }
 
 base::FilePath ProfileQt::GetPath()
@@ -240,8 +211,18 @@ std::string ProfileQt::GetMediaDeviceIDSalt()
     return m_prefServiceAdapter.mediaDeviceIdSalt();
 }
 
+content::FileSystemAccessPermissionContext *ProfileQt::GetFileSystemAccessPermissionContext()
+{
+    return FileSystemAccessPermissionContextFactoryQt::GetForProfile(this);
+}
+
 void ProfileQt::setupPrefService()
 {
+    profile_metrics::SetBrowserProfileType(this,
+                                           IsOffTheRecord()
+                                               ? profile_metrics::BrowserProfileType::kIncognito
+                                               : profile_metrics::BrowserProfileType::kRegular);
+
     // Remove previous handler before we set a new one or we will assert
     // TODO: Remove in Qt6
     if (m_prefServiceAdapter.prefService() != nullptr) {
@@ -262,29 +243,11 @@ const PrefServiceAdapter &ProfileQt::prefServiceAdapter() const
     return m_prefServiceAdapter;
 }
 
-
-content::PlatformNotificationService *ProfileQt::platformNotificationService()
+content::PlatformNotificationService *ProfileQt::GetPlatformNotificationService()
 {
     if (!m_platformNotificationService)
         m_platformNotificationService = std::make_unique<PlatformNotificationServiceQt>(this);
     return m_platformNotificationService.get();
-}
-
-bool ProfileQt::ensureDirectoryExists()
-{
-    const base::FilePath &path = GetPath();
-
-    if (base::PathExists(path))
-        return true;
-
-    base::File::Error error;
-    if (base::CreateDirectoryAndGetError(path, &error))
-        return true;
-
-    std::string errorstr = base::File::ErrorToString(error);
-    qWarning("Cannot create directory %s. Error: %s.", path.AsUTF8Unsafe().c_str(),
-             errorstr.c_str());
-    return false;
 }
 
 } // namespace QtWebEngineCore

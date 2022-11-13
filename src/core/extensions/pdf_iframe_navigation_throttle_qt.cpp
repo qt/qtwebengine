@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2021 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2021 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 // based on //chrome/browser/plugins/pdf_iframe_navigation_throttle.cc
 // Copyright 2017 The Chromium Authors. All rights reserved.
@@ -61,6 +25,8 @@
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
 
+#include <QtGlobal>
+
 namespace extensions {
 
 constexpr char kPDFMimeType[] = "application/pdf";
@@ -70,7 +36,8 @@ class PdfWebContentsLifetimeHelper : public content::WebContentsUserData<PdfWebC
 {
 public:
     explicit PdfWebContentsLifetimeHelper(content::WebContents *web_contents)
-        : web_contents_(web_contents)
+        : content::WebContentsUserData<PdfWebContentsLifetimeHelper>(*web_contents)
+        , web_contents_(web_contents)
     {}
 
     base::WeakPtr<PdfWebContentsLifetimeHelper> GetWeakPtr()
@@ -86,26 +53,31 @@ public:
 private:
     friend class content::WebContentsUserData<PdfWebContentsLifetimeHelper>;
 
-    content::WebContents* const web_contents_;
+    content::WebContents *const web_contents_;
     base::WeakPtrFactory<PdfWebContentsLifetimeHelper> weak_factory_{this};
 
     WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(PdfWebContentsLifetimeHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PdfWebContentsLifetimeHelper);
 
 bool IsPDFPluginEnabled(content::NavigationHandle *navigation_handle, bool *is_stale)
 {
     content::WebContents *web_contents = navigation_handle->GetWebContents();
+    Q_ASSERT(web_contents);
+
+    if (web_contents->IsInnerWebContentsForGuest())
+        web_contents = web_contents->GetOuterWebContents();
+
     int process_id = web_contents->GetMainFrame()->GetProcess()->GetID();
     int routing_id = web_contents->GetMainFrame()->GetRoutingID();
     content::WebPluginInfo plugin_info;
     // Will check WebEngineSettings by PluginServiceFilterQt
     return content::PluginService::GetInstance()->GetPluginInfo(
-        process_id, routing_id, navigation_handle->GetURL(),
-        web_contents->GetMainFrame()->GetLastCommittedOrigin(), kPDFMimeType,
-        false /* allow_wildcard */, is_stale, &plugin_info,
-        nullptr /* actual_mime_type */);
+                process_id, routing_id, navigation_handle->GetURL(),
+                kPDFMimeType,
+                false /* allow_wildcard */, is_stale, &plugin_info,
+                nullptr /* actual_mime_type */);
 }
 
 std::string GetPDFPlaceholderHTML(const GURL &pdf_url)

@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qquickwebengineaction_p.h"
 #include "qquickwebengineaction_p_p.h"
@@ -49,22 +13,26 @@
 #include "qquickwebenginescriptcollection_p_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginetouchhandleprovider_p_p.h"
+#include "qquickwebenginetouchhandle_p.h"
 #include "qquickwebenginetouchselectionmenurequest_p.h"
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
 
 #include "authentication_dialog_controller.h"
+#include "autofill_popup_controller.h"
 #include "profile_adapter.h"
 #include "file_picker_controller.h"
 #include "find_text_helper.h"
 #include "javascript_dialog_controller.h"
-#include "render_widget_host_view_qt_delegate_quick.h"
+#include "qquickwebengine_accessible.h"
+#include "render_widget_host_view_qt_delegate_item.h"
 #include "render_widget_host_view_qt_delegate_quickwindow.h"
 #include "touch_selection_menu_controller.h"
 #include "ui_delegates_manager.h"
 #include "web_contents_adapter.h"
 
 #include <QtWebEngineCore/qwebenginecertificateerror.h>
+#include <QtWebEngineCore/qwebenginefilesystemaccessrequest.h>
 #include <QtWebEngineCore/qwebenginefindtextresult.h>
 #include <QtWebEngineCore/qwebenginefullscreenrequest.h>
 #include <QtWebEngineCore/qwebengineloadinginfo.h>
@@ -137,14 +105,61 @@ Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::LoadSucceededStatus) == st
 QT_WARNING_POP
 #endif
 
-#ifndef QT_NO_ACCESSIBILITY
+class WebEngineQuickWidgetDelegate : public QtWebEngineCore::WidgetDelegate
+{
+public:
+    WebEngineQuickWidgetDelegate(QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *item, QQuickWebEngineView *parent)
+        : m_contentItem(item)
+        , m_parentView(parent)
+    {
+    }
+
+    ~WebEngineQuickWidgetDelegate() override
+    {
+        if (m_contentItem)
+            m_contentItem->setWidgetDelegate(nullptr);
+    }
+
+    void InitAsPopup(const QRect &screenRect) override
+    {
+        Q_UNUSED(screenRect);
+        Q_UNREACHABLE();
+    }
+
+    void Bind(WebContentsAdapterClient *client) override
+    {
+        QQuickWebEngineViewPrivate::bindViewAndDelegateItem(
+                static_cast<QQuickWebEngineViewPrivate *>(client), m_contentItem);
+    }
+
+    void Unbind() override
+    {
+        QQuickWebEngineViewPrivate::bindViewAndDelegateItem(nullptr, m_contentItem);
+    }
+
+    void Destroy() override
+    {
+        delete this;
+    }
+
+    bool ActiveFocusOnPress() override
+    {
+        return m_parentView->property("activeFocusOnPress").toBool() || m_parentView->hasActiveFocus();
+    }
+
+private:
+    QPointer<RenderWidgetHostViewQtDelegateItem> m_contentItem; // deleted by core
+    QPointer<QQuickWebEngineView> m_parentView;
+};
+
+#if QT_CONFIG(accessibility)
 static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *object)
 {
     if (QQuickWebEngineView *v = qobject_cast<QQuickWebEngineView*>(object))
         return new QQuickWebEngineViewAccessible(v);
-    return 0;
+    return nullptr;
 }
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 static QLatin1String defaultMimeType("text/html;charset=UTF-8");
 
@@ -168,12 +183,13 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , m_zoomFactor(1.0)
     , m_profileInitialized(false)
     , m_contextMenuRequest(nullptr)
+    , m_touchHandleDelegate(nullptr)
 {
     memset(actions, 0, sizeof(actions));
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessible::installFactory(&webAccessibleFactory);
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 }
 
 QQuickWebEngineViewPrivate::~QQuickWebEngineViewPrivate()
@@ -182,9 +198,7 @@ QQuickWebEngineViewPrivate::~QQuickWebEngineViewPrivate()
     m_profile->d_ptr->removeWebContentsAdapterClient(this);
     if (m_faviconProvider)
         m_faviconProvider->detach(q_ptr);
-    // q_ptr->d_ptr might be null due to destroy()
-    if (q_ptr->d_ptr)
-        bindViewAndWidget(q_ptr, nullptr);
+    bindViewAndDelegateItem(this, nullptr);
 }
 
 void QQuickWebEngineViewPrivate::initializeProfile()
@@ -217,8 +231,8 @@ void QQuickWebEngineViewPrivate::releaseProfile()
     // The profile for this web contents is about to be
     // garbage collected, delete WebContents first and
     // let the QQuickWebEngineView be collected later by gc.
-    bindViewAndWidget(q_ptr, nullptr);
-    delete q_ptr->d_ptr.take();
+    bindViewAndDelegateItem(this, nullptr);
+    q_ptr->d_ptr.reset();
 }
 
 UIDelegatesManager *QQuickWebEngineViewPrivate::ui()
@@ -231,22 +245,26 @@ UIDelegatesManager *QQuickWebEngineViewPrivate::ui()
 
 RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client)
 {
-    return new RenderWidgetHostViewQtDelegateQuick(client, /*isPopup = */ false);
+    Q_Q(QQuickWebEngineView);
+    auto *item = new RenderWidgetHostViewQtDelegateItem(client, /*isPopup = */ false);
+    item->setWidgetDelegate(new WebEngineQuickWidgetDelegate(item, q));
+    return item;
 }
 
 RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client)
 {
     Q_Q(QQuickWebEngineView);
     const bool hasWindowCapability = QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MultipleWindows);
-    RenderWidgetHostViewQtDelegateQuick *quickDelegate = new RenderWidgetHostViewQtDelegateQuick(client, /*isPopup = */ true);
+    RenderWidgetHostViewQtDelegateItem *quickDelegate = new RenderWidgetHostViewQtDelegateItem(client, /*isPopup = */ true);
     if (hasWindowCapability) {
         RenderWidgetHostViewQtDelegateQuickWindow *wrapperWindow =
                 new RenderWidgetHostViewQtDelegateQuickWindow(quickDelegate, q->window());
+        quickDelegate->setWidgetDelegate(wrapperWindow);
         wrapperWindow->setVirtualParent(q);
-        quickDelegate->setParentItem(wrapperWindow->contentItem());
-        return wrapperWindow;
+        return quickDelegate;
     }
     quickDelegate->setParentItem(q);
+    quickDelegate->setWidgetDelegate(new WebEngineQuickWidgetDelegate(quickDelegate, q));
     quickDelegate->show();
     return quickDelegate;
 }
@@ -645,6 +663,13 @@ void QQuickWebEngineViewPrivate::runRegisterProtocolHandlerRequest(QWebEngineReg
     Q_EMIT q->registerProtocolHandlerRequested(request);
 }
 
+void QQuickWebEngineViewPrivate::runFileSystemAccessRequest(
+        QWebEngineFileSystemAccessRequest request)
+{
+    Q_Q(QQuickWebEngineView);
+    Q_EMIT q->fileSystemAccessRequested(request);
+}
+
 QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()
 {
     Q_Q(QQuickWebEngineView);
@@ -673,6 +698,19 @@ void QQuickWebEngineViewPrivate::findTextFinished(const QWebEngineFindTextResult
 {
     Q_Q(QQuickWebEngineView);
     Q_EMIT q->findTextFinished(result);
+}
+
+void QQuickWebEngineViewPrivate::showAutofillPopup(
+        QtWebEngineCore::AutofillPopupController *controller, const QRect &bounds,
+        bool autoselectFirstSuggestion)
+{
+    ui()->showAutofillPopup(controller, bounds.bottomLeft(), bounds.width() + 2,
+                            autoselectFirstSuggestion);
+}
+
+void QQuickWebEngineViewPrivate::hideAutofillPopup()
+{
+    ui()->hideAutofillPopup();
 }
 
 QWebEngineSettings *QQuickWebEngineViewPrivate::webEngineSettings() const
@@ -704,74 +742,6 @@ void QQuickWebEngineViewPrivate::visibleChanged(bool visible)
 {
     Q_UNUSED(visible);
 }
-
-#ifndef QT_NO_ACCESSIBILITY
-QQuickWebEngineViewAccessible::QQuickWebEngineViewAccessible(QQuickWebEngineView *o)
-    : QAccessibleObject(o)
-{}
-
-bool QQuickWebEngineViewAccessible::isValid() const
-{
-    if (!QAccessibleObject::isValid())
-        return false;
-
-    if (!engineView() || !engineView()->d_func())
-        return false;
-
-    return true;
-}
-
-QAccessibleInterface *QQuickWebEngineViewAccessible::parent() const
-{
-    QQuickItem *parent = engineView()->parentItem();
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(parent);
-    if (!iface)
-        return QAccessible::queryAccessibleInterface(engineView()->window());
-    return iface;
-}
-
-QAccessibleInterface *QQuickWebEngineViewAccessible::focusChild() const
-{
-    if (child(0) && child(0)->focusChild())
-        return child(0)->focusChild();
-    return const_cast<QQuickWebEngineViewAccessible *>(this);
-}
-
-int QQuickWebEngineViewAccessible::childCount() const
-{
-    return child(0) ? 1 : 0;
-}
-
-QAccessibleInterface *QQuickWebEngineViewAccessible::child(int index) const
-{
-    if (index == 0 && isValid())
-        return engineView()->d_func()->adapter->browserAccessible();
-    return nullptr;
-}
-
-int QQuickWebEngineViewAccessible::indexOfChild(const QAccessibleInterface *c) const
-{
-    if (child(0) && c == child(0))
-        return 0;
-    return -1;
-}
-
-QString QQuickWebEngineViewAccessible::text(QAccessible::Text) const
-{
-    return QString();
-}
-
-QAccessible::Role QQuickWebEngineViewAccessible::role() const
-{
-    return QAccessible::Client;
-}
-
-QAccessible::State QQuickWebEngineViewAccessible::state() const
-{
-    QAccessible::State s;
-    return s;
-}
-#endif // QT_NO_ACCESSIBILITY
 
 class WebContentsAdapterOwner : public QObject
 {
@@ -901,59 +871,63 @@ void QQuickWebEngineViewPrivate::setFullScreenMode(bool fullscreen)
     }
 }
 
-void QQuickWebEngineViewPrivate::bindViewAndWidget(QQuickWebEngineView *view,
-                                                   RenderWidgetHostViewQtDelegateQuick *widget)
+// static
+void QQuickWebEngineViewPrivate::bindViewAndDelegateItem(QQuickWebEngineViewPrivate *viewPrivate,
+                                                         RenderWidgetHostViewQtDelegateItem *delegateItem)
 {
-    auto oldWidget = view ? view->d_func()->widget : nullptr;
-    auto oldView = widget ? widget->m_view : nullptr;
+    auto oldDelegateItem = viewPrivate ? viewPrivate->delegateItem : nullptr;
+    auto oldAdapterClient = delegateItem ? delegateItem->m_adapterClient : nullptr;
+
+    auto *oldViewPrivate = static_cast<QQuickWebEngineViewPrivate *>(oldAdapterClient);
 
     // Change pointers first.
 
-    if (widget && oldView != view) {
-        if (oldView)
-            oldView->d_func()->widget = nullptr;
-        widget->m_view = view;
+    if (delegateItem && oldViewPrivate != viewPrivate) {
+        if (oldViewPrivate)
+            oldViewPrivate->delegateItem = nullptr;
+        delegateItem->m_adapterClient = viewPrivate;
     }
 
-    if (view && oldWidget != widget) {
-        if (oldWidget)
-            oldWidget->m_view = nullptr;
-        view->d_func()->widget = widget;
+    if (viewPrivate && oldDelegateItem != delegateItem) {
+        if (oldDelegateItem)
+            oldDelegateItem->m_adapterClient = nullptr;
+        viewPrivate->delegateItem = delegateItem;
     }
 
     // Then notify.
 
-    if (widget && oldView != view && oldView)
-        oldView->d_func()->widgetChanged(widget, nullptr);
+    if (oldViewPrivate && oldViewPrivate != viewPrivate)
+        oldViewPrivate->delegateItemChanged(delegateItem, nullptr);
 
-    if (view && oldWidget != widget)
-        view->d_func()->widgetChanged(oldWidget, widget);
+    if (viewPrivate && oldDelegateItem != delegateItem)
+        viewPrivate->delegateItemChanged(oldDelegateItem, delegateItem);
 }
 
-void QQuickWebEngineViewPrivate::widgetChanged(RenderWidgetHostViewQtDelegateQuick *oldWidget,
-                                               RenderWidgetHostViewQtDelegateQuick *newWidget)
+void QQuickWebEngineViewPrivate::delegateItemChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *oldDelegateItem,
+                                                     QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *newDelegateItem)
 {
     Q_Q(QQuickWebEngineView);
 
-    if (oldWidget) {
-        oldWidget->setParentItem(nullptr);
+    if (oldDelegateItem) {
+        oldDelegateItem->setParentItem(nullptr);
 #if QT_CONFIG(accessibility)
-        if (!QtWebEngineCore::closingDown())
-            QAccessible::deleteAccessibleInterface(
-                    QAccessible::uniqueId(QAccessible::queryAccessibleInterface(oldWidget)));
+        if (!QtWebEngineCore::closingDown()) {
+            if (auto iface = QAccessible::queryAccessibleInterface(oldDelegateItem))
+                QAccessible::deleteAccessibleInterface(QAccessible::uniqueId(iface));
+        }
 #endif
     }
 
-    if (newWidget) {
+    if (newDelegateItem) {
         Q_ASSERT(!QtWebEngineCore::closingDown());
 #if QT_CONFIG(accessibility)
-        QAccessible::registerAccessibleInterface(new QtWebEngineCore::RenderWidgetHostViewQtDelegateQuickAccessible(newWidget, q));
+        QAccessible::registerAccessibleInterface(new QtWebEngineCore::RenderWidgetHostViewQtDelegateQuickAccessible(newDelegateItem, q));
 #endif
-        newWidget->setParentItem(q);
-        newWidget->setSize(q->boundingRect().size());
+        newDelegateItem->setParentItem(q);
+        newDelegateItem->setSize(q->boundingRect().size());
         // Focus on creation if the view accepts it
         if (q->activeFocusOnPress())
-            newWidget->setFocus(true);
+            newDelegateItem->setFocus(true);
     }
 }
 
@@ -1266,9 +1240,34 @@ void QQuickWebEngineViewPrivate::setToolTip(const QString &toolTipText)
         ui()->showToolTip(toolTipText);
 }
 
-QtWebEngineCore::TouchHandleDrawableClient *QQuickWebEngineViewPrivate::createTouchHandle(const QMap<int, QImage> &images)
+QtWebEngineCore::TouchHandleDrawableDelegate *
+QQuickWebEngineViewPrivate::createTouchHandleDelegate(const QMap<int, QImage> &images)
 {
-    return new QQuickWebEngineTouchHandle(ui(), images);
+    Q_Q(QQuickWebEngineView);
+    // lifecycle managed by Chromium's TouchHandleDrawable
+    QQuickWebEngineTouchHandle *handle = new QQuickWebEngineTouchHandle();
+    if (m_touchHandleDelegate) {
+        QQmlContext *qmlContext = QQmlEngine::contextForObject(q);
+        QQmlContext *context = new QQmlContext(qmlContext, handle);
+        context->setContextObject(handle);
+        QObject *delegate = m_touchHandleDelegate->create(context);
+        Q_ASSERT(delegate);
+        QQuickItem *item = qobject_cast<QQuickItem *>(delegate);
+        item->setParentItem(q);
+        handle->setItem(item, false);
+    } else {
+        QQuickItem *item = ui()->createTouchHandle();
+        Q_ASSERT(item);
+        QQmlEngine *engine = qmlEngine(item);
+        Q_ASSERT(engine);
+        QQuickWebEngineTouchHandleProvider *touchHandleProvider =
+                static_cast<QQuickWebEngineTouchHandleProvider *>(
+                        engine->imageProvider(QQuickWebEngineTouchHandleProvider::identifier()));
+        Q_ASSERT(touchHandleProvider);
+        touchHandleProvider->init(images);
+        handle->setItem(item, true);
+    }
+    return handle;
 }
 
 void QQuickWebEngineViewPrivate::showTouchSelectionMenu(QtWebEngineCore::TouchSelectionMenuController *menuController, const QRect &selectionBounds, const QSize &handleSize)
@@ -1663,8 +1662,8 @@ void QQuickWebEngineView::geometryChange(const QRectF &newGeometry, const QRectF
 {
     QQuickItem::geometryChange(newGeometry, oldGeometry);
     Q_D(QQuickWebEngineView);
-    if (d->widget)
-        d->widget->setSize(newGeometry.size());
+    if (d->delegateItem)
+        d->delegateItem->setSize(newGeometry.size());
 }
 
 void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &value)
@@ -2178,14 +2177,14 @@ void QQuickWebEngineView::componentComplete()
     QQuickItem::componentComplete();
     Q_D(QQuickWebEngineView);
     d->initializeProfile();
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     // Enable accessibility via a dynamic QQmlProperty, instead of using private API call
     // QQuickAccessibleAttached::qmlAttachedProperties(this). The qmlContext is required, otherwise
     // it is not possible to reference attached properties.
     QQmlContext *qmlContext = QQmlEngine::contextForObject(this);
     QQmlProperty role(this, QStringLiteral("Accessible.role"), qmlContext);
     role.write(QAccessible::Grouping);
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
     QTimer::singleShot(0, this, &QQuickWebEngineView::lazyInitialize);
 }
@@ -2389,44 +2388,21 @@ bool QQuickContextMenuBuilder::isMenuItemEnabled(ContextMenuItem menuItem)
     Q_UNREACHABLE();
 }
 
-
-QQuickWebEngineTouchHandle::QQuickWebEngineTouchHandle(QtWebEngineCore::UIDelegatesManager *ui, const QMap<int, QImage> &images)
+void QQuickWebEngineView::setTouchHandleDelegate(QQmlComponent *delegate)
 {
-    Q_ASSERT(ui);
-    m_item.reset(ui->createTouchHandle());
-
-    QQmlEngine *engine = qmlEngine(m_item.data());
-    Q_ASSERT(engine);
-    QQuickWebEngineTouchHandleProvider *touchHandleProvider =
-            static_cast<QQuickWebEngineTouchHandleProvider *>(engine->imageProvider(QQuickWebEngineTouchHandleProvider::identifier()));
-    Q_ASSERT(touchHandleProvider);
-    touchHandleProvider->init(images);
+    if (d_ptr->m_touchHandleDelegate != delegate) {
+        d_ptr->m_touchHandleDelegate = delegate;
+        d_ptr->webContentsAdapter()->resetTouchSelectionController();
+        emit touchHandleDelegateChanged();
+    }
 }
 
-void QQuickWebEngineTouchHandle::setImage(int orientation)
+QQmlComponent *QQuickWebEngineView::touchHandleDelegate() const
 {
-    QUrl url = QQuickWebEngineTouchHandleProvider::url(orientation);
-    m_item->setProperty("source", url);
-}
-
-void QQuickWebEngineTouchHandle::setBounds(const QRect &bounds)
-{
-    m_item->setProperty("x", bounds.x());
-    m_item->setProperty("y", bounds.y());
-    m_item->setProperty("width", bounds.width());
-    m_item->setProperty("height", bounds.height());
-}
-
-void QQuickWebEngineTouchHandle::setVisible(bool visible)
-{
-    m_item->setProperty("visible", visible);
-}
-
-void QQuickWebEngineTouchHandle::setOpacity(float opacity)
-{
-    m_item->setProperty("opacity", opacity);
+    return d_ptr->m_touchHandleDelegate;
 }
 
 QT_END_NAMESPACE
 
 #include "moc_qquickwebengineview_p.cpp"
+#include "moc_qquickwebengineforeigntypes_p.cpp"

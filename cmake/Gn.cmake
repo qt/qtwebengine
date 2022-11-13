@@ -65,7 +65,7 @@ execute_process(
     RESULT_VARIABLE gnResult
     OUTPUT_VARIABLE gnOutput
     ERROR_VARIABLE gnError
-    TIMEOUT 300
+    TIMEOUT 600
 )
 
 if(NOT gnResult EQUAL 0)

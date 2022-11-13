@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2019 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2019 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 // based on chrome/browser/plugins/plugin_response_interceptor_url_loader_throttle.cc
 // Copyright 2018 The Chromium Authors. All rights reserved.
@@ -64,6 +28,51 @@
 #include "web_engine_settings.h"
 
 #include <string>
+#include <tuple>
+
+namespace {
+void ClearAllButFrameAncestors(network::mojom::URLResponseHead *response_head)
+{
+    response_head->headers->RemoveHeader("Content-Security-Policy");
+    response_head->headers->RemoveHeader("Content-Security-Policy-Report-Only");
+
+    if (!response_head->parsed_headers)
+        return;
+
+    std::vector<network::mojom::ContentSecurityPolicyPtr> &csp =
+        response_head->parsed_headers->content_security_policy;
+    std::vector<network::mojom::ContentSecurityPolicyPtr> cleared;
+
+    for (auto &policy : csp) {
+        auto frame_ancestors = policy->directives.find(network::mojom::CSPDirectiveName::FrameAncestors);
+        if (frame_ancestors == policy->directives.end())
+            continue;
+
+        auto cleared_policy = network::mojom::ContentSecurityPolicy::New();
+        cleared_policy->self_origin = std::move(policy->self_origin);
+        cleared_policy->header = std::move(policy->header);
+        cleared_policy->header->header_value = "";
+        cleared_policy->directives[network::mojom::CSPDirectiveName::FrameAncestors] = std::move(frame_ancestors->second);
+
+        auto raw_frame_ancestors = policy->raw_directives.find(network::mojom::CSPDirectiveName::FrameAncestors);
+        DCHECK(raw_frame_ancestors != policy->raw_directives.end());
+
+        cleared_policy->header->header_value = "frame-ancestors " + raw_frame_ancestors->second;
+        response_head->headers->AddHeader(
+            cleared_policy->header->type == network::mojom::ContentSecurityPolicyType::kEnforce
+                ? "Content-Security-Policy"
+                : "Content-Security-Policy-Report-Only",
+            cleared_policy->header->header_value);
+        cleared_policy->raw_directives[network::mojom::CSPDirectiveName::FrameAncestors] =
+            std::move(raw_frame_ancestors->second);
+
+        cleared.push_back(std::move(cleared_policy));
+    }
+
+    csp.swap(cleared);
+}
+}  // namespace
+
 
 namespace QtWebEngineCore {
 
@@ -108,7 +117,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
     // Content-Security-Policy, and does not currently respect the policy anyway.
     // Ignore CSP served on a PDF response. https://crbug.com/271452
     if (extension_id == extension_misc::kPdfExtensionId && response_head->headers)
-        response_head->headers->RemoveHeader("Content-Security-Policy");
+        ClearAllButFrameAncestors(response_head);
 
     MimeTypesHandler::ReportUsedHandler(extension_id);
 
@@ -117,7 +126,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
     std::string payload = view_id;
 
     mojo::PendingRemote<network::mojom::URLLoader> dummy_new_loader;
-    ignore_result(dummy_new_loader.InitWithNewPipeAndPassReceiver());
+    std::ignore = dummy_new_loader.InitWithNewPipeAndPassReceiver();
     mojo::Remote<network::mojom::URLLoaderClient> new_client;
     mojo::PendingReceiver<network::mojom::URLLoaderClient> new_client_receiver =
         new_client.BindNewPipeAndPassReceiver();
@@ -151,9 +160,11 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
 
     mojo::PendingRemote<network::mojom::URLLoader> original_loader;
     mojo::PendingReceiver<network::mojom::URLLoaderClient> original_client;
+    mojo::ScopedDataPipeConsumerHandle body;
     delegate_->InterceptResponse(std::move(dummy_new_loader),
-                                std::move(new_client_receiver), &original_loader,
-                                &original_client);
+                                 std::move(new_client_receiver),
+                                 &original_loader, &original_client,
+                                 &body);
 
     // Make a deep copy of URLResponseHead before passing it cross-thread.
     auto deep_copied_response = response_head->Clone();
@@ -171,6 +182,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
     transferrable_loader->url_loader_client = std::move(original_client);
     transferrable_loader->head = std::move(deep_copied_response);
     transferrable_loader->head->intercepted_by_plugin = true;
+    transferrable_loader->body = std::move(body);
 
     bool embedded = m_request_destination !=
             network::mojom::RequestDestination::kDocument;
@@ -179,7 +191,6 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
       base::BindOnce(
             &extensions::StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent,
             extension_id, view_id, embedded, m_frame_tree_node_id,
-            -1 /* render_process_id */, -1 /* render_frame_id */,
             std::move(transferrable_loader), response_url));
 }
 

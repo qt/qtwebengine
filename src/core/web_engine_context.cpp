@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "web_engine_context.h"
 
@@ -95,7 +59,6 @@
 #include "media/base/media_switches.h"
 #include "mojo/core/embedder/embedder.h"
 #include "net/base/port_util.h"
-#include "ppapi/buildflags/buildflags.h"
 #include "sandbox/policy/switches.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -107,10 +70,10 @@
 #include "ui/events/event_switches.h"
 #include "ui/native_theme/native_theme_features.h"
 #include "ui/gl/gl_switches.h"
-#if defined(OS_WIN)
+#if defined(Q_OS_WIN)
 #include "sandbox/win/src/sandbox_types.h"
 #include "content/public/app/sandbox_helper_win.h"
-#endif // OS_WIN
+#endif // Q_OS_WIN
 
 #if defined(Q_OS_MACOS)
 #include "base/mac/foundation_util.h"
@@ -185,14 +148,21 @@ static bool usingSupportedSGBackend()
 
 bool usingSoftwareDynamicGL()
 {
+    const char openGlVar[] = "QT_OPENGL";
     if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
         return true;
+
+    if (qEnvironmentVariableIsSet(openGlVar)) {
+        const QByteArray requested = qgetenv(openGlVar);
+        if (requested == "software")
+            return true;
+    }
 #if defined(Q_OS_WIN)
     HMODULE handle = QNativeInterface::QWGLContext::openGLModuleHandle();
     wchar_t path[MAX_PATH];
     DWORD size = GetModuleFileName(handle, path, MAX_PATH);
     QFileInfo openGLModule(QString::fromWCharArray(path, size));
-    return !openGLModule.fileName().compare(QLatin1String("opengl32sw.dll"),Qt::CaseInsensitive);
+    return openGLModule.fileName().contains(QLatin1String("opengl32sw"),Qt::CaseInsensitive);
 #else
     return false;
 #endif
@@ -476,7 +446,6 @@ void WebEngineContext::destroy()
     GLContextHelper::destroy();
 
     // These would normally be in the content-runner, but we allocated them separately:
-    m_startupData.reset();
     m_mojoIpcSupport.reset();
     m_discardableSharedMemoryManager.reset();
 
@@ -662,16 +631,11 @@ WebEngineContext::WebEngineContext()
     // Allow us to inject javascript like any webview toolkit.
     content::RenderFrameHost::AllowInjectingJavaScript();
 
-    QStringList appArgs = QCoreApplication::arguments();
-
     bool useEmbeddedSwitches = false;
-#if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
-    useEmbeddedSwitches = !appArgs.contains(QStringLiteral("--disable-embedded-switches"));
-#else
-    useEmbeddedSwitches  = appArgs.contains(QStringLiteral("--enable-embedded-switches"));
-#endif
+    bool enableGLSoftwareRendering = false;
+    base::CommandLine *parsedCommandLine =
+            initCommandLine(useEmbeddedSwitches, enableGLSoftwareRendering);
 
-    base::CommandLine* parsedCommandLine = commandLine();
     setupProxyPac(parsedCommandLine);
     parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
 
@@ -687,8 +651,6 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(sandbox::policy::switches::kNoSandbox);
         qInfo() << "Sandboxing disabled by user.";
     }
-    // Do not try to be clever with device-scale-factor, it messes up scaling in accessibility for us
-    parsedCommandLine->AppendSwitchASCII(switches::kEnableUseZoomForDSF, "false");
 
     parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
 
@@ -718,7 +680,6 @@ WebEngineContext::WebEngineContext()
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
         enableFeatures.push_back(features::kOverlayScrollbar.name);
         parsedCommandLine->AppendSwitch(switches::kEnableViewport);
-        parsedCommandLine->AppendSwitch(switches::kMainFrameResizesAreOrientationChanges);
         parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
     }
 
@@ -730,7 +691,6 @@ WebEngineContext::WebEngineContext()
     // bitmaps, use software rendering via software OpenGL. This might be less
     // performant, but at least provides WebGL support.
     // TODO(miklocek), check if this still works with latest chromium
-    const bool enableGLSoftwareRendering = appArgs.contains(QStringLiteral("--enable-webgl-software-rendering"));
     const bool disableGpu = parsedCommandLine->HasSwitch(switches::kDisableGpu);
     const char *glType = getGLType(enableGLSoftwareRendering, disableGpu);
 
@@ -767,15 +727,15 @@ WebEngineContext::WebEngineContext()
 
     content::ContentMainParams contentMainParams(m_mainDelegate.get());
     contentMainParams.setup_signal_handlers = false;
-#if defined(OS_WIN)
+#if defined(Q_OS_WIN)
     contentMainParams.sandbox_info = QtWebEngineSandbox::staticSandboxInterfaceInfo();
-    sandbox::SandboxInterfaceInfo sandbox_info = {0};
+    sandbox::SandboxInterfaceInfo sandbox_info = {nullptr};
     if (!contentMainParams.sandbox_info) {
         content::InitializeSandboxInfo(&sandbox_info);
         contentMainParams.sandbox_info = &sandbox_info;
     }
 #endif
-    m_contentRunner->Initialize(contentMainParams);
+    m_contentRunner->Initialize(std::move(contentMainParams));
 
     mojo::core::Configuration mojoConfiguration;
     mojoConfiguration.is_broker_process = true;
@@ -788,21 +748,21 @@ WebEngineContext::WebEngineContext()
     m_mainDelegate->PostEarlyInitialization(false);
     content::StartBrowserThreadPool();
     content::BrowserTaskExecutor::PostFeatureListSetup();
-    tracing::InitTracingPostThreadPoolStartAndFeatureList();
+    tracing::InitTracingPostThreadPoolStartAndFeatureList(false);
     m_discardableSharedMemoryManager = std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
     base::PowerMonitor::Initialize(std::make_unique<base::PowerMonitorDeviceSource>());
 
     m_mojoIpcSupport = std::make_unique<content::MojoIpcSupport>(content::BrowserTaskExecutor::CreateIOThread());
     download::SetIOTaskRunner(m_mojoIpcSupport->io_thread()->task_runner());
-    m_startupData = m_mojoIpcSupport->CreateBrowserStartupData();
+    std::unique_ptr<content::StartupData> startupData = m_mojoIpcSupport->CreateBrowserStartupData();
 
     // Once the MessageLoop has been created, attach a top-level RunLoop.
     m_runLoop.reset(new base::RunLoop);
     m_runLoop->BeforeRun();
 
-    content::MainFunctionParams mainParams(*base::CommandLine::ForCurrentProcess());
-    mainParams.startup_data = m_startupData.get();
-    m_browserRunner->Initialize(mainParams);
+    content::MainFunctionParams mainParams(base::CommandLine::ForCurrentProcess());
+    mainParams.startup_data = std::move(startupData);
+    m_browserRunner->Initialize(std::move(mainParams));
 
     m_devtoolsServer.reset(new DevToolsServerQt());
     m_devtoolsServer->start();
@@ -814,9 +774,7 @@ WebEngineContext::WebEngineContext()
     // Initialize WebCacheManager here to ensure its subscription to render process creation events.
     web_cache::WebCacheManager::GetInstance();
 
-    base::ThreadRestrictions::SetIOAllowed(true);
-
-#if defined(OS_LINUX)
+#if defined(Q_OS_LINUX)
     media::AudioManager::SetGlobalAppName(QCoreApplication::applicationName().toStdString());
 #endif
 
@@ -871,17 +829,30 @@ gpu::SyncPointManager *WebEngineContext::syncPointManager()
     return s_syncPointManager.loadRelaxed();
 }
 
-base::CommandLine* WebEngineContext::commandLine() {
+base::CommandLine *WebEngineContext::initCommandLine(bool &useEmbeddedSwitches,
+                                                     bool &enableGLSoftwareRendering)
+{
     if (base::CommandLine::CreateEmpty()) {
         base::CommandLine* parsedCommandLine = base::CommandLine::ForCurrentProcess();
         QStringList appArgs = QCoreApplication::arguments();
         if (qEnvironmentVariableIsSet(kChromiumFlagsEnv)) {
             appArgs = appArgs.mid(0, 1); // Take application name and drop the rest
             appArgs.append(parseEnvCommandLine(qEnvironmentVariable(kChromiumFlagsEnv)));
+        } else {
+            int index = appArgs.indexOf(QLatin1String("--webEngineArgs"));
+            if (index > -1) {
+                appArgs.erase(appArgs.begin() + 1, appArgs.begin() + index + 1);
+            } else {
+                appArgs = appArgs.mid(0, 1);
+            }
         }
-#ifdef Q_OS_WIN
-        appArgs.removeAll(QStringLiteral("--enable-webgl-software-rendering"));
+#if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
+        useEmbeddedSwitches = !appArgs.contains(QStringLiteral("--disable-embedded-switches"));
+#else
+        useEmbeddedSwitches = appArgs.contains(QStringLiteral("--enable-embedded-switches"));
 #endif
+        enableGLSoftwareRendering =
+            appArgs.removeAll(QStringLiteral("--enable-webgl-software-rendering"));
         appArgs.removeAll(QStringLiteral("--disable-embedded-switches"));
         appArgs.removeAll(QStringLiteral("--enable-embedded-switches"));
 
@@ -920,7 +891,7 @@ const char *qWebEngineChromiumVersion() noexcept
 }
 const char *qWebEngineChromiumSecurityPatchVersion() noexcept
 {
-    return "104.0.5112.81"; // FIXME: Remember to update
+    return "107.0.5304.88"; // FIXME: Remember to update
 }
 
 QT_END_NAMESPACE

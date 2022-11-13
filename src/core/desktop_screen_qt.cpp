@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2021 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2021 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "desktop_screen_qt.h"
 
@@ -45,6 +9,15 @@
 
 #include <QGuiApplication>
 #include <QScreen>
+
+#if defined(USE_OZONE)
+#include "ui/ozone/buildflags.h"
+#if BUILDFLAG(OZONE_PLATFORM_X11)
+#define USE_XSCREENSAVER
+#include "ui/base/x/x11_screensaver.h"
+#include "ui/base/x/x11_util.h"
+#endif
+#endif
 
 #include <cmath>
 
@@ -69,12 +42,21 @@ display::Display toDisplayDisplay(int id, const QScreen *screen)
 {
     auto display = display::Display(id, toGfx(screen->geometry()));
     display.set_work_area(toGfx(screen->availableGeometry()));
-    display.set_device_scale_factor(screen->devicePixelRatio());
     display.set_is_monochrome(screen->depth() == 1);
     display.set_color_depth(screen->depth());
     display.set_depth_per_component(8); // FIXME: find the real value
     display.set_display_frequency(std::ceil(screen->refreshRate()));
     display.set_rotation(toDisplayRotation(screen->orientation()));
+
+    // FIXME: support lower scale factor
+    float pixelRatio = screen->devicePixelRatio();
+    if (pixelRatio < 1) {
+        qWarning("Unsupported scale factor (%f) detected on Display%d", pixelRatio, id);
+        display.set_device_scale_factor(qGuiApp->devicePixelRatio());
+    } else {
+        display.set_device_scale_factor(pixelRatio);
+    }
+
     if (screen->nativeOrientation() != Qt::PrimaryOrientation)
         display.set_panel_rotation(toDisplayRotation(screen->nativeOrientation()));
     return display;
@@ -135,6 +117,26 @@ bool DesktopScreenQt::updateAllScreens()
 display::Display DesktopScreenQt::GetDisplayNearestWindow(gfx::NativeWindow /*window*/) const
 {
     return GetPrimaryDisplay();
+}
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
+bool DesktopScreenQt::SetScreenSaverSuspended(bool suspend)
+{
+#if defined(USE_XSCREENSAVER)
+    return ui::SuspendX11ScreenSaver(suspend);
+#else
+    return false;
+#endif
+}
+#endif
+
+bool DesktopScreenQt::IsScreenSaverActive() const
+{
+#if defined(USE_XSCREENSAVER)
+    return ui::IsXScreensaverActive();
+#else
+    return false;
+#endif
 }
 
 } // namespace QtWebEngineCore

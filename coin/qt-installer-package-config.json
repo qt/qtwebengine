@@ -6,7 +6,7 @@
             "**/include/*QtPdf*/**/*",
             "**/lib/cmake/Qt*Gui/*Pdf*",
             "**/lib/cmake/Qt*Pdf*/*",
-            "**/lib/cmake/Qt*Qml/QmlPlugins/*pdf*",
+            "**/lib/cmake/Qt*Qml/QmlPlugins/*Pdf*",
             "**/lib/metatypes/*pdf*",
             "**/lib/pkgconfig/*Pdf*",
             "**/lib/*Pdf*",
@@ -15,8 +15,10 @@
             "**/mkspecs/modules/qt_lib_pdf*",
             "**/mkspecs/modules/qt_plugin_qpdf.pri",
             "**/modules/Pdf*",
-            "**/plugins/imageformats/*",
-            "**/qml/QtQuick/**/*"
+            "**/plugins/imageformats/**/*",
+            "**/qml/QtQuick/**/*",
+            "**/qml/QtQuick/Pdf/**/.rcc/*",
+            "**/qml/QtQuick/Pdf/**/.rcc/qmlcache/*"
         ]
     }
 }

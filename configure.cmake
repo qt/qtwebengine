@@ -234,7 +234,8 @@ qt_feature("qtpdf-widgets-build" PRIVATE
 qt_feature("qtpdf-quick-build" PRIVATE
     LABEL "Build QtPdfQuick"
     PURPOSE "Enables building the QtPdfQuick module."
-    CONDITION TARGET Qt::Quick AND TARGET Qt::Qml AND QT_FEATURE_qtpdf_build
+    CONDITION TARGET Qt::Quick AND TARGET Qt::Qml AND QT_FEATURE_qtpdf_build AND
+        Qt6Quick_VERSION VERSION_GREATER_EQUAL "6.4.0"
 )
 
 function(qtwebengine_internal_is_file_inside_root_build_dir out_var file)
@@ -555,14 +556,21 @@ add_check_for_support(
 )
 
 if(WIN32)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL MSVC)
+        add_check_for_support(
+            MODULES QtWebEngine QtPdf
+            CONDITION NOT MSVC_VERSION LESS 1929
+            MESSAGE "MSVC compiler version must be at least 14.29."
+        )
+    endif()
     set(windowsSdkVersion $ENV{WindowsSDKVersion})
     string(REGEX REPLACE "([0-9.]+).*" "\\1" windowsSdkVersion "${windowsSdkVersion}")
     string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+)\\.[0-9]+" "\\1" sdkMinor "${windowsSdkVersion}")
     message("-- Windows 10 SDK version: ${windowsSdkVersion}")
     add_check_for_support(
         MODULES QtWebEngine QtPdf
-        CONDITION sdkMinor GREATER_EQUAL 19041
-        MESSAGE "Build requires Windows 10 SDK at least version 10.0.19041.0"
+        CONDITION sdkMinor GREATER_EQUAL 20348
+        MESSAGE "Build requires Windows 10 SDK at least version 10.0.20348.0"
     )
 endif()
 

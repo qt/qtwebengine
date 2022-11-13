@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2017 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2017 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 // Based on chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc:
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
@@ -53,18 +17,16 @@
 #include "chrome/browser/ui/webui/device_log_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
-#include "chrome/browser/ui/webui/quota_internals/quota_internals_ui.h"
 #include "chrome/browser/ui/webui/user_actions/user_actions_ui.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/url_utils.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
-#include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "url/gurl.h"
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
 #include "chrome/browser/ui/webui/sandbox/sandbox_internals_ui.h"
 #endif
 
@@ -130,9 +92,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
     if (url.host() == chrome::kChromeUINetInternalsHost)
         return &NewWebUI<NetInternalsUI>;
 
-    if (url.host() == chrome::kChromeUIQuotaInternalsHost)
-        return &NewWebUI<QuotaInternalsUI>;
-
     if (url.SchemeIs(content::kChromeDevToolsScheme)) {
         //        if (!DevToolsUIBindings::IsValidFrontendURL(url))
         //            return nullptr;
@@ -168,7 +127,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
     if (url.host_piece() == chrome::kChromeUIWebRtcLogsHost)
         return &NewWebUI<WebRtcLogsUI>;
 #endif
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) // Consider enabling for BUILDFLAG(IS_WIN)
     if (url.host_piece() == chrome::kChromeUISandboxHost)
         return &NewWebUI<SandboxInternalsUI>;
 #endif

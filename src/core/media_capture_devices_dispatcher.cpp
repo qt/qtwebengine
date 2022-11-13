@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -43,13 +7,12 @@
 
 #include "media_capture_devices_dispatcher.h"
 
-#include "javascript_dialog_manager_qt.h"
 #include "type_conversion.h"
 #include "web_contents_delegate_qt.h"
 #include "web_contents_view_qt.h"
 #include "web_engine_settings.h"
 
-#include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
@@ -59,14 +22,11 @@
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager_base.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if QT_CONFIG(webengine_webrtc)
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #endif
-
-#include <QtCore/qcoreapplication.h>
 
 #if defined(WEBRTC_USE_X11)
 #include <dlfcn.h>
@@ -90,7 +50,7 @@ const blink::MediaStreamDevice *findDeviceWithId(const blink::MediaStreamDevices
             return &(*iter);
         }
     }
-    return 0;
+    return nullptr;
 }
 
 // Based on chrome/browser/media/webrtc/desktop_capture_devices_util.cc:
@@ -256,7 +216,7 @@ public:
     }
 
 private:
-    gfx::NativeViewId OnStarted(base::OnceClosure stop, SourceCallback source,
+    gfx::NativeViewId OnStarted(base::RepeatingClosure stop, SourceCallback source,
                                 const std::string& label,
                                 std::vector<content::DesktopMediaID> screen_capture_ids,
                                 StateChangeCallback state_change) override
@@ -282,9 +242,7 @@ private:
     base::WeakPtr<WebContentsDelegateQt> m_delegate;
     const blink::MediaStreamDevices m_devices;
     bool m_started = false;
-    base::OnceClosure m_onStop; // currently unused
-
-    DISALLOW_COPY_AND_ASSIGN(MediaStreamUIQt);
+    base::RepeatingClosure m_onStop; // currently unused
 };
 
 } // namespace
@@ -336,6 +294,7 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
             case blink::MEDIA_DEVICE_ACCESS:
             case blink::MEDIA_DEVICE_UPDATE:
             case blink::MEDIA_GENERATE_STREAM:
+            case blink::MEDIA_GET_OPEN_DEVICE:
                 getDefaultDevices(request.requested_audio_device_id, request.requested_video_device_id,
                                   microphoneRequested, webcamRequested, &devices);
                 break;
@@ -375,7 +334,7 @@ MediaCaptureDevicesDispatcher *MediaCaptureDevicesDispatcher::GetInstance()
 MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
     : m_webContentsCollection(this)
 {
-#if defined(OS_WIN)
+#if defined(Q_OS_WIN)
     // Currently loopback audio capture is supported only on Windows.
     m_loopbackAudioSupported = true;
 #endif

@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "certificate_error_controller.h"
 
@@ -78,9 +42,10 @@ ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateSymantecLegacy,
                    net::ERR_CERT_SYMANTEC_LEGACY)
 ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateKnownInterceptionBlocked,
                    net::ERR_CERT_KNOWN_INTERCEPTION_BLOCKED)
-ASSERT_ENUMS_MATCH(QWebEngineCertificateError::SslObsoleteVersion,
-                   net::ERR_SSL_OBSOLETE_VERSION)
-// ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateErrorEnd, net::ERR_CERT_END)
+// net::ERR_SSL_OBSOLETE_VERSION was removed again in Chromium 98
+//ASSERT_ENUMS_MATCH(QWebEngineCertificateError::SslObsoleteVersion,
+//                   net::ERR_SSL_OBSOLETE_VERSION)
+//ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateErrorEnd, net::ERR_CERT_END)
 
 // Copied from chrome/browser/ssl/ssl_error_handler.cc:
 static int IsCertErrorFatal(int cert_error)
@@ -98,7 +63,6 @@ static int IsCertErrorFatal(int cert_error)
     case net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED:
     case net::ERR_CERT_SYMANTEC_LEGACY:
     case net::ERR_CERT_KNOWN_INTERCEPTION_BLOCKED:
-    case net::ERR_SSL_OBSOLETE_VERSION:
         return false;
     case net::ERR_CERT_CONTAINS_ERRORS:
     case net::ERR_CERT_REVOKED:

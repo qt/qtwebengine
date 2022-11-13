@@ -1,61 +1,10 @@
-/****************************************************************************
-**
-** Copyright (C) 2020 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the examples of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:BSD$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** BSD License Usage
-** Alternatively, you may use this file under the terms of the BSD license
-** as follows:
-**
-** "Redistribution and use in source and binary forms, with or without
-** modification, are permitted provided that the following conditions are
-** met:
-**   * Redistributions of source code must retain the above copyright
-**     notice, this list of conditions and the following disclaimer.
-**   * Redistributions in binary form must reproduce the above copyright
-**     notice, this list of conditions and the following disclaimer in
-**     the documentation and/or other materials provided with the
-**     distribution.
-**   * Neither the name of The Qt Company Ltd nor the names of its
-**     contributors may be used to endorse or promote products derived
-**     from this software without specific prior written permission.
-**
-**
-** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-import QtQml // workaround for QTBUG-82873
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts
 import QtQuick.Pdf
-import QtQuick.Shapes
-import QtQuick.Window
-import Qt.labs.animation
 
 ApplicationWindow {
     id: root
@@ -64,7 +13,7 @@ ApplicationWindow {
     color: "lightgrey"
     title: document.title
     visible: true
-    property string source // for main.cpp
+    required property url source // for main.cpp
     property real scaleStep: Math.sqrt(2)
 
     header: ToolBar {
@@ -197,15 +146,36 @@ ApplicationWindow {
     }
 
     Dialog {
-        id: errorDialog
-        title: "Error loading " + document.source
-        standardButtons: Dialog.Ok
+        id: passwordDialog
+        title: "Password"
+        standardButtons: Dialog.Ok | Dialog.Cancel
         modal: true
         closePolicy: Popup.CloseOnEscape
         anchors.centerIn: parent
         width: 300
 
-        Label {
+        contentItem: TextField {
+            id: passwordField
+            placeholderText: qsTr("Please provide the password")
+            echoMode: TextInput.Password
+            width: parent.width
+            onAccepted: passwordDialog.accept()
+        }
+        onOpened: function() { passwordField.forceActiveFocus() }
+        onAccepted: document.password = passwordField.text
+    }
+
+    Dialog {
+        id: errorDialog
+        title: "Error loading " + document.source
+        standardButtons: Dialog.Close
+        modal: true
+        closePolicy: Popup.CloseOnEscape
+        anchors.centerIn: parent
+        width: 300
+        visible: document.status === PdfDocument.Error
+
+        contentItem: Label {
             id: errorField
             text: document.error
         }
@@ -218,7 +188,7 @@ ApplicationWindow {
         document: PdfDocument {
             id: document
             source: Qt.resolvedUrl(root.source)
-            onStatusChanged: if (status === PdfDocument.Error) errorDialog.open()
+            onPasswordRequired: passwordDialog.open()
         }
         searchString: searchField.text
     }
@@ -237,17 +207,23 @@ ApplicationWindow {
             anchors.fill: parent
             anchors.margins: 2
             model: view.searchModel
+            currentIndex: view.searchModel.currentResult
             ScrollBar.vertical: ScrollBar { }
             delegate: ItemDelegate {
+                id: resultDelegate
+                required property int index
+                required property int page
+                required property string contextBefore
+                required property string contextAfter
                 width: parent ? parent.width : 0
                 RowLayout {
                     anchors.fill: parent
                     spacing: 0
                     Label {
-                        text: "Page " + (page + 1) + ": "
+                        text: "Page " + (resultDelegate.page + 1) + ": "
                     }
                     Label {
-                        text: contextBefore
+                        text: resultDelegate.contextBefore
                         elide: Text.ElideLeft
                         horizontalAlignment: Text.AlignRight
                         Layout.fillWidth: true
@@ -259,18 +235,14 @@ ApplicationWindow {
                         width: implicitWidth
                     }
                     Label {
-                        text: contextAfter
+                        text: resultDelegate.contextAfter
                         elide: Text.ElideRight
                         Layout.fillWidth: true
                         Layout.preferredWidth: parent.width / 2
                     }
                 }
                 highlighted: ListView.isCurrentItem
-                onClicked: {
-                    searchResultsList.currentIndex = index
-                    view.goToLocation(page, location, 0)
-                    view.searchModel.currentResult = indexOnPage
-                }
+                onClicked: view.searchModel.currentResult = resultDelegate.index
             }
         }
     }
