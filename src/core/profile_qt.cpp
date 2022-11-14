@@ -5,6 +5,7 @@
 
 #include "profile_adapter.h"
 #include "browsing_data_remover_delegate_qt.h"
+#include "client_hints.h"
 #include "download_manager_delegate_qt.h"
 #include "file_system_access/file_system_access_permission_context_factory_qt.h"
 #include "net/ssl_host_state_delegate_qt.h"
@@ -209,7 +210,7 @@ content::PermissionControllerDelegate *ProfileQt::GetPermissionControllerDelegat
 
 content::ClientHintsControllerDelegate *ProfileQt::GetClientHintsControllerDelegate()
 {
-    return nullptr;
+    return ClientHintsFactory::GetForBrowserContext(this);
 }
 
 content::StorageNotificationService *ProfileQt::GetStorageNotificationService()

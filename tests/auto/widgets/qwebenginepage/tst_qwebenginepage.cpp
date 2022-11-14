@@ -263,6 +263,7 @@ private Q_SLOTS:
     void fileSystemAccessDialog();
 
     void localToRemoteNavigation();
+    void clientHints();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -5117,6 +5118,33 @@ void tst_QWebEnginePage::localToRemoteNavigation()
     page.runJavaScript(QStringLiteral("document.getElementById(\"link\").click()"));
     QTest::qWait(500);
     QVERIFY(!remote.loaded);
+}
+
+void tst_QWebEnginePage::clientHints()
+{
+    HttpServer server;
+    connect(&server, &HttpServer::newRequest, [&] (HttpReqRep *r) {
+        r->setResponseBody(r->requestHeader("Sec-Ch-Ua-Platform"));
+        r->sendResponse();
+    });
+    QVERIFY(server.start());
+
+    QWebEnginePage page;
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+
+    page.setUrl(server.url());
+    QTRY_COMPARE(loadSpy.size(), 1);
+    QVERIFY(loadSpy.takeFirst().value(0).toBool());
+
+    QString platform = toPlainTextSync(&page);
+#ifdef Q_OS_LINUX
+    QCOMPARE(platform.toLower(), "\"linux\"");
+#elif defined (Q_OS_MACOS)
+    QCOMPARE(platform.toLower(), "\"macos\"");
+#elif defined (Q_OS_WIN)
+    QCOMPARE(platform.toLower(), "\"windows\"");
+#endif
+
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};

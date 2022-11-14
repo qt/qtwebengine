@@ -90,6 +90,7 @@ foreach(arch ${archs})
                 certificate_error_controller.cpp certificate_error_controller.h
                 chromium_overrides.cpp
                 client_cert_select_controller.cpp client_cert_select_controller.h
+                client_hints.cpp client_hints.h
                 clipboard_change_observer.h
                 clipboard_qt.cpp clipboard_qt.h
                 color_chooser_controller.cpp color_chooser_controller.h color_chooser_controller_p.h
