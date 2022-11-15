@@ -856,12 +856,12 @@ std::vector<std::unique_ptr<content::NavigationThrottle>> ContentBrowserClientQt
                             base::BindRepeating(&navigationThrottleCallback),
                             navigation_interception::SynchronyMode::kSync));
 
-#if BUILDFLAG(ENABLE_PDF)
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    MaybeAddThrottle(extensions::PDFIFrameNavigationThrottleQt::MaybeCreateThrottleFor(navigation_handle), &throttles);
-#endif // BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
+    MaybeAddThrottle(
+            extensions::PDFIFrameNavigationThrottleQt::MaybeCreateThrottleFor(navigation_handle),
+            &throttles);
     MaybeAddThrottle(pdf::PdfNavigationThrottle::MaybeCreateThrottleFor(navigation_handle, std::make_unique<PdfStreamDelegateQt>()), &throttles);
-#endif // BUILDFLAG(ENABLE_PDF)
+#endif // BUILDFLAG(ENABLE_PDF) && BUIDLFLAG(ENABLE_EXTENSIONS)
 
     return throttles;
 }
@@ -1238,7 +1238,7 @@ ContentBrowserClientQt::WillCreateURLLoaderRequestInterceptors(content::Navigati
                                        const scoped_refptr<network::SharedURLLoaderFactory>& network_loader_factory)
 {
     std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>> interceptors;
-#if BUILDFLAG(ENABLE_PDF)
+#if BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
     {
         std::unique_ptr<content::URLLoaderRequestInterceptor> pdf_interceptor =
                 pdf::PdfURLLoaderRequestInterceptor::MaybeCreateInterceptor(
@@ -1246,7 +1246,7 @@ ContentBrowserClientQt::WillCreateURLLoaderRequestInterceptors(content::Navigati
         if (pdf_interceptor)
             interceptors.push_back(std::move(pdf_interceptor));
     }
-#endif
+#endif // BUILDFLAG(ENABLE_PDF) && BUIDLFLAG(ENABLE_EXTENSIONS)
 
     return interceptors;
 }
