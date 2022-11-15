@@ -489,7 +489,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
             webContents(), AutofillClientQt::FromWebContents(webContents()),
             /* app_locale = */ "", autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 
-#if QT_CONFIG(webengine_printing_and_pdf)
+#if QT_CONFIG(webengine_printing_and_pdf) && QT_CONFIG(webengine_extensions)
     pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
             webContents(), std::make_unique<PDFWebContentsHelperClientQt>());
 #endif
