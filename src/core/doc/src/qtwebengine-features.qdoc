@@ -132,6 +132,9 @@
     Note that during the \c selectClientCertificate calls, \QWE lists both system
     and in-memory stored clients certificates.
 
+    See also \l{WebEngine Widgets Client Certificate Example}{Client Certificate Example}
+    for more implementation details.
+
     \section1 Custom Schemes
 
     \QWE makes it possible for the application to define its own custom
