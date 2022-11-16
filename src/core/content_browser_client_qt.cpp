@@ -118,6 +118,7 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "common/extensions/extensions_client_qt.h"
 #include "components/guest_view/browser/guest_view_base.h"
+#include "extensions/browser/api/messaging/messaging_api_message_filter.h"
 #include "extensions/browser/api/mime_handler_private/mime_handler_private.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_message_filter.h"
@@ -250,6 +251,7 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost 
     host->AddFilter(new BrowserMessageFilterQt(id, profile));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     host->AddFilter(new extensions::ExtensionMessageFilter(id, profile));
+    host->AddFilter(new extensions::MessagingAPIMessageFilter(id, profile));
 #endif //ENABLE_EXTENSIONS
 
     bool is_incognito_process = profile->IsOffTheRecord();
