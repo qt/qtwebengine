@@ -1,13 +1,13 @@
 dependencies:
   ../qtdeclarative:
-    ref: 0dbb801920ea04d99834f7e89e02241f12bd54f8
+    ref: 92e3a21d2040af2be30e342d4ed5c96f0c48e487
     required: true
   ../qtpositioning:
-    ref: 85e250ca97de2c4d45841200deb3ab30d30f863f
+    ref: 1e06f60261845143d7b7269662c53baa5ec7b523
     required: false
   ../qttools:
-    ref: db10efbc42c3e3e553ce3845eb29170e1272ce0e
+    ref: 02e40bfc26278ca4f7da4f5e525ffd5437c4126a
     required: false
   ../qtwebchannel:
-    ref: 869ae721cce9a83c3e56551ce1d1ec2c65540193
+    ref: ef6437c43533d0660a8957222dce29ef15c52226
     required: false
