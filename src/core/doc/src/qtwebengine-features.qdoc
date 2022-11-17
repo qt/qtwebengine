@@ -125,10 +125,12 @@
     recommended to always give the user a choice before uniquely identifying them
     to a remote server.
 
-    To manage a client certificate in-memory store, the QWebEngineClientCertificateStore
-    instance can be obtained with the QWebEngineProfile::clientCertificateStore() method.
-    An application can use this class to add a new certificate with a
-    QWebEngineClientCertificateStore::add() call.
+    In addition to the client certificate stored in system settings, \QWE offers also
+    the in-memory store. The QWebEngineClientCertificateStore instance can be obtained with
+    the QWebEngineProfile::clientCertificateStore() method. An application can use this
+    class to add a new certificate with a QWebEngineClientCertificateStore::add() call.
+    Note that during the \c selectClientCertificate calls, \QWE lists both system
+    and in-memory stored clients certificates.
 
     \section1 Custom Schemes
 
@@ -137,7 +139,7 @@
 
     Custom schemes can be used to implement alternative network protocols with
     all the usual web security policies, privileged internal schemes for
-    displaying user interface compoments or debugging information, sandboxed
+    displaying user interface components or debugging information, sandboxed
     schemes with extra restrictions, and so on.
 
     For more information, see \l QWebEngineUrlScheme and \l
