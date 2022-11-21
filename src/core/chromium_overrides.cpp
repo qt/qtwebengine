@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/font_list.h"
+#include "gpu/vulkan/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -19,6 +20,10 @@
 #include <QFontDatabase>
 #include <QLibraryInfo>
 
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "gpu/vulkan/init/vulkan_factory.h"
+#endif
+
 #if !QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
 #include "chrome/browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h"
 #endif
@@ -27,6 +32,17 @@ void *GetQtXDisplay()
 {
     return GLContextHelper::getXDisplay();
 }
+
+#if BUILDFLAG(ENABLE_VULKAN)
+namespace gpu {
+std::unique_ptr<VulkanImplementation> CreateVulkanImplementation(bool use_swiftshader,
+                                                                 bool allow_protected_memory)
+{
+    NOTIMPLEMENTED();
+    return nullptr;
+}
+} // namespace gpu
+#endif
 
 namespace content {
 class WebContentsView;
