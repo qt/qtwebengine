@@ -110,6 +110,7 @@ namespace gpu {
 std::unique_ptr<VulkanImplementation> CreateVulkanImplementation(bool use_swiftshader,
                                                                  bool allow_protected_memory)
 {
+#if QT_CONFIG(webengine_vulkan)
 #if BUILDFLAG(IS_APPLE)
     // TODO: Investigate if we can support MoltenVK.
     NOTIMPLEMENTED();
@@ -132,6 +133,10 @@ std::unique_ptr<VulkanImplementation> CreateVulkanImplementation(bool use_swifts
 
     return std::make_unique<VulkanImplementationQt>();
 #endif // BUILDFLAG(IS_APPLE)
+#else
+    NOTREACHED();
+    return nullptr;
+#endif // QT_CONFIG(webengine_vulkan)
 }
 } // namespace gpu
 #endif // BUILDFLAG(ENABLE_VULKAN)
