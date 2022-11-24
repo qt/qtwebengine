@@ -343,7 +343,6 @@ qt_feature("webengine-system-minizip" PRIVATE
 )
 qt_feature("webengine-system-libevent" PRIVATE
     LABEL "libevent"
-    AUTODETECT FALSE # coin bug 711
     CONDITION UNIX AND LIBEVENT_FOUND
 )
 qt_feature("webengine-system-libxml" PRIVATE
