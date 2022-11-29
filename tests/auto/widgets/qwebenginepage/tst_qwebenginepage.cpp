@@ -165,7 +165,8 @@ private Q_SLOTS:
     void runJavaScriptDisabled();
     void runJavaScriptFromSlot();
     void fullScreenRequested();
-    void quotaRequested();
+    void requestQuota_data();
+    void requestQuota();
 
 
     // Tests from tst_QWebEngineFrame
@@ -2015,8 +2016,18 @@ void tst_QWebEnginePage::fullScreenRequested()
     QTRY_VERIFY(isFalseJavaScriptResult(page, "document.webkitIsFullScreen"));
 }
 
-void tst_QWebEnginePage::quotaRequested()
+void tst_QWebEnginePage::requestQuota_data()
 {
+    QTest::addColumn<QString>("storage");
+    QTest::addRow("webkitPersistentStorage") << "navigator.webkitPersistentStorage";
+    QTest::addRow("webkitTemporaryStorage") << "navigator.webkitTemporaryStorage";
+
+}
+
+void tst_QWebEnginePage::requestQuota()
+{
+    QFETCH(QString, storage);
+
     ConsolePage page;
     QWebEngineView view;
     view.setPage(&page);
@@ -2024,35 +2035,23 @@ void tst_QWebEnginePage::quotaRequested()
     page.load(QUrl("qrc:///resources/content.html"));
     QVERIFY(loadFinishedSpy.wait());
 
-    connect(&page, &QWebEnginePage::quotaRequested,
-            [] (QWebEngineQuotaRequest request)
-    {
-        if (request.requestedSize() <= 5000)
-            request.accept();
-        else
-            request.reject();
-    });
-
-    evaluateJavaScriptSync(&page,
-        "navigator.webkitPersistentStorage.requestQuota(1024, function(grantedSize) {" \
-            "console.log(grantedSize);" \
-        "});");
+    evaluateJavaScriptSync(&page, QString(
+        "var storage = %1;"
+        "storage.requestQuota(1024, function(grantedSize) {"
+        "   console.log(grantedSize);"
+        "});").arg(storage));
     QTRY_COMPARE(page.messages.size(), 1);
     QTRY_COMPARE(page.messages[0], QString("1024"));
 
-    evaluateJavaScriptSync(&page,
-        "navigator.webkitPersistentStorage.requestQuota(6000, function(grantedSize) {" \
-            "console.log(grantedSize);" \
-        "});");
-    QTRY_COMPARE(page.messages.size(), 2);
-    QTRY_COMPARE(page.messages[1], QString("1024"));
-
-    evaluateJavaScriptSync(&page,
-        "navigator.webkitPersistentStorage.queryUsageAndQuota(function(usedBytes, grantedBytes) {" \
-            "console.log(usedBytes + ', ' + grantedBytes);" \
-        "});");
+    evaluateJavaScriptSync(&page, QString(
+        "var storage = %1;"
+        "storage.queryUsageAndQuota(function(usedBytes, grantedBytes) {"
+        "   console.log(usedBytes);"
+        "   console.log(grantedBytes);"
+        "});").arg(storage));
     QTRY_COMPARE(page.messages.size(), 3);
-    QTRY_COMPARE(page.messages[2], QString("0, 1024"));
+    QTRY_COMPARE(page.messages[1], QString("0"));
+    QTRY_VERIFY(page.messages[2].toLongLong() >= 1024);
 }
 
 void tst_QWebEnginePage::symmetricUrl()

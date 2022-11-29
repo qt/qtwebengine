@@ -46,7 +46,6 @@ public:
     void RenderProcessWillLaunch(content::RenderProcessHost *host) override;
     gl::GLShareGroup* GetInProcessGpuShareGroup() override;
     content::MediaObserver* GetMediaObserver() override;
-    scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext() override;
     void OverrideWebkitPrefs(content::WebContents *web_contents,
                              blink::web_pref::WebPreferences *prefs) override;
     void AllowCertificateError(content::WebContents *web_contents,

@@ -74,7 +74,6 @@
 #include "platform_notification_service_qt.h"
 #include "profile_qt.h"
 #include "profile_io_data_qt.h"
-#include "quota_permission_context_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
 #include "select_file_dialog_factory_qt.h"
 #include "type_conversion.h"
@@ -286,11 +285,6 @@ void ContentBrowserClientQt::OverrideWebkitPrefs(content::WebContents *webConten
     WebContentsDelegateQt* delegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
     if (delegate)
         delegate->overrideWebPreferences(webContents, web_prefs);
-}
-
-scoped_refptr<content::QuotaPermissionContext> ContentBrowserClientQt::CreateQuotaPermissionContext()
-{
-    return new QuotaPermissionContextQt;
 }
 
 void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webContents,

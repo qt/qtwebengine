@@ -7,6 +7,7 @@
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtWebEngineCore/qwebengineclientcertificateselection.h>
 #include <QtWebEngineCore/qwebenginedownloadrequest.h>
+#include <QtWebEngineCore/qwebenginequotarequest.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
@@ -35,7 +36,6 @@ class QWebEngineNavigationRequest;
 class QWebEngineNewWindowRequest;
 class QWebEnginePagePrivate;
 class QWebEngineProfile;
-class QWebEngineQuotaRequest;
 class QWebEngineRegisterProtocolHandlerRequest;
 class QWebEngineScriptCollection;
 class QWebEngineSettings;
@@ -309,7 +309,9 @@ Q_SIGNALS:
     void featurePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature);
     void featurePermissionRequestCanceled(const QUrl &securityOrigin, QWebEnginePage::Feature feature);
     void fullScreenRequested(QWebEngineFullScreenRequest fullScreenRequest);
-    void quotaRequested(QWebEngineQuotaRequest quotaRequest);
+#if QT_DEPRECATED_SINCE(6, 5)
+    QT_DEPRECATED void quotaRequested(QWebEngineQuotaRequest quotaRequest);
+#endif
     void registerProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest request);
     void fileSystemAccessRequested(QWebEngineFileSystemAccessRequest request);
     void selectClientCertificate(QWebEngineClientCertificateSelection clientCertSelection);

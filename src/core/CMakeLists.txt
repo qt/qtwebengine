@@ -159,9 +159,6 @@ foreach(arch ${archs})
                 profile_adapter_client.cpp profile_adapter_client.h
                 profile_io_data_qt.cpp profile_io_data_qt.h
                 profile_qt.cpp profile_qt.h
-                quota_permission_context_qt.cpp quota_permission_context_qt.h
-                quota_request_controller.h
-                quota_request_controller_impl.cpp quota_request_controller_impl.h
                 render_view_context_menu_qt.cpp render_view_context_menu_qt.h
                 render_widget_host_view_qt.cpp render_widget_host_view_qt.h
                 render_widget_host_view_qt_delegate.h

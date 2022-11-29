@@ -1230,10 +1230,13 @@
 /*!
     \qmlsignal WebEngineView::quotaRequested(QuotaRequest request)
     \since QtWebEngine 1.7
+    \deprecated [6.5] This signal is no longer emitted.
 
-    This signal is emitted when the web page issues a \a request for a larger persistent storage
-    than the application's current allocation in File System API. The default quota
-    is 0 bytes.
+    Requesting host quota is no longer supported by Chromium.
+    The behavior of navigator.webkitPersistentStorage
+    is identical to navigator.webkitTemporaryStorage.
+
+    For further details, see https://crbug.com/1233525
 
     \sa QuotaRequest
 */

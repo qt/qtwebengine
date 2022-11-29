@@ -37,7 +37,6 @@
 #include <QtWebEngineCore/qwebenginefullscreenrequest.h>
 #include <QtWebEngineCore/qwebengineloadinginfo.h>
 #include <QtWebEngineCore/qwebenginenavigationrequest.h>
-#include <QtWebEngineCore/qwebenginequotarequest.h>
 #include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
 #include <QtWebEngineCore/qwebenginescriptcollection.h>
 #include <QtWebEngineCore/private/qwebenginecontextmenurequest_p.h>
@@ -649,12 +648,6 @@ void QQuickWebEngineViewPrivate::runMouseLockPermissionRequest(const QUrl &secur
 {
     // TODO: Add mouse lock support
     adapter->grantMouseLockPermission(securityOrigin, false);
-}
-
-void QQuickWebEngineViewPrivate::runQuotaRequest(QWebEngineQuotaRequest request)
-{
-    Q_Q(QQuickWebEngineView);
-    Q_EMIT q->quotaRequested(request);
 }
 
 void QQuickWebEngineViewPrivate::runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest request)
