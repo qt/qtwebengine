@@ -26,7 +26,7 @@ void AutofillPopupController::setCurrentIndex(const QModelIndex &index)
 
     if (m_currentIndex.isValid()) {
         const autofill::Suggestion &suggestion = d->suggestions[m_currentIndex.row()];
-        d->delegate->DidSelectSuggestion(suggestion.main_text.value, suggestion.frontend_id, suggestion.GetPayload<std::string>());
+        d->delegate->DidSelectSuggestion(suggestion.main_text.value, suggestion.frontend_id, autofill::Suggestion::BackendId());
     }
 
     Q_EMIT currentIndexChanged(index);
@@ -79,8 +79,7 @@ void AutofillPopupController::acceptSuggestion()
 
     const int index = m_currentIndex.row();
     const autofill::Suggestion &suggestion = d->suggestions[index];
-    d->delegate->DidAcceptSuggestion(suggestion.main_text.value, suggestion.frontend_id,
-                                     suggestion.payload, index);
+    d->delegate->DidAcceptSuggestion(suggestion, index);
 }
 
 void AutofillPopupController::notifyPopupShown()

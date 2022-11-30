@@ -316,7 +316,7 @@ void DevToolsFrontendQt::WebContentsDestroyed()
 void DevToolsFrontendQt::SetPreference(const std::string &name, const std::string &value)
 {
     DCHECK(m_prefStore);
-    m_prefStore->SetValue(name, base::WrapUnique(new base::Value(value)), 0);
+    m_prefStore->SetValue(name, base::Value(value), 0);
 }
 
 void DevToolsFrontendQt::RemovePreference(const std::string &name)

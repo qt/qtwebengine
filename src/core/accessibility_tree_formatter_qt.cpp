@@ -24,16 +24,16 @@ public:
     explicit AccessibilityTreeFormatterQt();
     ~AccessibilityTreeFormatterQt() override;
 
-   base::Value BuildTree(ui::AXPlatformNodeDelegate *start) const override;
-   base::Value BuildTreeForSelector(const AXTreeSelector &selector) const override
+   base::Value::Dict BuildTree(ui::AXPlatformNodeDelegate *start) const override;
+   base::Value::Dict BuildTreeForSelector(const AXTreeSelector &selector) const override
    {
-       return base::Value{};
+       return base::Value::Dict{};
    }
 
 private:
     void RecursiveBuildAccessibilityTree(const BrowserAccessibility &node, base::Value::Dict *dict) const;
     void AddProperties(const BrowserAccessibility &node, base::Value::Dict *dict) const;
-    std::string ProcessTreeForOutput(const base::DictionaryValue &node) const override;
+    std::string ProcessTreeForOutput(const base::Value::Dict &node) const override;
 };
 
 AccessibilityTreeFormatterQt::AccessibilityTreeFormatterQt()
@@ -44,13 +44,13 @@ AccessibilityTreeFormatterQt::~AccessibilityTreeFormatterQt()
 {
 }
 
-base::Value AccessibilityTreeFormatterQt::BuildTree(ui::AXPlatformNodeDelegate *start) const
+base::Value::Dict AccessibilityTreeFormatterQt::BuildTree(ui::AXPlatformNodeDelegate *start) const
 {
     BrowserAccessibility *root_internal =
         BrowserAccessibility::FromAXPlatformNodeDelegate(start);
     base::Value::Dict dict;
     RecursiveBuildAccessibilityTree(*root_internal, &dict);
-    return base::Value(std::move(dict));
+    return dict;
 }
 
 void AccessibilityTreeFormatterQt::RecursiveBuildAccessibilityTree(const BrowserAccessibility &node, base::Value::Dict *dict) const
@@ -135,36 +135,33 @@ void AccessibilityTreeFormatterQt::AddProperties(const BrowserAccessibility &nod
     dict->Set("description", iface->text(QAccessible::Description).toStdString());
 }
 
-std::string AccessibilityTreeFormatterQt::ProcessTreeForOutput(const base::DictionaryValue &node) const
+std::string AccessibilityTreeFormatterQt::ProcessTreeForOutput(const base::Value::Dict &node) const
 {
     std::string error_value;
-    if (node.GetString("error", &error_value))
-        return error_value;
+    if (auto error_value = node.FindString("error"))
+        return *error_value;
 
     std::string line;
     std::string role_value;
-    node.GetString("role", &role_value);
-    if (!role_value.empty())
-        WriteAttribute(true, base::StringPrintf("%s", role_value.c_str()), &line);
+    if (auto role_value = node.FindString("role"))
+        WriteAttribute(true, base::StringPrintf("%s", role_value->c_str()), &line);
 
-    const base::ListValue *states_value = nullptr;
-    if (node.GetList("states", &states_value)) {
-        for (const auto &state : states_value->GetList()) {
+    if (const auto states_value = node.FindList("states")) {
+        for (const auto &state : *states_value) {
             if (auto *state_value = state.GetIfString())
                 WriteAttribute(false, *state_value, &line);
         }
     }
 
-    std::string name_value;
-    if (node.GetString("name", &name_value))
-        WriteAttribute(true, base::StringPrintf("name='%s'", name_value.c_str()), &line);
+    if (auto name_value = node.FindString("name"))
+        WriteAttribute(true, base::StringPrintf("name='%s'", name_value->c_str()), &line);
 
-    std::string description_value;
-    if (node.GetString("description", &description_value))
-        WriteAttribute(false, base::StringPrintf("description='%s'", description_value.c_str()), &line);
+    if (auto description_value = node.FindString("description"))
+        WriteAttribute(false, base::StringPrintf("description='%s'", description_value->c_str()), &line);
 
     int id_value;
-    node.GetInteger("id", &id_value);
+    if (auto maybe_id = node.FindInt("id"))
+        id_value = *maybe_id;
     WriteAttribute(false, base::StringPrintf("id=%d", id_value), &line);
 
     return line + "\n";

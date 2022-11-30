@@ -475,7 +475,7 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kNote") << QString("<div role='note'>a</div>") << 0 << QAccessible::Note;
     //QTest::newRow("ax::mojom::Role::kPane"); // No mapping to ARIA role
     QTest::newRow("ax::mojom::Role::kParagraph") << QString("<p>a</p>") << 0 << QAccessible::Paragraph;
-    QTest::newRow("ax::mojom::Role::kPopUpButton") << QString("<select><option>a</option></select>") << 1 << QAccessible::ComboBox;
+    QTest::newRow("ax::mojom::Role::kPopUpButton") << QString("<select><option>a</option></select>") << 1 << QAccessible::PopupMenu;
     QTest::newRow("ax::mojom::Role::kPre") << QString("<pre>a</pre>") << 0 << QAccessible::Section;
     //QTest::newRow("ax::mojom::Role::kPresentational") << QString("<div role='presentation'>a</div>") << 0 << QAccessible::NoRole; // FIXME: Aria role 'presentation' should work
     QTest::newRow("ax::mojom::Role::kProgressIndicator") << QString("<div role='progressbar' aria-valuenow='77' aria-valuemin='22' aria-valuemax='99'></div>") << 0 << QAccessible::ProgressBar;

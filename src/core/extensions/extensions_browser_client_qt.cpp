@@ -166,7 +166,7 @@ private:
         if (!head->mime_type.empty()) {
             head->headers->AddHeader(net::HttpRequestHeaders::kContentType, head->mime_type.c_str());
         }
-        client_->OnReceiveResponse(std::move(head), std::move(consumer_handle));
+        client_->OnReceiveResponse(std::move(head), std::move(consumer_handle), absl::nullopt);
 
         uint32_t write_size = data->size();
         MojoResult result = producer_handle->WriteData(data->front(), &write_size, MOJO_WRITE_DATA_FLAG_NONE);
@@ -288,6 +288,24 @@ BrowserContext *ExtensionsBrowserClientQt::GetOffTheRecordContext(BrowserContext
 
 BrowserContext *ExtensionsBrowserClientQt::GetOriginalContext(BrowserContext *context)
 {
+    return context;
+}
+
+BrowserContext *ExtensionsBrowserClientQt::GetRedirectedContextInIncognito(BrowserContext *context, bool, bool)
+{
+    // like in ShellExtensionsBrowserClient:
+    return context;
+}
+
+BrowserContext *ExtensionsBrowserClientQt::GetContextForRegularAndIncognito(BrowserContext *context, bool, bool)
+{
+    // like in ShellExtensionsBrowserClient:
+    return context;
+}
+
+BrowserContext *ExtensionsBrowserClientQt::GetRegularProfile(BrowserContext *context, bool, bool)
+{
+    // like in ShellExtensionsBrowserClient:
     return context;
 }
 

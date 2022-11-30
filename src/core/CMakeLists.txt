@@ -382,11 +382,16 @@ foreach(arch ${archs})
 
         if(LINUX)
             list(APPEND gnArgArg
+                use_gtk=false # GTK toolkit bindings
+                use_qt=false # Qt5 toolkit bindings
                 use_cups=false
                 use_gio=false
                 use_gnome_keyring=false
-                use_udev=true
                 use_bundled_fontconfig=false
+                use_glib=false
+                use_bluez=false
+                use_vaapi=false
+                use_udev=true
                 enable_session_service=false
                 is_cfi=false
                 use_ozone=true
@@ -395,9 +400,6 @@ foreach(arch ${archs})
                 ozone_platform_external=true
                 ozone_platform="qt"
                 ozone_extra_path="${CMAKE_CURRENT_LIST_DIR}/ozone/ozone_extra.gni"
-                use_glib=false
-                use_bluez=false
-                use_vaapi=false
             )
             set(systemLibs libjpeg libpng freetype harfbuzz libevent libwebp libxml
                 opus snappy libvpx icu ffmpeg re2 lcms2

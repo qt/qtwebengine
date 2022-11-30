@@ -30,10 +30,9 @@ WebChannelIPCTransportHost::WebChannelIPCTransportHost(content::WebContents *con
     , m_worldId(worldId)
     , m_receiver(contents, this)
 {
-    contents->ForEachRenderFrameHost(base::BindRepeating([](WebChannelIPCTransportHost *that, uint32_t worldId, content::RenderFrameHost *frame) {
-                                                   that->setWorldId(frame, worldId);
-                                               },
-                                               base::Unretained(this), worldId));
+    contents->ForEachRenderFrameHost([this, worldId](content::RenderFrameHost *frame) {
+                                         setWorldId(frame, worldId);
+                                     });
 }
 
 WebChannelIPCTransportHost::~WebChannelIPCTransportHost()
@@ -60,10 +59,9 @@ void WebChannelIPCTransportHost::setWorldId(uint32_t worldId)
 {
     if (m_worldId == worldId)
         return;
-    web_contents()->ForEachRenderFrameHost(base::BindRepeating([](WebChannelIPCTransportHost *that, uint32_t worldId, content::RenderFrameHost *frame) {
-                                                         that->setWorldId(frame, worldId);
-                                                     },
-                                                     base::Unretained(this), worldId));
+    web_contents()->ForEachRenderFrameHost([this, worldId](content::RenderFrameHost *frame) {
+                                               setWorldId(frame, worldId);
+                                           });
     m_worldId = worldId;
 }
 
@@ -77,11 +75,11 @@ void WebChannelIPCTransportHost::setWorldId(content::RenderFrameHost *frame, uin
 
 void WebChannelIPCTransportHost::resetWorldId()
 {
-    web_contents()->ForEachRenderFrameHost(base::BindRepeating([](WebChannelIPCTransportHost *that, content::RenderFrameHost *frame) {
+    web_contents()->ForEachRenderFrameHost([this] (content::RenderFrameHost *frame) {
         if (!frame->IsRenderFrameLive())
             return;
-        that->GetWebChannelIPCTransportRemote(frame)->ResetWorldId();
-    }, this));
+        GetWebChannelIPCTransportRemote(frame)->ResetWorldId();
+    });
 }
 
 void WebChannelIPCTransportHost::DispatchWebChannelMessage(const std::vector<uint8_t> &json)

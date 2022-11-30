@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
+#include "base/types/optional_util.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
@@ -26,6 +27,7 @@
 #include "extensions/common/switches.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_frame_helper.h"
+#include "extensions/renderer/extension_web_view_helper.h"
 #include "extensions/renderer/extensions_render_frame_observer.h"
 #include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/script_context.h"
@@ -112,6 +114,11 @@ void ExtensionsRendererClientQt::RenderThreadStarted()
     resource_request_policy_.reset(new extensions::ResourceRequestPolicyQt(extension_dispatcher_.get()));
 
     thread->AddObserver(extension_dispatcher_.get());
+}
+
+void ExtensionsRendererClientQt::WebViewCreated(blink::WebView *web_view, const url::Origin *outermost_origin)
+{
+    new extensions::ExtensionWebViewHelper(web_view, outermost_origin);
 }
 
 void ExtensionsRendererClientQt::RenderFrameCreated(content::RenderFrame *render_frame,

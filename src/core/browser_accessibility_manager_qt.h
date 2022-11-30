@@ -24,13 +24,13 @@ class BrowserAccessibilityManagerQt : public BrowserAccessibilityManager
 public:
     BrowserAccessibilityManagerQt(QtWebEngineCore::WebContentsAccessibilityQt *webContentsAccessibility,
                                   const ui::AXTreeUpdate &initialTree,
-                                  BrowserAccessibilityDelegate *delegate);
+                                  WebAXPlatformTreeManagerDelegate *delegate);
     ~BrowserAccessibilityManagerQt() override;
     void FireBlinkEvent(ax::mojom::Event event_type,
                         BrowserAccessibility *node,
                         int action_request_id) override;
     void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
-                            BrowserAccessibility* node) override;
+                            const ui::AXNode *node) override;
 
     QAccessibleInterface *rootParentAccessible();
     bool isValid() const { return m_valid; }

@@ -459,7 +459,7 @@ function(add_linker_options target buildDir completeStatic)
     endif()
     if(WIN32)
         get_copy_of_response_file(objects_rsp ${target} objects)
-        target_link_options(${cmakeTarget} PRIVATE /DELAYLOAD:mf.dll /DELAYLOAD:mfplat.dll /DELAYLOAD:mfreadwrite.dll)
+        target_link_options(${cmakeTarget} PRIVATE /DELAYLOAD:mf.dll /DELAYLOAD:mfplat.dll /DELAYLOAD:mfreadwrite.dll /DELAYLOAD:winmm.dll)
         target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${objects_rsp}>")
         if(NOT completeStatic)
             get_copy_of_response_file(archives_rsp ${target} archives)
@@ -800,7 +800,7 @@ endmacro()
 
 macro(append_build_type_setup)
     list(APPEND gnArgArg
-        use_qt=true
+        is_qtwebengine=true
         init_stack_vars=false
         is_component_build=false
         is_shared=true

@@ -14,7 +14,8 @@
 #include "components/autofill/content/renderer/autofill_assistant_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
-#include "components/cdm/renderer/widevine_key_system_properties.h"
+#include "components/cdm/renderer/external_clear_key_key_system_info.h"
+#include "components/cdm/renderer/widevine_key_system_info.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/grit/components_resources.h"
@@ -25,7 +26,8 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/buildflags/buildflags.h"
-#include "media/base/key_system_properties.h"
+#include "media/base/key_system_info.h"
+#include "media/cdm/cdm_capability.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "net/base/net_errors.h"
@@ -71,12 +73,13 @@
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "base/feature_list.h"
-#include "components/cdm/renderer/external_clear_key_key_system_properties.h"
 #include "content/public/renderer/key_system_support.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
 #include "third_party/widevine/cdm/buildflags.h"
+#if BUILDFLAG(ENABLE_WIDEVINE)
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
+#endif
 #endif
 
 #if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
@@ -202,6 +205,16 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_fr
 
     new autofill::AutofillAgent(render_frame, password_autofill_agent, password_generation_agent,
                                 autofill_assistant_agent, associated_interfaces);
+}
+
+void ContentRendererClientQt::WebViewCreated(blink::WebView *web_view,
+                                             bool was_created_by_renderer,
+                                             const url::Origin *outermost_origin)
+{
+    Q_UNUSED(was_created_by_renderer);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    ExtensionsRendererClientQt::GetInstance()->WebViewCreated(web_view, outermost_origin);
+#endif
 }
 
 void ContentRendererClientQt::RunScriptsAtDocumentStart(content::RenderFrame *render_frame)
@@ -464,7 +477,7 @@ static const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey"
 
 // External Clear Key (used for testing).
 static void AddExternalClearKey(const media::mojom::KeySystemCapabilityPtr &capability,
-                                media::KeySystemPropertiesVector *key_systems)
+                                media::KeySystemInfoVector *key_systems)
 {
     Q_UNUSED(capability);
     if (!base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting)) {
@@ -590,7 +603,7 @@ static media::SupportedCodecs GetSupportedCodecs(const media::CdmCapability& cap
 }
 
 static void AddWidevine(const media::mojom::KeySystemCapabilityPtr &capability,
-                        media::KeySystemPropertiesVector *key_systems)
+                        media::KeySystemInfoVector *key_systems)
 {
     // Codecs and encryption schemes.
     media::SupportedCodecs codecs = media::EME_CODEC_NONE;
@@ -618,7 +631,7 @@ static void AddWidevine(const media::mojom::KeySystemCapabilityPtr &capability,
     }
 
     // Robustness.
-    using Robustness = cdm::WidevineKeySystemProperties::Robustness;
+    using Robustness = cdm::WidevineKeySystemInfo::Robustness;
     auto max_audio_robustness = Robustness::SW_SECURE_CRYPTO;
     auto max_video_robustness = Robustness::SW_SECURE_DECODE;
 
@@ -631,7 +644,7 @@ static void AddWidevine(const media::mojom::KeySystemCapabilityPtr &capability,
     auto persistent_state_support = media::EmeFeatureSupport::REQUESTABLE;
     auto distinctive_identifier_support = media::EmeFeatureSupport::NOT_SUPPORTED;
 
-    key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
+    key_systems->emplace_back(new cdm::WidevineKeySystemInfo(
                                   codecs, std::move(encryption_schemes), std::move(session_types),
                                   hw_secure_codecs, std::move(hw_secure_encryption_schemes),
                                   std::move(hw_secure_session_types),
@@ -645,7 +658,7 @@ static void AddWidevine(const media::mojom::KeySystemCapabilityPtr &capability,
 void OnKeySystemSupportUpdated(media::GetSupportedKeySystemsCB cb,
                                content::KeySystemCapabilityPtrMap key_system_capabilities)
 {
-    media::KeySystemPropertiesVector key_systems;
+    media::KeySystemInfoVector key_systems;
     for (const auto &entry : key_system_capabilities) {
         const auto &key_system = entry.first;
         const auto &capability = entry.second;

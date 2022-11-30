@@ -39,7 +39,7 @@ autofill::AutocompleteHistoryManager *AutofillClientQt::GetAutocompleteHistoryMa
 
 PrefService *AutofillClientQt::GetPrefs()
 {
-    return const_cast<PrefService *>(base::as_const(*this).GetPrefs());
+    return const_cast<PrefService *>(std::as_const(*this).GetPrefs());
 }
 
 const PrefService *AutofillClientQt::GetPrefs() const
