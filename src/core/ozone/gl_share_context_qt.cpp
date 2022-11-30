@@ -4,14 +4,16 @@
 #include "gl_share_context_qt.h"
 #include <QtGui/qtgui-config.h>
 #include <qpa/qplatformnativeinterface.h>
-#include <QtGui/qopenglcontext_platform.h>
-#if defined(Q_OS_MACOS)
-#include "macos_context_type_helper.h"
-#endif
+
 #if QT_CONFIG(opengl)
+#include <QtGui/qopenglcontext_platform.h>
 #include <QOpenGLContext>
 #include <QOpenGLExtraFunctions>
-#endif
+
+#if defined(Q_OS_MACOS)
+#include "macos_context_type_helper.h"
+#endif // defined(Q_OS_MACOS)
+#endif // QT_CONFIG(opengl)
 
 namespace QtWebEngineCore {
 
