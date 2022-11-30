@@ -10,13 +10,11 @@
 #include "proxy_config_monitor.h"
 #include "proxy_config_service_qt.h"
 
-#include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
-#include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/proxy_resolution/proxy_config_with_annotation.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 #include <utility>

@@ -9,11 +9,10 @@
 
 #include "proxy_config_service_qt.h"
 
-#include "base/bind.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
-#include "content/public/browser/browser_thread.h"
+#include "net/base/proxy_server.h"
 
-using content::BrowserThread;
+#include <QNetworkProxy>
 
 net::ProxyServer ProxyConfigServiceQt::fromQNetworkProxy(const QNetworkProxy &qtProxy)
 {
