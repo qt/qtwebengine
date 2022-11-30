@@ -142,10 +142,9 @@ bool VulkanImplementationQt::CanImportGpuMemoryBuffer(
     return false;
 }
 
-std::unique_ptr<VulkanImage>
-VulkanImplementationQt::CreateImageFromGpuMemoryHandle(VulkanDeviceQueue * /*device_queue*/,
-                                                       gfx::GpuMemoryBufferHandle /*gmb_handle*/,
-                                                       gfx::Size /*size*/, VkFormat /*vk_format*/)
+std::unique_ptr<VulkanImage> VulkanImplementationQt::CreateImageFromGpuMemoryHandle(VulkanDeviceQueue *, gfx::GpuMemoryBufferHandle,
+                                                                                    gfx::Size, VkFormat,
+                                                                                    const gfx::ColorSpace &)
 {
     NOTREACHED();
     return nullptr;

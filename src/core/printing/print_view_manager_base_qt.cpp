@@ -188,9 +188,9 @@ void PrintViewManagerBaseQt::UpdatePrintingEnabled()
 #if QT_CONFIG(webengine_printing_and_pdf)
     enabled = true;
 #endif
-    web_contents()->ForEachRenderFrameHost(
-           base::BindRepeating(&PrintViewManagerBaseQt::SendPrintingEnabled,
-                               base::Unretained(this), enabled));
+    web_contents()->ForEachRenderFrameHost([this, enabled](content::RenderFrameHost *rfh) {
+        SendPrintingEnabled(enabled, rfh);
+    });
 }
 
 void PrintViewManagerBaseQt::NavigationStopped()

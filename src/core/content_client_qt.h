@@ -14,7 +14,7 @@ namespace QtWebEngineCore {
 class ContentClientQt : public content::ContentClient {
 public:
 #if QT_CONFIG(webengine_pepper_plugins)
-    void AddPepperPlugins(std::vector<content::PepperPluginInfo>* plugins) override;
+    void AddPlugins(std::vector<content::ContentPluginInfo> *plugins) override;
 #endif
     void AddContentDecryptionModules(std::vector<content::CdmInfo> *cdms,
                                      std::vector<media::CdmHostFilePath> *cdm_host_file_paths) override;

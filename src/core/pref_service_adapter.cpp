@@ -122,8 +122,6 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterBooleanPref(autofill::prefs::kAutofillCreditCardEnabled, false);
     registry->RegisterBooleanPref(autofill::prefs::kAutofillCreditCardFidoAuthEnabled, false);
     registry->RegisterBooleanPref(autofill::prefs::kAutofillWalletImportEnabled, false);
-    registry->RegisterBooleanPref(autofill::prefs::kAutofillJapanCityFieldMigratedDeprecated,
-                                  false);
 
     // devtools
     registry->RegisterDictionaryPref(prefs::kDevToolsFileSystemPaths);
@@ -190,7 +188,7 @@ QStringList PrefServiceAdapter::spellCheckLanguages() const
 {
     QStringList spellcheck_dictionaries;
     const auto &list = m_prefService->GetList(spellcheck::prefs::kSpellCheckDictionaries);
-    for (const auto &dictionary : list->GetList()) {
+    for (const auto &dictionary : list) {
         spellcheck_dictionaries.append(QString::fromStdString(dictionary.GetString()));
     }
 

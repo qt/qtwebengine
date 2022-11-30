@@ -357,6 +357,8 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
     case ax::mojom::Role::kComboBoxMenuButton:
     case ax::mojom::Role::kTextFieldWithComboBox:
         return QAccessible::ComboBox;
+    case ax::mojom::Role::kComboBoxSelect:
+        return QAccessible::PopupMenu;
     case ax::mojom::Role::kComplementary:
         return QAccessible::ComplementaryContent;
     case ax::mojom::Role::kComment:

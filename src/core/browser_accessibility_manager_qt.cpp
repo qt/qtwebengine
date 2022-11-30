@@ -24,7 +24,7 @@ namespace content {
 // static
 BrowserAccessibilityManager *BrowserAccessibilityManager::Create(
         const ui::AXTreeUpdate &initialTree,
-        BrowserAccessibilityDelegate *delegate)
+        WebAXPlatformTreeManagerDelegate *delegate)
 {
 #if QT_CONFIG(accessibility)
     Q_ASSERT(delegate);
@@ -49,7 +49,7 @@ BrowserAccessibilityManager *BrowserAccessibilityManager::Create(
 
 // static
 BrowserAccessibilityManager *BrowserAccessibilityManager::Create(
-        BrowserAccessibilityDelegate *delegate)
+        WebAXPlatformTreeManagerDelegate *delegate)
 {
 #if QT_CONFIG(accessibility)
     return BrowserAccessibilityManager::Create(BrowserAccessibilityManagerQt::GetEmptyDocument(), delegate);
@@ -62,7 +62,7 @@ BrowserAccessibilityManager *BrowserAccessibilityManager::Create(
 BrowserAccessibilityManagerQt::BrowserAccessibilityManagerQt(
     QtWebEngineCore::WebContentsAccessibilityQt *webContentsAccessibility,
     const ui::AXTreeUpdate &initialTree,
-    BrowserAccessibilityDelegate* delegate)
+    WebAXPlatformTreeManagerDelegate* delegate)
       : BrowserAccessibilityManager(delegate)
       , m_webContentsAccessibility(webContentsAccessibility)
 {
@@ -148,9 +148,13 @@ void BrowserAccessibilityManagerQt::FireBlinkEvent(ax::mojom::Event event_type,
 }
 
 void BrowserAccessibilityManagerQt::FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
-                                                       BrowserAccessibility* node)
+                                                       const ui::AXNode *node)
 {
-    auto *iface = toQAccessibleInterface(node);
+    BrowserAccessibilityManager::FireGeneratedEvent(event_type, node);
+
+    BrowserAccessibility *wrapper = GetFromAXNode(node);
+    DCHECK(wrapper);
+    auto *iface = toQAccessibleInterface(wrapper);
 
     switch (event_type) {
     case ui::AXEventGenerator::Event::VALUE_IN_TEXT_FIELD_CHANGED:

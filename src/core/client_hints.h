@@ -70,6 +70,9 @@ public:
 
     void ClearAdditionalClientHints() override;
 
+    void SetMostRecentMainFrameViewportSize(const gfx::Size&) override;
+    gfx::Size GetMostRecentMainFrameViewportSize() override;
+
 private:
     SEQUENCE_CHECKER(sequence_checker_);
 
@@ -87,6 +90,11 @@ private:
 
     std::unique_ptr<network::NetworkQualityTracker> network_quality_tracker_
         GUARDED_BY_CONTEXT(sequence_checker_);
+
+    // This stores the viewport size of the most recent visible main frame tree
+    // node. This value is only used when the viewport size cannot be directly
+    // queried such as for prefetch requests and for tab restores.
+    gfx::Size viewport_size_;
 };
 
 } // namespace QtWebEngineCore

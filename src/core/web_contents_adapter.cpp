@@ -153,14 +153,10 @@ static QVariant fromJSValue(const base::Value *result)
     }
     case base::Value::Type::DICTIONARY:
     {
-        const base::DictionaryValue *out;
-        if (result->GetAsDictionary(&out)) {
+        if (const auto dict = result->GetIfDict()) {
             QVariantMap map;
-            base::DictionaryValue::Iterator it(*out);
-            while (!it.IsAtEnd()) {
-                map.insert(toQt(it.key()), fromJSValue(&it.value()));
-                it.Advance();
-            }
+            for (const auto pair : *dict)
+                map.insert(toQt(pair.first), fromJSValue(&pair.second));
             ret.setValue(map);
         }
         break;
@@ -1026,7 +1022,7 @@ QAccessibleInterface *WebContentsAdapter::browserAccessible()
     content::BrowserAccessibilityManager *manager = rfh->GetOrCreateBrowserAccessibilityManager();
     if (!manager) // FIXME!
         return nullptr;
-    content::BrowserAccessibility *acc = manager->GetRoot();
+    content::BrowserAccessibility *acc = manager->GetFromAXNode(manager->GetRoot());
 
     return content::toQAccessibleInterface(acc);
 }

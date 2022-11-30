@@ -368,7 +368,7 @@ source_set("qtwebengine_sources") {
       "//extensions/common/url_pattern.h",
     ]
   }
-  if (is_linux) {
+  if (is_linux || is_win) {
     sources += [
       "//chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc",
       "//chrome/browser/ui/webui/sandbox/sandbox_internals_ui.h",
@@ -378,6 +378,8 @@ source_set("qtwebengine_sources") {
     sources += [
       "//chrome/browser/net/chrome_mojo_proxy_resolver_win.cc",
       "//chrome/browser/net/chrome_mojo_proxy_resolver_win.h",
+      "//chrome/browser/ui/webui/sandbox/sandbox_handler.cc",
+      "//chrome/browser/ui/webui/sandbox/sandbox_handler.h",
     ]
     deps += [ "//services/proxy_resolver_win",
               "//services/proxy_resolver_win/public/mojom",
@@ -508,6 +510,7 @@ repack("qtwebengine_repack_resources") {
     "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
     "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/content/dev_ui_content_resources.pak",
+    "$root_gen_dir/content/indexed_db_resources.pak",
     "$root_gen_dir/content/quota_internals_resources.pak",
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
@@ -525,6 +528,7 @@ repack("qtwebengine_repack_resources") {
      "//content/browser/resources/media:resources",
      "//content/browser/tracing:resources",
      "//content:content_resources",
+     "//content/browser/resources/indexed_db:resources",
      "//content/browser/resources/quota:resources",
      "//content:dev_ui_content_resources_grit",
      "//mojo/public/js:resources",

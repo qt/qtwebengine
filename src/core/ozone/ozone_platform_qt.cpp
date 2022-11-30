@@ -84,7 +84,6 @@ const ui::OzonePlatform::PlatformProperties &OzonePlatformQt::GetPlatformPropert
     static base::NoDestructor<ui::OzonePlatform::PlatformProperties> properties;
     static bool initialized = false;
     if (!initialized) {
-        properties->uses_external_vulkan_image_factory = true;
         properties->fetch_buffer_formats_for_gmb_on_gpu = true;
 
         initialized = true;

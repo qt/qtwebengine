@@ -110,10 +110,9 @@ public:
     void Restart();
 
     // network::mojom::URLLoaderClient
-    void OnReceiveResponse(network::mojom::URLResponseHeadPtr head, mojo::ScopedDataPipeConsumerHandle) override;
+    void OnReceiveResponse(network::mojom::URLResponseHeadPtr head, mojo::ScopedDataPipeConsumerHandle, absl::optional<mojo_base::BigBuffer>) override;
     void OnReceiveRedirect(const net::RedirectInfo &redirect_info, network::mojom::URLResponseHeadPtr head) override;
     void OnUploadProgress(int64_t current_position, int64_t total_size, OnUploadProgressCallback callback) override;
-    void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
     void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
     void OnComplete(const network::URLLoaderCompletionStatus &status) override;
     void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr) override {}
@@ -403,11 +402,11 @@ void InterceptedRequest::ContinueAfterIntercept()
 
 // URLLoaderClient methods.
 
-void InterceptedRequest::OnReceiveResponse(network::mojom::URLResponseHeadPtr head, mojo::ScopedDataPipeConsumerHandle handle)
+void InterceptedRequest::OnReceiveResponse(network::mojom::URLResponseHeadPtr head, mojo::ScopedDataPipeConsumerHandle handle, absl::optional<mojo_base::BigBuffer> buffer)
 {
     current_response_ = head.Clone();
 
-    target_client_->OnReceiveResponse(std::move(head), std::move(handle));
+    target_client_->OnReceiveResponse(std::move(head), std::move(handle), std::move(buffer));
 }
 
 void InterceptedRequest::OnReceiveRedirect(const net::RedirectInfo &redirect_info, network::mojom::URLResponseHeadPtr head)
@@ -425,11 +424,6 @@ void InterceptedRequest::OnReceiveRedirect(const net::RedirectInfo &redirect_inf
 void InterceptedRequest::OnUploadProgress(int64_t current_position, int64_t total_size, OnUploadProgressCallback callback)
 {
     target_client_->OnUploadProgress(current_position, total_size, std::move(callback));
-}
-
-void InterceptedRequest::OnReceiveCachedMetadata(mojo_base::BigBuffer data)
-{
-    target_client_->OnReceiveCachedMetadata(std::move(data));
 }
 
 void InterceptedRequest::OnTransferSizeUpdated(int32_t transfer_size_diff)

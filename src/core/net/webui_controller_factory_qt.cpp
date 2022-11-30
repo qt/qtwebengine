@@ -128,7 +128,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
     if (url.host_piece() == chrome::kChromeUIWebRtcLogsHost)
         return &NewWebUI<WebRtcLogsUI>;
 #endif
-#if BUILDFLAG(IS_LINUX) // Consider enabling for BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
     if (url.host_piece() == chrome::kChromeUISandboxHost)
         return &NewWebUI<SandboxInternalsUI>;
 #endif
