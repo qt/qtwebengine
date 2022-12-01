@@ -6,7 +6,14 @@
 
 #include "web_contents_adapter_client.h"
 
+#include <memory>
+#include <utility>
+
 QT_BEGIN_NAMESPACE
+
+// We changed the type from QScopedPointer to unique_ptr, make sure it's binary compatible:
+static_assert(sizeof(QScopedPointer<QWebEngineUrlRequestInfoPrivate>)
+              == sizeof(std::unique_ptr<QWebEngineUrlRequestInfoPrivate>));
 
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::LinkNavigation, QWebEngineUrlRequestInfo::NavigationTypeLink)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::TypedNavigation, QWebEngineUrlRequestInfo::NavigationTypeTyped)
@@ -92,14 +99,17 @@ QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo() {}
 /*!
     \internal
 */
-QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfo &&p) : d_ptr(p.d_ptr.take()) {}
+QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfo &&p)
+    : d_ptr(std::move(p.d_ptr))
+{
+}
 
 /*!
     \internal
 */
 QWebEngineUrlRequestInfo &QWebEngineUrlRequestInfo::operator=(QWebEngineUrlRequestInfo &&p)
 {
-    d_ptr.reset(p.d_ptr.take());
+    d_ptr = std::move(p.d_ptr);
     return *this;
 }
 
