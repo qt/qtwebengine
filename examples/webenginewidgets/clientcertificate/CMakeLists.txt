@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.16)
-project(maps LANGUAGES CXX)
+project(clientcertificate LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 
@@ -27,7 +27,7 @@ set_target_properties(client PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-qt_internal_add_resource(client "client"
+qt_add_resources(client "client"
     PREFIX
         "/"
     FILES
@@ -35,7 +35,7 @@ qt_internal_add_resource(client "client"
        "resources/client.key"
 )
 
-qt_internal_add_resource(server "server"
+qt_add_resources(server "server"
     PREFIX
         "/"
     FILES
