@@ -34,7 +34,7 @@ qt_internal_add_resource(tst_qwebengineclientcertificatestore "tst_qwebenginecli
         ${tst_qwebengineclientcertificatestore_resource_files}
 )
 
-if(LINUX)
+if(LINUX AND NOT CMAKE_CROSSCOMPILING)
 
     get_filename_component(homePath $ENV{HOME} ABSOLUTE)
 
