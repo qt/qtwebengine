@@ -36,35 +36,41 @@ if(LINUX AND NOT CMAKE_CROSSCOMPILING)
     get_filename_component(homePath $ENV{HOME} ABSOLUTE)
 
     find_program(pk12util_EXECUTABLE NAMES pk12util)
+    find_program(certutil_EXECUTABLE NAMES certutil)
 
-    if(pk12util_EXECUTABLE)
+    if(pk12util_EXECUTABLE AND certutil_EXECUTABLE)
         add_custom_command(
             DEPENDS resources/client2.p12
-            COMMAND ${pk12util_EXECUTABLE}
-                -d sql:"${homePath}/.pki/nssdb"
-                -n qwebengineclientcertificatestore
+            COMMAND test -e "${homePath}/.pki/nssdb" || ${CMAKE_COMMAND} -E make_directory
+                "${homePath}/.pki/nssdb"
+            COMMAND test -e "${homePath}/.pki/nssdb/cert9.db" || ${certutil_EXECUTABLE}
+                -N --empty-password -d sql:${homePath}/.pki/nssdb
+            COMMAND test -e "${homePath}/.pki/nssdb/cert9.db" && ${pk12util_EXECUTABLE}
+                -d sql:${homePath}/.pki/nssdb
                 -i "${CMAKE_CURRENT_LIST_DIR}/resources/client2.p12"
-                -W \"\"
+                -W ""
             COMMAND ${CMAKE_COMMAND} -E touch pk12util.stamp
             OUTPUT pk12util.stamp
+            VERBATIM
+            USES_TERMINAL
         )
         add_custom_target(
             add-user-personal-certificate
             DEPENDS pk12util.stamp
     )
     qt_internal_extend_target(tst_qwebengineclientcertificatestore DEFINES TEST_NSS)
-    add_dependencies(tst_qwebengineclientcertificatestore  add-user-personal-certificate)
+    add_dependencies(tst_qwebengineclientcertificatestore add-user-personal-certificate)
     endif()
 
     find_program(certutil_EXECUTABLE NAMES certutil)
 
     if(certutil_EXECUTABLE)
         add_custom_target(remove-user-personal-certificate
+            COMMAND ${CMAKE_COMMAND} -E remove pk12util.stamp
             COMMAND ${certutil_EXECUTABLE}
                 -d sql:"${homePath}/.pki/nssdb"
                 -D
                 -n qwebengineclientcertificatestore
-            COMMAND ${CMAKE_COMMAND} -E remove pk12util.stamp
         )
     endif()
 endif()
