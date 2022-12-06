@@ -15,10 +15,14 @@
         \li \l{Client Certificates}
         \li \l{Custom Schemes}
         \li \l{Drag and Drop}
+        \li \l{Favicon}
         \li \l{Fullscreen}
+        \li \l{Hardware Acceleration}
         \li \l{HTML5 DRM}
         \li \l{HTML5 Geolocation}
+        \li \l{HTML5 WebSockets}
         \li \l{HTTP/2 Protocol}
+        \li \l{Local Storage}
         \li \l{Native Dialogs}
         \li \l{Pepper Plugin API}
         \li \l{PDF File Viewing}
@@ -28,9 +32,9 @@
         \li \l{Spellchecker}
         \li \l{Touch}
         \li \l{View Source}
-        \li \l{webrtc_feature}{WebRTC}
         \li \l{Web Notifications}
-        \li \l{Favicon Handling}
+        \li \l{WebGL}
+        \li \l{webrtc_feature}{WebRTC}
     \endlist
 
     \section1 Audio and Video Codecs
@@ -121,6 +125,16 @@
     recommended to always give the user a choice before uniquely identifying them
     to a remote server.
 
+    In addition to the client certificate stored in system settings, \QWE offers also
+    the in-memory store. The QWebEngineClientCertificateStore instance can be obtained with
+    the QWebEngineProfile::clientCertificateStore() method. An application can use this
+    class to add a new certificate with a QWebEngineClientCertificateStore::add() call.
+    Note that during the \c selectClientCertificate calls, \QWE lists both system
+    and in-memory stored clients certificates.
+
+    See also \l{WebEngine Widgets Client Certificate Example}{Client Certificate Example}
+    for more implementation details.
+
     \section1 Custom Schemes
 
     \QWE makes it possible for the application to define its own custom
@@ -128,7 +142,7 @@
 
     Custom schemes can be used to implement alternative network protocols with
     all the usual web security policies, privileged internal schemes for
-    displaying user interface compoments or debugging information, sandboxed
+    displaying user interface components or debugging information, sandboxed
     schemes with extra restrictions, and so on.
 
     For more information, see \l QWebEngineUrlScheme and \l
@@ -149,6 +163,61 @@
 
     Support for this feature was added in Qt 5.7.0.
 
+    \section1 Favicon
+
+    \QWE supports the web site URL icon, \e favicon. Each icon is stored in the internal
+    database for each \l QWebEngieProfile and can be accessed using a \l QWebEnginePage::icon()
+    call or a \l {WebEngineView::icon}{WebEngineView.icon} property for the currently loaded content.
+
+    Moreover \QWE provides API for accessing already stored icons in the internal profile's database.
+
+    \note The icon database is not available for off-the-record profiles.
+
+    \section2 QML Favicon Handling
+
+    For accessing icons a \c QQuickImageProvider is registered. This provider can be
+    accessed by a special URL where the scheme is "image:" and the host is "favicon".
+
+    \qml
+    Image {
+        source: "image://favicon/url"
+    }
+    \endqml
+
+    The \c url can be the URL of the favicon:
+
+    \qml
+    Image {
+        source: "image://favicon/https://www.qt.io/hubfs/2016_Qt_Logo/qt_logo_green_rgb_16x16.png"
+    }
+    \endqml
+
+    The \c url also can be a page URL to access its icon:
+
+    \qml
+    Image {
+        source: "image://favicon/https://www.qt.io/"
+    }
+    \endqml
+
+    If more than one icon is available, the \l {Image::sourceSize} property can be
+    specified to choose the icon with the desired size. If \l {Image::sourceSize}
+    is not specified or 0, the largest available icon will be chosen.
+
+    The image provider looks up the requested icon in the existing \l {WebEngineView}
+    instances. First, it tries to match the currently displayed icons. If no match
+    has been found it requests the icon from the database. Each profile has its
+    own icon database and it is stored in the persistent storage thus the stored icons
+    can be accessed without network connection too. The icon must be previously loaded
+    to be stored in the database.
+
+    \section2 C++ Favicon Handling
+
+    A user can request an icon from the previously loaded content for each
+    \l QWebEngineProfile using the \l QWebEngineProfile::requestIconForPageURL() or
+    \l QWebEngineProfile::requestIconForIconURL() calls. Note that the profile's database is
+    stored in the persistent storage and can be accessed without a network connection.
+
     \section1 Fullscreen
 
     \QWE supports viewing web content in fullscreen mode. For more
@@ -164,6 +233,20 @@
     mode.
 
     Support for this feature was added in Qt 5.6.0.
+
+    \section1 Hardware Acceleration
+
+    QtWebEngine tries to use hardware acceleration for rendering the content. It uses
+    \c OpenGL or \c OpenGLES APIs to execute rendering calls on the GPU. As a fallback,
+    software rendering is used whenever the hardware does not meet the required set of
+    OpenGL functionality. A user can check the current hardware acceleration state by
+    loading the \c {chrome://gpu} internal page. Moreover, the acceleration can be explicitly
+    disabled with \c {QTWEBENGINE_CHROMIUM_FLAGS} using the \c {disable-gpu} switch.
+    For example on Linux:
+
+    \badcode
+    export QTWEBENGINE_CHROMIUM_FLAGS=--disable-gpu
+    \endcode
 
     \section1 HTML5 DRM
 
@@ -205,17 +288,34 @@
     \section1 HTML5 Geolocation
 
     \QWE supports JavaScript Geolocation API with \l {Qt Positioning} as a
-    backend. The application has to explicitly allow the feature by using
-    QWebEnginePage::Geolocation or \l{WebEngineView::Feature}
-    {WebEngineView.Feature}.
+    backend. HTML5 geolocation is disabled by default. To explicitly allow it, the application
+    needs to listen to QWebEnginePage::featurePermissionRequested. Use QWebEnginePage::Geolocation
+    with a QWebEnginePage::setFeaturePermission() call or \l{WebEngineView::Feature}
+    with a \l{WebEngineView::grantFeaturePermission} {WebEngineView.grantFeaturePermission}() call
+    to grant the required permission.
 
-    If Qt Positioning has been built before \QWE then this feature can be
+    If \QWE was built with Qt Positioning support then this feature can be
     tested by using \l{WebEngine Widgets Maps Example}{Maps} and allowing it to
-    find the current position of the user. Note that on Windows an external GPS
-    receiver must be connected to the application. For more information, see
-    \l{Qt Positioning}.
+    find the current position of the user.
+
+    See \l{Qt Positioning} for a possible backend setup like the GPS or IP based positioning.
 
     Support for this feature was added in Qt 5.5.0.
+
+    \section1 HTML5 WebSockets
+
+    \QWE supports the WebSocket JavaScript API to communicate with WebSocket servers
+    using the \c {ws://} or \c {wss://} protocols. Moreover, integration with Qt WebChannel
+    and Qt WebSockets enables communication between JavaScript and the native side of
+    the application.
+
+    The Qt WebChannel module has a great example for a
+    \l[QtWebChannel]{Qt WebChannel ChatServer Example}{chat server}
+    and its web based
+    \l[QtWebChannel]{Qt WebChannel ChatClient HTML Example}{chat client}.
+    The client works out of the box in the example browsers of \QWE
+    (such as \l{WebEngine Widgets Simple Browser Example}
+    {Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}).
 
     \section1 HTTP/2 Protocol
 
@@ -225,6 +325,31 @@
     This feature can be tested by opening an HTTP/2 demo, such as the
     \l{Akamai HTTP/2 Demo}, in \l{WebEngine Widgets Simple Browser Example}
     {Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}.
+
+    \section1 Local Storage
+
+    \QWE supports saving key-value pairs in a \c {Local Storage} with no expiration date.
+    This is a part of the \l
+    {https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API}
+    {Web Storage API}, where a user can access a \c Storage object for the given domains
+    using the \c Window.localStorage JavaScript property. The stored data will persist even
+    after the page or the browser application is closed.
+
+    Note that the \c Local Storage can be also disabled with a
+    \l QWebEngineSettings::LocalStorageEnabled
+    setting. Moreover, the storage path can be adjusted with a
+    \l QWebEngineProfile::setPersistentStoragePath
+    call.
+
+    \code
+     QWebEngineProfile profile("MyProfile");
+     profile.settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, isEnabled);
+     profile.setPersistentStoragePath("/path/to/storage");
+    \endcode
+
+    \QWE offers also an easy way of investigating the content of the \c {Local Storage}
+    with \l {Qt WebEngine Developer Tools} by visiting the \uicontrol Application panel
+    and expanding the \uicontrol {Local Storage} menu.
 
     \section1 Native Dialogs
 
@@ -516,6 +641,15 @@
     This feature can be tested by building and running the
     \l{WebEngine Widgets Spellchecker Example}{Spellchecker Example}.
 
+    \QWE can be compiled also without spellchecker support with the use of
+    a \c {webengine-spellchecker} configure switch.
+
+    \badcode
+    qt-configure-module path\to\qtwebengine\sources -no-webengine-spellchecker
+    \endcode
+
+    For more information, see \l{Qt Configure Options}.
+
     Support for this feature was added in Qt 5.8.0.
 
     \section1 Touch
@@ -562,17 +696,6 @@
 
     Support for this feature was added in Qt 5.8.0.
 
-    \target webrtc_feature
-    \section1 WebRTC
-
-    WebRTC provides browsers with Real-Time Communications (RTC) capabilities
-    via simple APIs. For more information, see \l{WebEngineView::Feature}
-    {WebEngineView.Feature} and QWebEnginePage::Feature.
-
-    This feature can be tested by setting up a webcam or microphone and then
-    opening \c https://test.webrtc.org/ in \l{WebEngine Widgets Simple Browser
-    Example}{Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}.
-
     \section1 Web Notifications
 
     Qt WebEngine supports JavaScript \l{Web Notifications API}.
@@ -582,41 +705,25 @@
 
     Support for this feature was added in Qt 5.13.0.
 
-    \section1 Favicon Handling
+    \section1 WebGL
 
-    For accessing icons a \c QQuickImageProvider is registered. This provider can be
-    accessed by a special URL where the scheme is "image:" and the host is "favicon".
-    For example,
-    \qml
-    Image {
-        source: "image://favicon/url"
-    }
-    \endqml
+    \QWE supports WebGL for some graphics stacks setups. A user can visit the
+    chrome://gpu page using the QtWebEngine powered application. The \e {Graphics Feature Status}
+    overview states if WebGL is supported for the current platform setup. A user can also
+    check the \l {https://webglreport.com}{WebGL Report}.
 
-    The \c url can be  the URL of the favicon. For example,
-    \qml
-    Image {
-        source: "image://favicon/https://www.qt.io/hubfs/2016_Qt_Logo/qt_logo_green_rgb_16x16.png"
-    }
-    \endqml
+    The WebGL support is enabled by default. You can disable it with the
+    \l QWebEngineSettings::WebGLEnabled setting.
 
-    The \c url also can be a page URL to access its icon. For example,
-    \qml
-    Image {
-        source: "image://favicon/https://www.qt.io/"
-    }
-    \endqml
+    \target webrtc_feature
+    \section1 WebRTC
 
-    If more than one icon is available, the \l {Image::sourceSize} property can be
-    specified to choose the icon with the desired size. If \l {Image::sourceSize}
-    is not specified or 0, the largest available icon will be chosen.
+    WebRTC provides browsers with Real-Time Communications (RTC) capabilities
+    via simple APIs. For more information, see \l{WebEngineView::Feature}
+    {WebEngineView.Feature}, and QWebEnginePage::Feature.
 
-    The image provider looks up the requested icon in the existing \l {WebEngineView}
-    instances. First, it tries to match the currently displayed icons. If no match
-    has been found it requests the icon from the database. Each profile has its
-    own icon database and it is stored in the persistent storage thus the stored icons
-    can be accessed without network connection too. The icon must be previously loaded
-    to be stored in the database.
+    This feature can be tested by setting up a webcam or microphone and then
+    opening \c https://test.webrtc.org/ in \l{WebEngine Widgets Simple Browser
+    Example}{Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}.
 
-    \note The icon database is not available for off-the-record profiles.
 */

@@ -4,10 +4,16 @@
 #ifndef COMPOSITOR_H
 #define COMPOSITOR_H
 
+#include <QtGui/qtguiglobal.h>
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
+
+#if QT_CONFIG(webengine_vulkan)
+#include <QVulkanInstance>
+#endif
 
 QT_BEGIN_NAMESPACE
 class QImage;
+class QQuickWindow;
 class QSize;
 QT_END_NAMESPACE
 
@@ -31,6 +37,7 @@ public:
     enum class Type {
         Software,
         OpenGL,
+        Vulkan,
     };
 
     // Identifies a compositor.
@@ -138,6 +145,17 @@ public:
 
     // (OpenGL) Texture of the frame.
     virtual int textureId();
+
+#if QT_CONFIG(webengine_vulkan)
+    // (Vulkan) VkImage of the frame.
+    virtual VkImage vkImage(QQuickWindow *win);
+
+    // (Vulkan) Layout for vkImage().
+    virtual VkImageLayout vkImageLayout();
+
+    // (Vulkan) Release Vulkan resources created by Qt's Vulkan instance.
+    virtual void releaseVulkanResources(QQuickWindow *win);
+#endif
 
 protected:
     Compositor(Type type) : m_type(type) { }

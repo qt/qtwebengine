@@ -1117,7 +1117,7 @@ void tst_QQuickWebEngineView::javascriptClipboard()
     // - return value of queryCommandEnabled and
     // - return value of execCommand
     // - comparing the clipboard / input field
-    QGuiApplication::clipboard()->clear();
+    QGuiApplication::clipboard()->setText(QString());
     QCOMPARE(evaluateJavaScriptSync(view, "document.queryCommandEnabled('copy')").toBool(),
              copyResult);
     QCOMPARE(evaluateJavaScriptSync(view, "document.execCommand('copy')").toBool(), copyResult);

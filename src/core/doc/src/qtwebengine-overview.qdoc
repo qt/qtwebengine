@@ -58,6 +58,9 @@
 
     The \QWE core is based on the \l {Chromium Project}. Chromium provides its own network
     and painting engines and is developed tightly together with its dependent modules.
+    Even though the QtNetwork stack is not used, its setup can be synchronized with the \QWE.
+    See \l {Proxy Support}, \l {Managing Certificates}, \l {Client Certificates}, and
+    \l {QWebEngineCookieStore} for more details.
 
     \note \QWE is based on Chromium, but does not contain or use any services
     or add-ons that might be part of the Chrome browser that is built and delivered by Google.
@@ -65,10 +68,19 @@
     \l{https://chromium.googlesource.com/chromium/src/+/master/docs/chromium_browser_vs_google_chrome.md}{overview}
     that is part of the documentation in the \l {Chromium Project} upstream source tree.
 
-    This version of \QWE is based on Chromium version 94.0.4606, with additional security
-    fixes from newer versions. The Chromium version can also be read at runtime using the
+    The Chromium version used is the one used by the latest stable Chrome version at the time of Qt feature freeze
+    for the current version of \QWE. Additional security patches are cherry picked from newer Chrome releases on
+    every patch release, security patches released in time for the Qt patch release freeze will be included.
+    If Chrome releases critical fixes outside our release window, the next patch release is sped up to ensure a
+    patched \QWE is released before the patch details goes public.
+
+    If you need a newer \QWE beyond security fixes, and can not update all of Qt, \QWE supports building with
+    older version of Qt back to the last Qt LTS. For instance \QWE 6.3, 6.4, and 6.5 can all be built with Qt 6.2.
+    In Qt LTS releases, \QWE may be fully replaced with such a newer version to make security patching easier.
+
+    The relevant Chromium versions in question can also be read at runtime using the
     \l qWebEngineChromiumVersion() method, and \l qWebEngineChromiumSecurityPatchVersion()
-    to read the current patch level. You can also find the versions in the QtWebEngine
+    to read the current security patch level. You can also find the versions in the \QWE
     sources in the CHROMIUM_VERSION file.
 
     \section2 Qt WebEngine Process

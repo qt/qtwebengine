@@ -10,6 +10,10 @@
 #include <QtCore/qpointer.h>
 #include <QtQuick/qquickwindow.h>
 
+// silence syncqt
+QT_BEGIN_NAMESPACE
+QT_END_NAMESPACE
+
 namespace QtWebEngineCore {
 
 class RenderWidgetHostViewQtDelegateQuickWindow : public QQuickWindow , public WidgetDelegate {

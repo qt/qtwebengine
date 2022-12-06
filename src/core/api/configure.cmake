@@ -150,6 +150,12 @@ qt_feature("webengine-sanitizer" PRIVATE
     AUTODETECT CLANG
     CONDITION CLANG AND ECM_ENABLE_SANITIZERS
 )
+qt_feature("webengine-vulkan" PRIVATE
+    SECTION "WebEngine"
+    LABEL "Vulkan support"
+    PURPOSE "Enables support for Vulkan rendering"
+    CONDITION QT_FEATURE_vulkan
+)
 # internal testing feature
 qt_feature("webengine-system-poppler" PRIVATE
     LABEL "popler"
@@ -176,6 +182,10 @@ qt_configure_add_summary_entry(ARGS "webengine-extensions")
 qt_configure_add_summary_entry(
     ARGS "webengine-ozone-x11"
     CONDITION UNIX
+)
+qt_configure_add_summary_entry(
+    ARGS "webengine-vulkan"
+    CONDITION QT_FEATURE_vulkan
 )
 qt_configure_add_summary_entry(
     ARGS "webengine-v8-snapshot-support"

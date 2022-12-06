@@ -113,7 +113,7 @@ bool AutofillClientQt::IsPasswordManagerEnabled()
     return false;
 }
 
-void AutofillClientQt::PropagateAutofillPredictions(content::RenderFrameHost *,
+void AutofillClientQt::PropagateAutofillPredictions(autofill::AutofillDriver *,
                                                     const std::vector<autofill::FormStructure *> &)
 {
     // For testing purposes only.

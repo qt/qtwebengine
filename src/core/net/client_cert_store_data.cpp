@@ -20,16 +20,16 @@
 
 namespace {
 
-class SSLPlatformKeyOverride : public net::ThreadedSSLPrivateKey::Delegate
+class SSLPlatformKeyQt : public net::ThreadedSSLPrivateKey::Delegate
 {
 public:
-    SSLPlatformKeyOverride(const QByteArray &sslKeyInBytes)
+    SSLPlatformKeyQt(const QByteArray &sslKeyInBytes)
     {
         m_mem = BIO_new_mem_buf(sslKeyInBytes, -1);
         m_key = PEM_read_bio_PrivateKey(m_mem, nullptr, nullptr, nullptr);
     }
 
-    ~SSLPlatformKeyOverride() override
+    ~SSLPlatformKeyQt() override
     {
         if (m_key)
             EVP_PKEY_free(m_key);
@@ -65,8 +65,8 @@ public:
 
     std::vector<uint16_t> GetAlgorithmPreferences() override
     {
-        return { SSL_SIGN_RSA_PKCS1_SHA1, SSL_SIGN_RSA_PKCS1_SHA512
-               , SSL_SIGN_RSA_PKCS1_SHA384, SSL_SIGN_RSA_PKCS1_SHA256 };
+        return net::SSLPrivateKey::DefaultAlgorithmPreferences(EVP_PKEY_id(m_key),
+                                                               /* supports pss */ true);
     }
     std::string GetProviderName() override {
         return "qtwebengine";
@@ -82,7 +82,7 @@ scoped_refptr<net::SSLPrivateKey> wrapOpenSSLPrivateKey(const QByteArray &sslKey
         return nullptr;
 
     return base::MakeRefCounted<net::ThreadedSSLPrivateKey>(
-                std::make_unique<SSLPlatformKeyOverride>(sslKeyInBytes),
+                std::make_unique<SSLPlatformKeyQt>(sslKeyInBytes),
                 net::GetSSLPlatformKeyTaskRunner());
 }
 

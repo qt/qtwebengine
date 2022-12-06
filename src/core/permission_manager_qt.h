@@ -13,8 +13,8 @@
 
 namespace QtWebEngineCore {
 
-class PermissionManagerQt : public content::PermissionControllerDelegate {
-
+class PermissionManagerQt : public content::PermissionControllerDelegate
+{
 public:
     PermissionManagerQt();
     ~PermissionManagerQt();
@@ -24,41 +24,45 @@ public:
 
     // content::PermissionManager implementation:
     void RequestPermission(
-        content::PermissionType permission,
+        blink::PermissionType permission,
         content::RenderFrameHost* render_frame_host,
         const GURL& requesting_origin,
         bool user_gesture,
         base::OnceCallback<void(blink::mojom::PermissionStatus)> callback) override;
 
     blink::mojom::PermissionStatus GetPermissionStatus(
-        content::PermissionType permission,
+        blink::PermissionType permission,
         const GURL& requesting_origin,
         const GURL& embedding_origin) override;
 
-    blink::mojom::PermissionStatus GetPermissionStatusForFrame(
-        content::PermissionType permission,
-        content::RenderFrameHost *render_frame_host,
-        const GURL& requesting_origin) override;
+    blink::mojom::PermissionStatus GetPermissionStatusForCurrentDocument(blink::PermissionType, content::RenderFrameHost *) override;
 
-    blink::mojom::PermissionStatus GetPermissionStatusForCurrentDocument(content::PermissionType, content::RenderFrameHost *) override;
+    blink::mojom::PermissionStatus GetPermissionStatusForWorker(blink::PermissionType, content::RenderProcessHost *, const GURL &) override;
 
-    blink::mojom::PermissionStatus GetPermissionStatusForWorker(content::PermissionType, content::RenderProcessHost *, const GURL &) override;
+    content::PermissionResult GetPermissionResultForOriginWithoutContext(blink::PermissionType, const url::Origin &) override;
 
     void ResetPermission(
-        content::PermissionType permission,
+        blink::PermissionType permission,
         const GURL& requesting_origin,
         const GURL& embedding_origin) override;
 
     void RequestPermissions(
-        const std::vector<content::PermissionType>& permission,
+        const std::vector<blink::PermissionType>& permission,
         content::RenderFrameHost* render_frame_host,
         const GURL& requesting_origin,
         bool user_gesture,
         base::OnceCallback<void(
             const std::vector<blink::mojom::PermissionStatus>&)> callback) override;
 
+    void RequestPermissionsFromCurrentDocument(
+        const std::vector<blink::PermissionType>& permissions,
+        content::RenderFrameHost* render_frame_host,
+        bool user_gesture,
+        base::OnceCallback<void(
+            const std::vector<blink::mojom::PermissionStatus>&)> callback) override;
+
     content::PermissionControllerDelegate::SubscriptionId SubscribePermissionStatusChange(
-        content::PermissionType permission,
+        blink::PermissionType permission,
         content::RenderProcessHost* render_process_host,
         content::RenderFrameHost* render_frame_host,
         const GURL& requesting_origin,
@@ -76,7 +80,7 @@ private:
     };
     struct MultiRequest {
         int id;
-        std::vector<content::PermissionType> types;
+        std::vector<blink::PermissionType> types;
         QUrl origin;
         base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus>&)> callback;
     };

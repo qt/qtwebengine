@@ -11,7 +11,6 @@
 #include "proxy_config_service_qt.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -28,9 +27,7 @@ ProxyConfigMonitor::ProxyConfigMonitor(PrefService *prefs)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    proxy_config_service_.reset(
-            new ProxyConfigServiceQt(
-                    prefs, base::CreateSingleThreadTaskRunner({ BrowserThread::UI })));
+    proxy_config_service_.reset(new ProxyConfigServiceQt(prefs, content::GetUIThreadTaskRunner({})));
 
     proxy_config_service_->AddObserver(this);
 }

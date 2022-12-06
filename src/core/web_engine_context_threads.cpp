@@ -4,14 +4,14 @@
 #include "web_engine_context.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/gpu/gpu_main_thread_factory.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/utility_process_host.h"
+#include "content/child/child_process.h"
 #include "content/gpu/gpu_child_thread.h"
-#include "content/gpu/gpu_process.h"
 #include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -29,14 +29,14 @@ struct GpuThreadControllerQt : content::GpuThreadController
 {
     GpuThreadControllerQt(const content::InProcessChildThreadParams &params, const gpu::GpuPreferences &gpuPreferences)
     {
-        base::PostTask(
-                FROM_HERE, { content::BrowserThread::UI },
+        content::GetUIThreadTaskRunner({})->PostTask(
+                FROM_HERE,
                 base::BindOnce(&GpuThreadControllerQt::createGpuProcess, params, gpuPreferences));
     }
     ~GpuThreadControllerQt() override
     {
-        base::PostTask(
-                FROM_HERE, { content::BrowserThread::UI },
+        content::GetUIThreadTaskRunner({})->PostTask(
+                FROM_HERE,
                 base::BindOnce(&GpuThreadControllerQt::destroyGpuProcess));
     }
 
@@ -48,11 +48,11 @@ struct GpuThreadControllerQt : content::GpuThreadController
         if (s_gpuProcessDestroyed)
             return;
 
-        s_gpuProcess = std::make_unique<content::GpuProcess>(base::ThreadPriority::NORMAL);
+        s_gpuProcess = std::make_unique<content::ChildProcess>(base::ThreadType::kDefault);
         auto gpuInit = std::make_unique<gpu::GpuInit>();
         gpuInit->InitializeInProcess(base::CommandLine::ForCurrentProcess(), gpuPreferences);
         auto childThread = new content::GpuChildThread(params, std::move(gpuInit));
-        childThread->Init(base::Time::Now());
+        childThread->Init(base::TimeTicks::Now());
         s_gpuProcess->set_main_thread(childThread);
     }
 
@@ -68,11 +68,11 @@ struct GpuThreadControllerQt : content::GpuThreadController
         s_gpuProcessDestroyed = true;
     }
 
-    static std::unique_ptr<content::GpuProcess> s_gpuProcess;
+    static std::unique_ptr<content::ChildProcess> s_gpuProcess;
     static bool s_gpuProcessDestroyed;
 };
 
-std::unique_ptr<content::GpuProcess> GpuThreadControllerQt::s_gpuProcess;
+std::unique_ptr<content::ChildProcess> GpuThreadControllerQt::s_gpuProcess;
 bool GpuThreadControllerQt::s_gpuProcessDestroyed = false;
 
 static std::unique_ptr<content::GpuThreadController> createGpuThreadController(

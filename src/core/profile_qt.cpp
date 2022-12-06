@@ -5,6 +5,7 @@
 
 #include "profile_adapter.h"
 #include "browsing_data_remover_delegate_qt.h"
+#include "client_hints.h"
 #include "download_manager_delegate_qt.h"
 #include "file_system_access/file_system_access_permission_context_factory_qt.h"
 #include "net/ssl_host_state_delegate_qt.h"
@@ -71,10 +72,6 @@ ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
         : profile_metrics::BrowserProfileType::kRegular);
 
     setupPrefService();
-
-#if defined(Q_OS_WIN)
-    OSCrypt::Init(m_prefServiceAdapter.prefService());
-#endif
 
     // Mark the context as live. This prevents the use-after-free DCHECK in
     // AssertBrowserContextWasntDestroyed from being triggered when a new
@@ -213,10 +210,15 @@ content::PermissionControllerDelegate *ProfileQt::GetPermissionControllerDelegat
 
 content::ClientHintsControllerDelegate *ProfileQt::GetClientHintsControllerDelegate()
 {
-    return nullptr;
+    return ClientHintsFactory::GetForBrowserContext(this);
 }
 
 content::StorageNotificationService *ProfileQt::GetStorageNotificationService()
+{
+    return nullptr;
+}
+
+content::ReduceAcceptLanguageControllerDelegate *ProfileQt::GetReduceAcceptLanguageControllerDelegate()
 {
     return nullptr;
 }

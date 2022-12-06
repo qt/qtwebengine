@@ -15,7 +15,7 @@ namespace QtWebEngineCore {
 WebEnginePageRenderFrame::WebEnginePageRenderFrame(content::RenderFrame *render_frame)
     : content::RenderFrameObserver(render_frame), m_binding(this), m_ready(false)
 {
-    render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
+    render_frame->GetAssociatedInterfaceRegistry()->AddInterface<qtwebenginepage::mojom::WebEnginePageRenderFrame>(
             base::BindRepeating(&WebEnginePageRenderFrame::BindReceiver, base::Unretained(this)));
 }
 

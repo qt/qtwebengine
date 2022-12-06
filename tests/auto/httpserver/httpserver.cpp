@@ -24,7 +24,8 @@ HttpServer::HttpServer(QTcpServer *tcpServer, const QString &protocol,
 {
     m_url.setHost(hostAddress.toString());
     m_url.setScheme(protocol);
-    connect(tcpServer, &QTcpServer::newConnection, this, &HttpServer::handleNewConnection);
+    connect(tcpServer, &QTcpServer::pendingConnectionAvailable, this,
+            &HttpServer::handleNewConnection);
 }
 
 HttpServer::~HttpServer()

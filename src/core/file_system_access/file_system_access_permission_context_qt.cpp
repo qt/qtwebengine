@@ -214,7 +214,7 @@ FileSystemAccessPermissionContextQt::GetReadPermissionGrant(const url::Origin &o
         // |path| changed from being a directory to being a file or vice versa,
         // don't just re-use the existing grant but revoke the old grant before
         // creating a new grant.
-        existing_grant->SetStatus(PermissionStatus::DENIED);
+        existing_grant->SetStatus(blink::mojom::PermissionStatus::DENIED);
         existing_grant = nullptr;
     }
 
@@ -243,7 +243,7 @@ FileSystemAccessPermissionContextQt::GetWritePermissionGrant(const url::Origin &
         // |path| changed from being a directory to being a file or vice versa,
         // don't just re-use the existing grant but revoke the old grant before
         // creating a new grant.
-        existing_grant->SetStatus(PermissionStatus::DENIED);
+        existing_grant->SetStatus(blink::mojom::PermissionStatus::DENIED);
         existing_grant = nullptr;
     }
 
@@ -256,13 +256,14 @@ FileSystemAccessPermissionContextQt::GetWritePermissionGrant(const url::Origin &
     return existing_grant;
 }
 
-void FileSystemAccessPermissionContextQt::ConfirmSensitiveDirectoryAccess(
+void FileSystemAccessPermissionContextQt::ConfirmSensitiveEntryAccess(
         const url::Origin &origin, PathType path_type, const base::FilePath &path,
-        HandleType handle_type, content::GlobalRenderFrameHostId frame_id,
-        base::OnceCallback<void(SensitiveDirectoryResult)> callback)
+        HandleType handle_type, ui::SelectFileDialog::Type dialog_type,
+        content::GlobalRenderFrameHostId frame_id,
+        base::OnceCallback<void(SensitiveEntryResult)> callback)
 {
     if (path_type == PathType::kExternal) {
-        std::move(callback).Run(SensitiveDirectoryResult::kAllowed);
+        std::move(callback).Run(SensitiveEntryResult::kAllowed);
         return;
     }
 
@@ -270,7 +271,7 @@ void FileSystemAccessPermissionContextQt::ConfirmSensitiveDirectoryAccess(
             FROM_HERE, { base::MayBlock(), base::TaskPriority::USER_VISIBLE },
             base::BindOnce(&ShouldBlockAccessToPath, path, handle_type),
             base::BindOnce(&FileSystemAccessPermissionContextQt::DidConfirmSensitiveDirectoryAccess,
-                           m_weakFactory.GetWeakPtr(), origin, path, handle_type, frame_id,
+                           m_weakFactory.GetWeakPtr(), origin, path, handle_type, dialog_type, frame_id,
                            std::move(callback)));
 }
 
@@ -371,25 +372,31 @@ void FileSystemAccessPermissionContextQt::NavigatedAwayFromOrigin(const url::Ori
 
     OriginState &origin_state = it->second;
     for (auto &grant : origin_state.read_grants)
-        grant.second->SetStatus(PermissionStatus::ASK);
+        grant.second->SetStatus(blink::mojom::PermissionStatus::ASK);
     for (auto &grant : origin_state.write_grants)
-        grant.second->SetStatus(PermissionStatus::ASK);
+        grant.second->SetStatus(blink::mojom::PermissionStatus::ASK);
 }
 
 void FileSystemAccessPermissionContextQt::DidConfirmSensitiveDirectoryAccess(
-        const url::Origin &origin, const base::FilePath &path, HandleType handle_type,
+        const url::Origin &origin, const base::FilePath &path, HandleType handle_type, ui::SelectFileDialog::Type dialog_type,
         content::GlobalRenderFrameHostId frame_id,
-        base::OnceCallback<void(SensitiveDirectoryResult)> callback, bool should_block)
+        base::OnceCallback<void(SensitiveEntryResult)> callback, bool should_block)
 {
     Q_UNUSED(origin);
     Q_UNUSED(path);
     Q_UNUSED(handle_type);
+    Q_UNUSED(dialog_type);
     Q_UNUSED(frame_id);
 
     if (should_block)
-        std::move(callback).Run(SensitiveDirectoryResult::kAbort);
+        std::move(callback).Run(SensitiveEntryResult::kAbort);
     else
-        std::move(callback).Run(SensitiveDirectoryResult::kAllowed);
+        std::move(callback).Run(SensitiveEntryResult::kAllowed);
+}
+
+std::u16string FileSystemAccessPermissionContextQt::GetPickerTitle(const blink::mojom::FilePickerOptionsPtr &)
+{
+    return {};
 }
 
 } // namespace QtWebEngineCore

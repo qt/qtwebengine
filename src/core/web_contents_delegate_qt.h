@@ -150,8 +150,10 @@ public:
     using LoadingState = WebContentsAdapterClient::LoadingState;
     LoadingState loadingState() const { return m_loadingState; }
 
-    void addDevices(const blink::MediaStreamDevices &devices);
-    void removeDevices(const blink::MediaStreamDevices &devices);
+    void addDevices(const blink::mojom::StreamDevices &devices);
+    void removeDevices(const blink::mojom::StreamDevices &devices);
+    void addDevice(const blink::MediaStreamDevice &device);
+    void removeDevice(const blink::MediaStreamDevice &device);
 
     bool isCapturingAudio() const { return m_audioStreamCount > 0; }
     bool isCapturingVideo() const { return m_videoStreamCount > 0; }

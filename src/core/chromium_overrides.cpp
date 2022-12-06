@@ -9,9 +9,12 @@
 
 #include "base/values.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/font_list.h"
+#include "content/public/browser/web_contents_view_delegate.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
+#include "gpu/vulkan/buildflags.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 
@@ -23,23 +26,32 @@
 #include "chrome/browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h"
 #endif
 
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "compositor/vulkan_implementation_qt.h"
+
+#include "gpu/vulkan/init/vulkan_factory.h"
+
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
+#endif // defined(USE_OZONE)
+#endif // defined(ENABLE_VULKAN)
+
 void *GetQtXDisplay()
 {
     return GLContextHelper::getXDisplay();
 }
 
 namespace content {
-class WebContentsView;
-class WebContentsViewDelegate;
 class RenderViewHostDelegateView;
 
-WebContentsView* CreateWebContentsView(WebContentsImpl *web_contents,
-    WebContentsViewDelegate *,
+std::unique_ptr<WebContentsView> CreateWebContentsView(WebContentsImpl *web_contents,
+    std::unique_ptr<WebContentsViewDelegate> delegate,
     RenderViewHostDelegateView **render_view_host_delegate_view)
 {
     QtWebEngineCore::WebContentsViewQt* rv = new QtWebEngineCore::WebContentsViewQt(web_contents);
     *render_view_host_delegate_view = rv;
-    return rv;
+    return std::unique_ptr<WebContentsView>(rv);
 }
 
 #if defined(Q_OS_DARWIN)
@@ -62,36 +74,58 @@ base::FilePath getSandboxPath()
 namespace content {
 
 // content/common/font_list.h
-std::unique_ptr<base::ListValue> GetFontList_SlowBlocking()
+base::Value::List GetFontList_SlowBlocking()
 {
-    std::unique_ptr<base::ListValue> font_list(new base::ListValue);
+    base::Value::List font_list;
 
     for (auto family : QFontDatabase::families()){
-        std::unique_ptr<base::ListValue> font_item(new base::ListValue());
-        font_item->Append(family.toStdString());
-        font_item->Append(family.toStdString());  // localized name.
+        base::Value::List font_item;
+        font_item.Append(family.toStdString());
+        font_item.Append(family.toStdString());  // localized name.
         // TODO(yusukes): Support localized family names.
-        font_list->Append(std::move(font_item));
+        font_list.Append(std::move(font_item));
     }
     return font_list;
 }
 
 } // namespace content
-
-namespace aura {
-class Window;
-}
-
-namespace wm {
-class ActivationClient;
-
-ActivationClient *GetActivationClient(aura::Window *)
-{
-    return nullptr;
-}
-
-} // namespace wm
 #endif // defined(USE_AURA) || defined(USE_OZONE)
+
+#if BUILDFLAG(ENABLE_VULKAN)
+namespace gpu {
+std::unique_ptr<VulkanImplementation> CreateVulkanImplementation(bool use_swiftshader,
+                                                                 bool allow_protected_memory)
+{
+#if QT_CONFIG(webengine_vulkan)
+#if BUILDFLAG(IS_APPLE)
+    // TODO: Investigate if we can support MoltenVK.
+    NOTIMPLEMENTED();
+    return nullptr;
+#else
+#if defined(USE_OZONE)
+    return ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone()->CreateVulkanImplementation(
+            use_swiftshader, allow_protected_memory);
+#endif
+
+#if !BUILDFLAG(IS_WIN)
+    // TODO(samans): Support Swiftshader on more platforms.
+    // https://crbug.com/963988
+    DCHECK(!use_swiftshader) << "Vulkan Swiftshader is not supported on this platform.";
+#endif // !BUILDFLAG(IS_WIN)
+
+    // Protected memory is supported only on Fuchsia, which uses Ozone, i.e.
+    // VulkanImplementation is initialized above.
+    DCHECK(!allow_protected_memory) << "Protected memory is not supported on this platform.";
+
+    return std::make_unique<VulkanImplementationQt>();
+#endif // BUILDFLAG(IS_APPLE)
+#else
+    NOTREACHED();
+    return nullptr;
+#endif // QT_CONFIG(webengine_vulkan)
+}
+} // namespace gpu
+#endif // BUILDFLAG(ENABLE_VULKAN)
 
 std::unique_ptr<ui::OSExchangeDataProvider> ui::OSExchangeDataProviderFactory::CreateProvider()
 {

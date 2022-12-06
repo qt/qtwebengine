@@ -39,7 +39,7 @@ SSLHostStateDelegateQt::SSLHostStateDelegateQt() {}
 
 SSLHostStateDelegateQt::~SSLHostStateDelegateQt() {}
 
-void SSLHostStateDelegateQt::AllowCert(const std::string &host, const net::X509Certificate &cert, int error, content::WebContents *)
+void SSLHostStateDelegateQt::AllowCert(const std::string &host, const net::X509Certificate &cert, int error, content::StoragePartition *)
 {
     m_certPolicyforHost[host].Allow(cert, error);
 }
@@ -67,7 +67,7 @@ void SSLHostStateDelegateQt::Clear(base::RepeatingCallback<bool(const std::strin
 // prior to this query, otherwise false.
 content::SSLHostStateDelegate::CertJudgment SSLHostStateDelegateQt::QueryPolicy(const std::string &host,
                                                                                 const net::X509Certificate &cert,
-                                                                                int error, content::WebContents *)
+                                                                                int error, content::StoragePartition *)
 {
     return m_certPolicyforHost[host].Check(cert, error) ? SSLHostStateDelegate::ALLOWED : SSLHostStateDelegate::DENIED;
 }
@@ -83,12 +83,12 @@ bool SSLHostStateDelegateQt::DidHostRunInsecureContent(const std::string &host, 
     return false;
 }
 
-void SSLHostStateDelegateQt::AllowHttpForHost(const std::string &host, content::WebContents *web_contents)
+void SSLHostStateDelegateQt::AllowHttpForHost(const std::string &host, content::StoragePartition *web_contents)
 {
     // Intentional no-op see aw_ssl_host_state_delegate
 }
 
-bool SSLHostStateDelegateQt::IsHttpAllowedForHost(const std::string &host, content::WebContents *web_contents)
+bool SSLHostStateDelegateQt::IsHttpAllowedForHost(const std::string &host, content::StoragePartition *web_contents)
 {
     return false;
 }
@@ -104,7 +104,7 @@ void SSLHostStateDelegateQt::RevokeUserAllowExceptions(const std::string &host)
 // |host|. This does not mean that *all* certificate errors are allowed, just
 // that there exists an exception. To see if a particular certificate and
 // error combination exception is allowed, use QueryPolicy().
-bool SSLHostStateDelegateQt::HasAllowException(const std::string &host, content::WebContents *)
+bool SSLHostStateDelegateQt::HasAllowException(const std::string &host, content::StoragePartition *)
 {
     auto policy_iterator = m_certPolicyforHost.find(host);
     return policy_iterator != m_certPolicyforHost.end() &&

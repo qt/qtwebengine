@@ -115,6 +115,7 @@ shared_library("QtWebEngineCore") {
     "//components/autofill/content/browser",
     "//components/autofill/content/renderer",
     "//components/autofill/core/browser",
+    "//components/autofill/core/browser:buildflags",
     "//components/cdm/renderer",
     "//components/error_page/common",
     "//components/favicon/content",
@@ -137,6 +138,7 @@ shared_library("QtWebEngineCore") {
     "//content/public/app",
     "//content/public/browser",
     "//content",
+    "//gpu/ipc:gl_in_process_context",
     "//media:media_buildflags",
     "//net",
     "//services/proxy_resolver:lib",
@@ -222,12 +224,12 @@ source_set("qtwebengine_sources") {
   ]
   deps = [
     "//build:branding_buildflags",
+    "//build/config/chromebox_for_meetings:buildflags",
     "//chrome/browser:dev_ui_browser_resources_grit",
     "//chrome/browser/resources/net_internals:resources",
     "//chrome/browser/signin:identity_manager_provider",
     "//chrome/common:buildflags",
     "//chrome/common:version_header",
-    "//chromeos/components/chromebox_for_meetings/buildflags",
     "//components/custom_handlers",
     "//components/embedder_support:embedder_support",
     "//components/nacl/common:buildflags",
@@ -263,6 +265,10 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/prefs/chrome_command_line_pref_store.h",
     "//chrome/browser/profiles/incognito_helpers.cc",
     "//chrome/browser/profiles/incognito_helpers.h",
+    "//chrome/browser/profiles/profile_keyed_service_factory.cc",
+    "//chrome/browser/profiles/profile_keyed_service_factory.h",
+    "//chrome/browser/profiles/profile_selections.cc",
+    "//chrome/browser/profiles/profile_selections.h",
     "//chrome/browser/profiles/profile.cc",
     "//chrome/browser/profiles/profile.h",
     "//chrome/browser/push_messaging/push_messaging_app_identifier.cc",
@@ -417,7 +423,7 @@ source_set("qtwebengine_sources") {
 
   if (enable_webrtc && enable_extensions) {
     deps += [
-      "//chrome/browser/resources/media:webrtc_logs_resources",
+      "//chrome/browser/resources/media:resources",
       "//components/upload_list",
       "//components/webrtc_logging/browser",
       "//components/webrtc_logging/common",
@@ -548,10 +554,10 @@ repack("qtwebengine_repack_resources") {
   }
   if (enable_webrtc && enable_extensions) {
     sources += [
-      "$root_gen_dir/chrome/webrtc_logs_resources.pak",
+        "$root_gen_dir/chrome/media_resources.pak",
     ]
     deps += [
-      "//chrome/browser/resources/media:webrtc_logs_resources",
+        "//chrome/browser/resources/media:resources",
     ]
   }
   if (enable_pdf) {
@@ -568,7 +574,6 @@ repack("qtwebengine_repack_resources_100") {
   sources = [
     "$root_gen_dir/chrome/renderer_resources_100_percent.pak",
     "$root_gen_dir/components/components_resources_100_percent.pak",
-    "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
   ]
@@ -576,7 +581,6 @@ repack("qtwebengine_repack_resources_100") {
   deps = [
     "//chrome/renderer:resources_grit",
     "//components/resources:components_scaled_resources_grit",
-    "//content/app/resources:resources_grit",
     "//third_party/blink/public:scaled_resources_100_percent",
     "//ui/resources:ui_resources_grd_grit"
   ]
@@ -594,7 +598,6 @@ repack("qtwebengine_repack_resources_200") {
   sources = [
     "$root_gen_dir/chrome/renderer_resources_200_percent.pak",
     "$root_gen_dir/components/components_resources_200_percent.pak",
-    "$root_gen_dir/content/app/resources/content_resources_200_percent.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_200_percent.pak",
     "$root_gen_dir/ui/resources/ui_resources_200_percent.pak",
   ]
@@ -602,7 +605,6 @@ repack("qtwebengine_repack_resources_200") {
   deps = [
     "//chrome/renderer:resources_grit",
     "//components/resources:components_scaled_resources_grit",
-    "//content/app/resources:resources_grit",
     "//third_party/blink/public:scaled_resources_200_percent",
     "//ui/resources:ui_resources_grd_grit"
   ]

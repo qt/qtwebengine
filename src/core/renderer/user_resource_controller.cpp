@@ -182,7 +182,7 @@ UserResourceController::RenderFrameObserverHelper::RenderFrameObserverHelper(
     , m_binding(this)
     , m_userResourceController(controller)
 {
-    render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
+    render_frame->GetAssociatedInterfaceRegistry()->AddInterface<qtwebengine::mojom::UserResourceControllerRenderFrame>(
             base::BindRepeating(&UserResourceController::RenderFrameObserverHelper::BindReceiver,
                                 base::Unretained(this)));
 }
@@ -347,7 +347,7 @@ void UserResourceController::ClearScripts()
 void UserResourceController::RegisterMojoInterfaces(
         blink::AssociatedInterfaceRegistry *associated_interfaces)
 {
-    associated_interfaces->AddInterface(
+    associated_interfaces->AddInterface<qtwebengine::mojom::UserResourceController>(
             base::BindRepeating(&UserResourceController::BindReceiver, base::Unretained(this)));
 }
 

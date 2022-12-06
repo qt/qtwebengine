@@ -21,7 +21,6 @@ class CommandLine;
 namespace content {
 class BrowserMainRunner;
 class ContentMainRunner;
-class GpuProcess;
 class GpuThreadController;
 class InProcessChildThreadParams;
 class MojoIpcSupport;

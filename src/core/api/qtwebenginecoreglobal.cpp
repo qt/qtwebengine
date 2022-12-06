@@ -195,22 +195,25 @@ sandbox::SandboxInterfaceInfo *staticSandboxInterfaceInfo(sandbox::SandboxInterf
 static void initialize()
 {
 #if QT_CONFIG(opengl)
-  if (QCoreApplication::instance()) {
-    // On window/ANGLE, calling QtWebEngineQuick::initialize from DllMain will result in a crash.
-    if (!qt_gl_global_share_context() &&
-        !(QCoreApplication::testAttribute(Qt::AA_ShareOpenGLContexts) &&
-          QQuickWindow::graphicsApi() == QSGRendererInterface::OpenGLRhi)
-       ) {
-      qWarning("Qt WebEngine seems to be initialized from a plugin. Please "
-               "set Qt::AA_ShareOpenGLContexts using QCoreApplication::setAttribute and "
-               "QSGRendererInterface::OpenGLRhi using QQuickWindow::setGraphicsApi "
-               "before constructing QGuiApplication.");
+    if (QCoreApplication::instance()) {
+        // On Windows/ANGLE, calling QtWebEngineQuick::initialize from DllMain will result in a
+        // crash.
+        if (!qt_gl_global_share_context()
+            && !(QCoreApplication::testAttribute(Qt::AA_ShareOpenGLContexts)
+                 && QQuickWindow::graphicsApi() == QSGRendererInterface::OpenGLRhi)) {
+            qWarning("Qt WebEngine seems to be initialized from a plugin. Please "
+                     "set Qt::AA_ShareOpenGLContexts using QCoreApplication::setAttribute and "
+                     "QSGRendererInterface::OpenGLRhi using QQuickWindow::setGraphicsApi "
+                     "before constructing QGuiApplication.");
+        }
+        return;
     }
-    return;
-  }
-  // QCoreApplication is not yet instantiated, ensuring the call will be deferred
-  qAddPreRoutine(QtWebEngineCore::initialize);
-  QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGLRhi);
+
+    // QCoreApplication is not yet instantiated, ensuring the call will be deferred
+    qAddPreRoutine(QtWebEngineCore::initialize);
+    auto api = QQuickWindow::graphicsApi();
+    if (api != QSGRendererInterface::OpenGLRhi && api != QSGRendererInterface::VulkanRhi)
+        QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGLRhi);
 #endif // QT_CONFIG(opengl)
 }
 

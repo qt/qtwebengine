@@ -510,6 +510,8 @@ ApplicationWindow {
                         }
                     }
                 ]
+                settings.localContentCanAccessRemoteUrls: true
+                settings.localContentCanAccessFileUrls: false
                 settings.autoLoadImages: appSettings.autoLoadImages
                 settings.javascriptEnabled: appSettings.javaScriptEnabled
                 settings.errorPageEnabled: appSettings.errorPageEnabled

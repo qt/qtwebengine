@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 
 using content::BrowserThread;
 
@@ -36,7 +35,7 @@ net::ProxyServer ProxyConfigServiceQt::fromQNetworkProxy(const QNetworkProxy &qt
 
 ProxyConfigServiceQt::ProxyConfigServiceQt(PrefService *prefService,
                                            const scoped_refptr<base::SequencedTaskRunner> &taskRunner)
-    : m_baseService(net::ConfiguredProxyResolutionService::CreateSystemProxyConfigService(taskRunner))
+    : m_baseService(net::ProxyConfigService::CreateSystemProxyConfigService(taskRunner))
     , m_usesSystemConfiguration(false)
     , m_registeredObserver(false)
     , m_prefState(prefService

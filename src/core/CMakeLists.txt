@@ -90,6 +90,7 @@ foreach(arch ${archs})
                 certificate_error_controller.cpp certificate_error_controller.h
                 chromium_overrides.cpp
                 client_cert_select_controller.cpp client_cert_select_controller.h
+                client_hints.cpp client_hints.h
                 clipboard_change_observer.h
                 clipboard_qt.cpp clipboard_qt.h
                 color_chooser_controller.cpp color_chooser_controller.h color_chooser_controller_p.h
@@ -128,7 +129,7 @@ foreach(arch ${archs})
                 login_delegate_qt.cpp login_delegate_qt.h
                 media_capture_devices_dispatcher.cpp media_capture_devices_dispatcher.h
                 native_web_keyboard_event_qt.cpp
-                net/client_cert_override.cpp net/client_cert_override.h
+                net/client_cert_qt.cpp net/client_cert_qt.h
                 net/client_cert_store_data.cpp net/client_cert_store_data.h
                 net/cookie_monster_delegate_qt.cpp net/cookie_monster_delegate_qt.h
                 net/custom_url_loader_factory.cpp net/custom_url_loader_factory.h
@@ -204,10 +205,14 @@ foreach(arch ${archs})
                 ozone/gl_surface_glx_qt.cpp ozone/gl_surface_glx_qt.h
         )
 
+        extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_vulkan
+            SOURCES
+                compositor/vulkan_implementation_qt.cpp compositor/vulkan_implementation_qt.h
+        )
+
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_opengl
             SOURCES
                 compositor/compositor_resource_fence.cpp compositor/compositor_resource_fence.h
-                compositor/display_gl_output_surface.cpp compositor/display_gl_output_surface.h
                 compositor/display_skia_output_device.cpp compositor/display_skia_output_device.h
         )
 
@@ -225,8 +230,6 @@ foreach(arch ${archs})
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_printing_and_pdf
             SOURCES
                 printing/pdfium_document_wrapper_qt.cpp printing/pdfium_document_wrapper_qt.h
-                printing/pdf_web_contents_helper_client_qt.cpp printing/pdf_web_contents_helper_client_qt.h
-                printing/pdf_stream_delegate_qt.cpp printing/pdf_stream_delegate_qt.h
                 printing/print_view_manager_base_qt.cpp printing/print_view_manager_base_qt.h
                 printing/print_view_manager_qt.cpp printing/print_view_manager_qt.h
                 printing/printer_worker.cpp printing/printer_worker.h
@@ -268,6 +271,8 @@ foreach(arch ${archs})
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_extensions AND QT_FEATURE_webengine_printing_and_pdf
             SOURCES
                 extensions/pdf_iframe_navigation_throttle_qt.cpp extensions/pdf_iframe_navigation_throttle_qt.h
+                printing/pdf_stream_delegate_qt.cpp printing/pdf_stream_delegate_qt.h
+                printing/pdf_web_contents_helper_client_qt.cpp printing/pdf_web_contents_helper_client_qt.h
         )
 
         extend_gn_target(${buildGn} CONDITION WIN32
@@ -289,6 +294,7 @@ foreach(arch ${archs})
 
         list(APPEND gnArgArg
             qtwebengine_target="${buildDir}/${config}/${arch}:QtWebEngineCore"
+            build_with_tflite_lib=false
             enable_background_contents=false
             enable_background_mode=false
             enable_ipc_fuzzer=false
@@ -296,17 +302,20 @@ foreach(arch ${archs})
             enable_media_remoting=false
             enable_message_center=false
             enable_nacl=false
-            enable_one_click_signin=false
             enable_oop_printing=false
             enable_remoting=false
             enable_reporting=false
             enable_resource_allowlist_generation=false
+            enable_screen_ai_service=false
             enable_swiftshader=false
             enable_swiftshader_vulkan=false
             angle_enable_swiftshader=false
             dawn_use_swiftshader=false
+            use_dawn=false
+            enable_vr=false
             enable_web_speech=false
             enable_widevine=true
+            enable_library_cdms=true
             fatal_linker_warnings=false
             has_native_accessibility=false
             safe_browsing_mode=0
@@ -318,6 +327,7 @@ foreach(arch ${archs})
             strip_absolute_paths_from_debug_symbols=false
             devtools_fast_bundle=false
             devtools_skip_typecheck=false
+            enable_jxl_decoder=false # temporarily because libjxl causes internal compiler error on armv7
         )
 
         extend_gn_list(gnArgArg

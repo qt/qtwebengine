@@ -13,7 +13,6 @@
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
-#include "base/task/post_task.h"
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_restrictions.h"
@@ -55,6 +54,7 @@
 #include "content/public/common/network_service_util.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/media_switches.h"
 #include "mojo/core/embedder/embedder.h"
@@ -123,7 +123,8 @@ namespace QtWebEngineCore {
 
 static bool usingSupportedSGBackend()
 {
-    if (QQuickWindow::graphicsApi() != QSGRendererInterface::OpenGL)
+    if (QQuickWindow::graphicsApi() != QSGRendererInterface::OpenGL
+        && QQuickWindow::graphicsApi() != QSGRendererInterface::Vulkan)
         return false;
 
     const QStringList args = QGuiApplication::arguments();
@@ -676,12 +677,27 @@ WebEngineContext::WebEngineContext()
     disableFeatures.push_back(features::kWebUsb.name);
     disableFeatures.push_back(media::kPictureInPicture.name);
 
+    // Disable webkitPersistentStorage alias to webkitTemporaryStorage.
+    // Persistent quota is depreceted and this flag will be removed:
+    // https://chromium-review.googlesource.com/c/chromium/src/+/3888541
+    // TODO: Implement support for webkitTemporaryStorage.
+    // Also see: https://bugs.chromium.org/p/chromium/issues/detail?id=1233525
+    disableFeatures.push_back(blink::features::kPersistentQuotaIsTemporaryQuota.name);
+
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
         enableFeatures.push_back(features::kOverlayScrollbar.name);
         parsedCommandLine->AppendSwitch(switches::kEnableViewport);
         parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
     }
+
+#if QT_CONFIG(webengine_vulkan)
+    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan) {
+        enableFeatures.push_back(features::kVulkan.name);
+        parsedCommandLine->AppendSwitchASCII(switches::kUseVulkan,
+                                             switches::kVulkanImplementationNameNative);
+    }
+#endif
 
     initializeFeatureList(parsedCommandLine, enableFeatures, disableFeatures);
 
@@ -745,7 +761,7 @@ WebEngineContext::WebEngineContext()
     m_mainDelegate->PreBrowserMain();
     base::MessagePump::OverrideMessagePumpForUIFactory(messagePumpFactory);
     content::BrowserTaskExecutor::Create();
-    m_mainDelegate->PostEarlyInitialization(false);
+    m_mainDelegate->PostEarlyInitialization({});
     content::StartBrowserThreadPool();
     content::BrowserTaskExecutor::PostFeatureListSetup();
     tracing::InitTracingPostThreadPoolStartAndFeatureList(false);
@@ -891,7 +907,7 @@ const char *qWebEngineChromiumVersion() noexcept
 }
 const char *qWebEngineChromiumSecurityPatchVersion() noexcept
 {
-    return "104.0.5112.102"; // FIXME: Remember to update
+    return "107.0.5304.88"; // FIXME: Remember to update
 }
 
 QT_END_NAMESPACE

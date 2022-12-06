@@ -6,8 +6,9 @@
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
-#include <QtCore/qscopedpointer.h>
 #include <QtCore/qurl.h>
+
+#include <memory>
 
 namespace QtWebEngineCore {
 class ContentBrowserClientQt;
@@ -87,7 +88,7 @@ private:
     QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfo &&p);
     QWebEngineUrlRequestInfo &operator=(QWebEngineUrlRequestInfo &&p);
     ~QWebEngineUrlRequestInfo();
-    QScopedPointer<QWebEngineUrlRequestInfoPrivate> d_ptr;
+    std::unique_ptr<QWebEngineUrlRequestInfoPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE

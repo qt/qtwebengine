@@ -23,6 +23,8 @@ BrowserWindow *Browser::createHiddenWindow(bool offTheRecord)
                 QString::fromLatin1("simplebrowser.%1").arg(qWebEngineChromiumVersion())));
         m_profile->settings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
         m_profile->settings()->setAttribute(QWebEngineSettings::DnsPrefetchEnabled, true);
+        m_profile->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
+        m_profile->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls, false);
         QObject::connect(m_profile.get(), &QWebEngineProfile::downloadRequested,
                          &m_downloadManagerWidget, &DownloadManagerWidget::downloadRequested);
     }

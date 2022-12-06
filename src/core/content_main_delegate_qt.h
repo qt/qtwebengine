@@ -20,14 +20,13 @@ public:
     // This is where the embedder puts all of its startup code that needs to run
     // before the sandbox is engaged.
     void PreSandboxStartup() override;
-    void PostEarlyInitialization(bool) override;
 
     content::ContentClient *CreateContentClient() override;
     content::ContentBrowserClient* CreateContentBrowserClient() override;
     content::ContentGpuClient* CreateContentGpuClient() override;
     content::ContentRendererClient* CreateContentRendererClient() override;
     content::ContentUtilityClient* CreateContentUtilityClient() override;
-    bool BasicStartupComplete(int* /*exit_code*/) override;
+    absl::optional<int> BasicStartupComplete() override;
 
 private:
     ContentClientQt m_contentClient;

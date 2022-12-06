@@ -29,6 +29,7 @@ RenderWidgetHostViewQtDelegateItem::RenderWidgetHostViewQtDelegateItem(RenderWid
 
 RenderWidgetHostViewQtDelegateItem::~RenderWidgetHostViewQtDelegateItem()
 {
+    releaseVulkanResources();
     if (m_widgetDelegate) {
         m_widgetDelegate->Unbind();
         m_widgetDelegate->Destroy();
@@ -315,6 +316,12 @@ void RenderWidgetHostViewQtDelegateItem::itemChange(ItemChange change, const Ite
                                                this, &RenderWidgetHostViewQtDelegateItem::onBeforeRendering, Qt::DirectConnection));
             m_windowConnections.append(connect(value.window, SIGNAL(xChanged(int)), SLOT(onWindowPosChanged())));
             m_windowConnections.append(connect(value.window, SIGNAL(yChanged(int)), SLOT(onWindowPosChanged())));
+#if QT_CONFIG(webengine_vulkan)
+            m_windowConnections.append(
+                    connect(value.window, &QQuickWindow::sceneGraphAboutToStop, this,
+                            &RenderWidgetHostViewQtDelegateItem::releaseVulkanResources,
+                            Qt::DirectConnection));
+#endif
             if (!m_isPopup)
                 m_windowConnections.append(connect(value.window, SIGNAL(closing(QQuickCloseEvent *)), SLOT(onHide())));
         }
@@ -362,6 +369,18 @@ QSGNode *RenderWidgetHostViewQtDelegateItem::updatePaintNode(QSGNode *oldNode, U
         node->setTexture(QNativeInterface::QSGOpenGLTexture::fromNative(texId, win, texSize, texOpts));
         node->setTextureCoordinatesTransform(QSGImageNode::MirrorVertically);
 #endif
+#if QT_CONFIG(webengine_vulkan)
+    } else if (comp->type() == Compositor::Type::Vulkan) {
+        QQuickWindow::CreateTextureOptions texOpts;
+        if (comp->hasAlphaChannel())
+            texOpts.setFlag(QQuickWindow::TextureHasAlphaChannel);
+
+        VkImage image = comp->vkImage(win);
+        VkImageLayout layout = comp->vkImageLayout();
+        node->setTexture(QNativeInterface::QSGVulkanTexture::fromNative(image, layout, win, texSize,
+                                                                        texOpts));
+        node->setTextureCoordinatesTransform(QSGImageNode::MirrorVertically);
+#endif // QT_CONFIG(webengine_vulkan)
     } else {
         Q_UNREACHABLE();
     }
@@ -372,7 +391,7 @@ QSGNode *RenderWidgetHostViewQtDelegateItem::updatePaintNode(QSGNode *oldNode, U
 void RenderWidgetHostViewQtDelegateItem::onBeforeRendering()
 {
     auto comp = compositor();
-    if (!comp || comp->type() != Compositor::Type::OpenGL)
+    if (!comp || comp->type() == Compositor::Type::Software)
         return;
     comp->waitForTexture();
 }
@@ -386,6 +405,17 @@ void RenderWidgetHostViewQtDelegateItem::onHide()
 {
     QFocusEvent event(QEvent::FocusOut, Qt::OtherFocusReason);
     m_client->forwardEvent(&event);
+}
+
+void RenderWidgetHostViewQtDelegateItem::releaseVulkanResources()
+{
+#if QT_CONFIG(webengine_vulkan)
+    auto comp = compositor();
+    if (!comp || comp->type() != Compositor::Type::Vulkan)
+        return;
+
+    comp->releaseVulkanResources(QQuickItem::window());
+#endif
 }
 
 void RenderWidgetHostViewQtDelegateItem::adapterClientChanged(WebContentsAdapterClient *client)

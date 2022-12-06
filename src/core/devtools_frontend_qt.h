@@ -67,7 +67,7 @@ protected:
     void DispatchProtocolMessage(content::DevToolsAgentHost* agent_host, base::span<const uint8_t> message) override;
 
     void SetPreferences(const std::string& json);
-    void HandleMessageFromDevToolsFrontend(base::Value message);
+    void HandleMessageFromDevToolsFrontend(base::Value::Dict message);
 
 private:
     // WebContentsObserver overrides
@@ -115,7 +115,7 @@ private:
     class NetworkResourceLoader;
     std::set<std::unique_ptr<NetworkResourceLoader>, base::UniquePtrComparator> m_loaders;
 
-    base::DictionaryValue m_preferences;
+    base::Value::Dict m_preferences;
     scoped_refptr<PersistentPrefStore> m_prefStore;
     base::WeakPtrFactory<DevToolsFrontendQt> m_weakFactory;
 };

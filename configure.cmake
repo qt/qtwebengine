@@ -6,6 +6,8 @@ if(QT_CONFIGURE_RUNNING)
     endfunction()
     function(add_check_for_support)
     endfunction()
+    function(check_for_ulimit)
+    endfunction()
 else()
     find_package(Ninja 1.7.2)
     find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT)
@@ -344,7 +346,6 @@ qt_feature("webengine-system-minizip" PRIVATE
 )
 qt_feature("webengine-system-libevent" PRIVATE
     LABEL "libevent"
-    AUTODETECT FALSE # coin bug 711
     CONDITION UNIX AND LIBEVENT_FOUND
 )
 qt_feature("webengine-system-libxml" PRIVATE
@@ -558,6 +559,13 @@ add_check_for_support(
 )
 
 if(WIN32)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL MSVC)
+        add_check_for_support(
+            MODULES QtWebEngine QtPdf
+            CONDITION NOT MSVC_VERSION LESS 1929
+            MESSAGE "MSVC compiler version must be at least 14.29."
+        )
+    endif()
     set(windowsSdkVersion $ENV{WindowsSDKVersion})
     string(REGEX REPLACE "([0-9.]+).*" "\\1" windowsSdkVersion "${windowsSdkVersion}")
     string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+)\\.[0-9]+" "\\1" sdkMinor "${windowsSdkVersion}")

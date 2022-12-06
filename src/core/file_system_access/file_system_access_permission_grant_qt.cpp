@@ -30,9 +30,9 @@ void FileSystemAccessPermissionGrantQt::RequestPermission(
     // Check if a permission request has already been processed previously. This
     // check is done first because we don't want to reset the status of a
     // permission if it has already been granted.
-    if (GetStatus() != PermissionStatus::ASK || !m_context) {
-        if (GetStatus() == PermissionStatus::GRANTED)
-            SetStatus(PermissionStatus::GRANTED);
+    if (GetStatus() != blink::mojom::PermissionStatus::ASK || !m_context) {
+        if (GetStatus() == blink::mojom::PermissionStatus::GRANTED)
+            SetStatus(blink::mojom::PermissionStatus::GRANTED);
         std::move(callback).Run(PermissionRequestOutcome::kRequestAborted);
         return;
     }
@@ -107,7 +107,7 @@ void FileSystemAccessPermissionGrantQt::RequestPermission(
             std::move(fullscreen_block));
 }
 
-void FileSystemAccessPermissionGrantQt::SetStatus(PermissionStatus status)
+void FileSystemAccessPermissionGrantQt::SetStatus(blink::mojom::PermissionStatus status)
 {
     bool should_notify = m_status != status;
     m_status = status;
@@ -116,24 +116,24 @@ void FileSystemAccessPermissionGrantQt::SetStatus(PermissionStatus status)
 }
 
 void FileSystemAccessPermissionGrantQt::OnPermissionRequestResult(
-        base::OnceCallback<void(PermissionRequestOutcome)> callback, PermissionAction result)
+        base::OnceCallback<void(PermissionRequestOutcome)> callback, permissions::PermissionAction result)
 {
     switch (result) {
-    case PermissionAction::GRANTED:
-        SetStatus(PermissionStatus::GRANTED);
+    case permissions::PermissionAction::GRANTED:
+        SetStatus(blink::mojom::PermissionStatus::GRANTED);
         std::move(callback).Run(PermissionRequestOutcome::kUserGranted);
         break;
-    case PermissionAction::DENIED:
-        SetStatus(PermissionStatus::DENIED);
+    case permissions::PermissionAction::DENIED:
+        SetStatus(blink::mojom::PermissionStatus::DENIED);
         std::move(callback).Run(PermissionRequestOutcome::kUserDenied);
         break;
-    case PermissionAction::DISMISSED:
-    case PermissionAction::IGNORED:
+    case permissions::PermissionAction::DISMISSED:
+    case permissions::PermissionAction::IGNORED:
         std::move(callback).Run(PermissionRequestOutcome::kUserDismissed);
         break;
-    case PermissionAction::REVOKED:
-    case PermissionAction::GRANTED_ONCE:
-    case PermissionAction::NUM:
+    case permissions::PermissionAction::REVOKED:
+    case permissions::PermissionAction::GRANTED_ONCE:
+    case permissions::PermissionAction::NUM:
         NOTREACHED();
         break;
     }

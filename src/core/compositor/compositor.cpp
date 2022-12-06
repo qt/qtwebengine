@@ -9,6 +9,7 @@
 #include <QHash>
 #include <QImage>
 #include <QMutex>
+#include <QQuickWindow>
 
 namespace QtWebEngineCore {
 
@@ -152,6 +153,25 @@ int Compositor::textureId()
     Q_UNREACHABLE();
     return 0;
 }
+
+#if QT_CONFIG(webengine_vulkan)
+VkImage Compositor::vkImage(QQuickWindow *)
+{
+    Q_UNREACHABLE();
+    return {};
+}
+
+VkImageLayout Compositor::vkImageLayout()
+{
+    Q_UNREACHABLE();
+    return {};
+}
+
+void Compositor::releaseVulkanResources(QQuickWindow *)
+{
+    Q_UNREACHABLE();
+}
+#endif
 
 // static
 void Compositor::unlockBindings()

@@ -4,7 +4,6 @@
 #include "url_request_custom_job_delegate.h"
 #include "url_request_custom_job_proxy.h"
 
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"

@@ -442,8 +442,8 @@ void tst_Origins::jsUrlRelative()
     // URLs even without an initial slash.
     QCOMPARE(eval(QSL("new URL('bar', 'qrc:foo').href")), QVariant(QSL("qrc:bar")));
     QCOMPARE(eval(QSL("new URL('baz', 'qrc:foo/bar').href")), QVariant(QSL("qrc:foo/baz")));
-    QCOMPARE(eval(QSL("new URL('bar', 'qrc://foo').href")), QVariant());
-    QCOMPARE(eval(QSL("new URL('bar', 'qrc:///foo').href")), QVariant());
+    QCOMPARE(eval(QSL("new URL('bar', 'qrc://foo').href")), QVariant(QSL("qrc://bar")));
+    QCOMPARE(eval(QSL("new URL('bar', 'qrc:///foo').href")), QVariant(QSL("qrc:///bar")));
 
     // With a slash it works the same as http except 'foo' is part of the path and not the host.
     QCOMPARE(eval(QSL("new URL('bar', 'qrc:/foo').href")), QVariant(QSL("qrc:/bar")));

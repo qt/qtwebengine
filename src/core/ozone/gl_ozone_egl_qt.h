@@ -12,12 +12,14 @@ namespace ui {
 
 class GLOzoneEGLQt : public GLOzoneEGL {
 public:
-    bool InitializeGLOneOffPlatform() override;
-    bool InitializeExtensionSettingsOneOffPlatform() override;
+    gl::GLDisplay *InitializeGLOneOffPlatform(uint64_t system_device_id) override;
+    bool InitializeExtensionSettingsOneOffPlatform(gl::GLDisplay *display) override;
     scoped_refptr<gl::GLSurface> CreateViewGLSurface(
+            gl::GLDisplay *display,
             gfx::AcceleratedWidget window) override;
     scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
-            const gfx::Size& size) override;
+            gl::GLDisplay *display,
+            const gfx::Size &size) override;
 
 protected:
     // Returns native platform display handle. This is used to obtain the EGL

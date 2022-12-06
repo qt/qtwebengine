@@ -263,7 +263,7 @@ int BrowserAccessibilityInterface::indexOfChild(const QAccessibleInterface *ifac
 {
 
     const BrowserAccessibilityInterface *child = static_cast<const BrowserAccessibilityInterface *>(iface);
-    return const_cast<BrowserAccessibilityInterface *>(child)->q->GetIndexInParent();
+    return const_cast<BrowserAccessibilityInterface *>(child)->q->GetIndexInParent().value();
 }
 
 QString BrowserAccessibilityInterface::text(QAccessible::Text t) const

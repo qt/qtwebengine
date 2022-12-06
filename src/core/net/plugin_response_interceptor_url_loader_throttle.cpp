@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -151,16 +150,13 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
                 producer_handle->WriteData(
                     payload.c_str(), &len, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
 
-
-    new_client->OnStartLoadingResponseBody(std::move(consumer_handle));
-
     network::URLLoaderCompletionStatus status(net::OK);
     status.decoded_body_length = len;
     new_client->OnComplete(status);
 
     mojo::PendingRemote<network::mojom::URLLoader> original_loader;
     mojo::PendingReceiver<network::mojom::URLLoaderClient> original_client;
-    mojo::ScopedDataPipeConsumerHandle body;
+    mojo::ScopedDataPipeConsumerHandle body = std::move(consumer_handle);
     delegate_->InterceptResponse(std::move(dummy_new_loader),
                                  std::move(new_client_receiver),
                                  &original_loader, &original_client,
