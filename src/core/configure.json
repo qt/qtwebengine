@@ -106,11 +106,6 @@
             "condition": "config.unix && libs.webengine-alsa",
             "output": [ "privateFeature" ]
         },
-        "webengine-v8-snapshot-support": {
-            "label" : "Building v8 snapshot supported",
-            "condition": "!config.unix || !features.cross_compile || arch.arm64 || tests.webengine-host-compiler",
-            "output": [ "privateFeature" ]
-        },
         "webengine-geolocation": {
             "label": "Geolocation",
             "condition": "module.positioning",
@@ -221,11 +216,6 @@
             "type": "warning",
             "condition": "config.linux && features.webengine-embedded-build && !features.webengine-system-ffmpeg && arch.arm && !features.webengine-arm-thumb",
             "message": "Thumb instruction set is required to build ffmpeg for QtWebEngine."
-        },
-        {
-            "type": "warning",
-            "condition": "config.unix && config.cross_compile && !features.webengine-v8-snapshot-support",
-            "message": "V8 snapshot cannot be built. Most likely, the 32-bit host compiler does not work. Please make sure you have 32-bit devel environment installed."
         }
     ],
 
@@ -251,11 +241,6 @@
                     "type": "feature",
                     "args": "webengine-ozone",
                     "condition": "config.unix"
-                },
-                {
-                    "type": "feature",
-                    "args": "webengine-v8-snapshot-support",
-                    "condition": "config.unix && config.cross_compile"
                 },
                 {
                     "type": "feature",
