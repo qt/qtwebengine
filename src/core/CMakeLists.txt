@@ -460,6 +460,14 @@ foreach(arch ${archs})
                     list(APPEND gnArgArg media_use_ffmpeg=false use_webaudio_ffmpeg=false)
                 endif()
             endif()
+
+            if(CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm64")
+                # V8 sandbox initialization is slow in QEMU.
+                # This is a workaround to avoid auto test timeouts on the QEMU arm64 CI.
+                if ("$ENV{TARGET_OSVERSION_COIN}" STREQUAL "qemu")
+                    list(APPEND gnArgArg v8_enable_sandbox=false)
+                endif()
+            endif()
         endif()
 
         if(MACOS)
