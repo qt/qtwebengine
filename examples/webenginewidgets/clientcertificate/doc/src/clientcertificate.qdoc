@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-    \example webenginewidgets/clientcertificatesi
+    \example webenginewidgets/clientcertificate
     \title WebEngine Widgets Client Certificate Example
     \ingroup webengine-widgetexamples
-    \brief A simple client certificate authentication scenario using \QWE and \l QSslServer
+    \brief A simple client certificate authentication scenario using \QWE and \l QSslServer.
 
     \image selection.png
 
