@@ -9,7 +9,7 @@ SUBDIRS += \
     notifications \
     simplebrowser \
     stylesheetbrowser \
-    push_notifications \
+    push-notifications \
     videoplayer \
     webui
 

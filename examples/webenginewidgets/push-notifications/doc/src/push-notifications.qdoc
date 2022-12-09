@@ -36,7 +36,7 @@ implementation will deliver a push message. However, to show it, a service worke
 be registered. As the service worker runs in the background, it allows displaying notifications
 even if a website, which has installed it, is no longer opened.
 
-\image push_notifications.png
+\image push-notifications.png
 
 Let's go more into implementation details. We start with implementing our custom
 push service using NodeJS with two modules:
@@ -50,11 +50,11 @@ push service using NodeJS with two modules:
 Let's initialize a new project and install the required modules in the root directory of this
 example:
 
-\snippet /push_notifications/commands 0
+\snippet /push-notifications/commands 0
 
 These commands should create package.js, which defines the start command:
 
-\snippet /push_notifications/commands 1
+\snippet /push-notifications/commands 1
 
 Now let's move on to the push service back-end implementation in server.js.
 
@@ -64,7 +64,7 @@ subscription at a time. To do that we need to create \e VAPID keys which we are 
 generate with \e web-push libs. The public key is going to be used by the front-end and authenticate
 to the service.
 
-\quotefromfile webenginewidgets/push_notifications/server.js
+\quotefromfile webenginewidgets/push-notifications/server.js
 \skipto const express
 \printto add subscribe route
 
@@ -73,7 +73,7 @@ to the service.
 To generate keys, we can use the tool shipped with \e web-push lib, that is installed by
 \c npm in our example's root directory.
 
-\snippet /push_notifications/commands 2
+\snippet /push-notifications/commands 2
 
 Now we add two \c routes to the push server. One to \c subscribe and one to \c unsubscribe,
 so that our front-end can send an HTTP POST request to handle the push subscription.
@@ -83,20 +83,20 @@ the user. We keep around the \c subscription to be able to send push notificatio
 As a confirmation, we send the 201 status code and schedule the first push notification based on
 the \c ping-time value. The \c unsubscribe request simply removes a subscription.
 
-\quotefromfile webenginewidgets/push_notifications/server.js
+\quotefromfile webenginewidgets/push-notifications/server.js
 \skipto add subscribe route
 \printto function sendNotification
 
 The \c sendNotication() function sends push messages using the web-push lib. We create the payload
 with the message we want to present to a user and schedule the next push message.
 
-\quotefromfile webenginewidgets/push_notifications/server.js
+\quotefromfile webenginewidgets/push-notifications/server.js
 \skipto function sendNotification
 \printto server.listen
 
 In the end we start the server to listen on the given port.
 
-\quotefromfile webenginewidgets/push_notifications/server.js
+\quotefromfile webenginewidgets/push-notifications/server.js
 \skipto server.listen
 \printline started
 
@@ -105,7 +105,7 @@ often they want to receive ping notification messages. We will have two buttons:
 \e {Ping Me} to subscribe for push notifications and \e Clear to unsubscribe.
 In the end we load ping.js, which we cover next.
 
-\quotefromfile webenginewidgets/push_notifications/content/index.html
+\quotefromfile webenginewidgets/push-notifications/content/index.html
 \skipto <body>
 \printuntil </body>
 
@@ -116,7 +116,7 @@ This way the user can leave the website and still get notified as the service wo
 in the background and handles incoming messages. To achieve that, we have to first register
 one with:
 
-\quotefromfile webenginewidgets/push_notifications/content/ping.js
+\quotefromfile webenginewidgets/push-notifications/content/ping.js
 \skipto const register
 \printline worker.js
 
@@ -125,7 +125,7 @@ user. If the permission is granted, the push subscription is returned. It includ
 that allows sending notifications to the browser, where the registered service worker waits for
 push messages.
 
-\quotefromfile webenginewidgets/push_notifications/content/ping.js
+\quotefromfile webenginewidgets/push-notifications/content/ping.js
 \skipto var subscription
 \printto console.log
 
@@ -133,14 +133,14 @@ As mentioned the subscription is created for FCM and should be now sent to our c
 with an HTTP POST request. In addition, we add to the post request the HTTP header with the
 \c ping-time the user entered on our website.
 
-\quotefromfile webenginewidgets/push_notifications/content/ping.js
+\quotefromfile webenginewidgets/push-notifications/content/ping.js
 \skipto await fetch
 \printto console.log
 
 The function \c clear call unsubscribes first from our push server by sending an HTTP POST request
 and later from the 3rd-party push service (FCM).
 
-\quotefromfile webenginewidgets/push_notifications/content/ping.js
+\quotefromfile webenginewidgets/push-notifications/content/ping.js
 \skipuntil async function clear()
 \skipuntil {
 \printto console.log
@@ -157,7 +157,7 @@ and call \c setup() or \c clear().
 As the last part of the front-end let's look inside a service worker script, where we simply
 register an event listener for \e push events.
 
-\quotefromfile webenginewidgets/push_notifications/content/worker.js
+\quotefromfile webenginewidgets/push-notifications/content/worker.js
 \skipto self
 \printuntil });
 \printuntil });
@@ -170,7 +170,7 @@ the look and feel of a notification message.
 Having the implementation in place, we can start the server on localhost at the port 5000.
 To do that, we can simply enter in the console in the project's root directory:
 
-\snippet /push_notifications/commands 3
+\snippet /push-notifications/commands 3
 
 Now we can fire up \e simplebrowser and enter \c http:\\localhost:5000 as a URL.
 
