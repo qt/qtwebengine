@@ -2280,6 +2280,9 @@ QSizeF QWebEnginePage::contentsSize() const
     To be informed about the result of the request, connect to the signal
     pdfPrintingFinished().
 
+    \note The \l QWebEnginePage::Stop web action can be used to interrupt
+    this asynchronous operation.
+
     If a file already exists at the provided file path, it will be overwritten.
     \sa pdfPrintingFinished()
 */
@@ -2304,6 +2307,8 @@ void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &layo
 
     The \a resultCallback must take a const reference to a QByteArray as parameter. If printing was successful, this byte array
     will contain the PDF data, otherwise, the byte array will be empty.
+
+    \note The \l QWebEnginePage::Stop web action can be used to interrupt this operation.
 
     \warning We guarantee that the callback (\a resultCallback) is always called, but it might be done
     during page destruction. When QWebEnginePage is deleted, the callback is triggered with an invalid

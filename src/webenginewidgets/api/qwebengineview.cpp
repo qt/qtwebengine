@@ -1408,6 +1408,9 @@ void QWebEngineView::printToPdf(const std::function<void(const QByteArray&)> &re
 
     \note Printing runs on the browser process, which is by default not sandboxed.
 
+    \note The data generation step of printing can be interrupted for a short period of time using
+    the \l QWebEnginePage::Stop web action.
+
     \note This function rasterizes the result when rendering onto \a printer. Please consider raising
     the default resolution of \a printer to at least 300 DPI or using printToPdf() to produce
     PDF file output more effectively.

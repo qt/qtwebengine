@@ -277,7 +277,7 @@ void PrintViewManagerQt::resetPdfState()
 
 void PrintViewManagerQt::PrintPreviewDone()
 {
-    if (IsPrintRenderFrameConnected(m_printPreviewRfh))
+    if (m_printPreviewRfh->IsRenderFrameLive() && IsPrintRenderFrameConnected(m_printPreviewRfh))
         GetPrintRenderFrame(m_printPreviewRfh)->OnPrintPreviewDialogClosed();
     m_printPreviewRfh = nullptr;
 }
@@ -338,6 +338,10 @@ void PrintViewManagerQt::ShowScriptedPrintPreview(bool /*source_is_modifiable*/)
 
 void PrintViewManagerQt::RequestPrintPreview(printing::mojom::RequestPrintPreviewParamsPtr /*params*/)
 {
+    if (m_printSettings.empty()) {
+        PrintPreviewDone();
+        return;
+    }
     mojo::AssociatedRemote<printing::mojom::PrintRenderFrame> printRenderFrame;
     m_printPreviewRfh->GetRemoteAssociatedInterfaces()->GetInterface(&printRenderFrame);
     printRenderFrame->PrintPreview(m_printSettings.Clone());
