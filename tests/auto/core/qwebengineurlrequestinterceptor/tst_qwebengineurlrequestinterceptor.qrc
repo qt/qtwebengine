@@ -1,6 +1,8 @@
 <!DOCTYPE RCC><RCC version="1.0">
     <qresource prefix="/">
         <file>resources/content.html</file>
+        <file>resources/content2.html</file>
+        <file>resources/content3.html</file>
         <file>resources/favicon.html</file>
         <file>resources/firstparty.html</file>
         <file>resources/fontawesome.woff</file>

@@ -79,6 +79,7 @@ private Q_SLOTS:
     void replaceInterceptor_data();
     void replaceInterceptor();
     void replaceOnIntercept();
+    void multipleRedirects();
 };
 
 tst_QWebEngineUrlRequestInterceptor::tst_QWebEngineUrlRequestInterceptor()
@@ -207,6 +208,29 @@ public:
 
     TestRequestInterceptor(bool redirect = false, const QUrl &url = kRedirectUrl)
         : shouldRedirect(redirect), redirectUrl(url)
+    {
+    }
+};
+
+class TestMultipleRedirectsInterceptor : public QWebEngineUrlRequestInterceptor {
+public:
+    QList<RequestInfo> requestInfos;
+    QMap<QUrl, QUrl> redirectPairs;
+    int redirectCount = 0;
+    void interceptRequest(QWebEngineUrlRequestInfo &info) override
+    {
+        QVERIFY(QThread::currentThread() == QCoreApplication::instance()->thread());
+        qCDebug(lc) << this << "Type:" << info.resourceType() << info.requestMethod() << "Navigation:" << info.navigationType()
+                    << info.requestUrl() << "Initiator:" << info.initiator();
+        auto redirectUrl = redirectPairs.constFind(info.requestUrl());
+        if (redirectUrl != redirectPairs.constEnd()) {
+          info.redirect(redirectUrl.value());
+          requestInfos.append(info);
+          redirectCount++;
+        }
+    }
+
+    TestMultipleRedirectsInterceptor()
     {
     }
 };
@@ -913,6 +937,29 @@ void tst_QWebEngineUrlRequestInterceptor::replaceOnIntercept()
     QCOMPARE(profileInterceptor.requestInfos.size(), 3);
     QCOMPARE(pageInterceptor1.requestInfos.size(), 0);
     QCOMPARE(profileInterceptor.requestInfos.size(), pageInterceptor2.requestInfos.size());
+}
+
+void tst_QWebEngineUrlRequestInterceptor::multipleRedirects()
+{
+    HttpServer server;
+    server.setResourceDirs({ ":/resources" });
+    QVERIFY(server.start());
+
+    TestMultipleRedirectsInterceptor multiInterceptor;
+    multiInterceptor.redirectPairs.insert(QUrl(server.url("/content.html")), QUrl(server.url("/content2.html")));
+    multiInterceptor.redirectPairs.insert(QUrl(server.url("/content2.html")), QUrl(server.url("/content3.html")));
+
+    QWebEngineProfile profile;
+    profile.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
+    profile.setUrlRequestInterceptor(&multiInterceptor);
+    QWebEnginePage page(&profile);
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+
+    page.setUrl(server.url("/content.html"));
+
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 20000);
+    QTRY_COMPARE(multiInterceptor.redirectCount, 2);
+    QTRY_COMPARE(multiInterceptor.requestInfos.size(), 2);
 }
 
 QTEST_MAIN(tst_QWebEngineUrlRequestInterceptor)
