@@ -93,4 +93,4 @@ navigation.qmltypespage = "Qt WebEngine QML Types"
 macro.QWE    = "Qt \\WebEngine"
 
 # Fail the documentation build if there are more warnings than the limit
-warninglimit = 4
+warninglimit = 0
