@@ -255,6 +255,10 @@ void WebContentsDelegateQt::RenderFrameCreated(content::RenderFrameHost *render_
 {
     content::FrameTreeNode *node = static_cast<content::RenderFrameHostImpl *>(render_frame_host)->frame_tree_node();
     m_frameFocusedObserver.addNode(node);
+
+    // If it's a child frame (render_widget_host_view_child_frame) install an InputEventObserver on
+    // it. Note that it is only needed for WheelEventAck.
+    RenderWidgetHostViewQt::registerInputEventObserver(web_contents(), render_frame_host);
 }
 
 void WebContentsDelegateQt::PrimaryMainFrameRenderProcessGone(base::TerminationStatus status)

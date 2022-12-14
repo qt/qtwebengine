@@ -21,6 +21,7 @@
 namespace content {
 class RenderFrameHost;
 class RenderWidgetHostImpl;
+class WebContents;
 }
 
 namespace ui {
@@ -30,7 +31,7 @@ class TouchSelectionController;
 namespace QtWebEngineCore {
 
 class RenderWidgetHostViewQtDelegateClient;
-class GuestInputEventObserverQt;
+class InputEventObserverQt;
 class TouchSelectionControllerClientQt;
 class WebContentsAccessibilityQt;
 class WebContentsAdapterClient;
@@ -41,6 +42,7 @@ class RenderWidgetHostViewQt
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
     , public content::TextInputManager::Observer
     , public content::RenderFrameMetadataProvider::Observer
+    , public content::RenderWidgetHost::InputEventObserver
 {
 public:
     RenderWidgetHostViewQt(content::RenderWidgetHost* widget);
@@ -51,7 +53,6 @@ public:
     WebContentsAdapterClient *adapterClient() { return m_adapterClient; }
     void setAdapterClient(WebContentsAdapterClient *adapterClient);
     RenderWidgetHostViewQtDelegateClient *delegateClient() const { return m_delegateClient.get(); }
-    void addGuest(content::RenderWidgetHost *);
 
     // Overridden from RenderWidgetHostView:
     void InitAsChild(gfx::NativeView) override;
@@ -149,6 +150,14 @@ public:
     void OnRenderFrameSubmission() override {}
     void OnLocalSurfaceIdChanged(const cc::RenderFrameMetadata &) override {}
 
+    // Overridden from content::RenderWidgetHost::InputEventObserver
+    void OnInputEvent(const blink::WebInputEvent &) override { }
+    void OnInputEventAck(blink::mojom::InputEventResultSource,
+                         blink::mojom::InputEventResultState state,
+                         const blink::WebInputEvent &event) override;
+
+    static void registerInputEventObserver(content::WebContents *, content::RenderFrameHost *);
+
     // Called from RenderWidgetHostViewQtDelegateClient.
     Compositor::Id compositorId();
     void notifyShown();
@@ -185,7 +194,6 @@ private:
     std::unique_ptr<content::CursorManager> m_cursorManager;
 
     ui::FilteredGestureProvider m_gestureProvider;
-    std::unique_ptr<GuestInputEventObserverQt> m_guestInputEventObserver;
 
     viz::FrameSinkId m_frameSinkId;
     std::unique_ptr<RenderWidgetHostViewQtDelegateClient> m_delegateClient;

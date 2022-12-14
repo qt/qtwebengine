@@ -41,17 +41,8 @@ void ExtensionWebContentsObserverQt::CreateForWebContents(content::WebContents *
 void ExtensionWebContentsObserverQt::RenderFrameCreated(content::RenderFrameHost *render_frame_host)
 {
     ExtensionWebContentsObserver::RenderFrameCreated(render_frame_host);
-
-    if (web_contents()->IsInnerWebContentsForGuest() && static_cast<content::RenderFrameHostImpl *>(render_frame_host)->is_local_root_subframe()) {
-        content::WebContents *parent = web_contents()->GetOutermostWebContents();
-        QtWebEngineCore::RenderWidgetHostViewQt *main_rwhv = static_cast<QtWebEngineCore::RenderWidgetHostViewQt *>(parent->GetRenderWidgetHostView());
-        // Main frame of guest WebContents
-        content::RenderWidgetHost *guest_render_widget_host = web_contents()->GetRenderViewHost()->GetWidget();
-        main_rwhv->addGuest(guest_render_widget_host);
-        // The frame which holds the actual PDF content inside the guest
-        content::RenderWidgetHost *pdf_render_widget_host = render_frame_host->GetRenderWidgetHost();
-        main_rwhv->addGuest(pdf_render_widget_host);
-    }
+    QtWebEngineCore::RenderWidgetHostViewQt::registerInputEventObserver(web_contents(),
+                                                                        render_frame_host);
 
     const Extension *extension = GetExtensionFromFrame(render_frame_host, false);
     if (!extension)
