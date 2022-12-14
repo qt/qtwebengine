@@ -275,9 +275,9 @@ void RenderWidgetHostViewQtDelegateItem::touchEvent(QTouchEvent *event)
 
 void RenderWidgetHostViewQtDelegateItem::hoverMoveEvent(QHoverEvent *event)
 {
+    event->ignore();
     if ((!m_isPopup && m_widgetDelegate && !m_widgetDelegate->ActiveFocusOnPress())
         || event->position() == event->oldPosF()) {
-        event->ignore();
         return;
     }
     m_client->forwardEvent(event);
@@ -285,6 +285,7 @@ void RenderWidgetHostViewQtDelegateItem::hoverMoveEvent(QHoverEvent *event)
 
 void RenderWidgetHostViewQtDelegateItem::hoverLeaveEvent(QHoverEvent *event)
 {
+    event->ignore();
     m_client->forwardEvent(event);
 }
 
