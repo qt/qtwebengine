@@ -18,6 +18,7 @@
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/cursor_manager.h"
@@ -29,6 +30,7 @@
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/cursors/webcursor.h"
+#include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -141,33 +143,10 @@ public:
     }
 };
 
-class GuestInputEventObserverQt : public content::RenderWidgetHost::InputEventObserver
-{
-public:
-    GuestInputEventObserverQt(RenderWidgetHostViewQt *rwhv)
-        : m_rwhv(rwhv)
-    {
-    }
-    ~GuestInputEventObserverQt() {}
-
-    void OnInputEvent(const blink::WebInputEvent&) override {}
-    void OnInputEventAck(blink::mojom::InputEventResultSource,
-                         blink::mojom::InputEventResultState state,
-                         const blink::WebInputEvent &event) override
-    {
-        if (event.GetType() == blink::WebInputEvent::Type::kMouseWheel)
-            m_rwhv->WheelEventAck(static_cast<const blink::WebMouseWheelEvent &>(event), state);
-    }
-
-private:
-    RenderWidgetHostViewQt *m_rwhv;
-};
-
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget)
     : content::RenderWidgetHostViewBase::RenderWidgetHostViewBase(widget)
     , m_taskRunner(base::ThreadTaskRunnerHandle::Get())
     , m_gestureProvider(QtGestureProviderConfig(), this)
-    , m_guestInputEventObserver(new GuestInputEventObserverQt(this))
     , m_frameSinkId(host()->GetFrameSinkId())
     , m_delegateClient(new RenderWidgetHostViewQtDelegateClient(this))
 {
@@ -247,9 +226,34 @@ void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterC
                                                             m_adapterClient = nullptr; });
 }
 
-void RenderWidgetHostViewQt::addGuest(content::RenderWidgetHost *rwh)
+void RenderWidgetHostViewQt::OnInputEventAck(blink::mojom::InputEventResultSource,
+                                             blink::mojom::InputEventResultState state,
+                                             const blink::WebInputEvent &event)
 {
-    rwh->AddInputEventObserver(m_guestInputEventObserver.get());
+    if (event.GetType() == blink::WebInputEvent::Type::kMouseWheel)
+        WheelEventAck(static_cast<const blink::WebMouseWheelEvent &>(event), state);
+}
+
+// static
+// Called when new child/guest renderframes created.
+void RenderWidgetHostViewQt::registerInputEventObserver(content::WebContents *webContents,
+                                                        content::RenderFrameHost *rfh)
+{
+    if (static_cast<content::RenderFrameHostImpl *>(rfh)->is_local_root_subframe()) {
+        content::WebContents *parent = webContents->GetOutermostWebContents();
+        QtWebEngineCore::RenderWidgetHostViewQt *mainRwhv =
+                static_cast<QtWebEngineCore::RenderWidgetHostViewQt *>(
+                        parent->GetRenderWidgetHostView());
+        // Child (originAgentCluster) or guest (pdf) frame that is embedded into the main frame
+        content::RenderWidgetHost *childFrame = rfh->GetRenderWidgetHost();
+        childFrame->AddInputEventObserver(mainRwhv);
+
+        if (webContents->IsInnerWebContentsForGuest()) {
+            // The frame which holds the actual PDF content inside the guest
+            content::RenderWidgetHost *guestFrame = webContents->GetRenderViewHost()->GetWidget();
+            guestFrame->AddInputEventObserver(mainRwhv);
+        }
+    }
 }
 
 void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView)

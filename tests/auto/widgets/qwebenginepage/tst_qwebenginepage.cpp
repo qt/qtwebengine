@@ -36,6 +36,7 @@
 #include <QPaintEngine>
 #include <QPushButton>
 #include <QScreen>
+#include <QWheelEvent>
 #if defined(QT_STATEMACHINE_LIB)
 #    include <QStateMachine>
 #endif
@@ -265,6 +266,7 @@ private Q_SLOTS:
 
     void localToRemoteNavigation();
     void clientHints();
+    void childFrameInput();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -292,6 +294,13 @@ private:
             QTest::touchEvent(window, s_touchDevice.get()).release(1, p);
         }
     };
+
+    void makeScroll(QWidget *target, QPointF pos, QPoint globalPos, QPoint angleDelta)
+    {
+        QWheelEvent ev(pos, globalPos, QPoint(0, 0), angleDelta, Qt::NoButton, Qt::NoModifier,
+                       Qt::NoScrollPhase, false);
+        QGuiApplication::sendEvent(target, &ev);
+    }
 };
 
 tst_QWebEnginePage::tst_QWebEnginePage()
@@ -5145,6 +5154,105 @@ void tst_QWebEnginePage::clientHints()
     QCOMPARE(platform.toLower(), "\"windows\"");
 #endif
 
+}
+
+void tst_QWebEnginePage::childFrameInput()
+{
+    HttpServer server;
+    server.setHostDomain("localhost");
+
+    // The cross-origin policy blocks scripting this frame with QWebEnginePage::runJavaScript.
+    // Use console messages to validate events.
+    QString innerHtml(
+            "<html><head><style>body{height:1200px;width:1200px;}</style></head><body>test<script>"
+            "  let lastX, lastY = 0;"
+            "  document.onscroll = (e) => {"
+            "    if (window.scrollY > lastY) console.log(\"Down\");"
+            "    if (window.scrollY < lastY) console.log(\"Up\");"
+            "    if (window.scrollX > lastX) console.log(\"Right\");"
+            "    if (window.scrollX < lastX) console.log(\"Left\");"
+            "    lastX = window.scrollX;"
+            "    lastY = window.scrollY;"
+            "  };"
+            "  window.onload = () => {console.log('loaded');};"
+            "</script></body></html>");
+
+    QVERIFY(server.start());
+    connect(&server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
+        if (rr->requestPath() == "/main.html") {
+            // the Origin-Agent-Cluster header enables dedicated processes for origins
+            rr->setResponseHeader("Origin-Agent-Cluster", "?1");
+            // the same-site-cross-origin page forces to create the frame in a different process
+            server.setHostDomain("sub.localhost");
+            rr->setResponseBody(("<html><body>"
+                                 "<iframe id=\"iframe\" width=90% height=90% src=\""
+                                 + server.url().toString().toUtf8()
+                                 + "inner.html\"></iframe>"
+                                   "</body></html>"));
+        }
+        if (rr->requestPath() == "/inner.html")
+            rr->setResponseBody(innerHtml.toUtf8());
+        rr->sendResponse();
+    });
+
+    QWebEngineView view;
+    ConsolePage page;
+    view.setPage(&page);
+    view.resize(640, 480);
+    QSignalSpy loadSpy(&page, &QWebEnginePage::loadFinished);
+    page.load(server.url("/main.html"));
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 1, 20000);
+
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QTRY_VERIFY(evaluateJavaScriptSync(&page, "window.originAgentCluster").toBool());
+
+    // make sure the frame is loaded
+    QTRY_COMPARE(page.messages.size(), 1);
+    QTRY_COMPARE(page.messages[0], QString("loaded"));
+
+    // focus
+    evaluateJavaScriptSync(&page, "document.getElementById('iframe').contentWindow.focus()");
+    QTRY_COMPARE(evaluateJavaScriptSync(&page, "document.activeElement.id").toString(),
+                 QStringLiteral("iframe"));
+
+    QPoint globalPos = view.windowHandle()->position();
+    QPoint p = elementCenter(&page, QString("iframe"));
+
+    // Even if the document is loaded, it is not necessarily drawn.
+    // Hit-testing (in Viz) for pointer events will be flacky in this scenario.
+    // Send keyClick events first so the target frame will be cached for wheel events.
+    QTest::keyClick(view.focusProxy(), Qt::Key_Down);
+    QTRY_COMPARE(page.messages.size(), 2);
+    QTRY_COMPARE(page.messages[1], QString("Down"));
+
+    QTest::keyClick(view.focusProxy(), Qt::Key_Up);
+    QTRY_COMPARE(page.messages.size(), 3);
+    QTRY_COMPARE(page.messages[2], QString("Up"));
+
+    QTest::keyClick(view.focusProxy(), Qt::Key_Right);
+    QTRY_COMPARE(page.messages.size(), 4);
+    QTRY_COMPARE(page.messages[3], QString("Right"));
+
+    QTest::keyClick(view.focusProxy(), Qt::Key_Left);
+    QTRY_COMPARE(page.messages.size(), 5);
+    QTRY_COMPARE(page.messages[4], QString("Left"));
+
+    makeScroll(view.focusProxy(), p, globalPos, QPoint(0, -120));
+    QTRY_COMPARE(page.messages.size(), 6);
+    QTRY_COMPARE(page.messages[5], QString("Down"));
+
+    makeScroll(view.focusProxy(), p, globalPos, QPoint(0, 120));
+    QTRY_COMPARE(page.messages.size(), 7);
+    QTRY_COMPARE(page.messages[6], QString("Up"));
+
+    makeScroll(view.focusProxy(), p, globalPos, QPoint(-120, 0));
+    QTRY_COMPARE(page.messages.size(), 8);
+    QTRY_COMPARE(page.messages[7], QString("Right"));
+
+    makeScroll(view.focusProxy(), p, globalPos, QPoint(120, 0));
+    QTRY_COMPARE(page.messages.size(), 9);
+    QTRY_COMPARE(page.messages[8], QString("Left"));
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
