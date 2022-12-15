@@ -56,7 +56,6 @@ public:
     content::PlatformNotificationService *GetPlatformNotificationService() override;
     std::string GetMediaDeviceIDSalt() override;
     content::FileSystemAccessPermissionContext *GetFileSystemAccessPermissionContext() override;
-    std::string GetPushMessagingEndpoint() const override;
     content::ReduceAcceptLanguageControllerDelegate *GetReduceAcceptLanguageControllerDelegate() override;
 
     // Profile implementation:

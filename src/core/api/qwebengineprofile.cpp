@@ -392,36 +392,32 @@ void QWebEngineProfile::setDownloadPath(const QString &path)
 /*!
     \since 6.5
 
-    The address used to create subscriptions for a push messaging service.
+    Returns \c true if the push messaging service is enabled.
+    \note By default the push messaging service is disabled.
 
-    \note By default, the endpoint is an empty URL and push messaging is disabled.
-
-    \sa setPushServiceEndpoint()
+    \sa setPushServiceEnabled()
 */
-QUrl QWebEngineProfile::pushServiceEndpoint() const
+bool QWebEngineProfile::isPushServiceEnabled() const
 {
     const Q_D(QWebEngineProfile);
-    return d->profileAdapter()->pushServiceEndpoint();
+    return d->profileAdapter()->pushServiceEnabled();
 }
 
 /*!
     \since 6.5
 
-    Enables push messaging feature by setting \a endpoint to a valid address used as a
-    push messaging service endpoint. Subscription requests for the push service will be
-    sent to the concatenation of \a endpoint and a subscription ID (which is provided
-    by the browser engine).
+    Enables the push messaging service if \a enable is \c true, otherwise disables it.
 
-    \note Default endpoint used by Google Chrome browser is \c {https://fcm.googleapis.com/fcm/send/}
+    \note \QWE uses \l {https://firebase.google.com}{Firebase Cloud Messaging (FCM)}
+    as a browser push service. Therefore, all push messages will go through the
+    Google push service and its respective servers.
 
-    If set back to the default empty URL, push messaging is disabled.
-
-    \sa pushServiceEndpoint()
+    \sa isPushServiceEnabled()
 */
-void QWebEngineProfile::setPushServiceEndpoint(const QUrl &endpoint)
+void QWebEngineProfile::setPushServiceEnabled(bool enable)
 {
     Q_D(QWebEngineProfile);
-    d->profileAdapter()->setPushServiceEndpoint(endpoint);
+    d->profileAdapter()->setPushServiceEnabled(enable);
 }
 
 /*!

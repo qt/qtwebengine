@@ -98,8 +98,8 @@ public:
     QString downloadPath() const;
     void setDownloadPath(const QString &path);
 
-    QUrl pushServiceEndpoint() const;
-    void setPushServiceEndpoint(const QUrl &endpoint);
+    bool isPushServiceEnabled() const;
+    void setPushServiceEnabled(bool enabled);
 
     void setNotificationPresenter(std::function<void(std::unique_ptr<QWebEngineNotification>)> notificationPresenter);
 

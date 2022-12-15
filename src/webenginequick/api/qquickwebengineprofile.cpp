@@ -821,46 +821,38 @@ QString QQuickWebEngineProfile::downloadPath() const
 }
 
 /*!
-    \qmlproperty string WebEngineProfile::pushServiceEndpoint
+    \qmlproperty bool WebEngineProfile::isPushServiceEnabled
     \since  QtWebEngine 6.5
 
-    The address used to create subscriptions for a push messaging service.
-
-    Subscription requests for the push service will be sent to the concatenation
-    of \a endpoint and a subscription ID (which is provided by the browser engine).
-
-    \note Default endpoint used by Google Chrome browser is \c {https://fcm.googleapis.com/fcm/send/}
-
-    \note By default, the endpoint is an empty URL and push messaging is disabled.
+    Whether the push messaging service is enabled.
+    \note By default the push messaging service is disabled.
+    \note \QWE uses the \l {https://firebase.google.com}{Firebase Cloud Messaging (FCM)} as a browser push service.
+    Therefore, all push messages will go through the Google push service and its respective servers.
 */
 
 /*!
-    \property QQuickWebEngineProfile::pushServiceEndpoint
+    \property QQuickWebEngineProfile::isPushServiceEnabled
     \since QtWebEngine 6.5
 
-    The address used to create subscriptions for a push messaging service.
-
-    Subscription requests for the push service will be sent to the concatenation
-    of \a endpoint and a subscription ID (which is provided by the browser engine).
-
-    \note Default endpoint used by Google Chrome browser is \c {https://fcm.googleapis.com/fcm/send/}
-
-    \note By default, the endpoint is an empty URL and push messaging is disabled.
+    Whether the push messaging service is enabled.
+    \note By default the push messaging service is disabled.
+    \note \QWE uses the \l {https://firebase.google.com}{Firebase Cloud Messaging (FCM)} as a browser push service.
+    Therefore, all push messages will go through the Google push service and its respective servers.
 */
 
-QUrl QQuickWebEngineProfile::pushServiceEndpoint() const
+bool QQuickWebEngineProfile::isPushServiceEnabled() const
 {
     const Q_D(QQuickWebEngineProfile);
-    return d->profileAdapter()->pushServiceEndpoint();
+    return d->profileAdapter()->pushServiceEnabled();
 }
 
-void QQuickWebEngineProfile::setPushServiceEndpoint(const QUrl &endpoint)
+void QQuickWebEngineProfile::setPushServiceEnabled(bool enabled)
 {
     Q_D(QQuickWebEngineProfile);
-    if (pushServiceEndpoint() == endpoint)
+    if (isPushServiceEnabled() == enabled)
         return;
-    d->profileAdapter()->setPushServiceEndpoint(endpoint);
-    emit pushServiceEndpointChanged();
+    d->profileAdapter()->setPushServiceEnabled(enabled);
+    emit pushServiceEnabledChanged();
 }
 
 /*!
