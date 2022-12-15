@@ -159,14 +159,9 @@ storage::SpecialStoragePolicy *ProfileQt::GetSpecialStoragePolicy()
     return nullptr;
 }
 
-std::string ProfileQt::GetPushMessagingEndpoint() const
-{
-    return m_profileAdapter->pushServiceEndpoint().toString().toStdString();
-}
-
 content::PushMessagingService *ProfileQt::GetPushMessagingService()
 {
-    if (!m_profileAdapter->pushServiceEndpoint().isEmpty())
+    if (m_profileAdapter->pushServiceEnabled())
         return PushMessagingServiceFactory::GetForProfile(this);
     else
         return nullptr;

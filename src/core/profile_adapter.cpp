@@ -63,6 +63,7 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
     , m_httpCacheType(DiskHttpCache)
     , m_persistentCookiesPolicy(AllowPersistentCookies)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
+    , m_pushServiceEnabled(false)
     , m_httpCacheMaxSize(0)
 {
     WebEngineContext::current()->addProfileAdapter(this);
@@ -628,14 +629,14 @@ bool ProfileAdapter::isSpellCheckEnabled() const
 #endif
 }
 
-QUrl ProfileAdapter::pushServiceEndpoint() const
+bool ProfileAdapter::pushServiceEnabled() const
 {
-    return m_pushServiceEndpoint;
+  return m_pushServiceEnabled;
 }
 
-void ProfileAdapter::setPushServiceEndpoint(const QUrl &endpoint)
+void ProfileAdapter::setPushServiceEnabled(bool enabled)
 {
-    m_pushServiceEndpoint = endpoint;
+    m_pushServiceEnabled = enabled;
 }
 
 void ProfileAdapter::addWebContentsAdapterClient(WebContentsAdapterClient *client)
