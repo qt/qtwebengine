@@ -63,6 +63,9 @@ private:
             const url::Origin &origin, const base::FilePath &path, HandleType handle_type,
             UserAction user_action, content::GlobalRenderFrameHostId frame_id,
             base::OnceCallback<void(SensitiveEntryResult)> callback, bool should_block);
+    bool AncestorHasActivePermission(const url::Origin &origin,
+                                     const base::FilePath &path,
+                                     GrantType grant_type) const;
 
     content::BrowserContext *m_profile;
 
