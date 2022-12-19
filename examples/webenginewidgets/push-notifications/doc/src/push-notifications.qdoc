@@ -172,12 +172,24 @@ To do that, we can simply enter in the console in the project's root directory:
 
 \snippet /push-notifications/commands 3
 
-Now we can fire up \e simplebrowser and enter \c http:\\localhost:5000 as a URL.
+Now we can look into the \e push-notification browser application, which is based on
+\l {WebEngine Notifications Example}:
+
+\quotefromfile webenginewidgets/push-notifications/main.cpp
+\skipto main
+\printuntil app.exec
+\printuntil }
+
+This application simply opens the page at \c http:\\localhost:5000. We are not going into detail
+about how to open a notification as it is documented \l {WebEngine Notifications Example}{here}.
+However, you need to modify the application in two ways. First, \c QWebEngineProfile cannot be
+set to \e off-the-record because push messaging would be disabled. Therefore, as you can see
+above, \c  QWebEngineProfile is initialized with the name. Second, you need to enable push
+messaging with the call QWebEngineProfile::setPushServiceEnabled for the created \c profile.
+
+When the application runs it displays:
 
 \image website.png
-
-\note \c QWebEngineProfile cannot be set to \e off-the-record, because push messages would be
-disabled.
 
 After granting the permission we can send our ping request:
 
@@ -187,5 +199,4 @@ We should see the coming push notification:
 
 \image notification.png
 
-\note To troubleshoot errors, open \e {Developer Tools} from Tools menu.
 */
