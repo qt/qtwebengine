@@ -17,6 +17,8 @@
 #include <QMutex>
 #include <QVector2D>
 
+#include <QtCore/private/qtools_p.h>
+
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QRecursiveMutex, pdfMutex)
@@ -39,7 +41,7 @@ public:
         QMetaEnum rolesMetaEnum = doc->metaObject()->enumerator(doc->metaObject()->indexOfEnumerator("PageModelRole"));
         for (int r = Qt::UserRole; r < int(QPdfDocument::PageModelRole::NRoles); ++r) {
             auto name = QByteArray(rolesMetaEnum.valueToKey(r));
-            name[0] = tolower(name[0]);
+            name[0] = QtMiscUtils::toAsciiLower(name[0]);
             m_roleNames.insert(r, name);
         }
         connect(doc, &QPdfDocument::statusChanged, this, [this](QPdfDocument::Status s) {
