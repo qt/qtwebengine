@@ -350,6 +350,10 @@ void UIDelegatesManager::showDialog(QSharedPointer<AuthenticationDialogControlle
 
 void UIDelegatesManager::showFilePicker(QSharedPointer<FilePickerController> controller)
 {
+    if (controller->mode() == FilePickerController::UploadFolder) {
+        showDirectoryPicker(controller);
+        return;
+    }
 
     if (!ensureComponentLoaded(FilePicker))
         return;
@@ -361,19 +365,21 @@ void UIDelegatesManager::showFilePicker(QSharedPointer<FilePickerController> con
     filePicker->setParent(m_view);
     filePickerComponent->completeCreate();
 
+    static int fileModeIndex = filePicker->metaObject()->indexOfEnumerator("FileMode");
+    QMetaEnum fileModeEnum = filePicker->metaObject()->enumerator(fileModeIndex);
+
     // Fine-tune some properties depending on the mode.
     switch (controller->mode()) {
     case FilePickerController::Open:
+        filePicker->setProperty("fileMode", fileModeEnum.keyToValue("OpenFile"));
         break;
     case FilePickerController::Save:
-        filePicker->setProperty("selectExisting", false);
+        filePicker->setProperty("fileMode", fileModeEnum.keyToValue("SaveFile"));
         break;
     case FilePickerController::OpenMultiple:
-        filePicker->setProperty("selectMultiple", true);
+        filePicker->setProperty("fileMode", fileModeEnum.keyToValue("OpenFiles"));
         break;
     case FilePickerController::UploadFolder:
-        filePicker->setProperty("selectFolder", true);
-        break;
     default:
         Q_UNREACHABLE();
     }
@@ -395,6 +401,35 @@ void UIDelegatesManager::showFilePicker(QSharedPointer<FilePickerController> con
     QObject::connect(filePicker, rejectSignal.method(), filePicker, filePicker->metaObject()->method(deleteLaterIndex));
 
     QMetaObject::invokeMethod(filePicker, "open");
+}
+
+void UIDelegatesManager::showDirectoryPicker(QSharedPointer<FilePickerController> controller)
+{
+    if (!ensureComponentLoaded(DirectoryPicker))
+        return;
+
+    QQmlContext *context = qmlContext(m_view);
+    QObject *directoryPicker = directoryPickerComponent->beginCreate(context);
+    if (QQuickItem *item = qobject_cast<QQuickItem*>(directoryPicker))
+        item->setParentItem(m_view);
+    directoryPicker->setParent(m_view);
+    directoryPickerComponent->completeCreate();
+
+    QQmlProperty directoryPickedSignal(directoryPicker, QStringLiteral("onFolderSelected"));
+    CHECK_QML_SIGNAL_PROPERTY(directoryPickedSignal, directoryPickerComponent->url());
+    QQmlProperty rejectSignal(directoryPicker, QStringLiteral("onRejected"));
+    CHECK_QML_SIGNAL_PROPERTY(rejectSignal, directoryPickerComponent->url());
+    static int acceptedIndex = controller->metaObject()->indexOfSlot("accepted(QVariant)");
+    QObject::connect(directoryPicker, directoryPickedSignal.method(), controller.data(), controller->metaObject()->method(acceptedIndex));
+    static int rejectedIndex = controller->metaObject()->indexOfSlot("rejected()");
+    QObject::connect(directoryPicker, rejectSignal.method(), controller.data(), controller->metaObject()->method(rejectedIndex));
+
+    // delete when done.
+    static int deleteLaterIndex = directoryPicker->metaObject()->indexOfSlot("deleteLater()");
+    QObject::connect(directoryPicker, directoryPickedSignal.method(), directoryPicker, directoryPicker->metaObject()->method(deleteLaterIndex));
+    QObject::connect(directoryPicker, rejectSignal.method(), directoryPicker, directoryPicker->metaObject()->method(deleteLaterIndex));
+
+    QMetaObject::invokeMethod(directoryPicker, "open");
 }
 
 class TemporaryCursorMove
