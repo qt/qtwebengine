@@ -22,6 +22,7 @@
     F(ConfirmDialog, confirmDialog) SEPARATOR \
     F(PromptDialog, promptDialog) SEPARATOR \
     F(FilePicker, filePicker) SEPARATOR \
+    F(DirectoryPicker, directoryPicker) SEPARATOR \
     F(AuthenticationDialog, authenticationDialog) SEPARATOR \
     F(ToolTip, toolTip) SEPARATOR \
     F(TouchHandle, touchHandle) SEPARATOR \
@@ -80,6 +81,7 @@ public:
     void showDialog(QSharedPointer<JavaScriptDialogController>);
     void showDialog(QSharedPointer<AuthenticationDialogController>);
     void showFilePicker(QSharedPointer<FilePickerController>);
+    void showDirectoryPicker(QSharedPointer<FilePickerController>);
     virtual void showMenu(QObject *menu);
     void showToolTip(const QString &text);
     QQuickItem *createTouchHandle();
