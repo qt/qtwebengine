@@ -4822,6 +4822,10 @@ public:
         Q_UNUSED(oldFiles);
         chosenFileSelectionMode = mode;
         chosenAcceptedMimeTypes = acceptedMimeTypes;
+
+        if (chosenFileSelectionMode == QWebEnginePage::FileSelectUploadFolder)
+          return QStringList() << m_tempDir.path();
+
         return QStringList() << (m_tempDir.path() + "/file.txt");
     }
 
