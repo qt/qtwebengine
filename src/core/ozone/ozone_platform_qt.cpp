@@ -25,11 +25,13 @@
 #include "platform_window_qt.h"
 
 #if BUILDFLAG(USE_XKBCOMMON)
+#include "base/logging.h"
 #include "ui/events/ozone/layout/xkb/xkb_evdev_codes.h"
 #include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
 
 #include <X11/XKBlib.h>
 #include <X11/extensions/XKBrules.h>
+#include <filesystem>
 
 extern void *GetQtXDisplay();
 #endif // BUILDFLAG(USE_XKBCOMMON)
@@ -181,8 +183,10 @@ static std::string getCurrentKeyboardLayout()
 bool OzonePlatformQt::InitializeUI(const ui::OzonePlatform::InitParams &)
 {
 #if BUILDFLAG(USE_XKBCOMMON)
+    std::string xkb_path("/usr/share/X11/xkb");
     std::string layout = getCurrentKeyboardLayout();
-    if (layout.empty()) {
+    if (layout.empty() || !std::filesystem::exists(xkb_path) || std::filesystem::is_empty(xkb_path)) {
+        LOG(WARNING) << "Failed to load keymap file, falling back to StubKeyboardLayoutEngine";
         m_keyboardLayoutEngine = std::make_unique<StubKeyboardLayoutEngine>();
     } else {
         m_keyboardLayoutEngine = std::make_unique<XkbKeyboardLayoutEngine>(m_xkbEvdevCodeConverter);
