@@ -166,7 +166,7 @@
     \section1 Favicon
 
     \QWE supports the web site URL icon, \e favicon. Each icon is stored in the internal
-    database for each \l QWebEngieProfile and can be accessed using a \l QWebEnginePage::icon()
+    database for each \l QWebEngineProfile and can be accessed using a \l QWebEnginePage::icon()
     call or a \l {WebEngineView::icon}{WebEngineView.icon} property for the currently loaded content.
 
     Moreover \QWE provides API for accessing already stored icons in the internal profile's database.
