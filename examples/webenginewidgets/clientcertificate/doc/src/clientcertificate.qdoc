@@ -84,7 +84,7 @@
     \skipto QFile
     \printuntil QSslKey
 
-    Now we add the certificate and its private key to \l {QWebEngigneCretificateStore}.
+    Now we add the certificate and its private key to \l {QWebEngigneClientCertificateStore}.
 
     \printuntil clientCertificateStore
 
@@ -99,7 +99,7 @@
     \printuntil acceptCertificate
 
     The handling for \l QWebEnginePage::selectClientCertificate simply displays \l QDialog
-    with \l QWidgetList showing a list of client certificates to choose from.
+    with \l QListWidget showing a list of client certificates to choose from.
     The user selected certificate is then passed to the
     \l QWebEngineClientCertificateSelection::select call.
 
@@ -115,7 +115,7 @@
     For our embedded device we will develop a minimalistic HTTPS server. We can use \l QSslServer
     to handle incoming connections and to provide an \l QSslSocket instance. To do that,
     we create an instance of a \l QSslServer and, similarly to our client setup, we load a server
-    certificate and its private key. Next, we create \l QSslCertifcate and \l QSslKey objects
+    certificate and its private key. Next, we create \l QSslCertificate and \l QSslKey objects
     accordingly. Additionally, we need a CA certificate so the server can validate the certificate
     presented by the client. The CA and local certificate are set to \l QSslConfiguration and
     used later by the server.
