@@ -86,11 +86,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
     // This will get called a lot to check all URLs, so do a quick check of other
     // schemes to filter out most URLs.
     if (!content::HasWebUIScheme(url))
-        return NULL;
+        return nullptr;
 
     // We must compare hosts only since some of the Web UIs append extra stuff
     // after the host name.
-    if (url.host() == chrome::kChromeUINetInternalsHost)
+    if (url.host_piece() == chrome::kChromeUINetInternalsHost)
         return &NewWebUI<NetInternalsUI>;
 
     if (url.SchemeIs(content::kChromeDevToolsScheme)) {
@@ -98,7 +98,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
             return nullptr;
         return &NewWebUI<DevToolsUI>;
     }
-    if (url.host() == chrome::kChromeUIAccessibilityHost)
+    if (url.host_piece() == chrome::kChromeUIAccessibilityHost)
         return &NewWebUI<AccessibilityUI>;
 
     if (url.host_piece() == chrome::kChromeUIUserActionsHost)
