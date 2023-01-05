@@ -183,6 +183,7 @@ foreach(arch ${archs})
                 type_conversion.cpp type_conversion.h
                 user_notification_controller.cpp user_notification_controller.h
                 user_script.cpp user_script.h
+                version_ui_qt.cpp version_ui_qt.h
                 visited_links_manager_qt.cpp visited_links_manager_qt.h
                 web_contents_adapter.cpp web_contents_adapter.h
                 web_contents_adapter_client.h
