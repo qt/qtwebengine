@@ -11,6 +11,7 @@ add_subdirectory(qwebengineurlrequestjob)
 add_subdirectory(origins)
 add_subdirectory(devtools)
 add_subdirectory(getdomainandregistry)
+add_subdirectory(qtversion)
 
 if(QT_FEATURE_ssl)
     add_subdirectory(qwebengineclientcertificatestore)

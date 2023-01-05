@@ -10,7 +10,6 @@
 
 #include "build_config_qt.h"
 #include "devtools_frontend_qt.h"
-
 #include "base/functional/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/accessibility/accessibility_ui.h"
@@ -26,6 +25,7 @@
 #include "media/media_buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "url/gurl.h"
+#include "version_ui_qt.h"
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
 #include "chrome/browser/ui/webui/sandbox/sandbox_internals_ui.h"
@@ -106,6 +106,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
 
     if (url.host_piece() == chrome::kChromeUIDeviceLogHost)
         return &NewWebUI<chromeos::DeviceLogUI>;
+
+    if (url.host_piece() == chrome::kChromeUIVersionQtHost)
+        return &NewWebUI<VersionUIQt>;
 
 //    if (url.host_piece() == chrome::kChromeUIInspectHost)
 //        return &NewWebUI<InspectUI>;
