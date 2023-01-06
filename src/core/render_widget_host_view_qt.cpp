@@ -1008,12 +1008,17 @@ void RenderWidgetHostViewQt::OnRenderFrameMetadataChangedAfterActivation(base::T
         m_touchSelectionControllerClient->UpdateClientSelectionBounds(m_selectionStart, m_selectionEnd);
     }
 
-    gfx::PointF scrollOffset = metadata.root_scroll_offset.value_or(gfx::PointF());
-    gfx::SizeF contentsSize = metadata.root_layer_size;
+    gfx::PointF scrollOffset = gfx::PointF();
+    if (metadata.root_scroll_offset.has_value())
+        scrollOffset = gfx::ScalePoint(metadata.root_scroll_offset.value(),
+                                       1 / metadata.device_scale_factor);
     std::swap(m_lastScrollOffset, scrollOffset);
-    std::swap(m_lastContentsSize, contentsSize);
     if (m_adapterClient && scrollOffset != m_lastScrollOffset)
         m_adapterClient->updateScrollPosition(toQt(m_lastScrollOffset));
+
+    gfx::SizeF contentsSize =
+            gfx::ScaleSize(metadata.root_layer_size, 1 / metadata.device_scale_factor);
+    std::swap(m_lastContentsSize, contentsSize);
     if (m_adapterClient && contentsSize != m_lastContentsSize)
         m_adapterClient->updateContentsSize(toQt(m_lastContentsSize));
 }
