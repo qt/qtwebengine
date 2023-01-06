@@ -157,8 +157,6 @@ public:
     bool m_fullscreenMode;
     bool isLoading;
     bool m_activeFocusOnPress;
-    bool m_navigationActionTriggered;
-    qreal devicePixelRatio;
     QMap<quint64, QJSValue> m_callbacks;
     QQmlWebChannel *m_webChannel;
     QPointer<QQuickWebEngineView> inspectedView;
