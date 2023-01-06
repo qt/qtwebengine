@@ -200,7 +200,6 @@ public:
     QWebChannel *webChannel;
     unsigned int webChannelWorldId;
     QUrl iconUrl;
-    bool m_navigationActionTriggered;
     QPointer<QWebEnginePage> inspectedPage;
     QPointer<QWebEnginePage> devToolsPage;
     bool defaultAudioMuted;
