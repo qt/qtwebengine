@@ -2482,7 +2482,8 @@ void tst_QWebEnginePage::baseUrl()
 void tst_QWebEnginePage::scrollPosition()
 {
     // enlarged image in a small viewport, to provoke the scrollbars to appear
-    QString html("<html><body><img src='qrc:/image.png' height=500 width=500/></body></html>");
+    QString html(
+            "<html><body><img src='qrc:/resources/image.png' height=500 width=500/></body></html>");
 
     QWebEngineView view;
     view.setFixedSize(200,200);
@@ -2496,8 +2497,8 @@ void tst_QWebEnginePage::scrollPosition()
 
     // try to set the scroll offset programmatically
     view.page()->runJavaScript("window.scrollTo(23, 29);");
-    QTRY_COMPARE(view.page()->scrollPosition().x(), 23 * view.windowHandle()->devicePixelRatio());
-    QCOMPARE(view.page()->scrollPosition().y(), 29 * view.windowHandle()->devicePixelRatio());
+    QTRY_COMPARE(view.page()->scrollPosition().x(), 23);
+    QCOMPARE(view.page()->scrollPosition().y(), 29);
 
     int x = evaluateJavaScriptSync(view.page(), "window.scrollX").toInt();
     int y = evaluateJavaScriptSync(view.page(), "window.scrollY").toInt();
