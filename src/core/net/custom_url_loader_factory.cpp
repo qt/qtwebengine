@@ -262,6 +262,11 @@ private:
                 headers += "Access-Control-Allow-Credentials: true\n";
             }
         }
+        for (auto it = m_additionalResponseHeaders.cbegin();
+             it != m_additionalResponseHeaders.cend(); ++it) {
+            headers += it.key().toLower().toStdString() + ": " + it.value().toLower().toStdString()
+                    + "\n";
+        }
         m_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(net::HttpUtil::AssembleRawHeaders(headers));
         m_head->encoded_data_length = m_head->headers->raw_headers().length();
 

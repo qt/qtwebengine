@@ -112,6 +112,18 @@ QMap<QByteArray, QByteArray> QWebEngineUrlRequestJob::requestHeaders() const
 }
 
 /*!
+    \since 6.6
+    Set \a additionalResponseHeaders. These additional headers of the response
+    are only used when QWebEngineUrlRequestJob::reply(const QByteArray&, QIODevice*)
+    is called.
+*/
+void QWebEngineUrlRequestJob::setAdditionalResponseHeaders(
+        const QMap<QByteArray, QByteArray> &additionalResponseHeaders) const
+{
+    d_ptr->setAdditionalResponseHeaders(additionalResponseHeaders);
+}
+
+/*!
     Replies to the request with \a device and the content type \a contentType.
     Content type is similar to the HTTP Content-Type header, and can either be
     a MIME type, or a MIME type and charset encoding combined like this:
