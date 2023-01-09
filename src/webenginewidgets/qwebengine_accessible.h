@@ -7,8 +7,6 @@
 #include <QtCore/QPointer>
 #include <QtWidgets/QAccessibleWidget>
 
-#if QT_CONFIG(accessibility)
-
 QT_BEGIN_NAMESPACE
 class QWebEngineView;
 
@@ -47,6 +45,5 @@ private:
     QPointer<QWebEngineView> m_view;
 };
 } // namespace QtWebEngineCore
-#endif // QT_CONFIG(accessibility)
 
 #endif // QWEBENGINE_ACCESSIBLE_H

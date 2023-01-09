@@ -27,7 +27,6 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qstring.h>
-#include <QtGui/qaccessibleobject.h>
 
 namespace QtWebEngineCore {
 class RenderWidgetHostViewQtDelegateItem;

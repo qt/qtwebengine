@@ -24,7 +24,6 @@
 #include "file_picker_controller.h"
 #include "find_text_helper.h"
 #include "javascript_dialog_controller.h"
-#include "qquickwebengine_accessible.h"
 #include "render_widget_host_view_qt_delegate_item.h"
 #include "render_widget_host_view_qt_delegate_quickwindow.h"
 #include "touch_selection_menu_controller.h"
@@ -57,6 +56,12 @@
 #include <QtQml/qqmlcontext.h>
 #include <QtQml/qqmlengine.h>
 #include <QtQml/qqmlproperty.h>
+
+#if QT_CONFIG(accessibility)
+#include "qquickwebengine_accessible.h"
+
+#include <QtGui/qaccessible.h>
+#endif
 
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include <QtCore/qmargins.h>

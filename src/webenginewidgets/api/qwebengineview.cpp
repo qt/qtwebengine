@@ -6,7 +6,6 @@
 #include "qwebengineview_p.h"
 #include "render_widget_host_view_qt_delegate_client.h"
 #include "render_widget_host_view_qt_delegate_item.h"
-#include "qwebengine_accessible.h"
 #include "ui/autofillpopupwidget_p.h"
 #include "touchhandlewidget_p.h"
 #include "touchselectionmenuwidget_p.h"
@@ -30,6 +29,10 @@
 #include <QStyle>
 #include <QGuiApplication>
 #include <QQuickWidget>
+
+#if QT_CONFIG(accessibility)
+#include "qwebengine_accessible.h"
+#endif
 
 #if QT_CONFIG(action)
 #include <QAction>

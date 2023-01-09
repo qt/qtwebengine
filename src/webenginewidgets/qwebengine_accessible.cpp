@@ -8,8 +8,6 @@
 
 #include "web_contents_adapter.h"
 
-#if QT_CONFIG(accessibility)
-
 QT_BEGIN_NAMESPACE
 
 QWebEngineViewAccessible::QWebEngineViewAccessible(QWebEngineView *o) : QAccessibleWidget(o)
@@ -102,5 +100,3 @@ QWebEngineViewAccessible *RenderWidgetHostViewQtDelegateWidgetAccessible::viewAc
 }
 
 } // namespace QtWebEngineCore
-
-#endif // QT_CONFIG(accessibility)
