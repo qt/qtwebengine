@@ -410,6 +410,7 @@ void RenderWidgetHostViewQtDelegateClient::handlePointerEvent(T *event)
 
     webEvent.movement_x = event->globalPosition().x() - m_previousMousePosition.x();
     webEvent.movement_y = event->globalPosition().y() - m_previousMousePosition.y();
+    webEvent.is_raw_movement_event = true;
 
     if (m_rwhv->IsMouseLocked())
         QCursor::setPos(m_previousMousePosition);
