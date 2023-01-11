@@ -69,8 +69,8 @@ foreach(arch ${archs})
             DEFINES
                 QT_NO_KEYWORDS
                 QT_USE_QSTRINGBUILDER
-                QTWEBENGINECORE_VERSION_STR=\\\\\\\\\"${QT_REPO_MODULE_VERSION}\\\\\\\\\"
-                QTWEBENGINEPROCESS_NAME=\\\\\\\\\"${qtWebEngineProcessName}\\\\\\\\\"
+                QTWEBENGINECORE_VERSION_STR=${QT_REPO_MODULE_VERSION}
+                QTWEBENGINEPROCESS_NAME=${qtWebEngineProcessName}
                 BUILDING_CHROMIUM
                 "${forwardDeclarationMacro}"
             CXX_COMPILE_OPTIONS
@@ -503,7 +503,7 @@ foreach(arch ${archs})
             CMAKE_TARGET WebEngineCore
             NINJA_TARGETS QtWebEngineCore convert_dict
             GN_TARGET ${buildGn}
-            GN_ARGS "${gnArgArg}"
+            GN_ARGS ${gnArgArg}
             BUILDDIR ${buildDir}/${config}/${arch}
             MODULE core
         )

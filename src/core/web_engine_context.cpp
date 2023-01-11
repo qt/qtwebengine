@@ -117,6 +117,9 @@ Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
 QT_END_NAMESPACE
 #endif
 
+#define STRINGIFY_LITERAL(x) #x
+#define STRINGIFY_EXPANDED(x) STRINGIFY_LITERAL(x)
+
 namespace QtWebEngineCore {
 
 Q_LOGGING_CATEGORY(webEngineContextLog, "qt.webenginecontext")
@@ -897,13 +900,19 @@ bool WebEngineContext::closingDown()
 QT_BEGIN_NAMESPACE
 const char *qWebEngineVersion() noexcept
 {
-    return QTWEBENGINECORE_VERSION_STR;
+    return STRINGIFY_EXPANDED(QTWEBENGINECORE_VERSION_STR);
+}
+
+const char *qWebEngineProcessName() noexcept
+{
+    return STRINGIFY_EXPANDED(QTWEBENGINEPROCESS_NAME);
 }
 
 const char *qWebEngineChromiumVersion() noexcept
 {
-    return CHROMIUM_VERSION;
+    return STRINGIFY_EXPANDED(CHROMIUM_VERSION);
 }
+
 const char *qWebEngineChromiumSecurityPatchVersion() noexcept
 {
     return "108.0.5359.181"; // FIXME: Remember to update
