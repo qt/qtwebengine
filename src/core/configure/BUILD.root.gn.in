@@ -33,7 +33,7 @@ if (moc_source_h_files != []) {
     script = "@WEBENGINE_ROOT_SOURCE_DIR@/tools/scripts/gn_run_binary.py"
     sources =  moc_source_h_files
     outputs = [ "${target_gen_dir}/.moc/moc_{{source_name_part}}.cpp" ]
-    inputs = [ "@WEBENGINE_ROOT_SOURCE_DIR@/CMakeLists.txt" ]
+    inputs = [ "@WEBENGINE_ROOT_SOURCE_DIR@/src/core/CMakeLists.txt" ]
     args = [
       @GN_ARGS_MOC_BIN@,
       @GN_ARGS_DEFINES@,
