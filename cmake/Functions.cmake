@@ -2,9 +2,11 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 function(assertTargets)
-    qt_parse_all_arguments(arg "add_check_for_support"
-        "" "" "MODULES;TARGETS" "${ARGN}"
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "" "" "MODULES;TARGETS"
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
+
     foreach(module ${arg_MODULES})
         if(NOT DEFINED ${module}_SUPPORT)
             set(${module}_SUPPORT ON PARENT_SCOPE)
@@ -36,9 +38,11 @@ endfunction()
 
 # TODO: this should be idealy in qtbase
 function(add_check_for_support)
-    qt_parse_all_arguments(arg "add_check_for_support"
-        "" "" "MODULES;MESSAGE;CONDITION" "${ARGN}"
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "" "" "MODULES;MESSAGE;CONDITION"
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
+
     foreach(module ${arg_MODULES})
         if(NOT DEFINED ${module}_SUPPORT)
             set(${module}_SUPPORT ON PARENT_SCOPE)
@@ -181,7 +185,9 @@ endmacro()
 
 function(extend_gn_target target)
     get_target_property(elements ${target} ELEMENTS)
-    qt_parse_all_arguments(GN "extend_gn_target" "" "" "CONDITION;${elements}" "${ARGN}")
+    cmake_parse_arguments(PARSE_ARGV 1 GN "" "" "CONDITION;${elements}")
+    _qt_internal_validate_all_args_are_parsed(GN)
+
     if("x${GN_CONDITION}" STREQUAL x)
         set(GN_CONDITION ON)
     endif()
@@ -193,7 +199,9 @@ function(extend_gn_target target)
 endfunction()
 
 function(extend_gn_list outList)
-    qt_parse_all_arguments(GN "extend_gn_list" "" "" "ARGS;CONDITION" "${ARGN}")
+    cmake_parse_arguments(PARSE_ARGV 1 GN "" "" "ARGS;CONDITION")
+    _qt_internal_validate_all_args_are_parsed(GN)
+
     if("x${GN_CONDITION}" STREQUAL x)
         set(GN_CONDITION ON)
     endif()
@@ -741,7 +749,9 @@ function(extract_cflag result cflag)
 endfunction()
 
 function(extend_gn_list_cflag outList)
-    qt_parse_all_arguments(GN "extend_gn_list_cflag" "" "" "ARG;CFLAG" "${ARGN}")
+    cmake_parse_arguments(PARSE_ARGV 1 GN "" "" "ARG;CFLAG")
+    _qt_internal_validate_all_args_are_parsed(GN)
+
     extract_cflag(cflag "${GN_CFLAG}")
     if(cflag)
         set(${outList} "${${outList}}" "${GN_ARG}=\"${cflag}\"" PARENT_SCOPE)
@@ -1040,9 +1050,11 @@ macro(append_pkg_config_setup)
 endmacro()
 
 function(add_ninja_command)
-    qt_parse_all_arguments(arg "add_ninja_command"
-        "" "TARGET;OUTPUT;BUILDDIR;MODULE" "BYPRODUCTS" "${ARGN}"
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "" "TARGET;OUTPUT;BUILDDIR;MODULE" "BYPRODUCTS"
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
+
     string(REPLACE " " ";" NINJAFLAGS "$ENV{NINJAFLAGS}")
     list(TRANSFORM arg_BYPRODUCTS PREPEND "${arg_BUILDDIR}/")
     add_custom_command(
@@ -1141,9 +1153,10 @@ function(get_config_filenames c_config cxx_config static_config target_config)
 endfunction()
 
 function(add_gn_command)
-    qt_parse_all_arguments(arg "add_gn_command"
-        "" "CMAKE_TARGET;GN_TARGET;MODULE;BUILDDIR" "NINJA_TARGETS;GN_ARGS" "${ARGN}"
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "" "CMAKE_TARGET;GN_TARGET;MODULE;BUILDDIR" "NINJA_TARGETS;GN_ARGS"
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     get_config_filenames(cConfigFileName cxxConfigFileName staticConfigFileName targetConfigFileName)
     set(gnArgArgFile ${arg_BUILDDIR}/args.gn)

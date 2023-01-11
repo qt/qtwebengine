@@ -189,7 +189,7 @@ foreach(arch ${archs})
             CMAKE_TARGET Pdf
             NINJA_TARGETS QtPdf
             GN_TARGET ${buildGn}
-            GN_ARGS "${gnArgArg}"
+            GN_ARGS ${gnArgArg}
             BUILDDIR ${buildDir}/${config}/${arch}
             MODULE pdf
         )

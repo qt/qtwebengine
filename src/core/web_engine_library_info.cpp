@@ -57,7 +57,7 @@ static QString getBundlePath(CFBundleRef frameworkBundle)
     // The following is a fix for QtWebEngineProcess crashes on OS X 10.7 and before.
     // We use it for the other OS X versions as well to make sure it works and because
     // the directory structure should be the same.
-    if (qApp->applicationName() == QLatin1String(QTWEBENGINEPROCESS_NAME)) {
+    if (qApp->applicationName() == QLatin1String(qWebEngineProcessName())) {
         path = QDir::cleanPath(qApp->applicationDirPath() % QLatin1String("/../../../.."));
     } else if (frameworkBundle) {
         CFURLRef bundleUrl = CFBundleCopyBundleURL(frameworkBundle);
@@ -75,7 +75,7 @@ static QString getResourcesPath(CFBundleRef frameworkBundle)
     // The following is a fix for QtWebEngineProcess crashes on OS X 10.7 and before.
     // We use it for the other OS X versions as well to make sure it works and because
     // the directory structure should be the same.
-    if (qApp->applicationName() == QLatin1String(QTWEBENGINEPROCESS_NAME)) {
+    if (qApp->applicationName() == QLatin1String(qWebEngineProcessName())) {
         path = getBundlePath(frameworkBundle) % QLatin1String("/Resources");
     } else if (frameworkBundle) {
         CFURLRef resourcesRelativeUrl = CFBundleCopyResourcesDirectoryURL(frameworkBundle);
@@ -121,9 +121,9 @@ QString subProcessPath()
     static QString processPath;
     if (processPath.isEmpty()) {
 #if defined(Q_OS_WIN)
-        const QString processBinary = QLatin1String(QTWEBENGINEPROCESS_NAME) % QLatin1String(".exe");
+        const QString processBinary = QLatin1String(qWebEngineProcessName()) % QLatin1String(".exe");
 #else
-        const QString processBinary = QLatin1String(QTWEBENGINEPROCESS_NAME);
+        const QString processBinary = QLatin1String(qWebEngineProcessName());
 #endif
 
         QStringList candidatePaths;
@@ -133,8 +133,9 @@ QString subProcessPath()
             candidatePaths << fromEnv;
         } else {
 #if defined(Q_OS_DARWIN) && defined(QT_MAC_FRAMEWORK_BUILD)
-            candidatePaths << getBundlePath(frameworkBundle())
-                              % QStringLiteral("/Helpers/" QTWEBENGINEPROCESS_NAME ".app/Contents/MacOS/" QTWEBENGINEPROCESS_NAME);
+            candidatePaths << getBundlePath(frameworkBundle()) % QStringLiteral("/Helpers/")
+                            % qWebEngineProcessName() % QStringLiteral(".app/Contents/MacOS/")
+                            % qWebEngineProcessName();
 #else
             candidatePaths << QLibraryInfo::path(QLibraryInfo::LibraryExecutablesPath)
                               % QLatin1Char('/') % processBinary;

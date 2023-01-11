@@ -960,7 +960,9 @@ void ContentBrowserClientQt::OverrideURLLoaderFactoryParams(content::BrowserCont
 std::string ContentBrowserClientQt::getUserAgent()
 {
     // Mention the Chromium version we're based on to get passed stupid UA-string-based feature detection (several WebRTC demos need this)
-    return content::BuildUserAgentFromProduct("QtWebEngine/" QTWEBENGINECORE_VERSION_STR " Chrome/" CHROMIUM_VERSION);
+    return content::BuildUserAgentFromProduct("QtWebEngine/" + std::string(qWebEngineVersion())
+                                              + " Chrome/"
+                                              + std::string(qWebEngineChromiumVersion()));
 }
 
 blink::UserAgentMetadata ContentBrowserClientQt::getUserAgentMetadata()
