@@ -1,20 +1,27 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "ui/accessibility/platform/inspect/ax_tree_formatter_base.h"
-
-#include <utility>
-
-#include "base/strings/stringprintf.h"
-#include "base/values.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
-#include "content/browser/accessibility/browser_accessibility.h"
 #include "content/public/browser/ax_inspect_factory.h"
 #include "ui/accessibility/platform/inspect/ax_event_recorder.h"
 
+#include <QtGui/qtguiglobal.h>
+
+#include <memory>
+#include <string>
+#include <utility>
+
+#if QT_CONFIG(accessibility)
 #include "browser_accessibility_qt.h"
 
+#include "base/strings/stringprintf.h"
+#include "base/values.h"
+#include "content/browser/accessibility/browser_accessibility.h"
+#include "ui/accessibility/platform/inspect/ax_tree_formatter_base.h"
+
 #include <QtGui/qaccessible.h>
+#endif
 
 namespace content {
 

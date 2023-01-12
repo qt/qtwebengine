@@ -3,7 +3,6 @@
 
 #include "render_widget_host_view_qt.h"
 
-#include "browser_accessibility_manager_qt.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "render_widget_host_view_qt_delegate_client.h"
@@ -287,11 +286,6 @@ gfx::NativeView RenderWidgetHostViewQt::GetNativeView()
     // Since we manage the view hierarchy in Qt its value hasn't
     // been meaningful.
     return gfx::NativeView();
-}
-
-gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
-{
-    return 0;
 }
 
 content::WebContentsAccessibility *RenderWidgetHostViewQt::GetWebContentsAccessibility()

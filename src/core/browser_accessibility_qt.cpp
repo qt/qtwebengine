@@ -6,15 +6,12 @@
 // found in the LICENSE.Chromium file.
 
 #include "browser_accessibility_qt.h"
-
-#if QT_CONFIG(accessibility)
-
-#include "content/browser/accessibility/browser_accessibility.h"
-#include "ui/accessibility/ax_enums.mojom.h"
-
 #include "browser_accessibility_manager_qt.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "type_conversion.h"
+
+#include "content/browser/accessibility/browser_accessibility.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 #include <QtGui/qaccessible.h>
 
@@ -802,7 +799,8 @@ void BrowserAccessibilityInterface::doAction(const QString &actionName)
         q->manager()->SetFocus(*q);
 }
 
-QStringList BrowserAccessibilityInterface::keyBindingsForAction(const QString &actionName) const
+QStringList
+BrowserAccessibilityInterface::keyBindingsForAction(const QString & /*actionName*/) const
 {
     QT_NOT_YET_IMPLEMENTED
     return QStringList();
@@ -1139,6 +1137,3 @@ const QAccessibleInterface *toQAccessibleInterface(const BrowserAccessibility *o
 }
 
 } // namespace content
-
-
-#endif // QT_CONFIG(accessibility)

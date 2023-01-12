@@ -62,6 +62,23 @@
 #include "ui/gfx/font_render_params.h"
 #include "qtwebengine/browser/qtwebenginepage.mojom.h"
 
+#include <QtCore/QVariant>
+#include <QtCore/QElapsedTimer>
+#include <QtCore/QMimeData>
+#include <QtCore/QTemporaryDir>
+#include <QtGui/QDrag>
+#include <QtGui/QDragEnterEvent>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QPageLayout>
+#include <QtGui/QPixmap>
+#include <QtGui/QStyleHints>
+
+#if QT_CONFIG(accessibility)
+#include "browser_accessibility_qt.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
+#include <QtGui/qaccessible.h>
+#endif
+
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "printing/pdf_web_contents_helper_client_qt.h"
@@ -76,22 +93,6 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/extension_web_contents_observer_qt.h"
 #endif
-
-#include <QtCore/QVariant>
-#include <QtCore/QElapsedTimer>
-#include <QtCore/QMimeData>
-#include <QtCore/QTemporaryDir>
-#include <QtGui/QDrag>
-#include <QtGui/QDragEnterEvent>
-#include <QtGui/QGuiApplication>
-#include <QtGui/QPageLayout>
-#include <QtGui/QPixmap>
-#include <QtGui/QStyleHints>
-
-// Can't include headers as qaccessible.h conflicts with Chromium headers.
-namespace content {
-extern QAccessibleInterface *toQAccessibleInterface(BrowserAccessibility *acc);
-}
 
 namespace QtWebEngineCore {
 
