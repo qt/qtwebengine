@@ -5,10 +5,14 @@
 
 #include "render_widget_host_view_qt_delegate_client.h"
 
-#include <QGuiApplication>
-#include <QMouseEvent>
-#include <QSGImageNode>
-#include <QWindow>
+#include <QtGui/qevent.h>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qwindow.h>
+#include <QtQuick/qsgimagenode.h>
+
+#if QT_CONFIG(accessibility)
+#include <QtGui/qaccessible.h>
+#endif
 
 namespace QtWebEngineCore {
 

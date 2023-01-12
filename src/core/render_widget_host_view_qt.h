@@ -12,14 +12,11 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_client.h"
-#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/web_contents_accessibility.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
-
-QT_FORWARD_DECLARE_CLASS(QAccessibleInterface)
 
 namespace content {
 class RenderFrameHost;
@@ -56,12 +53,13 @@ public:
     RenderWidgetHostViewQtDelegateClient *delegateClient() const { return m_delegateClient.get(); }
     void addGuest(content::RenderWidgetHost *);
 
+    // Overridden from RenderWidgetHostView:
     void InitAsChild(gfx::NativeView) override;
     void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&, const gfx::Rect&) override;
     void SetSize(const gfx::Size& size) override;
     void SetBounds(const gfx::Rect&) override;
     gfx::NativeView GetNativeView() override;
-    gfx::NativeViewAccessible GetNativeViewAccessible() override;
+    gfx::NativeViewAccessible GetNativeViewAccessible() override { return nullptr; }
     void Focus() override;
     bool HasFocus() override;
     bool IsMouseLocked() override;
@@ -119,6 +117,7 @@ public:
     ui::Compositor *GetCompositor() override;
     absl::optional<content::DisplayFeature> GetDisplayFeature() override;
     void SetDisplayFeatureForTesting(const content::DisplayFeature*) override;
+    content::WebContentsAccessibility *GetWebContentsAccessibility() override;
 #if BUILDFLAG(IS_MAC)
     void ShowSharePicker(
         const std::string &title,
@@ -143,9 +142,6 @@ public:
     void OnUpdateTextInputStateCalled(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view, bool did_update_state) override;
     void OnSelectionBoundsChanged(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view) override;
     void OnTextSelectionChanged(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view) override;
-
-    // Overridden from content::BrowserAccessibilityDelegate
-    content::WebContentsAccessibility *GetWebContentsAccessibility() override;
 
     // Overridden from content::RenderFrameMetadataProvider::Observer
     void OnRenderFrameMetadataChangedAfterActivation(base::TimeTicks activation_time) override;

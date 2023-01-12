@@ -76,13 +76,11 @@ foreach(arch ${archs})
             CXX_COMPILE_OPTIONS
                 ${gnCxxCompileOptions}
             SOURCES
-                accessibility_activation_observer.cpp accessibility_activation_observer.h
                 accessibility_tree_formatter_qt.cpp
                 authentication_dialog_controller.cpp authentication_dialog_controller.h authentication_dialog_controller_p.h
                 autofill_client_qt.cpp autofill_client_qt.h
                 autofill_popup_controller.cpp autofill_popup_controller.h autofill_popup_controller_p.h
                 browser_accessibility_manager_qt.cpp browser_accessibility_manager_qt.h
-                browser_accessibility_qt.cpp browser_accessibility_qt.h
                 browser_main_parts_qt.cpp browser_main_parts_qt.h
                 browser_message_filter_qt.cpp browser_message_filter_qt.h
                 browsing_data_remover_delegate_qt.cpp browsing_data_remover_delegate_qt.h
@@ -195,6 +193,12 @@ foreach(arch ${archs})
                 web_engine_settings.cpp web_engine_settings.h
                 web_event_factory.cpp web_event_factory.h
                 web_usb_detector_qt.cpp web_usb_detector_qt.h
+        )
+
+        extend_gn_target(${buildGn} CONDITION QT_FEATURE_accessibility
+            SOURCES
+                accessibility_activation_observer.cpp accessibility_activation_observer.h
+                browser_accessibility_qt.cpp browser_accessibility_qt.h
         )
 
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_ozone_x11

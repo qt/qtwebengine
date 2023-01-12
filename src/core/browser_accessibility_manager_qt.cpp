@@ -1,23 +1,26 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
+#include "qtwebenginecoreglobal.h"
+
+#include "content/browser/accessibility/browser_accessibility_manager.h"
+
+#include <QtGui/qtguiglobal.h>
+
+#if QT_CONFIG(accessibility)
+#include "browser_accessibility_qt.h"
 #include "browser_accessibility_manager_qt.h"
-#include "qtwebenginecoreglobal_p.h"
+#include "render_widget_host_view_qt.h" // WebContentsAccessibilityQt
 
 #include "content/browser/accessibility/browser_accessibility.h"
-#include "ui/accessibility/ax_enums.mojom.h"
-
 #if QT_CONFIG(webengine_extensions)
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/web_contents.h"
 #endif // QT_CONFIG(webengine_extensions)
-
-#include "browser_accessibility_qt.h"
-#include "render_widget_host_view_qt.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 #include <QtGui/qaccessible.h>
-
-using namespace blink;
+#endif // QT_CONFIG(accessibility)
 
 namespace content {
 
@@ -43,6 +46,8 @@ BrowserAccessibilityManager *BrowserAccessibilityManager::Create(
 
     return new BrowserAccessibilityManagerQt(access, initialTree, delegate);
 #else
+    Q_UNUSED(initialTree);
+    Q_UNUSED(delegate);
     return nullptr;
 #endif // QT_CONFIG(accessibility)
 }
@@ -54,6 +59,7 @@ BrowserAccessibilityManager *BrowserAccessibilityManager::Create(
 #if QT_CONFIG(accessibility)
     return BrowserAccessibilityManager::Create(BrowserAccessibilityManagerQt::GetEmptyDocument(), delegate);
 #else
+    Q_UNUSED(delegate);
     return nullptr;
 #endif
 }
