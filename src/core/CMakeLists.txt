@@ -365,6 +365,10 @@ foreach(arch ${archs})
             CONDITION QT_FEATURE_webengine_extensions
         )
         extend_gn_list(gnArgArg
+            ARGS enable_vulkan
+            CONDITION QT_FEATURE_webengine_vulkan
+        )
+        extend_gn_list(gnArgArg
             ARGS use_kerberos
             CONDITION QT_FEATURE_webengine_kerberos
         )
