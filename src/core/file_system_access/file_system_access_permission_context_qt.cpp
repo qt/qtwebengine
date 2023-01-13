@@ -446,4 +446,22 @@ bool FileSystemAccessPermissionContextQt::AncestorHasActivePermission(
     return false;
 }
 
+void FileSystemAccessPermissionContextQt::PermissionGrantDestroyed(
+        FileSystemAccessPermissionGrantQt *grant)
+{
+    auto it = m_origins.find(grant->origin());
+    if (it == m_origins.end())
+        return;
+
+    auto &grants =
+            grant->type() == GrantType::kRead ? it->second.read_grants : it->second.write_grants;
+    auto grant_it = grants.find(grant->path());
+
+    if (grant_it == grants.end()) {
+        return;
+    }
+    if (grant_it->second == grant)
+        grants.erase(grant_it);
+}
+
 } // namespace QtWebEngineCore
