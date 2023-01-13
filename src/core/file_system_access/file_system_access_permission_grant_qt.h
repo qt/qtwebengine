@@ -36,6 +36,9 @@ public:
 
     void SetStatus(blink::mojom::PermissionStatus status);
 
+protected:
+    ~FileSystemAccessPermissionGrantQt() override;
+
 private:
     void OnPermissionRequestResult(base::OnceCallback<void(PermissionRequestOutcome)> callback,
                                    permissions::PermissionAction result);
