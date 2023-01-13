@@ -22,7 +22,11 @@ FileSystemAccessPermissionGrantQt::FileSystemAccessPermissionGrantQt(
     : m_context(context), m_origin(origin), m_path(path), m_handleType(handle_type), m_type(type)
 {
 }
-
+FileSystemAccessPermissionGrantQt::~FileSystemAccessPermissionGrantQt()
+{
+    if (m_context)
+        m_context->PermissionGrantDestroyed(this);
+}
 void FileSystemAccessPermissionGrantQt::RequestPermission(
         content::GlobalRenderFrameHostId frame_id, UserActivationState user_activation_state,
         base::OnceCallback<void(PermissionRequestOutcome)> callback)

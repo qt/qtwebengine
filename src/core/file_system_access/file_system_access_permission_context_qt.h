@@ -19,7 +19,7 @@ class BrowserContext;
 }
 
 namespace QtWebEngineCore {
-
+class FileSystemAccessPermissionGrantQt;
 class FileSystemAccessPermissionContextQt : public content::FileSystemAccessPermissionContext,
                                             public KeyedService
 {
@@ -55,6 +55,8 @@ public:
 
     void NavigatedAwayFromOrigin(const url::Origin &origin);
     content::BrowserContext *profile() const { return m_profile; }
+
+    void PermissionGrantDestroyed(FileSystemAccessPermissionGrantQt *);
 
 private:
     class PermissionGrantImpl;
