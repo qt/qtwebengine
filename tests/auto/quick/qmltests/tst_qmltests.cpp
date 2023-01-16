@@ -105,6 +105,13 @@ public:
         return tempDir.isValid() ? tempDir.path() : QString();
     }
 
+    Q_INVOKABLE QUrl pathUrl(const QString &filename = QString())
+    {
+        Q_ASSERT(tempDir.isValid());
+        return filename.isEmpty() ? QUrl::fromLocalFile(tempDir.path())
+                                  : QUrl::fromLocalFile(tempDir.filePath(filename));
+    }
+
     Q_INVOKABLE void removeRecursive(const QString dirname)
     {
         QDir dir(dirname);
@@ -117,6 +124,8 @@ public:
         }
         QDir().rmdir(dirname);
     }
+
+    Q_INVOKABLE void createDirectory(const QString dirname) { QDir(tempDir.path()).mkdir(dirname); }
 
 private:
     QTemporaryDir tempDir;
