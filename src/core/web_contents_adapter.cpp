@@ -1779,14 +1779,19 @@ WebContentsAdapterClient::renderProcessExitStatus(int terminationStatus) {
         status = WebContentsAdapterClient::NormalTerminationStatus;
         break;
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+    case base::TERMINATION_STATUS_LAUNCH_FAILED:
         status = WebContentsAdapterClient::AbnormalTerminationStatus;
         break;
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+    case base::TERMINATION_STATUS_OOM:
         status = WebContentsAdapterClient::KilledTerminationStatus;
         break;
     case base::TERMINATION_STATUS_PROCESS_CRASHED:
 #if BUILDFLAG(IS_ANDROID)
     case base::TERMINATION_STATUS_OOM_PROTECTED:
+#endif
+#if BUILDFLAG(IS_WIN)
+    case base::TERMINATION_STATUS_INTEGRITY_FAILURE:
 #endif
         status = WebContentsAdapterClient::CrashedTerminationStatus;
         break;
