@@ -14,10 +14,6 @@
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "url/gurl.h"
 
-namespace blink {
-class WebSecurityOrigin;
-}
-
 namespace QtWebEngineCore {
 
 // Handles blocking content per content settings for each RenderFrame.
