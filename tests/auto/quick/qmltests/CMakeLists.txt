@@ -28,6 +28,7 @@ set(testList
     tst_favicon.qml
     tst_faviconDatabase.qml
     tst_filePicker.qml
+    tst_filesystem.qml
     tst_findText.qml
     tst_focusOnNavigation.qml
     tst_fullScreenRequest.qml
