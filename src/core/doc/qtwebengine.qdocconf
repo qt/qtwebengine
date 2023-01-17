@@ -45,7 +45,6 @@ depends += qtcore \
            qtcore5compat \
            qtdesigner \
            qtgui \
-           qtlocation \
            qtnetwork \
            qtprintsupport \
            qtpositioning \
