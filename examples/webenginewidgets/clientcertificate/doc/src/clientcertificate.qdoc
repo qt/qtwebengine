@@ -84,7 +84,7 @@
     \skipto QFile
     \printuntil QSslKey
 
-    Now we add the certificate and its private key to \l {QWebEngigneClientCertificateStore}.
+    Now we add the certificate and its private key to \l {QWebEngineClientCertificateStore}.
 
     \printuntil clientCertificateStore
 
