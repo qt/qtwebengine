@@ -119,6 +119,8 @@ QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
 
+Q_LOGGING_CATEGORY(webEngineContextLog, "qt.webenginecontext")
+
 #if QT_CONFIG(opengl)
 
 static bool usingSupportedSGBackend()
@@ -235,8 +237,7 @@ void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
 
 static void logContext(const char *glType, base::CommandLine *cmd)
 {
-    QLoggingCategory webEngineContextLog("qt.webenginecontext");
-    if (webEngineContextLog.isInfoEnabled()) {
+    if (Q_UNLIKELY(webEngineContextLog().isDebugEnabled())) {
 #if QT_CONFIG(opengl)
         const QSurfaceFormat sharedFormat = qt_gl_global_share_context()->format();
         const auto profile = QMetaEnum::fromType<QSurfaceFormat::OpenGLContextProfile>().valueToKey(
@@ -248,23 +249,23 @@ static void logContext(const char *glType, base::CommandLine *cmd)
         for (const auto &pair : switch_map)
             params << " * " << toQt(pair.first)
                    << toQt(pair.second) << "\n";
-        qCInfo(webEngineContextLog,
-               "\n\nGL Type: %s\n"
-               "Surface Type: %s\n"
-               "Surface Profile: %s\n"
-               "Surface Version: %d.%d\n"
-               "QSG RHI Backend: %s\n"
-               "Using Supported QSG Backend: %s\n"
-               "Using Software Dynamic GL: %s\n"
-               "Using Multithreaded OpenGL: %s\n\n"
-               "Init Parameters:\n %s",
-               glType, type, profile, sharedFormat.majorVersion(), sharedFormat.minorVersion(),
-               qUtf8Printable(QSGRhiSupport::instance()->rhiBackendName()),
-               usingSupportedSGBackend() ? "yes" : "no", usingSoftwareDynamicGL() ? "yes" : "no",
-               !WebEngineContext::isGpuServiceOnUIThread() ? "yes" : "no",
-               qPrintable(params.join(" ")));
+        qCDebug(webEngineContextLog,
+                "\n\nGL Type: %s\n"
+                "Surface Type: %s\n"
+                "Surface Profile: %s\n"
+                "Surface Version: %d.%d\n"
+                "QSG RHI Backend: %s\n"
+                "Using Supported QSG Backend: %s\n"
+                "Using Software Dynamic GL: %s\n"
+                "Using Multithreaded OpenGL: %s\n\n"
+                "Init Parameters:\n %s",
+                glType, type, profile, sharedFormat.majorVersion(), sharedFormat.minorVersion(),
+                qUtf8Printable(QSGRhiSupport::instance()->rhiBackendName()),
+                usingSupportedSGBackend() ? "yes" : "no", usingSoftwareDynamicGL() ? "yes" : "no",
+                !WebEngineContext::isGpuServiceOnUIThread() ? "yes" : "no",
+                qPrintable(params.join(" ")));
 #else
-        qCInfo(webEngineContextLog) << "WebEngine compiled with no opengl enabled.";
+        qCDebug(webEngineContextLog) << "WebEngine compiled with no opengl enabled.";
 #endif //QT_CONFIG(opengl)
     }
 }
