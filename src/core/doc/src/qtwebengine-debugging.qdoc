@@ -92,6 +92,15 @@
     QTWEBENGINE_CHROMIUM_FLAGS="--disable-logging" mybrowser
     \endcode
 
-    QTWEBENGINE_CHROMIUM_FLAGS can also be set using {qputenv} from within the
+    QTWEBENGINE_CHROMIUM_FLAGS can also be set using \c qputenv from within the
     application if called before QtWebEngineQuick::initialize().
+
+    \section1 Dump WebEngineContext Information
+
+    For dumping the WebEngineContext information, you can set the \c QT_LOGGING_RULES
+    environment variable to \c "qt.webenginecontext.debug=true".
+
+    The output contains information about the graphical backend, and the way how \QWE
+    is initialized for the application. This is particularly useful for reproducing
+    issues.
 */

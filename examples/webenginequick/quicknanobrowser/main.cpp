@@ -12,6 +12,7 @@
 
 #include <QtCore/QCommandLineParser>
 #include <QtCore/QCommandLineOption>
+#include <QtCore/QLoggingCategory>
 
 static QUrl startupUrl(const QCommandLineParser &parser)
 {
@@ -31,6 +32,7 @@ int main(int argc, char **argv)
     QtWebEngineQuick::initialize();
 
     QGuiApplication app(argc, argv);
+    QLoggingCategory::setFilterRules(QStringLiteral("qt.webenginecontext.debug=true"));
 
     QCommandLineParser parser;
     parser.addHelpOption();
