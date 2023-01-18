@@ -842,44 +842,52 @@ gpu::SyncPointManager *WebEngineContext::syncPointManager()
 base::CommandLine *WebEngineContext::initCommandLine(bool &useEmbeddedSwitches,
                                                      bool &enableGLSoftwareRendering)
 {
-    if (base::CommandLine::CreateEmpty()) {
-        base::CommandLine* parsedCommandLine = base::CommandLine::ForCurrentProcess();
-        QStringList appArgs = QCoreApplication::arguments();
-        if (qEnvironmentVariableIsSet(kChromiumFlagsEnv)) {
-            appArgs = appArgs.mid(0, 1); // Take application name and drop the rest
-            appArgs.append(parseEnvCommandLine(qEnvironmentVariable(kChromiumFlagsEnv)));
-        } else {
-            int index = appArgs.indexOf(QLatin1String("--webEngineArgs"));
-            if (index > -1) {
-                appArgs.erase(appArgs.begin() + 1, appArgs.begin() + index + 1);
-            } else {
-                appArgs = appArgs.mid(0, 1);
-            }
-        }
-#if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
-        useEmbeddedSwitches = !appArgs.contains(QStringLiteral("--disable-embedded-switches"));
-#else
-        useEmbeddedSwitches = appArgs.contains(QStringLiteral("--enable-embedded-switches"));
-#endif
-        enableGLSoftwareRendering =
-            appArgs.removeAll(QStringLiteral("--enable-webgl-software-rendering"));
-        appArgs.removeAll(QStringLiteral("--disable-embedded-switches"));
-        appArgs.removeAll(QStringLiteral("--enable-embedded-switches"));
+    if (!base::CommandLine::CreateEmpty())
+        qFatal("base::CommandLine has been initialized unexpectedly.");
 
-        base::CommandLine::StringVector argv;
-        argv.resize(appArgs.size());
-#if defined(Q_OS_WIN)
-        for (int i = 0; i < appArgs.size(); ++i)
-            argv[i] = appArgs[i].toStdWString();
-#else
-        for (int i = 0; i < appArgs.size(); ++i)
-            argv[i] = appArgs[i].toStdString();
-#endif
-        parsedCommandLine->InitFromArgv(argv);
-        return parsedCommandLine;
+    base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
+    QStringList appArgs = QCoreApplication::arguments();
+    if (qEnvironmentVariableIsSet(kChromiumFlagsEnv)) {
+        appArgs = appArgs.mid(0, 1); // Take application name and drop the rest
+        appArgs.append(parseEnvCommandLine(qEnvironmentVariable(kChromiumFlagsEnv)));
     } else {
-        return base::CommandLine::ForCurrentProcess();
+        int index = appArgs.indexOf(QLatin1String("--webEngineArgs"));
+        if (index > -1) {
+            appArgs.erase(appArgs.begin() + 1, appArgs.begin() + index + 1);
+        } else {
+            appArgs = appArgs.mid(0, 1);
+        }
     }
+#if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
+    useEmbeddedSwitches = !appArgs.contains(QStringLiteral("--disable-embedded-switches"));
+#else
+    useEmbeddedSwitches = appArgs.contains(QStringLiteral("--enable-embedded-switches"));
+#endif
+    enableGLSoftwareRendering =
+            appArgs.removeAll(QStringLiteral("--enable-webgl-software-rendering"));
+    appArgs.removeAll(QStringLiteral("--disable-embedded-switches"));
+    appArgs.removeAll(QStringLiteral("--enable-embedded-switches"));
+
+    base::CommandLine::StringVector argv;
+    argv.resize(appArgs.size());
+#if defined(Q_OS_WIN)
+    for (int i = 0; i < appArgs.size(); ++i)
+        argv[i] = appArgs[i].toStdWString();
+#else
+    for (int i = 0; i < appArgs.size(); ++i)
+        argv[i] = appArgs[i].toStdString();
+#endif
+    parsedCommandLine->InitFromArgv(argv);
+
+    if (QCoreApplication::arguments().empty()) {
+        // TODO: Replace this qWarning with a qFatal at the beginning of the function
+        // when the corresponding Active Qt issue gets fixed: QTBUG-110158.
+        qWarning("Argument list is empty, the program name is not passed to QCoreApplication. "
+                 "Command line arguments might be ignored. Unexpected behavior may occur.");
+        Q_ASSERT(false);
+    }
+
+    return parsedCommandLine;
 }
 
 bool WebEngineContext::closingDown()
