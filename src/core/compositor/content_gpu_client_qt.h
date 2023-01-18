@@ -43,6 +43,8 @@
 
 namespace QtWebEngineCore {
 
+class ShareGroupQtQuick;
+
 class ContentGpuClientQt : public content::ContentGpuClient {
 public:
     explicit ContentGpuClientQt();
@@ -50,6 +52,10 @@ public:
 
     // content::ContentGpuClient implementation.
     gpu::SyncPointManager *GetSyncPointManager() override;
+    gl::GLShareGroup *GetInProcessGpuShareGroup() override;
+
+private:
+    scoped_refptr<ShareGroupQtQuick> m_shareGroupQtQuick;
 };
 
 }
