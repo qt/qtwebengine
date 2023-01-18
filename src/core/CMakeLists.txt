@@ -398,7 +398,6 @@ foreach(arch ${archs})
                 use_bundled_fontconfig=false
                 use_glib=false
                 use_bluez=false
-                use_vaapi=false
                 use_udev=true
                 enable_session_service=false
                 is_cfi=false
@@ -410,7 +409,7 @@ foreach(arch ${archs})
                 ozone_extra_path="${CMAKE_CURRENT_LIST_DIR}/ozone/ozone_extra.gni"
             )
             set(systemLibs libjpeg libpng freetype harfbuzz libevent libwebp libxml
-                opus snappy libvpx icu ffmpeg re2 lcms2 libopenjpeg2
+                opus snappy icu ffmpeg re2 lcms2 libopenjpeg2
             )
             foreach(slib ${systemLibs})
                 extend_gn_list(gnArgArg
@@ -451,12 +450,27 @@ foreach(arch ${archs})
                 CONDITION QT_FEATURE_webengine_system_pulseaudio
             )
             extend_gn_list(gnArgArg
+                ARGS use_vaapi
+                CONDITION QT_FEATURE_webengine_vaapi
+            )
+            if(NOT QT_FEATURE_webengine_vaapi)
+                # hardware accelerated encoding requires bundled libvpx
+                extend_gn_list(gnArgArg
+                    ARGS use_system_libvpx
+                    CONDITION QT_FEATURE_webengine_system_libvpx
+                )
+            endif()
+            extend_gn_list(gnArgArg
                 ARGS ozone_platform_x11 use_xkbcommon
                 CONDITION QT_FEATURE_webengine_ozone_x11
             )
             extend_gn_list(gnArgArg
                 ARGS rtc_use_x11
                 CONDITION QT_FEATURE_webengine_ozone_x11 AND QT_FEATURE_webengine_webrtc
+            )
+            extend_gn_list(gnArgArg
+                ARGS use_vaapi_x11
+                CONDITION QT_FEATURE_webengine_ozone_x11 AND QT_FEATURE_webengine_vaapi
             )
 
             if(QT_FEATURE_webengine_kerberos)

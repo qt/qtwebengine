@@ -28,7 +28,10 @@ namespace gl {
 
 bool GLDisplayEGL::InitializeExtensionSettings()
 {
-    return GLSurfaceEGLQt::InitializeExtensionSettingsOneOff();
+    if (display_ == EGL_NO_DISPLAY)
+        return false;
+    ext->UpdateConditionalExtensionSettings(display_);
+    return true;
 }
 
 GLDisplayEGL *GLDisplayEGL::GetDisplayForCurrentContext()
@@ -54,6 +57,13 @@ bool GLDisplayEGL::Initialize(gl::EGLDisplayPlatform native_display)
     if (glDisplay) {
         display_ = glDisplay->GetDisplay();
         native_display_ = native_display;
+        std::string platform_extensions(ext->GetPlatformExtensions(display_));
+        gfx::ExtensionSet extensions(gfx::MakeExtensionSet(platform_extensions));
+        ext->b_EGL_EXT_image_dma_buf_import =
+                gfx::HasExtension(extensions, "EGL_EXT_image_dma_buf_import");
+        ext->b_EGL_EXT_image_dma_buf_import_modifiers =
+                gfx::HasExtension(extensions, "EGL_EXT_image_dma_buf_import_modifiers");
+//        ext->InitializeExtensionSettings(display_); Not functional for us at this moment
     }
 
     return glDisplay;
@@ -265,7 +275,7 @@ void* GLSurfacelessQtEGL::GetShareHandle()
 
 namespace gl {
 
-std::string DisplayExtensionsEGL::GetPlatformExtensions(void*)
+std::string DisplayExtensionsEGL::GetPlatformExtensions(EGLDisplay)
 {
     EGLDisplay display = GLContextHelper::getEGLDisplay();
     if (display == EGL_NO_DISPLAY)

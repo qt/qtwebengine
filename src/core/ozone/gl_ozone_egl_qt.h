@@ -20,6 +20,15 @@ public:
     scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
             gl::GLDisplay *display,
             const gfx::Size &size) override;
+    bool CanImportNativePixmap() override;
+    std::unique_ptr<NativePixmapGLBinding> ImportNativePixmap(
+            scoped_refptr<gfx::NativePixmap> pixmap,
+            gfx::BufferFormat plane_format,
+            gfx::BufferPlane plane,
+            gfx::Size plane_size,
+            const gfx::ColorSpace &color_space,
+            GLenum target,
+            GLuint texture_id) override;
 
 protected:
     // Returns native platform display handle. This is used to obtain the EGL

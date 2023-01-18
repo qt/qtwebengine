@@ -28,7 +28,7 @@ public:
     bool CanImportNativePixmap() override;
     std::unique_ptr<ui::NativePixmapGLBinding> ImportNativePixmap(
             scoped_refptr<gfx::NativePixmap>, gfx::BufferFormat, gfx::BufferPlane,
-            gfx::Size, const gfx::ColorSpace&, GLenum, GLuint) override;
+            gfx::Size, const gfx::ColorSpace &, GLenum, GLuint) override;
 
     scoped_refptr<gl::GLContext> CreateGLContext(
             gl::GLShareGroup* share_group,

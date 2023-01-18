@@ -9,9 +9,13 @@
 #include "gl_ozone_glx_qt.h"
 #include "gl_surface_glx_qt.h"
 #include "gl_context_qt.h"
+
+#include "media/gpu/buildflags.h"
 #include "ui/gl/gl_context_glx.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_glx_api_implementation.h"
+#include "ui/ozone/platform/x11/native_pixmap_glx_binding.h"
+
 #include <dlfcn.h>
 
 namespace ui {
@@ -109,10 +113,15 @@ bool GLOzoneGLXQt::CanImportNativePixmap()
 }
 
 std::unique_ptr<ui::NativePixmapGLBinding> GLOzoneGLXQt::ImportNativePixmap(
-        scoped_refptr<gfx::NativePixmap>, gfx::BufferFormat, gfx::BufferPlane,
-        gfx::Size, const gfx::ColorSpace&, GLenum, GLuint)
+        scoped_refptr<gfx::NativePixmap> pixmap, gfx::BufferFormat plane_format, gfx::BufferPlane plane,
+        gfx::Size plane_size, const gfx::ColorSpace &, GLenum target, GLuint texture_id)
 {
+#if BUILDFLAG(USE_VAAPI_X11)
+    return NativePixmapGLXBinding::Create(pixmap, plane_format, plane, plane_size,
+                                          target, texture_id);
+#else
     return nullptr;
+#endif
 }
 
 bool GLOzoneGLXQt::InitializeExtensionSettingsOneOffPlatform(gl::GLDisplay *)

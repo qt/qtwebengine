@@ -326,6 +326,20 @@ source_set("qtwebengine_sources") {
     "//components/embedder_support/user_agent_utils.cc",
     "//components/embedder_support/user_agent_utils.h",
   ]
+  if (use_ozone && use_vaapi) {
+    deps += [
+      "//ui/base/x:gl",
+      "//ui/gfx/linux:gpu_memory_buffer_support_x11",
+    ]
+    sources += [
+      "//ui/ozone/platform/wayland/gpu/wayland_gl_egl_utility.cc",
+      "//ui/ozone/platform/wayland/gpu/wayland_gl_egl_utility.h",
+      "//ui/ozone/platform/x11/gl_egl_utility_x11.cc",
+      "//ui/ozone/platform/x11/gl_egl_utility_x11.h",
+      "//ui/ozone/platform/x11/native_pixmap_glx_binding.cc",
+      "//ui/ozone/platform/x11/native_pixmap_glx_binding.h",
+    ]
+  }
   if (enable_extensions) {
     deps += [
       ":qtwebengine_extensions_features",

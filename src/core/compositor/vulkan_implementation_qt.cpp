@@ -82,6 +82,8 @@ std::vector<const char *> VulkanImplementationQt::GetOptionalDeviceExtensions()
         VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME,
 #else
         VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME,
+        VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME,
+        VK_EXT_EXTERNAL_MEMORY_DMA_BUF_EXTENSION_NAME,
 #endif
     };
 }
@@ -136,18 +138,42 @@ VkExternalMemoryHandleTypeFlagBits VulkanImplementationQt::GetExternalImageHandl
 }
 
 bool VulkanImplementationQt::CanImportGpuMemoryBuffer(
-        VulkanDeviceQueue* /*device_queue*/,
-        gfx::GpuMemoryBufferType /*memory_buffer_type*/)
+        VulkanDeviceQueue *device_queue,
+        gfx::GpuMemoryBufferType memory_buffer_type)
 {
+#if BUILDFLAG(IS_LINUX)
+    const auto &enabled_extensions = device_queue->enabled_extensions();
+    return gfx::HasExtension(enabled_extensions,
+                             VK_EXT_EXTERNAL_MEMORY_DMA_BUF_EXTENSION_NAME) &&
+           gfx::HasExtension(enabled_extensions,
+                             VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME) &&
+           memory_buffer_type == gfx::GpuMemoryBufferType::NATIVE_PIXMAP;
+#else
     return false;
+#endif
 }
 
-std::unique_ptr<VulkanImage> VulkanImplementationQt::CreateImageFromGpuMemoryHandle(VulkanDeviceQueue *, gfx::GpuMemoryBufferHandle,
-                                                                                    gfx::Size, VkFormat,
+std::unique_ptr<VulkanImage> VulkanImplementationQt::CreateImageFromGpuMemoryHandle(VulkanDeviceQueue *device_queue,
+                                                                                    gfx::GpuMemoryBufferHandle gmb_handle,
+                                                                                    gfx::Size size,
+                                                                                    VkFormat vk_format,
                                                                                     const gfx::ColorSpace &)
 {
-    NOTREACHED();
+#if BUILDFLAG(IS_LINUX)
+    constexpr auto kUsage =
+        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
+        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    auto tiling = gmb_handle.native_pixmap_handle.modifier ==
+                          gfx::NativePixmapHandle::kNoModifier
+                      ? VK_IMAGE_TILING_OPTIMAL
+                      : VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT;
+    return gpu::VulkanImage::CreateFromGpuMemoryBufferHandle(
+        device_queue, std::move(gmb_handle), size, vk_format, kUsage, /*flags=*/0,
+        tiling, VK_QUEUE_FAMILY_EXTERNAL);
+#else
+    NOTIMPLEMENTED();
     return nullptr;
+#endif
 }
 
 } // namespace gpu

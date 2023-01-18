@@ -12,6 +12,8 @@ if(NOT QT_CONFIGURE_RUNNING)
         pkg_check_modules(PULSEAUDIO libpulse>=0.9.10 libpulse-mainloop-glib)
         pkg_check_modules(XDAMAGE xdamage)
         pkg_check_modules(POPPLER_CPP poppler-cpp IMPORTED_TARGET)
+        pkg_check_modules(GBM gbm)
+        pkg_check_modules(LIBVA libva)
         if(NOT GIO_FOUND)
             pkg_check_modules(GIO gio-2.0)
         endif()
@@ -152,6 +154,13 @@ qt_feature("webengine-vulkan" PRIVATE
     PURPOSE "Enables support for Vulkan rendering"
     CONDITION QT_FEATURE_vulkan
 )
+qt_feature("webengine-vaapi" PRIVATE
+    SECTION "WebEngine"
+    LABEL "VA-API support"
+    PURPOSE "Enables support for VA-API hardware acceleration"
+    AUTODETECT GBM_FOUND AND LIBVA_FOUND
+    CONDITION LINUX
+)
 # internal testing feature
 qt_feature("webengine-system-poppler" PRIVATE
     LABEL "popler"
@@ -184,12 +193,16 @@ qt_configure_add_summary_entry(
     CONDITION QT_FEATURE_vulkan
 )
 qt_configure_add_summary_entry(
+    ARGS "webengine-vaapi"
+    CONDITION LINUX
+)
+qt_configure_add_summary_entry(
     ARGS "webengine-system-alsa"
-    CONDITION UNIX
+    CONDITION LINUX
 )
 qt_configure_add_summary_entry(
     ARGS "webengine-system-pulseaudio"
-    CONDITION UNIX
+    CONDITION LINUX
 )
 qt_configure_end_summary_section() # end of "Qt WebEngineCore" section
 if(CMAKE_CROSSCOMPILING)
