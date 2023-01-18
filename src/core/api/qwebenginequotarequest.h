@@ -18,13 +18,14 @@ class Q_WEBENGINECORE_EXPORT QWebEngineQuotaRequest
     Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
     Q_PROPERTY(qint64 requestedSize READ requestedSize CONSTANT FINAL)
 public:
+    QT_DEPRECATED_VERSION_X_6_5("Requesting host quota is no longer supported.")
     QWebEngineQuotaRequest() {}
     Q_INVOKABLE void accept();
     Q_INVOKABLE void reject();
     QUrl origin() const;
     qint64 requestedSize() const;
-    bool operator==(const QWebEngineQuotaRequest &) const { return false; }
-    bool operator!=(const QWebEngineQuotaRequest &) const { return true; }
+    bool operator==(const QWebEngineQuotaRequest &) const { Q_UNREACHABLE(); }
+    bool operator!=(const QWebEngineQuotaRequest &) const { Q_UNREACHABLE(); }
 };
 
 QT_END_NAMESPACE

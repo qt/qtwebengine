@@ -310,7 +310,8 @@ Q_SIGNALS:
     void featurePermissionRequestCanceled(const QUrl &securityOrigin, QWebEnginePage::Feature feature);
     void fullScreenRequested(QWebEngineFullScreenRequest fullScreenRequest);
 #if QT_DEPRECATED_SINCE(6, 5)
-    QT_DEPRECATED void quotaRequested(QWebEngineQuotaRequest quotaRequest);
+    QT_DEPRECATED_VERSION_X_6_5("Requesting host quota is no longer supported.")
+    void quotaRequested(QWebEngineQuotaRequest quotaRequest);
 #endif
     void registerProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest request);
     void fileSystemAccessRequested(QWebEngineFileSystemAccessRequest request);
