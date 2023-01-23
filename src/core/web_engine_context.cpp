@@ -184,7 +184,7 @@ static const char *getGLType(bool enableGLSoftwareRendering, bool disableGpu)
         return glType;
 
     if (!qt_gl_global_share_context() || !qt_gl_global_share_context()->isValid()) {
-        qWarning("WebEngineContext used before QtWebEngineCore::initialize() or OpenGL context "
+        qWarning("WebEngineContext is used before QtWebEngineQuick::initialize() or OpenGL context "
                  "creation failed.");
         return glType;
     }
