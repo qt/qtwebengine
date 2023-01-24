@@ -28,14 +28,9 @@ namespace device {
 class GeolocationManager;
 } // namespace device
 
-namespace gl {
-class GLShareGroup;
-}
-
 namespace QtWebEngineCore {
 
 class BrowserMainPartsQt;
-class ShareGroupQt;
 
 class ContentBrowserClientQt : public content::ContentBrowserClient
 {
@@ -44,7 +39,6 @@ public:
     ~ContentBrowserClientQt();
     std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(bool is_integration_test) override;
     void RenderProcessWillLaunch(content::RenderProcessHost *host) override;
-    gl::GLShareGroup* GetInProcessGpuShareGroup() override;
     content::MediaObserver* GetMediaObserver() override;
     void OverrideWebkitPrefs(content::WebContents *web_contents,
                              blink::web_pref::WebPreferences *prefs) override;
@@ -240,7 +234,6 @@ public:
     std::string GetProduct() override;
 
 private:
-    scoped_refptr<ShareGroupQt> m_shareGroupQt;
     BrowserMainPartsQt *m_browserMainParts = nullptr;
 };
 
