@@ -68,7 +68,6 @@
 #include "net/proxying_restricted_cookie_manager_qt.h"
 #include "net/proxying_url_loader_factory_qt.h"
 #include "net/system_network_context_manager.h"
-#include "ozone/gl_share_context_qt.h"
 #include "platform_notification_service_qt.h"
 #include "profile_qt.h"
 #include "profile_io_data_qt.h"
@@ -86,11 +85,6 @@
 #include "api/qwebenginecookiestore.h"
 #include "api/qwebenginecookiestore_p.h"
 #include "api/qwebengineurlrequestinfo_p.h"
-
-#if QT_CONFIG(opengl)
-#include <QOpenGLContext>
-#include <QOpenGLExtraFunctions>
-#endif
 
 #if QT_CONFIG(webengine_geolocation)
 #include "base/memory/ptr_util.h"
@@ -154,11 +148,6 @@
 
 #include <QGuiApplication>
 #include <QStandardPaths>
-#include <qpa/qplatformnativeinterface.h>
-
-QT_BEGIN_NAMESPACE
-Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
-QT_END_NAMESPACE
 
 // Implement IsHandledProtocol as declared in //url/url_util_qt.h.
 namespace url {
@@ -246,13 +235,6 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost 
     mojo::AssociatedRemote<qtwebengine::mojom::RendererConfiguration> renderer_configuration;
     host->GetChannel()->GetRemoteAssociatedInterface(&renderer_configuration);
     renderer_configuration->SetInitialConfiguration(is_incognito_process);
-}
-
-gl::GLShareGroup *ContentBrowserClientQt::GetInProcessGpuShareGroup()
-{
-    if (!m_shareGroupQt.get())
-        m_shareGroupQt = new ShareGroupQt;
-    return m_shareGroupQt.get();
 }
 
 content::MediaObserver *ContentBrowserClientQt::GetMediaObserver()
