@@ -35,6 +35,7 @@ target_link_libraries(quicknanobrowser PUBLIC
 qt_add_qml_module(quicknanobrowser
     URI BrowserUtils
     VERSION 1.0
+    RESOURCE_PREFIX /
 )
 
 # Resources:
