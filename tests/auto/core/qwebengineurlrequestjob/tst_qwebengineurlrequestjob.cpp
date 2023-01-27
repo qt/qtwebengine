@@ -7,8 +7,6 @@
 #include <QtWebEngineCore/qwebengineurlrequestjob.h>
 #include <QtWebEngineCore/qwebengineprofile.h>
 #include <QtWebEngineCore/qwebenginepage.h>
-#include <QtWebEngineCore/qwebenginehttprequest.h>
-#include <QtWebEngineCore/qwebenginesettings.h>
 
 class AdditionalResponseHeadersHandler : public QWebEngineUrlSchemeHandler
 {
