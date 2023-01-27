@@ -84,7 +84,8 @@ static const QStringList hardcodedTypes = QStringList()
     << "QWebEngineCookieStore*"
     << "Qt::LayoutDirection"
     << "QQuickWebEngineScriptCollection*"
-    << "QQmlComponent*";
+    << "QQmlComponent*"
+    << "QHash<QByteArray,QByteArray>";
 
 static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineAction.text --> QString"
@@ -293,6 +294,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineJavaScriptDialogRequest.title --> QString"
     << "QQuickWebEngineJavaScriptDialogRequest.type --> QQuickWebEngineJavaScriptDialogRequest::DialogType"
     << "QWebEngineLoadingInfo.errorCode --> int"
+    << "QWebEngineLoadingInfo.responseHeaders --> QHash<QByteArray,QByteArray>"
     << "QWebEngineLoadingInfo.errorDomain --> QWebEngineLoadingInfo::ErrorDomain"
     << "QWebEngineLoadingInfo.errorString --> QString"
     << "QWebEngineLoadingInfo.status --> QWebEngineLoadingInfo::LoadStatus"

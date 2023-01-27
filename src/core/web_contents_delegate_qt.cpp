@@ -383,7 +383,8 @@ void WebContentsDelegateQt::emitLoadFinished(bool isErrorPage)
                 ? QWebEngineLoadingInfo::LoadStoppedStatus : QWebEngineLoadingInfo::LoadFailedStatus);
     QWebEngineLoadingInfo info(m_loadingInfo.url, loadStatus, m_loadingInfo.isErrorPage,
                                m_loadingInfo.errorDescription, m_loadingInfo.errorCode,
-                               QWebEngineLoadingInfo::ErrorDomain(m_loadingInfo.errorDomain));
+                               QWebEngineLoadingInfo::ErrorDomain(m_loadingInfo.errorDomain),
+                               m_loadingInfo.responseHeaders);
     m_viewClient->loadFinished(std::move(info));
     m_viewClient->updateNavigationActions();
 }
@@ -409,6 +410,21 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
         }
 
         emitLoadCommitted();
+    }
+
+    const net::HttpResponseHeaders * const responseHeaders = navigation_handle->GetResponseHeaders();
+    QHash<QByteArray, QByteArray> responseHeadersMap;
+    if (responseHeaders != nullptr) {
+        m_loadingInfo.responseHeaders.clear();
+        std::size_t iter = 0;
+        std::string headerName;
+        std::string headerValue;
+        while (responseHeaders->EnumerateHeaderLines(&iter, &headerName, &headerValue)) {
+            m_loadingInfo.responseHeaders.insert(
+                        QByteArray::fromStdString(headerName),
+                        QByteArray::fromStdString(headerValue)
+            );
+        }
     }
 
     // Success is reported by DidFinishLoad, but DidFailLoad is now dead code and needs to be handled below
