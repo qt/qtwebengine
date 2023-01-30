@@ -229,6 +229,9 @@ QT_WARNING_POP
         InsertOrderedList,
         InsertUnorderedList,
 
+        ChangeTextDirectionLTR,
+        ChangeTextDirectionRTL,
+
         WebActionCount
     };
     Q_ENUM(WebAction)

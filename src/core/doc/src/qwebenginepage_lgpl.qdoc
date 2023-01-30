@@ -194,6 +194,10 @@
            Inserts an unordered list at the current cursor position,
            deleting the current selection.
            Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value ChangeTextDirectionLTR
+           Changes text direction to left-to-right in the focused input element. (Added in Qt 6.6)
+    \value ChangeTextDirectionRTL
+           Changes text direction to right-to-left in the focused input element. (Added in Qt 6.6)
     \omitvalue WebActionCount
 
 */

@@ -1969,6 +1969,12 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
     case InsertUnorderedList:
         runJavaScript(QStringLiteral("document.execCommand('insertUnorderedList');"), QWebEngineScript::ApplicationWorld);
         break;
+    case ChangeTextDirectionLTR:
+        d->adapter->changeTextDirection(true /*left to right*/);
+        break;
+    case ChangeTextDirectionRTL:
+        d->adapter->changeTextDirection(false /*left to right*/);
+        break;
     default:
         Q_UNREACHABLE();
     }
@@ -2143,6 +2149,12 @@ QQuickWebEngineAction *QQuickWebEngineView::action(WebAction action)
         break;
     case InsertUnorderedList:
         text = tr("Insert &Unordered List");
+        break;
+    case ChangeTextDirectionLTR:
+        text = tr("Change text direction left to right");
+        break;
+    case ChangeTextDirectionRTL:
+        text = tr("Change text direction right to left");
         break;
     case NoWebAction:
     case WebActionCount:

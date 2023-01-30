@@ -201,6 +201,7 @@ public:
     bool hasFocusedFrame() const;
     void resetSelection();
     void resetTouchSelectionController();
+    void changeTextDirection(bool leftToRight);
 
     // meant to be used within WebEngineCore only
     void initialize(content::SiteInstance *site);

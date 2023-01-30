@@ -97,7 +97,9 @@ ApplicationWindow {
                     WebEngineView.SavePage,
                     WebEngineView.Copy,
                     WebEngineView.Paste,
-                    WebEngineView.Cut
+                    WebEngineView.Cut,
+                    WebEngineView.ChangeTextDirectionLTR,
+                    WebEngineView.ChangeTextDirectionRTL,
                 ]
                 MenuItem {
                     text: webEngineView.action(modelData).text

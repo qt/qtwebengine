@@ -1772,6 +1772,20 @@ void WebContentsAdapter::resetTouchSelectionController()
         rwhv->resetTouchSelectionController();
 }
 
+void WebContentsAdapter::changeTextDirection(bool leftToRight)
+{
+    CHECK_INITIALIZED();
+    if (auto rwhv = static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView())) {
+        auto textInputManager = rwhv->GetTextInputManager();
+        if (!textInputManager)
+            return;
+        if (auto activeWidget = textInputManager->GetActiveWidget()) {
+            activeWidget->UpdateTextDirection(leftToRight ? base::i18n::TextDirection::LEFT_TO_RIGHT : base::i18n::TextDirection::RIGHT_TO_LEFT);
+            activeWidget->NotifyTextDirection();
+        }
+    }
+}
+
 WebContentsAdapterClient::RenderProcessTerminationStatus
 WebContentsAdapterClient::renderProcessExitStatus(int terminationStatus) {
     auto status = WebContentsAdapterClient::RenderProcessTerminationStatus(-1);

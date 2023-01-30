@@ -34,6 +34,7 @@ set(testList
     tst_geopermission.qml
     tst_getUserMedia.qml
     tst_inputMethod.qml
+    tst_inputTextDirection.qml
     tst_javaScriptDialogs.qml
     tst_keyboardEvents.qml
     tst_keyboardModifierMapping.qml

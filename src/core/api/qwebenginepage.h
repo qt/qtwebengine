@@ -122,6 +122,9 @@ public:
         InsertOrderedList,
         InsertUnorderedList,
 
+        ChangeTextDirectionLTR,
+        ChangeTextDirectionRTL,
+
         WebActionCount
     };
     Q_ENUM(WebAction)
