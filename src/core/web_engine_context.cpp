@@ -845,8 +845,13 @@ base::CommandLine *WebEngineContext::initCommandLine(bool &useEmbeddedSwitches,
     if (!base::CommandLine::CreateEmpty())
         qFatal("base::CommandLine has been initialized unexpectedly.");
 
-    base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
     QStringList appArgs = QCoreApplication::arguments();
+    if (appArgs.empty()) {
+        qFatal("Argument list is empty, the program name is not passed to QCoreApplication. "
+               "base::CommandLine cannot be properly initialized.");
+    }
+
+    base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
     if (qEnvironmentVariableIsSet(kChromiumFlagsEnv)) {
         appArgs = appArgs.mid(0, 1); // Take application name and drop the rest
         appArgs.append(parseEnvCommandLine(qEnvironmentVariable(kChromiumFlagsEnv)));
@@ -878,14 +883,6 @@ base::CommandLine *WebEngineContext::initCommandLine(bool &useEmbeddedSwitches,
         argv[i] = appArgs[i].toStdString();
 #endif
     parsedCommandLine->InitFromArgv(argv);
-
-    if (QCoreApplication::arguments().empty()) {
-        // TODO: Replace this qWarning with a qFatal at the beginning of the function
-        // when the corresponding Active Qt issue gets fixed: QTBUG-110158.
-        qWarning("Argument list is empty, the program name is not passed to QCoreApplication. "
-                 "Command line arguments might be ignored. Unexpected behavior may occur.");
-        Q_ASSERT(false);
-    }
 
     return parsedCommandLine;
 }
