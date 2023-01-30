@@ -559,13 +559,6 @@ ApplicationWindow {
                     request.accept();
                 }
 
-                onQuotaRequested: function(request) {
-                    if (request.requestedSize <= 5 * 1024 * 1024)
-                        request.accept();
-                    else
-                        request.reject();
-                }
-
                 onRegisterProtocolHandlerRequested: function(request) {
                     console.log("accepting registerProtocolHandler request for "
                                 + request.scheme + " from " + request.origin);
