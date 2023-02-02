@@ -150,7 +150,15 @@ void registerSchemes()
         scheme.setFlags(QWebEngineUrlScheme::LocalScheme | QWebEngineUrlScheme::CorsEnabled);
         QWebEngineUrlScheme::registerScheme(scheme);
     }
-
+    {
+        QWebEngineUrlScheme scheme("fetchapi-allowed");
+        scheme.setFlags(QWebEngineUrlScheme::CorsEnabled | QWebEngineUrlScheme::FetchApiAllowed);
+        QWebEngineUrlScheme::registerScheme(scheme);
+    }
+    {
+        QWebEngineUrlScheme scheme("fetchapi-not-allowed");
+        QWebEngineUrlScheme::registerScheme(scheme);
+    }
 }
 Q_CONSTRUCTOR_FUNCTION(registerSchemes)
 
@@ -323,6 +331,9 @@ private Q_SLOTS:
     void redirectInterceptorSecure();
     void redirectInterceptorFile();
     void redirectInterceptorHttp();
+    void fetchApiCustomUrl_data();
+    void fetchApiCustomUrl();
+    void fetchApiHttpUrl();
 
 private:
     bool verifyLoad(const QUrl &url)
@@ -1509,6 +1520,122 @@ void tst_Origins::localMediaBlock()
         QTest::qSleep(500);
     QTRY_COMPARE(accessed.load(), enableAccess);
 
+}
+
+class FetchApiHandler : public QWebEngineUrlSchemeHandler
+{
+    Q_OBJECT
+public:
+    FetchApiHandler(QByteArray schemeName, QObject *parent = nullptr)
+        : QWebEngineUrlSchemeHandler(parent), m_schemeName(schemeName)
+    {
+    }
+
+    void requestStarted(QWebEngineUrlRequestJob *job) override
+    {
+        QCOMPARE(job->requestUrl(), QUrl(m_schemeName + ":about"));
+        fetchWasAllowed = true;
+    }
+
+    bool fetchWasAllowed = false;
+
+private:
+    QByteArray m_schemeName;
+};
+
+class FetchApiPage : public QWebEnginePage
+{
+    Q_OBJECT
+
+signals:
+    void jsCalled();
+
+public:
+    FetchApiPage(QWebEngineProfile *profile, QObject *parent = nullptr)
+        : QWebEnginePage(profile, parent)
+    {
+    }
+
+protected:
+    void javaScriptConsoleMessage(QWebEnginePage::JavaScriptConsoleMessageLevel level,
+                                  const QString &message, int lineNumber,
+                                  const QString &sourceID) override
+    {
+        qCritical() << "js:" << message;
+        emit jsCalled();
+    }
+};
+
+void tst_Origins::fetchApiCustomUrl_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<QByteArray>("fetchApiScheme");
+    QTest::addColumn<bool>("expectedFetchWasAllowed");
+
+    QTest::newRow("custom url with fetch allowed flag")
+            << QUrl("qrc:///resources/fetchApi.html?printRes=false&url=fetchapi-allowed:about")
+            << QBAL("fetchapi-allowed") << true;
+    QTest::newRow("custom url without fetch allowed flag")
+            << QUrl("qrc:///resources/fetchApi.html?printRes=false&url=fetchapi-not-allowed:about")
+            << QBAL("fetchapi-not-allowed") << false;
+}
+
+void tst_Origins::fetchApiCustomUrl()
+{
+    QFETCH(QUrl, url);
+    QFETCH(QByteArray, fetchApiScheme);
+    QFETCH(bool, expectedFetchWasAllowed);
+
+    QWebEngineProfile profile;
+    FetchApiHandler handler(fetchApiScheme);
+
+    profile.installUrlSchemeHandler(fetchApiScheme, &handler);
+
+    FetchApiPage page(&profile);
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy jsSpy(&page, SIGNAL(jsCalled()));
+
+    if (fetchApiScheme == "fetchapi-not-allowed") {
+        QTest::ignoreMessage(QtCriticalMsg, QRegularExpression("Failed to fetch"));
+        QTest::ignoreMessage(
+                QtCriticalMsg,
+                QRegularExpression("Fetch API cannot load fetchapi-not-allowed:about."));
+    }
+
+    page.load(url);
+    QVERIFY(loadSpy.wait());
+    QCOMPARE(handler.fetchWasAllowed, expectedFetchWasAllowed);
+
+    if (fetchApiScheme == "fetchapi-not-allowed") {
+        QVERIFY(jsSpy.wait());
+    }
+}
+
+void tst_Origins::fetchApiHttpUrl()
+{
+    HttpServer httpServer;
+    QObject::connect(&httpServer, &HttpServer::newRequest, this, [](HttpReqRep *rr) {
+        rr->setResponseBody(QBAL("Fetch Was Allowed"));
+        rr->setResponseHeader(QBAL("Access-Control-Allow-Origin"), QBAL("*"));
+        rr->sendResponse();
+    });
+    QVERIFY(httpServer.start());
+
+    QWebEngineProfile profile;
+    FetchApiPage page(&profile);
+
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy jsSpy(&page, SIGNAL(jsCalled()));
+
+    QTest::ignoreMessage(QtCriticalMsg, QRegularExpression("Fetch Was Allowed"));
+
+    const QByteArray fullUrl = QByteArray("qrc:///resources/fetchApi.html?printRes=true&url=")
+            + httpServer.url("/somepage.html").toEncoded();
+    page.load(QUrl(fullUrl));
+
+    QVERIFY(loadSpy.wait());
+    QVERIFY(jsSpy.wait());
+    QVERIFY(httpServer.stop());
 }
 
 QTEST_MAIN(tst_Origins)

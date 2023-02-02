@@ -162,6 +162,10 @@ public:
   this includes access from other schemes. The appropriate CORS headers are
   generated automatically by the QWebEngineUrlRequestJob class. By default only
   \c http and \c https are CORS enabled. (Added in Qt 5.14)
+
+  \value FetchApiAllowed
+  Enables a URL scheme to be used by the HTML5 fetch API. By default
+  only \c http and \c https can be used by fetch.
 */
 
 QWebEngineUrlScheme::QWebEngineUrlScheme(QWebEngineUrlSchemePrivate *d) : d(d) {}
