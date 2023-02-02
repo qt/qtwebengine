@@ -71,7 +71,7 @@
 #endif
 
 #if QT_CONFIG(webengine_webchannel)
-#include <QtWebChannel/qqmlwebchannel.h>
+#include <QtWebChannelQuick/qqmlwebchannel.h>
 #endif
 
 QT_BEGIN_NAMESPACE

@@ -23,7 +23,8 @@ project(QtWebEngine
 
 find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS
     Gui Widgets Network OpenGL Quick Qml PrintSupport
-    WebChannel Positioning QuickControls2 Test QuickWidgets QuickTest WebSockets Designer
+    WebChannel WebChannelQuick Positioning QuickControls2
+    Test QuickWidgets QuickTest WebSockets Designer
     JpegPrivate PngPrivate HarfbuzzPrivate FreetypePrivate ZlibPrivate
 )
 

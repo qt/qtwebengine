@@ -57,6 +57,11 @@ qt_internal_add_qml_module(WebEngineQuick
         Qt::WebEngineCore
 )
 
+qt_internal_extend_target(WebEngineQuick CONDITION QT_FEATURE_webengine_webchannel
+    PUBLIC_LIBRARIES
+        Qt::WebChannelQuick
+)
+
 qt_internal_extend_target(WebEngineQuick CONDITION QT_FEATURE_accessibility
     SOURCES
         qquickwebengine_accessible.cpp qquickwebengine_accessible.h
