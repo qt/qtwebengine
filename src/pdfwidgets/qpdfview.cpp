@@ -8,6 +8,7 @@
 #include "qpdfpagerenderer.h"
 
 #include <QGuiApplication>
+#include <QLoggingCategory>
 #include <QPainter>
 #include <QPaintEvent>
 #include <QPdfDocument>
@@ -17,6 +18,9 @@
 #include <QScroller>
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(qLcLink, "qt.pdf.links")
+//#define DEBUG_LINKS
 
 QPdfViewPrivate::QPdfViewPrivate(QPdfView *q)
     : q_ptr(q)
@@ -241,6 +245,12 @@ qreal QPdfViewPrivate::yPositionForPage(int pageNumber) const
     return (*it).y();
 }
 
+QTransform QPdfViewPrivate::screenScaleTransform() const
+{
+    const qreal scale = m_screenResolution * m_zoomFactor;
+    return QTransform::fromScale(scale, scale);
+}
+
 void QPdfViewPrivate::updateDocumentLayout()
 {
     m_documentLayout = calculateDocumentLayout();
@@ -282,7 +292,7 @@ QPdfView::QPdfView(QWidget *parent)
     horizontalScrollBar()->setSingleStep(20);
 
     QScroller::grabGesture(this);
-
+    setMouseTracking(true);
     d->calculateViewport();
 }
 
@@ -317,6 +327,7 @@ void QPdfView::setDocument(QPdfDocument *document)
                         [d](){ d->documentStatusChanged(); });
 
     d->m_pageRenderer->setDocument(d->m_document);
+    d->m_linkModel.setDocument(d->m_document);
 
     d->documentStatusChanged();
 }
@@ -510,6 +521,29 @@ void QPdfView::paintEvent(QPaintEvent *event)
             } else {
                 d->m_pageRenderer->requestPage(page, pageGeometry.size() * devicePixelRatioF());
             }
+
+#ifdef DEBUG_LINKS
+            const QTransform scaleTransform = d->screenScaleTransform();
+            const QString fmt = u"page %1 @ %2, %3"_s;
+            d->m_linkModel.setPage(page);
+            const int linkCount = d->m_linkModel.rowCount({});
+            for (int i = 0; i < linkCount; ++i) {
+                const QRectF linkBounds = scaleTransform.mapRect(
+                            d->m_linkModel.data(d->m_linkModel.index(i),
+                                                int(QPdfLinkModel::Role::Rect)).toRectF())
+                        .translated(pageGeometry.topLeft());
+                painter.setPen(Qt::blue);
+                painter.drawRect(linkBounds);
+                painter.setPen(Qt::red);
+                const QPoint loc = d->m_linkModel.data(d->m_linkModel.index(i),
+                                                       int(QPdfLinkModel::Role::Location)).toPoint();
+                // TODO maybe draw destination URL if that's what it is
+                painter.drawText(linkBounds.bottomLeft() + QPoint(2, -2),
+                                 fmt.arg(d->m_linkModel.data(d->m_linkModel.index(i),
+                                                             int(QPdfLinkModel::Role::Page)).toInt())
+                                 .arg(loc.x()).arg(loc.y()));
+            }
+#endif
         }
     }
 }
@@ -531,6 +565,50 @@ void QPdfView::scrollContentsBy(int dx, int dy)
     QAbstractScrollArea::scrollContentsBy(dx, dy);
 
     d->calculateViewport();
+}
+
+void QPdfView::mousePressEvent(QMouseEvent *event)
+{
+    Q_ASSERT(event->isAccepted());
+}
+
+void QPdfView::mouseMoveEvent(QMouseEvent *event)
+{
+    Q_D(QPdfView);
+    const QTransform screenInvTransform = d->screenScaleTransform().inverted();
+    for (auto it = d->m_documentLayout.pageGeometries.cbegin(); it != d->m_documentLayout.pageGeometries.cend(); ++it) {
+        const int page = it.key();
+        const QRect pageGeometry = it.value();
+        if (pageGeometry.contains(event->position().toPoint())) {
+            const QPointF posInPoints = screenInvTransform.map(event->position() - pageGeometry.topLeft());
+            d->m_linkModel.setPage(page);
+            auto dest = d->m_linkModel.linkAt(posInPoints);
+            setCursor(dest.isValid() ? Qt::PointingHandCursor : Qt::ArrowCursor);
+            if (dest.isValid())
+                qCDebug(qLcLink) << event->position() << ":" << posInPoints << "pt ->" << dest;
+        }
+    }
+}
+
+void QPdfView::mouseReleaseEvent(QMouseEvent *event)
+{
+    Q_D(QPdfView);
+    const QTransform screenInvTransform = d->screenScaleTransform().inverted();
+    for (auto it = d->m_documentLayout.pageGeometries.cbegin(); it != d->m_documentLayout.pageGeometries.cend(); ++it) {
+        const int page = it.key();
+        const QRect pageGeometry = it.value();
+        if (pageGeometry.contains(event->position().toPoint())) {
+            const QPointF posInPoints = screenInvTransform.map(event->position() - pageGeometry.topLeft());
+            d->m_linkModel.setPage(page);
+            auto dest = d->m_linkModel.linkAt(posInPoints);
+            if (dest.isValid()) {
+                qCDebug(qLcLink) << event << ": jumping to" << dest;
+                d->m_pageNavigator->jump(dest.page(), dest.location(), dest.zoom());
+                // TODO scroll and zoom to where the link tells us to
+            }
+            return;
+        }
+    }
 }
 
 QT_END_NAMESPACE

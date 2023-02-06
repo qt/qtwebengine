@@ -22,7 +22,7 @@ qt_internal_add_module(Pdf
         qpdfdocumentrenderoptions.h
         qpdffile.cpp qpdffile_p.h
         qpdflink.cpp qpdflink.h qpdflink_p.h
-        qpdflinkmodel.cpp qpdflinkmodel_p.h qpdflinkmodel_p_p.h
+        qpdflinkmodel.cpp qpdflinkmodel.h qpdflinkmodel_p.h
         qpdfpagenavigator.cpp qpdfpagenavigator.h
         qpdfpagerenderer.cpp qpdfpagerenderer.h
         qpdfsearchmodel.cpp qpdfsearchmodel.h qpdfsearchmodel_p.h

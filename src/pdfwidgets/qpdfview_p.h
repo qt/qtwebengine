@@ -16,6 +16,7 @@
 //
 
 #include "qpdfview.h"
+#include "qpdflinkmodel.h"
 
 #include <QHash>
 #include <QPointer>
@@ -44,6 +45,8 @@ public:
 
     qreal yPositionForPage(int page) const;
 
+    QTransform screenScaleTransform() const; // points to pixels
+
     struct DocumentLayout
     {
         QSize documentSize;
@@ -57,6 +60,7 @@ public:
     QPointer<QPdfDocument> m_document;
     QPdfPageNavigator* m_pageNavigator;
     QPdfPageRenderer *m_pageRenderer;
+    QPdfLinkModel m_linkModel;
 
     QPdfView::PageMode m_pageMode;
     QPdfView::ZoomMode m_zoomMode;

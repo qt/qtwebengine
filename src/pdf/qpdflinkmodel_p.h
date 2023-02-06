@@ -15,58 +15,23 @@
 // We mean it.
 //
 
-#include "qtpdfglobal.h"
-#include "qpdfdocument.h"
-
-#include <QObject>
-#include <QAbstractListModel>
+#include "qpdflinkmodel.h"
+#include <private/qabstractitemmodel_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QPdfLinkModelPrivate;
-
-class Q_PDF_EXPORT QPdfLinkModel : public QAbstractListModel
+class QPdfLinkModelPrivate: public QAbstractItemModelPrivate
 {
-    Q_OBJECT
-    Q_PROPERTY(QPdfDocument *document READ document WRITE setDocument NOTIFY documentChanged)
-    Q_PROPERTY(int page READ page WRITE setPage NOTIFY pageChanged)
+    Q_DECLARE_PUBLIC(QPdfLinkModel)
 
 public:
-    enum class Role : int {
-        Link = Qt::UserRole,
-        Rectangle,
-        Url,
-        Page,
-        Location,
-        Zoom,
-        NRoles
-    };
-    Q_ENUM(Role)
-    explicit QPdfLinkModel(QObject *parent = nullptr);
-    ~QPdfLinkModel();
+    QPdfLinkModelPrivate();
 
-    QPdfDocument *document() const;
+    void update();
 
-    QHash<int, QByteArray> roleNames() const override;
-    int rowCount(const QModelIndex &parent) const override;
-    QVariant data(const QModelIndex &index, int role) const override;
-
-    int page() const;
-
-public Q_SLOTS:
-    void setDocument(QPdfDocument *document);
-    void setPage(int page);
-
-Q_SIGNALS:
-    void documentChanged();
-    void pageChanged(int page);
-
-private Q_SLOTS:
-    void onStatusChanged(QPdfDocument::Status status);
-
-private:
-    QHash<int, QByteArray> m_roleNames;
-    Q_DECLARE_PRIVATE(QPdfLinkModel)
+    QPdfDocument *document = nullptr;
+    QList<QPdfLink> links;
+    int page = 0;
 };
 
 QT_END_NAMESPACE
