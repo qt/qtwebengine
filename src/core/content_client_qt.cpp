@@ -420,4 +420,19 @@ std::u16string ContentClientQt::GetLocalizedString(int message_id)
     return l10n_util::GetStringUTF16(message_id);
 }
 
+// This method is a copy from chrome/common/chrome_content_client.cc:
+// Copyright 2012 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE.Chromium file.
+blink::OriginTrialPolicy *ContentClientQt::GetOriginTrialPolicy()
+{
+    // Prevent initialization race (see crbug.com/721144). There may be a
+    // race when the policy is needed for worker startup (which happens on a
+    // separate worker thread).
+    base::AutoLock auto_lock(origin_trial_policy_lock_);
+    if (!origin_trial_policy_)
+        origin_trial_policy_ = std::make_unique<embedder_support::OriginTrialPolicyImpl>();
+    return origin_trial_policy_.get();
+}
+
 } // namespace QtWebEngineCore
