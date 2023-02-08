@@ -212,6 +212,27 @@
                 { "type": "pkgConfig", "args": "libavcodec libavformat libavutil" }
             ]
         },
+        "webengine-ffmpeg-support": {
+            "label": "compatible ffmpeg",
+            "type": "compile",
+            "test": {
+                "head": [
+                    "#include <libavformat/version.h>",
+                    "extern \"C\" {",
+                    "#include <libavformat/avformat.h>",
+                    "}"
+                ],
+                "main": [
+                    "#if LIBAVFORMAT_VERSION_MAJOR >= 59",
+                        "AVStream stream;",
+                        "auto first_dts = av_stream_get_first_dts(&stream);",
+                    "#endif"
+                ]
+            },
+            "sources": [
+                { "type": "pkgConfig", "args": "libavformat" }
+            ]
+        },
         "webengine-opus": {
             "label": "opus",
             "sources": [
@@ -758,6 +779,11 @@
             "type": "warning",
             "condition": "config.ios && config.simulator && config.device && features.build-qtpdf",
             "message": "Building fat libray with device and simulator architectures will disable NEON."
+        },
+        {
+            "type": "fatal",
+            "condition": "features.webengine-system-ffmpeg && !libs.webengine-ffmpeg-support",
+            "message": "Unmodified ffmpeg >= 5.0 is not supported. Please configure with -qt-webengine-ffmpeg."
         }
     ],
     "summary": [
