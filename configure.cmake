@@ -49,7 +49,7 @@ if(PkgConfig_FOUND)
     pkg_check_modules(LCMS2 lcms2)
     pkg_check_modules(FREETYPE freetype2 IMPORTED_TARGET)
     pkg_check_modules(LIBXML2 libxml-2.0 libxslt IMPORTED_TARGET)
-    pkg_check_modules(FFMPEG libavcodec libavformat libavutil)
+    pkg_check_modules(FFMPEG libavcodec libavformat libavutil IMPORTED_TARGET)
     pkg_check_modules(OPUS opus>=1.3.1)
     pkg_check_modules(VPX vpx>=1.10.0 IMPORTED_TARGET)
     pkg_check_modules(LIBPCI libpci)
@@ -201,6 +201,25 @@ qt_config_compile_test(winversion
 #error unsupported Visual Studio version
 #endif
 int main(void){
+    return 0;
+}"
+)
+
+qt_config_compile_test(libavformat
+    LABEL "libavformat"
+    LIBRARIES
+        PkgConfig::FFMPEG
+    CODE
+"
+#include \"libavformat/version.h\"
+extern \"C\" {
+#include \"libavformat/avformat.h\"
+}
+int main(void) {
+#if LIBAVFORMAT_VERSION_MAJOR >= 59
+    AVStream stream;
+    auto first_dts = av_stream_get_first_dts(&stream);
+#endif
     return 0;
 }"
 )
@@ -524,6 +543,11 @@ add_check_for_support(
    MODULES QtWebEngine
    CONDITION NOT LINUX OR DBUS_FOUND
    MESSAGE "Build requires dbus."
+)
+add_check_for_support(
+    MODULES QtWebEngine
+    CONDITION NOT LINUX OR NOT QT_FEATURE_webengine_system_ffmpeg OR TEST_libavformat
+    MESSAGE "Unmodified ffmpeg >= 5.0 is not supported."
 )
 # FIXME: This prevents non XCB Linux builds from building:
 set(xcbSupport X11 LIBDRM XCOMPOSITE XCURSOR XRANDR XI XPROTO XSHMFENCE XTST)
