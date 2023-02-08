@@ -67,6 +67,10 @@ protected:
                                   const QString &message, int lineNumber,
                                   const QString &sourceID) override
     {
+        Q_UNUSED(level);
+        Q_UNUSED(lineNumber);
+        Q_UNUSED(sourceID);
+
         auto splitMessage = message.split(";");
         if (splitMessage[0] == QString("TST_ADDITIONALRESPONSEHEADERS"))
             QCOMPARE(splitMessage[1], m_compareString);
