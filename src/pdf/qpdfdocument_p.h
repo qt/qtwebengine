@@ -81,6 +81,31 @@ public:
     QPointF getCharPosition(FPDF_TEXTPAGE textPage, double pageHeight, int charIndex);
     QRectF getCharBox(FPDF_TEXTPAGE textPage, double pageHeight, int charIndex);
 
+    // FPDF takes the rotation parameter as an int.
+    // This enum is mapping the int values defined in fpdfview.h:956.
+    // (not using enum class to ensure int convertability)
+    enum QFPDFRotation {
+        Normal = 0,
+        ClockWise90 = 1,
+        ClockWise180 = 2,
+        CounterClockWise90 = 3
+    };
+
+    static constexpr QFPDFRotation toFPDFRotation(QPdfDocumentRenderOptions::Rotation rotation)
+    {
+        switch (rotation) {
+        case QPdfDocumentRenderOptions::Rotation::None:
+            return QFPDFRotation::Normal;
+        case QPdfDocumentRenderOptions::Rotation::Clockwise90:
+            return QFPDFRotation::ClockWise90;
+        case QPdfDocumentRenderOptions::Rotation::Clockwise180:
+            return QFPDFRotation::ClockWise180;
+        case QPdfDocumentRenderOptions::Rotation::Clockwise270:
+            return QFPDFRotation::CounterClockWise90;
+        }
+        Q_UNREACHABLE();
+    }
+
     struct TextPosition {
         QPointF position;
         qreal height = 0;
