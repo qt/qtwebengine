@@ -109,7 +109,7 @@ shared_library("QtWebEngineCore") {
     "//third_party/boringssl/src/include",
     "//third_party/skia/include/core"
   ]
-  defines = [ "CHROMIUM_VERSION=\"" + chromium_version[0] + "\"" ]
+  defines = [ "CHROMIUM_VERSION=" + chromium_version[0] ]
   deps = [
     "//base",
     "//components/autofill/content/browser",
