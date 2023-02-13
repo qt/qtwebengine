@@ -123,6 +123,10 @@ foreach(arch ${archs})
                 ARGS use_system_icu
                 CONDITION QT_FEATURE_webengine_system_icu
             )
+            extend_gn_list(gnArgArg
+                ARGS use_system_libopenjpeg2
+                CONDITION QT_FEATURE_webengine_system_libopenjpeg2
+            )
         endif()
         if(MACOS)
             list(APPEND gnArgArg angle_enable_vulkan=false)
