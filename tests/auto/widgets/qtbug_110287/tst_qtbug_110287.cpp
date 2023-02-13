@@ -25,7 +25,7 @@ void tst_qtbug_110287::getAddrInfo()
     QString address("http://www.qt.io");
     QScopedPointer<QNetworkReply> reply(nam.get(QNetworkRequest(address)));
 
-    if (!namSpy.wait(20000) || reply->error() != QNetworkReply::NoError)
+    if (!namSpy.wait(25000) || reply->error() != QNetworkReply::NoError)
         QSKIP("Couldn't load page from network, skipping test.");
 
     QWebEngineView view;
@@ -33,7 +33,7 @@ void tst_qtbug_110287::getAddrInfo()
 
     // load() will trigger system DNS resolution that uses getaddrinfo()
     view.load(QUrl(address));
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size() > 0, true, 20000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size() > 0, true, 30000);
     QTRY_COMPARE(loadFinishedSpy[0][0].toBool(), true);
 }
 
