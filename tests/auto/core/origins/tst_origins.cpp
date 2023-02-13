@@ -1604,7 +1604,7 @@ void tst_Origins::fetchApiCustomUrl()
 
     page.load(url);
     QVERIFY(loadSpy.wait());
-    QCOMPARE(handler.fetchWasAllowed, expectedFetchWasAllowed);
+    QTRY_COMPARE(handler.fetchWasAllowed, expectedFetchWasAllowed);
 
     if (fetchApiScheme == "fetchapi-not-allowed") {
         QVERIFY(jsSpy.wait());
