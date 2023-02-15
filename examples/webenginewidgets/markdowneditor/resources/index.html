@@ -14,7 +14,7 @@
   var placeholder = document.getElementById('placeholder');
 
   var updateText = function(text) {
-      placeholder.innerHTML = marked(text);
+      placeholder.innerHTML = marked.parse(text);
   }
 
   new QWebChannel(qt.webChannelTransport,
