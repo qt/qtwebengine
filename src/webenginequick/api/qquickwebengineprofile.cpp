@@ -902,6 +902,19 @@ void QQuickWebEngineProfile::setUrlRequestInterceptor(QWebEngineUrlRequestInterc
     d->profileAdapter()->setRequestInterceptor(interceptor);
 }
 
+/*!
+    Registers a response interceptor singleton \a interceptor to intercept URL responses.
+
+    The profile does not take ownership of the pointer.
+
+    \sa QWebEngineUrlResponseInterceptor
+*/
+void QQuickWebEngineProfile::setUrlResponseInterceptor(
+        QWebEngineUrlResponseInterceptor *interceptor)
+{
+    Q_D(QQuickWebEngineProfile);
+    d->profileAdapter()->setResponseInterceptor(interceptor);
+}
 
 /*!
     Returns the custom URL scheme handler register for the URL scheme \a scheme.

@@ -62,9 +62,12 @@ using QtWebEngineCore::ProfileAdapter;
     The default profile can be accessed by defaultProfile(). It is a built-in profile that all
     web pages not specifically created with another profile belong to.
 
-    Implementing the QWebEngineUrlRequestInterceptor interface and registering the interceptor on a
-    profile by setUrlRequestInterceptor() enables intercepting, blocking, and modifying URL
-    requests (QWebEngineUrlRequestInfo) before they reach the networking stack of Chromium.
+    You can implement interceptor interfaces for URL requests and responses and register them
+    on a profile to intercept, block, or modify URL requests before they reach the networking
+    stack of Chromium or response headers right after they come off the networking stack of
+    Chromium. For requests, implement QWebEngineUrlRequestInterceptor and register it via
+    setUrlRequestInterceptor(). For response headers, implement QWebEngineUrlResponseInterceptor
+    and register it via setUrlResponseInterceptor().
 
     A QWebEngineUrlSchemeHandler can be registered for a profile by installUrlSchemeHandler()
     to add support for custom URL schemes. Requests for the scheme are then issued to
@@ -600,6 +603,21 @@ void QWebEngineProfile::setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor
 {
     Q_D(QWebEngineProfile);
     d->profileAdapter()->setRequestInterceptor(interceptor);
+}
+
+/*!
+    Registers a response interceptor singleton \a interceptor to intercept URL response headers.
+
+    The profile does not take ownership of the pointer.
+
+    \since 6.6
+    \sa QWebEngineUrlResponseInterceptor
+*/
+
+void QWebEngineProfile::setUrlResponseInterceptor(QWebEngineUrlResponseInterceptor *interceptor)
+{
+    Q_D(QWebEngineProfile);
+    d->profileAdapter()->setResponseInterceptor(interceptor);
 }
 
 /*!

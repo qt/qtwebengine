@@ -8,6 +8,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qstring.h>
+#include <QtWebEngineCore/qwebengineurlresponseinterceptor.h>
 #include <QtQml/qqmlregistration.h>
 
 QT_BEGIN_NAMESPACE
@@ -90,6 +91,7 @@ public:
     QWebEngineCookieStore *cookieStore() const;
 
     void setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
+    void setUrlResponseInterceptor(QWebEngineUrlResponseInterceptor *interceptor);
 
     const QWebEngineUrlSchemeHandler *urlSchemeHandler(const QByteArray &) const;
     void installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *);

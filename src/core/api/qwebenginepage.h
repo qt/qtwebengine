@@ -40,6 +40,7 @@ class QWebEngineRegisterProtocolHandlerRequest;
 class QWebEngineScriptCollection;
 class QWebEngineSettings;
 class QWebEngineUrlRequestInterceptor;
+class QWebEngineUrlResponseInterceptor;
 
 class Q_WEBENGINECORE_EXPORT QWebEnginePage : public QObject
 {
@@ -287,6 +288,7 @@ public:
     QWebEnginePage *devToolsPage() const;
 
     void setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
+    void setUrlResponseInterceptor(QWebEngineUrlResponseInterceptor *interceptor);
 
     LifecycleState lifecycleState() const;
     void setLifecycleState(LifecycleState state);

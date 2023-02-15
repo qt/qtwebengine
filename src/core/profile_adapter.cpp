@@ -191,6 +191,16 @@ void ProfileAdapter::setRequestInterceptor(QWebEngineUrlRequestInterceptor *inte
     m_requestInterceptor = interceptor;
 }
 
+QWebEngineUrlResponseInterceptor *ProfileAdapter::responseInterceptor()
+{
+    return m_responseInterceptor.data();
+}
+
+void ProfileAdapter::setResponseInterceptor(QWebEngineUrlResponseInterceptor *interceptor)
+{
+    m_responseInterceptor = interceptor;
+}
+
 void ProfileAdapter::addClient(ProfileAdapterClient *adapterClient)
 {
     m_clients.append(adapterClient);
