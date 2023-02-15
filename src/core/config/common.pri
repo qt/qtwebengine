@@ -46,3 +46,4 @@ qtConfig(webengine-kerberos) {
 }
 
 !qtConfig(webengine-nodejs10): gn_args += use_rollup=false
+gn_args += enable_ipc_logging=false
