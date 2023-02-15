@@ -287,6 +287,7 @@ foreach(arch ${archs})
         list(APPEND gnArgArg
             qtwebengine_target="${buildDir}/${config}/${arch}:QtWebEngineCore"
             enable_ipc_fuzzer=false
+            enable_ipc_logging=false
             enable_media_remoting=false
             enable_message_center=false
             enable_nacl=false
