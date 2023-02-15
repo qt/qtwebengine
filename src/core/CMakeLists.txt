@@ -300,6 +300,7 @@ foreach(arch ${archs})
             enable_background_contents=false
             enable_background_mode=false
             enable_ipc_fuzzer=false
+            enable_ipc_logging=false
             enable_js_type_check=false
             enable_media_remoting=false
             enable_message_center=false
