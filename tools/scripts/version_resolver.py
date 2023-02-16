@@ -54,20 +54,12 @@ snapshot_src_dir = os.path.abspath(os.path.join(qtwebengine_root, 'src/3rdparty'
 upstream_src_dir = os.path.abspath(snapshot_src_dir + '_upstream')
 
 submodule_blacklist = [
-    'third_party/WebKit/LayoutTests/w3c/csswg-test'
-    , 'third_party/WebKit/LayoutTests/w3c/web-platform-tests'
-    , 'chrome/tools/test/reference_build/chrome_mac'
-    , 'chrome/tools/test/reference_build/chrome_linux'
-    , 'chrome/tools/test/reference_build/chrome_win'
-   # buildtools duplicates:
-    , 'buildtools/clang_format/script'
-    , 'buildtools/linux64'
-    , 'buildtools/mac'
-    , 'buildtools/win'
-    , 'buildtools/third_party/libc++/trunk'
-    , 'buildtools/third_party/libc++abi/trunk'
-    , 'buildtools/third_party/libunwind/trunk'
-    ]
+  'buildtools/clang_format/script',
+  'buildtools/third_party/libc++/trunk',
+  'buildtools/third_party/libc++abi/trunk',
+  'buildtools/third_party/libunwind/trunk'
+]
+submodule_whitelist = [ 'src/third_party/android_ndk' , 'src/third_party/libunwindstack' ]
 
 sys.path.append(os.path.join(qtwebengine_root, 'tools', 'scripts'))
 
@@ -94,7 +86,7 @@ def read(parserCls):
     git_deps = subprocess.check_output(['git', 'show', chromium_version +':DEPS'])
 
     parser = parserCls()
-    git_submodules = parser.parse(git_deps)
+    git_submodules = parser.parse(git_deps, submodule_whitelist)
 
     submodule_dict = {}
 

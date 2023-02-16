@@ -31,7 +31,7 @@ class SubmoduleDEPSParser(resolver.DEPSParser):
         #result.update(self.custom_vars or {})
         return result
 
-    def createSubmodulesFromScope(self, scope, os):
+    def createSubmodulesFromScope(self, scope, os, module_whitelist = []):
         submodules = []
         for dep in scope:
             url = ''
@@ -39,10 +39,11 @@ class SubmoduleDEPSParser(resolver.DEPSParser):
                 url = scope[dep]
             elif (type(scope[dep]) == dict and 'url' in scope[dep]):
                 url = scope[dep]['url']
+
                 if ('condition' in scope[dep]) and \
                 (not 'checkout_linux' in scope[dep]['condition']) and \
-                (not 'checkout_android_native_support' in scope[dep]['condition']):
-                    url = ''
+                (not dep in module_whitelist):
+                    continue
             if url:
                 url = url.format(**self.get_vars())
                 repo_rev = url.split('@')
@@ -67,11 +68,11 @@ class SubmoduleDEPSParser(resolver.DEPSParser):
                 submodules.append(submodule)
         return submodules
 
-    def parse(self, deps_content):
+    def parse(self, deps_content, module_whitelist = []):
         exec(deps_content, self.global_scope, self.local_scope)
 
         submodules = []
-        submodules.extend(self.createSubmodulesFromScope(self.local_scope['deps'], 'all'))
+        submodules.extend(self.createSubmodulesFromScope(self.local_scope['deps'], 'all', module_whitelist))
         if 'deps_os' in self.local_scope:
             for os_dep in self.local_scope['deps_os']:
                 submodules.extend(self.createSubmodulesFromScope(self.local_scope['deps_os'][os_dep], os_dep))

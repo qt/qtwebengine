@@ -38,7 +38,7 @@ class PackageDEPSParser(resolver.DEPSParser):
                 entities.append(entity)
         return entities
 
-    def parse(self, deps_content):
+    def parse(self, deps_content, module_whitelist = []):
         exec(deps_content, self.global_scope, self.local_scope)
         entities = []
         entities.extend(self.createEntitiesFromScope(self.local_scope['deps']))
