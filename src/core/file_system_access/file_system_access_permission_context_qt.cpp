@@ -471,4 +471,8 @@ void FileSystemAccessPermissionContextQt::PermissionGrantDestroyed(
         grants.erase(grant_it);
 }
 
+void FileSystemAccessPermissionContextQt::NotifyEntryMoved(const url::Origin &, const base::FilePath &, const base::FilePath &)
+{
+}
+
 } // namespace QtWebEngineCore

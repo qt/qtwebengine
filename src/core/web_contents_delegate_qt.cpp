@@ -641,12 +641,6 @@ void WebContentsDelegateQt::UpdateTargetURL(content::WebContents* source, const 
     m_viewClient->didUpdateTargetURL(toQt(url));
 }
 
-void WebContentsDelegateQt::OnVisibilityChanged(content::Visibility visibility)
-{
-    if (visibility != content::Visibility::HIDDEN)
-        web_cache::WebCacheManager::GetInstance()->ObserveActivity(web_contents()->GetPrimaryMainFrame()->GetProcess()->GetID());
-}
-
 void WebContentsDelegateQt::ActivateContents(content::WebContents* contents)
 {
     QWebEngineSettings *settings = m_viewClient->webEngineSettings();

@@ -33,7 +33,7 @@ static ProfileAdapter::PermissionType toQt(blink::PermissionType type)
         return ProfileAdapter::NotificationPermission;
     case blink::PermissionType::ACCESSIBILITY_EVENTS:
     case blink::PermissionType::CAMERA_PAN_TILT_ZOOM:
-    case blink::PermissionType::WINDOW_PLACEMENT:
+    case blink::PermissionType::WINDOW_MANAGEMENT:
         return ProfileAdapter::UnsupportedPermission;
     case blink::PermissionType::MIDI_SYSEX:
     case blink::PermissionType::PROTECTED_MEDIA_IDENTIFIER:

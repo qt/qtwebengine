@@ -14,6 +14,7 @@
 #include "ui/gl/gl_context_glx.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_glx_api_implementation.h"
+#include "ui/gl/presenter.h"
 #include "ui/ozone/platform/x11/native_pixmap_glx_binding.h"
 
 #include <dlfcn.h>
@@ -91,7 +92,7 @@ scoped_refptr<gl::GLSurface> GLOzoneGLXQt::CreateViewGLSurface(
     return nullptr;
 }
 
-scoped_refptr<gl::GLSurface> GLOzoneGLXQt::CreateSurfacelessViewGLSurface(
+scoped_refptr<gl::Presenter> GLOzoneGLXQt::CreateSurfacelessViewGLSurface(
         gl::GLDisplay* display,
         gfx::AcceleratedWidget window) {
     return nullptr;

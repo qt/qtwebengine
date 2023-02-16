@@ -145,7 +145,7 @@ public:
         DCHECK(!m_scopedSkiaWriteAccess);
         DCHECK(!m_scopedOverlayReadAccess);
 
-        m_scopedOverlayReadAccess = m_overlayRepresentation->BeginScopedReadAccess(true);
+        m_scopedOverlayReadAccess = m_overlayRepresentation->BeginScopedReadAccess();
         DCHECK(m_scopedOverlayReadAccess);
         m_acquireFence = TakeGpuFence(m_scopedOverlayReadAccess->TakeAcquireFence());
     }
@@ -164,11 +164,13 @@ public:
             m_textureCleanup = nullptr;
         }
     }
-    gl::GLImage *glImage()
+#ifdef Q_OS_MACOS
+    gfx::ScopedIOSurface ioSurface() const
     {
         DCHECK(m_presentCount);
-        return m_scopedOverlayReadAccess->gl_image();
+        return m_scopedOverlayReadAccess->GetIOSurface();
     }
+#endif
 
     void createFence()
     {
@@ -344,17 +346,11 @@ QSGTexture *NativeSkiaOutputDevice::texture(QQuickWindow *win, uint32_t textureO
 {
     if (!m_frontBuffer || !m_readyWithTexture)
         return nullptr;
-    gl::GLImageIOSurface *gl_image_iosurface = gl::GLImageIOSurface::FromGLImage(m_frontBuffer->glImage());
-    QSGTexture *texture = nullptr;
-    if (gl_image_iosurface) {
-        texture = makeMetalTexture(win, gl_image_iosurface->io_surface().release(), /* plane */ 0,
-                                   m_shape.characterization.width(), m_shape.characterization.height(),
-                                   textureOptions);
-    } else {
-        qWarning() << "GLImage not an IOSURFACE";
-    }
+    Q_ASSERT(QQuickWindow::graphicsApi() == QSGRendererInterface::Metal);
 
-    return texture;
+    return makeMetalTexture(win, m_frontBuffer->ioSurface().release(), /* plane */ 0,
+                            m_shape.characterization.width(), m_shape.characterization.height(),
+                            textureOptions);
 }
 #elif defined(Q_OS_WIN)
 QSGTexture *NativeSkiaOutputDevice::texture(QQuickWindow *win, uint32_t textureOptions)

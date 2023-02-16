@@ -145,9 +145,6 @@ PrintViewManagerBaseQt::PrintViewManagerBaseQt(content::WebContents *contents)
     , m_didPrintingSucceed(false)
     , m_printerQueriesQueue(WebEngineContext::current()->getPrintJobManager()->queue())
 {
-    // FIXME: Check if this needs to be executed async:
-    // TODO: Add isEnabled to profile
-    PrintViewManagerBaseQt::UpdatePrintingEnabled();
 }
 
 PrintViewManagerBaseQt::~PrintViewManagerBaseQt()
@@ -179,18 +176,6 @@ void PrintViewManagerBaseQt::ScriptedPrintReply(ScriptedPrintCallback callback,
 
 //    set_cookie(params->params->document_cookie);
     std::move(callback).Run(std::move(params));
-}
-
-void PrintViewManagerBaseQt::UpdatePrintingEnabled()
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    bool enabled = false;
-#if QT_CONFIG(webengine_printing_and_pdf)
-    enabled = true;
-#endif
-    web_contents()->ForEachRenderFrameHost([this, enabled](content::RenderFrameHost *rfh) {
-        SendPrintingEnabled(enabled, rfh);
-    });
 }
 
 void PrintViewManagerBaseQt::NavigationStopped()
@@ -284,6 +269,7 @@ void PrintViewManagerBaseQt::GetDefaultPrintSettings(GetDefaultPrintSettingsCall
      printer_query_ptr->GetDefaultSettings(
                  base::BindOnce(&OnDidGetDefaultPrintSettings, m_printerQueriesQueue,
                                 std::move(printer_query), std::move(callback_wrapper)),
+                 false,
                  !render_process_host->IsPdf());
 }
 
@@ -297,6 +283,15 @@ void PrintViewManagerBaseQt::PrintingFailed(int32_t cookie, printing::mojom::Pri
     PrintManager::PrintingFailed(cookie, reason);
 
     ReleasePrinterQuery();
+}
+void PrintViewManagerBaseQt::IsPrintingEnabled(IsPrintingEnabledCallback callback)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    bool enabled = false;
+#if QT_CONFIG(webengine_printing_and_pdf)
+    enabled = true;
+#endif
+    std::move(callback).Run(enabled);
 }
 
 void PrintViewManagerBaseQt::ScriptedPrint(printing::mojom::ScriptedPrintParamsPtr params,
@@ -326,11 +321,6 @@ void PrintViewManagerBaseQt::ScriptedPrint(printing::mojom::ScriptedPrintParamsP
 
 void PrintViewManagerBaseQt::ShowInvalidPrinterSettingsError()
 {
-}
-
-void PrintViewManagerBaseQt::DidStartLoading()
-{
-    UpdatePrintingEnabled();
 }
 
 // Note: In PrintViewManagerQt we always initiate printing with
@@ -536,11 +526,10 @@ bool PrintViewManagerBaseQt::RunInnerMessageLoop()
 
   m_quitInnerLoop = run_loop.QuitClosure();
 
-  // Need to enable recursive task.
-  {
-      base::CurrentThread::ScopedNestableTaskAllower allow;
-      run_loop.Run();
-  }
+  auto weak_this = weak_ptr_factory_.GetWeakPtr();
+  run_loop.Run();
+  if (!weak_this)
+      return false;
 
   bool success = !m_quitInnerLoop;
   m_quitInnerLoop.Reset();
@@ -608,12 +597,6 @@ void PrintViewManagerBaseQt::StopWorker(int documentCookie)
     if (!printerQuery)
         return;
     printerQuery->StopWorker();
-}
-
-void PrintViewManagerBaseQt::SendPrintingEnabled(bool enabled, content::RenderFrameHost* rfh)
-{
-    if (rfh->IsRenderFrameLive())
-        GetPrintRenderFrame(rfh)->SetPrintingEnabled(enabled);
 }
 
 void PrintViewManagerBaseQt::UpdatePrintSettings(int32_t cookie, base::Value::Dict job_settings,

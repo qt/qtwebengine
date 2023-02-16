@@ -87,8 +87,6 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterIntegerPref(prefs::kNotificationNextPersistentId, 10000);
     registry->RegisterDictionaryPref(prefs::kPushMessagingAppIdentifierMap);
     registry->RegisterListPref(prefs::kAccountInfo);
-    registry->RegisterStringPref(prefs::kGoogleServicesLastAccountId,
-                               std::string());
     registry->RegisterStringPref(prefs::kGoogleServicesLastUsername,
                                std::string());
     registry->RegisterStringPref(prefs::kGoogleServicesAccountId, std::string());

@@ -340,14 +340,14 @@ foreach(arch ${archs})
             strip_absolute_paths_from_debug_symbols=false
             devtools_fast_bundle=false
             devtools_skip_typecheck=false
-            enable_jxl_decoder=false # temporarily because libjxl causes internal compiler error on armv7
+            use_static_angle=true
         )
         extend_gn_list(gnArgArg
             ARGS use_v8_context_snapshot v8_use_external_startup_data
             CONDITION QT_FEATURE_webengine_v8_context_snapshot
         )
         extend_gn_list(gnArgArg
-            ARGS enable_basic_printing enable_print_preview enable_pdf
+            ARGS enable_printing enable_basic_printing enable_print_preview enable_pdf
             CONDITION QT_FEATURE_webengine_printing_and_pdf
         )
         extend_gn_list(gnArgArg
@@ -521,8 +521,6 @@ foreach(arch ${archs})
         if(MACOS)
             list(APPEND gnArgArg
                 use_external_popup_menu=false
-                angle_enable_vulkan=false
-                use_static_angle=true
             )
         endif()
 

@@ -89,7 +89,7 @@ struct LazyDirectoryListerCacher
                 webui::GetI18nTemplateHtml(
                     ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(IDR_DIR_HEADER_HTML),
                     std::move(dict));
-        html_data = base::RefCountedString::TakeString(&html);
+        html_data = base::MakeRefCounted<base::RefCountedString>(std::move(html));
     }
 
     scoped_refptr<base::RefCountedMemory> html_data;

@@ -386,7 +386,6 @@ source_set("qtwebengine_sources") {
       "//extensions/common:core_api_provider",
       "//extensions/browser",
       "//extensions/browser/api",
-      "//extensions/browser:core_api_provider",
       "//extensions/renderer",
       "//extensions:extensions_resources",
       "//extensions/strings",
