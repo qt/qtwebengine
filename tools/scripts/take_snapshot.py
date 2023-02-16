@@ -394,7 +394,7 @@ def exportChromium():
             copyFile(f, os.path.join(third_party_chromium, f))
 
     # We need to gzip transport_security_state_static.json since it is otherwise too big for our git configuration:
-    subprocess.call(['gzip', third_party_chromium + '/net/http/transport_security_state_static.json'])
+    subprocess.call(['gzip', '-n',  third_party_chromium + '/net/http/transport_security_state_static.json'])
     print("")
 
 commandNotFound = subprocess.call(['which', 'dos2unix'])
