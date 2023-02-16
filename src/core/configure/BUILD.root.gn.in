@@ -97,7 +97,7 @@ config("cpp17_config") {
 }
 
 shared_library("QtWebEngineCore") {
-  rsp_types = [ "objects", "archives", "libs" ]
+  rsp_types = [ "objects", "archives", "libs", "lflags"]
   configs += [
     ":cpp17_config",
     ":QtWebEngineCore_config",
@@ -705,7 +705,7 @@ if (enable_extensions) {
 
 if (enable_spellcheck) {
   shared_library("convert_dict") {
-    rsp_types = [ "objects", "archives", "libs" ]
+    rsp_types = [ "objects", "archives", "libs", "lflags" ]
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
     deps = [
       "//chrome/tools/convert_dict:lib",
