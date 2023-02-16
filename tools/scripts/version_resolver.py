@@ -11,8 +11,39 @@ import sys
 import json
 import urllib3
 import git_submodule as GitSubmodule
+from abc import ABC, abstractmethod
 
-chromium_version = '108.0.5359.109'
+class DEPSParser(ABC):
+    def __init__(self):
+        self.global_scope = {
+          'Var': lambda var_name: '{%s}' % var_name,
+          'Str': str,
+          'deps_os': {},
+        }
+        self.local_scope = {}
+        self.topmost_supermodule_path_prefix = ''
+
+    def subdir(self, dep):
+        if dep.startswith('src/'):
+            return dep[4:]
+        # Don't skip submodules that have a supermodule path prefix set (at the moment these
+        # are 2nd level deep submodules).
+        elif not self.topmost_supermodule_path_prefix:
+        # Ignore the information about chromium itself since we get that from git,
+        # also ignore anything outside src/ (e.g. depot_tools)
+           return None
+        else:
+           return dep
+
+    @abstractmethod
+    def parse(self):
+        pass
+
+    def get_recursedeps(self):
+        return self.local_scope["recursedeps"]
+
+
+chromium_version = '108.0.5359.220'
 chromium_branch = '5359'
 ninja_version = 'v1.8.2'
 
@@ -59,10 +90,10 @@ def readReleaseChannels():
             channels[os].append({ 'channel': ver['channel'], 'version': ver['version'], 'branch': ver['true_branch'] })
     return channels
 
-def readSubmodules():
+def read(parserCls):
     git_deps = subprocess.check_output(['git', 'show', chromium_version +':DEPS'])
 
-    parser = GitSubmodule.DEPSParser()
+    parser = parserCls()
     git_submodules = parser.parse(git_deps)
 
     submodule_dict = {}
@@ -80,7 +111,7 @@ def readSubmodules():
             with open(extra_deps_file_path, 'r') as extra_deps_file:
                 extra_deps = extra_deps_file.read()
                 if extra_deps:
-                    extradeps_parser = GitSubmodule.DEPSParser()
+                    extradeps_parser = parserCls()
                     extradeps_parser.topmost_supermodule_path_prefix = extradeps_dir
                     extradeps_submodules = extradeps_parser.parse(extra_deps)
                     for sub in extradeps_submodules:

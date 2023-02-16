@@ -12,6 +12,7 @@ import shutil
 
 from distutils.version import StrictVersion
 import git_submodule as GitSubmodule
+import cipd_package as CIPDPackage
 
 qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 os.chdir(qtwebengine_root)
@@ -32,6 +33,11 @@ def isInChromiumBlacklist(file_path):
     if file_path.endswith('.gn') or file_path.endswith('.gni') or file_path.endswith('.typemap') or \
     file_path.endswith('.mojom'):
         return False
+    # Add android dependencies info so gn build tree can be parsed
+    if file_path.endswith('.info') or file_path.endswith('.pydeps'):
+        return False
+    if file_path.endswith('.mailmap') or file_path.endswith('.tat.gz.sha1'):
+        return True
     if (file_path.startswith('android_webview')
         or file_path.startswith('apps/')
         or file_path.startswith('ash/')
@@ -121,6 +127,7 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/accessibility')
             or file_path.startswith('third_party/afl')
             or file_path.startswith('third_party/android_')
+            or file_path.startswith('third_party/androidx')
             or file_path.startswith('third_party/angle/third_party/deqp')
             or file_path.startswith('third_party/angle/third_party/glmark2')
             or file_path.startswith('third_party/angle/third_party/VK-GL-CTS')
@@ -201,7 +208,6 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/google_')
             or file_path.startswith('third_party/grpc/')
             or file_path.startswith('third_party/hunspell_dictionaries')
-            or file_path.startswith('third_party/icu/android')
             or file_path.startswith('third_party/icu/cast')
             or file_path.startswith('third_party/icu/chromeos')
             or file_path.startswith('third_party/instrumented_libraries')
@@ -213,6 +219,7 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/libFuzzer')
             or file_path.startswith('third_party/liblouis')
             or file_path.startswith('third_party/libphonenumber')
+            or file_path.startswith('third_party/libunwindstack')
             or file_path.startswith('third_party/logilab')
             or file_path.startswith('third_party/markdown')
             or file_path.startswith('third_party/openh264/src/res')
@@ -292,7 +299,7 @@ def printProgress(current, total):
     sys.stdout.write("\r{} of {}".format(current, total))
     sys.stdout.flush()
 
-def copyFile(src, dst):
+def copyFile(src, dst, use_link = True, force_remove = False):
     src = os.path.abspath(src)
     dst = os.path.abspath(dst)
     dst_dir = os.path.dirname(dst)
@@ -300,11 +307,14 @@ def copyFile(src, dst):
     if not os.path.isdir(dst_dir):
         os.makedirs(dst_dir)
 
-    if os.path.exists(dst):
+    if force_remove or os.path.exists(dst):
         os.remove(dst)
 
     try:
-        os.link(src, dst)
+        if use_link:
+            os.link(src, dst)
+        else:
+            shutil.copy(src,dst)
         # Qt uses LF-only but Chromium isn't.
         subprocess.call(['dos2unix', '--keep-bom', '--quiet', dst])
     except OSError as exception:
@@ -334,6 +344,16 @@ def listFilesInCurrentRepository(use_deps=False):
         submodule_files = submodule.listFiles()
         for submodule_file in submodule_files:
             files.append(os.path.join(submodule.pathRelativeToTopMostSupermodule(), submodule_file))
+    return files
+
+def listPackageFilesInCurrentRepositoryForPackage(packageName):
+    cipd = CIPDPackage.CIPDEntity(os.getcwd())
+    cipd_entities = cipd.readEntities()
+    files = []
+    for e in cipd_entities:
+        pkg = e.findPackage(CIPDPackage.androidx_package_name)
+        if pkg:
+            files.extend(pkg.listFiles())
     return files
 
 def exportGn():
@@ -378,11 +398,15 @@ def exportChromium():
     files.append(b'build/util/LASTCHANGE.committime')
     files.append(b'skia/ext/skia_commit_hash.h')
     files.append(b'gpu/config/gpu_lists_version.h')
+
+    files.extend(listPackageFilesInCurrentRepositoryForPackage(CIPDPackage.androidx_package_name))
+
     for root, directories, local_files in os.walk(third_party_upstream_chromium + '/third_party/node/node_modules'):
         for name in local_files:
             f = os.path.relpath(os.path.join(root, name))
             files.append(f)
 
+    symlinks = []
     print('copying files to ' + third_party_chromium)
     for i in range(len(files)):
         printProgress(i+1, len(files))
@@ -391,7 +415,16 @@ def exportChromium():
         else:
             f = files[i]
         if not isInChromiumBlacklist(f) and not isInGitBlacklist(f):
-            copyFile(f, os.path.join(third_party_chromium, f))
+            d = os.path.join(third_party_chromium, f)
+            copyFile(f,d)
+            # make sure we did not make a hardlink of symlink which is broken afterwards
+            if os.path.islink(f):
+              symlinks.append((f,d))
+    # this is mostly used for files coming from cipd packages
+    for s in symlinks:
+        if not os.path.exists(s[1]):
+            print('fixing ivalid link ' + s[1])
+            copyFile(s[0],s[1], use_link = False, force_remove = True)
 
     # We need to gzip transport_security_state_static.json since it is otherwise too big for our git configuration:
     subprocess.call(['gzip', '-n',  third_party_chromium + '/net/http/transport_security_state_static.json'])
