@@ -25,7 +25,7 @@ public:
 
     // Overridden from viz::SoftwareOutputDevice.
     void Resize(const gfx::Size &sizeInPixels, float devicePixelRatio) override;
-    void OnSwapBuffers(SwapBuffersCallback swap_ack_callback) override;
+    void OnSwapBuffers(SwapBuffersCallback swap_ack_callback, gl::FrameData data) override;
 
     // Overridden from Compositor.
     void swapFrame() override;
@@ -60,7 +60,7 @@ void DisplaySoftwareOutputSurface::Device::Resize(const gfx::Size &sizeInPixels,
     surface_ = SkSurface::MakeRaster(SkImageInfo::MakeN32Premul(sizeInPixels.width(), sizeInPixels.height()));
 }
 
-void DisplaySoftwareOutputSurface::Device::OnSwapBuffers(SwapBuffersCallback swap_ack_callback)
+void DisplaySoftwareOutputSurface::Device::OnSwapBuffers(SwapBuffersCallback swap_ack_callback, gl::FrameData data)
 {
     { // MEMO don't hold a lock together with an 'observer', as the call from Qt's scene graph may come at the same time
         QMutexLocker locker(&m_mutex);

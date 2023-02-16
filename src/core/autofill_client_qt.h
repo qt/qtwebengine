@@ -52,7 +52,7 @@ public:
     base::span<const autofill::Suggestion> GetPopupSuggestions() const override;
     void UpdatePopup(const std::vector<autofill::Suggestion> &, autofill::PopupType) override;
     void HideAutofillPopup(autofill::PopupHidingReason reason) override;
-    bool IsAutocompleteEnabled() override;
+    bool IsAutocompleteEnabled() const override;
     bool IsPasswordManagerEnabled() override;
     void PropagateAutofillPredictions(autofill::AutofillDriver *,
                                       const std::vector<autofill::FormStructure *> &) override;

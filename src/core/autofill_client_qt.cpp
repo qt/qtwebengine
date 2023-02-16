@@ -103,7 +103,7 @@ void AutofillClientQt::HideAutofillPopup(autofill::PopupHidingReason)
     adapterClient()->hideAutofillPopup();
 }
 
-bool AutofillClientQt::IsAutocompleteEnabled()
+bool AutofillClientQt::IsAutocompleteEnabled() const
 {
     return autofill::prefs::IsAutocompleteEnabled(GetPrefs());
 }

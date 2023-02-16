@@ -855,7 +855,8 @@ macro(append_build_type_setup)
         forbid_non_component_debug_builds=false
         treat_warnings_as_errors=false
         use_allocator_shim=false
-        use_allocator="none"
+        use_partition_alloc=true
+        use_partition_alloc_as_malloc=false
         use_custom_libcxx=false
     )
     if(${config} STREQUAL "Debug")
@@ -878,7 +879,7 @@ macro(append_build_type_setup)
     if(FEATURE_developer_build OR (${config} STREQUAL "Debug") OR QT_FEATURE_webengine_sanitizer)
         list(APPEND gnArgArg
              is_official_build=false
-             from_here_uses_location_builtins=false
+             use_viz_debugger=false
         )
     else()
         list(APPEND gnArgArg is_official_build=true)

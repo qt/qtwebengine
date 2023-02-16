@@ -119,6 +119,11 @@ foreach(arch ${archs})
           qt_libjpeg_config="${buildDir}/${config}/${arch}:qt_libjpeg_config"
           qt_harfbuzz_config="${buildDir}/${config}/${arch}:qt_harfbuzz_config"
           qt_freetype_config="${buildDir}/${config}/${arch}:qt_freetype_config"
+          enable_swiftshader=false
+          enable_swiftshader_vulkan=false
+          angle_enable_swiftshader=false
+          dawn_use_swiftshader=false
+          use_dawn=false
           enable_ipc_fuzzer=false
           enable_remoting=false
           enable_resource_allowlist_generation=false

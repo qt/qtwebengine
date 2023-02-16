@@ -36,9 +36,6 @@ class PrintViewManagerBaseQt : public printing::PrintManager
 public:
     ~PrintViewManagerBaseQt() override;
 
-    // Whether printing is enabled or not.
-    void UpdatePrintingEnabled();
-
     std::u16string RenderSourceName();
 
     // mojom::PrintManagerHost:
@@ -48,6 +45,7 @@ public:
     void GetDefaultPrintSettings(GetDefaultPrintSettingsCallback callback) override;
     void UpdatePrintSettings(int32_t cookie, base::Value::Dict job_settings,
                              UpdatePrintSettingsCallback callback) override;
+    void IsPrintingEnabled(IsPrintingEnabledCallback callback) override;
     void ScriptedPrint(printing::mojom::ScriptedPrintParamsPtr,
                        printing::mojom::PrintManagerHost::ScriptedPrintCallback) override;
     void ShowInvalidPrinterSettingsError() override;
@@ -83,9 +81,6 @@ protected:
     void StopWorker(int documentCookie);
 
 private:
-    // content::WebContentsObserver implementation.
-    void DidStartLoading() override;
-
     // Requests the RenderView to render all the missing pages for the print job.
     // No-op if no print job is pending. Returns true if at least one page has
     // been requested to the renderer.
@@ -135,9 +130,6 @@ private:
 
     // Release the PrinterQuery associated with our |cookie_|.
     void ReleasePrinterQuery();
-
-    // Helper method for UpdatePrintingEnabled().
-    void SendPrintingEnabled(bool enabled, content::RenderFrameHost* rfh);
 
 private:
     content::NotificationRegistrar m_registrar;

@@ -39,7 +39,7 @@ public:
             gl::GLDisplay* display,
             gfx::AcceleratedWidget window) override;
 
-    scoped_refptr<gl::GLSurface> CreateSurfacelessViewGLSurface(
+    scoped_refptr<gl::Presenter> CreateSurfacelessViewGLSurface(
             gl::GLDisplay* display,
             gfx::AcceleratedWidget window) override;
 

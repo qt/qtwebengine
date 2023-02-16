@@ -290,11 +290,12 @@ void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderF
         // TODO(elproxy): We could potentially get better diagnostics here by first calling
         // NetErrorHelper::GetErrorStringsForDnsProbe, but that one is harder to untangle.
 
+        base::Value::Dict error_page_params;
         error_page::LocalizedError::PageState errorPageState =
                 error_page::LocalizedError::GetPageState(
                         error.reason(), error.domain(), error.url(), isPost, false,
                         error.stale_copy_in_cache(), false,
-                        RenderConfiguration::is_incognito_process(), false, false, false, locale, false);
+                        RenderConfiguration::is_incognito_process(), false, false, false, locale, false, &error_page_params);
 
         resourceId = IDR_NET_ERROR_HTML;
 
@@ -477,7 +478,7 @@ static const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey"
 
 // External Clear Key (used for testing).
 static void AddExternalClearKey(const media::mojom::KeySystemCapabilityPtr &capability,
-                                media::KeySystemInfoVector *key_systems)
+                                media::KeySystemInfos* key_systems)
 {
     Q_UNUSED(capability);
     if (!base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting)) {
@@ -486,7 +487,7 @@ static void AddExternalClearKey(const media::mojom::KeySystemCapabilityPtr &capa
     }
 
     // TODO(xhwang): Actually use `capability` to determine capabilities.
-    key_systems->push_back(std::make_unique<cdm::ExternalClearKeyProperties>());
+    key_systems->push_back(std::make_unique<cdm::ExternalClearKeyKeySystemInfo>());
 }
 
 #if BUILDFLAG(ENABLE_WIDEVINE)
@@ -603,7 +604,7 @@ static media::SupportedCodecs GetSupportedCodecs(const media::CdmCapability& cap
 }
 
 static void AddWidevine(const media::mojom::KeySystemCapabilityPtr &capability,
-                        media::KeySystemInfoVector *key_systems)
+                        media::KeySystemInfos *key_systems)
 {
     // Codecs and encryption schemes.
     media::SupportedCodecs codecs = media::EME_CODEC_NONE;
@@ -658,11 +659,11 @@ static void AddWidevine(const media::mojom::KeySystemCapabilityPtr &capability,
 void OnKeySystemSupportUpdated(media::GetSupportedKeySystemsCB cb,
                                content::KeySystemCapabilityPtrMap key_system_capabilities)
 {
-    media::KeySystemInfoVector key_systems;
+    media::KeySystemInfos key_systems;
     for (const auto &entry : key_system_capabilities) {
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
         const auto &key_system = entry.first;
         const auto &capability = entry.second;
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #if BUILDFLAG(ENABLE_WIDEVINE)
         if (key_system == kWidevineKeySystem) {
             AddWidevine(capability, &key_systems);
@@ -674,9 +675,9 @@ void OnKeySystemSupportUpdated(media::GetSupportedKeySystemsCB cb,
             AddExternalClearKey(capability, &key_systems);
             continue;
         }
-#endif // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
         DLOG(ERROR) << "Unrecognized key system: " << key_system;
+#endif // BUILDFLAG(ENABLE_LIBRARY_CDMS)
     }
 
     cb.Run(std::move(key_systems));

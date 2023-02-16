@@ -979,9 +979,8 @@ void WebContentsAdapter::setZoomFactor(qreal factor)
     content::HostZoomMap *zoomMap = content::HostZoomMap::GetForWebContents(m_webContents.get());
 
     if (zoomMap) {
-        int render_process_id = m_webContents->GetPrimaryMainFrame()->GetProcess()->GetID();
-        int render_view_id = m_webContents->GetRenderViewHost()->GetRoutingID();
-        zoomMap->SetTemporaryZoomLevel(render_process_id, render_view_id, zoomLevel);
+        const content::GlobalRenderFrameHostId global_id = m_webContents->GetPrimaryMainFrame()->GetGlobalId();
+        zoomMap->SetTemporaryZoomLevel(global_id, zoomLevel);
     }
 }
 
@@ -1546,7 +1545,7 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
     }
 
     {
-        base::CurrentThread::ScopedNestableTaskAllower allow;
+        base::CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop allow;
         drag->exec(allowedActions);
     }
 
