@@ -75,7 +75,7 @@ void tst_MultiPageView::internalLink()
     QVERIFY(showView(window, testFileUrl("multiPageView.qml")));
     QQuickItem *pdfView = window.rootObject();
     QVERIFY(pdfView);
-    pdfView->setProperty("source", "bookmarksAndLinks.pdf");
+    pdfView->setProperty("source", testFileUrl("bookmarksAndLinks.pdf"));
     QTRY_COMPARE(pdfView->property("currentPageRenderingStatus").toInt(), QQuickPdfPageImage::Ready);
 
     QQuickItem *table = static_cast<QQuickItem *>(findFirstChild(pdfView, "QQuickTableView"));
@@ -259,7 +259,7 @@ void tst_MultiPageView::password()
     // actual QPdfDocument::pageCountChanged(int), for comparison with the illusory QQuickPdfDocument::pageCountChanged
     QVERIFY(extPageCountChangedSpy.isValid());
 
-    QVERIFY(pdfView->setProperty("source", u"pdf-sample.protected.pdf"_s));
+    QVERIFY(pdfView->setProperty("source", testFileUrl(u"pdf-sample.protected.pdf"_s)));
 
     QTRY_COMPARE(passwordRequiredSpy.size(), 1);
     qCDebug(lcTests) << "error while awaiting password" << doc->error()
@@ -291,7 +291,7 @@ void tst_MultiPageView::selectionAndClipboard()
     QQuickPdfDocument *doc = pdfView->property("document").value<QQuickPdfDocument*>();
     QVERIFY(doc);
     QVERIFY(doc->setProperty("password", u"Qt"_s));
-    QVERIFY(pdfView->setProperty("source", u"pdf-sample.protected.pdf"_s));
+    QVERIFY(pdfView->setProperty("source", testFileUrl((u"pdf-sample.protected.pdf"_s))));
     QTRY_COMPARE(pdfView->property("currentPageRenderingStatus").toInt(), QQuickPdfPageImage::Ready);
 
     QVERIFY(QMetaObject::invokeMethod(pdfView, "selectAll"));
@@ -319,7 +319,7 @@ void tst_MultiPageView::search()
     QQuickPdfDocument *doc = pdfView->property("document").value<QQuickPdfDocument*>();
     QVERIFY(doc);
     QVERIFY(doc->setProperty("password", u"Qt"_s));
-    QVERIFY(pdfView->setProperty("source", u"pdf-sample.protected.pdf"_s));
+    QVERIFY(pdfView->setProperty("source", testFileUrl(u"pdf-sample.protected.pdf"_s)));
     QTRY_COMPARE(pdfView->property("currentPageRenderingStatus").toInt(), QQuickPdfPageImage::Ready);
     QPdfSearchModel *searchModel = pdfView->property("searchModel").value<QPdfSearchModel*>();
     QVERIFY(searchModel);

@@ -8,5 +8,8 @@ qt_internal_add_test(tst_qpdfbookmarkmodel
         Qt::Gui
         Qt::Network
         Qt::Pdf
+    TESTDATA
+        pdf-sample.bookmarks.pdf
+        pdf-sample.bookmarks_pages.pdf
 )
 

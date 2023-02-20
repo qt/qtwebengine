@@ -8,5 +8,7 @@ qt_internal_add_test(tst_qpdfpagerenderer
         Qt::Gui
         Qt::Network
         Qt::Pdf
+    TESTDATA
+        pdf-sample.pagerenderer.pdf
 )
 
