@@ -9,4 +9,8 @@ qt_internal_add_test(tst_qpdfdocument
         Qt::Network
         Qt::PrintSupport
         Qt::Pdf
+    TESTDATA
+        pdf-sample.protected.pdf
+        pdf-sample.metadata.pdf
+        test.pdf
 )

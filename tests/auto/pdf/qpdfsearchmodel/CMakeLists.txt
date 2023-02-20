@@ -8,4 +8,6 @@ qt_internal_add_test(tst_qpdfsearchmodel
         Qt::Gui
         Qt::Network
         Qt::Pdf
+    TESTDATA
+        test.pdf
 )
