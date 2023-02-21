@@ -97,6 +97,8 @@ void BrowserAccessibilityManagerQt::FireBlinkEvent(ax::mojom::Event event_type,
     switch (event_type) {
     case ax::mojom::Event::kFocus: {
         QAccessibleEvent event(iface, QAccessible::Focus);
+        if (event.object())
+            event.setChild(-1);
         QAccessible::updateAccessibility(&event);
         break;
     }
@@ -104,6 +106,8 @@ void BrowserAccessibilityManagerQt::FireBlinkEvent(ax::mojom::Event event_type,
         QAccessible::State change;
         change.checked = true;
         QAccessibleStateChangeEvent event(iface, change);
+        if (event.object())
+            event.setChild(-1);
         QAccessible::updateAccessibility(&event);
         break;
     }
@@ -112,6 +116,8 @@ void BrowserAccessibilityManagerQt::FireBlinkEvent(ax::mojom::Event event_type,
         if (QAccessibleValueInterface *valueIface = iface->valueInterface())
             value = valueIface->currentValue();
         QAccessibleValueChangeEvent event(iface, value);
+        if (event.object())
+            event.setChild(-1);
         QAccessible::updateAccessibility(&event);
         break;
     }
@@ -123,6 +129,8 @@ void BrowserAccessibilityManagerQt::FireBlinkEvent(ax::mojom::Event event_type,
         break;
     case ax::mojom::Event::kTextChanged: {
         QAccessibleTextUpdateEvent event(iface, -1, QString(), QString());
+        if (event.object())
+            event.setChild(-1);
         QAccessible::updateAccessibility(&event);
         break;
     }
@@ -134,9 +142,13 @@ void BrowserAccessibilityManagerQt::FireBlinkEvent(ax::mojom::Event event_type,
             textIface->selection(0, &start, &end);
             if (start == end) {
                 QAccessibleTextCursorEvent event(iface, start);
+                if (event.object())
+                    event.setChild(-1);
                 QAccessible::updateAccessibility(&event);
             } else {
                 QAccessibleTextSelectionEvent event(iface, start, end);
+                if (event.object())
+                    event.setChild(-1);
                 QAccessible::updateAccessibility(&event);
             }
         }
@@ -156,6 +168,8 @@ void BrowserAccessibilityManagerQt::FireGeneratedEvent(ui::AXEventGenerator::Eve
     case ui::AXEventGenerator::Event::VALUE_IN_TEXT_FIELD_CHANGED:
         if (iface->role() == QAccessible::EditableText) {
             QAccessibleTextUpdateEvent event(iface, -1, QString(), QString());
+            if (event.object())
+                event.setChild(-1);
             QAccessible::updateAccessibility(&event);
         }
         break;
