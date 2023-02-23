@@ -103,6 +103,7 @@ int main() {
     pkt.data.frame.height[0] = 0u;
     auto a = CONSTRAINED_FROM_ABOVE_DROP;
     auto b = VPX_IMG_FMT_NV12;
+    auto v9 = vpx_codec_vp9_cx();
 }"
 )
 
