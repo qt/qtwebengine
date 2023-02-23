@@ -6,10 +6,10 @@
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
-#include <QtCore/qshareddata.h>
+#include <QtCore/qhash.h>
 #include <QtCore/qobject.h>
+#include <QtCore/qshareddata.h>
 #include <QtCore/qurl.h>
-#include <QHash>
 
 namespace QtWebEngineCore {
 class WebContentsAdapter;
