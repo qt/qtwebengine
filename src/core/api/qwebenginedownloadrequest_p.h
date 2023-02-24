@@ -31,32 +31,35 @@ QT_BEGIN_NAMESPACE
 class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineDownloadRequestPrivate
 {
 public:
-    QWebEngineDownloadRequestPrivate(QtWebEngineCore::ProfileAdapter *adapter, const QUrl &url);
+    QWebEngineDownloadRequestPrivate(QtWebEngineCore::ProfileAdapter *adapter);
     ~QWebEngineDownloadRequestPrivate();
 
     void update(const QtWebEngineCore::ProfileAdapterClient::DownloadItemInfo &info);
     void setFinished();
 
-    bool downloadFinished;
-    quint32 downloadId;
+    bool downloadFinished = false;
+    quint32 downloadId = -1;
     qint64 startTime;
-    QWebEngineDownloadRequest::DownloadState downloadState;
-    QWebEngineDownloadRequest::SavePageFormat savePageFormat;
-    QWebEngineDownloadRequest::DownloadInterruptReason interruptReason;
+    QWebEngineDownloadRequest::DownloadState downloadState =
+            QWebEngineDownloadRequest::DownloadCancelled;
+    QWebEngineDownloadRequest::SavePageFormat savePageFormat =
+            QWebEngineDownloadRequest::MimeHtmlSaveFormat;
+    QWebEngineDownloadRequest::DownloadInterruptReason interruptReason =
+            QWebEngineDownloadRequest::NoReason;
     QString downloadPath;
-    const QUrl downloadUrl;
+    QUrl downloadUrl;
     QString mimeType;
-    bool downloadPaused;
+    bool downloadPaused = false;
     QString suggestedFileName;
     QString downloadDirectory;
     QString downloadFileName;
-    bool isCustomFileName;
-    qint64 totalBytes;
-    qint64 receivedBytes;
-    bool isSavePageDownload;
+    bool isCustomFileName = false;
+    qint64 totalBytes = -1;
+    qint64 receivedBytes = 0;
+    bool isSavePageDownload = false;
     QWebEngineDownloadRequest *q_ptr;
     QPointer<QtWebEngineCore::ProfileAdapter> profileAdapter;
-    QtWebEngineCore::WebContentsAdapterClient *adapterClient;
+    QtWebEngineCore::WebContentsAdapterClient *adapterClient = nullptr;
     Q_DECLARE_PUBLIC(QWebEngineDownloadRequest)
 };
 
