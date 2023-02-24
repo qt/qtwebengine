@@ -415,7 +415,7 @@ void tst_QWebEngineDownloadRequest::downloadLink()
     ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *item) {
         QCOMPARE(item->state(), QWebEngineDownloadRequest::DownloadRequested);
         QCOMPARE(item->isFinished(), false);
-        QCOMPARE(item->totalBytes(), -1);
+        QCOMPARE(item->totalBytes(), fileContents.size());
         QCOMPARE(item->receivedBytes(), 0);
         QCOMPARE(item->interruptReason(), QWebEngineDownloadRequest::NoReason);
         QCOMPARE(item->isSavePageDownload(), false);
@@ -526,7 +526,7 @@ void tst_QWebEngineDownloadRequest::downloadTwoLinks()
     ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *item) {
         QCOMPARE(item->state(), QWebEngineDownloadRequest::DownloadRequested);
         QCOMPARE(item->isFinished(), false);
-        QCOMPARE(item->totalBytes(), -1);
+        QCOMPARE(item->totalBytes(), 5); // strlen("fileN")
         QCOMPARE(item->receivedBytes(), 0);
         QCOMPARE(item->interruptReason(), QWebEngineDownloadRequest::NoReason);
         QCOMPARE(item->savePageFormat(), QWebEngineDownloadRequest::UnknownSaveFormat);
