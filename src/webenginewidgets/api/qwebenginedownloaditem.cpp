@@ -465,7 +465,7 @@ QWebEngineDownloadItem::DownloadState QWebEngineDownloadItem::state() const
 }
 
 /*!
-    Returns the the total amount of data to download in bytes.
+    Returns the total amount of data to download in bytes.
 
     \c -1 means the size is unknown.
 */
