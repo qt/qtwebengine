@@ -482,7 +482,7 @@ foreach(arch ${archs})
 
             if(CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm")
                 check_thumb(armThumb)
-                if(NOT armThumb AND NOT QT_FEATURE_system_ffmpeg)
+                if(NOT armThumb AND NOT QT_FEATURE_webengine_system_ffmpeg)
                     list(APPEND gnArgArg media_use_ffmpeg=false use_webaudio_ffmpeg=false)
                 endif()
             endif()
