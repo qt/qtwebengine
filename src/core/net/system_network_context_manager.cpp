@@ -292,7 +292,15 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(network::
     // respect prefs::kEnableReferrers from the appropriate pref store.
     network_context_params->enable_referrers = false;
 
-    network_context_params->proxy_resolver_factory = ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver();
+    const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+
+    if (command_line.HasSwitch(switches::kSingleProcess)) {
+      LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
+    } else {
+      network_context_params->proxy_resolver_factory =
+          ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver();
+    }
 
     // Use the SystemNetworkContextManager to populate and update SSL
     // configuration. The SystemNetworkContextManager is owned by the

@@ -39,7 +39,9 @@
 
 #include "profile_adapter.h"
 
+#include "base/files/file_util.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/time/time_to_iso8601.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/content/browser/history_database_helper.h"
 #include "components/history/core/browser/history_database_params.h"
@@ -48,9 +50,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
-#include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/url_util.h"
 
@@ -65,12 +65,8 @@
 #include "renderer_host/user_resource_controller_host.h"
 #include "type_conversion.h"
 #include "visited_links_manager_qt.h"
-#include "web_engine_context.h"
 #include "web_contents_adapter_client.h"
-
-#include "base/files/file_util.h"
-#include "base/time/time_to_iso8601.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "web_engine_context.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_system.h"
@@ -120,9 +116,8 @@ ProfileAdapter::~ProfileAdapter()
 {
     m_cancelableTaskTracker->TryCancelAll();
     m_profile->NotifyWillBeDestroyed();
-    while (!m_webContentsAdapterClients.isEmpty()) {
-       m_webContentsAdapterClients.first()->releaseProfile();
-    }
+    releaseAllWebContentsAdapterClients();
+
     WebEngineContext::current()->removeProfileAdapter(this);
     if (m_downloadManagerDelegate) {
         m_profile->GetDownloadManager()->Shutdown();
@@ -653,6 +648,12 @@ void ProfileAdapter::addWebContentsAdapterClient(WebContentsAdapterClient *clien
 void ProfileAdapter::removeWebContentsAdapterClient(WebContentsAdapterClient *client)
 {
     m_webContentsAdapterClients.removeAll(client);
+}
+
+void ProfileAdapter::releaseAllWebContentsAdapterClients()
+{
+    while (!m_webContentsAdapterClients.isEmpty())
+        m_webContentsAdapterClients.first()->releaseProfile();
 }
 
 void ProfileAdapter::resetVisitedLinksManager()

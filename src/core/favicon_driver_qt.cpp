@@ -300,15 +300,15 @@ void FaviconDriverQt::DidStartNavigation(content::NavigationHandle *navigation_h
         return;
 
     m_faviconUrls.reset();
-    m_completedHandlersCount = 0;
-    m_latestFavicon = FaviconStatusQt();
 
     if (!navigation_handle->IsSameDocument()) {
+        m_completedHandlersCount = 0;
+        m_latestFavicon = FaviconStatusQt();
         m_documentOnLoadCompleted = false;
         m_manifestUrl = GURL();
-    }
 
-    m_viewClient->iconChanged(QUrl());
+        m_viewClient->iconChanged(QUrl());
+    }
 
     content::ReloadType reload_type = navigation_handle->GetReloadType();
     if (reload_type == content::ReloadType::NONE || IsOffTheRecord())

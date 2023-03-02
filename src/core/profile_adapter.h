@@ -53,10 +53,11 @@
 
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 
-#include <QEnableSharedFromThis>
+#include <QHash>
 #include <QList>
 #include <QPointer>
 #include <QScopedPointer>
+#include <QSharedPointer>
 #include <QString>
 
 #include <QtWebEngineCore/qwebengineclientcertificatestore.h>
@@ -137,6 +138,7 @@ public:
 
     void addWebContentsAdapterClient(WebContentsAdapterClient *client);
     void removeWebContentsAdapterClient(WebContentsAdapterClient *client);
+    void releaseAllWebContentsAdapterClients();
 
     // KEEP IN SYNC with API or add mapping layer
     enum HttpCacheType {
