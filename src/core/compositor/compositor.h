@@ -124,13 +124,7 @@ public:
     virtual QSize size() = 0;
 
     // Whether frame needs an alpha channel.
-    //
-    // In software mode, the image format can be either
-    //   QImage::Format_ARGB32_Premultiplied or
-    //   QImage::Format_RGBA8888_Premultiplied
-    //
-    // In OpenGL mode, the texture format is either GL_RGBA or GL_RGB.
-    virtual bool hasAlphaChannel() = 0;
+    virtual bool requiresAlphaChannel() = 0;
 
     // (Software) QImage of the frame.
     //

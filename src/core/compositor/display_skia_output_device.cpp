@@ -255,12 +255,15 @@ private:
 };
 
 DisplaySkiaOutputDevice::DisplaySkiaOutputDevice(
-        scoped_refptr<gpu::SharedContextState> contextState, gpu::MemoryTracker *memoryTracker,
+        scoped_refptr<gpu::SharedContextState> contextState,
+        bool requiresAlpha,
+        gpu::MemoryTracker *memoryTracker,
         DidSwapBufferCompleteCallback didSwapBufferCompleteCallback)
     : SkiaOutputDevice(contextState->gr_context(), memoryTracker, didSwapBufferCompleteCallback)
     , Compositor(contextState->GrContextIsVulkan() ? Compositor::Type::Vulkan
                                                    : Compositor::Type::OpenGL)
     , m_contextState(contextState)
+    , m_requiresAlpha(requiresAlpha)
 {
     capabilities_.uses_default_gl_framebuffer = false;
     capabilities_.supports_surfaceless = true;
@@ -369,9 +372,9 @@ QSize DisplaySkiaOutputDevice::size()
     return m_frontBuffer ? toQt(m_frontBuffer->shape().characterization.dimensions()) : QSize();
 }
 
-bool DisplaySkiaOutputDevice::hasAlphaChannel()
+bool DisplaySkiaOutputDevice::requiresAlphaChannel()
 {
-    return true;
+    return m_requiresAlpha;
 }
 
 float DisplaySkiaOutputDevice::devicePixelRatio()
