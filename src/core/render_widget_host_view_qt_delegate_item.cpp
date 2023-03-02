@@ -370,8 +370,10 @@ QSGNode *RenderWidgetHostViewQtDelegateItem::updatePaintNode(QSGNode *oldNode, U
 #if QT_CONFIG(opengl)
     } else if (comp->type() == Compositor::Type::OpenGL) {
         QQuickWindow::CreateTextureOptions texOpts;
-        if (comp->hasAlphaChannel())
+        if (comp->requiresAlphaChannel() || m_clearColor.alpha() < 255)
             texOpts.setFlag(QQuickWindow::TextureHasAlphaChannel);
+        else
+            texOpts.setFlag(QQuickWindow::TextureIsOpaque);
         int texId = comp->textureId();
         node->setTexture(QNativeInterface::QSGOpenGLTexture::fromNative(texId, win, texSize, texOpts));
         node->setTextureCoordinatesTransform(QSGImageNode::MirrorVertically);
@@ -379,8 +381,10 @@ QSGNode *RenderWidgetHostViewQtDelegateItem::updatePaintNode(QSGNode *oldNode, U
 #if QT_CONFIG(webengine_vulkan)
     } else if (comp->type() == Compositor::Type::Vulkan) {
         QQuickWindow::CreateTextureOptions texOpts;
-        if (comp->hasAlphaChannel())
+        if (comp->requiresAlphaChannel() || m_clearColor.alpha() < 255)
             texOpts.setFlag(QQuickWindow::TextureHasAlphaChannel);
+        else
+            texOpts.setFlag(QQuickWindow::TextureIsOpaque);
 
         VkImage image = comp->vkImage(win);
         VkImageLayout layout = comp->vkImageLayout();

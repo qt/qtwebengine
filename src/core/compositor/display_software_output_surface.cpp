@@ -20,7 +20,7 @@ class DisplaySoftwareOutputSurface::Device final : public viz::SoftwareOutputDev
                                                    public Compositor
 {
 public:
-    Device();
+    Device(bool requiresAlpha);
 
     // Overridden from viz::SoftwareOutputDevice.
     void Resize(const gfx::Size &sizeInPixels, float devicePixelRatio) override;
@@ -31,20 +31,23 @@ public:
     QImage image() override;
     float devicePixelRatio() override;
     QSize size() override;
-    bool hasAlphaChannel() override;
+    bool requiresAlphaChannel() override;
 
 private:
     mutable QMutex m_mutex;
     float m_devicePixelRatio = 1.0;
+    bool m_requiresAlpha;
     scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
     SwapBuffersCallback m_swapCompletionCallback;
     QImage m_image;
     float m_imageDevicePixelRatio = 1.0;
 };
 
-DisplaySoftwareOutputSurface::Device::Device()
+DisplaySoftwareOutputSurface::Device::Device(bool requiresAlpha)
     : Compositor(Type::Software)
-{}
+    , m_requiresAlpha(requiresAlpha)
+{
+}
 
 void DisplaySoftwareOutputSurface::Device::Resize(const gfx::Size &sizeInPixels, float devicePixelRatio)
 {
@@ -122,13 +125,13 @@ QSize DisplaySoftwareOutputSurface::Device::size()
     return m_image.size();
 }
 
-bool DisplaySoftwareOutputSurface::Device::hasAlphaChannel()
+bool DisplaySoftwareOutputSurface::Device::requiresAlphaChannel()
 {
-    return m_image.format() == QImage::Format_ARGB32_Premultiplied;
+    return m_requiresAlpha;
 }
 
-DisplaySoftwareOutputSurface::DisplaySoftwareOutputSurface()
-    : SoftwareOutputSurface(std::make_unique<Device>())
+DisplaySoftwareOutputSurface::DisplaySoftwareOutputSurface(bool requiresAlpha)
+    : SoftwareOutputSurface(std::make_unique<Device>(requiresAlpha))
 {}
 
 DisplaySoftwareOutputSurface::~DisplaySoftwareOutputSurface() {}

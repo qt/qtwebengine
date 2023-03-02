@@ -10,9 +10,9 @@
 #include <qtgui-config.h>
 
 std::unique_ptr<viz::OutputSurface>
-viz::OutputSurfaceProviderImpl::CreateSoftwareOutputSurface()
+viz::OutputSurfaceProviderImpl::CreateSoftwareOutputSurface(const RendererSettings &renderer_settings)
 {
-    return std::make_unique<QtWebEngineCore::DisplaySoftwareOutputSurface>();
+    return std::make_unique<QtWebEngineCore::DisplaySoftwareOutputSurface>(renderer_settings.requires_alpha_channel);
 }
 
 std::unique_ptr<viz::SkiaOutputDevice>
@@ -21,6 +21,7 @@ viz::SkiaOutputSurfaceImplOnGpu::CreateOutputDevice()
 #if QT_CONFIG(opengl)
     return std::make_unique<QtWebEngineCore::DisplaySkiaOutputDevice>(
             context_state_,
+            renderer_settings_.requires_alpha_channel,
             shared_gpu_deps_->memory_tracker(),
             GetDidSwapBuffersCompleteCallback());
 #else
@@ -28,25 +29,3 @@ viz::SkiaOutputSurfaceImplOnGpu::CreateOutputDevice()
 #endif // QT_CONFIG(opengl)
 }
 
-void gpu::InProcessCommandBuffer::GetTextureQt(
-        unsigned int client_id,
-        GetTextureCallback callback,
-        const std::vector<SyncToken>& sync_token_fences)
-{
-    ScheduleGpuTask(base::BindOnce(&InProcessCommandBuffer::GetTextureQtOnGpuThread,
-                                   gpu_thread_weak_ptr_factory_.GetWeakPtr(),
-                                   client_id,
-                                   std::move(callback)),
-                    sync_token_fences);
-}
-
-void gpu::InProcessCommandBuffer::GetTextureQtOnGpuThread(
-        unsigned int client_id, GetTextureCallback callback)
-{
-    if (!MakeCurrent()) {
-        LOG(ERROR) << "MakeCurrent failed for GetTextureQt";
-        return;
-    }
-    gpu::TextureBase *texture = decoder_->GetTextureBase(client_id);
-    std::move(callback).Run(texture ? texture->service_id() : 0, gl::GLFence::Create());
-}

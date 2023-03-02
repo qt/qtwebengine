@@ -11,7 +11,7 @@ namespace QtWebEngineCore {
 class DisplaySoftwareOutputSurface final : public viz::SoftwareOutputSurface
 {
 public:
-    DisplaySoftwareOutputSurface();
+    DisplaySoftwareOutputSurface(bool requiresAlpha);
     ~DisplaySoftwareOutputSurface() override;
 
     // Overridden from viz::OutputSurface.
