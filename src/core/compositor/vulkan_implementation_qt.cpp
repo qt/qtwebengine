@@ -10,6 +10,8 @@
 #include "gpu/vulkan/vulkan_util.h"
 #include "ui/gfx/gpu_fence.h"
 
+#include <vulkan/vulkan.h>
+
 namespace gpu {
 
 VulkanImplementationQt::VulkanImplementationQt() : VulkanImplementation(false) { }
@@ -25,12 +27,13 @@ bool VulkanImplementationQt::InitializeVulkanInstance(bool /*using_surface*/)
 
     auto env = base::Environment::Create();
     std::string vulkan_path;
-    if (!env->GetVar("QT_VULKAN_LIB", &vulkan_path))
-#ifdef Q_OS_WIN
+    if (!env->GetVar("QT_VULKAN_LIB", &vulkan_path)) {
+#if BUILDFLAG(IS_WIN)
         vulkan_path = "vulkan-1.dll";
 #else
         vulkan_path = "libvulkan.so.1";
 #endif
+    }
 
     if (!vulkan_instance_.Initialize(base::FilePath::FromUTF8Unsafe(vulkan_path),
                                      required_extensions, {})) {
@@ -66,7 +69,7 @@ std::vector<const char *> VulkanImplementationQt::GetRequiredDeviceExtensions()
 {
     return {
         VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
-#ifdef Q_OS_WIN
+#if BUILDFLAG(IS_WIN)
         VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME,
 #else
         VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
@@ -78,7 +81,7 @@ std::vector<const char *> VulkanImplementationQt::GetOptionalDeviceExtensions()
 {
     return {
         VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
-#ifdef Q_OS_WIN
+#if BUILDFLAG(IS_WIN)
         VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME,
 #else
         VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME,
@@ -102,7 +105,7 @@ VulkanImplementationQt::ExportVkFenceToGpuFence(VkDevice /*vk_device*/, VkFence 
 VkSemaphore VulkanImplementationQt::CreateExternalSemaphore(VkDevice vk_device)
 {
     return CreateExternalVkSemaphore(
-#ifdef Q_OS_WIN
+#if BUILDFLAG(IS_WIN)
             vk_device, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT);
 #else
             vk_device, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT);
@@ -119,7 +122,7 @@ SemaphoreHandle VulkanImplementationQt::GetSemaphoreHandle(VkDevice vk_device,
                                                            VkSemaphore vk_semaphore)
 {
     return GetVkSemaphoreHandle(vk_device, vk_semaphore,
-#ifdef Q_OS_WIN
+#if BUILDFLAG(IS_WIN)
                                 VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT);
 #else
                                 VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT);
@@ -128,7 +131,7 @@ SemaphoreHandle VulkanImplementationQt::GetSemaphoreHandle(VkDevice vk_device,
 
 VkExternalMemoryHandleTypeFlagBits VulkanImplementationQt::GetExternalImageHandleType()
 {
-#ifdef Q_OS_WIN
+#ifdef BUILDFLAG(IS_WIN)
     return VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT;
 #else
     return VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
