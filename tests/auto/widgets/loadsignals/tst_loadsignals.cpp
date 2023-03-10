@@ -111,7 +111,7 @@ void tst_LoadSignals::init()
     if (!view.url().isEmpty()) {
         loadFinishedSpy.clear();
         view.load(QUrl("about:blank"));
-        QTRY_COMPARE(loadFinishedSpy.count(), 1);
+        QTRY_COMPARE(loadFinishedSpy.size(), 1);
     }
     resetSpies();
     page.reset();
@@ -421,11 +421,11 @@ void tst_LoadSignals::loadFinishedAfterNotFoundError()
         ? server->url("/not-found-page.html")
         : QUrl(rfcInvalid ? "http://some.invalid" : "http://non.existent/url");
     view.load(url);
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 20000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 20000);
     QVERIFY(!loadFinishedSpy.at(0).at(0).toBool());
     QCOMPARE(toPlainTextSync(view.page()), QString());
-    QCOMPARE(loadFinishedSpy.count(), 1);
-    QCOMPARE(loadStartedSpy.count(), 1);
+    QCOMPARE(loadFinishedSpy.size(), 1);
+    QCOMPARE(loadStartedSpy.size(), 1);
     QVERIFY(std::is_sorted(page.loadProgress.begin(), page.loadProgress.end()));
     page.loadProgress.clear();
 
@@ -447,13 +447,13 @@ void tst_LoadSignals::loadFinishedAfterNotFoundError()
         ? server->url("/another-missing-one.html")
         : QUrl(rfcInvalid ? "http://some.other.invalid" : "http://another.non.existent/url");
     view.load(url);
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 2, 20000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 2, 20000);
     QVERIFY(!loadFinishedSpy.at(1).at(0).toBool());
-    QCOMPARE(loadStartedSpy.count(), 2);
+    QCOMPARE(loadStartedSpy.size(), 2);
 
     QEXPECT_FAIL("", "No more loads (like separate load for error pages) are expected", Continue);
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 3, 1000);
-    QCOMPARE(loadStartedSpy.count(), 2);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 3, 1000);
+    QCOMPARE(loadStartedSpy.size(), 2);
     QVERIFY(std::is_sorted(page.loadProgress.begin(), page.loadProgress.end()));
 
     { auto &&loadStart = page.loadingInfos[2], &&loadFinish = page.loadingInfos[3];
@@ -488,7 +488,7 @@ void tst_LoadSignals::errorPageTriggered()
     HttpServer server;
     connect(&server, &HttpServer::newRequest, [] (HttpReqRep *rr) {
         QList<QByteArray> parts = rr->requestPath().split('/');
-        if (parts.length() != 3) {
+        if (parts.size() != 3) {
             // For example, /favicon.ico
             rr->sendResponse(404);
             return;

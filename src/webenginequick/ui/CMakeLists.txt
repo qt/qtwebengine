@@ -4,6 +4,7 @@ set(qml_files
     "AutofillPopup.qml"
     "ColorDialog.qml"
     "ConfirmDialog.qml"
+    "DirectoryPicker.qml"
     "FilePicker.qml"
     "Menu.qml"
     "MenuItem.qml"

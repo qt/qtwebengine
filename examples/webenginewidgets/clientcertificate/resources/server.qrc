@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/resources">
+        <file>server.key</file>
+        <file>server.pem</file>
+        <file>ca.pem</file>
+    </qresource>
+</RCC>

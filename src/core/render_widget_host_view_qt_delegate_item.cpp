@@ -199,6 +199,8 @@ void RenderWidgetHostViewQtDelegateItem::focusInEvent(QFocusEvent *event)
     if (QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(this)) {
         if (auto *focusChild = iface->focusChild()) {
             QAccessibleEvent focusEvent(focusChild, QAccessible::Focus);
+            if (focusEvent.object())
+                focusEvent.setChild(-1);
             QAccessible::updateAccessibility(&focusEvent);
         }
     }
@@ -307,7 +309,7 @@ void RenderWidgetHostViewQtDelegateItem::itemChange(ItemChange change, const Ite
 {
     QQuickItem::itemChange(change, value);
     if (change == QQuickItem::ItemSceneChange) {
-        for (const QMetaObject::Connection &c : qAsConst(m_windowConnections))
+        for (const QMetaObject::Connection &c : std::as_const(m_windowConnections))
             disconnect(c);
         m_windowConnections.clear();
         if (value.window) {

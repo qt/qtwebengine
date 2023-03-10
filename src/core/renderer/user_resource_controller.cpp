@@ -163,7 +163,7 @@ void UserResourceController::runScripts(QtWebEngineCore::UserScriptData::Injecti
     QList<uint64_t> scriptsToRun = m_frameUserScriptMap.value(globalScriptsIndex);
     scriptsToRun.append(m_frameUserScriptMap.value(renderFrame));
 
-    for (uint64_t id : qAsConst(scriptsToRun)) {
+    for (uint64_t id : std::as_const(scriptsToRun)) {
         const QtWebEngineCore::UserScriptData &script = m_scripts.value(id);
         if (script.injectionPoint != p || (!script.injectForSubframes && !isMainFrame))
             continue;
@@ -295,7 +295,7 @@ void UserResourceController::renderFrameDestroyed(content::RenderFrame *renderFr
     FrameUserScriptMap::iterator it = m_frameUserScriptMap.find(renderFrame);
     if (it == m_frameUserScriptMap.end()) // ASSERT maybe?
         return;
-    for (uint64_t id : qAsConst(it.value())) {
+    for (uint64_t id : std::as_const(it.value())) {
         m_scripts.remove(id);
     }
     m_frameUserScriptMap.remove(renderFrame);
@@ -329,7 +329,7 @@ void UserResourceController::clearScriptsForFrame(content::RenderFrame *frame)
     FrameUserScriptMap::iterator it = m_frameUserScriptMap.find(frame);
     if (it == m_frameUserScriptMap.end())
         return;
-    for (uint64_t id : qAsConst(it.value()))
+    for (uint64_t id : std::as_const(it.value()))
         m_scripts.remove(id);
 
     m_frameUserScriptMap.remove(frame);

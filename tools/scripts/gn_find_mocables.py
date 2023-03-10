@@ -7,7 +7,7 @@ import os
 
 mocables = set()
 includedMocs = set()
-files = sys.argv[2:]
+files = sys.argv[1:]
 
 for f in filter(os.path.isfile, files):
     inBlockComment = False

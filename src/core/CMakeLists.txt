@@ -125,7 +125,7 @@ foreach(arch ${archs})
                 login_delegate_qt.cpp login_delegate_qt.h
                 media_capture_devices_dispatcher.cpp media_capture_devices_dispatcher.h
                 native_web_keyboard_event_qt.cpp
-                net/client_cert_override.cpp net/client_cert_override.h
+                net/client_cert_qt.cpp net/client_cert_qt.h
                 net/client_cert_store_data.cpp net/client_cert_store_data.h
                 net/cookie_monster_delegate_qt.cpp net/cookie_monster_delegate_qt.h
                 net/custom_url_loader_factory.cpp net/custom_url_loader_factory.h
@@ -222,8 +222,6 @@ foreach(arch ${archs})
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_printing_and_pdf
             SOURCES
                 printing/pdfium_document_wrapper_qt.cpp printing/pdfium_document_wrapper_qt.h
-                printing/pdf_web_contents_helper_client_qt.cpp printing/pdf_web_contents_helper_client_qt.h
-                printing/pdf_stream_delegate_qt.cpp printing/pdf_stream_delegate_qt.h
                 printing/print_view_manager_base_qt.cpp printing/print_view_manager_base_qt.h
                 printing/print_view_manager_qt.cpp printing/print_view_manager_qt.h
                 printing/printer_worker.cpp printing/printer_worker.h
@@ -265,6 +263,8 @@ foreach(arch ${archs})
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_extensions AND QT_FEATURE_webengine_printing_and_pdf
             SOURCES
                 extensions/pdf_iframe_navigation_throttle_qt.cpp extensions/pdf_iframe_navigation_throttle_qt.h
+                printing/pdf_stream_delegate_qt.cpp printing/pdf_stream_delegate_qt.h
+                printing/pdf_web_contents_helper_client_qt.cpp printing/pdf_web_contents_helper_client_qt.h
         )
 
         extend_gn_target(${buildGn} CONDITION WIN32
@@ -287,6 +287,7 @@ foreach(arch ${archs})
         list(APPEND gnArgArg
             qtwebengine_target="${buildDir}/${config}/${arch}:QtWebEngineCore"
             enable_ipc_fuzzer=false
+            enable_ipc_logging=false
             enable_media_remoting=false
             enable_message_center=false
             enable_nacl=false

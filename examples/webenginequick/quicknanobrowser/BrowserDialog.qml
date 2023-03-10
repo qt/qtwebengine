@@ -8,7 +8,7 @@ import QtWebEngine
 Window {
     id: window
     property alias currentWebView: webView
-    flags: Qt.Dialog | Qt.WindowStaysOnTopHint
+    flags: Qt.Dialog
     width: 800
     height: 600
     visible: true

@@ -27,7 +27,7 @@ MainWindow::MainWindow(const QUrl &url) :
         // Add back default style sheets if the user cleared them out
         loadDefaultStyleSheets();
     } else {
-        for (auto name : qAsConst(styleSheets)) {
+        for (auto name : std::as_const(styleSheets)) {
             StyleSheet styleSheet = settings.value(name).value<StyleSheet>();
             if (styleSheet.second)
                 insertStyleSheet(name, styleSheet.first, false);

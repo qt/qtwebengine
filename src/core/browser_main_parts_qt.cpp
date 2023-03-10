@@ -262,12 +262,12 @@ int BrowserMainPartsQt::PreMainMessageLoopRun()
     extensions::ExtensionsClient::Set(new extensions::ExtensionsClientQt());
     extensions::ExtensionsBrowserClient::Set(new extensions::ExtensionsBrowserClientQt());
     extensions::ExtensionSystemFactoryQt::GetInstance();
-#endif // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
     content::PluginService *plugin_service = content::PluginService::GetInstance();
     plugin_service->SetFilter(extensions::PluginServiceFilterQt::GetInstance());
 #endif // BUILDFLAG(ENABLE_PLUGINS)
+#endif // BUILDFLAG(ENABLE_EXTENSIONS)
 
     if (base::FeatureList::IsEnabled(features::kWebUsb)) {
         m_webUsbDetector.reset(new WebUsbDetectorQt());

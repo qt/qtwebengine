@@ -50,7 +50,7 @@ public:
 
     int childCount() const
     {
-        return m_childNodes.count();
+        return m_childNodes.size();
     }
 
     int row() const
@@ -172,7 +172,7 @@ struct QPdfBookmarkModelPrivate
             const int titleLength = int(FPDFBookmark_GetTitle(bookmark, nullptr, 0));
 
             QList<char16_t> titleBuffer(titleLength);
-            FPDFBookmark_GetTitle(bookmark, titleBuffer.data(), quint32(titleBuffer.length()));
+            FPDFBookmark_GetTitle(bookmark, titleBuffer.data(), quint32(titleBuffer.size()));
 
             const FPDF_DEST dest = FPDFBookmark_GetDest(document, bookmark);
             const int pageNumber = FPDFDest_GetDestPageIndex(document, dest);

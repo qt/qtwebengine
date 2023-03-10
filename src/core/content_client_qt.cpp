@@ -296,7 +296,7 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
 #endif
     }
 
-    for (const QString &pluginPath : qAsConst(pluginPaths)) {
+    for (const QString &pluginPath : std::as_const(pluginPaths)) {
         *cdm_path = QtWebEngineCore::toFilePath(pluginPath);
         if (base::PathExists(*cdm_path)) {
             // Add the supported codecs as if they came from the component manifest.

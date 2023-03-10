@@ -69,7 +69,7 @@ DesktopScreenQt::DesktopScreenQt()
 
 DesktopScreenQt::~DesktopScreenQt()
 {
-    for (auto conn : qAsConst(m_connections))
+    for (auto conn : std::as_const(m_connections))
         QObject::disconnect(conn);
 }
 

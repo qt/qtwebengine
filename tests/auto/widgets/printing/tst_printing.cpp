@@ -32,13 +32,13 @@ void tst_Printing::printToPdfBasic()
     QWebEngineView view;
     QSignalSpy spy(&view, &QWebEngineView::loadFinished);
     view.load(QUrl("qrc:///resources/basic_printing_page.html"));
-    QTRY_VERIFY(spy.count() == 1);
+    QTRY_VERIFY(spy.size() == 1);
 
     QSignalSpy savePdfSpy(view.page(), &QWebEnginePage::pdfPrintingFinished);
     QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0.0, 0.0, 0.0, 0.0));
     QString path = tempDir.path() + "/print_1_success.pdf";
     view.page()->printToPdf(path, layout);
-    QTRY_VERIFY2(savePdfSpy.count() == 1, "Printing to PDF file failed without signal");
+    QTRY_VERIFY2(savePdfSpy.size() == 1, "Printing to PDF file failed without signal");
 
     QList<QVariant> successArguments = savePdfSpy.takeFirst();
     QVERIFY2(successArguments.at(0).toString() == path, "File path for first saved PDF does not match arguments");
@@ -50,7 +50,7 @@ void tst_Printing::printToPdfBasic()
     path = tempDir.path() + "/print_|2_failed.pdf";
 #endif
     view.page()->printToPdf(path, QPageLayout());
-    QTRY_VERIFY2(savePdfSpy.count() == 1, "Printing to PDF file failed without signal");
+    QTRY_VERIFY2(savePdfSpy.size() == 1, "Printing to PDF file failed without signal");
 
     QList<QVariant> failedArguments = savePdfSpy.takeFirst();
     QVERIFY2(failedArguments.at(0).toString() == path, "File path for second saved PDF does not match arguments");
@@ -58,11 +58,11 @@ void tst_Printing::printToPdfBasic()
 
     CallbackSpy<QByteArray> successfulSpy;
     view.page()->printToPdf(successfulSpy.ref(), layout);
-    QVERIFY(successfulSpy.waitForResult().length() > 0);
+    QVERIFY(successfulSpy.waitForResult().size() > 0);
 
     CallbackSpy<QByteArray> failedInvalidLayoutSpy;
     view.page()->printToPdf(failedInvalidLayoutSpy.ref(), QPageLayout());
-    QCOMPARE(failedInvalidLayoutSpy.waitForResult().length(), 0);
+    QCOMPARE(failedInvalidLayoutSpy.waitForResult().size(), 0);
 }
 
 void tst_Printing::printRequest()
@@ -76,14 +76,14 @@ void tst_Printing::printRequest()
      CallbackSpy<QByteArray> resultSpy;
 
      view.load(QUrl("qrc:///resources/basic_printing_page.html"));
-     QTRY_VERIFY(loadFinishedSpy.count() == 1);
+     QTRY_VERIFY(loadFinishedSpy.size() == 1);
      view.page()->runJavaScript("window.print()");
-     QTRY_VERIFY(printRequestedSpy.count() == 1);
-     QVERIFY(printRequestedSpy2.count() == 1);
+     QTRY_VERIFY(printRequestedSpy.size() == 1);
+     QVERIFY(printRequestedSpy2.size() == 1);
      //check if printing still works
      view.printToPdf(resultSpy.ref(), layout);
      const QByteArray data = resultSpy.waitForResult();
-     QVERIFY(data.length() > 0);
+     QVERIFY(data.size() > 0);
 }
 
 #if QT_CONFIG(webengine_system_poppler)

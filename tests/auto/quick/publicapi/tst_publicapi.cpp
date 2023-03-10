@@ -892,12 +892,12 @@ void tst_publicapi::publicAPI()
     // Uncomment to print the actual API.
     // QStringList sortedAPI(actualAPI);
     // std::sort(sortedAPI.begin(), sortedAPI.end());
-    // for (const QString &actual : qAsConst(sortedAPI))
+    // for (const QString &actual : std::as_const(sortedAPI))
     //     printf("    << \"%s\"\n", qPrintable(actual));
 
     bool apiMatch = true;
     // Make sure that nothing slips in the public API unintentionally.
-    for (const QString &actual : qAsConst(actualAPI)) {
+    for (const QString &actual : std::as_const(actualAPI)) {
         if (!expectedAPI.contains(actual)) {
             qWarning("Expected list is not up-to-date: %ls", qUtf16Printable(actual));
             apiMatch = false;

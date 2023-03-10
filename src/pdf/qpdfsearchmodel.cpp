@@ -161,7 +161,7 @@ QList<QPdfLink> QPdfSearchModel::resultsOnPage(int page) const
 {
     Q_D(const QPdfSearchModel);
     const_cast<QPdfSearchModelPrivate *>(d)->doSearch(page);
-    if (d->searchResults.count() <= page)
+    if (d->searchResults.size() <= page)
         return {};
     return d->searchResults[page];
 }
@@ -207,7 +207,7 @@ void QPdfSearchModel::timerEvent(QTimerEvent *event)
         return;
     if (!d->document || d->nextPageToUpdate >= d->document->pageCount()) {
         if (d->document)
-            qCDebug(qLcS) << "done updating search results on" << d->searchResults.count() << "pages";
+            qCDebug(qLcS) << "done updating search results on" << d->searchResults.size() << "pages";
         killTimer(d->updateTimerId);
         d->updateTimerId = -1;
     }
@@ -234,7 +234,7 @@ void QPdfSearchModelPrivate::clearResults()
 
 bool QPdfSearchModelPrivate::doSearch(int page)
 {
-    if (page < 0 || page >= pagesSearched.count() || searchString.isEmpty())
+    if (page < 0 || page >= pagesSearched.size() || searchString.isEmpty())
         return false;
     if (pagesSearched[page])
         return true;
@@ -298,7 +298,7 @@ bool QPdfSearchModelPrivate::doSearch(int page)
                 if (si < 0)
                     qWarning() << "search string" << searchString << "not found in context" << context;
                 contextBefore = context.mid(0, si);
-                contextAfter = context.mid(si + searchString.length());
+                contextAfter = context.mid(si + searchString.size());
             }
         }
         if (!rects.isEmpty())
@@ -308,15 +308,15 @@ bool QPdfSearchModelPrivate::doSearch(int page)
     FPDFText_ClosePage(textPage);
     FPDF_ClosePage(pdfPage);
     qCDebug(qLcS) << searchString << "took" << timer.elapsed() << "ms to find"
-                  << newSearchResults.count() << "results on page" << page;
+                  << newSearchResults.size() << "results on page" << page;
 
     pagesSearched[page] = true;
     searchResults[page] = newSearchResults;
-    if (newSearchResults.count() > 0) {
+    if (newSearchResults.size() > 0) {
         int rowsBefore = rowsBeforePage(page);
-        qCDebug(qLcS) << "from row" << rowsBefore << "rowCount" << rowCountSoFar << "increasing by" << newSearchResults.count();
-        rowCountSoFar += newSearchResults.count();
-        q->beginInsertRows(QModelIndex(), rowsBefore, rowsBefore + newSearchResults.count() - 1);
+        qCDebug(qLcS) << "from row" << rowsBefore << "rowCount" << rowCountSoFar << "increasing by" << newSearchResults.size();
+        rowCountSoFar += newSearchResults.size();
+        q->beginInsertRows(QModelIndex(), rowsBefore, rowsBefore + newSearchResults.size() - 1);
         q->endInsertRows();
     }
     return true;
@@ -332,7 +332,7 @@ QPdfSearchModelPrivate::PageAndIndex QPdfSearchModelPrivate::pageAndIndexForResu
     for (int page = 0; page < pageCount; ++page) {
         if (!pagesSearched[page])
             doSearch(page);
-        totalSoFar += searchResults[page].count();
+        totalSoFar += searchResults[page].size();
         if (totalSoFar > resultIndex)
             return {page, resultIndex - previousTotalSoFar};
         previousTotalSoFar = totalSoFar;
@@ -344,7 +344,7 @@ int QPdfSearchModelPrivate::rowsBeforePage(int page)
 {
     int ret = 0;
     for (int i = 0; i < page; ++i)
-        ret += searchResults[i].count();
+        ret += searchResults[i].size();
     return ret;
 }
 

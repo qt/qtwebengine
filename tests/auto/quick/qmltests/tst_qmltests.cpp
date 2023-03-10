@@ -105,11 +105,18 @@ public:
         return tempDir.isValid() ? tempDir.path() : QString();
     }
 
+    Q_INVOKABLE QUrl pathUrl(const QString &filename = QString())
+    {
+        Q_ASSERT(tempDir.isValid());
+        return filename.isEmpty() ? QUrl::fromLocalFile(tempDir.path())
+                                  : QUrl::fromLocalFile(tempDir.filePath(filename));
+    }
+
     Q_INVOKABLE void removeRecursive(const QString dirname)
     {
         QDir dir(dirname);
         QFileInfoList entries(dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot));
-        for (int i = 0; i < entries.count(); ++i) {
+        for (int i = 0; i < entries.size(); ++i) {
             if (entries[i].isDir())
                 removeRecursive(entries[i].filePath());
             else
@@ -117,6 +124,8 @@ public:
         }
         QDir().rmdir(dirname);
     }
+
+    Q_INVOKABLE void createDirectory(const QString dirname) { QDir(tempDir.path()).mkdir(dirname); }
 
 private:
     QTemporaryDir tempDir;
@@ -253,8 +262,9 @@ int main(int argc, char **argv)
 
 #if QT_CONFIG(ssl)
     qmlRegisterSingletonType<HttpsServer>(
-            "Test.Shared", 1, 0, "HttpsServer",
-            [&](QQmlEngine *, QJSEngine *) { return new HttpsServer(":/resources/server.pem",":/resources/server.key"); });
+            "Test.Shared", 1, 0, "HttpsServer", [&](QQmlEngine *, QJSEngine *) {
+                return new HttpsServer(":/resources/server.pem", ":/resources/server.key", "");
+            });
 #endif
     Setup setup;
     int i = quick_test_main_with_setup(

@@ -184,7 +184,7 @@ void tst_QWebEngineScript::loadEvents()
 
     // Single frame / setHtml
     page.setHtml(QStringLiteral("<!DOCTYPE html><html><head><title>mr</title></head><body></body></html>"));
-    QTRY_COMPARE_WITH_TIMEOUT(page.spy.count(), 1, 20000);
+    QTRY_COMPARE_WITH_TIMEOUT(page.spy.size(), 1, 20000);
     QVERIFY(page.spy.takeFirst().value(0).toBool());
     QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::MainWorld).toStringList()));
     QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList()));
@@ -192,14 +192,14 @@ void tst_QWebEngineScript::loadEvents()
     // After discard
     page.setLifecycleState(QWebEnginePage::LifecycleState::Discarded);
     page.setLifecycleState(QWebEnginePage::LifecycleState::Active);
-    QTRY_COMPARE_WITH_TIMEOUT(page.spy.count(), 1, 20000);
+    QTRY_COMPARE_WITH_TIMEOUT(page.spy.size(), 1, 20000);
     QVERIFY(page.spy.takeFirst().value(0).toBool());
     QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::MainWorld).toStringList()));
     QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList()));
 
     // Multiple frames
     page.load(QUrl("qrc:/resources/test_iframe_main.html"));
-    QTRY_COMPARE_WITH_TIMEOUT(page.spy.count(), 1, 20000);
+    QTRY_COMPARE_WITH_TIMEOUT(page.spy.size(), 1, 20000);
     QVERIFY(page.spy.takeFirst().value(0).toBool());
     QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::MainWorld).toStringList()));
     QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList()));
@@ -210,7 +210,7 @@ void tst_QWebEngineScript::loadEvents()
 
     // Cross-process navigation
     page.load(QUrl("chrome://gpu"));
-    QTRY_COMPARE_WITH_TIMEOUT(page.spy.count(), 1, 20000);
+    QTRY_COMPARE_WITH_TIMEOUT(page.spy.size(), 1, 20000);
     QVERIFY(page.spy.takeFirst().value(0).toBool());
     QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::MainWorld).toStringList()));
     QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList()));
@@ -219,8 +219,8 @@ void tst_QWebEngineScript::loadEvents()
     QVERIFY(profile.pages.size() == 1);
     page.load(QUrl("qrc:/resources/test_window_open.html"));
     QTRY_COMPARE(profile.pages.size(), 2u);
-    QTRY_COMPARE(profile.pages.front().spy.count(), 1);
-    QTRY_COMPARE(profile.pages.back().spy.count(), 1);
+    QTRY_COMPARE(profile.pages.front().spy.size(), 1);
+    QTRY_COMPARE(profile.pages.back().spy.size(), 1);
     QVERIFY(verifyOrder(profile.pages.front().eval("window.log", QWebEngineScript::MainWorld).toStringList()));
     QVERIFY(verifyOrder(profile.pages.front().eval("window.log", QWebEngineScript::ApplicationWorld).toStringList()));
     QVERIFY(verifyOrder(profile.pages.back().eval("window.log", QWebEngineScript::MainWorld).toStringList()));
@@ -271,7 +271,7 @@ void tst_QWebEngineScript::scriptDisabled()
     page.scripts().insert(script);
     page.load(QUrl("about:blank"));
     QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.size(), 1);
     QCOMPARE(spy.takeFirst().value(0).toBool(), true);
     // MainWorld scripts are disabled by the setting...
     QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "foo", QWebEngineScript::MainWorld), QVariant());
@@ -280,7 +280,7 @@ void tst_QWebEngineScript::scriptDisabled()
     page.scripts().clear();
     page.scripts().insert(script);
     page.load(QUrl("about:blank"));
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.size(), 1);
     QCOMPARE(spy.takeFirst().value(0).toBool(), true);
     // ...but ApplicationWorld scripts should still work
     QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "foo", QWebEngineScript::MainWorld), QVariant());
@@ -298,7 +298,7 @@ void tst_QWebEngineScript::viewSource()
     page.scripts().insert(script);
     page.load(QUrl("view-source:about:blank"));
     QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.size(), 1);
     QCOMPARE(spy.takeFirst().value(0).toBool(), true);
     QCOMPARE(evaluateJavaScriptSync(&page, "foo"), QVariant(42));
 }
@@ -457,7 +457,7 @@ void tst_QWebEngineScript::scriptsInNestedIframes()
     QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
     page.load(QUrl("qrc:/resources/test_iframe_main.html"));
     view.show();
-    QTRY_VERIFY_WITH_TIMEOUT(spyFinished.count() > 0, 20000);
+    QTRY_VERIFY_WITH_TIMEOUT(spyFinished.size() > 0, 20000);
 
     // Check that main frame has modified content.
     QCOMPARE(
@@ -557,22 +557,22 @@ void tst_QWebEngineScript::navigation()
 
     QString url1 = QStringLiteral("about:blank");
     page.setUrl(url1);
-    QTRY_COMPARE(spyTextChanged.count(), 1);
+    QTRY_COMPARE(spyTextChanged.size(), 1);
     QCOMPARE(testObject.text(), url1);
 
     QString url2 = QStringLiteral("chrome://gpu/");
     page.setUrl(url2);
-    QTRY_COMPARE(spyTextChanged.count(), 2);
+    QTRY_COMPARE(spyTextChanged.size(), 2);
     QCOMPARE(testObject.text(), url2);
 
     QString url3 = QStringLiteral("qrc:/resources/test_iframe_main.html");
     page.setUrl(url3);
-    QTRY_COMPARE(spyTextChanged.count(), 3);
+    QTRY_COMPARE(spyTextChanged.size(), 3);
     QCOMPARE(testObject.text(), url3);
 
     page.setLifecycleState(QWebEnginePage::LifecycleState::Discarded);
     page.setUrl(url1);
-    QTRY_COMPARE(spyTextChanged.count(), 4);
+    QTRY_COMPARE(spyTextChanged.size(), 4);
     QCOMPARE(testObject.text(), url1);
 }
 

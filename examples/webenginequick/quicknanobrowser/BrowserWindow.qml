@@ -1,7 +1,7 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-import Qt.labs.settings
+import QtCore
 import QtQml
 import QtQuick
 import QtQuick.Controls
@@ -510,6 +510,8 @@ ApplicationWindow {
                         }
                     }
                 ]
+                settings.localContentCanAccessRemoteUrls: true
+                settings.localContentCanAccessFileUrls: false
                 settings.autoLoadImages: appSettings.autoLoadImages
                 settings.javascriptEnabled: appSettings.javaScriptEnabled
                 settings.errorPageEnabled: appSettings.errorPageEnabled
