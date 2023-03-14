@@ -38,6 +38,7 @@ qt_internal_add_module(WebEngineCore
         qwebengineurlrequestjob.cpp qwebengineurlrequestjob.h
         qwebengineurlscheme.cpp qwebengineurlscheme.h
         qwebengineurlschemehandler.cpp qwebengineurlschemehandler.h
+        qwebengineglobalsettings.cpp qwebengineglobalsettings.h qwebengineglobalsettings_p.h
     DEFINES
         BUILDING_CHROMIUM
         NOMINMAX
@@ -46,6 +47,7 @@ qt_internal_add_module(WebEngineCore
         ../../3rdparty/chromium
         ../../3rdparty/chromium/third_party/abseil-cpp
         ../../3rdparty/chromium/third_party/perfetto/include
+        ../../3rdparty/chromium/third_party/boringssl/src/include
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate

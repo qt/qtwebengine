@@ -4,6 +4,7 @@
 add_subdirectory(qwebenginecookiestore)
 add_subdirectory(qwebengineloadinginfo)
 add_subdirectory(qwebenginesettings)
+add_subdirectory(qwebengineglobalsettings)
 add_subdirectory(qwebengineurlrequestinterceptor)
 add_subdirectory(qwebengineurlresponseinterceptor)
 add_subdirectory(qwebengineurlrequestjob)

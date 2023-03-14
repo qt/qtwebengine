@@ -29,6 +29,8 @@
 #include "services/network/public/mojom/cert_verifier_service.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
+#include "api/qwebengineglobalsettings.h"
+#include "api/qwebengineglobalsettings_p.h"
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_win.h"
@@ -37,9 +39,6 @@
 #endif
 
 namespace {
-
-// The global instance of the SystemNetworkContextmanager.
-SystemNetworkContextManager *g_system_network_context_manager = nullptr;
 
 network::mojom::HttpAuthStaticParamsPtr CreateHttpAuthStaticParams()
 {
@@ -64,6 +63,11 @@ network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams()
 }
 
 } // namespace
+
+namespace QtWebEngineCore {
+
+// The global instance of the SystemNetworkContextmanager.
+SystemNetworkContextManager *g_system_network_context_manager = nullptr;
 
 // SharedURLLoaderFactory backed by a SystemNetworkContextManager and its
 // network context. Transparently handles crashes.
@@ -255,12 +259,24 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(network::mojom::Networ
 
         network_service->SetExplicitlyAllowedPorts(explicitly_allowed_network_ports);
     }
-    // Configure the stub resolver. This must be done after the system
-    // NetworkContext is created, but before anything has the chance to use it.
-    //    bool stub_resolver_enabled;
-    //    absl::optional<std::vector<network::mojom::DnsOverHttpsServerPtr>> dns_over_https_servers;
-    //    GetStubResolverConfig(local_state_, &stub_resolver_enabled, &dns_over_https_servers);
-    //    content::GetNetworkService()->ConfigureStubHostResolver(stub_resolver_enabled, std::move(dns_over_https_servers));
+
+    // The network service is a singleton that can be reinstantiated for different reasons,
+    // e.g., when the network service crashes. Therefore, we configure the stub host
+    // resolver of the network service here, each time it is instantiated, with our global
+    // DNS-Over-HTTPS settings. This ensures that the global settings don't get lost
+    // on reinstantiation and are in effect upon initial instantiation.
+    QWebEngineGlobalSettings *const globalSettings = QWebEngineGlobalSettings::GetInstance();
+    if (globalSettings->d_ptr->isDnsOverHttpsUserConfigured) {
+        const bool insecureDnsClientEnabled = globalSettings->d_ptr->insecureDnsClientEnabled;
+        const bool additionalInsecureDnsTypesEnabled =
+                globalSettings->d_ptr->additionalInsecureDnsTypesEnabled;
+        const net::SecureDnsMode dnsMode = net::SecureDnsMode(globalSettings->d_ptr->dnsMode);
+        const absl::optional<net::DnsOverHttpsConfig> dnsOverHttpsTemplates =
+                net::DnsOverHttpsConfig::FromString(globalSettings->d_ptr->dnsOverHttpsTemplates);
+        content::GetNetworkService()->ConfigureStubHostResolver(insecureDnsClientEnabled, dnsMode,
+                                                                *dnsOverHttpsTemplates,
+                                                                additionalInsecureDnsTypesEnabled);
+    }
 }
 
 void SystemNetworkContextManager::AddSSLConfigToNetworkContextParams(network::mojom::NetworkContextParams *network_context_params)
@@ -320,3 +336,5 @@ network::mojom::NetworkContextParamsPtr SystemNetworkContextManager::CreateNetwo
          content::GetCertVerifierParams(std::move(cert_verifier_creation_params));
     return network_context_params;
 }
+
+} // namespace QtWebEngineCore
