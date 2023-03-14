@@ -4,14 +4,18 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "searchresultdelegate.h"
 #include "zoomselector.h"
 
 #include <QFileDialog>
+#include <QLineEdit>
 #include <QMessageBox>
 #include <QPdfBookmarkModel>
 #include <QPdfDocument>
 #include <QPdfPageNavigator>
 #include <QPdfPageSelector>
+#include <QPdfSearchModel>
+#include <QShortcut>
 #include <QStandardPaths>
 #include <QtMath>
 
@@ -24,6 +28,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
     , m_zoomSelector(new ZoomSelector(this))
     , m_pageSelector(new QPdfPageSelector(this))
+    , m_searchModel(new QPdfSearchModel(this))
+    , m_searchField(new QLineEdit(this))
     , m_document(new QPdfDocument(this))
 {
     ui->setupUi(this);
@@ -50,6 +56,23 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->bookmarkView, &QAbstractItemView::activated, this, &MainWindow::bookmarkSelected);
 
     ui->thumbnailsView->setModel(m_document->pageModel());
+
+    m_searchModel->setDocument(m_document);
+    ui->pdfView->setSearchModel(m_searchModel);
+    ui->searchToolBar->insertWidget(ui->actionFindPrevious, m_searchField);
+    connect(new QShortcut(QKeySequence::Find, this), &QShortcut::activated, this, [this]() {
+        m_searchField->setFocus(Qt::ShortcutFocusReason);
+    });
+    m_searchField->setPlaceholderText(tr("Find in document"));
+    m_searchField->setMaximumWidth(400);
+    connect(m_searchField, &QLineEdit::textEdited, this, [this](const QString &text) {
+        m_searchModel->setSearchString(text);
+        ui->tabWidget->setCurrentWidget(ui->searchResultsTab);
+    });
+    ui->searchResultsView->setModel(m_searchModel);
+    ui->searchResultsView->setItemDelegate(new SearchResultDelegate(this));
+    connect(ui->searchResultsView->selectionModel(), &QItemSelectionModel::currentChanged,
+            this, &MainWindow::searchResultSelected);
 
     ui->pdfView->setDocument(m_document);
 
@@ -94,6 +117,18 @@ void MainWindow::pageSelected(int page)
     setWindowTitle(tr("%1: page %2 (%3 of %4)")
                    .arg(documentTitle.isEmpty() ? u"PDF Viewer"_qs : documentTitle,
                         m_pageSelector->text(), QString::number(page + 1), QString::number(m_document->pageCount())));
+}
+
+void MainWindow::searchResultSelected(const QModelIndex &current, const QModelIndex &previous)
+{
+    Q_UNUSED(previous);
+    if (!current.isValid())
+        return;
+
+    const int page = current.data(int(QPdfSearchModel::Role::Page)).toInt();
+    const QPointF location = current.data(int(QPdfSearchModel::Role::Location)).toPointF();
+    ui->pdfView->pageNavigator()->jump(page, location);
+    ui->pdfView->setCurrentSearchResult(current.row());
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -171,4 +206,20 @@ void MainWindow::on_actionBack_triggered()
 void MainWindow::on_actionForward_triggered()
 {
     ui->pdfView->pageNavigator()->forward();
+}
+
+void MainWindow::on_actionFindNext_triggered()
+{
+    int next = ui->searchResultsView->currentIndex().row() + 1;
+    if (next >= m_searchModel->rowCount({}))
+        next = 0;
+    ui->searchResultsView->setCurrentIndex(m_searchModel->index(next));
+}
+
+void MainWindow::on_actionFindPrevious_triggered()
+{
+    int prev = ui->searchResultsView->currentIndex().row() - 1;
+    if (prev < 0)
+        prev = m_searchModel->rowCount({}) - 1;
+    ui->searchResultsView->setCurrentIndex(m_searchModel->index(prev));
 }
