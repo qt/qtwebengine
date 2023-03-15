@@ -47,7 +47,7 @@ void initialize()
     // call initialize the same way as widgets do
     qAddPreRoutine(QtWebEngineCore::initialize);
     auto api = QQuickWindow::graphicsApi();
-    if (api != QSGRendererInterface::OpenGLRhi && api != QSGRendererInterface::VulkanRhi)
+    if (api != QSGRendererInterface::OpenGLRhi && api != QSGRendererInterface::VulkanRhi && api != QSGRendererInterface::MetalRhi)
         QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGLRhi);
 }
 } // namespace QtWebEngineQuick

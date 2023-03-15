@@ -1,10 +1,9 @@
-// Copyright (C) 2021 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef DISPLAY_SKIA_OUTPUT_DEVICE_H
-#define DISPLAY_SKIA_OUTPUT_DEVICE_H
+#ifndef NATIVE_SKIA_OUTPUT_DEVICE_H
+#define NATIVE_SKIA_OUTPUT_DEVICE_H
 
-#include "compositor_resource_fence.h"
 #include "compositor.h"
 
 #include "base/threading/thread_task_runner_handle.h"
@@ -17,16 +16,28 @@ QT_BEGIN_NAMESPACE
 class QQuickWindow;
 QT_END_NAMESPACE
 
+namespace gpu {
+class SharedImageFactory;
+class SharedImageRepresentationFactory;
+}
+
+namespace viz {
+class SkiaOutputSurfaceDependency;
+}
+
 namespace QtWebEngineCore {
 
-class DisplaySkiaOutputDevice final : public viz::SkiaOutputDevice, public Compositor
+class NativeSkiaOutputDevice final : public viz::SkiaOutputDevice, public Compositor
 {
 public:
-    DisplaySkiaOutputDevice(scoped_refptr<gpu::SharedContextState> contextState,
+    NativeSkiaOutputDevice(scoped_refptr<gpu::SharedContextState> contextState,
                             bool requiresAlpha,
                             gpu::MemoryTracker *memoryTracker,
+                            viz::SkiaOutputSurfaceDependency *dependency,
+                            gpu::SharedImageFactory *shared_image_factory,
+                            gpu::SharedImageRepresentationFactory *shared_image_representation_factory,
                             DidSwapBufferCompleteCallback didSwapBufferCompleteCallback);
-    ~DisplaySkiaOutputDevice() override;
+    ~NativeSkiaOutputDevice() override;
 
     // Overridden from SkiaOutputDevice.
     void SetFrameSinkId(const viz::FrameSinkId &frame_sink_id) override;
@@ -44,16 +55,12 @@ public:
     // Overridden from Compositor.
     void swapFrame() override;
     void waitForTexture() override;
-    QSGTexture *texture(QQuickWindow *win, uint32_t texOpts) override;
+    void releaseTexture() override;
+    QSGTexture *texture(QQuickWindow *win, uint32_t textureOptions) override;
     bool textureIsFlipped() override;
     QSize size() override;
     bool requiresAlphaChannel() override;
     float devicePixelRatio() override;
-#if QT_CONFIG(webengine_vulkan)
-    VkImage vkImage(QQuickWindow *win);
-    VkImageLayout vkImageLayout();
-    void releaseVulkanResources(QQuickWindow *win) override;
-#endif
 
 private:
     struct Shape
@@ -72,26 +79,25 @@ private:
     };
 
     class Buffer;
-
+    friend class NativeSkiaOutputDevice::Buffer;
     void SwapBuffersFinished();
 
     mutable QMutex m_mutex;
-    scoped_refptr<gpu::SharedContextState> m_contextState;
     Shape m_shape;
     std::unique_ptr<Buffer> m_frontBuffer;
     std::unique_ptr<Buffer> m_middleBuffer;
     std::unique_ptr<Buffer> m_backBuffer;
     viz::OutputSurfaceFrame m_frame;
     bool m_readyToUpdate = false;
+    bool m_readyWithTexture = false;
     bool m_requiresAlpha;
     scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
 
-#if QT_CONFIG(webengine_vulkan)
-    VkImage m_importedImage = VK_NULL_HANDLE;
-    VkDeviceMemory m_importedImageMemory = VK_NULL_HANDLE;
-#endif // QT_CONFIG(webengine_vulkan)
+    const raw_ptr<gpu::SharedImageFactory> m_factory;
+    const raw_ptr<gpu::SharedImageRepresentationFactory> m_representationFactory;
+    const raw_ptr<viz::SkiaOutputSurfaceDependency> m_deps;
 };
 
 } // namespace QtWebEngineCore
 
-#endif // !DISPLAY_SKIA_OUTPUT_DEVICE_H
+#endif // !NATIVE_SKIA_OUTPUT_DEVICE_H

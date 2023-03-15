@@ -13,6 +13,7 @@
 
 #include <QMutex>
 #include <QPainter>
+#include <QQuickWindow>
 
 namespace QtWebEngineCore {
 
@@ -28,7 +29,8 @@ public:
 
     // Overridden from Compositor.
     void swapFrame() override;
-    QImage image() override;
+    QSGTexture *texture(QQuickWindow *win, uint32_t) override;
+    bool textureIsFlipped() override;
     float devicePixelRatio() override;
     QSize size() override;
     bool requiresAlphaChannel() override;
@@ -110,9 +112,14 @@ void DisplaySoftwareOutputSurface::Device::swapFrame()
     m_taskRunner.reset();
 }
 
-QImage DisplaySoftwareOutputSurface::Device::image()
+QSGTexture *DisplaySoftwareOutputSurface::Device::texture(QQuickWindow *win, uint32_t)
 {
-    return m_image;
+    return win->createTextureFromImage(m_image);
+}
+
+bool DisplaySoftwareOutputSurface::Device::textureIsFlipped()
+{
+    return false;
 }
 
 float DisplaySoftwareOutputSurface::Device::devicePixelRatio()
