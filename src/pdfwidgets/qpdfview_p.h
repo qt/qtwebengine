@@ -58,6 +58,7 @@ public:
 
     QPdfView *q_ptr;
     QPointer<QPdfDocument> m_document;
+    QPointer<QPdfSearchModel> m_searchModel;
     QPdfPageNavigator* m_pageNavigator;
     QPdfPageRenderer *m_pageRenderer;
     QPdfLinkModel m_linkModel;
@@ -65,6 +66,8 @@ public:
     QPdfView::PageMode m_pageMode;
     QPdfView::ZoomMode m_zoomMode;
     qreal m_zoomFactor;
+
+    int m_currentSearchResult = -1;
 
     int m_pageSpacing;
     QMargins m_documentMargins;

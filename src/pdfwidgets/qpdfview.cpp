@@ -13,6 +13,7 @@
 #include <QPaintEvent>
 #include <QPdfDocument>
 #include <QPdfPageNavigator>
+#include <QPdfSearchModel>
 #include <QScreen>
 #include <QScrollBar>
 #include <QScroller>
@@ -21,6 +22,10 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(qLcLink, "qt.pdf.links")
 //#define DEBUG_LINKS
+
+static const QColor SearchResultHighlight("#80B0C4DE");
+static const QColor CurrentSearchResultHighlight(Qt::cyan);
+static const int CurrentSearchResultWidth(2);
 
 QPdfViewPrivate::QPdfViewPrivate(QPdfView *q)
     : q_ptr(q)
@@ -340,6 +345,69 @@ QPdfDocument *QPdfView::document() const
 }
 
 /*!
+    \since 6.6
+    \property QPdfView::searchModel
+
+    If this property is set, QPdfView draws highlight rectangles over the
+    search results provided by \l QPdfSearchModel::resultsOnPage(). By default
+    it is \c nullptr.
+*/
+void QPdfView::setSearchModel(QPdfSearchModel *searchModel)
+{
+    Q_D(QPdfView);
+    if (d->m_searchModel == searchModel)
+        return;
+
+    if (d->m_searchModel)
+        d->m_searchModel->disconnect(this);
+
+    d->m_searchModel = searchModel;
+    emit searchModelChanged(searchModel);
+
+    if (searchModel) {
+        connect(searchModel, &QPdfSearchModel::dataChanged, this,
+                [this](const QModelIndex &, const QModelIndex &, const QList<int> &) { update(); });
+    }
+    setCurrentSearchResult(-1);
+}
+
+QPdfSearchModel *QPdfView::searchModel() const
+{
+    Q_D(const QPdfView);
+    return d->m_searchModel;
+}
+
+/*!
+    \since 6.6
+    \property QPdfView::currentSearchResult
+
+    If this property is set to a positive number, and \l searchModel is set,
+    QPdfView draws a frame around the search result provided by
+    \l QPdfSearchModel at the given index. For example, if QPdfSearchModel is
+    used as the model for a QListView, you can keep this property updated by
+    connecting QItemSelectionModel::currentChanged() from
+    QListView::selectionModel() to a function that will in turn call this function.
+
+    By default it is \c -1, so that no search results are framed.
+*/
+void QPdfView::setCurrentSearchResult(int currentResult)
+{
+    Q_D(QPdfView);
+    if (d->m_currentSearchResult == currentResult)
+        return;
+
+    d->m_currentSearchResult = currentResult;
+    emit currentSearchResultChanged(currentResult);
+    viewport()->update(); //update();
+}
+
+int QPdfView::currentSearchResult() const
+{
+    Q_D(const QPdfView);
+    return d->m_currentSearchResult;
+}
+
+/*!
     This accessor returns the navigation stack that will handle back/forward navigation.
 */
 QPdfPageNavigator *QPdfView::pageNavigator() const
@@ -522,8 +590,8 @@ void QPdfView::paintEvent(QPaintEvent *event)
                 d->m_pageRenderer->requestPage(page, pageGeometry.size() * devicePixelRatioF());
             }
 
-#ifdef DEBUG_LINKS
             const QTransform scaleTransform = d->screenScaleTransform();
+#ifdef DEBUG_LINKS
             const QString fmt = u"page %1 @ %2, %3"_s;
             d->m_linkModel.setPage(page);
             const int linkCount = d->m_linkModel.rowCount({});
@@ -544,6 +612,21 @@ void QPdfView::paintEvent(QPaintEvent *event)
                                  .arg(loc.x()).arg(loc.y()));
             }
 #endif
+            if (d->m_searchModel) {
+                for (const QPdfLink &result : d->m_searchModel->resultsOnPage(page)) {
+                    for (const QRectF &rect : result.rectangles())
+                        painter.fillRect(scaleTransform.mapRect(rect).translated(pageGeometry.topLeft()), SearchResultHighlight);
+                }
+
+                if (d->m_currentSearchResult >= 0 && d->m_currentSearchResult < d->m_searchModel->rowCount({})) {
+                    const QPdfLink &cur = d->m_searchModel->resultAtIndex(d->m_currentSearchResult);
+                    if (cur.page() == page) {
+                        painter.setPen({CurrentSearchResultHighlight, CurrentSearchResultWidth});
+                        for (const auto &rect : cur.rectangles())
+                            painter.drawRect(scaleTransform.mapRect(rect).translated(pageGeometry.topLeft()));
+                    }
+                }
+            }
         }
     }
 }
