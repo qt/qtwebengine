@@ -43,6 +43,10 @@ qt_internal_add_module(Pdf
 
 add_subdirectory(plugins/imageformats/pdf)
 
+get_install_config(config)
+get_architectures(archs)
+list(GET archs 0 arch)
+
 ##
 #  PDF DOCS
 ##
@@ -51,6 +55,15 @@ qt_internal_add_docs(Pdf
     doc/qtpdf.qdocconf
 )
 
+add_code_attributions_target(
+    TARGET generate_pdf_attributions
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/pdf_attributions.qdoc
+    GN_TARGET :QtPdf
+    FILE_TEMPLATE doc/about_credits.tmpl
+    ENTRY_TEMPLATE doc/about_credits_entry.tmpl
+    BUILDDIR ${buildDir}/${config}/${arch}
+)
+add_dependencies(docs generate_pdf_attributions)
 
 ##
 #   TOOLCHAIN SETUP
