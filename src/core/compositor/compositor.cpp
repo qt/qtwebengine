@@ -137,36 +137,27 @@ Compositor::Handle<Compositor::Observer> Compositor::observer()
     return nullptr;
 }
 
-QImage Compositor::image()
-{
-    Q_UNREACHABLE();
-    return {};
-}
-
 void Compositor::waitForTexture()
 {
-    Q_UNREACHABLE();
 }
 
-int Compositor::textureId()
+void Compositor::releaseTexture()
+{
+}
+
+QSGTexture *Compositor::texture(QQuickWindow *, uint32_t textureOptions)
 {
     Q_UNREACHABLE();
-    return 0;
+    return nullptr;
+}
+
+bool Compositor::textureIsFlipped()
+{
+    Q_UNREACHABLE();
+    return false;
 }
 
 #if QT_CONFIG(webengine_vulkan)
-VkImage Compositor::vkImage(QQuickWindow *)
-{
-    Q_UNREACHABLE();
-    return {};
-}
-
-VkImageLayout Compositor::vkImageLayout()
-{
-    Q_UNREACHABLE();
-    return {};
-}
-
 void Compositor::releaseVulkanResources(QQuickWindow *)
 {
     Q_UNREACHABLE();

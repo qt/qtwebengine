@@ -99,6 +99,7 @@ foreach(arch ${archs})
                 compositor/content_gpu_client_qt.cpp compositor/content_gpu_client_qt.h
                 compositor/display_overrides.cpp
                 compositor/display_software_output_surface.cpp compositor/display_software_output_surface.h
+                compositor/native_skia_output_device.cpp compositor/native_skia_output_device.h
                 content_browser_client_qt.cpp content_browser_client_qt.h
                 content_client_qt.cpp content_client_qt.h
                 content_main_delegate_qt.cpp content_main_delegate_qt.h
@@ -217,6 +218,12 @@ foreach(arch ${archs})
             SOURCES
                 compositor/compositor_resource_fence.cpp compositor/compositor_resource_fence.h
                 compositor/display_skia_output_device.cpp compositor/display_skia_output_device.h
+        )
+
+        extend_gn_target(${buildGn} CONDITION MACOS
+            SOURCES
+                compositor/native_skia_output_device_mac.mm
+                compositor/native_skia_output_device_mac2.mm
         )
 
         extend_gn_target(${buildGn} CONDITION MACOS AND QT_FEATURE_opengl
@@ -493,6 +500,7 @@ foreach(arch ${archs})
             list(APPEND gnArgArg
                 use_external_popup_menu=false
                 angle_enable_vulkan=false
+                use_static_angle=true
             )
         endif()
 

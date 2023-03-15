@@ -7,14 +7,10 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 
-#if QT_CONFIG(webengine_vulkan)
-#include <QVulkanInstance>
-#endif
-
 QT_BEGIN_NAMESPACE
-class QImage;
 class QQuickWindow;
 class QSize;
+class QSGTexture;
 QT_END_NAMESPACE
 
 namespace viz {
@@ -25,9 +21,8 @@ namespace QtWebEngineCore {
 
 // Produces composited frames for display.
 //
-// Used by quick/widgets libraries for accessing the frame and
-// controlling frame swapping. Must be cast to a subclass to access
-// the frame as QImage or OpenGL texture, etc.
+// Used by quick/widgets libraries for accessing the frames and
+// controlling frame swapping.
 class Q_WEBENGINECORE_PRIVATE_EXPORT Compositor
 {
     struct Binding;
@@ -38,6 +33,7 @@ public:
         Software,
         OpenGL,
         Vulkan,
+        NativeBuffer
     };
 
     // Identifies a compositor.
@@ -126,27 +122,19 @@ public:
     // Whether frame needs an alpha channel.
     virtual bool requiresAlphaChannel() = 0;
 
-    // (Software) QImage of the frame.
-    //
-    // This is a big image so we should try not to make copies of it.
-    // In particular, the client should drop its QImage reference
-    // before calling swapFrame(), otherwise each swap will cause a
-    // detach.
-    virtual QImage image();
-
-    // (OpenGL) Wait on texture fence in Qt's current OpenGL context.
+    // Wait on texture to be ready aka. sync.
     virtual void waitForTexture();
 
-    // (OpenGL) Texture of the frame.
-    virtual int textureId();
+    // Release any held texture resources
+    virtual void releaseTexture();
+
+    // QSGTexture of the frame.
+    virtual QSGTexture *texture(QQuickWindow *win, uint32_t textureOptions);
+
+    // Is the texture produced upside down?
+    virtual bool textureIsFlipped();
 
 #if QT_CONFIG(webengine_vulkan)
-    // (Vulkan) VkImage of the frame.
-    virtual VkImage vkImage(QQuickWindow *win);
-
-    // (Vulkan) Layout for vkImage().
-    virtual VkImageLayout vkImageLayout();
-
     // (Vulkan) Release Vulkan resources created by Qt's Vulkan instance.
     virtual void releaseVulkanResources(QQuickWindow *win);
 #endif

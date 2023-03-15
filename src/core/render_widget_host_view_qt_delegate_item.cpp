@@ -320,6 +320,8 @@ void RenderWidgetHostViewQtDelegateItem::itemChange(ItemChange change, const Ite
         if (value.window) {
             m_windowConnections.append(connect(value.window, &QQuickWindow::beforeRendering,
                                                this, &RenderWidgetHostViewQtDelegateItem::onBeforeRendering, Qt::DirectConnection));
+            m_windowConnections.append(connect(value.window, &QQuickWindow::afterFrameEnd,
+                                               this, &RenderWidgetHostViewQtDelegateItem::onAfterRendering, Qt::DirectConnection));
             m_windowConnections.append(connect(value.window, SIGNAL(xChanged(int)), SLOT(onWindowPosChanged())));
             m_windowConnections.append(connect(value.window, SIGNAL(yChanged(int)), SLOT(onWindowPosChanged())));
 #if QT_CONFIG(webengine_vulkan)
@@ -347,15 +349,22 @@ QSGNode *RenderWidgetHostViewQtDelegateItem::updatePaintNode(QSGNode *oldNode, U
 {
     auto comp = compositor();
     if (!comp)
-        return nullptr;
+        return oldNode;
 
     QQuickWindow *win = QQuickItem::window();
 
+    QSGImageNode *node = nullptr;
     // Delete old node before swapFrame to decrement refcount of
     // QImage in software mode.
-    delete oldNode;
-    QSGImageNode *node = win->createImageNode();
-    node->setOwnsTexture(true);
+    if (comp->type() == Compositor::Type::Software)
+        delete oldNode;
+    else
+        node = static_cast<QSGImageNode*>(oldNode);
+
+    if (!node) {
+        node = win->createImageNode();
+        node->setOwnsTexture(true);
+    }
 
     comp->swapFrame();
 
@@ -363,36 +372,22 @@ QSGNode *RenderWidgetHostViewQtDelegateItem::updatePaintNode(QSGNode *oldNode, U
     QSizeF texSizeInDips = QSizeF(texSize) / comp->devicePixelRatio();
     node->setRect(QRectF(QPointF(0, 0), texSizeInDips));
 
-    if (comp->type() == Compositor::Type::Software) {
-        QImage image = comp->image();
-        node->setTexture(win->createTextureFromImage(image));
-#if QT_CONFIG(opengl)
-    } else if (comp->type() == Compositor::Type::OpenGL) {
-        QQuickWindow::CreateTextureOptions texOpts;
-        if (comp->requiresAlphaChannel() || m_clearColor.alpha() < 255)
-            texOpts.setFlag(QQuickWindow::TextureHasAlphaChannel);
-        else
-            texOpts.setFlag(QQuickWindow::TextureIsOpaque);
-        int texId = comp->textureId();
-        node->setTexture(QNativeInterface::QSGOpenGLTexture::fromNative(texId, win, texSize, texOpts));
-        node->setTextureCoordinatesTransform(QSGImageNode::MirrorVertically);
-#endif
-#if QT_CONFIG(webengine_vulkan)
-    } else if (comp->type() == Compositor::Type::Vulkan) {
-        QQuickWindow::CreateTextureOptions texOpts;
-        if (comp->requiresAlphaChannel() || m_clearColor.alpha() < 255)
-            texOpts.setFlag(QQuickWindow::TextureHasAlphaChannel);
-        else
-            texOpts.setFlag(QQuickWindow::TextureIsOpaque);
-
-        VkImage image = comp->vkImage(win);
-        VkImageLayout layout = comp->vkImageLayout();
-        node->setTexture(QNativeInterface::QSGVulkanTexture::fromNative(image, layout, win, texSize,
-                                                                        texOpts));
-        node->setTextureCoordinatesTransform(QSGImageNode::MirrorVertically);
-#endif // QT_CONFIG(webengine_vulkan)
+    QQuickWindow::CreateTextureOptions texOpts;
+    if (comp->requiresAlphaChannel() || m_clearColor.alpha() < 255)
+        texOpts.setFlag(QQuickWindow::TextureHasAlphaChannel);
+    else
+        texOpts.setFlag(QQuickWindow::TextureIsOpaque);
+    QSGTexture *texture = comp->texture(win, texOpts);
+    if (texture) {
+        node->setTexture(texture);
+        if (comp->textureIsFlipped())
+            node->setTextureCoordinatesTransform(QSGImageNode::MirrorVertically);
     } else {
-        Q_UNREACHABLE();
+        if (!oldNode || comp->type() == Compositor::Type::Software) {
+            qDebug("Compositor returned null texture");
+            delete node;
+            return nullptr;
+        }
     }
 
     return node;
@@ -404,6 +399,14 @@ void RenderWidgetHostViewQtDelegateItem::onBeforeRendering()
     if (!comp || comp->type() == Compositor::Type::Software)
         return;
     comp->waitForTexture();
+}
+
+void RenderWidgetHostViewQtDelegateItem::onAfterRendering()
+{
+    auto comp = compositor();
+    if (!comp || comp->type() != Compositor::Type::NativeBuffer)
+        return;
+    comp->releaseTexture();
 }
 
 void RenderWidgetHostViewQtDelegateItem::onWindowPosChanged()

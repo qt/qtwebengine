@@ -5,6 +5,9 @@
 #include <QtGui/qtgui-config.h>
 #include <qpa/qplatformnativeinterface.h>
 
+#include "ui/gl/gl_context_egl.h"
+#include "ui/gl/gl_implementation.h"
+
 #if QT_CONFIG(opengl)
 #include <QtGui/qopenglcontext_platform.h>
 #include <QOpenGLContext>
@@ -59,6 +62,11 @@ unsigned int QtShareGLContext::CheckStickyGraphicsResetStatusImpl()
 
 void ShareGroupQt::AboutToAddFirstContext()
 {
+    if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE) {
+        m_shareContextQt = new gl::GLContextEGL(nullptr);
+        return;
+    }
+
 #if QT_CONFIG(opengl)
     // This currently has to be setup by ::main in all applications using QQuickWebEngineView with
     // delegated rendering.

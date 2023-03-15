@@ -3,10 +3,12 @@
 
 #include "display_skia_output_device.h"
 #include "display_software_output_surface.h"
+#include "native_skia_output_device.h"
 
 #include "components/viz/service/display_embedder/output_surface_provider_impl.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.h"
 #include "gpu/ipc/in_process_command_buffer.h"
+
 #include <qtgui-config.h>
 
 std::unique_ptr<viz::OutputSurface>
@@ -18,6 +20,16 @@ viz::OutputSurfaceProviderImpl::CreateSoftwareOutputSurface(const RendererSettin
 std::unique_ptr<viz::SkiaOutputDevice>
 viz::SkiaOutputSurfaceImplOnGpu::CreateOutputDevice()
 {
+    if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE) {
+        return std::make_unique<QtWebEngineCore::NativeSkiaOutputDevice>(
+                context_state_,
+                renderer_settings_.requires_alpha_channel,
+                shared_gpu_deps_->memory_tracker(),
+                dependency_.get(),
+                shared_image_factory_.get(),
+                shared_image_representation_factory_.get(),
+                GetDidSwapBuffersCompleteCallback());
+    }
 #if QT_CONFIG(opengl)
     return std::make_unique<QtWebEngineCore::DisplaySkiaOutputDevice>(
             context_state_,
@@ -28,4 +40,3 @@ viz::SkiaOutputSurfaceImplOnGpu::CreateOutputDevice()
     return nullptr;
 #endif // QT_CONFIG(opengl)
 }
-

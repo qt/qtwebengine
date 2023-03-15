@@ -130,7 +130,8 @@ Q_LOGGING_CATEGORY(webEngineContextLog, "qt.webenginecontext")
 static bool usingSupportedSGBackend()
 {
     if (QQuickWindow::graphicsApi() != QSGRendererInterface::OpenGL
-        && QQuickWindow::graphicsApi() != QSGRendererInterface::Vulkan)
+        && QQuickWindow::graphicsApi() != QSGRendererInterface::Vulkan
+        && QQuickWindow::graphicsApi() != QSGRendererInterface::Metal)
         return false;
 
     const QStringList args = QGuiApplication::arguments();
@@ -190,6 +191,11 @@ static const char *getGLType(bool enableGLSoftwareRendering, bool disableGpu)
     if (disableGpu || (!tryGL && !enableGLSoftwareRendering))
         return glType;
 
+#if defined(Q_OS_MACOS)
+    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Metal)
+        return gl::kGLImplementationANGLEName;
+#endif
+
     if (!qt_gl_global_share_context() || !qt_gl_global_share_context()->isValid()) {
         qWarning("WebEngineContext is used before QtWebEngineQuick::initialize() or OpenGL context "
                  "creation failed.");
@@ -227,8 +233,14 @@ static const char *getGLType(bool enableGLSoftwareRendering, bool disableGpu)
     return glType;
 }
 #else
-static const char *getGLType(bool enableGLSoftwareRendering, bool disableGpu)
+static const char *getGLType(bool /*enableGLSoftwareRendering*/, bool disableGpu)
 {
+    if (disableGpu)
+        return gl::kGLImplementationDisabledName;
+#if defined(Q_OS_MACOS)
+    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Metal)
+        return gl::kGLImplementationANGLEName;
+#endif
     return gl::kGLImplementationDisabledName;
 }
 #endif // QT_CONFIG(opengl)
@@ -242,34 +254,41 @@ void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
 static void logContext(const char *glType, base::CommandLine *cmd)
 {
     if (Q_UNLIKELY(webEngineContextLog().isDebugEnabled())) {
-#if QT_CONFIG(opengl)
-        const QSurfaceFormat sharedFormat = qt_gl_global_share_context()->format();
-        const auto profile = QMetaEnum::fromType<QSurfaceFormat::OpenGLContextProfile>().valueToKey(
-                sharedFormat.profile());
-        const auto type = QMetaEnum::fromType<QSurfaceFormat::RenderableType>().valueToKey(
-                sharedFormat.renderableType());
         const base::CommandLine::SwitchMap switch_map = cmd->GetSwitches();
         QStringList params;
         for (const auto &pair : switch_map)
             params << " * " << toQt(pair.first)
                    << toQt(pair.second) << "\n";
+#if QT_CONFIG(opengl)
+        const QSurfaceFormat sharedFormat = qt_gl_global_share_context() ? qt_gl_global_share_context()->format() : QSurfaceFormat::defaultFormat();
+        const auto profile = QMetaEnum::fromType<QSurfaceFormat::OpenGLContextProfile>().valueToKey(
+                sharedFormat.profile());
+        const auto type = QMetaEnum::fromType<QSurfaceFormat::RenderableType>().valueToKey(
+                sharedFormat.renderableType());
         qCDebug(webEngineContextLog,
-                "\n\nGL Type: %s\n"
+                "\n\nChromium GL Backend: %s\n"
                 "Surface Type: %s\n"
                 "Surface Profile: %s\n"
                 "Surface Version: %d.%d\n"
                 "QSG RHI Backend: %s\n"
                 "Using Supported QSG Backend: %s\n"
                 "Using Software Dynamic GL: %s\n"
+                "Using Shared GL: %s\n"
                 "Using Multithreaded OpenGL: %s\n\n"
                 "Init Parameters:\n %s",
                 glType, type, profile, sharedFormat.majorVersion(), sharedFormat.minorVersion(),
                 qUtf8Printable(QSGRhiSupport::instance()->rhiBackendName()),
                 usingSupportedSGBackend() ? "yes" : "no", usingSoftwareDynamicGL() ? "yes" : "no",
+                qt_gl_global_share_context() ? "yes" : "no",
                 !WebEngineContext::isGpuServiceOnUIThread() ? "yes" : "no",
                 qPrintable(params.join(" ")));
 #else
-        qCDebug(webEngineContextLog) << "WebEngine compiled with no opengl enabled.";
+        qCDebug(webEngineContextLog,
+                "\n\nChromium GL Backend: %s\n"
+                "QSG RHI Backend: %s\n\n"
+                "Init Parameters:\n %s",
+                glType, qUtf8Printable(QSGRhiSupport::instance()->rhiBackendName()),
+                qPrintable(params.join(" ")));
 #endif //QT_CONFIG(opengl)
     }
 }
@@ -716,19 +735,21 @@ WebEngineContext::WebEngineContext()
             parsedCommandLine->AppendSwitch(switches::kIgnoreGpuBlocklist);
         }
 #if QT_CONFIG(opengl)
-        const QSurfaceFormat sharedFormat = QOpenGLContext::globalShareContext()->format();
-        if (sharedFormat.profile() == QSurfaceFormat::CompatibilityProfile)
-            parsedCommandLine->AppendSwitch(switches::kCreateDefaultGLContext);
+        if (glType != gl::kGLImplementationANGLEName) {
+            const QSurfaceFormat sharedFormat = QOpenGLContext::globalShareContext()->format();
+            if (sharedFormat.profile() == QSurfaceFormat::CompatibilityProfile)
+                parsedCommandLine->AppendSwitch(switches::kCreateDefaultGLContext);
 #if defined(Q_OS_WIN)
-        // This switch is used in Chromium's gl_context_wgl.cc file to determine whether to create
-        // an OpenGL Core Profile context. If the switch is not set, it would always try to create a
-        // Core Profile context, even if Qt uses a legacy profile, which causes
-        // "Could not share GL contexts" warnings, because it's not possible to share between Core and
-        // legacy profiles. See GLContextWGL::Initialize().
-        if (sharedFormat.renderableType() == QSurfaceFormat::OpenGL
-            && sharedFormat.profile() != QSurfaceFormat::CoreProfile)
-            parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
+            // This switch is used in Chromium's gl_context_wgl.cc file to determine whether to create
+            // an OpenGL Core Profile context. If the switch is not set, it would always try to create a
+            // Core Profile context, even if Qt uses a legacy profile, which causes
+            // "Could not share GL contexts" warnings, because it's not possible to share between Core and
+            // legacy profiles. See GLContextWGL::Initialize().
+            if (sharedFormat.renderableType() == QSurfaceFormat::OpenGL
+                && sharedFormat.profile() != QSurfaceFormat::CoreProfile)
+                parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
 #endif
+        }
 #endif //QT_CONFIG(opengl)
     } else if (!disableGpu) {
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);

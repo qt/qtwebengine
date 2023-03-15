@@ -32,6 +32,8 @@
 #include <QVulkanDeviceFunctions>
 #endif // QT_CONFIG(webengine_vulkan)
 
+#include <QSGTexture>
+
 namespace QtWebEngineCore {
 
 class DisplaySkiaOutputDevice::Buffer
@@ -40,6 +42,9 @@ public:
     Buffer(DisplaySkiaOutputDevice *parent)
         : m_parent(parent)
         , m_shape(m_parent->m_shape)
+    {
+    }
+    void initialize()
     {
         const auto &colorType = m_shape.characterization.colorType();
         DCHECK(colorType != kUnknown_SkColorType);
@@ -77,8 +82,10 @@ public:
 #if QT_CONFIG(webengine_vulkan) && defined(Q_OS_WIN)
         CloseHandle(m_win32Handle);
 #endif
-        DeleteGrBackendTexture(m_parent->m_contextState.get(), &m_texture);
-        m_parent->memory_type_tracker_->TrackMemFree(m_estimatedSize);
+        if (m_texture.isValid()) {
+            DeleteGrBackendTexture(m_parent->m_contextState.get(), &m_texture);
+            m_parent->memory_type_tracker_->TrackMemFree(m_estimatedSize);
+        }
     }
 
     void createFence()
@@ -267,6 +274,9 @@ DisplaySkiaOutputDevice::DisplaySkiaOutputDevice(
 {
     capabilities_.uses_default_gl_framebuffer = false;
     capabilities_.supports_surfaceless = true;
+    capabilities_.preserve_buffer_content = true;
+    capabilities_.only_invalidates_damage_rect = false;
+    capabilities_.number_of_buffers = 3;
 
     capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBA_8888)] =
             kRGBA_8888_SkColorType;
@@ -309,7 +319,7 @@ void DisplaySkiaOutputDevice::SwapBuffers(BufferPresentedCallback feedback,
     {
         QMutexLocker locker(&m_mutex);
         m_taskRunner = base::ThreadTaskRunnerHandle::Get();
-        m_middleBuffer = std::move(m_backBuffer);
+        std::swap(m_middleBuffer, m_backBuffer);
         m_readyToUpdate = true;
     }
 
@@ -325,10 +335,12 @@ void DisplaySkiaOutputDevice::DiscardBackbuffer()
 {
 }
 
-SkSurface *DisplaySkiaOutputDevice::BeginPaint(std::vector<GrBackendSemaphore> *)
+SkSurface *DisplaySkiaOutputDevice::BeginPaint(std::vector<GrBackendSemaphore> *end_semaphores)
 {
-    if (!m_backBuffer || m_backBuffer->shape() != m_shape)
+    if (!m_backBuffer || m_backBuffer->shape() != m_shape) {
         m_backBuffer = std::make_unique<Buffer>(this);
+        m_backBuffer->initialize();
+    }
     return m_backBuffer->surface();
 }
 
@@ -355,16 +367,32 @@ void DisplaySkiaOutputDevice::waitForTexture()
         m_frontBuffer->consumeFence();
 }
 
-int DisplaySkiaOutputDevice::textureId()
+QSGTexture *DisplaySkiaOutputDevice::texture(QQuickWindow *win, uint32_t textureOptions)
 {
     if (!m_frontBuffer)
-        return 0;
+        return nullptr;
 
-    GrGLTextureInfo info;
-    if (!m_frontBuffer->texture().getGLTextureInfo(&info))
-        return 0;
+    QQuickWindow::CreateTextureOptions texOpts(textureOptions);
 
-    return info.fID;
+    QSGTexture *texture = nullptr;
+#if QT_CONFIG(webengine_vulkan)
+    if (type() == Type::Vulkan) {
+        VkImage image = vkImage(win);
+        VkImageLayout layout = vkImageLayout();
+        texture = QNativeInterface::QSGVulkanTexture::fromNative(image, layout, win, size(), texOpts);
+    } else
+#endif
+    {
+        GrGLTextureInfo info;
+        if (m_frontBuffer->texture().getGLTextureInfo(&info))
+            texture = QNativeInterface::QSGOpenGLTexture::fromNative(info.fID, win, size(), texOpts);
+    }
+    return texture;
+}
+
+bool DisplaySkiaOutputDevice::textureIsFlipped()
+{
+    return true;
 }
 
 QSize DisplaySkiaOutputDevice::size()
@@ -472,7 +500,7 @@ void DisplaySkiaOutputDevice::SwapBuffersFinished()
 {
     {
         QMutexLocker locker(&m_mutex);
-        m_backBuffer = std::move(m_middleBuffer);
+        std::swap(m_backBuffer, m_middleBuffer);
     }
 
     FinishSwapBuffers(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_ACK),
