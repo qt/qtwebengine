@@ -9,7 +9,7 @@
 
     \brief A utility type for ignoring certificate errors or rejecting erroneous certificates.
 
-    This QML type contains information about a certificate error that occurred. The \l error
+    This QML type contains information about a certificate error that occurred. The \l type
     property holds the reason that the error occurred and the \l description property holds a
     short localized description of the error. The \l url property holds the URL that triggered
     the error.
@@ -49,7 +49,7 @@
     The URL that triggered the error.
  */
 /*!
-    \qmlproperty enumeration WebEngineCertificateError::error
+    \qmlproperty enumeration WebEngineCertificateError::type
     \readonly
 
     The type of the error.

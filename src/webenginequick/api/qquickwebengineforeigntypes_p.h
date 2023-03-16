@@ -185,9 +185,17 @@ struct ForeginWebEngineFileSystemAccessRequest
 {
     Q_GADGET
     QML_FOREIGN(QWebEngineFileSystemAccessRequest)
-    QML_NAMED_ELEMENT(WebEngineFileSystemAccessRequest)
+    QML_NAMED_ELEMENT(webEngineFileSystemAccessRequest)
     QML_ADDED_IN_VERSION(6, 4)
     QML_UNCREATABLE("")
+};
+
+namespace ForeginWebEngineFileSystemAccessRequestNamespace
+{
+    Q_NAMESPACE
+    QML_FOREIGN_NAMESPACE(QWebEngineFileSystemAccessRequest)
+    QML_NAMED_ELEMENT(WebEngineFileSystemAccessRequest)
+    QML_ADDED_IN_VERSION(6, 4)
 };
 
 QT_END_NAMESPACE
