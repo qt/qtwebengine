@@ -18,6 +18,7 @@ else()
     find_package(GPerf)
     find_package(BISON)
     find_package(FLEX)
+    find_package(Perl)
     find_package(PkgConfig)
     find_package(Snappy)
     find_package(Nodejs 12.0)
@@ -686,3 +687,10 @@ if(PRINT_BFD_LINKER_WARNING)
         MESSAGE "Using bfd linker requires at least 4096 open files limit"
     )
 endif()
+if(NOT FEATURE_webengine_opus_system AND NOT Perl_FOUND)
+    qt_configure_add_report_entry(
+        TYPE WARNING
+        MESSAGE "No perl found, compiling opus without some optimizations."
+    )
+endif()
+

@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 3.19)
 
 find_package(Ninja 1.7.2 REQUIRED)
 find_package(Nodejs 12 REQUIRED)
+find_package(Perl)
 find_package(PkgConfig)
 if(PkgConfig_FOUND)
     create_pkg_config_host_wrapper(${CMAKE_CURRENT_BINARY_DIR})
@@ -418,6 +419,12 @@ foreach(arch ${archs})
                     CONDITION QT_FEATURE_webengine_system_${slib}
                 )
             endforeach()
+            if(NOT QT_FEATURE_webengine_system_opus)
+                extend_gn_list(gnArgArg
+                   ARGS has_perl
+                   CONDITION Perl_FOUND
+            )
+            endif()
             extend_gn_list(gnArgArg
                 ARGS use_system_libxslt
                 CONDITION QT_FEATURE_webengine_system_libxml
