@@ -7,8 +7,10 @@
 #include <QColor>
 #include <QWidget>
 
+QT_BEGIN_NAMESPACE
 class QLineEdit;
 class QPushButton;
+QT_END_NAMESPACE
 
 class ColorPicker : public QWidget
 {

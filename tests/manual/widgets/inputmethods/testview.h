@@ -7,8 +7,10 @@
 #include <QTextCharFormat>
 #include <QWidget>
 
+QT_BEGIN_NAMESPACE
 class QPushButton;
 class QTableView;
+QT_END_NAMESPACE
 
 class TestView : public QWidget
 {
