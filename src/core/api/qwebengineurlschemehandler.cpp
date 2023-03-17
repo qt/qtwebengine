@@ -30,10 +30,23 @@ QT_BEGIN_NAMESPACE
     {
     public:
         MySchemeHandler(QObject *parent = nullptr);
-        void requestStarted(QWebEngineUrlRequestJob *request)
+        void requestStarted(QWebEngineUrlRequestJob *job)
         {
-            // ....
+            const QByteArray method = job->requestMethod();
+            const QUrl url = job->requestUrl();
+
+            if (isValidUrl(url)) {
+                if (method == QByteArrayLiteral("GET")) {
+                    job->reply(QByteArrayLiteral("text/html"), makeReply(url));
+                else // Unsupported method
+                    job->fail(QWebEngineUrlRequestJob::RequestDenied);
+            } else {
+                // Invalid URL
+                job->fail(QWebEngineUrlRequestJob::UrlNotFound);
+            }
         }
+        bool isValidUrl(const QUrl &url) const // ....
+        QIODevice *makeReply(const QUrl &url) // ....
     };
 
     int main(int argc, char **argv)
@@ -56,7 +69,7 @@ QT_BEGIN_NAMESPACE
 
     \inmodule QtWebEngineCore
 
-    \sa {QWebEngineUrlScheme}, {WebEngine Widgets WebUI Example}
+    \sa {QWebEngineUrlScheme}
 */
 
 /*!
