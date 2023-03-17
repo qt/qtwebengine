@@ -3,7 +3,6 @@ QT_FOR_CONFIG += webenginecore webenginecore-private network-private
 TEMPLATE=subdirs
 
 SUBDIRS += \
-    minimal \
     contentmanipulation \
     cookiebrowser \
     notifications \
