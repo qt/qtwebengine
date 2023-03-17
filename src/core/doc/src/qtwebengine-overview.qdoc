@@ -162,7 +162,7 @@
     The following sample QML application loads a web page using the \l{WebEngineView::}{url}
     property:
 
-    \quotefromfile webenginequick/minimal/main.qml
+    \quotefromfile minimal/main.qml
     \skipto import
     \printuntil /^\}/
 
