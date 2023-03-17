@@ -9,8 +9,7 @@ SUBDIRS += \
     simplebrowser \
     stylesheetbrowser \
     push-notifications \
-    videoplayer \
-    webui
+    videoplayer
 
 qtConfig(webengine-geolocation): SUBDIRS += maps
 qtConfig(webengine-webchannel): SUBDIRS += markdowneditor
