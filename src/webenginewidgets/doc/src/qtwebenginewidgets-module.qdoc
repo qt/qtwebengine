@@ -24,4 +24,9 @@
 
     \snippet qtwebenginewidgets_build_snippet.qdoc 2
     \endif
+
+    The minimum amount of code needed to load and display an HTML page requires just
+    implementing the \c QWebEngineView class.
+
+    \snippet simple/main.cpp Minimal Example
 */
