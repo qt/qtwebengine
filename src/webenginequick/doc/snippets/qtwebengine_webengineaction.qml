@@ -17,7 +17,7 @@ ApplicationWindow {
     header: ToolBar {
         RowLayout {
             anchors.fill: parent
-
+//! [0]
             ToolButton {
                 property int itemAction: WebEngineView.Back
                 text: webEngineView.action(itemAction).text
@@ -26,7 +26,7 @@ ApplicationWindow {
                 icon.name: webEngineView.action(itemAction).iconName
                 display: AbstractButton.TextUnderIcon
             }
-
+//! [0]
             ToolButton {
                 property int itemAction: WebEngineView.Forward
                 text: webEngineView.action(itemAction).text
@@ -88,6 +88,7 @@ ApplicationWindow {
             })
         }
 
+//! [1]
         property Menu contextMenu: Menu {
             Repeater {
                 model: [
@@ -117,5 +118,6 @@ ApplicationWindow {
                 contextMenu.popup();
             }
         }
+//! [1]
     }
 }
