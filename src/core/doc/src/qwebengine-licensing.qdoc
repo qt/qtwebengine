@@ -18,7 +18,8 @@ Third party licenses included in the sources are:
 */
 
 /*!
-\page qtwebengine-3rdparty-chromium-global.html attribution
+\page qtwebengine-3rdparty-chromium-global.html
+\attribution
 \ingroup qtwebengine-licensing
 \title Chromium License
 \brief BSD
