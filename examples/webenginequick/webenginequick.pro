@@ -1,8 +1,7 @@
 TEMPLATE=subdirs
 
 SUBDIRS += \
-    quicknanobrowser \
-    webengineaction
+    quicknanobrowser
 
 qtHaveModule(quickcontrols2) {
     SUBDIRS += \

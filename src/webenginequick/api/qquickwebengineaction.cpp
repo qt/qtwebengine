@@ -20,7 +20,7 @@ QT_BEGIN_NAMESPACE
     method. It provides information about the action, such as
     whether it is \l enabled.
 
-    The following code uses the \l WebEngineView::action() method to check if the
+    The following code uses the \l WebEngineView::action() method to check if
     the copy action is enabled:
 
     \code
@@ -30,6 +30,14 @@ QT_BEGIN_NAMESPACE
     else
         console.log("Copy is disabled.");
     \endcode
+
+    A \l ToolButton can be connected to a WebEngineAction as follows:
+
+    \snippet qtwebengine_webengineaction.qml 0
+
+    A context menu could be implemented like this:
+
+    \snippet qtwebengine_webengineaction.qml 1
 */
 
 QQuickWebEngineActionPrivate::QQuickWebEngineActionPrivate(const QVariant &data, const QString &text, const QString &iconName, bool enabled)
