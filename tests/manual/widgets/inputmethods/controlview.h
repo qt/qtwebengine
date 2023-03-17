@@ -8,12 +8,15 @@
 #include <QTextCharFormat>
 #include <QWidget>
 
-class ColorPicker;
+QT_BEGIN_NAMESPACE
 class QComboBox;
 class QLabel;
 class QLineEdit;
 class QPushButton;
 class QSpinBox;
+QT_END_NAMESPACE
+
+class ColorPicker;
 
 class ControlView : public QWidget
 {
