@@ -685,6 +685,35 @@ void QQuickWebEngineFileDialogRequest::dialogReject()
     \since QtWebEngine 1.10
 
     \brief A request for showing a tooltip to the user.
+
+    A TooltipRequest is a request object that is passed as a
+    parameter of the WebEngineView::tooltipRequested signal. Use the
+    \c onTooltipRequested signal handler to handle requests for
+    custom tooltip menus at specific positions.
+
+    The \l accepted property of the request indicates whether the request
+    is handled by the user code or the default tooltip should
+    be displayed.
+
+    The following code uses a custom tooltip to handle the request:
+
+    \code
+    WebEngineView {
+        // ...
+        onTooltipRequested: function(request) {
+            if (request.type == TooltipRequest.Show) {
+                tooltip.visible = true;
+                tooltip.x = request.x;
+                tooltip.y = request.y;
+                tooltip.text = request.text;
+            } else {
+                tooltip.visible = false;
+            }
+            request.accepted = true;
+        }
+        // ...
+    }
+    \endcode
 */
 
 QQuickWebEngineTooltipRequest::QQuickWebEngineTooltipRequest(

@@ -383,7 +383,6 @@
     WebEngineView::colorDialogRequested(),
     WebEngineView::fileDialogRequested(), and
     WebEngineView::formValidationMessageRequested() signals. For an example,
-    see \l{WebEngine Qt Quick Custom Dialogs Example}.
 
     \section1 Pepper Plugin API
 

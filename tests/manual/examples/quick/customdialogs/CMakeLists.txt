@@ -1,23 +1,14 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-cmake_minimum_required(VERSION 3.16)
-project(customdialogs LANGUAGES CXX)
-
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
-
-if(NOT DEFINED INSTALL_EXAMPLESDIR)
-    set(INSTALL_EXAMPLESDIR "examples")
+if (NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
+    cmake_minimum_required(VERSION 3.16)
+    project(customdialogs LANGUAGES CXX)
+    find_package(Qt6 REQUIRED COMPONENTS Core Gui WebEngineQuick)
 endif()
 
-set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/webenginequick/customdialogs")
-
-find_package(Qt6 REQUIRED COMPONENTS Core Gui WebEngineQuick)
-
-qt_add_executable(customdialogs
-    main.cpp
-    server.cpp server.h
+qt_internal_add_manual_test(customdialogs
+    SOURCES main.cpp server.cpp server.h
 )
 
 set_target_properties(customdialogs PROPERTIES
@@ -63,14 +54,3 @@ qt_add_resources(customdialogs "customdialogs"
         ${customdialogs_resource_files}
 )
 
-if(TARGET Qt::Widgets)
-    target_link_libraries(customdialogs PUBLIC
-        Qt::Widgets
-    )
-endif()
-
-install(TARGETS customdialogs
-    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
-    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
-    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
-)
