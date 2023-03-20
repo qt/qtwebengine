@@ -64,6 +64,10 @@ qt_feature("webengine-system-alsa" PRIVATE
     LABEL "Use ALSA"
     CONDITION UNIX AND TEST_alsa
 )
+qt_feature("webengine-v8-context-snapshot" PRIVATE
+    LABEL "Use v8 context snapshot"
+    CONDITION NOT CMAKE_CROSSCOMPILING
+)
 qt_feature("webengine-geolocation" PUBLIC
     LABEL "Geolocation"
     CONDITION TARGET Qt::Positioning
@@ -204,6 +208,7 @@ qt_configure_add_summary_entry(
     ARGS "webengine-system-pulseaudio"
     CONDITION LINUX
 )
+qt_configure_add_summary_entry(ARGS "webengine-v8-context-snapshot")
 qt_configure_end_summary_section() # end of "Qt WebEngineCore" section
 if(CMAKE_CROSSCOMPILING)
     check_thumb(armThumb)

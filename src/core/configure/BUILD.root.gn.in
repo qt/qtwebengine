@@ -11,6 +11,7 @@ import("//build/config/locales.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//ui/ozone/ozone.gni")
+import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 
 # Workaround for cmake configure_file command. Words wrapped with @ characters are
 # handled as variables in this file.
@@ -109,6 +110,7 @@ shared_library("QtWebEngineCore") {
     "//third_party/boringssl/src/include",
     "//third_party/skia/include/core"
   ]
+  data_deps = []
   defines = [ "CHROMIUM_VERSION=" + chromium_version[0] ]
   deps = [
     "//base",
@@ -165,7 +167,7 @@ shared_library("QtWebEngineCore") {
 
   if (is_win) {
     configs += [ "//build/config/compiler:rtti" ]
-    data_deps = [ ":QtWebEngineCoreSandbox" ]
+    data_deps += [ ":QtWebEngineCoreSandbox" ]
   }
   if (use_embedded_config) {
     configs += [ ":embedded_config" ]
@@ -184,6 +186,11 @@ shared_library("QtWebEngineCore") {
   if (moc_source_cpp_files != []) {
     deps += [
         ":generate_cpp_mocs",
+    ]
+  }
+  if (use_v8_context_snapshot) {
+    data_deps += [
+      "//tools/v8_context_snapshot:v8_context_snapshot"
     ]
   }
 }

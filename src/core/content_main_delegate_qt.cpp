@@ -262,6 +262,8 @@ absl::optional<int> ContentMainDelegateQt::BasicStartupComplete()
 {
     SafeOverridePath(base::FILE_EXE, WebEngineLibraryInfo::getPath(base::FILE_EXE));
     SafeOverridePath(base::DIR_QT_LIBRARY_DATA, WebEngineLibraryInfo::getPath(base::DIR_QT_LIBRARY_DATA));
+    SafeOverridePath(base::DIR_ASSETS, WebEngineLibraryInfo::getPath(base::DIR_ASSETS));
+    SafeOverridePath(base::DIR_EXE, WebEngineLibraryInfo::getPath(base::DIR_ASSETS));
     SafeOverridePath(ui::DIR_LOCALES, WebEngineLibraryInfo::getPath(ui::DIR_LOCALES));
 #if QT_CONFIG(webengine_spellchecker)
     SafeOverridePath(base::DIR_APP_DICTIONARIES, WebEngineLibraryInfo::getPath(base::DIR_APP_DICTIONARIES));

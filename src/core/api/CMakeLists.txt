@@ -79,6 +79,7 @@ qt_internal_extend_target(WebEngineCore CONDITION QT_FEATURE_webengine_geolocati
 
 get_install_config(config)
 get_architectures(archs)
+get_configs(configs)
 list(GET archs 0 arch)
 
 ##
@@ -114,7 +115,16 @@ set(resourceList qtwebengine_resources.pak
     qtwebengine_resources_200p.pak
     qtwebengine_devtools_resources.pak)
 
-
+if(QT_FEATURE_webengine_v8_context_snapshot AND NOT MACOS)
+    list(APPEND resourceList v8_context_snapshot.bin)
+elseif(QT_FEATURE_webengine_v8_context_snapshot)
+    foreach(arch ${archs})
+       foreach(config ${configs})
+          get_filename_component(resSourcePath ${buildDir}/${config}/${arch}/v8_context_snapshot.${arch}.bin REALPATH)
+          list(APPEND resourceFiles ${resSourcePath})
+       endforeach()
+    endforeach()
+endif()
 
 foreach(loc ${localeList})
     get_filename_component(locSourcePath ${buildDir}/${config}/${arch}/qtwebengine_locales/${loc}.pak REALPATH)
@@ -126,7 +136,8 @@ foreach(res ${resourceList})
     list(APPEND resourceFiles ${resSourcePath})
 endforeach()
 
-if (NOT QT_FEATURE_webengine_system_icu)
+
+if(NOT QT_FEATURE_webengine_system_icu)
     get_filename_component(icuFile ${buildDir}/${config}/${arch}/icudtl.dat REALPATH)
     list(APPEND resourceFiles ${icuFile})
     set_target_properties(WebEngineCore PROPERTIES ICUDTL_FILE ${icuFile})
