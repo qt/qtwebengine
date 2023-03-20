@@ -1501,6 +1501,27 @@
         // ...
     }
     \endcode
+
+    The touch handles can be also switched dynamically:
+
+    \code
+     Component {
+        id: circleTouchHandle
+        Rectangle {
+            color: "blue"
+            radius: 50
+        }
+    }
+    function showDefaultHandle(isDefault) {
+        if (isDefault)
+            webEngineView.touchHandleDelegate = circleTouchHandle
+        else
+            webEngineView.touchHandleDelegate = null
+    }
+    \endcode
+
+    \note If no delegate is provided, Chromium's default touch handles will appear.
+
 */
 
     \sa {WebEngine Qt Quick Custom Touch Handle Example}
