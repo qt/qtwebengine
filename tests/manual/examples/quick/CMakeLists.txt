@@ -1,2 +1,3 @@
 add_subdirectory(minimal)
 add_subdirectory(customdialogs)
+add_subdirectory(customtouchhandle)
