@@ -12,8 +12,22 @@ QT_BEGIN_NAMESPACE
     \brief The QWebEngineUrlSchemeHandler class is a base class for handling custom URL schemes.
     \since 5.6
 
+    A custom scheme handler is, broadly speaking, similar to a web application
+    served over HTTP. However, because custom schemes are integrated directly
+    into the web engine, they have the advantage in terms of efficiency and security:
+    There is no need for generating and parsing HTTP messages or for transferring data
+    over sockets, nor any way to intercept or monitor the traffic.
+
     To implement a custom URL scheme for QtWebEngine, you first have to create an instance of
     QWebEngineUrlScheme and register it using QWebEngineUrlScheme::registerScheme().
+
+    As custom schemes are integrated directly into the web engine, they do not
+    necessarily need to follow the standard security rules which apply to
+    ordinary web content. Depending on the chosen configuration, content served
+    over a custom scheme may be given access to local resources, be set to
+    ignore Content-Security-Policy rules, or conversely, be denied access to any
+    other content entirely. If it is to be accessed by normal content, ensure cross-origin
+    access is enabled, and if accessed from HTTPS that it is marked as secure.
 
     \note Make sure that you create and register the scheme object \e before the QGuiApplication
     or QApplication object is instantiated.
