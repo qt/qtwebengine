@@ -1,4 +1,4 @@
-// Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
@@ -19,8 +19,11 @@
 #include "ozone/gl_surface_egl_qt.h"
 
 #include "gpu/ipc/service/image_transport_surface.h"
+#include "ui/gl/direct_composition_support.h"
+#include "ui/gl/gl_display.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/gl/direct_composition_surface_win.h"
+#include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/vsync_provider_win.h"
 #endif
 
@@ -93,13 +96,26 @@ gl::GLDisplay *InitializeGLOneOffPlatform(uint64_t system_device_id)
 {
     VSyncProviderWin::InitializeOneOff();
 
-    if (GetGLImplementation() == kGLImplementationEGLGLES2 || GetGLImplementation() == kGLImplementationEGLANGLE)
-        return GLSurfaceEGLQt::InitializeOneOff(system_device_id);
-
     if (GetGLImplementation() == kGLImplementationDesktopGL || GetGLImplementation() == kGLImplementationDesktopGLCoreProfile)
         return GLSurfaceWGLQt::InitializeOneOff(system_device_id);
 
-    return nullptr;
+    GLDisplayEGL *display = GetDisplayEGL(system_device_id);
+    switch (GetGLImplementation()) {
+    case kGLImplementationEGLANGLE:
+    case kGLImplementationEGLGLES2:
+        if (!display->Initialize(EGLDisplayPlatform(GetDC(nullptr)))) {
+            LOG(ERROR) << "GLDisplayEGL::Initialize failed.";
+            return nullptr;
+        }
+        InitializeDirectComposition(display);
+        break;
+    case kGLImplementationMockGL:
+    case kGLImplementationStubGL:
+        break;
+    default:
+        NOTREACHED();
+    }
+    return display;
 }
 
 bool usingSoftwareDynamicGL()
@@ -125,21 +141,10 @@ CreateOffscreenGLSurfaceWithFormat(GLDisplay *display, const gfx::Size& size, GL
     }
     case kGLImplementationEGLANGLE:
     case kGLImplementationEGLGLES2: {
-        surface = new GLSurfaceEGLQt(static_cast<gl::GLDisplayEGL*>(display), size);
-        if (surface->Initialize(format))
-            return surface;
-
-        // Surfaceless context will be used ONLY if pseudo surfaceless context
-        // is not available since some implementations of surfaceless context
-        // have problems. (e.g. QTBUG-57290)
-        if (GLSurfaceEGLQt::g_egl_surfaceless_context_supported) {
-            surface = new GLSurfacelessQtEGL(static_cast<gl::GLDisplayEGL*>(display), size);
-            if (surface->Initialize(format))
-                return surface;
-        }
-        LOG(ERROR) << "eglCreatePbufferSurface failed and surfaceless context not available";
-        LOG(WARNING) << "Failed to create offscreen GL surface";
-        break;
+        GLDisplayEGL *display_egl = display->GetAs<gl::GLDisplayEGL>();
+        if (display_egl->IsEGLSurfacelessContextSupported() && size.width() == 0 && size.height() == 0)
+            return InitializeGLSurfaceWithFormat(new SurfacelessEGL(display_egl, size), format);
+        return InitializeGLSurfaceWithFormat(new PbufferGLSurfaceEGL(display_egl, size), format);
     }
     default:
         break;
@@ -150,28 +155,13 @@ CreateOffscreenGLSurfaceWithFormat(GLDisplay *display, const gfx::Size& size, GL
 }
 
 scoped_refptr<GLSurface>
-CreateViewGLSurface(gfx::AcceleratedWidget window)
+CreateViewGLSurface(GLDisplay *display, gfx::AcceleratedWidget window)
 {
-    QT_NOT_USED
     return nullptr;
 }
 
 } // namespace init
 #endif  // BUILDFLAG(IS_WIN)
 } // namespace gl
-
-#if BUILDFLAG(IS_WIN)
-namespace gpu {
-class GpuCommandBufferStub;
-class GpuChannelManager;
-scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(gl::GLDisplay *,
-                                                                        base::WeakPtr<ImageTransportSurfaceDelegate>,
-                                                                        SurfaceHandle, gl::GLSurfaceFormat)
-{
-    QT_NOT_USED
-    return scoped_refptr<gl::GLSurface>();
-}
-} // namespace gpu
-#endif // BUILDFLAG(IS_WIN)
 
 #endif // !defined(Q_OS_MACOS)

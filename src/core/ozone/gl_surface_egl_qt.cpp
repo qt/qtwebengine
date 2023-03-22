@@ -15,12 +15,7 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/init/gl_factory.h"
 
-#if !BUILDFLAG(IS_MAC)
-// From ANGLE's egl/eglext.h.
-#ifndef EGL_ANGLE_surface_d3d_texture_2d_share_handle
-#define EGL_ANGLE_surface_d3d_texture_2d_share_handle 1
-#define EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE 0x3200
-#endif
+#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN)
 
 using ui::GetLastEGLErrorString;
 
@@ -260,12 +255,7 @@ void* GLSurfacelessQtEGL::GetShareHandle()
     return NULL;
 }
 
-} // namespace gl
-#endif // !BUILDFLAG(IS_MAC)
-
-namespace gl {
-
-std::string DisplayExtensionsEGL::GetPlatformExtensions(void*)
+std::string DisplayExtensionsEGL::GetPlatformExtensions(EGLDisplay)
 {
     EGLDisplay display = GLContextHelper::getEGLDisplay();
     if (display == EGL_NO_DISPLAY)
@@ -274,4 +264,6 @@ std::string DisplayExtensionsEGL::GetPlatformExtensions(void*)
     const char* str = eglQueryString(display, EGL_EXTENSIONS);
     return str ? std::string(str) : "";
 }
+
 } // namespace gl
+#endif // !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN)
