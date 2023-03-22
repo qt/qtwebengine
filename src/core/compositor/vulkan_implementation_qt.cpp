@@ -133,7 +133,7 @@ SemaphoreHandle VulkanImplementationQt::GetSemaphoreHandle(VkDevice vk_device,
 
 VkExternalMemoryHandleTypeFlagBits VulkanImplementationQt::GetExternalImageHandleType()
 {
-#ifdef BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_WIN)
     return VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT;
 #else
     return VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
