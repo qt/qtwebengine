@@ -1,0 +1,197 @@
+// Copyright (C) 2023 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \example webenginewidgets/recipebrowser
+    \title Recipe Browser
+    \meta category {Application Examples}
+    \meta tag {widgets, webengine, webchannel, webenginescript}
+    \ingroup webengine-widgetexamples
+    \brief Injecting custom stylsheets into web pages and providing a rich text preview
+    tool for a custom markup language.
+
+    \image recipebrowser.webp
+
+    \e {Recipe Browser} is a small hybrid web browser application. It demonstrates how to
+    use the \l{Qt WebEngine Widgets C++ Classes} {Qt WebEngine C++ classes} to combine
+    C++ and JavaScript logic in the following ways.
+
+    \list
+        \li Running arbitrary JavaScript code via \c QWebEnginePage::runJavaScript() to
+            inject custom CSS stylesheets
+        \li Using QWebEngineScript and QWebEngineScriptCollection to persist the JavaScript
+            code and inject it to every page
+        \li Using QWebChannel to interact with and provide a rich text preview for a custom
+            markup language
+    \endlist
+
+    \l{http://daringfireball.net/projects/markdown/}{Markdown} is a lightweight
+    markup language with a plain text formatting syntax.
+    Some services, such as \l{http://github.com}{github}, acknowledge the
+    format, and render the content as rich text when viewed in a browser.
+
+    The Recipe Browser main window is split into a navigation on the left and
+    a preview area on the right. The preview area on the right switches to an
+    editor when the user clicks the Edit button on the top left of the main window.
+    The editor supports the Markdown syntax and is implemented by using
+    QPlainTextEdit. The document is rendered as rich text in the preview area,
+    once the user clicks the View button,to which the Edit button transforms to.
+    This rendering is implemented by using QWebEngineView. To render the text,
+    a JavaScript library inside the web engine converts the Markdown text to HTML.
+    The preview is updated from the editor through QWebChannel.
+
+    \include examples-run.qdocinc
+
+    \section1 Exposing Document Text
+
+    To render the current Markdown text it needs to be exposed to the web engine through
+    QWebChannel. To achieve this it has to be part of Qt metatype system. This is done
+    by using a dedicated \c Document class that exposes the document text as a
+    \c {Q_PROPERTY}:
+
+    \quotefromfile webenginewidgets/recipebrowser/document.h
+    \skipto class Document
+    \printto #endif
+
+    The \c Document class wraps a QString \c m_currentText to be set on the C++
+    side with  the \c setText() method and exposes it at runtime as a \c text
+    property with a \c textChanged signal. We define the \c setText method as
+    follows:
+
+    \quotefromfile webenginewidgets/recipebrowser/document.cpp
+    \skipto Document::setText(const QString &text)
+    \printuntil /^\}/
+
+    Additionally, the \c Document class keeps track of the current recipe via
+    \c m_currentPage. We call the recipes pages here, because each recipe has
+    its distinct HTML document that contains the initial text content.
+    Furthermore, \c m_textCollection is a QMap<QString, QString> that contains
+    the key/value pairs \{page, text\}, so that changes made to the text content
+    of a page is persisted between navigation. Nevertheless, we do not write the
+    modified text contents to the drive, but instead we persist them between
+    application start and shutdown via QSettings.
+
+    \section1 Creating the Main Window
+
+    The \c MainWindow class inherits the QMainWindow class:
+
+    \quotefromfile webenginewidgets/recipebrowser/mainwindow.h
+    \skipto class MainWindow :
+    \printto endif
+
+    The class declares private slots that match the two buttons on the
+    top left, over the navigation list view. Additionally, helper
+    methods for custom CSS stylesheets are declared.
+
+    The actual layout of the main window is specified in a \c .ui file.
+    The widgets and actions are available at runtime in the \c ui member
+    variable.
+
+    \c m_isEditMode is a boolean that toggles between the editor and the
+    preview area.
+    \c m_content is an instance of the \c Document class.
+
+    The actual setup of the different objects is done in the \c MainWindow
+    constructor:
+
+    \quotefromfile webenginewidgets/recipebrowser/mainwindow.cpp
+    \skipto MainWindow::MainWindow
+    \printto connect
+
+    The constructor first calls \c setupUi to construct the widgets and menu
+    actions according to the UI file. The text editor font is set to one
+    with a fixed character width, and the QWebEngineView widget is told not
+    to show a context menu. Furthermore, the editor is hidden away.
+
+    \printto ui->recipes
+
+    Here the \c clicked signals of QPushButton are connected to respective functions
+    that show the stylesheets dialog or toggle between edit and view mode, that is,
+    hide and show the editor and preview area respectively.
+
+    \printto m_content.setTextEdit
+
+    Here the navigation QListWidget on the left is setup with the 7 recipes.
+    Also, the currentItemChanged signal of QListWidget is connected to a lambda
+    that loads the new, current recipe page and updates the page in \c m_content.
+
+    \printto connect
+
+    Next, the pointer to the ui editor, a QPlainTextEdit, is passed to \c m_content to ensure that
+    calls to \c Document::setInitialText() work properly.
+
+    \printto QSettings
+
+    Here the \c textChanged signal of the editor is connected to a lambda that
+    updates the text in \c m_content. This object is then exposed to the JS side
+    by \c QWebChannel under the name \c{content}.
+
+    \printto ui->recipes
+
+    By using QSettings we persist stylesheets between application runs. If there
+    should be no stylesheets configured, for example, because the user deleted all of them
+    in a previous run, we load default ones.
+
+    \printto }
+
+    Finally, we set the currently selected list item to the first contained in the
+    navigation list widget. This triggers the previously mentioned
+    QListWidget::currentItemChanged signal and navigates to the page of the list item.
+
+    \section1 Working With Stylesheets
+
+    We use JavaScript to create and append CSS elements to the documents.
+    After declaring the script source, QWebEnginePage::runJavaScript() can run it
+    immediately and apply newly created styles on the current content of the web view.
+    Encapsulating the script into a QWebEngineScript and adding it to the script collection
+    of QWebEnginePage makes its effect permanent.
+
+    \quotefromfile webenginewidgets/recipebrowser/mainwindow.cpp
+    \skipto MainWindow::insertStyleSheet
+    \printuntil /^\}/
+
+    Removing stylesheets can be done similarly:
+
+    \quotefromfile webenginewidgets/recipebrowser/mainwindow.cpp
+    \skipto MainWindow::removeStyleSheet
+    \printuntil /^\}/
+
+    \section1 Creating a recipe file
+
+    \quotefile webenginewidgets/recipebrowser/assets/pages/burger.html
+
+    All the different recipe pages are set up the same way.
+
+    In the \c <head> part they
+    include two CSS files: \c markdown.css, that styles the markdown, and
+    custom.css, that does some further styling but most importantly hides the
+    \c <div> with id \e content, as this \c <div> only contains the unmodified,
+    initial content text. Also, three JS scripts are included. \c marked.js
+    is responsible for parsing the markdown and transforming it into HTML.
+    \c custom.js does some configuration of \c marked.js, and \c qwebchannel.js
+    exposes the QWebChannel JavaScript API.
+
+    In the body there are two \c <div> elements. The \c <div> with id \e placeholder
+    gets the markdown text injected that is rendered and visible. The \c <div> with id
+    \e content is hidden by \c custom.css and only contains the original, unmodified
+    text content of the recipe.
+
+    Finally, on the bottom of each recipe HTML file is a script that is responsible for
+    the communication between the C++ and JavaScript side via QWebChannel. The original,
+    unmodified text content inside the \c <div> with id \e content is passed to the C++
+    side and a callback is setup that is invoked when the \c textChanged signal of
+    \c m_content is emitted. The callback then updates the contents of the \c <div>
+    \e placeholder with the parsed markdown.
+
+    \section1 Files and Attributions
+
+    The example bundles the following code with third-party licenses:
+    \table
+    \row
+        \li \l{recipebrowser-marked}{Marked}
+        \li MIT License
+    \row
+        \li \l{recipebrowser-markdowncss}{Markdown.css}
+        \li Apache License 2.0
+    \endtable
+*/

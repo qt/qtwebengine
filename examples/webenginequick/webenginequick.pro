@@ -5,6 +5,5 @@ SUBDIRS += \
 
 qtHaveModule(quickcontrols2) {
     SUBDIRS += \
-        lifecycle \
-        recipebrowser
+        lifecycle
 }
