@@ -13,7 +13,7 @@ set(TOUCHMOCKING_DIR "../../touchmocking")
 include_directories(${TOUCHMOCKING_DIR})
 add_definitions(-DQUICK_TOUCHBROWSER)
 
-qt_internal_add_manual_test(touchbrowser
+qt_internal_add_manual_test(touchbrowser-quick
     GUI
     SOURCES
         main.cpp
@@ -21,7 +21,7 @@ qt_internal_add_manual_test(touchbrowser
         ${TOUCHMOCKING_DIR}/touchmockingapplication.cpp
         ${TOUCHMOCKING_DIR}/touchmockingapplication.h
         ${TOUCHMOCKING_DIR}/utils.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::Quick
         Qt::WebEngineQuick
