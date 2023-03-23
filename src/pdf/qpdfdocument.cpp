@@ -17,6 +17,8 @@
 #include <QMutex>
 #include <QVector2D>
 
+#include <QtCore/private/qtools_p.h>
+
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QRecursiveMutex, pdfMutex)
@@ -39,7 +41,7 @@ public:
         QMetaEnum rolesMetaEnum = doc->metaObject()->enumerator(doc->metaObject()->indexOfEnumerator("PageModelRole"));
         for (int r = Qt::UserRole; r < int(QPdfDocument::PageModelRole::NRoles); ++r) {
             auto name = QByteArray(rolesMetaEnum.valueToKey(r));
-            name[0] = tolower(name[0]);
+            name[0] = QtMiscUtils::toAsciiLower(name[0]);
             m_roleNames.insert(r, name);
         }
         connect(doc, &QPdfDocument::statusChanged, this, [this](QPdfDocument::Status s) {
@@ -639,7 +641,7 @@ QVariant QPdfDocument::metaData(MetaDataField field) const
     const unsigned long len = FPDF_GetMetaText(d->doc, fieldName.constData(), nullptr, 0);
 
     QList<ushort> buf(len);
-    FPDF_GetMetaText(d->doc, fieldName.constData(), buf.data(), buf.length());
+    FPDF_GetMetaText(d->doc, fieldName.constData(), buf.data(), buf.size());
     lock.unlock();
 
     QString text = QString::fromUtf16(reinterpret_cast<const char16_t *>(buf.data()));
@@ -969,7 +971,7 @@ QPdfSelection QPdfDocument::getSelectionAtIndex(int page, int startIndex, int ma
     QString text;
     if (maxLength > 0) {
         text = d->getText(textPage, startIndex, maxLength);
-        rectCount = FPDFText_CountRects(textPage, startIndex, text.length());
+        rectCount = FPDFText_CountRects(textPage, startIndex, text.size());
         for (int i = 0; i < rectCount; ++i) {
             double l, r, b, t;
             FPDFText_GetRect(textPage, i, &l, &t, &r, &b);
@@ -984,12 +986,12 @@ QPdfSelection QPdfDocument::getSelectionAtIndex(int page, int startIndex, int ma
     if (bounds.isEmpty())
         hull = QRectF(d->getCharPosition(textPage, pageHeight, startIndex), QSizeF());
     qCDebug(qLcDoc) << "on page" << page << "at index" << startIndex << "maxLength" << maxLength
-                    << "got" << text.length() << "chars," << rectCount << "rects within" << hull;
+                    << "got" << text.size() << "chars," << rectCount << "rects within" << hull;
 
     FPDFText_ClosePage(textPage);
     FPDF_ClosePage(pdfPage);
 
-    return QPdfSelection(text, bounds, hull, startIndex, startIndex + text.length());
+    return QPdfSelection(text, bounds, hull, startIndex, startIndex + text.size());
 }
 
 /*!

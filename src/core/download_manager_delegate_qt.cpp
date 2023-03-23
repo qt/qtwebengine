@@ -157,7 +157,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
             item->GetStartTime().ToTimeT()
         };
 
-        for (ProfileAdapterClient *client : qAsConst(clients)) {
+        for (ProfileAdapterClient *client : std::as_const(clients)) {
             client->downloadRequested(info);
             if (info.accepted)
                 break;
@@ -254,7 +254,7 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
         ++m_currentId,
         toQt(web_contents->GetURL()),
         download::DownloadItem::IN_PROGRESS,
-        0, /* totalBytes */
+        -1, /* totalBytes */
         0, /* receivedBytes */
         QStringLiteral("application/x-mimearchive"),
         suggestedFilePath,
@@ -269,7 +269,7 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
         QDateTime::currentMSecsSinceEpoch()
     };
 
-    for (ProfileAdapterClient *client : qAsConst(clients)) {
+    for (ProfileAdapterClient *client : std::as_const(clients)) {
         client->downloadRequested(info);
         if (info.accepted)
             break;
@@ -317,7 +317,7 @@ void DownloadManagerDelegateQt::OnDownloadUpdated(download::DownloadItem *downlo
             download->GetStartTime().ToTimeT()
         };
 
-        for (ProfileAdapterClient *client : qAsConst(clients)) {
+        for (ProfileAdapterClient *client : std::as_const(clients)) {
             client->downloadUpdated(info);
         }
     }

@@ -24,7 +24,8 @@ HttpServer::HttpServer(QTcpServer *tcpServer, const QString &protocol,
 {
     m_url.setHost(hostAddress.toString());
     m_url.setScheme(protocol);
-    connect(tcpServer, &QTcpServer::newConnection, this, &HttpServer::handleNewConnection);
+    connect(tcpServer, &QTcpServer::pendingConnectionAvailable, this,
+            &HttpServer::handleNewConnection);
 }
 
 HttpServer::~HttpServer()
@@ -79,7 +80,7 @@ void HttpServer::handleNewConnection()
         // if request wasn't handled or purposely ignored for default behavior
         // then try to serve htmls from resources dirs if set
         if (rr->requestMethod() == "GET") {
-            for (auto &&dir : qAsConst(m_dirs)) {
+            for (auto &&dir : std::as_const(m_dirs)) {
                 QFile f(dir + rr->requestPath());
                 if (f.exists()) {
                     if (f.open(QFile::ReadOnly)) {

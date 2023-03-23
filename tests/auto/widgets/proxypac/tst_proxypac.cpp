@@ -41,10 +41,10 @@ void tst_ProxyPac::proxypac()
 
     const bool v8_proxy_resolver_enabled = !fromEnv.contains("--single-process");
     page.load(QUrl("http://test.proxy1.com"));
-    QTRY_COMPARE(proxySpy1.count() >= 1, v8_proxy_resolver_enabled);
-    QVERIFY(proxySpy2.count() == 0);
+    QTRY_COMPARE(proxySpy1.size() >= 1, v8_proxy_resolver_enabled);
+    QVERIFY(proxySpy2.size() == 0);
     page.load(QUrl("http://test.proxy2.com"));
-    QTRY_COMPARE(proxySpy2.count() >= 1, v8_proxy_resolver_enabled);
+    QTRY_COMPARE(proxySpy2.size() >= 1, v8_proxy_resolver_enabled);
 
     // check for crash
     QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);

@@ -30,6 +30,7 @@
 #include <QtWebEngineCore/qwebenginefullscreenrequest.h>
 #include <QtWebEngineCore/qwebenginecontextmenurequest.h>
 #include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
+#include <QtWebEngineCore/qwebenginefilesystemaccessrequest.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -178,6 +179,23 @@ struct ForeignWebEngineFindTextResult
     QML_ADDED_IN_VERSION(1, 10)
     QML_EXTRA_VERSION(2, 0)
     QML_UNCREATABLE("")
+};
+
+struct ForeginWebEngineFileSystemAccessRequest
+{
+    Q_GADGET
+    QML_FOREIGN(QWebEngineFileSystemAccessRequest)
+    QML_NAMED_ELEMENT(webEngineFileSystemAccessRequest)
+    QML_ADDED_IN_VERSION(6, 4)
+    QML_UNCREATABLE("")
+};
+
+namespace ForeginWebEngineFileSystemAccessRequestNamespace
+{
+    Q_NAMESPACE
+    QML_FOREIGN_NAMESPACE(QWebEngineFileSystemAccessRequest)
+    QML_NAMED_ELEMENT(WebEngineFileSystemAccessRequest)
+    QML_ADDED_IN_VERSION(6, 4)
 };
 
 QT_END_NAMESPACE

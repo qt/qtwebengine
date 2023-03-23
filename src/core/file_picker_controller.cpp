@@ -187,7 +187,7 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
         }
 
         std::vector<blink::mojom::FileChooserFileInfoPtr> chooser_files;
-        for (const auto &file : qAsConst(files)) {
+        for (const auto &file : std::as_const(files)) {
             chooser_files.push_back(blink::mojom::FileChooserFileInfo::NewNativeFile(
                     blink::mojom::NativeFileInfo::New(toFilePath(file), std::u16string())));
         }
@@ -198,9 +198,13 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
             d_ptr->fileDialogListener->FileSelected(
                     std::move(chooser_files), baseDir,
                     static_cast<blink::mojom::FileChooserParams::Mode>(d_ptr->mode));
+
+        // release the fileSelectListener manually because it blocks fullscreen requests in chromium
+        // see QTBUG-106975
+        d_ptr->fileDialogListener.reset();
     } else if (d_ptr->fileSystemAccessDialogListener) {
         std::vector<base::FilePath> files;
-        for (const auto &file : qAsConst(filesList)) {
+        for (const auto &file : std::as_const(filesList)) {
             files.push_back(toFilePath(file));
         }
 
@@ -209,10 +213,6 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
         else
             d_ptr->fileSystemAccessDialogListener->MultiFilesSelected(files, nullptr);
     }
-
-    // release the fileSelectListener manually because it blocks fullscreen requests in chromium
-    // see QTBUG-106975
-    d_ptr->fileDialogListener.reset();
 }
 
 QStringList FilePickerController::acceptedMimeTypes() const

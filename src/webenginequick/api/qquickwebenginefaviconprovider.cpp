@@ -35,9 +35,9 @@ static QSize largestSize(const QList<QSize> &availableSizes)
 
 static QSize fitSize(const QList<QSize> &availableSizes, const QSize &requestedSize)
 {
-    Q_ASSERT(availableSizes.count());
+    Q_ASSERT(availableSizes.size());
     QSize result = largestSize(availableSizes);
-    if (availableSizes.count() == 1 || area(requestedSize) >= area(result))
+    if (availableSizes.size() == 1 || area(requestedSize) >= area(result))
         return result;
 
     for (const QSize &size : availableSizes) {

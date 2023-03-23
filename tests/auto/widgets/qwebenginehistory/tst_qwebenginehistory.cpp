@@ -39,7 +39,7 @@ protected :
     {
         loadFinishedSpy->clear();
         page->load(QUrl("qrc:/resources/page" + QString::number(nr) + ".html"));
-        QTRY_COMPARE(loadFinishedSpy->count(), 1);
+        QTRY_COMPARE(loadFinishedSpy->size(), 1);
         loadFinishedSpy->clear();
     }
 
@@ -150,8 +150,8 @@ void tst_QWebEngineHistory::back()
     for (int i = histsize;i > 1;i--) {
         QTRY_COMPARE(toPlainTextSync(page), QString("page") + QString::number(i));
         hist->back();
-        QTRY_COMPARE(loadFinishedSpy->count(), histsize-i+1);
-        QTRY_COMPARE(titleChangedSpy.count(), histsize-i+1);
+        QTRY_COMPARE(loadFinishedSpy->size(), histsize-i+1);
+        QTRY_COMPARE(titleChangedSpy.size(), histsize-i+1);
     }
     //try one more time (too many). crash test
     hist->back();
@@ -168,15 +168,15 @@ void tst_QWebEngineHistory::forward()
     while (hist->canGoBack()) {
         hist->back();
         histBackCount++;
-        QTRY_COMPARE(loadFinishedSpy->count(), histBackCount);
+        QTRY_COMPARE(loadFinishedSpy->size(), histBackCount);
     }
 
     QSignalSpy titleChangedSpy(page, SIGNAL(titleChanged(const QString&)));
     for (int i = 1;i < histsize;i++) {
         QTRY_COMPARE(toPlainTextSync(page), QString("page") + QString::number(i));
         hist->forward();
-        QTRY_COMPARE(loadFinishedSpy->count(), i+histBackCount);
-        QTRY_COMPARE(titleChangedSpy.count(), i);
+        QTRY_COMPARE(loadFinishedSpy->size(), i+histBackCount);
+        QTRY_COMPARE(titleChangedSpy.size(), i);
     }
     //try one more time (too many). crash test
     hist->forward();
@@ -205,15 +205,15 @@ void tst_QWebEngineHistory::goToItem()
     QWebEngineHistoryItem current = hist->currentItem();
 
     hist->back();
-    QTRY_COMPARE(loadFinishedSpy->count(), 1);
+    QTRY_COMPARE(loadFinishedSpy->size(), 1);
 
     hist->back();
-    QTRY_COMPARE(loadFinishedSpy->count(), 2);
+    QTRY_COMPARE(loadFinishedSpy->size(), 2);
 
     QVERIFY(hist->currentItem().title() != current.title());
 
     hist->goToItem(current);
-    QTRY_COMPARE(loadFinishedSpy->count(), 2);
+    QTRY_COMPARE(loadFinishedSpy->size(), 2);
 
     QTRY_COMPARE(hist->currentItem().title(), current.title());
 }
@@ -225,7 +225,7 @@ void tst_QWebEngineHistory::items()
 {
     QList<QWebEngineHistoryItem> items = hist->items();
     //check count
-    QTRY_COMPARE(histsize, items.count());
+    QTRY_COMPARE(histsize, items.size());
 
     //check order
     for (int i = 1;i <= histsize;i++) {
@@ -236,10 +236,10 @@ void tst_QWebEngineHistory::items()
 void tst_QWebEngineHistory::backForwardItems()
 {
     hist->back();
-    QTRY_COMPARE(loadFinishedSpy->count(), 1);
+    QTRY_COMPARE(loadFinishedSpy->size(), 1);
 
     hist->back();
-    QTRY_COMPARE(loadFinishedSpy->count(), 2);
+    QTRY_COMPARE(loadFinishedSpy->size(), 2);
 
     QTRY_COMPARE(hist->items().size(), 5);
     QTRY_COMPARE(hist->backItems(100).size(), 2);
@@ -297,9 +297,9 @@ void tst_QWebEngineHistory::serialize_2()
     hist->back();
     QTRY_VERIFY(evaluateJavaScriptSync(page, "location.hash").toString().isEmpty());
     hist->back();
-    QTRY_COMPARE(loadFinishedSpy->count(), 1);
+    QTRY_COMPARE(loadFinishedSpy->size(), 1);
     hist->back();
-    QTRY_COMPARE(loadFinishedSpy->count(), 2);
+    QTRY_COMPARE(loadFinishedSpy->size(), 2);
     //check if current index was changed (make sure that it is not last item)
     QVERIFY(hist->currentItemIndex() != initialCurrentIndex);
     //save current index
@@ -310,18 +310,18 @@ void tst_QWebEngineHistory::serialize_2()
     load >> *hist;
     QVERIFY(load.status() == QDataStream::Ok);
     // Restoring the history will trigger a load.
-    QTRY_COMPARE(loadFinishedSpy->count(), 3);
+    QTRY_COMPARE(loadFinishedSpy->size(), 3);
 
     //check current index
     QTRY_COMPARE(hist->currentItemIndex(), oldCurrentIndex);
 
     hist->forward();
-    QTRY_COMPARE(loadFinishedSpy->count(), 4);
+    QTRY_COMPARE(loadFinishedSpy->size(), 4);
     hist->forward();
-    QTRY_COMPARE(loadFinishedSpy->count(), 5);
+    QTRY_COMPARE(loadFinishedSpy->size(), 5);
     hist->forward();
     // In-page navigation, the last url was the page5.html
-    QTRY_COMPARE(loadFinishedSpy->count(), 5);
+    QTRY_COMPARE(loadFinishedSpy->size(), 5);
     QTRY_COMPARE(hist->currentItemIndex(), initialCurrentIndex);
 }
 
@@ -429,7 +429,7 @@ void tst_QWebEngineHistory::saveAndRestore_crash_4()
     QSignalSpy loadFinishedSpy2(page2.data(), SIGNAL(loadFinished(bool)));
     QDataStream load(&buffer, QIODevice::ReadOnly);
     load >> *page2->history();
-    QTRY_COMPARE(loadFinishedSpy2.count(), 1);
+    QTRY_COMPARE(loadFinishedSpy2.size(), 1);
 }
 
 void tst_QWebEngineHistory::saveAndRestore_InternalPage()
@@ -468,7 +468,7 @@ void tst_QWebEngineHistory::popPushState()
     QWebEnginePage page;
     QSignalSpy spyLoadFinished(&page, SIGNAL(loadFinished(bool)));
     page.setHtml("<html><body>long live Qt!</body></html>");
-    QTRY_COMPARE(spyLoadFinished.count(), 1);
+    QTRY_COMPARE(spyLoadFinished.size(), 1);
     evaluateJavaScriptSync(&page, script);
 }
 

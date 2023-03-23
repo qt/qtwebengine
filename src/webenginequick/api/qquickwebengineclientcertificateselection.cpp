@@ -126,7 +126,7 @@ QQmlListProperty<QQuickWebEngineClientCertificateOption> QQuickWebEngineClientCe
 {
     if (m_certificates.empty()) {
         QList<QSslCertificate> certificates = d_ptr->certificates();
-        for (int i = 0; i < certificates.count(); ++i)
+        for (int i = 0; i < certificates.size(); ++i)
             m_certificates.push_back(new QQuickWebEngineClientCertificateOption(this, i));
     }
 

@@ -29,6 +29,7 @@ set(tst_origins_resource_files
     "resources/viewSource.html"
     "resources/websocket.html"
     "resources/websocket2.html"
+    "resources/red.png"
 )
 
 qt_internal_add_resource(tst_origins "tst_origins"

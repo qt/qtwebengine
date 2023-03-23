@@ -88,9 +88,9 @@ void tst_Favicon::faviconLoad()
                                    + QLatin1String("/resources/favicon-single.html"));
     m_page->load(url);
 
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
-    QTRY_COMPARE(iconChangedSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
+    QTRY_COMPARE(iconUrlChangedSpy.size(), 1);
+    QTRY_COMPARE(iconChangedSpy.size(), 1);
 
     QUrl iconUrl = iconUrlChangedSpy.at(0).at(0).toString();
     QCOMPARE(iconUrl, m_page->iconUrl());
@@ -101,7 +101,7 @@ void tst_Favicon::faviconLoad()
     const QIcon &icon = m_page->icon();
     QVERIFY(!icon.isNull());
 
-    QCOMPARE(icon.availableSizes().count(), 2);
+    QCOMPARE(icon.availableSizes().size(), 2);
     QVERIFY(icon.availableSizes().contains(QSize(16, 16)));
     QVERIFY(icon.availableSizes().contains(QSize(32, 32)));
 }
@@ -115,9 +115,9 @@ void tst_Favicon::faviconLoadFromResources()
     QUrl url("qrc:/resources/favicon-single.html");
     m_page->load(url);
 
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
-    QTRY_COMPARE(iconChangedSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
+    QTRY_COMPARE(iconUrlChangedSpy.size(), 1);
+    QTRY_COMPARE(iconChangedSpy.size(), 1);
 
     QUrl iconUrl = iconUrlChangedSpy.at(0).at(0).toString();
     QCOMPARE(iconUrl, m_page->iconUrl());
@@ -126,7 +126,7 @@ void tst_Favicon::faviconLoadFromResources()
     const QIcon &icon = m_page->icon();
     QVERIFY(!icon.isNull());
 
-    QCOMPARE(icon.availableSizes().count(), 2);
+    QCOMPARE(icon.availableSizes().size(), 2);
     QVERIFY(icon.availableSizes().contains(QSize(16, 16)));
     QVERIFY(icon.availableSizes().contains(QSize(32, 32)));
 }
@@ -150,9 +150,9 @@ void tst_Favicon::faviconLoadEncodedUrl()
     QUrl url(urlString + QLatin1String("?favicon=load should work with#whitespace!"));
     m_page->load(url);
 
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
-    QTRY_COMPARE(iconChangedSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
+    QTRY_COMPARE(iconUrlChangedSpy.size(), 1);
+    QTRY_COMPARE(iconChangedSpy.size(), 1);
 
     QUrl iconUrl = iconUrlChangedSpy.at(0).at(0).toString();
     QCOMPARE(m_page->iconUrl(), iconUrl);
@@ -163,7 +163,7 @@ void tst_Favicon::faviconLoadEncodedUrl()
     const QIcon &icon = m_page->icon();
     QVERIFY(!icon.isNull());
 
-    QCOMPARE(icon.availableSizes().count(), 2);
+    QCOMPARE(icon.availableSizes().size(), 2);
     QVERIFY(icon.availableSizes().contains(QSize(16, 16)));
     QVERIFY(icon.availableSizes().contains(QSize(32, 32)));
 }
@@ -175,27 +175,27 @@ void tst_Favicon::faviconLoadAfterHistoryNavigation()
     QSignalSpy iconChangedSpy(m_page, SIGNAL(iconChanged(QIcon)));
 
     m_page->load(QUrl("qrc:/resources/favicon-single.html"));
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
-    QTRY_COMPARE(iconChangedSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
+    QTRY_COMPARE(iconUrlChangedSpy.size(), 1);
+    QTRY_COMPARE(iconChangedSpy.size(), 1);
     QCOMPARE(m_page->iconUrl(), QUrl("qrc:/resources/icons/qt32.ico"));
 
     m_page->load(QUrl("qrc:/resources/favicon-multi.html"));
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 2, 30000);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 3);
-    QTRY_COMPARE(iconChangedSpy.count(), 3);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 2, 30000);
+    QTRY_COMPARE(iconUrlChangedSpy.size(), 3);
+    QTRY_COMPARE(iconChangedSpy.size(), 3);
     QCOMPARE(m_page->iconUrl(), QUrl("qrc:/resources/icons/qtmulti.ico"));
 
     m_page->triggerAction(QWebEnginePage::Back);
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 3, 30000);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 5);
-    QTRY_COMPARE(iconChangedSpy.count(), 5);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 3, 30000);
+    QTRY_COMPARE(iconUrlChangedSpy.size(), 5);
+    QTRY_COMPARE(iconChangedSpy.size(), 5);
     QCOMPARE(m_page->iconUrl(), QUrl("qrc:/resources/icons/qt32.ico"));
 
     m_page->triggerAction(QWebEnginePage::Forward);
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 4, 30000);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 7);
-    QTRY_COMPARE(iconChangedSpy.count(), 7);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 4, 30000);
+    QTRY_COMPARE(iconUrlChangedSpy.size(), 7);
+    QTRY_COMPARE(iconChangedSpy.size(), 7);
     QCOMPARE(m_page->iconUrl(), QUrl("qrc:/resources/icons/qtmulti.ico"));
 }
 
@@ -208,9 +208,9 @@ void tst_Favicon::faviconLoadPushState()
     QUrl url("qrc:/resources/favicon-single.html");
     m_page->load(url);
 
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
-    QTRY_COMPARE(iconChangedSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
+    QTRY_COMPARE(iconUrlChangedSpy.size(), 1);
+    QTRY_COMPARE(iconChangedSpy.size(), 1);
 
     QUrl iconUrl = iconUrlChangedSpy.at(0).at(0).toString();
     QCOMPARE(iconUrl, m_page->iconUrl());
@@ -229,8 +229,8 @@ void tst_Favicon::faviconLoadPushState()
     QTRY_COMPARE(m_page->history()->count(), 2);
 
     // Favicon change is not expected.
-    QCOMPARE(iconUrlChangedSpy.count(), 0);
-    QCOMPARE(iconChangedSpy.count(), 0);
+    QCOMPARE(iconUrlChangedSpy.size(), 0);
+    QCOMPARE(iconChangedSpy.size(), 0);
     QCOMPARE(m_page->iconUrl(), QUrl("qrc:/resources/icons/qt32.ico"));
 }
 
@@ -251,9 +251,9 @@ void tst_Favicon::noFavicon()
                                    + QLatin1String("/resources/test1.html"));
     m_page->load(url);
 
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
-    QCOMPARE(iconUrlChangedSpy.count(), 0);
-    QCOMPARE(iconChangedSpy.count(), 0);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
+    QCOMPARE(iconUrlChangedSpy.size(), 0);
+    QCOMPARE(iconChangedSpy.size(), 0);
 
     QVERIFY(m_page->iconUrl().isEmpty());
     QVERIFY(m_page->icon().isNull());
@@ -268,9 +268,9 @@ void tst_Favicon::aboutBlank()
     QUrl url("about:blank");
     m_page->load(url);
 
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
-    QCOMPARE(iconUrlChangedSpy.count(), 0);
-    QCOMPARE(iconChangedSpy.count(), 0);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
+    QCOMPARE(iconUrlChangedSpy.size(), 0);
+    QCOMPARE(iconChangedSpy.size(), 0);
 
     QVERIFY(m_page->iconUrl().isEmpty());
     QVERIFY(m_page->icon().isNull());
@@ -293,9 +293,9 @@ void tst_Favicon::unavailableFavicon()
                                    + QLatin1String("/resources/favicon-unavailable.html"));
     m_page->load(url);
 
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
-    QCOMPARE(iconUrlChangedSpy.count(), 0);
-    QCOMPARE(iconChangedSpy.count(), 0);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
+    QCOMPARE(iconUrlChangedSpy.size(), 0);
+    QCOMPARE(iconChangedSpy.size(), 0);
 
     QVERIFY(m_page->iconUrl().isEmpty());
     QVERIFY(m_page->icon().isNull());
@@ -312,9 +312,9 @@ void tst_Favicon::errorPageEnabled()
     QUrl url("http://url.invalid");
     m_page->load(url);
 
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
-    QCOMPARE(iconUrlChangedSpy.count(), 0);
-    QCOMPARE(iconChangedSpy.count(), 0);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
+    QCOMPARE(iconUrlChangedSpy.size(), 0);
+    QCOMPARE(iconChangedSpy.size(), 0);
 
     QVERIFY(m_page->iconUrl().isEmpty());
     QVERIFY(m_page->icon().isNull());
@@ -331,9 +331,9 @@ void tst_Favicon::errorPageDisabled()
     QUrl url("http://url.invalid");
     m_page->load(url);
 
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
-    QCOMPARE(iconUrlChangedSpy.count(), 0);
-    QCOMPARE(iconChangedSpy.count(), 0);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
+    QCOMPARE(iconUrlChangedSpy.size(), 0);
+    QCOMPARE(iconChangedSpy.size(), 0);
 
     QVERIFY(m_page->iconUrl().isEmpty());
     QVERIFY(m_page->icon().isNull());
@@ -356,9 +356,9 @@ void tst_Favicon::touchIcon()
                                    + QLatin1String("/resources/favicon-touch.html"));
     m_page->load(url);
 
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
-    QCOMPARE(iconUrlChangedSpy.count(), 0);
-    QCOMPARE(iconChangedSpy.count(), 0);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
+    QCOMPARE(iconUrlChangedSpy.size(), 0);
+    QCOMPARE(iconChangedSpy.size(), 0);
 
     QVERIFY(m_page->iconUrl().isEmpty());
     QVERIFY(m_page->icon().isNull());
@@ -387,9 +387,9 @@ void tst_Favicon::multiIcon()
     m_page->settings()->setAttribute(QWebEngineSettings::TouchIconsEnabled, false);
     m_page->load(url);
 
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
-    QTRY_COMPARE(iconChangedSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
+    QTRY_COMPARE(iconUrlChangedSpy.size(), 1);
+    QTRY_COMPARE(iconChangedSpy.size(), 1);
 
     iconUrl = iconUrlChangedSpy.at(0).at(0).toString();
     QCOMPARE(m_page->iconUrl(), iconUrl);
@@ -399,14 +399,14 @@ void tst_Favicon::multiIcon()
 
     icon = m_page->icon();
     QVERIFY(!icon.isNull());
-    QCOMPARE(icon.availableSizes().count(), 2);
+    QCOMPARE(icon.availableSizes().size(), 2);
     QVERIFY(icon.availableSizes().contains(QSize(16, 16)));
     QVERIFY(icon.availableSizes().contains(QSize(32, 32)));
 
     // Reset
     loadFinishedSpy.clear();
     m_page->load(QUrl("about:blank"));
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
     iconUrlChangedSpy.clear();
     iconChangedSpy.clear();
     loadFinishedSpy.clear();
@@ -416,9 +416,9 @@ void tst_Favicon::multiIcon()
     m_page->settings()->setAttribute(QWebEngineSettings::TouchIconsEnabled, true);
     m_page->load(url);
 
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
-    QTRY_COMPARE(iconChangedSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
+    QTRY_COMPARE(iconUrlChangedSpy.size(), 1);
+    QTRY_COMPARE(iconChangedSpy.size(), 1);
 
     iconUrl = iconUrlChangedSpy.at(0).at(0).toString();
     QCOMPARE(m_page->iconUrl(), iconUrl);
@@ -428,7 +428,7 @@ void tst_Favicon::multiIcon()
 
     icon = m_page->icon();
     QVERIFY(!icon.isNull());
-    QCOMPARE(icon.availableSizes().count(), 1);
+    QCOMPARE(icon.availableSizes().size(), 1);
     QVERIFY(icon.availableSizes().contains(QSize(64, 64)));
 }
 
@@ -454,9 +454,9 @@ void tst_Favicon::downloadIconsDisabled()
 
     m_page->load(url);
 
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
-    QCOMPARE(iconUrlChangedSpy.count(), 0);
-    QCOMPARE(iconChangedSpy.count(), 0);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
+    QCOMPARE(iconUrlChangedSpy.size(), 0);
+    QCOMPARE(iconChangedSpy.size(), 0);
 
     QVERIFY(m_page->iconUrl().isEmpty());
     QVERIFY(m_page->icon().isNull());
@@ -491,9 +491,9 @@ void tst_Favicon::downloadTouchIconsEnabled()
 
     m_page->load(url);
 
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
-    QTRY_COMPARE(iconChangedSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
+    QTRY_COMPARE(iconUrlChangedSpy.size(), 1);
+    QTRY_COMPARE(iconChangedSpy.size(), 1);
 
     const QUrl &iconUrl = iconUrlChangedSpy.at(0).at(0).toString();
     QCOMPARE(m_page->iconUrl(), iconUrl);
@@ -502,7 +502,7 @@ void tst_Favicon::downloadTouchIconsEnabled()
     const QIcon &icon = m_page->icon();
     QVERIFY(!icon.isNull());
 
-    QCOMPARE(icon.availableSizes().count(), 1);
+    QCOMPARE(icon.availableSizes().size(), 1);
     QCOMPARE(icon.availableSizes().first(), expectedIconSize);
 }
 
@@ -524,9 +524,9 @@ void tst_Favicon::dynamicFavicon()
                     "<link rel='icon' type='image/png' "
                     "href='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='/>"
                     "</html>");
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
-    QTRY_COMPARE(iconChangedSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
+    QTRY_COMPARE(iconUrlChangedSpy.size(), 1);
+    QTRY_COMPARE(iconChangedSpy.size(), 1);
 
     QCOMPARE(m_page->icon().pixmap(1, 1).toImage().pixelColor(0, 0), QColor(Qt::black));
 
@@ -535,7 +535,7 @@ void tst_Favicon::dynamicFavicon()
         evaluateJavaScriptSync(
                 m_page,
                 "document.getElementsByTagName('link')[0].href = 'data:image/png;base64," + colors[color] + "';");
-        QTRY_COMPARE(iconChangedSpy.count(), 1);
+        QTRY_COMPARE(iconChangedSpy.size(), 1);
         QTRY_COMPARE(m_page->iconUrl().toString(),
                      QString("data:image/png;base64," + colors[color]));
         QCOMPARE(m_page->icon().pixmap(1, 1).toImage().pixelColor(0, 0), QColor(color));
@@ -555,13 +555,13 @@ void tst_Favicon::touchIconWithSameURL()
                     "<link rel='icon' type='image/png' href='" + icon + "'/>"
                     "<link rel='apple-touch-icon' type='image/png' href='" + icon + "'/>"
                     "</html>");
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
 
     // The default favicon has to be loaded even if its URL is also set as a touch icon while touch
     // icons are disabled.
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
+    QTRY_COMPARE(iconUrlChangedSpy.size(), 1);
     QCOMPARE(m_page->iconUrl().toString(), icon);
-    QTRY_COMPARE(iconChangedSpy.count(), 1);
+    QTRY_COMPARE(iconChangedSpy.size(), 1);
 
     loadFinishedSpy.clear();
     iconUrlChangedSpy.clear();
@@ -570,13 +570,13 @@ void tst_Favicon::touchIconWithSameURL()
     m_page->setHtml("<html>"
                     "<link rel='apple-touch-icon' type='image/png' href='" + icon + "'/>"
                     "</html>");
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
 
     // This page only has a touch icon. With disabled touch icons we don't expect any icon to be
     // shown even if the same icon was loaded previously.
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
+    QTRY_COMPARE(iconUrlChangedSpy.size(), 1);
     QVERIFY(m_page->iconUrl().toString().isEmpty());
-    QTRY_COMPARE(iconChangedSpy.count(), 1);
+    QTRY_COMPARE(iconChangedSpy.size(), 1);
 }
 
 void tst_Favicon::iconDatabaseOTR()
@@ -592,9 +592,9 @@ void tst_Favicon::iconDatabaseOTR()
 
     page->load(QUrl("qrc:/resources/favicon-misc.html"));
 
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
-    QTRY_COMPARE(iconChangedSpy.count(), 1);
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QTRY_COMPARE(iconUrlChangedSpy.size(), 1);
+    QTRY_COMPARE(iconChangedSpy.size(), 1);
 
     {
         bool iconRequestDone = false;
@@ -647,15 +647,15 @@ void tst_Favicon::requestIconForIconURL()
 
     page->load(QUrl("qrc:/resources/favicon-misc.html"));
 
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
-    QTRY_COMPARE(iconChangedSpy.count(), 1);
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QTRY_COMPARE(iconUrlChangedSpy.size(), 1);
+    QTRY_COMPARE(iconChangedSpy.size(), 1);
 
     page->load(QUrl("about:blank"));
 
-    QTRY_COMPARE(loadFinishedSpy.count(), 2);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 2);
-    QTRY_COMPARE(iconChangedSpy.count(), 2);
+    QTRY_COMPARE(loadFinishedSpy.size(), 2);
+    QTRY_COMPARE(iconUrlChangedSpy.size(), 2);
+    QTRY_COMPARE(iconChangedSpy.size(), 2);
     QVERIFY(page->icon().isNull());
     QVERIFY(page->iconUrl().isEmpty());
 
@@ -717,15 +717,15 @@ void tst_Favicon::requestIconForPageURL()
 
     page->load(QUrl("qrc:/resources/favicon-misc.html"));
 
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
-    QTRY_COMPARE(iconChangedSpy.count(), 1);
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QTRY_COMPARE(iconUrlChangedSpy.size(), 1);
+    QTRY_COMPARE(iconChangedSpy.size(), 1);
 
     page->load(QUrl("about:blank"));
 
-    QTRY_COMPARE(loadFinishedSpy.count(), 2);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 2);
-    QTRY_COMPARE(iconChangedSpy.count(), 2);
+    QTRY_COMPARE(loadFinishedSpy.size(), 2);
+    QTRY_COMPARE(iconUrlChangedSpy.size(), 2);
+    QTRY_COMPARE(iconChangedSpy.size(), 2);
     QVERIFY(page->icon().isNull());
     QVERIFY(page->iconUrl().isEmpty());
 
@@ -770,15 +770,15 @@ void tst_Favicon::desiredSize()
 
         page->load(QUrl("qrc:/resources/favicon-multi.html"));
 
-        QTRY_COMPARE(loadFinishedSpy.count(), 1);
-        QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
-        QTRY_COMPARE(iconChangedSpy.count(), 1);
+        QTRY_COMPARE(loadFinishedSpy.size(), 1);
+        QTRY_COMPARE(iconUrlChangedSpy.size(), 1);
+        QTRY_COMPARE(iconChangedSpy.size(), 1);
 
         page->load(QUrl("about:blank"));
 
-        QTRY_COMPARE(loadFinishedSpy.count(), 2);
-        QTRY_COMPARE(iconUrlChangedSpy.count(), 2);
-        QTRY_COMPARE(iconChangedSpy.count(), 2);
+        QTRY_COMPARE(loadFinishedSpy.size(), 2);
+        QTRY_COMPARE(iconUrlChangedSpy.size(), 2);
+        QTRY_COMPARE(iconChangedSpy.size(), 2);
         QVERIFY(page->icon().isNull());
         QVERIFY(page->iconUrl().isEmpty());
     }
@@ -813,15 +813,15 @@ void tst_Favicon::desiredSize()
 
         page->load(QUrl("qrc:/resources/favicon-multi.html"));
 
-        QTRY_COMPARE(loadFinishedSpy.count(), 1);
-        QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
-        QTRY_COMPARE(iconChangedSpy.count(), 1);
+        QTRY_COMPARE(loadFinishedSpy.size(), 1);
+        QTRY_COMPARE(iconUrlChangedSpy.size(), 1);
+        QTRY_COMPARE(iconChangedSpy.size(), 1);
 
         page->load(QUrl("about:blank"));
 
-        QTRY_COMPARE(loadFinishedSpy.count(), 2);
-        QTRY_COMPARE(iconUrlChangedSpy.count(), 2);
-        QTRY_COMPARE(iconChangedSpy.count(), 2);
+        QTRY_COMPARE(loadFinishedSpy.size(), 2);
+        QTRY_COMPARE(iconUrlChangedSpy.size(), 2);
+        QTRY_COMPARE(iconChangedSpy.size(), 2);
         QVERIFY(page->icon().isNull());
         QVERIFY(page->iconUrl().isEmpty());
     }

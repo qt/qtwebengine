@@ -25,7 +25,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmltype WebEngineNewWindowRequest
     \instantiates QWebEngineNewWindowRequest
-    \inqmlmodule QtWebEngineQuick
+    \inqmlmodule QtWebEngine
     \since QtWebEngine 1.12
 
     \brief A utility type for the WebEngineView::newWindowRequested signal.

@@ -113,7 +113,7 @@ inline QPoint elementCenter(QQuickWebEngineView *view, const QString &id)
             "})()");
     QVariantList rectList = evaluateJavaScriptSync(view, jsCode).toList();
 
-    if (rectList.count() != 2) {
+    if (rectList.size() != 2) {
         qWarning("elementCenter failed.");
         return QPoint();
     }

@@ -23,7 +23,7 @@ FileSystemAccessPermissionRequestControllerImpl::FileSystemAccessPermissionReque
         const FileSystemAccessPermissionRequestManagerQt::RequestData &request,
         base::OnceCallback<void(permissions::PermissionAction result)> callback)
     : FileSystemAccessPermissionRequestController(
-            toQt(request.origin.GetURL()), toQt(request.path.value()),
+            toQt(request.origin.GetURL()), QUrl::fromLocalFile(toQt(request.path.value())),
             (HandleType)request.handle_type, AccessFlags((int)request.access))
     , m_callback(std::move(callback))
 {

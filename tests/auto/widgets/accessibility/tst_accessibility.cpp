@@ -532,7 +532,7 @@ void tst_Accessibility::roles()
     QSignalSpy spyFinished(&webView, &QWebEngineView::loadFinished);
     webView.setHtml("<html><body>" + html + "</body></html>");
     webView.show();
-    QTRY_COMPARE_WITH_TIMEOUT(spyFinished.count(), 1, 20000);
+    QTRY_COMPARE_WITH_TIMEOUT(spyFinished.size(), 1, 20000);
 
     QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
 

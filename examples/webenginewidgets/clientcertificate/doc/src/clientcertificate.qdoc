@@ -1,0 +1,159 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \example webenginewidgets/clientcertificate
+    \title WebEngine Widgets Client Certificate Example
+    \ingroup webengine-widgetexamples
+    \brief A simple client certificate authentication scenario using \QWE and \l QSslServer.
+
+    \image selection.png
+
+    In this example we are going to show a client certificate authentication workflow.
+    The presented authentication scenario can be for example implemented
+    for an embedded device, which provides a web interface to handle its functionality.
+    The administrator uses the \QWE powered client to maintain the embedded device
+    and has a custom SSL certificate to authenticate.
+    The connection is encrypted with SSL sockets. The embedded device uses
+    a \c QSslSocket to handle the authentication and the encryption. This way the
+    administrator does not have to enter any credentials and just needs to select
+    a proper certificate that is recognized by the device.
+
+    In the example we focus on a very simple and minimalistic approach to demonstrate
+    the workflow. Note that QSslSocket is a low level solution as we do not have to
+    run a full-blown HTTPS server on the resource limited embedded device.
+
+    \section1 Creating Certificates
+
+    The example comes with certificates already generated, but let's see how to generate
+    new ones. We create certificates for the server and the client using
+    \l{https://www.openssl.org}{OpenSSL tooling}.
+
+    First, we create the certificate signing request \c CSR and sign it. We will use
+    a CA private key to sign and issue both local certificates for the client and the server.
+
+    \badcode
+    openssl req -out ca.pem -new -x509 -nodes -keyout ca.key
+    \endcode
+
+    \note Specify the \c {-days} option to override the default certificate validity of 30 days.
+
+    Now, let's create two private keys for our client and a server:
+
+    \badcode
+    openssl genrsa -out client.key 2048
+    \endcode
+    \badcode
+    openssl genrsa -out server.key 2048
+    \endcode
+
+    Next we need two certificate signing requests:
+
+    \badcode
+    openssl req -key client.key -new -out client.req
+    \endcode
+    \badcode
+    openssl req -key server.key -new -out server.req
+    \endcode
+
+    Let's issue now both certificates from CSRs:
+
+    \badcode
+    openssl x509 -req -in client.req -out client.pem -CA ca.pem -CAkey ca.key
+    \endcode
+    \badcode
+    openssl x509 -req -in server.req -out server.pem -CA ca.pem -CAkey ca.key
+    \endcode
+
+    The client certificate subject and the serial number will be displayed for
+    selection during authentication. The serial number can be printed with:
+
+    \badcode
+    openssl x509 -serial -noout -in client.pem
+    \endcode
+
+    \section1 Implementing the Client
+
+    Now we can implement our web browser client.
+
+    We start by loading our certificate and its private key and creating \l QSslCertificate
+    and \l QSslKey instances.
+
+
+    \quotefromfile webenginewidgets/clientcertificate/client.cpp
+    \skipto QFile
+    \printuntil QSslKey
+
+    Now we add the certificate and its private key to \l {QWebEngineClientCertificateStore}.
+
+    \printuntil clientCertificateStore
+
+    To handle certificates we need to create an instance of \l QWebEnginePage and connect to two
+    singals \l QWebEnginePage::certificateError and \l QWebEnginePage::selectClientCertificate.
+    The first one is only needed as our self-signed server certificate will trigger a certificate
+    error, which has to be accepted to proceed with the authentication. In production
+    environments self-signed certificates are not used, therefore in this example we handle
+    \l QWebEngineCertificateError just to avoid providing proper certificates.
+    Note the private key is a secret and should never be published.
+
+    \printuntil acceptCertificate
+
+    The handling for \l QWebEnginePage::selectClientCertificate simply displays \l QDialog
+    with \l QListWidget showing a list of client certificates to choose from.
+    The user selected certificate is then passed to the
+    \l QWebEngineClientCertificateSelection::select call.
+
+    \printto QWebEngineView
+
+    Finally, we create a \l QWebEngineView for our \l QWebEnginePage, load the server
+    URL, and show the page.
+
+    \printuntil show
+
+    \section1 Implementing the Server
+
+    For our embedded device we will develop a minimalistic HTTPS server. We can use \l QSslServer
+    to handle incoming connections and to provide an \l QSslSocket instance. To do that,
+    we create an instance of a \l QSslServer and, similarly to our client setup, we load a server
+    certificate and its private key. Next, we create \l QSslCertificate and \l QSslKey objects
+    accordingly. Additionally, we need a CA certificate so the server can validate the certificate
+    presented by the client. The CA and local certificate are set to \l QSslConfiguration and
+    used later by the server.
+
+    \quotefromfile webenginewidgets/clientcertificate/server.cpp
+    \skipto QSslServer
+    \printuntil setSslConfiguration
+
+    Next, we set the server to listen for incoming connections on port \c 5555
+
+    \printuntil qInfo
+
+    We provide a lambda function for the \l QTcpServer::pendingConnectionAvailable signal,
+    where we implement handling for incoming connections. This signal is triggered
+    after authentication has succeeded and \c socket TLS encryption has started.
+
+    \printto readyRead
+
+    The \c Request object used above is a simple wrapper around \l QByteArray as we use
+    \l QPointer to help with memory management. This object gathers incoming HTTP data.
+    It is deleted when the request has completed or a socket has been terminated.
+
+    \quotefromfile webenginewidgets/clientcertificate/server.cpp
+    \skipto struct
+    \printuntil };
+
+    The reply for the request depends on the requested URL, and it is sent back through
+    the socket in form of a HTML page. For the \c GET root request the administrator sees
+    the \c {Access Granted} message and an \c {Exit} HTML button. If the administrator clicks it,
+    the client sends another request. This time with the \c{/exit} relative URL,
+    which it turn triggers the server termination.
+
+    \quotefromfile webenginewidgets/clientcertificate/server.cpp
+    \skipto readyRead
+    \printuntil });
+
+    To run the example, start the \c server and then the \c client. After you select
+    the certificate, the \c {Access Granted} page is displayed.
+
+    \image granted.png
+*/

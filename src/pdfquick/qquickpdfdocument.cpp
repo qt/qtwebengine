@@ -8,6 +8,7 @@
 #include <QtQml/qqmlcontext.h>
 #include <QtQml/qqmlengine.h>
 #include <QtQuick/qquickitem.h>
+#include <QtQml/qqmlfile.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -41,9 +42,9 @@ void QQuickPdfDocument::classBegin()
 {
     m_doc = static_cast<QPdfDocument *>(qmlExtendedObject(this));
     Q_ASSERT(m_doc);
-    connect(m_doc, &QPdfDocument::passwordChanged, this, [this]() {
-        if (resolvedSource().isValid() && resolvedSource().isLocalFile())
-            m_doc->load(resolvedSource().path());
+    connect(m_doc, &QPdfDocument::passwordChanged, this, [this]() -> void {
+        if (resolvedSource().isValid())
+            m_doc->load(QQmlFile::urlToLocalFileOrQrc(resolvedSource()));
     });
     connect(m_doc, &QPdfDocument::statusChanged, this, [this] (QPdfDocument::Status status) {
         emit errorChanged();

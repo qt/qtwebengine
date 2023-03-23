@@ -57,7 +57,7 @@ QList<TouchPoint> RenderWidgetHostViewQtDelegateClient::mapTouchPointIds(const Q
     Q_ASSERT(output.size() == std::accumulate(output.cbegin(), output.cend(), QSet<int>(),
                  [] (QSet<int> s, const TouchPoint &p) { s.insert(p.second.id()); return s; }).size());
 
-    for (auto &&point : qAsConst(input))
+    for (auto &&point : std::as_const(input))
         if (point.state() == QEventPoint::Released)
             m_touchIdMapping.remove(point.id());
 
@@ -536,7 +536,7 @@ void RenderWidgetHostViewQtDelegateClient::handleTouchEvent(QTouchEvent *event)
     auto sc = qScopeGuard([&] () {
         switch (event->type()) {
             case QEvent::TouchCancel:
-                for (auto &&it : qAsConst(touchPoints))
+                for (auto &&it : std::as_const(touchPoints))
                     m_touchIdMapping.remove(it.second.id());
                 Q_FALLTHROUGH();
 
