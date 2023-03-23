@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/3rdparty/markdown.css</file>
+        <file>assets/3rdparty/marked.js</file>
+        <file>assets/custom.js</file>
+        <file>assets/custom.css</file>
+        <file>assets/pages/burger.html</file>
+        <file>assets/pages/cupcakes.html</file>
+        <file>assets/pages/pasta.html</file>
+        <file>assets/pages/pizza.html</file>
+        <file>assets/pages/skewers.html</file>
+        <file>assets/pages/soup.html</file>
+        <file>assets/pages/steak.html</file>
+    </qresource>
+</RCC>

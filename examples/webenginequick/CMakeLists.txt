@@ -3,6 +3,3 @@
 
 qt_internal_add_example(lifecycle)
 qt_internal_add_example(quicknanobrowser)
-if(TARGET Qt::QuickControls2)
-    qt_internal_add_example(recipebrowser)
-endif()
