@@ -55,7 +55,6 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/network_service_util.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/media_switches.h"
@@ -475,7 +474,6 @@ WebEngineContext::~WebEngineContext()
     Q_ASSERT(!m_devtoolsServer);
     Q_ASSERT(!m_browserRunner);
     Q_ASSERT(m_profileAdapters.isEmpty());
-    delete s_syncPointManager.fetchAndStoreRelaxed(nullptr);
 }
 
 WebEngineContext *WebEngineContext::current()
@@ -832,19 +830,6 @@ WebRtcLogUploader *WebEngineContext::webRtcLogUploader()
 }
 #endif
 
-
-static QMutex s_spmMutex;
-QAtomicPointer<gpu::SyncPointManager> WebEngineContext::s_syncPointManager;
-
-gpu::SyncPointManager *WebEngineContext::syncPointManager()
-{
-    if (gpu::SyncPointManager *spm = s_syncPointManager.loadAcquire())
-        return spm;
-    QMutexLocker lock(&s_spmMutex);
-    if (!s_syncPointManager)
-        s_syncPointManager.storeRelaxed(new gpu::SyncPointManager());
-    return s_syncPointManager.loadRelaxed();
-}
 
 base::CommandLine *WebEngineContext::initCommandLine(bool &useEmbeddedSwitches,
                                                      bool &enableGLSoftwareRendering)
