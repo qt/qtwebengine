@@ -21,6 +21,7 @@
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #endif
 #include "chrome/common/chrome_switches.h"
+#include "content/common/process_visibility_tracker.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/compositor/viz_process_transport_factory.h"
@@ -30,6 +31,7 @@
 #endif
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/download/public/common/download_task_runner.h"
+#include "components/power_scheduler/power_mode_arbiter.h"
 #include "components/viz/common/features.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/app/mojo_ipc_support.h"
@@ -762,8 +764,10 @@ WebEngineContext::WebEngineContext()
     content::StartBrowserThreadPool();
     content::BrowserTaskExecutor::PostFeatureListSetup();
     tracing::InitTracingPostThreadPoolStartAndFeatureList(false);
-    m_discardableSharedMemoryManager = std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
     base::PowerMonitor::Initialize(std::make_unique<base::PowerMonitorDeviceSource>());
+    content::ProcessVisibilityTracker::GetInstance();
+    m_discardableSharedMemoryManager = std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
+    power_scheduler::PowerModeArbiter::GetInstance()->OnThreadPoolAvailable();
 
     m_mojoIpcSupport = std::make_unique<content::MojoIpcSupport>(content::BrowserTaskExecutor::CreateIOThread());
     download::SetIOTaskRunner(m_mojoIpcSupport->io_thread()->task_runner());
