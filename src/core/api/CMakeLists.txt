@@ -94,7 +94,7 @@ add_custom_command(
     USES_TERMINAL
 )
 add_custom_target(generate_chromium_attributions DEPENDS chromium_attributions.qdoc)
-add_dependencies(generate_docs_WebEngineCore generate_chromium_attributions)
+add_dependencies(docs generate_chromium_attributions)
 
 ##
 #  WEBENGINECORE RESOURCES
