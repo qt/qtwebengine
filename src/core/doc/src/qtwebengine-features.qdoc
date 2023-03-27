@@ -298,6 +298,12 @@
     tested by using \l{WebEngine Widgets Maps Example}{Maps} and allowing it to
     find the current position of the user.
 
+    \note On Windows 11, enable settings to grant the maps example access to
+    Windows location services. In the Settings App under
+    \uicontrol {Privacy & Security} > \uicontrol {Location}, enable \uicontrol
+    {Location services}, \uicontrol {Let apps access your location} and \uicontrol
+    {Let desktop apps access your location}.
+
     See \l{Qt Positioning} for a possible backend setup like the GPS or IP based positioning.
 
     Support for this feature was added in Qt 5.5.0.
