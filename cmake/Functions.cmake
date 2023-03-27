@@ -1048,11 +1048,13 @@ macro(append_toolchain_setup)
         list(APPEND gnArgArg
             custom_toolchain="${buildDir}/target_toolchain:target"
             host_toolchain="${buildDir}/host_toolchain:host"
-            v8_snapshot_toolchain="${buildDir}/v8_toolchain:v8"
         )
         get_gn_arch(cpu ${TEST_architecture_arch})
         if(CMAKE_CROSSCOMPILING)
-            list(APPEND gnArgArg target_cpu="${cpu}")
+            list(APPEND gnArgArg
+                v8_snapshot_toolchain="${buildDir}/v8_toolchain:v8"
+                target_cpu="${cpu}"
+            )
         else()
             list(APPEND gnArgArg host_cpu="${cpu}")
         endif()
