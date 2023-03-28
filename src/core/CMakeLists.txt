@@ -593,3 +593,11 @@ if(QT_FEATURE_webengine_spellchecker AND NOT CMAKE_CROSSCOMPILING)
     add_dependencies(${dict_target_name} WebEngineCore)
 endif()
 
+##
+#  CHROMIUM UPDATE
+##
+
+add_custom_target(update-chromium
+    COMMAND ${CMAKE_COMMAND} -P ${WEBENGINE_ROOT_SOURCE_DIR}/cmake/SubmoduleUpdate.cmake
+    DEPENDS ${WEBENGINE_ROOT_SOURCE_DIR}/cmake/SubmoduleUpdate.cmake
+)
