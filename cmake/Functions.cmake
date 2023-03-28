@@ -1325,3 +1325,28 @@ function(add_build feature value)
     set(depTracker "${depTracker}" ${feature})
     set_property(GLOBAL PROPERTY MATRIX_DEPENDENCY_TRACKER "${depTracker}")
 endfunction()
+
+function(add_code_attributions_target)
+    cmake_parse_arguments(PARSE_ARGV 0 arg ""
+        "TARGET;OUTPUT;GN_TARGET;FILE_TEMPLATE;ENTRY_TEMPLATE;BUILDDIR" ""
+    )
+    _qt_internal_validate_all_args_are_parsed(arg)
+    get_filename_component(fileTemplate ${arg_FILE_TEMPLATE} ABSOLUTE)
+    get_filename_component(entryTemplate ${arg_ENTRY_TEMPLATE} ABSOLUTE)
+    add_custom_command(
+        OUTPUT ${arg_OUTPUT}
+        COMMAND ${Python3_EXECUTABLE} ${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium/tools/licenses.py
+           --file-template ${fileTemplate}
+           --entry-template ${entryTemplate}
+           --gn-binary ${Gn_EXECUTABLE}
+           --gn-target ${arg_GN_TARGET} --gn-out-dir ${arg_BUILDDIR}
+           credits ${arg_OUTPUT}
+        WORKING_DIRECTORY ${arg_BUILDDIR}
+        DEPENDS
+           ${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium/tools/licenses.py
+           ${arg_FILE_TEMPLATE}
+           ${arg_ENTRY_TEMPLATE}
+        USES_TERMINAL
+     )
+     add_custom_target(${arg_TARGET} DEPENDS ${arg_OUTPUT})
+endfunction()
