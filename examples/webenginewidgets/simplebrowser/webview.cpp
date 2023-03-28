@@ -17,6 +17,8 @@
 #include <QTimer>
 #include <QStyle>
 
+using namespace Qt::StringLiterals;
+
 WebView::WebView(QWidget *parent)
     : QWebEngineView(parent)
     , m_loadProgress(100)
@@ -147,13 +149,13 @@ QIcon WebView::favIcon() const
         return favIcon;
 
     if (m_loadProgress < 0) {
-        static QIcon errorIcon(QStringLiteral(":dialog-error.png"));
+        static QIcon errorIcon(u":dialog-error.png"_s);
         return errorIcon;
     } else if (m_loadProgress < 100) {
-        static QIcon loadingIcon(QStringLiteral(":view-refresh.png"));
+        static QIcon loadingIcon(u":view-refresh.png"_s);
         return loadingIcon;
     } else {
-        static QIcon defaultIcon(QStringLiteral(":text-html.png"));
+        static QIcon defaultIcon(u":text-html.png"_s);
         return defaultIcon;
     }
 }
