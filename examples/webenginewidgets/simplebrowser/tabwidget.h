@@ -19,7 +19,7 @@ class TabWidget : public QTabWidget
     Q_OBJECT
 
 public:
-    TabWidget(QWebEngineProfile *profile, QWidget *parent = nullptr);
+    explicit TabWidget(QWebEngineProfile *profile, QWidget *parent = nullptr);
 
     WebView *currentWebView() const;
 

@@ -19,7 +19,7 @@ class WebPopupWindow : public QWidget
     Q_OBJECT
 
 public:
-    WebPopupWindow(QWebEngineProfile *profile);
+    explicit WebPopupWindow(QWebEngineProfile *profile);
     WebView *view() const;
 
 private slots:

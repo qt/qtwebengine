@@ -27,14 +27,6 @@ BrowserWindow::BrowserWindow(Browser *browser, QWebEngineProfile *profile, bool 
     : m_browser(browser)
     , m_profile(profile)
     , m_tabWidget(new TabWidget(profile, this))
-    , m_progressBar(nullptr)
-    , m_historyBackAction(nullptr)
-    , m_historyForwardAction(nullptr)
-    , m_stopAction(nullptr)
-    , m_reloadAction(nullptr)
-    , m_stopReloadAction(nullptr)
-    , m_urlLineEdit(nullptr)
-    , m_favAction(nullptr)
 {
     setAttribute(Qt::WA_DeleteOnClose, true);
     setFocusPolicy(Qt::ClickFocus);

@@ -21,7 +21,6 @@ using namespace Qt::StringLiterals;
 
 WebView::WebView(QWidget *parent)
     : QWebEngineView(parent)
-    , m_loadProgress(100)
 {
     connect(this, &QWebEngineView::loadStarted, [this]() {
         m_loadProgress = 0;
