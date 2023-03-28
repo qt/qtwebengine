@@ -75,6 +75,10 @@ qt_internal_extend_target(WebEngineCore CONDITION QT_FEATURE_webengine_geolocati
         Qt::Positioning
 )
 
+get_install_config(config)
+get_architectures(archs)
+list(GET archs 0 arch)
+
 ##
 #  DOCS
 ##
@@ -83,17 +87,14 @@ qt_internal_add_docs(WebEngineCore
     ../doc/qtwebengine.qdocconf
 )
 
-add_custom_command(
-    OUTPUT chromium_attributions.qdoc
-    COMMAND ${Python3_EXECUTABLE} chromium/tools/licenses.py
-        --file-template ../core/doc/about_credits.tmpl
-        --entry-template ../core/doc/about_credits_entry.tmpl
-        credits ${CMAKE_CURRENT_BINARY_DIR}/chromium_attributions.qdoc
-    DEPENDS ../doc/about_credits.tmpl ../doc/about_credits_entry.tmpl
-    WORKING_DIRECTORY ${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty
-    USES_TERMINAL
+add_code_attributions_target(
+    TARGET generate_chromium_attributions
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/chromium_attributions.qdoc
+    GN_TARGET :QtWebEngineCore
+    FILE_TEMPLATE ../doc/about_credits.tmpl
+    ENTRY_TEMPLATE ../doc/about_credits_entry.tmpl
+    BUILDDIR ${buildDir}/${config}/${arch}
 )
-add_custom_target(generate_chromium_attributions DEPENDS chromium_attributions.qdoc)
 add_dependencies(docs generate_chromium_attributions)
 
 ##
@@ -110,9 +111,7 @@ set(resourceList qtwebengine_resources.pak
     qtwebengine_resources_200p.pak
     qtwebengine_devtools_resources.pak)
 
-get_install_config(config)
-get_architectures(archs)
-list(GET archs 0 arch)
+
 
 foreach(loc ${localeList})
     get_filename_component(locSourcePath ${buildDir}/${config}/${arch}/qtwebengine_locales/${loc}.pak REALPATH)
