@@ -13,7 +13,6 @@
 
 DownloadManagerWidget::DownloadManagerWidget(QWidget *parent)
     : QWidget(parent)
-    , m_numDownloads(0)
 {
     setupUi(this);
 }

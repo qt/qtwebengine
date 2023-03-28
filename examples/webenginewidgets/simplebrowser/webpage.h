@@ -13,7 +13,7 @@ class WebPage : public QWebEnginePage
     Q_OBJECT
 
 public:
-    WebPage(QWebEngineProfile *profile, QObject *parent = nullptr);
+    explicit WebPage(QWebEngineProfile *profile, QObject *parent = nullptr);
 
 signals:
     void createCertificateErrorDialog(QWebEngineCertificateError error);
