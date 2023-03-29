@@ -77,7 +77,7 @@ void ShareGroupQt::AboutToAddFirstContext()
                "QCoreApplication is created.");
     }
     m_shareContextQt = new QtShareGLContext(shareContext);
-#endif
+#endif // QT_CONFIG(opengl)
 }
 
 } // namespace

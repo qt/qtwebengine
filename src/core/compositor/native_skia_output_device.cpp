@@ -16,8 +16,12 @@
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "ui/gl/gl_fence.h"
 
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS)
 #include "ui/gl/gl_image_io_surface.h"
+#elif defined(Q_OS_WIN)
+#include "ui/gl/gl_image_d3d.h"
+#include <QtQuick/qsgtexture.h>
+#include <d3d11_1.h>
 #endif
 
 #include <QQuickWindow>
@@ -155,6 +159,10 @@ public:
             return;
 
         m_scopedOverlayReadAccess.reset();
+        if (m_textureCleanup) {
+            m_textureCleanup();
+            m_textureCleanup = nullptr;
+        }
     }
     gl::GLImage *glImage()
     {
@@ -178,6 +186,7 @@ public:
 
     const Shape &shape() const { return m_shape; }
 
+    std::function<void()> m_textureCleanup;
 private:
     NativeSkiaOutputDevice *m_parent;
     Shape m_shape;
@@ -347,10 +356,53 @@ QSGTexture *NativeSkiaOutputDevice::texture(QQuickWindow *win, uint32_t textureO
 
     return texture;
 }
+#elif defined(Q_OS_WIN)
+QSGTexture *NativeSkiaOutputDevice::texture(QQuickWindow *win, uint32_t textureOptions)
+{
+    if (!m_frontBuffer || !m_readyWithTexture)
+        return nullptr;
+    Q_ASSERT(QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11);
+
+    QSGTexture *texture = nullptr;
+    gl::GLImageD3D *gl_image_d3d = gl::GLImageD3D::FromGLImage(m_frontBuffer->glImage());
+    if (gl_image_d3d) {
+        // Pass texture between two D3D devices:
+        HRESULT status = S_OK;
+        HANDLE sharedHandle;
+        sharedHandle = gl_image_d3d->shared_handle();
+        if (!sharedHandle) {
+            qWarning() << "No shared handle";
+            return nullptr;
+        }
+        Q_ASSERT(sharedHandle);
+
+        HANDLE sharedHandleDup;
+        DuplicateHandle(GetCurrentProcess(), sharedHandle, GetCurrentProcess(), &sharedHandleDup, 0, FALSE, DUPLICATE_SAME_ACCESS);
+
+        QSGRendererInterface *ri = win->rendererInterface();
+        ID3D11Device1 *device = static_cast<ID3D11Device1 *>(ri->getResource(win, QSGRendererInterface::DeviceResource));
+
+        ID3D11Texture2D *qtTexture;
+        status = device->OpenSharedResource1(sharedHandleDup, __uuidof(ID3D11Texture2D), (void**)&qtTexture);
+        Q_ASSERT(status == S_OK);
+
+        QQuickWindow::CreateTextureOptions texOpts(textureOptions);
+        texture = QNativeInterface::QSGD3D11Texture::fromNative(qtTexture, win, size(), texOpts);
+
+        m_frontBuffer->m_textureCleanup = [qtTexture,sharedHandleDup]() {
+            qtTexture->Release();
+            ::CloseHandle(sharedHandleDup);
+        };
+    } else {
+        qWarning() << "GLImage is not D3D";
+    }
+
+    return texture;
+}
 #else
 QSGTexture *NativeSkiaOutputDevice::texture(QQuickWindow *, uint32_t)
 {
-    // Add Windows and Linux versions.
+    // Add Linux versions.
     NOTIMPLEMENTED();
     return nullptr;
 }

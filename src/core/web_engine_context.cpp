@@ -131,7 +131,8 @@ static bool usingSupportedSGBackend()
 {
     if (QQuickWindow::graphicsApi() != QSGRendererInterface::OpenGL
         && QQuickWindow::graphicsApi() != QSGRendererInterface::Vulkan
-        && QQuickWindow::graphicsApi() != QSGRendererInterface::Metal)
+        && QQuickWindow::graphicsApi() != QSGRendererInterface::Metal
+        && QQuickWindow::graphicsApi() != QSGRendererInterface::Direct3D11)
         return false;
 
     const QStringList args = QGuiApplication::arguments();
@@ -194,6 +195,9 @@ static const char *getGLType(bool enableGLSoftwareRendering, bool disableGpu)
 #if defined(Q_OS_MACOS)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::Metal)
         return gl::kGLImplementationANGLEName;
+#elif defined(Q_OS_WIN)
+    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11)
+        return gl::kGLImplementationANGLEName;
 #endif
 
     if (!qt_gl_global_share_context() || !qt_gl_global_share_context()->isValid()) {
@@ -239,6 +243,9 @@ static const char *getGLType(bool /*enableGLSoftwareRendering*/, bool disableGpu
         return gl::kGLImplementationDisabledName;
 #if defined(Q_OS_MACOS)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::Metal)
+        return gl::kGLImplementationANGLEName;
+#elif defined(Q_OS_WIN)
+    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11)
         return gl::kGLImplementationANGLEName;
 #endif
     return gl::kGLImplementationDisabledName;
