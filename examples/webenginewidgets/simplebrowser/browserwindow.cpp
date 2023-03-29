@@ -294,6 +294,20 @@ QMenu *BrowserWindow::createHelpMenu()
     return helpMenu;
 }
 
+static bool isBackspace(const QKeySequence &k)
+{
+    return (k[0].key() & Qt::Key_unknown) == Qt::Key_Backspace;
+}
+
+// Chromium already handles navigate on backspace when appropriate.
+static QList<QKeySequence> removeBackspace(QList<QKeySequence> keys)
+{
+    const auto it = std::find_if(keys.begin(), keys.end(), isBackspace);
+    if (it != keys.end())
+        keys.erase(it);
+    return keys;
+}
+
 QToolBar *BrowserWindow::createToolBar()
 {
     QToolBar *navigationBar = new QToolBar(tr("Navigation"));
@@ -301,14 +315,7 @@ QToolBar *BrowserWindow::createToolBar()
     navigationBar->toggleViewAction()->setEnabled(false);
 
     m_historyBackAction = new QAction(this);
-    QList<QKeySequence> backShortcuts = QKeySequence::keyBindings(QKeySequence::Back);
-    for (auto it = backShortcuts.begin(); it != backShortcuts.end();) {
-        // Chromium already handles navigate on backspace when appropriate.
-        if ((*it)[0].key() == Qt::Key_Backspace)
-            it = backShortcuts.erase(it);
-        else
-            ++it;
-    }
+    auto backShortcuts = removeBackspace(QKeySequence::keyBindings(QKeySequence::Back));
     // For some reason Qt doesn't bind the dedicated Back key to Back.
     backShortcuts.append(QKeySequence(Qt::Key_Back));
     m_historyBackAction->setShortcuts(backShortcuts);
@@ -321,13 +328,7 @@ QToolBar *BrowserWindow::createToolBar()
     navigationBar->addAction(m_historyBackAction);
 
     m_historyForwardAction = new QAction(this);
-    QList<QKeySequence> fwdShortcuts = QKeySequence::keyBindings(QKeySequence::Forward);
-    for (auto it = fwdShortcuts.begin(); it != fwdShortcuts.end();) {
-        if (((*it)[0].key() & Qt::Key_unknown) == Qt::Key_Backspace)
-            it = fwdShortcuts.erase(it);
-        else
-            ++it;
-    }
+    auto fwdShortcuts = removeBackspace(QKeySequence::keyBindings(QKeySequence::Forward));
     fwdShortcuts.append(QKeySequence(Qt::Key_Forward));
     m_historyForwardAction->setShortcuts(fwdShortcuts);
     m_historyForwardAction->setIconVisibleInMenu(false);
