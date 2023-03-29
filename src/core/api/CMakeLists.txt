@@ -95,6 +95,7 @@ add_code_attributions_target(
     ENTRY_TEMPLATE ../doc/about_credits_entry.tmpl
     BUILDDIR ${buildDir}/${config}/${arch}
 )
+add_dependencies(generate_chromium_attributions run_core_GnDone)
 add_dependencies(docs generate_chromium_attributions)
 
 ##

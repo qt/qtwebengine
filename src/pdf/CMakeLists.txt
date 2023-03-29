@@ -63,6 +63,7 @@ add_code_attributions_target(
     ENTRY_TEMPLATE doc/about_credits_entry.tmpl
     BUILDDIR ${buildDir}/${config}/${arch}
 )
+add_dependencies(generate_pdf_attributions run_pdf_GnDone)
 add_dependencies(docs generate_pdf_attributions)
 
 ##
