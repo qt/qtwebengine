@@ -323,6 +323,7 @@ foreach(arch ${archs})
             angle_enable_swiftshader=false
             dawn_use_swiftshader=false
             use_dawn=false
+            build_dawn_tests=false
             enable_vr=false
             enable_web_speech=false
             enable_widevine=true
@@ -516,6 +517,7 @@ foreach(arch ${archs})
                 com_init_check_hook_disabled=true
                 heterogeneous_executables=true
                 enable_vr=false
+                use_static_angle=true
             )
         endif()
 
