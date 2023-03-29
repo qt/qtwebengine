@@ -1335,17 +1335,21 @@ function(add_code_attributions_target)
     get_filename_component(entryTemplate ${arg_ENTRY_TEMPLATE} ABSOLUTE)
     add_custom_command(
         OUTPUT ${arg_OUTPUT}
-        COMMAND ${Python3_EXECUTABLE} ${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium/tools/licenses.py
-           --file-template ${fileTemplate}
-           --entry-template ${entryTemplate}
-           --gn-binary ${Gn_EXECUTABLE}
-           --gn-target ${arg_GN_TARGET} --gn-out-dir ${arg_BUILDDIR}
-           credits ${arg_OUTPUT}
-        WORKING_DIRECTORY ${arg_BUILDDIR}
+        COMMAND ${CMAKE_COMMAND}
+            -DLICENSE_SCRIPT=${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium/tools/licenses.py
+            -DFILE_TEMPLATE=${fileTemplate}
+            -DENTRY_TEMPLATE=${entryTemplate}
+            -DGN_TARGET=${arg_GN_TARGET}
+            -DBUILDDIR=${arg_BUILDDIR}
+            -DOUTPUT=${arg_OUTPUT}
+            -DPython3_EXECUTABLE=${Python3_EXECUTABLE}
+            -P ${WEBENGINE_ROOT_SOURCE_DIR}/cmake/License.cmake
+        WORKING_DIRECTORY ${WEBENGINE_ROOT_BUILD_DIR}
         DEPENDS
-           ${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium/tools/licenses.py
-           ${arg_FILE_TEMPLATE}
-           ${arg_ENTRY_TEMPLATE}
+            ${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium/tools/licenses.py
+            ${arg_FILE_TEMPLATE}
+            ${arg_ENTRY_TEMPLATE}
+            ${WEBENGINE_ROOT_SOURCE_DIR}/cmake/License.cmake
         USES_TERMINAL
      )
      add_custom_target(${arg_TARGET} DEPENDS ${arg_OUTPUT})
