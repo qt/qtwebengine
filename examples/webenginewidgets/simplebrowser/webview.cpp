@@ -150,13 +150,14 @@ QIcon WebView::favIcon() const
     if (m_loadProgress < 0) {
         static QIcon errorIcon(u":dialog-error.png"_s);
         return errorIcon;
-    } else if (m_loadProgress < 100) {
+    }
+    if (m_loadProgress < 100) {
         static QIcon loadingIcon(u":view-refresh.png"_s);
         return loadingIcon;
-    } else {
-        static QIcon defaultIcon(u":text-html.png"_s);
-        return defaultIcon;
     }
+
+    static QIcon defaultIcon(u":text-html.png"_s);
+    return defaultIcon;
 }
 
 QWebEngineView *WebView::createWindow(QWebEnginePage::WebWindowType type)
