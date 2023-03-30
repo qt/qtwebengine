@@ -193,9 +193,9 @@ static const char *getGLType(bool enableGLSoftwareRendering, bool disableGpu)
         return glType;
 
 #if defined(Q_OS_MACOS)
-    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Metal)
-        return gl::kGLImplementationANGLEName;
-#elif defined(Q_OS_WIN)
+    return gl::kGLImplementationANGLEName;
+#else
+#if defined(Q_OS_WIN)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11)
         return gl::kGLImplementationANGLEName;
 #endif
@@ -211,15 +211,10 @@ static const char *getGLType(bool enableGLSoftwareRendering, bool disableGpu)
     switch (sharedFormat.renderableType()) {
     case QSurfaceFormat::OpenGL:
         if (sharedFormat.profile() == QSurfaceFormat::CoreProfile) {
-#if defined(Q_OS_MACOS)
-            // Chromium supports core profile only on mac
-            glType = gl::kGLImplementationCoreProfileName;
-#else
             glType = gl::kGLImplementationDesktopName;
             qWarning("An OpenGL Core Profile was requested, but it is not supported "
                      "on the current platform. Falling back to a non-Core profile. "
                      "Note that this might cause rendering issues.");
-#endif
         } else {
             glType = gl::kGLImplementationDesktopName;
         }
@@ -235,6 +230,7 @@ static const char *getGLType(bool enableGLSoftwareRendering, bool disableGpu)
                  "https://bugreports.qt.io");
     }
     return glType;
+#endif // defined(Q_OS_MACOS)
 }
 #else
 static const char *getGLType(bool /*enableGLSoftwareRendering*/, bool disableGpu)
@@ -242,8 +238,7 @@ static const char *getGLType(bool /*enableGLSoftwareRendering*/, bool disableGpu
     if (disableGpu)
         return gl::kGLImplementationDisabledName;
 #if defined(Q_OS_MACOS)
-    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Metal)
-        return gl::kGLImplementationANGLEName;
+    return gl::kGLImplementationANGLEName;
 #elif defined(Q_OS_WIN)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11)
         return gl::kGLImplementationANGLEName;

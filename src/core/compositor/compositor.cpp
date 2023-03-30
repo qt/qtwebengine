@@ -157,12 +157,10 @@ bool Compositor::textureIsFlipped()
     return false;
 }
 
-#if QT_CONFIG(webengine_vulkan)
-void Compositor::releaseVulkanResources(QQuickWindow *)
+void Compositor::releaseResources(QQuickWindow *)
 {
     Q_UNREACHABLE();
 }
-#endif
 
 // static
 void Compositor::unlockBindings()

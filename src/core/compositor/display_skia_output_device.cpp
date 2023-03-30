@@ -472,7 +472,7 @@ VkImageLayout DisplaySkiaOutputDevice::vkImageLayout()
     return m_frontBuffer->imageLayout();
 }
 
-void DisplaySkiaOutputDevice::releaseVulkanResources(QQuickWindow *win)
+void DisplaySkiaOutputDevice::releaseResources(QQuickWindow *win)
 {
     VkDevice *vkDevicePtr = static_cast<VkDevice *>(
             win->rendererInterface()->getResource(win, QSGRendererInterface::DeviceResource));

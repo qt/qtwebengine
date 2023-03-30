@@ -226,11 +226,6 @@ foreach(arch ${archs})
                 compositor/native_skia_output_device_mac2.mm
         )
 
-        extend_gn_target(${buildGn} CONDITION MACOS AND QT_FEATURE_opengl
-            SOURCES
-                macos_context_type_helper.mm macos_context_type_helper.h
-        )
-
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_pepper_plugins
             SOURCES
                 renderer/pepper/pepper_renderer_host_factory_qt.cpp renderer/pepper/pepper_renderer_host_factory_qt.h

@@ -52,7 +52,7 @@ public:
 #if QT_CONFIG(webengine_vulkan)
     VkImage vkImage(QQuickWindow *win);
     VkImageLayout vkImageLayout();
-    void releaseVulkanResources(QQuickWindow *win) override;
+    void releaseResources(QQuickWindow *win) override;
 #endif
 
 private:
