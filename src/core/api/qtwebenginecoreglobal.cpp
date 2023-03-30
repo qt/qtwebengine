@@ -6,12 +6,6 @@
 #include <QGuiApplication>
 #if QT_CONFIG(opengl)
 # include <QOpenGLContext>
-#ifdef Q_OS_MACOS
-#include <sys/types.h>
-#include <sys/sysctl.h>
-#include <QOffscreenSurface>
-#include "macos_context_type_helper.h"
-#endif
 #endif
 #include <QThread>
 #include <QQuickWindow>
@@ -23,33 +17,15 @@
 #include "base/path_service.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
-#if QT_CONFIG(opengl)
+#if QT_CONFIG(opengl) && !defined(Q_OS_MACOS)
 QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT void qt_gl_set_global_share_context(QOpenGLContext *context);
 Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
 QT_END_NAMESPACE
 #endif
 
-#if QT_CONFIG(opengl)
-#ifdef Q_OS_MACOS
-static bool needsOfflineRendererWorkaround()
-{
-    size_t hwmodelsize = 0;
-
-    if (sysctlbyname("hw.model", nullptr, &hwmodelsize, nullptr, 0) == -1)
-        return false;
-
-    char hwmodel[hwmodelsize];
-    if (sysctlbyname("hw.model", &hwmodel, &hwmodelsize, nullptr, 0) == -1)
-        return false;
-
-    return QString::fromLatin1(hwmodel) == QLatin1String("MacPro6,1");
-}
-#endif
-#endif
-
 namespace QtWebEngineCore {
-#if QT_CONFIG(opengl)
+#if QT_CONFIG(opengl) && !defined(Q_OS_MACOS)
 static QOpenGLContext *shareContext;
 
 static void deleteShareContext()
@@ -68,13 +44,9 @@ static void deleteShareContext()
 
 Q_WEBENGINECORE_PRIVATE_EXPORT void initialize()
 {
-#if QT_CONFIG(opengl)
+#if QT_CONFIG(opengl) && !defined(Q_OS_MACOS)
 #ifdef Q_OS_WIN32
     qputenv("QT_D3DCREATE_MULTITHREADED", "1");
-#endif
-#ifdef Q_OS_MACOS
-    if (needsOfflineRendererWorkaround())
-        qputenv("QT_MAC_PRO_WEBENGINE_WORKAROUND", "1");
 #endif
     // No need to override the shared context if QApplication already set one (e.g with Qt::AA_ShareOpenGLContexts).
     if (!qt_gl_global_share_context()) {
@@ -100,57 +72,6 @@ Q_WEBENGINECORE_PRIVATE_EXPORT void initialize()
         shareContext = new QOpenGLContext;
         QSurfaceFormat format = QSurfaceFormat::defaultFormat();
 
-#if defined(Q_OS_MACOS)
-        if (format == QSurfaceFormat()) {
-            QOpenGLContext testContext;
-
-            // Chromium turns off OpenGL for CoreProfiles with versions < 4.1
-            // The newest Mac that only supports 3.3 was released in Mid 2011,
-            // so it should be safe to request 4.1, but we still double check it
-            // works in order not to set an invalid default surface format.
-            format.setVersion(4, 1);
-            format.setProfile(QSurfaceFormat::CoreProfile);
-
-            testContext.setFormat(format);
-            if (testContext.create()) {
-                QOffscreenSurface surface;
-                surface.setFormat(format);
-                surface.create();
-
-                if (testContext.makeCurrent(&surface)) {
-                    // The Cocoa QPA integration allows sharing between OpenGL 3.2 and 4.1 contexts,
-                    // which means even though we requested a 4.1 context, if we only get a 3.2
-                    // context, it will still work an Chromium will not black list it.
-                    if (testContext.format().version() >= qMakePair(3, 2)
-                        && testContext.format().profile() == QSurfaceFormat::CoreProfile
-                        && !isCurrentContextSoftware()) {
-                        QSurfaceFormat::setDefaultFormat(format);
-                    } else {
-                        qWarning("The available OpenGL surface format was either not version 3.2 "
-                                 "or higher or not a Core Profile.\n"
-                                 "Chromium on macOS will fall back to software rendering in this "
-                                 "case.\n"
-                                 "Hardware acceleration and features such as WebGL will not be "
-                                 "available.");
-                        format = QSurfaceFormat::defaultFormat();
-                    }
-                    testContext.doneCurrent();
-                }
-                surface.destroy();
-            }
-        } else {
-            // The user explicitly requested a specific surface format that does not fit Chromium's
-            // requirements. Warn them about this.
-            if (format.version() < qMakePair(3, 2)
-                || format.profile() != QSurfaceFormat::CoreProfile) {
-                qWarning("An OpenGL surfcace format was requested that is either not version 3.2 "
-                         "or higher or a not Core Profile.\n"
-                         "Chromium on macOS will fall back to software rendering in this case.\n"
-                         "Hardware acceleration and features such as WebGL will not be available.");
-            }
-        }
-#endif
-
         shareContext->setFormat(format);
         shareContext->create();
         qAddPostRoutine(deleteShareContext);
@@ -160,22 +81,7 @@ Q_WEBENGINECORE_PRIVATE_EXPORT void initialize()
         app->setAttribute(Qt::AA_ShareOpenGLContexts);
     }
 
-#if defined(Q_OS_MACOS)
-    // Check that the default QSurfaceFormat OpenGL profile is compatible with the global OpenGL
-    // shared context profile, otherwise this could lead to a nasty crash.
-    QSurfaceFormat sharedFormat = qt_gl_global_share_context()->format();
-    QSurfaceFormat defaultFormat = QSurfaceFormat::defaultFormat();
-
-    if (defaultFormat.profile() != sharedFormat.profile()
-        && defaultFormat.profile() == QSurfaceFormat::CoreProfile
-        && defaultFormat.version() >= qMakePair(3, 2)) {
-        qFatal("QWebEngine: Default QSurfaceFormat OpenGL profile is not compatible with the "
-               "global shared context OpenGL profile. Please make sure you set a compatible "
-               "QSurfaceFormat before the QtGui application instance is created.");
-    }
-#endif
-
-#endif // QT_CONFIG(opengl)
+#endif // QT_CONFIG(opengl) && !defined(Q_OS_MACOS)
 }
 
 bool closingDown()
@@ -200,21 +106,7 @@ sandbox::SandboxInterfaceInfo *staticSandboxInterfaceInfo(sandbox::SandboxInterf
 #endif
 static void initialize()
 {
-#if QT_CONFIG(opengl)
-    if (QCoreApplication::instance()) {
-        // On Windows/ANGLE, calling QtWebEngineQuick::initialize from DllMain will result in a
-        // crash.
-        if (!qt_gl_global_share_context()
-            && !(QCoreApplication::testAttribute(Qt::AA_ShareOpenGLContexts)
-                 && QQuickWindow::graphicsApi() == QSGRendererInterface::OpenGLRhi)) {
-            qWarning("Qt WebEngine seems to be initialized from a plugin. Please "
-                     "set Qt::AA_ShareOpenGLContexts using QCoreApplication::setAttribute and "
-                     "QSGRendererInterface::OpenGLRhi using QQuickWindow::setGraphicsApi "
-                     "before constructing QGuiApplication.");
-        }
-        return;
-    }
-
+#if QT_CONFIG(opengl) && !defined(Q_OS_MACOS)
     // QCoreApplication is not yet instantiated, ensuring the call will be deferred
     qAddPreRoutine(QtWebEngineCore::initialize);
     auto api = QQuickWindow::graphicsApi();

@@ -156,6 +156,10 @@ public:
             return;
 
         m_scopedOverlayReadAccess.reset();
+    }
+
+    void freeTexture()
+    {
         if (m_textureCleanup) {
             m_textureCleanup();
             m_textureCleanup = nullptr;
@@ -325,6 +329,8 @@ void NativeSkiaOutputDevice::swapFrame()
             m_readyWithTexture = true;
             m_frontBuffer->beginPresent();
         }
+        if (m_middleBuffer)
+            m_middleBuffer->freeTexture();
     }
 }
 
@@ -342,18 +348,41 @@ void NativeSkiaOutputDevice::releaseTexture()
     }
 }
 
-#ifdef Q_OS_MACOS
+void NativeSkiaOutputDevice::releaseResources(QQuickWindow *)
+{
+    if (m_frontBuffer)
+        m_frontBuffer->freeTexture();
+}
+
+#if defined(Q_OS_MACOS)
 QSGTexture *makeMetalTexture(QQuickWindow *win, IOSurfaceRef io_surface, uint io_surface_plane, int width, int height, uint32_t textureOptions);
+QSGTexture *makeCGLTexture(QQuickWindow *win, IOSurfaceRef io_surface, int width, int height, uint32_t textureOptions, uint32_t *heldTexture);
+void releaseGlTexture(uint32_t);
 
 QSGTexture *NativeSkiaOutputDevice::texture(QQuickWindow *win, uint32_t textureOptions)
 {
     if (!m_frontBuffer || !m_readyWithTexture)
         return nullptr;
-    Q_ASSERT(QQuickWindow::graphicsApi() == QSGRendererInterface::Metal);
+    static const auto graphicsApi = QQuickWindow::graphicsApi();
 
-    return makeMetalTexture(win, m_frontBuffer->ioSurface().release(), /* plane */ 0,
-                            m_shape.characterization.width(), m_shape.characterization.height(),
-                            textureOptions);
+    QSGTexture *texture = nullptr;
+    gfx::ScopedIOSurface ioSurface = m_frontBuffer->ioSurface();
+    if (graphicsApi == QSGRendererInterface::Metal) {
+        texture = makeMetalTexture(win, ioSurface.release(), /* plane */ 0,
+                                   m_shape.characterization.width(), m_shape.characterization.height(),
+                                   textureOptions);
+#if QT_CONFIG(opengl)
+    } else if (graphicsApi == QSGRendererInterface::OpenGL) {
+        uint heldTexture;
+        texture = makeCGLTexture(win, ioSurface.release(),
+                                 m_shape.characterization.width(), m_shape.characterization.height(),
+                                 textureOptions, &heldTexture);
+        m_frontBuffer->m_textureCleanup = [heldTexture]() { releaseGlTexture(heldTexture); };
+#endif
+    }
+    if (!texture)
+        qFatal("Unknown QSG graphics backend");
+    return texture;
 }
 #elif defined(Q_OS_WIN)
 QSGTexture *NativeSkiaOutputDevice::texture(QQuickWindow *win, uint32_t textureOptions)

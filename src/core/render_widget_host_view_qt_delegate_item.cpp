@@ -35,7 +35,7 @@ RenderWidgetHostViewQtDelegateItem::RenderWidgetHostViewQtDelegateItem(RenderWid
 
 RenderWidgetHostViewQtDelegateItem::~RenderWidgetHostViewQtDelegateItem()
 {
-    releaseVulkanResources();
+    releaseTextureResources();
     if (m_widgetDelegate) {
         m_widgetDelegate->Unbind();
         m_widgetDelegate->Destroy();
@@ -330,7 +330,7 @@ void RenderWidgetHostViewQtDelegateItem::itemChange(ItemChange change, const Ite
 #if QT_CONFIG(webengine_vulkan)
             m_windowConnections.append(
                     connect(value.window, &QQuickWindow::sceneGraphAboutToStop, this,
-                            &RenderWidgetHostViewQtDelegateItem::releaseVulkanResources,
+                            &RenderWidgetHostViewQtDelegateItem::releaseTextureResources,
                             Qt::DirectConnection));
 #endif
             if (!m_isPopup)
@@ -423,15 +423,13 @@ void RenderWidgetHostViewQtDelegateItem::onHide()
     m_client->forwardEvent(&event);
 }
 
-void RenderWidgetHostViewQtDelegateItem::releaseVulkanResources()
+void RenderWidgetHostViewQtDelegateItem::releaseTextureResources()
 {
-#if QT_CONFIG(webengine_vulkan)
     auto comp = compositor();
-    if (!comp || comp->type() != Compositor::Type::Vulkan)
+    if (!comp || (comp->type() != Compositor::Type::Vulkan && comp->type() != Compositor::Type::NativeBuffer))
         return;
 
-    comp->releaseVulkanResources(QQuickItem::window());
-#endif
+    comp->releaseResources(QQuickItem::window());
 }
 
 void RenderWidgetHostViewQtDelegateItem::adapterClientChanged(WebContentsAdapterClient *client)
