@@ -497,6 +497,13 @@ add_check_for_support(
    MESSAGE "node.js version 12 or later is required."
 )
 add_check_for_support(
+    MODULES QtWebEngine
+    CONDITION NOT (Nodejs_ARCH STREQUAL ia32) AND
+              NOT (Nodejs_ARCH STREQUAL x86) AND
+              NOT (Nodejs_ARCH STREQUAL arm)
+    MESSAGE "32bit version of Nodejs is not supported."
+)
+add_check_for_support(
    MODULES QtWebEngine QtPdf
    CONDITION Python3_EXECUTABLE
    MESSAGE "Python version 3.6 or later is required."
