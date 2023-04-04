@@ -207,9 +207,9 @@ void QPdfPageNavigator::jump(QPdfLink destination)
         emit currentLocationChanged(currentLocation());
     if (d->changing)
         return;
-    if (!backAvailableWas)
+    if (backAvailableWas != backAvailable())
         emit backAvailableChanged(backAvailable());
-    if (forwardAvailableWas)
+    if (forwardAvailableWas != forwardAvailable())
         emit forwardAvailableChanged(forwardAvailable());
     emit jumped(currentLink());
     qCDebug(qLcNav) << "push: index" << d->currentHistoryIndex << destination << "-> history" <<
@@ -263,9 +263,9 @@ void QPdfPageNavigator::jump(int page, const QPointF &location, qreal zoom)
         emit currentLocationChanged(currentLocation());
     if (d->changing)
         return;
-    if (!backAvailableWas)
+    if (backAvailableWas != backAvailable())
         emit backAvailableChanged(backAvailable());
-    if (forwardAvailableWas)
+    if (forwardAvailableWas != forwardAvailable())
         emit forwardAvailableChanged(forwardAvailable());
     emit jumped(currentLink());
     qCDebug(qLcNav) << "push: index" << d->currentHistoryIndex << "page" << page
