@@ -138,6 +138,7 @@ foreach(arch ${archs})
                 net/proxying_restricted_cookie_manager_qt.cpp net/proxying_restricted_cookie_manager_qt.h
                 net/proxying_url_loader_factory_qt.cpp net/proxying_url_loader_factory_qt.h
                 net/qrc_url_scheme_handler.cpp net/qrc_url_scheme_handler.h
+                net/resource_request_body_qt.cpp net/resource_request_body_qt.h
                 net/ssl_host_state_delegate_qt.cpp net/ssl_host_state_delegate_qt.h
                 net/system_network_context_manager.cpp net/system_network_context_manager.h
                 net/url_request_custom_job_delegate.cpp net/url_request_custom_job_delegate.h
