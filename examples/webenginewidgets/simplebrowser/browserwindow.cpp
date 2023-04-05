@@ -355,9 +355,8 @@ QToolBar *BrowserWindow::createToolBar()
     downloadsAction->setIcon(QIcon(u":go-bottom.png"_s));
     downloadsAction->setToolTip(tr("Show downloads"));
     navigationBar->addAction(downloadsAction);
-    connect(downloadsAction, &QAction::triggered, [this]() {
-        m_browser->downloadManagerWidget().show();
-    });
+    connect(downloadsAction, &QAction::triggered,
+            &m_browser->downloadManagerWidget(), &QWidget::show);
 
     return navigationBar;
 }
