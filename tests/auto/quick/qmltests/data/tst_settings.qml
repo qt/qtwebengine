@@ -78,6 +78,42 @@ TestWebEngineView {
 
             webEngineView2.destroy();
         }
+
+        function test_disableReadingFromCanvas_data() {
+            return [
+                { tag: 'disabled', disableReadingFromCanvas: false, result: true },
+                { tag: 'enabled', disableReadingFromCanvas: true, result: false },
+            ]
+        }
+
+        function test_disableReadingFromCanvas(data) {
+            webEngineView.settings.disableReadingFromCanvas = data.disableReadingFromCanvas;
+            webEngineView.loadHtml("<html><body>" +
+                                   "<canvas id='myCanvas' width='200' height='40' style='border:1px solid #000000;'></canvas>" +
+                                   "</body></html>");
+            verify(webEngineView.waitForLoadSucceeded());
+            verify(webEngineView.settings.disableReadingFromCanvas === data.disableReadingFromCanvas )
+
+            var jsCode = "(function(){" +
+                       "   var canvas = document.getElementById(\"myCanvas\");" +
+                       "   var ctx = canvas.getContext(\"2d\");" +
+                       "   ctx.fillStyle = \"rgb(255,0,255)\";" +
+                       "   ctx.fillRect(0, 0, 200, 40);" +
+                       "   try {" +
+                       "      src = canvas.toDataURL();" +
+                       "   }" +
+                       "   catch(err) {" +
+                       "      src = \"\";" +
+                       "   }" +
+                       "   return src.length ? true : false;" +
+                       "})();";
+
+            var isDataRead = false;
+            runJavaScript(jsCode, function(result) {
+                isDataRead = result
+            });
+            tryVerify(function() { return isDataRead === data.result });
+        }
     }
 }
 

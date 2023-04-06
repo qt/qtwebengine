@@ -443,6 +443,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.webGLEnabledChanged() --> void"
     << "QQuickWebEngineSettings.webRTCPublicInterfacesOnly --> bool"
     << "QQuickWebEngineSettings.webRTCPublicInterfacesOnlyChanged() --> void"
+    << "QQuickWebEngineSettings.disableReadingFromCanvas --> bool"
+    << "QQuickWebEngineSettings.disableReadingFromCanvasChanged() --> void"
     << "QQuickWebEngineSingleton.defaultProfile --> QQuickWebEngineProfile*"
     << "QQuickWebEngineSingleton.settings --> QQuickWebEngineSettings*"
     << "QQuickWebEngineSingleton.script() --> QWebEngineScript"

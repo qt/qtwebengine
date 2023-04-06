@@ -433,6 +433,20 @@ bool QQuickWebEngineSettings::navigateOnDropEnabled() const
 }
 
 /*!
+    \qmlproperty bool WebEngineSettings::disableReadingFromCanvas
+    \since QtWebEngine 6.6
+
+    Disables JavaScript reading from canvas elements.
+    This setting will have impact on all HTML5 canvas elements irrespective of origin.
+
+    Disabled by default.
+ */
+bool QQuickWebEngineSettings::disableReadingFromCanvas() const
+{
+    return d_ptr->testAttribute(QWebEngineSettings::DisableReadingFromCanvas);
+}
+
+/*!
     \qmlproperty string WebEngineSettings::defaultTextEncoding
     \since QtWebEngine 1.2
 
@@ -713,6 +727,14 @@ void QQuickWebEngineSettings::setNavigateOnDropEnabled(bool on)
     d_ptr->setAttribute(QWebEngineSettings::NavigateOnDropEnabled, on);
     if (wasOn != on)
         Q_EMIT navigateOnDropEnabledChanged();
+}
+
+void QQuickWebEngineSettings::setDisableReadingFromCanvas(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::DisableReadingFromCanvas);
+    d_ptr->setAttribute(QWebEngineSettings::DisableReadingFromCanvas, on);
+    if (wasOn != on)
+        Q_EMIT disableReadingFromCanvasChanged();
 }
 
 void QQuickWebEngineSettings::setUnknownUrlSchemePolicy(QQuickWebEngineSettings::UnknownUrlSchemePolicy policy)
