@@ -1379,7 +1379,8 @@ void QWebEngineView::printToPdf(const std::function<void(const QByteArray&)> &re
     \fn void QWebEngineView::printRequested()
     \since 6.2
 
-    This signal is emitted when the JavaScript \c{window.print()} method is called.
+    This signal is emitted when the JavaScript \c{window.print()} method is called or the user pressed the print
+    button of PDF viewer plugin.
     Typically, the signal handler can simply call print().
 
     \sa print()
