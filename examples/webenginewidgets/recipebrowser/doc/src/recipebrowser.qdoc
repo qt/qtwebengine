@@ -4,7 +4,7 @@
 /*!
     \example webenginewidgets/recipebrowser
     \title Recipe Browser
-    \meta category {Application Examples}
+    \examplecategory {Application Examples}
     \meta tag {widgets, webengine, webchannel, webenginescript}
     \ingroup webengine-widgetexamples
     \brief Injecting custom stylsheets into web pages and providing a rich text preview
