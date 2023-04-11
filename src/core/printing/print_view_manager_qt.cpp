@@ -336,12 +336,23 @@ void PrintViewManagerQt::ShowScriptedPrintPreview(bool /*source_is_modifiable*/)
     // ignore for now
 }
 
-void PrintViewManagerQt::RequestPrintPreview(printing::mojom::RequestPrintPreviewParamsPtr /*params*/)
+void PrintViewManagerQt::RequestPrintPreview(printing::mojom::RequestPrintPreviewParamsPtr params)
 {
+    if (!m_printPreviewRfh && params->webnode_only) {
+        // The preview was requested by the print button of PDF viewer plugin. The code path ends up here, because
+        // Chromium automatically initiated a preview generation. We don't want that, just notify our embedder
+        // like we do in SetupScriptedPrintPreview() after window.print() and let them decide what to do.
+        content::WebContentsView *view = static_cast<content::WebContentsImpl*>(web_contents()->GetOutermostWebContents())->GetView();
+        if (WebContentsAdapterClient *client = WebContentsViewQt::from(view)->client())
+            client->printRequested();
+        return;
+    }
+
     if (m_printSettings.empty()) {
         PrintPreviewDone();
         return;
     }
+
     mojo::AssociatedRemote<printing::mojom::PrintRenderFrame> printRenderFrame;
     m_printPreviewRfh->GetRemoteAssociatedInterfaces()->GetInterface(&printRenderFrame);
     printRenderFrame->PrintPreview(m_printSettings.Clone());
