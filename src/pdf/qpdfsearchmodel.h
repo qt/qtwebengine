@@ -55,6 +55,7 @@ Q_SIGNALS:
 protected:
     void updatePage(int page);
     void timerEvent(QTimerEvent *event) override;
+    void onDocumentPageCountChanged(int count);
 
 private:
     QHash<int, QByteArray> m_roleNames;

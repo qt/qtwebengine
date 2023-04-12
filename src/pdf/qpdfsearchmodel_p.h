@@ -45,6 +45,8 @@ public:
     int rowCountSoFar = 0;
     int updateTimerId = -1;
     int nextPageToUpdate = 0;
+
+    QMetaObject::Connection documentConnection;
 };
 
 QT_END_NAMESPACE
