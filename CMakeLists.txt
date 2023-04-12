@@ -20,6 +20,7 @@ project(QtWebEngine
     HOMEPAGE_URL "https://qt.io/"
     LANGUAGES CXX C
 )
+qt_internal_project_setup()
 
 find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS
     Gui Widgets Network OpenGL Quick Qml PrintSupport

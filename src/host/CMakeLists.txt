@@ -20,6 +20,7 @@ project(QtWebEngineConfigure
     LANGUAGES CXX C)
 
 find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core)
+qt_internal_project_setup()
 
 set(buildDir ${CMAKE_CURRENT_BINARY_DIR})
 configure_gn_toolchain(host ${TEST_architecture_arch} ${TEST_architecture_arch}
