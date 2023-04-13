@@ -20,7 +20,6 @@ Q_LOGGING_CATEGORY(qLcS, "qt.pdf.search")
 
 static const int UpdateTimerInterval = 100;
 static const int ContextChars = 64;
-static const double CharacterHitTolerance = 6.0;
 
 /*!
     \class QPdfSearchModel
@@ -257,6 +256,7 @@ bool QPdfSearchModelPrivate::doSearch(int page)
     }
     FPDF_SCHHANDLE sh = FPDFText_FindStart(textPage, searchString.utf16(), 0, 0);
     QList<QPdfLink> newSearchResults;
+    constexpr double CharacterHitTolerance = 6.0;
     while (FPDFText_FindNext(sh)) {
         int idx = FPDFText_GetSchResultIndex(sh);
         int count = FPDFText_GetSchCount(sh);
