@@ -15,7 +15,7 @@ public:
     GLOzoneGLXQt() {}
     ~GLOzoneGLXQt() override {}
 
-    gl::GLDisplay *InitializeGLOneOffPlatform(uint64_t system_device_id) override;
+    gl::GLDisplay *InitializeGLOneOffPlatform(bool, std::vector<gl::DisplayType>, gl::GpuPreference) override;
     bool InitializeStaticGLBindings(const gl::GLImplementationParts &implementation) override;
     bool InitializeExtensionSettingsOneOffPlatform(gl::GLDisplay *display) override;
     void ShutdownGL(gl::GLDisplay *display) override;

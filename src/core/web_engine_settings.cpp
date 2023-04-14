@@ -9,7 +9,6 @@
 
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"

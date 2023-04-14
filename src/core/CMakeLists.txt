@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.19)
 
 find_package(Ninja 1.7.2 REQUIRED)
-find_package(Nodejs 12 REQUIRED)
+find_package(Nodejs 14.19 REQUIRED)
 find_package(Perl)
 find_package(PkgConfig)
 if(PkgConfig_FOUND)
@@ -310,7 +310,6 @@ foreach(arch ${archs})
             enable_background_mode=false
             enable_ipc_fuzzer=false
             enable_ipc_logging=false
-            enable_js_type_check=false
             enable_media_remoting=false
             enable_message_center=false
             enable_nacl=false
@@ -320,6 +319,7 @@ foreach(arch ${archs})
             enable_resource_allowlist_generation=false
             enable_screen_ai_service=false
             enable_session_service=false
+            enable_supervised_users=false
             enable_swiftshader=false
             enable_swiftshader_vulkan=false
             angle_enable_swiftshader=false
@@ -341,6 +341,8 @@ foreach(arch ${archs})
             devtools_fast_bundle=false
             devtools_skip_typecheck=false
             use_static_angle=true
+            chrome_root_store_supported=false
+            trial_comparison_cert_verifier_supported=false
         )
         extend_gn_list(gnArgArg
             ARGS use_v8_context_snapshot v8_use_external_startup_data
@@ -364,6 +366,10 @@ foreach(arch ${archs})
         )
         extend_gn_list(gnArgArg
             ARGS enable_webrtc
+            CONDITION QT_FEATURE_webengine_webrtc
+        )
+        extend_gn_list(gnArgArg
+            ARGS enable_screen_capture
             CONDITION QT_FEATURE_webengine_webrtc
         )
         extend_gn_list(gnArgArg

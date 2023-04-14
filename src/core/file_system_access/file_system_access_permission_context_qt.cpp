@@ -241,6 +241,8 @@ FileSystemAccessPermissionContextQt::GetReadPermissionGrant(const url::Origin &o
         break;
     case UserAction::kLoadFromStorage:
         break;
+    case UserAction::kNone:
+        Q_UNREACHABLE();
     }
 
     return existing_grant;
@@ -285,6 +287,8 @@ FileSystemAccessPermissionContextQt::GetWritePermissionGrant(const url::Origin &
     case UserAction::kDragAndDrop:
     case UserAction::kLoadFromStorage:
         break;
+    case UserAction::kNone:
+        Q_UNREACHABLE();
     }
 
     return existing_grant;

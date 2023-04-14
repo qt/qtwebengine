@@ -41,10 +41,12 @@ bool GLOzoneEGLQt::LoadGLES2Bindings(const gl::GLImplementationParts & /*impleme
     return LoadQtEGLBindings();
 }
 
-gl::GLDisplay *GLOzoneEGLQt::InitializeGLOneOffPlatform(uint64_t system_device_id)
+gl::GLDisplay *GLOzoneEGLQt::InitializeGLOneOffPlatform(bool supports_angle,
+                                                        std::vector<gl::DisplayType> init_displays,
+                                                        gl::GpuPreference gpu_preference)
 {
-    if (auto display = gl::GLSurfaceEGLQt::InitializeOneOff(system_device_id)) {
-        if (!static_cast<gl::GLDisplayEGL*>(display)->Initialize(GetNativeDisplay())) {
+    if (auto display = gl::GLSurfaceEGLQt::InitializeOneOff(gpu_preference)) {
+        if (!static_cast<gl::GLDisplayEGL*>(display)->Initialize(supports_angle, std::move(init_displays), GetNativeDisplay())) {
             LOG(ERROR) << "GLDisplayEGL::Initialize failed.";
             return nullptr;
         }
@@ -52,6 +54,7 @@ gl::GLDisplay *GLOzoneEGLQt::InitializeGLOneOffPlatform(uint64_t system_device_i
     }
     return nullptr;
 }
+
 
 bool GLOzoneEGLQt::InitializeExtensionSettingsOneOffPlatform(gl::GLDisplay *display)
 {

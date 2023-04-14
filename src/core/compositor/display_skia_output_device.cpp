@@ -318,7 +318,7 @@ void DisplaySkiaOutputDevice::SwapBuffers(BufferPresentedCallback feedback,
 
     {
         QMutexLocker locker(&m_mutex);
-        m_taskRunner = base::ThreadTaskRunnerHandle::Get();
+        m_taskRunner = base::SingleThreadTaskRunner::GetCurrentDefault();
         std::swap(m_middleBuffer, m_backBuffer);
         m_readyToUpdate = true;
     }

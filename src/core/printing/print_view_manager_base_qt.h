@@ -48,7 +48,6 @@ public:
     void IsPrintingEnabled(IsPrintingEnabledCallback callback) override;
     void ScriptedPrint(printing::mojom::ScriptedPrintParamsPtr,
                        printing::mojom::PrintManagerHost::ScriptedPrintCallback) override;
-    void ShowInvalidPrinterSettingsError() override;
     void PrintingFailed(int32_t cookie,
                         printing::mojom::PrintFailureReason reason) override;
 

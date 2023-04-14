@@ -9,6 +9,7 @@
 
 #include "extensions/pdf_iframe_navigation_throttle_qt.h"
 
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/grit/renderer_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/download_utils.h"
@@ -181,7 +182,7 @@ void PDFIFrameNavigationThrottleQt::LoadPlaceholderHTML()
 
     PdfWebContentsLifetimeHelper::CreateForWebContents(web_contents);
     PdfWebContentsLifetimeHelper *helper = PdfWebContentsLifetimeHelper::FromWebContents(web_contents);
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&PdfWebContentsLifetimeHelper::NavigateIFrameToPlaceholder,
                        helper->GetWeakPtr(), std::move(params)));

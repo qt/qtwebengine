@@ -49,14 +49,15 @@ public:
                                            const std::vector<std::u16string> &labels) override;
     void PinPopupView() override;
     autofill::AutofillClient::PopupOpenArgs GetReopenPopupArgs() const override;
-    base::span<const autofill::Suggestion> GetPopupSuggestions() const override;
+    std::vector<autofill::Suggestion> GetPopupSuggestions() const override;
     void UpdatePopup(const std::vector<autofill::Suggestion> &, autofill::PopupType) override;
     void HideAutofillPopup(autofill::PopupHidingReason reason) override;
     bool IsAutocompleteEnabled() const override;
     bool IsPasswordManagerEnabled() override;
     void PropagateAutofillPredictions(autofill::AutofillDriver *,
                                       const std::vector<autofill::FormStructure *> &) override;
-
+    bool IsOffTheRecord() override;
+    scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
 private:
     explicit AutofillClientQt(content::WebContents *webContents);

@@ -38,6 +38,7 @@ private:
 
 tst_InspectorServer::tst_InspectorServer()
 {
+    qputenv("QTWEBENGINE_CHROMIUM_FLAGS", "--remote-allow-origins=*");
     qputenv("QTWEBENGINE_REMOTE_DEBUGGING", INSPECTOR_SERVER_PORT);
     QtWebEngineQuick::initialize();
     QQuickWebEngineProfile::defaultProfile()->setOffTheRecord(true);

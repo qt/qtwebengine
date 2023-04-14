@@ -53,6 +53,7 @@ static ProfileAdapter::PermissionType toQt(blink::PermissionType type)
     case blink::PermissionType::STORAGE_ACCESS_GRANT:
     case blink::PermissionType::LOCAL_FONTS:
     case blink::PermissionType::DISPLAY_CAPTURE:
+    case blink::PermissionType::TOP_LEVEL_STORAGE_ACCESS:
     case blink::PermissionType::NUM:
         LOG(INFO) << "Unexpected unsupported permission type: " << static_cast<int>(type);
         break;

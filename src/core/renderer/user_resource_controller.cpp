@@ -5,6 +5,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/strings/pattern.h"
+#include "base/task/single_thread_task_runner.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "extensions/common/url_pattern.h"
@@ -203,7 +204,7 @@ void UserResourceController::RenderFrameObserverHelper::DidCommitProvisionalLoad
 
     m_runner.reset(new Runner(render_frame()->GetWebFrame(), m_userResourceController));
 
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
             FROM_HERE,
             base::BindOnce(&Runner::run, m_runner->AsWeakPtr(),
                            QtWebEngineCore::UserScriptData::DocumentElementCreation));
@@ -214,7 +215,7 @@ void UserResourceController::RenderFrameObserverHelper::DidDispatchDOMContentLoa
     // Don't run scripts if provisional load failed (DidFailProvisionalLoad
     // called instead of DidCommitProvisionalLoad).
     if (m_runner)
-        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
                 FROM_HERE,
                 base::BindOnce(&Runner::run, m_runner->AsWeakPtr(),
                                QtWebEngineCore::UserScriptData::AfterLoad),
@@ -224,7 +225,7 @@ void UserResourceController::RenderFrameObserverHelper::DidDispatchDOMContentLoa
 void UserResourceController::RenderFrameObserverHelper::DidFinishLoad()
 {
     if (m_runner)
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
                 FROM_HERE,
                 base::BindOnce(&Runner::run, m_runner->AsWeakPtr(),
                                QtWebEngineCore::UserScriptData::AfterLoad));

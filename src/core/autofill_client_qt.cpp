@@ -10,11 +10,10 @@
 #include "web_contents_adapter_client.h"
 #include "web_contents_view_qt.h"
 
-#include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace QtWebEngineCore {
 
@@ -51,9 +50,6 @@ const PrefService *AutofillClientQt::GetPrefs() const
 void AutofillClientQt::ShowAutofillPopup(const autofill::AutofillClient::PopupOpenArgs &open_args,
                                          base::WeakPtr<autofill::AutofillPopupDelegate> delegate)
 {
-    // Specific popups (personal, address, credit card, password) are not supported.
-    DCHECK(open_args.popup_type == autofill::PopupType::kUnspecified);
-
     m_popupController->d->delegate = delegate;
     m_popupController->d->suggestions = open_args.suggestions;
     m_popupController->updateModel();
@@ -85,11 +81,11 @@ autofill::AutofillClient::PopupOpenArgs AutofillClientQt::GetReopenPopupArgs() c
     return autofill::AutofillClient::PopupOpenArgs();
 }
 
-base::span<const autofill::Suggestion> AutofillClientQt::GetPopupSuggestions() const
+std::vector<autofill::Suggestion> AutofillClientQt::GetPopupSuggestions() const
 {
     // Called by password_manager component only.
     NOTIMPLEMENTED();
-    return base::span<const autofill::Suggestion>();
+    return {};
 }
 
 void AutofillClientQt::UpdatePopup(const std::vector<autofill::Suggestion> &, autofill::PopupType)
@@ -111,6 +107,16 @@ bool AutofillClientQt::IsAutocompleteEnabled() const
 bool AutofillClientQt::IsPasswordManagerEnabled()
 {
     return false;
+}
+
+bool AutofillClientQt::IsOffTheRecord()
+{
+    return web_contents()->GetBrowserContext()->IsOffTheRecord();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory> AutofillClientQt::GetURLLoaderFactory()
+{
+    return nullptr;
 }
 
 void AutofillClientQt::PropagateAutofillPredictions(autofill::AutofillDriver *,

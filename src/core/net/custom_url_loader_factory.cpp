@@ -273,7 +273,8 @@ private:
         m_head->encoded_data_length = m_head->headers->raw_headers().length();
 
         if (!m_redirect.is_empty()) {
-            m_head->content_length = m_head->encoded_body_length = -1;
+            m_head->content_length = {};
+            m_head->encoded_body_length = {};
             net::RedirectInfo::FirstPartyURLPolicy first_party_url_policy =
                     m_request.update_first_party_url_on_redirect ? net::RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT
                                                                  : net::RedirectInfo::FirstPartyURLPolicy::NEVER_CHANGE_URL;
@@ -341,7 +342,8 @@ private:
         }
         m_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(net::HttpUtil::AssembleRawHeaders(headers));
         m_head->encoded_data_length = m_head->headers->raw_headers().length();
-        m_head->content_length = m_head->encoded_body_length = -1;
+        m_head->content_length = {};
+        m_head->encoded_body_length = {};
         m_client->OnReceiveResponse(std::move(m_head), mojo::ScopedDataPipeConsumerHandle(), absl::nullopt);
         CompleteWithFailure(net::Error(error));
     }

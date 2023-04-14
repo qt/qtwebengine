@@ -63,6 +63,7 @@ static_library("QtPdf") {
     libs = [
       "dloadhelper.lib",
       "winmm.lib",
+      "usp10.lib",
     ]
   }
   if (is_mingw) {

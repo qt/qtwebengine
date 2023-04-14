@@ -3,8 +3,8 @@
 
 #include "client_cert_qt.h"
 
-#include "base/bind.h"
-#include "base/callback_forward.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "crypto/crypto_buildflags.h"
 #include "net/ssl/client_cert_store.h"

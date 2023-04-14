@@ -15,7 +15,7 @@
 // We mean it.
 //
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 
 #include "web_contents_adapter_client.h"
