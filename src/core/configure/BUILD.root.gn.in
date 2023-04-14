@@ -87,20 +87,19 @@ config("embedded_config") {
   defines = [ "QTWEBENGINE_EMBEDDED_SWITCHES=1" ]
 }
 
-config("cpp17_config") {
-  # static initialized constexpr expressions must be compiled always as c++14 or always as c++17
-  # and our qtwebengine core sources use them as c++17
+config("cpp20_config") {
+  # Chromium is build with C++20
   if (is_win) {
-    cflags_cc = [ "/std:c++17" ]
+    cflags_cc = [ "/std:c++20" ]
   } else {
-    cflags_cc = [ "-std=c++17" ]
+    cflags_cc = [ "-std=c++20" ]
   }
 }
 
 shared_library("QtWebEngineCore") {
   rsp_types = [ "objects", "archives", "libs", "lflags"]
   configs += [
-    ":cpp17_config",
+    ":cpp20_config",
     ":QtWebEngineCore_config",
     "//build/config:precompiled_headers"
   ]
@@ -125,6 +124,7 @@ shared_library("QtWebEngineCore") {
     "//components/gcm_driver",
     "//components/history/content/browser",
     "//components/keyed_service/content",
+    "//components/lens:buildflags",
     "//components/navigation_interception",
     "//components/network_hints/browser",
     "//components/network_hints/common:mojo_bindings",
@@ -135,6 +135,7 @@ shared_library("QtWebEngineCore") {
     "//components/web_cache/browser",
     "//components/web_cache/renderer",
     "//components/spellcheck:buildflags",
+    "//components/supervised_user/core/common:buildflags",
     "//components/profile_metrics",
     "//components/proxy_config",
     "//components/user_prefs",
@@ -225,7 +226,7 @@ source_set("qtwebengine_spellcheck_sources") {
 }
 
 source_set("devtools_sources") {
-  configs += [ ":cpp17_config" ]
+  configs += [ ":cpp20_config" ]
   deps = [
     "//components/zoom",
     "//third_party/blink/public/mojom:mojom_platform",
@@ -252,7 +253,7 @@ source_set("devtools_sources") {
 
 source_set("qtwebengine_sources") {
   configs += [
-    ":cpp17_config",
+    ":cpp20_config",
     "//skia:skia_config",
     "//third_party/boringssl:external_config",
   ]
@@ -513,7 +514,7 @@ source_set("qtwebengine_sources") {
 if (is_win) {
   static_library("QtWebEngineCoreSandbox") {
     complete_static_lib = true
-    configs += [ ":cpp17_config",
+    configs += [ ":cpp20_config",
                  ":QtWebEngineCore_config",
                  "//build/config:precompiled_headers"
     ]
@@ -548,6 +549,7 @@ repack("qtwebengine_repack_resources") {
     "$root_gen_dir/chrome/net_internals_resources.pak",
     "$root_gen_dir/components/components_resources.pak",
     "$root_gen_dir/components/dev_ui_components_resources.pak",
+    "$root_gen_dir/content/attribution_internals_resources.pak",
     "$root_gen_dir/content/browser/resources/media/media_internals_resources.pak",
     "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
     "$root_gen_dir/content/content_resources.pak",
@@ -557,7 +559,7 @@ repack("qtwebengine_repack_resources") {
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
-    "$root_gen_dir/ui/resources/webui_generated_resources.pak",
+    "$root_gen_dir/ui/resources/webui_resources.pak",
   ]
   output = "$root_out_dir/qtwebengine_resources.pak"
   deps = [
@@ -567,6 +569,7 @@ repack("qtwebengine_repack_resources") {
      "//chrome/common:resources_grit",
      "//components/resources:components_resources_grit",
      "//components/resources:dev_ui_components_resources_grit",
+     "//content/browser/resources/attribution_reporting:resources",
      "//content/browser/resources/media:resources",
      "//content/browser/tracing:resources",
      "//content:content_resources",
@@ -576,7 +579,7 @@ repack("qtwebengine_repack_resources") {
      "//mojo/public/js:resources",
      "//net:net_resources_grit",
      "//third_party/blink/public:resources_grit",
-     "//ui/resources:webui_generated_resources_grd",
+     "//ui/resources:webui_resources_grd",
   ]
   if (enable_extensions) {
     sources += [

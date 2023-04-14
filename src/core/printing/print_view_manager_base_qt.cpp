@@ -65,8 +65,6 @@ void OnDidGetDefaultPrintSettings(scoped_refptr<printing::PrintQueriesQueue> que
         // If user hasn't cancelled.
         if (printer_query->cookie() && printer_query->settings().dpi()) {
             queue->QueuePrinterQuery(std::move(printer_query));
-        } else {
-            printer_query->StopWorker();
         }
     }
 }
@@ -109,8 +107,6 @@ void OnDidUpdatePrintSettings(scoped_refptr<printing::PrintQueriesQueue> queue,
 
     if (printer_query->cookie() && printer_query->settings().dpi()) {
         queue->QueuePrinterQuery(std::move(printer_query));
-    } else {
-        printer_query->StopWorker();
     }
 }
 
@@ -132,8 +128,6 @@ void OnDidScriptedPrint(scoped_refptr<printing::PrintQueriesQueue> queue,
 
     if (has_dpi && has_valid_cookie) {
         queue->QueuePrinterQuery(std::move(printer_query));
-    } else {
-        printer_query->StopWorker();
     }
 }
 
@@ -317,10 +311,6 @@ void PrintViewManagerBaseQt::ScriptedPrint(printing::mojom::ScriptedPrintParamsP
                 params->expected_pages_count, params->has_selection, params->margin_type,
                 params->is_scripted, !render_process_host->IsPdf(),
                 base::BindOnce(&OnDidScriptedPrint, m_printerQueriesQueue, std::move(printer_query), std::move(callback_wrapper)));
-}
-
-void PrintViewManagerBaseQt::ShowInvalidPrinterSettingsError()
-{
 }
 
 // Note: In PrintViewManagerQt we always initiate printing with
@@ -580,11 +570,8 @@ void PrintViewManagerBaseQt::ReleasePrinterQuery()
     if (!printJobManager)
         return;
 
-    std::unique_ptr<printing::PrinterQuery> printerQuery;
-    printerQuery = m_printerQueriesQueue->PopPrinterQuery(cookie);
-    if (!printerQuery)
-        return;
-    printerQuery->StopWorker();
+    std::unique_ptr<printing::PrinterQuery> printerQuery =
+            m_printerQueriesQueue->PopPrinterQuery(cookie);
 }
 
 // Originally from print_preview_message_handler.cc:
@@ -594,9 +581,6 @@ void PrintViewManagerBaseQt::StopWorker(int documentCookie)
         return;
     std::unique_ptr<printing::PrinterQuery> printerQuery =
             m_printerQueriesQueue->PopPrinterQuery(documentCookie);
-    if (!printerQuery)
-        return;
-    printerQuery->StopWorker();
 }
 
 void PrintViewManagerBaseQt::UpdatePrintSettings(int32_t cookie, base::Value::Dict job_settings,

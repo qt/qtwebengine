@@ -12,7 +12,7 @@
 #include <QtCore/QThread>
 #include <QtPositioning/QGeoPositionInfoSource>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/device/geolocation/geolocation_provider.h"

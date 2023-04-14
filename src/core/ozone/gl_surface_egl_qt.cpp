@@ -35,12 +35,12 @@ GLSurfaceEGLQt::~GLSurfaceEGLQt()
     Destroy();
 }
 
-gl::GLDisplay *GLSurfaceEGLQt::InitializeOneOff(uint64_t system_device_id)
+gl::GLDisplay *GLSurfaceEGLQt::InitializeOneOff(gl::GpuPreference preference)
 {
     if (s_initialized)
         return g_display;
 
-    auto *egl_display = GLDisplayManagerEGL::GetInstance()->GetDisplay(system_device_id);
+    auto *egl_display = GLDisplayManagerEGL::GetInstance()->GetDisplay(preference);
     g_display = egl_display;
     egl_display->SetDisplay(GLContextHelper::getEGLDisplay());
     if (!egl_display->GetDisplay()) {

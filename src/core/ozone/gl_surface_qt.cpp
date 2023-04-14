@@ -19,6 +19,7 @@
 #include "ozone/gl_surface_egl_qt.h"
 
 #include "gpu/ipc/service/image_transport_surface.h"
+#include "ui/gl/init/gl_display_initializer.h"
 #include "ui/gl/direct_composition_support.h"
 #include "ui/gl/gl_display.h"
 #include "ui/gl/gl_implementation.h"
@@ -62,7 +63,7 @@ bool GLSurfaceQt::IsOffscreen()
     return true;
 }
 
-gfx::SwapResult GLSurfaceQt::SwapBuffers(PresentationCallback callback, FrameData data)
+gfx::SwapResult GLSurfaceQt::SwapBuffers(PresentationCallback callback, gfx::FrameData data)
 {
     LOG(ERROR) << "Attempted to call SwapBuffers on a pbuffer.";
     Q_UNREACHABLE();
@@ -92,18 +93,18 @@ void* GLSurfaceQt::GetConfig()
 #if BUILDFLAG(IS_WIN)
 namespace init {
 
-gl::GLDisplay *InitializeGLOneOffPlatform(uint64_t system_device_id)
+gl::GLDisplay *InitializeGLOneOffPlatform(gl::GpuPreference gpu_preference)
 {
     VSyncProviderWin::InitializeOneOff();
 
     if (GetGLImplementation() == kGLImplementationDesktopGL || GetGLImplementation() == kGLImplementationDesktopGLCoreProfile)
-        return GLSurfaceWGLQt::InitializeOneOff(system_device_id);
+        return GLSurfaceWGLQt::InitializeOneOff(gpu_preference);
 
-    GLDisplayEGL *display = GetDisplayEGL(system_device_id);
+    GLDisplayEGL *display = GetDisplayEGL(gpu_preference);
     switch (GetGLImplementation()) {
     case kGLImplementationEGLANGLE:
     case kGLImplementationEGLGLES2:
-        if (!display->Initialize(EGLDisplayPlatform(GetDC(nullptr)))) {
+        if (!InitializeDisplay(display, EGLDisplayPlatform(GetDC(nullptr)))) {
             LOG(ERROR) << "GLDisplayEGL::Initialize failed.";
             return nullptr;
         }

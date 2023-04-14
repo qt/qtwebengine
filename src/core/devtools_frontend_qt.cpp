@@ -136,12 +136,12 @@ WebContentsDelegateQt *DevToolsFrontendQt::frontendDelegate() const
 
 void DevToolsFrontendQt::ColorPickedInEyeDropper(int r, int g, int b, int a)
 {
-    base::DictionaryValue color;
-    color.SetInteger("r", r);
-    color.SetInteger("g", g);
-    color.SetInteger("b", b);
-    color.SetInteger("a", a);
-    m_bindings->CallClientMethod("DevToolsAPI", "eyeDropperPickedColor", std::move(color));
+    base::Value::Dict color;
+    color.Set("r", r);
+    color.Set("g", g);
+    color.Set("b", b);
+    color.Set("a", a);
+    m_bindings->CallClientMethod("DevToolsAPI", "eyeDropperPickedColor", base::Value(std::move(color)));
 }
 
 // content::WebContentsObserver implementation

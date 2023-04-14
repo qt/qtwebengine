@@ -4,7 +4,7 @@
 #ifndef BROWSER_MESSAGE_FILTER_QT_H
 #define BROWSER_MESSAGE_FILTER_QT_H
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "content/public/browser/browser_message_filter.h"
 
 class GURL;

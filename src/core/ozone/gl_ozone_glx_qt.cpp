@@ -21,8 +21,9 @@
 
 namespace ui {
 
-gl::GLDisplay *GLOzoneGLXQt::InitializeGLOneOffPlatform(uint64_t system_device_id) {
-    return gl::GLSurfaceGLXQt::InitializeOneOff(system_device_id);
+gl::GLDisplay *GLOzoneGLXQt::InitializeGLOneOffPlatform(bool, std::vector<gl::DisplayType>, gl::GpuPreference preference)
+{
+    return gl::GLSurfaceGLXQt::InitializeOneOff(preference);
 }
 
 bool GLOzoneGLXQt::InitializeStaticGLBindings(

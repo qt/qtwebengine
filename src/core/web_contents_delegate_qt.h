@@ -123,7 +123,6 @@ public:
     void DidStopLoading() override;
     void DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code) override;
     void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) override;
-    void BeforeUnloadFired(bool proceed, const base::TimeTicks& proceed_time) override;
     void ActivateContents(content::WebContents* contents) override;
     void ResourceLoadComplete(content::RenderFrameHost* render_frame_host,
                               const content::GlobalRequestID& request_id,

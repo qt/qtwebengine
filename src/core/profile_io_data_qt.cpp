@@ -161,7 +161,7 @@ void ProfileIODataQt::resetNetworkContext()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     setFullConfiguration();
-    m_profile->ForEachStoragePartition(
+    m_profile->ForEachLoadedStoragePartition(
             base::BindRepeating([](content::StoragePartition *storage) {
                 auto storage_impl = static_cast<content::StoragePartitionImpl *>(storage);
                 storage_impl->ResetURLLoaderFactories();

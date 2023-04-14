@@ -8,7 +8,7 @@
 
 #include "plugin_response_interceptor_url_loader_throttle.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/guid.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "content/public/browser/browser_context.h"

@@ -152,7 +152,7 @@ static QVariant fromJSValue(const base::Value *result)
         }
         break;
     }
-    case base::Value::Type::DICTIONARY:
+    case base::Value::Type::DICT:
     {
         if (const auto dict = result->GetIfDict()) {
             QVariantMap map;
@@ -304,6 +304,7 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
             toGurl(virtualUrl),
             content::Referrer(toGurl(referrerUrl), static_cast<network::mojom::ReferrerPolicy>(referrerPolicy)),
             absl::nullopt, // optional initiator_origin
+            absl::nullopt, // optional initiator_base_url
             // Use a transition type of reload so that we don't incorrectly
             // increase the typed count.
             ui::PAGE_TRANSITION_RELOAD,

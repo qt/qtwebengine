@@ -11,7 +11,7 @@ if(QT_CONFIGURE_RUNNING)
 else()
     find_package(Ninja 1.7.2)
     find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT)
-    find_program(Python3_EXECUTABLE NAMES python3 HINTS $ENV{PYTHON3_PATH})
+    find_program(Python3_EXECUTABLE NAMES python3 python HINTS $ENV{PYTHON3_PATH})
     if(NOT Python3_EXECUTABLE)
         find_package(Python3 3.6)
     endif()
@@ -21,7 +21,7 @@ else()
     find_package(Perl)
     find_package(PkgConfig)
     find_package(Snappy)
-    find_package(Nodejs 12.0)
+    find_package(Nodejs 14.0)
 endif()
 
 if(PkgConfig_FOUND)
@@ -201,7 +201,7 @@ qt_config_compile_test(winversion
     LABEL "winversion"
     CODE
 "
-#if !defined(__clang__) && _MSC_FULL_VER < 191426428
+#if !defined(__clang__) && _MSC_VER < 1934
 #error unsupported Visual Studio version
 #endif
 int main(void){
@@ -499,7 +499,7 @@ add_check_for_support(
 add_check_for_support(
    MODULES QtWebEngine QtPdf
    CONDITION TARGET Nodejs::Nodejs
-   MESSAGE "node.js version 12 or later is required."
+   MESSAGE "node.js version 14 or later is required."
 )
 add_check_for_support(
     MODULES QtWebEngine
@@ -586,7 +586,7 @@ ${xcbErrorMessage}"
 add_check_for_support(
    MODULES QtWebEngine QtPdf
    CONDITION NOT MSVC OR TEST_winversion
-   MESSAGE "Build requires Visual Studio 2019 or higher."
+   MESSAGE "Build requires Visual Studio 2022 or higher."
 )
 add_check_for_support(
    MODULES QtWebEngine
@@ -614,8 +614,8 @@ if(WIN32)
     if(MSVC)
         add_check_for_support(
             MODULES QtWebEngine QtPdf
-            CONDITION NOT MSVC_VERSION LESS 1929
-            MESSAGE "MSVC compiler version must be at least 14.29."
+            CONDITION NOT MSVC_VERSION LESS 1934
+            MESSAGE "VS compiler version must be at least 14.34"
         )
     endif()
     set(windowsSdkVersion $ENV{WindowsSDKVersion})

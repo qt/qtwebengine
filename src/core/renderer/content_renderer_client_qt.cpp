@@ -10,8 +10,8 @@
 #include "renderer/web_engine_page_render_frame.h"
 #include "web_engine_library_info.h"
 
+#include "base/task/sequenced_task_runner.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
-#include "components/autofill/content/renderer/autofill_assistant_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/cdm/renderer/external_clear_key_key_system_info.h"
@@ -131,12 +131,12 @@ void ContentRendererClientQt::RenderThreadStarted()
 void ContentRendererClientQt::ExposeInterfacesToBrowser(mojo::BinderMap* binders)
 {
     binders->Add<visitedlink::mojom::VisitedLinkNotificationSink>(
-                m_visitedLinkReader->GetBindCallback(), base::SequencedTaskRunnerHandle::Get());
+                m_visitedLinkReader->GetBindCallback(), base::SingleThreadTaskRunner::GetCurrentDefault());
 
     binders->Add<web_cache::mojom::WebCache>(
                 base::BindRepeating(&web_cache::WebCacheImpl::BindReceiver,
                                     base::Unretained(m_webCacheImpl.get())),
-                base::SequencedTaskRunnerHandle::Get());
+                base::SingleThreadTaskRunner::GetCurrentDefault());
 
 #if QT_CONFIG(webengine_spellchecker)
     binders->Add<spellcheck::mojom::SpellChecker>(
@@ -147,7 +147,7 @@ void ContentRendererClientQt::ExposeInterfacesToBrowser(mojo::BinderMap* binders
                                  client->InitSpellCheck();
                              client->m_spellCheck->BindReceiver(std::move(receiver));
                          }, this),
-                 base::SequencedTaskRunnerHandle::Get());
+                 base::SingleThreadTaskRunner::GetCurrentDefault());
 #endif
 
 #if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
@@ -157,7 +157,7 @@ void ContentRendererClientQt::ExposeInterfacesToBrowser(mojo::BinderMap* binders
                             mojo::PendingReceiver<chrome::mojom::WebRtcLoggingAgent> receiver) {
                                 client->GetWebRtcLoggingAgent()->AddReceiver(std::move(receiver));
                          }, this),
-                 base::SequencedTaskRunnerHandle::Get());
+                 base::SingleThreadTaskRunner::GetCurrentDefault());
 #endif
 }
 
@@ -195,8 +195,6 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_fr
     ExtensionsRendererClientQt::GetInstance()->RenderFrameCreated(render_frame, render_frame_observer->registry());
 #endif
 
-    autofill::AutofillAssistantAgent *autofill_assistant_agent =
-            new autofill::AutofillAssistantAgent(render_frame);
     autofill::PasswordAutofillAgent *password_autofill_agent =
             new autofill::PasswordAutofillAgent(render_frame, associated_interfaces);
     autofill::PasswordGenerationAgent *password_generation_agent =
@@ -204,7 +202,7 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_fr
                                                   associated_interfaces);
 
     new autofill::AutofillAgent(render_frame, password_autofill_agent, password_generation_agent,
-                                autofill_assistant_agent, associated_interfaces);
+                                associated_interfaces);
 }
 
 void ContentRendererClientQt::WebViewCreated(blink::WebView *web_view,

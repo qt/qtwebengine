@@ -988,11 +988,13 @@ macro(append_compiler_linker_sdk_setup)
     if(MSVC)
         get_filename_component(windowsSdkPath $ENV{WINDOWSSDKDIR} ABSOLUTE)
         get_filename_component(visualStudioPath $ENV{VSINSTALLDIR} ABSOLUTE)
+        set(windowSdkVersion $ENV{WindowsSDKVersion})
         list(APPEND gnArgArg
             win_linker_timing=true
             use_incremental_linking=false
-            visual_studio_version=2019
+            visual_studio_version=2022
             visual_studio_path=\"${visualStudioPath}\"
+            windows_sdk_version=\"${windowsSdkVersion}\"
             windows_sdk_path=\"${windowsSdkPath}\"
         )
     endif()

@@ -12,7 +12,6 @@
 #include "web_contents_adapter_client.h"
 #include "web_event_factory.h"
 
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
@@ -47,7 +46,7 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/wm/core/cursors_aura.h"
+#include "ui/wm/core/cursor_util.h"
 #include "ui/base/cursor/cursor_size.h"
 #endif
 
@@ -145,7 +144,7 @@ public:
 
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget)
     : content::RenderWidgetHostViewBase::RenderWidgetHostViewBase(widget)
-    , m_taskRunner(base::ThreadTaskRunnerHandle::Get())
+    , m_taskRunner(base::SingleThreadTaskRunner::GetCurrentDefault())
     , m_gestureProvider(QtGestureProviderConfig(), this)
     , m_frameSinkId(host()->GetFrameSinkId())
     , m_delegateClient(new RenderWidgetHostViewQtDelegateClient(this))
@@ -478,14 +477,13 @@ bool RenderWidgetHostViewQt::updateCursorFromResource(ui::mojom::CursorType type
     return true;
 }
 
-void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
+void RenderWidgetHostViewQt::UpdateCursor(const ui::Cursor &webCursor)
 {
     DisplayCursor(webCursor);
 }
 
-void RenderWidgetHostViewQt::DisplayCursor(const content::WebCursor &webCursor)
+void RenderWidgetHostViewQt::DisplayCursor(const ui::Cursor &cursorInfo)
 {
-    const ui::Cursor &cursorInfo = webCursor.cursor();
     Qt::CursorShape shape = Qt::ArrowCursor;
     switch (cursorInfo.type()) {
     case ui::mojom::CursorType::kNull:
