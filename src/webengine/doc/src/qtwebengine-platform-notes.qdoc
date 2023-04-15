@@ -221,13 +221,11 @@
             or VoiceOver on \macos.
     \endlist
 
-    Due to some limitations, the Linux QPA plugin almost always reports that accessibility should
-    be activated. On big HTML pages, this can cause a significant slowdown in rendering speed.
+    On some old Linux configurations, accessibility can cause a significant slowdown
+    on large HTML pages.
 
-    Because of that, from Qt 5.9 onwards, \QWE accessibility support is disabled by default
-    on Linux.
-    It can be re-enabled by setting the \c QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY environment
-    variable to a non-empty value.
+    Because of that, \QWE accessibility support can be disabled on Linux, by setting the
+    \c QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY environment variable to 0.
 
     \section1 Popups in Fullscreen Applications on Windows
     Because of a limitation in the Windows compositor, applications that show a fullscreen web
