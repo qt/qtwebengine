@@ -15,6 +15,8 @@
 
 #include "chrome/browser/devtools/devtools_eye_dropper.h"
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
@@ -25,6 +27,7 @@
 using namespace QtWebEngineCore;
 
 namespace {
+static const char kScreencastEnabled[] = "screencastEnabled";
 
 static std::string GetFrontendURL()
 {
@@ -80,6 +83,14 @@ DevToolsFrontendQt::DevToolsFrontendQt(QSharedPointer<WebContentsAdapter> webCon
     // bindings take ownership over devtools
     m_bindings->SetDelegate(this);
     m_bindings->AttachTo(content::DevToolsAgentHost::GetOrCreateFor(m_inspectedContents));
+
+    auto *prefService = m_bindings->profile()->GetPrefs();
+    const auto &devtoolsPrefs = prefService->GetDict(prefs::kDevToolsPreferences);
+
+    if (!devtoolsPrefs.Find(kScreencastEnabled)) {
+        ScopedDictPrefUpdate update(prefService, prefs::kDevToolsPreferences);
+        update->Set(kScreencastEnabled, "false");
+    }
 }
 
 DevToolsFrontendQt::~DevToolsFrontendQt()
