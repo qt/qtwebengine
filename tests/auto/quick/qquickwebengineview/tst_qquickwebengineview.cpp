@@ -16,6 +16,7 @@
 #include <QtGui/private/qinputmethod_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginescriptcollection_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginesettings_p.h>
+#include <QtWebEngineQuick/private/qquickwebenginedownloadrequest_p.h>
 #include <QtWebEngineQuick/private/qquickwebengineview_p.h>
 #include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
 #include <qpa/qplatforminputcontext.h>
@@ -74,6 +75,8 @@ private Q_SLOTS:
     void focusChild();
 #endif
     void htmlSelectPopup();
+    void savePage_data();
+    void savePage();
 
 private:
     inline QQuickWebEngineView *newWebEngineView();
@@ -1272,6 +1275,81 @@ void tst_QQuickWebEngineView::htmlSelectPopup()
     makeTouch(popup, QPoint(popup->width() / 2, popup->height() / 2));
     QTRY_VERIFY(!popup);
     QCOMPARE(evaluateJavaScriptSync(&view, "document.getElementById('select').value").toString(), QStringLiteral("O2"));
+}
+
+void tst_QQuickWebEngineView::savePage_data()
+{
+    QTest::addColumn<QWebEngineDownloadRequest::SavePageFormat>("savePageFormat");
+
+    QTest::newRow("SingleHtmlSaveFormat") << QWebEngineDownloadRequest::SingleHtmlSaveFormat;
+    QTest::newRow("CompleteHtmlSaveFormat") << QWebEngineDownloadRequest::CompleteHtmlSaveFormat;
+    QTest::newRow("MimeHtmlSaveFormat") << QWebEngineDownloadRequest::MimeHtmlSaveFormat;
+}
+
+void tst_QQuickWebEngineView::savePage()
+{
+    QFETCH(QWebEngineDownloadRequest::SavePageFormat, savePageFormat);
+
+    QTemporaryDir tempDir(QDir::tempPath() + "/tst_QQuickWebEngineView-XXXXXX");
+    QVERIFY(tempDir.isValid());
+    const QString filePath = tempDir.path() + "/saved_page.html";
+
+    QQuickWebEngineView *view = webEngineView();
+    connect(view->profile(), &QQuickWebEngineProfile::downloadRequested,
+            [&](QQuickWebEngineDownloadRequest *downloadRequest) {
+                QCOMPARE(downloadRequest->state(),
+                         QQuickWebEngineDownloadRequest::DownloadInProgress);
+                QCOMPARE(downloadRequest->isSavePageDownload(), true);
+                QCOMPARE(downloadRequest->savePageFormat(), savePageFormat);
+                QCOMPARE(QDir(downloadRequest->downloadDirectory())
+                                 .filePath(downloadRequest->downloadFileName()),
+                         filePath);
+                QCOMPARE(downloadRequest->url(), view->url());
+
+                connect(downloadRequest, &QQuickWebEngineDownloadRequest::isFinishedChanged,
+                        [&, downloadRequest]() {
+                            QCOMPARE(downloadRequest->state(),
+                                     QQuickWebEngineDownloadRequest::DownloadCompleted);
+                            QCOMPARE(downloadRequest->isSavePageDownload(), true);
+                            QCOMPARE(downloadRequest->isFinished(), true);
+                            QCOMPARE(downloadRequest->savePageFormat(), savePageFormat);
+                            QCOMPARE(downloadRequest->totalBytes(),
+                                     downloadRequest->receivedBytes());
+                            QVERIFY(downloadRequest->receivedBytes() > 0);
+                            QCOMPARE(QDir(downloadRequest->downloadDirectory())
+                                             .filePath(downloadRequest->downloadFileName()),
+                                     filePath);
+                            QCOMPARE(downloadRequest->url(), view->url());
+                            QTestEventLoop::instance().exitLoop();
+                        });
+            });
+
+    const QString originalData = QStringLiteral("Basic page");
+    view->setUrl(urlFromTestPath("html/basic_page.html"));
+    QVERIFY(waitForLoadSucceeded(view));
+    QCOMPARE(evaluateJavaScriptSync(view, "document.getElementsByTagName('h1')[0].innerText")
+                     .toString(),
+             originalData);
+
+    // Save the loaded page as HTML.
+    view->save(filePath, savePageFormat);
+    QTestEventLoop::instance().enterLoop(10);
+    QFile file(filePath);
+    QVERIFY(file.exists());
+
+    // Load something else.
+    view->setUrl(urlFromTestPath("html/basic_page2.html"));
+    QVERIFY(waitForLoadSucceeded(view));
+    QVERIFY(evaluateJavaScriptSync(view, "document.getElementsByTagName('h1')[0].innerText")
+                    .toString()
+            != originalData);
+
+    // Load the saved page and compare the contents.
+    view->setUrl(QUrl::fromLocalFile(filePath));
+    QVERIFY(waitForLoadSucceeded(view));
+    QCOMPARE(evaluateJavaScriptSync(view, "document.getElementsByTagName('h1')[0].innerText")
+                     .toString(),
+             originalData);
 }
 
 #if QT_CONFIG(accessibility)

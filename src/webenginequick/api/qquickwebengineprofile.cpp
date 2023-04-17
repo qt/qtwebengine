@@ -212,7 +212,8 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     QWebEngineDownloadRequestPrivate *itemPrivate =
             new QWebEngineDownloadRequestPrivate(m_profileAdapter);
     itemPrivate->downloadId = info.id;
-    itemPrivate->downloadState = QWebEngineDownloadRequest::DownloadRequested;
+    itemPrivate->downloadState = info.accepted ? QWebEngineDownloadRequest::DownloadInProgress
+                                               : QWebEngineDownloadRequest::DownloadRequested;
     itemPrivate->startTime = info.startTime;
     itemPrivate->downloadUrl = info.url;
     itemPrivate->totalBytes = info.totalBytes;

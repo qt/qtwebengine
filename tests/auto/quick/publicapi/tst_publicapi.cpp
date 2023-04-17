@@ -72,7 +72,9 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QQuickWebEngineTouchSelectionMenuRequest::staticMetaObject
     ;
 
-static QList<QMetaEnum> knownEnumNames = QList<QMetaEnum>();
+static QList<QMetaEnum> knownEnumNames = QList<QMetaEnum>()
+    << QWebEngineDownloadRequest::staticMetaObject.enumerator(QWebEngineDownloadRequest::staticMetaObject.indexOfEnumerator("SavePageFormat"))
+    ;
 
 static const QStringList hardcodedTypes = QStringList()
     << "QJSValue"
@@ -787,6 +789,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.zoomFactor --> double"
     << "QQuickWebEngineView.zoomFactorChanged(double) --> void"
     << "QQuickWebEngineView.acceptAsNewWindow(QWebEngineNewWindowRequest*) --> void"
+    << "QQuickWebEngineView.save(QString) --> void"
+    << "QQuickWebEngineView.save(QString,QWebEngineDownloadRequest::SavePageFormat) --> void"
     << "QWebEngineQuotaRequest.accept() --> void"
     << "QWebEngineQuotaRequest.origin --> QUrl"
     << "QWebEngineQuotaRequest.reject() --> void"

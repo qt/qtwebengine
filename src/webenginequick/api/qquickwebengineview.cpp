@@ -2411,6 +2411,13 @@ QQmlComponent *QQuickWebEngineView::touchHandleDelegate() const
     return d_ptr->m_touchHandleDelegate;
 }
 
+void QQuickWebEngineView::save(const QString &filePath,
+                               QWebEngineDownloadRequest::SavePageFormat format) const
+{
+    Q_D(const QQuickWebEngineView);
+    d->adapter->save(filePath, format);
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qquickwebengineview_p.cpp"

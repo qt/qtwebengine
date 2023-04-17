@@ -17,6 +17,7 @@
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtWebEngineCore/qwebenginequotarequest.h>
+#include <QtWebEngineCore/qwebenginedownloadrequest.h>
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 #include <QtGui/qcolor.h>
 #include <QtQml/qqmlregistration.h>
@@ -465,6 +466,10 @@ QT_WARNING_POP
 
     QQmlComponent *touchHandleDelegate() const;
     void setTouchHandleDelegate(QQmlComponent *delegagte);
+    Q_REVISION(6, 6)
+    Q_INVOKABLE void save(const QString &filePath,
+                          QWebEngineDownloadRequest::SavePageFormat format =
+                                  QWebEngineDownloadRequest::MimeHtmlSaveFormat) const;
 
 public Q_SLOTS:
     void runJavaScript(const QString&, const QJSValue & = QJSValue());

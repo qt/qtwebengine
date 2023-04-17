@@ -60,6 +60,7 @@ set(testList
     tst_userScripts.qml
     tst_userScriptCollection.qml
     tst_viewSource.qml
+    tst_save.qml
 )
 
 if(QT_FEATURE_webengine_webchannel)

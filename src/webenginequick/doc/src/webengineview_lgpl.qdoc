@@ -1528,5 +1528,24 @@
 
 */
 
+/*!
+    \qmlmethod void WebEngineView::save(const QString &filePath, QWebEngineDownloadRequest::SavePageFormat format)
+    \since QtWebEngine 6.6
+
+    Save the current web page to disk.
+
+    The web page is saved to \a filePath in the specified \a{format}.
+
+    This is a shortcut for the following actions:
+    \list
+    \li Trigger the Save web action.
+    \li Accept the next download item and set the specified file path and save format.
+    \endlist
+
+    This function issues an asynchronous download request for the web page and returns immediately.
+
+    \sa QWebEngineDownloadRequest::SavePageFormat
+*/
+
     \sa {WebEngine Qt Quick Custom Touch Handle Example}
 */
