@@ -460,6 +460,10 @@ defineTest(qtwebengine_isMacOsPlatformSupported) {
         qtwebengine_platformError("requires a macOS SDK version of 10.13 or newer. Current version is $${WEBENGINE_OSX_SDK_PRODUCT_VERSION}.")
         return(false)
     }
+    CONFIG(debug, debug|release):isUniversal(){
+        qtwebengine_platformError("Universal builds can not be done with debug configuration due to large binary size.")
+        return(false)
+    }
     return(true)
 }
 
