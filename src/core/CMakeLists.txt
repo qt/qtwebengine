@@ -263,6 +263,7 @@ foreach(arch ${archs})
                 extensions/extension_web_contents_observer_qt.cpp extensions/extension_web_contents_observer_qt.h
                 extensions/extensions_api_client_qt.cpp extensions/extensions_api_client_qt.h
                 extensions/extensions_browser_client_qt.cpp extensions/extensions_browser_client_qt.h
+                extensions/file_system_delegate_qt.cpp extensions/file_system_delegate_qt.h
                 extensions/messaging_delegate_qt.cpp extensions/messaging_delegate_qt.h
                 extensions/mime_handler_view_guest_delegate_qt.cpp extensions/mime_handler_view_guest_delegate_qt.h
                 extensions/plugin_service_filter_qt.cpp extensions/plugin_service_filter_qt.h
