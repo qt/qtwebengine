@@ -384,14 +384,20 @@ function(get_ios_target_triple_and_sysroot result arch)
     )
 endfunction()
 
-function(add_ninja_target target cmakeTarget ninjaTarget config arch buildDir)
-    string(TOUPPER ${config} cfg)
-    add_custom_target(${target} DEPENDS ${buildDir}/${config}/${arch}/${ninjaTarget}.stamp)
-    set_target_properties(${target} PROPERTIES
-        CONFIG ${config}
-        ARCH ${arch}
-        CMAKE_TARGET ${cmakeTarget}
-        NINJA_TARGET ${ninjaTarget}
+function(add_ninja_target)
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "" "TARGET;CMAKE_TARGET;NINJA_TARGET;BUILDDIR;NINJA_STAMP;NINJA_DATA_STAMP;CONFIG;ARCH" ""
+    )
+    _qt_internal_validate_all_args_are_parsed(arg)
+    set(stamps ${arg_NINJA_STAMP} ${arg_NINJA_DATA_STAMP})
+    list(TRANSFORM stamps PREPEND "${arg_BUILDDIR}/${arg_CONFIG}/${arg_ARCH}/")
+    add_custom_target(${arg_TARGET} DEPENDS ${stamps})
+    set_target_properties(${arg_TARGET} PROPERTIES
+        CONFIG ${arg_CONFIG}
+        ARCH ${arg_ARCH}
+        CMAKE_TARGET ${arg_CMAKE_TARGET}
+        NINJA_TARGET ${arg_NINJA_TARGET}
+        NINJA_STAMP ${arg_NINJA_STAMP}
     )
 endfunction()
 
@@ -507,6 +513,7 @@ function(add_intermediate_archive target buildDir completeStatic)
     get_target_property(arch ${target} ARCH)
     get_target_property(ninjaTarget ${target} NINJA_TARGET)
     get_target_property(cmakeTarget ${target} CMAKE_TARGET)
+    get_target_property(ninjaStamp ${target} NINJA_STAMP)
     string(TOUPPER ${config} cfg)
     set(objects_rsp "${buildDir}/${ninjaTarget}_objects.rsp")
     set(objects_out "${buildDir}/${cmakeTarget}_objects.o")
@@ -534,7 +541,7 @@ function(add_intermediate_archive target buildDir completeStatic)
             ${objects_out}
             ${archives_out}
         DEPENDS
-            ${buildDir}/${ninjaTarget}.stamp
+            ${buildDir}/${ninjaStamp}
         WORKING_DIRECTORY "${buildDir}/../../.."
         COMMENT "Creating intermediate archives for ${cmakeTarget}/${config}/${arch}"
         USES_TERMINAL
@@ -548,6 +555,7 @@ function(add_intermediate_object target buildDir completeStatic)
     get_target_property(arch ${target} ARCH)
     get_target_property(ninjaTarget ${target} NINJA_TARGET)
     get_target_property(cmakeTarget ${target} CMAKE_TARGET)
+    get_target_property(ninjaStamp ${target} NINJA_STAMP)
     string(TOUPPER ${config} cfg)
     if(IOS)
         get_ios_target_triple_and_sysroot(args ${arch})
@@ -562,7 +570,7 @@ function(add_intermediate_object target buildDir completeStatic)
             -Wl,-keep_private_externs
             @${objects_rsp}
         DEPENDS
-            ${buildDir}/${ninjaTarget}.stamp
+            ${buildDir}/${ninjaStamp}
         WORKING_DIRECTORY "${buildDir}/../../.."
         COMMENT "Creating intermediate object files for ${cmakeTarget}/${config}/${arch}"
         USES_TERMINAL
@@ -610,6 +618,7 @@ endfunction()
 function(add_lipo_command target buildDir)
     get_target_property(config ${target} CONFIG)
     get_target_property(cmakeTarget ${target} CMAKE_TARGET)
+    get_target_property(ninjaTarget ${target} NINJA_TARGET)
     set(fileName ${cmakeTarget}.a)
     create_lipo_command(${target} ${buildDir} ${fileName})
     add_library(${cmakeTarget}_${config} STATIC IMPORTED GLOBAL)
@@ -1086,15 +1095,16 @@ endmacro()
 
 function(add_ninja_command)
     cmake_parse_arguments(PARSE_ARGV 0 arg
-        "" "TARGET;OUTPUT;BUILDDIR;MODULE" "BYPRODUCTS"
+        "" "TARGET;BUILDDIR;MODULE" "OUTPUT;BYPRODUCTS"
     )
     _qt_internal_validate_all_args_are_parsed(arg)
 
     string(REPLACE " " ";" NINJAFLAGS "$ENV{NINJAFLAGS}")
+    list(TRANSFORM arg_OUTPUT PREPEND "${arg_BUILDDIR}/")
     list(TRANSFORM arg_BYPRODUCTS PREPEND "${arg_BUILDDIR}/")
     add_custom_command(
         OUTPUT
-            ${arg_BUILDDIR}/${arg_OUTPUT}
+            ${arg_OUTPUT}
             ${arg_BUILDDIR}/${arg_TARGET} # use generator expression in CMAKE 3.20
         BYPRODUCTS ${arg_BYPRODUCTS}
         COMMENT "Running ninja for ${arg_TARGET} in ${arg_BUILDDIR}"
@@ -1133,7 +1143,12 @@ function(get_architectures result)
     set(${result} ${${result}} PARENT_SCOPE)
 endfunction()
 
-function(add_gn_build_aritfacts_to_target cmakeTarget ninjaTarget module buildDir completeStatic)
+function(add_gn_build_aritfacts_to_target)
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "" "CMAKE_TARGET;NINJA_TARGET;BUILDDIR;MODULE;COMPLETE_STATIC;NINJA_STAMP;NINJA_DATA_STAMP" ""
+    )
+    _qt_internal_validate_all_args_are_parsed(arg)
+
     # config loop is a workaround to be able to add_custom_command per config
     # note this is fixed in CMAKE.3.20 and should be cleaned up when 3.20 is
     # the minimum cmake we support
@@ -1141,41 +1156,50 @@ function(add_gn_build_aritfacts_to_target cmakeTarget ninjaTarget module buildDi
     get_architectures(archs)
     foreach(config ${configs})
         foreach(arch ${archs})
-
-            set(target ${ninjaTarget}_${config}_${arch})
-            add_ninja_target(${target} ${cmakeTarget} ${ninjaTarget} ${config} ${arch} ${buildDir})
-            add_ninja_command(
-                TARGET ${ninjaTarget}
-                OUTPUT ${ninjaTarget}.stamp
-                BUILDDIR ${buildDir}/${config}/${arch}
-                MODULE ${module}
+            set(target ${arg_NINJA_TARGET}_${config}_${arch})
+            set(stamps ${arg_NINJA_STAMP} ${arg_NINJA_DATA_STAMP})
+            add_ninja_target(
+                TARGET ${target}
+                NINJA_TARGET ${arg_NINJA_TARGET}
+                CMAKE_TARGET ${arg_CMAKE_TARGET}
+                NINJA_STAMP ${arg_NINJA_STAMP}
+                NINJA_DATA_STAMP ${arg_NINJA_DATA_STAMP}
+                CONFIG ${config}
+                ARCH ${arch}
+                BUILDDIR ${arg_BUILDDIR}
             )
-            add_dependencies(run_${module}_NinjaDone ${target})
-            set_target_properties(${cmakeTarget} PROPERTIES
-                LINK_DEPENDS ${buildDir}/${config}/${arch}/${ninjaTarget}.stamp
+            add_ninja_command(
+                TARGET ${arg_NINJA_TARGET}
+                OUTPUT ${stamps}
+                BUILDDIR ${arg_BUILDDIR}/${config}/${arch}
+                MODULE ${arg_MODULE}
+            )
+            add_dependencies(run_${arg_MODULE}_NinjaDone ${target})
+            set_target_properties(${arg_CMAKE_TARGET} PROPERTIES
+                LINK_DEPENDS ${arg_BUILDDIR}/${config}/${arch}/${arg_NINJA_STAMP}
             )
             if(QT_IS_MACOS_UNIVERSAL)
-                add_intermediate_archive(${target} ${buildDir}/${config}/${arch} ${completeStatic})
+                add_intermediate_archive(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
             elseif(IOS)
-                add_intermediate_object(${target} ${buildDir}/${config}/${arch} ${completeStatic})
+                add_intermediate_object(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
             else()
                 if(MACOS AND QT_FEATURE_static)
                     # mac archiver does not support @file notation, do intermediate object istead
-                    add_intermediate_object(${target} ${buildDir}/${config}/${arch} ${completeStatic})
-                    add_archiver_options(${target} ${buildDir}/${config}/${arch} ${completeStatic})
+                    add_intermediate_object(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
+                    add_archiver_options(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
                 else()
-                    add_linker_options(${target} ${buildDir}/${config}/${arch} ${completeStatic})
+                    add_linker_options(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
                 endif()
             endif()
             unset(target)
         endforeach()
         list(GET archs 0 arch)
-        set(target ${ninjaTarget}_${config}_${arch})
+        set(target ${arg_NINJA_TARGET}_${config}_${arch})
         if(QT_IS_MACOS_UNIVERSAL)
-            add_lipo_command(${target} ${buildDir}/${config})
+            add_lipo_command(${target} ${arg_BUILDDIR}/${config})
         endif()
         if(IOS)
-            add_ios_lipo_command(${target} ${buildDir}/${config})
+            add_ios_lipo_command(${target} ${arg_BUILDDIR}/${config})
         endif()
     endforeach()
 endfunction()

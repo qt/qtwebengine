@@ -562,7 +562,20 @@ target_include_directories(WebEngineCore PRIVATE
     ${buildDir}/$<CONFIG>/${arch}/gen/third_party/perfetto/build_config
 )
 
-add_gn_build_aritfacts_to_target(WebEngineCore QtWebEngineCore core ${buildDir} FALSE)
+set(stamps QtWebEngineCore.stamp)
+if(QT_FEATURE_webengine_v8_context_snapshot)
+    set(dataStamp obj/tools/v8_context_snapshot/v8_context_snapshot.stamp)
+endif()
+
+add_gn_build_aritfacts_to_target(
+    CMAKE_TARGET WebEngineCore
+    NINJA_TARGET QtWebEngineCore
+    MODULE core
+    BUILDDIR ${buildDir}
+    COMPLETE_STATIC FALSE
+    NINJA_STAMP QtWebEngineCore.stamp
+    NINJA_DATA_STAMP ${dataStamp}
+)
 add_dependencies(WebEngineCore run_core_NinjaDone)
 if(COIN_BUG_699)
    set_property(TARGET WebEngineCore PROPERTY CXX_LINKER_LAUNCHER ${PROJECT_BINARY_DIR}/linker_ulimit.sh)
@@ -604,7 +617,14 @@ if(QT_FEATURE_webengine_spellchecker AND NOT CMAKE_CROSSCOMPILING)
         ../3rdparty/chromium/third_party/boringssl/src/include
         ${buildDir}/$<CONFIG>/${arch}/gen
     )
-    add_gn_build_aritfacts_to_target(${dict_target_name} convert_dict core ${buildDir} FALSE)
+    add_gn_build_aritfacts_to_target(
+        CMAKE_TARGET ${dict_target_name}
+        NINJA_TARGET convert_dict
+        MODULE core
+        BUILDDIR ${buildDir}
+        COMPLETE_STATIC FALSE
+        NINJA_STAMP convert_dict.stamp
+    )
     add_dependencies(${dict_target_name} run_core_NinjaDone)
     add_dependencies(${dict_target_name} WebEngineCore)
 endif()

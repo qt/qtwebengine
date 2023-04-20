@@ -226,6 +226,13 @@ endforeach()
 get_architectures(archs)
 list(GET archs 0 arch)
 target_include_directories(Pdf PRIVATE ${buildDir}/$<CONFIG>/${arch}/gen)
-add_gn_build_aritfacts_to_target(Pdf QtPdf pdf ${buildDir} TRUE)
+add_gn_build_aritfacts_to_target(
+    CMAKE_TARGET Pdf
+    NINJA_TARGET QtPdf
+    MODULE pdf
+    BUILDDIR ${buildDir}
+    COMPLETE_STATIC TRUE
+    NINJA_STAMP QtPdf.stamp
+)
 add_dependencies(Pdf run_pdf_NinjaDone)
 

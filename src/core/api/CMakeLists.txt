@@ -115,6 +115,8 @@ set(resourceList qtwebengine_resources.pak
     qtwebengine_resources_200p.pak
     qtwebengine_devtools_resources.pak)
 
+set(stamps ${buildDir}/${config}/${arch}/QtWebEngineCore.stamp)
+
 if(QT_FEATURE_webengine_v8_context_snapshot AND NOT MACOS)
     list(APPEND resourceList v8_context_snapshot.bin)
 elseif(QT_FEATURE_webengine_v8_context_snapshot)
@@ -123,6 +125,7 @@ elseif(QT_FEATURE_webengine_v8_context_snapshot)
           get_filename_component(resSourcePath ${buildDir}/${config}/${arch}/v8_context_snapshot.${arch}.bin REALPATH)
           list(APPEND resourceFiles ${resSourcePath})
        endforeach()
+       set(stamps ${stamps} ${buildDir}/${config}/${arch}/obj/tools/v8_context_snapshot/v8_context_snapshot.stamp)
     endforeach()
 endif()
 
@@ -158,7 +161,7 @@ if(QT_FEATURE_framework)
         GENERATED TRUE
     )
 
-    add_custom_command(OUTPUT ${allResourceFiles} DEPENDS ${buildDir}/${config}/${arch}/QtWebEngineCore.stamp)
+    add_custom_command(OUTPUT ${allResourceFiles} DEPENDS "${stamps}")
     add_custom_target(generate_resources_${config} DEPENDS ${allResourceFiles})
 
     addCopyCommand(WebEngineCore "${localeFiles}"
