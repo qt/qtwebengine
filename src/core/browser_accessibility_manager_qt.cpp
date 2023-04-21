@@ -37,9 +37,6 @@ BrowserAccessibilityManager *BrowserAccessibilityManager::Create(
 #if QT_CONFIG(webengine_extensions)
     // Accessibility is not supported for guest views.
     if (!access) {
-        Q_ASSERT(content::WebContents::FromRenderFrameHost(
-                         static_cast<content::RenderFrameHostImpl *>(delegate))
-                         ->GetOuterWebContents());
         return nullptr;
     }
 #endif // QT_CONFIG(webengine_extensions)
