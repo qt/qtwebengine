@@ -289,10 +289,11 @@ void UserResourceController::renderFrameDestroyed(content::RenderFrame *renderFr
     FrameUserScriptMap::iterator it = m_frameUserScriptMap.find(renderFrame);
     if (it == m_frameUserScriptMap.end()) // ASSERT maybe?
         return;
-    for (uint64_t id : std::as_const(it.value())) {
-        m_scripts.remove(id);
+    if (renderFrame->IsMainFrame()) {
+        for (uint64_t id : std::as_const(it.value()))
+            m_scripts.remove(id);
     }
-    m_frameUserScriptMap.remove(renderFrame);
+    m_frameUserScriptMap.erase(it);
 }
 
 void UserResourceController::addScriptForFrame(const QtWebEngineCore::UserScriptData &script,
@@ -304,7 +305,8 @@ void UserResourceController::addScriptForFrame(const QtWebEngineCore::UserScript
 
     if (!(*it).contains(script.scriptId))
         (*it).append(script.scriptId);
-    m_scripts.insert(script.scriptId, script);
+    if (!frame || frame->IsMainFrame())
+        m_scripts.insert(script.scriptId, script);
 }
 
 void UserResourceController::removeScriptForFrame(const QtWebEngineCore::UserScriptData &script,
@@ -315,7 +317,8 @@ void UserResourceController::removeScriptForFrame(const QtWebEngineCore::UserScr
         return;
 
     (*it).removeOne(script.scriptId);
-    m_scripts.remove(script.scriptId);
+    if (!frame || frame->IsMainFrame())
+        m_scripts.remove(script.scriptId);
 }
 
 void UserResourceController::clearScriptsForFrame(content::RenderFrame *frame)
@@ -323,8 +326,10 @@ void UserResourceController::clearScriptsForFrame(content::RenderFrame *frame)
     FrameUserScriptMap::iterator it = m_frameUserScriptMap.find(frame);
     if (it == m_frameUserScriptMap.end())
         return;
-    for (uint64_t id : std::as_const(it.value()))
-        m_scripts.remove(id);
+    if (!frame || frame->IsMainFrame()) {
+        for (uint64_t id : std::as_const(it.value()))
+            m_scripts.remove(id);
+    }
 
     m_frameUserScriptMap.remove(frame);
 }
