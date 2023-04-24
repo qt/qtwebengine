@@ -21,75 +21,6 @@ using ui::GetLastEGLErrorString;
 
 namespace gl {
 
-bool GLDisplayEGL::InitializeExtensionSettings()
-{
-    if (display_ == EGL_NO_DISPLAY)
-        return false;
-    ext->UpdateConditionalExtensionSettings(display_);
-    return true;
-}
-
-GLDisplayEGL *GLDisplayEGL::GetDisplayForCurrentContext()
-{
-    GLContext *context = GLContext::GetCurrent();
-    return context ? context->GetGLDisplayEGL() : nullptr;
-}
-
-bool GLDisplayEGL::IsEGLSurfacelessContextSupported()
-{
-    return GLSurfaceEGLQt::g_egl_surfaceless_context_supported;
-}
-
-bool GLDisplayEGL::IsEGLContextPrioritySupported()
-{
-    return false;
-}
-
-bool GLDisplayEGL::Initialize(gl::EGLDisplayPlatform native_display)
-{
-    auto glDisplay = GLSurfaceEGLQt::InitializeOneOff(0);
-
-    if (glDisplay) {
-        display_ = glDisplay->GetDisplay();
-        native_display_ = native_display;
-        std::string platform_extensions(ext->GetPlatformExtensions(display_));
-        gfx::ExtensionSet extensions(gfx::MakeExtensionSet(platform_extensions));
-        ext->b_EGL_EXT_image_dma_buf_import =
-                gfx::HasExtension(extensions, "EGL_EXT_image_dma_buf_import");
-        ext->b_EGL_EXT_image_dma_buf_import_modifiers =
-                gfx::HasExtension(extensions, "EGL_EXT_image_dma_buf_import_modifiers");
-//        ext->InitializeExtensionSettings(display_); Not functional for us at this moment
-    }
-
-    return glDisplay;
-}
-
-bool GLDisplayEGL::IsAndroidNativeFenceSyncSupported()
-{
-    return false;
-}
-
-// static
-GLDisplayEGL *GLSurfaceEGL::GetGLDisplayEGL()
-{
-    return GLDisplayManagerEGL::GetInstance()->GetDisplay(GpuPreference::kDefault);
-}
-
-DisplayType GLDisplayEGL::GetDisplayType() const
-{
-    return DisplayType::DEFAULT;
-}
-
-EGLDisplayPlatform GLDisplayEGL::GetNativeDisplay() const
-{
-    return native_display_;
-}
-
-GLSurface *GLSurfaceEGL::createSurfaceless(gl::GLDisplayEGL *display, const gfx::Size& size)
-{
-    return new GLSurfacelessQtEGL(display, size);
-}
-
 bool GLSurfaceEGLQt::g_egl_surfaceless_context_supported = false;
 bool GLSurfaceEGLQt::s_initialized = false;
 
@@ -263,16 +194,6 @@ EGLSurface GLSurfacelessQtEGL::GetHandle()
 void* GLSurfacelessQtEGL::GetShareHandle()
 {
     return NULL;
-}
-
-std::string DisplayExtensionsEGL::GetPlatformExtensions(EGLDisplay)
-{
-    EGLDisplay display = GLContextHelper::getEGLDisplay();
-    if (display == EGL_NO_DISPLAY)
-        return "";
-
-    const char* str = eglQueryString(display, EGL_EXTENSIONS);
-    return str ? std::string(str) : "";
 }
 
 } // namespace gl
