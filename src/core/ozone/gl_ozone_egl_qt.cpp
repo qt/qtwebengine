@@ -25,33 +25,20 @@
 
 namespace ui {
 
-bool GLOzoneEGLQt::LoadGLES2Bindings(const gl::GLImplementationParts & /*implementation*/)
+bool LoadQtEGLBindings()
 {
-    base::NativeLibrary eglgles2Library = dlopen(NULL, RTLD_LAZY);
-    if (!eglgles2Library) {
-        LOG(ERROR) << "Failed to open EGL/GLES2 context " << dlerror();
-        return false;
-    }
-
-    gl::GLGetProcAddressProc get_proc_address =
-            reinterpret_cast<gl::GLGetProcAddressProc>(
-                base::GetFunctionPointerFromNativeLibrary(eglgles2Library,
-                                                          "eglGetProcAddress"));
-    if (!get_proc_address) {
-        // QTBUG-63341 most likely libgles2 not linked with libegl -> fallback to qpa
-        get_proc_address =
-                reinterpret_cast<gl::GLGetProcAddressProc>(GLContextHelper::getEglGetProcAddress());
-    }
-
+    gl::GLGetProcAddressProc get_proc_address = reinterpret_cast<gl::GLGetProcAddressProc>(GLContextHelper::getEglGetProcAddress());
     if (!get_proc_address) {
         LOG(ERROR) << "eglGetProcAddress not found.";
-        base::UnloadNativeLibrary(eglgles2Library);
         return false;
     }
-
     gl::SetGLGetProcAddressProc(get_proc_address);
-    gl::AddGLNativeLibrary(eglgles2Library);
     return true;
+}
+
+bool GLOzoneEGLQt::LoadGLES2Bindings(const gl::GLImplementationParts & /*implementation*/)
+{
+    return LoadQtEGLBindings();
 }
 
 gl::GLDisplay *GLOzoneEGLQt::InitializeGLOneOffPlatform(uint64_t system_device_id)
