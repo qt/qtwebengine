@@ -286,6 +286,7 @@ public:
     QWebEnginePage *inspectedPage() const;
     void setDevToolsPage(QWebEnginePage *page);
     QWebEnginePage *devToolsPage() const;
+    QString devToolsId();
 
     void setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
     void setUrlResponseInterceptor(QWebEngineUrlResponseInterceptor *interceptor);

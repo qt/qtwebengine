@@ -1567,6 +1567,12 @@ QQuickWebEngineView *QQuickWebEngineView::devToolsView() const
     return d->devToolsView;
 }
 
+QString QQuickWebEngineView::devToolsId()
+{
+    Q_D(QQuickWebEngineView);
+    d->ensureContentsAdapter();
+    return d->adapter->devToolsId();
+}
 
 void QQuickWebEngineView::setDevToolsView(QQuickWebEngineView *devToolsView)
 {

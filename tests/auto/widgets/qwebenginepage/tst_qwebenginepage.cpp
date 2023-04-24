@@ -3547,6 +3547,8 @@ void tst_QWebEnginePage::devTools()
     QCOMPARE(inspectedPage2.inspectedPage(), nullptr);
     QCOMPARE(devToolsPage.devToolsPage(), nullptr);
     QCOMPARE(devToolsPage.inspectedPage(), nullptr);
+
+    QVERIFY(!inspectedPage1.devToolsId().isEmpty());
 }
 
 void tst_QWebEnginePage::openLinkInDifferentProfile()

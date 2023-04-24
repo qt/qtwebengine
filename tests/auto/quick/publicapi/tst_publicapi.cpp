@@ -690,6 +690,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.contentsSize --> QSizeF"
     << "QQuickWebEngineView.contentsSizeChanged(QSizeF) --> void"
     << "QQuickWebEngineView.contextMenuRequested(QWebEngineContextMenuRequest*) --> void"
+    << "QQuickWebEngineView.devToolsId --> QString"
     << "QQuickWebEngineView.devToolsView --> QQuickWebEngineView*"
     << "QQuickWebEngineView.devToolsViewChanged() --> void"
     << "QQuickWebEngineView.featurePermissionRequested(QUrl,Feature) --> void"

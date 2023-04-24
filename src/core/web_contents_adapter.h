@@ -159,6 +159,7 @@ public:
     void openDevToolsFrontend(QSharedPointer<WebContentsAdapter> devtoolsFrontend);
     void closeDevToolsFrontend();
     void devToolsFrontendDestroyed(DevToolsFrontendQt *frontend);
+    QString devToolsId();
 
     void grantMediaAccessPermission(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags flags);
     void grantMouseLockPermission(const QUrl &securityOrigin, bool granted);

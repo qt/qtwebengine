@@ -81,6 +81,7 @@ class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
 
     Q_PROPERTY(QQuickWebEngineView *inspectedView READ inspectedView WRITE setInspectedView NOTIFY inspectedViewChanged REVISION(1,7) FINAL)
     Q_PROPERTY(QQuickWebEngineView *devToolsView READ devToolsView WRITE setDevToolsView NOTIFY devToolsViewChanged REVISION(1,7) FINAL)
+    Q_PROPERTY(QString devToolsId READ devToolsId CONSTANT REVISION(0) FINAL)
 
     Q_PROPERTY(LifecycleState lifecycleState READ lifecycleState WRITE setLifecycleState NOTIFY lifecycleStateChanged REVISION(1,10) FINAL)
     Q_PROPERTY(LifecycleState recommendedState READ recommendedState NOTIFY recommendedStateChanged REVISION(1,10) FINAL)
@@ -458,6 +459,7 @@ QT_WARNING_POP
     QQuickWebEngineView *inspectedView() const;
     void setDevToolsView(QQuickWebEngineView *);
     QQuickWebEngineView *devToolsView() const;
+    QString devToolsId();
 
     LifecycleState lifecycleState() const;
     void setLifecycleState(LifecycleState state);

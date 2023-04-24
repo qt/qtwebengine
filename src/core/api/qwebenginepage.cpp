@@ -2168,6 +2168,24 @@ void QWebEnginePage::setDevToolsPage(QWebEnginePage *devToolsPage)
     }
 }
 
+/*!
+    \since 6.6
+    Returns the id of the developer tools host associated with this page.
+
+    If remote debugging is enabled (see \l{Qt WebEngine Developer Tools}), the id can be used to
+   build the URL to connect to the developer tool websocket:
+   \c{ws://localhost:<debugggin-port>/devtools/page/<id>)}. The websocket can be used to to interact
+   with the page using the \l{https://chromedevtools.github.io/devtools-protocol/}{DevTools
+   Protocol}.
+*/
+
+QString QWebEnginePage::devToolsId()
+{
+    Q_D(QWebEnginePage);
+    d->ensureInitialized();
+    return d->adapter->devToolsId();
+}
+
 ASSERT_ENUMS_MATCH(FilePickerController::Open, QWebEnginePage::FileSelectOpen)
 ASSERT_ENUMS_MATCH(FilePickerController::OpenMultiple, QWebEnginePage::FileSelectOpenMultiple)
 ASSERT_ENUMS_MATCH(FilePickerController::UploadFolder, QWebEnginePage::FileSelectUploadFolder)

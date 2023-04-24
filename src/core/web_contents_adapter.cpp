@@ -1281,6 +1281,11 @@ void WebContentsAdapter::devToolsFrontendDestroyed(DevToolsFrontendQt *frontend)
     updateRecommendedState();
 }
 
+QString WebContentsAdapter::devToolsId()
+{
+    return QString::fromStdString(DevToolsFrontendQt::GetId(m_webContents.get()));
+}
+
 void WebContentsAdapter::exitFullScreen()
 {
     CHECK_INITIALIZED();
