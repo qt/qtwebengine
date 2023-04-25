@@ -69,6 +69,7 @@ if(isFramework)
     set_target_properties(${qtWebEngineProcessName} PROPERTIES
         MACOSX_BUNDLE TRUE
         INSTALL_RPATH "@loader_path/../../../../../../../"
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info_mac.plist.in"
     )
 
     target_sources(${qtWebEngineProcessName} PRIVATE QtWebEngineProcess.entitlements)
