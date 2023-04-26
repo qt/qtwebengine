@@ -61,7 +61,7 @@
     new windows, such as pop-up windows, you can subclass QWebEngineView and
     reimplement the createWindow() function.
 
-    \sa {WebEngine Widgets Simple Browser Example}, {WebEngine Content Manipulation Example}, {WebEngine Recipe Browser Example}
+    \sa {WebEngine Widgets Simple Browser Example}, {WebEngine Content Manipulation Example}
 */
 
 
