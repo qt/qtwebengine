@@ -19,6 +19,13 @@ qt_add_executable(quicknanobrowser
     utils.h
 )
 
+if(WIN32)
+    set_property(
+        TARGET quicknanobrowser
+        APPEND PROPERTY
+            SOURCES quicknanobrowser.exe.manifest)
+endif()
+
 set_target_properties(quicknanobrowser PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
