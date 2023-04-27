@@ -197,4 +197,26 @@
     Because of a limitation in the Windows compositor, applications that show a fullscreen web
     engine view will not properly display popups or other top-level windows. The reason and
     workaround is described in \l {Fullscreen OpenGL Based Windows}.
+
+    \target windows_manifest
+    \section1 Windows Application Manifest
+    A manifest is an XML file that is read when the program starts and informs Windows how to run the program.
+    Some \QWE features may require adding a manifest file for the user application to work correctly on Windows.
+
+    The following snippets show the manifest file's structure and how to embed it into the program.
+
+    \note These code snippets are taken from the \l {WebEngine Quick Nano Browser} example.
+
+    The manifest file defines which Windows versions the application supports.
+    \l {QWebEngineProfile::} {httpUserAgent} needs this information to report the correct Windows version.
+    \quotefile ../../../../examples/webenginequick/quicknanobrowser/quicknanobrowser.exe.manifest
+
+    To embed the file into the executable, add it to the sources:
+    \quotefromfile ../../../../examples/webenginequick/quicknanobrowser/CMakeLists.txt
+    \skipto qt_add_executable
+    \dots
+    \printuntil endif
+    \dots
+
+    For more information, see the \l {https://learn.microsoft.com/en-us/windows/win32/sbscs/application-manifests} {Application manifest documentation page}.
 */
