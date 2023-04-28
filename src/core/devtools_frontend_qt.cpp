@@ -162,7 +162,7 @@ void DevToolsFrontendQt::ActivateWindow()
     web_contents()->Focus();
 }
 
-void DevToolsFrontendQt::InspectElementCompleted()
+void DevToolsFrontendQt::OnLoadCompleted()
 {
     m_bindings->CallClientMethod("DevToolsAPI", "setUseSoftMenu", base::Value(true));
 }
