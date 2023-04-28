@@ -36,15 +36,21 @@ void tst_QWebEngineGlobalSettings::dnsOverHttps_data()
 {
     QTest::addColumn<QWebEngineGlobalSettings::DnsMode>("dnsMode");
     QTest::addColumn<QString>("uriTemplate");
-    QTest::addColumn<bool>("isWithCustomDnsServer");
+    QTest::addColumn<bool>("isMockDnsServerCalledExpected");
     QTest::addColumn<bool>("isDnsResolutionSuccessExpected");
-    QTest::newRow("DnsMode::Secure (mock DNS)")
-            << QWebEngineGlobalSettings::DnsMode::Secure
-            << QStringLiteral("https://127.0.0.1:3000/dns-query{?dns}") << true << false;
-    QTest::newRow("DnsMode::Secure (real DNS)")
-            << QWebEngineGlobalSettings::DnsMode::Secure
-            << QStringLiteral("https://dns.google/dns-query{?dns}") << false << true;
-
+    QTest::addColumn<bool>("isConfigurationSuccessExpected");
+    QTest::newRow("DnsMode::SystemOnly (no DoH server)")
+            << QWebEngineGlobalSettings::DnsMode::SystemOnly << QStringLiteral("") << false << true
+            << true;
+    QTest::newRow("DnsMode::SecureOnly (mock DoH server)")
+            << QWebEngineGlobalSettings::DnsMode::SecureOnly
+            << QStringLiteral("https://127.0.0.1:3000/dns-query{?dns}") << true << false << true;
+    QTest::newRow("DnsMode::SecureOnly (real DoH server)")
+            << QWebEngineGlobalSettings::DnsMode::SecureOnly
+            << QStringLiteral("https://dns.google/dns-query{?dns}") << false << true << true;
+    QTest::newRow("DnsMode::SecureOnly (Empty URI Templates)")
+            << QWebEngineGlobalSettings::DnsMode::SecureOnly << QStringLiteral("") << false << false
+            << false;
     // Note: In the following test, we can't verify that the DoH server is called first and
     // afterwards insecure DNS is tried, because for the DoH server to ever be used when the DNS
     // mode is set to DnsMode::WithFallback, Chromium starts an asynchronous DoH server DnsProbe and
@@ -52,33 +58,45 @@ void tst_QWebEngineGlobalSettings::dnsOverHttps_data()
     // DNS response, which in turn requires that certificate errors aren't ignored and
     // non-self-signed certificates are used for correct encryption. Instead of implementing
     // all of that, this test verifies that Chromium tries probing the configured DoH server only.
-    QTest::newRow("DnsMode::WithFallback (mock DNS)")
-            << QWebEngineGlobalSettings::DnsMode::WithFallback
-            << QStringLiteral("https://127.0.0.1:3000/dns-query{?dns}") << true << true;
+    QTest::newRow("DnsMode::SecureWithFallback (mock DoH server)")
+            << QWebEngineGlobalSettings::DnsMode::SecureWithFallback
+            << QStringLiteral("https://127.0.0.1:3000/dns-query{?dns}") << true << true << true;
+    QTest::newRow("DnsMode::SecureWithFallback (Empty URI Templates)")
+            << QWebEngineGlobalSettings::DnsMode::SecureWithFallback << QStringLiteral("") << false
+            << false << false;
 }
 
 void tst_QWebEngineGlobalSettings::dnsOverHttps()
 {
     QFETCH(QWebEngineGlobalSettings::DnsMode, dnsMode);
     QFETCH(QString, uriTemplate);
-    QFETCH(bool, isWithCustomDnsServer);
+    QFETCH(bool, isMockDnsServerCalledExpected);
     QFETCH(bool, isDnsResolutionSuccessExpected);
-    bool isDnsServerCalled = false;
+    QFETCH(bool, isConfigurationSuccessExpected);
+    bool isMockDnsServerCalled = false;
     bool isLoadSuccessful = false;
 
+    QWebEngineGlobalSettings *globalSettings = QWebEngineGlobalSettings::instance();
+    bool configurationSuccess = globalSettings->setDnsMode(dnsMode, QStringList() << uriTemplate);
+    QCOMPARE(configurationSuccess, isConfigurationSuccessExpected);
+
+    if (!configurationSuccess) {
+        // In this case, DNS has invalid configuration, so the DNS change transaction is not
+        // triggered and the result of the DNS resolution depends on the current DNS mode, which is
+        // set by the previous run of this function.
+        return;
+    }
     HttpsServer httpsServer(":/cert/localhost.crt", ":/cert/localhost.key", ":/cert/RootCA.pem",
                             3000, this);
-    if (isWithCustomDnsServer) {
-        QObject::connect(
-                &httpsServer, &HttpsServer::newRequest, this, [&isDnsServerCalled](HttpReqRep *rr) {
-                    QVERIFY(rr->requestPath().contains(QByteArrayLiteral("/dns-query?dns=")));
-                    isDnsServerCalled = true;
-                    rr->close();
-                });
-        QVERIFY(httpsServer.start());
-        httpsServer.setExpectError(true);
-        httpsServer.setVerifyMode(QSslSocket::PeerVerifyMode::VerifyNone);
-    }
+    QObject::connect(&httpsServer, &HttpsServer::newRequest, this,
+                     [&isMockDnsServerCalled](HttpReqRep *rr) {
+                         QVERIFY(rr->requestPath().contains(QByteArrayLiteral("/dns-query?dns=")));
+                         isMockDnsServerCalled = true;
+                         rr->close();
+                     });
+    QVERIFY(httpsServer.start());
+    httpsServer.setExpectError(isMockDnsServerCalledExpected);
+    httpsServer.setVerifyMode(QSslSocket::PeerVerifyMode::VerifyNone);
 
     QWebEngineProfile profile;
     QWebEnginePage page(&profile);
@@ -87,15 +105,12 @@ void tst_QWebEngineGlobalSettings::dnsOverHttps()
     connect(&page, &QWebEnginePage::loadFinished, this,
             [&isLoadSuccessful](bool ok) { isLoadSuccessful = ok; });
 
-    QWebEngineGlobalSettings *globalSettings = QWebEngineGlobalSettings::instance();
-    globalSettings->configureDnsOverHttps(dnsMode, uriTemplate);
-
     page.load(QUrl("https://google.com/"));
-    if (!loadSpy.wait(10000)) {
+    if (!loadSpy.wait(20000)) {
         QSKIP("Couldn't load page from network, skipping test.");
     }
 
-    QTRY_COMPARE(isDnsServerCalled, isWithCustomDnsServer);
+    QTRY_COMPARE(isMockDnsServerCalled, isMockDnsServerCalledExpected);
     QCOMPARE(isLoadSuccessful, isDnsResolutionSuccessExpected);
     QVERIFY(httpsServer.stop());
 }
