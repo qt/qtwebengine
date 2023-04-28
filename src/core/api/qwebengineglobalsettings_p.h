@@ -25,17 +25,17 @@ class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineGlobalSettingsPrivate
 {
 public:
     QWebEngineGlobalSettingsPrivate()
-        : dnsMode(QWebEngineGlobalSettings::DnsMode::WithFallback)
+        : dnsMode(QWebEngineGlobalSettings::DnsMode::SystemOnly)
         , dnsOverHttpsTemplates("")
-        , insecureDnsClientEnabled(true)
-        , additionalInsecureDnsTypesEnabled(true)
-        , isDnsOverHttpsUserConfigured(false){};
+        , insecureDnsClientEnabled(false)
+        , additionalInsecureDnsTypesEnabled(false){};
 
     QWebEngineGlobalSettings::DnsMode dnsMode;
     std::string dnsOverHttpsTemplates;
-    bool insecureDnsClientEnabled;
-    bool additionalInsecureDnsTypesEnabled;
-    bool isDnsOverHttpsUserConfigured;
+    const bool insecureDnsClientEnabled;
+    const bool additionalInsecureDnsTypesEnabled;
+
+    void configureStubHostResolver();
 };
 
 QT_END_NAMESPACE

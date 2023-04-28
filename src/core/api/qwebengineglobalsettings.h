@@ -23,9 +23,8 @@ public:
     static QWebEngineGlobalSettings *instance();
 
     // Mapping net::SecureDnsMode
-    enum class DnsMode { WithFallback = 1, Secure = 2 };
-
-    void configureDnsOverHttps(DnsMode dnsMode, const QString &dnsOverHttpsTemplates);
+    enum class DnsMode { SystemOnly = 0, SecureWithFallback = 1, SecureOnly = 2 };
+    bool setDnsMode(DnsMode dnsMode, const QStringList &dnsServerTemplates);
 
 private:
     QWebEngineGlobalSettings(QObject *p = nullptr);
