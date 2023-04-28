@@ -14,6 +14,10 @@ respect the licenses of Chromium, and third-party code included in
 Chromium. The arguably most restrictive license to be respected by
 all users is LGPLv2.1.
 
+\note Any GPL licenses listed below are only used to access Linux system
+resources. \QWE does not link to nor distribute GPL binary code, and
+it does not affect users of \QWE.
+
 Third party licenses included in the sources are:
 */
 
