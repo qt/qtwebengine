@@ -409,7 +409,7 @@ qt_feature("webengine-system-harfbuzz" PRIVATE
     CONDITION UNIX AND TARGET Qt::Gui AND HARFBUZZ_FOUND AND QT_FEATURE_system_harfbuzz
 )
 qt_feature("webengine-qt-harfbuzz" PRIVATE
-    LABEL "qtpng"
+    LABEL "qtharfbuzz"
     CONDITION QT_FEATURE_static
         AND TARGET Qt::Gui
         AND QT_FEATURE_harfbuzz
