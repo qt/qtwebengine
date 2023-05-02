@@ -267,6 +267,8 @@ private Q_SLOTS:
     void localToRemoteNavigation();
     void clientHints();
     void childFrameInput();
+    void openLinkInNewPageWithWebWindowType_data();
+    void openLinkInNewPageWithWebWindowType();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -5253,6 +5255,78 @@ void tst_QWebEnginePage::childFrameInput()
     makeScroll(view.focusProxy(), p, globalPos, QPoint(120, 0));
     QTRY_COMPARE(page.messages.size(), 9);
     QTRY_COMPARE(page.messages[8], QString("Left"));
+}
+
+void tst_QWebEnginePage::openLinkInNewPageWithWebWindowType_data()
+{
+    QTest::addColumn<QWebEnginePage::WebWindowType>("webWindowType");
+    QTest::addColumn<QString>("elementId");
+    QTest::addColumn<Qt::MouseButton>("button");
+    QTest::addColumn<Qt::KeyboardModifier>("keyboardModififer");
+    QTest::newRow("webBrowserWindow")
+            << QWebEnginePage::WebBrowserWindow << "link" << Qt::LeftButton << Qt::ShiftModifier;
+    QTest::newRow("webBrowserTab")
+            << QWebEnginePage::WebBrowserTab << "link" << Qt::LeftButton << Qt::NoModifier;
+    QTest::newRow("webDialog") << QWebEnginePage::WebDialog << "openWindow" << Qt::LeftButton
+                               << Qt::NoModifier;
+    QTest::newRow("webBrowserBackgroundTab") << QWebEnginePage::WebBrowserBackgroundTab << "link"
+                                             << Qt::MiddleButton << Qt::NoModifier;
+}
+
+class WebWindowTypeTestPage : public QWebEnginePage
+{
+    Q_OBJECT
+
+public:
+    WebWindowType windowType;
+
+signals:
+    void windowCreated();
+
+private:
+    QWebEnginePage *createWindow(WebWindowType type) override
+    {
+        windowType = type;
+        emit windowCreated();
+        return nullptr;
+    }
+};
+
+void tst_QWebEnginePage::openLinkInNewPageWithWebWindowType()
+{
+    QFETCH(QWebEnginePage::WebWindowType, webWindowType);
+    QFETCH(QString, elementId);
+    QFETCH(Qt::MouseButton, button);
+    QFETCH(Qt::KeyboardModifier, keyboardModififer);
+
+    WebWindowTypeTestPage page;
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy windowCreatedSpy(&page, &WebWindowTypeTestPage::windowCreated);
+    QWebEngineView view(&page);
+    view.resize(640, 480);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    page.settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
+    page.settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
+    QString html = "<html><body>"
+                   "<a id='link' href='hello' target='_blank'>link</a>"
+                   "<br><br>"
+                   "<button id='openWindow' onclick='myFunction()'>Try it</button>"
+                   "<script>"
+                   "function myFunction() {"
+                   " const myWindow = window.open('', '', 'width=300,height=300');"
+                   "}"
+                   "</script>"
+                   "</body></html>";
+
+    page.setHtml(html);
+    QVERIFY(loadFinishedSpy.wait());
+
+    QTest::mouseClick(view.focusProxy(), button, keyboardModififer,
+                      elementCenter(&page, elementId));
+    QVERIFY(windowCreatedSpy.wait());
+    QCOMPARE(page.windowType, webWindowType);
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
