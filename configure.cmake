@@ -43,6 +43,7 @@ if(PkgConfig_FOUND)
     pkg_check_modules(LIBEVENT libevent)
     pkg_check_modules(MINIZIP minizip)
     pkg_check_modules(PNG libpng>=1.6.0)
+    pkg_check_modules(TIFF libtiff-4>=4.2.0)
     pkg_check_modules(ZLIB zlib)
     pkg_check_modules(RE2 re2 IMPORTED_TARGET)
     pkg_check_modules(ICU icu-uc>=70 icu-i18n>=70)
@@ -386,6 +387,10 @@ qt_feature("webengine-system-libpng" PRIVATE
     LABEL "png"
     CONDITION UNIX AND TARGET Qt::Gui AND PNG_FOUND AND QT_FEATURE_system_png
 )
+qt_feature("webengine-system-libtiff" PRIVATE
+    LABEL "tiff"
+    CONDITION UNIX AND TARGET Qt::Gui AND TIFF_FOUND
+)
 qt_feature("webengine-qt-libpng" PRIVATE
     LABEL "qtpng"
     CONDITION QT_FEATURE_static
@@ -650,6 +655,7 @@ if(UNIX)
     qt_configure_add_summary_entry(ARGS "webengine-system-libxml")
     qt_configure_add_summary_entry(ARGS "webengine-system-lcms2")
     qt_configure_add_summary_entry(ARGS "webengine-system-libpng")
+    qt_configure_add_summary_entry(ARGS "webengine-system-libtiff")
     qt_configure_add_summary_entry(ARGS "webengine-system-libjpeg")
     qt_configure_add_summary_entry(ARGS "webengine-system-libopenjpeg2")
     qt_configure_add_summary_entry(ARGS "webengine-system-harfbuzz")

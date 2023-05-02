@@ -456,6 +456,10 @@ foreach(arch ${archs})
                 CONDITION QT_FEATURE_webengine_system_libpng
             )
             extend_gn_list(gnArgArg
+                ARGS pdfium_use_system_libtiff
+                CONDITION QT_FEATURE_webengine_system_libtiff
+            )
+            extend_gn_list(gnArgArg
                 ARGS use_libpci
                 CONDITION QT_FEATURE_webengine_system_libpci
             )
