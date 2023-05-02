@@ -189,6 +189,14 @@ foreach(arch ${archs})
             CONDITION QT_FEATURE_pdf_xfa_tiff
         )
         extend_gn_list(gnArgArg
+            ARGS pdfium_use_system_zlib
+            CONDITION QT_FEATURE_webengine_system_zlib
+        )
+        extend_gn_list(gnArgArg
+            ARGS pdfium_use_system_libpng use_system_libpng
+            CONDITION QT_FEATURE_webengine_system_libpng
+        )
+        extend_gn_list(gnArgArg
             ARGS pdfium_use_qt_libpng
             CONDITION QT_FEATURE_webengine_qt_libpng
         )
