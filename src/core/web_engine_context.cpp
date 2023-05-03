@@ -700,6 +700,11 @@ WebEngineContext::WebEngineContext()
     // Avoid crashing when websites tries using this feature (since 83)
     disableFeatures.push_back(features::kInstalledApp.name);
 
+    // Not implemented but it overrides the devtools eyedropper
+    // Should be sync with kEyeDropper base::Feature
+    parsedCommandLine->AppendSwitchASCII(switches::kDisableBlinkFeatures, "EyeDropperAPI");
+    disableFeatures.push_back(features::kEyeDropper.name);
+
     // Explicitly tell Chromium about default-on features we do not support
     disableFeatures.push_back(features::kBackgroundFetch.name);
     disableFeatures.push_back(features::kWebOTP.name);
