@@ -921,12 +921,14 @@ base::CommandLine *WebEngineContext::initCommandLine(bool &useEmbeddedSwitches,
     }
 
     base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
+    int index = appArgs.indexOf(QRegularExpression(QLatin1String("--webEngineArgs"),
+                                                   QRegularExpression::CaseInsensitiveOption));
     if (qEnvironmentVariableIsSet(kChromiumFlagsEnv)) {
         appArgs = appArgs.mid(0, 1); // Take application name and drop the rest
         appArgs.append(parseEnvCommandLine(qEnvironmentVariable(kChromiumFlagsEnv)));
+        if (index > -1)
+            qWarning("Note 'webEngineArgs' are overridden by QTWEBENGINE_CHROMIUM_FLAGS");
     } else {
-        int index = appArgs.indexOf(QRegularExpression(QLatin1String("--webEngineArgs"),
-                                                       QRegularExpression::CaseInsensitiveOption));
         if (index > -1) {
             appArgs.erase(appArgs.begin() + 1, appArgs.begin() + index + 1);
         } else {
