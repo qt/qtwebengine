@@ -66,19 +66,18 @@ void tst_QWebEngineGlobalSettings::dnsOverHttps()
     bool isDnsServerCalled = false;
     bool isLoadSuccessful = false;
 
-    HttpsServer *httpsServer;
+    HttpsServer httpsServer(":/cert/localhost.crt", ":/cert/localhost.key", ":/cert/RootCA.pem",
+                            3000, this);
     if (isWithCustomDnsServer) {
-        httpsServer = new HttpsServer(":/cert/localhost.crt", ":/cert/localhost.key",
-                                      ":/cert/RootCA.pem", 3000, this);
         QObject::connect(
-                httpsServer, &HttpsServer::newRequest, this, [&isDnsServerCalled](HttpReqRep *rr) {
+                &httpsServer, &HttpsServer::newRequest, this, [&isDnsServerCalled](HttpReqRep *rr) {
                     QVERIFY(rr->requestPath().contains(QByteArrayLiteral("/dns-query?dns=")));
                     isDnsServerCalled = true;
                     rr->close();
                 });
-        QVERIFY(httpsServer->start());
-        httpsServer->setExpectError(true);
-        httpsServer->setVerifyMode(QSslSocket::PeerVerifyMode::VerifyNone);
+        QVERIFY(httpsServer.start());
+        httpsServer.setExpectError(true);
+        httpsServer.setVerifyMode(QSslSocket::PeerVerifyMode::VerifyNone);
     }
 
     QWebEngineProfile profile;
@@ -92,13 +91,13 @@ void tst_QWebEngineGlobalSettings::dnsOverHttps()
     globalSettings->configureDnsOverHttps(dnsMode, uriTemplate);
 
     page.load(QUrl("https://google.com/"));
-    QVERIFY(loadSpy.wait());
+    if (!loadSpy.wait(10000)) {
+        QSKIP("Couldn't load page from network, skipping test.");
+    }
 
     QTRY_COMPARE(isDnsServerCalled, isWithCustomDnsServer);
     QCOMPARE(isLoadSuccessful, isDnsResolutionSuccessExpected);
-
-    if (isWithCustomDnsServer)
-        QVERIFY(httpsServer->stop());
+    QVERIFY(httpsServer.stop());
 }
 
 static QByteArrayList params = QByteArrayList() << "--ignore-certificate-errors";
