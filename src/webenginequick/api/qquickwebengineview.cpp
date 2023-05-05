@@ -1346,7 +1346,11 @@ void QQuickWebEngineView::runJavaScript(const QString &script, quint32 worldId, 
     d->ensureContentsAdapter();
     if (!callback.isUndefined()) {
         quint64 requestId = d_ptr->adapter->runJavaScriptCallbackResult(script, worldId);
-        d->m_callbacks.insert(requestId, callback);
+        if (requestId) {
+            d->m_callbacks.insert(requestId, callback);
+        } else {
+            callback.call();
+        }
     } else
         d->adapter->runJavaScript(script, worldId);
 }

@@ -1044,6 +1044,10 @@ void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldI
     CHECK_INITIALIZED();
     content::RenderFrameHost *rfh =  m_webContents->GetPrimaryMainFrame();
     Q_ASSERT(rfh);
+    if (!static_cast<content::RenderFrameHostImpl*>(rfh)->GetAssociatedLocalFrame()) {
+        qWarning() << "Local frame is gone, not running script";
+        return;
+    }
     if (worldId == 0)
         rfh->ExecuteJavaScript(toString16(javaScript), base::NullCallback());
     else
@@ -1055,6 +1059,10 @@ quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScrip
     CHECK_INITIALIZED(0);
     content::RenderFrameHost *rfh =  m_webContents->GetPrimaryMainFrame();
     Q_ASSERT(rfh);
+    if (!static_cast<content::RenderFrameHostImpl*>(rfh)->GetAssociatedLocalFrame()) {
+        qWarning() << "Local frame is gone, not running script";
+        return 0;
+    }
     content::RenderFrameHost::JavaScriptResultCallback callback = base::BindOnce(&callbackOnEvaluateJS, m_adapterClient, m_nextRequestId);
     if (worldId == 0)
         rfh->ExecuteJavaScript(toString16(javaScript), std::move(callback));
