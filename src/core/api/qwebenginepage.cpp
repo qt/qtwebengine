@@ -1999,7 +1999,10 @@ void QWebEnginePage::runJavaScript(const QString& scriptSource, const std::funct
         return;
     }
     quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, QWebEngineScript::MainWorld);
-    d->m_variantCallbacks.insert(requestId, resultCallback);
+    if (requestId)
+        d->m_variantCallbacks.insert(requestId, resultCallback);
+    else if (resultCallback)
+        resultCallback(QVariant());
 }
 
 void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId, const std::function<void(const QVariant &)> &resultCallback)
@@ -2014,7 +2017,10 @@ void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId,
     }
     if (resultCallback) {
         quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, worldId);
-        d->m_variantCallbacks.insert(requestId, resultCallback);
+        if (requestId)
+            d->m_variantCallbacks.insert(requestId, resultCallback);
+        else
+            resultCallback(QVariant());
     } else {
         d->adapter->runJavaScript(scriptSource, worldId);
     }
