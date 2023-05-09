@@ -51,6 +51,7 @@ Rectangle {
             TextField {
                 id: findTextField
                 anchors.fill: parent
+                color: "black"
                 background: Rectangle {
                     color: "transparent"
                 }
@@ -64,6 +65,7 @@ Rectangle {
         Label {
             text: activeMatch + "/" + numberOfMatches
             visible: findTextField.text != ""
+            color: "black"
         }
 
         Rectangle {
@@ -79,17 +81,29 @@ Rectangle {
             text: "<"
             enabled: numberOfMatches > 0
             onClicked: root.findPrevious()
+            contentItem: Text {
+                color: "black"
+                text: parent.text
+            }
         }
 
         ToolButton {
             text: ">"
             enabled: numberOfMatches > 0
             onClicked: root.findNext()
+            contentItem: Text {
+                color: "black"
+                text: parent.text
+            }
         }
 
         ToolButton {
             text: "x"
             onClicked: root.visible = false
+            contentItem: Text {
+                color: "black"
+                text: parent.text
+            }
         }
     }
 }
