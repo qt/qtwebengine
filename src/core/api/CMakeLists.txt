@@ -124,6 +124,8 @@ set(resourceList qtwebengine_resources.pak
 
 set(stamps ${buildDir}/${config}/${arch}/QtWebEngineCore.stamp)
 
+qt_internal_get_filename_path_mode(path_mode)
+
 if(QT_FEATURE_webengine_v8_context_snapshot)
     foreach(arch ${archs})
        foreach(config ${configs})
@@ -137,7 +139,7 @@ if(QT_FEATURE_webengine_v8_context_snapshot)
            else()
                unset(ext_debug)
            endif()
-          get_filename_component(resSourcePath ${buildDir}/${config}/${arch}/v8_context_snapshot${ext_arch}${ext_debug}.bin REALPATH)
+          get_filename_component(resSourcePath ${buildDir}/${config}/${arch}/v8_context_snapshot${ext_arch}${ext_debug}.bin ${path_mode})
           list(APPEND resourceFiles ${resSourcePath})
        endforeach()
        if(MACOS)
@@ -147,18 +149,18 @@ if(QT_FEATURE_webengine_v8_context_snapshot)
 endif()
 
 foreach(loc ${localeList})
-    get_filename_component(locSourcePath ${buildDir}/${config}/${arch}/qtwebengine_locales/${loc}.pak REALPATH)
+    get_filename_component(locSourcePath ${buildDir}/${config}/${arch}/qtwebengine_locales/${loc}.pak ${path_mode})
     list(APPEND localeFiles ${locSourcePath})
 endforeach()
 
 foreach(res ${resourceList})
-    get_filename_component(resSourcePath ${buildDir}/${config}/${arch}/${res} REALPATH)
+    get_filename_component(resSourcePath ${buildDir}/${config}/${arch}/${res} ${path_mode})
     list(APPEND resourceFiles ${resSourcePath})
 endforeach()
 
 
 if(NOT QT_FEATURE_webengine_system_icu)
-    get_filename_component(icuFile ${buildDir}/${config}/${arch}/icudtl.dat REALPATH)
+    get_filename_component(icuFile ${buildDir}/${config}/${arch}/icudtl.dat ${path_mode})
     list(APPEND resourceFiles ${icuFile})
     set_target_properties(WebEngineCore PROPERTIES ICUDTL_FILE ${icuFile})
 endif()

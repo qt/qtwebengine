@@ -5,8 +5,10 @@
 #  MAIN CONFIGURE
 ##
 
-get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.." REALPATH)
-get_filename_component(WEBENGINE_ROOT_BUILD_DIR "${PROJECT_BINARY_DIR}" REALPATH)
+qt_internal_get_filename_path_mode(path_mode)
+
+get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.." ${path_mode})
+get_filename_component(WEBENGINE_ROOT_BUILD_DIR "${PROJECT_BINARY_DIR}" ${path_mode})
 
 # Note this is configure that does not belong to any module
 qt_feature_module_begin(ONLY_EVALUATE_FEATURES)
@@ -140,6 +142,7 @@ if(NOT Gn_FOUND)
                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                    -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>
                    -DWEBENGINE_ROOT_BUILD_DIR=${PROJECT_BINARY_DIR}
+                   -DQT_ALLOW_SYMLINK_IN_PATHS=${QT_ALLOW_SYMLINK_IN_PATHS}
     )
     if(QT_FEATURE_qtwebengine_core_build)
         add_dependencies(run_core_GnReady gn)
