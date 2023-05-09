@@ -2,7 +2,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 if(NOT DEFINED WEBENGINE_ROOT_SOURCE_DIR)
-    get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../.." REALPATH)
+    qt_internal_get_filename_path_mode(path_mode)
+
+    get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../.." ${path_mode})
 endif()
 include(${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Functions.cmake)
 

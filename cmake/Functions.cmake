@@ -222,10 +222,15 @@ function(configure_gn_target sourceDir inFilePath outFilePath)
     # FIXME: GN_CONFIG
     set(GN_CONFIG NOTUSED)
 
+    set(path_mode REALPATH)
+    if(APPLE AND QT_ALLOW_SYMLINK_IN_PATHS)
+        set(path_mode ABSOLUTE)
+    endif()
+
     # GN_SOURCES GN_HEADERS
     get_property(gnSources DIRECTORY PROPERTY GN_SOURCES)
     foreach(gnSourceFile ${gnSources})
-        get_filename_component(gnSourcePath ${sourceDir}/${gnSourceFile} REALPATH)
+        get_filename_component(gnSourcePath ${sourceDir}/${gnSourceFile} ${path_mode})
         list(APPEND sourceList \"${gnSourcePath}\")
     endforeach()
     set(GN_HEADERS ${sourceList})
@@ -245,7 +250,7 @@ function(configure_gn_target sourceDir inFilePath outFilePath)
     get_property(gnIncludes DIRECTORY PROPERTY GN_INCLUDES)
     list(REMOVE_DUPLICATES gnIncludes)
     foreach(gnInclude ${gnIncludes})
-        get_filename_component(gnInclude ${gnInclude} REALPATH)
+        get_filename_component(gnInclude ${gnInclude} ${path_mode})
         list(APPEND GN_ARGS_INCLUDES \"-I${gnInclude}\")
         list(APPEND GN_INCLUDE_DIRS \"${gnInclude}\")
     endforeach()
@@ -269,7 +274,7 @@ function(configure_gn_target sourceDir inFilePath outFilePath)
     list(REMOVE_DUPLICATES GN_CFLAGS_C)
 
     # GN_SOURCE_ROOT
-    get_filename_component(GN_SOURCE_ROOT "${sourceDir}" REALPATH)
+    get_filename_component(GN_SOURCE_ROOT "${sourceDir}" ${path_mode})
 
     if(APPLE) # this runs in scrpit mode without qt-cmake so on MACOS here
         recoverFrameworkBuild(GN_INCLUDE_DIRS GN_CFLAGS_C)
@@ -1242,6 +1247,7 @@ function(add_gn_command)
              -DQT_HOST_GN_PATH=${QT_HOST_GN_PATH}
              -DPython3_EXECUTABLE=${Python3_EXECUTABLE}
              -DGN_THREADS=$ENV{QTWEBENGINE_GN_THREADS}
+             -DQT_ALLOW_SYMLINK_IN_PATHS=${QT_ALLOW_SYMLINK_IN_PATHS}
              -P ${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Gn.cmake
         WORKING_DIRECTORY ${WEBENGINE_ROOT_BUILD_DIR}
         COMMENT "Run gn for target ${arg_CMAKE_TARGET} in ${arg_BUILDDIR}"
