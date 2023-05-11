@@ -497,6 +497,8 @@ function(add_linker_options target buildDir completeStatic)
         endif()
         get_copy_of_response_file(libs_rsp ${target} libs)
         target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${libs_rsp}>")
+        # enable larger PDBs
+        target_link_options(${cmakeTarget} PRIVATE "/pdbpagesize:8192")
         # we need libs rsp also when linking process with sandbox lib
         set_property(TARGET ${cmakeTarget} PROPERTY LIBS_RSP ${libs_rsp})
     endif()
