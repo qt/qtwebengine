@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 qt_examples_build_begin(EXTERNAL_BUILD)
-if(NOT CMAKE_CROSSCOMPILING) #QTBUG-86533
+if(NOT CMAKE_CROSSCOMPILING AND Qt6Core_VERSION VERSION_GREATER_EQUAL "6.5") #QTBUG-86533
     if(TARGET Qt::WebEngineCore)
         add_subdirectory(webenginequick)
     endif()
