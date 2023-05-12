@@ -6,6 +6,7 @@
 
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
+#include "services/network/public/cpp/resource_request_body.h"
 
 #include "api/qwebengineurlrequestjob.h"
 #include "profile_adapter.h"
@@ -126,7 +127,8 @@ void URLRequestCustomJobProxy::readyRead()
 
 void URLRequestCustomJobProxy::initialize(GURL url, std::string method,
                                           absl::optional<url::Origin> initiator,
-                                          std::map<std::string, std::string> headers)
+                                          std::map<std::string, std::string> headers,
+                                          scoped_refptr<network::ResourceRequestBody> requestBody)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     Q_ASSERT(!m_delegate);
@@ -144,10 +146,9 @@ void URLRequestCustomJobProxy::initialize(GURL url, std::string method,
         qHeaders.insert(toQByteArray(it->first), toQByteArray(it->second));
 
     if (schemeHandler) {
-        m_delegate = new URLRequestCustomJobDelegate(this, toQt(url),
-                                                     QByteArray::fromStdString(method),
-                                                     initiatorOrigin,
-                                                     qHeaders);
+        m_delegate =
+                new URLRequestCustomJobDelegate(this, toQt(url), QByteArray::fromStdString(method),
+                                                initiatorOrigin, qHeaders, requestBody.get());
         QWebEngineUrlRequestJob *requestJob = new QWebEngineUrlRequestJob(m_delegate);
         schemeHandler->requestStarted(requestJob);
     }

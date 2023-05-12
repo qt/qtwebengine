@@ -15,6 +15,10 @@
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
 
+namespace network {
+class ResourceRequestBody;
+}
+
 namespace QtWebEngineCore {
 
 class URLRequestCustomJob;
@@ -58,7 +62,9 @@ public:
     void abort();
     void fail(int error);
     void release();
-    void initialize(GURL url, std::string method, absl::optional<url::Origin> initiatorOrigin, std::map<std::string, std::string> headers);
+    void initialize(GURL url, std::string method, absl::optional<url::Origin> initiatorOrigin,
+                    std::map<std::string, std::string> headers,
+                    scoped_refptr<network::ResourceRequestBody> requestBody);
     void readyRead();
 
     // IO thread owned:
