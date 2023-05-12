@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qwebenginepage.h"
+#include "authenticator_request_dialog_controller.h"
 #include "qwebenginepage_p.h"
 
 #include "qwebenginecertificateerror.h"
@@ -21,6 +22,7 @@
 #include "qwebenginescript.h"
 #include "qwebenginescriptcollection_p.h"
 #include "qwebenginesettings.h"
+#include "qwebenginewebauthuxrequest.h"
 
 #include "authentication_dialog_controller.h"
 #include "autofill_popup_controller.h"
@@ -774,6 +776,12 @@ void QWebEnginePagePrivate::ensureInitialized() const
 {
     if (!adapter->isInitialized())
         adapter->loadDefault();
+}
+
+void QWebEnginePagePrivate::showWebAuthDialog(QWebEngineWebAuthUXRequest *request)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->webAuthUXRequested(request);
 }
 
 QWebEnginePage::QWebEnginePage(QObject* parent)

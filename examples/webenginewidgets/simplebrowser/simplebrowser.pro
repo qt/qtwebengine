@@ -10,7 +10,8 @@ HEADERS += \
     tabwidget.h \
     webpage.h \
     webpopupwindow.h \
-    webview.h
+    webview.h \
+    webauthdialog.h
 
 SOURCES += \
     browser.cpp \
@@ -21,7 +22,8 @@ SOURCES += \
     tabwidget.cpp \
     webpage.cpp \
     webpopupwindow.cpp \
-    webview.cpp
+    webview.cpp \
+    webauthdialog.cpp
 
 win32 {
     CONFIG -= embed_manifest_exe
@@ -32,7 +34,8 @@ FORMS += \
     certificateerrordialog.ui \
     passworddialog.ui \
     downloadmanagerwidget.ui \
-    downloadwidget.ui
+    downloadwidget.ui \
+    webauthdialog.ui
 
 RESOURCES += data/simplebrowser.qrc
 

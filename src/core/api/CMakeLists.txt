@@ -39,6 +39,7 @@ qt_internal_add_module(WebEngineCore
         qwebengineurlscheme.cpp qwebengineurlscheme.h
         qwebengineurlschemehandler.cpp qwebengineurlschemehandler.h
         qwebengineglobalsettings.cpp qwebengineglobalsettings.h qwebengineglobalsettings_p.h
+        qwebenginewebauthuxrequest.cpp qwebenginewebauthuxrequest.h qwebenginewebauthuxrequest_p.h
     DEFINES
         BUILDING_CHROMIUM
     INCLUDE_DIRECTORIES

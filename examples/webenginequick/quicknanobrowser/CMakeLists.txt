@@ -53,6 +53,7 @@ set(resources_resource_files
     "DownloadView.qml"
     "FindBar.qml"
     "FullScreenNotification.qml"
+    "WebAuthDialog.qml"
 )
 
 qt_add_resources(quicknanobrowser "resources"

@@ -607,6 +607,9 @@ ApplicationWindow {
                     featurePermissionDialog.feature = feature;
                     featurePermissionDialog.visible = true;
                 }
+                onWebAuthUXRequested: function(request) {
+                    webAuthDialog.init(request);
+                }
 
                 Timer {
                     id: reloadTimer
@@ -757,6 +760,11 @@ ApplicationWindow {
         id: downloadView
         visible: false
         anchors.fill: parent
+    }
+
+    WebAuthDialog {
+        id: webAuthDialog
+        visible: false
     }
 
     function onDownloadRequested(download) {

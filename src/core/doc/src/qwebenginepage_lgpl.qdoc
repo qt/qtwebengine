@@ -816,3 +816,15 @@
 
     \sa url()
 */
+
+/*!
+    \fn void QWebEnginePage::webAuthUXRequested(QWebEngineWebAuthUXRequest *request);
+    \since 6.7
+
+    This signal is emitted when a WebAuth authenticator needs user interaction
+    during the authentication process. These requests are handled by displaying a dialog to the user.
+
+    The \a request contains the information and API required to complete the WebAuth UX request.
+
+    \sa QWebEngineWebAuthUXRequest
+*/

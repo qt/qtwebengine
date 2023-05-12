@@ -31,6 +31,7 @@
 #include <QtWebEngineCore/qwebenginecontextmenurequest.h>
 #include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
 #include <QtWebEngineCore/qwebenginefilesystemaccessrequest.h>
+#include <QtWebEngineCore/qwebenginewebauthuxrequest.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -196,6 +197,13 @@ namespace ForeginWebEngineFileSystemAccessRequestNamespace
     QML_FOREIGN_NAMESPACE(QWebEngineFileSystemAccessRequest)
     QML_NAMED_ELEMENT(WebEngineFileSystemAccessRequest)
     QML_ADDED_IN_VERSION(6, 4)
+};
+
+namespace ForeignWebEngineWebAuthUXRequest {
+    Q_NAMESPACE
+    QML_FOREIGN_NAMESPACE(QWebEngineWebAuthUXRequest)
+    QML_NAMED_ELEMENT(WebEngineWebAuthUXRequest)
+    QML_ADDED_IN_VERSION(6, 7)
 };
 
 QT_END_NAMESPACE

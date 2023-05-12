@@ -233,6 +233,12 @@ public:
     blink::UserAgentMetadata GetUserAgentMetadata() override { return getUserAgentMetadata(); }
     std::string GetProduct() override;
 
+    content::WebAuthenticationDelegate *GetWebAuthenticationDelegate() override;
+#if !BUILDFLAG(IS_ANDROID)
+    std::unique_ptr<content::AuthenticatorRequestClientDelegate>
+    GetWebAuthenticationRequestDelegate(content::RenderFrameHost *render_frame_host) override;
+#endif
+
 private:
     BrowserMainPartsQt *m_browserMainParts = nullptr;
 };

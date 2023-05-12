@@ -9,6 +9,7 @@
 #include "webview.h"
 #include "ui_certificateerrordialog.h"
 #include "ui_passworddialog.h"
+#include "webauthdialog.h"
 #include <QContextMenuEvent>
 #include <QDebug>
 #include <QMenu>
@@ -98,6 +99,8 @@ void WebView::setPage(WebPage *page)
                    &WebView::handleProxyAuthenticationRequired);
         disconnect(oldPage, &QWebEnginePage::registerProtocolHandlerRequested, this,
                    &WebView::handleRegisterProtocolHandlerRequested);
+        disconnect(oldPage, &QWebEnginePage::webAuthUXRequested, this,
+                   &WebView::handleWebAuthUXRequested);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
         disconnect(oldPage, &QWebEnginePage::fileSystemAccessRequested, this,
                    &WebView::handleFileSystemAccessRequested);
@@ -121,6 +124,7 @@ void WebView::setPage(WebPage *page)
     connect(page, &QWebEnginePage::fileSystemAccessRequested, this,
             &WebView::handleFileSystemAccessRequested);
 #endif
+    connect(page, &QWebEnginePage::webAuthUXRequested, this, &WebView::handleWebAuthUXRequested);
 }
 
 int WebView::loadProgress() const
@@ -289,6 +293,32 @@ void WebView::handleProxyAuthenticationRequired(const QUrl &, QAuthenticator *au
     } else {
         // Set authenticator null if dialog is cancelled
         *auth = QAuthenticator();
+    }
+}
+
+void WebView::handleWebAuthUXRequested(QWebEngineWebAuthUXRequest *request)
+{
+    if (m_authDialog)
+        delete m_authDialog;
+
+    m_authDialog = new WebAuthDialog(request, window());
+    m_authDialog->setModal(false);
+    m_authDialog->setWindowFlags(m_authDialog->windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
+    connect(request, &QWebEngineWebAuthUXRequest::stateChanged, this, &WebView::onStateChanged);
+    m_authDialog->show();
+}
+
+void WebView::onStateChanged(QWebEngineWebAuthUXRequest::WebAuthUXState state)
+{
+    if (QWebEngineWebAuthUXRequest::Completed == state
+        || QWebEngineWebAuthUXRequest::Cancelled == state) {
+        if (m_authDialog) {
+            delete m_authDialog;
+            m_authDialog = nullptr;
+        }
+    } else {
+        m_authDialog->updateDisplay();
     }
 }
 

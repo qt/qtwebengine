@@ -196,6 +196,8 @@ foreach(arch ${archs})
                 web_engine_settings.cpp web_engine_settings.h
                 web_event_factory.cpp web_event_factory.h
                 web_usb_detector_qt.cpp web_usb_detector_qt.h
+                authenticator_request_client_delegate_qt.cpp authenticator_request_client_delegate_qt.h
+                authenticator_request_dialog_controller.cpp authenticator_request_dialog_controller.h authenticator_request_dialog_controller_p.h
         )
 
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_accessibility

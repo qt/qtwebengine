@@ -41,6 +41,7 @@ class QWebEngineScriptCollection;
 class QWebEngineSettings;
 class QWebEngineUrlRequestInterceptor;
 class QWebEngineUrlResponseInterceptor;
+class QWebEngineWebAuthUXRequest;
 
 class Q_WEBENGINECORE_EXPORT QWebEnginePage : public QObject
 {
@@ -354,6 +355,8 @@ Q_SIGNALS:
 
     // TODO: fixme / rewrite bindPageToView
     void _q_aboutToDelete();
+
+    void webAuthUXRequested(QWebEngineWebAuthUXRequest *request);
 
 protected:
     virtual QWebEnginePage *createWindow(WebWindowType type);

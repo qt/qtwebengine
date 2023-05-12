@@ -83,6 +83,7 @@
 #include "web_engine_context.h"
 #include "web_engine_library_info.h"
 #include "web_engine_settings.h"
+#include "authenticator_request_client_delegate_qt.h"
 #include "api/qwebenginecookiestore.h"
 #include "api/qwebenginecookiestore_p.h"
 #include "api/qwebengineurlrequestinfo_p.h"
@@ -1349,5 +1350,20 @@ ContentBrowserClientQt::AllowWebBluetooth(content::BrowserContext *browser_conte
     DCHECK(browser_context);
     return content::ContentBrowserClient::AllowWebBluetoothResult::BLOCK_GLOBALLY_DISABLED;
 }
+
+content::WebAuthenticationDelegate *ContentBrowserClientQt::GetWebAuthenticationDelegate()
+{
+    static base::NoDestructor<WebAuthenticationDelegateQt> delegate;
+    return delegate.get();
+}
+
+#if !BUILDFLAG(IS_ANDROID)
+std::unique_ptr<content::AuthenticatorRequestClientDelegate>
+ContentBrowserClientQt::GetWebAuthenticationRequestDelegate(
+        content::RenderFrameHost *render_frame_host)
+{
+    return std::make_unique<AuthenticatorRequestClientDelegateQt>(render_frame_host);
+}
+#endif
 
 } // namespace QtWebEngineCore

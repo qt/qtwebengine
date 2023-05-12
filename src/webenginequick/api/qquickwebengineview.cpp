@@ -39,6 +39,7 @@
 #include <QtWebEngineCore/qwebenginepage.h>
 #include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
 #include <QtWebEngineCore/qwebenginescriptcollection.h>
+#include <QtWebEngineCore/qwebenginewebauthuxrequest.h>
 #include <QtWebEngineCore/private/qwebenginecontextmenurequest_p.h>
 #include <QtWebEngineCore/private/qwebenginehistory_p.h>
 #include <QtWebEngineCore/private/qwebenginenewwindowrequest_p.h>
@@ -1306,6 +1307,12 @@ void QQuickWebEngineViewPrivate::showTouchSelectionMenu(QtWebEngineCore::TouchSe
 void QQuickWebEngineViewPrivate::hideTouchSelectionMenu()
 {
     ui()->hideTouchSelectionMenu();
+}
+
+void QQuickWebEngineViewPrivate::showWebAuthDialog(QWebEngineWebAuthUXRequest *request)
+{
+    Q_Q(QQuickWebEngineView);
+    Q_EMIT q->webAuthUXRequested(request);
 }
 
 bool QQuickWebEngineView::isLoading() const

@@ -27,6 +27,7 @@ qt_add_executable(simplebrowser
     webpage.cpp webpage.h
     webpopupwindow.cpp webpopupwindow.h
     webview.cpp webview.h
+    webauthdialog.cpp webauthdialog.h webauthdialog.ui
 )
 
 if(WIN32)
