@@ -1,6 +1,15 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+# this macro is missing in 6.2
+if(NOT COMMAND _qt_internal_validate_all_args_are_parsed)
+    macro(_qt_internal_validate_all_args_are_parsed result)
+        if(DEFINED ${result}_UNPARSED_ARGUMENTS)
+            message(FATAL_ERROR "Unknown arguments (${${result}_UNPARSED_ARGUMENTS}).")
+        endif()
+    endmacro()
+endif()
+
 function(assertTargets)
     cmake_parse_arguments(PARSE_ARGV 0 arg
         "" "" "MODULES;TARGETS"
