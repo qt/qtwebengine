@@ -6,8 +6,7 @@
 
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
-#include <QtCore/qtclasshelpermacros.h>
-#include <QtCore/qtconfigmacros.h>
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
 QT_FORWARD_DECLARE_CLASS(QAccessibleInterface)
 

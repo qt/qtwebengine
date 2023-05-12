@@ -26,6 +26,7 @@ class QWebEngineHttpRequest;
 class QWebEngineSettings;
 class QWebEngineViewAccessible;
 class QWebEngineViewPrivate;
+class QMenu;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineView : public QWidget
 {
