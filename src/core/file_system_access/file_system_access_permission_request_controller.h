@@ -17,7 +17,7 @@ class FileSystemAccessPermissionRequestController : public RequestController
 public:
     FileSystemAccessPermissionRequestController(const QUrl &origin, const QUrl &filePath,
                                                 HandleType handleType, AccessFlags accessType)
-        : RequestController(std::move(origin))
+        : RequestController(origin)
         , m_filePath(filePath)
         , m_handleType(handleType)
         , m_accessType(accessType)
