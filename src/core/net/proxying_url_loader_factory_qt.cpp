@@ -317,18 +317,25 @@ void InterceptedRequest::Restart()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+    bool granted_special_access = false;
+    auto navigationType = toQt(pageTransitionToNavigationType(ui::PageTransition(request_.transition_type)));
+    switch (navigationType) {
+    case QWebEngineUrlRequestInfo::NavigationTypeLink:
+    case QWebEngineUrlRequestInfo::NavigationTypeTyped:
+        if (blink::mojom::ResourceType(request_.resource_type) == blink::mojom::ResourceType::kMainFrame && request_.has_user_gesture)
+            granted_special_access = true; // allow normal explicit navigation
+        break;
+    case QWebEngineUrlRequestInfo::NavigationTypeBackForward:
+    case QWebEngineUrlRequestInfo::NavigationTypeReload:
+        if (blink::mojom::ResourceType(request_.resource_type) == blink::mojom::ResourceType::kMainFrame)
+            granted_special_access = true;
+        break;
+    default:
+        break;
+    }
+
     // Check if non-local access is allowed
     if (!allow_remote_ && remote_access_) {
-        bool granted_special_access = false;
-        switch (ui::PageTransition(request_.transition_type)) {
-        case ui::PAGE_TRANSITION_LINK:
-        case ui::PAGE_TRANSITION_TYPED:
-            if (blink::mojom::ResourceType(request_.resource_type) == blink::mojom::ResourceType::kMainFrame && request_.has_user_gesture)
-                granted_special_access = true; // allow normal explicit navigation
-            break;
-        default:
-            break;
-        }
         if (!granted_special_access) {
             target_client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_NETWORK_ACCESS_DENIED));
             delete this;
@@ -338,7 +345,6 @@ void InterceptedRequest::Restart()
 
     // Check if local access is allowed
     if (!allow_local_ && local_access_) {
-        bool granted_special_access = false;
         // Check for specifically granted file access:
         if (auto *frame_tree = content::FrameTreeNode::GloballyFindByID(frame_tree_node_id_)) {
             const int renderer_id = frame_tree->current_frame_host()->GetProcess()->GetID();
@@ -365,7 +371,6 @@ void InterceptedRequest::Restart()
     }
 
     auto resourceType = toQt(blink::mojom::ResourceType(request_.resource_type));
-    auto navigationType = toQt(pageTransitionToNavigationType(ui::PageTransition(request_.transition_type)));
     const QUrl originalUrl = toQt(request_.url);
     const QUrl initiator = request_.request_initiator.has_value() ? toQt(request_.request_initiator->GetURL()) : QUrl();
 

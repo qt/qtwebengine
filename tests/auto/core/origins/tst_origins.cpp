@@ -13,6 +13,7 @@
 #include <QtWebEngineCore/qwebenginesettings.h>
 #include <QtWebEngineCore/qwebengineprofile.h>
 #include <QtWebEngineCore/qwebenginepage.h>
+#include <QtWebEngineWidgets/qwebengineview.h>
 
 #if defined(WEBSOCKETS)
 #include <QtWebSockets/qwebsocket.h>
@@ -306,6 +307,8 @@ private Q_SLOTS:
     void subdirWithoutAccess();
     void fileAccessRemoteUrl_data();
     void fileAccessRemoteUrl();
+    void fileAccessLocalUrl_data();
+    void fileAccessLocalUrl();
     void mixedSchemes_data();
     void mixedSchemes();
     void mixedSchemesWithCsp();
@@ -606,13 +609,22 @@ void tst_Origins::subdirWithoutAccess()
 void tst_Origins::fileAccessRemoteUrl_data()
 {
     QTest::addColumn<bool>("EnableAccess");
-    QTest::addRow("enabled") << true;
-    QTest::addRow("disabled") << false;
+    QTest::addColumn<bool>("UserGesture");
+    QTest::addRow("enabled, XHR") << true << false;
+    QTest::addRow("enabled, link click") << true << true;
+    QTest::addRow("disabled, XHR") << false << false;
+    QTest::addRow("disabled, link click") << false << true;
 }
 
 void tst_Origins::fileAccessRemoteUrl()
 {
     QFETCH(bool, EnableAccess);
+    QFETCH(bool, UserGesture);
+
+    QWebEngineView view;
+    view.setPage(m_page);
+    view.resize(800, 600);
+    view.show();
 
     HttpServer server;
     server.setResourceDirs({ QDir(QT_TESTCASE_SOURCEDIR).canonicalPath() + "/resources" });
@@ -621,11 +633,88 @@ void tst_Origins::fileAccessRemoteUrl()
     ScopedAttribute sa1(m_page->settings(), QWebEngineSettings::LocalContentCanAccessRemoteUrls, EnableAccess);
     ScopedAttribute sa2(m_page->settings(), QWebEngineSettings::ErrorPageEnabled, false);
 
-    QVERIFY(verifyLoad("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
-                       + "/resources/mixedXHR.html"));
+    if (UserGesture) {
+        QString remoteUrl(server.url("/link.html").toString());
+#ifdef Q_OS_WIN
+        QString localUrl("file:///" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/link.html?linkLocation=" + remoteUrl);
+#else
+        QString localUrl("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/link.html?linkLocation=" + remoteUrl);
+#endif
 
-    eval("sendXHR('" + server.url("/mixedXHR.txt").toString() + "')");
-    QTRY_COMPARE(eval("result"), (EnableAccess ? QString("ok") : QString("error")));
+        QVERIFY(verifyLoad(localUrl));
+
+        QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, elementCenter(m_page, "link"));
+        // Succeed independently of EnableAccess == false
+        QTRY_COMPARE(m_page->url(), remoteUrl);
+
+        // Back/forward navigation is also allowed, however they are not user gesture
+        m_page->triggerAction(QWebEnginePage::Back);
+        QTRY_COMPARE(m_page->url(), localUrl);
+        m_page->triggerAction(QWebEnginePage::Forward);
+        QTRY_COMPARE(m_page->url(), remoteUrl);
+    } else {
+        QVERIFY(verifyLoad("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/mixedXHR.html"));
+        eval("sendXHR('" + server.url("/mixedXHR.txt").toString() + "')");
+        QTRY_COMPARE(eval("result"), (EnableAccess ? QString("ok") : QString("error")));
+    }
+}
+
+void tst_Origins::fileAccessLocalUrl_data()
+{
+    QTest::addColumn<bool>("EnableAccess");
+    QTest::addColumn<bool>("UserGesture");
+    QTest::addRow("enabled, XHR") << true << false;
+    QTest::addRow("enabled, link click") << true << true;
+    QTest::addRow("disabled, XHR") << false << false;
+    QTest::addRow("disabled, link click") << false << true;
+}
+
+void tst_Origins::fileAccessLocalUrl()
+{
+    QFETCH(bool, EnableAccess);
+    QFETCH(bool, UserGesture);
+
+    QWebEngineView view;
+    view.setPage(m_page);
+    view.resize(800, 600);
+    view.show();
+
+    ScopedAttribute sa1(m_page->settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, EnableAccess);
+    ScopedAttribute sa2(m_page->settings(), QWebEngineSettings::ErrorPageEnabled, false);
+
+    if (UserGesture) {
+#ifdef Q_OS_WIN
+        QString localUrl1("file:///" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/link.html?linkLocation=link.html");
+        QString localUrl2("file:///" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/link.html");
+#else
+        QString localUrl1("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/link.html?linkLocation=link.html");
+        QString localUrl2("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/link.html");
+#endif
+
+        QVERIFY(verifyLoad(localUrl1));
+        QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, elementCenter(m_page, "link"));
+        // Succeed independently of EnableAccess == false
+        QTRY_COMPARE(m_page->url(), localUrl2);
+
+        // Back/forward navigation is also allowed, however they are not user gesture
+        m_page->triggerAction(QWebEnginePage::Back);
+        QTRY_COMPARE(m_page->url(), localUrl1);
+        m_page->triggerAction(QWebEnginePage::Forward);
+        QTRY_COMPARE(m_page->url(), localUrl2);
+    } else {
+        QVERIFY(verifyLoad("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/mixedXHR.html"));
+        eval("sendXHR('file:" +  QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/mixedXHR.txt" + "')");
+        QTRY_COMPARE(eval("result"), (EnableAccess ? QString("ok") : QString("error")));
+    }
 }
 
 // Load the main page over one scheme with an iframe over another scheme.

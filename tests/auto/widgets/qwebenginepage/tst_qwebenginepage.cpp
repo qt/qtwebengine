@@ -271,7 +271,6 @@ private Q_SLOTS:
     void openLinkInNewPageWithWebWindowType();
 
 private:
-    static QPoint elementCenter(QWebEnginePage *page, const QString &id);
     static bool isFalseJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
     static bool isTrueJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
     static bool isEmptyListJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
@@ -3286,23 +3285,6 @@ void tst_QWebEnginePage::mouseMovementProperties()
     QTest::mouseMove(&view, QPoint(20, 20));
     QTRY_COMPARE(page.messages.size(), 3);
     QTRY_COMPARE(page.messages[2], QString("-10, -10"));
-}
-
-QPoint tst_QWebEnginePage::elementCenter(QWebEnginePage *page, const QString &id)
-{
-    QVariantList rectList = evaluateJavaScriptSync(page,
-            "(function(){"
-            "var elem = document.getElementById('" + id + "');"
-            "var rect = elem.getBoundingClientRect();"
-            "return [(rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2];"
-            "})()").toList();
-
-    if (rectList.size() != 2) {
-        qWarning("elementCenter failed.");
-        return QPoint();
-    }
-
-    return QPoint(rectList.at(0).toInt(), rectList.at(1).toInt());
 }
 
 void tst_QWebEnginePage::viewSource()
