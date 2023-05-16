@@ -164,8 +164,9 @@ public:
   \c http and \c https are CORS enabled. (Added in Qt 5.14)
 
   \value FetchApiAllowed
-  Enables a URL scheme to be used by the HTML5 fetch API. By default
-  only \c http and \c https can be used by fetch.
+  Enables a URL scheme to be used by the HTML5 fetch API and \c XMLHttpRequest.send with
+  a body. By default only \c http and \c https can be send to using the Fetch API or with
+  an XMLHttpRequest with a body.
 */
 
 QWebEngineUrlScheme::QWebEngineUrlScheme(QWebEngineUrlSchemePrivate *d) : d(d) {}
