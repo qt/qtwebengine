@@ -1359,6 +1359,7 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterMove_data()
 void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
 {
     QWebEngineView view;
+    Q_ASSERT(QGuiApplication::primaryScreen());
     view.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft());
     view.resize(640, 480);
     view.show();
@@ -1430,6 +1431,7 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
     mainWidget.layout()->addWidget(&view);
 
     QScreen *screen = QGuiApplication::primaryScreen();
+    Q_ASSERT(screen);
     mainWidget.move(screen->availableGeometry().topLeft());
     mainWidget.resize(640, 480);
     mainWidget.show();
