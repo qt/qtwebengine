@@ -35,6 +35,21 @@ else()
 endif()
 
 file(MAKE_DIRECTORY ${GN_BINARY_DIR})
+
+if((UNIX AND NOT APPLE) AND
+    (CMAKE_CXX_COMPILER_ID STREQUAL GNU OR
+    CMAKE_CXX_COMPILER_ID STREQUAL Clang))
+    set(platform linux)
+elseif(MSVC)
+    set(platform msvc)
+elseif(MINGW)
+    set(platform mingw)
+elseif(APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL AppleClang)
+    set(platform darwin)
+else()
+    message(FATAL_ERROR "Unsupported gn platform !")
+endif()
+
 add_custom_command(
     OUTPUT ${GN_EXECUTABLE}
     WORKING_DIRECTORY ${GN_BINARY_DIR}
@@ -44,6 +59,7 @@ add_custom_command(
         --cc ${CMAKE_C_COMPILER}
         --cxx ${CMAKE_CXX_COMPILER}
         --ld ${GN_LINKER}
+        --platform ${platform}
         --ar ${CMAKE_AR}
         --qt-version "${QT_REPO_MODULE_VERSION}.qtwebengine.qt.io"
         $<$<PLATFORM_ID:Darwin>:--isysroot>
