@@ -32,7 +32,6 @@ qt_internal_add_module(Pdf
         ../3rdparty/chromium
     DEFINES
         QT_BUILD_PDF_LIB
-        NOMINMAX
     LIBRARIES
         Qt::CorePrivate
         Qt::Network

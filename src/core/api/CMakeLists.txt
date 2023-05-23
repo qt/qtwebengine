@@ -41,7 +41,6 @@ qt_internal_add_module(WebEngineCore
         qwebengineglobalsettings.cpp qwebengineglobalsettings.h qwebengineglobalsettings_p.h
     DEFINES
         BUILDING_CHROMIUM
-        NOMINMAX
     INCLUDE_DIRECTORIES
         ../
         ../../3rdparty/chromium
