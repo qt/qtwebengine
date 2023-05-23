@@ -585,25 +585,33 @@ ${xcbErrorMessage}"
 )
 add_check_for_support(
    MODULES QtWebEngine QtPdf
-   CONDITION NOT WIN32 OR TEST_winversion
+   CONDITION NOT MSVC OR TEST_winversion
    MESSAGE "Build requires Visual Studio 2019 or higher."
 )
 add_check_for_support(
-   MODULES QtWebEngine QtPdf
-   CONDITION
+   MODULES QtWebEngine
+   CONDITION MSVC OR
        (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL GNU) OR
        (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL Clang) OR
-       (WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL MSVC) OR
-       (WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL Clang AND
-          CMAKE_CXX_SIMULATE_ID STREQUAL MSVC) OR
-       (MACOS AND CMAKE_CXX_COMPILER_ID STREQUAL AppleClang) OR
+       (MACOS AND CMAKE_CXX_COMPILER_ID STREQUAL AppleClang)
+   MESSAGE
+       "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
+)
+
+add_check_for_support(
+   MODULES QtPdf
+   CONDITION MSVC OR
+       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL GNU) OR
+       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL Clang) OR
        (APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL AppleClang) OR
-       (ANDROID AND CMAKE_CXX_COMPILER_ID STREQUAL Clang)
-   MESSAGE "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
+       (ANDROID AND CMAKE_CXX_COMPILER_ID STREQUAL Clang) OR
+       (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL GNU)
+   MESSAGE
+       "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
 )
 
 if(WIN32)
-    if(CMAKE_CXX_COMPILER_ID STREQUAL MSVC)
+    if(MSVC)
         add_check_for_support(
             MODULES QtWebEngine QtPdf
             CONDITION NOT MSVC_VERSION LESS 1929
@@ -615,7 +623,7 @@ if(WIN32)
     string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+)\\.[0-9]+" "\\1" sdkMinor "${windowsSdkVersion}")
     message("-- Windows 10 SDK version: ${windowsSdkVersion}")
     add_check_for_support(
-        MODULES QtWebEngine QtPdf
+        MODULES QtWebEngine
         CONDITION sdkMinor GREATER_EQUAL 20348
         MESSAGE "Build requires Windows 10 SDK at least version 10.0.20348.0"
     )

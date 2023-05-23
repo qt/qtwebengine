@@ -59,10 +59,15 @@ static_library("QtPdf") {
   deps = [
     "//third_party/pdfium"
   ]
-  if (is_win) {
+  if (is_msvc) {
     libs = [
       "dloadhelper.lib",
       "winmm.lib",
+    ]
+  }
+  if (is_mingw) {
+    libs = [
+      "winmm",
     ]
   }
 }

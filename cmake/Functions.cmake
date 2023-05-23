@@ -495,7 +495,13 @@ function(add_linker_options target buildDir completeStatic)
     endif()
     if(WIN32)
         get_copy_of_response_file(objects_rsp ${target} objects)
-        target_link_options(${cmakeTarget} PRIVATE /DELAYLOAD:mf.dll /DELAYLOAD:mfplat.dll /DELAYLOAD:mfreadwrite.dll /DELAYLOAD:winmm.dll)
+        if(NOT MINGW)
+            target_link_options(${cmakeTarget}
+                PRIVATE /DELAYLOAD:mf.dll /DELAYLOAD:mfplat.dll /DELAYLOAD:mfreadwrite.dll /DELAYLOAD:winmm.dll
+            )
+            # enable larger PDBs
+            target_link_options(${cmakeTarget} PRIVATE "/pdbpagesize:8192")
+        endif()
         target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${objects_rsp}>")
         if(NOT completeStatic)
             get_copy_of_response_file(archives_rsp ${target} archives)
@@ -503,8 +509,6 @@ function(add_linker_options target buildDir completeStatic)
         endif()
         get_copy_of_response_file(libs_rsp ${target} libs)
         target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${libs_rsp}>")
-        # enable larger PDBs
-        target_link_options(${cmakeTarget} PRIVATE "/pdbpagesize:8192")
         # we need libs rsp also when linking process with sandbox lib
         set_property(TARGET ${cmakeTarget} PROPERTY LIBS_RSP ${libs_rsp})
     endif()
@@ -918,6 +922,10 @@ macro(append_compiler_linker_sdk_setup)
     endif()
 
     extend_gn_list(gnArgArg ARGS is_clang CONDITION CLANG)
+    extend_gn_list(gnArgArg ARGS is_mingw CONDITION MINGW)
+    extend_gn_list(gnArgArg ARGS is_msvc CONDITION MSVC)
+    extend_gn_list(gnArgArg ARGS is_gcc CONDITION LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL GNU)
+
     if(CLANG)
         if(MACOS)
             get_darwin_sdk_version(macSdkVersion)
@@ -976,7 +984,7 @@ macro(append_compiler_linker_sdk_setup)
         endif()
     endif()
 
-    if(WIN32)
+    if(MSVC)
         get_filename_component(windowsSdkPath $ENV{WINDOWSSDKDIR} ABSOLUTE)
         get_filename_component(visualStudioPath $ENV{VSINSTALLDIR} ABSOLUTE)
         list(APPEND gnArgArg
@@ -1055,6 +1063,14 @@ macro(append_sanitizer_setup)
 endmacro()
 
 macro(append_toolchain_setup)
+    if(MINGW)
+        list(APPEND gnArgArg
+            # note '/' prefix
+            custom_toolchain="/${buildDir}/target_toolchain:target"
+            host_toolchain="/${buildDir}/host_toolchain:host"
+        )
+        list(APPEND gnArgArg host_cpu="${cpu}")
+    endif()
     if(LINUX)
         list(APPEND gnArgArg
             custom_toolchain="${buildDir}/target_toolchain:target"

@@ -70,7 +70,7 @@ add_dependencies(docs generate_pdf_attributions)
 #   TOOLCHAIN SETUP
 ##
 
-if(LINUX)
+if(LINUX OR MINGW)
     setup_toolchains()
 endif()
 
