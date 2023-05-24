@@ -95,7 +95,7 @@ add_code_attributions_target(
     BUILDDIR ${buildDir}/${config}/${arch}
 )
 add_dependencies(generate_chromium_attributions run_core_GnDone)
-add_dependencies(docs generate_chromium_attributions)
+add_dependencies(prepare_docs_WebEngineCore generate_chromium_attributions)
 
 ##
 #  WEBENGINECORE RESOURCES
