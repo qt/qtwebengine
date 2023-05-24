@@ -4,6 +4,7 @@
 /*!
 
 \example webenginewidgets/push-notifications
+\examplecategory {Desktop}
 \title WebEngine Push Notifications Example
 \ingroup webengine-widgetexamples
 \brief Demonstrates how to subscribe to and unsubscribe from push notifications.
