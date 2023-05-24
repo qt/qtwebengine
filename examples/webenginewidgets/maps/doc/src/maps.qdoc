@@ -3,6 +3,7 @@
 
 /*!
     \example webenginewidgets/maps
+    \examplecategory {Desktop}
     \title WebEngine Widgets Maps Example
     \ingroup webengine-widgetexamples
     \brief Demonstrates how to handle geolocation requests.
