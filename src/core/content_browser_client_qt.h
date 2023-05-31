@@ -37,10 +37,9 @@ class ContentBrowserClientQt : public content::ContentBrowserClient
 public:
     ContentBrowserClientQt();
     ~ContentBrowserClientQt();
-    std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(content::MainFunctionParams) override;
+    std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(bool is_integration_test) override;
     void RenderProcessWillLaunch(content::RenderProcessHost *host) override;
     content::MediaObserver* GetMediaObserver() override;
-    scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext() override;
     void OverrideWebkitPrefs(content::WebContents *web_contents,
                              blink::web_pref::WebPreferences *prefs) override;
     void AllowCertificateError(content::WebContents *web_contents,
@@ -188,8 +187,7 @@ public:
                                 const std::string &scheme) override;
     std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
     WillCreateURLLoaderRequestInterceptors(content::NavigationUIData *navigation_ui_data,
-                                           int frame_tree_node_id,
-                                           const scoped_refptr<network::SharedURLLoaderFactory> &network_loader_factory) override;
+                                           int frame_tree_node_id) override;
     bool WillCreateURLLoaderFactory(content::BrowserContext *browser_context,
                                     content::RenderFrameHost *frame,
                                     int render_process_id,
@@ -226,11 +224,13 @@ public:
     void SiteInstanceDeleting(content::SiteInstance *site_instance) override;
     base::flat_set<std::string> GetPluginMimeTypesWithExternalHandlers(content::BrowserContext *browser_context) override;
 
-    content::WebContentsViewDelegate* GetWebContentsViewDelegate(content::WebContents* web_contents) override;
+    std::unique_ptr<content::WebContentsViewDelegate> GetWebContentsViewDelegate(content::WebContents *web_contents) override;
 
     static std::string getUserAgent();
+    static blink::UserAgentMetadata getUserAgentMetadata();
 
     std::string GetUserAgent() override { return getUserAgent(); }
+    blink::UserAgentMetadata GetUserAgentMetadata() override { return getUserAgentMetadata(); }
     std::string GetProduct() override;
 
 private:

@@ -74,10 +74,8 @@ void QQuickPdfDocument::setSource(QUrl source)
     emit sourceChanged();
     const QQmlContext *context = qmlContext(this);
     m_resolvedSource = context ? context->resolvedUrl(source) : source;
-    if (source.scheme() == QLatin1String("qrc"))
-        m_doc->load(QLatin1Char(':') + m_resolvedSource.path());
-    else
-        m_doc->load(m_resolvedSource.toLocalFile());
+    if (m_resolvedSource.isValid())
+        m_doc->load(QQmlFile::urlToLocalFileOrQrc(m_resolvedSource));
 }
 
 /*!

@@ -152,12 +152,11 @@ QList<QRectF> QPdfLink::rectangles() const
 */
 QString QPdfLink::toString() const
 {
-    static const QString format = QPdfLinkModel::tr("page %1 location %2,%3 zoom %4");
-    return d->page > 0 ? format.arg(QString::number(d->page),
-                                    QString::number(d->location.x()),
-                                    QString::number(d->location.y()),
-                                    QString::number(d->zoom))
-                       : d->url.toString();
+    if (d->page <= 0)
+         return d->url.toString();
+    return QPdfLinkModel::tr("Page %1 location %2, %3 zoom %4")
+        .arg(d->page).arg(d->location.x(), 0, 'f', 1).arg(d->location.y(), 0, 'f', 1)
+        .arg(d->zoom, 0, 'f', 0);
 }
 
 /*!

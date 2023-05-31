@@ -3,14 +3,10 @@
 
 #include "renderer/web_engine_page_render_frame.h"
 #include "content/public/renderer/render_frame.h"
-#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 
-#include "third_party/blink/public/web/web_document.h"
-#include "third_party/blink/public/web/web_element.h"
-#include "third_party/blink/public/web/web_frame.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_frame_content_dumper.h"
-#include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
 
@@ -19,7 +15,7 @@ namespace QtWebEngineCore {
 WebEnginePageRenderFrame::WebEnginePageRenderFrame(content::RenderFrame *render_frame)
     : content::RenderFrameObserver(render_frame), m_binding(this), m_ready(false)
 {
-    render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
+    render_frame->GetAssociatedInterfaceRegistry()->AddInterface<qtwebenginepage::mojom::WebEnginePageRenderFrame>(
             base::BindRepeating(&WebEnginePageRenderFrame::BindReceiver, base::Unretained(this)));
 }
 

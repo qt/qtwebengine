@@ -22,6 +22,12 @@
     geolocation requests are denied by default. This example demonstrates the
     steps an application must take in order to start accepting these requests.
 
+    \note On Windows 11, enable settings to grant the application access to
+    Windows location services. In the Settings App under
+    \uicontrol {Privacy & Security} > \uicontrol {Location}, enable \uicontrol
+    {Location services}, \uicontrol {Let apps access your location} and \uicontrol
+    {Let desktop apps access your location}.
+
     \include examples-run.qdocinc
 
     \section1 The Code

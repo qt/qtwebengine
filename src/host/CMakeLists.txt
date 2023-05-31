@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 cmake_minimum_required(VERSION 3.19)
 
 if(NOT DEFINED WEBENGINE_ROOT_SOURCE_DIR)
@@ -17,6 +20,10 @@ project(QtWebEngineConfigure
     LANGUAGES CXX C)
 
 find_package(Qt6 6.2 CONFIG REQUIRED COMPONENTS BuildInternals Core)
+
+if(COMMAND qt_internal_project_setup)
+    qt_internal_project_setup()
+endif()
 
 set(buildDir ${CMAKE_CURRENT_BINARY_DIR})
 configure_gn_toolchain(host ${TEST_architecture_arch} ${TEST_architecture_arch}

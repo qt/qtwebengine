@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
 #include "base/task/current_thread.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -47,21 +47,18 @@ void GetDefaultPrintSettingsReply(printing::mojom::PrintManagerHost::GetDefaultP
     std::move(callback).Run(std::move(params));
 }
 
-void GetDefaultPrintSettingsReplyOnIO(scoped_refptr<printing::PrintQueriesQueue> queue,
+void OnDidGetDefaultPrintSettings(scoped_refptr<printing::PrintQueriesQueue> queue,
                                       std::unique_ptr<printing::PrinterQuery> printer_query,
                                       printing::mojom::PrintManagerHost::GetDefaultPrintSettingsCallback callback)
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     printing::mojom::PrintParamsPtr params = printing::mojom::PrintParams::New();
     if (printer_query && printer_query->last_status() == printing::mojom::ResultCode::kSuccess) {
         RenderParamsFromPrintSettings(printer_query->settings(), params.get());
         params->document_cookie = printer_query->cookie();
     }
 
-    content::GetUIThreadTaskRunner({})->PostTask(
-                FROM_HERE,
-                base::BindOnce(&GetDefaultPrintSettingsReply,
-                               std::move(callback), std::move(params)));
+    GetDefaultPrintSettingsReply(std::move(callback), std::move(params));
 
     // If printing was enabled.
     if (printer_query) {
@@ -72,26 +69,6 @@ void GetDefaultPrintSettingsReplyOnIO(scoped_refptr<printing::PrintQueriesQueue>
             printer_query->StopWorker();
         }
     }
-}
-
-void GetDefaultPrintSettingsOnIO(printing::mojom::PrintManagerHost::GetDefaultPrintSettingsCallback callback,
-                                 scoped_refptr<printing::PrintQueriesQueue> queue,
-                                 bool is_modifiable,
-                                 content::GlobalRenderFrameHostId rfh_id)
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-    std::unique_ptr<printing::PrinterQuery> printer_query = queue->PopPrinterQuery(0);
-    if (!printer_query)
-        printer_query = queue->CreatePrinterQuery(rfh_id);
-
-    // Loads default settings. This is asynchronous, only the mojo message sender
-    // will hang until the settings are retrieved.
-    auto *printer_query_ptr = printer_query.get();
-    printer_query_ptr->GetDefaultSettings(
-        base::BindOnce(&GetDefaultPrintSettingsReplyOnIO, queue,
-                       std::move(printer_query), std::move(callback)),
-        is_modifiable);
 }
 
 printing::mojom::PrintPagesParamsPtr CreateEmptyPrintPagesParamsPtr()
@@ -112,25 +89,23 @@ void UpdatePrintSettingsReply(printing::mojom::PrintManagerHost::UpdatePrintSett
     std::move(callback).Run(std::move(params), canceled);
 }
 
-void UpdatePrintSettingsReplyOnIO(scoped_refptr<printing::PrintQueriesQueue> queue,
+void OnDidUpdatePrintSettings(scoped_refptr<printing::PrintQueriesQueue> queue,
                                   std::unique_ptr<printing::PrinterQuery> printer_query,
                                   printing::mojom::PrintManagerHost::UpdatePrintSettingsCallback callback,
                                   int process_id, int routing_id)
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     DCHECK(printer_query);
     auto params = printing::mojom::PrintPagesParams::New();
     params->params = printing::mojom::PrintParams::New();
     if (printer_query->last_status() == printing::mojom::ResultCode::kSuccess) {
         RenderParamsFromPrintSettings(printer_query->settings(), params->params.get());
         params->params->document_cookie = printer_query->cookie();
-        params->pages = printing::PageRange::GetPages(printer_query->settings().ranges());
+        params->pages = printer_query->settings().ranges();
     }
-    bool canceled = printer_query->last_status() == printing::mojom::ResultCode::kAccessDenied;
+    bool canceled = printer_query->last_status() == printing::mojom::ResultCode::kCanceled;
 
-    content::GetUIThreadTaskRunner({})->PostTask(
-                FROM_HERE,
-                base::BindOnce(&UpdatePrintSettingsReply, std::move(callback), std::move(params), canceled));
+    UpdatePrintSettingsReply(std::move(callback), std::move(params), canceled);
 
     if (printer_query->cookie() && printer_query->settings().dpi()) {
         queue->QueuePrinterQuery(std::move(printer_query));
@@ -139,65 +114,27 @@ void UpdatePrintSettingsReplyOnIO(scoped_refptr<printing::PrintQueriesQueue> que
     }
 }
 
-void UpdatePrintSettingsOnIO(int32_t cookie,
-                             printing::mojom::PrintManagerHost::UpdatePrintSettingsCallback callback,
-                             scoped_refptr<printing::PrintQueriesQueue> queue,
-                             base::Value::Dict job_settings,
-                             int process_id, int routing_id)
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    std::unique_ptr<printing::PrinterQuery> printer_query = queue->PopPrinterQuery(cookie);
-    if (!printer_query)
-        printer_query = queue->CreatePrinterQuery(content::GlobalRenderFrameHostId());
 
-    auto *printer_query_ptr = printer_query.get();
-    printer_query_ptr->SetSettings(
-                std::move(job_settings),
-                base::BindOnce(&UpdatePrintSettingsReplyOnIO,
-                               queue, std::move(printer_query), std::move(callback),
-                               process_id, routing_id));
-}
-
-void ScriptedPrintReplyOnIO(scoped_refptr<printing::PrintQueriesQueue> queue,
+void OnDidScriptedPrint(scoped_refptr<printing::PrintQueriesQueue> queue,
                             std::unique_ptr<printing::PrinterQuery> printer_query,
                             printing::mojom::PrintManagerHost::ScriptedPrintCallback callback)
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     printing::mojom::PrintPagesParamsPtr params = CreateEmptyPrintPagesParamsPtr();
     if (printer_query->last_status() == printing::mojom::ResultCode::kSuccess && printer_query->settings().dpi()) {
         RenderParamsFromPrintSettings(printer_query->settings(), params->params.get());
         params->params->document_cookie = printer_query->cookie();
-        params->pages = printing::PageRange::GetPages(printer_query->settings().ranges());
+        params->pages = printer_query->settings().ranges();
     }
     bool has_valid_cookie = params->params->document_cookie;
     bool has_dpi = !params->params->dpi.IsEmpty();
-    content::GetUIThreadTaskRunner({})->PostTask(
-                FROM_HERE, base::BindOnce(std::move(callback), std::move(params)));
+    std::move(callback).Run(std::move(params));
 
     if (has_dpi && has_valid_cookie) {
         queue->QueuePrinterQuery(std::move(printer_query));
     } else {
         printer_query->StopWorker();
     }
-}
-
-void ScriptedPrintOnIO(printing::mojom::ScriptedPrintParamsPtr params,
-                       printing::mojom::PrintManagerHost::ScriptedPrintCallback callback,
-                       scoped_refptr<printing::PrintQueriesQueue> queue,
-                       bool is_modifiable,
-                       content::GlobalRenderFrameHostId rfh_id)
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-    std::unique_ptr<printing::PrinterQuery> printer_query = queue->PopPrinterQuery(params->cookie);
-    if (!printer_query)
-        printer_query = queue->CreatePrinterQuery(rfh_id);
-
-    auto *printer_query_ptr = printer_query.get();
-    printer_query_ptr->GetSettingsFromUser(
-                params->expected_pages_count, params->has_selection, params->margin_type,
-                params->is_scripted, is_modifiable,
-                base::BindOnce(&ScriptedPrintReplyOnIO, queue, std::move(printer_query), std::move(callback)));
 }
 
 }  // namespace
@@ -251,9 +188,9 @@ void PrintViewManagerBaseQt::UpdatePrintingEnabled()
 #if QT_CONFIG(webengine_printing_and_pdf)
     enabled = true;
 #endif
-    web_contents()->ForEachFrame(
-            base::BindRepeating(&PrintViewManagerBaseQt::SendPrintingEnabled,
-                                base::Unretained(this), enabled));
+    web_contents()->ForEachRenderFrameHost([this, enabled](content::RenderFrameHost *rfh) {
+        SendPrintingEnabled(enabled, rfh);
+    });
 }
 
 void PrintViewManagerBaseQt::NavigationStopped()
@@ -334,21 +271,30 @@ void PrintViewManagerBaseQt::GetDefaultPrintSettings(GetDefaultPrintSettingsCall
             print_manager_host_receivers_.GetCurrentTargetFrame();
     content::RenderProcessHost *render_process_host =
             render_frame_host->GetProcess();
-    content::GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(&GetDefaultPrintSettingsOnIO, std::move(callback), m_printerQueriesQueue,
-                       !render_process_host->IsPdf(),
-                       render_frame_host->GetGlobalId()));
+
+    auto callback_wrapper =
+        base::BindOnce(&GetDefaultPrintSettingsReply, std::move(callback));
+    std::unique_ptr<printing::PrinterQuery> printer_query = m_printerQueriesQueue->PopPrinterQuery(0);
+    if (!printer_query)
+        printer_query = m_printerQueriesQueue->CreatePrinterQuery(render_frame_host->GetGlobalId());
+
+     // Loads default settings. This is asynchronous, only the mojo message sender
+     // will hang until the settings are retrieved.
+     auto *printer_query_ptr = printer_query.get();
+     printer_query_ptr->GetDefaultSettings(
+                 base::BindOnce(&OnDidGetDefaultPrintSettings, m_printerQueriesQueue,
+                                std::move(printer_query), std::move(callback_wrapper)),
+                 !render_process_host->IsPdf());
 }
 
-void PrintViewManagerBaseQt::PrintingFailed(int32_t cookie)
+void PrintViewManagerBaseQt::PrintingFailed(int32_t cookie, printing::mojom::PrintFailureReason reason)
 {
     // Note: Not redundant with cookie checks in the same method in other parts of
     // the class hierarchy.
     if (!IsValidCookie(cookie))
         return;
 
-    PrintManager::PrintingFailed(cookie);
+    PrintManager::PrintingFailed(cookie, reason);
 
     ReleasePrinterQuery();
 }
@@ -365,10 +311,17 @@ void PrintViewManagerBaseQt::ScriptedPrint(printing::mojom::ScriptedPrintParamsP
     auto callback_wrapper = base::BindOnce(
         &PrintViewManagerBaseQt::ScriptedPrintReply, weak_ptr_factory_.GetWeakPtr(),
         std::move(callback), render_process_host->GetID());
-    content::GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(&ScriptedPrintOnIO, std::move(params), std::move(callback_wrapper),
-                       m_printerQueriesQueue, !render_process_host->IsPdf(), render_frame_host->GetGlobalId()));
+
+    std::unique_ptr<printing::PrinterQuery> printer_query =
+         m_printerQueriesQueue->PopPrinterQuery(params->cookie);
+    if (!printer_query)
+       printer_query = m_printerQueriesQueue->CreatePrinterQuery(render_frame_host->GetGlobalId());
+
+    auto *printer_query_ptr = printer_query.get();
+    printer_query_ptr->GetSettingsFromUser(
+                params->expected_pages_count, params->has_selection, params->margin_type,
+                params->is_scripted, !render_process_host->IsPdf(),
+                base::BindOnce(&OnDidScriptedPrint, m_printerQueriesQueue, std::move(printer_query), std::move(callback_wrapper)));
 }
 
 void PrintViewManagerBaseQt::ShowInvalidPrinterSettingsError()
@@ -408,42 +361,22 @@ void PrintViewManagerBaseQt::RenderFrameDeleted(content::RenderFrameHost *render
     }
 }
 
-void PrintViewManagerBaseQt::Observe(int type,
-        const content::NotificationSource& /*source*/,
-        const content::NotificationDetails& details)
+void PrintViewManagerBaseQt::OnDocDone(int /*job_id*/, printing::PrintedDocument * /*document*/)
 {
-    DCHECK_EQ(chrome::NOTIFICATION_PRINT_JOB_EVENT, type);
-    OnNotifyPrintJobEvent(*content::Details<printing::JobEventDetails>(details).ptr());
 }
 
-void PrintViewManagerBaseQt::OnNotifyPrintJobEvent(const printing::JobEventDetails& event_details)
+void PrintViewManagerBaseQt::OnJobDone()
 {
-    switch (event_details.type()) {
-    case printing::JobEventDetails::FAILED: {
-        TerminatePrintJob(true);
-        break;
-    }
-//    case printing::JobEventDetails::ALL_PAGES_REQUESTED: {
-//        ShouldQuitFromInnerMessageLoop();
-//        break;
-//    }
-    case printing::JobEventDetails::NEW_DOC:
-    case printing::JobEventDetails::DOC_DONE: {
-        // Don't care about the actual printing process.
-        break;
-    }
-    case printing::JobEventDetails::JOB_DONE: {
-        // Printing is done, we don't need it anymore.
-        // print_job_->is_job_pending() may still be true, depending on the order
-        // of object registration.
-        m_didPrintingSucceed = true;
-        ReleasePrintJob();
-        break;
-    }
-    default:
-        NOTREACHED();
-        break;
-    }
+    // Printing is done, we don't need it anymore.
+    // print_job_->is_job_pending() may still be true, depending on the order
+    // of object registration.
+    m_didPrintingSucceed = true;
+    ReleasePrintJob();
+}
+
+void PrintViewManagerBaseQt::OnFailed()
+{
+    TerminatePrintJob(true);
 }
 
 // Requests the RenderView to render all the missing pages for the print job.
@@ -462,8 +395,8 @@ bool PrintViewManagerBaseQt::RenderAllMissingPagesNow()
 
     // We can't print if there is no renderer.
     if (!web_contents() ||
-        !web_contents()->GetMainFrame() ||
-        !web_contents()->GetMainFrame()->IsRenderFrameLive()) {
+        !web_contents()->GetPrimaryMainFrame() ||
+        !web_contents()->GetPrimaryMainFrame()->IsRenderFrameLive()) {
       return false;
     }
 
@@ -502,11 +435,14 @@ bool PrintViewManagerBaseQt::CreateNewPrintJob(std::unique_ptr<printing::Printer
     DCHECK(query);
 
     // Disconnect the current |m_printJob|.
+    auto weak_this = weak_ptr_factory_.GetWeakPtr();
     DisconnectFromCurrentPrintJob();
+    if (!weak_this)
+      return false;
 
     // We can't print if there is no renderer.
-    if (!web_contents()->GetMainFrame() ||
-        !web_contents()->GetMainFrame()->IsRenderFrameLive()) {
+    if (!web_contents()->GetPrimaryMainFrame() ||
+        !web_contents()->GetPrimaryMainFrame()->IsRenderFrameLive()) {
         return false;
     }
 
@@ -516,8 +452,7 @@ bool PrintViewManagerBaseQt::CreateNewPrintJob(std::unique_ptr<printing::Printer
 
     m_printJob = base::MakeRefCounted<printing::PrintJob>(nullptr /*g_browser_process->print_job_manager()*/);
     m_printJob->Initialize(std::move(query), RenderSourceName(), number_pages_);
-    m_registrar.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
-                    content::Source<printing::PrintJob>(m_printJob.get()));
+    m_printJob->AddObserver(*this);
     m_didPrintingSucceed = false;
     return true;
 }
@@ -573,8 +508,8 @@ void PrintViewManagerBaseQt::ReleasePrintJob()
     if (rfh)
       GetPrintRenderFrame(rfh)->PrintingDone(m_didPrintingSucceed);
 
-    m_registrar.Remove(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
-                       content::Source<printing::PrintJob>(m_printJob.get()));
+    m_printJob->RemoveObserver(*this);
+
     // Don't close the worker thread.
     m_printJob = nullptr;
 }
@@ -660,8 +595,7 @@ void PrintViewManagerBaseQt::ReleasePrinterQuery()
     printerQuery = m_printerQueriesQueue->PopPrinterQuery(cookie);
     if (!printerQuery)
         return;
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(&printing::PrinterQuery::StopWorker, std::move(printerQuery)));
+    printerQuery->StopWorker();
 }
 
 // Originally from print_preview_message_handler.cc:
@@ -669,12 +603,11 @@ void PrintViewManagerBaseQt::StopWorker(int documentCookie)
 {
     if (documentCookie <= 0)
         return;
-    std::unique_ptr<printing::PrinterQuery> printer_query =
+    std::unique_ptr<printing::PrinterQuery> printerQuery =
             m_printerQueriesQueue->PopPrinterQuery(documentCookie);
-    if (printer_query.get()) {
-        base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                       base::BindOnce(&printing::PrinterQuery::StopWorker, std::move(printer_query)));
-    }
+    if (!printerQuery)
+        return;
+    printerQuery->StopWorker();
 }
 
 void PrintViewManagerBaseQt::SendPrintingEnabled(bool enabled, content::RenderFrameHost* rfh)
@@ -695,13 +628,16 @@ void PrintViewManagerBaseQt::UpdatePrintSettings(int32_t cookie, base::Value::Di
 
     content::RenderFrameHost *render_frame_host =
             print_manager_host_receivers_.GetCurrentTargetFrame();
+    std::unique_ptr<printing::PrinterQuery> printer_query = m_printerQueriesQueue->PopPrinterQuery(cookie);
+    if (!printer_query)
+         printer_query = m_printerQueriesQueue->CreatePrinterQuery(content::GlobalRenderFrameHostId());
 
-    content::GetIOThreadTaskRunner({})->PostTask(
-                FROM_HERE,
-                base::BindOnce(&UpdatePrintSettingsOnIO, cookie, std::move(callback),
-                               m_printerQueriesQueue, std::move(job_settings),
-                               render_frame_host->GetProcess()->GetID(),
-                               render_frame_host->GetRoutingID()));
+    auto *printer_query_ptr = printer_query.get();
+    printer_query_ptr->SetSettings(
+                    std::move(job_settings),
+                    base::BindOnce(&OnDidUpdatePrintSettings,
+                                   m_printerQueriesQueue, std::move(printer_query), std::move(callback),
+                                   render_frame_host->GetProcess()->GetID(), render_frame_host->GetRoutingID()));
 }
 
 } // namespace QtWebEngineCore

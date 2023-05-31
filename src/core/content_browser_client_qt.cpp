@@ -4,10 +4,10 @@
 #include "content_browser_client_qt.h"
 
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
+#include "components/embedder_support/user_agent_utils.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/navigation_interception/intercept_navigation_throttle.h"
@@ -30,9 +30,11 @@
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
@@ -71,7 +73,6 @@
 #include "platform_notification_service_qt.h"
 #include "profile_qt.h"
 #include "profile_io_data_qt.h"
-#include "quota_permission_context_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
 #include "select_file_dialog_factory_qt.h"
 #include "type_conversion.h"
@@ -93,7 +94,11 @@
 
 #if QT_CONFIG(webengine_spellchecker)
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
+#include "chrome/browser/spellchecker/spellcheck_factory.h"
+#include "chrome/browser/spellchecker/spellcheck_service.h"
+#include "components/spellcheck/browser/pref_names.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
+#include "components/spellcheck/common/spellcheck_features.h"
 #endif
 
 #if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
@@ -107,6 +112,7 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "common/extensions/extensions_client_qt.h"
 #include "components/guest_view/browser/guest_view_base.h"
+#include "extensions/browser/api/messaging/messaging_api_message_filter.h"
 #include "extensions/browser/api/mime_handler_private/mime_handler_private.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_message_filter.h"
@@ -200,7 +206,7 @@ ContentBrowserClientQt::~ContentBrowserClientQt()
 {
 }
 
-std::unique_ptr<content::BrowserMainParts> ContentBrowserClientQt::CreateBrowserMainParts(content::MainFunctionParams)
+std::unique_ptr<content::BrowserMainParts> ContentBrowserClientQt::CreateBrowserMainParts(bool)
 {
     Q_ASSERT(!m_browserMainParts);
     auto browserMainParts = std::make_unique<BrowserMainPartsQt>();
@@ -212,6 +218,11 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost 
 {
     const int id = host->GetID();
     Profile *profile = Profile::FromBrowserContext(host->GetBrowserContext());
+
+#if QT_CONFIG(webengine_spellchecker)
+    if (spellcheck::UseBrowserSpellChecker() && !profile->GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckEnable))
+        SpellcheckServiceFactory::GetForContext(profile)->InitForRenderer(host);
+#endif
 
 #if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
     WebRtcLoggingController::AttachToRenderProcessHost(host, WebEngineContext::current()->webRtcLogUploader());
@@ -229,6 +240,7 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost 
     host->AddFilter(new BrowserMessageFilterQt(id, profile));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     host->AddFilter(new extensions::ExtensionMessageFilter(id, profile));
+    host->AddFilter(new extensions::MessagingAPIMessageFilter(id, profile));
 #endif //ENABLE_EXTENSIONS
 
     bool is_incognito_process = profile->IsOffTheRecord();
@@ -255,11 +267,6 @@ void ContentBrowserClientQt::OverrideWebkitPrefs(content::WebContents *webConten
     WebContentsDelegateQt* delegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
     if (delegate)
         delegate->overrideWebPreferences(webContents, web_prefs);
-}
-
-scoped_refptr<content::QuotaPermissionContext> ContentBrowserClientQt::CreateQuotaPermissionContext()
-{
-    return new QuotaPermissionContextQt;
 }
 
 void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webContents,
@@ -449,12 +456,12 @@ void ContentBrowserClientQt::ExposeInterfacesToRenderer(service_manager::BinderR
     if (auto *manager = performance_manager::PerformanceManagerRegistry::GetInstance())
         manager->CreateProcessNodeAndExposeInterfacesToRendererProcess(registry, render_process_host);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    associated_registry->AddInterface(base::BindRepeating(&extensions::EventRouter::BindForRenderer,
-                                                          render_process_host->GetID()));
-    associated_registry->AddInterface(base::BindRepeating(&extensions::ExtensionsGuestView::CreateForComponents,
-                                                          render_process_host->GetID()));
-    associated_registry->AddInterface(base::BindRepeating(&extensions::ExtensionsGuestView::CreateForExtensions,
-                                                          render_process_host->GetID()));
+    associated_registry->AddInterface<extensions::mojom::EventRouter>(
+                base::BindRepeating(&extensions::EventRouter::BindForRenderer, render_process_host->GetID()));
+    associated_registry->AddInterface<guest_view::mojom::GuestViewHost>(
+                base::BindRepeating(&extensions::ExtensionsGuestView::CreateForComponents, render_process_host->GetID()));
+    associated_registry->AddInterface<extensions::mojom::GuestView>(
+                base::BindRepeating(&extensions::ExtensionsGuestView::CreateForExtensions, render_process_host->GetID()));
 #else
     Q_UNUSED(associated_registry);
 #endif
@@ -465,7 +472,7 @@ void ContentBrowserClientQt::RegisterAssociatedInterfaceBindersForRenderFrameHos
         blink::AssociatedInterfaceRegistry &associated_registry)
 {
 #if QT_CONFIG(webengine_webchannel)
-    associated_registry.AddInterface(
+    associated_registry.AddInterface<qtwebchannel::mojom::WebChannelTransportHost>(
                 base::BindRepeating(
                     [](content::RenderFrameHost *render_frame_host,
                        mojo::PendingAssociatedReceiver<qtwebchannel::mojom::WebChannelTransportHost> receiver) {
@@ -475,7 +482,7 @@ void ContentBrowserClientQt::RegisterAssociatedInterfaceBindersForRenderFrameHos
                     }, &rfh));
 #endif
 #if BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
-    associated_registry.AddInterface(
+    associated_registry.AddInterface<printing::mojom::PrintManagerHost>(
                 base::BindRepeating(
                     [](content::RenderFrameHost* render_frame_host,
                        mojo::PendingAssociatedReceiver<printing::mojom::PrintManagerHost> receiver) {
@@ -483,21 +490,21 @@ void ContentBrowserClientQt::RegisterAssociatedInterfaceBindersForRenderFrameHos
                     }, &rfh));
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    associated_registry.AddInterface(
+    associated_registry.AddInterface<extensions::mojom::LocalFrameHost>(
                 base::BindRepeating(
                     [](content::RenderFrameHost *render_frame_host,
                        mojo::PendingAssociatedReceiver<extensions::mojom::LocalFrameHost> receiver) {
                         extensions::ExtensionWebContentsObserverQt::BindLocalFrameHost(std::move(receiver), render_frame_host);
                     }, &rfh));
 #endif
-    associated_registry.AddInterface(
+    associated_registry.AddInterface<autofill::mojom::AutofillDriver>(
                 base::BindRepeating(
                     [](content::RenderFrameHost *render_frame_host,
                        mojo::PendingAssociatedReceiver<autofill::mojom::AutofillDriver> receiver) {
                         autofill::ContentAutofillDriverFactory::BindAutofillDriver(std::move(receiver), render_frame_host);
                     }, &rfh));
 #if BUILDFLAG(ENABLE_PDF)
-    associated_registry.AddInterface(
+    associated_registry.AddInterface<pdf::mojom::PdfService>(
                 base::BindRepeating(
                     [](content::RenderFrameHost *render_frame_host,
                        mojo::PendingAssociatedReceiver<pdf::mojom::PdfService> receiver) {
@@ -663,7 +670,7 @@ static void LaunchURL(const GURL& url,
                         has_user_gesture);
 
         if (!allowed) {
-            content::RenderFrameHost *rfh = webContents->GetMainFrame();
+            content::RenderFrameHost *rfh = webContents->GetPrimaryMainFrame();
             if (!base::CommandLine::ForCurrentProcess()->HasSwitch("disable-sandbox-external-protocols")) {
                 rfh->AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kError,
                                          "Navigation to external protocol blocked by sandbox.");
@@ -697,7 +704,7 @@ bool ContentBrowserClientQt::HandleExternalProtocol(const GURL &url,
     Q_UNUSED(initiator_document);
     Q_UNUSED(out_factory);
 
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
                    base::BindOnce(&LaunchURL,
                                   url,
                                   std::move(web_contents_getter),
@@ -953,7 +960,15 @@ void ContentBrowserClientQt::OverrideURLLoaderFactoryParams(content::BrowserCont
 std::string ContentBrowserClientQt::getUserAgent()
 {
     // Mention the Chromium version we're based on to get passed stupid UA-string-based feature detection (several WebRTC demos need this)
-    return content::BuildUserAgentFromProduct("QtWebEngine/" QTWEBENGINECORE_VERSION_STR " Chrome/" CHROMIUM_VERSION);
+    return content::BuildUserAgentFromProduct("QtWebEngine/" + std::string(qWebEngineVersion())
+                                              + " Chrome/"
+                                              + std::string(qWebEngineChromiumVersion()));
+}
+
+blink::UserAgentMetadata ContentBrowserClientQt::getUserAgentMetadata()
+{
+    static blink::UserAgentMetadata userAgentMetadata(embedder_support::GetUserAgentMetadata());
+    return userAgentMetadata;
 }
 
 std::string ContentBrowserClientQt::GetProduct()
@@ -1200,8 +1215,7 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
 
 std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
 ContentBrowserClientQt::WillCreateURLLoaderRequestInterceptors(content::NavigationUIData* navigation_ui_data,
-                                       int frame_tree_node_id,
-                                       const scoped_refptr<network::SharedURLLoaderFactory>& network_loader_factory)
+                                       int frame_tree_node_id)
 {
     std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>> interceptors;
 #if BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1274,7 +1288,7 @@ void ContentBrowserClientQt::CreateWebSocket(
             to_url = toGurl(infoPrivate->url);
         for (auto header = infoPrivate->extraHeaders.constBegin(); header != infoPrivate->extraHeaders.constEnd(); ++header) {
             std::string h = header.key().toStdString();
-            if (base::LowerCaseEqualsASCII(h, net::HttpRequestHeaders::kUserAgent))
+            if (base::EqualsCaseInsensitiveASCII(h, net::HttpRequestHeaders::kUserAgent))
                 addedUserAgent = true;
             headers.push_back(network::mojom::HttpHeader::New(h, header.value().toStdString()));
         }
@@ -1317,7 +1331,7 @@ void ContentBrowserClientQt::SiteInstanceDeleting(content::SiteInstance *site_in
 #endif
 }
 
-content::WebContentsViewDelegate *ContentBrowserClientQt::GetWebContentsViewDelegate(content::WebContents *web_contents)
+std::unique_ptr<content::WebContentsViewDelegate> ContentBrowserClientQt::GetWebContentsViewDelegate(content::WebContents *web_contents)
 {
     FormInteractionTabHelper::CreateForWebContents(web_contents);
     FileSystemAccessPermissionRequestManagerQt::CreateForWebContents(web_contents);

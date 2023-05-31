@@ -4,6 +4,7 @@
 #include "ozone_platform_qt.h"
 
 #if defined(USE_OZONE)
+#include "base/no_destructor.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/display/types/native_display_delegate.h"
@@ -24,11 +25,13 @@
 #include "platform_window_qt.h"
 
 #if BUILDFLAG(USE_XKBCOMMON)
+#include "base/logging.h"
 #include "ui/events/ozone/layout/xkb/xkb_evdev_codes.h"
 #include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
 
 #include <X11/XKBlib.h>
 #include <X11/extensions/XKBrules.h>
+#include <filesystem>
 
 extern void *GetQtXDisplay();
 #endif // BUILDFLAG(USE_XKBCOMMON)
@@ -50,8 +53,10 @@ public:
     ui::InputController* GetInputController() override;
     std::unique_ptr<ui::SystemInputInjector> CreateSystemInputInjector() override;
     ui::OverlayManagerOzone* GetOverlayManager() override;
-    std::unique_ptr<InputMethod> CreateInputMethod(internal::InputMethodDelegate *delegate, gfx::AcceleratedWidget widget) override;
+    std::unique_ptr<InputMethod> CreateInputMethod(ImeKeyEventDispatcher *ime_key_event_dispatcher, gfx::AcceleratedWidget widget) override;
     std::unique_ptr<ui::PlatformScreen> CreateScreen() override { return nullptr; }
+    const PlatformProperties &GetPlatformProperties() override;
+
 private:
     bool InitializeUI(const ui::OzonePlatform::InitParams &) override;
     void InitializeGPU(const ui::OzonePlatform::InitParams &) override;
@@ -75,6 +80,19 @@ private:
 OzonePlatformQt::OzonePlatformQt() {}
 
 OzonePlatformQt::~OzonePlatformQt() {}
+
+const ui::OzonePlatform::PlatformProperties &OzonePlatformQt::GetPlatformProperties()
+{
+    static base::NoDestructor<ui::OzonePlatform::PlatformProperties> properties;
+    static bool initialized = false;
+    if (!initialized) {
+        properties->fetch_buffer_formats_for_gmb_on_gpu = true;
+
+        initialized = true;
+    }
+
+    return *properties;
+}
 
 ui::SurfaceFactoryOzone* OzonePlatformQt::GetSurfaceFactoryOzone()
 {
@@ -165,8 +183,10 @@ static std::string getCurrentKeyboardLayout()
 bool OzonePlatformQt::InitializeUI(const ui::OzonePlatform::InitParams &)
 {
 #if BUILDFLAG(USE_XKBCOMMON)
+    std::string xkb_path("/usr/share/X11/xkb");
     std::string layout = getCurrentKeyboardLayout();
-    if (layout.empty()) {
+    if (layout.empty() || !std::filesystem::exists(xkb_path) || std::filesystem::is_empty(xkb_path)) {
+        LOG(WARNING) << "Failed to load keymap file, falling back to StubKeyboardLayoutEngine";
         m_keyboardLayoutEngine = std::make_unique<StubKeyboardLayoutEngine>();
     } else {
         m_keyboardLayoutEngine = std::make_unique<XkbKeyboardLayoutEngine>(m_xkbEvdevCodeConverter);
@@ -190,7 +210,7 @@ void OzonePlatformQt::InitializeGPU(const ui::OzonePlatform::InitParams &)
     surface_factory_ozone_.reset(new QtWebEngineCore::SurfaceFactoryQt());
 }
 
-std::unique_ptr<InputMethod> OzonePlatformQt::CreateInputMethod(internal::InputMethodDelegate *, gfx::AcceleratedWidget)
+std::unique_ptr<InputMethod> OzonePlatformQt::CreateInputMethod(ImeKeyEventDispatcher *, gfx::AcceleratedWidget)
 {
     NOTREACHED();
     return nullptr;

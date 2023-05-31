@@ -15,11 +15,6 @@ ContentGpuClientQt::~ContentGpuClientQt()
 {
 }
 
-gpu::SyncPointManager *ContentGpuClientQt::GetSyncPointManager()
-{
-    return WebEngineContext::syncPointManager();
-}
-
 gl::GLShareGroup *ContentGpuClientQt::GetInProcessGpuShareGroup()
 {
     if (!m_shareGroupQt.get())

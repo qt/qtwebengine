@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 #### Libraries
 
 if(NOT QT_CONFIGURE_RUNNING)
@@ -58,10 +61,6 @@ qt_feature("webengine-embedded-build" PRIVATE
 qt_feature("webengine-system-alsa" PRIVATE
     LABEL "Use ALSA"
     CONDITION UNIX AND TEST_alsa
-)
-qt_feature("webengine-v8-snapshot-support" PRIVATE
-    LABEL "Building v8 snapshot supported"
-    CONDITION NOT UNIX OR NOT QT_FEATURE_cross_compile OR ( TEST_architecture_arch STREQUAL arm64 ) OR TEST_webengine_host_compiler
 )
 qt_feature("webengine-geolocation" PUBLIC
     LABEL "Geolocation"
@@ -147,6 +146,12 @@ qt_feature("webengine-sanitizer" PRIVATE
     AUTODETECT CLANG
     CONDITION CLANG AND ECM_ENABLE_SANITIZERS
 )
+qt_feature("webengine-vulkan" PRIVATE
+    SECTION "WebEngine"
+    LABEL "Vulkan support"
+    PURPOSE "Enables support for Vulkan rendering"
+    CONDITION QT_FEATURE_vulkan
+)
 # internal testing feature
 qt_feature("webengine-system-poppler" PRIVATE
     LABEL "popler"
@@ -175,8 +180,8 @@ qt_configure_add_summary_entry(
     CONDITION UNIX
 )
 qt_configure_add_summary_entry(
-    ARGS "webengine-v8-snapshot-support"
-    CONDITION UNIX AND cross_compile
+    ARGS "webengine-vulkan"
+    CONDITION QT_FEATURE_vulkan
 )
 qt_configure_add_summary_entry(
     ARGS "webengine-system-alsa"
@@ -198,11 +203,6 @@ if(CMAKE_CROSSCOMPILING)
             AND NOT armThumb
    )
 endif()
-qt_configure_add_report_entry(
-    TYPE WARNING
-    MESSAGE "V8 snapshot cannot be built. Most likely, the 32-bit host compiler does not work. Please make sure you have 32-bit devel environment installed."
-    CONDITION UNIX AND cross_compile AND NOT QT_FEATURE_webengine_v8_snapshot_support
-)
 qt_configure_add_report_entry(
     TYPE WARNING
     MESSAGE "WebRTC requires XDamage with qpa_xcb."

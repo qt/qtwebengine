@@ -16,6 +16,7 @@
 //
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
+#include <QtWebEngineCore/qwebenginequotarequest.h>
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 #include <QtGui/qcolor.h>
 #include <QtQml/qqmlregistration.h>
@@ -46,7 +47,6 @@ class QWebEngineHistory;
 class QWebEngineLoadingInfo;
 class QWebEngineNavigationRequest;
 class QWebEngineNewWindowRequest;
-class QWebEngineQuotaRequest;
 class QWebEngineRegisterProtocolHandlerRequest;
 class QQuickWebEngineScriptCollection;
 class QQuickWebEngineTouchSelectionMenuRequest;
@@ -516,7 +516,10 @@ Q_SIGNALS:
     Q_REVISION(1,4) void colorDialogRequested(QQuickWebEngineColorDialogRequest *request);
     Q_REVISION(1,4) void fileDialogRequested(QQuickWebEngineFileDialogRequest *request);
     Q_REVISION(1,5) void pdfPrintingFinished(const QString &filePath, bool success);
-    Q_REVISION(1,7) void quotaRequested(const QWebEngineQuotaRequest &request);
+#if QT_DEPRECATED_SINCE(6, 5)
+    QT_DEPRECATED_VERSION_X_6_5("Requesting host quota is no longer supported.")
+    Q_REVISION(1, 7) void quotaRequested(const QWebEngineQuotaRequest &request);
+#endif
     Q_REVISION(1,7) void geometryChangeRequested(const QRect &geometry, const QRect &frameGeometry);
     Q_REVISION(1,7) void inspectedViewChanged();
     Q_REVISION(1,7) void devToolsViewChanged();

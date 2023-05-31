@@ -39,7 +39,7 @@ autofill::AutocompleteHistoryManager *AutofillClientQt::GetAutocompleteHistoryMa
 
 PrefService *AutofillClientQt::GetPrefs()
 {
-    return const_cast<PrefService *>(base::as_const(*this).GetPrefs());
+    return const_cast<PrefService *>(std::as_const(*this).GetPrefs());
 }
 
 const PrefService *AutofillClientQt::GetPrefs() const
@@ -113,7 +113,7 @@ bool AutofillClientQt::IsPasswordManagerEnabled()
     return false;
 }
 
-void AutofillClientQt::PropagateAutofillPredictions(content::RenderFrameHost *,
+void AutofillClientQt::PropagateAutofillPredictions(autofill::AutofillDriver *,
                                                     const std::vector<autofill::FormStructure *> &)
 {
     // For testing purposes only.

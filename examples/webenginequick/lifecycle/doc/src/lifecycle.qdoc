@@ -31,6 +31,9 @@
     window also has a \l {Drawer} for changing settings. The drawer can be
     opened by clicking the "⋮" button on the tool bar.
 
+    \note Note that \c {WebTab.qml} uses \l {QUrl::}
+    {fromUserInput} to handle incomplete URLs.
+
     \section1 Lifecycle States in the Example
 
     The example implements two ways of changing the lifecycle state: manual and

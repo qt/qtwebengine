@@ -4,7 +4,6 @@
 #include "custom_url_loader_factory.h"
 
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -64,7 +63,7 @@ public:
         scoped_refptr<URLRequestCustomJobProxy> proxy = new URLRequestCustomJobProxy(this, m_proxy->m_scheme, m_proxy->m_profileAdapter);
         m_proxy->m_client = nullptr;
 //        m_taskRunner->PostTask(FROM_HERE, base::BindOnce(&URLRequestCustomJobProxy::release, m_proxy));
-        base::PostTask(FROM_HERE, { content::BrowserThread::UI },
+        content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
                        base::BindOnce(&URLRequestCustomJobProxy::release, m_proxy));
         m_proxy = std::move(proxy);
         if (new_url)
@@ -87,7 +86,7 @@ private:
                     mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote,
                     QPointer<ProfileAdapter> profileAdapter)
         // ### We can opt to run the url-loader on the UI thread instead
-        : m_taskRunner(base::CreateSingleThreadTaskRunner({ content::BrowserThread::IO }))
+        : m_taskRunner(content::GetIOThreadTaskRunner({}))
         , m_proxy(new URLRequestCustomJobProxy(this, request.url.scheme(), profileAdapter))
         , m_receiver(this, std::move(loader))
         , m_client(std::move(client_remote))
@@ -151,7 +150,7 @@ private:
             m_firstBytePosition = m_byteRange.first_byte_position();
 
 //        m_taskRunner->PostTask(FROM_HERE,
-        base::PostTask(FROM_HERE, { content::BrowserThread::UI },
+        content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
                        base::BindOnce(&URLRequestCustomJobProxy::initialize, m_proxy,
                                       m_request.url, m_request.method, m_request.request_initiator, std::move(headers)));
     }
@@ -204,7 +203,7 @@ private:
             m_device->close();
         m_device = nullptr;
 //        m_taskRunner->PostTask(FROM_HERE, base::BindOnce(&URLRequestCustomJobProxy::release, m_proxy));
-        base::PostTask(FROM_HERE, { content::BrowserThread::UI },
+        content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
                        base::BindOnce(&URLRequestCustomJobProxy::release, m_proxy));
         if (!wait_for_loader_error || !m_receiver.is_bound())
             delete this;
@@ -286,8 +285,7 @@ private:
         m_head->mime_type = m_mimeType;
         m_head->charset = m_charset;
         m_headerBytesRead = m_head->headers->raw_headers().length();
-        m_client->OnReceiveResponse(std::move(m_head), mojo::ScopedDataPipeConsumerHandle());
-        m_client->OnStartLoadingResponseBody(std::move(m_pipeConsumerHandle));
+        m_client->OnReceiveResponse(std::move(m_head), std::move(m_pipeConsumerHandle), absl::nullopt);
         m_head = nullptr;
 
         m_watcher = std::make_unique<mojo::SimpleWatcher>(
@@ -337,7 +335,7 @@ private:
         m_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(net::HttpUtil::AssembleRawHeaders(headers));
         m_head->encoded_data_length = m_head->headers->raw_headers().length();
         m_head->content_length = m_head->encoded_body_length = -1;
-        m_client->OnReceiveResponse(std::move(m_head), mojo::ScopedDataPipeConsumerHandle());
+        m_client->OnReceiveResponse(std::move(m_head), mojo::ScopedDataPipeConsumerHandle(), absl::nullopt);
         CompleteWithFailure(net::Error(error));
     }
     void notifyReadyRead() override
@@ -447,7 +445,7 @@ private:
 class CustomURLLoaderFactory : public network::mojom::URLLoaderFactory {
 public:
     CustomURLLoaderFactory(ProfileAdapter *profileAdapter, mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
-        : m_taskRunner(base::CreateSequencedTaskRunner({ content::BrowserThread::IO }))
+        : m_taskRunner(content::GetIOThreadTaskRunner({}))
         , m_profileAdapter(profileAdapter)
     {
         m_receivers.set_disconnect_handler(base::BindRepeating(

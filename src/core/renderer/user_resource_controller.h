@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 
 #include <QtCore/QHash>
-#include <QtCore/QSet>
+#include <QtCore/QList>
 
 namespace blink {
 class WebLocalFrame;
@@ -18,7 +18,6 @@ class WebLocalFrame;
 
 namespace content {
 class RenderFrame;
-class RenderView;
 }
 
 namespace QtWebEngineCore {
@@ -47,7 +46,6 @@ private:
     void UnregisterMojoInterfaces(blink::AssociatedInterfaceRegistry *associated_interfaces) override;
 
     class RenderFrameObserverHelper;
-    class RenderViewObserverHelper;
 
     void AddScript(const QtWebEngineCore::UserScriptData &data) override;
     void RemoveScript(const QtWebEngineCore::UserScriptData &data) override;
@@ -55,12 +53,13 @@ private:
 
     void runScripts(QtWebEngineCore::UserScriptData::InjectionPoint, blink::WebLocalFrame *);
 
-    typedef QList<uint64_t> UserScriptSet;
-    typedef QHash<const content::RenderFrame *, UserScriptSet> FrameUserScriptMap;
+    typedef QList<uint64_t> UserScriptList;
+    typedef QHash<const content::RenderFrame *, UserScriptList> FrameUserScriptMap;
     FrameUserScriptMap m_frameUserScriptMap;
     QHash<uint64_t, QtWebEngineCore::UserScriptData> m_scripts;
     mojo::AssociatedReceiver<qtwebengine::mojom::UserResourceController> m_binding;
     friend class RenderFrameObserverHelper;
 };
-} // namespace
+
+} // namespace QtWebEngineCore
 #endif // USER_RESOURCE_CONTROLLER_H

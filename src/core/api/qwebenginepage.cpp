@@ -17,7 +17,6 @@
 #include "qwebenginenewwindowrequest_p.h"
 #include "qwebengineprofile.h"
 #include "qwebengineprofile_p.h"
-#include "qwebenginequotarequest.h"
 #include "qwebengineregisterprotocolhandlerrequest.h"
 #include "qwebenginescript.h"
 #include "qwebenginescriptcollection_p.h"
@@ -34,6 +33,7 @@
 #include "render_widget_host_view_qt_delegate.h"
 #include "render_widget_host_view_qt_delegate_client.h"
 #include "render_widget_host_view_qt_delegate_item.h"
+#include "touch_selection_menu_controller.h"
 #include "web_contents_adapter.h"
 
 #include <QAction>
@@ -502,12 +502,6 @@ void QWebEnginePagePrivate::runMouseLockPermissionRequest(const QUrl &securityOr
     Q_EMIT q->featurePermissionRequested(securityOrigin, QWebEnginePage::MouseLock);
 }
 
-void QWebEnginePagePrivate::runQuotaRequest(QWebEngineQuotaRequest request)
-{
-    Q_Q(QWebEnginePage);
-    Q_EMIT q->quotaRequested(request);
-}
-
 void QWebEnginePagePrivate::runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest request)
 {
     Q_Q(QWebEnginePage);
@@ -742,12 +736,13 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 /*!
     \fn QWebEnginePage::quotaRequested(QWebEngineQuotaRequest quotaRequest)
     \since 5.11
+    \deprecated [6.5] This signal is no longer emitted.
 
-    This signal is emitted when the web page requests larger persistent storage
-    than the application's current allocation in File System API. The default quota
-    is 0 bytes.
+    Requesting host quota is no longer supported by Chromium.
+    The behavior of navigator.webkitPersistentStorage
+    is identical to navigator.webkitTemporaryStorage.
 
-    The request object \a quotaRequest can be used to accept or reject the request.
+    For further details, see https://crbug.com/1233525
 */
 
 /*!
@@ -1658,6 +1653,31 @@ void QWebEnginePagePrivate::printRequested()
         view->printRequested();
 }
 
+QtWebEngineCore::TouchHandleDrawableDelegate *
+QWebEnginePagePrivate::createTouchHandleDelegate(const QMap<int, QImage> &images)
+{
+    return view->createTouchHandleDelegate(images);
+}
+
+void QWebEnginePagePrivate::showTouchSelectionMenu(
+        QtWebEngineCore::TouchSelectionMenuController *controller, const QRect &selectionBounds,
+        const QSize &handleSize)
+{
+    Q_UNUSED(handleSize);
+
+    if (controller->buttonCount() == 1) {
+        controller->runContextMenu();
+        return;
+    }
+
+    view->showTouchSelectionMenu(controller, selectionBounds);
+}
+
+void QWebEnginePagePrivate::hideTouchSelectionMenu()
+{
+    view->hideTouchSelectionMenu();
+}
+
 void QWebEnginePagePrivate::lifecycleStateChanged(LifecycleState state)
 {
     Q_Q(QWebEnginePage);
@@ -1979,7 +1999,10 @@ void QWebEnginePage::runJavaScript(const QString& scriptSource, const std::funct
         return;
     }
     quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, QWebEngineScript::MainWorld);
-    d->m_variantCallbacks.insert(requestId, resultCallback);
+    if (requestId)
+        d->m_variantCallbacks.insert(requestId, resultCallback);
+    else if (resultCallback)
+        resultCallback(QVariant());
 }
 
 void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId, const std::function<void(const QVariant &)> &resultCallback)
@@ -1994,7 +2017,10 @@ void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId,
     }
     if (resultCallback) {
         quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, worldId);
-        d->m_variantCallbacks.insert(requestId, resultCallback);
+        if (requestId)
+            d->m_variantCallbacks.insert(requestId, resultCallback);
+        else
+            resultCallback(QVariant());
     } else {
         d->adapter->runJavaScript(scriptSource, worldId);
     }
@@ -2228,6 +2254,9 @@ QSizeF QWebEnginePage::contentsSize() const
     To be informed about the result of the request, connect to the signal
     pdfPrintingFinished().
 
+    \note The \l QWebEnginePage::Stop web action can be used to interrupt
+    this asynchronous operation.
+
     If a file already exists at the provided file path, it will be overwritten.
     \sa pdfPrintingFinished()
 */
@@ -2252,6 +2281,8 @@ void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &layo
 
     The \a resultCallback must take a const reference to a QByteArray as parameter. If printing was successful, this byte array
     will contain the PDF data, otherwise, the byte array will be empty.
+
+    \note The \l QWebEnginePage::Stop web action can be used to interrupt this operation.
 
     \warning We guarantee that the callback (\a resultCallback) is always called, but it might be done
     during page destruction. When QWebEnginePage is deleted, the callback is triggered with an invalid

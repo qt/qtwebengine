@@ -21,7 +21,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -143,7 +142,7 @@ void ExtensionSystemQt::LoadExtension(std::string extension_id, std::unique_ptr<
     if (!extension.get())
         LOG(ERROR) << error;
 
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(FROM_HERE,
             base::BindOnce(&InfoMap::AddExtension,
                            base::Unretained(info_map()),
                            base::RetainedRef(extension),
@@ -378,8 +377,7 @@ void ExtensionSystemQt::RegisterExtensionWithRequestContexts(const Extension *ex
     bool incognito_enabled = false;
     bool notifications_disabled = false;
 
-    base::PostTaskAndReply(
-            FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(FROM_HERE,
             base::BindOnce(&InfoMap::AddExtension, info_map(),
                            base::RetainedRef(extension), install_time, incognito_enabled,
                            notifications_disabled),
@@ -388,8 +386,7 @@ void ExtensionSystemQt::RegisterExtensionWithRequestContexts(const Extension *ex
 
 void ExtensionSystemQt::UnregisterExtensionWithRequestContexts(const std::string &extension_id)
 {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(FROM_HERE,
         base::BindOnce(&InfoMap::RemoveExtension, info_map(), extension_id));
 }
 

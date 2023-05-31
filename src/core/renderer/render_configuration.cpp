@@ -7,7 +7,6 @@
 // found in the LICENSE file.
 
 #include "renderer/render_configuration.h"
-#include "user_resource_controller.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 
 namespace QtWebEngineCore {
@@ -17,7 +16,7 @@ bool RenderConfiguration::m_isIncognitoProcess = false;
 void RenderConfiguration::RegisterMojoInterfaces(
         blink::AssociatedInterfaceRegistry *associated_interfaces)
 {
-    associated_interfaces->AddInterface(
+    associated_interfaces->AddInterface<qtwebengine::mojom::RendererConfiguration>(
             base::BindRepeating(&RenderConfiguration::OnRendererConfigurationAssociatedRequest,
                                 base::Unretained(this)));
 }

@@ -16,12 +16,8 @@
 
 namespace ui {
 
-bool GLOzoneGLXQt::InitializeGLOneOffPlatform() {
-    if (!gl::GLSurfaceGLXQt::InitializeOneOff()) {
-        LOG(ERROR) << "GLSurfaceGLXQt::InitializeOneOff failed.";
-        return false;
-    }
-    return true;
+gl::GLDisplay *GLOzoneGLXQt::InitializeGLOneOffPlatform(uint64_t system_device_id) {
+    return gl::GLSurfaceGLXQt::InitializeOneOff(system_device_id);
 }
 
 bool GLOzoneGLXQt::InitializeStaticGLBindings(
@@ -65,7 +61,7 @@ void GLOzoneGLXQt::SetDisabledExtensionsPlatform(
     gl::SetDisabledExtensionsGLX(disabled_extensions);
 }
 
-void GLOzoneGLXQt::ShutdownGL() {
+void GLOzoneGLXQt::ShutdownGL(gl::GLDisplay *) {
     gl::ClearBindingsGL();
     gl::ClearBindingsGLX();
 }
@@ -86,16 +82,19 @@ scoped_refptr<gl::GLContext> GLOzoneGLXQt::CreateGLContext(
 }
 
 scoped_refptr<gl::GLSurface> GLOzoneGLXQt::CreateViewGLSurface(
+        gl::GLDisplay* display,
         gfx::AcceleratedWidget window) {
     return nullptr;
 }
 
 scoped_refptr<gl::GLSurface> GLOzoneGLXQt::CreateSurfacelessViewGLSurface(
+        gl::GLDisplay* display,
         gfx::AcceleratedWidget window) {
     return nullptr;
 }
 
 scoped_refptr<gl::GLSurface> GLOzoneGLXQt::CreateOffscreenGLSurface(
+        gl::GLDisplay* display,
         const gfx::Size& size) {
     scoped_refptr<gl::GLSurface> surface = new gl::GLSurfaceGLXQt(size);
     if (surface->Initialize(gl::GLSurfaceFormat()))
@@ -104,7 +103,19 @@ scoped_refptr<gl::GLSurface> GLOzoneGLXQt::CreateOffscreenGLSurface(
     return nullptr;
 }
 
-bool GLOzoneGLXQt::InitializeExtensionSettingsOneOffPlatform()
+bool GLOzoneGLXQt::CanImportNativePixmap()
+{
+    return false;
+}
+
+std::unique_ptr<ui::NativePixmapGLBinding> GLOzoneGLXQt::ImportNativePixmap(
+        scoped_refptr<gfx::NativePixmap>, gfx::BufferFormat, gfx::BufferPlane,
+        gfx::Size, const gfx::ColorSpace&, GLenum, GLuint)
+{
+    return nullptr;
+}
+
+bool GLOzoneGLXQt::InitializeExtensionSettingsOneOffPlatform(gl::GLDisplay *)
 {
     return gl::GLSurfaceGLXQt::InitializeExtensionSettingsOneOff();
 }

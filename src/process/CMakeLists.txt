@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 if(NOT DEFINED WEBENGINE_ROOT_SOURCE_DIR)
     get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../.." REALPATH)
 endif()
@@ -66,6 +69,7 @@ if(isFramework)
     set_target_properties(${qtWebEngineProcessName} PROPERTIES
         MACOSX_BUNDLE TRUE
         INSTALL_RPATH "@loader_path/../../../../../../../"
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info_mac.plist.in"
     )
 
     target_sources(${qtWebEngineProcessName} PRIVATE QtWebEngineProcess.entitlements)

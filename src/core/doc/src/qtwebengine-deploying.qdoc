@@ -138,4 +138,47 @@
     QTQUICK_COMPILER_SKIPPED_RESOURCES += resources/my_resource.qrc
     \endcode
 
+    \section2 \macos Specific Deployment Steps
+
+    To deploy a \QWE application that accesses the microphone or camera
+    on \macos, you will need to provide texts for the messages that will be shown to the user to
+    explain why the application asks for permission to access to the camera or microphone.
+    To do this, add the texts to the application's \c Info.plist file using the keys
+    described below.
+
+    For the camera usage message, provide a text using the following key:
+    \code
+    <key>NSCameraUsageDescription</key>
+    <string>Your message text for camera usage.</string>
+    \endcode
+
+    \sa \l{https://developer.apple.com/documentation/bundleresources/information_property_list/nscamerausagedescription} {Apple's property list file documentation}
+
+    For the microphone usage message, provide a text using the following key:
+    \code
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Your message text for microphone usage.</string>
+    \endcode
+
+    \sa \l{https://developer.apple.com/documentation/bundleresources/information_property_list/nsmicrophoneusagedescription} {Apple's property list file documentation}
+
+    To notarize an application that accesses the camera or the microphone,
+    you will need to add the corresponding keys to your application's entitlements file used for
+    deployment and notarization.
+
+    To enable access to the camera, add:
+    \code
+    <key>com.apple.security.device.camera</key>
+    <true/>
+    \endcode
+
+    \sa \l{https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_device_camera} {Apple's camera entitlement documentation}.
+
+    To enable access to the microphone, add:
+    \code
+    <key>com.apple.security.device.microphone</key>
+    <true/>
+    \endcode
+
+    /sa \l{https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_device_microphone} {Apple's microphone entitlement documentation}.
 */

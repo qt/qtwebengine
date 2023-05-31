@@ -23,6 +23,7 @@ private slots:
 #if QT_CONFIG(webengine_system_poppler)
     void printToPdfPoppler();
 #endif
+    void interruptPrinting();
 };
 
 void tst_Printing::printToPdfBasic()
@@ -117,6 +118,19 @@ void tst_Printing::printToPdfPoppler()
 }
 #endif
 
+void tst_Printing::interruptPrinting()
+{
+    QWebEngineView view;
+    QSignalSpy spy(&view, &QWebEngineView::loadFinished);
+    view.load(QUrl("qrc:///resources/basic_printing_page.html"));
+    QTRY_VERIFY(spy.size() == 1);
+
+    QTemporaryDir tempDir(QDir::tempPath() + "/tst_qwebengineview-XXXXXX");
+    QVERIFY(tempDir.isValid());
+    view.page()->printToPdf(tempDir.path() + "/file.pdf");
+    // Navigation stop interrupts print job, preferably do this without crash/assert
+    view.page()->triggerAction(QWebEnginePage::Stop);
+}
 
 QTEST_MAIN(tst_Printing)
 #include "tst_printing.moc"

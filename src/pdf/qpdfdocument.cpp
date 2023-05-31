@@ -824,22 +824,6 @@ QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions
     result.fill(Qt::transparent);
     FPDF_BITMAP bitmap = FPDFBitmap_CreateEx(result.width(), result.height(), FPDFBitmap_BGRA, result.bits(), result.bytesPerLine());
 
-    int rotation = 0;
-    switch (renderOptions.rotation()) {
-    case QPdfDocumentRenderOptions::Rotation::None:
-        rotation = 0;
-        break;
-    case QPdfDocumentRenderOptions::Rotation::Clockwise90:
-        rotation = 1;
-        break;
-    case QPdfDocumentRenderOptions::Rotation::Clockwise180:
-        rotation = 2;
-        break;
-    case QPdfDocumentRenderOptions::Rotation::Clockwise270:
-        rotation = 3;
-        break;
-    }
-
     const QPdfDocumentRenderOptions::RenderFlags renderFlags = renderOptions.renderFlags();
     int flags = 0;
     if (renderFlags & QPdfDocumentRenderOptions::RenderFlag::Annotations)
@@ -885,6 +869,7 @@ QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions
         qCDebug(qLcDoc) << "page" << page << "region" << renderOptions.scaledClipRect()
                         << "size" << imageSize << "took" << timer.elapsed() << "ms";
     } else {
+        const auto rotation = QPdfDocumentPrivate::toFPDFRotation(renderOptions.rotation());
         FPDF_RenderPageBitmap(bitmap, pdfPage, 0, 0, result.width(), result.height(), rotation, flags);
         qCDebug(qLcDoc) << "page" << page << "size" << imageSize << "took" << timer.elapsed() << "ms";
     }

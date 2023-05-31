@@ -13,6 +13,7 @@
 
 #include <QMutex>
 #include <QPainter>
+#include <QQuickWindow>
 
 namespace QtWebEngineCore {
 
@@ -20,7 +21,7 @@ class DisplaySoftwareOutputSurface::Device final : public viz::SoftwareOutputDev
                                                    public Compositor
 {
 public:
-    Device();
+    Device(bool requiresAlpha);
 
     // Overridden from viz::SoftwareOutputDevice.
     void Resize(const gfx::Size &sizeInPixels, float devicePixelRatio) override;
@@ -28,23 +29,27 @@ public:
 
     // Overridden from Compositor.
     void swapFrame() override;
-    QImage image() override;
+    QSGTexture *texture(QQuickWindow *win, uint32_t) override;
+    bool textureIsFlipped() override;
     float devicePixelRatio() override;
     QSize size() override;
-    bool hasAlphaChannel() override;
+    bool requiresAlphaChannel() override;
 
 private:
     mutable QMutex m_mutex;
     float m_devicePixelRatio = 1.0;
+    bool m_requiresAlpha;
     scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
     SwapBuffersCallback m_swapCompletionCallback;
     QImage m_image;
     float m_imageDevicePixelRatio = 1.0;
 };
 
-DisplaySoftwareOutputSurface::Device::Device()
+DisplaySoftwareOutputSurface::Device::Device(bool requiresAlpha)
     : Compositor(Type::Software)
-{}
+    , m_requiresAlpha(requiresAlpha)
+{
+}
 
 void DisplaySoftwareOutputSurface::Device::Resize(const gfx::Size &sizeInPixels, float devicePixelRatio)
 {
@@ -107,9 +112,14 @@ void DisplaySoftwareOutputSurface::Device::swapFrame()
     m_taskRunner.reset();
 }
 
-QImage DisplaySoftwareOutputSurface::Device::image()
+QSGTexture *DisplaySoftwareOutputSurface::Device::texture(QQuickWindow *win, uint32_t)
 {
-    return m_image;
+    return win->createTextureFromImage(m_image);
+}
+
+bool DisplaySoftwareOutputSurface::Device::textureIsFlipped()
+{
+    return false;
 }
 
 float DisplaySoftwareOutputSurface::Device::devicePixelRatio()
@@ -122,13 +132,13 @@ QSize DisplaySoftwareOutputSurface::Device::size()
     return m_image.size();
 }
 
-bool DisplaySoftwareOutputSurface::Device::hasAlphaChannel()
+bool DisplaySoftwareOutputSurface::Device::requiresAlphaChannel()
 {
-    return m_image.format() == QImage::Format_ARGB32_Premultiplied;
+    return m_requiresAlpha;
 }
 
-DisplaySoftwareOutputSurface::DisplaySoftwareOutputSurface()
-    : SoftwareOutputSurface(std::make_unique<Device>())
+DisplaySoftwareOutputSurface::DisplaySoftwareOutputSurface(bool requiresAlpha)
+    : SoftwareOutputSurface(std::make_unique<Device>(requiresAlpha))
 {}
 
 DisplaySoftwareOutputSurface::~DisplaySoftwareOutputSurface() {}

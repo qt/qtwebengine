@@ -2,6 +2,7 @@ TEMPLATE = app
 
 QT += quickcontrols2 webenginequick
 
+HEADERS += utils.h
 SOURCES += main.cpp
 
 RESOURCES += resources.qrc

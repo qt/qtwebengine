@@ -6,11 +6,7 @@
 
 #include <QtGui/qaccessible.h>
 
-#if QT_CONFIG(accessibility)
-
 namespace QtWebEngineCore {
-
-class RenderWidgetHostViewQt;
 
 class AccessibilityActivationObserver : public QAccessible::ActivationObserver
 {
@@ -22,7 +18,5 @@ public:
 };
 
 } // namespace QtWebEngineCore
-
-#endif // QT_CONFIG(accessibility)
 
 #endif // ACCESSIBILITY_ACTIVATION_OBSERVER_H

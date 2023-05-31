@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 set(qml_files
     "AlertDialog.qml"
     "AuthenticationDialog.qml"

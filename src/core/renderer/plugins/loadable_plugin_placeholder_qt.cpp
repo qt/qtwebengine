@@ -40,11 +40,11 @@ LoadablePluginPlaceholderQt* LoadablePluginPlaceholderQt::CreateLoadableMissingP
 {
     std::string template_html(ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(IDR_BLOCKED_PLUGIN_HTML));
 
-    base::DictionaryValue values;
-    values.SetString("name", "");
-    values.SetString("message", l10n_util::GetStringUTF8(IDS_PLUGIN_NOT_SUPPORTED));
+    base::Value::Dict values;
+    values.Set("name", "");
+    values.Set("message", l10n_util::GetStringUTF8(IDS_PLUGIN_NOT_SUPPORTED));
 
-    const std::string html_data = webui::GetI18nTemplateHtml(template_html, &values);
+    const std::string html_data = webui::GetI18nTemplateHtml(template_html, std::move(values));
 
     // Will destroy itself when its WebViewPlugin is going away.
     return new LoadablePluginPlaceholderQt(render_frame, params, html_data, params.mime_type.Utf16());

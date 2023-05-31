@@ -7,8 +7,10 @@
 
 #include "gl_context_qt.h"
 #include "ozone/gl_surface_glx_qt.h"
+
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_display.h"
+#include "ui/gl/gl_display_manager.h"
 #include "ui/gl/gl_surface_glx.h"
 
 namespace gl {
@@ -86,37 +88,37 @@ GLSurfaceGLXQt::~GLSurfaceGLXQt()
     Destroy();
 }
 
-bool GLSurfaceGLXQt::InitializeOneOff()
+GLDisplay *GLSurfaceGLXQt::InitializeOneOff(uint64_t system_device_id)
 {
     if (s_initialized)
-        return true;
+        return g_display;
 
-    g_display = new GLDisplayX11();
+    g_display = GLDisplayManagerX11::GetInstance()->GetDisplay(system_device_id);
     if (!g_display->GetDisplay()) {
         LOG(ERROR) << "GLContextHelper::getXDisplay() failed.";
-        return false;
+        return nullptr;
     }
 
     g_config = GLContextHelper::getGlXConfig();
     if (!g_config) {
         LOG(ERROR) << "GLContextHelper::getGlxConfig() failed.";
-        return false;
+        return nullptr;
     }
 
     Display* display = static_cast<Display*>(g_display->GetDisplay());
     int major, minor;
     if (!glXQueryVersion(display, &major, &minor)) {
         LOG(ERROR) << "glxQueryVersion failed.";
-        return false;
+        return nullptr;
     }
 
     if (major == 1 && minor < 3) {
         LOG(ERROR) << "GLX 1.3 or later is required.";
-        return false;
+        return nullptr;
     }
 
     s_initialized = true;
-    return true;
+    return g_display;
 }
 
 

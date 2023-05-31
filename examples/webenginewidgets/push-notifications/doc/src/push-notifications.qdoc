@@ -1,0 +1,202 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+
+\example webenginewidgets/push-notifications
+\title WebEngine Push Notifications Example
+\ingroup webengine-widgetexamples
+\brief Demonstrates how to subscribe to and unsubscribe from push notifications.
+
+In this example we are going to send push notifications from a web push service to the user.
+This is the typical scenario where messages are sent from the application server i.e. website
+back-end through a 3rd-party push service, to finally arrive at the user's browser in form of
+notifications. To demonstrate this flow, we will implement a simple push service server
+application, to which the user can subscribe to receive \e ping messages.
+
+As already mentioned, in such a workflow there are three different parties involved:
+
+\list
+    \li the user's web browser where they receive push notifications
+    \li 3rd-party push service, which is defined by a subscription endpoint and is a part
+    of a browser's push service implementation
+    \li application server, which will store user's subscriptions and initiate push messages
+    using a subscription endpoint
+\endlist
+
+The user visits a website, where a JavaScript web application uses the JavaScript Push API
+to create a push notification subscription. The user is then asked to grant a permission
+to receive and display push notifications. Once accepted, the Push API establishes a push channel
+with a 3rd-party push service, which in case of QtWebEngine is \l {https://firebase.google.com}
+{Firebase Cloud Messaging (FCM)}. The unique push subscription is created that
+includes the subscription endpoint URL. The browser then sends a subscription message
+to the application server forwarding the endpoint setup. The application server can now
+use the subscription endpoint to send notifications to the browser. The browser push service
+implementation will deliver a push message. However, to show it, a service worker must
+be registered. As the service worker runs in the background, it allows displaying notifications
+even if a website, which has installed it, is no longer opened.
+
+\image push-notifications.png
+
+Let's go more into implementation details. We start with implementing our custom
+push service using NodeJS with two modules:
+
+\list
+    \li \l {https://github.com/web-push-libs/web-push} {web-push} - provides the web-push protocol
+    implementation
+    \li \l {https://github.com/expressjs/express} {express} - provides the web application framework
+\endlist
+
+Let's initialize a new project and install the required modules in the root directory of this
+example:
+
+\snippet /push-notifications/commands 0
+
+These commands should create package.js, which defines the start command:
+
+\snippet /push-notifications/commands 1
+
+Now let's move on to the push service back-end implementation in server.js.
+
+We start by including the required modules and doing basic \e express framework setup, which
+we use to create our custom push server. For simplicity we are going to handle only one
+subscription at a time. To do that we need to create \e VAPID keys which we are going to
+generate with \e web-push libs. The public key is going to be used by the front-end and authenticate
+to the service.
+
+\quotefromfile webenginewidgets/push-notifications/server.js
+\skipto const express
+\printto add subscribe route
+
+\note We are not going to cover the encryption of messages in this example.
+
+To generate keys, we can use the tool shipped with \e web-push lib, that is installed by
+\c npm in our example's root directory.
+
+\snippet /push-notifications/commands 2
+
+Now we add two \c routes to the push server. One to \c subscribe and one to \c unsubscribe,
+so that our front-end can send an HTTP POST request to handle the push subscription.
+In the subscribe request we will get \c subscription in the request body and we also retrieve
+the custom header \c ping-time that defines how often the ping messages should be pushed to
+the user. We keep around the \c subscription to be able to send push notifications later.
+As a confirmation, we send the 201 status code and schedule the first push notification based on
+the \c ping-time value. The \c unsubscribe request simply removes a subscription.
+
+\quotefromfile webenginewidgets/push-notifications/server.js
+\skipto add subscribe route
+\printto function sendNotification
+
+The \c sendNotication() function sends push messages using the web-push lib. We create the payload
+with the message we want to present to a user and schedule the next push message.
+
+\quotefromfile webenginewidgets/push-notifications/server.js
+\skipto function sendNotification
+\printto server.listen
+
+In the end we start the server to listen on the given port.
+
+\quotefromfile webenginewidgets/push-notifications/server.js
+\skipto server.listen
+\printline started
+
+Let's move now to our front-end. We create a simple page index.html, where the user can enter how
+often they want to receive ping notification messages. We will have two buttons:
+\e {Ping Me} to subscribe for push notifications and \e Clear to unsubscribe.
+In the end we load ping.js, which we cover next.
+
+\quotefromfile webenginewidgets/push-notifications/content/index.html
+\skipto <body>
+\printuntil </body>
+
+The last piece is creating the logic for the push subscription within the front-end. Here we have two
+functions, \c setup and \c clear, to handle subscriptions. When the user clicks on the \e {Ping Me}
+button, \c setup is called. To be able to receive notifications, the service worker is needed.
+This way the user can leave the website and still get notified as the service worker works
+in the background and handles incoming messages. To achieve that, we have to first register
+one with:
+
+\quotefromfile webenginewidgets/push-notifications/content/ping.js
+\skipto const register
+\printline worker.js
+
+The call to \c cpushManager.subscribe() will trigger a permission prompt, which is displayed to the
+user. If the permission is granted, the push subscription is returned. It includes a URL endpoint
+that allows sending notifications to the browser, where the registered service worker waits for
+push messages.
+
+\quotefromfile webenginewidgets/push-notifications/content/ping.js
+\skipto var subscription
+\printto console.log
+
+As mentioned the subscription is created for FCM and should be now sent to our custom server
+with an HTTP POST request. In addition, we add to the post request the HTTP header with the
+\c ping-time the user entered on our website.
+
+\quotefromfile webenginewidgets/push-notifications/content/ping.js
+\skipto await fetch
+\printto console.log
+
+The function \c clear call unsubscribes first from our push server by sending an HTTP POST request
+and later from the 3rd-party push service (FCM).
+
+\quotefromfile webenginewidgets/push-notifications/content/ping.js
+\skipuntil async function clear()
+\skipuntil {
+\printto console.log
+\dots
+\skipto await fetch
+\printto console.log
+\dots
+\skipto await subscription
+\printto console.log
+
+The rest of code in ping.js is just boilerplate code to read a user provided value
+and call \c setup() or \c clear().
+
+As the last part of the front-end let's look inside a service worker script, where we simply
+register an event listener for \e push events.
+
+\quotefromfile webenginewidgets/push-notifications/content/worker.js
+\skipto self
+\printuntil });
+\printuntil });
+
+When a push event comes we simply use the Notification JavaScript API to display a notification.
+
+\note QtWebEngine Notification Example shows how to provide your own handler and customize
+the look and feel of a notification message.
+
+Having the implementation in place, we can start the server on localhost at the port 5000.
+To do that, we can simply enter in the console in the project's root directory:
+
+\snippet /push-notifications/commands 3
+
+Now we can look into the \e push-notification browser application, which is based on
+\l {WebEngine Notifications Example}:
+
+\quotefromfile webenginewidgets/push-notifications/main.cpp
+\skipto main
+\printuntil app.exec
+\printuntil }
+
+This application simply opens the page at \c http:\\localhost:5000. We are not going into detail
+about how to open a notification as it is documented \l {WebEngine Notifications Example}{here}.
+However, you need to modify the application in two ways. First, \c QWebEngineProfile cannot be
+set to \e off-the-record because push messaging would be disabled. Therefore, as you can see
+above, \c  QWebEngineProfile is initialized with the name. Second, you need to enable push
+messaging with the call QWebEngineProfile::setPushServiceEnabled for the created \c profile.
+
+When the application runs it displays:
+
+\image website.png
+
+After granting the permission we can send our ping request:
+
+\image permissions.png
+
+We should see the coming push notification:
+
+\image notification.png
+
+*/

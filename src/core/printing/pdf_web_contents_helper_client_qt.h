@@ -18,10 +18,10 @@ public:
 private:
     // pdf::PDFWebContentsHelperClient:
     content::RenderFrameHost* FindPdfFrame(content::WebContents *contents) override;
-    void UpdateContentRestrictions(content::WebContents *contents, int content_restrictions) override {}
     void OnPDFHasUnsupportedFeature(content::WebContents *contents) override {}
     void OnSaveURL(content::WebContents *contents) override {}
-    void SetPluginCanSave(content::WebContents *contents, bool can_save) override;
+    void SetPluginCanSave(content::RenderFrameHost *render_frame_host, bool can_save) override;
+    void UpdateContentRestrictions(content::RenderFrameHost *, int) override;
 };
 
 #endif // PDF_WEB_CONTENTS_HELPER_CLIENT_QT_H

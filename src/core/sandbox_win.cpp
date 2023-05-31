@@ -11,7 +11,7 @@
 #endif
 
 namespace QtWebEngineSandbox {
-// A duplicate of the function by same name in startup_helper_win.cc
+// A duplicate of the function by same name in sandbox_helper_win.cc
 static void InitializeSandboxInfo(sandbox::SandboxInterfaceInfo *info)
 {
     info->broker_services = sandbox::SandboxFactory::GetBrokerServices();
@@ -19,7 +19,7 @@ static void InitializeSandboxInfo(sandbox::SandboxInterfaceInfo *info)
         info->target_services = sandbox::SandboxFactory::GetTargetServices();
     } else {
         // Ensure the proper mitigations are enforced for the browser process.
-        sandbox::ApplyProcessMitigationsToCurrentProcess(
+        info->broker_services->RatchetDownSecurityMitigations(
             sandbox::MITIGATION_DEP | sandbox::MITIGATION_DEP_NO_ATL_THUNK |
             sandbox::MITIGATION_HARDEN_TOKEN_IL_POLICY);
         // Note: these mitigations are "post-startup".  Some mitigations that need

@@ -10,6 +10,7 @@
 
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/renderer/render_frame.h"
+#include "third_party/blink/public/web/web_document_loader.h"
 
 #if QT_CONFIG(webengine_pepper_plugins)
 #include "base/memory/ptr_util.h"

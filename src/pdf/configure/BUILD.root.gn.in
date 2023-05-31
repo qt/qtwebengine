@@ -51,7 +51,7 @@ config("cpp17_config") {
 
 static_library("QtPdf") {
   complete_static_lib = true
-  rsp_types = [ "objects", "archives", "libs" ]
+  rsp_types = [ "objects", "archives", "libs", "lflags" ]
   configs += [
     ":cpp17_config",
     ":QtPdf_config"
@@ -59,4 +59,10 @@ static_library("QtPdf") {
   deps = [
     "//third_party/pdfium"
   ]
+  if (is_win) {
+    libs = [
+      "dloadhelper.lib",
+      "winmm.lib",
+    ]
+  }
 }

@@ -18,7 +18,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/webplugininfo.h"
-#include "net/base/escape.h"
+#include "base/strings/escape.h"
 #include "net/http/http_response_headers.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -69,12 +69,12 @@ bool IsPDFPluginEnabled(content::NavigationHandle *navigation_handle, bool *is_s
     if (web_contents->IsInnerWebContentsForGuest())
         web_contents = web_contents->GetOuterWebContents();
 
-    int process_id = web_contents->GetMainFrame()->GetProcess()->GetID();
-    int routing_id = web_contents->GetMainFrame()->GetRoutingID();
+    int process_id = web_contents->GetPrimaryMainFrame()->GetProcess()->GetID();
+    int routing_id = web_contents->GetPrimaryMainFrame()->GetRoutingID();
     content::WebPluginInfo plugin_info;
     // Will check WebEngineSettings by PluginServiceFilterQt
     return content::PluginService::GetInstance()->GetPluginInfo(
-                process_id, routing_id, navigation_handle->GetURL(),
+                process_id, routing_id, nullptr, navigation_handle->GetURL(),
                 kPDFMimeType,
                 false /* allow_wildcard */, is_stale, &plugin_info,
                 nullptr /* actual_mime_type */);
@@ -85,12 +85,12 @@ std::string GetPDFPlaceholderHTML(const GURL &pdf_url)
     std::string template_html = ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(IDR_PDF_PLUGIN_HTML);
     webui::AppendWebUiCssTextDefaults(&template_html);
 
-    base::DictionaryValue values;
-    values.SetString("fileName", pdf_url.ExtractFileName());
-    values.SetString("open", l10n_util::GetStringUTF8(IDS_ACCNAME_OPEN));
-    values.SetString("pdfUrl", pdf_url.spec());
+    base::Value::Dict values;
+    values.Set("fileName", pdf_url.ExtractFileName());
+    values.Set("open", l10n_util::GetStringUTF8(IDS_ACCNAME_OPEN));
+    values.Set("pdfUrl", pdf_url.spec());
 
-    return webui::GetI18nTemplateHtml(template_html, &values);
+    return webui::GetI18nTemplateHtml(template_html, std::move(values));
 }
 
 // static
@@ -167,7 +167,7 @@ void PDFIFrameNavigationThrottleQt::LoadPlaceholderHTML()
 {
     // Prepare the params to navigate to the placeholder.
     std::string html = GetPDFPlaceholderHTML(navigation_handle()->GetURL());
-    GURL data_url("data:text/html," + net::EscapePath(html));
+    GURL data_url("data:text/html," + base::EscapePath(html));
     content::OpenURLParams params = content::OpenURLParams::FromNavigationHandle(navigation_handle());
     params.url = data_url;
     params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;

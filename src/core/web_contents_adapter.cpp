@@ -8,6 +8,7 @@
 #include "web_contents_adapter.h"
 
 #include "autofill_client_qt.h"
+#include "content_browser_client_qt.h"
 #include "devtools_frontend_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "favicon_driver_qt.h"
@@ -27,13 +28,13 @@
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/task/current_thread.h"
-#include "base/task/post_task.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/values.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/embedder_support/user_agent_utils.h"
 #include "components/favicon/core/favicon_service.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/text_input_manager.h"
@@ -49,6 +50,7 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/drop_data.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/buildflags/buildflags.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/page_state/page_state.h"
@@ -59,6 +61,23 @@
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/font_render_params.h"
 #include "qtwebengine/browser/qtwebenginepage.mojom.h"
+
+#include <QtCore/QVariant>
+#include <QtCore/QElapsedTimer>
+#include <QtCore/QMimeData>
+#include <QtCore/QTemporaryDir>
+#include <QtGui/QDrag>
+#include <QtGui/QDragEnterEvent>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QPageLayout>
+#include <QtGui/QPixmap>
+#include <QtGui/QStyleHints>
+
+#if QT_CONFIG(accessibility)
+#include "browser_accessibility_qt.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
+#include <QtGui/qaccessible.h>
+#endif
 
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "components/pdf/browser/pdf_web_contents_helper.h"
@@ -74,22 +93,6 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/extension_web_contents_observer_qt.h"
 #endif
-
-#include <QtCore/QVariant>
-#include <QtCore/QElapsedTimer>
-#include <QtCore/QMimeData>
-#include <QtCore/QTemporaryDir>
-#include <QtGui/QDrag>
-#include <QtGui/QDragEnterEvent>
-#include <QtGui/QGuiApplication>
-#include <QtGui/QPageLayout>
-#include <QtGui/QPixmap>
-#include <QtGui/QStyleHints>
-
-// Can't include headers as qaccessible.h conflicts with Chromium headers.
-namespace content {
-extern QAccessibleInterface *toQAccessibleInterface(BrowserAccessibility *acc);
-}
 
 namespace QtWebEngineCore {
 
@@ -151,14 +154,10 @@ static QVariant fromJSValue(const base::Value *result)
     }
     case base::Value::Type::DICTIONARY:
     {
-        const base::DictionaryValue *out;
-        if (result->GetAsDictionary(&out)) {
+        if (const auto dict = result->GetIfDict()) {
             QVariantMap map;
-            base::DictionaryValue::Iterator it(*out);
-            while (!it.IsAtEnd()) {
-                map.insert(toQt(it.key()), fromJSValue(&it.value()));
-                it.Advance();
-            }
+            for (const auto pair : *dict)
+                map.insert(toQt(pair.first), fromJSValue(&pair.second));
             ret.setValue(map);
         }
         break;
@@ -394,7 +393,7 @@ QSharedPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavig
         // Set up the file access rights for the selected navigation entry.
         // TODO(joth): This is duplicated from chrome/.../session_restore.cc and
         // should be shared e.g. in  NavigationController. http://crbug.com/68222
-        const int id = newWebContents->GetMainFrame()->GetProcess()->GetID();
+        const int id = newWebContents->GetPrimaryMainFrame()->GetProcess()->GetID();
         const blink::PageState& pageState = controller.GetActiveEntry()->GetPageState();
         const std::vector<base::FilePath>& filePaths = pageState.GetReferencedFiles();
         for (std::vector<base::FilePath>::const_iterator file = filePaths.begin(); file != filePaths.end(); ++file)
@@ -487,7 +486,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     AutofillClientQt::CreateForWebContents(webContents());
     autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
             webContents(), AutofillClientQt::FromWebContents(webContents()),
-            /* app_locale = */ "", autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+             base::BindRepeating(&autofill::BrowserDriverInitHook, AutofillClientQt::FromWebContents(webContents()), ""));
 
 #if QT_CONFIG(webengine_printing_and_pdf) && QT_CONFIG(webengine_extensions)
     pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
@@ -503,7 +502,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     // Create a RenderView with the initial empty document
     content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
-    if (!m_webContents->GetMainFrame()->IsRenderFrameLive())
+    if (!m_webContents->GetPrimaryMainFrame()->IsRenderFrameLive())
         static_cast<content::WebContentsImpl*>(m_webContents.get())->CreateRenderViewForRenderManager(
                 rvh, absl::nullopt, nullptr);
 
@@ -522,6 +521,7 @@ void WebContentsAdapter::initializeRenderPrefs()
     rendererPrefs->caret_blink_interval =
             base::Milliseconds(0.5 * static_cast<double>(qtCursorFlashTime));
     rendererPrefs->user_agent_override = blink::UserAgentOverride::UserAgentOnly(m_profileAdapter->httpUserAgent().toStdString());
+    rendererPrefs->user_agent_override.ua_metadata_override = ContentBrowserClientQt::getUserAgentMetadata();
     rendererPrefs->accept_languages = m_profileAdapter->httpAcceptLanguageWithoutQualities().toStdString();
 #if QT_CONFIG(webengine_webrtc)
     base::CommandLine* commandLine = base::CommandLine::ForCurrentProcess();
@@ -586,7 +586,7 @@ void WebContentsAdapter::reload()
 
     bool wasDiscarded = (m_lifecycleState == LifecycleState::Discarded);
     setLifecycleState(LifecycleState::Active);
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetPrimaryMainFrame());
     WebEngineSettings *settings = WebEngineSettings::get(m_adapterClient->webEngineSettings());
     settings->doApply();
     if (!wasDiscarded) // undiscard() already triggers a reload
@@ -601,7 +601,7 @@ void WebContentsAdapter::reloadAndBypassCache()
 
     bool wasDiscarded = (m_lifecycleState == LifecycleState::Discarded);
     setLifecycleState(LifecycleState::Active);
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetPrimaryMainFrame());
     WebEngineSettings *settings = WebEngineSettings::get(m_adapterClient->webEngineSettings());
     settings->doApply();
     if (!wasDiscarded) // undiscard() already triggers a reload
@@ -633,7 +633,7 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
         setLifecycleState(LifecycleState::Active);
     }
 
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetPrimaryMainFrame());
 
     WebEngineSettings::get(m_adapterClient->webEngineSettings())->doApply();
 
@@ -707,7 +707,7 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
 
     if (resizeNeeded) {
         // Schedule navigation on the event loop.
-        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+        content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
                        base::BindOnce(&NavigateTask, sharedFromThis().toWeakRef(), std::move(params)));
     } else {
         Navigate(this, params);
@@ -721,7 +721,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     else
         setLifecycleState(LifecycleState::Active);
 
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetPrimaryMainFrame());
 
     WebEngineSettings::get(m_adapterClient->webEngineSettings())->doApply();
 
@@ -872,7 +872,7 @@ void WebContentsAdapter::navigateBack()
 {
     CHECK_INITIALIZED();
     base::RecordAction(base::UserMetricsAction("Back"));
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetPrimaryMainFrame());
     if (!m_webContents->GetController().CanGoBack())
         return;
     m_webContents->GetController().GoBack();
@@ -883,7 +883,7 @@ void WebContentsAdapter::navigateForward()
 {
     CHECK_INITIALIZED();
     base::RecordAction(base::UserMetricsAction("Forward"));
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetPrimaryMainFrame());
     if (!m_webContents->GetController().CanGoForward())
         return;
     m_webContents->GetController().GoForward();
@@ -893,7 +893,7 @@ void WebContentsAdapter::navigateForward()
 void WebContentsAdapter::navigateToIndex(int offset)
 {
     CHECK_INITIALIZED();
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetPrimaryMainFrame());
     m_webContents->GetController().GoToIndex(offset);
     focusIfNecessary();
 }
@@ -901,7 +901,7 @@ void WebContentsAdapter::navigateToIndex(int offset)
 void WebContentsAdapter::navigateToOffset(int offset)
 {
     CHECK_INITIALIZED();
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetPrimaryMainFrame());
     m_webContents->GetController().GoToOffset(offset);
     focusIfNecessary();
 }
@@ -979,7 +979,7 @@ void WebContentsAdapter::setZoomFactor(qreal factor)
     content::HostZoomMap *zoomMap = content::HostZoomMap::GetForWebContents(m_webContents.get());
 
     if (zoomMap) {
-        int render_process_id = m_webContents->GetMainFrame()->GetProcess()->GetID();
+        int render_process_id = m_webContents->GetPrimaryMainFrame()->GetProcess()->GetID();
         int render_view_id = m_webContents->GetRenderViewHost()->GetRoutingID();
         zoomMap->SetTemporaryZoomLevel(render_process_id, render_view_id, zoomLevel);
     }
@@ -1017,13 +1017,13 @@ QWebEngineUrlRequestInterceptor* WebContentsAdapter::requestInterceptor() const
 QAccessibleInterface *WebContentsAdapter::browserAccessible()
 {
     CHECK_INITIALIZED(nullptr);
-    content::RenderFrameHostImpl *rfh = static_cast<content::RenderFrameHostImpl *>(m_webContents->GetMainFrame());
+    content::RenderFrameHostImpl *rfh = static_cast<content::RenderFrameHostImpl *>(m_webContents->GetPrimaryMainFrame());
     if (!rfh)
         return nullptr;
     content::BrowserAccessibilityManager *manager = rfh->GetOrCreateBrowserAccessibilityManager();
     if (!manager) // FIXME!
         return nullptr;
-    content::BrowserAccessibility *acc = manager->GetRoot();
+    content::BrowserAccessibility *acc = manager->GetFromAXNode(manager->GetRoot());
 
     return content::toQAccessibleInterface(acc);
 }
@@ -1032,8 +1032,12 @@ QAccessibleInterface *WebContentsAdapter::browserAccessible()
 void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldId)
 {
     CHECK_INITIALIZED();
-    content::RenderFrameHost *rfh =  m_webContents->GetMainFrame();
+    content::RenderFrameHost *rfh =  m_webContents->GetPrimaryMainFrame();
     Q_ASSERT(rfh);
+    if (!static_cast<content::RenderFrameHostImpl*>(rfh)->GetAssociatedLocalFrame()) {
+        qWarning() << "Local frame is gone, not running script";
+        return;
+    }
     if (worldId == 0)
         rfh->ExecuteJavaScript(toString16(javaScript), base::NullCallback());
     else
@@ -1043,8 +1047,12 @@ void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldI
 quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScript, quint32 worldId)
 {
     CHECK_INITIALIZED(0);
-    content::RenderFrameHost *rfh =  m_webContents->GetMainFrame();
+    content::RenderFrameHost *rfh =  m_webContents->GetPrimaryMainFrame();
     Q_ASSERT(rfh);
+    if (!static_cast<content::RenderFrameHostImpl*>(rfh)->GetAssociatedLocalFrame()) {
+        qWarning() << "Local frame is gone, not running script";
+        return 0;
+    }
     content::RenderFrameHost::JavaScriptResultCallback callback = base::BindOnce(&callbackOnEvaluateJS, m_adapterClient, m_nextRequestId);
     if (worldId == 0)
         rfh->ExecuteJavaScript(toString16(javaScript), std::move(callback));
@@ -1155,7 +1163,7 @@ qint64 WebContentsAdapter::renderProcessPid() const
 {
     CHECK_INITIALIZED(0);
 
-    content::RenderProcessHost *renderProcessHost = m_webContents->GetMainFrame()->GetProcess();
+    content::RenderProcessHost *renderProcessHost = m_webContents->GetPrimaryMainFrame()->GetProcess();
     const base::Process &process = renderProcessHost->GetProcess();
     if (!process.IsValid())
         return 0;
@@ -1165,7 +1173,7 @@ qint64 WebContentsAdapter::renderProcessPid() const
 void WebContentsAdapter::copyImageAt(const QPoint &location)
 {
     CHECK_INITIALIZED();
-    m_webContents->GetMainFrame()->CopyImageAt(location.x(), location.y());
+    m_webContents->GetPrimaryMainFrame()->CopyImageAt(location.x(), location.y());
 }
 
 static blink::mojom::MediaPlayerActionType toBlinkMediaPlayerActionType(WebContentsAdapter::MediaPlayerAction action)
@@ -1192,7 +1200,7 @@ void WebContentsAdapter::executeMediaPlayerActionAt(const QPoint &location, Medi
     if (action == MediaPlayerNoAction)
         return;
     blink::mojom::MediaPlayerAction blinkAction(toBlinkMediaPlayerActionType(action), enable);
-    m_webContents->GetMainFrame()->ExecuteMediaPlayerActionAtLocation(toGfx(location), blinkAction);
+    m_webContents->GetPrimaryMainFrame()->ExecuteMediaPlayerActionAtLocation(toGfx(location), blinkAction);
 }
 
 void WebContentsAdapter::inspectElementAt(const QPoint &location)
@@ -1815,7 +1823,7 @@ void WebContentsAdapter::viewSource()
 {
     CHECK_INITIALIZED();
     base::RecordAction(base::UserMetricsAction("ViewSource"));
-    m_webContents->GetMainFrame()->ViewSource();
+    m_webContents->GetPrimaryMainFrame()->ViewSource();
 }
 
 bool WebContentsAdapter::canViewSource()
@@ -2002,7 +2010,7 @@ void WebContentsAdapter::discard()
     nullContents->SetWasDiscarded(true);
 
     // Kill render process if this is the only page it's got.
-    content::RenderProcessHost *renderProcessHost = m_webContents->GetMainFrame()->GetProcess();
+    content::RenderProcessHost *renderProcessHost = m_webContents->GetPrimaryMainFrame()->GetProcess();
     renderProcessHost->FastShutdownIfPossible(/* page_count */ 1u,
                                               /* skip_unload_handlers */ false);
 
@@ -2039,7 +2047,7 @@ void WebContentsAdapter::undiscard()
     // Create a RenderView with the initial empty document
     content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
-    if (!m_webContents->GetMainFrame()->IsRenderFrameLive())
+    if (!m_webContents->GetPrimaryMainFrame()->IsRenderFrameLive())
         static_cast<content::WebContentsImpl *>(m_webContents.get())
                 ->CreateRenderViewForRenderManager(rvh, absl::nullopt, nullptr);
     m_webContentsDelegate->RenderViewHostChanged(nullptr, rvh);

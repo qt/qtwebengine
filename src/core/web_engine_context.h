@@ -21,7 +21,6 @@ class CommandLine;
 namespace content {
 class BrowserMainRunner;
 class ContentMainRunner;
-class GpuProcess;
 class GpuThreadController;
 class InProcessChildThreadParams;
 class MojoIpcSupport;
@@ -33,7 +32,6 @@ class DiscardableSharedMemoryManager;
 
 namespace gpu {
 struct GpuPreferences;
-class SyncPointManager;
 }
 
 #if QT_CONFIG(webengine_printing_and_pdf)
@@ -86,8 +84,6 @@ public:
     static base::CommandLine *initCommandLine(bool &useEmbeddedSwitches,
                                               bool &enableGLSoftwareRendering);
 
-    static gpu::SyncPointManager *syncPointManager();
-
     static bool isGpuServiceOnUIThread();
 
 private:
@@ -122,7 +118,6 @@ private:
     static scoped_refptr<QtWebEngineCore::WebEngineContext> m_handle;
     static bool m_destroyed;
     static bool m_closingDown;
-    static QAtomicPointer<gpu::SyncPointManager> s_syncPointManager;
 };
 
 } // namespace

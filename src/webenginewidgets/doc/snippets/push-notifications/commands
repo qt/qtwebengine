@@ -1,0 +1,19 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+
+//! [0]
+npm init -y
+npm install web-push express
+//! [0]
+
+//! [1]
+"start": "node server.js"
+//! [1]
+
+//! [2]
+./node_odules/.bin/web-push generate-vapid-keys
+//! [2]
+
+//! [3]
+npm start
+//! [3]

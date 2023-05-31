@@ -180,6 +180,12 @@ void QPdfLinkModelPrivate::update()
             qCWarning(qLcLink) << "skipping link with invalid bounding box";
             continue; // while enumerating links
         }
+        // In case horizontal/vertical coordinates are flipped, swap them.
+        if (rect.right < rect.left)
+            std::swap(rect.right, rect.left);
+        if (rect.bottom > rect.top)
+            std::swap(rect.bottom, rect.top);
+
         QPdfLink linkData;
         linkData.d->rects << QRectF(rect.left, pageHeight - rect.top,
                                rect.right - rect.left, rect.top - rect.bottom);

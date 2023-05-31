@@ -12,18 +12,16 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_client.h"
-#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/web_contents_accessibility.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 
-QT_FORWARD_DECLARE_CLASS(QAccessibleInterface)
-
 namespace content {
 class RenderFrameHost;
 class RenderWidgetHostImpl;
+class WebContents;
 }
 
 namespace ui {
@@ -33,7 +31,7 @@ class TouchSelectionController;
 namespace QtWebEngineCore {
 
 class RenderWidgetHostViewQtDelegateClient;
-class GuestInputEventObserverQt;
+class InputEventObserverQt;
 class TouchSelectionControllerClientQt;
 class WebContentsAccessibilityQt;
 class WebContentsAdapterClient;
@@ -44,6 +42,7 @@ class RenderWidgetHostViewQt
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
     , public content::TextInputManager::Observer
     , public content::RenderFrameMetadataProvider::Observer
+    , public content::RenderWidgetHost::InputEventObserver
 {
 public:
     RenderWidgetHostViewQt(content::RenderWidgetHost* widget);
@@ -54,14 +53,14 @@ public:
     WebContentsAdapterClient *adapterClient() { return m_adapterClient; }
     void setAdapterClient(WebContentsAdapterClient *adapterClient);
     RenderWidgetHostViewQtDelegateClient *delegateClient() const { return m_delegateClient.get(); }
-    void addGuest(content::RenderWidgetHost *);
 
+    // Overridden from RenderWidgetHostView:
     void InitAsChild(gfx::NativeView) override;
     void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&, const gfx::Rect&) override;
     void SetSize(const gfx::Size& size) override;
     void SetBounds(const gfx::Rect&) override;
     gfx::NativeView GetNativeView() override;
-    gfx::NativeViewAccessible GetNativeViewAccessible() override;
+    gfx::NativeViewAccessible GetNativeViewAccessible() override { return nullptr; }
     void Focus() override;
     bool HasFocus() override;
     bool IsMouseLocked() override;
@@ -94,7 +93,8 @@ public:
     void WheelEventAck(const blink::WebMouseWheelEvent &event,
                        blink::mojom::InputEventResultState ack_result) override;
     void GestureEventAck(const blink::WebGestureEvent &event,
-                         blink::mojom::InputEventResultState ack_result) override;
+                         blink::mojom::InputEventResultState ack_result,
+                         blink::mojom::ScrollResultDataPtr scroll_result_data) override;
     content::MouseWheelPhaseHandler *GetMouseWheelPhaseHandler() override;
     viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(const cc::RenderFrameMetadata &metadata) override;
     void OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata);
@@ -118,6 +118,7 @@ public:
     ui::Compositor *GetCompositor() override;
     absl::optional<content::DisplayFeature> GetDisplayFeature() override;
     void SetDisplayFeatureForTesting(const content::DisplayFeature*) override;
+    content::WebContentsAccessibility *GetWebContentsAccessibility() override;
 #if BUILDFLAG(IS_MAC)
     void ShowSharePicker(
         const std::string &title,
@@ -143,14 +144,19 @@ public:
     void OnSelectionBoundsChanged(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view) override;
     void OnTextSelectionChanged(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view) override;
 
-    // Overridden from content::BrowserAccessibilityDelegate
-    content::WebContentsAccessibility *GetWebContentsAccessibility() override;
-
     // Overridden from content::RenderFrameMetadataProvider::Observer
     void OnRenderFrameMetadataChangedAfterActivation(base::TimeTicks activation_time) override;
     void OnRenderFrameMetadataChangedBeforeActivation(const cc::RenderFrameMetadata &) override {}
     void OnRenderFrameSubmission() override {}
     void OnLocalSurfaceIdChanged(const cc::RenderFrameMetadata &) override {}
+
+    // Overridden from content::RenderWidgetHost::InputEventObserver
+    void OnInputEvent(const blink::WebInputEvent &) override { }
+    void OnInputEventAck(blink::mojom::InputEventResultSource,
+                         blink::mojom::InputEventResultState state,
+                         const blink::WebInputEvent &event) override;
+
+    static void registerInputEventObserver(content::WebContents *, content::RenderFrameHost *);
 
     // Called from RenderWidgetHostViewQtDelegateClient.
     Compositor::Id compositorId();
@@ -188,7 +194,6 @@ private:
     std::unique_ptr<content::CursorManager> m_cursorManager;
 
     ui::FilteredGestureProvider m_gestureProvider;
-    std::unique_ptr<GuestInputEventObserverQt> m_guestInputEventObserver;
 
     viz::FrameSinkId m_frameSinkId;
     std::unique_ptr<RenderWidgetHostViewQtDelegateClient> m_delegateClient;

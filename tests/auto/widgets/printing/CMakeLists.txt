@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 include(../../util/util.cmake)
 
 find_package(PkgConfig)
@@ -8,10 +11,9 @@ endif()
 qt_internal_add_test(tst_printing
     SOURCES
         tst_printing.cpp
-    PUBLIC_LIBRARIES
-        Qt::WebEngineWidgets
     LIBRARIES
         Qt::CorePrivate
+        Qt::WebEngineWidgets
         Qt::WebEngineCorePrivate
         Test::Util
 )

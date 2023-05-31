@@ -3,7 +3,6 @@
 
 #include "render_widget_host_view_qt.h"
 
-#include "browser_accessibility_manager_qt.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "render_widget_host_view_qt_delegate_client.h"
@@ -19,6 +18,7 @@
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/cursor_manager.h"
@@ -30,6 +30,7 @@
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/cursors/webcursor.h"
+#include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -46,12 +47,12 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/aura/cursor/cursors_aura.h"
+#include "ui/wm/core/cursors_aura.h"
 #include "ui/base/cursor/cursor_size.h"
 #endif
 
 #if defined(Q_OS_MACOS)
-#include "content/app/resources/grit/content_resources.h"
+#include "ui/resources/grit/ui_resources.h"
 #endif
 
 #include <QGuiApplication>
@@ -142,33 +143,10 @@ public:
     }
 };
 
-class GuestInputEventObserverQt : public content::RenderWidgetHost::InputEventObserver
-{
-public:
-    GuestInputEventObserverQt(RenderWidgetHostViewQt *rwhv)
-        : m_rwhv(rwhv)
-    {
-    }
-    ~GuestInputEventObserverQt() {}
-
-    void OnInputEvent(const blink::WebInputEvent&) override {}
-    void OnInputEventAck(blink::mojom::InputEventResultSource,
-                         blink::mojom::InputEventResultState state,
-                         const blink::WebInputEvent &event) override
-    {
-        if (event.GetType() == blink::WebInputEvent::Type::kMouseWheel)
-            m_rwhv->WheelEventAck(static_cast<const blink::WebMouseWheelEvent &>(event), state);
-    }
-
-private:
-    RenderWidgetHostViewQt *m_rwhv;
-};
-
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget)
     : content::RenderWidgetHostViewBase::RenderWidgetHostViewBase(widget)
     , m_taskRunner(base::ThreadTaskRunnerHandle::Get())
     , m_gestureProvider(QtGestureProviderConfig(), this)
-    , m_guestInputEventObserver(new GuestInputEventObserverQt(this))
     , m_frameSinkId(host()->GetFrameSinkId())
     , m_delegateClient(new RenderWidgetHostViewQtDelegateClient(this))
 {
@@ -217,6 +195,9 @@ RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
     if (text_input_manager_)
         text_input_manager_->RemoveObserver(this);
 
+    if (host()->delegate())
+        m_touchSelectionControllerClient->resetControls();
+
     m_touchSelectionController.reset();
     m_touchSelectionControllerClient.reset();
 
@@ -245,9 +226,34 @@ void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterC
                                                             m_adapterClient = nullptr; });
 }
 
-void RenderWidgetHostViewQt::addGuest(content::RenderWidgetHost *rwh)
+void RenderWidgetHostViewQt::OnInputEventAck(blink::mojom::InputEventResultSource,
+                                             blink::mojom::InputEventResultState state,
+                                             const blink::WebInputEvent &event)
 {
-    rwh->AddInputEventObserver(m_guestInputEventObserver.get());
+    if (event.GetType() == blink::WebInputEvent::Type::kMouseWheel)
+        WheelEventAck(static_cast<const blink::WebMouseWheelEvent &>(event), state);
+}
+
+// static
+// Called when new child/guest renderframes created.
+void RenderWidgetHostViewQt::registerInputEventObserver(content::WebContents *webContents,
+                                                        content::RenderFrameHost *rfh)
+{
+    if (static_cast<content::RenderFrameHostImpl *>(rfh)->is_local_root_subframe()) {
+        content::WebContents *parent = webContents->GetOutermostWebContents();
+        QtWebEngineCore::RenderWidgetHostViewQt *mainRwhv =
+                static_cast<QtWebEngineCore::RenderWidgetHostViewQt *>(
+                        parent->GetRenderWidgetHostView());
+        // Child (originAgentCluster) or guest (pdf) frame that is embedded into the main frame
+        content::RenderWidgetHost *childFrame = rfh->GetRenderWidgetHost();
+        childFrame->AddInputEventObserver(mainRwhv);
+
+        if (webContents->IsInnerWebContentsForGuest()) {
+            // The frame which holds the actual PDF content inside the guest
+            content::RenderWidgetHost *guestFrame = webContents->GetRenderViewHost()->GetWidget();
+            guestFrame->AddInputEventObserver(mainRwhv);
+        }
+    }
 }
 
 void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView)
@@ -284,11 +290,6 @@ gfx::NativeView RenderWidgetHostViewQt::GetNativeView()
     // Since we manage the view hierarchy in Qt its value hasn't
     // been meaningful.
     return gfx::NativeView();
-}
-
-gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
-{
-    return 0;
 }
 
 content::WebContentsAccessibility *RenderWidgetHostViewQt::GetWebContentsAccessibility()
@@ -419,7 +420,7 @@ bool RenderWidgetHostViewQt::updateCursorFromResource(ui::mojom::CursorType type
 
 #if defined(USE_AURA)
     gfx::Point hotspot;
-    if (!aura::GetCursorDataFor(ui::CursorSize::kNormal, type, hotspotDpr, &resourceId, &hotspot))
+    if (!wm::GetCursorDataFor(ui::CursorSize::kNormal, type, hotspotDpr, &resourceId, &hotspot))
         return false;
     hotX = hotspot.x();
     hotY = hotspot.y();
@@ -903,7 +904,9 @@ void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &even
     }
 }
 
-void RenderWidgetHostViewQt::GestureEventAck(const blink::WebGestureEvent &event, blink::mojom::InputEventResultState ack_result)
+void RenderWidgetHostViewQt::GestureEventAck(const blink::WebGestureEvent &event,
+                                             blink::mojom::InputEventResultState ack_result,
+                                             blink::mojom::ScrollResultDataPtr scroll_result_data)
 {
     // Forward unhandled scroll events back as wheel events
     if (event.GetType() != blink::WebInputEvent::Type::kGestureScrollUpdate)
@@ -1003,12 +1006,17 @@ void RenderWidgetHostViewQt::OnRenderFrameMetadataChangedAfterActivation(base::T
         m_touchSelectionControllerClient->UpdateClientSelectionBounds(m_selectionStart, m_selectionEnd);
     }
 
-    gfx::PointF scrollOffset = metadata.root_scroll_offset.value_or(gfx::PointF());
-    gfx::SizeF contentsSize = metadata.root_layer_size;
+    gfx::PointF scrollOffset = gfx::PointF();
+    if (metadata.root_scroll_offset.has_value())
+        scrollOffset = gfx::ScalePoint(metadata.root_scroll_offset.value(),
+                                       1 / metadata.device_scale_factor);
     std::swap(m_lastScrollOffset, scrollOffset);
-    std::swap(m_lastContentsSize, contentsSize);
     if (m_adapterClient && scrollOffset != m_lastScrollOffset)
         m_adapterClient->updateScrollPosition(toQt(m_lastScrollOffset));
+
+    gfx::SizeF contentsSize =
+            gfx::ScaleSize(metadata.root_layer_size, 1 / metadata.device_scale_factor);
+    std::swap(m_lastContentsSize, contentsSize);
     if (m_adapterClient && contentsSize != m_lastContentsSize)
         m_adapterClient->updateContentsSize(toQt(m_lastContentsSize));
 }
