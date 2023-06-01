@@ -10,8 +10,6 @@
 #include "api/qquickwebengineview_p_p.h"
 #include "web_contents_adapter.h"
 
-
-#if QT_CONFIG(accessibility)
 QT_BEGIN_NAMESPACE
 QQuickWebEngineViewAccessible::QQuickWebEngineViewAccessible(QQuickWebEngineView *o)
     : QAccessibleObject(o)
@@ -147,4 +145,3 @@ QQuickWebEngineViewAccessible *RenderWidgetHostViewQtDelegateQuickAccessible::vi
     return static_cast<QQuickWebEngineViewAccessible *>(QAccessible::queryAccessibleInterface(m_view));
 }
 } // namespace QtWebEngineCore
-#endif // QT_CONFIG(accessibility)

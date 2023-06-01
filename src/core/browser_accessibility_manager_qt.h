@@ -6,10 +6,7 @@
 
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
-#include <QtCore/qobject.h>
-#include <QtGui/qtgui-config.h>
-
-#if QT_CONFIG(accessibility)
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
 QT_FORWARD_DECLARE_CLASS(QAccessibleInterface)
 
@@ -24,13 +21,13 @@ class BrowserAccessibilityManagerQt : public BrowserAccessibilityManager
 public:
     BrowserAccessibilityManagerQt(QtWebEngineCore::WebContentsAccessibilityQt *webContentsAccessibility,
                                   const ui::AXTreeUpdate &initialTree,
-                                  BrowserAccessibilityDelegate *delegate);
+                                  WebAXPlatformTreeManagerDelegate *delegate);
     ~BrowserAccessibilityManagerQt() override;
     void FireBlinkEvent(ax::mojom::Event event_type,
                         BrowserAccessibility *node,
                         int action_request_id) override;
     void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
-                            BrowserAccessibility* node) override;
+                            const ui::AXNode *node) override;
 
     QAccessibleInterface *rootParentAccessible();
     bool isValid() const { return m_valid; }
@@ -43,5 +40,4 @@ private:
 
 }
 
-#endif // QT_CONFIG(accessibility)
-#endif
+#endif // BROWSER_ACCESSIBILITY_MANAGER_QT_H

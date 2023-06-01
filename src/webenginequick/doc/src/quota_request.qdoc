@@ -6,8 +6,12 @@
     \instantiates QWebEngineQuotaRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.7
+    \deprecated [6.5] Requesting host quota is no longer supported by Chromium.
 
-    \brief A utility type for the WebEngineView::quotaRequested() signal.
+    The behavior of navigator.webkitPersistentStorage
+    is identical to navigator.webkitTemporaryStorage.
+
+    For further details, see https://crbug.com/1233525
 
     \sa WebEngineView::quotaRequested()
 */
@@ -15,36 +19,18 @@
 /*!
     \qmlproperty url QuotaRequest::origin
     \readonly
-
-    The URL of the web page that issued the quota request.
 */
 
 /*!
     \qmlproperty qint64 QuotaRequest::requestedSize
     \readonly
-
-    Contains the size of the requested disk space in bytes.
 */
 
 /*!
     \qmlmethod void QuotaRequest::accept()
-
-    Accepts the quota request.
-
-    \qml
-    WebEngineView {
-        onQuotaRequested: function(request) {
-            if (request.requestedSize <= 5 * 1024 * 1024)
-                request.accept();
-            else
-                request.reject();
-        }
-    }
-    \endqml
 */
 
 /*!
     \qmlmethod void QuotaRequest::reject()
-    Rejects the quota request.
 */
 

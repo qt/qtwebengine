@@ -1,7 +1,21 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
+# this macro is missing in 6.2
+if(NOT COMMAND _qt_internal_validate_all_args_are_parsed)
+    macro(_qt_internal_validate_all_args_are_parsed result)
+        if(DEFINED ${result}_UNPARSED_ARGUMENTS)
+            message(FATAL_ERROR "Unknown arguments (${${result}_UNPARSED_ARGUMENTS}).")
+        endif()
+    endmacro()
+endif()
+
 function(assertTargets)
-    qt_parse_all_arguments(arg "add_check_for_support"
-        "" "" "MODULES;TARGETS" "${ARGN}"
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "" "" "MODULES;TARGETS"
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
+
     foreach(module ${arg_MODULES})
         if(NOT DEFINED ${module}_SUPPORT)
             set(${module}_SUPPORT ON PARENT_SCOPE)
@@ -33,9 +47,11 @@ endfunction()
 
 # TODO: this should be idealy in qtbase
 function(add_check_for_support)
-    qt_parse_all_arguments(arg "add_check_for_support"
-        "" "" "MODULES;MESSAGE;CONDITION" "${ARGN}"
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "" "" "MODULES;MESSAGE;CONDITION"
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
+
     foreach(module ${arg_MODULES})
         if(NOT DEFINED ${module}_SUPPORT)
             set(${module}_SUPPORT ON PARENT_SCOPE)
@@ -178,7 +194,9 @@ endmacro()
 
 function(extend_gn_target target)
     get_target_property(elements ${target} ELEMENTS)
-    qt_parse_all_arguments(GN "extend_gn_target" "" "" "CONDITION;${elements}" "${ARGN}")
+    cmake_parse_arguments(PARSE_ARGV 1 GN "" "" "CONDITION;${elements}")
+    _qt_internal_validate_all_args_are_parsed(GN)
+
     if("x${GN_CONDITION}" STREQUAL x)
         set(GN_CONDITION ON)
     endif()
@@ -190,7 +208,9 @@ function(extend_gn_target target)
 endfunction()
 
 function(extend_gn_list outList)
-    qt_parse_all_arguments(GN "extend_gn_list" "" "" "ARGS;CONDITION" "${ARGN}")
+    cmake_parse_arguments(PARSE_ARGV 1 GN "" "" "ARGS;CONDITION")
+    _qt_internal_validate_all_args_are_parsed(GN)
+
     if("x${GN_CONDITION}" STREQUAL x)
         set(GN_CONDITION ON)
     endif()
@@ -429,7 +449,7 @@ function(add_linker_options target buildDir completeStatic)
     set(archives_rsp "${buildDir}/${ninjaTarget}_archives.rsp")
     set(libs_rsp "${buildDir}/${ninjaTarget}_libs.rsp")
     set_target_properties(${cmakeTarget} PROPERTIES STATIC_LIBRARY_OPTIONS "@${objects_rsp}")
-    if(LINUX)
+    if(LINUX OR ANDROID)
          get_gn_arch(cpu ${TEST_architecture_arch})
          if(CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm" AND ${config} STREQUAL "Debug")
              target_link_options(${cmakeTarget} PRIVATE "LINKER:--long-plt")
@@ -442,9 +462,31 @@ function(add_linker_options target buildDir completeStatic)
                  "$<1:-Wl,--start-group $<$<CONFIG:${config}>:@${archives_rsp}> -Wl,--end-group>"
              )
          endif()
+
+         # we need only the '-L' flags from lflags.rsp, filter them
+         set(lflags_rsp "${buildDir}/${ninjaTarget}_lflags.rsp")
+         set(lflags_filtered_rsp "${buildDir}/${ninjaTarget}_lflags_filtered.rsp")
+         set(lflags_filter_script "${buildDir}/${ninjaTarget}_lflags_filter.cmake")
+         file(GENERATE OUTPUT ${lflags_filter_script}
+              CONTENT "file(STRINGS ${lflags_rsp} lflags)
+                       string(REGEX MATCHALL \"-L.*\" lflags_filtered \${lflags})
+                       file(WRITE ${lflags_filtered_rsp} \${lflags_filtered})"
+              FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+         )
+         add_custom_command(
+            OUTPUT ${lflags_filtered_rsp}
+            COMMAND ${CMAKE_COMMAND} -P ${lflags_filter_script}
+            DEPENDS ${lflags_filter_script} ${lflags_rsp}
+         )
+         add_custom_target(
+            run_${cmakeTarget}_${config}_lflags_filter
+            DEPENDS ${lflags_filtered_rsp}
+         )
+         add_dependencies(${cmakeTarget} run_${cmakeTarget}_${config}_lflags_filter)
+
          # linker here options are just to prevent processing it by cmake
          target_link_libraries(${cmakeTarget} PRIVATE
-             "$<1:-Wl,--no-fatal-warnings $<$<CONFIG:${config}>:@${libs_rsp}> -Wl,--no-fatal-warnings>"
+             "$<1:-Wl,--no-fatal-warnings $<$<CONFIG:${config}>:@${lflags_filtered_rsp}> $<$<CONFIG:${config}>:@${libs_rsp}> -Wl,--no-fatal-warnings>"
          )
     endif()
     if(MACOS)
@@ -456,7 +498,7 @@ function(add_linker_options target buildDir completeStatic)
     endif()
     if(WIN32)
         get_copy_of_response_file(objects_rsp ${target} objects)
-        target_link_options(${cmakeTarget} PRIVATE /DELAYLOAD:mf.dll /DELAYLOAD:mfplat.dll /DELAYLOAD:mfreadwrite.dll)
+        target_link_options(${cmakeTarget} PRIVATE /DELAYLOAD:mf.dll /DELAYLOAD:mfplat.dll /DELAYLOAD:mfreadwrite.dll /DELAYLOAD:winmm.dll)
         target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${objects_rsp}>")
         if(NOT completeStatic)
             get_copy_of_response_file(archives_rsp ${target} archives)
@@ -464,6 +506,8 @@ function(add_linker_options target buildDir completeStatic)
         endif()
         get_copy_of_response_file(libs_rsp ${target} libs)
         target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${libs_rsp}>")
+        # enable larger PDBs
+        target_link_options(${cmakeTarget} PRIVATE "/pdbpagesize:8192")
         # we need libs rsp also when linking process with sandbox lib
         set_property(TARGET ${cmakeTarget} PROPERTY LIBS_RSP ${libs_rsp})
     endif()
@@ -628,6 +672,8 @@ function(get_gn_arch result arch)
         set(${result} "mipsel" PARENT_SCOPE)
     elseif(arch STREQUAL "mipsel64")
         set(${result} "mips64el" PARENT_SCOPE)
+    elseif(arch STREQUAL "riscv64")
+        set(${result} "riscv64" PARENT_SCOPE)
     else()
         message(DEBUG "Unsupported architecture: ${arch}")
     endif()
@@ -647,6 +693,8 @@ function(get_v8_arch result targetArch hostArch)
             set(${result} "mipsel" PARENT_SCOPE)
         elseif(hostArch STREQUAL "mipsel64")
             set(${result} "mipsel" PARENT_SCOPE)
+        elseif(hostArch STREQUAL "riscv64")
+            set(${result} "riscv64" PARENT_SCOPE)
         elseif(hostArch IN_LIST list32)
             set(${result} "${hostArch}" PARENT_SCOPE)
         else()
@@ -734,7 +782,9 @@ function(extract_cflag result cflag)
 endfunction()
 
 function(extend_gn_list_cflag outList)
-    qt_parse_all_arguments(GN "extend_gn_list_cflag" "" "" "ARG;CFLAG" "${ARGN}")
+    cmake_parse_arguments(PARSE_ARGV 1 GN "" "" "ARG;CFLAG")
+    _qt_internal_validate_all_args_are_parsed(GN)
+
     extract_cflag(cflag "${GN_CFLAG}")
     if(cflag)
         set(${outList} "${${outList}}" "${GN_ARG}=\"${cflag}\"" PARENT_SCOPE)
@@ -793,7 +843,7 @@ endmacro()
 
 macro(append_build_type_setup)
     list(APPEND gnArgArg
-        use_qt=true
+        is_qtwebengine=true
         init_stack_vars=false
         is_component_build=false
         is_shared=true
@@ -807,7 +857,7 @@ macro(append_build_type_setup)
     if(${config} STREQUAL "Debug")
         list(APPEND gnArgArg is_debug=true symbol_level=2)
         if(WIN32)
-            list(APPEND gnArgArg enable_iterator_debugging=true v8_optimized_debug=false)
+            list(APPEND gnArgArg enable_iterator_debugging=true)
         endif()
     elseif(${config} STREQUAL "Release")
         list(APPEND gnArgArg is_debug=false symbol_level=0)
@@ -907,6 +957,14 @@ macro(append_compiler_linker_sdk_setup)
                 CONDITION QT_FEATURE_stdlib_libcpp
             )
         endif()
+        if(ANDROID)
+            list(APPEND gnArgArg
+                android_ndk_root="${CMAKE_ANDROID_NDK}"
+                android_ndk_version="${CMAKE_ANDROID_NDK_VERSION}"
+                clang_use_default_sample_profile=false
+                #android_ndk_major_version=22
+            )
+        endif()
     else()
         if(QT_FEATURE_use_lld_linker)
             get_filename_component(clangBasePath ${CMAKE_LINKER} DIRECTORY)
@@ -1001,11 +1059,13 @@ macro(append_toolchain_setup)
         list(APPEND gnArgArg
             custom_toolchain="${buildDir}/target_toolchain:target"
             host_toolchain="${buildDir}/host_toolchain:host"
-            v8_snapshot_toolchain="${buildDir}/v8_toolchain:v8"
         )
         get_gn_arch(cpu ${TEST_architecture_arch})
         if(CMAKE_CROSSCOMPILING)
-            list(APPEND gnArgArg target_cpu="${cpu}")
+            list(APPEND gnArgArg
+                v8_snapshot_toolchain="${buildDir}/v8_toolchain:v8"
+                target_cpu="${cpu}"
+            )
         else()
             list(APPEND gnArgArg host_cpu="${cpu}")
         endif()
@@ -1020,6 +1080,9 @@ macro(append_toolchain_setup)
             list(APPEND gnArgArg target_sysroot="${sysroot}" target_os="ios")
         endif()
     endif()
+    if(ANDROID)
+        list(APPEND gnArgArg target_os="android")
+    endif()
 endmacro()
 
 
@@ -1033,9 +1096,11 @@ macro(append_pkg_config_setup)
 endmacro()
 
 function(add_ninja_command)
-    qt_parse_all_arguments(arg "add_ninja_command"
-        "" "TARGET;OUTPUT;BUILDDIR;MODULE" "BYPRODUCTS" "${ARGN}"
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "" "TARGET;OUTPUT;BUILDDIR;MODULE" "BYPRODUCTS"
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
+
     string(REPLACE " " ";" NINJAFLAGS "$ENV{NINJAFLAGS}")
     list(TRANSFORM arg_BYPRODUCTS PREPEND "${arg_BUILDDIR}/")
     add_custom_command(
@@ -1134,9 +1199,10 @@ function(get_config_filenames c_config cxx_config static_config target_config)
 endfunction()
 
 function(add_gn_command)
-    qt_parse_all_arguments(arg "add_gn_command"
-        "" "CMAKE_TARGET;GN_TARGET;MODULE;BUILDDIR" "NINJA_TARGETS;GN_ARGS" "${ARGN}"
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "" "CMAKE_TARGET;GN_TARGET;MODULE;BUILDDIR" "NINJA_TARGETS;GN_ARGS"
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     get_config_filenames(cConfigFileName cxxConfigFileName staticConfigFileName targetConfigFileName)
     set(gnArgArgFile ${arg_BUILDDIR}/args.gn)
@@ -1145,7 +1211,7 @@ function(add_gn_command)
     file(WRITE ${gnArgArgFile} ${arg_GN_ARGS})
 
     foreach(ninjaTarget ${arg_NINJA_TARGETS})
-        list(APPEND output ${ninjaTarget}_objects.rsp ${ninjaTarget}_archives.rsp ${ninjaTarget}_libs.rsp)
+        list(APPEND output ${ninjaTarget}_objects.rsp ${ninjaTarget}_archives.rsp ${ninjaTarget}_libs.rsp ${ninjaTarget}_lflags.rsp)
     endforeach()
     list(TRANSFORM output PREPEND "${arg_BUILDDIR}/")
 
@@ -1271,4 +1337,33 @@ function(add_build feature value)
     endforeach()
     set(depTracker "${depTracker}" ${feature})
     set_property(GLOBAL PROPERTY MATRIX_DEPENDENCY_TRACKER "${depTracker}")
+endfunction()
+
+function(add_code_attributions_target)
+    cmake_parse_arguments(PARSE_ARGV 0 arg ""
+        "TARGET;OUTPUT;GN_TARGET;FILE_TEMPLATE;ENTRY_TEMPLATE;BUILDDIR" ""
+    )
+    _qt_internal_validate_all_args_are_parsed(arg)
+    get_filename_component(fileTemplate ${arg_FILE_TEMPLATE} ABSOLUTE)
+    get_filename_component(entryTemplate ${arg_ENTRY_TEMPLATE} ABSOLUTE)
+    add_custom_command(
+        OUTPUT ${arg_OUTPUT}
+        COMMAND ${CMAKE_COMMAND}
+            -DLICENSE_SCRIPT=${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium/tools/licenses.py
+            -DFILE_TEMPLATE=${fileTemplate}
+            -DENTRY_TEMPLATE=${entryTemplate}
+            -DGN_TARGET=${arg_GN_TARGET}
+            -DBUILDDIR=${arg_BUILDDIR}
+            -DOUTPUT=${arg_OUTPUT}
+            -DPython3_EXECUTABLE=${Python3_EXECUTABLE}
+            -P ${WEBENGINE_ROOT_SOURCE_DIR}/cmake/License.cmake
+        WORKING_DIRECTORY ${WEBENGINE_ROOT_BUILD_DIR}
+        DEPENDS
+            ${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium/tools/licenses.py
+            ${arg_FILE_TEMPLATE}
+            ${arg_ENTRY_TEMPLATE}
+            ${WEBENGINE_ROOT_SOURCE_DIR}/cmake/License.cmake
+        USES_TERMINAL
+     )
+     add_custom_target(${arg_TARGET} DEPENDS ${arg_OUTPUT})
 endfunction()

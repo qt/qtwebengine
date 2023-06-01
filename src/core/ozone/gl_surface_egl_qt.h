@@ -10,11 +10,13 @@
 
 namespace gl {
 
+class GLDisplayEGL;
+
 class GLSurfaceEGLQt: public GLSurfaceQt {
 public:
-    explicit GLSurfaceEGLQt(const gfx::Size& size);
+    explicit GLSurfaceEGLQt(gl::GLDisplayEGL *display, const gfx::Size& size);
 
-    static bool InitializeOneOff();
+    static gl::GLDisplay *InitializeOneOff(uint64_t system_device_id);
     static bool InitializeExtensionSettingsOneOff();
 
     bool Initialize(GLSurfaceFormat format) override;
@@ -42,7 +44,7 @@ private:
 
 class GLSurfacelessQtEGL : public GLSurfaceQt {
 public:
-    explicit GLSurfacelessQtEGL(const gfx::Size& size);
+    explicit GLSurfacelessQtEGL(gl::GLDisplayEGL *display, const gfx::Size& size);
 
 public:
     bool Initialize(GLSurfaceFormat format) override;

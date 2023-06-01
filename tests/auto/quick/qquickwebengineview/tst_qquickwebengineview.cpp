@@ -69,8 +69,10 @@ private Q_SLOTS:
     void javascriptClipboard_data();
     void javascriptClipboard();
     void setProfile();
-    void focusChild();
+#if QT_CONFIG(accessibility)
     void focusChild_data();
+    void focusChild();
+#endif
     void htmlSelectPopup();
 
 private:
@@ -1117,7 +1119,7 @@ void tst_QQuickWebEngineView::javascriptClipboard()
     // - return value of queryCommandEnabled and
     // - return value of execCommand
     // - comparing the clipboard / input field
-    QGuiApplication::clipboard()->clear();
+    QGuiApplication::clipboard()->setText(QString());
     QCOMPARE(evaluateJavaScriptSync(view, "document.queryCommandEnabled('copy')").toBool(),
              copyResult);
     QCOMPARE(evaluateJavaScriptSync(view, "document.execCommand('copy')").toBool(), copyResult);
@@ -1180,6 +1182,7 @@ void tst_QQuickWebEngineView::setProfile() {
     QTRY_COMPARE(webEngineView()->url() ,urlFromTestPath("html/basic_page2.html"));
 }
 
+#if QT_CONFIG(accessibility)
 void tst_QQuickWebEngineView::focusChild_data()
 {
     QTest::addColumn<QString>("interfaceName");
@@ -1242,6 +1245,7 @@ void tst_QQuickWebEngineView::focusChild()
     // <html> -> <body> -> <input>
     QCOMPARE(traverseToWebDocumentAccessibleInterface(iface)->child(0)->child(0), iface->focusChild());
 }
+#endif // QT_CONFIG(accessibility)
 
 void tst_QQuickWebEngineView::htmlSelectPopup()
 {
@@ -1270,8 +1274,12 @@ void tst_QQuickWebEngineView::htmlSelectPopup()
     QCOMPARE(evaluateJavaScriptSync(&view, "document.getElementById('select').value").toString(), QStringLiteral("O2"));
 }
 
+#if QT_CONFIG(accessibility)
 static QByteArrayList params = QByteArrayList()
     << "--force-renderer-accessibility";
+#else
+static QByteArrayList params;
+#endif
 
 W_QTEST_MAIN(tst_QQuickWebEngineView, params)
 #include "tst_qquickwebengineview.moc"

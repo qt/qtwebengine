@@ -18,7 +18,6 @@ public:
     ~ContentGpuClientQt() override;
 
     // content::ContentGpuClient implementation.
-    gpu::SyncPointManager *GetSyncPointManager() override;
     gl::GLShareGroup *GetInProcessGpuShareGroup() override;
 
 private:

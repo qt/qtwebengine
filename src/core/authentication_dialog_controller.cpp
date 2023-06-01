@@ -4,7 +4,6 @@
 #include "authentication_dialog_controller.h"
 #include "authentication_dialog_controller_p.h"
 
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_task_traits.h"
 
@@ -17,7 +16,7 @@ AuthenticationDialogControllerPrivate::AuthenticationDialogControllerPrivate(bas
 
 void AuthenticationDialogControllerPrivate::dialogFinished(bool accepted, const QString &user, const QString &password)
 {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
                    base::BindOnce(&LoginDelegateQt::sendAuthToRequester,
                                   loginDelegate, accepted, user, password));
 }

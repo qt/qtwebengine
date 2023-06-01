@@ -80,6 +80,18 @@ static QWebEngineUrlRequestInfo::NavigationType toQt(WebContentsAdapterClient::N
     return static_cast<QWebEngineUrlRequestInfo::NavigationType>(navigationType);
 }
 
+static QHash<QByteArray, QByteArray> toQt(const net::HttpRequestHeaders &headers)
+{
+    const auto vector = headers.GetHeaderVector();
+    QHash<QByteArray, QByteArray> hash;
+
+    for (const auto &header : vector) {
+        hash.insert(QByteArray::fromStdString(header.key), QByteArray::fromStdString(header.value));
+    }
+
+    return hash;
+}
+
 // Handles intercepted, in-progress requests/responses, so that they can be
 // controlled and modified accordingly.
 class InterceptedRequest : public network::mojom::URLLoader
@@ -98,12 +110,10 @@ public:
     void Restart();
 
     // network::mojom::URLLoaderClient
-    void OnReceiveResponse(network::mojom::URLResponseHeadPtr head, mojo::ScopedDataPipeConsumerHandle) override;
+    void OnReceiveResponse(network::mojom::URLResponseHeadPtr head, mojo::ScopedDataPipeConsumerHandle, absl::optional<mojo_base::BigBuffer>) override;
     void OnReceiveRedirect(const net::RedirectInfo &redirect_info, network::mojom::URLResponseHeadPtr head) override;
     void OnUploadProgress(int64_t current_position, int64_t total_size, OnUploadProgressCallback callback) override;
-    void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
     void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
-    void OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle body) override;
     void OnComplete(const network::URLLoaderCompletionStatus &status) override;
     void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr) override {}
 
@@ -306,8 +316,14 @@ void InterceptedRequest::Restart()
     else
         firstPartyUrl = toQt(request_.site_for_cookies.first_party_url()); // m_topDocumentUrl can be empty for the main-frame.
 
-    auto info = new QWebEngineUrlRequestInfoPrivate(resourceType, navigationType, originalUrl, firstPartyUrl,
-                                                    initiator, QByteArray::fromStdString(request_.method));
+    QHash<QByteArray, QByteArray> headers = toQt(request_.headers);
+
+    if (!request_.referrer.is_empty())
+        headers.insert("Referer", toQt(request_.referrer).toEncoded());
+
+    auto info = new QWebEngineUrlRequestInfoPrivate(
+            resourceType, navigationType, originalUrl, firstPartyUrl, initiator,
+            QByteArray::fromStdString(request_.method), headers);
     Q_ASSERT(!request_info_);
     request_info_.reset(new QWebEngineUrlRequestInfo(info));
 
@@ -342,7 +358,7 @@ void InterceptedRequest::ContinueAfterIntercept()
 
             for (auto header = info.extraHeaders.constBegin(); header != info.extraHeaders.constEnd(); ++header) {
                 std::string h = header.key().toStdString();
-                if (base::LowerCaseEqualsASCII(h, "referer")) {
+                if (base::EqualsCaseInsensitiveASCII(h, "referer")) {
                     request_.referrer = GURL(header.value().toStdString());
                 } else {
                     request_.headers.SetHeader(h, header.value().toStdString());
@@ -386,11 +402,11 @@ void InterceptedRequest::ContinueAfterIntercept()
 
 // URLLoaderClient methods.
 
-void InterceptedRequest::OnReceiveResponse(network::mojom::URLResponseHeadPtr head, mojo::ScopedDataPipeConsumerHandle handle)
+void InterceptedRequest::OnReceiveResponse(network::mojom::URLResponseHeadPtr head, mojo::ScopedDataPipeConsumerHandle handle, absl::optional<mojo_base::BigBuffer> buffer)
 {
     current_response_ = head.Clone();
 
-    target_client_->OnReceiveResponse(std::move(head), std::move(handle));
+    target_client_->OnReceiveResponse(std::move(head), std::move(handle), std::move(buffer));
 }
 
 void InterceptedRequest::OnReceiveRedirect(const net::RedirectInfo &redirect_info, network::mojom::URLResponseHeadPtr head)
@@ -410,19 +426,9 @@ void InterceptedRequest::OnUploadProgress(int64_t current_position, int64_t tota
     target_client_->OnUploadProgress(current_position, total_size, std::move(callback));
 }
 
-void InterceptedRequest::OnReceiveCachedMetadata(mojo_base::BigBuffer data)
-{
-    target_client_->OnReceiveCachedMetadata(std::move(data));
-}
-
 void InterceptedRequest::OnTransferSizeUpdated(int32_t transfer_size_diff)
 {
     target_client_->OnTransferSizeUpdated(transfer_size_diff);
-}
-
-void InterceptedRequest::OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle body)
-{
-    target_client_->OnStartLoadingResponseBody(std::move(body));
 }
 
 void InterceptedRequest::OnComplete(const network::URLLoaderCompletionStatus &status)

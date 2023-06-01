@@ -4,6 +4,8 @@
 #ifndef BROWSING_DATA_REMOVER_DELEGATE_QT_H
 #define BROWSING_DATA_REMOVER_DELEGATE_QT_H
 
+#include <cstdint>
+
 #include "content/public/browser/browsing_data_remover_delegate.h"
 
 namespace QtWebEngineCore {

@@ -16,7 +16,7 @@ class GLSurfaceWGLQt: public GLSurfaceQt {
 public:
     explicit GLSurfaceWGLQt(const gfx::Size& size);
 
-    static bool InitializeOneOff();
+    static gl::GLDisplay *InitializeOneOff(uint64_t system_device_id);
 
     bool Initialize(GLSurfaceFormat format) override;
     void Destroy() override;

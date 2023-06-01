@@ -50,8 +50,8 @@ const char kWidevineCdmFileName[] =
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if QT_CONFIG(webengine_printing_and_pdf)
+#include "components/pdf/common/internal_plugin_helpers.h"
 #include "pdf/pdf.h"
-const char kPdfPluginMimeType[] = "application/x-google-chrome-pdf";
 const char kPdfPluginPath[] = "internal-pdf-viewer";
 #endif // QT_CONFIG(webengine_printing_and_pdf)
 
@@ -98,7 +98,7 @@ static QString getProgramFilesDir(bool x86Dir = false)
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE.Chromium file.
 
-#include "content/public/common/pepper_plugin_info.h"
+#include "content/public/common/content_plugin_info.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
 static QString ppapiPluginsPath()
@@ -114,16 +114,19 @@ static QString ppapiPluginsPath()
     return potentialPluginsPath;
 }
 
-void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins)
+void ComputeBuiltInPlugins(std::vector<content::ContentPluginInfo> *plugins)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
-    content::PepperPluginInfo pdf_info;
+    static constexpr char kPDFPluginExtension[] = "pdf";
+    static constexpr char kPDFPluginDescription[] = "Portable Document Format";
+    content::ContentPluginInfo pdf_info;
     pdf_info.is_internal = true;
     pdf_info.is_out_of_process = true;
     pdf_info.name = "Chromium PDF Viewer";
-    pdf_info.description = "Portable Document Format";
+    pdf_info.description = kPDFPluginDescription;
     pdf_info.path = base::FilePath::FromUTF8Unsafe(kPdfPluginPath);
-    content::WebPluginMimeType pdf_mime_type(kPdfPluginMimeType, "pdf", "Portable Document Format");
+    content::WebPluginMimeType pdf_mime_type(
+        pdf::kInternalPluginMimeType, kPDFPluginExtension, kPDFPluginDescription);
     pdf_info.mime_types.push_back(pdf_mime_type);
     plugins->push_back(pdf_info);
 #endif // QT_CONFIG(webengine_printing_and_pdf)
@@ -131,7 +134,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins)
 
 namespace QtWebEngineCore {
 
-void ContentClientQt::AddPepperPlugins(std::vector<content::PepperPluginInfo>* plugins)
+void ContentClientQt::AddPlugins(std::vector<content::ContentPluginInfo> *plugins)
 {
     ComputeBuiltInPlugins(plugins);
 }
@@ -415,6 +418,21 @@ gfx::Image &ContentClientQt::GetNativeImageNamed(int resource_id)
 std::u16string ContentClientQt::GetLocalizedString(int message_id)
 {
     return l10n_util::GetStringUTF16(message_id);
+}
+
+// This method is a copy from chrome/common/chrome_content_client.cc:
+// Copyright 2012 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE.Chromium file.
+blink::OriginTrialPolicy *ContentClientQt::GetOriginTrialPolicy()
+{
+    // Prevent initialization race (see crbug.com/721144). There may be a
+    // race when the policy is needed for worker startup (which happens on a
+    // separate worker thread).
+    base::AutoLock auto_lock(origin_trial_policy_lock_);
+    if (!origin_trial_policy_)
+        origin_trial_policy_ = std::make_unique<embedder_support::OriginTrialPolicyImpl>();
+    return origin_trial_policy_.get();
 }
 
 } // namespace QtWebEngineCore

@@ -4,6 +4,7 @@
 #include "gl_surface_wgl_qt.h"
 
 #if BUILDFLAG(IS_WIN)
+#include "ui/gl/gl_display_manager.h"
 #include "ui/gl/gl_surface_wgl.h"
 
 namespace gl {
@@ -19,9 +20,12 @@ GLSurfaceWGLQt::~GLSurfaceWGLQt()
     Destroy();
 }
 
-bool GLSurfaceWGLQt::InitializeOneOff()
+gl::GLDisplay *GLSurfaceWGLQt::InitializeOneOff(uint64_t system_device_id)
 {
-    return GLSurfaceWGL::InitializeOneOff();
+    if (GLSurfaceWGL::InitializeOneOff())
+        return GLDisplayManagerWGL::GetInstance()->GetDisplay(GpuPreference::kDefault);
+
+    return nullptr;
 }
 
 bool GLSurfaceWGLQt::Initialize(GLSurfaceFormat format)

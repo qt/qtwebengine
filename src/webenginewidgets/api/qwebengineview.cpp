@@ -6,8 +6,9 @@
 #include "qwebengineview_p.h"
 #include "render_widget_host_view_qt_delegate_client.h"
 #include "render_widget_host_view_qt_delegate_item.h"
-#include "qwebengine_accessible.h"
 #include "ui/autofillpopupwidget_p.h"
+#include "touchhandlewidget_p.h"
+#include "touchselectionmenuwidget_p.h"
 
 #include <QtWebEngineCore/private/qwebenginepage_p.h>
 #include <QtWebEngineCore/qwebenginecontextmenurequest.h>
@@ -17,6 +18,7 @@
 
 #include "autofill_popup_controller.h"
 #include "color_chooser_controller.h"
+#include "touch_selection_menu_controller.h"
 #include "web_contents_adapter.h"
 
 #include <QContextMenuEvent>
@@ -27,6 +29,10 @@
 #include <QStyle>
 #include <QGuiApplication>
 #include <QQuickWidget>
+
+#if QT_CONFIG(accessibility)
+#include "qwebengine_accessible.h"
+#endif
 
 #if QT_CONFIG(action)
 #include <QAction>
@@ -57,6 +63,7 @@
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "printing/printer_worker.h"
 
+#include <QPrintEngine>
 #include <QPrinter>
 #include <QThread>
 #endif
@@ -807,7 +814,11 @@ void QWebEngineViewPrivate::didPrintPage(QPrinter *&currentPrinter, QSharedPoint
     printerWorker->m_documentCopies = currentPrinter->copyCount();
     printerWorker->m_collateCopies = currentPrinter->collateCopies();
 
-    QObject::connect(printerWorker, &QtWebEngineCore::PrinterWorker::resultReady, q, [q, &currentPrinter](bool success) {
+    int oldCopyCount = currentPrinter->copyCount();
+    currentPrinter->printEngine()->setProperty(QPrintEngine::PPK_CopyCount, 1);
+
+    QObject::connect(printerWorker, &QtWebEngineCore::PrinterWorker::resultReady, q, [q, &currentPrinter, oldCopyCount](bool success) {
+        currentPrinter->printEngine()->setProperty(QPrintEngine::PPK_CopyCount, oldCopyCount);
         currentPrinter = nullptr;
         Q_EMIT q->printFinished(success);
     });
@@ -1397,6 +1408,9 @@ void QWebEngineView::printToPdf(const std::function<void(const QByteArray&)> &re
 
     \note Printing runs on the browser process, which is by default not sandboxed.
 
+    \note The data generation step of printing can be interrupted for a short period of time using
+    the \l QWebEnginePage::Stop web action.
+
     \note This function rasterizes the result when rendering onto \a printer. Please consider raising
     the default resolution of \a printer to at least 300 DPI or using printToPdf() to produce
     PDF file output more effectively.
@@ -1590,6 +1604,49 @@ bool QContextMenuBuilder::isMenuItemEnabled(ContextMenuItem menuItem)
     Q_UNREACHABLE();
 }
 #endif // QT_CONFIG(action)
+
+QtWebEngineCore::TouchHandleDrawableDelegate *
+QWebEngineViewPrivate::createTouchHandleDelegate(const QMap<int, QImage> &images)
+{
+    Q_Q(QWebEngineView);
+    return new QtWebEngineWidgetUI::TouchHandleWidget(q, images);
+}
+
+void QWebEngineViewPrivate::hideTouchSelectionMenu()
+{
+    if (m_touchSelectionMenu)
+        m_touchSelectionMenu->close();
+}
+
+void QWebEngineViewPrivate::showTouchSelectionMenu(
+        QtWebEngineCore::TouchSelectionMenuController *controller, const QRect &selectionBounds)
+{
+    Q_ASSERT(m_touchSelectionMenu == nullptr);
+    Q_Q(QWebEngineView);
+
+    // Do not show outside of view
+    QSize parentSize = q->nativeParentWidget() ? q->nativeParentWidget()->size() : q->size();
+    if (selectionBounds.x() < 0 || selectionBounds.x() > parentSize.width()
+        || selectionBounds.y() < 0 || selectionBounds.y() > parentSize.height())
+        return;
+
+    m_touchSelectionMenu = new QtWebEngineWidgetUI::TouchSelectionMenuWidget(q, controller);
+
+    const int kSpacingBetweenButtons = 2;
+    const int kMenuButtonMinWidth = 80;
+    const int kMenuButtonMinHeight = 40;
+
+    int buttonCount = controller->buttonCount();
+    int width = (kSpacingBetweenButtons * (buttonCount + 1)) + (kMenuButtonMinWidth * buttonCount);
+    int height = kMenuButtonMinHeight + kSpacingBetweenButtons;
+    int x = (selectionBounds.x() + selectionBounds.x() + selectionBounds.width() - width) / 2;
+    int y = selectionBounds.y() - height - 2;
+
+    QPoint pos = q->mapToGlobal(QPoint(x, y));
+
+    m_touchSelectionMenu->setGeometry(pos.x(), pos.y(), width, height);
+    m_touchSelectionMenu->show();
+}
 
 QT_END_NAMESPACE
 

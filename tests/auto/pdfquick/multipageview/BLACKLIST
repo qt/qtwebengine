@@ -1,0 +1,7 @@
+# QTBUG-111306
+[navigation:click links and go back, twice]
+android
+
+# QTBUG-111306
+[navigation:click two links in series and then go back]
+android

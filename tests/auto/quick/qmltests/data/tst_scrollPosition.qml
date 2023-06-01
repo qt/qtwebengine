@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 import QtQuick
-import QtQuick.Window
 import QtTest
 import QtWebEngine
 
@@ -36,7 +35,7 @@ TestWebEngineView {
 
             tryCompare(scrollPositionSpy, "count", 1);
             compare(webEngineView.scrollPosition.x, 0);
-            compare(webEngineView.scrollPosition.y, 600 * Screen.devicePixelRatio);
+            compare(webEngineView.scrollPosition.y, 600);
         }
 
         function test_scrollPositionAfterReload() {
@@ -49,13 +48,13 @@ TestWebEngineView {
             // Wait for proper scroll position change otherwise we cannot expect
             // the new y position after reload.
             tryCompare(webEngineView.scrollPosition, "x", 0);
-            tryCompare(webEngineView.scrollPosition, "y", 600 * Screen.devicePixelRatio);
+            tryCompare(webEngineView.scrollPosition, "y", 600);
 
             webEngineView.reload();
             verify(webEngineView.waitForLoadSucceeded());
 
             tryCompare(webEngineView.scrollPosition, "x", 0);
-            tryCompare(webEngineView.scrollPosition, "y", 600 * Screen.devicePixelRatio);
+            tryCompare(webEngineView.scrollPosition, "y", 600);
         }
     }
 }

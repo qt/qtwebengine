@@ -263,7 +263,7 @@ int main(int argc, char **argv)
 #if QT_CONFIG(ssl)
     qmlRegisterSingletonType<HttpsServer>(
             "Test.Shared", 1, 0, "HttpsServer", [&](QQmlEngine *, QJSEngine *) {
-                return new HttpsServer(":/resources/server.pem", ":/resources/server.key");
+                return new HttpsServer(":/resources/server.pem", ":/resources/server.key", "");
             });
 #endif
     Setup setup;

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-\page qt_add_webengine_dictionary.html
+\page qt-add-webengine-dictionary.html
 \ingroup cmake-commands-qtwebenginecore
 
 \title qt_add_webengine_dictionary

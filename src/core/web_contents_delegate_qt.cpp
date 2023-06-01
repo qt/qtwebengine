@@ -48,6 +48,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/data_url.h"
 #include "net/base/url_util.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
 #include <QDesktopServices>
 #include <QTimer>
@@ -204,11 +205,11 @@ QUrl WebContentsDelegateQt::url(content::WebContents *source) const
     m_pendingUrlUpdate = false;
     return newUrl;
 }
-void WebContentsDelegateQt::AddNewContents(content::WebContents* source, std::unique_ptr<content::WebContents> new_contents, const GURL &target_url,
-                                           WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked)
+void WebContentsDelegateQt::AddNewContents(content::WebContents *source, std::unique_ptr<content::WebContents> new_contents, const GURL &target_url,
+                                           WindowOpenDisposition disposition, const blink::mojom::WindowFeatures &window_features, bool user_gesture, bool *was_blocked)
 {
     Q_UNUSED(source)
-    QSharedPointer<WebContentsAdapter> newAdapter = createWindow(std::move(new_contents), disposition, initial_pos, toQt(target_url), user_gesture);
+    QSharedPointer<WebContentsAdapter> newAdapter = createWindow(std::move(new_contents), disposition, window_features.bounds, toQt(target_url), user_gesture);
     // Chromium can forget to pass user-agent override settings to new windows (see QTBUG-61774 and QTBUG-76249),
     // so set it here. Note the actual value doesn't really matter here. Only the second value does, but we try
     // to give the correct user-agent anyway.
@@ -254,6 +255,10 @@ void WebContentsDelegateQt::RenderFrameCreated(content::RenderFrameHost *render_
 {
     content::FrameTreeNode *node = static_cast<content::RenderFrameHostImpl *>(render_frame_host)->frame_tree_node();
     m_frameFocusedObserver.addNode(node);
+
+    // If it's a child frame (render_widget_host_view_child_frame) install an InputEventObserver on
+    // it. Note that it is only needed for WheelEventAck.
+    RenderWidgetHostViewQt::registerInputEventObserver(web_contents(), render_frame_host);
 }
 
 void WebContentsDelegateQt::PrimaryMainFrameRenderProcessGone(base::TerminationStatus status)
@@ -472,7 +477,7 @@ void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_h
 {
     setLoadingState(LoadingState::Loaded);
 
-    if (render_frame_host != web_contents()->GetMainFrame())
+    if (render_frame_host != web_contents()->GetPrimaryMainFrame())
         return;
 
     if (validated_url.spec() == content::kUnreachableWebDataURL) {
@@ -623,7 +628,7 @@ void WebContentsDelegateQt::UpdateTargetURL(content::WebContents* source, const 
 void WebContentsDelegateQt::OnVisibilityChanged(content::Visibility visibility)
 {
     if (visibility != content::Visibility::HIDDEN)
-        web_cache::WebCacheManager::GetInstance()->ObserveActivity(web_contents()->GetMainFrame()->GetProcess()->GetID());
+        web_cache::WebCacheManager::GetInstance()->ObserveActivity(web_contents()->GetPrimaryMainFrame()->GetProcess()->GetID());
 }
 
 void WebContentsDelegateQt::ActivateContents(content::WebContents* contents)
@@ -869,6 +874,7 @@ int &WebContentsDelegateQt::streamCount(blink::mojom::MediaStreamType type)
     case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE:
     case blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE:
     case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB:
+    case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET:
         return m_desktopStreamCount;
 
     case blink::mojom::MediaStreamType::NO_SERVICE:
@@ -880,20 +886,34 @@ int &WebContentsDelegateQt::streamCount(blink::mojom::MediaStreamType type)
     return m_videoStreamCount;
 }
 
-void WebContentsDelegateQt::addDevices(const blink::MediaStreamDevices &devices)
+void WebContentsDelegateQt::addDevices(const blink::mojom::StreamDevices &devices)
 {
-    for (const auto &device : devices)
-        ++streamCount(device.type);
+    if (devices.audio_device.has_value())
+        addDevice(devices.audio_device.value());
+    if (devices.video_device.has_value())
+        addDevice(devices.video_device.value());
 
     webContentsAdapter()->updateRecommendedState();
 }
 
-void WebContentsDelegateQt::removeDevices(const blink::MediaStreamDevices &devices)
+void WebContentsDelegateQt::removeDevices(const blink::mojom::StreamDevices &devices)
 {
-    for (const auto &device : devices)
-        ++streamCount(device.type);
+    if (devices.audio_device.has_value())
+        removeDevice(devices.audio_device.value());
+    if (devices.video_device.has_value())
+        removeDevice(devices.video_device.value());
 
     webContentsAdapter()->updateRecommendedState();
+}
+
+void WebContentsDelegateQt::addDevice(const blink::MediaStreamDevice &device)
+{
+    ++streamCount(device.type);
+}
+
+void WebContentsDelegateQt::removeDevice(const blink::MediaStreamDevice &device)
+{
+    --streamCount(device.type);
 }
 
 FrameFocusedObserver::FrameFocusedObserver(WebContentsAdapterClient *adapterClient)

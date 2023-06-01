@@ -15,7 +15,6 @@
 #include "type_conversion.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -29,7 +28,7 @@ void ProxyingRestrictedCookieManagerQt::CreateAndBind(ProfileIODataQt *profileIo
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(FROM_HERE,
                    base::BindOnce(&ProxyingRestrictedCookieManagerQt::CreateAndBindOnIoThread,
                                   profileIoData,
                                   std::move(underlying_rcm),
@@ -121,7 +120,7 @@ void ProxyingRestrictedCookieManagerQt::SetCookieFromString(const GURL &url,
         underlying_restricted_cookie_manager_->SetCookieFromString(url, site_for_cookies, top_frame_origin, cookie,
                                                                    partitioned_cookies_runtime_feature_enabled, std::move(callback));
     } else {
-        std::move(callback).Run();
+        std::move(callback).Run(false, false); // FIXME: is true, true in aw_proxying_restricted_cookie_manager.cc though..
     }
 }
 
@@ -148,6 +147,11 @@ void ProxyingRestrictedCookieManagerQt::CookiesEnabledFor(const GURL &url,
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     std::move(callback).Run(allowCookies(url, site_for_cookies));
+}
+
+void ProxyingRestrictedCookieManagerQt::ConvertPartitionedCookiesToUnpartitioned(const GURL&)
+{
+    NOTIMPLEMENTED();
 }
 
 bool ProxyingRestrictedCookieManagerQt::allowCookies(const GURL &url, const net::SiteForCookies &site_for_cookies) const

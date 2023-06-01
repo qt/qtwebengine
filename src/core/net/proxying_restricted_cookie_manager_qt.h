@@ -56,6 +56,7 @@ public:
                            const net::SiteForCookies &site_for_cookies,
                            const url::Origin &top_frame_origin,
                            CookiesEnabledForCallback callback) override;
+    void ConvertPartitionedCookiesToUnpartitioned(const GURL&) override;
 
     // Internal:
     bool allowCookies(const GURL &url, const net::SiteForCookies &site_for_cookies) const;

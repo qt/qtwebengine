@@ -6,6 +6,8 @@
 
 #include <QWebEngineSettings>
 
+using namespace Qt::StringLiterals;
+
 Browser::Browser()
 {
     // Quit application if the download manager window is the only remaining window
@@ -19,8 +21,8 @@ Browser::Browser()
 BrowserWindow *Browser::createHiddenWindow(bool offTheRecord)
 {
     if (!offTheRecord && !m_profile) {
-        m_profile.reset(new QWebEngineProfile(
-                QString::fromLatin1("simplebrowser.%1").arg(qWebEngineChromiumVersion())));
+        const QString name = u"simplebrowser."_s + QLatin1StringView(qWebEngineChromiumVersion());
+        m_profile.reset(new QWebEngineProfile(name));
         m_profile->settings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
         m_profile->settings()->setAttribute(QWebEngineSettings::DnsPrefetchEnabled, true);
         m_profile->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);

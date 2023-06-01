@@ -1444,6 +1444,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev)
     webKitEvent.SetPositionInWidget(ev->position().x(), ev->position().y());
     webKitEvent.movement_x = ev->position().x() - ev->oldPos().x();
     webKitEvent.movement_y = ev->position().y() - ev->oldPos().y();
+    webKitEvent.is_raw_movement_event = true;
     webKitEvent.pointer_type = WebPointerProperties::PointerType::kMouse;
 
     return webKitEvent;

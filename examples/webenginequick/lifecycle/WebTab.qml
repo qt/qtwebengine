@@ -132,7 +132,7 @@ ColumnLayout {
                 text: view.url == "about:blank" ? "" : view.url
                 selectByMouse: true
 
-                onAccepted: { view.url = text }
+                onAccepted: { view.url = utils.fromUserInput(text) }
             }
             WebToolButton {
                 text: "⋮"

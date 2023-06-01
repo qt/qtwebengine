@@ -5,17 +5,20 @@
 #include "browserwindow.h"
 #include "tabwidget.h"
 #include <QApplication>
+#include <QLoggingCategory>
 #include <QWebEngineProfile>
 #include <QWebEngineSettings>
+
+using namespace Qt::StringLiterals;
 
 QUrl commandLineUrlArgument()
 {
     const QStringList args = QCoreApplication::arguments();
     for (const QString &arg : args.mid(1)) {
-        if (!arg.startsWith(QLatin1Char('-')))
+        if (!arg.startsWith(u'-'))
             return QUrl::fromUserInput(arg);
     }
-    return QUrl(QStringLiteral("https://www.qt.io"));
+    return QUrl(u"https://www.qt.io"_s);
 }
 
 int main(int argc, char **argv)
@@ -23,7 +26,8 @@ int main(int argc, char **argv)
     QCoreApplication::setOrganizationName("QtExamples");
 
     QApplication app(argc, argv);
-    app.setWindowIcon(QIcon(QStringLiteral(":AppLogoColor.png")));
+    app.setWindowIcon(QIcon(u":AppLogoColor.png"_s));
+    QLoggingCategory::setFilterRules(u"qt.webenginecontext.debug=true"_s);
 
     QWebEngineProfile::defaultProfile()->settings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
     QWebEngineProfile::defaultProfile()->settings()->setAttribute(QWebEngineSettings::DnsPrefetchEnabled, true);

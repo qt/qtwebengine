@@ -3,8 +3,6 @@
 
 #include "accessibility_activation_observer.h"
 
-#if QT_CONFIG(accessibility)
-
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 
 namespace QtWebEngineCore {
@@ -49,5 +47,3 @@ void AccessibilityActivationObserver::accessibilityActiveChanged(bool active)
 }
 
 } // namespace QtWebEngineCore
-
-#endif // QT_CONFIG(accessibility)

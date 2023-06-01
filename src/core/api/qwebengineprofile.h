@@ -98,6 +98,9 @@ public:
     QString downloadPath() const;
     void setDownloadPath(const QString &path);
 
+    bool isPushServiceEnabled() const;
+    void setPushServiceEnabled(bool enabled);
+
     void setNotificationPresenter(std::function<void(std::unique_ptr<QWebEngineNotification>)> notificationPresenter);
 
     QWebEngineClientCertificateStore *clientCertificateStore();

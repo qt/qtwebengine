@@ -55,7 +55,7 @@ void DownloadManagerDelegateQt::cancelDownload(content::DownloadTargetCallback c
                             download::DownloadItem::UNKNOWN,
                             base::FilePath(),
                             base::FilePath(),
-                            absl::nullopt,
+                            std::string(),
                             download::DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
 }
 
@@ -97,7 +97,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
                                  download::DownloadItem::VALIDATED,
                                  item->GetForcedFilePath(),
                                  item->GetFileNameToReportUser(),
-                                 absl::nullopt,
+                                 item->GetMimeType(),
                                  download::DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE);
         return true;
     }
@@ -190,7 +190,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
                                  download::DownloadItem::VALIDATED,
                                  filePathForCallback.AddExtension(toFilePathString("download")),
                                  base::FilePath(),
-                                 absl::nullopt,
+                                 item->GetMimeType(),
                                  download::DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE);
     } else
         cancelDownload(std::move(*callback));

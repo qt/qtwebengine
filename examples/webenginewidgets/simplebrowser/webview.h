@@ -20,7 +20,7 @@ class WebView : public QWebEngineView
     Q_OBJECT
 
 public:
-    WebView(QWidget *parent = nullptr);
+    explicit WebView(QWidget *parent = nullptr);
     void setPage(WebPage *page);
 
     int loadProgress() const;
@@ -51,7 +51,7 @@ private:
     void createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction);
 
 private:
-    int m_loadProgress;
+    int m_loadProgress = 100;
 };
 
 #endif

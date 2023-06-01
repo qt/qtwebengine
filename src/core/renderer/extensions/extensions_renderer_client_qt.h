@@ -16,6 +16,7 @@ namespace blink {
 class WebLocalFrame;
 struct WebPluginParams;
 class WebURL;
+class WebView;
 }
 
 namespace content {
@@ -55,6 +56,8 @@ public:
 
     // Match ContentRendererClientQt's method names...
     void RenderThreadStarted();
+    void WebViewCreated(blink::WebView *web_view,
+                        const url::Origin *outermost_origin);
     void RenderFrameCreated(content::RenderFrame *, service_manager::BinderRegistry *);
     bool OverrideCreatePlugin(content::RenderFrame *render_frame,
                               const blink::WebPluginParams &params);

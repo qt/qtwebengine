@@ -21,7 +21,7 @@ WebEnginePageHost::WebEnginePageHost(content::WebContents *webContents,
 
 void WebEnginePageHost::FetchDocumentMarkup(uint64_t requestId)
 {
-    auto &remote = GetWebEnginePageRenderFrame(web_contents()->GetMainFrame());
+    auto &remote = GetWebEnginePageRenderFrame(web_contents()->GetPrimaryMainFrame());
     remote->FetchDocumentMarkup(
             requestId,
             base::BindOnce(&WebEnginePageHost::OnDidFetchDocumentMarkup, base::Unretained(this)));
@@ -29,7 +29,7 @@ void WebEnginePageHost::FetchDocumentMarkup(uint64_t requestId)
 
 void WebEnginePageHost::FetchDocumentInnerText(uint64_t requestId)
 {
-    auto &remote = GetWebEnginePageRenderFrame(web_contents()->GetMainFrame());
+    auto &remote = GetWebEnginePageRenderFrame(web_contents()->GetPrimaryMainFrame());
     remote->FetchDocumentInnerText(requestId,
                                    base::BindOnce(&WebEnginePageHost::OnDidFetchDocumentInnerText,
                                                   base::Unretained(this)));
@@ -53,7 +53,7 @@ void WebEnginePageHost::RenderFrameDeleted(content::RenderFrameHost *render_fram
 
 void WebEnginePageHost::SetBackgroundColor(uint32_t color)
 {
-    auto &remote = GetWebEnginePageRenderFrame(web_contents()->GetMainFrame());
+    auto &remote = GetWebEnginePageRenderFrame(web_contents()->GetPrimaryMainFrame());
     remote->SetBackgroundColor(color);
 }
 
