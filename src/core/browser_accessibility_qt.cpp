@@ -126,6 +126,8 @@ public:
     void modelChange(QAccessibleTableModelChangeEvent *event) override;
 
 private:
+    content::BrowserAccessibility *findTable() const;
+
     QObject *m_object = nullptr;
     QAccessible::Id m_id = 0;
     BrowserAccessibilityQt *q;
@@ -212,10 +214,14 @@ void *BrowserAccessibilityInterface::interface_cast(QAccessible::InterfaceType t
     }
     case QAccessible::TableCellInterface: {
         QAccessible::Role r = role();
-        if (r == QAccessible::Cell ||
-            r == QAccessible::ListItem ||
-            r == QAccessible::TreeItem)
-            return static_cast<QAccessibleTableCellInterface*>(this);
+        if (r == QAccessible::Cell) {
+            Q_ASSERT(findTable());
+            return static_cast<QAccessibleTableCellInterface *>(this);
+        }
+        if (r == QAccessible::ListItem || r == QAccessible::TreeItem) {
+            if (findTable())
+                return static_cast<QAccessibleTableCellInterface *>(this);
+        }
         break;
     }
     default:
@@ -1102,14 +1108,20 @@ bool BrowserAccessibilityInterface::isSelected() const
     return false;
 }
 
+content::BrowserAccessibility *BrowserAccessibilityInterface::findTable() const
+{
+    content::BrowserAccessibility *parent = q->PlatformGetParent();
+    while (parent && parent->GetRole() != ax::mojom::Role::kTable)
+        parent = parent->PlatformGetParent();
+
+    return parent;
+}
+
 QAccessibleInterface *BrowserAccessibilityInterface::table() const
 {
-    content::BrowserAccessibility *find_table = q->PlatformGetParent();
-    while (find_table && find_table->GetRole() != ax::mojom::Role::kTable)
-        find_table = find_table->PlatformGetParent();
-    if (!find_table)
-        return nullptr;
-    return content::toQAccessibleInterface(find_table);
+    content::BrowserAccessibility *table = findTable();
+    Q_ASSERT(table);
+    return content::toQAccessibleInterface(table);
 }
 
 void BrowserAccessibilityInterface::modelChange(QAccessibleTableModelChangeEvent *)

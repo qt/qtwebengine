@@ -471,7 +471,6 @@ ApplicationWindow {
         }
 
         function removeView(index) {
-            tabBar.removeItem(index);
             if (tabBar.count > 1) {
                 tabBar.removeItem(tabBar.itemAt(index));
                 tabLayout.children[index].destroy();
