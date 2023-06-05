@@ -445,6 +445,7 @@ function(add_linker_options target buildDir completeStatic)
     set(objects_rsp "${buildDir}/${ninjaTarget}_objects.rsp")
     set(archives_rsp "${buildDir}/${ninjaTarget}_archives.rsp")
     set(libs_rsp "${buildDir}/${ninjaTarget}_libs.rsp")
+    set(ldir_rsp "${buildDir}/${ninjaTarget}_ldir.rsp")
     set_target_properties(${cmakeTarget} PROPERTIES STATIC_LIBRARY_OPTIONS "@${objects_rsp}")
     if(LINUX OR ANDROID)
          get_gn_arch(cpu ${TEST_architecture_arch})
@@ -460,30 +461,9 @@ function(add_linker_options target buildDir completeStatic)
              )
          endif()
 
-         # we need only the '-L' flags from lflags.rsp, filter them
-         set(lflags_rsp "${buildDir}/${ninjaTarget}_lflags.rsp")
-         set(lflags_filtered_rsp "${buildDir}/${ninjaTarget}_lflags_filtered.rsp")
-         set(lflags_filter_script "${buildDir}/${ninjaTarget}_lflags_filter.cmake")
-         file(GENERATE OUTPUT ${lflags_filter_script}
-              CONTENT "file(STRINGS ${lflags_rsp} lflags)
-                       string(REGEX MATCHALL \"-L.*\" lflags_filtered \${lflags})
-                       file(WRITE ${lflags_filtered_rsp} \${lflags_filtered})"
-              FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-         )
-         add_custom_command(
-            OUTPUT ${lflags_filtered_rsp}
-            COMMAND ${CMAKE_COMMAND} -P ${lflags_filter_script}
-            DEPENDS ${lflags_filter_script} ${lflags_rsp}
-         )
-         add_custom_target(
-            run_${cmakeTarget}_${config}_lflags_filter
-            DEPENDS ${lflags_filtered_rsp}
-         )
-         add_dependencies(${cmakeTarget} run_${cmakeTarget}_${config}_lflags_filter)
-
          # linker here options are just to prevent processing it by cmake
          target_link_libraries(${cmakeTarget} PRIVATE
-             "$<1:-Wl,--no-fatal-warnings $<$<CONFIG:${config}>:@${lflags_filtered_rsp}> $<$<CONFIG:${config}>:@${libs_rsp}> -Wl,--no-fatal-warnings>"
+             "$<1:-Wl,--no-fatal-warnings $<$<CONFIG:${config}>:@${ldir_rsp}> $<$<CONFIG:${config}>:@${libs_rsp}> -Wl,--no-fatal-warnings>"
          )
     endif()
     if(MACOS)
@@ -1245,7 +1225,7 @@ function(add_gn_command)
     file(WRITE ${gnArgArgFile} ${arg_GN_ARGS})
 
     foreach(ninjaTarget ${arg_NINJA_TARGETS})
-        list(APPEND output ${ninjaTarget}_objects.rsp ${ninjaTarget}_archives.rsp ${ninjaTarget}_libs.rsp ${ninjaTarget}_lflags.rsp)
+        list(APPEND output ${ninjaTarget}_objects.rsp ${ninjaTarget}_archives.rsp ${ninjaTarget}_libs.rsp ${ninjaTarget}_ldir.rsp)
     endforeach()
     list(TRANSFORM output PREPEND "${arg_BUILDDIR}/")
 
