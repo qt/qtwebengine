@@ -1,0 +1,11 @@
+// Copyright (C) 2023 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qtpdf-platformnotes.html
+    \title Qt PDF Platform Notes
+
+    Building Qt PDF for Android is currently
+    \l{https://bugreports.qt.io/browse/QTBUG-83459} {not supported} on Windows host platforms.
+*/
+
