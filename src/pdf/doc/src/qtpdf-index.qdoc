@@ -65,6 +65,11 @@
         \li \l{Qt Quick PDF QML Types}
     \endlist
 
+    \section1 Articles and Guides
+    \list
+        \li {Qt PDF Platform Notes} {Platform Notes}
+    \endlist
+
     \section1 Licenses and Attributions
 
     Qt PDF is available under commercial licenses from \l{The Qt Company}.
