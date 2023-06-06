@@ -183,6 +183,7 @@ private Q_SLOTS:
     void navigateOnDrop_data();
     void navigateOnDrop();
     void datalist();
+    void longKeyEventText();
 };
 
 // This will be called before the first test function is executed.
@@ -3783,6 +3784,50 @@ void tst_QWebEngineView::datalist()
             evaluateJavaScriptSync(view.page(), "document.getElementById('browserInput').value")
                     .toString(),
             QStringLiteral("fil"));
+}
+
+class ConsolePage : public QWebEnginePage
+{
+    Q_OBJECT
+public:
+    ConsolePage(QObject *parent = nullptr) : QWebEnginePage(parent) { }
+    void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message,
+                                  int lineNumber, const QString &sourceID) override
+    {
+        Q_UNUSED(level)
+        Q_UNUSED(lineNumber)
+        Q_UNUSED(sourceID)
+        if (message.contains("TEST_KEY:Shift"))
+            emit done();
+    }
+signals:
+    void done();
+};
+
+//qtbug_113704
+void tst_QWebEngineView::longKeyEventText()
+{
+    const QString html(QStringLiteral("<html><body><p>TEST</p>"
+                                      "<script>"
+                                      "document.addEventListener('keydown', (event)=> {"
+                                      "console.log('TEST_KEY:' + event.key);"
+                                      "});"
+                                      "</script>"
+                                      "</body></html>"));
+
+    QWebEngineView view;
+    ConsolePage page;
+    view.setPage(&page);
+    QSignalSpy loadFinishedSpy(view.page(), &QWebEnginePage::loadFinished);
+    view.resize(200, 400);
+    view.show();
+    view.setHtml(html);
+    QTRY_VERIFY(loadFinishedSpy.size());
+    QSignalSpy consoleMessageSpy(&page, &ConsolePage::done);
+    Qt::Key key(Qt::Key_Shift);
+    QKeyEvent event(QKeyEvent::KeyPress, key, Qt::NoModifier, QKeySequence(key).toString());
+    QApplication::sendEvent(view.focusProxy(), &event);
+    QTRY_VERIFY(consoleMessageSpy.size());
 }
 
 QTEST_MAIN(tst_QWebEngineView)
