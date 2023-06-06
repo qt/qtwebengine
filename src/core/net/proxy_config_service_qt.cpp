@@ -16,14 +16,15 @@
 
 net::ProxyServer ProxyConfigServiceQt::fromQNetworkProxy(const QNetworkProxy &qtProxy)
 {
-    net::HostPortPair hostPortPair(qtProxy.hostName().toStdString(), qtProxy.port());
+    std::string host = qtProxy.hostName().toStdString();
+    uint16_t port = qtProxy.port();
     switch (qtProxy.type()) {
     case QNetworkProxy::Socks5Proxy:
-        return net::ProxyServer(net::ProxyServer::SCHEME_SOCKS5, hostPortPair);
+        return net::ProxyServer::FromSchemeHostAndPort(net::ProxyServer::SCHEME_SOCKS5, host, port);
     case QNetworkProxy::HttpProxy:
     case QNetworkProxy::HttpCachingProxy:
     case QNetworkProxy::FtpCachingProxy:
-        return net::ProxyServer(net::ProxyServer::SCHEME_HTTP, hostPortPair);
+        return net::ProxyServer::FromSchemeHostAndPort(net::ProxyServer::SCHEME_HTTP, host, port);
     case QNetworkProxy::NoProxy:
     case QNetworkProxy::DefaultProxy:
         return net::ProxyServer(net::ProxyServer::SCHEME_DIRECT, net::HostPortPair());
