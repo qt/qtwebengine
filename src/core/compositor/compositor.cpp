@@ -9,6 +9,7 @@
 #include <QHash>
 #include <QImage>
 #include <QMutex>
+#include <QQuickWindow>
 
 namespace QtWebEngineCore {
 
@@ -136,22 +137,32 @@ Compositor::Handle<Compositor::Observer> Compositor::observer()
     return nullptr;
 }
 
-QImage Compositor::image()
-{
-    Q_UNREACHABLE();
-    return {};
-}
-
 void Compositor::waitForTexture()
 {
-    Q_UNREACHABLE();
 }
 
-int Compositor::textureId()
+void Compositor::releaseTexture()
+{
+}
+
+QSGTexture *Compositor::texture(QQuickWindow *, uint32_t textureOptions)
 {
     Q_UNREACHABLE();
-    return 0;
+    return nullptr;
 }
+
+bool Compositor::textureIsFlipped()
+{
+    Q_UNREACHABLE();
+    return false;
+}
+
+#if QT_CONFIG(webengine_vulkan)
+void Compositor::releaseVulkanResources(QQuickWindow *)
+{
+    Q_UNREACHABLE();
+}
+#endif
 
 // static
 void Compositor::unlockBindings()

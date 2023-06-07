@@ -9,3 +9,5 @@ windows
 
 [horizontalScrollbarTest]
 b2qt # different scrollbar
+macos
+rhel # flaky

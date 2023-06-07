@@ -5,7 +5,6 @@
 
 #include "qtwebenginecoreglobal_p.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "components/spellcheck/spellcheck_buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/local_interface_provider.h"
 
@@ -52,6 +51,9 @@ public:
     void RenderThreadStarted() override;
     void ExposeInterfacesToBrowser(mojo::BinderMap* binders) override;
     void RenderFrameCreated(content::RenderFrame *render_frame) override;
+    void WebViewCreated(blink::WebView *web_view,
+                        bool was_created_by_renderer,
+                        const url::Origin *outermost_origin) override;
 
     void PrepareErrorPage(content::RenderFrame *render_frame,
                           const blink::WebURLError &error,
@@ -93,7 +95,7 @@ public:
 
 
 private:
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
     void InitSpellCheck();
 #endif
     // service_manager::LocalInterfaceProvider:

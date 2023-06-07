@@ -7,7 +7,9 @@
 #include <QPainter>
 #include <QPdfDocument>
 #include <QPrinter>
+#include <QDateTime>
 #include <QTemporaryFile>
+#include <QTimeZone>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -376,8 +378,10 @@ void tst_QPdfDocument::metaData()
     QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::Keywords).toString(), QString::fromLatin1("meta data keywords"));
     QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::Producer).toString(), QString::fromLatin1("LibreOffice 5.1"));
     QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::Creator).toString(), QString::fromLatin1("Writer"));
-    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::CreationDate).toDateTime(), QDateTime(QDate(2016, 8, 7), QTime(7, 3, 6), Qt::UTC));
-    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::ModificationDate).toDateTime(), QDateTime(QDate(2016, 8, 8), QTime(8, 3, 6), Qt::UTC));
+    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::CreationDate).toDateTime(),
+             QDateTime(QDate(2016, 8, 7), QTime(7, 3, 6), QTimeZone::UTC));
+    QCOMPARE(doc.metaData(QPdfDocument::MetaDataField::ModificationDate).toDateTime(),
+             QDateTime(QDate(2016, 8, 8), QTime(8, 3, 6), QTimeZone::UTC));
 }
 
 void tst_QPdfDocument::pageLabels()

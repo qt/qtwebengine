@@ -57,7 +57,7 @@ public:
     void AboutToAddFirstContext() override;
 
 private:
-    scoped_refptr<QtShareGLContext> m_shareContextQt;
+    scoped_refptr<gl::GLContext> m_shareContextQt;
 };
 } // namespace
 #endif

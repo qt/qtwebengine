@@ -4,19 +4,13 @@
 #include "user_resource_controller.h"
 
 #include "base/memory/weak_ptr.h"
-#include "base/pending_task.h"
 #include "base/strings/pattern.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "extensions/common/url_pattern.h"
-#include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_script_source.h"
-#include "third_party/blink/public/web/web_view.h"
-#include "v8/include/v8.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 
 #include "qtwebengine/userscript/user_script_data.h"
@@ -188,7 +182,7 @@ UserResourceController::RenderFrameObserverHelper::RenderFrameObserverHelper(
     , m_binding(this)
     , m_userResourceController(controller)
 {
-    render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
+    render_frame->GetAssociatedInterfaceRegistry()->AddInterface<qtwebengine::mojom::UserResourceControllerRenderFrame>(
             base::BindRepeating(&UserResourceController::RenderFrameObserverHelper::BindReceiver,
                                 base::Unretained(this)));
 }
@@ -295,10 +289,11 @@ void UserResourceController::renderFrameDestroyed(content::RenderFrame *renderFr
     FrameUserScriptMap::iterator it = m_frameUserScriptMap.find(renderFrame);
     if (it == m_frameUserScriptMap.end()) // ASSERT maybe?
         return;
-    for (uint64_t id : std::as_const(it.value())) {
-        m_scripts.remove(id);
+    if (renderFrame->IsMainFrame()) {
+        for (uint64_t id : std::as_const(it.value()))
+            m_scripts.remove(id);
     }
-    m_frameUserScriptMap.remove(renderFrame);
+    m_frameUserScriptMap.erase(it);
 }
 
 void UserResourceController::addScriptForFrame(const QtWebEngineCore::UserScriptData &script,
@@ -306,11 +301,12 @@ void UserResourceController::addScriptForFrame(const QtWebEngineCore::UserScript
 {
     FrameUserScriptMap::iterator it = m_frameUserScriptMap.find(frame);
     if (it == m_frameUserScriptMap.end())
-        it = m_frameUserScriptMap.insert(frame, UserScriptSet());
+        it = m_frameUserScriptMap.insert(frame, UserScriptList());
 
     if (!(*it).contains(script.scriptId))
         (*it).append(script.scriptId);
-    m_scripts.insert(script.scriptId, script);
+    if (!frame || frame->IsMainFrame())
+        m_scripts.insert(script.scriptId, script);
 }
 
 void UserResourceController::removeScriptForFrame(const QtWebEngineCore::UserScriptData &script,
@@ -321,7 +317,8 @@ void UserResourceController::removeScriptForFrame(const QtWebEngineCore::UserScr
         return;
 
     (*it).removeOne(script.scriptId);
-    m_scripts.remove(script.scriptId);
+    if (!frame || frame->IsMainFrame())
+        m_scripts.remove(script.scriptId);
 }
 
 void UserResourceController::clearScriptsForFrame(content::RenderFrame *frame)
@@ -329,8 +326,10 @@ void UserResourceController::clearScriptsForFrame(content::RenderFrame *frame)
     FrameUserScriptMap::iterator it = m_frameUserScriptMap.find(frame);
     if (it == m_frameUserScriptMap.end())
         return;
-    for (uint64_t id : std::as_const(it.value()))
-        m_scripts.remove(id);
+    if (!frame || frame->IsMainFrame()) {
+        for (uint64_t id : std::as_const(it.value()))
+            m_scripts.remove(id);
+    }
 
     m_frameUserScriptMap.remove(frame);
 }
@@ -353,7 +352,7 @@ void UserResourceController::ClearScripts()
 void UserResourceController::RegisterMojoInterfaces(
         blink::AssociatedInterfaceRegistry *associated_interfaces)
 {
-    associated_interfaces->AddInterface(
+    associated_interfaces->AddInterface<qtwebengine::mojom::UserResourceController>(
             base::BindRepeating(&UserResourceController::BindReceiver, base::Unretained(this)));
 }
 

@@ -1,14 +1,9 @@
 TEMPLATE=subdirs
 
 SUBDIRS += \
-    customdialogs \
-    customtouchhandle \
-    minimal \
-    quicknanobrowser \
-    webengineaction
+    quicknanobrowser
 
 qtHaveModule(quickcontrols2) {
     SUBDIRS += \
-        lifecycle \
-        recipebrowser
+        lifecycle
 }

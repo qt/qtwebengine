@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 cmake_minimum_required(VERSION 3.16)
 project(lifecycle LANGUAGES CXX)
 
@@ -13,6 +16,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui QuickControls2 WebEngineQuick)
 
 qt_add_executable(lifecycle
     main.cpp
+    utils.h
 )
 
 set_target_properties(lifecycle PROPERTIES

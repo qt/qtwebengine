@@ -24,7 +24,7 @@
     \l QtWebEngineQuick::initialize in the application main source file, as illustrated by the
     following code snippet:
 
-    \quotefromfile webenginequick/minimal/main.cpp
+    \quotefromfile minimal/main.cpp
     \skipto main
     \printuntil }
 
@@ -39,7 +39,7 @@
 
     The following sample QML application loads a web page using the \c url property:
 
-    \quotefromfile webenginequick/minimal/main.qml
+    \quotefromfile minimal/main.qml
     \skipto import
     \printuntil /^\}/
 
@@ -1230,10 +1230,13 @@
 /*!
     \qmlsignal WebEngineView::quotaRequested(QuotaRequest request)
     \since QtWebEngine 1.7
+    \deprecated [6.5] This signal is no longer emitted.
 
-    This signal is emitted when the web page issues a \a request for a larger persistent storage
-    than the application's current allocation in File System API. The default quota
-    is 0 bytes.
+    Requesting host quota is no longer supported by Chromium.
+    The behavior of navigator.webkitPersistentStorage
+    is identical to navigator.webkitTemporaryStorage.
+
+    For further details, see https://crbug.com/1233525
 
     \sa QuotaRequest
 */
@@ -1498,6 +1501,27 @@
         // ...
     }
     \endcode
+
+    The touch handles can be also switched dynamically:
+
+    \code
+     Component {
+        id: circleTouchHandle
+        Rectangle {
+            color: "blue"
+            radius: 50
+        }
+    }
+    function showDefaultHandle(isDefault) {
+        if (isDefault)
+            webEngineView.touchHandleDelegate = circleTouchHandle
+        else
+            webEngineView.touchHandleDelegate = null
+    }
+    \endcode
+
+    \note If no delegate is provided, Chromium's default touch handles will appear.
+
 */
 
     \sa {WebEngine Qt Quick Custom Touch Handle Example}

@@ -54,7 +54,7 @@ public:
     void HideAutofillPopup(autofill::PopupHidingReason reason) override;
     bool IsAutocompleteEnabled() override;
     bool IsPasswordManagerEnabled() override;
-    void PropagateAutofillPredictions(content::RenderFrameHost *,
+    void PropagateAutofillPredictions(autofill::AutofillDriver *,
                                       const std::vector<autofill::FormStructure *> &) override;
 
 

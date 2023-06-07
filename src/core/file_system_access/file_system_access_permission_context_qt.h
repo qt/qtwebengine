@@ -36,10 +36,11 @@ public:
     scoped_refptr<content::FileSystemAccessPermissionGrant>
     GetWritePermissionGrant(const url::Origin &origin, const base::FilePath &path,
                             HandleType handle_type, UserAction user_action) override;
-    void ConfirmSensitiveDirectoryAccess(
+    void ConfirmSensitiveEntryAccess(
             const url::Origin &origin, PathType path_type, const base::FilePath &path,
-            HandleType handle_type, content::GlobalRenderFrameHostId frame_id,
-            base::OnceCallback<void(SensitiveDirectoryResult)> callback) override;
+            HandleType handle_type, UserAction user_action,
+            content::GlobalRenderFrameHostId frame_id,
+            base::OnceCallback<void(SensitiveEntryResult)> callback) override;
     void PerformAfterWriteChecks(std::unique_ptr<content::FileSystemAccessWriteItem> item,
                                  content::GlobalRenderFrameHostId frame_id,
                                  base::OnceCallback<void(AfterWriteCheckResult)> callback) override;
@@ -49,7 +50,8 @@ public:
                                 const base::FilePath &path, const PathType type) override;
     FileSystemAccessPermissionContextQt::PathInfo
     GetLastPickedDirectory(const url::Origin &origin, const std::string &id) override;
-    base::FilePath GetWellKnownDirectoryPath(blink::mojom::WellKnownDirectory directory) override;
+    base::FilePath GetWellKnownDirectoryPath(blink::mojom::WellKnownDirectory directory, const url::Origin &origin) override;
+    std::u16string GetPickerTitle(const blink::mojom::FilePickerOptionsPtr &) override;
 
     void NavigatedAwayFromOrigin(const url::Origin &origin);
     content::BrowserContext *profile() const { return m_profile; }
@@ -61,8 +63,8 @@ private:
 
     void DidConfirmSensitiveDirectoryAccess(
             const url::Origin &origin, const base::FilePath &path, HandleType handle_type,
-            content::GlobalRenderFrameHostId frame_id,
-            base::OnceCallback<void(SensitiveDirectoryResult)> callback, bool should_block);
+            UserAction user_action, content::GlobalRenderFrameHostId frame_id,
+            base::OnceCallback<void(SensitiveEntryResult)> callback, bool should_block);
     bool AncestorHasActivePermission(const url::Origin &origin,
                                      const base::FilePath &path,
                                      GrantType grant_type) const;

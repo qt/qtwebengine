@@ -8,7 +8,7 @@ qt_internal_add_test(tst_multipageview
     SOURCES
         tst_multipageview.cpp
         ../shared/util.cpp ../shared/util.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Quick
         Qt::PdfQuickPrivate
@@ -20,11 +20,11 @@ qt_internal_add_test(tst_multipageview
 
 qt_internal_extend_target(tst_multipageview CONDITION ANDROID OR IOS
     DEFINES
-        QT_QMLTEST_DATADIR=\\\":/data\\\"
+        QT_QMLTEST_DATADIR=":/data"
 )
 
 qt_internal_extend_target(tst_multipageview CONDITION NOT ANDROID AND NOT IOS
     DEFINES
-        QT_QMLTEST_DATADIR=\\\"${CMAKE_CURRENT_SOURCE_DIR}/data\\\"
+        QT_QMLTEST_DATADIR="${CMAKE_CURRENT_SOURCE_DIR}/data"
 )
 

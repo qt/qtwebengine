@@ -1,10 +1,10 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-import Qt.labs.settings
+import QtCore
 import QtQml
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import QtQuick.Window
 import QtWebEngine
@@ -471,7 +471,6 @@ ApplicationWindow {
         }
 
         function removeView(index) {
-            tabBar.removeItem(index);
             if (tabBar.count > 1) {
                 tabBar.removeItem(tabBar.itemAt(index));
                 tabLayout.children[index].destroy();
@@ -559,13 +558,6 @@ ApplicationWindow {
                     request.accept();
                 }
 
-                onQuotaRequested: function(request) {
-                    if (request.requestedSize <= 5 * 1024 * 1024)
-                        request.accept();
-                    else
-                        request.reject();
-                }
-
                 onRegisterProtocolHandlerRequested: function(request) {
                     console.log("accepting registerProtocolHandler request for "
                                 + request.scheme + " from " + request.origin);
@@ -610,6 +602,12 @@ ApplicationWindow {
                         findBar.reset();
                 }
 
+                onFeaturePermissionRequested: function(securityOrigin, feature) {
+                    featurePermissionDialog.securityOrigin = securityOrigin;
+                    featurePermissionDialog.feature = feature;
+                    featurePermissionDialog.visible = true;
+                }
+
                 Timer {
                     id: reloadTimer
                     interval: 0
@@ -648,22 +646,21 @@ ApplicationWindow {
     Dialog {
         id: sslDialog
         anchors.centerIn: parent
-        contentWidth: Math.max(mainText.width, detailedText.width)
-        contentHeight: mainText.height + detailedText.height
+        contentWidth: Math.max(mainTextForSSLDialog.width, detailedTextForSSLDialog.width)
+        contentHeight: mainTextForSSLDialog.height + detailedTextForSSLDialog.height
         property var certErrors: []
         // fixme: icon!
         // icon: StandardIcon.Warning
         standardButtons: Dialog.No | Dialog.Yes
         title: "Server's certificate not trusted"
         contentItem: Item {
-            id: textContentItem
             Label {
-                id: mainText
+                id: mainTextForSSLDialog
                 text: "Do you wish to continue?"
             }
             Text {
-                id: detailedText
-                anchors.top: mainText.bottom
+                id: detailedTextForSSLDialog
+                anchors.top: mainTextForSSLDialog.bottom
                 text: "If you wish so, you may continue with an unverified certificate.\n" +
                       "Accepting an unverified certificate means\n" +
                       "you may not be connected with the host you tried to connect to.\n" +
@@ -687,6 +684,68 @@ ApplicationWindow {
         }
         function presentError(){
             visible = certErrors.length > 0
+        }
+    }
+    Dialog {
+        id: featurePermissionDialog
+        anchors.centerIn: parent
+        width: Math.min(browserWindow.width, browserWindow.height) / 3 * 2
+        contentWidth: mainTextForPermissionDialog.width
+        contentHeight: mainTextForPermissionDialog.height
+        standardButtons: Dialog.No | Dialog.Yes
+        title: "Permission Request"
+
+        property var feature;
+        property url securityOrigin;
+
+        contentItem: Item {
+            Label {
+                id: mainTextForPermissionDialog
+                text: featurePermissionDialog.questionForFeature()
+            }
+        }
+
+        onAccepted: currentWebView && currentWebView.grantFeaturePermission(securityOrigin, feature, true)
+        onRejected: currentWebView && currentWebView.grantFeaturePermission(securityOrigin, feature, false)
+        onVisibleChanged: {
+            if (visible)
+                width = contentWidth + 20;
+        }
+
+        function questionForFeature() {
+            var question = "Allow " + securityOrigin + " to "
+
+            switch (feature) {
+            case WebEngineView.Geolocation:
+                question += "access your location information?";
+                break;
+            case WebEngineView.MediaAudioCapture:
+                question += "access your microphone?";
+                break;
+            case WebEngineView.MediaVideoCapture:
+                question += "access your webcam?";
+                break;
+            case WebEngineView.MediaVideoCapture:
+                question += "access your microphone and webcam?";
+                break;
+            case WebEngineView.MouseLock:
+                question += "lock your mouse cursor?";
+                break;
+            case WebEngineView.DesktopVideoCapture:
+                question += "capture video of your desktop?";
+                break;
+            case WebEngineView.DesktopAudioVideoCapture:
+                question += "capture audio and video of your desktop?";
+                break;
+            case WebEngineView.Notifications:
+                question += "show notification on your desktop?";
+                break;
+            default:
+                question += "access unknown or unsupported feature [" + feature + "] ?";
+                break;
+            }
+
+            return question;
         }
     }
 

@@ -24,7 +24,7 @@ PlatformWindowQt::~PlatformWindowQt()
     ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
 }
 
-gfx::Rect PlatformWindowQt::GetBounds() const
+gfx::Rect PlatformWindowQt::GetBoundsInPixels() const
 {
     return bounds_;
 }
@@ -34,17 +34,29 @@ void PlatformWindowQt::Close()
     delegate_->OnClosed();
 }
 
-void PlatformWindowQt::SetBounds(const gfx::Rect& bounds)
+void PlatformWindowQt::SetBoundsInPixels(const gfx::Rect& bounds)
 {
     if (bounds == bounds_)
         return;
+    const bool origin_changed = (bounds_.origin() != bounds.origin());
+
     bounds_ = bounds;
-    delegate_->OnBoundsChanged(bounds);
+    delegate_->OnBoundsChanged({origin_changed});
 }
 
 bool PlatformWindowQt::CanDispatchEvent(const ui::PlatformEvent& /*ne*/)
 {
     return true;
+}
+
+gfx::Rect PlatformWindowQt::GetBoundsInDIP() const
+{
+    return delegate_->ConvertRectToDIP(bounds_);
+}
+
+void PlatformWindowQt::SetBoundsInDIP(const gfx::Rect &bounds_in_dip)
+{
+    SetBoundsInPixels(delegate_->ConvertRectToPixels(bounds_in_dip));
 }
 
 uint32_t PlatformWindowQt::DispatchEvent(const ui::PlatformEvent& native_event)

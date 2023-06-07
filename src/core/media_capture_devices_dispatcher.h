@@ -30,7 +30,7 @@ public:
     void handleMediaAccessPermissionResponse(content::WebContents *, const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags);
 
 private:
-    void getDefaultDevices(const std::string &audioDeviceId, const std::string &videoDeviceId, bool audio, bool video, blink::MediaStreamDevices *);
+    void getDefaultDevices(const std::string &audioDeviceId, const std::string &videoDeviceId, bool audio, bool video, blink::mojom::StreamDevicesSet &devices);
 
     // Overridden from content::MediaObserver:
     void OnAudioCaptureDevicesChanged() override {}

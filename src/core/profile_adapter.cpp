@@ -63,6 +63,7 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
     , m_httpCacheType(DiskHttpCache)
     , m_persistentCookiesPolicy(AllowPersistentCookies)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
+    , m_pushServiceEnabled(false)
     , m_httpCacheMaxSize(0)
 {
     WebEngineContext::current()->addProfileAdapter(this);
@@ -76,6 +77,8 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
         extensions::ExtensionSystem::Get(m_profile.data())->InitForRegularProfile(true);
 #endif
     m_cancelableTaskTracker.reset(new base::CancelableTaskTracker());
+
+    m_profile->DoFinalInit();
 }
 
 ProfileAdapter::~ProfileAdapter()
@@ -624,6 +627,16 @@ bool ProfileAdapter::isSpellCheckEnabled() const
 #else
     return false;
 #endif
+}
+
+bool ProfileAdapter::pushServiceEnabled() const
+{
+  return m_pushServiceEnabled;
+}
+
+void ProfileAdapter::setPushServiceEnabled(bool enabled)
+{
+    m_pushServiceEnabled = enabled;
 }
 
 void ProfileAdapter::addWebContentsAdapterClient(WebContentsAdapterClient *client)

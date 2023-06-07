@@ -76,6 +76,7 @@ private Q_SLOTS:
     void scriptsInNestedIframes();
     void matchQrcUrl();
     void injectionOrder();
+    void reloadWithSubframes();
 };
 
 void tst_QWebEngineScript::domEditing()
@@ -692,6 +693,38 @@ void tst_QWebEngineScript::injectionOrder()
 
     page.load(QUrl("qrc:/resources/test_iframe_inner.html"));
     QTRY_COMPARE(page.log, expected);
+}
+
+void tst_QWebEngineScript::reloadWithSubframes()
+{
+    class Page : public QWebEnginePage
+    {
+    public:
+        Page() : QWebEnginePage() {}
+        QVector<QString> log;
+
+    protected:
+        void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel, const QString &message, int,
+                                      const QString &) override
+        {
+            log.append(message);
+        }
+    } page;
+
+    QWebEngineScript s;
+    s.setInjectionPoint(QWebEngineScript::DocumentCreation);
+    s.setSourceCode(QStringLiteral("console.log('Hello');"));
+    page.scripts().insert(s);
+
+    page.setHtml(QStringLiteral("<body>"
+                                "  <h1>Test scripts working on reload </h1>"
+                                "  <iframe src='about://blank'>"
+                                "  </iframe>"
+                                "</body>"));
+    QTRY_COMPARE(page.log.size(), 1);
+
+    page.triggerAction(QWebEnginePage::Reload);
+    QTRY_COMPARE(page.log.size(), 2);
 }
 
 QTEST_MAIN(tst_QWebEngineScript)

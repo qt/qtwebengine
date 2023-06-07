@@ -24,7 +24,6 @@
 #include "file_picker_controller.h"
 #include "find_text_helper.h"
 #include "javascript_dialog_controller.h"
-#include "qquickwebengine_accessible.h"
 #include "render_widget_host_view_qt_delegate_item.h"
 #include "render_widget_host_view_qt_delegate_quickwindow.h"
 #include "touch_selection_menu_controller.h"
@@ -37,7 +36,6 @@
 #include <QtWebEngineCore/qwebenginefullscreenrequest.h>
 #include <QtWebEngineCore/qwebengineloadinginfo.h>
 #include <QtWebEngineCore/qwebenginenavigationrequest.h>
-#include <QtWebEngineCore/qwebenginequotarequest.h>
 #include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
 #include <QtWebEngineCore/qwebenginescriptcollection.h>
 #include <QtWebEngineCore/private/qwebenginecontextmenurequest_p.h>
@@ -58,6 +56,12 @@
 #include <QtQml/qqmlcontext.h>
 #include <QtQml/qqmlengine.h>
 #include <QtQml/qqmlproperty.h>
+
+#if QT_CONFIG(accessibility)
+#include "qquickwebengine_accessible.h"
+
+#include <QtGui/qaccessible.h>
+#endif
 
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include <QtCore/qmargins.h>
@@ -174,7 +178,6 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , m_fullscreenMode(false)
     , isLoading(false)
     , m_activeFocusOnPress(true)
-    , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
     , m_webChannel(nullptr)
     , m_webChannelWorld(0)
     , m_defaultAudioMuted(false)
@@ -649,12 +652,6 @@ void QQuickWebEngineViewPrivate::runMouseLockPermissionRequest(const QUrl &secur
 {
     // TODO: Add mouse lock support
     adapter->grantMouseLockPermission(securityOrigin, false);
-}
-
-void QQuickWebEngineViewPrivate::runQuotaRequest(QWebEngineQuotaRequest request)
-{
-    Q_Q(QQuickWebEngineView);
-    Q_EMIT q->quotaRequested(request);
 }
 
 void QQuickWebEngineViewPrivate::runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest request)
@@ -1349,7 +1346,11 @@ void QQuickWebEngineView::runJavaScript(const QString &script, quint32 worldId, 
     d->ensureContentsAdapter();
     if (!callback.isUndefined()) {
         quint64 requestId = d_ptr->adapter->runJavaScriptCallbackResult(script, worldId);
-        d->m_callbacks.insert(requestId, callback);
+        if (requestId) {
+            d->m_callbacks.insert(requestId, callback);
+        } else {
+            callback.call();
+        }
     } else
         d->adapter->runJavaScript(script, worldId);
 }

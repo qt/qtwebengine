@@ -30,7 +30,6 @@ QT_FORWARD_DECLARE_CLASS(QVariant)
 QT_FORWARD_DECLARE_CLASS(QWebEngineFileSystemAccessRequest)
 QT_FORWARD_DECLARE_CLASS(QWebEngineFindTextResult)
 QT_FORWARD_DECLARE_CLASS(QWebEngineLoadingInfo)
-QT_FORWARD_DECLARE_CLASS(QWebEngineQuotaRequest)
 QT_FORWARD_DECLARE_CLASS(QWebEngineRegisterProtocolHandlerRequest)
 QT_FORWARD_DECLARE_CLASS(QWebEngineUrlRequestInfo)
 QT_FORWARD_DECLARE_CLASS(QWebEngineUrlRequestInterceptor)
@@ -187,7 +186,6 @@ public:
     virtual void runFeaturePermissionRequest(ProfileAdapter::PermissionType, const QUrl &securityOrigin) = 0;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) = 0;
     virtual void runMouseLockPermissionRequest(const QUrl &securityOrigin) = 0;
-    virtual void runQuotaRequest(QWebEngineQuotaRequest) = 0;
     virtual void runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest) = 0;
     virtual void runFileSystemAccessRequest(QWebEngineFileSystemAccessRequest) = 0;
     virtual QWebEngineSettings *webEngineSettings() const = 0;

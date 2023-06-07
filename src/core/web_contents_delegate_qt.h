@@ -81,7 +81,7 @@ public:
     content::WebContents *OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params) override;
     void NavigationStateChanged(content::WebContents* source, content::InvalidateTypes changed_flags) override;
     void AddNewContents(content::WebContents *source, std::unique_ptr<content::WebContents> new_contents, const GURL &target_url,
-                        WindowOpenDisposition disposition, const gfx::Rect &initial_pos, bool user_gesture, bool *was_blocked) override;
+                        WindowOpenDisposition disposition, const blink::mojom::WindowFeatures &window_features, bool user_gesture, bool *was_blocked) override;
     void CloseContents(content::WebContents *source) override;
     void LoadProgressChanged(double progress) override;
     bool HandleKeyboardEvent(content::WebContents *source, const content::NativeWebKeyboardEvent &event) override;
@@ -150,8 +150,10 @@ public:
     using LoadingState = WebContentsAdapterClient::LoadingState;
     LoadingState loadingState() const { return m_loadingState; }
 
-    void addDevices(const blink::MediaStreamDevices &devices);
-    void removeDevices(const blink::MediaStreamDevices &devices);
+    void addDevices(const blink::mojom::StreamDevices &devices);
+    void removeDevices(const blink::mojom::StreamDevices &devices);
+    void addDevice(const blink::MediaStreamDevice &device);
+    void removeDevice(const blink::MediaStreamDevice &device);
 
     bool isCapturingAudio() const { return m_audioStreamCount > 0; }
     bool isCapturingVideo() const { return m_videoStreamCount > 0; }

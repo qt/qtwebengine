@@ -22,7 +22,8 @@ class BrowserWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    BrowserWindow(Browser *browser, QWebEngineProfile *profile, bool forDevTools = false);
+    explicit BrowserWindow(Browser *browser, QWebEngineProfile *profile,
+                           bool forDevTools = false);
     QSize sizeHint() const override;
     TabWidget *tabWidget() const;
     WebView *currentTab() const;
@@ -55,14 +56,14 @@ private:
     Browser *m_browser;
     QWebEngineProfile *m_profile;
     TabWidget *m_tabWidget;
-    QProgressBar *m_progressBar;
-    QAction *m_historyBackAction;
-    QAction *m_historyForwardAction;
-    QAction *m_stopAction;
-    QAction *m_reloadAction;
-    QAction *m_stopReloadAction;
-    QLineEdit *m_urlLineEdit;
-    QAction *m_favAction;
+    QProgressBar *m_progressBar = nullptr;
+    QAction *m_historyBackAction = nullptr;
+    QAction *m_historyForwardAction = nullptr;
+    QAction *m_stopAction = nullptr;
+    QAction *m_reloadAction = nullptr;
+    QAction *m_stopReloadAction = nullptr;
+    QLineEdit *m_urlLineEdit = nullptr;
+    QAction *m_favAction = nullptr;
     QString m_lastSearch;
 };
 

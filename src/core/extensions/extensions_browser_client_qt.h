@@ -35,6 +35,9 @@ public:
     bool HasOffTheRecordContext(content::BrowserContext *context) override;
     content::BrowserContext *GetOffTheRecordContext(content::BrowserContext *context) override;
     content::BrowserContext *GetOriginalContext(content::BrowserContext *context) override;
+    content::BrowserContext *GetRedirectedContextInIncognito(content::BrowserContext *context, bool, bool) override;
+    content::BrowserContext *GetContextForRegularAndIncognito(content::BrowserContext *context, bool, bool) override;
+    content::BrowserContext *GetRegularProfile(content::BrowserContext *context, bool, bool) override;
     bool IsGuestSession(content::BrowserContext *context) const override;
     bool IsExtensionIncognitoEnabled(const std::string &extension_id, content::BrowserContext *context) const override;
     bool CanExtensionCrossIncognito(const Extension *extension, content::BrowserContext *context) const override;
@@ -65,7 +68,7 @@ public:
     GetComponentExtensionResourceManager() override;
     void BroadcastEventToRenderers(events::HistogramValue histogram_value,
                                    const std::string &event_name,
-                                   std::unique_ptr<base::ListValue> args,
+                                   base::Value::List args,
                                    bool dispatch_to_off_the_record_profiles) override;
     ExtensionCache *GetExtensionCache() override;
     bool IsBackgroundUpdateAllowed() override;

@@ -24,15 +24,14 @@ content::RenderFrameHost *FindPdfChildFrame(content::RenderFrameHost *rfh)
 
     content::RenderFrameHost *pdf_rfh = nullptr;
     rfh->ForEachRenderFrameHost(
-                base::BindRepeating(
-                    [](content::RenderFrameHost *&pdf_rfh, content::RenderFrameHost *rfh) {
+                    [&pdf_rfh](content::RenderFrameHost *rfh) {
                         if (!rfh->GetProcess()->IsPdf())
                             return;
 
                         DCHECK(IsPdfExtensionOrigin(rfh->GetParent()->GetLastCommittedOrigin()));
                         DCHECK(!pdf_rfh);
                         pdf_rfh = rfh;
-                    }, std::ref(pdf_rfh)));
+                    });
 
     return pdf_rfh;
 }
@@ -43,14 +42,18 @@ PDFWebContentsHelperClientQt::~PDFWebContentsHelperClientQt() = default;
 
 content::RenderFrameHost *PDFWebContentsHelperClientQt::FindPdfFrame(content::WebContents *contents)
 {
-    content::RenderFrameHost *main_frame = contents->GetMainFrame();
+    content::RenderFrameHost *main_frame = contents->GetPrimaryMainFrame();
     content::RenderFrameHost *pdf_frame = FindPdfChildFrame(main_frame);
     return pdf_frame ? pdf_frame : main_frame;
 }
 
-void PDFWebContentsHelperClientQt::SetPluginCanSave(content::WebContents *contents, bool can_save)
+void PDFWebContentsHelperClientQt::SetPluginCanSave(content::RenderFrameHost *render_frame_host, bool can_save)
 {
-    auto *guest_view = extensions::MimeHandlerViewGuest::FromWebContents(contents);
+    auto *guest_view = extensions::MimeHandlerViewGuest::FromRenderFrameHost(render_frame_host);
     if (guest_view)
         guest_view->SetPluginCanSave(can_save);
+}
+
+void PDFWebContentsHelperClientQt::UpdateContentRestrictions(content::RenderFrameHost *, int)
+{
 }

@@ -85,6 +85,9 @@ TestWebEngineView {
 
         function test_iconDatabase(row)
         {
+            if (Screen.devicePixelRatio !== 1.0)
+                skip("This test is not supported on High DPI screens.");
+
             webEngineView.profile = row.profile;
             compare(iconChangedSpy.count, 0);
 
@@ -129,6 +132,9 @@ TestWebEngineView {
 
         function test_iconDatabaseMultiView()
         {
+            if (Screen.devicePixelRatio !== 1.0)
+                skip("This test is not supported on High DPI screens.");
+
             var pixel;
 
             var faviconImage = Qt.createQmlObject("

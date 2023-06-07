@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 qt_feature("pdf-v8" PRIVATE
     LABEL "Support V8"
     PURPOSE "Enables javascript support."

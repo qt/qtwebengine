@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 function(qt6_add_webengine_dictionary)
     set(options)
     set(oneValueArgs TARGET SOURCE OUTPUT_DIRECTORY)

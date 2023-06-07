@@ -17,4 +17,13 @@
     in the Qt6 package and \c target_link_libraries() to link against the module:
 
     \snippet qtwebengine_build_snippet.qdoc 2
+
+    The minimal amount of code needed to load and display an HTML page using the QML engine
+    requires a proper initialization:
+
+    \snippet minimal/main.cpp Minimal Example
+
+    Where the content of main.qml is simply:
+
+    \snippet minimal/main.qml Minimal Example
 */

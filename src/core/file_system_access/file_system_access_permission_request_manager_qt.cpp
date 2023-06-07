@@ -153,7 +153,7 @@ void FileSystemAccessPermissionRequestManagerQt::DidFinishNavigation(
     if (!navigation->IsInMainFrame() || !navigation->HasCommitted())
         return;
 
-    auto src_origin = url::Origin::Create(navigation->GetPreviousMainFrameURL());
+    auto src_origin = url::Origin::Create(navigation->GetPreviousPrimaryMainFrameURL());
     auto dest_origin = url::Origin::Create(navigation->GetURL());
     if (src_origin == dest_origin)
         return;
@@ -168,7 +168,7 @@ void FileSystemAccessPermissionRequestManagerQt::DidFinishNavigation(
 
 void FileSystemAccessPermissionRequestManagerQt::WebContentsDestroyed()
 {
-    auto src_origin = web_contents()->GetMainFrame()->GetLastCommittedOrigin();
+    auto src_origin = web_contents()->GetPrimaryMainFrame()->GetLastCommittedOrigin();
 
     // Navigated away from |src_origin|, tell permission context to check if
     // permissions need to be revoked.

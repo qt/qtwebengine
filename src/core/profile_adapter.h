@@ -101,6 +101,9 @@ public:
     void setSpellCheckEnabled(bool enabled);
     bool isSpellCheckEnabled() const;
 
+    bool pushServiceEnabled() const;
+    void setPushServiceEnabled(bool enabled);
+
     void addWebContentsAdapterClient(WebContentsAdapterClient *client);
     void removeWebContentsAdapterClient(WebContentsAdapterClient *client);
     void releaseAllWebContentsAdapterClients();
@@ -221,6 +224,7 @@ private:
 
     QList<ProfileAdapterClient*> m_clients;
     QList<WebContentsAdapterClient *> m_webContentsAdapterClients;
+    bool m_pushServiceEnabled;
     int m_httpCacheMaxSize;
     QrcUrlSchemeHandler m_qrcHandler;
     std::unique_ptr<base::CancelableTaskTracker> m_cancelableTaskTracker;

@@ -3231,7 +3231,7 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::newRow("process-internals") << QUrl("chrome://process-internals") << true;
     QTest::newRow("quota-internals") << QUrl("chrome://quota-internals") << true;
     QTest::newRow("safe-browsing") << QUrl("chrome://safe-browsing") << false;
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN)
     QTest::newRow("sandbox") << QUrl("chrome://sandbox") << true;
 #else
     QTest::newRow("sandbox") << QUrl("chrome://sandbox") << false;

@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 # this is just simply pkg config wrapper to pass executable path to gn
 
 if(CMAKE_CROSSCOMPILING)

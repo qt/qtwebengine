@@ -77,6 +77,11 @@ public:
     virtual void showAutofillPopup(QtWebEngineCore::AutofillPopupController *controller,
                                    const QRect &bounds, bool autoselectFirstSuggestion) = 0;
     virtual void hideAutofillPopup() = 0;
+    virtual QtWebEngineCore::TouchHandleDrawableDelegate *
+    createTouchHandleDelegate(const QMap<int, QImage> &) = 0;
+    virtual void showTouchSelectionMenu(QtWebEngineCore::TouchSelectionMenuController *,
+                                        const QRect &) = 0;
+    virtual void hideTouchSelectionMenu() = 0;
 };
 
 class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEnginePagePrivate : public QtWebEngineCore::WebContentsAdapterClient
@@ -138,7 +143,6 @@ public:
     void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) override;
     void runFeaturePermissionRequest(QtWebEngineCore::ProfileAdapter::PermissionType permission, const QUrl &securityOrigin) override;
     void runMouseLockPermissionRequest(const QUrl &securityOrigin) override;
-    void runQuotaRequest(QWebEngineQuotaRequest) override;
     void runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest) override;
     void runFileSystemAccessRequest(QWebEngineFileSystemAccessRequest) override;
     QObject *accessibilityParentObject() override;
@@ -157,9 +161,10 @@ public:
     void setToolTip(const QString &toolTipText) override;
     void printRequested() override;
     QtWebEngineCore::TouchHandleDrawableDelegate *
-    createTouchHandleDelegate(const QMap<int, QImage> &) override { return nullptr; }
-    void showTouchSelectionMenu(QtWebEngineCore::TouchSelectionMenuController *, const QRect &, const QSize &) override { }
-    void hideTouchSelectionMenu() override { }
+    createTouchHandleDelegate(const QMap<int, QImage> &) override;
+    void showTouchSelectionMenu(QtWebEngineCore::TouchSelectionMenuController *, const QRect &,
+                                const QSize &) override;
+    void hideTouchSelectionMenu() override;
     const QObject *holdingQObject() const override;
     ClientType clientType() override { return QtWebEngineCore::WebContentsAdapterClient::WidgetsClient; }
     void findTextFinished(const QWebEngineFindTextResult &result) override;
@@ -195,7 +200,6 @@ public:
     QWebChannel *webChannel;
     unsigned int webChannelWorldId;
     QUrl iconUrl;
-    bool m_navigationActionTriggered;
     QPointer<QWebEnginePage> inspectedPage;
     QPointer<QWebEnginePage> devToolsPage;
     bool defaultAudioMuted;
