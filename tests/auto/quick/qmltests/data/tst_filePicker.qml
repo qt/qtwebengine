@@ -98,7 +98,7 @@ TestWebEngineView {
 
             function acceptedFileHandler(request) {
                 request.accepted = true;
-                request.dialogAccept(row.input);
+                request.dialogAccept([row.input]);
                 finished = true;
             }
 
@@ -253,7 +253,7 @@ TestWebEngineView {
 
             function acceptedFileHandler(request) {
                 request.accepted = true;
-                request.dialogAccept(row.input);
+                request.dialogAccept([row.input]);
                 finished = true;
             }
 
