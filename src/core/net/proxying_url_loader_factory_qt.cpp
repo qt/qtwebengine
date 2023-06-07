@@ -293,9 +293,9 @@ void InterceptedRequest::interceptResponseHeaders(
     }
 
     const QUrl requestUrl = QUrl::fromEncoded(QByteArray::fromStdString(request_.url.spec()));
-    const QHash<QByteArray, QByteArray> requestHeaders =
+    const QMultiHash<QByteArray, QByteArray> requestHeaders =
             [](const net::HttpRequestHeaders &headers) {
-                QHash<QByteArray, QByteArray> result;
+                QMultiHash<QByteArray, QByteArray> result;
                 for (const auto &header : headers.GetHeaderVector()) {
                     result.insert(QByteArray::fromStdString(header.key),
                                   QByteArray::fromStdString(header.value));
