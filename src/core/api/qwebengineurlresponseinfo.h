@@ -22,18 +22,15 @@ class Q_WEBENGINECORE_EXPORT QWebEngineUrlResponseInfo : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QUrl requestUrl READ requestUrl CONSTANT FINAL)
-    Q_PROPERTY(QHash<QByteArray,QByteArray> requestHeaders READ requestHeaders CONSTANT FINAL)
+    Q_PROPERTY(QMultiHash<QByteArray, QByteArray> requestHeaders READ requestHeaders CONSTANT FINAL)
     Q_PROPERTY(QHash<QByteArray,QByteArray> responseHeaders READ responseHeaders WRITE
                        setResponseHeaders)
 
 public:
-    QWebEngineUrlResponseInfo(const QUrl &requestUrl,
-                              const QHash<QByteArray, QByteArray> &requestHeaders,
-                              const QHash<QByteArray, QByteArray> &responseHeaders,
-                              QObject *p = nullptr);
+    ~QWebEngineUrlResponseInfo() override;
 
     QUrl requestUrl() const;
-    QHash<QByteArray, QByteArray> requestHeaders() const;
+    QMultiHash<QByteArray, QByteArray> requestHeaders() const;
     QHash<QByteArray, QByteArray> responseHeaders() const;
 
     void setResponseHeaders(const QHash<QByteArray, QByteArray> &newResponseHeaders);
@@ -42,6 +39,11 @@ private:
     friend class QtWebEngineCore::InterceptedRequest;
     Q_DECLARE_PRIVATE(QWebEngineUrlResponseInfo)
     QWebEngineUrlResponseInfoPrivate *d_ptr;
+
+    QWebEngineUrlResponseInfo(const QUrl &requestUrl,
+                              const QMultiHash<QByteArray, QByteArray> &requestHeaders,
+                              const QHash<QByteArray, QByteArray> &responseHeaders,
+                              QObject *p = nullptr);
 };
 
 QT_END_NAMESPACE

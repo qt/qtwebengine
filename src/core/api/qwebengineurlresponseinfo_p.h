@@ -26,7 +26,7 @@ class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineUrlResponseInfoPrivate
 {
 public:
     QWebEngineUrlResponseInfoPrivate(const QUrl &requestUrl,
-                                     const QHash<QByteArray, QByteArray> &requestHeaders,
+                                     const QMultiHash<QByteArray, QByteArray> &requestHeaders,
                                      const QHash<QByteArray, QByteArray> &responseHeaders)
         : requestUrl(requestUrl)
         , requestHeaders(requestHeaders)
@@ -36,7 +36,7 @@ public:
     }
 
     QUrl requestUrl;
-    QHash<QByteArray, QByteArray> requestHeaders;
+    QMultiHash<QByteArray, QByteArray> requestHeaders;
     QHash<QByteArray, QByteArray> responseHeaders;
     bool isModified;
 };

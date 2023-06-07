@@ -18,12 +18,14 @@ QT_BEGIN_NAMESPACE
     \sa QWebEngineUrlResponseInterceptor
 */
 QWebEngineUrlResponseInfo::QWebEngineUrlResponseInfo(
-        const QUrl &requestUrl, const QHash<QByteArray, QByteArray> &requestHeaders,
+        const QUrl &requestUrl, const QMultiHash<QByteArray, QByteArray> &requestHeaders,
         const QHash<QByteArray, QByteArray> &responseHeaders, QObject *p)
     : QObject(p)
     , d_ptr(new QWebEngineUrlResponseInfoPrivate(requestUrl, requestHeaders, responseHeaders))
 {
 }
+
+QWebEngineUrlResponseInfo::~QWebEngineUrlResponseInfo(){};
 
 /*!
     \property QWebEngineUrlResponseInfo::requestUrl
@@ -39,7 +41,7 @@ QUrl QWebEngineUrlResponseInfo::requestUrl() const
     \property QWebEngineUrlResponseInfo::requestHeaders
     \brief Holds the request headers of the URL load request.
 */
-QHash<QByteArray, QByteArray> QWebEngineUrlResponseInfo::requestHeaders() const
+QMultiHash<QByteArray, QByteArray> QWebEngineUrlResponseInfo::requestHeaders() const
 {
     Q_D(const QWebEngineUrlResponseInfo);
     return d->requestHeaders;
@@ -57,7 +59,7 @@ QHash<QByteArray, QByteArray> QWebEngineUrlResponseInfo::responseHeaders() const
 
 /*!
     \fn void QWebEngineUrlResponseInfo::setResponseHeaders(
-        const QHash<QByteArray, QByteArray> &newResponseHeaders)
+        const QMultiMap<QByteArray, QByteArray> &newResponseHeaders)
     \brief Sets the response headers to \a newResponseHeaders.
 
     Sets the response headers to \a newResponseHeaders. If \a newResponseHeaders

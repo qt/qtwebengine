@@ -37,7 +37,7 @@ class Interceptor : public QWebEngineUrlResponseInterceptor
     Q_OBJECT
 
     QUrl m_receivedRequestUrl;
-    QHash<QByteArray, QByteArray> m_receivedRequestHeaders;
+    QMultiHash<QByteArray, QByteArray> m_receivedRequestHeaders;
 
 public:
     void interceptResponseHeaders(QWebEngineUrlResponseInfo &info) override
@@ -53,7 +53,7 @@ public:
     }
 
     void getReceivedRequest(QUrl *receivedRequestUrl,
-                            QHash<QByteArray, QByteArray> *receivedRequestHeaders)
+                            QMultiHash<QByteArray, QByteArray> *receivedRequestHeaders)
     {
         *receivedRequestUrl = m_receivedRequestUrl;
         *receivedRequestHeaders = m_receivedRequestHeaders;
@@ -118,7 +118,7 @@ void tst_QWebEngineUrlResponseInterceptor::interceptRequest()
     QVERIFY(loadSpy.wait());
 
     QUrl receivedRequestUrl;
-    QHash<QByteArray, QByteArray> receivedRequestHeaders;
+    QMultiHash<QByteArray, QByteArray> receivedRequestHeaders;
     interceptor.getReceivedRequest(&receivedRequestUrl, &receivedRequestHeaders);
 
     bool receivedRequestHeadersContainsQtWebEngine = false;
