@@ -1276,6 +1276,9 @@ function(add_gn_command)
             ${arg_BUILDDIR}/${targetConfigFileName}
     )
     add_dependencies(run_${arg_MODULE}_GnDone runGn_${arg_GN_TARGET})
+    if(TARGET thirdparty_sync_headers)
+        add_dependencies(runGn_${arg_GN_TARGET} thirdparty_sync_headers)
+    endif()
     create_gn_target_config(${arg_GN_TARGET} ${arg_BUILDDIR}/${targetConfigFileName})
 endfunction()
 
