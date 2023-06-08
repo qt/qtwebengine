@@ -4,7 +4,7 @@
 #import <IOSurface/IOSurface.h>
 #import <Metal/Metal.h>
 
-#include <QtCore/qtconfigmacros.h>
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
 QT_BEGIN_NAMESPACE
 class QSGTexture;
