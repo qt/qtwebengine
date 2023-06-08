@@ -9,16 +9,14 @@
 #include <QWebEngineProfile>
 #include <QWebEngineSettings>
 
-using namespace Qt::StringLiterals;
-
 QUrl commandLineUrlArgument()
 {
     const QStringList args = QCoreApplication::arguments();
     for (const QString &arg : args.mid(1)) {
-        if (!arg.startsWith(u'-'))
+        if (!arg.startsWith(QLatin1Char('-')))
             return QUrl::fromUserInput(arg);
     }
-    return QUrl(u"https://www.qt.io"_s);
+    return QUrl(QStringLiteral("https://www.qt.io"));
 }
 
 int main(int argc, char **argv)
@@ -26,8 +24,8 @@ int main(int argc, char **argv)
     QCoreApplication::setOrganizationName("QtExamples");
 
     QApplication app(argc, argv);
-    app.setWindowIcon(QIcon(u":AppLogoColor.png"_s));
-    QLoggingCategory::setFilterRules(u"qt.webenginecontext.debug=true"_s);
+    app.setWindowIcon(QIcon(QStringLiteral(":AppLogoColor.png")));
+    QLoggingCategory::setFilterRules(QStringLiteral("qt.webenginecontext.debug=true"));
 
     QWebEngineProfile::defaultProfile()->settings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
     QWebEngineProfile::defaultProfile()->settings()->setAttribute(QWebEngineSettings::DnsPrefetchEnabled, true);
