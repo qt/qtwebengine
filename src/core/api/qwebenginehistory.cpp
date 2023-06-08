@@ -242,13 +242,6 @@ QWebEngineHistory::QWebEngineHistory(QWebEngineHistoryPrivate *d) : d_ptr(d) { }
 
 QWebEngineHistory::~QWebEngineHistory() { }
 
-/*!
-    \qmlmethod void WebEngineHistory::clear()
-    \since QtWebEngine 1.11
-
-    Clears the history.
-*/
-
 void QWebEngineHistory::clear()
 {
     Q_D(const QWebEngineHistory);
