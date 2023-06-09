@@ -1304,7 +1304,7 @@
 */
 
 /*!
-    \qmlproperty WebEngineView WebEngineView::devToolsView
+    \qmlproperty WebEngineView WebEngineView::devToolsId
     \since QtWebEngine 6.6
     \readonly
 
