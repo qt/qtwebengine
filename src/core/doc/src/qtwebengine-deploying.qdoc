@@ -152,7 +152,8 @@
     <string>Your message text for camera usage.</string>
     \endcode
 
-    \sa \l{https://developer.apple.com/documentation/bundleresources/information_property_list/nscamerausagedescription} {Apple's property list file documentation}
+    See also \l{https://developer.apple.com/documentation/bundleresources/information_property_list/nscamerausagedescription}
+    {Apple's property list file documentation}.
 
     For the microphone usage message, provide a text using the following key:
     \code
@@ -160,7 +161,8 @@
     <string>Your message text for microphone usage.</string>
     \endcode
 
-    \sa \l{https://developer.apple.com/documentation/bundleresources/information_property_list/nsmicrophoneusagedescription} {Apple's property list file documentation}
+    See also \l{https://developer.apple.com/documentation/bundleresources/information_property_list/nsmicrophoneusagedescription}
+    {Apple's property list file documentation}.
 
     To notarize an application that accesses the camera or the microphone,
     you will need to add the corresponding keys to your application's entitlements file used for
@@ -172,7 +174,8 @@
     <true/>
     \endcode
 
-    \sa \l{https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_device_camera} {Apple's camera entitlement documentation}.
+    See also \l{https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_device_camera}
+    {Apple's camera entitlement documentation}.
 
     To enable access to the microphone, add:
     \code
@@ -180,5 +183,6 @@
     <true/>
     \endcode
 
-    /sa \l{https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_device_microphone} {Apple's microphone entitlement documentation}.
+    See also \l{https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_device_microphone}
+    {Apple's microphone entitlement documentation}.
 */
