@@ -58,8 +58,6 @@ QHash<QByteArray, QByteArray> QWebEngineUrlResponseInfo::responseHeaders() const
 }
 
 /*!
-    \fn void QWebEngineUrlResponseInfo::setResponseHeaders(
-        const QMultiMap<QByteArray, QByteArray> &newResponseHeaders)
     \brief Sets the response headers to \a newResponseHeaders.
 
     Sets the response headers to \a newResponseHeaders. If \a newResponseHeaders
