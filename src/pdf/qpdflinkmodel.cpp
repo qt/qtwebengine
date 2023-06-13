@@ -46,9 +46,10 @@ Q_LOGGING_CATEGORY(qLcLink, "qt.pdf.links")
 QPdfLinkModel::QPdfLinkModel(QObject *parent)
     : QAbstractListModel(*(new QPdfLinkModelPrivate()), parent)
 {
+    Q_D(QPdfLinkModel);
     QMetaEnum rolesMetaEnum = metaObject()->enumerator(metaObject()->indexOfEnumerator("Role"));
     for (int r = Qt::UserRole; r < int(Role::NRoles); ++r)
-        m_roleNames.insert(r, QByteArray(rolesMetaEnum.valueToKey(r)).toLower());
+        d->roleNames.insert(r, QByteArray(rolesMetaEnum.valueToKey(r)).toLower());
 }
 
 /*!
@@ -58,7 +59,8 @@ QPdfLinkModel::~QPdfLinkModel() {}
 
 QHash<int, QByteArray> QPdfLinkModel::roleNames() const
 {
-    return m_roleNames;
+    Q_D(const QPdfLinkModel);
+    return d->roleNames;
 }
 
 /*!

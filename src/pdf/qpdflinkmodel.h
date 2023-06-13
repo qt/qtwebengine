@@ -56,7 +56,6 @@ private Q_SLOTS:
     void onStatusChanged(QPdfDocument::Status status);
 
 private:
-    QHash<int, QByteArray> m_roleNames;
     Q_DECLARE_PRIVATE(QPdfLinkModel)
 };
 
