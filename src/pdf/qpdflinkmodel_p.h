@@ -29,6 +29,7 @@ public:
 
     void update();
 
+    QHash<int, QByteArray> roleNames;
     QPdfDocument *document = nullptr;
     QList<QPdfLink> links;
     int page = 0;
