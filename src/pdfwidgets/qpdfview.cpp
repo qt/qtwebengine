@@ -16,7 +16,6 @@
 #include <QPdfSearchModel>
 #include <QScreen>
 #include <QScrollBar>
-#include <QScroller>
 
 QT_BEGIN_NAMESPACE
 
@@ -296,7 +295,6 @@ QPdfView::QPdfView(QWidget *parent)
     verticalScrollBar()->setSingleStep(20);
     horizontalScrollBar()->setSingleStep(20);
 
-    QScroller::grabGesture(this);
     setMouseTracking(true);
     d->calculateViewport();
 }
