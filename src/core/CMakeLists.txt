@@ -333,6 +333,7 @@ foreach(arch ${archs})
             chrome_pgo_phase=0
             optimize_webui=false
             strip_absolute_paths_from_debug_symbols=false
+            pdf_use_skia=true
             devtools_fast_bundle=false
             devtools_skip_typecheck=false
             use_static_angle=true
