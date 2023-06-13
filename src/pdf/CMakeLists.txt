@@ -138,6 +138,7 @@ foreach(arch ${archs})
                 ozone_auto_platforms=false
                 use_gnome_keyring=false
                 enable_vr=false
+                use_ml_inliner=false
             )
             extend_gn_list(gnArgArg
                 ARGS use_system_icu
