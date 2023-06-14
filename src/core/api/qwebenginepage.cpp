@@ -329,6 +329,109 @@ void QWebEnginePagePrivate::createNewWindow(WindowOpenDisposition disposition, b
     Q_EMIT q->newWindowRequested(request);
 }
 
+QString QWebEnginePagePrivate::actionText(int action)
+{
+    switch (action) {
+    case QWebEnginePage::Back:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Back);
+    case QWebEnginePage::Forward:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Forward);
+    case QWebEnginePage::Stop:
+        return QWebEnginePage::tr("Stop");
+    case QWebEnginePage::Reload:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Reload);
+    case QWebEnginePage::ReloadAndBypassCache:
+        return QWebEnginePage::tr("Reload and Bypass Cache");
+    case QWebEnginePage::Cut:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Cut);
+    case QWebEnginePage::Copy:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Copy);
+    case QWebEnginePage::Paste:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Paste);
+    case QWebEnginePage::Undo:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Undo);
+    case QWebEnginePage::Redo:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Redo);
+    case QWebEnginePage::SelectAll:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::SelectAll);
+    case QWebEnginePage::PasteAndMatchStyle:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::PasteAndMatchStyle);
+    case QWebEnginePage::OpenLinkInThisWindow:
+        return QWebEnginePage::tr("Open link in this window");
+    case QWebEnginePage::OpenLinkInNewWindow:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::OpenLinkInNewWindow);
+    case QWebEnginePage::OpenLinkInNewTab:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::OpenLinkInNewTab);
+    case QWebEnginePage::OpenLinkInNewBackgroundTab:
+        return QWebEnginePage::tr("Open link in new background tab");
+    case QWebEnginePage::CopyLinkToClipboard:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::CopyLinkToClipboard);
+    case QWebEnginePage::DownloadLinkToDisk:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::DownloadLinkToDisk);
+    case QWebEnginePage::CopyImageToClipboard:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::CopyImageToClipboard);
+    case QWebEnginePage::CopyImageUrlToClipboard:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::CopyImageUrlToClipboard);
+    case QWebEnginePage::DownloadImageToDisk:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::DownloadImageToDisk);
+    case QWebEnginePage::CopyMediaUrlToClipboard:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::CopyMediaUrlToClipboard);
+    case QWebEnginePage::ToggleMediaControls:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ToggleMediaControls);
+    case QWebEnginePage::ToggleMediaLoop:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ToggleMediaLoop);
+    case QWebEnginePage::ToggleMediaPlayPause:
+        return QWebEnginePage::tr("Toggle Play/Pause");
+    case QWebEnginePage::ToggleMediaMute:
+        return QWebEnginePage::tr("Toggle Mute");
+    case QWebEnginePage::DownloadMediaToDisk:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::DownloadMediaToDisk);
+    case QWebEnginePage::InspectElement:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::InspectElement);
+    case QWebEnginePage::ExitFullScreen:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ExitFullScreen);
+    case QWebEnginePage::RequestClose:
+        return QWebEnginePage::tr("Close Page");
+    case QWebEnginePage::Unselect:
+        return QWebEnginePage::tr("Unselect");
+    case QWebEnginePage::SavePage:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::SavePage);
+    case QWebEnginePage::ViewSource:
+        return RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ViewSource);
+    case QWebEnginePage::ToggleBold:
+        return QWebEnginePage::tr("&Bold");
+    case QWebEnginePage::ToggleItalic:
+        return QWebEnginePage::tr("&Italic");
+    case QWebEnginePage::ToggleUnderline:
+        return QWebEnginePage::tr("&Underline");
+    case QWebEnginePage::ToggleStrikethrough:
+        return QWebEnginePage::tr("&Strikethrough");
+    case QWebEnginePage::AlignLeft:
+        return QWebEnginePage::tr("Align &Left");
+    case QWebEnginePage::AlignCenter:
+        return QWebEnginePage::tr("Align &Center");
+    case QWebEnginePage::AlignRight:
+        return QWebEnginePage::tr("Align &Right");
+    case QWebEnginePage::AlignJustified:
+        return QWebEnginePage::tr("Align &Justified");
+    case QWebEnginePage::Indent:
+        return QWebEnginePage::tr("&Indent");
+    case QWebEnginePage::Outdent:
+        return QWebEnginePage::tr("&Outdent");
+    case QWebEnginePage::InsertOrderedList:
+        return QWebEnginePage::tr("Insert &Ordered List");
+    case QWebEnginePage::InsertUnorderedList:
+        return QWebEnginePage::tr("Insert &Unordered List");
+    case QWebEnginePage::ChangeTextDirectionLTR:
+        return QWebEnginePage::tr("Change text direction left to right");
+    case QWebEnginePage::ChangeTextDirectionRTL:
+        return QWebEnginePage::tr("Change text direction right to left");
+    default:
+        break;
+    }
+    return {};
+}
+
 class WebContentsAdapterOwner : public QObject
 {
 public:
@@ -1042,154 +1145,7 @@ QAction *QWebEnginePage::action(WebAction action) const
     if (d->actions[action])
         return d->actions[action];
 
-    QString text;
-    switch (action) {
-    case Back:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Back);
-        break;
-    case Forward:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Forward);
-        break;
-    case Stop:
-        text = tr("Stop");
-        break;
-    case Reload:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Reload);
-        break;
-    case ReloadAndBypassCache:
-        text = tr("Reload and Bypass Cache");
-        break;
-    case Cut:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Cut);
-        break;
-    case Copy:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Copy);
-        break;
-    case Paste:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Paste);
-        break;
-    case Undo:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Undo);
-        break;
-    case Redo:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Redo);
-        break;
-    case SelectAll:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::SelectAll);
-        break;
-    case PasteAndMatchStyle:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::PasteAndMatchStyle);
-        break;
-    case OpenLinkInThisWindow:
-        text = tr("Open link in this window");
-        break;
-    case OpenLinkInNewWindow:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::OpenLinkInNewWindow);
-        break;
-    case OpenLinkInNewTab:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::OpenLinkInNewTab);
-        break;
-    case OpenLinkInNewBackgroundTab:
-        text = tr("Open link in new background tab");
-        break;
-    case CopyLinkToClipboard:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::CopyLinkToClipboard);
-        break;
-    case DownloadLinkToDisk:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::DownloadLinkToDisk);
-        break;
-    case CopyImageToClipboard:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::CopyImageToClipboard);
-        break;
-    case CopyImageUrlToClipboard:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::CopyImageUrlToClipboard);
-        break;
-    case DownloadImageToDisk:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::DownloadImageToDisk);
-        break;
-    case CopyMediaUrlToClipboard:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::CopyMediaUrlToClipboard);
-        break;
-    case ToggleMediaControls:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ToggleMediaControls);
-        break;
-    case ToggleMediaLoop:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ToggleMediaLoop);
-        break;
-    case ToggleMediaPlayPause:
-        text = tr("Toggle Play/Pause");
-        break;
-    case ToggleMediaMute:
-        text = tr("Toggle Mute");
-        break;
-    case DownloadMediaToDisk:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::DownloadMediaToDisk);
-        break;
-    case InspectElement:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::InspectElement);
-        break;
-    case ExitFullScreen:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ExitFullScreen);
-        break;
-    case RequestClose:
-        text = tr("Close Page");
-        break;
-    case Unselect:
-        text = tr("Unselect");
-        break;
-    case SavePage:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::SavePage);
-        break;
-    case ViewSource:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ViewSource);
-        break;
-    case ToggleBold:
-        text = tr("&Bold");
-        break;
-    case ToggleItalic:
-        text = tr("&Italic");
-        break;
-    case ToggleUnderline:
-        text = tr("&Underline");
-        break;
-    case ToggleStrikethrough:
-        text = tr("&Strikethrough");
-        break;
-    case AlignLeft:
-        text = tr("Align &Left");
-        break;
-    case AlignCenter:
-        text = tr("Align &Center");
-        break;
-    case AlignRight:
-        text = tr("Align &Right");
-        break;
-    case AlignJustified:
-        text = tr("Align &Justified");
-        break;
-    case Indent:
-        text = tr("&Indent");
-        break;
-    case Outdent:
-        text = tr("&Outdent");
-        break;
-    case InsertOrderedList:
-        text = tr("Insert &Ordered List");
-        break;
-    case InsertUnorderedList:
-        text = tr("Insert &Unordered List");
-        break;
-    case ChangeTextDirectionLTR:
-        text = tr("Change text direction left to right");
-        break;
-    case ChangeTextDirectionRTL:
-        text = tr("Change text direction right to left");
-        break;
-    case NoWebAction:
-    case WebActionCount:
-        Q_UNREACHABLE();
-        break;
-    }
+    const QString text = QWebEnginePagePrivate::actionText(action);
 
     QAction *a = new QAction(const_cast<QWebEnginePage*>(this));
     a->setText(text);
