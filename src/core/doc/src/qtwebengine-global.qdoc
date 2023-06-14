@@ -49,5 +49,8 @@
     Returns the domain of the host, that is, the effective top-level domain
     (eTLD) and the first domain below it, from \a url.
 
+    This function supports internationalized domain names (IDN). In this case,
+    it returns the domain encoded in Punycode.
+
     If the host is not a domain, returns an empty string.
 */
