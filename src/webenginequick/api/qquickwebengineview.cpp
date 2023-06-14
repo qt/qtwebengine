@@ -43,6 +43,7 @@
 #include <QtWebEngineCore/private/qwebenginehistory_p.h>
 #include <QtWebEngineCore/private/qwebenginenewwindowrequest_p.h>
 #include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
+#include <QtWebEngineCore/private/qwebenginepage_p.h>
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 
 #include <QtCore/qloggingcategory.h>
@@ -2002,173 +2003,113 @@ QQuickWebEngineAction *QQuickWebEngineView::action(WebAction action)
         return d->actions[action];
     }
 
-    QString text;
+    const QString text = QWebEnginePagePrivate::actionText(action);
     QString iconName;
 
     switch (action) {
     case Back:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Back);
         iconName = QStringLiteral("go-previous");
         break;
     case Forward:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Forward);
         iconName = QStringLiteral("go-next");
         break;
     case Stop:
-        text = tr("Stop");
         iconName = QStringLiteral("process-stop");
         break;
     case Reload:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Reload);
         iconName = QStringLiteral("view-refresh");
         break;
     case ReloadAndBypassCache:
-        text = tr("Reload and Bypass Cache");
         iconName = QStringLiteral("view-refresh");
         break;
     case Cut:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Cut);
         iconName = QStringLiteral("edit-cut");
         break;
     case Copy:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Copy);
         iconName = QStringLiteral("edit-copy");
         break;
     case Paste:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Paste);
         iconName = QStringLiteral("edit-paste");
         break;
     case Undo:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Undo);
         iconName = QStringLiteral("edit-undo");
         break;
     case Redo:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Redo);
         iconName = QStringLiteral("edit-redo");
         break;
     case SelectAll:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::SelectAll);
         iconName = QStringLiteral("edit-select-all");
         break;
     case PasteAndMatchStyle:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::PasteAndMatchStyle);
         iconName = QStringLiteral("edit-paste");
         break;
     case OpenLinkInThisWindow:
-        text = tr("Open link in this window");
-        break;
     case OpenLinkInNewWindow:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::OpenLinkInNewWindow);
-        break;
     case OpenLinkInNewTab:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::OpenLinkInNewTab);
-        break;
     case CopyLinkToClipboard:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::CopyLinkToClipboard);
-        break;
     case DownloadLinkToDisk:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::DownloadLinkToDisk);
-        break;
     case CopyImageToClipboard:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::CopyImageToClipboard);
-        break;
     case CopyImageUrlToClipboard:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::CopyImageUrlToClipboard);
-        break;
     case DownloadImageToDisk:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::DownloadImageToDisk);
-        break;
     case CopyMediaUrlToClipboard:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::CopyMediaUrlToClipboard);
-        break;
     case ToggleMediaControls:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ToggleMediaControls);
-        break;
     case ToggleMediaLoop:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ToggleMediaLoop);
         break;
     case ToggleMediaPlayPause:
-        text = tr("Toggle Play/Pause");
         iconName = QStringLiteral("media-playback-start");
         break;
     case ToggleMediaMute:
-        text = tr("Toggle Mute");
         iconName = QStringLiteral("audio-volume-muted");
         break;
     case DownloadMediaToDisk:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::DownloadMediaToDisk);
-        break;
     case InspectElement:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::InspectElement);
         break;
     case ExitFullScreen:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ExitFullScreen);
         iconName = QStringLiteral("view-fullscreen");
         break;
     case RequestClose:
-        text = tr("Close Page");
         iconName = QStringLiteral("window-close");
         break;
     case Unselect:
-        text = tr("Unselect");
         iconName = QStringLiteral("edit-select-none");
         break;
     case SavePage:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::SavePage);
         iconName = QStringLiteral("document-save");
         break;
     case OpenLinkInNewBackgroundTab:
         break;
     case ViewSource:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ViewSource);
         break;
     case ToggleBold:
-        text = tr("&Bold");
         iconName = QStringLiteral("format-text-bold");
         break;
     case ToggleItalic:
-        text = tr("&Italic");
         iconName = QStringLiteral("format-text-italic");
         break;
     case ToggleUnderline:
-        text = tr("&Underline");
         iconName = QStringLiteral("format-text-underline");
         break;
     case ToggleStrikethrough:
-        text = tr("&Strikethrough");
         iconName = QStringLiteral("format-text-strikethrough");
         break;
     case AlignLeft:
-        text = tr("Align &Left");
         break;
     case AlignCenter:
-        text = tr("Align &Center");
         break;
     case AlignRight:
-        text = tr("Align &Right");
         break;
     case AlignJustified:
-        text = tr("Align &Justified");
         break;
     case Indent:
-        text = tr("&Indent");
         iconName = QStringLiteral("format-indent-more");
         break;
     case Outdent:
-        text = tr("&Outdent");
         iconName = QStringLiteral("format-indent-less");
         break;
     case InsertOrderedList:
-        text = tr("Insert &Ordered List");
-        break;
     case InsertUnorderedList:
-        text = tr("Insert &Unordered List");
-        break;
     case ChangeTextDirectionLTR:
-        text = tr("Change text direction left to right");
-        break;
     case ChangeTextDirectionRTL:
-        text = tr("Change text direction right to left");
         break;
     case NoWebAction:
     case WebActionCount:
