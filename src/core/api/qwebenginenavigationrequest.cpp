@@ -89,7 +89,10 @@ void QWebEngineNavigationRequest::setAction(QWebEngineNavigationRequest::Navigat
         return;
 
     acceptRequest ? accept() : reject();
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     emit actionChanged();
+QT_WARNING_POP
 }
 #endif
 /*!
