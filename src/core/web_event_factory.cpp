@@ -1541,8 +1541,9 @@ static QPoint getWheelEventDelta(const blink::WebGestureEvent &webEvent)
 {
     static const float cDefaultQtScrollStep = 20.f;
     static const int wheelScrollLines = QGuiApplication::styleHints()->wheelScrollLines();
-    return QPoint(webEvent.data.scroll_update.delta_x * QWheelEvent::DefaultDeltasPerStep / (wheelScrollLines * cDefaultQtScrollStep),
-                  webEvent.data.scroll_update.delta_y * QWheelEvent::DefaultDeltasPerStep / (wheelScrollLines * cDefaultQtScrollStep));
+    static const float deltasPerStep = static_cast<float>(QWheelEvent::DefaultDeltasPerStep);
+    return QPoint(webEvent.data.scroll_update.delta_x * deltasPerStep / (wheelScrollLines * cDefaultQtScrollStep),
+                  webEvent.data.scroll_update.delta_y * deltasPerStep / (wheelScrollLines * cDefaultQtScrollStep));
 }
 
 blink::WebMouseWheelEvent::Phase toBlinkPhase(QWheelEvent *ev)
@@ -1589,8 +1590,8 @@ blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev)
     webEvent.SetPositionInScreen(static_cast<float>(ev->globalPosition().x()),
                                  static_cast<float>(ev->globalPosition().y()));
 
-    webEvent.wheel_ticks_x = static_cast<float>(ev->angleDelta().x()) / QWheelEvent::DefaultDeltasPerStep;
-    webEvent.wheel_ticks_y = static_cast<float>(ev->angleDelta().y()) / QWheelEvent::DefaultDeltasPerStep;
+    webEvent.wheel_ticks_x = ev->angleDelta().x() / static_cast<float>(QWheelEvent::DefaultDeltasPerStep);
+    webEvent.wheel_ticks_y = ev->angleDelta().y() / static_cast<float>(QWheelEvent::DefaultDeltasPerStep);
     webEvent.phase = toBlinkPhase(ev);
 #if defined(Q_OS_DARWIN)
     // PrecisePixel is a macOS term meaning it is a system scroll gesture, see qnsview_mouse.mm
@@ -1627,8 +1628,8 @@ bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent,
     webEvent.SetPositionInScreen(static_cast<float>(ev->globalPosition().x()),
                                  static_cast<float>(ev->globalPosition().y()));
 
-    webEvent.wheel_ticks_x += static_cast<float>(ev->angleDelta().x()) / QWheelEvent::DefaultDeltasPerStep;
-    webEvent.wheel_ticks_y += static_cast<float>(ev->angleDelta().y()) / QWheelEvent::DefaultDeltasPerStep;
+    webEvent.wheel_ticks_x = ev->angleDelta().x() / static_cast<float>(QWheelEvent::DefaultDeltasPerStep);
+    webEvent.wheel_ticks_y = ev->angleDelta().y() / static_cast<float>(QWheelEvent::DefaultDeltasPerStep);
     setBlinkWheelEventDelta(webEvent);
 
     return true;

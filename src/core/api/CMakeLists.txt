@@ -66,7 +66,16 @@ set_target_properties(WebEngineCore PROPERTIES QTWEBENGINEPROCESS_NAME ${qtWebEn
 qt_skip_warnings_are_errors(WebEngineCore)
 
 if(CLANG OR GCC)
-    target_compile_options(WebEngineCore PRIVATE "-Wno-unused-parameter")
+    target_compile_options(WebEngineCore PRIVATE
+        "-Wno-unused-parameter"
+        "-Wno-expansion-to-defined"
+    )
+endif()
+
+if(GCC)
+    target_compile_options(WebEngineCore PRIVATE
+        "-Wno-packed-not-aligned"
+    )
 endif()
 
 qt_internal_extend_target(WebEngineCore CONDITION QT_FEATURE_webengine_webchannel
