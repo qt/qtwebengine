@@ -22,5 +22,3 @@ qtConfig(webengine-spellchecker):!qtConfig(webengine-native-spellchecker):!cross
 } else {
     message("Spellchecker example will not be built because it depends on usage of Hunspell dictionaries.")
 }
-
-qtConfig(ssl):greaterThan(QT_MAJOR_VERSION, 5):greaterThan(QT_MINOR_VERSION, 3):SUBDIRS += clientcertificate

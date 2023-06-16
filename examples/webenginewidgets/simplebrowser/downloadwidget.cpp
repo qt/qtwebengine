@@ -7,8 +7,6 @@
 #include <QUrl>
 #include <QWebEngineDownloadRequest>
 
-using namespace Qt::StringLiterals;
-
 DownloadWidget::DownloadWidget(QWebEngineDownloadRequest *download, QWidget *parent)
     : QFrame(parent)
     , m_download(download)
@@ -98,11 +96,11 @@ void DownloadWidget::updateWidget()
     }
 
     if (state == QWebEngineDownloadRequest::DownloadInProgress) {
-        static QIcon cancelIcon(u":process-stop.png"_s);
+        static QIcon cancelIcon(QStringLiteral(":process-stop.png"));
         m_cancelButton->setIcon(cancelIcon);
         m_cancelButton->setToolTip(tr("Stop downloading"));
     } else {
-        static QIcon removeIcon(u":edit-clear.png"_s);
+        static QIcon removeIcon(QStringLiteral(":edit-clear.png"));
         m_cancelButton->setIcon(removeIcon);
         m_cancelButton->setToolTip(tr("Remove from list"));
     }
