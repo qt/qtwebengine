@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
-#include "media/gpu/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -39,9 +38,6 @@
 #include "ui/base/ui_base_switches.h"
 #endif
 
-// must be included before vaapi_wrapper.h
-#include <QtCore/qcoreapplication.h>
-
 #if BUILDFLAG(IS_WIN)
 #include "media/gpu/windows/dxva_video_decode_accelerator_win.h"
 #include "media/gpu/windows/media_foundation_video_encode_accelerator_win.h"
@@ -53,9 +49,7 @@
 #include "media/gpu/mac/vt_video_decode_accelerator_mac.h"
 #endif
 
-#if BUILDFLAG(USE_VAAPI)
-#include "media/gpu/vaapi/vaapi_wrapper.h"
-#endif
+#include <QtCore/qcoreapplication.h>
 
 namespace content {
 ContentClient *GetContentClient();
@@ -171,21 +165,21 @@ void ContentMainDelegateQt::PreSandboxStartup()
         setlocale(LC_NUMERIC, "C");
 #endif
 
-    // from gpu_main.cc:
-#if BUILDFLAG(USE_VAAPI)
-    media::VaapiWrapper::PreSandboxInitialization();
-#endif
+    bool isBrowserProcess = !parsedCommandLine->HasSwitch(switches::kProcessType);
+    if (isBrowserProcess) {
+        // from gpu_main.cc:
 #if BUILDFLAG(IS_WIN)
-    media::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
-    media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
+        media::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
+        media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
 #endif
 
 #if BUILDFLAG(IS_MAC)
-    {
-        TRACE_EVENT0("gpu", "Initialize VideoToolbox");
-        media::InitializeVideoToolbox();
-    }
+        {
+            TRACE_EVENT0("gpu", "Initialize VideoToolbox");
+            media::InitializeVideoToolbox();
+        }
 #endif
+    }
 
     if (parsedCommandLine->HasSwitch(switches::kApplicationName)) {
         std::string appName = parsedCommandLine->GetSwitchValueASCII(switches::kApplicationName);
