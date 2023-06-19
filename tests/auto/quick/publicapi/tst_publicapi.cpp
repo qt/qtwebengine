@@ -671,6 +671,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.ToggleUnderline --> WebAction"
     << "QQuickWebEngineView.Undo --> WebAction"
     << "QQuickWebEngineView.Unselect --> WebAction"
+    << "QQuickWebEngineView.OpenLinkInNewBackgroundTab --> WebAction"
     << "QQuickWebEngineView.ViewSource --> WebAction"
     << "QQuickWebEngineView.WarningMessageLevel --> JavaScriptConsoleMessageLevel"
     << "QQuickWebEngineView.WebActionCount --> WebAction"
