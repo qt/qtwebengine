@@ -214,6 +214,7 @@ QT_WARNING_POP
         RequestClose,
         Unselect,
         SavePage,
+        OpenLinkInNewBackgroundTab, // Not supported in QML
         ViewSource,
 
         ToggleBold,

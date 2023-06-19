@@ -36,6 +36,7 @@
 #include <QtWebEngineCore/qwebenginefullscreenrequest.h>
 #include <QtWebEngineCore/qwebengineloadinginfo.h>
 #include <QtWebEngineCore/qwebenginenavigationrequest.h>
+#include <QtWebEngineCore/qwebenginepage.h>
 #include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
 #include <QtWebEngineCore/qwebenginescriptcollection.h>
 #include <QtWebEngineCore/private/qwebenginecontextmenurequest_p.h>
@@ -77,6 +78,7 @@
 QT_BEGIN_NAMESPACE
 using namespace QtWebEngineCore;
 
+Q_STATIC_ASSERT(int(QQuickWebEngineView::WebActionCount) == int(QWebEnginePage::WebActionCount));
 #if QT_DEPRECATED_SINCE(6, 2)
 QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
 Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::AcceptRequest)            == static_cast<int>(QWebEngineNavigationRequest::AcceptRequest));
@@ -2114,6 +2116,8 @@ QQuickWebEngineAction *QQuickWebEngineView::action(WebAction action)
     case SavePage:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::SavePage);
         iconName = QStringLiteral("document-save");
+        break;
+    case OpenLinkInNewBackgroundTab:
         break;
     case ViewSource:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ViewSource);
