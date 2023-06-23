@@ -12,6 +12,7 @@ qt_internal_add_module(WebEngineCore
         qwebenginecertificateerror.cpp qwebenginecertificateerror.h
         qwebengineclientcertificateselection.cpp qwebengineclientcertificateselection.h
         qwebengineclientcertificatestore.cpp qwebengineclientcertificatestore.h
+        qwebengineclienthints.cpp qwebengineclienthints.h
         qwebenginecontextmenurequest.cpp qwebenginecontextmenurequest.h qwebenginecontextmenurequest_p.h
         qwebenginecookiestore.cpp qwebenginecookiestore.h qwebenginecookiestore_p.h
         qwebenginedownloadrequest.cpp qwebenginedownloadrequest.h qwebenginedownloadrequest_p.h

@@ -50,6 +50,7 @@
 #include <qnetworkcookiejar.h>
 #include <qnetworkreply.h>
 #include <qnetworkrequest.h>
+#include <qwebengineclienthints.h>
 #include <qwebenginedownloadrequest.h>
 #include <qwebenginefilesystemaccessrequest.h>
 #include <qwebenginefindtextresult.h>
@@ -268,6 +269,7 @@ private Q_SLOTS:
     void fileSystemAccessDialog();
 
     void localToRemoteNavigation();
+    void clientHints_data();
     void clientHints();
     void childFrameInput();
     void openLinkInNewPageWithWebWindowType_data();
@@ -5132,31 +5134,127 @@ void tst_QWebEnginePage::localToRemoteNavigation()
     QVERIFY(!remote.loaded);
 }
 
+void tst_QWebEnginePage::clientHints_data()
+{
+    QTest::addColumn<bool>("clientHintsEnabled");
+    QTest::addColumn<QString>("arch");
+    QTest::addColumn<QString>("platform");
+    QTest::addColumn<QString>("model");
+    QTest::addColumn<bool>("isMobile");
+    QTest::addColumn<QString>("fullVersion");
+    QTest::addColumn<QString>("platformVersion");
+    QTest::addColumn<QString>("bitness");
+    QTest::addColumn<bool>("isWOW64");
+    QTest::addColumn<QHash<QString, QString>>("fullVersionList");
+
+    QTest::newRow("Modify values") << true << "Abc" << "AmigaOS" << "Ultra" << true << "1.99" << "3" << "x64" << true << QHash<QString, QString>({{"APITest", "1.0.0"}, {"App", "5.0"}});
+    QTest::newRow("Empty values") << true << "" << "" << "" << false << "" << "" << "" << false << QHash<QString, QString>();
+    QTest::newRow("Disable headers") << false << "" << "" << "" << false << "" << "" << "" << false << QHash<QString, QString>();
+}
+
 void tst_QWebEnginePage::clientHints()
 {
-    HttpServer server;
-    connect(&server, &HttpServer::newRequest, [&] (HttpReqRep *r) {
-        r->setResponseBody(r->requestHeader("Sec-Ch-Ua-Platform"));
-        r->sendResponse();
-    });
-    QVERIFY(server.start());
+    QFETCH(bool, clientHintsEnabled);
+    QFETCH(QString, arch);
+    QFETCH(QString, platform);
+    QFETCH(QString, model);
+    QFETCH(bool, isMobile);
+    QFETCH(QString, fullVersion);
+    QFETCH(QString, platformVersion);
+    QFETCH(QString, bitness);
+    QFETCH(bool, isWOW64);
+    typedef QHash<QString, QString> brandVersionPairs;
+    QFETCH(brandVersionPairs, fullVersionList);
 
     QWebEnginePage page;
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+
+    QWebEngineClientHints *clientHints = page.profile()->clientHints();
+    clientHints->setAllClientHintsEnabled(clientHintsEnabled);
+
+    HttpServer server;
+    int requestCount = 0;
+    connect(&server, &HttpServer::newRequest, [&] (HttpReqRep *r) {
+        // Platform and Mobile hints are always sent and can't be disabled with this API
+        QVERIFY(r->hasRequestHeader("Sec-CH-UA-Platform"));
+        QVERIFY(r->hasRequestHeader("Sec-CH-UA-Mobile"));
+        if (!clientHintsEnabled) {
+            QVERIFY(!r->hasRequestHeader("Sec-CH-UA-Arch"));
+            QVERIFY(!r->hasRequestHeader("Sec-CH-UA-Model"));
+            QVERIFY(!r->hasRequestHeader("Sec-CH-UA-Full-Version"));
+            QVERIFY(!r->hasRequestHeader("Sec-CH-UA-Platform-Version"));
+            QVERIFY(!r->hasRequestHeader("Sec-CH-UA-Bitness"));
+            QVERIFY(!r->hasRequestHeader("Sec-CH-UA-Wow64"));
+            QVERIFY(!r->hasRequestHeader("Sec-CH-UA-Full-Version-List"));
+        }
+
+        // The first request header won't contain any hints, only after a response with "Accept-CH"
+        if (requestCount > 1 && clientHintsEnabled) {
+            // All hint values are lower case in the headers
+            QCOMPARE(QString(r->requestHeader("Sec-CH-UA-Arch")).remove("\""), arch.toLower());
+            QCOMPARE(QString(r->requestHeader("Sec-CH-UA-Platform")).remove("\""), platform.toLower());
+            QCOMPARE(QString(r->requestHeader("Sec-CH-UA-Model")).remove("\""), model.toLower());
+            QCOMPARE(QString(r->requestHeader("Sec-CH-UA-Mobile")).remove("\""), isMobile ? "?1" : "?0");
+            QCOMPARE(QString(r->requestHeader("Sec-CH-UA-Full-Version")).remove("\""), fullVersion.toLower());
+            QCOMPARE(QString(r->requestHeader("Sec-CH-UA-Platform-Version")).remove("\""), platformVersion.toLower());
+            QCOMPARE(QString(r->requestHeader("Sec-CH-UA-Bitness")).remove("\""), bitness.toLower());
+            QCOMPARE(QString(r->requestHeader("Sec-CH-UA-Wow64")).remove("\""), isWOW64 ? "?1" : "?0");
+            for (auto i = fullVersionList.cbegin(), end = fullVersionList.cend(); i != end; ++i)
+                QVERIFY(QString(r->requestHeader("Sec-CH-UA-Full-Version-List")).contains(i.key().toLower()));
+        }
+
+        r->setResponseHeader("Accept-CH", "Sec-CH-UA-Arch, Sec-CH-UA-Bitness, Sec-CH-UA-Full-Version, Sec-CH-UA-Full-Version-List, Sec-CH-UA-Mobile, Sec-CH-UA-Model, Sec-CH-UA-Platform-Version, Sec-CH-UA-Platform, Sec-CH-UA-Wow64, Sec-CH-UA");
+        r->sendResponse();
+        requestCount++;
+    });
+    QVERIFY(server.start());
+
+    clientHints->setArch(arch);
+    clientHints->setPlatform(platform);
+    clientHints->setModel(model);
+    clientHints->setIsMobile(isMobile);
+    clientHints->setFullVersion(fullVersion);
+    clientHints->setPlatformVersion(platformVersion);
+    clientHints->setBitness(bitness);
+    clientHints->setIsWow64(isWOW64);
+    clientHints->setFullVersionList(fullVersionList);
 
     page.setUrl(server.url());
     QTRY_COMPARE(loadSpy.size(), 1);
     QVERIFY(loadSpy.takeFirst().value(0).toBool());
 
-    QString platform = toPlainTextSync(&page);
-#ifdef Q_OS_LINUX
-    QCOMPARE(platform.toLower(), "\"linux\"");
-#elif defined (Q_OS_MACOS)
-    QCOMPARE(platform.toLower(), "\"macos\"");
-#elif defined (Q_OS_WIN)
-    QCOMPARE(platform.toLower(), "\"windows\"");
-#endif
+    QCOMPARE(clientHints->arch(), arch);
+    QCOMPARE(clientHints->platform(), platform);
+    QCOMPARE(clientHints->model(), model);
+    QCOMPARE(clientHints->isMobile(), isMobile);
+    QCOMPARE(clientHints->fullVersion(), fullVersion);
+    QCOMPARE(clientHints->platformVersion(), platformVersion);
+    QCOMPARE(clientHints->bitness(), bitness);
+    QCOMPARE(clientHints->isWow64(), isWOW64);
+    for (auto i = fullVersionList.cbegin(), end = fullVersionList.cend(); i != end; ++i)
+        QCOMPARE(clientHints->fullVersionList()[i.key()], i.value());
 
+    // A new user agent string should not override/disable client hints
+    page.profile()->setHttpUserAgent(QStringLiteral("Custom user agent"));
+    page.triggerAction(QWebEnginePage::Reload);
+    QTRY_COMPARE(loadSpy.size(), 1);
+
+    // Reset all to default values
+    clientHints->resetAll();
+    QCOMPARE_NE(clientHints->arch(), arch);
+#ifdef Q_OS_LINUX
+    QCOMPARE(clientHints->platform().toLower(), "linux");
+#elif defined (Q_OS_MACOS)
+    QCOMPARE(clientHints->platform().toLower(), "macos");
+#elif defined (Q_OS_WIN)
+    QCOMPARE(clientHints->platform().toLower(), "windows");
+#endif
+    QCOMPARE_NE(clientHints->fullVersion(), fullVersion);
+    QCOMPARE_NE(clientHints->platformVersion(), platformVersion);
+    QCOMPARE_NE(clientHints->bitness(), bitness);
+    for (auto i = fullVersionList.cbegin(), end = fullVersionList.cend(); i != end; ++i)
+        QVERIFY(!clientHints->fullVersionList().contains(i.key()));
+    QVERIFY(clientHints->fullVersionList().contains("Chromium"));
 }
 
 void tst_QWebEnginePage::childFrameInput()

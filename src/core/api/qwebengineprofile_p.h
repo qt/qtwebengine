@@ -31,6 +31,7 @@ class WebEngineSettings;
 
 QT_BEGIN_NAMESPACE
 
+class QWebEngineClientHints;
 class QWebEngineNotification;
 class QWebEngineProfile;
 class QWebEngineScriptCollection;
@@ -64,6 +65,7 @@ private:
     QWebEngineSettings *m_settings;
     QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
     QScopedPointer<QWebEngineScriptCollection> m_scriptCollection;
+    QScopedPointer<QWebEngineClientHints> m_clientHints;
     QMap<quint32, QPointer<QWebEngineDownloadRequest>> m_ongoingDownloads;
     std::function<void(std::unique_ptr<QWebEngineNotification>)> m_notificationPresenter;
 };

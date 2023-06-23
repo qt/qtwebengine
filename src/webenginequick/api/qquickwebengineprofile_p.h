@@ -28,6 +28,7 @@ class ProfileAdapter;
 
 QT_BEGIN_NAMESPACE
 
+class QWebEngineClientHints;
 class QQuickWebEngineDownloadRequest;
 class QQuickWebEngineSettings;
 class QQuickWebEngineScriptCollection;
@@ -58,6 +59,7 @@ public:
 private:
     QQuickWebEngineProfile *q_ptr;
     QScopedPointer<QQuickWebEngineSettings> m_settings;
+    QScopedPointer<QWebEngineClientHints> m_clientHints;
     QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
     QMap<quint32, QPointer<QQuickWebEngineDownloadRequest> > m_ongoingDownloads;
 

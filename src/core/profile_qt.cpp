@@ -44,6 +44,7 @@ namespace QtWebEngineCore {
 ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
     : m_profileIOData(new ProfileIODataQt(this))
     , m_profileAdapter(profileAdapter)
+    , m_userAgentMetadata(embedder_support::GetUserAgentMetadata())
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     , m_extensionSystem(nullptr)
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
@@ -267,6 +268,11 @@ PrefServiceAdapter &ProfileQt::prefServiceAdapter()
 const PrefServiceAdapter &ProfileQt::prefServiceAdapter() const
 {
     return m_prefServiceAdapter;
+}
+
+const blink::UserAgentMetadata &ProfileQt::userAgentMetadata()
+{
+    return m_userAgentMetadata;
 }
 
 content::PlatformNotificationService *ProfileQt::GetPlatformNotificationService()

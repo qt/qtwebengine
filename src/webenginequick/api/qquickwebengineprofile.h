@@ -15,6 +15,7 @@ QT_BEGIN_NAMESPACE
 class QQuickWebEngineDownloadRequest;
 class QQuickWebEngineSettings;
 class QWebEngineClientCertificateStore;
+class QWebEngineClientHints;
 class QWebEngineCookieStore;
 class QWebEngineNotification;
 class QWebEngineUrlRequestInterceptor;
@@ -113,6 +114,7 @@ public:
     void setPushServiceEnabled(bool enable);
 
     QWebEngineClientCertificateStore *clientCertificateStore();
+    QWebEngineClientHints *clientHints() const;
 
     static QQuickWebEngineProfile *defaultProfile();
 

@@ -3,6 +3,7 @@
 
 #include "qwebengineprofile.h"
 #include "qwebengineprofile_p.h"
+#include "qwebengineclienthints.h"
 #include "qwebenginecookiestore.h"
 #include "qwebenginedownloadrequest.h"
 #include "qwebenginedownloadrequest_p.h"
@@ -143,6 +144,7 @@ QWebEngineProfilePrivate::QWebEngineProfilePrivate(ProfileAdapter* profileAdapte
     , m_profileAdapter(profileAdapter)
     , m_scriptCollection(new QWebEngineScriptCollection(
                              new QWebEngineScriptCollectionPrivate(profileAdapter->userResourceController())))
+    , m_clientHints(new QWebEngineClientHints(profileAdapter))
 {
     m_profileAdapter->addClient(this);
 }
@@ -925,6 +927,12 @@ void QWebEngineProfile::requestIconForIconURL(const QUrl &url, int desiredSizeIn
     d->profileAdapter()->requestIconForIconURL(url, desiredSizeInPixel,
                                                settings()->testAttribute(QWebEngineSettings::TouchIconsEnabled),
                                                iconAvailableCallback);
+}
+
+QWebEngineClientHints *QWebEngineProfile::clientHints() const
+{
+    Q_D(const QWebEngineProfile);
+    return d->m_clientHints.data();
 }
 
 QT_END_NAMESPACE

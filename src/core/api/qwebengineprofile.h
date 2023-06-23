@@ -17,6 +17,7 @@ QT_BEGIN_NAMESPACE
 
 class QUrl;
 class QWebEngineClientCertificateStore;
+class QWebEngineClientHints;
 class QWebEngineCookieStore;
 class QWebEngineDownloadRequest;
 class QWebEngineNotification;
@@ -81,6 +82,7 @@ public:
 
     QWebEngineSettings *settings() const;
     QWebEngineScriptCollection *scripts() const;
+    QWebEngineClientHints *clientHints() const;
 
     const QWebEngineUrlSchemeHandler *urlSchemeHandler(const QByteArray &) const;
     void installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *);

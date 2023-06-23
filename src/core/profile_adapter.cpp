@@ -7,6 +7,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time_to_iso8601.h"
+#include "components/embedder_support/user_agent_utils.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/content/browser/history_database_helper.h"
 #include "components/history/core/browser/history_database_params.h"
@@ -39,6 +40,7 @@
 
 #include <QCoreApplication>
 #include <QDir>
+#include <QJsonObject>
 #include <QSet>
 #include <QString>
 #include <QStandardPaths>
@@ -63,6 +65,7 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
     , m_httpCacheType(DiskHttpCache)
     , m_persistentCookiesPolicy(AllowPersistentCookies)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
+    , m_clientHintsEnabled(true)
     , m_pushServiceEnabled(false)
     , m_httpCacheMaxSize(0)
 {
@@ -319,8 +322,11 @@ void ProfileAdapter::setHttpUserAgent(const QString &userAgent)
 
     std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
     for (content::WebContentsImpl *web_contents : list)
-        if (web_contents->GetBrowserContext() == m_profile.data())
-            web_contents->SetUserAgentOverride(blink::UserAgentOverride::UserAgentOnly(stdUserAgent), true);
+        if (web_contents->GetBrowserContext() == m_profile.data()) {
+            auto userAgentOverride = blink::UserAgentOverride::UserAgentOnly(stdUserAgent);
+            userAgentOverride.ua_metadata_override = m_profile->m_userAgentMetadata;
+            web_contents->SetUserAgentOverride(userAgentOverride, true);
+        }
 
     m_profile->ForEachLoadedStoragePartition(
                 base::BindRepeating([](const std::string &user_agent, content::StoragePartition *storage_partition) {
@@ -588,6 +594,110 @@ void ProfileAdapter::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
         base::BindRepeating([](std::string accept_language, content::StoragePartition *storage_partition) {
             storage_partition->GetNetworkContext()->SetAcceptLanguage(accept_language);
         }, http_accept_language));
+}
+
+QVariant ProfileAdapter::clientHint(ClientHint clientHint) const
+{
+    blink::UserAgentMetadata &userAgentMetadata = m_profile->m_userAgentMetadata;
+    switch (clientHint) {
+    case ProfileAdapter::UAArchitecture:
+        return QVariant(toQString(userAgentMetadata.architecture));
+    case ProfileAdapter::UAPlatform:
+        return QVariant(toQString(userAgentMetadata.platform));
+    case ProfileAdapter::UAModel:
+        return QVariant(toQString(userAgentMetadata.model));
+    case ProfileAdapter::UAMobile:
+        return QVariant(userAgentMetadata.mobile);
+    case ProfileAdapter::UAFullVersion:
+        return QVariant(toQString(userAgentMetadata.full_version));
+    case ProfileAdapter::UAPlatformVersion:
+        return QVariant(toQString(userAgentMetadata.platform_version));
+    case ProfileAdapter::UABitness:
+        return QVariant(toQString(userAgentMetadata.bitness));
+    case ProfileAdapter::UAFullVersionList: {
+            QJsonObject ret;
+            for (const auto &value : userAgentMetadata.brand_full_version_list)
+                ret.insert(toQString(value.brand), QJsonValue(toQString(value.version)));
+            return QVariant(ret);
+        }
+    case ProfileAdapter::UAWOW64:
+        return QVariant(userAgentMetadata.wow64);
+    default:
+        return QVariant();
+    }
+}
+
+void ProfileAdapter::setClientHint(ClientHint clientHint, const QVariant &value)
+{
+    blink::UserAgentMetadata &userAgentMetadata = m_profile->m_userAgentMetadata;
+    switch (clientHint) {
+    case ProfileAdapter::UAArchitecture:
+        userAgentMetadata.architecture = value.toString().toStdString();
+        break;
+    case ProfileAdapter::UAPlatform:
+        userAgentMetadata.platform = value.toString().toStdString();
+        break;
+    case ProfileAdapter::UAModel:
+        userAgentMetadata.model = value.toString().toStdString();
+        break;
+    case ProfileAdapter::UAMobile:
+        userAgentMetadata.mobile = value.toBool();
+        break;
+    case ProfileAdapter::UAFullVersion:
+        userAgentMetadata.full_version = value.toString().toStdString();
+        break;
+    case ProfileAdapter::UAPlatformVersion:
+        userAgentMetadata.platform_version = value.toString().toStdString();
+        break;
+    case ProfileAdapter::UABitness:
+        userAgentMetadata.bitness = value.toString().toStdString();
+        break;
+    case ProfileAdapter::UAFullVersionList: {
+        userAgentMetadata.brand_full_version_list.clear();
+        QJsonObject fullVersionList = value.toJsonObject();
+        for (const QString &key : fullVersionList.keys())
+            userAgentMetadata.brand_full_version_list.push_back({
+                key.toStdString(),
+                fullVersionList.value(key).toString().toStdString()
+            });
+        break;
+    }
+    case ProfileAdapter::UAWOW64:
+        userAgentMetadata.wow64 = value.toBool();
+        break;
+    default:
+        break;
+    }
+
+    std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
+    for (content::WebContentsImpl *web_contents : list) {
+        if (web_contents->GetBrowserContext() == m_profile.data()) {
+            web_contents->GetMutableRendererPrefs()->user_agent_override.ua_metadata_override = userAgentMetadata;
+            web_contents->SyncRendererPrefs();
+        }
+    }
+}
+
+bool ProfileAdapter::clientHintsEnabled()
+{
+    return m_clientHintsEnabled;
+}
+
+void ProfileAdapter::setClientHintsEnabled(bool enabled)
+{
+    m_clientHintsEnabled = enabled;
+}
+
+void ProfileAdapter::resetClientHints()
+{
+    m_profile->m_userAgentMetadata = embedder_support::GetUserAgentMetadata();
+    std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
+    for (content::WebContentsImpl *web_contents : list) {
+        if (web_contents->GetBrowserContext() == m_profile.data()) {
+            web_contents->GetMutableRendererPrefs()->user_agent_override.ua_metadata_override = m_profile->m_userAgentMetadata;
+            web_contents->SyncRendererPrefs();
+        }
+    }
 }
 
 void ProfileAdapter::clearHttpCache()

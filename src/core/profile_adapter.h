@@ -143,6 +143,18 @@ public:
         DeniedPermission = 2
     };
 
+    enum ClientHint : uchar {
+        UAArchitecture,
+        UAPlatform,
+        UAModel,
+        UAMobile,
+        UAFullVersion,
+        UAPlatformVersion,
+        UABitness,
+        UAFullVersionList,
+        UAWOW64,
+    };
+
     HttpCacheType httpCacheType() const;
     void setHttpCacheType(ProfileAdapter::HttpCacheType);
 
@@ -172,6 +184,12 @@ public:
     QString httpAcceptLanguageWithoutQualities() const;
     QString httpAcceptLanguage() const;
     void setHttpAcceptLanguage(const QString &httpAcceptLanguage);
+
+    QVariant clientHint(ClientHint clientHint) const;
+    void setClientHint(ClientHint clientHint, const QVariant &value);
+    bool clientHintsEnabled();
+    void setClientHintsEnabled(bool enabled);
+    void resetClientHints();
 
     void clearHttpCache();
 
@@ -221,6 +239,7 @@ private:
     QHash<QByteArray, QPointer<QWebEngineUrlSchemeHandler>> m_customUrlSchemeHandlers;
     QHash<QByteArray, QWeakPointer<UserNotificationController>> m_ephemeralNotifications;
     QHash<QByteArray, QSharedPointer<UserNotificationController>> m_persistentNotifications;
+    bool m_clientHintsEnabled;
 
     QList<ProfileAdapterClient*> m_clients;
     QList<WebContentsAdapterClient *> m_webContentsAdapterClients;

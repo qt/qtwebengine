@@ -230,10 +230,9 @@ public:
     std::unique_ptr<content::WebContentsViewDelegate> GetWebContentsViewDelegate(content::WebContents *web_contents) override;
 
     static std::string getUserAgent();
-    static blink::UserAgentMetadata getUserAgentMetadata();
 
     std::string GetUserAgent() override { return getUserAgent(); }
-    blink::UserAgentMetadata GetUserAgentMetadata() override { return getUserAgentMetadata(); }
+    blink::UserAgentMetadata GetUserAgentMetadata() override;
     std::string GetProduct() override;
 
     content::WebAuthenticationDelegate *GetWebAuthenticationDelegate() override;

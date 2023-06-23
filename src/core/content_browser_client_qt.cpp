@@ -970,8 +970,9 @@ std::string ContentBrowserClientQt::getUserAgent()
                                               + std::string(qWebEngineChromiumVersion()));
 }
 
-blink::UserAgentMetadata ContentBrowserClientQt::getUserAgentMetadata()
+blink::UserAgentMetadata ContentBrowserClientQt::GetUserAgentMetadata()
 {
+    // Implemented only for safe-keeping. It will be overridden on WebContents level.
     static blink::UserAgentMetadata userAgentMetadata(embedder_support::GetUserAgentMetadata());
     return userAgentMetadata;
 }

@@ -14,6 +14,7 @@
 
 #include <QtWebEngineCore/qwebenginescriptcollection.h>
 #include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
+#include <QtWebEngineCore/qwebengineclienthints.h>
 #include <QtWebEngineCore/qwebenginecookiestore.h>
 #include <QtWebEngineCore/qwebenginenotification.h>
 #include <QtWebEngineCore/private/qwebenginedownloadrequest_p.h>
@@ -135,6 +136,7 @@ QT_BEGIN_NAMESPACE
 
 QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(ProfileAdapter *profileAdapter)
     : m_settings(new QQuickWebEngineSettings())
+    , m_clientHints(new QWebEngineClientHints(profileAdapter))
     , m_profileAdapter(profileAdapter)
 {
     profileAdapter->addClient(this);
@@ -1020,6 +1022,12 @@ QWebEngineClientCertificateStore *QQuickWebEngineProfile::clientCertificateStore
 #else
     return nullptr;
 #endif
+}
+
+QWebEngineClientHints *QQuickWebEngineProfile::clientHints() const
+{
+    Q_D(const QQuickWebEngineProfile);
+    return d->m_clientHints.data();
 }
 
 void QQuickWebEngineProfile::ensureQmlContext(const QObject *object)
