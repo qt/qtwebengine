@@ -3,7 +3,6 @@
 
 /*!
     \example webenginewidgets/simplebrowser
-    \examplecategory {Application Examples}
     \title WebEngine Widgets Simple Browser Example
     \ingroup webengine-widgetexamples
     \brief A simple browser based on \QWE Widgets.
