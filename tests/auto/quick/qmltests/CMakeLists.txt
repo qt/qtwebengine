@@ -1,4 +1,4 @@
-# Copyright (C) 2022 The Qt Company Ltd.
+# Copyright (C) 2023 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
 include(../../httpserver/httpserver.cmake)
@@ -33,7 +33,6 @@ set(testList
     tst_findText.qml
     tst_focusOnNavigation.qml
     tst_fullScreenRequest.qml
-    tst_geopermission.qml
     tst_getUserMedia.qml
     tst_inputMethod.qml
     tst_inputTextDirection.qml
@@ -70,6 +69,10 @@ endif()
 
 if(QT_FEATURE_ssl)
     list(APPEND testList tst_certificateError.qml)
+endif()
+
+if (NOT APPLE)
+   list(APPEND testList tst_geopermission.qml)
 endif()
 
 set(content "")

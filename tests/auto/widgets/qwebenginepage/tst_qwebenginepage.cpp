@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2016 The Qt Company Ltd.
+    Copyright (C) 2023 The Qt Company Ltd.
     Copyright (C) 2009 Girish Ramakrishnan <girish@forwardbias.in>
     Copyright (C) 2010 Holger Hans Peter Freyther
 
@@ -116,8 +116,10 @@ private Q_SLOTS:
     void acceptNavigationRequest();
     void acceptNavigationRequestNavigationType();
     void acceptNavigationRequestRelativeToNothing();
+#ifndef Q_OS_MACOS
     void geolocationRequestJS_data();
     void geolocationRequestJS();
+#endif
     void loadFinished();
     void actionStates();
     void pasteImage();
@@ -451,6 +453,7 @@ private:
     bool m_allowGeolocation;
 };
 
+#ifndef Q_OS_MACOS
 void tst_QWebEnginePage::geolocationRequestJS_data()
 {
     QTest::addColumn<bool>("allowed");
@@ -490,6 +493,7 @@ void tst_QWebEnginePage::geolocationRequestJS()
         QEXPECT_FAIL("", "No location service available.", Continue);
     QCOMPARE(result, errorCode);
 }
+#endif
 
 void tst_QWebEnginePage::loadFinished()
 {
