@@ -22,7 +22,7 @@ void tst_qtbug_110287::getAddrInfo()
     QNetworkAccessManager nam;
     QSignalSpy namSpy(&nam, &QNetworkAccessManager::finished);
 
-    QString address("http://www.qt.io");
+    QString address("http://www.example.com");
     QScopedPointer<QNetworkReply> reply(nam.get(QNetworkRequest(address)));
 
     if (!namSpy.wait(25000) || reply->error() != QNetworkReply::NoError)
