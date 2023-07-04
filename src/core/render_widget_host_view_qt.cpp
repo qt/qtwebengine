@@ -368,6 +368,9 @@ gfx::Rect RenderWidgetHostViewQt::GetViewBounds()
 
 void RenderWidgetHostViewQt::UpdateBackgroundColor()
 {
+    if (!m_delegate)
+        return;
+
     DCHECK(GetBackgroundColor());
     SkColor color = *GetBackgroundColor();
 
