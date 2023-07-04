@@ -831,9 +831,8 @@ QString QPdfDocument::pageLabel(int page)
 */
 int QPdfDocument::pageIndexForLabel(const QString &label)
 {
-    const auto trimmed = label.trimmed();
     for (int i = 0; i < d->pageCount; ++i) {
-        if (pageLabel(i) == trimmed)
+        if (pageLabel(i) == label)
             return i;
     }
     return -1;
