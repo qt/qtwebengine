@@ -33,6 +33,7 @@ Q_SIGNALS:
 protected:
     int valueFromText(const QString &text) const override;
     QString textFromValue(int value) const override;
+    QValidator::State validate(QString &text, int &pos) const override;
 
 private:
     Q_DECLARE_PRIVATE(QPdfPageSelector)

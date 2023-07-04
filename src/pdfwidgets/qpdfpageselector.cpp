@@ -88,7 +88,7 @@ int QPdfPageSelector::valueFromText(const QString &text) const
     if (d->document.isNull())
         return 0;
 
-    return d->document->pageIndexForLabel(text);
+    return d->document->pageIndexForLabel(text.trimmed());
 }
 
 QString QPdfPageSelector::textFromValue(int value) const
@@ -98,6 +98,12 @@ QString QPdfPageSelector::textFromValue(int value) const
         return {};
 
     return d->document->pageLabel(value);
+}
+
+QValidator::State QPdfPageSelector::validate(QString &text, int &pos) const
+{
+    Q_UNUSED(pos);
+    return valueFromText(text) >= 0 ? QValidator::Acceptable : QValidator::Intermediate;
 }
 
 QT_END_NAMESPACE
