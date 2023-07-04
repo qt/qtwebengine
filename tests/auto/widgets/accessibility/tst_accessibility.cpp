@@ -17,6 +17,7 @@
     Boston, MA 02110-1301, USA.
 */
 
+#include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
 #include <qtest.h>
 #include <widgetutil.h>
 
@@ -607,7 +608,11 @@ void tst_Accessibility::crossTreeParent()
 
 static QByteArrayList params = QByteArrayList()
     << "--force-renderer-accessibility"
-    << "--enable-features=AccessibilityExposeARIAAnnotations";
+    << "--enable-features=AccessibilityExposeARIAAnnotations"
+#if QT_CONFIG(webengine_embedded_build)
+    << "--disable-features=TimedHTMLParserBudget"
+#endif
+    ;
 
 W_QTEST_MAIN(tst_Accessibility, params)
 #include "tst_accessibility.moc"
