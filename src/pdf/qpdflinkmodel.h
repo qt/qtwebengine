@@ -42,7 +42,7 @@ public:
 
     int page() const;
 
-    QPdfLink linkAt(const QPointF &point) const;
+    QPdfLink linkAt(QPointF point) const;
 
 public Q_SLOTS:
     void setDocument(QPdfDocument *document);

@@ -154,7 +154,7 @@ void QPdfLinkModel::setPage(int page)
     not found. In other words, this function is useful for picking, to handle
     mouse click or hover.
 */
-QPdfLink QPdfLinkModel::linkAt(const QPointF &point) const
+QPdfLink QPdfLinkModel::linkAt(QPointF point) const
 {
     Q_D(const QPdfLinkModel);
     for (const auto &link : std::as_const(d->links)) {
