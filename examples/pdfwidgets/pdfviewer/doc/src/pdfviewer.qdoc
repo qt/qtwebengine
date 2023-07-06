@@ -5,6 +5,7 @@
     \example pdfviewer
     \meta installpath pdfwidgets
     \ingroup qtpdf-examples
+    \examplecategory {Graphics & Multimedia}
 
     \title PDF Viewer Widget Example
     \brief A widget-based PDF viewer that allows scrolling through the pages.

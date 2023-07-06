@@ -3,7 +3,7 @@
 
 /*!
     \example webenginewidgets/contentmanipulation
-    \examplecategory {Desktop}
+    \examplecategory {Web Technologies}
     \title WebEngine Content Manipulation Example
     \ingroup webengine-widgetexamples
     \brief Demonstrates how to load and manipulate web content.

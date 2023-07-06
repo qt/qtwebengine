@@ -6,6 +6,7 @@
     \title WebEngine Widgets Simple Browser Example
     \ingroup webengine-widgetexamples
     \brief A simple browser based on \QWE Widgets.
+    \examplecategory {Web Technologies}
 
     \image simplebrowser.png
 

@@ -6,6 +6,7 @@
     \title WebEngine Widgets Spellchecker Example
     \ingroup webengine-widgetexamples
     \brief Integrates a spellchecker into a simple HTML form.
+    \examplecategory {Web Technologies}
 
     \image spellchecker-example.png
 
