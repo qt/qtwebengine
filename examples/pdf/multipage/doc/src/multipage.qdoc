@@ -5,6 +5,7 @@
     \example multipage
     \meta installpath pdf
     \ingroup qtpdf-examples
+    \examplecategory {Graphics & Multimedia}
 
     \title PDF Multipage Viewer Example
     \brief A Qt Quick PDF viewer that allows scrolling through the pages.

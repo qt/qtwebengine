@@ -9,6 +9,7 @@
 
     \image quicknanobrowser-demo.jpg
     \examplecategory {Application Examples}
+    \examplecategory {Web Technologies}
 
     \e {Quick Nano Browser} demonstrates how to use the \l{Qt WebEngine QML Types}
     {Qt WebEngine QML types} to develop a small web browser application that consists of a browser

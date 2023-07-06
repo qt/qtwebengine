@@ -3,7 +3,7 @@
 
 /*!
     \example webenginewidgets/clientcertificate
-    \examplecategory {Networking}
+    \examplecategory {Web Technologies}
     \title WebEngine Widgets Client Certificate Example
     \ingroup webengine-widgetexamples
     \brief A simple client certificate authentication scenario using \QWE and \l QSslServer.

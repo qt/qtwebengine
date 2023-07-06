@@ -6,6 +6,7 @@
     \title WebEngine Lifecycle Example
     \ingroup webengine-examples
     \brief Freezes and discards background tabs to reduce CPU and memory usage.
+    \examplecategory {Web Technologies}
 
     \image lifecycle.png
 
