@@ -9,6 +9,7 @@
     \ingroup webengine-widgetexamples
     \brief Injecting custom stylsheets into web pages and providing a rich text preview
     tool for a custom markup language.
+    \examplecategory {Web Technologies}
 
     \image recipebrowser.webp
 

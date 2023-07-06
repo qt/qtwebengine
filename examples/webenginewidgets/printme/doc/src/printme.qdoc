@@ -3,7 +3,7 @@
 
 /*!
     \example webenginewidgets/printme
-    \examplecategory {Desktop}
+    \examplecategory {Web Technologies}
     \title WebEngine Widgets PrintMe Example
     \ingroup webengine-widgetexamples
     \brief Demonstrates how to print web pages using Qt WebEngine Widgets.
