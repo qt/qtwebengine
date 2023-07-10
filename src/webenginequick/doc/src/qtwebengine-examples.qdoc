@@ -5,7 +5,6 @@
     \group webengine-examples
     \title Qt WebEngine Quick Examples
     \brief Examples demonstrating the \QWE usage.
-    \ingroup all-examples
 
     These examples and demonstrations show a range of different uses for \l{Qt WebEngine},
     from displaying Web pages within a QML user interface to an implementation of
