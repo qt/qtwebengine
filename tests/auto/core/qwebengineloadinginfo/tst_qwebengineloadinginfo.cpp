@@ -82,7 +82,7 @@ private Q_SLOTS:
         QWebEngineHttpRequest request(httpServer.url("/somepage.html"));
         page.load(request);
 
-        QVERIFY(spy.wait());
+        QTRY_VERIFY_WITH_TIMEOUT(spy.count() > 0, 20000);
         QVERIFY(httpServer.stop());
     }
 };
