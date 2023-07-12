@@ -2143,9 +2143,9 @@ void QWebEnginePage::setDevToolsPage(QWebEnginePage *devToolsPage)
    Protocol}.
 */
 
-QString QWebEnginePage::devToolsId()
+QString QWebEnginePage::devToolsId() const
 {
-    Q_D(QWebEnginePage);
+    Q_D(const QWebEnginePage);
     d->ensureInitialized();
     return d->adapter->devToolsId();
 }

@@ -33,7 +33,8 @@ qt_internal_add_module(WebEngineCore
         qwebenginescriptcollection.cpp qwebenginescriptcollection.h qwebenginescriptcollection_p.h
         qwebenginesettings.cpp qwebenginesettings.h
         qwebengineurlrequestinfo.cpp qwebengineurlrequestinfo.h qwebengineurlrequestinfo_p.h
-        qwebengineurlrequestinterceptor.h qwebengineurlresponseinterceptor.h
+        qwebengineurlrequestinterceptor.h qwebengineurlrequestinterceptor.cpp
+        qwebengineurlresponseinterceptor.h qwebengineurlresponseinterceptor.cpp
         qwebengineurlresponseinfo.cpp qwebengineurlresponseinfo.h qwebengineurlresponseinfo_p.h
         qwebengineurlrequestjob.cpp qwebengineurlrequestjob.h
         qwebengineurlscheme.cpp qwebengineurlscheme.h

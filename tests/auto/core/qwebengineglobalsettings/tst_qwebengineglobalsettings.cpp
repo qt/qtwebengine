@@ -87,7 +87,7 @@ void tst_QWebEngineGlobalSettings::dnsOverHttps()
     connect(&page, &QWebEnginePage::loadFinished, this,
             [&isLoadSuccessful](bool ok) { isLoadSuccessful = ok; });
 
-    QWebEngineGlobalSettings *globalSettings = QWebEngineGlobalSettings::GetInstance();
+    QWebEngineGlobalSettings *globalSettings = QWebEngineGlobalSettings::instance();
     globalSettings->configureDnsOverHttps(dnsMode, uriTemplate);
 
     page.load(QUrl("https://google.com/"));

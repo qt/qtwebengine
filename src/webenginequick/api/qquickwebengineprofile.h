@@ -8,7 +8,6 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qstring.h>
-#include <QtWebEngineCore/qwebengineurlresponseinterceptor.h>
 #include <QtQml/qqmlregistration.h>
 
 QT_BEGIN_NAMESPACE
@@ -19,6 +18,7 @@ class QWebEngineClientCertificateStore;
 class QWebEngineCookieStore;
 class QWebEngineNotification;
 class QWebEngineUrlRequestInterceptor;
+class QWebEngineUrlResponseInterceptor;
 class QWebEngineUrlSchemeHandler;
 class QQuickWebEngineScriptCollection;
 class QQuickWebEngineProfilePrivate;

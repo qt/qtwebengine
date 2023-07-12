@@ -265,7 +265,7 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(network::mojom::Networ
     // resolver of the network service here, each time it is instantiated, with our global
     // DNS-Over-HTTPS settings. This ensures that the global settings don't get lost
     // on reinstantiation and are in effect upon initial instantiation.
-    QWebEngineGlobalSettings *const globalSettings = QWebEngineGlobalSettings::GetInstance();
+    QWebEngineGlobalSettings *const globalSettings = QWebEngineGlobalSettings::instance();
     if (globalSettings->d_ptr->isDnsOverHttpsUserConfigured) {
         const bool insecureDnsClientEnabled = globalSettings->d_ptr->insecureDnsClientEnabled;
         const bool additionalInsecureDnsTypesEnabled =
