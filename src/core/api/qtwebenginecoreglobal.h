@@ -5,10 +5,11 @@
 #define QTWEBENGINECOREGLOBAL_H
 
 #include <QtCore/qglobal.h>
-#include <QtCore/qurl.h>
 #include <QtWebEngineCore/qtwebenginecore-config.h>
 
 QT_BEGIN_NAMESPACE
+
+class QUrl;
 
 #if defined(BUILDING_CHROMIUM)
 #  define Q_WEBENGINECORE_EXPORT Q_DECL_EXPORT

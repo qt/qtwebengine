@@ -15,10 +15,9 @@ class QWebEngineUrlResponseInfo;
 class Q_WEBENGINECORE_EXPORT QWebEngineUrlResponseInterceptor : public QObject
 {
     Q_OBJECT
-    Q_DISABLE_COPY(QWebEngineUrlResponseInterceptor)
 public:
     explicit QWebEngineUrlResponseInterceptor(QObject *p = nullptr) : QObject(p) { }
-
+    ~QWebEngineUrlResponseInterceptor() override;
     virtual void interceptResponseHeaders(QWebEngineUrlResponseInfo &info) = 0;
 };
 

@@ -40,10 +40,10 @@ private:
     Q_DECLARE_PRIVATE(QWebEngineUrlResponseInfo)
     QWebEngineUrlResponseInfoPrivate *d_ptr;
 
-    QWebEngineUrlResponseInfo(const QUrl &requestUrl,
-                              const QMultiHash<QByteArray, QByteArray> &requestHeaders,
-                              const QHash<QByteArray, QByteArray> &responseHeaders,
-                              QObject *p = nullptr);
+    explicit QWebEngineUrlResponseInfo(const QUrl &requestUrl,
+                                       const QMultiHash<QByteArray, QByteArray> &requestHeaders,
+                                       const QHash<QByteArray, QByteArray> &responseHeaders,
+                                       QObject *p = nullptr);
 };
 
 QT_END_NAMESPACE

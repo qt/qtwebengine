@@ -39,7 +39,7 @@ QWebEngineGlobalSettings::~QWebEngineGlobalSettings() { }
 
     Gets the global instance of QWebEngineGlobalSettings.
 */
-QWebEngineGlobalSettings *QWebEngineGlobalSettings::GetInstance()
+QWebEngineGlobalSettings *QWebEngineGlobalSettings::instance()
 {
     static QWebEngineGlobalSettings settings;
     return &settings;
@@ -58,7 +58,7 @@ QWebEngineGlobalSettings *QWebEngineGlobalSettings::GetInstance()
 */
 
 /*!
-    \fn QWebEngineGlobalSettings::configureDnsOverHttps(const DnsMode dnsMode,
+    \fn QWebEngineGlobalSettings::configureDnsOverHttps(DnsMode dnsMode,
                                                         const QString &dnsOverHttpsTemplates)
 
     Configures the Chromium stub host resolver, thus allowing DNS-over-HTTPS functionality.
@@ -73,7 +73,7 @@ QWebEngineGlobalSettings *QWebEngineGlobalSettings::GetInstance()
     valid \l{https://datatracker.ietf.org/doc/html/rfc6570}{URI templates} separated by
     whitespace characters. One example URI template is https://dns.google/dns-query{?dns}.
 */
-void QWebEngineGlobalSettings::configureDnsOverHttps(const DnsMode dnsMode,
+void QWebEngineGlobalSettings::configureDnsOverHttps(DnsMode dnsMode,
                                                      const QString &dnsOverHttpsTemplates)
 {
     Q_D(QWebEngineGlobalSettings);

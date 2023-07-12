@@ -19,21 +19,21 @@ class QWebEngineGlobalSettingsPrivate;
 class Q_WEBENGINECORE_EXPORT QWebEngineGlobalSettings : public QObject
 {
     Q_OBJECT
-    Q_DISABLE_COPY(QWebEngineGlobalSettings)
 public:
-    static QWebEngineGlobalSettings *GetInstance();
+    static QWebEngineGlobalSettings *instance();
 
     // Mapping net::SecureDnsMode
     enum class DnsMode { WithFallback = 1, Secure = 2 };
 
-    void configureDnsOverHttps(const DnsMode dnsMode, const QString &dnsOverHttpsTemplates);
+    void configureDnsOverHttps(DnsMode dnsMode, const QString &dnsOverHttpsTemplates);
 
 private:
     QWebEngineGlobalSettings(QObject *p = nullptr);
-    ~QWebEngineGlobalSettings();
+    ~QWebEngineGlobalSettings() override;
 
     friend class QtWebEngineCore::SystemNetworkContextManager;
     Q_DECLARE_PRIVATE(QWebEngineGlobalSettings)
+    // can't re-use base d_ptr: need to maintain compat with last Qt LTS
     QScopedPointer<QWebEngineGlobalSettingsPrivate> d_ptr;
 };
 
