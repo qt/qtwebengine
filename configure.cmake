@@ -615,8 +615,8 @@ if(WIN32)
     if(MSVC)
         add_check_for_support(
             MODULES QtWebEngine QtPdf
-            CONDITION NOT MSVC_VERSION LESS 1934
-            MESSAGE "VS compiler version must be at least 14.34"
+            CONDITION NOT MSVC_VERSION LESS 1936
+            MESSAGE "VS compiler version must be at least 14.36"
         )
     endif()
     set(windowsSdkVersion $ENV{WindowsSDKVersion})
@@ -625,8 +625,8 @@ if(WIN32)
     message("-- Windows 10 SDK version: ${windowsSdkVersion}")
     add_check_for_support(
         MODULES QtWebEngine
-        CONDITION sdkMinor GREATER_EQUAL 20348
-        MESSAGE "Build requires Windows 10 SDK at least version 10.0.20348.0"
+        CONDITION sdkMinor GREATER_EQUAL 22621
+        MESSAGE "Build requires Windows 11 SDK at least version 10.0.22621.0"
     )
 endif()
 
