@@ -46,10 +46,10 @@
     On Windows, the following additional tools are required:
 
     \list
-        \li Visual Studio 2019 or later, or clang-cl version 10 or later
+        \li Visual Studio 2022 or later, or clang-cl version 10 or later
         \li Active Template Library (ATL), usually included in the Visual Studio
             installation
-        \li Windows 10 SDK version 10.0.20348.0 or later
+        \li Windows 11 SDK version 10.0.22621.0 or later
     \endlist
 
     \note It is not recommended to use tools from  \c msys2 or \c cygwin to build \QWE as it may result in build errors.
