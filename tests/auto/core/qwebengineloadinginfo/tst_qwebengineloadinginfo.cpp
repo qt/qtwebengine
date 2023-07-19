@@ -6,6 +6,7 @@
 #include <QtWebEngineCore/qwebenginepage.h>
 #include <QtWebEngineCore/qwebengineloadinginfo.h>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
+#include <QtWebEngineCore/qwebenginesettings.h>
 
 #include <httpserver.h>
 #include <httpreqrep.h>
@@ -75,6 +76,7 @@ private Q_SLOTS:
 
         QWebEngineProfile profile;
         QWebEnginePage page(&profile);
+        page.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
         QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
         QObject::connect(&page, &QWebEnginePage::loadingChanged, this, &tst_QWebEngineLoadingInfo::loadingInfoChanged);
 
@@ -82,7 +84,7 @@ private Q_SLOTS:
         QWebEngineHttpRequest request(httpServer.url("/somepage.html"));
         page.load(request);
 
-        QTRY_VERIFY_WITH_TIMEOUT(spy.count() > 0, 20000);
+        QTRY_VERIFY(spy.count() > 0);
         QVERIFY(httpServer.stop());
     }
 };
