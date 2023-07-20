@@ -4,7 +4,6 @@
 #include "display_software_output_surface.h"
 
 #include "compositor.h"
-#include "render_widget_host_view_qt_delegate.h"
 #include "type_conversion.h"
 
 #include "base/task/single_thread_task_runner.h"

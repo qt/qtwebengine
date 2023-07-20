@@ -16,7 +16,6 @@
 #if BUILDFLAG(IS_WIN)
 #include "web_engine_context.h"
 #include "ozone/gl_surface_wgl_qt.h"
-#include "ozone/gl_surface_egl_qt.h"
 
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/gl/init/gl_display_initializer.h"
@@ -33,7 +32,6 @@ namespace gl {
 
 GLDisplay *GLSurfaceQt::g_display = nullptr;
 void *GLSurfaceQt::g_config = nullptr;
-std::string GLSurfaceQt::g_client_extensions;
 std::string GLSurfaceQt::g_extensions;
 
 GLSurfaceQt::~GLSurfaceQt()

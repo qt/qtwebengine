@@ -6,22 +6,12 @@
 #include "gl_ozone_egl_qt.h"
 #include "gl_surface_egl_qt.h"
 
-#include "base/files/file_path.h"
-#include "base/native_library.h"
 #include "media/gpu/buildflags.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_display.h"
-#include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_egl_api_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_utils.h"
-#include "ui/gl/init/gl_factory.h"
-#include "ui/gl/init/gl_initializer.h"
 #include "ui/ozone/common/native_pixmap_egl_binding.h"
-
-#include <EGL/egl.h>
-#include <dlfcn.h>
 
 namespace ui {
 

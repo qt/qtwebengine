@@ -7,7 +7,6 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 
 #include <QHash>
-#include <QImage>
 #include <QMutex>
 #include <QQuickWindow>
 

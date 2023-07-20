@@ -3,6 +3,7 @@
 
 #include "display_skia_output_device.h"
 
+#include "compositor_resource_fence.h"
 #include "type_conversion.h"
 
 #include "gpu/command_buffer/service/skia_utils.h"

@@ -36,7 +36,6 @@ public:
     static void* g_config;
     static GLDisplay *g_display;
     static std::string g_extensions;
-    static std::string g_client_extensions;
 };
 
 } // namespace gl
