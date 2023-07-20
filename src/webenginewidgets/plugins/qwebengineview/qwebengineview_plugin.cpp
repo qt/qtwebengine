@@ -79,14 +79,6 @@ void QWebEngineViewPlugin::initialize(QDesignerFormEditorInterface * /*core*/)
 
 QString QWebEngineViewPlugin::domXml() const
 {
-    const auto graphicsApi = QQuickWindow::graphicsApi();
-    if (graphicsApi != QSGRendererInterface::OpenGLRhi
-        && graphicsApi != QSGRendererInterface::Software) {
-        qWarning("Qt Designer: The QWebEngineView custom widget plugin is disabled because it requires OpenGL/Software RHI (current: %d).",
-                 int(graphicsApi));
-        return {};
-    }
-
     return QStringLiteral("\
     <ui language=\"c++\">\
         <widget class=\"QWebEngineView\" name=\"webEngineView\">\
