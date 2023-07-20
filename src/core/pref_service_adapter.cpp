@@ -111,6 +111,7 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterListPref(extensions::pref_names::kNativeMessagingBlocklist);
     registry->RegisterListPref(extensions::pref_names::kNativeMessagingAllowlist);
     registry->RegisterBooleanPref(extensions::pref_names::kNativeMessagingUserLevelHosts, true);
+    registry->RegisterListPref(extensions::pref_names::kExtendedBackgroundLifetimeForPortConnectionsToUrls);
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 
     // Media device salt id key
