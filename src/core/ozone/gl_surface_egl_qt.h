@@ -6,7 +6,6 @@
 
 #include "gl_surface_qt.h"
 #include <EGL/egl.h>
-#include <EGL/eglext.h>
 
 namespace gl {
 

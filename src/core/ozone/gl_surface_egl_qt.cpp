@@ -12,7 +12,6 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_display.h"
 #include "ui/gl/gl_display_manager.h"
-#include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/init/gl_factory.h"
 
 #if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN)
@@ -59,7 +58,6 @@ gl::GLDisplay *GLSurfaceEGLQt::InitializeOneOff(gl::GpuPreference preference)
         return nullptr;
     }
 
-    g_client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
     g_extensions = eglQueryString(egl_display->GetDisplay(), EGL_EXTENSIONS);
     g_egl_surfaceless_context_supported = ExtensionsContain(g_extensions.c_str(), "EGL_KHR_surfaceless_context");
     if (g_egl_surfaceless_context_supported) {
