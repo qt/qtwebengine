@@ -511,10 +511,12 @@ foreach(arch ${archs})
             endif()
 
             if(CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm64")
-                # V8 sandbox initialization is slow in QEMU.
                 # This is a workaround to avoid auto test timeouts on the QEMU arm64 CI.
                 if ("$ENV{TARGET_OSVERSION_COIN}" STREQUAL "qemu")
-                    list(APPEND gnArgArg v8_enable_sandbox=false)
+                    list(APPEND gnArgArg
+                        v8_enable_sandbox=false
+                        arm_control_flow_integrity="none"
+                    )
                 endif()
             endif()
         endif()
