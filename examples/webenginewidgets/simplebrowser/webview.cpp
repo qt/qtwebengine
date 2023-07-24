@@ -63,6 +63,14 @@ WebView::WebView(QWidget *parent)
     });
 }
 
+WebView::~WebView()
+{
+    if (m_imageAnimationGroup)
+        delete m_imageAnimationGroup;
+
+    m_imageAnimationGroup = nullptr;
+}
+
 inline QString questionForFeature(QWebEnginePage::Feature feature)
 {
     switch (feature) {
@@ -204,6 +212,49 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
     } else {
         (*inspectElement)->setText(tr("Inspect element"));
     }
+
+    // add conext menu for image policy
+    QMenu *editImageAnimation = new QMenu(tr("Image animation policy"));
+
+    m_imageAnimationGroup = new QActionGroup(editImageAnimation);
+    m_imageAnimationGroup->setExclusive(true);
+
+    QAction *disableImageAnimation =
+            editImageAnimation->addAction(tr("Disable all image animation"));
+    disableImageAnimation->setCheckable(true);
+    m_imageAnimationGroup->addAction(disableImageAnimation);
+    connect(disableImageAnimation, &QAction::triggered, [this]() {
+        handleImageAnimationPolicyChange(QWebEngineSettings::DisallowImageAnimation);
+    });
+    QAction *allowImageAnimationOnce =
+            editImageAnimation->addAction(tr("Allow animated images, but only once"));
+    allowImageAnimationOnce->setCheckable(true);
+    m_imageAnimationGroup->addAction(allowImageAnimationOnce);
+    connect(allowImageAnimationOnce, &QAction::triggered,
+            [this]() { handleImageAnimationPolicyChange(QWebEngineSettings::AnimateImageOnce); });
+    QAction *allowImageAnimation = editImageAnimation->addAction(tr("Allow all animated images"));
+    allowImageAnimation->setCheckable(true);
+    m_imageAnimationGroup->addAction(allowImageAnimation);
+    connect(allowImageAnimation, &QAction::triggered, [this]() {
+        handleImageAnimationPolicyChange(QWebEngineSettings::AllowImageAnimation);
+    });
+
+    switch (page()->settings()->imageAnimationPolicy()) {
+    case QWebEngineSettings::AllowImageAnimation:
+        allowImageAnimation->setChecked(true);
+        break;
+    case QWebEngineSettings::AnimateImageOnce:
+        allowImageAnimationOnce->setChecked(true);
+        break;
+    case QWebEngineSettings::DisallowImageAnimation:
+        disableImageAnimation->setChecked(true);
+        break;
+    default:
+        allowImageAnimation->setChecked(true);
+        break;
+    }
+
+    menu->addMenu(editImageAnimation);
     menu->popup(event->globalPos());
 }
 
@@ -364,5 +415,13 @@ void WebView::handleFileSystemAccessRequested(QWebEngineFileSystemAccessRequest 
         request.accept();
     else
         request.reject();
+}
+
+void WebView::handleImageAnimationPolicyChange(QWebEngineSettings::ImageAnimationPolicy policy)
+{
+    if (!page())
+        return;
+
+    page()->settings()->setImageAnimationPolicy(policy);
 }
 #endif // QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)

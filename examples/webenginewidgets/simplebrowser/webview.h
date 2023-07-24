@@ -13,6 +13,8 @@
 #include <QWebEnginePage>
 #include <QWebEngineRegisterProtocolHandlerRequest>
 #include <QWebEngineWebAuthUxRequest>
+#include <QWebEngineSettings>
+#include <QActionGroup>
 
 class WebPage;
 class WebAuthDialog;
@@ -23,6 +25,7 @@ class WebView : public QWebEngineView
 
 public:
     explicit WebView(QWidget *parent = nullptr);
+    ~WebView();
     void setPage(WebPage *page);
 
     int loadProgress() const;
@@ -49,6 +52,7 @@ private slots:
     void handleFileSystemAccessRequested(QWebEngineFileSystemAccessRequest request);
     void handleWebAuthUxRequested(QWebEngineWebAuthUxRequest *request);
 #endif
+    void handleImageAnimationPolicyChange(QWebEngineSettings::ImageAnimationPolicy policy);
 
 private:
     void createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction);
@@ -57,6 +61,7 @@ private:
 private:
     int m_loadProgress = 100;
     WebAuthDialog *m_authDialog = nullptr;
+    QActionGroup *m_imageAnimationGroup = nullptr;
 };
 
 #endif

@@ -44,6 +44,7 @@ ApplicationWindow {
         property alias webRTCPublicInterfacesOnly : webRTCPublicInterfacesOnly.checked
         property alias devToolsEnabled: devToolsEnabled.checked
         property alias pdfViewerEnabled: pdfViewerEnabled.checked
+        property int imageAnimationPolicy: WebEngineSettings.AllowImageAnimation
     }
 
     Action {
@@ -362,10 +363,49 @@ ApplicationWindow {
                     }
                     MenuItem {
                         id: pdfViewerEnabled
-                        text: "PDF viewer enabled"
+                        text: "PDF Viewer Enabled"
                         checkable: true
                         checked: WebEngine.settings.pdfViewerEnabled
                     }
+
+                    Menu {
+                        id: imageAnimationPolicy
+                        title: "Image Animation Policy"
+
+                        MenuItem {
+                            id: disableImageAnimation
+                            text: "Disable All Image Animation"
+                            checkable: true
+                            autoExclusive: true
+                            checked: WebEngine.settings.imageAnimationPolicy === WebEngineSettings.DisallowImageAnimation
+                            onTriggered: {
+                                appSettings.imageAnimationPolicy = WebEngineSettings.DisallowImageAnimation
+                            }
+                        }
+
+                        MenuItem {
+                            id: allowImageAnimation
+                            text: "Allow All Animated Images"
+                            checkable: true
+                            autoExclusive: true
+                            checked: WebEngine.settings.imageAnimationPolicy === WebEngineSettings.AllowImageAnimation
+                            onTriggered : {
+                                appSettings.imageAnimationPolicy = WebEngineSettings.AllowImageAnimation
+                            }
+                        }
+
+                        MenuItem {
+                            id: animateImageOnce
+                            text: "Animate Image Once"
+                            checkable: true
+                            autoExclusive: true
+                            checked: WebEngine.settings.imageAnimationPolicy === WebEngineSettings.AnimateImageOnce
+                            onTriggered : {
+                                appSettings.imageAnimationPolicy = WebEngineSettings.AnimateImageOnce
+                            }
+                        }
+                    }
+
                 }
             }
         }
@@ -520,6 +560,7 @@ ApplicationWindow {
                 settings.touchIconsEnabled: appSettings.touchIconsEnabled
                 settings.webRTCPublicInterfacesOnly: appSettings.webRTCPublicInterfacesOnly
                 settings.pdfViewerEnabled: appSettings.pdfViewerEnabled
+                settings.imageAnimationPolicy: appSettings.imageAnimationPolicy
 
                 onCertificateError: function(error) {
                     error.defer();

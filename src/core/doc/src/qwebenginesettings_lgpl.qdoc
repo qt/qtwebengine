@@ -202,6 +202,24 @@
 */
 
 /*!
+    \enum QWebEngineSettings::ImageAnimationPolicy
+    \since Qt 6.8
+
+    This enum describes how an image animation should be handled when the image frames
+    are rendered for animation.
+
+    \value AllowImageAnimation
+           Allows image animation when the image frames are rendered.
+    \value AnimateImageOnce
+           Animate the image once when the image frames are rendered.
+    \value DisallowImageAnimation
+           Disallows image animation when the image frames are rendered.
+    \omitvalue InheritedImageAnimationPolicy
+
+    \sa imageAnimationPolicy setImageAnimationPolicy resetImageAnimationPolicy
+*/
+
+/*!
     \fn void QWebEngineSettings::setFontSize(FontSize type, int size)
     Sets the font size for \a type to \a size in pixels.
 */
@@ -288,4 +306,27 @@
 
     Resets the setting of \a attribute to the value specified in the
     profile that the page belongs to.
+*/
+
+/*!
+    \fn QWebEngineSettings::ImageAnimationPolicy QWebEngineSettings::imageAnimationPolicy() const
+    \since Qt 6.8
+    Returns the currently selected policy for handling image animation when the image frames are rendered.
+    Default is \l{QWebEngineSettings::AllowImageAnimation}.
+    \sa setImageAnimationPolicy resetImageAnimationPolicy
+*/
+
+/*!
+    \fn void QWebEngineSettings::setImageAnimationPolicy(QWebEngineSettings::ImageAnimationPolicy policy)
+    \since Qt 6.8
+    Sets the policy for handling image animation when the image frames are rendered to \a policy.
+    Default is \l{QWebEngineSettings::AllowImageAnimation}.
+    \sa imageAnimationPolicy resetImageAnimationPolicy
+*/
+
+/*!
+    \fn void QWebEngineSettings::resetImageAnimationPolicy()
+    \since Qt 6.7
+    Removes the policy for handling image animation.
+    \sa imageAnimationPolicy setImageAnimationPolicy
 */

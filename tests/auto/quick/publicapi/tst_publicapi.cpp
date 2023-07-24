@@ -872,6 +872,11 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineWebAuthPinRequest.error --> QWebEngineWebAuthUxRequest::PinEntryError"
     << "QWebEngineWebAuthPinRequest.minPinLength --> int"
     << "QWebEngineWebAuthPinRequest.remainingAttempts --> int"
+    << "QQuickWebEngineSettings.AllowImageAnimation --> ImageAnimationPolicy"
+    << "QQuickWebEngineSettings.AnimateImageOnce --> ImageAnimationPolicy"
+    << "QQuickWebEngineSettings.DisallowImageAnimation --> ImageAnimationPolicy"
+    << "QQuickWebEngineSettings.imageAnimationPolicy --> QQuickWebEngineSettings::ImageAnimationPolicy"
+    << "QQuickWebEngineSettings.imageAnimationPolicyChanged() --> void"
     ;
 
 static bool isCheckedEnum(QMetaType t)

@@ -67,6 +67,9 @@ public:
     void setUnknownUrlSchemePolicy(QWebEngineSettings::UnknownUrlSchemePolicy policy);
     QWebEngineSettings::UnknownUrlSchemePolicy unknownUrlSchemePolicy() const;
 
+    void setImageAnimationPolicy(QWebEngineSettings::ImageAnimationPolicy policy);
+    QWebEngineSettings::ImageAnimationPolicy imageAnimationPolicy() const;
+
     void scheduleApply();
 
     void scheduleApplyRecursively();
@@ -95,6 +98,7 @@ private:
     static QHash<QWebEngineSettings::FontFamily, QString> s_defaultFontFamilies;
     static QHash<QWebEngineSettings::FontSize, int> s_defaultFontSizes;
     QWebEngineSettings::UnknownUrlSchemePolicy m_unknownUrlSchemePolicy;
+    QWebEngineSettings::ImageAnimationPolicy m_imageAnimationPolicy;
 
     friend class WebContentsAdapter;
 };

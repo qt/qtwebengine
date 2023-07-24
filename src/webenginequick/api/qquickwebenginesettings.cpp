@@ -496,6 +496,33 @@ QString QQuickWebEngineSettings::defaultTextEncoding() const
     return d_ptr->defaultTextEncoding();
 }
 
+ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::AllowImageAnimation,
+                   QWebEngineSettings::AllowImageAnimation)
+ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::AnimateImageOnce, QWebEngineSettings::AnimateImageOnce)
+ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::DisallowImageAnimation,
+                   QWebEngineSettings::DisallowImageAnimation)
+/*!
+    \qmlproperty enumeration WebEngineSettings::imageAnimationPolicy
+    \since QtWebEngine 6.8
+
+    Specifies how an image animation should be handled when the image frames
+    are rendered for animation.
+
+    \value WebEngineSettings.AllowImageAnimation
+           Allows all image animations when the image frames are rendered.
+    \value WebEngineSettings.AnimateImageOnce
+           Animate the image once when the image frames are rendered.
+    \value WebEngineSettings.DisallowImageAnimation
+           Disallows all image animations when the image frames are rendered.
+
+    Default value is \c {WebEngineSettings.AllowImageAnimation}.
+*/
+QQuickWebEngineSettings::ImageAnimationPolicy QQuickWebEngineSettings::imageAnimationPolicy() const
+{
+    return static_cast<QQuickWebEngineSettings::ImageAnimationPolicy>(
+            d_ptr->imageAnimationPolicy());
+}
+
 ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::DisallowUnknownUrlSchemes, QWebEngineSettings::DisallowUnknownUrlSchemes)
 ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction, QWebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction)
 ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::AllowAllUnknownUrlSchemes, QWebEngineSettings::AllowAllUnknownUrlSchemes)
@@ -809,6 +836,17 @@ void QQuickWebEngineSettings::setWebRTCPublicInterfacesOnly(bool on)
 void QQuickWebEngineSettings::setParentSettings(QQuickWebEngineSettings *parentSettings)
 {
     d_ptr->setParentSettings(parentSettings->d_ptr.data());
+}
+
+void QQuickWebEngineSettings::setImageAnimationPolicy(
+        QQuickWebEngineSettings::ImageAnimationPolicy policy)
+{
+    QWebEngineSettings::ImageAnimationPolicy oldPolicy = d_ptr->imageAnimationPolicy();
+    QWebEngineSettings::ImageAnimationPolicy newPolicy =
+            static_cast<QWebEngineSettings::ImageAnimationPolicy>(policy);
+    d_ptr->setImageAnimationPolicy(newPolicy);
+    if (oldPolicy != newPolicy)
+        Q_EMIT imageAnimationPolicyChanged();
 }
 
 QT_END_NAMESPACE

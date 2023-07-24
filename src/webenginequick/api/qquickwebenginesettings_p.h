@@ -60,7 +60,7 @@ class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool readingFromCanvasEnabled READ readingFromCanvasEnabled WRITE setReadingFromCanvasEnabled NOTIFY readingFromCanvasEnabledChanged REVISION(6,6) FINAL)
     Q_PROPERTY(bool forceDarkMode READ forceDarkMode WRITE setForceDarkMode NOTIFY forceDarkModeChanged REVISION(6,7) FINAL)
     Q_PROPERTY(bool scrollAnimatorEnabled READ scrollAnimatorEnabled WRITE setScrollAnimatorEnabled NOTIFY scrollAnimatorEnabledChanged REVISION(6,8) FINAL)
-
+    Q_PROPERTY(ImageAnimationPolicy imageAnimationPolicy READ imageAnimationPolicy WRITE setImageAnimationPolicy NOTIFY imageAnimationPolicyChanged REVISION(6,8) FINAL)
     QML_NAMED_ELEMENT(WebEngineSettings)
     QML_ADDED_IN_VERSION(1, 1)
     QML_EXTRA_VERSION(2, 0)
@@ -73,6 +73,14 @@ public:
     };
 
     Q_ENUM(UnknownUrlSchemePolicy)
+
+    enum ImageAnimationPolicy {
+        AllowImageAnimation = 1,
+        AnimateImageOnce,
+        DisallowImageAnimation
+    };
+
+    Q_ENUM(ImageAnimationPolicy)
 
     ~QQuickWebEngineSettings();
 
@@ -111,6 +119,7 @@ public:
     bool readingFromCanvasEnabled() const;
     bool forceDarkMode() const;
     bool scrollAnimatorEnabled() const;
+    ImageAnimationPolicy imageAnimationPolicy() const;
 
     void setAutoLoadImages(bool on);
     void setJavascriptEnabled(bool on);
@@ -147,6 +156,7 @@ public:
     void setReadingFromCanvasEnabled(bool on);
     void setForceDarkMode(bool on);
     void setScrollAnimatorEnabled(bool on);
+    void setImageAnimationPolicy(ImageAnimationPolicy policy);
 
 signals:
     void autoLoadImagesChanged();
@@ -184,6 +194,7 @@ signals:
     Q_REVISION(6,6) void readingFromCanvasEnabledChanged();
     Q_REVISION(6,7) void forceDarkModeChanged();
     Q_REVISION(6,8) void scrollAnimatorEnabledChanged();
+    Q_REVISION(6,8) void imageAnimationPolicyChanged();
 
 private:
     explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = nullptr);

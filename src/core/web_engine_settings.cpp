@@ -56,10 +56,25 @@ static inline bool isTouchEventsAPIEnabled() {
     return touchEventsAPIEnabled;
 }
 
+blink::mojom::ImageAnimationPolicy
+toBlinkImageAnimationPolicy(QWebEngineSettings::ImageAnimationPolicy policy)
+{
+    switch (policy) {
+    case QWebEngineSettings::AllowImageAnimation:
+        return blink::mojom::ImageAnimationPolicy::kImageAnimationPolicyAllowed;
+    case QWebEngineSettings::AnimateImageOnce:
+        return blink::mojom::ImageAnimationPolicy::kImageAnimationPolicyAnimateOnce;
+    case QWebEngineSettings::DisallowImageAnimation:
+        return blink::mojom::ImageAnimationPolicy::kImageAnimationPolicyNoAnimation;
+    }
+    return blink::mojom::ImageAnimationPolicy::kImageAnimationPolicyAllowed;
+}
+
 WebEngineSettings::WebEngineSettings(WebEngineSettings *_parentSettings)
     : m_adapter(nullptr)
     , parentSettings(_parentSettings)
     , m_unknownUrlSchemePolicy(QWebEngineSettings::InheritedUnknownUrlSchemePolicy)
+    , m_imageAnimationPolicy(QWebEngineSettings::InheritedImageAnimationPolicy)
 {
     if (parentSettings)
         parentSettings->childSettings.insert(this);
@@ -191,6 +206,24 @@ QString WebEngineSettings::defaultTextEncoding() const
 void WebEngineSettings::setUnknownUrlSchemePolicy(QWebEngineSettings::UnknownUrlSchemePolicy policy)
 {
     m_unknownUrlSchemePolicy = policy;
+    scheduleApplyRecursively();
+}
+
+void WebEngineSettings::setImageAnimationPolicy(QWebEngineSettings::ImageAnimationPolicy policy)
+{
+    m_imageAnimationPolicy = policy;
+    scheduleApplyRecursively();
+}
+
+QWebEngineSettings::ImageAnimationPolicy WebEngineSettings::imageAnimationPolicy() const
+{
+    if (m_imageAnimationPolicy != QWebEngineSettings::InheritedImageAnimationPolicy)
+        return m_imageAnimationPolicy;
+
+    if (parentSettings)
+        return parentSettings->imageAnimationPolicy();
+
+    return QWebEngineSettings::AllowImageAnimation;
 }
 
 QWebEngineSettings::UnknownUrlSchemePolicy WebEngineSettings::unknownUrlSchemePolicy() const
@@ -300,6 +333,7 @@ void WebEngineSettings::initDefaults()
 
     m_defaultEncoding = QStringLiteral("ISO-8859-1");
     m_unknownUrlSchemePolicy = QWebEngineSettings::InheritedUnknownUrlSchemePolicy;
+    m_imageAnimationPolicy = QWebEngineSettings::InheritedImageAnimationPolicy;
 }
 
 void WebEngineSettings::scheduleApply()
@@ -378,6 +412,7 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
     prefs->dom_paste_enabled = testAttribute(QWebEngineSettings::JavascriptCanPaste);
     prefs->dns_prefetching_enabled = testAttribute(QWebEngineSettings::DnsPrefetchEnabled);
     prefs->disable_reading_from_canvas = !testAttribute(QWebEngineSettings::ReadingFromCanvasEnabled);
+    prefs->animation_policy = toBlinkImageAnimationPolicy(imageAnimationPolicy());
 
     // Fonts settings.
     prefs->standard_font_family_map[blink::web_pref::kCommonScript] =
