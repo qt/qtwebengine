@@ -50,24 +50,25 @@ Item {
     }
     TapHandler {
         gesturePolicy: TapHandler.ReleaseWithinBounds
-        onTapped: root.tapped(link)
+        onTapped: root.tapped(root.link)
     }
     TapHandler {
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad | PointerDevice.Stylus
         acceptedButtons: Qt.RightButton
         gesturePolicy: TapHandler.ReleaseWithinBounds
-        onTapped: root.contextMenuRequested(link)
+        onTapped: root.contextMenuRequested(root.link)
     }
     TapHandler {
         acceptedDevices: PointerDevice.TouchScreen
-        onLongPressed: root.contextMenuRequested(link)
+        onLongPressed: root.contextMenuRequested(root.link)
     }
     ToolTip {
         visible: linkHH.hovered
         delay: 1000
         property string destFormat: qsTr("Page %1 location %2, %3 zoom %4")
-        text: page >= 0 ?
-                  destFormat.arg(page + 1).arg(location.x.toFixed(1)).arg(location.y.toFixed(1)).arg(zoom) :
-                  url
+        text: root.page >= 0 ?
+                  destFormat.arg(root.page + 1).arg(root.location.x.toFixed(1))
+                            .arg(root.location.y.toFixed(1)).arg(root.zoom) :
+                  root.url
     }
 }
