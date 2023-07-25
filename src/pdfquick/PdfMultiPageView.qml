@@ -408,12 +408,16 @@ Item {
                             const centroidInFlickable = tableView.mapFromItem(paper, pinch.centroid.position.x, pinch.centroid.position.y)
                             const newSourceWidth = image.sourceSize.width * paper.scale
                             const ratio = newSourceWidth / image.sourceSize.width
-                            console.log(lcMPV, "pinch ended on page", index, "with centroid", pinch.centroid.position, centroidInPoints, "wrt flickable", centroidInFlickable,
+                            console.log(lcMPV, "pinch ended on page", index,
+                                        "with scale", paper.scale.toFixed(3), "ratio", ratio.toFixed(3),
+                                        "centroid", pinch.centroid.position, centroidInPoints,
+                                        "wrt flickable", centroidInFlickable,
                                         "page at", pageHolder.x.toFixed(2), pageHolder.y.toFixed(2),
                                         "contentX/Y were", tableView.contentX.toFixed(2), tableView.contentY.toFixed(2))
                             if (ratio > 1.1 || ratio < 0.9) {
                                 const centroidOnPage = Qt.point(centroidInPoints.x * root.renderScale * ratio, centroidInPoints.y * root.renderScale * ratio)
                                 paper.scale = 1
+                                pinch.persistentScale = 1
                                 paper.x = 0
                                 paper.y = 0
                                 root.renderScale *= ratio
