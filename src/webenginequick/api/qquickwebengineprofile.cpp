@@ -124,6 +124,15 @@ QT_BEGIN_NAMESPACE
     \sa WebEngineProfile::presentNotification
 */
 
+/*!
+    \fn QQuickWebEngineProfile::clearHttpCacheCompleted()
+    \since 6.7
+
+    This signal is emitted when the clearHttpCache() operation is completed.
+
+    \sa clearHttpCache()
+*/
+
 QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(ProfileAdapter *profileAdapter)
     : m_settings(new QQuickWebEngineSettings())
     , m_profileAdapter(profileAdapter)
@@ -279,6 +288,12 @@ void QQuickWebEngineProfilePrivate::showNotification(QSharedPointer<QtWebEngineC
     Q_EMIT q->presentNotification(notification);
 }
 
+void QQuickWebEngineProfilePrivate::clearHttpCacheCompleted()
+{
+    Q_Q(QQuickWebEngineProfile);
+    Q_EMIT q->clearHttpCacheCompleted();
+}
+
 QQuickWebEngineScriptCollection *QQuickWebEngineProfilePrivate::getUserScripts()
 {
     Q_Q(QQuickWebEngineProfile);
@@ -348,6 +363,15 @@ QQuickWebEngineScriptCollection *QQuickWebEngineProfilePrivate::getUserScripts()
     This signal is emitted whenever there is a newly created user notification.
     The \a notification argument holds the \l {WebEngineNotification} instance
     to query data and interact with.
+*/
+
+/*!
+    \qmlsignal WebEngineProfile::clearHttpCacheCompleted()
+    \since QtWebEngine 6.7
+
+    This signal is emitted when the clearHttpCache() operation is completed.
+
+    \sa clearHttpCache()
 */
 
 /*!
@@ -874,7 +898,11 @@ QWebEngineCookieStore *QQuickWebEngineProfile::cookieStore() const
 
     Removes the profile's cache entries.
 
-    \sa WebEngineProfile::cachePath
+    \note Make sure that you do not start new navigation or any operation on the profile while
+    the clear operation is in progress. The clearHttpCacheCompleted() signal notifies about the
+    completion.
+
+    \sa WebEngineProfile::cachePath clearHttpCacheCompleted()
 */
 
 /*!
@@ -882,7 +910,11 @@ QWebEngineCookieStore *QQuickWebEngineProfile::cookieStore() const
 
     Removes the profile's cache entries.
 
-    \sa WebEngineProfile::clearHttpCache
+    \note Make sure that you do not start new navigation or any operation on the profile while
+    the clear operation is in progress. The clearHttpCacheCompleted() signal notifies about the
+    completion.
+
+    \sa WebEngineProfile::clearHttpCache() clearHttpCacheCompleted()
 */
 void QQuickWebEngineProfile::clearHttpCache()
 {

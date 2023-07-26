@@ -351,6 +351,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineProfile.cachePath --> QString"
     << "QQuickWebEngineProfile.cachePathChanged() --> void"
     << "QQuickWebEngineProfile.clearHttpCache() --> void"
+    << "QQuickWebEngineProfile.clearHttpCacheCompleted() --> void"
     << "QQuickWebEngineProfile.downloadFinished(QQuickWebEngineDownloadRequest*) --> void"
     << "QQuickWebEngineProfile.downloadRequested(QQuickWebEngineDownloadRequest*) --> void"
     << "QQuickWebEngineProfile.downloadPath --> QString"

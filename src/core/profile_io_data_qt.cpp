@@ -21,6 +21,7 @@
 #include "net/client_cert_store_data.h"
 #include "net/cookie_monster_delegate_qt.h"
 #include "net/system_network_context_manager.h"
+#include "profile_adapter_client.h"
 #include "profile_qt.h"
 #include "type_conversion.h"
 
@@ -65,11 +66,9 @@ void ProfileIODataQt::shutdownOnUIThread()
         m_cookieDelegate->unsetMojoCookieManager();
     m_proxyConfigMonitor.reset();
 
-    if (m_clearHttpCacheInProgress) {
-        m_clearHttpCacheInProgress = false;
-        content::BrowsingDataRemover *remover =
-                m_profileAdapter->profile()->GetBrowsingDataRemover();
-        remover->RemoveObserver(&m_removerObserver);
+    if (m_clearHttpCacheState == Removing) {
+        m_clearHttpCacheState = Completed;
+        removeBrowsingDataRemoverObserver();
     }
 
     bool posted = content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE, this);
@@ -110,8 +109,8 @@ void ProfileIODataQt::initializeOnUIThread()
 void ProfileIODataQt::clearHttpCache()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    if (!m_clearHttpCacheInProgress) {
-        m_clearHttpCacheInProgress = true;
+    if (m_clearHttpCacheState == Completed) {
+        m_clearHttpCacheState = Removing;
         content::BrowsingDataRemover *remover =
                 m_profileAdapter->profile()->GetBrowsingDataRemover();
         remover->AddObserver(&m_removerObserver);
@@ -137,9 +136,9 @@ BrowsingDataRemoverObserverQt::BrowsingDataRemoverObserverQt(ProfileIODataQt *pr
 
 void BrowsingDataRemoverObserverQt::OnBrowsingDataRemoverDone(uint64_t)
 {
-    Q_ASSERT(m_profileIOData->m_clearHttpCacheInProgress);
+    Q_ASSERT(m_profileIOData->m_clearHttpCacheState == ProfileIODataQt::Removing);
     m_profileIOData->removeBrowsingDataRemoverObserver();
-    m_profileIOData->m_clearHttpCacheInProgress = false;
+    m_profileIOData->m_clearHttpCacheState = ProfileIODataQt::Resetting;
     m_profileIOData->resetNetworkContext();
 }
 
@@ -160,13 +159,44 @@ void ProfileIODataQt::setFullConfiguration()
 void ProfileIODataQt::resetNetworkContext()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    Q_ASSERT(m_clearHttpCacheState != Removing);
     setFullConfiguration();
     m_profile->ForEachLoadedStoragePartition(
-            base::BindRepeating([](content::StoragePartition *storage) {
+            base::BindRepeating([](ProfileIODataQt *profileData,
+                                   content::StoragePartition *storage) {
+                storage->SetNetworkContextCreatedObserver(profileData);
+
                 auto storage_impl = static_cast<content::StoragePartitionImpl *>(storage);
                 storage_impl->ResetURLLoaderFactories();
                 storage_impl->ResetNetworkContext();
-            }));
+            }, this));
+}
+
+void ProfileIODataQt::OnNetworkContextCreated(content::StoragePartition *storage)
+{
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+    storage->SetNetworkContextCreatedObserver(nullptr);
+
+    if (m_clearHttpCacheState != Resetting)
+        return;
+
+    bool pendingReset = false;
+    m_profile->ForEachLoadedStoragePartition(
+            base::BindRepeating([](bool *pendingReset,
+                                   ProfileIODataQt *profileData,
+                                   content::StoragePartition *storage) {
+                if (storage->GetNetworkContextCreatedObserver() == profileData)
+                    *pendingReset = true;
+            }, &pendingReset, this));
+
+    if (pendingReset)
+        return;
+
+    m_clearHttpCacheState = Completed;
+
+    for (ProfileAdapterClient *client : m_profileAdapter->clients())
+        client->clearHttpCacheCompleted();
 }
 
 bool ProfileIODataQt::canGetCookies(const QUrl &firstPartyUrl, const QUrl &url) const

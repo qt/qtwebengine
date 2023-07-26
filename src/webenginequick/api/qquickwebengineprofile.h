@@ -132,6 +132,7 @@ Q_SIGNALS:
     Q_REVISION(1,3) void spellCheckEnabledChanged();
     Q_REVISION(1,5) void downloadPathChanged();
     Q_REVISION(6,5) void pushServiceEnabledChanged();
+    Q_REVISION(6,7) void clearHttpCacheCompleted();
     void downloadRequested(QQuickWebEngineDownloadRequest *download);
     void downloadFinished(QQuickWebEngineDownloadRequest *download);
 
