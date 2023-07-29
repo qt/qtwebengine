@@ -127,6 +127,9 @@ public:
     void ResourceLoadComplete(content::RenderFrameHost* render_frame_host,
                               const content::GlobalRequestID& request_id,
                               const blink::mojom::ResourceLoadInfo& resource_load_info) override;
+    void InnerWebContentsAttached(content::WebContents *inner_web_contents,
+                                  content::RenderFrameHost *render_frame_host,
+                                  bool is_full_page) override;
 
     void didFailLoad(const QUrl &url, int errorCode, const QString &errorDescription);
     void overrideWebPreferences(content::WebContents *, blink::web_pref::WebPreferences*);

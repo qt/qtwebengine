@@ -815,6 +815,15 @@ void WebContentsDelegateQt::ResourceLoadComplete(content::RenderFrameHost* rende
     }
 }
 
+void WebContentsDelegateQt::InnerWebContentsAttached(content::WebContents *inner_web_contents,
+                                        content::RenderFrameHost *render_frame_host,
+                                        bool is_full_page)
+{
+    blink::web_pref::WebPreferences guestPrefs = inner_web_contents->GetOrCreateWebPreferences();
+    webEngineSettings()->overrideWebPreferences(inner_web_contents, &guestPrefs);
+    inner_web_contents->SetWebPreferences(guestPrefs);
+}
+
 FindTextHelper *WebContentsDelegateQt::findTextHelper()
 {
     return m_findTextHelper.data();
