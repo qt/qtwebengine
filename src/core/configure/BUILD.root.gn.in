@@ -81,6 +81,7 @@ config("QtWebEngineCore_config") {
 
 declare_args() {
   use_embedded_config = false
+  enable_webenginedriver = true
 }
 
 config("embedded_config") {
@@ -754,6 +755,15 @@ if (enable_spellcheck) {
       "//base",
       "//base:i18n",
       "//third_party/hunspell",
+    ]
+  }
+}
+
+if (enable_webenginedriver) {
+  group("webenginedriver_group") {
+    testonly = true
+    deps = [
+      "//chrome/test/chromedriver:chromedriver_server",
     ]
   }
 }

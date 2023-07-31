@@ -172,6 +172,14 @@ qt_feature("webengine-vaapi" PRIVATE
     # hardware accelerated encoding requires bundled libvpx
     CONDITION LINUX AND NOT QT_FEATURE_webengine_system_libvpx
 )
+list(LENGTH CMAKE_OSX_ARCHITECTURES osx_arch_count)
+qt_feature("webenginedriver" PUBLIC
+    SECTION "WebEngine"
+    LABEL "Build WebEngineDriver"
+    PURPOSE "Enables WebEngineDriver build"
+    CONDITION NOT CMAKE_CROSSCOMPILING
+              AND NOT (CMAKE_OSX_ARCHITECTURES AND osx_arch_count GREATER 1)
+)
 # internal testing feature
 qt_feature("webengine-system-poppler" PRIVATE
     LABEL "popler"
@@ -216,6 +224,7 @@ qt_configure_add_summary_entry(
     CONDITION LINUX
 )
 qt_configure_add_summary_entry(ARGS "webengine-v8-context-snapshot")
+qt_configure_add_summary_entry(ARGS "webenginedriver")
 qt_configure_end_summary_section() # end of "Qt WebEngineCore" section
 if(CMAKE_CROSSCOMPILING)
     check_thumb(armThumb)

@@ -1405,7 +1405,8 @@ endfunction()
 
 function(add_code_attributions_target)
     cmake_parse_arguments(PARSE_ARGV 0 arg ""
-        "TARGET;OUTPUT;GN_TARGET;FILE_TEMPLATE;ENTRY_TEMPLATE;BUILDDIR" ""
+        "TARGET;OUTPUT;GN_TARGET;FILE_TEMPLATE;ENTRY_TEMPLATE;BUILDDIR"
+        "EXTRA_THIRD_PARTY_DIRS"
     )
     _qt_internal_validate_all_args_are_parsed(arg)
     get_filename_component(fileTemplate ${arg_FILE_TEMPLATE} ABSOLUTE)
@@ -1417,6 +1418,7 @@ function(add_code_attributions_target)
             -DFILE_TEMPLATE=${fileTemplate}
             -DENTRY_TEMPLATE=${entryTemplate}
             -DGN_TARGET=${arg_GN_TARGET}
+            -DEXTRA_THIRD_PARTY_DIRS="${arg_EXTRA_THIRD_PARTY_DIRS}"
             -DBUILDDIR=${arg_BUILDDIR}
             -DOUTPUT=${arg_OUTPUT}
             -DPython3_EXECUTABLE=${Python3_EXECUTABLE}

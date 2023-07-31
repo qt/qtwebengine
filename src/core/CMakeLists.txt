@@ -14,6 +14,7 @@ endif()
 set(buildDir "${CMAKE_CURRENT_BINARY_DIR}")
 
 add_subdirectory(api)
+add_subdirectory(tools/webenginedriver)
 add_subdirectory(tools/qwebengine_convert_dict)
 
 ##
@@ -410,6 +411,10 @@ foreach(arch ${archs})
             ARGS use_embedded_config
             CONDITION QT_FEATURE_webengine_embedded_build
         )
+        extend_gn_list(gnArgArg
+            ARGS enable_webenginedriver
+            CONDITION QT_FEATURE_webenginedriver
+        )
 
         if(LINUX)
             list(APPEND gnArgArg
@@ -631,6 +636,23 @@ if(QT_FEATURE_webengine_spellchecker AND NOT CMAKE_CROSSCOMPILING)
     )
     add_dependencies(${dict_target_name} run_core_NinjaDone)
     add_dependencies(${dict_target_name} WebEngineCore)
+endif()
+
+##
+#  WEBENGINEDRIVER
+##
+
+if(QT_FEATURE_webenginedriver)
+    add_ninja_command(
+        TARGET webenginedriver_group
+        OUTPUT ${WEBENGINEDRIVER_EXECUTABLE}
+        BUILDDIR ${buildDir}/$<CONFIG>/${arch}
+        MODULE core
+    )
+    add_custom_target(webenginedriver
+        DEPENDS
+            ${buildDir}/$<CONFIG>/${arch}/${WEBENGINEDRIVER_EXECUTABLE})
+    add_dependencies(run_core_NinjaDone webenginedriver)
 endif()
 
 ##
