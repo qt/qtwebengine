@@ -58,6 +58,7 @@ class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool pdfViewerEnabled READ pdfViewerEnabled WRITE setPdfViewerEnabled NOTIFY pdfViewerEnabledChanged REVISION(1,8) FINAL)
     Q_PROPERTY(bool navigateOnDropEnabled READ navigateOnDropEnabled WRITE setNavigateOnDropEnabled NOTIFY navigateOnDropEnabledChanged REVISION(6,4) FINAL)
     Q_PROPERTY(bool readingFromCanvasEnabled READ readingFromCanvasEnabled WRITE setReadingFromCanvasEnabled NOTIFY readingFromCanvasEnabledChanged REVISION(6,6) FINAL)
+    Q_PROPERTY(bool forceDarkMode READ forceDarkMode WRITE setForceDarkMode NOTIFY forceDarkModeChanged REVISION(6,7) FINAL)
     QML_NAMED_ELEMENT(WebEngineSettings)
     QML_ADDED_IN_VERSION(1, 1)
     QML_EXTRA_VERSION(2, 0)
@@ -106,6 +107,7 @@ public:
     bool pdfViewerEnabled() const;
     bool navigateOnDropEnabled() const;
     bool readingFromCanvasEnabled() const;
+    bool forceDarkMode() const;
 
     void setAutoLoadImages(bool on);
     void setJavascriptEnabled(bool on);
@@ -140,6 +142,7 @@ public:
     void setPdfViewerEnabled(bool on);
     void setNavigateOnDropEnabled(bool on);
     void setReadingFromCanvasEnabled(bool on);
+    void setForceDarkMode(bool on);
 
 signals:
     void autoLoadImagesChanged();
@@ -175,6 +178,7 @@ signals:
     Q_REVISION(1,8) void pdfViewerEnabledChanged();
     Q_REVISION(6,4) void navigateOnDropEnabledChanged();
     Q_REVISION(6,6) void readingFromCanvasEnabledChanged();
+    Q_REVISION(6,7) void forceDarkModeChanged();
 
 private:
     explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = nullptr);

@@ -401,6 +401,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.dnsPrefetchEnabledChanged() --> void"
     << "QQuickWebEngineSettings.errorPageEnabled --> bool"
     << "QQuickWebEngineSettings.errorPageEnabledChanged() --> void"
+    << "QQuickWebEngineSettings.forceDarkMode --> bool"
+    << "QQuickWebEngineSettings.forceDarkModeChanged() --> void"
     << "QQuickWebEngineSettings.focusOnNavigationEnabled --> bool"
     << "QQuickWebEngineSettings.focusOnNavigationEnabledChanged() --> void"
     << "QQuickWebEngineSettings.fullScreenSupportEnabled --> bool"

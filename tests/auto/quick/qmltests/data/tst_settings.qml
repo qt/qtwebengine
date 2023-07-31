@@ -114,6 +114,32 @@ TestWebEngineView {
             });
             tryVerify(function() { return isDataRead === data.result });
         }
+
+        function test_forceDarkMode() {
+            // based on: https://developer.chrome.com/blog/auto-dark-theme/#detecting-auto-dark-theme
+            webEngineView.loadHtml("<html><body>" +
+                                   "<div id=\"detection\", style=\"display: none; background-color: canvas; color-scheme: light\"</div>" +
+                                   "</body></html>");
+            const script = "(() => {"
+                           + "  const detectionDiv = document.querySelector('#detection');"
+                           + "  return getComputedStyle(detectionDiv).backgroundColor != 'rgb(255, 255, 255)';"
+                           + "})()";
+            verify(webEngineView.waitForLoadSucceeded());
+
+            var isAutoDark = true;
+            runJavaScript(script, result => isAutoDark = result);
+            tryVerify(() => {return !isAutoDark});
+
+            webEngineView.settings.forceDarkMode = true;
+            verify(webEngineView.settings.forceDarkMode == true)
+
+            isAutoDark = false;
+            // the page is not updated immediately
+            tryVerify(function() {
+                runJavaScript(script, result => isAutoDark = result);
+                return isAutoDark;
+            });
+        }
     }
 }
 

@@ -172,6 +172,9 @@
            This setting will have impact on all HTML5 canvas elements irrespective of origin, and can be disabled
            to prevent canvas fingerprinting.
            Enabled by default. (Added in Qt 6.6)
+    \value ForceDarkMode Specifies that all web contents will be rendered using a dark theme.
+           For more information, see \l{https://developer.chrome.com/blog/auto-dark-theme/}{Auto dark theme}.
+           Disabled by default. (Added in Qt 6.7)
 */
 
 /*!

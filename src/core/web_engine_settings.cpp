@@ -264,6 +264,8 @@ void WebEngineSettings::initDefaults()
         bool noReadingFromCanvas =
                 commandLine->HasSwitch(switches::kDisableReadingFromCanvas);
         s_defaultAttributes.insert(QWebEngineSettings::ReadingFromCanvasEnabled, !noReadingFromCanvas);
+        bool forceDarkMode = commandLine->HasSwitch(switches::kForceDarkMode);
+        s_defaultAttributes.insert(QWebEngineSettings::ForceDarkMode, forceDarkMode);
     }
 
     if (s_defaultFontFamilies.isEmpty()) {
@@ -360,6 +362,7 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
     prefs->fullscreen_supported = testAttribute(QWebEngineSettings::FullScreenSupportEnabled);
     prefs->accelerated_2d_canvas_enabled =
             testAttribute(QWebEngineSettings::Accelerated2dCanvasEnabled);
+    prefs->force_dark_mode_enabled = testAttribute(QWebEngineSettings::ForceDarkMode);
     prefs->webgl1_enabled = prefs->webgl2_enabled = testAttribute(QWebEngineSettings::WebGLEnabled);
     prefs->should_print_backgrounds = testAttribute(QWebEngineSettings::PrintElementBackgrounds);
     prefs->allow_running_insecure_content =
