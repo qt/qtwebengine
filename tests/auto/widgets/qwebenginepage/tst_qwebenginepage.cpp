@@ -51,6 +51,7 @@
 #include <qnetworkreply.h>
 #include <qnetworkrequest.h>
 #include <qwebenginedownloadrequest.h>
+#include <qwebenginedesktopmediarequest.h>
 #include <qwebenginefilesystemaccessrequest.h>
 #include <qwebenginefindtextresult.h>
 #include <qwebenginefullscreenrequest.h>
@@ -273,6 +274,7 @@ private Q_SLOTS:
     void openLinkInNewPageWithWebWindowType_data();
     void openLinkInNewPageWithWebWindowType();
     void keepInterceptorAfterNewWindowRequested();
+    void chooseDesktopMedia();
 
 private:
     static bool isFalseJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
@@ -5375,6 +5377,51 @@ void tst_QWebEnginePage::keepInterceptorAfterNewWindowRequested()
     QTRY_COMPARE(loadFinishedSpy.size(), 1);
     QVERIFY(loadFinishedSpy.takeFirst().value(0).toBool());
     QVERIFY(interceptor.ran);
+}
+
+void tst_QWebEnginePage::chooseDesktopMedia()
+{
+#if QT_CONFIG(webengine_extensions) && QT_CONFIG(webengine_webrtc)
+    HttpServer server;
+    server.setHostDomain("localhost");
+    connect(&server, &HttpServer::newRequest, &server, [&] (HttpReqRep *r) {
+        if (r->requestMethod() == "GET")
+                r->setResponseBody("<html></html>");
+    });
+    QVERIFY(server.start());
+
+    QWebEnginePage page;
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+    page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
+
+    bool desktopMediaRequested = false;
+    bool permissionRequested = false;
+
+    connect(&page, &QWebEnginePage::desktopMediaRequested,
+            [&](const QWebEngineDesktopMediaRequest &) {
+                desktopMediaRequested = true;
+            });
+
+    connect(&page, &QWebEnginePage::featurePermissionRequested,
+            [&](const QUrl &securityOrigin, QWebEnginePage::Feature feature) {
+                permissionRequested = true;
+                // Handle permission to 'complete' the media request
+                page.setFeaturePermission(securityOrigin, feature,
+                                          QWebEnginePage::PermissionGrantedByUser);
+            });
+
+    page.load(QUrl(server.url()));
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 20000);
+
+    const QString extensionId("nkeimhogjdpnpccoofpliimaahmaaome");
+    page.runJavaScript(QString("(() => {"
+                               "  let port = chrome.runtime.connect(\"%1\", {name: \"chooseDesktopMedia\"});"
+                               "  port.postMessage({method: \"chooseDesktopMedia\"});"
+                               "})()").arg(extensionId));
+
+    QTRY_VERIFY(desktopMediaRequested);
+    QTRY_VERIFY(permissionRequested);
+#endif // QT_CONFIG(webengine_extensions) && QT_CONFIG(webengine_webrtc)
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
