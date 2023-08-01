@@ -34,6 +34,7 @@
     On all platforms, the following tools are required at build time:
 
     \list
+        \li C++20 compiler support
         \li CMake 3.19 or newer
         \li \l Python 3 with html5lib library
         \li Bison, Flex
