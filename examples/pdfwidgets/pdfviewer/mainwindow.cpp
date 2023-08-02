@@ -128,7 +128,7 @@ void MainWindow::searchResultSelected(const QModelIndex &current, const QModelIn
     const int page = current.data(int(QPdfSearchModel::Role::Page)).toInt();
     const QPointF location = current.data(int(QPdfSearchModel::Role::Location)).toPointF();
     ui->pdfView->pageNavigator()->jump(page, location);
-    ui->pdfView->setCurrentSearchResult(current.row());
+    ui->pdfView->setCurrentSearchResultIndex(current.row());
 }
 
 void MainWindow::on_actionOpen_triggered()

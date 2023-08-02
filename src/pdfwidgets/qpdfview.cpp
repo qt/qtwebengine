@@ -366,7 +366,7 @@ void QPdfView::setSearchModel(QPdfSearchModel *searchModel)
         connect(searchModel, &QPdfSearchModel::dataChanged, this,
                 [this](const QModelIndex &, const QModelIndex &, const QList<int> &) { update(); });
     }
-    setCurrentSearchResult(-1);
+    setCurrentSearchResultIndex(-1);
 }
 
 QPdfSearchModel *QPdfView::searchModel() const
@@ -377,7 +377,7 @@ QPdfSearchModel *QPdfView::searchModel() const
 
 /*!
     \since 6.6
-    \property QPdfView::currentSearchResult
+    \property QPdfView::currentSearchResultIndex
 
     If this property is set to a positive number, and \l searchModel is set,
     QPdfView draws a frame around the search result provided by
@@ -388,21 +388,21 @@ QPdfSearchModel *QPdfView::searchModel() const
 
     By default it is \c -1, so that no search results are framed.
 */
-void QPdfView::setCurrentSearchResult(int currentResult)
+void QPdfView::setCurrentSearchResultIndex(int currentResult)
 {
     Q_D(QPdfView);
-    if (d->m_currentSearchResult == currentResult)
+    if (d->m_currentSearchResultIndex == currentResult)
         return;
 
-    d->m_currentSearchResult = currentResult;
-    emit currentSearchResultChanged(currentResult);
+    d->m_currentSearchResultIndex = currentResult;
+    emit currentSearchResultIndexChanged(currentResult);
     viewport()->update(); //update();
 }
 
-int QPdfView::currentSearchResult() const
+int QPdfView::currentSearchResultIndex() const
 {
     Q_D(const QPdfView);
-    return d->m_currentSearchResult;
+    return d->m_currentSearchResultIndex;
 }
 
 /*!
@@ -616,8 +616,8 @@ void QPdfView::paintEvent(QPaintEvent *event)
                         painter.fillRect(scaleTransform.mapRect(rect).translated(pageGeometry.topLeft()), SearchResultHighlight);
                 }
 
-                if (d->m_currentSearchResult >= 0 && d->m_currentSearchResult < d->m_searchModel->rowCount({})) {
-                    const QPdfLink &cur = d->m_searchModel->resultAtIndex(d->m_currentSearchResult);
+                if (d->m_currentSearchResultIndex >= 0 && d->m_currentSearchResultIndex < d->m_searchModel->rowCount({})) {
+                    const QPdfLink &cur = d->m_searchModel->resultAtIndex(d->m_currentSearchResultIndex);
                     if (cur.page() == page) {
                         painter.setPen({CurrentSearchResultHighlight, CurrentSearchResultWidth});
                         for (const auto &rect : cur.rectangles())
