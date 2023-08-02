@@ -67,7 +67,7 @@ public:
     QPdfView::ZoomMode m_zoomMode;
     qreal m_zoomFactor;
 
-    int m_currentSearchResult = -1;
+    int m_currentSearchResultIndex = -1;
 
     int m_pageSpacing;
     QMargins m_documentMargins;

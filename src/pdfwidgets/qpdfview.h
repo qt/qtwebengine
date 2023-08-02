@@ -31,7 +31,7 @@ class Q_PDF_WIDGETS_EXPORT QPdfView : public QAbstractScrollArea
     Q_PROPERTY(QMargins documentMargins READ documentMargins WRITE setDocumentMargins NOTIFY documentMarginsChanged)
 
     Q_PROPERTY(QPdfSearchModel* searchModel READ searchModel WRITE setSearchModel NOTIFY searchModelChanged)
-    Q_PROPERTY(int currentSearchResult READ currentSearchResult WRITE setCurrentSearchResult NOTIFY currentSearchResultChanged)
+    Q_PROPERTY(int currentSearchResultIndex READ currentSearchResultIndex WRITE setCurrentSearchResultIndex NOTIFY currentSearchResultIndexChanged)
 
 public:
     enum class PageMode
@@ -59,7 +59,7 @@ public:
     QPdfSearchModel *searchModel() const;
     void setSearchModel(QPdfSearchModel *searchModel);
 
-    int currentSearchResult() const;
+    int currentSearchResultIndex() const;
 
     QPdfPageNavigator *pageNavigator() const;
 
@@ -77,7 +77,7 @@ public Q_SLOTS:
     void setPageMode(QPdfView::PageMode mode);
     void setZoomMode(QPdfView::ZoomMode mode);
     void setZoomFactor(qreal factor);
-    void setCurrentSearchResult(int currentResult);
+    void setCurrentSearchResultIndex(int currentResult);
 
 Q_SIGNALS:
     void documentChanged(QPdfDocument *document);
@@ -87,7 +87,7 @@ Q_SIGNALS:
     void pageSpacingChanged(int pageSpacing);
     void documentMarginsChanged(QMargins documentMargins);
     void searchModelChanged(QPdfSearchModel *searchModel);
-    void currentSearchResultChanged(int currentResult);
+    void currentSearchResultIndexChanged(int currentResult);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
