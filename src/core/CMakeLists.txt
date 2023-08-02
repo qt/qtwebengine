@@ -14,7 +14,7 @@ endif()
 set(buildDir "${CMAKE_CURRENT_BINARY_DIR}")
 
 add_subdirectory(api)
-add_subdirectory(tools)
+add_subdirectory(tools/qwebengine_convert_dict)
 
 ##
 #   TOOLCHAIN SETUP

@@ -1,11 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-
-##
-#  WEBENGINECORE DICT CONVERT TOOL
-##
-
 if(QT_FEATURE_webengine_spellchecker AND NOT CMAKE_CROSSCOMPILING)
     qt_get_tool_target_name(dict_target_name qwebengine_convert_dict)
     qt_internal_add_tool(${dict_target_name}
@@ -14,7 +9,7 @@ if(QT_FEATURE_webengine_spellchecker AND NOT CMAKE_CROSSCOMPILING)
         TOOLS_TARGET WebEngineCore
         SOURCES main.cpp
         INCLUDE_DIRECTORIES
-            ../../3rdparty/chromium/third_party/abseil-cpp
+            ../../../3rdparty/chromium/third_party/abseil-cpp
     )
     if(COMMAND qt_internal_return_unless_building_tools)
         qt_internal_return_unless_building_tools()
