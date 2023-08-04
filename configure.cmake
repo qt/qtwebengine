@@ -201,7 +201,7 @@ qt_config_compile_test(winversion
     LABEL "winversion"
     CODE
 "
-#if !defined(__clang__) && _MSC_VER < 1934
+#if !defined(__clang__) && _MSC_VER < 1922
 #error unsupported Visual Studio version
 #endif
 int main(void){
@@ -609,8 +609,8 @@ if(WIN32)
     if(MSVC)
         add_check_for_support(
             MODULES QtWebEngine QtPdf
-            CONDITION NOT MSVC_VERSION LESS 1936
-            MESSAGE "VS compiler version must be at least 14.36"
+            CONDITION NOT MSVC_VERSION LESS 1922
+            MESSAGE "VS compiler version must be at least 14.22"
         )
     endif()
     set(windowsSdkVersion $ENV{WindowsSDKVersion})
@@ -626,7 +626,7 @@ endif()
 add_check_for_support(
    MODULES QtWebEngine QtPdf
    CONDITION NOT MSVC OR TEST_winversion
-   MESSAGE "Build requires Visual Studio 2022 or higher."
+   MESSAGE "Build requires Visual Studio 2019 or higher."
 )
 
 #### Summary
