@@ -18,6 +18,9 @@
     the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
     Boston, MA 02110-1301, USA.
 */
+
+#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
+
 #include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
 #include <qtest.h>
 #include <util.h>
