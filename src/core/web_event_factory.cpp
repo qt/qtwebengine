@@ -558,6 +558,8 @@ static int windowsKeyCodeForQtKey(int qtKey, bool isKeypad)
         case Qt::Key_QuoteDbl:
             return VK_OEM_7; // case '\'': case '"': return 0xDE;
             // VK_OEM_8 (DF) Used for miscellaneous characters; it can vary by keyboard.
+        case Qt::Key_AltGr:
+            return 0xE1; // (E1) VK_OEM_AX = ui::VKEY_ALTGR see ui/events/keycodes/keyboard_codes_win.h
             // VK_OEM_102 (E2) Windows 2000/XP: Either the angle bracket key or the backslash key on the RT 102-key keyboard
 
         case Qt::Key_AudioRewind:
