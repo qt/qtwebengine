@@ -54,10 +54,17 @@ struct ForeignWebEngineLoadingInfo
     QML_UNCREATABLE("")
 };
 
+// To prevent the same type from being exported twice into qmltypes
+// (for value type and for the enums)
+struct QWebEngineCertificateErrorDerived : public QWebEngineCertificateError
+{
+    Q_GADGET
+};
+
 namespace ForeignWebEngineCertificateErrorNamespace
 {
     Q_NAMESPACE
-    QML_FOREIGN_NAMESPACE(QWebEngineCertificateError)
+    QML_FOREIGN_NAMESPACE(QWebEngineCertificateErrorDerived)
     QML_NAMED_ELEMENT(WebEngineCertificateError)
     QML_ADDED_IN_VERSION(1, 1)
     QML_EXTRA_VERSION(2, 0)
