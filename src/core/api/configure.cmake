@@ -162,7 +162,7 @@ qt_feature("webengine-vaapi" PRIVATE
     SECTION "WebEngine"
     LABEL "VA-API support"
     PURPOSE "Enables support for VA-API hardware acceleration"
-    AUTODETECT GBM_FOUND AND LIBVA_FOUND
+    AUTODETECT GBM_FOUND AND LIBVA_FOUND AND QT_FEATURE_vulkan
     CONDITION LINUX
 )
 # internal testing feature
