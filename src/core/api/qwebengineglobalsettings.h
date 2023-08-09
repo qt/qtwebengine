@@ -23,7 +23,7 @@ public:
     static QWebEngineGlobalSettings *instance();
 
     // Mapping net::SecureDnsMode
-    enum class DnsMode { SystemOnly = 0, SecureWithFallback = 1, SecureOnly = 2 };
+    enum class DnsMode : quint8 { SystemOnly = 0, SecureWithFallback = 1, SecureOnly = 2 };
     bool setDnsMode(DnsMode dnsMode, const QStringList &dnsServerTemplates);
 
 private:
