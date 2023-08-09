@@ -470,10 +470,6 @@ QT_WARNING_POP
 
     QQmlComponent *touchHandleDelegate() const;
     void setTouchHandleDelegate(QQmlComponent *delegagte);
-    Q_REVISION(6, 6)
-    Q_INVOKABLE void save(const QString &filePath,
-                          QWebEngineDownloadRequest::SavePageFormat format =
-                                  QWebEngineDownloadRequest::MimeHtmlSaveFormat) const;
 
 public Q_SLOTS:
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
@@ -493,6 +489,9 @@ public Q_SLOTS:
     Q_REVISION(1,3) void printToPdf(const QString &filePath, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
     Q_REVISION(1,3) void printToPdf(const QJSValue &callback, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
     Q_REVISION(1,4) void replaceMisspelledWord(const QString &replacement);
+    Q_REVISION(6, 6) void save(const QString &filePath,
+                               QWebEngineDownloadRequest::SavePageFormat format =
+                                       QWebEngineDownloadRequest::MimeHtmlSaveFormat) const;
 
 private Q_SLOTS:
     void lazyInitialize();
