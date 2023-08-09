@@ -433,17 +433,19 @@ bool QQuickWebEngineSettings::navigateOnDropEnabled() const
 }
 
 /*!
-    \qmlproperty bool WebEngineSettings::disableReadingFromCanvas
+    \qmlproperty bool WebEngineSettings::readingFromCanvasEnabled
     \since QtWebEngine 6.6
 
-    Disables JavaScript reading from canvas elements.
-    This setting will have impact on all HTML5 canvas elements irrespective of origin.
+    Specifies that reading from all canvas elements is enabled.
 
-    Disabled by default.
+    This setting will have impact on all HTML5 canvas elements irrespective of origin, and can be disabled
+    to prevent canvas fingerprinting.
+
+    Enabled by default.
  */
-bool QQuickWebEngineSettings::disableReadingFromCanvas() const
+bool QQuickWebEngineSettings::readingFromCanvasEnabled() const
 {
-    return d_ptr->testAttribute(QWebEngineSettings::DisableReadingFromCanvas);
+    return d_ptr->testAttribute(QWebEngineSettings::ReadingFromCanvasEnabled);
 }
 
 /*!
@@ -729,12 +731,12 @@ void QQuickWebEngineSettings::setNavigateOnDropEnabled(bool on)
         Q_EMIT navigateOnDropEnabledChanged();
 }
 
-void QQuickWebEngineSettings::setDisableReadingFromCanvas(bool on)
+void QQuickWebEngineSettings::setReadingFromCanvasEnabled(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::DisableReadingFromCanvas);
-    d_ptr->setAttribute(QWebEngineSettings::DisableReadingFromCanvas, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::ReadingFromCanvasEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::ReadingFromCanvasEnabled, on);
     if (wasOn != on)
-        Q_EMIT disableReadingFromCanvasChanged();
+        Q_EMIT readingFromCanvasEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setUnknownUrlSchemePolicy(QQuickWebEngineSettings::UnknownUrlSchemePolicy policy)

@@ -60,7 +60,7 @@ public:
         DnsPrefetchEnabled,
         PdfViewerEnabled,
         NavigateOnDropEnabled,
-        DisableReadingFromCanvas,
+        ReadingFromCanvasEnabled,
     };
 
     enum FontSize {
