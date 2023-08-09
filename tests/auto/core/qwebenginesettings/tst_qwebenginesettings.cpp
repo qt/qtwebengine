@@ -211,15 +211,15 @@ void tst_QWebEngineSettings::disableReadingFromCanvas()
     QWebEnginePage page;
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
     page.settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
-    page.settings()->setAttribute(QWebEngineSettings::DisableReadingFromCanvas,
-                                  disableReadingFromCanvas);
+    page.settings()->setAttribute(QWebEngineSettings::ReadingFromCanvasEnabled,
+                                  !disableReadingFromCanvas);
     page.setHtml("<html><body>"
                  "<canvas id='myCanvas' width='200' height='40' style='border:1px solid "
                  "#000000;'></canvas>"
                  "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
-    QCOMPARE(page.settings()->testAttribute(QWebEngineSettings::DisableReadingFromCanvas),
-             disableReadingFromCanvas);
+    QCOMPARE(page.settings()->testAttribute(QWebEngineSettings::ReadingFromCanvasEnabled),
+             !disableReadingFromCanvas);
 
     const QString jsCode("(function(){"
                          "   var canvas = document.getElementById(\"myCanvas\");"

@@ -87,12 +87,12 @@ TestWebEngineView {
         }
 
         function test_disableReadingFromCanvas(data) {
-            webEngineView.settings.disableReadingFromCanvas = data.disableReadingFromCanvas;
+            webEngineView.settings.readingFromCanvasEnabled = !data.disableReadingFromCanvas;
             webEngineView.loadHtml("<html><body>" +
                                    "<canvas id='myCanvas' width='200' height='40' style='border:1px solid #000000;'></canvas>" +
                                    "</body></html>");
             verify(webEngineView.waitForLoadSucceeded());
-            verify(webEngineView.settings.disableReadingFromCanvas === data.disableReadingFromCanvas )
+            verify(webEngineView.settings.readingFromCanvasEnabled === !data.disableReadingFromCanvas )
 
             var jsCode = "(function(){" +
                        "   var canvas = document.getElementById(\"myCanvas\");" +

@@ -261,9 +261,9 @@ void WebEngineSettings::initDefaults()
         s_defaultAttributes.insert(QWebEngineSettings::PdfViewerEnabled, false);
 #endif
         s_defaultAttributes.insert(QWebEngineSettings::NavigateOnDropEnabled, true);
-        bool readingFromCanvas =
+        bool noReadingFromCanvas =
                 commandLine->HasSwitch(switches::kDisableReadingFromCanvas);
-        s_defaultAttributes.insert(QWebEngineSettings::DisableReadingFromCanvas, readingFromCanvas);
+        s_defaultAttributes.insert(QWebEngineSettings::ReadingFromCanvasEnabled, !noReadingFromCanvas);
     }
 
     if (s_defaultFontFamilies.isEmpty()) {
@@ -372,7 +372,7 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
     prefs->dom_paste_enabled = testAttribute(QWebEngineSettings::JavascriptCanPaste);
     prefs->dns_prefetching_enabled = testAttribute(QWebEngineSettings::DnsPrefetchEnabled);
     prefs->navigate_on_drag_drop = testAttribute(QWebEngineSettings::NavigateOnDropEnabled);
-    prefs->disable_reading_from_canvas = testAttribute(QWebEngineSettings::DisableReadingFromCanvas);
+    prefs->disable_reading_from_canvas = !testAttribute(QWebEngineSettings::ReadingFromCanvasEnabled);
 
     // Fonts settings.
     prefs->standard_font_family_map[blink::web_pref::kCommonScript] =
