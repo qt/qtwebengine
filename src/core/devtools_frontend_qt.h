@@ -60,7 +60,7 @@ private:
     void OnLoadCompleted() override;
 
     void InspectElementCompleted() override{};
-    void CloseWindow() override{};
+    void CloseWindow() override;
     void Inspect(scoped_refptr<content::DevToolsAgentHost>) override{};
     void SetInspectedPageBounds(const gfx::Rect &) override{};
     void SetIsDocked(bool) override{};

@@ -204,4 +204,9 @@ void DevToolsFrontendQt::InspectedContentsClosing()
     web_contents()->ClosePage();
 }
 
+void DevToolsFrontendQt::CloseWindow()
+{
+    web_contents()->Close();
+}
+
 } // namespace QtWebEngineCore
