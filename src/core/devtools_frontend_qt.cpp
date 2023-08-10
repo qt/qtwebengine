@@ -209,4 +209,9 @@ std::string DevToolsFrontendQt::GetId(content::WebContents *inspectedContents)
     return content::DevToolsAgentHost::GetOrCreateFor(inspectedContents)->GetId();
 }
 
+void DevToolsFrontendQt::CloseWindow()
+{
+    web_contents()->Close();
+}
+
 } // namespace QtWebEngineCore
