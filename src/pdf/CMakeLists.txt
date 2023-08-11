@@ -139,7 +139,6 @@ foreach(arch ${archs})
             list(APPEND gnArgArg
                 is_cfi=false
                 ozone_auto_platforms=false
-                use_gnome_keyring=false
                 enable_vr=false
                 use_ml_inliner=false
             )

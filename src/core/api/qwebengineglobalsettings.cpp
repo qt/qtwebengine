@@ -9,7 +9,6 @@
 #undef signals
 #endif
 
-#include "content/browser/network_service_instance_impl.h"
 #include "content/public/browser/network_service_instance.h"
 #include "services/network/network_service.h"
 
@@ -122,8 +121,7 @@ QWebEngineGlobalSettingsPrivate *QWebEngineGlobalSettingsPrivate::instance()
 
 void QWebEngineGlobalSettingsPrivate::configureStubHostResolver()
 {
-    if (content::GetNetworkServiceAvailability()
-        != content::NetworkServiceAvailability::NOT_CREATED) {
+    if (content::IsNetworkServiceCreated()) {
         network::mojom::NetworkService *networkService = content::GetNetworkService();
         if (networkService) {
             qDebug() << "doh set to" << dnsOverHttpsTemplates << " -- "

@@ -34,12 +34,14 @@ public:
 
     // Overridden from SkiaOutputDevice.
     void SetFrameSinkId(const viz::FrameSinkId &frame_sink_id) override;
-    bool Reshape(const SkSurfaceCharacterization &characterization,
-                 const gfx::ColorSpace& colorSpace,
+    bool Reshape(const SkImageInfo &image_info,
+                 const gfx::ColorSpace &color_space,
+                 int sample_count,
                  float device_scale_factor,
                  gfx::OverlayTransform transform) override;
-    void SwapBuffers(BufferPresentedCallback feedback,
-                     viz::OutputSurfaceFrame frame) override;
+    void Present(const absl::optional<gfx::Rect>& update_rect,
+                 BufferPresentedCallback feedback,
+                 viz::OutputSurfaceFrame frame) override;
     void EnsureBackbuffer() override;
     void DiscardBackbuffer() override;
     SkSurface *BeginPaint(std::vector<GrBackendSemaphore> *semaphores) override;
@@ -63,13 +65,13 @@ public:
 private:
     struct Shape
     {
-        SkSurfaceCharacterization characterization;
+        SkImageInfo imageInfo;
         float devicePixelRatio;
         gfx::ColorSpace colorSpace;
 
         bool operator==(const Shape &that) const
         {
-            return (characterization == that.characterization &&
+            return (imageInfo == that.imageInfo &&
                     devicePixelRatio == that.devicePixelRatio &&
                     colorSpace == that.colorSpace);
         }

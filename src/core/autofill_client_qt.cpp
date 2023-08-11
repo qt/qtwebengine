@@ -17,8 +17,16 @@
 
 namespace QtWebEngineCore {
 
+void AutofillClientQt::CreateForWebContents(content::WebContents *contents)
+{
+    DCHECK(contents);
+    if (!FromWebContents(contents))
+        contents->SetUserData(UserDataKey(), base::WrapUnique(new AutofillClientQt(contents)));
+}
+
 AutofillClientQt::AutofillClientQt(content::WebContents *webContents)
-    : content::WebContentsUserData<AutofillClientQt>(*webContents)
+    : autofill::ContentAutofillClient(
+            webContents, base::BindRepeating(&autofill::BrowserDriverInitHook, this, ""))
     , content::WebContentsObserver(webContents)
     , m_popupController(new AutofillPopupController(new AutofillPopupControllerPrivate))
 {
@@ -132,7 +140,5 @@ WebContentsAdapterClient *AutofillClientQt::adapterClient()
                    static_cast<content::WebContentsImpl *>(web_contents())->GetView())
             ->client();
 }
-
-WEB_CONTENTS_USER_DATA_KEY_IMPL(AutofillClientQt);
 
 } // namespace QtWebEngineCore

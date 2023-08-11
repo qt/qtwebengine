@@ -491,9 +491,6 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
             webContents(), FaviconServiceFactoryQt::GetForBrowserContext(context), m_adapterClient);
 
     AutofillClientQt::CreateForWebContents(webContents());
-    autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
-            webContents(), AutofillClientQt::FromWebContents(webContents()),
-             base::BindRepeating(&autofill::BrowserDriverInitHook, AutofillClientQt::FromWebContents(webContents()), ""));
 
 #if QT_CONFIG(webengine_printing_and_pdf) && QT_CONFIG(webengine_extensions)
     pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(

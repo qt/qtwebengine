@@ -39,6 +39,8 @@ public:
 
     blink::mojom::PermissionStatus GetPermissionStatusForWorker(blink::PermissionType, content::RenderProcessHost *, const GURL &) override;
 
+    blink::mojom::PermissionStatus GetPermissionStatusForEmbeddedRequester(blink::PermissionType, content::RenderFrameHost*, const url::Origin&) override;
+
     content::PermissionResult GetPermissionResultForOriginWithoutContext(blink::PermissionType, const url::Origin &) override;
 
     void ResetPermission(

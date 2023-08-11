@@ -47,11 +47,11 @@ public:
     }
     void initialize()
     {
-        const auto &colorType = m_shape.characterization.colorType();
+        const auto &colorType = m_shape.imageInfo.colorType();
         DCHECK(colorType != kUnknown_SkColorType);
 
         m_texture = m_parent->m_contextState->gr_context()->createBackendTexture(
-                m_shape.characterization.width(), m_shape.characterization.height(), colorType,
+                m_shape.imageInfo.width(), m_shape.imageInfo.height(), colorType,
                 GrMipMapped::kNo, GrRenderable::kYes);
         DCHECK(m_texture.isValid());
 
@@ -62,7 +62,7 @@ public:
             NOTREACHED();
 #endif
         } else {
-            auto info = SkImageInfo::Make(m_shape.characterization.width(), m_shape.characterization.height(),
+            auto info = SkImageInfo::Make(m_shape.imageInfo.width(), m_shape.imageInfo.height(),
                                           colorType, kUnpremul_SkAlphaType);
             m_estimatedSize = info.computeMinByteSize();
         }
@@ -210,8 +210,8 @@ private:
                 m_imageInfo.fProtected == GrProtected::kYes ? VK_IMAGE_CREATE_PROTECTED_BIT : 0;
         m_imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
         m_imageCreateInfo.format = m_imageInfo.fFormat;
-        m_imageCreateInfo.extent.width = static_cast<uint32_t>(m_shape.characterization.width());
-        m_imageCreateInfo.extent.height = static_cast<uint32_t>(m_shape.characterization.height());
+        m_imageCreateInfo.extent.width = static_cast<uint32_t>(m_shape.imageInfo.width());
+        m_imageCreateInfo.extent.height = static_cast<uint32_t>(m_shape.imageInfo.height());
         m_imageCreateInfo.extent.depth = 1;
         m_imageCreateInfo.mipLevels = m_imageInfo.fLevelCount;
         m_imageCreateInfo.arrayLayers = 1;
@@ -297,19 +297,20 @@ void DisplaySkiaOutputDevice::SetFrameSinkId(const viz::FrameSinkId &id)
 {
     bind(id);
 }
-
-bool DisplaySkiaOutputDevice::Reshape(const SkSurfaceCharacterization &characterization,
+bool DisplaySkiaOutputDevice::Reshape(const SkImageInfo &image_info,
                                       const gfx::ColorSpace &colorSpace,
+                                      int sample_count,
                                       float device_scale_factor,
                                       gfx::OverlayTransform transform)
 {
-    m_shape = Shape{characterization, device_scale_factor, colorSpace};
+    m_shape = Shape{image_info, device_scale_factor, colorSpace};
     DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
     return true;
 }
 
-void DisplaySkiaOutputDevice::SwapBuffers(BufferPresentedCallback feedback,
-                                          viz::OutputSurfaceFrame frame)
+void DisplaySkiaOutputDevice::Present(const absl::optional<gfx::Rect> &update_rect,
+                                      BufferPresentedCallback feedback,
+                                      viz::OutputSurfaceFrame frame)
 {
     DCHECK(m_backBuffer);
 
@@ -398,7 +399,7 @@ bool DisplaySkiaOutputDevice::textureIsFlipped()
 
 QSize DisplaySkiaOutputDevice::size()
 {
-    return m_frontBuffer ? toQt(m_frontBuffer->shape().characterization.dimensions()) : QSize();
+    return m_frontBuffer ? toQt(m_frontBuffer->shape().imageInfo.dimensions()) : QSize();
 }
 
 bool DisplaySkiaOutputDevice::requiresAlphaChannel()
@@ -505,7 +506,7 @@ void DisplaySkiaOutputDevice::SwapBuffersFinished()
     }
 
     FinishSwapBuffers(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_ACK),
-                      gfx::Size(m_shape.characterization.width(), m_shape.characterization.height()),
+                      gfx::Size(m_shape.imageInfo.width(), m_shape.imageInfo.height()),
                       std::move(m_frame));
 }
 

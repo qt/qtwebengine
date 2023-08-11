@@ -56,13 +56,13 @@ public:
 
         if (!m_parent->m_factory->CreateSharedImage(mailbox,
                                                     viz::SharedImageFormat::SinglePlane(viz::RGBA_8888),
-                                                    {m_parent->m_shape.characterization.width(), m_parent->m_shape.characterization.height()},
+                                                    {m_parent->m_shape.imageInfo.width(), m_parent->m_shape.imageInfo.height()},
                                                     m_parent->m_shape.colorSpace,
                                                     m_parent->capabilities_.output_surface_origin == gfx::SurfaceOrigin::kTopLeft
                                                         ? kTopLeft_GrSurfaceOrigin
                                                         : kBottomLeft_GrSurfaceOrigin,
                                                     kPremul_SkAlphaType,
-                                                    m_parent->m_deps->GetSurfaceHandle(), kDefaultSharedImageUsage)) {
+                                                    m_parent->m_deps->GetSurfaceHandle(), kDefaultSharedImageUsage, "QWE_SharedImageBuffer")) {
             LOG(ERROR) << "CreateSharedImage failed.";
             return false;
         }
@@ -111,12 +111,13 @@ public:
         // The Flush now takes place in finishPaintCurrentBuffer on the CPU side.
         // check if end_semaphores is not empty then flush here
         DCHECK(m_scopedSkiaWriteAccess);
-        auto end_state = m_scopedSkiaWriteAccess->TakeEndState();
-        if (!m_endSemaphores.empty() || end_state || force_flush) {
+        if (!m_endSemaphores.empty() || force_flush) {
             GrFlushInfo flush_info = {};
                 flush_info.fNumSemaphores = m_endSemaphores.size();
                 flush_info.fSignalSemaphores = m_endSemaphores.data();
-            m_scopedSkiaWriteAccess->surface()->flush(flush_info, end_state.get());
+            m_scopedSkiaWriteAccess->surface()->flush();
+            m_scopedSkiaWriteAccess->ApplyBackendSurfaceEndState();
+            m_scopedSkiaWriteAccess->surface()->flush(flush_info, nullptr);
             auto *direct_context = m_scopedSkiaWriteAccess->surface()->recordingContext()->asDirectContext();
             DCHECK(direct_context);
             direct_context->submit();
@@ -258,18 +259,20 @@ void NativeSkiaOutputDevice::SetFrameSinkId(const viz::FrameSinkId &id)
     bind(id);
 }
 
-bool NativeSkiaOutputDevice::Reshape(const SkSurfaceCharacterization &characterization,
-                                      const gfx::ColorSpace &colorSpace,
-                                      float device_scale_factor,
-                                      gfx::OverlayTransform transform)
+bool NativeSkiaOutputDevice::Reshape(const SkImageInfo &image_info,
+                                     const gfx::ColorSpace &colorSpace,
+                                     int sample_count,
+                                     float device_scale_factor,
+                                     gfx::OverlayTransform transform)
 {
-    m_shape = Shape{characterization, device_scale_factor, colorSpace};
+    m_shape = Shape{image_info, device_scale_factor, colorSpace};
     DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
     return true;
 }
 
-void NativeSkiaOutputDevice::SwapBuffers(BufferPresentedCallback feedback,
-                                          viz::OutputSurfaceFrame frame)
+void NativeSkiaOutputDevice::Present(const absl::optional<gfx::Rect> &update_rect,
+                                     BufferPresentedCallback feedback,
+                                     viz::OutputSurfaceFrame frame)
 {
     DCHECK(m_backBuffer);
 
@@ -370,13 +373,13 @@ QSGTexture *NativeSkiaOutputDevice::texture(QQuickWindow *win, uint32_t textureO
     gfx::ScopedIOSurface ioSurface = m_frontBuffer->ioSurface();
     if (graphicsApi == QSGRendererInterface::Metal) {
         texture = makeMetalTexture(win, ioSurface.release(), /* plane */ 0,
-                                   m_shape.characterization.width(), m_shape.characterization.height(),
+                                   m_shape.imageInfo.width(), m_shape.imageInfo.height(),
                                    textureOptions);
 #if QT_CONFIG(opengl)
     } else if (graphicsApi == QSGRendererInterface::OpenGL) {
         uint heldTexture;
         texture = makeCGLTexture(win, ioSurface.release(),
-                                 m_shape.characterization.width(), m_shape.characterization.height(),
+                                 m_shape.imageInfo.width(), m_shape.imageInfo.height(),
                                  textureOptions, &heldTexture);
         m_frontBuffer->m_textureCleanup = [heldTexture]() { releaseGlTexture(heldTexture); };
 #endif
@@ -452,7 +455,7 @@ bool NativeSkiaOutputDevice::textureIsFlipped()
 
 QSize NativeSkiaOutputDevice::size()
 {
-    return m_frontBuffer ? toQt(m_frontBuffer->shape().characterization.dimensions()) : QSize();
+    return m_frontBuffer ? toQt(m_frontBuffer->shape().imageInfo.dimensions()) : QSize();
 }
 
 bool NativeSkiaOutputDevice::requiresAlphaChannel()
@@ -473,7 +476,7 @@ void NativeSkiaOutputDevice::SwapBuffersFinished()
     }
 
     FinishSwapBuffers(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_ACK),
-                      gfx::Size(m_shape.characterization.width(), m_shape.characterization.height()),
+                      gfx::Size(m_shape.imageInfo.width(), m_shape.imageInfo.height()),
                       std::move(m_frame));
 }
 

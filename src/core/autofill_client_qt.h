@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/content/browser/content_autofill_client.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -30,12 +30,13 @@ namespace QtWebEngineCore {
 class AutofillPopupController;
 class WebContentsAdapterClient;
 
-class AutofillClientQt : public autofill::AutofillClient,
-                         public content::WebContentsUserData<AutofillClientQt>,
+class AutofillClientQt : public autofill::ContentAutofillClient,
                          public content::WebContentsObserver
 {
 public:
     ~AutofillClientQt() override;
+
+    static void CreateForWebContents(content::WebContents *contents);
 
     // autofill::AutofillClient overrides:
     autofill::PersonalDataManager *GetPersonalDataManager() override;
@@ -65,9 +66,6 @@ private:
     WebContentsAdapterClient *adapterClient();
 
     QScopedPointer<AutofillPopupController> m_popupController;
-
-    WEB_CONTENTS_USER_DATA_KEY_DECL();
-    friend class content::WebContentsUserData<AutofillClientQt>;
 };
 
 } // namespace QtWebEngineCore

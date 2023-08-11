@@ -305,6 +305,15 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForWorker
     return GetPermissionStatus(permission, url, url);
 }
 
+blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForEmbeddedRequester(
+        blink::PermissionType permission,
+        content::RenderFrameHost *render_frame_host,
+        const url::Origin &requesting_origin)
+{
+    return GetPermissionStatus(permission, requesting_origin.GetURL(),
+                               render_frame_host->GetLastCommittedOrigin().GetURL());
+}
+
 content::PermissionResult PermissionManagerQt::GetPermissionResultForOriginWithoutContext(
         blink::PermissionType permission,
         const url::Origin &origin)

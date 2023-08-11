@@ -56,6 +56,7 @@ protected:
     void WriteData(const ui::ClipboardFormatType &format, const char *data_data, size_t data_len) override;
     void WriteSvg(const char *, size_t) override;
     void WriteFilenames(std::vector<ui::FileInfo> filenames) override;
+    void WriteUnsanitizedHTML(const char*, size_t, const char*, size_t) override;
 
     base::flat_map<ui::ClipboardBuffer, std::unique_ptr<ui::DataTransferEndpoint>> m_dataSrc;
 };

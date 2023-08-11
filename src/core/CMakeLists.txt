@@ -303,6 +303,7 @@ foreach(arch ${archs})
 
         list(APPEND gnArgArg
             qtwebengine_target="${buildDir}/${config}/${arch}:QtWebEngineCore"
+            build_dawn_tests=false
             build_with_tflite_lib=false
             enable_background_contents=false
             enable_background_mode=false
@@ -322,8 +323,6 @@ foreach(arch ${archs})
             enable_swiftshader_vulkan=false
             angle_enable_swiftshader=false
             dawn_use_swiftshader=false
-            use_dawn=false
-            build_dawn_tests=false
             enable_vr=false
             enable_web_speech=false
             enable_widevine=true
@@ -331,16 +330,17 @@ foreach(arch ${archs})
             fatal_linker_warnings=false
             has_native_accessibility=false
             safe_browsing_mode=0
-            skia_use_dawn=false
             toolkit_views=false
             chrome_pgo_phase=0
             optimize_webui=false
             strip_absolute_paths_from_debug_symbols=false
             pdf_use_skia=true
+            use_dawn=false
+            skia_use_dawn=false
             devtools_fast_bundle=false
             devtools_skip_typecheck=false
             use_static_angle=true
-            chrome_root_store_supported=false
+            use_perfetto_client_library=false
             trial_comparison_cert_verifier_supported=false
         )
         extend_gn_list(gnArgArg
@@ -413,7 +413,6 @@ foreach(arch ${archs})
                 use_qt=false # Qt5 toolkit bindings
                 use_cups=false
                 use_gio=false
-                use_gnome_keyring=false
                 use_bundled_fontconfig=false
                 use_glib=false
                 use_bluez=false
@@ -522,11 +521,6 @@ foreach(arch ${archs})
             list(APPEND gnArgArg
                 use_external_popup_menu=false
             )
-        endif()
-
-        if(NOT CLANG)
-            list(APPEND gnArgArg
-                enable_location_source=false)
         endif()
 
         if(WIN32)

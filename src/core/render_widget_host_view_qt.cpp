@@ -980,7 +980,6 @@ void RenderWidgetHostViewQt::TakeFallbackContentFrom(content::RenderWidgetHostVi
     CopyBackgroundColorIfPresentFrom(*viewQt);
 
     m_delegatedFrameHost->TakeFallbackContentFrom(viewQt->m_delegatedFrameHost.get());
-    host()->GetContentRenderingTimeoutFrom(viewQt->host());
 }
 
 void RenderWidgetHostViewQt::EnsureSurfaceSynchronizedForWebTest()

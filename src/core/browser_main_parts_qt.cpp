@@ -73,8 +73,8 @@
 #endif
 
 #if defined(Q_OS_LINUX)
-#include "components/os_crypt/key_storage_config_linux.h"
-#include "components/os_crypt/os_crypt.h"
+#include "components/os_crypt/sync/key_storage_config_linux.h"
+#include "components/os_crypt/sync/os_crypt.h"
 #endif
 
 namespace QtWebEngineCore {
@@ -220,7 +220,7 @@ void BrowserMainPartsQt::PostCreateMainMessageLoop()
         device_event_log::Initialize(0 /* default max entries */);
 
 #if defined(Q_OS_LINUX)
-    std::unique_ptr<os_crypt::Config> config = std::make_unique<os_crypt::Config>();
+    auto config = std::make_unique<os_crypt::Config>();
     config->product_name = "Qt WebEngine";
     config->main_thread_runner = content::GetUIThreadTaskRunner({});
     config->should_use_preference = false;

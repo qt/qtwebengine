@@ -420,6 +420,11 @@ void ClipboardQt::WriteFilenames(std::vector<ui::FileInfo> filenames)
     getUncommittedData()->setUrls(urls);
 }
 
+void ClipboardQt::WriteUnsanitizedHTML(const char *markup_data, size_t markup_len, const char *url_data, size_t url_len)
+{
+    WriteHTML(markup_data, markup_len, url_data, url_len);
+}
+
 #if defined(USE_OZONE)
 bool ClipboardQt::IsSelectionBufferAvailable() const
 {

@@ -39,6 +39,8 @@ public:
     bool DidHostRunInsecureContent(const std::string &host, int child_id, InsecureContentType content_type) override;
     void AllowHttpForHost(const std::string &host, content::StoragePartition *web_contents) override;
     bool IsHttpAllowedForHost(const std::string &host, content::StoragePartition *web_contents) override;
+    void SetHttpsEnforcementForHost(const std::string &host, bool enforce, content::StoragePartition *storage_partition) override;
+    bool IsHttpsEnforcedForHost(const std::string &host, content::StoragePartition *web_contents) override;
     void RevokeUserAllowExceptions(const std::string &host) override;
     bool HasAllowException(const std::string &host, content::StoragePartition *web_contents) override;
 
