@@ -38,10 +38,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->mainToolBar->insertWidget(ui->actionZoom_In, m_zoomSelector);
 
     ui->mainToolBar->insertWidget(ui->actionForward, m_pageSelector);
-    connect(m_pageSelector, &QPdfPageSelector::valueChanged, this, &MainWindow::pageSelected);
+    connect(m_pageSelector, &QPdfPageSelector::currentPageChanged, this, &MainWindow::pageSelected);
     m_pageSelector->setDocument(m_document);
     auto nav = ui->pdfView->pageNavigator();
-    connect(nav, &QPdfPageNavigator::currentPageChanged, m_pageSelector, &QPdfPageSelector::setValue);
+    connect(nav, &QPdfPageNavigator::currentPageChanged, m_pageSelector, &QPdfPageSelector::setCurrentPage);
     connect(nav, &QPdfPageNavigator::backAvailableChanged, ui->actionBack, &QAction::setEnabled);
     connect(nav, &QPdfPageNavigator::forwardAvailableChanged, ui->actionForward, &QAction::setEnabled);
 
@@ -116,7 +116,7 @@ void MainWindow::pageSelected(int page)
     setWindowTitle(!documentTitle.isEmpty() ? documentTitle : QStringLiteral("PDF Viewer"));
     setWindowTitle(tr("%1: page %2 (%3 of %4)")
                    .arg(documentTitle.isEmpty() ? u"PDF Viewer"_qs : documentTitle,
-                        m_pageSelector->text(), QString::number(page + 1), QString::number(m_document->pageCount())));
+                        m_pageSelector->currentPageLabel(), QString::number(page + 1), QString::number(m_document->pageCount())));
 }
 
 void MainWindow::searchResultSelected(const QModelIndex &current, const QModelIndex &previous)

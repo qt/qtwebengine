@@ -17,22 +17,42 @@
 
 #include "qpdfpageselector.h"
 
+#include <QtWidgets/qspinbox.h>
+
 #include <QPointer>
 
 QT_BEGIN_NAMESPACE
 
+class QPdfPageSelectorSpinBox : public QSpinBox
+{
+    Q_OBJECT
+public:
+    QPdfPageSelectorSpinBox() : QPdfPageSelectorSpinBox(nullptr) {}
+    explicit QPdfPageSelectorSpinBox(QWidget *parent);
+    ~QPdfPageSelectorSpinBox();
+
+    void setDocument(QPdfDocument *document);
+    QPdfDocument *document() const { return m_document.get(); }
+
+Q_SIGNALS:
+    void _q_documentChanged(QPdfDocument *document);
+
+protected:
+    int valueFromText(const QString &text) const override;
+    QString textFromValue(int value) const override;
+    QValidator::State validate(QString &text, int &pos) const override;
+
+private:
+    void documentStatusChanged();
+private:
+    QPointer<QPdfDocument> m_document;
+    QMetaObject::Connection m_documentStatusChangedConnection;
+};
+
 class QPdfPageSelectorPrivate
 {
-    Q_DECLARE_PUBLIC(QPdfPageSelector)
-
 public:
-    QPdfPageSelectorPrivate(QPdfPageSelector *q);
-
-    void documentStatusChanged();
-
-    QPdfPageSelector *q_ptr;
-    QPointer<QPdfDocument> document;
-    QMetaObject::Connection documentStatusChangedConnection;
+    QPdfPageSelectorSpinBox *spinBox;
 };
 
 QT_END_NAMESPACE
