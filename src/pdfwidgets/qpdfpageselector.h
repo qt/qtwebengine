@@ -7,6 +7,8 @@
 #include <QtPdfWidgets/qtpdfwidgetsglobal.h>
 #include <QtWidgets/qspinbox.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class QPdfDocument;
@@ -37,7 +39,7 @@ protected:
 
 private:
     Q_DECLARE_PRIVATE(QPdfPageSelector)
-    QScopedPointer<QPdfPageSelectorPrivate> d_ptr;
+    const std::unique_ptr<QPdfPageSelectorPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE
