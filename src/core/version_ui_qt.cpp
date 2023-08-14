@@ -17,7 +17,7 @@ const char kQtWebEngineChromiumSecurityPatchVersion[] =
         "qtwebengine_chromium_security_patch_version";
 const char kCommandLine[] = "command_line";
 const char kQtVersionCSS[] = "qt_version.css";
-const char kQtLogo[] = "images/qtlogo.png";
+const char kQtLogo[] = "images/qt.png";
 const char kQtWebEngineLogo[] = "images/qtwebengine.png";
 }
 
@@ -32,8 +32,8 @@ VersionUIQt::VersionUIQt(content::WebUI *web_ui) : content::WebUIController(web_
             "script-src chrome://resources 'self' 'unsafe-inline';");
     html_source->SetDefaultResource(IDR_VERSION_UI_QT_HTML);
     html_source->AddResourcePath(kQtVersionCSS, IDR_VERSION_UI_QT_CSS);
-    html_source->AddResourcePath("images/qt.png", IDR_QT_LOGO);
-    html_source->AddResourcePath("images/qtwebengine.png", IDR_QTWEBENGINE_LOGO);
+    html_source->AddResourcePath(kQtLogo, IDR_QT_LOGO);
+    html_source->AddResourcePath(kQtWebEngineLogo, IDR_QTWEBENGINE_LOGO);
 
     html_source->AddString(kQtWebEngineVersion, qWebEngineVersion());
     html_source->AddString(kQtWebEngineChromiumVersion, qWebEngineChromiumVersion());
