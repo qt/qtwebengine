@@ -5,7 +5,8 @@
 #define QPDFPAGESELECTOR_H
 
 #include <QtPdfWidgets/qtpdfwidgetsglobal.h>
-#include <QtWidgets/qspinbox.h>
+
+#include <QtWidgets/qwidget.h>
 
 #include <memory>
 
@@ -14,12 +15,13 @@ QT_BEGIN_NAMESPACE
 class QPdfDocument;
 class QPdfPageSelectorPrivate;
 
-class Q_PDF_WIDGETS_EXPORT QPdfPageSelector : public QSpinBox
+class Q_PDF_WIDGETS_EXPORT QPdfPageSelector : public QWidget
 {
     Q_OBJECT
 
     Q_PROPERTY(QPdfDocument* document READ document WRITE setDocument NOTIFY documentChanged)
-
+    Q_PROPERTY(int currentPage READ currentPage WRITE setCurrentPage NOTIFY currentPageChanged USER true)
+    Q_PROPERTY(QString currentPageLabel READ currentPageLabel NOTIFY currentPageLabelChanged)
 public:
     QPdfPageSelector() : QPdfPageSelector(nullptr) {}
     explicit QPdfPageSelector(QWidget *parent);
@@ -28,13 +30,16 @@ public:
     void setDocument(QPdfDocument *document);
     QPdfDocument *document() const;
 
+    int currentPage() const;
+    QString currentPageLabel() const;
+
+public Q_SLOTS:
+    void setCurrentPage(int index);
+
 Q_SIGNALS:
     void documentChanged(QPdfDocument *document);
-
-protected:
-    int valueFromText(const QString &text) const override;
-    QString textFromValue(int value) const override;
-    QValidator::State validate(QString &text, int &pos) const override;
+    void currentPageChanged(int index);
+    void currentPageLabelChanged(const QString &label);
 
 private:
     Q_DECLARE_PRIVATE(QPdfPageSelector)
