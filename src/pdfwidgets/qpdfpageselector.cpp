@@ -25,6 +25,7 @@ void QPdfPageSelectorPrivate::documentStatusChanged()
 /*!
     \class QPdfPageSelector
     \inmodule QtPdf
+    \since 6.6
     \brief A QSpinBox for selecting a PDF page.
 
     QPdfPageSelector is a QSpinBox specialized for selecting a page label
