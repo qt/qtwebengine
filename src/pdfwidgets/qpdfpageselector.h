@@ -24,7 +24,7 @@ class Q_PDF_WIDGETS_EXPORT QPdfPageSelector : public QSpinBox
 public:
     QPdfPageSelector() : QPdfPageSelector(nullptr) {}
     explicit QPdfPageSelector(QWidget *parent);
-    ~QPdfPageSelector();
+    ~QPdfPageSelector() override;
 
     void setDocument(QPdfDocument *document);
     QPdfDocument *document() const;
