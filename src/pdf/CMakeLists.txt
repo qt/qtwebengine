@@ -71,7 +71,7 @@ add_dependencies(docs generate_pdf_attributions)
 #   TOOLCHAIN SETUP
 ##
 
-if(LINUX OR MINGW)
+if(LINUX OR MINGW OR ANDROID)
     setup_toolchains()
 endif()
 
@@ -132,6 +132,7 @@ foreach(arch ${archs})
           enable_web_speech=false
           chrome_pgo_phase=0
           strip_absolute_paths_from_debug_symbols=false
+          v8_enable_webassembly=false
         )
 
         if(LINUX OR ANDROID)
@@ -160,7 +161,7 @@ foreach(arch ${archs})
                 CONDITION QT_FEATURE_pdf_bitcode
             )
         endif()
-        if(WIN32)
+        if(WIN32 OR ANDROID)
           list(APPEND gnArgArg
               ninja_use_custom_environment_files=false
               safe_browsing_mode=0

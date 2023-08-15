@@ -50,9 +50,10 @@ if(QT_FEATURE_qtpdf_build)
 endif()
 
 # TODO: this could be run as part of main configure with execute_process
+# Skip for qtpdf(android)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL GNU AND TEST_architecture_arch STREQUAL "x86_64"
-AND GN_TARGET_CPU STREQUAL "arm")
+    AND GN_TARGET_CPU STREQUAL "arm" AND NOT MINGW AND NOT ANDROID)
     try_compile(
         has32HostCompiler
         "${CMAKE_CURRENT_BINARY_DIR}/config.tests/hostcompiler"

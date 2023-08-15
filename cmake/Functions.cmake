@@ -717,6 +717,15 @@ function(get_gn_is_clang result)
     endif()
 endfunction()
 
+
+function(get_gn_is_mingw result)
+    if(MINGW)
+        set(${result} "true" PARENT_SCOPE)
+    else()
+        set(${result} "false" PARENT_SCOPE)
+    endif()
+endfunction()
+
 function(get_ios_sysroot result arch)
     if(NOT CMAKE_APPLE_ARCH_SYSROOTS)
       message(FATAL_ERROR "CMAKE_APPLE_ARCH_SYSROOTS not set.")
@@ -734,6 +743,7 @@ function(configure_gn_toolchain name binTargetCpu v8TargetCpu toolchainIn toolch
     set(GN_TOOLCHAIN ${name})
     get_gn_os(GN_OS)
     get_gn_is_clang(GN_IS_CLANG)
+    get_gn_is_mingw(GN_IS_MINGW)
     get_gn_arch(GN_CPU ${binTargetCpu})
     get_gn_arch(GN_V8_CPU ${v8TargetCpu})
     configure_file(${toolchainIn} ${toolchainOut}/BUILD.gn @ONLY)
@@ -1086,6 +1096,14 @@ macro(append_toolchain_setup)
     endif()
     if(ANDROID)
         list(APPEND gnArgArg target_os="android")
+        if(CMAKE_HOST_WIN32)
+            list(APPEND gnArgArg
+                host_toolchain="/${buildDir}/host_toolchain:host"
+                host_cpu="x64"
+                v8_snapshot_toolchain="/${buildDir}/v8_toolchain:v8"
+                target_cpu="${cpu}"
+            )
+        endif()
     endif()
 endmacro()
 
@@ -1234,17 +1252,15 @@ function(add_gn_command)
     endforeach()
     list(TRANSFORM output PREPEND "${arg_BUILDDIR}/")
 
-    if(QT_HOST_PATH)
-      set(QT_HOST_GN_PATH ${QT_HOST_PATH}/${INSTALL_LIBEXECDIR})
-    endif()
-
     add_custom_command(
         OUTPUT ${output}
         COMMAND ${CMAKE_COMMAND}
              -DBUILD_DIR=${arg_BUILDDIR}
              -DSOURCE_DIR=${CMAKE_CURRENT_LIST_DIR}
              -DMODULE=${arg_MODULE}
-             -DQT_HOST_GN_PATH=${QT_HOST_GN_PATH}
+             -DQT_HOST_PATH=${QT_HOST_PATH}
+             -DINSTALL_LIBEXECDIR=${INSTALL_LIBEXECDIR}
+             -DINSTALL_BINDIR=${INSTALL_BINDIR}
              -DPython3_EXECUTABLE=${Python3_EXECUTABLE}
              -DGN_THREADS=$ENV{QTWEBENGINE_GN_THREADS}
              -DQT_ALLOW_SYMLINK_IN_PATHS=${QT_ALLOW_SYMLINK_IN_PATHS}
