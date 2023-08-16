@@ -21,8 +21,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QPdfPageRenderer;
-
 class QPdfPageSelectorPrivate
 {
     Q_DECLARE_PUBLIC(QPdfPageSelector)

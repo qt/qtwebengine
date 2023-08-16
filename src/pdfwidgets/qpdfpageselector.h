@@ -12,7 +12,6 @@
 QT_BEGIN_NAMESPACE
 
 class QPdfDocument;
-class QPdfPageNavigator;
 class QPdfPageSelectorPrivate;
 
 class Q_PDF_WIDGETS_EXPORT QPdfPageSelector : public QSpinBox
