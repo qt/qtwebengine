@@ -680,19 +680,19 @@ void tst_QWebEnginePage::acceptNavigationRequestNavigationType()
     QTRY_COMPARE(loadSpy.size(), 4);
     QTRY_COMPARE(page.navigations.size(), 4);
 
-    page.load(QUrl("qrc:///resources/reload.html"));
-    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 6, 20000);
-    QTRY_COMPARE(page.navigations.size(), 6);
-
     QList<QWebEngineNavigationRequest::NavigationType> expectedList;
     expectedList << QWebEngineNavigationRequest::TypedNavigation
                  << QWebEngineNavigationRequest::TypedNavigation
                  << QWebEngineNavigationRequest::BackForwardNavigation
-                 << QWebEngineNavigationRequest::ReloadNavigation
-                 << QWebEngineNavigationRequest::TypedNavigation
-                 << QWebEngineNavigationRequest::RedirectNavigation;
+                 << QWebEngineNavigationRequest::ReloadNavigation;
 
     // client side redirect
+    page.load(QUrl("qrc:///resources/reload.html"));
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 6, 20000);
+    QTRY_COMPARE(page.navigations.size(), 6);
+    expectedList += { QWebEngineNavigationRequest::TypedNavigation, QWebEngineNavigationRequest::RedirectNavigation };
+
+
     page.load(QUrl("qrc:///resources/redirect.html"));
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 7, 20000);
     QTRY_COMPARE(page.navigations.size(), 8);
