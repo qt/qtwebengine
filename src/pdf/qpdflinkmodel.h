@@ -32,7 +32,7 @@ public:
     };
     Q_ENUM(Role)
     explicit QPdfLinkModel(QObject *parent = nullptr);
-    ~QPdfLinkModel();
+    ~QPdfLinkModel() override;
 
     QPdfDocument *document() const;
 
