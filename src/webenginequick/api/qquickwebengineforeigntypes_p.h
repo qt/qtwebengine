@@ -148,6 +148,7 @@ struct ForeignWebEngineContextMenuRequest
     QML_UNCREATABLE("")
 };
 
+#if QT_DEPRECATED_SINCE(6, 5)
 struct ForeignWebEngineQuotaRequest
 {
     Q_GADGET
@@ -157,6 +158,7 @@ struct ForeignWebEngineQuotaRequest
     QML_EXTRA_VERSION(2, 0)
     QML_UNCREATABLE("")
 };
+#endif
 
 struct ForeignWebEngineRegisterProtocolHandlerRequest
 {
