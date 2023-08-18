@@ -127,8 +127,6 @@ public:
     void PauseReadingBodyFromNet() override;
     void ResumeReadingBodyFromNet() override;
 
-    static inline void cleanup(QWebEngineUrlRequestInfo *info) { delete info; }
-
 private:
     void InterceptOnUIThread();
     void ContinueAfterIntercept();
@@ -171,7 +169,13 @@ private:
 
     const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
-    QScopedPointer<QWebEngineUrlRequestInfo, InterceptedRequest> request_info_;
+    struct RequestInfoDeleter
+    {
+        void operator()(QWebEngineUrlRequestInfo *ptr) const
+        { delete ptr; }
+    };
+
+    std::unique_ptr<QWebEngineUrlRequestInfo, RequestInfoDeleter> request_info_;
 
     mojo::Receiver<network::mojom::URLLoader> proxied_loader_receiver_;
     mojo::Remote<network::mojom::URLLoaderClient> target_client_;
@@ -357,7 +361,7 @@ void InterceptedRequest::ContinueAfterIntercept()
 
     if (request_info_) {
         // cleanup in scope because of delete this and it's not needed else where after
-        decltype(request_info_) scoped_request_info(request_info_.take());
+        const auto scoped_request_info = std::move(request_info_);
         QWebEngineUrlRequestInfoPrivate &info = *scoped_request_info->d_ptr;
 
         if (info.changed) {
