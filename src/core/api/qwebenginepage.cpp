@@ -105,7 +105,9 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
 {
     memset(actions, 0, sizeof(actions));
 
+#if QT_DEPRECATED_SINCE(6, 5)
     qRegisterMetaType<QWebEngineQuotaRequest>();
+#endif
     qRegisterMetaType<QWebEngineRegisterProtocolHandlerRequest>();
     qRegisterMetaType<QWebEngineFileSystemAccessRequest>();
     qRegisterMetaType<QWebEngineFindTextResult>();
