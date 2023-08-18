@@ -63,7 +63,7 @@ static QString webenginePluginsPath()
 {
     // Look for plugins in /plugins/webengine or application dir.
     static bool initialized = false;
-    static QString potentialPluginsPath = QLibraryInfo::location(QLibraryInfo::PluginsPath) % QLatin1String("/webengine");
+    static QString potentialPluginsPath = QLibraryInfo::path(QLibraryInfo::PluginsPath) % QLatin1String("/webengine");
     if (!initialized) {
         initialized = true;
         if (!QFileInfo::exists(potentialPluginsPath))
@@ -107,7 +107,7 @@ static QString ppapiPluginsPath()
 {
     // Look for plugins in /plugins/ppapi or application dir.
     static bool initialized = false;
-    static QString potentialPluginsPath = QLibraryInfo::location(QLibraryInfo::PluginsPath) % QLatin1String("/ppapi");
+    static QString potentialPluginsPath = QLibraryInfo::path(QLibraryInfo::PluginsPath) % QLatin1String("/ppapi");
     if (!initialized) {
         initialized = true;
         if (!QFileInfo::exists(potentialPluginsPath))
