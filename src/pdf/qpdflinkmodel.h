@@ -21,7 +21,7 @@ class Q_PDF_EXPORT QPdfLinkModel : public QAbstractListModel
     Q_PROPERTY(int page READ page WRITE setPage NOTIFY pageChanged)
 
 public:
-    enum class Role : int {
+    enum class Role {
         Link = Qt::UserRole,
         Rectangle,
         Url,
