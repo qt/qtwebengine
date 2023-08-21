@@ -9,7 +9,6 @@
 #include "devtools_frontend_qt.h"
 
 #include "profile_qt.h"
-#include "profile_adapter.h"
 #include "web_contents_adapter.h"
 #include "web_contents_delegate_qt.h"
 

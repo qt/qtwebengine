@@ -4,18 +4,12 @@
 #include "profile_io_data_qt.h"
 
 #include "content/browser/storage_partition_impl.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
-#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
-#include "content/public/common/content_features.h"
-#include "net/ssl/ssl_config_service_defaults.h"
-#include "services/cert_verifier/cert_verifier_creation.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
-#include "services/network/public/mojom/cert_verifier_service.mojom.h"
 
 #include "net/client_cert_qt.h"
 #include "net/client_cert_store_data.h"
@@ -24,9 +18,6 @@
 #include "profile_adapter_client.h"
 #include "profile_qt.h"
 #include "type_conversion.h"
-
-#include <QDebug>
-#include <mutex>
 
 namespace QtWebEngineCore {
 

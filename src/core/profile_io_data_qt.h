@@ -6,7 +6,6 @@
 
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/storage_partition.h"
-#include "chrome/browser/profiles/profile.h"
 #include "extensions/buildflags/buildflags.h"
 
 #include "net/proxy_config_monitor.h"
@@ -14,19 +13,23 @@
 
 #include <QtCore/QString>
 #include <QtCore/QPointer>
-#include <QtCore/QMutex>
+#include <QtCore/QRecursiveMutex>
 
 namespace cert_verifier {
 namespace mojom {
 class CertVerifierCreationParams;
 }}
 
-namespace net {
-class ClientCertStore;
+namespace content {
+class ResourceContext;
 }
 
 namespace extensions {
 class ExtensionSystemQt;
+}
+
+namespace net {
+class ClientCertStore;
 }
 
 namespace QtWebEngineCore {

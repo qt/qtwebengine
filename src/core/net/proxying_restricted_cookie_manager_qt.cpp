@@ -10,8 +10,7 @@
 
 #include "api/qwebenginecookiestore.h"
 #include "api/qwebenginecookiestore_p.h"
-#include "profile_adapter.h"
-#include "profile_qt.h"
+#include "profile_io_data_qt.h"
 #include "type_conversion.h"
 
 #include "base/memory/ptr_util.h"
