@@ -36,7 +36,10 @@ QQuickPdfDocument::QQuickPdfDocument(QObject *parent)
 /*!
     \internal
 */
-QQuickPdfDocument::~QQuickPdfDocument() = default;
+QQuickPdfDocument::~QQuickPdfDocument()
+{
+    delete m_carrierFile;
+};
 
 void QQuickPdfDocument::classBegin()
 {
