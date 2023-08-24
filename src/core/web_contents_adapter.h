@@ -211,8 +211,6 @@ public:
     void updateRecommendedState();
     void setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
     QWebEngineUrlRequestInterceptor* requestInterceptor() const;
-    void setResponseInterceptor(QWebEngineUrlResponseInterceptor *interceptor);
-    QWebEngineUrlResponseInterceptor *responseInterceptor() const;
 
 private:
     Q_DISABLE_COPY(WebContentsAdapter)
@@ -254,7 +252,6 @@ private:
     LifecycleState m_recommendedState = LifecycleState::Active;
     bool m_inspector = false;
     QPointer<QWebEngineUrlRequestInterceptor> m_requestInterceptor;
-    QPointer<QWebEngineUrlResponseInterceptor> m_responseInterceptor;
 };
 
 } // namespace QtWebEngineCore

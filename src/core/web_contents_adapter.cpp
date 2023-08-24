@@ -1013,16 +1013,6 @@ QWebEngineUrlRequestInterceptor* WebContentsAdapter::requestInterceptor() const
     return m_requestInterceptor;
 }
 
-void WebContentsAdapter::setResponseInterceptor(QWebEngineUrlResponseInterceptor *interceptor)
-{
-    m_responseInterceptor = interceptor;
-}
-
-QWebEngineUrlResponseInterceptor *WebContentsAdapter::responseInterceptor() const
-{
-    return m_responseInterceptor;
-}
-
 #if QT_CONFIG(accessibility)
 QAccessibleInterface *WebContentsAdapter::browserAccessible()
 {
