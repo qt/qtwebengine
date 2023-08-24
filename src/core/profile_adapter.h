@@ -27,7 +27,6 @@
 #include <QtWebEngineCore/qwebengineclientcertificatestore.h>
 #include <QtWebEngineCore/qwebenginecookiestore.h>
 #include <QtWebEngineCore/qwebengineurlrequestinterceptor.h>
-#include <QtWebEngineCore/qwebengineurlresponseinterceptor.h>
 #include <QtWebEngineCore/qwebengineurlschemehandler.h>
 #include "net/qrc_url_scheme_handler.h"
 
@@ -64,9 +63,6 @@ public:
 
     QWebEngineUrlRequestInterceptor* requestInterceptor();
     void setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
-
-    QWebEngineUrlResponseInterceptor *responseInterceptor();
-    void setResponseInterceptor(QWebEngineUrlResponseInterceptor *interceptor);
 
     QList<ProfileAdapterClient*> clients() { return m_clients; }
     void addClient(ProfileAdapterClient *adapterClient);
@@ -213,7 +209,6 @@ private:
     QWebEngineClientCertificateStore *m_clientCertificateStore = nullptr;
 #endif
     QPointer<QWebEngineUrlRequestInterceptor> m_requestInterceptor;
-    QPointer<QWebEngineUrlResponseInterceptor> m_responseInterceptor;
 
     QString m_dataPath;
     QString m_downloadPath;

@@ -1696,26 +1696,6 @@ void QWebEnginePage::setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *i
     d->adapter->setRequestInterceptor(interceptor);
 }
 
-/*!
-    \since 6.6
-
-    Registers the response interceptor \a interceptor to intercept URL response headers.
-
-    The page does not take ownership of the pointer. This interceptor is called
-    after any interceptors on the profile, and unlike profile interceptors, only
-    URL responses to this page are intercepted.
-
-    To unset the response interceptor, set a \c nullptr.
-
-    \sa QWebEngineUrlResponseInterceptor, QWebEngineProfile::setUrlResponseInterceptor()
-*/
-
-void QWebEnginePage::setUrlResponseInterceptor(QWebEngineUrlResponseInterceptor *interceptor)
-{
-    Q_D(QWebEnginePage);
-    d->adapter->setResponseInterceptor(interceptor);
-}
-
 void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEnginePage::Feature feature, QWebEnginePage::PermissionPolicy policy)
 {
     Q_D(QWebEnginePage);

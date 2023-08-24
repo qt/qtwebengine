@@ -18,7 +18,6 @@ class QWebEngineClientCertificateStore;
 class QWebEngineCookieStore;
 class QWebEngineNotification;
 class QWebEngineUrlRequestInterceptor;
-class QWebEngineUrlResponseInterceptor;
 class QWebEngineUrlSchemeHandler;
 class QQuickWebEngineScriptCollection;
 class QQuickWebEngineProfilePrivate;
@@ -91,7 +90,6 @@ public:
     QWebEngineCookieStore *cookieStore() const;
 
     void setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
-    void setUrlResponseInterceptor(QWebEngineUrlResponseInterceptor *interceptor);
 
     const QWebEngineUrlSchemeHandler *urlSchemeHandler(const QByteArray &) const;
     void installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *);

@@ -20,14 +20,11 @@
 #include "url/url_util_qt.h"
 
 #include "api/qwebengineurlrequestinfo_p.h"
-#include "api/qwebengineurlresponseinfo_p.h"
 #include "type_conversion.h"
 #include "web_contents_adapter.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_view_qt.h"
 #include "net/resource_request_body_qt.h"
-
-#include <QtWebEngineCore/QWebEngineUrlResponseInfo>
 
 // originally based on aw_proxying_url_loader_factory.cc:
 // Copyright 2018 The Chromium Authors. All rights reserved.
@@ -152,11 +149,6 @@ private:
     content::WebContents* webContents();
     QWebEngineUrlRequestInterceptor* getProfileInterceptor();
     QWebEngineUrlRequestInterceptor* getPageInterceptor();
-    QWebEngineUrlResponseInterceptor *getProfileResponseInterceptor();
-    QWebEngineUrlResponseInterceptor *getPageResponseInterceptor();
-
-    void interceptResponseHeaders(QWebEngineUrlResponseInterceptor *const interceptor,
-                                  net::HttpResponseHeaders *const responseHeadersPtr);
 
     QPointer<ProfileAdapter> profile_adapter_;
     const int frame_tree_node_id_;
@@ -261,59 +253,6 @@ QWebEngineUrlRequestInterceptor* InterceptedRequest::getPageInterceptor()
             return client->webContentsAdapter()->requestInterceptor();
     }
     return nullptr;
-}
-
-QWebEngineUrlResponseInterceptor* InterceptedRequest::getProfileResponseInterceptor()
-{
-    return profile_adapter_ ? profile_adapter_->responseInterceptor() : nullptr;
-}
-
-QWebEngineUrlResponseInterceptor* InterceptedRequest::getPageResponseInterceptor()
-{
-    if (auto wc = webContents()) {
-        auto view = static_cast<content::WebContentsImpl *>(wc)->GetView();
-        if (WebContentsAdapterClient *client = WebContentsViewQt::from(view)->client())
-            return client->webContentsAdapter()->responseInterceptor();
-    }
-    return nullptr;
-}
-
-void InterceptedRequest::interceptResponseHeaders(
-        QWebEngineUrlResponseInterceptor *const interceptor,
-        net::HttpResponseHeaders *const responseHeadersPtr)
-{
-    QHash<QByteArray, QByteArray> responseHeaders;
-    std::unordered_set<std::string> headersToRemove;
-    {
-        std::size_t iter = 0;
-        std::string name;
-        std::string value;
-        while (responseHeadersPtr->EnumerateHeaderLines(&iter, &name, &value)) {
-            responseHeaders.insert(QByteArray::fromStdString(name),
-                                   QByteArray::fromStdString(value));
-            headersToRemove.insert(name);
-        }
-    }
-
-    const QUrl requestUrl = QUrl::fromEncoded(QByteArray::fromStdString(request_.url.spec()));
-    const QMultiHash<QByteArray, QByteArray> requestHeaders =
-            [](const net::HttpRequestHeaders &headers) {
-                QMultiHash<QByteArray, QByteArray> result;
-                for (const auto &header : headers.GetHeaderVector()) {
-                    result.insert(QByteArray::fromStdString(header.key),
-                                  QByteArray::fromStdString(header.value));
-                }
-                return result;
-            }(request_.headers);
-
-    QWebEngineUrlResponseInfo info(requestUrl, requestHeaders, responseHeaders);
-    interceptor->interceptResponseHeaders(info);
-
-    if (info.d_ptr->isModified) {
-        responseHeadersPtr->RemoveHeaders(headersToRemove);
-        for (auto it = info.responseHeaders().cbegin(); it != info.responseHeaders().cend(); ++it)
-            responseHeadersPtr->AddHeader(it.key().toStdString(), it.value().toStdString());
-    }
 }
 
 void InterceptedRequest::Restart()
@@ -473,12 +412,6 @@ void InterceptedRequest::ContinueAfterIntercept()
 
 void InterceptedRequest::OnReceiveResponse(network::mojom::URLResponseHeadPtr head, mojo::ScopedDataPipeConsumerHandle handle, absl::optional<mojo_base::BigBuffer> buffer)
 {
-    QWebEngineUrlResponseInterceptor *const responseInterceptor = getProfileResponseInterceptor()
-            ? getProfileResponseInterceptor()
-            : getPageResponseInterceptor();
-    if (responseInterceptor)
-        interceptResponseHeaders(responseInterceptor, head->headers.get());
-
     current_response_ = head.Clone();
 
     target_client_->OnReceiveResponse(std::move(head), std::move(handle), std::move(buffer));
