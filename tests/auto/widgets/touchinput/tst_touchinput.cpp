@@ -130,7 +130,7 @@ void TouchInputTest::initTestCase()
     view.setHtml("<html><head><style>.rect { min-width: 240px; min-height: 120px; }</style></head><body>"
                  "<p id='text' style='width: 150px;'>The Qt Company</p>"
                  "<div id='notext' style='width: 150px; height: 100px; background-color: #f00;'></div>"
-                 "<form><input id='input' width='150px' type='text' value='The Qt Company2' /></form>"
+                 "<form><input id='input' style='width: 150px;' type='text' value='The Qt Company2' /></form>"
                  "<button id='btn' type='button' onclick='alert(\"button clicked!\")'>Click Me!</button>"
                  "<select id='select' onchange='alert(\"option changed to: \" + this.value)'>"
                  "<option value='O1'>O1</option><option value='O2'>O2</option><option value='O3'>O3</option></select>"

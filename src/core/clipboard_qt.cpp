@@ -27,6 +27,8 @@
 #include <QImageWriter>
 #include <QMimeData>
 
+#include <memory>
+
 namespace QtWebEngineCore {
 
 static void registerMetaTypes()
@@ -60,12 +62,12 @@ using namespace QtWebEngineCore;
 
 namespace {
 
-QScopedPointer<QMimeData> uncommittedData;
+std::unique_ptr<QMimeData> uncommittedData;
 QMimeData *getUncommittedData()
 {
     if (!uncommittedData)
         uncommittedData.reset(new QMimeData);
-    return uncommittedData.data();
+    return uncommittedData.get();
 }
 
 } // namespace
@@ -104,7 +106,7 @@ void ClipboardQt::WritePortableAndPlatformRepresentations(ui::ClipboardBuffer ty
 
     // Commit the accumulated data.
     if (uncommittedData)
-        QGuiApplication::clipboard()->setMimeData(uncommittedData.take(),
+        QGuiApplication::clipboard()->setMimeData(uncommittedData.release(),
                                                   type == ui::ClipboardBuffer::kCopyPaste ? QClipboard::Clipboard
                                                                                           : QClipboard::Selection);
 

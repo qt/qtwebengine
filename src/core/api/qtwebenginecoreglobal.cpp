@@ -212,7 +212,12 @@ static void initialize()
     // QCoreApplication is not yet instantiated, ensuring the call will be deferred
     qAddPreRoutine(QtWebEngineCore::initialize);
     auto api = QQuickWindow::graphicsApi();
-    if (api != QSGRendererInterface::OpenGL && api != QSGRendererInterface::Vulkan)
+    if (api != QSGRendererInterface::OpenGL
+#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
+        && api != QSGRendererInterface::Vulkan
+        && api != QSGRendererInterface::Metal && api != QSGRendererInterface::Direct3D11
+#endif
+        )
         QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
 #endif // QT_CONFIG(opengl)
 }

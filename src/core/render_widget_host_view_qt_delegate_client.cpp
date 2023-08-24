@@ -528,7 +528,7 @@ void RenderWidgetHostViewQtDelegateClient::handleTouchEvent(QTouchEvent *event)
         m_eventsToNowDelta = (base::TimeTicks::Now() - eventTimestamp).InMicroseconds();
     eventTimestamp += base::Microseconds(m_eventsToNowDelta);
 
-    auto touchPoints = mapTouchPointIds(event->touchPoints());
+    auto touchPoints = mapTouchPointIds(event->points());
     // Make sure that POINTER_DOWN action is delivered before MOVE, and MOVE before POINTER_UP
     std::sort(touchPoints.begin(), touchPoints.end(), [] (const TouchPoint &l, const TouchPoint &r) {
         return l.second.state() < r.second.state();

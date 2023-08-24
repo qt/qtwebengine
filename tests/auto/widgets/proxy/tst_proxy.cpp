@@ -8,7 +8,7 @@
 #include <QWebEnginePage>
 #include <QWebEngineView>
 #include <QWebEngineUrlRequestInterceptor>
-
+#include <QWebEngineLoadingInfo>
 
 struct Interceptor : public QWebEngineUrlRequestInterceptor
 {
@@ -28,6 +28,7 @@ public:
 private slots:
     void proxyAuthentication();
     void forwardCookie();
+    void invalidHostName();
 };
 
 
@@ -70,6 +71,19 @@ void tst_Proxy::forwardCookie()
     QSignalSpy cookieSpy(&server, &ProxyServer::cookieMatch);
     page.load(QUrl("http://www.qt.io"));
     QTRY_VERIFY2(cookieSpy.size() > 0, "Could not get cookie");
+}
+
+// Crash test ( https://bugreports.qt.io/browse/QTBUG-113992 )
+void tst_Proxy::invalidHostName()
+{
+    QNetworkProxy proxy;
+    proxy.setType(QNetworkProxy::HttpProxy);
+    proxy.setHostName("999.0.0.0");
+    QNetworkProxy::setApplicationProxy(proxy);
+    QWebEnginePage page;
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+    page.load(QUrl("http://www.qt.io"));
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 1, 20000);
 }
 
 #include "tst_proxy.moc"

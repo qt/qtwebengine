@@ -22,6 +22,7 @@ qt_add_executable(quicknanobrowser
 set_target_properties(quicknanobrowser PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
+    MACOSX_BUNDLE_GUI_IDENTIFIER "io.qt.examples.webenginequick.quicknanobrowser"
 )
 
 target_link_libraries(quicknanobrowser PUBLIC
@@ -75,6 +76,18 @@ if(TARGET Qt::Widgets)
     target_link_libraries(quicknanobrowser PUBLIC
         Qt::Widgets
     )
+endif()
+
+if (APPLE)
+    set_target_properties(quicknanobrowser PROPERTIES
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.cmake.macos.plist"
+    )
+
+    if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
+        # Need to sign application for location permissions to work
+        add_custom_command(TARGET quicknanobrowser
+            POST_BUILD COMMAND codesign -s - quicknanobrowser.app)
+    endif()
 endif()
 
 install(TARGETS quicknanobrowser

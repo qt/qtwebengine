@@ -162,7 +162,7 @@ void DevToolsFrontendQt::ActivateWindow()
     web_contents()->Focus();
 }
 
-void DevToolsFrontendQt::InspectElementCompleted()
+void DevToolsFrontendQt::OnLoadCompleted()
 {
     m_bindings->CallClientMethod("DevToolsAPI", "setUseSoftMenu", base::Value(true));
 }
@@ -202,6 +202,11 @@ bool DevToolsFrontendQt::IsValidFrontendURL(const GURL &url)
 void DevToolsFrontendQt::InspectedContentsClosing()
 {
     web_contents()->ClosePage();
+}
+
+void DevToolsFrontendQt::CloseWindow()
+{
+    web_contents()->Close();
 }
 
 } // namespace QtWebEngineCore

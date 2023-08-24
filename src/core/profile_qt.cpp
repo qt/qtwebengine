@@ -46,7 +46,12 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "base/command_line.h"
 #include "components/guest_view/browser/guest_view_manager.h"
+#include "extensions/browser/extension_pref_value_map_factory.h"
+#include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_prefs_factory.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
@@ -246,6 +251,7 @@ content::FileSystemAccessPermissionContext *ProfileQt::GetFileSystemAccessPermis
 
 void ProfileQt::setupPrefService()
 {
+    const bool recreation = m_prefServiceAdapter.prefService() != nullptr;
     profile_metrics::SetBrowserProfileType(this,
                                            IsOffTheRecord()
                                                ? profile_metrics::BrowserProfileType::kIncognito
@@ -253,12 +259,28 @@ void ProfileQt::setupPrefService()
 
     // Remove previous handler before we set a new one or we will assert
     // TODO: Remove in Qt6
-    if (m_prefServiceAdapter.prefService() != nullptr) {
+    if (recreation) {
         user_prefs::UserPrefs::Remove(this);
         m_prefServiceAdapter.commit();
     }
     m_prefServiceAdapter.setup(*m_profileAdapter);
     user_prefs::UserPrefs::Set(this, m_prefServiceAdapter.prefService());
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    if (recreation) {
+        // Recreate ExtensionPrefs to update its pointer to the new PrefService
+        extensions::ExtensionsBrowserClient *client = extensions::ExtensionsBrowserClient::Get();
+        std::vector<extensions::EarlyExtensionPrefsObserver *> prefsObservers;
+        client->GetEarlyExtensionPrefsObservers(this, &prefsObservers);
+        extensions::ExtensionPrefs *extensionPrefs = extensions::ExtensionPrefs::Create(
+            this, client->GetPrefServiceForContext(this),
+            this->GetPath().AppendASCII(extensions::kInstallDirectoryName),
+            ExtensionPrefValueMapFactory::GetForBrowserContext(this),
+            client->AreExtensionsDisabled(*base::CommandLine::ForCurrentProcess(), this),
+            prefsObservers);
+        extensions::ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(this, base::WrapUnique(extensionPrefs));
+    }
+#endif
 }
 
 PrefServiceAdapter &ProfileQt::prefServiceAdapter()
