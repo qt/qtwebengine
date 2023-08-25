@@ -201,7 +201,7 @@ private:
         int errorCode = 0, errorDomain = 0;
         QString errorDescription;
         bool triggersErrorPage = false;
-        QHash<QByteArray, QByteArray> responseHeaders;
+        QMultiMap<QByteArray, QByteArray> responseHeaders;
         void clear() { *this = LoadingInfo(); }
     } m_loadingInfo;
 

@@ -413,7 +413,6 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
     }
 
     const net::HttpResponseHeaders * const responseHeaders = navigation_handle->GetResponseHeaders();
-    QHash<QByteArray, QByteArray> responseHeadersMap;
     if (responseHeaders != nullptr) {
         m_loadingInfo.responseHeaders.clear();
         std::size_t iter = 0;

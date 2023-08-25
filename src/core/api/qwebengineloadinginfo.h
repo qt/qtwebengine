@@ -6,7 +6,7 @@
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
-#include <QtCore/qhash.h>
+#include <QtCore/qmap.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qurl.h>
@@ -27,7 +27,7 @@ class Q_WEBENGINECORE_EXPORT QWebEngineLoadingInfo
     Q_PROPERTY(QString errorString READ errorString CONSTANT FINAL)
     Q_PROPERTY(ErrorDomain errorDomain READ errorDomain CONSTANT FINAL)
     Q_PROPERTY(int errorCode READ errorCode CONSTANT FINAL)
-    Q_PROPERTY(QHash<QByteArray,QByteArray> responseHeaders READ responseHeaders CONSTANT FINAL)
+    Q_PROPERTY(QMultiMap<QByteArray,QByteArray> responseHeaders READ responseHeaders CONSTANT FINAL)
 
 public:
     enum LoadStatus {
@@ -62,13 +62,13 @@ public:
     QString errorString() const;
     ErrorDomain errorDomain() const;
     int errorCode() const;
-    QHash<QByteArray,QByteArray> responseHeaders() const;
+    QMultiMap<QByteArray,QByteArray> responseHeaders() const;
 
 private:
     QWebEngineLoadingInfo(const QUrl &url, LoadStatus status, bool isErrorPage = false,
                           const QString &errorString = QString(), int errorCode = 0,
                           ErrorDomain errorDomain = NoErrorDomain,
-                          const QHash<QByteArray, QByteArray> &responseHeaders = {});
+                          const QMultiMap<QByteArray,QByteArray> &responseHeaders = {});
     class QWebEngineLoadingInfoPrivate;
     Q_DECLARE_PRIVATE(QWebEngineLoadingInfo)
     QExplicitlySharedDataPointer<QWebEngineLoadingInfoPrivate> d_ptr;

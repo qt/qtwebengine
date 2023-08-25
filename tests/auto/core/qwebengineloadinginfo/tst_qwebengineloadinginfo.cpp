@@ -11,7 +11,7 @@
 #include <httpserver.h>
 #include <httpreqrep.h>
 
-typedef QHash<QByteArray, QByteArray> Map;
+typedef QMultiMap<QByteArray, QByteArray> Map;
 
 class tst_QWebEngineLoadingInfo : public QObject
 {
