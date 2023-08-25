@@ -323,6 +323,9 @@ void WebEngineSettings::doApply()
 
 void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPreferences *prefs)
 {
+    // Not supported
+    prefs->picture_in_picture_enabled = false;
+
     // Override for now
     prefs->touch_event_feature_detection_enabled = isTouchEventsAPIEnabled();
 #if !QT_CONFIG(webengine_embedded_build)
