@@ -3,6 +3,7 @@
 
 /*!
     \example webenginewidgets/videoplayer
+    \examplecategory {Web Technologies}
     \title WebEngine Widgets Video Player Example
     \ingroup webengine-widgetexamples
     \brief Displays full screen video using \l QWebEngineView.

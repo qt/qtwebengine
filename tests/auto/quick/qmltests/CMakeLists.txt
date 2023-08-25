@@ -25,6 +25,7 @@ set(testList
     tst_datalist.qml
     tst_desktopBehaviorLoadHtml.qml
     tst_download.qml
+    tst_dragHandlerUnderView.qml
     tst_favicon.qml
     tst_faviconDatabase.qml
     tst_filePicker.qml

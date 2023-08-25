@@ -13,10 +13,6 @@
 #include "render_widget_host_view_qt.h" // WebContentsAccessibilityQt
 
 #include "content/browser/accessibility/browser_accessibility.h"
-#if QT_CONFIG(webengine_extensions)
-#include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "content/public/browser/web_contents.h"
-#endif // QT_CONFIG(webengine_extensions)
 #include "ui/accessibility/ax_enums.mojom.h"
 
 #include <QtGui/qaccessible.h>
@@ -34,12 +30,10 @@ BrowserAccessibilityManager *BrowserAccessibilityManager::Create(
     QtWebEngineCore::WebContentsAccessibilityQt *access = nullptr;
     access = static_cast<QtWebEngineCore::WebContentsAccessibilityQt *>(delegate->AccessibilityGetWebContentsAccessibility());
 
-#if QT_CONFIG(webengine_extensions)
-    // Accessibility is not supported for guest views.
+    // Accessibility is not supported for guest views and child frames.
     if (!access) {
         return nullptr;
     }
-#endif // QT_CONFIG(webengine_extensions)
 
     return new BrowserAccessibilityManagerQt(access, initialTree, delegate);
 #else

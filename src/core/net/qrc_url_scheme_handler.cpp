@@ -10,6 +10,8 @@
 #include <QMimeDatabase>
 #include <QMimeType>
 
+#include <memory>
+
 namespace QtWebEngineCore {
 
 void QrcUrlSchemeHandler::requestStarted(QWebEngineUrlRequestJob *job)
@@ -22,7 +24,7 @@ void QrcUrlSchemeHandler::requestStarted(QWebEngineUrlRequestJob *job)
 
     QUrl requestUrl = job->requestUrl();
     QString requestPath = requestUrl.path();
-    QScopedPointer<QFile> file(new QFile(':' + requestPath, job));
+    auto file = std::make_unique<QFile>(':' + requestPath, job);
     if (!file->exists() || file->size() == 0) {
         qWarning("QResource '%s' not found or is empty", qUtf8Printable(requestPath));
         job->fail(QWebEngineUrlRequestJob::UrlNotFound);
@@ -32,9 +34,9 @@ void QrcUrlSchemeHandler::requestStarted(QWebEngineUrlRequestJob *job)
     QMimeDatabase mimeDatabase;
     QMimeType mimeType = mimeDatabase.mimeTypeForFile(fileInfo);
     if (mimeType.name() == QStringLiteral("application/x-extension-html"))
-        job->reply("text/html", file.take());
+        job->reply("text/html", file.release());
     else
-        job->reply(mimeType.name().toUtf8(), file.take());
+        job->reply(mimeType.name().toUtf8(), file.release());
 }
 
 } // namespace QtWebEngineCore

@@ -298,14 +298,7 @@ Item {
         property point jumpLocationMargin: Qt.point(10, 10)  // px away from viewport edges
         anchors.fill: parent
         anchors.leftMargin: 2
-        model: modelInUse && root.document ? root.document.pageCount : 0
-        // workaround to make TableView do scheduleRebuildTable(RebuildOption::All) in cases when forceLayout() doesn't
-        property bool modelInUse: true
-        function rebuild() {
-            modelInUse = false
-            modelInUse = true
-        }
-        // end workaround
+        model: root.document ? root.document.pageCount : 0
         rowSpacing: 6
         property real rotationNorm: Math.round((360 + (root.pageRotation % 360)) % 360)
         property bool rot90: rotationNorm == 90 || rotationNorm == 270
@@ -528,8 +521,8 @@ Item {
         // and don't force layout either, because positionViewAtCell() will do that
         if (pageNavigator.jumping)
             return
-        // make TableView rebuild from scratch, because otherwise it doesn't know the delegates are changing size
-        tableView.rebuild()
+        // page size changed: TableView needs to redo layout to avoid overlapping delegates or gaps between them
+        tableView.forceLayout()
         const cell = tableView.cellAtPos(root.width / 2, root.height / 2)
         const currentItem = tableView.itemAtCell(cell)
         if (currentItem) {

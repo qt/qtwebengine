@@ -558,6 +558,8 @@ static int windowsKeyCodeForQtKey(int qtKey, bool isKeypad)
         case Qt::Key_QuoteDbl:
             return VK_OEM_7; // case '\'': case '"': return 0xDE;
             // VK_OEM_8 (DF) Used for miscellaneous characters; it can vary by keyboard.
+        case Qt::Key_AltGr:
+            return 0xE1; // (E1) VK_OEM_AX = ui::VKEY_ALTGR see ui/events/keycodes/keyboard_codes_win.h
             // VK_OEM_102 (E2) Windows 2000/XP: Either the angle bracket key or the backslash key on the RT 102-key keyboard
 
         case Qt::Key_AudioRewind:
@@ -1677,10 +1679,12 @@ content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *e
                 ui::DomCodeToUsLayoutKeyboardCode(static_cast<ui::DomCode>(webKitEvent.dom_code));
 
     const ushort* text = qtText.utf16();
-    size_t textSize = std::min(sizeof(webKitEvent.text), size_t(qtText.length() * 2));
-    memcpy(&webKitEvent.text, text, textSize);
-    memcpy(&webKitEvent.unmodified_text, text, textSize);
-
+    size_t size = std::char_traits<char16_t>::length((char16_t *)text);
+    if (size <= blink::WebKeyboardEvent::kTextLengthCap - 1) { // should be null terminated
+        size_t textSize = std::min(sizeof(webKitEvent.text), size * sizeof(char16_t));
+        memcpy(&webKitEvent.text, text, textSize);
+        memcpy(&webKitEvent.unmodified_text, text, textSize);
+    }
     if (webKitEvent.windows_key_code == VK_RETURN) {
         // This is the same behavior as GTK:
         // We need to treat the enter key as a key press of character \r. This
