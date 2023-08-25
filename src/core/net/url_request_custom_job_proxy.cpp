@@ -41,7 +41,7 @@ void URLRequestCustomJobProxy::release()
 }
 
 void URLRequestCustomJobProxy::reply(std::string contentType, QIODevice *device,
-                                     QMap<QByteArray, QByteArray> additionalResponseHeaders)
+                                     QMultiMap<QByteArray, QByteArray> additionalResponseHeaders)
 {
     if (!m_client)
         return;
@@ -59,7 +59,7 @@ void URLRequestCustomJobProxy::reply(std::string contentType, QIODevice *device,
     }
     m_client->m_mimeType = qcontentType.trimmed().toStdString();
     m_client->m_device = device;
-    m_client->m_additionalResponseHeaders = additionalResponseHeaders;
+    m_client->m_additionalResponseHeaders = std::move(additionalResponseHeaders);
     if (m_client->m_device && !m_client->m_device->isReadable())
         m_client->m_device->open(QIODevice::ReadOnly);
 

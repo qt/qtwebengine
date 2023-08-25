@@ -31,7 +31,7 @@ public:
     public:
         std::string m_mimeType;
         std::string m_charset;
-        QMap<QByteArray, QByteArray> m_additionalResponseHeaders;
+        QMultiMap<QByteArray, QByteArray> m_additionalResponseHeaders;
         GURL m_redirect;
         QIODevice *m_device;
         int64_t m_firstBytePosition;
@@ -53,7 +53,7 @@ public:
     // Called from URLRequestCustomJobDelegate via post:
     //void setReplyCharset(const std::string &);
     void reply(std::string mimeType, QIODevice *device,
-               QMap<QByteArray, QByteArray> additionalResponseHeaders);
+               QMultiMap<QByteArray, QByteArray> additionalResponseHeaders);
     void redirect(GURL url);
     void abort();
     void fail(int error);

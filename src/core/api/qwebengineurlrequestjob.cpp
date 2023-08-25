@@ -118,7 +118,7 @@ QMap<QByteArray, QByteArray> QWebEngineUrlRequestJob::requestHeaders() const
     is called.
 */
 void QWebEngineUrlRequestJob::setAdditionalResponseHeaders(
-        const QMap<QByteArray, QByteArray> &additionalResponseHeaders) const
+        const QMultiMap<QByteArray, QByteArray> &additionalResponseHeaders) const
 {
     d_ptr->setAdditionalResponseHeaders(additionalResponseHeaders);
 }

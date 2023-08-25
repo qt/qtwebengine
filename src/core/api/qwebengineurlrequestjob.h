@@ -44,7 +44,7 @@ public:
     void fail(Error error);
     void redirect(const QUrl &url);
     void setAdditionalResponseHeaders(
-            const QMap<QByteArray, QByteArray> &additionalResponseHeaders) const;
+            const QMultiMap<QByteArray, QByteArray> &additionalResponseHeaders) const;
 
 private:
     QWebEngineUrlRequestJob(QtWebEngineCore::URLRequestCustomJobDelegate *);

@@ -52,7 +52,7 @@ QMap<QByteArray, QByteArray> URLRequestCustomJobDelegate::requestHeaders() const
 }
 
 void URLRequestCustomJobDelegate::setAdditionalResponseHeaders(
-        const QMap<QByteArray, QByteArray> &additionalResponseHeaders)
+        const QMultiMap<QByteArray, QByteArray> &additionalResponseHeaders)
 {
     m_additionalResponseHeaders = additionalResponseHeaders;
 }
