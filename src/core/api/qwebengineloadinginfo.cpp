@@ -23,7 +23,7 @@ class QWebEngineLoadingInfo::QWebEngineLoadingInfoPrivate : public QSharedData {
 public:
     QWebEngineLoadingInfoPrivate(const QUrl& url, LoadStatus status, bool isErrorPage,
                                  const QString& errorString, int errorCode, ErrorDomain errorDomain,
-                                 const QHash<QByteArray,QByteArray>& responseHeaders)
+                                 const QMultiMap<QByteArray,QByteArray>& responseHeaders)
         : url(url)
         , status(status)
         , isErrorPage(isErrorPage)
@@ -40,7 +40,7 @@ public:
     QString errorString;
     int errorCode;
     ErrorDomain errorDomain;
-    QHash<QByteArray,QByteArray> responseHeaders;
+    QMultiMap<QByteArray,QByteArray> responseHeaders;
 };
 
 /*!
@@ -56,7 +56,7 @@ public:
 */
 QWebEngineLoadingInfo::QWebEngineLoadingInfo(const QUrl& url, LoadStatus status, bool isErrorPage,
                                              const QString& errorString, int errorCode, ErrorDomain errorDomain,
-                                             const QHash<QByteArray,QByteArray>& responseHeaders)
+                                             const QMultiMap<QByteArray,QByteArray>& responseHeaders)
     : d_ptr(new QWebEngineLoadingInfoPrivate(url, status, isErrorPage, errorString, errorCode, errorDomain,
                                              responseHeaders))
 {
@@ -164,11 +164,12 @@ int QWebEngineLoadingInfo::errorCode() const
 
 /*!
     \property QWebEngineLoadingInfo::responseHeaders
+    \since 6.6
     \brief Holds the response headers when \c QWebEngineLoadingInfo::status()
            is equal to \c QWebEngineLoadingInfo::LoadSucceededStatus or
            \c QWebEngineLoadingInfo::LoadFailedStatus.
 */
-QHash<QByteArray,QByteArray> QWebEngineLoadingInfo::responseHeaders() const
+QMultiMap<QByteArray,QByteArray> QWebEngineLoadingInfo::responseHeaders() const
 {
     Q_D(const QWebEngineLoadingInfo);
     return d->responseHeaders;
