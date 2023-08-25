@@ -64,7 +64,7 @@ public:
     {
         QCOMPARE(job->requestUrl(), QUrl(schemeName + ":about"));
 
-        QMap<QByteArray, QByteArray> additionalResponseHeaders;
+        QMultiMap<QByteArray, QByteArray> additionalResponseHeaders;
         if (m_addAdditionalResponseHeaders) {
             additionalResponseHeaders.insert(QByteArray::fromStdString("test1"),
                                              QByteArray::fromStdString("test1VALUE"));

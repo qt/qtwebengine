@@ -55,7 +55,7 @@ public:
     QIODevice *requestBody();
 
     void
-    setAdditionalResponseHeaders(const QMap<QByteArray, QByteArray> &additionalResponseHeaders);
+    setAdditionalResponseHeaders(const QMultiMap<QByteArray, QByteArray> &additionalResponseHeaders);
     void reply(const QByteArray &contentType, QIODevice *device);
     void redirect(const QUrl &url);
     void abort();
@@ -76,7 +76,7 @@ private:
     QByteArray m_method;
     QUrl m_initiatorOrigin;
     const QMap<QByteArray, QByteArray> m_requestHeaders;
-    QMap<QByteArray, QByteArray> m_additionalResponseHeaders;
+    QMultiMap<QByteArray, QByteArray> m_additionalResponseHeaders;
     ResourceRequestBody m_resourceRequestBody;
 };
 

@@ -57,7 +57,7 @@ QIODevice *URLRequestCustomJobDelegate::requestBody()
 }
 
 void URLRequestCustomJobDelegate::setAdditionalResponseHeaders(
-        const QMap<QByteArray, QByteArray> &additionalResponseHeaders)
+        const QMultiMap<QByteArray, QByteArray> &additionalResponseHeaders)
 {
     m_additionalResponseHeaders = additionalResponseHeaders;
 }
