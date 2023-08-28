@@ -828,6 +828,7 @@ QString QPdfDocument::pageLabel(int page)
     Returns the index of the page that has the \a label, or \c -1 if not found.
 
     \sa pageLabel()
+    \since 6.6
 */
 int QPdfDocument::pageIndexForLabel(const QString &label)
 {
