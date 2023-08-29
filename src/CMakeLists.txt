@@ -149,7 +149,8 @@ if(NOT Gn_FOUND)
     endif()
 endif()
 
-if(NOT Gn_FOUND OR Gn_EXECUTABLE MATCHES "^${installDir}")
+string(REGEX REPLACE "(.)" "\\\\\\1" path_to_match "${installDir}")
+if(NOT Gn_FOUND OR Gn_EXECUTABLE MATCHES "^${path_to_match}")
     set(INSTALL_GN 1 CACHE INTERNAL "")
 endif()
 
