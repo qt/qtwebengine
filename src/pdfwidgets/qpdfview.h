@@ -5,8 +5,6 @@
 #ifndef QPDFVIEW_H
 #define QPDFVIEW_H
 
-#include <QtPdf/qpdfdocument.h>
-#include <QtPdf/qpdflink.h>
 #include <QtPdfWidgets/qtpdfwidgetsglobal.h>
 #include <QtWidgets/qabstractscrollarea.h>
 
