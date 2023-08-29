@@ -16,6 +16,7 @@
 //
 
 #include "qpdfview.h"
+#include "qpdfdocument.h"
 #include "qpdflinkmodel.h"
 
 #include <QHash>
