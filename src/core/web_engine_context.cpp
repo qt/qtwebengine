@@ -104,6 +104,7 @@
 #include <qopenglcontext_platform.h>
 #endif
 #include <QQuickWindow>
+#include <QRegularExpression>
 #include <QStringList>
 #include <QSurfaceFormat>
 #include <QNetworkProxy>
@@ -875,7 +876,8 @@ base::CommandLine *WebEngineContext::initCommandLine(bool &useEmbeddedSwitches,
         appArgs = appArgs.mid(0, 1); // Take application name and drop the rest
         appArgs.append(parseEnvCommandLine(qEnvironmentVariable(kChromiumFlagsEnv)));
     } else {
-        int index = appArgs.indexOf(QLatin1String("--webEngineArgs"));
+        int index = appArgs.indexOf(QRegularExpression(QLatin1String("--webEngineArgs"),
+                                                       QRegularExpression::CaseInsensitiveOption));
         if (index > -1) {
             appArgs.erase(appArgs.begin() + 1, appArgs.begin() + index + 1);
         } else {
