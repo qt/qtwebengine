@@ -48,6 +48,14 @@ Q_WEBENGINECORE_PRIVATE_EXPORT void initialize()
 #ifdef Q_OS_WIN32
     qputenv("QT_D3DCREATE_MULTITHREADED", "1");
 #endif
+    auto api = QQuickWindow::graphicsApi();
+    if (api != QSGRendererInterface::OpenGL
+#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
+        && api != QSGRendererInterface::Vulkan && api != QSGRendererInterface::Metal
+        && api != QSGRendererInterface::Direct3D11
+#endif
+    )
+        QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
     // No need to override the shared context if QApplication already set one (e.g with Qt::AA_ShareOpenGLContexts).
     if (!qt_gl_global_share_context()) {
 
@@ -109,14 +117,6 @@ static void initialize()
 #if QT_CONFIG(opengl) && !defined(Q_OS_MACOS)
     // QCoreApplication is not yet instantiated, ensuring the call will be deferred
     qAddPreRoutine(QtWebEngineCore::initialize);
-    auto api = QQuickWindow::graphicsApi();
-    if (api != QSGRendererInterface::OpenGL
-#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
-        && api != QSGRendererInterface::Vulkan
-        && api != QSGRendererInterface::Metal && api != QSGRendererInterface::Direct3D11
-#endif
-        )
-        QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
 #endif // QT_CONFIG(opengl)
 }
 
