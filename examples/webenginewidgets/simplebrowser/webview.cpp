@@ -325,7 +325,7 @@ void WebView::handleFileSystemAccessRequested(QWebEngineFileSystemAccessRequest 
         Q_UNREACHABLE();
     }
 
-    auto answer = QMessageBox::question(window(), tr("File system access reques"),
+    auto answer = QMessageBox::question(window(), tr("File system access request"),
                                         tr("Give %1 %2 access to %3?")
                                                 .arg(request.origin().host())
                                                 .arg(accessType)
