@@ -34,23 +34,23 @@ Q_LOGGING_CATEGORY(lc, "qt.webengine.tests")
 
 void tst_QWebEngineGlobalSettings::dnsOverHttps_data()
 {
-    QTest::addColumn<QWebEngineGlobalSettings::DnsMode>("dnsMode");
+    QTest::addColumn<QWebEngineGlobalSettings::SecureDnsMode>("dnsMode");
     QTest::addColumn<QString>("uriTemplate");
     QTest::addColumn<bool>("isMockDnsServerCalledExpected");
     QTest::addColumn<bool>("isDnsResolutionSuccessExpected");
     QTest::addColumn<bool>("isConfigurationSuccessExpected");
     QTest::newRow("DnsMode::SystemOnly (no DoH server)")
-            << QWebEngineGlobalSettings::DnsMode::SystemOnly << QStringLiteral("") << false << true
-            << true;
+            << QWebEngineGlobalSettings::SecureDnsMode::SystemOnly << QStringLiteral("") << false
+            << true << true;
     QTest::newRow("DnsMode::SecureOnly (mock DoH server)")
-            << QWebEngineGlobalSettings::DnsMode::SecureOnly
+            << QWebEngineGlobalSettings::SecureDnsMode::SecureOnly
             << QStringLiteral("https://127.0.0.1:3000/dns-query{?dns}") << true << false << true;
     QTest::newRow("DnsMode::SecureOnly (real DoH server)")
-            << QWebEngineGlobalSettings::DnsMode::SecureOnly
+            << QWebEngineGlobalSettings::SecureDnsMode::SecureOnly
             << QStringLiteral("https://dns.google/dns-query{?dns}") << false << true << true;
     QTest::newRow("DnsMode::SecureOnly (Empty URI Templates)")
-            << QWebEngineGlobalSettings::DnsMode::SecureOnly << QStringLiteral("") << false << false
-            << false;
+            << QWebEngineGlobalSettings::SecureDnsMode::SecureOnly << QStringLiteral("") << false
+            << false << false;
     // Note: In the following test, we can't verify that the DoH server is called first and
     // afterwards insecure DNS is tried, because for the DoH server to ever be used when the DNS
     // mode is set to DnsMode::WithFallback, Chromium starts an asynchronous DoH server DnsProbe and
@@ -59,16 +59,16 @@ void tst_QWebEngineGlobalSettings::dnsOverHttps_data()
     // non-self-signed certificates are used for correct encryption. Instead of implementing
     // all of that, this test verifies that Chromium tries probing the configured DoH server only.
     QTest::newRow("DnsMode::SecureWithFallback (mock DoH server)")
-            << QWebEngineGlobalSettings::DnsMode::SecureWithFallback
+            << QWebEngineGlobalSettings::SecureDnsMode::SecureWithFallback
             << QStringLiteral("https://127.0.0.1:3000/dns-query{?dns}") << true << true << true;
     QTest::newRow("DnsMode::SecureWithFallback (Empty URI Templates)")
-            << QWebEngineGlobalSettings::DnsMode::SecureWithFallback << QStringLiteral("") << false
-            << false << false;
+            << QWebEngineGlobalSettings::SecureDnsMode::SecureWithFallback << QStringLiteral("")
+            << false << false << false;
 }
 
 void tst_QWebEngineGlobalSettings::dnsOverHttps()
 {
-    QFETCH(QWebEngineGlobalSettings::DnsMode, dnsMode);
+    QFETCH(QWebEngineGlobalSettings::SecureDnsMode, dnsMode);
     QFETCH(QString, uriTemplate);
     QFETCH(bool, isMockDnsServerCalledExpected);
     QFETCH(bool, isDnsResolutionSuccessExpected);
@@ -76,8 +76,8 @@ void tst_QWebEngineGlobalSettings::dnsOverHttps()
     bool isMockDnsServerCalled = false;
     bool isLoadSuccessful = false;
 
-    QWebEngineGlobalSettings *globalSettings = QWebEngineGlobalSettings::instance();
-    bool configurationSuccess = globalSettings->setDnsMode(dnsMode, QStringList() << uriTemplate);
+    bool configurationSuccess =
+            QWebEngineGlobalSettings::setDnsMode({ dnsMode, QStringList{ uriTemplate } });
     QCOMPARE(configurationSuccess, isConfigurationSuccessExpected);
 
     if (!configurationSuccess) {

@@ -25,12 +25,13 @@ class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineGlobalSettingsPrivate
 {
 public:
     QWebEngineGlobalSettingsPrivate()
-        : dnsMode(QWebEngineGlobalSettings::DnsMode::SystemOnly)
+        : dnsMode(QWebEngineGlobalSettings::SecureDnsMode::SystemOnly)
         , dnsOverHttpsTemplates("")
         , insecureDnsClientEnabled(false)
         , additionalInsecureDnsTypesEnabled(false){};
 
-    QWebEngineGlobalSettings::DnsMode dnsMode;
+    static QWebEngineGlobalSettingsPrivate *instance();
+    QWebEngineGlobalSettings::SecureDnsMode dnsMode;
     std::string dnsOverHttpsTemplates;
     const bool insecureDnsClientEnabled;
     const bool additionalInsecureDnsTypesEnabled;

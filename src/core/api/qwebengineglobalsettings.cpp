@@ -15,82 +15,90 @@
 
 QT_BEGIN_NAMESPACE
 
-ASSERT_ENUMS_MATCH(net::SecureDnsMode::kSecure, QWebEngineGlobalSettings::DnsMode::SecureOnly)
+ASSERT_ENUMS_MATCH(net::SecureDnsMode::kSecure, QWebEngineGlobalSettings::SecureDnsMode::SecureOnly)
 ASSERT_ENUMS_MATCH(net::SecureDnsMode::kAutomatic,
-                   QWebEngineGlobalSettings::DnsMode::SecureWithFallback)
-ASSERT_ENUMS_MATCH(net::SecureDnsMode::kOff, QWebEngineGlobalSettings::DnsMode::SystemOnly)
+                   QWebEngineGlobalSettings::SecureDnsMode::SecureWithFallback)
+ASSERT_ENUMS_MATCH(net::SecureDnsMode::kOff, QWebEngineGlobalSettings::SecureDnsMode::SystemOnly)
 
 /*!
-    \class QWebEngineGlobalSettings
-    \brief The QWebEngineGlobalSettings class configures global properties of the web engine.
+    \namespace QWebEngineGlobalSettings
+    \brief The QWebEngineGlobalSettings namespace holds global settings of the web engine.
     \since 6.6
     \inmodule QtWebEngineCore
 
-    The QWebEngineGlobalSettings class is a singleton that configures global properties
-    of the web engine.
+    The QWebEngineGlobalSettings namespace holds global properties of the web engine.
 
-    Invoke setDnsMode() and setDnsServerTemplates() to configure DNS-over-HTTPS.
+    Invoke setDnsMode() to configure DNS-over-HTTPS.
 
-    \sa QWebEngineGlobalSettings::setDnsMode(), QWebEngineGlobalSettings::setDnsServerTemplates()
+    \sa QWebEngineGlobalSettings::setDnsMode()
 */
 
-QWebEngineGlobalSettings::QWebEngineGlobalSettings(QObject *p)
-    : QObject(p), d_ptr(new QWebEngineGlobalSettingsPrivate)
-{
-}
-
-QWebEngineGlobalSettings::~QWebEngineGlobalSettings() { }
-
 /*!
-    \fn QWebEngineGlobalSettings *QWebEngineGlobalSettings::GetInstance()
+    \enum QWebEngineGlobalSettings::SecureDnsMode
 
-    Gets the global instance of QWebEngineGlobalSettings.
-*/
-QWebEngineGlobalSettings *QWebEngineGlobalSettings::instance()
-{
-    static QWebEngineGlobalSettings settings;
-    return &settings;
-}
-
-/*!
-    \enum QWebEngineGlobalSettings::DnsMode
-
-    This enum sets the DNS-over-HTTPS mode:
+    This enum sets the DNS-over-HTTPS mode used by the DnsMode structure:
 
     \value SystemOnly This is the default. Use the system DNS host resolution.
     \value SecureWithFallback Enable DNS-over-HTTPS (DoH). DoH servers have to be
-    provided through QWebEngineGlobalSettings::setDnsServerTemplates(). If a host can't be resolved
-    via the provided servers, the system DNS host resolution is used.
-    \value SecureOnly Enable DNS-over-HTTPS and only allow hosts to be resolved this way.
-    DoH servers have to be provided through QWebEngineGlobalSettings::setDnsServerTemplates().
-    If the DNS-over-HTTPS resolution fails, there is no fallback and DNS host resolution
-    fails completely.
+    provided through \l {QWebEngineGlobalSettings::DnsMode::serverTemplates}{serverTemplates} in
+    the DnsMode structure. If a host cannot be resolved via the provided servers,
+    the system DNS host resolution is used.
+    \value SecureOnly Enable DNS-over-HTTPS and only allow hosts to be resolved
+    this way. DoH servers have to be provided through
+    \l {QWebEngineGlobalSettings::DnsMode::serverTemplates}{serverTemplates} in the DnsMode
+    structure. If the DNS-over-HTTPS resolution fails, there is no fallback and the DNS host
+    resolution fails completely.
 */
 
 /*!
-    \fn void QWebEngineGlobalSettings::setDnsMode(DnsMode dnsMode, const QStringList
-    &dnsServerTemplates)
+    \class QWebEngineGlobalSettings::DnsMode
+    \brief The DnsMode struct provides means to specify the DNS host resolution mode.
+    \since 6.6
+    \inmodule QtWebEngineCore
 
-    Set \a dnsMode to DnsMode::SystemOnly to use the system DNS resolution.
-
-    Set \a dnsMode to DnsMode::SecureOnly to only allow DNS-over-HTTPS host resolution using servers
-    from \a dnsServerTemplates.
-
-    Set \a dnsMode to DnsMode::SecureWithFallback to enable DNS-over-HTTPS host resolution using
-    servers from \a dnsServerTemplates,with a fallback to the system DNS.
-
-    A list \a dnsServerTemplates is a list of \l{https://datatracker.ietf.org/d7oc/html/rfc6570}{URI
-    templates}. One example URI template is https://dns.google/dns-query{?dns}.
-
-    This function returns \c false if the \a dnsServerTemplates list is empty or contains URI
-    templates that cannot be parsed for DnsMode::SecureOnly or DnsMode::SecureWithFallback.
-    Otherwise, it returns \c true meaning the DNS mode change is triggered.
+    The QWebEngineGlobalSettings::DnsMode structure describes the DNS mode and
+    the associated DNS server template used for the DNS host resolution.
 */
-bool QWebEngineGlobalSettings::setDnsMode(DnsMode dnsMode, const QStringList &dnsServerTemplates)
+
+/*!
+    \variable QWebEngineGlobalSettings::DnsMode::secureMode
+    \brief The DNS mode used for the host resolution.
+
+    Set \a secureMode to SecureDnsMode::SecureOnly to only allow DNS-over-HTTPS host resolution
+    using servers from \a serverTemplates.
+
+    Set \a secureMode to SecureDnsMode::SecureWithFallback to enable DNS-over-HTTPS host resolution
+    using servers from \a serverTemplates, with a fallback to the system DNS.
+
+    \sa QWebEngineGlobalSettings::SecureDnsMode
+*/
+
+/*!
+    \variable QWebEngineGlobalSettings::DnsMode::serverTemplates
+    \brief A list of server URI templates used for secure DNS-over-HTTPS host resolution.
+
+    The \c serverTemplates structure member lists
+    \l{https://datatracker.ietf.org/d7oc/html/rfc6570}{URI templates}.
+    An example of a URI template is https://dns.google/dns-query{?dns}.
+*/
+
+/*!
+    \fn void QWebEngineGlobalSettings::setDnsMode(DnsMode dnsMode)
+
+    Sets \a dnsMode for DNS-over-HTTPS host resolution.
+
+    This function returns \c false if the \l {QWebEngineGlobalSettings::DnsMode::serverTemplates}
+    {serverTemplates} list in the \l {QWebEngineGlobalSettings::DnsMode}{DnsMode} structure is empty
+    or contains URI templates that cannot be parsed for SecureDnsMode::SecureOnly or
+    SecureDnsMode::SecureWithFallback. Otherwise, it returns \c true meaning that the DNS mode
+    change is triggered.
+*/
+
+bool QWebEngineGlobalSettings::setDnsMode(DnsMode dnsMode)
 {
-    Q_D(QWebEngineGlobalSettings);
-    if (dnsMode != DnsMode::SystemOnly) {
-        const QString servers = dnsServerTemplates.join(QChar::Space);
+    QWebEngineGlobalSettingsPrivate *d = QWebEngineGlobalSettingsPrivate::instance();
+    if (dnsMode.secureMode != SecureDnsMode::SystemOnly) {
+        const QString servers = dnsMode.serverTemplates.join(QChar::Space);
         const std::string templates = servers.toStdString();
         absl::optional<net::DnsOverHttpsConfig> dnsOverHttpsConfig =
                 net::DnsOverHttpsConfig::FromString(templates);
@@ -98,7 +106,7 @@ bool QWebEngineGlobalSettings::setDnsMode(DnsMode dnsMode, const QStringList &dn
             return false;
         d->dnsOverHttpsTemplates = templates;
     }
-    d->dnsMode = dnsMode;
+    d->dnsMode = dnsMode.secureMode;
     d->configureStubHostResolver();
     return true;
 }
@@ -106,6 +114,12 @@ bool QWebEngineGlobalSettings::setDnsMode(DnsMode dnsMode, const QStringList &dn
 /*!
     \internal
 */
+QWebEngineGlobalSettingsPrivate *QWebEngineGlobalSettingsPrivate::instance()
+{
+    static QWebEngineGlobalSettingsPrivate settings;
+    return &settings;
+}
+
 void QWebEngineGlobalSettingsPrivate::configureStubHostResolver()
 {
     if (content::GetNetworkServiceAvailability()
@@ -113,8 +127,9 @@ void QWebEngineGlobalSettingsPrivate::configureStubHostResolver()
         network::mojom::NetworkService *networkService = content::GetNetworkService();
         if (networkService) {
             qDebug() << "doh set to" << dnsOverHttpsTemplates << " -- "
-                     << (dnsMode == QWebEngineGlobalSettings::DnsMode::SecureOnly ? "SecureOnly"
-                                 : dnsMode == QWebEngineGlobalSettings::DnsMode::SystemOnly
+                     << (dnsMode == QWebEngineGlobalSettings::SecureDnsMode::SecureOnly
+                                 ? "SecureOnly"
+                                 : dnsMode == QWebEngineGlobalSettings::SecureDnsMode::SystemOnly
                                  ? "SystemOnly"
                                  : "SecureWithFallback");
             absl::optional<net::DnsOverHttpsConfig> dohConfig = dnsOverHttpsTemplates.empty()
