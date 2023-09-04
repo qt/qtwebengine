@@ -265,7 +265,7 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(network::mojom::Networ
     // resolver of the network service here, each time it is instantiated, with our global
     // DNS-Over-HTTPS settings. This ensures that the global settings don't get lost
     // on reinstantiation and are in effect upon initial instantiation.
-    QWebEngineGlobalSettings::instance()->d_ptr->configureStubHostResolver();
+    QWebEngineGlobalSettingsPrivate::instance()->configureStubHostResolver();
 }
 
 void SystemNetworkContextManager::AddSSLConfigToNetworkContextParams(network::mojom::NetworkContextParams *network_context_params)

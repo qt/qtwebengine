@@ -4,37 +4,26 @@
 #ifndef QWEBENGINEGLOBALSETTINGS_H
 #define QWEBENGINEGLOBALSETTINGS_H
 
+#if 0
+#pragma qt_class(QWebEngineGlobalSettings)
+#endif
+
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtCore/QObject>
 #include <QtCore/QScopedPointer>
 
-namespace QtWebEngineCore {
-class SystemNetworkContextManager;
-}
-
 QT_BEGIN_NAMESPACE
 
-class QWebEngineGlobalSettingsPrivate;
-
-class Q_WEBENGINECORE_EXPORT QWebEngineGlobalSettings : public QObject
+namespace QWebEngineGlobalSettings {
+// Mapping net::SecureDnsMode
+enum class SecureDnsMode : quint8 { SystemOnly = 0, SecureWithFallback = 1, SecureOnly = 2 };
+struct DnsMode
 {
-    Q_OBJECT
-public:
-    static QWebEngineGlobalSettings *instance();
-
-    // Mapping net::SecureDnsMode
-    enum class DnsMode : quint8 { SystemOnly = 0, SecureWithFallback = 1, SecureOnly = 2 };
-    bool setDnsMode(DnsMode dnsMode, const QStringList &dnsServerTemplates);
-
-private:
-    QWebEngineGlobalSettings(QObject *p = nullptr);
-    ~QWebEngineGlobalSettings() override;
-
-    friend class QtWebEngineCore::SystemNetworkContextManager;
-    Q_DECLARE_PRIVATE(QWebEngineGlobalSettings)
-    // can't re-use base d_ptr: need to maintain compat with last Qt LTS
-    QScopedPointer<QWebEngineGlobalSettingsPrivate> d_ptr;
+    SecureDnsMode secureMode = SecureDnsMode::SystemOnly;
+    QStringList serverTemplates;
 };
+Q_WEBENGINECORE_EXPORT bool setDnsMode(DnsMode dnsMode);
+}
 
 QT_END_NAMESPACE
 
