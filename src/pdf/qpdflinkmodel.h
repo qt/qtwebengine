@@ -10,6 +10,8 @@
 
 #include <QtCore/QAbstractListModel>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class QPdfLinkModelPrivate;
@@ -57,6 +59,7 @@ private Q_SLOTS:
 
 private:
     Q_DECLARE_PRIVATE(QPdfLinkModel)
+    const std::unique_ptr<QPdfLinkModelPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE
