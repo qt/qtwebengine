@@ -20,12 +20,14 @@
 
 QT_BEGIN_NAMESPACE
 
-class QPdfLinkModelPrivate: public QAbstractItemModelPrivate
+class QPdfLinkModelPrivate
 {
+    QPdfLinkModel *q_ptr;
     Q_DECLARE_PUBLIC(QPdfLinkModel)
 
 public:
-    QPdfLinkModelPrivate();
+    explicit QPdfLinkModelPrivate(QPdfLinkModel *qq)
+        : q_ptr(qq) {}
 
     void update();
 

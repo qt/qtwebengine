@@ -44,7 +44,8 @@ Q_LOGGING_CATEGORY(qLcLink, "qt.pdf.links")
     Constructs a new link model with parent object \a parent.
 */
 QPdfLinkModel::QPdfLinkModel(QObject *parent)
-    : QAbstractListModel(*(new QPdfLinkModelPrivate()), parent)
+    : QAbstractListModel(parent),
+      d_ptr{std::make_unique<QPdfLinkModelPrivate>(this)}
 {
     Q_D(QPdfLinkModel);
     QMetaEnum rolesMetaEnum = metaObject()->enumerator(metaObject()->indexOfEnumerator("Role"));
@@ -164,10 +165,6 @@ QPdfLink QPdfLinkModel::linkAt(QPointF point) const
         }
     }
     return {};
-}
-
-QPdfLinkModelPrivate::QPdfLinkModelPrivate() : QAbstractItemModelPrivate()
-{
 }
 
 void QPdfLinkModelPrivate::update()
