@@ -56,7 +56,6 @@ if(PkgConfig_FOUND)
     pkg_check_modules(VPX vpx>=1.10.0 IMPORTED_TARGET)
     pkg_check_modules(LIBPCI libpci)
     pkg_check_modules(LIBOPENJP2 libopenjp2)
-    pkg_check_modules(DRI dri)
 endif()
 
 if(Python3_EXECUTABLE)
@@ -537,12 +536,7 @@ add_check_for_support(
 add_check_for_support(
    MODULES QtWebEngine QtPdf
    CONDITION NOT LINUX OR PkgConfig_FOUND
-   MESSAGE "pkg-config support is required."
-)
-add_check_for_support(
-   MODULES QtWebEngine QtPdf
-   CONDITION NOT LINUX OR DRI_FOUND
-   MESSAGE "pkg-config(dri) is required."
+   MESSAGE "A pkg-config support is required."
 )
 add_check_for_support(
    MODULES QtWebEngine QtPdf
