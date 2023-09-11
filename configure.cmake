@@ -574,11 +574,6 @@ ${xcbErrorMessage}"
 )
 add_check_for_support(
    MODULES QtWebEngine QtPdf
-   CONDITION NOT WIN32 OR TEST_winversion
-   MESSAGE "Build requires Visual Studio 2019 or higher."
-)
-add_check_for_support(
-   MODULES QtWebEngine QtPdf
    CONDITION
        (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL GNU) OR
        (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL Clang) OR
@@ -590,7 +585,6 @@ add_check_for_support(
        (ANDROID AND CMAKE_CXX_COMPILER_ID STREQUAL Clang)
    MESSAGE "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
 )
-
 if(WIN32)
     if(CMAKE_CXX_COMPILER_ID STREQUAL MSVC)
         add_check_for_support(
@@ -609,6 +603,11 @@ if(WIN32)
         MESSAGE "Build requires Windows 10 SDK at least version 10.0.20348.0"
     )
 endif()
+add_check_for_support(
+   MODULES QtWebEngine QtPdf
+   CONDITION NOT MSVC OR TEST_winversion
+   MESSAGE "Build requires Visual Studio 2019 or higher."
+)
 
 #### Summary
 

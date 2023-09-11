@@ -77,6 +77,8 @@
 QT_BEGIN_NAMESPACE
 using namespace QtWebEngineCore;
 
+using LoadStatus = QWebEngineLoadingInfo::LoadStatus;
+using ErrorDomain = QWebEngineLoadingInfo::ErrorDomain;
 #if QT_DEPRECATED_SINCE(6, 2)
 QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
 Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::AcceptRequest)            == static_cast<int>(QWebEngineNavigationRequest::AcceptRequest));
@@ -92,9 +94,6 @@ Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::NewViewInWindow)          
 Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::NewViewInTab)             == static_cast<int>(QWebEngineNewWindowRequest::InNewTab));
 Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::NewViewInDialog)          == static_cast<int>(QWebEngineNewWindowRequest::InNewDialog));
 Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::NewViewInBackgroundTab)   == static_cast<int>(QWebEngineNewWindowRequest::InNewBackgroundTab));
-
-using LoadStatus = QWebEngineLoadingInfo::LoadStatus;
-using ErrorDomain = QWebEngineLoadingInfo::ErrorDomain;
 Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::NoErrorDomain)          == static_cast<int>(ErrorDomain::NoErrorDomain));
 Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::InternalErrorDomain)    == static_cast<int>(ErrorDomain::InternalErrorDomain));
 Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::ConnectionErrorDomain)  == static_cast<int>(ErrorDomain::ConnectionErrorDomain));

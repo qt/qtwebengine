@@ -196,19 +196,11 @@ void QPdfSearchModel::setDocument(QPdfDocument *document)
 
     disconnect(d->documentConnection);
     d->documentConnection = connect(document, &QPdfDocument::pageCountChanged, this,
-                                    &QPdfSearchModel::onDocumentPageCountChanged);
+                                    [this]() { d_func()->clearResults(); });
 
     d->document = document;
     d->clearResults();
     emit documentChanged();
-}
-
-void QPdfSearchModel::onDocumentPageCountChanged(int count)
-{
-    Q_UNUSED(count);
-
-    Q_D(QPdfSearchModel);
-    d->clearResults();
 }
 
 void QPdfSearchModel::timerEvent(QTimerEvent *event)
