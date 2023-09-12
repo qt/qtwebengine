@@ -48,7 +48,7 @@ foreach(arch ${archs})
         get_forward_declaration_macro(forwardDeclarationMacro)
         get_target_property(qtWebEngineProcessName WebEngineCore QTWEBENGINEPROCESS_NAME)
 
-        if(QT_FEATURE_debug_and_release AND ("${config}" STREQUAL "Debug"))
+        if("${config}" STREQUAL "Debug")
             set(qtWebEngineProcessName "${qtWebEngineProcessName}${CMAKE_DEBUG_POSTFIX}")
         endif()
 

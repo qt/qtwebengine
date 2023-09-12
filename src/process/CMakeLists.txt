@@ -59,13 +59,13 @@ foreach(config ${configs})
     set_target_properties(${qtWebEngineProcessName} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_${config_upper} "${outputPath}"
     )
-endforeach()
 
-if(QT_FEATURE_debug_and_release)
-    set_target_properties(${qtWebEngineProcessName} PROPERTIES
-        OUTPUT_NAME_DEBUG ${qtWebEngineProcessName}${CMAKE_DEBUG_POSTFIX}
-    )
-endif()
+    if("${config}" STREQUAL "Debug")
+        set_target_properties(${qtWebEngineProcessName} PROPERTIES
+            OUTPUT_NAME_DEBUG ${qtWebEngineProcessName}${CMAKE_DEBUG_POSTFIX}
+        )
+    endif()
+endforeach()
 
 if(isFramework)
     set_target_properties(${qtWebEngineProcessName} PROPERTIES
