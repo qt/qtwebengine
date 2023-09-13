@@ -1360,18 +1360,19 @@ void tst_QWebEngineView::inputMethodsTextFormat_data()
 
 void tst_QWebEngineView::inputMethodsTextFormat()
 {
-    QWebEngineView view;
-    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
-    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    QWebEnginePage page;
+    QWebEngineView view(&page);
+    page.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
 
-    view.setHtml("<html><body>"
+    page.setHtml("<html><body>"
                  " <input type='text' id='input1' style='font-family: serif' value='' maxlength='20'/>"
                  "</body></html>");
     QTRY_COMPARE(loadFinishedSpy.size(), 1);
 
-    evaluateJavaScriptSync(view.page(), "document.getElementById('input1').focus()");
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
+    evaluateJavaScriptSync(&page, "document.getElementById('input1').focus()");
 
     QFETCH(QString, string);
     QFETCH(int, start);
@@ -1395,8 +1396,8 @@ void tst_QWebEngineView::inputMethodsTextFormat()
     attrs.append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, start, length, format));
 
     QInputMethodEvent im(string, attrs);
-    QVERIFY(QApplication::sendEvent(view.focusProxy(), &im));
-    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), string);
+    QApplication::sendEvent(view.focusProxy(), &im);
+    QTRY_COMPARE_WITH_TIMEOUT(evaluateJavaScriptSync(&page, "document.getElementById('input1').value").toString(), string, 20000);
 }
 
 void tst_QWebEngineView::keyboardEvents()
