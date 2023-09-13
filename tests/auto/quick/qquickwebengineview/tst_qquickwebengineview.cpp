@@ -5,6 +5,7 @@
 
 #include "testwindow.h"
 #include "quickutil.h"
+#include "util.h"
 
 #include <QScopedPointer>
 #include <QtCore/qelapsedtimer.h>
@@ -1297,7 +1298,10 @@ void tst_QQuickWebEngineView::savePage()
     const QString filePath = tempDir.path() + "/saved_page.html";
 
     QQuickWebEngineView *view = webEngineView();
-    connect(view->profile(), &QQuickWebEngineProfile::downloadRequested,
+    int acceptedCount = 0;
+    int finishedCount = 0;
+    ScopedConnection sc1 = connect(
+            view->profile(), &QQuickWebEngineProfile::downloadRequested,
             [&](QQuickWebEngineDownloadRequest *downloadRequest) {
                 QCOMPARE(downloadRequest->state(),
                          QQuickWebEngineDownloadRequest::DownloadInProgress);
@@ -1322,8 +1326,9 @@ void tst_QQuickWebEngineView::savePage()
                                              .filePath(downloadRequest->downloadFileName()),
                                      filePath);
                             QCOMPARE(downloadRequest->url(), view->url());
-                            QTestEventLoop::instance().exitLoop();
+                            finishedCount++;
                         });
+                acceptedCount++;
             });
 
     const QString originalData = QStringLiteral("Basic page");
@@ -1335,7 +1340,8 @@ void tst_QQuickWebEngineView::savePage()
 
     // Save the loaded page as HTML.
     view->save(filePath, savePageFormat);
-    QTestEventLoop::instance().enterLoop(10);
+    QTRY_COMPARE(acceptedCount, 1);
+    QTRY_COMPARE(finishedCount, 1);
     QFile file(filePath);
     QVERIFY(file.exists());
 
