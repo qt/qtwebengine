@@ -1692,11 +1692,11 @@ void tst_Origins::fetchApiCustomUrl()
     }
 
     page.load(url);
-    QVERIFY(loadSpy.wait());
+    QTRY_VERIFY(loadSpy.count() > 0);
     QTRY_COMPARE(handler.fetchWasAllowed, expectedFetchWasAllowed);
 
     if (fetchApiScheme == "fetchapi-not-allowed") {
-        QVERIFY(jsSpy.wait());
+        QTRY_VERIFY(jsSpy.count() > 0);
     }
 }
 
@@ -1722,8 +1722,8 @@ void tst_Origins::fetchApiHttpUrl()
             + httpServer.url("/somepage.html").toEncoded();
     page.load(QUrl(fullUrl));
 
-    QVERIFY(loadSpy.wait());
-    QVERIFY(jsSpy.wait());
+    QTRY_VERIFY(loadSpy.count() > 0);
+    QTRY_VERIFY(jsSpy.count() > 0);
     QVERIFY(httpServer.stop());
 }
 

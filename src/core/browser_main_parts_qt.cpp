@@ -50,6 +50,7 @@
 #include "web_engine_context.h"
 #include "web_usb_detector_qt.h"
 
+#include <QDeadlineTimer>
 #include <QtGui/qtgui-config.h>
 #include <QStandardPaths>
 
@@ -121,7 +122,7 @@ public:
     {
         // NOTE: This method may called from any thread at any time.
         ensureDelegate();
-        m_scheduler.scheduleWork();
+        m_scheduler.scheduleImmediateWork();
     }
 
     void ScheduleDelayedWork(const Delegate::NextWorkInfo &next_work_info) override
@@ -194,13 +195,16 @@ private:
     {
         ScopedGLContextChecker glContextChecker;
 
+        QDeadlineTimer timer(std::chrono::milliseconds(2));
         base::MessagePump::Delegate::NextWorkInfo more_work_info = m_delegate->DoWork();
+        while (more_work_info.is_immediate() && !timer.hasExpired())
+            more_work_info = m_delegate->DoWork();
 
         if (more_work_info.is_immediate())
-            return ScheduleWork();
+            return m_scheduler.scheduleImmediateWork();
 
         if (m_delegate->DoIdleWork())
-            return ScheduleWork();
+            return m_scheduler.scheduleIdleWork();
 
         ScheduleDelayedWork(more_work_info.delayed_run_time);
     }
