@@ -11,9 +11,14 @@ QWebEngineMessagePumpScheduler::QWebEngineMessagePumpScheduler(std::function<voi
     : m_callback(std::move(callback))
 {}
 
-void QWebEngineMessagePumpScheduler::scheduleWork()
+void QWebEngineMessagePumpScheduler::scheduleImmediateWork()
 {
-    QCoreApplication::postEvent(this, new QTimerEvent(0));
+    QCoreApplication::postEvent(this, new QTimerEvent(0), Qt::NormalEventPriority);
+}
+
+void QWebEngineMessagePumpScheduler::scheduleIdleWork()
+{
+    QCoreApplication::postEvent(this, new QTimerEvent(0), Qt::LowEventPriority);
 }
 
 void QWebEngineMessagePumpScheduler::scheduleDelayedWork(int delay)
