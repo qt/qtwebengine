@@ -511,7 +511,10 @@ QWebEngineProfile::HttpCacheType QWebEngineProfile::httpCacheType() const
 /*!
     Sets the HTTP cache type to \a httpCacheType.
 
-    \sa httpCacheType(), setCachePath()
+    \note Setting the \a httpCacheType to NoCache on the profile, which has already some cache
+    entries does not trigger the removal of those entries.
+
+    \sa httpCacheType(), setCachePath(), clearHttpCache()
 */
 void QWebEngineProfile::setHttpCacheType(QWebEngineProfile::HttpCacheType httpCacheType)
 {
