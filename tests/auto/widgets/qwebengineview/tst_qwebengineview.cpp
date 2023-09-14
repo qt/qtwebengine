@@ -2960,6 +2960,7 @@ void tst_QWebEngineView::imeCompositionQueryEvent()
     }
 
     QInputMethodQueryEvent srrndTextQuery(Qt::ImSurroundingText);
+    QInputMethodQueryEvent absolutePosQuery(Qt::ImAbsolutePosition);
     QInputMethodQueryEvent cursorPosQuery(Qt::ImCursorPosition);
     QInputMethodQueryEvent anchorPosQuery(Qt::ImAnchorPosition);
 
@@ -2974,11 +2975,13 @@ void tst_QWebEngineView::imeCompositionQueryEvent()
     QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 11);
 
     QApplication::sendEvent(input, &srrndTextQuery);
+    QApplication::sendEvent(input, &absolutePosQuery);
     QApplication::sendEvent(input, &cursorPosQuery);
     QApplication::sendEvent(input, &anchorPosQuery);
     qApp->processEvents();
 
     QTRY_COMPARE(srrndTextQuery.value(Qt::ImSurroundingText).toString(), QString(""));
+    QTRY_COMPARE(absolutePosQuery.value(Qt::ImAbsolutePosition).toInt(), 11);
     QTRY_COMPARE(cursorPosQuery.value(Qt::ImCursorPosition).toInt(), 11);
     QTRY_COMPARE(anchorPosQuery.value(Qt::ImAnchorPosition).toInt(), 11);
 
@@ -2994,11 +2997,13 @@ void tst_QWebEngineView::imeCompositionQueryEvent()
     QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("composition"));
 
     QApplication::sendEvent(input, &srrndTextQuery);
+    QApplication::sendEvent(input, &absolutePosQuery);
     QApplication::sendEvent(input, &cursorPosQuery);
     QApplication::sendEvent(input, &anchorPosQuery);
     qApp->processEvents();
 
     QTRY_COMPARE(srrndTextQuery.value(Qt::ImSurroundingText).toString(), QString("composition"));
+    QTRY_COMPARE(absolutePosQuery.value(Qt::ImAbsolutePosition).toInt(), 11);
     QTRY_COMPARE(cursorPosQuery.value(Qt::ImCursorPosition).toInt(), 11);
     QTRY_COMPARE(anchorPosQuery.value(Qt::ImAnchorPosition).toInt(), 11);
 }
