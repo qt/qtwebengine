@@ -344,6 +344,7 @@ QVariant RenderWidgetHostViewQtDelegateClient::inputMethodQuery(Qt::InputMethodQ
         }
         return QVariant();
     }
+    case Qt::ImAbsolutePosition:
     case Qt::ImCursorPosition:
         return m_cursorPosition;
     case Qt::ImAnchorPosition:
