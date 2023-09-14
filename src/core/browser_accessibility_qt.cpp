@@ -25,10 +25,7 @@ public:
     BrowserAccessibilityQt(content::BrowserAccessibilityManager *manager, ui::AXNode *node);
     ~BrowserAccessibilityQt();
 
-    QtWebEngineCore::BrowserAccessibilityInterface *interface() const { return m_interface; }
-
-private:
-    QtWebEngineCore::BrowserAccessibilityInterface *m_interface = nullptr;
+    QtWebEngineCore::BrowserAccessibilityInterface *interface = nullptr;
 };
 
 class BrowserAccessibilityInterface
@@ -41,6 +38,7 @@ class BrowserAccessibilityInterface
 {
 public:
     BrowserAccessibilityInterface(BrowserAccessibilityQt *chromiumInterface);
+    ~BrowserAccessibilityInterface() override;
 
     void destroy();
 
@@ -133,15 +131,17 @@ private:
     BrowserAccessibilityQt *q;
 };
 
-BrowserAccessibilityQt::BrowserAccessibilityQt(content::BrowserAccessibilityManager *manager, ui::AXNode *node)
-    : content::BrowserAccessibility(manager, node),
-      m_interface(new BrowserAccessibilityInterface(this))
+BrowserAccessibilityQt::BrowserAccessibilityQt(content::BrowserAccessibilityManager *manager,
+                                               ui::AXNode *node)
+    : content::BrowserAccessibility(manager, node)
+    , interface(new BrowserAccessibilityInterface(this))
 {
 }
 
 BrowserAccessibilityQt::~BrowserAccessibilityQt()
 {
-    m_interface->destroy();
+    if (interface)
+        interface->destroy();
 }
 
 BrowserAccessibilityInterface::BrowserAccessibilityInterface(BrowserAccessibilityQt *chromiumInterface)
@@ -155,6 +155,11 @@ BrowserAccessibilityInterface::BrowserAccessibilityInterface(BrowserAccessibilit
     }
 
     m_id = QAccessible::registerAccessibleInterface(this);
+}
+
+BrowserAccessibilityInterface::~BrowserAccessibilityInterface()
+{
+    q->interface = nullptr;
 }
 
 void BrowserAccessibilityInterface::destroy()
@@ -1140,12 +1145,12 @@ std::unique_ptr<BrowserAccessibility> BrowserAccessibility::Create(BrowserAccess
 
 QAccessibleInterface *toQAccessibleInterface(BrowserAccessibility *obj)
 {
-    return static_cast<QtWebEngineCore::BrowserAccessibilityQt *>(obj)->interface();
+    return static_cast<QtWebEngineCore::BrowserAccessibilityQt *>(obj)->interface;
 }
 
 const QAccessibleInterface *toQAccessibleInterface(const BrowserAccessibility *obj)
 {
-    return static_cast<const QtWebEngineCore::BrowserAccessibilityQt *>(obj)->interface();
+    return static_cast<const QtWebEngineCore::BrowserAccessibilityQt *>(obj)->interface;
 }
 
 } // namespace content
