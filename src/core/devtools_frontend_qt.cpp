@@ -61,7 +61,7 @@ DevToolsFrontendQt *DevToolsFrontendQt::Show(QSharedPointer<WebContentsAdapter> 
             new DevToolsFrontendQt(frontendAdapter, inspectedContents);
 
     if (contents->GetURL() == GURL(GetFrontendURL())) {
-        contents->GetController().Reload(content::ReloadType::ORIGINAL_REQUEST_URL, false);
+        contents->GetController().LoadOriginalRequestURL();
     } else {
         content::NavigationController::LoadURLParams loadParams((GURL(GetFrontendURL())));
         loadParams.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_AUTO_TOPLEVEL
