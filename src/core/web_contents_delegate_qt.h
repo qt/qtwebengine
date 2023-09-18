@@ -139,8 +139,8 @@ public:
     void launchExternalURL(const QUrl &url, ui::PageTransition page_transition, bool is_main_frame, bool has_user_gesture);
     FindTextHelper *findTextHelper();
 
-    void setSavePageInfo(const SavePageInfo &spi) { m_savePageInfo = spi; }
-    const SavePageInfo &savePageInfo() { return m_savePageInfo; }
+    void setSavePageInfo(SavePageInfo *spi) { m_savePageInfo.reset(spi); }
+    SavePageInfo *savePageInfo() { return m_savePageInfo.get(); }
 
     WebEngineSettings *webEngineSettings() const;
     WebContentsAdapter *webContentsAdapter() const;
@@ -180,7 +180,7 @@ private:
 
     WebContentsAdapterClient *m_viewClient;
     QScopedPointer<FindTextHelper> m_findTextHelper;
-    SavePageInfo m_savePageInfo;
+    std::unique_ptr<SavePageInfo> m_savePageInfo;
     QSharedPointer<FilePickerController> m_filePickerController;
     LoadingState m_loadingState;
     FrameFocusedObserver m_frameFocusedObserver;

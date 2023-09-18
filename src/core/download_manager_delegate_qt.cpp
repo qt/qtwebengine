@@ -102,9 +102,21 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
         return true;
     }
 
+    bool isSavePageDownload = false;
+    WebContentsAdapterClient *adapterClient = nullptr;
+    if (content::WebContents *webContents = content::DownloadItemUtils::GetWebContents(item)) {
+        WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt *>(webContents->GetDelegate());
+        adapterClient = contentsDelegate->adapterClient();
+        if (contentsDelegate->savePageInfo()) {
+            // We end up here when saving non text-based files (MHTML, PDF or images)
+            isSavePageDownload = true;
+            // Clear the delegate's SavePageInfo. It's only valid for the page currently being saved.
+            contentsDelegate->setSavePageInfo(nullptr);
+        }
+    }
+
     QString suggestedFilename = toQt(item->GetSuggestedFilename());
     QString mimeTypeString = toQt(item->GetMimeType());
-
 
     if (suggestedFilename.isEmpty())
         suggestedFilename = toQt(net::HttpContentDisposition(item->GetContentDisposition(), net::kCharsetLatin1).filename());
@@ -132,11 +144,6 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
     item->AddObserver(this);
     QList<ProfileAdapterClient*> clients = m_profileAdapter->clients();
     if (!clients.isEmpty()) {
-        content::WebContents *webContents = content::DownloadItemUtils::GetWebContents(item);
-        WebContentsAdapterClient *adapterClient = nullptr;
-        if (webContents)
-            adapterClient = static_cast<WebContentsDelegateQt *>(webContents->GetDelegate())->adapterClient();
-
         Q_ASSERT(m_currentId == item->GetId());
         ProfileAdapterClient::DownloadItemInfo info = {
             item->GetId(),
@@ -150,7 +157,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
             false /* accepted */,
             false /* paused */,
             false /* done */,
-            false /* isSavePageDownload */,
+            isSavePageDownload,
             item->GetLastReason(),
             adapterClient,
             suggestedFilename,
@@ -220,12 +227,18 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
     if (clients.isEmpty())
         return;
 
+    bool acceptedByDefault = false;
+    QString suggestedFilePath;
+    ProfileAdapterClient::SavePageFormat suggestedSaveFormat = ProfileAdapterClient::UnknownSavePageFormat;
     WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt *>(
             web_contents->GetDelegate());
-    const SavePageInfo &spi = contentsDelegate->savePageInfo();
+    if (SavePageInfo *spi = contentsDelegate->savePageInfo()) {
+        suggestedFilePath = spi->requestedFilePath;
+        suggestedSaveFormat = static_cast<ProfileAdapterClient::SavePageFormat>(spi->requestedFormat);
+        // Clear the delegate's SavePageInfo. It's only valid for the page currently being saved.
+        contentsDelegate->setSavePageInfo(nullptr);
+    }
 
-    bool acceptedByDefault = false;
-    QString suggestedFilePath = spi.requestedFilePath;
     if (suggestedFilePath.isEmpty()) {
         suggestedFilePath = QFileInfo(toQt(suggested_path.AsUTF8Unsafe())).completeBaseName()
                 + QStringLiteral(".mhtml");
@@ -237,13 +250,8 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
         suggestedFilePath = downloadDir.absoluteFilePath(suggestedFilePath);
     }
 
-    ProfileAdapterClient::SavePageFormat suggestedSaveFormat
-            = static_cast<ProfileAdapterClient::SavePageFormat>(spi.requestedFormat);
     if (suggestedSaveFormat == ProfileAdapterClient::UnknownSavePageFormat)
         suggestedSaveFormat = ProfileAdapterClient::MimeHtmlSaveFormat;
-
-    // Clear the delegate's SavePageInfo. It's only valid for the page currently being saved.
-    contentsDelegate->setSavePageInfo(SavePageInfo());
 
     WebContentsAdapterClient *adapterClient = nullptr;
     if (web_contents)
