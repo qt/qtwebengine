@@ -34,10 +34,17 @@
 
 QT_BEGIN_NAMESPACE
 
+// To prevent the same type from being exported twice into qmltypes
+// (for value type and for the enums)
+struct QWebEngineLoadingInfoDerived : public QWebEngineLoadingInfo
+{
+    Q_GADGET
+};
+
 namespace ForeignWebEngineLoadingInfoNamespace
 {
     Q_NAMESPACE
-    QML_FOREIGN_NAMESPACE(QWebEngineLoadingInfo)
+    QML_FOREIGN_NAMESPACE(QWebEngineLoadingInfoDerived)
     QML_NAMED_ELEMENT(WebEngineLoadingInfo)
     QML_ADDED_IN_VERSION(1, 1)
     QML_EXTRA_VERSION(2, 0)
@@ -199,10 +206,17 @@ struct ForeginWebEngineFileSystemAccessRequest
     QML_UNCREATABLE("")
 };
 
+// To prevent the same type from being exported twice into qmltypes
+// (for value type and for the enums)
+struct QWebEngineFileSystemAccessRequestDerived : public QWebEngineFileSystemAccessRequest
+{
+    Q_GADGET
+};
+
 namespace ForeginWebEngineFileSystemAccessRequestNamespace
 {
     Q_NAMESPACE
-    QML_FOREIGN_NAMESPACE(QWebEngineFileSystemAccessRequest)
+    QML_FOREIGN_NAMESPACE(QWebEngineFileSystemAccessRequestDerived)
     QML_NAMED_ELEMENT(WebEngineFileSystemAccessRequest)
     QML_ADDED_IN_VERSION(6, 4)
 };

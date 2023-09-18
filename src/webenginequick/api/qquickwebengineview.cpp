@@ -594,7 +594,7 @@ bool QQuickWebEngineViewPrivate::isFullScreenMode() const
 void QQuickWebEngineViewPrivate::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
 {
     Q_Q(QQuickWebEngineView);
-    if (q->receivers(SIGNAL(javaScriptConsoleMessage(JavaScriptConsoleMessageLevel,QString,int,QString))) > 0) {
+    if (q->receivers(SIGNAL(javaScriptConsoleMessage(QQuickWebEngineView::JavaScriptConsoleMessageLevel,QString,int,QString))) > 0) {
         Q_EMIT q->javaScriptConsoleMessage(static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(level), message, lineNumber, sourceID);
         return;
     }
