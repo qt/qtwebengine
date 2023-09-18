@@ -483,7 +483,7 @@ public Q_SLOTS:
     void stop();
     Q_REVISION(1,1) void findText(const QString &subString, FindFlags options = { }, const QJSValue &callback = QJSValue());
     Q_REVISION(1,1) void fullScreenCancelled();
-    Q_REVISION(1,1) void grantFeaturePermission(const QUrl &securityOrigin, Feature, bool granted);
+    Q_REVISION(1,1) void grantFeaturePermission(const QUrl &securityOrigin, QQuickWebEngineView::Feature, bool granted);
     Q_REVISION(1,2) void setActiveFocusOnPress(bool arg);
     Q_REVISION(1,2) void triggerWebAction(WebAction action);
     Q_REVISION(1,3) void printToPdf(const QString &filePath, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
@@ -504,17 +504,22 @@ Q_SIGNALS:
     void loadProgressChanged();
     void linkHovered(const QUrl &hoveredUrl);
     void navigationRequested(QWebEngineNavigationRequest *request);
-    void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID);
+    void javaScriptConsoleMessage(QQuickWebEngineView::JavaScriptConsoleMessageLevel level,
+                                  const QString &message, int lineNumber, const QString &sourceID);
     Q_REVISION(1,1) void certificateError(const QWebEngineCertificateError &error);
     Q_REVISION(1,1) void fullScreenRequested(const QWebEngineFullScreenRequest &request);
     Q_REVISION(1,1) void isFullScreenChanged();
-    Q_REVISION(1,1) void featurePermissionRequested(const QUrl &securityOrigin, Feature feature);
+    Q_REVISION(1, 1)
+    void featurePermissionRequested(const QUrl &securityOrigin,
+                                    QQuickWebEngineView::Feature feature);
     Q_REVISION(1,1) void zoomFactorChanged(qreal arg);
     Q_REVISION(1,1) void profileChanged();
     Q_REVISION(1,1) void webChannelChanged();
     Q_REVISION(1,2) void activeFocusOnPressChanged(bool);
     Q_REVISION(1,2) void backgroundColorChanged();
-    Q_REVISION(1,2) void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode);
+    Q_REVISION(1, 2)
+    void renderProcessTerminated(QQuickWebEngineView::RenderProcessTerminationStatus terminationStatus,
+                            int exitCode);
     Q_REVISION(1,2) void windowCloseRequested();
     Q_REVISION(1,3) void contentsSizeChanged(const QSizeF& size);
     Q_REVISION(1,3) void scrollPositionChanged(const QPointF& position);
@@ -538,8 +543,8 @@ Q_SIGNALS:
     Q_REVISION(1,8) void printRequested();
     Q_REVISION(1,9) void selectClientCertificate(QQuickWebEngineClientCertificateSelection *clientCertSelection);
     Q_REVISION(1,10) void tooltipRequested(QQuickWebEngineTooltipRequest *request);
-    Q_REVISION(1,10) void lifecycleStateChanged(LifecycleState state);
-    Q_REVISION(1,10) void recommendedStateChanged(LifecycleState state);
+    Q_REVISION(1, 10) void lifecycleStateChanged(QQuickWebEngineView::LifecycleState state);
+    Q_REVISION(1, 10) void recommendedStateChanged(QQuickWebEngineView::LifecycleState state);
     Q_REVISION(1,10) void findTextFinished(const QWebEngineFindTextResult &result);
     Q_REVISION(1,11) void renderProcessPidChanged(qint64 pid);
     Q_REVISION(1,11) void canGoBackChanged();
