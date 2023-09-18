@@ -754,7 +754,7 @@ void WebContentsAdapter::save(const QString &filePath, int savePageFormat)
 {
     CHECK_INITIALIZED();
     base::RecordAction(base::UserMetricsAction("SavePage"));
-    m_webContentsDelegate->setSavePageInfo(SavePageInfo(filePath, savePageFormat));
+    m_webContentsDelegate->setSavePageInfo(new SavePageInfo(filePath, savePageFormat));
     m_webContents->OnSavePage();
 }
 

@@ -14,6 +14,7 @@ TestWebEngineView {
     property int receivedBytes: 0
     property string downloadDir: ""
     property string downloadFileName: ""
+    property bool isSavePageDownload: false
     property var downloadState: []
     property int savePageFormat: WebEngineDownloadRequest.MimeHtmlSaveFormat;
 
@@ -42,6 +43,7 @@ TestWebEngineView {
             savePageFormat = download.savePageFormat
             downloadDir = download.downloadDirectory;
             downloadFileName = download.downloadFileName
+            isSavePageDownload = download.isSavePageDownload
         }
         onDownloadFinished: function(download) {
             receivedBytes = download.receivedBytes
@@ -73,6 +75,7 @@ TestWebEngineView {
             receivedBytes = 0
             downloadDir = ""
             downloadFileName = ""
+            isSavePageDownload = false
             downloadState = []
             downloadUrl = ""
         }
@@ -104,6 +107,7 @@ TestWebEngineView {
             compare(savePageFormat, saveFormat)
             compare(downloadDir, fileDir)
             compare(downloadFileName, fileName)
+            compare(isSavePageDownload, true)
             compare(downloadState[0], WebEngineDownloadRequest.DownloadInProgress)
             downloadFinishedSpy.wait()
             compare(downloadFinishedSpy.count, 1)
@@ -118,6 +122,23 @@ TestWebEngineView {
             webEngineView.url = Qt.resolvedUrl(filePath)
             verify(webEngineView.waitForLoadSucceeded())
             verify(verifyData())
+        }
+
+        function test_saveImage() {
+            var fileDir = tempDir.path()
+            var fileName = "favicon.png"
+            var filePath = fileDir + "/"+ fileName
+
+            // Load an image
+            webEngineView.url = Qt.resolvedUrl("icons/favicon.png")
+            verify(webEngineView.waitForLoadSucceeded())
+
+            webEngineView.save(filePath)
+            downLoadRequestedSpy.wait()
+            compare(downLoadRequestedSpy.count, 1)
+            compare(downloadUrl, webEngineView.url)
+            compare(isSavePageDownload, true)
+            compare(downloadState[0], WebEngineDownloadRequest.DownloadRequested)
         }
     }
 }
