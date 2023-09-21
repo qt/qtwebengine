@@ -25,6 +25,8 @@ public:
     BrowserAccessibilityQt(content::BrowserAccessibilityManager *manager, ui::AXNode *node);
     ~BrowserAccessibilityQt();
 
+    bool isReady() const;
+
     QtWebEngineCore::BrowserAccessibilityInterface *interface = nullptr;
 };
 
@@ -144,6 +146,13 @@ BrowserAccessibilityQt::~BrowserAccessibilityQt()
         interface->destroy();
 }
 
+bool BrowserAccessibilityQt::isReady() const
+{
+    // FIXME: This is just a workaround, remove this when the commented out assert in
+    //        BrowserAccessibilityManager::GetFromID(int32_t id) gets fixed.
+    return manager()->GetFromID(node()->id()) != nullptr;
+}
+
 BrowserAccessibilityInterface::BrowserAccessibilityInterface(BrowserAccessibilityQt *chromiumInterface)
     : q(chromiumInterface)
 {
@@ -169,6 +178,9 @@ void BrowserAccessibilityInterface::destroy()
 
 bool BrowserAccessibilityInterface::isValid() const
 {
+    if (!q->isReady())
+        return false;
+
     auto managerQt = static_cast<content::BrowserAccessibilityManagerQt *>(q->manager());
     return managerQt && managerQt->isValid();
 }
@@ -276,6 +288,9 @@ int BrowserAccessibilityInterface::indexOfChild(const QAccessibleInterface *ifac
 
 QString BrowserAccessibilityInterface::text(QAccessible::Text t) const
 {
+    if (!q->isReady())
+        return QString();
+
     switch (t) {
     case QAccessible::Name:
         return toQt(q->GetStringAttribute(ax::mojom::StringAttribute::kName));
@@ -297,7 +312,7 @@ void BrowserAccessibilityInterface::setText(QAccessible::Text t, const QString &
 
 QRect BrowserAccessibilityInterface::rect() const
 {
-    if (!q->manager()) // needed implicitly by GetScreenBoundsRect()
+    if (!q->manager() || !q->isReady()) // needed implicitly by GetScreenBoundsRect()
         return QRect();
     gfx::Rect bounds = q->GetUnclippedScreenBoundsRect();
     bounds = gfx::ScaleToRoundedRect(bounds, 1.f / q->manager()->device_scale_factor()); // FIXME: check
@@ -699,6 +714,11 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
 QAccessible::State BrowserAccessibilityInterface::state() const
 {
     QAccessible::State state = QAccessible::State();
+    if (!q->isReady()) {
+        state.invalid = true;
+        return state;
+    }
+
     if (q->HasState(ax::mojom::State::kCollapsed))
         state.collapsed = true;
     if (q->HasState(ax::mojom::State::kDefault))
