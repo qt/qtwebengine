@@ -26,7 +26,7 @@ void AutofillPopupController::setCurrentIndex(const QModelIndex &index)
 
     if (m_currentIndex.isValid()) {
         const autofill::Suggestion &suggestion = d->suggestions[m_currentIndex.row()];
-        d->delegate->DidSelectSuggestion(suggestion.main_text.value, suggestion.frontend_id, autofill::Suggestion::BackendId());
+        d->delegate->DidSelectSuggestion(suggestion);
     }
 
     Q_EMIT currentIndexChanged(index);

@@ -193,7 +193,7 @@ std::unique_ptr<base::MessagePump> messagePumpFactory()
         return std::make_unique<MessagePumpForUIQt>();
     }
 #if BUILDFLAG(IS_MAC)
-    return base::MessagePumpMac::Create();
+    return base::message_pump_mac::Create();
 #else
     return std::make_unique<base::MessagePumpForUI>();
 #endif
@@ -222,7 +222,6 @@ void BrowserMainPartsQt::PostCreateMainMessageLoop()
 #if defined(Q_OS_LINUX)
     auto config = std::make_unique<os_crypt::Config>();
     config->product_name = "Qt WebEngine";
-    config->main_thread_runner = content::GetUIThreadTaskRunner({});
     config->should_use_preference = false;
     config->user_data_path = toFilePath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
     OSCrypt::SetConfig(std::move(config));
@@ -231,7 +230,7 @@ void BrowserMainPartsQt::PostCreateMainMessageLoop()
 
 int BrowserMainPartsQt::PreMainMessageLoopRun()
 {
-    ui::SelectFileDialog::SetFactory(new SelectFileDialogFactoryQt());
+    ui::SelectFileDialog::SetFactory(std::make_unique<SelectFileDialogFactoryQt>());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::ExtensionsClient::Set(new extensions::ExtensionsClientQt());

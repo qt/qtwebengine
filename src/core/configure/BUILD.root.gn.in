@@ -262,6 +262,7 @@ source_set("qtwebengine_sources") {
     "//build:branding_buildflags",
     "//build/config/chromebox_for_meetings:buildflags",
     "//chrome/browser:dev_ui_browser_resources_grit",
+    "//chrome/browser/resources/accessibility:resources",
     "//chrome/browser/resources/net_internals:resources",
     "//chrome/browser/signin:identity_manager_provider",
     "//chrome/common:buildflags",
@@ -416,6 +417,9 @@ source_set("qtwebengine_sources") {
       "//chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc",
       "//chrome/browser/ui/webui/sandbox/sandbox_internals_ui.h",
     ]
+    deps += [
+      "//chrome/browser/resources/sandbox_internals:resources",
+    ]
   }
   if (is_win) {
     sources += [
@@ -544,6 +548,7 @@ group("qtwebengine_resources") {
 repack("qtwebengine_repack_resources") {
   sources = [
     "$root_gen_dir/qtwebengine/qt_webengine_resources.pak",
+    "$root_gen_dir/chrome/accessibility_resources.pak",
     "$root_gen_dir/chrome/common_resources.pak",
     "$root_gen_dir/chrome/dev_ui_browser_resources.pak",
     "$root_gen_dir/chrome/net_internals_resources.pak",
@@ -553,10 +558,13 @@ repack("qtwebengine_repack_resources") {
     "$root_gen_dir/content/browser/resources/media/media_internals_resources.pak",
     "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
     "$root_gen_dir/content/content_resources.pak",
-    "$root_gen_dir/content/dev_ui_content_resources.pak",
-    "$root_gen_dir/content/indexed_db_resources.pak",
     "$root_gen_dir/content/gpu_resources.pak",
+    "$root_gen_dir/content/histograms_resources.pak",
+    "$root_gen_dir/content/indexed_db_resources.pak",
+    "$root_gen_dir/content/network_errors_resources.pak",
+    "$root_gen_dir/content/process_resources.pak",
     "$root_gen_dir/content/quota_internals_resources.pak",
+    "$root_gen_dir/content/service_worker_resources.pak",
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
@@ -566,18 +574,22 @@ repack("qtwebengine_repack_resources") {
   deps = [
      "//qtwebengine/browser:qt_webengine_resources",
      "//chrome/browser:dev_ui_browser_resources_grit",
+     "//chrome/browser/resources/accessibility:resources",
      "//chrome/browser/resources/net_internals:resources",
      "//chrome/common:resources_grit",
      "//components/resources:components_resources_grit",
      "//components/resources:dev_ui_components_resources_grit",
      "//content/browser/resources/attribution_reporting:resources",
      "//content/browser/resources/gpu:resources",
+     "//content/browser/resources/histograms:resources_grit",
+     "//content/browser/resources/indexed_db:resources",
      "//content/browser/resources/media:resources",
+     "//content/browser/resources/net:resources",
+     "//content/browser/resources/process:resources",
+     "//content/browser/resources/quota:resources",
+     "//content/browser/resources/service_worker:resources",
      "//content/browser/tracing:resources",
      "//content:content_resources",
-     "//content/browser/resources/indexed_db:resources",
-     "//content/browser/resources/quota:resources",
-     "//content:dev_ui_content_resources_grit",
      "//mojo/public/js:resources",
      "//net:net_resources_grit",
      "//third_party/blink/public:resources_grit",
@@ -617,6 +629,14 @@ repack("qtwebengine_repack_resources") {
     ]
     deps += [
       "//chrome/browser/resources/pdf:resources",
+    ]
+  }
+  if (is_linux || is_win) {
+    sources += [
+      "$root_gen_dir/chrome/sandbox_internals_resources.pak",
+    ]
+    deps += [
+      "//chrome/browser/resources/sandbox_internals:resources_grit",
     ]
   }
 }

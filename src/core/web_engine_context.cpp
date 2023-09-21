@@ -32,7 +32,6 @@
 #endif
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/download/public/common/download_task_runner.h"
-#include "components/power_scheduler/power_mode_arbiter.h"
 #include "components/viz/common/features.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/app/mojo_ipc_support.h"
@@ -57,7 +56,6 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
-#include "content/public/common/network_service_util.h"
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/utility/in_process_utility_thread.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -76,6 +74,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/events/event_switches.h"
 #include "ui/native_theme/native_theme_features.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/gl_switches.h"
 #if defined(Q_OS_WIN)
 #include "sandbox/win/src/sandbox_types.h"
@@ -777,8 +776,11 @@ WebEngineContext::WebEngineContext()
             // "Could not share GL contexts" warnings, because it's not possible to share between Core and
             // legacy profiles. See GLContextWGL::Initialize().
             if (sharedFormat.renderableType() == QSurfaceFormat::OpenGL
-                && sharedFormat.profile() != QSurfaceFormat::CoreProfile)
-                parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
+                && sharedFormat.profile() != QSurfaceFormat::CoreProfile) {
+                gl::GlWorkarounds workarounds = gl::GetGlWorkarounds();
+                workarounds.disable_es3gl_context = true;
+                gl::SetGlWorkarounds(workarounds);
+            }
 #endif
         }
 #endif //QT_CONFIG(opengl)
@@ -817,7 +819,6 @@ WebEngineContext::WebEngineContext()
     base::PowerMonitor::Initialize(std::make_unique<base::PowerMonitorDeviceSource>());
     content::ProcessVisibilityTracker::GetInstance();
     m_discardableSharedMemoryManager = std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
-    power_scheduler::PowerModeArbiter::GetInstance()->OnThreadPoolAvailable();
 
     m_mojoIpcSupport = std::make_unique<content::MojoIpcSupport>(content::BrowserTaskExecutor::CreateIOThread());
     download::SetIOTaskRunner(m_mojoIpcSupport->io_thread()->task_runner());

@@ -43,6 +43,7 @@ public:
     bool IsHttpsEnforcedForHost(const std::string &host, content::StoragePartition *web_contents) override;
     void RevokeUserAllowExceptions(const std::string &host) override;
     bool HasAllowException(const std::string &host, content::StoragePartition *web_contents) override;
+    bool HasAllowExceptionForAnyHost(content::StoragePartition *storage_partition) override;
 
 private:
     std::map<std::string, CertPolicy> m_certPolicyforHost;

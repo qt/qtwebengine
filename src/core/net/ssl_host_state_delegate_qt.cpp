@@ -111,6 +111,16 @@ bool SSLHostStateDelegateQt::HasAllowException(const std::string &host, content:
            policy_iterator->second.HasAllowException();
 }
 
+bool SSLHostStateDelegateQt::HasAllowExceptionForAnyHost(content::StoragePartition *storage_partition)
+{
+    for (auto const &it : m_certPolicyforHost) {
+        if (it.second.HasAllowException()) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void SSLHostStateDelegateQt::SetHttpsEnforcementForHost(const std::string &host, bool enforce,
                                                         content::StoragePartition *storage_partition)
 {

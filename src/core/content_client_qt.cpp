@@ -163,14 +163,17 @@ static const QDir widevineCdmDirHint(const QDir &widevineDir)
         return widevineDir;
     }
 
+    std::string error_message;
     JSONStringValueDeserializer deserializer(jsonString);
-    std::unique_ptr<base::Value> dict = deserializer.Deserialize(nullptr, nullptr);
+    std::unique_ptr<base::Value> dict = deserializer.Deserialize(nullptr, &error_message);
     if (!dict || !dict->is_dict()) {
+        DLOG(ERROR) << "Could not deserialize the CDM hint file. Error: "
+                    << error_message;
         // Could not deserialize the CDM hint file.
         return widevineDir;
     }
 
-    std::string *widevineCdmDirPath = dict->FindStringKey("Path");
+    std::string *widevineCdmDirPath = dict->GetDict().FindString("Path");
     if (!widevineCdmDirPath)
         return widevineDir;
 

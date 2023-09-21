@@ -25,7 +25,8 @@ public:
     void StopProvider() override;
     const device::mojom::GeopositionResult* GetPosition() override { return m_lastKnownPosition.get(); }
     void OnPermissionGranted() override;
-    void SetUpdateCallback(const LocationProviderUpdateCallback& callback) override;
+    void SetUpdateCallback(const LocationProviderUpdateCallback &callback) override;
+    void FillDiagnostics(device::mojom::GeolocationDiagnostics &) override {}
 
 private:
     friend class QtPositioningHelper;

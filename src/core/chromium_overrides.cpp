@@ -45,11 +45,12 @@ void *GetQtXDisplay()
 namespace content {
 class RenderViewHostDelegateView;
 
-std::unique_ptr<WebContentsView> CreateWebContentsView(WebContentsImpl *web_contents,
-    std::unique_ptr<WebContentsViewDelegate> delegate,
-    RenderViewHostDelegateView **render_view_host_delegate_view)
+std::unique_ptr<WebContentsView> CreateWebContentsView(
+        WebContentsImpl *web_contents,
+        std::unique_ptr<WebContentsViewDelegate> delegate,
+        raw_ptr<RenderViewHostDelegateView>* render_view_host_delegate_view)
 {
-    QtWebEngineCore::WebContentsViewQt* rv = new QtWebEngineCore::WebContentsViewQt(web_contents);
+    QtWebEngineCore::WebContentsViewQt *rv = new QtWebEngineCore::WebContentsViewQt(web_contents);
     *render_view_host_delegate_view = rv;
     return std::unique_ptr<WebContentsView>(rv);
 }

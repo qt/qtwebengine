@@ -115,11 +115,11 @@ public:
             GrFlushInfo flush_info = {};
                 flush_info.fNumSemaphores = m_endSemaphores.size();
                 flush_info.fSignalSemaphores = m_endSemaphores.data();
-            m_scopedSkiaWriteAccess->surface()->flush();
-            m_scopedSkiaWriteAccess->ApplyBackendSurfaceEndState();
-            m_scopedSkiaWriteAccess->surface()->flush(flush_info, nullptr);
             auto *direct_context = m_scopedSkiaWriteAccess->surface()->recordingContext()->asDirectContext();
             DCHECK(direct_context);
+            direct_context->flush(m_scopedSkiaWriteAccess->surface(), {});
+            m_scopedSkiaWriteAccess->ApplyBackendSurfaceEndState();
+            direct_context->flush(m_scopedSkiaWriteAccess->surface(), flush_info, nullptr);
             direct_context->submit();
         }
         m_scopedSkiaWriteAccess.reset();
@@ -227,7 +227,8 @@ NativeSkiaOutputDevice::NativeSkiaOutputDevice(
         gpu::SharedImageFactory *shared_image_factory,
         gpu::SharedImageRepresentationFactory *shared_image_representation_factory,
         DidSwapBufferCompleteCallback didSwapBufferCompleteCallback)
-    : SkiaOutputDevice(contextState->gr_context(), memoryTracker, didSwapBufferCompleteCallback)
+    : SkiaOutputDevice(contextState->gr_context(), contextState->graphite_context(),
+                       memoryTracker, didSwapBufferCompleteCallback)
     , Compositor(Compositor::Type::NativeBuffer)
     , m_requiresAlpha(requiresAlpha)
     , m_factory(shared_image_factory)

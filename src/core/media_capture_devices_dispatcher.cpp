@@ -543,13 +543,11 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
 
     content::DesktopMediaID mediaId;
     if (main_frame) {
-        // The extension name that the stream is registered with.
-        std::string originalExtensionName;
         // Resolve DesktopMediaID for the specified device id.
         mediaId = content::DesktopStreamsRegistry::GetInstance()->RequestMediaForStreamId(
                 request.requested_video_device_id, main_frame->GetProcess()->GetID(),
                 main_frame->GetRoutingID(), url::Origin::Create(request.security_origin),
-                &originalExtensionName, content::kRegistryStreamTypeDesktop);
+                content::kRegistryStreamTypeDesktop);
     }
 
     // Received invalid device id.

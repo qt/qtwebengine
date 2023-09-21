@@ -478,6 +478,10 @@ foreach(arch ${archs})
                 CONDITION QT_FEATURE_webengine_system_pulseaudio
             )
             extend_gn_list(gnArgArg
+                ARGS use_system_minigbm
+                CONDITION QT_FEATURE_webengine_system_gbm
+            )
+            extend_gn_list(gnArgArg
                 ARGS use_vaapi
                 CONDITION QT_FEATURE_webengine_vaapi
             )

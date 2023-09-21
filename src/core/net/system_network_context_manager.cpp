@@ -34,8 +34,8 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_win.h"
-#include "components/os_crypt/os_crypt.h"
-#include "content/public/common/network_service_util.h"
+#include "components/os_crypt/sync/os_crypt.h"
+#include "content/public/browser/network_service_util.h"
 #endif
 
 namespace {

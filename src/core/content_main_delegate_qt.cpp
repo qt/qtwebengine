@@ -39,8 +39,8 @@
 #endif
 
 #if BUILDFLAG(IS_WIN)
-#include "media/gpu/windows/dxva_video_decode_accelerator_win.h"
-#include "media/gpu/windows/media_foundation_video_encode_accelerator_win.h"
+#include "media/base/win/mf_initializer.h"
+#include "sandbox/policy/win/sandbox_warmup.h"
 #endif
 
 #if BUILDFLAG(IS_MAC)
@@ -169,8 +169,7 @@ void ContentMainDelegateQt::PreSandboxStartup()
     if (isBrowserProcess) {
         // from gpu_main.cc:
 #if BUILDFLAG(IS_WIN)
-        media::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
-        media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
+        media::PreSandboxMediaFoundationInitialization();
 #endif
 
 #if BUILDFLAG(IS_MAC)

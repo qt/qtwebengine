@@ -187,7 +187,9 @@ public:
                                 const std::string &scheme) override;
     std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
     WillCreateURLLoaderRequestInterceptors(content::NavigationUIData *navigation_ui_data,
-                                           int frame_tree_node_id) override;
+                                           int frame_tree_node_id,
+                                           int64_t navigation_id,
+                                           scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner) override;
     bool WillCreateURLLoaderFactory(content::BrowserContext *browser_context,
                                     content::RenderFrameHost *frame,
                                     int render_process_id,
@@ -199,7 +201,8 @@ public:
                                     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient> *header_client,
                                     bool *bypass_redirect_checks,
                                     bool *disable_secure_dns,
-                                    network::mojom::URLLoaderFactoryOverridePtr *factory_override) override;
+                                    network::mojom::URLLoaderFactoryOverridePtr *factory_override,
+                                    scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner) override;
     scoped_refptr<network::SharedURLLoaderFactory> GetSystemSharedURLLoaderFactory() override;
     network::mojom::NetworkContext *GetSystemNetworkContext() override;
     void OnNetworkServiceCreated(network::mojom::NetworkService *network_service) override;
@@ -221,7 +224,6 @@ public:
     void RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(content::BrowserContext* browser_context,
                                                                  NonNetworkURLLoaderFactoryMap* factories) override;
     void SiteInstanceGotProcess(content::SiteInstance *site_instance) override;
-    void SiteInstanceDeleting(content::SiteInstance *site_instance) override;
     base::flat_set<std::string> GetPluginMimeTypesWithExternalHandlers(content::BrowserContext *browser_context) override;
 
     std::unique_ptr<content::WebContentsViewDelegate> GetWebContentsViewDelegate(content::WebContents *web_contents) override;

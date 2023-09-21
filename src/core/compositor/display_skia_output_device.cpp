@@ -7,7 +7,9 @@
 #include "type_conversion.h"
 
 #include "gpu/command_buffer/service/skia_utils.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
+#include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
 
 #if QT_CONFIG(webengine_vulkan)
 #if defined(USE_OZONE)
@@ -69,7 +71,7 @@ public:
         m_parent->memory_type_tracker_->TrackMemAlloc(m_estimatedSize);
 
         SkSurfaceProps surfaceProps = SkSurfaceProps{0, kUnknown_SkPixelGeometry};
-        m_surface = SkSurface::MakeFromBackendTexture(
+        m_surface = SkSurfaces::WrapBackendTexture(
                 m_parent->m_contextState->gr_context(), m_texture,
                 m_parent->capabilities_.output_surface_origin == gfx::SurfaceOrigin::kTopLeft
                 ? kTopLeft_GrSurfaceOrigin
@@ -267,7 +269,8 @@ DisplaySkiaOutputDevice::DisplaySkiaOutputDevice(
         bool requiresAlpha,
         gpu::MemoryTracker *memoryTracker,
         DidSwapBufferCompleteCallback didSwapBufferCompleteCallback)
-    : SkiaOutputDevice(contextState->gr_context(), memoryTracker, didSwapBufferCompleteCallback)
+    : SkiaOutputDevice(contextState->gr_context(), contextState->graphite_context(),
+                       memoryTracker, didSwapBufferCompleteCallback)
     , Compositor(contextState->GrContextIsVulkan() ? Compositor::Type::Vulkan
                                                    : Compositor::Type::OpenGL)
     , m_contextState(contextState)

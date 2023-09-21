@@ -1192,7 +1192,8 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
         mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient> *header_client,
         bool *bypass_redirect_checks,
         bool *disable_secure_dns,
-        network::mojom::URLLoaderFactoryOverridePtr *factory_override)
+        network::mojom::URLLoaderFactoryOverridePtr *factory_override,
+        scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner)
 {
     Q_UNUSED(render_process_id);
     Q_UNUSED(type);
@@ -1208,6 +1209,7 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
     mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_url_loader_factory;
     *factory_receiver = pending_url_loader_factory.InitWithNewPipeAndPassReceiver();
     // Will manage its own lifetime
+    // FIXME: use navigation_response_task_runner?
     new ProxyingURLLoaderFactoryQt(adapter,
                                    frame ? frame->GetFrameTreeNodeId() : content::RenderFrameHost::kNoFrameTreeNodeId,
                                    std::move(proxied_receiver), std::move(pending_url_loader_factory));
@@ -1216,7 +1218,8 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
 
 std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
 ContentBrowserClientQt::WillCreateURLLoaderRequestInterceptors(content::NavigationUIData* navigation_ui_data,
-                                       int frame_tree_node_id)
+                                       int frame_tree_node_id, int64_t navigation_id,
+                                       scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner)
 {
     std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>> interceptors;
 #if BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1305,30 +1308,19 @@ void ContentBrowserClientQt::SiteInstanceGotProcess(content::SiteInstance *site_
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     content::BrowserContext *context = site_instance->GetBrowserContext();
     extensions::ExtensionRegistry *registry = extensions::ExtensionRegistry::Get(context);
-    const extensions::Extension *extension = registry->enabled_extensions().GetExtensionOrAppByURL(site_instance->GetSiteURL());
+    if (!registry)
+        return;
+    if (site_instance->IsGuest())
+        return;
+    auto site_url = site_instance->GetSiteURL();
+    if (!site_url.SchemeIs(extensions::kExtensionScheme))
+        return;
+    const extensions::Extension *extension = registry->enabled_extensions().GetByID(site_url.host());
     if (!extension)
         return;
 
     extensions::ProcessMap *processMap = extensions::ProcessMap::Get(context);
-    processMap->Insert(extension->id(), site_instance->GetProcess()->GetID(), site_instance->GetId());
-#endif
-}
-
-void ContentBrowserClientQt::SiteInstanceDeleting(content::SiteInstance *site_instance)
-{
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    // Don't do anything if we're shutting down.
-    if (content::BrowserMainRunner::ExitedMainMessageLoop() || !site_instance->HasProcess())
-       return;
-
-    content::BrowserContext *context = site_instance->GetBrowserContext();
-    extensions::ExtensionRegistry *registry = extensions::ExtensionRegistry::Get(context);
-    const extensions::Extension *extension = registry->enabled_extensions().GetExtensionOrAppByURL(site_instance->GetSiteURL());
-    if (!extension)
-        return;
-
-    extensions::ProcessMap *processMap = extensions::ProcessMap::Get(context);
-    processMap->Remove(extension->id(), site_instance->GetProcess()->GetID(), site_instance->GetId());
+    processMap->Insert(extension->id(), site_instance->GetProcess()->GetID());
 #endif
 }
 

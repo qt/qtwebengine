@@ -71,7 +71,7 @@ public:
     const base::OneShotEvent &ready() const override { return ready_; }
     bool is_ready() const override;
 
-    void PerformActionBasedOnOmahaAttributes(const std::string &, const base::Value &) override { /* fixme? */}
+    void PerformActionBasedOnOmahaAttributes(const std::string &, const base::Value::Dict &) override { /* fixme? */}
 
 private:
     void NotifyExtensionLoaded(const Extension *extension);

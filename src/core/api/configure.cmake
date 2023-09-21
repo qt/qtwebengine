@@ -77,6 +77,12 @@ qt_feature("webengine-system-pulseaudio" PRIVATE
     AUTODETECT UNIX
     CONDITION PULSEAUDIO_FOUND
 )
+qt_feature("webengine-system-gbm" PRIVATE
+    SECTION "WebEngine"
+    LABEL "Use system GBM"
+    AUTODETECT UNIX
+    CONDITION GBM_FOUND
+)
 qt_feature("webengine-printing-and-pdf" PRIVATE
     LABEL "Printing and PDF"
     PURPOSE "Provides printing and output to PDF."

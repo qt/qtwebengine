@@ -9,7 +9,7 @@
 #include "plugin_response_interceptor_url_loader_throttle.h"
 
 #include "base/functional/bind.h"
-#include "base/guid.h"
+#include "base/uuid.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -120,7 +120,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
 
     MimeTypesHandler::ReportUsedHandler(extension_id);
 
-    std::string view_id = base::GenerateGUID();
+    std::string view_id = base::Uuid::GenerateRandomV4().AsLowercaseString();
     // The string passed down to the original client with the response body.
     std::string payload = view_id;
 
@@ -173,7 +173,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
     auto transferrable_loader = blink::mojom::TransferrableURLLoader::New();
     transferrable_loader->url = GURL(
         extensions::Extension::GetBaseURLFromExtensionId(extension_id).spec() +
-        base::GenerateGUID());
+        base::Uuid::GenerateRandomV4().AsLowercaseString());
     transferrable_loader->url_loader = std::move(original_loader);
     transferrable_loader->url_loader_client = std::move(original_client);
     transferrable_loader->head = std::move(deep_copied_response);

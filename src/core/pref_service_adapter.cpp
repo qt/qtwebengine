@@ -43,7 +43,7 @@
 #endif
 
 #if defined(Q_OS_WIN)
-#include "components/os_crypt/os_crypt.h"
+#include "components/os_crypt/sync/os_crypt.h"
 #endif
 
 namespace {
