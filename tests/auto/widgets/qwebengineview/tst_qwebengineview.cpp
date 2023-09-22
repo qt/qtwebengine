@@ -2310,22 +2310,19 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
 
     // Select text by ctrl+a
     QTest::keyClick(view.windowHandle(), Qt::Key_A, Qt::ControlModifier);
-    QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.size(), 1);
+    QTRY_COMPARE(selectionChangedSpy.size(), 1);
     QVERIFY(view.hasSelection());
     QCOMPARE(view.page()->selectedText(), QString("This is a text"));
 
     // Deselect text by mouse click
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, view.geometry().center());
-    QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.size(), 2);
+    QTRY_COMPARE(selectionChangedSpy.size(), 2);
     QVERIFY(!view.hasSelection());
     QVERIFY(view.page()->selectedText().isEmpty());
 
     // Select text by ctrl+a
     QTest::keyClick(view.windowHandle(), Qt::Key_A, Qt::ControlModifier);
-    QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.size(), 3);
+    QTRY_COMPARE(selectionChangedSpy.size(), 3);
     QVERIFY(view.hasSelection());
     QCOMPARE(view.page()->selectedText(), QString("This is a text"));
 
@@ -2333,8 +2330,7 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
     view.hide();
     view.page()->setLifecycleState(QWebEnginePage::LifecycleState::Discarded);
     view.show();
-    QVERIFY(loadFinishedSpy.wait());
-    QCOMPARE(selectionChangedSpy.size(), 4);
+    QTRY_COMPARE(selectionChangedSpy.size(), 4);
     QVERIFY(!view.hasSelection());
     QVERIFY(view.page()->selectedText().isEmpty());
 
@@ -2357,31 +2353,27 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
 
     // Select the whole page by ctrl+a
     QTest::keyClick(view.windowHandle(), Qt::Key_A, Qt::ControlModifier);
-    QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.size(), 1);
+    QTRY_COMPARE(selectionChangedSpy.size(), 1);
     QVERIFY(view.hasSelection());
     QVERIFY(view.page()->selectedText().startsWith(QString("This is a text")));
 
     // Remove selection by clicking into an input field
     QPoint textInputCenter = elementCenter(view.page(), "input1");
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, textInputCenter);
-    QVERIFY(selectionChangedSpy.wait());
+    QTRY_COMPARE(selectionChangedSpy.size(), 2);
     QCOMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
-    QCOMPARE(selectionChangedSpy.size(), 2);
     QVERIFY(!view.hasSelection());
     QVERIFY(view.page()->selectedText().isEmpty());
 
     // Select the content of the input field by ctrl+a
     QTest::keyClick(view.windowHandle(), Qt::Key_A, Qt::ControlModifier);
-    QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.size(), 3);
+    QTRY_COMPARE(selectionChangedSpy.size(), 3);
     QVERIFY(view.hasSelection());
     QCOMPARE(view.page()->selectedText(), QString("QtWebEngine"));
 
     // Deselect input field's text by mouse click
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, view.geometry().center());
-    QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.size(), 4);
+    QTRY_COMPARE(selectionChangedSpy.size(), 4);
     QVERIFY(!view.hasSelection());
     QVERIFY(view.page()->selectedText().isEmpty());
 }
