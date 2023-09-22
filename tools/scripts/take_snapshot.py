@@ -77,6 +77,7 @@ def isInChromiumBlacklist(file_path):
           and not (file_path.startswith('chrome/common/')
             and not file_path.startswith('chrome/common/extensions/docs'))
           and not file_path.startswith('chrome/renderer/')
+          and not file_path.startswith('chrome/test/chromedriver/')
           and not file_path.startswith('chrome/tools/convert_dict/')
           and not file_path.endswith('.grd')
           and not file_path.endswith('.grdp')
@@ -277,6 +278,7 @@ def isInChromiumBlacklist(file_path):
            or ('/test/' in file_path
              and not '/webrtc/' in file_path
              and not file_path.startswith('net/test/')
+             and not file_path.startswith('chrome/test/chromedriver/')
              and not file_path.endswith('test_hook.h')
              and not file_path.endswith('perftimer.h')
              and not file_path.endswith('test-torque.tq')
