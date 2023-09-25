@@ -147,7 +147,7 @@
 
     \section2 \macos Specific Deployment Steps
 
-    To deploy a \QWE application on \maocs, you will need to ensure that the \QWE process is signed
+    To deploy a \QWE application on \macos, you will need to ensure that the \QWE process is signed
     with an entitlements file that at least contains the entitlements listed in
     QtWebEngineCore.framework/Helpers/QtWebEngineProcess.app/Contents/Resources/QtWebEngineProcess.entitlements.
 

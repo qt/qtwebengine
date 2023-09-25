@@ -87,9 +87,9 @@ void QPdfPageSelector::setCurrentPage(int index)
 }
 
 /*!
-    \property QPdfPageSelector::currentPageIndex
+    \property QPdfPageSelector::currentPageLabel
 
-    This property holds the page label corresponding to the current page index
+    This property holds the page label corresponding to the current page
     in the document.
 
     This is the text presented to the user.

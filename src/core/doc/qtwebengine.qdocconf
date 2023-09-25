@@ -91,3 +91,6 @@ navigation.qmltypespage = "Qt WebEngine QML Types"
 
 # \QWE macro expands to 'Qt WebEngine' without auto-linking anywhere.
 macro.QWE    = "Qt \\WebEngine"
+
+# Enforce zero documentation warnings
+warninglimit = 0
