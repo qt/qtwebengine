@@ -275,7 +275,6 @@ void QWebEngineUrlRequestInfo::resetChanged()
 
 /*!
     Redirects this request to \a url.
-    It is only possible to redirect requests that do not have payload data, such as GET requests.
 */
 
 void QWebEngineUrlRequestInfo::redirect(const QUrl &url)
