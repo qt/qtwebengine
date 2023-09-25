@@ -763,6 +763,15 @@ static void LaunchURL(const GURL& url,
         protocolHandlerRegistry->IsHandledProtocol(url.scheme()))
         return;
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    if (guest_view::GuestViewBase::IsGuest(webContents)) {
+        // Use parent / top level contents delegate for launching URLs from guest views.
+        webContents = guest_view::GuestViewBase::GetTopLevelWebContents(webContents);
+        if (!webContents)
+            return;
+    }
+#endif //BUILDFLAG(ENABLE_EXTENSIONS)
+
     WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
     contentsDelegate->launchExternalURL(toQt(url), page_transition, is_main_frame, has_user_gesture);
 }
