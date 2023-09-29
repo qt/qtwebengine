@@ -102,21 +102,32 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
         return true;
     }
 
+    QString suggestedFilePath;
+    QString suggestedFilename;
     bool isSavePageDownload = false;
     WebContentsAdapterClient *adapterClient = nullptr;
     if (content::WebContents *webContents = content::DownloadItemUtils::GetWebContents(item)) {
         WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt *>(webContents->GetDelegate());
         adapterClient = contentsDelegate->adapterClient();
-        if (contentsDelegate->savePageInfo()) {
+        if (SavePageInfo *spi = contentsDelegate->savePageInfo()) {
             // We end up here when saving non text-based files (MHTML, PDF or images)
+            suggestedFilePath = spi->requestedFilePath;
+            const QFileInfo fileInfo(suggestedFilePath);
+            if (fileInfo.isRelative()) {
+                const QDir downloadDir(m_profileAdapter->downloadPath());
+                suggestedFilePath = downloadDir.absoluteFilePath(suggestedFilePath);
+            }
+            suggestedFilename = fileInfo.fileName();
             isSavePageDownload = true;
             // Clear the delegate's SavePageInfo. It's only valid for the page currently being saved.
             contentsDelegate->setSavePageInfo(nullptr);
         }
     }
 
-    QString suggestedFilename = toQt(item->GetSuggestedFilename());
     QString mimeTypeString = toQt(item->GetMimeType());
+
+    if (suggestedFilename.isEmpty())
+        suggestedFilename = toQt(item->GetSuggestedFilename());
 
     if (suggestedFilename.isEmpty())
         suggestedFilename = toQt(net::HttpContentDisposition(item->GetContentDisposition(), net::kCharsetLatin1).filename());
@@ -139,7 +150,8 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
 
     QDir defaultDownloadDirectory(m_profileAdapter->downloadPath());
 
-    QString suggestedFilePath = m_profileAdapter->determineDownloadPath(defaultDownloadDirectory.absolutePath(), suggestedFilename, item->GetStartTime().ToTimeT());
+    if (suggestedFilePath.isEmpty())
+        suggestedFilePath = m_profileAdapter->determineDownloadPath(defaultDownloadDirectory.absolutePath(), suggestedFilename, item->GetStartTime().ToTimeT());
 
     item->AddObserver(this);
     QList<ProfileAdapterClient*> clients = m_profileAdapter->clients();
