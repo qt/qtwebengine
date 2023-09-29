@@ -31,7 +31,8 @@ qhp.QtWebEngine.subprojects.examples.selectors = doc:example
 qhp.QtWebEngine.subprojects.examples.sortPages = true
 
 manifestmeta.highlighted.names += "QtWebEngine/WebEngine Widgets Simple Browser Example" \
-                "QtWebEngine/WebEngine Quick Nano Browser"
+                "QtWebEngine/WebEngine Quick Nano Browser" \
+                "QtWebEngine/Recipe Browser"
 
 tagfile                 = ../../../doc/qtwebengine/qtwebengine.tags
 
