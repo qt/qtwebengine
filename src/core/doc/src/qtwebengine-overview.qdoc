@@ -4,6 +4,7 @@
 /*!
     \page qtwebengine-overview.html
     \title Qt WebEngine Overview
+    \ingroup explanations-webtechnologies
 
     The \QWE module provides a web browser engine that makes it easy to embed content from
     the World Wide Web into your Qt application on platforms that do not have a native web engine.
