@@ -340,16 +340,16 @@ QQuickWebEngineScriptCollection *QQuickWebEngineProfilePrivate::getUserScripts()
 */
 
 /*!
-    \qmlsignal WebEngineProfile::downloadRequested(WebEngineDownloadItem download)
+    \qmlsignal WebEngineProfile::downloadRequested(WebEngineDownloadRequest download)
 
     This signal is emitted whenever a download has been triggered.
     The \a download argument holds the state of the download.
-    The download has to be explicitly accepted with WebEngineDownloadItem::accept() or the
+    The download has to be explicitly accepted with WebEngineDownloadRequest::accept() or the
     download will be cancelled by default.
 */
 
 /*!
-    \qmlsignal WebEngineProfile::downloadFinished(WebEngineDownloadItem download)
+    \qmlsignal WebEngineProfile::downloadFinished(WebEngineDownloadRequest download)
 
     This signal is emitted whenever downloading stops, because it finished successfully, was
     cancelled, or was interrupted (for example, because connectivity was lost).
