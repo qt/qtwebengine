@@ -140,6 +140,26 @@ TestWebEngineView {
             compare(downloadDir, fileDir)
             compare(downloadFileName, fileName)
             compare(isSavePageDownload, true)
+            compare(downloadState[0], WebEngineDownloadRequest.DownloadInProgress)
+            downloadFinishedSpy.wait()
+            compare(downloadFinishedSpy.count, 1)
+            compare(totalBytes, receivedBytes)
+            compare(downloadState[1], WebEngineDownloadRequest.DownloadCompleted)
+        }
+
+        function test_saveWebAction() {
+            // Load an image
+            webEngineView.url = Qt.resolvedUrl("icons/favicon.png")
+            verify(webEngineView.waitForLoadSucceeded())
+
+            // Saving without specifying path shouldn't be auto accepted
+            webEngineView.triggerWebAction(WebEngineView.SavePage)
+            downLoadRequestedSpy.wait()
+            compare(downLoadRequestedSpy.count, 1)
+            compare(downloadUrl, webEngineView.url)
+            compare(isSavePageDownload, true)
+            // The initial download request starts from DownloadRequested state,
+            // which means it wasn't automatically accepted.
             compare(downloadState[0], WebEngineDownloadRequest.DownloadRequested)
         }
     }
