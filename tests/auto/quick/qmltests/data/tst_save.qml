@@ -137,6 +137,8 @@ TestWebEngineView {
             downLoadRequestedSpy.wait()
             compare(downLoadRequestedSpy.count, 1)
             compare(downloadUrl, webEngineView.url)
+            compare(downloadDir, fileDir)
+            compare(downloadFileName, fileName)
             compare(isSavePageDownload, true)
             compare(downloadState[0], WebEngineDownloadRequest.DownloadRequested)
         }
