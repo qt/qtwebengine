@@ -102,6 +102,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
         return true;
     }
 
+    bool acceptedByDefault = false;
     QString suggestedFilePath;
     QString suggestedFilename;
     bool isSavePageDownload = false;
@@ -118,7 +119,11 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
                 suggestedFilePath = downloadDir.absoluteFilePath(suggestedFilePath);
             }
             suggestedFilename = fileInfo.fileName();
+
+            if (!suggestedFilePath.isEmpty() && !suggestedFilename.isEmpty())
+                acceptedByDefault = true;
             isSavePageDownload = true;
+
             // Clear the delegate's SavePageInfo. It's only valid for the page currently being saved.
             contentsDelegate->setSavePageInfo(nullptr);
         }
@@ -166,7 +171,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
             mimeTypeString,
             suggestedFilePath,
             ProfileAdapterClient::UnknownSavePageFormat,
-            false /* accepted */,
+            acceptedByDefault,
             false /* paused */,
             false /* done */,
             isSavePageDownload,
