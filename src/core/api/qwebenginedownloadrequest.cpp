@@ -219,16 +219,22 @@ void QWebEngineDownloadRequest::cancel()
 
     QWebEngineDownloadRequest::DownloadState state = d->downloadState;
 
-    if (state == QWebEngineDownloadRequest::DownloadCompleted
-            || state == QWebEngineDownloadRequest::DownloadCancelled)
+    if (state == QWebEngineDownloadRequest::DownloadCompleted)
         return;
 
-    // We directly cancel the download request if the user cancels
-    // before it even started, so no need to notify the profile here.
+    bool cancelled = state == QWebEngineDownloadRequest::DownloadCancelled;
+    if (cancelled)
+        return;
+
+    // Check if the download manager has a DownloadItem for this ID
+    // (network downloads or in progress page/resource saves)
     if (state == QWebEngineDownloadRequest::DownloadInProgress) {
         if (d->profileAdapter)
-            d->profileAdapter->cancelDownload(d->downloadId);
-    } else {
+            cancelled = d->profileAdapter->cancelDownload(d->downloadId);
+    }
+
+    // Not cancelled downloads are not even started yet at this point
+    if (!cancelled) {
         d->downloadState = QWebEngineDownloadRequest::DownloadCancelled;
         Q_EMIT stateChanged(d->downloadState);
         d->setFinished();

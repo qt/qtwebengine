@@ -201,9 +201,9 @@ void ProfileAdapter::removeClient(ProfileAdapterClient *adapterClient)
     m_clients.removeOne(adapterClient);
 }
 
-void ProfileAdapter::cancelDownload(quint32 downloadId)
+bool ProfileAdapter::cancelDownload(quint32 downloadId)
 {
-    downloadManagerDelegate()->cancelDownload(downloadId);
+    return downloadManagerDelegate()->cancelDownload(downloadId);
 }
 
 void ProfileAdapter::pauseDownload(quint32 downloadId)
