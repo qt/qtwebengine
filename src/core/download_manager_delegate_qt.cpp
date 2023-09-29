@@ -59,10 +59,13 @@ void DownloadManagerDelegateQt::cancelDownload(content::DownloadTargetCallback c
                             download::DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
 }
 
-void DownloadManagerDelegateQt::cancelDownload(quint32 downloadId)
+bool DownloadManagerDelegateQt::cancelDownload(quint32 downloadId)
 {
-    if (download::DownloadItem *download = findDownloadById(downloadId))
+    if (download::DownloadItem *download = findDownloadById(downloadId)) {
         download->Cancel(/* user_cancel */ true);
+        return true;
+    }
+    return false;
 }
 
 void DownloadManagerDelegateQt::pauseDownload(quint32 downloadId)

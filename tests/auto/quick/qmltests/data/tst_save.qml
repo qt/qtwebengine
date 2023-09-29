@@ -17,6 +17,7 @@ TestWebEngineView {
     property bool isSavePageDownload: false
     property var downloadState: []
     property int savePageFormat: WebEngineDownloadRequest.MimeHtmlSaveFormat;
+    property bool autoCancel: false
 
     TempDir {
         id: tempDir
@@ -44,6 +45,9 @@ TestWebEngineView {
             downloadDir = download.downloadDirectory;
             downloadFileName = download.downloadFileName
             isSavePageDownload = download.isSavePageDownload
+
+            if (autoCancel)
+                download.cancel()
         }
         onDownloadFinished: function(download) {
             receivedBytes = download.receivedBytes
@@ -78,6 +82,7 @@ TestWebEngineView {
             isSavePageDownload = false
             downloadState = []
             downloadUrl = ""
+            autoCancel = false
         }
 
         function test_savePage_data() {
@@ -124,7 +129,16 @@ TestWebEngineView {
             verify(verifyData())
         }
 
-        function test_saveImage() {
+        function test_saveImage_data() {
+            return [
+                   { tag: "Auto accept", autoCancel: false },
+                   { tag: "Cancel", autoCancel: true },
+            ];
+        }
+
+        function test_saveImage(row) {
+            autoCancel = row.autoCancel
+
             var fileDir = tempDir.path()
             var fileName = "favicon.png"
             var filePath = fileDir + "/"+ fileName
@@ -143,8 +157,13 @@ TestWebEngineView {
             compare(downloadState[0], WebEngineDownloadRequest.DownloadInProgress)
             downloadFinishedSpy.wait()
             compare(downloadFinishedSpy.count, 1)
-            compare(totalBytes, receivedBytes)
-            compare(downloadState[1], WebEngineDownloadRequest.DownloadCompleted)
+            if (autoCancel) {
+                compare(receivedBytes, 0)
+                compare(downloadState[1], WebEngineDownloadRequest.DownloadCancelled)
+            } else {
+                compare(totalBytes, receivedBytes)
+                compare(downloadState[1], WebEngineDownloadRequest.DownloadCompleted)
+            }
         }
 
         function test_saveWebAction() {
