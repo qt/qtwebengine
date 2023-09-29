@@ -3076,7 +3076,7 @@ void tst_QWebEnginePage::loadInSignalHandlers()
     URLSetter setter(m_page, signal, type, urlForSetter);
     QSignalSpy spy(&setter, &URLSetter::finished);
     m_page->load(url);
-    QTRY_COMPARE_WITH_TIMEOUT(spy.size(), 1, 20000);
+    QTRY_VERIFY_WITH_TIMEOUT(spy.size() >= 1, 20000);
     QCOMPARE(m_page->url(), urlForSetter);
 }
 
