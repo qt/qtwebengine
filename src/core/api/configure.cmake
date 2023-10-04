@@ -163,7 +163,8 @@ qt_feature("webengine-vaapi" PRIVATE
     LABEL "VA-API support"
     PURPOSE "Enables support for VA-API hardware acceleration"
     AUTODETECT GBM_FOUND AND LIBVA_FOUND AND QT_FEATURE_vulkan
-    CONDITION LINUX
+    # hardware accelerated encoding requires bundled libvpx
+    CONDITION LINUX AND NOT QT_FEATURE_webengine_system_libvpx
 )
 # internal testing feature
 qt_feature("webengine-system-poppler" PRIVATE
@@ -225,4 +226,9 @@ qt_configure_add_report_entry(
     TYPE WARNING
     MESSAGE "WebRTC requires XDamage with qpa_xcb."
     CONDITION QT_FEATURE_webengine_ozone_x11 AND NOT XDAMAGE_FOUND
+)
+qt_configure_add_report_entry(
+    TYPE WARNING
+    MESSAGE "VA-API is incompatible with system libvpx."
+    CONDITION QT_FEATURE_webengine_system_libvpx AND QT_FEATURE_webengine_vaapi
 )
