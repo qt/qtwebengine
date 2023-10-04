@@ -17,6 +17,7 @@
 #include "ui/gl/gl_fence.h"
 
 #if defined(Q_OS_WIN)
+#include <QtCore/private/qsystemerror_p.h>
 #include <QtQuick/qsgtexture.h>
 #include <d3d11_1.h>
 #endif
@@ -413,7 +414,14 @@ QSGTexture *NativeSkiaOutputDevice::texture(QQuickWindow *win, uint32_t textureO
 
         ID3D11Texture2D *qtTexture;
         status = device->OpenSharedResource1(sharedHandle, __uuidof(ID3D11Texture2D), (void**)&qtTexture);
-        Q_ASSERT(status == S_OK);
+        if (status != S_OK) {
+            qWarning("Failed to share D3D11 texture (%s). This will result in failed rendering. Report the bug, and try restarting with QTWEBENGINE_CHROMIUM_FLAGS=--disble-gpu",
+                     qPrintable(QSystemError::windowsComString(status)));
+            ::CloseHandle(sharedHandle);
+            return nullptr;
+        }
+
+        Q_ASSERT(qtTexture);
 
         QQuickWindow::CreateTextureOptions texOpts(textureOptions);
         texture = QNativeInterface::QSGD3D11Texture::fromNative(qtTexture, win, size(), texOpts);
