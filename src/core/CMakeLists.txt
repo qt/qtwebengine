@@ -427,7 +427,7 @@ foreach(arch ${archs})
                 ozone_extra_path="${CMAKE_CURRENT_LIST_DIR}/ozone/ozone_extra.gni"
             )
             set(systemLibs libjpeg libpng freetype harfbuzz libevent libwebp libxml
-                opus snappy icu ffmpeg re2 lcms2 libopenjpeg2
+                opus snappy icu ffmpeg re2 lcms2 libopenjpeg2 libvpx
             )
             foreach(slib ${systemLibs})
                 extend_gn_list(gnArgArg
@@ -481,13 +481,6 @@ foreach(arch ${archs})
                 ARGS use_vaapi
                 CONDITION QT_FEATURE_webengine_vaapi
             )
-            if(NOT QT_FEATURE_webengine_vaapi)
-                # hardware accelerated encoding requires bundled libvpx
-                extend_gn_list(gnArgArg
-                    ARGS use_system_libvpx
-                    CONDITION QT_FEATURE_webengine_system_libvpx
-                )
-            endif()
             extend_gn_list(gnArgArg
                 ARGS ozone_platform_x11 use_xkbcommon
                 CONDITION QT_FEATURE_webengine_ozone_x11

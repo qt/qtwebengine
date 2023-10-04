@@ -347,6 +347,7 @@ qt_feature("webengine-system-ffmpeg" PRIVATE
 )
 qt_feature("webengine-system-libvpx" PRIVATE
     LABEL "libvpx"
+    AUTODETECT FALSE
     CONDITION UNIX AND TEST_vpx
 )
 qt_feature("webengine-system-snappy" PRIVATE
