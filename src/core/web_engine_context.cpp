@@ -720,6 +720,9 @@ WebEngineContext::WebEngineContext()
     enableFeatures.push_back(features::kNetworkServiceInProcess.name);
     enableFeatures.push_back(features::kTracingServiceInProcess.name);
 
+#if QT_CONFIG(webengine_webrtc_pipewire)
+    enableFeatures.push_back(features::kWebRtcPipeWireCapturer.name);
+#endif
     // When enabled, event.movement is calculated in blink instead of in browser.
     disableFeatures.push_back(features::kConsolidatedMovementXY.name);
 
