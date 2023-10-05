@@ -13,10 +13,6 @@
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 
-#if QT_CONFIG(webengine_vulkan)
-#include <vulkan/vulkan.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 class QQuickWindow;
 QT_END_NAMESPACE
@@ -56,12 +52,6 @@ public:
     bool requiresAlphaChannel() override;
     float devicePixelRatio() override;
 
-#if QT_CONFIG(webengine_vulkan)
-    VkImage vkImage(QQuickWindow *win);
-    VkImageLayout vkImageLayout();
-    void releaseResources(QQuickWindow *win) override;
-#endif
-
 private:
     struct Shape
     {
@@ -92,11 +82,6 @@ private:
     bool m_readyToUpdate = false;
     bool m_requiresAlpha;
     scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
-
-#if QT_CONFIG(webengine_vulkan)
-    VkImage m_importedImage = VK_NULL_HANDLE;
-    VkDeviceMemory m_importedImageMemory = VK_NULL_HANDLE;
-#endif // QT_CONFIG(webengine_vulkan)
 };
 
 } // namespace QtWebEngineCore

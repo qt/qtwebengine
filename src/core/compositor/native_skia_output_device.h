@@ -58,7 +58,7 @@ public:
     void swapFrame() override;
     void waitForTexture() override;
     void releaseTexture() override;
-    void releaseResources(QQuickWindow *win) override;
+    void releaseResources() override;
     QSGTexture *texture(QQuickWindow *win, uint32_t textureOptions) override;
     bool textureIsFlipped() override;
     QSize size() override;

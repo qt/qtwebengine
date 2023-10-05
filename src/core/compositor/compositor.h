@@ -134,7 +134,7 @@ public:
     virtual bool textureIsFlipped();
 
     // Release resources created in texture()
-    virtual void releaseResources(QQuickWindow *win);
+    virtual void releaseResources();
 
 protected:
     Compositor(Type type) : m_type(type) { }

@@ -20,7 +20,11 @@ viz::OutputSurfaceProviderImpl::CreateSoftwareOutputSurface(const RendererSettin
 std::unique_ptr<viz::SkiaOutputDevice>
 viz::SkiaOutputSurfaceImplOnGpu::CreateOutputDevice()
 {
-    if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE) {
+    if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE
+#if defined(USE_OZONE)
+        || context_state_->GrContextIsVulkan()
+#endif
+    ) {
         return std::make_unique<QtWebEngineCore::NativeSkiaOutputDevice>(
                 context_state_,
                 renderer_settings_.requires_alpha_channel,
