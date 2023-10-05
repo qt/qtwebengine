@@ -203,8 +203,10 @@ static const char *getGLType(bool enableGLSoftwareRendering, bool disableGpu)
     return gl::kGLImplementationANGLEName;
 #else
 #if defined(Q_OS_WIN)
-    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11)
+    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11
+        || QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan) {
         return gl::kGLImplementationANGLEName;
+    }
 #endif
 
     if (!qt_gl_global_share_context() || !qt_gl_global_share_context()->isValid()) {
@@ -247,8 +249,10 @@ static const char *getGLType(bool /*enableGLSoftwareRendering*/, bool disableGpu
 #if defined(Q_OS_MACOS)
     return gl::kGLImplementationANGLEName;
 #elif defined(Q_OS_WIN)
-    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11)
+    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11
+        || QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan) {
         return gl::kGLImplementationANGLEName;
+    }
 #endif
     return gl::kGLImplementationDisabledName;
 }
@@ -728,16 +732,37 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
     }
 
-#if QT_CONFIG(webengine_vulkan)
+#if QT_CONFIG(webengine_vulkan) && defined(USE_OZONE)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan) {
         enableFeatures.push_back(features::kVulkan.name);
         parsedCommandLine->AppendSwitchASCII(switches::kUseVulkan,
                                              switches::kVulkanImplementationNameNative);
+        const char deviceExtensionsVar[] = "QT_VULKAN_DEVICE_EXTENSIONS";
+        QByteArrayList requiredDeviceExtensions = { "VK_EXT_external_memory_dma_buf",
+                                                    "VK_EXT_image_drm_format_modifier" };
+        if (qEnvironmentVariableIsSet(deviceExtensionsVar)) {
+            QByteArrayList envExtList = qgetenv(deviceExtensionsVar).split(';');
+            int found = 0;
+            for (const QByteArray &ext : requiredDeviceExtensions) {
+                if (envExtList.contains(ext))
+                    found++;
+            }
+            if (found != requiredDeviceExtensions.size()) {
+                qWarning().nospace()
+                        << "Vulkan rendering may fail because " << deviceExtensionsVar
+                        << " environment variable is already set but it doesn't contain"
+                        << " some of the required Vulkan device extensions:\n"
+                        << qPrintable(requiredDeviceExtensions.join('\n'));
+            }
+        } else {
+            qputenv(deviceExtensionsVar, requiredDeviceExtensions.join(';'));
+        }
     }
-#endif
+#endif // QT_CONFIG(webengine_vulkan) && defined(USE_OZONE)
 
 #if defined(Q_OS_WIN)
-    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11) {
+    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11
+        || QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan) {
         const QString luid = getAdapterLuid();
         if (!luid.isEmpty())
             parsedCommandLine->AppendSwitchASCII(switches::kUseAdapterLuid, luid.toStdString());

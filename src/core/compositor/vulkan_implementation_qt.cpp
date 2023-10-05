@@ -115,7 +115,7 @@ VkExternalSemaphoreHandleTypeFlagBits VulkanImplementationQt::GetExternalSemapho
 #if BUILDFLAG(IS_WIN)
     return VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT;
 #else
-    return VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT;
+    return VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT;
 #endif
 }
 
