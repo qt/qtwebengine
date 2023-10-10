@@ -1,52 +1,21 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "renderer/content_renderer_client_qt.h"
 
 #include "extensions/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "renderer/content_settings_observer_qt.h"
+#include "base/i18n/rtl.h"
 #include "base/strings/string_split.h"
 #if QT_CONFIG(webengine_spellchecker)
 #include "components/spellcheck/renderer/spellcheck.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
 #endif
+#include "components/autofill/content/renderer/autofill_agent.h"
+#include "components/autofill/content/renderer/autofill_assistant_agent.h"
+#include "components/autofill/content/renderer/password_autofill_agent.h"
+#include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/cdm/renderer/external_clear_key_key_system_properties.h"
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "components/error_page/common/error.h"
@@ -66,6 +35,7 @@
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "net/base/net_errors.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/web_url_error.h"
@@ -75,6 +45,8 @@
 #include "ui/base/webui/jstemplate_builder.h"
 
 #if QT_CONFIG(webengine_printing_and_pdf)
+#include "components/pdf/renderer/internal_plugin_renderer_helpers.h"
+#include "components/pdf/renderer/pdf_internal_plugin_delegate.h"
 #include "renderer/print_web_view_helper_delegate_qt.h"
 #endif
 
@@ -88,6 +60,7 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "common/extensions/extensions_client_qt.h"
+#include "extensions/common/constants.h"
 #include "extensions/extensions_renderer_client_qt.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_manager.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -210,8 +183,10 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_fr
 #if QT_CONFIG(webengine_printing_and_pdf)
     new printing::PrintRenderFrameHelper(render_frame, base::WrapUnique(new PrintWebViewHelperDelegateQt()));
 #endif // QT_CONFIG(webengine_printing_and_pdf)
-#if BUILDFLAG(ENABLE_EXTENSIONS)
+
     blink::AssociatedInterfaceRegistry *associated_interfaces = render_frame_observer->associatedInterfaces();
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     associated_interfaces->AddInterface(base::BindRepeating(
         &extensions::MimeHandlerViewContainerManager::BindReceiver,
         render_frame->GetRoutingID()));
@@ -219,6 +194,17 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_fr
     auto registry = std::make_unique<service_manager::BinderRegistry>();
     ExtensionsRendererClientQt::GetInstance()->RenderFrameCreated(render_frame, render_frame_observer->registry());
 #endif
+
+    autofill::AutofillAssistantAgent *autofill_assistant_agent =
+            new autofill::AutofillAssistantAgent(render_frame);
+    autofill::PasswordAutofillAgent *password_autofill_agent =
+            new autofill::PasswordAutofillAgent(render_frame, associated_interfaces);
+    autofill::PasswordGenerationAgent *password_generation_agent =
+            new autofill::PasswordGenerationAgent(render_frame, password_autofill_agent,
+                                                  associated_interfaces);
+
+    new autofill::AutofillAgent(render_frame, password_autofill_agent, password_generation_agent,
+                                autofill_assistant_agent, associated_interfaces);
 }
 
 void ContentRendererClientQt::RunScriptsAtDocumentStart(content::RenderFrame *render_frame)
@@ -256,6 +242,7 @@ void ContentRendererClientQt::RunScriptsAtDocumentIdle(content::RenderFrame *ren
 void ContentRendererClientQt::PrepareErrorPage(content::RenderFrame *renderFrame,
                                                const blink::WebURLError &web_error,
                                                const std::string &httpMethod,
+                                               content::mojom::AlternativeErrorPageOverrideInfoPtr alternative_error_page_info,
                                                std::string *errorHtml)
 {
     GetNavigationErrorStringsInternal(
@@ -269,6 +256,7 @@ void ContentRendererClientQt::PrepareErrorPageForHttpStatusError(content::Render
                                                                  const blink::WebURLError &error,
                                                                  const std::string &httpMethod,
                                                                  int http_status,
+                                                                 content::mojom::AlternativeErrorPageOverrideInfoPtr alternative_error_page_info,
                                                                  std::string *errorHtml)
 {
     GetNavigationErrorStringsInternal(renderFrame, httpMethod,
@@ -324,6 +312,66 @@ std::unique_ptr<blink::WebPrescientNetworking> ContentRendererClientQt::CreatePr
     return std::make_unique<network_hints::WebPrescientNetworkingImpl>(render_frame);
 }
 
+namespace {
+bool IsPdfExtensionOrigin(const url::Origin &origin)
+{
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    return origin.scheme() == extensions::kExtensionScheme &&
+           origin.host() == extension_misc::kPdfExtensionId;
+#else
+    return false;
+#endif
+}
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+void AppendParams(const std::vector<content::WebPluginMimeType::Param> &additional_params,
+                  blink::WebVector<blink::WebString> *existing_names,
+                  blink::WebVector<blink::WebString> *existing_values)
+{
+    DCHECK(existing_names->size() == existing_values->size());
+    size_t existing_size = existing_names->size();
+    size_t total_size = existing_size + additional_params.size();
+
+    blink::WebVector<blink::WebString> names(total_size);
+    blink::WebVector<blink::WebString> values(total_size);
+
+    for (size_t i = 0; i < existing_size; ++i) {
+        names[i] = (*existing_names)[i];
+        values[i] = (*existing_values)[i];
+    }
+
+    for (size_t i = 0; i < additional_params.size(); ++i) {
+        names[existing_size + i] = blink::WebString::FromUTF16(additional_params[i].name);
+        values[existing_size + i] = blink::WebString::FromUTF16(additional_params[i].value);
+    }
+
+    existing_names->Swap(names);
+    existing_values->Swap(values);
+}
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
+
+#if QT_CONFIG(webengine_printing_and_pdf)
+// based on chrome/renderer/pdf/chrome_pdf_internal_plugin_delegate.cc:
+class PdfInternalPluginDelegateQt final
+    : public pdf::PdfInternalPluginDelegate
+{
+public:
+    PdfInternalPluginDelegateQt() = default;
+    PdfInternalPluginDelegateQt(const PdfInternalPluginDelegateQt &) = delete;
+    PdfInternalPluginDelegateQt& operator=(const PdfInternalPluginDelegateQt &) = delete;
+    ~PdfInternalPluginDelegateQt() override = default;
+
+    // `pdf::PdfInternalPluginDelegate`:
+    bool IsAllowedOrigin(const url::Origin &origin) const override;
+};
+
+bool PdfInternalPluginDelegateQt::IsAllowedOrigin(const url::Origin &origin) const
+{
+    return IsPdfExtensionOrigin(origin);
+}
+#endif
+} // namespace
+
 bool ContentRendererClientQt::IsPluginHandledExternally(content::RenderFrame *render_frame,
                                    const blink::WebElement &plugin_element,
                                    const GURL &original_url,
@@ -335,10 +383,11 @@ bool ContentRendererClientQt::IsPluginHandledExternally(content::RenderFrame *re
     std::string mime_type;
 
     static_cast<content::RenderFrameImpl *>(render_frame)->GetPepperHost()->GetPluginInfo(
-                original_url, render_frame->GetWebFrame()->Top()->GetSecurityOrigin(),
-                original_mime_type, &found, &plugin_info, &mime_type);
+                original_url, original_mime_type, &found, &plugin_info, &mime_type);
     if (!found)
         return false;
+    if (IsPdfExtensionOrigin(render_frame->GetWebFrame()->GetSecurityOrigin()))
+        return true;
     return extensions::MimeHandlerViewContainerManager::Get(
                 content::RenderFrame::FromWebFrame(
                     plugin_element.GetDocument().GetFrame()),
@@ -364,12 +413,25 @@ bool ContentRendererClientQt::OverrideCreatePlugin(content::RenderFrame *render_
     bool found = false;
 
     static_cast<content::RenderFrameImpl *>(render_frame)->GetPepperHost()->GetPluginInfo(
-                params.url, render_frame->GetWebFrame()->Top()->GetSecurityOrigin(),
-                params.mime_type.Utf8(), &found, &info, &mime_type);
-    if (!found)
+                params.url, params.mime_type.Utf8(), &found, &info, &mime_type);
+    if (!found) {
         *plugin = LoadablePluginPlaceholderQt::CreateLoadableMissingPlugin(render_frame, params)->plugin();
-    else
-        *plugin = render_frame->CreatePlugin(info, params);
+        return true;
+    }
+    if (info.name == u"Chromium PDF Viewer") {
+        blink::WebPluginParams new_params(params);
+        for (const auto& mime_type : info.mime_types) {
+          if (mime_type.mime_type == params.mime_type.Utf8()) {
+            AppendParams(mime_type.additional_params, &new_params.attribute_names,
+                         &new_params.attribute_values);
+            break;
+          }
+        }
+
+        *plugin = pdf::CreateInternalPlugin(std::move(new_params), render_frame, std::make_unique<PdfInternalPluginDelegateQt>());
+        return true;
+    }
+    *plugin = render_frame->CreatePlugin(info, params);
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
     return true;
 }
@@ -401,90 +463,20 @@ void ContentRendererClientQt::GetInterface(const std::string &interface_name, mo
 // found in the LICENSE.Chromium file.
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-// External Clear Key (used for testing).
-static void AddExternalClearKey(std::vector<std::unique_ptr<media::KeySystemProperties>> *concrete_key_systems)
-{
-    // TODO(xhwang): Move these into an array so we can use a for loop to add
-    // supported key systems below.
-    static const char kExternalClearKeyKeySystem[] =
-            "org.chromium.externalclearkey";
-    static const char kExternalClearKeyDecryptOnlyKeySystem[] =
-            "org.chromium.externalclearkey.decryptonly";
-    static const char kExternalClearKeyMessageTypeTestKeySystem[] =
-            "org.chromium.externalclearkey.messagetypetest";
-    static const char kExternalClearKeyFileIOTestKeySystem[] =
-            "org.chromium.externalclearkey.fileiotest";
-    static const char kExternalClearKeyOutputProtectionTestKeySystem[] =
-            "org.chromium.externalclearkey.outputprotectiontest";
-    static const char kExternalClearKeyPlatformVerificationTestKeySystem[] =
-            "org.chromium.externalclearkey.platformverificationtest";
-    static const char kExternalClearKeyInitializeFailKeySystem[] =
-            "org.chromium.externalclearkey.initializefail";
-    static const char kExternalClearKeyCrashKeySystem[] =
-            "org.chromium.externalclearkey.crash";
-    static const char kExternalClearKeyVerifyCdmHostTestKeySystem[] =
-            "org.chromium.externalclearkey.verifycdmhosttest";
-    static const char kExternalClearKeyStorageIdTestKeySystem[] =
-            "org.chromium.externalclearkey.storageidtest";
-    static const char kExternalClearKeyDifferentGuidTestKeySystem[] =
-            "org.chromium.externalclearkey.differentguid";
-    static const char kExternalClearKeyCdmProxyTestKeySystem[] =
-            "org.chromium.externalclearkey.cdmproxytest";
+static const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
 
-    media::mojom::KeySystemCapabilityPtr capability;
-    if (!content::IsKeySystemSupported(kExternalClearKeyKeySystem, &capability)) {
-        DVLOG(1) << "External Clear Key not supported";
+// External Clear Key (used for testing).
+static void AddExternalClearKey(const media::mojom::KeySystemCapabilityPtr &capability,
+                                media::KeySystemPropertiesVector *key_systems)
+{
+    Q_UNUSED(capability);
+    if (!base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting)) {
+        DLOG(ERROR) << "ExternalClearKey supported despite not enabled.";
         return;
     }
 
-    concrete_key_systems->emplace_back(
-            new cdm::ExternalClearKeyProperties(kExternalClearKeyKeySystem));
-
-    // Add support of decrypt-only mode in ClearKeyCdm.
-    concrete_key_systems->emplace_back(
-            new cdm::ExternalClearKeyProperties(kExternalClearKeyDecryptOnlyKeySystem));
-
-    // A key system that triggers various types of messages in ClearKeyCdm.
-    concrete_key_systems->emplace_back(
-            new cdm::ExternalClearKeyProperties(kExternalClearKeyMessageTypeTestKeySystem));
-
-    // A key system that triggers the FileIO test in ClearKeyCdm.
-    concrete_key_systems->emplace_back(
-            new cdm::ExternalClearKeyProperties(kExternalClearKeyFileIOTestKeySystem));
-
-    // A key system that triggers the output protection test in ClearKeyCdm.
-    concrete_key_systems->emplace_back(
-            new cdm::ExternalClearKeyProperties(kExternalClearKeyOutputProtectionTestKeySystem));
-
-    // A key system that triggers the platform verification test in ClearKeyCdm.
-    concrete_key_systems->emplace_back(
-            new cdm::ExternalClearKeyProperties(kExternalClearKeyPlatformVerificationTestKeySystem));
-
-    // A key system that Chrome thinks is supported by ClearKeyCdm, but actually
-    // will be refused by ClearKeyCdm. This is to test the CDM initialization
-    // failure case.
-    concrete_key_systems->emplace_back(
-            new cdm::ExternalClearKeyProperties(kExternalClearKeyInitializeFailKeySystem));
-
-    // A key system that triggers a crash in ClearKeyCdm.
-    concrete_key_systems->emplace_back(
-            new cdm::ExternalClearKeyProperties(kExternalClearKeyCrashKeySystem));
-
-    // A key system that triggers the verify host files test in ClearKeyCdm.
-    concrete_key_systems->emplace_back(
-            new cdm::ExternalClearKeyProperties(kExternalClearKeyVerifyCdmHostTestKeySystem));
-
-    // A key system that fetches the Storage ID in ClearKeyCdm.
-    concrete_key_systems->emplace_back(
-            new cdm::ExternalClearKeyProperties(kExternalClearKeyStorageIdTestKeySystem));
-
-    // A key system that is registered with a different CDM GUID.
-    concrete_key_systems->emplace_back(
-            new cdm::ExternalClearKeyProperties(kExternalClearKeyDifferentGuidTestKeySystem));
-
-    // A key system that triggers CDM Proxy test in ClearKeyCdm.
-    concrete_key_systems->emplace_back(
-            new cdm::ExternalClearKeyProperties(kExternalClearKeyCdmProxyTestKeySystem));
+    // TODO(xhwang): Actually use `capability` to determine capabilities.
+    key_systems->push_back(std::make_unique<cdm::ExternalClearKeyProperties>());
 }
 
 #if BUILDFLAG(ENABLE_WIDEVINE)
@@ -505,14 +497,43 @@ media::SupportedCodecs GetVP9Codecs(const std::vector<media::VideoCodecProfile> 
             supported_vp9_codecs |= media::EME_CODEC_VP9_PROFILE2;
             break;
         default:
-            DVLOG(1) << "Unexpected " << GetCodecName(media::VideoCodec::kCodecVP9)
-                     << " profile: " << GetProfileName(profile);
+            DVLOG(1) << "Unexpected " << media::GetCodecName(media::VideoCodec::kVP9)
+                     << " profile: " << media::GetProfileName(profile);
             break;
         }
     }
 
     return supported_vp9_codecs;
 }
+
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+SupportedCodecs GetHevcCodecs(const std::vector<media::VideoCodecProfile> &profiles)
+{
+    // If no profiles are specified, then all are supported.
+    if (profiles.empty()) {
+        return media::EME_CODEC_HEVC_PROFILE_MAIN |
+               media::EME_CODEC_HEVC_PROFILE_MAIN10;
+    }
+
+    media::SupportedCodecs supported_hevc_codecs = media::EME_CODEC_NONE;
+    for (const auto& profile : profiles) {
+        switch (profile) {
+        case media::HEVCPROFILE_MAIN:
+            supported_hevc_codecs |= media::EME_CODEC_HEVC_PROFILE_MAIN;
+            break;
+        case media::HEVCPROFILE_MAIN10:
+            supported_hevc_codecs |= media::EME_CODEC_HEVC_PROFILE_MAIN10;
+            break;
+        default:
+            DVLOG(1) << "Unexpected " << media::GetCodecName(media::VideoCodec::kHEVC)
+                     << " profile: " << media::GetProfileName(profile);
+            break;
+        }
+    }
+
+    return supported_hevc_codecs;
+}
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 
 static media::SupportedCodecs GetSupportedCodecs(const media::CdmCapability& capability,
                                                  bool is_secure)
@@ -521,17 +542,17 @@ static media::SupportedCodecs GetSupportedCodecs(const media::CdmCapability& cap
 
     for (const auto& codec : capability.audio_codecs) {
         switch (codec) {
-        case media::AudioCodec::kCodecOpus:
+        case media::AudioCodec::kOpus:
             supported_codecs |= media::EME_CODEC_OPUS;
             break;
-        case media::AudioCodec::kCodecVorbis:
+        case media::AudioCodec::kVorbis:
             supported_codecs |= media::EME_CODEC_VORBIS;
             break;
-        case media::AudioCodec::kCodecFLAC:
+        case media::AudioCodec::kFLAC:
             supported_codecs |= media::EME_CODEC_FLAC;
             break;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-        case media::AudioCodec::kCodecAAC:
+        case media::AudioCodec::kAAC:
             supported_codecs |= media::EME_CODEC_AAC;
             break;
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -543,20 +564,25 @@ static media::SupportedCodecs GetSupportedCodecs(const media::CdmCapability& cap
 
     for (const auto &codec : capability.video_codecs) {
         switch (codec.first) {
-        case media::VideoCodec::kCodecVP8:
+        case media::VideoCodec::kVP8:
             supported_codecs |= media::EME_CODEC_VP8;
             break;
-        case media::VideoCodec::kCodecVP9:
+        case media::VideoCodec::kVP9:
             supported_codecs |= GetVP9Codecs(codec.second);
             break;
-        case media::VideoCodec::kCodecAV1:
+        case media::VideoCodec::kAV1:
             supported_codecs |= media::EME_CODEC_AV1;
             break;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-        case media::VideoCodec::kCodecH264:
+        case media::VideoCodec::kH264:
             supported_codecs |= media::EME_CODEC_AVC1;
             break;
 #endif // BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+        case media::VideoCodec::kHEVC:
+            supported_codecs |= GetHevcCodecs(codec.second);
+            break;
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
         default:
             DVLOG(1) << "Unexpected supported codec: " << GetCodecName(codec.first);
             break;
@@ -566,14 +592,9 @@ static media::SupportedCodecs GetSupportedCodecs(const media::CdmCapability& cap
     return supported_codecs;
 }
 
-static void AddWidevine(std::vector<std::unique_ptr<media::KeySystemProperties>> *concrete_key_systems)
+static void AddWidevine(const media::mojom::KeySystemCapabilityPtr &capability,
+                        media::KeySystemPropertiesVector *key_systems)
 {
-    media::mojom::KeySystemCapabilityPtr capability;
-    if (!content::IsKeySystemSupported(kWidevineKeySystem, &capability)) {
-        DVLOG(1) << "Widevine CDM is not currently available.";
-        return;
-    }
-
     // Codecs and encryption schemes.
     media::SupportedCodecs codecs = media::EME_CODEC_NONE;
     media::SupportedCodecs hw_secure_codecs = media::EME_CODEC_NONE;
@@ -613,26 +634,44 @@ static void AddWidevine(std::vector<std::unique_ptr<media::KeySystemProperties>>
     auto persistent_state_support = media::EmeFeatureSupport::REQUESTABLE;
     auto distinctive_identifier_support = media::EmeFeatureSupport::NOT_SUPPORTED;
 
-    concrete_key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
-                                           codecs, encryption_schemes, hw_secure_codecs,
-                                           hw_secure_encryption_schemes, max_audio_robustness, max_video_robustness,
-                                           persistent_license_support, persistent_state_support,
-                                           distinctive_identifier_support));
+    key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
+                                  codecs, encryption_schemes, hw_secure_codecs,
+                                  hw_secure_encryption_schemes, max_audio_robustness, max_video_robustness,
+                                  persistent_license_support, persistent_state_support,
+                                  distinctive_identifier_support));
 }
 #endif // BUILDFLAG(ENABLE_WIDEVINE)
 #endif // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-void ContentRendererClientQt::AddSupportedKeySystems(std::vector<std::unique_ptr<media::KeySystemProperties>> *key_systems)
+void OnKeySystemSupportUpdated(media::GetSupportedKeySystemsCB cb,
+                               content::KeySystemCapabilityPtrMap key_system_capabilities)
 {
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-    if (base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting))
-        AddExternalClearKey(key_systems);
-
+    media::KeySystemPropertiesVector key_systems;
+    for (const auto &entry : key_system_capabilities) {
+        const auto &key_system = entry.first;
+        const auto &capability = entry.second;
 #if BUILDFLAG(ENABLE_WIDEVINE)
-    AddWidevine(key_systems);
-#endif // BUILDFLAG(ENABLE_WIDEVINE)
+        if (key_system == kWidevineKeySystem) {
+            AddWidevine(capability, &key_systems);
+            continue;
+        }
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
 
-#endif // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+        if (key_system == kExternalClearKeyKeySystem) {
+            AddExternalClearKey(capability, &key_systems);
+            continue;
+        }
+
+        DLOG(ERROR) << "Unrecognized key system: " << key_system;
+    }
+
+    cb.Run(std::move(key_systems));
+}
+
+void ContentRendererClientQt::GetSupportedKeySystems(media::GetSupportedKeySystemsCB cb)
+{
+    content::ObserveKeySystemSupportUpdate(
+        base::BindRepeating(&OnKeySystemSupportUpdated, std::move(cb)));
 }
 
 #if QT_CONFIG(webengine_spellchecker)

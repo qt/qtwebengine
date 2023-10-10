@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2021 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2021 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 // based on chrome/browser/net/system_network_context_manager.cc:
 // Copyright 2017 The Chromium Authors. All rights reserved.
@@ -73,9 +37,8 @@ SystemNetworkContextManager *g_system_network_context_manager = nullptr;
 
 network::mojom::HttpAuthStaticParamsPtr CreateHttpAuthStaticParams()
 {
-    network::mojom::HttpAuthStaticParamsPtr auth_static_params = network::mojom::HttpAuthStaticParams::New();
-
-    auth_static_params->supported_schemes = { "basic", "digest", "ntlm", "negotiate" };
+    network::mojom::HttpAuthStaticParamsPtr auth_static_params =
+        network::mojom::HttpAuthStaticParams::New();
 
     return auth_static_params;
 }
@@ -83,6 +46,8 @@ network::mojom::HttpAuthStaticParamsPtr CreateHttpAuthStaticParams()
 network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams()
 {
     network::mojom::HttpAuthDynamicParamsPtr auth_dynamic_params = network::mojom::HttpAuthDynamicParams::New();
+
+    auth_dynamic_params->allowed_schemes = { "basic", "digest", "ntlm", "negotiate" };
 
     auto *command_line = base::CommandLine::ForCurrentProcess();
     auth_dynamic_params->server_allowlist = command_line->GetSwitchValueASCII(switches::kAuthServerAllowlist);
@@ -143,8 +108,6 @@ private:
 
     SEQUENCE_CHECKER(sequence_checker_);
     SystemNetworkContextManager *manager_;
-
-    DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryForSystem);
 };
 
 network::mojom::NetworkContext *SystemNetworkContextManager::GetContext()
@@ -224,27 +187,39 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(network::mojom::Networ
     network_service->ConfigureHttpAuthPrefs(CreateHttpAuthDynamicParams());
 
     // Configure the Certificate Transparency logs.
-    std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs =
+    std::vector<std::pair<std::string, base::Time>> disqualified_logs =
         certificate_transparency::GetDisqualifiedLogs();
     std::vector<network::mojom::CTLogInfoPtr> log_list_mojo;
     for (const auto &ct_log : certificate_transparency::GetKnownLogs()) {
         network::mojom::CTLogInfoPtr log_info = network::mojom::CTLogInfo::New();
         log_info->public_key = std::string(ct_log.log_key, ct_log.log_key_length);
+        log_info->id = crypto::SHA256HashString(log_info->public_key);
         log_info->name = ct_log.log_name;
+        log_info->current_operator = ct_log.current_operator;
 
-        std::string log_id = crypto::SHA256HashString(log_info->public_key);
         auto it = std::lower_bound(
-            std::begin(disqualified_logs), std::end(disqualified_logs), log_id,
+            std::begin(disqualified_logs), std::end(disqualified_logs), log_info->id,
             [](const auto& disqualified_log, const std::string& log_id) {
                 return disqualified_log.first < log_id;
             });
-        if (it != std::end(disqualified_logs) && it->first == log_id)
+        if (it != std::end(disqualified_logs) && it->first == log_info->id)
             log_info->disqualified_at = it->second;
+
+        for (size_t i = 0; i < ct_log.previous_operators_length; i++) {
+            const auto& op = ct_log.previous_operators[i];
+            network::mojom::PreviousOperatorEntryPtr previous_operator =
+                network::mojom::PreviousOperatorEntry::New();
+            previous_operator->name = op.name;
+            previous_operator->end_time = op.end_time;
+            log_info->previous_operators.push_back(std::move(previous_operator));
+        }
+
         log_list_mojo.push_back(std::move(log_info));
     }
     network_service->UpdateCtLogList(
-        std::move(log_list_mojo),
-        certificate_transparency::GetLogListTimestamp());
+            std::move(log_list_mojo),
+            certificate_transparency::GetLogListTimestamp(),
+            base::DoNothing());
 
     // The system NetworkContext is created first
     network_service_network_context_.reset();
@@ -317,16 +292,9 @@ network::mojom::NetworkContextParamsPtr SystemNetworkContextManager::CreateNetwo
             cert_verifier_creation_params = cert_verifier::mojom::CertVerifierCreationParams::New();
     ConfigureDefaultNetworkContextParams(network_context_params.get(), cert_verifier_creation_params.get());
 
-    network_context_params->context_name = std::string("system");
-
     network_context_params->enable_referrers = false;
 
     network_context_params->http_cache_enabled = false;
-
-    // These are needed for PAC scripts that use FTP URLs.
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-    network_context_params->enable_ftp_url_support = true;
-#endif
 
     proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
 

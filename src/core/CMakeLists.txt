@@ -4,7 +4,6 @@ find_package(Ninja 1.7.2 REQUIRED)
 find_package(Nodejs 12 REQUIRED)
 find_package(PkgConfig)
 if(PkgConfig_FOUND)
-    pkg_check_modules(XSCRNSAVER xscrnsaver)
     create_pkg_config_host_wrapper(${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
@@ -77,6 +76,8 @@ foreach(arch ${archs})
                 accessibility_activation_observer.cpp accessibility_activation_observer.h
                 accessibility_tree_formatter_qt.cpp
                 authentication_dialog_controller.cpp authentication_dialog_controller.h authentication_dialog_controller_p.h
+                autofill_client_qt.cpp autofill_client_qt.h
+                autofill_popup_controller.cpp autofill_popup_controller.h autofill_popup_controller_p.h
                 browser_accessibility_manager_qt.cpp browser_accessibility_manager_qt.h
                 browser_accessibility_qt.cpp browser_accessibility_qt.h
                 browser_main_parts_qt.cpp browser_main_parts_qt.h
@@ -99,6 +100,10 @@ foreach(arch ${archs})
                 content_client_qt.cpp content_client_qt.h
                 content_main_delegate_qt.cpp content_main_delegate_qt.h
                 content_utility_client_qt.cpp content_utility_client_qt.h
+                custom_handlers/protocol_handler_registry_delegate_qt.h custom_handlers/protocol_handler_registry_delegate_qt.cpp
+                custom_handlers/protocol_handler_registry_factory.h custom_handlers/protocol_handler_registry_factory.cpp
+                custom_handlers/register_protocol_handler_request_controller.h
+                custom_handlers/register_protocol_handler_request_controller_impl.cpp custom_handlers/register_protocol_handler_request_controller_impl.h
                 delegated_frame_host_client_qt.cpp delegated_frame_host_client_qt.h
                 desktop_screen_qt.cpp desktop_screen_qt.h
                 devtools_frontend_qt.cpp devtools_frontend_qt.h
@@ -107,6 +112,12 @@ foreach(arch ${archs})
                 favicon_driver_qt.cpp favicon_driver_qt.h
                 favicon_service_factory_qt.cpp favicon_service_factory_qt.h
                 file_picker_controller.cpp file_picker_controller.h
+                file_system_access/file_system_access_permission_context_factory_qt.cpp file_system_access/file_system_access_permission_context_factory_qt.h
+                file_system_access/file_system_access_permission_context_qt.cpp file_system_access/file_system_access_permission_context_qt.h
+                file_system_access/file_system_access_permission_grant_qt.cpp file_system_access/file_system_access_permission_grant_qt.h
+                file_system_access/file_system_access_permission_request_controller.h
+                file_system_access/file_system_access_permission_request_controller_impl.cpp file_system_access/file_system_access_permission_request_controller_impl.h
+                file_system_access/file_system_access_permission_request_manager_qt.cpp file_system_access/file_system_access_permission_request_manager_qt.h
                 find_text_helper.cpp find_text_helper.h
                 global_descriptors_qt.h
                 javascript_dialog_controller.cpp javascript_dialog_controller.h javascript_dialog_controller_p.h
@@ -147,12 +158,11 @@ foreach(arch ${archs})
                 quota_permission_context_qt.cpp quota_permission_context_qt.h
                 quota_request_controller.h
                 quota_request_controller_impl.cpp quota_request_controller_impl.h
-                register_protocol_handler_request_controller.h
-                register_protocol_handler_request_controller_impl.cpp register_protocol_handler_request_controller_impl.h
                 render_view_context_menu_qt.cpp render_view_context_menu_qt.h
                 render_widget_host_view_qt.cpp render_widget_host_view_qt.h
                 render_widget_host_view_qt_delegate.h
                 render_widget_host_view_qt_delegate_client.cpp render_widget_host_view_qt_delegate_client.h
+                render_widget_host_view_qt_delegate_item.cpp render_widget_host_view_qt_delegate_item.h
                 renderer/content_renderer_client_qt.cpp renderer/content_renderer_client_qt.h
                 renderer/content_settings_observer_qt.cpp renderer/content_settings_observer_qt.h
                 renderer/render_configuration.cpp renderer/render_configuration.h
@@ -163,7 +173,6 @@ foreach(arch ${archs})
                 renderer_host/web_engine_page_host.cpp renderer_host/web_engine_page_host.h
                 request_controller.h
                 resource_bundle_qt.cpp
-                resource_context_qt.cpp resource_context_qt.h
                 select_file_dialog_factory_qt.cpp select_file_dialog_factory_qt.h
                 touch_handle_drawable_client.h
                 touch_handle_drawable_qt.cpp touch_handle_drawable_qt.h
@@ -208,13 +217,13 @@ foreach(arch ${archs})
             SOURCES
                 renderer/pepper/pepper_renderer_host_factory_qt.cpp renderer/pepper/pepper_renderer_host_factory_qt.h
                 renderer/plugins/loadable_plugin_placeholder_qt.cpp renderer/plugins/loadable_plugin_placeholder_qt.h
-                renderer_host/pepper/pepper_host_factory_qt.cpp renderer_host/pepper/pepper_host_factory_qt.h
-                renderer_host/pepper/pepper_isolated_file_system_message_filter.cpp renderer_host/pepper/pepper_isolated_file_system_message_filter.h
         )
 
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_printing_and_pdf
             SOURCES
                 printing/pdfium_document_wrapper_qt.cpp printing/pdfium_document_wrapper_qt.h
+                printing/pdf_web_contents_helper_client_qt.cpp printing/pdf_web_contents_helper_client_qt.h
+                printing/pdf_stream_delegate_qt.cpp printing/pdf_stream_delegate_qt.h
                 printing/print_view_manager_base_qt.cpp printing/print_view_manager_base_qt.h
                 printing/print_view_manager_qt.cpp printing/print_view_manager_qt.h
                 printing/printer_worker.cpp printing/printer_worker.h
@@ -245,13 +254,17 @@ foreach(arch ${archs})
                 extensions/extensions_browser_client_qt.cpp extensions/extensions_browser_client_qt.h
                 extensions/messaging_delegate_qt.cpp extensions/messaging_delegate_qt.h
                 extensions/mime_handler_view_guest_delegate_qt.cpp extensions/mime_handler_view_guest_delegate_qt.h
-                extensions/pdf_iframe_navigation_throttle_qt.cpp extensions/pdf_iframe_navigation_throttle_qt.h
                 extensions/plugin_service_filter_qt.cpp extensions/plugin_service_filter_qt.h
                 net/plugin_response_interceptor_url_loader_throttle.cpp net/plugin_response_interceptor_url_loader_throttle.h
                 renderer/extensions/extensions_dispatcher_delegate_qt.cpp renderer/extensions/extensions_dispatcher_delegate_qt.h
                 renderer/extensions/extensions_renderer_client_qt.cpp renderer/extensions/extensions_renderer_client_qt.h
                 renderer/extensions/renderer_permissions_policy_delegate_qt.cpp renderer/extensions/renderer_permissions_policy_delegate_qt.h
                 renderer/extensions/resource_request_policy_qt.cpp renderer/extensions/resource_request_policy_qt.h
+        )
+
+        extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_extensions AND QT_FEATURE_webengine_printing_and_pdf
+            SOURCES
+                extensions/pdf_iframe_navigation_throttle_qt.cpp extensions/pdf_iframe_navigation_throttle_qt.h
         )
 
         extend_gn_target(${buildGn} CONDITION WIN32
@@ -283,6 +296,7 @@ foreach(arch ${archs})
             enable_swiftshader=false
             enable_swiftshader_vulkan=false
             angle_enable_swiftshader=false
+            dawn_use_swiftshader=false
             enable_web_speech=false
             enable_widevine=true
             fatal_linker_warnings=false
@@ -295,7 +309,9 @@ foreach(arch ${archs})
             enable_js_type_check=false
             v8_use_external_startup_data=false
             strip_absolute_paths_from_debug_symbols=false
-            disable_ftp_support=true
+            enable_oop_printing=false
+            devtools_fast_bundle=false
+            devtools_skip_typecheck=false
         )
 
         extend_gn_list(gnArgArg
@@ -345,6 +361,10 @@ foreach(arch ${archs})
             ARGS use_browser_spellchecker
             CONDITION QT_FEATURE_webengine_native_spellchecker
         )
+        extend_gn_list(gnArgArg
+            ARGS use_embedded_config
+            CONDITION QT_FEATURE_webengine_embedded_build
+        )
 
         if(LINUX)
             list(APPEND gnArgArg
@@ -356,13 +376,14 @@ foreach(arch ${archs})
                 enable_session_service=false
                 is_cfi=false
                 use_ozone=true
-                use_x11=false
                 ozone_auto_platforms=false
                 ozone_platform_headless=false
                 ozone_platform_external=true
                 ozone_platform="qt"
                 ozone_extra_path="${CMAKE_CURRENT_LIST_DIR}/ozone/ozone_extra.gni"
                 use_glib=false
+                use_bluez=false
+                use_vaapi=false
             )
             set(systemLibs libjpeg libpng freetype harfbuzz libevent libwebp libxml
                 opus snappy libvpx icu ffmpeg re2 lcms2
@@ -413,10 +434,12 @@ foreach(arch ${archs})
                 ARGS rtc_use_x11
                 CONDITION QT_FEATURE_webengine_ozone_x11 AND QT_FEATURE_webengine_webrtc
             )
-            extend_gn_list(gnArgArg
-                ARGS use_xscrnsaver
-                CONDITION QT_FEATURE_webengine_ozone_x11 AND XSCRNSAVER_FOUND
-            )
+
+            if(QT_FEATURE_webengine_kerberos)
+                list(APPEND gnArgArg
+                     external_gssapi_include_dir="${GSSAPI_INCLUDE_DIRS}/gssapi"
+                )
+            endif()
 
             if(QT_FEATURE_webengine_kerberos)
                 list(APPEND gnArgArg

@@ -1,36 +1,12 @@
-/****************************************************************************
-**
-** Copyright (C) 2018 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:GPL-EXCEPT$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3 as published by the Free Software
-** Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2018 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <util.h>
 #include "httpserver.h"
 
 #include <QtCore/qfile.h>
 #include <QtTest/QtTest>
+#include <QtWebEngineCore/qwebengineurlrequestinterceptor.h>
 #include <QtWebEngineCore/qwebengineurlrequestjob.h>
 #include <QtWebEngineCore/qwebengineurlscheme.h>
 #include <QtWebEngineCore/qwebengineurlschemehandler.h>
@@ -47,6 +23,8 @@
 
 #define QSL QStringLiteral
 #define QBAL QByteArrayLiteral
+
+Q_LOGGING_CATEGORY(lc, "qt.webengine.tests")
 
 void registerSchemes()
 {
@@ -125,20 +103,31 @@ void registerSchemes()
     }
 
     {
-        QWebEngineUrlScheme scheme(QBAL("redirect1"));
+        QWebEngineUrlScheme scheme(QBAL("redirect"));
         scheme.setFlags(QWebEngineUrlScheme::CorsEnabled);
         QWebEngineUrlScheme::registerScheme(scheme);
     }
 
     {
-        QWebEngineUrlScheme scheme(QBAL("redirect2"));
-        scheme.setFlags(QWebEngineUrlScheme::CorsEnabled);
+        QWebEngineUrlScheme scheme(QBAL("redirect-secure"));
+        scheme.setFlags(QWebEngineUrlScheme::SecureScheme);
+        QWebEngineUrlScheme::registerScheme(scheme);
+    }
+
+    {
+        QWebEngineUrlScheme scheme(QBAL("redirect-local"));
+        scheme.setFlags(QWebEngineUrlScheme::LocalScheme | QWebEngineUrlScheme::LocalAccessAllowed);
         QWebEngineUrlScheme::registerScheme(scheme);
     }
 
     {
         QWebEngineUrlScheme scheme(QBAL("cors"));
         scheme.setFlags(QWebEngineUrlScheme::CorsEnabled);
+        QWebEngineUrlScheme::registerScheme(scheme);
+    }
+    {
+        QWebEngineUrlScheme scheme(QBAL("secure-cors"));
+        scheme.setFlags(QWebEngineUrlScheme::SecureScheme | QWebEngineUrlScheme::CorsEnabled);
         QWebEngineUrlScheme::registerScheme(scheme);
     }
     {
@@ -185,9 +174,11 @@ public:
         profile->installUrlSchemeHandler(QBAL("HostSyntax-ContentSecurityPolicyIgnored"), this);
         profile->installUrlSchemeHandler(QBAL("HostAndPortSyntax"), this);
         profile->installUrlSchemeHandler(QBAL("HostPortAndUserInformationSyntax"), this);
-        profile->installUrlSchemeHandler(QBAL("redirect1"), this);
-        profile->installUrlSchemeHandler(QBAL("redirect2"), this);
+        profile->installUrlSchemeHandler(QBAL("redirect"), this);
+        profile->installUrlSchemeHandler(QBAL("redirect-secure"), this);
+        profile->installUrlSchemeHandler(QBAL("redirect-local"), this);
         profile->installUrlSchemeHandler(QBAL("cors"), this);
+        profile->installUrlSchemeHandler(QBAL("secure-cors"), this);
         profile->installUrlSchemeHandler(QBAL("localaccess"), this);
         profile->installUrlSchemeHandler(QBAL("local"), this);
         profile->installUrlSchemeHandler(QBAL("local-localaccess"), this);
@@ -202,10 +193,15 @@ private:
         QUrl url = job->requestUrl();
         m_requests << url;
 
-        if (url.scheme() == QBAL("redirect1")) {
-            url.setScheme(QBAL("redirect2"));
-            job->redirect(url);
-            return;
+        if (url.scheme().startsWith("redirect")) {
+            QString path = url.path();
+            int idx = path.indexOf(QChar('/'));
+            if (idx > 0) {
+                url.setScheme(path.first(idx));
+                url.setPath(path.mid(idx, -1));
+                job->redirect(url);
+                return;
+            }
         }
 
         QString pathPrefix = QDir(QT_TESTCASE_SOURCEDIR).canonicalPath();
@@ -229,6 +225,30 @@ private:
     QList<QUrl> m_requests;
 };
 
+class TestRequestInterceptor : public QWebEngineUrlRequestInterceptor
+{
+public:
+    TestRequestInterceptor() = default;
+    void interceptRequest(QWebEngineUrlRequestInfo &info) override
+    {
+        qCDebug(lc) << this << "Type:" << info.resourceType() << info.requestMethod() << "Navigation:" << info.navigationType()
+                    << info.requestUrl() << "Initiator:" << info.initiator();
+
+        QUrl url = info.requestUrl();
+        requests << url;
+        if (url.scheme().startsWith("redirect")) {
+            QString path = url.path();
+            int idx = path.indexOf(QChar('/'));
+            if (idx > 0) {
+                url.setScheme(path.first(idx));
+                url.setPath(path.mid(idx, -1));
+                info.redirect(url);
+            }
+        }
+    }
+    QList<QUrl> requests;
+};
+
 class TestPage : public QWebEnginePage
 {
 public:
@@ -240,6 +260,7 @@ public:
                                   const QString &) override
     {
         messages << message;
+        qCDebug(lc) << message;
     }
     QStringList messages;
 };
@@ -276,7 +297,14 @@ private Q_SLOTS:
     void serviceWorker();
     void viewSource();
     void createObjectURL();
-    void redirect();
+    void redirectScheme();
+    void redirectSchemeLocal();
+    void redirectSchemeSecure();
+    void redirectInterceptor();
+    void redirectInterceptorLocal();
+    void redirectInterceptorSecure();
+    void redirectInterceptorFile();
+    void redirectInterceptorHttp();
 
 private:
     bool verifyLoad(const QUrl &url)
@@ -1228,17 +1256,165 @@ void tst_Origins::createObjectURL()
     QVERIFY(eval(QSL("result")).toString().startsWith(QSL("blob:tst:")));
 }
 
-void tst_Origins::redirect()
+void tst_Origins::redirectScheme()
 {
-    QVERIFY(verifyLoad(QSL("redirect1:/resources/redirect.html")));
-    QTRY_COMPARE(m_handler->requests().size(), 7);
-    QCOMPARE(m_handler->requests()[0], QUrl(QStringLiteral("redirect1:/resources/redirect.html")));
-    QCOMPARE(m_handler->requests()[1], QUrl(QStringLiteral("redirect2:/resources/redirect.html")));
-    QCOMPARE(m_handler->requests()[2], QUrl(QStringLiteral("redirect1:/resources/redirect.css")));
-    QCOMPARE(m_handler->requests()[3], QUrl(QStringLiteral("redirect2:/resources/redirect.css")));
-    QCOMPARE(m_handler->requests()[4], QUrl(QStringLiteral("redirect1:/resources/Akronim-Regular.woff2")));
-    QCOMPARE(m_handler->requests()[5], QUrl(QStringLiteral("redirect1:/resources/Akronim-Regular.woff2")));
-    QCOMPARE(m_handler->requests()[6], QUrl(QStringLiteral("redirect2:/resources/Akronim-Regular.woff2")));
+    QVERIFY(verifyLoad(QSL("redirect:cors/resources/redirect.html")));
+    eval("addStylesheetLink('redirect:cors/resources/redirect.css')");
+    QTRY_COMPARE(m_handler->requests().size(), 4);
+    QCOMPARE(m_handler->requests()[0], QUrl(QStringLiteral("redirect:cors/resources/redirect.html")));
+    QCOMPARE(m_handler->requests()[1], QUrl(QStringLiteral("cors:/resources/redirect.html")));
+    QCOMPARE(m_handler->requests()[2], QUrl(QStringLiteral("redirect:cors/resources/redirect.css")));
+    QCOMPARE(m_handler->requests()[3], QUrl(QStringLiteral("cors:/resources/redirect.css")));
+
+    QVERIFY(!verifyLoad(QSL("redirect:file/resources/redirect.html")));
+    QVERIFY(!verifyLoad(QSL("redirect:local/resources/redirect.html")));
+    QVERIFY(!verifyLoad(QSL("redirect:local-cors/resources/redirect.html")));
+}
+
+void tst_Origins::redirectSchemeLocal()
+{
+    QVERIFY(verifyLoad(QSL("redirect-local:local/resources/redirect.html")));
+    eval("addStylesheetLink('redirect-local:local/resources/redirect.css')");
+    QTRY_COMPARE(m_handler->requests().size(), 4);
+    QCOMPARE(m_handler->requests()[0], QUrl(QStringLiteral("redirect-local:local/resources/redirect.html")));
+    QCOMPARE(m_handler->requests()[1], QUrl(QStringLiteral("local:/resources/redirect.html")));
+    QCOMPARE(m_handler->requests()[2], QUrl(QStringLiteral("redirect-local:local/resources/redirect.css")));
+    QCOMPARE(m_handler->requests()[3], QUrl(QStringLiteral("local:/resources/redirect.css")));
+}
+
+void tst_Origins::redirectSchemeSecure()
+{
+    QVERIFY(verifyLoad(QSL("redirect-secure:secure-cors/resources/redirect.html")));
+    eval("addStylesheetLink('redirect-secure:secure-cors/resources/redirect.css')");
+    QTRY_COMPARE(m_handler->requests().size(), 4);
+    QCOMPARE(m_handler->requests()[0], QUrl(QStringLiteral("redirect-secure:secure-cors/resources/redirect.html")));
+    QCOMPARE(m_handler->requests()[1], QUrl(QStringLiteral("secure-cors:/resources/redirect.html")));
+    QCOMPARE(m_handler->requests()[2], QUrl(QStringLiteral("redirect-secure:secure-cors/resources/redirect.css")));
+    QCOMPARE(m_handler->requests()[3], QUrl(QStringLiteral("secure-cors:/resources/redirect.css")));
+}
+
+void tst_Origins::redirectInterceptor()
+{
+    TestRequestInterceptor interceptor;
+    m_profile.setUrlRequestInterceptor(&interceptor);
+
+    QVERIFY(verifyLoad(QSL("redirect:cors/resources/redirect.html")));
+    eval("addStylesheetLink('redirect:cors/resources/redirect.css')");
+
+    QTRY_COMPARE(interceptor.requests.size(), 4);
+    QTRY_COMPARE(m_handler->requests().size(), 2);
+    QCOMPARE(m_handler->requests()[0], QUrl(QStringLiteral("cors:/resources/redirect.html")));
+    QCOMPARE(m_handler->requests()[1], QUrl(QStringLiteral("cors:/resources/redirect.css")));
+
+    QCOMPARE(interceptor.requests[0], QUrl(QStringLiteral("redirect:cors/resources/redirect.html")));
+    QCOMPARE(interceptor.requests[1], QUrl(QStringLiteral("cors:/resources/redirect.html")));
+    QCOMPARE(interceptor.requests[2], QUrl(QStringLiteral("redirect:cors/resources/redirect.css")));
+    QCOMPARE(interceptor.requests[3], QUrl(QStringLiteral("cors:/resources/redirect.css")));
+
+    QVERIFY(!verifyLoad(QSL("redirect:file/resources/redirect.html")));
+    QVERIFY(!verifyLoad(QSL("redirect:local/resources/redirect.html")));
+    QVERIFY(!verifyLoad(QSL("redirect:local-cors/resources/redirect.html")));
+}
+
+void tst_Origins::redirectInterceptorLocal()
+{
+    TestRequestInterceptor interceptor;
+    m_profile.setUrlRequestInterceptor(&interceptor);
+
+    QVERIFY(verifyLoad(QSL("redirect-local:local/resources/redirect.html")));
+    eval("addStylesheetLink('redirect-local:local/resources/redirect.css')");
+
+    QTRY_COMPARE(interceptor.requests.size(), 4);
+    QTRY_COMPARE(m_handler->requests().size(), 2);
+    QCOMPARE(m_handler->requests()[0], QUrl(QStringLiteral("local:/resources/redirect.html")));
+    QCOMPARE(m_handler->requests()[1], QUrl(QStringLiteral("local:/resources/redirect.css")));
+
+    QCOMPARE(interceptor.requests[0], QUrl(QStringLiteral("redirect-local:local/resources/redirect.html")));
+    QCOMPARE(interceptor.requests[1], QUrl(QStringLiteral("local:/resources/redirect.html")));
+    QCOMPARE(interceptor.requests[2], QUrl(QStringLiteral("redirect-local:local/resources/redirect.css")));
+    QCOMPARE(interceptor.requests[3], QUrl(QStringLiteral("local:/resources/redirect.css")));
+}
+
+void tst_Origins::redirectInterceptorSecure()
+{
+    TestRequestInterceptor interceptor;
+    m_profile.setUrlRequestInterceptor(&interceptor);
+
+    QVERIFY(verifyLoad(QSL("redirect-secure:secure-cors/resources/redirect.html")));
+    eval("addStylesheetLink('redirect-secure:secure-cors/resources/redirect.css')");
+
+    QTRY_COMPARE(interceptor.requests.size(), 4);
+    QTRY_COMPARE(m_handler->requests().size(), 2);
+    QCOMPARE(m_handler->requests()[0], QUrl(QStringLiteral("secure-cors:/resources/redirect.html")));
+    QCOMPARE(m_handler->requests()[1], QUrl(QStringLiteral("secure-cors:/resources/redirect.css")));
+
+    QCOMPARE(interceptor.requests[0], QUrl(QStringLiteral("redirect-secure:secure-cors/resources/redirect.html")));
+    QCOMPARE(interceptor.requests[1], QUrl(QStringLiteral("secure-cors:/resources/redirect.html")));
+    QCOMPARE(interceptor.requests[2], QUrl(QStringLiteral("redirect-secure:secure-cors/resources/redirect.css")));
+    QCOMPARE(interceptor.requests[3], QUrl(QStringLiteral("secure-cors:/resources/redirect.css")));
+}
+
+class TestRedirectInterceptor : public QWebEngineUrlRequestInterceptor
+{
+public:
+    TestRedirectInterceptor() = default;
+    void interceptRequest(QWebEngineUrlRequestInfo &info) override
+    {
+        qCDebug(lc) << this << "Type:" << info.resourceType() << info.requestMethod() << "Navigation:" << info.navigationType()
+                    << info.requestUrl() << "Initiator:" << info.initiator();
+
+        QUrl url = info.requestUrl();
+        requests << url;
+        if (url.path().startsWith("/redirect")) {
+            QString path = url.path();
+            int idx = path.indexOf(QChar('/'), 10);
+            if (idx > 0) {
+                url.setScheme(path.mid(10, idx - 10));
+                url.setPath(path.mid(idx, -1));
+                url.setHost({});
+                info.redirect(url);
+            }
+        }
+    }
+    QList<QUrl> requests;
+};
+
+void tst_Origins::redirectInterceptorFile()
+{
+    TestRedirectInterceptor interceptor;
+    m_profile.setUrlRequestInterceptor(&interceptor);
+
+    QVERIFY(verifyLoad(QSL("file:///redirect/local-cors/resources/redirect.html")));
+    eval("addStylesheetLink('file:///redirect/local-cors/resources/redirect.css')");
+
+    QTRY_COMPARE(interceptor.requests.size(), 4);
+    QTRY_COMPARE(m_handler->requests().size(), 2);
+    QCOMPARE(m_handler->requests()[0], QUrl(QStringLiteral("local-cors:/resources/redirect.html")));
+    QCOMPARE(m_handler->requests()[1], QUrl(QStringLiteral("local-cors:/resources/redirect.css")));
+
+    QCOMPARE(interceptor.requests[0], QUrl(QStringLiteral("file:///redirect/local-cors/resources/redirect.html")));
+    QCOMPARE(interceptor.requests[1], QUrl(QStringLiteral("local-cors:/resources/redirect.html")));
+    QCOMPARE(interceptor.requests[2], QUrl(QStringLiteral("file:///redirect/local-cors/resources/redirect.css")));
+    QCOMPARE(interceptor.requests[3], QUrl(QStringLiteral("local-cors:/resources/redirect.css")));
+}
+
+void tst_Origins::redirectInterceptorHttp()
+{
+    TestRedirectInterceptor interceptor;
+    m_profile.setUrlRequestInterceptor(&interceptor);
+
+    QVERIFY(verifyLoad(QSL("http://hallo/redirect/cors/resources/redirect.html")));
+    eval("addStylesheetLink('http://hallo/redirect/cors/resources/redirect.css')");
+
+    QTRY_COMPARE(interceptor.requests.size(), 4);
+    QTRY_COMPARE(m_handler->requests().size(), 2);
+    QCOMPARE(m_handler->requests()[0], QUrl(QStringLiteral("cors:/resources/redirect.html")));
+    QCOMPARE(m_handler->requests()[1], QUrl(QStringLiteral("cors:/resources/redirect.css")));
+
+    QCOMPARE(interceptor.requests[0], QUrl(QStringLiteral("http://hallo/redirect/cors/resources/redirect.html")));
+    QCOMPARE(interceptor.requests[1], QUrl(QStringLiteral("cors:/resources/redirect.html")));
+    QCOMPARE(interceptor.requests[2], QUrl(QStringLiteral("http://hallo/redirect/cors/resources/redirect.css")));
+    QCOMPARE(interceptor.requests[3], QUrl(QStringLiteral("cors:/resources/redirect.css")));
 }
 
 void tst_Origins::localMediaBlock_data()

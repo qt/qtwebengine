@@ -1,56 +1,16 @@
-/****************************************************************************
-**
-** Copyright (C) 2018 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2018 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "ui/accessibility/platform/inspect/ax_tree_formatter_base.h"
 
 #include <utility>
 
-#include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/public/browser/ax_inspect_factory.h"
+#include "ui/accessibility/platform/inspect/ax_event_recorder.h"
 
 #include "browser_accessibility_qt.h"
 
@@ -65,10 +25,6 @@ public:
     ~AccessibilityTreeFormatterQt() override;
 
    base::Value BuildTree(ui::AXPlatformNodeDelegate *start) const override;
-   base::Value BuildTreeForWindow(gfx::AcceleratedWidget hwnd) const override
-   {
-       return base::Value{};
-   }
    base::Value BuildTreeForSelector(const AXTreeSelector &selector) const override
    {
        return base::Value{};
@@ -194,9 +150,8 @@ std::string AccessibilityTreeFormatterQt::ProcessTreeForOutput(const base::Dicti
     const base::ListValue *states_value = nullptr;
     if (node.GetList("states", &states_value)) {
         for (const auto &state : states_value->GetList()) {
-            std::string state_value;
-            if (state.GetAsString(&state_value))
-                WriteAttribute(false, state_value, &line);
+            if (auto *state_value = state.GetIfString())
+                WriteAttribute(false, *state_value, &line);
         }
     }
 
@@ -221,7 +176,7 @@ std::string AccessibilityTreeFormatterQt::ProcessTreeForOutput(const base::Dicti
 std::unique_ptr<ui::AXTreeFormatter>
 AXInspectFactory::CreatePlatformFormatter()
 {
-    return AXInspectFactory::CreateFormatter(kQt);
+    return AXInspectFactory::CreateFormatter(ui::AXApiType::kQt);
 }
 
 // static
@@ -229,16 +184,16 @@ std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreatePlatformRecorder(Br
                                                                               base::ProcessId pid,
                                                                               const ui::AXTreeSelector &selector)
 {
-    return AXInspectFactory::CreateRecorder(kQt, manager, pid, selector);
+    return AXInspectFactory::CreateRecorder(ui::AXApiType::kQt, manager, pid, selector);
 }
 
 // static
-std::unique_ptr<ui::AXTreeFormatter> AXInspectFactory::CreateFormatter(AXInspectFactory::Type type)
+std::unique_ptr<ui::AXTreeFormatter> AXInspectFactory::CreateFormatter(ui::AXApiType::Type type)
 {
     switch (type) {
-    case kBlink:
+    case ui::AXApiType::kBlink:
         return std::make_unique<AccessibilityTreeFormatterBlink>();
-    case kQt:
+    case ui::AXApiType::kQt:
 #if QT_CONFIG(accessibility)
         return std::make_unique<AccessibilityTreeFormatterQt>();
 #else
@@ -251,14 +206,14 @@ std::unique_ptr<ui::AXTreeFormatter> AXInspectFactory::CreateFormatter(AXInspect
 }
 
 // static
-std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreateRecorder(AXInspectFactory::Type type,
+std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreateRecorder(ui::AXApiType::Type type,
                                                                       BrowserAccessibilityManager *manager,
                                                                       base::ProcessId pid,
                                                                       const ui::AXTreeSelector &selector)
 {
     switch (type) {
-    case kQt:
-        return std::make_unique<AccessibilityEventRecorder>(manager);
+    case ui::AXApiType::kQt:
+        return std::make_unique<ui::AXEventRecorder>();
     default:
         NOTREACHED() << "Unsupported inspect type " << type;
     }

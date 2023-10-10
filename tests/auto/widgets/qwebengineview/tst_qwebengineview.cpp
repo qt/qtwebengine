@@ -37,6 +37,7 @@
 #include <QDropEvent>
 #include <QLabel>
 #include <QLineEdit>
+#include <QListView>
 #include <QHBoxLayout>
 #include <QMenu>
 #include <QMimeData>
@@ -44,6 +45,7 @@
 #include <QQuickWidget>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
 #include <QScopeGuard>
+#include <QStringListModel>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QStyle>
@@ -70,7 +72,8 @@ namespace QTest {
     {
         QTest::qWait(QTest::defaultMouseDelay());
         lastMouseTimestamp += QTest::defaultMouseDelay();
-        QMouseEvent me(type, pos, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+        QMouseEvent me(type, pos, widget->mapToGlobal(pos), Qt::LeftButton, Qt::LeftButton,
+                       Qt::NoModifier);
         me.setTimestamp(++lastMouseTimestamp);
         QSpontaneKeyEvent::setSpontaneous(&me);
         qApp->sendEvent(widget, &me);
@@ -106,6 +109,7 @@ private Q_SLOTS:
     void changePage();
     void reusePage_data();
     void reusePage();
+    void setLoadedPage();
     void microFocusCoordinates();
     void focusInputTypes();
     void unhandledKeyEventPropagation();
@@ -151,7 +155,7 @@ private Q_SLOTS:
 
     void mouseLeave();
 
-#ifndef QT_NO_CLIPBOARD
+#if QT_CONFIG(clipboard)
     void globalMouseSelection();
 #endif
     void noContextMenu();
@@ -178,6 +182,7 @@ private Q_SLOTS:
     void inspectElement();
     void navigateOnDrop_data();
     void navigateOnDrop();
+    void datalist();
 };
 
 // This will be called before the first test function is executed.
@@ -200,6 +205,7 @@ void tst_QWebEngineView::init()
 // This will be called after every test function.
 void tst_QWebEngineView::cleanup()
 {
+    QTRY_COMPARE(QApplication::topLevelWidgets().size(), 0);
 }
 
 void tst_QWebEngineView::renderHints()
@@ -399,7 +405,7 @@ void tst_QWebEngineView::reusePage()
     view1->show();
     QVERIFY(QTest::qWaitForWindowExposed(view1));
     delete view1;
-    QVERIFY(page != 0); // deleting view must not have deleted the page, since it's not a child of view
+    QVERIFY(page != nullptr); // deleting view must not have deleted the page, since it's not a child of view
 
     QWebEngineView *view2 = new QWebEngineView;
     view2->setPage(page.data());
@@ -410,6 +416,23 @@ void tst_QWebEngineView::reusePage()
     delete page.data(); // must not crash
 
     QDir::setCurrent(QApplication::applicationDirPath());
+}
+
+void tst_QWebEngineView::setLoadedPage()
+{
+    // MEMO load page first to make sure that just simple attach to view would draw its content
+    QWebEnginePage page;
+    QSignalSpy loadSpy(&page, &QWebEnginePage::loadFinished);
+    page.setHtml(QString("<html><body bgcolor=\"%1\"></body></html>").arg(QColor(Qt::yellow).name()));
+    QTRY_VERIFY(loadSpy.count() == 1 && loadSpy.first().first().toBool());
+
+    QWebEngineView view;
+    view.resize(480, 320);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    view.setPage(&page);
+    QTRY_COMPARE(view.grab().toImage().pixelColor(QPoint(view.width() / 2, view.height() / 2)), Qt::yellow);
 }
 
 // Class used in crashTests
@@ -614,7 +637,7 @@ void tst_QWebEngineView::unhandledKeyEventPropagation()
 
     QSignalSpy loadFinishedSpy(&webView, SIGNAL(loadFinished(bool)));
     webView.load(QUrl("qrc:///resources/keyboardEvents.html"));
-    QVERIFY(loadFinishedSpy.wait());
+    QTRY_VERIFY_WITH_TIMEOUT(loadFinishedSpy.count() > 0, 20000);
 
     evaluateJavaScriptSync(webView.page(), "document.getElementById('first_div').focus()");
     QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("first_div"));
@@ -909,7 +932,7 @@ public:
         case QEvent::ContextMenu:
         case QEvent::KeyPress:
         case QEvent::KeyRelease:
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
         case QEvent::Wheel:
 #endif
             ++m_eventCounter;
@@ -1124,20 +1147,22 @@ void tst_QWebEngineView::focusInternalRenderWidgetHostViewQuickItem()
     QWebEngineView *webView = new QWebEngineView;
     QWebEngineSettings *settings = webView->page()->settings();
     settings->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, false);
-    webView->resize(300, 300);
+    webView->resize(300, 100);
 
-    QHBoxLayout *layout = new QHBoxLayout;
+    QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(label);
     layout->addWidget(webView);
 
+    containerWidget->resize(300, 200);
     containerWidget->setLayout(layout);
     containerWidget->show();
     QVERIFY(QTest::qWaitForWindowExposed(containerWidget.data()));
 
     // Load the content, and check that focus is not set.
     QSignalSpy loadSpy(webView, SIGNAL(loadFinished(bool)));
-    webView->setHtml("<html><head><title>Title</title></head><body>Hello"
-                    "<input id=\"input\" type=\"text\"></body></html>");
+    webView->setHtml("<html><body>"
+                     "  <input id='input1' type='text'/>"
+                     "</body></html>");
     QTRY_COMPARE(loadSpy.count(), 1);
     QTRY_COMPARE(webView->hasFocus(), false);
 
@@ -1147,15 +1172,43 @@ void tst_QWebEngineView::focusInternalRenderWidgetHostViewQuickItem()
     // Check that focus is set in QWebEngineView and all internal classes.
     QTRY_COMPARE(webView->hasFocus(), true);
 
-    QQuickWidget *renderWidgetHostViewQtDelegateWidget =
-            qobject_cast<QQuickWidget *>(webView->focusProxy());
-    QVERIFY(renderWidgetHostViewQtDelegateWidget);
-    QTRY_COMPARE(renderWidgetHostViewQtDelegateWidget->hasFocus(), true);
+    QQuickWidget *webEngineQuickWidget = qobject_cast<QQuickWidget *>(webView->focusProxy());
+    QVERIFY(webEngineQuickWidget);
+    QTRY_COMPARE(webEngineQuickWidget->hasFocus(), true);
 
-    QQuickItem *renderWidgetHostViewQuickItem =
-            renderWidgetHostViewQtDelegateWidget->rootObject();
-    QVERIFY(renderWidgetHostViewQuickItem);
-    QTRY_COMPARE(renderWidgetHostViewQuickItem->hasFocus(), true);
+    QQuickItem *root = webEngineQuickWidget->rootObject();
+    // The root item should not has focus, otherwise it would handle input events
+    // instead of the RenderWidgetHostViewQtDelegateItem.
+    QVERIFY(!root->hasFocus());
+
+    QCOMPARE(root->childItems().size(), 1);
+    QQuickItem *renderWidgetHostViewQtDelegateItem = root->childItems().at(0);
+    QVERIFY(renderWidgetHostViewQtDelegateItem);
+    QTRY_COMPARE(renderWidgetHostViewQtDelegateItem->hasFocus(), true);
+    // Test if QWebEngineView handles key events.
+    QTRY_COMPARE(renderWidgetHostViewQtDelegateItem->hasActiveFocus(), true);
+
+    // Key events should not be forwarded to the unfocused input field.
+    QTRY_COMPARE(evaluateJavaScriptSync(webView->page(),
+                                        "document.getElementById('input1').value").toString(),
+                                        QStringLiteral(""));
+    QTest::keyClick(webView->focusProxy(), Qt::Key_X);
+    QTest::qWait(100);
+    QTRY_COMPARE(evaluateJavaScriptSync(webView->page(),
+                 "document.getElementById('input1').value").toString(),
+                 QStringLiteral(""));
+
+    // Focus the input field. Focus rectangle is expected to appear around the input field.
+    evaluateJavaScriptSync(webView->page(), "document.getElementById('input1').focus()");
+    QTRY_COMPARE(evaluateJavaScriptSync(webView->page(),
+                                        "document.activeElement.id").toString(),
+                                        QStringLiteral("input1"));
+
+    // Test the focused input field with a key event.
+    QTest::keyClick(webView->focusProxy(), Qt::Key_X);
+    QTRY_COMPARE(evaluateJavaScriptSync(webView->page(),
+                                        "document.getElementById('input1').value").toString(),
+                                        QStringLiteral("x"));
 }
 
 void tst_QWebEngineView::doNotBreakLayout()
@@ -1345,7 +1398,7 @@ void tst_QWebEngineView::keyboardEvents()
     view.show();
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
     view.load(QUrl("qrc:///resources/keyboardEvents.html"));
-    QVERIFY(loadFinishedSpy.wait());
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
 
     QStringList elements;
     elements << "first_div" << "second_div";
@@ -1464,17 +1517,21 @@ void tst_QWebEngineView::keyboardFocusAfterPopup()
     QTRY_COMPARE(QApplication::focusWidget(), window.lineEdit);
 
     // Trigger QCompleter's popup and select the first suggestion.
-    QTest::keyClick(QApplication::focusWindow(), Qt::Key_T);
+    QTest::keyPress(QApplication::focusWindow(), Qt::Key_T);
+    QTest::keyRelease(QApplication::focusWindow(), Qt::Key_T);
     QTRY_VERIFY(QApplication::activePopupWidget());
-    QTest::keyClick(QApplication::focusWindow(), Qt::Key_Down);
-    QTest::keyClick(QApplication::focusWindow(), Qt::Key_Enter);
+    QTest::keyPress(QApplication::focusWindow(), Qt::Key_Down);
+    QTest::keyRelease(QApplication::focusWindow(), Qt::Key_Down);
+    QTest::keyPress(QApplication::focusWindow(), Qt::Key_Enter);
+    QTest::keyRelease(QApplication::focusWindow(), Qt::Key_Enter);
 
     // Due to FocusOnNavigationEnabled, focus should now move to the webView.
     QTRY_COMPARE(QApplication::focusWidget(), window.webView->focusProxy());
 
     // Keyboard events sent to the window should go to the <input> element.
     QVERIFY(loadFinishedSpy.count() || loadFinishedSpy.wait());
-    QTest::keyClick(QApplication::focusWindow(), Qt::Key_X);
+    QTest::keyPress(QApplication::focusWindow(), Qt::Key_X);
+    QTest::keyRelease(QApplication::focusWindow(), Qt::Key_X);
     QTRY_COMPARE(evaluateJavaScriptSync(window.webView->page(), "document.getElementById('input1').value").toString(),
                  QStringLiteral("x"));
 }
@@ -2945,7 +3002,7 @@ void tst_QWebEngineView::imeCompositionQueryEvent()
     QTRY_COMPARE(anchorPosQuery.value(Qt::ImAnchorPosition).toInt(), 11);
 }
 
-#ifndef QT_NO_CLIPBOARD
+#if QT_CONFIG(clipboard)
 void tst_QWebEngineView::globalMouseSelection()
 {
     if (!QApplication::clipboard()->supportsSelection()) {
@@ -3122,46 +3179,50 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::addColumn<bool>("supported");
     QTest::newRow("about") << QUrl("chrome://about") << false;
     QTest::newRow("accessibility") << QUrl("chrome://accessibility") << true;
-    QTest::newRow("appcache-internals") << QUrl("chrome://appcache-internals") << true;
+    QTest::newRow("app-service-internals") << QUrl("chrome://app-service-internals") << false;
+    QTest::newRow("app-settings") << QUrl("chrome://app-settings") << false;
     QTest::newRow("apps") << QUrl("chrome://apps") << false;
+    QTest::newRow("attribution-internals") << QUrl("chrome://attribution-internals") << true;
     QTest::newRow("autofill-internals") << QUrl("chrome://autofill-internals") << false;
     QTest::newRow("blob-internals") << QUrl("chrome://blob-internals") << true;
     QTest::newRow("bluetooth-internals") << QUrl("chrome://bluetooth-internals") << false;
     QTest::newRow("bookmarks") << QUrl("chrome://bookmarks") << false;
     QTest::newRow("chrome-urls") << QUrl("chrome://chrome-urls") << false;
     QTest::newRow("components") << QUrl("chrome://components") << false;
-    QTest::newRow("conversion-internals") << QUrl("chrome://conversion-internals") << true;
+    QTest::newRow("connectors-internals") << QUrl("chrome://connectors-internals") << false;
     QTest::newRow("crashes") << QUrl("chrome://crashes") << false;
     QTest::newRow("credits") << QUrl("chrome://credits") << false;
     QTest::newRow("device-log") << QUrl("chrome://device-log") << true;
-    QTest::newRow("devices") << QUrl("chrome://devices") << false;
     QTest::newRow("dino") << QUrl("chrome://dino") << false; // It works but this is an error page
     QTest::newRow("discards") << QUrl("chrome://discards") << false;
     QTest::newRow("download-internals") << QUrl("chrome://download-internals") << false;
     QTest::newRow("downloads") << QUrl("chrome://downloads") << false;
     QTest::newRow("extensions") << QUrl("chrome://extensions") << false;
+    QTest::newRow("extensions-internals") << QUrl("chrome://extensions-internals") << false;
     QTest::newRow("flags") << QUrl("chrome://flags") << false;
     QTest::newRow("gcm-internals") << QUrl("chrome://gcm-internals") << false;
     QTest::newRow("gpu") << QUrl("chrome://gpu") << true;
     QTest::newRow("help") << QUrl("chrome://help") << false;
     QTest::newRow("histograms") << QUrl("chrome://histograms") << true;
     QTest::newRow("history") << QUrl("chrome://history") << false;
+    QTest::newRow("history-clusters-internals") << QUrl("chrome://history-clusters-internals") << false;
     QTest::newRow("indexeddb-internals") << QUrl("chrome://indexeddb-internals") << true;
     QTest::newRow("inspect") << QUrl("chrome://inspect") << false;
     QTest::newRow("interstitials") << QUrl("chrome://interstitials") << false;
-    QTest::newRow("interventions-internals") << QUrl("chrome://interventions-internals") << false;
     QTest::newRow("invalidations") << QUrl("chrome://invalidations") << false;
     QTest::newRow("linux-proxy-config") << QUrl("chrome://linux-proxy-config") << false;
     QTest::newRow("local-state") << QUrl("chrome://local-state") << false;
     QTest::newRow("management") << QUrl("chrome://management") << false;
     QTest::newRow("media-engagement") << QUrl("chrome://media-engagement") << false;
     QTest::newRow("media-internals") << QUrl("chrome://media-internals") << true;
+    QTest::newRow("nacl") << QUrl("chrome://nacl") << false;
     QTest::newRow("net-export") << QUrl("chrome://net-export") << false;
     QTest::newRow("net-internals") << QUrl("chrome://net-internals") << true;
     QTest::newRow("network-error") << QUrl("chrome://network-error") << false;
     QTest::newRow("network-errors") << QUrl("chrome://network-errors") << true;
     QTest::newRow("ntp-tiles-internals") << QUrl("chrome://ntp-tiles-internals") << false;
     QTest::newRow("omnibox") << QUrl("chrome://omnibox") << false;
+    QTest::newRow("optimization-guide-internals") << QUrl("chrome://optimization-guide-internals") << false;
     QTest::newRow("password-manager-internals") << QUrl("chrome://password-manager-internals") << false;
     QTest::newRow("policy") << QUrl("chrome://policy") << false;
     QTest::newRow("predictors") << QUrl("chrome://predictors") << false;
@@ -3179,8 +3240,6 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::newRow("settings") << QUrl("chrome://settings") << false;
     QTest::newRow("signin-internals") << QUrl("chrome://signin-internals") << false;
     QTest::newRow("site-engagement") << QUrl("chrome://site-engagement") << false;
-    QTest::newRow("suggestions") << QUrl("chrome://suggestions") << false;
-    QTest::newRow("supervised-user-internals") << QUrl("chrome://supervised-user-internals") << false;
     QTest::newRow("sync-internals") << QUrl("chrome://sync-internals") << false;
     QTest::newRow("system") << QUrl("chrome://system") << false;
     QTest::newRow("terms") << QUrl("chrome://terms") << false;
@@ -3190,12 +3249,14 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::newRow("usb-internals") << QUrl("chrome://usb-internals") << false;
     QTest::newRow("user-actions") << QUrl("chrome://user-actions") << true;
     QTest::newRow("version") << QUrl("chrome://version") << false;
+    QTest::newRow("web-app-internals") << QUrl("chrome://web-app-internals") << false;
 #if QT_CONFIG(webengine_webrtc)
     QTest::newRow("webrtc-internals") << QUrl("chrome://webrtc-internals") << true;
 #if QT_CONFIG(webengine_extensions)
     QTest::newRow("webrtc-logs") << QUrl("chrome://webrtc-logs") << true;
 #endif // QT_CONFIG(webengine_extensions)
 #endif // QT_CONFIG(webengine_webrtc)
+    QTest::newRow("whats-new") << QUrl("chrome://whats-new") << false;
 }
 
 void tst_QWebEngineView::webUIURLs()
@@ -3207,7 +3268,7 @@ void tst_QWebEngineView::webUIURLs()
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
     view.load(url);
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 90000);
     QCOMPARE(loadFinishedSpy.takeFirst().at(0).toBool(), supported);
 }
 
@@ -3377,10 +3438,8 @@ void tst_QWebEngineView::switchPage()
       QSignalSpy loadFinishedSpy2(&page2, SIGNAL(loadFinished(bool)));
       // TODO fixme: page without the view has no real widget behind, so
       // reading graphical content will fail, add view for now.
-      QWebEngineView webView1;
-      QWebEngineView webView2;
-      webView1.setPage(&page1);
-      webView2.setPage(&page2);
+      QWebEngineView webView1(&page1, nullptr);
+      QWebEngineView webView2(&page2, nullptr);
       page1.setHtml("<html><body bgcolor=\"#000000\"></body></html>");
       page2.setHtml("<html><body bgcolor=\"#ffffff\"></body></html>");
       QTRY_VERIFY(loadFinishedSpy1.count() && loadFinishedSpy2.count());
@@ -3454,17 +3513,15 @@ void tst_QWebEngineView::setViewPreservesExplicitPage()
 void tst_QWebEngineView::closeDiscardsPage()
 {
     QWebEngineProfile profile;
-    QWebEnginePage page(&profile);
-    QWebEngineView view;
-    view.setPage(&page);
+    QWebEngineView view(&profile, nullptr);
     view.resize(300, 300);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QCOMPARE(page.isVisible(), true);
-    QCOMPARE(page.lifecycleState(), QWebEnginePage::LifecycleState::Active);
+    QCOMPARE(view.page()->isVisible(), true);
+    QCOMPARE(view.page()->lifecycleState(), QWebEnginePage::LifecycleState::Active);
     view.close();
-    QCOMPARE(page.isVisible(), false);
-    QCOMPARE(page.lifecycleState(), QWebEnginePage::LifecycleState::Discarded);
+    QCOMPARE(view.page()->isVisible(), false);
+    QCOMPARE(view.page()->lifecycleState(), QWebEnginePage::LifecycleState::Discarded);
 }
 
 
@@ -3520,16 +3577,21 @@ void tst_QWebEngineView::inspectElement()
 void tst_QWebEngineView::navigateOnDrop_data()
 {
     QTest::addColumn<QUrl>("url");
-    QTest::newRow("file") << QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).absoluteFilePath("resources/dummy.html"));
-    QTest::newRow("qrc") << QUrl("qrc:///resources/dummy.html");
+    QTest::addColumn<bool>("navigateOnDrop");
+    QTest::newRow("file") << QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).absoluteFilePath("resources/dummy.html")) << true;
+    QTest::newRow("qrc") << QUrl("qrc:///resources/dummy.html") << true;
+    QTest::newRow("file_no_navigate") << QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).absoluteFilePath("resources/dummy.html")) << false;
+    QTest::newRow("qrc_no_navigate") << QUrl("qrc:///resources/dummy.html") << false;
 }
 
 void tst_QWebEngineView::navigateOnDrop()
 {
     QFETCH(QUrl, url);
+    QFETCH(bool, navigateOnDrop);
     struct WebEngineView : QWebEngineView {
         QWebEngineView* createWindow(QWebEnginePage::WebWindowType /* type */) override { return this; }
     } view;
+    view.page()->settings()->setAttribute(QWebEngineSettings::NavigateOnDropEnabled, navigateOnDrop);
     view.resize(640, 480);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
@@ -3546,9 +3608,181 @@ void tst_QWebEngineView::navigateOnDrop()
     };
 
     sendEvents();
+    if (navigateOnDrop) {
+        QTRY_COMPARE(loadSpy.count(), 1);
+        QVERIFY(loadSpy.last().first().toBool());
+        QCOMPARE(view.url(), url);
+    } else {
+        QTest::qWait(500);
+        QCOMPARE(loadSpy.size(), 0);
+        QVERIFY(view.url() != url);
+    }
+
+    // Check dynamically changing the setting
+    loadSpy.clear();
+    view.page()->settings()->setAttribute(QWebEngineSettings::NavigateOnDropEnabled, !navigateOnDrop);
+    view.setUrl(QUrl("about:blank"));
     QTRY_COMPARE(loadSpy.count(), 1);
-    QVERIFY(loadSpy.first().first().toBool());
-    QCOMPARE(view.url(), url);
+
+    sendEvents();
+    if (!navigateOnDrop) {
+        QTRY_COMPARE(loadSpy.count(), 2);
+        QVERIFY(loadSpy.last().first().toBool());
+        QCOMPARE(view.url(), url);
+    } else {
+        QTest::qWait(500);
+        QCOMPARE(loadSpy.size(), 1);
+        QVERIFY(view.url() != url);
+    }
+}
+
+void tst_QWebEngineView::datalist()
+{
+    QString html("<html><body>"
+                 "<input id='browserInput' list='browserDatalist'>"
+                 "<datalist id='browserDatalist'>"
+                 "  <option value='Internet Explorer'>"
+                 "  <option value='Firefox'>"
+                 "  <option value='Chrome'>"
+                 "  <option value='Opera'>"
+                 "  <option value='Safari'>"
+                 "</datalist>"
+                 "</body></html>");
+
+    QWebEngineView view;
+    view.resize(200, 400);
+    view.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    QSignalSpy loadSpy(&view, &QWebEngineView::loadFinished);
+    view.setHtml(html);
+    QTRY_COMPARE(loadSpy.count(), 1);
+
+    QString listValuesJS("(function() {"
+                         "  var browserDatalist = document.getElementById('browserDatalist');"
+                         "  var options = browserDatalist.options;"
+                         "  var result = [];"
+                         "  for (let i = 0; i < options.length; ++i) {"
+                         "    result.push(options[i].value);"
+                         "  }"
+                         "  return result;"
+                         "})();");
+    QStringList values = evaluateJavaScriptSync(view.page(), listValuesJS).toStringList();
+    QCOMPARE(values, QStringList({ "Internet Explorer", "Firefox", "Chrome", "Opera", "Safari" }));
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('browserInput').value;")
+                     .toString(),
+             QStringLiteral(""));
+
+    auto listView = [&view]() -> QListView * {
+        if (QApplication::topLevelWidgets().size() == 1) {
+            // No popup case.
+            return nullptr;
+        }
+
+        QWidget *autofillPopupWidget = nullptr;
+        for (QWidget *w : QApplication::topLevelWidgets()) {
+            if (w != &view) {
+                autofillPopupWidget = w;
+                break;
+            }
+        }
+
+        if (!autofillPopupWidget)
+            return nullptr;
+
+        for (QObject *o : autofillPopupWidget->children()) {
+            if (QListView *listView = qobject_cast<QListView *>(o))
+                return listView;
+        }
+
+        return nullptr;
+    };
+
+    // Make sure there is no open popup yet.
+    QVERIFY(!listView());
+    // Click in the input field.
+    QPoint browserInputCenter = elementCenter(view.page(), "browserInput");
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, browserInputCenter);
+    // Wait for the popup.
+    QTRY_VERIFY(listView());
+
+    // No suggestion is selected.
+    QCOMPARE(listView()->currentIndex(), QModelIndex());
+    QCOMPARE(listView()->model()->rowCount(), 5);
+
+    // Accepting suggestion does nothing.
+    QTest::keyClick(view.windowHandle(), Qt::Key_Enter);
+    QVERIFY(listView());
+    QCOMPARE(listView()->currentIndex(), QModelIndex());
+
+    // Escape should close popup.
+    QTest::keyClick(view.windowHandle(), Qt::Key_Escape);
+    QTRY_VERIFY(!listView());
+
+    // Key Down should open the popup and select the first suggestion.
+    QTest::keyClick(view.windowHandle(), Qt::Key_Down);
+    QTRY_VERIFY(listView());
+    QCOMPARE(listView()->currentIndex().row(), 0);
+
+    // Test keyboard navigation in list.
+    QTest::keyClick(view.windowHandle(), Qt::Key_Up);
+    QCOMPARE(listView()->currentIndex().row(), 4);
+    QTest::keyClick(view.windowHandle(), Qt::Key_Up);
+    QCOMPARE(listView()->currentIndex().row(), 3);
+    QTest::keyClick(view.windowHandle(), Qt::Key_PageDown);
+    QCOMPARE(listView()->currentIndex().row(), 4);
+    QTest::keyClick(view.windowHandle(), Qt::Key_PageUp);
+    QCOMPARE(listView()->currentIndex().row(), 0);
+    QTest::keyClick(view.windowHandle(), Qt::Key_Down);
+    QCOMPARE(listView()->currentIndex().row(), 1);
+    QTest::keyClick(view.windowHandle(), Qt::Key_Down);
+    QCOMPARE(listView()->currentIndex().row(), 2);
+
+    // Test accepting suggestion.
+    QCOMPARE(static_cast<QStringListModel *>(listView()->model())
+                     ->data(listView()->currentIndex())
+                     .toString(),
+             QStringLiteral("Chrome"));
+    QTest::keyClick(view.windowHandle(), Qt::Key_Enter);
+    QTRY_COMPARE(
+            evaluateJavaScriptSync(view.page(), "document.getElementById('browserInput').value")
+                    .toString(),
+            QStringLiteral("Chrome"));
+    // Accept closes popup.
+    QTRY_VERIFY(!listView());
+
+    // Clear input field, should not trigger popup.
+    evaluateJavaScriptSync(view.page(), "document.getElementById('browserInput').value = ''");
+    QVERIFY(!listView());
+
+    // Filter suggestions.
+    QTest::keyClick(view.windowHandle(), Qt::Key_F);
+    QTRY_VERIFY(listView());
+    QCOMPARE(listView()->model()->rowCount(), 2);
+    QCOMPARE(listView()->currentIndex(), QModelIndex());
+    QCOMPARE(static_cast<QStringListModel *>(listView()->model())
+                     ->data(listView()->model()->index(0, 0))
+                     .toString(),
+             QStringLiteral("Firefox"));
+    QCOMPARE(static_cast<QStringListModel *>(listView()->model())
+                     ->data(listView()->model()->index(1, 0))
+                     .toString(),
+             QStringLiteral("Safari"));
+    QTest::keyClick(view.windowHandle(), Qt::Key_I);
+    QTRY_COMPARE(listView()->model()->rowCount(), 1);
+    QCOMPARE(listView()->currentIndex(), QModelIndex());
+    QCOMPARE(static_cast<QStringListModel *>(listView()->model())
+                     ->data(listView()->model()->index(0, 0))
+                     .toString(),
+             QStringLiteral("Firefox"));
+    QTest::keyClick(view.windowHandle(), Qt::Key_L);
+    // Mismatch should close popup.
+    QTRY_VERIFY(!listView());
+    QTRY_COMPARE(
+            evaluateJavaScriptSync(view.page(), "document.getElementById('browserInput').value")
+                    .toString(),
+            QStringLiteral("fil"));
 }
 
 QTEST_MAIN(tst_QWebEngineView)

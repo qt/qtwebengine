@@ -1,30 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2018 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:GPL-EXCEPT$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3 as published by the Free Software
-** Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2018 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <QtTest/QtTest>
 
@@ -242,11 +217,11 @@ void tst_LoadSignals::rejectNavigationRequest_data()
     QTest::newRow("SamePageImmediate")
             << QUrl("qrc:///resources/page5.html")
             << QUrl("qrc:///resources/page5.html#anchor")
-            << 1 << SignalsOrderOnce << 200 << QWebEngineLoadingInfo::InternalErrorDomain; // FIXME wrong error domain
+            << 1 << SignalsOrderOnce << 200 << QWebEngineLoadingInfo::HttpStatusCodeDomain;
     QTest::newRow("SamePageDeferred")
             << QUrl("qrc:///resources/page3.html")
             << QUrl("qrc:///resources/page3.html#anchor")
-            << 1 << SignalsOrderOnce << 200 << QWebEngineLoadingInfo::InternalErrorDomain; // FIXME wrong error domain
+            << 1 << SignalsOrderOnce << 200 << QWebEngineLoadingInfo::HttpStatusCodeDomain;
     QTest::newRow("OtherPageImmediate")
             << QUrl("qrc:///resources/page6.html")
             << QUrl("qrc:///resources/page2.html#anchor")
@@ -302,7 +277,7 @@ void tst_LoadSignals::monotonicity()
     QVERIFY(server.start());
 
     view.load(server.url("/loadprogress/main.html"));
-    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 10000);
     QVERIFY(loadFinishedSpy[0][0].toBool());
 
     QVERIFY(page.loadProgress.size() >= 3);
@@ -415,7 +390,7 @@ void tst_LoadSignals::numberOfStartedAndFinishedSignalsIsSame()
     QTRY_LOOP_IMPL(loadStartedSpy.size() || loadFinishedSpy.size(), 1000, 100);
     QCOMPARE(page.signalsOrder, SignalsOrderOnce);
     QCOMPARE(page.loadingInfos[1].errorCode(), 200);
-    QCOMPARE(page.loadingInfos[1].errorDomain(), QWebEngineLoadingInfo::InternalErrorDomain); // FIXME should be no error or separate domain?
+    QCOMPARE(page.loadingInfos[1].errorDomain(), QWebEngineLoadingInfo::HttpStatusCodeDomain);
 }
 
 void tst_LoadSignals::loadFinishedAfterNotFoundError_data()
@@ -426,7 +401,7 @@ void tst_LoadSignals::loadFinishedAfterNotFoundError_data()
     QTest::addColumn<int>("errorDomain");
     QTest::addRow("rfc_invalid")  << true  << false << -105 << int(QWebEngineLoadingInfo::ConnectionErrorDomain);
     QTest::addRow("non_existent") << false << false << -105 << int(QWebEngineLoadingInfo::ConnectionErrorDomain);
-    QTest::addRow("server_404")   << false << true  <<  404 << int(QWebEngineLoadingInfo::InternalErrorDomain); // FIXME should be no error or separate domain?
+    QTest::addRow("server_404")   << false << true  <<  404 << int(QWebEngineLoadingInfo::HttpStatusCodeDomain);
 }
 
 void tst_LoadSignals::loadFinishedAfterNotFoundError()
@@ -502,10 +477,10 @@ void tst_LoadSignals::errorPageTriggered_data()
     QTest::addColumn<bool>("triggersErrorPage");
     QTest::addColumn<int>("errorCode");
     QTest::addColumn<QWebEngineLoadingInfo::ErrorDomain>("errorDomain");
-    QTest::newRow("/content/200") << QStringLiteral("/content/200") << true << false << 200 << QWebEngineLoadingInfo::InternalErrorDomain;  // FIXME ?
-    QTest::newRow("/empty/200") << QStringLiteral("/content/200") << true << false << 200 << QWebEngineLoadingInfo::InternalErrorDomain;    // no error
-    QTest::newRow("/content/404") << QStringLiteral("/content/404") << false << false << 404 << QWebEngineLoadingInfo::InternalErrorDomain; // or
-    QTest::newRow("/empty/404") << QStringLiteral("/empty/404") << false << true << 404 << QWebEngineLoadingInfo::InternalErrorDomain;      // separate domain?
+    QTest::newRow("/content/200") << QStringLiteral("/content/200") << true << false << 200 << QWebEngineLoadingInfo::HttpStatusCodeDomain;
+    QTest::newRow("/empty/200") << QStringLiteral("/content/200") << true << false << 200 << QWebEngineLoadingInfo::HttpStatusCodeDomain;
+    QTest::newRow("/content/404") << QStringLiteral("/content/404") << false << false << 404 << QWebEngineLoadingInfo::HttpStatusCodeDomain;
+    QTest::newRow("/empty/404") << QStringLiteral("/empty/404") << false << true << 404 << QWebEngineLoadingInfo::HttpStatusCodeDomain;
 }
 
 void tst_LoadSignals::errorPageTriggered()

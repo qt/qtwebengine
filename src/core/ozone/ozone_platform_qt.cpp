@@ -1,51 +1,15 @@
-/****************************************************************************
-**
-** Copyright (C) 2017 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2017 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "ozone_platform_qt.h"
 
 #if defined(USE_OZONE)
 #include "ui/base/buildflags.h"
-#include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
+#include "ui/ozone/common/bitmap_cursor_factory.h"
 #include "ui/ozone/common/stub_client_native_pixmap_factory.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
@@ -89,13 +53,13 @@ public:
     std::unique_ptr<InputMethod> CreateInputMethod(internal::InputMethodDelegate *delegate, gfx::AcceleratedWidget widget) override;
     std::unique_ptr<ui::PlatformScreen> CreateScreen() override { return nullptr; }
 private:
-    void InitializeUI(const ui::OzonePlatform::InitParams &) override;
+    bool InitializeUI(const ui::OzonePlatform::InitParams &) override;
     void InitializeGPU(const ui::OzonePlatform::InitParams &) override;
 
     void InitScreen(ui::PlatformScreen *) override {}
 
     std::unique_ptr<QtWebEngineCore::SurfaceFactoryQt> surface_factory_ozone_;
-    std::unique_ptr<CursorFactory> cursor_factory_ozone_;
+    std::unique_ptr<CursorFactory> cursor_factory_;
 
     std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
     std::unique_ptr<InputController> input_controller_;
@@ -105,8 +69,6 @@ private:
     XkbEvdevCodes m_xkbEvdevCodeConverter;
 #endif
     std::unique_ptr<KeyboardLayoutEngine> m_keyboardLayoutEngine;
-
-    DISALLOW_COPY_AND_ASSIGN(OzonePlatformQt);
 };
 
 
@@ -121,7 +83,7 @@ ui::SurfaceFactoryOzone* OzonePlatformQt::GetSurfaceFactoryOzone()
 
 ui::CursorFactory* OzonePlatformQt::GetCursorFactory()
 {
-    return cursor_factory_ozone_.get();
+    return cursor_factory_.get();
 }
 
 GpuPlatformSupportHost* OzonePlatformQt::GetGpuPlatformSupportHost()
@@ -200,7 +162,7 @@ static std::string getCurrentKeyboardLayout()
 }
 #endif // BUILDFLAG(USE_XKBCOMMON)
 
-void OzonePlatformQt::InitializeUI(const ui::OzonePlatform::InitParams &)
+bool OzonePlatformQt::InitializeUI(const ui::OzonePlatform::InitParams &)
 {
 #if BUILDFLAG(USE_XKBCOMMON)
     std::string layout = getCurrentKeyboardLayout();
@@ -218,8 +180,9 @@ void OzonePlatformQt::InitializeUI(const ui::OzonePlatform::InitParams &)
 
     overlay_manager_.reset(new StubOverlayManager());
     input_controller_ = CreateStubInputController();
-    cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone());
+    cursor_factory_.reset(new BitmapCursorFactory());
     gpu_platform_support_host_.reset(ui::CreateStubGpuPlatformSupportHost());
+    return true;
 }
 
 void OzonePlatformQt::InitializeGPU(const ui::OzonePlatform::InitParams &)

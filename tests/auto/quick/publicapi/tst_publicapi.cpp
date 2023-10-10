@@ -1,30 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:GPL-EXCEPT$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3 as published by the Free Software
-** Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <QMetaEnum>
 #include <QMetaMethod>
@@ -35,6 +10,7 @@
 #include <QtTest/QtTest>
 #include <QtWebEngineQuick/QQuickWebEngineProfile>
 #include <QtWebEngineCore/QWebEngineCertificateError>
+#include <QtWebEngineCore/QWebEngineFileSystemAccessRequest>
 #include <QtWebEngineCore/QWebEngineFindTextResult>
 #include <QtWebEngineCore/QWebEngineFullScreenRequest>
 #include <QtWebEngineCore/QWebEngineHistory>
@@ -85,6 +61,7 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QQuickWebEngineTooltipRequest::staticMetaObject
     << &QWebEngineContextMenuRequest::staticMetaObject
     << &QWebEngineCertificateError::staticMetaObject
+    << &QWebEngineFileSystemAccessRequest::staticMetaObject
     << &QWebEngineFindTextResult::staticMetaObject
     << &QWebEngineLoadingInfo::staticMetaObject
     << &QWebEngineNavigationRequest::staticMetaObject
@@ -106,7 +83,8 @@ static const QStringList hardcodedTypes = QStringList()
     << "const QQuickWebEngineContextMenuData*"
     << "QWebEngineCookieStore*"
     << "Qt::LayoutDirection"
-    << "QQuickWebEngineScriptCollection*";
+    << "QQuickWebEngineScriptCollection*"
+    << "QQmlComponent*";
 
 static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineAction.text --> QString"
@@ -287,6 +265,16 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineFullScreenRequest.origin --> QUrl"
     << "QWebEngineFullScreenRequest.reject() --> void"
     << "QWebEngineFullScreenRequest.toggleOn --> bool"
+    << "QWebEngineFileSystemAccessRequest.File --> HandleType"
+    << "QWebEngineFileSystemAccessRequest.Directory --> HandleType"
+    << "QWebEngineFileSystemAccessRequest.Read --> AccessFlags"
+    << "QWebEngineFileSystemAccessRequest.Write --> AccessFlags"
+    << "QWebEngineFileSystemAccessRequest.origin --> QUrl"
+    << "QWebEngineFileSystemAccessRequest.filePath --> QUrl"
+    << "QWebEngineFileSystemAccessRequest.handleType --> QWebEngineFileSystemAccessRequest::HandleType"
+    << "QWebEngineFileSystemAccessRequest.accessFlags --> QFlags<QWebEngineFileSystemAccessRequest::AccessFlag>"
+    << "QWebEngineFileSystemAccessRequest.accept() --> void"
+    << "QWebEngineFileSystemAccessRequest.reject() --> void"
     << "QWebEngineHistory.backItems --> QWebEngineHistoryModel*"
     << "QWebEngineHistory.clear() --> void"
     << "QWebEngineHistory.forwardItems --> QWebEngineHistoryModel*"
@@ -314,6 +302,7 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineLoadingInfo.LoadStartedStatus --> LoadStatus"
     << "QWebEngineLoadingInfo.LoadStoppedStatus --> LoadStatus"
     << "QWebEngineLoadingInfo.LoadSucceededStatus --> LoadStatus"
+    << "QWebEngineLoadingInfo.HttpStatusCodeDomain --> ErrorDomain"
     << "QWebEngineLoadingInfo.CertificateErrorDomain --> ErrorDomain"
     << "QWebEngineLoadingInfo.ConnectionErrorDomain --> ErrorDomain"
     << "QWebEngineLoadingInfo.DnsErrorDomain --> ErrorDomain"
@@ -424,6 +413,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.localContentCanAccessRemoteUrlsChanged() --> void"
     << "QQuickWebEngineSettings.localStorageEnabled --> bool"
     << "QQuickWebEngineSettings.localStorageEnabledChanged() --> void"
+    << "QQuickWebEngineSettings.navigateOnDropEnabled --> bool"
+    << "QQuickWebEngineSettings.navigateOnDropEnabledChanged() --> void"
     << "QQuickWebEngineSettings.pdfViewerEnabled --> bool"
     << "QQuickWebEngineSettings.pdfViewerEnabledChanged() --> void"
     << "QQuickWebEngineSettings.playbackRequiresUserGesture --> bool"
@@ -693,6 +684,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.devToolsViewChanged() --> void"
     << "QQuickWebEngineView.featurePermissionRequested(QUrl,Feature) --> void"
     << "QQuickWebEngineView.fileDialogRequested(QQuickWebEngineFileDialogRequest*) --> void"
+    << "QQuickWebEngineView.fileSystemAccessRequested(QWebEngineFileSystemAccessRequest) --> void"
     << "QQuickWebEngineView.findText(QString) --> void"
     << "QQuickWebEngineView.findText(QString,FindFlags) --> void"
     << "QQuickWebEngineView.findText(QString,FindFlags,QJSValue) --> void"
@@ -772,6 +764,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.title --> QString"
     << "QQuickWebEngineView.titleChanged() --> void"
     << "QQuickWebEngineView.tooltipRequested(QQuickWebEngineTooltipRequest*) --> void"
+    << "QQuickWebEngineView.touchHandleDelegate --> QQmlComponent*"
+    << "QQuickWebEngineView.touchHandleDelegateChanged() --> void"
     << "QQuickWebEngineView.touchSelectionMenuRequested(QQuickWebEngineTouchSelectionMenuRequest*) --> void"
     << "QQuickWebEngineView.triggerWebAction(WebAction) --> void"
     << "QQuickWebEngineView.url --> QUrl"

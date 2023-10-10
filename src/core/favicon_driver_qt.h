@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2021 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2021 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 //
 //  W A R N I N G
@@ -55,7 +19,9 @@
 
 #include "components/favicon/core/favicon_driver.h"
 #include "components/favicon/core/favicon_handler.h"
+#include "content/public/browser/document_user_data.h"
 #include "content/public/browser/favicon_status.h"
+#include "content/public/browser/navigation_handle_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
@@ -65,7 +31,7 @@ class WebContents;
 }
 
 namespace favicon {
-class FaviconService;
+class CoreFaviconService;
 }
 
 namespace QtWebEngineCore {
@@ -87,7 +53,7 @@ class FaviconDriverQt : public favicon::FaviconDriver,
 {
 public:
     static void CreateForWebContents(content::WebContents *webContents,
-                                     favicon::FaviconService *faviconService,
+                                     favicon::CoreFaviconService *faviconService,
                                      WebContentsAdapterClient *viewClient);
 
     // FaviconDriver implementation.
@@ -96,14 +62,37 @@ public:
     bool FaviconIsValid() const override;
     GURL GetActiveURL() override;
 
+    GURL GetManifestURL(content::RenderFrameHost *rfh);
     GURL GetFaviconURL() const;
 
 protected:
-    FaviconDriverQt(content::WebContents *webContent, favicon::FaviconService *faviconService,
+    FaviconDriverQt(content::WebContents *webContent, favicon::CoreFaviconService *faviconService,
                     WebContentsAdapterClient *viewClient);
 
 private:
     friend class content::WebContentsUserData<FaviconDriverQt>;
+
+    // TODO(crbug.com/1205018): these two classes are current used to ensure that
+    // we disregard manifest URL updates that arrive prior to onload firing.
+    struct DocumentManifestData : public content::DocumentUserData<DocumentManifestData>
+    {
+        explicit DocumentManifestData(content::RenderFrameHost *rfh);
+        ~DocumentManifestData() override;
+        DOCUMENT_USER_DATA_KEY_DECL();
+        bool has_manifest_url = false;
+    };
+
+    struct NavigationManifestData : public content::NavigationHandleUserData<NavigationManifestData>
+    {
+        explicit NavigationManifestData(content::NavigationHandle &navigation_handle);
+        ~NavigationManifestData() override;
+        NAVIGATION_HANDLE_USER_DATA_KEY_DECL();
+        bool has_manifest_url = false;
+    };
+
+    // Callback when a manifest is downloaded.
+    void OnDidDownloadManifest(ManifestDownloadCallback callback, const GURL &manifest_url,
+                               blink::mojom::ManifestPtr manifest);
 
     // FaviconHandler::Delegate implementation.
     int DownloadImage(const GURL &url, int max_image_size, ImageDownloadCallback callback) override;
@@ -119,15 +108,13 @@ private:
     void OnHandlerCompleted(favicon::FaviconHandler *handler) override;
 
     // content::WebContentsObserver implementation.
-    void DidUpdateFaviconURL(content::RenderFrameHost *render_frame_host,
+    void DidUpdateFaviconURL(content::RenderFrameHost *rfh,
                              const std::vector<blink::mojom::FaviconURLPtr> &candidates) override;
-    void DidUpdateWebManifestURL(content::RenderFrameHost *target_frame,
-                                 const GURL &manifest_url) override;
+    void DidUpdateWebManifestURL(content::RenderFrameHost *rfh, const GURL &manifest_url) override;
     void DidStartNavigation(content::NavigationHandle *navigation_handle) override;
     void DidFinishNavigation(content::NavigationHandle *navigation_handle) override;
-    void DocumentOnLoadCompletedInMainFrame(content::RenderFrameHost *render_frame_host) override;
 
-    // Informs FaviconService that the favicon for |url| is out of date. If
+    // Informs CoreFaviconService that the favicon for |url| is out of date. If
     // |force_reload| is true, then discard information about favicon download
     // failures.
     void SetFaviconOutOfDateForPage(const GURL &url, bool force_reload);
@@ -141,26 +128,22 @@ private:
 
     // KeyedService used by FaviconDriverImpl. It may be null during testing,
     // but if it is defined, it must outlive the FaviconDriverImpl.
-    favicon::FaviconService *m_faviconService;
+    raw_ptr<favicon::CoreFaviconService> m_faviconService;
 
     WebContentsAdapterClient *m_viewClient;
 
-    // FaviconHandlers used to download the different kind of favicons.
+    // FaviconHandlers are used to download the different kind of favicons.
     std::vector<std::unique_ptr<favicon::FaviconHandler>> m_handlers;
 
     GURL m_bypassCachePageURL;
-    bool m_documentOnLoadCompleted = false;
 
     // nullopt until the actual list is reported via DidUpdateFaviconURL().
     absl::optional<std::vector<blink::mojom::FaviconURLPtr>> m_faviconUrls;
-    // Web Manifest URL or empty URL if none.
-    GURL m_manifestUrl;
 
     int m_completedHandlersCount = 0;
     FaviconStatusQt m_latestFavicon;
 
     WEB_CONTENTS_USER_DATA_KEY_DECL();
-    DISALLOW_COPY_AND_ASSIGN(FaviconDriverQt);
 };
 
 } // namespace QtWebEngineCore

@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #ifndef CONTENT_BROWSER_CLIENT_QT_H
 #define CONTENT_BROWSER_CLIENT_QT_H
@@ -78,7 +42,7 @@ class ContentBrowserClientQt : public content::ContentBrowserClient
 public:
     ContentBrowserClientQt();
     ~ContentBrowserClientQt();
-    std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(const content::MainFunctionParams&) override;
+    std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(content::MainFunctionParams) override;
     void RenderProcessWillLaunch(content::RenderProcessHost *host) override;
     gl::GLShareGroup* GetInProcessGpuShareGroup() override;
     content::MediaObserver* GetMediaObserver() override;
@@ -98,7 +62,6 @@ public:
                                               std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
     std::unique_ptr<net::ClientCertStore> CreateClientCertStore(content::BrowserContext *browser_context) override;
     std::unique_ptr<content::DevToolsManagerDelegate> CreateDevToolsManagerDelegate() override;
-    content::PlatformNotificationService * GetPlatformNotificationService(content::BrowserContext *browser_context) override;
 
     std::string GetApplicationLocale() override;
     std::string GetAcceptLangs(content::BrowserContext* context) override;
@@ -117,9 +80,8 @@ public:
     void ExposeInterfacesToRenderer(service_manager::BinderRegistry *registry,
                                     blink::AssociatedInterfaceRegistry *associated_registry,
                                     content::RenderProcessHost *render_process_host) override;
-    bool BindAssociatedReceiverFromFrame(content::RenderFrameHost *render_frame_host,
-                                         const std::string &interface_name,
-                                         mojo::ScopedInterfaceEndpointHandle *handle) override;
+    void RegisterAssociatedInterfaceBindersForRenderFrameHost(content::RenderFrameHost &render_frame_host,
+                                                              blink::AssociatedInterfaceRegistry &associated_registry) override;
 
     bool CanCreateWindow(content::RenderFrameHost *opener,
                          const GURL &opener_url,
@@ -145,14 +107,18 @@ public:
             int process_id,
             int routing_id,
             mojo::PendingReceiver<network::mojom::RestrictedCookieManager> *receiver) override;
+    bool WillInterceptWebSocket(content::RenderFrameHost *frame) override;
+    void CreateWebSocket(
+            content::RenderFrameHost *frame,
+            WebSocketFactory factory,
+            const GURL &url,
+            const net::SiteForCookies &site_for_cookies,
+            const absl::optional<std::string> &user_agent,
+            mojo::PendingRemote<network::mojom::WebSocketHandshakeClient> handshake_client) override;
 
-    bool AllowAppCache(const GURL &manifest_url,
-                       const GURL &first_party,
-                       const absl::optional<url::Origin> &top_frame_origin,
-                       content::BrowserContext *context) override;
     content::AllowServiceWorkerResult AllowServiceWorker(
             const GURL &scope,
-            const GURL &site_for_cookies,
+            const net::SiteForCookies &site_for_cookies,
             const absl::optional<url::Origin> &top_frame_origin,
             const GURL &script_url,
             content::BrowserContext *context) override;
@@ -190,10 +156,6 @@ public:
     void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::PosixFileDescriptorInfo* mappings) override;
 #endif
 
-#if QT_CONFIG(webengine_pepper_plugins)
-    void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) override;
-#endif
-
     std::unique_ptr<content::LoginDelegate> CreateLoginDelegate(
             const net::AuthChallengeInfo &auth_info,
             content::WebContents *web_contents,
@@ -207,13 +169,15 @@ public:
     bool HandleExternalProtocol(
             const GURL &url,
             base::RepeatingCallback<content::WebContents*()> web_contents_getter,
-            int child_id,
             int frame_tree_node_id,
             content::NavigationUIData *navigation_data,
-            bool is_main_frame,
+            bool is_primary_main_frame,
+            bool is_in_fenced_frame_tree,
+            network::mojom::WebSandboxFlags sandbox_flags,
             ui::PageTransition page_transition,
             bool has_user_gesture,
             const absl::optional<url::Origin> &initiating_origin,
+            content::RenderFrameHost *initiator_document,
             mojo::PendingRemote<network::mojom::URLLoaderFactory> *out_factory) override;
 
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> CreateURLLoaderThrottles(
@@ -228,7 +192,10 @@ public:
     bool HasErrorPage(int http_status_code, content::WebContents *contents) override;
     bool HasCustomSchemeHandler(content::BrowserContext *browser_context,
                                 const std::string &scheme) override;
-
+    std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
+    WillCreateURLLoaderRequestInterceptors(content::NavigationUIData *navigation_ui_data,
+                                           int frame_tree_node_id,
+                                           const scoped_refptr<network::SharedURLLoaderFactory> &network_loader_factory) override;
     bool WillCreateURLLoaderFactory(content::BrowserContext *browser_context,
                                     content::RenderFrameHost *frame,
                                     int render_process_id,
@@ -255,6 +222,7 @@ public:
                                                         ukm::SourceIdObj ukm_source_id,
                                                         NonNetworkURLLoaderFactoryMap *factories) override;
     void RegisterNonNetworkSubresourceURLLoaderFactories(int render_process_id, int render_frame_id,
+                                                         const absl::optional<url::Origin>& request_initiator_origin,
                                                          NonNetworkURLLoaderFactoryMap *factories) override;
     void RegisterNonNetworkWorkerMainResourceURLLoaderFactories(content::BrowserContext* browser_context,
                                                                 NonNetworkURLLoaderFactoryMap* factories) override;

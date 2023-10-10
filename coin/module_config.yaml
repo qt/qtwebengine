@@ -1,14 +1,15 @@
 version: 2
+alias: qtwebengine
 accept_configuration:
   condition: property
   property: features
   not_contains_value: Disable
 
 machine_type:
-    Build:
-        cores: 8
-    Test:
-        cores: 4
+  Build:
+    cores: 8
+  Test:
+    cores: 4
 
 instructions:
   Build:

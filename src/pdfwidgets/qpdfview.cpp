@@ -1,41 +1,6 @@
-/****************************************************************************
-**
-** Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Tobias König <tobias.koenig@kdab.com>
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtPDF module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Tobias König <tobias.koenig@kdab.com>
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qpdfview.h"
 #include "qpdfview_p.h"
@@ -46,7 +11,7 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include <QPdfDocument>
-#include <QPdfPageNavigation>
+#include <QPdfPageNavigator>
 #include <QScreen>
 #include <QScrollBar>
 #include <QScroller>
@@ -56,10 +21,10 @@ QT_BEGIN_NAMESPACE
 QPdfViewPrivate::QPdfViewPrivate(QPdfView *q)
     : q_ptr(q)
     , m_document(nullptr)
-    , m_pageNavigation(nullptr)
+    , m_pageNavigator(nullptr)
     , m_pageRenderer(nullptr)
-    , m_pageMode(QPdfView::SinglePage)
-    , m_zoomMode(QPdfView::CustomZoom)
+    , m_pageMode(QPdfView::PageMode::SinglePage)
+    , m_zoomMode(QPdfView::ZoomMode::Custom)
     , m_zoomFactor(1.0)
     , m_pageSpacing(3)
     , m_documentMargins(6, 6, 6, 6)
@@ -73,7 +38,7 @@ void QPdfViewPrivate::init()
 {
     Q_Q(QPdfView);
 
-    m_pageNavigation = new QPdfPageNavigation(q);
+    m_pageNavigator = new QPdfPageNavigator(q);
     m_pageRenderer = new QPdfPageRenderer(q);
     m_pageRenderer->setRenderMode(QPdfPageRenderer::RenderMode::MultiThreaded);
 }
@@ -93,7 +58,7 @@ void QPdfViewPrivate::currentPageChanged(int currentPage)
 
     q->verticalScrollBar()->setValue(yPositionForPage(currentPage));
 
-    if (m_pageMode == QPdfView::SinglePage)
+    if (m_pageMode == QPdfView::PageMode::SinglePage)
         invalidateDocumentLayout();
 }
 
@@ -121,15 +86,15 @@ void QPdfViewPrivate::setViewport(QRect viewport)
     if (oldSize != m_viewport.size()) {
         updateDocumentLayout();
 
-        if (m_zoomMode != QPdfView::CustomZoom) {
+        if (m_zoomMode != QPdfView::ZoomMode::Custom) {
             invalidatePageCache();
         }
     }
 
-    if (m_pageMode == QPdfView::MultiPage) {
+    if (m_pageMode == QPdfView::PageMode::MultiPage) {
         // An imaginary, 2px height line at the upper half of the viewport, which is used to
         // determine which page is currently located there -> we propagate that as 'current' page
-        // to the QPdfPageNavigation object
+        // to the QPdfPageNavigator object
         const QRect currentPageLine(m_viewport.x(), m_viewport.y() + m_viewport.height() * 0.4, m_viewport.width(), 2);
 
         int currentPage = 0;
@@ -141,9 +106,10 @@ void QPdfViewPrivate::setViewport(QRect viewport)
             }
         }
 
-        if (currentPage != m_pageNavigation->currentPage()) {
+        if (currentPage != m_pageNavigator->currentPage()) {
             m_blockPageScrolling = true;
-            m_pageNavigation->setCurrentPage(currentPage);
+            // ΤODO give location on the page
+            m_pageNavigator->jump(currentPage, {}, m_zoomFactor);
             m_blockPageScrolling = false;
         }
     }
@@ -205,7 +171,7 @@ QPdfViewPrivate::DocumentLayout QPdfViewPrivate::calculateDocumentLayout() const
 
     DocumentLayout documentLayout;
 
-    if (!m_document || m_document->status() != QPdfDocument::Ready)
+    if (!m_document || m_document->status() != QPdfDocument::Status::Ready)
         return documentLayout;
 
     QHash<int, QRect> pageGeometries;
@@ -214,22 +180,24 @@ QPdfViewPrivate::DocumentLayout QPdfViewPrivate::calculateDocumentLayout() const
 
     int totalWidth = 0;
 
-    const int startPage = (m_pageMode == QPdfView::SinglePage ? m_pageNavigation->currentPage() : 0);
-    const int endPage = (m_pageMode == QPdfView::SinglePage ? m_pageNavigation->currentPage() + 1 : pageCount);
+    const int startPage = (m_pageMode == QPdfView::PageMode::SinglePage ? m_pageNavigator->currentPage() : 0);
+    const int endPage = (m_pageMode == QPdfView::PageMode::SinglePage ? m_pageNavigator->currentPage() + 1 : pageCount);
 
     // calculate page sizes
     for (int page = startPage; page < endPage; ++page) {
         QSize pageSize;
-        if (m_zoomMode == QPdfView::CustomZoom) {
-            pageSize = QSizeF(m_document->pageSize(page) * m_screenResolution * m_zoomFactor).toSize();
-        } else if (m_zoomMode == QPdfView::FitToWidth) {
-            pageSize = QSizeF(m_document->pageSize(page) * m_screenResolution).toSize();
-            const qreal factor = (qreal(m_viewport.width() - m_documentMargins.left() - m_documentMargins.right()) / qreal(pageSize.width()));
+        if (m_zoomMode == QPdfView::ZoomMode::Custom) {
+            pageSize = QSizeF(m_document->pagePointSize(page) * m_screenResolution * m_zoomFactor).toSize();
+        } else if (m_zoomMode == QPdfView::ZoomMode::FitToWidth) {
+            pageSize = QSizeF(m_document->pagePointSize(page) * m_screenResolution).toSize();
+            const qreal factor = (qreal(m_viewport.width() - m_documentMargins.left() - m_documentMargins.right()) /
+                                  qreal(pageSize.width()));
             pageSize *= factor;
-        } else if (m_zoomMode == QPdfView::FitInView) {
-            const QSize viewportSize(m_viewport.size() + QSize(-m_documentMargins.left() - m_documentMargins.right(), -m_pageSpacing));
+        } else if (m_zoomMode == QPdfView::ZoomMode::FitInView) {
+            const QSize viewportSize(m_viewport.size() +
+                                     QSize(-m_documentMargins.left() - m_documentMargins.right(), -m_pageSpacing));
 
-            pageSize = QSizeF(m_document->pageSize(page) * m_screenResolution).toSize();
+            pageSize = QSizeF(m_document->pagePointSize(page) * m_screenResolution).toSize();
             pageSize = pageSize.scaled(viewportSize, Qt::KeepAspectRatio);
         }
 
@@ -280,7 +248,21 @@ void QPdfViewPrivate::updateDocumentLayout()
     updateScrollBars();
 }
 
+/*!
+    \class QPdfView
+    \inmodule QtPdf
+    \brief A PDF viewer widget.
 
+    QPdfView is a PDF viewer widget that offers a user experience similar to
+    many common PDF viewer applications, with two \l {pageMode}{modes}.
+    In the \c MultiPage mode, it supports flicking through the pages in the
+    entire document, with narrow gaps between the page images.
+    In the \c SinglePage mode, it shows one page at a time.
+*/
+
+/*!
+    Constructs a PDF viewer with parent widget \a parent.
+*/
 QPdfView::QPdfView(QWidget *parent)
     : QAbstractScrollArea(parent)
     , d_ptr(new QPdfViewPrivate(this))
@@ -289,10 +271,12 @@ QPdfView::QPdfView(QWidget *parent)
 
     d->init();
 
-    connect(d->m_pageNavigation, &QPdfPageNavigation::currentPageChanged, this, [d](int page){ d->currentPageChanged(page); });
+    connect(d->m_pageNavigator, &QPdfPageNavigator::currentPageChanged, this,
+            [d](int page){ d->currentPageChanged(page); });
 
-    connect(d->m_pageRenderer, &QPdfPageRenderer::pageRendered,
-            this, [d](int pageNumber, QSize imageSize, const QImage &image, QPdfDocumentRenderOptions, quint64 requestId){ d->pageRendered(pageNumber, imageSize, image, requestId); });
+    connect(d->m_pageRenderer, &QPdfPageRenderer::pageRendered, this,
+            [d](int pageNumber, QSize imageSize, const QImage &image, QPdfDocumentRenderOptions, quint64 requestId) {
+                d->pageRendered(pageNumber, imageSize, image, requestId); });
 
     verticalScrollBar()->setSingleStep(20);
     horizontalScrollBar()->setSingleStep(20);
@@ -302,10 +286,18 @@ QPdfView::QPdfView(QWidget *parent)
     d->calculateViewport();
 }
 
+/*!
+    Destroys the PDF viewer.
+*/
 QPdfView::~QPdfView()
 {
 }
 
+/*!
+    \property QPdfView::document
+
+    This property holds the document to be viewed.
+*/
 void QPdfView::setDocument(QPdfDocument *document)
 {
     Q_D(QPdfView);
@@ -320,9 +312,10 @@ void QPdfView::setDocument(QPdfDocument *document)
     emit documentChanged(d->m_document);
 
     if (d->m_document)
-        d->m_documentStatusChangedConnection = connect(d->m_document.data(), &QPdfDocument::statusChanged, this, [d](){ d->documentStatusChanged(); });
+        d->m_documentStatusChangedConnection =
+                connect(d->m_document.data(), &QPdfDocument::statusChanged, this,
+                        [d](){ d->documentStatusChanged(); });
 
-    d->m_pageNavigation->setDocument(d->m_document);
     d->m_pageRenderer->setDocument(d->m_document);
 
     d->documentStatusChanged();
@@ -335,13 +328,31 @@ QPdfDocument *QPdfView::document() const
     return d->m_document;
 }
 
-QPdfPageNavigation *QPdfView::pageNavigation() const
+/*!
+    This accessor returns the navigation stack that will handle back/forward navigation.
+*/
+QPdfPageNavigator *QPdfView::pageNavigator() const
 {
     Q_D(const QPdfView);
 
-    return d->m_pageNavigation;
+    return d->m_pageNavigator;
 }
 
+/*!
+    \enum QPdfView::PageMode
+
+    This enum describes the overall behavior of the PDF viewer:
+
+    \value SinglePage   Show one page at a time.
+    \value MultiPage    Allow scrolling through all pages in the document.
+*/
+
+/*!
+    \property QPdfView::pageMode
+
+    This property holds whether to show one page at a time, or all pages in the
+    document. The default is \c SinglePage.
+*/
 QPdfView::PageMode QPdfView::pageMode() const
 {
     Q_D(const QPdfView);
@@ -362,6 +373,24 @@ void QPdfView::setPageMode(PageMode mode)
     emit pageModeChanged(d->m_pageMode);
 }
 
+/*!
+    \enum QPdfView::ZoomMode
+
+    This enum describes the magnification behavior of the PDF viewer:
+
+    \value Custom       Use \l zoomFactor only.
+    \value FitToWidth   Automatically choose a zoom factor so that
+                        the width of the page fits in the view.
+    \value FitInView    Automatically choose a zoom factor so that
+                        the entire page fits in the view.
+*/
+
+/*!
+    \property QPdfView::zoomMode
+
+    This property indicates whether to use a custom size for the page(s),
+    or zoom them to fit to the view. The default is \c CustomZoom.
+*/
 QPdfView::ZoomMode QPdfView::zoomMode() const
 {
     Q_D(const QPdfView);
@@ -382,6 +411,12 @@ void QPdfView::setZoomMode(ZoomMode mode)
     emit zoomModeChanged(d->m_zoomMode);
 }
 
+/*!
+    \property QPdfView::zoomFactor
+
+    This property holds the ratio of pixels to points. The default is \c 1,
+    meaning one point (1/72 of an inch) equals 1 logical pixel.
+*/
 qreal QPdfView::zoomFactor() const
 {
     Q_D(const QPdfView);
@@ -402,6 +437,12 @@ void QPdfView::setZoomFactor(qreal factor)
     emit zoomFactorChanged(d->m_zoomFactor);
 }
 
+/*!
+    \property QPdfView::pageSpacing
+
+    This property holds the size of the padding between pages in the \l MultiPage
+    \l {pageMode}{mode}.
+*/
 int QPdfView::pageSpacing() const
 {
     Q_D(const QPdfView);
@@ -422,6 +463,11 @@ void QPdfView::setPageSpacing(int spacing)
     emit pageSpacingChanged(d->m_pageSpacing);
 }
 
+/*!
+    \property QPdfView::documentMargins
+
+    This property holds the margins around the page view.
+*/
 QMargins QPdfView::documentMargins() const
 {
     Q_D(const QPdfView);
@@ -450,7 +496,8 @@ void QPdfView::paintEvent(QPaintEvent *event)
     painter.fillRect(event->rect(), palette().brush(QPalette::Dark));
     painter.translate(-d->m_viewport.x(), -d->m_viewport.y());
 
-    for (auto it = d->m_documentLayout.pageGeometries.cbegin(); it != d->m_documentLayout.pageGeometries.cend(); ++it) {
+    for (auto it = d->m_documentLayout.pageGeometries.cbegin();
+         it != d->m_documentLayout.pageGeometries.cend(); ++it) {
         const QRect pageGeometry = it.value();
         if (pageGeometry.intersects(d->m_viewport)) { // page needs to be painted
             painter.fillRect(pageGeometry, Qt::white);

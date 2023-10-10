@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2018 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2018 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -63,14 +27,16 @@
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "components/crx_file/id_util.h"
+#include "components/value_store/value_store_factory.h"
+#include "components/value_store/value_store_factory_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/common/webplugininfo.h"
+#include "extensions/browser/app_sorting.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/content_verifier_delegate.h"
 #include "extensions/browser/extension_pref_store.h"
@@ -80,20 +46,23 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/notification_types.h"
-#include "extensions/browser/null_app_sorting.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/renderer_startup_helper.h"
-#include "extensions/browser/runtime_data.h"
 #include "extensions/browser/service_worker_manager.h"
 #include "extensions/browser/user_script_manager.h"
-#include "extensions/browser/value_store/value_store_factory_impl.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "net/base/mime_util.h"
+#include "pdf/buildflags.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "qtwebengine/grit/qt_webengine_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "content/public/browser/plugin_service.h"
+#endif
 
 using content::BrowserThread;
 
@@ -220,6 +189,7 @@ void ExtensionSystemQt::NotifyExtensionLoaded(const Extension *extension)
     // know about it.
     extension_registry_->TriggerOnLoaded(extension);
 
+#if BUILDFLAG(ENABLE_PLUGINS)
     // Register plugins included with the extension.
     // Implementation based on PluginManager::OnExtensionLoaded.
     const MimeTypesHandler *handler = MimeTypesHandler::GetHandler(extension);
@@ -245,6 +215,7 @@ void ExtensionSystemQt::NotifyExtensionLoaded(const Extension *extension)
         plugin_service->RefreshPlugins();
         plugin_service->RegisterInternalPlugin(info, true);
     }
+#endif // BUILDFLAG(ENABLE_PLUGINS)
 }
 
 bool ExtensionSystemQt::FinishDelayedInstallationIfReady(const std::string &extension_id, bool install_immediately)
@@ -269,11 +240,6 @@ ExtensionService *ExtensionSystemQt::extension_service()
     return nullptr;
 }
 
-RuntimeData *ExtensionSystemQt::runtime_data()
-{
-    return runtime_data_.get();
-}
-
 ManagementPolicy *ExtensionSystemQt::management_policy()
 {
     return nullptr;
@@ -294,7 +260,12 @@ StateStore *ExtensionSystemQt::rules_store()
     return nullptr;
 }
 
-scoped_refptr<ValueStoreFactory> ExtensionSystemQt::store_factory()
+StateStore *ExtensionSystemQt::dynamic_user_scripts_store()
+{
+    return nullptr;
+}
+
+scoped_refptr<value_store::ValueStoreFactory> ExtensionSystemQt::store_factory()
 {
     return store_factory_;
 }
@@ -313,7 +284,7 @@ QuotaService *ExtensionSystemQt::quota_service()
 
 AppSorting *ExtensionSystemQt::app_sorting()
 {
-    return app_sorting_.get();
+    return nullptr;
 }
 
 ContentVerifier *ExtensionSystemQt::content_verifier()
@@ -326,7 +297,7 @@ ContentVerifier *ExtensionSystemQt::content_verifier()
 
 ExtensionSystemQt::ExtensionSystemQt(content::BrowserContext *browserContext)
     : browser_context_(browserContext)
-    , store_factory_(new ValueStoreFactoryImpl(browserContext->GetPath()))
+    , store_factory_(new value_store::ValueStoreFactoryImpl(browserContext->GetPath()))
     , extension_registry_(ExtensionRegistry::Get(browserContext))
     , renderer_helper_(extensions::RendererStartupHelperFactory::GetForBrowserContext(browserContext))
     , initialized_(false)
@@ -345,13 +316,9 @@ void ExtensionSystemQt::Init(bool extensions_enabled)
 
     initialized_ = true;
 
-    service_worker_manager_.reset(new ServiceWorkerManager(browser_context_));
-    runtime_data_.reset(new RuntimeData(extension_registry_));
-    quota_service_.reset(new QuotaService);
-    app_sorting_.reset(new NullAppSorting);
-
-    user_script_manager_ =
-        std::make_unique<UserScriptManager>(browser_context_);
+    service_worker_manager_ = std::make_unique<ServiceWorkerManager>(browser_context_);
+    user_script_manager_ = std::make_unique<UserScriptManager>(browser_context_);
+    quota_service_ = std::make_unique<QuotaService>();
 
     // Make the chrome://extension-icon/ resource available.
     // content::URLDataSource::Add(browser_context_, new ExtensionIconSource(browser_context_));
@@ -360,6 +327,7 @@ void ExtensionSystemQt::Init(bool extensions_enabled)
         // Inform the rest of the extensions system to start.
         ready_.Signal();
 
+#if BUILDFLAG(ENABLE_PDF)
         {
             std::string pdf_manifest = ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(IDR_PDF_MANIFEST);
             base::ReplaceFirstSubstringAfterOffset(&pdf_manifest, 0, "<NAME>", "chromium-pdf");
@@ -371,6 +339,7 @@ void ExtensionSystemQt::Init(bool extensions_enabled)
             std::string id = GenerateId(pdfManifestDict.get(), path);
             LoadExtension(id, std::move(pdfManifestDict), path);
         }
+#endif // BUILDFLAG(ENABLE_PDF)
 
 #if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
         {
@@ -417,12 +386,11 @@ void ExtensionSystemQt::RegisterExtensionWithRequestContexts(const Extension *ex
             std::move(callback));
 }
 
-void ExtensionSystemQt::UnregisterExtensionWithRequestContexts(const std::string &extension_id,
-                                                               const UnloadedExtensionReason reason)
+void ExtensionSystemQt::UnregisterExtensionWithRequestContexts(const std::string &extension_id)
 {
     base::PostTask(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&InfoMap::RemoveExtension, info_map(), extension_id, reason));
+        base::BindOnce(&InfoMap::RemoveExtension, info_map(), extension_id));
 }
 
 bool ExtensionSystemQt::is_ready() const

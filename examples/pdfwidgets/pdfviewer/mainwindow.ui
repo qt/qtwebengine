@@ -134,7 +134,7 @@
      <x>0</x>
      <y>0</y>
      <width>700</width>
-     <height>22</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -184,12 +184,14 @@
    <addaction name="actionZoom_Out"/>
    <addaction name="actionZoom_In"/>
    <addaction name="separator"/>
+   <addaction name="actionBack"/>
+   <addaction name="actionForward"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">
    <property name="icon">
-    <iconset resource="resources.qrc">
-     <normaloff>:/icons/images/fileopen.png</normaloff>:/icons/images/fileopen.png</iconset>
+    <iconset theme="document-open" resource="resources.qrc">
+     <normaloff>:/icons/images/document-open.svgz</normaloff>:/icons/images/document-open.svgz</iconset>
    </property>
    <property name="text">
     <string>Open...</string>
@@ -199,6 +201,9 @@
    </property>
   </action>
   <action name="actionQuit">
+   <property name="icon">
+    <iconset theme="application-exit"/>
+   </property>
    <property name="text">
     <string>Quit</string>
    </property>
@@ -207,6 +212,9 @@
    </property>
   </action>
   <action name="actionAbout">
+   <property name="icon">
+    <iconset theme="help-about"/>
+   </property>
    <property name="text">
     <string>About</string>
    </property>
@@ -218,8 +226,8 @@
   </action>
   <action name="actionZoom_In">
    <property name="icon">
-    <iconset resource="resources.qrc">
-     <normaloff>:/icons/images/zoom-in-24.png</normaloff>:/icons/images/zoom-in-24.png</iconset>
+    <iconset theme="zoom-in" resource="resources.qrc">
+     <normaloff>:/icons/images/zoom-in.svgz</normaloff>:/icons/images/zoom-in.svgz</iconset>
    </property>
    <property name="text">
     <string>Zoom In</string>
@@ -230,8 +238,8 @@
   </action>
   <action name="actionZoom_Out">
    <property name="icon">
-    <iconset resource="resources.qrc">
-     <normaloff>:/icons/images/zoom-out-24.png</normaloff>:/icons/images/zoom-out-24.png</iconset>
+    <iconset theme="zoom-out" resource="resources.qrc">
+     <normaloff>:/icons/images/zoom-out.svgz</normaloff>:/icons/images/zoom-out.svgz</iconset>
    </property>
    <property name="text">
     <string>Zoom Out</string>
@@ -241,6 +249,10 @@
    </property>
   </action>
   <action name="actionPrevious_Page">
+   <property name="icon">
+    <iconset theme="go-previous-view-page" resource="resources.qrc">
+     <normaloff>:/icons/images/go-previous-view-page.svgz</normaloff>:/icons/images/go-previous-view-page.svgz</iconset>
+   </property>
    <property name="text">
     <string>Previous Page</string>
    </property>
@@ -249,6 +261,10 @@
    </property>
   </action>
   <action name="actionNext_Page">
+   <property name="icon">
+    <iconset theme="go-next-view-page" resource="resources.qrc">
+     <normaloff>:/icons/images/go-next-view-page.svgz</normaloff>:/icons/images/go-next-view-page.svgz</iconset>
+   </property>
    <property name="text">
     <string>Next Page</string>
    </property>
@@ -262,6 +278,36 @@
    </property>
    <property name="text">
     <string>Continuous</string>
+   </property>
+  </action>
+  <action name="actionBack">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/images/go-previous-view.svgz</normaloff>:/icons/images/go-previous-view.svgz</iconset>
+   </property>
+   <property name="text">
+    <string>Back</string>
+   </property>
+   <property name="toolTip">
+    <string>back to previous view</string>
+   </property>
+  </action>
+  <action name="actionForward">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/images/go-next-view.svgz</normaloff>:/icons/images/go-next-view.svgz</iconset>
+   </property>
+   <property name="text">
+    <string>Forward</string>
+   </property>
+   <property name="toolTip">
+    <string>forward to next view</string>
    </property>
   </action>
  </widget>

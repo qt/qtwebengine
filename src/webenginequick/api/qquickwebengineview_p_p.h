@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #ifndef QQUICKWEBENGINEVIEW_P_P_H
 #define QQUICKWEBENGINEVIEW_P_P_H
@@ -51,9 +15,11 @@
 // We mean it.
 //
 
+#include "qquickwebenginetouchhandle_p.h"
 #include "qquickwebengineview_p.h"
 #include "render_view_context_menu_qt.h"
 #include "touch_handle_drawable_client.h"
+#include "ui_delegates_manager.h"
 #include "web_contents_adapter_client.h"
 
 #include <QtCore/qcompilerdetection.h>
@@ -64,7 +30,7 @@
 #include <QtGui/qaccessibleobject.h>
 
 namespace QtWebEngineCore {
-class RenderWidgetHostViewQtDelegateQuick;
+class RenderWidgetHostViewQtDelegateItem;
 class TouchSelectionMenuController;
 class UIDelegatesManager;
 class WebContentsAdapter;
@@ -139,6 +105,7 @@ public:
     void runMouseLockPermissionRequest(const QUrl &securityOrigin) override;
     void runQuotaRequest(QWebEngineQuotaRequest) override;
     void runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest) override;
+    void runFileSystemAccessRequest(QWebEngineFileSystemAccessRequest) override;
     QObject *accessibilityParentObject() override;
     QWebEngineSettings *webEngineSettings() const override;
     void allowCertificateError(const QWebEngineCertificateError &error) override;
@@ -154,7 +121,7 @@ public:
     QObject *dragSource() const override;
     bool isEnabled() const override;
     void setToolTip(const QString &toolTipText) override;
-    QtWebEngineCore::TouchHandleDrawableClient *createTouchHandle(const QMap<int, QImage> &images) override;
+    QtWebEngineCore::TouchHandleDrawableDelegate *createTouchHandleDelegate(const QMap<int, QImage> &images) override;
     void showTouchSelectionMenu(QtWebEngineCore::TouchSelectionMenuController *, const QRect &, const QSize &) override;
     void hideTouchSelectionMenu() override;
     const QObject *holdingQObject() const override;
@@ -164,6 +131,10 @@ public:
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;
     void printRequested() override;
     void findTextFinished(const QWebEngineFindTextResult &result) override;
+    void showAutofillPopup(QtWebEngineCore::AutofillPopupController *controller,
+                           const QRect &bounds, bool autoselectFirstSuggestion) override;
+    void hideAutofillPopup() override;
+
     void updateAction(QQuickWebEngineView::WebAction) const;
     bool adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
     void setProfile(QQuickWebEngineProfile *profile);
@@ -171,9 +142,9 @@ public:
     void ensureContentsAdapter();
     void setFullScreenMode(bool);
 
-    static void bindViewAndWidget(QQuickWebEngineView *view, QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick *widget);
-    void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick *oldWidget,
-                       QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick *newWidget);
+    static void bindViewAndDelegateItem(QQuickWebEngineViewPrivate *viewPrivate, QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *delegateItem);
+    void delegateItemChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *oldDelegateItem,
+                             QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *newDelegateItem);
 
     QQuickWebEngineProfile *m_profile;
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter;
@@ -197,7 +168,7 @@ public:
     bool m_defaultAudioMuted;
     bool m_isBeingAdopted;
     mutable QQuickWebEngineAction *actions[QQuickWebEngineView::WebActionCount];
-    QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick *widget = nullptr;
+    QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *delegateItem = nullptr;
 
     bool profileInitialized() const;
     QQuickWebEngineScriptCollection *getUserScripts();
@@ -210,27 +181,8 @@ private:
     QWebEngineContextMenuRequest *m_contextMenuRequest;
     QScopedPointer<QQuickWebEngineScriptCollection> m_scriptCollection;
     QPointer<QQuickWebEngineFaviconProvider> m_faviconProvider;
+    QQmlComponent *m_touchHandleDelegate;
 };
-
-#ifndef QT_NO_ACCESSIBILITY
-class QQuickWebEngineViewAccessible : public QAccessibleObject
-{
-public:
-    QQuickWebEngineViewAccessible(QQuickWebEngineView *o);
-    bool isValid() const override;
-    QAccessibleInterface *parent() const override;
-    QAccessibleInterface *focusChild() const override;
-    int childCount() const override;
-    QAccessibleInterface *child(int index) const override;
-    int indexOfChild(const QAccessibleInterface*) const override;
-    QString text(QAccessible::Text) const override;
-    QAccessible::Role role() const override;
-    QAccessible::State state() const override;
-
-private:
-    QQuickWebEngineView *engineView() const { return static_cast<QQuickWebEngineView*>(object()); }
-};
-#endif // QT_NO_ACCESSIBILITY
 
 class QQuickContextMenuBuilder : public QtWebEngineCore::RenderViewContextMenuQt
 {
@@ -248,19 +200,6 @@ private:
 
     QQuickWebEngineView *m_view;
     QObject *m_menu;
-};
-
-class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineTouchHandle : public QtWebEngineCore::TouchHandleDrawableClient {
-public:
-    QQuickWebEngineTouchHandle(QtWebEngineCore::UIDelegatesManager *ui, const QMap<int, QImage> &images);
-
-    void setImage(int orientation) override;
-    void setBounds(const QRect &bounds) override;
-    void setVisible(bool visible) override;
-    void setOpacity(float opacity) override;
-
-private:
-    QScopedPointer<QQuickItem> m_item;
 };
 
 QT_END_NAMESPACE

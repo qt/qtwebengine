@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "web_engine_settings.h"
 
@@ -297,6 +261,7 @@ void WebEngineSettings::initDefaults()
 #else
         s_defaultAttributes.insert(QWebEngineSettings::PdfViewerEnabled, false);
 #endif
+        s_defaultAttributes.insert(QWebEngineSettings::NavigateOnDropEnabled, true);
     }
 
     if (s_defaultFontFamilies.isEmpty()) {
@@ -367,6 +332,7 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
         // to enable them separately. With viewport-enabled we match Android defaults.
         prefs->viewport_meta_enabled = true;
         prefs->shrinks_viewport_contents_to_fit = true;
+        prefs->main_frame_resizes_are_orientation_changes = true;
     }
 
     // Attributes mapping.
@@ -403,6 +369,7 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
     }
     prefs->dom_paste_enabled = testAttribute(QWebEngineSettings::JavascriptCanPaste);
     prefs->dns_prefetching_enabled = testAttribute(QWebEngineSettings::DnsPrefetchEnabled);
+    prefs->navigate_on_drag_drop = testAttribute(QWebEngineSettings::NavigateOnDropEnabled);
 
     // Fonts settings.
     prefs->standard_font_family_map[blink::web_pref::kCommonScript] =
@@ -417,8 +384,6 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
             toString16(fontFamily(QWebEngineSettings::CursiveFont));
     prefs->fantasy_font_family_map[blink::web_pref::kCommonScript] =
             toString16(fontFamily(QWebEngineSettings::FantasyFont));
-    prefs->pictograph_font_family_map[blink::web_pref::kCommonScript] =
-            toString16(fontFamily(QWebEngineSettings::PictographFont));
     prefs->default_font_size = fontSize(QWebEngineSettings::DefaultFontSize);
     prefs->default_fixed_font_size = fontSize(QWebEngineSettings::DefaultFixedFontSize);
     prefs->minimum_font_size = fontSize(QWebEngineSettings::MinimumFontSize);

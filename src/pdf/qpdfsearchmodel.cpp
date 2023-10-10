@@ -1,47 +1,11 @@
-/****************************************************************************
-**
-** Copyright (C) 2020 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtPDF module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2020 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qpdfdestination.h"
 #include "qpdfdocument_p.h"
+#include "qpdflink.h"
+#include "qpdflink_p.h"
 #include "qpdfsearchmodel.h"
 #include "qpdfsearchmodel_p.h"
-#include "qpdfsearchresult_p.h"
 
 #include "third_party/pdfium/public/fpdf_doc.h"
 #include "third_party/pdfium/public/fpdf_text.h"
@@ -58,11 +22,44 @@ static const int UpdateTimerInterval = 100;
 static const int ContextChars = 64;
 static const double CharacterHitTolerance = 6.0;
 
+/*!
+    \class QPdfSearchModel
+    \since 5.15
+    \inmodule QtPdf
+    \inherits QAbstractListModel
+
+    \brief The QPdfSearchModel class searches for a string in a PDF document
+    and holds the results.
+
+    This is used in the \l {Model/View Programming} paradigm to display
+    a list of search results, to highlight them on the rendered PDF pages,
+    and to iterate through them using the "search forward" / "search backward"
+    buttons and shortcuts that would be found in a typical document-viewing UI:
+
+    \image search-results.png
+*/
+
+/*!
+    \enum QPdfSearchModel::Role
+
+    \value Page The page number where the search result is found (int).
+    \value IndexOnPage The index of the search result on the page (int).
+    \value Location The position of the search result on the page (QPointF).
+    \value ContextBefore The adjacent text on the page, before the search string (QString).
+    \value ContextAfter The adjacent text on the page, after the search string (QString).
+    \omitvalue NRoles
+
+    \sa QPdfLink
+*/
+
+/*!
+    Constructs a new search model with parent object \a parent.
+*/
 QPdfSearchModel::QPdfSearchModel(QObject *parent)
     : QAbstractListModel(*(new QPdfSearchModelPrivate()), parent)
 {
     QMetaEnum rolesMetaEnum = metaObject()->enumerator(metaObject()->indexOfEnumerator("Role"));
-    for (int r = Qt::UserRole; r < int(Role::_Count); ++r) {
+    for (int r = Qt::UserRole; r < int(Role::NRoles); ++r) {
         QByteArray roleName = QByteArray(rolesMetaEnum.valueToKey(r));
         if (roleName.isEmpty())
             continue;
@@ -71,13 +68,24 @@ QPdfSearchModel::QPdfSearchModel(QObject *parent)
     }
 }
 
+/*!
+    Destroys the model.
+*/
 QPdfSearchModel::~QPdfSearchModel() {}
 
+/*!
+    \reimp
+*/
 QHash<int, QByteArray> QPdfSearchModel::roleNames() const
 {
     return m_roleNames;
 }
 
+/*!
+    \reimp
+
+    The number of rows in the model is equal to the number of search results found.
+*/
 int QPdfSearchModel::rowCount(const QModelIndex &parent) const
 {
     Q_D(const QPdfSearchModel);
@@ -85,6 +93,9 @@ int QPdfSearchModel::rowCount(const QModelIndex &parent) const
     return d->rowCountSoFar;
 }
 
+/*!
+    \reimp
+*/
 QVariant QPdfSearchModel::data(const QModelIndex &index, int role) const
 {
     Q_D(const QPdfSearchModel);
@@ -102,7 +113,7 @@ QVariant QPdfSearchModel::data(const QModelIndex &index, int role) const
         return d->searchResults[pi.page][pi.index].contextBefore();
     case Role::ContextAfter:
         return d->searchResults[pi.page][pi.index].contextAfter();
-    case Role::_Count:
+    case Role::NRoles:
         break;
     }
     if (role == Qt::DisplayRole) {
@@ -120,6 +131,10 @@ void QPdfSearchModel::updatePage(int page)
     d->doSearch(page);
 }
 
+/*!
+    \property QPdfSearchModel::searchString
+    \brief the string to search for
+*/
 QString QPdfSearchModel::searchString() const
 {
     Q_D(const QPdfSearchModel);
@@ -139,7 +154,10 @@ void QPdfSearchModel::setSearchString(const QString &searchString)
     endResetModel();
 }
 
-QList<QPdfSearchResult> QPdfSearchModel::resultsOnPage(int page) const
+/*!
+    Returns the list of all results found on the given \a page.
+*/
+QList<QPdfLink> QPdfSearchModel::resultsOnPage(int page) const
 {
     Q_D(const QPdfSearchModel);
     const_cast<QPdfSearchModelPrivate *>(d)->doSearch(page);
@@ -148,15 +166,23 @@ QList<QPdfSearchResult> QPdfSearchModel::resultsOnPage(int page) const
     return d->searchResults[page];
 }
 
-QPdfSearchResult QPdfSearchModel::resultAtIndex(int index) const
+/*!
+    Returns a result found by \a index in the \l document, regardless of the
+    page on which it was found.  \a index must be less than \l rowCount.
+*/
+QPdfLink QPdfSearchModel::resultAtIndex(int index) const
 {
     Q_D(const QPdfSearchModel);
     const auto pi = const_cast<QPdfSearchModelPrivate*>(d)->pageAndIndexForResult(index);
     if (pi.page < 0)
-        return QPdfSearchResult();
+        return {};
     return d->searchResults[pi.page][pi.index];
 }
 
+/*!
+    \property QPdfSearchModel::document
+    \brief the document to search
+*/
 QPdfDocument *QPdfSearchModel::document() const
 {
     Q_D(const QPdfSearchModel);
@@ -230,7 +256,7 @@ bool QPdfSearchModelPrivate::doSearch(int page)
         return false;
     }
     FPDF_SCHHANDLE sh = FPDFText_FindStart(textPage, searchString.utf16(), 0, 0);
-    QList<QPdfSearchResult> newSearchResults;
+    QList<QPdfLink> newSearchResults;
     while (FPDFText_FindNext(sh)) {
         int idx = FPDFText_GetSchResultIndex(sh);
         int count = FPDFText_GetSchCount(sh);
@@ -276,7 +302,7 @@ bool QPdfSearchModelPrivate::doSearch(int page)
             }
         }
         if (!rects.isEmpty())
-            newSearchResults << QPdfSearchResult(page, rects, contextBefore, contextAfter);
+            newSearchResults << QPdfLink(page, rects, contextBefore, contextAfter);
     }
     FPDFText_FindClose(sh);
     FPDFText_ClosePage(textPage);
@@ -298,6 +324,8 @@ bool QPdfSearchModelPrivate::doSearch(int page)
 
 QPdfSearchModelPrivate::PageAndIndex QPdfSearchModelPrivate::pageAndIndexForResult(int resultIndex)
 {
+    if (pagesSearched.isEmpty())
+        return {-1, -1};
     const int pageCount = document->pageCount();
     int totalSoFar = 0;
     int previousTotalSoFar = 0;

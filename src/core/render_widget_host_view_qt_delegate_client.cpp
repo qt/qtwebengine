@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2020 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2020 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "render_widget_host_view_qt_delegate_client.h"
 
@@ -53,6 +17,7 @@
 #include <QEvent>
 #include <QInputMethodEvent>
 #include <QScopeGuard>
+#include <QSet>
 #include <QSGNode>
 #include <QStyleHints>
 #include <QTextFormat>
@@ -245,7 +210,7 @@ bool RenderWidgetHostViewQtDelegateClient::forwardEvent(QEvent *event)
     switch (event->type()) {
     case QEvent::ShortcutOverride: {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-
+        event->ignore();
         auto acceptKeyOutOfInputField = [](QKeyEvent *keyEvent) -> bool {
 #ifdef Q_OS_MACOS
             // Check if a shortcut is registered for this key sequence.
@@ -511,6 +476,9 @@ void RenderWidgetHostViewQtDelegateClient::handleKeyEvent(QKeyEvent *event)
     if (event->type() == QEvent::KeyRelease && event->isAutoRepeat())
         return;
 
+    if (!m_rwhv->GetFocusedWidget())
+        return;
+
     content::NativeWebKeyboardEvent webEvent = WebEventFactory::toWebKeyboardEvent(event);
     if (webEvent.GetType() == blink::WebInputEvent::Type::kRawKeyDown && !m_editCommand.empty()) {
         ui::LatencyInfo latency;
@@ -554,10 +522,10 @@ void RenderWidgetHostViewQtDelegateClient::handleTouchEvent(QTouchEvent *event)
     // Calculate a delta between event timestamps and Now() on the first received event, and
     // apply this delta to all successive events. This delta is most likely smaller than it
     // should by calculating it here but this will hopefully cause less than one frame of delay.
-    base::TimeTicks eventTimestamp = base::TimeTicks() + base::TimeDelta::FromMilliseconds(event->timestamp());
+    base::TimeTicks eventTimestamp = base::TimeTicks() + base::Milliseconds(event->timestamp());
     if (m_eventsToNowDelta == 0)
         m_eventsToNowDelta = (base::TimeTicks::Now() - eventTimestamp).InMicroseconds();
-    eventTimestamp += base::TimeDelta::FromMicroseconds(m_eventsToNowDelta);
+    eventTimestamp += base::Microseconds(m_eventsToNowDelta);
 
     auto touchPoints = mapTouchPointIds(event->touchPoints());
     // Make sure that POINTER_DOWN action is delivered before MOVE, and MOVE before POINTER_UP

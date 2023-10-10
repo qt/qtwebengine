@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2017 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2017 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #ifndef DEVTOOLS_FRONTEND_QT_H
 #define DEVTOOLS_FRONTEND_QT_H
@@ -45,14 +9,9 @@
 
 #include "web_contents_delegate_qt.h"
 
-#include "base/compiler_specific.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/values.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace base {
@@ -60,8 +19,8 @@ class Value;
 }
 
 namespace content {
+class DevToolsFrontendHost;
 class NavigationHandle;
-class RenderViewHost;
 class WebContents;
 }  // namespace content
 
@@ -82,10 +41,12 @@ public:
 
     void DisconnectFromTarget();
 
-    void CallClientFunction(const std::string& function_name,
-                            const base::Value* arg1,
-                            const base::Value* arg2,
-                            const base::Value* arg3);
+    void CallClientFunction(const std::string &object_name,
+                            const std::string &method_name,
+                            base::Value arg1 = {},
+                            base::Value arg2 = {},
+                            base::Value arg3 = {},
+                            base::OnceCallback<void(base::Value)> cb = base::NullCallback());
 
     WebContentsDelegateQt *frontendDelegate() const
     {
@@ -106,10 +67,10 @@ protected:
 private:
     // WebContentsObserver overrides
     void ReadyToCommitNavigation(content::NavigationHandle* navigation_handle) override;
-    void DocumentAvailableInMainFrame(content::RenderFrameHost *render_frame_host) override;
+    void DocumentOnLoadCompletedInPrimaryMainFrame() override;
     void WebContentsDestroyed() override;
 
-    void SendMessageAck(int request_id, const base::Value* arg1);
+    void SendMessageAck(int request_id, base::Value arg1);
     void SetPreference(const std::string &name, const std::string &value);
     void RemovePreference(const std::string &name);
     void ClearPreferences();
@@ -134,8 +95,6 @@ private:
     base::DictionaryValue m_preferences;
     scoped_refptr<PersistentPrefStore> m_prefStore;
     base::WeakPtrFactory<DevToolsFrontendQt> m_weakFactory;
-
-    DISALLOW_COPY_AND_ASSIGN(DevToolsFrontendQt);
 };
 
 } // namespace QtWebEngineCore

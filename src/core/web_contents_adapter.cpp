@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -43,10 +7,12 @@
 
 #include "web_contents_adapter.h"
 
+#include "autofill_client_qt.h"
 #include "devtools_frontend_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "favicon_driver_qt.h"
 #include "favicon_service_factory_qt.h"
+#include "find_text_helper.h"
 #include "media_capture_devices_dispatcher.h"
 #include "profile_adapter.h"
 #include "profile_qt.h"
@@ -66,6 +32,8 @@
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/values.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
+#include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/favicon/core/favicon_service.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/text_input_manager.h"
@@ -93,6 +61,8 @@
 #include "qtwebengine/browser/qtwebenginepage.mojom.h"
 
 #if QT_CONFIG(webengine_printing_and_pdf)
+#include "components/pdf/browser/pdf_web_contents_helper.h"
+#include "printing/pdf_web_contents_helper_client_qt.h"
 #include "printing/print_view_manager_qt.h"
 #endif
 
@@ -127,8 +97,8 @@ namespace QtWebEngineCore {
     if (!isInitialized())                       \
         return return_value
 
-#define CHECK_VALID_RENDER_WIDGET_HOST_VIEW(render_view_host) \
-    if (!render_view_host->IsRenderViewLive() && render_view_host->GetWidget()->GetView()) { \
+#define CHECK_VALID_RENDER_WIDGET_HOST_VIEW(render_frame_host) \
+    if (!render_frame_host->IsRenderFrameLive() && render_frame_host->GetView()) { \
         LOG(WARNING) << "Ignore navigation due to terminated render process with invalid RenderWidgetHostView."; \
         return; \
     }
@@ -143,9 +113,8 @@ static QVariant fromJSValue(const base::Value *result)
         break;
     case base::Value::Type::BOOLEAN:
     {
-        bool out;
-        if (result->GetAsBoolean(&out))
-            ret.setValue(out);
+        if (auto out = result->GetIfBool())
+            ret.setValue(*out);
         break;
     }
     case base::Value::Type::INTEGER:
@@ -162,21 +131,19 @@ static QVariant fromJSValue(const base::Value *result)
     }
     case base::Value::Type::STRING:
     {
-        std::u16string out;
-        if (result->GetAsString(&out))
-            ret.setValue(toQt(out));
+        if (auto out = result->GetIfString())
+            ret.setValue(toQt(*out));
         break;
     }
     case base::Value::Type::LIST:
     {
-        const base::ListValue *out;
-        if (result->GetAsList(&out)) {
+        if (const auto out = result->GetIfList()) {
+            size_t size = out->size();
             QVariantList list;
-            list.reserve(out->GetSize());
-            for (size_t i = 0; i < out->GetSize(); ++i) {
-                const base::Value *outVal = 0;
-                if (out->Get(i, &outVal) && outVal)
-                    list.insert(i, fromJSValue(outVal));
+            list.reserve(size);
+            for (size_t i = 0; i < size; ++i) {
+                auto &outVal = (*out)[i];
+                list.insert(i, fromJSValue(&outVal));
             }
             ret.setValue(list);
         }
@@ -517,6 +484,16 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     FaviconDriverQt::CreateForWebContents(
             webContents(), FaviconServiceFactoryQt::GetForBrowserContext(context), m_adapterClient);
 
+    AutofillClientQt::CreateForWebContents(webContents());
+    autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
+            webContents(), AutofillClientQt::FromWebContents(webContents()),
+            /* app_locale = */ "", autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+
+#if QT_CONFIG(webengine_printing_and_pdf)
+    pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
+            webContents(), std::make_unique<PDFWebContentsHelperClientQt>());
+#endif
+
     // Create an instance of WebEngineVisitedLinksManager to catch the first
     // content::NOTIFICATION_RENDERER_PROCESS_CREATED event. This event will
     // force to initialize visited links in VisitedLinkSlave.
@@ -526,7 +503,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     // Create a RenderView with the initial empty document
     content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
-    if (!rvh->IsRenderViewLive())
+    if (!m_webContents->GetMainFrame()->IsRenderFrameLive())
         static_cast<content::WebContentsImpl*>(m_webContents.get())->CreateRenderViewForRenderManager(
                 rvh, absl::nullopt, nullptr);
 
@@ -543,7 +520,7 @@ void WebContentsAdapter::initializeRenderPrefs()
     // seconds
     const int qtCursorFlashTime = QGuiApplication::styleHints()->cursorFlashTime();
     rendererPrefs->caret_blink_interval =
-            base::TimeDelta::FromMillisecondsD(0.5 * static_cast<double>(qtCursorFlashTime));
+            base::Milliseconds(0.5 * static_cast<double>(qtCursorFlashTime));
     rendererPrefs->user_agent_override = blink::UserAgentOverride::UserAgentOnly(m_profileAdapter->httpUserAgent().toStdString());
     rendererPrefs->accept_languages = m_profileAdapter->httpAcceptLanguageWithoutQualities().toStdString();
 #if QT_CONFIG(webengine_webrtc)
@@ -609,7 +586,7 @@ void WebContentsAdapter::reload()
 
     bool wasDiscarded = (m_lifecycleState == LifecycleState::Discarded);
     setLifecycleState(LifecycleState::Active);
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
     WebEngineSettings *settings = WebEngineSettings::get(m_adapterClient->webEngineSettings());
     settings->doApply();
     if (!wasDiscarded) // undiscard() already triggers a reload
@@ -624,7 +601,7 @@ void WebContentsAdapter::reloadAndBypassCache()
 
     bool wasDiscarded = (m_lifecycleState == LifecycleState::Discarded);
     setLifecycleState(LifecycleState::Active);
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
     WebEngineSettings *settings = WebEngineSettings::get(m_adapterClient->webEngineSettings());
     settings->doApply();
     if (!wasDiscarded) // undiscard() already triggers a reload
@@ -656,7 +633,7 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
         setLifecycleState(LifecycleState::Active);
     }
 
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
 
     WebEngineSettings::get(m_adapterClient->webEngineSettings())->doApply();
 
@@ -744,7 +721,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     else
         setLifecycleState(LifecycleState::Active);
 
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
 
     WebEngineSettings::get(m_adapterClient->webEngineSettings())->doApply();
 
@@ -895,7 +872,7 @@ void WebContentsAdapter::navigateBack()
 {
     CHECK_INITIALIZED();
     base::RecordAction(base::UserMetricsAction("Back"));
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
     if (!m_webContents->GetController().CanGoBack())
         return;
     m_webContents->GetController().GoBack();
@@ -906,7 +883,7 @@ void WebContentsAdapter::navigateForward()
 {
     CHECK_INITIALIZED();
     base::RecordAction(base::UserMetricsAction("Forward"));
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
     if (!m_webContents->GetController().CanGoForward())
         return;
     m_webContents->GetController().GoForward();
@@ -916,7 +893,7 @@ void WebContentsAdapter::navigateForward()
 void WebContentsAdapter::navigateToIndex(int offset)
 {
     CHECK_INITIALIZED();
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
     m_webContents->GetController().GoToIndex(offset);
     focusIfNecessary();
 }
@@ -924,7 +901,7 @@ void WebContentsAdapter::navigateToIndex(int offset)
 void WebContentsAdapter::navigateToOffset(int offset)
 {
     CHECK_INITIALIZED();
-    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetMainFrame());
     m_webContents->GetController().GoToOffset(offset);
     focusIfNecessary();
 }
@@ -1040,9 +1017,7 @@ QWebEngineUrlRequestInterceptor* WebContentsAdapter::requestInterceptor() const
 QAccessibleInterface *WebContentsAdapter::browserAccessible()
 {
     CHECK_INITIALIZED(nullptr);
-    content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
-    Q_ASSERT(rvh);
-    content::RenderFrameHostImpl *rfh = static_cast<content::RenderFrameHostImpl *>(rvh->GetMainFrame());
+    content::RenderFrameHostImpl *rfh = static_cast<content::RenderFrameHostImpl *>(m_webContents->GetMainFrame());
     if (!rfh)
         return nullptr;
     content::BrowserAccessibilityManager *manager = rfh->GetOrCreateBrowserAccessibilityManager();
@@ -1057,26 +1032,24 @@ QAccessibleInterface *WebContentsAdapter::browserAccessible()
 void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldId)
 {
     CHECK_INITIALIZED();
-    content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
-    Q_ASSERT(rvh);
-//    static_cast<content::RenderFrameHostImpl *>(rvh->GetMainFrame())->NotifyUserActivation();
+    content::RenderFrameHost *rfh =  m_webContents->GetMainFrame();
+    Q_ASSERT(rfh);
     if (worldId == 0)
-        rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript), base::NullCallback());
+        rfh->ExecuteJavaScript(toString16(javaScript), base::NullCallback());
     else
-        rvh->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), base::NullCallback(), worldId);
+        rfh->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), base::NullCallback(), worldId);
 }
 
 quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScript, quint32 worldId)
 {
     CHECK_INITIALIZED(0);
-    content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
-    Q_ASSERT(rvh);
-//    static_cast<content::RenderFrameHostImpl *>(rvh->GetMainFrame())->NotifyUserActivation();
+    content::RenderFrameHost *rfh =  m_webContents->GetMainFrame();
+    Q_ASSERT(rfh);
     content::RenderFrameHost::JavaScriptResultCallback callback = base::BindOnce(&callbackOnEvaluateJS, m_adapterClient, m_nextRequestId);
     if (worldId == 0)
-        rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript), std::move(callback));
+        rfh->ExecuteJavaScript(toString16(javaScript), std::move(callback));
     else
-        rvh->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), std::move(callback), worldId);
+        rfh->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), std::move(callback), worldId);
     return m_nextRequestId++;
 }
 
@@ -1101,7 +1074,9 @@ void WebContentsAdapter::updateWebPreferences(const blink::web_pref::WebPreferen
 
     // In case of updating preferences during navigation, there might be a pending RVH what will
     // be active on successful navigation.
-    content::RenderFrameHost *pendingRFH = (static_cast<content::WebContentsImpl*>(m_webContents.get()))->GetFrameTree()->root()->render_manager()->speculative_frame_host();
+    content::RenderFrameHost *pendingRFH =
+            (static_cast<content::WebContentsImpl*>(m_webContents.get()))
+                ->GetPrimaryFrameTree().root()->render_manager()->speculative_frame_host();
     if (pendingRFH) {
         content::RenderViewHost *pendingRVH = pendingRFH->GetRenderViewHost();
         Q_ASSERT(pendingRVH);
@@ -1190,7 +1165,7 @@ qint64 WebContentsAdapter::renderProcessPid() const
 void WebContentsAdapter::copyImageAt(const QPoint &location)
 {
     CHECK_INITIALIZED();
-    m_webContents->GetRenderViewHost()->GetMainFrame()->CopyImageAt(location.x(), location.y());
+    m_webContents->GetMainFrame()->CopyImageAt(location.x(), location.y());
 }
 
 static blink::mojom::MediaPlayerActionType toBlinkMediaPlayerActionType(WebContentsAdapter::MediaPlayerAction action)
@@ -1217,7 +1192,7 @@ void WebContentsAdapter::executeMediaPlayerActionAt(const QPoint &location, Medi
     if (action == MediaPlayerNoAction)
         return;
     blink::mojom::MediaPlayerAction blinkAction(toBlinkMediaPlayerActionType(action), enable);
-    m_webContents->GetRenderViewHost()->GetMainFrame()->ExecuteMediaPlayerActionAtLocation(toGfx(location), blinkAction);
+    m_webContents->GetMainFrame()->ExecuteMediaPlayerActionAtLocation(toGfx(location), blinkAction);
 }
 
 void WebContentsAdapter::inspectElementAt(const QPoint &location)
@@ -1394,7 +1369,7 @@ void WebContentsAdapter::grantFeaturePermission(const QUrl &securityOrigin, Prof
 void WebContentsAdapter::grantMouseLockPermission(const QUrl &securityOrigin, bool granted)
 {
     CHECK_INITIALIZED();
-    if (securityOrigin != toQt(m_webContents->GetLastCommittedURL().GetOrigin()))
+    if (securityOrigin != toQt(m_webContents->GetLastCommittedURL().DeprecatedGetOriginAsURL()))
         return;
 
     if (granted) {
@@ -1419,7 +1394,7 @@ void WebContentsAdapter::grantMouseLockPermission(const QUrl &securityOrigin, bo
 void WebContentsAdapter::handlePendingMouseLockPermission()
 {
     CHECK_INITIALIZED();
-    auto it = m_pendingMouseLockPermissions.find(toQt(m_webContents->GetLastCommittedURL().GetOrigin()));
+    auto it = m_pendingMouseLockPermissions.find(toQt(m_webContents->GetLastCommittedURL().DeprecatedGetOriginAsURL()));
     if (it != m_pendingMouseLockPermissions.end()) {
         m_webContents->GotResponseToLockMouseRequest(it.value() ? blink::mojom::PointerLockResult::kSuccess
                                                                 : blink::mojom::PointerLockResult::kPermissionDenied);
@@ -1722,7 +1697,7 @@ void WebContentsAdapter::waitForUpdateDragActionCalled()
                      static_cast<int>(timeout));
             return;
         }
-        base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
+        base::PlatformThread::Sleep(base::Milliseconds(1));
     }
 }
 
@@ -1789,6 +1764,14 @@ void WebContentsAdapter::resetSelection()
     }
 }
 
+void WebContentsAdapter::resetTouchSelectionController()
+{
+    CHECK_INITIALIZED();
+    unselect();
+    if (auto rwhv = static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView()))
+        rwhv->resetTouchSelectionController();
+}
+
 WebContentsAdapterClient::RenderProcessTerminationStatus
 WebContentsAdapterClient::renderProcessExitStatus(int terminationStatus) {
     auto status = WebContentsAdapterClient::RenderProcessTerminationStatus(-1);
@@ -1800,13 +1783,10 @@ WebContentsAdapterClient::renderProcessExitStatus(int terminationStatus) {
         status = WebContentsAdapterClient::AbnormalTerminationStatus;
         break;
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
-#if defined(OS_CHROMEOS)
-    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
-#endif
         status = WebContentsAdapterClient::KilledTerminationStatus;
         break;
     case base::TERMINATION_STATUS_PROCESS_CRASHED:
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     case base::TERMINATION_STATUS_OOM_PROTECTED:
 #endif
         status = WebContentsAdapterClient::CrashedTerminationStatus;
@@ -2054,7 +2034,7 @@ void WebContentsAdapter::undiscard()
     // Create a RenderView with the initial empty document
     content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
-    if (!rvh->IsRenderViewLive())
+    if (!m_webContents->GetMainFrame()->IsRenderFrameLive())
         static_cast<content::WebContentsImpl *>(m_webContents.get())
                 ->CreateRenderViewForRenderManager(rvh, absl::nullopt, nullptr);
     m_webContentsDelegate->RenderViewHostChanged(nullptr, rvh);

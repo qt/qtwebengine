@@ -1,45 +1,10 @@
-/****************************************************************************
-**
-** Copyright (C) 2019 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtPDF module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2019 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qpdfiohandler_p.h"
 #include <QLoggingCategory>
 #include <QPainter>
+#include <QtPdf/private/qpdffile_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -47,6 +12,12 @@ Q_LOGGING_CATEGORY(qLcPdf, "qt.imageformat.pdf")
 
 QPdfIOHandler::QPdfIOHandler()
 {
+}
+
+QPdfIOHandler::~QPdfIOHandler()
+{
+    if (m_ownsDocument)
+        delete m_doc;
 }
 
 bool QPdfIOHandler::canRead() const
@@ -76,27 +47,27 @@ int QPdfIOHandler::currentImageNumber() const
 
 QRect QPdfIOHandler::currentImageRect() const
 {
-    return QRect(QPoint(0, 0), m_doc.pageSize(m_page).toSize());
+    return QRect(QPoint(0, 0), m_doc->pagePointSize(m_page).toSize());
 }
 
 int QPdfIOHandler::imageCount() const
 {
     int ret = 0;
     if (const_cast<QPdfIOHandler *>(this)->load(device()))
-        ret = m_doc.pageCount();
-    qCDebug(qLcPdf) << "imageCount" << ret;
+        ret = m_doc->pageCount();
+    qCDebug(qLcPdf) << ret;
     return ret;
 }
 
 bool QPdfIOHandler::read(QImage *image)
 {
     if (load(device())) {
-        if (m_page >= m_doc.pageCount())
+        if (m_page >= m_doc->pageCount())
             return false;
         if (m_page < 0)
             m_page = 0;
         const bool xform = (m_clipRect.isValid() || m_scaledSize.isValid() || m_scaledClipRect.isValid());
-        QSize pageSize = m_doc.pageSize(m_page).toSize();
+        QSize pageSize = m_doc->pagePointSize(m_page).toSize();
         QSize finalSize = pageSize;
         QRectF bounds;
         if (xform && !finalSize.isEmpty()) {
@@ -123,7 +94,7 @@ bool QPdfIOHandler::read(QImage *image)
             t.translate(tr1.x(), tr1.y());
             bounds = t.mapRect(bounds);
         }
-        qCDebug(qLcPdf) << Q_FUNC_INFO << m_page << finalSize;
+        qCDebug(qLcPdf) << m_page << finalSize;
         if (image->size() != finalSize || !image->reinterpretAsFormat(QImage::Format_ARGB32_Premultiplied)) {
             *image = QImage(finalSize, QImage::Format_ARGB32_Premultiplied);
             if (!finalSize.isEmpty() && image->isNull()) {
@@ -139,7 +110,7 @@ bool QPdfIOHandler::read(QImage *image)
             options.setScaledSize(pageSize);
             image->fill(m_backColor.rgba());
             QPainter p(image);
-            QImage pageImage = m_doc.render(m_page, finalSize, options);
+            QImage pageImage = m_doc->render(m_page, finalSize, options);
             p.drawImage(0, 0, pageImage);
             p.end();
         }
@@ -156,7 +127,7 @@ QVariant QPdfIOHandler::option(ImageOption option) const
         return QImage::Format_ARGB32_Premultiplied;
     case Size:
         const_cast<QPdfIOHandler *>(this)->load(device());
-        return m_doc.pageSize(qMax(0, m_page));
+        return m_doc->pagePointSize(qMax(0, m_page));
     case ClipRect:
         return m_clipRect;
     case ScaledSize:
@@ -166,7 +137,7 @@ QVariant QPdfIOHandler::option(ImageOption option) const
     case BackgroundColor:
         return m_backColor;
     case Name:
-        return m_doc.metaData(QPdfDocument::Title);
+        return m_doc->metaData(QPdfDocument::MetaDataField::Title);
     default:
         break;
     }
@@ -213,7 +184,7 @@ bool QPdfIOHandler::supportsOption(ImageOption option) const
 
 bool QPdfIOHandler::jumpToImage(int frame)
 {
-    qCDebug(qLcPdf) << Q_FUNC_INFO << frame;
+    qCDebug(qLcPdf) << frame;
     if (frame < 0 || frame >= imageCount())
         return false;
     m_page = frame;
@@ -233,8 +204,18 @@ bool QPdfIOHandler::load(QIODevice *device)
         if (!canRead())
             return false;
 
-    m_doc.load(device);
-    m_loaded = (m_doc.error() == QPdfDocument::DocumentError::NoError);
+    QPdfFile *pdfFile = qobject_cast<QPdfFile *>(device);
+    if (pdfFile) {
+        m_doc = pdfFile->document();
+        m_ownsDocument = false;
+        qCDebug(qLcPdf) << "loading via QPdfFile, reusing document instance" << m_doc;
+    } else {
+        m_doc = new QPdfDocument();
+        m_ownsDocument = true;
+        m_doc->load(device);
+        qCDebug(qLcPdf) << "loading via new document instance" << m_doc;
+    }
+    m_loaded = (m_doc->error() == QPdfDocument::Error::None);
 
     return m_loaded;
 }

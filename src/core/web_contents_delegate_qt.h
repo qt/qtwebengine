@@ -1,58 +1,17 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #ifndef WEB_CONTENTS_DELEGATE_QT_H
 #define WEB_CONTENTS_DELEGATE_QT_H
 
 #include "content/browser/renderer_host/frame_tree_node.h"
-#include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-#include "base/callback.h"
+#include "web_contents_adapter_client.h"
 
-#include "color_chooser_controller.h"
-#include "find_text_helper.h"
-#include "javascript_dialog_manager_qt.h"
 #include <QtCore/qlist.h>
-#include <QWebEngineCertificateError>
 
 namespace blink {
     namespace web_pref {
@@ -61,15 +20,15 @@ namespace blink {
 }
 
 namespace content {
-    class ColorChooser;
-    class SiteInstance;
-    class JavaScriptDialogManager;
-    class WebContents;
-    struct ColorSuggestion;
+class ColorChooser;
+class JavaScriptDialogManager;
+class WebContents;
+struct MediaStreamRequest;
 }
 
 namespace QtWebEngineCore {
 
+class FindTextHelper;
 class WebContentsAdapter;
 class WebContentsAdapterClient;
 class WebEngineSettings;
@@ -154,13 +113,13 @@ public:
 
     // WebContentsObserver overrides
     void RenderFrameCreated(content::RenderFrameHost *render_frame_host) override;
-    void RenderProcessGone(base::TerminationStatus status) override;
+    void PrimaryMainFrameRenderProcessGone(base::TerminationStatus status) override;
     void RenderFrameHostChanged(content::RenderFrameHost *old_host, content::RenderFrameHost *new_host) override;
     void RenderViewHostChanged(content::RenderViewHost *old_host, content::RenderViewHost *new_host) override;
+    void RenderViewReady() override;
     void DidStartNavigation(content::NavigationHandle *navigation_handle) override;
     void DidFinishNavigation(content::NavigationHandle *navigation_handle) override;
-    void DidStartLoading() override;
-    void DidReceiveResponse() override;
+    void PrimaryPageChanged(content::Page &page) override;
     void DidStopLoading() override;
     void DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code) override;
     void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) override;
@@ -221,7 +180,6 @@ private:
     SavePageInfo m_savePageInfo;
     QSharedPointer<FilePickerController> m_filePickerController;
     LoadingState m_loadingState;
-    bool m_didStartLoadingSeen;
     FrameFocusedObserver m_frameFocusedObserver;
 
     QString m_title;
@@ -237,7 +195,7 @@ private:
         bool isLoading() const { return progress >= 0; }
         QUrl url;
         bool isErrorPage = false;
-        int errorCode = 0;
+        int errorCode = 0, errorDomain = 0;
         QString errorDescription;
         bool triggersErrorPage = false;
         void clear() { *this = LoadingInfo(); }

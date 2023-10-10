@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #ifndef QWEBENGINEPAGE_P_H
 #define QWEBENGINEPAGE_P_H
@@ -59,12 +23,14 @@
 #include <QtCore/qcompilerdetection.h>
 #include <QtCore/QPointer>
 #include <QtCore/QTimer>
+#include <QtGui/QColor>
 
 namespace QtWebEngineCore {
+class AutofillPopupController;
 class RenderWidgetHostViewQtDelegate;
-class RenderWidgetHostViewQtDelegateWidget;
 class RenderWidgetHostViewQtDelegateClient;
-class TouchHandleDrawableClient;
+class RenderWidgetHostViewQtDelegateItem;
+class TouchHandleDrawableDelegate;
 class TouchSelectionMenuController;
 class WebContentsAdapter;
 }
@@ -94,6 +60,8 @@ public:
     virtual void setToolTip(const QString &toolTipText) = 0;
     virtual QtWebEngineCore::RenderWidgetHostViewQtDelegate *CreateRenderWidgetHostViewQtDelegate(
             QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) = 0;
+    virtual QtWebEngineCore::RenderWidgetHostViewQtDelegate *CreateRenderWidgetHostViewQtDelegateForPopup(
+            QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) = 0;
     virtual QWebEngineContextMenuRequest *lastContextMenuRequest() const = 0;
     virtual QWebEnginePage *createPageForWindow(QWebEnginePage::WebWindowType type) = 0;
     virtual bool isEnabled() const = 0;
@@ -106,6 +74,9 @@ public:
     virtual void didPrintPage(QPrinter *&printer, QSharedPointer<QByteArray> result) = 0;
     virtual void didPrintPageToPdf(const QString &filePath, bool success) = 0;
     virtual void printRequested() = 0;
+    virtual void showAutofillPopup(QtWebEngineCore::AutofillPopupController *controller,
+                                   const QRect &bounds, bool autoselectFirstSuggestion) = 0;
+    virtual void hideAutofillPopup() = 0;
 };
 
 class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEnginePagePrivate : public QtWebEngineCore::WebContentsAdapterClient
@@ -118,7 +89,7 @@ public:
     ~QWebEnginePagePrivate();
 
     QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override;
-    QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override { return CreateRenderWidgetHostViewQtDelegate(client); }
+    QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override;
     void initializationFinished() override;
     void lifecycleStateChanged(LifecycleState state) override;
     void recommendedStateChanged(LifecycleState state) override;
@@ -169,6 +140,7 @@ public:
     void runMouseLockPermissionRequest(const QUrl &securityOrigin) override;
     void runQuotaRequest(QWebEngineQuotaRequest) override;
     void runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest) override;
+    void runFileSystemAccessRequest(QWebEngineFileSystemAccessRequest) override;
     QObject *accessibilityParentObject() override;
     QWebEngineSettings *webEngineSettings() const override;
     void allowCertificateError(const QWebEngineCertificateError &error) override;
@@ -184,12 +156,16 @@ public:
     bool isEnabled() const override;
     void setToolTip(const QString &toolTipText) override;
     void printRequested() override;
-    QtWebEngineCore::TouchHandleDrawableClient *createTouchHandle(const QMap<int, QImage> &) override { return nullptr; }
+    QtWebEngineCore::TouchHandleDrawableDelegate *
+    createTouchHandleDelegate(const QMap<int, QImage> &) override { return nullptr; }
     void showTouchSelectionMenu(QtWebEngineCore::TouchSelectionMenuController *, const QRect &, const QSize &) override { }
     void hideTouchSelectionMenu() override { }
     const QObject *holdingQObject() const override;
     ClientType clientType() override { return QtWebEngineCore::WebContentsAdapterClient::WidgetsClient; }
     void findTextFinished(const QWebEngineFindTextResult &result) override;
+    void showAutofillPopup(QtWebEngineCore::AutofillPopupController *controller,
+                           const QRect &bounds, bool autoselectFirstSuggestion) override;
+    void hideAutofillPopup() override;
 
     QtWebEngineCore::ProfileAdapter *profileAdapter() override;
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;
@@ -225,7 +201,7 @@ public:
     bool defaultAudioMuted;
     qreal defaultZoomFactor;
     QTimer wasShownTimer;
-    QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *widget = nullptr;
+    QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *delegateItem = nullptr;
 #if QT_CONFIG(webengine_printing_and_pdf)
     QPrinter *currentPrinter = nullptr;
 #endif

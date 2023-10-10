@@ -1,30 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:GPL-EXCEPT$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3 as published by the Free Software
-** Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -161,7 +136,7 @@ void tst_InspectorServer::testRemoteDebuggingMessage()
         .arg(pageList.at(0).toObject().value("webSocketDebuggerUrl").toString())
         .arg(jsExpression));
 
-    QTRY_COMPARE(webSocketQueryWebView->title(), jsExpressionResult);
+    QTRY_COMPARE_WITH_TIMEOUT(webSocketQueryWebView->title(), jsExpressionResult, 10000);
 }
 
 void tst_InspectorServer::openRemoteDebuggingSession()
@@ -185,7 +160,7 @@ void tst_InspectorServer::openRemoteDebuggingSession()
     // - The page list didn't return a valid inspector URL
     // - Or the front-end couldn't be loaded through the inspector HTTP server
     // - Or the web socket connection couldn't be established between the front-end and the page through the inspector server
-    QTRY_VERIFY_WITH_TIMEOUT(inspectorWebView->title().startsWith("DevTools -"), 30000);
+    QTRY_VERIFY_WITH_TIMEOUT(inspectorWebView->title().startsWith("DevTools -"), 60000);
 }
 
 QTEST_MAIN(tst_InspectorServer)

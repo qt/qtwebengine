@@ -1,41 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "file_picker_controller.h"
 #include "type_conversion.h"
@@ -114,16 +78,16 @@ void FilePickerController::accepted(const QStringList &files)
             base::FilePath filePath = toFilePath(urlString).NormalizePathSeparators();
             std::vector<base::FilePath::StringType> pathComponents;
             // Splits the file URL into scheme, host name, path and file name.
-            filePath.GetComponents(&pathComponents);
+            pathComponents = filePath.GetComponents();
 
             QString absolutePath;
-#if !defined(OS_WIN)
+#if !defined(Q_OS_WIN)
             absolutePath = "/";
 #endif
 
             QString scheme = toQt(pathComponents[0]);
             if (scheme.size() > 5) {
-#if defined(OS_WIN)
+#if defined(Q_OS_WIN)
                 // There is no slash at the end of the file scheme and it is valid on Windows: file:C:/
                 if (scheme.size() == 7 && scheme.at(5).isLetter() && scheme.at(6) == ':') {
                     absolutePath += scheme.at(5) + ":/";
@@ -131,7 +95,7 @@ void FilePickerController::accepted(const QStringList &files)
 #endif
                     qWarning("Ignoring invalid item in FilePickerController::accepted(QStringList): %s", qPrintable(urlString));
                     continue;
-#if defined(OS_WIN)
+#if defined(Q_OS_WIN)
                 }
 #endif
             }
@@ -140,7 +104,7 @@ void FilePickerController::accepted(const QStringList &files)
             if (base::FilePath::IsSeparator(urlString.at(5).toLatin1())
                 && base::FilePath::IsSeparator(urlString.at(6).toLatin1())
                 && !base::FilePath::IsSeparator(urlString.at(7).toLatin1())) {
-#if defined(OS_WIN)
+#if defined(Q_OS_WIN)
                 if (urlString.at(8) != ':' && pathComponents.size() > 2) {
                     absolutePath += "//";
 #else
@@ -245,6 +209,10 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
         else
             d_ptr->fileSystemAccessDialogListener->MultiFilesSelected(files, nullptr);
     }
+
+    // release the fileSelectListener manually because it blocks fullscreen requests in chromium
+    // see QTBUG-106975
+    d_ptr->fileDialogListener.reset();
 }
 
 QStringList FilePickerController::acceptedMimeTypes() const
@@ -287,7 +255,7 @@ QStringList FilePickerController::nameFilters(const QStringList &acceptedMimeTyp
             const QMimeType &mimeType = mimeDatabase.mimeTypeForName(type);
             if (mimeType.isValid() && !mimeType.globPatterns().isEmpty()) {
                 QString globs = mimeType.globPatterns().join(" ");
-                acceptedGlobs.append(globs);
+                acceptedGlobs.append(mimeType.globPatterns());
                 nameFilters.append(mimeType.comment() + " (" + globs + ")");
             }
         } else if (type.endsWith("/*")) {
@@ -298,7 +266,7 @@ QStringList FilePickerController::nameFilters(const QStringList &acceptedMimeTyp
             for (const QMimeType &m : allMimeTypes) {
                 if (m.name().startsWith(type) && !m.globPatterns().isEmpty()) {
                     QString globs = m.globPatterns().join(" ");
-                    acceptedGlobs.append(globs);
+                    acceptedGlobs.append(m.globPatterns());
                     nameFilters.append(m.comment() + " (" + globs + ")");
                 }
             }

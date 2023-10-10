@@ -1,42 +1,6 @@
-/****************************************************************************
-**
-** Copyright (C) 2013 BlackBerry Limited. All rights reserved.
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2013 BlackBerry Limited. All rights reserved.
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qtwebenginecoreglobal_p.h"
 #include "web_engine_library_info.h"
@@ -62,9 +26,9 @@
 #include <QLoggingCategory>
 #include <QStandardPaths>
 
-#if defined(OS_WIN)
+#if defined(Q_OS_WIN)
 #include <windows.h>
-#endif // OS_WIN
+#endif
 
 #ifndef QTWEBENGINEPROCESS_NAME
 #error "No name defined for QtWebEngine's process"
@@ -81,7 +45,7 @@ QString fallbackDir() {
     return directory;
 }
 
-#if defined(OS_MAC) && defined(QT_MAC_FRAMEWORK_BUILD)
+#if defined(Q_OS_DARWIN) && defined(QT_MAC_FRAMEWORK_BUILD)
 static inline CFBundleRef frameworkBundle()
 {
     return CFBundleGetBundleWithIdentifier(CFSTR("org.qt-project.QtWebEngineCore"));
@@ -124,7 +88,7 @@ static QString getResourcesPath(CFBundleRef frameworkBundle)
 }
 #endif
 
-#if defined(OS_MAC)
+#if defined(Q_OS_DARWIN)
 static QString getMainApplicationResourcesPath()
 {
     QString resourcesPath;
@@ -156,7 +120,7 @@ QString subProcessPath()
 {
     static QString processPath;
     if (processPath.isEmpty()) {
-#if defined(OS_WIN)
+#if defined(Q_OS_WIN)
         const QString processBinary = QLatin1String(QTWEBENGINEPROCESS_NAME) % QLatin1String(".exe");
 #else
         const QString processBinary = QLatin1String(QTWEBENGINEPROCESS_NAME);
@@ -168,7 +132,7 @@ QString subProcessPath()
             // Only search in QTWEBENGINEPROCESS_PATH if set
             candidatePaths << fromEnv;
         } else {
-#if defined(OS_MAC) && defined(QT_MAC_FRAMEWORK_BUILD)
+#if defined(Q_OS_DARWIN) && defined(QT_MAC_FRAMEWORK_BUILD)
             candidatePaths << getBundlePath(frameworkBundle())
                               % QStringLiteral("/Helpers/" QTWEBENGINEPROCESS_NAME ".app/Contents/MacOS/" QTWEBENGINEPROCESS_NAME);
 #else
@@ -204,7 +168,7 @@ QString subProcessPath()
             qFatal("%s", qPrintable(errorMessage.join('\n')));
         }
 
-#if defined(OS_WIN)
+#if defined(Q_OS_WIN)
         base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
         if (!parsedCommandLine->HasSwitch(sandbox::policy::switches::kNoSandbox)) {
             if (WebEngineLibraryInfo::isUNCPath(processPath) || WebEngineLibraryInfo::isRemoteDrivePath(processPath))
@@ -234,7 +198,7 @@ QString localesPath()
             // Only search in QTWEBENGINE_LOCALES_PATH if set
             candidatePaths << fromEnv;
         } else {
-#if defined(OS_MAC) && defined(QT_MAC_FRAMEWORK_BUILD)
+#if defined(Q_OS_DARWIN) && defined(QT_MAC_FRAMEWORK_BUILD)
             candidatePaths << getResourcesPath(frameworkBundle()) % QDir::separator()
                             % QLatin1String("qtwebengine_locales");
 #endif
@@ -290,7 +254,7 @@ QString dictionariesPath()
             candidatePaths << fromEnv;
         } else {
             // First try to find dictionaries near the application.
-#ifdef OS_MAC
+#ifdef Q_OS_DARWIN
             QString resourcesDictionariesPath = getMainApplicationResourcesPath()
                     % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
             candidatePaths << resourcesDictionariesPath;
@@ -300,7 +264,7 @@ QString dictionariesPath()
             candidatePaths << applicationDictionariesPath;
 
             // Then try to find dictionaries near the installed library.
-#if defined(OS_MAC) && defined(QT_MAC_FRAMEWORK_BUILD)
+#if defined(Q_OS_DARWIN) && defined(QT_MAC_FRAMEWORK_BUILD)
             QString frameworkDictionariesPath = getResourcesPath(frameworkBundle())
                     % QLatin1String("/qtwebengine_dictionaries");
             candidatePaths << frameworkDictionariesPath;
@@ -336,7 +300,7 @@ QString resourcesPath()
             // Only search in QTWEBENGINE_RESOURCES_PATH if set
             candidatePaths << fromEnv;
         } else {
-#if defined(OS_MAC) && defined(QT_MAC_FRAMEWORK_BUILD)
+#if defined(Q_OS_DARWIN) && defined(QT_MAC_FRAMEWORK_BUILD)
             candidatePaths << getResourcesPath(frameworkBundle());
 #endif
             candidatePaths << QLibraryInfo::path(QLibraryInfo::DataPath) % QDir::separator()
@@ -387,14 +351,14 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
         return toFilePath(resourcesPath() % QLatin1String("/qtwebengine_resources_200p.pak"));
     case QT_RESOURCES_DEVTOOLS_PAK:
         return toFilePath(resourcesPath() % QLatin1String("/qtwebengine_devtools_resources.pak"));
-#if defined(OS_MAC) && defined(QT_MAC_FRAMEWORK_BUILD)
+#if defined(Q_OS_DARWIN) && defined(QT_MAC_FRAMEWORK_BUILD)
     case QT_FRAMEWORK_BUNDLE:
         return toFilePath(getBundlePath(frameworkBundle()));
 #endif
     case base::FILE_EXE:
     case content::CHILD_PROCESS_EXE:
         return toFilePath(subProcessPath());
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
     case base::DIR_CACHE:
         directory = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
         break;
@@ -452,7 +416,7 @@ std::string WebEngineLibraryInfo::getApplicationLocale()
         : QLocale().bcp47Name().toStdString();
 }
 
-#if defined(OS_WIN)
+#if defined(Q_OS_WIN)
 bool WebEngineLibraryInfo::isRemoteDrivePath(const QString &path)
 {
     WCHAR wDriveLetter[4] = { 0 };
