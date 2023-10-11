@@ -118,6 +118,11 @@ void URLRequestCustomJobProxy::fail(int error)
     // else we fail on the next read, or the read that might already be in progress
 }
 
+void URLRequestCustomJobProxy::succeed()
+{
+    m_client->notifySuccess();
+}
+
 void URLRequestCustomJobProxy::readyRead()
 {
     DCHECK (m_ioTaskRunner->RunsTasksInCurrentSequence());

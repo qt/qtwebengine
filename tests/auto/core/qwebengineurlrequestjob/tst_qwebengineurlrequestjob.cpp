@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <QtTest/QtTest>
+#include <util.h>
+#include <QtWebEngineCore/qwebengineloadinginfo.h>
 #include <QtWebEngineCore/qwebengineurlschemehandler.h>
 #include <QtWebEngineCore/qwebengineurlscheme.h>
 #include <QtWebEngineCore/qwebengineurlrequestjob.h>
 #include <QtWebEngineCore/qwebengineprofile.h>
 #include <QtWebEngineCore/qwebenginepage.h>
+
 
 class CustomPage : public QWebEnginePage
 {
@@ -125,6 +128,32 @@ public:
     const static inline QByteArray schemeName = QByteArrayLiteral("requestbodyhandler");
 };
 
+class SuccessHandler : public QWebEngineUrlSchemeHandler
+{
+public:
+    SuccessHandler() { }
+
+    void requestStarted(QWebEngineUrlRequestJob *requestJob) override
+    {
+        if (silentSuccess)
+            requestJob->reply("", nullptr);
+        else {
+            QBuffer *buffer = new QBuffer(requestJob);
+            buffer->setData(requestJob->requestUrl().toString().toUtf8());
+            requestJob->reply("text/plain;charset=utf-8", buffer);
+        }
+    }
+
+    static void registerUrlScheme()
+    {
+        QWebEngineUrlScheme successScheme(schemeName);
+        QWebEngineUrlScheme::registerScheme(successScheme);
+    }
+
+    bool silentSuccess = false;
+    const static inline QByteArray schemeName = QByteArrayLiteral("success");
+};
+
 class tst_QWebEngineUrlRequestJob : public QObject
 {
     Q_OBJECT
@@ -137,6 +166,7 @@ private Q_SLOTS:
     {
         AdditionalResponseHeadersHandler::registerUrlScheme();
         RequestBodyHandler::registerUrlScheme();
+        SuccessHandler::registerUrlScheme();
     }
 
     void withAdditionalResponseHeaders_data()
@@ -180,6 +210,30 @@ private Q_SLOTS:
         page.load(QUrl("qrc:///requestBodyScript.html"));
         QVERIFY(spy.wait());
         QCOMPARE(page.comparedMessageCount(), 1);
+    }
+
+    void notifySuccess()
+    {
+        QWebEngineProfile profile;
+        QWebEnginePage page(&profile);
+        QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+
+        SuccessHandler handler;
+        page.profile()->installUrlSchemeHandler(SuccessHandler::schemeName, &handler);
+
+        page.load(QUrl("success://one"));
+        QTRY_COMPARE(loadFinishedSpy.size(), 1);
+        QTRY_COMPARE(loadFinishedSpy.at(0).first().toBool(), true);
+        QCOMPARE(toPlainTextSync(&page), "success://one");
+
+        handler.silentSuccess = true;
+
+        page.load(QUrl("success://two"));
+        // Page load was successful
+        QTRY_COMPARE(loadFinishedSpy.size(), 2);
+        QTRY_COMPARE(loadFinishedSpy.at(1).first().toBool(), true);
+        // The content of the page did not change
+        QCOMPARE(toPlainTextSync(&page), "success://one");
     }
 };
 

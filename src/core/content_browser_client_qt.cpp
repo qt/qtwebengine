@@ -1038,7 +1038,7 @@ void ContentBrowserClientQt::RegisterNonNetworkNavigationURLLoaderFactories(int 
     ProfileAdapter *profileAdapter = static_cast<ProfileQt *>(profile)->profileAdapter();
 
     for (const QByteArray &scheme : profileAdapter->customUrlSchemes())
-        factories->emplace(scheme.toStdString(), CreateCustomURLLoaderFactory(profileAdapter));
+        factories->emplace(scheme.toStdString(), CreateCustomURLLoaderFactory(profileAdapter, web_contents));
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     factories->emplace(
@@ -1055,7 +1055,7 @@ void ContentBrowserClientQt::RegisterNonNetworkWorkerMainResourceURLLoaderFactor
     ProfileAdapter *profileAdapter = static_cast<ProfileQt *>(profile)->profileAdapter();
 
     for (const QByteArray &scheme : profileAdapter->customUrlSchemes())
-        factories->emplace(scheme.toStdString(), CreateCustomURLLoaderFactory(profileAdapter));
+        factories->emplace(scheme.toStdString(), CreateCustomURLLoaderFactory(profileAdapter, nullptr));
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     factories->emplace(
@@ -1073,7 +1073,7 @@ void ContentBrowserClientQt::RegisterNonNetworkServiceWorkerUpdateURLLoaderFacto
     for (const QByteArray &scheme : profileAdapter->customUrlSchemes()) {
         if (const url::CustomScheme *cs = url::CustomScheme::FindScheme(scheme.toStdString())) {
             if (cs->flags & url::CustomScheme::ServiceWorkersAllowed)
-                factories->emplace(scheme.toStdString(), CreateCustomURLLoaderFactory(profileAdapter));
+                factories->emplace(scheme.toStdString(), CreateCustomURLLoaderFactory(profileAdapter, nullptr));
         }
     }
 
@@ -1093,14 +1093,14 @@ void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int
     Profile *profile = Profile::FromBrowserContext(process_host->GetBrowserContext());
     ProfileAdapter *profileAdapter = static_cast<ProfileQt *>(profile)->profileAdapter();
 
-    for (const QByteArray &scheme : profileAdapter->customUrlSchemes())
-        factories->emplace(scheme.toStdString(), CreateCustomURLLoaderFactory(profileAdapter));
-
     content::RenderFrameHost *frame_host = content::RenderFrameHost::FromID(render_process_id, render_frame_id);
     content::WebContents *web_contents = content::WebContents::FromRenderFrameHost(frame_host);
     GURL url;
     if (web_contents)
         url = web_contents->GetVisibleURL();
+
+    for (const QByteArray &scheme : profileAdapter->customUrlSchemes())
+        factories->emplace(scheme.toStdString(), CreateCustomURLLoaderFactory(profileAdapter, web_contents));
 
     bool is_background_page = false;
 #if BUILDFLAG(ENABLE_EXTENSIONS)

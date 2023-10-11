@@ -17,6 +17,9 @@
 
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
+namespace content {
+class WebContents;
+}
 namespace network {
 namespace mojom {
 class URLLoaderFactory;
@@ -26,7 +29,7 @@ class URLLoaderFactory;
 namespace QtWebEngineCore {
 class ProfileAdapter;
 
-mojo::PendingRemote<network::mojom::URLLoaderFactory> CreateCustomURLLoaderFactory(ProfileAdapter *profileAdapter);
+mojo::PendingRemote<network::mojom::URLLoaderFactory> CreateCustomURLLoaderFactory(ProfileAdapter *profileAdapter, content::WebContents *webContents);
 
 } // namespace QtWebEngineCore
 

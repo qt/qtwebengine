@@ -64,12 +64,16 @@ void URLRequestCustomJobDelegate::setAdditionalResponseHeaders(
 
 void URLRequestCustomJobDelegate::reply(const QByteArray &contentType, QIODevice *device)
 {
-    if (device)
+    if (!device)
+        m_proxy->m_ioTaskRunner->PostTask(FROM_HERE,
+                                          base::BindOnce(&URLRequestCustomJobProxy::succeed, m_proxy));
+    else {
         QObject::connect(device, &QIODevice::readyRead, this, &URLRequestCustomJobDelegate::slotReadyRead);
-    m_proxy->m_ioTaskRunner->PostTask(FROM_HERE,
-                                      base::BindOnce(&URLRequestCustomJobProxy::reply, m_proxy,
-                                                     contentType.toStdString(), device,
-                                                     std::move(m_additionalResponseHeaders)));
+        m_proxy->m_ioTaskRunner->PostTask(FROM_HERE,
+                                          base::BindOnce(&URLRequestCustomJobProxy::reply, m_proxy,
+                                                         contentType.toStdString(), device,
+                                                         std::move(m_additionalResponseHeaders)));
+    }
 }
 
 void URLRequestCustomJobDelegate::slotReadyRead()
