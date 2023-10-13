@@ -44,8 +44,10 @@
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QIcon>
+
 #include <QLoggingCategory>
 #include <QMimeData>
+#include <QtCore/QPointer>
 #include <QRect>
 #include <QTimer>
 #include <QUrl>

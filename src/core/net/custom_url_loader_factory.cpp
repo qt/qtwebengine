@@ -32,6 +32,7 @@
 #include <QtCore/qiodevice.h>
 #include <QtCore/qmimedatabase.h>
 #include <QtCore/qmimedata.h>
+#include <QtCore/qpointer.h>
 #include <QtCore/qurl.h>
 
 namespace QtWebEngineCore {
