@@ -302,8 +302,6 @@ void QWebEngineUrlRequestInfo::block(bool shouldBlock)
 
 void QWebEngineUrlRequestInfo::setHttpHeader(const QByteArray &name, const QByteArray &value)
 {
-    d_ptr->changed = true;
-
     // Headers are case insentive, so we need to compare manually
     for (auto it = d_ptr->extraHeaders.begin(); it != d_ptr->extraHeaders.end(); ++it) {
         if (it.key().compare(name, Qt::CaseInsensitive) == 0) {

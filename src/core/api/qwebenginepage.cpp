@@ -1707,7 +1707,9 @@ void QWebEnginePagePrivate::visibleChanged(bool visible)
 
     The page does not take ownership of the pointer. This interceptor is called
     after any interceptors on the profile, and unlike profile interceptors, only
-    URL requests from this page are intercepted.
+    URL requests from this page are intercepted. If the original request was
+    already blocked or redirected by the profile interceptor, it will not be
+    intercepted by this.
 
     To unset the request interceptor, set a \c nullptr.
 

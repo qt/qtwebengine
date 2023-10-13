@@ -53,6 +53,8 @@ private Q_SLOTS:
     void multipleRedirects();
     void postWithBody_data();
     void postWithBody();
+    void profilePreventsPageInterception_data();
+    void profilePreventsPageInterception();
 };
 
 tst_QWebEngineUrlRequestInterceptor::tst_QWebEngineUrlRequestInterceptor()
@@ -139,7 +141,7 @@ public:
 
         // MEMO avoid unintentionally changing request when it is not needed for test logic
         //      since api behavior depends on 'changed' state of the info object
-        Q_ASSERT(info.changed() == (block || redirect || !headers.empty()));
+        Q_ASSERT(info.changed() == (block || redirect));
     }
 
     bool shouldSkipRequest(const RequestInfo &requestInfo)
@@ -1057,6 +1059,63 @@ void tst_QWebEngineUrlRequestInterceptor::postWithBody()
 
     QTRY_VERIFY(ok);
     QVERIFY(interceptor.isCalled);
+}
+
+class PageOrProfileInterceptor : public QWebEngineUrlRequestInterceptor
+{
+public:
+    PageOrProfileInterceptor(const QString &profileAction)
+        : profileAction(profileAction)
+    {
+    }
+
+    void interceptRequest(QWebEngineUrlRequestInfo &info) override
+    {
+        if (profileAction == "block")
+            info.block(true);
+        else if (profileAction == "redirect")
+            info.redirect(QUrl("data:text/html,<p>redirected"));
+        else if (profileAction == "add header")
+            info.setHttpHeader("Custom-Header", "Value");
+        else
+            QVERIFY(info.httpHeaders().contains("Custom-Header"));
+        ran = true;
+    }
+
+    QString profileAction;
+    bool ran = false;
+};
+
+void tst_QWebEngineUrlRequestInterceptor::profilePreventsPageInterception_data()
+{
+    QTest::addColumn<QString>("profileAction");
+    QTest::addColumn<bool>("interceptInProfile");
+    QTest::addColumn<bool>("interceptInPage");
+    QTest::newRow("block") << "block" << true << false;
+    QTest::newRow("redirect") << "redirect" << true << false;
+    QTest::newRow("add header") << "add header" << true << true;
+}
+
+void tst_QWebEngineUrlRequestInterceptor::profilePreventsPageInterception()
+{
+    QFETCH(QString, profileAction);
+    QFETCH(bool, interceptInProfile);
+    QFETCH(bool, interceptInPage);
+
+    QWebEngineProfile profile;
+    PageOrProfileInterceptor profileInterceptor(profileAction);
+    profile.setUrlRequestInterceptor(&profileInterceptor);
+    profile.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
+
+    QWebEnginePage page(&profile);
+    PageOrProfileInterceptor pageInterceptor("");
+    page.setUrlRequestInterceptor(&pageInterceptor);
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+
+    page.load(QUrl("qrc:///resources/index.html"));
+    QTRY_COMPARE(loadSpy.size(), 1);
+    QCOMPARE(profileInterceptor.ran, interceptInProfile);
+    QCOMPARE(pageInterceptor.ran, interceptInPage);
 }
 
 QTEST_MAIN(tst_QWebEngineUrlRequestInterceptor)
