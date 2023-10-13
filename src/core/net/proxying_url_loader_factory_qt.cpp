@@ -361,18 +361,17 @@ void InterceptedRequest::ContinueAfterIntercept()
         const auto scoped_request_info = std::move(request_info_);
         QWebEngineUrlRequestInfoPrivate &info = *scoped_request_info->d_ptr;
 
+        for (auto header = info.extraHeaders.constBegin(); header != info.extraHeaders.constEnd(); ++header) {
+            std::string h = header.key().toStdString();
+            if (base::EqualsCaseInsensitiveASCII(h, "referer"))
+                request_.referrer = GURL(header.value().toStdString());
+            else
+                request_.headers.SetHeader(h, header.value().toStdString());
+        }
+
         if (info.changed) {
             if (info.shouldBlockRequest)
                 return SendErrorAndCompleteImmediately(net::ERR_BLOCKED_BY_CLIENT);
-
-            for (auto header = info.extraHeaders.constBegin(); header != info.extraHeaders.constEnd(); ++header) {
-                std::string h = header.key().toStdString();
-                if (base::EqualsCaseInsensitiveASCII(h, "referer")) {
-                    request_.referrer = GURL(header.value().toStdString());
-                } else {
-                    request_.headers.SetHeader(h, header.value().toStdString());
-                }
-            }
 
             if (info.shouldRedirectRequest) {
                 net::RedirectInfo::FirstPartyURLPolicy first_party_url_policy =
