@@ -497,7 +497,7 @@ foreach(arch ${archs})
                      external_gssapi_include_dir="${GSSAPI_INCLUDE_DIRS}/gssapi"
                 )
             endif()
-
+            get_gn_arch(cpu ${TEST_architecture_arch})
             if(CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm")
                 check_thumb(armThumb)
                 if(NOT armThumb AND NOT QT_FEATURE_webengine_system_ffmpeg)
@@ -514,6 +514,7 @@ foreach(arch ${archs})
                     )
                 endif()
             endif()
+            unset(cpu)
         endif()
 
         if(MACOS)

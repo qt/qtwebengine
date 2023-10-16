@@ -434,6 +434,7 @@ function(add_linker_options target buildDir completeStatic)
          target_link_libraries(${cmakeTarget} PRIVATE
              "$<1:-Wl,--no-fatal-warnings $<$<CONFIG:${config}>:@${ldir_rsp}> $<$<CONFIG:${config}>:@${libs_rsp}> -Wl,--no-fatal-warnings>"
          )
+         unset(cpu)
     endif()
     if(MACOS)
         target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${objects_rsp}>")
@@ -612,46 +613,50 @@ function(qt_internal_add_external_project_dependency_to_root_project name)
     cmake_policy(POP)
 endfunction()
 
+# Function maps TEST_architecture_arch or CMAKE_SYSTEM_PROCESSOR into gn architecture
 function(get_gn_arch result arch)
-    if(arch STREQUAL "i386")
+    set(armList arm armv7-a)
+    set(mips64List mips64 mipsel64)
+    set(x86List i386 i686)
+    set(x64List x86_64 AMD64 x86_64h aarch64)
+    if(arch IN_LIST x86List)
         set(${result} "x86" PARENT_SCOPE)
-    elseif(arch STREQUAL "x86_64")
+    elseif(arch IN_LIST x64List)
         set(${result} "x64" PARENT_SCOPE)
-    elseif(arch STREQUAL "arm")
+    elseif(arch IN_LIST armList)
         set(${result} "arm" PARENT_SCOPE)
     elseif(arch STREQUAL "arm64")
         set(${result} "arm64" PARENT_SCOPE)
     elseif(arch STREQUAL "mipsel")
         set(${result} "mipsel" PARENT_SCOPE)
-    elseif(arch STREQUAL "mipsel64")
+    elseif(arch IN_LIST mipsList)
         set(${result} "mips64el" PARENT_SCOPE)
     elseif(arch STREQUAL "riscv64")
         set(${result} "riscv64" PARENT_SCOPE)
     else()
-        message(DEBUG "Unsupported architecture: ${arch}")
+        message(FATAL_ERROR "Unknown architecture: ${arch}")
     endif()
 endfunction()
 
+# Function maps gn architecture for v8
 function(get_v8_arch result targetArch hostArch)
-    set(list32 i386 arm mipsel)
+    set(list32 x86 arm mipsel riscv32)
     if(hostArch STREQUAL targetArch)
         set(${result} "${targetArch}" PARENT_SCOPE)
     elseif(targetArch IN_LIST list32)
         # 32bit target which needs a 32bit compatible host
-        if(hostArch STREQUAL "x86_64")
-            set(${result} "i386" PARENT_SCOPE)
+        if(hostArch STREQUAL "x64")
+            set(${result} "x86" PARENT_SCOPE)
         elseif(hostArch STREQUAL "arm64")
             set(${result} "arm" PARENT_SCOPE)
-        elseif(hostArch STREQUAL "mips64")
-            set(${result} "mipsel" PARENT_SCOPE)
-        elseif(hostArch STREQUAL "mipsel64")
+        elseif(hostArch STREQUAL "mips64el")
             set(${result} "mipsel" PARENT_SCOPE)
         elseif(hostArch STREQUAL "riscv64")
-            set(${result} "riscv64" PARENT_SCOPE)
+            set(${result} "riscv32" PARENT_SCOPE)
         elseif(hostArch IN_LIST list32)
             set(${result} "${hostArch}" PARENT_SCOPE)
         else()
-            message(FATAL_ERROR "Unsupported architecture: ${hostArch}")
+            message(FATAL_ERROR "Unknown architecture: ${hostArch}")
         endif()
     else()
         # assume 64bit target which matches 64bit host
@@ -694,12 +699,12 @@ function(get_ios_sysroot result arch)
     set(${result} ${sysroot} PARENT_SCOPE)
 endfunction()
 
-function(configure_gn_toolchain name binTargetCpu v8TargetCpu toolchainIn toolchainOut)
+function(configure_gn_toolchain name cpu v8Cpu toolchainIn toolchainOut)
     set(GN_TOOLCHAIN ${name})
     get_gn_os(GN_OS)
     get_gn_is_clang(GN_IS_CLANG)
-    get_gn_arch(GN_CPU ${binTargetCpu})
-    get_gn_arch(GN_V8_CPU ${v8TargetCpu})
+    set(GN_CPU ${cpu})
+    set(GN_V8_CPU ${v8Cpu})
     configure_file(${toolchainIn} ${toolchainOut}/BUILD.gn @ONLY)
 endfunction()
 
@@ -781,17 +786,19 @@ macro(create_pkg_config_host_wrapper buildDir)
 endmacro()
 
 macro(setup_toolchains)
+    get_gn_arch(gn_arch ${TEST_architecture_arch})
     if(NOT CMAKE_CROSSCOMPILING) # delivered by hostBuild project
-        configure_gn_toolchain(host ${TEST_architecture_arch} ${TEST_architecture_arch}
+        configure_gn_toolchain(host ${gn_arch} ${gn_arch}
             ${WEBENGINE_ROOT_SOURCE_DIR}/src/host/BUILD.toolchain.gn.in
             ${buildDir}/host_toolchain)
-        configure_gn_toolchain(v8 ${TEST_architecture_arch} ${TEST_architecture_arch}
+        configure_gn_toolchain(v8 ${gn_arch} ${gn_arch}
             ${WEBENGINE_ROOT_SOURCE_DIR}/src/host/BUILD.toolchain.gn.in
             ${buildDir}/v8_toolchain)
     endif()
-    configure_gn_toolchain(target ${TEST_architecture_arch} ${TEST_architecture_arch}
+    configure_gn_toolchain(target ${gn_arch} ${gn_arch}
         ${WEBENGINE_ROOT_SOURCE_DIR}/src/host/BUILD.toolchain.gn.in
         ${buildDir}/target_toolchain)
+    unset(gn_arch)
 endmacro()
 
 macro(append_build_type_setup)
@@ -991,6 +998,7 @@ macro(append_compiler_linker_sdk_setup)
         ARGS use_lld
         CONDITION QT_FEATURE_use_lld_linker
     )
+    unset(cpu)
 endmacro()
 
 macro(append_sanitizer_setup)
@@ -1020,20 +1028,24 @@ macro(append_sanitizer_setup)
 endmacro()
 
 macro(append_toolchain_setup)
-    if(MINGW)
-        list(APPEND gnArgArg
-            # note '/' prefix
-            custom_toolchain="/${buildDir}/target_toolchain:target"
-            host_toolchain="/${buildDir}/host_toolchain:host"
-        )
-        list(APPEND gnArgArg host_cpu="${cpu}")
-    endif()
-    if(LINUX)
+    if(WIN32)
+        get_gn_arch(cpu ${arch})
+        list(APPEND gnArgArg target_cpu="${cpu}")
+        if(MINGW)
+            get_gn_arch(cpu ${TEST_architecture_arch})
+            list(APPEND gnArgArg
+                # note '/' prefix
+                custom_toolchain="/${buildDir}/target_toolchain:target"
+                host_toolchain="/${buildDir}/host_toolchain:host"
+                host_cpu="${cpu}"
+            )
+        endif()
+    elseif(LINUX)
+        get_gn_arch(cpu ${TEST_architecture_arch})
         list(APPEND gnArgArg
             custom_toolchain="${buildDir}/target_toolchain:target"
             host_toolchain="${buildDir}/host_toolchain:host"
         )
-        get_gn_arch(cpu ${TEST_architecture_arch})
         if(CMAKE_CROSSCOMPILING)
             list(APPEND gnArgArg
                 v8_snapshot_toolchain="${buildDir}/v8_toolchain:v8"
@@ -1045,17 +1057,18 @@ macro(append_toolchain_setup)
         if(CMAKE_SYSROOT)
             list(APPEND gnArgArg target_sysroot="${CMAKE_SYSROOT}")
         endif()
-    else()
+    elseif(MACOS)
         get_gn_arch(cpu ${arch})
         list(APPEND gnArgArg target_cpu="${cpu}")
-        if(IOS)
-            get_ios_sysroot(sysroot ${arch})
-            list(APPEND gnArgArg target_sysroot="${sysroot}" target_os="ios")
-        endif()
+    elseif(IOS)
+        get_gn_arch(cpu ${arch})
+        get_ios_sysroot(sysroot ${arch})
+        list(APPEND gnArgArg target_cpu="${cpu}" target_sysroot="${sysroot}" target_os="ios")
+    elseif(ANDROID)
+        get_gn_arch(cpu ${TEST_architecture_arch})
+        list(APPEND gnArgArg target_os="android" target_cpu="${cpu}")
     endif()
-    if(ANDROID)
-        list(APPEND gnArgArg target_os="android")
-    endif()
+    unset(cpu)
 endmacro()
 
 

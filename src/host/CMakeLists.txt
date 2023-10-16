@@ -21,14 +21,16 @@ project(QtWebEngineConfigure
 
 find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core)
 qt_internal_project_setup()
+get_gn_arch(target_arch ${GN_TARGET_CPU})
+get_gn_arch(host_arch ${TEST_architecture_arch})
+get_v8_arch(v8_arch ${target_arch} ${host_arch})
 
 set(buildDir ${CMAKE_CURRENT_BINARY_DIR})
-configure_gn_toolchain(host ${TEST_architecture_arch} ${TEST_architecture_arch}
+configure_gn_toolchain(host ${host_arch} ${host_arch}
     ${WEBENGINE_ROOT_SOURCE_DIR}/src/host/BUILD.toolchain.gn.in
     ${buildDir}/host_toolchain
 )
-get_v8_arch(GN_V8_HOST_CPU ${GN_TARGET_CPU} ${TEST_architecture_arch})
-configure_gn_toolchain(v8 ${GN_V8_HOST_CPU} ${GN_TARGET_CPU}
+configure_gn_toolchain(v8 ${v8_arch} ${target_arch}
     ${WEBENGINE_ROOT_SOURCE_DIR}/src/host/BUILD.toolchain.gn.in
     ${buildDir}/v8_toolchain)
 
