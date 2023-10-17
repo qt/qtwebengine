@@ -460,6 +460,8 @@ bool QWebEnginePagePrivate::adoptWebContents(WebContentsAdapter *webContents)
 
     m_isBeingAdopted = true;
 
+    webContents->setRequestInterceptor(adapter->requestInterceptor());
+
     // This throws away the WebContentsAdapter that has been used until now.
     // All its states, particularly the loading URL, are replaced by the adopted WebContentsAdapter.
     WebContentsAdapterOwner *adapterOwner = new WebContentsAdapterOwner(adapter->sharedFromThis());
