@@ -65,6 +65,7 @@
 #include <qwebenginescript.h>
 #include <qwebenginescriptcollection.h>
 #include <qwebenginesettings.h>
+#include <qwebengineurlrequestinterceptor.h>
 #include <qwebengineurlrequestjob.h>
 #include <qwebengineurlscheme.h>
 #include <qwebengineurlschemehandler.h>
@@ -271,6 +272,7 @@ private Q_SLOTS:
     void childFrameInput();
     void openLinkInNewPageWithWebWindowType_data();
     void openLinkInNewPageWithWebWindowType();
+    void keepInterceptorAfterNewWindowRequested();
 
 private:
     static bool isFalseJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
@@ -5326,6 +5328,53 @@ void tst_QWebEnginePage::openLinkInNewPageWithWebWindowType()
                       elementCenter(&page, elementId));
     QVERIFY(windowCreatedSpy.wait());
     QCOMPARE(page.windowType, webWindowType);
+}
+
+class DoNothingInterceptor : public QWebEngineUrlRequestInterceptor
+{
+public:
+    DoNothingInterceptor() { }
+
+    void interceptRequest(QWebEngineUrlRequestInfo &) override
+    {
+        ran = true;
+    }
+    bool ran = false;
+};
+
+void tst_QWebEnginePage::keepInterceptorAfterNewWindowRequested()
+{
+    DoNothingInterceptor interceptor;
+    QWebEnginePage page;
+    page.setUrlRequestInterceptor(&interceptor);
+    connect(&page, &QWebEnginePage::newWindowRequested, [&](QWebEngineNewWindowRequest &request) {
+        request.openIn(&page);
+    });
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+
+    QWebEngineView view;
+    view.resize(500, 500);
+    view.setPage(&page);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    page.setHtml("<html><body>"
+                  "<a id='link' href='hello' target='_blank'>link</a>"
+                  "</body></html>");
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QVERIFY(loadFinishedSpy.takeFirst().value(0).toBool());
+    QVERIFY(interceptor.ran);
+    interceptor.ran = false;
+
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, elementCenter(&page, "link"));
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QVERIFY(loadFinishedSpy.takeFirst().value(0).toBool());
+    QVERIFY(!interceptor.ran);
+
+    page.setHtml("<html><body></body></html>");
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QVERIFY(loadFinishedSpy.takeFirst().value(0).toBool());
+    QVERIFY(interceptor.ran);
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
