@@ -191,7 +191,6 @@ foreach(arch ${archs})
                 web_contents_delegate_qt.cpp web_contents_delegate_qt.h
                 web_contents_view_qt.cpp web_contents_view_qt.h
                 web_engine_context.cpp web_engine_context.h
-                web_engine_context_threads.cpp
                 web_engine_error.cpp web_engine_error.h
                 web_engine_library_info.cpp web_engine_library_info.h
                 web_engine_settings.cpp web_engine_settings.h

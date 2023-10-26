@@ -37,9 +37,12 @@
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/app/mojo_ipc_support.h"
 #include "content/browser/devtools/devtools_http_handler.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/startup_data_impl.h"
 #include "content/browser/startup_helper.h"
+#include "content/browser/utility_process_host.h"
+#include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_runner.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -55,6 +58,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/network_service_util.h"
+#include "content/renderer/in_process_renderer_thread.h"
+#include "content/utility/in_process_utility_thread.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "media/audio/audio_manager.h"
@@ -303,13 +308,11 @@ static void logContext(const char *glType, base::CommandLine *cmd)
                 "Using Supported QSG Backend: %s\n"
                 "Using Software Dynamic GL: %s\n"
                 "Using Shared GL: %s\n"
-                "Using Multithreaded OpenGL: %s\n\n"
                 "Init Parameters:\n %s",
                 glType, type, profile, sharedFormat.majorVersion(), sharedFormat.minorVersion(),
                 qUtf8Printable(QSGRhiSupport::instance()->rhiBackendName()),
                 usingSupportedSGBackend() ? "yes" : "no", usingSoftwareDynamicGL() ? "yes" : "no",
                 qt_gl_global_share_context() ? "yes" : "no",
-                !WebEngineContext::isGpuServiceOnUIThread() ? "yes" : "no",
                 qPrintable(params.join(" ")));
 #else
         qCDebug(webEngineContextLog,
@@ -465,7 +468,6 @@ void WebEngineContext::destroy()
     // on IO thread (triggered by ~BrowserMainRunner). But by that time the UI
     // task runner is not working anymore so we need to do this earlier.
     cleanupVizProcess();
-    destroyGpuProcess();
     // Flush the UI message loop before quitting.
     flushMessages();
 
@@ -595,18 +597,6 @@ ProxyAuthentication WebEngineContext::qProxyNetworkAuthentication(QString host, 
 
 const static char kChromiumFlagsEnv[] = "QTWEBENGINE_CHROMIUM_FLAGS";
 const static char kDisableSandboxEnv[] = "QTWEBENGINE_DISABLE_SANDBOX";
-const static char kDisableInProcGpuThread[] = "QTWEBENGINE_DISABLE_GPU_THREAD";
-
-// static
-bool WebEngineContext::isGpuServiceOnUIThread()
-{
-    static bool threadedGpu =
-#if QT_CONFIG(opengl) && !defined(Q_OS_MACOS)
-            QOpenGLContext::supportsThreadedOpenGL() &&
-#endif
-            !qEnvironmentVariableIsSet(kDisableInProcGpuThread);
-    return !threadedGpu;
-}
 
 static void initializeFeatureList(base::CommandLine *commandLine, std::vector<std::string> enableFeatures, std::vector<std::string> disableFeatures)
 {
@@ -945,6 +935,13 @@ base::CommandLine *WebEngineContext::initCommandLine(bool &useEmbeddedSwitches,
 bool WebEngineContext::closingDown()
 {
     return m_closingDown;
+}
+
+void WebEngineContext::registerMainThreadFactories()
+{
+    content::UtilityProcessHost::RegisterUtilityMainThreadFactory(content::CreateInProcessUtilityThread);
+    content::RenderProcessHostImpl::RegisterRendererMainThreadFactory(content::CreateInProcessRendererThread);
+    content::RegisterGpuMainThreadFactory(content::CreateInProcessGpuThread);
 }
 
 } // namespace

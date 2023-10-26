@@ -146,55 +146,9 @@ private:
                              seqMan->controller_.get());
         }
     }
-    // Both Qt and Chromium keep track of the current GL context by using
-    // thread-local variables, and naturally they are completely unaware of each
-    // other. As a result, when a QOpenGLContext is made current, the previous
-    // gl::GLContext is not released, and vice-versa. This is fine as long as
-    // each thread uses exclusively either Qt or Chromium GL bindings, which is
-    // usually the case.
-    //
-    // The only exception is when the GL driver is considered thread-unsafe
-    // (QOpenGLContext::supportsThreadedOpenGL() is false), in which case we
-    // have to run all GL operations, including Chromium's GPU service, on the
-    // UI thread. Now the bindings are being mixed and both Qt and Chromium get
-    // quite confused regarding the current state of the surface.
-    //
-    // To get this to work we have to release the current QOpenGLContext before
-    // executing any tasks from Chromium's GPU service and the gl::GLContext
-    // afterwards. Since GPU service just posts tasks to the UI thread task
-    // runner, we'll have to instrument the entire UI thread message pump.
-    class ScopedGLContextChecker
-    {
-#if QT_CONFIG(opengl)
-    public:
-        ScopedGLContextChecker()
-        {
-            if (!m_enabled)
-                return;
-
-            if (QOpenGLContext *context = QOpenGLContext::currentContext())
-                context->doneCurrent();
-        }
-
-        ~ScopedGLContextChecker()
-        {
-            if (!m_enabled)
-                return;
-
-            if (gl::GLContext *context = gl::GLContext::GetCurrent())
-                context->ReleaseCurrent(nullptr);
-        }
-
-    private:
-        bool m_enabled = WebEngineContext::isGpuServiceOnUIThread();
-#endif // QT_CONFIG(opengl)
-    };
-
 
     void handleScheduledWork()
     {
-        ScopedGLContextChecker glContextChecker;
-
         QDeadlineTimer timer(std::chrono::milliseconds(2));
         base::MessagePump::Delegate::NextWorkInfo more_work_info = m_delegate->DoWork();
         while (more_work_info.is_immediate() && !timer.hasExpired())

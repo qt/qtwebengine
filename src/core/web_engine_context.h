@@ -84,8 +84,6 @@ public:
     static base::CommandLine *initCommandLine(bool &useEmbeddedSwitches,
                                               bool &enableGLSoftwareRendering);
 
-    static bool isGpuServiceOnUIThread();
-
 private:
     friend class base::RefCounted<WebEngineContext>;
     friend class ProfileAdapter;
@@ -93,7 +91,6 @@ private:
     ~WebEngineContext();
 
     static void registerMainThreadFactories();
-    static void destroyGpuProcess();
 
     std::unique_ptr<base::RunLoop> m_runLoop;
     std::unique_ptr<ContentMainDelegateQt> m_mainDelegate;
