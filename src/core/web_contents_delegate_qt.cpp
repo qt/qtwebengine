@@ -16,6 +16,7 @@
 #include "find_text_helper.h"
 #include "javascript_dialog_manager_qt.h"
 #include "media_capture_devices_dispatcher.h"
+#include "native_web_keyboard_event_qt.h"
 #include "profile_adapter.h"
 #include "profile_qt.h"
 #include "qwebengineloadinginfo.h"
@@ -246,7 +247,7 @@ bool WebContentsDelegateQt::HandleKeyboardEvent(content::WebContents *, const co
 {
     Q_ASSERT(!event.skip_in_browser);
     if (event.os_event)
-        m_viewClient->unhandledKeyEvent(reinterpret_cast<QKeyEvent *>(event.os_event));
+        m_viewClient->unhandledKeyEvent(ToKeyEvent(event.os_event));
     // FIXME: ?
     return true;
 }

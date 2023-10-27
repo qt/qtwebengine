@@ -35,6 +35,7 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 
+#include "native_web_keyboard_event_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
 
 #include <QtGui/private/qtgui-config_p.h>
@@ -1659,7 +1660,7 @@ void WebEventFactory::sendUnhandledWheelEvent(const blink::WebGestureEvent &even
 
 content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *ev)
 {
-    content::NativeWebKeyboardEvent webKitEvent(reinterpret_cast<gfx::NativeEvent>(ev));
+    content::NativeWebKeyboardEvent webKitEvent(ToNativeEvent(ev));
     webKitEvent.SetTimeStamp(base::TimeTicks::Now());
     webKitEvent.SetModifiers(modifiersForEvent(ev));
     webKitEvent.SetType(webEventTypeForEvent(ev));

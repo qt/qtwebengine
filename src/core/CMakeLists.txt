@@ -128,7 +128,7 @@ foreach(arch ${archs})
                 javascript_dialog_manager_qt.cpp javascript_dialog_manager_qt.h
                 login_delegate_qt.cpp login_delegate_qt.h
                 media_capture_devices_dispatcher.cpp media_capture_devices_dispatcher.h
-                native_web_keyboard_event_qt.cpp
+                native_web_keyboard_event_qt.cpp native_web_keyboard_event_qt.h
                 net/client_cert_qt.cpp net/client_cert_qt.h
                 net/client_cert_store_data.cpp net/client_cert_store_data.h
                 net/cookie_monster_delegate_qt.cpp net/cookie_monster_delegate_qt.h
@@ -225,6 +225,7 @@ foreach(arch ${archs})
 
         extend_gn_target(${buildGn} CONDITION MACOS
             SOURCES
+                native_web_keyboard_event_qt_mac.mm
                 compositor/native_skia_output_device_mac.mm
                 compositor/native_skia_output_device_mac2.mm
         )
