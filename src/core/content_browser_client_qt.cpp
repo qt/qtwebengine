@@ -146,7 +146,9 @@
 #if BUILDFLAG(ENABLE_PDF)
 #include "components/pdf/browser/pdf_navigation_throttle.h"
 #include "components/pdf/browser/pdf_url_loader_request_interceptor.h"
-#include "components/pdf/browser/pdf_web_contents_helper.h"
+#include "components/pdf/browser/pdf_document_helper.h"
+
+#include "printing/pdf_document_helper_client_qt.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
@@ -286,13 +288,15 @@ void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webCont
 }
 
 
-base::OnceClosure ContentBrowserClientQt::SelectClientCertificate(content::WebContents *webContents,
+base::OnceClosure ContentBrowserClientQt::SelectClientCertificate(content::BrowserContext *browser_context,
+                                                                  content::WebContents *webContents,
                                                                   net::SSLCertRequestInfo *certRequestInfo,
                                                                   net::ClientCertIdentityList clientCerts,
                                                                   std::unique_ptr<content::ClientCertificateDelegate> delegate)
 {
+    Q_UNUSED(browser_context);
     if (!clientCerts.empty()) {
-        WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
+        WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
 
         QSharedPointer<ClientCertSelectController> certSelectController(
                 new ClientCertSelectController(certRequestInfo, std::move(clientCerts), std::move(delegate)));
@@ -509,7 +513,7 @@ void ContentBrowserClientQt::RegisterAssociatedInterfaceBindersForRenderFrameHos
                 base::BindRepeating(
                     [](content::RenderFrameHost *render_frame_host,
                        mojo::PendingAssociatedReceiver<pdf::mojom::PdfService> receiver) {
-                        pdf::PDFWebContentsHelper::BindPdfService(std::move(receiver), render_frame_host);
+                        pdf::PDFDocumentHelper::BindPdfService(std::move(receiver), render_frame_host, std::make_unique<PDFDocumentHelperClientQt>());
                     }, &rfh));
 #endif  // BUILDFLAG(ENABLE_PDF)
     ContentBrowserClient::RegisterAssociatedInterfaceBindersForRenderFrameHost(rfh, associated_registry);
@@ -1357,5 +1361,22 @@ ContentBrowserClientQt::GetWebAuthenticationRequestDelegate(
     return std::make_unique<AuthenticatorRequestClientDelegateQt>(render_frame_host);
 }
 #endif
+
+void ContentBrowserClientQt::GetMediaDeviceIDSalt(content::RenderFrameHost *rfh,
+                                                  const net::SiteForCookies & /*site_for_cookies*/,
+                                                  const blink::StorageKey & /*storage_key*/,
+                                                  base::OnceCallback<void(bool, const std::string&)> callback)
+{
+#if BUILDFLAG(ENABLE_WEBRTC)
+    content::BrowserContext *browser_context = rfh->GetBrowserContext();
+    if (!browser_context->IsOffTheRecord()) {
+        ProfileQt *profile = static_cast<ProfileQt *>(browser_context);
+        std::string mediaId = profile->GetMediaDeviceIDSalt();
+        std::move(callback).Run(true, mediaId);
+        return;
+    }
+#endif
+    std::move(callback).Run(false, "");
+}
 
 } // namespace QtWebEngineCore

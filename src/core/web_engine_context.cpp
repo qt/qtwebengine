@@ -36,6 +36,7 @@
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/app/mojo_ipc_support.h"
 #include "content/browser/devtools/devtools_http_handler.h"
+#include "content/browser/gpu/gpu_main_thread_factory.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/startup_data_impl.h"
@@ -82,7 +83,7 @@
 #endif // Q_OS_WIN
 
 #if defined(Q_OS_MACOS)
-#include "base/mac/foundation_util.h"
+#include "base/apple/foundation_util.h"
 #endif
 
 #if QT_CONFIG(accessibility)
@@ -647,7 +648,7 @@ WebEngineContext::WebEngineContext()
 #if defined(Q_OS_MACOS)
     // The bundled handling is currently both completely broken in Chromium,
     // and unnecessary for us.
-    base::mac::SetOverrideAmIBundled(false);
+    base::apple::SetOverrideAmIBundled(false);
 #endif
 
     base::ThreadPoolInstance::Create("Browser");
@@ -693,8 +694,6 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(sandbox::policy::switches::kNoSandbox);
         qInfo() << "Sandboxing disabled by user.";
     }
-
-    parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
 
     // Do not advertise a feature we have removed at compile time
     parsedCommandLine->AppendSwitch(switches::kDisableSpeechAPI);

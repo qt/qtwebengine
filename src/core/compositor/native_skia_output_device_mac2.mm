@@ -13,15 +13,15 @@
 #include <QtOpenGL/qopenglframebufferobject.h>
 #endif
 
-@class MTLDevice;
+@protocol MTLDevice;
 @protocol MTLTexture;
 
 namespace QtWebEngineCore {
 
-MTLDevice *getRhiDev(QQuickWindow *win)
+id<MTLDevice> getRhiDev(QQuickWindow *win)
 {
     QSGRendererInterface *ri = win->rendererInterface();
-    return static_cast<MTLDevice *>(ri->getResource(win, QSGRendererInterface::DeviceResource));
+    return (__bridge id<MTLDevice>)(ri->getResource(win, QSGRendererInterface::DeviceResource));
 }
 
 QSGTexture *makeMetalTexture2(QQuickWindow *win, id<MTLTexture> mtlTexture, int width, int height, uint32_t textureOptions)

@@ -248,13 +248,13 @@ void ProfileQt::setupPrefService()
         extensions::ExtensionsBrowserClient *client = extensions::ExtensionsBrowserClient::Get();
         std::vector<extensions::EarlyExtensionPrefsObserver *> prefsObservers;
         client->GetEarlyExtensionPrefsObservers(this, &prefsObservers);
-        extensions::ExtensionPrefs *extensionPrefs = extensions::ExtensionPrefs::Create(
+        auto extensionPrefs = extensions::ExtensionPrefs::Create(
             this, client->GetPrefServiceForContext(this),
             this->GetPath().AppendASCII(extensions::kInstallDirectoryName),
             ExtensionPrefValueMapFactory::GetForBrowserContext(this),
             client->AreExtensionsDisabled(*base::CommandLine::ForCurrentProcess(), this),
             prefsObservers);
-        extensions::ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(this, base::WrapUnique(extensionPrefs));
+        extensions::ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(this, std::move(extensionPrefs));
     }
 #endif
 }

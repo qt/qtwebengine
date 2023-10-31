@@ -54,7 +54,6 @@ public:
     content::ClientHintsControllerDelegate *GetClientHintsControllerDelegate() override;
     content::StorageNotificationService *GetStorageNotificationService() override;
     content::PlatformNotificationService *GetPlatformNotificationService() override;
-    std::string GetMediaDeviceIDSalt() override;
     content::FileSystemAccessPermissionContext *GetFileSystemAccessPermissionContext() override;
     content::ReduceAcceptLanguageControllerDelegate *GetReduceAcceptLanguageControllerDelegate() override;
 
@@ -65,6 +64,7 @@ public:
 
     void DoFinalInit();
     ProfileAdapter *profileAdapter() { return m_profileAdapter; }
+    std::string GetMediaDeviceIDSalt();
 
 #if QT_CONFIG(webengine_spellchecker)
     void FailedToLoadDictionary(const std::string &language) override;

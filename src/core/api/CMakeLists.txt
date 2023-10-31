@@ -59,6 +59,7 @@ qt_internal_add_module(WebEngineCore
 )
 
 set_target_properties(WebEngineCore PROPERTIES QTWEBENGINEPROCESS_NAME ${qtWebEngineProcessName})
+set_target_properties(WebEngineCore PROPERTIES CXX_STANDARD 20)
 
 # Chromium included headers are not clean
 qt_skip_warnings_are_errors(WebEngineCore)

@@ -123,7 +123,6 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterBooleanPref(autofill::prefs::kAutofillProfileEnabled, false);
     registry->RegisterBooleanPref(autofill::prefs::kAutofillCreditCardEnabled, false);
     registry->RegisterBooleanPref(autofill::prefs::kAutofillCreditCardFidoAuthEnabled, false);
-    registry->RegisterBooleanPref(autofill::prefs::kAutofillWalletImportEnabled, false);
 
     // devtools
     registry->RegisterDictionaryPref(prefs::kDevToolsFileSystemPaths);
@@ -142,12 +141,6 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     {
         base::ScopedAllowBlocking allowBlock;
         m_prefService = factory.Create(registry);
-    }
-
-    // Initialize salt value if none was stored before
-    if (m_prefService->GetString(kPrefMediaDeviceIDSalt).empty()) {
-        m_prefService->SetString(kPrefMediaDeviceIDSalt,
-                content::BrowserContext::CreateRandomMediaDeviceIDSalt());
     }
 
 #if QT_CONFIG(webengine_spellchecker)

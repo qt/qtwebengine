@@ -49,7 +49,8 @@ public:
                                bool is_main_frame_request,
                                bool strict_enforcement,
                                base::OnceCallback<void(content::CertificateRequestResultType)> callback) override;
-    base::OnceClosure SelectClientCertificate(content::WebContents* web_contents,
+    base::OnceClosure SelectClientCertificate(content::BrowserContext* browser_context,
+                                              content::WebContents* web_contents,
                                               net::SSLCertRequestInfo* cert_request_info,
                                               net::ClientCertIdentityList client_certs,
                                               std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
@@ -240,6 +241,11 @@ public:
     std::unique_ptr<content::AuthenticatorRequestClientDelegate>
     GetWebAuthenticationRequestDelegate(content::RenderFrameHost *render_frame_host) override;
 #endif
+
+    void GetMediaDeviceIDSalt(content::RenderFrameHost *rfh,
+                              const net::SiteForCookies &site_for_cookies,
+                              const blink::StorageKey &storage_key,
+                              base::OnceCallback<void(bool, const std::string&)> callback) override;
 
 private:
     BrowserMainPartsQt *m_browserMainParts = nullptr;

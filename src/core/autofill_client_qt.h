@@ -49,14 +49,17 @@ public:
     void UpdateAutofillPopupDataListValues(const std::vector<std::u16string> &values,
                                            const std::vector<std::u16string> &labels) override;
     void PinPopupView() override;
-    autofill::AutofillClient::PopupOpenArgs GetReopenPopupArgs() const override;
+    PopupOpenArgs GetReopenPopupArgs(
+            autofill::AutofillSuggestionTriggerSource trigger_source) const override;
     std::vector<autofill::Suggestion> GetPopupSuggestions() const override;
-    void UpdatePopup(const std::vector<autofill::Suggestion> &, autofill::PopupType) override;
+    void UpdatePopup(const std::vector<autofill::Suggestion>& suggestions,
+                     autofill::PopupType popup_type,
+                     autofill::AutofillSuggestionTriggerSource trigger_source) override;
     void HideAutofillPopup(autofill::PopupHidingReason reason) override;
     bool IsAutocompleteEnabled() const override;
     bool IsPasswordManagerEnabled() override;
-    void PropagateAutofillPredictions(autofill::AutofillDriver *,
-                                      const std::vector<autofill::FormStructure *> &) override;
+    void PropagateAutofillPredictionsDeprecated(autofill::AutofillDriver *,
+                                                const std::vector<autofill::FormStructure *> &) override;
     bool IsOffTheRecord() override;
     scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 

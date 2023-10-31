@@ -88,7 +88,7 @@ config("embedded_config") {
 }
 
 config("cpp20_config") {
-  # Chromium is build with C++20
+  # Chromium is built with C++20
   if (is_win) {
     cflags_cc = [ "/std:c++20" ]
   } else {
@@ -275,6 +275,7 @@ source_set("qtwebengine_sources") {
     "//components/embedder_support:embedder_support",
     "//components/nacl/common:buildflags",
     "//components/performance_manager",
+    "//components/permissions:permissions_common",
     "//components/plugins/renderer/",
     "//content/browser/resources/quota:resources",
     "//extensions/buildflags:buildflags",
@@ -352,7 +353,6 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/ui/webui/webui_util.h",
     "//chrome/common/chrome_switches.cc",
     "//chrome/common/chrome_switches.h",
-    "//chrome/common/pref_names.cc",
     "//chrome/common/pref_names.h",
     "//chrome/common/url_constants.cc",
     "//chrome/common/url_constants.h",
@@ -371,8 +371,6 @@ source_set("qtwebengine_sources") {
       "//ui/ozone/platform/wayland/gpu/wayland_gl_egl_utility.h",
       "//ui/ozone/platform/x11/gl_egl_utility_x11.cc",
       "//ui/ozone/platform/x11/gl_egl_utility_x11.h",
-      "//ui/ozone/platform/x11/native_pixmap_glx_binding.cc",
-      "//ui/ozone/platform/x11/native_pixmap_glx_binding.h",
     ]
   }
   if (enable_extensions) {

@@ -19,11 +19,6 @@
 #include "pdf/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 
-#if BUILDFLAG(ENABLE_PDF)
-#include "components/pdf/browser/pdf_web_contents_helper.h"
-#include "printing/pdf_web_contents_helper_client_qt.h"
-#endif
-
 #if BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "printing/print_view_manager_qt.h"
 #endif
@@ -48,9 +43,9 @@ FileSystemDelegate *ExtensionsAPIClientQt::GetFileSystemDelegate()
     return m_fileSystemDelegate.get();
 }
 
-std::unique_ptr<guest_view::GuestViewManagerDelegate> ExtensionsAPIClientQt::CreateGuestViewManagerDelegate(content::BrowserContext *context) const
+std::unique_ptr<guest_view::GuestViewManagerDelegate> ExtensionsAPIClientQt::CreateGuestViewManagerDelegate() const
 {
-    return std::make_unique<extensions::ExtensionsGuestViewManagerDelegate>(context);
+    return std::make_unique<extensions::ExtensionsGuestViewManagerDelegate>();
 }
 
 std::unique_ptr<MimeHandlerViewGuestDelegate> ExtensionsAPIClientQt::CreateMimeHandlerViewGuestDelegate(MimeHandlerViewGuest *guest) const
@@ -65,10 +60,6 @@ void ExtensionsAPIClientQt::AttachWebContentsHelpers(content::WebContents *web_c
     QtWebEngineCore::PrintViewManagerQt::CreateForWebContents(web_contents);
 #endif
     ExtensionWebContentsObserverQt::CreateForWebContents(web_contents);
-
-#if BUILDFLAG(ENABLE_PDF)
-    pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(web_contents, std::make_unique<PDFWebContentsHelperClientQt>());
-#endif
 }
 
 MessagingDelegate *ExtensionsAPIClientQt::GetMessagingDelegate()

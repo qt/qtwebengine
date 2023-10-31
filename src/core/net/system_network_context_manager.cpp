@@ -38,6 +38,13 @@
 #include "content/public/browser/network_service_util.h"
 #endif
 
+#include <QDebug>
+
+ASSERT_ENUMS_MATCH(net::SecureDnsMode::kSecure, QWebEngineGlobalSettings::SecureDnsMode::SecureOnly)
+ASSERT_ENUMS_MATCH(net::SecureDnsMode::kAutomatic,
+                   QWebEngineGlobalSettings::SecureDnsMode::SecureWithFallback)
+ASSERT_ENUMS_MATCH(net::SecureDnsMode::kOff, QWebEngineGlobalSettings::SecureDnsMode::SystemOnly)
+
 namespace {
 
 network::mojom::HttpAuthStaticParamsPtr CreateHttpAuthStaticParams()
@@ -324,6 +331,37 @@ network::mojom::NetworkContextParamsPtr SystemNetworkContextManager::CreateNetwo
     network_context_params->cert_verifier_params =
          content::GetCertVerifierParams(std::move(cert_verifier_creation_params));
     return network_context_params;
+}
+
+bool isValidTemplates(std::string templates)
+{
+    absl::optional<net::DnsOverHttpsConfig> dnsOverHttpsConfig =
+            net::DnsOverHttpsConfig::FromString(templates);
+    return dnsOverHttpsConfig.has_value();
+}
+
+
+void configureStubHostResolver(QWebEngineGlobalSettings::SecureDnsMode dnsMode,
+                               std::string dnsOverHttpsTemplates, bool insecureDnsClientEnabled,
+                               bool additionalInsecureDnsTypesEnabled)
+{
+    if (content::IsNetworkServiceCreated()) {
+        network::mojom::NetworkService *networkService = content::GetNetworkService();
+        if (networkService) {
+            qDebug() << "doh set to" << dnsOverHttpsTemplates << " -- "
+                     << (dnsMode == QWebEngineGlobalSettings::SecureDnsMode::SecureOnly
+                                 ? "SecureOnly"
+                                 : dnsMode == QWebEngineGlobalSettings::SecureDnsMode::SystemOnly
+                                         ? "SystemOnly"
+                                         : "SecureWithFallback");
+            absl::optional<net::DnsOverHttpsConfig> dohConfig = dnsOverHttpsTemplates.empty()
+                    ? net::DnsOverHttpsConfig()
+                    : net::DnsOverHttpsConfig::FromString(dnsOverHttpsTemplates);
+            networkService->ConfigureStubHostResolver(insecureDnsClientEnabled,
+                                                      net::SecureDnsMode(dnsMode), *dohConfig,
+                                                      additionalInsecureDnsTypesEnabled);
+        }
+    }
 }
 
 } // namespace QtWebEngineCore

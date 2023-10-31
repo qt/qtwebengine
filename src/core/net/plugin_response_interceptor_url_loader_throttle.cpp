@@ -86,11 +86,14 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
                                                                      bool *defer)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (content::download_utils::MustDownload(response_url, response_head->headers.get(), response_head->mime_type))
-        return;
 
     content::WebContents *web_contents = content::WebContents::FromFrameTreeNodeId(m_frame_tree_node_id);
     if (!web_contents)
+        return;
+
+    if (content::download_utils::MustDownload(
+                web_contents->GetBrowserContext(),
+                response_url, response_head->headers.get(), response_head->mime_type))
         return;
 
     std::string extension_id;

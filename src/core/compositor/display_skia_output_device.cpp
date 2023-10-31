@@ -10,6 +10,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
+#include "third_party/skia/include/gpu/ganesh/gl/GrGLBackendSurface.h"
 
 #if QT_CONFIG(webengine_vulkan)
 #if defined(USE_OZONE)
@@ -389,7 +390,7 @@ QSGTexture *DisplaySkiaOutputDevice::texture(QQuickWindow *win, uint32_t texture
 #endif
     {
         GrGLTextureInfo info;
-        if (m_frontBuffer->texture().getGLTextureInfo(&info))
+        if (GrBackendTextures::GetGLTextureInfo(m_frontBuffer->texture(), &info))
             texture = QNativeInterface::QSGOpenGLTexture::fromNative(info.fID, win, size(), texOpts);
     }
     return texture;

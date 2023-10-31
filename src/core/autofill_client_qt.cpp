@@ -62,9 +62,12 @@ void AutofillClientQt::ShowAutofillPopup(const autofill::AutofillClient::PopupOp
     m_popupController->d->suggestions = open_args.suggestions;
     m_popupController->updateModel();
 
+    bool autoSelectFirstSuggestion =
+        open_args.trigger_source == autofill::AutofillSuggestionTriggerSource::kTextFieldDidReceiveKeyDown;
+
     adapterClient()->showAutofillPopup(m_popupController.data(),
                                        QRect(toQt(gfx::ToEnclosingRect(open_args.element_bounds))),
-                                       open_args.autoselect_first_suggestion.value());
+                                       autoSelectFirstSuggestion);
 }
 
 void AutofillClientQt::UpdateAutofillPopupDataListValues(const std::vector<std::u16string> &values,
@@ -82,7 +85,7 @@ void AutofillClientQt::PinPopupView()
     NOTIMPLEMENTED();
 }
 
-autofill::AutofillClient::PopupOpenArgs AutofillClientQt::GetReopenPopupArgs() const
+autofill::AutofillClient::PopupOpenArgs AutofillClientQt::GetReopenPopupArgs(autofill::AutofillSuggestionTriggerSource trigger_source) const
 {
     // Called by password_manager component only.
     NOTIMPLEMENTED();
@@ -96,7 +99,7 @@ std::vector<autofill::Suggestion> AutofillClientQt::GetPopupSuggestions() const
     return {};
 }
 
-void AutofillClientQt::UpdatePopup(const std::vector<autofill::Suggestion> &, autofill::PopupType)
+void AutofillClientQt::UpdatePopup(const std::vector<autofill::Suggestion> &, autofill::PopupType, autofill::AutofillSuggestionTriggerSource)
 {
     // Called by password_manager component only.
     NOTIMPLEMENTED();
@@ -127,8 +130,8 @@ scoped_refptr<network::SharedURLLoaderFactory> AutofillClientQt::GetURLLoaderFac
     return nullptr;
 }
 
-void AutofillClientQt::PropagateAutofillPredictions(autofill::AutofillDriver *,
-                                                    const std::vector<autofill::FormStructure *> &)
+void AutofillClientQt::PropagateAutofillPredictionsDeprecated(autofill::AutofillDriver *,
+                                                              const std::vector<autofill::FormStructure *> &)
 {
     // For testing purposes only.
     NOTIMPLEMENTED();

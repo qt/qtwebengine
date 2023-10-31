@@ -245,7 +245,7 @@ void WebContentsDelegateQt::LoadProgressChanged(double progress)
 
 bool WebContentsDelegateQt::HandleKeyboardEvent(content::WebContents *, const content::NativeWebKeyboardEvent &event)
 {
-    Q_ASSERT(!event.skip_in_browser);
+    Q_ASSERT(!event.skip_if_unhandled);
     if (event.os_event)
         m_viewClient->unhandledKeyEvent(ToKeyEvent(event.os_event));
     // FIXME: ?

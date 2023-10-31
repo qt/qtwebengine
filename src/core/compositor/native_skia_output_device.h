@@ -71,12 +71,14 @@ private:
         SkImageInfo imageInfo;
         float devicePixelRatio;
         gfx::ColorSpace colorSpace;
+        int sampleCount;
 
         bool operator==(const Shape &that) const
         {
             return (imageInfo == that.imageInfo &&
                     devicePixelRatio == that.devicePixelRatio &&
-                    colorSpace == that.colorSpace);
+                    colorSpace == that.colorSpace &&
+                    sampleCount == that.sampleCount);
         }
         bool operator!=(const Shape &that) const { return !(*this == that); }
     };

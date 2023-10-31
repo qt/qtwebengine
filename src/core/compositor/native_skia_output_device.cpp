@@ -6,6 +6,7 @@
 #include "type_conversion.h"
 
 #include "components/viz/common/resources/shared_image_format.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -55,14 +56,11 @@ public:
         auto mailbox = gpu::Mailbox::GenerateForSharedImage();
 
         if (!m_parent->m_factory->CreateSharedImage(mailbox,
-                                                    viz::SharedImageFormat::SinglePlane(viz::RGBA_8888),
-                                                    {m_parent->m_shape.imageInfo.width(), m_parent->m_shape.imageInfo.height()},
-                                                    m_parent->m_shape.colorSpace,
-                                                    m_parent->capabilities_.output_surface_origin == gfx::SurfaceOrigin::kTopLeft
-                                                        ? kTopLeft_GrSurfaceOrigin
-                                                        : kBottomLeft_GrSurfaceOrigin,
-                                                    kPremul_SkAlphaType,
-                                                    m_parent->m_deps->GetSurfaceHandle(), kDefaultSharedImageUsage, "QWE_SharedImageBuffer")) {
+                                                    viz::SkColorTypeToSinglePlaneSharedImageFormat(kRGBA_8888_SkColorType),
+                                                    {m_shape.imageInfo.width(), m_shape.imageInfo.height()},
+                                                    m_shape.colorSpace, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+                                                    m_parent->m_deps->GetSurfaceHandle(), kDefaultSharedImageUsage,
+                                                    "QWE_SharedImageBuffer")) {
             LOG(ERROR) << "CreateSharedImage failed.";
             return false;
         }
@@ -94,8 +92,9 @@ public:
         // Buffer queue is internal to GPU proc and handles texture initialization,
         // so allow uncleared access.
         m_scopedSkiaWriteAccess = m_skiaRepresentation->BeginScopedWriteAccess(
-            0 /* sampleCount */, surface_props, &beginSemaphores, &m_endSemaphores,
-            gpu::SharedImageRepresentation::AllowUnclearedAccess::kYes);
+                m_shape.sampleCount, surface_props,
+                &beginSemaphores, &m_endSemaphores,
+                gpu::SharedImageRepresentation::AllowUnclearedAccess::kYes);
         DCHECK(m_scopedSkiaWriteAccess);
         if (!beginSemaphores.empty()) {
             m_scopedSkiaWriteAccess->surface()->wait(
@@ -237,9 +236,9 @@ NativeSkiaOutputDevice::NativeSkiaOutputDevice(
 {
     capabilities_.uses_default_gl_framebuffer = false;
     capabilities_.supports_surfaceless = true;
+    capabilities_.output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
     capabilities_.preserve_buffer_content = true;
     capabilities_.only_invalidates_damage_rect = false;
-    capabilities_.number_of_buffers = 3;
 
     capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBA_8888)] =
             kRGBA_8888_SkColorType;
@@ -266,7 +265,7 @@ bool NativeSkiaOutputDevice::Reshape(const SkImageInfo &image_info,
                                      float device_scale_factor,
                                      gfx::OverlayTransform transform)
 {
-    m_shape = Shape{image_info, device_scale_factor, colorSpace};
+    m_shape = Shape{image_info, device_scale_factor, colorSpace, sample_count};
     DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
     return true;
 }
@@ -451,7 +450,7 @@ QSGTexture *NativeSkiaOutputDevice::texture(QQuickWindow *, uint32_t)
 
 bool NativeSkiaOutputDevice::textureIsFlipped()
 {
-    return true;
+    return false;
 }
 
 QSize NativeSkiaOutputDevice::size()

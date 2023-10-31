@@ -104,39 +104,18 @@ VulkanImplementationQt::ExportVkFenceToGpuFence(VkDevice /*vk_device*/, VkFence 
     return nullptr;
 }
 
-VkSemaphore VulkanImplementationQt::CreateExternalSemaphore(VkDevice vk_device)
-{
-    return CreateExternalVkSemaphore(
-#if BUILDFLAG(IS_WIN)
-            vk_device, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT);
-#else
-            vk_device, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT);
-#endif
-}
-
 VkSemaphore VulkanImplementationQt::ImportSemaphoreHandle(VkDevice vk_device,
                                                           SemaphoreHandle sync_handle)
 {
     return ImportVkSemaphoreHandle(vk_device, std::move(sync_handle));
 }
 
-SemaphoreHandle VulkanImplementationQt::GetSemaphoreHandle(VkDevice vk_device,
-                                                           VkSemaphore vk_semaphore)
-{
-    return GetVkSemaphoreHandle(vk_device, vk_semaphore,
-#if BUILDFLAG(IS_WIN)
-                                VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT);
-#else
-                                VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT);
-#endif
-}
-
-VkExternalMemoryHandleTypeFlagBits VulkanImplementationQt::GetExternalImageHandleType()
+VkExternalSemaphoreHandleTypeFlagBits VulkanImplementationQt::GetExternalSemaphoreHandleType()
 {
 #if BUILDFLAG(IS_WIN)
-    return VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT;
+    return VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT;
 #else
-    return VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+    return VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT;
 #endif
 }
 

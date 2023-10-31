@@ -60,7 +60,7 @@
 #endif
 
 #if BUILDFLAG(IS_MAC)
-#include "base/message_loop/message_pump_mac.h"
+#include "base/message_loop/message_pump_apple.h"
 #include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #include "services/device/public/cpp/geolocation/system_geolocation_source.h"
 #include "ui/base/idle/idle.h"
@@ -182,6 +182,7 @@ public:
         callback.Run(device::LocationSystemPermissionStatus::kDenied);
     }
     void RegisterPositionUpdateCallback(PositionUpdateCallback callback) {}
+    void RequestPermission() override {}
 };
 #endif // BUILDFLAG(IS_MAC)
 
@@ -193,7 +194,7 @@ std::unique_ptr<base::MessagePump> messagePumpFactory()
         return std::make_unique<MessagePumpForUIQt>();
     }
 #if BUILDFLAG(IS_MAC)
-    return base::message_pump_mac::Create();
+    return base::message_pump_apple::Create();
 #else
     return std::make_unique<base::MessagePumpForUI>();
 #endif

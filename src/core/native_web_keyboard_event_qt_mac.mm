@@ -17,8 +17,8 @@
 
 #include "base/apple/owned_objc.h"
 
-#include <QtGui/private/qapplekeymapper_p.h>
 #include <QtGui/QKeyEvent>
+#include <QtGui/private/qapplekeymapper_p.h>
 
 namespace QtWebEngineCore {
 
@@ -116,27 +116,27 @@ namespace content {
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(const blink::WebKeyboardEvent &web_event, gfx::NativeView)
     : blink::WebKeyboardEvent(web_event)
-    , skip_in_browser(false)
+    , skip_if_unhandled(false)
 {
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type type, int modifiers,
                                                base::TimeTicks timestamp)
     : blink::WebKeyboardEvent(type, modifiers, timestamp)
-    , skip_in_browser(false)
+    , skip_if_unhandled(false)
 {
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(gfx::NativeEvent native_event)
     : os_event(native_event) // FIXME: Copy?
-    , skip_in_browser(false)
+    , skip_if_unhandled(false)
 {
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(const NativeWebKeyboardEvent& other)
     : blink::WebKeyboardEvent(other)
     , os_event(other.os_event) // FIXME: Copy?
-    , skip_in_browser(other.skip_in_browser)
+    , skip_if_unhandled(other.skip_if_unhandled)
 {
 }
 
@@ -145,7 +145,7 @@ NativeWebKeyboardEvent &NativeWebKeyboardEvent::operator=(const NativeWebKeyboar
     blink::WebKeyboardEvent::operator=(other);
 
     os_event = other.os_event; // FIXME: Copy?
-    skip_in_browser = other.skip_in_browser;
+    skip_if_unhandled = other.skip_if_unhandled;
 
     return *this;
 }

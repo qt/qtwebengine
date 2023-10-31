@@ -50,7 +50,7 @@ namespace content {
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(const blink::WebKeyboardEvent &web_event, gfx::NativeView)
     : blink::WebKeyboardEvent(web_event)
     , os_event(nullptr)
-    , skip_in_browser(false)
+    , skip_if_unhandled(false)
 {
 }
 
@@ -58,20 +58,20 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type type, 
                                                base::TimeTicks timestamp)
     : blink::WebKeyboardEvent(type, modifiers, timestamp)
     , os_event(nullptr)
-    , skip_in_browser(false)
+    , skip_if_unhandled(false)
 {
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(gfx::NativeEvent native_event)
     : os_event(CopyEvent(native_event))
-    , skip_in_browser(false)
+    , skip_if_unhandled(false)
 {
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(const NativeWebKeyboardEvent& other)
     : blink::WebKeyboardEvent(other)
     , os_event(CopyEvent(other.os_event))
-    , skip_in_browser(other.skip_in_browser)
+    , skip_if_unhandled(other.skip_if_unhandled)
 {
 }
 
@@ -82,7 +82,7 @@ NativeWebKeyboardEvent &NativeWebKeyboardEvent::operator=(const NativeWebKeyboar
     blink::WebKeyboardEvent::operator=(other);
     DestroyEvent(os_event);
     os_event = CopyEvent(other.os_event);
-    skip_in_browser = other.skip_in_browser;
+    skip_if_unhandled = other.skip_if_unhandled;
     return *this;
 }
 

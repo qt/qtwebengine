@@ -170,19 +170,29 @@ QT_END_NAMESPACE
 namespace gl {
 namespace init {
 
-scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
-                                         GLSurface* compatible_surface,
-                                         const GLContextAttribs& attribs)
+scoped_refptr<GLContext> CreateGLContext(GLShareGroup *share_group,
+                                         GLSurface *compatible_surface,
+                                         const GLContextAttribs &attribs)
 {
-    if (GetGLImplementation() == kGLImplementationDesktopGL) {
+    switch (GetGLImplementation()) {
+    case kGLImplementationDesktopGLCoreProfile:
+    case kGLImplementationDesktopGL: {
         scoped_refptr<GLContext> context = new GLContextWGL(share_group);
         if (!context->Initialize(compatible_surface, attribs))
             return nullptr;
         return context;
     }
-
-    return InitializeGLContext(new GLContextEGL(share_group),
-                               compatible_surface, attribs);
+    case kGLImplementationEGLANGLE:
+    case kGLImplementationEGLGLES2:
+        return InitializeGLContext(new GLContextEGL(share_group),
+                                   compatible_surface, attribs);
+    case kGLImplementationDisabled:
+        return nullptr;
+    default:
+        break;
+    }
+    Q_UNREACHABLE();
+    return nullptr;
 }
 
 }  // namespace init

@@ -282,7 +282,7 @@ foreach(arch ${archs})
             SOURCES
                 extensions/pdf_iframe_navigation_throttle_qt.cpp extensions/pdf_iframe_navigation_throttle_qt.h
                 printing/pdf_stream_delegate_qt.cpp printing/pdf_stream_delegate_qt.h
-                printing/pdf_web_contents_helper_client_qt.cpp printing/pdf_web_contents_helper_client_qt.h
+                printing/pdf_document_helper_client_qt.cpp printing/pdf_document_helper_client_qt.h
         )
 
         extend_gn_target(${buildGn} CONDITION WIN32
@@ -310,6 +310,7 @@ foreach(arch ${archs})
             enable_background_mode=false
             enable_ipc_fuzzer=false
             enable_ipc_logging=false
+            enable_java_templates=false
             enable_media_remoting=false
             enable_message_center=false
             enable_nacl=false
@@ -525,6 +526,7 @@ foreach(arch ${archs})
         if(MACOS)
             list(APPEND gnArgArg
                 use_external_popup_menu=false
+                skia_use_metal=false
             )
         endif()
 
@@ -533,7 +535,6 @@ foreach(arch ${archs})
                 ninja_use_custom_environment_files=false
                 com_init_check_hook_disabled=true
                 heterogeneous_executables=true
-                use_static_angle=true
             )
         endif()
 

@@ -9,15 +9,15 @@
 #undef signals
 #endif
 
-#include "content/public/browser/network_service_instance.h"
-#include "services/network/network_service.h"
+namespace QtWebEngineCore {
+extern void configureStubHostResolver(QWebEngineGlobalSettings::SecureDnsMode dnsMode,
+                                      std::string dnsOverHttpsTemplates, bool insecureDnsClientEnabled,
+                                      bool additionalInsecureDnsTypesEnabled);
+extern bool isValidTemplates(std::string templates);
+
+} // namespace QtWebEngineCore
 
 QT_BEGIN_NAMESPACE
-
-ASSERT_ENUMS_MATCH(net::SecureDnsMode::kSecure, QWebEngineGlobalSettings::SecureDnsMode::SecureOnly)
-ASSERT_ENUMS_MATCH(net::SecureDnsMode::kAutomatic,
-                   QWebEngineGlobalSettings::SecureDnsMode::SecureWithFallback)
-ASSERT_ENUMS_MATCH(net::SecureDnsMode::kOff, QWebEngineGlobalSettings::SecureDnsMode::SystemOnly)
 
 /*!
     \namespace QWebEngineGlobalSettings
@@ -99,9 +99,7 @@ bool QWebEngineGlobalSettings::setDnsMode(DnsMode dnsMode)
     if (dnsMode.secureMode != SecureDnsMode::SystemOnly) {
         const QString servers = dnsMode.serverTemplates.join(QChar::Space);
         const std::string templates = servers.toStdString();
-        absl::optional<net::DnsOverHttpsConfig> dnsOverHttpsConfig =
-                net::DnsOverHttpsConfig::FromString(templates);
-        if (!dnsOverHttpsConfig.has_value())
+        if (!QtWebEngineCore::isValidTemplates(templates))
             return false;
         d->dnsOverHttpsTemplates = templates;
     }
@@ -121,23 +119,7 @@ QWebEngineGlobalSettingsPrivate *QWebEngineGlobalSettingsPrivate::instance()
 
 void QWebEngineGlobalSettingsPrivate::configureStubHostResolver()
 {
-    if (content::IsNetworkServiceCreated()) {
-        network::mojom::NetworkService *networkService = content::GetNetworkService();
-        if (networkService) {
-            qDebug() << "doh set to" << dnsOverHttpsTemplates << " -- "
-                     << (dnsMode == QWebEngineGlobalSettings::SecureDnsMode::SecureOnly
-                                 ? "SecureOnly"
-                                 : dnsMode == QWebEngineGlobalSettings::SecureDnsMode::SystemOnly
-                                 ? "SystemOnly"
-                                 : "SecureWithFallback");
-            absl::optional<net::DnsOverHttpsConfig> dohConfig = dnsOverHttpsTemplates.empty()
-                    ? net::DnsOverHttpsConfig()
-                    : net::DnsOverHttpsConfig::FromString(dnsOverHttpsTemplates);
-            networkService->ConfigureStubHostResolver(insecureDnsClientEnabled,
-                                                      net::SecureDnsMode(dnsMode), *dohConfig,
-                                                      additionalInsecureDnsTypesEnabled);
-        }
-    }
+    QtWebEngineCore::configureStubHostResolver(dnsMode, dnsOverHttpsTemplates, insecureDnsClientEnabled, additionalInsecureDnsTypesEnabled);
 }
 
 QT_END_NAMESPACE

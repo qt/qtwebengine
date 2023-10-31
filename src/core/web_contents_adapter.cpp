@@ -79,8 +79,6 @@
 #endif
 
 #if QT_CONFIG(webengine_printing_and_pdf)
-#include "components/pdf/browser/pdf_web_contents_helper.h"
-#include "printing/pdf_web_contents_helper_client_qt.h"
 #include "printing/print_view_manager_qt.h"
 #endif
 
@@ -491,11 +489,6 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
             webContents(), FaviconServiceFactoryQt::GetForBrowserContext(context), m_adapterClient);
 
     AutofillClientQt::CreateForWebContents(webContents());
-
-#if QT_CONFIG(webengine_printing_and_pdf) && QT_CONFIG(webengine_extensions)
-    pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
-            webContents(), std::make_unique<PDFWebContentsHelperClientQt>());
-#endif
 
     // Create an instance of WebEngineVisitedLinksManager to catch the first
     // content::NOTIFICATION_RENDERER_PROCESS_CREATED event. This event will

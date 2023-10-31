@@ -12,11 +12,11 @@ class QSGTexture;
 class QQuickWindow;
 QT_END_NAMESPACE
 
-@class MTLDevice;
+@protocol MTLDevice;
 
 namespace QtWebEngineCore {
 QSGTexture *makeMetalTexture2(QQuickWindow *win, id<MTLTexture> mtlTexture, int width, int height, uint32_t textureOptions);
-MTLDevice *getRhiDev(QQuickWindow *win);
+id<MTLDevice> getRhiDev(QQuickWindow *win);
 
 QSGTexture *makeMetalTexture(QQuickWindow *win, IOSurfaceRef io_surface, uint io_surface_plane, int width, int height, uint32_t textureOptions)
 {

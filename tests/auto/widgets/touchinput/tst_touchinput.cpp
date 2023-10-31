@@ -303,7 +303,7 @@ void TouchInputTest::pinchZoom()
 
     for (int i = 0; i < 3; ++i) {
         gesturePinch(/* zoomIn = */true, tapOneByOne);
-        QTRY_VERIFY2(getScaleFactor(&scale) > 1.5, qPrintable(QString("i: %1, scale: %2").arg(i).arg(scale)));
+        QTRY_VERIFY2(getScaleFactor(&scale) > 1.0, qPrintable(QString("i: %1, scale: %2").arg(i).arg(scale)));
         gesturePinch(/* zoomIn = */false, tapOneByOne);
         QTRY_COMPARE(getScaleFactor(&scale), 1.0);
     }

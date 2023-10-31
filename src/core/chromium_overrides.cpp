@@ -133,12 +133,6 @@ std::unique_ptr<ui::OSExchangeDataProvider> ui::OSExchangeDataProviderFactory::C
     return nullptr;
 }
 
-#if !BUILDFLAG(ENABLE_EXTENSIONS)
-namespace extensions {
-  const char kExtensionScheme[] = "chrome-extension";
-}
-#endif
-
 #if !QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
 namespace extensions {
 ExtensionFunction::ResponseAction WebrtcLoggingPrivateSetMetaDataFunction::Run()

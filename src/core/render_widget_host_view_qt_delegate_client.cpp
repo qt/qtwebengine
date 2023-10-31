@@ -492,14 +492,14 @@ void RenderWidgetHostViewQtDelegateClient::handleKeyEvent(QKeyEvent *event)
 
     bool keyDownTextInsertion =
             webEvent.GetType() == blink::WebInputEvent::Type::kRawKeyDown && webEvent.text[0];
-    webEvent.skip_in_browser = keyDownTextInsertion;
+    webEvent.skip_if_unhandled = keyDownTextInsertion;
     m_rwhv->GetFocusedWidget()->ForwardKeyboardEvent(webEvent);
 
     if (keyDownTextInsertion) {
         // Blink won't consume the RawKeyDown, but rather the Char event in this case.
         // The RawKeyDown is skipped on the way back (see above).
         // The same os_event will be set on both NativeWebKeyboardEvents.
-        webEvent.skip_in_browser = false;
+        webEvent.skip_if_unhandled = false;
         webEvent.SetType(blink::WebInputEvent::Type::kChar);
         m_rwhv->GetFocusedWidget()->ForwardKeyboardEvent(webEvent);
     }
