@@ -450,6 +450,11 @@ bool WebEngineSettings::applySettingsToRendererPreferences(blink::RendererPrefer
         }
     }
 #endif
+    bool canNavigateOnDrop = testAttribute(QWebEngineSettings::NavigateOnDropEnabled);
+    if (canNavigateOnDrop != prefs->can_accept_load_drops) {
+        prefs->can_accept_load_drops = canNavigateOnDrop;
+        changed = true;
+    }
     return changed;
 }
 
