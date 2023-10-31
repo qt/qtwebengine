@@ -553,6 +553,8 @@ void WebContentsAdapter::initializeRenderPrefs()
                 ? blink::kWebRTCIPHandlingDefaultPublicInterfaceOnly
                 : blink::kWebRTCIPHandlingDefault;
 #endif
+    rendererPrefs->can_accept_load_drops = m_adapterClient->webEngineSettings()->testAttribute(QWebEngineSettings::NavigateOnDropEnabled);
+
     // Set web-contents font settings to the default font settings as Chromium constantly overrides
     // the global font defaults with the font settings of the latest web-contents created.
     static const gfx::FontRenderParams params = gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr);
