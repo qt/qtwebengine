@@ -720,6 +720,9 @@ WebEngineContext::WebEngineContext()
     enableFeatures.push_back(features::kNetworkServiceInProcess.name);
     enableFeatures.push_back(features::kTracingServiceInProcess.name);
 
+#if QT_CONFIG(webengine_webrtc_pipewire)
+    enableFeatures.push_back(features::kWebRtcPipeWireCapturer.name);
+#endif
     // When enabled, event.movement is calculated in blink instead of in browser.
     disableFeatures.push_back(features::kConsolidatedMovementXY.name);
 
@@ -971,7 +974,7 @@ const char *qWebEngineChromiumVersion() noexcept
 
 const char *qWebEngineChromiumSecurityPatchVersion() noexcept
 {
-    return "117.0.5938.63"; // FIXME: Remember to update
+    return "117.0.5938.149"; // FIXME: Remember to update
 }
 
 QT_END_NAMESPACE

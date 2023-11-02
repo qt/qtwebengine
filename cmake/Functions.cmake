@@ -918,6 +918,8 @@ macro(append_compiler_linker_sdk_setup)
     endif()
 
     extend_gn_list(gnArgArg ARGS is_clang CONDITION CLANG)
+    extend_gn_list(gnArgArg ARGS is_msvc CONDITION MSVC)
+
     if(CLANG)
         if(MACOS)
             get_darwin_sdk_version(macSdkVersion)
@@ -976,7 +978,7 @@ macro(append_compiler_linker_sdk_setup)
         endif()
     endif()
 
-    if(WIN32)
+    if(MSVC)
         get_filename_component(windowsSdkPath $ENV{WINDOWSSDKDIR} ABSOLUTE)
         get_filename_component(visualStudioPath $ENV{VSINSTALLDIR} ABSOLUTE)
         list(APPEND gnArgArg

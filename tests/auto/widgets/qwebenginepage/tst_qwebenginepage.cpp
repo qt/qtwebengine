@@ -278,6 +278,9 @@ private:
 
     QWebEngineView* m_view;
     QWebEnginePage* m_page;
+    QScopedPointer<QPointingDevice> s_touchDevice =
+            QScopedPointer<QPointingDevice>(QTest::createTouchDevice());
+
     QString tmpDirPath() const
     {
         static QString tmpd = QDir::tempPath() + "/tst_qwebenginepage-"
@@ -285,13 +288,13 @@ private:
         return tmpd;
     }
 
-    QScopedPointer<QPointingDevice> s_touchDevice;
-    void makeClick(QWindow *window, bool withTouch = false, const QPoint &p = QPoint()) {
+    void makeClick(const QPointer<QWindow> window, bool withTouch = false,
+                   const QPoint &p = QPoint())
+    {
+        QVERIFY2(window, "window is gone");
         if (!withTouch) {
             QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(), p);
         } else {
-            if (!s_touchDevice)
-                s_touchDevice.reset(QTest::createTouchDevice());
             QTest::touchEvent(window, s_touchDevice.get()).press(1, p);
             QTest::touchEvent(window, s_touchDevice.get()).release(1, p);
         }
@@ -1358,6 +1361,9 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterMove_data()
 
 void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
 {
+#if defined(Q_OS_MACOS) && (defined(__arm64__) || defined(__aarch64__))
+    QSKIP("This test crashes for Apple M1");
+#endif
     QWebEngineView view;
     view.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft());
     view.resize(640, 480);
@@ -1370,7 +1376,7 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
     QTRY_COMPARE(spyLoadFinished.size(), 1);
     const auto oldTlws = QGuiApplication::topLevelWindows();
     QFETCH(bool, withTouch);
-    QWindow *window = view.windowHandle();
+    QPointer<QWindow> window = view.windowHandle();
     auto pos = elementCenter(view.page(), "foo");
     makeClick(window, withTouch, pos);
     QWindow *popup = nullptr;
@@ -1420,6 +1426,9 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove_data()
 
 void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
 {
+#if defined(Q_OS_MACOS) && (defined(__arm64__) || defined(__aarch64__))
+    QSKIP("This test crashes for Apple M1");
+#endif
     QWidget mainWidget;
     mainWidget.setLayout(new QHBoxLayout);
 
@@ -1443,7 +1452,7 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
     const auto oldTlws = QGuiApplication::topLevelWindows();
 
     QFETCH(bool, withTouch);
-    QWindow *window = view.window()->windowHandle();
+    QPointer<QWindow> window = view.window()->windowHandle();
     makeClick(window, withTouch, view.mapTo(view.window(), elementCenter(view.page(), "foo")));
 
     QWindow *popup = nullptr;

@@ -345,8 +345,6 @@ void ProfileAdapter::setHttpCacheType(ProfileAdapter::HttpCacheType newhttpCache
         return;
     if (!m_offTheRecord && !m_profile->m_profileIOData->isClearHttpCacheInProgress()) {
         m_profile->m_profileIOData->resetNetworkContext();
-        if (m_httpCacheType == NoCache)
-            clearHttpCache();
     }
 }
 
