@@ -98,6 +98,12 @@
         \li \c icudtl.dat provides support for International Components for
             Unicode (ICU). It is the Chromium version of ICU, which is not
             needed if \QWE was configured to use the system ICU.
+        \li \c v8_context_snapshot.bin contains a previously prepared snapshot
+            of a v8 context used to speed up initialization. Debug builds use
+            separate snapshots with the file name extension \c .debug.bin instead
+            of \c .bin. On \macos, there is a snapshot for each architecture named
+            accordingly, for example \c v8_context_snapshot.arm64.bin or
+            \c v8_context_snapshot.arm64.debug.bin.
     \endlist
 
     Resources are searched from the following locations:
