@@ -933,9 +933,11 @@ macro(append_compiler_linker_sdk_setup)
             get_filename_component(clangBasePath ${clangBasePath} DIRECTORY)
         endif()
 
+        string(REGEX MATCH "[0-9]+" clangVersion ${CMAKE_CXX_COMPILER_VERSION})
         list(APPEND gnArgArg
             clang_base_path="${clangBasePath}"
             clang_use_chrome_plugins=false
+            clang_version=${clangVersion}
             fatal_linker_warnings=false
         )
 
