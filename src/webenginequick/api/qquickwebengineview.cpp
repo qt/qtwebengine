@@ -792,6 +792,8 @@ QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
 
 QQuickWebEngineView::~QQuickWebEngineView()
 {
+    if (hasFocus())
+        setFocus(false);
 }
 
 void QQuickWebEngineViewPrivate::ensureContentsAdapter()
