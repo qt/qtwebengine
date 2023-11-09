@@ -1057,6 +1057,11 @@ macro(append_sanitizer_setup)
             ARGS is_ubsan is_ubsan_vptr
             CONDITION undefined IN_LIST ECM_ENABLE_SANITIZERS
         )
+        if(APPLE)
+            list(APPEND gnArgArg
+                clang_version=\"${QT_COMPILER_VERSION_MAJOR}.${QT_COMPILER_VERSION_MINOR}.${QT_COMPILER_VERSION_PATCH}\"
+            )
+        endif()
     endif()
 endmacro()
 
