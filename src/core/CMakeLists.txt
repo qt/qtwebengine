@@ -322,6 +322,8 @@ foreach(arch ${archs})
             qtwebengine_target="${buildDir}/${config}/${arch}:QtWebEngineCore"
             build_dawn_tests=false
             build_with_tflite_lib=false
+            is_qtwebengine=true
+            is_qtpdf=false
             enable_background_contents=false
             enable_background_mode=false
             enable_ipc_fuzzer=false

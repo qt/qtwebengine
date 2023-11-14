@@ -536,7 +536,6 @@ endmacro()
 
 macro(append_build_type_setup)
     list(APPEND gnArgArg
-        is_qtwebengine=true
         init_stack_vars=false
         is_component_build=false
         is_shared=true

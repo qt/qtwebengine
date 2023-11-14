@@ -120,6 +120,8 @@ foreach(arch ${archs})
           qt_libjpeg_config="${buildDir}/${config}/${arch}:qt_libjpeg_config"
           qt_harfbuzz_config="${buildDir}/${config}/${arch}:qt_harfbuzz_config"
           qt_freetype_config="${buildDir}/${config}/${arch}:qt_freetype_config"
+          is_qtwebengine=true
+          is_qtpdf=true
           enable_swiftshader=false
           enable_swiftshader_vulkan=false
           angle_enable_swiftshader=false
