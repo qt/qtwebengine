@@ -194,7 +194,7 @@ endif()
 # install gn for cross build
 if((LINUX OR MACOS OR WIN32) AND INSTALL_GN)
     if(NOT QT_WILL_INSTALL)
-        set(copyOuput
+        set(copyOutput
             ${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/gn${CMAKE_EXECUTABLE_SUFFIX}
         )
         if(Gn_FOUND)
