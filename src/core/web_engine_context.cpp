@@ -918,6 +918,22 @@ base::CommandLine *WebEngineContext::initCommandLine(bool &useEmbeddedSwitches,
     appArgs.removeAll(QStringLiteral("--disable-embedded-switches"));
     appArgs.removeAll(QStringLiteral("--enable-embedded-switches"));
 
+    bool isRemoteDebugPort =
+            (-1
+             != appArgs.indexOf(QRegularExpression(QStringLiteral("--remote-debugging-port=.*"),
+                                                   QRegularExpression::CaseInsensitiveOption)))
+            || !qEnvironmentVariable("QTWEBENGINE_REMOTE_DEBUGGING").isEmpty();
+    bool isRemoteAllowOrigins =
+            (-1
+             != appArgs.indexOf(QRegularExpression(QStringLiteral("--remote-allow-origins=.*"),
+                                                   QRegularExpression::CaseInsensitiveOption)));
+
+    if (isRemoteDebugPort && !isRemoteAllowOrigins) {
+        appArgs.append(QStringLiteral("--remote-allow-origins=*"));
+        qWarning("Added {--remote-allow-origins=*} to command-line arguments "
+                 "to avoid web socket connection errors during remote debugging.");
+    }
+
     base::CommandLine::StringVector argv;
     argv.resize(appArgs.size());
 #if defined(Q_OS_WIN)
