@@ -1026,6 +1026,11 @@ macro(append_compiler_linker_sdk_setup)
             # we use arm_neon_optional for ARMv7
             list(APPEND gnArgArg arm_optionally_use_neon=true)
         endif()
+        extract_cflag(march "march")
+        get_arm_version(arm_version ${march})
+        if(arm_version EQUAL 7)
+            list(APPEND gnArgArg use_arm_crc32=false)
+        endif()
         check_thumb(armThumb)
         extend_gn_list(gnArgArg
             ARGS arm_use_thumb
