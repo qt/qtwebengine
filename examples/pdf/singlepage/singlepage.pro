@@ -9,6 +9,6 @@ RESOURCES += \
 EXAMPLE_FILES = \
     viewer.qml
 
-target.path = $$[QT_INSTALL_EXAMPLES]/pdf/pdfviewer
+target.path = $$[QT_INSTALL_EXAMPLES]/pdf/singlepage
 INSTALLS += target
 

@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/pdfviewer">
+    <qresource prefix="/singlepage">
         <file>viewer.qml</file>
         <file>resources/document-open.svg</file>
         <file>resources/edit-clear.svg</file>

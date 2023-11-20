@@ -44,7 +44,7 @@ ApplicationWindow {
                         action: Action {
                             shortcut: StandardKey.ZoomIn
                             enabled: pageView.sourceSize.width < 10000
-                            icon.source: "../../../../examples/pdf/pdfviewer/resources/zoom-in.svg"
+                            icon.source: "../../../../examples/pdf/singlepage/resources/zoom-in.svg"
                             onTriggered: pageView.renderScale *= root.scaleStep
                         }
                     }
@@ -52,20 +52,20 @@ ApplicationWindow {
                         action: Action {
                             shortcut: StandardKey.ZoomOut
                             enabled: pageView.sourceSize.width > 50
-                            icon.source: "../../../../examples/pdf/pdfviewer/resources/zoom-out.svg"
+                            icon.source: "../../../../examples/pdf/singlepage/resources/zoom-out.svg"
                             onTriggered: pageView.renderScale /= root.scaleStep
                         }
                     }
                     ToolButton {
                         action: Action {
                             shortcut: "Ctrl+0"
-                            icon.source: "../../../../examples/pdf/pdfviewer/resources/zoom-original.svg"
+                            icon.source: "../../../../examples/pdf/singlepage/resources/zoom-original.svg"
                             onTriggered: pageView.resetScale()
                         }
                     }
                     ToolButton {
                         action: Action {
-                            icon.source: "../../../../examples/pdf/pdfviewer/resources/go-previous-view-page.svg"
+                            icon.source: "../../../../examples/pdf/singlepage/resources/go-previous-view-page.svg"
                             enabled: pageView.backEnabled
                             onTriggered: pageView.back()
                         }
@@ -84,7 +84,7 @@ ApplicationWindow {
                     }
                     ToolButton {
                         action: Action {
-                            icon.source: "../../../../examples/pdf/pdfviewer/resources/go-next-view-page.svg"
+                            icon.source: "../../../../examples/pdf/singlepage/resources/go-next-view-page.svg"
                             enabled: pageView.forwardEnabled
                             onTriggered: pageView.forward()
                         }

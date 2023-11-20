@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
     PdfApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
-    engine.load(QUrl(QStringLiteral("qrc:///pdfviewer/viewer.qml")));
+    engine.load(QUrl(QStringLiteral("qrc:///multipage/viewer.qml")));
     app.setFileOpener(engine.rootObjects().constFirst());
     if (app.arguments().count() > 1) {
         QUrl toLoad = QUrl::fromUserInput(app.arguments().at(1));

@@ -22,7 +22,7 @@ ApplicationWindow {
             ToolButton {
                 action: Action {
                     shortcut: StandardKey.Open
-                    icon.source: "qrc:/pdfviewer/resources/document-open.svg"
+                    icon.source: "qrc:/multipage/resources/document-open.svg"
                     onTriggered: fileDialog.open()
                 }
             }
@@ -30,7 +30,7 @@ ApplicationWindow {
                 action: Action {
                     shortcut: StandardKey.ZoomIn
                     enabled: view.renderScale < 10
-                    icon.source: "qrc:/pdfviewer/resources/zoom-in.svg"
+                    icon.source: "qrc:/multipage/resources/zoom-in.svg"
                     onTriggered: view.renderScale *= Math.sqrt(2)
                 }
             }
@@ -38,46 +38,46 @@ ApplicationWindow {
                 action: Action {
                     shortcut: StandardKey.ZoomOut
                     enabled: view.renderScale > 0.1
-                    icon.source: "qrc:/pdfviewer/resources/zoom-out.svg"
+                    icon.source: "qrc:/multipage/resources/zoom-out.svg"
                     onTriggered: view.renderScale /= Math.sqrt(2)
                 }
             }
             ToolButton {
                 action: Action {
-                    icon.source: "qrc:/pdfviewer/resources/zoom-fit-width.svg"
+                    icon.source: "qrc:/multipage/resources/zoom-fit-width.svg"
                     onTriggered: view.scaleToWidth(root.contentItem.width, root.contentItem.height)
                 }
             }
             ToolButton {
                 action: Action {
-                    icon.source: "qrc:/pdfviewer/resources/zoom-fit-best.svg"
+                    icon.source: "qrc:/multipage/resources/zoom-fit-best.svg"
                     onTriggered: view.scaleToPage(root.contentItem.width, root.contentItem.height)
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: "Ctrl+0"
-                    icon.source: "qrc:/pdfviewer/resources/zoom-original.svg"
+                    icon.source: "qrc:/multipage/resources/zoom-original.svg"
                     onTriggered: view.resetScale()
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: "Ctrl+L"
-                    icon.source: "qrc:/pdfviewer/resources/rotate-left.svg"
+                    icon.source: "qrc:/multipage/resources/rotate-left.svg"
                     onTriggered: view.pageRotation -= 90
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: "Ctrl+R"
-                    icon.source: "qrc:/pdfviewer/resources/rotate-right.svg"
+                    icon.source: "qrc:/multipage/resources/rotate-right.svg"
                     onTriggered: view.pageRotation += 90
                 }
             }
             ToolButton {
                 action: Action {
-                    icon.source: "qrc:/pdfviewer/resources/go-previous-view-page.svg"
+                    icon.source: "qrc:/multipage/resources/go-previous-view-page.svg"
                     enabled: view.backEnabled
                     onTriggered: view.back()
                 }
@@ -102,7 +102,7 @@ ApplicationWindow {
             }
             ToolButton {
                 action: Action {
-                    icon.source: "qrc:/pdfviewer/resources/go-next-view-page.svg"
+                    icon.source: "qrc:/multipage/resources/go-next-view-page.svg"
                     enabled: view.forwardEnabled
                     onTriggered: view.forward()
                 }
@@ -113,14 +113,14 @@ ApplicationWindow {
             ToolButton {
                 action: Action {
                     shortcut: StandardKey.SelectAll
-                    icon.source: "qrc:/pdfviewer/resources/edit-select-all.svg"
+                    icon.source: "qrc:/multipage/resources/edit-select-all.svg"
                     onTriggered: view.selectAll()
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: StandardKey.Copy
-                    icon.source: "qrc:/pdfviewer/resources/edit-copy.svg"
+                    icon.source: "qrc:/multipage/resources/edit-copy.svg"
                     enabled: view.selectedText !== ""
                     onTriggered: view.copySelectionToClipboard()
                 }
@@ -390,7 +390,7 @@ ApplicationWindow {
                     id: sidebarOpenAction
                     checkable: true
                     checked: sidebar.opened
-                    icon.source: checked ? "qrc:/pdfviewer/resources/sidebar-collapse-left.svg" : "qrc:/pdfviewer/resources/sidebar-expand-left.svg"
+                    icon.source: checked ? "qrc:/multipage/resources/sidebar-collapse-left.svg" : "qrc:/multipage/resources/sidebar-expand-left.svg"
                     onTriggered: sidebar.open()
                 }
                 ToolTip.visible: enabled && hovered
@@ -399,7 +399,7 @@ ApplicationWindow {
             }
             ToolButton {
                 action: Action {
-                    icon.source: "qrc:/pdfviewer/resources/go-up-search.svg"
+                    icon.source: "qrc:/multipage/resources/go-up-search.svg"
                     shortcut: StandardKey.FindPrevious
                     onTriggered: view.searchBack()
                 }
@@ -419,7 +419,7 @@ ApplicationWindow {
                 }
                 Image {
                     visible: searchField.text !== ""
-                    source: "qrc:/pdfviewer/resources/edit-clear.svg"
+                    source: "qrc:/multipage/resources/edit-clear.svg"
                     sourceSize.height: searchField.height - 6
                     anchors {
                         right: parent.right
@@ -433,7 +433,7 @@ ApplicationWindow {
             }
             ToolButton {
                 action: Action {
-                    icon.source: "qrc:/pdfviewer/resources/go-down-search.svg"
+                    icon.source: "qrc:/multipage/resources/go-down-search.svg"
                     shortcut: StandardKey.FindNext
                     onTriggered: view.searchForward()
                 }
