@@ -57,6 +57,8 @@ qt_internal_add_module(WebEngineCore
         Qt::Gui
         Qt::Network
         Qt::Quick
+    EXTRA_CMAKE_FILES
+        "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}WebEngineCoreDeploySupport.cmake"
 )
 
 set_target_properties(WebEngineCore PROPERTIES QTWEBENGINEPROCESS_NAME ${qtWebEngineProcessName})
