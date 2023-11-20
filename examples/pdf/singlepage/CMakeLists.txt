@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.16)
-project(pdfviewer LANGUAGES CXX)
+project(singlepage LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 
@@ -10,7 +10,7 @@ if(NOT DEFINED INSTALL_EXAMPLESDIR)
     set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
-set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/pdf/pdfviewer")
+set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/pdf/singlepage")
 
 find_package(Qt6 REQUIRED COMPONENTS Gui Qml)
 
@@ -50,7 +50,7 @@ set(viewer_resource_files
 
 qt_add_resources(pdfviewerquick "viewer"
     PREFIX
-        "/pdfviewer"
+        "/singlepage"
     FILES
         ${viewer_resource_files}
 )

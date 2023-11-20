@@ -23,13 +23,13 @@ int main(int argc, char* argv[])
 
     QQmlApplicationEngine engine;
 
-    QUrl toLoad = QUrl("qrc:/pdfviewer/resources/test.pdf");
+    QUrl toLoad = QUrl("qrc:/singlepage/resources/test.pdf");
     if (!parser.positionalArguments().isEmpty())
         toLoad = QUrl::fromLocalFile(parser.positionalArguments().constFirst());
 
     engine.setInitialProperties({{"source", toLoad}});
 
-    engine.load(QUrl(QStringLiteral("qrc:///pdfviewer/viewer.qml")));
+    engine.load(QUrl(QStringLiteral("qrc:///singlepage/viewer.qml")));
     if (engine.rootObjects().isEmpty())
         return -1;
 

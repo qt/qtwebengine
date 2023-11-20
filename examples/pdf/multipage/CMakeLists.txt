@@ -63,7 +63,7 @@ set(viewer_resource_files
 
 qt_add_resources(multipage "viewer"
     PREFIX
-        "/pdfviewer"
+        "/multipage"
     FILES
         ${viewer_resource_files}
 )
