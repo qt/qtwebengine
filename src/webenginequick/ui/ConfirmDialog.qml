@@ -55,6 +55,7 @@ Dialog {
                 id: message
                 Layout.fillWidth: true
                 color: palette.windowText
+                textFormat: Text.PlainText
             }
         }
         Item {

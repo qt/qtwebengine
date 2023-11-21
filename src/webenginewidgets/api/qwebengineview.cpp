@@ -553,8 +553,10 @@ bool QWebEngineViewPrivate::showAuthorizationDialog(const QString &title, const 
 {
 #if QT_CONFIG(messagebox)
     Q_Q(QWebEngineView);
-    return QMessageBox::question(q, title, message, QMessageBox::Yes, QMessageBox::No)
-            == QMessageBox::Yes;
+    QMessageBox msgBox(QMessageBox::Question, title, message, QMessageBox::Yes | QMessageBox::No,
+                       q, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
+    msgBox.setTextFormat(Qt::PlainText);
+    return msgBox.exec() == QMessageBox::Yes;
 #else
     return false;
 #endif // QT_CONFIG(messagebox)
@@ -564,8 +566,12 @@ void QWebEngineViewPrivate::javaScriptAlert(const QUrl &url, const QString &msg)
 {
 #if QT_CONFIG(messagebox)
     Q_Q(QWebEngineView);
-    QMessageBox::information(q, QStringLiteral("Javascript Alert - %1").arg(url.toString()),
-                             msg.toHtmlEscaped());
+    QMessageBox msgBox(QMessageBox::Information,
+                       QStringLiteral("Javascript Alert - %1").arg(url.toString()),
+                       msg, QMessageBox::Ok, q,
+                       Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
+    msgBox.setTextFormat(Qt::PlainText);
+    msgBox.exec();
 #else
     Q_UNUSED(msg);
 #endif // QT_CONFIG(messagebox)
@@ -575,10 +581,12 @@ bool QWebEngineViewPrivate::javaScriptConfirm(const QUrl &url, const QString &ms
 {
 #if QT_CONFIG(messagebox)
     Q_Q(QWebEngineView);
-    return (QMessageBox::information(q,
-                                     QStringLiteral("Javascript Confirm - %1").arg(url.toString()),
-                                     msg.toHtmlEscaped(), QMessageBox::Ok, QMessageBox::Cancel)
-            == QMessageBox::Ok);
+    QMessageBox msgBox(QMessageBox::Information,
+                       QStringLiteral("Javascript Confirm - %1").arg(url.toString()),
+                       msg, QMessageBox::Ok | QMessageBox::Cancel, q,
+                       Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
+    msgBox.setTextFormat(Qt::PlainText);
+    return msgBox.exec() == QMessageBox::Ok;
 #else
     Q_UNUSED(msg);
     return false;
@@ -591,10 +599,16 @@ bool QWebEngineViewPrivate::javaScriptPrompt(const QUrl &url, const QString &msg
 #if QT_CONFIG(inputdialog)
     Q_Q(QWebEngineView);
     bool ret = false;
+
+    // Workaround: Do not interpret text as Qt::RichText
+    // QInputDialog uses Qt::AutoText that interprets the text string as
+    // Qt::RichText if Qt::mightBeRichText() returns true, otherwise as Qt::PlainText.
+    const QString message = Qt::mightBeRichText(msg) ? msg.toHtmlEscaped() : msg;
+
     if (result)
         *result = QInputDialog::getText(
                 q, QStringLiteral("Javascript Prompt - %1").arg(url.toString()),
-                msg.toHtmlEscaped(), QLineEdit::Normal, defaultValue.toHtmlEscaped(), &ret);
+                message, QLineEdit::Normal, defaultValue, &ret);
     return ret;
 #else
     Q_UNUSED(msg);
