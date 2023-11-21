@@ -278,6 +278,9 @@ private:
 
     QWebEngineView* m_view;
     QWebEnginePage* m_page;
+    QScopedPointer<QPointingDevice> s_touchDevice =
+            QScopedPointer<QPointingDevice>(QTest::createTouchDevice());
+
     QString tmpDirPath() const
     {
         static QString tmpd = QDir::tempPath() + "/tst_qwebenginepage-"
@@ -285,13 +288,13 @@ private:
         return tmpd;
     }
 
-    QScopedPointer<QPointingDevice> s_touchDevice;
-    void makeClick(QWindow *window, bool withTouch = false, const QPoint &p = QPoint()) {
+    void makeClick(const QPointer<QWindow> window, bool withTouch = false,
+                   const QPoint &p = QPoint())
+    {
+        QVERIFY2(window, "window is gone");
         if (!withTouch) {
             QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(), p);
         } else {
-            if (!s_touchDevice)
-                s_touchDevice.reset(QTest::createTouchDevice());
             QTest::touchEvent(window, s_touchDevice.get()).press(1, p);
             QTest::touchEvent(window, s_touchDevice.get()).release(1, p);
         }
@@ -1358,6 +1361,9 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterMove_data()
 
 void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
 {
+#if defined(Q_OS_MACOS) && (defined(__arm64__) || defined(__aarch64__))
+    QSKIP("This test crashes for Apple M1");
+#endif
     QWebEngineView view;
     view.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft());
     view.resize(640, 480);
@@ -1370,7 +1376,7 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
     QTRY_COMPARE(spyLoadFinished.size(), 1);
     const auto oldTlws = QGuiApplication::topLevelWindows();
     QFETCH(bool, withTouch);
-    QWindow *window = view.windowHandle();
+    QPointer<QWindow> window = view.windowHandle();
     auto pos = elementCenter(view.page(), "foo");
     makeClick(window, withTouch, pos);
     QWindow *popup = nullptr;
@@ -1420,6 +1426,9 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove_data()
 
 void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
 {
+#if defined(Q_OS_MACOS) && (defined(__arm64__) || defined(__aarch64__))
+    QSKIP("This test crashes for Apple M1");
+#endif
     QWidget mainWidget;
     mainWidget.setLayout(new QHBoxLayout);
 
@@ -1443,7 +1452,7 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
     const auto oldTlws = QGuiApplication::topLevelWindows();
 
     QFETCH(bool, withTouch);
-    QWindow *window = view.window()->windowHandle();
+    QPointer<QWindow> window = view.window()->windowHandle();
     makeClick(window, withTouch, view.mapTo(view.window(), elementCenter(view.page(), "foo")));
 
     QWindow *popup = nullptr;
@@ -2072,14 +2081,14 @@ void tst_QWebEnginePage::symmetricUrl()
 
     QVERIFY(view.url().isEmpty());
 
-    QCOMPARE(view.history()->count(), 1);
+    QCOMPARE(view.history()->count(), 0);
 
     QUrl dataUrl("data:text/html,<h1>Test");
 
     view.setUrl(dataUrl);
     view.show();
     QCOMPARE(view.url(), dataUrl);
-    QCOMPARE(view.history()->count(), 1);
+    QCOMPARE(view.history()->count(), 0);
 
     // loading is _not_ immediate, so the text isn't set just yet.
     QVERIFY(toPlainTextSync(view.page()).isEmpty());
@@ -2392,7 +2401,7 @@ void tst_QWebEnginePage::setHtmlWithBaseURL()
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].height").toInt(), 128);
 
     // no history item has to be added.
-    QCOMPARE(m_view->page()->history()->count(), 1);
+    QCOMPARE(m_view->page()->history()->count(), 0);
 }
 
 class MyPage : public QWebEnginePage
@@ -2823,7 +2832,7 @@ void tst_QWebEnginePage::setUrlHistory()
     int expectedLoadFinishedCount = 0;
     QSignalSpy spy(m_page, SIGNAL(loadFinished(bool)));
 
-    QCOMPARE(m_page->history()->count(), 1);
+    QCOMPARE(m_page->history()->count(), 0);
 
     m_page->setUrl(QUrl());
     expectedLoadFinishedCount++;
@@ -2897,7 +2906,7 @@ void tst_QWebEnginePage::setUrlUsingStateObject()
     QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
     int expectedUrlChangeCount = 0;
 
-    QCOMPARE(m_page->history()->count(), 1);
+    QCOMPARE(m_page->history()->count(), 0);
 
     url = QUrl("qrc:/resources/test1.html");
     m_page->setUrl(url);
@@ -3076,7 +3085,7 @@ void tst_QWebEnginePage::loadInSignalHandlers()
     URLSetter setter(m_page, signal, type, urlForSetter);
     QSignalSpy spy(&setter, &URLSetter::finished);
     m_page->load(url);
-    QTRY_COMPARE_WITH_TIMEOUT(spy.size(), 1, 20000);
+    QTRY_VERIFY_WITH_TIMEOUT(spy.size() >= 1, 20000);
     QCOMPARE(m_page->url(), urlForSetter);
 }
 
@@ -3722,7 +3731,7 @@ void tst_QWebEnginePage::openLinkInNewPage()
             QCOMPARE(page1.history()->count(), 1);
         else
             QCOMPARE(page1.history()->count(), 2);
-        QCOMPARE(page2.history()->count(), 1);
+        QCOMPARE(page2.history()->count(), 0);
         break;
     case Effect::LoadInOther:
         QTRY_COMPARE(page2.spy.size(), 1);

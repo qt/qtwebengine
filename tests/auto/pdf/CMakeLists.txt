@@ -2,7 +2,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 add_subdirectory(qpdfbookmarkmodel)
-#add_subdirectory(qpdfpagenavigator)
+if (TARGET Qt::PdfWidgets)
+    add_subdirectory(qpdfpagenavigator)
+endif()
 add_subdirectory(qpdfpagerenderer)
 if(TARGET Qt::PrintSupport)
     add_subdirectory(qpdfdocument)

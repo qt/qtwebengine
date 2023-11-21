@@ -4,6 +4,7 @@
 /*!
     \page qtwebengine-deploying.html
     \title Deploying Qt WebEngine Applications
+    \ingroup explanations-webtechnologies
 
     The way to package and deploy applications varies between operating systems.
     For Windows and \macos, \l{The Windows Deployment Tool}{windeployqt} and

@@ -12,7 +12,7 @@
 
     To use the types in this module, import the module with the following line:
 
-    \code
+    \qml
     import QtQuick.Pdf
-    \endcode
+    \endqml
 */

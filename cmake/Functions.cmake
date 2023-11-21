@@ -918,6 +918,8 @@ macro(append_compiler_linker_sdk_setup)
     endif()
 
     extend_gn_list(gnArgArg ARGS is_clang CONDITION CLANG)
+    extend_gn_list(gnArgArg ARGS is_msvc CONDITION MSVC)
+
     if(CLANG)
         if(MACOS)
             get_darwin_sdk_version(macSdkVersion)
@@ -976,7 +978,7 @@ macro(append_compiler_linker_sdk_setup)
         endif()
     endif()
 
-    if(WIN32)
+    if(MSVC)
         get_filename_component(windowsSdkPath $ENV{WINDOWSSDKDIR} ABSOLUTE)
         get_filename_component(visualStudioPath $ENV{VSINSTALLDIR} ABSOLUTE)
         list(APPEND gnArgArg
@@ -1051,6 +1053,11 @@ macro(append_sanitizer_setup)
             ARGS is_ubsan is_ubsan_vptr
             CONDITION undefined IN_LIST ECM_ENABLE_SANITIZERS
         )
+        if(MACOS)
+            list(APPEND gnArgArg
+                clang_version="${QT_COMPILER_VERSION_MAJOR}.${QT_COMPILER_VERSION_MINOR}.${QT_COMPILER_VERSION_PATCH}"
+            )
+        endif()
     endif()
 endmacro()
 

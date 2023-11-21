@@ -25,10 +25,9 @@ public:
     BrowserAccessibilityQt(content::BrowserAccessibilityManager *manager, ui::AXNode *node);
     ~BrowserAccessibilityQt();
 
-    QtWebEngineCore::BrowserAccessibilityInterface *interface() const { return m_interface; }
+    bool isReady() const;
 
-private:
-    QtWebEngineCore::BrowserAccessibilityInterface *m_interface = nullptr;
+    QtWebEngineCore::BrowserAccessibilityInterface *interface = nullptr;
 };
 
 class BrowserAccessibilityInterface
@@ -41,6 +40,7 @@ class BrowserAccessibilityInterface
 {
 public:
     BrowserAccessibilityInterface(BrowserAccessibilityQt *chromiumInterface);
+    ~BrowserAccessibilityInterface() override;
 
     void destroy();
 
@@ -133,15 +133,24 @@ private:
     BrowserAccessibilityQt *q;
 };
 
-BrowserAccessibilityQt::BrowserAccessibilityQt(content::BrowserAccessibilityManager *manager, ui::AXNode *node)
-    : content::BrowserAccessibility(manager, node),
-      m_interface(new BrowserAccessibilityInterface(this))
+BrowserAccessibilityQt::BrowserAccessibilityQt(content::BrowserAccessibilityManager *manager,
+                                               ui::AXNode *node)
+    : content::BrowserAccessibility(manager, node)
+    , interface(new BrowserAccessibilityInterface(this))
 {
 }
 
 BrowserAccessibilityQt::~BrowserAccessibilityQt()
 {
-    m_interface->destroy();
+    if (interface)
+        interface->destroy();
+}
+
+bool BrowserAccessibilityQt::isReady() const
+{
+    // FIXME: This is just a workaround, remove this when the commented out assert in
+    //        BrowserAccessibilityManager::GetFromID(int32_t id) gets fixed.
+    return manager()->GetFromID(node()->id()) != nullptr;
 }
 
 BrowserAccessibilityInterface::BrowserAccessibilityInterface(BrowserAccessibilityQt *chromiumInterface)
@@ -157,6 +166,11 @@ BrowserAccessibilityInterface::BrowserAccessibilityInterface(BrowserAccessibilit
     m_id = QAccessible::registerAccessibleInterface(this);
 }
 
+BrowserAccessibilityInterface::~BrowserAccessibilityInterface()
+{
+    q->interface = nullptr;
+}
+
 void BrowserAccessibilityInterface::destroy()
 {
     QAccessible::deleteAccessibleInterface(m_id);
@@ -164,6 +178,9 @@ void BrowserAccessibilityInterface::destroy()
 
 bool BrowserAccessibilityInterface::isValid() const
 {
+    if (!q->isReady())
+        return false;
+
     auto managerQt = static_cast<content::BrowserAccessibilityManagerQt *>(q->manager());
     return managerQt && managerQt->isValid();
 }
@@ -214,11 +231,7 @@ void *BrowserAccessibilityInterface::interface_cast(QAccessible::InterfaceType t
     }
     case QAccessible::TableCellInterface: {
         QAccessible::Role r = role();
-        if (r == QAccessible::Cell) {
-            Q_ASSERT(findTable());
-            return static_cast<QAccessibleTableCellInterface *>(this);
-        }
-        if (r == QAccessible::ListItem || r == QAccessible::TreeItem) {
+        if (r == QAccessible::Cell || r == QAccessible::ListItem || r == QAccessible::TreeItem) {
             if (findTable())
                 return static_cast<QAccessibleTableCellInterface *>(this);
         }
@@ -271,6 +284,9 @@ int BrowserAccessibilityInterface::indexOfChild(const QAccessibleInterface *ifac
 
 QString BrowserAccessibilityInterface::text(QAccessible::Text t) const
 {
+    if (!q->isReady())
+        return QString();
+
     switch (t) {
     case QAccessible::Name:
         return toQt(q->GetStringAttribute(ax::mojom::StringAttribute::kName));
@@ -292,7 +308,7 @@ void BrowserAccessibilityInterface::setText(QAccessible::Text t, const QString &
 
 QRect BrowserAccessibilityInterface::rect() const
 {
-    if (!q->manager()) // needed implicitly by GetScreenBoundsRect()
+    if (!q->manager() || !q->isReady()) // needed implicitly by GetScreenBoundsRect()
         return QRect();
     gfx::Rect bounds = q->GetUnclippedScreenBoundsRect();
     bounds = gfx::ScaleToRoundedRect(bounds, 1.f / q->manager()->device_scale_factor()); // FIXME: check
@@ -694,6 +710,11 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
 QAccessible::State BrowserAccessibilityInterface::state() const
 {
     QAccessible::State state = QAccessible::State();
+    if (!q->isReady()) {
+        state.invalid = true;
+        return state;
+    }
+
     if (q->HasState(ax::mojom::State::kCollapsed))
         state.collapsed = true;
     if (q->HasState(ax::mojom::State::kDefault))
@@ -1140,12 +1161,12 @@ std::unique_ptr<BrowserAccessibility> BrowserAccessibility::Create(BrowserAccess
 
 QAccessibleInterface *toQAccessibleInterface(BrowserAccessibility *obj)
 {
-    return static_cast<QtWebEngineCore::BrowserAccessibilityQt *>(obj)->interface();
+    return static_cast<QtWebEngineCore::BrowserAccessibilityQt *>(obj)->interface;
 }
 
 const QAccessibleInterface *toQAccessibleInterface(const BrowserAccessibility *obj)
 {
-    return static_cast<const QtWebEngineCore::BrowserAccessibilityQt *>(obj)->interface();
+    return static_cast<const QtWebEngineCore::BrowserAccessibilityQt *>(obj)->interface;
 }
 
 } // namespace content
