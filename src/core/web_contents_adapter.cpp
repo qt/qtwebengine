@@ -39,7 +39,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_request_utils.h"
@@ -280,7 +279,7 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
     int count;
     input >> count >> *currentIndex;
 
-    std::unique_ptr<content::NavigationEntryRestoreContext> context = content::NavigationEntryRestoreContext::Create(); // FIXME?
+    std::unique_ptr<content::NavigationEntryRestoreContext> context = content::NavigationEntryRestoreContext::Create();
 
     entries->reserve(count);
     // Logic taken from SerializedNavigationEntry::ReadFromPickle and ToNavigationEntries.
@@ -407,17 +406,6 @@ QSharedPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavig
     std::unique_ptr<content::WebContents> newWebContents = createBlankWebContents(adapterClient, adapterClient->profileAdapter()->profile());
     content::NavigationController &controller = newWebContents->GetController();
     controller.Restore(currentIndex, content::RestoreType::kRestored, &entries);
-
-    if (controller.GetActiveEntry()) {
-        // Set up the file access rights for the selected navigation entry.
-        // TODO(joth): This is duplicated from chrome/.../session_restore.cc and
-        // should be shared e.g. in  NavigationController. http://crbug.com/68222
-        const int id = newWebContents->GetPrimaryMainFrame()->GetProcess()->GetID();
-        const blink::PageState& pageState = controller.GetActiveEntry()->GetPageState();
-        const std::vector<base::FilePath>& filePaths = pageState.GetReferencedFiles();
-        for (std::vector<base::FilePath>::const_iterator file = filePaths.begin(); file != filePaths.end(); ++file)
-            content::ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(id, *file);
-    }
 
     return QSharedPointer<WebContentsAdapter>::create(std::move(newWebContents));
 }
