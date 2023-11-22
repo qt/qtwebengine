@@ -76,6 +76,7 @@
 #include "content/public/renderer/key_system_support.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
+#include "media/cdm/clear_key_cdm_common.h"
 #include "third_party/widevine/cdm/buildflags.h"
 #if BUILDFLAG(ENABLE_WIDEVINE)
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
@@ -472,8 +473,6 @@ void ContentRendererClientQt::GetInterface(const std::string &interface_name, mo
 // found in the LICENSE.Chromium file.
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-static const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
-
 // External Clear Key (used for testing).
 static void AddExternalClearKey(const media::mojom::KeySystemCapabilityPtr &capability,
                                 media::KeySystemInfos* key_systems)
@@ -669,7 +668,7 @@ void OnKeySystemSupportUpdated(media::GetSupportedKeySystemsCB cb,
         }
 #endif // BUILDFLAG(ENABLE_WIDEVINE)
 
-        if (key_system == kExternalClearKeyKeySystem) {
+        if (key_system == media::kExternalClearKeyKeySystem) {
             AddExternalClearKey(capability, &key_systems);
             continue;
         }

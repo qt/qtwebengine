@@ -355,31 +355,23 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
         base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
         base::FilePath clear_key_cdm_path = command_line->GetSwitchValuePath(switches::kClearKeyCdmPathForTesting);
         if (!clear_key_cdm_path.empty() && base::PathExists(clear_key_cdm_path)) {
-            // TODO(crbug.com/764480): Remove these after we have a central place for
-            // External Clear Key (ECK) related information.
-            // Normal External Clear Key key system.
-            const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
-            // A variant of ECK key system that has a different GUID.
-            const char kExternalClearKeyDifferentGuidTestKeySystem[] =
-                    "org.chromium.externalclearkey.differentguid";
-
             // Supported codecs are hard-coded in ExternalClearKeyProperties.
             media::CdmCapability capability(
                 {}, {}, {media::EncryptionScheme::kCenc, media::EncryptionScheme::kCbcs},
                 {media::CdmSessionType::kTemporary,
                  media::CdmSessionType::kPersistentLicense});
 
-            // Register kExternalClearKeyDifferentGuidTestKeySystem first separately.
+            // Register media::kExternalClearKeyDifferentCdmTypeTestKeySystem first separately.
             // Otherwise, it'll be treated as a sub-key-system of normal
             // kExternalClearKeyKeySystem. See MultipleCdmTypes test in
             // ECKEncryptedMediaTest.
-            cdms->push_back(content::CdmInfo(kExternalClearKeyDifferentGuidTestKeySystem,
+            cdms->push_back(content::CdmInfo(media::kExternalClearKeyDifferentCdmTypeTestKeySystem,
                                              Robustness::kSoftwareSecure, capability,
                                              /*supports_sub_key_systems=*/false, media::kClearKeyCdmDisplayName,
                                              media::kClearKeyCdmDifferentCdmType, base::Version("0.1.0.0"),
                                              clear_key_cdm_path));
 
-            cdms->push_back(content::CdmInfo(kExternalClearKeyKeySystem,
+            cdms->push_back(content::CdmInfo(media::kExternalClearKeyKeySystem,
                                              Robustness::kSoftwareSecure, capability,
                                              /*supports_sub_key_systems=*/true, media::kClearKeyCdmDisplayName,
                                              media::kClearKeyCdmType, base::Version("0.1.0.0"),
