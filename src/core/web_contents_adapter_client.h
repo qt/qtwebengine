@@ -61,7 +61,7 @@ class WebContentsAdapter;
 class WebContentsDelegateQt;
 class WebEngineSettings;
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT WebContentsAdapterClient {
+class Q_WEBENGINECORE_EXPORT WebContentsAdapterClient {
 public:
     // This must match window_open_disposition_list.h.
     enum WindowOpenDisposition {

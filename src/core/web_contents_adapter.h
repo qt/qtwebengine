@@ -60,7 +60,7 @@ class ProfileQt;
 class WebEnginePageHost;
 class WebChannelIPCTransportHost;
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT WebContentsAdapter : public QEnableSharedFromThis<WebContentsAdapter> {
+class Q_WEBENGINECORE_EXPORT WebContentsAdapter : public QEnableSharedFromThis<WebContentsAdapter> {
 public:
     static QSharedPointer<WebContentsAdapter> createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient);
     WebContentsAdapter();

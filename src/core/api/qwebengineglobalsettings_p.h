@@ -21,7 +21,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineGlobalSettingsPrivate
+class Q_WEBENGINECORE_EXPORT QWebEngineGlobalSettingsPrivate
 {
 public:
     QWebEngineGlobalSettingsPrivate()

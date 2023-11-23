@@ -9,7 +9,7 @@
 
 namespace QtWebEngineCore {
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT TouchHandleDrawableDelegate {
+class Q_WEBENGINECORE_EXPORT TouchHandleDrawableDelegate {
 public:
     virtual ~TouchHandleDrawableDelegate() { }
 

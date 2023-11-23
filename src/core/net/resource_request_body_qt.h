@@ -31,7 +31,7 @@ class DataPipeConsumerHandle;
 
 namespace QtWebEngineCore {
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT ResourceRequestBody : public QIODevice
+class Q_WEBENGINECORE_EXPORT ResourceRequestBody : public QIODevice
 {
     Q_OBJECT
 public:

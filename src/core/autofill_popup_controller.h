@@ -15,7 +15,7 @@ namespace QtWebEngineCore {
 
 class AutofillPopupControllerPrivate;
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT AutofillPopupController : public QObject
+class Q_WEBENGINECORE_EXPORT AutofillPopupController : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QStringListModel *model READ model CONSTANT FINAL)

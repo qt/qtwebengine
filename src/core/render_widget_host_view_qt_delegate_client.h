@@ -46,7 +46,7 @@ struct MultipleMouseClickHelper
     ulong lastPressTimestamp = 0;
 };
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT RenderWidgetHostViewQtDelegateClient
+class Q_WEBENGINECORE_EXPORT RenderWidgetHostViewQtDelegateClient
 {
 public:
     RenderWidgetHostViewQtDelegateClient(RenderWidgetHostViewQt *rwhv);

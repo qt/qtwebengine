@@ -27,7 +27,7 @@ class WebContentsAdapterClient;
 class WebEngineSettings;
 class UserNotificationController;
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT ProfileAdapterClient
+class Q_WEBENGINECORE_EXPORT ProfileAdapterClient
 {
 public:
     // Keep in sync with content::DownloadItem::DownloadState

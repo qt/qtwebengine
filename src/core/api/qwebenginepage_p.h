@@ -84,7 +84,7 @@ public:
     virtual void hideTouchSelectionMenu() = 0;
 };
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEnginePagePrivate : public QtWebEngineCore::WebContentsAdapterClient
+class Q_WEBENGINECORE_EXPORT QWebEnginePagePrivate : public QtWebEngineCore::WebContentsAdapterClient
 {
 public:
     Q_DECLARE_PUBLIC(QWebEnginePage)

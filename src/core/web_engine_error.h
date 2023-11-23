@@ -17,7 +17,7 @@
 
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT WebEngineError
+class Q_WEBENGINECORE_EXPORT WebEngineError
 {
 
 public:

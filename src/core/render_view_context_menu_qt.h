@@ -21,7 +21,7 @@ QT_FORWARD_DECLARE_CLASS(QWebEngineContextMenuRequest)
 
 namespace QtWebEngineCore {
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT RenderViewContextMenuQt
+class Q_WEBENGINECORE_EXPORT RenderViewContextMenuQt
 {
 public:
     enum ContextMenuItem {

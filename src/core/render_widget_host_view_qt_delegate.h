@@ -29,7 +29,7 @@ QT_END_NAMESPACE
 namespace QtWebEngineCore {
 
 class WebContentsAdapterClient;
-class Q_WEBENGINECORE_PRIVATE_EXPORT RenderWidgetHostViewQtDelegate {
+class Q_WEBENGINECORE_EXPORT RenderWidgetHostViewQtDelegate {
 public:
     virtual ~RenderWidgetHostViewQtDelegate() { }
     virtual void initAsPopup(const QRect&) = 0;

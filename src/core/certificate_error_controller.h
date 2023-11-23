@@ -33,7 +33,7 @@ class GURL;
 
 namespace QtWebEngineCore {
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT CertificateErrorController {
+class Q_WEBENGINECORE_EXPORT CertificateErrorController {
 public:
     CertificateErrorController(
             int cert_error, const net::SSLInfo &ssl_info, const GURL &request_url,

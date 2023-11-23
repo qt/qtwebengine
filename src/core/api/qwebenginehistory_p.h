@@ -72,7 +72,7 @@ public:
     int offsetForIndex(int) const override;
 };
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineHistoryPrivate
+class Q_WEBENGINECORE_EXPORT QWebEngineHistoryPrivate
 {
 public:
     typedef std::function<QUrl (const QUrl &)> ImageProviderUrl;

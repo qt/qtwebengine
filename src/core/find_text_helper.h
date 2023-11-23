@@ -37,7 +37,7 @@ namespace QtWebEngineCore {
 
 class WebContentsAdapterClient;
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT FindTextHelper {
+class Q_WEBENGINECORE_EXPORT FindTextHelper {
 public:
     FindTextHelper(content::WebContents *webContents, WebContentsAdapterClient *viewClient);
     ~FindTextHelper();

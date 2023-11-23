@@ -22,7 +22,7 @@ namespace QtWebEngineCore {
 //
 // Used by quick/widgets libraries for accessing the frames and
 // controlling frame swapping.
-class Q_WEBENGINECORE_PRIVATE_EXPORT Compositor
+class Q_WEBENGINECORE_EXPORT Compositor
 {
     struct Binding;
 
@@ -75,7 +75,7 @@ public:
     // Observes the compositor corresponding to the given id.
     //
     // Only one observer can exist per compositor.
-    class Q_WEBENGINECORE_PRIVATE_EXPORT Observer
+    class Q_WEBENGINECORE_EXPORT Observer
     {
     public:
         // Binding to compositor

@@ -42,7 +42,7 @@ static void deleteShareContext()
 // after the QGuiApplication creation, when AA_ShareOpenGLContexts fills
 // the same need but the flag has to be set earlier.
 
-Q_WEBENGINECORE_PRIVATE_EXPORT void initialize()
+Q_WEBENGINECORE_EXPORT void initialize()
 {
 #if QT_CONFIG(opengl) && !defined(Q_OS_MACOS)
 #ifdef Q_OS_WIN32

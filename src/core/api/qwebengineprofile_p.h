@@ -37,7 +37,7 @@ class QWebEngineProfile;
 class QWebEngineScriptCollection;
 class QWebEngineSettings;
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineProfilePrivate : public QtWebEngineCore::ProfileAdapterClient {
+class Q_WEBENGINECORE_EXPORT QWebEngineProfilePrivate : public QtWebEngineCore::ProfileAdapterClient {
 public:
     Q_DECLARE_PUBLIC(QWebEngineProfile)
     QWebEngineProfilePrivate(QtWebEngineCore::ProfileAdapter *profileAdapter);

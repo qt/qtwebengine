@@ -23,7 +23,7 @@ namespace QtWebEngineCore {
 
 class JavaScriptDialogControllerPrivate;
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT JavaScriptDialogController : public QObject {
+class Q_WEBENGINECORE_EXPORT JavaScriptDialogController : public QObject {
     Q_OBJECT
 public:
     ~JavaScriptDialogController();

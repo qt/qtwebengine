@@ -27,18 +27,16 @@
 #define QT_NOT_USED Q_UNREACHABLE(); // This will assert in debug.
 #endif
 
-#define Q_WEBENGINECORE_PRIVATE_EXPORT Q_WEBENGINECORE_EXPORT
-
 namespace QtWebEngineCore {
-Q_WEBENGINECORE_PRIVATE_EXPORT int processMain(int argc, const char **argv);
-Q_WEBENGINECORE_PRIVATE_EXPORT bool closingDown();
+Q_WEBENGINECORE_EXPORT int processMain(int argc, const char **argv);
+Q_WEBENGINECORE_EXPORT bool closingDown();
 } // namespace
 #if defined(Q_OS_WIN)
 namespace sandbox {
 struct SandboxInterfaceInfo;
 }
 namespace QtWebEngineSandbox {
-Q_WEBENGINECORE_PRIVATE_EXPORT sandbox::SandboxInterfaceInfo *staticSandboxInterfaceInfo(sandbox::SandboxInterfaceInfo *info = nullptr);
+Q_WEBENGINECORE_EXPORT sandbox::SandboxInterfaceInfo *staticSandboxInterfaceInfo(sandbox::SandboxInterfaceInfo *info = nullptr);
 void initializeStaticCopy(int argc, const char **argv);
 }
 #endif
