@@ -9,10 +9,10 @@
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
 QT_BEGIN_NAMESPACE
-void Q_WEBENGINEQUICK_PRIVATE_EXPORT qml_register_types_QtWebEngine();
+void Q_WEBENGINEQUICK_EXPORT qml_register_types_QtWebEngine();
 QT_END_NAMESPACE
 #else
-void Q_WEBENGINEQUICK_PRIVATE_EXPORT qml_register_types_QtWebEngine();
+void Q_WEBENGINEQUICK_EXPORT qml_register_types_QtWebEngine();
 #endif
 
 QT_BEGIN_NAMESPACE

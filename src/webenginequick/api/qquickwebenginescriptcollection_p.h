@@ -26,7 +26,7 @@ QT_BEGIN_NAMESPACE
 class QQmlEngine;
 class QQuickWebEngineScriptCollectionPrivate;
 
-class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineScriptCollection : public QObject
+class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineScriptCollection : public QObject
 {
     Q_OBJECT
 public:

@@ -32,7 +32,7 @@ namespace QtWebEngineCore {
 
 QT_BEGIN_NAMESPACE
 
-class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineAuthenticationDialogRequest : public QObject {
+class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineAuthenticationDialogRequest : public QObject {
     Q_OBJECT
 public:
 
@@ -79,7 +79,7 @@ private:
     Q_DISABLE_COPY(QQuickWebEngineAuthenticationDialogRequest)
 };
 
-class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineJavaScriptDialogRequest : public QObject {
+class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineJavaScriptDialogRequest : public QObject {
     Q_OBJECT
 public:
 
@@ -130,7 +130,7 @@ private:
     Q_DISABLE_COPY(QQuickWebEngineJavaScriptDialogRequest)
 };
 
-class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineColorDialogRequest : public QObject {
+class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineColorDialogRequest : public QObject {
     Q_OBJECT
 public:
 
@@ -161,7 +161,7 @@ private:
     Q_DISABLE_COPY(QQuickWebEngineColorDialogRequest)
 };
 
-class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineFileDialogRequest : public QObject {
+class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineFileDialogRequest : public QObject {
     Q_OBJECT
 public:
 
@@ -206,7 +206,7 @@ private:
     Q_DISABLE_COPY(QQuickWebEngineFileDialogRequest)
 };
 
-class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineTooltipRequest : public QObject {
+class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineTooltipRequest : public QObject {
     Q_OBJECT
 public:
     enum RequestType {

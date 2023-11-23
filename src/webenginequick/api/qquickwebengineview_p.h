@@ -54,7 +54,7 @@ class QQuickWebEngineScriptCollection;
 class QQuickWebEngineTouchSelectionMenuRequest;
 class QWebEngineWebAuthUXRequest;
 
-class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
+class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
     Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged FINAL)

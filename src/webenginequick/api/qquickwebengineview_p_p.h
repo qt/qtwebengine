@@ -45,7 +45,7 @@ class QWebEngineContextMenuRequest;
 class QWebEngineFindTextResult;
 class QWebEngineHistory;
 
-class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineViewPrivate : public QtWebEngineCore::WebContentsAdapterClient
+class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineViewPrivate : public QtWebEngineCore::WebContentsAdapterClient
 {
 public:
     Q_DECLARE_PUBLIC(QQuickWebEngineView)

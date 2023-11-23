@@ -23,7 +23,7 @@
 QT_BEGIN_NAMESPACE
 
 class QWebEngineSettings;
-class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
+class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineSettings : public QObject {
     Q_OBJECT
     Q_PROPERTY(bool autoLoadImages READ autoLoadImages WRITE setAutoLoadImages NOTIFY autoLoadImagesChanged FINAL)
     Q_PROPERTY(bool javascriptEnabled READ javascriptEnabled WRITE setJavascriptEnabled NOTIFY javascriptEnabledChanged FINAL)

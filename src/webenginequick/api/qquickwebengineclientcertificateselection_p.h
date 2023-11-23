@@ -33,7 +33,7 @@ QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineClientCertificateSelection;
 
-class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineClientCertificateOption : public QObject {
+class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineClientCertificateOption : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString issuer READ issuer CONSTANT FINAL)
     Q_PROPERTY(QString subject READ subject CONSTANT FINAL)
@@ -62,7 +62,7 @@ private:
     int m_index;
 };
 
-class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineClientCertificateSelection : public QObject {
+class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineClientCertificateSelection : public QObject {
     Q_OBJECT
     Q_PROPERTY(QUrl host READ host CONSTANT FINAL)
     Q_PROPERTY(QQmlListProperty<QQuickWebEngineClientCertificateOption> certificates READ certificates CONSTANT FINAL)

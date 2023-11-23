@@ -25,7 +25,7 @@ QT_BEGIN_NAMESPACE
 class QQuickWebEngineSettings;
 class QQuickWebEngineProfile;
 
-class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineSingleton : public QObject {
+class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineSingleton : public QObject {
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineSettings* settings READ settings CONSTANT FINAL)
     Q_PROPERTY(QQuickWebEngineProfile* defaultProfile READ defaultProfile CONSTANT FINAL REVISION(1,1))
