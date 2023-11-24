@@ -504,9 +504,9 @@ add_check_for_support(
 )
 add_check_for_support(
     MODULES QtWebEngine
-    CONDITION NOT (Nodejs_ARCH STREQUAL ia32) AND
-              NOT (Nodejs_ARCH STREQUAL x86) AND
-              NOT (Nodejs_ARCH STREQUAL arm)
+    CONDITION NOT (Nodejs_ARCH STREQUAL "ia32") AND
+              NOT (Nodejs_ARCH STREQUAL "x86") AND
+              NOT (Nodejs_ARCH STREQUAL "arm")
     MESSAGE "32bit version of Nodejs is not supported."
 )
 add_check_for_support(
@@ -587,9 +587,9 @@ ${xcbErrorMessage}"
 add_check_for_support(
    MODULES QtWebEngine
    CONDITION MSVC OR
-       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL GNU) OR
-       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL Clang) OR
-       (MACOS AND CMAKE_CXX_COMPILER_ID STREQUAL AppleClang)
+       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
+       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR
+       (MACOS AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
    MESSAGE
        "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
 )
@@ -597,12 +597,12 @@ add_check_for_support(
 add_check_for_support(
    MODULES QtPdf
    CONDITION MSVC OR
-       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL GNU) OR
-       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL Clang) OR
-       (APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL AppleClang) OR
-       (ANDROID AND CMAKE_CXX_COMPILER_ID STREQUAL Clang) OR
-       (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL GNU) OR
-       (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
+       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR
+       (APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") OR
+       (ANDROID AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR
+       (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
+       (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
    MESSAGE
        "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
 )
