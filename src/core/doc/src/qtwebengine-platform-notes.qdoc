@@ -39,7 +39,7 @@
         \li \l Python 3 with html5lib library
         \li Bison, Flex
         \li GPerf
-        \li Node.js version 12 or later
+        \li Node.js version 14 or later
     \endlist
 
     \section2 Windows
