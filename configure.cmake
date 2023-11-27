@@ -198,18 +198,6 @@ int main(void) {
 }"
 )
 
-qt_config_compile_test(winversion
-    LABEL "winversion"
-    CODE
-"
-#if !defined(__clang__) && _MSC_VER < 1922
-#error unsupported Visual Studio version
-#endif
-int main(void){
-    return 0;
-}"
-)
-
 qt_config_compile_test(libavformat
     LABEL "libavformat"
     LIBRARIES
@@ -609,11 +597,21 @@ add_check_for_support(
 )
 if(WIN32)
     if(MSVC)
-        add_check_for_support(
-            MODULES QtWebEngine QtPdf
-            CONDITION NOT MSVC_VERSION LESS 1922
-            MESSAGE "VS compiler version must be at least 14.22"
-        )
+        if(MSVC_TOOLSET_VERSION EQUAL 142) # VS 2019 (16.0)
+            add_check_for_support(
+                MODULES QtWebEngine QtPdf
+                CONDITION NOT MSVC_VERSION LESS 1929
+                MESSAGE "VS compiler version must be at least 14.29"
+            )
+        elseif(MSVC_TOOLSET_VERSION EQUAL 143) # VS 2022 (17.0)
+            add_check_for_support(
+                MODULES QtWebEngine QtPdf
+                CONDITION NOT MSVC_VERSION LESS 1936
+                MESSAGE "VS compiler version must be at least 14.36"
+            )
+        else()
+            message(FATAL_ERROR "Build requires Visual Studio 2019 or higher.")
+        endif()
     endif()
     set(windowsSdkVersion $ENV{WindowsSDKVersion})
     string(REGEX REPLACE "([0-9.]+).*" "\\1" windowsSdkVersion "${windowsSdkVersion}")
@@ -625,11 +623,6 @@ if(WIN32)
         MESSAGE "Build requires Windows 11 SDK at least version 10.0.22621.0"
     )
 endif()
-add_check_for_support(
-   MODULES QtWebEngine QtPdf
-   CONDITION NOT MSVC OR TEST_winversion
-   MESSAGE "Build requires Visual Studio 2019 or higher."
-)
 
 #### Summary
 
