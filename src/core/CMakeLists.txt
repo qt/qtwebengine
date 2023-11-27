@@ -146,6 +146,7 @@ foreach(arch ${archs})
                 net/system_network_context_manager.cpp net/system_network_context_manager.h
                 net/url_request_custom_job_delegate.cpp net/url_request_custom_job_delegate.h
                 net/url_request_custom_job_proxy.cpp net/url_request_custom_job_proxy.h
+                net/version_ui_qt.cpp net/version_ui_qt.h
                 net/webui_controller_factory_qt.cpp net/webui_controller_factory_qt.h
                 ozone/gl_context_qt.cpp ozone/gl_context_qt.h
                 ozone/gl_ozone_egl_qt.cpp ozone/gl_ozone_egl_qt.h
@@ -188,7 +189,6 @@ foreach(arch ${archs})
                 type_conversion.cpp type_conversion.h
                 user_notification_controller.cpp user_notification_controller.h
                 user_script.cpp user_script.h
-                version_ui_qt.cpp version_ui_qt.h
                 visited_links_manager_qt.cpp visited_links_manager_qt.h
                 web_contents_adapter.cpp web_contents_adapter.h
                 web_contents_adapter_client.h
