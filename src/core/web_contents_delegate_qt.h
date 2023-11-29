@@ -12,6 +12,7 @@
 #include "web_contents_adapter_client.h"
 
 #include <QtCore/qlist.h>
+#include <QtCore/qmap.h>
 
 namespace blink {
     namespace web_pref {
