@@ -4,7 +4,10 @@
 add_subdirectory(qwebenginecookiestore)
 add_subdirectory(qwebengineloadinginfo)
 add_subdirectory(qwebenginesettings)
-add_subdirectory(qwebengineglobalsettings)
+if(QT_FEATURE_ssl)
+    # only tests doh, and requires ssl
+    add_subdirectory(qwebengineglobalsettings)
+endif()
 add_subdirectory(qwebengineurlrequestinterceptor)
 add_subdirectory(qwebengineurlrequestjob)
 add_subdirectory(origins)
