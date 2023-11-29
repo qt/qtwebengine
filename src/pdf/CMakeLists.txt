@@ -38,7 +38,6 @@ qt_internal_add_module(Pdf
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
-    GENERATE_CPP_EXPORTS
 )
 
 add_subdirectory(plugins/imageformats/pdf)
