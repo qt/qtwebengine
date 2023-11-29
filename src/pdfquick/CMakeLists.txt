@@ -36,5 +36,6 @@ qt_internal_add_qml_module(PdfQuick
         Qt::Core
         Qt::Gui
         Qt::Qml
+    NO_GENERATE_CPP_EXPORTS
 )
 

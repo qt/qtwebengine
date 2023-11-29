@@ -15,4 +15,5 @@ qt_internal_add_module(PdfWidgets
         Qt::Gui
         Qt::Widgets
         Qt::Pdf
+    NO_GENERATE_CPP_EXPORTS
 )
