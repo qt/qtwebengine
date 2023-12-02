@@ -260,6 +260,10 @@ QPdfDocument* QPdfBookmarkModel::document() const
     return d->m_document;
 }
 
+/*!
+    \property QPdfBookmarkModel::document
+    \brief the PDF document in which bookmarks are to be found.
+*/
 void QPdfBookmarkModel::setDocument(QPdfDocument *document)
 {
     if (d->m_document == document)
