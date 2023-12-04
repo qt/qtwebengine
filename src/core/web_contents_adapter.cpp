@@ -1272,7 +1272,10 @@ void WebContentsAdapter::openDevToolsFrontend(QSharedPointer<WebContentsAdapter>
 
     setLifecycleState(LifecycleState::Active);
 
-    m_devToolsFrontend = DevToolsFrontendQt::Show(frontendAdapter, m_webContents.get());
+    content::WebContents *webContents = m_webContents.get();
+    if (content::WebContents *guest = guestWebContents())
+        webContents = guest;
+    m_devToolsFrontend = DevToolsFrontendQt::Show(frontendAdapter, webContents);
     updateRecommendedState();
 }
 
