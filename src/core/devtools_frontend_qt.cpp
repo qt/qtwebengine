@@ -77,6 +77,7 @@ DevToolsFrontendQt::DevToolsFrontendQt(QSharedPointer<WebContentsAdapter> webCon
     : content::WebContentsObserver(webContentsAdapter->webContents())
     , m_frontendAdapter(webContentsAdapter)
     , m_inspectedContents(inspectedContents)
+    , m_outermostContents(inspectedContents->GetOutermostWebContents())
     , m_bindings(new DevToolsUIBindings(webContentsAdapter->webContents()))
 {
     // bindings take ownership over devtools
@@ -146,8 +147,10 @@ void DevToolsFrontendQt::ColorPickedInEyeDropper(int r, int g, int b, int a)
 // content::WebContentsObserver implementation
 void DevToolsFrontendQt::WebContentsDestroyed()
 {
+    // If m_inspectedContents was a guest view it was probably already destroyed,
+    // but its embedder still lives.
     WebContentsAdapter *inspectedAdapter =
-            static_cast<WebContentsDelegateQt *>(m_inspectedContents->GetDelegate())
+            static_cast<WebContentsDelegateQt *>(m_outermostContents->GetDelegate())
                     ->webContentsAdapter();
     if (inspectedAdapter)
         inspectedAdapter->devToolsFrontendDestroyed(this);
@@ -200,6 +203,8 @@ bool DevToolsFrontendQt::IsValidFrontendURL(const GURL &url)
 
 void DevToolsFrontendQt::InspectedContentsClosing()
 {
+    // Called for already destroyed guest views
+    m_inspectedContents = nullptr;
     web_contents()->ClosePage();
 }
 
