@@ -452,6 +452,9 @@
     The action is owned by the QWebEnginePage but you can customize the look by
     changing its properties.
 
+    \l{QWebEnginePage::action(WebAction action)} does not have a default styled icon.
+    Use \l{QWebEngineView::pageAction()} to have an action with a default styled icon.
+
     QWebEnginePage also takes care of implementing the action, so that upon
     triggering the corresponding action is performed on the page.
 

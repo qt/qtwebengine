@@ -85,7 +85,7 @@ public:
     static void bindPageAndView(QWebEnginePage *page, QWebEngineView *view);
     static void bindPageAndWidget(QWebEnginePagePrivate *pagePrivate,
                                   QtWebEngineCore::WebEngineQuickWidget *widget);
-    QIcon webActionIcon(QWebEnginePage::WebAction action);
+    QIcon webActionIcon(QWebEnginePage::WebAction action) const;
     void unhandledKeyEvent(QKeyEvent *event) override;
     void focusContainer() override;
     bool passOnFocus(bool reverse) override;

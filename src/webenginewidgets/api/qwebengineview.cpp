@@ -747,9 +747,9 @@ void QWebEngineViewPrivate::bindPageAndWidget(QWebEnginePagePrivate *pagePrivate
     }
 }
 
-QIcon QWebEngineViewPrivate::webActionIcon(QWebEnginePage::WebAction action)
+QIcon QWebEngineViewPrivate::webActionIcon(QWebEnginePage::WebAction action) const
 {
-    Q_Q(QWebEngineView);
+    Q_Q(const QWebEngineView);
     QIcon icon;
     QStyle *style = q->style();
 
@@ -1121,7 +1121,16 @@ QString QWebEngineView::selectedText() const
 #if QT_CONFIG(action)
 QAction* QWebEngineView::pageAction(QWebEnginePage::WebAction action) const
 {
-    return page()->action(action);
+    Q_D(const QWebEngineView);
+    QAction *pageAction = page()->action(action);
+
+    if (pageAction->icon().isNull()) {
+        auto icon = d->webActionIcon(action);
+        if (!icon.isNull())
+            pageAction->setIcon(icon);
+    }
+
+    return pageAction;
 }
 #endif
 
@@ -1479,79 +1488,79 @@ void QContextMenuBuilder::addMenuItem(ContextMenuItem menuItem)
 
     switch (menuItem) {
     case ContextMenuItem::Back:
-        action = thisRef->action(QWebEnginePage::Back);
+        action = m_view->pageAction(QWebEnginePage::Back);
         break;
     case ContextMenuItem::Forward:
-        action = thisRef->action(QWebEnginePage::Forward);
+        action = m_view->pageAction(QWebEnginePage::Forward);
         break;
     case ContextMenuItem::Reload:
-        action = thisRef->action(QWebEnginePage::Reload);
+        action = m_view->pageAction(QWebEnginePage::Reload);
         break;
     case ContextMenuItem::Cut:
-        action = thisRef->action(QWebEnginePage::Cut);
+        action = m_view->pageAction(QWebEnginePage::Cut);
         break;
     case ContextMenuItem::Copy:
-        action = thisRef->action(QWebEnginePage::Copy);
+        action = m_view->pageAction(QWebEnginePage::Copy);
         break;
     case ContextMenuItem::Paste:
-        action = thisRef->action(QWebEnginePage::Paste);
+        action = m_view->pageAction(QWebEnginePage::Paste);
         break;
     case ContextMenuItem::Undo:
-        action = thisRef->action(QWebEnginePage::Undo);
+        action = m_view->pageAction(QWebEnginePage::Undo);
         break;
     case ContextMenuItem::Redo:
-        action = thisRef->action(QWebEnginePage::Redo);
+        action = m_view->pageAction(QWebEnginePage::Redo);
         break;
     case ContextMenuItem::SelectAll:
-        action = thisRef->action(QWebEnginePage::SelectAll);
+        action = m_view->pageAction(QWebEnginePage::SelectAll);
         break;
     case ContextMenuItem::PasteAndMatchStyle:
-        action = thisRef->action(QWebEnginePage::PasteAndMatchStyle);
+        action = m_view->pageAction(QWebEnginePage::PasteAndMatchStyle);
         break;
     case ContextMenuItem::OpenLinkInNewWindow:
-        action = thisRef->action(QWebEnginePage::OpenLinkInNewWindow);
+        action = m_view->pageAction(QWebEnginePage::OpenLinkInNewWindow);
         break;
     case ContextMenuItem::OpenLinkInNewTab:
-        action = thisRef->action(QWebEnginePage::OpenLinkInNewTab);
+        action = m_view->pageAction(QWebEnginePage::OpenLinkInNewTab);
         break;
     case ContextMenuItem::CopyLinkToClipboard:
-        action = thisRef->action(QWebEnginePage::CopyLinkToClipboard);
+        action = m_view->pageAction(QWebEnginePage::CopyLinkToClipboard);
         break;
     case ContextMenuItem::DownloadLinkToDisk:
-        action = thisRef->action(QWebEnginePage::DownloadLinkToDisk);
+        action = m_view->pageAction(QWebEnginePage::DownloadLinkToDisk);
         break;
     case ContextMenuItem::CopyImageToClipboard:
-        action = thisRef->action(QWebEnginePage::CopyImageToClipboard);
+        action = m_view->pageAction(QWebEnginePage::CopyImageToClipboard);
         break;
     case ContextMenuItem::CopyImageUrlToClipboard:
-        action = thisRef->action(QWebEnginePage::CopyImageUrlToClipboard);
+        action = m_view->pageAction(QWebEnginePage::CopyImageUrlToClipboard);
         break;
     case ContextMenuItem::DownloadImageToDisk:
-        action = thisRef->action(QWebEnginePage::DownloadImageToDisk);
+        action = m_view->pageAction(QWebEnginePage::DownloadImageToDisk);
         break;
     case ContextMenuItem::CopyMediaUrlToClipboard:
-        action = thisRef->action(QWebEnginePage::CopyMediaUrlToClipboard);
+        action = m_view->pageAction(QWebEnginePage::CopyMediaUrlToClipboard);
         break;
     case ContextMenuItem::ToggleMediaControls:
-        action = thisRef->action(QWebEnginePage::ToggleMediaControls);
+        action = m_view->pageAction(QWebEnginePage::ToggleMediaControls);
         break;
     case ContextMenuItem::ToggleMediaLoop:
-        action = thisRef->action(QWebEnginePage::ToggleMediaLoop);
+        action = m_view->pageAction(QWebEnginePage::ToggleMediaLoop);
         break;
     case ContextMenuItem::DownloadMediaToDisk:
-        action = thisRef->action(QWebEnginePage::DownloadMediaToDisk);
+        action = m_view->pageAction(QWebEnginePage::DownloadMediaToDisk);
         break;
     case ContextMenuItem::InspectElement:
-        action = thisRef->action(QWebEnginePage::InspectElement);
+        action = m_view->pageAction(QWebEnginePage::InspectElement);
         break;
     case ContextMenuItem::ExitFullScreen:
-        action = thisRef->action(QWebEnginePage::ExitFullScreen);
+        action = m_view->pageAction(QWebEnginePage::ExitFullScreen);
         break;
     case ContextMenuItem::SavePage:
-        action = thisRef->action(QWebEnginePage::SavePage);
+        action = m_view->pageAction(QWebEnginePage::SavePage);
         break;
     case ContextMenuItem::ViewSource:
-        action = thisRef->action(QWebEnginePage::ViewSource);
+        action = m_view->pageAction(QWebEnginePage::ViewSource);
         break;
     case ContextMenuItem::SpellingSuggestions:
         for (int i = 0; i < m_contextData->spellCheckerSuggestions().size() && i < 4; i++) {
