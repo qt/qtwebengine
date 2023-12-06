@@ -601,7 +601,7 @@ QString QWebEngineDownloadRequest::interruptReasonString() const
 QWebEnginePage *QWebEngineDownloadRequest::page() const
 {
     Q_D(const QWebEngineDownloadRequest);
-    if (d->adapterClient->clientType() == QtWebEngineCore::WebContentsAdapterClient::WidgetsClient)
+    if (d->adapterClient && d->adapterClient->clientType() == QtWebEngineCore::WebContentsAdapterClient::WidgetsClient)
         return const_cast<QWebEnginePage *>(static_cast<const QWebEnginePage *>(d->adapterClient->holdingQObject()));
     return nullptr;
 }
