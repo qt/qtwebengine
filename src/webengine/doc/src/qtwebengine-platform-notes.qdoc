@@ -126,6 +126,10 @@
     \note \QWE cannot be built for the 32-bit mode of \macos (using the
     \c macx-clang-32 \c mkspec).
 
+    \note Universal debug or debug-and-release builds of \QWE on \macos are not supported in Qt 5
+    due to memory constraints of the build toolchain. Use the configure options \c -force-debug-info
+    and \c -separate-debug-info for a build that can be used with a debugger.
+
     \section1 Using Earlier Qt Versions to Build \QWE
 
     Building \QWE with earlier Qt versions (down to the last LTS
