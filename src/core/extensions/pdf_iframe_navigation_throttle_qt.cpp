@@ -26,11 +26,11 @@
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
 
+#include "pdf_util_qt.h"
+
 #include <QtGlobal>
 
 namespace extensions {
-
-constexpr char kPDFMimeType[] = "application/pdf";
 
 // Used to scope the posted navigation task to the lifetime of |web_contents|.
 class PdfWebContentsLifetimeHelper : public content::WebContentsUserData<PdfWebContentsLifetimeHelper>
@@ -76,7 +76,7 @@ bool IsPDFPluginEnabled(content::NavigationHandle *navigation_handle, bool *is_s
                 process_id, routing_id,
                 navigation_handle->GetWebContents()->GetBrowserContext(),
                 navigation_handle->GetURL(),
-                kPDFMimeType, false /* allow_wildcard */,
+                QtWebEngineCore::kPDFMimeType, false /* allow_wildcard */,
                 is_stale, &plugin_info, nullptr /* actual_mime_type */);
 }
 
@@ -119,7 +119,7 @@ content::NavigationThrottle::ThrottleCheckResult PDFIFrameNavigationThrottleQt::
 
     std::string mime_type;
     response_headers->GetMimeType(&mime_type);
-    if (mime_type != kPDFMimeType)
+    if (mime_type != QtWebEngineCore::kPDFMimeType)
         return content::NavigationThrottle::PROCEED;
 
     // We MUST download responses marked as attachments rather than showing

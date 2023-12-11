@@ -15,6 +15,7 @@
 #include "favicon_service_factory_qt.h"
 #include "find_text_helper.h"
 #include "media_capture_devices_dispatcher.h"
+#include "pdf_util_qt.h"
 #include "profile_adapter.h"
 #include "profile_qt.h"
 #include "qwebengineloadinginfo.h"
@@ -1952,7 +1953,7 @@ WebContentsAdapter::LifecycleState WebContentsAdapter::determineRecommendedState
     // Do not discard PDFs as they might contain entry that is not saved and they
     // don't remember their scrolling positions. See crbug.com/547286 and
     // crbug.com/65244.
-    if (m_webContents->GetContentsMimeType() == "application/pdf")
+    if (m_webContents->GetContentsMimeType() == kPDFMimeType)
         return LifecycleState::Frozen;
 
     return LifecycleState::Discarded;
