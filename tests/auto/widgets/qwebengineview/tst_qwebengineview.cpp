@@ -2065,8 +2065,8 @@ void tst_QWebEngineView::inputContextQueryInput()
         QApplication::sendEvent(view.focusProxy(), &event);
     }
     QTRY_COMPARE(testContext.infos.size(), 1);
-    QCOMPARE(testContext.infos[0].cursorPosition, 3);
-    QCOMPARE(testContext.infos[0].anchorPosition, 3);
+    QCOMPARE(testContext.infos[0].cursorPosition, 0);
+    QCOMPARE(testContext.infos[0].anchorPosition, 0);
     QCOMPARE(testContext.infos[0].surroundingText, QStringLiteral("QtWebEngine!"));
     QCOMPARE(testContext.infos[0].selectedText, QStringLiteral(""));
     QCOMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QStringLiteral("123QtWebEngine!"));
@@ -2662,8 +2662,8 @@ void tst_QWebEngineView::imeComposition()
         QApplication::sendEvent(view.focusProxy(), &event);
     }
     QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString(""));
-    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 11);
-    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 11);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 0);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 0);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
     QCOMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QString("QtWebEngine"));
 
@@ -2974,7 +2974,7 @@ void tst_QWebEngineView::imeCompositionQueryEvent()
         qApp->processEvents();
     }
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QString("composition"));
-    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 11);
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 0);
 
     QApplication::sendEvent(input, &srrndTextQuery);
     QApplication::sendEvent(input, &absolutePosQuery);
@@ -2983,9 +2983,9 @@ void tst_QWebEngineView::imeCompositionQueryEvent()
     qApp->processEvents();
 
     QTRY_COMPARE(srrndTextQuery.value(Qt::ImSurroundingText).toString(), QString(""));
-    QTRY_COMPARE(absolutePosQuery.value(Qt::ImAbsolutePosition).toInt(), 11);
-    QTRY_COMPARE(cursorPosQuery.value(Qt::ImCursorPosition).toInt(), 11);
-    QTRY_COMPARE(anchorPosQuery.value(Qt::ImAnchorPosition).toInt(), 11);
+    QTRY_COMPARE(absolutePosQuery.value(Qt::ImAbsolutePosition).toInt(), 0);
+    QTRY_COMPARE(cursorPosQuery.value(Qt::ImCursorPosition).toInt(), 0);
+    QTRY_COMPARE(anchorPosQuery.value(Qt::ImAnchorPosition).toInt(), 0);
 
     // Send commit
     {
@@ -3008,6 +3008,55 @@ void tst_QWebEngineView::imeCompositionQueryEvent()
     QTRY_COMPARE(absolutePosQuery.value(Qt::ImAbsolutePosition).toInt(), 11);
     QTRY_COMPARE(cursorPosQuery.value(Qt::ImCursorPosition).toInt(), 11);
     QTRY_COMPARE(anchorPosQuery.value(Qt::ImAnchorPosition).toInt(), 11);
+
+    // Test another composition to ensure that the cursor position is set correctly.
+    // In this case cursor will be at position 11 during input composition.
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("123", attributes);
+        QApplication::sendEvent(input, &event);
+        qApp->processEvents();
+    }
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value")
+                         .toString(),
+                 QString("composition123"));
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 11);
+
+    QApplication::sendEvent(input, &srrndTextQuery);
+    QApplication::sendEvent(input, &absolutePosQuery);
+    QApplication::sendEvent(input, &cursorPosQuery);
+    QApplication::sendEvent(input, &anchorPosQuery);
+    qApp->processEvents();
+
+    QTRY_COMPARE(srrndTextQuery.value(Qt::ImSurroundingText).toString(), QString("composition"));
+    QTRY_COMPARE(absolutePosQuery.value(Qt::ImAbsolutePosition).toInt(), 11);
+    QTRY_COMPARE(cursorPosQuery.value(Qt::ImCursorPosition).toInt(), 11);
+    QTRY_COMPARE(anchorPosQuery.value(Qt::ImAnchorPosition).toInt(), 11);
+
+    // Send commit
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("", attributes);
+        event.setCommitString("123");
+        QApplication::sendEvent(input, &event);
+        qApp->processEvents();
+    }
+
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value")
+                         .toString(),
+                 QString("composition123"));
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 14);
+
+    QApplication::sendEvent(input, &srrndTextQuery);
+    QApplication::sendEvent(input, &absolutePosQuery);
+    QApplication::sendEvent(input, &cursorPosQuery);
+    QApplication::sendEvent(input, &anchorPosQuery);
+    qApp->processEvents();
+
+    QTRY_COMPARE(srrndTextQuery.value(Qt::ImSurroundingText).toString(), QString("composition123"));
+    QTRY_COMPARE(absolutePosQuery.value(Qt::ImAbsolutePosition).toInt(), 14);
+    QTRY_COMPARE(cursorPosQuery.value(Qt::ImCursorPosition).toInt(), 14);
+    QTRY_COMPARE(anchorPosQuery.value(Qt::ImAnchorPosition).toInt(), 14);
 }
 
 #if QT_CONFIG(clipboard)
