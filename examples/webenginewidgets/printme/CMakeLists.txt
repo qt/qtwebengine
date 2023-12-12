@@ -33,7 +33,6 @@ target_link_libraries(printme PUBLIC
 
 # Resources:
 set(data_resource_files
-    "data/icon.svg"
     "data/index.html"
     "data/style.css"
 )
