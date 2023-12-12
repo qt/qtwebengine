@@ -685,9 +685,11 @@ void RenderWidgetHostViewQt::OnUpdateTextInputStateCalled(content::TextInputMana
 
     // In case of text selection, the update is expected in RenderWidgetHostViewQt::selectionChanged().
     if (GetSelectedText().empty()) {
-        // At this point it is unknown whether the text input state has been updated due to a text selection.
-        // Keep the cursor position updated for cursor movements too.
-        delegateClient()->setCursorPosition(state->selection.start());
+        if (state->composition.has_value()) {
+            delegateClient()->setCursorPosition(state->composition->start());
+        } else {
+            delegateClient()->setCursorPosition(state->selection.start());
+        }
         m_delegate->inputMethodStateChanged(type != ui::TEXT_INPUT_TYPE_NONE, type == ui::TEXT_INPUT_TYPE_PASSWORD);
     }
 
