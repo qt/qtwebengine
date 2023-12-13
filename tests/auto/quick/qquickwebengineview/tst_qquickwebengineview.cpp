@@ -1152,9 +1152,9 @@ void tst_QQuickWebEngineView::javascriptClipboard()
                 "if (result.state == 'prompt') accessPrompt = true;"
             "})"));
 
-    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessGranted").toBool(), copyResult);
-    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessDenied").toBool(), !javascriptCanAccessClipboard);
-    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessPrompt").toBool(), false);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessGranted").toBool(), javascriptCanAccessClipboard && javascriptCanPaste);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessDenied").toBool(), false);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessPrompt").toBool(), !javascriptCanAccessClipboard || !javascriptCanPaste);
 
     evaluateJavaScriptSync(view,
         QStringLiteral(
@@ -1168,9 +1168,9 @@ void tst_QQuickWebEngineView::javascriptClipboard()
                 "if (result.state == 'prompt') accessPrompt = true;"
             "})"));
 
-    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessGranted").toBool(), pasteResult);
-    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessDenied").toBool(), !javascriptCanAccessClipboard || !javascriptCanPaste);
-    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessPrompt").toBool(), false);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessGranted").toBool(), javascriptCanAccessClipboard && javascriptCanPaste);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessDenied").toBool(), false);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessPrompt").toBool(), !javascriptCanAccessClipboard || !javascriptCanPaste);
 }
 
 void tst_QQuickWebEngineView::setProfile() {

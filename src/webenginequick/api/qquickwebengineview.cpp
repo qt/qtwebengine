@@ -492,6 +492,8 @@ static QQuickWebEngineView::Feature toFeature(QtWebEngineCore::ProfileAdapter::P
         return QQuickWebEngineView::Notifications;
     case QtWebEngineCore::ProfileAdapter::GeolocationPermission:
         return QQuickWebEngineView::Geolocation;
+    case QtWebEngineCore::ProfileAdapter::ClipboardReadWrite:
+        return QQuickWebEngineView::ClipboardReadWrite;
     default:
         break;
     }
@@ -1780,6 +1782,11 @@ void QQuickWebEngineView::grantFeaturePermission(const QUrl &securityOrigin, QQu
     case Notifications:
         d_ptr->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::NotificationPermission,
                                                granted ? ProfileAdapter::AllowedPermission : ProfileAdapter::DeniedPermission);
+        break;
+    case ClipboardReadWrite:
+        d_ptr->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::ClipboardReadWrite,
+                                               granted ? ProfileAdapter::AllowedPermission
+                                                       : ProfileAdapter::DeniedPermission);
         break;
     default:
         Q_UNREACHABLE();

@@ -234,6 +234,10 @@ private Q_SLOTS:
     void notificationPermission_data();
     void notificationPermission();
     void sendNotification();
+    void clipboardReadWritePermissionInitialState_data();
+    void clipboardReadWritePermissionInitialState();
+    void clipboardReadWritePermission_data();
+    void clipboardReadWritePermission();
     void contentsSize();
 
     void setLifecycleState();
@@ -3886,6 +3890,149 @@ void tst_QWebEnginePage::sendNotification()
     QTRY_VERIFY2(page.messages.contains("onclick"), page.messages.join("\n").toLatin1().constData());
     activeNotification->close();
     QTRY_VERIFY2(page.messages.contains("onclose"), page.messages.join("\n").toLatin1().constData());
+}
+
+static QString clipboardPermissionQuery(QString variableName, QString permissionName)
+{
+    return QString("var %1; navigator.permissions.query({ name:'%2' }).then((p) => { %1 = p.state; "
+                   "});")
+            .arg(variableName)
+            .arg(permissionName);
+}
+
+
+void tst_QWebEnginePage::clipboardReadWritePermissionInitialState_data()
+{
+    QTest::addColumn<bool>("canAccessClipboard");
+    QTest::addColumn<bool>("canPaste");
+    QTest::addColumn<QString>("permission");
+    QTest::newRow("access and paste should grant") << true << true << "granted";
+    QTest::newRow("no access should prompt") << false << true << "prompt";
+    QTest::newRow("no paste should prompt") << true << false << "prompt";
+    QTest::newRow("no access or paste should prompt") << false << false << "prompt";
+}
+
+void tst_QWebEnginePage::clipboardReadWritePermissionInitialState()
+{
+    QFETCH(bool, canAccessClipboard);
+    QFETCH(bool, canPaste);
+    QFETCH(QString, permission);
+
+    QWebEngineProfile otr;
+    QWebEngineView view(&otr);
+    QWebEnginePage &page = *view.page();
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
+    page.settings()->setAttribute(QWebEngineSettings::JavascriptCanAccessClipboard,
+                                  canAccessClipboard);
+    page.settings()->setAttribute(QWebEngineSettings::JavascriptCanPaste, canPaste);
+
+    QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
+    QUrl baseUrl("https://www.example.com/somepage.html");
+    page.setHtml(QString("<html><body>Test</body></html>"), baseUrl);
+    QTRY_COMPARE(spy.size(), 1);
+
+    evaluateJavaScriptSync(&page, clipboardPermissionQuery("readPermission", "clipboard-read"));
+    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("readPermission")), permission);
+    evaluateJavaScriptSync(&page, clipboardPermissionQuery("writePermission", "clipboard-write"));
+    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("writePermission")), permission);
+}
+
+void tst_QWebEnginePage::clipboardReadWritePermission_data()
+{
+    QTest::addColumn<bool>("canAccessClipboard");
+    QTest::addColumn<QWebEnginePage::PermissionPolicy>("initialPolicy");
+    QTest::addColumn<QString>("initialPermission");
+    QTest::addColumn<QWebEnginePage::PermissionPolicy>("requestPolicy");
+    QTest::addColumn<QString>("finalPermission");
+
+    QTest::newRow("noAccessGrantGrant")
+            << false << QWebEnginePage::PermissionGrantedByUser << "granted"
+            << QWebEnginePage::PermissionGrantedByUser << "granted";
+    QTest::newRow("noAccessGrantDeny")
+            << false << QWebEnginePage::PermissionGrantedByUser << "granted"
+            << QWebEnginePage::PermissionDeniedByUser << "denied";
+    QTest::newRow("noAccessDenyGrant")
+            << false << QWebEnginePage::PermissionDeniedByUser << "denied"
+            << QWebEnginePage::PermissionGrantedByUser << "granted";
+    QTest::newRow("noAccessDenyDeny") << false << QWebEnginePage::PermissionDeniedByUser << "denied"
+                                      << QWebEnginePage::PermissionDeniedByUser << "denied";
+    QTest::newRow("noAccessAskGrant") << false << QWebEnginePage::PermissionUnknown << "prompt"
+                                      << QWebEnginePage::PermissionGrantedByUser << "granted";
+
+    // All policies are ignored and overridden by setting JsCanAccessClipboard and JsCanPaste to
+    // true
+    QTest::newRow("accessGrantGrant")
+            << true << QWebEnginePage::PermissionGrantedByUser << "granted"
+            << QWebEnginePage::PermissionGrantedByUser << "granted";
+    QTest::newRow("accessDenyDeny") << true << QWebEnginePage::PermissionDeniedByUser << "granted"
+                                    << QWebEnginePage::PermissionDeniedByUser << "granted";
+    QTest::newRow("accessAskAsk") << true << QWebEnginePage::PermissionUnknown << "granted"
+                                  << QWebEnginePage::PermissionUnknown << "granted";
+}
+
+void tst_QWebEnginePage::clipboardReadWritePermission()
+{
+    QFETCH(bool, canAccessClipboard);
+    QFETCH(QWebEnginePage::PermissionPolicy, initialPolicy);
+    QFETCH(QString, initialPermission);
+    QFETCH(QWebEnginePage::PermissionPolicy, requestPolicy);
+    QFETCH(QString, finalPermission);
+
+    QWebEngineProfile otr;
+    QWebEngineView view(&otr);
+    QWebEnginePage &page = *view.page();
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
+    page.settings()->setAttribute(QWebEngineSettings::JavascriptCanAccessClipboard,
+                                  canAccessClipboard);
+    page.settings()->setAttribute(QWebEngineSettings::JavascriptCanPaste, true);
+
+    QUrl baseUrl("https://www.example.com/somepage.html");
+
+    int permissionRequestCount = 0;
+    bool errorState = false;
+
+    // if JavascriptCanAccessClipboard is true, this never fires
+    connect(&page, &QWebEnginePage::featurePermissionRequested, &page,
+            [&](const QUrl &o, QWebEnginePage::Feature f) {
+                if (f != QWebEnginePage::ClipboardReadWrite)
+                    return;
+                if (o != baseUrl.url(QUrl::RemoveFilename)) {
+                    qWarning() << "Unexpected case. Can't proceed." << o;
+                    errorState = true;
+                    return;
+                }
+                permissionRequestCount++;
+                page.setFeaturePermission(o, f, requestPolicy);
+            });
+
+    page.setFeaturePermission(baseUrl, QWebEnginePage::ClipboardReadWrite, initialPolicy);
+
+    QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
+    page.setHtml(QString("<html><body>Test</body></html>"), baseUrl);
+    QTRY_COMPARE(spy.size(), 1);
+
+    evaluateJavaScriptSync(&page, clipboardPermissionQuery("readPermission", "clipboard-read"));
+    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("readPermission")), initialPermission);
+    evaluateJavaScriptSync(&page, clipboardPermissionQuery("writePermission", "clipboard-write"));
+    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("writePermission")), initialPermission);
+
+    auto triggerRequest = [&page](QString variableName, QString apiCall)
+    {
+        auto js = QString("var %1; navigator.clipboard.%2.then((v) => { %1 = 'granted' }, (v) => { %1 = "
+                "'denied' });")
+            .arg(variableName)
+            .arg(apiCall);
+        evaluateJavaScriptSync(&page, js);
+    };
+
+    // permission is not 'remembered' from api standpoint, hence is not suppressed on explicit call
+    // from JS
+    triggerRequest("readState", "readText()");
+    QTRY_COMPARE(evaluateJavaScriptSync(&page, "readState"), finalPermission);
+    triggerRequest("writeState", "writeText('foo')");
+    QTRY_COMPARE(evaluateJavaScriptSync(&page, "writeState"), finalPermission);
+    QCOMPARE(permissionRequestCount, canAccessClipboard ? 0 : 2);
+    QVERIFY(!errorState);
 }
 
 void tst_QWebEnginePage::contentsSize()

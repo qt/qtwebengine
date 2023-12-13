@@ -90,6 +90,8 @@ inline QString questionForFeature(QWebEnginePage::Feature feature)
         return QObject::tr("Allow %1 to capture audio and video of your desktop?");
     case QWebEnginePage::Notifications:
         return QObject::tr("Allow %1 to show notification on your desktop?");
+    case QWebEnginePage::ClipboardReadWrite:
+        return QObject::tr("Allow %1 to read from and write to the clipboard?");
     }
     return QString();
 }

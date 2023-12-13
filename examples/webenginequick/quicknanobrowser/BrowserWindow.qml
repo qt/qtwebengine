@@ -784,6 +784,9 @@ ApplicationWindow {
             case WebEngineView.Notifications:
                 question += "show notification on your desktop?";
                 break;
+            case WebEngineView.ClipboardReadWrite:
+                question += "read from and write to your clipboard?";
+                break;
             default:
                 question += "access unknown or unsupported feature [" + feature + "] ?";
                 break;

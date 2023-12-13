@@ -25,10 +25,11 @@ static ProfileAdapter::PermissionType toQt(blink::PermissionType type)
         return ProfileAdapter::AudioCapturePermission;
     case blink::PermissionType::VIDEO_CAPTURE:
         return ProfileAdapter::VideoCapturePermission;
+        // We treat these both as read/write since we do not currently have a
+        // ClipboardSanitizedWrite feature.
     case blink::PermissionType::CLIPBOARD_READ_WRITE:
-        return ProfileAdapter::ClipboardRead;
     case blink::PermissionType::CLIPBOARD_SANITIZED_WRITE:
-        return ProfileAdapter::ClipboardWrite;
+        return ProfileAdapter::ClipboardReadWrite;
     case blink::PermissionType::NOTIFICATIONS:
         return ProfileAdapter::NotificationPermission;
     case blink::PermissionType::ACCESSIBILITY_EVENTS:
@@ -66,6 +67,7 @@ static bool canRequestPermissionFor(ProfileAdapter::PermissionType type)
     switch (type) {
     case ProfileAdapter::GeolocationPermission:
     case ProfileAdapter::NotificationPermission:
+    case ProfileAdapter::ClipboardReadWrite:
         return true;
     default:
         break;
@@ -89,13 +91,11 @@ static blink::mojom::PermissionStatus getStatusFromSettings(blink::PermissionTyp
 {
     switch (type) {
     case blink::PermissionType::CLIPBOARD_READ_WRITE:
-        if (!settings->testAttribute(QWebEngineSettings::JavascriptCanPaste))
-            return blink::mojom::PermissionStatus::DENIED;
-         Q_FALLTHROUGH();
     case blink::PermissionType::CLIPBOARD_SANITIZED_WRITE:
-        if (!settings->testAttribute(QWebEngineSettings::JavascriptCanAccessClipboard))
-            return blink::mojom::PermissionStatus::DENIED;
-        return blink::mojom::PermissionStatus::GRANTED;
+        if (settings->testAttribute(QWebEngineSettings::JavascriptCanPaste)
+            && settings->testAttribute(QWebEngineSettings::JavascriptCanAccessClipboard))
+            return blink::mojom::PermissionStatus::GRANTED;
+        return blink::mojom::PermissionStatus::ASK;
     default:
         return blink::mojom::PermissionStatus::ASK;
     }
@@ -198,14 +198,17 @@ void PermissionManagerQt::RequestPermissions(content::RenderFrameHost *frameHost
     result.reserve(requestDescription.permissions.size());
     for (blink::PermissionType permission : requestDescription.permissions) {
         const ProfileAdapter::PermissionType permissionType = toQt(permission);
-        if (permissionType == ProfileAdapter::UnsupportedPermission)
+        if (permissionType == ProfileAdapter::UnsupportedPermission) {
             result.push_back(blink::mojom::PermissionStatus::DENIED);
-        else if (permissionType == ProfileAdapter::ClipboardRead || permissionType == ProfileAdapter::ClipboardWrite)
-            result.push_back(getStatusFromSettings(permission, contentsDelegate->webEngineSettings()));
-        else {
+            continue;
+        }
+
+        auto status = getStatusFromSettings(permission, contentsDelegate->webEngineSettings());
+        if (status == blink::mojom::PermissionStatus::ASK) {
             answerable = false;
             break;
-        }
+        } else
+            result.push_back(status);
     }
     if (answerable) {
         std::move(callback).Run(result);
@@ -256,7 +259,9 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForCurren
         WebContentsDelegateQt *delegate = static_cast<WebContentsDelegateQt *>(
                 content::WebContents::FromRenderFrameHost(render_frame_host)->GetDelegate());
         Q_ASSERT(delegate);
-        return getStatusFromSettings(permission, delegate->webEngineSettings());
+        auto status = getStatusFromSettings(permission, delegate->webEngineSettings());
+        if (status != blink::mojom::PermissionStatus::ASK)
+            return status;
     }
 
     return GetPermissionStatus(

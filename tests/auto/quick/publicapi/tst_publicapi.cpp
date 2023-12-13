@@ -531,6 +531,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.CertificateErrorDomain --> ErrorDomain"
     << "QQuickWebEngineView.ChangeTextDirectionLTR --> WebAction"
     << "QQuickWebEngineView.ChangeTextDirectionRTL --> WebAction"
+    << "QQuickWebEngineView.ClipboardReadWrite --> Feature"
     << "QQuickWebEngineView.Comm10E --> PrintedPageSizeId"
     << "QQuickWebEngineView.ConnectionErrorDomain --> ErrorDomain"
     << "QQuickWebEngineView.Copy --> WebAction"

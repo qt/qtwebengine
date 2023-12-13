@@ -295,6 +295,11 @@
             for screen sharing purposes for example.
     \value [since 5.10] DesktopAudioVideoCapture
             Both audio and video output capture.
+    \value [since 6.8] ClipboardReadWrite
+            Read and write access for the clipboard. If both \l{QWebEngineSettings::JavascriptCanPaste}
+            {JavascriptCanPaste} and \l{QWebEngineSettings::JavascriptCanAccessClipboard}
+            {JavascriptCanAccessClipboard} settings are enabled, this permission will always be granted
+            automatically and no feature requests will be made.
 
     \sa featurePermissionRequested(), featurePermissionRequestCanceled(), setFeaturePermission(), PermissionPolicy
 

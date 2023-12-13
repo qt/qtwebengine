@@ -173,6 +173,7 @@ QT_WARNING_POP
         DesktopVideoCapture,
         DesktopAudioVideoCapture,
         Notifications,
+        ClipboardReadWrite,
     };
     Q_ENUM(Feature)
 

@@ -172,7 +172,8 @@ public:
         MediaAudioVideoCapture,
         MouseLock,
         DesktopVideoCapture,
-        DesktopAudioVideoCapture
+        DesktopAudioVideoCapture,
+        ClipboardReadWrite,
     };
     Q_ENUM(Feature)
 

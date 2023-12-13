@@ -595,6 +595,8 @@ static QWebEnginePage::Feature toFeature(QtWebEngineCore::ProfileAdapter::Permis
         return QWebEnginePage::Notifications;
     case QtWebEngineCore::ProfileAdapter::GeolocationPermission:
         return QWebEnginePage::Geolocation;
+    case QtWebEngineCore::ProfileAdapter::ClipboardReadWrite:
+        return QWebEnginePage::ClipboardReadWrite;
     default:
         break;
     }
@@ -1750,6 +1752,10 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
         case Notifications:
             d->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::NotificationPermission, ProfileAdapter::AskPermission);
             break;
+        case ClipboardReadWrite:
+            d->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::ClipboardReadWrite,
+                                               ProfileAdapter::AskPermission);
+            break;
         }
         return;
     }
@@ -1787,6 +1793,10 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
         case Notifications:
             d->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::NotificationPermission, ProfileAdapter::AllowedPermission);
             break;
+        case ClipboardReadWrite:
+            d->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::ClipboardReadWrite,
+                                               ProfileAdapter::AllowedPermission);
+            break;
         }
     } else { // if (policy == PermissionDeniedByUser)
         switch (feature) {
@@ -1805,6 +1815,10 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
             break;
         case Notifications:
             d->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::NotificationPermission, ProfileAdapter::DeniedPermission);
+            break;
+        case ClipboardReadWrite:
+            d->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::ClipboardReadWrite,
+                                               ProfileAdapter::DeniedPermission);
             break;
         }
     }

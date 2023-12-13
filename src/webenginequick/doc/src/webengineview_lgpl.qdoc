@@ -859,6 +859,12 @@
             Both audio and video output capture. (Added in Qt 5.10)
     \value  WebEnginView.Notifications
             Web notifications for the end-user.
+    \value  WebEngineView.ClipboardReadWrite
+            Read and write access for the clipboard. If both \l{WebEngineSettings::JavascriptCanPaste}
+            {JavascriptCanPaste} and \l{WebEngineSettings::JavascriptCanAccessClipboard}
+            {JavascriptCanAccessClipboard} settings are enabled, this permission will always be granted
+            automatically and no feature requests will be made.
+            (Added in Qt 6.8)
 
     \sa featurePermissionRequested(), grantFeaturePermission()
 */
