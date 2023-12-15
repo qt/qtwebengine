@@ -182,7 +182,7 @@ qt_feature("webenginedriver" PUBLIC
 )
 # internal testing feature
 qt_feature("webengine-system-poppler" PRIVATE
-    LABEL "popler"
+    LABEL "poppler"
     CONDITION UNIX AND TEST_poppler
 )
 qt_configure_add_summary_section(NAME "Qt WebEngineCore")

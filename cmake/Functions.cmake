@@ -24,18 +24,6 @@ function(assertTargets)
     endforeach()
 endfunction()
 
-#TODO: remove me
-function(add_implicit_dependencies target)
-    if(TARGET ${target})
-        list(REMOVE_ITEM ARGN ${target})
-        foreach(qtTarget IN ITEMS ${ARGN})
-            if(TARGET Qt::${qtTarget})
-                add_dependencies(${target} Qt::${qtTarget})
-            endif()
-        endforeach()
-    endif()
-endfunction()
-
 # TODO: this should be idealy in qtbase
 function(add_check_for_support)
     cmake_parse_arguments(PARSE_ARGV 0 arg
@@ -63,23 +51,6 @@ function(add_check_for_support)
             endif()
         endif()
     endforeach()
-endfunction()
-
-function(get_qt_features outList module)
-    get_cmake_property(variableList VARIABLES)
-    set(_featureList "")
-    foreach (variableKey ${variableList})
-        unset(FOUND)
-        string(REGEX MATCH QT_FEATURE_${module} FOUND ${variableKey})
-        if(FOUND)
-            list(APPEND _featureList "${variableKey}=${${variableKey}}")
-        endif()
-    endforeach()
-    if("${${outList}}" STREQUAL "")
-        set(${outList} ${_featureList} PARENT_SCOPE)
-    else()
-        set(${outList} "${${outList}}" "${_featureList}" PARENT_SCOPE)
-    endif()
 endfunction()
 
 function(create_cxx_config cmakeTarget arch configFileName)
@@ -324,13 +295,6 @@ function(get_install_config result)
         endif()
     endif()
 endfunction()
-
-macro(assertRunAsTopLevelBuild)
-    if(NOT DEFINED WEBENGINE_REPO_BUILD)
-        message(FATAL_ERROR "This cmake file should run as top level build.")
-        return()
-    endif()
-endmacro()
 
 # we need to pass -F or -iframework in case of frameworks builds, which gn treats as
 # compiler flag and cmake as include dir, so swap it.
@@ -1192,7 +1156,7 @@ function(get_architectures result)
     set(${result} ${${result}} PARENT_SCOPE)
 endfunction()
 
-function(add_gn_build_aritfacts_to_target)
+function(add_gn_build_artifacts_to_target)
     cmake_parse_arguments(PARSE_ARGV 0 arg
         "" "CMAKE_TARGET;NINJA_TARGET;BUILDDIR;MODULE;COMPLETE_STATIC;NINJA_STAMP;NINJA_DATA_STAMP" ""
     )
@@ -1334,16 +1298,6 @@ function(addCopyCommand target src dst)
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${dst}
         COMMAND ${CMAKE_COMMAND} -E copy ${src} ${dst}
-        TARGET ${target}
-        DEPENDS ${src}
-        USES_TERMINAL
-    )
-endfunction()
-
-function(addCopyDirCommand target src dst)
-    add_custom_command(
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${src} ${dst}
         TARGET ${target}
         DEPENDS ${src}
         USES_TERMINAL
