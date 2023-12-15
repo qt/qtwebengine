@@ -68,6 +68,14 @@
 #include <QThread>
 #endif
 
+QT_BEGIN_NAMESPACE
+class QSpontaneKeyEvent
+{
+public:
+    static inline void makeSpontaneous(QEvent *ev) { ev->setSpontaneous(); }
+};
+QT_END_NAMESPACE
+
 namespace QtWebEngineCore {
 class WebEngineQuickWidget : public QQuickWidget, public WidgetDelegate
 {
@@ -171,6 +179,14 @@ public:
         if (const QWidget *root = QQuickWidget::window())
             return root->windowHandle();
         return nullptr;
+    }
+    void unhandledWheelEvent(QWheelEvent *ev) override
+    {
+        auto parentWidget = QQuickWidget::parentWidget();
+        if (parentWidget) {
+            QSpontaneKeyEvent::makeSpontaneous(ev);
+            qApp->notify(parentWidget, ev);
+        }
     }
 
 protected:

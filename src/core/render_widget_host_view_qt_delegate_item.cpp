@@ -449,10 +449,8 @@ void RenderWidgetHostViewQtDelegateItem::updateAdapterClientIfNeeded(WebContents
 
 void RenderWidgetHostViewQtDelegateItem::unhandledWheelEvent(QWheelEvent *ev)
 {
-    if (QWindow *w = Window()) {
-        if (QWindow *p = w->parent())
-            qApp->sendEvent(p, ev);
-    }
+    if (m_widgetDelegate)
+        m_widgetDelegate->unhandledWheelEvent(ev);
 }
 
 } // namespace QtWebEngineCore
