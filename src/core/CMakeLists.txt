@@ -566,7 +566,7 @@ if(QT_FEATURE_webengine_v8_context_snapshot)
     set(dataStamp obj/tools/v8_context_snapshot/v8_context_snapshot.stamp)
 endif()
 
-add_gn_build_aritfacts_to_target(
+add_gn_build_artifacts_to_target(
     CMAKE_TARGET WebEngineCore
     NINJA_TARGET QtWebEngineCore
     MODULE core
@@ -616,7 +616,7 @@ if(QT_FEATURE_webengine_spellchecker AND NOT CMAKE_CROSSCOMPILING)
         ../3rdparty/chromium/third_party/boringssl/src/include
         ${buildDir}/$<CONFIG>/${arch}/gen
     )
-    add_gn_build_aritfacts_to_target(
+    add_gn_build_artifacts_to_target(
         CMAKE_TARGET ${dict_target_name}
         NINJA_TARGET convert_dict
         MODULE core
