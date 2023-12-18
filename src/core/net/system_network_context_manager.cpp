@@ -38,8 +38,6 @@
 #include "content/public/browser/network_service_util.h"
 #endif
 
-#include <QDebug>
-
 ASSERT_ENUMS_MATCH(net::SecureDnsMode::kSecure, QWebEngineGlobalSettings::SecureDnsMode::SecureOnly)
 ASSERT_ENUMS_MATCH(net::SecureDnsMode::kAutomatic,
                    QWebEngineGlobalSettings::SecureDnsMode::SecureWithFallback)
@@ -348,12 +346,6 @@ void configureStubHostResolver(QWebEngineGlobalSettings::SecureDnsMode dnsMode,
     if (content::IsNetworkServiceCreated()) {
         network::mojom::NetworkService *networkService = content::GetNetworkService();
         if (networkService) {
-            qDebug() << "doh set to" << dnsOverHttpsTemplates << " -- "
-                     << (dnsMode == QWebEngineGlobalSettings::SecureDnsMode::SecureOnly
-                                 ? "SecureOnly"
-                                 : dnsMode == QWebEngineGlobalSettings::SecureDnsMode::SystemOnly
-                                         ? "SystemOnly"
-                                         : "SecureWithFallback");
             absl::optional<net::DnsOverHttpsConfig> dohConfig = dnsOverHttpsTemplates.empty()
                     ? net::DnsOverHttpsConfig()
                     : net::DnsOverHttpsConfig::FromString(dnsOverHttpsTemplates);
