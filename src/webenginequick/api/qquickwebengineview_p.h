@@ -260,8 +260,6 @@ QT_WARNING_POP
     // must match QPageSize::PageSizeId
     enum PrintedPageSizeId {
         // Existing Qt sizes
-        A4,
-        B5,
         Letter,
         Legal,
         Executive,
@@ -269,21 +267,24 @@ QT_WARNING_POP
         A1,
         A2,
         A3,
+        A4,
         A5,
         A6,
         A7,
         A8,
         A9,
+        A10,
         B0,
         B1,
-        B10,
         B2,
         B3,
         B4,
+        B5,
         B6,
         B7,
         B8,
         B9,
+        B10,
         C5E,
         Comm10E,
         DLE,
@@ -293,7 +294,6 @@ QT_WARNING_POP
         Custom,
 
         // New values derived from PPD standard
-        A10,
         A3Extra,
         A4Extra,
         A4Plus,
@@ -396,10 +396,8 @@ QT_WARNING_POP
         EnvelopePrc10,
         EnvelopeYou4,
 
-        // Last item, with commonly used synynoms from QPagedPrintEngine / QPrinter
+        // Last item
         LastPageSize = EnvelopeYou4,
-        NPageSize = LastPageSize,
-        NPaperSize = LastPageSize,
 
         // Convenience overloads for naming consistency
         AnsiA = Letter,

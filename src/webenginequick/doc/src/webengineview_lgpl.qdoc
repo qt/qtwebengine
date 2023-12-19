@@ -996,8 +996,6 @@
     \value WebEngineView.EnvelopePrc10
     \value WebEngineView.EnvelopeYou4
     \value WebEngineView.LastPageSize = \c EnvelopeYou4
-    \omitvalue NPageSize
-    \omitvalue NPaperSize
 
     \sa WebEngineView::printToPdf()
 */
