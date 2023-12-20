@@ -49,6 +49,8 @@ ApplicationWindow {
         property alias devToolsEnabled: devToolsEnabled.checked
         property alias pdfViewerEnabled: pdfViewerEnabled.checked
         property int imageAnimationPolicy: WebEngineSettings.ImageAnimationPolicy.Allow
+        property alias javascriptCanAccessClipboard: javascriptCanAccessClipboard.checked
+        property alias javascriptCanPaste: javascriptCanPaste.checked
     }
 
     Action {
@@ -380,7 +382,6 @@ ApplicationWindow {
                         checkable: true
                         checked: WebEngine.settings.pdfViewerEnabled
                     }
-
                     Menu {
                         id: imageAnimationPolicy
                         title: "Image Animation Policy"
@@ -419,6 +420,18 @@ ApplicationWindow {
                         }
                     }
 
+                    MenuItem {
+                        id: javascriptCanAccessClipboard
+                        text: "JavaScript can access clipboard"
+                        checkable: true
+                        checked: WebEngine.settings.javascriptCanAccessClipboard
+                    }
+                    MenuItem {
+                        id: javascriptCanPaste
+                        text: "JavaScript can paste"
+                        checkable: true
+                        checked: WebEngine.settings.javascriptCanPaste
+                    }
                 }
             }
         }
@@ -581,6 +594,8 @@ ApplicationWindow {
                 settings.pdfViewerEnabled: appSettings.pdfViewerEnabled
                 settings.imageAnimationPolicy: appSettings.imageAnimationPolicy
                 settings.screenCaptureEnabled: true
+                settings.javascriptCanAccessClipboard: appSettings.javascriptCanAccessClipboard
+                settings.javascriptCanPaste: appSettings.javascriptCanPaste
 
                 onWindowCloseRequested: function() {
                     tabBar.removeView(webEngineView.index);
