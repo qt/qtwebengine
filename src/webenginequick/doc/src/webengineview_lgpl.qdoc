@@ -852,12 +852,12 @@
             Video devices, such as cameras.
     \value  WebEngineView.MediaAudioVideoCapture
             Both audio and video capture devices.
-    \value  DesktopVideoCapture
+    \value  WebEngineView.DesktopVideoCapture
             Video output capture, that is, the capture of the user's display.
             (Added in Qt 5.10)
-    \value  DesktopAudioVideoCapture
+    \value  WebEngineView.DesktopAudioVideoCapture
             Both audio and video output capture. (Added in Qt 5.10)
-    \value  WebEnginView.Notifications
+    \value  WebEngineView.Notifications
             Web notifications for the end-user.
     \value  WebEngineView.ClipboardReadWrite
             Read and write access for the clipboard. If both \l{WebEngineSettings::JavascriptCanPaste}
