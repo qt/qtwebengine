@@ -230,7 +230,6 @@ foreach(arch ${archs})
             SOURCES
                 native_web_keyboard_event_qt_mac.mm
                 compositor/native_skia_output_device_mac.mm
-                compositor/native_skia_output_device_mac2.mm
         )
 
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_pepper_plugins
