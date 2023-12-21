@@ -1024,6 +1024,12 @@ QWebEngineClientCertificateStore *QQuickWebEngineProfile::clientCertificateStore
 #endif
 }
 
+/*!
+    Return the Client Hints settings associated with this browsing context.
+
+    \since 6.8
+    \sa QWebEngineClientHints
+*/
 QWebEngineClientHints *QQuickWebEngineProfile::clientHints() const
 {
     Q_D(const QQuickWebEngineProfile);

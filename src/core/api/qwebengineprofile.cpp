@@ -929,6 +929,12 @@ void QWebEngineProfile::requestIconForIconURL(const QUrl &url, int desiredSizeIn
                                                iconAvailableCallback);
 }
 
+/*!
+    Return the Client Hints settings associated with this browsing context.
+
+    \since 6.8
+    \sa QWebEngineClientHints
+*/
 QWebEngineClientHints *QWebEngineProfile::clientHints() const
 {
     Q_D(const QWebEngineProfile);
