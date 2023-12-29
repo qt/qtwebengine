@@ -129,7 +129,10 @@ ApplicationWindow {
             }
             Shortcut {
                 sequence: StandardKey.Find
-                onActivated: searchField.forceActiveFocus()
+                onActivated: {
+                    searchField.forceActiveFocus()
+                    searchField.selectAll()
+                }
             }
             Shortcut {
                 sequence: StandardKey.Quit
