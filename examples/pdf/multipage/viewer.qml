@@ -398,6 +398,7 @@ ApplicationWindow {
                 action: Action {
                     icon.source: "qrc:/pdfviewer/resources/go-up-search.svg"
                     shortcut: StandardKey.FindPrevious
+                    enabled: view.searchModel.count > 0
                     onTriggered: view.searchBack()
                 }
                 ToolTip.visible: enabled && hovered
@@ -432,6 +433,7 @@ ApplicationWindow {
                 action: Action {
                     icon.source: "qrc:/pdfviewer/resources/go-down-search.svg"
                     shortcut: StandardKey.FindNext
+                    enabled: view.searchModel.count > 0
                     onTriggered: view.searchForward()
                 }
                 ToolTip.visible: enabled && hovered

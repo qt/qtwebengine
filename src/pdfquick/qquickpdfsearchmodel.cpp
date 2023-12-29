@@ -270,6 +270,13 @@ QPdfLink QQuickPdfSearchModel::currentResultLink() const
     The string to search for.
 */
 
+/*!
+    \since 6.8
+    \qmlproperty int PdfSearchModel::count
+
+    The number of search results found.
+*/
+
 QT_END_NAMESPACE
 
 #include "moc_qquickpdfsearchmodel_p.cpp"
