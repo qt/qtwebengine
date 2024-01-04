@@ -9,12 +9,31 @@
 #include "base/task/single_thread_task_runner.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
+#include "gpu/config/gpu_preferences.h"
 
 #include <QMutex>
+
+#if defined(Q_OS_WIN)
+#include "ui/gl/dc_layer_overlay_image.h"
+#endif
+
+#if defined(Q_OS_MACOS)
+#include "ui/gfx/mac/io_surface.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 class QQuickWindow;
 QT_END_NAMESPACE
+
+namespace gl {
+class GLFence;
+}
+
+namespace gfx {
+class GpuFence;
+class NativePixmap;
+}
 
 namespace gpu {
 class SharedImageFactory;
@@ -27,7 +46,7 @@ class SkiaOutputSurfaceDependency;
 
 namespace QtWebEngineCore {
 
-class NativeSkiaOutputDevice final : public viz::SkiaOutputDevice, public Compositor
+class NativeSkiaOutputDevice : public viz::SkiaOutputDevice, public Compositor
 {
 public:
     NativeSkiaOutputDevice(scoped_refptr<gpu::SharedContextState> contextState,
@@ -59,13 +78,12 @@ public:
     void waitForTexture() override;
     void releaseTexture() override;
     void releaseResources() override;
-    QSGTexture *texture(QQuickWindow *win, uint32_t textureOptions) override;
     bool textureIsFlipped() override;
     QSize size() override;
     bool requiresAlphaChannel() override;
     float devicePixelRatio() override;
 
-private:
+protected:
     struct Shape
     {
         SkImageInfo imageInfo;
@@ -83,18 +101,67 @@ private:
         bool operator!=(const Shape &that) const { return !(*this == that); }
     };
 
-    class Buffer;
+    class Buffer
+    {
+    public:
+        Buffer(NativeSkiaOutputDevice *parent);
+        ~Buffer();
+
+        bool initialize();
+        SkSurface *beginWriteSkia();
+        void endWriteSkia(bool force_flush);
+        std::vector<GrBackendSemaphore> takeEndWriteSkiaSemaphores();
+        void beginPresent();
+        void endPresent();
+        void freeTexture();
+        void createFence();
+        void consumeFence();
+
+#if defined(USE_OZONE)
+        scoped_refptr<gfx::NativePixmap> nativePixmap();
+#elif defined(Q_OS_WIN)
+        absl::optional<gl::DCLayerOverlayImage> overlayImage() const;
+#elif defined(Q_OS_MACOS)
+        gfx::ScopedIOSurface ioSurface() const;
+#endif
+
+        const Shape &shape() const { return m_shape; }
+        viz::SharedImageFormat sharedImageFormat() { return m_overlayRepresentation->format(); }
+
+        std::function<void()> textureCleanupCallback;
+
+    private:
+        NativeSkiaOutputDevice *m_parent;
+        Shape m_shape;
+        uint64_t m_estimatedSize = 0; // FIXME: estimate size
+        std::unique_ptr<gfx::GpuFence> m_acquireFence;
+        std::unique_ptr<gl::GLFence> m_fence;
+        gpu::Mailbox m_mailbox;
+        std::unique_ptr<gpu::SkiaImageRepresentation> m_skiaRepresentation;
+        std::unique_ptr<gpu::SkiaImageRepresentation::ScopedWriteAccess> m_scopedSkiaWriteAccess;
+        std::unique_ptr<gpu::OverlayImageRepresentation> m_overlayRepresentation;
+        std::unique_ptr<gpu::OverlayImageRepresentation::ScopedReadAccess>
+                m_scopedOverlayReadAccess;
+        std::vector<GrBackendSemaphore> m_endSemaphores;
+        int m_presentCount = 0;
+    };
+
+protected:
+    std::unique_ptr<Buffer> m_frontBuffer;
+    bool m_readyWithTexture = false;
+    gpu::GrContextType m_grContextType;
+
+private:
     friend class NativeSkiaOutputDevice::Buffer;
+
     void SwapBuffersFinished();
 
     mutable QMutex m_mutex;
     Shape m_shape;
-    std::unique_ptr<Buffer> m_frontBuffer;
     std::unique_ptr<Buffer> m_middleBuffer;
     std::unique_ptr<Buffer> m_backBuffer;
     viz::OutputSurfaceFrame m_frame;
     bool m_readyToUpdate = false;
-    bool m_readyWithTexture = false;
     bool m_requiresAlpha;
     scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
 

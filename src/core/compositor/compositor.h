@@ -30,9 +30,8 @@ public:
     // Identifies the implementation type.
     enum class Type {
         Software,
-        OpenGL,
-        Vulkan,
-        NativeBuffer
+        OpenGL, // TODO: Legacy, remove it with DisplaySkiaOutputDevice!
+        Native
     };
 
     // Identifies a compositor.

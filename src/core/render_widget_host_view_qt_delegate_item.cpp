@@ -407,9 +407,7 @@ void RenderWidgetHostViewQtDelegateItem::onBeforeRendering()
 void RenderWidgetHostViewQtDelegateItem::onAfterFrameEnd()
 {
     auto comp = compositor();
-    if (!comp
-        || (comp->type() != Compositor::Type::Vulkan
-            && comp->type() != Compositor::Type::NativeBuffer))
+    if (!comp || comp->type() != Compositor::Type::Native)
         return;
     comp->releaseTexture();
 }
@@ -428,7 +426,7 @@ void RenderWidgetHostViewQtDelegateItem::onHide()
 void RenderWidgetHostViewQtDelegateItem::releaseTextureResources()
 {
     auto comp = compositor();
-    if (!comp || (comp->type() != Compositor::Type::Vulkan && comp->type() != Compositor::Type::NativeBuffer))
+    if (!comp || comp->type() != Compositor::Type::Native)
         return;
 
     comp->releaseResources();
