@@ -76,6 +76,18 @@ QQuickPdfDocument *QQuickPdfPageImage::document() const
 void QQuickPdfPageImage::load()
 {
     Q_D(QQuickPdfPageImage);
+    QUrl url = source();
+    if (!d->doc || !d->doc->carrierFile()) {
+        if (!url.isEmpty()) {
+            qmlWarning(this) << "document property not set: falling back to inefficient loading of " << url;
+            QQuickImageBase::load();
+        }
+        return;
+    }
+    if (url != d->doc->resolvedSource()) {
+        url = d->doc->resolvedSource();
+        qmlWarning(this) << "document and source properties in conflict: preferring document source " << url;
+    }
     auto carrierFile = d->doc->carrierFile();
     static int thisRequestProgress = -1;
     static int thisRequestFinished = -1;
@@ -86,7 +98,7 @@ void QQuickPdfPageImage::load()
             QQuickImageBase::staticMetaObject.indexOfSlot("requestFinished()");
     }
 
-    d->pix.loadImageFromDevice(qmlEngine(this), carrierFile, d->url,
+    d->pix.loadImageFromDevice(qmlEngine(this), carrierFile, url,
                                d->sourceClipRect.toRect(), d->sourcesize * d->devicePixelRatio,
                                QQuickImageProviderOptions(), d->currentFrame, d->frameCount);
 
