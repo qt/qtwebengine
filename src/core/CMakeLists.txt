@@ -217,6 +217,7 @@ foreach(arch ${archs})
 
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_vulkan
             SOURCES
+                compositor/native_skia_output_device_vulkan.cpp compositor/native_skia_output_device_vulkan.h
                 compositor/vulkan_implementation_qt.cpp compositor/vulkan_implementation_qt.h
         )
 
@@ -224,12 +225,14 @@ foreach(arch ${archs})
             SOURCES
                 compositor/compositor_resource_fence.cpp compositor/compositor_resource_fence.h
                 compositor/display_skia_output_device.cpp compositor/display_skia_output_device.h
+                compositor/native_skia_output_device_opengl.cpp compositor/native_skia_output_device_opengl.h
         )
 
         extend_gn_target(${buildGn} CONDITION MACOS
             SOURCES
                 native_web_keyboard_event_qt_mac.mm
                 compositor/native_skia_output_device_mac.mm
+                compositor/native_skia_output_device_metal.cpp compositor/native_skia_output_device_metal.h
         )
 
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_pepper_plugins
@@ -290,6 +293,7 @@ foreach(arch ${archs})
         extend_gn_target(${buildGn} CONDITION WIN32
             SOURCES
                 clipboard_util_win.cpp
+                compositor/native_skia_output_device_direct3d11.cpp compositor/native_skia_output_device_direct3d11.h
         )
 
         ##

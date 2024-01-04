@@ -26,30 +26,26 @@
 
 namespace QtWebEngineCore {
 
-QSGTexture *makeMetalTexture(QQuickWindow *win, IOSurfaceRef io_surface, uint io_surface_plane, int width, int height, uint32_t textureOptions)
+QSGTexture *makeMetalTexture(QQuickWindow *win, IOSurfaceRef ioSurface, uint ioSurfacePlane,
+                             const QSize &size, QQuickWindow::CreateTextureOptions texOpts)
 {
     auto desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
-                 width:width height:height mipmapped:false];
+                                                                   width:size.width()
+                                                                  height:size.height()
+                                                               mipmapped:false];
 
     QSGRendererInterface *ri = win->rendererInterface();
     auto device = (__bridge id<MTLDevice>)(ri->getResource(win, QSGRendererInterface::DeviceResource));
-    auto texture = [device newTextureWithDescriptor:desc iosurface:io_surface plane:io_surface_plane];
-    QQuickWindow::CreateTextureOptions texOpts(textureOptions);
-    return QNativeInterface::QSGMetalTexture::fromNative(texture, win, {width, height}, texOpts);
+    auto texture = [device newTextureWithDescriptor:desc iosurface:ioSurface plane:ioSurfacePlane];
+    return QNativeInterface::QSGMetalTexture::fromNative(texture, win, size, texOpts);
 }
 
 #if QT_CONFIG(opengl)
-void releaseGlTexture(uint32_t glTexture)
+uint32_t makeCGLTexture(QQuickWindow *win, IOSurfaceRef ioSurface, const QSize &size)
 {
-    auto *glContext = QOpenGLContext::currentContext();
-    if (!glContext)
-        return;
-    auto glFun = glContext->functions();
-    glFun->glDeleteTextures(1, &glTexture);
-}
+    const int width = size.width();
+    const int height = size.height();
 
-QSGTexture *makeCGLTexture(QQuickWindow *win, IOSurfaceRef io_surface, int width, int height, uint32_t textureOptions, uint32_t *heldTexture)
-{
     auto glContext = QOpenGLContext::currentContext();
     auto glFun = glContext->extraFunctions();
     auto nscontext = glContext->nativeInterface<QNativeInterface::QCocoaGLContext>()->nativeContext();
@@ -60,7 +56,8 @@ QSGTexture *makeCGLTexture(QQuickWindow *win, IOSurfaceRef io_surface, int width
     GLuint glTexture;
     glFun->glGenTextures(1, &glTexture);
     glFun->glBindTexture(GL_TEXTURE_RECTANGLE_ARB, glTexture);
-    CGLTexImageIOSurface2D(cglContext, GL_TEXTURE_RECTANGLE_ARB, GL_RGBA, width, height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, io_surface, 0);
+    CGLTexImageIOSurface2D(cglContext, GL_TEXTURE_RECTANGLE_ARB, GL_RGBA, width, height, GL_BGRA,
+                           GL_UNSIGNED_INT_8_8_8_8_REV, ioSurface, 0);
     glFun->glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
     glFun->glViewport(0, 0, width, height);
 
@@ -86,9 +83,7 @@ QSGTexture *makeCGLTexture(QQuickWindow *win, IOSurfaceRef io_surface, int width
     }
     win->endExternalCommands();
 
-    *heldTexture = glTexture;
-    QQuickWindow::CreateTextureOptions texOpts(textureOptions);
-    return QNativeInterface::QSGOpenGLTexture::fromNative(glTexture, win, {width, height}, texOpts);
+    return glTexture;
 }
 #endif // QT_CONFIG(opengl)
 
