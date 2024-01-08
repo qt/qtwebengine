@@ -19,7 +19,7 @@ project(QtWebEngineConfigure
     VERSION "${QT_REPO_MODULE_VERSION}"
     LANGUAGES CXX C)
 
-find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core)
+find_package(Qt6 6.5 CONFIG REQUIRED COMPONENTS BuildInternals Core)
 qt_internal_project_setup()
 get_gn_arch(target_arch ${GN_TARGET_CPU})
 get_gn_arch(host_arch ${TEST_architecture_arch})
