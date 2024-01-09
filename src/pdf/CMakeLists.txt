@@ -65,7 +65,7 @@ add_code_attributions_target(
     BUILDDIR ${buildDir}/${config}/${arch}
 )
 add_dependencies(generate_pdf_attributions run_pdf_GnDone)
-add_dependencies(docs generate_pdf_attributions)
+add_dependencies(prepare_docs_Pdf generate_pdf_attributions)
 
 ##
 #   TOOLCHAIN SETUP
