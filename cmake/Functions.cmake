@@ -1098,11 +1098,16 @@ endmacro()
 
 
 macro(append_pkg_config_setup)
-    if(LINUX)
+    if(PkgConfig_FOUND)
         list(APPEND gnArgArg
             pkg_config="${PKG_CONFIG_EXECUTABLE}"
             host_pkg_config="${PKG_CONFIG_HOST_EXECUTABLE}"
         )
+        if(NOT "$ENV{PKG_CONFIG_LIBDIR}" STREQUAL "")
+            list(APPEND gnArgArg
+                system_libdir="$ENV{PKG_CONFIG_LIBDIR}"
+            )
+        endif()
     endif()
 endmacro()
 
