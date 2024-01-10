@@ -62,6 +62,7 @@
 #if BUILDFLAG(IS_MAC)
 #include "base/message_loop/message_pump_mac.h"
 #include "services/device/public/cpp/geolocation/geolocation_manager.h"
+#include "services/device/public/cpp/geolocation/system_geolocation_source.h"
 #include "ui/base/idle/idle.h"
 #endif
 
@@ -213,19 +214,20 @@ private:
 };
 
 #if BUILDFLAG(IS_MAC)
-class FakeGeolocationManager : public device::GeolocationManager
+class FakeGeolocationSource : public device::SystemGeolocationSource
 {
 public:
-    FakeGeolocationManager() = default;
-    ~FakeGeolocationManager() override = default;
+    FakeGeolocationSource() = default;
+    ~FakeGeolocationSource() override = default;
 
-    // GeolocationManager implementation:
+    // SystemGeolocationSource implementation:
     void StartWatchingPosition(bool) override {}
     void StopWatchingPosition() override {}
-    device::LocationSystemPermissionStatus GetSystemPermission() const override
+    void RegisterPermissionUpdateCallback(PermissionUpdateCallback callback)
     {
-        return device::LocationSystemPermissionStatus::kDenied;
+        callback.Run(device::LocationSystemPermissionStatus::kDenied);
     }
+    void RegisterPositionUpdateCallback(PositionUpdateCallback callback) {}
 };
 #endif // BUILDFLAG(IS_MAC)
 
@@ -254,7 +256,7 @@ int BrowserMainPartsQt::PreEarlyInitialization()
 void BrowserMainPartsQt::PreCreateMainMessageLoop()
 {
 #if BUILDFLAG(IS_MAC)
-    m_geolocationManager = std::make_unique<FakeGeolocationManager>();
+    m_geolocationManager = std::make_unique<device::GeolocationManager>(std::make_unique<FakeGeolocationSource>());
 #endif
 }
 

@@ -9,6 +9,11 @@ if(Nodejs_EXECUTABLE)
         OUTPUT_VARIABLE Nodejs_VERSION
         ERROR_QUIET
         OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    execute_process(
+        COMMAND ${Nodejs_EXECUTABLE} -p "process.arch"
+        OUTPUT_VARIABLE Nodejs_ARCH
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif()
 
 string (REGEX MATCHALL "([1-9][0-9])\..*" Nodejs_VERSION "${Nodejs_VERSION}")

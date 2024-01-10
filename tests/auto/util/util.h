@@ -163,7 +163,7 @@ static inline QRect elementGeometry(QWebEnginePage *page, const QString &id)
     QVariantList coords = evaluateJavaScriptSync(page, jsCode).toList();
 
     if (coords.size() != 4) {
-        qWarning("elementGeometry faield.");
+        qWarning("elementGeometry failed.");
         return QRect();
     }
 

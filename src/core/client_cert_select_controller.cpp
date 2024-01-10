@@ -3,7 +3,7 @@
 
 #include "client_cert_select_controller.h"
 
-#include <base/bind.h>
+#include <base/functional/bind.h>
 #include <content/public/browser/client_certificate_delegate.h>
 #include <net/cert/x509_certificate.h>
 #include <net/ssl/client_cert_identity.h>
@@ -77,7 +77,8 @@ void ClientCertSelectController::select(const QSslCertificate &certificate)
     }
     QByteArray derCertificate = certificate.toDer();
     scoped_refptr<net::X509Certificate> selectedCert =
-            net::X509Certificate::CreateFromBytes(base::make_span((const unsigned char *)derCertificate.constData(), derCertificate.length()));
+            net::X509Certificate::CreateFromBytes(base::make_span((const unsigned char *)derCertificate.constData(),
+                                                                  (long unsigned)derCertificate.length()));
     for (auto &certInfo : m_clientCerts) {
         scoped_refptr<net::X509Certificate> cert = certInfo->certificate();
         if (cert->EqualsExcludingChain(selectedCert.get())) {

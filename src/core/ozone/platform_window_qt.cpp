@@ -3,7 +3,7 @@
 
 #if defined(USE_OZONE)
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "ozone/platform_window_qt.h"
 #include "ui/base/cursor/platform_cursor.h"
 #include "ui/events/ozone/events_ozone.h"

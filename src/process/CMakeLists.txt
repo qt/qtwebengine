@@ -2,7 +2,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 if(NOT DEFINED WEBENGINE_ROOT_SOURCE_DIR)
-    get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../.." REALPATH)
+    qt_internal_get_filename_path_mode(path_mode)
+
+    get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../.." ${path_mode})
 endif()
 include(${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Functions.cmake)
 
@@ -57,13 +59,13 @@ foreach(config ${configs})
     set_target_properties(${qtWebEngineProcessName} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_${config_upper} "${outputPath}"
     )
-endforeach()
 
-if(QT_FEATURE_debug_and_release)
-    set_target_properties(${qtWebEngineProcessName} PROPERTIES
-        OUTPUT_NAME_DEBUG ${qtWebEngineProcessName}${CMAKE_DEBUG_POSTFIX}
-    )
-endif()
+    if("${config}" STREQUAL "Debug")
+        set_target_properties(${qtWebEngineProcessName} PROPERTIES
+            OUTPUT_NAME_DEBUG ${qtWebEngineProcessName}${CMAKE_DEBUG_POSTFIX}
+        )
+    endif()
+endforeach()
 
 if(isFramework)
     set_target_properties(${qtWebEngineProcessName} PROPERTIES

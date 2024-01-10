@@ -8,9 +8,7 @@
 #include <QWebEngineView>
 
 #include <functional>
-
-using namespace std;
-using namespace std::placeholders;
+#include <utility>
 
 class Html2PdfConverter : public QObject
 {
@@ -30,8 +28,8 @@ private:
 };
 
 Html2PdfConverter::Html2PdfConverter(QString inputPath, QString outputPath)
-    : m_inputPath(move(inputPath))
-    , m_outputPath(move(outputPath))
+    : m_inputPath(std::move(inputPath))
+    , m_outputPath(std::move(outputPath))
     , m_view(new QWebEngineView)
 {
     connect(m_view.data(), &QWebEngineView::loadFinished,

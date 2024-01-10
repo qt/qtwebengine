@@ -72,7 +72,9 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QQuickWebEngineTouchSelectionMenuRequest::staticMetaObject
     ;
 
-static QList<QMetaEnum> knownEnumNames = QList<QMetaEnum>();
+static QList<QMetaEnum> knownEnumNames = QList<QMetaEnum>()
+    << QWebEngineDownloadRequest::staticMetaObject.enumerator(QWebEngineDownloadRequest::staticMetaObject.indexOfEnumerator("SavePageFormat"))
+    ;
 
 static const QStringList hardcodedTypes = QStringList()
     << "QJSValue"
@@ -84,7 +86,8 @@ static const QStringList hardcodedTypes = QStringList()
     << "QWebEngineCookieStore*"
     << "Qt::LayoutDirection"
     << "QQuickWebEngineScriptCollection*"
-    << "QQmlComponent*";
+    << "QQmlComponent*"
+    << "QMultiMap<QByteArray,QByteArray>";
 
 static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineAction.text --> QString"
@@ -293,6 +296,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineJavaScriptDialogRequest.title --> QString"
     << "QQuickWebEngineJavaScriptDialogRequest.type --> QQuickWebEngineJavaScriptDialogRequest::DialogType"
     << "QWebEngineLoadingInfo.errorCode --> int"
+    << "QWebEngineLoadingInfo.responseHeaders --> QMultiMap<QByteArray,QByteArray>"
     << "QWebEngineLoadingInfo.errorDomain --> QWebEngineLoadingInfo::ErrorDomain"
     << "QWebEngineLoadingInfo.errorString --> QString"
     << "QWebEngineLoadingInfo.status --> QWebEngineLoadingInfo::LoadStatus"
@@ -439,6 +443,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.webGLEnabledChanged() --> void"
     << "QQuickWebEngineSettings.webRTCPublicInterfacesOnly --> bool"
     << "QQuickWebEngineSettings.webRTCPublicInterfacesOnlyChanged() --> void"
+    << "QQuickWebEngineSettings.readingFromCanvasEnabled --> bool"
+    << "QQuickWebEngineSettings.readingFromCanvasEnabledChanged() --> void"
     << "QQuickWebEngineSingleton.defaultProfile --> QQuickWebEngineProfile*"
     << "QQuickWebEngineSingleton.settings --> QQuickWebEngineSettings*"
     << "QQuickWebEngineSingleton.script() --> QWebEngineScript"
@@ -507,6 +513,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.Back --> WebAction"
     << "QQuickWebEngineView.C5E --> PrintedPageSizeId"
     << "QQuickWebEngineView.CertificateErrorDomain --> ErrorDomain"
+    << "QQuickWebEngineView.ChangeTextDirectionLTR --> WebAction"
+    << "QQuickWebEngineView.ChangeTextDirectionRTL --> WebAction"
     << "QQuickWebEngineView.Comm10E --> PrintedPageSizeId"
     << "QQuickWebEngineView.ConnectionErrorDomain --> ErrorDomain"
     << "QQuickWebEngineView.Copy --> WebAction"
@@ -663,6 +671,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.ToggleUnderline --> WebAction"
     << "QQuickWebEngineView.Undo --> WebAction"
     << "QQuickWebEngineView.Unselect --> WebAction"
+    << "QQuickWebEngineView.OpenLinkInNewBackgroundTab --> WebAction"
     << "QQuickWebEngineView.ViewSource --> WebAction"
     << "QQuickWebEngineView.WarningMessageLevel --> JavaScriptConsoleMessageLevel"
     << "QQuickWebEngineView.WebActionCount --> WebAction"
@@ -682,9 +691,10 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.contentsSize --> QSizeF"
     << "QQuickWebEngineView.contentsSizeChanged(QSizeF) --> void"
     << "QQuickWebEngineView.contextMenuRequested(QWebEngineContextMenuRequest*) --> void"
+    << "QQuickWebEngineView.devToolsId --> QString"
     << "QQuickWebEngineView.devToolsView --> QQuickWebEngineView*"
     << "QQuickWebEngineView.devToolsViewChanged() --> void"
-    << "QQuickWebEngineView.featurePermissionRequested(QUrl,Feature) --> void"
+    << "QQuickWebEngineView.featurePermissionRequested(QUrl,QQuickWebEngineView::Feature) --> void"
     << "QQuickWebEngineView.fileDialogRequested(QQuickWebEngineFileDialogRequest*) --> void"
     << "QQuickWebEngineView.fileSystemAccessRequested(QWebEngineFileSystemAccessRequest) --> void"
     << "QQuickWebEngineView.findText(QString) --> void"
@@ -697,7 +707,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.goBack() --> void"
     << "QQuickWebEngineView.goBackOrForward(int) --> void"
     << "QQuickWebEngineView.goForward() --> void"
-    << "QQuickWebEngineView.grantFeaturePermission(QUrl,Feature,bool) --> void"
+    << "QQuickWebEngineView.grantFeaturePermission(QUrl,QQuickWebEngineView::Feature,bool) --> void"
     << "QQuickWebEngineView.history --> QWebEngineHistory*"
     << "QQuickWebEngineView.icon --> QUrl"
     << "QQuickWebEngineView.iconChanged() --> void"
@@ -705,10 +715,10 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.inspectedViewChanged() --> void"
     << "QQuickWebEngineView.isFullScreen --> bool"
     << "QQuickWebEngineView.isFullScreenChanged() --> void"
-    << "QQuickWebEngineView.javaScriptConsoleMessage(JavaScriptConsoleMessageLevel,QString,int,QString) --> void"
+    << "QQuickWebEngineView.javaScriptConsoleMessage(QQuickWebEngineView::JavaScriptConsoleMessageLevel,QString,int,QString) --> void"
     << "QQuickWebEngineView.javaScriptDialogRequested(QQuickWebEngineJavaScriptDialogRequest*) --> void"
     << "QQuickWebEngineView.lifecycleState --> QQuickWebEngineView::LifecycleState"
-    << "QQuickWebEngineView.lifecycleStateChanged(LifecycleState) --> void"
+    << "QQuickWebEngineView.lifecycleStateChanged(QQuickWebEngineView::LifecycleState) --> void"
     << "QQuickWebEngineView.linkHovered(QUrl) --> void"
     << "QQuickWebEngineView.loadHtml(QString) --> void"
     << "QQuickWebEngineView.loadHtml(QString,QUrl) --> void"
@@ -747,11 +757,11 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.renderProcessPid --> qlonglong"
     << "QQuickWebEngineView.renderProcessPidChanged(qlonglong) --> void"
     << "QQuickWebEngineView.recommendedState --> QQuickWebEngineView::LifecycleState"
-    << "QQuickWebEngineView.recommendedStateChanged(LifecycleState) --> void"
+    << "QQuickWebEngineView.recommendedStateChanged(QQuickWebEngineView::LifecycleState) --> void"
     << "QQuickWebEngineView.registerProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest) --> void"
     << "QQuickWebEngineView.reload() --> void"
     << "QQuickWebEngineView.reloadAndBypassCache() --> void"
-    << "QQuickWebEngineView.renderProcessTerminated(RenderProcessTerminationStatus,int) --> void"
+    << "QQuickWebEngineView.renderProcessTerminated(QQuickWebEngineView::RenderProcessTerminationStatus,int) --> void"
     << "QQuickWebEngineView.replaceMisspelledWord(QString) --> void"
     << "QQuickWebEngineView.runJavaScript(QString) --> void"
     << "QQuickWebEngineView.runJavaScript(QString,QJSValue) --> void"
@@ -783,6 +793,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.zoomFactor --> double"
     << "QQuickWebEngineView.zoomFactorChanged(double) --> void"
     << "QQuickWebEngineView.acceptAsNewWindow(QWebEngineNewWindowRequest*) --> void"
+    << "QQuickWebEngineView.save(QString) --> void"
+    << "QQuickWebEngineView.save(QString,QWebEngineDownloadRequest::SavePageFormat) --> void"
     << "QWebEngineQuotaRequest.accept() --> void"
     << "QWebEngineQuotaRequest.origin --> QUrl"
     << "QWebEngineQuotaRequest.reject() --> void"

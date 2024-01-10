@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Link</title>
+    </head>
+    <body>
+        <a id="link" href="">Link</a>
+        <script>
+            const urlParams = new URLSearchParams(window.location.search);
+            document.getElementById("link").href = urlParams.get('linkLocation');
+        </script>
+    </body>
+</html>

@@ -11,9 +11,40 @@ import sys
 import json
 import urllib3
 import git_submodule as GitSubmodule
+from abc import ABC, abstractmethod
 
-chromium_version = '108.0.5359.109'
-chromium_branch = '5359'
+class DEPSParser(ABC):
+    def __init__(self):
+        self.global_scope = {
+          'Var': lambda var_name: '{%s}' % var_name,
+          'Str': str,
+          'deps_os': {},
+        }
+        self.local_scope = {}
+        self.topmost_supermodule_path_prefix = ''
+
+    def subdir(self, dep):
+        if dep.startswith('src/'):
+            return dep[4:]
+        # Don't skip submodules that have a supermodule path prefix set (at the moment these
+        # are 2nd level deep submodules).
+        elif not self.topmost_supermodule_path_prefix:
+        # Ignore the information about chromium itself since we get that from git,
+        # also ignore anything outside src/ (e.g. depot_tools)
+           return None
+        else:
+           return dep
+
+    @abstractmethod
+    def parse(self):
+        pass
+
+    def get_recursedeps(self):
+        return self.local_scope["recursedeps"]
+
+
+chromium_version = '112.0.5615.213'
+chromium_branch = '5615'
 ninja_version = 'v1.8.2'
 
 json_url = 'http://omahaproxy.appspot.com/all.json'
@@ -23,20 +54,12 @@ snapshot_src_dir = os.path.abspath(os.path.join(qtwebengine_root, 'src/3rdparty'
 upstream_src_dir = os.path.abspath(snapshot_src_dir + '_upstream')
 
 submodule_blacklist = [
-    'third_party/WebKit/LayoutTests/w3c/csswg-test'
-    , 'third_party/WebKit/LayoutTests/w3c/web-platform-tests'
-    , 'chrome/tools/test/reference_build/chrome_mac'
-    , 'chrome/tools/test/reference_build/chrome_linux'
-    , 'chrome/tools/test/reference_build/chrome_win'
-   # buildtools duplicates:
-    , 'buildtools/clang_format/script'
-    , 'buildtools/linux64'
-    , 'buildtools/mac'
-    , 'buildtools/win'
-    , 'buildtools/third_party/libc++/trunk'
-    , 'buildtools/third_party/libc++abi/trunk'
-    , 'buildtools/third_party/libunwind/trunk'
-    ]
+  'buildtools/clang_format/script',
+  'buildtools/third_party/libc++/trunk',
+  'buildtools/third_party/libc++abi/trunk',
+  'buildtools/third_party/libunwind/trunk'
+]
+submodule_whitelist = [ 'src/third_party/android_ndk' , 'src/third_party/libunwindstack' ]
 
 sys.path.append(os.path.join(qtwebengine_root, 'tools', 'scripts'))
 
@@ -59,11 +82,11 @@ def readReleaseChannels():
             channels[os].append({ 'channel': ver['channel'], 'version': ver['version'], 'branch': ver['true_branch'] })
     return channels
 
-def readSubmodules():
+def read(parserCls):
     git_deps = subprocess.check_output(['git', 'show', chromium_version +':DEPS'])
 
-    parser = GitSubmodule.DEPSParser()
-    git_submodules = parser.parse(git_deps)
+    parser = parserCls()
+    git_submodules = parser.parse(git_deps, submodule_whitelist)
 
     submodule_dict = {}
 
@@ -80,7 +103,7 @@ def readSubmodules():
             with open(extra_deps_file_path, 'r') as extra_deps_file:
                 extra_deps = extra_deps_file.read()
                 if extra_deps:
-                    extradeps_parser = GitSubmodule.DEPSParser()
+                    extradeps_parser = parserCls()
                     extradeps_parser.topmost_supermodule_path_prefix = extradeps_dir
                     extradeps_submodules = extradeps_parser.parse(extra_deps)
                     for sub in extradeps_submodules:

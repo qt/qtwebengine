@@ -210,6 +210,7 @@
 /*!
     \fn QAction *QWebEngineView::pageAction(QWebEnginePage::WebAction action) const
     Returns a pointer to a QAction that encapsulates the specified web action \a action.
+    This function will also set a default styled icon to the QAction if it lacks one.
 */
 
 /*!

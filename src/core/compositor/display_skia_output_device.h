@@ -4,14 +4,18 @@
 #ifndef DISPLAY_SKIA_OUTPUT_DEVICE_H
 #define DISPLAY_SKIA_OUTPUT_DEVICE_H
 
-#include "compositor_resource_fence.h"
+#include <QtCore/QMutex>
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
+
 #include "compositor.h"
 
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 
-#include <QMutex>
+#if QT_CONFIG(webengine_vulkan)
+#include <vulkan/vulkan.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 class QQuickWindow;
@@ -49,10 +53,11 @@ public:
     QSize size() override;
     bool requiresAlphaChannel() override;
     float devicePixelRatio() override;
+
 #if QT_CONFIG(webengine_vulkan)
     VkImage vkImage(QQuickWindow *win);
     VkImageLayout vkImageLayout();
-    void releaseVulkanResources(QQuickWindow *win) override;
+    void releaseResources(QQuickWindow *win) override;
 #endif
 
 private:

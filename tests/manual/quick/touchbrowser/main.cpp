@@ -1,16 +1,14 @@
-// Copyright (C) 2018 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#if defined(DESKTOP_BUILD)
 #include "touchmockingapplication.h"
-#endif
 #include "utils.h"
 
-#include <QtGui/QGuiApplication>
-#include <QtQml/QQmlApplicationEngine>
-#include <QtQml/QQmlContext>
-#include <QtQuick/QQuickView>
-#include <QtWebEngineQuick/qtwebenginequickglobal.h>
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
+#include <QQmlContext>
+#include <QQuickView>
+#include <QtWebEngineQuick>
 
 static QUrl startupUrl()
 {
@@ -29,31 +27,10 @@ static QUrl startupUrl()
 
 int main(int argc, char **argv)
 {
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
-
-    // We use touch mocking on desktop and apply all the mobile switches.
-    QByteArrayList args = QByteArrayList()
-            << QByteArrayLiteral("--enable-embedded-switches")
-            << QByteArrayLiteral("--log-level=0");
-    const int count = args.size() + argc;
-    QList<char*> qargv(count);
-
-    qargv[0] = argv[0];
-    for (int i = 0; i < args.size(); ++i)
-        qargv[i + 1] = args[i].data();
-    for (int i = args.size() + 1; i < count; ++i)
-        qargv[i] = argv[i - args.size()];
-
-    int qAppArgCount = qargv.size();
-
     QtWebEngineQuick::initialize();
 
-#if defined(DESKTOP_BUILD)
-    TouchMockingApplication app(qAppArgCount, qargv.data());
-#else
-    QGuiApplication app(qAppArgCount, qargv.data());
-#endif
+    TouchMockingApplication app(argc, argv);
+    app.setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents, true);
 
     QQuickView view;
     Utils utils;

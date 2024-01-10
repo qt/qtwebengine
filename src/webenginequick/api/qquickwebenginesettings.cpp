@@ -433,6 +433,22 @@ bool QQuickWebEngineSettings::navigateOnDropEnabled() const
 }
 
 /*!
+    \qmlproperty bool WebEngineSettings::readingFromCanvasEnabled
+    \since QtWebEngine 6.6
+
+    Specifies that reading from all canvas elements is enabled.
+
+    This setting will have impact on all HTML5 canvas elements irrespective of origin, and can be disabled
+    to prevent canvas fingerprinting.
+
+    Enabled by default.
+ */
+bool QQuickWebEngineSettings::readingFromCanvasEnabled() const
+{
+    return d_ptr->testAttribute(QWebEngineSettings::ReadingFromCanvasEnabled);
+}
+
+/*!
     \qmlproperty string WebEngineSettings::defaultTextEncoding
     \since QtWebEngine 1.2
 
@@ -713,6 +729,14 @@ void QQuickWebEngineSettings::setNavigateOnDropEnabled(bool on)
     d_ptr->setAttribute(QWebEngineSettings::NavigateOnDropEnabled, on);
     if (wasOn != on)
         Q_EMIT navigateOnDropEnabledChanged();
+}
+
+void QQuickWebEngineSettings::setReadingFromCanvasEnabled(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::ReadingFromCanvasEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::ReadingFromCanvasEnabled, on);
+    if (wasOn != on)
+        Q_EMIT readingFromCanvasEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setUnknownUrlSchemePolicy(QQuickWebEngineSettings::UnknownUrlSchemePolicy policy)

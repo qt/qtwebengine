@@ -55,10 +55,18 @@ static QSslServer *createServer(const QString &certificateFileName, const QStrin
 struct HttpsServer : HttpServer
 {
     HttpsServer(const QString &certPath, const QString &keyPath, const QString &ca,
-                QObject *parent = nullptr)
-        : HttpServer(createServer(certPath, keyPath, ca), "https", QHostAddress::LocalHost, 0,
+                quint16 port = 0, QObject *parent = nullptr)
+        : HttpServer(createServer(certPath, keyPath, ca), "https", QHostAddress::LocalHost, port,
                      parent)
     {
+    }
+
+    void setVerifyMode(const QSslSocket::PeerVerifyMode verifyMode)
+    {
+        QSslServer *server = static_cast<QSslServer *>(getTcpServer());
+        QSslConfiguration config = server->sslConfiguration();
+        config.setPeerVerifyMode(verifyMode);
+        server->setSslConfiguration(config);
     }
 };
 

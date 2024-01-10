@@ -14,6 +14,7 @@
 #include <touch_selection_menu_controller.h>
 #include <web_contents_adapter_client.h>
 
+#include <QtCore/qdiriterator.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qtimer.h>
@@ -731,8 +732,14 @@ bool UIDelegatesManager::initializeImportDirs(QStringList &dirs, QQmlEngine *eng
         }
 
         QFileInfo fi(controlsImportPath);
-        if (fi.exists())
+        if (fi.exists()) {
             dirs << fi.absolutePath();
+
+            // add subdirectories
+            QDirIterator it(controlsImportPath, QDir::AllDirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+            while (it.hasNext())
+                dirs << QFileInfo(it.next()).absoluteFilePath();
+        }
     }
     return !dirs.isEmpty();
 }

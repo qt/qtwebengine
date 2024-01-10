@@ -21,7 +21,7 @@ static QUrl startupUrl(const QCommandLineParser &parser)
         if (url.isValid())
             return url;
     }
-    return QUrl(QStringLiteral("https://www.qt.io"));
+    return QUrl(QStringLiteral("chrome://qt"));
 }
 
 int main(int argc, char **argv)

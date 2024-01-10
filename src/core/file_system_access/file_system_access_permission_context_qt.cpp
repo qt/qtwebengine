@@ -241,6 +241,8 @@ FileSystemAccessPermissionContextQt::GetReadPermissionGrant(const url::Origin &o
         break;
     case UserAction::kLoadFromStorage:
         break;
+    case UserAction::kNone:
+        Q_UNREACHABLE();
     }
 
     return existing_grant;
@@ -285,6 +287,8 @@ FileSystemAccessPermissionContextQt::GetWritePermissionGrant(const url::Origin &
     case UserAction::kDragAndDrop:
     case UserAction::kLoadFromStorage:
         break;
+    case UserAction::kNone:
+        Q_UNREACHABLE();
     }
 
     return existing_grant;
@@ -469,6 +473,10 @@ void FileSystemAccessPermissionContextQt::PermissionGrantDestroyed(
     }
     if (grant_it->second == grant)
         grants.erase(grant_it);
+}
+
+void FileSystemAccessPermissionContextQt::NotifyEntryMoved(const url::Origin &, const base::FilePath &, const base::FilePath &)
+{
 }
 
 } // namespace QtWebEngineCore

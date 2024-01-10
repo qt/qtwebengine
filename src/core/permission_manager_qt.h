@@ -4,7 +4,7 @@
 #ifndef PERMISSION_MANAGER_QT_H
 #define PERMISSION_MANAGER_QT_H
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "content/public/browser/permission_controller_delegate.h"
 
 #include "profile_adapter.h"

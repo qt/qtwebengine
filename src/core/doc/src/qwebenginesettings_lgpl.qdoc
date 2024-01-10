@@ -168,6 +168,10 @@
     \value NavigateOnDropEnabled Specifies that navigations can be triggered by dropping URLs on
            the view.
            Enabled by default. (Added in Qt 6.4)
+    \value ReadingFromCanvasEnabled Specifies that reading from all canvas elements is enabled.
+           This setting will have impact on all HTML5 canvas elements irrespective of origin, and can be disabled
+           to prevent canvas fingerprinting.
+           Enabled by default. (Added in Qt 6.6)
 */
 
 /*!

@@ -58,7 +58,7 @@ function(add_check_for_support)
             set(${module}_SUPPORT ON)
         endif()
         if(${module}_SUPPORT)
-            if("x${arg_CONDITION}" STREQUAL x)
+            if("x${arg_CONDITION}" STREQUAL "x")
                 set(arg_CONDITION ON)
             endif()
             qt_evaluate_config_expression(result ${arg_CONDITION})
@@ -197,7 +197,7 @@ function(extend_gn_target target)
     cmake_parse_arguments(PARSE_ARGV 1 GN "" "" "CONDITION;${elements}")
     _qt_internal_validate_all_args_are_parsed(GN)
 
-    if("x${GN_CONDITION}" STREQUAL x)
+    if("x${GN_CONDITION}" STREQUAL "x")
         set(GN_CONDITION ON)
     endif()
     qt_evaluate_config_expression(result ${GN_CONDITION})
@@ -211,7 +211,7 @@ function(extend_gn_list outList)
     cmake_parse_arguments(PARSE_ARGV 1 GN "" "" "ARGS;CONDITION")
     _qt_internal_validate_all_args_are_parsed(GN)
 
-    if("x${GN_CONDITION}" STREQUAL x)
+    if("x${GN_CONDITION}" STREQUAL "x")
         set(GN_CONDITION ON)
     endif()
     qt_evaluate_config_expression(result ${GN_CONDITION})
@@ -231,10 +231,15 @@ function(configure_gn_target sourceDir inFilePath outFilePath)
     # FIXME: GN_CONFIG
     set(GN_CONFIG NOTUSED)
 
+    set(path_mode REALPATH)
+    if(APPLE AND QT_ALLOW_SYMLINK_IN_PATHS)
+        set(path_mode ABSOLUTE)
+    endif()
+
     # GN_SOURCES GN_HEADERS
     get_property(gnSources DIRECTORY PROPERTY GN_SOURCES)
     foreach(gnSourceFile ${gnSources})
-        get_filename_component(gnSourcePath ${sourceDir}/${gnSourceFile} REALPATH)
+        get_filename_component(gnSourcePath ${sourceDir}/${gnSourceFile} ${path_mode})
         list(APPEND sourceList \"${gnSourcePath}\")
     endforeach()
     set(GN_HEADERS ${sourceList})
@@ -254,7 +259,7 @@ function(configure_gn_target sourceDir inFilePath outFilePath)
     get_property(gnIncludes DIRECTORY PROPERTY GN_INCLUDES)
     list(REMOVE_DUPLICATES gnIncludes)
     foreach(gnInclude ${gnIncludes})
-        get_filename_component(gnInclude ${gnInclude} REALPATH)
+        get_filename_component(gnInclude ${gnInclude} ${path_mode})
         list(APPEND GN_ARGS_INCLUDES \"-I${gnInclude}\")
         list(APPEND GN_INCLUDE_DIRS \"${gnInclude}\")
     endforeach()
@@ -278,7 +283,7 @@ function(configure_gn_target sourceDir inFilePath outFilePath)
     list(REMOVE_DUPLICATES GN_CFLAGS_C)
 
     # GN_SOURCE_ROOT
-    get_filename_component(GN_SOURCE_ROOT "${sourceDir}" REALPATH)
+    get_filename_component(GN_SOURCE_ROOT "${sourceDir}" ${path_mode})
 
     if(APPLE) # this runs in scrpit mode without qt-cmake so on MACOS here
         recoverFrameworkBuild(GN_INCLUDE_DIRS GN_CFLAGS_C)
@@ -393,14 +398,20 @@ function(get_ios_target_triple_and_sysroot result arch)
     )
 endfunction()
 
-function(add_ninja_target target cmakeTarget ninjaTarget config arch buildDir)
-    string(TOUPPER ${config} cfg)
-    add_custom_target(${target} DEPENDS ${buildDir}/${config}/${arch}/${ninjaTarget}.stamp)
-    set_target_properties(${target} PROPERTIES
-        CONFIG ${config}
-        ARCH ${arch}
-        CMAKE_TARGET ${cmakeTarget}
-        NINJA_TARGET ${ninjaTarget}
+function(add_ninja_target)
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "" "TARGET;CMAKE_TARGET;NINJA_TARGET;BUILDDIR;NINJA_STAMP;NINJA_DATA_STAMP;CONFIG;ARCH" ""
+    )
+    _qt_internal_validate_all_args_are_parsed(arg)
+    set(stamps ${arg_NINJA_STAMP} ${arg_NINJA_DATA_STAMP})
+    list(TRANSFORM stamps PREPEND "${arg_BUILDDIR}/${arg_CONFIG}/${arg_ARCH}/")
+    add_custom_target(${arg_TARGET} DEPENDS ${stamps})
+    set_target_properties(${arg_TARGET} PROPERTIES
+        CONFIG ${arg_CONFIG}
+        ARCH ${arg_ARCH}
+        CMAKE_TARGET ${arg_CMAKE_TARGET}
+        NINJA_TARGET ${arg_NINJA_TARGET}
+        NINJA_STAMP ${arg_NINJA_STAMP}
     )
 endfunction()
 
@@ -448,6 +459,7 @@ function(add_linker_options target buildDir completeStatic)
     set(objects_rsp "${buildDir}/${ninjaTarget}_objects.rsp")
     set(archives_rsp "${buildDir}/${ninjaTarget}_archives.rsp")
     set(libs_rsp "${buildDir}/${ninjaTarget}_libs.rsp")
+    set(ldir_rsp "${buildDir}/${ninjaTarget}_ldir.rsp")
     set_target_properties(${cmakeTarget} PROPERTIES STATIC_LIBRARY_OPTIONS "@${objects_rsp}")
     if(LINUX OR ANDROID)
          get_gn_arch(cpu ${TEST_architecture_arch})
@@ -463,30 +475,9 @@ function(add_linker_options target buildDir completeStatic)
              )
          endif()
 
-         # we need only the '-L' flags from lflags.rsp, filter them
-         set(lflags_rsp "${buildDir}/${ninjaTarget}_lflags.rsp")
-         set(lflags_filtered_rsp "${buildDir}/${ninjaTarget}_lflags_filtered.rsp")
-         set(lflags_filter_script "${buildDir}/${ninjaTarget}_lflags_filter.cmake")
-         file(GENERATE OUTPUT ${lflags_filter_script}
-              CONTENT "file(STRINGS ${lflags_rsp} lflags)
-                       string(REGEX MATCHALL \"-L.*\" lflags_filtered \${lflags})
-                       file(WRITE ${lflags_filtered_rsp} \${lflags_filtered})"
-              FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-         )
-         add_custom_command(
-            OUTPUT ${lflags_filtered_rsp}
-            COMMAND ${CMAKE_COMMAND} -P ${lflags_filter_script}
-            DEPENDS ${lflags_filter_script} ${lflags_rsp}
-         )
-         add_custom_target(
-            run_${cmakeTarget}_${config}_lflags_filter
-            DEPENDS ${lflags_filtered_rsp}
-         )
-         add_dependencies(${cmakeTarget} run_${cmakeTarget}_${config}_lflags_filter)
-
          # linker here options are just to prevent processing it by cmake
          target_link_libraries(${cmakeTarget} PRIVATE
-             "$<1:-Wl,--no-fatal-warnings $<$<CONFIG:${config}>:@${lflags_filtered_rsp}> $<$<CONFIG:${config}>:@${libs_rsp}> -Wl,--no-fatal-warnings>"
+             "$<1:-Wl,--no-fatal-warnings $<$<CONFIG:${config}>:@${ldir_rsp}> $<$<CONFIG:${config}>:@${libs_rsp}> -Wl,--no-fatal-warnings>"
          )
     endif()
     if(MACOS)
@@ -494,11 +485,17 @@ function(add_linker_options target buildDir completeStatic)
         if(NOT completeStatic)
             target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${archives_rsp}>")
         endif()
-        target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${libs_rsp}>")
+        target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${ldir_rsp}>" "$<$<CONFIG:${config}>:@${libs_rsp}>")
     endif()
     if(WIN32)
         get_copy_of_response_file(objects_rsp ${target} objects)
-        target_link_options(${cmakeTarget} PRIVATE /DELAYLOAD:mf.dll /DELAYLOAD:mfplat.dll /DELAYLOAD:mfreadwrite.dll /DELAYLOAD:winmm.dll)
+        if(NOT MINGW)
+            target_link_options(${cmakeTarget}
+                PRIVATE /DELAYLOAD:mf.dll /DELAYLOAD:mfplat.dll /DELAYLOAD:mfreadwrite.dll /DELAYLOAD:winmm.dll
+            )
+            # enable larger PDBs
+            target_link_options(${cmakeTarget} PRIVATE "/pdbpagesize:8192")
+        endif()
         target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${objects_rsp}>")
         if(NOT completeStatic)
             get_copy_of_response_file(archives_rsp ${target} archives)
@@ -506,8 +503,6 @@ function(add_linker_options target buildDir completeStatic)
         endif()
         get_copy_of_response_file(libs_rsp ${target} libs)
         target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${libs_rsp}>")
-        # enable larger PDBs
-        target_link_options(${cmakeTarget} PRIVATE "/pdbpagesize:8192")
         # we need libs rsp also when linking process with sandbox lib
         set_property(TARGET ${cmakeTarget} PROPERTY LIBS_RSP ${libs_rsp})
     endif()
@@ -518,6 +513,7 @@ function(add_intermediate_archive target buildDir completeStatic)
     get_target_property(arch ${target} ARCH)
     get_target_property(ninjaTarget ${target} NINJA_TARGET)
     get_target_property(cmakeTarget ${target} CMAKE_TARGET)
+    get_target_property(ninjaStamp ${target} NINJA_STAMP)
     string(TOUPPER ${config} cfg)
     set(objects_rsp "${buildDir}/${ninjaTarget}_objects.rsp")
     set(objects_out "${buildDir}/${cmakeTarget}_objects.o")
@@ -545,7 +541,7 @@ function(add_intermediate_archive target buildDir completeStatic)
             ${objects_out}
             ${archives_out}
         DEPENDS
-            ${buildDir}/${ninjaTarget}.stamp
+            ${buildDir}/${ninjaStamp}
         WORKING_DIRECTORY "${buildDir}/../../.."
         COMMENT "Creating intermediate archives for ${cmakeTarget}/${config}/${arch}"
         USES_TERMINAL
@@ -559,6 +555,7 @@ function(add_intermediate_object target buildDir completeStatic)
     get_target_property(arch ${target} ARCH)
     get_target_property(ninjaTarget ${target} NINJA_TARGET)
     get_target_property(cmakeTarget ${target} CMAKE_TARGET)
+    get_target_property(ninjaStamp ${target} NINJA_STAMP)
     string(TOUPPER ${config} cfg)
     if(IOS)
         get_ios_target_triple_and_sysroot(args ${arch})
@@ -573,7 +570,7 @@ function(add_intermediate_object target buildDir completeStatic)
             -Wl,-keep_private_externs
             @${objects_rsp}
         DEPENDS
-            ${buildDir}/${ninjaTarget}.stamp
+            ${buildDir}/${ninjaStamp}
         WORKING_DIRECTORY "${buildDir}/../../.."
         COMMENT "Creating intermediate object files for ${cmakeTarget}/${config}/${arch}"
         USES_TERMINAL
@@ -621,6 +618,7 @@ endfunction()
 function(add_lipo_command target buildDir)
     get_target_property(config ${target} CONFIG)
     get_target_property(cmakeTarget ${target} CMAKE_TARGET)
+    get_target_property(ninjaTarget ${target} NINJA_TARGET)
     set(fileName ${cmakeTarget}.a)
     create_lipo_command(${target} ${buildDir} ${fileName})
     add_library(${cmakeTarget}_${config} STATIC IMPORTED GLOBAL)
@@ -851,7 +849,8 @@ macro(append_build_type_setup)
         forbid_non_component_debug_builds=false
         treat_warnings_as_errors=false
         use_allocator_shim=false
-        use_allocator="none"
+        use_partition_alloc=true
+        use_partition_alloc_as_malloc=false
         use_custom_libcxx=false
     )
     if(${config} STREQUAL "Debug")
@@ -874,7 +873,7 @@ macro(append_build_type_setup)
     if(FEATURE_developer_build OR (${config} STREQUAL "Debug") OR QT_FEATURE_webengine_sanitizer)
         list(APPEND gnArgArg
              is_official_build=false
-             from_here_uses_location_builtins=false
+             use_viz_debugger=false
         )
     else()
         list(APPEND gnArgArg is_official_build=true)
@@ -918,7 +917,9 @@ macro(append_compiler_linker_sdk_setup)
     endif()
 
     extend_gn_list(gnArgArg ARGS is_clang CONDITION CLANG)
+    extend_gn_list(gnArgArg ARGS is_mingw CONDITION MINGW)
     extend_gn_list(gnArgArg ARGS is_msvc CONDITION MSVC)
+    extend_gn_list(gnArgArg ARGS is_gcc CONDITION LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
     if(CLANG)
         if(MACOS)
@@ -981,11 +982,13 @@ macro(append_compiler_linker_sdk_setup)
     if(MSVC)
         get_filename_component(windowsSdkPath $ENV{WINDOWSSDKDIR} ABSOLUTE)
         get_filename_component(visualStudioPath $ENV{VSINSTALLDIR} ABSOLUTE)
+        set(windowSdkVersion $ENV{WindowsSDKVersion})
         list(APPEND gnArgArg
             win_linker_timing=true
             use_incremental_linking=false
-            visual_studio_version=2019
+            visual_studio_version=2022
             visual_studio_path=\"${visualStudioPath}\"
+            windows_sdk_version=\"${windowsSdkVersion}\"
             windows_sdk_path=\"${windowsSdkPath}\"
         )
     endif()
@@ -1053,15 +1056,23 @@ macro(append_sanitizer_setup)
             ARGS is_ubsan is_ubsan_vptr
             CONDITION undefined IN_LIST ECM_ENABLE_SANITIZERS
         )
-        if(MACOS)
+        if(APPLE)
             list(APPEND gnArgArg
-                clang_version="${QT_COMPILER_VERSION_MAJOR}.${QT_COMPILER_VERSION_MINOR}.${QT_COMPILER_VERSION_PATCH}"
+                clang_version=\"${QT_COMPILER_VERSION_MAJOR}.${QT_COMPILER_VERSION_MINOR}.${QT_COMPILER_VERSION_PATCH}\"
             )
         endif()
     endif()
 endmacro()
 
 macro(append_toolchain_setup)
+    if(MINGW)
+        list(APPEND gnArgArg
+            # note '/' prefix
+            custom_toolchain="/${buildDir}/target_toolchain:target"
+            host_toolchain="/${buildDir}/host_toolchain:host"
+        )
+        list(APPEND gnArgArg host_cpu="${cpu}")
+    endif()
     if(LINUX)
         list(APPEND gnArgArg
             custom_toolchain="${buildDir}/target_toolchain:target"
@@ -1104,15 +1115,16 @@ endmacro()
 
 function(add_ninja_command)
     cmake_parse_arguments(PARSE_ARGV 0 arg
-        "" "TARGET;OUTPUT;BUILDDIR;MODULE" "BYPRODUCTS"
+        "" "TARGET;BUILDDIR;MODULE" "OUTPUT;BYPRODUCTS"
     )
     _qt_internal_validate_all_args_are_parsed(arg)
 
     string(REPLACE " " ";" NINJAFLAGS "$ENV{NINJAFLAGS}")
+    list(TRANSFORM arg_OUTPUT PREPEND "${arg_BUILDDIR}/")
     list(TRANSFORM arg_BYPRODUCTS PREPEND "${arg_BUILDDIR}/")
     add_custom_command(
         OUTPUT
-            ${arg_BUILDDIR}/${arg_OUTPUT}
+            ${arg_OUTPUT}
             ${arg_BUILDDIR}/${arg_TARGET} # use generator expression in CMAKE 3.20
         BYPRODUCTS ${arg_BYPRODUCTS}
         COMMENT "Running ninja for ${arg_TARGET} in ${arg_BUILDDIR}"
@@ -1151,7 +1163,12 @@ function(get_architectures result)
     set(${result} ${${result}} PARENT_SCOPE)
 endfunction()
 
-function(add_gn_build_aritfacts_to_target cmakeTarget ninjaTarget module buildDir completeStatic)
+function(add_gn_build_aritfacts_to_target)
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "" "CMAKE_TARGET;NINJA_TARGET;BUILDDIR;MODULE;COMPLETE_STATIC;NINJA_STAMP;NINJA_DATA_STAMP" ""
+    )
+    _qt_internal_validate_all_args_are_parsed(arg)
+
     # config loop is a workaround to be able to add_custom_command per config
     # note this is fixed in CMAKE.3.20 and should be cleaned up when 3.20 is
     # the minimum cmake we support
@@ -1159,41 +1176,50 @@ function(add_gn_build_aritfacts_to_target cmakeTarget ninjaTarget module buildDi
     get_architectures(archs)
     foreach(config ${configs})
         foreach(arch ${archs})
-
-            set(target ${ninjaTarget}_${config}_${arch})
-            add_ninja_target(${target} ${cmakeTarget} ${ninjaTarget} ${config} ${arch} ${buildDir})
-            add_ninja_command(
-                TARGET ${ninjaTarget}
-                OUTPUT ${ninjaTarget}.stamp
-                BUILDDIR ${buildDir}/${config}/${arch}
-                MODULE ${module}
+            set(target ${arg_NINJA_TARGET}_${config}_${arch})
+            set(stamps ${arg_NINJA_STAMP} ${arg_NINJA_DATA_STAMP})
+            add_ninja_target(
+                TARGET ${target}
+                NINJA_TARGET ${arg_NINJA_TARGET}
+                CMAKE_TARGET ${arg_CMAKE_TARGET}
+                NINJA_STAMP ${arg_NINJA_STAMP}
+                NINJA_DATA_STAMP ${arg_NINJA_DATA_STAMP}
+                CONFIG ${config}
+                ARCH ${arch}
+                BUILDDIR ${arg_BUILDDIR}
             )
-            add_dependencies(run_${module}_NinjaDone ${target})
-            set_target_properties(${cmakeTarget} PROPERTIES
-                LINK_DEPENDS ${buildDir}/${config}/${arch}/${ninjaTarget}.stamp
+            add_ninja_command(
+                TARGET ${arg_NINJA_TARGET}
+                OUTPUT ${stamps}
+                BUILDDIR ${arg_BUILDDIR}/${config}/${arch}
+                MODULE ${arg_MODULE}
+            )
+            add_dependencies(run_${arg_MODULE}_NinjaDone ${target})
+            set_target_properties(${arg_CMAKE_TARGET} PROPERTIES
+                LINK_DEPENDS ${arg_BUILDDIR}/${config}/${arch}/${arg_NINJA_STAMP}
             )
             if(QT_IS_MACOS_UNIVERSAL)
-                add_intermediate_archive(${target} ${buildDir}/${config}/${arch} ${completeStatic})
+                add_intermediate_archive(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
             elseif(IOS)
-                add_intermediate_object(${target} ${buildDir}/${config}/${arch} ${completeStatic})
+                add_intermediate_object(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
             else()
                 if(MACOS AND QT_FEATURE_static)
                     # mac archiver does not support @file notation, do intermediate object istead
-                    add_intermediate_object(${target} ${buildDir}/${config}/${arch} ${completeStatic})
-                    add_archiver_options(${target} ${buildDir}/${config}/${arch} ${completeStatic})
+                    add_intermediate_object(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
+                    add_archiver_options(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
                 else()
-                    add_linker_options(${target} ${buildDir}/${config}/${arch} ${completeStatic})
+                    add_linker_options(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
                 endif()
             endif()
             unset(target)
         endforeach()
         list(GET archs 0 arch)
-        set(target ${ninjaTarget}_${config}_${arch})
+        set(target ${arg_NINJA_TARGET}_${config}_${arch})
         if(QT_IS_MACOS_UNIVERSAL)
-            add_lipo_command(${target} ${buildDir}/${config})
+            add_lipo_command(${target} ${arg_BUILDDIR}/${config})
         endif()
         if(IOS)
-            add_ios_lipo_command(${target} ${buildDir}/${config})
+            add_ios_lipo_command(${target} ${arg_BUILDDIR}/${config})
         endif()
     endforeach()
 endfunction()
@@ -1218,7 +1244,7 @@ function(add_gn_command)
     file(WRITE ${gnArgArgFile} ${arg_GN_ARGS})
 
     foreach(ninjaTarget ${arg_NINJA_TARGETS})
-        list(APPEND output ${ninjaTarget}_objects.rsp ${ninjaTarget}_archives.rsp ${ninjaTarget}_libs.rsp ${ninjaTarget}_lflags.rsp)
+        list(APPEND output ${ninjaTarget}_objects.rsp ${ninjaTarget}_archives.rsp ${ninjaTarget}_libs.rsp ${ninjaTarget}_ldir.rsp)
     endforeach()
     list(TRANSFORM output PREPEND "${arg_BUILDDIR}/")
 
@@ -1235,6 +1261,7 @@ function(add_gn_command)
              -DQT_HOST_GN_PATH=${QT_HOST_GN_PATH}
              -DPython3_EXECUTABLE=${Python3_EXECUTABLE}
              -DGN_THREADS=$ENV{QTWEBENGINE_GN_THREADS}
+             -DQT_ALLOW_SYMLINK_IN_PATHS=${QT_ALLOW_SYMLINK_IN_PATHS}
              -P ${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Gn.cmake
         WORKING_DIRECTORY ${WEBENGINE_ROOT_BUILD_DIR}
         COMMENT "Run gn for target ${arg_CMAKE_TARGET} in ${arg_BUILDDIR}"
@@ -1359,7 +1386,7 @@ function(add_code_attributions_target)
     add_custom_command(
         OUTPUT ${arg_OUTPUT}
         COMMAND ${CMAKE_COMMAND}
-            -DLICENSE_SCRIPT=${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium/tools/licenses.py
+            -DLICENSE_SCRIPT=${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium/tools/licenses/licenses.py
             -DFILE_TEMPLATE=${fileTemplate}
             -DENTRY_TEMPLATE=${entryTemplate}
             -DGN_TARGET=${arg_GN_TARGET}
@@ -1369,7 +1396,7 @@ function(add_code_attributions_target)
             -P ${WEBENGINE_ROOT_SOURCE_DIR}/cmake/License.cmake
         WORKING_DIRECTORY ${WEBENGINE_ROOT_BUILD_DIR}
         DEPENDS
-            ${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium/tools/licenses.py
+            ${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium/tools/licenses/licenses.py
             ${arg_FILE_TEMPLATE}
             ${arg_ENTRY_TEMPLATE}
             ${WEBENGINE_ROOT_SOURCE_DIR}/cmake/License.cmake

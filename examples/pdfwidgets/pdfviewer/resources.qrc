@@ -1,10 +1,12 @@
 <RCC>
     <qresource prefix="/icons">
         <file>images/document-open.svgz</file>
+        <file>images/go-down-search.svgz</file>
         <file>images/go-next-view.svgz</file>
         <file>images/go-previous-view.svgz</file>
         <file>images/go-next-view-page.svgz</file>
         <file>images/go-previous-view-page.svgz</file>
+        <file>images/go-up-search.svgz</file>
         <file>images/zoom-in.svgz</file>
         <file>images/zoom-out.svgz</file>
     </qresource>

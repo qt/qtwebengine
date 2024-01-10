@@ -35,7 +35,7 @@ RenderWidgetHostViewQtDelegateItem::RenderWidgetHostViewQtDelegateItem(RenderWid
 
 RenderWidgetHostViewQtDelegateItem::~RenderWidgetHostViewQtDelegateItem()
 {
-    releaseVulkanResources();
+    releaseTextureResources();
     if (m_widgetDelegate) {
         m_widgetDelegate->Unbind();
         m_widgetDelegate->Destroy();
@@ -283,9 +283,9 @@ void RenderWidgetHostViewQtDelegateItem::touchEvent(QTouchEvent *event)
 
 void RenderWidgetHostViewQtDelegateItem::hoverMoveEvent(QHoverEvent *event)
 {
+    event->ignore();
     if ((!m_isPopup && m_widgetDelegate && !m_widgetDelegate->ActiveFocusOnPress())
         || event->position() == event->oldPosF()) {
-        event->ignore();
         return;
     }
     m_client->forwardEvent(event);
@@ -293,6 +293,7 @@ void RenderWidgetHostViewQtDelegateItem::hoverMoveEvent(QHoverEvent *event)
 
 void RenderWidgetHostViewQtDelegateItem::hoverLeaveEvent(QHoverEvent *event)
 {
+    event->ignore();
     m_client->forwardEvent(event);
 }
 
@@ -322,14 +323,15 @@ void RenderWidgetHostViewQtDelegateItem::itemChange(ItemChange change, const Ite
         if (value.window) {
             m_windowConnections.append(connect(value.window, &QQuickWindow::beforeRendering,
                                                this, &RenderWidgetHostViewQtDelegateItem::onBeforeRendering, Qt::DirectConnection));
-            m_windowConnections.append(connect(value.window, &QQuickWindow::afterFrameEnd,
-                                               this, &RenderWidgetHostViewQtDelegateItem::onAfterRendering, Qt::DirectConnection));
+            m_windowConnections.append(connect(value.window, &QQuickWindow::afterFrameEnd, this,
+                                               &RenderWidgetHostViewQtDelegateItem::onAfterFrameEnd,
+                                               Qt::DirectConnection));
             m_windowConnections.append(connect(value.window, SIGNAL(xChanged(int)), SLOT(onWindowPosChanged())));
             m_windowConnections.append(connect(value.window, SIGNAL(yChanged(int)), SLOT(onWindowPosChanged())));
 #if QT_CONFIG(webengine_vulkan)
             m_windowConnections.append(
                     connect(value.window, &QQuickWindow::sceneGraphAboutToStop, this,
-                            &RenderWidgetHostViewQtDelegateItem::releaseVulkanResources,
+                            &RenderWidgetHostViewQtDelegateItem::releaseTextureResources,
                             Qt::DirectConnection));
 #endif
             if (!m_isPopup)
@@ -403,7 +405,7 @@ void RenderWidgetHostViewQtDelegateItem::onBeforeRendering()
     comp->waitForTexture();
 }
 
-void RenderWidgetHostViewQtDelegateItem::onAfterRendering()
+void RenderWidgetHostViewQtDelegateItem::onAfterFrameEnd()
 {
     auto comp = compositor();
     if (!comp || comp->type() != Compositor::Type::NativeBuffer)
@@ -422,15 +424,13 @@ void RenderWidgetHostViewQtDelegateItem::onHide()
     m_client->forwardEvent(&event);
 }
 
-void RenderWidgetHostViewQtDelegateItem::releaseVulkanResources()
+void RenderWidgetHostViewQtDelegateItem::releaseTextureResources()
 {
-#if QT_CONFIG(webengine_vulkan)
     auto comp = compositor();
-    if (!comp || comp->type() != Compositor::Type::Vulkan)
+    if (!comp || (comp->type() != Compositor::Type::Vulkan && comp->type() != Compositor::Type::NativeBuffer))
         return;
 
-    comp->releaseVulkanResources(QQuickItem::window());
-#endif
+    comp->releaseResources(QQuickItem::window());
 }
 
 void RenderWidgetHostViewQtDelegateItem::adapterClientChanged(WebContentsAdapterClient *client)

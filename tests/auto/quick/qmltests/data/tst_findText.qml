@@ -206,8 +206,7 @@ TestWebEngineView {
 
             var listItemText = '';
             for (var i = 0; i < 100000; ++i)
-                listItemText += "bla ";
-            listItemText = listItemText.trim();
+                listItemText += "bla";
 
             webEngineView.loadHtml(
                         "<html><body>" +

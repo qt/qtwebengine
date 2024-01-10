@@ -1,4 +1,5 @@
 // Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Tobias König <tobias.koenig@kdab.com>
+// Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #ifndef QPDFVIEW_H
@@ -11,6 +12,7 @@ QT_BEGIN_NAMESPACE
 
 class QPdfDocument;
 class QPdfPageNavigator;
+class QPdfSearchModel;
 class QPdfViewPrivate;
 
 class Q_PDF_WIDGETS_EXPORT QPdfView : public QAbstractScrollArea
@@ -25,6 +27,9 @@ class Q_PDF_WIDGETS_EXPORT QPdfView : public QAbstractScrollArea
 
     Q_PROPERTY(int pageSpacing READ pageSpacing WRITE setPageSpacing NOTIFY pageSpacingChanged)
     Q_PROPERTY(QMargins documentMargins READ documentMargins WRITE setDocumentMargins NOTIFY documentMarginsChanged)
+
+    Q_PROPERTY(QPdfSearchModel* searchModel READ searchModel WRITE setSearchModel NOTIFY searchModelChanged)
+    Q_PROPERTY(int currentSearchResultIndex READ currentSearchResultIndex WRITE setCurrentSearchResultIndex NOTIFY currentSearchResultIndexChanged)
 
 public:
     enum class PageMode
@@ -49,6 +54,11 @@ public:
     void setDocument(QPdfDocument *document);
     QPdfDocument *document() const;
 
+    QPdfSearchModel *searchModel() const;
+    void setSearchModel(QPdfSearchModel *searchModel);
+
+    int currentSearchResultIndex() const;
+
     QPdfPageNavigator *pageNavigator() const;
 
     PageMode pageMode() const;
@@ -65,6 +75,7 @@ public Q_SLOTS:
     void setPageMode(QPdfView::PageMode mode);
     void setZoomMode(QPdfView::ZoomMode mode);
     void setZoomFactor(qreal factor);
+    void setCurrentSearchResultIndex(int currentResult);
 
 Q_SIGNALS:
     void documentChanged(QPdfDocument *document);
@@ -73,11 +84,16 @@ Q_SIGNALS:
     void zoomFactorChanged(qreal zoomFactor);
     void pageSpacingChanged(int pageSpacing);
     void documentMarginsChanged(QMargins documentMargins);
+    void searchModelChanged(QPdfSearchModel *searchModel);
+    void currentSearchResultIndexChanged(int currentResult);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void scrollContentsBy(int dx, int dy) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
     Q_DECLARE_PRIVATE(QPdfView)

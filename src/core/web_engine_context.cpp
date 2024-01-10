@@ -7,7 +7,7 @@
 #include <QtGui/private/qrhi_p.h>
 
 #include "base/base_switches.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/power_monitor/power_monitor.h"
@@ -105,6 +105,7 @@
 #include <qopenglcontext_platform.h>
 #endif
 #include <QQuickWindow>
+#include <QRegularExpression>
 #include <QStringList>
 #include <QSurfaceFormat>
 #include <QNetworkProxy>
@@ -194,9 +195,9 @@ static const char *getGLType(bool enableGLSoftwareRendering, bool disableGpu)
         return glType;
 
 #if defined(Q_OS_MACOS)
-    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Metal)
-        return gl::kGLImplementationANGLEName;
-#elif defined(Q_OS_WIN)
+    return gl::kGLImplementationANGLEName;
+#else
+#if defined(Q_OS_WIN)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11)
         return gl::kGLImplementationANGLEName;
 #endif
@@ -212,15 +213,10 @@ static const char *getGLType(bool enableGLSoftwareRendering, bool disableGpu)
     switch (sharedFormat.renderableType()) {
     case QSurfaceFormat::OpenGL:
         if (sharedFormat.profile() == QSurfaceFormat::CoreProfile) {
-#if defined(Q_OS_MACOS)
-            // Chromium supports core profile only on mac
-            glType = gl::kGLImplementationCoreProfileName;
-#else
             glType = gl::kGLImplementationDesktopName;
             qWarning("An OpenGL Core Profile was requested, but it is not supported "
                      "on the current platform. Falling back to a non-Core profile. "
                      "Note that this might cause rendering issues.");
-#endif
         } else {
             glType = gl::kGLImplementationDesktopName;
         }
@@ -236,6 +232,7 @@ static const char *getGLType(bool enableGLSoftwareRendering, bool disableGpu)
                  "https://bugreports.qt.io");
     }
     return glType;
+#endif // defined(Q_OS_MACOS)
 }
 #else
 static const char *getGLType(bool /*enableGLSoftwareRendering*/, bool disableGpu)
@@ -243,8 +240,7 @@ static const char *getGLType(bool /*enableGLSoftwareRendering*/, bool disableGpu
     if (disableGpu)
         return gl::kGLImplementationDisabledName;
 #if defined(Q_OS_MACOS)
-    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Metal)
-        return gl::kGLImplementationANGLEName;
+    return gl::kGLImplementationANGLEName;
 #elif defined(Q_OS_WIN)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11)
         return gl::kGLImplementationANGLEName;
@@ -739,7 +735,6 @@ WebEngineContext::WebEngineContext()
     disableFeatures.push_back(features::kWebOTP.name);
     disableFeatures.push_back(features::kWebPayments.name);
     disableFeatures.push_back(features::kWebUsb.name);
-    disableFeatures.push_back(media::kPictureInPicture.name);
 
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
@@ -934,6 +929,22 @@ base::CommandLine *WebEngineContext::initCommandLine(bool &useEmbeddedSwitches,
             appArgs.removeAll(QStringLiteral("--enable-webgl-software-rendering"));
     appArgs.removeAll(QStringLiteral("--disable-embedded-switches"));
     appArgs.removeAll(QStringLiteral("--enable-embedded-switches"));
+
+    bool isRemoteDebugPort =
+            (-1
+             != appArgs.indexOf(QRegularExpression(QStringLiteral("--remote-debugging-port=.*"),
+                                                   QRegularExpression::CaseInsensitiveOption)))
+            || !qEnvironmentVariable("QTWEBENGINE_REMOTE_DEBUGGING").isEmpty();
+    bool isRemoteAllowOrigins =
+            (-1
+             != appArgs.indexOf(QRegularExpression(QStringLiteral("--remote-allow-origins=.*"),
+                                                   QRegularExpression::CaseInsensitiveOption)));
+
+    if (isRemoteDebugPort && !isRemoteAllowOrigins) {
+        appArgs.append(QStringLiteral("--remote-allow-origins=*"));
+        qWarning("Added {--remote-allow-origins=*} to command-line arguments "
+                 "to avoid web socket connection errors during remote debugging.");
+    }
 
     base::CommandLine::StringVector argv;
     argv.resize(appArgs.size());
