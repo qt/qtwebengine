@@ -473,7 +473,7 @@ add_check_for_support(
    MESSAGE "Build can be done only on Linux, Windows, macO, iOS and Android(on non-Windows hosts only)."
 )
 if(LINUX AND CMAKE_CROSSCOMPILING)
-   set(supportedTargets "arm" "arm64" "armv7-a")
+   set(supportedTargets "arm" "arm64" "armv7-a" "x86_64")
    add_check_for_support(
        MODULES QtWebEngine QtPdf
        CONDITION TEST_architecture_arch IN_LIST supportedTargets
