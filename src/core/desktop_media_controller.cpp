@@ -9,8 +9,11 @@
 #include "base/functional/callback.h"
 #include "chrome/browser/media/webrtc/desktop_capturer_wrapper.h"
 #include "chrome/browser/media/webrtc/native_desktop_media_list.h"
-#include "content/public/browser/desktop_capture.h"
 #include "content/public/browser/desktop_media_id.h"
+
+#if QT_CONFIG(webengine_webrtc)
+#include "content/public/browser/desktop_capture.h"
+#endif QT_CONFIG(webengine_webrtc)
 
 namespace QtWebEngineCore {
 namespace {
@@ -28,9 +31,9 @@ DesktopMediaList::Type toMediaListType(DesktopMediaType type)
 
 std::unique_ptr<DesktopMediaList> createMediaList(DesktopMediaType type)
 {
+#if QT_CONFIG(webengine_webrtc)
     DesktopMediaList::Type listType = toMediaListType(type);
-    webrtc::DesktopCaptureOptions options = webrtc::DesktopCaptureOptions::CreateDefault();
-    options.set_disable_effects(false);
+    webrtc::DesktopCaptureOptions options = content::desktop_capture::CreateDesktopCaptureOptions();
 
     switch (listType) {
     case DesktopMediaList::Type::kScreen: {
@@ -46,12 +49,16 @@ std::unique_ptr<DesktopMediaList> createMediaList(DesktopMediaType type)
         std::unique_ptr<DesktopCapturerWrapper> capturer =
                 std::make_unique<DesktopCapturerWrapper>(std::move(windowCapturer));
         return std::make_unique<NativeDesktopMediaList>(
-                listType, std::move(capturer), false);
+                listType, std::move(capturer),
+                !content::desktop_capture::ShouldEnumerateCurrentProcessWindows());
     }
     default: {
         Q_UNREACHABLE();
     }
     }
+#else
+    return nullptr;
+#endif // QT_CONFIG(webengine_webrtc)
 }
 } // namespace
 
