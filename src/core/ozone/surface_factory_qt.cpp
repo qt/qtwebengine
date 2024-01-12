@@ -6,7 +6,9 @@
 
 #include "qtwebenginecoreglobal_p.h"
 #include "ozone/gl_context_qt.h"
+#include "ozone/gl_ozone_angle_qt.h"
 #include "ozone/gl_ozone_egl_qt.h"
+#include "qtwebenginecoreglobal_p.h"
 
 #include "media/gpu/buildflags.h"
 #include "ui/base/ozone_buildflags.h"
@@ -34,30 +36,42 @@ SurfaceFactoryQt::SurfaceFactoryQt()
 {
 #if BUILDFLAG(IS_OZONE_X11)
     if (GLContextHelper::getGlxPlatformInterface()) {
-        m_impl = { gl::GLImplementationParts(gl::kGLImplementationDesktopGL),
-                   gl::GLImplementationParts(gl::kGLImplementationDisabled) };
-        m_ozone.reset(new ui::GLOzoneGLXQt());
+        m_impls.push_back({ gl::GLImplementationParts(gl::kGLImplementationDesktopGL),
+                            std::make_unique<ui::GLOzoneGLXQt>() });
     } else
 #endif
     if (GLContextHelper::getEglPlatformInterface()) {
-        m_impl = { gl::GLImplementationParts(gl::kGLImplementationEGLGLES2),
-                   gl::GLImplementationParts(gl::kGLImplementationDesktopGL),
-                   gl::GLImplementationParts(gl::kGLImplementationDisabled) };
-        m_ozone.reset(new ui::GLOzoneEGLQt());
-    } else {
-        m_impl = { gl::GLImplementationParts(gl::kGLImplementationDisabled) };
+        m_impls.push_back({ gl::GLImplementationParts(gl::kGLImplementationEGLGLES2),
+                            std::make_unique<ui::GLOzoneEGLQt>() });
+        m_impls.push_back({ gl::GLImplementationParts(gl::kGLImplementationDesktopGL),
+                            std::make_unique<ui::GLOzoneEGLQt>() });
     }
+
+    m_impls.push_back({ gl::GLImplementationParts(gl::kGLImplementationEGLANGLE),
+                        std::make_unique<ui::GLOzoneANGLEQt>() });
+    m_impls.push_back({ gl::GLImplementationParts(gl::kGLImplementationDisabled), nullptr });
 }
 
 std::vector<gl::GLImplementationParts> SurfaceFactoryQt::GetAllowedGLImplementations()
 {
-    return m_impl;
+    std::vector<gl::GLImplementationParts> allowed;
+    for (const auto &impl : m_impls)
+        allowed.push_back(impl.first);
+
+    return allowed;
 }
 
 ui::GLOzone *SurfaceFactoryQt::GetGLOzone(const gl::GLImplementationParts &implementation)
 {
-    return m_ozone.get();
+    for (const auto &impl : m_impls) {
+        if (impl.first.gl == implementation.gl)
+            return impl.second.get();
+    }
+
+    qFatal() << "GLOzone not found for" << gl::GetGLImplementationGLName(implementation);
+    return nullptr;
 }
+
 #if BUILDFLAG(ENABLE_VULKAN)
 std::unique_ptr<gpu::VulkanImplementation>
 SurfaceFactoryQt::CreateVulkanImplementation(bool /*allow_protected_memory*/,
