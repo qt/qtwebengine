@@ -222,9 +222,12 @@ NativeSkiaOutputDevice::Buffer::~Buffer()
 // found in the LICENSE file.
 bool NativeSkiaOutputDevice::Buffer::initialize()
 {
-    static const uint32_t kDefaultSharedImageUsage = gpu::SHARED_IMAGE_USAGE_SCANOUT
-            | gpu::SHARED_IMAGE_USAGE_DISPLAY_READ | gpu::SHARED_IMAGE_USAGE_DISPLAY_WRITE
+    uint32_t kDefaultSharedImageUsage = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ
+            | gpu::SHARED_IMAGE_USAGE_DISPLAY_WRITE
             | gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
+    if (m_parent->m_isNativeBufferSupported)
+        kDefaultSharedImageUsage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
+
     auto mailbox = gpu::Mailbox::GenerateForSharedImage();
 
     SkColorType skColorType = m_shape.imageInfo.colorType();

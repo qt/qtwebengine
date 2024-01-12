@@ -149,6 +149,7 @@ foreach(arch ${archs})
                 net/version_ui_qt.cpp net/version_ui_qt.h
                 net/webui_controller_factory_qt.cpp net/webui_controller_factory_qt.h
                 ozone/gl_context_qt.cpp ozone/gl_context_qt.h
+                ozone/gl_ozone_angle_qt.cpp ozone/gl_ozone_angle_qt.h
                 ozone/gl_ozone_egl_qt.cpp ozone/gl_ozone_egl_qt.h
                 ozone/gl_share_context_qt.cpp ozone/gl_share_context_qt.h
                 ozone/gl_surface_egl_qt.cpp ozone/gl_surface_egl_qt.h
@@ -427,6 +428,7 @@ foreach(arch ${archs})
 
         if(LINUX)
             list(APPEND gnArgArg
+                angle_enable_gl=true
                 use_gtk=false # GTK toolkit bindings
                 use_qt=false # Qt5 toolkit bindings
                 use_cups=false
