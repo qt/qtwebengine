@@ -30,37 +30,19 @@ public:
     };
     Q_ENUM(WebAuthUXState)
 
-    // The reason we are prompting for a new PIN.
     enum class PINEntryReason : int {
-        // Indicates a new PIN is being set.
         Set,
-
-        // The existing PIN must be changed before using this authenticator.
         Change,
-
-        // The existing PIN is being collected to prove user verification.
         Challenge
     };
     Q_ENUM(PINEntryReason)
 
-    // The errors that may prompt asking for a PIN.
     enum class PINEntryError : int {
-        // No error has occurred.
         NoError,
-
-        // Internal UV is locked, so we are falling back to PIN.
         InternalUvLocked,
-
-        // The PIN the user entered does not match the authenticator PIN.
         WrongPIN,
-
-        // The new PIN the user entered is too short.
         TooShort,
-
-        // The new PIN the user entered contains invalid characters.
         InvalidCharacters,
-
-        // The new PIN the user entered is the same as the currently set PIN.
         SameAsCurrentPIN,
     };
     Q_ENUM(PINEntryError)
@@ -76,12 +58,8 @@ public:
         AuthenticatorMissingUserVerification,
         AuthenticatorMissingLargeBlob,
         NoCommonAlgorithms,
-        // kStorageFull indicates that a resident credential could not be created
-        // because the authenticator has insufficient storage.
         StorageFull,
         UserConsentDenied,
-        // kWinUserCancelled means that the user clicked "Cancel" in the native
-        // Windows UI.
         WinUserCancelled,
     };
     Q_ENUM(RequestFailureReason)
@@ -125,18 +103,10 @@ struct Q_WEBENGINECORE_EXPORT QWebEngineWebAuthPINRequest
     Q_PROPERTY(qint32 minPinLength MEMBER minPinLength CONSTANT FINAL)
     Q_PROPERTY(qint32 remainingAttempts MEMBER remainingAttempts CONSTANT FINAL)
 public:
-    // Why this PIN is being collected.
     QWebEngineWebAuthUXRequest::PINEntryReason reason;
-
-    // The error for which we are prompting for a PIN.
     QWebEngineWebAuthUXRequest::PINEntryError error =
             QWebEngineWebAuthUXRequest::PINEntryError::NoError;
-
-    // The minimum PIN length the authenticator will accept for the PIN.
     qint32 minPinLength;
-
-    // The number of attempts remaining before a hard lock. Should be ignored unless |mode| is
-    // kChallenge.
     int remainingAttempts = 0;
 };
 
