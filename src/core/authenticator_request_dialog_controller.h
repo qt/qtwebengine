@@ -8,9 +8,6 @@
 #include <QtCore/qobject.h>
 #include "qwebenginewebauthuxrequest.h"
 
-// #include "base/functional/callback_forward.h"
-// #include "device/fido/authenticator_get_assertion_response.h"
-
 namespace content {
 class WebContents;
 class RenderFrameHost;
