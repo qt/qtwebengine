@@ -65,7 +65,7 @@ private:
     bool m_isDialogCreated = false;
     QWebEngineWebAuthPINRequest m_pinRequest;
 
-    QWebEngineWebAuthUXRequest *m_request;
+    QWebEngineWebAuthUXRequest *m_request = nullptr;
     QWebEngineWebAuthUXRequest::RequestFailureReason m_requestFailureReason;
 
     // m_pendingState holds requested steps until the UI is shown. The UI is only
