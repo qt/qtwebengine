@@ -179,6 +179,7 @@ qt_feature("webenginedriver" PUBLIC
     PURPOSE "Enables WebEngineDriver build"
     CONDITION NOT CMAKE_CROSSCOMPILING
               AND NOT (CMAKE_OSX_ARCHITECTURES AND osx_arch_count GREATER 1)
+    DISABLE CMAKE_BUILD_TYPE STREQUAL Debug
 )
 # internal testing feature
 qt_feature("webengine-system-poppler" PRIVATE
