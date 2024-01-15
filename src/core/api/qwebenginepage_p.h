@@ -172,7 +172,7 @@ public:
     void showAutofillPopup(QtWebEngineCore::AutofillPopupController *controller,
                            const QRect &bounds, bool autoselectFirstSuggestion) override;
     void hideAutofillPopup() override;
-    void showWebAuthDialog(QWebEngineWebAuthUXRequest *controller) override;
+    void showWebAuthDialog(QWebEngineWebAuthUxRequest *controller) override;
 
     QtWebEngineCore::ProfileAdapter *profileAdapter() override;
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;

@@ -27,17 +27,17 @@ public:
     void selectAccount(const QStringList &userList);
     QStringList userNames() const;
     QString relyingPartyId() const;
-    QWebEngineWebAuthUXRequest::WebAuthUXState state() const;
-    QWebEngineWebAuthPINRequest pinRequest();
-    QWebEngineWebAuthUXRequest::RequestFailureReason requestFailureReason() const;
+    QWebEngineWebAuthUxRequest::WebAuthUxState state() const;
+    QWebEngineWebAuthPinRequest pinRequest();
+    QWebEngineWebAuthUxRequest::RequestFailureReason requestFailureReason() const;
     void sendSelectAccountResponse(const QString &selectedAccount);
-    void setCurrentState(QWebEngineWebAuthUXRequest::WebAuthUXState uxState);
+    void setCurrentState(QWebEngineWebAuthUxRequest::WebAuthUxState uxState);
     void setRelyingPartyId(const QString &rpId);
 
     // Support pin functionality
-    void collectPIN(QWebEngineWebAuthPINRequest pinRequestInfo);
+    void collectPin(QWebEngineWebAuthPinRequest pinRequestInfo);
     void finishCollectToken();
-    void handleRequestFailure(QWebEngineWebAuthUXRequest::RequestFailureReason reason);
+    void handleRequestFailure(QWebEngineWebAuthUxRequest::RequestFailureReason reason);
     void sendCollectPinResponse(const QString &pin);
 
     // Deleting dialog;
@@ -53,25 +53,24 @@ public:
 private:
     content::RenderFrameHost *m_renderFrameHost;
     QStringList m_userList;
-    //    QString m_selectedAccount;
     QString m_pin;
     QString m_relyingPartyId;
 
     bool m_isStarted = false;
     bool m_isConditionalRequest = false;
-    QWebEngineWebAuthUXRequest::WebAuthUXState m_currentState =
-            QWebEngineWebAuthUXRequest::NotStarted;
+    QWebEngineWebAuthUxRequest::WebAuthUxState m_currentState =
+            QWebEngineWebAuthUxRequest::WebAuthUxState::NotStarted;
     base::WeakPtr<AuthenticatorRequestClientDelegateQt> m_authenticatorRequestDelegate;
     bool m_isDialogCreated = false;
-    QWebEngineWebAuthPINRequest m_pinRequest;
+    QWebEngineWebAuthPinRequest m_pinRequest;
 
-    QWebEngineWebAuthUXRequest *m_request = nullptr;
-    QWebEngineWebAuthUXRequest::RequestFailureReason m_requestFailureReason;
+    QWebEngineWebAuthUxRequest *m_request = nullptr;
+    QWebEngineWebAuthUxRequest::RequestFailureReason m_requestFailureReason;
 
     // m_pendingState holds requested steps until the UI is shown. The UI is only
     // shown once the TransportAvailabilityInfo is available, but authenticators
     // may request, e.g., PIN entry prior to that.
-    absl::optional<QWebEngineWebAuthUXRequest::WebAuthUXState> m_pendingState;
+    absl::optional<QWebEngineWebAuthUxRequest::WebAuthUxState> m_pendingState;
 };
 
 } // namespace QtWebEngineCore

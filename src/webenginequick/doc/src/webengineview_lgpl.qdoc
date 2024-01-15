@@ -1564,7 +1564,7 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::webAuthUXRequested(QWebEngineWebAuthUXRequest *request);
+    \qmlsignal WebEngineView::webAuthUxRequested(QWebEngineWebAuthUxRequest *request);
     \since QtWebEngine 6.7
 
     This signal is emitted when a WebAuth authenticator requires user interaction
@@ -1572,7 +1572,7 @@
 
     The \a request contains the information and API required to complete the WebAuth UX request.
 
-    \sa QWebEngineWebAuthUXRequest
+    \sa QWebEngineWebAuthUxRequest
 */
 
     \sa {WebEngine Qt Quick Custom Touch Handle Example}

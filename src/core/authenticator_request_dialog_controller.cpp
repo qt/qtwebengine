@@ -11,20 +11,21 @@
 #include "qwebenginewebauthuxrequest_p.h"
 #include "qwebenginewebauthuxrequest.h"
 
-using PINEntryError = QWebEngineWebAuthUXRequest::PINEntryError;
-using PINEntryReason = QWebEngineWebAuthUXRequest::PINEntryReason;
+using PinEntryError = QWebEngineWebAuthUxRequest::PinEntryError;
+using PinEntryReason = QWebEngineWebAuthUxRequest::PinEntryReason;
+using WebAuthUxState = QWebEngineWebAuthUxRequest::WebAuthUxState;
 
 namespace QtWebEngineCore {
 
-ASSERT_ENUMS_MATCH(PINEntryReason::Set, device::pin::PINEntryReason::kSet)
-ASSERT_ENUMS_MATCH(PINEntryReason::Change, device::pin::PINEntryReason::kChange)
-ASSERT_ENUMS_MATCH(PINEntryReason::Challenge, device::pin::PINEntryReason::kChallenge)
-ASSERT_ENUMS_MATCH(PINEntryError::WrongPIN, device::pin::PINEntryError::kWrongPIN)
-ASSERT_ENUMS_MATCH(PINEntryError::TooShort, device::pin::PINEntryError::kTooShort)
-ASSERT_ENUMS_MATCH(PINEntryError::SameAsCurrentPIN, device::pin::PINEntryError::kSameAsCurrentPIN)
-ASSERT_ENUMS_MATCH(PINEntryError::NoError, device::pin::PINEntryError::kNoError)
-ASSERT_ENUMS_MATCH(PINEntryError::InvalidCharacters, device::pin::PINEntryError::kInvalidCharacters)
-ASSERT_ENUMS_MATCH(PINEntryError::InternalUvLocked, device::pin::PINEntryError::kInternalUvLocked)
+ASSERT_ENUMS_MATCH(PinEntryReason::Set, device::pin::PINEntryReason::kSet)
+ASSERT_ENUMS_MATCH(PinEntryReason::Change, device::pin::PINEntryReason::kChange)
+ASSERT_ENUMS_MATCH(PinEntryReason::Challenge, device::pin::PINEntryReason::kChallenge)
+ASSERT_ENUMS_MATCH(PinEntryError::WrongPin, device::pin::PINEntryError::kWrongPIN)
+ASSERT_ENUMS_MATCH(PinEntryError::TooShort, device::pin::PINEntryError::kTooShort)
+ASSERT_ENUMS_MATCH(PinEntryError::SameAsCurrentPin, device::pin::PINEntryError::kSameAsCurrentPIN)
+ASSERT_ENUMS_MATCH(PinEntryError::NoError, device::pin::PINEntryError::kNoError)
+ASSERT_ENUMS_MATCH(PinEntryError::InvalidCharacters, device::pin::PINEntryError::kInvalidCharacters)
+ASSERT_ENUMS_MATCH(PinEntryError::InternalUvLocked, device::pin::PINEntryError::kInternalUvLocked)
 
 AuthenticatorRequestDialogControllerPrivate::AuthenticatorRequestDialogControllerPrivate(
         content::RenderFrameHost *renderFrameHost,
@@ -58,10 +59,10 @@ void AuthenticatorRequestDialogControllerPrivate::showWebAuthDialog()
 
     if (adapterClient) {
 
-        QWebEngineWebAuthUXRequestPrivate *itemPrivate =
-                new QWebEngineWebAuthUXRequestPrivate(q_ptr);
+        QWebEngineWebAuthUxRequestPrivate *itemPrivate =
+                new QWebEngineWebAuthUxRequestPrivate(q_ptr);
 
-        m_request = new QWebEngineWebAuthUXRequest(itemPrivate);
+        m_request = new QWebEngineWebAuthUxRequest(itemPrivate);
 
         adapterClient->showWebAuthDialog(m_request);
         m_isDialogCreated = true;
@@ -74,18 +75,18 @@ void AuthenticatorRequestDialogControllerPrivate::selectAccount(const QStringLis
 {
     m_userList.clear();
     m_userList = userList;
-    setCurrentState(QWebEngineWebAuthUXRequest::SelectAccount);
+    setCurrentState(WebAuthUxState::SelectAccount);
 }
 
-void AuthenticatorRequestDialogControllerPrivate::collectPIN(QWebEngineWebAuthPINRequest pinRequest)
+void AuthenticatorRequestDialogControllerPrivate::collectPin(QWebEngineWebAuthPinRequest pinRequest)
 {
     m_pinRequest = pinRequest;
-    setCurrentState(QWebEngineWebAuthUXRequest::CollectPIN);
+    setCurrentState(WebAuthUxState::CollectPin);
 }
 
 void AuthenticatorRequestDialogControllerPrivate::finishCollectToken()
 {
-    setCurrentState(QWebEngineWebAuthUXRequest::FinishTokenCollection);
+    setCurrentState(WebAuthUxState::FinishTokenCollection);
 }
 
 QStringList AuthenticatorRequestDialogControllerPrivate::userNames() const
@@ -97,11 +98,11 @@ void AuthenticatorRequestDialogControllerPrivate::finishRequest()
 {
     if (!m_isDialogCreated)
         return;
-    setCurrentState(QWebEngineWebAuthUXRequest::Completed);
+    setCurrentState(WebAuthUxState::Completed);
 }
 
 void AuthenticatorRequestDialogControllerPrivate::setCurrentState(
-        QWebEngineWebAuthUXRequest::WebAuthUXState uxState)
+        QWebEngineWebAuthUxRequest::WebAuthUxState uxState)
 {
     if (!m_isStarted) {
         // Dialog isn't showing yet. Remember to show this step when it appears.
@@ -119,8 +120,8 @@ void AuthenticatorRequestDialogControllerPrivate::setCurrentState(
     } else {
         Q_EMIT q_ptr->stateChanged(m_currentState);
 
-        if (m_currentState == QWebEngineWebAuthUXRequest::Cancelled
-            || m_currentState == QWebEngineWebAuthUXRequest::Completed) {
+        if (m_currentState == QWebEngineWebAuthUxRequest::WebAuthUxState::Cancelled
+            || m_currentState == QWebEngineWebAuthUxRequest::WebAuthUxState::Completed) {
             m_isDialogCreated = false;
         }
     }
@@ -128,7 +129,7 @@ void AuthenticatorRequestDialogControllerPrivate::setCurrentState(
 
 void AuthenticatorRequestDialogControllerPrivate::cancelRequest()
 {
-    setCurrentState(QWebEngineWebAuthUXRequest::Cancelled);
+    setCurrentState(WebAuthUxState::Cancelled);
     content::GetUIThreadTaskRunner({})->PostTask(
             FROM_HERE,
             base::BindOnce(&AuthenticatorRequestClientDelegateQt::onCancelRequest,
@@ -152,7 +153,7 @@ void AuthenticatorRequestDialogControllerPrivate::sendSelectAccountResponse(
                            m_authenticatorRequestDelegate, selectedAccount));
 }
 
-QWebEngineWebAuthUXRequest::WebAuthUXState
+QWebEngineWebAuthUxRequest::WebAuthUxState
 AuthenticatorRequestDialogControllerPrivate::state() const
 {
     return m_currentState;
@@ -181,16 +182,16 @@ QString AuthenticatorRequestDialogControllerPrivate::relyingPartyId() const
     return m_relyingPartyId;
 }
 
-QWebEngineWebAuthPINRequest AuthenticatorRequestDialogControllerPrivate::pinRequest()
+QWebEngineWebAuthPinRequest AuthenticatorRequestDialogControllerPrivate::pinRequest()
 {
     return m_pinRequest;
 }
 
 void AuthenticatorRequestDialogControllerPrivate::handleRequestFailure(
-        QWebEngineWebAuthUXRequest::RequestFailureReason reason)
+        QWebEngineWebAuthUxRequest::RequestFailureReason reason)
 {
     m_requestFailureReason = reason;
-    setCurrentState(QWebEngineWebAuthUXRequest::RequestFailed);
+    setCurrentState(WebAuthUxState::RequestFailed);
 }
 
 void AuthenticatorRequestDialogControllerPrivate::sendCollectPinResponse(const QString &pin)
@@ -201,7 +202,7 @@ void AuthenticatorRequestDialogControllerPrivate::sendCollectPinResponse(const Q
                            m_authenticatorRequestDelegate, pin));
 }
 
-QWebEngineWebAuthUXRequest::RequestFailureReason
+QWebEngineWebAuthUxRequest::RequestFailureReason
 AuthenticatorRequestDialogControllerPrivate::requestFailureReason() const
 {
     return m_requestFailureReason;
@@ -222,9 +223,9 @@ void AuthenticatorRequestDialogController::selectAccount(const QStringList &user
     d_ptr->selectAccount(userList);
 }
 
-void AuthenticatorRequestDialogController::collectPIN(QWebEngineWebAuthPINRequest pinRequest)
+void AuthenticatorRequestDialogController::collectPin(QWebEngineWebAuthPinRequest pinRequest)
 {
-    d_ptr->collectPIN(pinRequest);
+    d_ptr->collectPin(pinRequest);
 }
 
 QStringList AuthenticatorRequestDialogController::userNames() const
@@ -232,7 +233,7 @@ QStringList AuthenticatorRequestDialogController::userNames() const
     return d_ptr->userNames();
 }
 
-QWebEngineWebAuthPINRequest AuthenticatorRequestDialogController::pinRequest()
+QWebEngineWebAuthPinRequest AuthenticatorRequestDialogController::pinRequest()
 {
     return d_ptr->pinRequest();
 }
@@ -257,7 +258,7 @@ void AuthenticatorRequestDialogController::finishRequest()
     d_ptr->finishRequest();
 }
 
-QWebEngineWebAuthUXRequest::WebAuthUXState AuthenticatorRequestDialogController::state() const
+QWebEngineWebAuthUxRequest::WebAuthUxState AuthenticatorRequestDialogController::state() const
 {
     return d_ptr->state();
 }
@@ -278,7 +279,7 @@ QString AuthenticatorRequestDialogController::relyingPartyId() const
 }
 
 void AuthenticatorRequestDialogController::handleRequestFailure(
-        QWebEngineWebAuthUXRequest::RequestFailureReason reason)
+        QWebEngineWebAuthUxRequest::RequestFailureReason reason)
 {
     d_ptr->handleRequestFailure(reason);
 }
@@ -293,7 +294,7 @@ void AuthenticatorRequestDialogController::sendCollectPinResponse(const QString 
     d_ptr->sendCollectPinResponse(pin);
 }
 
-QWebEngineWebAuthUXRequest::RequestFailureReason
+QWebEngineWebAuthUxRequest::RequestFailureReason
 AuthenticatorRequestDialogController::requestFailureReason() const
 {
     return d_ptr->requestFailureReason();

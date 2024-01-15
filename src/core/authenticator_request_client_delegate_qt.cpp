@@ -13,7 +13,7 @@
 
 namespace QtWebEngineCore {
 
-using RequestFailureReason = QWebEngineWebAuthUXRequest::RequestFailureReason;
+using RequestFailureReason = QWebEngineWebAuthUxRequest::RequestFailureReason;
 
 WebAuthenticationDelegateQt::WebAuthenticationDelegateQt() = default;
 
@@ -68,13 +68,13 @@ bool AuthenticatorRequestClientDelegateQt::DoesBlockRequestOnFailure(
         break;
     case InterestingFailureReason::kAuthenticatorRemovedDuringPINEntry:
         m_dialogController->handleRequestFailure(
-                RequestFailureReason::AuthenticatorRemovedDuringPINEntry);
+                RequestFailureReason::AuthenticatorRemovedDuringPinEntry);
         break;
     case InterestingFailureReason::kHardPINBlock:
-        m_dialogController->handleRequestFailure(RequestFailureReason::HardPINBlock);
+        m_dialogController->handleRequestFailure(RequestFailureReason::HardPinBlock);
         break;
     case InterestingFailureReason::kSoftPINBlock:
-        m_dialogController->handleRequestFailure(RequestFailureReason::SoftPINBlock);
+        m_dialogController->handleRequestFailure(RequestFailureReason::SoftPinBlock);
         break;
     case InterestingFailureReason::kKeyAlreadyRegistered:
         m_dialogController->handleRequestFailure(RequestFailureReason::KeyAlreadyRegistered);
@@ -177,7 +177,8 @@ void AuthenticatorRequestClientDelegateQt::OnTransportAvailabilityEnumerated(
 {
     // Show dialog only after this step;
     // If m_isUiDisabled is set or another UI request in progress return
-    if (m_isUiDisabled || m_dialogController->state() != QWebEngineWebAuthUXRequest::NotStarted)
+    if (m_isUiDisabled
+        || m_dialogController->state() != QWebEngineWebAuthUxRequest::WebAuthUxState::NotStarted)
         return;
 
     // Start WebAuth UX
@@ -196,13 +197,13 @@ void AuthenticatorRequestClientDelegateQt::CollectPIN(
 {
 
     m_providePinCallback = std::move(provide_pin_cb);
-    QWebEngineWebAuthPINRequest pinRequestInfo;
+    QWebEngineWebAuthPinRequest pinRequestInfo;
 
-    pinRequestInfo.reason = static_cast<QWebEngineWebAuthUXRequest::PINEntryReason>(options.reason);
-    pinRequestInfo.error = static_cast<QWebEngineWebAuthUXRequest::PINEntryError>(options.error);
+    pinRequestInfo.reason = static_cast<QWebEngineWebAuthUxRequest::PinEntryReason>(options.reason);
+    pinRequestInfo.error = static_cast<QWebEngineWebAuthUxRequest::PinEntryError>(options.error);
     pinRequestInfo.remainingAttempts = options.attempts;
     pinRequestInfo.minPinLength = options.min_pin_length;
-    m_dialogController->collectPIN(pinRequestInfo);
+    m_dialogController->collectPin(pinRequestInfo);
 }
 
 void AuthenticatorRequestClientDelegateQt::FinishCollectToken()

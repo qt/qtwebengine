@@ -794,10 +794,10 @@ void QWebEnginePagePrivate::ensureInitialized() const
         adapter->loadDefault();
 }
 
-void QWebEnginePagePrivate::showWebAuthDialog(QWebEngineWebAuthUXRequest *request)
+void QWebEnginePagePrivate::showWebAuthDialog(QWebEngineWebAuthUxRequest *request)
 {
     Q_Q(QWebEnginePage);
-    Q_EMIT q->webAuthUXRequested(request);
+    Q_EMIT q->webAuthUxRequested(request);
 }
 
 QWebEnginePage::QWebEnginePage(QObject* parent)

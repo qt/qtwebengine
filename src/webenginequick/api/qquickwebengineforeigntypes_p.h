@@ -222,11 +222,11 @@ namespace ForeginWebEngineFileSystemAccessRequestNamespace
     QML_ADDED_IN_VERSION(6, 4)
 };
 
-struct ForeignWebEngineWebAuthUXRequest
+struct ForeignWebEngineWebAuthUxRequest
 {
     Q_GADGET
-    QML_FOREIGN(QWebEngineWebAuthUXRequest)
-    QML_NAMED_ELEMENT(WebEngineWebAuthUXRequest)
+    QML_FOREIGN(QWebEngineWebAuthUxRequest)
+    QML_NAMED_ELEMENT(WebEngineWebAuthUxRequest)
     QML_ADDED_IN_VERSION(6, 7)
     QML_UNCREATABLE("")
 };

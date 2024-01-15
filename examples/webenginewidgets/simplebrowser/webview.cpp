@@ -99,8 +99,8 @@ void WebView::setPage(WebPage *page)
                    &WebView::handleProxyAuthenticationRequired);
         disconnect(oldPage, &QWebEnginePage::registerProtocolHandlerRequested, this,
                    &WebView::handleRegisterProtocolHandlerRequested);
-        disconnect(oldPage, &QWebEnginePage::webAuthUXRequested, this,
-                   &WebView::handleWebAuthUXRequested);
+        disconnect(oldPage, &QWebEnginePage::webAuthUxRequested, this,
+                   &WebView::handleWebAuthUxRequested);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
         disconnect(oldPage, &QWebEnginePage::fileSystemAccessRequested, this,
                    &WebView::handleFileSystemAccessRequested);
@@ -124,7 +124,7 @@ void WebView::setPage(WebPage *page)
     connect(page, &QWebEnginePage::fileSystemAccessRequested, this,
             &WebView::handleFileSystemAccessRequested);
 #endif
-    connect(page, &QWebEnginePage::webAuthUXRequested, this, &WebView::handleWebAuthUXRequested);
+    connect(page, &QWebEnginePage::webAuthUxRequested, this, &WebView::handleWebAuthUxRequested);
 }
 
 int WebView::loadProgress() const
@@ -296,7 +296,7 @@ void WebView::handleProxyAuthenticationRequired(const QUrl &, QAuthenticator *au
     }
 }
 
-void WebView::handleWebAuthUXRequested(QWebEngineWebAuthUXRequest *request)
+void WebView::handleWebAuthUxRequested(QWebEngineWebAuthUxRequest *request)
 {
     if (m_authDialog)
         delete m_authDialog;
@@ -305,14 +305,14 @@ void WebView::handleWebAuthUXRequested(QWebEngineWebAuthUXRequest *request)
     m_authDialog->setModal(false);
     m_authDialog->setWindowFlags(m_authDialog->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-    connect(request, &QWebEngineWebAuthUXRequest::stateChanged, this, &WebView::onStateChanged);
+    connect(request, &QWebEngineWebAuthUxRequest::stateChanged, this, &WebView::onStateChanged);
     m_authDialog->show();
 }
 
-void WebView::onStateChanged(QWebEngineWebAuthUXRequest::WebAuthUXState state)
+void WebView::onStateChanged(QWebEngineWebAuthUxRequest::WebAuthUxState state)
 {
-    if (QWebEngineWebAuthUXRequest::Completed == state
-        || QWebEngineWebAuthUXRequest::Cancelled == state) {
+    if (QWebEngineWebAuthUxRequest::WebAuthUxState::Completed == state
+        || QWebEngineWebAuthUxRequest::WebAuthUxState::Cancelled == state) {
         if (m_authDialog) {
             delete m_authDialog;
             m_authDialog = nullptr;

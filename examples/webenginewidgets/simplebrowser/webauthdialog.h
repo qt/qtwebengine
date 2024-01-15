@@ -14,20 +14,20 @@ class WebAuthDialog : public QDialog
 {
     Q_OBJECT
 public:
-    WebAuthDialog(QWebEngineWebAuthUXRequest *request, QWidget *parent = nullptr);
+    WebAuthDialog(QWebEngineWebAuthUxRequest *request, QWidget *parent = nullptr);
     ~WebAuthDialog();
 
     void updateDisplay();
 
 private:
-    QWebEngineWebAuthUXRequest *uxRequest;
+    QWebEngineWebAuthUxRequest *uxRequest;
     QButtonGroup *buttonGroup = nullptr;
     QScrollArea *scrollArea = nullptr;
     QWidget *selectAccountWidget = nullptr;
     QVBoxLayout *selectAccountLayout = nullptr;
 
     void setupSelectAccountUI();
-    void setupCollectPINUI();
+    void setupCollectPinUI();
     void setupFinishCollectTokenUI();
     void setupErrorUI();
     void onCancelRequest();
