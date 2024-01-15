@@ -36,7 +36,7 @@ QT_FORWARD_DECLARE_CLASS(QWebEngineUrlRequestInterceptor)
 QT_FORWARD_DECLARE_CLASS(QWebEngineContextMenuRequest)
 QT_FORWARD_DECLARE_CLASS(QWebEngineCertificateError)
 QT_FORWARD_DECLARE_CLASS(QWebEngineSettings)
-QT_FORWARD_DECLARE_CLASS(QWebEngineWebAuthUXRequest)
+QT_FORWARD_DECLARE_CLASS(QWebEngineWebAuthUxRequest)
 
 namespace content {
 struct DropData;
@@ -218,7 +218,7 @@ public:
     virtual ProfileAdapter *profileAdapter() = 0;
     virtual WebContentsAdapter* webContentsAdapter() = 0;
     virtual void releaseProfile() = 0;
-    virtual void showWebAuthDialog(QWebEngineWebAuthUXRequest *request) = 0;
+    virtual void showWebAuthDialog(QWebEngineWebAuthUxRequest *request) = 0;
 };
 
 } // namespace QtWebEngineCore

@@ -607,7 +607,7 @@ ApplicationWindow {
                     featurePermissionDialog.feature = feature;
                     featurePermissionDialog.visible = true;
                 }
-                onWebAuthUXRequested: function(request) {
+                onWebAuthUxRequested: function(request) {
                     webAuthDialog.init(request);
                 }
 

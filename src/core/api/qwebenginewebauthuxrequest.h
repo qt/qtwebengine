@@ -7,53 +7,60 @@
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtCore/qobject.h>
 
+namespace QtWebEngineCore {
+class AuthenticatorRequestDialogControllerPrivate;
+}
+
 QT_BEGIN_NAMESPACE
 
-class QWebEngineWebAuthUXRequestPrivate;
-struct QWebEngineWebAuthPINRequest;
+class QWebEngineWebAuthUxRequestPrivate;
+struct QWebEngineWebAuthPinRequest;
 
-class Q_WEBENGINECORE_EXPORT QWebEngineWebAuthUXRequest : public QObject
+class Q_WEBENGINECORE_EXPORT QWebEngineWebAuthUxRequest : public QObject
 {
     Q_OBJECT
-public:
-    QWebEngineWebAuthUXRequest(QWebEngineWebAuthUXRequestPrivate *);
-    ~QWebEngineWebAuthUXRequest();
 
-    enum WebAuthUXState {
+    Q_PROPERTY(QStringList userNames READ userNames CONSTANT FINAL)
+    Q_PROPERTY(WebAuthUxState state READ state NOTIFY stateChanged FINAL)
+    Q_PROPERTY(QString relyingPartyId READ relyingPartyId CONSTANT FINAL)
+    Q_PROPERTY(QWebEngineWebAuthPinRequest pinRequest READ pinRequest CONSTANT FINAL)
+    Q_PROPERTY(RequestFailureReason requestFailureReason READ requestFailureReason CONSTANT FINAL)
+public:
+    enum class WebAuthUxState {
         NotStarted,
         SelectAccount,
-        CollectPIN,
+        CollectPin,
         FinishTokenCollection,
         RequestFailed,
         Cancelled,
-        Completed
+        Completed,
     };
-    Q_ENUM(WebAuthUXState)
+    Q_ENUM(WebAuthUxState)
 
-    enum class PINEntryReason : int {
+    enum class PinEntryReason {
         Set,
         Change,
-        Challenge
+        Challenge,
     };
-    Q_ENUM(PINEntryReason)
+    Q_ENUM(PinEntryReason)
 
-    enum class PINEntryError : int {
+    enum class PinEntryError {
         NoError,
         InternalUvLocked,
-        WrongPIN,
+        WrongPin,
         TooShort,
         InvalidCharacters,
-        SameAsCurrentPIN,
+        SameAsCurrentPin,
     };
-    Q_ENUM(PINEntryError)
+    Q_ENUM(PinEntryError)
 
-    enum class RequestFailureReason : int {
+    enum class RequestFailureReason {
         Timeout,
         KeyNotRegistered,
         KeyAlreadyRegistered,
-        SoftPINBlock,
-        HardPINBlock,
-        AuthenticatorRemovedDuringPINEntry,
+        SoftPinBlock,
+        HardPinBlock,
+        AuthenticatorRemovedDuringPinEntry,
         AuthenticatorMissingResidentKeys,
         AuthenticatorMissingUserVerification,
         AuthenticatorMissingLargeBlob,
@@ -64,20 +71,16 @@ public:
     };
     Q_ENUM(RequestFailureReason)
 
-    Q_PROPERTY(QStringList userNames READ userNames CONSTANT FINAL)
-    Q_PROPERTY(WebAuthUXState state READ state NOTIFY stateChanged FINAL)
-    Q_PROPERTY(QString relyingPartyId READ relyingPartyId CONSTANT FINAL)
-    Q_PROPERTY(QWebEngineWebAuthPINRequest pinRequest READ pinRequest CONSTANT FINAL)
-    Q_PROPERTY(RequestFailureReason requestFailureReason READ requestFailureReason CONSTANT FINAL)
+    ~QWebEngineWebAuthUxRequest() override;
 
     QStringList userNames() const;
     QString relyingPartyId() const;
-    QWebEngineWebAuthPINRequest pinRequest() const;
-    WebAuthUXState state() const;
+    QWebEngineWebAuthPinRequest pinRequest() const;
+    WebAuthUxState state() const;
     RequestFailureReason requestFailureReason() const;
 
 Q_SIGNALS:
-    void stateChanged(QWebEngineWebAuthUXRequest::WebAuthUXState state);
+    void stateChanged(QWebEngineWebAuthUxRequest::WebAuthUxState state);
 
 public Q_SLOTS:
     void cancel();
@@ -85,27 +88,26 @@ public Q_SLOTS:
     void setSelectedAccount(const QString &selectedAccount);
     void setPin(const QString &pin);
 
-private Q_SLOTS:
-    void handleUXUpdate(WebAuthUXState currentState);
-
 protected:
-    QScopedPointer<QWebEngineWebAuthUXRequestPrivate> d_ptr;
+    explicit QWebEngineWebAuthUxRequest(QWebEngineWebAuthUxRequestPrivate *);
 
-    Q_DECLARE_PRIVATE(QWebEngineWebAuthUXRequest)
+    std::unique_ptr<QWebEngineWebAuthUxRequestPrivate> d_ptr;
+    friend class QtWebEngineCore::AuthenticatorRequestDialogControllerPrivate;
+    Q_DECLARE_PRIVATE(QWebEngineWebAuthUxRequest)
 };
 
-struct Q_WEBENGINECORE_EXPORT QWebEngineWebAuthPINRequest
+struct Q_WEBENGINECORE_EXPORT QWebEngineWebAuthPinRequest
 {
     Q_GADGET
 
-    Q_PROPERTY(QWebEngineWebAuthUXRequest::PINEntryReason reason MEMBER reason CONSTANT FINAL)
-    Q_PROPERTY(QWebEngineWebAuthUXRequest::PINEntryError error MEMBER error CONSTANT FINAL)
+    Q_PROPERTY(QWebEngineWebAuthUxRequest::PinEntryReason reason MEMBER reason CONSTANT FINAL)
+    Q_PROPERTY(QWebEngineWebAuthUxRequest::PinEntryError error MEMBER error CONSTANT FINAL)
     Q_PROPERTY(qint32 minPinLength MEMBER minPinLength CONSTANT FINAL)
-    Q_PROPERTY(qint32 remainingAttempts MEMBER remainingAttempts CONSTANT FINAL)
+    Q_PROPERTY(int remainingAttempts MEMBER remainingAttempts CONSTANT FINAL)
 public:
-    QWebEngineWebAuthUXRequest::PINEntryReason reason;
-    QWebEngineWebAuthUXRequest::PINEntryError error =
-            QWebEngineWebAuthUXRequest::PINEntryError::NoError;
+    QWebEngineWebAuthUxRequest::PinEntryReason reason;
+    QWebEngineWebAuthUxRequest::PinEntryError error =
+            QWebEngineWebAuthUxRequest::PinEntryError::NoError;
     qint32 minPinLength;
     int remainingAttempts = 0;
 };

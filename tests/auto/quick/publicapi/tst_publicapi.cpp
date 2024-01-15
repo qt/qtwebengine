@@ -24,7 +24,7 @@
 #include <QtWebEngineCore/QWebEngineDownloadRequest>
 #include <QtWebEngineCore/QWebEngineScript>
 #include <QtWebEngineCore/QWebEngineLoadingInfo>
-#include <QtWebEngineCore/QWebEngineWebAuthUXRequest>
+#include <QtWebEngineCore/QWebEngineWebAuthUxRequest>
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebengineaction_p.h>
 #include <private/qquickwebengineclientcertificateselection_p.h>
@@ -74,8 +74,8 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QWebEngineQuotaRequest::staticMetaObject
     << &QWebEngineRegisterProtocolHandlerRequest::staticMetaObject
     << &QQuickWebEngineTouchSelectionMenuRequest::staticMetaObject
-    << &QWebEngineWebAuthUXRequest::staticMetaObject
-    << &QWebEngineWebAuthPINRequest::staticMetaObject
+    << &QWebEngineWebAuthUxRequest::staticMetaObject
+    << &QWebEngineWebAuthPinRequest::staticMetaObject
     ;
 
 static QList<QMetaEnum> knownEnumNames = QList<QMetaEnum>()
@@ -828,50 +828,50 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineNotification.click() --> void"
     << "QWebEngineNotification.close() --> void"
     << "QWebEngineNotification.closed() --> void"
-    << "QQuickWebEngineView.webAuthUXRequested(QWebEngineWebAuthUXRequest*) --> void"
-    << "QWebEngineWebAuthUXRequest.NotStarted --> WebAuthUXState"
-    << "QWebEngineWebAuthUXRequest.SelectAccount --> WebAuthUXState"
-    << "QWebEngineWebAuthUXRequest.CollectPIN --> WebAuthUXState"
-    << "QWebEngineWebAuthUXRequest.FinishTokenCollection --> WebAuthUXState"
-    << "QWebEngineWebAuthUXRequest.RequestFailed --> WebAuthUXState"
-    << "QWebEngineWebAuthUXRequest.Cancelled --> WebAuthUXState"
-    << "QWebEngineWebAuthUXRequest.Completed --> WebAuthUXState"
-    << "QWebEngineWebAuthUXRequest.PINEntryReason.Set --> PINEntryReason"
-    << "QWebEngineWebAuthUXRequest.PINEntryReason.Change --> PINEntryReason"
-    << "QWebEngineWebAuthUXRequest.PINEntryReason.Challenge --> PINEntryReason"
-    << "QWebEngineWebAuthUXRequest.PINEntryError.NoError --> PINEntryError"
-    << "QWebEngineWebAuthUXRequest.PINEntryError.InternalUvLocked --> PINEntryError"
-    << "QWebEngineWebAuthUXRequest.PINEntryError.WrongPIN --> PINEntryError"
-    << "QWebEngineWebAuthUXRequest.PINEntryError.TooShort --> PINEntryError"
-    << "QWebEngineWebAuthUXRequest.PINEntryError.InvalidCharacters --> PINEntryError"
-    << "QWebEngineWebAuthUXRequest.PINEntryError.SameAsCurrentPIN --> PINEntryError"
-    << "QWebEngineWebAuthUXRequest.RequestFailureReason.Timeout --> RequestFailureReason"
-    << "QWebEngineWebAuthUXRequest.RequestFailureReason.KeyNotRegistered --> RequestFailureReason"
-    << "QWebEngineWebAuthUXRequest.RequestFailureReason.KeyAlreadyRegistered --> RequestFailureReason"
-    << "QWebEngineWebAuthUXRequest.RequestFailureReason.SoftPINBlock --> RequestFailureReason"
-    << "QWebEngineWebAuthUXRequest.RequestFailureReason.HardPINBlock --> RequestFailureReason"
-    << "QWebEngineWebAuthUXRequest.RequestFailureReason.AuthenticatorRemovedDuringPINEntry --> RequestFailureReason"
-    << "QWebEngineWebAuthUXRequest.RequestFailureReason.AuthenticatorMissingResidentKeys --> RequestFailureReason"
-    << "QWebEngineWebAuthUXRequest.RequestFailureReason.AuthenticatorMissingUserVerification --> RequestFailureReason"
-    << "QWebEngineWebAuthUXRequest.RequestFailureReason.AuthenticatorMissingLargeBlob --> RequestFailureReason"
-    << "QWebEngineWebAuthUXRequest.RequestFailureReason.NoCommonAlgorithms --> RequestFailureReason"
-    << "QWebEngineWebAuthUXRequest.RequestFailureReason.StorageFull --> RequestFailureReason"
-    << "QWebEngineWebAuthUXRequest.RequestFailureReason.UserConsentDenied --> RequestFailureReason"
-    << "QWebEngineWebAuthUXRequest.RequestFailureReason.WinUserCancelled --> RequestFailureReason"
-    << "QWebEngineWebAuthUXRequest.userNames --> QStringList"
-    << "QWebEngineWebAuthUXRequest.state --> QWebEngineWebAuthUXRequest::WebAuthUXState"
-    << "QWebEngineWebAuthUXRequest.relyingPartyId --> QString"
-    << "QWebEngineWebAuthUXRequest.pinRequest --> QWebEngineWebAuthPINRequest"
-    << "QWebEngineWebAuthUXRequest.requestFailureReason --> QWebEngineWebAuthUXRequest::RequestFailureReason"
-    << "QWebEngineWebAuthUXRequest.stateChanged(QWebEngineWebAuthUXRequest::WebAuthUXState) --> void"
-    << "QWebEngineWebAuthUXRequest.cancel() --> void"
-    << "QWebEngineWebAuthUXRequest.retry() --> void"
-    << "QWebEngineWebAuthUXRequest.setSelectedAccount(QString) --> void"
-    << "QWebEngineWebAuthUXRequest.setPin(QString) --> void"
-    << "QWebEngineWebAuthPINRequest.reason --> QWebEngineWebAuthUXRequest::PINEntryReason"
-    << "QWebEngineWebAuthPINRequest.error --> QWebEngineWebAuthUXRequest::PINEntryError"
-    << "QWebEngineWebAuthPINRequest.minPinLength --> int"
-    << "QWebEngineWebAuthPINRequest.remainingAttempts --> int"
+    << "QQuickWebEngineView.webAuthUxRequested(QWebEngineWebAuthUxRequest*) --> void"
+    << "QWebEngineWebAuthUxRequest.WebAuthUxState.NotStarted --> WebAuthUxState"
+    << "QWebEngineWebAuthUxRequest.WebAuthUxState.SelectAccount --> WebAuthUxState"
+    << "QWebEngineWebAuthUxRequest.WebAuthUxState.CollectPin --> WebAuthUxState"
+    << "QWebEngineWebAuthUxRequest.WebAuthUxState.FinishTokenCollection --> WebAuthUxState"
+    << "QWebEngineWebAuthUxRequest.WebAuthUxState.RequestFailed --> WebAuthUxState"
+    << "QWebEngineWebAuthUxRequest.WebAuthUxState.Cancelled --> WebAuthUxState"
+    << "QWebEngineWebAuthUxRequest.WebAuthUxState.Completed --> WebAuthUxState"
+    << "QWebEngineWebAuthUxRequest.PinEntryReason.Set --> PinEntryReason"
+    << "QWebEngineWebAuthUxRequest.PinEntryReason.Change --> PinEntryReason"
+    << "QWebEngineWebAuthUxRequest.PinEntryReason.Challenge --> PinEntryReason"
+    << "QWebEngineWebAuthUxRequest.PinEntryError.NoError --> PinEntryError"
+    << "QWebEngineWebAuthUxRequest.PinEntryError.InternalUvLocked --> PinEntryError"
+    << "QWebEngineWebAuthUxRequest.PinEntryError.WrongPin --> PinEntryError"
+    << "QWebEngineWebAuthUxRequest.PinEntryError.TooShort --> PinEntryError"
+    << "QWebEngineWebAuthUxRequest.PinEntryError.InvalidCharacters --> PinEntryError"
+    << "QWebEngineWebAuthUxRequest.PinEntryError.SameAsCurrentPin --> PinEntryError"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.Timeout --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.KeyNotRegistered --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.KeyAlreadyRegistered --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.SoftPinBlock --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.HardPinBlock --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.AuthenticatorRemovedDuringPinEntry --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.AuthenticatorMissingResidentKeys --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.AuthenticatorMissingUserVerification --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.AuthenticatorMissingLargeBlob --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.NoCommonAlgorithms --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.StorageFull --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.UserConsentDenied --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.WinUserCancelled --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.userNames --> QStringList"
+    << "QWebEngineWebAuthUxRequest.state --> QWebEngineWebAuthUxRequest::WebAuthUxState"
+    << "QWebEngineWebAuthUxRequest.relyingPartyId --> QString"
+    << "QWebEngineWebAuthUxRequest.pinRequest --> QWebEngineWebAuthPinRequest"
+    << "QWebEngineWebAuthUxRequest.requestFailureReason --> QWebEngineWebAuthUxRequest::RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.stateChanged(QWebEngineWebAuthUxRequest::WebAuthUxState) --> void"
+    << "QWebEngineWebAuthUxRequest.cancel() --> void"
+    << "QWebEngineWebAuthUxRequest.retry() --> void"
+    << "QWebEngineWebAuthUxRequest.setSelectedAccount(QString) --> void"
+    << "QWebEngineWebAuthUxRequest.setPin(QString) --> void"
+    << "QWebEngineWebAuthPinRequest.reason --> QWebEngineWebAuthUxRequest::PinEntryReason"
+    << "QWebEngineWebAuthPinRequest.error --> QWebEngineWebAuthUxRequest::PinEntryError"
+    << "QWebEngineWebAuthPinRequest.minPinLength --> int"
+    << "QWebEngineWebAuthPinRequest.remainingAttempts --> int"
     ;
 
 static bool isCheckedEnum(QMetaType t)

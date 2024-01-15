@@ -1319,10 +1319,10 @@ void QQuickWebEngineViewPrivate::hideTouchSelectionMenu()
     ui()->hideTouchSelectionMenu();
 }
 
-void QQuickWebEngineViewPrivate::showWebAuthDialog(QWebEngineWebAuthUXRequest *request)
+void QQuickWebEngineViewPrivate::showWebAuthDialog(QWebEngineWebAuthUxRequest *request)
 {
     Q_Q(QQuickWebEngineView);
-    Q_EMIT q->webAuthUXRequested(request);
+    Q_EMIT q->webAuthUxRequested(request);
 }
 
 bool QQuickWebEngineView::isLoading() const

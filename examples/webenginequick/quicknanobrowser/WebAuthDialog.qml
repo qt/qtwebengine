@@ -28,10 +28,10 @@ Dialog {
 
     onApplied: {
         switch (webAuthDialog.authrequest.state) {
-            case WebEngineWebAuthUXRequest.CollectPIN:
+            case WebEngineWebAuthUxRequest.CollectPin:
                 webAuthDialog.authrequest.setPin(pinEdit.text);
                 break;
-            case WebEngineWebAuthUXRequest.SelectAccount:
+            case WebEngineWebAuthUxRequest.SelectAccount:
                 webAuthDialog.authrequest.setSelectedAccount(webAuthDialog.selectAccount);
                 break;
              default:
@@ -58,19 +58,19 @@ Dialog {
 
     function setupUI(state) {
         switch (state) {
-        case WebEngineWebAuthUXRequest.SelectAccount:
+        case WebEngineWebAuthUxRequest.SelectAccount:
             setupSelectAccountUI();
             break;
-        case WebEngineWebAuthUXRequest.CollectPIN:
-            setupCollectPIN();
+        case WebEngineWebAuthUxRequest.CollectPin:
+            setupCollectPin();
             break;
-        case WebEngineWebAuthUXRequest.FinishTokenCollection:
+        case WebEngineWebAuthUxRequest.FinishTokenCollection:
             setupFinishCollectToken();
             break;
-        case WebEngineWebAuthUXRequest.RequestFailed:
+        case WebEngineWebAuthUxRequest.RequestFailed:
             setupErrorUI();
             break;
-        case WebEngineWebAuthUXRequest.Completed:
+        case WebEngineWebAuthUxRequest.Completed:
             webAuthDialog.close();
             break;
         }
@@ -176,19 +176,19 @@ Dialog {
         standardButton(Dialog.Cancel).text ="Cancel"
     }
 
-    function setupCollectPIN() {
+    function setupCollectPin() {
         var requestInfo = webAuthDialog.authrequest.pinRequest;
 
         pinEdit.clear();
 
-        if (requestInfo.reason === WebEngineWebAuthUXRequest.Challenge) {
+        if (requestInfo.reason === WebEngineWebAuthUxRequest.Challenge) {
             heading.text = "PIN required";
             description.text = "Enter the PIN for your security key";
             pinLabel.visible = true;
             pinEdit.visible = true;
             confirmPinLabel.visible = false;
             confirmPinEdit.visible = false;
-        } else if (reason === WebEngineWebAuthUXRequest.Set) {
+        } else if (reason === WebEngineWebAuthUxRequest.Set) {
             heading.text = "Set PIN ";
             description.text = "Set new PIN for your security key";
             pinLabel.visible = true;
@@ -207,17 +207,17 @@ Dialog {
     function getPINErrorDetails() {
         var requestInfo = webAuthDialog.authrequest.pinRequest;
         switch (requestInfo.error) {
-        case WebEngineWebAuthUXRequest.NoError:
+        case WebEngineWebAuthUxRequest.NoError:
             return "";
-        case WebEngineWebAuthUXRequest.TooShort:
+        case WebEngineWebAuthUxRequest.TooShort:
             return "Too short";
-        case WebEngineWebAuthUXRequest.InternalUvLocked:
-            return "Internal Uv Locked";
-        case WebEngineWebAuthUXRequest.WrongPIN:
+        case WebEngineWebAuthUxRequest.InternalUvLocked:
+            return "Internal Uv locked";
+        case WebEngineWebAuthUxRequest.WrongPin:
             return "Wrong PIN";
-        case WebEngineWebAuthUXRequest.InvalidCharacters:
-            return "Invalid Characters";
-        case WebEngineWebAuthUXRequest.SameAsCurrentPIN:
+        case WebEngineWebAuthUxRequest.InvalidCharacters:
+            return "Invalid characters";
+        case WebEngineWebAuthUxRequest.SameAsCurrentPin:
             return "Same as current PIN";
         }
     }
@@ -225,34 +225,34 @@ Dialog {
     function getRequestFailureResaon() {
         var requestFailureReason = webAuthDialog.authrequest.requestFailureReason;
         switch (requestFailureReason) {
-        case WebEngineWebAuthUXRequest.Timeout:
+        case WebEngineWebAuthUxRequest.Timeout:
             return " Request Timeout";
-        case WebEngineWebAuthUXRequest.KeyNotRegistered:
+        case WebEngineWebAuthUxRequest.KeyNotRegistered:
             return "Key not registered";
-        case WebEngineWebAuthUXRequest.KeyAlreadyRegistered:
+        case WebEngineWebAuthUxRequest.KeyAlreadyRegistered:
             return "You already registered this device. You don't have to register it again
                     Try agin with different key or device";
-        case WebEngineWebAuthUXRequest.SoftPINBlock:
+        case WebEngineWebAuthUxRequest.SoftPinBlock:
             return "The security key is locked because the wrong PIN was entered too many times.
                     To unlock it, remove and reinsert it.";
-        case WebEngineWebAuthUXRequest.HardPINBlock:
+        case WebEngineWebAuthUxRequest.HardPinBlock:
             return "The security key is locked because the wrong PIN was entered too many times.
                     You'll need to reset the security key.";
-        case WebEngineWebAuthUXRequest.AuthenticatorRemovedDuringPINEntry:
+        case WebEngineWebAuthUxRequest.AuthenticatorRemovedDuringPinEntry:
             return "Authenticator removed during verification. Please reinsert and try again";
-        case WebEngineWebAuthUXRequest.AuthenticatorMissingResidentKeys:
+        case WebEngineWebAuthUxRequest.AuthenticatorMissingResidentKeys:
             return "Authenticator doesn't have resident key support";
-        case WebEngineWebAuthUXRequest.AuthenticatorMissingUserVerification:
+        case WebEngineWebAuthUxRequest.AuthenticatorMissingUserVerification:
             return "Authenticator missing user verification";
-        case WebEngineWebAuthUXRequest.AuthenticatorMissingLargeBlob:
+        case WebEngineWebAuthUxRequest.AuthenticatorMissingLargeBlob:
             return "Authenticator missing Large Blob support";
-        case WebEngineWebAuthUXRequest.NoCommonAlgorithms:
+        case WebEngineWebAuthUxRequest.NoCommonAlgorithms:
             return "No common Algorithms";
-        case WebEngineWebAuthUXRequest.StorageFull:
+        case WebEngineWebAuthUxRequest.StorageFull:
             return "Storage full";
-        case WebEngineWebAuthUXRequest.UserConsentDenied:
+        case WebEngineWebAuthUxRequest.UserConsentDenied:
             return "User consent denied";
-        case WebEngineWebAuthUXRequest.WinUserCancelled:
+        case WebEngineWebAuthUxRequest.WinUserCancelled:
             return "User cancelled request";
         }
     }

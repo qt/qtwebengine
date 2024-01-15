@@ -24,26 +24,26 @@ public:
     void sendSelectAccountResponse(const QString &account);
     void sendCollectPinResponse(const QString &pin);
     QStringList userNames() const;
-    QWebEngineWebAuthPINRequest pinRequest();
+    QWebEngineWebAuthPinRequest pinRequest();
     void reject();
     AuthenticatorRequestDialogController(AuthenticatorRequestDialogControllerPrivate *);
 
-    QWebEngineWebAuthUXRequest::WebAuthUXState state() const;
+    QWebEngineWebAuthUxRequest::WebAuthUxState state() const;
     QString relyingPartyId() const;
     void retryRequest();
-    QWebEngineWebAuthUXRequest::RequestFailureReason requestFailureReason() const;
+    QWebEngineWebAuthUxRequest::RequestFailureReason requestFailureReason() const;
 
 Q_SIGNALS:
-    void stateChanged(QWebEngineWebAuthUXRequest::WebAuthUXState state);
+    void stateChanged(QWebEngineWebAuthUxRequest::WebAuthUxState state);
 
 private:
     void selectAccount(const QStringList &userList);
-    void collectPIN(QWebEngineWebAuthPINRequest pinRequest);
+    void collectPin(QWebEngineWebAuthPinRequest pinRequest);
     void finishCollectToken();
     void startRequest(bool bIsConditionalRequest);
     void finishRequest();
     void setRelyingPartyId(const std::string &rpId);
-    void handleRequestFailure(QWebEngineWebAuthUXRequest::RequestFailureReason reason);
+    void handleRequestFailure(QWebEngineWebAuthUxRequest::RequestFailureReason reason);
 
     QScopedPointer<AuthenticatorRequestDialogControllerPrivate> d_ptr;
     friend class AuthenticatorRequestClientDelegateQt;

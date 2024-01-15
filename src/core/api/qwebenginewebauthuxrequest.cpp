@@ -6,22 +6,22 @@
 #include "authenticator_request_dialog_controller.h"
 
 /*!
-    \qmltype WebEngineWebAuthUXRequest
-    \instantiates QWebEngineWebAuthUXRequest
+    \qmltype WebEngineWebAuthUxRequest
+    \instantiates QWebEngineWebAuthUxRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 6.7
     \brief Encapsulates the data of a WebAuth UX request.
 
     Web engine's WebAuth UX requests are passed to the user in the
-    \l WebEngineView::webAuthUXRequested() signal.
+    \l WebEngineView::webAuthUxRequested() signal.
 
     For more information about how to handle web engine authenticator requests, see the
     \l{WebEngine Quick Nano Browser}{Nano Browser}.
 */
 
 /*!
-    \class QWebEngineWebAuthUXRequest
-    \brief The QWebEngineWebAuthUXRequest class encapsulates the data of a WebAuth UX request.
+    \class QWebEngineWebAuthUxRequest
+    \brief The QWebEngineWebAuthUxRequest class encapsulates the data of a WebAuth UX request.
     \since 6.7
 
     \inmodule QtWebEngineCore
@@ -31,19 +31,19 @@
     dialog to users. QtWebEngine currently supports user verification, resident credentials,
     and display request failure UX requests.
 
-    QWebEngineWebAuthUXRequest models a WebAuth UX request throughout its life cycle,
+    QWebEngineWebAuthUxRequest models a WebAuth UX request throughout its life cycle,
     starting with showing a UX dialog, updating it's content through state changes, and
     finally closing the dialog.
 
     WebAuth UX requests are normally triggered when the authenticator requires user interaction.
     It is the QWebEnginePage's responsibility to notify the application of the new WebAuth UX
     requests, which it does by emitting the
-    \l{QWebEnginePage::webAuthUXRequested}{webAuthUXRequested} signal together with a newly
-    created QWebEngineWebAuthUXRequest. The application can then examine this request and
+    \l{QWebEnginePage::webAuthUxRequested}{webAuthUxRequested} signal together with a newly
+    created QWebEngineWebAuthUxRequest. The application can then examine this request and
     display a WebAuth UX dialog.
 
-    The QWebEngineWebAuthUXRequest object periodically emits the \l
-    {QWebEngineWebAuthUXRequest::}{stateChanged} signal to notify potential
+    The QWebEngineWebAuthUxRequest object periodically emits the \l
+    {QWebEngineWebAuthUxRequest::}{stateChanged} signal to notify potential
     observers of the current WebAuth UX states. The observers update the WebAuth dialog
     accordingly.
 
@@ -52,8 +52,8 @@
 */
 
 /*!
-    \struct QWebEngineWebAuthPINRequest
-    \brief The QWebEngineWebAuthPINRequest class encapsulates the data of a PIN WebAuth UX request.
+    \struct QWebEngineWebAuthPinRequest
+    \brief The QWebEngineWebAuthPinRequest class encapsulates the data of a PIN WebAuth UX request.
     \since 6.7
 
     \inmodule QtWebEngineCore
@@ -63,38 +63,38 @@
     \li The reason for the PIN prompt.
     \li The error details for the PIN prompt.
     \li The number of attempts remaining before a hard lock. Should be ignored unless
-        \l{QWebEngineWebAuthPINRequest::reason} is
-        \l{QWebEngineWebAuthUXRequest::PINEntryReason::Challenge}.
+        \l{QWebEngineWebAuthPinRequest::reason} is
+        \l{QWebEngineWebAuthUxRequest::PinEntryReason::Challenge}.
     \li The minimum PIN length the authenticator will accept for the PIN.
     \endlist
     Use this structure to update the WebAuth UX dialog when the WebAuth UX state is \l
-    QWebEngineWebAuthUXRequest::CollectPIN.
+    QWebEngineWebAuthUxRequest::WebAuthUxState::CollectPin.
 */
 
 /*!
-    \property QWebEngineWebAuthPINRequest::reason
+    \property QWebEngineWebAuthPinRequest::reason
     \brief The reason for the PIN prompt.
 */
 
 /*!
-    \property QWebEngineWebAuthPINRequest::error
+    \property QWebEngineWebAuthPinRequest::error
     \brief The error details for the PIN prompt.
 */
 
 /*!
-    \property QWebEngineWebAuthPINRequest::remainingAttempts
+    \property QWebEngineWebAuthPinRequest::remainingAttempts
     \brief The number of attempts remaining before a hard lock. Should be ignored unless
-           \l{QWebEngineWebAuthPINRequest::reason} is
-           \l{QWebEngineWebAuthUXRequest::PINEntryReason::Challenge}.
+           \l{QWebEngineWebAuthPinRequest::reason} is
+           \l{QWebEngineWebAuthUxRequest::PinEntryReason::Challenge}.
 */
 
 /*!
-    \property QWebEngineWebAuthPINRequest::minPinLength
+    \property QWebEngineWebAuthPinRequest::minPinLength
     \brief The minimum PIN length the authenticator will accept for the PIN.
 */
 
 /*!
-    \enum QWebEngineWebAuthUXRequest::WebAuthUXState
+    \enum QWebEngineWebAuthUxRequest::WebAuthUxState
 
     This enum describes the state of the current WebAuth UX request.
 
@@ -102,7 +102,7 @@
     \value SelectAccount The authenticator requires resident credential details.
            The application needs to display an account details dialog, and
            the user needs to select an account to proceed.
-    \value CollectPIN The authenticator requires user verification.
+    \value CollectPin The authenticator requires user verification.
            The application needs to display a PIN request dialog.
     \value FinishTokenCollection The authenticator requires token/user verification (like tap on
            the FIDO key) to complete the process.
@@ -112,7 +112,7 @@
 */
 
 /*!
-    \enum QWebEngineWebAuthUXRequest::PINEntryReason
+    \enum QWebEngineWebAuthUxRequest::PinEntryReason
 
     This enum describes the reasons that may prompt the authenticator to ask for a PIN.
 
@@ -122,20 +122,20 @@
 */
 
 /*!
-    \enum QWebEngineWebAuthUXRequest::PINEntryError
+    \enum QWebEngineWebAuthUxRequest::PinEntryError
 
     This enum describes the errors that may prompt the authenticator to ask for a PIN.
 
     \value NoError No error has occurred.
     \value InternalUvLocked Internal UV is locked, so we are falling back to PIN.
-    \value WrongPIN The PIN the user entered does not match the authenticator PIN.
+    \value WrongPin The PIN the user entered does not match the authenticator PIN.
     \value TooShort The new PIN the user entered is too short.
     \value InvalidCharacters The new PIN the user entered contains invalid characters.
-    \value SameAsCurrentPIN The new PIN the user entered is the same as the currently set PIN.
+    \value SameAsCurrentPin The new PIN the user entered is the same as the currently set PIN.
 */
 
 /*!
-    \enum QWebEngineWebAuthUXRequest::RequestFailureReason
+    \enum QWebEngineWebAuthUxRequest::RequestFailureReason
 
     This enum describes the reason for WebAuth request failure.
 
@@ -143,10 +143,10 @@
     \value KeyNotRegistered Key is not registered with the authenticator.
     \value KeyAlreadyRegistered Key is already registered with the authenticator.
            Try to register with another Key or use another authenticator.
-    \value SoftPINBlock The authenticator is blocked as the user entered the wrong key many times.
-    \value HardPINBlock The authenticator is blocked as the user entered the wrong key many times
+    \value SoftPinBlock The authenticator is blocked as the user entered the wrong key many times.
+    \value HardPinBlock The authenticator is blocked as the user entered the wrong key many times
            and reset the PIN to use the specific authenticator again.
-    \value AuthenticatorRemovedDuringPINEntry Authenticator removed during PIN entry.
+    \value AuthenticatorRemovedDuringPinEntry Authenticator removed during PIN entry.
     \value AuthenticatorMissingResidentKeys Authenticator doesn't have resident key support.
     \value AuthenticatorMissingUserVerification Authenticator doesn't
            have user verification support.
@@ -159,23 +159,23 @@
 */
 
 /*!
-    \fn void QWebEngineWebAuthUXRequest::stateChanged(WebAuthUXState state)
+    \fn void QWebEngineWebAuthUxRequest::stateChanged(WebAuthUxState state)
 
     This signal is emitted whenever the WebAuth UX's \a state changes.
 
-    \sa state, WebAuthUXState
+    \sa state, WebAuthUxState
 */
 
 /*!
-    \qmlsignal void WebEngineWebAuthUXRequest::stateChanged(WebAuthUXState state)
+    \qmlsignal void WebEngineWebAuthUxRequest::stateChanged(WebAuthUxState state)
     This signal is emitted whenever the WebAuth UX's \a state changes.
 
-    \sa state, QWebEngineWebAuthUXRequest::WebAuthUXState
+    \sa state, QWebEngineWebAuthUxRequest::WebAuthUxState
 */
 
 /*! \internal
  */
-QWebEngineWebAuthUXRequestPrivate::QWebEngineWebAuthUXRequestPrivate(
+QWebEngineWebAuthUxRequestPrivate::QWebEngineWebAuthUxRequestPrivate(
         QtWebEngineCore::AuthenticatorRequestDialogController *controller)
     : webAuthDialogController(controller)
 {
@@ -184,134 +184,127 @@ QWebEngineWebAuthUXRequestPrivate::QWebEngineWebAuthUXRequestPrivate(
 
 /*! \internal
  */
-QWebEngineWebAuthUXRequestPrivate::~QWebEngineWebAuthUXRequestPrivate() { }
+QWebEngineWebAuthUxRequestPrivate::~QWebEngineWebAuthUxRequestPrivate() { }
 
 /*! \internal
  */
-void QWebEngineWebAuthUXRequest::handleUXUpdate(WebAuthUXState currentState)
-{
-    Q_D(QWebEngineWebAuthUXRequest);
-
-    d->m_currentState = currentState;
-
-    Q_EMIT stateChanged(d->m_currentState);
-}
-
-/*! \internal
- */
-QWebEngineWebAuthUXRequest::QWebEngineWebAuthUXRequest(QWebEngineWebAuthUXRequestPrivate *p)
+QWebEngineWebAuthUxRequest::QWebEngineWebAuthUxRequest(QWebEngineWebAuthUxRequestPrivate *p)
     : d_ptr(p)
 {
     connect(d_ptr->webAuthDialogController,
-            &QtWebEngineCore::AuthenticatorRequestDialogController::stateChanged, this,
-            &QWebEngineWebAuthUXRequest::handleUXUpdate);
+            &QtWebEngineCore::AuthenticatorRequestDialogController::stateChanged,
+            [this](WebAuthUxState currentState) {
+                Q_D(QWebEngineWebAuthUxRequest);
+                d->m_currentState = currentState;
+                Q_EMIT stateChanged(d->m_currentState);
+            });
 }
 
 /*! \internal
  */
-QWebEngineWebAuthUXRequest::~QWebEngineWebAuthUXRequest() { }
+QWebEngineWebAuthUxRequest::~QWebEngineWebAuthUxRequest() { }
 
 /*!
-    \qmlproperty stringlist WebEngineWebAuthUXRequest::userNames
+    \qmlproperty stringlist WebEngineWebAuthUxRequest::userNames
     \brief The available user names for the resident credential support.
 
     This is needed when the current WebAuth request's UX state is
-    WebEngineWebAuthUXRequest.SelectAccount. The WebAuth dialog displays user names.
+    WebEngineWebAuthUxRequest.SelectAccount. The WebAuth dialog displays user names.
     The user needs to select an account to proceed.
 
-    \sa state setSelectedAccount() QWebEngineWebAuthUXRequest::userNames
+    \sa state setSelectedAccount() QWebEngineWebAuthUxRequest::userNames
 */
 /*!
-    \property QWebEngineWebAuthUXRequest::userNames
+    \property QWebEngineWebAuthUxRequest::userNames
     \brief The available user names for the resident credential support.
     This is needed when the current WebAuth request's UX state is \l SelectAccount.
     The WebAuth dialog displays user names. The user needs to select an account to proceed.
 
     \sa SelectAccount setSelectedAccount()
 */
-QStringList QWebEngineWebAuthUXRequest::userNames() const
+QStringList QWebEngineWebAuthUxRequest::userNames() const
 {
-    const Q_D(QWebEngineWebAuthUXRequest);
+    const Q_D(QWebEngineWebAuthUxRequest);
 
     return d->webAuthDialogController->userNames();
 }
 
 /*!
-    \qmlproperty string WebEngineWebAuthUXRequest::relyingPartyId
+    \qmlproperty string WebEngineWebAuthUxRequest::relyingPartyId
     \brief The WebAuth request's relying party id.
 */
 /*!
-    \property QWebEngineWebAuthUXRequest::relyingPartyId
+    \property QWebEngineWebAuthUxRequest::relyingPartyId
     \brief The WebAuth request's relying party id.
 */
-QString QWebEngineWebAuthUXRequest::relyingPartyId() const
+QString QWebEngineWebAuthUxRequest::relyingPartyId() const
 {
-    const Q_D(QWebEngineWebAuthUXRequest);
+    const Q_D(QWebEngineWebAuthUxRequest);
 
     return d->webAuthDialogController->relyingPartyId();
 }
 
 /*!
-    \qmlproperty QWebEngineWebAuthPINRequest WebEngineWebAuthUXRequest::pinRequest
+    \qmlproperty QWebEngineWebAuthPinRequest WebEngineWebAuthUxRequest::pinRequest
     \brief The WebAuth request's PIN request information.
 
-    \sa QWebEngineWebAuthPINRequest
+    \sa QWebEngineWebAuthPinRequest
 */
 /*!
-    \property QWebEngineWebAuthUXRequest::pinRequest
+    \property QWebEngineWebAuthUxRequest::pinRequest
     \brief The WebAuth request's PIN request information.
 
-    This is needed when the current WebAuth request state is \l CollectPIN.
+    This is needed when the current WebAuth request state is \l CollectPin.
     WebAuth Dialog displays a PIN request dialog. The user needs to enter a PIN and
     invoke \l setPin() to proceed.
 
-    \sa QWebEngineWebAuthPINRequest CollectPIN setPin()
+    \sa QWebEngineWebAuthPinRequest CollectPin setPin()
 */
-QWebEngineWebAuthPINRequest QWebEngineWebAuthUXRequest::pinRequest() const
+QWebEngineWebAuthPinRequest QWebEngineWebAuthUxRequest::pinRequest() const
 {
-    const Q_D(QWebEngineWebAuthUXRequest);
+    const Q_D(QWebEngineWebAuthUxRequest);
 
     return d->webAuthDialogController->pinRequest();
 }
 
 /*!
-    \qmlproperty enumeration WebEngineWebAuthUXRequest::state
+    \qmlproperty enumeration WebEngineWebAuthUxRequest::state
     \brief The WebAuth request's current UX state.
 
-    \value WebEngineWebAuthUXRequest.NotStarted WebAuth UX request not started yet.
-    \value WebEngineWebAuthUXRequest.SelectAccount The authenticator requires
+    \value WebEngineWebAuthUxRequest.NotStarted WebAuth UX request not started yet.
+    \value WebEngineWebAuthUxRequest.SelectAccount The authenticator requires
            resident credential details. The application needs to display an account details dialog,
            and the user needs to select an account to proceed.
-    \value WebEngineWebAuthUXRequest.CollectPIN The authenticator requires user verification.
+    \value WebEngineWebAuthUxRequest.CollectPin The authenticator requires user verification.
            The application needs to display a PIN request dialog.
-    \value WebEngineWebAuthUXRequest.FinishTokenCollection The authenticator requires
+    \value WebEngineWebAuthUxRequest.FinishTokenCollection The authenticator requires
            token/user verification (like tap on the FIDO key) to complete the process.
-    \value WebEngineWebAuthUXRequest.RequestFailed WebAuth request failed. Display error details.
-    \value WebEngineWebAuthUXRequest.Cancelled  WebAuth request is cancelled.
+    \value WebEngineWebAuthUxRequest.RequestFailed WebAuth request failed. Display error details.
+    \value WebEngineWebAuthUxRequest.Cancelled  WebAuth request is cancelled.
            Close the WebAuth dialog.
-    \value WebEngineWebAuthUXRequest.Completed WebAuth request is completed.
+    \value WebEngineWebAuthUxRequest.Completed WebAuth request is completed.
            Close the WebAuth dialog.
 */
 /*!
-    \property QWebEngineWebAuthUXRequest::state
+    \property QWebEngineWebAuthUxRequest::state
     \brief The WebAuth request's current UX state.
 
     \l stateChanged() is emitted when the current state changes.
     Update the WebAuth dialog in reponse to the changes in state.
 */
-QWebEngineWebAuthUXRequest::WebAuthUXState QWebEngineWebAuthUXRequest::state() const
+QWebEngineWebAuthUxRequest::WebAuthUxState QWebEngineWebAuthUxRequest::state() const
 {
     return d_ptr->m_currentState;
 }
 
 /*!
-    \qmlmethod void WebEngineWebAuthUXRequest::setSelectedAccount(const QString &selectedAccount)
+    \qmlmethod void WebEngineWebAuthUxRequest::setSelectedAccount(const QString &selectedAccount)
     Sends the \a selectedAccount name to the authenticator.
     This is needed when the current WebAuth request's UX state is
-    WebEngineWebAuthUXRequest.SelectAccount. The WebAuth request is blocked until the user selects
+    WebEngineWebAuthUxRequest.SelectAccount. The WebAuth request is blocked until the user selects
     an account and invokes this method.
 
-    \sa WebEngineWebAuthUXRequest::userNames state
+    \sa WebEngineWebAuthUxRequest::userNames state
 */
 /*!
     Sends the \a selectedAccount name to the authenticator.
@@ -320,55 +313,55 @@ QWebEngineWebAuthUXRequest::WebAuthUXState QWebEngineWebAuthUXRequest::state() c
 
     \sa userNames SelectAccount
 */
-void QWebEngineWebAuthUXRequest::setSelectedAccount(const QString &selectedAccount)
+void QWebEngineWebAuthUxRequest::setSelectedAccount(const QString &selectedAccount)
 {
-    Q_D(QWebEngineWebAuthUXRequest);
+    Q_D(QWebEngineWebAuthUxRequest);
 
     d->webAuthDialogController->sendSelectAccountResponse(selectedAccount);
 }
 
 /*!
-    \qmlmethod void WebEngineWebAuthUXRequest::setPin(const QString &pin)
+    \qmlmethod void WebEngineWebAuthUxRequest::setPin(const QString &pin)
     Sends the \a pin to the authenticator that prompts for a PIN.
     This is needed when the current WebAuth request's UX state is
-    WebEngineWebAuthUXRequest.CollectPIN. The WebAuth request is blocked until
+    WebEngineWebAuthUxRequest.CollectPin. The WebAuth request is blocked until
     the user responds with a PIN.
 
-    \sa QWebEngineWebAuthPINRequest state
+    \sa QWebEngineWebAuthPinRequest state
 */
 /*!
     Sends the \a pin to the authenticator that prompts for a PIN.
-    This is needed when the current WebAuth request's UX state is \l CollectPIN.
+    This is needed when the current WebAuth request's UX state is \l CollectPin.
     The WebAuth request is blocked until the user responds with a PIN.
 
-    \sa QWebEngineWebAuthPINRequest CollectPIN
+    \sa QWebEngineWebAuthPinRequest CollectPin
 */
-void QWebEngineWebAuthUXRequest::setPin(const QString &pin)
+void QWebEngineWebAuthUxRequest::setPin(const QString &pin)
 {
-    Q_D(QWebEngineWebAuthUXRequest);
+    Q_D(QWebEngineWebAuthUxRequest);
     d->webAuthDialogController->sendCollectPinResponse(pin);
 }
 
 /*!
-    \qmlmethod void WebEngineWebAuthUXRequest::cancel()
+    \qmlmethod void WebEngineWebAuthUxRequest::cancel()
     Cancels the current WebAuth request.
 
-    \sa QWebEngineWebAuthUXRequest::Cancelled, WebEngineWebAuthUXRequest::stateChanged()
+    \sa QWebEngineWebAuthUxRequest::Cancelled, WebEngineWebAuthUxRequest::stateChanged()
 */
 /*!
     Cancels the current WebAuth request.
 
-    \sa QWebEngineWebAuthUXRequest::Cancelled, stateChanged()
+    \sa QWebEngineWebAuthUxRequest::Cancelled, stateChanged()
 */
-void QWebEngineWebAuthUXRequest::cancel()
+void QWebEngineWebAuthUxRequest::cancel()
 {
-    Q_D(QWebEngineWebAuthUXRequest);
+    Q_D(QWebEngineWebAuthUxRequest);
 
     d->webAuthDialogController->reject();
 }
 
 /*!
-    \qmlmethod void WebEngineWebAuthUXRequest::retry()
+    \qmlmethod void WebEngineWebAuthUxRequest::retry()
     Retries the current WebAuth request.
 
     \sa  stateChanged()
@@ -378,52 +371,52 @@ void QWebEngineWebAuthUXRequest::cancel()
 
     \sa  stateChanged()
 */
-void QWebEngineWebAuthUXRequest::retry()
+void QWebEngineWebAuthUxRequest::retry()
 {
-    const Q_D(QWebEngineWebAuthUXRequest);
+    const Q_D(QWebEngineWebAuthUxRequest);
 
     d->webAuthDialogController->retryRequest();
 }
 
 /*!
-    \qmlproperty enumeration WebEngineWebAuthUXRequest::requestFailureReason
+    \qmlproperty enumeration WebEngineWebAuthUxRequest::requestFailureReason
     \brief The WebAuth request's failure reason.
 
-    \value WebEngineWebAuthUXRequest.Timeout The authentication session has timed out.
-    \value WebEngineWebAuthUXRequest.KeyNotRegistered Key is not registered with the authenticator.
-    \value WebEngineWebAuthUXRequest.KeyAlreadyRegistered Key is already registered with
+    \value WebEngineWebAuthUxRequest.Timeout The authentication session has timed out.
+    \value WebEngineWebAuthUxRequest.KeyNotRegistered Key is not registered with the authenticator.
+    \value WebEngineWebAuthUxRequest.KeyAlreadyRegistered Key is already registered with
            the authenticator. Try to register with another key or use another authenticator.
-    \value WebEngineWebAuthUXRequest.SoftPINBlock The authenticator is blocked as the user
+    \value WebEngineWebAuthUxRequest.SoftPinBlock The authenticator is blocked as the user
            entered the wrong key many times.
-    \value WebEngineWebAuthUXRequest.HardPINBlock The authenticator is blocked as the user entered
+    \value WebEngineWebAuthUxRequest.HardPinBlock The authenticator is blocked as the user entered
            the wrong key many times and reset the PIN to use the specific authenticator again.
-    \value WebEngineWebAuthUXRequest.AuthenticatorRemovedDuringPINEntry Authenticator
+    \value WebEngineWebAuthUxRequest.AuthenticatorRemovedDuringPinEntry Authenticator
            removed during PIN entry.
-    \value WebEngineWebAuthUXRequest.AuthenticatorMissingResidentKeys Authenticator doesn't
+    \value WebEngineWebAuthUxRequest.AuthenticatorMissingResidentKeys Authenticator doesn't
            have resident key support.
-    \value WebEngineWebAuthUXRequest.AuthenticatorMissingUserVerification Authenticator doesn't
+    \value WebEngineWebAuthUxRequest.AuthenticatorMissingUserVerification Authenticator doesn't
            have user verification support.
-    \value WebEngineWebAuthUXRequest.AuthenticatorMissingLargeBlob Authenticator doesn't have
+    \value WebEngineWebAuthUxRequest.AuthenticatorMissingLargeBlob Authenticator doesn't have
            large blob support.
-    \value WebEngineWebAuthUXRequest.NoCommonAlgorithms No common algorithm.
-    \value WebEngineWebAuthUXRequest.StorageFull The resident credential could not be created
+    \value WebEngineWebAuthUxRequest.NoCommonAlgorithms No common algorithm.
+    \value WebEngineWebAuthUxRequest.StorageFull The resident credential could not be created
            because the authenticator has insufficient storage.
-    \value WebEngineWebAuthUXRequest.UserConsentDenied User consent denied.
-    \value WebEngineWebAuthUXRequest.WinUserCancelled The user clicked \uicontrol Cancel
+    \value WebEngineWebAuthUxRequest.UserConsentDenied User consent denied.
+    \value WebEngineWebAuthUxRequest.WinUserCancelled The user clicked \uicontrol Cancel
            in the native windows UI.
 
     \sa  stateChanged()
 */
 /*!
-    \property QWebEngineWebAuthUXRequest::requestFailureReason
+    \property QWebEngineWebAuthUxRequest::requestFailureReason
     \brief The WebAuth request's failure reason.
 
-    \sa  stateChanged()  QWebEngineWebAuthUXRequest::RequestFailureReason
+    \sa  stateChanged()  QWebEngineWebAuthUxRequest::RequestFailureReason
 */
-QWebEngineWebAuthUXRequest::RequestFailureReason
-QWebEngineWebAuthUXRequest::requestFailureReason() const
+QWebEngineWebAuthUxRequest::RequestFailureReason
+QWebEngineWebAuthUxRequest::requestFailureReason() const
 {
-    const Q_D(QWebEngineWebAuthUXRequest);
+    const Q_D(QWebEngineWebAuthUxRequest);
 
     return d->webAuthDialogController->requestFailureReason();
 }

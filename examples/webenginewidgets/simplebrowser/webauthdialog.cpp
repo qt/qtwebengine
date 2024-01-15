@@ -10,7 +10,7 @@
 #include <QPushButton>
 #include <QWebEngineView>
 
-WebAuthDialog::WebAuthDialog(QWebEngineWebAuthUXRequest *request, QWidget *parent)
+WebAuthDialog::WebAuthDialog(QWebEngineWebAuthUxRequest *request, QWidget *parent)
     : QDialog(parent), uxRequest(request), uiWebAuthDialog(new Ui::WebAuthDialog)
 {
     uiWebAuthDialog->setupUi(this);
@@ -70,16 +70,16 @@ WebAuthDialog::~WebAuthDialog()
 void WebAuthDialog::updateDisplay()
 {
     switch (uxRequest->state()) {
-    case QWebEngineWebAuthUXRequest::SelectAccount:
+    case QWebEngineWebAuthUxRequest::WebAuthUxState::SelectAccount:
         setupSelectAccountUI();
         break;
-    case QWebEngineWebAuthUXRequest::CollectPIN:
-        setupCollectPINUI();
+    case QWebEngineWebAuthUxRequest::WebAuthUxState::CollectPin:
+        setupCollectPinUI();
         break;
-    case QWebEngineWebAuthUXRequest::FinishTokenCollection:
+    case QWebEngineWebAuthUxRequest::WebAuthUxState::FinishTokenCollection:
         setupFinishCollectTokenUI();
         break;
-    case QWebEngineWebAuthUXRequest::RequestFailed:
+    case QWebEngineWebAuthUxRequest::WebAuthUxState::RequestFailed:
         setupErrorUI();
         break;
     default:
@@ -126,7 +126,7 @@ void WebAuthDialog::setupFinishCollectTokenUI()
     uiWebAuthDialog->buttonBox->button(QDialogButtonBox::Retry)->setVisible(false);
     scrollArea->setVisible(false);
 }
-void WebAuthDialog::setupCollectPINUI()
+void WebAuthDialog::setupCollectPinUI()
 {
     clearSelectAccountButtons();
     uiWebAuthDialog->m_mainVerticalLayout->addWidget(uiWebAuthDialog->m_pinGroupBox);
@@ -139,15 +139,15 @@ void WebAuthDialog::setupCollectPINUI()
     uiWebAuthDialog->buttonBox->button(QDialogButtonBox::Retry)->setVisible(false);
     scrollArea->setVisible(false);
 
-    QWebEngineWebAuthPINRequest pinRequestInfo = uxRequest->pinRequest();
+    QWebEngineWebAuthPinRequest pinRequestInfo = uxRequest->pinRequest();
 
-    if (pinRequestInfo.reason == QWebEngineWebAuthUXRequest::PINEntryReason::Challenge) {
+    if (pinRequestInfo.reason == QWebEngineWebAuthUxRequest::PinEntryReason::Challenge) {
         uiWebAuthDialog->m_headingLabel->setText(tr("PIN Required"));
         uiWebAuthDialog->m_description->setText(tr("Enter the PIN for your security key"));
         uiWebAuthDialog->m_confirmPinLabel->setVisible(false);
         uiWebAuthDialog->m_confirmPinLineEdit->setVisible(false);
     } else {
-        if (pinRequestInfo.reason == QWebEngineWebAuthUXRequest::PINEntryReason::Set) {
+        if (pinRequestInfo.reason == QWebEngineWebAuthUxRequest::PinEntryReason::Set) {
             uiWebAuthDialog->m_headingLabel->setText(tr("New PIN Required"));
             uiWebAuthDialog->m_description->setText(tr("Set new PIN for your security key"));
         } else {
@@ -160,21 +160,21 @@ void WebAuthDialog::setupCollectPINUI()
 
     QString errorDetails;
     switch (pinRequestInfo.error) {
-    case QWebEngineWebAuthUXRequest::PINEntryError::NoError:
+    case QWebEngineWebAuthUxRequest::PinEntryError::NoError:
         break;
-    case QWebEngineWebAuthUXRequest::PINEntryError::InternalUvLocked:
+    case QWebEngineWebAuthUxRequest::PinEntryError::InternalUvLocked:
         errorDetails = tr("Internal User Verification Locked ");
         break;
-    case QWebEngineWebAuthUXRequest::PINEntryError::WrongPIN:
-        errorDetails = tr("Wrong Pin");
+    case QWebEngineWebAuthUxRequest::PinEntryError::WrongPin:
+        errorDetails = tr("Wrong PIN");
         break;
-    case QWebEngineWebAuthUXRequest::PINEntryError::TooShort:
+    case QWebEngineWebAuthUxRequest::PinEntryError::TooShort:
         errorDetails = tr("Too Short");
         break;
-    case QWebEngineWebAuthUXRequest::PINEntryError::InvalidCharacters:
+    case QWebEngineWebAuthUxRequest::PinEntryError::InvalidCharacters:
         errorDetails = tr("Invalid Characters");
         break;
-    case QWebEngineWebAuthUXRequest::PINEntryError::SameAsCurrentPIN:
+    case QWebEngineWebAuthUxRequest::PinEntryError::SameAsCurrentPin:
         errorDetails = tr("Same as current PIN");
         break;
     }
@@ -193,12 +193,12 @@ void WebAuthDialog::onCancelRequest()
 void WebAuthDialog::onAcceptRequest()
 {
     switch (uxRequest->state()) {
-    case QWebEngineWebAuthUXRequest::SelectAccount:
+    case QWebEngineWebAuthUxRequest::WebAuthUxState::SelectAccount:
         if (buttonGroup->checkedButton()) {
             uxRequest->setSelectedAccount(buttonGroup->checkedButton()->text());
         }
         break;
-    case QWebEngineWebAuthUXRequest::CollectPIN:
+    case QWebEngineWebAuthUxRequest::WebAuthUxState::CollectPin:
         uxRequest->setPin(uiWebAuthDialog->m_pinLineEdit->text());
         break;
     default:
@@ -213,51 +213,51 @@ void WebAuthDialog::setupErrorUI()
     QString errorHeading = tr("Something went wrong");
     bool isVisibleRetry = false;
     switch (uxRequest->requestFailureReason()) {
-    case QWebEngineWebAuthUXRequest::RequestFailureReason::Timeout:
+    case QWebEngineWebAuthUxRequest::RequestFailureReason::Timeout:
         errorDescription = tr("Request Timeout");
         break;
-    case QWebEngineWebAuthUXRequest::RequestFailureReason::KeyNotRegistered:
+    case QWebEngineWebAuthUxRequest::RequestFailureReason::KeyNotRegistered:
         errorDescription = tr("Key not registered");
         break;
-    case QWebEngineWebAuthUXRequest::RequestFailureReason::KeyAlreadyRegistered:
+    case QWebEngineWebAuthUxRequest::RequestFailureReason::KeyAlreadyRegistered:
         errorDescription = tr("You already registered this device."
                               "Try again with device");
         isVisibleRetry = true;
         break;
-    case QWebEngineWebAuthUXRequest::RequestFailureReason::SoftPINBlock:
+    case QWebEngineWebAuthUxRequest::RequestFailureReason::SoftPinBlock:
         errorDescription =
                 tr("The security key is locked because the wrong PIN was entered too many times."
                    "To unlock it, remove and reinsert it.");
         isVisibleRetry = true;
         break;
-    case QWebEngineWebAuthUXRequest::RequestFailureReason::HardPINBlock:
+    case QWebEngineWebAuthUxRequest::RequestFailureReason::HardPinBlock:
         errorDescription =
                 tr("The security key is locked because the wrong PIN was entered too many times."
                    " You'll need to reset the security key.");
         break;
-    case QWebEngineWebAuthUXRequest::RequestFailureReason::AuthenticatorRemovedDuringPINEntry:
+    case QWebEngineWebAuthUxRequest::RequestFailureReason::AuthenticatorRemovedDuringPinEntry:
         errorDescription =
                 tr("Authenticator removed during verification. Please reinsert and try again");
         break;
-    case QWebEngineWebAuthUXRequest::RequestFailureReason::AuthenticatorMissingResidentKeys:
+    case QWebEngineWebAuthUxRequest::RequestFailureReason::AuthenticatorMissingResidentKeys:
         errorDescription = tr("Authenticator doesn't have resident key support");
         break;
-    case QWebEngineWebAuthUXRequest::RequestFailureReason::AuthenticatorMissingUserVerification:
+    case QWebEngineWebAuthUxRequest::RequestFailureReason::AuthenticatorMissingUserVerification:
         errorDescription = tr("Authenticator missing user verification");
         break;
-    case QWebEngineWebAuthUXRequest::RequestFailureReason::AuthenticatorMissingLargeBlob:
+    case QWebEngineWebAuthUxRequest::RequestFailureReason::AuthenticatorMissingLargeBlob:
         errorDescription = tr("Authenticator missing Large Blob support");
         break;
-    case QWebEngineWebAuthUXRequest::RequestFailureReason::NoCommonAlgorithms:
+    case QWebEngineWebAuthUxRequest::RequestFailureReason::NoCommonAlgorithms:
         errorDescription = tr("Authenticator missing Large Blob support");
         break;
-    case QWebEngineWebAuthUXRequest::RequestFailureReason::StorageFull:
+    case QWebEngineWebAuthUxRequest::RequestFailureReason::StorageFull:
         errorDescription = tr("Storage Full");
         break;
-    case QWebEngineWebAuthUXRequest::RequestFailureReason::UserConsentDenied:
+    case QWebEngineWebAuthUxRequest::RequestFailureReason::UserConsentDenied:
         errorDescription = tr("User consent denied");
         break;
-    case QWebEngineWebAuthUXRequest::RequestFailureReason::WinUserCancelled:
+    case QWebEngineWebAuthUxRequest::RequestFailureReason::WinUserCancelled:
         errorDescription = tr("User Cancelled Request");
         break;
     }

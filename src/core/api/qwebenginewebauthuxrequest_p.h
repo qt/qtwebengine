@@ -26,16 +26,16 @@ class AuthenticatorRequestDialogController;
 
 QT_BEGIN_NAMESPACE
 
-class Q_WEBENGINECORE_EXPORT QWebEngineWebAuthUXRequestPrivate
+class Q_WEBENGINECORE_EXPORT QWebEngineWebAuthUxRequestPrivate
 {
 
 public:
-    QWebEngineWebAuthUXRequestPrivate(
+    QWebEngineWebAuthUxRequestPrivate(
             QtWebEngineCore::AuthenticatorRequestDialogController *controller);
-    ~QWebEngineWebAuthUXRequestPrivate();
+    ~QWebEngineWebAuthUxRequestPrivate();
 
-    QWebEngineWebAuthUXRequest::WebAuthUXState m_currentState =
-            QWebEngineWebAuthUXRequest::NotStarted;
+    QWebEngineWebAuthUxRequest::WebAuthUxState m_currentState =
+            QWebEngineWebAuthUxRequest::WebAuthUxState::NotStarted;
     QtWebEngineCore::AuthenticatorRequestDialogController *webAuthDialogController;
 };
 
