@@ -14,16 +14,13 @@
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
 #include "ui/gfx/linux/client_native_pixmap_factory_dmabuf.h"
-#include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
 #include "ui/ozone/common/bitmap_cursor_factory.h"
-#include "ui/ozone/common/stub_client_native_pixmap_factory.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/platform_screen.h"
 #include "ui/ozone/public/system_input_injector.h"
-#include "ui/ozone/platform/x11/gl_egl_utility_x11.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_gl_egl_utility.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_init_properties.h"
@@ -42,6 +39,9 @@
 #endif // BUILDFLAG(USE_XKBCOMMON)
 
 #if BUILDFLAG(OZONE_PLATFORM_X11)
+#include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
+#include "ui/ozone/platform/x11/gl_egl_utility_x11.h"
+
 extern void *GetQtXDisplay();
 #endif
 
