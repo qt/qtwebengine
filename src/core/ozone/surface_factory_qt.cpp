@@ -9,8 +9,9 @@
 
 #include "media/gpu/buildflags.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
+#include "ui/ozone/buildflags.h"
 
-#if defined(USE_GLX)
+#if BUILDFLAG(OZONE_PLATFORM_X11)
 #include "ozone/gl_ozone_glx_qt.h"
 
 #include "ui/gfx/linux/gbm_buffer.h"
@@ -27,7 +28,7 @@ namespace QtWebEngineCore {
 
 SurfaceFactoryQt::SurfaceFactoryQt()
 {
-#if defined(USE_GLX)
+#if BUILDFLAG(OZONE_PLATFORM_X11)
     if (GLContextHelper::getGlxPlatformInterface()) {
         m_impl = { gl::GLImplementationParts(gl::kGLImplementationDesktopGL),
                    gl::GLImplementationParts(gl::kGLImplementationDisabled) };
@@ -68,7 +69,7 @@ SurfaceFactoryQt::CreateVulkanImplementation(bool /*allow_protected_memory*/,
 
 bool SurfaceFactoryQt::CanCreateNativePixmapForFormat(gfx::BufferFormat format)
 {
-#if defined(USE_GLX)
+#if BUILDFLAG(OZONE_PLATFORM_X11)
     if (GLContextHelper::getGlxPlatformInterface())
         return ui::GpuMemoryBufferSupportX11::GetInstance()->CanCreateNativePixmapForFormat(format);
 #endif
@@ -85,7 +86,7 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
 {
     if (framebuffer_size && !gfx::Rect(size).Contains(gfx::Rect(*framebuffer_size)))
         return nullptr;
-#if defined(USE_GLX)
+#if BUILDFLAG(OZONE_PLATFORM_X11)
     if (GLContextHelper::getGlxPlatformInterface()) {
         scoped_refptr<gfx::NativePixmapDmaBuf> pixmap;
         auto buffer = ui::GpuMemoryBufferSupportX11::GetInstance()->CreateBuffer(format, size, usage);
@@ -122,7 +123,7 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
         gfx::BufferFormat format,
         gfx::NativePixmapHandle handle)
 {
-#if defined(USE_GLX)
+#if BUILDFLAG(OZONE_PLATFORM_X11)
     if (GLContextHelper::getGlxPlatformInterface()) {
         scoped_refptr<gfx::NativePixmapDmaBuf> pixmap;
         auto buffer = ui::GpuMemoryBufferSupportX11::GetInstance()->CreateBufferFromHandle(size, format, std::move(handle));
