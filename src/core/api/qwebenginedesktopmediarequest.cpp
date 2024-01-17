@@ -21,28 +21,16 @@ QT_BEGIN_NAMESPACE
     If a web application requests access to the contents of a display,
     QWebEnginePage::desktopMediaRequested will be emitted with a
     QWebEngineDesktopMediaRequest instance as an argument which holds references to
-    data models for available windows and screens that can be captured.
-    The signal handler needs to then either call QWebEngineDesktopMediaRequest:selectScreen(),
-    QWebEngineDesktopMediaRequest::selectWindow() to accept the request and start screensharing.
-    \sa QWebEnginePage::desktopMediaRequested().
-*/
+    QAbstractListModels for available windows and screens that can be captured.
 
-/*!
-    \class QWebEngineMediaSourceModel
-    \brief A data model that represents display sources for screen capturing.
-
-    \since 6.7
-
-    \inmodule QtWebEngineCore
-    The QWebEngineMediaSourceModel exposes the \e name Role.
-    The name role specifies the name of the source which is the title of a window or the number of
-    the display.
+    The data model's \e Qt::DisplayRole specifies the name of the source which is the title of a
+    window or the number of the display.
     The model is dynamically updates if the available list of sources has changed e.g a window is
     opened/closed.
 
-    This type is uncreatable, it can only be accessed from a QWebEngineDesktopMediaRequest.
-    \sa QWebEngineDesktopMediaRequest::windowsModel(),
-   QWebEngineDesktopMediaRequest::screensModel().
+    The signal handler needs to then either call QWebEngineDesktopMediaRequest:selectScreen() or
+    QWebEngineDesktopMediaRequest::selectWindow() to accept the request and start screensharing.
+    \sa QWebEnginePage::desktopMediaRequested().
 */
 
 class QWebEngineMediaSourceModelPrivate
@@ -57,6 +45,20 @@ QWebEngineMediaSourceModelPrivate::QWebEngineMediaSourceModelPrivate(
     : m_mediaList(mediaList)
 {
 }
+
+class QWebEngineMediaSourceModel : public QAbstractListModel
+{
+public:
+    ~QWebEngineMediaSourceModel() override;
+
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+
+private:
+    friend class QWebEngineDesktopMediaRequestPrivate;
+    explicit QWebEngineMediaSourceModel(QWebEngineMediaSourceModelPrivate *dd);
+    std::unique_ptr<QWebEngineMediaSourceModelPrivate> d;
+};
 
 QWebEngineMediaSourceModel::QWebEngineMediaSourceModel(QWebEngineMediaSourceModelPrivate *dd)
     : d(dd)
@@ -79,7 +81,7 @@ QWebEngineMediaSourceModel::QWebEngineMediaSourceModel(QWebEngineMediaSourceMode
     QObject::connect(d->m_mediaList, &QtWebEngineCore::DesktopMediaListQt::sourceNameChanged, this,
                      [this](int index) {
                          Q_EMIT dataChanged(QModelIndex(), QModelIndex(),
-                                            { Qt::DisplayRole, Roles::NameRole });
+                                            { Qt::DisplayRole });
                      });
 }
 
@@ -96,20 +98,11 @@ QVariant QWebEngineMediaSourceModel::data(const QModelIndex &index, int role) co
         return QVariant();
     switch (role) {
     case Qt::DisplayRole:
-    case Qt::EditRole:
-    case NameRole:
         return d->m_mediaList->getSourceName(index.row());
     default:
         break;
     }
     return QVariant();
-}
-
-QHash<int, QByteArray> QWebEngineMediaSourceModel::roleNames() const
-{
-    QHash<int, QByteArray> roles = QAbstractItemModel::roleNames();
-    roles[NameRole] = "name";
-    return roles;
 }
 
 QWebEngineDesktopMediaRequestPrivate::QWebEngineDesktopMediaRequestPrivate(
@@ -160,22 +153,24 @@ QWebEngineDesktopMediaRequest::QWebEngineDesktopMediaRequest(
 {
 }
 
+QWebEngineDesktopMediaRequest::~QWebEngineDesktopMediaRequest() = default;
+
 /*!
-    Returns a QWebEngineMediaSourceModel for the available screens.
+    Returns a QAbstractListModel for the available screens.
 
     \sa windowsModel()
 */
-QWebEngineMediaSourceModel *QWebEngineDesktopMediaRequest::screensModel() const
+QAbstractListModel *QWebEngineDesktopMediaRequest::screensModel() const
 {
     return d->m_screensModel.get();
 }
 
 /*!
-    Returns a QWebEngineMediaSourceModel for the available windows.
+    Returns a QAbstractListModel for the available windows.
 
     \sa screensModel()
 */
-QWebEngineMediaSourceModel *QWebEngineDesktopMediaRequest::windowsModel() const
+QAbstractListModel *QWebEngineDesktopMediaRequest::windowsModel() const
 {
     return d->m_windowsModel.get();
 }

@@ -31,6 +31,7 @@
 #include "web_contents_adapter.h"
 
 #include <QtWebEngineCore/qwebenginecertificateerror.h>
+#include <QtWebEngineCore/qwebenginedesktopmediarequest.h>
 #include <QtWebEngineCore/qwebenginefilesystemaccessrequest.h>
 #include <QtWebEngineCore/qwebenginefindtextresult.h>
 #include <QtWebEngineCore/qwebenginefullscreenrequest.h>
