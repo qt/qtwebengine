@@ -81,11 +81,7 @@ gl::EGLDisplayPlatform GLOzoneEGLQt::GetNativeDisplay()
 
 bool GLOzoneEGLQt::CanImportNativePixmap()
 {
-#if BUILDFLAG(USE_VAAPI)
     return gl::GLSurfaceEGL::GetGLDisplayEGL()->ext->b_EGL_EXT_image_dma_buf_import;
-#else
-    return false;
-#endif
 }
 
 std::unique_ptr<NativePixmapGLBinding> GLOzoneEGLQt::ImportNativePixmap(
@@ -97,13 +93,8 @@ std::unique_ptr<NativePixmapGLBinding> GLOzoneEGLQt::ImportNativePixmap(
         GLenum target,
         GLuint texture_id)
 {
-#if BUILDFLAG(USE_VAAPI)
-    return NativePixmapEGLBinding::Create(pixmap, plane_format, plane,
-                                          plane_size, color_space, target,
-                                          texture_id);
-#else
-    return nullptr;
-#endif
+    return NativePixmapEGLBinding::Create(pixmap, plane_format, plane, plane_size, color_space,
+                                          target, texture_id);
 }
 
 } // namespace ui
