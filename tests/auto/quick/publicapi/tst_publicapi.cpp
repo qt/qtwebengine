@@ -67,7 +67,7 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QWebEngineFileSystemAccessRequest::staticMetaObject
     << &QWebEngineFindTextResult::staticMetaObject
     << &QWebEngineLoadingInfo::staticMetaObject
-    << &QWebEngineMediaSourceModel::staticMetaObject
+    << &QAbstractListModel::staticMetaObject
     << &QWebEngineNavigationRequest::staticMetaObject
     << &QWebEngineNewWindowRequest::staticMetaObject
     << &QWebEngineNotification::staticMetaObject
@@ -270,8 +270,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineTooltipRequest.text --> QString"
     << "QQuickWebEngineTooltipRequest.type --> QQuickWebEngineTooltipRequest::RequestType"
     << "QQuickWebEngineTooltipRequest.accepted --> bool"
-    << "QWebEngineDesktopMediaRequest.screensModel --> QWebEngineMediaSourceModel*"
-    << "QWebEngineDesktopMediaRequest.windowsModel --> QWebEngineMediaSourceModel*"
+    << "QWebEngineDesktopMediaRequest.screensModel --> QAbstractListModel*"
+    << "QWebEngineDesktopMediaRequest.windowsModel --> QAbstractListModel*"
     << "QWebEngineDesktopMediaRequest.selectScreen(QModelIndex) --> void"
     << "QWebEngineDesktopMediaRequest.selectWindow(QModelIndex) --> void"
     << "QWebEngineDesktopMediaRequest.cancel() --> void"

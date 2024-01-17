@@ -6,7 +6,6 @@
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtWebEngineCore/qwebengineclientcertificateselection.h>
-#include <QtWebEngineCore/qwebenginedesktopmediarequest.h>
 #include <QtWebEngineCore/qwebenginedownloadrequest.h>
 #include <QtWebEngineCore/qwebenginequotarequest.h>
 
@@ -27,6 +26,7 @@ class QRect;
 class QVariant;
 class QWebChannel;
 class QWebEngineCertificateError;
+class QWebEngineDesktopMediaRequest;
 class QWebEngineFileSystemAccessRequest;
 class QWebEngineFindTextResult;
 class QWebEngineFullScreenRequest;
