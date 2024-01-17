@@ -68,15 +68,11 @@ SurfaceFactoryQt::CreateVulkanImplementation(bool /*allow_protected_memory*/,
 
 bool SurfaceFactoryQt::CanCreateNativePixmapForFormat(gfx::BufferFormat format)
 {
-#if BUILDFLAG(USE_VAAPI)
 #if defined(USE_GLX)
     if (GLContextHelper::getGlxPlatformInterface())
         return ui::GpuMemoryBufferSupportX11::GetInstance()->CanCreateNativePixmapForFormat(format);
 #endif
     return ui::SurfaceFactoryOzone::CanCreateNativePixmapForFormat(format);
-#else  // !BUILDFLAG(USE_VAAPI)
-    return false;
-#endif // BUILDFLAG(USE_VAAPI)
 }
 
 scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
@@ -89,7 +85,7 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
 {
     if (framebuffer_size && !gfx::Rect(size).Contains(gfx::Rect(*framebuffer_size)))
         return nullptr;
-#if defined(USE_GLX) && BUILDFLAG(USE_VAAPI)
+#if defined(USE_GLX)
     if (GLContextHelper::getGlxPlatformInterface()) {
         scoped_refptr<gfx::NativePixmapDmaBuf> pixmap;
         auto buffer = ui::GpuMemoryBufferSupportX11::GetInstance()->CreateBuffer(format, size, usage);
@@ -126,7 +122,6 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
         gfx::BufferFormat format,
         gfx::NativePixmapHandle handle)
 {
-#if BUILDFLAG(USE_VAAPI)
 #if defined(USE_GLX)
     if (GLContextHelper::getGlxPlatformInterface()) {
         scoped_refptr<gfx::NativePixmapDmaBuf> pixmap;
@@ -140,7 +135,6 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
 #endif
     if (GLContextHelper::getEglPlatformInterface())
         return base::MakeRefCounted<gfx::NativePixmapDmaBuf>(size, format, std::move(handle));
-#endif
     return nullptr;
 }
 

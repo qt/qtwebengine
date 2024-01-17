@@ -39,9 +39,11 @@
 #include <X11/XKBlib.h>
 #include <X11/extensions/XKBrules.h>
 #include <filesystem>
-
-extern void *GetQtXDisplay();
 #endif // BUILDFLAG(USE_XKBCOMMON)
+
+#if BUILDFLAG(OZONE_PLATFORM_X11)
+extern void *GetQtXDisplay();
+#endif
 
 namespace ui {
 
@@ -68,9 +70,8 @@ public:
     const PlatformRuntimeProperties &GetPlatformRuntimeProperties() override
     {
         static OzonePlatform::PlatformRuntimeProperties properties;
-#if BUILDFLAG(USE_VAAPI)
         if (has_initialized_gpu()) {
-#if BUILDFLAG(USE_VAAPI_X11)
+#if BUILDFLAG(OZONE_PLATFORM_X11)
             if (GetQtXDisplay()) {
                 // This property is set when the GetPlatformRuntimeProperties is
                 // called on the gpu process side.
@@ -79,7 +80,6 @@ public:
 #endif
                 properties.supports_native_pixmaps = true; // buffer_manager_->GetGbmDevice() != nullptr
         }
-#endif
         return properties;
     }
     bool IsNativePixmapConfigSupported(gfx::BufferFormat format, gfx::BufferUsage usage) const override;
@@ -239,7 +239,7 @@ void OzonePlatformQt::InitializeGPU(const ui::OzonePlatform::InitParams &params)
 {
     surface_factory_ozone_.reset(new QtWebEngineCore::SurfaceFactoryQt());
 
-#if BUILDFLAG(OZONE_PLATFORM_X11) && BUILDFLAG(USE_VAAPI_X11)
+#if BUILDFLAG(OZONE_PLATFORM_X11)
     if (params.enable_native_gpu_memory_buffers) {
         base::ThreadPool::PostTask(FROM_HERE,
                                    base::BindOnce([]()
@@ -258,16 +258,11 @@ std::unique_ptr<InputMethod> OzonePlatformQt::CreateInputMethod(ImeKeyEventDispa
 
 bool OzonePlatformQt::IsNativePixmapConfigSupported(gfx::BufferFormat format, gfx::BufferUsage usage) const
 {
-#if BUILDFLAG(USE_VAAPI)
     return gfx::ClientNativePixmapDmaBuf::IsConfigurationSupported(format, usage);
-#else
-    return false;
-#endif
 }
 
 PlatformGLEGLUtility *OzonePlatformQt::GetPlatformGLEGLUtility()
 {
-#if BUILDFLAG(USE_VAAPI)
     if (!gl_egl_utility_) {
 #if BUILDFLAG(OZONE_PLATFORM_X11)
         if (GetQtXDisplay())
@@ -276,10 +271,8 @@ PlatformGLEGLUtility *OzonePlatformQt::GetPlatformGLEGLUtility()
 #endif
             gl_egl_utility_ = std::make_unique<WaylandGLEGLUtility>();
     }
-#endif
     return gl_egl_utility_.get();
 }
-
 
 } // namespace
 
@@ -287,11 +280,7 @@ OzonePlatform* CreateOzonePlatformQt() { return new OzonePlatformQt; }
 
 gfx::ClientNativePixmapFactory *CreateClientNativePixmapFactoryQt()
 {
-#if BUILDFLAG(USE_VAAPI)
     return gfx::CreateClientNativePixmapFactoryDmabuf();
-#else
-    return CreateStubClientNativePixmapFactory();
-#endif
 }
 
 }  // namespace ui
