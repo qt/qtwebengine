@@ -77,6 +77,10 @@ bool QQuickWebEngineSettings::javascriptCanOpenWindows() const
     To enable also the pasting of clipboard content from JavaScript,
     use javascriptCanPaste.
 
+    Since unrestricted clipboard access is a potential security concern, it is
+    recommended that applications leave this disabled and instead respond to
+    \l{WebEngineView::ClipboardReadWrite}{ClipboardReadWrite} feature permission requests.
+
     Disabled by default.
 */
 bool QQuickWebEngineSettings::javascriptCanAccessClipboard() const
@@ -382,6 +386,10 @@ bool QQuickWebEngineSettings::webRTCPublicInterfacesOnly() const
 
     Enables JavaScript \c{execCommand("paste")}.
     This also requires enabling javascriptCanAccessClipboard.
+
+    Since unrestricted clipboard access is a potential security concern, it is
+    recommended that applications leave this disabled and instead respond to
+    \l{WebEngineView::ClipboardReadWrite}{ClipboardReadWrite} feature permission requests.
 
     Disabled by default.
 */
