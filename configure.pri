@@ -12,12 +12,9 @@ defineTest(isPythonVersionSupported) {
     python_version ~= s/[()]//g
     python_version = $$split(python_version, ',')
     python_major_version = $$first(python_version)
-    greaterThan(python_major_version, 2) {
-        qtLog("Python version 3 is not supported by Chromium.")
-        return(false)
-    }
     python_minor_version = $$member(python_version, 1)
     python_patch_version = $$member(python_version, 2)
+    greaterThan(python_major_version, 2): greaterThan(python_minor_version, 7): return(true)
     greaterThan(python_major_version, 1): greaterThan(python_minor_version, 6): greaterThan(python_patch_version, 4): return(true)
     qtLog("Unsupported python version: $${python_major_version}.$${python_minor_version}.$${python_patch_version}.")
     return(false)
@@ -52,22 +49,38 @@ defineTest(qtConfReport_jumboBuild) {
     qtConfReportPadded($${1}, $$mergeLimit)
 }
 
-defineTest(qtConfTest_detectPython2) {
-    python = $$qtConfFindInPath("python2$$EXE_SUFFIX")
-    isEmpty(python) {
-        qtLog("'python2$$EXE_SUFFIX' not found in PATH. Checking for 'python$$EXE_SUFFIX'.")
-        python = $$qtConfFindInPath("python$$EXE_SUFFIX")
+defineTest(qtConfTest_detectPython) {
+    pythonOverride = $$eval(config.input.python_override)
+    !isEmpty(pythonOverride) {
+        python = $$qtConfFindInPath("$$pythonOverride$$EXE_SUFFIX")
+        isEmpty(python) {
+           qtLog("User selected '$$pythonOverride$$EXE_SUFFIX' was not found in PATH. Giving up.")
+           return(false)
+        }
     }
+
+    win32 {
+        # the default name of the python 2 executable on windows is just
+        # python, so try that first
+        isEmpty(python):python = $$qtConfFindInPath("python$$EXE_SUFFIX")
+        isEmpty(python):python = $$qtConfFindInPath("python2$$EXE_SUFFIX")
+        isEmpty(python):python = $$qtConfFindInPath("python3$$EXE_SUFFIX")
+    } else {
+        isEmpty(python):python = $$qtConfFindInPath("python2$$EXE_SUFFIX")
+        isEmpty(python):python = $$qtConfFindInPath("python3$$EXE_SUFFIX")
+        isEmpty(python):python = $$qtConfFindInPath("python$$EXE_SUFFIX")
+    }
+
     isEmpty(python) {
-        qtLog("'python$$EXE_SUFFIX' not found in PATH. Giving up.")
+        qtLog("Python not found in PATH. Giving up.")
         return(false)
     }
     !isPythonVersionSupported($$python) {
-        qtLog("A suitable Python 2 executable could not be located.")
+        qtLog("A suitable Python executable could not be located.")
         return(false)
     }
 
-    # Make tests.python2.location available in configure.json.
+    # Make tests.python.location available in configure.json.
     $${1}.location = $$clean_path($$python)
     export($${1}.location)
     $${1}.cache += location

@@ -15,6 +15,7 @@ WebEngine options:
                                    (Linux only)
   -webengine-pepper-plugins ...... Enable use of Pepper Flash and Widevine
                                    plugins [auto]
+  -webengine-python-version ...... Use specific python version for building [python2/python3]
   -webengine-printing-and-pdf .... Enable use of printing and output to PDF
                                    [auto]
   -webengine-proprietary-codecs .. Enable support for proprietary codecs [no]

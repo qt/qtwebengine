@@ -10,7 +10,8 @@
         "options": {
             "build-qtwebengine-core": "boolean",
             "build-qtpdf": "boolean",
-            "webengine-jumbo-build": { "type": "optionalString", "name": "merge_limit"}
+            "webengine-jumbo-build": { "type": "optionalString", "name": "merge_limit"},
+            "webengine-python-version": { "type": "optionalString", "name": "python_override", "values": ["python2", "python3"] }
         }
     },
     "libraries": {
@@ -316,9 +317,9 @@
             "label": "system ninja",
             "type": "detectNinja"
         },
-        "webengine-python2": {
-            "label": "python2",
-            "type": "detectPython2",
+        "webengine-python": {
+            "label": "python",
+            "type": "detectPython",
             "log": "location"
         },
         "webengine-winversion": {
@@ -395,7 +396,7 @@
                          && features.webengine-gperf
                          && features.webengine-bison
                          && features.webengine-flex
-                         && features.webengine-python2
+                         && features.webengine-python
                          && features.webengine-nodejs
                          && (!config.sanitizer || features.webengine-sanitizer)
                          && (!config.linux || features.pkg-config)
@@ -421,7 +422,7 @@
                          && features.webengine-gperf
                          && features.webengine-bison
                          && features.webengine-flex
-                         && features.webengine-python2
+                         && features.webengine-python
                          && (!config.sanitizer || features.webengine-sanitizer)
                          && (!config.linux || features.pkg-config)
                          && (!config.linux || features.webengine-host-pkg-config)
@@ -444,12 +445,12 @@
             "autoDetect": "features.private_tests",
             "output": [ "privateFeature" ]
         },
-        "webengine-python2": {
-            "label": "python2",
-            "condition": "tests.webengine-python2",
+        "webengine-python": {
+            "label": "python",
+            "condition": "tests.webengine-python",
             "output": [
                 "privateFeature",
-                { "type": "varAssign", "name": "QMAKE_PYTHON2", "value": "tests.webengine-python2.location" }
+                { "type": "varAssign", "name": "QMAKE_PYTHON", "value": "tests.webengine-python.location" }
             ]
         },
         "webengine-gperf": {
