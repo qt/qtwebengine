@@ -30,6 +30,7 @@ private Q_SLOTS:
     void selectionAndClipboard();
     void search();
     void pinchDragPinch();
+    void jumpOnDocumentReady();
 
 public:
     enum NavigationAction {
@@ -428,6 +429,17 @@ void tst_MultiPageView::pinchDragPinch()
     // wait for rendering to be done before we exit: if we delete the document
     // prematurely, QPdfIOHandler might access a dangling pointer
     QTRY_COMPARE(image->status(), QQuickPdfPageImage::Ready);
+}
+
+void tst_MultiPageView::jumpOnDocumentReady() // QTBUG-119416
+{
+    QQuickView window;
+    QVERIFY(showView(window, testFileUrl("jumpOnDocumentReady.qml")));
+    QQuickItem *pdfView = window.rootObject();
+    QVERIFY(pdfView);
+
+    // QML calls view.goToPage(2): verify that it eventually happens
+    QTRY_COMPARE(pdfView->property("currentPage").toInt(), 2);
 }
 
 QTEST_MAIN(tst_MultiPageView)
