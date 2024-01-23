@@ -787,6 +787,9 @@ ApplicationWindow {
             case WebEngineView.ClipboardReadWrite:
                 question += "read from and write to your clipboard?";
                 break;
+            case WebEngineView.LocalFontsAccess:
+                question += "access the fonts stored on your machine?";
+                break;
             default:
                 question += "access unknown or unsupported feature [" + feature + "] ?";
                 break;
