@@ -3,9 +3,12 @@
     <head>
         <title>Mixed - Frame</title>
         <script>
-         console.log('Frame Loaded');
-         var canary = true;
-         parent.canary = true;
+         try{
+             var canary = true;
+             parent.canary = true;
+         }catch(exception){
+         };
+
         </script>
     </head>
     <body></body>

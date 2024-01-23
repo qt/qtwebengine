@@ -18,7 +18,7 @@
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/mojom/cert_verifier_service.mojom.h"
 
-#include "net/client_cert_override.h"
+#include "net/client_cert_qt.h"
 #include "net/client_cert_store_data.h"
 #include "net/cookie_monster_delegate_qt.h"
 #include "net/system_network_context_manager.h"
@@ -185,9 +185,9 @@ ClientCertificateStoreData *ProfileIODataQt::clientCertificateStoreData()
 std::unique_ptr<net::ClientCertStore> ProfileIODataQt::CreateClientCertStore()
 {
 #if QT_CONFIG(ssl)
-    return std::unique_ptr<net::ClientCertStore>(new ClientCertOverrideStore(m_clientCertificateStoreData));
+    return std::unique_ptr<net::ClientCertStore>(new ClientCertStoreQt(m_clientCertificateStoreData));
 #else
-    return std::unique_ptr<net::ClientCertStore>(new ClientCertOverrideStore(nullptr));
+    return std::unique_ptr<net::ClientCertStore>(new ClientCertStoreQt(nullptr));
 #endif
 }
 

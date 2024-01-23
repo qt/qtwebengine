@@ -198,9 +198,11 @@ bool ClipboardQt::IsFormatAvailable(const ui::ClipboardFormatType &format,
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(
             type == ui::ClipboardBuffer::kCopyPaste ? QClipboard::Clipboard : QClipboard::Selection);
 
-    if (format == ui::ClipboardFormatType::BitmapType())
-        return mimeData && mimeData->hasImage();
-    return mimeData && mimeData->hasFormat(QString::fromStdString(format.GetName()));
+    if (!mimeData)
+        return false;
+    if (format == ui::ClipboardFormatType::PngType())
+        return mimeData->hasImage();
+    return mimeData->hasFormat(QString::fromStdString(format.GetName()));
 }
 
 void ClipboardQt::Clear(ui::ClipboardBuffer type)
@@ -224,18 +226,13 @@ void ClipboardQt::ReadAvailableTypes(ui::ClipboardBuffer type,
             type == ui::ClipboardBuffer::kCopyPaste ? QClipboard::Clipboard : QClipboard::Selection);
     if (!mimeData)
         return;
-    if (mimeData->hasImage() && !mimeData->formats().contains(QStringLiteral("image/png")))
-        types->push_back(toString16(QStringLiteral("image/png")));
-    const QStringList formats = mimeData->formats();
-    for (const QString &mimeType : formats) {
-        // Special handling for chromium/x-web-custom-data. We must read the data
-        // and deserialize it to find the list of mime types to report.
-        if (mimeType == QString::fromLatin1(ui::kMimeTypeWebCustomData)) {
-            const QByteArray customData = mimeData->data(QString::fromLatin1(ui::kMimeTypeWebCustomData));
-            ui::ReadCustomDataTypes(customData.constData(), customData.size(), types);
-        } else {
-            types->push_back(toString16(mimeType));
-        }
+
+    for (const auto& mime_type : GetStandardFormats(type, data_dst))
+        types->push_back(mime_type);
+
+    if (mimeData->hasFormat(QString::fromLatin1(ui::kMimeTypeWebCustomData))) {
+        const QByteArray customData = mimeData->data(QString::fromLatin1(ui::kMimeTypeWebCustomData));
+        ui::ReadCustomDataTypes(customData.constData(), customData.size(), types);
     }
 }
 
@@ -438,12 +435,23 @@ std::vector<std::u16string> ClipboardQt::GetStandardFormats(ui::ClipboardBuffer 
         return {};
 
     std::vector<std::u16string> types;
+    if (mimeData->hasImage())
+        types.push_back(base::UTF8ToUTF16(ui::kMimeTypePNG));
+    if (mimeData->hasHtml())
+        types.push_back(base::UTF8ToUTF16(ui::kMimeTypeHTML));
+    if (mimeData->hasText())
+        types.push_back(base::UTF8ToUTF16(ui::kMimeTypeText));
+    if (mimeData->hasUrls())
+        types.push_back(base::UTF8ToUTF16(ui::kMimeTypeURIList));
     const QStringList formats = mimeData->formats();
-    if (mimeData->hasImage() && !formats.contains(QStringLiteral("image/png")))
-        types.push_back(toString16(QStringLiteral("image/png")));
     for (const QString &mimeType : formats) {
-        if (mimeType != QString::fromLatin1(ui::kMimeTypeWebCustomData))
-            types.push_back(toString16(mimeType));
+        auto mime_type = mimeType.toStdString();
+        // Only add white-listed formats here
+        if (mime_type == ui::ClipboardFormatType::SvgType().GetName() ||
+            mime_type == ui::ClipboardFormatType::RtfType().GetName()) {
+          types.push_back(base::UTF8ToUTF16(mime_type));
+          continue;
+        }
     }
     return types;
 }

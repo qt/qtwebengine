@@ -184,7 +184,7 @@ void UserResourceControllerHost::renderProcessStartedWithHost(content::RenderPro
     auto userResourceController = new UserResourceControllerRemote;
     renderer->GetChannel()->GetRemoteAssociatedInterface(userResourceController);
     m_observedProcesses.insert(renderer, userResourceController);
-    for (const UserScript &script : qAsConst(m_profileWideScripts)) {
+    for (const UserScript &script : std::as_const(m_profileWideScripts)) {
         (*userResourceController)->AddScript(script.data());
     }
 }

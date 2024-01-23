@@ -209,10 +209,12 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     Q_Q(QQuickWebEngineProfile);
 
     Q_ASSERT(!m_ongoingDownloads.contains(info.id));
-    QWebEngineDownloadRequestPrivate *itemPrivate = new QWebEngineDownloadRequestPrivate(m_profileAdapter, info.url);
+    QWebEngineDownloadRequestPrivate *itemPrivate =
+            new QWebEngineDownloadRequestPrivate(m_profileAdapter);
     itemPrivate->downloadId = info.id;
     itemPrivate->downloadState = QWebEngineDownloadRequest::DownloadRequested;
     itemPrivate->startTime = info.startTime;
+    itemPrivate->downloadUrl = info.url;
     itemPrivate->totalBytes = info.totalBytes;
     itemPrivate->mimeType = info.mimeType;
     itemPrivate->downloadDirectory = QFileInfo(info.path).path();

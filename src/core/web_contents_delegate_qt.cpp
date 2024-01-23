@@ -271,6 +271,7 @@ void WebContentsDelegateQt::PrimaryMainFrameRenderProcessGone(base::TerminationS
         || status == base::TERMINATION_STATUS_STILL_RUNNING) {
         return;
     }
+    LOG(INFO) << "ProcessGone: " << int(status) << " (" << web_contents()->GetCrashedErrorCode() << ")";
 
     setLoadingState(LoadingState::Unloaded);
 }
@@ -744,7 +745,7 @@ bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost 
         return m_viewClient->profileAdapter()->checkPermission(toQt(security_origin), ProfileAdapter::VideoCapturePermission);
     default:
         LOG(INFO) << "WebContentsDelegateQt::CheckMediaAccessPermission: "
-                  << "Unsupported media stream type checked" << type;
+                  << "Unsupported media stream type checked " << type;
         return false;
     }
 }

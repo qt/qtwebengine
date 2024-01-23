@@ -6,23 +6,34 @@
          var result;
          var canary;
 
-         function setIFrameUrl(url) {
+         function setIFrameUrl(frameUrl,imgUrl) {
              result = undefined;
              canary = undefined;
-             document.getElementById("iframe").setAttribute("src", url);
-             // Early fire is OK unless the test is expecting cannotLoad.
-             // If timeout is too short then a false positive is possible.
-             setTimeout(() => { result = result || "cannotLoad"; }, 3000);
+             let img = document.createElement('img');
+             img.onerror = function() {
+                 console.log("TEST:cannotLoad");
+                 console.log("TEST:done");
+             };
+             img.onload = function() {
+                 document.getElementById("iframe").setAttribute("src", frameUrl);
+             };
+             img.src = imgUrl
          }
 
          addEventListener("load", function() {
              document.getElementById("iframe").addEventListener("load", function() {
-                 if (canary && window[0].canary)
-                     result = "canLoadAndAccess";
-                 else
-                     result = "canLoadButNotAccess";
+                 if (canary && window[0].canary) {
+                     console.log("TEST:canLoadAndAccess");
+                     console.log("TEST:done");
+                 } else {
+                     console.log("TEST:canLoadButNotAccess");
+                     console.log("TEST:done");
+                 }
              });
          });
+         window.onerror = function(message, url, line, col, errorObj) {
+             return true;
+         };
         </script>
     </head>
     <body>

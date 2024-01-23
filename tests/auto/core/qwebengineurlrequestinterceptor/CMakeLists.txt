@@ -12,6 +12,8 @@ qt_internal_add_test(tst_qwebengineurlrequestinterceptor
 
 set(tst_qwebengineurlrequestinterceptor_resource_files
     "resources/content.html"
+    "resources/content2.html"
+    "resources/content3.html"
     "resources/favicon.html"
     "resources/firstparty.html"
     "resources/fontawesome.woff"

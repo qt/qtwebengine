@@ -151,7 +151,7 @@ QWebEngineHttpRequest QWebEngineHttpRequest::postRequest(const QUrl &url,
         QByteArray key = QUrl::toPercentEncoding(it.key());
         QByteArray value = QUrl::toPercentEncoding(it.value());
 
-        if (buffer.length() > 0)
+        if (buffer.size() > 0)
             buffer += '&';
         buffer.append(key).append('=').append(value);
     }

@@ -123,20 +123,9 @@ static inline QWebEngineDownloadRequest::DownloadInterruptReason toDownloadInter
     QWebEnginePage::download, QWebEnginePage::save
 */
 
-QWebEngineDownloadRequestPrivate::QWebEngineDownloadRequestPrivate(QtWebEngineCore::ProfileAdapter *adapter, const QUrl &url)
-    : downloadFinished(false)
-    , downloadId(-1)
-    , downloadState(QWebEngineDownloadRequest::DownloadCancelled)
-    , savePageFormat(QWebEngineDownloadRequest::MimeHtmlSaveFormat)
-    , interruptReason(QWebEngineDownloadRequest::NoReason)
-    , downloadUrl(url)
-    , downloadPaused(false)
-    , isCustomFileName(false)
-    , totalBytes(-1)
-    , receivedBytes(0)
-    , isSavePageDownload(false)
-    , profileAdapter(adapter)
-    , adapterClient(nullptr)
+QWebEngineDownloadRequestPrivate::QWebEngineDownloadRequestPrivate(
+        QtWebEngineCore::ProfileAdapter *adapter)
+    : profileAdapter(adapter)
 {
 }
 
@@ -391,7 +380,7 @@ QWebEngineDownloadRequest::DownloadState QWebEngineDownloadRequest::state() cons
 }
 
 /*!
-    Returns the the total amount of data to download in bytes.
+    Returns the total amount of data to download in bytes.
 
     \c -1 means the size is unknown.
 */

@@ -1,0 +1,66 @@
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title> Failed to Upload </title>
+</script>
+</head>
+
+<body>
+<button>Request File Picker</button>
+<script>
+ async function handleDirectoryEntry( dirHandle, out ) {
+     for await (const entry of dirHandle.values()) {
+         if (entry.kind === "file"){
+             const file = await entry.getFile();
+             out[ file.name ] = file;
+         }
+         if (entry.kind === "directory") {
+             const newHandle = await dirHandle.getDirectoryHandle( entry.name, { create: false } );
+             const newOut = out[ entry.name ] = {};
+             await handleDirectoryEntry( newHandle, newOut );
+         }
+     }
+ }
+    const button = document.querySelector('button');
+    button.addEventListener('click', async function() {
+    switch(window.dialogType) {
+        case "savePicker":
+           const saveFileHandle = await window.showSaveFilePicker();
+           const writable = await saveFileHandle.createWritable();
+           await writable.write(new Blob(['TEST_CONTENT']));
+           await writable.close();
+           console.log("TEST:DONE")
+           break;
+       case "filePicker":
+            let [openFileHandle] = await window.showOpenFilePicker();
+            const options = {};
+            options.mode = 'readwrite'
+            await openFileHandle.requestPermission(options)
+            const file = await openFileHandle.getFile();
+            const contents = await file.text();
+            console.log("TEST:" + contents)
+            console.log("TEST:DONE")
+            break;
+       case "directoryPicker":
+            console.log("start")
+            const dirHandle = await window.showDirectoryPicker();
+            for await (const entry of dirHandle.values()) {
+                if (entry.kind === "file"){
+                    continue
+                }
+                if (entry.kind === "directory") {
+                    console.log("TEST:" + entry.name)
+                }
+            }
+            console.log("TEST:DONE")
+            break;
+       default:
+    }
+    });
+    window.onload = function() {
+    window.dialogType = window.location.href.split('=')[1];
+    document.querySelector('button').focus()
+    }
+</script>
+</body>
+</html>

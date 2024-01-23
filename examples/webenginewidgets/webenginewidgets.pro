@@ -1,4 +1,4 @@
-QT_FOR_CONFIG += webenginecore webenginecore-private
+QT_FOR_CONFIG += webenginecore webenginecore-private network-private
 
 TEMPLATE=subdirs
 
@@ -24,4 +24,3 @@ qtConfig(webengine-spellchecker):!qtConfig(webengine-native-spellchecker):!cross
 } else {
     message("Spellchecker example will not be built because it depends on usage of Hunspell dictionaries.")
 }
-

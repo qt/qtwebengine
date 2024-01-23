@@ -32,7 +32,7 @@
     \l{WebEngineScriptCollection::find}{WebEngineScriptCollection.find} method.
 */
 
-*!
+/*!
     \qmlproperty url WebEngineScript::sourceUrl
 
     This property holds the remote source location of the user script (if any).
