@@ -597,6 +597,8 @@ static QWebEnginePage::Feature toFeature(QtWebEngineCore::ProfileAdapter::Permis
         return QWebEnginePage::Geolocation;
     case QtWebEngineCore::ProfileAdapter::ClipboardReadWrite:
         return QWebEnginePage::ClipboardReadWrite;
+    case QtWebEngineCore::ProfileAdapter::LocalFontsPermission:
+        return QWebEnginePage::LocalFontsAccess;
     default:
         break;
     }
@@ -1756,6 +1758,9 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
             d->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::ClipboardReadWrite,
                                                ProfileAdapter::AskPermission);
             break;
+        case LocalFontsAccess:
+            d->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::LocalFontsPermission, ProfileAdapter::AskPermission);
+            break;
         }
         return;
     }
@@ -1797,6 +1802,9 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
             d->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::ClipboardReadWrite,
                                                ProfileAdapter::AllowedPermission);
             break;
+        case LocalFontsAccess:
+            d->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::LocalFontsPermission, ProfileAdapter::AllowedPermission);
+            break;
         }
     } else { // if (policy == PermissionDeniedByUser)
         switch (feature) {
@@ -1819,6 +1827,9 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
         case ClipboardReadWrite:
             d->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::ClipboardReadWrite,
                                                ProfileAdapter::DeniedPermission);
+            break;
+        case LocalFontsAccess:
+            d->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::LocalFontsPermission, ProfileAdapter::DeniedPermission);
             break;
         }
     }

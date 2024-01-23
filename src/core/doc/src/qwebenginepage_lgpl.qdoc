@@ -300,6 +300,8 @@
             {JavascriptCanPaste} and \l{QWebEngineSettings::JavascriptCanAccessClipboard}
             {JavascriptCanAccessClipboard} settings are enabled, this permission will always be granted
             automatically and no feature requests will be made.
+    \value [since 6.8] LocalFontsAccess
+            Access to the fonts installed on the user's machine. Only available on desktop platforms.
 
     \sa featurePermissionRequested(), featurePermissionRequestCanceled(), setFeaturePermission(), PermissionPolicy
 

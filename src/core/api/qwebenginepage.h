@@ -174,6 +174,7 @@ public:
         DesktopVideoCapture,
         DesktopAudioVideoCapture,
         ClipboardReadWrite,
+        LocalFontsAccess,
     };
     Q_ENUM(Feature)
 

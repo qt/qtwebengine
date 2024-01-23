@@ -32,6 +32,8 @@ static ProfileAdapter::PermissionType toQt(blink::PermissionType type)
         return ProfileAdapter::ClipboardReadWrite;
     case blink::PermissionType::NOTIFICATIONS:
         return ProfileAdapter::NotificationPermission;
+    case blink::PermissionType::LOCAL_FONTS:
+        return ProfileAdapter::LocalFontsPermission;
     case blink::PermissionType::ACCESSIBILITY_EVENTS:
     case blink::PermissionType::CAMERA_PAN_TILT_ZOOM:
     case blink::PermissionType::WINDOW_MANAGEMENT:
@@ -52,7 +54,6 @@ static ProfileAdapter::PermissionType toQt(blink::PermissionType type)
     case blink::PermissionType::AR:
     case blink::PermissionType::VR:
     case blink::PermissionType::STORAGE_ACCESS_GRANT:
-    case blink::PermissionType::LOCAL_FONTS:
     case blink::PermissionType::DISPLAY_CAPTURE:
     case blink::PermissionType::TOP_LEVEL_STORAGE_ACCESS:
     case blink::PermissionType::NUM:
@@ -68,6 +69,7 @@ static bool canRequestPermissionFor(ProfileAdapter::PermissionType type)
     case ProfileAdapter::GeolocationPermission:
     case ProfileAdapter::NotificationPermission:
     case ProfileAdapter::ClipboardReadWrite:
+    case ProfileAdapter::LocalFontsPermission:
         return true;
     default:
         break;

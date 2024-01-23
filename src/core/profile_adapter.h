@@ -134,6 +134,7 @@ public:
         AudioCapturePermission = 3,
         VideoCapturePermission = 4,
         ClipboardReadWrite = 5,
+        LocalFontsPermission = 6,
     };
 
     enum PermissionState {
