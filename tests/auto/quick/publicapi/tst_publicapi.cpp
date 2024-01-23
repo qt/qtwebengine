@@ -644,6 +644,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.LoadStartedStatus --> LoadStatus"
     << "QQuickWebEngineView.LoadStoppedStatus --> LoadStatus"
     << "QQuickWebEngineView.LoadSucceededStatus --> LoadStatus"
+    << "QQuickWebEngineView.LocalFontsAccess --> Feature"
     << "QQuickWebEngineView.MediaAudioCapture --> Feature"
     << "QQuickWebEngineView.MediaAudioVideoCapture --> Feature"
     << "QQuickWebEngineView.MediaVideoCapture --> Feature"

@@ -494,6 +494,8 @@ static QQuickWebEngineView::Feature toFeature(QtWebEngineCore::ProfileAdapter::P
         return QQuickWebEngineView::Geolocation;
     case QtWebEngineCore::ProfileAdapter::ClipboardReadWrite:
         return QQuickWebEngineView::ClipboardReadWrite;
+    case QtWebEngineCore::ProfileAdapter::LocalFontsPermission:
+        return QQuickWebEngineView::LocalFontsAccess;
     default:
         break;
     }
@@ -1787,6 +1789,10 @@ void QQuickWebEngineView::grantFeaturePermission(const QUrl &securityOrigin, QQu
         d_ptr->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::ClipboardReadWrite,
                                                granted ? ProfileAdapter::AllowedPermission
                                                        : ProfileAdapter::DeniedPermission);
+        break;
+    case LocalFontsAccess:
+        d_ptr->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::LocalFontsPermission,
+                                               granted ? ProfileAdapter::AllowedPermission : ProfileAdapter::DeniedPermission);
         break;
     default:
         Q_UNREACHABLE();

@@ -174,6 +174,7 @@ QT_WARNING_POP
         DesktopAudioVideoCapture,
         Notifications,
         ClipboardReadWrite,
+        LocalFontsAccess,
     };
     Q_ENUM(Feature)
 

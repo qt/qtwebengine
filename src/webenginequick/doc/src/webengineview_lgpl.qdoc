@@ -865,6 +865,9 @@
             {JavascriptCanAccessClipboard} settings are enabled, this permission will always be granted
             automatically and no feature requests will be made.
             (Added in Qt 6.8)
+    \value  WebEngineView.LocalFontsAccess
+            Access to the fonts installed on the user's machine. Only available on desktop platforms.
+            (Added in Qt 6.8)
 
     \sa featurePermissionRequested(), grantFeaturePermission()
 */
