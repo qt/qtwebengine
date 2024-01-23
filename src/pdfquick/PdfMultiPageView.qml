@@ -162,6 +162,13 @@ Item {
         \sa PdfPageNavigator::jump(), currentPage
     */
     function goToLocation(page, location, zoom) {
+        if (tableView.rows === 0) {
+            // save this request for later
+            tableView.pendingRow = page
+            tableView.pendingLocation = location
+            tableView.pendingZoom = zoom
+            return
+        }
         if (zoom > 0) {
             pageNavigator.jumping = true // don't call pageNavigator.update() because we will jump() instead
             root.renderScale = zoom
@@ -312,6 +319,21 @@ Item {
         property real pageHolderWidth: Math.max(root.width, ((rot90 ? root.document?.maxPageHeight : root.document?.maxPageWidth) ?? 0) * root.renderScale)
         columnWidthProvider: function(col) { return root.document ? pageHolderWidth + vscroll.width + 2 : 0 }
         rowHeightProvider: function(row) { return (rot90 ? root.document.pagePointSize(row).width : root.document.pagePointSize(row).height) * root.renderScale }
+
+        // delayed-jump feature in case the user called goToPage() or goToLocation() too early
+        property int pendingRow: -1
+        property point pendingLocation
+        property real pendingZoom: -1
+        onRowsChanged: {
+            if (rows > 0 && tableView.pendingRow >= 0) {
+                console.log(lcMPV, "initiating delayed jump to page", tableView.pendingRow, "loc", tableView.pendingLocation, "zoom", tableView.pendingZoom)
+                root.goToLocation(tableView.pendingRow, tableView.pendingLocation, tableView.pendingZoom)
+                tableView.pendingRow = -1
+                tableView.pendingLocation = Qt.point(-1, -1)
+                tableView.pendingZoom = -1
+            }
+        }
+
         delegate: Rectangle {
             id: pageHolder
             required property int index
