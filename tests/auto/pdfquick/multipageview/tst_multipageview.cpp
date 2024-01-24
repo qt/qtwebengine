@@ -371,6 +371,8 @@ void tst_MultiPageView::pinchDragPinch()
     QVERIFY(firstPage);
     QQuickItem *paper = firstPage->childAt(10, 10);
     QVERIFY(paper);
+    QQuickPdfPageImage *image = firstPage->findChild<QQuickPdfPageImage *>();
+    QVERIFY(image);
 
     auto pinch = [&window, paper, this]() {
         const int threshold = QGuiApplication::styleHints()->startDragDistance();
@@ -421,6 +423,10 @@ void tst_MultiPageView::pinchDragPinch()
     pinch();
     qCDebug(lcTests) << "new scale" << pdfView->property("renderScale").toReal();
     QTRY_COMPARE(pdfView->property("renderScale").toReal(), 4);
+
+    // wait for rendering to be done before we exit: if we delete the document
+    // prematurely, QPdfIOHandler might access a dangling pointer
+    QTRY_COMPARE(image->status(), QQuickPdfPageImage::Ready);
 }
 
 QTEST_MAIN(tst_MultiPageView)
