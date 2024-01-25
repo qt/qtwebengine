@@ -96,9 +96,9 @@ protected:
     Q_DECLARE_PRIVATE(QWebEngineWebAuthUxRequest)
 };
 
-struct Q_WEBENGINECORE_EXPORT QWebEngineWebAuthPinRequest
+struct QWebEngineWebAuthPinRequest
 {
-    Q_GADGET
+    Q_GADGET_EXPORT(Q_WEBENGINECORE_EXPORT)
 
     Q_PROPERTY(QWebEngineWebAuthUxRequest::PinEntryReason reason MEMBER reason CONSTANT FINAL)
     Q_PROPERTY(QWebEngineWebAuthUxRequest::PinEntryError error MEMBER error CONSTANT FINAL)
@@ -106,10 +106,9 @@ struct Q_WEBENGINECORE_EXPORT QWebEngineWebAuthPinRequest
     Q_PROPERTY(int remainingAttempts MEMBER remainingAttempts CONSTANT FINAL)
 public:
     QWebEngineWebAuthUxRequest::PinEntryReason reason;
-    QWebEngineWebAuthUxRequest::PinEntryError error =
-            QWebEngineWebAuthUxRequest::PinEntryError::NoError;
+    QWebEngineWebAuthUxRequest::PinEntryError error;
     qint32 minPinLength;
-    int remainingAttempts = 0;
+    int remainingAttempts;
 };
 
 QT_END_NAMESPACE
