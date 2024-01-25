@@ -314,6 +314,9 @@ void WebContentsDelegateQt::RenderViewHostChanged(content::RenderViewHost *, con
         Q_ASSERT(rwhv->delegate());
         rwhv->delegate()->adapterClientChanged(m_viewClient);
         m_viewClient->zoomUpdateIsNeeded();
+        auto backgroundColor = m_viewClient->backgroundColor();
+        if (backgroundColor != Qt::white)
+            m_viewClient->webContentsAdapter()->setBackgroundColor(backgroundColor);
     }
 }
 
