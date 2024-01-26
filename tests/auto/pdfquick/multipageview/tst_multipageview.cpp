@@ -360,6 +360,7 @@ void tst_MultiPageView::search()
 
 void tst_MultiPageView::pinchDragPinch()
 {
+    qputenv("QML_NO_TOUCH_COMPRESSION", "1");
     QQuickView window;
     QVERIFY(showView(window, testFileUrl("multiPageView.qml")));
     QQuickItem *pdfView = window.rootObject();
