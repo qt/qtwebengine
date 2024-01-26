@@ -4,6 +4,7 @@
 import glob
 import os
 import re
+import string
 import subprocess
 import sys
 import version_resolver as resolver
@@ -17,6 +18,11 @@ def subprocessCall(args):
 def subprocessCheckOutput(args):
     print(args)
     return subprocess.check_output(args).decode()
+
+# Special string formatter that support flat key names with '.' in them
+class DepsFormatter(string.Formatter):
+    def get_field(self, field_name, args, kwargs):
+        return (self.get_value(field_name, args, kwargs), field_name)
 
 class SubmoduleDEPSParser(resolver.DEPSParser):
     def __init__(self):
@@ -45,7 +51,7 @@ class SubmoduleDEPSParser(resolver.DEPSParser):
                 (not dep in module_whitelist):
                     continue
             if url:
-                url = url.format(**self.get_vars())
+                url = DepsFormatter().vformat(url, [], self.get_vars())
                 repo_rev = url.split('@')
                 repo = repo_rev[0]
                 rev = repo_rev[1]
