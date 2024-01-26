@@ -710,6 +710,7 @@
     is empty, it is assumed that the content is \c{text/plain,charset=US-ASCII}.
 
     External objects referenced in the content are located relative to \a baseUrl.
+    For external objects with relative URLs to be loaded, \c baseUrl cannot be empty.
 
     The \a data is loaded immediately; external objects are loaded asynchronously.
 
