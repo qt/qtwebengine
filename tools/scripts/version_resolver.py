@@ -43,7 +43,7 @@ class DEPSParser(ABC):
         return self.local_scope["recursedeps"]
 
 
-chromium_version = '118.0.5993.124'
+chromium_version = '118.0.5993.220'
 chromium_branch = '5993'
 ninja_version = 'v1.8.2'
 
