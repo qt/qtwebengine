@@ -41,7 +41,7 @@ private:
     bool load(QIODevice *device);
 
 private:
-    QPdfDocument *m_doc = nullptr;
+    QPointer<QPdfDocument> m_doc;
     int m_page = -1;
 
     QRect m_clipRect;
