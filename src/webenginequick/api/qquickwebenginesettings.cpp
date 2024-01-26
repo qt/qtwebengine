@@ -462,6 +462,19 @@ bool QQuickWebEngineSettings::forceDarkMode() const
 }
 
 /*!
+    \qmlproperty bool WebEngineSettings::scrollAnimatorEnabled
+    \since QtWebEngine 6.8
+
+    Enables animated scrolling.
+
+    Disabled by default.
+ */
+bool QQuickWebEngineSettings::scrollAnimatorEnabled() const
+{
+    return d_ptr->testAttribute(QWebEngineSettings::ScrollAnimatorEnabled);
+}
+
+/*!
     \qmlproperty string WebEngineSettings::defaultTextEncoding
     \since QtWebEngine 1.2
 
@@ -758,6 +771,14 @@ void QQuickWebEngineSettings::setForceDarkMode(bool on)
     d_ptr->setAttribute(QWebEngineSettings::ForceDarkMode, on);
     if (wasOn != on)
         Q_EMIT forceDarkModeChanged();
+}
+
+void QQuickWebEngineSettings::setScrollAnimatorEnabled(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::ScrollAnimatorEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::ScrollAnimatorEnabled, on);
+    if (wasOn != on)
+        Q_EMIT scrollAnimatorEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setUnknownUrlSchemePolicy(QQuickWebEngineSettings::UnknownUrlSchemePolicy policy)

@@ -411,6 +411,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.errorPageEnabledChanged() --> void"
     << "QQuickWebEngineSettings.forceDarkMode --> bool"
     << "QQuickWebEngineSettings.forceDarkModeChanged() --> void"
+    << "QQuickWebEngineSettings.scrollAnimatorEnabled --> bool"
+    << "QQuickWebEngineSettings.scrollAnimatorEnabledChanged() --> void"
     << "QQuickWebEngineSettings.focusOnNavigationEnabled --> bool"
     << "QQuickWebEngineSettings.focusOnNavigationEnabledChanged() --> void"
     << "QQuickWebEngineSettings.fullScreenSupportEnabled --> bool"
