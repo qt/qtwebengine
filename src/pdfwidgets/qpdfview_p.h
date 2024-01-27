@@ -46,12 +46,12 @@ public:
 
     qreal yPositionForPage(int page) const;
 
-    QTransform screenScaleTransform() const; // points to pixels
+    QTransform screenScaleTransform(int page) const; // points to pixels
 
     struct DocumentLayout
     {
         QSize documentSize;
-        QHash<int, QRect> pageGeometries;
+        QHash<int, QPair<QRect, qreal>> pageGeometryAndScale;
     };
 
     DocumentLayout calculateDocumentLayout() const;
