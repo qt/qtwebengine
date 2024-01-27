@@ -106,8 +106,9 @@ void QPdfViewPrivate::setViewport(QRect viewport)
         const QRect currentPageLine(m_viewport.x(), m_viewport.y() + m_viewport.height() * 0.4, m_viewport.width(), 2);
 
         int currentPage = 0;
-        for (auto it = m_documentLayout.pageGeometries.cbegin(); it != m_documentLayout.pageGeometries.cend(); ++it) {
-            const QRect pageGeometry = it.value();
+        for (auto it = m_documentLayout.pageGeometryAndScale.cbegin();
+             it != m_documentLayout.pageGeometryAndScale.cend(); ++it) {
+            const QRect pageGeometry = it.value().first;
             if (pageGeometry.intersects(currentPageLine)) {
                 currentPage = it.key();
                 break;
@@ -182,7 +183,7 @@ QPdfViewPrivate::DocumentLayout QPdfViewPrivate::calculateDocumentLayout() const
     if (!m_document || m_document->status() != QPdfDocument::Status::Ready)
         return documentLayout;
 
-    QHash<int, QRect> pageGeometries;
+    QHash<int, QPair<QRect, qreal>> pageGeometryAndScale;
 
     const int pageCount = m_document->pageCount();
 
@@ -194,24 +195,28 @@ QPdfViewPrivate::DocumentLayout QPdfViewPrivate::calculateDocumentLayout() const
     // calculate page sizes
     for (int page = startPage; page < endPage; ++page) {
         QSize pageSize;
+        qreal pageScale = m_zoomFactor;
         if (m_zoomMode == QPdfView::ZoomMode::Custom) {
             pageSize = QSizeF(m_document->pagePointSize(page) * m_screenResolution * m_zoomFactor).toSize();
         } else if (m_zoomMode == QPdfView::ZoomMode::FitToWidth) {
             pageSize = QSizeF(m_document->pagePointSize(page) * m_screenResolution).toSize();
-            const qreal factor = (qreal(m_viewport.width() - m_documentMargins.left() - m_documentMargins.right()) /
-                                  qreal(pageSize.width()));
-            pageSize *= factor;
+            pageScale = (qreal(m_viewport.width() - m_documentMargins.left() - m_documentMargins.right()) /
+                         qreal(pageSize.width()));
+            pageSize *= pageScale;
         } else if (m_zoomMode == QPdfView::ZoomMode::FitInView) {
             const QSize viewportSize(m_viewport.size() +
                                      QSize(-m_documentMargins.left() - m_documentMargins.right(), -m_pageSpacing));
 
             pageSize = QSizeF(m_document->pagePointSize(page) * m_screenResolution).toSize();
-            pageSize = pageSize.scaled(viewportSize, Qt::KeepAspectRatio);
+            QSize scaledSize = pageSize.scaled(viewportSize, Qt::KeepAspectRatio);
+            // because of KeepAspectRatio, the ratio of widths should be the same as the ratio of heights
+            pageScale = qreal(scaledSize.width()) / qreal(pageSize.width());
+            pageSize = scaledSize;
         }
 
         totalWidth = qMax(totalWidth, pageSize.width());
 
-        pageGeometries[page] = QRect(QPoint(0, 0), pageSize);
+        pageGeometryAndScale[page] = {QRect(QPoint(0, 0), pageSize), pageScale};
     }
 
     totalWidth += m_documentMargins.left() + m_documentMargins.right();
@@ -220,19 +225,19 @@ QPdfViewPrivate::DocumentLayout QPdfViewPrivate::calculateDocumentLayout() const
 
     // calculate page positions
     for (int page = startPage; page < endPage; ++page) {
-        const QSize pageSize = pageGeometries[page].size();
+        const QSize pageSize = pageGeometryAndScale[page].first.size();
 
         // center horizontal inside the viewport
         const int pageX = (qMax(totalWidth, m_viewport.width()) - pageSize.width()) / 2;
 
-        pageGeometries[page].moveTopLeft(QPoint(pageX, pageY));
+        pageGeometryAndScale[page].first.moveTopLeft(QPoint(pageX, pageY));
 
         pageY += pageSize.height() + m_pageSpacing;
     }
 
     pageY += m_documentMargins.bottom();
 
-    documentLayout.pageGeometries = pageGeometries;
+    documentLayout.pageGeometryAndScale = pageGeometryAndScale;
 
     // calculate overall document size
     documentLayout.documentSize = QSize(totalWidth, pageY);
@@ -242,16 +247,25 @@ QPdfViewPrivate::DocumentLayout QPdfViewPrivate::calculateDocumentLayout() const
 
 qreal QPdfViewPrivate::yPositionForPage(int pageNumber) const
 {
-    const auto it = m_documentLayout.pageGeometries.constFind(pageNumber);
-    if (it == m_documentLayout.pageGeometries.cend())
+    const auto it = m_documentLayout.pageGeometryAndScale.constFind(pageNumber);
+    if (it == m_documentLayout.pageGeometryAndScale.cend())
         return 0.0;
 
-    return (*it).y();
+    return (*it).first.y();
 }
 
-QTransform QPdfViewPrivate::screenScaleTransform() const
+QTransform QPdfViewPrivate::screenScaleTransform(int page) const
 {
-    const qreal scale = m_screenResolution * m_zoomFactor;
+    qreal scale = m_screenResolution * m_zoomFactor;
+    switch (m_zoomMode) {
+    case QPdfView::ZoomMode::FitToWidth:
+    case QPdfView::ZoomMode::FitInView:
+        scale = m_screenResolution * m_documentLayout.pageGeometryAndScale[page].second;
+        break;
+    default:
+        break;
+    }
+
     return QTransform::fromScale(scale, scale);
 }
 
@@ -573,9 +587,9 @@ void QPdfView::paintEvent(QPaintEvent *event)
     painter.fillRect(event->rect(), palette().brush(QPalette::Dark));
     painter.translate(-d->m_viewport.x(), -d->m_viewport.y());
 
-    for (auto it = d->m_documentLayout.pageGeometries.cbegin();
-         it != d->m_documentLayout.pageGeometries.cend(); ++it) {
-        const QRect pageGeometry = it.value();
+    for (auto it = d->m_documentLayout.pageGeometryAndScale.cbegin();
+         it != d->m_documentLayout.pageGeometryAndScale.cend(); ++it) {
+        const QRect pageGeometry = it.value().first;
         if (pageGeometry.intersects(d->m_viewport)) { // page needs to be painted
             painter.fillRect(pageGeometry, Qt::white);
 
@@ -588,7 +602,7 @@ void QPdfView::paintEvent(QPaintEvent *event)
                 d->m_pageRenderer->requestPage(page, pageGeometry.size() * devicePixelRatioF());
             }
 
-            const QTransform scaleTransform = d->screenScaleTransform();
+            const QTransform scaleTransform = d->screenScaleTransform(page);
 #ifdef DEBUG_LINKS
             const QString fmt = u"page %1 @ %2, %3"_s;
             d->m_linkModel.setPage(page);
@@ -656,10 +670,11 @@ void QPdfView::mousePressEvent(QMouseEvent *event)
 void QPdfView::mouseMoveEvent(QMouseEvent *event)
 {
     Q_D(QPdfView);
-    const QTransform screenInvTransform = d->screenScaleTransform().inverted();
-    for (auto it = d->m_documentLayout.pageGeometries.cbegin(); it != d->m_documentLayout.pageGeometries.cend(); ++it) {
+    for (auto it = d->m_documentLayout.pageGeometryAndScale.cbegin();
+         it != d->m_documentLayout.pageGeometryAndScale.cend(); ++it) {
         const int page = it.key();
-        const QRect pageGeometry = it.value();
+        const QTransform screenInvTransform = d->screenScaleTransform(page).inverted();
+        const QRect pageGeometry = it.value().first;
         if (pageGeometry.contains(event->position().toPoint())) {
             const QPointF posInPoints = screenInvTransform.map(event->position() - pageGeometry.topLeft());
             d->m_linkModel.setPage(page);
@@ -674,10 +689,11 @@ void QPdfView::mouseMoveEvent(QMouseEvent *event)
 void QPdfView::mouseReleaseEvent(QMouseEvent *event)
 {
     Q_D(QPdfView);
-    const QTransform screenInvTransform = d->screenScaleTransform().inverted();
-    for (auto it = d->m_documentLayout.pageGeometries.cbegin(); it != d->m_documentLayout.pageGeometries.cend(); ++it) {
+    for (auto it = d->m_documentLayout.pageGeometryAndScale.cbegin();
+         it != d->m_documentLayout.pageGeometryAndScale.cend(); ++it) {
         const int page = it.key();
-        const QRect pageGeometry = it.value();
+        const QTransform screenInvTransform = d->screenScaleTransform(page).inverted();
+        const QRect pageGeometry = it.value().first;
         if (pageGeometry.contains(event->position().toPoint())) {
             const QPointF posInPoints = screenInvTransform.map(event->position() - pageGeometry.topLeft());
             d->m_linkModel.setPage(page);
