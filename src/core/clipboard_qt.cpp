@@ -234,7 +234,8 @@ void ClipboardQt::ReadAvailableTypes(ui::ClipboardBuffer type,
 
     if (mimeData->hasFormat(QString::fromLatin1(ui::kMimeTypeWebCustomData))) {
         const QByteArray customData = mimeData->data(QString::fromLatin1(ui::kMimeTypeWebCustomData));
-        ui::ReadCustomDataTypes(customData.constData(), customData.size(), types);
+        const base::span custom_data(customData.constData(), (unsigned long)customData.size());
+        ui::ReadCustomDataTypes(base::as_bytes(custom_data), types);
     }
 }
 
@@ -342,7 +343,9 @@ void ClipboardQt::ReadCustomData(ui::ClipboardBuffer clipboard_type, const std::
     if (!mimeData)
         return;
     const QByteArray customData = mimeData->data(QString::fromLatin1(ui::kMimeTypeWebCustomData));
-    ui::ReadCustomDataForType(customData.constData(), customData.size(), type, result);
+    const base::span custom_data(customData.constData(), (unsigned long)customData.size());
+    if (auto maybe_result = ui::ReadCustomDataForType(base::as_bytes(custom_data), type))
+        *result = *std::move(maybe_result);
 }
 
 void ClipboardQt::ReadBookmark(const ui::DataTransferEndpoint *data_dst, std::u16string *title, std::string *url) const

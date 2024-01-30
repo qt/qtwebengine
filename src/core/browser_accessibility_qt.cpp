@@ -617,7 +617,7 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
         return QAccessible::ComboBox;
     case ax::mojom::Role::kPortal:
         return QAccessible::Button;
-    case ax::mojom::Role::kPre:
+    case ax::mojom::Role::kPreDeprecated:
         return QAccessible::Section;
     case ax::mojom::Role::kProgressIndicator:
         return QAccessible::ProgressBar;

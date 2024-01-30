@@ -80,13 +80,17 @@ public:
 #endif
 
     // content::RenderViewHostDelegateView overrides:
-    void StartDragging(const content::DropData& drop_data, blink::DragOperationsMask allowed_ops,
+    void StartDragging(const content::DropData& drop_data,
+                       const url::Origin& source_origin,
+                       blink::DragOperationsMask allowed_ops,
                        const gfx::ImageSkia& image, const gfx::Vector2d& image_offset,
                        const gfx::Rect& drag_obj_rect,
                        const blink::mojom::DragEventSourceInfo &event_info,
                        content::RenderWidgetHostImpl *source_rwh) override;
 
-    void UpdateDragCursor(ui::mojom::DragOperation dragOperation) override;
+    void UpdateDragOperation(ui::mojom::DragOperation dragOperation, bool document_is_handling_drag) override;
+
+    void TransferDragSecurityInfo(content::WebContentsView *) override {}
 
     void ShowContextMenu(content::RenderFrameHost &, const content::ContextMenuParams &params) override;
 
