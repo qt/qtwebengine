@@ -982,7 +982,7 @@ const char *qWebEngineChromiumVersion() noexcept
 
 const char *qWebEngineChromiumSecurityPatchVersion() noexcept
 {
-    return "120.0.6099.225"; // FIXME: Remember to update
+    return "121.0.6167.85"; // FIXME: Remember to update
 }
 
 QT_END_NAMESPACE
