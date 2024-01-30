@@ -201,7 +201,7 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
     importedImageCreateInfo.pNext = &externalMemoryImageCreateInfo;
     importedImageCreateInfo.flags = 0;
     importedImageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-    importedImageCreateInfo.format = gpu::ToVkFormat(m_frontBuffer->sharedImageFormat());
+    importedImageCreateInfo.format = gpu::ToVkFormatSinglePlanar(m_frontBuffer->sharedImageFormat());
     importedImageCreateInfo.extent.width = static_cast<uint32_t>(size().width());
     importedImageCreateInfo.extent.height = static_cast<uint32_t>(size().height());
     importedImageCreateInfo.extent.depth = 1;

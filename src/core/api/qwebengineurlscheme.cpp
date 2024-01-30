@@ -372,7 +372,7 @@ void QWebEngineUrlScheme::registerScheme(const QWebEngineUrlScheme &scheme)
 */
 QWebEngineUrlScheme QWebEngineUrlScheme::schemeByName(const QByteArray &name)
 {
-    base::StringPiece namePiece{ name.data(), static_cast<size_t>(name.size()) };
+    std::string_view namePiece{ name.data(), static_cast<size_t>(name.size()) };
     if (const url::CustomScheme *cs = url::CustomScheme::FindScheme(namePiece))
         return QWebEngineUrlScheme(new QWebEngineUrlSchemePrivate(*cs));
     return QWebEngineUrlScheme();

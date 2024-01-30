@@ -1736,8 +1736,12 @@ static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeDat
     if (mimeData->hasText())
         dropData->text = toOptionalString16(mimeData->text());
     if (mimeData->hasFormat(QLatin1String(ui::kMimeTypeWebCustomData))) {
-        QByteArray customData = mimeData->data(QLatin1String(ui::kMimeTypeWebCustomData));
-        ui::ReadCustomDataIntoMap(customData.constData(), customData.length(), &dropData->custom_data);
+        const QByteArray customData = mimeData->data(QLatin1String(ui::kMimeTypeWebCustomData));
+        const base::span custom_data(customData.constData(), (long unsigned)customData.length());
+        if (auto maybe_data = ui::ReadCustomDataIntoMap(base::as_bytes(custom_data)))
+            dropData->custom_data = *std::move(maybe_data);
+        else
+            dropData->custom_data.clear();
     }
 }
 

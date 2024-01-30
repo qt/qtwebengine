@@ -6,7 +6,6 @@
 #include "base/files/file_util.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/time/time_to_iso8601.h"
 #include "components/embedder_support/user_agent_utils.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/content/browser/history_database_helper.h"

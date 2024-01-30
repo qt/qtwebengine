@@ -39,7 +39,7 @@ public:
     bool CanRequestResource(const GURL &resource_url,
                             blink::WebLocalFrame *frame,
                             ui::PageTransition transition_type,
-                            const absl::optional<url::Origin> &initiator_origin);
+                            const url::Origin *initiator_origin);
 
 private:
     Dispatcher *m_dispatcher;

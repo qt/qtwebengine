@@ -46,8 +46,8 @@ public:
 
     void ShowAutofillPopup(const autofill::AutofillClient::PopupOpenArgs &open_args,
                            base::WeakPtr<autofill::AutofillPopupDelegate> delegate) override;
-    void UpdateAutofillPopupDataListValues(const std::vector<std::u16string> &values,
-                                           const std::vector<std::u16string> &labels) override;
+    void UpdateAutofillPopupDataListValues(
+            base::span<const autofill::SelectOption> datalist) override;
     void PinPopupView() override;
     PopupOpenArgs GetReopenPopupArgs(
             autofill::AutofillSuggestionTriggerSource trigger_source) const override;
@@ -58,8 +58,6 @@ public:
     void HideAutofillPopup(autofill::PopupHidingReason reason) override;
     bool IsAutocompleteEnabled() const override;
     bool IsPasswordManagerEnabled() override;
-    void PropagateAutofillPredictionsDeprecated(autofill::AutofillDriver *,
-                                                const std::vector<autofill::FormStructure *> &) override;
     bool IsOffTheRecord() override;
     scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 

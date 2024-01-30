@@ -149,7 +149,7 @@ void ExtensionsRendererClientQt::WillSendRequest(blink::WebLocalFrame *frame,
     if (url.ProtocolIs(extensions::kExtensionScheme) &&
             !resource_request_policy_->CanRequestResource(url, frame,
                                                           transition_type,
-                                                          base::OptionalFromPtr(initiator_origin))) {
+                                                          initiator_origin)) {
         *new_url = GURL(chrome::kExtensionInvalidRequestURL);
     }
 }
