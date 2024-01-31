@@ -2136,7 +2136,8 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
         d->adapter->changeTextDirection(false /*left to right*/);
         break;
     default:
-        Q_UNREACHABLE();
+        // Reachable when a spell checker replacement word has been selected
+        break;
     }
 }
 
@@ -2439,6 +2440,8 @@ void QQuickContextMenuBuilder::addMenuItem(ContextMenuItem menuItem)
             action = new QQuickWebEngineAction(m_menu);
             QString replacement = m_contextData->spellCheckerSuggestions().at(i);
             QObject::connect(action, &QQuickWebEngineAction::triggered, [thisRef, replacement] { thisRef->replaceMisspelledWord(replacement); });
+            action->d_ptr->m_text = replacement;
+            action->d_ptr->m_enabled = true;
             m_view->d_ptr->ui()->addMenuItem(action, m_menu);
         }
         return;
