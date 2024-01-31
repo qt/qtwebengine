@@ -16,6 +16,7 @@
 #define QWEBENGINEDESKTOPMEDIAREQUEST_P_H
 
 #include <QtCore/qabstractitemmodel.h>
+#include <QtCore/QSharedData>
 #include <QtCore/qobject.h>
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
@@ -26,7 +27,7 @@ class DesktopMediaController;
 QT_BEGIN_NAMESPACE
 class QWebEngineMediaSourceModel;
 
-class QWebEngineDesktopMediaRequestPrivate
+class QWebEngineDesktopMediaRequestPrivate : public QSharedData
 {
 public:
     ~QWebEngineDesktopMediaRequestPrivate();

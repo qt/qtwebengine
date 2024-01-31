@@ -6,6 +6,9 @@
 #include "qwebenginedesktopmediarequest_p.h"
 
 QT_BEGIN_NAMESPACE
+
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QWebEngineDesktopMediaRequestPrivate)
+
 /*!
     \class QWebEngineDesktopMediaRequest
     \brief A request for populating a dialog with available sources for screen capturing.
@@ -33,19 +36,6 @@ QT_BEGIN_NAMESPACE
     \sa QWebEnginePage::desktopMediaRequested().
 */
 
-class QWebEngineMediaSourceModelPrivate
-{
-public:
-    QWebEngineMediaSourceModelPrivate(QtWebEngineCore::DesktopMediaListQt *);
-    QtWebEngineCore::DesktopMediaListQt *m_mediaList;
-};
-
-QWebEngineMediaSourceModelPrivate::QWebEngineMediaSourceModelPrivate(
-        QtWebEngineCore::DesktopMediaListQt *mediaList)
-    : m_mediaList(mediaList)
-{
-}
-
 class QWebEngineMediaSourceModel : public QAbstractListModel
 {
 public:
@@ -56,29 +46,29 @@ public:
 
 private:
     friend class QWebEngineDesktopMediaRequestPrivate;
-    explicit QWebEngineMediaSourceModel(QWebEngineMediaSourceModelPrivate *dd);
-    std::unique_ptr<QWebEngineMediaSourceModelPrivate> d;
+    explicit QWebEngineMediaSourceModel(QtWebEngineCore::DesktopMediaListQt *mediaList);
+    QtWebEngineCore::DesktopMediaListQt *m_mediaList;
 };
 
-QWebEngineMediaSourceModel::QWebEngineMediaSourceModel(QWebEngineMediaSourceModelPrivate *dd)
-    : d(dd)
+QWebEngineMediaSourceModel::QWebEngineMediaSourceModel(QtWebEngineCore::DesktopMediaListQt *mediaList)
+    : m_mediaList(mediaList)
 {
-    QObject::connect(d->m_mediaList, &QtWebEngineCore::DesktopMediaListQt::sourceAdded, this,
+    QObject::connect(m_mediaList, &QtWebEngineCore::DesktopMediaListQt::sourceAdded, this,
                      [this](int index) {
                         beginInsertRows(QModelIndex(), index, index);
                         endInsertRows();
                      });
-    QObject::connect(d->m_mediaList, &QtWebEngineCore::DesktopMediaListQt::sourceRemoved, this,
+    QObject::connect(m_mediaList, &QtWebEngineCore::DesktopMediaListQt::sourceRemoved, this,
                      [this](int index) {
                          beginRemoveRows(QModelIndex(), index, index);
                          endRemoveRows();
                      });
-    QObject::connect(d->m_mediaList, &QtWebEngineCore::DesktopMediaListQt::sourceMoved, this,
+    QObject::connect(m_mediaList, &QtWebEngineCore::DesktopMediaListQt::sourceMoved, this,
                      [this](int oldIndex, int newIndex) {
                          beginMoveRows(QModelIndex(), oldIndex, oldIndex, QModelIndex(), newIndex);
                          endMoveRows();
                      });
-    QObject::connect(d->m_mediaList, &QtWebEngineCore::DesktopMediaListQt::sourceNameChanged, this,
+    QObject::connect(m_mediaList, &QtWebEngineCore::DesktopMediaListQt::sourceNameChanged, this,
                      [this](int index) {
                          Q_EMIT dataChanged(QModelIndex(), QModelIndex(),
                                             { Qt::DisplayRole });
@@ -89,7 +79,7 @@ QWebEngineMediaSourceModel::~QWebEngineMediaSourceModel() { }
 
 int QWebEngineMediaSourceModel::rowCount(const QModelIndex &) const
 {
-    return d->m_mediaList->getSourceCount();
+    return m_mediaList->getSourceCount();
 }
 
 QVariant QWebEngineMediaSourceModel::data(const QModelIndex &index, int role) const
@@ -98,7 +88,8 @@ QVariant QWebEngineMediaSourceModel::data(const QModelIndex &index, int role) co
         return QVariant();
     switch (role) {
     case Qt::DisplayRole:
-        return d->m_mediaList->getSourceName(index.row());
+    case Qt::EditRole:
+        return m_mediaList->getSourceName(index.row());
     default:
         break;
     }
@@ -108,10 +99,8 @@ QVariant QWebEngineMediaSourceModel::data(const QModelIndex &index, int role) co
 QWebEngineDesktopMediaRequestPrivate::QWebEngineDesktopMediaRequestPrivate(
         QtWebEngineCore::DesktopMediaController *controller)
     : controller(controller)
-    , m_screensModel(new QWebEngineMediaSourceModel(
-              new QWebEngineMediaSourceModelPrivate(controller->screens())))
-    , m_windowsModel(new QWebEngineMediaSourceModel(
-              new QWebEngineMediaSourceModelPrivate(controller->windows())))
+    , m_screensModel(new QWebEngineMediaSourceModel(controller->screens()))
+    , m_windowsModel(new QWebEngineMediaSourceModel(controller->windows()))
 {
 }
 
@@ -154,6 +143,15 @@ QWebEngineDesktopMediaRequest::QWebEngineDesktopMediaRequest(
 }
 
 QWebEngineDesktopMediaRequest::~QWebEngineDesktopMediaRequest() = default;
+
+QWebEngineDesktopMediaRequest::QWebEngineDesktopMediaRequest(
+        const QWebEngineDesktopMediaRequest &other) noexcept = default;
+
+QWebEngineDesktopMediaRequest &QWebEngineDesktopMediaRequest::operator=(
+        const QWebEngineDesktopMediaRequest &other) noexcept = default;
+
+QWebEngineDesktopMediaRequest::QWebEngineDesktopMediaRequest(
+        QWebEngineDesktopMediaRequest &&other) noexcept = default;
 
 /*!
     Returns a QAbstractListModel for the available screens.
