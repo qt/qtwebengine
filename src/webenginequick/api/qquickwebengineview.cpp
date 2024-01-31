@@ -42,6 +42,7 @@
 #include <QtWebEngineCore/qwebenginescriptcollection.h>
 #include <QtWebEngineCore/qwebenginewebauthuxrequest.h>
 #include <QtWebEngineCore/private/qwebenginecontextmenurequest_p.h>
+#include <QtWebEngineCore/private/qwebenginedesktopmediarequest_p.h>
 #include <QtWebEngineCore/private/qwebenginehistory_p.h>
 #include <QtWebEngineCore/private/qwebenginenewwindowrequest_p.h>
 #include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
