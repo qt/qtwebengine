@@ -1,4 +1,4 @@
-# Copyright (C) 2022 The Qt Company Ltd.
+# Copyright (C) 2023 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.16)
@@ -42,7 +42,6 @@ if (APPLE)
             POST_BUILD COMMAND codesign -s - maps.app)
     endif()
 endif()
-
 
 install(TARGETS maps
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

@@ -59,6 +59,8 @@ public:
 
     Q_INVOKABLE void setHostDomain(const QString &host) { m_url.setHost(host); }
 
+    Q_INVOKABLE QTcpServer *getTcpServer() const { return m_tcpServer; }
+
 Q_SIGNALS:
     // Emitted after a HTTP request has been successfully parsed.
     void newRequest(HttpReqRep *reqRep);

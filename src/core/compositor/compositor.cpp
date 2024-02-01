@@ -7,7 +7,6 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 
 #include <QHash>
-#include <QImage>
 #include <QMutex>
 #include <QQuickWindow>
 
@@ -153,12 +152,10 @@ bool Compositor::textureIsFlipped()
     return false;
 }
 
-#if QT_CONFIG(webengine_vulkan)
-void Compositor::releaseVulkanResources(QQuickWindow *)
+void Compositor::releaseResources(QQuickWindow *)
 {
     Q_UNREACHABLE();
 }
-#endif
 
 // static
 void Compositor::unlockBindings()

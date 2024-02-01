@@ -787,6 +787,7 @@
             Exit the fullscreen mode. (Added in Qt 5.6)
     \value  WebEngineView.SavePage
             Save the current web page to disk. (Added in Qt 5.7)
+    \omitvalue WebEngineView.OpenLinkInNewBackgroundTab
     \value  WebEngineView.ViewSource
             Show the source of the current page in a new tab. Requires a handler for the
             \l newWindowRequested() signal. (Added in Qt 5.8)
@@ -831,6 +832,10 @@
             Inserts an unordered list at the current cursor position,
             deleting the current selection.
             Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value  WebEngineView.ChangeTextDirectionLTR
+            Changes text direction to left-to-right in the focused input element. (Added in Qt 6.6)
+    \value  WebEngineView.ChangeTextDirectionRTL
+            Changes text direction to right-to-left in the focused input element. (Added in Qt 6.6)
     \omitvalue WebActionCount
 */
 
@@ -1298,6 +1303,20 @@
 */
 
 /*!
+    \qmlproperty WebEngineView WebEngineView::devToolsId
+    \since QtWebEngine 6.6
+    \readonly
+
+    The id of the developer tools host associated with this page.
+
+    If remote debugging is enabled (see \l{Qt WebEngine Developer Tools}), the id can be used to
+    build the URL to connect to the developer tool websocket:
+    \c{ws://localhost:<debugggin-port>/devtools/page/<id>)}. The websocket can be used to to interact
+    with the page using the \l{https://chromedevtools.github.io/devtools-protocol/}{DevTools
+    Protocol}.
+*/
+
+/*!
     \qmlmethod WebEngineAction WebEngineView::action(WebAction action)
     \since 5.12
 
@@ -1521,6 +1540,25 @@
 
     \note If no delegate is provided, Chromium's default touch handles will appear.
 
+*/
+
+/*!
+    \qmlmethod void WebEngineView::save(const QString &filePath, QWebEngineDownloadRequest::SavePageFormat format)
+    \since QtWebEngine 6.6
+
+    Save the current web page to disk.
+
+    The web page is saved to \a filePath in the specified \a{format}.
+
+    This is a shortcut for the following actions:
+    \list
+    \li Trigger the Save web action.
+    \li Accept the next download item and set the specified file path and save format.
+    \endlist
+
+    This function issues an asynchronous download request for the web page and returns immediately.
+
+    \sa QWebEngineDownloadRequest::SavePageFormat
 */
 
     \sa {WebEngine Qt Quick Custom Touch Handle Example}

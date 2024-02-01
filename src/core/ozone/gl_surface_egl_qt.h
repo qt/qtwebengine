@@ -6,7 +6,6 @@
 
 #include "gl_surface_qt.h"
 #include <EGL/egl.h>
-#include <EGL/eglext.h>
 
 namespace gl {
 
@@ -16,7 +15,7 @@ class GLSurfaceEGLQt: public GLSurfaceQt {
 public:
     explicit GLSurfaceEGLQt(gl::GLDisplayEGL *display, const gfx::Size& size);
 
-    static gl::GLDisplay *InitializeOneOff(uint64_t system_device_id);
+    static gl::GLDisplay *InitializeOneOff(gl::GpuPreference preference);
     static bool InitializeExtensionSettingsOneOff();
 
     bool Initialize(GLSurfaceFormat format) override;

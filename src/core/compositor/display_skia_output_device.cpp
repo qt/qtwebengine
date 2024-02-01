@@ -3,6 +3,7 @@
 
 #include "display_skia_output_device.h"
 
+#include "compositor_resource_fence.h"
 #include "type_conversion.h"
 
 #include "gpu/command_buffer/service/skia_utils.h"
@@ -318,7 +319,7 @@ void DisplaySkiaOutputDevice::SwapBuffers(BufferPresentedCallback feedback,
 
     {
         QMutexLocker locker(&m_mutex);
-        m_taskRunner = base::ThreadTaskRunnerHandle::Get();
+        m_taskRunner = base::SingleThreadTaskRunner::GetCurrentDefault();
         std::swap(m_middleBuffer, m_backBuffer);
         m_readyToUpdate = true;
     }
@@ -472,7 +473,7 @@ VkImageLayout DisplaySkiaOutputDevice::vkImageLayout()
     return m_frontBuffer->imageLayout();
 }
 
-void DisplaySkiaOutputDevice::releaseVulkanResources(QQuickWindow *win)
+void DisplaySkiaOutputDevice::releaseResources(QQuickWindow *win)
 {
     VkDevice *vkDevicePtr = static_cast<VkDevice *>(
             win->rendererInterface()->getResource(win, QSGRendererInterface::DeviceResource));

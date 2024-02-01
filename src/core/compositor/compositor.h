@@ -4,7 +4,6 @@
 #ifndef COMPOSITOR_H
 #define COMPOSITOR_H
 
-#include <QtGui/qtguiglobal.h>
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -134,10 +133,8 @@ public:
     // Is the texture produced upside down?
     virtual bool textureIsFlipped();
 
-#if QT_CONFIG(webengine_vulkan)
-    // (Vulkan) Release Vulkan resources created by Qt's Vulkan instance.
-    virtual void releaseVulkanResources(QQuickWindow *win);
-#endif
+    // Release resources created in texture()
+    virtual void releaseResources(QQuickWindow *win);
 
 protected:
     Compositor(Type type) : m_type(type) { }

@@ -1,4 +1,4 @@
-# Copyright (C) 2022 The Qt Company Ltd.
+# Copyright (C) 2023 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.16)
@@ -18,6 +18,13 @@ qt_add_executable(quicknanobrowser
     main.cpp
     utils.h
 )
+
+if(WIN32)
+    set_property(
+        TARGET quicknanobrowser
+        APPEND PROPERTY
+            SOURCES quicknanobrowser.exe.manifest)
+endif()
 
 set_target_properties(quicknanobrowser PROPERTIES
     WIN32_EXECUTABLE TRUE

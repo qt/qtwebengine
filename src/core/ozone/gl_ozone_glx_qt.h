@@ -15,7 +15,7 @@ public:
     GLOzoneGLXQt() {}
     ~GLOzoneGLXQt() override {}
 
-    gl::GLDisplay *InitializeGLOneOffPlatform(uint64_t system_device_id) override;
+    gl::GLDisplay *InitializeGLOneOffPlatform(bool, std::vector<gl::DisplayType>, gl::GpuPreference) override;
     bool InitializeStaticGLBindings(const gl::GLImplementationParts &implementation) override;
     bool InitializeExtensionSettingsOneOffPlatform(gl::GLDisplay *display) override;
     void ShutdownGL(gl::GLDisplay *display) override;
@@ -28,7 +28,7 @@ public:
     bool CanImportNativePixmap() override;
     std::unique_ptr<ui::NativePixmapGLBinding> ImportNativePixmap(
             scoped_refptr<gfx::NativePixmap>, gfx::BufferFormat, gfx::BufferPlane,
-            gfx::Size, const gfx::ColorSpace&, GLenum, GLuint) override;
+            gfx::Size, const gfx::ColorSpace &, GLenum, GLuint) override;
 
     scoped_refptr<gl::GLContext> CreateGLContext(
             gl::GLShareGroup* share_group,
@@ -39,7 +39,7 @@ public:
             gl::GLDisplay* display,
             gfx::AcceleratedWidget window) override;
 
-    scoped_refptr<gl::GLSurface> CreateSurfacelessViewGLSurface(
+    scoped_refptr<gl::Presenter> CreateSurfacelessViewGLSurface(
             gl::GLDisplay* display,
             gfx::AcceleratedWidget window) override;
 

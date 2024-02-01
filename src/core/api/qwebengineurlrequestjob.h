@@ -43,6 +43,8 @@ public:
     void reply(const QByteArray &contentType, QIODevice *device);
     void fail(Error error);
     void redirect(const QUrl &url);
+    void setAdditionalResponseHeaders(
+            const QMultiMap<QByteArray, QByteArray> &additionalResponseHeaders) const;
 
 private:
     QWebEngineUrlRequestJob(QtWebEngineCore::URLRequestCustomJobDelegate *);

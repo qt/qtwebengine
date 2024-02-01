@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 
     WebView view;
     view.setUrl(QUrl(QStringLiteral("qrc:/index.html")));
-    view.resize(500, 640);
+    view.resize(500, 750);
     view.show();
 
     return app.exec();

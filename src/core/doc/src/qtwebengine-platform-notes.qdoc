@@ -34,11 +34,12 @@
     On all platforms, the following tools are required at build time:
 
     \list
+        \li C++20 compiler support
         \li CMake 3.19 or newer
         \li \l Python 3 with html5lib library
         \li Bison, Flex
         \li GPerf
-        \li Node.js version 12 or later
+        \li Node.js version 14 or later
     \endlist
 
     \section2 Windows
@@ -49,7 +50,7 @@
         \li Visual Studio 2019 or later, or clang-cl version 10 or later
         \li Active Template Library (ATL), usually included in the Visual Studio
             installation
-        \li Windows 10 SDK version 10.0.20348.0 or later
+        \li Windows 11 SDK version 10.0.22621.0 or later
     \endlist
 
     \note It is not recommended to use tools from  \c msys2 or \c cygwin to build \QWE as it may result in build errors.
@@ -187,16 +188,36 @@
             or VoiceOver on \macos.
     \endlist
 
-    Due to some limitations, the Linux QPA plugin almost always reports that accessibility should
-    be activated. On big HTML pages, this can cause a significant slowdown in rendering speed.
+    On some old Linux configurations, accessibility can cause a significant slowdown
+    on large HTML pages.
 
-    Because of that, \QWE accessibility support is disabled by default
-    on Linux.
-    It can be re-enabled by setting the \c QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY environment
-    variable to a non-empty value.
+    Because of that, \QWE accessibility support can be disabled on Linux, by setting the
+    \c QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY environment variable to 0.
 
     \section1 Popups in Fullscreen Applications on Windows
     Because of a limitation in the Windows compositor, applications that show a fullscreen web
     engine view will not properly display popups or other top-level windows. The reason and
     workaround is described in \l {Fullscreen OpenGL Based Windows}.
+
+    \target windows_manifest
+    \section1 Windows Application Manifest
+    A manifest is an XML file that is read when the program starts and informs Windows how to run the program.
+    Some \QWE features may require adding a manifest file for the user application to work correctly on Windows.
+
+    The following snippets show the manifest file's structure and how to embed it into the program.
+
+    \note These code snippets are taken from the \l {WebEngine Quick Nano Browser} example.
+
+    The manifest file defines which Windows versions the application supports.
+    \l {QWebEngineProfile::} {httpUserAgent} needs this information to report the correct Windows version.
+    \quotefile ../../../../examples/webenginequick/quicknanobrowser/quicknanobrowser.exe.manifest
+
+    To embed the file into the executable, add it to the sources:
+    \quotefromfile ../../../../examples/webenginequick/quicknanobrowser/CMakeLists.txt
+    \skipto qt_add_executable
+    \dots
+    \printuntil endif
+    \dots
+
+    For more information, see the \l {https://learn.microsoft.com/en-us/windows/win32/sbscs/application-manifests} {Application manifest documentation page}.
 */

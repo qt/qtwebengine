@@ -33,7 +33,7 @@ static ProfileAdapter::PermissionType toQt(blink::PermissionType type)
         return ProfileAdapter::NotificationPermission;
     case blink::PermissionType::ACCESSIBILITY_EVENTS:
     case blink::PermissionType::CAMERA_PAN_TILT_ZOOM:
-    case blink::PermissionType::WINDOW_PLACEMENT:
+    case blink::PermissionType::WINDOW_MANAGEMENT:
         return ProfileAdapter::UnsupportedPermission;
     case blink::PermissionType::MIDI_SYSEX:
     case blink::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
@@ -53,6 +53,7 @@ static ProfileAdapter::PermissionType toQt(blink::PermissionType type)
     case blink::PermissionType::STORAGE_ACCESS_GRANT:
     case blink::PermissionType::LOCAL_FONTS:
     case blink::PermissionType::DISPLAY_CAPTURE:
+    case blink::PermissionType::TOP_LEVEL_STORAGE_ACCESS:
     case blink::PermissionType::NUM:
         LOG(INFO) << "Unexpected unsupported permission type: " << static_cast<int>(type);
         break;

@@ -48,6 +48,8 @@ public:
     QUrl initiator() const;
     QMap<QByteArray, QByteArray> requestHeaders() const;
 
+    void
+    setAdditionalResponseHeaders(const QMultiMap<QByteArray, QByteArray> &additionalResponseHeaders);
     void reply(const QByteArray &contentType, QIODevice *device);
     void redirect(const QUrl &url);
     void abort();
@@ -69,6 +71,7 @@ private:
     QByteArray m_method;
     QUrl m_initiatorOrigin;
     const QMap<QByteArray, QByteArray> m_requestHeaders;
+    QMultiMap<QByteArray, QByteArray> m_additionalResponseHeaders;
 };
 
 } // namespace

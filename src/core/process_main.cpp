@@ -39,7 +39,6 @@ int processMain(int argc, const char **argv)
     CHECK(seatbelt.server->InitializeSandbox());
   }
 #endif  // IS_MAC
-
     return content::ContentMain(std::move(params));
 }
 

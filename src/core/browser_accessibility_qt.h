@@ -4,7 +4,7 @@
 #ifndef BROWSER_ACCESSIBILITY_QT_H
 #define BROWSER_ACCESSIBILITY_QT_H
 
-#include <QtWebEngineCore/qtwebenginecoreglobal.h>
+#include <QtCore/qtconfigmacros.h>
 
 QT_FORWARD_DECLARE_CLASS(QAccessibleInterface)
 

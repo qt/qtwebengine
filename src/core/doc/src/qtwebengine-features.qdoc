@@ -83,7 +83,7 @@
 
     This feature can be tested by launching a \QWE application with the
     command line option \c {--remote-debugging-port=[your-port]} or by setting
-    the environment variable \c QTWEBENGINE_REMOTE_DEBUGGING, and then using a
+    the environment variable \c QTWEBENGINE_REMOTE_DEBUGGING and then using a
     Chromium based browser (such as \l{WebEngine Widgets Simple Browser Example}
     {Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}) to connect
     to \c {http://localhost:[your-port]}.
@@ -95,6 +95,12 @@
     \badcode
     --webEngineArgs --remote-debugging-port=5000
     \endcode
+
+    To avoid WebSocket errors during remote debugging, add an additional command-line argument
+    \c {--remote-allow-origins=<origin>[,<origin>, ...]}, where \c <origin> refers to the request origin.
+    Use \c {--remote-allow-origins=*} to allow connections from all origins. If nothing is specified,
+    \QWE will add \c {--remote-allow-origins=*} to command-line arguments when remote-debugging is enabled,
+    thereby allowing requests from all origins.
 
     The Chromium DevTools page can also be shown within the application. To set
     this up, you can call either QWebEnginePage::setInspectedPage() to the page
@@ -304,10 +310,6 @@
     \uicontrol {Privacy & Security} > \uicontrol {Location}, enable \uicontrol
     {Location services}, \uicontrol {Let apps access your location} and \uicontrol
     {Let desktop apps access your location}.
-
-    \note On macOS add a description text explaining why use of the location is needed
-    using the \c NSLocationUsageDescription in your application's \c Info.plist file
-    and sign the application to trigger \c macos to ask the user for permission.
 
     See \l{Qt Positioning} for a possible backend setup like the GPS or IP based positioning.
 

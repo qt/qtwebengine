@@ -30,8 +30,10 @@
 #include <QLibraryInfo>
 #include <QString>
 
+
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_paths.h"  // nogncheck
+#include "media/cdm/clear_key_cdm_common.h"
 #include "third_party/widevine/cdm/buildflags.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 #if BUILDFLAG(ENABLE_WIDEVINE) && !BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)

@@ -49,7 +49,7 @@ class Q_WEBENGINECORE_EXPORT QWebEnginePage : public QObject
     Q_PROPERTY(QUrl requestedUrl READ requestedUrl)
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor)
     Q_PROPERTY(QString title READ title)
-    Q_PROPERTY(QUrl url READ url WRITE setUrl)
+    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(QUrl iconUrl READ iconUrl NOTIFY iconUrlChanged)
     Q_PROPERTY(QIcon icon READ icon NOTIFY iconChanged)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor)
@@ -121,6 +121,9 @@ public:
 
         InsertOrderedList,
         InsertUnorderedList,
+
+        ChangeTextDirectionLTR,
+        ChangeTextDirectionRTL,
 
         WebActionCount
     };
@@ -282,6 +285,7 @@ public:
     QWebEnginePage *inspectedPage() const;
     void setDevToolsPage(QWebEnginePage *page);
     QWebEnginePage *devToolsPage() const;
+    QString devToolsId() const;
 
     void setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
 

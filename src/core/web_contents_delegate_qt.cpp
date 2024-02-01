@@ -383,7 +383,8 @@ void WebContentsDelegateQt::emitLoadFinished(bool isErrorPage)
                 ? QWebEngineLoadingInfo::LoadStoppedStatus : QWebEngineLoadingInfo::LoadFailedStatus);
     QWebEngineLoadingInfo info(m_loadingInfo.url, loadStatus, m_loadingInfo.isErrorPage,
                                m_loadingInfo.errorDescription, m_loadingInfo.errorCode,
-                               QWebEngineLoadingInfo::ErrorDomain(m_loadingInfo.errorDomain));
+                               QWebEngineLoadingInfo::ErrorDomain(m_loadingInfo.errorDomain),
+                               m_loadingInfo.responseHeaders);
     m_viewClient->loadFinished(std::move(info));
     m_viewClient->updateNavigationActions();
 }
@@ -409,6 +410,20 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
         }
 
         emitLoadCommitted();
+    }
+
+    const net::HttpResponseHeaders * const responseHeaders = navigation_handle->GetResponseHeaders();
+    if (responseHeaders != nullptr) {
+        m_loadingInfo.responseHeaders.clear();
+        std::size_t iter = 0;
+        std::string headerName;
+        std::string headerValue;
+        while (responseHeaders->EnumerateHeaderLines(&iter, &headerName, &headerValue)) {
+            m_loadingInfo.responseHeaders.insert(
+                        QByteArray::fromStdString(headerName),
+                        QByteArray::fromStdString(headerValue)
+            );
+        }
     }
 
     // Success is reported by DidFinishLoad, but DidFailLoad is now dead code and needs to be handled below
@@ -625,12 +640,6 @@ void WebContentsDelegateQt::UpdateTargetURL(content::WebContents* source, const 
     m_viewClient->didUpdateTargetURL(toQt(url));
 }
 
-void WebContentsDelegateQt::OnVisibilityChanged(content::Visibility visibility)
-{
-    if (visibility != content::Visibility::HIDDEN)
-        web_cache::WebCacheManager::GetInstance()->ObserveActivity(web_contents()->GetPrimaryMainFrame()->GetProcess()->GetID());
-}
-
 void WebContentsDelegateQt::ActivateContents(content::WebContents* contents)
 {
     QWebEngineSettings *settings = m_viewClient->webEngineSettings();
@@ -735,12 +744,6 @@ void WebContentsDelegateQt::BeforeUnloadFired(content::WebContents *tab, bool pr
         m_viewClient->windowCloseRejected();
 }
 
-void WebContentsDelegateQt::BeforeUnloadFired(bool proceed, const base::TimeTicks &proceed_time)
-{
-    Q_UNUSED(proceed);
-    Q_UNUSED(proceed_time);
-}
-
 bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost *, const GURL& security_origin, blink::mojom::MediaStreamType type)
 {
     switch (type) {
@@ -809,6 +812,15 @@ void WebContentsDelegateQt::ResourceLoadComplete(content::RenderFrameHost* rende
     if (resource_load_info.request_destination == network::mojom::RequestDestination::kDocument) {
         m_isDocumentEmpty = (resource_load_info.raw_body_bytes == 0);
     }
+}
+
+void WebContentsDelegateQt::InnerWebContentsAttached(content::WebContents *inner_web_contents,
+                                        content::RenderFrameHost *render_frame_host,
+                                        bool is_full_page)
+{
+    blink::web_pref::WebPreferences guestPrefs = inner_web_contents->GetOrCreateWebPreferences();
+    webEngineSettings()->overrideWebPreferences(inner_web_contents, &guestPrefs);
+    inner_web_contents->SetWebPreferences(guestPrefs);
 }
 
 FindTextHelper *WebContentsDelegateQt::findTextHelper()

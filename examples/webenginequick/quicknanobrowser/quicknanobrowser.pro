@@ -6,6 +6,11 @@ TARGET = quicknanobrowser
 HEADERS = utils.h
 SOURCES = main.cpp
 
+win32 {
+    CONFIG -= embed_manifest_exe
+    QMAKE_MANIFEST = $$PWD/quicknanobrowser.exe.manifest
+}
+
 RESOURCES += resources.qrc
 
 QT += qml quick webenginequick

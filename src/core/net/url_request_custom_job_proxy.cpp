@@ -40,7 +40,8 @@ void URLRequestCustomJobProxy::release()
     }
 }
 
-void URLRequestCustomJobProxy::reply(std::string contentType, QIODevice *device)
+void URLRequestCustomJobProxy::reply(std::string contentType, QIODevice *device,
+                                     QMultiMap<QByteArray, QByteArray> additionalResponseHeaders)
 {
     if (!m_client)
         return;
@@ -50,14 +51,15 @@ void URLRequestCustomJobProxy::reply(std::string contentType, QIODevice *device)
     if (sidx > 0) {
         const int cidx = qcontentType.indexOf("charset=", sidx);
         if (cidx > 0) {
-            m_client->m_charset = qcontentType.mid(cidx + 8).toStdString();
+            m_client->m_charset = qcontentType.mid(cidx + 8).trimmed().toStdString();
             qcontentType = qcontentType.first(sidx);
         } else {
             qWarning() << "QWebEngineUrlRequestJob::reply(): Unrecognized content-type format with ';'" << qcontentType;
         }
     }
-    m_client->m_mimeType = qcontentType.toStdString();
+    m_client->m_mimeType = qcontentType.trimmed().toStdString();
     m_client->m_device = device;
+    m_client->m_additionalResponseHeaders = std::move(additionalResponseHeaders);
     if (m_client->m_device && !m_client->m_device->isReadable())
         m_client->m_device->open(QIODevice::ReadOnly);
 

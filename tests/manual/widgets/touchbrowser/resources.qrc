@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="touchpoint.png">../../touchmocking/touchpoint.png</file>
+    </qresource>
+</RCC>
