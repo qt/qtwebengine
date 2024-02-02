@@ -66,7 +66,7 @@ qt_feature("webengine-system-alsa" PRIVATE
 )
 qt_feature("webengine-v8-context-snapshot" PRIVATE
     LABEL "Use v8 context snapshot"
-    CONDITION NOT CMAKE_CROSSCOMPILING
+    AUTODETECT NOT CMAKE_CROSSCOMPILING
 )
 qt_feature("webengine-geolocation" PUBLIC
     LABEL "Geolocation"
