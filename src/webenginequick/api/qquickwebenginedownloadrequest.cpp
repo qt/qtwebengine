@@ -1,7 +1,8 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qquickwebenginedownloadrequest_p.h"
+#include "qquickwebenginedownloadrequest.h"
+#include "qquickwebengineview_p.h"
 #include "QtWebEngineCore/private/qwebenginedownloadrequest_p.h"
 
 #include "web_contents_adapter_client.h"
@@ -29,4 +30,4 @@ QQuickWebEngineView *QQuickWebEngineDownloadRequest::view() const
 
 QT_END_NAMESPACE
 
-#include "moc_qquickwebenginedownloadrequest_p.cpp"
+#include "moc_qquickwebenginedownloadrequest.cpp"

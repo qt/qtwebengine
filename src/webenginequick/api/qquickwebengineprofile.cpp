@@ -3,7 +3,7 @@
 
 #include "qquickwebengineprofile.h"
 #include "qquickwebengineprofile_p.h"
-#include "qquickwebenginedownloadrequest_p.h"
+#include "qquickwebenginedownloadrequest.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginescriptcollection_p.h"
 #include "qquickwebenginescriptcollection_p_p.h"
