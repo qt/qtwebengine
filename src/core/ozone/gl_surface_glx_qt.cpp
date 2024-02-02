@@ -88,12 +88,12 @@ GLSurfaceGLXQt::~GLSurfaceGLXQt()
     Destroy();
 }
 
-GLDisplay *GLSurfaceGLXQt::InitializeOneOff(uint64_t system_device_id)
+GLDisplay *GLSurfaceGLXQt::InitializeOneOff(gl::GpuPreference preference)
 {
     if (s_initialized)
         return g_display;
 
-    g_display = GLDisplayManagerX11::GetInstance()->GetDisplay(system_device_id);
+    g_display = GLDisplayManagerX11::GetInstance()->GetDisplay(preference);
     if (!g_display->GetDisplay()) {
         LOG(ERROR) << "GLContextHelper::getXDisplay() failed.";
         return nullptr;

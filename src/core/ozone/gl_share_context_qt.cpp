@@ -12,10 +12,6 @@
 #include <QtGui/qopenglcontext_platform.h>
 #include <QOpenGLContext>
 #include <QOpenGLExtraFunctions>
-
-#if defined(Q_OS_MACOS)
-#include "macos_context_type_helper.h"
-#endif // defined(Q_OS_MACOS)
 #endif // QT_CONFIG(opengl)
 
 namespace QtWebEngineCore {
@@ -25,9 +21,7 @@ QtShareGLContext::QtShareGLContext(QOpenGLContext *context)
 {
 #if QT_CONFIG(opengl)
 #if defined(Q_OS_MACOS)
-    auto *mac_ctx = context->nativeInterface<QNativeInterface::QCocoaGLContext>();
-    if (mac_ctx)
-        m_handle = cglContext(mac_ctx->nativeContext());
+    qFatal("macOS only support using ANGLE.");
 #endif
 #if defined(Q_OS_WIN)
     auto *win_ctx = context->nativeInterface<QNativeInterface::QWGLContext>();

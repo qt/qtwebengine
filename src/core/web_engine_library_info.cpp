@@ -378,6 +378,8 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
     case base::DIR_APP_DICTIONARIES:
         return toFilePath(dictionariesPath());
 #endif
+    case base::DIR_ASSETS:
+        return toFilePath(resourcesPath());
     default:
         // Note: the path system expects this function to override the default
         // behavior. So no need to log an error if we don't support a given

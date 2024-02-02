@@ -5,10 +5,12 @@ QT += core gui widgets pdfwidgets
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
+    searchresultdelegate.cpp \
     zoomselector.cpp
 
 HEADERS += \
     mainwindow.h \
+    searchresultdelegate.h \
     zoomselector.h
 
 FORMS += \

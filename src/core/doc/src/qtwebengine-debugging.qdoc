@@ -49,6 +49,12 @@
     interface on, so that you can access the developer tools from a remote
     device.
 
+    To avoid WebSocket errors during remote debugging, add an additional command-line
+    argument \c {--remote-allow-origins=<origin>[,<origin>, ...]}, where \c <origin> refers to the request origin.
+    Use \c {--remote-allow-origins=*} to allow connections from all origins. If nothing is specified,
+    \QWE will add \c {--remote-allow-origins=*} to command-line arguments when remote-debugging is enabled,
+    thereby allowing requests from all origins.
+
     For a detailed explanation of the capabilities of developer tools, see the
     \l {Chrome DevTools} page.
 

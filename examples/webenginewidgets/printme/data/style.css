@@ -1,72 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
 html,body {
-     height:100%;
-     width:100%;
-     margin:0;
+     height: 100%;
+     width: 100%;
 }
+
  body {
-     display:flex;
+     display: flex;
 }
- .logo {
-     width: 75px;
-     height: 75px;
-     float: left;
-     margin: 20px 20px 0px 20px;
-     -webkit-animation:spin 8s linear infinite;
-}
- @-webkit-keyframes spin {
-     100% {
-         -webkit-transform: rotate(360deg);
-    }
-}
+
  .header {
      display: inline
 }
+
  .form {
-     width: 480px;
-     height: 170px;
-     background: -webkit-linear-gradient(bottom, #ddd, #fff);
-     border: 1px solid #999;
-     border-radius: 12px;
+     width: 50%;
+     background: #fff;
+     border: 0.5px solid #999;
+     border-radius: 8px;
      color: #46a;
-     font-family: 'Lucida Sans Unicode', 'Lucida Grande', sans-serif;
-     font-size: 14px;
-     font-style: italic;
-     font-weight: bold;
+     font-family: 'Titillium Web', sans-serif;
+     font-size: 1rem;
      margin: auto;
-     padding: 10px;
+     padding: 1.5rem;
      position: relative;
-     line-height: 26px;
      text-decoration: none;
-     -webkit-box-shadow: 0px 0px 5px #444;
 }
- h1 {
-     padding-left:40px;
-     color: #46a2da;
+
+h1 {
+    color: #00414A;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-top: -0.85rem;
+    margin-bottom: 2rem;
 }
- h2 {
-     color: #80c342;
-     font-size: 13px;
-     margin-top: -20px;
+
+h2 {
+    color: #00414A;
+    font-size: 1.125rem;
+    font-weight: 400;
+    font-style: italic;
+    margin-bottom: 1rem;
 }
- span {
-     margin-left: 20px;
-}
+
  .button{
-     display: inline-block;
-     background: #46a2da;
-     width: 100px;
-     height: 30px;
-     padding: 0px;
-     text-align: center;
-     font-weight: bold;
-     color: #ffffff;
-     text-decoration: none;
-     border: 1px solid #999;
-     margin-left: 190px;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     padding: 0.4444em 0.8889em;
+     height: 2.4em;
+     cursor: pointer;
+     background: #00414A;
+     color: #fff;
+     border-radius: 4px;
+     margin-top: 2rem;
+     font-family: 'Titillium Web', sans-serif;
+     font-size: 1.125rem;
+     font-weight: 400;
+     transition: color 300ms ease-out, border 300ms ease-out;
 }
+
  .button:hover {
-    background-color: #46a200
+    background: #19545C;
 }
+
  .button:active {
-     background-color: #3e8e41;
+     background-color: #19545C;
 }

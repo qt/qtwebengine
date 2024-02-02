@@ -28,6 +28,8 @@ class URLLoaderFactory;
 class SharedURLLoaderFactory;
 } // namespace network
 
+namespace QtWebEngineCore {
+
 // Responsible for creating and managing access to the system NetworkContext.
 // Lives on the UI thread. The NetworkContext this owns is intended for requests
 // not associated with a profile. It stores no data on disk, and has no HTTP
@@ -113,5 +115,7 @@ private:
 
     ProxyConfigMonitor proxy_config_monitor_;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // SYSTEM_NETWORK_CONTEXT_MANAGER_H_

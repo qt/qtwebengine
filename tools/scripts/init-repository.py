@@ -12,6 +12,7 @@ import argparse
 qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 import git_submodule as GitSubmodule
+import cipd_package as CIPDPackage
 import version_resolver as resolver
 
 chromium_src = os.environ.get('CHROMIUM_SRC_DIR')
@@ -21,13 +22,14 @@ use_external_chromium = False
 
 parser = argparse.ArgumentParser(description='Initialize QtWebEngine repository.')
 parser.add_argument('--baseline-upstream', action='store_true', help='initialize using upstream Chromium submodule w/o applying patches (for maintenance purposes only)')
+parser.add_argument('--use_cipd', action='store_true', help='fetch and deploy packages with cipd')
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-u', '--upstream', action='store_true', help='initialize using upstream Chromium submodule')
 group.add_argument('-s', '--snapshot', action='store_true', help='initialize using flat Chromium snapshot submodule (default)')
 args = parser.parse_args()
-
 if args.baseline_upstream:
     args.upstream = True
+    args.use_cipd = True
 
 if chromium_src:
     chromium_src = os.path.abspath(chromium_src)
@@ -110,6 +112,20 @@ def initSnapshot():
     snapshot.os = 'all'
     snapshot.initialize()
 
+def initPackages():
+    # 'androidx' it is the only so far cipd package we need
+    third_party_upstream_chromium = os.path.join(qtwebengine_root, 'src/3rdparty_upstream/chromium')
+    currentDir = os.getcwd()
+    os.chdir(third_party_upstream_chromium)
+    cipd = CIPDPackage.CIPDEntity(third_party_upstream_chromium)
+    cipd_entites = cipd.readEntities()
+    for e in cipd_entites:
+        pkg = e.findPackage(CIPDPackage.androidx_package_name)
+        if pkg:
+            print('-- fetching and deploying ' + CIPDPackage.androidx_package_name)
+            pkg.fetchAndDeploy()
+    os.chdir(currentDir)
+
 os.chdir(qtwebengine_root)
 
 if args.upstream:
@@ -119,3 +135,8 @@ if args.upstream:
         subprocess.call(['python3', os.path.join(qtwebengine_root, 'tools', 'scripts', 'patch_upstream.py')])
 if args.snapshot:
     initSnapshot()
+if args.use_cipd:
+    cipdNotFound = subprocess.call(['which', 'cipd'])
+    if cipdNotFound:
+        raise Exception("You need cipd from depo tools.Try setting ./src/3rdparty_upstream/chromium/third_party/depot_tools/cipd in your PATH.")
+    initPackages()

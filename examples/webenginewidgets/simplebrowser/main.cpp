@@ -18,7 +18,7 @@ QUrl commandLineUrlArgument()
         if (!arg.startsWith(u'-'))
             return QUrl::fromUserInput(arg);
     }
-    return QUrl(u"https://www.qt.io"_s);
+    return QUrl(u"chrome://qt"_s);
 }
 
 int main(int argc, char **argv)

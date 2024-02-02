@@ -40,3 +40,14 @@
     Returns the version number of last Chromium version security patches have been
     merged from.
 */
+
+/*!
+    \fn QString qWebEngineGetDomainAndRegistry(const QUrl &url)
+    \relates <qtwebenginecoreglobal.h>
+    \since 6.6
+
+    Returns the domain of the host, that is, the effective top-level domain
+    (eTLD) and the first domain below it, from \a url.
+
+    If the host is not a domain, returns an empty string.
+*/

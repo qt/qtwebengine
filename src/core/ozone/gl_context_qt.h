@@ -8,7 +8,6 @@
 #include "ui/gl/gl_context.h"
 
 namespace gl {
-class GLContext;
 class GLSurface;
 }
 

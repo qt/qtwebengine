@@ -143,10 +143,12 @@ void MainWindow::toggleEditView()
         ui->textEdit->show();
 
         ui->editViewButton->setText(QStringLiteral("View"));
+        ui->editViewButton->setIcon(QIcon(":/icons/view.svg"));
     } else {
         ui->textEdit->hide();
         ui->webEngineView->show();
 
         ui->editViewButton->setText(QStringLiteral("Edit"));
+        ui->editViewButton->setIcon(QIcon(":/icons/edit.svg"));
     }
 }

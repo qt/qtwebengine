@@ -7,6 +7,7 @@
 // found in the LICENSE file.
 
 #include "extensions_api_client_qt.h"
+#include "file_system_delegate_qt.h"
 #include "messaging_delegate_qt.h"
 
 #include <memory>
@@ -20,6 +21,7 @@
 
 #if BUILDFLAG(ENABLE_PDF)
 #include "components/pdf/browser/pdf_web_contents_helper.h"
+#include "printing/pdf_web_contents_helper_client_qt.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -39,6 +41,13 @@ AppViewGuestDelegate *ExtensionsAPIClientQt::CreateAppViewGuestDelegate() const
     return nullptr;
 }
 
+FileSystemDelegate *ExtensionsAPIClientQt::GetFileSystemDelegate()
+{
+    if (!m_fileSystemDelegate)
+        m_fileSystemDelegate = std::make_unique<FileSystemDelegateQt>();
+    return m_fileSystemDelegate.get();
+}
+
 std::unique_ptr<guest_view::GuestViewManagerDelegate> ExtensionsAPIClientQt::CreateGuestViewManagerDelegate(content::BrowserContext *context) const
 {
     return std::make_unique<extensions::ExtensionsGuestViewManagerDelegate>(context);
@@ -56,6 +65,10 @@ void ExtensionsAPIClientQt::AttachWebContentsHelpers(content::WebContents *web_c
     QtWebEngineCore::PrintViewManagerQt::CreateForWebContents(web_contents);
 #endif
     ExtensionWebContentsObserverQt::CreateForWebContents(web_contents);
+
+#if BUILDFLAG(ENABLE_PDF)
+    pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(web_contents, std::make_unique<PDFWebContentsHelperClientQt>());
+#endif
 }
 
 MessagingDelegate *ExtensionsAPIClientQt::GetMessagingDelegate()

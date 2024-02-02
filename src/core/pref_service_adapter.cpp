@@ -87,8 +87,6 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterIntegerPref(prefs::kNotificationNextPersistentId, 10000);
     registry->RegisterDictionaryPref(prefs::kPushMessagingAppIdentifierMap);
     registry->RegisterListPref(prefs::kAccountInfo);
-    registry->RegisterStringPref(prefs::kGoogleServicesLastAccountId,
-                               std::string());
     registry->RegisterStringPref(prefs::kGoogleServicesLastUsername,
                                std::string());
     registry->RegisterStringPref(prefs::kGoogleServicesAccountId, std::string());
@@ -113,6 +111,7 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterListPref(extensions::pref_names::kNativeMessagingBlocklist);
     registry->RegisterListPref(extensions::pref_names::kNativeMessagingAllowlist);
     registry->RegisterBooleanPref(extensions::pref_names::kNativeMessagingUserLevelHosts, true);
+    registry->RegisterListPref(extensions::pref_names::kExtendedBackgroundLifetimeForPortConnectionsToUrls);
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 
     // Media device salt id key

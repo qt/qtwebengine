@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+<body>
+    <script type="text/javascript">
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const url = urlParams.get('url');
+        const f = fetch(url);
+        if (urlParams.get('printRes') == 'true') {
+            f.then((r) => r.text()).then((p) => console.log(p));
+        }
+    </script>
+</body>
+</html>

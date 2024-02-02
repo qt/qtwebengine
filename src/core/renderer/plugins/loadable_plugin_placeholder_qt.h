@@ -31,8 +31,6 @@ private:
 
     // content::LoadablePluginPlaceholder overrides.
     blink::WebPlugin* CreatePlugin() override;
-    void OnBlockedContent(content::RenderFrame::PeripheralContentStatus status,
-                          bool is_same_origin) override {}
 
     // WebViewPlugin::Delegate (via PluginPlaceholder) methods:
     v8::Local<v8::Value> GetV8Handle(v8::Isolate* isolate) override;

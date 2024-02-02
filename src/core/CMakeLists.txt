@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.19)
 
 find_package(Ninja 1.7.2 REQUIRED)
-find_package(Nodejs 12 REQUIRED)
+find_package(Nodejs 14.19 REQUIRED)
 find_package(Perl)
 find_package(PkgConfig)
 if(PkgConfig_FOUND)
@@ -48,7 +48,7 @@ foreach(arch ${archs})
         get_forward_declaration_macro(forwardDeclarationMacro)
         get_target_property(qtWebEngineProcessName WebEngineCore QTWEBENGINEPROCESS_NAME)
 
-        if(QT_FEATURE_debug_and_release AND ("${config}" STREQUAL "Debug"))
+        if("${config}" STREQUAL "Debug")
             set(qtWebEngineProcessName "${qtWebEngineProcessName}${CMAKE_DEBUG_POSTFIX}")
         endif()
 
@@ -183,6 +183,7 @@ foreach(arch ${archs})
                 type_conversion.cpp type_conversion.h
                 user_notification_controller.cpp user_notification_controller.h
                 user_script.cpp user_script.h
+                version_ui_qt.cpp version_ui_qt.h
                 visited_links_manager_qt.cpp visited_links_manager_qt.h
                 web_contents_adapter.cpp web_contents_adapter.h
                 web_contents_adapter_client.h
@@ -226,11 +227,6 @@ foreach(arch ${archs})
                 compositor/native_skia_output_device_mac2.mm
         )
 
-        extend_gn_target(${buildGn} CONDITION MACOS AND QT_FEATURE_opengl
-            SOURCES
-                macos_context_type_helper.mm macos_context_type_helper.h
-        )
-
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_pepper_plugins
             SOURCES
                 renderer/pepper/pepper_renderer_host_factory_qt.cpp renderer/pepper/pepper_renderer_host_factory_qt.h
@@ -268,6 +264,7 @@ foreach(arch ${archs})
                 extensions/extension_web_contents_observer_qt.cpp extensions/extension_web_contents_observer_qt.h
                 extensions/extensions_api_client_qt.cpp extensions/extensions_api_client_qt.h
                 extensions/extensions_browser_client_qt.cpp extensions/extensions_browser_client_qt.h
+                extensions/file_system_delegate_qt.cpp extensions/file_system_delegate_qt.h
                 extensions/messaging_delegate_qt.cpp extensions/messaging_delegate_qt.h
                 extensions/mime_handler_view_guest_delegate_qt.cpp extensions/mime_handler_view_guest_delegate_qt.h
                 extensions/plugin_service_filter_qt.cpp extensions/plugin_service_filter_qt.h
@@ -309,7 +306,6 @@ foreach(arch ${archs})
             enable_background_mode=false
             enable_ipc_fuzzer=false
             enable_ipc_logging=false
-            enable_js_type_check=false
             enable_media_remoting=false
             enable_message_center=false
             enable_nacl=false
@@ -319,6 +315,7 @@ foreach(arch ${archs})
             enable_resource_allowlist_generation=false
             enable_screen_ai_service=false
             enable_session_service=false
+            enable_supervised_users=false
             enable_swiftshader=false
             enable_swiftshader_vulkan=false
             angle_enable_swiftshader=false
@@ -336,15 +333,20 @@ foreach(arch ${archs})
             toolkit_views=false
             chrome_pgo_phase=0
             optimize_webui=false
-            v8_use_external_startup_data=false
             strip_absolute_paths_from_debug_symbols=false
+            pdf_use_skia=true
             devtools_fast_bundle=false
             devtools_skip_typecheck=false
-            enable_jxl_decoder=false # temporarily because libjxl causes internal compiler error on armv7
+            use_static_angle=true
+            chrome_root_store_supported=false
+            trial_comparison_cert_verifier_supported=false
         )
-
         extend_gn_list(gnArgArg
-            ARGS enable_basic_printing enable_print_preview enable_pdf
+            ARGS use_v8_context_snapshot v8_use_external_startup_data
+            CONDITION QT_FEATURE_webengine_v8_context_snapshot
+        )
+        extend_gn_list(gnArgArg
+            ARGS enable_printing enable_basic_printing enable_print_preview enable_pdf
             CONDITION QT_FEATURE_webengine_printing_and_pdf
         )
         extend_gn_list(gnArgArg
@@ -361,6 +363,10 @@ foreach(arch ${archs})
         )
         extend_gn_list(gnArgArg
             ARGS enable_webrtc
+            CONDITION QT_FEATURE_webengine_webrtc
+        )
+        extend_gn_list(gnArgArg
+            ARGS enable_screen_capture
             CONDITION QT_FEATURE_webengine_webrtc
         )
         extend_gn_list(gnArgArg
@@ -409,7 +415,6 @@ foreach(arch ${archs})
                 use_bundled_fontconfig=false
                 use_glib=false
                 use_bluez=false
-                use_vaapi=false
                 use_udev=true
                 is_cfi=false
                 use_ozone=true
@@ -420,7 +425,7 @@ foreach(arch ${archs})
                 ozone_extra_path="${CMAKE_CURRENT_LIST_DIR}/ozone/ozone_extra.gni"
             )
             set(systemLibs libjpeg libpng freetype harfbuzz libevent libwebp libxml
-                opus snappy libvpx icu ffmpeg re2 lcms2 libopenjpeg2
+                opus snappy icu ffmpeg re2 lcms2 libopenjpeg2 libvpx
             )
             foreach(slib ${systemLibs})
                 extend_gn_list(gnArgArg
@@ -455,6 +460,10 @@ foreach(arch ${archs})
                 CONDITION QT_FEATURE_webengine_system_libpng
             )
             extend_gn_list(gnArgArg
+                ARGS pdfium_use_system_libtiff
+                CONDITION QT_FEATURE_webengine_system_libtiff
+            )
+            extend_gn_list(gnArgArg
                 ARGS use_libpci
                 CONDITION QT_FEATURE_webengine_system_libpci
             )
@@ -467,12 +476,20 @@ foreach(arch ${archs})
                 CONDITION QT_FEATURE_webengine_system_pulseaudio
             )
             extend_gn_list(gnArgArg
+                ARGS use_vaapi
+                CONDITION QT_FEATURE_webengine_vaapi
+            )
+            extend_gn_list(gnArgArg
                 ARGS ozone_platform_x11 use_xkbcommon
                 CONDITION QT_FEATURE_webengine_ozone_x11
             )
             extend_gn_list(gnArgArg
                 ARGS rtc_use_x11
                 CONDITION QT_FEATURE_webengine_ozone_x11 AND QT_FEATURE_webengine_webrtc
+            )
+            extend_gn_list(gnArgArg
+                ARGS use_vaapi_x11
+                CONDITION QT_FEATURE_webengine_ozone_x11 AND QT_FEATURE_webengine_vaapi
             )
 
             if(QT_FEATURE_webengine_kerberos)
@@ -489,10 +506,12 @@ foreach(arch ${archs})
             endif()
 
             if(CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm64")
-                # V8 sandbox initialization is slow in QEMU.
                 # This is a workaround to avoid auto test timeouts on the QEMU arm64 CI.
                 if ("$ENV{TARGET_OSVERSION_COIN}" STREQUAL "qemu")
-                    list(APPEND gnArgArg v8_enable_sandbox=false)
+                    list(APPEND gnArgArg
+                        v8_enable_sandbox=false
+                        arm_control_flow_integrity="none"
+                    )
                 endif()
             endif()
         endif()
@@ -500,8 +519,6 @@ foreach(arch ${archs})
         if(MACOS)
             list(APPEND gnArgArg
                 use_external_popup_menu=false
-                angle_enable_vulkan=false
-                use_static_angle=true
             )
         endif()
 
@@ -544,7 +561,20 @@ target_include_directories(WebEngineCore PRIVATE
     ${buildDir}/$<CONFIG>/${arch}/gen/third_party/perfetto/build_config
 )
 
-add_gn_build_aritfacts_to_target(WebEngineCore QtWebEngineCore core ${buildDir} FALSE)
+set(stamps QtWebEngineCore.stamp)
+if(QT_FEATURE_webengine_v8_context_snapshot)
+    set(dataStamp obj/tools/v8_context_snapshot/v8_context_snapshot.stamp)
+endif()
+
+add_gn_build_aritfacts_to_target(
+    CMAKE_TARGET WebEngineCore
+    NINJA_TARGET QtWebEngineCore
+    MODULE core
+    BUILDDIR ${buildDir}
+    COMPLETE_STATIC FALSE
+    NINJA_STAMP QtWebEngineCore.stamp
+    NINJA_DATA_STAMP ${dataStamp}
+)
 add_dependencies(WebEngineCore run_core_NinjaDone)
 if(COIN_BUG_699)
    set_property(TARGET WebEngineCore PROPERTY CXX_LINKER_LAUNCHER ${PROJECT_BINARY_DIR}/linker_ulimit.sh)
@@ -586,7 +616,14 @@ if(QT_FEATURE_webengine_spellchecker AND NOT CMAKE_CROSSCOMPILING)
         ../3rdparty/chromium/third_party/boringssl/src/include
         ${buildDir}/$<CONFIG>/${arch}/gen
     )
-    add_gn_build_aritfacts_to_target(${dict_target_name} convert_dict core ${buildDir} FALSE)
+    add_gn_build_aritfacts_to_target(
+        CMAKE_TARGET ${dict_target_name}
+        NINJA_TARGET convert_dict
+        MODULE core
+        BUILDDIR ${buildDir}
+        COMPLETE_STATIC FALSE
+        NINJA_STAMP convert_dict.stamp
+    )
     add_dependencies(${dict_target_name} run_core_NinjaDone)
     add_dependencies(${dict_target_name} WebEngineCore)
 endif()

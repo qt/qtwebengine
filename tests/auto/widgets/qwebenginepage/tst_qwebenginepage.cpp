@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2016 The Qt Company Ltd.
+    Copyright (C) 2023 The Qt Company Ltd.
     Copyright (C) 2009 Girish Ramakrishnan <girish@forwardbias.in>
     Copyright (C) 2010 Holger Hans Peter Freyther
 
@@ -65,6 +65,7 @@
 #include <qwebenginescript.h>
 #include <qwebenginescriptcollection.h>
 #include <qwebenginesettings.h>
+#include <qwebengineurlrequestinterceptor.h>
 #include <qwebengineurlrequestjob.h>
 #include <qwebengineurlscheme.h>
 #include <qwebengineurlschemehandler.h>
@@ -116,8 +117,10 @@ private Q_SLOTS:
     void acceptNavigationRequest();
     void acceptNavigationRequestNavigationType();
     void acceptNavigationRequestRelativeToNothing();
+#ifndef Q_OS_MACOS
     void geolocationRequestJS_data();
     void geolocationRequestJS();
+#endif
     void loadFinished();
     void actionStates();
     void pasteImage();
@@ -269,9 +272,9 @@ private Q_SLOTS:
     void childFrameInput();
     void openLinkInNewPageWithWebWindowType_data();
     void openLinkInNewPageWithWebWindowType();
+    void keepInterceptorAfterNewWindowRequested();
 
 private:
-    static QPoint elementCenter(QWebEnginePage *page, const QString &id);
     static bool isFalseJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
     static bool isTrueJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
     static bool isEmptyListJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
@@ -455,6 +458,7 @@ private:
     bool m_allowGeolocation;
 };
 
+#ifndef Q_OS_MACOS
 void tst_QWebEnginePage::geolocationRequestJS_data()
 {
     QTest::addColumn<bool>("allowed");
@@ -494,6 +498,7 @@ void tst_QWebEnginePage::geolocationRequestJS()
         QEXPECT_FAIL("", "No location service available.", Continue);
     QCOMPARE(result, errorCode);
 }
+#endif
 
 void tst_QWebEnginePage::loadFinished()
 {
@@ -1365,6 +1370,7 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
     QSKIP("This test crashes for Apple M1");
 #endif
     QWebEngineView view;
+    QTRY_VERIFY(QGuiApplication::primaryScreen());
     view.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft());
     view.resize(640, 480);
     view.show();
@@ -1439,6 +1445,7 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
     mainWidget.layout()->addWidget(&view);
 
     QScreen *screen = QGuiApplication::primaryScreen();
+    Q_ASSERT(screen);
     mainWidget.move(screen->availableGeometry().topLeft());
     mainWidget.resize(640, 480);
     mainWidget.show();
@@ -3295,23 +3302,6 @@ void tst_QWebEnginePage::mouseMovementProperties()
     QTRY_COMPARE(page.messages[2], QString("-10, -10"));
 }
 
-QPoint tst_QWebEnginePage::elementCenter(QWebEnginePage *page, const QString &id)
-{
-    QVariantList rectList = evaluateJavaScriptSync(page,
-            "(function(){"
-            "var elem = document.getElementById('" + id + "');"
-            "var rect = elem.getBoundingClientRect();"
-            "return [(rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2];"
-            "})()").toList();
-
-    if (rectList.size() != 2) {
-        qWarning("elementCenter failed.");
-        return QPoint();
-    }
-
-    return QPoint(rectList.at(0).toInt(), rectList.at(1).toInt());
-}
-
 void tst_QWebEnginePage::viewSource()
 {
     TestPage page;
@@ -3554,6 +3544,8 @@ void tst_QWebEnginePage::devTools()
     QCOMPARE(inspectedPage2.inspectedPage(), nullptr);
     QCOMPARE(devToolsPage.devToolsPage(), nullptr);
     QCOMPARE(devToolsPage.inspectedPage(), nullptr);
+
+    QVERIFY(!inspectedPage1.devToolsId().isEmpty());
 }
 
 void tst_QWebEnginePage::openLinkInDifferentProfile()
@@ -5336,6 +5328,53 @@ void tst_QWebEnginePage::openLinkInNewPageWithWebWindowType()
                       elementCenter(&page, elementId));
     QVERIFY(windowCreatedSpy.wait());
     QCOMPARE(page.windowType, webWindowType);
+}
+
+class DoNothingInterceptor : public QWebEngineUrlRequestInterceptor
+{
+public:
+    DoNothingInterceptor() { }
+
+    void interceptRequest(QWebEngineUrlRequestInfo &) override
+    {
+        ran = true;
+    }
+    bool ran = false;
+};
+
+void tst_QWebEnginePage::keepInterceptorAfterNewWindowRequested()
+{
+    DoNothingInterceptor interceptor;
+    QWebEnginePage page;
+    page.setUrlRequestInterceptor(&interceptor);
+    connect(&page, &QWebEnginePage::newWindowRequested, [&](QWebEngineNewWindowRequest &request) {
+        request.openIn(&page);
+    });
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+
+    QWebEngineView view;
+    view.resize(500, 500);
+    view.setPage(&page);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    page.setHtml("<html><body>"
+                  "<a id='link' href='hello' target='_blank'>link</a>"
+                  "</body></html>");
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QVERIFY(loadFinishedSpy.takeFirst().value(0).toBool());
+    QVERIFY(interceptor.ran);
+    interceptor.ran = false;
+
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, elementCenter(&page, "link"));
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QVERIFY(loadFinishedSpy.takeFirst().value(0).toBool());
+    QVERIFY(!interceptor.ran);
+
+    page.setHtml("<html><body></body></html>");
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QVERIFY(loadFinishedSpy.takeFirst().value(0).toBool());
+    QVERIFY(interceptor.ran);
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};

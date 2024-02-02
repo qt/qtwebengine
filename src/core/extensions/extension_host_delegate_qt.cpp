@@ -33,13 +33,13 @@ content::JavaScriptDialogManager *ExtensionHostDelegateQt::GetJavaScriptDialogMa
 void ExtensionHostDelegateQt::CreateTab(std::unique_ptr<content::WebContents> web_contents,
                                         const std::string &extension_id,
                                         WindowOpenDisposition disposition,
-                                        const gfx::Rect &initial_rect,
+                                        const blink::mojom::WindowFeatures &features,
                                         bool user_gesture)
 {
     Q_UNUSED(web_contents);
     Q_UNUSED(extension_id);
     Q_UNUSED(disposition);
-    Q_UNUSED(initial_rect);
+    Q_UNUSED(features);
     Q_UNUSED(user_gesture);
 
     Q_UNREACHABLE();

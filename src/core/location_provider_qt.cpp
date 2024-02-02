@@ -1,4 +1,4 @@
-// Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "location_provider_qt.h"
@@ -12,7 +12,11 @@
 #include <QtCore/QThread>
 #include <QtPositioning/QGeoPositionInfoSource>
 
-#include "base/bind.h"
+#if QT_CONFIG(permissions)
+#include <QtCore/qpermissions.h>
+#endif
+
+#include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/device/geolocation/geolocation_provider.h"
@@ -37,6 +41,7 @@ private Q_SLOTS:
     void error(QGeoPositionInfoSource::Error positioningError);
 
 private:
+    void startImpl(bool highAccuracy);
     LocationProviderQt *m_locationProvider;
     QGeoPositionInfoSource *m_positionInfoSource;
     base::WeakPtrFactory<LocationProviderQt> m_locationProviderFactory;
@@ -65,6 +70,38 @@ static bool isHighAccuracySource(const QGeoPositionInfoSource *source)
 
 void QtPositioningHelper::start(bool highAccuracy)
 {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    // New Qt permissions API from 6.5.0
+#if QT_CONFIG(permissions)
+    QLocationPermission locationPermission;
+    locationPermission.setAvailability(QLocationPermission::WhenInUse);
+
+    QLocationPermission::Accuracy accuracy = highAccuracy ? QLocationPermission::Precise
+                                                          : QLocationPermission::Approximate;
+    locationPermission.setAccuracy(accuracy);
+
+    switch (qApp->checkPermission(locationPermission)) {
+    case Qt::PermissionStatus::Undetermined:
+        qApp->requestPermission(locationPermission, this,
+                    [this, &highAccuracy](const QPermission &permission) {
+                      if (permission.status() == Qt::PermissionStatus::Granted)
+                          this->startImpl(highAccuracy);
+                    });
+
+        return;
+    case Qt::PermissionStatus::Denied:
+        qWarning("Failed to initialize location provider: The user does not have the right "
+                 "permissions or has denied the permission request.");
+        return;
+    case Qt::PermissionStatus::Granted:
+        break; // Proceed
+    }
+#endif
+    startImpl(highAccuracy);
+}
+
+void QtPositioningHelper::startImpl(bool highAccuracy){
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!m_positionInfoSource)
         m_positionInfoSource = QGeoPositionInfoSource::createDefaultSource(this);

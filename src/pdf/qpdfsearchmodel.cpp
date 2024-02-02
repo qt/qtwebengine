@@ -173,7 +173,7 @@ QPdfLink QPdfSearchModel::resultAtIndex(int index) const
 {
     Q_D(const QPdfSearchModel);
     const auto pi = const_cast<QPdfSearchModelPrivate*>(d)->pageAndIndexForResult(index);
-    if (pi.page < 0)
+    if (pi.page < 0 || index < 0)
         return {};
     return d->searchResults[pi.page][pi.index];
 }

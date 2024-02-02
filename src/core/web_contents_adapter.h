@@ -159,6 +159,7 @@ public:
     void openDevToolsFrontend(QSharedPointer<WebContentsAdapter> devtoolsFrontend);
     void closeDevToolsFrontend();
     void devToolsFrontendDestroyed(DevToolsFrontendQt *frontend);
+    QString devToolsId();
 
     void grantMediaAccessPermission(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags flags);
     void grantMouseLockPermission(const QUrl &securityOrigin, bool granted);
@@ -201,6 +202,7 @@ public:
     bool hasFocusedFrame() const;
     void resetSelection();
     void resetTouchSelectionController();
+    void changeTextDirection(bool leftToRight);
 
     // meant to be used within WebEngineCore only
     void initialize(content::SiteInstance *site);

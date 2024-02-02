@@ -199,7 +199,7 @@ QList<QPolygonF> QQuickPdfSearchModel::boundingPolygonsOnPage(int page)
 */
 void QQuickPdfSearchModel::setCurrentPage(int currentPage)
 {
-    if (m_currentPage == currentPage)
+    if (m_currentPage == currentPage || !document())
         return;
 
     const auto pageCount = document()->document()->pageCount();

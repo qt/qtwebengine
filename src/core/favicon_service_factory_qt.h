@@ -48,7 +48,7 @@ public:
 
     void OnHistoryServiceCreated(history::HistoryService *history_service) override;
     void Shutdown() override;
-    bool CanAddURL(const GURL &url) override;
+    history::CanAddURLCallback GetThreadSafeCanAddURLCallback() const override;
     void NotifyProfileError(sql::InitStatus init_status, const std::string &diagnostics) override;
     std::unique_ptr<history::HistoryBackendClient> CreateBackendClient() override;
     void UpdateBookmarkLastUsedTime(int64_t bookmark_node_id, base::Time time) override;

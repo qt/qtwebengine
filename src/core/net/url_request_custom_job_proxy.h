@@ -10,6 +10,8 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 #include <QtCore/QPointer>
+#include <QMap>
+#include <QByteArray>
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
 
@@ -29,6 +31,7 @@ public:
     public:
         std::string m_mimeType;
         std::string m_charset;
+        QMultiMap<QByteArray, QByteArray> m_additionalResponseHeaders;
         GURL m_redirect;
         QIODevice *m_device;
         int64_t m_firstBytePosition;
@@ -49,7 +52,8 @@ public:
 
     // Called from URLRequestCustomJobDelegate via post:
     //void setReplyCharset(const std::string &);
-    void reply(std::string mimeType, QIODevice *device);
+    void reply(std::string mimeType, QIODevice *device,
+               QMultiMap<QByteArray, QByteArray> additionalResponseHeaders);
     void redirect(GURL url);
     void abort();
     void fail(int error);

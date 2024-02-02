@@ -52,6 +52,7 @@ public:
     GetLastPickedDirectory(const url::Origin &origin, const std::string &id) override;
     base::FilePath GetWellKnownDirectoryPath(blink::mojom::WellKnownDirectory directory, const url::Origin &origin) override;
     std::u16string GetPickerTitle(const blink::mojom::FilePickerOptionsPtr &) override;
+    void NotifyEntryMoved(const url::Origin &, const base::FilePath &, const base::FilePath &) override;
 
     void NavigatedAwayFromOrigin(const url::Origin &origin);
     content::BrowserContext *profile() const { return m_profile; }

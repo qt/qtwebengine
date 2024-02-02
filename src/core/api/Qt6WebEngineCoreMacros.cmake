@@ -1,6 +1,12 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+# Install support uses the CMAKE_INSTALL_xxxDIR variables. Include this here
+# so that it is more likely to get pulled in earlier at a higher level, and also
+# to avoid re-including it many times later
+include(GNUInstallDirs)
+_qt_internal_add_deploy_support("${CMAKE_CURRENT_LIST_DIR}/Qt6WebEngineCoreDeploySupport.cmake")
+
 function(qt6_add_webengine_dictionary)
     set(options)
     set(oneValueArgs TARGET SOURCE OUTPUT_DIRECTORY)
@@ -23,7 +29,7 @@ function(qt6_add_webengine_dictionary)
         set(copyCommand COMMAND ${CMAKE_COMMAND} -E copy_directory ${ARGS_OUTPUT_DIRECTORY}/dict
            ${ARGS_OUTPUT_DIRECTORY}/$<CONFIG>
         )
-    elseif(isBundle)
+    elseif((MACOS OR IOS) AND isBundle)
         get_target_property(outputName ${ARGS_TARGET} OUTPUT_NAME)
         if(NOT outputName)
            set(outputName ${ARGS_TARGET})

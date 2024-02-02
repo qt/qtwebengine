@@ -201,9 +201,9 @@ void ProfileAdapter::removeClient(ProfileAdapterClient *adapterClient)
     m_clients.removeOne(adapterClient);
 }
 
-void ProfileAdapter::cancelDownload(quint32 downloadId)
+bool ProfileAdapter::cancelDownload(quint32 downloadId)
 {
-    downloadManagerDelegate()->cancelDownload(downloadId);
+    return downloadManagerDelegate()->cancelDownload(downloadId);
 }
 
 void ProfileAdapter::pauseDownload(quint32 downloadId)
@@ -322,7 +322,7 @@ void ProfileAdapter::setHttpUserAgent(const QString &userAgent)
         if (web_contents->GetBrowserContext() == m_profile.data())
             web_contents->SetUserAgentOverride(blink::UserAgentOverride::UserAgentOnly(stdUserAgent), true);
 
-    m_profile->ForEachStoragePartition(
+    m_profile->ForEachLoadedStoragePartition(
                 base::BindRepeating([](const std::string &user_agent, content::StoragePartition *storage_partition) {
                     storage_partition->GetNetworkContext()->SetUserAgent(user_agent);
                 }, stdUserAgent));
@@ -462,7 +462,7 @@ const QList<QByteArray> ProfileAdapter::customUrlSchemes() const
 
 void ProfileAdapter::updateCustomUrlSchemeHandlers()
 {
-    m_profile->ForEachStoragePartition(
+    m_profile->ForEachLoadedStoragePartition(
         base::BindRepeating([](content::StoragePartition *storage_partition) {
             storage_partition->ResetURLLoaderFactories();
         }));
@@ -584,7 +584,7 @@ void ProfileAdapter::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
         }
     }
 
-    m_profile->ForEachStoragePartition(
+    m_profile->ForEachLoadedStoragePartition(
         base::BindRepeating([](std::string accept_language, content::StoragePartition *storage_partition) {
             storage_partition->GetNetworkContext()->SetAcceptLanguage(accept_language);
         }, http_accept_language));

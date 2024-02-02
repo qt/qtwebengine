@@ -13,6 +13,7 @@
 #include <QtWebEngineCore/qwebenginesettings.h>
 #include <QtWebEngineCore/qwebengineprofile.h>
 #include <QtWebEngineCore/qwebenginepage.h>
+#include <QtWebEngineWidgets/qwebengineview.h>
 
 #if defined(WEBSOCKETS)
 #include <QtWebSockets/qwebsocket.h>
@@ -150,7 +151,15 @@ void registerSchemes()
         scheme.setFlags(QWebEngineUrlScheme::LocalScheme | QWebEngineUrlScheme::CorsEnabled);
         QWebEngineUrlScheme::registerScheme(scheme);
     }
-
+    {
+        QWebEngineUrlScheme scheme("fetchapi-allowed");
+        scheme.setFlags(QWebEngineUrlScheme::CorsEnabled | QWebEngineUrlScheme::FetchApiAllowed);
+        QWebEngineUrlScheme::registerScheme(scheme);
+    }
+    {
+        QWebEngineUrlScheme scheme("fetchapi-not-allowed");
+        QWebEngineUrlScheme::registerScheme(scheme);
+    }
 }
 Q_CONSTRUCTOR_FUNCTION(registerSchemes)
 
@@ -298,6 +307,8 @@ private Q_SLOTS:
     void subdirWithoutAccess();
     void fileAccessRemoteUrl_data();
     void fileAccessRemoteUrl();
+    void fileAccessLocalUrl_data();
+    void fileAccessLocalUrl();
     void mixedSchemes_data();
     void mixedSchemes();
     void mixedSchemesWithCsp();
@@ -323,6 +334,9 @@ private Q_SLOTS:
     void redirectInterceptorSecure();
     void redirectInterceptorFile();
     void redirectInterceptorHttp();
+    void fetchApiCustomUrl_data();
+    void fetchApiCustomUrl();
+    void fetchApiHttpUrl();
 
 private:
     bool verifyLoad(const QUrl &url)
@@ -595,13 +609,22 @@ void tst_Origins::subdirWithoutAccess()
 void tst_Origins::fileAccessRemoteUrl_data()
 {
     QTest::addColumn<bool>("EnableAccess");
-    QTest::addRow("enabled") << true;
-    QTest::addRow("disabled") << false;
+    QTest::addColumn<bool>("UserGesture");
+    QTest::addRow("enabled, XHR") << true << false;
+    QTest::addRow("enabled, link click") << true << true;
+    QTest::addRow("disabled, XHR") << false << false;
+    QTest::addRow("disabled, link click") << false << true;
 }
 
 void tst_Origins::fileAccessRemoteUrl()
 {
     QFETCH(bool, EnableAccess);
+    QFETCH(bool, UserGesture);
+
+    QWebEngineView view;
+    view.setPage(m_page);
+    view.resize(800, 600);
+    view.show();
 
     HttpServer server;
     server.setResourceDirs({ QDir(QT_TESTCASE_SOURCEDIR).canonicalPath() + "/resources" });
@@ -610,11 +633,88 @@ void tst_Origins::fileAccessRemoteUrl()
     ScopedAttribute sa1(m_page->settings(), QWebEngineSettings::LocalContentCanAccessRemoteUrls, EnableAccess);
     ScopedAttribute sa2(m_page->settings(), QWebEngineSettings::ErrorPageEnabled, false);
 
-    QVERIFY(verifyLoad("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
-                       + "/resources/mixedXHR.html"));
+    if (UserGesture) {
+        QString remoteUrl(server.url("/link.html").toString());
+#ifdef Q_OS_WIN
+        QString localUrl("file:///" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/link.html?linkLocation=" + remoteUrl);
+#else
+        QString localUrl("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/link.html?linkLocation=" + remoteUrl);
+#endif
 
-    eval("sendXHR('" + server.url("/mixedXHR.txt").toString() + "')");
-    QTRY_COMPARE(eval("result"), (EnableAccess ? QString("ok") : QString("error")));
+        QVERIFY(verifyLoad(localUrl));
+
+        QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, elementCenter(m_page, "link"));
+        // Succeed independently of EnableAccess == false
+        QTRY_COMPARE(m_page->url(), remoteUrl);
+
+        // Back/forward navigation is also allowed, however they are not user gesture
+        m_page->triggerAction(QWebEnginePage::Back);
+        QTRY_COMPARE(m_page->url(), localUrl);
+        m_page->triggerAction(QWebEnginePage::Forward);
+        QTRY_COMPARE(m_page->url(), remoteUrl);
+    } else {
+        QVERIFY(verifyLoad("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/mixedXHR.html"));
+        eval("sendXHR('" + server.url("/mixedXHR.txt").toString() + "')");
+        QTRY_COMPARE(eval("result"), (EnableAccess ? QString("ok") : QString("error")));
+    }
+}
+
+void tst_Origins::fileAccessLocalUrl_data()
+{
+    QTest::addColumn<bool>("EnableAccess");
+    QTest::addColumn<bool>("UserGesture");
+    QTest::addRow("enabled, XHR") << true << false;
+    QTest::addRow("enabled, link click") << true << true;
+    QTest::addRow("disabled, XHR") << false << false;
+    QTest::addRow("disabled, link click") << false << true;
+}
+
+void tst_Origins::fileAccessLocalUrl()
+{
+    QFETCH(bool, EnableAccess);
+    QFETCH(bool, UserGesture);
+
+    QWebEngineView view;
+    view.setPage(m_page);
+    view.resize(800, 600);
+    view.show();
+
+    ScopedAttribute sa1(m_page->settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, EnableAccess);
+    ScopedAttribute sa2(m_page->settings(), QWebEngineSettings::ErrorPageEnabled, false);
+
+    if (UserGesture) {
+#ifdef Q_OS_WIN
+        QString localUrl1("file:///" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/link.html?linkLocation=link.html");
+        QString localUrl2("file:///" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/link.html");
+#else
+        QString localUrl1("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/link.html?linkLocation=link.html");
+        QString localUrl2("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/link.html");
+#endif
+
+        QVERIFY(verifyLoad(localUrl1));
+        QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, elementCenter(m_page, "link"));
+        // Succeed independently of EnableAccess == false
+        QTRY_COMPARE(m_page->url(), localUrl2);
+
+        // Back/forward navigation is also allowed, however they are not user gesture
+        m_page->triggerAction(QWebEnginePage::Back);
+        QTRY_COMPARE(m_page->url(), localUrl1);
+        m_page->triggerAction(QWebEnginePage::Forward);
+        QTRY_COMPARE(m_page->url(), localUrl2);
+    } else {
+        QVERIFY(verifyLoad("file:" + QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/mixedXHR.html"));
+        eval("sendXHR('file:" +  QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
+                           + "/resources/mixedXHR.txt" + "')");
+        QTRY_COMPARE(eval("result"), (EnableAccess ? QString("ok") : QString("error")));
+    }
 }
 
 // Load the main page over one scheme with an iframe over another scheme.
@@ -1509,6 +1609,122 @@ void tst_Origins::localMediaBlock()
         QTest::qSleep(500);
     QTRY_COMPARE(accessed.load(), enableAccess);
 
+}
+
+class FetchApiHandler : public QWebEngineUrlSchemeHandler
+{
+    Q_OBJECT
+public:
+    FetchApiHandler(QByteArray schemeName, QObject *parent = nullptr)
+        : QWebEngineUrlSchemeHandler(parent), m_schemeName(schemeName)
+    {
+    }
+
+    void requestStarted(QWebEngineUrlRequestJob *job) override
+    {
+        QCOMPARE(job->requestUrl(), QUrl(m_schemeName + ":about"));
+        fetchWasAllowed = true;
+    }
+
+    bool fetchWasAllowed = false;
+
+private:
+    QByteArray m_schemeName;
+};
+
+class FetchApiPage : public QWebEnginePage
+{
+    Q_OBJECT
+
+signals:
+    void jsCalled();
+
+public:
+    FetchApiPage(QWebEngineProfile *profile, QObject *parent = nullptr)
+        : QWebEnginePage(profile, parent)
+    {
+    }
+
+protected:
+    void javaScriptConsoleMessage(QWebEnginePage::JavaScriptConsoleMessageLevel level,
+                                  const QString &message, int lineNumber,
+                                  const QString &sourceID) override
+    {
+        qCritical() << "js:" << message;
+        emit jsCalled();
+    }
+};
+
+void tst_Origins::fetchApiCustomUrl_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<QByteArray>("fetchApiScheme");
+    QTest::addColumn<bool>("expectedFetchWasAllowed");
+
+    QTest::newRow("custom url with fetch allowed flag")
+            << QUrl("qrc:///resources/fetchApi.html?printRes=false&url=fetchapi-allowed:about")
+            << QBAL("fetchapi-allowed") << true;
+    QTest::newRow("custom url without fetch allowed flag")
+            << QUrl("qrc:///resources/fetchApi.html?printRes=false&url=fetchapi-not-allowed:about")
+            << QBAL("fetchapi-not-allowed") << false;
+}
+
+void tst_Origins::fetchApiCustomUrl()
+{
+    QFETCH(QUrl, url);
+    QFETCH(QByteArray, fetchApiScheme);
+    QFETCH(bool, expectedFetchWasAllowed);
+
+    QWebEngineProfile profile;
+    FetchApiHandler handler(fetchApiScheme);
+
+    profile.installUrlSchemeHandler(fetchApiScheme, &handler);
+
+    FetchApiPage page(&profile);
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy jsSpy(&page, SIGNAL(jsCalled()));
+
+    if (fetchApiScheme == "fetchapi-not-allowed") {
+        QTest::ignoreMessage(QtCriticalMsg, QRegularExpression("Failed to fetch"));
+        QTest::ignoreMessage(
+                QtCriticalMsg,
+                QRegularExpression("Fetch API cannot load fetchapi-not-allowed:about."));
+    }
+
+    page.load(url);
+    QTRY_VERIFY(loadSpy.count() > 0);
+    QTRY_COMPARE(handler.fetchWasAllowed, expectedFetchWasAllowed);
+
+    if (fetchApiScheme == "fetchapi-not-allowed") {
+        QTRY_VERIFY(jsSpy.count() > 0);
+    }
+}
+
+void tst_Origins::fetchApiHttpUrl()
+{
+    HttpServer httpServer;
+    QObject::connect(&httpServer, &HttpServer::newRequest, this, [](HttpReqRep *rr) {
+        rr->setResponseBody(QBAL("Fetch Was Allowed"));
+        rr->setResponseHeader(QBAL("Access-Control-Allow-Origin"), QBAL("*"));
+        rr->sendResponse();
+    });
+    QVERIFY(httpServer.start());
+
+    QWebEngineProfile profile;
+    FetchApiPage page(&profile);
+
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy jsSpy(&page, SIGNAL(jsCalled()));
+
+    QTest::ignoreMessage(QtCriticalMsg, QRegularExpression("Fetch Was Allowed"));
+
+    const QByteArray fullUrl = QByteArray("qrc:///resources/fetchApi.html?printRes=true&url=")
+            + httpServer.url("/somepage.html").toEncoded();
+    page.load(QUrl(fullUrl));
+
+    QTRY_VERIFY(loadSpy.count() > 0);
+    QTRY_VERIFY(jsSpy.count() > 0);
+    QVERIFY(httpServer.stop());
 }
 
 QTEST_MAIN(tst_Origins)

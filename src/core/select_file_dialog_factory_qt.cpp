@@ -137,7 +137,7 @@ SelectFileDialogFactoryQt::Create(ui::SelectFileDialog::Listener *listener,
                                   std::unique_ptr<ui::SelectFilePolicy> policy)
 {
     content::WebContents *webContents =
-            static_cast<SelectFilePolicyQt *>(policy.get())->webContents();
+            static_cast<SelectFilePolicyQt *>(policy.get())->webContents()->GetOutermostWebContents();
     WebContentsAdapterClient *client =
             WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(webContents)->GetView())
                     ->client();

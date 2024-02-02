@@ -16,6 +16,7 @@
 //
 
 #include "qpdfdocument.h"
+#include "private/qtpdfexports_p.h"
 
 #include "third_party/pdfium/public/fpdfview.h"
 #include "third_party/pdfium/public/fpdf_dataavail.h"

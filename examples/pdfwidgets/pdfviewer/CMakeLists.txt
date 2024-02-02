@@ -18,6 +18,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets PdfWidgets)
 qt_add_executable(pdfviewerwidgets
     main.cpp
     mainwindow.cpp mainwindow.h mainwindow.ui
+    searchresultdelegate.cpp searchresultdelegate.h
     zoomselector.cpp zoomselector.h
 )
 
@@ -46,6 +47,8 @@ set(resources_resource_files
     "images/zoom-previous.svgz"
     "images/document-open.svgz"
     "images/go-next-view.svgz"
+    "images/go-down-search.svgz"
+    "images/go-up-search.svgz"
 )
 
 qt_add_resources(pdfviewerwidgets "resources"

@@ -53,6 +53,11 @@ set(recipebrowser_resource_files
     "assets/pages/skewers.html"
     "assets/pages/soup.html"
     "assets/pages/steak.html"
+    "assets/icons/edit.svg"
+    "assets/icons/stylesheets.svg"
+    "assets/icons/add.svg"
+    "assets/icons/remove.svg"
+    "assets/icons/view.svg"
 )
 
 qt_add_resources(recipebrowser "recipebrowser"

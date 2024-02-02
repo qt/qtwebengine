@@ -5,7 +5,6 @@
     \group webengine-widgetexamples
     \title Qt WebEngine Widgets Examples
     \brief Examples demonstrating the \QWE Widgets usage.
-    \ingroup all-examples
 
     Qt provides an integrated Web browser component based on Chromium, the popular
     open source browser engine.

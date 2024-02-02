@@ -29,6 +29,13 @@ qt_add_executable(simplebrowser
     webview.cpp webview.h
 )
 
+if(WIN32)
+    set_property(
+        TARGET simplebrowser
+        APPEND PROPERTY
+            SOURCES simplebrowser.exe.manifest)
+endif()
+
 set_target_properties(simplebrowser PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
@@ -87,7 +94,6 @@ if (APPLE)
             POST_BUILD COMMAND codesign -s - simplebrowser.app)
     endif()
 endif()
-
 
 install(TARGETS simplebrowser
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

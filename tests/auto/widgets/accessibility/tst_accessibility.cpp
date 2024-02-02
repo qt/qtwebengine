@@ -17,6 +17,7 @@
     Boston, MA 02110-1301, USA.
 */
 
+#include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
 #include <qtest.h>
 #include <widgetutil.h>
 
@@ -50,6 +51,7 @@ private Q_SLOTS:
     void roles();
     void objectName();
     void crossTreeParent();
+    void tableCellInterface();
 };
 
 // This will be called before the first test function is executed.
@@ -605,9 +607,65 @@ void tst_Accessibility::crossTreeParent()
     QCOMPARE(p->object()->objectName(), QStringLiteral("my_id"));
 }
 
+void tst_Accessibility::tableCellInterface()
+{
+    QWebEngineView webView;
+    webView.resize(400, 400);
+    webView.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&webView));
+
+    QSignalSpy spyFinished(&webView, &QWebEngineView::loadFinished);
+    webView.setHtml(QLatin1String(
+            "<html><body>"
+            "  <ul>"
+            "    <li><a href='#link1' id='link1'>Link in ListItem</a></li>"
+            "  </ul>"
+            ""
+            "  <div role='rowgroup'>"
+            "    <div role='row'>"
+            "      <span role='cell'><a href='#link2' id='link2'>Link in Cell</a></span>"
+            "    </div>"
+            "  </div>"
+            "</body></html>"));
+    QTRY_COMPARE(spyFinished.size(), 1);
+
+    QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
+    QAccessibleInterface *document = view->child(0);
+    QTRY_COMPARE(document->childCount(), 2);
+
+    // ListItem without Table parent.
+    {
+        QAccessibleInterface *list = document->child(0);
+        QAccessibleInterface *listItem = list->child(0);
+        QVERIFY(!listItem->tableCellInterface());
+
+        // Should not crash.
+        QPoint linkCenter = elementCenter(webView.page(), QLatin1String("link1"));
+        QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, {}, linkCenter);
+        QTRY_COMPARE(webView.url().fragment(), QLatin1String("link1"));
+    }
+
+    // Cell without Table parent.
+    {
+        QAccessibleInterface *rowgroup = document->child(1);
+        QAccessibleInterface *row = rowgroup->child(0);
+        QAccessibleInterface *cell = row->child(0);
+        QVERIFY(!cell->tableCellInterface());
+
+        // Should not crash.
+        QPoint linkCenter = elementCenter(webView.page(), QLatin1String("link2"));
+        QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, {}, linkCenter);
+        QTRY_COMPARE(webView.url().fragment(), QLatin1String("link2"));
+    }
+}
+
 static QByteArrayList params = QByteArrayList()
     << "--force-renderer-accessibility"
-    << "--enable-features=AccessibilityExposeARIAAnnotations";
+    << "--enable-features=AccessibilityExposeARIAAnnotations"
+#if QT_CONFIG(webengine_embedded_build)
+    << "--disable-features=TimedHTMLParserBudget"
+#endif
+    ;
 
 W_QTEST_MAIN(tst_Accessibility, params)
 #include "tst_accessibility.moc"

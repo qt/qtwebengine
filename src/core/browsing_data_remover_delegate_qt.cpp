@@ -3,8 +3,8 @@
 
 #include "browsing_data_remover_delegate_qt.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browsing_data_remover.h"
 

@@ -32,7 +32,6 @@ target_link_libraries(spellchecker PUBLIC
 
 # Resources:
 set(spellchecker_resource_files
-    "data/icon.svg"
     "data/index.html"
     "data/style.css"
 )

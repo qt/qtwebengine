@@ -152,7 +152,7 @@ static QVariant fromJSValue(const base::Value *result)
         }
         break;
     }
-    case base::Value::Type::DICTIONARY:
+    case base::Value::Type::DICT:
     {
         if (const auto dict = result->GetIfDict()) {
             QVariantMap map;
@@ -322,6 +322,7 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
             toGurl(virtualUrl),
             content::Referrer(toGurl(referrerUrl), static_cast<network::mojom::ReferrerPolicy>(referrerPolicy)),
             absl::nullopt, // optional initiator_origin
+            absl::nullopt, // optional initiator_base_url
             // Use a transition type of reload so that we don't incorrectly
             // increase the typed count.
             ui::PAGE_TRANSITION_RELOAD,
@@ -773,7 +774,7 @@ void WebContentsAdapter::save(const QString &filePath, int savePageFormat)
 {
     CHECK_INITIALIZED();
     base::RecordAction(base::UserMetricsAction("SavePage"));
-    m_webContentsDelegate->setSavePageInfo(SavePageInfo(filePath, savePageFormat));
+    m_webContentsDelegate->setSavePageInfo(new SavePageInfo(filePath, savePageFormat));
     m_webContents->OnSavePage();
 }
 
@@ -999,9 +1000,8 @@ void WebContentsAdapter::setZoomFactor(qreal factor)
     content::HostZoomMap *zoomMap = content::HostZoomMap::GetForWebContents(m_webContents.get());
 
     if (zoomMap) {
-        int render_process_id = m_webContents->GetPrimaryMainFrame()->GetProcess()->GetID();
-        int render_view_id = m_webContents->GetRenderViewHost()->GetRoutingID();
-        zoomMap->SetTemporaryZoomLevel(render_process_id, render_view_id, zoomLevel);
+        const content::GlobalRenderFrameHostId global_id = m_webContents->GetPrimaryMainFrame()->GetGlobalId();
+        zoomMap->SetTemporaryZoomLevel(global_id, zoomLevel);
     }
 }
 
@@ -1291,6 +1291,11 @@ void WebContentsAdapter::devToolsFrontendDestroyed(DevToolsFrontendQt *frontend)
     updateRecommendedState();
 }
 
+QString WebContentsAdapter::devToolsId()
+{
+    return QString::fromStdString(DevToolsFrontendQt::GetId(m_webContents.get()));
+}
+
 void WebContentsAdapter::exitFullScreen()
 {
     CHECK_INITIALIZED();
@@ -1551,7 +1556,7 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
     }
 
     {
-        base::CurrentThread::ScopedNestableTaskAllower allow;
+        base::CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop allow;
         drag->exec(allowedActions);
     }
 
@@ -1798,6 +1803,20 @@ void WebContentsAdapter::resetTouchSelectionController()
     unselect();
     if (auto rwhv = static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView()))
         rwhv->resetTouchSelectionController();
+}
+
+void WebContentsAdapter::changeTextDirection(bool leftToRight)
+{
+    CHECK_INITIALIZED();
+    if (auto rwhv = static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView())) {
+        auto textInputManager = rwhv->GetTextInputManager();
+        if (!textInputManager)
+            return;
+        if (auto activeWidget = textInputManager->GetActiveWidget()) {
+            activeWidget->UpdateTextDirection(leftToRight ? base::i18n::TextDirection::LEFT_TO_RIGHT : base::i18n::TextDirection::RIGHT_TO_LEFT);
+            activeWidget->NotifyTextDirection();
+        }
+    }
 }
 
 WebContentsAdapterClient::RenderProcessTerminationStatus

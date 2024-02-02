@@ -5,6 +5,7 @@ find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Core Gui Widgets)
 
 qt_internal_add_module(PdfWidgets
     SOURCES
+        qpdfpageselector.cpp qpdfpageselector.h qpdfpageselector_p.h
         qpdfview.cpp qpdfview.h qpdfview_p.h
         qtpdfwidgetsglobal.h
     LIBRARIES

@@ -9,7 +9,6 @@ cmake_minimum_required(VERSION 3.16)
 include(.cmake.conf)
 include(ExternalProject)
 include(cmake/Functions.cmake)
-include(src/core/api/Qt6WebEngineCoreMacros.cmake)
 
 project(QtWebEngineDummy)
 find_package(Qt6 6.2 CONFIG REQUIRED COMPONENTS BuildInternals Core)

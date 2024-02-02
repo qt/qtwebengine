@@ -684,6 +684,12 @@ void tst_QWebEngineView::unhandledKeyEventPropagation()
 
 void tst_QWebEngineView::horizontalScrollbarTest()
 {
+#if QT_CONFIG(webengine_embedded_build)
+    // Embedded builds enable the OverlayScrollbar and Viewport features (see 'useEmbeddedSwitches' in web_engine_context.cpp).
+    // These features make the scrollbar simpler assuming we are on a device with small (usually touch) display.
+    // These scrollbars behave differently on mouse events.
+    QSKIP("Embedded builds have different scrollbar, skipping test.");
+#endif
     QString html("<html><body>"
                  "<div style='width: 1000px; height: 1000px; background-color: green' />"
                  "</body></html>");
@@ -1359,10 +1365,9 @@ void tst_QWebEngineView::inputMethodsTextFormat()
     page.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
 
-    page.setHtml(
-            "<html><body>"
-            " <input type='text' id='input1' style='font-family: serif' value='' maxlength='20'/>"
-            "</body></html>");
+    page.setHtml("<html><body>"
+                 " <input type='text' id='input1' style='font-family: serif' value='' maxlength='20'/>"
+                 "</body></html>");
     QTRY_COMPARE(loadFinishedSpy.size(), 1);
 
     view.show();
@@ -1392,9 +1397,7 @@ void tst_QWebEngineView::inputMethodsTextFormat()
 
     QInputMethodEvent im(string, attrs);
     QApplication::sendEvent(view.focusProxy(), &im);
-    QTRY_COMPARE_WITH_TIMEOUT(
-            evaluateJavaScriptSync(&page, "document.getElementById('input1').value").toString(),
-            string, 20000);
+    QTRY_COMPARE_WITH_TIMEOUT(evaluateJavaScriptSync(&page, "document.getElementById('input1').value").toString(), string, 20000);
 }
 
 void tst_QWebEngineView::keyboardEvents()

@@ -6,7 +6,7 @@
 
 #include "compositor.h"
 
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 
@@ -56,6 +56,7 @@ public:
     void swapFrame() override;
     void waitForTexture() override;
     void releaseTexture() override;
+    void releaseResources(QQuickWindow *win) override;
     QSGTexture *texture(QQuickWindow *win, uint32_t textureOptions) override;
     bool textureIsFlipped() override;
     QSize size() override;

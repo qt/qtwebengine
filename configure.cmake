@@ -11,7 +11,7 @@ if(QT_CONFIGURE_RUNNING)
 else()
     find_package(Ninja 1.7.2)
     find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT)
-    find_program(Python3_EXECUTABLE NAMES python3 HINTS $ENV{PYTHON3_PATH})
+    find_program(Python3_EXECUTABLE NAMES python3 python HINTS $ENV{PYTHON3_PATH})
     if(NOT Python3_EXECUTABLE)
         find_package(Python3 3.6)
     endif()
@@ -21,7 +21,7 @@ else()
     find_package(Perl)
     find_package(PkgConfig)
     find_package(Snappy)
-    find_package(Nodejs 12.0)
+    find_package(Nodejs 14.0)
 endif()
 
 if(PkgConfig_FOUND)
@@ -43,6 +43,7 @@ if(PkgConfig_FOUND)
     pkg_check_modules(LIBEVENT libevent)
     pkg_check_modules(MINIZIP minizip)
     pkg_check_modules(PNG libpng>=1.6.0)
+    pkg_check_modules(TIFF libtiff-4>=4.2.0)
     pkg_check_modules(ZLIB zlib)
     pkg_check_modules(RE2 re2 IMPORTED_TARGET)
     pkg_check_modules(ICU icu-uc>=70 icu-i18n>=70)
@@ -196,14 +197,21 @@ int main(void) {
 }"
 )
 
-qt_config_compile_test(winversion
-    LABEL "winversion"
+qt_config_compile_test(libavformat
+    LABEL "libavformat"
+    LIBRARIES
+        PkgConfig::FFMPEG
     CODE
 "
-#if !defined(__clang__) && _MSC_FULL_VER < 191426428
-#error unsupported Visual Studio version
+#include \"libavformat/version.h\"
+extern \"C\" {
+#include \"libavformat/avformat.h\"
+}
+int main(void) {
+#if LIBAVFORMAT_VERSION_MAJOR >= 59
+    AVStream stream;
+    auto first_dts = av_stream_get_first_dts(&stream);
 #endif
-int main(void){
     return 0;
 }"
 )
@@ -347,6 +355,7 @@ qt_feature("webengine-system-ffmpeg" PRIVATE
 )
 qt_feature("webengine-system-libvpx" PRIVATE
     LABEL "libvpx"
+    AUTODETECT FALSE
     CONDITION UNIX AND TEST_vpx
 )
 qt_feature("webengine-system-snappy" PRIVATE
@@ -386,6 +395,10 @@ qt_feature("webengine-system-lcms2" PRIVATE
 qt_feature("webengine-system-libpng" PRIVATE
     LABEL "png"
     CONDITION UNIX AND TARGET Qt::Gui AND PNG_FOUND AND QT_FEATURE_system_png
+)
+qt_feature("webengine-system-libtiff" PRIVATE
+    LABEL "tiff"
+    CONDITION UNIX AND TARGET Qt::Gui AND TIFF_FOUND
 )
 qt_feature("webengine-qt-libpng" PRIVATE
     LABEL "qtpng"
@@ -495,7 +508,14 @@ add_check_for_support(
 add_check_for_support(
    MODULES QtWebEngine QtPdf
    CONDITION TARGET Nodejs::Nodejs
-   MESSAGE "node.js version 12 or later is required."
+   MESSAGE "node.js version 14 or later is required."
+)
+add_check_for_support(
+    MODULES QtWebEngine
+    CONDITION NOT (Nodejs_ARCH STREQUAL "ia32") AND
+              NOT (Nodejs_ARCH STREQUAL "x86") AND
+              NOT (Nodejs_ARCH STREQUAL "arm")
+    MESSAGE "32bit version of Nodejs is not supported."
 )
 add_check_for_support(
    MODULES QtWebEngine QtPdf
@@ -573,31 +593,53 @@ add_check_for_support(
 ${xcbErrorMessage}"
 )
 add_check_for_support(
-   MODULES QtWebEngine QtPdf
+   MODULES QtWebEngine
    CONDITION MSVC OR
-       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL GNU) OR
-       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL Clang) OR
-       (MACOS AND CMAKE_CXX_COMPILER_ID STREQUAL AppleClang) OR
-       (APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL AppleClang) OR
-       (ANDROID AND CMAKE_CXX_COMPILER_ID STREQUAL Clang)
-   MESSAGE "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
+       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
+       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR
+       (MACOS AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+   MESSAGE
+       "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
+)
+
+add_check_for_support(
+   MODULES QtPdf
+   CONDITION MSVC OR
+       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
+       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR
+       (APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") OR
+       (ANDROID AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR
+       (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
+       (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+   MESSAGE
+       "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
 )
 if(WIN32)
     if(MSVC)
-        add_check_for_support(
-            MODULES QtWebEngine QtPdf
-            CONDITION NOT MSVC_VERSION LESS 1929
-            MESSAGE "MSVC compiler version must be at least 14.29."
-        )
+        if(MSVC_TOOLSET_VERSION EQUAL 142) # VS 2019 (16.0)
+            add_check_for_support(
+                MODULES QtWebEngine QtPdf
+                CONDITION NOT MSVC_VERSION LESS 1929
+                MESSAGE "VS compiler version must be at least 14.29"
+            )
+        elseif(MSVC_TOOLSET_VERSION EQUAL 143) # VS 2022 (17.0)
+            add_check_for_support(
+                MODULES QtWebEngine QtPdf
+                CONDITION NOT MSVC_VERSION LESS 1936
+                MESSAGE "VS compiler version must be at least 14.36"
+            )
+        else()
+            message(FATAL_ERROR "Build requires Visual Studio 2019 or higher.")
+        endif()
     endif()
     set(windowsSdkVersion $ENV{WindowsSDKVersion})
     string(REGEX REPLACE "([0-9.]+).*" "\\1" windowsSdkVersion "${windowsSdkVersion}")
     string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+)\\.[0-9]+" "\\1" sdkMinor "${windowsSdkVersion}")
     message("-- Windows 10 SDK version: ${windowsSdkVersion}")
     add_check_for_support(
-        MODULES QtWebEngine QtPdf
-        CONDITION sdkMinor GREATER_EQUAL 20348
-        MESSAGE "Build requires Windows 10 SDK at least version 10.0.20348.0"
+        MODULES QtWebEngine
+        CONDITION sdkMinor GREATER_EQUAL 22621
+        MESSAGE "Build requires Windows 11 SDK at least version 10.0.22621.0"
     )
 endif()
 add_check_for_support(
@@ -640,6 +682,7 @@ if(UNIX)
     qt_configure_add_summary_entry(ARGS "webengine-system-libxml")
     qt_configure_add_summary_entry(ARGS "webengine-system-lcms2")
     qt_configure_add_summary_entry(ARGS "webengine-system-libpng")
+    qt_configure_add_summary_entry(ARGS "webengine-system-libtiff")
     qt_configure_add_summary_entry(ARGS "webengine-system-libjpeg")
     qt_configure_add_summary_entry(ARGS "webengine-system-libopenjpeg2")
     qt_configure_add_summary_entry(ARGS "webengine-system-harfbuzz")

@@ -1,15 +1,27 @@
 <RCC>
     <qresource prefix="/">
-        <file>assets/3rdparty/markdown.css</file>
-        <file>assets/3rdparty/marked.js</file>
-        <file>assets/custom.js</file>
-        <file>assets/custom.css</file>
-        <file>assets/pages/burger.html</file>
-        <file>assets/pages/cupcakes.html</file>
-        <file>assets/pages/pasta.html</file>
-        <file>assets/pages/pizza.html</file>
-        <file>assets/pages/skewers.html</file>
-        <file>assets/pages/soup.html</file>
-        <file>assets/pages/steak.html</file>
+        <file alias="3rdparty/markdown.css">assets/3rdparty/markdown.css</file>
+        <file alias="3rdparty/marked.js">assets/3rdparty/marked.js</file>
+        <file alias="custom.js">assets/custom.js</file>
+        <file alias="custom.css">assets/custom.css</file>
+        <file alias="pages/images/burger.jpg">assets/pages/images/burger.jpg</file>
+        <file alias="pages/images/cupcakes.jpg">assets/pages/images/cupcakes.jpg</file>
+        <file alias="pages/images/pasta.jpg">assets/pages/images/pasta.jpg</file>
+        <file alias="pages/images/pizza.jpg">assets/pages/images/pizza.jpg</file>
+        <file alias="pages/images/skewers.jpg">assets/pages/images/skewers.jpg</file>
+        <file alias="pages/images/soup.jpg">assets/pages/images/soup.jpg</file>
+        <file alias="pages/images/steak.jpg">assets/pages/images/steak.jpg</file>
+        <file alias="pages/burger.html">assets/pages/burger.html</file>
+        <file alias="pages/cupcakes.html">assets/pages/cupcakes.html</file>
+        <file alias="pages/pasta.html">assets/pages/pasta.html</file>
+        <file alias="pages/pizza.html">assets/pages/pizza.html</file>
+        <file alias="pages/skewers.html">assets/pages/skewers.html</file>
+        <file alias="pages/soup.html">assets/pages/soup.html</file>
+        <file alias="pages/steak.html">assets/pages/steak.html</file>
+        <file alias="icons/edit.svg">assets/icons/edit.svg</file>
+        <file alias="icons/stylesheets.svg">assets/icons/stylesheets.svg</file>
+        <file alias="icons/add.svg">assets/icons/add.svg</file>
+        <file alias="icons/remove.svg">assets/icons/remove.svg</file>
+        <file alias="icons/view.svg">assets/icons/view.svg</file>
     </qresource>
 </RCC>

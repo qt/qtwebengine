@@ -46,7 +46,7 @@ public:
                         bool can_save_as_complete,
                         content::SavePackagePathPickedCallback callback) override;
 
-    void cancelDownload(quint32 downloadId);
+    bool cancelDownload(quint32 downloadId);
     void pauseDownload(quint32 downloadId);
     void resumeDownload(quint32 downloadId);
     void removeDownload(quint32 downloadId);

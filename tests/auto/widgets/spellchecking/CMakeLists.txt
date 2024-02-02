@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 include(../../util/util.cmake)
+include(../../../../src/core/api/Qt6WebEngineCoreMacros.cmake)
 
 qt_internal_add_test(tst_spellchecking
     SOURCES

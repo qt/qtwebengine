@@ -8,11 +8,11 @@
 #include <QThread>
 #include <QtGui/private/qtgui-config_p.h>
 #include <qpa/qplatformnativeinterface.h>
-#include "ui/gl/gl_context_egl.h"
-#include "ui/gl/gl_implementation.h"
 
 #if BUILDFLAG(IS_WIN)
+#include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_context_wgl.h"
+#include "ui/gl/gl_implementation.h"
 #endif
 
 QT_BEGIN_NAMESPACE

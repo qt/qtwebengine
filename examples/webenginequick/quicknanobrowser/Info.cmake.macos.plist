@@ -28,5 +28,9 @@
     <true/>
     <key>NSLocationUsageDescription</key>
     <string>Quick Nano Browser would like to give web sites access to your location for demo purposes.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Quick Nano Browser would like to give web sites access to your computer's microphone for demo purposes.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Quick Nano Browser would like to give web sites access to your computer's camera for demo purposes.</string>
 </dict>
 </plist>

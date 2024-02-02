@@ -22,13 +22,15 @@ Q_STATIC_ASSERT(static_cast<int>(WebEngineError::HttpStatusCodeDomain) == static
 class QWebEngineLoadingInfo::QWebEngineLoadingInfoPrivate : public QSharedData {
 public:
     QWebEngineLoadingInfoPrivate(const QUrl& url, LoadStatus status, bool isErrorPage,
-                                 const QString& errorString, int errorCode, ErrorDomain errorDomain)
+                                 const QString& errorString, int errorCode, ErrorDomain errorDomain,
+                                 const QMultiMap<QByteArray,QByteArray>& responseHeaders)
         : url(url)
         , status(status)
         , isErrorPage(isErrorPage)
         , errorString(errorString)
         , errorCode(errorCode)
         , errorDomain(errorDomain)
+        , responseHeaders(responseHeaders)
     {
     }
 
@@ -38,6 +40,7 @@ public:
     QString errorString;
     int errorCode;
     ErrorDomain errorDomain;
+    QMultiMap<QByteArray,QByteArray> responseHeaders;
 };
 
 /*!
@@ -52,8 +55,10 @@ public:
     \sa QWebEnginePage::loadStarted, QWebEnginePage::loadFinished, WebEngineView::loadingChanged
 */
 QWebEngineLoadingInfo::QWebEngineLoadingInfo(const QUrl& url, LoadStatus status, bool isErrorPage,
-                                             const QString& errorString, int errorCode, ErrorDomain errorDomain)
-    : d_ptr(new QWebEngineLoadingInfoPrivate(url, status, isErrorPage, errorString, errorCode, errorDomain))
+                                             const QString& errorString, int errorCode, ErrorDomain errorDomain,
+                                             const QMultiMap<QByteArray,QByteArray>& responseHeaders)
+    : d_ptr(new QWebEngineLoadingInfoPrivate(url, status, isErrorPage, errorString, errorCode, errorDomain,
+                                             responseHeaders))
 {
 }
 
@@ -155,6 +160,19 @@ int QWebEngineLoadingInfo::errorCode() const
 {
     Q_D(const QWebEngineLoadingInfo);
     return d->errorCode;
+}
+
+/*!
+    \property QWebEngineLoadingInfo::responseHeaders
+    \since 6.6
+    \brief Holds the response headers when \c QWebEngineLoadingInfo::status()
+           is equal to \c QWebEngineLoadingInfo::LoadSucceededStatus or
+           \c QWebEngineLoadingInfo::LoadFailedStatus.
+*/
+QMultiMap<QByteArray,QByteArray> QWebEngineLoadingInfo::responseHeaders() const
+{
+    Q_D(const QWebEngineLoadingInfo);
+    return d->responseHeaders;
 }
 
 QT_END_NAMESPACE

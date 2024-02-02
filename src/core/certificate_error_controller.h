@@ -16,8 +16,10 @@
 #define CERTIFICATE_ERROR_CONTROLLER_H
 
 #include "qtwebenginecoreglobal_p.h"
-#include "base/callback.h"
+
+#include "base/functional/callback.h"
 #include "content/public/browser/certificate_request_result_type.h"
+
 #include "qwebenginecertificateerror.h"
 #include <QtCore/QDateTime>
 #include <QtCore/QScopedPointer>

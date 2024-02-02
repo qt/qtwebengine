@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qpdflink_p.h"
+#include "qpdflinkmodel.h"
 #include "qpdflinkmodel_p.h"
-#include "qpdflinkmodel_p_p.h"
 #include "qpdfdocument_p.h"
 
 #include "third_party/pdfium/public/fpdf_doc.h"
@@ -16,9 +16,9 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(qLcLink, "qt.pdf.links")
 
-/*! \internal
+/*!
     \class QPdfLinkModel
-    \since 5.15
+    \since 6.6
     \inmodule QtPdf
     \inherits QAbstractListModel
 
@@ -28,7 +28,7 @@ Q_LOGGING_CATEGORY(qLcLink, "qt.pdf.links")
     This is used in PDF viewers to implement the hyperlink mechanism.
 */
 
-/*! \internal
+/*!
     \enum QPdfLinkModel::Role
 
     \value Link A QPdfLink object.
@@ -40,28 +40,31 @@ Q_LOGGING_CATEGORY(qLcLink, "qt.pdf.links")
     \omitvalue NRoles
 */
 
-/*! \internal
+/*!
     Constructs a new link model with parent object \a parent.
 */
 QPdfLinkModel::QPdfLinkModel(QObject *parent)
-    : QAbstractListModel(*(new QPdfLinkModelPrivate()), parent)
+    : QAbstractListModel(parent),
+      d_ptr{std::make_unique<QPdfLinkModelPrivate>(this)}
 {
+    Q_D(QPdfLinkModel);
     QMetaEnum rolesMetaEnum = metaObject()->enumerator(metaObject()->indexOfEnumerator("Role"));
     for (int r = Qt::UserRole; r < int(Role::NRoles); ++r)
-        m_roleNames.insert(r, QByteArray(rolesMetaEnum.valueToKey(r)).toLower());
+        d->roleNames.insert(r, QByteArray(rolesMetaEnum.valueToKey(r)).toLower());
 }
 
-/*! \internal
+/*!
     Destroys the model.
 */
 QPdfLinkModel::~QPdfLinkModel() {}
 
 QHash<int, QByteArray> QPdfLinkModel::roleNames() const
 {
-    return m_roleNames;
+    Q_D(const QPdfLinkModel);
+    return d->roleNames;
 }
 
-/*! \internal
+/*!
     \reimp
 */
 int QPdfLinkModel::rowCount(const QModelIndex &parent) const
@@ -71,7 +74,7 @@ int QPdfLinkModel::rowCount(const QModelIndex &parent) const
     return d->links.size();
 }
 
-/*! \internal
+/*!
     \reimp
 */
 QVariant QPdfLinkModel::data(const QModelIndex &index, int role) const
@@ -99,9 +102,9 @@ QVariant QPdfLinkModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-/*! \internal
+/*!
     \property QPdfLinkModel::document
-    \brief the document to load links from
+    \brief The document to load links from.
 */
 QPdfDocument *QPdfLinkModel::document() const
 {
@@ -125,9 +128,9 @@ void QPdfLinkModel::setDocument(QPdfDocument *document)
         d->update();
 }
 
-/*! \internal
+/*!
     \property QPdfLinkModel::page
-    \brief the page to load links from
+    \brief The page to load links from.
 */
 int QPdfLinkModel::page() const
 {
@@ -146,8 +149,22 @@ void QPdfLinkModel::setPage(int page)
     d->update();
 }
 
-QPdfLinkModelPrivate::QPdfLinkModelPrivate() : QAbstractItemModelPrivate()
+/*!
+    Returns a \l {QPdfLink::isValid()}{valid} link if found under the \a point
+    (given in units of points, 1/72 of an inch), or an invalid link if it is
+    not found. In other words, this function is useful for picking, to handle
+    mouse click or hover.
+*/
+QPdfLink QPdfLinkModel::linkAt(QPointF point) const
 {
+    Q_D(const QPdfLinkModel);
+    for (const auto &link : std::as_const(d->links)) {
+        for (const auto &rect : link.rectangles()) {
+            if (rect.contains(point))
+                return link;
+        }
+    }
+    return {};
 }
 
 void QPdfLinkModelPrivate::update()

@@ -302,9 +302,6 @@ Flickable {
     }
 
     onRenderScaleChanged: {
-        image.sourceSize.width = document.pagePointSize(pageNavigator.currentPage).width *
-                renderScale * Screen.devicePixelRatio
-        image.sourceSize.height = 0
         paper.scale = 1
         const currentLocation = Qt.point((root.contentX + root.width / 2) / root.renderScale,
                                          (root.contentY + root.height / 2) / root.renderScale)
@@ -365,6 +362,10 @@ Flickable {
             rotation: root.pageRotation
             anchors.centerIn: parent
             property real pageScale: image.paintedWidth / document.pagePointSize(pageNavigator.currentPage).width
+            width: document.pagePointSize(pageNavigator.currentPage).width * root.renderScale
+            height: document.pagePointSize(pageNavigator.currentPage).height * root.renderScale
+            sourceSize.width: width * Screen.devicePixelRatio
+            sourceSize.height: 0
 
             Shape {
                 anchors.fill: parent

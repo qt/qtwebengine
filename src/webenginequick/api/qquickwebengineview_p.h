@@ -17,6 +17,7 @@
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtWebEngineCore/qwebenginequotarequest.h>
+#include <QtWebEngineCore/qwebenginedownloadrequest.h>
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 #include <QtGui/qcolor.h>
 #include <QtQml/qqmlregistration.h>
@@ -80,6 +81,7 @@ class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
 
     Q_PROPERTY(QQuickWebEngineView *inspectedView READ inspectedView WRITE setInspectedView NOTIFY inspectedViewChanged REVISION(1,7) FINAL)
     Q_PROPERTY(QQuickWebEngineView *devToolsView READ devToolsView WRITE setDevToolsView NOTIFY devToolsViewChanged REVISION(1,7) FINAL)
+    Q_PROPERTY(QString devToolsId READ devToolsId CONSTANT REVISION(6,6) FINAL)
 
     Q_PROPERTY(LifecycleState lifecycleState READ lifecycleState WRITE setLifecycleState NOTIFY lifecycleStateChanged REVISION(1,10) FINAL)
     Q_PROPERTY(LifecycleState recommendedState READ recommendedState NOTIFY recommendedStateChanged REVISION(1,10) FINAL)
@@ -212,6 +214,7 @@ QT_WARNING_POP
         RequestClose,
         Unselect,
         SavePage,
+        OpenLinkInNewBackgroundTab, // Not supported in QML
         ViewSource,
 
         ToggleBold,
@@ -228,6 +231,9 @@ QT_WARNING_POP
 
         InsertOrderedList,
         InsertUnorderedList,
+
+        ChangeTextDirectionLTR,
+        ChangeTextDirectionRTL,
 
         WebActionCount
     };
@@ -260,8 +266,6 @@ QT_WARNING_POP
     // must match QPageSize::PageSizeId
     enum PrintedPageSizeId {
         // Existing Qt sizes
-        A4,
-        B5,
         Letter,
         Legal,
         Executive,
@@ -269,21 +273,24 @@ QT_WARNING_POP
         A1,
         A2,
         A3,
+        A4,
         A5,
         A6,
         A7,
         A8,
         A9,
+        A10,
         B0,
         B1,
-        B10,
         B2,
         B3,
         B4,
+        B5,
         B6,
         B7,
         B8,
         B9,
+        B10,
         C5E,
         Comm10E,
         DLE,
@@ -293,7 +300,6 @@ QT_WARNING_POP
         Custom,
 
         // New values derived from PPD standard
-        A10,
         A3Extra,
         A4Extra,
         A4Plus,
@@ -396,10 +402,8 @@ QT_WARNING_POP
         EnvelopePrc10,
         EnvelopeYou4,
 
-        // Last item, with commonly used synynoms from QPagedPrintEngine / QPrinter
+        // Last item
         LastPageSize = EnvelopeYou4,
-        NPageSize = LastPageSize,
-        NPaperSize = LastPageSize,
 
         // Convenience overloads for naming consistency
         AnsiA = Letter,
@@ -454,6 +458,7 @@ QT_WARNING_POP
     QQuickWebEngineView *inspectedView() const;
     void setDevToolsView(QQuickWebEngineView *);
     QQuickWebEngineView *devToolsView() const;
+    QString devToolsId();
 
     LifecycleState lifecycleState() const;
     void setLifecycleState(LifecycleState state);
@@ -475,12 +480,15 @@ public Q_SLOTS:
     void stop();
     Q_REVISION(1,1) void findText(const QString &subString, FindFlags options = { }, const QJSValue &callback = QJSValue());
     Q_REVISION(1,1) void fullScreenCancelled();
-    Q_REVISION(1,1) void grantFeaturePermission(const QUrl &securityOrigin, Feature, bool granted);
+    Q_REVISION(1,1) void grantFeaturePermission(const QUrl &securityOrigin, QQuickWebEngineView::Feature, bool granted);
     Q_REVISION(1,2) void setActiveFocusOnPress(bool arg);
     Q_REVISION(1,2) void triggerWebAction(WebAction action);
     Q_REVISION(1,3) void printToPdf(const QString &filePath, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
     Q_REVISION(1,3) void printToPdf(const QJSValue &callback, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
     Q_REVISION(1,4) void replaceMisspelledWord(const QString &replacement);
+    Q_REVISION(6, 6) void save(const QString &filePath,
+                               QWebEngineDownloadRequest::SavePageFormat format =
+                                       QWebEngineDownloadRequest::MimeHtmlSaveFormat) const;
 
 private Q_SLOTS:
     void lazyInitialize();
@@ -493,17 +501,22 @@ Q_SIGNALS:
     void loadProgressChanged();
     void linkHovered(const QUrl &hoveredUrl);
     void navigationRequested(QWebEngineNavigationRequest *request);
-    void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID);
+    void javaScriptConsoleMessage(QQuickWebEngineView::JavaScriptConsoleMessageLevel level,
+                                  const QString &message, int lineNumber, const QString &sourceID);
     Q_REVISION(1,1) void certificateError(const QWebEngineCertificateError &error);
     Q_REVISION(1,1) void fullScreenRequested(const QWebEngineFullScreenRequest &request);
     Q_REVISION(1,1) void isFullScreenChanged();
-    Q_REVISION(1,1) void featurePermissionRequested(const QUrl &securityOrigin, Feature feature);
+    Q_REVISION(1, 1)
+    void featurePermissionRequested(const QUrl &securityOrigin,
+                                    QQuickWebEngineView::Feature feature);
     Q_REVISION(1,1) void zoomFactorChanged(qreal arg);
     Q_REVISION(1,1) void profileChanged();
     Q_REVISION(1,1) void webChannelChanged();
     Q_REVISION(1,2) void activeFocusOnPressChanged(bool);
     Q_REVISION(1,2) void backgroundColorChanged();
-    Q_REVISION(1,2) void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode);
+    Q_REVISION(1, 2)
+    void renderProcessTerminated(QQuickWebEngineView::RenderProcessTerminationStatus terminationStatus,
+                            int exitCode);
     Q_REVISION(1,2) void windowCloseRequested();
     Q_REVISION(1,3) void contentsSizeChanged(const QSizeF& size);
     Q_REVISION(1,3) void scrollPositionChanged(const QPointF& position);
@@ -527,8 +540,8 @@ Q_SIGNALS:
     Q_REVISION(1,8) void printRequested();
     Q_REVISION(1,9) void selectClientCertificate(QQuickWebEngineClientCertificateSelection *clientCertSelection);
     Q_REVISION(1,10) void tooltipRequested(QQuickWebEngineTooltipRequest *request);
-    Q_REVISION(1,10) void lifecycleStateChanged(LifecycleState state);
-    Q_REVISION(1,10) void recommendedStateChanged(LifecycleState state);
+    Q_REVISION(1, 10) void lifecycleStateChanged(QQuickWebEngineView::LifecycleState state);
+    Q_REVISION(1, 10) void recommendedStateChanged(QQuickWebEngineView::LifecycleState state);
     Q_REVISION(1,10) void findTextFinished(const QWebEngineFindTextResult &result);
     Q_REVISION(1,11) void renderProcessPidChanged(qint64 pid);
     Q_REVISION(1,11) void canGoBackChanged();

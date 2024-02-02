@@ -20,10 +20,10 @@ GLSurfaceWGLQt::~GLSurfaceWGLQt()
     Destroy();
 }
 
-gl::GLDisplay *GLSurfaceWGLQt::InitializeOneOff(uint64_t system_device_id)
+gl::GLDisplay *GLSurfaceWGLQt::InitializeOneOff(gl::GpuPreference gpu_preference)
 {
     if (GLSurfaceWGL::InitializeOneOff())
-        return GLDisplayManagerWGL::GetInstance()->GetDisplay(GpuPreference::kDefault);
+        return GLDisplayManagerWGL::GetInstance()->GetDisplay(gpu_preference);
 
     return nullptr;
 }

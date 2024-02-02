@@ -51,7 +51,7 @@ config("cpp17_config") {
 
 static_library("QtPdf") {
   complete_static_lib = true
-  rsp_types = [ "objects", "archives", "libs", "lflags" ]
+  rsp_types = [ "objects", "archives", "libs", "ldir" ]
   configs += [
     ":cpp17_config",
     ":QtPdf_config"
@@ -63,6 +63,12 @@ static_library("QtPdf") {
     libs = [
       "dloadhelper.lib",
       "winmm.lib",
+      "usp10.lib",
+    ]
+  }
+  if (is_mingw) {
+    libs = [
+      "winmm",
     ]
   }
 }

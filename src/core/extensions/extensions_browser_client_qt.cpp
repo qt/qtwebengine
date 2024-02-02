@@ -19,9 +19,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
+#include "extensions/browser/api/core_extensions_browser_api_provider.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/runtime/runtime_api_delegate.h"
-#include "extensions/browser/core_extensions_browser_api_provider.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/extension_protocols.h"
@@ -79,7 +79,7 @@ scoped_refptr<base::RefCountedMemory> GetResource(int resource_id, const std::st
         base::StringPiece input(reinterpret_cast<const char *>(bytes->front()), bytes->size());
         std::string temp_str = ui::ReplaceTemplateExpressions(input, *replacements);
         DCHECK(!temp_str.empty());
-        return base::RefCountedString::TakeString(&temp_str);
+        return base::MakeRefCounted<base::RefCountedString>(std::move(temp_str));
     }
     return bytes;
 }

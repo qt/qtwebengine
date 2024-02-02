@@ -45,6 +45,10 @@
             <property name="text">
              <string>Edit</string>
             </property>
+            <property name="icon">
+             <iconset resource="recipebrowser.qrc">
+              <normaloff>:/icons/edit.svg</normaloff>:/icons/edit.svg</iconset>
+            </property>
            </widget>
           </item>
           <item>
@@ -57,6 +61,10 @@
             </property>
             <property name="text">
              <string>Stylesheets</string>
+            </property>
+            <property name="icon">
+             <iconset resource="recipebrowser.qrc">
+              <normaloff>:/icons/stylesheets.svg</normaloff>:/icons/stylesheets.svg</iconset>
             </property>
            </widget>
           </item>
@@ -101,6 +109,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="recipebrowser.qrc"/>
+ </resources>
  <connections/>
 </ui>

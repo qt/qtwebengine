@@ -38,6 +38,8 @@ private Q_SLOTS:
     void javascriptClipboard_data();
     void javascriptClipboard();
     void setInAcceptNavigationRequest();
+    void disableReadingFromCanvas_data();
+    void disableReadingFromCanvas();
 };
 
 void tst_QWebEngineSettings::resetAttributes()
@@ -191,6 +193,48 @@ void tst_QWebEngineSettings::setInAcceptNavigationRequest()
     QVERIFY(loadFinishedSpy.wait());
     QVERIFY(page.settings()->testAttribute(QWebEngineSettings::JavascriptEnabled));
     QCOMPARE(toPlainTextSync(&page), QStringLiteral("PASS"));
+}
+
+void tst_QWebEngineSettings::disableReadingFromCanvas_data()
+{
+    QTest::addColumn<bool>("disableReadingFromCanvas");
+    QTest::addColumn<bool>("result");
+    QTest::newRow("disabled") << false << true;
+    QTest::newRow("enabled") << true << false;
+}
+
+void tst_QWebEngineSettings::disableReadingFromCanvas()
+{
+    QFETCH(bool, disableReadingFromCanvas);
+    QFETCH(bool, result);
+
+    QWebEnginePage page;
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+    page.settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
+    page.settings()->setAttribute(QWebEngineSettings::ReadingFromCanvasEnabled,
+                                  !disableReadingFromCanvas);
+    page.setHtml("<html><body>"
+                 "<canvas id='myCanvas' width='200' height='40' style='border:1px solid "
+                 "#000000;'></canvas>"
+                 "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+    QCOMPARE(page.settings()->testAttribute(QWebEngineSettings::ReadingFromCanvasEnabled),
+             !disableReadingFromCanvas);
+
+    const QString jsCode("(function(){"
+                         "   var canvas = document.getElementById(\"myCanvas\");"
+                         "   var ctx = canvas.getContext(\"2d\");"
+                         "   ctx.fillStyle = \"rgb(255,0,255)\";"
+                         "   ctx.fillRect(0, 0, 200, 40);"
+                         "   try {"
+                         "      src = canvas.toDataURL();"
+                         "   }"
+                         "   catch(err) {"
+                         "      src = \"\";"
+                         "   }"
+                         "   return src.length ? true : false;"
+                         "})();");
+    QCOMPARE(evaluateJavaScriptSync(&page, jsCode).toBool(), result);
 }
 
 QTEST_MAIN(tst_QWebEngineSettings)

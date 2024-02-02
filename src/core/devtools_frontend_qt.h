@@ -40,6 +40,7 @@ public:
     WebContentsDelegateQt *frontendDelegate() const;
 
     static bool IsValidFrontendURL(const GURL &url);
+    static std::string GetId(content::WebContents *inspectedContents);
 
 protected:
     DevToolsFrontendQt(QSharedPointer<WebContentsAdapter> webContentsAdapter,

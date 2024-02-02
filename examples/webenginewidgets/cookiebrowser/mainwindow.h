@@ -29,9 +29,13 @@ class CookieWidget : public QWidget,  public Ui_CookieWidget
 public:
     CookieWidget(const QNetworkCookie &cookie, QWidget *parent = nullptr);
     void setHighlighted(bool enabled);
+    bool isHighlighted() { return m_isHighlighted; }
 signals:
     void deleteClicked();
     void viewClicked();
+
+private:
+    bool m_isHighlighted = false;
 };
 
 class MainWindow : public QMainWindow, public Ui_MainWindow

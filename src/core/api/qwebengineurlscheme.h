@@ -42,6 +42,7 @@ public:
         ViewSourceAllowed = 0x20,
         ContentSecurityPolicyIgnored = 0x40,
         CorsEnabled = 0x80,
+        FetchApiAllowed = 0x100,
     };
     Q_DECLARE_FLAGS(Flags, Flag)
     Q_FLAG(Flags)

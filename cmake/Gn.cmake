@@ -9,8 +9,13 @@ if(NOT CMAKE_SCRIPT_MODE_FILE)
     return()
 endif()
 
-get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/.." REALPATH)
-get_filename_component(WEBENGINE_ROOT_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}" REALPATH)
+set(path_mode REALPATH)
+if(APPLE AND QT_ALLOW_SYMLINK_IN_PATHS)
+    set(path_mode ABSOLUTE)
+endif()
+
+get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/.." ${path_mode})
+get_filename_component(WEBENGINE_ROOT_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}" ${path_mode})
 
 include(${WEBENGINE_ROOT_SOURCE_DIR}/.cmake.conf)
 include(${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Functions.cmake)

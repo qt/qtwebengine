@@ -83,7 +83,7 @@ private:
     void OnExtensionRegisteredWithRequestContexts(scoped_refptr<const extensions::Extension> extension);
 
     void NotifyExtensionLoaded(const Extension *extension);
-    void LoadExtension(std::string extension_id, std::unique_ptr<base::DictionaryValue> manifest, const base::FilePath &directory);
+    void LoadExtension(std::string extension_id, const base::Value::Dict &manifest, const base::FilePath &directory);
     // The services that are shared between normal and incognito profiles.
 
     // Data to be accessed on the IO thread. Must outlive process_manager_.

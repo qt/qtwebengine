@@ -28,5 +28,6 @@
     <true/>
     <key>NSLocationUsageDescription</key>
     <string>The maps demo would like to access your location for demo purposes.</string>
+
 </dict>
 </plist>

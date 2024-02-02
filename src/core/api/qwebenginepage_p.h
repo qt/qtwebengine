@@ -186,6 +186,8 @@ public:
     void setFullScreenMode(bool);
     void ensureInitialized() const;
 
+    static QString actionText(int action);
+
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter;
     QWebEngineHistory *history;
     QWebEngineProfile *profile;

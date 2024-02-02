@@ -9,7 +9,6 @@
 
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -262,6 +261,9 @@ void WebEngineSettings::initDefaults()
         s_defaultAttributes.insert(QWebEngineSettings::PdfViewerEnabled, false);
 #endif
         s_defaultAttributes.insert(QWebEngineSettings::NavigateOnDropEnabled, true);
+        bool noReadingFromCanvas =
+                commandLine->HasSwitch(switches::kDisableReadingFromCanvas);
+        s_defaultAttributes.insert(QWebEngineSettings::ReadingFromCanvasEnabled, !noReadingFromCanvas);
     }
 
     if (s_defaultFontFamilies.isEmpty()) {
@@ -321,6 +323,9 @@ void WebEngineSettings::doApply()
 
 void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPreferences *prefs)
 {
+    // Not supported
+    prefs->picture_in_picture_enabled = false;
+
     // Override for now
     prefs->touch_event_feature_detection_enabled = isTouchEventsAPIEnabled();
 #if !QT_CONFIG(webengine_embedded_build)
@@ -370,6 +375,7 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
     prefs->dom_paste_enabled = testAttribute(QWebEngineSettings::JavascriptCanPaste);
     prefs->dns_prefetching_enabled = testAttribute(QWebEngineSettings::DnsPrefetchEnabled);
     prefs->navigate_on_drag_drop = testAttribute(QWebEngineSettings::NavigateOnDropEnabled);
+    prefs->disable_reading_from_canvas = !testAttribute(QWebEngineSettings::ReadingFromCanvasEnabled);
 
     // Fonts settings.
     prefs->standard_font_family_map[blink::web_pref::kCommonScript] =

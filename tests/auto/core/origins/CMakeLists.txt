@@ -9,6 +9,7 @@ qt_internal_add_test(tst_origins
         tst_origins.cpp
     LIBRARIES
         Qt::WebEngineCore
+        Qt::WebEngineWidgets
         Test::HttpServer
         Test::Util
 )
@@ -33,6 +34,7 @@ set(tst_origins_resource_files
     "resources/websocket.html"
     "resources/websocket2.html"
     "resources/red.png"
+    "resources/fetchApi.html"
 )
 
 qt_internal_add_resource(tst_origins "tst_origins"

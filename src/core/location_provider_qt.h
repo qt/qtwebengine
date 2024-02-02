@@ -4,7 +4,7 @@
 #ifndef LOCATION_PROVIDER_QT_H
 #define LOCATION_PROVIDER_QT_H
 
-#include <QtCore/qcompilerdetection.h>
+#include <QtCore/qtconfigmacros.h>
 
 #include "services/device/public/cpp/geolocation/geoposition.h"
 #include "services/device/public/cpp/geolocation/location_provider.h"

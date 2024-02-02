@@ -460,7 +460,7 @@ void QWebEngineProfile::setCachePath(const QString &path)
     "Windows NT 6.2" (Windows 8), unless the application does contain a manifest
     that declares newer Windows versions as supported.
 
-    \sa setHttpUserAgent()
+    \sa setHttpUserAgent(), {windows_manifest} {Windows Application Manifest}
 */
 QString QWebEngineProfile::httpUserAgent() const
 {

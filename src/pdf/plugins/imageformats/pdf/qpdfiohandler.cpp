@@ -62,7 +62,7 @@ int QPdfIOHandler::imageCount() const
 bool QPdfIOHandler::read(QImage *image)
 {
     if (load(device())) {
-        if (m_page >= m_doc->pageCount())
+        if (m_doc.isNull() || m_page >= m_doc->pageCount())
             return false;
         if (m_page < 0)
             m_page = 0;
@@ -110,9 +110,11 @@ bool QPdfIOHandler::read(QImage *image)
             options.setScaledSize(pageSize);
             image->fill(m_backColor.rgba());
             QPainter p(image);
-            QImage pageImage = m_doc->render(m_page, finalSize, options);
-            p.drawImage(0, 0, pageImage);
-            p.end();
+            if (!m_doc.isNull()) {
+                QImage pageImage = m_doc->render(m_page, finalSize, options);
+                p.drawImage(0, 0, pageImage);
+                p.end();
+            }
         }
         return true;
     }

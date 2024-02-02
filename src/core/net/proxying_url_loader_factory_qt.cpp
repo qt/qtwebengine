@@ -5,7 +5,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -260,18 +260,25 @@ void InterceptedRequest::Restart()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+    bool granted_special_access = false;
+    auto navigationType = toQt(pageTransitionToNavigationType(ui::PageTransition(request_.transition_type)));
+    switch (navigationType) {
+    case QWebEngineUrlRequestInfo::NavigationTypeLink:
+    case QWebEngineUrlRequestInfo::NavigationTypeTyped:
+        if (blink::mojom::ResourceType(request_.resource_type) == blink::mojom::ResourceType::kMainFrame && request_.has_user_gesture)
+            granted_special_access = true; // allow normal explicit navigation
+        break;
+    case QWebEngineUrlRequestInfo::NavigationTypeBackForward:
+    case QWebEngineUrlRequestInfo::NavigationTypeReload:
+        if (blink::mojom::ResourceType(request_.resource_type) == blink::mojom::ResourceType::kMainFrame)
+            granted_special_access = true;
+        break;
+    default:
+        break;
+    }
+
     // Check if non-local access is allowed
     if (!allow_remote_ && remote_access_) {
-        bool granted_special_access = false;
-        switch (ui::PageTransition(request_.transition_type)) {
-        case ui::PAGE_TRANSITION_LINK:
-        case ui::PAGE_TRANSITION_TYPED:
-            if (blink::mojom::ResourceType(request_.resource_type) == blink::mojom::ResourceType::kMainFrame && request_.has_user_gesture)
-                granted_special_access = true; // allow normal explicit navigation
-            break;
-        default:
-            break;
-        }
         if (!granted_special_access) {
             target_client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_NETWORK_ACCESS_DENIED));
             delete this;
@@ -281,7 +288,6 @@ void InterceptedRequest::Restart()
 
     // Check if local access is allowed
     if (!allow_local_ && local_access_) {
-        bool granted_special_access = false;
         // Check for specifically granted file access:
         if (auto *frame_tree = content::FrameTreeNode::GloballyFindByID(frame_tree_node_id_)) {
             const int renderer_id = frame_tree->current_frame_host()->GetProcess()->GetID();
@@ -308,7 +314,6 @@ void InterceptedRequest::Restart()
     }
 
     auto resourceType = toQt(blink::mojom::ResourceType(request_.resource_type));
-    auto navigationType = toQt(pageTransitionToNavigationType(ui::PageTransition(request_.transition_type)));
     const QUrl originalUrl = toQt(request_.url);
     const QUrl initiator = request_.request_initiator.has_value() ? toQt(request_.request_initiator->GetURL()) : QUrl();
 
@@ -356,18 +361,17 @@ void InterceptedRequest::ContinueAfterIntercept()
         const auto scoped_request_info = std::move(request_info_);
         QWebEngineUrlRequestInfoPrivate &info = *scoped_request_info->d_ptr;
 
+        for (auto header = info.extraHeaders.constBegin(); header != info.extraHeaders.constEnd(); ++header) {
+            std::string h = header.key().toStdString();
+            if (base::EqualsCaseInsensitiveASCII(h, "referer"))
+                request_.referrer = GURL(header.value().toStdString());
+            else
+                request_.headers.SetHeader(h, header.value().toStdString());
+        }
+
         if (info.changed) {
             if (info.shouldBlockRequest)
                 return SendErrorAndCompleteImmediately(net::ERR_BLOCKED_BY_CLIENT);
-
-            for (auto header = info.extraHeaders.constBegin(); header != info.extraHeaders.constEnd(); ++header) {
-                std::string h = header.key().toStdString();
-                if (base::EqualsCaseInsensitiveASCII(h, "referer")) {
-                    request_.referrer = GURL(header.value().toStdString());
-                } else {
-                    request_.headers.SetHeader(h, header.value().toStdString());
-                }
-            }
 
             if (info.shouldRedirectRequest) {
                 net::RedirectInfo::FirstPartyURLPolicy first_party_url_policy =

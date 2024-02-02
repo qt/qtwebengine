@@ -59,6 +59,7 @@ CookieWidget::CookieWidget(const QNetworkCookie &cookie, QWidget *parent): QWidg
 
 void CookieWidget::setHighlighted(bool enabled)
 {
+    m_isHighlighted = enabled;
     QPalette p = palette();
     p.setColor(backgroundRole(), enabled ? p.alternateBase().color() : p.base().color());
     setPalette(p);
@@ -112,9 +113,18 @@ void MainWindow::handleCookieAdded(const QNetworkCookie &cookie)
         return;
 
     CookieWidget *widget = new CookieWidget(cookie);
-    widget->setHighlighted(m_cookies.count() % 2);
     m_cookies.append(cookie);
-    m_layout->insertWidget(0,widget);
+    // Check whether the first widget in the layout is highlighted.
+    // if it is highlighted, then do not highlight the new item.
+    CookieWidget *firstWidget = m_layout->count()
+            ? qobject_cast<CookieWidget *>(m_layout->itemAt(0)->widget())
+            : nullptr;
+    if (firstWidget) {
+        widget->setHighlighted(!firstWidget->isHighlighted());
+    } else {
+        widget->setHighlighted(false);
+    }
+    m_layout->insertWidget(0, widget);
 
     connect(widget, &CookieWidget::deleteClicked, [this, cookie, widget]() {
         m_store->deleteCookie(cookie);

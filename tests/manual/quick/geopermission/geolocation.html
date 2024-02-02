@@ -1,0 +1,32 @@
+<html>
+<head>
+<title>Geolocation Permission API Test</title>
+<script>
+
+var errorMessage;
+var handled = false;
+
+function successHandler(location) {
+    var message = document.getElementById("message");
+    message.innerHTML = "Latitude: " + location.coords.latitude +
+    "<br>Longitude: " + location.coords.longitude;
+
+    errorMessage = "";
+    handled = true;
+}
+
+function errorHandler(error) {
+    errorMessage = error.message;
+    handled = true;
+}
+
+<!-- One shot example -->
+navigator.geolocation.getCurrentPosition(successHandler, errorHandler);
+
+</script>
+</head>
+<body>
+<div id="message">Location unknown</div>
+</body>
+</html>
+

@@ -12,6 +12,7 @@
 #include "web_contents_adapter_client.h"
 
 #include <QtCore/qlist.h>
+#include <QtCore/qmap.h>
 
 namespace blink {
     namespace web_pref {
@@ -123,12 +124,13 @@ public:
     void DidStopLoading() override;
     void DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code) override;
     void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) override;
-    void BeforeUnloadFired(bool proceed, const base::TimeTicks& proceed_time) override;
-    void OnVisibilityChanged(content::Visibility visibility) override;
     void ActivateContents(content::WebContents* contents) override;
     void ResourceLoadComplete(content::RenderFrameHost* render_frame_host,
                               const content::GlobalRequestID& request_id,
                               const blink::mojom::ResourceLoadInfo& resource_load_info) override;
+    void InnerWebContentsAttached(content::WebContents *inner_web_contents,
+                                  content::RenderFrameHost *render_frame_host,
+                                  bool is_full_page) override;
 
     void didFailLoad(const QUrl &url, int errorCode, const QString &errorDescription);
     void overrideWebPreferences(content::WebContents *, blink::web_pref::WebPreferences*);
@@ -138,8 +140,8 @@ public:
     void launchExternalURL(const QUrl &url, ui::PageTransition page_transition, bool is_main_frame, bool has_user_gesture);
     FindTextHelper *findTextHelper();
 
-    void setSavePageInfo(const SavePageInfo &spi) { m_savePageInfo = spi; }
-    const SavePageInfo &savePageInfo() { return m_savePageInfo; }
+    void setSavePageInfo(SavePageInfo *spi) { m_savePageInfo.reset(spi); }
+    SavePageInfo *savePageInfo() { return m_savePageInfo.get(); }
 
     WebEngineSettings *webEngineSettings() const;
     WebContentsAdapter *webContentsAdapter() const;
@@ -179,7 +181,7 @@ private:
 
     WebContentsAdapterClient *m_viewClient;
     QScopedPointer<FindTextHelper> m_findTextHelper;
-    SavePageInfo m_savePageInfo;
+    std::unique_ptr<SavePageInfo> m_savePageInfo;
     QSharedPointer<FilePickerController> m_filePickerController;
     LoadingState m_loadingState;
     FrameFocusedObserver m_frameFocusedObserver;
@@ -200,6 +202,7 @@ private:
         int errorCode = 0, errorDomain = 0;
         QString errorDescription;
         bool triggersErrorPage = false;
+        QMultiMap<QByteArray, QByteArray> responseHeaders;
         void clear() { *this = LoadingInfo(); }
     } m_loadingInfo;
 

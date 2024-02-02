@@ -36,12 +36,14 @@
 #include <QtWebEngineCore/qwebenginefullscreenrequest.h>
 #include <QtWebEngineCore/qwebengineloadinginfo.h>
 #include <QtWebEngineCore/qwebenginenavigationrequest.h>
+#include <QtWebEngineCore/qwebenginepage.h>
 #include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
 #include <QtWebEngineCore/qwebenginescriptcollection.h>
 #include <QtWebEngineCore/private/qwebenginecontextmenurequest_p.h>
 #include <QtWebEngineCore/private/qwebenginehistory_p.h>
 #include <QtWebEngineCore/private/qwebenginenewwindowrequest_p.h>
 #include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
+#include <QtWebEngineCore/private/qwebenginepage_p.h>
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 
 #include <QtCore/qloggingcategory.h>
@@ -77,6 +79,7 @@
 QT_BEGIN_NAMESPACE
 using namespace QtWebEngineCore;
 
+Q_STATIC_ASSERT(int(QQuickWebEngineView::WebActionCount) == int(QWebEnginePage::WebActionCount));
 using LoadStatus = QWebEngineLoadingInfo::LoadStatus;
 using ErrorDomain = QWebEngineLoadingInfo::ErrorDomain;
 #if QT_DEPRECATED_SINCE(6, 2)
@@ -106,6 +109,134 @@ Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::LoadStoppedStatus)   == st
 Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::LoadFailedStatus)    == static_cast<int>(LoadStatus::LoadFailedStatus));
 Q_STATIC_ASSERT(static_cast<int>(QQuickWebEngineView::LoadSucceededStatus) == static_cast<int>(LoadStatus::LoadSucceededStatus));
 QT_WARNING_POP
+#endif
+
+#if QT_CONFIG(webengine_printing_and_pdf)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Letter, QQuickWebEngineView::PrintedPageSizeId::Letter)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Legal, QQuickWebEngineView::PrintedPageSizeId::Legal)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Executive, QQuickWebEngineView::PrintedPageSizeId::Executive)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::A0, QQuickWebEngineView::PrintedPageSizeId::A0)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::A1, QQuickWebEngineView::PrintedPageSizeId::A1)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::A2, QQuickWebEngineView::PrintedPageSizeId::A2)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::A3, QQuickWebEngineView::PrintedPageSizeId::A3)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::A4, QQuickWebEngineView::PrintedPageSizeId::A4)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::A5, QQuickWebEngineView::PrintedPageSizeId::A5)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::A6, QQuickWebEngineView::PrintedPageSizeId::A6)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::A7, QQuickWebEngineView::PrintedPageSizeId::A7)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::A8, QQuickWebEngineView::PrintedPageSizeId::A8)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::A9, QQuickWebEngineView::PrintedPageSizeId::A9)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::A10, QQuickWebEngineView::PrintedPageSizeId::A10)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::B0, QQuickWebEngineView::PrintedPageSizeId::B0)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::B1, QQuickWebEngineView::PrintedPageSizeId::B1)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::B2, QQuickWebEngineView::PrintedPageSizeId::B2)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::B3, QQuickWebEngineView::PrintedPageSizeId::B3)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::B4, QQuickWebEngineView::PrintedPageSizeId::B4)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::B5, QQuickWebEngineView::PrintedPageSizeId::B5)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::B6, QQuickWebEngineView::PrintedPageSizeId::B6)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::B7, QQuickWebEngineView::PrintedPageSizeId::B7)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::B8, QQuickWebEngineView::PrintedPageSizeId::B8)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::B9, QQuickWebEngineView::PrintedPageSizeId::B9)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::B10, QQuickWebEngineView::PrintedPageSizeId::B10)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::C5E, QQuickWebEngineView::PrintedPageSizeId::C5E)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Comm10E, QQuickWebEngineView::PrintedPageSizeId::Comm10E)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::DLE, QQuickWebEngineView::PrintedPageSizeId::DLE)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Folio, QQuickWebEngineView::PrintedPageSizeId::Folio)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Ledger, QQuickWebEngineView::PrintedPageSizeId::Ledger)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Tabloid, QQuickWebEngineView::PrintedPageSizeId::Tabloid)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Custom, QQuickWebEngineView::PrintedPageSizeId::Custom)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::A3Extra, QQuickWebEngineView::PrintedPageSizeId::A3Extra)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::A4Extra, QQuickWebEngineView::PrintedPageSizeId::A4Extra)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::A4Plus, QQuickWebEngineView::PrintedPageSizeId::A4Plus)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::A4Small, QQuickWebEngineView::PrintedPageSizeId::A4Small)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::A5Extra, QQuickWebEngineView::PrintedPageSizeId::A5Extra)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::B5Extra, QQuickWebEngineView::PrintedPageSizeId::B5Extra)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::JisB0, QQuickWebEngineView::PrintedPageSizeId::JisB0)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::JisB1, QQuickWebEngineView::PrintedPageSizeId::JisB1)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::JisB2, QQuickWebEngineView::PrintedPageSizeId::JisB2)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::JisB3, QQuickWebEngineView::PrintedPageSizeId::JisB3)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::JisB4, QQuickWebEngineView::PrintedPageSizeId::JisB4)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::JisB5, QQuickWebEngineView::PrintedPageSizeId::JisB5)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::JisB6, QQuickWebEngineView::PrintedPageSizeId::JisB6)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::JisB7, QQuickWebEngineView::PrintedPageSizeId::JisB7)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::JisB8, QQuickWebEngineView::PrintedPageSizeId::JisB8)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::JisB9, QQuickWebEngineView::PrintedPageSizeId::JisB9)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::JisB10, QQuickWebEngineView::PrintedPageSizeId::JisB10)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::AnsiC, QQuickWebEngineView::PrintedPageSizeId::AnsiC)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::AnsiD, QQuickWebEngineView::PrintedPageSizeId::AnsiD)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::AnsiE, QQuickWebEngineView::PrintedPageSizeId::AnsiE)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::LegalExtra, QQuickWebEngineView::PrintedPageSizeId::LegalExtra)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::LetterExtra, QQuickWebEngineView::PrintedPageSizeId::LetterExtra)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::LetterPlus, QQuickWebEngineView::PrintedPageSizeId::LetterPlus)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::LetterSmall, QQuickWebEngineView::PrintedPageSizeId::LetterSmall)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::TabloidExtra, QQuickWebEngineView::PrintedPageSizeId::TabloidExtra)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::ArchA, QQuickWebEngineView::PrintedPageSizeId::ArchA)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::ArchB, QQuickWebEngineView::PrintedPageSizeId::ArchB)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::ArchC, QQuickWebEngineView::PrintedPageSizeId::ArchC)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::ArchD, QQuickWebEngineView::PrintedPageSizeId::ArchD)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::ArchE, QQuickWebEngineView::PrintedPageSizeId::ArchE)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Imperial7x9, QQuickWebEngineView::PrintedPageSizeId::Imperial7x9)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Imperial8x10, QQuickWebEngineView::PrintedPageSizeId::Imperial8x10)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Imperial9x11, QQuickWebEngineView::PrintedPageSizeId::Imperial9x11)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Imperial9x12, QQuickWebEngineView::PrintedPageSizeId::Imperial9x12)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Imperial10x11, QQuickWebEngineView::PrintedPageSizeId::Imperial10x11)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Imperial10x13, QQuickWebEngineView::PrintedPageSizeId::Imperial10x13)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Imperial10x14, QQuickWebEngineView::PrintedPageSizeId::Imperial10x14)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Imperial12x11, QQuickWebEngineView::PrintedPageSizeId::Imperial12x11)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Imperial15x11, QQuickWebEngineView::PrintedPageSizeId::Imperial15x11)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::ExecutiveStandard, QQuickWebEngineView::PrintedPageSizeId::ExecutiveStandard)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Note, QQuickWebEngineView::PrintedPageSizeId::Note)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Quarto, QQuickWebEngineView::PrintedPageSizeId::Quarto)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Statement, QQuickWebEngineView::PrintedPageSizeId::Statement)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::SuperA, QQuickWebEngineView::PrintedPageSizeId::SuperA)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::SuperB, QQuickWebEngineView::PrintedPageSizeId::SuperB)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Postcard, QQuickWebEngineView::PrintedPageSizeId::Postcard)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::DoublePostcard, QQuickWebEngineView::PrintedPageSizeId::DoublePostcard)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Prc16K, QQuickWebEngineView::PrintedPageSizeId::Prc16K)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Prc32K, QQuickWebEngineView::PrintedPageSizeId::Prc32K)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Prc32KBig, QQuickWebEngineView::PrintedPageSizeId::Prc32KBig)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::FanFoldUS, QQuickWebEngineView::PrintedPageSizeId::FanFoldUS)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::FanFoldGerman, QQuickWebEngineView::PrintedPageSizeId::FanFoldGerman)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::FanFoldGermanLegal, QQuickWebEngineView::PrintedPageSizeId::FanFoldGermanLegal)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeB4, QQuickWebEngineView::PrintedPageSizeId::EnvelopeB4)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeB5, QQuickWebEngineView::PrintedPageSizeId::EnvelopeB5)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeB6, QQuickWebEngineView::PrintedPageSizeId::EnvelopeB6)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeC0, QQuickWebEngineView::PrintedPageSizeId::EnvelopeC0)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeC1, QQuickWebEngineView::PrintedPageSizeId::EnvelopeC1)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeC2, QQuickWebEngineView::PrintedPageSizeId::EnvelopeC2)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeC3, QQuickWebEngineView::PrintedPageSizeId::EnvelopeC3)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeC4, QQuickWebEngineView::PrintedPageSizeId::EnvelopeC4)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeC6, QQuickWebEngineView::PrintedPageSizeId::EnvelopeC6)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeC65, QQuickWebEngineView::PrintedPageSizeId::EnvelopeC65)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeC7, QQuickWebEngineView::PrintedPageSizeId::EnvelopeC7)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Envelope9, QQuickWebEngineView::PrintedPageSizeId::Envelope9)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Envelope11, QQuickWebEngineView::PrintedPageSizeId::Envelope11)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Envelope12, QQuickWebEngineView::PrintedPageSizeId::Envelope12)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Envelope14, QQuickWebEngineView::PrintedPageSizeId::Envelope14)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeMonarch, QQuickWebEngineView::PrintedPageSizeId::EnvelopeMonarch)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopePersonal, QQuickWebEngineView::PrintedPageSizeId::EnvelopePersonal)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeChou3, QQuickWebEngineView::PrintedPageSizeId::EnvelopeChou3)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeChou4, QQuickWebEngineView::PrintedPageSizeId::EnvelopeChou4)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeInvite, QQuickWebEngineView::PrintedPageSizeId::EnvelopeInvite)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeItalian, QQuickWebEngineView::PrintedPageSizeId::EnvelopeItalian)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeKaku2, QQuickWebEngineView::PrintedPageSizeId::EnvelopeKaku2)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeKaku3, QQuickWebEngineView::PrintedPageSizeId::EnvelopeKaku3)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopePrc1, QQuickWebEngineView::PrintedPageSizeId::EnvelopePrc1)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopePrc2, QQuickWebEngineView::PrintedPageSizeId::EnvelopePrc2)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopePrc3, QQuickWebEngineView::PrintedPageSizeId::EnvelopePrc3)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopePrc4, QQuickWebEngineView::PrintedPageSizeId::EnvelopePrc4)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopePrc5, QQuickWebEngineView::PrintedPageSizeId::EnvelopePrc5)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopePrc6, QQuickWebEngineView::PrintedPageSizeId::EnvelopePrc6)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopePrc7, QQuickWebEngineView::PrintedPageSizeId::EnvelopePrc7)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopePrc8, QQuickWebEngineView::PrintedPageSizeId::EnvelopePrc8)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopePrc9, QQuickWebEngineView::PrintedPageSizeId::EnvelopePrc9)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopePrc10, QQuickWebEngineView::PrintedPageSizeId::EnvelopePrc10)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeYou4, QQuickWebEngineView::PrintedPageSizeId::EnvelopeYou4)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::LastPageSize, QQuickWebEngineView::PrintedPageSizeId::LastPageSize)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::AnsiA, QQuickWebEngineView::PrintedPageSizeId::AnsiA)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::AnsiB, QQuickWebEngineView::PrintedPageSizeId::AnsiB)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeC5, QQuickWebEngineView::PrintedPageSizeId::EnvelopeC5)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::EnvelopeDL, QQuickWebEngineView::PrintedPageSizeId::EnvelopeDL)
+ASSERT_ENUMS_MATCH(QPageSize::PageSizeId::Envelope10, QQuickWebEngineView::PrintedPageSizeId::Envelope10)
 #endif
 
 class WebEngineQuickWidgetDelegate : public QtWebEngineCore::WidgetDelegate
@@ -591,7 +722,7 @@ bool QQuickWebEngineViewPrivate::isFullScreenMode() const
 void QQuickWebEngineViewPrivate::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
 {
     Q_Q(QQuickWebEngineView);
-    if (q->receivers(SIGNAL(javaScriptConsoleMessage(JavaScriptConsoleMessageLevel,QString,int,QString))) > 0) {
+    if (q->receivers(SIGNAL(javaScriptConsoleMessage(QQuickWebEngineView::JavaScriptConsoleMessageLevel,QString,int,QString))) > 0) {
         Q_EMIT q->javaScriptConsoleMessage(static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(level), message, lineNumber, sourceID);
         return;
     }
@@ -1566,6 +1697,12 @@ QQuickWebEngineView *QQuickWebEngineView::devToolsView() const
     return d->devToolsView;
 }
 
+QString QQuickWebEngineView::devToolsId()
+{
+    Q_D(QQuickWebEngineView);
+    d->ensureContentsAdapter();
+    return d->adapter->devToolsId();
+}
 
 void QQuickWebEngineView::setDevToolsView(QQuickWebEngineView *devToolsView)
 {
@@ -1972,6 +2109,12 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
     case InsertUnorderedList:
         runJavaScript(QStringLiteral("document.execCommand('insertUnorderedList');"), QWebEngineScript::ApplicationWorld);
         break;
+    case ChangeTextDirectionLTR:
+        d->adapter->changeTextDirection(true /*left to right*/);
+        break;
+    case ChangeTextDirectionRTL:
+        d->adapter->changeTextDirection(false /*left to right*/);
+        break;
     default:
         Q_UNREACHABLE();
     }
@@ -1987,165 +2130,113 @@ QQuickWebEngineAction *QQuickWebEngineView::action(WebAction action)
         return d->actions[action];
     }
 
-    QString text;
+    const QString text = QWebEnginePagePrivate::actionText(action);
     QString iconName;
 
     switch (action) {
     case Back:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Back);
         iconName = QStringLiteral("go-previous");
         break;
     case Forward:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Forward);
         iconName = QStringLiteral("go-next");
         break;
     case Stop:
-        text = tr("Stop");
         iconName = QStringLiteral("process-stop");
         break;
     case Reload:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Reload);
         iconName = QStringLiteral("view-refresh");
         break;
     case ReloadAndBypassCache:
-        text = tr("Reload and Bypass Cache");
         iconName = QStringLiteral("view-refresh");
         break;
     case Cut:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Cut);
         iconName = QStringLiteral("edit-cut");
         break;
     case Copy:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Copy);
         iconName = QStringLiteral("edit-copy");
         break;
     case Paste:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Paste);
         iconName = QStringLiteral("edit-paste");
         break;
     case Undo:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Undo);
         iconName = QStringLiteral("edit-undo");
         break;
     case Redo:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Redo);
         iconName = QStringLiteral("edit-redo");
         break;
     case SelectAll:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::SelectAll);
         iconName = QStringLiteral("edit-select-all");
         break;
     case PasteAndMatchStyle:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::PasteAndMatchStyle);
         iconName = QStringLiteral("edit-paste");
         break;
     case OpenLinkInThisWindow:
-        text = tr("Open link in this window");
-        break;
     case OpenLinkInNewWindow:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::OpenLinkInNewWindow);
-        break;
     case OpenLinkInNewTab:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::OpenLinkInNewTab);
-        break;
     case CopyLinkToClipboard:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::CopyLinkToClipboard);
-        break;
     case DownloadLinkToDisk:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::DownloadLinkToDisk);
-        break;
     case CopyImageToClipboard:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::CopyImageToClipboard);
-        break;
     case CopyImageUrlToClipboard:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::CopyImageUrlToClipboard);
-        break;
     case DownloadImageToDisk:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::DownloadImageToDisk);
-        break;
     case CopyMediaUrlToClipboard:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::CopyMediaUrlToClipboard);
-        break;
     case ToggleMediaControls:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ToggleMediaControls);
-        break;
     case ToggleMediaLoop:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ToggleMediaLoop);
         break;
     case ToggleMediaPlayPause:
-        text = tr("Toggle Play/Pause");
         iconName = QStringLiteral("media-playback-start");
         break;
     case ToggleMediaMute:
-        text = tr("Toggle Mute");
         iconName = QStringLiteral("audio-volume-muted");
         break;
     case DownloadMediaToDisk:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::DownloadMediaToDisk);
-        break;
     case InspectElement:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::InspectElement);
         break;
     case ExitFullScreen:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ExitFullScreen);
         iconName = QStringLiteral("view-fullscreen");
         break;
     case RequestClose:
-        text = tr("Close Page");
         iconName = QStringLiteral("window-close");
         break;
     case Unselect:
-        text = tr("Unselect");
         iconName = QStringLiteral("edit-select-none");
         break;
     case SavePage:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::SavePage);
         iconName = QStringLiteral("document-save");
         break;
+    case OpenLinkInNewBackgroundTab:
+        break;
     case ViewSource:
-        text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ViewSource);
         break;
     case ToggleBold:
-        text = tr("&Bold");
         iconName = QStringLiteral("format-text-bold");
         break;
     case ToggleItalic:
-        text = tr("&Italic");
         iconName = QStringLiteral("format-text-italic");
         break;
     case ToggleUnderline:
-        text = tr("&Underline");
         iconName = QStringLiteral("format-text-underline");
         break;
     case ToggleStrikethrough:
-        text = tr("&Strikethrough");
         iconName = QStringLiteral("format-text-strikethrough");
         break;
     case AlignLeft:
-        text = tr("Align &Left");
         break;
     case AlignCenter:
-        text = tr("Align &Center");
         break;
     case AlignRight:
-        text = tr("Align &Right");
         break;
     case AlignJustified:
-        text = tr("Align &Justified");
         break;
     case Indent:
-        text = tr("&Indent");
         iconName = QStringLiteral("format-indent-more");
         break;
     case Outdent:
-        text = tr("&Outdent");
         iconName = QStringLiteral("format-indent-less");
         break;
     case InsertOrderedList:
-        text = tr("Insert &Ordered List");
-        break;
     case InsertUnorderedList:
-        text = tr("Insert &Unordered List");
+    case ChangeTextDirectionLTR:
+    case ChangeTextDirectionRTL:
         break;
     case NoWebAction:
     case WebActionCount:
@@ -2400,6 +2491,13 @@ void QQuickWebEngineView::setTouchHandleDelegate(QQmlComponent *delegate)
 QQmlComponent *QQuickWebEngineView::touchHandleDelegate() const
 {
     return d_ptr->m_touchHandleDelegate;
+}
+
+void QQuickWebEngineView::save(const QString &filePath,
+                               QWebEngineDownloadRequest::SavePageFormat format) const
+{
+    Q_D(const QQuickWebEngineView);
+    d->adapter->save(filePath, format);
 }
 
 QT_END_NAMESPACE

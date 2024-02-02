@@ -97,7 +97,8 @@ void ClientCertificateStoreData::add(const QSslCertificate &certificate, const Q
 
     Entry *data = new Entry;
     data->keyPtr = wrapOpenSSLPrivateKey(sslKeyInBytes);
-    data->certPtr = net::X509Certificate::CreateFromBytes(base::make_span((const unsigned char *)certInBytes.data(), certInBytes.length()));
+    data->certPtr = net::X509Certificate::CreateFromBytes(base::make_span((const unsigned char *)certInBytes.data(),
+                                                                          (unsigned long)certInBytes.length()));
     data->key = privateKey;
     data->certificate = certificate;
     extraCerts.append(data);

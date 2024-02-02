@@ -10,8 +10,8 @@
 #include "renderer/web_engine_page_render_frame.h"
 #include "web_engine_library_info.h"
 
+#include "base/task/sequenced_task_runner.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
-#include "components/autofill/content/renderer/autofill_assistant_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/cdm/renderer/external_clear_key_key_system_info.h"
@@ -131,12 +131,12 @@ void ContentRendererClientQt::RenderThreadStarted()
 void ContentRendererClientQt::ExposeInterfacesToBrowser(mojo::BinderMap* binders)
 {
     binders->Add<visitedlink::mojom::VisitedLinkNotificationSink>(
-                m_visitedLinkReader->GetBindCallback(), base::SequencedTaskRunnerHandle::Get());
+                m_visitedLinkReader->GetBindCallback(), base::SingleThreadTaskRunner::GetCurrentDefault());
 
     binders->Add<web_cache::mojom::WebCache>(
                 base::BindRepeating(&web_cache::WebCacheImpl::BindReceiver,
                                     base::Unretained(m_webCacheImpl.get())),
-                base::SequencedTaskRunnerHandle::Get());
+                base::SingleThreadTaskRunner::GetCurrentDefault());
 
 #if QT_CONFIG(webengine_spellchecker)
     binders->Add<spellcheck::mojom::SpellChecker>(
@@ -147,7 +147,7 @@ void ContentRendererClientQt::ExposeInterfacesToBrowser(mojo::BinderMap* binders
                                  client->InitSpellCheck();
                              client->m_spellCheck->BindReceiver(std::move(receiver));
                          }, this),
-                 base::SequencedTaskRunnerHandle::Get());
+                 base::SingleThreadTaskRunner::GetCurrentDefault());
 #endif
 
 #if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
@@ -157,7 +157,7 @@ void ContentRendererClientQt::ExposeInterfacesToBrowser(mojo::BinderMap* binders
                             mojo::PendingReceiver<chrome::mojom::WebRtcLoggingAgent> receiver) {
                                 client->GetWebRtcLoggingAgent()->AddReceiver(std::move(receiver));
                          }, this),
-                 base::SequencedTaskRunnerHandle::Get());
+                 base::SingleThreadTaskRunner::GetCurrentDefault());
 #endif
 }
 
@@ -195,8 +195,6 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_fr
     ExtensionsRendererClientQt::GetInstance()->RenderFrameCreated(render_frame, render_frame_observer->registry());
 #endif
 
-    autofill::AutofillAssistantAgent *autofill_assistant_agent =
-            new autofill::AutofillAssistantAgent(render_frame);
     autofill::PasswordAutofillAgent *password_autofill_agent =
             new autofill::PasswordAutofillAgent(render_frame, associated_interfaces);
     autofill::PasswordGenerationAgent *password_generation_agent =
@@ -204,7 +202,7 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_fr
                                                   associated_interfaces);
 
     new autofill::AutofillAgent(render_frame, password_autofill_agent, password_generation_agent,
-                                autofill_assistant_agent, associated_interfaces);
+                                associated_interfaces);
 }
 
 void ContentRendererClientQt::WebViewCreated(blink::WebView *web_view,
@@ -290,11 +288,12 @@ void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderF
         // TODO(elproxy): We could potentially get better diagnostics here by first calling
         // NetErrorHelper::GetErrorStringsForDnsProbe, but that one is harder to untangle.
 
+        base::Value::Dict error_page_params;
         error_page::LocalizedError::PageState errorPageState =
                 error_page::LocalizedError::GetPageState(
                         error.reason(), error.domain(), error.url(), isPost, false,
                         error.stale_copy_in_cache(), false,
-                        RenderConfiguration::is_incognito_process(), false, false, false, locale, false);
+                        RenderConfiguration::is_incognito_process(), false, false, false, locale, false, &error_page_params);
 
         resourceId = IDR_NET_ERROR_HTML;
 
@@ -477,7 +476,7 @@ static const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey"
 
 // External Clear Key (used for testing).
 static void AddExternalClearKey(const media::mojom::KeySystemCapabilityPtr &capability,
-                                media::KeySystemInfoVector *key_systems)
+                                media::KeySystemInfos* key_systems)
 {
     Q_UNUSED(capability);
     if (!base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting)) {
@@ -486,7 +485,7 @@ static void AddExternalClearKey(const media::mojom::KeySystemCapabilityPtr &capa
     }
 
     // TODO(xhwang): Actually use `capability` to determine capabilities.
-    key_systems->push_back(std::make_unique<cdm::ExternalClearKeyProperties>());
+    key_systems->push_back(std::make_unique<cdm::ExternalClearKeyKeySystemInfo>());
 }
 
 #if BUILDFLAG(ENABLE_WIDEVINE)
@@ -603,7 +602,7 @@ static media::SupportedCodecs GetSupportedCodecs(const media::CdmCapability& cap
 }
 
 static void AddWidevine(const media::mojom::KeySystemCapabilityPtr &capability,
-                        media::KeySystemInfoVector *key_systems)
+                        media::KeySystemInfos *key_systems)
 {
     // Codecs and encryption schemes.
     media::SupportedCodecs codecs = media::EME_CODEC_NONE;
@@ -658,11 +657,11 @@ static void AddWidevine(const media::mojom::KeySystemCapabilityPtr &capability,
 void OnKeySystemSupportUpdated(media::GetSupportedKeySystemsCB cb,
                                content::KeySystemCapabilityPtrMap key_system_capabilities)
 {
-    media::KeySystemInfoVector key_systems;
+    media::KeySystemInfos key_systems;
     for (const auto &entry : key_system_capabilities) {
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
         const auto &key_system = entry.first;
         const auto &capability = entry.second;
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #if BUILDFLAG(ENABLE_WIDEVINE)
         if (key_system == kWidevineKeySystem) {
             AddWidevine(capability, &key_systems);
@@ -674,9 +673,9 @@ void OnKeySystemSupportUpdated(media::GetSupportedKeySystemsCB cb,
             AddExternalClearKey(capability, &key_systems);
             continue;
         }
-#endif // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
         DLOG(ERROR) << "Unrecognized key system: " << key_system;
+#endif // BUILDFLAG(ENABLE_LIBRARY_CDMS)
     }
 
     cb.Run(std::move(key_systems));

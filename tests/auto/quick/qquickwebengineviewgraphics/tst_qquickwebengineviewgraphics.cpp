@@ -124,6 +124,7 @@ void tst_QQuickWebEngineViewGraphics::reparentToOtherWindow()
 
     m_view->rootObject()->setParentItem(window.contentItem());
     window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
     verifyGreenSquare(&window);
 }
 

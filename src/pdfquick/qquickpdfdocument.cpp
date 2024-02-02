@@ -72,7 +72,8 @@ void QQuickPdfDocument::setSource(QUrl source)
 
     m_source = source;
     m_maxPageWidthHeight = QSizeF();
-    m_carrierFile->deleteLater();
+    if (m_carrierFile)
+        m_carrierFile->deleteLater();
     m_carrierFile = nullptr;
     emit sourceChanged();
     const QQmlContext *context = qmlContext(this);

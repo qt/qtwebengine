@@ -30,6 +30,9 @@ viz::SkiaOutputSurfaceImplOnGpu::CreateOutputDevice()
                 shared_image_representation_factory_.get(),
                 GetDidSwapBuffersCompleteCallback());
     }
+#ifdef Q_OS_MACOS
+    qFatal("macOS only supports ANGLE");
+#endif
 #if QT_CONFIG(opengl)
     return std::make_unique<QtWebEngineCore::DisplaySkiaOutputDevice>(
             context_state_,

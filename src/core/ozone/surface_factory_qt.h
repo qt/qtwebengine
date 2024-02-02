@@ -20,6 +20,26 @@ public:
     std::unique_ptr<gpu::VulkanImplementation>
     CreateVulkanImplementation(bool allow_protected_memory, bool enforce_protected_memory) override;
 #endif
+    bool CanCreateNativePixmapForFormat(gfx::BufferFormat format) override;
+    scoped_refptr<gfx::NativePixmap> CreateNativePixmap(
+        gfx::AcceleratedWidget widget,
+        gpu::VulkanDeviceQueue* device_queue,
+        gfx::Size size,
+        gfx::BufferFormat format,
+        gfx::BufferUsage usage,
+        absl::optional<gfx::Size> framebuffer_size = absl::nullopt) override;
+    void CreateNativePixmapAsync(gfx::AcceleratedWidget widget,
+                                 gpu::VulkanDeviceQueue* device_queue,
+                                 gfx::Size size,
+                                 gfx::BufferFormat format,
+                                 gfx::BufferUsage usage,
+                                 NativePixmapCallback callback) override;
+    scoped_refptr<gfx::NativePixmap> CreateNativePixmapFromHandle(
+        gfx::AcceleratedWidget widget,
+        gfx::Size size,
+        gfx::BufferFormat format,
+        gfx::NativePixmapHandle handle) override;
+
 private:
     std::vector<gl::GLImplementationParts> m_impl;
     std::unique_ptr<ui::GLOzone> m_ozone;

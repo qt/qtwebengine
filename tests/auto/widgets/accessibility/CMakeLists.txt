@@ -8,5 +8,6 @@ qt_internal_add_test(tst_webengine_accessibility
         tst_accessibility.cpp
     LIBRARIES
         Qt::WebEngineWidgets
+        Qt::WebEngineCorePrivate
         Test::Util
 )

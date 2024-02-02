@@ -33,7 +33,7 @@ public:
     void SetCapture() override { }
     void ReleaseCapture() override { }
     bool HasCapture() const override { return false; }
-    void ToggleFullscreen() override { }
+    void SetFullscreen(bool, int64_t) override { }
     void Maximize() override { }
     void Minimize() override { }
     void Restore() override { }

@@ -231,11 +231,7 @@ void *BrowserAccessibilityInterface::interface_cast(QAccessible::InterfaceType t
     }
     case QAccessible::TableCellInterface: {
         QAccessible::Role r = role();
-        if (r == QAccessible::Cell) {
-            Q_ASSERT(findTable());
-            return static_cast<QAccessibleTableCellInterface *>(this);
-        }
-        if (r == QAccessible::ListItem || r == QAccessible::TreeItem) {
+        if (r == QAccessible::Cell || r == QAccessible::ListItem || r == QAccessible::TreeItem) {
             if (findTable())
                 return static_cast<QAccessibleTableCellInterface *>(this);
         }

@@ -68,12 +68,20 @@
           <property name="text">
            <string>Add</string>
           </property>
+          <property name="icon">
+           <iconset resource="recipebrowser.qrc">
+            <normaloff>:/icons/add.svg</normaloff>:/icons/add.svg</iconset>
+          </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="removeButton">
           <property name="text">
            <string>Remove</string>
+          </property>
+          <property name="icon">
+           <iconset resource="recipebrowser.qrc">
+            <normaloff>:/icons/remove.svg</normaloff>:/icons/remove.svg</iconset>
           </property>
          </widget>
         </item>
@@ -84,7 +92,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="recipebrowser.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

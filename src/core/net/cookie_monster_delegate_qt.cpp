@@ -3,7 +3,7 @@
 
 #include "cookie_monster_delegate_qt.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 

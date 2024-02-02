@@ -4,10 +4,9 @@
 #include "display_software_output_surface.h"
 
 #include "compositor.h"
-#include "render_widget_host_view_qt_delegate.h"
 #include "type_conversion.h"
 
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/output_surface_frame.h"
 
@@ -25,7 +24,7 @@ public:
 
     // Overridden from viz::SoftwareOutputDevice.
     void Resize(const gfx::Size &sizeInPixels, float devicePixelRatio) override;
-    void OnSwapBuffers(SwapBuffersCallback swap_ack_callback) override;
+    void OnSwapBuffers(SwapBuffersCallback swap_ack_callback, gfx::FrameData data) override;
 
     // Overridden from Compositor.
     void swapFrame() override;
@@ -60,11 +59,11 @@ void DisplaySoftwareOutputSurface::Device::Resize(const gfx::Size &sizeInPixels,
     surface_ = SkSurface::MakeRaster(SkImageInfo::MakeN32Premul(sizeInPixels.width(), sizeInPixels.height()));
 }
 
-void DisplaySoftwareOutputSurface::Device::OnSwapBuffers(SwapBuffersCallback swap_ack_callback)
+void DisplaySoftwareOutputSurface::Device::OnSwapBuffers(SwapBuffersCallback swap_ack_callback, gfx::FrameData data)
 {
     { // MEMO don't hold a lock together with an 'observer', as the call from Qt's scene graph may come at the same time
         QMutexLocker locker(&m_mutex);
-        m_taskRunner = base::ThreadTaskRunnerHandle::Get();
+        m_taskRunner = base::SingleThreadTaskRunner::GetCurrentDefault();
         m_swapCompletionCallback = std::move(swap_ack_callback);
     }
 

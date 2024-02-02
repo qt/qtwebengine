@@ -7,7 +7,7 @@
 #include <QtGui/private/qrhi_p.h>
 
 #include "base/base_switches.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/power_monitor/power_monitor.h"
@@ -105,6 +105,7 @@
 #include <qopenglcontext_platform.h>
 #endif
 #include <QQuickWindow>
+#include <QRegularExpression>
 #include <QStringList>
 #include <QSurfaceFormat>
 #include <QNetworkProxy>
@@ -178,6 +179,76 @@ bool usingSoftwareDynamicGL()
 #endif
 }
 
+static bool openGLPlatformSupport()
+{
+    return QGuiApplicationPrivate::platformIntegration()->hasCapability(
+            QPlatformIntegration::OpenGL);
+}
+
+static const char *getGLType(bool enableGLSoftwareRendering, bool disableGpu)
+{
+    const char *glType = gl::kGLImplementationDisabledName;
+    const bool tryGL =
+            usingSupportedSGBackend() && !usingSoftwareDynamicGL() && openGLPlatformSupport();
+
+    if (disableGpu || (!tryGL && !enableGLSoftwareRendering))
+        return glType;
+
+#if defined(Q_OS_MACOS)
+    return gl::kGLImplementationANGLEName;
+#else
+#if defined(Q_OS_WIN)
+    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11)
+        return gl::kGLImplementationANGLEName;
+#endif
+
+    if (!qt_gl_global_share_context() || !qt_gl_global_share_context()->isValid()) {
+        qWarning("WebEngineContext is used before QtWebEngineQuick::initialize() or OpenGL context "
+                 "creation failed.");
+        return glType;
+    }
+
+    const QSurfaceFormat sharedFormat = qt_gl_global_share_context()->format();
+
+    switch (sharedFormat.renderableType()) {
+    case QSurfaceFormat::OpenGL:
+        if (sharedFormat.profile() == QSurfaceFormat::CoreProfile) {
+            glType = gl::kGLImplementationDesktopName;
+            qWarning("An OpenGL Core Profile was requested, but it is not supported "
+                     "on the current platform. Falling back to a non-Core profile. "
+                     "Note that this might cause rendering issues.");
+        } else {
+            glType = gl::kGLImplementationDesktopName;
+        }
+        break;
+    case QSurfaceFormat::OpenGLES:
+        glType = gl::kGLImplementationEGLName;
+        break;
+    case QSurfaceFormat::OpenVG:
+    case QSurfaceFormat::DefaultRenderableType:
+    default:
+        // Shared contex created but no rederable type set.
+        qWarning("Unsupported rendering surface format. Please open bug report at "
+                 "https://bugreports.qt.io");
+    }
+    return glType;
+#endif // defined(Q_OS_MACOS)
+}
+#else
+static const char *getGLType(bool /*enableGLSoftwareRendering*/, bool disableGpu)
+{
+    if (disableGpu)
+        return gl::kGLImplementationDisabledName;
+#if defined(Q_OS_MACOS)
+    return gl::kGLImplementationANGLEName;
+#elif defined(Q_OS_WIN)
+    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11)
+        return gl::kGLImplementationANGLEName;
+#endif
+    return gl::kGLImplementationDisabledName;
+}
+#endif // QT_CONFIG(opengl)
+
 #if defined(Q_OS_WIN)
 static QString getAdapterLuid() {
     static const bool preferSoftwareDevice = qEnvironmentVariableIntValue("QSG_RHI_PREFER_SOFTWARE_RENDERER");
@@ -202,81 +273,6 @@ static QString getAdapterLuid() {
     }
 }
 #endif
-
-static bool openGLPlatformSupport()
-{
-    return QGuiApplicationPrivate::platformIntegration()->hasCapability(
-            QPlatformIntegration::OpenGL);
-}
-
-static const char *getGLType(bool enableGLSoftwareRendering, bool disableGpu)
-{
-    const char *glType = gl::kGLImplementationDisabledName;
-    const bool tryGL =
-            usingSupportedSGBackend() && !usingSoftwareDynamicGL() && openGLPlatformSupport();
-
-    if (disableGpu || (!tryGL && !enableGLSoftwareRendering))
-        return glType;
-
-#if defined(Q_OS_MACOS)
-    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Metal)
-        return gl::kGLImplementationANGLEName;
-#elif defined(Q_OS_WIN)
-    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11)
-        return gl::kGLImplementationANGLEName;
-#endif
-
-    if (!qt_gl_global_share_context() || !qt_gl_global_share_context()->isValid()) {
-        qWarning("WebEngineContext is used before QtWebEngineQuick::initialize() or OpenGL context "
-                 "creation failed.");
-        return glType;
-    }
-
-    const QSurfaceFormat sharedFormat = qt_gl_global_share_context()->format();
-
-    switch (sharedFormat.renderableType()) {
-    case QSurfaceFormat::OpenGL:
-        if (sharedFormat.profile() == QSurfaceFormat::CoreProfile) {
-#if defined(Q_OS_MACOS)
-            // Chromium supports core profile only on mac
-            glType = gl::kGLImplementationCoreProfileName;
-#else
-            glType = gl::kGLImplementationDesktopName;
-            qWarning("An OpenGL Core Profile was requested, but it is not supported "
-                     "on the current platform. Falling back to a non-Core profile. "
-                     "Note that this might cause rendering issues.");
-#endif
-        } else {
-            glType = gl::kGLImplementationDesktopName;
-        }
-        break;
-    case QSurfaceFormat::OpenGLES:
-        glType = gl::kGLImplementationEGLName;
-        break;
-    case QSurfaceFormat::OpenVG:
-    case QSurfaceFormat::DefaultRenderableType:
-    default:
-        // Shared contex created but no rederable type set.
-        qWarning("Unsupported rendering surface format. Please open bug report at "
-                 "https://bugreports.qt.io");
-    }
-    return glType;
-}
-#else
-static const char *getGLType(bool /*enableGLSoftwareRendering*/, bool disableGpu)
-{
-    if (disableGpu)
-        return gl::kGLImplementationDisabledName;
-#if defined(Q_OS_MACOS)
-    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Metal)
-        return gl::kGLImplementationANGLEName;
-#elif defined(Q_OS_WIN)
-    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11)
-        return gl::kGLImplementationANGLEName;
-#endif
-    return gl::kGLImplementationDisabledName;
-}
-#endif // QT_CONFIG(opengl)
 
 #if QT_CONFIG(webengine_pepper_plugins)
 void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
@@ -739,7 +735,6 @@ WebEngineContext::WebEngineContext()
     disableFeatures.push_back(features::kWebOTP.name);
     disableFeatures.push_back(features::kWebPayments.name);
     disableFeatures.push_back(features::kWebUsb.name);
-    disableFeatures.push_back(media::kPictureInPicture.name);
 
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
@@ -935,6 +930,22 @@ base::CommandLine *WebEngineContext::initCommandLine(bool &useEmbeddedSwitches,
     appArgs.removeAll(QStringLiteral("--disable-embedded-switches"));
     appArgs.removeAll(QStringLiteral("--enable-embedded-switches"));
 
+    bool isRemoteDebugPort =
+            (-1
+             != appArgs.indexOf(QRegularExpression(QStringLiteral("--remote-debugging-port=.*"),
+                                                   QRegularExpression::CaseInsensitiveOption)))
+            || !qEnvironmentVariable("QTWEBENGINE_REMOTE_DEBUGGING").isEmpty();
+    bool isRemoteAllowOrigins =
+            (-1
+             != appArgs.indexOf(QRegularExpression(QStringLiteral("--remote-allow-origins=.*"),
+                                                   QRegularExpression::CaseInsensitiveOption)));
+
+    if (isRemoteDebugPort && !isRemoteAllowOrigins) {
+        appArgs.append(QStringLiteral("--remote-allow-origins=*"));
+        qWarning("Added {--remote-allow-origins=*} to command-line arguments "
+                 "to avoid web socket connection errors during remote debugging.");
+    }
+
     base::CommandLine::StringVector argv;
     argv.resize(appArgs.size());
 #if defined(Q_OS_WIN)
@@ -974,7 +985,7 @@ const char *qWebEngineChromiumVersion() noexcept
 
 const char *qWebEngineChromiumSecurityPatchVersion() noexcept
 {
-    return "119.0.6045.123"; // FIXME: Remember to update
+    return "119.0.6045.199"; // FIXME: Remember to update
 }
 
 QT_END_NAMESPACE

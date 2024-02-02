@@ -115,85 +115,86 @@
            should be enabled to get automatic focus.
     \value PasteAndMatchStyle Paste content from the clipboard with current style.
 
-    \value OpenLinkInThisWindow Open the current link in the current window. (Added in Qt 5.6)
-    \value OpenLinkInNewWindow Open the current link in a new window. Requires implementation of
-           \l createWindow() or \l newWindowRequested() (Added in Qt 5.6)
-    \value OpenLinkInNewTab Open the current link in a new tab. Requires implementation of
-           \l createWindow() or \l newWindowRequested(). (Added in Qt 5.6)
-    \value OpenLinkInNewBackgroundTab Open the current link in a new background tab. Requires
-           implementation of \l createWindow() or \l newWindowRequested(). (Added in Qt 5.7)
-    \value CopyLinkToClipboard Copy the current link to the clipboard. (Added in Qt 5.6)
+    \value [since 5.6] OpenLinkInThisWindow Open the current link in the current window.
+    \value [since 5.6] OpenLinkInNewWindow Open the current link in a new window. Requires implementation of
+           \l createWindow() or \l newWindowRequested().
+    \value [since 5.6] OpenLinkInNewTab Open the current link in a new tab. Requires implementation of
+           \l createWindow() or \l newWindowRequested().
+    \value [since 5.7] OpenLinkInNewBackgroundTab Open the current link in a new background tab. Requires
+           implementation of \l createWindow() or \l newWindowRequested().
+    \value [since 5.6] CopyLinkToClipboard Copy the current link to the clipboard.
 
-    \value CopyImageToClipboard Copy the clicked image to the clipboard. (Added in Qt 5.6)
-    \value CopyImageUrlToClipboard Copy the clicked image's URL to the clipboard. (Added in Qt 5.6)
-    \value CopyMediaUrlToClipboard Copy the hovered audio or video's URL to the clipboard. (Added in Qt 5.6)
-    \value ToggleMediaControls Toggle between showing and hiding the controls for the hovered audio
-           or video element. (Added in Qt 5.6)
-    \value ToggleMediaLoop Toggle whether the hovered audio or video should loop on completetion or
-           not. (Added in Qt 5.6)
-    \value ToggleMediaPlayPause Toggle the play/pause state of the hovered audio or video element.
-           (Added in Qt 5.6)
-    \value ToggleMediaMute Mute or unmute the hovered audio or video element. (Added in Qt 5.6)
-    \value DownloadLinkToDisk Download the current link to the disk. Requires a slot for
-           \l{QWebEngineProfile::}{downloadRequested()}. (Added in Qt 5.6)
-    \value DownloadImageToDisk Download the highlighted image to the disk. Requires a slot for
-           \l{QWebEngineProfile::}{downloadRequested()}. (Added in Qt 5.6)
-    \value DownloadMediaToDisk Download the hovered audio or video to the disk. Requires a slot for
-           \l{QWebEngineProfile::}{downloadRequested()}. (Added in Qt 5.6)
+    \value [since 5.6] CopyImageToClipboard Copy the clicked image to the clipboard.
+    \value [since 5.6] CopyImageUrlToClipboard Copy the clicked image's URL to the clipboard.
+    \value [since 5.6] CopyMediaUrlToClipboard Copy the hovered audio or video's URL to the clipboard.
+    \value [since 5.6] ToggleMediaControls Toggle between showing and hiding the controls for the hovered audio
+           or video element.
+    \value [since 5.6] ToggleMediaLoop Toggle whether the hovered audio or video should loop on completetion or
+           not.
+    \value [since 5.6] ToggleMediaPlayPause Toggle the play/pause state of the hovered audio or video element.
+    \value [since 5.6] ToggleMediaMute Mute or unmute the hovered audio or video element.
+    \value [since 5.6] DownloadLinkToDisk Download the current link to the disk. Requires a slot for
+           \l{QWebEngineProfile::}{downloadRequested()}.
+    \value [since 5.6] DownloadImageToDisk Download the highlighted image to the disk. Requires a slot for
+           \l{QWebEngineProfile::}{downloadRequested()}.
+    \value [since 5.6] DownloadMediaToDisk Download the hovered audio or video to the disk. Requires a slot for
+           \l{QWebEngineProfile::}{downloadRequested()}.
 
-    \value InspectElement Trigger any attached Web Inspector to inspect the highlighed element.
-           (Added in Qt 5.6)
-    \value ExitFullScreen Exit the fullscreen mode. (Added in Qt 5.6)
-    \value RequestClose Request to close the web page. If defined, the \c{window.onbeforeunload}
+    \value [since 5.6] InspectElement Trigger any attached Web Inspector to inspect the highlighed element.
+    \value [since 5.6] ExitFullScreen Exit the fullscreen mode.
+    \value [since 5.6] RequestClose Request to close the web page. If defined, the \c{window.onbeforeunload}
            handler is run, and the user can confirm or reject to close the page. If the close
-           request is confirmed, \c windowCloseRequested is emitted. (Added in Qt 5.6)
-    \value Unselect Clear the current selection. (Added in Qt 5.7)
-    \value SavePage Save the current page to disk. MHTML is the default format that is used to store
+           request is confirmed, \c windowCloseRequested is emitted.
+    \value [since 5.7] Unselect Clear the current selection.
+    \value [since 5.7] SavePage Save the current page to disk. MHTML is the default format that is used to store
            the web page on disk. Requires a slot for \l{QWebEngineProfile::}{downloadRequested()}.
-           (Added in Qt 5.7)
-    \value ViewSource Show the source of the current page in a new tab. Requires implementation of
-            \l createWindow() or \l newWindowRequested(). (Added in Qt 5.8)
+    \value [since 5.8] ViewSource Show the source of the current page in a new tab. Requires implementation of
+            \l createWindow() or \l newWindowRequested().
 
-    \value ToggleBold
+    \value [since 5.10] ToggleBold
            Toggles boldness for the selection or at the cursor position.
-           Requires \c contenteditable="true". (Added in Qt 5.10)
-    \value ToggleItalic
+           Requires \c contenteditable="true".
+    \value [since 5.10] ToggleItalic
            Toggles italics for the selection or at the cursor position.
-           Requires \c contenteditable="true". (Added in Qt 5.10)
-    \value ToggleUnderline
+           Requires \c contenteditable="true".
+    \value [since 5.10] ToggleUnderline
            Toggles underlining of the selection or at the cursor position.
-           Requires \c contenteditable="true". (Added in Qt 5.10)
-    \value ToggleStrikethrough
+           Requires \c contenteditable="true".
+    \value [since 5.10] ToggleStrikethrough
            Toggles striking through the selection or at the cursor position.
-           Requires \c contenteditable="true". (Added in Qt 5.10)
+           Requires \c contenteditable="true".
 
-    \value AlignLeft
+    \value [since 5.10] AlignLeft
            Aligns the lines containing the selection or the cursor to the left.
-           Requires \c contenteditable="true". (Added in Qt 5.10)
-    \value AlignCenter
+           Requires \c contenteditable="true".
+    \value [since 5.10] AlignCenter
            Aligns the lines containing the selection or the cursor at the center.
-           Requires \c contenteditable="true". (Added in Qt 5.10)
-    \value AlignRight
+           Requires \c contenteditable="true".
+    \value [since 5.10] AlignRight
            Aligns the lines containing the selection or the cursor to the right.
-           Requires \c contenteditable="true". (Added in Qt 5.10)
-    \value AlignJustified
+           Requires \c contenteditable="true".
+    \value [since 5.10] AlignJustified
            Stretches the lines containing the selection or the cursor so that each
            line has equal width.
-           Requires \c contenteditable="true". (Added in Qt 5.10)
-    \value Indent
+           Requires \c contenteditable="true".
+    \value [since 5.10] Indent
            Indents the lines containing the selection or the cursor.
-           Requires \c contenteditable="true". (Added in Qt 5.10)
-    \value Outdent
+           Requires \c contenteditable="true".
+    \value [since 5.10] Outdent
            Outdents the lines containing the selection or the cursor.
-           Requires \c contenteditable="true". (Added in Qt 5.10)
+           Requires \c contenteditable="true".
 
-    \value InsertOrderedList
+    \value [since 5.10] InsertOrderedList
            Inserts an ordered list at the current cursor position, deleting the current selection.
-           Requires \c contenteditable="true". (Added in Qt 5.10)
-    \value InsertUnorderedList
+           Requires \c contenteditable="true".
+    \value [since 5.10] InsertUnorderedList
            Inserts an unordered list at the current cursor position,
            deleting the current selection.
-           Requires \c contenteditable="true". (Added in Qt 5.10)
+           Requires \c contenteditable="true".
+    \value [since 6.6] ChangeTextDirectionLTR
+           Changes text direction to left-to-right in the focused input element.
+    \value [since 6.6] ChangeTextDirectionRTL
+           Changes text direction to right-to-left in the focused input element.
     \omitvalue WebActionCount
 
 */
@@ -209,8 +210,8 @@
             A web browser tab.
     \value  WebDialog
             A window without decoration.
-    \value  WebBrowserBackgroundTab
-            A web browser tab without hiding the current visible WebEngineView. (Added in Qt 5.7)
+    \value [since 5.7] WebBrowserBackgroundTab
+            A web browser tab without hiding the current visible WebEngineView.
 */
 
 /*!
@@ -264,7 +265,7 @@
     \value NavigationTypeFormSubmitted The navigation request resulted from a form submission.
     \value NavigationTypeBackForward The navigation request resulted from a back or forward action.
     \value NavigationTypeReload The navigation request resulted from a reload action.
-    \value NavigationTypeRedirect The navigation request resulted from a content or server controlled redirect. This also includes automatic reloads. (Added in Qt 5.14)
+    \value [since 5.14] NavigationTypeRedirect The navigation request resulted from a content or server controlled redirect. This also includes automatic reloads.
     \value NavigationTypeOther The navigation request was triggered by other means not covered by the above.
 
     \sa acceptNavigationRequest()
@@ -289,11 +290,11 @@
     \value  MouseLock
             Mouse locking, which locks the mouse pointer to the web view and is typically used in
             games.
-    \value  DesktopVideoCapture
+    \value [since 5.10] DesktopVideoCapture
             Video output capture, that is, the capture of the user's display,
-            for screen sharing purposes for example. (Added in Qt 5.10)
-    \value  DesktopAudioVideoCapture
-            Both audio and video output capture. (Added in Qt 5.10)
+            for screen sharing purposes for example.
+    \value [since 5.10] DesktopAudioVideoCapture
+            Both audio and video output capture.
 
     \sa featurePermissionRequested(), featurePermissionRequestCanceled(), setFeaturePermission(), PermissionPolicy
 
@@ -450,6 +451,9 @@
 
     The action is owned by the QWebEnginePage but you can customize the look by
     changing its properties.
+
+    \l{QWebEnginePage::action(WebAction action)} does not have a default styled icon.
+    Use \l{QWebEngineView::pageAction()} to have an action with a default styled icon.
 
     QWebEnginePage also takes care of implementing the action, so that upon
     triggering the corresponding action is performed on the page.

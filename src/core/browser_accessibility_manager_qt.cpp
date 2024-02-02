@@ -74,7 +74,7 @@ BrowserAccessibilityManagerQt::~BrowserAccessibilityManagerQt()
 
 QAccessibleInterface *BrowserAccessibilityManagerQt::rootParentAccessible()
 {
-    content::BrowserAccessibility *parent_node = GetParentNodeFromParentTree();
+    content::BrowserAccessibility *parent_node = GetParentNodeFromParentTreeAsBrowserAccessibility();
     if (!parent_node) {
         Q_ASSERT(m_webContentsAccessibility);
         return QAccessible::queryAccessibleInterface(m_webContentsAccessibility->accessibilityParentObject());
