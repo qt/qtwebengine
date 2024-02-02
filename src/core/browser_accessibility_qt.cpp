@@ -10,6 +10,7 @@
 #include "qtwebenginecoreglobal_p.h"
 #include "type_conversion.h"
 
+#if QT_CONFIG(accessibility)
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
@@ -1151,14 +1152,22 @@ void BrowserAccessibilityInterface::modelChange(QAccessibleTableModelChangeEvent
 
 } // namespace QtWebEngineCore
 
+#endif // QT_CONFIG(accessibility)
 namespace content {
 
 // static
 std::unique_ptr<BrowserAccessibility> BrowserAccessibility::Create(BrowserAccessibilityManager *man, ui::AXNode *node)
 {
+#if QT_CONFIG(accessibility)
     return std::unique_ptr<BrowserAccessibility>(new QtWebEngineCore::BrowserAccessibilityQt(man, node));
+#else
+    Q_UNUSED(man);
+    Q_UNUSED(node);
+    return nullptr;
+#endif // #if QT_CONFIG(accessibility)
 }
 
+#if QT_CONFIG(accessibility)
 QAccessibleInterface *toQAccessibleInterface(BrowserAccessibility *obj)
 {
     return static_cast<QtWebEngineCore::BrowserAccessibilityQt *>(obj)->interface;
@@ -1168,5 +1177,6 @@ const QAccessibleInterface *toQAccessibleInterface(const BrowserAccessibility *o
 {
     return static_cast<const QtWebEngineCore::BrowserAccessibilityQt *>(obj)->interface;
 }
+#endif // #if QT_CONFIG(accessibility)
 
 } // namespace content

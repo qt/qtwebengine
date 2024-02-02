@@ -8,6 +8,7 @@
 
 #include "print_view_manager_qt.h"
 
+#include "pdf_util_qt.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_view_qt.h"
@@ -238,7 +239,11 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
     if (web_contents()->IsCrashed())
         return false;
 
-    content::RenderFrameHost* rfh = web_contents()->GetPrimaryMainFrame();
+    content::RenderFrameHost *rfh = web_contents()->GetPrimaryMainFrame();
+    // Use the plugin frame for printing if web_contents() is a PDF viewer guest
+    content::RenderFrameHost *full_page_plugin = GetFullPagePlugin(web_contents());
+    if (content::RenderFrameHost *pdf_rfh = FindPdfChildFrame(full_page_plugin ? full_page_plugin : rfh))
+        rfh = pdf_rfh;
     GetPrintRenderFrame(rfh)->InitiatePrintPreview(mojo::PendingAssociatedRemote<printing::mojom::PrintRenderer>(), false);
 
     DCHECK(!m_printPreviewRfh);

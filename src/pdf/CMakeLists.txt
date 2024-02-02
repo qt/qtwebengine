@@ -65,7 +65,7 @@ add_code_attributions_target(
     BUILDDIR ${buildDir}/${config}/${arch}
 )
 add_dependencies(generate_pdf_attributions run_pdf_GnDone)
-add_dependencies(docs generate_pdf_attributions)
+add_dependencies(prepare_docs_Pdf generate_pdf_attributions)
 
 ##
 #   TOOLCHAIN SETUP
@@ -245,7 +245,7 @@ endforeach()
 get_architectures(archs)
 list(GET archs 0 arch)
 target_include_directories(Pdf PRIVATE ${buildDir}/$<CONFIG>/${arch}/gen)
-add_gn_build_aritfacts_to_target(
+add_gn_build_artifacts_to_target(
     CMAKE_TARGET Pdf
     NINJA_TARGET QtPdf
     MODULE pdf
