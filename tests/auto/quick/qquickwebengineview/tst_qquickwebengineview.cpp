@@ -15,11 +15,11 @@
 #include <QtGui/qpa/qwindowsysteminterface.h>
 #include <QtQml/QQmlEngine>
 #include <QtTest/QtTest>
+#include <QtWebEngineQuick/QQuickWebEngineDownloadRequest>
 #include <QtWebEngineQuick/QQuickWebEngineProfile>
 #include <QtGui/private/qinputmethod_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginescriptcollection_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginesettings_p.h>
-#include <QtWebEngineQuick/private/qquickwebenginedownloadrequest_p.h>
 #include <QtWebEngineQuick/private/qquickwebengineview_p.h>
 #include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
 #include <qpa/qplatforminputcontext.h>

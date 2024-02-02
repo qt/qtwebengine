@@ -8,7 +8,6 @@
 #include <QMetaType>
 #include <QQmlListProperty>
 #include <QtTest/QtTest>
-#include <QtWebEngineQuick/QQuickWebEngineProfile>
 #include <QtWebEngineCore/QWebEngineCertificateError>
 #include <QtWebEngineCore/QWebEngineDesktopMediaRequest>
 #include <QtWebEngineCore/QWebEngineFileSystemAccessRequest>
@@ -28,11 +27,12 @@
 #include <QtWebEngineCore/QWebEngineWebAuthUxRequest>
 #include <QtWebEngineCore/QWebEngineFrame>
 #include <QtWebEngineCore/QWebEnginePermission>
+#include <QtWebEngineQuick/QQuickWebEngineDownloadRequest>
+#include <QtWebEngineQuick/QQuickWebEngineProfile>
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebengineaction_p.h>
 #include <private/qquickwebengineclientcertificateselection_p.h>
 #include <private/qquickwebenginedialogrequests_p.h>
-#include <private/qquickwebenginedownloadrequest_p.h>
 #include <private/qquickwebenginenewwindowrequest_p.h>
 #include <private/qquickwebenginesettings_p.h>
 #include <private/qquickwebenginesingleton_p.h>
