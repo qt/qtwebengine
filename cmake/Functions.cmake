@@ -458,8 +458,10 @@ function(add_linker_options target buildDir completeStatic)
             target_link_options(${cmakeTarget}
                 PRIVATE /DELAYLOAD:mf.dll /DELAYLOAD:mfplat.dll /DELAYLOAD:mfreadwrite.dll /DELAYLOAD:winmm.dll
             )
-            # enable larger PDBs
-            target_link_options(${cmakeTarget} PRIVATE "/pdbpagesize:8192")
+            # enable larger PDBs if webenginecore debug build
+            if(cmakeTarget STREQUAL "WebEngineCore")
+                target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:Debug>:/pdbpagesize:8192>")
+            endif()
         endif()
         target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${objects_rsp}>")
         if(NOT completeStatic)
