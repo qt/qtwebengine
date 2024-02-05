@@ -81,7 +81,7 @@ inline QQuickWebEngineView* tst_InspectorServer::webView() const
 QJsonArray tst_InspectorServer::fetchPageList() const
 {
     QNetworkAccessManager qnam;
-    QSignalSpy spy(&qnam, &QNetworkAccessManager::finished);;
+    QSignalSpy spy(&qnam, &QNetworkAccessManager::finished);
     QNetworkRequest request(s_inspectorServerHttpBaseUrl.resolved(QUrl("json/list")));
     QScopedPointer<QNetworkReply> reply(qnam.get(request));
     spy.wait();
