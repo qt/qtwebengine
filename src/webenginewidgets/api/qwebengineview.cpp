@@ -30,6 +30,7 @@
 #include <QStyle>
 #include <QGuiApplication>
 #include <QQuickWidget>
+#include <QtWidgets/private/qapplication_p.h>
 
 #if QT_CONFIG(accessibility)
 #include "qwebengine_accessible.h"
@@ -187,6 +188,8 @@ public:
     {
         auto parentWidget = QQuickWidget::parentWidget();
         if (parentWidget) {
+            if (QApplicationPrivate::wheel_widget)
+                QApplicationPrivate::wheel_widget = nullptr;
             QSpontaneKeyEvent::makeSpontaneous(ev);
             qApp->notify(parentWidget, ev);
         }
