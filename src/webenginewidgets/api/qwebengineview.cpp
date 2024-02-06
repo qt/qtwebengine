@@ -157,6 +157,7 @@ public:
     }
     void SetClearColor(const QColor &color) override
     {
+        setUpdatesEnabled(false);
         QQuickWidget::setClearColor(color);
         // QQuickWidget is usually blended by punching holes into widgets
         // above it to simulate the visual stacking order. If we want it to be
@@ -165,7 +166,8 @@ public:
         bool isTranslucent = color.alpha() < 255;
         setAttribute(Qt::WA_AlwaysStackOnTop, isTranslucent);
         setAttribute(Qt::WA_OpaquePaintEvent, !isTranslucent);
-        update();
+        setUpdatesEnabled(true);
+        window()->update();
     }
     void MoveWindow(const QPoint &screenPos) override
     {
