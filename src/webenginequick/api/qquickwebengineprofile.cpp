@@ -105,6 +105,8 @@ QT_BEGIN_NAMESPACE
   The download item is parented by the profile. If it is not accepted, it
   will be deleted immediately after the signal emission.
   This signal cannot be used with a queued connection.
+
+  \note To use from C++ static_cast \a download to QWebEngineDownloadRequest
 */
 
 /*!
@@ -113,6 +115,8 @@ QT_BEGIN_NAMESPACE
   This signal is emitted whenever downloading stops, because it finished successfully, was
   cancelled, or was interrupted (for example, because connectivity was lost).
   The \a download argument holds the state of the finished download instance.
+
+  \note To use from C++ static_cast \a download to QWebEngineDownloadRequest
 */
 
 /*!
