@@ -1,6 +1,9 @@
 # Copyright (C) 2023 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+# This is gn wrapper script and it assables code attributions.
+
+
 if(NOT CMAKE_SCRIPT_MODE_FILE)
     message("This files should run only in script mode")
     return()
@@ -10,7 +13,6 @@ get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/.." 
 get_filename_component(WEBENGINE_ROOT_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}" REALPATH)
 
 include(${WEBENGINE_ROOT_SOURCE_DIR}/.cmake.conf)
-include(${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Functions.cmake)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 
@@ -19,11 +21,11 @@ if(NOT Python3_EXECUTABLE)
     find_package(Python3 3.6 REQUIRED)
 endif()
 
-set(extraThirdPartyDirs "")
+set(extra_third_party_dirs "")
 if(NOT "${EXTRA_THIRD_PARTY_DIRS}" STREQUAL "")
-    string(REPLACE " " ";" dirList ${EXTRA_THIRD_PARTY_DIRS})
-    foreach(dir ${dirList})
-        string(CONCAT extraThirdPartyDirs ${extraThirdPartyDirs}"${dir}",)
+    string(REPLACE " " ";" dir_list ${EXTRA_THIRD_PARTY_DIRS})
+    foreach(dir ${dir_list})
+        string(CONCAT extra_third_party_dirs ${extra_third_party_dirs}"${dir}",)
     endforeach()
 endif()
 
@@ -34,18 +36,18 @@ execute_process(
         --gn-binary ${Gn_EXECUTABLE}
         --gn-target ${GN_TARGET}
         --gn-out-dir ${BUILDDIR}
-        --extra-third-party-dirs=[${extraThirdPartyDirs}]
+        --extra-third-party-dirs=[${extra_third_party_dirs}]
         credits ${OUTPUT}
     WORKING_DIRECTORY ${BUILDDIR}
-    RESULT_VARIABLE gnResult
-    OUTPUT_VARIABLE gnOutput
-    ERROR_VARIABLE gnError
+    RESULT_VARIABLE gn_result
+    OUTPUT_VARIABLE gn_output
+    ERROR_VARIABLE gn_error
     TIMEOUT 600
 )
 
-if(NOT gnResult EQUAL 0)
-    message(FATAL_ERROR "\n-- License FAILED\n${gnOutput}\n${gnError}\n${gnResult}\n")
+if(NOT gn_result EQUAL 0)
+    message(FATAL_ERROR "\n-- License FAILED\n${gn_output}\n${gn_error}\n${gn_result}\n")
 else()
-    string(REGEX REPLACE "\n$" "" gnOutput "${gnOutput}")
-    message("-- License ${gnOutput}")
+    string(REGEX REPLACE "\n$" "" gn_output "${gn_output}")
+    message("-- License ${gn_output}")
 endif()

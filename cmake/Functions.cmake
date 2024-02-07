@@ -1298,13 +1298,13 @@ function(add_code_attributions_target)
             -DBUILDDIR=${arg_BUILDDIR}
             -DOUTPUT=${arg_OUTPUT}
             -DPython3_EXECUTABLE=${Python3_EXECUTABLE}
-            -P ${WEBENGINE_ROOT_SOURCE_DIR}/cmake/License.cmake
+            -P ${WEBENGINE_ROOT_SOURCE_DIR}/cmake/QtGnCredits.cmake
         WORKING_DIRECTORY ${WEBENGINE_ROOT_BUILD_DIR}
         DEPENDS
             ${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium/tools/licenses/licenses.py
             ${arg_FILE_TEMPLATE}
             ${arg_ENTRY_TEMPLATE}
-            ${WEBENGINE_ROOT_SOURCE_DIR}/cmake/License.cmake
+            ${WEBENGINE_ROOT_SOURCE_DIR}/cmake/QtGnCredits.cmake
         USES_TERMINAL
      )
      add_custom_target(${arg_TARGET} DEPENDS ${arg_OUTPUT})
