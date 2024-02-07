@@ -18,7 +18,7 @@ get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/.." 
 get_filename_component(WEBENGINE_ROOT_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}" ${path_mode})
 
 include(${WEBENGINE_ROOT_SOURCE_DIR}/.cmake.conf)
-include(${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Functions.cmake)
+include(${WEBENGINE_ROOT_SOURCE_DIR}/cmake/QtBuildGnHelpers.cmake)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 
@@ -49,6 +49,7 @@ configure_gn_target(
    "${source_dir}"
    "${WEBENGINE_ROOT_SOURCE_DIR}/src/${module}/configure/BUILD.root.gn.in"
    "${build_dir}/BUILD.gn"
+   ${path_mode}
 )
 
 ##

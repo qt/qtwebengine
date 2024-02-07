@@ -126,30 +126,12 @@ function(add_gn_target target config arch)
     )
 endfunction()
 
-function(init_gn_config filePath)
-    include(${filePath})
-    set_directory_properties(PROPERTIES
-        ELEMENTS "${ELEMENTS}"
-        PREFIX "${PREFIX}"
-    )
-    applyToGnTarget(DIRECTORY)
-endfunction()
-
-function(read_gn_config filePath)
-    include(${filePath})
-    applyToGnTarget(DIRECTORY)
-endfunction()
-
-# this runs also in script mode, so we use than DIRECTORY
-macro(applyToGnTarget)
-    set(type ${ARGV0})
-    set(target ${ARGV1})
-    get_property(elementList ${type} ${target} PROPERTY ELEMENTS)
-    get_property(prefix ${type} ${target} PROPERTY PREFIX)
+macro(set_properties_on_target_scope target)
+    get_target_property(elementList ${target} ELEMENTS)
+    get_target_property(prefix ${target} PREFIX)
     foreach(element IN LISTS elementList)
         if(${prefix}_${element})
-            message(DEBUG "${prefix}_${element} = ${${prefix}_${element}}")
-            set_property(${type} ${target} APPEND PROPERTY ${prefix}_${element} ${${prefix}_${element}})
+            set_property(TARGET ${target} APPEND PROPERTY ${prefix}_${element} ${${prefix}_${element}})
         endif()
     endforeach()
 endmacro()
@@ -165,7 +147,7 @@ function(extend_gn_target target)
     qt_evaluate_config_expression(result ${GN_CONDITION})
     if(${result})
         message(DEBUG "extend_gn_target(${target} CONDITION ${GN_CONDITION} ...): Evaluated")
-        applyToGnTarget(TARGET ${target})
+        set_properties_on_target_scope(${target})
     endif()
 endfunction()
 
@@ -187,84 +169,6 @@ function(extend_gn_list outList)
         set(${outList} "${${outList}}" "${gnArg}=${value}")
     endforeach()
     set(${outList} "${${outList}}" PARENT_SCOPE)
-endfunction()
-
-function(configure_gn_target sourceDir inFilePath outFilePath)
-    # FIXME: GN_CONFIG
-    set(GN_CONFIG NOTUSED)
-
-    set(path_mode REALPATH)
-    if(APPLE AND QT_ALLOW_SYMLINK_IN_PATHS)
-        set(path_mode ABSOLUTE)
-    endif()
-
-    # GN_SOURCES GN_HEADERS
-    get_property(gnSources DIRECTORY PROPERTY GN_SOURCES)
-    foreach(gnSourceFile ${gnSources})
-        get_filename_component(gnSourcePath ${sourceDir}/${gnSourceFile} ${path_mode})
-        list(APPEND sourceList \"${gnSourcePath}\")
-    endforeach()
-    set(GN_HEADERS ${sourceList})
-    set(GN_SOURCES ${sourceList})
-    list(FILTER GN_HEADERS INCLUDE REGEX "^.+\\.h\"$")
-    list(FILTER GN_SOURCES EXCLUDE REGEX "^.+\\.h\"$")
-
-    # GN_DEFINES
-    get_property(gnDefines DIRECTORY PROPERTY GN_DEFINES)
-    list(REMOVE_DUPLICATES gnDefines)
-    foreach(gnDefine ${gnDefines})
-        list(APPEND GN_ARGS_DEFINES \"-D${gnDefine}\")
-        list(APPEND GN_DEFINES \"${gnDefine}\")
-    endforeach()
-
-    # GN_INCLUDES
-    get_property(gnIncludes DIRECTORY PROPERTY GN_INCLUDES)
-    list(REMOVE_DUPLICATES gnIncludes)
-    foreach(gnInclude ${gnIncludes})
-        get_filename_component(gnInclude ${gnInclude} ${path_mode})
-        list(APPEND GN_ARGS_INCLUDES \"-I${gnInclude}\")
-        list(APPEND GN_INCLUDE_DIRS \"${gnInclude}\")
-    endforeach()
-
-    # MOC
-    get_property(mocFilePath DIRECTORY PROPERTY GN_MOC_PATH)
-    set(GN_ARGS_MOC_BIN \"${mocFilePath}\")
-
-    # GN_CFLAGS_CC
-    get_property(gnCxxCompileOptions DIRECTORY PROPERTY GN_CXX_COMPILE_OPTIONS)
-    foreach(gnCxxCompileOption ${gnCxxCompileOptions})
-        list(APPEND GN_CFLAGS_CC \"${gnCxxCompileOption}\")
-    endforeach()
-    list(REMOVE_DUPLICATES GN_CFLAGS_CC)
-
-    # GN_CFLAGS_C
-    get_property(gnCCompileOptions DIRECTORY PROPERTY GN_C_COMPILE_OPTIONS)
-    foreach(gnCCompileOption ${gnCCompileOptions})
-        list(APPEND GN_CFLAGS_C \"${gnCCompileOption}\")
-    endforeach()
-    list(REMOVE_DUPLICATES GN_CFLAGS_C)
-
-    # GN_SOURCE_ROOT
-    get_filename_component(GN_SOURCE_ROOT "${sourceDir}" ${path_mode})
-
-    if(APPLE) # this runs in scrpit mode without qt-cmake so on MACOS here
-        recoverFrameworkBuild(GN_INCLUDE_DIRS GN_CFLAGS_C)
-    endif()
-
-    # Static setup
-    set(libs PNG JPEG FREETYPE HARFBUZZ ZLIB)
-    foreach(lib ${libs})
-        get_property(staticIncludes DIRECTORY PROPERTY GN_${lib}_INCLUDES)
-        foreach(is ${staticIncludes})
-            list(APPEND GN_${lib}_INCLUDES \"${is}\")
-        endforeach()
-    endforeach()
-    foreach(item GN_HEADERS GN_SOURCES GN_ARGS_DEFINES GN_DEFINES GN_ARGS_INCLUDES
-        GN_INCLUDE_DIRS GN_CFLAGS_CC GN_CFLAGS_C GN_PNG_INCLUDES GN_JPEG_INCLUDES
-        GN_FREETYPE_INCLUDES GN_HARFBUZZ_INCLUDES GN_ZLIB_INCLUDES)
-        string(REPLACE ";" ",\n  " ${item} "${${item}}")
-    endforeach()
-    configure_file(${inFilePath} ${outFilePath} @ONLY)
 endfunction()
 
 # we had no qtsync on headers during configure, so take current interface from expression
