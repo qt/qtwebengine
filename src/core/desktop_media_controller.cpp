@@ -13,7 +13,7 @@
 
 #if QT_CONFIG(webengine_webrtc)
 #include "content/public/browser/desktop_capture.h"
-#endif QT_CONFIG(webengine_webrtc)
+#endif // QT_CONFIG(webengine_webrtc)
 
 namespace QtWebEngineCore {
 namespace {
