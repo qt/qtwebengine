@@ -24,7 +24,6 @@ function(assertTargets)
     endforeach()
 endfunction()
 
-# TODO: this should be idealy in qtbase
 function(add_check_for_support)
     cmake_parse_arguments(PARSE_ARGV 0 arg
         "" "" "MODULES;MESSAGE;CONDITION"
@@ -111,64 +110,6 @@ function(create_gn_target_config target configFile)
              file(APPEND ${configFile} "set(${prefix}_${element} ${prop})\n")
          endif()
     endforeach()
-endfunction()
-
-function(add_gn_target target config arch)
-    add_custom_target(${target})
-    list(REMOVE_ITEM ARGN ${target})
-    list(REMOVE_ITEM ARGN ${config})
-    list(REMOVE_ITEM ARGN ${arch})
-    set_target_properties(${target} PROPERTIES
-        ELEMENTS "${ARGN}"
-        PREFIX "GN"
-        CONFIG ${config}
-        ARCH ${arch}
-    )
-endfunction()
-
-macro(set_properties_on_target_scope target)
-    get_target_property(elementList ${target} ELEMENTS)
-    get_target_property(prefix ${target} PREFIX)
-    foreach(element IN LISTS elementList)
-        if(${prefix}_${element})
-            set_property(TARGET ${target} APPEND PROPERTY ${prefix}_${element} ${${prefix}_${element}})
-        endif()
-    endforeach()
-endmacro()
-
-function(extend_gn_target target)
-    get_target_property(elements ${target} ELEMENTS)
-    cmake_parse_arguments(PARSE_ARGV 1 GN "" "" "CONDITION;${elements}")
-    _qt_internal_validate_all_args_are_parsed(GN)
-
-    if("x${GN_CONDITION}" STREQUAL "x")
-        set(GN_CONDITION ON)
-    endif()
-    qt_evaluate_config_expression(result ${GN_CONDITION})
-    if(${result})
-        message(DEBUG "extend_gn_target(${target} CONDITION ${GN_CONDITION} ...): Evaluated")
-        set_properties_on_target_scope(${target})
-    endif()
-endfunction()
-
-function(extend_gn_list outList)
-    cmake_parse_arguments(PARSE_ARGV 1 GN "" "" "ARGS;CONDITION")
-    _qt_internal_validate_all_args_are_parsed(GN)
-
-    if("x${GN_CONDITION}" STREQUAL "x")
-        set(GN_CONDITION ON)
-    endif()
-    qt_evaluate_config_expression(result ${GN_CONDITION})
-    if(${result})
-        set(value "true")
-    else()
-        set(value "false")
-    endif()
-    message(DEBUG "extend_gn_list(${outList} ${GN_ARGS} CONDITION ${GN_CONDITION} ...): Evaluated to ${value}")
-    foreach(gnArg ${GN_ARGS})
-        set(${outList} "${${outList}}" "${gnArg}=${value}")
-    endforeach()
-    set(${outList} "${${outList}}" PARENT_SCOPE)
 endfunction()
 
 # we had no qtsync on headers during configure, so take current interface from expression

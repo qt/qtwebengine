@@ -9,6 +9,7 @@ cmake_minimum_required(VERSION 3.16)
 include(.cmake.conf)
 include(ExternalProject)
 include(cmake/Functions.cmake)
+include(cmake/QtGnTargetHelpers.cmake)
 
 project(QtWebEngineDummy)
 find_package(Qt6 6.5 CONFIG REQUIRED COMPONENTS BuildInternals Core)
