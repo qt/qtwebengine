@@ -2,7 +2,12 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 # This is gn wrapper script and it assables final BUILD.gn based on:
-# gn_config_target.cmake, gn_config_c.cmake, gn_config_cxx.cmake
+#  * BUILD.root.gn.in
+#  * gn_config_target.cmake
+#  * gn_config_c.cmake
+#  * gn_config_cxx.cmake
+#  * gn_static.cmake
+
 
 if(NOT CMAKE_SCRIPT_MODE_FILE)
     message("This files should run only in script mode")

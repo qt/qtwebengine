@@ -52,66 +52,6 @@ function(add_check_for_support)
     endforeach()
 endfunction()
 
-function(create_cxx_config cmakeTarget arch configFileName)
-    if(NOT QT_SUPERBUILD AND QT_WILL_INSTALL)
-        get_target_property(mocFilePath Qt6::moc IMPORTED_LOCATION)
-    else()
-        if(CMAKE_CROSSCOMPILING)
-            set(mocFilePath "${QT_HOST_PATH}/${INSTALL_LIBEXECDIR}/moc${CMAKE_EXECUTABLE_SUFFIX}")
-        else()
-            set(mocFilePath "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/moc${CMAKE_EXECUTABLE_SUFFIX}")
-        endif()
-    endif()
-    file(GENERATE
-        OUTPUT $<CONFIG>/${arch}/${configFileName}
-        CONTENT "\
-            set(GN_INCLUDES \"$<TARGET_PROPERTY:INCLUDE_DIRECTORIES>\")\n\
-            set(GN_DEFINES \"$<TARGET_PROPERTY:COMPILE_DEFINITIONS>\")\n\
-            set(GN_LINK_OPTIONS \"$<TARGET_PROPERTY:LINK_OPTIONS>\")\n\
-            set(GN_CXX_COMPILE_OPTIONS \"$<TARGET_PROPERTY:COMPILE_OPTIONS>\")\n\
-            set(GN_MOC_PATH \"${mocFilePath}\")"
-#           set(GN_LIBS $<TARGET_PROPERTY:LINK_LIBRARIES>)
-        CONDITION $<COMPILE_LANGUAGE:CXX>
-        TARGET ${cmakeTarget}
-    )
-endfunction()
-
-function(create_static_config cmakeTarget arch configFileName)
-    list(APPEND libs Png Jpeg Harfbuzz Freetype Zlib)
-    foreach(lib IN LISTS libs)
-        string(TOUPPER ${lib} out)
-        set(lib Qt::${lib}Private)
-        list(APPEND contents "set(GN_${out}_INCLUDES \"$<$<STREQUAL:$<TARGET_NAME_IF_EXISTS:${lib}>,${lib}>:$<TARGET_PROPERTY:${lib},INTERFACE_INCLUDE_DIRECTORIES>>\")")
-    endforeach()
-    list(JOIN contents "\n" contents)
-    file(GENERATE
-        OUTPUT $<CONFIG>/${arch}/${configFileName}
-        CONTENT "${contents}"
-    )
-endfunction()
-
-function(create_c_config cmakeTarget arch configFileName)
-    file(GENERATE
-          OUTPUT $<CONFIG>/${arch}/${configFileName}
-          CONTENT "set(GN_C_COMPILE_OPTIONS $<TARGET_PROPERTY:COMPILE_OPTIONS>)"
-          CONDITION $<COMPILE_LANGUAGE:C>
-          TARGET ${cmakeTarget})
-endfunction()
-
-function(create_gn_target_config target configFile)
-    get_target_property(elementList ${target} ELEMENTS)
-    get_target_property(prefix ${target} PREFIX)
-    file(WRITE ${configFile}
-        "set(PREFIX ${prefix})\nset(ELEMENTS ${elementList})\n"
-    )
-    foreach(element IN LISTS elementList)
-         get_target_property(prop ${target} ${prefix}_${element})
-         if(prop)
-             file(APPEND ${configFile} "set(${prefix}_${element} ${prop})\n")
-         endif()
-    endforeach()
-endfunction()
-
 # we had no qtsync on headers during configure, so take current interface from expression
 # generator from our WebEngieCore target so we can apply it for our buildGn target
 function(resolve_target_includes resultVar target)
@@ -1080,13 +1020,6 @@ function(add_gn_build_artifacts_to_target)
     endforeach()
 endfunction()
 
-function(get_config_filenames c_config cxx_config static_config target_config)
-    set(${target_config} gn_config_target.cmake PARENT_SCOPE)
-    set(${cxx_config} gn_config_cxx.cmake PARENT_SCOPE)
-    set(${c_config} gn_config_c.cmake PARENT_SCOPE)
-    set(${static_config} gn_static.cmake PARENT_SCOPE)
-endfunction()
-
 function(add_gn_command)
     cmake_parse_arguments(PARSE_ARGV 0 arg
         "" "CMAKE_TARGET;GN_TARGET;MODULE;BUILDDIR" "NINJA_TARGETS;GN_ARGS"
@@ -1137,13 +1070,6 @@ function(add_gn_command)
         add_dependencies(runGn_${arg_GN_TARGET} thirdparty_sync_headers)
     endif()
     create_gn_target_config(${arg_GN_TARGET} ${arg_BUILDDIR}/${targetConfigFileName})
-endfunction()
-
-function(create_cxx_configs cmakeTarget arch)
-    get_config_filenames(cConfigFileName cxxConfigFileName staticConfigFileName targetConfigFileName)
-    create_c_config(${cmakeTarget} ${arch} ${cConfigFileName})
-    create_cxx_config(${cmakeTarget} ${arch} ${cxxConfigFileName})
-    create_static_config(${cmakeTarget} ${arch} ${staticConfigFileName})
 endfunction()
 
 # targets to gather per config / architecture targets
