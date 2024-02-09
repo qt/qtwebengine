@@ -198,6 +198,7 @@ int main(void) {
 }"
 )
 
+# "Unmodified ffmpeg >= 5.0 is not supported."
 qt_config_compile_test(libavformat
     LABEL "libavformat"
     LIBRARIES
@@ -215,220 +216,6 @@ int main(void) {
 #endif
     return 0;
 }"
-)
-
-#### Features
-
-qt_feature("qtwebengine-build" PUBLIC
-    LABEL "Build QtWebEngine Modules"
-    PURPOSE "Enables building the Qt WebEngine modules."
-)
-qt_feature("qtwebengine-core-build" PRIVATE
-    LABEL "Build QtWebEngineCore"
-    PURPOSE "Enables building the Qt WebEngineCore module."
-    CONDITION QT_FEATURE_qtwebengine_build
-)
-qt_feature("qtwebengine-widgets-build" PRIVATE
-    LABEL "Build QtWebEngineWidgets"
-    PURPOSE "Enables building the Qt WebEngineWidgets module."
-    CONDITION TARGET Qt::Widgets AND QT_FEATURE_qtwebengine_build
-)
-qt_feature("qtwebengine-quick-build" PRIVATE
-    LABEL "Build QtWebEngineQuick"
-    PURPOSE "Enables building the Qt WebEngineQuick module."
-    CONDITION TARGET Qt::Quick AND TARGET Qt::Qml AND QT_FEATURE_qtwebengine_build
-)
-qt_feature("qtpdf-build" PUBLIC
-    LABEL "Build Qt PDF"
-    PURPOSE "Enables building the Qt Pdf modules."
-)
-qt_feature("qtpdf-widgets-build" PRIVATE
-    LABEL "Build QtPdfWidgets"
-    PURPOSE "Enables building the Qt Pdf module."
-    CONDITION TARGET Qt::Widgets AND QT_FEATURE_qtpdf_build
-)
-qt_feature("qtpdf-quick-build" PRIVATE
-    LABEL "Build QtPdfQuick"
-    PURPOSE "Enables building the QtPdfQuick module."
-    CONDITION TARGET Qt::Quick AND TARGET Qt::Qml AND QT_FEATURE_qtpdf_build AND
-        Qt6Quick_VERSION VERSION_GREATER_EQUAL "6.4.0"
-)
-
-if(Ninja_FOUND)
-    qt_webengine_is_file_inside_root_build_dir(
-        Ninja_INSIDE_WEBENGINE_ROOT_BUILD_DIR "${Ninja_EXECUTABLE}")
-endif()
-qt_feature("webengine-build-ninja" PRIVATE
-    LABEL "Build Ninja"
-    AUTODETECT NOT Ninja_FOUND OR Ninja_INSIDE_WEBENGINE_ROOT_BUILD_DIR
-)
-
-if(Gn_FOUND)
-    qt_webengine_is_file_inside_root_build_dir(
-        Gn_INSIDE_WEBENGINE_ROOT_BUILD_DIR "${Gn_EXECUTABLE}")
-endif()
-qt_feature("webengine-build-gn" PRIVATE
-    LABEL "Build Gn"
-    AUTODETECT NOT Gn_FOUND OR Gn_INSIDE_WEBENGINE_ROOT_BUILD_DIR
-)
-# default assumed merge limit (should match the one in qt_cmdline.cmake)
-set(jumbo_merge_limit 8)
-# check value provided through configure script with -webengine-jumbo-build=(on|off|32)
-if(DEFINED INPUT_webengine_jumbo_file_merge_limit)
-    set(jumbo_merge_limit ${INPUT_webengine_jumbo_file_merge_limit})
-# then also verify if set directly with cmake call and -DFEATURE_webengine_jumbo_build=(ON|OFF|32)
-elseif(DEFINED FEATURE_webengine_jumbo_build)
-    if(FEATURE_webengine_jumbo_build GREATER 0)
-        set(jumbo_merge_limit ${FEATURE_webengine_jumbo_build})
-    elseif (NOT FEATURE_webengine_jumbo_build)
-        set(jumbo_merge_limit 0)
-    endif()
-endif()
-set(QT_FEATURE_webengine_jumbo_file_merge_limit ${jumbo_merge_limit}
-    CACHE STRING "Jumbo merge limit for WebEngineCore" FORCE)
-qt_feature("webengine-jumbo-build" PUBLIC
-    LABEL "Jumbo Build"
-    PURPOSE "Enables support for jumbo build of core library"
-    AUTODETECT FALSE
-    ENABLE jumbo_merge_limit GREATER 0
-)
-qt_feature("webengine-developer-build" PRIVATE
-    LABEL "Developer build"
-    PURPOSE "Enables the developer build configuration."
-    AUTODETECT QT_FEATURE_private_tests
-)
-qt_feature("webengine-system-re2" PRIVATE
-    LABEL "re2"
-    CONDITION UNIX AND TEST_re2
-)
-qt_feature("webengine-system-icu" PRIVATE
-    LABEL "icu"
-    AUTODETECT FALSE
-    CONDITION UNIX AND NOT APPLE AND ICU_FOUND
-)
-qt_feature("webengine-system-libwebp" PRIVATE
-    LABEL "libwebp, libwebpmux and libwebpdemux"
-    CONDITION UNIX AND WEBP_FOUND
-)
-qt_feature("webengine-system-libopenjpeg2" PRIVATE
-    LABEL "libopenjpeg2"
-    CONDITION UNIX AND LIBOPENJP2_FOUND
-)
-qt_feature("webengine-system-opus" PRIVATE
-    LABEL "opus"
-    CONDITION UNIX AND OPUS_FOUND
-)
-qt_feature("webengine-system-ffmpeg" PRIVATE
-    LABEL "ffmpeg"
-    AUTODETECT FALSE
-    CONDITION FFMPEG_FOUND AND QT_FEATURE_webengine_system_opus AND QT_FEATURE_webengine_system_libwebp
-)
-qt_feature("webengine-system-libvpx" PRIVATE
-    LABEL "libvpx"
-    AUTODETECT FALSE
-    CONDITION UNIX AND TEST_vpx
-)
-qt_feature("webengine-system-snappy" PRIVATE
-    LABEL "snappy"
-    CONDITION UNIX AND TEST_snappy
-)
-qt_feature("webengine-system-glib" PRIVATE
-    LABEL "glib"
-    CONDITION UNIX AND GLIB_FOUND
-)
-qt_feature("webengine-system-zlib" PRIVATE
-    LABEL "zlib"
-    CONDITION UNIX AND QT_FEATURE_system_zlib AND ZLIB_FOUND
-)
-qt_feature("webengine-qt-zlib" PRIVATE
-    LABEL "qtzlib"
-    CONDITION QT_FEATURE_static
-        AND TARGET Qt::Gui
-        AND NOT QT_FEATURE_system_zlib
-)
-qt_feature("webengine-system-minizip" PRIVATE
-    LABEL "minizip"
-    CONDITION UNIX AND MINIZIP_FOUND
-)
-qt_feature("webengine-system-libevent" PRIVATE
-    LABEL "libevent"
-    CONDITION UNIX AND LIBEVENT_FOUND
-)
-qt_feature("webengine-system-libxml" PRIVATE
-    LABEL "libxml2 and libxslt"
-    CONDITION UNIX AND TEST_libxml2
-)
-qt_feature("webengine-system-lcms2" PRIVATE
-    LABEL "lcms2"
-    CONDITION UNIX AND LCMS2_FOUND
-)
-qt_feature("webengine-system-libpng" PRIVATE
-    LABEL "png"
-    CONDITION UNIX AND TARGET Qt::Gui AND PNG_FOUND AND QT_FEATURE_system_png
-)
-qt_feature("webengine-system-libtiff" PRIVATE
-    LABEL "tiff"
-    CONDITION UNIX AND TARGET Qt::Gui AND TIFF_FOUND
-)
-qt_feature("webengine-qt-libpng" PRIVATE
-    LABEL "qtpng"
-    CONDITION QT_FEATURE_static
-        AND TARGET Qt::Gui
-        AND QT_FEATURE_png
-        AND NOT QT_FEATURE_system_png
-)
-qt_feature("webengine-system-libjpeg" PRIVATE
-    LABEL "jpeg"
-    CONDITION UNIX AND TARGET Qt::Gui AND TEST_jpeg AND QT_FEATURE_system_jpeg
-)
-qt_feature("webengine-qt-libjpeg" PRIVATE
-    LABEL "qtjpeg"
-    CONDITION QT_FEATURE_static
-        AND TARGET Qt::Gui
-        AND QT_FEATURE_jpeg
-        AND NOT QT_FEATURE_system_jpeg
-)
-qt_feature("webengine-system-harfbuzz" PRIVATE
-    LABEL "harfbuzz"
-    CONDITION UNIX AND TARGET Qt::Gui AND HARFBUZZ_FOUND AND QT_FEATURE_system_harfbuzz
-)
-qt_feature("webengine-qt-harfbuzz" PRIVATE
-    LABEL "qtharfbuzz"
-    CONDITION QT_FEATURE_static
-        AND TARGET Qt::Gui
-        AND QT_FEATURE_harfbuzz
-        AND NOT QT_FEATURE_system_harfbuzz
-)
-qt_feature("webengine-system-freetype" PRIVATE
-    LABEL "freetype"
-    CONDITION UNIX AND TARGET Qt::Gui AND TEST_freetype AND QT_FEATURE_system_freetype
-)
-qt_feature("webengine-qt-freetype" PRIVATE
-    LABEL "qtfreetype"
-    CONDITION QT_FEATURE_static
-        AND TARGET Qt::Gui
-        AND QT_FEATURE_freetype
-        AND NOT QT_FEATURE_system_freetype
-)
-qt_feature("webengine-system-libpci" PRIVATE
-    LABEL "libpci"
-    CONDITION UNIX AND LIBPCI_FOUND
-)
-
-qt_feature("webengine-ozone-x11" PRIVATE
-    LABEL "Support GLX on qpa-xcb"
-    CONDITION LINUX
-        AND TARGET Qt::Gui
-        AND QT_FEATURE_xcb
-        AND X11_FOUND
-        AND LIBDRM_FOUND
-        AND XCOMPOSITE_FOUND
-        AND XCURSOR_FOUND
-        AND XI_FOUND
-        AND XPROTO_FOUND
-        AND XRANDR_FOUND
-        AND XTST_FOUND
-        AND XSHMFENCE_FOUND
 )
 
 #### Support Checks
@@ -555,11 +342,6 @@ qt_webengine_configure_check("dbus"
     CONDITION NOT LINUX OR DBUS_FOUND
     MESSAGE "Build requires dbus."
 )
-qt_webengine_configure_check("ffmpeg"
-    MODULES QtWebEngine
-    CONDITION NOT LINUX OR NOT QT_FEATURE_webengine_system_ffmpeg OR TEST_libavformat
-    MESSAGE "Unmodified ffmpeg >= 5.0 is not supported."
-)
 
 if(LINUX AND QT_FEATURE_xcb)
     set(x_libs X11 LIBDRM XCOMPOSITE XCURSOR XRANDR XI XPROTO XSHMFENCE XTST)
@@ -628,6 +410,221 @@ if(WIN32)
     unset(windows_sdk_version)
     unset(sdk_minor)
 endif()
+
+#### Features
+
+qt_feature("qtwebengine-build" PUBLIC
+    LABEL "Build QtWebEngine Modules"
+    PURPOSE "Enables building the Qt WebEngine modules."
+)
+qt_feature("qtwebengine-core-build" PRIVATE
+    LABEL "Build QtWebEngineCore"
+    PURPOSE "Enables building the Qt WebEngineCore module."
+    CONDITION QT_FEATURE_qtwebengine_build
+)
+qt_feature("qtwebengine-widgets-build" PRIVATE
+    LABEL "Build QtWebEngineWidgets"
+    PURPOSE "Enables building the Qt WebEngineWidgets module."
+    CONDITION TARGET Qt::Widgets AND QT_FEATURE_qtwebengine_build
+)
+qt_feature("qtwebengine-quick-build" PRIVATE
+    LABEL "Build QtWebEngineQuick"
+    PURPOSE "Enables building the Qt WebEngineQuick module."
+    CONDITION TARGET Qt::Quick AND TARGET Qt::Qml AND QT_FEATURE_qtwebengine_build
+)
+qt_feature("qtpdf-build" PUBLIC
+    LABEL "Build Qt PDF"
+    PURPOSE "Enables building the Qt Pdf modules."
+)
+qt_feature("qtpdf-widgets-build" PRIVATE
+    LABEL "Build QtPdfWidgets"
+    PURPOSE "Enables building the Qt Pdf module."
+    CONDITION TARGET Qt::Widgets AND QT_FEATURE_qtpdf_build
+)
+qt_feature("qtpdf-quick-build" PRIVATE
+    LABEL "Build QtPdfQuick"
+    PURPOSE "Enables building the QtPdfQuick module."
+    CONDITION TARGET Qt::Quick AND TARGET Qt::Qml AND QT_FEATURE_qtpdf_build AND
+        Qt6Quick_VERSION VERSION_GREATER_EQUAL "6.4.0"
+)
+
+if(Ninja_FOUND)
+    qt_webengine_is_file_inside_root_build_dir(
+        Ninja_INSIDE_WEBENGINE_ROOT_BUILD_DIR "${Ninja_EXECUTABLE}")
+endif()
+qt_feature("webengine-build-ninja" PRIVATE
+    LABEL "Build Ninja"
+    AUTODETECT NOT Ninja_FOUND OR Ninja_INSIDE_WEBENGINE_ROOT_BUILD_DIR
+)
+
+if(Gn_FOUND)
+    qt_webengine_is_file_inside_root_build_dir(
+        Gn_INSIDE_WEBENGINE_ROOT_BUILD_DIR "${Gn_EXECUTABLE}")
+endif()
+qt_feature("webengine-build-gn" PRIVATE
+    LABEL "Build Gn"
+    AUTODETECT NOT Gn_FOUND OR Gn_INSIDE_WEBENGINE_ROOT_BUILD_DIR
+)
+# default assumed merge limit (should match the one in qt_cmdline.cmake)
+set(jumbo_merge_limit 8)
+# check value provided through configure script with -webengine-jumbo-build=(on|off|32)
+if(DEFINED INPUT_webengine_jumbo_file_merge_limit)
+    set(jumbo_merge_limit ${INPUT_webengine_jumbo_file_merge_limit})
+# then also verify if set directly with cmake call and -DFEATURE_webengine_jumbo_build=(ON|OFF|32)
+elseif(DEFINED FEATURE_webengine_jumbo_build)
+    if(FEATURE_webengine_jumbo_build GREATER 0)
+        set(jumbo_merge_limit ${FEATURE_webengine_jumbo_build})
+    elseif (NOT FEATURE_webengine_jumbo_build)
+        set(jumbo_merge_limit 0)
+    endif()
+endif()
+set(QT_FEATURE_webengine_jumbo_file_merge_limit ${jumbo_merge_limit}
+    CACHE STRING "Jumbo merge limit for WebEngineCore" FORCE)
+qt_feature("webengine-jumbo-build" PUBLIC
+    LABEL "Jumbo Build"
+    PURPOSE "Enables support for jumbo build of core library"
+    AUTODETECT FALSE
+    ENABLE jumbo_merge_limit GREATER 0
+)
+qt_feature("webengine-developer-build" PRIVATE
+    LABEL "Developer build"
+    PURPOSE "Enables the developer build configuration."
+    AUTODETECT QT_FEATURE_private_tests
+)
+qt_feature("webengine-system-re2" PRIVATE
+    LABEL "re2"
+    CONDITION UNIX AND TEST_re2
+)
+qt_feature("webengine-system-icu" PRIVATE
+    LABEL "icu"
+    AUTODETECT FALSE
+    CONDITION UNIX AND NOT APPLE AND ICU_FOUND
+)
+qt_feature("webengine-system-libwebp" PRIVATE
+    LABEL "libwebp, libwebpmux and libwebpdemux"
+    CONDITION UNIX AND WEBP_FOUND
+)
+qt_feature("webengine-system-libopenjpeg2" PRIVATE
+    LABEL "libopenjpeg2"
+    CONDITION UNIX AND LIBOPENJP2_FOUND
+)
+qt_feature("webengine-system-opus" PRIVATE
+    LABEL "opus"
+    CONDITION UNIX AND OPUS_FOUND
+)
+qt_feature("webengine-system-ffmpeg" PRIVATE
+    LABEL "ffmpeg"
+    AUTODETECT FALSE
+    CONDITION FFMPEG_FOUND AND QT_FEATURE_webengine_system_opus AND QT_FEATURE_webengine_system_libwebp AND TEST_libavformat
+)
+qt_feature("webengine-system-libvpx" PRIVATE
+    LABEL "libvpx"
+    AUTODETECT FALSE
+    CONDITION UNIX AND TEST_vpx
+)
+qt_feature("webengine-system-snappy" PRIVATE
+    LABEL "snappy"
+    CONDITION UNIX AND TEST_snappy
+)
+qt_feature("webengine-system-glib" PRIVATE
+    LABEL "glib"
+    CONDITION UNIX AND GLIB_FOUND
+)
+qt_feature("webengine-system-zlib" PRIVATE
+    LABEL "zlib"
+    CONDITION UNIX AND QT_FEATURE_system_zlib AND ZLIB_FOUND
+)
+qt_feature("webengine-qt-zlib" PRIVATE
+    LABEL "qtzlib"
+    CONDITION QT_FEATURE_static
+        AND TARGET Qt::Gui
+        AND NOT QT_FEATURE_system_zlib
+)
+qt_feature("webengine-system-minizip" PRIVATE
+    LABEL "minizip"
+    CONDITION UNIX AND MINIZIP_FOUND
+)
+qt_feature("webengine-system-libevent" PRIVATE
+    LABEL "libevent"
+    CONDITION UNIX AND LIBEVENT_FOUND
+)
+qt_feature("webengine-system-libxml" PRIVATE
+    LABEL "libxml2 and libxslt"
+    CONDITION UNIX AND TEST_libxml2
+)
+qt_feature("webengine-system-lcms2" PRIVATE
+    LABEL "lcms2"
+    CONDITION UNIX AND LCMS2_FOUND
+)
+qt_feature("webengine-system-libpng" PRIVATE
+    LABEL "png"
+    CONDITION UNIX AND TARGET Qt::Gui AND PNG_FOUND AND QT_FEATURE_system_png
+)
+qt_feature("webengine-system-libtiff" PRIVATE
+    LABEL "tiff"
+    CONDITION UNIX AND TARGET Qt::Gui AND TIFF_FOUND
+)
+qt_feature("webengine-qt-libpng" PRIVATE
+    LABEL "qtpng"
+    CONDITION QT_FEATURE_static
+        AND TARGET Qt::Gui
+        AND QT_FEATURE_png
+        AND NOT QT_FEATURE_system_png
+)
+qt_feature("webengine-system-libjpeg" PRIVATE
+    LABEL "jpeg"
+    CONDITION UNIX AND TARGET Qt::Gui AND TEST_jpeg AND QT_FEATURE_system_jpeg
+)
+qt_feature("webengine-qt-libjpeg" PRIVATE
+    LABEL "qtjpeg"
+    CONDITION QT_FEATURE_static
+        AND TARGET Qt::Gui
+        AND QT_FEATURE_jpeg
+        AND NOT QT_FEATURE_system_jpeg
+)
+qt_feature("webengine-system-harfbuzz" PRIVATE
+    LABEL "harfbuzz"
+    CONDITION UNIX AND TARGET Qt::Gui AND HARFBUZZ_FOUND AND QT_FEATURE_system_harfbuzz
+)
+qt_feature("webengine-qt-harfbuzz" PRIVATE
+    LABEL "qtharfbuzz"
+    CONDITION QT_FEATURE_static
+        AND TARGET Qt::Gui
+        AND QT_FEATURE_harfbuzz
+        AND NOT QT_FEATURE_system_harfbuzz
+)
+qt_feature("webengine-system-freetype" PRIVATE
+    LABEL "freetype"
+    CONDITION UNIX AND TARGET Qt::Gui AND TEST_freetype AND QT_FEATURE_system_freetype
+)
+qt_feature("webengine-qt-freetype" PRIVATE
+    LABEL "qtfreetype"
+    CONDITION QT_FEATURE_static
+        AND TARGET Qt::Gui
+        AND QT_FEATURE_freetype
+        AND NOT QT_FEATURE_system_freetype
+)
+qt_feature("webengine-system-libpci" PRIVATE
+    LABEL "libpci"
+    CONDITION UNIX AND LIBPCI_FOUND
+)
+
+qt_feature("webengine-ozone-x11" PRIVATE
+    LABEL "Support GLX on qpa-xcb"
+    CONDITION LINUX
+        AND TARGET Qt::Gui
+        AND QT_FEATURE_xcb
+        AND X11_FOUND
+        AND LIBDRM_FOUND
+        AND XCOMPOSITE_FOUND
+        AND XCURSOR_FOUND
+        AND XI_FOUND
+        AND XPROTO_FOUND
+        AND XRANDR_FOUND
+        AND XTST_FOUND
+        AND XSHMFENCE_FOUND
+)
+
 
 #### Summary
 
