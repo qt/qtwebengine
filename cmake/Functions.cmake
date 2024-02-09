@@ -1,57 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-function(assertTargets)
-    cmake_parse_arguments(PARSE_ARGV 0 arg
-        "" "" "MODULES;TARGETS"
-    )
-    _qt_internal_validate_all_args_are_parsed(arg)
-
-    foreach(module ${arg_MODULES})
-        if(NOT DEFINED ${module}_SUPPORT)
-            set(${module}_SUPPORT ON PARENT_SCOPE)
-            set(${module}_SUPPORT ON)
-        endif()
-        if(${module}_SUPPORT)
-            foreach(qtTarget ${arg_TARGETS})
-                if(NOT TARGET Qt::${qtTarget})
-                    set(${module}_ERROR "Missing required Qt::${qtTarget}." PARENT_SCOPE)
-                    set(${module}_SUPPORT OFF PARENT_SCOPE)
-                    break()
-                endif()
-            endforeach()
-        endif()
-    endforeach()
-endfunction()
-
-function(add_check_for_support)
-    cmake_parse_arguments(PARSE_ARGV 0 arg
-        "" "" "MODULES;MESSAGE;CONDITION"
-    )
-    _qt_internal_validate_all_args_are_parsed(arg)
-
-    foreach(module ${arg_MODULES})
-        if(NOT DEFINED ${module}_SUPPORT)
-            set(${module}_SUPPORT ON PARENT_SCOPE)
-            set(${module}_SUPPORT ON)
-        endif()
-        if(${module}_SUPPORT)
-            if("x${arg_CONDITION}" STREQUAL "x")
-                set(arg_CONDITION ON)
-            endif()
-            qt_evaluate_config_expression(result ${arg_CONDITION})
-            if(NOT ${result})
-                set(${module}_SUPPORT OFF PARENT_SCOPE)
-                set(${module}_ERROR ${arg_MESSAGE} PARENT_SCOPE)
-            qt_configure_add_report_entry(TYPE WARNING
-                MESSAGE "${module} won't be built. ${arg_MESSAGE}"
-                CONDITION ON
-            )
-            endif()
-        endif()
-    endforeach()
-endfunction()
-
 # we had no qtsync on headers during configure, so take current interface from expression
 # generator from our WebEngieCore target so we can apply it for our buildGn target
 function(resolve_target_includes resultVar target)
@@ -742,16 +691,16 @@ macro(append_compiler_linker_sdk_setup)
     endif()
 
     if(MSVC)
-        get_filename_component(windowsSdkPath $ENV{WINDOWSSDKDIR} ABSOLUTE)
-        get_filename_component(visualStudioPath $ENV{VSINSTALLDIR} ABSOLUTE)
-        set(windowSdkVersion $ENV{WindowsSDKVersion})
+        get_filename_component(windows_sdk_path $ENV{WINDOWSSDKDIR} ABSOLUTE)
+        get_filename_component(visual_studio_path $ENV{VSINSTALLDIR} ABSOLUTE)
+        qt_webengine_get_windows_sdk_version(windows_sdk_version sdk_minor)
         list(APPEND gnArgArg
             win_linker_timing=true
             use_incremental_linking=false
             visual_studio_version=2022
-            visual_studio_path=\"${visualStudioPath}\"
-            windows_sdk_version=\"${windowsSdkVersion}\"
-            windows_sdk_path=\"${windowsSdkPath}\"
+            visual_studio_path=\"${visual_studio_path}\"
+            windows_sdk_version=\"${windows_sdk_version}\"
+            windows_sdk_path=\"${windows_sdk_path}\"
         )
     endif()
     get_gn_arch(cpu ${TEST_architecture_arch})
@@ -1091,59 +1040,6 @@ function(addCopyCommand target src dst)
         DEPENDS ${src}
         USES_TERMINAL
     )
-endfunction()
-
-function(check_for_ulimit)
-    message("-- Checking 'ulimit -n'")
-    execute_process(COMMAND bash -c "ulimit -n"
-        OUTPUT_VARIABLE ulimitOutput
-    )
-    string(REGEX MATCHALL "[0-9]+" limit "${ulimitOutput}")
-    message(" -- Open files limit ${limit}")
-    if(NOT (QT_FEATURE_use_gold_linker OR QT_FEATURE_use_lld_linker) AND ulimitOutput LESS 4096)
-        if(NOT ${CMAKE_VERSION} VERSION_LESS "3.21.0")
-            message(" -- Creating linker launcher")
-            file(GENERATE OUTPUT ${PROJECT_BINARY_DIR}/linker_ulimit.sh
-                CONTENT "#!/bin/bash\nulimit -n 4096\nexec \"$@\""
-                FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-            )
-            set(COIN_BUG_699 ON PARENT_SCOPE)
-        else()
-            set(PRINT_BFD_LINKER_WARNING ON PARENT_SCOPE)
-        endif()
-    endif()
-endfunction()
-
-function(add_build feature value)
-    list(APPEND cmakeArgs
-        "-DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}"
-        "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
-        "-DMATRIX_SUBBUILD=ON"
-        "-DFEATURE_${feature}=${value}"
-    )
-    if(CMAKE_C_COMPILER_LAUNCHER)
-        list(APPEND cmakeArgs "-DCMAKE_C_COMPILER_LAUNCHER=${CMAKE_C_COMPILER_LAUNCHER}")
-    endif()
-    if(CMAKE_CXX_COMPILER_LAUNCHER)
-        list(APPEND cmakeArgs "-DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}")
-    endif()
-
-    externalproject_add(${feature}
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
-        BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/${feature}-${value}
-        PREFIX ${feature}-${value}
-        CMAKE_ARGS ${cmakeArgs}
-        USES_TERMINAL_BUILD ON
-        USES_TERMINAL_CONFIGURE ON
-        BUILD_ALWAYS TRUE
-        INSTALL_COMMAND ""
-    )
-    get_property(depTracker GLOBAL PROPERTY MATRIX_DEPENDENCY_TRACKER)
-    foreach(dep ${depTracker})
-        add_dependencies(${feature} ${dep})
-    endforeach()
-    set(depTracker "${depTracker}" ${feature})
-    set_property(GLOBAL PROPERTY MATRIX_DEPENDENCY_TRACKER "${depTracker}")
 endfunction()
 
 function(add_code_attributions_target)

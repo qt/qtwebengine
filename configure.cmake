@@ -2,11 +2,11 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 if(QT_CONFIGURE_RUNNING)
-    function(assertTargets)
+    function(qt_webengine_configure_check)
     endfunction()
-    function(add_check_for_support)
+    function(qt_webengine_configure_check_for_ulimit)
     endfunction()
-    function(check_for_ulimit)
+    function(qt_webengine_get_windows_sdk_version)
     endfunction()
 else()
     find_package(Ninja 1.7.2)
@@ -69,7 +69,7 @@ endif()
 
 #### Tests
 if(LINUX)
-   check_for_ulimit()
+   qt_webengine_configure_check_for_ulimit()
 endif()
 
 qt_config_compile_test(re2
@@ -254,19 +254,8 @@ qt_feature("qtpdf-quick-build" PRIVATE
         Qt6Quick_VERSION VERSION_GREATER_EQUAL "6.4.0"
 )
 
-function(qtwebengine_internal_is_file_inside_root_build_dir out_var file)
-    set(result ON)
-    if(NOT QT_CONFIGURE_RUNNING)
-        file(RELATIVE_PATH relpath "${WEBENGINE_ROOT_BUILD_DIR}" "${file}")
-        if(IS_ABSOLUTE "${relpath}" OR relpath MATCHES "^\\.\\./")
-            set(result OFF)
-        endif()
-    endif()
-    set(${out_var} ${result} PARENT_SCOPE)
-endfunction()
-
 if(Ninja_FOUND)
-    qtwebengine_internal_is_file_inside_root_build_dir(
+    qt_webengine_is_file_inside_root_build_dir(
         Ninja_INSIDE_WEBENGINE_ROOT_BUILD_DIR "${Ninja_EXECUTABLE}")
 endif()
 qt_feature("webengine-build-ninja" PRIVATE
@@ -275,7 +264,7 @@ qt_feature("webengine-build-ninja" PRIVATE
 )
 
 if(Gn_FOUND)
-    qtwebengine_internal_is_file_inside_root_build_dir(
+    qt_webengine_is_file_inside_root_build_dir(
         Gn_INSIDE_WEBENGINE_ROOT_BUILD_DIR "${Gn_EXECUTABLE}")
 endif()
 qt_feature("webengine-build-gn" PRIVATE
@@ -443,14 +432,8 @@ qt_feature("webengine-ozone-x11" PRIVATE
 )
 
 #### Support Checks
-if(WIN32 AND (CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM64"
-        OR CMAKE_CROSSCOMPILING))
-   set(WIN_ARM_64 ON)
-else()
-   set(WIN_ARM_64 OFF)
-endif()
 
-add_check_for_support(
+qt_webengine_configure_check("minimum-cmake-version"
     MODULES QtWebEngine QtPdf
     CONDITION
         CMAKE_VERSION
@@ -460,170 +443,190 @@ add_check_for_support(
         "Build requires CMake ${QT_SUPPORTED_MIN_CMAKE_VERSION_FOR_BUILDING_WEBENGINE} or higher."
 )
 
-assertTargets(
-   MODULES QtWebEngine QtPdf
-   TARGETS Gui Quick Qml
-)
-add_check_for_support(
-   MODULES QtWebEngine
-   CONDITION LINUX OR (WIN32 AND NOT WIN_ARM_64) OR MACOS
-   MESSAGE "Build can be done only on Linux, Windows or macOS."
-)
-add_check_for_support(
-   MODULES QtPdf
-   CONDITION LINUX OR (WIN32 AND NOT WIN_ARM_64) OR MACOS OR IOS OR ANDROID
-   MESSAGE "Build can be done only on Linux, Windows, macO, iOS and Android."
-)
-if(LINUX AND CMAKE_CROSSCOMPILING)
-   set(supportedTargets "arm" "arm64" "armv7-a" "x86_64")
-   add_check_for_support(
-       MODULES QtWebEngine QtPdf
-       CONDITION TEST_architecture_arch IN_LIST supportedTargets
-       MESSAGE "Cross compiling is not supported for ${TEST_architecture_arch}."
-   )
-   unset(supportedTargets)
+set(targets_to_check Gui Quick Qml)
+foreach(target_to_check ${targets_to_check})
+    qt_webengine_configure_check("required-target-${target_to_check}"
+        MODULES QtWebEngine QtPdf
+        CONDITION TARGET Qt::${target_to_check}
+        MESSAGE "Missing required Qt::${target_to_check}."
+    )
+endforeach()
+unset(targets_to_check)
+
+if(WIN32 AND (CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64" OR
+         CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM64" OR
+         CMAKE_CROSSCOMPILING))
+    set(WIN_ARM_64 ON)
+else()
+    set(WIN_ARM_64 OFF)
 endif()
-add_check_for_support(
-   MODULES QtWebEngine
-   CONDITION NOT QT_FEATURE_static
-   MESSAGE "Static build is not supported."
+
+qt_webengine_configure_check("supported-platform"
+    MODULES QtWebEngine
+    CONDITION LINUX OR (WIN32 AND NOT WIN_ARM_64) OR MACOS
+    MESSAGE "Build can be done only on Linux, Windows or macOS."
 )
-add_check_for_support(
-   MODULES QtWebEngine QtPdf
-   CONDITION TARGET Nodejs::Nodejs
-   MESSAGE "node.js version 14 or later is required."
+qt_webengine_configure_check("supported-platform"
+    MODULES QtPdf
+    CONDITION LINUX OR (WIN32 AND NOT WIN_ARM_64) OR MACOS OR IOS OR ANDROID
+    MESSAGE "Build can be done only on Linux, Windows, macO, iOS and Android."
 )
-add_check_for_support(
+
+if(LINUX AND CMAKE_CROSSCOMPILING)
+    set(supported_targets "arm" "arm64" "armv7-a" "x86_64")
+    qt_webengine_configure_check("supported-arch"
+        MODULES QtWebEngine QtPdf
+        CONDITION TEST_architecture_arch IN_LIST supported_targets
+        MESSAGE "Cross compiling is not supported for ${TEST_architecture_arch}."
+    )
+    unset(supported_targets)
+endif()
+
+qt_webengine_configure_check("static-build"
+    MODULES QtWebEngine
+    CONDITION NOT QT_FEATURE_static
+    MESSAGE "Static build is not supported."
+)
+
+qt_webengine_configure_check("node-js"
+    MODULES QtWebEngine QtPdf
+    CONDITION TARGET Nodejs::Nodejs
+    MESSAGE "node.js version 14 or later is required."
+)
+qt_webengine_configure_check("node-js-32"
     MODULES QtWebEngine
     CONDITION NOT (Nodejs_ARCH STREQUAL "ia32") AND
               NOT (Nodejs_ARCH STREQUAL "x86") AND
               NOT (Nodejs_ARCH STREQUAL "arm")
     MESSAGE "32bit version of Nodejs is not supported."
 )
-add_check_for_support(
-   MODULES QtWebEngine QtPdf
-   CONDITION Python3_EXECUTABLE
-   MESSAGE "Python version 3.6 or later is required."
+qt_webengine_configure_check("python3"
+    MODULES QtWebEngine QtPdf
+    CONDITION Python3_EXECUTABLE
+    MESSAGE "Python version 3.6 or later is required."
 )
-add_check_for_support(
-   MODULES QtWebEngine QtPdf
-   CONDITION Python3_EXECUTABLE AND NOT html5lib_NOT_FOUND
-   MESSAGE "Python3 html5lib is missing."
+qt_webengine_configure_check("python3-html5lib"
+    MODULES QtWebEngine QtPdf
+    CONDITION Python3_EXECUTABLE AND NOT html5lib_NOT_FOUND
+    MESSAGE "Python3 html5lib is missing."
 )
-add_check_for_support(
-   MODULES QtWebEngine QtPdf
-   CONDITION GPerf_FOUND
-   MESSAGE "Tool gperf is required."
+qt_webengine_configure_check("gperf"
+    MODULES QtWebEngine QtPdf
+    CONDITION GPerf_FOUND
+    MESSAGE "Tool gperf is required."
 )
-add_check_for_support(
-   MODULES QtWebEngine QtPdf
-   CONDITION BISON_FOUND
-   MESSAGE "Tool bison is required."
+qt_webengine_configure_check("bison"
+    MODULES QtWebEngine QtPdf
+    CONDITION BISON_FOUND
+    MESSAGE "Tool bison is required."
 )
-add_check_for_support(
-   MODULES QtWebEngine QtPdf
-   CONDITION FLEX_FOUND
-   MESSAGE "Tool flex is required."
+qt_webengine_configure_check("flex"
+    MODULES QtWebEngine QtPdf
+    CONDITION FLEX_FOUND
+    MESSAGE "Tool flex is required."
 )
-add_check_for_support(
-   MODULES QtWebEngine QtPdf
-   CONDITION NOT LINUX OR PkgConfig_FOUND
-   MESSAGE "A pkg-config support is required."
+qt_webengine_configure_check("pkg-config"
+    MODULES QtWebEngine QtPdf
+    CONDITION NOT LINUX OR PkgConfig_FOUND
+    MESSAGE "A pkg-config support is required."
 )
-add_check_for_support(
-   MODULES QtWebEngine QtPdf
-   CONDITION NOT LINUX OR TEST_glibc
-   MESSAGE "A suitable version >= 2.17 of glibc is required."
+qt_webengine_configure_check("glibc"
+    MODULES QtWebEngine QtPdf
+    CONDITION NOT LINUX OR TEST_glibc
+    MESSAGE "A suitable version >= 2.17 of glibc is required."
 )
-add_check_for_support(
-   MODULES QtWebEngine QtPdf
-   CONDITION NOT LINUX OR TEST_khr
-   MESSAGE "Build requires Khronos development headers for build - see mesa/libegl1-mesa-dev"
+qt_webengine_configure_check("mesa-headers"
+    MODULES QtWebEngine QtPdf
+    CONDITION NOT LINUX OR TEST_khr
+    MESSAGE "Build requires Khronos development headers for build - see mesa/libegl1-mesa-dev"
 )
-add_check_for_support(
-   MODULES QtWebEngine
-   CONDITION NOT LINUX OR FONTCONFIG_FOUND
-   MESSAGE "Build requires fontconfig."
+qt_webengine_configure_check("fontconfig"
+    MODULES QtWebEngine
+    CONDITION NOT LINUX OR FONTCONFIG_FOUND
+    MESSAGE "Build requires fontconfig."
 )
-add_check_for_support(
-   MODULES QtWebEngine
-   CONDITION NOT LINUX OR NSS_FOUND
-   MESSAGE "Build requires nss >= 3.26."
+qt_webengine_configure_check("nss"
+    MODULES QtWebEngine
+    CONDITION NOT LINUX OR NSS_FOUND
+    MESSAGE "Build requires nss >= 3.26."
 )
-add_check_for_support(
-   MODULES QtWebEngine
-   CONDITION NOT LINUX OR DBUS_FOUND
-   MESSAGE "Build requires dbus."
+qt_webengine_configure_check("dbus"
+    MODULES QtWebEngine
+    CONDITION NOT LINUX OR DBUS_FOUND
+    MESSAGE "Build requires dbus."
 )
-add_check_for_support(
+qt_webengine_configure_check("ffmpeg"
     MODULES QtWebEngine
     CONDITION NOT LINUX OR NOT QT_FEATURE_webengine_system_ffmpeg OR TEST_libavformat
     MESSAGE "Unmodified ffmpeg >= 5.0 is not supported."
 )
-# FIXME: This prevents non XCB Linux builds from building:
-set(xcbSupport X11 LIBDRM XCOMPOSITE XCURSOR XRANDR XI XPROTO XSHMFENCE XTST)
-foreach(xs ${xcbSupport})
-    if(${xs}_FOUND)
-       set(xcbErrorMessage "${xcbErrorMessage} ${xs}:YES")
-    else()
-       set(xcbErrorMessage "${xcbErrorMessage} ${xs}:NO")
-    endif()
-endforeach()
-add_check_for_support(
-   MODULES QtWebEngine
-   CONDITION NOT LINUX OR NOT QT_FEATURE_xcb OR QT_FEATURE_webengine_ozone_x11
-   MESSAGE "Could not find all necessary libraries for qpa-xcb support.\
-${xcbErrorMessage}"
-)
-add_check_for_support(
-   MODULES QtWebEngine
-   CONDITION MSVC OR
-       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
-       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR
-       (MACOS AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-   MESSAGE
-       "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
-)
 
-add_check_for_support(
-   MODULES QtPdf
-   CONDITION MSVC OR
-       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
-       (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR
-       (APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") OR
-       (ANDROID AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR
-       (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
-       (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-   MESSAGE
-       "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
+if(LINUX AND QT_FEATURE_xcb)
+    set(x_libs X11 LIBDRM XCOMPOSITE XCURSOR XRANDR XI XPROTO XSHMFENCE XTST)
+    foreach(x_lib ${x_libs})
+        string(TOLOWER ${x_lib} x)
+        qt_webengine_configure_check("${x}"
+            MODULES QtWebEngine
+            CONDITION ${x_lib}_FOUND
+            MESSAGE "Could not find ${x} librarary for qpa-xcb support."
+        )
+        unset(x)
+    endforeach()
+    unset(x_libs)
+endif()
+
+qt_webengine_configure_check("compiler"
+    MODULES QtWebEngine
+    CONDITION MSVC OR
+        (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
+        (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR
+        (MACOS AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+    MESSAGE
+        "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
 )
-if(WIN32)
-    if(MSVC)
-        if(MSVC_TOOLSET_VERSION EQUAL 142) # VS 2019 (16.0)
-            add_check_for_support(
-                MODULES QtWebEngine QtPdf
-                CONDITION NOT MSVC_VERSION LESS 1929
-                MESSAGE "VS compiler version must be at least 14.29"
-            )
-        elseif(MSVC_TOOLSET_VERSION EQUAL 143) # VS 2022 (17.0)
-            add_check_for_support(
-                MODULES QtWebEngine QtPdf
-                CONDITION NOT MSVC_VERSION LESS 1936
-                MESSAGE "VS compiler version must be at least 14.36"
-            )
-        else()
-            message(FATAL_ERROR "Build requires Visual Studio 2019 or higher.")
-        endif()
+qt_webengine_configure_check("compiler"
+    MODULES QtPdf
+    CONDITION MSVC OR
+        (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
+        (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR
+        (APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") OR
+        (ANDROID AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR
+        (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
+        (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    MESSAGE
+        "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
+)
+if(WIN32 AND MSVC)
+    qt_webengine_configure_check("visual-studio"
+        MODULES QtWebEngine QtPdf
+        CONDITION MSVC_TOOLSET_VERSION EQUAL 142 OR MSVC_TOOLSET_VERSION EQUAL 143
+        MESSAGE "Build requires Visual Studio 2019 or higher."
+    )
+    if(MSVC_TOOLSET_VERSION EQUAL 142) # VS 2019 (16.0)
+        qt_webengine_configure_check("msvc"
+            MODULES QtWebEngine QtPdf
+            CONDITION NOT MSVC_VERSION LESS 1929
+            MESSAGE "VS compiler version must be at least 14.29"
+        )
+    elseif(MSVC_TOOLSET_VERSION EQUAL 143) # VS 2022 (17.0)
+        qt_webengine_configure_check("msvc"
+            MODULES QtWebEngine QtPdf
+            CONDITION NOT MSVC_VERSION LESS 1936
+            MESSAGE "VS compiler version must be at least 14.36"
+        )
     endif()
-    set(windowsSdkVersion $ENV{WindowsSDKVersion})
-    string(REGEX REPLACE "([0-9.]+).*" "\\1" windowsSdkVersion "${windowsSdkVersion}")
-    string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+)\\.[0-9]+" "\\1" sdkMinor "${windowsSdkVersion}")
-    message("-- Windows 10 SDK version: ${windowsSdkVersion}")
-    add_check_for_support(
+endif()
+
+if(WIN32)
+    qt_webengine_get_windows_sdk_version(windows_sdk_version sdk_minor)
+    message("-- Windows 10 SDK version: ${windows_sdk_version}")
+    qt_webengine_configure_check("windows-sdk"
         MODULES QtWebEngine
-        CONDITION sdkMinor GREATER_EQUAL 22621
+        CONDITION sdk_minor GREATER_EQUAL 22621
         MESSAGE "Build requires Windows 11 SDK at least version 10.0.22621.0"
     )
+    unset(windows_sdk_version)
+    unset(sdk_minor)
 endif()
 
 #### Summary
