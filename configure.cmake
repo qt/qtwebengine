@@ -643,11 +643,6 @@ if(WIN32)
         MESSAGE "Build requires Windows 11 SDK at least version 10.0.22621.0"
     )
 endif()
-add_check_for_support(
-   MODULES QtWebEngine QtPdf
-   CONDITION NOT MSVC OR TEST_winversion
-   MESSAGE "Build requires Visual Studio 2019 or higher."
-)
 
 #### Summary
 
