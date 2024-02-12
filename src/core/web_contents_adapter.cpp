@@ -60,6 +60,7 @@
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/font_render_params.h"
+#include "ui/native_theme/native_theme.h"
 #include "qtwebengine/browser/qtwebenginepage.mojom.h"
 
 #include <QtCore/QVariant>
@@ -453,6 +454,10 @@ bool WebContentsAdapter::isInitialized() const
     return (bool)m_webContentsDelegate;
 }
 
+ui::NativeTheme::PreferredColorScheme toWeb(Qt::ColorScheme colorScheme) {
+    return colorScheme == Qt::ColorScheme::Dark ? ui::NativeTheme::PreferredColorScheme::kDark : ui::NativeTheme::PreferredColorScheme::kLight;
+}
+
 void WebContentsAdapter::initialize(content::SiteInstance *site)
 {
     Q_ASSERT(m_adapterClient);
@@ -505,6 +510,12 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
                 rvh, absl::nullopt, nullptr);
 
     m_webContentsDelegate->RenderViewHostChanged(nullptr, rvh);
+
+    // Make sure the system theme's light/dark mode is propagated to webpages
+    QObject::connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, [](Qt::ColorScheme colorScheme){
+        ui::NativeTheme::GetInstanceForWeb()->set_preferred_color_scheme(toWeb(colorScheme));
+    });
+    ui::NativeTheme::GetInstanceForWeb()->set_preferred_color_scheme(toWeb(QGuiApplication::styleHints()->colorScheme()));
 
     m_adapterClient->initializationFinished();
 }
