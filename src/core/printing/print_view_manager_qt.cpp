@@ -333,7 +333,10 @@ void PrintViewManagerQt::SetupScriptedPrintPreview(SetupScriptedPrintPreviewCall
     if (rfh)
         GetPrintRenderFrame(rfh)->OnPrintPreviewDialogClosed();
 
-    client->printRequested();
+    if (web_contents()->GetPrimaryMainFrame() == rfh)
+        client->printRequested();
+    else
+        client->printRequestedByFrame(static_cast<quint64>(rfh->GetFrameTreeNodeId()));
 }
 
 void PrintViewManagerQt::ShowScriptedPrintPreview(bool /*source_is_modifiable*/)

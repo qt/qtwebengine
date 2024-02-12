@@ -59,7 +59,9 @@ public:
 
 private:
     friend class QWebEnginePage;
+    friend class QWebEnginePagePrivate;
     friend class QQuickWebEngineView;
+    friend class QQuickWebEngineViewPrivate;
 
     QWebEngineFrame(QtWebEngineCore::WebContentsAdapterClient *page, quint64 id);
 

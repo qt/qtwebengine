@@ -74,6 +74,7 @@ public:
     virtual void didPrintPage(QPrinter *&printer, QSharedPointer<QByteArray> result) = 0;
     virtual void didPrintPageToPdf(const QString &filePath, bool success) = 0;
     virtual void printRequested() = 0;
+    virtual void printRequestedByFrame(QWebEngineFrame frame) = 0;
     virtual void showAutofillPopup(QtWebEngineCore::AutofillPopupController *controller,
                                    const QRect &bounds, bool autoselectFirstSuggestion) = 0;
     virtual void hideAutofillPopup() = 0;
@@ -163,6 +164,7 @@ public:
     bool isEnabled() const override;
     void setToolTip(const QString &toolTipText) override;
     void printRequested() override;
+    void printRequestedByFrame(quint64 frameId) override;
     QtWebEngineCore::TouchHandleDrawableDelegate *
     createTouchHandleDelegate(const QMap<int, QImage> &) override;
     void showTouchSelectionMenu(QtWebEngineCore::TouchSelectionMenuController *, const QRect &,

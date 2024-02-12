@@ -887,6 +887,12 @@ void QWebEngineViewPrivate::printRequested()
     });
 }
 
+void QWebEngineViewPrivate::printRequestedByFrame(QWebEngineFrame frame)
+{
+    Q_Q(QWebEngineView);
+    QTimer::singleShot(0, q, [q, frame]() { Q_EMIT q->printRequestedByFrame(frame); });
+}
+
 bool QWebEngineViewPrivate::isVisible() const
 {
     Q_Q(const QWebEngineView);
@@ -1430,7 +1436,20 @@ void QWebEngineView::printToPdf(const std::function<void(const QByteArray&)> &re
     button of PDF viewer plugin.
     Typically, the signal handler can simply call print().
 
-    \sa print()
+    Since 6.8, this signal is only emitted for the main frame, instead of being emitted
+    for any frame that requests printing.
+
+    \sa printRequestedByFrame(), print()
+*/
+
+/*!
+    \fn void QWebEngineView::printRequestedByFrame(QWebEngineFrame frame)
+    \since 6.8
+
+    This signal is emitted when the JavaScript \c{window.print()} method is called on \a frame.
+    If the frame is the main frame, \c{printRequested} is emitted instead.
+
+    \sa printRequested(), print()
 */
 
 /*!

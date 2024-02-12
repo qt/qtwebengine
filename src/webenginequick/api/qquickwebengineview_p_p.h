@@ -130,6 +130,7 @@ public:
     QtWebEngineCore::ProfileAdapter *profileAdapter() override;
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;
     void printRequested() override;
+    void printRequestedByFrame(quint64 frameId) override;
     void findTextFinished(const QWebEngineFindTextResult &result) override;
     void showAutofillPopup(QtWebEngineCore::AutofillPopupController *controller,
                            const QRect &bounds, bool autoselectFirstSuggestion) override;

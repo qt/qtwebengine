@@ -842,6 +842,14 @@ void QQuickWebEngineViewPrivate::printRequested()
     });
 }
 
+void QQuickWebEngineViewPrivate::printRequestedByFrame(quint64 frameId)
+{
+    Q_Q(QQuickWebEngineView);
+    QTimer::singleShot(0, q, [this, q, frameId]() {
+        Q_EMIT q->printRequestedByFrame(QWebEngineFrame(this, frameId));
+    });
+}
+
 void QQuickWebEngineViewPrivate::findTextFinished(const QWebEngineFindTextResult &result)
 {
     Q_Q(QQuickWebEngineView);

@@ -561,6 +561,7 @@ Q_SIGNALS:
     Q_REVISION(6,4) void fileSystemAccessRequested(const QWebEngineFileSystemAccessRequest &request);
     Q_REVISION(6, 7) void webAuthUxRequested(QWebEngineWebAuthUxRequest *request);
     Q_REVISION(6,7) void desktopMediaRequested(const QWebEngineDesktopMediaRequest &request);
+    Q_REVISION(6, 8) void printRequestedByFrame(QWebEngineFrame frame);
 
 protected:
     void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;

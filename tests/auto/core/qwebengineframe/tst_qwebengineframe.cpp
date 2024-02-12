@@ -38,6 +38,7 @@ private Q_SLOTS:
     void url();
     void size();
     void runJavaScript();
+    void printRequestedByFrame();
 
 private:
 };
@@ -187,6 +188,24 @@ void tst_QWebEngineFrame::runJavaScript()
     children[0].runJavaScript("window.name", spy.ref());
     auto result = spy.waitForResult();
     QCOMPARE(result, QString("test-subframe0"));
+}
+
+void tst_QWebEngineFrame::printRequestedByFrame()
+{
+    QWebEnginePage page;
+    QSignalSpy loadSpy{ &page, SIGNAL(loadFinished(bool)) };
+    QSignalSpy printRequestedSpy{ &page, SIGNAL(printRequestedByFrame(QWebEngineFrame)) };
+
+    page.load(QUrl("qrc:/resources/nesting-iframe.html"));
+    QTRY_COMPARE(loadSpy.size(), 1);
+    auto oFrame2 = page.findFrameByName("test-main-frame");
+    QVERIFY(oFrame2.has_value());
+    CallbackSpy<QVariant> spy;
+    oFrame2->runJavaScript("window.print()", spy.ref());
+    spy.waitForResult();
+    QCOMPARE(printRequestedSpy.size(), 1);
+    auto *framePtr = get_if<QWebEngineFrame>(&printRequestedSpy[0][0]);
+    QCOMPARE(*framePtr, *oFrame2);
 }
 
 QTEST_MAIN(tst_QWebEngineFrame)

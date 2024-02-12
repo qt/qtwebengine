@@ -353,6 +353,7 @@ Q_SIGNALS:
 
     void pdfPrintingFinished(const QString &filePath, bool success);
     void printRequested();
+    void printRequestedByFrame(QWebEngineFrame frame);
 
     void visibleChanged(bool visible);
 

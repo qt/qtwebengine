@@ -766,6 +766,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.NewViewInWindow --> NewViewDestination"
     << "QQuickWebEngineView.pdfPrintingFinished(QString,bool) --> void"
     << "QQuickWebEngineView.printRequested() --> void"
+    << "QQuickWebEngineView.printRequestedByFrame(QWebEngineFrame) --> void"
     << "QQuickWebEngineView.printToPdf(QJSValue) --> void"
     << "QQuickWebEngineView.printToPdf(QJSValue,PrintedPageSizeId) --> void"
     << "QQuickWebEngineView.printToPdf(QJSValue,PrintedPageSizeId,PrintedPageOrientation) --> void"
