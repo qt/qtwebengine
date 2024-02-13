@@ -4,8 +4,9 @@
 #ifndef BROWSER_ACCESSIBILITY_QT_H
 #define BROWSER_ACCESSIBILITY_QT_H
 
-#include <QtCore/qtconfigmacros.h>
+#include <QtGui/qtguiglobal.h>
 
+#if QT_CONFIG(accessibility)
 QT_FORWARD_DECLARE_CLASS(QAccessibleInterface)
 
 namespace content {
@@ -15,5 +16,6 @@ QAccessibleInterface *toQAccessibleInterface(BrowserAccessibility *obj);
 const QAccessibleInterface *toQAccessibleInterface(const BrowserAccessibility *obj);
 
 } // namespace content
+#endif // QT_CONFIG(accessibility)
 
 #endif // BROWSER_ACCESSIBILITY_QT_H

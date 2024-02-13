@@ -11,7 +11,7 @@ include(ExternalProject)
 include(cmake/Functions.cmake)
 
 project(QtWebEngineDummy)
-find_package(Qt6 6.2 CONFIG REQUIRED COMPONENTS BuildInternals Core)
+find_package(Qt6 6.5 CONFIG REQUIRED COMPONENTS BuildInternals Core)
 
 project(QtWebEngine
     VERSION ${Qt6Core_VERSION}

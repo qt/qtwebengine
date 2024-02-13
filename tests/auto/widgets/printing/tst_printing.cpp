@@ -3,6 +3,7 @@
 
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 #include <QtWebEngineCore/qtwebenginecore-config.h>
+#include <QWebEngineSettings>
 #include <QWebEngineView>
 #include <QTemporaryDir>
 #include <QTest>
@@ -22,6 +23,7 @@ private slots:
     void printRequest();
 #if QT_CONFIG(webengine_system_poppler)
     void printToPdfPoppler();
+    void printFromPdfViewer();
 #endif
     void interruptPrinting();
 };
@@ -115,6 +117,50 @@ void tst_Printing::printToPdfPoppler()
     rectf rect;
     QVERIFY2(pdfPage->search(ustring::from_latin1("Hello Paper World"), rect, page::search_from_top,
                      case_sensitive ), "Could not find text");
+}
+
+void tst_Printing::printFromPdfViewer()
+{
+    using namespace poppler;
+
+    QWebEngineView view;
+    view.page()->settings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
+    view.page()->settings()->setAttribute(QWebEngineSettings::PdfViewerEnabled, true);
+
+    // Load a basic HTML
+    QSignalSpy spy(&view, &QWebEngineView::loadFinished);
+    view.load(QUrl("qrc:///resources/basic_printing_page.html"));
+    QTRY_COMPARE(spy.size(), 1);
+
+    // Create a PDF
+    QTemporaryDir tempDir(QDir::tempPath() + "/tst_printing-XXXXXX");
+    QVERIFY(tempDir.isValid());
+    QString path = tempDir.path() + "/basic_page.pdf";
+    QSignalSpy savePdfSpy(view.page(), &QWebEnginePage::pdfPrintingFinished);
+    view.page()->printToPdf(path);
+    QTRY_COMPARE(savePdfSpy.size(), 1);
+
+    // Open the new file with the PDF viewer plugin
+    view.load(QUrl("file://" + path));
+    QTRY_COMPARE(spy.size(), 2);
+
+    // Print from the plugin
+    // loadFinished signal is not reliable when loading a PDF file, because it has multiple phases.
+    // Workaround: Try to print it a couple of times until the result matches the expected.
+    CallbackSpy<QByteArray> resultSpy;
+    bool ok = QTest::qWaitFor([&]() -> bool {
+        view.printToPdf(resultSpy.ref());
+        QByteArray data = resultSpy.waitForResult();
+
+        // Check if the result contains text from the original basic HTML
+        // This catches all the typical issues: empty result or printing the WebUI without PDF content.
+        QScopedPointer<document> pdf(document::load_from_raw_data(data.constData(), data.length()));
+        QScopedPointer<page> pdfPage(pdf->create_page(0));
+        rectf rect;
+        return pdfPage->search(ustring::from_latin1("Hello Paper World"), rect, page::search_from_top,
+                            case_sensitive);
+    }, 10000);
+    QVERIFY(ok);
 }
 #endif
 

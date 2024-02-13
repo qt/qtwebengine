@@ -9,33 +9,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/constants.h"
 
-namespace {
-bool IsPdfExtensionOrigin(const url::Origin &origin)
-{
-    return origin.scheme() == extensions::kExtensionScheme &&
-           origin.host() == extension_misc::kPdfExtensionId;
-}
-
-// from chrome/browser/pdf/pdf_frame_util.cc:
-content::RenderFrameHost *FindPdfChildFrame(content::RenderFrameHost *rfh)
-{
-    if (!IsPdfExtensionOrigin(rfh->GetLastCommittedOrigin()))
-        return nullptr;
-
-    content::RenderFrameHost *pdf_rfh = nullptr;
-    rfh->ForEachRenderFrameHost(
-                    [&pdf_rfh](content::RenderFrameHost *rfh) {
-                        if (!rfh->GetProcess()->IsPdf())
-                            return;
-
-                        DCHECK(IsPdfExtensionOrigin(rfh->GetParent()->GetLastCommittedOrigin()));
-                        DCHECK(!pdf_rfh);
-                        pdf_rfh = rfh;
-                    });
-
-    return pdf_rfh;
-}
-}  // namespace
+#include "pdf_util_qt.h"
 
 PDFWebContentsHelperClientQt::PDFWebContentsHelperClientQt() = default;
 PDFWebContentsHelperClientQt::~PDFWebContentsHelperClientQt() = default;
@@ -43,7 +17,7 @@ PDFWebContentsHelperClientQt::~PDFWebContentsHelperClientQt() = default;
 content::RenderFrameHost *PDFWebContentsHelperClientQt::FindPdfFrame(content::WebContents *contents)
 {
     content::RenderFrameHost *main_frame = contents->GetPrimaryMainFrame();
-    content::RenderFrameHost *pdf_frame = FindPdfChildFrame(main_frame);
+    content::RenderFrameHost *pdf_frame = QtWebEngineCore::FindPdfChildFrame(main_frame);
     return pdf_frame ? pdf_frame : main_frame;
 }
 

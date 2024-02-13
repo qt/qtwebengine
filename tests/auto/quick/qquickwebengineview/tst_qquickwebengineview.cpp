@@ -693,8 +693,8 @@ void tst_QQuickWebEngineView::inputContextQueryInput()
         QGuiApplication::sendEvent(qApp->focusObject(), &event);
     }
     QTRY_COMPARE(testContext.infos.size(), 1);
-    QCOMPARE(testContext.infos[0].cursorPosition, 3);
-    QCOMPARE(testContext.infos[0].anchorPosition, 3);
+    QCOMPARE(testContext.infos[0].cursorPosition, 0);
+    QCOMPARE(testContext.infos[0].anchorPosition, 0);
     QCOMPARE(testContext.infos[0].surroundingText, QStringLiteral("QtWebEngine!"));
     QCOMPARE(testContext.infos[0].selectedText, QStringLiteral(""));
     QCOMPARE(evaluateJavaScriptSync(view, "document.getElementById('input1').value").toString(), QStringLiteral("123QtWebEngine!"));

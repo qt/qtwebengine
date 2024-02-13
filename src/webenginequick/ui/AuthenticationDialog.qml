@@ -50,6 +50,7 @@ Dialog {
         Label {
             id: message
             color: palette.windowText
+            textFormat: Text.PlainText
         }
         GridLayout {
             columns: 2

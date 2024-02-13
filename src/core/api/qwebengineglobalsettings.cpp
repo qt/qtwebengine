@@ -3,7 +3,6 @@
 
 #include "qwebengineglobalsettings.h"
 #include "qwebengineglobalsettings_p.h"
-#include <QDebug>
 
 #ifdef signals
 #undef signals
@@ -126,12 +125,6 @@ void QWebEngineGlobalSettingsPrivate::configureStubHostResolver()
         != content::NetworkServiceAvailability::NOT_CREATED) {
         network::mojom::NetworkService *networkService = content::GetNetworkService();
         if (networkService) {
-            qDebug() << "doh set to" << dnsOverHttpsTemplates << " -- "
-                     << (dnsMode == QWebEngineGlobalSettings::SecureDnsMode::SecureOnly
-                                 ? "SecureOnly"
-                                 : dnsMode == QWebEngineGlobalSettings::SecureDnsMode::SystemOnly
-                                 ? "SystemOnly"
-                                 : "SecureWithFallback");
             absl::optional<net::DnsOverHttpsConfig> dohConfig = dnsOverHttpsTemplates.empty()
                     ? net::DnsOverHttpsConfig()
                     : net::DnsOverHttpsConfig::FromString(dnsOverHttpsTemplates);

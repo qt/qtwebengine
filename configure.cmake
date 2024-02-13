@@ -493,12 +493,13 @@ add_check_for_support(
    MESSAGE "Build can be done only on Linux, Windows, macO, iOS and Android(on non-Windows hosts only)."
 )
 if(LINUX AND CMAKE_CROSSCOMPILING)
-   get_gn_arch(testArch ${TEST_architecture_arch})
+   set(supportedTargets "arm" "arm64" "armv7-a" "x86_64")
    add_check_for_support(
        MODULES QtWebEngine QtPdf
-       CONDITION testArch
+       CONDITION TEST_architecture_arch IN_LIST supportedTargets
        MESSAGE "Cross compiling is not supported for ${TEST_architecture_arch}."
    )
+   unset(supportedTargets)
 endif()
 add_check_for_support(
    MODULES QtWebEngine
@@ -642,11 +643,6 @@ if(WIN32)
         MESSAGE "Build requires Windows 11 SDK at least version 10.0.22621.0"
     )
 endif()
-add_check_for_support(
-   MODULES QtWebEngine QtPdf
-   CONDITION NOT MSVC OR TEST_winversion
-   MESSAGE "Build requires Visual Studio 2019 or higher."
-)
 
 #### Summary
 
