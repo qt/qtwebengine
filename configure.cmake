@@ -416,6 +416,7 @@ endif()
 qt_feature("qtwebengine-build" PUBLIC
     LABEL "Build QtWebEngine Modules"
     PURPOSE "Enables building the Qt WebEngine modules."
+    CONDITION QT_CONFIGURE_CHECK_qtwebengine_build
 )
 qt_feature("qtwebengine-core-build" PRIVATE
     LABEL "Build QtWebEngineCore"
@@ -435,6 +436,7 @@ qt_feature("qtwebengine-quick-build" PRIVATE
 qt_feature("qtpdf-build" PUBLIC
     LABEL "Build Qt PDF"
     PURPOSE "Enables building the Qt Pdf modules."
+    CONDITION QT_CONFIGURE_CHECK_qtpdf_build
 )
 qt_feature("qtpdf-widgets-build" PRIVATE
     LABEL "Build QtPdfWidgets"

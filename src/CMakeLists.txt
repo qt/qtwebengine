@@ -1,56 +1,16 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-##
-#  MAIN CONFIGURE
-##
-
 qt_internal_get_filename_path_mode(path_mode)
-
 get_filename_component(WEBENGINE_ROOT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.." ${path_mode})
 get_filename_component(WEBENGINE_ROOT_BUILD_DIR "${PROJECT_BINARY_DIR}" ${path_mode})
 
-# Note this is configure that does not belong to any module
-qt_feature_module_begin(ONLY_EVALUATE_FEATURES)
-# Enable printing of feature summary by forcing qt_configure_record_command
-# to work in spite of ONLY_EVALUATE_FEATURES.
-set(__QtFeature_only_evaluate_features OFF)
-include(../configure.cmake)
-qt_feature_module_end(ONLY_EVALUATE_FEATURES)
 
 ##
-#  SUPPORT CHECK
+#  RUN CONFIGURE
 ##
 
-# TODO: here we should return FATAL_ERROR and ask user to define
-# FEATURE_qtwebenignebuild=OFF if one wants to only build qtpdf,
-# however our ci setup is not flexible enough and configure step must succeed
-
-if(NOT ${QtWebEngine_SUPPORT})
-    add_custom_target(WebEngineErrorMessage ALL
-        ${CMAKE_COMMAND} -E cmake_echo_color --red "QtWebEngine will not be built: ${QtWebEngine_ERROR}"
-        COMMENT "Check QtWebEngine support"
-        VERBATIM
-    )
-    message("-- Support check for QtWebEngine failed: ${QtWebEngine_ERROR}")
-    set(QT_FEATURE_qtwebengine_build OFF CACHE BOOL "Build QtWebEngine Modules" FORCE)
-    set(QT_FEATURE_qtwebengine_core_build OFF CACHE BOOL "Build QtWebEngineCore" FORCE)
-    set(QT_FEATURE_qtwebengine_widgets_build OFF CACHE BOOL "Build QtWebEngineWidgets" FORCE)
-    set(QT_FEATURE_qtwebengine_quick_build OFF CACHE BOOL "Build QtWebEngineQuick" FORCE)
-
-endif()
-
-if(NOT ${QtPdf_SUPPORT})
-    add_custom_target(PdfErrorMessage ALL
-        ${CMAKE_COMMAND} -E cmake_echo_color --red "QtPdf will not be built: ${QtPdf_ERROR}"
-        COMMENT "Check QtPdf support"
-        VERBATIM
-    )
-    message("-- Support check for QtPdf failed: ${QtPdf_ERROR}")
-    set(QT_FEATURE_qtpdf_build OFF CACHE BOOL "Build QtPdf" FORCE)
-    set(QT_FEATURE_qtpdf_widgets_build OFF CACHE BOOL "Build QtPdfWidgets" FORCE)
-    set(QT_FEATURE_qtpdf_quick_build OFF CACHE BOOL "Build QtPdfQuick" FORCE)
-endif()
+qt_webengine_run_configure(../configure.cmake)
 
 if(NOT QT_FEATURE_qtwebengine_build AND NOT QT_FEATURE_qtpdf_build)
     return()
@@ -64,36 +24,39 @@ cmake_minimum_required(VERSION ${QT_SUPPORTED_MIN_CMAKE_VERSION_FOR_BUILDING_WEB
 ##
 
 if(QT_FEATURE_qtwebengine_core_build)
-   add_subdirectory(core)
-   add_subdirectory(process)
+    add_subdirectory(core)
+    add_subdirectory(process)
 endif()
 if(QT_FEATURE_qtwebengine_widgets_build)
-   add_subdirectory(webenginewidgets)
+    add_subdirectory(webenginewidgets)
 endif()
 if(QT_FEATURE_qtwebengine_quick_build)
-   add_subdirectory(webenginequick)
+    add_subdirectory(webenginequick)
 endif()
 
 if(QT_FEATURE_qtpdf_build)
-   add_subdirectory(pdf)
-   # keep log order, pdf build after webengine
-   if(QT_FEATURE_qtwebengine_core_build)
-       add_dependencies(run_pdf_NinjaReady WebEngineCore)
-   endif()
-   if(QT_FEATURE_qtwebengine_widgets_build)
-       add_dependencies(run_pdf_NinjaReady WebEngineWidgets)
-   endif()
-   if(QT_FEATURE_qtwebengine_quick_build)
-       add_dependencies(run_pdf_NinjaReady WebEngineQuick)
-   endif()
-   if(QT_FEATURE_qtpdf_widgets_build)
-       add_subdirectory(pdfwidgets)
-   endif()
-   if(QT_FEATURE_qtpdf_quick_build)
-       add_subdirectory(pdfquick)
-   endif()
+    add_subdirectory(pdf)
+endif()
+if(QT_FEATURE_qtpdf_widgets_build)
+    add_subdirectory(pdfwidgets)
+endif()
+if(QT_FEATURE_qtpdf_quick_build)
+    add_subdirectory(pdfquick)
 endif()
 
+# Keep log order, pdf build after webengine
+
+if(QT_FEATURE_qtpdf_build)
+    if(QT_FEATURE_qtwebengine_core_build)
+        add_dependencies(run_pdf_NinjaReady WebEngineCore)
+    endif()
+    if(QT_FEATURE_qtwebengine_widgets_build)
+        add_dependencies(run_pdf_NinjaReady WebEngineWidgets)
+    endif()
+    if(QT_FEATURE_qtwebengine_quick_build)
+        add_dependencies(run_pdf_NinjaReady WebEngineQuick)
+    endif()
+endif()
 ##
 #  NINJA PROJECT
 ##

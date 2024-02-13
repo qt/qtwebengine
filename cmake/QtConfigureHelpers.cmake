@@ -3,30 +3,104 @@
 
 # These are functions aim to help during configure step checks and build setup
 
-function(qt_webengine_configure_check)
+macro(qt_webengine_run_configure configure_file_path)
+    # Run main configure that does not belong to any module
+    qt_feature_module_begin(ONLY_EVALUATE_FEATURES)
+    qt_webengine_configure_begin()
+    # Enable printing of feature summary by forcing qt_configure_record_command
+    # to work in spite of ONLY_EVALUATE_FEATURES.
+    set(__QtFeature_only_evaluate_features OFF)
+    include(${configure_file_path})
+    qt_webengine_configure_end()
+    qt_feature_module_end(ONLY_EVALUATE_FEATURES)
+endmacro()
+
+function(qt_webengine_configure_begin)
+    set(configure_checks "" PARENT_SCOPE)
+endfunction()
+
+# Sets QT_CONFIGURE_CHECK_(module)_build and prints found issues
+function(qt_webengine_configure_end)
+
+    foreach(module_checked ${configure_checks})
+        set(error_message "\n -- The following configure issues were found:")
+        string(TOLOWER ${module_checked} module)
+        if(NOT ${configure_checks_${module}_support})
+            foreach(check ${configure_checks_${module}})
+                if(NOT ${configure_checks_${module}_${check}})
+                    string(APPEND error_message "\n * ${configure_checks_${module}_${check}_error}")
+                endif()
+            endforeach()
+            message(STATUS "Configure checks for ${module} failed.${error_message}")
+            set(QT_CONFIGURE_CHECK_${module}_build OFF CACHE BOOL "Build ${module_checked} Modules" FORCE)
+            qt_configure_add_report_entry(
+               TYPE WARNING
+               MESSAGE "${module_checked} won't be built. ${error_message}"
+            )
+            qt_webengine_add_error_target(${module_checked} "Delete CMakeCache.txt and try to reconfigure.")
+        else()
+           set(QT_CONFIGURE_CHECK_${module}_build ON CACHE BOOL "Build ${module_checked} Modules" FORCE)
+        endif()
+    endforeach()
+
+    # Cleanup
+    foreach(module_checked ${configure_checks})
+        string(TOLOWER ${module_checked} module)
+            foreach(check ${configure_checks_${module}})
+                unset(configure_checks_${module}_${check}_error PARENT_SCOPE)
+                unset(configure_checks_${module}_${check} PARENT_SCOPE)
+            endforeach()
+         unset(configure_checks_${module} PARENT_SCOPE)
+         unset(configure_checks_${module}_support PARENT_SCOPE)
+    endforeach()
+    unset(configure_checks PARENT_SCOPE)
+endfunction()
+
+function(qt_webengine_add_error_target module error_message)
+    add_custom_target(${module}_error_message ALL
+        ${CMAKE_COMMAND} -E cmake_echo_color --red "${module} will not be built: ${error_message}"
+        COMMENT "${module} configure check"
+        VERBATIM
+    )
+endfunction()
+
+function(qt_webengine_normalize_check name out_var)
+    string(REGEX REPLACE "[^a-zA-Z0-9_]" "_" name "${name}")
+    set(${out_var} "${name}" PARENT_SCOPE)
+endfunction()
+
+# Sets QT_CONFIGURE_CHECK_(check) according to CONDITION
+function(qt_webengine_configure_check check)
+
+    qt_webengine_normalize_check("${check}" check)
     cmake_parse_arguments(PARSE_ARGV 1 arg
         "" "" "MODULES;MESSAGE;CONDITION"
     )
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    foreach(module ${arg_MODULES})
-        if(NOT DEFINED ${module}_SUPPORT)
-            set(${module}_SUPPORT ON PARENT_SCOPE)
-            set(${module}_SUPPORT ON)
+    foreach(m ${arg_MODULES})
+        string(TOLOWER ${m} module)
+        if(NOT DEFINED configure_checks_${module})
+            set(configure_checks_${module} "" PARENT_SCOPE)
+            set(configure_checks_${module}_support ON PARENT_SCOPE)
+            set(configure_checks ${m} ${configure_checks})
+            set(configure_checks ${configure_checks} PARENT_SCOPE)
         endif()
-        if(${module}_SUPPORT)
+        if(NOT DEFINED configure_checks_${module}_${check})
+            set(configure_checks_${module}_${check}_error "" PARENT_SCOPE)
             if("x${arg_CONDITION}" STREQUAL "x")
                 set(arg_CONDITION ON)
             endif()
             qt_evaluate_config_expression(result ${arg_CONDITION})
+            set(configure_checks_${module}_${check} ${result} PARENT_SCOPE)
+            set(QT_CONFIGURE_CHECK_${check} ${result} PARENT_SCOPE)
             if(NOT ${result})
-                set(${module}_SUPPORT OFF PARENT_SCOPE)
-                set(${module}_ERROR ${arg_MESSAGE} PARENT_SCOPE)
-            qt_configure_add_report_entry(TYPE WARNING
-                MESSAGE "${module} won't be built. ${arg_MESSAGE}"
-                CONDITION ON
-            )
+                set(configure_checks_${module}_support OFF PARENT_SCOPE)
+                set(configure_checks_${module}_${check}_error ${arg_MESSAGE} PARENT_SCOPE)
             endif()
+            set(configure_checks_${module} ${check} ${configure_checks_${module}} PARENT_SCOPE)
+        else()
+            message(FATAL_ERROR "Duplicated config check '${check}' found. Aborting !")
         endif()
     endforeach()
 endfunction()
