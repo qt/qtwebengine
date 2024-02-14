@@ -320,7 +320,8 @@ QToolBar *BrowserWindow::createToolBar()
     backShortcuts.append(QKeySequence(Qt::Key_Back));
     m_historyBackAction->setShortcuts(backShortcuts);
     m_historyBackAction->setIconVisibleInMenu(false);
-    m_historyBackAction->setIcon(QIcon(u":go-previous.png"_s));
+    m_historyBackAction->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::GoPrevious,
+                                                  QIcon(":go-previous.png"_L1)));
     m_historyBackAction->setToolTip(tr("Go back in history"));
     connect(m_historyBackAction, &QAction::triggered, [this]() {
         m_tabWidget->triggerWebPageAction(QWebEnginePage::Back);
@@ -332,7 +333,8 @@ QToolBar *BrowserWindow::createToolBar()
     fwdShortcuts.append(QKeySequence(Qt::Key_Forward));
     m_historyForwardAction->setShortcuts(fwdShortcuts);
     m_historyForwardAction->setIconVisibleInMenu(false);
-    m_historyForwardAction->setIcon(QIcon(u":go-next.png"_s));
+    m_historyForwardAction->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::GoNext,
+                                                     QIcon(":go-next.png"_L1)));
     m_historyForwardAction->setToolTip(tr("Go forward in history"));
     connect(m_historyForwardAction, &QAction::triggered, [this]() {
         m_tabWidget->triggerWebPageAction(QWebEnginePage::Forward);
@@ -456,8 +458,10 @@ WebView *BrowserWindow::currentTab() const
 
 void BrowserWindow::handleWebViewLoadProgress(int progress)
 {
-    static QIcon stopIcon(u":process-stop.png"_s);
-    static QIcon reloadIcon(u":view-refresh.png"_s);
+    static QIcon stopIcon = QIcon::fromTheme(QIcon::ThemeIcon::ProcessStop,
+                                             QIcon(":process-stop.png"_L1));
+    static QIcon reloadIcon = QIcon::fromTheme(QIcon::ThemeIcon::ViewRefresh,
+                                               QIcon(":view-refresh.png"_L1));
 
     if (0 < progress && progress < 100) {
         m_stopReloadAction->setData(QWebEnginePage::Stop);
