@@ -356,9 +356,14 @@ foreach(arch ${archs})
         )
         extend_gn_list(gnArgArg
             ARGS enable_plugins
-            CONDITION QT_FEATURE_webengine_pepper_plugins
+            CONDITION QT_FEATURE_webengine_printing_and_pdf OR
+            QT_FEATURE_webengine_pepper_plugins
         )
         extend_gn_list(gnArgArg
+            ARGS enable_ppapi
+            CONDITION QT_FEATURE_webengine_pepper_plugins
+        )
+         extend_gn_list(gnArgArg
             ARGS enable_spellcheck
             CONDITION QT_FEATURE_webengine_spellchecker
         )
