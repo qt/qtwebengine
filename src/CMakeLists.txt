@@ -57,31 +57,8 @@ if(QT_FEATURE_qtpdf_build)
         add_dependencies(run_pdf_NinjaReady WebEngineQuick)
     endif()
 endif()
-##
-#  NINJA PROJECT
-##
 
 set(installDir ${PROJECT_BINARY_DIR}/install)
-
-if(NOT Ninja_FOUND)
-    externalproject_add(ninja
-        SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/ninja
-        BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR}/ninja
-        INSTALL_DIR ${installDir}
-        PREFIX      ninja
-        USES_TERMINAL_BUILD TRUE
-        EXCLUDE_FROM_ALL TRUE
-        CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release
-                   -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-                   -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>
-    )
-    if(QT_FEATURE_qtwebengine_core_build)
-        add_dependencies(run_core_NinjaReady ninja)
-    endif()
-    if(QT_FEATURE_qtpdf_build)
-        add_dependencies(run_pdf_NinjaReady ninja)
-    endif()
-endif()
 
 ##
 #  GN PROJECT

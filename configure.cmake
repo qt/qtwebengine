@@ -450,15 +450,6 @@ qt_feature("qtpdf-quick-build" PRIVATE
         Qt6Quick_VERSION VERSION_GREATER_EQUAL "6.4.0"
 )
 
-if(Ninja_FOUND)
-    qt_webengine_is_file_inside_root_build_dir(
-        Ninja_INSIDE_WEBENGINE_ROOT_BUILD_DIR "${Ninja_EXECUTABLE}")
-endif()
-qt_feature("webengine-build-ninja" PRIVATE
-    LABEL "Build Ninja"
-    AUTODETECT NOT Ninja_FOUND OR Ninja_INSIDE_WEBENGINE_ROOT_BUILD_DIR
-)
-
 if(Gn_FOUND)
     qt_webengine_is_file_inside_root_build_dir(
         Gn_INSIDE_WEBENGINE_ROOT_BUILD_DIR "${Gn_EXECUTABLE}")
@@ -632,7 +623,6 @@ qt_feature("webengine-ozone-x11" PRIVATE
 
 # > Qt WebEngine Build Features
 qt_configure_add_summary_section(NAME "WebEngine Repository Build Options")
-qt_configure_add_summary_entry(ARGS "webengine-build-ninja")
 qt_configure_add_summary_entry(ARGS "webengine-build-gn")
 qt_configure_add_summary_entry(ARGS "webengine-jumbo-build")
 qt_configure_add_summary_entry(ARGS "webengine-developer-build")
