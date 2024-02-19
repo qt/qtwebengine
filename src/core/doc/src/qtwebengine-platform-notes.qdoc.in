@@ -34,12 +34,7 @@
     On all platforms, the following tools are required at build time:
 
     \list
-        \li C++20 compiler support
-        \li CMake 3.19 or newer
-        \li \l Python 3 with html5lib library
-        \li Bison, Flex
-        \li GPerf
-        \li Node.js version 14 or later
+        @DOCUMENTATION_ALL_PLATFORMS@
     \endlist
 
     \section2 Windows
@@ -47,10 +42,7 @@
     On Windows, the following additional tools are required:
 
     \list
-        \li Visual Studio 2019 or later, or clang-cl version 10 or later
-        \li Active Template Library (ATL), usually included in the Visual Studio
-            installation
-        \li Windows 11 SDK version 10.0.22621.0 or later
+        @DOCUMENTATION_WINDOWS_PLATFORM@
     \endlist
 
     \note It is not recommended to use tools from  \c msys2 or \c cygwin to build \QWE as it may result in build errors.
@@ -63,21 +55,14 @@
     following \c pkg-config files are required:
 
     \list
-        \li \c dbus-1
-        \li \c fontconfig
+        @DOCUMENTATION_LINUX_PKG_CONFIG@
     \endlist
 
     If Qt was configured for \c xcb, the following \c pkg-config files are also
     required:
 
     \list
-        \li \c libdrm
-        \li \c xcomposite
-        \li \c xcursor
-        \li \c xi
-        \li \c xrandr
-        \li \c xscrnsaver
-        \li \c xtst
+        @DOCUMENTATION_LINUX_XCB@
     \endlist
 
     \section2 \macos

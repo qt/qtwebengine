@@ -10,14 +10,13 @@ get_filename_component(WEBENGINE_ROOT_BUILD_DIR "${PROJECT_BINARY_DIR}" ${path_m
 #  RUN CONFIGURE
 ##
 
+qt_webengine_configure_begin()
 qt_webengine_run_configure(../configure.cmake)
 
 if(NOT QT_FEATURE_qtwebengine_build AND NOT QT_FEATURE_qtpdf_build)
+    qt_webengine_configure_end()
     return()
 endif()
-
-# Upgrade CMake policies to the minimum supported version.
-cmake_minimum_required(VERSION ${QT_SUPPORTED_MIN_CMAKE_VERSION_FOR_BUILDING_WEBENGINE})
 
 ##
 #  MODULES
@@ -26,6 +25,10 @@ cmake_minimum_required(VERSION ${QT_SUPPORTED_MIN_CMAKE_VERSION_FOR_BUILDING_WEB
 if(QT_FEATURE_qtwebengine_core_build)
     add_subdirectory(core)
     add_subdirectory(process)
+    qt_webengine_generate_documentation(
+        core/doc/src/qtwebengine-platform-notes.qdoc.in
+        core/api/qtwebengine-platform-notes.qdoc
+    )
 endif()
 if(QT_FEATURE_qtwebengine_widgets_build)
     add_subdirectory(webenginewidgets)
@@ -161,3 +164,4 @@ if((LINUX OR MACOS OR WIN32) AND INSTALL_GN)
     endif()
 endif()
 
+qt_webengine_configure_end()

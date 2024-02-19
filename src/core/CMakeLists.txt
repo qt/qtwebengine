@@ -1,10 +1,10 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION ${QT_CONFIGURE_CHECK_cmake_version})
 
-find_package(Ninja 1.7.2 REQUIRED)
-find_package(Nodejs 14.19 REQUIRED)
+find_package(Ninja ${QT_CONFIGURE_CHECK_ninja_version} REQUIRED)
+find_package(Nodejs ${QT_CONFIGURE_CHECK_nodejs_version} REQUIRED)
 find_package(Perl)
 find_package(PkgConfig)
 if(PkgConfig_FOUND)
