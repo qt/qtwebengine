@@ -738,7 +738,8 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitchASCII(switches::kUseVulkan,
                                              switches::kVulkanImplementationNameNative);
         const char deviceExtensionsVar[] = "QT_VULKAN_DEVICE_EXTENSIONS";
-        QByteArrayList requiredDeviceExtensions = { "VK_EXT_external_memory_dma_buf",
+        QByteArrayList requiredDeviceExtensions = { "VK_KHR_external_memory_fd",
+                                                    "VK_EXT_external_memory_dma_buf",
                                                     "VK_EXT_image_drm_format_modifier" };
         if (qEnvironmentVariableIsSet(deviceExtensionsVar)) {
             QByteArrayList envExtList = qgetenv(deviceExtensionsVar).split(';');

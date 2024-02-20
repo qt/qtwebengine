@@ -19,6 +19,10 @@
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gl/gl_fence.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 namespace QtWebEngineCore {
 
 namespace {
@@ -40,7 +44,7 @@ NativeSkiaOutputDevice::NativeSkiaOutputDevice(
     : SkiaOutputDevice(contextState->gr_context(), contextState->graphite_context(), memoryTracker,
                        didSwapBufferCompleteCallback)
     , Compositor(Type::Native)
-    , m_grContextType(contextState->gr_context_type())
+    , m_contextState(contextState)
     , m_requiresAlpha(requiresAlpha)
     , m_factory(shared_image_factory)
     , m_representationFactory(shared_image_representation_factory)
@@ -51,6 +55,12 @@ NativeSkiaOutputDevice::NativeSkiaOutputDevice(
     capabilities_.output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
     capabilities_.preserve_buffer_content = true;
     capabilities_.only_invalidates_damage_rect = false;
+
+#if defined(USE_OZONE)
+    m_isNativeBufferSupported = ui::OzonePlatform::GetInstance()
+                                        ->GetPlatformRuntimeProperties()
+                                        .supports_native_pixmaps;
+#endif
 }
 
 NativeSkiaOutputDevice::~NativeSkiaOutputDevice()
@@ -84,7 +94,7 @@ void NativeSkiaOutputDevice::Present(const absl::optional<gfx::Rect> &update_rec
     {
         QMutexLocker locker(&m_mutex);
         m_backBuffer->createFence();
-        m_taskRunner = base::SingleThreadTaskRunner::GetCurrentDefault();
+        m_gpuTaskRunner = base::SingleThreadTaskRunner::GetCurrentDefault();
         std::swap(m_middleBuffer, m_backBuffer);
         m_readyToUpdate = true;
     }
@@ -126,10 +136,9 @@ void NativeSkiaOutputDevice::swapFrame()
     QMutexLocker locker(&m_mutex);
     if (m_readyToUpdate) {
         std::swap(m_frontBuffer, m_middleBuffer);
-        m_taskRunner->PostTask(FROM_HERE,
-                               base::BindOnce(&NativeSkiaOutputDevice::SwapBuffersFinished,
-                                              base::Unretained(this)));
-        m_taskRunner.reset();
+        m_gpuTaskRunner->PostTask(FROM_HERE,
+                                  base::BindOnce(&NativeSkiaOutputDevice::SwapBuffersFinished,
+                                                 base::Unretained(this)));
         m_readyToUpdate = false;
         if (m_frontBuffer) {
             m_readyWithTexture = true;
@@ -137,6 +146,7 @@ void NativeSkiaOutputDevice::swapFrame()
         }
         if (m_middleBuffer)
             m_middleBuffer->freeTexture();
+        m_gpuTaskRunner.reset();
     }
 }
 
@@ -228,17 +238,19 @@ bool NativeSkiaOutputDevice::Buffer::initialize()
     }
     m_mailbox = mailbox;
 
-    m_skiaRepresentation = m_parent->m_representationFactory->ProduceSkia(
-            m_mailbox, m_parent->m_deps->GetSharedContextState());
+    m_skiaRepresentation =
+            m_parent->m_representationFactory->ProduceSkia(m_mailbox, m_parent->m_contextState);
     if (!m_skiaRepresentation) {
         LOG(ERROR) << "ProduceSkia() failed.";
         return false;
     }
 
-    m_overlayRepresentation = m_parent->m_representationFactory->ProduceOverlay(m_mailbox);
-    if (!m_overlayRepresentation) {
-        LOG(ERROR) << "ProduceOverlay() failed";
-        return false;
+    if (m_parent->m_isNativeBufferSupported) {
+        m_overlayRepresentation = m_parent->m_representationFactory->ProduceOverlay(m_mailbox);
+        if (!m_overlayRepresentation) {
+            LOG(ERROR) << "ProduceOverlay() failed";
+            return false;
+        }
     }
 
     return true;
@@ -295,30 +307,62 @@ std::vector<GrBackendSemaphore> NativeSkiaOutputDevice::Buffer::takeEndWriteSkia
     return std::exchange(m_endSemaphores, {});
 }
 
+void NativeSkiaOutputDevice::Buffer::createSkImageOnGPUThread()
+{
+    if (!m_scopedSkiaReadAccess)
+        return;
+
+    QMutexLocker locker(&m_skImageMutex);
+    m_cachedSkImage = m_scopedSkiaReadAccess->CreateSkImage(m_parent->m_contextState.get());
+    if (!m_cachedSkImage)
+        qWarning("SKIA: Failed to create SkImage.");
+}
+
 void NativeSkiaOutputDevice::Buffer::beginPresent()
 {
     if (++m_presentCount != 1) {
-        DCHECK(m_scopedOverlayReadAccess);
+        DCHECK(m_scopedOverlayReadAccess || m_scopedSkiaReadAccess);
         return;
     }
 
     DCHECK(!m_scopedSkiaWriteAccess);
-    DCHECK(!m_scopedOverlayReadAccess);
+    DCHECK(!m_scopedOverlayReadAccess && !m_scopedSkiaReadAccess);
 
-    m_scopedOverlayReadAccess = m_overlayRepresentation->BeginScopedReadAccess();
-    DCHECK(m_scopedOverlayReadAccess);
-    m_acquireFence = TakeGpuFence(m_scopedOverlayReadAccess->TakeAcquireFence());
+    if (m_overlayRepresentation) {
+        m_scopedOverlayReadAccess = m_overlayRepresentation->BeginScopedReadAccess();
+        DCHECK(m_scopedOverlayReadAccess);
+        m_acquireFence = TakeGpuFence(m_scopedOverlayReadAccess->TakeAcquireFence());
+    } else {
+        DCHECK(m_skiaRepresentation);
+        std::vector<GrBackendSemaphore> beginSemaphores;
+        m_scopedSkiaReadAccess =
+                m_skiaRepresentation->BeginScopedReadAccess(&beginSemaphores, nullptr);
+        DCHECK(m_scopedSkiaReadAccess);
+        if (!beginSemaphores.empty())
+            qWarning("SKIA: Unexpected semaphores while reading texture, wait is not implemented.");
+
+        m_parent->m_gpuTaskRunner->PostTask(FROM_HERE,
+                                            base::BindOnce(&NativeSkiaOutputDevice::Buffer::createSkImageOnGPUThread,
+                                                           base::Unretained(this)));
+    }
 }
 
 void NativeSkiaOutputDevice::Buffer::endPresent()
 {
     if (!m_presentCount)
         return;
-    DCHECK(m_scopedOverlayReadAccess);
+    DCHECK(m_scopedOverlayReadAccess || m_scopedSkiaReadAccess);
     if (--m_presentCount)
         return;
 
-    m_scopedOverlayReadAccess.reset();
+    if (m_scopedOverlayReadAccess) {
+        DCHECK(!m_scopedSkiaReadAccess);
+        m_scopedOverlayReadAccess.reset();
+    } else if (m_scopedSkiaReadAccess) {
+        DCHECK(!m_scopedOverlayReadAccess);
+        QMutexLocker locker(&m_skImageMutex);
+        m_scopedSkiaReadAccess.reset();
+    }
 }
 
 void NativeSkiaOutputDevice::Buffer::freeTexture()
@@ -332,7 +376,7 @@ void NativeSkiaOutputDevice::Buffer::freeTexture()
 void NativeSkiaOutputDevice::Buffer::createFence()
 {
     // For some reason we still need to create this, but we do not need to wait on it.
-    if (m_parent->m_grContextType == gpu::GrContextType::kGL)
+    if (m_parent->m_contextState->gr_context_type() == gpu::GrContextType::kGL)
         m_fence = gl::GLFence::Create();
 }
 
@@ -344,10 +388,17 @@ void NativeSkiaOutputDevice::Buffer::consumeFence()
     }
 }
 
+sk_sp<SkImage> NativeSkiaOutputDevice::Buffer::skImage()
+{
+    return m_cachedSkImage;
+}
 #if defined(USE_OZONE)
 scoped_refptr<gfx::NativePixmap> NativeSkiaOutputDevice::Buffer::nativePixmap()
 {
     DCHECK(m_presentCount);
+    if (!m_scopedOverlayReadAccess)
+        return nullptr;
+
     return m_scopedOverlayReadAccess->GetNativePixmap();
 }
 #elif defined(Q_OS_WIN)
