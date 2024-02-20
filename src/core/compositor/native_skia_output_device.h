@@ -117,6 +117,7 @@ protected:
         void createFence();
         void consumeFence();
 
+        sk_sp<SkImage> skImage();
 #if defined(USE_OZONE)
         scoped_refptr<gfx::NativePixmap> nativePixmap();
 #elif defined(Q_OS_WIN)
@@ -126,11 +127,13 @@ protected:
 #endif
 
         const Shape &shape() const { return m_shape; }
-        viz::SharedImageFormat sharedImageFormat() { return m_overlayRepresentation->format(); }
+        viz::SharedImageFormat sharedImageFormat() const { return m_skiaRepresentation->format(); }
 
         std::function<void()> textureCleanupCallback;
 
     private:
+        void createSkImageOnGPUThread();
+
         NativeSkiaOutputDevice *m_parent;
         Shape m_shape;
         uint64_t m_estimatedSize = 0; // FIXME: estimate size
@@ -139,17 +142,22 @@ protected:
         gpu::Mailbox m_mailbox;
         std::unique_ptr<gpu::SkiaImageRepresentation> m_skiaRepresentation;
         std::unique_ptr<gpu::SkiaImageRepresentation::ScopedWriteAccess> m_scopedSkiaWriteAccess;
+        std::unique_ptr<gpu::SkiaImageRepresentation::ScopedReadAccess> m_scopedSkiaReadAccess;
         std::unique_ptr<gpu::OverlayImageRepresentation> m_overlayRepresentation;
         std::unique_ptr<gpu::OverlayImageRepresentation::ScopedReadAccess>
                 m_scopedOverlayReadAccess;
         std::vector<GrBackendSemaphore> m_endSemaphores;
         int m_presentCount = 0;
+
+        mutable QMutex m_skImageMutex;
+        sk_sp<SkImage> m_cachedSkImage;
     };
 
 protected:
+    scoped_refptr<gpu::SharedContextState> m_contextState;
     std::unique_ptr<Buffer> m_frontBuffer;
     bool m_readyWithTexture = false;
-    gpu::GrContextType m_grContextType;
+    bool m_isNativeBufferSupported = true;
 
 private:
     friend class NativeSkiaOutputDevice::Buffer;
@@ -163,7 +171,7 @@ private:
     viz::OutputSurfaceFrame m_frame;
     bool m_readyToUpdate = false;
     bool m_requiresAlpha;
-    scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
+    scoped_refptr<base::SingleThreadTaskRunner> m_gpuTaskRunner;
 
     const raw_ptr<gpu::SharedImageFactory> m_factory;
     const raw_ptr<gpu::SharedImageRepresentationFactory> m_representationFactory;
