@@ -93,6 +93,21 @@ if(LINUX)
    qt_webengine_configure_check_for_ulimit()
 endif()
 
+qt_config_compile_test(cxx20
+    LABEL "C++20 support"
+    CODE
+"#if __cplusplus > 201703L
+#else
+#  error __cplusplus must be > 201703L
+#endif
+int main(void)
+{
+    return 0;
+}
+"
+   CXX_STANDARD 20
+)
+
 qt_config_compile_test(re2
     LABEL "re2"
     LIBRARIES
@@ -240,6 +255,13 @@ int main(void) {
 )
 
 #### Support Checks
+
+qt_webengine_configure_check("compiler-cxx20"
+    MODULES QtWebEngine QtPdf
+    CONDITION TEST_cxx20
+    MESSAGE "Missing C++20 compiler support."
+    DOCUMENTATION "C++20 compiler support"
+)
 
 qt_webengine_configure_check("cmake"
     MODULES QtWebEngine QtPdf
