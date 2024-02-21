@@ -1445,6 +1445,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev)
     webKitEvent.SetType(webEventTypeForEvent(ev));
 
     webKitEvent.SetPositionInWidget(ev->position().x(), ev->position().y());
+    webKitEvent.SetPositionInScreen(ev->globalPosition().x(), ev->globalPosition().y());
     webKitEvent.movement_x = ev->position().x() - ev->oldPos().x();
     webKitEvent.movement_y = ev->position().y() - ev->oldPos().y();
     webKitEvent.is_raw_movement_event = true;
