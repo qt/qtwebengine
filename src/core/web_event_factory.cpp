@@ -1662,11 +1662,15 @@ content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *e
 {
     content::NativeWebKeyboardEvent webKitEvent(ToNativeEvent(ev));
     webKitEvent.SetTimeStamp(base::TimeTicks::Now());
-    webKitEvent.SetModifiers(modifiersForEvent(ev));
+    bool isBackTabWithoutModifier =
+            ev->key() == Qt::Key_Backtab && ev->modifiers() == Qt::NoModifier;
+    webKitEvent.SetModifiers(isBackTabWithoutModifier ? WebInputEvent::kShiftKey
+                                                      : modifiersForEvent(ev));
     webKitEvent.SetType(webEventTypeForEvent(ev));
 
     int qtKey = qtKeyForKeyEvent(ev);
-    Qt::KeyboardModifiers qtModifiers = qtModifiersForEvent(ev);
+    Qt::KeyboardModifiers qtModifiers =
+            isBackTabWithoutModifier ? Qt::ShiftModifier : qtModifiersForEvent(ev);
     QString qtText = qtTextForKeyEvent(ev, qtKey, qtModifiers);
 
     webKitEvent.native_key_code = nativeKeyCodeForKeyEvent(ev);
