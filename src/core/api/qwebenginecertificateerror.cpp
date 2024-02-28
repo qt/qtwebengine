@@ -88,6 +88,19 @@ QUrl QWebEngineCertificateError::url() const
 }
 
 /*!
+    \property QWebEngineCertificateError::isMainFrame
+    \since 6.8
+
+    Returns whether the certificate error comes from the main frame. If false,
+    the error comes from a sub-resource and most likely needs to be rejected without
+    user input.
+*/
+bool QWebEngineCertificateError::isMainFrame() const
+{
+    return d->isMainFrame();
+}
+
+/*!
     Returns the type of the error.
 
     \sa description(), isOverridable()

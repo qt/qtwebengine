@@ -134,6 +134,7 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineCertificateError.defer() --> void"
     << "QWebEngineCertificateError.description --> QString"
     << "QWebEngineCertificateError.type --> QWebEngineCertificateError::Type"
+    << "QWebEngineCertificateError.isMainFrame --> bool"
     << "QWebEngineCertificateError.acceptCertificate() --> void"
     << "QWebEngineCertificateError.overridable --> bool"
     << "QWebEngineCertificateError.rejectCertificate() --> void"

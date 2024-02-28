@@ -223,11 +223,15 @@
     The \c handleProxyAuthenticationRequired signal handler implements the very same
     steps for the authentication of HTTP proxies.
 
-    In case of SSL errors, we just need to return a boolean value indicating
-    whether the certificate should be ignored.
+    In case of SSL errors, we check whether they come from the main frame, or
+    from a resource inside the page. Resource errors automatically trigger a
+    certificate rejection, since a user won't have enough context to make a
+    decision. For all other cases, we trigger a dialog where the user can
+    allow or reject the certificate.
 
     \quotefromfile webenginewidgets/simplebrowser/webpage.cpp
     \skipto WebPage::handleCertificateError(
+    \printuntil }
     \printuntil }
     \printuntil }
 

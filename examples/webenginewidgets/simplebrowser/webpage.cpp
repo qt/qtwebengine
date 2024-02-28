@@ -19,6 +19,13 @@ WebPage::WebPage(QWebEngineProfile *profile, QObject *parent)
 
 void WebPage::handleCertificateError(QWebEngineCertificateError error)
 {
+    // Automatically block certificate errors from page resources without prompting the user.
+    // This mirrors the behavior found in other major browsers.
+    if (!error.isMainFrame()) {
+        error.rejectCertificate();
+        return;
+    }
+
     error.defer();
     QTimer::singleShot(0, this,
                        [this, error]() mutable { emit createCertificateErrorDialog(error); });

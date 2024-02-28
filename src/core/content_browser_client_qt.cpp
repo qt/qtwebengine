@@ -276,14 +276,14 @@ void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webCont
                                                    int cert_error,
                                                    const net::SSLInfo &ssl_info,
                                                    const GURL &request_url,
-                                                   bool /* is_main_frame_request */,
+                                                   bool is_main_frame_request,
                                                    bool strict_enforcement,
                                                    base::OnceCallback<void(content::CertificateRequestResultType)> callback)
 {
     WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
 
     QSharedPointer<CertificateErrorController> errorController(new CertificateErrorController(
-            cert_error, ssl_info, request_url, strict_enforcement, std::move(callback)));
+            cert_error, ssl_info, request_url, is_main_frame_request, strict_enforcement, std::move(callback)));
     contentsDelegate->allowCertificateError(errorController);
 }
 

@@ -563,6 +563,11 @@ ApplicationWindow {
                 settings.imageAnimationPolicy: appSettings.imageAnimationPolicy
 
                 onCertificateError: function(error) {
+                    if (!error.isMainFrame) {
+                        error.rejectCertificate();
+                        return;
+                    }
+
                     error.defer();
                     sslDialog.enqueue(error);
                 }
