@@ -199,6 +199,11 @@ public:
             qApp->notify(parentWidget, ev);
         }
     }
+    void SetCursor(const QCursor &cursor) override
+    {
+        if (auto parentWidget = QQuickWidget::parentWidget())
+            parentWidget->setCursor(cursor);
+    }
 
 protected:
     void closeEvent(QCloseEvent *event) override
