@@ -126,6 +126,8 @@ void RenderWidgetHostViewQtDelegateItem::readyToSwap()
 
 void RenderWidgetHostViewQtDelegateItem::updateCursor(const QCursor &cursor)
 {
+    if (m_widgetDelegate)
+        m_widgetDelegate->SetCursor(cursor);
     setCursor(cursor);
 }
 
