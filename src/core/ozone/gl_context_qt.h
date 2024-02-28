@@ -5,10 +5,23 @@
 #define GL_GL_CONTEXT_QT_H_
 
 #include <QObject>
+#include <QtCore/qscopedpointer.h>
+
 #include "ui/gl/gl_context.h"
+
+#if defined(USE_OZONE)
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+
+#include "base/files/scoped_file.h"
+#endif
 
 namespace gl {
 class GLSurface;
+}
+
+namespace ui {
+class GbmDevice;
 }
 
 QT_BEGIN_NAMESPACE
@@ -37,6 +50,40 @@ private:
     static GLContextHelper* contextHelper;
     bool m_robustness = false;
 };
+
+#if defined(USE_OZONE)
+#undef eglQueryDevices
+#undef eglQueryDeviceString
+#undef eglQueryString
+
+class EGLHelper
+{
+public:
+    struct EGLFunctions
+    {
+        EGLFunctions();
+
+        PFNEGLQUERYDEVICESEXTPROC eglQueryDevices;
+        PFNEGLQUERYDEVICESTRINGEXTPROC eglQueryDeviceString;
+        PFNEGLQUERYSTRINGPROC eglQueryString;
+    };
+
+    static EGLHelper *instance();
+
+    EGLFunctions *functions() const { return m_functions.get(); }
+    EGLDeviceEXT getEGLDevice() const { return m_eglDevice; }
+    ui::GbmDevice *getGbmDevice();
+
+private:
+    EGLHelper();
+
+    QScopedPointer<EGLFunctions> m_functions;
+    EGLDeviceEXT m_eglDevice = EGL_NO_DEVICE_EXT;
+    base::ScopedFD m_drmRenderNodeFd;
+    std::unique_ptr<ui::GbmDevice> m_gbmDevice;
+    bool m_isDmaBufSupported = false;
+};
+#endif // defined(USE_OZONE)
 
 QT_END_NAMESPACE
 

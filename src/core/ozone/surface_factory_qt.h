@@ -40,6 +40,8 @@ public:
         gfx::BufferFormat format,
         gfx::NativePixmapHandle handle) override;
 
+    bool SupportsNativePixmaps() const;
+
 private:
     std::vector<gl::GLImplementationParts> m_impl;
     std::unique_ptr<ui::GLOzone> m_ozone;

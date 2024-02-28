@@ -9,10 +9,18 @@
 #include <QtGui/private/qtgui-config_p.h>
 #include <qpa/qplatformnativeinterface.h>
 
+#include "ui/gl/gl_implementation.h"
+
+#if defined(USE_OZONE)
+#include "ui/gfx/linux/drm_util_linux.h"
+#include "ui/gfx/linux/gbm_device.h"
+#include "ui/gfx/linux/gbm_wrapper.h"
+#include "ui/ozone/platform/wayland/gpu/drm_render_node_handle.h"
+#endif
+
 #if BUILDFLAG(IS_WIN)
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_context_wgl.h"
-#include "ui/gl/gl_implementation.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -163,6 +171,108 @@ bool GLContextHelper::isCreateContextRobustnessSupported()
 {
     return contextHelper->m_robustness;
 }
+
+#if defined(USE_OZONE)
+EGLHelper::EGLFunctions::EGLFunctions()
+{
+    const static auto getProcAddress =
+            reinterpret_cast<gl::GLGetProcAddressProc>(GLContextHelper::getEglGetProcAddress());
+
+    eglQueryDevices =
+            reinterpret_cast<PFNEGLQUERYDEVICESEXTPROC>(getProcAddress("eglQueryDevicesEXT"));
+    eglQueryDeviceString = reinterpret_cast<PFNEGLQUERYDEVICESTRINGEXTPROC>(
+            getProcAddress("eglQueryDeviceStringEXT"));
+    eglQueryString = reinterpret_cast<PFNEGLQUERYSTRINGPROC>(getProcAddress("eglQueryString"));
+}
+
+EGLHelper *EGLHelper::instance()
+{
+    static EGLHelper eglHelper;
+    return &eglHelper;
+}
+
+EGLHelper::EGLHelper() : m_functions(new EGLHelper::EGLFunctions())
+{
+    const char *extensions = m_functions->eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+    if (!extensions) {
+        qWarning("EGL: Failed to query EGL extensions.");
+        return;
+    }
+
+    auto eglDisplay = GLContextHelper::getEGLDisplay();
+    if (!eglDisplay) {
+        qWarning("EGL: No EGL display.");
+        return;
+    }
+
+    const char *displayExtensions = m_functions->eglQueryString(eglDisplay, EGL_EXTENSIONS);
+    bool hasImageDmaBufImportExtension = strstr(displayExtensions, "EGL_EXT_image_dma_buf_import");
+
+    if (strstr(extensions, "EGL_EXT_device_base")) {
+        EGLint numDevices;
+        m_functions->eglQueryDevices(1, &m_eglDevice, &numDevices);
+    }
+
+    bool hasDeviceDrmRenderNodeExtensions = false;
+    if (m_eglDevice != EGL_NO_DEVICE_EXT) {
+        const char *deviceExtensions =
+                m_functions->eglQueryDeviceString(m_eglDevice, EGL_EXTENSIONS);
+        hasDeviceDrmRenderNodeExtensions =
+                strstr(deviceExtensions, "EGL_EXT_device_drm_render_node");
+    }
+
+    m_isDmaBufSupported = hasImageDmaBufImportExtension && hasDeviceDrmRenderNodeExtensions;
+
+    if (m_isDmaBufSupported) {
+        // FIXME: This disables GBM for nvidia. Remove this when nvidia fixes its GBM support.
+        //
+        // "Buffer allocation and submission to DRM KMS using gbm is not currently supported."
+        // See: https://download.nvidia.com/XFree86/Linux-x86_64/550.40.07/README/kms.html
+        //
+        // Chromium uses GBM to allocate scanout buffers. Scanout requires DRM KMS. If KMS is
+        // enabled, gbm_device and gbm_buffer are created without any issues but rendering to the
+        // buffer will malfunction. It is not known how to detect this problem before rendering
+        // so we just disable GBM for nvidia.
+        const char *displayVendor = m_functions->eglQueryString(eglDisplay, EGL_VENDOR);
+        m_isDmaBufSupported = !strstr(displayVendor, "NVIDIA");
+    }
+}
+
+ui::GbmDevice *EGLHelper::getGbmDevice()
+{
+    if (!m_isDmaBufSupported)
+        return nullptr;
+
+    if (m_gbmDevice)
+        return m_gbmDevice.get();
+
+    Q_ASSERT(m_eglDevice != EGL_NO_DEVICE_EXT);
+    const char *drmRenderNodeFilePath =
+            m_functions->eglQueryDeviceString(m_eglDevice, EGL_DRM_RENDER_NODE_FILE_EXT);
+    if (!drmRenderNodeFilePath) {
+        qWarning("EGL: Failed to query DRM render node file path.");
+        m_isDmaBufSupported = false;
+        return nullptr;
+    }
+
+    ui::DrmRenderNodeHandle handle;
+    if (!handle.Initialize(base::FilePath(drmRenderNodeFilePath))) {
+        qWarning("EGL: Failed to initialize DRM render node handle.");
+        m_isDmaBufSupported = false;
+        return nullptr;
+    }
+
+    m_drmRenderNodeFd = handle.PassFD();
+    m_gbmDevice = ui::CreateGbmDevice(m_drmRenderNodeFd.get());
+    if (!m_gbmDevice) {
+        qWarning("EGL: Failed to initialize GBM device.");
+        m_isDmaBufSupported = false;
+        return nullptr;
+    }
+
+    return m_gbmDevice.get();
+}
+#endif // defined(USE_OZONE)
 
 QT_END_NAMESPACE
 

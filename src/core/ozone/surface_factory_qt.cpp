@@ -8,13 +8,16 @@
 #include "ozone/gl_ozone_egl_qt.h"
 
 #include "media/gpu/buildflags.h"
+#include "ui/gfx/linux/drm_util_linux.h"
+#include "ui/gfx/linux/gbm_buffer.h"
+#include "ui/gfx/linux/gbm_device.h"
+#include "ui/gfx/linux/gbm_util.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
 #include "ui/ozone/buildflags.h"
 
 #if BUILDFLAG(OZONE_PLATFORM_X11)
 #include "ozone/gl_ozone_glx_qt.h"
 
-#include "ui/gfx/linux/gbm_buffer.h"
 #include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
 #endif
 
@@ -73,7 +76,11 @@ bool SurfaceFactoryQt::CanCreateNativePixmapForFormat(gfx::BufferFormat format)
     if (GLContextHelper::getGlxPlatformInterface())
         return ui::GpuMemoryBufferSupportX11::GetInstance()->CanCreateNativePixmapForFormat(format);
 #endif
-    return ui::SurfaceFactoryOzone::CanCreateNativePixmapForFormat(format);
+
+    if (GLContextHelper::getEglPlatformInterface())
+        return ui::SurfaceFactoryOzone::CanCreateNativePixmapForFormat(format);
+
+    return false;
 }
 
 scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
@@ -84,23 +91,34 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
         gfx::BufferUsage usage,
         absl::optional<gfx::Size> framebuffer_size)
 {
+    Q_ASSERT(SupportsNativePixmaps());
     if (framebuffer_size && !gfx::Rect(size).Contains(gfx::Rect(*framebuffer_size)))
         return nullptr;
+
+    std::unique_ptr<ui::GbmBuffer> gbmBuffer;
+
 #if BUILDFLAG(OZONE_PLATFORM_X11)
     if (GLContextHelper::getGlxPlatformInterface()) {
-        scoped_refptr<gfx::NativePixmapDmaBuf> pixmap;
-        auto buffer = ui::GpuMemoryBufferSupportX11::GetInstance()->CreateBuffer(format, size, usage);
-        if (buffer) {
-            gfx::NativePixmapHandle handle = buffer->ExportHandle();
-            pixmap = base::MakeRefCounted<gfx::NativePixmapDmaBuf>(size, format, std::move(handle));
-        }
-        // CreateNativePixmap is non-blocking operation. Thus, it is safe to call it
-        // and return the result with the provided callback.
-        return pixmap;
+        gbmBuffer = ui::GpuMemoryBufferSupportX11::GetInstance()->CreateBuffer(format, size, usage);
+        if (!gbmBuffer)
+            qFatal("Failed to create GBM buffer for GLX.");
     }
 #endif
-    // FIXME: No EGL implementation.
-    return nullptr;
+
+    if (GLContextHelper::getEglPlatformInterface()) {
+        const uint32_t fourccFormat = ui::GetFourCCFormatFromBufferFormat(format);
+        const uint32_t gbmFlags = ui::BufferUsageToGbmFlags(usage);
+
+        ui::GbmDevice *gbmDevice = EGLHelper::instance()->getGbmDevice();
+        // FIXME: CreateBufferWithModifiers for wayland?
+        gbmBuffer = gbmDevice->CreateBuffer(fourccFormat, size, gbmFlags);
+        if (!gbmBuffer)
+            qFatal("Failed to create GBM buffer for EGL.");
+    }
+
+    Q_ASSERT(gbmBuffer);
+    gfx::NativePixmapHandle handle = gbmBuffer->ExportHandle();
+    return base::MakeRefCounted<gfx::NativePixmapDmaBuf>(size, format, std::move(handle));
 }
 
 void SurfaceFactoryQt::CreateNativePixmapAsync(
@@ -111,6 +129,7 @@ void SurfaceFactoryQt::CreateNativePixmapAsync(
         gfx::BufferUsage usage,
         NativePixmapCallback callback)
 {
+    Q_ASSERT(SupportsNativePixmaps());
     // CreateNativePixmap is non-blocking operation. Thus, it is safe to call it
     // and return the result with the provided callback.
     std::move(callback).Run(CreateNativePixmap(widget, device_queue, size, format, usage));
@@ -123,20 +142,43 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
         gfx::BufferFormat format,
         gfx::NativePixmapHandle handle)
 {
+    Q_ASSERT(SupportsNativePixmaps());
+    std::unique_ptr<ui::GbmBuffer> gbmBuffer;
+
 #if BUILDFLAG(OZONE_PLATFORM_X11)
     if (GLContextHelper::getGlxPlatformInterface()) {
-        scoped_refptr<gfx::NativePixmapDmaBuf> pixmap;
-        auto buffer = ui::GpuMemoryBufferSupportX11::GetInstance()->CreateBufferFromHandle(size, format, std::move(handle));
-        if (buffer) {
-            gfx::NativePixmapHandle buffer_handle = buffer->ExportHandle();
-            pixmap = base::MakeRefCounted<gfx::NativePixmapDmaBuf>(size, format, std::move(buffer_handle));
-        }
-        return pixmap;
+        gbmBuffer = ui::GpuMemoryBufferSupportX11::GetInstance()->CreateBufferFromHandle(
+                size, format, std::move(handle));
+        if (!gbmBuffer)
+            qFatal("Failed to create GBM buffer for GLX.");
     }
 #endif
+
+    if (GLContextHelper::getEglPlatformInterface()) {
+        const uint32_t fourccFormat = ui::GetFourCCFormatFromBufferFormat(format);
+        ui::GbmDevice *gbmDevice = EGLHelper::instance()->getGbmDevice();
+        gbmBuffer = gbmDevice->CreateBufferFromHandle(fourccFormat, size, std::move(handle));
+
+        if (!gbmBuffer)
+            qFatal("Failed to create GBM buffer for EGL.");
+    }
+
+    Q_ASSERT(gbmBuffer);
+    gfx::NativePixmapHandle bufferHandle = gbmBuffer->ExportHandle();
+    return base::MakeRefCounted<gfx::NativePixmapDmaBuf>(size, format, std::move(bufferHandle));
+}
+
+bool SurfaceFactoryQt::SupportsNativePixmaps() const
+{
+#if BUILDFLAG(OZONE_PLATFORM_X11)
+    if (GLContextHelper::getGlxPlatformInterface())
+        return ui::GpuMemoryBufferSupportX11::GetInstance()->has_gbm_device();
+#endif
+
     if (GLContextHelper::getEglPlatformInterface())
-        return base::MakeRefCounted<gfx::NativePixmapDmaBuf>(size, format, std::move(handle));
-    return nullptr;
+        return (EGLHelper::instance()->getGbmDevice() != nullptr);
+
+    return false;
 }
 
 } // namespace QtWebEngineCore
