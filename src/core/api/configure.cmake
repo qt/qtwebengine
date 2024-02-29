@@ -248,3 +248,8 @@ qt_configure_add_report_entry(
     MESSAGE "VA-API is incompatible with system libvpx."
     CONDITION QT_FEATURE_webengine_system_libvpx AND QT_FEATURE_webengine_vaapi
 )
+qt_configure_add_report_entry(
+    TYPE WARNING
+    MESSAGE "System GBM is disabled. The bundled minigbm supports Intel only, you might need to install libgbm to avoid rendering issues."
+    CONDITION NOT QT_FEATURE_webengine_system_gbm
+)
