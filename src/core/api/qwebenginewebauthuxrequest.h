@@ -25,6 +25,7 @@ class Q_WEBENGINECORE_EXPORT QWebEngineWebAuthUxRequest : public QObject
     Q_PROPERTY(QString relyingPartyId READ relyingPartyId CONSTANT FINAL)
     Q_PROPERTY(QWebEngineWebAuthPinRequest pinRequest READ pinRequest CONSTANT FINAL)
     Q_PROPERTY(RequestFailureReason requestFailureReason READ requestFailureReason CONSTANT FINAL)
+    Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
 public:
     enum class WebAuthUxState {
         NotStarted,
