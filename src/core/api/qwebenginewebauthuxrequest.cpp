@@ -209,8 +209,9 @@ QWebEngineWebAuthUxRequest::~QWebEngineWebAuthUxRequest() { }
     \brief The available user names for the resident credential support.
 
     This is needed when the current WebAuth request's UX state is
-    WebEngineWebAuthUxRequest.SelectAccount. The WebAuth dialog displays user names.
-    The user needs to select an account to proceed.
+    WebEngineWebAuthUxRequest.WebAuthUxState.SelectAccount. The
+    WebAuth dialog displays user names. The user needs to select an
+    account to proceed.
 
     \sa state setSelectedAccount() QWebEngineWebAuthUxRequest::userNames
 */
@@ -271,18 +272,18 @@ QWebEngineWebAuthPinRequest QWebEngineWebAuthUxRequest::pinRequest() const
     \qmlproperty enumeration WebEngineWebAuthUxRequest::state
     \brief The WebAuth request's current UX state.
 
-    \value WebEngineWebAuthUxRequest.NotStarted WebAuth UX request not started yet.
-    \value WebEngineWebAuthUxRequest.SelectAccount The authenticator requires
+    \value WebEngineWebAuthUxRequest.WebAuthUxState.NotStarted WebAuth UX request not started yet.
+    \value WebEngineWebAuthUxRequest.WebAuthUxState.SelectAccount The authenticator requires
            resident credential details. The application needs to display an account details dialog,
            and the user needs to select an account to proceed.
-    \value WebEngineWebAuthUxRequest.CollectPin The authenticator requires user verification.
+    \value WebEngineWebAuthUxRequest.WebAuthUxState.CollectPin The authenticator requires user verification.
            The application needs to display a PIN request dialog.
-    \value WebEngineWebAuthUxRequest.FinishTokenCollection The authenticator requires
+    \value WebEngineWebAuthUxRequest.WebAuthUxState.FinishTokenCollection The authenticator requires
            token/user verification (like tap on the FIDO key) to complete the process.
-    \value WebEngineWebAuthUxRequest.RequestFailed WebAuth request failed. Display error details.
-    \value WebEngineWebAuthUxRequest.Cancelled  WebAuth request is cancelled.
+    \value WebEngineWebAuthUxRequest.WebAuthUxState.RequestFailed WebAuth request failed. Display error details.
+    \value WebEngineWebAuthUxRequest.WebAuthUxState.Cancelled  WebAuth request is cancelled.
            Close the WebAuth dialog.
-    \value WebEngineWebAuthUxRequest.Completed WebAuth request is completed.
+    \value WebEngineWebAuthUxRequest.WebAuthUxState.Completed WebAuth request is completed.
            Close the WebAuth dialog.
 */
 /*!
@@ -299,10 +300,12 @@ QWebEngineWebAuthUxRequest::WebAuthUxState QWebEngineWebAuthUxRequest::state() c
 
 /*!
     \qmlmethod void WebEngineWebAuthUxRequest::setSelectedAccount(const QString &selectedAccount)
+
     Sends the \a selectedAccount name to the authenticator.
     This is needed when the current WebAuth request's UX state is
-    WebEngineWebAuthUxRequest.SelectAccount. The WebAuth request is blocked until the user selects
-    an account and invokes this method.
+    WebEngineWebAuthUxRequest.WebAuthUxState.SelectAccount. The
+    WebAuth request is blocked until the user selects an account and
+    invokes this method.
 
     \sa WebEngineWebAuthUxRequest::userNames state
 */
@@ -324,8 +327,8 @@ void QWebEngineWebAuthUxRequest::setSelectedAccount(const QString &selectedAccou
     \qmlmethod void WebEngineWebAuthUxRequest::setPin(const QString &pin)
     Sends the \a pin to the authenticator that prompts for a PIN.
     This is needed when the current WebAuth request's UX state is
-    WebEngineWebAuthUxRequest.CollectPin. The WebAuth request is blocked until
-    the user responds with a PIN.
+    WebEngineWebAuthUxRequest.WebAuthUxState.CollectPin. The WebAuth
+    request is blocked until the user responds with a PIN.
 
     \sa QWebEngineWebAuthPinRequest state
 */
@@ -382,27 +385,27 @@ void QWebEngineWebAuthUxRequest::retry()
     \qmlproperty enumeration WebEngineWebAuthUxRequest::requestFailureReason
     \brief The WebAuth request's failure reason.
 
-    \value WebEngineWebAuthUxRequest.Timeout The authentication session has timed out.
-    \value WebEngineWebAuthUxRequest.KeyNotRegistered Key is not registered with the authenticator.
-    \value WebEngineWebAuthUxRequest.KeyAlreadyRegistered Key is already registered with
+    \value WebEngineWebAuthUxRequest.RequestFailureReason.Timeout The authentication session has timed out.
+    \value WebEngineWebAuthUxRequest.RequestFailureReason.KeyNotRegistered Key is not registered with the authenticator.
+    \value WebEngineWebAuthUxRequest.RequestFailureReason.KeyAlreadyRegistered Key is already registered with
            the authenticator. Try to register with another key or use another authenticator.
-    \value WebEngineWebAuthUxRequest.SoftPinBlock The authenticator is blocked as the user
+    \value WebEngineWebAuthUxRequest.RequestFailureReason.SoftPinBlock The authenticator is blocked as the user
            entered the wrong key many times.
-    \value WebEngineWebAuthUxRequest.HardPinBlock The authenticator is blocked as the user entered
+    \value WebEngineWebAuthUxRequest.RequestFailureReason.HardPinBlock The authenticator is blocked as the user entered
            the wrong key many times and reset the PIN to use the specific authenticator again.
-    \value WebEngineWebAuthUxRequest.AuthenticatorRemovedDuringPinEntry Authenticator
+    \value WebEngineWebAuthUxRequest.RequestFailureReason.AuthenticatorRemovedDuringPinEntry Authenticator
            removed during PIN entry.
-    \value WebEngineWebAuthUxRequest.AuthenticatorMissingResidentKeys Authenticator doesn't
+    \value WebEngineWebAuthUxRequest.RequestFailureReason.AuthenticatorMissingResidentKeys Authenticator doesn't
            have resident key support.
-    \value WebEngineWebAuthUxRequest.AuthenticatorMissingUserVerification Authenticator doesn't
+    \value WebEngineWebAuthUxRequest.RequestFailureReason.AuthenticatorMissingUserVerification Authenticator doesn't
            have user verification support.
-    \value WebEngineWebAuthUxRequest.AuthenticatorMissingLargeBlob Authenticator doesn't have
+    \value WebEngineWebAuthUxRequest.RequestFailureReason.AuthenticatorMissingLargeBlob Authenticator doesn't have
            large blob support.
-    \value WebEngineWebAuthUxRequest.NoCommonAlgorithms No common algorithm.
-    \value WebEngineWebAuthUxRequest.StorageFull The resident credential could not be created
+    \value WebEngineWebAuthUxRequest.RequestFailureReason.NoCommonAlgorithms No common algorithm.
+    \value WebEngineWebAuthUxRequest.RequestFailureReason.StorageFull The resident credential could not be created
            because the authenticator has insufficient storage.
-    \value WebEngineWebAuthUxRequest.UserConsentDenied User consent denied.
-    \value WebEngineWebAuthUxRequest.WinUserCancelled The user clicked \uicontrol Cancel
+    \value WebEngineWebAuthUxRequest.RequestFailureReason.UserConsentDenied User consent denied.
+    \value WebEngineWebAuthUxRequest.RequestFailureReason.WinUserCancelled The user clicked \uicontrol Cancel
            in the native windows UI.
 
     \sa  stateChanged()
