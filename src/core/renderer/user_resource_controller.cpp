@@ -110,7 +110,7 @@ private:
     void DidCommitProvisionalLoad(ui::PageTransition transition) override;
     void DidDispatchDOMContentLoadedEvent() override;
     void DidFinishLoad() override;
-    void WillDetach() override;
+    void WillDetach(blink::DetachReason detach_reason) override;
     void OnDestruct() override;
     void AddScript(const QtWebEngineCore::UserScriptData &data) override;
     void RemoveScript(const QtWebEngineCore::UserScriptData &data) override;
@@ -231,7 +231,8 @@ void UserResourceController::RenderFrameObserverHelper::DidFinishLoad()
                                QtWebEngineCore::UserScriptData::AfterLoad));
 }
 
-void UserResourceController::RenderFrameObserverHelper::WillDetach()
+void UserResourceController::RenderFrameObserverHelper::WillDetach(
+        blink::DetachReason detach_reason)
 {
     m_runner.reset();
 }

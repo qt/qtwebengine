@@ -22,11 +22,11 @@ namespace QtWebEngineCore {
 // static
 gin::WrapperInfo LoadablePluginPlaceholderQt::kWrapperInfo = {gin::kEmbedderNativeGin};
 
-LoadablePluginPlaceholderQt::LoadablePluginPlaceholderQt(content::RenderFrame* render_frame,
-                                                         const blink::WebPluginParams& params,
-                                                         const std::string& html_data,
-                                                         const std::u16string& title)
-    : plugins::LoadablePluginPlaceholder(render_frame, params, html_data)
+LoadablePluginPlaceholderQt::LoadablePluginPlaceholderQt(content::RenderFrame *render_frame,
+                                                         const blink::WebPluginParams &params,
+                                                         const std::string &html_data,
+                                                         const std::u16string &title)
+    : plugins::LoadablePluginPlaceholder(render_frame, params)
 {}
 
 LoadablePluginPlaceholderQt::~LoadablePluginPlaceholderQt()

@@ -97,12 +97,6 @@ std::vector<autofill::Suggestion> AutofillClientQt::GetPopupSuggestions() const
     return {};
 }
 
-void AutofillClientQt::UpdatePopup(const std::vector<autofill::Suggestion> &, autofill::PopupType, autofill::AutofillSuggestionTriggerSource)
-{
-    // Called by password_manager component only.
-    NOTIMPLEMENTED();
-}
-
 void AutofillClientQt::HideAutofillPopup(autofill::PopupHidingReason)
 {
     adapterClient()->hideAutofillPopup();

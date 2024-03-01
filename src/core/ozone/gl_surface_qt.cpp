@@ -128,15 +128,14 @@ bool usingSoftwareDynamicGL()
 #endif // QT_CONFIG(opengl)
 }
 
-scoped_refptr<GLSurface>
-CreateOffscreenGLSurfaceWithFormat(GLDisplay *display, const gfx::Size& size, GLSurfaceFormat format)
+scoped_refptr<GLSurface> CreateOffscreenGLSurface(GLDisplay *display, const gfx::Size &size)
 {
     scoped_refptr<GLSurface> surface;
     switch (GetGLImplementation()) {
     case kGLImplementationDesktopGLCoreProfile:
     case kGLImplementationDesktopGL: {
         surface = new GLSurfaceWGLQt(size);
-        if (surface->Initialize(format))
+        if (surface->Initialize(GLSurfaceFormat()))
             return surface;
         break;
     }
@@ -144,8 +143,8 @@ CreateOffscreenGLSurfaceWithFormat(GLDisplay *display, const gfx::Size& size, GL
     case kGLImplementationEGLGLES2: {
         GLDisplayEGL *display_egl = display->GetAs<gl::GLDisplayEGL>();
         if (display_egl->IsEGLSurfacelessContextSupported() && size.width() == 0 && size.height() == 0)
-            return InitializeGLSurfaceWithFormat(new SurfacelessEGL(display_egl, size), format);
-        return InitializeGLSurfaceWithFormat(new PbufferGLSurfaceEGL(display_egl, size), format);
+            return InitializeGLSurface(new SurfacelessEGL(display_egl, size));
+        return InitializeGLSurface(new PbufferGLSurfaceEGL(display_egl, size));
     }
     default:
         break;

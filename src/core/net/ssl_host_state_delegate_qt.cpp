@@ -127,9 +127,9 @@ void SSLHostStateDelegateQt::SetHttpsEnforcementForHost(const std::string &host,
     // Intentional no-op see aw_ssl_host_state_delegate
 }
 
-bool SSLHostStateDelegateQt::IsHttpsEnforcedForHost(const std::string &host, content::StoragePartition *storage_partition)
+bool SSLHostStateDelegateQt::IsHttpsEnforcedForUrl(const GURL &url,
+                                                   content::StoragePartition *storage_partition)
 {
-    // Intentional no-op
     return false;
 }
 

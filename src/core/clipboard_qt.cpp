@@ -9,10 +9,12 @@
 #include "clipboard_change_observer.h"
 #include "type_conversion.h"
 
+#include "base/containers/map_util.h"
 #include "base/logging.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/types/variant_util.h"
+#include "base/types/optional_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -128,8 +130,10 @@ void ClipboardQt::WriteText(base::StringPiece text)
     getUncommittedData()->setText(toQString(text));
 }
 
-void ClipboardQt::WriteHTML(base::StringPiece markup, absl::optional<base::StringPiece> source_url)
+void ClipboardQt::WriteHTML(base::StringPiece markup, absl::optional<base::StringPiece> source_url,
+                            ui::ClipboardContentType /*content_type*/)
 {
+
     QString markup_string = toQString(markup);
 #if defined (Q_OS_MACOS)
     // We need to prepend the charset on macOS to prevent garbled Unicode characters
@@ -390,10 +394,9 @@ const ui::ClipboardSequenceNumberToken &ClipboardQt::GetSequenceNumber(ui::Clipb
             : clipboardChangeObserver()->getSelectionSequenceNumber();
 }
 
-const ui::DataTransferEndpoint *ClipboardQt::GetSource(ui::ClipboardBuffer buffer) const
+absl::optional<ui::DataTransferEndpoint> ClipboardQt::GetSource(ui::ClipboardBuffer buffer) const
 {
-    auto it = m_dataSrc.find(buffer);
-    return it == m_dataSrc.end() ? nullptr : it->second.get();
+    return base::OptionalFromPtr(base::FindPtrOrNull(m_dataSrc, buffer));
 }
 
 void ClipboardQt::ReadFilenames(ui::ClipboardBuffer buffer,
@@ -421,11 +424,6 @@ void ClipboardQt::WriteFilenames(std::vector<ui::FileInfo> filenames)
         urls.append(url);
     }
     getUncommittedData()->setUrls(urls);
-}
-
-void ClipboardQt::WriteUnsanitizedHTML(base::StringPiece markup, absl::optional<base::StringPiece> source_url)
-{
-    WriteHTML(std::move(markup), std::move(source_url));
 }
 
 #if defined(USE_OZONE)

@@ -31,7 +31,7 @@ public:
 
         m_texture = m_parent->m_contextState->gr_context()->createBackendTexture(
                 m_shape.imageInfo.width(), m_shape.imageInfo.height(), colorType,
-                GrMipMapped::kNo, GrRenderable::kYes);
+                skgpu::Mipmapped::kNo, GrRenderable::kYes);
         DCHECK(m_texture.isValid());
 
         DCHECK(m_texture.backend() == GrBackendApi::kOpenGL);

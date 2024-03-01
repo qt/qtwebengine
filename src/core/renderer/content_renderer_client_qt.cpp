@@ -11,7 +11,6 @@
 #include "web_engine_library_info.h"
 
 #include "base/task/sequenced_task_runner.h"
-#include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/cdm/renderer/external_clear_key_key_system_info.h"
@@ -37,6 +36,7 @@
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
+#include "ui/base/webui/web_ui_util.h"
 
 #if QT_CONFIG(webengine_spellchecker)
 #include "components/spellcheck/renderer/spellcheck.h"
@@ -178,7 +178,7 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_fr
     new QtWebEngineCore::ContentSettingsObserverQt(render_frame);
 
 #if QT_CONFIG(webengine_spellchecker)
-    new SpellCheckProvider(render_frame, m_spellCheck.data(), this);
+    new SpellCheckProvider(render_frame, m_spellCheck.data());
 #endif
 #if QT_CONFIG(webengine_printing_and_pdf)
     new printing::PrintRenderFrameHelper(render_frame, base::WrapUnique(new PrintWebViewHelperDelegateQt()));
@@ -188,9 +188,8 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_fr
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     associated_interfaces->AddInterface<extensions::mojom::MimeHandlerViewContainerManager>(
-                base::BindRepeating(
-                    &extensions::MimeHandlerViewContainerManager::BindReceiver,
-                    render_frame->GetRoutingID()));
+            base::BindRepeating(&extensions::MimeHandlerViewContainerManager::BindReceiver,
+                                base::Unretained(render_frame)));
 
     auto registry = std::make_unique<service_manager::BinderRegistry>();
     ExtensionsRendererClientQt::GetInstance()->RenderFrameCreated(render_frame, render_frame_observer->registry());
@@ -201,8 +200,12 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_fr
     auto password_generation_agent =
             std::make_unique<autofill::PasswordGenerationAgent>(render_frame, password_autofill_agent.get(), associated_interfaces);
 
-    new autofill::AutofillAgent(render_frame, std::move(password_autofill_agent), std::move(password_generation_agent),
-                                associated_interfaces);
+    new autofill::AutofillAgent(
+            render_frame,
+            { autofill::AutofillAgent::UsesKeyboardAccessoryForSuggestions(false),
+              autofill::AutofillAgent::ExtractAllDatalists(false) },
+            std::move(password_autofill_agent), std::move(password_generation_agent),
+            associated_interfaces);
 }
 
 void ContentRendererClientQt::WebViewCreated(blink::WebView *web_view,
@@ -302,13 +305,13 @@ void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderF
         if (template_html.empty())
             NOTREACHED() << "unable to load template. ID: " << resourceId;
         else // "t" is the id of the templates root node.
-            *errorHtml = webui::GetTemplatesHtml(template_html, errorPageState.strings, "t");
+            *errorHtml = webui::GetLocalizedHtml(template_html, errorPageState.strings);
     }
 }
 
-uint64_t ContentRendererClientQt::VisitedLinkHash(const char *canonicalUrl, size_t length)
+uint64_t ContentRendererClientQt::VisitedLinkHash(std::string_view canonicalUrl)
 {
-    return m_visitedLinkReader->ComputeURLFingerprint(canonicalUrl, length);
+    return m_visitedLinkReader->ComputeURLFingerprint(canonicalUrl);
 }
 
 bool ContentRendererClientQt::IsLinkVisited(uint64_t linkHash)
@@ -354,8 +357,8 @@ void AppendParams(const std::vector<content::WebPluginMimeType::Param> &addition
         values[existing_size + i] = blink::WebString::FromUTF16(additional_params[i].value);
     }
 
-    existing_names->Swap(names);
-    existing_values->Swap(values);
+    existing_names->swap(names);
+    existing_values->swap(values);
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 

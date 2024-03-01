@@ -43,6 +43,11 @@ QtShareGLContext::QtShareGLContext(QOpenGLContext *context)
 #endif // QT_CONFIG(opengl)
 }
 
+QtShareGLContext::~QtShareGLContext()
+{
+    OnContextWillDestroy();
+}
+
 unsigned int QtShareGLContext::CheckStickyGraphicsResetStatusImpl()
 {
 #if QT_CONFIG(opengl)

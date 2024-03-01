@@ -65,6 +65,7 @@ ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeCspReport, blink::mojom
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePluginResource, blink::mojom::ResourceType::kPluginResource)
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeNavigationPreloadMainFrame, blink::mojom::ResourceType::kNavigationPreloadMainFrame)
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeNavigationPreloadSubFrame, blink::mojom::ResourceType::kNavigationPreloadSubFrame)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeJson, blink::mojom::ResourceType::kJson)
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeLast, blink::mojom::ResourceType::kMaxValue)
 
 extern WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(ui::PageTransition transition);

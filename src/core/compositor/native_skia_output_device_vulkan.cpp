@@ -4,6 +4,7 @@
 #include "native_skia_output_device_vulkan.h"
 
 #include "gpu/command_buffer/service/shared_image/shared_image_format_service_utils.h"
+#include "ui/base/ozone_buildflags.h"
 
 #include <QtGui/qvulkaninstance.h>
 #include <QtGui/qvulkanfunctions.h>
@@ -11,17 +12,17 @@
 #include <QtQuick/qsgtexture.h>
 
 #if defined(USE_OZONE)
-#include "ui/ozone/buildflags.h"
-#if BUILDFLAG(OZONE_PLATFORM_X11)
+#if BUILDFLAG(IS_OZONE_X11)
 // We need to define USE_VULKAN_XCB for proper vulkan function pointers.
 // Avoiding it may lead to call wrong vulkan functions.
 // This is originally defined in chromium/gpu/vulkan/BUILD.gn.
 #define USE_VULKAN_XCB
-#endif // BUILDFLAG(OZONE_PLATFORM_X11)
+#endif // BUILDFLAG(IS_OZONE_X11)
 #include "gpu/vulkan/vulkan_function_pointers.h"
-
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
+#include "third_party/skia/include/gpu/vk/GrVkTypes.h"
+#include "third_party/skia/include/gpu/ganesh/vk/GrVkBackendSurface.h"
 #endif // defined(USE_OZONE)
 
 namespace QtWebEngineCore {
@@ -84,7 +85,8 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
             return nullptr;
         }
 
-        backendTexture.getVkImageInfo(&vkImageInfo);
+        GrBackendTextures::GetVkImageInfo(backendTexture, &vkImageInfo);
+
         if (vkImageInfo.fAlloc.fMemory == VK_NULL_HANDLE) {
             qWarning("VULKAN: Unable to access Vulkan memory.");
             return nullptr;

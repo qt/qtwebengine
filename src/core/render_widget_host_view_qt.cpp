@@ -21,7 +21,6 @@
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/cursor_manager.h"
-#include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -29,6 +28,7 @@
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/cursors/webcursor.h"
+#include "content/common/input/synthetic_gesture_target.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cursor/cursor.h"
@@ -159,6 +159,8 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
                                        host()->GetFrameSinkId(),
                                        &m_delegatedFrameHostClient,
                                        true /* should_register_frame_sink_id */));
+
+    m_delegatedFrameHost->SetIsFrameSinkIdOwner(true);
 
     content::ImageTransportFactory *imageTransportFactory = content::ImageTransportFactory::GetInstance();
     ui::ContextFactory *contextFactory = imageTransportFactory->GetContextFactory();
@@ -916,8 +918,7 @@ void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &even
 }
 
 void RenderWidgetHostViewQt::GestureEventAck(const blink::WebGestureEvent &event,
-                                             blink::mojom::InputEventResultState ack_result,
-                                             blink::mojom::ScrollResultDataPtr scroll_result_data)
+                                             blink::mojom::InputEventResultState ack_result)
 {
     // Forward unhandled scroll events back as wheel events
     if (event.GetType() != blink::WebInputEvent::Type::kGestureScrollUpdate)

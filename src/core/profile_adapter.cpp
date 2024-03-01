@@ -333,9 +333,9 @@ void ProfileAdapter::setHttpUserAgent(const QString &userAgent)
         }
 
     m_profile->ForEachLoadedStoragePartition(
-                base::BindRepeating([](const std::string &user_agent, content::StoragePartition *storage_partition) {
-                    storage_partition->GetNetworkContext()->SetUserAgent(user_agent);
-                }, stdUserAgent));
+            [stdUserAgent](content::StoragePartition *storage_partition) {
+                storage_partition->GetNetworkContext()->SetUserAgent(stdUserAgent);
+            });
 }
 
 ProfileAdapter::HttpCacheType ProfileAdapter::httpCacheType() const
@@ -490,10 +490,9 @@ const QList<QByteArray> ProfileAdapter::customUrlSchemes() const
 
 void ProfileAdapter::updateCustomUrlSchemeHandlers()
 {
-    m_profile->ForEachLoadedStoragePartition(
-        base::BindRepeating([](content::StoragePartition *storage_partition) {
-            storage_partition->ResetURLLoaderFactories();
-        }));
+    m_profile->ForEachLoadedStoragePartition([](content::StoragePartition *storage_partition) {
+        storage_partition->ResetURLLoaderFactories();
+    });
 }
 
 void ProfileAdapter::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
@@ -624,9 +623,9 @@ void ProfileAdapter::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
     }
 
     m_profile->ForEachLoadedStoragePartition(
-        base::BindRepeating([](std::string accept_language, content::StoragePartition *storage_partition) {
-            storage_partition->GetNetworkContext()->SetAcceptLanguage(accept_language);
-        }, http_accept_language));
+            [http_accept_language](content::StoragePartition *storage_partition) {
+                storage_partition->GetNetworkContext()->SetAcceptLanguage(http_accept_language);
+            });
 }
 
 QVariant ProfileAdapter::clientHint(ClientHint clientHint) const

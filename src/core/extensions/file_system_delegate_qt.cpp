@@ -41,36 +41,21 @@ FileEntryPickerQt::FileEntryPickerQt(
 
 FileEntryPickerQt::~FileEntryPickerQt() = default;
 
-void FileEntryPickerQt::FileSelected(const base::FilePath &path,
-        int index,
-        void *params)
+void FileEntryPickerQt::FileSelected(const ui::SelectedFileInfo &file, int index, void *params)
 {
-    MultiFilesSelected({path}, params);
+    MultiFilesSelected({ file }, params);
 }
 
-void FileEntryPickerQt::FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file,
-        int index,
-        void *params)
-{
-    FileSelected(file.file_path, index, params);
-}
-
-void FileEntryPickerQt::MultiFilesSelected(const std::vector<base::FilePath>& files,
-                      void* params)
+void FileEntryPickerQt::MultiFilesSelected(const std::vector<ui::SelectedFileInfo> &files,
+                                           void *params)
 {
     Q_UNUSED(params);
-    std::move(m_filesSelectedCallback).Run(files);
-    delete this;
-}
-
-void FileEntryPickerQt::MultiFilesSelectedWithExtraInfo(
-        const std::vector<ui::SelectedFileInfo> &files,
-        void *params)
-{
     std::vector<base::FilePath> paths;
-    for (const auto& file : files)
+    for (const auto &file : files) {
         paths.push_back(file.file_path);
-    MultiFilesSelected(paths, params);
+    }
+    std::move(m_filesSelectedCallback).Run(paths);
+    delete this;
 }
 
 void FileEntryPickerQt::FileSelectionCanceled(void *params)

@@ -13,11 +13,13 @@
 #include "web_engine_settings.h"
 
 #include "base/strings/strcat.h"
+#include "blink/public/common/page/page_zoom.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/desktop_streams_registry.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/render_process_host.h"
 #include "media/audio/audio_device_description.h"
@@ -107,6 +109,27 @@ media::mojom::CaptureHandlePtr CreateCaptureHandle(content::WebContents *capture
     return result;
 }
 
+absl::optional<int> GetZoomLevel(content::WebContents *capturer,
+                                 const content::DesktopMediaID &captured_id)
+{
+    content::RenderFrameHost *const captured_rfh =
+            content::RenderFrameHost::FromID(captured_id.web_contents_id.render_process_id,
+                                             captured_id.web_contents_id.main_render_frame_id);
+    if (!captured_rfh || !captured_rfh->IsActive()) {
+        return absl::nullopt;
+    }
+
+    content::WebContents *const captured_wc =
+            content::WebContents::FromRenderFrameHost(captured_rfh);
+    if (!captured_wc) {
+        return absl::nullopt;
+    }
+
+    double zoom_level =
+            blink::PageZoomLevelToZoomFactor(content::HostZoomMap::GetZoomLevel(captured_wc));
+    return std::round(100 * zoom_level);
+}
+
 // Based on chrome/browser/media/webrtc/desktop_capture_devices_util.cc:
 media::mojom::DisplayMediaInformationPtr DesktopMediaIDToDisplayMediaInformation(content::WebContents *capturer,
                                                                                  const url::Origin &capturer_origin,
@@ -122,6 +145,7 @@ media::mojom::DisplayMediaInformationPtr DesktopMediaIDToDisplayMediaInformation
 #endif  // defined(USE_AURA)
 
     media::mojom::CaptureHandlePtr capture_handle;
+    int zoom_level = 100;
     switch (media_id.type) {
     case content::DesktopMediaID::TYPE_SCREEN:
         display_surface = media::mojom::DisplayCaptureSurfaceType::MONITOR;
@@ -137,12 +161,16 @@ media::mojom::DisplayMediaInformationPtr DesktopMediaIDToDisplayMediaInformation
         display_surface = media::mojom::DisplayCaptureSurfaceType::BROWSER;
         cursor = media::mojom::CursorCaptureType::MOTION;
         capture_handle = CreateCaptureHandle(capturer, capturer_origin, media_id);
+        if (base::FeatureList::IsEnabled(features::kCapturedSurfaceControlKillswitch)) {
+            zoom_level = GetZoomLevel(capturer, media_id).value_or(zoom_level);
+        }
         break;
     case content::DesktopMediaID::TYPE_NONE:
         break;
     }
 
-    return media::mojom::DisplayMediaInformation::New(display_surface, logical_surface, cursor, std::move(capture_handle));
+    return media::mojom::DisplayMediaInformation::New(display_surface, logical_surface, cursor,
+                                                      std::move(capture_handle), zoom_level);
 }
 
 

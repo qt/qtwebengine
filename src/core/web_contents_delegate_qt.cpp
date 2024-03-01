@@ -794,7 +794,9 @@ void WebContentsDelegateQt::BeforeUnloadFired(content::WebContents *tab, bool pr
         m_viewClient->windowCloseRejected();
 }
 
-bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost *, const GURL& security_origin, blink::mojom::MediaStreamType type)
+bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost *,
+                                                       const url::Origin &security_origin,
+                                                       blink::mojom::MediaStreamType type)
 {
     switch (type) {
     case blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE:

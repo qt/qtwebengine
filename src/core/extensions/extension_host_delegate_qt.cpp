@@ -86,10 +86,9 @@ void ExtensionHostDelegateQt::ProcessMediaAccessRequest(content::WebContents *we
     });
 }
 
-bool ExtensionHostDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost *render_frame_host,
-                                                         const GURL &security_origin,
-                                                         blink::mojom::MediaStreamType type,
-                                                         const Extension *extension)
+bool ExtensionHostDelegateQt::CheckMediaAccessPermission(
+        content::RenderFrameHost *render_frame_host, const url::Origin &security_origin,
+        blink::mojom::MediaStreamType type, const Extension *extension)
 {
     Q_UNUSED(render_frame_host);
     Q_UNUSED(security_origin);

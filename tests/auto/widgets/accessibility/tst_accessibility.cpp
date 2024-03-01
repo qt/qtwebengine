@@ -94,13 +94,13 @@ void tst_Accessibility::noPage()
 void tst_Accessibility::hierarchy()
 {
     QWebEngineView webView;
+    QSignalSpy spyFinished(&webView, &QWebEngineView::loadFinished);
     webView.setHtml("<html><body>" \
         "Hello world" \
         "<input type='text' value='some text'></input>" \
         "</body></html>");
     webView.show();
-    QSignalSpy spyFinished(&webView, &QWebEngineView::loadFinished);
-    QVERIFY(spyFinished.wait());
+    QTRY_VERIFY(spyFinished.size());
 
     QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
     QVERIFY(view);
@@ -581,28 +581,27 @@ void tst_Accessibility::crossTreeParent()
     webView.show();
     QVERIFY(spyFinished.wait());
     QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
-    QAccessibleInterface *document = view->child(0);
-    QCOMPARE(document->role(), QAccessible::WebDocument);
-    QTRY_COMPARE(document->childCount(), 1);
-    QAccessibleInterface *p = document->child(0);
+    QCOMPARE(view->child(0)->role(), QAccessible::WebDocument);
+    QTRY_COMPARE(view->child(0)->childCount(), 1);
+    QAccessibleInterface *p = view->child(0)->child(0);
     QVERIFY(p);
-    QCOMPARE(p->parent(), document);
+    QCOMPARE(p->parent(), view->child(0));
     p = p->child(0);
     QVERIFY(p);
     QCOMPARE(p->role(), QAccessible::WebDocument);
-    QCOMPARE(p->parent()->parent(), document);
+    QCOMPARE(p->parent()->parent(), view->child(0));
     QTRY_COMPARE(p->childCount(), 1);
     p = p->child(0);
     QVERIFY(p);
     QAccessibleInterface *subdocument = p;
     QCOMPARE(p->role(), QAccessible::WebDocument);
-    QCOMPARE(p->parent()->parent()->parent(), document);
+    QCOMPARE(p->parent()->parent()->parent(), view->child(0));
     p = p->child(0);
     QVERIFY(p);
     QVERIFY(p->object());
     QCOMPARE(p->role(), QAccessible::Paragraph);
     QCOMPARE(p->parent(), subdocument);
-    QCOMPARE(p->parent()->parent()->parent()->parent(), document);
+    QCOMPARE(p->parent()->parent()->parent()->parent(), view->child(0));
     QCOMPARE(p->parent()->parent()->parent()->parent()->parent(), view);
     QCOMPARE(p->object()->objectName(), QStringLiteral("my_id"));
 }
