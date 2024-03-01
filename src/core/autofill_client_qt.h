@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/containers/span.h"
 #include "components/autofill/content/browser/content_autofill_client.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -52,9 +53,9 @@ public:
     PopupOpenArgs GetReopenPopupArgs(
             autofill::AutofillSuggestionTriggerSource trigger_source) const override;
     std::vector<autofill::Suggestion> GetPopupSuggestions() const override;
-    void UpdatePopup(const std::vector<autofill::Suggestion>& suggestions,
-                     autofill::PopupType popup_type,
-                     autofill::AutofillSuggestionTriggerSource trigger_source) override;
+    void UpdatePopup(const std::vector<autofill::Suggestion> &suggestions,
+                     autofill::FillingProduct main_filling_product,
+                     autofill::AutofillSuggestionTriggerSource trigger_source) override{};
     void HideAutofillPopup(autofill::PopupHidingReason reason) override;
     bool IsAutocompleteEnabled() const override;
     bool IsPasswordManagerEnabled() override;

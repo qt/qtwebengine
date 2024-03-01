@@ -2947,8 +2947,8 @@ void tst_QWebEngineView::imeJSInputEvents()
 
     QTRY_COMPARE(logLines().size(), 4);
     QCOMPARE(logLines()[0], QStringLiteral("[object CompositionEvent] compositionstart "));
-    QCOMPARE(logLines()[1], QStringLiteral("[object InputEvent] beforeinput preedit"));
-    QCOMPARE(logLines()[2], QStringLiteral("[object CompositionEvent] compositionupdate preedit"));
+    QCOMPARE(logLines()[1], QStringLiteral("[object CompositionEvent] compositionupdate preedit"));
+    QCOMPARE(logLines()[2], QStringLiteral("[object InputEvent] beforeinput preedit"));
     QCOMPARE(logLines()[3], QStringLiteral("[object InputEvent] input preedit"));
 
     {
@@ -2960,8 +2960,8 @@ void tst_QWebEngineView::imeJSInputEvents()
     }
 
     QTRY_COMPARE(logLines().size(), 9);
-    QCOMPARE(logLines()[4], QStringLiteral("[object InputEvent] beforeinput commit"));
-    QCOMPARE(logLines()[5], QStringLiteral("[object CompositionEvent] compositionupdate commit"));
+    QCOMPARE(logLines()[4], QStringLiteral("[object CompositionEvent] compositionupdate commit"));
+    QCOMPARE(logLines()[5], QStringLiteral("[object InputEvent] beforeinput commit"));
     QCOMPARE(logLines()[6], QStringLiteral("[object TextEvent] textInput commit"));
     QCOMPARE(logLines()[7], QStringLiteral("[object InputEvent] input commit"));
     QCOMPARE(logLines()[8], QStringLiteral("[object CompositionEvent] compositionend commit"));
@@ -2979,8 +2979,8 @@ void tst_QWebEngineView::imeJSInputEvents()
 
     QTRY_COMPARE(logLines().size(), 4);
     QCOMPARE(logLines()[0], QStringLiteral("[object CompositionEvent] compositionstart "));
-    QCOMPARE(logLines()[1], QStringLiteral("[object InputEvent] beforeinput preedit"));
-    QCOMPARE(logLines()[2], QStringLiteral("[object CompositionEvent] compositionupdate preedit"));
+    QCOMPARE(logLines()[1], QStringLiteral("[object CompositionEvent] compositionupdate preedit"));
+    QCOMPARE(logLines()[2], QStringLiteral("[object InputEvent] beforeinput preedit"));
     QCOMPARE(logLines()[3], QStringLiteral("[object InputEvent] input preedit"));
 
     {
@@ -2991,8 +2991,8 @@ void tst_QWebEngineView::imeJSInputEvents()
     }
 
     QTRY_COMPARE(logLines().size(), 9);
-    QCOMPARE(logLines()[4], QStringLiteral("[object InputEvent] beforeinput "));
-    QCOMPARE(logLines()[5], QStringLiteral("[object CompositionEvent] compositionupdate "));
+    QCOMPARE(logLines()[4], QStringLiteral("[object CompositionEvent] compositionupdate "));
+    QCOMPARE(logLines()[5], QStringLiteral("[object InputEvent] beforeinput "));
     QCOMPARE(logLines()[6], QStringLiteral("[object TextEvent] textInput "));
     QCOMPARE(logLines()[7], QStringLiteral("[object InputEvent] input null"));
     QCOMPARE(logLines()[8], QStringLiteral("[object CompositionEvent] compositionend "));
@@ -3894,10 +3894,13 @@ void tst_QWebEngineView::datalist()
     QTest::keyClick(view.windowHandle(), Qt::Key_Escape);
     QTRY_VERIFY(!listView());
 
-    // Key Down should open the popup and select the first suggestion.
+    // The first Key Down opens the popup.
     QTest::keyClick(view.windowHandle(), Qt::Key_Down);
     QTRY_VERIFY(listView());
-    QCOMPARE(listView()->currentIndex().row(), 0);
+
+    // The second Key Down selects the first suggestion.
+    QTest::keyClick(view.windowHandle(), Qt::Key_Down);
+    QTRY_COMPARE(listView()->currentIndex().row(), 0);
 
     // Test keyboard navigation in list.
     QTest::keyClick(view.windowHandle(), Qt::Key_Up);

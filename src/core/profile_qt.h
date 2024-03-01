@@ -40,7 +40,6 @@ public:
     base::FilePath GetPath() override;
     bool IsOffTheRecord() override;
 
-    content::ResourceContext *GetResourceContext() override;
     content::DownloadManagerDelegate *GetDownloadManagerDelegate() override;
     content::BrowserPluginGuestManager *GetGuestManager() override;
     storage::SpecialStoragePolicy *GetSpecialStoragePolicy() override;

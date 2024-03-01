@@ -18,7 +18,7 @@ public:
     void AddPermissionFeatures(FeatureProvider* provider) override;
 
     bool IsAPISchemaGenerated(const std::string& name) override;
-    base::StringPiece GetAPISchema(const std::string& name) override;
+    std::string_view GetAPISchema(const std::string &name) override;
 
     // Adds feature definitions to the given |provider| of the specified type.
     void AddManifestFeatures(FeatureProvider* provider) override { }

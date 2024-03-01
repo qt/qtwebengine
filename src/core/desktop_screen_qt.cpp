@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "desktop_screen_qt.h"
-
+#include "ui/base/ozone_buildflags.h"
 #include "ui/display/display.h"
 
 #include "type_conversion.h"
@@ -10,13 +10,10 @@
 #include <QGuiApplication>
 #include <QScreen>
 
-#if defined(USE_OZONE)
-#include "ui/ozone/buildflags.h"
-#if BUILDFLAG(OZONE_PLATFORM_X11)
+#if BUILDFLAG(IS_LINUX) && BUILDFLAG(IS_OZONE_X11)
 #define USE_XSCREENSAVER
 #include "ui/base/x/x11_screensaver.h"
 #include "ui/base/x/x11_util.h"
-#endif
 #endif
 
 #include <cmath>

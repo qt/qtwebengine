@@ -116,11 +116,6 @@ bool ProfileQt::IsOffTheRecord()
     return m_profileAdapter->isOffTheRecord();
 }
 
-content::ResourceContext *ProfileQt::GetResourceContext()
-{
-    return m_profileIOData->resourceContext();
-}
-
 content::DownloadManagerDelegate *ProfileQt::GetDownloadManagerDelegate()
 {
     return m_profileAdapter->downloadManagerDelegate();

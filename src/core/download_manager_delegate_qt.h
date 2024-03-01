@@ -35,7 +35,7 @@ public:
     void GetNextId(content::DownloadIdCallback callback) override;
 
     bool DetermineDownloadTarget(download::DownloadItem *item,
-                                 content::DownloadTargetCallback *callback) override;
+                                 download::DownloadTargetCallback *callback) override;
 
     void GetSaveDir(content::BrowserContext* browser_context,
                     base::FilePath* website_save_dir,
@@ -56,7 +56,7 @@ public:
     void OnDownloadDestroyed(download::DownloadItem *download) override;
 
 private:
-    void cancelDownload(content::DownloadTargetCallback callback);
+    void cancelDownload(download::DownloadTargetCallback callback);
     download::DownloadItem *findDownloadById(quint32 downloadId);
     void savePackageDownloadCreated(download::DownloadItem *download);
     ProfileAdapter *m_profileAdapter;

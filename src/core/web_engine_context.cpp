@@ -837,7 +837,7 @@ static void initializeFeatureList(base::CommandLine *commandLine, std::vector<st
 
     commandLine->AppendSwitchASCII(switches::kEnableFeatures, enableFeaturesString);
     commandLine->AppendSwitchASCII(switches::kDisableFeatures, disableFeaturesString);
-    base::FeatureList::InitializeInstance(enableFeaturesString, disableFeaturesString);
+    base::FeatureList::InitInstance(enableFeaturesString, disableFeaturesString);
 }
 
 WebEngineContext::WebEngineContext()

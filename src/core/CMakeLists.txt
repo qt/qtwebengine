@@ -350,6 +350,8 @@ foreach(arch ${archs})
             use_static_angle=true
             use_perfetto_client_library=false
             trial_comparison_cert_verifier_supported=false
+            enable_extensions_legacy_ipc=true
+            enable_bound_session_credentials=false
         )
         extend_gn_list(gnArgArg
             ARGS use_v8_context_snapshot v8_use_external_startup_data
@@ -577,6 +579,7 @@ target_include_directories(WebEngineCore PRIVATE
     ${buildDir}/$<CONFIG>/${arch}/gen
     ${buildDir}/$<CONFIG>/${arch}/gen/third_party/perfetto
     ${buildDir}/$<CONFIG>/${arch}/gen/third_party/perfetto/build_config
+    ${buildDir}/$<CONFIG>/${arch}/gen/base/allocator/partition_allocator/src
 )
 
 set(stamps QtWebEngineCore.stamp)
@@ -632,7 +635,9 @@ if(QT_FEATURE_webengine_spellchecker AND NOT CMAKE_CROSSCOMPILING)
     target_include_directories(${dict_target_name} PRIVATE
         ../3rdparty/chromium
         ../3rdparty/chromium/third_party/boringssl/src/include
+        ../3rdparty/chromium/base/allocator/partition_allocator/src
         ${buildDir}/$<CONFIG>/${arch}/gen
+        ${buildDir}/$<CONFIG>/${arch}/gen/base/allocator/partition_allocator/src
     )
     add_gn_build_artifacts_to_target(
         CMAKE_TARGET ${dict_target_name}

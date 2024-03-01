@@ -38,7 +38,7 @@
 #include <filesystem>
 #endif // BUILDFLAG(USE_XKBCOMMON)
 
-#if BUILDFLAG(OZONE_PLATFORM_X11)
+#if BUILDFLAG(IS_OZONE_X11)
 #include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
 #include "ui/ozone/platform/x11/gl_egl_utility_x11.h"
 
@@ -113,9 +113,6 @@ const ui::OzonePlatform::PlatformProperties &OzonePlatformQt::GetPlatformPropert
     if (!initialized) {
         DCHECK(m_supportsNativePixmaps);
         properties->fetch_buffer_formats_for_gmb_on_gpu = m_supportsNativePixmaps.value();
-#if BUILDFLAG(USE_VAAPI)
-        properties->supports_vaapi = m_supportsNativePixmaps.value();
-#endif
         initialized = true;
     }
 
@@ -238,7 +235,7 @@ void OzonePlatformQt::InitializeGPU(const ui::OzonePlatform::InitParams &params)
 {
     surface_factory_ozone_.reset(new QtWebEngineCore::SurfaceFactoryQt());
 
-#if BUILDFLAG(OZONE_PLATFORM_X11)
+#if BUILDFLAG(IS_OZONE_X11)
     if (params.enable_native_gpu_memory_buffers) {
         base::ThreadPool::PostTask(FROM_HERE,
                                    base::BindOnce([]()
@@ -263,7 +260,7 @@ bool OzonePlatformQt::IsNativePixmapConfigSupported(gfx::BufferFormat format, gf
 PlatformGLEGLUtility *OzonePlatformQt::GetPlatformGLEGLUtility()
 {
     if (!gl_egl_utility_) {
-#if BUILDFLAG(OZONE_PLATFORM_X11)
+#if BUILDFLAG(IS_OZONE_X11)
         if (GetQtXDisplay())
             gl_egl_utility_ = std::make_unique<GLEGLUtilityX11>();
         else

@@ -57,7 +57,7 @@ bool ExtensionsAPIProviderQt::IsAPISchemaGenerated(const std::string &name)
             api::QtWebEngineGeneratedSchemas::IsGenerated(name);
 }
 
-base::StringPiece ExtensionsAPIProviderQt::GetAPISchema(const std::string &name)
+std::string_view ExtensionsAPIProviderQt::GetAPISchema(const std::string &name)
 {
     if (!api::GeneratedSchemas::Get(name).empty())
         return api::GeneratedSchemas::Get(name);

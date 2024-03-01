@@ -18,6 +18,7 @@ class QtShareGLContext : public gl::GLContext
 
 public:
     QtShareGLContext(QOpenGLContext *qtContext);
+    ~QtShareGLContext() override;
     void *GetHandle() override { return m_handle; }
     unsigned int CheckStickyGraphicsResetStatusImpl() override;
     // We don't care about the rest, this context shouldn't be used except for its handle.

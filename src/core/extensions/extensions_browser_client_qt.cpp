@@ -542,5 +542,10 @@ media_device_salt::MediaDeviceSaltService *ExtensionsBrowserClientQt::GetMediaDe
     // Not needed for QWE
     return nullptr;
 }
-
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
+ExtensionsBrowserClientQt::GetControlledFrameEmbedderURLLoader(
+        int frame_tree_node_id, content::BrowserContext *browser_context)
+{
+    return mojo::PendingRemote<network::mojom::URLLoaderFactory>();
+}
 } // namespace extensions

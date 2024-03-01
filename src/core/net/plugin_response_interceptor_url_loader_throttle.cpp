@@ -124,8 +124,6 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
     if (extension_id == extension_misc::kPdfExtensionId && response_head->headers)
         ClearAllButFrameAncestors(response_head);
 
-    MimeTypesHandler::ReportUsedHandler(extension_id);
-
     const std::string stream_id = base::Uuid::GenerateRandomV4().AsLowercaseString();
 
     mojo::PendingRemote<network::mojom::URLLoader> dummy_new_loader;
@@ -134,14 +132,15 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
     mojo::PendingReceiver<network::mojom::URLLoaderClient> new_client_receiver =
         new_client.BindNewPipeAndPassReceiver();
 
-
+    const std::string internal_id = base::UnguessableToken::Create().ToString();
     // Provide the MimeHandlerView code a chance to override the payload. This is
     // the case where the resource is handled by frame-based MimeHandlerView.
-    const std::string payload = extensions::MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
-        m_frame_tree_node_id, response_url, response_head->mime_type, stream_id,
-        base::BindOnce(
-            &PluginResponseInterceptorURLLoaderThrottle::ResumeLoad,
-            weak_factory_.GetWeakPtr()));
+    const std::string payload =
+            extensions::MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
+                    m_frame_tree_node_id, response_url, response_head->mime_type, stream_id,
+                    internal_id,
+                    base::BindOnce(&PluginResponseInterceptorURLLoaderThrottle::ResumeLoad,
+                                   weak_factory_.GetWeakPtr()));
     *defer = true;
 
     mojo::ScopedDataPipeProducerHandle producer_handle;
@@ -186,11 +185,10 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
     bool embedded = m_request_destination !=
             network::mojom::RequestDestination::kDocument;
     content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-            &extensions::StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent,
-            extension_id, stream_id, embedded, m_frame_tree_node_id,
-            std::move(transferrable_loader), response_url));
+            FROM_HERE,
+            base::BindOnce(&extensions::StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent,
+                           extension_id, stream_id, embedded, m_frame_tree_node_id,
+                           std::move(transferrable_loader), response_url, internal_id));
 }
 
 void PluginResponseInterceptorURLLoaderThrottle::ResumeLoad()

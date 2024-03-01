@@ -9,6 +9,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/file_select_listener.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/selected_file_info.h"
 
 #include <QtCore/qcoreapplication.h>
 #include <QDir>
@@ -214,7 +215,8 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
         if (files.empty())
             d_ptr->fileSystemAccessDialogListener->FileSelectionCanceled(nullptr);
         else
-            d_ptr->fileSystemAccessDialogListener->MultiFilesSelected(files, nullptr);
+            d_ptr->fileSystemAccessDialogListener->MultiFilesSelected(
+                    ui::FilePathListToSelectedFileInfoList(files), nullptr);
     }
 }
 

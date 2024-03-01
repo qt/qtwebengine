@@ -494,12 +494,11 @@ void PermissionManagerQt::ResetPermission(
     updater.Get().Remove(requesting_origin.spec());
 }
 
-content::PermissionControllerDelegate::SubscriptionId PermissionManagerQt::SubscribePermissionStatusChange(
-    blink::PermissionType permission,
-    content::RenderProcessHost * /*render_process_host*/,
-    content::RenderFrameHost * /* render_frame_host */,
-    const GURL& requesting_origin,
-    base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback)
+content::PermissionControllerDelegate::SubscriptionId
+PermissionManagerQt::SubscribeToPermissionStatusChange(
+        blink::PermissionType permission, content::RenderProcessHost * /*render_process_host*/,
+        content::RenderFrameHost * /* render_frame_host */, const GURL &requesting_origin,
+        base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback)
 {
     auto subscriber_id = subscription_id_generator_.GenerateNextId();
     m_subscribers.insert( { subscriber_id,
@@ -507,7 +506,8 @@ content::PermissionControllerDelegate::SubscriptionId PermissionManagerQt::Subsc
     return subscriber_id;
 }
 
-void PermissionManagerQt::UnsubscribePermissionStatusChange(content::PermissionControllerDelegate::SubscriptionId subscription_id)
+void PermissionManagerQt::UnsubscribeFromPermissionStatusChange(
+        content::PermissionControllerDelegate::SubscriptionId subscription_id)
 {
     if (!m_subscribers.erase(subscription_id))
         LOG(WARNING) << "PermissionManagerQt::UnsubscribePermissionStatusChange called on unknown subscription id" << subscription_id;

@@ -37,8 +37,6 @@ ProfileIODataQt::~ProfileIODataQt()
 {
     if (content::BrowserThread::IsThreadInitialized(content::BrowserThread::IO))
         DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-    m_resourceContext.reset();
 }
 
 QPointer<ProfileAdapter> ProfileIODataQt::profileAdapter()
@@ -69,11 +67,6 @@ void ProfileIODataQt::shutdownOnUIThread()
     }
 }
 
-content::ResourceContext *ProfileIODataQt::resourceContext()
-{
-    return m_resourceContext.get();
-}
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 extensions::ExtensionSystemQt* ProfileIODataQt::GetExtensionSystem()
 {
@@ -91,7 +84,6 @@ void ProfileIODataQt::initializeOnUIThread()
 {
     m_profileAdapter = m_profile->profileAdapter();
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    m_resourceContext.reset(new content::ResourceContext());
     m_cookieDelegate = new CookieMonsterDelegateQt();
     m_cookieDelegate->setClient(m_profile->profileAdapter()->cookieStore());
     m_proxyConfigMonitor.reset(new ProxyConfigMonitor(m_profile->GetPrefs()));
@@ -152,15 +144,12 @@ void ProfileIODataQt::resetNetworkContext()
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     Q_ASSERT(m_clearHttpCacheState != Removing);
     setFullConfiguration();
-    m_profile->ForEachLoadedStoragePartition(
-            base::BindRepeating([](ProfileIODataQt *profileData,
-                                   content::StoragePartition *storage) {
-                storage->SetNetworkContextCreatedObserver(profileData);
-
-                auto storage_impl = static_cast<content::StoragePartitionImpl *>(storage);
-                storage_impl->ResetURLLoaderFactories();
-                storage_impl->ResetNetworkContext();
-            }, this));
+    m_profile->ForEachLoadedStoragePartition([this](content::StoragePartition *storage) {
+        storage->SetNetworkContextCreatedObserver(this);
+        auto storage_impl = static_cast<content::StoragePartitionImpl *>(storage);
+        storage_impl->ResetURLLoaderFactories();
+        storage_impl->ResetNetworkContext();
+    });
 }
 
 void ProfileIODataQt::OnNetworkContextCreated(content::StoragePartition *storage)
@@ -174,12 +163,10 @@ void ProfileIODataQt::OnNetworkContextCreated(content::StoragePartition *storage
 
     bool pendingReset = false;
     m_profile->ForEachLoadedStoragePartition(
-            base::BindRepeating([](bool *pendingReset,
-                                   ProfileIODataQt *profileData,
-                                   content::StoragePartition *storage) {
-                if (storage->GetNetworkContextCreatedObserver() == profileData)
-                    *pendingReset = true;
-            }, &pendingReset, this));
+            [&pendingReset, this](content::StoragePartition *storage) {
+                if (storage->GetNetworkContextCreatedObserver() == this)
+                    pendingReset = true;
+            });
 
     if (pendingReset)
         return;

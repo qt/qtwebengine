@@ -57,14 +57,13 @@ public:
             const content::PermissionRequestDescription &request_description,
             base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus> &)> callback) override;
 
-    content::PermissionControllerDelegate::SubscriptionId SubscribePermissionStatusChange(
-        blink::PermissionType permission,
-        content::RenderProcessHost* render_process_host,
-        content::RenderFrameHost* render_frame_host,
-        const GURL& requesting_origin,
-        const base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback) override;
+    content::PermissionControllerDelegate::SubscriptionId SubscribeToPermissionStatusChange(
+            blink::PermissionType permission, content::RenderProcessHost *render_process_host,
+            content::RenderFrameHost *render_frame_host, const GURL &requesting_origin,
+            const base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback) override;
 
-    void UnsubscribePermissionStatusChange(content::PermissionControllerDelegate::SubscriptionId subscription_id) override;
+    void UnsubscribeFromPermissionStatusChange(
+            content::PermissionControllerDelegate::SubscriptionId subscription_id) override;
 
 private:
     struct Request {
