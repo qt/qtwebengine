@@ -561,6 +561,7 @@ ApplicationWindow {
                 settings.webRTCPublicInterfacesOnly: appSettings.webRTCPublicInterfacesOnly
                 settings.pdfViewerEnabled: appSettings.pdfViewerEnabled
                 settings.imageAnimationPolicy: appSettings.imageAnimationPolicy
+                settings.screenCaptureEnabled: true
 
                 onCertificateError: function(error) {
                     if (!error.isMainFrame) {
@@ -608,6 +609,11 @@ ApplicationWindow {
                     console.log("accepting registerProtocolHandler request for "
                                 + request.scheme + " from " + request.origin);
                     request.accept();
+                }
+
+                onDesktopMediaRequested: function(request) {
+                    // select the primary screen
+                    request.selectScreen(request.screensModel.index(0, 0));
                 }
 
                 onRenderProcessTerminated: function(terminationStatus, exitCode) {
