@@ -520,6 +520,7 @@ ApplicationWindow {
                 settings.touchIconsEnabled: appSettings.touchIconsEnabled
                 settings.webRTCPublicInterfacesOnly: appSettings.webRTCPublicInterfacesOnly
                 settings.pdfViewerEnabled: appSettings.pdfViewerEnabled
+                settings.screenCaptureEnabled: true
 
                 onCertificateError: function(error) {
                     error.defer();
@@ -562,6 +563,11 @@ ApplicationWindow {
                     console.log("accepting registerProtocolHandler request for "
                                 + request.scheme + " from " + request.origin);
                     request.accept();
+                }
+
+                onDesktopMediaRequested: function(request) {
+                    // select the primary screen
+                    request.selectScreen(request.screensModel.index(0, 0));
                 }
 
                 onRenderProcessTerminated: function(terminationStatus, exitCode) {
