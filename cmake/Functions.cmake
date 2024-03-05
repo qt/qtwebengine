@@ -1185,6 +1185,15 @@ function(add_gn_build_artifacts_to_target)
         endforeach()
         list(GET archs 0 arch)
         set(target ${arg_NINJA_TARGET}_${config}_${arch})
+        # Work around for broken builds with new Apple linker ld_prime. Force
+        # use of the classic linker until this has been fixed.
+        # TODO: remove once this has been fixed by Apple. See issue FB13667242
+        # or QTBUG-122655 for details.
+        if(APPLECLANG)
+            if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "15.0.0")
+                target_link_options(${arg_CMAKE_TARGET} -ld_classic)
+            endif()
+        endif()
         if(QT_IS_MACOS_UNIVERSAL)
             add_lipo_command(${target} ${arg_BUILDDIR}/${config})
         endif()
