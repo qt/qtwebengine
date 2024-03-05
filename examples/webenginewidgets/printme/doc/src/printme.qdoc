@@ -55,9 +55,11 @@
     Now we can implement the \c{PrintHandler::printDocument()} slot, which is
     called in response to the \l{QPrintPreviewDialog::paintRequested} signal.
     To do actual painting on a printer, we call the \l QWebEngineView::print()
-    function. Because this call is asynchronous, we need to use
-    a local event loop. We begin the local event loop by calling
-    \l{QEventLoop::exec()}.
+    function. Printing is an async operation in Chromium, but not in Qt, so we
+    run a local event loop using \l{QEventLoop::exec()} to make sure printing
+    is done before returning. User input is blocked, since clicking on a button
+    while we're waiting for the print to finish can mess up the internal state
+    and cause a crash.
 
     \quotefromfile webenginewidgets/printme/printhandler.cpp
     \skipto PrintHandler::printDocument(
@@ -66,7 +68,8 @@
     To get notified about the result of printing job, we implement
     \c{PrintHandler::printFinished()} slot as handler of
     \l QWebEngineView::printFinished() signal. We check for \c{success} and
-    report any errors that occurred.
+    report any errors that occurred. Finally, we call \l{QEventLoop::quit()}
+    to exit out of the local event loop.
 
     \quotefromfile webenginewidgets/printme/printhandler.cpp
     \skipto PrintHandler::printFinished(
