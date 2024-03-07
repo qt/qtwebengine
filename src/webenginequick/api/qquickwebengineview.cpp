@@ -332,8 +332,7 @@ QQuickWebEngineViewPrivate::~QQuickWebEngineViewPrivate()
 {
     Q_ASSERT(m_profileInitialized);
     m_profile->d_ptr->removeWebContentsAdapterClient(this);
-    if (m_faviconProvider)
-        m_faviconProvider->detach(q_ptr);
+    FaviconProviderHelper::instance()->detach(q_ptr);
     bindViewAndDelegateItem(this, nullptr);
 }
 
@@ -951,16 +950,7 @@ void QQuickWebEngineViewPrivate::ensureContentsAdapter()
             adapter->loadDefault();
     }
 
-    if (!m_faviconProvider) {
-        QQmlEngine *engine = qmlEngine(q_ptr);
-        // TODO: this is a workaround for QTBUG-65044
-        if (!engine)
-            return;
-        m_faviconProvider = static_cast<QQuickWebEngineFaviconProvider *>(
-                engine->imageProvider(QQuickWebEngineFaviconProvider::identifier()));
-        m_faviconProvider->attach(q_ptr);
-        Q_ASSERT(m_faviconProvider);
-    }
+    FaviconProviderHelper::instance()->attach(q_ptr);
 }
 
 void QQuickWebEngineViewPrivate::initializationFinished()

@@ -144,7 +144,7 @@ private:
     QQuickWebEngineSettings *settings() const;
     void ensureQmlContext(const QObject *object);
 
-    friend class FaviconImageResponseRunnable;
+    friend class FaviconImageRequester;
     friend class QQuickWebEngineSingleton;
     friend class QQuickWebEngineViewPrivate;
     friend class QQuickWebEngineView;

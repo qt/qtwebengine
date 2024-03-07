@@ -37,7 +37,6 @@ class WebContentsAdapter;
 
 QT_BEGIN_NAMESPACE
 class QQmlComponent;
-class QQuickWebEngineFaviconProvider;
 class QQuickWebEngineScriptCollection;
 class QQuickWebEngineSettings;
 class QQuickWebEngineView;
@@ -178,7 +177,6 @@ private:
     bool m_profileInitialized;
     QWebEngineContextMenuRequest *m_contextMenuRequest;
     QScopedPointer<QQuickWebEngineScriptCollection> m_scriptCollection;
-    QPointer<QQuickWebEngineFaviconProvider> m_faviconProvider;
     QQmlComponent *m_touchHandleDelegate;
 };
 
