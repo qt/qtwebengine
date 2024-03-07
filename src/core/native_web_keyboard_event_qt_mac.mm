@@ -47,7 +47,7 @@ base::apple::OwnedNSEvent ToNativeEvent(QKeyEvent *keyEvent)
     return base::apple::OwnedNSEvent([NSEvent
                        keyEventWithType:type
                                location:NSZeroPoint
-                          modifierFlags:keyEvent->nativeModifiers()
+                          modifierFlags:QAppleKeyMapper::toCocoaModifiers(keyEvent->modifiers())
                               timestamp:keyEvent->timestamp() / 1000
                            windowNumber:0
                                 context:nil
