@@ -33,6 +33,7 @@ class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineProfile : public QObject {
     Q_PROPERTY(HttpCacheType httpCacheType READ httpCacheType WRITE setHttpCacheType NOTIFY httpCacheTypeChanged FINAL)
     Q_PROPERTY(QString httpAcceptLanguage READ httpAcceptLanguage WRITE setHttpAcceptLanguage NOTIFY httpAcceptLanguageChanged FINAL REVISION(1,1))
     Q_PROPERTY(PersistentCookiesPolicy persistentCookiesPolicy READ persistentCookiesPolicy WRITE setPersistentCookiesPolicy NOTIFY persistentCookiesPolicyChanged FINAL)
+    Q_PROPERTY(PersistentPermissionsPolicy persistentPermissionsPolicy READ persistentPermissionsPolicy WRITE setPersistentPermissionsPolicy NOTIFY persistentPermissionsPolicyChanged FINAL)
     Q_PROPERTY(int httpCacheMaximumSize READ httpCacheMaximumSize WRITE setHttpCacheMaximumSize NOTIFY httpCacheMaximumSizeChanged FINAL)
     Q_PROPERTY(QStringList spellCheckLanguages READ spellCheckLanguages WRITE setSpellCheckLanguages NOTIFY spellCheckLanguagesChanged FINAL REVISION(1,3))
     Q_PROPERTY(bool spellCheckEnabled READ isSpellCheckEnabled WRITE setSpellCheckEnabled NOTIFY spellCheckEnabledChanged FINAL REVISION(1,3))
@@ -61,6 +62,13 @@ public:
     };
     Q_ENUM(PersistentCookiesPolicy)
 
+    enum PersistentPermissionsPolicy : quint8 {
+        NoPersistentPermissions,
+        PersistentPermissionsInMemory,
+        PersistentPermissionsOnDisk,
+    };
+    Q_ENUM(PersistentPermissionsPolicy)
+
     QString storageName() const;
     void setStorageName(const QString &name);
 
@@ -81,6 +89,9 @@ public:
 
     PersistentCookiesPolicy persistentCookiesPolicy() const;
     void setPersistentCookiesPolicy(QQuickWebEngineProfile::PersistentCookiesPolicy);
+
+    PersistentPermissionsPolicy persistentPermissionsPolicy() const;
+    void setPersistentPermissionsPolicy(QQuickWebEngineProfile::PersistentPermissionsPolicy);
 
     int httpCacheMaximumSize() const;
     void setHttpCacheMaximumSize(int maxSize);
@@ -133,6 +144,7 @@ Q_SIGNALS:
     Q_REVISION(1,5) void downloadPathChanged();
     Q_REVISION(6,5) void pushServiceEnabledChanged();
     Q_REVISION(6,7) void clearHttpCacheCompleted();
+    Q_REVISION(6,8) void persistentPermissionsPolicyChanged();
     void downloadRequested(QQuickWebEngineDownloadRequest *download);
     void downloadFinished(QQuickWebEngineDownloadRequest *download);
 

@@ -95,6 +95,28 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QQuickWebEngineProfile::PersistentPermissionsPolicy
+
+    \since 6.8
+
+    This enum describes the policy for permission persistence:
+
+    \value  NoPersistentPermissions
+            The application will ask for permissions every time they're needed, regardless of
+            whether they've been granted before or not. This is intended for backwards compatibility
+            with existing applications, and otherwise not recommended.
+    \value  PersistentPermissionsInMemory
+            A request will be made only the first time a permission is needed. Any subsequent
+            requests will be automatically granted or denied, depending on the initial user choice.
+            This carries over to all pages that use the same QQuickWebEngineProfile instance, until the
+            application is shut down. This is the setting applied if \c off-the-record is set
+            or no persistent data path is available.
+    \value  PersistentPermissionsOnDisk
+            Works the same way as \c PersistentPermissionsInMemory, but the permissions are saved to
+            and restored from disk. This is the default setting.
+*/
+
+/*!
   \fn QQuickWebEngineProfile::downloadRequested(QQuickWebEngineDownloadRequest *download)
 
   This signal is emitted whenever a download has been triggered.
@@ -435,15 +457,18 @@ void QQuickWebEngineProfile::setStorageName(const QString &name)
     if (d->profileAdapter()->storageName() == name)
         return;
     ProfileAdapter::HttpCacheType oldCacheType = d->profileAdapter()->httpCacheType();
-    ProfileAdapter::PersistentCookiesPolicy oldPolicy = d->profileAdapter()->persistentCookiesPolicy();
+    ProfileAdapter::PersistentCookiesPolicy oldCookiePolicy = d->profileAdapter()->persistentCookiesPolicy();
+    ProfileAdapter::PersistentPermissionsPolicy oldPermissionsPolicy = d->profileAdapter()->persistentPermissionsPolicy();
     d->profileAdapter()->setStorageName(name);
     emit storageNameChanged();
     emit persistentStoragePathChanged();
     emit cachePathChanged();
     if (d->profileAdapter()->httpCacheType() != oldCacheType)
         emit httpCacheTypeChanged();
-    if (d->profileAdapter()->persistentCookiesPolicy() != oldPolicy)
+    if (d->profileAdapter()->persistentCookiesPolicy() != oldCookiePolicy)
         emit persistentCookiesPolicyChanged();
+    if (d->profileAdapter()->persistentPermissionsPolicy() != oldPermissionsPolicy)
+        emit persistentPermissionsPolicyChanged();
 }
 
 /*!
@@ -475,13 +500,16 @@ void QQuickWebEngineProfile::setOffTheRecord(bool offTheRecord)
     if (d->profileAdapter()->isOffTheRecord() == offTheRecord)
         return;
     ProfileAdapter::HttpCacheType oldCacheType = d->profileAdapter()->httpCacheType();
-    ProfileAdapter::PersistentCookiesPolicy oldPolicy = d->profileAdapter()->persistentCookiesPolicy();
+    ProfileAdapter::PersistentCookiesPolicy oldCookiePolicy = d->profileAdapter()->persistentCookiesPolicy();
+    ProfileAdapter::PersistentPermissionsPolicy oldPermissionsPolicy = d->profileAdapter()->persistentPermissionsPolicy();
     d->profileAdapter()->setOffTheRecord(offTheRecord);
     emit offTheRecordChanged();
     if (d->profileAdapter()->httpCacheType() != oldCacheType)
         emit httpCacheTypeChanged();
-    if (d->profileAdapter()->persistentCookiesPolicy() != oldPolicy)
+    if (d->profileAdapter()->persistentCookiesPolicy() != oldCookiePolicy)
         emit persistentCookiesPolicyChanged();
+    if (d->profileAdapter()->persistentPermissionsPolicy() != oldPermissionsPolicy)
+        emit persistentPermissionsPolicyChanged();
 }
 
 /*!
@@ -628,7 +656,7 @@ void QQuickWebEngineProfile::setHttpCacheType(QQuickWebEngineProfile::HttpCacheT
 /*!
     \qmlproperty enumeration WebEngineProfile::persistentCookiesPolicy
 
-    This enumeration describes the policy of cookie persistency:
+    This enumeration describes the policy of cookie persistence:
 
     \value  WebEngineProfile.NoPersistentCookies
             Both session and persistent cookies are stored in memory. This is the only setting
@@ -661,6 +689,51 @@ void QQuickWebEngineProfile::setPersistentCookiesPolicy(QQuickWebEngineProfile::
     d->profileAdapter()->setPersistentCookiesPolicy(ProfileAdapter::PersistentCookiesPolicy(newPersistentCookiesPolicy));
     if (d->profileAdapter()->persistentCookiesPolicy() != oldPolicy)
         emit persistentCookiesPolicyChanged();
+}
+
+/*!
+    \qmlproperty enumeration WebEngineProfile::persistentPermissionsPolicy
+
+    \since 6.8
+
+    This enumeration describes the policy for permission persistence:
+
+    \value  WebEngineProfile.NoPersistentPermissions
+            The application will ask for permissions every time they're needed, regardless of
+            whether they've been granted before or not. This is intended for backwards compatibility
+            with existing applications, and otherwise not recommended.
+    \value  WebEngineProfile.PersistentPermissionsInMemory
+            A request will be made only the first time a permission is needed. Any subsequent
+            requests will be automatically granted or denied, depending on the initial user choice.
+            This carries over to all pages using the same QWebEngineProfile instance, until the
+            application is shut down. This is the setting applied if \c off-the-record is set
+            or no persistent data path is available.
+    \value  WebEngineProfile.PersistentPermissionsOnDisk
+            Works the same way as \c PersistentPermissionsInMemory, but the permissions are saved to
+            and restored from disk. This is the default setting.
+*/
+
+/*!
+    \property QQuickWebEngineProfile::persistentPermissionsPolicy
+    \since 6.8
+
+    Describes the policy of permission persistence.
+    If the profile is off-the-record, NoPersistentCookies is returned.
+*/
+
+QQuickWebEngineProfile::PersistentPermissionsPolicy QQuickWebEngineProfile::persistentPermissionsPolicy() const
+{
+    Q_D(const QQuickWebEngineProfile);
+    return QQuickWebEngineProfile::PersistentPermissionsPolicy(d->profileAdapter()->persistentPermissionsPolicy());
+}
+
+void QQuickWebEngineProfile::setPersistentPermissionsPolicy(QQuickWebEngineProfile::PersistentPermissionsPolicy newPersistentPermissionsPolicy)
+{
+    Q_D(QQuickWebEngineProfile);
+    ProfileAdapter::PersistentPermissionsPolicy oldPolicy = d->profileAdapter()->persistentPermissionsPolicy();
+    d->profileAdapter()->setPersistentPermissionsPolicy(ProfileAdapter::PersistentPermissionsPolicy(newPersistentPermissionsPolicy));
+    if (d->profileAdapter()->persistentPermissionsPolicy() != oldPolicy)
+        emit persistentPermissionsPolicyChanged();
 }
 
 /*!

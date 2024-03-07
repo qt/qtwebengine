@@ -11,16 +11,19 @@
 
 #include <map>
 
+class PrefService;
+
 namespace QtWebEngineCore {
 
 class PermissionManagerQt : public content::PermissionControllerDelegate
 {
 public:
-    PermissionManagerQt();
+    PermissionManagerQt(ProfileAdapter *adapter);
     ~PermissionManagerQt();
 
     void permissionRequestReply(const QUrl &origin, ProfileAdapter::PermissionType type, ProfileAdapter::PermissionState reply);
     bool checkPermission(const QUrl &origin, ProfileAdapter::PermissionType type);
+    void commit();
 
     // content::PermissionManager implementation:
     blink::mojom::PermissionStatus GetPermissionStatus(
@@ -61,7 +64,6 @@ public:
     void UnsubscribePermissionStatusChange(content::PermissionControllerDelegate::SubscriptionId subscription_id) override;
 
 private:
-    QHash<QPair<QUrl, ProfileAdapter::PermissionType>, bool> m_permissions;
     struct Request {
         int id;
         ProfileAdapter::PermissionType type;
@@ -79,12 +81,19 @@ private:
         QUrl origin;
         base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback;
     };
+
+    void setPermission(blink::PermissionType permission,
+        const GURL& requesting_origin,
+        bool granted);
+
     std::vector<Request> m_requests;
     std::vector<MultiRequest> m_multiRequests;
     std::map<content::PermissionControllerDelegate::SubscriptionId, Subscription> m_subscribers;
     content::PermissionControllerDelegate::SubscriptionId::Generator subscription_id_generator_;
     int m_requestIdCount;
-
+    std::unique_ptr<PrefService> m_prefService;
+    QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
+    bool m_persistence;
 };
 
 } // namespace QtWebEngineCore

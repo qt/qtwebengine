@@ -49,6 +49,13 @@ public:
     };
     Q_ENUM(PersistentCookiesPolicy)
 
+    enum PersistentPermissionsPolicy : quint8 {
+        NoPersistentPermissions,
+        PersistentPermissionsInMemory,
+        PersistentPermissionsOnDisk,
+    };
+    Q_ENUM(PersistentPermissionsPolicy)
+
     QString storageName() const;
     bool isOffTheRecord() const;
 
@@ -69,6 +76,9 @@ public:
 
     PersistentCookiesPolicy persistentCookiesPolicy() const;
     void setPersistentCookiesPolicy(QWebEngineProfile::PersistentCookiesPolicy);
+
+    PersistentPermissionsPolicy persistentPermissionsPolicy() const;
+    void setPersistentPermissionsPolicy(QWebEngineProfile::PersistentPermissionsPolicy);
 
     int httpCacheMaximumSize() const;
     void setHttpCacheMaximumSize(int maxSize);

@@ -64,6 +64,7 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
     , m_downloadPath(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation))
     , m_httpCacheType(DiskHttpCache)
     , m_persistentCookiesPolicy(AllowPersistentCookies)
+    , m_persistentPermissionsPolicy(PersistentPermissionsOnDisk)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
     , m_clientHintsEnabled(true)
     , m_pushServiceEnabled(false)
@@ -72,6 +73,8 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
     WebEngineContext::current()->addProfileAdapter(this);
     // creation of profile requires webengine context
     m_profile.reset(new ProfileQt(this));
+    // initialize permissions store
+    profile()->GetPermissionControllerDelegate();
     // fixme: this should not be here
     m_profile->m_profileIOData->initializeOnUIThread();
     m_customUrlSchemeHandlers.insert(QByteArrayLiteral("qrc"), &m_qrcHandler);
@@ -109,6 +112,7 @@ void ProfileAdapter::setStorageName(const QString &storageName)
     m_name = storageName;
     if (!m_offTheRecord) {
         m_profile->setupPrefService();
+        m_profile->setupPermissionsManager();
         if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
             m_profile->m_profileIOData->resetNetworkContext();
         if (m_visitedLinksManager)
@@ -124,6 +128,7 @@ void ProfileAdapter::setOffTheRecord(bool offTheRecord)
         return;
     m_offTheRecord = offTheRecord;
     m_profile->setupPrefService();
+    m_profile->setupPermissionsManager();
     if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
         m_profile->m_profileIOData->resetNetworkContext();
     if (m_visitedLinksManager)
@@ -369,6 +374,24 @@ void ProfileAdapter::setPersistentCookiesPolicy(ProfileAdapter::PersistentCookie
         return;
     if (!m_offTheRecord && !m_profile->m_profileIOData->isClearHttpCacheInProgress())
         m_profile->m_profileIOData->resetNetworkContext();
+}
+
+ProfileAdapter::PersistentPermissionsPolicy ProfileAdapter::persistentPermissionsPolicy() const
+{
+    if (m_persistentPermissionsPolicy == NoPersistentPermissions)
+        return NoPersistentPermissions;
+    if (isOffTheRecord() || m_name.isEmpty())
+        return PersistentPermissionsInMemory;
+    return m_persistentPermissionsPolicy;
+}
+
+void ProfileAdapter::setPersistentPermissionsPolicy(ProfileAdapter::PersistentPermissionsPolicy newPersistentPermissionsPolicy)
+{
+    ProfileAdapter::PersistentPermissionsPolicy oldPolicy = persistentPermissionsPolicy();
+    m_persistentPermissionsPolicy = newPersistentPermissionsPolicy;
+    if (oldPolicy == persistentPermissionsPolicy())
+        return;
+    m_profile->setupPermissionsManager();
 }
 
 ProfileAdapter::VisitedLinksPolicy ProfileAdapter::visitedLinksPolicy() const

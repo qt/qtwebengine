@@ -485,6 +485,7 @@ void tst_QWebEnginePage::geolocationRequestJS()
     QWebEngineView view;
     JSTestPage *newPage = new JSTestPage(&view);
     view.setPage(newPage);
+    newPage->profile()->setPersistentPermissionsPolicy(QWebEngineProfile::NoPersistentPermissions);
     newPage->setGeolocationPermission(allowed);
 
     connect(newPage, SIGNAL(featurePermissionRequested(const QUrl&, QWebEnginePage::Feature)),
@@ -1660,6 +1661,7 @@ public:
         connect(this, &QWebEnginePage::loadFinished, [this](bool success){
             m_loadSucceeded = success;
         });
+        profile()->setPersistentPermissionsPolicy(QWebEngineProfile::NoPersistentPermissions);
         // We need to load content from a resource in order for the securityOrigin to be valid.
         load(QUrl("qrc:///resources/content.html"));
     }
@@ -3841,6 +3843,7 @@ void tst_QWebEnginePage::notificationPermission()
     QFETCH(QString, permission);
 
     QWebEngineProfile otr;
+    otr.setPersistentPermissionsPolicy(QWebEngineProfile::NoPersistentPermissions);
     QWebEnginePage page(&otr, nullptr);
 
     QUrl baseUrl("https://www.example.com/somepage.html");
@@ -3948,6 +3951,7 @@ void tst_QWebEnginePage::clipboardReadWritePermissionInitialState()
     QFETCH(QString, permission);
 
     QWebEngineProfile otr;
+    otr.setPersistentPermissionsPolicy(QWebEngineProfile::NoPersistentPermissions);
     QWebEngineView view(&otr);
     QWebEnginePage &page = *view.page();
     view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
@@ -4008,6 +4012,7 @@ void tst_QWebEnginePage::clipboardReadWritePermission()
     QFETCH(QString, finalPermission);
 
     QWebEngineProfile otr;
+    otr.setPersistentPermissionsPolicy(QWebEngineProfile::NoPersistentPermissions);
     QWebEngineView view(&otr);
     QWebEnginePage &page = *view.page();
     view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
@@ -4110,6 +4115,7 @@ void tst_QWebEnginePage::localFontAccessPermission() {
 
     QWebEngineView view;
     QWebEnginePage page(&view);
+    page.profile()->setPersistentPermissionsPolicy(QWebEngineProfile::NoPersistentPermissions);
     view.setPage(&page);
 
     connect(&page, &QWebEnginePage::featurePermissionRequested, &page, [&] (const QUrl &o, QWebEnginePage::Feature f) {
@@ -4141,9 +4147,6 @@ void tst_QWebEnginePage::localFontAccessPermission() {
         QTRY_VERIFY_WITH_TIMEOUT(evaluateJavaScriptSync(&page, QStringLiteral("done")).toBool() == true, 1000);
         QVERIFY((evaluateJavaScriptSync(&page, QStringLiteral("fonts.length")).toInt() == 0) == shouldBeEmpty);
     }
-
-    // Reset permission, since otherwise it will be stored between runs
-    page.setFeaturePermission(QUrl("qrc:///resources/fontaccess.html"), QWebEnginePage::LocalFontsAccess, QWebEnginePage::PermissionUnknown);
 }
 
 void tst_QWebEnginePage::setLifecycleState()
@@ -5721,6 +5724,7 @@ void tst_QWebEnginePage::chooseDesktopMedia()
     QWebEnginePage page;
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
     page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
+    page.profile()->setPersistentPermissionsPolicy(QWebEngineProfile::NoPersistentPermissions);
 
     bool desktopMediaRequested = false;
     bool permissionRequested = false;

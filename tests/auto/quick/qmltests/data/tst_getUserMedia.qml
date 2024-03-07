@@ -11,6 +11,7 @@ TestWebEngineView {
     height: 400
 
     settings.screenCaptureEnabled: true
+    profile.persistentPermissionsPolicy: WebEngineProfile.NoPersistentPermissions
 
     TestCase {
         name: "GetUserMedia"

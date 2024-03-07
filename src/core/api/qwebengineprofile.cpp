@@ -93,7 +93,7 @@ using QtWebEngineCore::ProfileAdapter;
 /*!
     \enum QWebEngineProfile::PersistentCookiesPolicy
 
-    This enum describes policy for cookie persistency:
+    This enum describes policy for cookie persistence:
 
     \value  NoPersistentCookies
             Both session and persistent cookies are stored in memory. This is the only setting
@@ -103,6 +103,28 @@ using QtWebEngineCore::ProfileAdapter;
             are only stored to disk for crash recovery. This is the default setting.
     \value  ForcePersistentCookies
             Both session and persistent cookies are saved to and restored from disk.
+*/
+
+/*!
+    \enum QWebEngineProfile::PersistentPermissionsPolicy
+
+    \since 6.8
+
+    This enum describes the policy for permission persistence:
+
+    \value  NoPersistentPermissions
+            The application will ask for permissions every time they're needed, regardless of
+            whether they've been granted before or not. This is intended for backwards compatibility
+            with existing applications, and otherwise not recommended.
+    \value  PersistentPermissionsInMemory
+            A request will be made only the first time a permission is needed. Any subsequent
+            requests will be automatically granted or denied, depending on the initial user choice.
+            This carries over to all pages that use the same QWebEngineProfile instance, until the
+            application is shut down. This is the setting applied if \c off-the-record is set
+            or no persistent data path is available.
+    \value  PersistentPermissionsOnDisk
+            Works the same way as \c PersistentPermissionsInMemory, but the permissions are saved to
+            and restored from disk. This is the default setting.
 */
 
 void QWebEngineProfilePrivate::showNotification(QSharedPointer<QtWebEngineCore::UserNotificationController> &controller)
@@ -568,6 +590,31 @@ void QWebEngineProfile::setPersistentCookiesPolicy(QWebEngineProfile::Persistent
 {
     Q_D(QWebEngineProfile);
     d->profileAdapter()->setPersistentCookiesPolicy(ProfileAdapter::PersistentCookiesPolicy(newPersistentCookiesPolicy));
+}
+
+/*!
+    Returns the current policy for persistent permissions.
+
+    Off-the-record profiles are not allowed to save data to the disk, so they can only return
+    PersistentPermissionsInMemory or NoPersistentPermissions.
+
+    \sa setPersistentPermissionsPolicy()
+*/
+QWebEngineProfile::PersistentPermissionsPolicy QWebEngineProfile::persistentPermissionsPolicy() const
+{
+    Q_D(const QWebEngineProfile);
+    return QWebEngineProfile::PersistentPermissionsPolicy(d->profileAdapter()->persistentPermissionsPolicy());
+}
+
+/*!
+    Sets the policy for persistent permissions to \a newPersistentPermissionsPolicy.
+
+    \sa persistentPermissionsPolicy()
+*/
+void QWebEngineProfile::setPersistentPermissionsPolicy(QWebEngineProfile::PersistentPermissionsPolicy newPersistentPermissionsPolicy)
+{
+    Q_D(QWebEngineProfile);
+    d->profileAdapter()->setPersistentPermissionsPolicy(ProfileAdapter::PersistentPermissionsPolicy(newPersistentPermissionsPolicy));
 }
 
 /*!

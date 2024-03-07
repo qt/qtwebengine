@@ -15,6 +15,8 @@ TestWebEngineView {
     property bool grantPermission: false
     property url securityOrigin: ''
 
+    profile.persistentPermissionsPolicy: WebEngineProfile.NoPersistentPermissions
+
     signal consoleMessage(string message)
 
     SignalSpy {

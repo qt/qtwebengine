@@ -127,6 +127,12 @@ public:
         TrackVisitedLinksOnDisk,
     };
 
+    enum PersistentPermissionsPolicy {
+        NoPersistentPermissions = 0,
+        PersistentPermissionsInMemory,
+        PersistentPermissionsOnDisk,
+    };
+
     enum PermissionType {
         UnsupportedPermission = 0,
         GeolocationPermission = 1,
@@ -160,6 +166,9 @@ public:
 
     PersistentCookiesPolicy persistentCookiesPolicy() const;
     void setPersistentCookiesPolicy(ProfileAdapter::PersistentCookiesPolicy);
+
+    PersistentPermissionsPolicy persistentPermissionsPolicy() const;
+    void setPersistentPermissionsPolicy(ProfileAdapter::PersistentPermissionsPolicy);
 
     VisitedLinksPolicy visitedLinksPolicy() const;
     void setVisitedLinksPolicy(ProfileAdapter::VisitedLinksPolicy);
@@ -235,6 +244,7 @@ private:
     HttpCacheType m_httpCacheType;
     QString m_httpAcceptLanguage;
     PersistentCookiesPolicy m_persistentCookiesPolicy;
+    PersistentPermissionsPolicy m_persistentPermissionsPolicy;
     VisitedLinksPolicy m_visitedLinksPolicy;
     QHash<QByteArray, QPointer<QWebEngineUrlSchemeHandler>> m_customUrlSchemeHandlers;
     QHash<QByteArray, QWeakPointer<UserNotificationController>> m_ephemeralNotifications;

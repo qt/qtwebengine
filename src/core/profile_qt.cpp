@@ -181,7 +181,7 @@ content::BrowsingDataRemoverDelegate *ProfileQt::GetBrowsingDataRemoverDelegate(
 content::PermissionControllerDelegate *ProfileQt::GetPermissionControllerDelegate()
 {
     if (!m_permissionManager)
-        m_permissionManager.reset(new PermissionManagerQt());
+        setupPermissionsManager();
     return m_permissionManager.get();
 }
 
@@ -258,6 +258,11 @@ void ProfileQt::setupPrefService()
         extensions::ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(this, std::move(extensionPrefs));
     }
 #endif
+}
+
+void ProfileQt::setupPermissionsManager()
+{
+    m_permissionManager.reset(new PermissionManagerQt(profileAdapter()));
 }
 
 PrefServiceAdapter &ProfileQt::prefServiceAdapter()

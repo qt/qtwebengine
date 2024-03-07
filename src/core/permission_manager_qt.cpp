@@ -3,12 +3,23 @@
 
 #include "permission_manager_qt.h"
 
+#include "base/threading/thread_restrictions.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
+#include "chrome/browser/prefs/chrome_command_line_pref_store.h"
+#include "components/prefs/pref_member.h"
+#include "components/prefs/in_memory_pref_store.h"
+#include "components/prefs/json_pref_store.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/pref_service_factory.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/scoped_user_pref_update.h"
+#include "components/proxy_config/pref_proxy_config_tracker_impl.h"
+#include "components/prefs/pref_service.h"
 
 #include "type_conversion.h"
 #include "web_contents_delegate_qt.h"
@@ -57,10 +68,31 @@ static ProfileAdapter::PermissionType toQt(blink::PermissionType type)
     case blink::PermissionType::DISPLAY_CAPTURE:
     case blink::PermissionType::TOP_LEVEL_STORAGE_ACCESS:
     case blink::PermissionType::NUM:
-        LOG(INFO) << "Unexpected unsupported permission type: " << static_cast<int>(type);
+        LOG(INFO) << "Unexpected unsupported WebEngine permission type: " << static_cast<int>(type);
         break;
     }
     return ProfileAdapter::UnsupportedPermission;
+}
+
+static blink::PermissionType toBlink(ProfileAdapter::PermissionType type)
+{
+    switch (type) {
+    case ProfileAdapter::GeolocationPermission:
+        return blink::PermissionType::GEOLOCATION;
+    case ProfileAdapter::AudioCapturePermission:
+        return blink::PermissionType::AUDIO_CAPTURE;
+    case ProfileAdapter::VideoCapturePermission:
+        return blink::PermissionType::VIDEO_CAPTURE;
+    case ProfileAdapter::ClipboardReadWrite:
+        return blink::PermissionType::CLIPBOARD_READ_WRITE;
+    case ProfileAdapter::NotificationPermission:
+        return blink::PermissionType::NOTIFICATIONS;
+    case ProfileAdapter::LocalFontsPermission:
+        return blink::PermissionType::LOCAL_FONTS;
+    }
+
+    LOG(INFO) << "Unexpected unsupported Blink permission type: " << static_cast<int>(type);
+    return blink::PermissionType::NUM;
 }
 
 static bool canRequestPermissionFor(ProfileAdapter::PermissionType type)
@@ -103,13 +135,50 @@ static blink::mojom::PermissionStatus getStatusFromSettings(blink::PermissionTyp
     }
 }
 
-PermissionManagerQt::PermissionManagerQt()
+PermissionManagerQt::PermissionManagerQt(ProfileAdapter *profileAdapter)
     : m_requestIdCount(0)
+    , m_persistence(true)
+    , m_profileAdapter(profileAdapter)
 {
+    PrefServiceFactory factory;
+    factory.set_async(false);
+    factory.set_command_line_prefs(base::MakeRefCounted<ChromeCommandLinePrefStore>(
+            base::CommandLine::ForCurrentProcess()));
+
+    QString userPrefStorePath = profileAdapter->dataPath();
+    auto prefRegistry = base::MakeRefCounted<PrefRegistrySimple>();
+
+    auto policy = profileAdapter->persistentPermissionsPolicy();
+    if (!profileAdapter->isOffTheRecord() && policy == ProfileAdapter::PersistentPermissionsOnDisk &&
+            !userPrefStorePath.isEmpty() && profileAdapter->ensureDataPathExists()) {
+        userPrefStorePath += QDir::separator();
+        userPrefStorePath += QStringLiteral("permissions.json");
+        factory.set_user_prefs(base::MakeRefCounted<JsonPrefStore>(toFilePath(userPrefStorePath)));
+    } else {
+        factory.set_user_prefs(new InMemoryPrefStore);
+    }
+
+    // Register all preference types as keys prior to doing anything else
+    prefRegistry->RegisterDictionaryPref(GetPermissionString(toBlink(ProfileAdapter::GeolocationPermission)));
+    prefRegistry->RegisterDictionaryPref(GetPermissionString(toBlink(ProfileAdapter::AudioCapturePermission)));
+    prefRegistry->RegisterDictionaryPref(GetPermissionString(toBlink(ProfileAdapter::VideoCapturePermission)));
+    prefRegistry->RegisterDictionaryPref(GetPermissionString(toBlink(ProfileAdapter::ClipboardReadWrite)));
+    prefRegistry->RegisterDictionaryPref(GetPermissionString(toBlink(ProfileAdapter::NotificationPermission)));
+    prefRegistry->RegisterDictionaryPref(GetPermissionString(toBlink(ProfileAdapter::LocalFontsPermission)));
+    PrefProxyConfigTrackerImpl::RegisterPrefs(prefRegistry.get());
+
+    if (policy == ProfileAdapter::NoPersistentPermissions)
+        m_persistence = false;
+
+    {
+        base::ScopedAllowBlocking allowBlock;
+        m_prefService = factory.Create(prefRegistry);
+    }
 }
 
 PermissionManagerQt::~PermissionManagerQt()
 {
+    commit();
 }
 
 void PermissionManagerQt::permissionRequestReply(const QUrl &url, ProfileAdapter::PermissionType type, ProfileAdapter::PermissionState reply)
@@ -119,11 +188,10 @@ void PermissionManagerQt::permissionRequestReply(const QUrl &url, ProfileAdapter
     const QUrl origin = gorigin.is_empty() ? url : toQt(gorigin);
     if (origin.isEmpty())
         return;
-    QPair<QUrl, ProfileAdapter::PermissionType> key(origin, type);
     if (reply == ProfileAdapter::AskPermission)
-        m_permissions.remove(key);
+        ResetPermission(toBlink(type), gorigin, gorigin);
     else
-        m_permissions[key] = (reply == ProfileAdapter::AllowedPermission);
+        setPermission(toBlink(type), gorigin, reply == ProfileAdapter::AllowedPermission);
     blink::mojom::PermissionStatus status = toBlink(reply);
     if (reply != ProfileAdapter::AskPermission) {
         auto it = m_requests.begin();
@@ -150,21 +218,23 @@ void PermissionManagerQt::permissionRequestReply(const QUrl &url, ProfileAdapter
             std::vector<blink::mojom::PermissionStatus> result;
             result.reserve(it->types.size());
             for (blink::PermissionType permission : it->types) {
-                const ProfileAdapter::PermissionType permissionType = toQt(permission);
-                if (permissionType == ProfileAdapter::UnsupportedPermission) {
+                if (toQt(permission) == ProfileAdapter::UnsupportedPermission) {
                     result.push_back(blink::mojom::PermissionStatus::DENIED);
                     continue;
                 }
 
-                QPair<QUrl, ProfileAdapter::PermissionType> key(origin, permissionType);
-                if (!m_permissions.contains(key)) {
-                    answerable = false;
-                    break;
+                blink::mojom::PermissionStatus permissionStatus = GetPermissionStatus(permission, gorigin, GURL());
+                if (permissionStatus == toBlink(reply)) {
+                    if (permissionStatus == blink::mojom::PermissionStatus::ASK) {
+                        answerable = false;
+                        break;
+                    }
+
+                    result.push_back(permissionStatus);
+                } else {
+                    // Reached when the PersistentPermissionsPolicy is set to NoPersistentPermissions
+                    result.push_back(toBlink(reply));
                 }
-                if (m_permissions[key])
-                    result.push_back(blink::mojom::PermissionStatus::GRANTED);
-                else
-                    result.push_back(blink::mojom::PermissionStatus::DENIED);
             }
             if (answerable) {
                 std::move(it->callback).Run(result);
@@ -178,8 +248,14 @@ void PermissionManagerQt::permissionRequestReply(const QUrl &url, ProfileAdapter
 
 bool PermissionManagerQt::checkPermission(const QUrl &origin, ProfileAdapter::PermissionType type)
 {
-    QPair<QUrl, ProfileAdapter::PermissionType> key(origin, type);
-    return m_permissions.contains(key) && m_permissions[key];
+    return GetPermissionStatus(toBlink(type), toGurl(origin), GURL()) == blink::mojom::PermissionStatus::GRANTED;
+}
+
+void PermissionManagerQt::commit()
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // Make sure modified permissions are written to disk
+    m_prefService->CommitPendingWrite();
 }
 
 void PermissionManagerQt::RequestPermissions(content::RenderFrameHost *frameHost,
@@ -205,13 +281,22 @@ void PermissionManagerQt::RequestPermissions(content::RenderFrameHost *frameHost
             continue;
         }
 
-        auto status = getStatusFromSettings(permission, contentsDelegate->webEngineSettings());
-        if (status == blink::mojom::PermissionStatus::ASK) {
-            answerable = false;
-            break;
-        } else
-            result.push_back(status);
+        blink::mojom::PermissionStatus permissionStatus = getStatusFromSettings(permission, contentsDelegate->webEngineSettings());
+        if (permissionStatus == blink::mojom::PermissionStatus::ASK) {
+            permissionStatus = GetPermissionStatus(permission, requestDescription.requesting_origin, GURL());
+            if (m_persistence && permissionStatus != blink::mojom::PermissionStatus::ASK) {
+                // Automatically grant/deny without prompt if already asked once
+                result.push_back(permissionStatus);
+            } else {
+                answerable = false;
+                break;
+            }
+        } else {
+            // Reached when clipboard settings have been set
+            result.push_back(permissionStatus);
+        }
     }
+
     if (answerable) {
         std::move(callback).Run(result);
         return;
@@ -231,7 +316,6 @@ void PermissionManagerQt::RequestPermissionsFromCurrentDocument(content::RenderF
                                                                 const content::PermissionRequestDescription &requestDescription,
                                                                 base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus>&)> callback)
 {
-
     RequestPermissions(frameHost, requestDescription, std::move(callback));
 }
 
@@ -244,10 +328,26 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatus(
     if (permissionType == ProfileAdapter::UnsupportedPermission)
         return blink::mojom::PermissionStatus::DENIED;
 
-    QPair<QUrl, ProfileAdapter::PermissionType> key(toQt(requesting_origin), permissionType);
-    if (!m_permissions.contains(key))
+    permission = toBlink(toQt(permission)); // Filter out merged/unsupported permissions (e.g. clipboard)
+    auto *pref = m_prefService->FindPreference(GetPermissionString(permission));
+    if (!pref)
+        return blink::mojom::PermissionStatus::ASK; // Permission type not in database
+
+    const auto *permissions = pref->GetValue()->GetIfDict();
+    Q_ASSERT(permissions);
+
+    auto requestedPermission = permissions->FindBool(requesting_origin.DeprecatedGetOriginAsURL().spec());
+    if (!requestedPermission)
+        return blink::mojom::PermissionStatus::ASK; // Origin is not in the current permission type's database
+
+    // Workaround: local fonts are entirely managed by Chromium, which only calls RequestPermission() _after_
+    // it's checked whether the permission has been granted. By always returning ASK, we force the request to
+    // come through every time.
+    if (permission == blink::PermissionType::LOCAL_FONTS
+        && m_profileAdapter->persistentPermissionsPolicy() == ProfileAdapter::NoPersistentPermissions)
         return blink::mojom::PermissionStatus::ASK;
-    if (m_permissions[key])
+
+    if (requestedPermission.value())
         return blink::mojom::PermissionStatus::GRANTED;
     return blink::mojom::PermissionStatus::DENIED;
 }
@@ -309,8 +409,8 @@ void PermissionManagerQt::ResetPermission(
     if (permissionType == ProfileAdapter::UnsupportedPermission)
         return;
 
-    QPair<QUrl, ProfileAdapter::PermissionType> key(toQt(requesting_origin), permissionType);
-    m_permissions.remove(key);
+    ScopedDictPrefUpdate updater(m_prefService.get(), GetPermissionString(permission));
+    updater.Get().Remove(requesting_origin.spec());
 }
 
 content::PermissionControllerDelegate::SubscriptionId PermissionManagerQt::SubscribePermissionStatusChange(
@@ -330,6 +430,22 @@ void PermissionManagerQt::UnsubscribePermissionStatusChange(content::PermissionC
 {
     if (!m_subscribers.erase(subscription_id))
         LOG(WARNING) << "PermissionManagerQt::UnsubscribePermissionStatusChange called on unknown subscription id" << subscription_id;
+}
+
+void PermissionManagerQt::setPermission(
+    blink::PermissionType permission,
+    const GURL& requesting_origin,
+    bool granted)
+{
+    const ProfileAdapter::PermissionType permissionType = toQt(permission);
+    if (permissionType == ProfileAdapter::UnsupportedPermission)
+        return;
+
+    if (!m_prefService->FindPreference(GetPermissionString(permission)))
+        return;
+
+    ScopedDictPrefUpdate updater(m_prefService.get(), GetPermissionString(permission));
+    updater.Get().Set(requesting_origin.spec(), granted);
 }
 
 } // namespace QtWebEngineCore

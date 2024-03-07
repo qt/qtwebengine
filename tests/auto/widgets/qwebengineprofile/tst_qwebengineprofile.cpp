@@ -56,6 +56,8 @@ private Q_SLOTS:
     void changePersistentCookiesPolicy();
     void initiator();
     void badDeleteOrder();
+    void permissionPersistence_data();
+    void permissionPersistence();
     void qtbug_71895(); // this should be the last test
 };
 
@@ -1013,6 +1015,82 @@ void tst_QWebEngineProfile::badDeleteOrder()
 
     delete profile;
     delete view;
+}
+
+void tst_QWebEngineProfile::permissionPersistence_data()
+{
+    QTest::addColumn<QWebEngineProfile::PersistentPermissionsPolicy>("policy");
+    QTest::addColumn<bool>("granted");
+
+    QTest::newRow("noPersistenceNotificationsNoGrant")      << QWebEngineProfile::NoPersistentPermissions       << false;
+    QTest::newRow("noPersistenceNotificationsGrant")        << QWebEngineProfile::NoPersistentPermissions       << true;
+    QTest::newRow("memoryPersistenceNotificationsNoGrant")  << QWebEngineProfile::PersistentPermissionsInMemory << false;
+    QTest::newRow("diskPersistenceNotificationsGrant")      << QWebEngineProfile::PersistentPermissionsOnDisk   << true;
+}
+
+void tst_QWebEngineProfile::permissionPersistence()
+{
+    QFETCH(QWebEngineProfile::PersistentPermissionsPolicy, policy);
+    QFETCH(bool, granted);
+
+    TestServer server;
+    QVERIFY(server.start());
+
+    std::unique_ptr<QWebEngineProfile> profile(new QWebEngineProfile("tst_persistence"));
+    profile->setPersistentPermissionsPolicy(policy);
+
+    std::unique_ptr<QWebEnginePage> page(new QWebEnginePage(profile.get()));
+    std::unique_ptr<QSignalSpy> loadSpy(new QSignalSpy(page.get(), &QWebEnginePage::loadFinished));
+    QDir storageDir = QDir(profile->persistentStoragePath());
+
+    // Delete permissions file if it somehow survived on disk
+    storageDir.remove("permissions.json");
+
+    page->load(server.url("/hedgehog.html"));
+    QTRY_COMPARE(loadSpy->size(), 1);
+
+    QVariant variant = granted ? "granted" : "denied";
+    QVariant defaultVariant = "default";
+    page->setFeaturePermission(server.url("/hedgehog.html"), QWebEnginePage::Notifications,
+        granted ? QWebEnginePage::PermissionGrantedByUser : QWebEnginePage::PermissionDeniedByUser);
+    QCOMPARE(evaluateJavaScriptSync(page.get(), "Notification.permission"), variant);
+
+    page.reset();
+    profile.reset();
+    loadSpy.reset();
+
+    bool expectSame = false;
+    if (policy == QWebEngineProfile::PersistentPermissionsOnDisk) {
+        expectSame = true;
+
+        // File is written asynchronously, wait for it to be created
+        QTRY_COMPARE(storageDir.exists("permissions.json"), true);
+    }
+
+    profile.reset(new QWebEngineProfile("tst_persistence"));
+    profile->setPersistentPermissionsPolicy(policy);
+
+    page.reset(new QWebEnginePage(profile.get()));
+    loadSpy.reset(new QSignalSpy(page.get(), &QWebEnginePage::loadFinished));
+    page->load(server.url("/hedgehog.html"));
+    QTRY_COMPARE(loadSpy->size(), 1);
+    QTRY_COMPARE(evaluateJavaScriptSync(page.get(), "Notification.permission"),
+        expectSame ? variant : defaultVariant);
+
+    page->setFeaturePermission(server.url("/hedgehog.html"), QWebEnginePage::Notifications, QWebEnginePage::PermissionUnknown);
+    QCOMPARE(evaluateJavaScriptSync(page.get(), "Notification.permission"), defaultVariant);
+
+    page.reset();
+    profile.reset();
+    loadSpy.reset();
+
+    if (policy == QWebEngineProfile::PersistentPermissionsOnDisk) {
+        // Wait for file to be written to before deleting
+        QTest::qWait(1000);
+        storageDir.remove("permissions.json");
+    }
+
+    QVERIFY(server.stop());
 }
 
 void tst_QWebEngineProfile::qtbug_71895()

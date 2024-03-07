@@ -13,6 +13,8 @@ TestWebEngineView {
     property bool deniedGeolocation: false
     property bool geoPermissionRequested: false
 
+    profile.persistentPermissionsPolicy: WebEngineProfile.NoPersistentPermissions
+
     SignalSpy {
         id: featurePermissionSpy
         target: webEngineView
