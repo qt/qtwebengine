@@ -570,8 +570,8 @@ private:
     QScopedPointer<QQuickWebEngineViewPrivate> d_ptr;
 
     friend class QQuickContextMenuBuilder;
-    friend class FaviconImageResponse;
-    friend class FaviconImageResponseRunnable;
+    friend class FaviconProviderHelper;
+    friend class FaviconImageRequester;
 #if QT_CONFIG(accessibility)
     friend class QQuickWebEngineViewAccessible;
 #endif // QT_CONFIG(accessibility)
