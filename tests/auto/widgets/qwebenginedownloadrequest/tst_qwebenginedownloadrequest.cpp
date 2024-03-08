@@ -44,10 +44,12 @@ private Q_SLOTS:
     void downloadPage_data();
     void downloadPage();
     void downloadViaSetUrl();
-    void downloadFileNot1();
-    void downloadFileNot2();
+    void downloadAnswerLater_data();
+    void downloadAnswerLater();
+    void downloadFileCancel();
     void downloadDeleted();
     void downloadDeletedByProfile();
+    void downloadRequestedWithoutHandler();
     void downloadUniqueFilename_data();
     void downloadUniqueFilename();
     void downloadUniqueFilenameWithTimestamp();
@@ -681,6 +683,7 @@ void tst_QWebEngineDownloadRequest::downloadViaSetUrl()
     QList<QUrl> downloadUrls;
     ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *item) {
         downloadUrls.append(item->url());
+        item->cancel();
     });
 
     // Set up the test scenario by trying to load some unrelated HTML.
@@ -710,29 +713,88 @@ void tst_QWebEngineDownloadRequest::downloadViaSetUrl()
     }
 }
 
-void tst_QWebEngineDownloadRequest::downloadFileNot1()
+void tst_QWebEngineDownloadRequest::downloadRequestedWithoutHandler()
 {
-    // Trigger file download via download() but don't accept().
-
     ScopedConnection sc1 = connect(m_server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
-        rr->sendResponse(404);
+        rr->setResponseHeader(QByteArrayLiteral("content-type"), QByteArrayLiteral("text/html"));
+        rr->setResponseBody(QByteArrayLiteral("<html><body>Hello</body></html>"));
+        rr->sendResponse();
     });
 
-    QPointer<QWebEngineDownloadRequest> downloadItem;
+    QTemporaryDir tmpDir;
+    QVERIFY(tmpDir.isValid());
+    QString downloadPath = tmpDir.filePath("test.html");
+
+    QWebEngineProfile profile;
+    QWebEnginePage page(&profile);
+
+    // Load some HTML
+    QSignalSpy loadSpy(&page, &QWebEnginePage::loadFinished);
+    page.load(m_server->url());
+    QTRY_COMPARE(loadSpy.size(), 1);
+    QCOMPARE(loadSpy.takeFirst().value(0).toBool(), true);
+
+    // Save and verify
+    page.save(downloadPath, QWebEngineDownloadRequest::SingleHtmlSaveFormat);
+    QFile file(downloadPath);
+    QTRY_VERIFY(file.exists());
+}
+
+void tst_QWebEngineDownloadRequest::downloadAnswerLater_data()
+{
+    QTest::addColumn<bool>("answer");
+    QTest::addColumn<bool>("accept");
+
+    QTest::newRow("accept") << true << true;
+    QTest::newRow("cancel") << true << false;
+    QTest::newRow("ignore") << false << true;
+}
+
+void tst_QWebEngineDownloadRequest::downloadAnswerLater()
+{
+    QFETCH(bool, answer);
+    QFETCH(bool, accept);
+
+    ScopedConnection sc1 = connect(m_server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
+        rr->setResponseHeader(QByteArrayLiteral("content-disposition"), QByteArrayLiteral("attachment"));
+        rr->setResponseBody(QByteArrayLiteral("a"));
+        rr->sendResponse();
+    });
+
+    QTemporaryDir tmpDir;
+    QVERIFY(tmpDir.isValid());
+    m_profile->setDownloadPath(tmpDir.path());
+
+    QPointer<QWebEngineDownloadRequest> downloadRequest;
     int downloadCount = 0;
-    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *item) {
-        QVERIFY(item);
-        QCOMPARE(item->state(), QWebEngineDownloadRequest::DownloadRequested);
-        downloadItem = item;
+    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *request) {
+        QVERIFY(request);
+        QCOMPARE(request->state(), QWebEngineDownloadRequest::DownloadRequested);
+        downloadRequest = request;
         downloadCount++;
     });
 
     m_page->download(m_server->url(QByteArrayLiteral("/file")));
     QTRY_COMPARE(downloadCount, 1);
-    QVERIFY(!downloadItem);
+    QVERIFY(downloadRequest);
+
+    if (answer) {
+        if (accept) {
+            downloadRequest->accept();
+            QCOMPARE(downloadRequest->state(), QWebEngineDownloadRequest::DownloadInProgress);
+            QTRY_COMPARE(m_finishedDownloads.size(), 1);
+            QCOMPARE(downloadRequest->state(), QWebEngineDownloadRequest::DownloadCompleted);
+        } else {
+            downloadRequest->cancel();
+            QCOMPARE(downloadRequest->state(), QWebEngineDownloadRequest::DownloadCancelled);
+        }
+    }
+
+    QVERIFY(downloadRequest);
+    delete downloadRequest;
 }
 
-void tst_QWebEngineDownloadRequest::downloadFileNot2()
+void tst_QWebEngineDownloadRequest::downloadFileCancel()
 {
     // Trigger file download via download() but call cancel() instead of accept().
 
@@ -1270,6 +1332,7 @@ void tst_QWebEngineDownloadRequest::downloadDataUrls()
         QCOMPARE(item->state(), QWebEngineDownloadRequest::DownloadRequested);
         QCOMPARE(item->downloadFileName(), expectedFileName);
         downloadRequestCount++;
+        item->cancel();
     });
 
     QSignalSpy loadSpy(m_page, &QWebEnginePage::loadFinished);

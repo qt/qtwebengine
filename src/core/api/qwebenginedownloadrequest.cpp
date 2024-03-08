@@ -9,6 +9,7 @@
 #include "profile_adapter.h"
 #include "web_contents_adapter_client.h"
 
+#include <QDir>
 #include <QFileInfo>
 
 QT_BEGIN_NAMESPACE
@@ -81,11 +82,9 @@ static inline QWebEngineDownloadRequest::DownloadInterruptReason toDownloadInter
     requests, which it does by emitting the
     \l{QWebEngineProfile::downloadRequested}{downloadRequested} signal together
     with a newly created QWebEngineDownloadRequest. The application can then
-    examine this item and decide whether to accept it or not. A signal handler
-    must explicitly call accept() on the item for \QWE to actually start
-    downloading and writing data to disk. If no signal handler calls accept(),
-    then the download request will be automatically rejected and nothing will be
-    written to disk.
+    examine this item and decide whether to accept it or not. When a decision is
+    made, the application must explicitly call accept() or cancel() on the item
+    for \QWE to actually start downloading or rejecting the request.
 
     \note Some properties, such as setting the path and file name where the file
     will be saved (see \l downloadDirectory() and \l downloadFileName()), can
@@ -93,18 +92,10 @@ static inline QWebEngineDownloadRequest::DownloadInterruptReason toDownloadInter
 
     \section2 Object Life Cycle
 
-    All items are guaranteed to be valid during the emission of the
-    \l{QWebEngineProfile::downloadRequested}{downloadRequested} signal. If
-    accept() is \e not called by any signal handler, then the item will be
-    deleted \e immediately after signal emission. This means that the
-    application \b{must not} keep references to rejected download items. It also
-    means the application should not use a queued connection to this signal.
-
-    If accept() \e is called by a signal handler, then the QWebEngineProfile
-    will take ownership of the item. However, it is safe for the application to
-    delete the item at any time, except during the handling of the
-    \l{QWebEngineProfile::downloadRequested}{downloadRequested} signal. The
-    QWebEngineProfile being a long-lived object, it is in fact recommended that
+    In each and every case, the QWebEngineProfile takes the ownership of the item.
+    However, it is safe for the application to delete the item at any time, except
+    during the handling of the \l{QWebEngineProfile::downloadRequested}{downloadRequested}
+    signal. The QWebEngineProfile being a long-lived object, it is in fact recommended that
     the application delete any items it is no longer interested in.
 
     \note Deleting an item will also automatically cancel a download since 5.12.2,
@@ -118,6 +109,12 @@ static inline QWebEngineDownloadRequest::DownloadInterruptReason toDownloadInter
     downloading any dependent resources, and potentially packaging everything
     into a special file format (\l savePageFormat). To check if a download is
     for a file or a web page, use \l isSavePageDownload.
+
+    Web page save requests are accepted automatically and started from
+    \l DownloadInProgress state by convenience reasons. The first directly connected
+    \l{QWebEngineProfile::downloadRequested}{downloadRequested} signal handler
+    can prevent this by calling cancel(), otherwise the save operation will start
+    writing data to the disk.
 
     \sa QWebEngineProfile, QWebEngineProfile::downloadRequested,
     QWebEnginePage::download, QWebEnginePage::save
@@ -137,7 +134,9 @@ void QWebEngineDownloadRequestPrivate::update(const ProfileAdapterClient::Downlo
 {
     Q_Q(QWebEngineDownloadRequest);
 
-    Q_ASSERT(downloadState != QWebEngineDownloadRequest::DownloadRequested);
+    // Don't change download state until users accept/cancel the request
+    if (!answered && downloadState == QWebEngineDownloadRequest::DownloadRequested)
+        return;
 
     if (toDownloadInterruptReason(info.downloadInterruptReason) != interruptReason) {
         interruptReason = toDownloadInterruptReason(info.downloadInterruptReason);
@@ -178,6 +177,20 @@ void QWebEngineDownloadRequestPrivate::setFinished()
     Q_EMIT q_ptr->isFinishedChanged();
 }
 
+void QWebEngineDownloadRequestPrivate::answer()
+{
+    if (answered)
+        return;
+
+    if (profileAdapter) {
+        QString path = QDir(downloadDirectory).filePath(downloadFileName);
+        bool accepted = downloadState != QWebEngineDownloadRequest::DownloadCancelled
+                && downloadState != QWebEngineDownloadRequest::DownloadRequested;
+        profileAdapter->acceptDownload(downloadId, accepted, useDownloadTargetCallback, path, savePageFormat);
+        answered = true;
+    }
+}
+
 /*!
     Accepts the current download request, which will start the download.
 
@@ -197,6 +210,7 @@ void QWebEngineDownloadRequest::accept()
 
     d->downloadState = QWebEngineDownloadRequest::DownloadInProgress;
     Q_EMIT stateChanged(d->downloadState);
+    d->answer();
 }
 
 /*!
@@ -239,6 +253,7 @@ void QWebEngineDownloadRequest::cancel()
         Q_EMIT stateChanged(d->downloadState);
         d->setFinished();
     }
+    d->answer();
 }
 
 /*!

@@ -221,6 +221,15 @@ void ProfileAdapter::removeDownload(quint32 downloadId)
     downloadManagerDelegate()->removeDownload(downloadId);
 }
 
+void ProfileAdapter::acceptDownload(quint32 downloadId, bool accepted, bool useDownloadTargetCallback,
+                                    const QString &path, int savePageFormat)
+{
+    if (useDownloadTargetCallback)
+        downloadManagerDelegate()->downloadTargetDetermined(downloadId, accepted, path);
+    else
+        downloadManagerDelegate()->savePathDetermined(downloadId, accepted, path, savePageFormat);
+}
+
 ProfileAdapter *ProfileAdapter::createDefaultProfileAdapter()
 {
     return WebEngineContext::current()->createDefaultProfileAdapter();
