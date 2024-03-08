@@ -112,13 +112,7 @@ Dialog {
                     enabled: true
                     focus: true
                     color: "white"
-                    layer.sourceRect: {
-                        Rectangle: {
-                            width: 20
-                            height: 20
-                            color: "#00B000"
-                        }
-                    }
+                    layer.sourceRect: Qt.rect(0, 0, 20, 20)
                 }
             }
 
