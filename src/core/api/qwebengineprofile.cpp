@@ -17,7 +17,7 @@
 #include "visited_links_manager_qt.h"
 #include "web_engine_settings.h"
 
-#include <QDir>
+#include <QFileInfo>
 #include <QtWebEngineCore/qwebengineurlscheme.h>
 
 QT_BEGIN_NAMESPACE
@@ -220,6 +220,12 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
 {
     Q_Q(QWebEngineProfile);
 
+    if (!q->receivers(SIGNAL(downloadRequested(QWebEngineDownloadRequest *)))) {
+        m_profileAdapter->acceptDownload(info.id, info.accepted, info.useDownloadTargetCallback, info.path,
+                                         info.savePageFormat);
+        return;
+    }
+
     Q_ASSERT(!m_ongoingDownloads.contains(info.id));
     QWebEngineDownloadRequestPrivate *itemPrivate =
             new QWebEngineDownloadRequestPrivate(m_profileAdapter);
@@ -235,6 +241,7 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     itemPrivate->mimeType = info.mimeType;
     itemPrivate->savePageFormat = static_cast<QWebEngineDownloadRequest::SavePageFormat>(info.savePageFormat);
     itemPrivate->isSavePageDownload = info.isSavePageDownload;
+    itemPrivate->useDownloadTargetCallback = info.useDownloadTargetCallback;
     if (info.page && info.page->clientType() == QtWebEngineCore::WebContentsAdapterClient::WidgetsClient)
         itemPrivate->adapterClient = info.page;
     else
@@ -247,18 +254,9 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
 
     Q_EMIT q->downloadRequested(download);
 
-    QWebEngineDownloadRequest::DownloadState state = download->state();
-
-    info.path = QDir(download->downloadDirectory()).filePath(download->downloadFileName());
-    info.savePageFormat = static_cast<QtWebEngineCore::ProfileAdapterClient::SavePageFormat>(
-                download->savePageFormat());
-    info.accepted = state != QWebEngineDownloadRequest::DownloadCancelled;
-
-    if (state == QWebEngineDownloadRequest::DownloadRequested) {
-        // Delete unaccepted downloads.
-        info.accepted = false;
-        delete download;
-    }
+    // Callbacks of automatically accepted save operations have to be called here
+    if (info.isSavePageDownload && info.accepted)
+        itemPrivate->answer();
 }
 
 void QWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)

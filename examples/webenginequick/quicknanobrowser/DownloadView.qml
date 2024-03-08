@@ -9,6 +9,7 @@ import QtQuick.Layouts
 Rectangle {
     id: downloadView
     color: "lightgray"
+    property var pendingDownloadRequest: null
 
     ListModel {
         id: downloadModel

@@ -5,6 +5,7 @@ import QtCore
 import QtQml
 import QtQuick
 import QtQuick.Controls.Fusion
+import QtQuick.Dialogs
 import QtQuick.Layouts
 import QtQuick.Window
 import QtWebEngine
@@ -824,10 +825,29 @@ ApplicationWindow {
         visible: false
     }
 
+    MessageDialog {
+        id: downloadAcceptDialog
+        property var downloadRequest: downloadView.pendingDownloadRequest
+        title: "Download requested"
+        text: downloadRequest ? downloadRequest.suggestedFileName : ""
+        buttons: Dialog.No | Dialog.Yes
+        onAccepted: {
+            downloadView.visible = true;
+            downloadView.append(downloadRequest);
+            downloadRequest.accept();
+        }
+        onRejected: {
+            downloadRequest.cancel();
+        }
+        onButtonClicked: {
+            visible = false;
+        }
+        visible: false
+    }
+
     function onDownloadRequested(download) {
-        downloadView.visible = true;
-        downloadView.append(download);
-        download.accept();
+        downloadView.pendingDownloadRequest = download;
+        downloadAcceptDialog.visible = true;
     }
 
     FindBar {

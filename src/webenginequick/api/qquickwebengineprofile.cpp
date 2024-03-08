@@ -246,6 +246,12 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
 {
     Q_Q(QQuickWebEngineProfile);
 
+    if (!q->receivers(SIGNAL(downloadRequested(QQuickWebEngineDownloadRequest *)))) {
+        m_profileAdapter->acceptDownload(info.id, info.accepted, info.useDownloadTargetCallback, info.path,
+                                         info.savePageFormat);
+        return;
+    }
+
     Q_ASSERT(!m_ongoingDownloads.contains(info.id));
     QWebEngineDownloadRequestPrivate *itemPrivate =
             new QWebEngineDownloadRequestPrivate(m_profileAdapter);
@@ -262,6 +268,7 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     itemPrivate->savePageFormat = static_cast<QWebEngineDownloadRequest::SavePageFormat>(
                 info.savePageFormat);
     itemPrivate->isSavePageDownload = info.isSavePageDownload;
+    itemPrivate->useDownloadTargetCallback = info.useDownloadTargetCallback;
     if (info.page && info.page->clientType() == QtWebEngineCore::WebContentsAdapterClient::QmlClient)
         itemPrivate->adapterClient = info.page;
     else
@@ -275,17 +282,9 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     QQmlEngine::setObjectOwnership(download, QQmlEngine::JavaScriptOwnership);
     Q_EMIT q->downloadRequested(download);
 
-    QWebEngineDownloadRequest::DownloadState state = download->state();
-    info.path = QDir(download->downloadDirectory()).filePath(download->downloadFileName());
-    info.savePageFormat = itemPrivate->savePageFormat;
-    info.accepted = state != QWebEngineDownloadRequest::DownloadCancelled
-                      && state != QWebEngineDownloadRequest::DownloadRequested;
-
-    if (state == QWebEngineDownloadRequest::DownloadRequested) {
-        // Delete unaccepted downloads.
-        info.accepted = false;
-        delete download;
-    }
+    // Callbacks of automatically accepted save operations have to be called here
+    if (info.isSavePageDownload && info.accepted)
+        itemPrivate->answer();
 }
 
 void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
