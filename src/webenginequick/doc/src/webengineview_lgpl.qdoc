@@ -1602,5 +1602,14 @@
     \sa QWebEngineWebAuthUxRequest
 */
 
+/*!
+    \qmlsignal WebEngineView::zoomFactorChanged(qreal factor);
+    \since QtWebEngine 6.8
+
+    This signal is emitted whenever the zoom \a factor for the page changes.
+
+    \sa zoomFactor
+*/
+
     \sa {WebEngine Qt Quick Custom Touch Handle Example}
 */

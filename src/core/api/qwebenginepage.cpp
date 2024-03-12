@@ -199,6 +199,12 @@ void QWebEnginePagePrivate::iconChanged(const QUrl &url)
     Q_EMIT q->iconChanged(iconUrl.isEmpty() ? QIcon() : adapter->icon());
 }
 
+void QWebEnginePagePrivate::zoomFactorChanged(qreal factor)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->zoomFactorChanged(factor);
+}
+
 void QWebEnginePagePrivate::loadProgressChanged(int progress)
 {
     Q_Q(QWebEnginePage);
@@ -2024,7 +2030,7 @@ void QWebEnginePage::setZoomFactor(qreal factor)
     Q_D(QWebEnginePage);
     d->defaultZoomFactor = factor;
 
-    if (d->adapter->isInitialized()) {
+    if (d->adapter->isInitialized() && !qFuzzyCompare(factor, zoomFactor())) {
         d->adapter->setZoomFactor(factor);
         // MEMO: should reset if factor was not applied due to being invalid
         d->defaultZoomFactor = zoomFactor();

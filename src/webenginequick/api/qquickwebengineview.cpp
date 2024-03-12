@@ -572,6 +572,12 @@ void QQuickWebEngineViewPrivate::iconChanged(const QUrl &url)
     QTimer::singleShot(0, q, &QQuickWebEngineView::iconChanged);
 }
 
+void QQuickWebEngineViewPrivate::zoomFactorChanged(qreal factor)
+{
+    Q_Q(QQuickWebEngineView);
+    Q_EMIT q->zoomFactorChanged(factor);
+}
+
 void QQuickWebEngineViewPrivate::loadProgressChanged(int progress)
 {
     Q_Q(QQuickWebEngineView);
@@ -1225,7 +1231,6 @@ void QQuickWebEngineView::setZoomFactor(qreal arg)
         d->adapter->setZoomFactor(arg);
         // MEMO: should reset if factor was not applied due to being invalid
         d->m_zoomFactor = zoomFactor();
-        emit zoomFactorChanged(d->m_zoomFactor);
     } else {
         d->m_zoomFactor = arg;
     }

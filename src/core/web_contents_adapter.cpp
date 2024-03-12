@@ -992,6 +992,9 @@ void WebContentsAdapter::setZoomFactor(qreal factor)
         const content::GlobalRenderFrameHostId global_id = m_webContents->GetPrimaryMainFrame()->GetGlobalId();
         zoomMap->SetTemporaryZoomLevel(global_id, zoomLevel);
     }
+
+    if (m_adapterClient)
+        m_adapterClient->zoomFactorChanged(currentZoomFactor());
 }
 
 qreal WebContentsAdapter::currentZoomFactor() const

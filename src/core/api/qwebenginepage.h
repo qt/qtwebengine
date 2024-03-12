@@ -51,7 +51,7 @@ class Q_WEBENGINECORE_EXPORT QWebEnginePage : public QObject
     Q_PROPERTY(QString selectedText READ selectedText)
     Q_PROPERTY(bool hasSelection READ hasSelection)
     Q_PROPERTY(QUrl requestedUrl READ requestedUrl)
-    Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor)
+    Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged)
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(QUrl iconUrl READ iconUrl NOTIFY iconUrlChanged)
@@ -344,6 +344,7 @@ Q_SIGNALS:
     void iconUrlChanged(const QUrl &url);
     void iconChanged(const QIcon &icon);
 
+    void zoomFactorChanged(qreal factor);
     void scrollPositionChanged(const QPointF &position);
     void contentsSizeChanged(const QSizeF &size);
     void audioMutedChanged(bool muted);

@@ -735,6 +735,8 @@
     \brief The zoom factor for the page content.
 
     Valid values are within the range from \c{0.25} to \c{5.0}. The default factor is \c{1.0}.
+
+    \sa zoomFactorChanged()
 */
 
 /*!
@@ -835,4 +837,13 @@
     The \a request contains the information and API required to complete the WebAuth UX request.
 
     \sa QWebEngineWebAuthUxRequest
+*/
+
+/*!
+    \fn void QWebEnginePage::zoomFactorChanged(qreal factor)
+    \since 6.8
+
+    This signal is emitted whenever the zoom \a factor for the page changes.
+
+    \sa zoomFactor(), setZoomFactor()
 */

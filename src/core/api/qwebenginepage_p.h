@@ -102,6 +102,7 @@ public:
     void titleChanged(const QString &) override;
     void urlChanged() override;
     void iconChanged(const QUrl &) override;
+    void zoomFactorChanged(qreal factor) override;
     void loadProgressChanged(int progress) override;
     void didUpdateTargetURL(const QUrl &) override;
     void selectionChanged() override;

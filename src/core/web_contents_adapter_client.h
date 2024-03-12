@@ -147,6 +147,7 @@ public:
     virtual void titleChanged(const QString&) = 0;
     virtual void urlChanged() = 0;
     virtual void iconChanged(const QUrl&) = 0;
+    virtual void zoomFactorChanged(qreal factor) = 0;
     virtual void loadProgressChanged(int progress) = 0;
     virtual void didUpdateTargetURL(const QUrl&) = 0;
     virtual void selectionChanged() = 0;
