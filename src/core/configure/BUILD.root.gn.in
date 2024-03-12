@@ -373,13 +373,10 @@ source_set("qtwebengine_sources") {
   ]
   if (use_ozone) {
     deps += [
-      "//build/config/linux/libdrm",
       "//ui/gfx/linux:drm",
     ]
 
     sources += [
-      "//ui/ozone/platform/wayland/gpu/drm_render_node_handle.cc",
-      "//ui/ozone/platform/wayland/gpu/drm_render_node_handle.h",
       "//ui/ozone/platform/wayland/gpu/wayland_gl_egl_utility.cc",
       "//ui/ozone/platform/wayland/gpu/wayland_gl_egl_utility.h",
     ]

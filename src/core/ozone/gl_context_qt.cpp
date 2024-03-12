@@ -10,12 +10,15 @@
 #include <qpa/qplatformnativeinterface.h>
 
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface.h"
 
 #if defined(USE_OZONE)
-#include "ui/gfx/linux/drm_util_linux.h"
-#include "ui/gfx/linux/gbm_device.h"
-#include "ui/gfx/linux/gbm_wrapper.h"
-#include "ui/ozone/platform/wayland/gpu/drm_render_node_handle.h"
+#include "ui/gl/egl_util.h"
+
+#include <QOpenGLFunctions>
+#include <QOffscreenSurface>
+
+#include <vector>
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -173,15 +176,90 @@ bool GLContextHelper::isCreateContextRobustnessSupported()
 }
 
 #if defined(USE_OZONE)
+class ScopedGLContext
+{
+public:
+    ScopedGLContext()
+        : m_context(new QOpenGLContext())
+        , m_previousContext(gl::GLContext::GetCurrent())
+        , m_previousSurface(gl::GLSurface::GetCurrent())
+    {
+        if (!m_context->create()) {
+            qWarning("Failed to create OpenGL context.");
+            return;
+        }
+
+        QOffscreenSurface *surface = new QOffscreenSurface(m_context->screen(), m_context.get());
+        surface->create();
+        Q_ASSERT(surface->isValid());
+
+        if (!m_context->makeCurrent(surface)) {
+            qWarning("Failed to make OpenGL context current.");
+            return;
+        }
+    }
+
+    ~ScopedGLContext()
+    {
+        if (!m_textures.empty()) {
+            auto glFun = m_context->functions();
+            glFun->glDeleteTextures(m_textures.size(), m_textures.data());
+        }
+
+        if (m_previousContext)
+            m_previousContext->MakeCurrent(m_previousSurface);
+    }
+
+    bool isValid() const { return m_context->isValid() && (m_context->surface() != nullptr); }
+
+    EGLDisplay eglDisplay() const
+    {
+        QNativeInterface::QEGLContext *nativeInterface =
+                m_context->nativeInterface<QNativeInterface::QEGLContext>();
+        return nativeInterface->display();
+    }
+
+    EGLContext eglContext() const
+    {
+        QNativeInterface::QEGLContext *nativeInterface =
+                m_context->nativeInterface<QNativeInterface::QEGLContext>();
+        return nativeInterface->nativeContext();
+    }
+
+    uint createTexture(int width, int height)
+    {
+        auto glFun = m_context->functions();
+
+        uint glTexture;
+        glFun->glGenTextures(1, &glTexture);
+        glFun->glBindTexture(GL_TEXTURE_2D, glTexture);
+        glFun->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                            NULL);
+        glFun->glBindTexture(GL_TEXTURE_2D, 0);
+
+        m_textures.push_back(glTexture);
+        return glTexture;
+    }
+
+private:
+    QScopedPointer<QOpenGLContext> m_context;
+    gl::GLContext *m_previousContext;
+    gl::GLSurface *m_previousSurface;
+    std::vector<uint> m_textures;
+};
+
 EGLHelper::EGLFunctions::EGLFunctions()
 {
     const static auto getProcAddress =
             reinterpret_cast<gl::GLGetProcAddressProc>(GLContextHelper::getEglGetProcAddress());
 
-    eglQueryDevices =
-            reinterpret_cast<PFNEGLQUERYDEVICESEXTPROC>(getProcAddress("eglQueryDevicesEXT"));
-    eglQueryDeviceString = reinterpret_cast<PFNEGLQUERYDEVICESTRINGEXTPROC>(
-            getProcAddress("eglQueryDeviceStringEXT"));
+    eglCreateImage = reinterpret_cast<PFNEGLCREATEIMAGEPROC>(getProcAddress("eglCreateImage"));
+    eglDestroyImage = reinterpret_cast<PFNEGLDESTROYIMAGEPROC>(getProcAddress("eglDestroyImage"));
+    eglGetError = reinterpret_cast<PFNEGLGETERRORPROC>(getProcAddress("eglGetError"));
+    eglExportDMABUFImageMESA = reinterpret_cast<PFNEGLEXPORTDMABUFIMAGEMESAPROC>(
+            getProcAddress("eglExportDMABUFImageMESA"));
+    eglExportDMABUFImageQueryMESA = reinterpret_cast<PFNEGLEXPORTDMABUFIMAGEQUERYMESAPROC>(
+            getProcAddress("eglExportDMABUFImageQueryMESA"));
     eglQueryString = reinterpret_cast<PFNEGLQUERYSTRINGPROC>(getProcAddress("eglQueryString"));
 }
 
@@ -199,6 +277,11 @@ EGLHelper::EGLHelper() : m_functions(new EGLHelper::EGLFunctions())
         return;
     }
 
+    if (strstr(extensions, "EGL_KHR_base_image")) {
+        qWarning("EGL: EGL_KHR_base_image extension is not supported.");
+        return;
+    }
+
     auto eglDisplay = GLContextHelper::getEGLDisplay();
     if (!eglDisplay) {
         qWarning("EGL: No EGL display.");
@@ -206,22 +289,9 @@ EGLHelper::EGLHelper() : m_functions(new EGLHelper::EGLFunctions())
     }
 
     const char *displayExtensions = m_functions->eglQueryString(eglDisplay, EGL_EXTENSIONS);
-    bool hasImageDmaBufImportExtension = strstr(displayExtensions, "EGL_EXT_image_dma_buf_import");
-
-    if (strstr(extensions, "EGL_EXT_device_base")) {
-        EGLint numDevices;
-        m_functions->eglQueryDevices(1, &m_eglDevice, &numDevices);
-    }
-
-    bool hasDeviceDrmRenderNodeExtensions = false;
-    if (m_eglDevice != EGL_NO_DEVICE_EXT) {
-        const char *deviceExtensions =
-                m_functions->eglQueryDeviceString(m_eglDevice, EGL_EXTENSIONS);
-        hasDeviceDrmRenderNodeExtensions =
-                strstr(deviceExtensions, "EGL_EXT_device_drm_render_node");
-    }
-
-    m_isDmaBufSupported = hasImageDmaBufImportExtension && hasDeviceDrmRenderNodeExtensions;
+    m_isDmaBufSupported = strstr(displayExtensions, "EGL_EXT_image_dma_buf_import")
+            && strstr(displayExtensions, "EGL_EXT_image_dma_buf_import_modifiers")
+            && strstr(displayExtensions, "EGL_MESA_image_dma_buf_export");
 
     if (m_isDmaBufSupported) {
         // FIXME: This disables GBM for nvidia. Remove this when nvidia fixes its GBM support.
@@ -238,39 +308,60 @@ EGLHelper::EGLHelper() : m_functions(new EGLHelper::EGLFunctions())
     }
 }
 
-ui::GbmDevice *EGLHelper::getGbmDevice()
+void EGLHelper::queryDmaBuf(const int width, const int height, int *fd, int *stride, int *offset,
+                            uint64_t *modifiers)
 {
     if (!m_isDmaBufSupported)
-        return nullptr;
+        return;
 
-    if (m_gbmDevice)
-        return m_gbmDevice.get();
+    ScopedGLContext context;
+    if (!context.isValid())
+        return;
 
-    Q_ASSERT(m_eglDevice != EGL_NO_DEVICE_EXT);
-    const char *drmRenderNodeFilePath =
-            m_functions->eglQueryDeviceString(m_eglDevice, EGL_DRM_RENDER_NODE_FILE_EXT);
-    if (!drmRenderNodeFilePath) {
-        qWarning("EGL: Failed to query DRM render node file path.");
-        m_isDmaBufSupported = false;
-        return nullptr;
+    EGLDisplay eglDisplay = context.eglDisplay();
+    EGLContext eglContext = context.eglContext();
+    if (!eglContext) {
+        qWarning("EGL: No EGLContext.");
+        return;
     }
 
-    ui::DrmRenderNodeHandle handle;
-    if (!handle.Initialize(base::FilePath(drmRenderNodeFilePath))) {
-        qWarning("EGL: Failed to initialize DRM render node handle.");
-        m_isDmaBufSupported = false;
-        return nullptr;
+    uint64_t textureId = context.createTexture(width, height);
+    EGLImage eglImage = m_functions->eglCreateImage(eglDisplay, eglContext, EGL_GL_TEXTURE_2D,
+                                                    (EGLClientBuffer)textureId, NULL);
+    if (eglImage == EGL_NO_IMAGE) {
+        qWarning() << "EGL: Failed to create EGLImage:"
+                   << ui::GetEGLErrorString(m_functions->eglGetError());
+        return;
     }
 
-    m_drmRenderNodeFd = handle.PassFD();
-    m_gbmDevice = ui::CreateGbmDevice(m_drmRenderNodeFd.get());
-    if (!m_gbmDevice) {
-        qWarning("EGL: Failed to initialize GBM device.");
+    int numPlanes = 0;
+    if (!m_functions->eglExportDMABUFImageQueryMESA(eglDisplay, eglImage, nullptr, &numPlanes,
+                                                    modifiers))
+        qWarning() << "EGL: Failed to retrieve the pixel format of the buffer:"
+                   << ui::GetEGLErrorString(m_functions->eglGetError());
+    Q_ASSERT(numPlanes == 1);
+
+    if (!m_functions->eglExportDMABUFImageMESA(eglDisplay, eglImage, fd, stride, offset))
+        qWarning() << "EGL: Failed to retrieve the dma_buf file descriptor:"
+                   << ui::GetEGLErrorString(m_functions->eglGetError());
+
+    m_functions->eglDestroyImage(eglDisplay, eglImage);
+}
+
+bool EGLHelper::isDmaBufSupported()
+{
+    if (!m_isDmaBufSupported)
+        return false;
+
+    int fd = -1;
+    queryDmaBuf(2, 2, &fd, nullptr, nullptr, nullptr);
+    if (fd == -1) {
         m_isDmaBufSupported = false;
-        return nullptr;
+        return false;
     }
 
-    return m_gbmDevice.get();
+    close(fd);
+    return true;
 }
 #endif // defined(USE_OZONE)
 
