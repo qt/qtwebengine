@@ -12,16 +12,10 @@
 #if defined(USE_OZONE)
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
-
-#include "base/files/scoped_file.h"
 #endif
 
 namespace gl {
 class GLSurface;
-}
-
-namespace ui {
-class GbmDevice;
 }
 
 QT_BEGIN_NAMESPACE
@@ -52,8 +46,11 @@ private:
 };
 
 #if defined(USE_OZONE)
-#undef eglQueryDevices
-#undef eglQueryDeviceString
+#undef eglCreateImage
+#undef eglDestroyImage
+#undef eglExportDMABUFImageMESA
+#undef eglExportDMABUFImageQueryMESA
+#undef eglGetError
 #undef eglQueryString
 
 class EGLHelper
@@ -63,24 +60,25 @@ public:
     {
         EGLFunctions();
 
-        PFNEGLQUERYDEVICESEXTPROC eglQueryDevices;
-        PFNEGLQUERYDEVICESTRINGEXTPROC eglQueryDeviceString;
+        PFNEGLCREATEIMAGEPROC eglCreateImage;
+        PFNEGLDESTROYIMAGEPROC eglDestroyImage;
+        PFNEGLEXPORTDMABUFIMAGEMESAPROC eglExportDMABUFImageMESA;
+        PFNEGLEXPORTDMABUFIMAGEQUERYMESAPROC eglExportDMABUFImageQueryMESA;
+        PFNEGLGETERRORPROC eglGetError;
         PFNEGLQUERYSTRINGPROC eglQueryString;
     };
 
     static EGLHelper *instance();
 
     EGLFunctions *functions() const { return m_functions.get(); }
-    EGLDeviceEXT getEGLDevice() const { return m_eglDevice; }
-    ui::GbmDevice *getGbmDevice();
+    void queryDmaBuf(const int width, const int height, int *fd, int *stride, int *offset,
+                     uint64_t *modifiers);
+    bool isDmaBufSupported();
 
 private:
     EGLHelper();
 
     QScopedPointer<EGLFunctions> m_functions;
-    EGLDeviceEXT m_eglDevice = EGL_NO_DEVICE_EXT;
-    base::ScopedFD m_drmRenderNodeFd;
-    std::unique_ptr<ui::GbmDevice> m_gbmDevice;
     bool m_isDmaBufSupported = false;
 };
 #endif // defined(USE_OZONE)

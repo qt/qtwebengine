@@ -1,27 +1,27 @@
-// Copyright (C) 2017 The Qt Company Ltd.
+// Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #if defined(USE_OZONE)
 #include "surface_factory_qt.h"
 
+#include "qtwebenginecoreglobal_p.h"
 #include "ozone/gl_context_qt.h"
 #include "ozone/gl_ozone_egl_qt.h"
 
 #include "media/gpu/buildflags.h"
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/gfx/linux/gbm_buffer.h"
-#include "ui/gfx/linux/gbm_device.h"
-#include "ui/gfx/linux/gbm_util.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
+#include "ui/gl/egl_util.h"
 #include "ui/ozone/buildflags.h"
+
+#include <QDebug>
 
 #if BUILDFLAG(OZONE_PLATFORM_X11)
 #include "ozone/gl_ozone_glx_qt.h"
 
 #include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
 #endif
-
-#include "qtwebenginecoreglobal_p.h"
 
 #if QT_CONFIG(webengine_vulkan)
 #include "compositor/vulkan_implementation_qt.h"
@@ -95,29 +95,35 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
     if (framebuffer_size && !gfx::Rect(size).Contains(gfx::Rect(*framebuffer_size)))
         return nullptr;
 
-    std::unique_ptr<ui::GbmBuffer> gbmBuffer;
+    gfx::NativePixmapHandle handle;
 
 #if BUILDFLAG(OZONE_PLATFORM_X11)
     if (GLContextHelper::getGlxPlatformInterface()) {
-        gbmBuffer = ui::GpuMemoryBufferSupportX11::GetInstance()->CreateBuffer(format, size, usage);
+        auto gbmBuffer =
+                ui::GpuMemoryBufferSupportX11::GetInstance()->CreateBuffer(format, size, usage);
         if (!gbmBuffer)
             qFatal("Failed to create GBM buffer for GLX.");
+        handle = gbmBuffer->ExportHandle();
     }
 #endif
 
     if (GLContextHelper::getEglPlatformInterface()) {
-        const uint32_t fourccFormat = ui::GetFourCCFormatFromBufferFormat(format);
-        const uint32_t gbmFlags = ui::BufferUsageToGbmFlags(usage);
+        int fd = -1;
+        int stride;
+        int offset;
+        uint64_t modifiers;
+        EGLHelper::instance()->queryDmaBuf(size.width(), size.height(), &fd, &stride, &offset,
+                                           &modifiers);
+        if (fd == -1)
+            qFatal("Failed to query DRM FD for EGL.");
 
-        ui::GbmDevice *gbmDevice = EGLHelper::instance()->getGbmDevice();
-        // FIXME: CreateBufferWithModifiers for wayland?
-        gbmBuffer = gbmDevice->CreateBuffer(fourccFormat, size, gbmFlags);
-        if (!gbmBuffer)
-            qFatal("Failed to create GBM buffer for EGL.");
+        const uint64_t planeSize = uint64_t(size.width()) * size.height() * 4;
+        gfx::NativePixmapPlane plane(stride, offset, planeSize, base::ScopedFD(::dup(fd)));
+
+        handle.planes.push_back(std::move(plane));
+        handle.modifier = modifiers;
     }
 
-    Q_ASSERT(gbmBuffer);
-    gfx::NativePixmapHandle handle = gbmBuffer->ExportHandle();
     return base::MakeRefCounted<gfx::NativePixmapDmaBuf>(size, format, std::move(handle));
 }
 
@@ -143,28 +149,84 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
         gfx::NativePixmapHandle handle)
 {
     Q_ASSERT(SupportsNativePixmaps());
-    std::unique_ptr<ui::GbmBuffer> gbmBuffer;
+    gfx::NativePixmapHandle bufferHandle;
 
 #if BUILDFLAG(OZONE_PLATFORM_X11)
     if (GLContextHelper::getGlxPlatformInterface()) {
-        gbmBuffer = ui::GpuMemoryBufferSupportX11::GetInstance()->CreateBufferFromHandle(
+        auto gbmBuffer = ui::GpuMemoryBufferSupportX11::GetInstance()->CreateBufferFromHandle(
                 size, format, std::move(handle));
         if (!gbmBuffer)
             qFatal("Failed to create GBM buffer for GLX.");
+        bufferHandle = gbmBuffer->ExportHandle();
     }
 #endif
 
     if (GLContextHelper::getEglPlatformInterface()) {
+        const size_t numPlanes = handle.planes.size();
         const uint32_t fourccFormat = ui::GetFourCCFormatFromBufferFormat(format);
-        ui::GbmDevice *gbmDevice = EGLHelper::instance()->getGbmDevice();
-        gbmBuffer = gbmDevice->CreateBufferFromHandle(fourccFormat, size, std::move(handle));
 
-        if (!gbmBuffer)
-            qFatal("Failed to create GBM buffer for EGL.");
+        std::vector<EGLAttrib> attrs;
+        attrs.push_back(EGL_WIDTH);
+        attrs.push_back(size.width());
+        attrs.push_back(EGL_HEIGHT);
+        attrs.push_back(size.height());
+        attrs.push_back(EGL_LINUX_DRM_FOURCC_EXT);
+        attrs.push_back(fourccFormat);
+        for (size_t planeIndex = 0; planeIndex < numPlanes; ++planeIndex) {
+            attrs.push_back(EGL_DMA_BUF_PLANE0_FD_EXT + planeIndex * 3);
+            attrs.push_back(handle.planes[planeIndex].fd.get());
+            attrs.push_back(EGL_DMA_BUF_PLANE0_OFFSET_EXT + planeIndex * 3);
+            attrs.push_back(handle.planes[planeIndex].offset);
+            attrs.push_back(EGL_DMA_BUF_PLANE0_PITCH_EXT + planeIndex * 3);
+            attrs.push_back(handle.planes[planeIndex].stride);
+            attrs.push_back(EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT + planeIndex * 2);
+            attrs.push_back(handle.modifier & 0xffffffff);
+            attrs.push_back(EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT + planeIndex * 2);
+            attrs.push_back(handle.modifier >> 32);
+        }
+        attrs.push_back(EGL_NONE);
+
+        EGLDisplay eglDisplay = GLContextHelper::getEGLDisplay();
+        EGLHelper *eglHelper = EGLHelper::instance();
+        auto *eglFun = eglHelper->functions();
+
+        EGLImage eglImage =
+                eglFun->eglCreateImage(eglDisplay, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT,
+                                       (EGLClientBuffer)NULL, attrs.data());
+        if (eglImage == EGL_NO_IMAGE_KHR) {
+            qFatal() << "Failed to import EGLImage:"
+                     << ui::GetEGLErrorString(eglFun->eglGetError());
+        }
+
+        Q_ASSERT(numPlanes <= 3);
+        int fds[3];
+        int strides[3];
+        int offsets[3];
+        if (!eglFun->eglExportDMABUFImageMESA(eglDisplay, eglImage, fds, strides, offsets)) {
+            qFatal() << "Failed to export EGLImage:"
+                     << ui::GetEGLErrorString(eglFun->eglGetError());
+        }
+
+        bufferHandle.modifier = handle.modifier;
+        for (size_t i = 0; i < numPlanes; ++i) {
+            int fd = fds[i];
+            int stride = strides[i];
+            int offset = offsets[i];
+            int size = handle.planes[i].size;
+
+            if (fd == -1) {
+                fd = fds[0];
+                stride = handle.planes[i].stride;
+                offset = handle.planes[i].offset;
+            }
+
+            gfx::NativePixmapPlane plane(stride, offset, size, base::ScopedFD(::dup(fd)));
+            bufferHandle.planes.push_back(std::move(plane));
+        }
+
+        eglFun->eglDestroyImage(eglDisplay, eglImage);
     }
 
-    Q_ASSERT(gbmBuffer);
-    gfx::NativePixmapHandle bufferHandle = gbmBuffer->ExportHandle();
     return base::MakeRefCounted<gfx::NativePixmapDmaBuf>(size, format, std::move(bufferHandle));
 }
 
@@ -176,7 +238,7 @@ bool SurfaceFactoryQt::SupportsNativePixmaps() const
 #endif
 
     if (GLContextHelper::getEglPlatformInterface())
-        return (EGLHelper::instance()->getGbmDevice() != nullptr);
+        return EGLHelper::instance()->isDmaBufSupported();
 
     return false;
 }
