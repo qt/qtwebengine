@@ -15,7 +15,7 @@
 #ifndef RENDER_VIEW_CONTEXT_MENU_QT_H
 #define RENDER_VIEW_CONTEXT_MENU_QT_H
 
-#include "web_contents_adapter_client.h"
+#include "qtwebenginecoreglobal.h"
 
 QT_FORWARD_DECLARE_CLASS(QWebEngineContextMenuRequest)
 
