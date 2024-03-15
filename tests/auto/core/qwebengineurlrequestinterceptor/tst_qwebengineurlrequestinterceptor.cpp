@@ -1055,7 +1055,7 @@ void tst_QWebEngineUrlRequestInterceptor::postWithBody()
     QWebEnginePage page(&profile);
     bool ok = false;
 
-    page.runJavaScript(script, [&ok](const QVariant result) { ok = true; });
+    page.runJavaScript(script, [&ok](const QVariant) { ok = true; });
 
     QTRY_VERIFY(ok);
     QVERIFY(interceptor.isCalled);
