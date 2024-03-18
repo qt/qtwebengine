@@ -367,6 +367,8 @@
 
 /*!
     \qmlmethod void WebEngineView::runJavaScript(string script, variant callback)
+    \qmlmethod void WebEngineView::runJavaScript(string script, int worldId, variant callback)
+
     Runs the specified \a script in the content of the web view.
 
     The \a callback parameter is optional. If a callback function is provided,
@@ -381,8 +383,10 @@
     example, \c{Date} and \c{ArrayBuffer}. Unsupported data types include, for
     example, \c{Function} and \c{Promise}.
 
-    The script will run in the same \e world as other scripts that are
-    part of the loaded site.
+    To avoid conflicts with other scripts executed on the page, the world in
+    which the script is run can be specified by \a worldId. The world ID must be
+    between \c 0 and \c 256. If you leave out the \c world ID, the script is
+    run in the \c MainWorld.
 
     \warning Do not execute lengthy routines in the callback function, because it might block the
     rendering of the web content.
