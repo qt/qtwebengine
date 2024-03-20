@@ -76,8 +76,8 @@ public:
         , flags(flagsFromModifiers(modifiers))
         , index(index)
     {
-        // index is only valid for ACTION_DOWN and ACTION_UP and should correspond to the point causing it
-        // see blink_event_util.cc:ToWebTouchPointState for details
+        // index is only valid for POINTER_DOWN and POINTER_UP and should correspond to the point
+        // causing it see blink_event_util.cc:ToWebTouchPointState for details
         Q_ASSERT_X((action != Action::POINTER_DOWN && action != Action::POINTER_UP && index == -1)
                 || (action == Action::POINTER_DOWN && index >= 0 && touchPoint(index).state() == QEventPoint::Pressed)
                 || (action == Action::POINTER_UP && index >= 0 && touchPoint(index).state() == QEventPoint::Released),

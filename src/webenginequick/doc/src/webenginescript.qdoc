@@ -90,7 +90,7 @@
 */
 
 /*!
-    \qmlproperty int WebEngineScript::runOnSubframes
+    \qmlproperty bool WebEngineScript::runsOnSubFrames
 
     Set this property to \c true if the script is executed on every frame in the page, or \c false
     if it is only ran for the main frame.
