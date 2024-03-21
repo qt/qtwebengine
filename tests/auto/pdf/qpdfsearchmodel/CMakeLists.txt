@@ -9,5 +9,7 @@ qt_internal_add_test(tst_qpdfsearchmodel
         Qt::Network
         Qt::Pdf
     TESTDATA
+        rotated_text.pdf
+        tagged_mcr_multipage.pdf
         test.pdf
 )
