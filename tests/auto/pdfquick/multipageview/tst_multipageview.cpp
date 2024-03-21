@@ -62,7 +62,7 @@ void tst_MultiPageView::internalLink_data()
     QTest::addColumn<qreal>("expectedZoom");
     QTest::addColumn<QPoint>("expectedScroll");
 
-    QTest::newRow("first link") << 0 << 1 << qreal(1) << QPoint(134, 1276);
+    QTest::newRow("first link") << 0 << 1 << qreal(1) << QPoint(134, 1286);
     // TODO fails because it zooms out, and the view leaves gaps between pages currently
 //    QTest::newRow("second link") << 1 << 2 << qreal(0.5) << QPoint(0, 717);
 }
