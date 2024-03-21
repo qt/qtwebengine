@@ -3,12 +3,11 @@
 
 #include "qpdfdocument_p.h"
 #include "qpdflink.h"
-#include "qpdflink_p.h"
 #include "qpdfsearchmodel.h"
 #include "qpdfsearchmodel_p.h"
 
-#include "third_party/pdfium/public/fpdf_doc.h"
 #include "third_party/pdfium/public/fpdf_text.h"
+#include "third_party/pdfium/public/fpdfview.h"
 
 #include <QtCore/qelapsedtimer.h>
 #include <QtCore/qloggingcategory.h>
@@ -251,7 +250,6 @@ bool QPdfSearchModelPrivate::doSearch(int page)
         qWarning() << "failed to load page" << page;
         return false;
     }
-    double pageHeight = FPDF_GetPageHeight(pdfPage);
     FPDF_TEXTPAGE textPage = FPDFText_LoadPage(pdfPage);
     if (!textPage) {
         qWarning() << "failed to load text of page" << page;
@@ -269,9 +267,12 @@ bool QPdfSearchModelPrivate::doSearch(int page)
         int startIndex = -1;
         int endIndex = -1;
         for (int r = 0; r < rectCount; ++r) {
+            // get bounding box of search result in page coordinates
             double left, top, right, bottom;
             FPDFText_GetRect(textPage, r, &left, &top, &right, &bottom);
-            rects << QRectF(left, pageHeight - top, right - left, top - bottom);
+            // deal with any internal PDF transforms and
+            // convert to the 1x (pixels = points) 4th-quadrant coordinate system
+            rects << document->d->mapPageToView(pdfPage, left, top, right, bottom);
             if (r == 0) {
                 startIndex = FPDFText_GetCharIndexAtPos(textPage, left, top,
                         CharacterHitTolerance, CharacterHitTolerance);
@@ -280,7 +281,8 @@ bool QPdfSearchModelPrivate::doSearch(int page)
                 endIndex = FPDFText_GetCharIndexAtPos(textPage, right, top,
                         CharacterHitTolerance, CharacterHitTolerance);
             }
-            qCDebug(qLcS) << rects.last() << "char idx" << startIndex << "->" << endIndex;
+            qCDebug(qLcS) << rects.last() << "char idx" << startIndex << "->" << endIndex
+                          << "from page rect" << left << top << right << bottom;
         }
         QString contextBefore, contextAfter;
         if (startIndex >= 0 || endIndex >= 0) {
