@@ -179,7 +179,6 @@ void QPdfLinkModelPrivate::update()
         qCWarning(qLcLink) << "failed to load page" << page;
         return;
     }
-    double pageHeight = FPDF_GetPageHeight(pdfPage);
     q->beginResetModel();
     links.clear();
 
@@ -204,8 +203,7 @@ void QPdfLinkModelPrivate::update()
             std::swap(rect.bottom, rect.top);
 
         QPdfLink linkData;
-        linkData.d->rects << QRectF(rect.left, pageHeight - rect.top,
-                               rect.right - rect.left, rect.top - rect.bottom);
+        linkData.d->rects << document->d->mapPageToView(pdfPage, rect.left, rect.top, rect.right, rect.bottom);
         FPDF_DEST dest = FPDFLink_GetDest(doc, linkAnnot);
         FPDF_ACTION action = FPDFLink_GetAction(linkAnnot);
         switch (FPDFAction_GetType(action)) {
@@ -224,7 +222,7 @@ void QPdfLinkModelPrivate::update()
                 break; // at least we got a page number, so the link will jump there
             }
             if (hasX && hasY)
-                linkData.d->location = QPointF(x, pageHeight - y);
+                linkData.d->location = document->d->mapPageToView(pdfPage, x, y);
             if (hasZoom)
                 linkData.d->zoom = zoom;
             break;
@@ -287,7 +285,7 @@ void QPdfLinkModelPrivate::update()
                     double left, top, right, bottom;
                     bool success = FPDFLink_GetRect(webLinks, i, r, &left, &top, &right, &bottom);
                     if (success) {
-                        linkData.d->rects << QRectF(left, pageHeight - top, right - left, top - bottom);
+                        linkData.d->rects << document->d->mapPageToView(pdfPage, left, top, right, bottom);
                         links << linkData;
                     }
                 }
