@@ -81,6 +81,7 @@ public:
     QString getText(FPDF_TEXTPAGE textPage, int startIndex, int count);
     QPointF getCharPosition(FPDF_TEXTPAGE textPage, double pageHeight, int charIndex);
     QRectF getCharBox(FPDF_TEXTPAGE textPage, double pageHeight, int charIndex);
+    QRectF mapPageToView(FPDF_PAGE pdfPage, double left, double top, double right, double bottom);
 
     // FPDF takes the rotation parameter as an int.
     // This enum is mapping the int values defined in fpdfview.h:956.

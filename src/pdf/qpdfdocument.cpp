@@ -474,6 +474,24 @@ QRectF QPdfDocumentPrivate::getCharBox(FPDF_TEXTPAGE textPage, double pageHeight
     return QRectF(l, pageHeight - t, r - l, t - b);
 }
 
+/*! \internal
+    Convert the bounding box defined by \a left \a top \a right and \a bottom
+    to the usual 1x (pixels = points) 4th-quadrant "view" coordinate system
+    that we use for rendering things on top of the page image.
+    Some PDF files have internal transforms that make this coordinate
+    system different from "page coordinates", so we cannot just
+    subtract from page height to invert the y coordinates, in general.
+ */
+QRectF QPdfDocumentPrivate::mapPageToView(FPDF_PAGE pdfPage, double left, double top, double right, double bottom)
+{
+    const auto pageHeight = FPDF_GetPageHeight(pdfPage);
+    const auto pageWidth = FPDF_GetPageWidth(pdfPage);
+    int xfmLeft, xfmTop, xfmRight, xfmBottom;
+    FPDF_PageToDevice(pdfPage, 0, 0, qRound(pageWidth), qRound(pageHeight), 0, left, top, &xfmLeft, &xfmTop);
+    FPDF_PageToDevice(pdfPage, 0, 0, qRound(pageWidth), qRound(pageHeight), 0, right, bottom, &xfmRight, &xfmBottom);
+    return QRectF(xfmLeft, xfmTop, xfmRight - xfmLeft, xfmBottom - xfmTop);
+}
+
 QPdfDocumentPrivate::TextPosition QPdfDocumentPrivate::hitTest(int page, QPointF position)
 {
     const QPdfMutexLocker lock;
