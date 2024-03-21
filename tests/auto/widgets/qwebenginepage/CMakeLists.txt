@@ -24,6 +24,7 @@ set(tst_qwebenginepage_resource_files
     "resources/content.html"
     "resources/dynamicFrame.html"
     "resources/foo.txt"
+    "resources/fontaccess.html"
     "resources/frame_a.html"
     "resources/frame_c.html"
     "resources/framedindex.html"

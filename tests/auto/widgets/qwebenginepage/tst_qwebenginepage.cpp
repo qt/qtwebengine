@@ -4094,7 +4094,7 @@ void tst_QWebEnginePage::localFontAccessPermission() {
     });
 
     QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
-    page.setHtml(QString("<html><body>Test</body></html>"), QUrl("qrc://secure/origin"));
+    page.load(QUrl("qrc:///resources/fontaccess.html"));
     QTRY_COMPARE(spy.size(), 1);
 
     // Font access is only enabled for visible WebContents.
@@ -4105,11 +4105,8 @@ void tst_QWebEnginePage::localFontAccessPermission() {
         W_QSKIP("Local fonts access is not supported.", SkipSingle);
 
     // Access to the API requires recent user interaction
-    QTest::mouseMove(view.windowHandle(), QPoint(10, 10));
-    QTest::mouseClick(view.windowHandle(), Qt::LeftButton);
-
-    auto js = QStringLiteral("var done = false; var fonts; window.queryLocalFonts().then(f => { fonts = f; done = true; });");
-    evaluateJavaScriptSync(&page, js);
+    QTest::keyPress(view.focusProxy(), Qt::Key_Space);
+    QTRY_COMPARE(evaluateJavaScriptSync(&page, QStringLiteral("activated")).toBool(), true);
 
     if (ignore) {
         QTRY_COMPARE_NE_WITH_TIMEOUT(evaluateJavaScriptSync(&page, QStringLiteral("done")).toBool(), true, 1000);
@@ -4118,12 +4115,8 @@ void tst_QWebEnginePage::localFontAccessPermission() {
         QVERIFY((evaluateJavaScriptSync(&page, QStringLiteral("fonts.length")).toInt() == 0) == shouldBeEmpty);
     }
 
-    // Move mouse to make sure subsequent runs' transient activation will fire
-    QTest::mouseMove(view.windowHandle(), QPoint(1, 10));
-    QTest::mouseClick(view.windowHandle(), Qt::LeftButton);
-
     // Reset permission, since otherwise it will be stored between runs
-    page.setFeaturePermission(QUrl("qrc://secure/origin"), QWebEnginePage::LocalFontsAccess, QWebEnginePage::PermissionUnknown);
+    page.setFeaturePermission(QUrl("qrc:///resources/fontaccess.html"), QWebEnginePage::LocalFontsAccess, QWebEnginePage::PermissionUnknown);
 }
 
 void tst_QWebEnginePage::setLifecycleState()

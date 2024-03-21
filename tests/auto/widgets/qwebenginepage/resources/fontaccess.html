@@ -1,0 +1,14 @@
+<html>
+<body onkeypress='onKeyPress()'>
+<a>This is test content</a>
+<script>
+var done = false;
+var fonts;
+var activated = false;
+function onKeyPress() {
+    activated = true;
+    window.queryLocalFonts().then(f => { fonts = f; done = true; });
+}
+</script>
+</body>
+</html>
