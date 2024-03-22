@@ -1551,6 +1551,23 @@
 */
 
 /*!
+    \qmlproperty webEngineFrame WebEngineView::mainFrame
+    \since QtWebEngine 6.8
+
+    The main, top-level frame of the page. All other frames on this page are accessible
+    as children of the main frame.
+ */
+
+/*!
+    \qmlmethod webEngineFrame WebEngineView::findFrameByName(string name)
+    \since QtWebEngine 6.8
+
+    Returns the frame with the given \a name. If there are multiple frames with the same
+    name, which one is returned is arbitrary. If no frame was found, returns an
+    \l{webEngineFrame::isValid}{invalid} frame.
+*/
+
+/*!
     \qmlmethod void WebEngineView::save(const QString &filePath, QWebEngineDownloadRequest::SavePageFormat format)
     \since QtWebEngine 6.6
 

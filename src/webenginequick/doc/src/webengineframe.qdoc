@@ -1,0 +1,65 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \qmltype webEngineFrame
+    \instantiates QQuickWebEngineFrame
+    \brief webEngineFrame provides information about and control over a page frame.
+    \since 6.8
+    \ingroup qmlvaluetypes
+    \inqmlmodule QtWebEngine
+
+    A web engine frame represents a single frame within a web page, such as those created by
+    \c <frame> or \c <iframe> HTML elements.
+    An active \l WebEngineView has one or more frames arranged in a tree structure. The top-level
+    frame, the root of this tree, can be accessed through the view's \l {WebEngineView::mainFrame}
+    {mainFrame} property.
+
+    A frame's lifetime is, at most, as long as the \l WebEngineView object that produced it.
+    However, frames may be created and deleted spontaneously and dynamically, for example through
+    navigation and script execution.
+*/
+
+/*!
+    \qmlproperty bool webEngineFrame::isValid
+
+    Returns \c{true} if this object represents an existing frame; \c{false} otherwise.
+
+    Once a frame is invalid, it never becomes valid again.
+*/
+
+/*!
+    \qmlproperty string webEngineFrame::name
+
+    Returns the frame name; that is, what would be returned by \c window.name in JavaScript.
+
+    If the frame could not be found, returns an empty string.
+
+    \sa htmlName
+*/
+
+/*!
+    \qmlproperty string webEngineFrame::htmlName
+
+    Returns the value of the frame's \c name HTML attribute, or an empty string if it has none.
+
+    If the frame could not be found, returns an empty string.
+
+    \sa name
+*/
+
+/*!
+    \qmlproperty url webEngineFrame::url
+
+    Returns the URL of the content currently loaded in this frame.
+
+    If the frame could not be found, returns an empty URL.
+*/
+
+/*!
+    \qmlproperty size webEngineFrame::size
+
+    Returns the size of the frame within the viewport.
+
+    If the frame could not be found, returns a default size with dimensions (-1, -1).
+*/

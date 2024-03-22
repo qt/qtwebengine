@@ -2519,6 +2519,19 @@ QQmlComponent *QQuickWebEngineView::touchHandleDelegate() const
     return d_ptr->m_touchHandleDelegate;
 }
 
+QWebEngineFrame QQuickWebEngineView::mainFrame()
+{
+    Q_D(QQuickWebEngineView);
+    return QWebEngineFrame(d, d->adapter->mainFrameId());
+}
+
+QWebEngineFrame QQuickWebEngineView::findFrameByName(const QString &name)
+{
+    Q_D(QQuickWebEngineView);
+    auto maybeId = d->adapter->findFrameIdByName(name);
+    return QWebEngineFrame(d, maybeId.value_or(WebContentsAdapter::kInvalidFrameId));
+}
+
 void QQuickWebEngineView::save(const QString &filePath,
                                QWebEngineDownloadRequest::SavePageFormat format) const
 {

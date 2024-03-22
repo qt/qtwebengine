@@ -25,6 +25,7 @@
 #include <QtWebEngineCore/QWebEngineScript>
 #include <QtWebEngineCore/QWebEngineLoadingInfo>
 #include <QtWebEngineCore/QWebEngineWebAuthUxRequest>
+#include <QtWebEngineCore/QWebEngineFrame>
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebengineaction_p.h>
 #include <private/qquickwebengineclientcertificateselection_p.h>
@@ -76,6 +77,7 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QQuickWebEngineTouchSelectionMenuRequest::staticMetaObject
     << &QWebEngineWebAuthUxRequest::staticMetaObject
     << &QWebEngineWebAuthPinRequest::staticMetaObject
+    << &QWebEngineFrame::staticMetaObject
     ;
 
 static QList<QMetaEnum> knownEnumNames = QList<QMetaEnum>()
@@ -715,6 +717,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.featurePermissionRequested(QUrl,QQuickWebEngineView::Feature) --> void"
     << "QQuickWebEngineView.fileDialogRequested(QQuickWebEngineFileDialogRequest*) --> void"
     << "QQuickWebEngineView.fileSystemAccessRequested(QWebEngineFileSystemAccessRequest) --> void"
+    << "QQuickWebEngineView.findFrameByName(QString) --> QWebEngineFrame"
     << "QQuickWebEngineView.findText(QString) --> void"
     << "QQuickWebEngineView.findText(QString,FindFlags) --> void"
     << "QQuickWebEngineView.findText(QString,FindFlags,QJSValue) --> void"
@@ -744,6 +747,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.loadProgressChanged() --> void"
     << "QQuickWebEngineView.loading --> bool"
     << "QQuickWebEngineView.loadingChanged(QWebEngineLoadingInfo) --> void"
+    << "QQuickWebEngineView.mainFrame --> QWebEngineFrame"
     << "QQuickWebEngineView.navigationRequested(QWebEngineNavigationRequest*) --> void"
     << "QQuickWebEngineView.newWindowRequested(QQuickWebEngineNewWindowRequest*) --> void"
     << "QQuickWebEngineView.AcceptRequest --> NavigationRequestAction"
@@ -880,6 +884,11 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.DisallowImageAnimation --> ImageAnimationPolicy"
     << "QQuickWebEngineSettings.imageAnimationPolicy --> QQuickWebEngineSettings::ImageAnimationPolicy"
     << "QQuickWebEngineSettings.imageAnimationPolicyChanged() --> void"
+    << "QWebEngineFrame.htmlName --> QString"
+    << "QWebEngineFrame.isValid --> bool"
+    << "QWebEngineFrame.name --> QString"
+    << "QWebEngineFrame.size --> QSizeF"
+    << "QWebEngineFrame.url --> QUrl"
     ;
 
 static bool isCheckedEnum(QMetaType t)

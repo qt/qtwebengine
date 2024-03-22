@@ -5,6 +5,7 @@
 #define QWEBENGINEFRAME_H
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
+#include <QtQml/qqmlregistration.h>
 #include <QtCore/qcompare.h>
 #include <QtCore/QList>
 #include <QtCore/QSizeF>
@@ -19,7 +20,18 @@ QT_BEGIN_NAMESPACE
 
 class Q_WEBENGINECORE_EXPORT QWebEngineFrame
 {
+    Q_GADGET
+
+    Q_PROPERTY(bool isValid READ isValid FINAL)
+    Q_PROPERTY(QString name READ name FINAL)
+    Q_PROPERTY(QString htmlName READ htmlName FINAL)
+    Q_PROPERTY(QUrl url READ url FINAL)
+    Q_PROPERTY(QSizeF size READ size FINAL)
+
 public:
+    QML_VALUE_TYPE(webEngineFrame)
+    QML_ADDED_IN_VERSION(6, 8)
+
     bool isValid() const;
     QString name() const;
     QString htmlName() const;
@@ -37,6 +49,7 @@ public:
 
 private:
     friend class QWebEnginePage;
+    friend class QQuickWebEngineView;
 
     QWebEngineFrame(QtWebEngineCore::WebContentsAdapterClient *page, quint64 id);
 
