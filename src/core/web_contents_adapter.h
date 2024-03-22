@@ -23,10 +23,12 @@
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 #include <QtWebEngineCore/qwebenginecontextmenurequest.h>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
+#include <QtWebEngineCore/qwebengineframe.h>
 
 #include "web_contents_adapter_client.h"
 
 #include <memory>
+#include <optional>
 
 namespace blink {
 namespace web_pref {
@@ -62,6 +64,9 @@ class WebChannelIPCTransportHost;
 
 class Q_WEBENGINECORE_EXPORT WebContentsAdapter : public QEnableSharedFromThis<WebContentsAdapter> {
 public:
+    // Sentinel to indicate a frame doesn't exist, for example with `findFrameByName`
+    static constexpr quint64 kInvalidFrameId = -3;
+
     static QSharedPointer<WebContentsAdapter> createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient);
     WebContentsAdapter();
     WebContentsAdapter(std::unique_ptr<content::WebContents> webContents);
@@ -203,6 +208,15 @@ public:
     void resetSelection();
     void resetTouchSelectionController();
     void changeTextDirection(bool leftToRight);
+
+    quint64 mainFrameId() const;
+    QString frameName(quint64 id) const;
+    QString frameHtmlName(quint64 id) const;
+    QList<quint64> frameChildren(quint64 id) const;
+    QUrl frameUrl(quint64 id) const;
+    QSizeF frameSize(quint64 id) const;
+    std::optional<quint64> findFrameIdByName(const QString &name) const;
+    bool hasFrame(quint64 id) const;
 
     // meant to be used within WebEngineCore only
     void initialize(content::SiteInstance *site);

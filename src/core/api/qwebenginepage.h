@@ -8,6 +8,7 @@
 #include <QtWebEngineCore/qwebengineclientcertificateselection.h>
 #include <QtWebEngineCore/qwebenginedownloadrequest.h>
 #include <QtWebEngineCore/qwebenginequotarequest.h>
+#include <QtWebEngineCore/qwebengineframe.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
@@ -16,6 +17,7 @@
 #include <QtGui/qtgui-config.h>
 
 #include <functional>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -300,6 +302,9 @@ public:
 
     bool isVisible() const;
     void setVisible(bool visible);
+
+    QWebEngineFrame mainFrame();
+    std::optional<QWebEngineFrame> findFrameByName(const QString &name);
 
     void acceptAsNewWindow(QWebEngineNewWindowRequest &request);
 

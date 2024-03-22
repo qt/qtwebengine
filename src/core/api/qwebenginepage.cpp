@@ -2501,6 +2501,33 @@ void QWebEnginePage::setVisible(bool visible)
     d->adapter->setVisible(visible);
 }
 
+/*!
+    \since 6.8
+
+    The main, top-level frame of the page. All other frames on this page are accessible
+    as children of the main frame.
+*/
+QWebEngineFrame QWebEnginePage::mainFrame()
+{
+    Q_D(QWebEnginePage);
+    return QWebEngineFrame(d, d->adapter->mainFrameId());
+}
+
+/*!
+    \since 6.8
+
+    Returns the frame with the given \a name. If there are multiple frames with the same
+    name, which one is returned is arbitrary. If no frame was found, returns \c std::nullopt.
+*/
+std::optional<QWebEngineFrame> QWebEnginePage::findFrameByName(const QString &name)
+{
+    Q_D(QWebEnginePage);
+    if (auto maybeId = d->adapter->findFrameIdByName(name)) {
+        return QWebEngineFrame(d, *maybeId);
+    }
+    return {};
+}
+
 QDataStream &operator<<(QDataStream &stream, const QWebEngineHistory &history)
 {
     auto adapter = history.d_func()->adapter();

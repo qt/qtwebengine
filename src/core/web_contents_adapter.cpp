@@ -1812,6 +1812,80 @@ void WebContentsAdapter::changeTextDirection(bool leftToRight)
     }
 }
 
+quint64 WebContentsAdapter::mainFrameId() const
+{
+    CHECK_INITIALIZED(content::RenderFrameHost::kNoFrameTreeNodeId);
+    return static_cast<quint64>(m_webContents->GetPrimaryMainFrame()->GetFrameTreeNodeId());
+}
+
+#define CHECK_INITIALIZED_AND_VALID_FRAME(webengine_frame_id_variable, frame_tree_node_variable,   \
+                                          return_value)                                            \
+    CHECK_INITIALIZED(return_value);                                                               \
+    if (webengine_frame_id_variable == kInvalidFrameId)                                            \
+        return return_value;                                                                       \
+    auto *frame_tree_node_variable = content::FrameTreeNode::GloballyFindByID(                     \
+            static_cast<int>(webengine_frame_id_variable));                                        \
+    if (!frame_tree_node_variable)                                                                 \
+    return return_value
+
+QString WebContentsAdapter::frameName(quint64 id) const
+{
+    CHECK_INITIALIZED_AND_VALID_FRAME(id, ftn, QString());
+    return QString::fromStdString(ftn->frame_name());
+}
+
+QString WebContentsAdapter::frameHtmlName(quint64 id) const
+{
+    CHECK_INITIALIZED_AND_VALID_FRAME(id, ftn, QString());
+    auto &maybeName = ftn->html_name();
+    return maybeName ? QString::fromStdString(*maybeName) : QString("");
+}
+
+QList<quint64> WebContentsAdapter::frameChildren(quint64 id) const
+{
+    CHECK_INITIALIZED_AND_VALID_FRAME(id, ftn, {});
+    QList<quint64> result;
+    size_t numChildren = ftn->child_count();
+    result.reserve(numChildren);
+    for (size_t i = 0; i < numChildren; ++i) {
+        result.push_back(ftn->child_at(i)->frame_tree_node_id());
+    }
+    return result;
+}
+
+QUrl WebContentsAdapter::frameUrl(quint64 id) const
+{
+    CHECK_INITIALIZED_AND_VALID_FRAME(id, ftn, QUrl());
+    return toQt(ftn->current_url());
+}
+
+QSizeF WebContentsAdapter::frameSize(quint64 id) const
+{
+    CHECK_INITIALIZED_AND_VALID_FRAME(id, ftn, QSizeF());
+    auto *rfh = ftn->current_frame_host();
+    Q_ASSERT(rfh);
+    auto maybeSize = rfh->GetFrameSize();
+    return maybeSize ? toQt(*maybeSize) : QSizeF();
+}
+
+std::optional<quint64> WebContentsAdapter::findFrameIdByName(const QString &name) const
+{
+    CHECK_INITIALIZED({});
+    auto *ftn = content::FrameTreeNode::From(m_webContents->GetPrimaryMainFrame());
+    Q_ASSERT(ftn);
+    if (auto *foundFtn = ftn->frame_tree().FindByName(name.toStdString()))
+        return foundFtn->frame_tree_node_id();
+    return {};
+}
+
+bool WebContentsAdapter::hasFrame(quint64 id) const
+{
+    CHECK_INITIALIZED_AND_VALID_FRAME(id, ftn, false);
+    auto *rfh = ftn->current_frame_host();
+    Q_ASSERT(rfh);
+    return content::WebContents::FromRenderFrameHost(rfh) == m_webContents.get();
+}
+
 WebContentsAdapterClient::RenderProcessTerminationStatus
 WebContentsAdapterClient::renderProcessExitStatus(int terminationStatus) {
     auto status = WebContentsAdapterClient::RenderProcessTerminationStatus(-1);

@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+    <head><title>Test-title</title></head>
+    <script>
+        window.name = 'test-main-frame'
+        onload = (e) => {
+            const frames = window.frames;
+            for (let i = 0; i < frames.length; i++) {
+                frames[i].name = 'test-subframe' + i;
+            }
+        };
+    </script>
+    <frameset cols="50%, 50%">
+        <frameset cols="50%, 50%">
+            <frame style="border: red dashed 1em;"/>
+            <frame style="border: green dashed 1em;"/>
+        </frameset>
+        <frame style="border: blue solid 1em;"/>
+    </frameset>
+</html>

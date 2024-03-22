@@ -19,6 +19,7 @@ qt_internal_add_module(WebEngineCore
         qwebenginedownloadrequest.cpp qwebenginedownloadrequest.h qwebenginedownloadrequest_p.h
         qwebenginefilesystemaccessrequest.cpp qwebenginefilesystemaccessrequest.h
         qwebenginefindtextresult.cpp qwebenginefindtextresult.h
+        qwebengineframe.cpp qwebengineframe.h
         qwebenginefullscreenrequest.cpp qwebenginefullscreenrequest.h
         qwebenginehistory.cpp qwebenginehistory.h qwebenginehistory_p.h
         qwebenginehttprequest.cpp qwebenginehttprequest.h
