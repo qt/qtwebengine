@@ -92,7 +92,8 @@ public:
     void runFileChooser(QSharedPointer<QtWebEngineCore::FilePickerController>) override;
     void desktopMediaRequested(QtWebEngineCore::DesktopMediaController *) override;
     void showColorDialog(QSharedPointer<QtWebEngineCore::ColorChooserController>) override;
-    void didRunJavaScript(quint64, const QVariant&) override;
+    void runJavaScript(const QString &script, quint32 worldId,
+                       const std::function<void(const QVariant &)> &callback) override;
     void didFetchDocumentMarkup(quint64, const QString&) override { }
     void didFetchDocumentInnerText(quint64, const QString&) override { }
     void didPrintPage(quint64 requestId, QSharedPointer<QByteArray>) override;
@@ -157,7 +158,7 @@ public:
     bool m_fullscreenMode;
     bool isLoading;
     bool m_activeFocusOnPress;
-    QMap<quint64, QJSValue> m_callbacks;
+    QMap<quint64, QJSValue> m_printCallbacks;
     QQmlWebChannel *m_webChannel;
     QPointer<QQuickWebEngineView> inspectedView;
     QPointer<QQuickWebEngineView> devToolsView;

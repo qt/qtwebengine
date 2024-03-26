@@ -489,10 +489,16 @@ void QWebEnginePagePrivate::windowCloseRejected()
     // Do nothing for now.
 }
 
-void QWebEnginePagePrivate::didRunJavaScript(quint64 requestId, const QVariant& result)
+void QWebEnginePagePrivate::runJavaScript(const QString &script, quint32 worldId,
+                                          const std::function<void(const QVariant &)> &callback)
 {
-    if (auto callback = m_variantCallbacks.take(requestId))
-        callback(result);
+    ensureInitialized();
+    if (adapter->lifecycleState() == WebContentsAdapter::LifecycleState::Discarded) {
+        qWarning("runJavaScript: disabled in Discarded state");
+        if (callback)
+            callback(QVariant());
+    } else
+        adapter->runJavaScript(script, worldId, callback);
 }
 
 void QWebEnginePagePrivate::didFetchDocumentMarkup(quint64 requestId, const QString& result)
@@ -971,11 +977,9 @@ QWebEnginePage::~QWebEnginePage()
         setDevToolsPage(nullptr);
         emit _q_aboutToDelete();
 
-        for (auto varFun : std::as_const(d_ptr->m_variantCallbacks))
-            varFun(QVariant());
+        d_ptr->adapter->clearJavaScriptCallbacks();
         for (auto strFun : std::as_const(d_ptr->m_stringCallbacks))
             strFun(QString());
-        d_ptr->m_variantCallbacks.clear();
         d_ptr->m_stringCallbacks.clear();
     }
 }
@@ -2029,40 +2033,13 @@ void QWebEnginePage::setZoomFactor(qreal factor)
 
 void QWebEnginePage::runJavaScript(const QString& scriptSource, const std::function<void(const QVariant &)> &resultCallback)
 {
-    Q_D(QWebEnginePage);
-    d->ensureInitialized();
-    if (d->adapter->lifecycleState() == WebContentsAdapter::LifecycleState::Discarded) {
-        qWarning("runJavaScript: disabled in Discarded state");
-        if (resultCallback)
-            resultCallback(QVariant());
-        return;
-    }
-    quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, QWebEngineScript::MainWorld);
-    if (requestId)
-        d->m_variantCallbacks.insert(requestId, resultCallback);
-    else if (resultCallback)
-        resultCallback(QVariant());
+    runJavaScript(scriptSource, QWebEngineScript::MainWorld, resultCallback);
 }
 
 void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId, const std::function<void(const QVariant &)> &resultCallback)
 {
     Q_D(QWebEnginePage);
-    d->ensureInitialized();
-    if (d->adapter->lifecycleState() == WebContentsAdapter::LifecycleState::Discarded) {
-        qWarning("runJavaScript: disabled in Discarded state");
-        if (resultCallback)
-            resultCallback(QVariant());
-        return;
-    }
-    if (resultCallback) {
-        quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, worldId);
-        if (requestId)
-            d->m_variantCallbacks.insert(requestId, resultCallback);
-        else
-            resultCallback(QVariant());
-    } else {
-        d->adapter->runJavaScript(scriptSource, worldId);
-    }
+    d->runJavaScript(scriptSource, worldId, resultCallback);
 }
 
 /*!

@@ -1296,19 +1296,18 @@ bool QQuickWebEngineView::activeFocusOnPress() const
     return d->m_activeFocusOnPress;
 }
 
-void QQuickWebEngineViewPrivate::didRunJavaScript(quint64 requestId, const QVariant &result)
+void QQuickWebEngineViewPrivate::runJavaScript(
+        const QString &script, quint32 worldId,
+        const std::function<void(const QVariant &)> &callback)
 {
-    Q_Q(QQuickWebEngineView);
-    QJSValue callback = m_callbacks.take(requestId);
-    QJSValueList args;
-    args.append(qmlEngine(q)->toScriptValue(result));
-    callback.call(args);
+    ensureContentsAdapter();
+    adapter->runJavaScript(script, worldId, callback);
 }
 
 void QQuickWebEngineViewPrivate::didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result)
 {
     Q_Q(QQuickWebEngineView);
-    QJSValue callback = m_callbacks.take(requestId);
+    QJSValue callback = m_printCallbacks.take(requestId);
     QJSValueList args;
     args.append(qmlEngine(q)->toScriptValue(*(result.data())));
     callback.call(args);
@@ -1487,16 +1486,15 @@ void QQuickWebEngineView::runJavaScript(const QString &script, const QJSValue &c
 void QQuickWebEngineView::runJavaScript(const QString &script, quint32 worldId, const QJSValue &callback)
 {
     Q_D(QQuickWebEngineView);
-    d->ensureContentsAdapter();
+    std::function<void(const QVariant &)> wrappedCallback;
     if (!callback.isUndefined()) {
-        quint64 requestId = d_ptr->adapter->runJavaScriptCallbackResult(script, worldId);
-        if (requestId) {
-            d->m_callbacks.insert(requestId, callback);
-        } else {
-            callback.call();
-        }
-    } else
-        d->adapter->runJavaScript(script, worldId);
+        wrappedCallback = [this, callback](const QVariant &result) {
+            QJSValueList args;
+            args.append(qmlEngine(this)->toScriptValue(result));
+            callback.call(args);
+        };
+    }
+    d->runJavaScript(script, worldId, wrappedCallback);
 }
 
 qreal QQuickWebEngineView::zoomFactor() const
@@ -1593,7 +1591,7 @@ void QQuickWebEngineView::printToPdf(const QJSValue &callback, PrintedPageSizeId
 
     d->ensureContentsAdapter();
     quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout, ranges);
-    d->m_callbacks.insert(requestId, callback);
+    d->m_printCallbacks.insert(requestId, callback);
 #else
     Q_UNUSED(pageSizeId);
     Q_UNUSED(orientation);

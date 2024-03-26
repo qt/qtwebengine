@@ -174,10 +174,9 @@ static QVariant fromJSValue(const base::Value *result)
     return ret;
 }
 
-static void callbackOnEvaluateJS(WebContentsAdapterClient *adapterClient, quint64 requestId, base::Value result)
+static void callbackOnEvaluateJS(WebContentsAdapter *adapter, quint64 requestId, base::Value result)
 {
-    if (requestId)
-        adapterClient->didRunJavaScript(requestId, fromJSValue(&result));
+    adapter->didRunJavaScript(requestId, result);
 }
 
 #if QT_CONFIG(webengine_printing_and_pdf)
@@ -1039,36 +1038,50 @@ QAccessibleInterface *WebContentsAdapter::browserAccessible()
 }
 #endif // QT_CONFIG(accessibility)
 
-void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldId)
+void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldId,
+                                       const std::function<void(const QVariant &)> &callback)
 {
-    CHECK_INITIALIZED();
+    auto exit = [&] {
+        if (callback)
+            callback(QVariant());
+    };
+
+    if (!isInitialized())
+        return exit();
     content::RenderFrameHost *rfh =  m_webContents->GetPrimaryMainFrame();
     Q_ASSERT(rfh);
     if (!static_cast<content::RenderFrameHostImpl*>(rfh)->GetAssociatedLocalFrame()) {
         qWarning() << "Local frame is gone, not running script";
-        return;
+        return exit();
+    }
+
+    content::RenderFrameHost::JavaScriptResultCallback wrappedCallback = base::NullCallback();
+    if (callback) {
+        wrappedCallback = base::BindOnce(&callbackOnEvaluateJS, this, m_nextRequestId);
+        m_javaScriptCallbacks.insert(m_nextRequestId, callback);
+        ++m_nextRequestId;
     }
     if (worldId == 0)
-        rfh->ExecuteJavaScript(toString16(javaScript), base::NullCallback());
+        rfh->ExecuteJavaScript(toString16(javaScript), std::move(wrappedCallback));
     else
-        rfh->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), base::NullCallback(), worldId);
+        rfh->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), std::move(wrappedCallback),
+                                              worldId);
 }
 
-quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScript, quint32 worldId)
+void WebContentsAdapter::didRunJavaScript(quint64 requestId, const base::Value &result)
 {
-    CHECK_INITIALIZED(0);
-    content::RenderFrameHost *rfh =  m_webContents->GetPrimaryMainFrame();
-    Q_ASSERT(rfh);
-    if (!static_cast<content::RenderFrameHostImpl*>(rfh)->GetAssociatedLocalFrame()) {
-        qWarning() << "Local frame is gone, not running script";
-        return 0;
-    }
-    content::RenderFrameHost::JavaScriptResultCallback callback = base::BindOnce(&callbackOnEvaluateJS, m_adapterClient, m_nextRequestId);
-    if (worldId == 0)
-        rfh->ExecuteJavaScript(toString16(javaScript), std::move(callback));
-    else
-        rfh->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), std::move(callback), worldId);
-    return m_nextRequestId++;
+    Q_ASSERT(requestId);
+    auto callback = m_javaScriptCallbacks.take(requestId);
+    Q_ASSERT(callback);
+    callback(fromJSValue(&result));
+}
+
+// Called when QWebEnginePage is deleted
+void WebContentsAdapter::clearJavaScriptCallbacks()
+{
+    for (auto varFun : std::as_const(m_javaScriptCallbacks))
+        varFun(QVariant());
+    m_javaScriptCallbacks.clear();
 }
 
 quint64 WebContentsAdapter::fetchDocumentMarkup()

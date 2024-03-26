@@ -16,8 +16,10 @@
 #define WEB_CONTENTS_ADAPTER_H
 
 #include <QtCore/QSharedPointer>
+#include <QtCore/QMap>
 #include <QtCore/QString>
 #include <QtCore/QUrl>
+#include <QtCore/QVariant>
 #include <QtCore/QPointer>
 #include <QtGui/qtgui-config.h>
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
@@ -27,6 +29,7 @@
 
 #include "web_contents_adapter_client.h"
 
+#include <functional>
 #include <memory>
 #include <optional>
 
@@ -34,6 +37,10 @@ namespace blink {
 namespace web_pref {
 struct WebPreferences;
 }
+}
+
+namespace base {
+class Value;
 }
 
 namespace content {
@@ -129,8 +136,10 @@ public:
     void serializeNavigationHistory(QDataStream &output);
     void setZoomFactor(qreal);
     qreal currentZoomFactor() const;
-    void runJavaScript(const QString &javaScript, quint32 worldId);
-    quint64 runJavaScriptCallbackResult(const QString &javaScript, quint32 worldId);
+    void runJavaScript(const QString &javaScript, quint32 worldId,
+                       const std::function<void(const QVariant &)> &callback);
+    void didRunJavaScript(quint64 requestId, const base::Value &result);
+    void clearJavaScriptCallbacks();
     quint64 fetchDocumentMarkup();
     quint64 fetchDocumentInnerText();
     void updateWebPreferences(const blink::web_pref::WebPreferences &webPreferences);
@@ -255,6 +264,7 @@ private:
     WebContentsAdapterClient *m_adapterClient;
     quint64 m_nextRequestId;
     QMap<QUrl, bool> m_pendingMouseLockPermissions;
+    QMap<quint64, std::function<void(const QVariant &)>> m_javaScriptCallbacks;
     std::unique_ptr<content::DropData> m_currentDropData;
     uint m_currentDropAction;
     bool m_updateDragActionCalled;

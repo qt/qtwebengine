@@ -130,7 +130,8 @@ public:
     void javascriptDialog(QSharedPointer<QtWebEngineCore::JavaScriptDialogController>) override;
     void runFileChooser(QSharedPointer<QtWebEngineCore::FilePickerController>) override;
     void showColorDialog(QSharedPointer<QtWebEngineCore::ColorChooserController>) override;
-    void didRunJavaScript(quint64 requestId, const QVariant &result) override;
+    void runJavaScript(const QString &script, quint32 worldId,
+                       const std::function<void(const QVariant &)> &callback) override;
     void didFetchDocumentMarkup(quint64 requestId, const QString &result) override;
     void didFetchDocumentInnerText(quint64 requestId, const QString &result) override;
     void didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result) override;
@@ -214,7 +215,6 @@ public:
     QPrinter *currentPrinter = nullptr;
 #endif
 
-    mutable QMap<quint64, std::function<void(const QVariant &)>> m_variantCallbacks;
     mutable QMap<quint64, std::function<void(const QString &)>> m_stringCallbacks;
     QMap<quint64, std::function<void(const QByteArray &)>> m_pdfResultCallbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];
