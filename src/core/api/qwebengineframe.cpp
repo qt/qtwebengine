@@ -3,6 +3,9 @@
 
 #include "qwebengineframe.h"
 
+#include "qwebenginescript.h"
+#include <QtQml/qqmlengine.h>
+
 #include "web_contents_adapter_client.h"
 #include "web_contents_adapter.h"
 
@@ -99,6 +102,77 @@ QUrl QWebEngineFrame::url() const
 QSizeF QWebEngineFrame::size() const
 {
     return m_adapterClient->webContentsAdapter()->frameSize(m_id);
+}
+
+/*! \fn void QWebEngineFrame::runJavaScript(const QString &script, const std::function<void(const QVariant &)> &callback)
+    \fn void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId)
+    \fn void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId, const
+   std::function<void(const QVariant &)> &callback)
+
+    Runs the JavaScript code contained in \a script on this frame, without checking
+    whether the DOM of the page has been constructed.
+    To avoid conflicts with other scripts executed on the page, the world in
+    which the script is run is specified by \a worldId. The world ID values are
+    the same as provided by QWebEngineScript::ScriptWorldId, and between \c 0
+    and \c 256. If you leave out the \c world ID, the script is run in the
+    \c MainWorld.
+    When the script has been executed, \a callback is called with the result of the last
+    executed statement. \c callback can be any of a function pointer, a functor or a lambda,
+    and it is expected to take a QVariant parameter. For example:
+    \code
+    page.runJavaScript("document.title", [](const QVariant &v) { qDebug() << v.toString(); });
+    \endcode
+    Only plain data can be returned from JavaScript as the result value.
+    Supported data types include all of the JSON data types as well as, for
+    example, \c{Date} and \c{ArrayBuffer}. Unsupported data types include, for
+    example, \c{Function} and \c{Promise}.
+    \warning Do not execute lengthy routines in the callback function, because it might block the
+    rendering of the web engine page.
+    \warning We guarantee that the \a callback is always called, but it might be
+   done during page destruction. When QWebEnginePage is deleted, the callback is triggered with an
+   invalid value and it is not safe to use the corresponding QWebEnginePage or QWebEngineView
+   instance inside it.
+    \sa QWebEngineScript::ScriptWorldId, QWebEnginePage::runJavaScript, {Script Injection}
+ */
+void QWebEngineFrame::runJavaScript(const QString &script,
+                                    const std::function<void(const QVariant &)> &callback)
+{
+    runJavaScript(script, QWebEngineScript::MainWorld, callback);
+}
+
+void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId,
+                                    const std::function<void(const QVariant &)> &callback)
+{
+    m_adapterClient->runJavaScript(script, worldId, m_id, callback);
+}
+
+void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId)
+{
+    runJavaScript(script, worldId, std::function<void(const QVariant &)>{});
+}
+
+void QWebEngineFrame::runJavaScript(const QString &script, const QJSValue &callback)
+{
+    runJavaScript(script, QWebEngineScript::MainWorld, callback);
+}
+
+void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId,
+                                    const QJSValue &callback)
+{
+    std::function<void(const QVariant &)> wrappedCallback;
+    if (!callback.isUndefined()) {
+        const QObject *holdingObject = m_adapterClient->holdingQObject();
+        wrappedCallback = [holdingObject, callback](const QVariant &result) {
+            if (auto engine = qmlEngine(holdingObject)) {
+                QJSValueList args;
+                args.append(engine->toScriptValue(result));
+                callback.call(args);
+            } else {
+                qWarning("No QML engine found to execute runJavaScript() callback");
+            }
+        };
+    }
+    runJavaScript(script, worldId, wrappedCallback);
 }
 
 /*! \fn bool QWebEngineFrame::operator==(const QWebEngineFrame &left, const QWebEngineFrame &right) noexcept

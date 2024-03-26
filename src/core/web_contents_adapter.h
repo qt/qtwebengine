@@ -46,6 +46,7 @@ class Value;
 namespace content {
 class WebContents;
 class SiteInstance;
+class RenderFrameHost;
 }
 
 QT_BEGIN_NAMESPACE
@@ -71,6 +72,8 @@ class WebChannelIPCTransportHost;
 
 class Q_WEBENGINECORE_EXPORT WebContentsAdapter : public QEnableSharedFromThis<WebContentsAdapter> {
 public:
+    // Sentinel to indicate that a behavior should happen on the main frame
+    static constexpr quint64 kUseMainFrameId = -2;
     // Sentinel to indicate a frame doesn't exist, for example with `findFrameByName`
     static constexpr quint64 kInvalidFrameId = -3;
 
@@ -136,7 +139,7 @@ public:
     void serializeNavigationHistory(QDataStream &output);
     void setZoomFactor(qreal);
     qreal currentZoomFactor() const;
-    void runJavaScript(const QString &javaScript, quint32 worldId,
+    void runJavaScript(const QString &javaScript, quint32 worldId, quint64 frameId,
                        const std::function<void(const QVariant &)> &callback);
     void didRunJavaScript(quint64 requestId, const base::Value &result);
     void clearJavaScriptCallbacks();
@@ -239,6 +242,7 @@ private:
     Q_DISABLE_COPY(WebContentsAdapter)
     void waitForUpdateDragActionCalled();
     bool handleDropDataFileContents(const content::DropData &dropData, QMimeData *mimeData);
+    content::RenderFrameHost *renderFrameHostFromFrameId(quint64 frameId) const;
 
     void wasShown();
     void wasHidden();

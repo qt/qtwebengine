@@ -774,7 +774,7 @@
     during page destruction. When QWebEnginePage is deleted, the callback is triggered with an invalid
     value and it is not safe to use the corresponding QWebEnginePage or QWebEngineView instance inside it.
 
-    \sa scripts(), QWebEngineScript::ScriptWorldId, {Script Injection}
+    \sa scripts(), QWebEngineScript::ScriptWorldId, QWebEngineFrame::runJavaScript, {Script Injection}
 */
 
 /*!

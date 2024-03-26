@@ -1041,7 +1041,23 @@ QAccessibleInterface *WebContentsAdapter::browserAccessible()
 }
 #endif // QT_CONFIG(accessibility)
 
-void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldId,
+content::RenderFrameHost *WebContentsAdapter::renderFrameHostFromFrameId(quint64 frameId) const
+{
+    content::RenderFrameHost *result;
+    if (frameId == kUseMainFrameId) {
+        result = m_webContents->GetPrimaryMainFrame();
+    } else {
+        auto *ftn = content::FrameTreeNode::GloballyFindByID(static_cast<int>(frameId));
+        if (!ftn)
+            return nullptr;
+
+        result = ftn->current_frame_host();
+    }
+    Q_ASSERT(result);
+    return result;
+}
+
+void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldId, quint64 frameId,
                                        const std::function<void(const QVariant &)> &callback)
 {
     auto exit = [&] {
@@ -1051,23 +1067,24 @@ void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldI
 
     if (!isInitialized())
         return exit();
-    content::RenderFrameHost *rfh =  m_webContents->GetPrimaryMainFrame();
-    Q_ASSERT(rfh);
+    auto *rfh = renderFrameHostFromFrameId(frameId);
+    if (!rfh)
+        return exit();
     if (!static_cast<content::RenderFrameHostImpl*>(rfh)->GetAssociatedLocalFrame()) {
         qWarning() << "Local frame is gone, not running script";
         return exit();
     }
 
-    content::RenderFrameHost::JavaScriptResultCallback wrappedCallback = base::NullCallback();
+    content::RenderFrameHost::JavaScriptResultCallback internalCallback = base::NullCallback();
     if (callback) {
-        wrappedCallback = base::BindOnce(&callbackOnEvaluateJS, this, m_nextRequestId);
+        internalCallback = base::BindOnce(&callbackOnEvaluateJS, this, m_nextRequestId);
         m_javaScriptCallbacks.insert(m_nextRequestId, callback);
         ++m_nextRequestId;
     }
     if (worldId == 0)
-        rfh->ExecuteJavaScript(toString16(javaScript), std::move(wrappedCallback));
+        rfh->ExecuteJavaScript(toString16(javaScript), std::move(internalCallback));
     else
-        rfh->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), std::move(wrappedCallback),
+        rfh->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), std::move(internalCallback),
                                               worldId);
 }
 

@@ -6,6 +6,7 @@
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtQml/qqmlregistration.h>
+#include <QtQml/qjsvalue.h>
 #include <QtCore/qcompare.h>
 #include <QtCore/QList>
 #include <QtCore/QSizeF>
@@ -38,6 +39,15 @@ public:
     QList<QWebEngineFrame> children() const;
     QUrl url() const;
     QSizeF size() const;
+
+    void runJavaScript(const QString &script,
+                       const std::function<void(const QVariant &)> &callback);
+    void runJavaScript(const QString &script, quint32 worldId,
+                       const std::function<void(const QVariant &)> &callback);
+    Q_INVOKABLE void runJavaScript(const QString &script, quint32 worldId = 0);
+    Q_INVOKABLE void runJavaScript(const QString &script, const QJSValue &callback);
+    Q_INVOKABLE void runJavaScript(const QString &script, quint32 worldId,
+                                   const QJSValue &callback);
 
     friend inline bool comparesEqual(const QWebEngineFrame &lhs,
                                      const QWebEngineFrame &rhs) noexcept

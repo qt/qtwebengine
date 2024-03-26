@@ -37,6 +37,7 @@ private Q_SLOTS:
     void childrenOfInvalidFrame();
     void url();
     void size();
+    void runJavaScript();
 
 private:
 };
@@ -173,6 +174,19 @@ void tst_QWebEngineFrame::size()
     QTRY_COMPARE(loadSpy.size(), 2);
     QVERIFY(!frame1.isValid());
     QCOMPARE(frame1.size(), QSizeF());
+}
+
+void tst_QWebEngineFrame::runJavaScript()
+{
+    QWebEnginePage page;
+    QSignalSpy loadSpy{ &page, SIGNAL(loadFinished(bool)) };
+    page.load(QUrl("qrc:/resources/iframes.html"));
+    QTRY_COMPARE(loadSpy.size(), 1);
+    auto children = page.mainFrame().children();
+    CallbackSpy<QVariant> spy;
+    children[0].runJavaScript("window.name", spy.ref());
+    auto result = spy.waitForResult();
+    QCOMPARE(result, QString("test-subframe0"));
 }
 
 QTEST_MAIN(tst_QWebEngineFrame)

@@ -93,7 +93,7 @@ public:
     void runFileChooser(QSharedPointer<QtWebEngineCore::FilePickerController>) override;
     void desktopMediaRequested(QtWebEngineCore::DesktopMediaController *) override;
     void showColorDialog(QSharedPointer<QtWebEngineCore::ColorChooserController>) override;
-    void runJavaScript(const QString &script, quint32 worldId,
+    void runJavaScript(const QString &script, quint32 worldId, quint64 frameId,
                        const std::function<void(const QVariant &)> &callback) override;
     void didFetchDocumentMarkup(quint64, const QString&) override { }
     void didFetchDocumentInnerText(quint64, const QString&) override { }

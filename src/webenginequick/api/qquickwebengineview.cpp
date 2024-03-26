@@ -1302,11 +1302,11 @@ bool QQuickWebEngineView::activeFocusOnPress() const
 }
 
 void QQuickWebEngineViewPrivate::runJavaScript(
-        const QString &script, quint32 worldId,
+        const QString &script, quint32 worldId, quint64 frameId,
         const std::function<void(const QVariant &)> &callback)
 {
     ensureContentsAdapter();
-    adapter->runJavaScript(script, worldId, callback);
+    adapter->runJavaScript(script, worldId, frameId, callback);
 }
 
 void QQuickWebEngineViewPrivate::didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result)
@@ -1499,7 +1499,7 @@ void QQuickWebEngineView::runJavaScript(const QString &script, quint32 worldId, 
             callback.call(args);
         };
     }
-    d->runJavaScript(script, worldId, wrappedCallback);
+    d->runJavaScript(script, worldId, WebContentsAdapter::kUseMainFrameId, wrappedCallback);
 }
 
 qreal QQuickWebEngineView::zoomFactor() const

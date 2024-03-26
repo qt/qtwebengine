@@ -495,7 +495,7 @@ void QWebEnginePagePrivate::windowCloseRejected()
     // Do nothing for now.
 }
 
-void QWebEnginePagePrivate::runJavaScript(const QString &script, quint32 worldId,
+void QWebEnginePagePrivate::runJavaScript(const QString &script, quint32 worldId, quint64 frameId,
                                           const std::function<void(const QVariant &)> &callback)
 {
     ensureInitialized();
@@ -504,7 +504,7 @@ void QWebEnginePagePrivate::runJavaScript(const QString &script, quint32 worldId
         if (callback)
             callback(QVariant());
     } else
-        adapter->runJavaScript(script, worldId, callback);
+        adapter->runJavaScript(script, worldId, frameId, callback);
 }
 
 void QWebEnginePagePrivate::didFetchDocumentMarkup(quint64 requestId, const QString& result)
@@ -2045,7 +2045,7 @@ void QWebEnginePage::runJavaScript(const QString& scriptSource, const std::funct
 void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId, const std::function<void(const QVariant &)> &resultCallback)
 {
     Q_D(QWebEnginePage);
-    d->runJavaScript(scriptSource, worldId, resultCallback);
+    d->runJavaScript(scriptSource, worldId, WebContentsAdapter::kUseMainFrameId, resultCallback);
 }
 
 /*!
