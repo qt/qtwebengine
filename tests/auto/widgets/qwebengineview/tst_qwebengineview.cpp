@@ -182,6 +182,7 @@ private Q_SLOTS:
     void inspectElement();
     void navigateOnDrop_data();
     void navigateOnDrop();
+    void emptyUriListOnDrop();
     void datalist();
     void longKeyEventText();
     void pageWithPaintListeners();
@@ -3782,6 +3783,28 @@ void tst_QWebEngineView::navigateOnDrop()
         QCOMPARE(loadSpy.size(), 1);
         QVERIFY(view.url() != url);
     }
+}
+
+void tst_QWebEngineView::emptyUriListOnDrop()
+{
+    QWebEngineView view;
+    view.resize(640, 480);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    QMimeData mimeData;
+    mimeData.setUrls({}); // creates an empty uri-list MIME type entry
+    QVERIFY(mimeData.hasUrls());
+
+    QDragEnterEvent dee(view.rect().center(), Qt::CopyAction, &mimeData, Qt::LeftButton,
+                        Qt::NoModifier);
+    QApplication::sendEvent(&view, &dee);
+    QDropEvent de(view.rect().center(), Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
+    QApplication::sendEvent(&view, &de);
+
+    QSignalSpy loadSpy(&view, &QWebEngineView::loadFinished);
+    view.setUrl(QUrl("about:blank"));
+    QTRY_COMPARE(loadSpy.size(), 1);
 }
 
 void tst_QWebEngineView::datalist()
