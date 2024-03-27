@@ -1619,7 +1619,7 @@ static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeDat
     }
     if (!dropData->filenames.empty())
         return;
-    if (mimeData->hasUrls()) {
+    if (!urls.empty()) {
         dropData->url = toGurl(urls.first());
         if (mimeData->hasText())
             dropData->url_title = toString16(mimeData->text());
