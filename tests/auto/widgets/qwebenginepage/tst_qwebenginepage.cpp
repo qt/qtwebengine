@@ -72,6 +72,7 @@
 #include <qwebengineurlscheme.h>
 #include <qwebengineurlschemehandler.h>
 #include <qwebengineview.h>
+#include <qwebenginepermission.h>
 #include <qimagewriter.h>
 #include <QColorSpace>
 #include <QQuickRenderControl>
@@ -451,12 +452,12 @@ public:
         return true;
     }
 public Q_SLOTS:
-    void requestPermission(const QUrl &origin, QWebEnginePage::Feature feature)
+    void requestPermission(QWebEnginePermission permission)
     {
         if (m_allowGeolocation)
-            setFeaturePermission(origin, feature, PermissionGrantedByUser);
+            permission.grant();
         else
-            setFeaturePermission(origin, feature, PermissionDeniedByUser);
+            permission.deny();
     }
 
 public:
@@ -488,8 +489,8 @@ void tst_QWebEnginePage::geolocationRequestJS()
     newPage->profile()->setPersistentPermissionsPolicy(QWebEngineProfile::NoPersistentPermissions);
     newPage->setGeolocationPermission(allowed);
 
-    connect(newPage, SIGNAL(featurePermissionRequested(const QUrl&, QWebEnginePage::Feature)),
-            newPage, SLOT(requestPermission(const QUrl&, QWebEnginePage::Feature)));
+    connect(newPage, SIGNAL(permissionRequested(QWebEnginePermission)),
+            newPage, SLOT(requestPermission(QWebEnginePermission)));
 
     QSignalSpy spyLoadFinished(newPage, SIGNAL(loadFinished(bool)));
     newPage->setHtml(QString("<html><body>test</body></html>"), QUrl("qrc://secure/origin"));
@@ -1656,8 +1657,9 @@ public:
     GetUserMediaTestPage()
         : m_gotRequest(false)
         , m_loadSucceeded(false)
+        , m_permission(nullptr)
     {
-        connect(this, &QWebEnginePage::featurePermissionRequested, this, &GetUserMediaTestPage::onFeaturePermissionRequested);
+        connect(this, &QWebEnginePage::permissionRequested, this, &GetUserMediaTestPage::onPermissionRequested);
         connect(this, &QWebEnginePage::loadFinished, [this](bool success){
             m_loadSucceeded = success;
         });
@@ -1695,18 +1697,20 @@ public:
 
     void rejectPendingRequest()
     {
-        setFeaturePermission(m_requestSecurityOrigin, m_requestedFeature, QWebEnginePage::PermissionDeniedByUser);
+        QVERIFY(m_permission);
+        m_permission->deny();
         m_gotRequest = false;
     }
     void acceptPendingRequest()
     {
-        setFeaturePermission(m_requestSecurityOrigin, m_requestedFeature, QWebEnginePage::PermissionGrantedByUser);
+        QVERIFY(m_permission);
+        m_permission->grant();
         m_gotRequest = false;
     }
 
-    bool gotFeatureRequest(QWebEnginePage::Feature feature)
+    bool gotFeatureRequest(QWebEnginePermission::Feature feature)
     {
-        return m_gotRequest && m_requestedFeature == feature;
+        return m_gotRequest && m_permission && m_permission->feature() == feature;
     }
 
     bool gotFeatureRequest() const
@@ -1720,50 +1724,47 @@ public:
     }
 
 private Q_SLOTS:
-    void onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature)
+    void onPermissionRequested(QWebEnginePermission permission)
     {
-        m_requestedFeature = feature;
-        m_requestSecurityOrigin = securityOrigin;
+        m_permission.reset(new QWebEnginePermission(permission));
         m_gotRequest = true;
     }
 
 private:
     bool m_gotRequest;
     bool m_loadSucceeded;
-    QWebEnginePage::Feature m_requestedFeature;
-    QUrl m_requestSecurityOrigin;
-
+    std::unique_ptr<QWebEnginePermission> m_permission;
 };
 
 void tst_QWebEnginePage::getUserMediaRequest_data()
 {
     QTest::addColumn<QString>("call");
-    QTest::addColumn<QWebEnginePage::Feature>("feature");
+    QTest::addColumn<QWebEnginePermission::Feature>("feature");
 
     QTest::addRow("device audio")
-        << "getUserMedia({audio: true})" << QWebEnginePage::MediaAudioCapture;
+        << "getUserMedia({audio: true})" << QWebEnginePermission::MediaAudioCapture;
     QTest::addRow("device video")
-        << "getUserMedia({video: true})" << QWebEnginePage::MediaVideoCapture;
+        << "getUserMedia({video: true})" << QWebEnginePermission::MediaVideoCapture;
     QTest::addRow("device audio+video")
-        << "getUserMedia({audio: true, video: true})" << QWebEnginePage::MediaAudioVideoCapture;
+        << "getUserMedia({audio: true, video: true})" << QWebEnginePermission::MediaAudioVideoCapture;
     QTest::addRow("desktop video")
         << "getUserMedia({video: { mandatory: { chromeMediaSource: 'desktop' }}})"
-        << QWebEnginePage::DesktopVideoCapture;
+        << QWebEnginePermission::DesktopVideoCapture;
     QTest::addRow("desktop audio+video")
         << "getUserMedia({audio: { mandatory: { chromeMediaSource: 'desktop' }}, video: { mandatory: { chromeMediaSource: 'desktop' }}})"
-        << QWebEnginePage::DesktopAudioVideoCapture;
+        << QWebEnginePermission::DesktopAudioVideoCapture;
     QTest::addRow("display video")
-        << "getDisplayMedia()" << QWebEnginePage::DesktopVideoCapture;
+        << "getDisplayMedia()" << QWebEnginePermission::DesktopVideoCapture;
 }
 
 void tst_QWebEnginePage::getUserMediaRequest()
 {
     QFETCH(QString, call);
-    QFETCH(QWebEnginePage::Feature, feature);
+    QFETCH(QWebEnginePermission::Feature, feature);
 
     GetUserMediaTestPage page;
     QWebEngineView view;
-    if (feature == QWebEnginePage::DesktopVideoCapture || feature == QWebEnginePage::DesktopAudioVideoCapture) {
+    if (feature == QWebEnginePermission::DesktopVideoCapture || feature == QWebEnginePermission::DesktopAudioVideoCapture) {
         // Desktop capture needs to be on a desktop.
         view.setPage(&page);
         view.resize(640, 480);
@@ -1833,7 +1834,7 @@ void tst_QWebEnginePage::getUserMediaRequestSettingDisabled()
 void tst_QWebEnginePage::getUserMediaRequestDesktopVideoManyPages()
 {
     const QString constraints = QStringLiteral("{video: { mandatory: { chromeMediaSource: 'desktop' }}}");
-    const QWebEnginePage::Feature feature = QWebEnginePage::DesktopVideoCapture;
+    const QWebEnginePermission::Feature feature = QWebEnginePermission::DesktopVideoCapture;
     std::vector<GetUserMediaTestPage> pages(10);
 
     // Desktop capture needs to be on a desktop
@@ -1866,7 +1867,7 @@ void tst_QWebEnginePage::getUserMediaRequestDesktopVideoManyPages()
 void tst_QWebEnginePage::getUserMediaRequestDesktopVideoManyRequests()
 {
     const QString constraints = QStringLiteral("{video: { mandatory: { chromeMediaSource: 'desktop' }}}");
-    const QWebEnginePage::Feature feature = QWebEnginePage::DesktopVideoCapture;
+    const QWebEnginePermission::Feature feature = QWebEnginePermission::DesktopVideoCapture;
     GetUserMediaTestPage page;
 
     // Desktop capture needs to be on a desktop
@@ -3795,20 +3796,30 @@ void tst_QWebEnginePage::dynamicFrame()
 
 struct NotificationPage : ConsolePage {
     Q_OBJECT
-    const QWebEnginePage::PermissionPolicy policy;
+    const QWebEnginePermission::State policy;
 
 public:
-    NotificationPage(QWebEnginePage::PermissionPolicy ppolicy) : policy(ppolicy) {
+    NotificationPage(QWebEnginePermission::State ppolicy) : policy(ppolicy) {
         connect(this, &QWebEnginePage::loadFinished, [load = spyLoad.ref()] (bool result) mutable { load(result); });
 
-        connect(this, &QWebEnginePage::featurePermissionRequested,
-                [this] (const QUrl &origin, QWebEnginePage::Feature feature) {
-            if (feature != QWebEnginePage::Notifications)
+        connect(this, &QWebEnginePage::permissionRequested,
+                [this] (QWebEnginePermission permission) {
+            if (permission.feature() != QWebEnginePermission::Notifications)
                 return;
             if (spyRequest.wasCalled())
                 QFAIL("request executed twise!");
-            setFeaturePermission(origin, feature, policy);
-            spyRequest.ref()(origin);
+            switch (policy) {
+            case QWebEnginePermission::Granted:
+                permission.grant();
+                break;
+            case QWebEnginePermission::Denied:
+                permission.deny();
+                break;
+            case QWebEnginePermission::Ask:
+                permission.reset();
+                break;
+            }
+            spyRequest.ref()(permission.origin());
         });
 
         load(QStringLiteral("qrc:///shared/notification.html"));
@@ -3828,18 +3839,18 @@ public:
 void tst_QWebEnginePage::notificationPermission_data()
 {
     QTest::addColumn<bool>("setOnInit");
-    QTest::addColumn<QWebEnginePage::PermissionPolicy>("policy");
+    QTest::addColumn<QWebEnginePermission::State>("policy");
     QTest::addColumn<QString>("permission");
-    QTest::newRow("denyOnInit")  << true  << QWebEnginePage::PermissionDeniedByUser << "denied";
-    QTest::newRow("deny")        << false << QWebEnginePage::PermissionDeniedByUser << "denied";
-    QTest::newRow("grant")       << false << QWebEnginePage::PermissionGrantedByUser << "granted";
-    QTest::newRow("grantOnInit") << true  << QWebEnginePage::PermissionGrantedByUser << "granted";
+    QTest::newRow("denyOnInit")  << true  << QWebEnginePermission::Denied << "denied";
+    QTest::newRow("deny")        << false << QWebEnginePermission::Denied << "denied";
+    QTest::newRow("grant")       << false << QWebEnginePermission::Granted << "granted";
+    QTest::newRow("grantOnInit") << true  << QWebEnginePermission::Granted << "granted";
 }
 
 void tst_QWebEnginePage::notificationPermission()
 {
     QFETCH(bool, setOnInit);
-    QFETCH(QWebEnginePage::PermissionPolicy, policy);
+    QFETCH(QWebEnginePermission::State, policy);
     QFETCH(QString, permission);
 
     QWebEngineProfile otr;
@@ -3849,20 +3860,33 @@ void tst_QWebEnginePage::notificationPermission()
     QUrl baseUrl("https://www.example.com/somepage.html");
 
     bool permissionRequested = false, errorState = false;
-    connect(&page, &QWebEnginePage::featurePermissionRequested, &page, [&] (const QUrl &o, QWebEnginePage::Feature f) {
-        if (f != QWebEnginePage::Notifications)
+    connect(&page, &QWebEnginePage::permissionRequested, &page, [&] (QWebEnginePermission permission) {
+        if (permission.feature() != QWebEnginePermission::Notifications)
             return;
-        if (permissionRequested || o != baseUrl.url(QUrl::RemoveFilename)) {
-            qWarning() << "Unexpected case. Can't proceed." << setOnInit << permissionRequested << o;
+        if (permissionRequested || permission.origin() != baseUrl.url(QUrl::RemoveFilename)) {
+            qWarning() << "Unexpected case. Can't proceed." << setOnInit << permissionRequested << permission.origin();
             errorState = true;
             return;
         }
         permissionRequested = true;
-        page.setFeaturePermission(o, f, policy);
+
+        if (policy == QWebEnginePermission::Granted)
+            permission.grant();
+        else
+            permission.deny();
     });
 
     if (setOnInit)
-        page.setFeaturePermission(baseUrl, QWebEnginePage::Notifications, policy);
+#if QT_DEPRECATED_SINCE(6, 8)
+        QT_WARNING_PUSH
+        QT_WARNING_DISABLE_DEPRECATED
+        // FIXME: Replace with QWebEngineProfile permission API when that's implemented
+        page.setFeaturePermission(baseUrl, QWebEnginePage::Notifications,
+            policy == QWebEnginePermission::Granted ? QWebEnginePage::PermissionGrantedByUser : QWebEnginePage::PermissionDeniedByUser);
+        QT_WARNING_POP
+#else
+        W_QSKIP("Compiled without deprecated APIs", SkipSingle);
+#endif // QT_DEPRECATED_SINCE(6, 8)
 
     QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
     page.setHtml(QString("<html><body>Test</body></html>"), baseUrl);
@@ -3871,8 +3895,17 @@ void tst_QWebEnginePage::notificationPermission()
     QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("Notification.permission")), setOnInit ? permission : QLatin1String("default"));
 
     if (!setOnInit) {
-        page.setFeaturePermission(baseUrl, QWebEnginePage::Notifications, policy);
+#if QT_DEPRECATED_SINCE(6, 8)
+        QT_WARNING_PUSH
+        QT_WARNING_DISABLE_DEPRECATED
+        // FIXME: Replace with QWebEngineProfile permission API when that's implemented
+        page.setFeaturePermission(baseUrl, QWebEnginePage::Notifications,
+            policy == QWebEnginePermission::Granted ? QWebEnginePage::PermissionGrantedByUser : QWebEnginePage::PermissionDeniedByUser);
         QTRY_COMPARE(evaluateJavaScriptSync(&page, QStringLiteral("Notification.permission")), permission);
+        QT_WARNING_POP
+#else
+        W_QSKIP("Compiled without deprecated APIs", SkipSingle);
+#endif // QT_DEPRECATED_SINCE(6, 8)
     }
 
     auto js = QStringLiteral("var permission; Notification.requestPermission().then(p => { permission = p })");
@@ -3885,7 +3918,7 @@ void tst_QWebEnginePage::notificationPermission()
 
 void tst_QWebEnginePage::sendNotification()
 {
-    NotificationPage page(QWebEnginePage::PermissionGrantedByUser);
+    NotificationPage page(QWebEnginePermission::Granted);
     QVERIFY(page.spyLoad.waitForResult());
 
     page.resetPermission();
@@ -3973,42 +4006,42 @@ void tst_QWebEnginePage::clipboardReadWritePermissionInitialState()
 void tst_QWebEnginePage::clipboardReadWritePermission_data()
 {
     QTest::addColumn<bool>("canAccessClipboard");
-    QTest::addColumn<QWebEnginePage::PermissionPolicy>("initialPolicy");
+    QTest::addColumn<QWebEnginePermission::State>("initialPolicy");
     QTest::addColumn<QString>("initialPermission");
-    QTest::addColumn<QWebEnginePage::PermissionPolicy>("requestPolicy");
+    QTest::addColumn<QWebEnginePermission::State>("requestPolicy");
     QTest::addColumn<QString>("finalPermission");
 
     QTest::newRow("noAccessGrantGrant")
-            << false << QWebEnginePage::PermissionGrantedByUser << "granted"
-            << QWebEnginePage::PermissionGrantedByUser << "granted";
+            << false << QWebEnginePermission::Granted << "granted"
+            << QWebEnginePermission::Granted << "granted";
     QTest::newRow("noAccessGrantDeny")
-            << false << QWebEnginePage::PermissionGrantedByUser << "granted"
-            << QWebEnginePage::PermissionDeniedByUser << "denied";
+            << false << QWebEnginePermission::Granted << "granted"
+            << QWebEnginePermission::Denied << "denied";
     QTest::newRow("noAccessDenyGrant")
-            << false << QWebEnginePage::PermissionDeniedByUser << "denied"
-            << QWebEnginePage::PermissionGrantedByUser << "granted";
-    QTest::newRow("noAccessDenyDeny") << false << QWebEnginePage::PermissionDeniedByUser << "denied"
-                                      << QWebEnginePage::PermissionDeniedByUser << "denied";
-    QTest::newRow("noAccessAskGrant") << false << QWebEnginePage::PermissionUnknown << "prompt"
-                                      << QWebEnginePage::PermissionGrantedByUser << "granted";
+            << false << QWebEnginePermission::Denied << "denied"
+            << QWebEnginePermission::Granted << "granted";
+    QTest::newRow("noAccessDenyDeny") << false << QWebEnginePermission::Denied << "denied"
+                                      << QWebEnginePermission::Denied << "denied";
+    QTest::newRow("noAccessAskGrant") << false << QWebEnginePermission::Ask << "prompt"
+                                      << QWebEnginePermission::Granted << "granted";
 
     // All policies are ignored and overridden by setting JsCanAccessClipboard and JsCanPaste to
     // true
     QTest::newRow("accessGrantGrant")
-            << true << QWebEnginePage::PermissionGrantedByUser << "granted"
-            << QWebEnginePage::PermissionGrantedByUser << "granted";
-    QTest::newRow("accessDenyDeny") << true << QWebEnginePage::PermissionDeniedByUser << "granted"
-                                    << QWebEnginePage::PermissionDeniedByUser << "granted";
-    QTest::newRow("accessAskAsk") << true << QWebEnginePage::PermissionUnknown << "granted"
-                                  << QWebEnginePage::PermissionUnknown << "granted";
+            << true << QWebEnginePermission::Granted << "granted"
+            << QWebEnginePermission::Granted << "granted";
+    QTest::newRow("accessDenyDeny") << true << QWebEnginePermission::Denied << "granted"
+                                    << QWebEnginePermission::Denied << "granted";
+    QTest::newRow("accessAskAsk") << true << QWebEnginePermission::Ask << "granted"
+                                  << QWebEnginePermission::Ask << "granted";
 }
 
 void tst_QWebEnginePage::clipboardReadWritePermission()
 {
     QFETCH(bool, canAccessClipboard);
-    QFETCH(QWebEnginePage::PermissionPolicy, initialPolicy);
+    QFETCH(QWebEnginePermission::State, initialPolicy);
     QFETCH(QString, initialPermission);
-    QFETCH(QWebEnginePage::PermissionPolicy, requestPolicy);
+    QFETCH(QWebEnginePermission::State, requestPolicy);
     QFETCH(QString, finalPermission);
 
     QWebEngineProfile otr;
@@ -4026,20 +4059,43 @@ void tst_QWebEnginePage::clipboardReadWritePermission()
     bool errorState = false;
 
     // if JavascriptCanAccessClipboard is true, this never fires
-    connect(&page, &QWebEnginePage::featurePermissionRequested, &page,
-            [&](const QUrl &o, QWebEnginePage::Feature f) {
-                if (f != QWebEnginePage::ClipboardReadWrite)
+    connect(&page, &QWebEnginePage::permissionRequested, &page,
+            [&](QWebEnginePermission permission) {
+                if (permission.feature() != QWebEnginePermission::ClipboardReadWrite)
                     return;
-                if (o != baseUrl.url(QUrl::RemoveFilename)) {
-                    qWarning() << "Unexpected case. Can't proceed." << o;
+                if (permission.origin() != baseUrl.url(QUrl::RemoveFilename)) {
+                    qWarning() << "Unexpected case. Can't proceed." << permission.origin();
                     errorState = true;
                     return;
                 }
                 permissionRequestCount++;
-                page.setFeaturePermission(o, f, requestPolicy);
+                switch (requestPolicy) {
+                case QWebEnginePermission::Granted:
+                    permission.grant();
+                    break;
+                case QWebEnginePermission::Denied:
+                    permission.deny();
+                    break;
+                case QWebEnginePermission::Ask:
+                    permission.reset();
+                    break;
+                default:
+                    break;
+                }
             });
 
-    page.setFeaturePermission(baseUrl, QWebEnginePage::ClipboardReadWrite, initialPolicy);
+    // FIXME: Replace with QWebEngineProfile permission API when that's implemented
+#if QT_DEPRECATED_SINCE(6, 8)
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
+    QWebEnginePage::PermissionPolicy deprecatedPolicy =
+        initialPolicy == QWebEnginePermission::Granted ? QWebEnginePage::PermissionGrantedByUser
+        : (initialPolicy == QWebEnginePermission::Denied ? QWebEnginePage::PermissionDeniedByUser : QWebEnginePage::PermissionUnknown);
+    page.setFeaturePermission(baseUrl, QWebEnginePage::ClipboardReadWrite, deprecatedPolicy);
+    QT_WARNING_POP
+#else
+    W_QSKIP("Compiled without deprecated APIs", SkipSingle);
+#endif // QT_DEPRECATED_SINCE(6, 8)
 
     QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
     page.setHtml(QString("<html><body>Test</body></html>"), baseUrl);
@@ -4099,17 +4155,17 @@ void tst_QWebEnginePage::contentsSize()
 
 void tst_QWebEnginePage::localFontAccessPermission_data()
 {
-    QTest::addColumn<QWebEnginePage::PermissionPolicy>("policy");
+    QTest::addColumn<QWebEnginePermission::State>("policy");
     QTest::addColumn<bool>("ignore");
     QTest::addColumn<bool>("shouldBeEmpty");
 
-    QTest::newRow("ignore")         << QWebEnginePage::PermissionDeniedByUser  << true  << true;
-    QTest::newRow("setDeny")        << QWebEnginePage::PermissionDeniedByUser  << false << true;
-    QTest::newRow("setGrant")       << QWebEnginePage::PermissionGrantedByUser << false << false;
+    QTest::newRow("ignore")   << QWebEnginePermission::Denied  << true  << true;
+    QTest::newRow("setDeny")  << QWebEnginePermission::Denied  << false << true;
+    QTest::newRow("setGrant") << QWebEnginePermission::Granted << false << false;
 }
 
 void tst_QWebEnginePage::localFontAccessPermission() {
-    QFETCH(QWebEnginePage::PermissionPolicy, policy);
+    QFETCH(QWebEnginePermission::State, policy);
     QFETCH(bool, ignore);
     QFETCH(bool, shouldBeEmpty);
 
@@ -4118,12 +4174,16 @@ void tst_QWebEnginePage::localFontAccessPermission() {
     page.profile()->setPersistentPermissionsPolicy(QWebEngineProfile::NoPersistentPermissions);
     view.setPage(&page);
 
-    connect(&page, &QWebEnginePage::featurePermissionRequested, &page, [&] (const QUrl &o, QWebEnginePage::Feature f) {
-        if (f != QWebEnginePage::LocalFontsAccess)
+    connect(&page, &QWebEnginePage::permissionRequested, &page, [&] (QWebEnginePermission permission) {
+        if (permission.feature() != QWebEnginePermission::LocalFontsAccess)
             return;
 
-        if (!ignore)
-            page.setFeaturePermission(o, f, policy);
+        if (!ignore) {
+            if (policy == QWebEnginePermission::Granted)
+                permission.grant();
+            else
+                permission.deny();
+        }
     });
 
     QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
@@ -5734,12 +5794,11 @@ void tst_QWebEnginePage::chooseDesktopMedia()
                 desktopMediaRequested = true;
             });
 
-    connect(&page, &QWebEnginePage::featurePermissionRequested,
-            [&](const QUrl &securityOrigin, QWebEnginePage::Feature feature) {
+    connect(&page, &QWebEnginePage::permissionRequested,
+            [&](QWebEnginePermission permission) {
                 permissionRequested = true;
                 // Handle permission to 'complete' the media request
-                page.setFeaturePermission(securityOrigin, feature,
-                                          QWebEnginePage::PermissionGrantedByUser);
+                permission.grant();
             });
 
     page.load(QUrl(server.url()));

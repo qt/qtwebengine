@@ -26,6 +26,7 @@
 #include <QtWebEngineCore/QWebEngineLoadingInfo>
 #include <QtWebEngineCore/QWebEngineWebAuthUxRequest>
 #include <QtWebEngineCore/QWebEngineFrame>
+#include <QtWebEngineCore/QWebEnginePermission>
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebengineaction_p.h>
 #include <private/qquickwebengineclientcertificateselection_p.h>
@@ -72,6 +73,7 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QWebEngineNavigationRequest::staticMetaObject
     << &QWebEngineNewWindowRequest::staticMetaObject
     << &QWebEngineNotification::staticMetaObject
+    << &QWebEnginePermission::staticMetaObject
     << &QWebEngineQuotaRequest::staticMetaObject
     << &QWebEngineRegisterProtocolHandlerRequest::staticMetaObject
     << &QQuickWebEngineTouchSelectionMenuRequest::staticMetaObject
@@ -82,6 +84,7 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
 
 static QList<QMetaEnum> knownEnumNames = QList<QMetaEnum>()
     << QWebEngineDownloadRequest::staticMetaObject.enumerator(QWebEngineDownloadRequest::staticMetaObject.indexOfEnumerator("SavePageFormat"))
+    << QWebEnginePermission::staticMetaObject.enumerator(QWebEnginePermission::staticMetaObject.indexOfEnumerator("Feature"))
     ;
 
 static const QStringList hardcodedTypes = QStringList()
@@ -353,6 +356,29 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineNewWindowRequest.InNewDialog --> DestinationType"
     << "QWebEngineNewWindowRequest.InNewTab --> DestinationType"
     << "QWebEngineNewWindowRequest.InNewWindow --> DestinationType"
+    << "QWebEnginePermission.Unsupported --> Feature"
+    << "QWebEnginePermission.MediaAudioCapture --> Feature"
+    << "QWebEnginePermission.MediaVideoCapture --> Feature"
+    << "QWebEnginePermission.MediaAudioVideoCapture --> Feature"
+    << "QWebEnginePermission.DesktopVideoCapture --> Feature"
+    << "QWebEnginePermission.DesktopAudioVideoCapture --> Feature"
+    << "QWebEnginePermission.MouseLock --> Feature"
+    << "QWebEnginePermission.Notifications --> Feature"
+    << "QWebEnginePermission.Geolocation --> Feature"
+    << "QWebEnginePermission.ClipboardReadWrite --> Feature"
+    << "QWebEnginePermission.LocalFontsAccess --> Feature"
+    << "QWebEnginePermission.Invalid --> State"
+    << "QWebEnginePermission.Ask --> State"
+    << "QWebEnginePermission.Granted --> State"
+    << "QWebEnginePermission.Denied --> State"
+    << "QWebEnginePermission.origin --> QUrl"
+    << "QWebEnginePermission.feature --> QWebEnginePermission::Feature"
+    << "QWebEnginePermission.state --> QWebEnginePermission::State"
+    << "QWebEnginePermission.isValid --> bool"
+    << "QWebEnginePermission.grant() --> void"
+    << "QWebEnginePermission.deny() --> void"
+    << "QWebEnginePermission.reset() --> void"
+    << "QWebEnginePermission.isTransient(QWebEnginePermission::Feature) --> bool"
     << "QQuickWebEngineNewWindowRequest.openIn(QQuickWebEngineView*) --> void"
     << "QQuickWebEngineProfile.AllowPersistentCookies --> PersistentCookiesPolicy"
     << "QQuickWebEngineProfile.DiskHttpCache --> HttpCacheType"
@@ -537,10 +563,20 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.B10 --> PrintedPageSizeId"
     << "QQuickWebEngineView.Back --> WebAction"
     << "QQuickWebEngineView.C5E --> PrintedPageSizeId"
+#if QT_DEPRECATED_SINCE(6, 8)
+    << "QQuickWebEngineView.ClipboardReadWrite --> Feature"
+    << "QQuickWebEngineView.DesktopAudioVideoCapture --> Feature"
+    << "QQuickWebEngineView.DesktopVideoCapture --> Feature"
+    << "QQuickWebEngineView.Geolocation --> Feature"
+    << "QQuickWebEngineView.LocalFontsAccess --> Feature"
+    << "QQuickWebEngineView.MediaAudioCapture --> Feature"
+    << "QQuickWebEngineView.MediaAudioVideoCapture --> Feature"
+    << "QQuickWebEngineView.MediaVideoCapture --> Feature"
+    << "QQuickWebEngineView.Notifications --> Feature"
+#endif
     << "QQuickWebEngineView.CertificateErrorDomain --> ErrorDomain"
     << "QQuickWebEngineView.ChangeTextDirectionLTR --> WebAction"
     << "QQuickWebEngineView.ChangeTextDirectionRTL --> WebAction"
-    << "QQuickWebEngineView.ClipboardReadWrite --> Feature"
     << "QQuickWebEngineView.Comm10E --> PrintedPageSizeId"
     << "QQuickWebEngineView.ConnectionErrorDomain --> ErrorDomain"
     << "QQuickWebEngineView.Copy --> WebAction"
@@ -552,8 +588,6 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.Custom --> PrintedPageSizeId"
     << "QQuickWebEngineView.Cut --> WebAction"
     << "QQuickWebEngineView.DLE --> PrintedPageSizeId"
-    << "QQuickWebEngineView.DesktopAudioVideoCapture --> Feature"
-    << "QQuickWebEngineView.DesktopVideoCapture --> Feature"
     << "QQuickWebEngineView.DnsErrorDomain --> ErrorDomain"
     << "QQuickWebEngineView.DoublePostcard --> PrintedPageSizeId"
     << "QQuickWebEngineView.DownloadImageToDisk --> WebAction"
@@ -608,7 +642,6 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.Folio --> PrintedPageSizeId"
     << "QQuickWebEngineView.Forward --> WebAction"
     << "QQuickWebEngineView.FtpErrorDomain --> ErrorDomain"
-    << "QQuickWebEngineView.Geolocation --> Feature"
     << "QQuickWebEngineView.HttpErrorDomain --> ErrorDomain"
     << "QQuickWebEngineView.Imperial10x11 --> PrintedPageSizeId"
     << "QQuickWebEngineView.Imperial10x13 --> PrintedPageSizeId"
@@ -653,12 +686,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.LoadStartedStatus --> LoadStatus"
     << "QQuickWebEngineView.LoadStoppedStatus --> LoadStatus"
     << "QQuickWebEngineView.LoadSucceededStatus --> LoadStatus"
-    << "QQuickWebEngineView.LocalFontsAccess --> Feature"
-    << "QQuickWebEngineView.MediaAudioCapture --> Feature"
-    << "QQuickWebEngineView.MediaAudioVideoCapture --> Feature"
-    << "QQuickWebEngineView.MediaVideoCapture --> Feature"
     << "QQuickWebEngineView.NoErrorDomain --> ErrorDomain"
-    << "QQuickWebEngineView.Notifications --> Feature"
     << "QQuickWebEngineView.NoWebAction --> WebAction"
     << "QQuickWebEngineView.NormalTerminationStatus --> RenderProcessTerminationStatus"
     << "QQuickWebEngineView.Note --> PrintedPageSizeId"
@@ -734,7 +762,9 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.goBack() --> void"
     << "QQuickWebEngineView.goBackOrForward(int) --> void"
     << "QQuickWebEngineView.goForward() --> void"
+#if QT_DEPRECATED_SINCE(6, 8)
     << "QQuickWebEngineView.grantFeaturePermission(QUrl,QQuickWebEngineView::Feature,bool) --> void"
+#endif
     << "QQuickWebEngineView.history --> QWebEngineHistory*"
     << "QQuickWebEngineView.icon --> QUrl"
     << "QQuickWebEngineView.iconChanged() --> void"
@@ -769,6 +799,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.NewViewInDialog --> NewViewDestination"
     << "QQuickWebEngineView.NewViewInTab --> NewViewDestination"
     << "QQuickWebEngineView.NewViewInWindow --> NewViewDestination"
+    << "QQuickWebEngineView.permissionRequested(QWebEnginePermission) --> void"
     << "QQuickWebEngineView.pdfPrintingFinished(QString,bool) --> void"
     << "QQuickWebEngineView.printRequested() --> void"
     << "QQuickWebEngineView.printRequestedByFrame(QWebEngineFrame) --> void"
@@ -1020,4 +1051,3 @@ void tst_publicapi::publicAPI()
 QTEST_MAIN(tst_publicapi)
 
 #include "tst_publicapi.moc"
-

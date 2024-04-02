@@ -26,6 +26,7 @@
 #include <QtWebEngineCore/qwebenginecontextmenurequest.h>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
 #include <QtWebEngineCore/qwebengineframe.h>
+#include <QtWebEngineCore/qwebenginepermission.h>
 
 #include "web_contents_adapter_client.h"
 
@@ -178,10 +179,12 @@ public:
     void devToolsFrontendDestroyed(DevToolsFrontendQt *frontend);
     QString devToolsId();
 
-    void grantMediaAccessPermission(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags flags);
-    void grantMouseLockPermission(const QUrl &securityOrigin, bool granted);
+    void setFeaturePermission(const QUrl &origin, QWebEnginePermission::Feature feature, QWebEnginePermission::State state);
+    QWebEnginePermission::State getPermissionState(const QUrl &origin, QWebEnginePermission::Feature feature);
+
+    void grantMediaAccessPermission(const QUrl &origin, WebContentsAdapterClient::MediaRequestFlags flags);
+    void grantMouseLockPermission(const QUrl &origin, bool granted);
     void handlePendingMouseLockPermission();
-    void grantFeaturePermission(const QUrl &securityOrigin, ProfileAdapter::PermissionType feature, ProfileAdapter::PermissionState allowed);
 
     void setBackgroundColor(const QColor &color);
     QAccessibleInterface *browserAccessible();

@@ -111,10 +111,9 @@
     \section2 Platform Features
 
     Web pages can request access to platform features, such as geolocation or audio and video
-    capture devices. The \l featurePermissionRequested() signal is emitted when a web page requests
-    to make use of a resource. The supported platform features are described by the \l Feature
-    property. If users grant the permission, the \l grantFeaturePermission() method is used to set
-    it to \e granted.
+    capture devices. The \l permissionRequested() signal is emitted when a web page requests
+    to make use of a resource. The supported platform features are described by the QWebEnginePermission::Feature
+    property.
 
     \section2 Rendering to OpenGL Surface
 
@@ -445,6 +444,7 @@
 /*!
     \qmlmethod void WebEngineView::grantFeaturePermission(url securityOrigin, Feature feature, bool granted)
     \since QtWebEngine 1.1
+    \deprecated [6.8] Use webEnginePermission.grant() or webEnginePermission.deny() instead.
 
     Sets or unsets the permission, depending on \a granted, for the web site
     identified by \a securityOrigin to use \a feature.
@@ -501,11 +501,21 @@
 /*!
     \qmlsignal WebEngineView::featurePermissionRequested(url securityOrigin, Feature feature)
     \since QtWebEngine 1.1
+    \deprecated [6.8] Use \l permissionRequested() instead.
 
     This signal is emitted when the web site identified by \a securityOrigin requests
     to make use of the resource or device identified by \a feature.
 
     \sa grantFeaturePermission()
+*/
+
+/*!
+    \qmlsignal WebEngineView::permissionRequested(webEnginePermission permission)
+    \since QtWebEngine 6.8
+
+    This signal is emitted when a web site requests to make use of a feature (e.g. geolocation access,
+    permission to send notifications). The \a permission object can queried for the requesting URL
+    and the \c{WebEnginePermission.Feature} it's asking for, as well as to grant or deny permission.
 */
 
 /*!
@@ -844,6 +854,7 @@
 
 /*!
     \qmlproperty enumeration WebEngineView::Feature
+    \deprecated [6.8] Replaced by WebEnginePermission.Feature.
 
     Describes the platform feature access categories that the user may be asked to grant or deny
     access to:

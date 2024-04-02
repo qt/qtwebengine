@@ -35,19 +35,19 @@ private slots:
 Page::Page(QWebEngineProfile *profile, QObject *parent) : QWebEnginePage(profile, parent)
 {
     settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
-    connect(this, &QWebEnginePage::featurePermissionRequested, this,
+    connect(this, &QWebEnginePage::permissionRequested, this,
             &Page::handlePermissionRequest);
     connect(this, &QWebEnginePage::desktopMediaRequested, this, &Page::handleDesktopMediaRequest);
 }
 
-void Page::handlePermissionRequest(const QUrl &origin, Feature feature)
+void Page::handlePermissionRequest(QWebEnginePermission permission)
 {
     if (QMessageBox::question(QApplication::activeWindow(), tr("Permission request"),
                               tr("allow access?"))
         == QMessageBox::Yes)
-        setFeaturePermission(origin, feature, PermissionGrantedByUser);
+        permission.grant();
     else
-        setFeaturePermission(origin, feature, PermissionDeniedByUser);
+        permission.deny();
 }
 
 void Page::handleDesktopMediaRequest(const QWebEngineDesktopMediaRequest &request)

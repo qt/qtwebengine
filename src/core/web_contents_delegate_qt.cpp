@@ -733,7 +733,7 @@ void WebContentsDelegateQt::selectClientCert(const QSharedPointer<ClientCertSele
     m_viewClient->selectClientCert(selectController);
 }
 
-void WebContentsDelegateQt::requestFeaturePermission(ProfileAdapter::PermissionType feature, const QUrl &requestingOrigin)
+void WebContentsDelegateQt::requestFeaturePermission(QWebEnginePermission::Feature feature, const QUrl &requestingOrigin)
 {
     m_viewClient->runFeaturePermissionRequest(feature, requestingOrigin);
 }
@@ -790,9 +790,9 @@ bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost 
 {
     switch (type) {
     case blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE:
-        return m_viewClient->profileAdapter()->checkPermission(toQt(security_origin), ProfileAdapter::AudioCapturePermission);
+        return m_viewClient->profileAdapter()->getPermissionState(toQt(security_origin), QWebEnginePermission::MediaAudioCapture);
     case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE:
-        return m_viewClient->profileAdapter()->checkPermission(toQt(security_origin), ProfileAdapter::VideoCapturePermission);
+        return m_viewClient->profileAdapter()->getPermissionState(toQt(security_origin), QWebEnginePermission::MediaVideoCapture);
     default:
         LOG(INFO) << "WebContentsDelegateQt::CheckMediaAccessPermission: "
                   << "Unsupported media stream type checked " << type;

@@ -20,6 +20,7 @@
 #include <QtWebEngineCore/qwebenginedesktopmediarequest.h>
 #include <QtWebEngineCore/qwebenginedownloadrequest.h>
 #include <QtWebEngineCore/qwebengineframe.h>
+#include <QtWebEngineCore/qwebenginepermission.h>
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 #include <QtGui/qcolor.h>
 #include <QtQml/qqmlregistration.h>
@@ -166,8 +167,12 @@ QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     Q_ENUM(NewViewDestination)
 QT_WARNING_POP
 #endif
-
-    enum Feature {
+#if QT_DEPRECATED_SINCE(6, 8)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
+    enum QT_DEPRECATED_VERSION_X_6_8(
+        "WebEnginePage::Feature has been deprecated. "
+        "The updated permissions API uses WebEnginePermission::Feature.")
+    Feature {
         MediaAudioCapture,
         MediaVideoCapture,
         MediaAudioVideoCapture,
@@ -179,6 +184,8 @@ QT_WARNING_POP
         LocalFontsAccess,
     };
     Q_ENUM(Feature)
+QT_WARNING_POP
+#endif
 
     enum WebAction {
         NoWebAction = - 1,
@@ -489,7 +496,17 @@ public Q_SLOTS:
     void stop();
     Q_REVISION(1,1) void findText(const QString &subString, FindFlags options = { }, const QJSValue &callback = QJSValue());
     Q_REVISION(1,1) void fullScreenCancelled();
+#if QT_DEPRECATED_SINCE(6, 8)
+#if !defined(Q_MOC_RUN)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+#endif // !defined(Q_MOC_RUN)
+    QT_DEPRECATED_VERSION_X_6_8("Setting permissions through WebEngineView has been deprecated. Please use WebEnginePermission instead.")
     Q_REVISION(1,1) void grantFeaturePermission(const QUrl &securityOrigin, QQuickWebEngineView::Feature, bool granted);
+#if !defined(Q_MOC_RUN)
+QT_WARNING_POP
+#endif // !defined(Q_MOC_RUN)
+#endif // QT_DEPRECATED_SINCE(6, 8)
     Q_REVISION(1,2) void setActiveFocusOnPress(bool arg);
     Q_REVISION(1,2) void triggerWebAction(WebAction action);
     Q_REVISION(1,3) void printToPdf(const QString &filePath, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
@@ -515,9 +532,19 @@ Q_SIGNALS:
     Q_REVISION(1,1) void certificateError(const QWebEngineCertificateError &error);
     Q_REVISION(1,1) void fullScreenRequested(const QWebEngineFullScreenRequest &request);
     Q_REVISION(1,1) void isFullScreenChanged();
+#if QT_DEPRECATED_SINCE(6, 8)
+#if !defined(Q_MOC_RUN)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+#endif // !defined(Q_MOC_RUN)
+    QT_MOC_COMPAT QT_DEPRECATED_VERSION_X_6_8("The signal has been deprecated; please use permissionRequested instead.")
     Q_REVISION(1, 1)
     void featurePermissionRequested(const QUrl &securityOrigin,
                                     QQuickWebEngineView::Feature feature);
+#if !defined(Q_MOC_RUN)
+QT_WARNING_POP
+#endif // !defined(Q_MOC_RUN)
+#endif // QT_DEPRECATED_SINCE(6, 8)
     Q_REVISION(1,1) void zoomFactorChanged(qreal arg);
     Q_REVISION(1,1) void profileChanged();
     Q_REVISION(1,1) void webChannelChanged();
@@ -562,6 +589,7 @@ Q_SIGNALS:
     Q_REVISION(6, 7) void webAuthUxRequested(QWebEngineWebAuthUxRequest *request);
     Q_REVISION(6,7) void desktopMediaRequested(const QWebEngineDesktopMediaRequest &request);
     Q_REVISION(6, 8) void printRequestedByFrame(QWebEngineFrame frame);
+    Q_REVISION(6,8) void permissionRequested(QWebEnginePermission permissionRequest);
 
 protected:
     void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;

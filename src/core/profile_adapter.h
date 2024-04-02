@@ -28,6 +28,7 @@
 #include <QtWebEngineCore/qwebenginecookiestore.h>
 #include <QtWebEngineCore/qwebengineurlrequestinterceptor.h>
 #include <QtWebEngineCore/qwebengineurlschemehandler.h>
+#include <QtWebEngineCore/qwebenginepermission.h>
 #include "net/qrc_url_scheme_handler.h"
 
 QT_FORWARD_DECLARE_CLASS(QObject)
@@ -133,22 +134,6 @@ public:
         PersistentPermissionsOnDisk,
     };
 
-    enum PermissionType {
-        UnsupportedPermission = 0,
-        GeolocationPermission = 1,
-        NotificationPermission = 2,
-        AudioCapturePermission = 3,
-        VideoCapturePermission = 4,
-        ClipboardReadWrite = 5,
-        LocalFontsPermission = 6,
-    };
-
-    enum PermissionState {
-        AskPermission = 0,
-        AllowedPermission = 1,
-        DeniedPermission = 2
-    };
-
     enum ClientHint : uchar {
         UAArchitecture,
         UAPlatform,
@@ -187,8 +172,8 @@ public:
     const QList<QByteArray> customUrlSchemes() const;
     UserResourceControllerHost *userResourceController();
 
-    void permissionRequestReply(const QUrl &origin, PermissionType type, PermissionState reply);
-    bool checkPermission(const QUrl &origin, PermissionType type);
+    void setPermission(const QUrl &origin, QWebEnginePermission::Feature feature, QWebEnginePermission::State state);
+    QWebEnginePermission::State getPermissionState(const QUrl &origin, QWebEnginePermission::Feature feature);
 
     QString httpAcceptLanguageWithoutQualities() const;
     QString httpAcceptLanguage() const;

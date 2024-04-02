@@ -9,6 +9,7 @@
 #include <QtWebEngineCore/qwebenginedownloadrequest.h>
 #include <QtWebEngineCore/qwebenginequotarequest.h>
 #include <QtWebEngineCore/qwebengineframe.h>
+#include <QtWebEngineCore/qwebenginepermission.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
@@ -147,12 +148,19 @@ public:
     };
     Q_ENUM(WebWindowType)
 
-    enum PermissionPolicy {
+#if QT_DEPRECATED_SINCE(6, 8)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
+    enum QT_DEPRECATED_VERSION_X_6_8(
+        "QWebEnginePage::PermissionPolicy has been deprecated. "
+        "The updated permissions API uses QWebEnginePermission::State.")
+    PermissionPolicy {
         PermissionUnknown,
         PermissionGrantedByUser,
         PermissionDeniedByUser
     };
     Q_ENUM(PermissionPolicy)
+QT_WARNING_POP
+#endif
 
     // must match WebContentsAdapterClient::NavigationType
     enum NavigationType {
@@ -166,7 +174,12 @@ public:
     };
     Q_ENUM(NavigationType)
 
-    enum Feature {
+#if QT_DEPRECATED_SINCE(6, 8)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
+    enum QT_DEPRECATED_VERSION_X_6_8(
+        "QWebEnginePage::Feature has been deprecated. "
+        "The updated permissions API uses QWebEnginePermission::Feature.")
+    Feature {
         Notifications = 0,
         Geolocation = 1,
         MediaAudioCapture = 2,
@@ -179,6 +192,8 @@ public:
         LocalFontsAccess,
     };
     Q_ENUM(Feature)
+QT_WARNING_POP
+#endif
 
     // Ex-QWebFrame enum
 
@@ -236,7 +251,12 @@ public:
 
     void findText(const QString &subString, FindFlags options = {}, const std::function<void(const QWebEngineFindTextResult &)> &resultCallback = std::function<void(const QWebEngineFindTextResult &)>());
 
+#if QT_DEPRECATED_SINCE(6, 8)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
+    QT_DEPRECATED_VERSION_X_6_8("Setting permissions through QWebEnginePage has been deprecated. Please use QWebEnginePermission instead.")
     void setFeaturePermission(const QUrl &securityOrigin, Feature feature, PermissionPolicy policy);
+QT_WARNING_POP
+#endif
 
     bool isLoading() const;
 
@@ -319,9 +339,23 @@ Q_SIGNALS:
     void geometryChangeRequested(const QRect &geom);
     void windowCloseRequested();
 
+#if QT_DEPRECATED_SINCE(6, 8)
+#if !defined(Q_MOC_RUN)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+#endif // !defined(Q_MOC_RUN)
+    QT_MOC_COMPAT QT_DEPRECATED_VERSION_X_6_8("The signal has been deprecated; please use permissionRequested instead.")
     void featurePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature);
+    QT_MOC_COMPAT QT_DEPRECATED_VERSION_X_6_8("The signal has been deprecated, and no longer functions.")
     void featurePermissionRequestCanceled(const QUrl &securityOrigin, QWebEnginePage::Feature feature);
+#if !defined(Q_MOC_RUN)
+QT_WARNING_POP
+#endif // !defined(Q_MOC_RUN)
+#endif // QT_DEPRECATED_SINCE(6, 8)
+
     void fullScreenRequested(QWebEngineFullScreenRequest fullScreenRequest);
+    void permissionRequested(QWebEnginePermission permissionRequest);
+
 #if QT_DEPRECATED_SINCE(6, 5)
     QT_DEPRECATED_VERSION_X_6_5("Requesting host quota is no longer supported.")
     void quotaRequested(QWebEngineQuotaRequest quotaRequest);

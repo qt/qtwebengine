@@ -22,17 +22,17 @@ TestWebEngineView {
                 {
                     tag: "device audio",
                     constraints: { audio: true },
-                    feature: WebEngineView.MediaAudioCapture,
+                    feature: WebEnginePermission.MediaAudioCapture,
                 },
                 {
                     tag: "device video",
                     constraints: { video: true },
-                    feature: WebEngineView.MediaVideoCapture,
+                    feature: WebEnginePermission.MediaVideoCapture,
                 },
                 {
                     tag: "device audio+video",
                     constraints: { audio: true, video: true },
-                    feature: WebEngineView.MediaAudioVideoCapture,
+                    feature: WebEnginePermission.MediaAudioVideoCapture,
                 },
                 {
                     tag: "desktop video",
@@ -43,7 +43,7 @@ TestWebEngineView {
                             }
                         }
                     },
-                    feature: WebEngineView.DesktopVideoCapture,
+                    feature: WebEnginePermission.DesktopVideoCapture,
                 },
                 {
                     tag: "desktop audio+video",
@@ -59,7 +59,7 @@ TestWebEngineView {
                             }
                         }
                     },
-                    feature: WebEngineView.DesktopAudioVideoCapture,
+                    feature: WebEnginePermission.DesktopAudioVideoCapture,
                 }
             ]
         }
@@ -116,28 +116,24 @@ TestWebEngineView {
     ////
     // synchronous permission requests
 
-    property variant requestedFeature
-    property variant requestedSecurityOrigin
+    property variant permissionObject
 
-    onFeaturePermissionRequested: function(securityOrigin, feature) {
-        requestedFeature = feature
-        requestedSecurityOrigin = securityOrigin
+    onPermissionRequested: function(perm) {
+        permissionObject = perm
     }
 
     function gotFeatureRequest(expectedFeature) {
-        return requestedFeature == expectedFeature
+        return permissionObject && permissionObject.feature == expectedFeature
     }
 
     function acceptPendingRequest() {
-        webEngineView.grantFeaturePermission(requestedSecurityOrigin, requestedFeature, true)
-        requestedFeature = undefined
-        requestedSecurityOrigin = undefined
+        permissionObject.grant()
+        permissionObject = undefined
     }
 
     function rejectPendingRequest() {
-        webEngineView.grantFeaturePermission(requestedSecurityOrigin, requestedFeature, false)
-        requestedFeature = undefined
-        requestedSecurityOrigin = undefined
+        permissionObject.deny()
+        permissionObject = undefined
     }
 
     ////
