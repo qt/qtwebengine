@@ -569,14 +569,14 @@ UserResourceControllerHost *ProfileAdapter::userResourceController()
     return m_userResourceController.data();
 }
 
-void ProfileAdapter::permissionRequestReply(const QUrl &origin, PermissionType type, PermissionState reply)
+void ProfileAdapter::setPermission(const QUrl &origin, QWebEnginePermission::Feature feature, QWebEnginePermission::State state)
 {
-    static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->permissionRequestReply(origin, type, reply);
+    static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->setPermission(origin, feature, state);
 }
 
-bool ProfileAdapter::checkPermission(const QUrl &origin, PermissionType type)
+QWebEnginePermission::State ProfileAdapter::getPermissionState(const QUrl &origin, QWebEnginePermission::Feature feature)
 {
-    return static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->checkPermission(origin, type);
+    return static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->getPermissionState(origin, feature);
 }
 
 QString ProfileAdapter::httpAcceptLanguageWithoutQualities() const

@@ -13,7 +13,7 @@ TestWebEngineView {
 
     property bool permissionRequested: false
     property bool grantPermission: false
-    property url securityOrigin: ''
+    property var permissionObject
 
     profile.persistentPermissionsPolicy: WebEngineProfile.NoPersistentPermissions
 
@@ -22,14 +22,17 @@ TestWebEngineView {
     SignalSpy {
         id: spyRequest
         target: view
-        signalName: 'featurePermissionRequested'
+        signalName: 'permissionRequested'
     }
 
-    onFeaturePermissionRequested: function(securityOrigin, feature) {
-        if (feature === WebEngineView.Notifications) {
+    onPermissionRequested: function(perm) {
+        if (perm.feature === WebEnginePermission.Notifications) {
             view.permissionRequested = true
-            view.securityOrigin = securityOrigin
-            view.grantFeaturePermission(securityOrigin, feature, grantPermission)
+            view.permissionObject = perm
+            if (grantPermission)
+                perm.grant()
+            else
+                perm.deny()
         }
     }
 
@@ -93,7 +96,7 @@ TestWebEngineView {
             compare(notification.title, title)
             compare(notification.message, message)
             compare(notification.direction, Qt.RightToLeft)
-            compare(notification.origin, securityOrigin)
+            compare(notification.origin, permissionObject.origin)
             compare(notification.tag, 'tst')
             compare(notification.language, 'de')
         }

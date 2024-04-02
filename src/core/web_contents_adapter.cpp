@@ -1411,21 +1411,92 @@ QSizeF WebContentsAdapter::lastContentsSize() const
     return QSizeF();
 }
 
-void WebContentsAdapter::grantMediaAccessPermission(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags flags)
+void WebContentsAdapter::setFeaturePermission(const QUrl &origin, QWebEnginePermission::Feature feature, QWebEnginePermission::State state)
+{
+    if (!QWebEnginePermission::isTransient(feature)) {
+        // Do not check for initialization in this path so permissions can be set before first navigation
+        Q_ASSERT(m_profileAdapter);
+        m_profileAdapter->setPermission(origin, feature, state);
+        return;
+    }
+
+    CHECK_INITIALIZED();
+    if (feature == QWebEnginePermission::MouseLock) {
+        switch (state) {
+        case QWebEnginePermission::Ask:
+            // Do nothing
+            break;
+        case QWebEnginePermission::Denied:
+            grantMouseLockPermission(origin, false);
+            break;
+        case QWebEnginePermission::Granted:
+            grantMouseLockPermission(origin, true);
+            break;
+        }
+
+        return;
+    }
+
+    const WebContentsAdapterClient::MediaRequestFlags audioVideoCaptureFlags(
+        WebContentsAdapterClient::MediaVideoCapture |
+        WebContentsAdapterClient::MediaAudioCapture);
+    const WebContentsAdapterClient::MediaRequestFlags desktopAudioVideoCaptureFlags(
+        WebContentsAdapterClient::MediaDesktopVideoCapture |
+        WebContentsAdapterClient::MediaDesktopAudioCapture);
+
+    switch (state) {
+    case QWebEnginePermission::Ask:
+        // Do nothing
+        return;
+    case QWebEnginePermission::Denied:
+        // Deny all media access
+        grantMediaAccessPermission(origin, WebContentsAdapterClient::MediaNone);
+        return;
+    case QWebEnginePermission::Granted:
+        // Enable only the requested capture type
+        break;
+    }
+
+    switch (feature) {
+    case QWebEnginePermission::MediaAudioVideoCapture:
+        grantMediaAccessPermission(origin, audioVideoCaptureFlags);
+        break;
+    case QWebEnginePermission::MediaAudioCapture:
+        grantMediaAccessPermission(origin, WebContentsAdapterClient::MediaAudioCapture);
+        break;
+    case QWebEnginePermission::MediaVideoCapture:
+        grantMediaAccessPermission(origin, WebContentsAdapterClient::MediaVideoCapture);
+        break;
+    case QWebEnginePermission::DesktopAudioVideoCapture:
+        grantMediaAccessPermission(origin, desktopAudioVideoCaptureFlags);
+        break;
+    case QWebEnginePermission::DesktopVideoCapture:
+        grantMediaAccessPermission(origin, WebContentsAdapterClient::MediaDesktopVideoCapture);
+        break;
+    default:
+        Q_UNREACHABLE();
+        break;
+    }
+}
+
+QWebEnginePermission::State WebContentsAdapter::getPermissionState(const QUrl &origin, QWebEnginePermission::Feature feature)
+{
+    // For now, we just return Ask for transient Features
+    if (QWebEnginePermission::isTransient(feature))
+        return QWebEnginePermission::Ask;
+
+    return m_profileAdapter->getPermissionState(origin, feature);
+}
+
+void WebContentsAdapter::grantMediaAccessPermission(const QUrl &origin, WebContentsAdapterClient::MediaRequestFlags flags)
 {
     CHECK_INITIALIZED();
     // Let the permission manager remember the reply.
     if (flags & WebContentsAdapterClient::MediaAudioCapture)
-        m_profileAdapter->permissionRequestReply(securityOrigin, ProfileAdapter::AudioCapturePermission, ProfileAdapter::AllowedPermission);
+        m_profileAdapter->setPermission(origin, QWebEnginePermission::MediaAudioCapture, QWebEnginePermission::Granted);
     if (flags & WebContentsAdapterClient::MediaVideoCapture)
-        m_profileAdapter->permissionRequestReply(securityOrigin, ProfileAdapter::VideoCapturePermission, ProfileAdapter::AllowedPermission);
-    MediaCaptureDevicesDispatcher::GetInstance()->handleMediaAccessPermissionResponse(m_webContents.get(), securityOrigin, flags);
-}
-
-void WebContentsAdapter::grantFeaturePermission(const QUrl &securityOrigin, ProfileAdapter::PermissionType feature, ProfileAdapter::PermissionState allowed)
-{
-    Q_ASSERT(m_profileAdapter);
-    m_profileAdapter->permissionRequestReply(securityOrigin, feature, allowed);
+        m_profileAdapter->setPermission(origin, QWebEnginePermission::MediaVideoCapture, QWebEnginePermission::Granted);
+    MediaCaptureDevicesDispatcher::GetInstance()->handleMediaAccessPermissionResponse(m_webContents.get(), origin, flags);
 }
 
 void WebContentsAdapter::grantMouseLockPermission(const QUrl &securityOrigin, bool granted)

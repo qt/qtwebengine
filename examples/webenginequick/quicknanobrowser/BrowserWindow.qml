@@ -648,10 +648,9 @@ ApplicationWindow {
                         findBar.reset();
                 }
 
-                onFeaturePermissionRequested: function(securityOrigin, feature) {
-                    featurePermissionDialog.securityOrigin = securityOrigin;
-                    featurePermissionDialog.feature = feature;
-                    featurePermissionDialog.visible = true;
+                onPermissionRequested: function(permission) {
+                    permissionDialog.permission = permission;
+                    permissionDialog.visible = true;
                 }
                 onWebAuthUxRequested: function(request) {
                     webAuthDialog.init(request);
@@ -736,7 +735,7 @@ ApplicationWindow {
         }
     }
     Dialog {
-        id: featurePermissionDialog
+        id: permissionDialog
         anchors.centerIn: parent
         width: Math.min(browserWindow.width, browserWindow.height) / 3 * 2
         contentWidth: mainTextForPermissionDialog.width
@@ -744,59 +743,58 @@ ApplicationWindow {
         standardButtons: Dialog.No | Dialog.Yes
         title: "Permission Request"
 
-        property var feature;
-        property url securityOrigin;
+        property var permission;
 
         contentItem: Item {
             Label {
                 id: mainTextForPermissionDialog
-                text: featurePermissionDialog.questionForFeature()
+                text: permissionDialog.questionForFeature()
             }
         }
 
-        onAccepted: currentWebView && currentWebView.grantFeaturePermission(securityOrigin, feature, true)
-        onRejected: currentWebView && currentWebView.grantFeaturePermission(securityOrigin, feature, false)
+        onAccepted: permission.grant()
+        onRejected: permission.deny()
         onVisibleChanged: {
             if (visible)
                 width = contentWidth + 20;
         }
 
         function questionForFeature() {
-            var question = "Allow " + securityOrigin + " to "
+            var question = "Allow " + permission.origin + " to "
 
-            switch (feature) {
-            case WebEngineView.Geolocation:
+            switch (permission.feature) {
+            case WebEnginePermission.Geolocation:
                 question += "access your location information?";
                 break;
-            case WebEngineView.MediaAudioCapture:
+            case WebEnginePermission.MediaAudioCapture:
                 question += "access your microphone?";
                 break;
-            case WebEngineView.MediaVideoCapture:
+            case WebEnginePermission.MediaVideoCapture:
                 question += "access your webcam?";
                 break;
-            case WebEngineView.MediaVideoCapture:
+            case WebEnginePermission.MediaAudioVideoCapture:
                 question += "access your microphone and webcam?";
                 break;
-            case WebEngineView.MouseLock:
+            case WebEnginePermission.MouseLock:
                 question += "lock your mouse cursor?";
                 break;
-            case WebEngineView.DesktopVideoCapture:
+            case WebEnginePermission.DesktopVideoCapture:
                 question += "capture video of your desktop?";
                 break;
-            case WebEngineView.DesktopAudioVideoCapture:
+            case WebEnginePermission.DesktopAudioVideoCapture:
                 question += "capture audio and video of your desktop?";
                 break;
-            case WebEngineView.Notifications:
+            case WebEnginePermission.Notifications:
                 question += "show notification on your desktop?";
                 break;
-            case WebEngineView.ClipboardReadWrite:
+            case WebEnginePermission.ClipboardReadWrite:
                 question += "read from and write to your clipboard?";
                 break;
-            case WebEngineView.LocalFontsAccess:
+            case WebEnginePermission.LocalFontsAccess:
                 question += "access the fonts stored on your machine?";
                 break;
             default:
-                question += "access unknown or unsupported feature [" + feature + "] ?";
+                question += "access unknown or unsupported feature [" + permission.feature + "] ?";
                 break;
             }
 

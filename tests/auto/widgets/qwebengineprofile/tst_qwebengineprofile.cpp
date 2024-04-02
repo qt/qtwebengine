@@ -1051,8 +1051,15 @@ void tst_QWebEngineProfile::permissionPersistence()
 
     QVariant variant = granted ? "granted" : "denied";
     QVariant defaultVariant = "default";
+#if QT_DEPRECATED_SINCE(6, 8)
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
     page->setFeaturePermission(server.url("/hedgehog.html"), QWebEnginePage::Notifications,
         granted ? QWebEnginePage::PermissionGrantedByUser : QWebEnginePage::PermissionDeniedByUser);
+    QT_WARNING_POP
+#else
+    W_QSKIP("Compiled without deprecated APIs", SkipSingle);
+#endif // QT_DEPRECATED_SINCE(6, 8)
     QCOMPARE(evaluateJavaScriptSync(page.get(), "Notification.permission"), variant);
 
     page.reset();
@@ -1077,7 +1084,14 @@ void tst_QWebEngineProfile::permissionPersistence()
     QTRY_COMPARE(evaluateJavaScriptSync(page.get(), "Notification.permission"),
         expectSame ? variant : defaultVariant);
 
+#if QT_DEPRECATED_SINCE(6, 8)
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
     page->setFeaturePermission(server.url("/hedgehog.html"), QWebEnginePage::Notifications, QWebEnginePage::PermissionUnknown);
+    QT_WARNING_POP
+#else
+    W_QSKIP("Compiled without deprecated APIs", SkipSingle);
+#endif // QT_DEPRECATED_SINCE(6, 8)
     QCOMPARE(evaluateJavaScriptSync(page.get(), "Notification.permission"), defaultVariant);
 
     page.reset();

@@ -13,25 +13,22 @@ MainWindow::MainWindow(QWidget *parent)
 
     QWebEnginePage *page = m_view->page();
 
-    connect(page, &QWebEnginePage::featurePermissionRequested,
-            [this, page](const QUrl &securityOrigin, QWebEnginePage::Feature feature) {
-        if (feature != QWebEnginePage::Geolocation)
+    connect(page, &QWebEnginePage::permissionRequested,
+            [this, page](QWebEnginePermission permission) {
+        if (permission.feature() != QWebEnginePermission::Geolocation)
             return;
 
         QMessageBox msgBox(this);
-        msgBox.setText(tr("%1 wants to know your location").arg(securityOrigin.host()));
+        msgBox.setText(tr("%1 wants to know your location").arg(permission.origin().host()));
         msgBox.setInformativeText(tr("Do you want to send your current location to this website?"));
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
         msgBox.setDefaultButton(QMessageBox::Yes);
 
-        if (msgBox.exec() == QMessageBox::Yes) {
-            page->setFeaturePermission(
-                securityOrigin, feature, QWebEnginePage::PermissionGrantedByUser);
-        } else {
-            page->setFeaturePermission(
-                securityOrigin, feature, QWebEnginePage::PermissionDeniedByUser);
-        }
+        if (msgBox.exec() == QMessageBox::Yes)
+            permission.grant();
+        else
+            permission.deny();
     });
 
-    page->load(QUrl(QStringLiteral("https://maps.google.com")));
+    page->load(QUrl(QStringLiteral("https://bing.com/maps")));
 }

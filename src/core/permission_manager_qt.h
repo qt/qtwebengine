@@ -7,6 +7,7 @@
 #include "base/functional/callback.h"
 #include "content/public/browser/permission_controller_delegate.h"
 
+#include <QtWebEngineCore/qwebenginepermission.h>
 #include "profile_adapter.h"
 
 #include <map>
@@ -21,8 +22,9 @@ public:
     PermissionManagerQt(ProfileAdapter *adapter);
     ~PermissionManagerQt();
 
-    void permissionRequestReply(const QUrl &origin, ProfileAdapter::PermissionType type, ProfileAdapter::PermissionState reply);
-    bool checkPermission(const QUrl &origin, ProfileAdapter::PermissionType type);
+    void setPermission(const QUrl &origin, QWebEnginePermission::Feature feature, QWebEnginePermission::State state);
+    QWebEnginePermission::State getPermissionState(const QUrl &origin, QWebEnginePermission::Feature feature);
+
     void commit();
 
     // content::PermissionManager implementation:
@@ -66,7 +68,7 @@ public:
 private:
     struct Request {
         int id;
-        ProfileAdapter::PermissionType type;
+        QWebEnginePermission::Feature type;
         QUrl origin;
         base::OnceCallback<void(blink::mojom::PermissionStatus)> callback;
     };
@@ -77,7 +79,7 @@ private:
         base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus>&)> callback;
     };
     struct Subscription {
-        ProfileAdapter::PermissionType type;
+        QWebEnginePermission::Feature type;
         QUrl origin;
         base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback;
     };

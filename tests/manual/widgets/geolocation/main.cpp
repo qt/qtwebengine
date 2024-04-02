@@ -16,18 +16,15 @@ class GeoPermissionWebView : public QWebEngineView {
   Q_OBJECT
 
 public slots:
-    void handleFeaturePermissionRequested(const QUrl &securityOrigin,
-                                               QWebEnginePage::Feature feature)
+    void handlePermissionRequested(QWebEnginePermission permission)
     {
         qWarning("Feature Permission");
         QString title = tr("Permission Request");
         QString question = QLatin1String("Allow access to geolocation?");
         if (!question.isEmpty() && QMessageBox::question(window(), title, question) == QMessageBox::Yes)
-            page()->setFeaturePermission(securityOrigin, feature,
-                                         QWebEnginePage::PermissionGrantedByUser);
+            permission.grant();
         else
-            page()->setFeaturePermission(securityOrigin, feature,
-                                         QWebEnginePage::PermissionDeniedByUser);
+            permission.deny();
     }
 
 };
@@ -38,8 +35,8 @@ int main(int argc, char *argv[])
     QMainWindow w;
     GeoPermissionWebView webview;
     QWebEnginePage page;
-    QObject::connect(&page, &QWebEnginePage::featurePermissionRequested, &webview,
-            &GeoPermissionWebView::handleFeaturePermissionRequested);
+    QObject::connect(&page, &QWebEnginePage::permissionRequested, &webview,
+            &GeoPermissionWebView::handlePermissionRequested);
     webview.setPage(&page);
     page.load(QUrl("qrc:/geolocation.html"));
     w.setCentralWidget(&webview);

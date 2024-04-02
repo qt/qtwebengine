@@ -14,6 +14,7 @@
 #include <QWebEngineRegisterProtocolHandlerRequest>
 #include <QWebEngineWebAuthUxRequest>
 #include <QWebEngineSettings>
+#include <QWebEnginePermission>
 #include <QActionGroup>
 
 class WebPage;
@@ -43,8 +44,7 @@ signals:
 private slots:
     void handleCertificateError(QWebEngineCertificateError error);
     void handleAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth);
-    void handleFeaturePermissionRequested(const QUrl &securityOrigin,
-                                          QWebEnginePage::Feature feature);
+    void handlePermissionRequested(QWebEnginePermission permission);
     void handleProxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth,
                                            const QString &proxyHost);
     void handleRegisterProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest request);

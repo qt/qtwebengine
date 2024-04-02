@@ -16,19 +16,19 @@ TestWebEngineView {
     profile.persistentPermissionsPolicy: WebEngineProfile.NoPersistentPermissions
 
     SignalSpy {
-        id: featurePermissionSpy
+        id: permissionSpy
         target: webEngineView
-        signalName: "featurePermissionRequested"
+        signalName: "permissionRequested"
     }
 
-    onFeaturePermissionRequested: function(securityOrigin, feature) {
-        if (feature === WebEngineView.Geolocation) {
+    onPermissionRequested: function(perm) {
+        if (perm.feature === WebEnginePermission.Geolocation) {
             geoPermissionRequested = true
             if (deniedGeolocation) {
-                webEngineView.grantFeaturePermission(securityOrigin, feature, false)
+                perm.deny()
             }
             else {
-                webEngineView.grantFeaturePermission(securityOrigin, feature, true)
+                perm.grant()
             }
         }
     }
@@ -57,15 +57,15 @@ TestWebEngineView {
 
         function init() {
             deniedGeolocation = false
-            featurePermissionSpy.clear()
+            permissionSpy.clear()
         }
 
         function test_geoPermissionRequest() {
-            compare(featurePermissionSpy.count, 0)
+            compare(permissionSpy.count, 0)
             webEngineView.url = Qt.resolvedUrl("geolocation.html")
-            featurePermissionSpy.wait()
+            permissionSpy.wait()
             verify(geoPermissionRequested)
-            compare(featurePermissionSpy.count, 1)
+            compare(permissionSpy.count, 1)
             tryVerify(isHandled, 5000)
             verify(getErrorMessage() === "")
         }
@@ -73,7 +73,7 @@ TestWebEngineView {
         function test_deniedGeolocationByUser() {
             deniedGeolocation = true
             webEngineView.url = Qt.resolvedUrl("geolocation.html")
-            featurePermissionSpy.wait()
+            permissionSpy.wait()
             tryVerify(isHandled, 5000)
             compare(getErrorMessage(), "User denied Geolocation")
         }

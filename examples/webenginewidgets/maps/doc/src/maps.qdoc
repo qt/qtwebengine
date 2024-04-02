@@ -48,10 +48,10 @@
     \printuntil setCentralWidget
 
     We then proceed to connect a lambda function to the \l
-    QWebEnginePage::featurePermissionRequested signal:
+    QWebEnginePage::permissionRequested signal:
 
     \skipto m_view->page()
-    \printuntil QWebEnginePage::Feature
+    \printuntil QWebEnginePermission permission
 
     This signal is emitted whenever a web page requests to make use of a certain
     feature or device, including not only location services but also audio
@@ -62,15 +62,14 @@
 
     Now comes the part where we actually ask the user for permission:
 
-    \printuntil securityOrigin
     \printuntil });
 
     Note that the question includes the host component of the web site's URI (\c
-    securityOrigin) to inform the user as to exactly which web site will be
+    permission.origin()) to inform the user as to exactly which web site will be
     receiving their location data.
 
-    We use the \l QWebEnginePage::setFeaturePermission method to communicate the
-    user's answer back to the web page.
+    We use the \l QWebEnginePermission::grant() and \l QWebEnginePermission::deny()
+    methods to communicate the user's answer back to the web page.
 
     Finally we ask the \l QWebEnginePage to load the web page that might want to
     use location services:
