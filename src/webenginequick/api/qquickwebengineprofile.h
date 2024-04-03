@@ -5,6 +5,7 @@
 #define QQUICKWEBENGINEPROFILE_H
 
 #include <QtWebEngineQuick/qtwebenginequickglobal.h>
+#include <QtWebEngineCore/qwebenginepermission.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qstring.h>
@@ -126,6 +127,11 @@ public:
 
     QWebEngineClientCertificateStore *clientCertificateStore();
     QWebEngineClientHints *clientHints() const;
+
+    Q_REVISION(6,8) Q_INVOKABLE QWebEnginePermission getPermission(const QUrl &securityOrigin, QWebEnginePermission::Feature feature) const;
+    Q_REVISION(6,8) Q_INVOKABLE QList<QWebEnginePermission> listPermissions() const;
+    Q_REVISION(6,8) Q_INVOKABLE QList<QWebEnginePermission> listPermissions(const QUrl &securityOrigin) const;
+    Q_REVISION(6,8) Q_INVOKABLE QList<QWebEnginePermission> listPermissions(QWebEnginePermission::Feature feature) const;
 
     static QQuickWebEngineProfile *defaultProfile();
 

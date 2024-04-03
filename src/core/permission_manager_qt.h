@@ -24,6 +24,7 @@ public:
 
     void setPermission(const QUrl &origin, QWebEnginePermission::Feature feature, QWebEnginePermission::State state);
     QWebEnginePermission::State getPermissionState(const QUrl &origin, QWebEnginePermission::Feature feature);
+    QList<QWebEnginePermission> listPermissions(const QUrl &origin, QWebEnginePermission::Feature feature);
 
     void commit();
 
@@ -90,6 +91,7 @@ private:
 
     std::vector<Request> m_requests;
     std::vector<MultiRequest> m_multiRequests;
+    std::vector<QWebEnginePermission::Feature> m_featureTypes;
     std::map<content::PermissionControllerDelegate::SubscriptionId, Subscription> m_subscribers;
     content::PermissionControllerDelegate::SubscriptionId::Generator subscription_id_generator_;
     int m_requestIdCount;

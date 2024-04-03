@@ -98,7 +98,9 @@ static const QStringList hardcodedTypes = QStringList()
     << "Qt::LayoutDirection"
     << "QQuickWebEngineScriptCollection*"
     << "QQmlComponent*"
-    << "QMultiMap<QByteArray,QByteArray>";
+    << "QMultiMap<QByteArray,QByteArray>"
+    << "QList<QWebEnginePermission>"
+    ;
 
 static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineAction.text --> QString"
@@ -397,6 +399,10 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineProfile.downloadRequested(QQuickWebEngineDownloadRequest*) --> void"
     << "QQuickWebEngineProfile.downloadPath --> QString"
     << "QQuickWebEngineProfile.downloadPathChanged() --> void"
+    << "QQuickWebEngineProfile.getPermission(QUrl,QWebEnginePermission::Feature) --> QWebEnginePermission"
+    << "QQuickWebEngineProfile.listPermissions() --> QList<QWebEnginePermission>"
+    << "QQuickWebEngineProfile.listPermissions(QUrl) --> QList<QWebEnginePermission>"
+    << "QQuickWebEngineProfile.listPermissions(QWebEnginePermission::Feature) --> QList<QWebEnginePermission>"
     << "QQuickWebEngineProfile.persistentPermissionsPolicy --> QQuickWebEngineProfile::PersistentPermissionsPolicy"
     << "QQuickWebEngineProfile.persistentPermissionsPolicyChanged() --> void"
     << "QQuickWebEngineProfile.presentNotification(QWebEngineNotification*) --> void"
