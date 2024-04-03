@@ -49,7 +49,7 @@ defineTest(qtConfReport_jumboBuild) {
     qtConfReportPadded($${1}, $$mergeLimit)
 }
 
-defineTest(qtConfTest_detectPython) {
+defineTest(qtConfTest_detectPython2) {
     pythonOverride = $$eval(config.input.python_override)
     !isEmpty(pythonOverride) {
         python = $$qtConfFindInPath("$$pythonOverride$$EXE_SUFFIX")

@@ -44,11 +44,11 @@ defineReplace(which) {
 
 # Returns the unquoted path to the python executable.
 defineReplace(pythonPath) {
-    isEmpty(QMAKE_PYTHON) {
+    isEmpty(QMAKE_PYTHON2) {
         # Fallback for building QtWebEngine with Qt < 5.8
-        QMAKE_PYTHON = python
+        QMAKE_PYTHON2 = python
     }
-    return($$QMAKE_PYTHON)
+    return($$QMAKE_PYTHON2)
 }
 
 # Returns the python executable for use with shell / make targets.
