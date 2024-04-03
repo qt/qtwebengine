@@ -318,8 +318,8 @@
             "type": "detectNinja"
         },
         "webengine-python": {
-            "label": "python",
-            "type": "detectPython",
+            "label": "python2",
+            "type": "detectPython2",
             "log": "location"
         },
         "webengine-winversion": {
@@ -446,11 +446,11 @@
             "output": [ "privateFeature" ]
         },
         "webengine-python": {
-            "label": "python",
+            "label": "python2",
             "condition": "tests.webengine-python",
             "output": [
                 "privateFeature",
-                { "type": "varAssign", "name": "QMAKE_PYTHON", "value": "tests.webengine-python.location" }
+                { "type": "varAssign", "name": "QMAKE_PYTHON2", "value": "tests.webengine-python.location" }
             ]
         },
         "webengine-gperf": {
