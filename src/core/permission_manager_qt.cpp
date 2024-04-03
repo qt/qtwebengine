@@ -21,6 +21,7 @@
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/prefs/pref_service.h"
 
+#include <QtWebEngineCore/private/qwebenginepermission_p.h>
 #include "type_conversion.h"
 #include "web_contents_delegate_qt.h"
 #include "web_engine_settings.h"
@@ -190,13 +191,19 @@ PermissionManagerQt::PermissionManagerQt(ProfileAdapter *profileAdapter)
         factory.set_user_prefs(new InMemoryPrefStore);
     }
 
+    m_featureTypes.push_back(QWebEnginePermission::Notifications);
+    m_featureTypes.push_back(QWebEnginePermission::Geolocation);
+    m_featureTypes.push_back(QWebEnginePermission::ClipboardReadWrite);
+    m_featureTypes.push_back(QWebEnginePermission::LocalFontsAccess);
+
+    // Transient, but the implementation relies on them being written to storage
+    m_featureTypes.push_back(QWebEnginePermission::MediaAudioCapture);
+    m_featureTypes.push_back(QWebEnginePermission::MediaVideoCapture);
+
     // Register all preference types as keys prior to doing anything else
-    prefRegistry->RegisterDictionaryPref(featureString(QWebEnginePermission::Geolocation));
-    prefRegistry->RegisterDictionaryPref(featureString(QWebEnginePermission::ClipboardReadWrite));
-    prefRegistry->RegisterDictionaryPref(featureString(QWebEnginePermission::Notifications));
-    prefRegistry->RegisterDictionaryPref(featureString(QWebEnginePermission::LocalFontsAccess));
-    prefRegistry->RegisterDictionaryPref(featureString(QWebEnginePermission::MediaAudioCapture));
-    prefRegistry->RegisterDictionaryPref(featureString(QWebEnginePermission::MediaVideoCapture));
+    for (auto &type : m_featureTypes) {
+        prefRegistry->RegisterDictionaryPref(featureString(type));
+    }
     PrefProxyConfigTrackerImpl::RegisterPrefs(prefRegistry.get());
 
     if (policy == ProfileAdapter::NoPersistentPermissions)
@@ -282,6 +289,47 @@ void PermissionManagerQt::setPermission(const QUrl &url, QWebEnginePermission::F
 QWebEnginePermission::State PermissionManagerQt::getPermissionState(const QUrl &origin, QWebEnginePermission::Feature feature)
 {
     return toQt(GetPermissionStatus(toBlink(feature), toGurl(origin), GURL()));
+}
+
+QList<QWebEnginePermission> PermissionManagerQt::listPermissions(const QUrl &origin, QWebEnginePermission::Feature feature)
+{
+    Q_ASSERT(origin.isEmpty() || feature == QWebEnginePermission::Unsupported);
+    QList<QWebEnginePermission> returnList;
+    GURL gorigin = toGurl(origin).DeprecatedGetOriginAsURL();
+    std::string originSpec = gorigin.spec();
+
+    if (!origin.isEmpty() && !gorigin.is_valid())
+        return returnList;
+
+    std::vector<QWebEnginePermission::Feature> types;
+    if (feature == QWebEnginePermission::Unsupported)
+        types = m_featureTypes;
+    else
+        types.push_back(feature);
+
+    for (auto &type : types) {
+        // Transient types may end up in the permission store as an implementation detail,
+        // but we do not want to expose them to callers.
+        if (QWebEnginePermission::isTransient(type))
+            continue;
+
+        auto *pref = m_prefService->FindPreference(featureString(type));
+        if (!pref)
+            continue;
+
+        auto *prefDict = pref->GetValue()->GetIfDict();
+        Q_ASSERT(prefDict);
+
+        for (const auto &entry : *prefDict) {
+            if (!originSpec.empty() && entry.first != originSpec)
+                continue;
+
+            auto *pvt = new QWebEnginePermissionPrivate(toQt(GURL(std::string_view(entry.first))), type, nullptr, m_profileAdapter.get());
+            returnList.push_back(QWebEnginePermission(pvt));
+        }
+    }
+
+    return returnList;
 }
 
 void PermissionManagerQt::commit()

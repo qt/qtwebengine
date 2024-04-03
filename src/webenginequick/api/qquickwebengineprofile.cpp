@@ -19,6 +19,7 @@
 #include <QtWebEngineCore/qwebenginenotification.h>
 #include <QtWebEngineCore/private/qwebenginedownloadrequest_p.h>
 #include <QtWebEngineCore/qwebengineurlscheme.h>
+#include <QtWebEngineCore/private/qwebenginepermission_p.h>
 
 #include <QtCore/qdir.h>
 #include <QtCore/qfileinfo.h>
@@ -1111,6 +1112,147 @@ QWebEngineClientHints *QQuickWebEngineProfile::clientHints() const
 {
     Q_D(const QQuickWebEngineProfile);
     return d->m_clientHints.data();
+}
+
+/*!
+    \fn QQuickWebEngineProfile::getPermission(const QUrl &securityOrigin, QWebEnginePermission::Feature feature) const
+
+    Returns a QWebEnginePermission object corresponding to a single permission for the provided \a securityOrigin and
+    \a feature. The object may be used to query for the current state of the permission, or to change it. It is not required
+    for a permission to already exist; the returned object may also be used to pre-grant a permission if a website is
+    known to use it.
+
+    \note This may only be used for permanent feature types. Calling it with a transient \a feature will return an invalid object.
+    \since 6.8
+    \sa listPermissions(), QWebEnginePermission::Feature
+ */
+
+/*!
+    \qmlmethod void WebEngineProfile::getPermission(url securityOrigin, WebEnginePermission.Feature feature) const
+
+    Returns a webEnginePermission object corresponding to a single permission for the provided \a securityOrigin and
+    \a feature. The object may be used to query for the current state of the permission, or to change it. It is not required
+    for a permission to already exist; the returned object may also be used to pre-grant a permission if a website is
+    known to use it.
+
+    \note This may only be used for permanent feature types. Calling it with a transient \a feature will return an invalid object.
+    \since 6.8
+    \sa listPermissions()
+ */
+QWebEnginePermission QQuickWebEngineProfile::getPermission(const QUrl &securityOrigin, QWebEnginePermission::Feature feature) const
+{
+    Q_D(const QQuickWebEngineProfile);
+
+    if (feature == QWebEnginePermission::Unsupported) {
+        qWarning("Attempting to get unsupported permission. Returned object will be in an invalid state.");
+        return QWebEnginePermission(new QWebEnginePermissionPrivate());
+    }
+
+    if (QWebEnginePermission::isTransient(feature)) {
+        qWarning() << "Attempting to get permission for feature" << feature << ". Returned object will be in an invalid state.";
+        return QWebEnginePermission(new QWebEnginePermissionPrivate());
+    }
+
+    auto *pvt = new QWebEnginePermissionPrivate(securityOrigin, feature, nullptr, d->profileAdapter());
+    return QWebEnginePermission(pvt);
+}
+
+/*!
+    \qmlmethod list<webEnginePermission> WebEngineProfile::listPermissions() const
+
+    Returns a \l list of webEnginePermission objects, each one representing a single permission currently
+    present in the permissions store. The returned list contains all previously granted/denied permissions for this profile,
+    except for those of a transient feature type.
+
+    \since 6.8
+    \sa getPermission()
+ */
+
+/*!
+    Returns a QList of QWebEnginePermission objects, each one representing a single permission currently
+    present in the permissions store. The returned list contains all previously granted/denied permissions for this profile,
+    except for those of a transient feature type.
+
+    \since 6.8
+    \sa getPermission()
+ */
+QList<QWebEnginePermission> QQuickWebEngineProfile::listPermissions() const
+{
+    Q_D(const QQuickWebEngineProfile);
+    if (persistentPermissionsPolicy() == NoPersistentPermissions)
+        return QList<QWebEnginePermission>();
+    return d->profileAdapter()->listPermissions();
+}
+
+/*!
+    \qmlmethod list<webEnginePermission> WebEngineProfile::listPermissions(url securityOrigin) const
+
+    Returns a \l list of webEnginePermission objects, each one representing a single permission currently
+    present in the permissions store. The returned list contains all previously granted/denied permissions associated with a
+    specific \a securityOrigin for this profile, except for those of a transient feature type.
+
+    \note Since permissions are granted on a per-origin basis, the provided \a securityOrigin will be stripped to its
+    origin form, and the returned list will contain all permissions for the origin. Thus, passing https://www.example.com/some/page.html
+    is the same as passing just https://www.example.com/.
+    \since 6.8
+    \sa getPermission()
+ */
+
+/*!
+    Returns a QList of QWebEnginePermission objects, each one representing a single permission currently
+    present in the permissions store. The returned list contains all previously granted/denied permissions associated with a
+    specific \a securityOrigin for this profile, except for those of a transient feature type.
+
+    \note Since permissions are granted on a per-origin basis, the provided \a securityOrigin will be stripped to its
+    origin form, and the returned list will contain all permissions for the origin. Thus, passing https://www.example.com/some/page.html
+    is the same as passing just https://www.example.com/.
+    \since 6.8
+    \sa getPermission()
+ */
+QList<QWebEnginePermission> QQuickWebEngineProfile::listPermissions(const QUrl &securityOrigin) const
+{
+    Q_D(const QQuickWebEngineProfile);
+    if (persistentPermissionsPolicy() == NoPersistentPermissions)
+        return QList<QWebEnginePermission>();
+    return d->profileAdapter()->listPermissions(securityOrigin);
+}
+
+/*!
+    \qmlmethod list<webEnginePermission> WebEngineProfile::listPermissions(WebEnginePermission.Feature feature) const
+
+    Returns a \l list of webEnginePermission objects, each one representing a single permission currently
+    present in the permissions store. The returned list contains all previously granted/denied permissions of the \a feature
+    type for this profile. If the feature is of a transient or unsupported type, the list will be empty.
+
+    \since 6.8
+    \sa getPermission()
+ */
+
+/*!
+    Returns a QList of QWebEnginePermission objects, each one representing a single permission currently
+    present in the permissions store. The returned list contains all previously granted/denied permissions of the \a feature
+    type for this profile. If the feature is of a transient or unsupported type, the list will be empty.
+
+    \since 6.8
+    \sa getPermission(), QWebEnginePermission::Feature
+ */
+QList<QWebEnginePermission> QQuickWebEngineProfile::listPermissions(QWebEnginePermission::Feature feature) const
+{
+    Q_D(const QQuickWebEngineProfile);
+    if (persistentPermissionsPolicy() == NoPersistentPermissions)
+        return QList<QWebEnginePermission>();
+
+    if (feature == QWebEnginePermission::Unsupported) {
+        qWarning("Attempting to get permission list for an unsupported type. Returned list will be empty.");
+        return QList<QWebEnginePermission>();
+    }
+
+    if (QWebEnginePermission::isTransient(feature)) {
+        qWarning() << "Attempting to get permission list for feature" << feature << ". Returned list will be empty.";
+        return QList<QWebEnginePermission>();
+    }
+
+    return d->profileAdapter()->listPermissions(QUrl(), feature);
 }
 
 void QQuickWebEngineProfile::ensureQmlContext(const QObject *object)

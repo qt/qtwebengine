@@ -174,6 +174,7 @@ public:
 
     void setPermission(const QUrl &origin, QWebEnginePermission::Feature feature, QWebEnginePermission::State state);
     QWebEnginePermission::State getPermissionState(const QUrl &origin, QWebEnginePermission::Feature feature);
+    QList<QWebEnginePermission> listPermissions(const QUrl &origin = QUrl(), QWebEnginePermission::Feature feature = QWebEnginePermission::Unsupported);
 
     QString httpAcceptLanguageWithoutQualities() const;
     QString httpAcceptLanguage() const;
@@ -184,6 +185,7 @@ public:
     bool clientHintsEnabled();
     void setClientHintsEnabled(bool enabled);
     void resetClientHints();
+
 
     void clearHttpCache();
 

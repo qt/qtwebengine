@@ -576,7 +576,18 @@ void ProfileAdapter::setPermission(const QUrl &origin, QWebEnginePermission::Fea
 
 QWebEnginePermission::State ProfileAdapter::getPermissionState(const QUrl &origin, QWebEnginePermission::Feature feature)
 {
+    if (persistentPermissionsPolicy() == ProfileAdapter::NoPersistentPermissions)
+        return QWebEnginePermission::Ask;
+
     return static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->getPermissionState(origin, feature);
+}
+
+QList<QWebEnginePermission> ProfileAdapter::listPermissions(const QUrl &origin, QWebEnginePermission::Feature feature)
+{
+    if (persistentPermissionsPolicy() == ProfileAdapter::NoPersistentPermissions)
+        return QList<QWebEnginePermission>();
+
+    return static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->listPermissions(origin, feature);
 }
 
 QString ProfileAdapter::httpAcceptLanguageWithoutQualities() const

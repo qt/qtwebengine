@@ -5,6 +5,7 @@
 #define QWEBENGINEPROFILE_H
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
+#include <QtWebEngineCore/qwebenginepermission.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qscopedpointer.h>
@@ -119,6 +120,11 @@ public:
 
     void requestIconForPageURL(const QUrl &url, int desiredSizeInPixel, std::function<void(const QIcon &, const QUrl &, const QUrl &)> iconAvailableCallback) const;
     void requestIconForIconURL(const QUrl &url, int desiredSizeInPixel, std::function<void(const QIcon &, const QUrl &)> iconAvailableCallback) const;
+
+    QWebEnginePermission getPermission(const QUrl &securityOrigin, QWebEnginePermission::Feature feature) const;
+    QList<QWebEnginePermission> listPermissions() const;
+    QList<QWebEnginePermission> listPermissions(const QUrl &securityOrigin) const;
+    QList<QWebEnginePermission> listPermissions(QWebEnginePermission::Feature feature) const;
 
     static QWebEngineProfile *defaultProfile();
 

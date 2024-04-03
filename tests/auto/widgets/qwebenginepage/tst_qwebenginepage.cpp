@@ -3818,6 +3818,8 @@ public:
             case QWebEnginePermission::Ask:
                 permission.reset();
                 break;
+            default:
+                break;
             }
             spyRequest.ref()(permission.origin());
         });
@@ -3876,17 +3878,13 @@ void tst_QWebEnginePage::notificationPermission()
             permission.deny();
     });
 
-    if (setOnInit)
-#if QT_DEPRECATED_SINCE(6, 8)
-        QT_WARNING_PUSH
-        QT_WARNING_DISABLE_DEPRECATED
-        // FIXME: Replace with QWebEngineProfile permission API when that's implemented
-        page.setFeaturePermission(baseUrl, QWebEnginePage::Notifications,
-            policy == QWebEnginePermission::Granted ? QWebEnginePage::PermissionGrantedByUser : QWebEnginePage::PermissionDeniedByUser);
-        QT_WARNING_POP
-#else
-        W_QSKIP("Compiled without deprecated APIs", SkipSingle);
-#endif // QT_DEPRECATED_SINCE(6, 8)
+    QWebEnginePermission permissionObject = otr.getPermission(baseUrl, QWebEnginePermission::Notifications);
+    if (setOnInit) {
+        if (policy == QWebEnginePermission::Granted)
+            permissionObject.grant();
+        else
+            permissionObject.deny();
+    }
 
     QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
     page.setHtml(QString("<html><body>Test</body></html>"), baseUrl);
@@ -3895,17 +3893,11 @@ void tst_QWebEnginePage::notificationPermission()
     QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("Notification.permission")), setOnInit ? permission : QLatin1String("default"));
 
     if (!setOnInit) {
-#if QT_DEPRECATED_SINCE(6, 8)
-        QT_WARNING_PUSH
-        QT_WARNING_DISABLE_DEPRECATED
-        // FIXME: Replace with QWebEngineProfile permission API when that's implemented
-        page.setFeaturePermission(baseUrl, QWebEnginePage::Notifications,
-            policy == QWebEnginePermission::Granted ? QWebEnginePage::PermissionGrantedByUser : QWebEnginePage::PermissionDeniedByUser);
+        if (policy == QWebEnginePermission::Granted)
+            permissionObject.grant();
+        else
+            permissionObject.deny();
         QTRY_COMPARE(evaluateJavaScriptSync(&page, QStringLiteral("Notification.permission")), permission);
-        QT_WARNING_POP
-#else
-        W_QSKIP("Compiled without deprecated APIs", SkipSingle);
-#endif // QT_DEPRECATED_SINCE(6, 8)
     }
 
     auto js = QStringLiteral("var permission; Notification.requestPermission().then(p => { permission = p })");
@@ -4084,18 +4076,20 @@ void tst_QWebEnginePage::clipboardReadWritePermission()
                 }
             });
 
-    // FIXME: Replace with QWebEngineProfile permission API when that's implemented
-#if QT_DEPRECATED_SINCE(6, 8)
-    QT_WARNING_PUSH
-    QT_WARNING_DISABLE_DEPRECATED
-    QWebEnginePage::PermissionPolicy deprecatedPolicy =
-        initialPolicy == QWebEnginePermission::Granted ? QWebEnginePage::PermissionGrantedByUser
-        : (initialPolicy == QWebEnginePermission::Denied ? QWebEnginePage::PermissionDeniedByUser : QWebEnginePage::PermissionUnknown);
-    page.setFeaturePermission(baseUrl, QWebEnginePage::ClipboardReadWrite, deprecatedPolicy);
-    QT_WARNING_POP
-#else
-    W_QSKIP("Compiled without deprecated APIs", SkipSingle);
-#endif // QT_DEPRECATED_SINCE(6, 8)
+    QWebEnginePermission permissionObject = otr.getPermission(baseUrl, QWebEnginePermission::ClipboardReadWrite);
+    switch (initialPolicy) {
+    case QWebEnginePermission::Granted:
+        permissionObject.grant();
+        break;
+    case QWebEnginePermission::Denied:
+        permissionObject.deny();
+        break;
+    case QWebEnginePermission::Ask:
+        permissionObject.reset();
+        break;
+    default:
+        break;
+    }
 
     QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
     page.setHtml(QString("<html><body>Test</body></html>"), baseUrl);
