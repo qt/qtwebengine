@@ -7,7 +7,7 @@
 ** Modified work:
 ** Copyright (C) 2016 The Qt Company Ltd.
 **
-** SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+** SPDX-License-Identifier: BSD-3-Clause
 **
 ** This tool converts Hunspell .aff/.dic pairs to a combined binary dictionary
 ** format (.bdic). This format is more compact, and can be more efficiently
