@@ -103,6 +103,25 @@
     \skipto TabWidget::setupView
     \printuntil /^\}/
 
+    \section1 Closing Tabs
+
+    When the user closes a tab, we first trigger the \l {QWebEnginePage::}{RequestClose} web action
+    on the corresponding \c WebView:
+
+    \quotefromfile webenginewidgets/simplebrowser/tabwidget.cpp
+    \skipto QTabBar::tabCloseRequested
+    \printuntil }
+
+    This allows any JavaScript \c beforeunload event listeners to fire, which may
+    prompt the user with a dialog to confirm that they want to close the page.
+    In this case, the user can reject the close request and leave the tab open,
+    otherwise the \l {QWebEnginePage::}{windowCloseRequested} signal is emitted and we close the
+    tab:
+
+    \quotefromfile webenginewidgets/simplebrowser/tabwidget.cpp
+    \skipto QWebEnginePage::windowCloseRequested
+    \printuntil }
+
     \section1 Implementing WebView Functionality
 
     The \c WebView is derived from QWebEngineView to support the following
