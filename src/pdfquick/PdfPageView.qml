@@ -30,7 +30,7 @@ Rectangle {
 
         A PdfDocument object with a valid \c source URL is required:
 
-        \snippet multipageview.qml 0
+        \snippet pdfpageview.qml 0
     */
     required property PdfDocument document
 
