@@ -51,8 +51,10 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
+#if QT_CONFIG(opengl)
 Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
+#endif
+
 GLContextHelper* GLContextHelper::contextHelper = 0;
 
 namespace {

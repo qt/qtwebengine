@@ -637,6 +637,7 @@ WebEngineContext::WebEngineContext()
 
     parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
 
+#if QT_CONFIG(opengl)
 #if defined(Q_OS_WIN)
     // This switch is used in Chromium's gl_context_wgl.cc file to determine whether to create
     // an OpenGL Core Profile context. If the switch is not set, it would always try to create a
@@ -659,7 +660,8 @@ WebEngineContext::WebEngineContext()
 
     if (isDesktopGLOrSoftware || isGLES2Context)
         parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
-#endif
+#endif // defined(Q_OS_WIN)
+#endif // QT_CONFIG(opengl)
 
     // Do not advertise a feature we have removed at compile time
     parsedCommandLine->AppendSwitch(switches::kDisableSpeechAPI);
