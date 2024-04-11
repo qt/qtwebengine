@@ -16,6 +16,7 @@
 #include "ui/ozone/buildflags.h"
 
 #include <QDebug>
+#include <QtGui/qtgui-config.h>
 
 #if BUILDFLAG(OZONE_PLATFORM_X11)
 #include "ozone/gl_ozone_glx_qt.h"
@@ -92,6 +93,8 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
         absl::optional<gfx::Size> framebuffer_size)
 {
     Q_ASSERT(SupportsNativePixmaps());
+
+#if QT_CONFIG(opengl)
     if (framebuffer_size && !gfx::Rect(size).Contains(gfx::Rect(*framebuffer_size)))
         return nullptr;
 
@@ -125,6 +128,9 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
     }
 
     return base::MakeRefCounted<gfx::NativePixmapDmaBuf>(size, format, std::move(handle));
+#else
+    return nullptr;
+#endif // QT_CONFIG(opengl)
 }
 
 void SurfaceFactoryQt::CreateNativePixmapAsync(
@@ -149,6 +155,8 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
         gfx::NativePixmapHandle handle)
 {
     Q_ASSERT(SupportsNativePixmaps());
+
+#if QT_CONFIG(opengl)
     gfx::NativePixmapHandle bufferHandle;
 
 #if BUILDFLAG(OZONE_PLATFORM_X11)
@@ -228,17 +236,22 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
     }
 
     return base::MakeRefCounted<gfx::NativePixmapDmaBuf>(size, format, std::move(bufferHandle));
+#else
+    return nullptr;
+#endif // QT_CONFIG(opengl)
 }
 
 bool SurfaceFactoryQt::SupportsNativePixmaps() const
 {
+#if QT_CONFIG(opengl)
 #if BUILDFLAG(OZONE_PLATFORM_X11)
     if (GLContextHelper::getGlxPlatformInterface())
         return ui::GpuMemoryBufferSupportX11::GetInstance()->has_gbm_device();
-#endif
+#endif // BUILDFLAG(OZONE_PLATFORM_X11)
 
     if (GLContextHelper::getEglPlatformInterface())
         return EGLHelper::instance()->isDmaBufSupported();
+#endif // QT_CONFIG(opengl)
 
     return false;
 }
