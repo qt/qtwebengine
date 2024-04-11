@@ -9,12 +9,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "qtwebengine/grit/qt_webengine_resources.h"
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
+#include "v8/include/v8-version-string.h"
 
 namespace {
 const char kQtWebEngineVersion[] = "qtwebengine_version";
 const char kQtWebEngineChromiumVersion[] = "qtwebengine_chromium_version";
 const char kQtWebEngineChromiumSecurityPatchVersion[] =
         "qtwebengine_chromium_security_patch_version";
+const char kQtWebEngineChromiumV8Version[] = "qtwebengine_chromium_v8_version";
 const char kCommandLine[] = "command_line";
 const char kQtVersionCSS[] = "qt_version.css";
 const char kQtLogo[] = "images/qt.png";
@@ -23,7 +25,6 @@ const char kQtWebEngineLogo[] = "images/qtwebengine.png";
 
 VersionUIQt::VersionUIQt(content::WebUI *web_ui) : content::WebUIController(web_ui)
 {
-
     Profile *profile = Profile::FromWebUI(web_ui);
     content::WebUIDataSource *html_source =
             content::WebUIDataSource::CreateAndAdd(profile, chrome::kChromeUIVersionQtHost);
@@ -39,6 +40,7 @@ VersionUIQt::VersionUIQt(content::WebUI *web_ui) : content::WebUIController(web_
     html_source->AddString(kQtWebEngineChromiumVersion, qWebEngineChromiumVersion());
     html_source->AddString(kQtWebEngineChromiumSecurityPatchVersion,
                            qWebEngineChromiumSecurityPatchVersion());
+    html_source->AddString(kQtWebEngineChromiumV8Version, V8_VERSION_STRING);
 #if BUILDFLAG(IS_WIN)
     html_source->AddString(
             kCommandLine,
