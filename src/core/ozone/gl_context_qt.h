@@ -6,10 +6,11 @@
 
 #include <QObject>
 #include <QtCore/qscopedpointer.h>
+#include <QtGui/qtgui-config.h>
 
 #include "ui/gl/gl_context.h"
 
-#if defined(USE_OZONE)
+#if QT_CONFIG(opengl) && defined(USE_OZONE)
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #endif
@@ -45,7 +46,7 @@ private:
     bool m_robustness = false;
 };
 
-#if defined(USE_OZONE)
+#if QT_CONFIG(opengl) && defined(USE_OZONE)
 #undef eglCreateImage
 #undef eglDestroyImage
 #undef eglExportDMABUFImageMESA
@@ -81,7 +82,7 @@ private:
     QScopedPointer<EGLFunctions> m_functions;
     bool m_isDmaBufSupported = false;
 };
-#endif // defined(USE_OZONE)
+#endif // QT_CONFIG(opengl) && defined(USE_OZONE)
 
 QT_END_NAMESPACE
 

@@ -175,7 +175,7 @@ bool GLContextHelper::isCreateContextRobustnessSupported()
     return contextHelper->m_robustness;
 }
 
-#if defined(USE_OZONE)
+#if QT_CONFIG(opengl) && defined(USE_OZONE)
 class ScopedGLContext
 {
 public:
@@ -363,7 +363,7 @@ bool EGLHelper::isDmaBufSupported()
     close(fd);
     return true;
 }
-#endif // defined(USE_OZONE)
+#endif // QT_CONFIG(opengl) && defined(USE_OZONE)
 
 QT_END_NAMESPACE
 
