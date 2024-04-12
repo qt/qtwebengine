@@ -3,6 +3,7 @@
 
 qt_internal_add_example(contentmanipulation)
 qt_internal_add_example(cookiebrowser)
+qt_internal_add_example(permissionbrowser)
 qt_internal_add_example(notifications)
 qt_internal_add_example(simplebrowser)
 qt_internal_add_example(push-notifications)
