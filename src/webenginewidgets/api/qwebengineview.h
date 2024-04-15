@@ -6,6 +6,7 @@
 
 #include <QtGui/QPageLayout>
 #include <QtGui/qpageranges.h>
+#include <QtWidgets/qmenu.h>
 #include <QtWidgets/qwidget.h>
 
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
@@ -18,6 +19,7 @@ class AutofillPopupWidget;
 QT_BEGIN_NAMESPACE
 
 class QContextMenuEvent;
+class QMenu;
 class QPrinter;
 class QUrl;
 class QWebEngineContextMenuRequest;

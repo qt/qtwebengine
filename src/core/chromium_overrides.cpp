@@ -42,6 +42,7 @@ std::unique_ptr<VulkanImplementation> CreateVulkanImplementation(bool use_swifts
     return nullptr;
 }
 } // namespace gpu
+
 #endif
 
 namespace content {

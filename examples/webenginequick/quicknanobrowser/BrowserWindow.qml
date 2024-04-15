@@ -1,7 +1,7 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-import QtCore
+import Qt.labs.settings
 import QtQml
 import QtQuick
 import QtQuick.Controls
