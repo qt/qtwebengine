@@ -30,9 +30,28 @@
 
 #include "ui/gl/gl_bindings.h"
 #undef glBindTexture
+#undef glCreateMemoryObjectsEXT
+#undef glDeleteMemoryObjectsEXT
 #undef glDeleteTextures
 #undef glGenTextures
+#undef glGetError
+#undef glImportMemoryFdEXT
+#undef glTextureStorageMem2DEXT
 #endif // BUILDFLAG(IS_OZONE_X11)
+
+#if BUILDFLAG(ENABLE_VULKAN)
+#if BUILDFLAG(IS_OZONE_X11)
+// We need to define USE_VULKAN_XCB for proper vulkan function pointers.
+// Avoiding it may lead to call wrong vulkan functions.
+// This is originally defined in chromium/gpu/vulkan/BUILD.gn.
+#define USE_VULKAN_XCB
+#endif // BUILDFLAG(IS_OZONE_X11)
+#include "components/viz/common/gpu/vulkan_context_provider.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
+#include "third_party/skia/include/gpu/vk/GrVkTypes.h"
+#include "third_party/skia/include/gpu/ganesh/vk/GrVkBackendSurface.h"
+#endif // BUILDFLAG(ENABLE_VULKAN)
 
 // Keep it at the end.
 #include "ozone/gl_context_qt.h"
@@ -125,8 +144,10 @@ NativeSkiaOutputDeviceOpenGL::NativeSkiaOutputDeviceOpenGL(
 {
     SkColorType skColorType = kRGBA_8888_SkColorType;
 #if BUILDFLAG(IS_OZONE_X11)
-    if (GLContextHelper::getGlxPlatformInterface())
+    if (GLContextHelper::getGlxPlatformInterface()
+        && m_contextState->gr_context_type() == gpu::GrContextType::kGL) {
         skColorType = kBGRA_8888_SkColorType;
+    }
 #endif // BUILDFLAG(IS_OZONE_X11)
 
     capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBA_8888)] = skColorType;
@@ -147,10 +168,9 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
         return nullptr;
 
 #if defined(USE_OZONE)
-    Q_ASSERT(m_contextState->gr_context_type() == gpu::GrContextType::kGL);
-
-    GrGLTextureInfo glTextureInfo;
     scoped_refptr<gfx::NativePixmap> nativePixmap = m_frontBuffer->nativePixmap();
+#if BUILDFLAG(ENABLE_VULKAN)
+    GrVkImageInfo vkImageInfo;
     if (!nativePixmap) {
         if (m_isNativeBufferSupported) {
             qWarning("No native pixmap.");
@@ -175,16 +195,23 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
             return nullptr;
         }
 
-        if (backendTexture.backend() != GrBackendApi::kOpenGL) {
-            qWarning("Backend texture is not a OpenGL texture.");
+        if (backendTexture.backend() != GrBackendApi::kVulkan) {
+            qWarning("Backend texture is not a Vulkan texture.");
             return nullptr;
         }
 
-        if (!GrBackendTextures::GetGLTextureInfo(backendTexture, &glTextureInfo)) {
-            qWarning("Unable to access OpenGL texture.");
+        GrBackendTextures::GetVkImageInfo(backendTexture, &vkImageInfo);
+        if (vkImageInfo.fAlloc.fMemory == VK_NULL_HANDLE) {
+            qWarning("Unable to access Vulkan memory.");
             return nullptr;
         }
     }
+#else
+    if (!nativePixmap) {
+        qWarning("No native pixmap.");
+        return nullptr;
+    }
+#endif // BUILDFLAG(ENABLE_VULKAN)
 #elif defined(Q_OS_WIN)
     auto overlayImage = m_frontBuffer->overlayImage();
     if (!overlayImage) {
@@ -208,6 +235,8 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
     GLuint glTexture = 0;
 
     if (nativePixmap) {
+        Q_ASSERT(m_contextState->gr_context_type() == gpu::GrContextType::kGL);
+
 #if BUILDFLAG(IS_OZONE_X11)
         if (GLContextHelper::getGlxPlatformInterface()) {
             x11::Pixmap pixmapId =
@@ -286,12 +315,65 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
             };
         }
     } else {
-        // TODO: Import texture into Qt's context.
-        qWarning("ANGLE is not yet supported without NativePixmap.");
-        glTexture = glTextureInfo.fID;
+#if BUILDFLAG(ENABLE_VULKAN)
+        Q_ASSERT(m_contextState->gr_context_type() == gpu::GrContextType::kVulkan);
+
+        gpu::VulkanFunctionPointers *vfp = gpu::GetVulkanFunctionPointers();
+        gpu::VulkanDeviceQueue *vulkanDeviceQueue =
+                m_contextState->vk_context_provider()->GetDeviceQueue();
+        VkDevice vulkanDevice = vulkanDeviceQueue->GetVulkanDevice();
+
+        VkDeviceMemory importedImageMemory = vkImageInfo.fAlloc.fMemory;
+        VkDeviceSize importedImageSize = vkImageInfo.fAlloc.fSize;
+
+        VkMemoryGetFdInfoKHR exportInfo = { VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR };
+        exportInfo.pNext = nullptr;
+        exportInfo.memory = importedImageMemory;
+        exportInfo.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
+
+        int fd = -1;
+        if (vfp->vkGetMemoryFdKHR(vulkanDevice, &exportInfo, &fd) != VK_SUCCESS)
+            qFatal("VULKAN: Unable to extract file descriptor out of external VkImage.");
+
+        static PFNGLCREATEMEMORYOBJECTSEXTPROC glCreateMemoryObjectsEXT =
+                (PFNGLCREATEMEMORYOBJECTSEXTPROC)glContext->getProcAddress(
+                        "glCreateMemoryObjectsEXT");
+        static PFNGLIMPORTMEMORYFDEXTPROC glImportMemoryFdEXT =
+                (PFNGLIMPORTMEMORYFDEXTPROC)glContext->getProcAddress("glImportMemoryFdEXT");
+        static PFNGLTEXTURESTORAGEMEM2DEXTPROC glTextureStorageMem2DEXT =
+                (PFNGLTEXTURESTORAGEMEM2DEXTPROC)glContext->getProcAddress(
+                        "glTextureStorageMem2DEXT");
+
+        GLuint glMemoryObject;
+        glFun->glGenTextures(1, &glTexture);
+        glFun->glBindTexture(GL_TEXTURE_2D, glTexture);
+        glCreateMemoryObjectsEXT(1, &glMemoryObject);
+        glImportMemoryFdEXT(glMemoryObject, importedImageSize, GL_HANDLE_TYPE_OPAQUE_FD_EXT, fd);
+        glTextureStorageMem2DEXT(glTexture, 1, GL_RGBA8_OES, size().width(), size().height(),
+                                 glMemoryObject, 0);
+        glFun->glBindTexture(GL_TEXTURE_2D, 0);
+
+        m_frontBuffer->textureCleanupCallback = [glTexture, glMemoryObject]() {
+            QOpenGLContext *glContext = QOpenGLContext::currentContext();
+            if (!glContext)
+                return;
+            auto glFun = glContext->functions();
+            Q_ASSERT(glFun->glGetError() == GL_NO_ERROR);
+
+            static PFNGLDELETEMEMORYOBJECTSEXTPROC glDeleteMemoryObjectsEXT =
+                    (PFNGLDELETEMEMORYOBJECTSEXTPROC)glContext->getProcAddress(
+                            "glDeleteMemoryObjectsEXT");
+
+            glDeleteMemoryObjectsEXT(1, &glMemoryObject);
+            glFun->glDeleteTextures(1, &glTexture);
+        };
+#else
+        Q_UNREACHABLE();
+#endif // BUILDFLAG(ENABLE_VULKAN)
     }
 
     texture = QNativeInterface::QSGOpenGLTexture::fromNative(glTexture, win, size(), texOpts);
+    Q_ASSERT(glFun->glGetError() == GL_NO_ERROR);
 #elif defined(Q_OS_WIN)
     // TODO: Add WGL support over ANGLE.
     QT_NOT_YET_IMPLEMENTED

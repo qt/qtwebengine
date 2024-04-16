@@ -962,6 +962,26 @@ WebEngineContext::WebEngineContext()
     }
 
 #if QT_CONFIG(webengine_vulkan)
+    if (QQuickWindow::graphicsApi() == QSGRendererInterface::OpenGL) {
+        // FIXME: We assume that ANGLE is explicitly enabled on Linux.
+        //        Make sure to reimplement fallback if ANGLE becomes the default.
+        bool usingANGLE = false;
+        if (parsedCommandLine->HasSwitch(switches::kUseGL))
+            usingANGLE = (parsedCommandLine->GetSwitchValueASCII(switches::kUseGL)
+                          == gl::kGLImplementationANGLEName);
+        if (usingANGLE && GPUInfo::instance()->vendor() == GPUInfo::Nvidia) {
+            qWarning("Disable ANGLE because GBM is not supported with the current configuration. "
+                     "Fallback to Vulkan rendering in Chromium.");
+            parsedCommandLine->RemoveSwitch(switches::kUseANGLE);
+            parsedCommandLine->RemoveSwitch(switches::kUseGL);
+            parsedCommandLine->AppendSwitchASCII(switches::kUseGL,
+                                                 gl::kGLImplementationDesktopName);
+            parsedCommandLine->AppendSwitchASCII(switches::kUseVulkan,
+                                                 switches::kVulkanImplementationNameNative);
+            enableFeatures.push_back(features::kVulkan.name);
+        }
+    }
+
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan) {
         enableFeatures.push_back(features::kVulkan.name);
         parsedCommandLine->AppendSwitchASCII(switches::kUseVulkan,

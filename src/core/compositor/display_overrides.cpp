@@ -43,9 +43,11 @@ viz::SkiaOutputSurfaceImplOnGpu::CreateOutputDevice()
     if (graphicsApi == QSGRendererInterface::OpenGL) {
         if (gl::GetGLImplementation() != gl::kGLImplementationEGLANGLE) {
 #if !defined(Q_OS_MACOS)
-            return std::make_unique<QtWebEngineCore::DisplaySkiaOutputDevice>(
-                    context_state_, renderer_settings_.requires_alpha_channel,
-                    shared_gpu_deps_->memory_tracker(), GetDidSwapBuffersCompleteCallback());
+            if (context_state_->gr_context_type() == gpu::GrContextType::kGL) {
+                return std::make_unique<QtWebEngineCore::DisplaySkiaOutputDevice>(
+                        context_state_, renderer_settings_.requires_alpha_channel,
+                        shared_gpu_deps_->memory_tracker(), GetDidSwapBuffersCompleteCallback());
+            }
 #else
             qFatal("macOS only supports ANGLE.");
 #endif // !defined(Q_OS_MACOS)
