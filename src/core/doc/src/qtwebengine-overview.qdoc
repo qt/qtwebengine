@@ -44,8 +44,13 @@
     dedicated profile for a \e {private browsing} mode, where no information is permanently saved.
 
     \note The \QWE Widgets module uses the \l{Qt Quick Scene Graph}{Qt Quick scene graph}
-    to compose the elements of a web page into one view. This means that the UI process
-    requires OpenGL ES 2.0 or OpenGL 2.0 for its rendering.
+    to compose the elements of a web page into one view.
+
+    The content is rendered using the graphics card (GPU) capabilities. The scene
+    graph, in turn, relies on the Qt Rendering Hardware Interface as an abstraction
+    layer for the different capabilities and APIs a GPU might feature. For more
+    advice on how to tweak the rendering pipeline, see therefore
+    \l{Rendering via the Qt Rendering Hardware Interface}.
 
     \section2 Qt WebEngine Module
 
