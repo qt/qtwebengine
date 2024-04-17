@@ -88,6 +88,11 @@ public:
     Action GetAction() const override { return action; }
     int GetActionIndex() const override { return index; }
     size_t GetPointerCount() const override { return touchPoints.size(); }
+    int32_t GetSourceDeviceId(size_t pointer_index) const override
+    {
+        return static_cast<int32_t>(
+                touchPoints[pointer_index].second.device()->uniqueId().numericId());
+    }
     int GetPointerId(size_t pointer_index) const override
     {
         return touchPoints[pointer_index].first;
