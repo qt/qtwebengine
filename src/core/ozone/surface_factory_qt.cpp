@@ -92,7 +92,8 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
         gfx::BufferUsage usage,
         absl::optional<gfx::Size> framebuffer_size)
 {
-    Q_ASSERT(SupportsNativePixmaps());
+    if (!SupportsNativePixmaps())
+        return nullptr;
 
 #if QT_CONFIG(opengl)
     if (framebuffer_size && !gfx::Rect(size).Contains(gfx::Rect(*framebuffer_size)))
@@ -141,7 +142,11 @@ void SurfaceFactoryQt::CreateNativePixmapAsync(
         gfx::BufferUsage usage,
         NativePixmapCallback callback)
 {
-    Q_ASSERT(SupportsNativePixmaps());
+    if (!SupportsNativePixmaps()) {
+        std::move(callback).Run(nullptr);
+        return;
+    }
+
     // CreateNativePixmap is non-blocking operation. Thus, it is safe to call it
     // and return the result with the provided callback.
     std::move(callback).Run(CreateNativePixmap(widget, device_queue, size, format, usage));
@@ -154,7 +159,8 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
         gfx::BufferFormat format,
         gfx::NativePixmapHandle handle)
 {
-    Q_ASSERT(SupportsNativePixmaps());
+    if (!SupportsNativePixmaps())
+        return nullptr;
 
 #if QT_CONFIG(opengl)
     gfx::NativePixmapHandle bufferHandle;
