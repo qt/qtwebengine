@@ -927,8 +927,10 @@ WebEngineContext::WebEngineContext()
     }
 
 #if defined(USE_OZONE)
-    if (GPUInfo::instance()->vendor() == GPUInfo::Nvidia)
+    if (GPUInfo::instance()->vendor() == GPUInfo::Nvidia) {
         disableFeatures.push_back(media::kVaapiVideoDecodeLinux.name);
+        parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
+    }
 
 #if QT_CONFIG(webengine_vulkan)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan) {
