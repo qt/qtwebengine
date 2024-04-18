@@ -926,7 +926,11 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
     }
 
-#if QT_CONFIG(webengine_vulkan) && defined(USE_OZONE)
+#if defined(USE_OZONE)
+    if (GPUInfo::instance()->vendor() == GPUInfo::Nvidia)
+        disableFeatures.push_back(media::kVaapiVideoDecodeLinux.name);
+
+#if QT_CONFIG(webengine_vulkan)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan) {
         enableFeatures.push_back(features::kVulkan.name);
         parsedCommandLine->AppendSwitchASCII(switches::kUseVulkan,
@@ -953,7 +957,8 @@ WebEngineContext::WebEngineContext()
             qputenv(deviceExtensionsVar, requiredDeviceExtensions.join(';'));
         }
     }
-#endif // QT_CONFIG(webengine_vulkan) && defined(USE_OZONE)
+#endif // QT_CONFIG(webengine_vulkan)
+#endif // defined(USE_OZONE)
 
 #if defined(Q_OS_WIN)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11
