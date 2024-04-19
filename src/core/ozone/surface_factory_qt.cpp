@@ -226,7 +226,7 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
             int fd = fds[i];
             int stride = strides[i];
             int offset = offsets[i];
-            int size = handle.planes[i].size;
+            int planeSize = handle.planes[i].size;
 
             if (fd == -1) {
                 fd = fds[0];
@@ -234,7 +234,7 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
                 offset = handle.planes[i].offset;
             }
 
-            gfx::NativePixmapPlane plane(stride, offset, size, base::ScopedFD(::dup(fd)));
+            gfx::NativePixmapPlane plane(stride, offset, planeSize, base::ScopedFD(::dup(fd)));
             bufferHandle.planes.push_back(std::move(plane));
         }
 
