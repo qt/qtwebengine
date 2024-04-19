@@ -309,11 +309,13 @@ std::vector<GrBackendSemaphore> NativeSkiaOutputDevice::Buffer::takeEndWriteSkia
 
 void NativeSkiaOutputDevice::Buffer::createSkImageOnGPUThread()
 {
-    if (!m_scopedSkiaReadAccess)
+    if (!m_scopedSkiaReadAccess) {
+        m_skImageMutex.unlock();
         return;
+    }
 
-    QMutexLocker locker(&m_skImageMutex);
     m_cachedSkImage = m_scopedSkiaReadAccess->CreateSkImage(m_parent->m_contextState.get());
+    m_skImageMutex.unlock();
     if (!m_cachedSkImage)
         qWarning("SKIA: Failed to create SkImage.");
 }
@@ -341,6 +343,7 @@ void NativeSkiaOutputDevice::Buffer::beginPresent()
         if (!beginSemaphores.empty())
             qWarning("SKIA: Unexpected semaphores while reading texture, wait is not implemented.");
 
+        m_skImageMutex.tryLock();
         m_parent->m_gpuTaskRunner->PostTask(FROM_HERE,
                                             base::BindOnce(&NativeSkiaOutputDevice::Buffer::createSkImageOnGPUThread,
                                                            base::Unretained(this)));
@@ -390,6 +393,7 @@ void NativeSkiaOutputDevice::Buffer::consumeFence()
 
 sk_sp<SkImage> NativeSkiaOutputDevice::Buffer::skImage()
 {
+    QMutexLocker locker(&m_skImageMutex);
     return m_cachedSkImage;
 }
 #if defined(USE_OZONE)
