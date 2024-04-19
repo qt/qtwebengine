@@ -56,6 +56,7 @@ QSGTexture *NativeSkiaOutputDeviceDirect3D11::texture(QQuickWindow *win, uint32_
     status = resource->CreateSharedHandle(NULL, DXGI_SHARED_RESOURCE_READ, NULL, &sharedHandle);
     Q_ASSERT(status == S_OK);
     Q_ASSERT(sharedHandle);
+    resource->Release();
 
     // Pass texture between two D3D devices:
     ID3D11Device1 *device = static_cast<ID3D11Device1 *>(

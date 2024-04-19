@@ -187,6 +187,7 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
     Q_ASSERT(status == S_OK);
     status = resource->CreateSharedHandle(NULL, DXGI_SHARED_RESOURCE_READ, NULL, &sharedHandle);
     Q_ASSERT(status == S_OK);
+    resource->Release();
 
     if (!sharedHandle)
         qFatal("VULKAN: Unable to extract shared handle.");
