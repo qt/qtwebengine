@@ -601,9 +601,6 @@ const static char kDisableInProcGpuThread[] = "QTWEBENGINE_DISABLE_GPU_THREAD";
 bool WebEngineContext::isGpuServiceOnUIThread()
 {
     static bool threadedGpu =
-#if QT_CONFIG(opengl) && !defined(Q_OS_MACOS)
-            QOpenGLContext::supportsThreadedOpenGL() &&
-#endif
             !qEnvironmentVariableIsSet(kDisableInProcGpuThread);
     return !threadedGpu;
 }
