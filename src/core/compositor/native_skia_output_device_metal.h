@@ -21,6 +21,9 @@ public:
 
     // Overridden from Compositor:
     QSGTexture *texture(QQuickWindow *win, uint32_t textureOptions) override;
+
+private:
+    void *m_currentMetalTexture = nullptr;
 };
 
 } // namespace QtWebEngineCore

@@ -36,8 +36,15 @@ QSGTexture *makeMetalTexture(QQuickWindow *win, IOSurfaceRef ioSurface, uint ioS
 
     QSGRendererInterface *ri = win->rendererInterface();
     auto device = (__bridge id<MTLDevice>)(ri->getResource(win, QSGRendererInterface::DeviceResource));
-    auto texture = [device newTextureWithDescriptor:desc iosurface:ioSurface plane:ioSurfacePlane];
+    id<MTLTexture> texture = [device newTextureWithDescriptor:desc
+                                                    iosurface:ioSurface
+                                                        plane:ioSurfacePlane];
     return QNativeInterface::QSGMetalTexture::fromNative(texture, win, size, texOpts);
+}
+
+void releaseMetalTexture(void *texture)
+{
+    [static_cast<id<MTLTexture>>(texture) release];
 }
 
 #if QT_CONFIG(opengl)
