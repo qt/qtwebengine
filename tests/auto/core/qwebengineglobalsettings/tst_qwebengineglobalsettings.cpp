@@ -3,6 +3,8 @@
 
 #include <QtTest>
 #include <widgetutil.h>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
 #include <QWebEngineProfile>
 #include <QWebEnginePage>
 #include <QWebEngineGlobalSettings>
@@ -68,6 +70,15 @@ void tst_QWebEngineGlobalSettings::dnsOverHttps_data()
 
 void tst_QWebEngineGlobalSettings::dnsOverHttps()
 {
+    const QUrl url = QStringLiteral("https://google.com/");
+    // Verify network access with NAM because the result of loadFinished signal
+    // is used to verify that the DNS resolution was successful.
+    QNetworkAccessManager nam;
+    QSignalSpy namSpy(&nam, &QNetworkAccessManager::finished);
+    QScopedPointer<QNetworkReply> reply(nam.get(QNetworkRequest(url)));
+    if (!namSpy.wait(20000) || reply->error() != QNetworkReply::NoError)
+        QSKIP("Couldn't load page from network, skipping test.");
+
     QFETCH(QWebEngineGlobalSettings::SecureDnsMode, dnsMode);
     QFETCH(QString, uriTemplate);
     QFETCH(bool, isMockDnsServerCalledExpected);
@@ -105,10 +116,8 @@ void tst_QWebEngineGlobalSettings::dnsOverHttps()
     connect(&page, &QWebEnginePage::loadFinished, this,
             [&isLoadSuccessful](bool ok) { isLoadSuccessful = ok; });
 
-    page.load(QUrl("https://google.com/"));
-    if (!loadSpy.wait(20000)) {
-        QSKIP("Couldn't load page from network, skipping test.");
-    }
+    page.load(url);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 1, 20000);
 
     QTRY_COMPARE(isMockDnsServerCalled, isMockDnsServerCalledExpected);
     QCOMPARE(isLoadSuccessful, isDnsResolutionSuccessExpected);
