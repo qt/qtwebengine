@@ -68,7 +68,7 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
     // TODO: Add WGL support over ANGLE.
     QT_NOT_YET_IMPLEMENTED
 #elif defined(Q_OS_MACOS)
-    uint32_t glTexture = makeCGLTexture(win, ioSurface.release(), size());
+    uint32_t glTexture = makeCGLTexture(win, ioSurface.get(), size());
     texture = QNativeInterface::QSGOpenGLTexture::fromNative(glTexture, win, size(), texOpts);
 
     m_frontBuffer->textureCleanupCallback = [glTexture]() {

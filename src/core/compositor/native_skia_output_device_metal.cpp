@@ -4,6 +4,7 @@
 #include "native_skia_output_device_metal.h"
 
 #include <QtQuick/qquickwindow.h>
+#include <QtQuick/qsgtexture.h>
 
 namespace QtWebEngineCore {
 
@@ -28,6 +29,7 @@ NativeSkiaOutputDeviceMetal::~NativeSkiaOutputDeviceMetal() { }
 
 QSGTexture *makeMetalTexture(QQuickWindow *win, IOSurfaceRef ioSurface, uint ioSurfacePlane,
                              const QSize &size, QQuickWindow::CreateTextureOptions texOpts);
+void releaseMetalTexture(void *texture);
 
 QSGTexture *NativeSkiaOutputDeviceMetal::texture(QQuickWindow *win, uint32_t textureOptions)
 {
@@ -40,8 +42,25 @@ QSGTexture *NativeSkiaOutputDeviceMetal::texture(QQuickWindow *win, uint32_t tex
         return nullptr;
     }
 
+    // This is a workaround to not to release metal texture too early.
+    // In RHI, QMetalTexture wraps MTLTexture. QMetalTexture seems to be only destructed after the
+    // next MTLTexture is imported. The "old" MTLTexture can be still pontentially used by RHI
+    // while QMetalTexture is not destructed. Metal Validation Layer also warns about it.
+    // Delay releasing MTLTexture after the next one is presented.
+    if (m_currentMetalTexture) {
+        m_frontBuffer->textureCleanupCallback = [texture = m_currentMetalTexture]() {
+            releaseMetalTexture(texture);
+        };
+        m_currentMetalTexture = nullptr;
+    }
+
     QQuickWindow::CreateTextureOptions texOpts(textureOptions);
-    return makeMetalTexture(win, ioSurface.release(), /* plane */ 0, size(), texOpts);
+    QSGTexture *qsgTexture = makeMetalTexture(win, ioSurface.get(), /* plane */ 0, size(), texOpts);
+
+    auto ni = qsgTexture->nativeInterface<QNativeInterface::QSGMetalTexture>();
+    m_currentMetalTexture = ni->nativeTexture();
+
+    return qsgTexture;
 }
 
 } // namespace QtWebEngineCore
