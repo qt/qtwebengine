@@ -124,7 +124,7 @@ public:
     void windowCloseRejected() override;
     void desktopMediaRequested(QtWebEngineCore::DesktopMediaController *) override;
     void contextMenuRequested(QWebEngineContextMenuRequest *request) override;
-    void navigationRequested(int navigationType, const QUrl &url, bool &accepted, bool isMainFrame) override;
+    void navigationRequested(int navigationType, const QUrl &url, bool &accepted, bool isMainFrame, bool hasFormData) override;
     void requestFullScreenMode(const QUrl &origin, bool fullscreen) override;
     bool isFullScreenMode() const override;
     void javascriptDialog(QSharedPointer<QtWebEngineCore::JavaScriptDialogController>) override;

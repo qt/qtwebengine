@@ -117,6 +117,7 @@ private Q_SLOTS:
     void comboBoxPopupPositionAfterChildMove_data();
     void comboBoxPopupPositionAfterChildMove();
     void acceptNavigationRequest();
+    void acceptNavigationRequestWithFormData();
     void acceptNavigationRequestNavigationType();
     void acceptNavigationRequestRelativeToNothing();
 #ifndef Q_OS_MACOS
@@ -636,6 +637,7 @@ public:
         QWebEngineNavigationRequest::NavigationType type;
         QUrl url;
         bool isMainFrame;
+        bool hasFormData;
     };
     QList<Navigation> navigations;
 
@@ -653,6 +655,7 @@ private Q_SLOTS:
         n.url = request.url();
         n.type = request.navigationType();
         n.isMainFrame = request.isMainFrame();
+        n.hasFormData = request.hasFormData();
         navigations.append(n);
         request.accept();
     }
@@ -670,9 +673,33 @@ private Q_SLOTS:
     }
 };
 
+void tst_QWebEnginePage::acceptNavigationRequestWithFormData()
+{
+    QWebEngineProfile profile;
+    profile.installUrlSchemeHandler("echo", new EchoingUrlSchemeHandler(&profile));
+    TestPage page(nullptr, &profile);
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+
+    page.setHtml(QString("<html><body><form name='tstform' action='foo' method='post'>"
+                            "<input type='text'><input type='submit'></form></body></html>"),
+                 QUrl("echo:/"));
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 1, 20000);
+    QCOMPARE(page.navigations[0].type, QWebEngineNavigationRequest::TypedNavigation);
+    QVERIFY(!page.navigations[0].hasFormData);
+
+    evaluateJavaScriptSync(&page, "tstform.submit();");
+    QTRY_COMPARE(loadSpy.size(), 2);
+    QCOMPARE(page.navigations[1].type, QWebEngineNavigationRequest::FormSubmittedNavigation);
+    QVERIFY(page.navigations[1].hasFormData);
+
+    page.triggerAction(QWebEnginePage::Reload);
+    QTRY_COMPARE(loadSpy.size(), 3);
+    QCOMPARE(page.navigations[2].type, QWebEngineNavigationRequest::ReloadNavigation);
+    QVERIFY(page.navigations[2].hasFormData);
+}
+
 void tst_QWebEnginePage::acceptNavigationRequestNavigationType()
 {
-
     TestPage page;
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
 

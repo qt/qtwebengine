@@ -88,7 +88,7 @@ public:
     void requestFullScreenMode(const QUrl &origin, bool fullscreen) override;
     bool isFullScreenMode() const override;
     void contextMenuRequested(QWebEngineContextMenuRequest *request) override;
-    void navigationRequested(int navigationType, const QUrl &url, bool &accepted, bool isMainFrame) override;
+    void navigationRequested(int navigationType, const QUrl &url, bool &accepted, bool isMainFrame, bool hasFrameData) override;
     void javascriptDialog(QSharedPointer<QtWebEngineCore::JavaScriptDialogController>) override;
     void runFileChooser(QSharedPointer<QtWebEngineCore::FilePickerController>) override;
     void desktopMediaRequested(QtWebEngineCore::DesktopMediaController *) override;

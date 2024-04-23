@@ -827,7 +827,8 @@ static bool navigationThrottleCallback(content::NavigationHandle *handle)
     client->navigationRequested(pageTransitionToNavigationType(transition_type),
                                 toQt(handle->GetURL()),
                                 navigationAccepted,
-                                handle->IsInPrimaryMainFrame());
+                                handle->IsInPrimaryMainFrame(),
+                                handle->IsFormSubmission());
     return !navigationAccepted;
 }
 
