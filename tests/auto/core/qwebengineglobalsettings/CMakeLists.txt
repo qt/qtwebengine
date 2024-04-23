@@ -8,6 +8,7 @@ qt_internal_add_test(tst_qwebengineglobalsettings
     SOURCES
         tst_qwebengineglobalsettings.cpp
     LIBRARIES
+        Qt::Network
         Qt::WebEngineCore
         Test::HttpServer
         Qt::WebEngineWidgets
