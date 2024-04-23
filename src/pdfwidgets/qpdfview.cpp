@@ -19,7 +19,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(qLcLink, "qt.pdf.links")
+Q_LOGGING_CATEGORY(qLcWLink, "qt.pdf.widgets.links")
 //#define DEBUG_LINKS
 
 static const QColor SearchResultHighlight("#80B0C4DE");
@@ -681,7 +681,7 @@ void QPdfView::mouseMoveEvent(QMouseEvent *event)
             auto dest = d->m_linkModel.linkAt(posInPoints);
             setCursor(dest.isValid() ? Qt::PointingHandCursor : Qt::ArrowCursor);
             if (dest.isValid())
-                qCDebug(qLcLink) << event->position() << ":" << posInPoints << "pt ->" << dest;
+                qCDebug(qLcWLink) << event->position() << ":" << posInPoints << "pt ->" << dest;
         }
     }
 }
@@ -699,7 +699,7 @@ void QPdfView::mouseReleaseEvent(QMouseEvent *event)
             d->m_linkModel.setPage(page);
             auto dest = d->m_linkModel.linkAt(posInPoints);
             if (dest.isValid()) {
-                qCDebug(qLcLink) << event << ": jumping to" << dest;
+                qCDebug(qLcWLink) << event << ": jumping to" << dest;
                 d->m_pageNavigator->jump(dest.page(), dest.location(), dest.zoom());
                 // TODO scroll and zoom to where the link tells us to
             }
