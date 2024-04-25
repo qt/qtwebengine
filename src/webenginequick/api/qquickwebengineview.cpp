@@ -25,9 +25,9 @@
 #include "find_text_helper.h"
 #include "javascript_dialog_controller.h"
 #include "render_widget_host_view_qt_delegate_item.h"
-#include "render_widget_host_view_qt_delegate_quickwindow.h"
+#include "render_widget_host_view_qt_delegate_quickwindow_p.h"
 #include "touch_selection_menu_controller.h"
-#include "ui_delegates_manager.h"
+#include "ui_delegates_manager_p.h"
 #include "web_contents_adapter.h"
 
 #include <QtWebEngineCore/qwebenginecertificateerror.h>
@@ -60,7 +60,7 @@
 #include <QtQml/qqmlproperty.h>
 
 #if QT_CONFIG(accessibility)
-#include "qquickwebengine_accessible.h"
+#include "qquickwebengine_accessible_p.h"
 
 #include <QtGui/qaccessible.h>
 #endif

@@ -4,6 +4,17 @@
 #ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICKWINDOW_H
 #define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICKWINDOW_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include "render_widget_host_view_qt_delegate.h"
 #include "render_widget_host_view_qt_delegate_item.h"
 

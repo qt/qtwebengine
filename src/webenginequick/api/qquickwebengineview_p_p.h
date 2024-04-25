@@ -19,7 +19,7 @@
 #include "qquickwebengineview_p.h"
 #include "render_view_context_menu_qt.h"
 #include "touch_handle_drawable_client.h"
-#include "ui_delegates_manager.h"
+#include "ui_delegates_manager_p.h"
 #include "web_contents_adapter_client.h"
 
 #include <QtCore/qcompilerdetection.h>
