@@ -18,7 +18,9 @@
             "**/plugins/imageformats/**/*",
             "**/qml/QtQuick/**/*",
             "**/qml/QtQuick/Pdf/**/.rcc/*",
-            "**/qml/QtQuick/Pdf/**/.rcc/qmlcache/*"
+            "**/qml/QtQuick/Pdf/**/.rcc/qmlcache/*",
+            "**/qml/QtQuick/Pdf/**/.qt/rcc/*",
+            "**/qml/QtQuick/Pdf/**/.qt/rcc/qmlcache/*"
         ]
     }
 }
