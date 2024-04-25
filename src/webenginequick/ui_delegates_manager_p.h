@@ -4,6 +4,17 @@
 #ifndef UI_DELEGATES_MANAGER_H
 #define UI_DELEGATES_MANAGER_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtCore/qcoreapplication.h> // Q_DECLARE_TR_FUNCTIONS
 #include <QtCore/qobject.h>
 #include <QtCore/qpoint.h>

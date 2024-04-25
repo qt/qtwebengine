@@ -32,7 +32,7 @@
 #include <QQuickWidget>
 
 #if QT_CONFIG(accessibility)
-#include "qwebengine_accessible.h"
+#include "qwebengine_accessible_p.h"
 #endif
 
 #if QT_CONFIG(action)
