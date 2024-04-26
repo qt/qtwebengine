@@ -3,6 +3,7 @@
 
 #include "web_engine_context.h"
 
+#include <map>
 #include <math.h>
 #include <QtGui/private/qrhi_p.h>
 
@@ -105,10 +106,6 @@
 #include <QGuiApplication>
 #include <QMutex>
 #include <QOffscreenSurface>
-#if QT_CONFIG(opengl)
-#include <QOpenGLContext>
-#include <qopenglcontext_platform.h>
-#endif
 #include <QQuickWindow>
 #include <QRegularExpression>
 #include <QStringList>
@@ -120,6 +117,9 @@
 #include <QLoggingCategory>
 
 #if QT_CONFIG(opengl)
+#include <QOpenGLContext>
+#include <qopenglcontext_platform.h>
+
 QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
 QT_END_NAMESPACE
@@ -131,6 +131,189 @@ QT_END_NAMESPACE
 namespace QtWebEngineCore {
 
 Q_LOGGING_CATEGORY(webEngineContextLog, "qt.webenginecontext")
+
+class GPUInfo
+{
+public:
+    enum Vendor {
+        Unknown = -1,
+        AMD,
+        Apple,
+        ARM,
+        Google,
+        ImgTec,
+        Intel,
+        Microsoft,
+        Mesa,
+        Nvidia,
+        Qualcomm,
+        Samsung
+    };
+
+    static GPUInfo *instance()
+    {
+        static GPUInfo instance;
+        return &instance;
+    }
+
+    static Vendor vendorIdToVendor(quint64 vendorId)
+    {
+        // clang-format off
+        // Based on //third_party/dawn/src/dawn/gpu_info.json
+        static const std::map<quint64, Vendor> vendorIdMap = {
+            {0x0, Unknown},
+            {0x1002, AMD},
+            {0x106B, Apple},
+            {0x13B5, ARM},
+            {0x1AE0, Google},
+            {0x1010, ImgTec},
+            {0x8086, Intel},
+            {0x10005, Mesa},
+            {0x1414, Microsoft},
+            {0x10DE, Nvidia},
+            {0x5143, Qualcomm},
+            {0x144D, Samsung}
+        };
+        // clang-format on
+
+        auto it = vendorIdMap.find(vendorId);
+        if (it != vendorIdMap.end())
+            return it->second;
+
+        qWarning() << "Unknown Vendor ID:" << QString("0x%1").arg(vendorId, 0, 16);
+        return Unknown;
+    }
+
+    static Vendor deviceNameToVendor(QString deviceName)
+    {
+        // TODO: Test and add more vendors to the list.
+        if (deviceName.contains(QLatin1String("AMD"), Qt::CaseInsensitive))
+            return AMD;
+        if (deviceName.contains(QLatin1String("Intel"), Qt::CaseInsensitive))
+            return Intel;
+        if (deviceName.contains(QLatin1String("Nvidia"), Qt::CaseInsensitive))
+            return Nvidia;
+
+#if defined(USE_OZONE)
+        if (deviceName.contains(QLatin1String("Mesa llvmpipe")))
+            return Mesa;
+#endif
+
+#if defined(Q_OS_MACOS)
+        if (deviceName.contains(QLatin1String("Apple")))
+            return Apple;
+#endif
+
+        return Unknown;
+    }
+
+    static std::string vendorToString(Vendor vendor)
+    {
+        // clang-format off
+        static const std::map<Vendor, std::string> vendorNameMap = {
+            {Unknown, "Unknown"},
+            {AMD, "AMD"},
+            {Apple, "Apple"},
+            {ARM, "ARM"},
+            {Google, "Google"},
+            {ImgTec, "Img Tec"},
+            {Intel, "Intel"},
+            {Mesa, "Mesa"},
+            {Microsoft, "Microsoft"},
+            {Nvidia, "Nvidia"},
+            {Qualcomm, "Qualcomm"},
+            {Samsung, "Samsung"}
+        };
+        // clang-format on
+
+        auto it = vendorNameMap.find(vendor);
+        if (it != vendorNameMap.end())
+            return it->second;
+
+        Q_UNREACHABLE();
+        return "Unknown";
+    }
+
+    Vendor vendor() const { return m_vendor; }
+    QString getAdapterLuid() const { return m_adapterLuid; }
+
+private:
+    GPUInfo()
+    {
+#if defined(Q_OS_WIN)
+        {
+            static const bool preferSoftwareDevice =
+                    qEnvironmentVariableIntValue("QSG_RHI_PREFER_SOFTWARE_RENDERER");
+            QRhiD3D11InitParams params;
+            QRhi::Flags flags;
+            if (preferSoftwareDevice) {
+                flags |= QRhi::PreferSoftwareRenderer;
+            }
+            QScopedPointer<QRhi> d3d11Rhi(QRhi::create(QRhi::D3D11, &params, flags, nullptr));
+            // mimic what QSGRhiSupport and QBackingStoreRhi does
+            if (!d3d11Rhi && !preferSoftwareDevice) {
+                flags |= QRhi::PreferSoftwareRenderer;
+                d3d11Rhi.reset(QRhi::create(QRhi::D3D11, &params, flags, nullptr));
+            }
+            if (d3d11Rhi) {
+                m_vendor = vendorIdToVendor(d3d11Rhi->driverInfo().vendorId);
+
+                const QRhiD3D11NativeHandles *handles =
+                        static_cast<const QRhiD3D11NativeHandles *>(d3d11Rhi->nativeHandles());
+                Q_ASSERT(handles);
+                m_adapterLuid =
+                        QString("%1,%2").arg(handles->adapterLuidHigh).arg(handles->adapterLuidLow);
+            }
+        }
+#elif defined(Q_OS_MACOS)
+        {
+            QRhiMetalInitParams params;
+            QScopedPointer<QRhi> metalRhi(
+                    QRhi::create(QRhi::Metal, &params, QRhi::Flags(), nullptr));
+            if (metalRhi)
+                m_vendor = deviceNameToVendor(metalRhi->driverInfo().deviceName);
+        }
+#endif
+
+#if QT_CONFIG(opengl)
+        if (m_vendor == Unknown) {
+            QRhiGles2InitParams params;
+            params.fallbackSurface = QRhiGles2InitParams::newFallbackSurface();
+            QScopedPointer<QRhi> glRhi(
+                    QRhi::create(QRhi::OpenGLES2, &params, QRhi::Flags(), nullptr));
+            if (glRhi)
+                m_vendor = deviceNameToVendor(glRhi->driverInfo().deviceName);
+        }
+#endif
+
+#if QT_CONFIG(webengine_vulkan)
+        if (m_vendor == Unknown) {
+            QVulkanInstance vulkanInstance;
+            vulkanInstance.setApiVersion(QVersionNumber(1, 1));
+            if (vulkanInstance.create()) {
+                QRhiVulkanInitParams params;
+                params.inst = &vulkanInstance;
+                QScopedPointer<QRhi> vulkanRhi(
+                        QRhi::create(QRhi::Vulkan, &params, QRhi::Flags(), nullptr));
+                if (vulkanRhi) {
+                    // TODO: The primary GPU is not necessarily the one which is connected to the
+                    // display in case of a Multi-GPU setup on Linux. This can be workarounded by
+                    // installing the Mesa's Device Selection Layer,
+                    // see https://www.phoronix.com/news/Mesa-20.1-Vulkan-Dev-Selection
+                    // Try to detect this case and at least warn about it.
+                    m_vendor = vendorIdToVendor(vulkanRhi->driverInfo().vendorId);
+                }
+            }
+        }
+#endif
+
+        if (m_vendor == Unknown)
+            qWarning("Unable to detect GPU vendor.");
+    }
+
+    Vendor m_vendor = Unknown;
+    QString m_adapterLuid;
+};
 
 static bool usingSupportedSGBackend()
 {
@@ -280,47 +463,6 @@ static std::string getAngleType(const std::string &glType, base::CommandLine *cm
     return "disabled";
 }
 
-static quint64 getGPUVendorId()
-{
-#if QT_CONFIG(webengine_vulkan)
-    QVulkanInstance vulkanInstance;
-    vulkanInstance.setApiVersion(QVersionNumber(1, 1));
-    if (vulkanInstance.create()) {
-        QRhiVulkanInitParams params;
-        params.inst = &vulkanInstance;
-        QScopedPointer<QRhi> rhi(QRhi::create(QRhi::Vulkan, &params, QRhi::Flags(), nullptr));
-        return rhi->driverInfo().vendorId;
-    }
-#endif
-
-    return 0;
-}
-
-#if defined(Q_OS_WIN)
-static QString getAdapterLuid() {
-    static const bool preferSoftwareDevice = qEnvironmentVariableIntValue("QSG_RHI_PREFER_SOFTWARE_RENDERER");
-    QRhiD3D11InitParams rhiParams;
-    QRhi::Flags flags;
-    if (preferSoftwareDevice) {
-        flags |= QRhi::PreferSoftwareRenderer;
-    }
-    QScopedPointer<QRhi> rhi(QRhi::create(QRhi::D3D11,&rhiParams,flags,nullptr));
-    // mimic what QSGRhiSupport and QBackingStoreRhi does
-    if (!rhi && !preferSoftwareDevice) {
-        flags |= QRhi::PreferSoftwareRenderer;
-        rhi.reset(QRhi::create(QRhi::D3D11, &rhiParams, flags));
-    }
-    if (rhi) {
-        const QRhiD3D11NativeHandles *handles =
-                static_cast<const QRhiD3D11NativeHandles *>(rhi->nativeHandles());
-        Q_ASSERT(handles);
-        return QString("%1,%2").arg(handles->adapterLuidHigh).arg(handles->adapterLuidLow);
-    } else {
-        return QString();
-    }
-}
-#endif
-
 #if QT_CONFIG(webengine_pepper_plugins)
 void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
 {
@@ -340,34 +482,7 @@ static void logContext(const std::string &glType, base::CommandLine *cmd)
 
         log << "QSG RHI Backend:" << QSGRhiSupport::instance()->rhiBackendName() << "\n";
         log << "QSG RHI Backend Supported:" << (usingSupportedSGBackend() ? "yes" : "no") << "\n";
-        log << "GPU Vendor:";
-        if (quint64 vendorId = getGPUVendorId()) {
-            switch (vendorId) {
-            case 0x1002:
-                log << "AMD";
-                break;
-            case 0x10DE:
-                log << "NVIDIA";
-                break;
-            case 0x8086:
-                log << "Intel";
-                break;
-            case 0x1010:
-                log << "ImgTec";
-                break;
-            case 0x13B5:
-                log << "ARM";
-                break;
-            case 0x5143:
-                log << "Qualcomm";
-                break;
-            default:
-                break;
-            }
-            log << QString("(0x%1)\n").arg(vendorId, 0, 16);
-        } else {
-            log << "Unable to detect\n";
-        }
+        log << "GPU Vendor:" << GPUInfo::vendorToString(GPUInfo::instance()->vendor()).c_str();
         log << "\n";
 
 #if QT_CONFIG(opengl)
@@ -843,7 +958,7 @@ WebEngineContext::WebEngineContext()
 #if defined(Q_OS_WIN)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11
         || QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan) {
-        const QString luid = getAdapterLuid();
+        const QString luid = GPUInfo::instance()->getAdapterLuid();
         if (!luid.isEmpty())
             parsedCommandLine->AppendSwitchASCII(switches::kUseAdapterLuid, luid.toStdString());
     }
