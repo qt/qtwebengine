@@ -879,6 +879,7 @@ QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()
 
 ProfileAdapter *QQuickWebEngineViewPrivate::profileAdapter()
 {
+    initializeProfile();
     return m_profile->d_ptr->profileAdapter();
 }
 

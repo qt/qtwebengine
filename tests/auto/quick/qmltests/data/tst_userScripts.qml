@@ -65,6 +65,23 @@ Item {
         }
     }
 
+    // This previously crashed. See change: https://codereview.qt-project.org/c/qt/qtwebengine/+/558237
+    WebEngineView {
+        id: webEngineView3
+        width: 400
+        height: 300
+
+        userScripts {
+            collection: [
+                {
+                    injectionPoint: WebEngineScript.DocumentReady,
+                    sourceCode: Qt.resolvedUrl("append-document-title.js"),
+                    worldId: WebEngineScript.UserWorld
+                }
+            ]
+        }
+    }
+
     TestCase {
         name: "UserScripts"
 
