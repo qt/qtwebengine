@@ -40,7 +40,7 @@ public:
         gfx::BufferFormat format,
         gfx::NativePixmapHandle handle) override;
 
-    bool SupportsNativePixmaps() const;
+    static bool SupportsNativePixmaps();
 
 private:
     std::vector<gl::GLImplementationParts> m_impl;
