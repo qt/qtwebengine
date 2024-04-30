@@ -73,7 +73,8 @@ public:
         if (has_initialized_gpu()) {
             // This property is set when the GetPlatformRuntimeProperties is
             // called on the gpu process side.
-            properties.supports_native_pixmaps = surface_factory_ozone_->SupportsNativePixmaps();
+            DCHECK(m_supportsNativePixmaps);
+            properties.supports_native_pixmaps = m_supportsNativePixmaps.value();
         }
         return properties;
     }
@@ -85,6 +86,7 @@ private:
 
     void InitScreen(ui::PlatformScreen *) override {}
 
+    absl::optional<bool> m_supportsNativePixmaps;
     std::unique_ptr<QtWebEngineCore::SurfaceFactoryQt> surface_factory_ozone_;
     std::unique_ptr<CursorFactory> cursor_factory_;
 
@@ -227,6 +229,7 @@ bool OzonePlatformQt::InitializeUI(const ui::OzonePlatform::InitParams &)
     input_controller_ = CreateStubInputController();
     cursor_factory_.reset(new BitmapCursorFactory());
     gpu_platform_support_host_.reset(ui::CreateStubGpuPlatformSupportHost());
+    m_supportsNativePixmaps = QtWebEngineCore::SurfaceFactoryQt::SupportsNativePixmaps();
     return true;
 }
 
