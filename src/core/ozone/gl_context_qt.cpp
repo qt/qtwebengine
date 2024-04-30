@@ -179,7 +179,7 @@ bool GLContextHelper::isCreateContextRobustnessSupported()
 class ScopedGLContext
 {
 public:
-    ScopedGLContext()
+    ScopedGLContext(QOffscreenSurface *surface)
         : m_context(new QOpenGLContext())
         , m_previousContext(gl::GLContext::GetCurrent())
         , m_previousSurface(gl::GLSurface::GetCurrent())
@@ -189,10 +189,7 @@ public:
             return;
         }
 
-        QOffscreenSurface *surface = new QOffscreenSurface(m_context->screen(), m_context.get());
-        surface->create();
         Q_ASSERT(surface->isValid());
-
         if (!m_context->makeCurrent(surface)) {
             qWarning("Failed to make OpenGL context current.");
             return;
@@ -269,7 +266,8 @@ EGLHelper *EGLHelper::instance()
     return &eglHelper;
 }
 
-EGLHelper::EGLHelper() : m_functions(new EGLHelper::EGLFunctions())
+EGLHelper::EGLHelper()
+    : m_functions(new EGLHelper::EGLFunctions()), m_offscreenSurface(new QOffscreenSurface())
 {
     const char *extensions = m_functions->eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
     if (!extensions) {
@@ -287,6 +285,9 @@ EGLHelper::EGLHelper() : m_functions(new EGLHelper::EGLFunctions())
         qWarning("EGL: No EGL display.");
         return;
     }
+
+    Q_ASSERT(QThread::currentThread() == qApp->thread());
+    m_offscreenSurface->create();
 
     const char *displayExtensions = m_functions->eglQueryString(eglDisplay, EGL_EXTENSIONS);
     m_isDmaBufSupported = strstr(displayExtensions, "EGL_EXT_image_dma_buf_import")
@@ -306,6 +307,16 @@ EGLHelper::EGLHelper() : m_functions(new EGLHelper::EGLFunctions())
         const char *displayVendor = m_functions->eglQueryString(eglDisplay, EGL_VENDOR);
         m_isDmaBufSupported = !strstr(displayVendor, "NVIDIA");
     }
+
+    // Try to create dma-buf.
+    if (m_isDmaBufSupported) {
+        int fd = -1;
+        queryDmaBuf(2, 2, &fd, nullptr, nullptr, nullptr);
+        if (fd == -1)
+            m_isDmaBufSupported = false;
+        else
+            close(fd);
+    }
 }
 
 void EGLHelper::queryDmaBuf(const int width, const int height, int *fd, int *stride, int *offset,
@@ -314,7 +325,7 @@ void EGLHelper::queryDmaBuf(const int width, const int height, int *fd, int *str
     if (!m_isDmaBufSupported)
         return;
 
-    ScopedGLContext context;
+    ScopedGLContext context(m_offscreenSurface.get());
     if (!context.isValid())
         return;
 
@@ -350,18 +361,7 @@ void EGLHelper::queryDmaBuf(const int width, const int height, int *fd, int *str
 
 bool EGLHelper::isDmaBufSupported()
 {
-    if (!m_isDmaBufSupported)
-        return false;
-
-    int fd = -1;
-    queryDmaBuf(2, 2, &fd, nullptr, nullptr, nullptr);
-    if (fd == -1) {
-        m_isDmaBufSupported = false;
-        return false;
-    }
-
-    close(fd);
-    return true;
+    return m_isDmaBufSupported;
 }
 #endif // QT_CONFIG(opengl) && defined(USE_OZONE)
 

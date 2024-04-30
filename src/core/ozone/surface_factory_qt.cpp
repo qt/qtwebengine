@@ -241,7 +241,7 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
 #endif // QT_CONFIG(opengl)
 }
 
-bool SurfaceFactoryQt::SupportsNativePixmaps() const
+bool SurfaceFactoryQt::SupportsNativePixmaps()
 {
 #if QT_CONFIG(opengl)
 #if BUILDFLAG(OZONE_PLATFORM_X11)

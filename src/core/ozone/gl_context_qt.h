@@ -21,6 +21,8 @@ class GLSurface;
 
 QT_BEGIN_NAMESPACE
 
+class QOffscreenSurface;
+
 class GLContextHelper : public QObject {
     Q_OBJECT
 public:
@@ -80,6 +82,7 @@ private:
     EGLHelper();
 
     QScopedPointer<EGLFunctions> m_functions;
+    QScopedPointer<QOffscreenSurface> m_offscreenSurface;
     bool m_isDmaBufSupported = false;
 };
 #endif // QT_CONFIG(opengl) && defined(USE_OZONE)
