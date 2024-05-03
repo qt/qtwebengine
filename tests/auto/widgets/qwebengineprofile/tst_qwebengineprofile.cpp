@@ -188,6 +188,7 @@ void tst_QWebEngineProfile::clearDataFromCache()
     QVERIFY(server.start());
 
     AutoDir cacheDir("./tst_QWebEngineProfile_clearDataFromCache");
+    QVERIFY(!cacheDir.exists("Cache"));
 
     QWebEngineProfile profile(QStringLiteral("clearDataFromCache"));
     QSignalSpy cacheSpy(&profile, &QWebEngineProfile::clearHttpCacheCompleted);
@@ -201,9 +202,10 @@ void tst_QWebEngineProfile::clearDataFromCache()
 
     QVERIFY(cacheDir.exists("Cache"));
     qint64 sizeBeforeClear = totalSize(cacheDir);
+    QCOMPARE_GT(sizeBeforeClear, 0);
     profile.clearHttpCache();
     QTRY_COMPARE(cacheSpy.size(), 1);
-    QVERIFY(sizeBeforeClear > totalSize(cacheDir));
+    QCOMPARE_GT(sizeBeforeClear, totalSize(cacheDir));
 
     (void)server.stop();
 }
