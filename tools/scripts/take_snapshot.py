@@ -188,6 +188,10 @@ def isInChromiumBlacklist(file_path):
               and not file_path.startswith('third_party/node/node_modules/js-tokens/')
               and not file_path.startswith('third_party/node/node_modules/jsesc/')
               and not file_path.startswith('third_party/node/node_modules/jsonschema/')
+              and not file_path.startswith('third_party/node/node_modules/@lit/reactive-element/')
+              and not file_path.startswith('third_party/node/node_modules/lit-element/')
+              and not file_path.startswith('third_party/node/node_modules/lit-html/')
+              and not file_path.startswith('third_party/node/node_modules/lit/')
               and not file_path.startswith('third_party/node/node_modules/lodash.camelcase/')
               and not file_path.startswith('third_party/node/node_modules/lodash.sortby/')
               and not file_path.startswith('third_party/node/node_modules/minimatch/')
@@ -271,6 +275,7 @@ def isInChromiumBlacklist(file_path):
             or '/fuzzer/' in file_path
             or '/fuzzers/' in file_path
             or '/fuzzing/' in file_path
+            and not file_path.endswith('internals_fuzzing.idl')
         ))
         or ('/test' in file_path
          and ('/testdata/' in file_path
