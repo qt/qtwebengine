@@ -205,7 +205,11 @@ void tst_QWebEngineProfile::clearDataFromCache()
     QCOMPARE_GT(sizeBeforeClear, 0);
     profile.clearHttpCache();
     QTRY_COMPARE(cacheSpy.size(), 1);
+#if defined(Q_OS_WIN)
+    QTRY_COMPARE_GT(sizeBeforeClear, totalSize(cacheDir));
+#else
     QCOMPARE_GT(sizeBeforeClear, totalSize(cacheDir));
+#endif
 
     (void)server.stop();
 }
