@@ -214,6 +214,9 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
 
         if (files.empty())
             d_ptr->fileSystemAccessDialogListener->FileSelectionCanceled(nullptr);
+        else if (files.size() == 1)
+            d_ptr->fileSystemAccessDialogListener->FileSelected(
+                    ui::SelectedFileInfo(files[0]), 0, nullptr);
         else
             d_ptr->fileSystemAccessDialogListener->MultiFilesSelected(
                     ui::FilePathListToSelectedFileInfoList(files), nullptr);
