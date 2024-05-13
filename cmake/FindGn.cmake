@@ -6,11 +6,11 @@ if(NOT DEFINED WEBENGINE_ROOT_BUILD_DIR)
 endif()
 find_program(Gn_EXECUTABLE NAMES gn PATHS "${WEBENGINE_ROOT_BUILD_DIR}/install/bin" NO_DEFAULT_PATH)
 if(NOT QT_HOST_PATH STREQUAL "")
-   find_program(Gn_EXECUTABLE NAMES gn PATHS ${QT_HOST_PATH}/${INSTALL_LIBEXECDIR} NO_DEFAULT_PATH)
+   find_program(Gn_EXECUTABLE NAMES gn PATHS ${QT_HOST_PATH}/${QT6_HOST_INFO_LIBEXECDIR} NO_DEFAULT_PATH)
    # note: mingw installs with INSTALL_LIBEXECDIR = bin,
    # however android on windows has INSTALL_LIBEXECDIR = libexec,
    # so cover this case also
-   find_program(Gn_EXECUTABLE NAMES gn PATHS ${QT_HOST_PATH}/${INSTALL_BINDIR} NO_DEFAULT_PATH)
+   find_program(Gn_EXECUTABLE NAMES gn PATHS ${QT_HOST_PATH}/${QT6_HOST_INFO_BINDIR} NO_DEFAULT_PATH)
 endif()
 find_program(Gn_EXECUTABLE NAMES gn)
 
