@@ -349,7 +349,6 @@ foreach(arch ${archs})
             devtools_skip_typecheck=false
             use_static_angle=true
             use_perfetto_client_library=false
-            trial_comparison_cert_verifier_supported=false
             enable_extensions_legacy_ipc=true
             enable_bound_session_credentials=false
         )
