@@ -19,9 +19,12 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
-#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/internal/identity_manager/gaia_cookie_manager_service.h"
+#include "components/signin/internal/identity_manager/primary_account_manager.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
+#include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/buildflags/buildflags.h"
 #include "content/public/browser/browser_context.h"
@@ -84,17 +87,20 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
 #endif // QT_CONFIG(webengine_spellchecker)
     registry->RegisterBooleanPref(prefs::kShowInternalAccessibilityTree, false);
     registry->RegisterBooleanPref(prefs::kAccessibilityImageLabelsEnabled, false);
+
+    // chrome/browser/notifications
     registry->RegisterIntegerPref(prefs::kNotificationNextPersistentId, 10000);
+    // chrome/browser/push_messaging
     registry->RegisterDictionaryPref(prefs::kPushMessagingAppIdentifierMap);
-    registry->RegisterListPref(prefs::kAccountInfo);
-    registry->RegisterStringPref(prefs::kGoogleServicesLastUsername,
-                               std::string());
-    registry->RegisterStringPref(prefs::kGoogleServicesAccountId, std::string());
-    registry->RegisterBooleanPref(prefs::kGoogleServicesConsentedToSync, false);
-    registry->RegisterBooleanPref(prefs::kAutologinEnabled, true);
-    registry->RegisterListPref(prefs::kReverseAutologinRejectedEmailList);
-    registry->RegisterBooleanPref(prefs::kSigninAllowed, true);
-    registry->RegisterBooleanPref(prefs::kSignedInWithCredentialProvider, false);
+    // chrome/browser/gcm
+    gcm::RegisterPrefs(registry.get());
+
+    // signin
+    PrimaryAccountManager::RegisterProfilePrefs(registry.get());
+    ProfileOAuth2TokenService::RegisterProfilePrefs(registry.get());
+    GaiaCookieManagerService::RegisterPrefs(registry.get());
+    AccountTrackerService::RegisterPrefs(registry.get());
+
 #if defined(Q_OS_WIN)
     OSCrypt::RegisterLocalPrefs(registry.get());
 #endif
@@ -133,10 +139,6 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     // these two. E.g.: 'clearPreferences', that is overridden by devtools_compatibility.js
     registry->RegisterDictionaryPref(prefs::kDevToolsSyncedPreferencesSyncDisabled);
     registry->RegisterDictionaryPref(prefs::kDevToolsSyncedPreferencesSyncEnabled);
-
-    registry->RegisterStringPref(prefs::kGoogleServicesSigninScopedDeviceId, std::string());
-    registry->RegisterStringPref(prefs::kGaiaCookieLastListAccountsData, std::string());
-    registry->RegisterStringPref(prefs::kGCMProductCategoryForSubtypes, std::string());
 
     {
         base::ScopedAllowBlocking allowBlock;
