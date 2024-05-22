@@ -42,7 +42,7 @@ QQuickPdfPageImage::~QQuickPdfPageImage()
 {
     Q_D(QQuickPdfPageImage);
     // cancel any async rendering job that is running on my behalf
-    d->pix.clear();
+    d->pendingPix->clear();
 }
 
 /*!
@@ -97,21 +97,23 @@ void QQuickPdfPageImage::load()
         thisRequestFinished =
             QQuickImageBase::staticMetaObject.indexOfSlot("requestFinished()");
     }
+    static QMetaMethod requestFinishedSlot = staticMetaObject.method(thisRequestFinished);
 
-    d->pix.loadImageFromDevice(qmlEngine(this), carrierFile, url,
+    d->pendingPix->loadImageFromDevice(qmlEngine(this), carrierFile, url,
                                d->sourceClipRect.toRect(), d->sourcesize * d->devicePixelRatio,
                                QQuickImageProviderOptions(), d->currentFrame, d->frameCount);
 
     qCDebug(qLcImg) << "loading page" << d->currentFrame << "of" << d->frameCount
-                    << "from" << carrierFile->fileName() << "status" << d->pix.status();
+                    << "from" << carrierFile->fileName() << "status" << d->pendingPix->status();
 
-    switch (d->pix.status()) {
+    switch (d->pendingPix->status()) {
     case QQuickPixmap::Ready:
+        requestFinishedSlot.invoke(this);
         pixmapChange();
         break;
     case QQuickPixmap::Loading:
-        d->pix.connectFinished(this, thisRequestFinished);
-        d->pix.connectDownloadProgress(this, thisRequestProgress);
+        d->pendingPix->connectFinished(this, thisRequestFinished);
+        d->pendingPix->connectDownloadProgress(this, thisRequestProgress);
         if (d->progress != 0.0) {
             d->progress = 0.0;
             emit progressChanged(d->progress);
@@ -122,7 +124,7 @@ void QQuickPdfPageImage::load()
         }
         break;
     default:
-        qCDebug(qLcImg) << "unexpected status" << d->pix.status();
+        qCDebug(qLcImg) << "unexpected status" << d->pendingPix->status();
         break;
     }
 }
