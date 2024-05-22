@@ -134,6 +134,7 @@ public:
     void NotifyHostAndDelegateOnWasShown(blink::mojom::RecordContentToVisibleTimeRequestPtr) override { QT_NOT_YET_IMPLEMENTED }
     void RequestSuccessfulPresentationTimeFromHostOrDelegate(blink::mojom::RecordContentToVisibleTimeRequestPtr) override {}
     void CancelSuccessfulPresentationTimeRequestForHostAndDelegate() override {}
+    void OnRendererWidgetCreated() override;
 
     // Overridden from ui::GestureProviderClient.
     void OnGestureEvent(const ui::GestureEventData& gesture) override;

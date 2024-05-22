@@ -298,6 +298,12 @@ content::WebContentsAccessibility *RenderWidgetHostViewQt::GetWebContentsAccessi
     return m_webContentsAccessibility.get();
 }
 
+void RenderWidgetHostViewQt::OnRendererWidgetCreated()
+{
+    if (m_adapterClient)
+        SetBackgroundColor(toSk(m_adapterClient->backgroundColor()));
+}
+
 QObject *WebContentsAccessibilityQt::accessibilityParentObject() const
 {
     return m_rwhv->m_adapterClient->accessibilityParentObject();
