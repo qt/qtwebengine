@@ -180,12 +180,10 @@ static void callbackOnEvaluateJS(WebContentsAdapter *adapter, quint64 requestId,
 }
 
 #if QT_CONFIG(webengine_printing_and_pdf)
-static void callbackOnPrintingFinished(WebContentsAdapterClient *adapterClient,
-                                       int requestId,
+static void callbackOnPrintingFinished(WebContentsAdapter *adapter, quint64 requestId,
                                        QSharedPointer<QByteArray> result)
 {
-    if (requestId)
-        adapterClient->didPrintPage(requestId, result);
+    adapter->didPrintPage(requestId, result);
 }
 
 static void callbackOnPdfSavingFinished(WebContentsAdapterClient *adapterClient,
@@ -1366,30 +1364,36 @@ void WebContentsAdapter::printToPDF(const QPageLayout &pageLayout, const QPageRa
 #endif // QT_CONFIG(webengine_printing_and_pdf)
 }
 
-quint64 WebContentsAdapter::printToPDFCallbackResult(const QPageLayout &pageLayout,
-                                                     const QPageRanges &pageRanges,
-                                                     bool colorMode,
-                                                     bool useCustomMargins)
+void WebContentsAdapter::printToPDFCallbackResult(
+        std::function<void(QSharedPointer<QByteArray>)> &&callback, const QPageLayout &pageLayout,
+        const QPageRanges &pageRanges, bool colorMode, bool useCustomMargins)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
-    CHECK_INITIALIZED(0);
-    PrintViewManagerQt::PrintToPDFCallback callback = base::BindOnce(&callbackOnPrintingFinished,
-                                                                     m_adapterClient,
-                                                                     m_nextRequestId);
+    CHECK_INITIALIZED();
+    Q_ASSERT(callback);
+    PrintViewManagerQt::PrintToPDFCallback internalCallback =
+            base::BindOnce(&callbackOnPrintingFinished, this, m_nextRequestId);
     content::WebContents *webContents = m_webContents.get();
     if (content::WebContents *guest = guestWebContents())
         webContents = guest;
-    PrintViewManagerQt::FromWebContents(webContents)->PrintToPDFWithCallback(pageLayout,
-                                                                                     pageRanges,
-                                                                                     colorMode,
-                                                                                     useCustomMargins,
-                                                                                     std::move(callback));
-    return m_nextRequestId++;
+    PrintViewManagerQt::FromWebContents(webContents)
+            ->PrintToPDFWithCallback(pageLayout, pageRanges, colorMode, useCustomMargins,
+                                     std::move(internalCallback));
+    m_printCallbacks.emplace(m_nextRequestId++, std::move(callback));
 #else
     Q_UNUSED(pageLayout);
     Q_UNUSED(colorMode);
-    return 0;
 #endif // QT_CONFIG(webengine_printing_and_pdf)
+}
+
+void WebContentsAdapter::didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result)
+{
+    Q_ASSERT(requestId);
+    auto mapIt = m_printCallbacks.find(requestId);
+    Q_ASSERT(mapIt != m_printCallbacks.end());
+    Q_ASSERT(mapIt->second);
+    mapIt->second(std::move(result));
+    m_printCallbacks.erase(mapIt);
 }
 
 QPointF WebContentsAdapter::lastScrollOffset() const

@@ -207,9 +207,10 @@ public:
     void leaveDrag();
 #endif // QT_CONFIG(draganddrop)
     void printToPDF(const QPageLayout&, const QPageRanges &, const QString&);
-    quint64 printToPDFCallbackResult(const QPageLayout &, const QPageRanges &,
-                                     bool colorMode = true,
-                                     bool useCustomMargins = true);
+    void printToPDFCallbackResult(std::function<void(QSharedPointer<QByteArray>)> &&,
+                                  const QPageLayout &, const QPageRanges &, bool colorMode = true,
+                                  bool useCustomMargins = true);
+    void didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result);
 
     void replaceMisspelling(const QString &word);
     void viewSource();
@@ -269,6 +270,7 @@ private:
     quint64 m_nextRequestId;
     QMap<QUrl, bool> m_pendingMouseLockPermissions;
     QMap<quint64, std::function<void(const QVariant &)>> m_javaScriptCallbacks;
+    std::map<quint64, std::function<void(QSharedPointer<QByteArray>)>> m_printCallbacks;
     std::unique_ptr<content::DropData> m_currentDropData;
     uint m_currentDropAction;
     bool m_updateDragActionCalled;

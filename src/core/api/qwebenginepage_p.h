@@ -136,7 +136,10 @@ public:
                        const std::function<void(const QVariant &)> &callback) override;
     void didFetchDocumentMarkup(quint64 requestId, const QString &result) override;
     void didFetchDocumentInnerText(quint64 requestId, const QString &result) override;
-    void didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result) override;
+    void printToPdf(const QString &filePath, const QPageLayout &layout,
+                    const QPageRanges &ranges) override;
+    void printToPdf(std::function<void(QSharedPointer<QByteArray>)> &&callback,
+                    const QPageLayout &layout, const QPageRanges &ranges) override;
     void didPrintPageToPdf(const QString &filePath, bool success) override;
     bool passOnFocus(bool reverse) override;
     void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message,
@@ -188,6 +191,7 @@ public:
     bool adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
     QtWebEngineCore::WebContentsAdapter *webContents() { return adapter.data(); }
     void recreateFromSerializedHistory(QDataStream &input);
+    void didPrintPage(QSharedPointer<QByteArray> result);
 
     void setFullScreenMode(bool);
     void ensureInitialized() const;
@@ -219,7 +223,6 @@ public:
 #endif
 
     mutable QMap<quint64, std::function<void(const QString &)>> m_stringCallbacks;
-    QMap<quint64, std::function<void(const QByteArray &)>> m_pdfResultCallbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];
 };
 

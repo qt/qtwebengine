@@ -274,6 +274,18 @@ void QWebEnginePagePrivate::loadFinished(QWebEngineLoadingInfo info)
     });
 }
 
+void QWebEnginePagePrivate::printToPdf(const QString &filePath, const QPageLayout &layout,
+                                       const QPageRanges &ranges)
+{
+    adapter->printToPDF(layout, ranges, filePath);
+}
+
+void QWebEnginePagePrivate::printToPdf(std::function<void(QSharedPointer<QByteArray>)> &&callback,
+                                       const QPageLayout &layout, const QPageRanges &ranges)
+{
+    adapter->printToPDFCallbackResult(std::move(callback), layout, ranges);
+}
+
 void QWebEnginePagePrivate::didPrintPageToPdf(const QString &filePath, bool success)
 {
     Q_Q(QWebEnginePage);
@@ -519,27 +531,18 @@ void QWebEnginePagePrivate::didFetchDocumentInnerText(quint64 requestId, const Q
         callback(result);
 }
 
-void QWebEnginePagePrivate::didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result)
+void QWebEnginePagePrivate::didPrintPage(QSharedPointer<QByteArray> result)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
-    // If no currentPrinter is set that means that were printing to PDF only.
-    if (!currentPrinter) {
-        if (!result.data())
-            return;
-        if (auto callback = m_pdfResultCallbacks.take(requestId))
-            callback(*(result.data()));
-        return;
-    }
-
+    Q_ASSERT(currentPrinter);
     if (view)
         view->didPrintPage(currentPrinter, result);
     else
         currentPrinter = nullptr;
 #else
-    // we should never enter this branch, but just for safe-keeping...
+    // should not get here
     Q_UNUSED(result);
-    if (auto callback = m_pdfResultCallbacks.take(requestId))
-        callback(QByteArray());
+    Q_ASSERT(false);
 #endif
 }
 
@@ -2327,7 +2330,7 @@ void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &layo
 #if QT_CONFIG(webengine_printing_and_pdf)
     Q_D(QWebEnginePage);
     d->ensureInitialized();
-    d->adapter->printToPDF(layout, ranges, filePath);
+    d->printToPdf(filePath, layout, ranges);
 #else
     Q_UNUSED(filePath);
     Q_UNUSED(layout);
@@ -2352,11 +2355,14 @@ void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &layo
 */
 void QWebEnginePage::printToPdf(const std::function<void(const QByteArray&)> &resultCallback, const QPageLayout &layout, const QPageRanges &ranges)
 {
-    Q_D(QWebEnginePage);
 #if QT_CONFIG(webengine_printing_and_pdf)
+    Q_D(QWebEnginePage);
     d->ensureInitialized();
-    quint64 requestId = d->adapter->printToPDFCallbackResult(layout, ranges);
-    d->m_pdfResultCallbacks.insert(requestId, resultCallback);
+    std::function wrappedCallback = [resultCallback](QSharedPointer<QByteArray> result) {
+        if (resultCallback && result)
+            resultCallback(*result);
+    };
+    d->printToPdf(std::move(wrappedCallback), layout, ranges);
 #else
     Q_UNUSED(layout);
     Q_UNUSED(ranges);

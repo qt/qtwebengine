@@ -26,6 +26,8 @@
 #include <QUrl>
 
 QT_FORWARD_DECLARE_CLASS(QKeyEvent)
+QT_FORWARD_DECLARE_CLASS(QPageLayout)
+QT_FORWARD_DECLARE_CLASS(QPageRanges)
 QT_FORWARD_DECLARE_CLASS(QVariant)
 QT_FORWARD_DECLARE_CLASS(QWebEngineFileSystemAccessRequest)
 QT_FORWARD_DECLARE_CLASS(QWebEngineFindTextResult)
@@ -180,7 +182,10 @@ public:
                                const std::function<void(const QVariant &)> &callback) = 0;
     virtual void didFetchDocumentMarkup(quint64 requestId, const QString& result) = 0;
     virtual void didFetchDocumentInnerText(quint64 requestId, const QString& result) = 0;
-    virtual void didPrintPage(quint64 requestId, QSharedPointer<QByteArray>) = 0;
+    virtual void printToPdf(const QString &filePath, const QPageLayout &layout,
+                            const QPageRanges &ranges) = 0;
+    virtual void printToPdf(std::function<void(QSharedPointer<QByteArray>)> &&callback,
+                            const QPageLayout &layout, const QPageRanges &ranges) = 0;
     virtual void didPrintPageToPdf(const QString &filePath, bool success) = 0;
     virtual bool passOnFocus(bool reverse) = 0;
     // returns the last QObject (QWidget/QQuickItem) based object in the accessibility

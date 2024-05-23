@@ -1317,13 +1317,17 @@ void QQuickWebEngineViewPrivate::runJavaScript(
     adapter->runJavaScript(script, worldId, frameId, callback);
 }
 
-void QQuickWebEngineViewPrivate::didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result)
+void QQuickWebEngineViewPrivate::printToPdf(const QString &filePath, const QPageLayout &layout,
+                                            const QPageRanges &ranges)
 {
-    Q_Q(QQuickWebEngineView);
-    QJSValue callback = m_printCallbacks.take(requestId);
-    QJSValueList args;
-    args.append(qmlEngine(q)->toScriptValue(*(result.data())));
-    callback.call(args);
+    adapter->printToPDF(layout, ranges, filePath);
+}
+
+void QQuickWebEngineViewPrivate::printToPdf(
+        std::function<void(QSharedPointer<QByteArray>)> &&callback, const QPageLayout &layout,
+        const QPageRanges &ranges)
+{
+    adapter->printToPDFCallbackResult(std::move(callback), layout, ranges);
 }
 
 void QQuickWebEngineViewPrivate::didPrintPageToPdf(const QString &filePath, bool success)
@@ -1603,8 +1607,13 @@ void QQuickWebEngineView::printToPdf(const QJSValue &callback, PrintedPageSizeId
         return;
 
     d->ensureContentsAdapter();
-    quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout, ranges);
-    d->m_printCallbacks.insert(requestId, callback);
+    std::function wrappedCallback = [this, callback](QSharedPointer<QByteArray> result) {
+        QJSValueList args;
+        args.append(qmlEngine(this)->toScriptValue(*result));
+        callback.call(args);
+    };
+
+    d->printToPdf(std::move(wrappedCallback), pageLayout, ranges);
 #else
     Q_UNUSED(pageSizeId);
     Q_UNUSED(orientation);
