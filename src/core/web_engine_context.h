@@ -16,6 +16,7 @@
 namespace base {
 class RunLoop;
 class CommandLine;
+class FieldTrialList;
 }
 
 namespace content {
@@ -102,6 +103,7 @@ private:
     std::unique_ptr<ProfileAdapter> m_defaultProfileAdapter;
     std::unique_ptr<DevToolsServerQt> m_devtoolsServer;
     QList<ProfileAdapter*> m_profileAdapters;
+    std::unique_ptr<base::FieldTrialList> m_fieldTrialList;
 #if QT_CONFIG(accessibility)
     std::unique_ptr<AccessibilityActivationObserver> m_accessibilityActivationObserver;
 #endif
