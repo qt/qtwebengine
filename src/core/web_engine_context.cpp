@@ -11,6 +11,7 @@
 #include "base/functional/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/metrics/field_trial.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/run_loop.h"
@@ -970,6 +971,10 @@ WebEngineContext::WebEngineContext()
             parsedCommandLine->AppendSwitchASCII(switches::kUseAdapterLuid, luid.toStdString());
     }
 #endif
+    // We need the FieldTrialList to make sure Chromium features are provided to child processes
+    if (!base::FieldTrialList::GetInstance()) {
+        m_fieldTrialList.reset(new base::FieldTrialList());
+    }
 
     initializeFeatureList(parsedCommandLine, enableFeatures, disableFeatures);
 
