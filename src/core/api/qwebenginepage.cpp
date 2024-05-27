@@ -275,15 +275,17 @@ void QWebEnginePagePrivate::loadFinished(QWebEngineLoadingInfo info)
 }
 
 void QWebEnginePagePrivate::printToPdf(const QString &filePath, const QPageLayout &layout,
-                                       const QPageRanges &ranges)
+                                       const QPageRanges &ranges, quint64 frameId)
 {
-    adapter->printToPDF(layout, ranges, filePath);
+    adapter->printToPDF(layout, ranges, filePath, frameId);
 }
 
 void QWebEnginePagePrivate::printToPdf(std::function<void(QSharedPointer<QByteArray>)> &&callback,
-                                       const QPageLayout &layout, const QPageRanges &ranges)
+                                       const QPageLayout &layout, const QPageRanges &ranges,
+                                       quint64 frameId)
 {
-    adapter->printToPDFCallbackResult(std::move(callback), layout, ranges);
+    adapter->printToPDFCallbackResult(std::move(callback), layout, ranges, /*colorMode*/ true,
+                                      /*useCustomMargins*/ true, frameId);
 }
 
 void QWebEnginePagePrivate::didPrintPageToPdf(const QString &filePath, bool success)
@@ -1692,7 +1694,7 @@ void QWebEnginePagePrivate::printRequested()
     This signal is emitted when the JavaScript \c{window.print()} method is called on \a frame.
     If the frame is the main frame, \c{printRequested} is emitted instead.
 
-    \sa printRequested(), printToPdf()
+    \sa printRequested(), printToPdf(), QWebEngineFrame::printToPdf()
 */
 
 void QWebEnginePagePrivate::printRequestedByFrame(quint64 frameId)
@@ -2330,7 +2332,7 @@ void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &layo
 #if QT_CONFIG(webengine_printing_and_pdf)
     Q_D(QWebEnginePage);
     d->ensureInitialized();
-    d->printToPdf(filePath, layout, ranges);
+    d->printToPdf(filePath, layout, ranges, WebContentsAdapter::kUseMainFrameId);
 #else
     Q_UNUSED(filePath);
     Q_UNUSED(layout);
@@ -2362,7 +2364,7 @@ void QWebEnginePage::printToPdf(const std::function<void(const QByteArray&)> &re
         if (resultCallback && result)
             resultCallback(*result);
     };
-    d->printToPdf(std::move(wrappedCallback), layout, ranges);
+    d->printToPdf(std::move(wrappedCallback), layout, ranges, WebContentsAdapter::kUseMainFrameId);
 #else
     Q_UNUSED(layout);
     Q_UNUSED(ranges);

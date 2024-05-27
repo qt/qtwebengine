@@ -183,9 +183,10 @@ public:
     virtual void didFetchDocumentMarkup(quint64 requestId, const QString& result) = 0;
     virtual void didFetchDocumentInnerText(quint64 requestId, const QString& result) = 0;
     virtual void printToPdf(const QString &filePath, const QPageLayout &layout,
-                            const QPageRanges &ranges) = 0;
+                            const QPageRanges &ranges, quint64 frameId) = 0;
     virtual void printToPdf(std::function<void(QSharedPointer<QByteArray>)> &&callback,
-                            const QPageLayout &layout, const QPageRanges &ranges) = 0;
+                            const QPageLayout &layout, const QPageRanges &ranges,
+                            quint64 frameId) = 0;
     virtual void didPrintPageToPdf(const QString &filePath, bool success) = 0;
     virtual bool passOnFocus(bool reverse) = 0;
     // returns the last QObject (QWidget/QQuickItem) based object in the accessibility

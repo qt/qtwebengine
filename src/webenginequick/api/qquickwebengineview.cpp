@@ -1318,16 +1318,17 @@ void QQuickWebEngineViewPrivate::runJavaScript(
 }
 
 void QQuickWebEngineViewPrivate::printToPdf(const QString &filePath, const QPageLayout &layout,
-                                            const QPageRanges &ranges)
+                                            const QPageRanges &ranges, quint64 frameId)
 {
-    adapter->printToPDF(layout, ranges, filePath);
+    adapter->printToPDF(layout, ranges, filePath, frameId);
 }
 
 void QQuickWebEngineViewPrivate::printToPdf(
         std::function<void(QSharedPointer<QByteArray>)> &&callback, const QPageLayout &layout,
-        const QPageRanges &ranges)
+        const QPageRanges &ranges, quint64 frameId)
 {
-    adapter->printToPDFCallbackResult(std::move(callback), layout, ranges);
+    adapter->printToPDFCallbackResult(std::move(callback), layout, ranges, /*colorMode*/ true,
+                                      /*useCustomMargins*/ true, frameId);
 }
 
 void QQuickWebEngineViewPrivate::didPrintPageToPdf(const QString &filePath, bool success)
@@ -1586,7 +1587,7 @@ void QQuickWebEngineView::printToPdf(const QString& filePath, PrintedPageSizeId 
     QPageLayout pageLayout(layoutSize, layoutOrientation, QMarginsF(0.0, 0.0, 0.0, 0.0));
     QPageRanges ranges;
     d->ensureContentsAdapter();
-    d->adapter->printToPDF(pageLayout, ranges, filePath);
+    d->printToPdf(filePath, pageLayout, ranges, WebContentsAdapter::kUseMainFrameId);
 #else
     Q_UNUSED(filePath);
     Q_UNUSED(pageSizeId);
@@ -1613,7 +1614,8 @@ void QQuickWebEngineView::printToPdf(const QJSValue &callback, PrintedPageSizeId
         callback.call(args);
     };
 
-    d->printToPdf(std::move(wrappedCallback), pageLayout, ranges);
+    d->printToPdf(std::move(wrappedCallback), pageLayout, ranges,
+                  WebContentsAdapter::kUseMainFrameId);
 #else
     Q_UNUSED(pageSizeId);
     Q_UNUSED(orientation);

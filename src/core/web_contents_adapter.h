@@ -206,10 +206,10 @@ public:
     void endDragging(QDropEvent *e, const QPointF &screenPos);
     void leaveDrag();
 #endif // QT_CONFIG(draganddrop)
-    void printToPDF(const QPageLayout&, const QPageRanges &, const QString&);
+    void printToPDF(const QPageLayout &, const QPageRanges &, const QString &, quint64 frameId);
     void printToPDFCallbackResult(std::function<void(QSharedPointer<QByteArray>)> &&,
-                                  const QPageLayout &, const QPageRanges &, bool colorMode = true,
-                                  bool useCustomMargins = true);
+                                  const QPageLayout &, const QPageRanges &, bool colorMode,
+                                  bool useCustomMargins, quint64 frameId);
     void didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result);
 
     void replaceMisspelling(const QString &word);

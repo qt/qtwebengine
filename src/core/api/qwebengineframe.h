@@ -49,6 +49,10 @@ public:
     Q_INVOKABLE void runJavaScript(const QString &script, quint32 worldId,
                                    const QJSValue &callback);
 
+    Q_INVOKABLE void printToPdf(const QString &filePath);
+    void printToPdf(const std::function<void(const QByteArray &)> &callback);
+    Q_INVOKABLE void printToPdf(const QJSValue &callback);
+
     friend inline bool comparesEqual(const QWebEngineFrame &lhs,
                                      const QWebEngineFrame &rhs) noexcept
     {

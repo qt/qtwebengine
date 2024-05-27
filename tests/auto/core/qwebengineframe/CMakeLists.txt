@@ -19,4 +19,6 @@ qt_internal_add_resource(tst_qwebengineframe "tst_qwebengineframe"
         "resources/frameset.html"
         "resources/iframes.html"
         "resources/nesting-iframe.html"
+        "resources/printing-inner-document.html"
+        "resources/printing-outer-document.html"
 )
