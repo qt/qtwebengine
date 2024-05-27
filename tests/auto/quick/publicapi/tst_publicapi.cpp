@@ -894,6 +894,8 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineFrame.htmlName --> QString"
     << "QWebEngineFrame.isValid --> bool"
     << "QWebEngineFrame.name --> QString"
+    << "QWebEngineFrame.printToPdf(QJSValue) --> void"
+    << "QWebEngineFrame.printToPdf(QString) --> void"
     << "QWebEngineFrame.runJavaScript(QString) --> void"
     << "QWebEngineFrame.runJavaScript(QString,uint) --> void"
     << "QWebEngineFrame.runJavaScript(QString,QJSValue) --> void"

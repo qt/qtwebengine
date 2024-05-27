@@ -97,3 +97,27 @@
     For more information about injecting scripts, see \l {Script Injection}.
     For an alternative way to inject scripts, see WebEngineView::userScripts.
 */
+
+/*!
+    \qmlmethod void webEngineFrame::printToPdf(string filePath)
+
+    Prints the frame's current content to a PDF document and stores it
+    under \a filePath. The resulting document will have A4 page size and
+    portrait orientation.
+
+    This method issues an asynchronous request for printing the web page into a
+    PDF and returns immediately. To be informed about the result of the
+    request, connect to the signal \l WebEngineView::pdfPrintingFinished().
+
+    \sa WebEngineView::pdfPrintingFinished()
+*/
+
+/*!
+    \qmlmethod void webEngineFrame::printToPdf(variant callback)
+
+    Prints the frame's current content to a PDF document and returns it in a byte array. The
+    resulting document will have A4 page size and portrait orientation.
+
+    The \a callback must take a string parameter. This string will contain the document's data upon
+    successful printing and an empty string otherwise.
+*/

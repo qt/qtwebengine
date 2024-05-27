@@ -39,6 +39,9 @@ private Q_SLOTS:
     void size();
     void runJavaScript();
     void printRequestedByFrame();
+    void printToPdfFile();
+    void printToPdfFileFailures();
+    void printToPdfFunction();
 
 private:
 };
@@ -206,6 +209,122 @@ void tst_QWebEngineFrame::printRequestedByFrame()
     QCOMPARE(printRequestedSpy.size(), 1);
     auto *framePtr = get_if<QWebEngineFrame>(&printRequestedSpy[0][0]);
     QCOMPARE(*framePtr, *oFrame2);
+}
+
+void tst_QWebEngineFrame::printToPdfFile()
+{
+    QTemporaryDir tempDir(QDir::tempPath() + "/tst_qwebengineframe-XXXXXX");
+    QVERIFY(tempDir.isValid());
+
+    QWebEnginePage page;
+    QSignalSpy loadSpy{ &page, SIGNAL(loadFinished(bool)) };
+    page.load(QUrl("qrc:/resources/printing-outer-document.html"));
+    QTRY_COMPARE(loadSpy.size(), 1);
+
+    auto outerFrame = page.mainFrame();
+    auto maybeInnerFrame = page.findFrameByName("inner");
+    QVERIFY(maybeInnerFrame);
+    auto innerFrame = *maybeInnerFrame;
+
+    QSignalSpy savePdfSpy{ &page, SIGNAL(pdfPrintingFinished(QString, bool)) };
+
+    QString outerPath = tempDir.path() + "/outer.pdf";
+    outerFrame.printToPdf(outerPath);
+    QTRY_COMPARE(savePdfSpy.size(), 1);
+
+    QList<QVariant> outerArgs = savePdfSpy.takeFirst();
+    QCOMPARE(outerArgs.at(0).toString(), outerPath);
+    QVERIFY(outerArgs.at(1).toBool());
+
+    QString innerPath = tempDir.path() + "/inner.pdf";
+    innerFrame.printToPdf(innerPath);
+    QTRY_COMPARE(savePdfSpy.size(), 1);
+
+    QList<QVariant> innerArgs = savePdfSpy.takeFirst();
+    QCOMPARE(innerArgs.at(0).toString(), innerPath);
+    QVERIFY(innerArgs.at(1).toBool());
+
+    // The outer document encompasses more elements so its PDF should be larger. This is a
+    // roundabout way to check that we aren't just printing the same document twice.
+    auto outerSize = QFileInfo(outerPath).size();
+    auto innerSize = QFileInfo(innerPath).size();
+    QCOMPARE_GT(outerSize, innerSize);
+    QCOMPARE_GT(innerSize, 0);
+}
+
+void tst_QWebEngineFrame::printToPdfFileFailures()
+{
+    QTemporaryDir tempDir(QDir::tempPath() + "/tst_qwebengineframe-XXXXXX");
+    QVERIFY(tempDir.isValid());
+
+    QWebEnginePage page;
+    QSignalSpy loadSpy{ &page, SIGNAL(loadFinished(bool)) };
+    page.load(QUrl("qrc:/resources/printing-outer-document.html"));
+    QTRY_COMPARE(loadSpy.size(), 1);
+
+    auto maybeInnerFrame = page.findFrameByName("inner");
+    QVERIFY(maybeInnerFrame);
+    auto innerFrame = *maybeInnerFrame;
+
+    QSignalSpy savePdfSpy{ &page, SIGNAL(pdfPrintingFinished(QString, bool)) };
+
+#if !defined(Q_OS_WIN)
+    auto badPath = tempDir.path() + "/print_//2_failed.pdf";
+#else
+    auto badPath = tempDir.path() + "/print_|2_failed.pdf";
+#endif
+    innerFrame.printToPdf(badPath);
+    QTRY_COMPARE(savePdfSpy.size(), 1);
+
+    QList<QVariant> badPathArgs = savePdfSpy.takeFirst();
+    QCOMPARE(badPathArgs.at(0).toString(), badPath);
+    QVERIFY(!badPathArgs.at(1).toBool());
+
+    page.triggerAction(QWebEnginePage::WebAction::Reload);
+    QTRY_COMPARE(loadSpy.size(), 2);
+
+    QVERIFY(!innerFrame.isValid());
+    QString invalidFramePath = tempDir.path() + "/invalidFrame.pdf";
+    innerFrame.printToPdf(invalidFramePath);
+    QTRY_COMPARE(savePdfSpy.size(), 1);
+
+    QList<QVariant> invalidFrameArgs = savePdfSpy.takeFirst();
+    QCOMPARE(invalidFrameArgs.at(0).toString(), invalidFramePath);
+    QVERIFY(!invalidFrameArgs.at(1).toBool());
+}
+
+void tst_QWebEngineFrame::printToPdfFunction()
+{
+    QWebEnginePage page;
+    QSignalSpy loadSpy{ &page, SIGNAL(loadFinished(bool)) };
+    page.load(QUrl("qrc:/resources/printing-outer-document.html"));
+    QTRY_COMPARE(loadSpy.size(), 1);
+
+    auto outerFrame = page.mainFrame();
+    auto maybeInnerFrame = page.findFrameByName("inner");
+    QVERIFY(maybeInnerFrame);
+    auto innerFrame = *maybeInnerFrame;
+
+    CallbackSpy<QByteArray> outerSpy;
+    outerFrame.printToPdf(outerSpy.ref());
+    auto outerPdfData = outerSpy.waitForResult();
+    QCOMPARE_GT(outerPdfData.size(), 0);
+
+    CallbackSpy<QByteArray> innerSpy;
+    innerFrame.printToPdf(innerSpy.ref());
+    auto innerPdfData = innerSpy.waitForResult();
+    QCOMPARE_GT(innerPdfData.size(), 0);
+    QCOMPARE_GT(outerPdfData.size(), innerPdfData.size());
+
+    page.triggerAction(QWebEnginePage::WebAction::Reload);
+    QTRY_COMPARE(loadSpy.size(), 2);
+    QVERIFY(!innerFrame.isValid());
+
+    CallbackSpy<QByteArray> invalidSpy;
+    innerFrame.printToPdf(invalidSpy.ref());
+    auto invalidPdfData = invalidSpy.waitForResult();
+    QVERIFY(invalidSpy.wasCalled());
+    QCOMPARE(invalidPdfData.size(), 0);
 }
 
 QTEST_MAIN(tst_QWebEngineFrame)

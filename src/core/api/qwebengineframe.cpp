@@ -5,6 +5,8 @@
 
 #include "qwebenginescript.h"
 #include <QtQml/qqmlengine.h>
+#include <QtGui/qpagelayout.h>
+#include <QtGui/qpageranges.h>
 
 #include "web_contents_adapter_client.h"
 #include "web_contents_adapter.h"
@@ -173,6 +175,67 @@ void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId,
         };
     }
     runJavaScript(script, worldId, wrappedCallback);
+}
+
+/*!
+    Renders the current content of the frame into a PDF document and saves it in the location
+    specified in \a filePath. Printing uses a page size of A4, portrait layout, and includes the
+    full range of pages.
+
+    This method issues an asynchronous request for printing the web page into a PDF and returns
+    immediately. To be informed about the result of the request, connect to the \l
+    QWebEnginePage::pdfPrintingFinished() signal.
+
+    \note The \l QWebEnginePage::Stop web action can be used to interrupt this asynchronous
+    operation.
+
+    If a file already exists at the provided file path, it will be overwritten.
+
+    \sa QWebEnginePage::pdfPrintingFinished()
+ */
+void QWebEngineFrame::printToPdf(const QString &filePath)
+{
+    QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF());
+    m_adapterClient->printToPdf(filePath, layout, QPageRanges(), m_id);
+}
+
+/*!
+    Renders the current content of the frame into a PDF document and returns a byte array containing
+    the PDF data as parameter to \a callback. Printing uses a page size of A4, portrait layout, and
+    includes the full range of pages.
+
+    The \a callback must take a const reference to a QByteArray as parameter. If printing was
+    successful, this byte array will contain the PDF data, otherwise, the byte array will be empty.
+
+    \note The \l QWebEnginePage::Stop web action can be used to interrupt this operation.
+*/
+void QWebEngineFrame::printToPdf(const std::function<void(const QByteArray &)> &callback)
+{
+    std::function wrappedCallback = [callback](QSharedPointer<QByteArray> result) {
+        if (callback)
+            callback(result ? *result : QByteArray());
+    };
+    QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF());
+    m_adapterClient->printToPdf(std::move(wrappedCallback), layout, QPageRanges(), m_id);
+}
+
+void QWebEngineFrame::printToPdf(const QJSValue &callback)
+{
+    std::function<void(QSharedPointer<QByteArray>)> wrappedCallback;
+    if (!callback.isUndefined()) {
+        const QObject *holdingObject = m_adapterClient->holdingQObject();
+        wrappedCallback = [holdingObject, callback](QSharedPointer<QByteArray> result) {
+            if (auto engine = qmlEngine(holdingObject)) {
+                QJSValueList args;
+                args.append(engine->toScriptValue(result ? *result : QByteArray()));
+                callback.call(args);
+            } else {
+                qWarning("No QML engine found to execute runJavaScript() callback");
+            }
+        };
+    }
+    QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF());
+    m_adapterClient->printToPdf(std::move(wrappedCallback), layout, QPageRanges(), m_id);
 }
 
 /*! \fn bool QWebEngineFrame::operator==(const QWebEngineFrame &left, const QWebEngineFrame &right) noexcept
