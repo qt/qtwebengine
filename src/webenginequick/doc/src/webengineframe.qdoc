@@ -65,8 +65,8 @@
 */
 
 /*!
-    \qmlmethod void WebEngineFrame::runJavaScript(string script, variant callback)
-    \qmlmethod void WebEngineFrame::runJavaScript(string script, uint worldId, variant callback)
+    \qmlmethod void webEngineFrame::runJavaScript(string script, variant callback)
+    \qmlmethod void webEngineFrame::runJavaScript(string script, uint worldId, variant callback)
 
     Runs the JavaScript code contained in \a script on this frame, without checking
     whether the DOM of the page has been constructed.
