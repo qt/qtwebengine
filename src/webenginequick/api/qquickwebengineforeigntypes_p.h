@@ -231,6 +231,15 @@ struct ForeignWebEngineWebAuthUxRequest
     QML_UNCREATABLE("")
 };
 
+struct ForeginWebEngineWebAuthPinRequest
+{
+    Q_GADGET
+    QML_FOREIGN(QWebEngineWebAuthPinRequest)
+    QML_NAMED_ELEMENT(WebEngineWebAuthPinRequest)
+    QML_ADDED_IN_VERSION(6, 8)
+    QML_UNCREATABLE("")
+};
+
 QT_END_NAMESPACE
 
 #endif // QQUICKWEBENGINEFOREIGNTYPES_H

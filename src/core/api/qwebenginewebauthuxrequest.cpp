@@ -94,6 +94,59 @@
 */
 
 /*!
+    \qmltype WebEngineWebAuthPinRequest
+    \instantiates QWebEngineWebAuthPinRequest
+    \inqmlmodule QtWebEngine
+    \since QtWebEngine 6.8
+    \brief Encapsulates the data of a PIN WebAuth UX request.
+
+    This encapsulates the following information related to a PIN request made by an authenticator.
+    \list
+    \li The reason for the PIN prompt.
+    \li The error details for the PIN prompt.
+    \li The number of attempts remaining before a hard lock. Should be ignored unless
+        \l{WebEngineWebAuthPinRequest::reason} is
+        \l{WebEngineWebAuthUxRequest.PinEntryReason.Challenge}.
+    \li The minimum PIN length that the authenticator will accept for the PIN.
+    \endlist
+    Use this structure to update the WebAuth UX dialog when the WebAuth UX state is \l
+    WebEngineWebAuthUxRequest.WebAuthUxState.CollectPin.
+*/
+
+/*!
+    \qmlproperty enumeration WebEngineWebAuthPinRequest::reason
+    \brief The reason for the PIN prompt.
+
+    \value WebEngineWebAuthUxRequest.PinEntryReason.Set A new PIN is being set.
+    \value WebEngineWebAuthUxRequest.PinEntryReason.Change The existing PIN must be changed before using this authenticator.
+    \value WebEngineWebAuthUxRequest.PinEntryReason.Challenge The existing PIN is being collected to prove user verification.
+*/
+
+/*!
+    \qmlproperty enumeration WebEngineWebAuthPinRequest::error
+    \brief The error details for the PIN prompt.
+
+    \value WebEngineWebAuthUxRequest.PinEntryError.NoError No error has occurred.
+    \value WebEngineWebAuthUxRequest.PinEntryError.InternalUvLocked Internal UV is locked, so we are falling back to PIN.
+    \value WebEngineWebAuthUxRequest.PinEntryError.WrongPin The PIN the user entered does not match the authenticator PIN.
+    \value WebEngineWebAuthUxRequest.PinEntryError.TooShort The new PIN the user entered is too short.
+    \value WebEngineWebAuthUxRequest.PinEntryError.InvalidCharacters The new PIN the user entered contains invalid characters.
+    \value WebEngineWebAuthUxRequest.PinEntryError.SameAsCurrentPin The new PIN the user entered is the same as the currently set PIN.
+*/
+
+/*!
+    \qmlproperty int WebEngineWebAuthPinRequest::remainingAttempts
+    \brief The number of attempts remaining before a hard lock. Should be ignored unless
+           \l{WebEngineWebAuthPinRequest::reason} is
+           \l{WebEngineWebAuthUxRequest.PinEntryReason.Challenge}.
+*/
+
+/*!
+    \qmlproperty int WebEngineWebAuthPinRequest::minPinLength
+    \brief The minimum PIN length that the authenticator will accept for the PIN.
+*/
+
+/*!
     \enum QWebEngineWebAuthUxRequest::WebAuthUxState
 
     This enum describes the state of the current WebAuth UX request.
