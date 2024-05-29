@@ -148,11 +148,28 @@ static inline QUrl baseUrlSync(QWebEnginePage *page)
     return spy.waitForResult().toUrl();
 }
 
-static inline bool loadSync(QWebEnginePage *page, const QUrl &url, bool ok = true)
+static inline bool loadSync(QWebEnginePage *page, const QUrl &url, bool ok = true,
+                            int timeout = 20000)
 {
     QSignalSpy spy(page, &QWebEnginePage::loadFinished);
     page->load(url);
-    return (!spy.empty() || spy.wait(20000)) && (spy.front().value(0).toBool() == ok);
+    return (!spy.empty() || spy.wait(timeout)) && (spy.front().value(0).toBool() == ok);
+}
+
+static inline bool setHtmlSync(QWebEnginePage *page, const QString &html,
+                               const QUrl &baseUrl = QUrl())
+{
+    QSignalSpy spy(page, &QWebEnginePage::loadFinished);
+    page->setHtml(html, baseUrl);
+    return (!spy.empty() || spy.wait(20000)) && spy.front().value(0).toBool();
+}
+
+static inline bool webActionLoadSync(QWebEnginePage *page, QWebEnginePage::WebAction action,
+                                     bool ok = true, int timeout = 20000)
+{
+    QSignalSpy spy(page, &QWebEnginePage::loadFinished);
+    page->triggerAction(action);
+    return (!spy.empty() || spy.wait(timeout)) && (spy.front().value(0).toBool() == ok);
 }
 
 static inline QRect elementGeometry(QWebEnginePage *page, const QString &id)
