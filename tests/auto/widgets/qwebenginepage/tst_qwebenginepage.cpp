@@ -176,8 +176,7 @@ private Q_SLOTS:
     void requestQuota_data();
     void requestQuota();
 
-
-    // Tests from tst_QWebEngineFrame
+    // Tests from pre-6.8 tst_QWebEngineFrame
     void symmetricUrl();
     void progressSignal();
     void urlChange();
