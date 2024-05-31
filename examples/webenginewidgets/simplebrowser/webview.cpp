@@ -156,8 +156,7 @@ QIcon WebView::favIcon() const
         return errorIcon;
     }
     if (m_loadProgress < 100) {
-        static QIcon loadingIcon = QIcon::fromTheme(QIcon::ThemeIcon::ViewRefresh,
-                                                    QIcon(":view-refresh.png"_L1));
+        static QIcon loadingIcon(u":view-refresh.png"_s);
         return loadingIcon;
     }
 
