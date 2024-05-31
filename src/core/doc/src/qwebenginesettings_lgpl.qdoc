@@ -179,6 +179,10 @@
     \value ForceDarkMode Specifies that all web contents will be rendered using a dark theme.
            For more information, see \l{https://developer.chrome.com/blog/auto-dark-theme/}{Auto dark theme}.
            Disabled by default. (Added in Qt 6.7)
+    \value PrintHeaderAndFooter Specifies that printing results will contain basic page information
+           (URL, title, date, page number) in header and footer area. It is the embedder's responsibility
+           to provide enough space for these texts by setting proper top and bottom margins.
+           Disabled by default. (Added in Qt 6.9)
 */
 
 /*!

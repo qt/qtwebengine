@@ -501,6 +501,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.pluginsEnabledChanged() --> void"
     << "QQuickWebEngineSettings.printElementBackgrounds --> bool"
     << "QQuickWebEngineSettings.printElementBackgroundsChanged() --> void"
+    << "QQuickWebEngineSettings.printHeaderAndFooter --> bool"
+    << "QQuickWebEngineSettings.printHeaderAndFooterChanged() --> void"
     << "QQuickWebEngineSettings.screenCaptureEnabled --> bool"
     << "QQuickWebEngineSettings.screenCaptureEnabledChanged() --> void"
     << "QQuickWebEngineSettings.showScrollBars --> bool"

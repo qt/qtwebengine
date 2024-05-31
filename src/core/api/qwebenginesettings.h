@@ -62,6 +62,7 @@ public:
         NavigateOnDropEnabled,
         ReadingFromCanvasEnabled,
         ForceDarkMode,
+        PrintHeaderAndFooter,
     };
 
     enum FontSize {

@@ -300,6 +300,7 @@ void WebEngineSettings::initDefaults()
         s_defaultAttributes.insert(QWebEngineSettings::ReadingFromCanvasEnabled, !noReadingFromCanvas);
         bool forceDarkMode = commandLine->HasSwitch(switches::kForceDarkMode);
         s_defaultAttributes.insert(QWebEngineSettings::ForceDarkMode, forceDarkMode);
+        s_defaultAttributes.insert(QWebEngineSettings::PrintHeaderAndFooter, false);
     }
 
     if (s_defaultFontFamilies.isEmpty()) {

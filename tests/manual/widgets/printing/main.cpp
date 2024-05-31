@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QEventLoop>
 #include <QPrinter>
+#include <QWebEngineSettings>
 #include <QWebEngineView>
 
 class PrintTester : public QObject
@@ -36,6 +37,8 @@ PrintTester::PrintTester(const QString &outputDir, const QUrl &url)
     connect(&m_view, &QWebEngineView::loadFinished, this, &PrintTester::loadFinished);
     connect(&m_view, &QWebEngineView::pdfPrintingFinished, this, &PrintTester::pdfPrintingFinished);
     connect(&m_view, &QWebEngineView::printFinished, this, &PrintTester::printingFinished);
+
+    m_view.settings()->setAttribute(QWebEngineSettings::PrintHeaderAndFooter, false);
 }
 
 int PrintTester::run()
@@ -69,7 +72,7 @@ void PrintTester::loadFinished(bool ok)
     const std::map<QString, QMargins> margins = {
         { "default", QMargins() },
         { "uniform", QMargins(20, 20, 20, 20) },
-        { "left", QMargins(30, 5, 5, 5) },
+        { "topbottom", QMargins(5, 30, 5, 30) },
     };
 
     for (auto const &[pageSizeName, pageSize] : pageSizes) {

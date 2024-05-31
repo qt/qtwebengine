@@ -18,6 +18,7 @@
 #include <QtGui/qpagelayout.h>
 #include <QtGui/qpageranges.h>
 #include <QtGui/qpagesize.h>
+#include <QWebEngineSettings>
 
 #include "base/values.h"
 #include "base/memory/ref_counted_memory.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "components/printing/common/print.mojom.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -212,6 +214,14 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
     if (!pageLayout.isValid())
         return false;
 
+    bool printHeaderAndFooter = false;
+    content::WebContentsView *view =
+            static_cast<content::WebContentsImpl *>(web_contents()->GetOutermostWebContents())
+                    ->GetView();
+    if (WebContentsAdapterClient *client = WebContentsViewQt::from(view)->client())
+        printHeaderAndFooter = client->webEngineSettings()->testAttribute(
+                QWebEngineSettings::PrintHeaderAndFooter);
+
     m_printSettings = createPrintSettingsFromQPageLayout(pageLayout);
     m_printSettings.Set(printing::kSettingShouldPrintBackgrounds,
                                 web_contents()->GetOrCreateWebPreferences().should_print_backgrounds);
@@ -219,6 +229,17 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
                                 int(printInColor ? printing::mojom::ColorModel::kColor : printing::mojom::ColorModel::kGrayscale));
     if (!pageRanges.isEmpty())
         m_printSettings.Set(printing::kSettingPageRange, createPageRangeSettings(pageRanges.toRangeList()));
+
+    if (printHeaderAndFooter) {
+        m_printSettings.Set(printing::kSettingHeaderFooterEnabled, true);
+        m_printSettings.Set(printing::kSettingHeaderFooterTitle, web_contents()->GetTitle());
+        GURL::Replacements sanitizer;
+        sanitizer.ClearUsername();
+        sanitizer.ClearPassword();
+        const GURL &url = web_contents()->GetLastCommittedURL();
+        m_printSettings.Set(printing::kSettingHeaderFooterURL,
+                            url_formatter::FormatUrl(url.ReplaceComponents(sanitizer)));
+    }
 
     if (web_contents()->IsCrashed())
         return false;

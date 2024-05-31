@@ -468,6 +468,22 @@ bool QQuickWebEngineSettings::forceDarkMode() const
 }
 
 /*!
+    \qmlproperty bool WebEngineSettings::printHeaderAndFooter
+    \since QtWebEngine 6.9
+
+    Specifies that printing results will contain basic page information (URL,
+    title, date, page number) in header and footer area. It is the embedder's
+    responsibility to provide enough space for these texts by setting proper top
+    and bottom margins.
+
+    Disabled by default.
+ */
+bool QQuickWebEngineSettings::printHeaderAndFooter() const
+{
+    return d_ptr->testAttribute(QWebEngineSettings::PrintHeaderAndFooter);
+}
+
+/*!
     \qmlproperty bool WebEngineSettings::scrollAnimatorEnabled
     \since QtWebEngine 6.8
 
@@ -805,6 +821,14 @@ void QQuickWebEngineSettings::setForceDarkMode(bool on)
     d_ptr->setAttribute(QWebEngineSettings::ForceDarkMode, on);
     if (wasOn != on)
         Q_EMIT forceDarkModeChanged();
+}
+
+void QQuickWebEngineSettings::setPrintHeaderAndFooter(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::PrintHeaderAndFooter);
+    d_ptr->setAttribute(QWebEngineSettings::PrintHeaderAndFooter, on);
+    if (wasOn != on)
+        Q_EMIT printHeaderAndFooterChanged();
 }
 
 void QQuickWebEngineSettings::setScrollAnimatorEnabled(bool on)

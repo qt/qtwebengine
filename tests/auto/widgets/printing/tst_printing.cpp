@@ -23,6 +23,8 @@ private slots:
     void printRequest();
     void pdfContent();
     void printFromPdfViewer();
+    void printHeaderAndFooter_data();
+    void printHeaderAndFooter();
     void interruptPrinting();
 };
 
@@ -182,6 +184,53 @@ void tst_Printing::printFromPdfViewer()
         return true;
     }, 15000);
     QVERIFY(ok);
+#endif
+}
+
+void tst_Printing::printHeaderAndFooter_data()
+{
+    QTest::addColumn<bool>("enabled");
+    QTest::newRow("PrintHeaderAndFooter disabled") << false;
+    QTest::newRow("PrintHeaderAndFooter enabled") << true;
+}
+
+void tst_Printing::printHeaderAndFooter()
+{
+#if !defined(QTPDF_SUPPORT)
+    QSKIP("QtPdf is required, but missing");
+#else
+    QFETCH(bool, enabled);
+
+    QWebEngineView view;
+    QVERIFY(!view.page()->settings()->testAttribute(QWebEngineSettings::PrintHeaderAndFooter));
+    view.page()->settings()->setAttribute(QWebEngineSettings::PrintHeaderAndFooter, enabled);
+
+    QSignalSpy spy(&view, &QWebEngineView::loadFinished);
+    view.load(QUrl("qrc:///resources/basic_printing_page.html"));
+    QTRY_COMPARE(spy.size(), 1);
+
+    CallbackSpy<QByteArray> resultSpy;
+    QPageLayout pageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait,
+                           QMarginsF(0, 30, 0, 30));
+    view.printToPdf(resultSpy.ref(), pageLayout);
+    const QByteArray data = resultSpy.waitForResult();
+    QVERIFY(data.length() > 0);
+
+    QPdfDocument document;
+    QSignalSpy statusChangedSpy(&document, &QPdfDocument::statusChanged);
+
+    QBuffer buffer;
+    buffer.setData((data));
+    buffer.open(QBuffer::ReadWrite);
+    document.load(&buffer);
+    QTRY_COMPARE(document.status(), QPdfDocument::Status::Ready);
+
+    QPdfSearchModel searchModel;
+    QSignalSpy countChangedSpy(&searchModel, &QPdfSearchModel::countChanged);
+    searchModel.setDocument(&document);
+    searchModel.setSearchString("Basic Printing Page");
+    countChangedSpy.wait(500);
+    QTRY_COMPARE(searchModel.count() == 1, enabled);
 #endif
 }
 
