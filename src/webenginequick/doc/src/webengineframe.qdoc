@@ -65,6 +65,12 @@
 */
 
 /*!
+    \qmlproperty bool webEngineFrame::isMainFrame
+
+    Returns \c{true} if this object represents the page's main frame; \c{false} otherwise.
+*/
+
+/*!
     \qmlmethod void webEngineFrame::runJavaScript(string script, variant callback)
     \qmlmethod void webEngineFrame::runJavaScript(string script, uint worldId, variant callback)
 

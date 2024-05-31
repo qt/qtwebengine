@@ -37,6 +37,7 @@ private Q_SLOTS:
     void childrenOfInvalidFrame();
     void url();
     void size();
+    void isMainFrame();
     void runJavaScript();
     void printRequestedByFrame();
     void printToPdfFile();
@@ -178,6 +179,19 @@ void tst_QWebEngineFrame::size()
     QTRY_COMPARE(loadSpy.size(), 2);
     QVERIFY(!frame1.isValid());
     QCOMPARE(frame1.size(), QSizeF());
+}
+
+void tst_QWebEngineFrame::isMainFrame()
+{
+    QWebEnginePage page;
+    QSignalSpy loadSpy{ &page, SIGNAL(loadFinished(bool)) };
+    page.load(QUrl("qrc:/resources/frameset.html"));
+    QTRY_COMPARE(loadSpy.size(), 1);
+    auto frame = page.mainFrame();
+    QVERIFY(frame.isMainFrame());
+    for (auto child : frame.children()) {
+        QVERIFY(!child.isMainFrame());
+    }
 }
 
 void tst_QWebEngineFrame::runJavaScript()

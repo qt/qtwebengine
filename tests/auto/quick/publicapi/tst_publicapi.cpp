@@ -929,6 +929,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.imageAnimationPolicy --> QQuickWebEngineSettings::ImageAnimationPolicy"
     << "QQuickWebEngineSettings.imageAnimationPolicyChanged() --> void"
     << "QWebEngineFrame.htmlName --> QString"
+    << "QWebEngineFrame.isMainFrame --> bool"
     << "QWebEngineFrame.isValid --> bool"
     << "QWebEngineFrame.name --> QString"
     << "QWebEngineFrame.printToPdf(QJSValue) --> void"

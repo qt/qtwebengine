@@ -28,6 +28,7 @@ class Q_WEBENGINECORE_EXPORT QWebEngineFrame
     Q_PROPERTY(QString htmlName READ htmlName FINAL)
     Q_PROPERTY(QUrl url READ url FINAL)
     Q_PROPERTY(QSizeF size READ size FINAL)
+    Q_PROPERTY(bool isMainFrame READ isMainFrame FINAL)
 
 public:
     QML_VALUE_TYPE(webEngineFrame)
@@ -39,6 +40,7 @@ public:
     QList<QWebEngineFrame> children() const;
     QUrl url() const;
     QSizeF size() const;
+    bool isMainFrame() const;
 
     void runJavaScript(const QString &script,
                        const std::function<void(const QVariant &)> &callback);

@@ -106,6 +106,14 @@ QSizeF QWebEngineFrame::size() const
     return m_adapterClient->webContentsAdapter()->frameSize(m_id);
 }
 
+/*!
+    Returns \c{true} if this object represents the page's main frame; \c{false} otherwise.
+*/
+bool QWebEngineFrame::isMainFrame() const
+{
+    return m_adapterClient->webContentsAdapter()->mainFrameId() == m_id;
+}
+
 /*! \fn void QWebEngineFrame::runJavaScript(const QString &script, const std::function<void(const QVariant &)> &callback)
     \fn void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId)
     \fn void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId, const
