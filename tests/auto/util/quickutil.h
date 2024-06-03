@@ -1,8 +1,8 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef QUICKUTIL_H
+#define QUICKUTIL_H
 
 #include <QEventLoop>
 #include <QQmlEngine>
@@ -162,5 +162,5 @@ int main(int argc, char *argv[]) \
     QTEST_SET_MAIN_SOURCE_PATH \
     return QTest::qExec(&tc, argc, argv); \
 }
-#endif /* UTIL_H */
 
+#endif /* QUICKUTIL_H */

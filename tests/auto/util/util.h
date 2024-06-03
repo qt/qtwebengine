@@ -1,6 +1,9 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#ifndef UTIL_H
+#define UTIL_H
+
 // Functions and macros that really need to be in QTestLib
 
 #if 0
@@ -176,3 +179,5 @@ static inline QPoint elementCenter(QWebEnginePage *page, const QString &id)
 }
 
 #define W_QSKIP(a, b) QSKIP(a)
+
+#endif /* UTIL_H */

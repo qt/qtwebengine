@@ -1,6 +1,9 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#ifndef WIDGETUTIL_H
+#define WIDGETUTIL_H
+
 // Functions and macros that really need to be in QTestLib
 
 #include "util.h"
@@ -26,3 +29,5 @@ int main(int argc, char *argv[]) \
     QTEST_SET_MAIN_SOURCE_PATH \
     return QTest::qExec(&tc, argc, argv); \
 }
+
+#endif /* WIDGETUTIL_H */
