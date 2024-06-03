@@ -479,6 +479,14 @@ void WebContentsDelegateQt::DidStopLoading()
     m_loadingInfo.clear();
 }
 
+void WebContentsDelegateQt::emitLoadSucceeded(const QUrl &url)
+{
+    // Used by CustomURLLoader to emit LoadSucceeded bypassing the inner state of this delegate
+    m_viewClient->loadFinished(
+            QWebEngineLoadingInfo(url, QWebEngineLoadingInfo::LoadSucceededStatus));
+    m_viewClient->updateNavigationActions();
+}
+
 void WebContentsDelegateQt::didFailLoad(const QUrl &url, int errorCode, const QString &errorDescription)
 {
     m_viewClient->iconChanged(QUrl());

@@ -132,6 +132,7 @@ public:
                                   content::RenderFrameHost *render_frame_host,
                                   bool is_full_page) override;
 
+    void emitLoadSucceeded(const QUrl &url);
     void didFailLoad(const QUrl &url, int errorCode, const QString &errorDescription);
     void overrideWebPreferences(content::WebContents *, blink::web_pref::WebPreferences*);
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &);

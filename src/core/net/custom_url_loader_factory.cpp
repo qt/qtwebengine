@@ -28,6 +28,7 @@
 #include "qwebengineloadinginfo.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
+#include "web_contents_delegate_qt.h"
 #include "web_contents_view_qt.h"
 
 #include <QtCore/qbytearray.h>
@@ -358,10 +359,9 @@ private:
     void notifySuccess() override
     {
         if (m_webContents) {
-            WebContentsAdapterClient *client = WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(m_webContents)->GetView())->client();
-            QWebEngineLoadingInfo info(toQt(m_request.url), QWebEngineLoadingInfo::LoadSucceededStatus);
-            client->loadFinished(std::move(info));
-            client->updateNavigationActions();
+            WebContentsDelegateQt *delegate =
+                    static_cast<WebContentsDelegateQt *>(m_webContents->GetDelegate());
+            delegate->emitLoadSucceeded(toQt(m_request.url));
         }
     }
     void notifyReadyRead() override
@@ -534,4 +534,3 @@ mojo::PendingRemote<network::mojom::URLLoaderFactory> CreateCustomURLLoaderFacto
 }
 
 } // namespace QtWebEngineCore
-
