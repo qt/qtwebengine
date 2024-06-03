@@ -12,9 +12,6 @@
 #include <QtCore/qurl.h>
 
 namespace QtWebEngineCore {
-namespace {
-class CustomURLLoader;
-}
 class WebContentsAdapter;
 class WebContentsDelegateQt;
 }
@@ -78,7 +75,6 @@ private:
     friend class QQuickWebEngineViewPrivate;
     friend class QtWebEngineCore::WebContentsAdapter;
     friend class QtWebEngineCore::WebContentsDelegateQt;
-    friend class QtWebEngineCore::CustomURLLoader;
 };
 
 QT_END_NAMESPACE
