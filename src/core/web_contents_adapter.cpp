@@ -1846,11 +1846,12 @@ void WebContentsAdapter::waitForUpdateDragActionCalled()
     }
 }
 
-void WebContentsAdapter::updateDragAction(int action)
+void WebContentsAdapter::updateDragAction(int action, bool documentIsHandlingDrag)
 {
     CHECK_INITIALIZED();
     m_updateDragActionCalled = true;
     m_currentDropAction = action;
+    m_documentIsHandlingDrag = documentIsHandlingDrag;
 }
 
 void WebContentsAdapter::endDragging(QDropEvent *e, const QPointF &screenPos)
@@ -1860,6 +1861,7 @@ void WebContentsAdapter::endDragging(QDropEvent *e, const QPointF &screenPos)
     rvh->GetWidget()->FilterDropData(m_currentDropData.get());
     m_lastDragClientPos = e->position();
     m_lastDragScreenPos = screenPos;
+    m_currentDropData->document_is_handling_drag = m_documentIsHandlingDrag;
     rvh->GetWidget()->DragTargetDrop(*m_currentDropData, toGfx(m_lastDragClientPos), toGfx(m_lastDragScreenPos),
                                      toWeb(e->buttons()) | toWeb(e->modifiers()), base::DoNothing());
 

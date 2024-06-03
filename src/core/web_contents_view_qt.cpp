@@ -257,11 +257,10 @@ void WebContentsViewQt::StartDragging(const content::DropData &drop_data,
 #endif // QT_CONFIG(draganddrop)
 }
 
-void WebContentsViewQt::UpdateDragOperation(ui::mojom::DragOperation dragOperation, bool isDrag)
+void WebContentsViewQt::UpdateDragOperation(ui::mojom::DragOperation dragOperation, bool document_is_handling_drag)
 {
 #if QT_CONFIG(draganddrop)
-    if (isDrag)
-        m_client->webContentsAdapter()->updateDragAction(int(dragOperation));
+    m_client->webContentsAdapter()->updateDragAction(int(dragOperation), document_is_handling_drag);
 #endif // QT_CONFIG(draganddrop)
 }
 

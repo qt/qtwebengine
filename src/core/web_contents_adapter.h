@@ -205,7 +205,7 @@ public:
                        Qt::DropActions allowedActions, const QPixmap &pixmap, const QPoint &offset);
     void enterDrag(QDragEnterEvent *e, const QPointF &screenPos);
     Qt::DropAction updateDragPosition(QDragMoveEvent *e, const QPointF &screenPos);
-    void updateDragAction(int action);
+    void updateDragAction(int action, bool documentIsHandlingDrag);
     void endDragging(QDropEvent *e, const QPointF &screenPos);
     void leaveDrag();
 #endif // QT_CONFIG(draganddrop)
@@ -285,6 +285,7 @@ private:
     LifecycleState m_lifecycleState = LifecycleState::Active;
     LifecycleState m_recommendedState = LifecycleState::Active;
     bool m_inspector = false;
+    bool m_documentIsHandlingDrag = false;
     QPointer<QWebEngineUrlRequestInterceptor> m_requestInterceptor;
 };
 
