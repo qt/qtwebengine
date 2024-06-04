@@ -266,6 +266,7 @@ void ProfileAdapter::setDataPath(const QString &path)
     m_dataPath = path;
     m_profile->setupPrefService();
     m_profile->setupPermissionsManager();
+    m_profile->setupStoragePath();
     if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
         m_profile->m_profileIOData->resetNetworkContext();
     if (!m_offTheRecord && m_visitedLinksManager)

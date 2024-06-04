@@ -72,6 +72,7 @@ public:
     // Build/Re-build the preference service. Call when updating the storage
     // data path.
     void setupPrefService();
+    void setupStoragePath();
     void setupPermissionsManager();
 
     PrefServiceAdapter &prefServiceAdapter();
