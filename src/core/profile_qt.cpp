@@ -17,7 +17,9 @@
 #include "web_engine_library_info.h"
 
 #include "base/base_paths.h"
+#include "base/path_service.h"
 #include "base/files/file_util.h"
+#include "base/task/thread_pool.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
@@ -40,6 +42,11 @@
 
 namespace QtWebEngineCore {
 
+enum {
+    PATH_QT_START = 1000, // Same as PATH_START in chrome_paths.h; no chance of collision
+    PATH_QT_END = 1999
+};
+
 ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
     : m_profileIOData(new ProfileIODataQt(this))
     , m_profileAdapter(profileAdapter)
@@ -53,6 +60,7 @@ ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
         : profile_metrics::BrowserProfileType::kRegular);
 
     setupPrefService();
+    setupStoragePath();
 
     // Mark the context as live. This prevents the use-after-free DCHECK in
     // AssertBrowserContextWasntDestroyed from being triggered when a new
@@ -252,6 +260,39 @@ void ProfileQt::setupPrefService()
         extensions::ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(this, std::move(extensionPrefs));
     }
 #endif
+}
+
+void ProfileQt::setupStoragePath()
+{
+#if defined(Q_OS_WIN)
+    if (IsOffTheRecord())
+        return;
+
+    // Mark the storage path as a "safe" path, allowing the path service on Windows to
+    // block file execution and prevent assertions when saving blobs to disk.
+    // We keep a static list of all profile paths
+
+    base::FilePath thisStoragePath = GetPath();
+
+    static std::vector<base::FilePath> storagePaths;
+    auto it = std::find(storagePaths.begin(), storagePaths.end(), thisStoragePath);
+    if (it == storagePaths.end()) {
+        if (storagePaths.size() >= (PATH_QT_END - PATH_QT_START)) {
+            qWarning() << "Number of profile paths exceeded " << PATH_QT_END - PATH_QT_START << ", storage may break";
+            return;
+        }
+
+        storagePaths.push_back(thisStoragePath);
+        it = storagePaths.end() - 1;
+    }
+
+    int pathID = PATH_QT_START + (it - storagePaths.begin());
+    base::ThreadPool::PostTaskAndReplyWithResult(FROM_HERE, { base::MayBlock() },
+        base::BindOnce(base::PathService::Override, PATH_QT_START + (it - storagePaths.begin()), thisStoragePath),
+        base::BindOnce([](int pathID_, bool succeeded) {
+            if (succeeded) base::SetExtraNoExecuteAllowedPath(pathID_);
+        }, pathID));
+#endif // defined(Q_OS_WIN)
 }
 
 void ProfileQt::setupPermissionsManager()
