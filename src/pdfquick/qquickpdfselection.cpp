@@ -470,9 +470,10 @@ void QQuickPdfSelection::setHold(bool hold)
 }
 
 /*!
-    \qmlproperty string PdfSelection::string
+    \qmlproperty string PdfSelection::text
 
-    The string found.
+    The text that was found in the rectangular area between \l from and \l to,
+    or all text on the \l page if selectAll() was called.
 */
 QString QQuickPdfSelection::text() const
 {
@@ -483,7 +484,7 @@ QString QQuickPdfSelection::text() const
 /*!
     \qmlmethod void PdfSelection::copyToClipboard()
 
-    Copies plain text from the \l string property to the system clipboard.
+    Copies plain text from the \l text property to the system clipboard.
 */
 void QQuickPdfSelection::copyToClipboard() const
 {

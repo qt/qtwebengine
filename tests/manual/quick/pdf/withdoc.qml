@@ -126,6 +126,10 @@ Window {
                         }
                     }
                     Shortcut {
+                        sequence: StandardKey.SelectAll
+                        onActivated: selection.selectAll()
+                    }
+                    Shortcut {
                         sequence: "Ctrl+0"
                         onActivated: image.sourceSize = undefined
                     }
