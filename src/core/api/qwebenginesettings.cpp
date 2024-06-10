@@ -115,7 +115,7 @@ QWebEngineSettings::ImageAnimationPolicy QWebEngineSettings::imageAnimationPolic
 
 void QWebEngineSettings::resetImageAnimationPolicy()
 {
-    d_ptr->setImageAnimationPolicy(QWebEngineSettings::InheritedImageAnimationPolicy);
+    d_ptr->setImageAnimationPolicy(QWebEngineSettings::ImageAnimationPolicy::Inherited);
 }
 
 QT_END_NAMESPACE

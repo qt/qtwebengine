@@ -496,11 +496,12 @@ QString QQuickWebEngineSettings::defaultTextEncoding() const
     return d_ptr->defaultTextEncoding();
 }
 
-ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::AllowImageAnimation,
-                   QWebEngineSettings::AllowImageAnimation)
-ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::AnimateImageOnce, QWebEngineSettings::AnimateImageOnce)
-ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::DisallowImageAnimation,
-                   QWebEngineSettings::DisallowImageAnimation)
+ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::ImageAnimationPolicy::Allow,
+                   QWebEngineSettings::ImageAnimationPolicy::Allow)
+ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::ImageAnimationPolicy::AnimateOnce,
+                   QWebEngineSettings::ImageAnimationPolicy::AnimateOnce)
+ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::ImageAnimationPolicy::Disallow,
+                   QWebEngineSettings::ImageAnimationPolicy::Disallow)
 /*!
     \qmlproperty enumeration WebEngineSettings::imageAnimationPolicy
     \since QtWebEngine 6.8
@@ -508,14 +509,14 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::DisallowImageAnimation,
     Specifies how an image animation should be handled when the image frames
     are rendered for animation.
 
-    \value WebEngineSettings.AllowImageAnimation
+    \value WebEngineSettings.ImageAnimationPolicy.Allow
            Allows all image animations when the image frames are rendered.
-    \value WebEngineSettings.AnimateImageOnce
+    \value WebEngineSettings.ImageAnimationPolicy.AnimateOnce
            Animate the image once when the image frames are rendered.
-    \value WebEngineSettings.DisallowImageAnimation
+    \value WebEngineSettings.ImageAnimationPolicy.Disallow
            Disallows all image animations when the image frames are rendered.
 
-    Default value is \c {WebEngineSettings.AllowImageAnimation}.
+    Default value is \c {WebEngineSettings.ImageAnimationPolicy.Allow}.
 */
 QQuickWebEngineSettings::ImageAnimationPolicy QQuickWebEngineSettings::imageAnimationPolicy() const
 {

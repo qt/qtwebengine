@@ -78,11 +78,11 @@ public:
         AllowAllUnknownUrlSchemes
     };
 
-    enum ImageAnimationPolicy {
-        InheritedImageAnimationPolicy = 0,
-        AllowImageAnimation,
-        AnimateImageOnce,
-        DisallowImageAnimation
+    enum class ImageAnimationPolicy : uint8_t {
+        Inherited = 0,
+        Allow,
+        AnimateOnce,
+        Disallow,
     };
 
 public:

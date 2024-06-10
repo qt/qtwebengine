@@ -208,13 +208,13 @@
     This enum describes how an image animation should be handled when the image frames
     are rendered for animation.
 
-    \value AllowImageAnimation
+    \value Allow
            Allows image animation when the image frames are rendered.
-    \value AnimateImageOnce
+    \value AnimateOnce
            Animate the image once when the image frames are rendered.
-    \value DisallowImageAnimation
+    \value Disallow
            Disallows image animation when the image frames are rendered.
-    \omitvalue InheritedImageAnimationPolicy
+    \omitvalue Inherited
 
     \sa imageAnimationPolicy setImageAnimationPolicy resetImageAnimationPolicy
 */
@@ -312,7 +312,7 @@
     \fn QWebEngineSettings::ImageAnimationPolicy QWebEngineSettings::imageAnimationPolicy() const
     \since Qt 6.8
     Returns the currently selected policy for handling image animation when the image frames are rendered.
-    Default is \l{QWebEngineSettings::AllowImageAnimation}.
+    Default is \l{QWebEngineSettings::ImageAnimationPolicy::Allow}.
     \sa setImageAnimationPolicy resetImageAnimationPolicy
 */
 
@@ -320,13 +320,13 @@
     \fn void QWebEngineSettings::setImageAnimationPolicy(QWebEngineSettings::ImageAnimationPolicy policy)
     \since Qt 6.8
     Sets the policy for handling image animation when the image frames are rendered to \a policy.
-    Default is \l{QWebEngineSettings::AllowImageAnimation}.
+    Default is \l{QWebEngineSettings::ImageAnimationPolicy::Allow}.
     \sa imageAnimationPolicy resetImageAnimationPolicy
 */
 
 /*!
     \fn void QWebEngineSettings::resetImageAnimationPolicy()
-    \since Qt 6.7
+    \since Qt 6.8
     Removes the policy for handling image animation.
     \sa imageAnimationPolicy setImageAnimationPolicy
 */

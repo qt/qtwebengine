@@ -44,7 +44,7 @@ ApplicationWindow {
         property alias webRTCPublicInterfacesOnly : webRTCPublicInterfacesOnly.checked
         property alias devToolsEnabled: devToolsEnabled.checked
         property alias pdfViewerEnabled: pdfViewerEnabled.checked
-        property int imageAnimationPolicy: WebEngineSettings.AllowImageAnimation
+        property int imageAnimationPolicy: WebEngineSettings.ImageAnimationPolicy.Allow
     }
 
     Action {
@@ -377,9 +377,9 @@ ApplicationWindow {
                             text: "Disable All Image Animation"
                             checkable: true
                             autoExclusive: true
-                            checked: WebEngine.settings.imageAnimationPolicy === WebEngineSettings.DisallowImageAnimation
+                            checked: WebEngine.settings.imageAnimationPolicy === WebEngineSettings.ImageAnimationPolicy.Disallow
                             onTriggered: {
-                                appSettings.imageAnimationPolicy = WebEngineSettings.DisallowImageAnimation
+                                appSettings.imageAnimationPolicy = WebEngineSettings.ImageAnimationPolicy.Disallow
                             }
                         }
 
@@ -388,9 +388,9 @@ ApplicationWindow {
                             text: "Allow All Animated Images"
                             checkable: true
                             autoExclusive: true
-                            checked: WebEngine.settings.imageAnimationPolicy === WebEngineSettings.AllowImageAnimation
+                            checked: WebEngine.settings.imageAnimationPolicy === WebEngineSettings.ImageAnimationPolicy.Allow
                             onTriggered : {
-                                appSettings.imageAnimationPolicy = WebEngineSettings.AllowImageAnimation
+                                appSettings.imageAnimationPolicy = WebEngineSettings.ImageAnimationPolicy.Allow
                             }
                         }
 
@@ -399,9 +399,9 @@ ApplicationWindow {
                             text: "Animate Image Once"
                             checkable: true
                             autoExclusive: true
-                            checked: WebEngine.settings.imageAnimationPolicy === WebEngineSettings.AnimateImageOnce
+                            checked: WebEngine.settings.imageAnimationPolicy === WebEngineSettings.ImageAnimationPolicy.AnimateOnce
                             onTriggered : {
-                                appSettings.imageAnimationPolicy = WebEngineSettings.AnimateImageOnce
+                                appSettings.imageAnimationPolicy = WebEngineSettings.ImageAnimationPolicy.AnimateOnce
                             }
                         }
                     }
