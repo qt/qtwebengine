@@ -69,6 +69,9 @@ static QWebEnginePermission::Feature toQt(blink::PermissionType type)
     case blink::PermissionType::VR:
     case blink::PermissionType::STORAGE_ACCESS_GRANT:
     case blink::PermissionType::TOP_LEVEL_STORAGE_ACCESS:
+    case blink::PermissionType::CAPTURED_SURFACE_CONTROL:
+    case blink::PermissionType::SMART_CARD:
+    case blink::PermissionType::WEB_PRINTING:
     case blink::PermissionType::NUM:
         LOG(INFO) << "Unexpected unsupported Blink permission type: " << static_cast<int>(type);
         break;
