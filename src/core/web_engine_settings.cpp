@@ -60,12 +60,14 @@ blink::mojom::ImageAnimationPolicy
 toBlinkImageAnimationPolicy(QWebEngineSettings::ImageAnimationPolicy policy)
 {
     switch (policy) {
-    case QWebEngineSettings::AllowImageAnimation:
+    case QWebEngineSettings::ImageAnimationPolicy::Allow:
         return blink::mojom::ImageAnimationPolicy::kImageAnimationPolicyAllowed;
-    case QWebEngineSettings::AnimateImageOnce:
+    case QWebEngineSettings::ImageAnimationPolicy::AnimateOnce:
         return blink::mojom::ImageAnimationPolicy::kImageAnimationPolicyAnimateOnce;
-    case QWebEngineSettings::DisallowImageAnimation:
+    case QWebEngineSettings::ImageAnimationPolicy::Disallow:
         return blink::mojom::ImageAnimationPolicy::kImageAnimationPolicyNoAnimation;
+    case QWebEngineSettings::ImageAnimationPolicy::Inherited:
+        break;
     }
     return blink::mojom::ImageAnimationPolicy::kImageAnimationPolicyAllowed;
 }
@@ -74,7 +76,7 @@ WebEngineSettings::WebEngineSettings(WebEngineSettings *_parentSettings)
     : m_adapter(nullptr)
     , parentSettings(_parentSettings)
     , m_unknownUrlSchemePolicy(QWebEngineSettings::InheritedUnknownUrlSchemePolicy)
-    , m_imageAnimationPolicy(QWebEngineSettings::InheritedImageAnimationPolicy)
+    , m_imageAnimationPolicy(QWebEngineSettings::ImageAnimationPolicy::Inherited)
 {
     if (parentSettings)
         parentSettings->childSettings.insert(this);
@@ -217,13 +219,13 @@ void WebEngineSettings::setImageAnimationPolicy(QWebEngineSettings::ImageAnimati
 
 QWebEngineSettings::ImageAnimationPolicy WebEngineSettings::imageAnimationPolicy() const
 {
-    if (m_imageAnimationPolicy != QWebEngineSettings::InheritedImageAnimationPolicy)
+    if (m_imageAnimationPolicy != QWebEngineSettings::ImageAnimationPolicy::Inherited)
         return m_imageAnimationPolicy;
 
     if (parentSettings)
         return parentSettings->imageAnimationPolicy();
 
-    return QWebEngineSettings::AllowImageAnimation;
+    return QWebEngineSettings::ImageAnimationPolicy::Allow;
 }
 
 QWebEngineSettings::UnknownUrlSchemePolicy WebEngineSettings::unknownUrlSchemePolicy() const
@@ -333,7 +335,7 @@ void WebEngineSettings::initDefaults()
 
     m_defaultEncoding = QStringLiteral("ISO-8859-1");
     m_unknownUrlSchemePolicy = QWebEngineSettings::InheritedUnknownUrlSchemePolicy;
-    m_imageAnimationPolicy = QWebEngineSettings::InheritedImageAnimationPolicy;
+    m_imageAnimationPolicy = QWebEngineSettings::ImageAnimationPolicy::Inherited;
 }
 
 void WebEngineSettings::scheduleApply()

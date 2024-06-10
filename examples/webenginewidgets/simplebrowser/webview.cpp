@@ -227,29 +227,29 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
     disableImageAnimation->setCheckable(true);
     m_imageAnimationGroup->addAction(disableImageAnimation);
     connect(disableImageAnimation, &QAction::triggered, [this]() {
-        handleImageAnimationPolicyChange(QWebEngineSettings::DisallowImageAnimation);
+        handleImageAnimationPolicyChange(QWebEngineSettings::ImageAnimationPolicy::Disallow);
     });
     QAction *allowImageAnimationOnce =
             editImageAnimation->addAction(tr("Allow animated images, but only once"));
     allowImageAnimationOnce->setCheckable(true);
     m_imageAnimationGroup->addAction(allowImageAnimationOnce);
     connect(allowImageAnimationOnce, &QAction::triggered,
-            [this]() { handleImageAnimationPolicyChange(QWebEngineSettings::AnimateImageOnce); });
+            [this]() { handleImageAnimationPolicyChange(QWebEngineSettings::ImageAnimationPolicy::AnimateOnce); });
     QAction *allowImageAnimation = editImageAnimation->addAction(tr("Allow all animated images"));
     allowImageAnimation->setCheckable(true);
     m_imageAnimationGroup->addAction(allowImageAnimation);
     connect(allowImageAnimation, &QAction::triggered, [this]() {
-        handleImageAnimationPolicyChange(QWebEngineSettings::AllowImageAnimation);
+        handleImageAnimationPolicyChange(QWebEngineSettings::ImageAnimationPolicy::Allow);
     });
 
     switch (page()->settings()->imageAnimationPolicy()) {
-    case QWebEngineSettings::AllowImageAnimation:
+    case QWebEngineSettings::ImageAnimationPolicy::Allow:
         allowImageAnimation->setChecked(true);
         break;
-    case QWebEngineSettings::AnimateImageOnce:
+    case QWebEngineSettings::ImageAnimationPolicy::AnimateOnce:
         allowImageAnimationOnce->setChecked(true);
         break;
-    case QWebEngineSettings::DisallowImageAnimation:
+    case QWebEngineSettings::ImageAnimationPolicy::Disallow:
         disableImageAnimation->setChecked(true);
         break;
     default:

@@ -74,10 +74,10 @@ public:
 
     Q_ENUM(UnknownUrlSchemePolicy)
 
-    enum ImageAnimationPolicy {
-        AllowImageAnimation = 1,
-        AnimateImageOnce,
-        DisallowImageAnimation
+    enum class ImageAnimationPolicy : uint8_t {
+        Allow = 1,
+        AnimateOnce,
+        Disallow,
     };
 
     Q_ENUM(ImageAnimationPolicy)
