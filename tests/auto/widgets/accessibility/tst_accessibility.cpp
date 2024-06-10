@@ -378,6 +378,7 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kDialog") << QString("<div role='dialog'></div>") << 0 << QAccessible::Dialog;
     //QTest::newRow("ax::mojom::Role::kDirectory") << QString("<ul role='directory'></ul>") << 0 << QAccessible::List; // FIXME: Aria role 'directory' should work
     QTest::newRow("ax::mojom::Role::kDisclosureTriangle") << QString("<details><summary>a</summary></details>") << 1 << QAccessible::Button;
+    QTest::newRow("ax::mojom::Role::kDisclosureTriangleGroup") << QString("<details name='groupName'><summary>a</summary></details>") << 1 << QAccessible::Button;
     QTest::newRow("ax::mojom::Role::kGenericContainer") << QString("<div>a</div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kDocCover") << QString("<div role='doc-cover'></div>") << 0 << QAccessible::Graphic;
     QTest::newRow("ax::mojom::Role::kDocBackLink") << QString("<div role='doc-backlink'></div>") << 0 << QAccessible::Link;

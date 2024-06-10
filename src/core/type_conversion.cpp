@@ -32,6 +32,7 @@ QImage toQImage(const SkBitmap &bitmap)
     case kR16G16_float_SkColorType:
     case kR16G16_unorm_SkColorType:
     case kR8_unorm_SkColorType:
+    case kRGBA_10x6_SkColorType:
         qWarning("Unknown or unsupported skia image format");
         break;
     case kAlpha_8_SkColorType:

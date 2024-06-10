@@ -408,6 +408,7 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
     case ax::mojom::Role::kDirectory:
         return QAccessible::List;
     case ax::mojom::Role::kDisclosureTriangle:
+    case ax::mojom::Role::kDisclosureTriangleGrouped:
         return QAccessible::Button;
     case ax::mojom::Role::kGenericContainer:
         return QAccessible::Section;
