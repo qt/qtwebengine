@@ -98,6 +98,7 @@ static blink::PermissionType toBlink(QWebEnginePermission::Feature feature)
     case QWebEnginePermission::LocalFontsAccess:
         return blink::PermissionType::LOCAL_FONTS;
     case QWebEnginePermission::MediaAudioVideoCapture:
+    case QWebEnginePermission::MouseLock:
     case QWebEnginePermission::Unsupported:
         LOG(INFO) << "Unexpected unsupported WebEngine permission type: " << static_cast<int>(feature);
         return blink::PermissionType::NUM;
@@ -173,8 +174,8 @@ static blink::mojom::PermissionStatus getStatusFromSettings(blink::PermissionTyp
 
 PermissionManagerQt::PermissionManagerQt(ProfileAdapter *profileAdapter)
     : m_requestIdCount(0)
-    , m_persistence(true)
     , m_profileAdapter(profileAdapter)
+    , m_persistence(true)
 {
     PrefServiceFactory factory;
     factory.set_async(false);

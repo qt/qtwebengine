@@ -1423,6 +1423,7 @@ void WebContentsAdapter::setFeaturePermission(const QUrl &origin, QWebEnginePerm
     CHECK_INITIALIZED();
     if (feature == QWebEnginePermission::MouseLock) {
         switch (state) {
+        case QWebEnginePermission::Invalid:
         case QWebEnginePermission::Ask:
             // Do nothing
             break;
@@ -1445,6 +1446,7 @@ void WebContentsAdapter::setFeaturePermission(const QUrl &origin, QWebEnginePerm
         WebContentsAdapterClient::MediaDesktopAudioCapture);
 
     switch (state) {
+    case QWebEnginePermission::Invalid:
     case QWebEnginePermission::Ask:
         // Do nothing
         return;
