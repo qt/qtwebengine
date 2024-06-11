@@ -365,7 +365,7 @@ QQuickWebEngineScriptCollection *QQuickWebEngineProfilePrivate::getUserScripts()
     whether a profile is off-the-record.
 
     Each web engine view has an associated profile. Views that do not have a specific profile set
-    share a common default one.
+    share a common one, which is off-the-record by default.
 */
 
 /*!
@@ -404,7 +404,12 @@ QQuickWebEngineScriptCollection *QQuickWebEngineProfilePrivate::getUserScripts()
 */
 
 /*!
-    Constructs a new profile with the parent \a parent.
+    Constructs a new off-the-record profile with the parent \a parent.
+
+    An off-the-record profile leaves no record on the local machine, and has no
+    persistent data or cache. Thus, the HTTP cache can only be in memory and the
+    cookies can only be non-persistent. Trying to change these settings will
+    have no effect.
 */
 QQuickWebEngineProfile::QQuickWebEngineProfile(QObject *parent)
     : QObject(parent),
@@ -478,6 +483,11 @@ void QQuickWebEngineProfile::setStorageName(const QString &name)
     Whether the web engine profile is \e off-the-record.
     An off-the-record profile forces cookies, the HTTP cache, and other normally persistent data
     to be stored only in memory. Profile is off-the-record by default.
+
+    Changing a profile from \e off-the-record to disk-based behavior also requires setting a
+    proper storageName.
+
+    \sa storageName()
 */
 
 
@@ -487,6 +497,11 @@ void QQuickWebEngineProfile::setStorageName(const QString &name)
     Whether the web engine profile is \e off-the-record.
     An off-the-record profile forces cookies, the HTTP cache, and other normally persistent data
     to be stored only in memory. Profile is off-the-record by default.
+
+    Changing a profile from \e off-the-record to disk-based behavior also requires setting a
+    proper storageName.
+
+    \sa setStorageName()
 */
 
 bool QQuickWebEngineProfile::isOffTheRecord() const
