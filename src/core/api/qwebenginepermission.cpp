@@ -300,6 +300,8 @@ bool QWebEnginePermission::isTransient(QWebEnginePermission::Feature feature)
     case QWebEnginePermission::Unsupported:
         return false;
     }
+
+    Q_UNREACHABLE_RETURN(false);
 }
 
 QT_END_NAMESPACE

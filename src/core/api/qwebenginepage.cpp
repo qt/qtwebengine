@@ -1857,8 +1857,8 @@ QT_WARNING_DISABLE_DEPRECATED
 void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEnginePage::Feature feature, QWebEnginePage::PermissionPolicy policy)
 {
     Q_D(QWebEnginePage);
-    QWebEnginePermission::Feature f;
-    QWebEnginePermission::State s;
+    QWebEnginePermission::Feature f = QWebEnginePermission::Feature::Unsupported;
+    QWebEnginePermission::State s = QWebEnginePermission::State::Invalid;
 
     switch (feature) {
     case QWebEnginePage::Notifications:
@@ -1891,6 +1891,8 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
     case QWebEnginePage::LocalFontsAccess:
         f = QWebEnginePermission::LocalFontsAccess;
         break;
+    default:
+        Q_UNREACHABLE();
     }
 
     switch (policy) {
@@ -1903,6 +1905,8 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
     case QWebEnginePage::PermissionGrantedByUser:
         s = QWebEnginePermission::Granted;
         break;
+    default:
+        Q_UNREACHABLE();
     }
 
     d->adapter->setFeaturePermission(securityOrigin, f, s);
