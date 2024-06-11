@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 cmake_minimum_required(VERSION 3.19)
 find_package(Ninja 1.7.2 REQUIRED)
 find_package(Nodejs 12 REQUIRED)
@@ -40,6 +43,10 @@ qt_internal_add_module(Pdf
 
 add_subdirectory(plugins/imageformats/pdf)
 
+get_install_config(config)
+get_architectures(archs)
+list(GET archs 0 arch)
+
 ##
 #  PDF DOCS
 ##
@@ -48,6 +55,16 @@ qt_internal_add_docs(Pdf
     doc/qtpdf.qdocconf
 )
 
+add_code_attributions_target(
+    TARGET generate_pdf_attributions
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/pdf_attributions.qdoc
+    GN_TARGET :QtPdf
+    FILE_TEMPLATE doc/about_credits.tmpl
+    ENTRY_TEMPLATE doc/about_credits_entry.tmpl
+    BUILDDIR ${buildDir}/${config}/${arch}
+)
+add_dependencies(generate_pdf_attributions run_pdf_GnDone)
+add_dependencies(docs generate_pdf_attributions)
 
 ##
 #   TOOLCHAIN SETUP
@@ -111,14 +128,20 @@ foreach(arch ${archs})
           strip_absolute_paths_from_debug_symbols=false
         )
 
-        if(LINUX)
+        if(LINUX OR ANDROID)
             list(APPEND gnArgArg
                 is_cfi=false
                 ozone_auto_platforms=false
-                use_gnome_keyring=false)
+                use_gnome_keyring=false
+                enable_vr=false
+            )
             extend_gn_list(gnArgArg
                 ARGS use_system_icu
                 CONDITION QT_FEATURE_webengine_system_icu
+            )
+            extend_gn_list(gnArgArg
+                ARGS use_system_libopenjpeg2
+                CONDITION QT_FEATURE_webengine_system_libopenjpeg2
             )
         endif()
         if(MACOS)
@@ -166,6 +189,14 @@ foreach(arch ${archs})
             CONDITION QT_FEATURE_pdf_xfa_tiff
         )
         extend_gn_list(gnArgArg
+            ARGS pdfium_use_system_zlib
+            CONDITION QT_FEATURE_webengine_system_zlib
+        )
+        extend_gn_list(gnArgArg
+            ARGS pdfium_use_system_libpng use_system_libpng
+            CONDITION QT_FEATURE_webengine_system_libpng
+        )
+        extend_gn_list(gnArgArg
             ARGS pdfium_use_qt_libpng
             CONDITION QT_FEATURE_webengine_qt_libpng
         )
@@ -186,7 +217,7 @@ foreach(arch ${archs})
             CMAKE_TARGET Pdf
             NINJA_TARGETS QtPdf
             GN_TARGET ${buildGn}
-            GN_ARGS "${gnArgArg}"
+            GN_ARGS ${gnArgArg}
             BUILDDIR ${buildDir}/${config}/${arch}
             MODULE pdf
         )

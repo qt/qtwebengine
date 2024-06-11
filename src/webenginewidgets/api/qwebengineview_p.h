@@ -25,10 +25,13 @@ class QWebEngineContextMenuRequest;
 class WebEngineQuickWidget;
 class RenderWidgetHostViewQtDelegate;
 class RenderWidgetHostViewQtDelegateClient;
+class TouchSelectionMenuController;
 }
 
 namespace QtWebEngineWidgetUI {
 class AutofillPopupWidget;
+class TouchHandleDrawableDelegate;
+class TouchSelectionMenuWidget;
 }
 
 QT_BEGIN_NAMESPACE
@@ -71,7 +74,12 @@ public:
     void showAutofillPopup(QtWebEngineCore::AutofillPopupController *controller,
                            const QRect &bounds, bool autoselectFirstSuggestion) override;
     void hideAutofillPopup() override;
+    QtWebEngineCore::TouchHandleDrawableDelegate *
+    createTouchHandleDelegate(const QMap<int, QImage> &images) override;
 
+    void showTouchSelectionMenu(QtWebEngineCore::TouchSelectionMenuController *,
+                                const QRect &) override;
+    void hideTouchSelectionMenu() override;
     QWebEngineViewPrivate();
     virtual ~QWebEngineViewPrivate();
     static void bindPageAndView(QWebEnginePage *page, QWebEngineView *view);
@@ -90,6 +98,7 @@ public:
     mutable bool m_ownsPage;
     QWebEngineContextMenuRequest *m_contextRequest;
     QScopedPointer<QtWebEngineWidgetUI::AutofillPopupWidget> m_autofillPopupWidget;
+    QPointer<QtWebEngineWidgetUI::TouchSelectionMenuWidget> m_touchSelectionMenu;
 };
 
 class QContextMenuBuilder : public QtWebEngineCore::RenderViewContextMenuQt

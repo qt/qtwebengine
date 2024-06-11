@@ -41,6 +41,10 @@ std::unique_ptr<history::HistoryBackendClient> HistoryClientQt::CreateBackendCli
     return nullptr;
 }
 
+void HistoryClientQt::UpdateBookmarkLastUsedTime(int64_t /*bookmark_node_id*/, base::Time /*time*/)
+{
+}
+
 // static
 history::HistoryService *
 HistoryServiceFactoryQt::GetForBrowserContext(content::BrowserContext *context)

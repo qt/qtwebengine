@@ -6,12 +6,10 @@
     \meta installpath pdfwidgets
     \ingroup qtpdf-examples
 
-    \title PDF Viewer Example
+    \title PDF Viewer Widget Example
     \brief A widget-based PDF viewer that allows scrolling through the pages.
 
-    \omit
-    //! TODO add thumbnail \image pdfviewer.png
-    \endomit
+    \image pdfviewer.png
 
     \e {PDF Viewer} demonstrates how to use the QPdfView class to render
     PDF documents and the QPdfPageNavigator class to navigate them.

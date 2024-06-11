@@ -30,7 +30,7 @@ private:
     void add(DownloadWidget *downloadWidget);
     void remove(DownloadWidget *downloadWidget);
 
-    int m_numDownloads;
+    int m_numDownloads = 0;
 };
 
 #endif // DOWNLOADMANAGERWIDGET_H

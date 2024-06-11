@@ -13,3 +13,6 @@ macos
 
 [comboBoxPopupPositionAfterChildMove]
 macos
+
+[backgroundColor]
+macos

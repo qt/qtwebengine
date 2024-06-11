@@ -119,13 +119,27 @@ display::Display DesktopScreenQt::GetDisplayNearestWindow(gfx::NativeWindow /*wi
     return GetPrimaryDisplay();
 }
 
+#if defined(USE_XSCREENSAVER)
+class XScreenSuspender : public display::Screen::ScreenSaverSuspender
+{
+public:
+    XScreenSuspender()
+    {
+        ui::SuspendX11ScreenSaver(true);
+    }
+    ~XScreenSuspender() override
+    {
+        ui::SuspendX11ScreenSaver(false);
+    }
+};
+#endif
 #if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
-bool DesktopScreenQt::SetScreenSaverSuspended(bool suspend)
+std::unique_ptr<display::Screen::ScreenSaverSuspender> DesktopScreenQt::SuspendScreenSaver()
 {
 #if defined(USE_XSCREENSAVER)
-    return ui::SuspendX11ScreenSaver(suspend);
+    return std::make_unique<XScreenSuspender>();
 #else
-    return false;
+    return nullptr;
 #endif
 }
 #endif

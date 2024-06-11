@@ -5,6 +5,7 @@
 #include "browserwindow.h"
 #include "tabwidget.h"
 #include <QApplication>
+#include <QLoggingCategory>
 #include <QWebEngineProfile>
 #include <QWebEngineSettings>
 
@@ -24,6 +25,7 @@ int main(int argc, char **argv)
 
     QApplication app(argc, argv);
     app.setWindowIcon(QIcon(QStringLiteral(":AppLogoColor.png")));
+    QLoggingCategory::setFilterRules(QStringLiteral("qt.webenginecontext.debug=true"));
 
     QWebEngineProfile::defaultProfile()->settings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
     QWebEngineProfile::defaultProfile()->settings()->setAttribute(QWebEngineSettings::DnsPrefetchEnabled, true);

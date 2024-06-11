@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 ##
 #  MAIN CONFIGURE
 ##
@@ -73,13 +76,13 @@ if(QT_FEATURE_qtpdf_build)
    add_subdirectory(pdf)
    # keep log order, pdf build after webengine
    if(QT_FEATURE_qtwebengine_core_build)
-       add_dependencies(run_pdf_GnReady WebEngineCore)
+       add_dependencies(run_pdf_NinjaReady WebEngineCore)
    endif()
    if(QT_FEATURE_qtwebengine_widgets_build)
-       add_dependencies(run_pdf_GnReady WebEngineWidgets)
+       add_dependencies(run_pdf_NinjaReady WebEngineWidgets)
    endif()
    if(QT_FEATURE_qtwebengine_quick_build)
-       add_dependencies(run_pdf_GnReady WebEngineQuick)
+       add_dependencies(run_pdf_NinjaReady WebEngineQuick)
    endif()
    if(QT_FEATURE_qtpdf_widgets_build)
        add_subdirectory(pdfwidgets)
@@ -166,7 +169,7 @@ if(CMAKE_CROSSCOMPILING AND NOT IOS AND NOT MACOS)
         PREFIX      host
         USES_TERMINAL_BUILD TRUE
         EXCLUDE_FROM_ALL TRUE
-        CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=${QT_HOST_PATH}/lib/cmake/Qt6/qt.toolchain.cmake
+        CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=${QT_HOST_PATH_CMAKE_DIR}/Qt6/qt.toolchain.cmake
                    -DWEBENGINE_ROOT_BUILD_DIR=${PROJECT_BINARY_DIR}
                    -DWEBENGINE_ROOT_SOURCE_DIR=${WEBENGINE_ROOT_SOURCE_DIR}
                    -DGN_TARGET_CPU=${TEST_architecture_arch}

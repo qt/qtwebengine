@@ -18,11 +18,12 @@ PluginServiceFilterQt *PluginServiceFilterQt::GetInstance()
     return base::Singleton<PluginServiceFilterQt>::get();
 }
 
-bool PluginServiceFilterQt::IsPluginAvailable(int render_process_id,
-                                              int render_frame_id,
+bool PluginServiceFilterQt::IsPluginAvailable(int render_process_id, int render_frame_id,
+                                              content::BrowserContext *browser_context,
                                               const content::WebPluginInfo &plugin)
 {
     Q_UNUSED(plugin);
+    Q_UNUSED(browser_context);
     content::RenderFrameHost *frame_host = content::RenderFrameHost::FromID(render_process_id, render_frame_id);
     content::WebContents *web_contents = content::WebContents::FromRenderFrameHost(frame_host);
     if (!web_contents) {

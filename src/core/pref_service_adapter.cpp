@@ -18,11 +18,16 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/signin/internal/identity_manager/account_tracker_service.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/buildflags/buildflags.h"
 #include "content/public/browser/browser_context.h"
+
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "chrome/browser/devtools/devtools_settings.h"
 
 #if QT_CONFIG(webengine_spellchecker)
 #include "chrome/browser/spellchecker/spellcheck_service.h"
@@ -35,6 +40,10 @@
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
+#endif
+
+#if defined(Q_OS_WIN)
+#include "components/os_crypt/os_crypt.h"
 #endif
 
 namespace {
@@ -76,6 +85,21 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterBooleanPref(prefs::kShowInternalAccessibilityTree, false);
     registry->RegisterBooleanPref(prefs::kAccessibilityImageLabelsEnabled, false);
     registry->RegisterIntegerPref(prefs::kNotificationNextPersistentId, 10000);
+    registry->RegisterDictionaryPref(prefs::kPushMessagingAppIdentifierMap);
+    registry->RegisterListPref(prefs::kAccountInfo);
+    registry->RegisterStringPref(prefs::kGoogleServicesLastAccountId,
+                               std::string());
+    registry->RegisterStringPref(prefs::kGoogleServicesLastUsername,
+                               std::string());
+    registry->RegisterStringPref(prefs::kGoogleServicesAccountId, std::string());
+    registry->RegisterBooleanPref(prefs::kGoogleServicesConsentedToSync, false);
+    registry->RegisterBooleanPref(prefs::kAutologinEnabled, true);
+    registry->RegisterListPref(prefs::kReverseAutologinRejectedEmailList);
+    registry->RegisterBooleanPref(prefs::kSigninAllowed, true);
+    registry->RegisterBooleanPref(prefs::kSignedInWithCredentialProvider, false);
+#if defined(Q_OS_WIN)
+    OSCrypt::RegisterLocalPrefs(registry.get());
+#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     registry->RegisterDictionaryPref(extensions::pref_names::kExtensions);
@@ -101,8 +125,20 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterBooleanPref(autofill::prefs::kAutofillCreditCardEnabled, false);
     registry->RegisterBooleanPref(autofill::prefs::kAutofillCreditCardFidoAuthEnabled, false);
     registry->RegisterBooleanPref(autofill::prefs::kAutofillWalletImportEnabled, false);
-    registry->RegisterBooleanPref(autofill::prefs::kAutofillJapanCityFieldMigratedDeprecated,
-                                  false);
+
+    // devtools
+    registry->RegisterDictionaryPref(prefs::kDevToolsFileSystemPaths);
+    registry->RegisterDictionaryPref(prefs::kDevToolsEditedFiles);
+    registry->RegisterDictionaryPref(prefs::kDevToolsPreferences);
+    registry->RegisterBooleanPref(prefs::kDevToolsSyncPreferences, false);
+    // even if kDevToolsSyncPreferences is disabled, the js frontend tries to access
+    // these two. E.g.: 'clearPreferences', that is overridden by devtools_compatibility.js
+    registry->RegisterDictionaryPref(prefs::kDevToolsSyncedPreferencesSyncDisabled);
+    registry->RegisterDictionaryPref(prefs::kDevToolsSyncedPreferencesSyncEnabled);
+
+    registry->RegisterStringPref(prefs::kGoogleServicesSigninScopedDeviceId, std::string());
+    registry->RegisterStringPref(prefs::kGaiaCookieLastListAccountsData, std::string());
+    registry->RegisterStringPref(prefs::kGCMProductCategoryForSubtypes, std::string());
 
     {
         base::ScopedAllowBlocking allowBlock;
@@ -161,7 +197,7 @@ QStringList PrefServiceAdapter::spellCheckLanguages() const
 {
     QStringList spellcheck_dictionaries;
     const auto &list = m_prefService->GetList(spellcheck::prefs::kSpellCheckDictionaries);
-    for (const auto &dictionary : list->GetList()) {
+    for (const auto &dictionary : list) {
         spellcheck_dictionaries.append(QString::fromStdString(dictionary.GetString()));
     }
 

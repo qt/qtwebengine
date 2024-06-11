@@ -9,6 +9,7 @@
 #include "webui_controller_factory_qt.h"
 
 #include "build_config_qt.h"
+#include "devtools_frontend_qt.h"
 
 #include "base/bind.h"
 #include "build/build_config.h"
@@ -93,8 +94,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
         return &NewWebUI<NetInternalsUI>;
 
     if (url.SchemeIs(content::kChromeDevToolsScheme)) {
-        //        if (!DevToolsUIBindings::IsValidFrontendURL(url))
-        //            return nullptr;
+        if (!QtWebEngineCore::DevToolsFrontendQt::IsValidFrontendURL(url))
+            return nullptr;
         return &NewWebUI<DevToolsUI>;
     }
     if (url.host() == chrome::kChromeUIAccessibilityHost)
@@ -127,7 +128,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
     if (url.host_piece() == chrome::kChromeUIWebRtcLogsHost)
         return &NewWebUI<WebRtcLogsUI>;
 #endif
-#if BUILDFLAG(IS_LINUX) // Consider enabling for BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
     if (url.host_piece() == chrome::kChromeUISandboxHost)
         return &NewWebUI<SandboxInternalsUI>;
 #endif

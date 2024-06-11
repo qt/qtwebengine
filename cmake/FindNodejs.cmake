@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 find_program(Nodejs_EXECUTABLE NAMES node nodejs)
 
 if(Nodejs_EXECUTABLE)

@@ -5,10 +5,14 @@
 
 #include "render_widget_host_view_qt_delegate_client.h"
 
-#include <QGuiApplication>
-#include <QMouseEvent>
-#include <QSGImageNode>
-#include <QWindow>
+#include <QtGui/qevent.h>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qwindow.h>
+#include <QtQuick/qsgimagenode.h>
+
+#if QT_CONFIG(accessibility)
+#include <QtGui/qaccessible.h>
+#endif
 
 namespace QtWebEngineCore {
 
@@ -29,6 +33,7 @@ RenderWidgetHostViewQtDelegateItem::RenderWidgetHostViewQtDelegateItem(RenderWid
 
 RenderWidgetHostViewQtDelegateItem::~RenderWidgetHostViewQtDelegateItem()
 {
+    releaseVulkanResources();
     if (m_widgetDelegate) {
         m_widgetDelegate->Unbind();
         m_widgetDelegate->Destroy();
@@ -315,8 +320,16 @@ void RenderWidgetHostViewQtDelegateItem::itemChange(ItemChange change, const Ite
         if (value.window) {
             m_windowConnections.append(connect(value.window, &QQuickWindow::beforeRendering,
                                                this, &RenderWidgetHostViewQtDelegateItem::onBeforeRendering, Qt::DirectConnection));
+            m_windowConnections.append(connect(value.window, &QQuickWindow::afterFrameEnd,
+                                               this, &RenderWidgetHostViewQtDelegateItem::onAfterRendering, Qt::DirectConnection));
             m_windowConnections.append(connect(value.window, SIGNAL(xChanged(int)), SLOT(onWindowPosChanged())));
             m_windowConnections.append(connect(value.window, SIGNAL(yChanged(int)), SLOT(onWindowPosChanged())));
+#if QT_CONFIG(webengine_vulkan)
+            m_windowConnections.append(
+                    connect(value.window, &QQuickWindow::sceneGraphAboutToStop, this,
+                            &RenderWidgetHostViewQtDelegateItem::releaseVulkanResources,
+                            Qt::DirectConnection));
+#endif
             if (!m_isPopup)
                 m_windowConnections.append(connect(value.window, SIGNAL(closing(QQuickCloseEvent *)), SLOT(onHide())));
         }
@@ -336,15 +349,22 @@ QSGNode *RenderWidgetHostViewQtDelegateItem::updatePaintNode(QSGNode *oldNode, U
 {
     auto comp = compositor();
     if (!comp)
-        return nullptr;
+        return oldNode;
 
     QQuickWindow *win = QQuickItem::window();
 
+    QSGImageNode *node = nullptr;
     // Delete old node before swapFrame to decrement refcount of
     // QImage in software mode.
-    delete oldNode;
-    QSGImageNode *node = win->createImageNode();
-    node->setOwnsTexture(true);
+    if (comp->type() == Compositor::Type::Software)
+        delete oldNode;
+    else
+        node = static_cast<QSGImageNode*>(oldNode);
+
+    if (!node) {
+        node = win->createImageNode();
+        node->setOwnsTexture(true);
+    }
 
     comp->swapFrame();
 
@@ -352,20 +372,22 @@ QSGNode *RenderWidgetHostViewQtDelegateItem::updatePaintNode(QSGNode *oldNode, U
     QSizeF texSizeInDips = QSizeF(texSize) / comp->devicePixelRatio();
     node->setRect(QRectF(QPointF(0, 0), texSizeInDips));
 
-    if (comp->type() == Compositor::Type::Software) {
-        QImage image = comp->image();
-        node->setTexture(win->createTextureFromImage(image));
-#if QT_CONFIG(opengl)
-    } else if (comp->type() == Compositor::Type::OpenGL) {
-        QQuickWindow::CreateTextureOptions texOpts;
-        if (comp->hasAlphaChannel())
-            texOpts.setFlag(QQuickWindow::TextureHasAlphaChannel);
-        int texId = comp->textureId();
-        node->setTexture(QNativeInterface::QSGOpenGLTexture::fromNative(texId, win, texSize, texOpts));
-        node->setTextureCoordinatesTransform(QSGImageNode::MirrorVertically);
-#endif
+    QQuickWindow::CreateTextureOptions texOpts;
+    if (comp->requiresAlphaChannel() || m_clearColor.alpha() < 255)
+        texOpts.setFlag(QQuickWindow::TextureHasAlphaChannel);
+    else
+        texOpts.setFlag(QQuickWindow::TextureIsOpaque);
+    QSGTexture *texture = comp->texture(win, texOpts);
+    if (texture) {
+        node->setTexture(texture);
+        if (comp->textureIsFlipped())
+            node->setTextureCoordinatesTransform(QSGImageNode::MirrorVertically);
     } else {
-        Q_UNREACHABLE();
+        if (!oldNode || comp->type() == Compositor::Type::Software) {
+            qDebug("Compositor returned null texture");
+            delete node;
+            return nullptr;
+        }
     }
 
     return node;
@@ -374,9 +396,17 @@ QSGNode *RenderWidgetHostViewQtDelegateItem::updatePaintNode(QSGNode *oldNode, U
 void RenderWidgetHostViewQtDelegateItem::onBeforeRendering()
 {
     auto comp = compositor();
-    if (!comp || comp->type() != Compositor::Type::OpenGL)
+    if (!comp || comp->type() == Compositor::Type::Software)
         return;
     comp->waitForTexture();
+}
+
+void RenderWidgetHostViewQtDelegateItem::onAfterRendering()
+{
+    auto comp = compositor();
+    if (!comp || comp->type() != Compositor::Type::NativeBuffer)
+        return;
+    comp->releaseTexture();
 }
 
 void RenderWidgetHostViewQtDelegateItem::onWindowPosChanged()
@@ -388,6 +418,17 @@ void RenderWidgetHostViewQtDelegateItem::onHide()
 {
     QFocusEvent event(QEvent::FocusOut, Qt::OtherFocusReason);
     m_client->forwardEvent(&event);
+}
+
+void RenderWidgetHostViewQtDelegateItem::releaseVulkanResources()
+{
+#if QT_CONFIG(webengine_vulkan)
+    auto comp = compositor();
+    if (!comp || comp->type() != Compositor::Type::Vulkan)
+        return;
+
+    comp->releaseVulkanResources(QQuickItem::window());
+#endif
 }
 
 void RenderWidgetHostViewQtDelegateItem::adapterClientChanged(WebContentsAdapterClient *client)

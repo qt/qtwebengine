@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Push Notification Using Node and FCM</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Push Notification Using NodeJS and QtWebEngine</h1>
+  <div id="app">
+    <div id="ping-setup">
+      <form>
+        <div>
+          Ping Me Every [sec]:
+        </div>
+        <div class="ping-input">
+          <input type="number" name="seconds" min="0" max="3600" required="">
+        </div><button>Ping Me</button>
+      </form>
+    </div>
+    <div id="ping-clear">
+      <div id="ping-text"></div><button id="ping-clear-button">Clear</button>
+    </div>
+  </div>
+  <script src="ping.js"></script>
+</body>
+</html>

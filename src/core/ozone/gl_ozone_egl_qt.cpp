@@ -48,32 +48,31 @@ bool GLOzoneEGLQt::LoadGLES2Bindings(const gl::GLImplementationParts & /*impleme
     return true;
 }
 
-bool GLOzoneEGLQt::InitializeGLOneOffPlatform()
+gl::GLDisplay *GLOzoneEGLQt::InitializeGLOneOffPlatform(uint64_t system_device_id)
 {
-    if (!gl::GLSurfaceEGLQt::InitializeOneOff()) {
-        LOG(ERROR) << "GLOzoneEGLQt::InitializeOneOff failed.";
-        return false;
-    }
-    return true;
+    return gl::GLSurfaceEGLQt::InitializeOneOff(system_device_id);
 }
 
-bool GLOzoneEGLQt::InitializeExtensionSettingsOneOffPlatform()
+bool GLOzoneEGLQt::InitializeExtensionSettingsOneOffPlatform(gl::GLDisplay *display)
 {
+    Q_UNUSED(display);
     return gl::GLSurfaceEGLQt::InitializeExtensionSettingsOneOff();
 }
 
-scoped_refptr<gl::GLSurface> GLOzoneEGLQt::CreateViewGLSurface(gfx::AcceleratedWidget window)
+scoped_refptr<gl::GLSurface> GLOzoneEGLQt::CreateViewGLSurface(gl::GLDisplay* display, gfx::AcceleratedWidget window)
 {
+    Q_UNUSED(display);
+    Q_UNUSED(window);
     return nullptr;
 }
 
-scoped_refptr<gl::GLSurface> GLOzoneEGLQt::CreateOffscreenGLSurface(const gfx::Size &size)
+scoped_refptr<gl::GLSurface> GLOzoneEGLQt::CreateOffscreenGLSurface(gl::GLDisplay* display, const gfx::Size &size)
 {
-    scoped_refptr<gl::GLSurface> surface = new gl::GLSurfaceEGLQt(size);
+    scoped_refptr<gl::GLSurface> surface = new gl::GLSurfaceEGLQt(static_cast<gl::GLDisplayEGL*>(display), size);
     if (surface->Initialize(gl::GLSurfaceFormat()))
         return surface;
 
-    surface = new gl::GLSurfacelessQtEGL(size);
+    surface = new gl::GLSurfacelessQtEGL(static_cast<gl::GLDisplayEGL*>(display), size);
     if (surface->Initialize(gl::GLSurfaceFormat()))
         return surface;
 

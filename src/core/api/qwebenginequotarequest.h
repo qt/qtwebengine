@@ -6,13 +6,9 @@
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
-#include <QtCore/qsharedpointer.h>
 #include <QtCore/qurl.h>
 
-namespace QtWebEngineCore {
-class QuotaPermissionContextQt;
-class QuotaRequestController;
-} // namespace QtWebEngineCore
+#if QT_DEPRECATED_SINCE(6, 5)
 
 QT_BEGIN_NAMESPACE
 
@@ -22,20 +18,18 @@ class Q_WEBENGINECORE_EXPORT QWebEngineQuotaRequest
     Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
     Q_PROPERTY(qint64 requestedSize READ requestedSize CONSTANT FINAL)
 public:
+    QT_DEPRECATED_VERSION_X_6_5("Requesting host quota is no longer supported.")
     QWebEngineQuotaRequest() {}
     Q_INVOKABLE void accept();
     Q_INVOKABLE void reject();
     QUrl origin() const;
     qint64 requestedSize() const;
-    bool operator==(const QWebEngineQuotaRequest &that) const { return d_ptr == that.d_ptr; }
-    bool operator!=(const QWebEngineQuotaRequest &that) const { return d_ptr != that.d_ptr; }
-
-private:
-    QWebEngineQuotaRequest(QSharedPointer<QtWebEngineCore::QuotaRequestController>);
-    friend QtWebEngineCore::QuotaPermissionContextQt;
-    QSharedPointer<QtWebEngineCore::QuotaRequestController> d_ptr;
+    bool operator==(const QWebEngineQuotaRequest &) const { Q_UNREACHABLE(); }
+    bool operator!=(const QWebEngineQuotaRequest &) const { Q_UNREACHABLE(); }
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_DEPRECATED_SINCE(6, 5)
 
 #endif // QWEBENGINEQUOTAREQUEST_H

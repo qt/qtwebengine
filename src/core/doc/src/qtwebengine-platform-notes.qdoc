@@ -52,13 +52,7 @@
         \li Windows 10 SDK version 10.0.20348.0 or later
     \endlist
 
-    \QWE can only be built on 64-bit Windows, with a x64-bit toolchain.
-    For building \QWE for x86 applications, you need to configure
-    and compile Qt with the Visual Studio x64 to x86 cross-compile
-    toolchain. This toolchain can be set up on the command line by running
-    \c{vcvarsall.bat amd64_x86}.
-
-    \note It is not recommended to use tools form  \c msys2 or \c cygwin to build \QWE as it may result in build errors.
+    \note It is not recommended to use tools from  \c msys2 or \c cygwin to build \QWE as it may result in build errors.
 
     \section2 Linux
 

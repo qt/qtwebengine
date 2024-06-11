@@ -56,13 +56,14 @@ public:
     content::PlatformNotificationService *GetPlatformNotificationService() override;
     std::string GetMediaDeviceIDSalt() override;
     content::FileSystemAccessPermissionContext *GetFileSystemAccessPermissionContext() override;
+    content::ReduceAcceptLanguageControllerDelegate *GetReduceAcceptLanguageControllerDelegate() override;
 
     // Profile implementation:
     PrefService *GetPrefs() override;
     const PrefService *GetPrefs() const override;
     bool IsNewProfile() const override;
 
-    void Initialize();
+    void DoFinalInit();
     ProfileAdapter *profileAdapter() { return m_profileAdapter; }
 
 #if QT_CONFIG(webengine_spellchecker)

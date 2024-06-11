@@ -91,6 +91,31 @@
     \skipto Dialog {
     \printuntil /^\ {4}\}/
 
+    \section1 Handling Feature Permission Requests
+
+    We use the \c onFeaturePermissionRequested() signal handler to handle requests for
+    accessing a certain feature or device. The \c securityOrigin parameter identifies the
+    requester web site, and the \c feature parameter is the requested feature. We use these
+    to construct the message of the dialog:
+
+    \quotefromfile webenginequick/quicknanobrowser/BrowserWindow.qml
+    \skipto onFeaturePermissionRequested
+    \printuntil }
+
+    We show a dialog where the user is asked to grant or deny access. The custom
+    \c questionForFeature() JavaScript function generates a human-readable question about
+    the request.
+    If users select \uicontrol Yes, we call the \l{WebEngineView::}{grantFeaturePermission()}
+    method with a third \c true parameter to grant the \c securityOrigin web site the permission
+    to access the \c feature.
+    If users select \uicontrol No, we call the same method but with the \c false parameter to
+    deny access:
+
+    \skipto id: sslDialog
+    \skipto Dialog {
+    \printuntil /^\ {4}\}/
+
+
     \section1 Entering and Leaving Fullscreen Mode
 
     We create a menu item for allowing fullscreen mode in a settings menu that we place on the tool

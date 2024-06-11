@@ -27,7 +27,6 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qstring.h>
-#include <QtGui/qaccessibleobject.h>
 
 namespace QtWebEngineCore {
 class RenderWidgetHostViewQtDelegateItem;
@@ -103,7 +102,6 @@ public:
     void authenticationRequired(QSharedPointer<QtWebEngineCore::AuthenticationDialogController>) override;
     void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) override;
     void runMouseLockPermissionRequest(const QUrl &securityOrigin) override;
-    void runQuotaRequest(QWebEngineQuotaRequest) override;
     void runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest) override;
     void runFileSystemAccessRequest(QWebEngineFileSystemAccessRequest) override;
     QObject *accessibilityParentObject() override;
@@ -158,8 +156,6 @@ public:
     bool m_fullscreenMode;
     bool isLoading;
     bool m_activeFocusOnPress;
-    bool m_navigationActionTriggered;
-    qreal devicePixelRatio;
     QMap<quint64, QJSValue> m_callbacks;
     QQmlWebChannel *m_webChannel;
     QPointer<QQuickWebEngineView> inspectedView;

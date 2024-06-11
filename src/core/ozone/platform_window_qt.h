@@ -21,8 +21,10 @@ public:
     PlatformWindowQt(PlatformWindowDelegate* delegate, const gfx::Rect& bounds);
     ~PlatformWindowQt() override;
     // PlatformWindow:
-    gfx::Rect GetBounds() const override;
-    void SetBounds(const gfx::Rect& bounds) override;
+    gfx::Rect GetBoundsInPixels() const override;
+    void SetBoundsInPixels(const gfx::Rect& bounds) override;
+    gfx::Rect GetBoundsInDIP() const override;
+    void SetBoundsInDIP(const gfx::Rect& bounds) override;
     void Show(bool inactive = false) override { }
     void Hide() override { }
     void Close() override;
@@ -39,8 +41,8 @@ public:
     void SetCursor(scoped_refptr<PlatformCursor>) override { }
     void MoveCursorTo(const gfx::Point&) override { }
     void ConfineCursorToBounds(const gfx::Rect&) override { }
-    void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override { }
-    gfx::Rect GetRestoredBoundsInPixels() const override { return gfx::Rect(); }
+    void SetRestoredBoundsInDIP(const gfx::Rect& bounds)  override { }
+    gfx::Rect GetRestoredBoundsInDIP() const  override { return gfx::Rect(); }
     void Activate() override { }
     void Deactivate() override { }
     void SetUseNativeFrame(bool use_native_frame) override { }

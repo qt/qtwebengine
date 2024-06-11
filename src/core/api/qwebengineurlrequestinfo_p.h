@@ -34,8 +34,10 @@ class QWebEngineUrlRequestInfoPrivate
     Q_DECLARE_PUBLIC(QWebEngineUrlRequestInfo)
 public:
     QWebEngineUrlRequestInfoPrivate(QWebEngineUrlRequestInfo::ResourceType resource,
-                                    QWebEngineUrlRequestInfo::NavigationType navigation, const QUrl &u, const QUrl &fpu,
-                                    const QUrl &i, const QByteArray &m);
+                                    QWebEngineUrlRequestInfo::NavigationType navigation,
+                                    const QUrl &u, const QUrl &fpu, const QUrl &i,
+                                    const QByteArray &m,
+                                    const QHash<QByteArray, QByteArray> &h = {});
 
     QWebEngineUrlRequestInfo::ResourceType resourceType;
     QWebEngineUrlRequestInfo::NavigationType navigationType;

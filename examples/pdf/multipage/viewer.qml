@@ -412,7 +412,7 @@ ApplicationWindow {
                 Layout.bottomMargin: 3
                 onAccepted: {
                     sidebar.open()
-                    sidebarTabs.setCurrentIndex(0)
+                    sidebarTabs.setCurrentIndex(1)
                 }
                 Image {
                     visible: searchField.text !== ""

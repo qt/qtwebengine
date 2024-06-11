@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 if(NOT DEFINED WEBENGINE_ROOT_BUILD_DIR)
     set(WEBENGINE_ROOT_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR})
 endif()

@@ -21,7 +21,7 @@ public:
     GLDisplay *GetGLDisplay() override;
     void *GetConfig() override;
     bool IsOffscreen() override;
-    gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
+    gfx::SwapResult SwapBuffers(PresentationCallback callback, FrameData data) override;
     gfx::Size GetSize() override;
     GLSurfaceFormat GetFormat() override;
 

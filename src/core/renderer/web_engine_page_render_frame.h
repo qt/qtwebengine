@@ -36,6 +36,6 @@ private:
     mojo::AssociatedReceiver<qtwebenginepage::mojom::WebEnginePageRenderFrame> m_binding;
     bool m_ready;
 };
-} // namespace
+} // namespace QtWebEngineCore
 
 #endif // WEB_ENGINE_PAGE_RENDER_FRAME_H

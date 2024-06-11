@@ -4,7 +4,6 @@
 #include "client_cert_qt.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/callback_forward.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "crypto/crypto_buildflags.h"
@@ -118,8 +117,8 @@ void ClientCertStoreQt::GetClientCerts(const net::SSLCertRequestInfo &cert_reque
 {
 #if QT_CONFIG(ssl)
     // Access the user-provided data from the UI thread, but return on whatever thread this is.
-    bool ok = base::PostTaskAndReplyWithResult(
-            FROM_HERE, { content::BrowserThread::UI },
+    bool ok = content::GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+            FROM_HERE,
             base::BindOnce(&ClientCertStoreQt::GetClientCertsOnUIThread,
                            base::Unretained(this), std::cref(cert_request_info)),
             base::BindOnce(&ClientCertStoreQt::GetClientCertsReturn,

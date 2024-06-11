@@ -25,14 +25,6 @@ BrowserWindow::BrowserWindow(Browser *browser, QWebEngineProfile *profile, bool 
     : m_browser(browser)
     , m_profile(profile)
     , m_tabWidget(new TabWidget(profile, this))
-    , m_progressBar(nullptr)
-    , m_historyBackAction(nullptr)
-    , m_historyForwardAction(nullptr)
-    , m_stopAction(nullptr)
-    , m_reloadAction(nullptr)
-    , m_stopReloadAction(nullptr)
-    , m_urlLineEdit(nullptr)
-    , m_favAction(nullptr)
 {
     setAttribute(Qt::WA_DeleteOnClose, true);
     setFocusPolicy(Qt::ClickFocus);
@@ -58,7 +50,8 @@ BrowserWindow::BrowserWindow(Browser *browser, QWebEngineProfile *profile, bool 
 
         m_progressBar->setMaximumHeight(1);
         m_progressBar->setTextVisible(false);
-        m_progressBar->setStyleSheet(QStringLiteral("QProgressBar {border: 0px} QProgressBar::chunk {background-color: #da4453}"));
+        m_progressBar->setStyleSheet(QStringLiteral(
+                "QProgressBar {border: 0px} QProgressBar::chunk {background-color: #da4453}"));
 
         layout->addWidget(m_progressBar);
     }
@@ -266,10 +259,18 @@ QMenu *BrowserWindow::createWindowMenu(TabWidget *tabWidget)
     previousTabAction->setShortcuts(shortcuts);
     connect(previousTabAction, &QAction::triggered, tabWidget, &TabWidget::previousTab);
 
-    connect(menu, &QMenu::aboutToShow, [this, menu, nextTabAction, previousTabAction]() {
+    QAction *inspectorAction = new QAction(tr("Open inspector in new window"), this);
+    shortcuts.clear();
+    shortcuts.append(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_I));
+    inspectorAction->setShortcuts(shortcuts);
+    connect(inspectorAction, &QAction::triggered, [this]() { emit currentTab()->devToolsRequested(currentTab()->page()); });
+
+    connect(menu, &QMenu::aboutToShow, [this, menu, nextTabAction, previousTabAction, inspectorAction]() {
         menu->clear();
         menu->addAction(nextTabAction);
         menu->addAction(previousTabAction);
+        menu->addSeparator();
+        menu->addAction(inspectorAction);
         menu->addSeparator();
 
         QList<BrowserWindow*> windows = m_browser->windows();
@@ -292,6 +293,20 @@ QMenu *BrowserWindow::createHelpMenu()
     return helpMenu;
 }
 
+static bool isBackspace(const QKeySequence &k)
+{
+    return (k[0].key() & Qt::Key_unknown) == Qt::Key_Backspace;
+}
+
+// Chromium already handles navigate on backspace when appropriate.
+static QList<QKeySequence> removeBackspace(QList<QKeySequence> keys)
+{
+    const auto it = std::find_if(keys.begin(), keys.end(), isBackspace);
+    if (it != keys.end())
+        keys.erase(it);
+    return keys;
+}
+
 QToolBar *BrowserWindow::createToolBar()
 {
     QToolBar *navigationBar = new QToolBar(tr("Navigation"));
@@ -299,14 +314,7 @@ QToolBar *BrowserWindow::createToolBar()
     navigationBar->toggleViewAction()->setEnabled(false);
 
     m_historyBackAction = new QAction(this);
-    QList<QKeySequence> backShortcuts = QKeySequence::keyBindings(QKeySequence::Back);
-    for (auto it = backShortcuts.begin(); it != backShortcuts.end();) {
-        // Chromium already handles navigate on backspace when appropriate.
-        if ((*it)[0].key() == Qt::Key_Backspace)
-            it = backShortcuts.erase(it);
-        else
-            ++it;
-    }
+    auto backShortcuts = removeBackspace(QKeySequence::keyBindings(QKeySequence::Back));
     // For some reason Qt doesn't bind the dedicated Back key to Back.
     backShortcuts.append(QKeySequence(Qt::Key_Back));
     m_historyBackAction->setShortcuts(backShortcuts);
@@ -319,13 +327,7 @@ QToolBar *BrowserWindow::createToolBar()
     navigationBar->addAction(m_historyBackAction);
 
     m_historyForwardAction = new QAction(this);
-    QList<QKeySequence> fwdShortcuts = QKeySequence::keyBindings(QKeySequence::Forward);
-    for (auto it = fwdShortcuts.begin(); it != fwdShortcuts.end();) {
-        if (((*it)[0].key() & Qt::Key_unknown) == Qt::Key_Backspace)
-            it = fwdShortcuts.erase(it);
-        else
-            ++it;
-    }
+    auto fwdShortcuts = removeBackspace(QKeySequence::keyBindings(QKeySequence::Forward));
     fwdShortcuts.append(QKeySequence(Qt::Key_Forward));
     m_historyForwardAction->setShortcuts(fwdShortcuts);
     m_historyForwardAction->setIconVisibleInMenu(false);
@@ -352,9 +354,8 @@ QToolBar *BrowserWindow::createToolBar()
     downloadsAction->setIcon(QIcon(QStringLiteral(":go-bottom.png")));
     downloadsAction->setToolTip(tr("Show downloads"));
     navigationBar->addAction(downloadsAction);
-    connect(downloadsAction, &QAction::triggered, [this]() {
-        m_browser->downloadManagerWidget().show();
-    });
+    connect(downloadsAction, &QAction::triggered,
+            &m_browser->downloadManagerWidget(), &QWidget::show);
 
     return navigationBar;
 }

@@ -50,7 +50,7 @@ void tst_ProxyPac::proxypac()
     QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
     page.load(QUrl("https://contribute.qt-project.org"));
 
-    QTRY_VERIFY_WITH_TIMEOUT(!spyFinished.isEmpty(), 100000);
+    QTRY_VERIFY_WITH_TIMEOUT(!spyFinished.isEmpty(), 200000);
 
 }
 

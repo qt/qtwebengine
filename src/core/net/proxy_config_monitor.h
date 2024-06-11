@@ -10,16 +10,11 @@
 #define PROXY_CONFIG_MONITOR_H
 
 #include <memory>
-#include <string>
 
-#include "build/buildflag.h"
-#include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
-#include "services/network/public/mojom/network_service.mojom-forward.h"
-#include "services/network/public/mojom/proxy_config.mojom-forward.h"
 #include "services/network/public/mojom/proxy_config_with_annotation.mojom.h"
 
 namespace net {
@@ -61,4 +56,4 @@ private:
     mojo::RemoteSet<network::mojom::ProxyConfigClient> proxy_config_client_set_;
 };
 
-#endif // !PROXY_CONFIG_MONITOR_H
+#endif // PROXY_CONFIG_MONITOR_H

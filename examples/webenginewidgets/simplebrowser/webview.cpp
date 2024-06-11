@@ -19,7 +19,6 @@
 
 WebView::WebView(QWidget *parent)
     : QWebEngineView(parent)
-    , m_loadProgress(100)
 {
     connect(this, &QWebEngineView::loadStarted, [this]() {
         m_loadProgress = 0;
@@ -57,7 +56,7 @@ WebView::WebView(QWidget *parent)
                                                    tr("Render process exited with code: %1\n"
                                                       "Do you want to reload the page ?").arg(statusCode));
         if (btn == QMessageBox::Yes)
-            QTimer::singleShot(0, [this] { reload(); });
+            QTimer::singleShot(0, this, &WebView::reload);
     });
 }
 
@@ -149,13 +148,15 @@ QIcon WebView::favIcon() const
     if (m_loadProgress < 0) {
         static QIcon errorIcon(QStringLiteral(":dialog-error.png"));
         return errorIcon;
-    } else if (m_loadProgress < 100) {
+    }
+
+    if (m_loadProgress < 100) {
         static QIcon loadingIcon(QStringLiteral(":view-refresh.png"));
         return loadingIcon;
-    } else {
-        static QIcon defaultIcon(QStringLiteral(":text-html.png"));
-        return defaultIcon;
     }
+
+    static QIcon defaultIcon(":text-html.png");
+    return defaultIcon;
 }
 
 QWebEngineView *WebView::createWindow(QWebEnginePage::WebWindowType type)
@@ -193,12 +194,8 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
         if (viewSource == actions.cend())
             menu->addSeparator();
 
-        QAction *action = new QAction(menu);
-        action->setText("Open inspector in new window");
+        QAction *action = menu->addAction("Open inspector in new window");
         connect(action, &QAction::triggered, [this]() { emit devToolsRequested(page()); });
-
-        QAction *before(inspectElement == actions.cend() ? nullptr : *inspectElement);
-        menu->insertAction(before, action);
     } else {
         (*inspectElement)->setText(tr("Inspect element"));
     }
@@ -239,8 +236,8 @@ void WebView::handleAuthenticationRequired(const QUrl &requestUrl, QAuthenticato
     passwordDialog.m_iconLabel->setPixmap(icon.pixmap(32, 32));
 
     QString introMessage(tr("Enter username and password for \"%1\" at %2")
-                                 .arg(auth->realm())
-                                 .arg(requestUrl.toString().toHtmlEscaped()));
+                                 .arg(auth->realm(),
+                                      requestUrl.toString().toHtmlEscaped()));
     passwordDialog.m_infoLabel->setText(introMessage);
     passwordDialog.m_infoLabel->setWordWrap(true);
 

@@ -31,6 +31,7 @@
 #include "select_file_dialog_factory_qt.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "type_conversion.h"
 #include "ui/display/screen.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -50,6 +51,7 @@
 #include "web_usb_detector_qt.h"
 
 #include <QtGui/qtgui-config.h>
+#include <QStandardPaths>
 
 #if QT_CONFIG(opengl)
 #include "ui/gl/gl_context.h"
@@ -68,6 +70,10 @@
 #include "desktop_screen_qt.h"
 #endif
 
+#if defined(Q_OS_LINUX)
+#include "components/os_crypt/key_storage_config_linux.h"
+#include "components/os_crypt/os_crypt.h"
+#endif
 
 namespace QtWebEngineCore {
 
@@ -252,6 +258,15 @@ void BrowserMainPartsQt::PostCreateMainMessageLoop()
 {
     if (!device_event_log::IsInitialized())
         device_event_log::Initialize(0 /* default max entries */);
+
+#if defined(Q_OS_LINUX)
+    std::unique_ptr<os_crypt::Config> config = std::make_unique<os_crypt::Config>();
+    config->product_name = "Qt WebEngine";
+    config->main_thread_runner = content::GetUIThreadTaskRunner({});
+    config->should_use_preference = false;
+    config->user_data_path = toFilePath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+    OSCrypt::SetConfig(std::move(config));
+#endif
 }
 
 int BrowserMainPartsQt::PreMainMessageLoopRun()

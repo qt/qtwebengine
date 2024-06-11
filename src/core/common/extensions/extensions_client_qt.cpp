@@ -122,6 +122,12 @@ bool ExtensionsClientQt::IsBlocklistUpdateURL(const GURL &url) const
     return true;
 }
 
+const GURL &ExtensionsClientQt::GetNewWebstoreBaseURL() const
+{
+    static GURL dummy;
+    return dummy;
+}
+
 // Returns the set of file paths corresponding to any images within an
 // extension's contents that may be displayed directly within the browser UI
 // or WebUI, such as icons or theme images. This set of paths is used by the

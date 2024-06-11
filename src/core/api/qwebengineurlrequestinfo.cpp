@@ -76,10 +76,10 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::RedirectNavigation
     execution of this function is finished.
 */
 
-QWebEngineUrlRequestInfoPrivate::QWebEngineUrlRequestInfoPrivate(QWebEngineUrlRequestInfo::ResourceType resource,
-                                                                 QWebEngineUrlRequestInfo::NavigationType navigation,
-                                                                 const QUrl &u, const QUrl &fpu, const QUrl &i,
-                                                                 const QByteArray &m)
+QWebEngineUrlRequestInfoPrivate::QWebEngineUrlRequestInfoPrivate(
+        QWebEngineUrlRequestInfo::ResourceType resource,
+        QWebEngineUrlRequestInfo::NavigationType navigation, const QUrl &u, const QUrl &fpu,
+        const QUrl &i, const QByteArray &m, const QHash<QByteArray, QByteArray> &h)
     : resourceType(resource)
     , navigationType(navigation)
     , shouldBlockRequest(false)
@@ -89,6 +89,7 @@ QWebEngineUrlRequestInfoPrivate::QWebEngineUrlRequestInfoPrivate(QWebEngineUrlRe
     , initiator(i)
     , method(m)
     , changed(false)
+    , extraHeaders(h)
 {}
 
 /*!
@@ -285,7 +286,28 @@ void QWebEngineUrlRequestInfo::block(bool shouldBlock)
 void QWebEngineUrlRequestInfo::setHttpHeader(const QByteArray &name, const QByteArray &value)
 {
     d_ptr->changed = true;
+
+    // Headers are case insentive, so we need to compare manually
+    for (auto it = d_ptr->extraHeaders.begin(); it != d_ptr->extraHeaders.end(); ++it) {
+        if (it.key().compare(name, Qt::CaseInsensitive) == 0) {
+            d_ptr->extraHeaders.erase(it);
+            break;
+        }
+    }
+
     d_ptr->extraHeaders.insert(name, value);
+}
+
+/*!
+    Returns the request headers.
+    \since 6.5
+    \note Not all headers are visible at this stage as Chromium will add
+    security and proxy headers at a later stage.
+*/
+
+QHash<QByteArray, QByteArray> QWebEngineUrlRequestInfo::httpHeaders() const
+{
+    return d_ptr->extraHeaders;
 }
 
 QT_END_NAMESPACE

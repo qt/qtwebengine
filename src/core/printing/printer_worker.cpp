@@ -65,8 +65,8 @@ void PrinterWorker::print()
             bool isLandscape = documentSize.width() > documentSize.height();
             m_device->setPageOrientation(isLandscape ? QPageLayout::Landscape
                                                       : QPageLayout::Portrait);
-            QRectF pageRect = m_device->pageLayout().pageSize().rectPixels(m_deviceResolution);
-            documentSize = documentSize.scaled(pageRect.size(), Qt::KeepAspectRatio);
+            QRectF paintRect = m_device->pageLayout().paintRectPixels(m_deviceResolution);
+            documentSize = documentSize.scaled(paintRect.size(), Qt::KeepAspectRatio);
 
             // setPageOrientation has to be called before qpainter.begin() or before
             // qprinter.newPage() so correct metrics is used, therefore call begin now for only

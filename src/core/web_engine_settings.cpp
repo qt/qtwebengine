@@ -422,7 +422,6 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
         prefs->text_track_font_family = style->font_family;
         prefs->text_track_font_variant = style->font_variant;
         prefs->text_track_window_color = style->window_color;
-        prefs->text_track_window_padding = style->window_padding;
         prefs->text_track_window_radius = style->window_radius;
     }
 }
