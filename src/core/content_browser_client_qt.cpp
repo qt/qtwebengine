@@ -148,12 +148,11 @@
 #include "components/pdf/browser/pdf_navigation_throttle.h"
 #include "components/pdf/browser/pdf_url_loader_request_interceptor.h"
 #include "components/pdf/browser/pdf_document_helper.h"
-
-#include "printing/pdf_document_helper_client_qt.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/pdf_iframe_navigation_throttle_qt.h"
+#include "printing/pdf_document_helper_client_qt.h"
 #endif
 
 #include <QGuiApplication>
@@ -517,7 +516,7 @@ void ContentBrowserClientQt::RegisterAssociatedInterfaceBindersForRenderFrameHos
                                                                            std::move(receiver));
             },
             &rfh));
-#if BUILDFLAG(ENABLE_PDF)
+#if BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
     associated_registry.AddInterface<pdf::mojom::PdfService>(
                 base::BindRepeating(
                     [](content::RenderFrameHost *render_frame_host,
