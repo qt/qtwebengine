@@ -48,7 +48,6 @@ struct SandboxInterfaceInfo;
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QObject)
-class WebRtcLogUploader;
 
 namespace QtWebEngineCore {
 
@@ -74,9 +73,6 @@ public:
     QObject *globalQObject();
 #if QT_CONFIG(webengine_printing_and_pdf)
     printing::PrintJobManager* getPrintJobManager();
-#endif
-#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
-    WebRtcLogUploader *webRtcLogUploader();
 #endif
     void destroyProfileAdapter();
     void addProfileAdapter(ProfileAdapter *profileAdapter);
@@ -110,9 +106,6 @@ private:
 
 #if QT_CONFIG(webengine_printing_and_pdf)
     std::unique_ptr<printing::PrintJobManager> m_printJobManager;
-#endif
-#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
-    std::unique_ptr<WebRtcLogUploader> m_webrtcLogUploader;
 #endif
     static scoped_refptr<QtWebEngineCore::WebEngineContext> m_handle;
     static bool m_destroyed;

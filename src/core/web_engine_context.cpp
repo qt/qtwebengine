@@ -20,9 +20,6 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
-#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
-#include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
-#endif
 #include "chrome/common/chrome_switches.h"
 #include "content/common/process_visibility_tracker.h"
 #include "content/gpu/gpu_child_thread.h"
@@ -658,11 +655,6 @@ void WebEngineContext::destroy()
     if (m_devtoolsServer)
         m_devtoolsServer->stop();
 
-#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
-    if (m_webrtcLogUploader)
-        m_webrtcLogUploader->Shutdown();
-#endif
-
     // Normally the GPU thread is shut down when the GpuProcessHost is destroyed
     // on IO thread (triggered by ~BrowserMainRunner). But by that time the UI
     // task runner is not working anymore so we need to do this earlier.
@@ -710,10 +702,6 @@ void WebEngineContext::destroy()
 
     // Drop the false reference.
     m_handle->Release();
-
-#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
-    m_webrtcLogUploader.reset();
-#endif
 }
 
 WebEngineContext::~WebEngineContext()
@@ -1108,16 +1096,6 @@ printing::PrintJobManager* WebEngineContext::getPrintJobManager()
     return m_printJobManager.get();
 }
 #endif
-
-#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
-WebRtcLogUploader *WebEngineContext::webRtcLogUploader()
-{
-    if (!m_webrtcLogUploader)
-        m_webrtcLogUploader = std::make_unique<WebRtcLogUploader>();
-    return m_webrtcLogUploader.get();
-}
-#endif
-
 
 base::CommandLine *WebEngineContext::initCommandLine(bool &useEmbeddedSwitches,
                                                      bool &enableGLSoftwareRendering)
