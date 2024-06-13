@@ -10,17 +10,10 @@
 namespace content {
 class BrowserContext;
 class BrowserMainParts;
-
-#if QT_CONFIG(webengine_pepper_plugins)
-class BrowserPpapiHost;
-#endif
-
 class DevToolsManagerDelegate;
 class RenderFrameHost;
 class RenderProcessHost;
-class ResourceContext;
 class WebContents;
-struct MainFunctionParams;
 struct Referrer;
 } // namespace content
 

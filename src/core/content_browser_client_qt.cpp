@@ -16,7 +16,6 @@
 #include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -25,15 +24,12 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_user_data.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
 #include "extensions/buildflags/buildflags.h"
@@ -57,7 +53,6 @@
 
 #include "profile_adapter.h"
 #include "browser_main_parts_qt.h"
-#include "browser_message_filter_qt.h"
 #include "certificate_error_controller.h"
 #include "client_cert_select_controller.h"
 #include "custom_handlers/protocol_handler_registry_factory.h"
@@ -70,7 +65,6 @@
 #include "net/proxying_restricted_cookie_manager_qt.h"
 #include "net/proxying_url_loader_factory_qt.h"
 #include "net/system_network_context_manager.h"
-#include "platform_notification_service_qt.h"
 #include "profile_qt.h"
 #include "profile_io_data_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
@@ -80,13 +74,16 @@
 #include "web_contents_adapter.h"
 #include "web_contents_delegate_qt.h"
 #include "web_contents_view_qt.h"
-#include "web_engine_context.h"
 #include "web_engine_library_info.h"
 #include "web_engine_settings.h"
 #include "authenticator_request_client_delegate_qt.h"
 #include "api/qwebenginecookiestore.h"
 #include "api/qwebenginecookiestore_p.h"
 #include "api/qwebengineurlrequestinfo_p.h"
+
+#if BUILDFLAG(CONTENT_ENABLE_LEGACY_IPC)
+#include "browser_message_filter_qt.h"
+#endif
 
 #if QT_CONFIG(webengine_geolocation)
 #include "base/memory/ptr_util.h"
@@ -190,7 +187,7 @@ bool IsHandledProtocol(base::StringPiece scheme)
         return true;
     return false;
 }
-}
+} // namespace url
 
 namespace QtWebEngineCore {
 
