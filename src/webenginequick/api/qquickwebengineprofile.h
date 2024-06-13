@@ -48,6 +48,7 @@ class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineProfile : public QObject {
 
 public:
     QQuickWebEngineProfile(QObject *parent = nullptr);
+    QQuickWebEngineProfile(const QString &storageName, QObject *parent = nullptr);
     ~QQuickWebEngineProfile();
 
     enum HttpCacheType {

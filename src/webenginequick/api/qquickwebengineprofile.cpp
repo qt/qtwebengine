@@ -418,6 +418,24 @@ QQuickWebEngineProfile::QQuickWebEngineProfile(QObject *parent)
     d_ptr->q_ptr = this;
 }
 
+/*!
+    Constructs a new profile with the storage name \a storageName and parent \a parent.
+
+    The storage name must be unique.
+
+    A disk-based QQuickWebEngineProfile should be destroyed on or before application exit, otherwise the cache
+    and persistent data may not be fully flushed to disk.
+
+    \since QtWebEngine 6.9
+    \sa storageName()
+*/
+QQuickWebEngineProfile::QQuickWebEngineProfile(const QString &storageName, QObject *parent)
+    : QObject(parent)
+    , d_ptr(new QQuickWebEngineProfilePrivate(new QtWebEngineCore::ProfileAdapter(storageName)))
+{
+    d_ptr->q_ptr = this;
+}
+
 QQuickWebEngineProfile::QQuickWebEngineProfile(QQuickWebEngineProfilePrivate *privatePtr, QObject *parent)
     : QObject(parent)
     , d_ptr(privatePtr)
