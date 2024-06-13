@@ -22,7 +22,6 @@
 #include "base/containers/span.h"
 #include "components/autofill/content/browser/content_autofill_client.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_user_data.h"
 
 #include <QScopedPointer>
 

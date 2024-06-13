@@ -11,10 +11,6 @@
 
 class PrefService;
 
-namespace content {
-class ResourceContext;
-}
-
 namespace extensions {
 class ExtensionSystemQt;
 }

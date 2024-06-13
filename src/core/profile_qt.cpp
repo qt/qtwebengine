@@ -15,7 +15,6 @@
 #include "qtwebenginecoreglobal_p.h"
 #include "type_conversion.h"
 #include "web_engine_library_info.h"
-#include "web_engine_context.h"
 
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
