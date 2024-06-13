@@ -1099,7 +1099,7 @@ void tst_QWebEngineProfile::permissionPersistence()
         storageDir.remove("permissions.json");
     }
 
-    QVERIFY(server.stop());
+    QTRY_VERIFY(server.stop());
 }
 
 void tst_QWebEngineProfile::getPermission_data()
