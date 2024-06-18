@@ -45,7 +45,6 @@ class DEPSParser(ABC):
 
 chromium_version = '122.0.6261.72'
 chromium_branch = '6261'
-ninja_version = 'v1.8.2'
 
 json_url = 'http://omahaproxy.appspot.com/all.json'
 
@@ -71,9 +70,6 @@ sys.path.append(os.path.join(qtwebengine_root, 'tools', 'scripts'))
 
 def currentVersion():
     return chromium_version
-
-def currentNinjaVersion():
-    return ninja_version
 
 def readReleaseChannels():
     response = urllib2.urlopen(json_url)
