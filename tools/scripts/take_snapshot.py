@@ -382,21 +382,6 @@ def exportGn():
             copyFile(f, os.path.join(third_party_gn, f))
     print("")
 
-def exportNinja():
-    third_party_upstream_ninja = os.path.join(third_party_upstream, 'ninja')
-    third_party_ninja = os.path.join(third_party, 'ninja')
-    os.makedirs(third_party_ninja);
-    print('exporting contents of:' + third_party_upstream_ninja)
-    os.chdir(third_party_upstream_ninja)
-    files = listFilesInCurrentRepository()
-    print('copying files to ' + third_party_ninja)
-    for i in range(len(files)):
-        printProgress(i+1, len(files))
-        f = files[i].decode()
-        if not isInGitBlacklist(f):
-            copyFile(f, os.path.join(third_party_ninja, f))
-    print("")
-
 def exportChromium():
     third_party_upstream_chromium = os.path.join(third_party_upstream, 'chromium')
     third_party_chromium = os.path.join(third_party, 'chromium')
@@ -461,7 +446,6 @@ if b'true' in ignore_case_setting:
 clearDirectory(third_party)
 
 exportGn()
-exportNinja()
 exportChromium()
 
 print('done.')

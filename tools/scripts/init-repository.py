@@ -16,7 +16,6 @@ import cipd_package as CIPDPackage
 import version_resolver as resolver
 
 chromium_src = os.environ.get('CHROMIUM_SRC_DIR')
-ninja_src = os.path.join(qtwebengine_root, 'src/3rdparty_upstream/ninja')
 gn_src = os.path.join(qtwebengine_root, 'src/3rdparty_upstream/gn')
 use_external_chromium = False
 
@@ -39,7 +38,6 @@ if not chromium_src or not os.path.isdir(chromium_src):
         chromium_src = os.path.join(qtwebengine_root, 'src/3rdparty_upstream/chromium')
     if args.snapshot or not chromium_src:
         chromium_src = os.path.join(qtwebengine_root, 'src/3rdparty/chromium')
-        ninja_src = os.path.join(qtwebengine_root, 'src/3rdparty/ninja')
         gn_src = os.path.join(qtwebengine_root, 'src/3rdparty/gn')
         args.snapshot = True
     print('CHROMIUM_SRC_DIR not set, using Chromium in' + chromium_src)
@@ -63,26 +61,15 @@ def updateLastChange():
 
 def initUpstreamSubmodules():
     gn_url = 'https://gn.googlesource.com/gn'
-    ninja_url = 'https://github.com/martine/ninja.git'
     chromium_url = 'https://chromium.googlesource.com/chromium/src.git'
-    ninja_shasum = 'refs/tags/' + resolver.currentNinjaVersion()
     chromium_ref = 'refs/tags/' + resolver.currentVersion()
     os.chdir(qtwebengine_root)
 
     current_submodules = subprocess.check_output(['git', 'submodule']).decode()
     if not 'src/3rdparty_upstream/gn' in current_submodules:
         subprocess.call(['git', 'submodule', 'add', gn_url, 'src/3rdparty_upstream/gn'])
-    if not 'src/3rdparty_upstream/ninja' in current_submodules:
-        subprocess.call(['git', 'submodule', 'add', ninja_url, 'src/3rdparty_upstream/ninja'])
     if not use_external_chromium and not 'src/3rdparty_upstream/chromium' in current_submodules:
         subprocess.call(['git', 'submodule', 'add', chromium_url, 'src/3rdparty_upstream/chromium'])
-
-    ninjaSubmodule = GitSubmodule.Submodule()
-    ninjaSubmodule.path = 'src/3rdparty_upstream/ninja'
-    ninjaSubmodule.ref = ninja_shasum
-    ninjaSubmodule.url = ninja_url
-    ninjaSubmodule.os = 'all'
-    ninjaSubmodule.initialize()
 
     gnSubmodule = GitSubmodule.Submodule()
     gnSubmodule.path = 'src/3rdparty_upstream/gn'
@@ -103,7 +90,6 @@ def initUpstreamSubmodules():
 
     # Unstage repositories so we do not accidentally commit them.
     subprocess.call(['git', 'reset', '-q', 'HEAD', 'src/3rdparty_upstream/gn'])
-    subprocess.call(['git', 'reset', '-q', 'HEAD', 'src/3rdparty_upstream/ninja'])
     subprocess.call(['git', 'reset', '-q', 'HEAD', 'src/3rdparty_upstream/chromium'])
 
 def initSnapshot():
