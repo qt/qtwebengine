@@ -8,14 +8,14 @@ QtObject {
     id: root
 
     property QtObject defaultProfile: WebEngineProfile {
-        storageName: "Profile"
         offTheRecord: false
-
+        storageName: "Profile"
         Component.onCompleted: {
             let fullVersionList = defaultProfile.clientHints.fullVersionList;
             fullVersionList["QuickNanoBrowser"] = "1.0";
             defaultProfile.clientHints.fullVersionList = fullVersionList;
         }
+
     }
 
     property QtObject otrProfile: WebEngineProfile {
