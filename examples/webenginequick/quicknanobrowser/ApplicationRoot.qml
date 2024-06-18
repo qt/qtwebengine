@@ -8,8 +8,8 @@ QtObject {
     id: root
 
     property QtObject defaultProfile: WebEngineProfile {
-        storageName: "Profile"
         offTheRecord: false
+        storageName: "Profile"
     }
 
     property QtObject otrProfile: WebEngineProfile {

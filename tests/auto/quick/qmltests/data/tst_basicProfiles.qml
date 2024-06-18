@@ -8,7 +8,7 @@ import Qt.labs.platform
 
 Item {
     WebEngineProfile { id: otrProfile; /* MEMO implicit offTheRecord: true */ }
-    WebEngineProfile { id: nonOtrProfile; offTheRecord: false }
+    WebEngineProfile { id: nonOtrProfile; offTheRecord: false; storageName: 'Test' }
 
     function getPath(path, offset = 1) { return path.substr(path.indexOf(':') + offset, path.length) }
     property string appDataLocation: getPath(getPath(StandardPaths.writableLocation(StandardPaths.AppDataLocation).toString(), 3))
@@ -60,14 +60,8 @@ Item {
 
         function test_nonOtrProfile() {
             let p = nonOtrProfile
+            compare(p.storageName, 'Test')
             verify(!p.offTheRecord)
-
-            compare(p.storageName, '')
-            compare(p.cachePath, '')
-            compare(getPath(p.persistentStoragePath), appDataLocation + '/QtWebEngine/UnknownProfile')
-            compare(p.httpCacheType, WebEngineProfile.MemoryHttpCache)
-            compare(p.httpCacheMaximumSize, 0)
-            compare(p.persistentCookiesPolicy, WebEngineProfile.NoPersistentCookies)
 
             compare(getPath(p.downloadPath), downloadLocation)
             compare(p.httpAcceptLanguage, '')
@@ -77,7 +71,6 @@ Item {
 
             compare(p.userScripts.collection, [])
 
-            p.storageName = 'Test'
             compare(p.storageName, 'Test')
             compare(getPath(p.cachePath), cacheLocation + '/QtWebEngine/' + p.storageName)
             compare(getPath(p.persistentStoragePath), appDataLocation + '/QtWebEngine/' + p.storageName)

@@ -19,8 +19,9 @@ TestWebEngineView {
     }
 
     property QtObject nonOTRProfile: WebEngineProfile {
-        persistentStoragePath: tempDir.path() + '/WebEngineFavicon'
         offTheRecord: false
+        storageName: 'WebEngineFavicon'
+        persistentStoragePath: tempDir.path() + '/WebEngineFavicon'
     }
 
     function removeFaviconProviderPrefix(url) {

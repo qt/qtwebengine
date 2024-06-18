@@ -19,8 +19,9 @@ TestWebEngineView {
     }
 
     property QtObject nonOTRProfile: WebEngineProfile {
-        persistentStoragePath: tempDir.path() + '/WebEngineFavicon'
         offTheRecord: false
+        storageName: 'WebEngineFavicon'
+        persistentStoragePath: tempDir.path() + '/WebEngineFavicon'
     }
 
     function getFaviconPixel(faviconImage) {
@@ -147,8 +148,9 @@ TestWebEngineView {
                     TestWebEngineView {\n
                         TempDir { id: tempDir }
                         profile: WebEngineProfile {\n
-                            persistentStoragePath: tempDir.path() + '/WebEngineFavicon1'\n
                             offTheRecord: false\n
+                            storageName: 'WebEngineFavicon1'\n
+                            persistentStoragePath: tempDir.path() + '/WebEngineFavicon1'\n
                         }\n
                     }", testCase);
 
@@ -159,8 +161,9 @@ TestWebEngineView {
                     TestWebEngineView {\n
                         TempDir { id: tempDir }
                         profile: WebEngineProfile {\n
-                            persistentStoragePath: tempDir.path() + '/WebEngineFavicon2'\n
                             offTheRecord: false\n
+                            storageName: 'WebEngineFavicon2'\n
+                            persistentStoragePath: tempDir.path() + '/WebEngineFavicon2'\n
                         }\n
                     }", testCase);
 

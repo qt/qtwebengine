@@ -472,6 +472,13 @@ void QQuickWebEngineProfile::setOffTheRecord(bool offTheRecord)
     Q_D(QQuickWebEngineProfile);
     if (d->profileAdapter()->isOffTheRecord() == offTheRecord)
         return;
+
+    if (!offTheRecord && d->profileAdapter()->storageName().isEmpty()) {
+        qWarning("Storage name is empty. Cannot change profile from off-the-record "
+                 "to disk-based behavior as it requires a proper storage name");
+        return;
+    }
+
     ProfileAdapter::HttpCacheType oldCacheType = d->profileAdapter()->httpCacheType();
     ProfileAdapter::PersistentCookiesPolicy oldPolicy = d->profileAdapter()->persistentCookiesPolicy();
     d->profileAdapter()->setOffTheRecord(offTheRecord);
