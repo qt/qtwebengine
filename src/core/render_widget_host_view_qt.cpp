@@ -876,6 +876,11 @@ bool RenderWidgetHostViewQt::updateScreenInfo()
         return false;
 
     display::ScreenInfos newScreenInfos = screenInfosFromQtForUpdate(window->screen());
+
+    // We always want to use the scale from our current window
+    // This screen information is stored on a per-view basis
+    auto &screen = newScreenInfos.mutable_current();
+    screen.device_scale_factor = window->devicePixelRatio();
     if (screen_infos_ == newScreenInfos)
         return false;
 
