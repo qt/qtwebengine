@@ -28,7 +28,6 @@ class GLContextHelper : public QObject {
 public:
     static void initialize();
     static void destroy();
-    static bool initializeContext(gl::GLContext* context, gl::GLSurface* surface, gl::GLContextAttribs attribs);
 
     static void* getEGLConfig();
     static void* getGlXConfig();
@@ -42,8 +41,6 @@ public:
     static void *getEglPlatformInterface();
 
 private:
-    Q_INVOKABLE bool initializeContextOnBrowserThread(gl::GLContext* context, gl::GLSurface* surface, gl::GLContextAttribs attribs);
-
     static GLContextHelper* contextHelper;
     bool m_robustness = false;
 };

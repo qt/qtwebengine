@@ -75,23 +75,6 @@ void GLContextHelper::destroy()
     contextHelper = nullptr;
 }
 
-bool GLContextHelper::initializeContextOnBrowserThread(gl::GLContext* context, gl::GLSurface* surface, gl::GLContextAttribs attribs)
-{
-    return context->Initialize(surface, attribs);
-}
-
-bool GLContextHelper::initializeContext(gl::GLContext* context, gl::GLSurface* surface, gl::GLContextAttribs attribs)
-{
-    bool ret = false;
-    Qt::ConnectionType connType = (QThread::currentThread() == qApp->thread()) ? Qt::DirectConnection : Qt::BlockingQueuedConnection;
-    QMetaObject::invokeMethod(contextHelper, "initializeContextOnBrowserThread", connType,
-            Q_RETURN_ARG(bool, ret),
-            Q_ARG(gl::GLContext*, context),
-            Q_ARG(gl::GLSurface*, surface),
-            Q_ARG(gl::GLContextAttribs, attribs));
-    return ret;
-}
-
 void* GLContextHelper::getEGLConfig()
 {
     QByteArray resource = QByteArrayLiteral("eglconfig");
