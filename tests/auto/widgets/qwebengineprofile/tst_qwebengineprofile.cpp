@@ -58,8 +58,8 @@ private Q_SLOTS:
     void badDeleteOrder();
     void permissionPersistence_data();
     void permissionPersistence();
-    void getPermission_data();
-    void getPermission();
+    void queryPermission_data();
+    void queryPermission();
     void listPermissions();
     void qtbug_71895(); // this should be the last test
 };
@@ -1025,10 +1025,10 @@ void tst_QWebEngineProfile::permissionPersistence_data()
     QTest::addColumn<QWebEngineProfile::PersistentPermissionsPolicy>("policy");
     QTest::addColumn<bool>("granted");
 
-    QTest::newRow("noPersistenceNotificationsNoGrant")      << QWebEngineProfile::NoPersistentPermissions       << false;
-    QTest::newRow("noPersistenceNotificationsGrant")        << QWebEngineProfile::NoPersistentPermissions       << true;
-    QTest::newRow("memoryPersistenceNotificationsNoGrant")  << QWebEngineProfile::PersistentPermissionsInMemory << false;
-    QTest::newRow("diskPersistenceNotificationsGrant")      << QWebEngineProfile::PersistentPermissionsOnDisk   << true;
+    QTest::newRow("noPersistenceNotificationsNoGrant")      << QWebEngineProfile::PersistentPermissionsPolicy::AskEveryTime  << false;
+    QTest::newRow("noPersistenceNotificationsGrant")        << QWebEngineProfile::PersistentPermissionsPolicy::AskEveryTime  << true;
+    QTest::newRow("memoryPersistenceNotificationsNoGrant")  << QWebEngineProfile::PersistentPermissionsPolicy::StoreInMemory << false;
+    QTest::newRow("diskPersistenceNotificationsGrant")      << QWebEngineProfile::PersistentPermissionsPolicy::StoreOnDisk   << true;
 }
 
 void tst_QWebEngineProfile::permissionPersistence()
@@ -1055,7 +1055,7 @@ void tst_QWebEngineProfile::permissionPersistence()
     QVariant variant = granted ? "granted" : "denied";
     QVariant defaultVariant = "default";
 
-    QWebEnginePermission permissionObject = profile->getPermission(server.url("/hedgehog.html"), QWebEnginePermission::Notifications);
+    QWebEnginePermission permissionObject = profile->queryPermission(server.url("/hedgehog.html"), QWebEnginePermission::PermissionType::Notifications);
     if (granted)
         permissionObject.grant();
     else
@@ -1067,7 +1067,7 @@ void tst_QWebEngineProfile::permissionPersistence()
     loadSpy.reset();
 
     bool expectSame = false;
-    if (policy == QWebEngineProfile::PersistentPermissionsOnDisk) {
+    if (policy == QWebEngineProfile::PersistentPermissionsPolicy::StoreOnDisk) {
         expectSame = true;
 
         // File is written asynchronously, wait for it to be created
@@ -1085,7 +1085,7 @@ void tst_QWebEngineProfile::permissionPersistence()
         expectSame ? variant : defaultVariant);
 
     // Re-acquire the permission, since deleting the Profile makes it invalid
-    permissionObject = profile->getPermission(server.url("/hedgehog.html"), QWebEnginePermission::Notifications);
+    permissionObject = profile->queryPermission(server.url("/hedgehog.html"), QWebEnginePermission::PermissionType::Notifications);
     permissionObject.reset();
     QCOMPARE(evaluateJavaScriptSync(page.get(), "Notification.permission"), defaultVariant);
 
@@ -1093,7 +1093,7 @@ void tst_QWebEngineProfile::permissionPersistence()
     profile.reset();
     loadSpy.reset();
 
-    if (policy == QWebEngineProfile::PersistentPermissionsOnDisk) {
+    if (policy == QWebEngineProfile::PersistentPermissionsPolicy::StoreOnDisk) {
         // Wait for file to be written to before deleting
         QTest::qWait(1000);
         storageDir.remove("permissions.json");
@@ -1102,81 +1102,86 @@ void tst_QWebEngineProfile::permissionPersistence()
     QTRY_VERIFY(server.stop());
 }
 
-void tst_QWebEngineProfile::getPermission_data()
+void tst_QWebEngineProfile::queryPermission_data()
 {
-    QTest::addColumn<QWebEnginePermission::Feature>("feature");
+    QTest::addColumn<QWebEnginePermission::PermissionType>("permissionType");
     QTest::addColumn<QUrl>("url");
     QTest::addColumn<bool>("expectedValid");
 
-    QTest::newRow("badUrl") << QWebEnginePermission::Notifications << QUrl(QStringLiteral("//:bad-url")) << false;
-    QTest::newRow("badFeature") << QWebEnginePermission::Unsupported << QUrl(QStringLiteral("qrc:/resources/hedgehog.html")) << false;
-    QTest::newRow("transientFeature") << QWebEnginePermission::MouseLock << QUrl(QStringLiteral("qrc:/resources/hedgehog.html")) << false;
-    QTest::newRow("good") << QWebEnginePermission::Notifications << QUrl(QStringLiteral("qrc:/resources/hedgehog.html")) << true;
+    QTest::newRow("badUrl")
+        << QWebEnginePermission::PermissionType::Notifications << QUrl(QStringLiteral("//:bad-url"))                   << false;
+    QTest::newRow("badFeature")
+        << QWebEnginePermission::PermissionType::Unsupported   << QUrl(QStringLiteral("qrc:/resources/hedgehog.html")) << false;
+    QTest::newRow("transientFeature")
+        << QWebEnginePermission::PermissionType::MouseLock     << QUrl(QStringLiteral("qrc:/resources/hedgehog.html")) << false;
+    QTest::newRow("good")
+        << QWebEnginePermission::PermissionType::Notifications << QUrl(QStringLiteral("qrc:/resources/hedgehog.html")) << true;
 }
 
-void tst_QWebEngineProfile::getPermission()
+void tst_QWebEngineProfile::queryPermission()
 {
-    QFETCH(QWebEnginePermission::Feature, feature);
+    QFETCH(QWebEnginePermission::PermissionType, permissionType);
     QFETCH(QUrl, url);
     QFETCH(bool, expectedValid);
 
     QWebEngineProfile profile;
     // In-memory is the default for otr profiles
-    QVERIFY(profile.persistentPermissionsPolicy() == QWebEngineProfile::PersistentPermissionsInMemory);
+    QVERIFY(profile.persistentPermissionsPolicy() == QWebEngineProfile::PersistentPermissionsPolicy::StoreInMemory);
 
-    QWebEnginePermission permission = profile.getPermission(url, feature);
+    QWebEnginePermission permission = profile.queryPermission(url, permissionType);
     bool valid = permission.isValid();
     QVERIFY(valid == expectedValid);
     if (!valid)
-        QVERIFY(permission.state() == QWebEnginePermission::Invalid);
+        QVERIFY(permission.state() == QWebEnginePermission::State::Invalid);
 
     // Verify that we can grant a valid permission, and we can't grant an invalid one...
     permission.grant();
-    QVERIFY(permission.state() == (valid ? QWebEnginePermission::Granted : QWebEnginePermission::Invalid));
+    QVERIFY(permission.state() == (valid ? QWebEnginePermission::State::Granted : QWebEnginePermission::State::Invalid));
 
     // ...and that doing so twice doesn't mess up the state...
     permission.grant();
-    QVERIFY(permission.state() == (valid ? QWebEnginePermission::Granted : QWebEnginePermission::Invalid));
+    QVERIFY(permission.state() == (valid ? QWebEnginePermission::State::Granted : QWebEnginePermission::State::Invalid));
 
     // ...and that the same thing applies to denying them...
     permission.deny();
-    QVERIFY(permission.state() == (valid ? QWebEnginePermission::Denied : QWebEnginePermission::Invalid));
+    QVERIFY(permission.state() == (valid ? QWebEnginePermission::State::Denied : QWebEnginePermission::State::Invalid));
     permission.deny();
-    QVERIFY(permission.state() == (valid ? QWebEnginePermission::Denied : QWebEnginePermission::Invalid));
+    QVERIFY(permission.state() == (valid ? QWebEnginePermission::State::Denied : QWebEnginePermission::State::Invalid));
 
     // ...and that resetting works
     permission.reset();
-    QVERIFY(permission.state() == (valid ? QWebEnginePermission::Ask : QWebEnginePermission::Invalid));
+    QVERIFY(permission.state() == (valid ? QWebEnginePermission::State::Ask : QWebEnginePermission::State::Invalid));
     permission.reset();
-    QVERIFY(permission.state() == (valid ? QWebEnginePermission::Ask : QWebEnginePermission::Invalid));
+    QVERIFY(permission.state() == (valid ? QWebEnginePermission::State::Ask : QWebEnginePermission::State::Invalid));
 }
 
 void tst_QWebEngineProfile::listPermissions()
 {
     QWebEngineProfile profile;
     // In-memory is the default for otr profiles
-    QVERIFY(profile.persistentPermissionsPolicy() == QWebEngineProfile::PersistentPermissionsInMemory);
+    QVERIFY(profile.persistentPermissionsPolicy() == QWebEngineProfile::PersistentPermissionsPolicy::StoreInMemory);
 
     QUrl commonUrl = QUrl(QStringLiteral("http://www.bing.com/maps"));
-    QWebEnginePermission::Feature commonFeature = QWebEnginePermission::Notifications;
+    QWebEnginePermission::PermissionType commonType = QWebEnginePermission::PermissionType::Notifications;
 
     // First, set several permissions at once
-    profile.getPermission(commonUrl, QWebEnginePermission::Geolocation).deny();
-    profile.getPermission(commonUrl, QWebEnginePermission::Unsupported).grant(); // Invalid
-    profile.getPermission(commonUrl, commonFeature).grant();
-    profile.getPermission(QUrl(QStringLiteral("http://www.google.com/translate")), commonFeature).grant();
+    profile.queryPermission(commonUrl, QWebEnginePermission::PermissionType::Geolocation).deny();
+    profile.queryPermission(commonUrl, QWebEnginePermission::PermissionType::Unsupported).grant(); // Invalid
+    profile.queryPermission(commonUrl, commonType).grant();
+    profile.queryPermission(QUrl(QStringLiteral("http://www.google.com/translate")), commonType).grant();
 
-    QList<QWebEnginePermission> permissionsListAll = profile.listPermissions();
-    QList<QWebEnginePermission> permissionsListUrl = profile.listPermissions(commonUrl);
-    QList<QWebEnginePermission> permissionsListFeature = profile.listPermissions(commonFeature);
+    QList<QWebEnginePermission> permissionsListAll = profile.listAllPermissions();
+    QList<QWebEnginePermission> permissionsListUrl = profile.listPermissionsForOrigin(commonUrl);
+    QList<QWebEnginePermission> permissionsListFeature = profile.listPermissionsForPermissionType(commonType);
 
     // Order of returned permissions is not guaranteed, so we must iterate until we find the one we need
     auto findInList = [](QList<QWebEnginePermission> list, const QUrl &url,
-        QWebEnginePermission::Feature feature, QWebEnginePermission::State state)
+        QWebEnginePermission::PermissionType permissionType, QWebEnginePermission::State state)
     {
         bool found = false;
         for (auto &permission : list) {
-            if (permission.origin().adjusted(QUrl::RemovePath) == url.adjusted(QUrl::RemovePath) && permission.feature() == feature && permission.state() == state) {
+            if (permission.origin().adjusted(QUrl::RemovePath) == url.adjusted(QUrl::RemovePath)
+                    && permission.permissionType() == permissionType && permission.state() == state) {
                 found = true;
                 break;
             }
@@ -1186,19 +1191,19 @@ void tst_QWebEngineProfile::listPermissions()
 
     // Check full list
     QVERIFY(permissionsListAll.size() == 3);
-    QVERIFY(findInList(permissionsListAll, commonUrl, QWebEnginePermission::Geolocation, QWebEnginePermission::Denied));
-    QVERIFY(findInList(permissionsListAll, commonUrl, commonFeature, QWebEnginePermission::Granted));
-    QVERIFY(findInList(permissionsListAll, QUrl(QStringLiteral("http://www.google.com")), commonFeature, QWebEnginePermission::Granted));
+    QVERIFY(findInList(permissionsListAll, commonUrl, QWebEnginePermission::PermissionType::Geolocation, QWebEnginePermission::State::Denied));
+    QVERIFY(findInList(permissionsListAll, commonUrl, commonType, QWebEnginePermission::State::Granted));
+    QVERIFY(findInList(permissionsListAll, QUrl(QStringLiteral("http://www.google.com")), commonType, QWebEnginePermission::State::Granted));
 
     // Check list filtered by URL
     QVERIFY(permissionsListUrl.size() == 2);
-    QVERIFY(findInList(permissionsListUrl, commonUrl, QWebEnginePermission::Geolocation, QWebEnginePermission::Denied));
-    QVERIFY(findInList(permissionsListAll, commonUrl, commonFeature, QWebEnginePermission::Granted));
+    QVERIFY(findInList(permissionsListUrl, commonUrl, QWebEnginePermission::PermissionType::Geolocation, QWebEnginePermission::State::Denied));
+    QVERIFY(findInList(permissionsListAll, commonUrl, commonType, QWebEnginePermission::State::Granted));
 
     // Check list filtered by feature
     QVERIFY(permissionsListFeature.size() == 2);
-    QVERIFY(findInList(permissionsListAll, commonUrl, commonFeature, QWebEnginePermission::Granted));
-    QVERIFY(findInList(permissionsListAll, QUrl(QStringLiteral("http://www.google.com")), commonFeature, QWebEnginePermission::Granted));
+    QVERIFY(findInList(permissionsListAll, commonUrl, commonType, QWebEnginePermission::State::Granted));
+    QVERIFY(findInList(permissionsListAll, QUrl(QStringLiteral("http://www.google.com")), commonType, QWebEnginePermission::State::Granted));
 }
 
 void tst_QWebEngineProfile::qtbug_71895()

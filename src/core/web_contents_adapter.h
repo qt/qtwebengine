@@ -179,8 +179,8 @@ public:
     void devToolsFrontendDestroyed(DevToolsFrontendQt *frontend);
     QString devToolsId();
 
-    void setFeaturePermission(const QUrl &origin, QWebEnginePermission::Feature feature, QWebEnginePermission::State state);
-    QWebEnginePermission::State getPermissionState(const QUrl &origin, QWebEnginePermission::Feature feature);
+    void setPermission(const QUrl &origin, QWebEnginePermission::PermissionType permissionType, QWebEnginePermission::State state);
+    QWebEnginePermission::State getPermissionState(const QUrl &origin, QWebEnginePermission::PermissionType permissionType);
 
     void grantMediaAccessPermission(const QUrl &origin, WebContentsAdapterClient::MediaRequestFlags flags);
     void grantMouseLockPermission(const QUrl &origin, bool granted);

@@ -71,27 +71,31 @@ WebView::~WebView()
     m_imageAnimationGroup = nullptr;
 }
 
-inline QString questionForFeature(QWebEnginePermission::Feature feature)
+inline QString questionForPermissionType(QWebEnginePermission::PermissionType permissionType)
 {
-    switch (feature) {
-    case QWebEnginePermission::Geolocation:
+    switch (permissionType) {
+    case QWebEnginePermission::PermissionType::Geolocation:
         return QObject::tr("Allow %1 to access your location information?");
-    case QWebEnginePermission::MediaAudioCapture:
+    case QWebEnginePermission::PermissionType::MediaAudioCapture:
         return QObject::tr("Allow %1 to access your microphone?");
-    case QWebEnginePermission::MediaVideoCapture:
+    case QWebEnginePermission::PermissionType::MediaVideoCapture:
         return QObject::tr("Allow %1 to access your webcam?");
-    case QWebEnginePermission::MediaAudioVideoCapture:
+    case QWebEnginePermission::PermissionType::MediaAudioVideoCapture:
         return QObject::tr("Allow %1 to access your microphone and webcam?");
-    case QWebEnginePermission::MouseLock:
+    case QWebEnginePermission::PermissionType::MouseLock:
         return QObject::tr("Allow %1 to lock your mouse cursor?");
-    case QWebEnginePermission::DesktopVideoCapture:
+    case QWebEnginePermission::PermissionType::DesktopVideoCapture:
         return QObject::tr("Allow %1 to capture video of your desktop?");
-    case QWebEnginePermission::DesktopAudioVideoCapture:
+    case QWebEnginePermission::PermissionType::DesktopAudioVideoCapture:
         return QObject::tr("Allow %1 to capture audio and video of your desktop?");
-    case QWebEnginePermission::Notifications:
+    case QWebEnginePermission::PermissionType::Notifications:
         return QObject::tr("Allow %1 to show notification on your desktop?");
-    case QWebEnginePermission::ClipboardReadWrite:
+    case QWebEnginePermission::PermissionType::ClipboardReadWrite:
         return QObject::tr("Allow %1 to read from and write to the clipboard?");
+    case QWebEnginePermission::PermissionType::LocalFontsAccess:
+        return QObject::tr("Allow %1 to access fonts stored on this machine?");
+    case QWebEnginePermission::PermissionType::Unsupported:
+        break;
     }
     return QString();
 }
@@ -312,7 +316,7 @@ void WebView::handleAuthenticationRequired(const QUrl &requestUrl, QAuthenticato
 void WebView::handlePermissionRequested(QWebEnginePermission permission)
 {
     QString title = tr("Permission Request");
-    QString question = questionForFeature(permission.feature()).arg(permission.origin().host());
+    QString question = questionForPermissionType(permission.permissionType()).arg(permission.origin().host());
     if (!question.isEmpty() && QMessageBox::question(window(), title, question) == QMessageBox::Yes)
         permission.grant();
     else

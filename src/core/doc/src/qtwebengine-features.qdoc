@@ -358,9 +358,9 @@
 
     \QWE supports JavaScript Geolocation API with \l {Qt Positioning} as a
     backend. HTML5 geolocation is disabled by default. To explicitly allow it, the application
-    needs to listen to QWebEnginePage::featurePermissionRequested. Use QWebEnginePage::Geolocation
-    with a QWebEnginePage::setFeaturePermission() call or \l{WebEngineView::Feature}
-    with a \l{WebEngineView::grantFeaturePermission} {WebEngineView.grantFeaturePermission}() call
+    needs to listen to QWebEnginePage::permissionRequested. When a permission request
+    with a type of QWebEnginePermission::PermissionType::Geolocation is received,
+    you can call QWebEnginePermission::grant() on the received object
     to grant the required permission.
 
     If \QWE was built with Qt Positioning support then this feature can be

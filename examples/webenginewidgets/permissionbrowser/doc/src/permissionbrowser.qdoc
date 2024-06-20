@@ -65,7 +65,7 @@
     gets populated with a \c PermissionWidget whenever that happens.
 
     The \c PermissionWidget displays the permission's origin, the requested
-    \l QWebEnginePermission::Feature, as well as the current status of that permission.
+    \l QWebEnginePermission::PermissionType, as well as the current status of that permission.
     It also has buttons for granting and denying the permission. Since the permission status
     is (by default) remembered, the delete button allows the user to remove the permission
     from the underlying storage.
@@ -133,23 +133,23 @@
     \skipto void MainWindow::handlePermissionModified
     \printuntil /^\}/
 
-    Notably, we only do this in cases where we know the permission is remembered.
-    This is not true for transient \c Features,
-    which require a permission prompt be shown to the user every time they're needed.
+    Notably, we only do this in cases where we know the permission is remembered;
+    some \c PermissionTypes are non-persistent, which means they require
+    a permission prompt be shown to the user every time they're used.
     We also exclude permissions with a \l QWebEnginePermission::Ask state, which
     indicates that the permission was \l {QWebEnginePermission::reset}{reset}(),
     and we don't add anything to the list of existing permissions when
     \l QWebEngineProfile::persistentPermissionsPolicy is set to
-    \c NoPersistentPermissions.
+    \c AskEveryTime.
 
-    \note Check the \l QWebEnginePermission::Feature documentation to see which
-    \c Features are transient.
+    \note Check the \l QWebEnginePermission::PermissionType documentation to see which
+    \c PermissionTypes are persistent.
 
     \section1 Displaying and modifying existing permissions
 
     By default, permissions are stored to disk and retrieved again on application
     startup. To get a list of all existing website permissions, we call
-    \l QWebEngineProfile::listPermissions():
+    \l QWebEngineProfile::listAllPermissions():
 
     \quotefromfile webenginewidgets/permissionbrowser/mainwindow.cpp
     \skipto void MainWindow::loadStoredPermissions()
@@ -161,7 +161,7 @@
 
     \section1 Pre-granting permissions
 
-    Certain permissions may be granted in advance, provided the origin and Feature type
+    Certain permissions may be granted in advance, provided the origin and permission type
     are known. Clicking on the "New" button in the top right will create a pop-up
     dialog that allows you to do just that. The dialog is implemented by the
     \c PermissionDialog class:
@@ -171,8 +171,8 @@
     \printuntil /^\}/
 
     We populate the \l QComboBox using the QMetaEnum type associated with
-    \l QWebEnginePermission::Feature. We make sure to filter out transient
-    features, since pre-granting these is not supported.
+    \l QWebEnginePermission::PermissionType. We make sure to filter out non-persistent
+    permission types, since pre-granting these is not supported.
 
     We display the dialog and add show the resulting \c PermissionWidget
     in the UI inside the \c MainWindow::handleNewClicked slot. The new
@@ -191,22 +191,22 @@
     of each option.
 
     \list
-        \li \l QWebEngineProfile::PersistentPermissionsOnDisk is the default, and it ensures
+        \li \l QWebEngineProfile::StoreOnDisk is the default, and it ensures
         that any permissions that have been granted in the current application run will be
         loaded back up at next startup. A permission onlycneeds to be granted once, and
         subsequent uses of the API that triggered the request will automatically be granted,
         until the application calls QWebEnginePermission::reset().
-        li \l QWebEngineProfile::PersistentPermissionsInMemory Has the same behavior as above,
+        li \l QWebEngineProfile::StoreInMemory Has the same behavior as above,
         except that permissions will be destroyed at application exit, and not committed
         to disk.
-        li \l QWebEngineProfile::NoPersistentPermissions makes sure permissions are never
-        remembered, and all act as if they're transient. Thus, every time a web API needs
+        li \l QWebEngineProfile::AskEveryTime makes sure permissions are never
+        remembered, and all act as if they're non-persistent. Thus, every time a web API needs
         a permission, a new prompt will be shown to the user. This option is intended for
         backwards compatibility and applications which implement their own permission storage.
     \endlist
 
     To ensure the user will be shown previously existing permissions, we need to call
-    \l QWebEngineProfile::listPermissions():
+    \l QWebEngineProfile::listAllPermissions():
 
     \quotefromfile webenginewidgets/permissionbrowser/mainwindow.cpp
     \skipto void MainWindow::loadStoredPermissions()

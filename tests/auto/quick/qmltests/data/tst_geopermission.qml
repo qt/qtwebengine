@@ -13,7 +13,7 @@ TestWebEngineView {
     property bool deniedGeolocation: false
     property bool geoPermissionRequested: false
 
-    profile.persistentPermissionsPolicy: WebEngineProfile.NoPersistentPermissions
+    profile.persistentPermissionsPolicy: WebEngineProfile.PersistentPermissionsPolicy.AskEveryTime
 
     SignalSpy {
         id: permissionSpy
@@ -22,7 +22,7 @@ TestWebEngineView {
     }
 
     onPermissionRequested: function(perm) {
-        if (perm.feature === WebEnginePermission.Geolocation) {
+        if (perm.permissionType === WebEnginePermission.PermissionType.Geolocation) {
             geoPermissionRequested = true
             if (deniedGeolocation) {
                 perm.deny()
@@ -63,17 +63,17 @@ TestWebEngineView {
         function test_geoPermissionRequest() {
             compare(permissionSpy.count, 0)
             webEngineView.url = Qt.resolvedUrl("geolocation.html")
-            permissionSpy.wait()
+            tryCompare(permissionSpy, "count", 1)
             verify(geoPermissionRequested)
-            compare(permissionSpy.count, 1)
             tryVerify(isHandled, 5000)
             verify(getErrorMessage() === "")
         }
 
         function test_deniedGeolocationByUser() {
+            compare(permissionSpy.count, 0)
             deniedGeolocation = true
             webEngineView.url = Qt.resolvedUrl("geolocation.html")
-            permissionSpy.wait()
+            tryCompare(permissionSpy, "count", 1)
             tryVerify(isHandled, 5000)
             compare(getErrorMessage(), "User denied Geolocation")
         }

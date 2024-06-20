@@ -31,11 +31,11 @@ QT_BEGIN_NAMESPACE
 struct QWebEnginePermissionPrivate : public QSharedData
 {
     Q_WEBENGINECORE_EXPORT QWebEnginePermissionPrivate();
-    Q_WEBENGINECORE_EXPORT QWebEnginePermissionPrivate(const QUrl &, QWebEnginePermission::Feature,
+    Q_WEBENGINECORE_EXPORT QWebEnginePermissionPrivate(const QUrl &, QWebEnginePermission::PermissionType,
         QSharedPointer<QtWebEngineCore::WebContentsAdapter>, QtWebEngineCore::ProfileAdapter *);
 
     QUrl origin;
-    QWebEnginePermission::Feature feature;
+    QWebEnginePermission::PermissionType permissionType;
 
     QWeakPointer<QtWebEngineCore::WebContentsAdapter> webContentsAdapter;
     QPointer<QtWebEngineCore::ProfileAdapter> profileAdapter;

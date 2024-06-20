@@ -114,7 +114,7 @@ public:
     void allowCertificateError(const QWebEngineCertificateError &error) override;
     void selectClientCert(const QSharedPointer<QtWebEngineCore::ClientCertSelectController>
                                   &selectController) override;
-    void runFeaturePermissionRequest(QWebEnginePermission::Feature feature, const QUrl &securityOrigin) override;
+    void runFeaturePermissionRequest(QWebEnginePermission::PermissionType permissionType, const QUrl &securityOrigin) override;
     void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) override;
     void requestGeometryChange(const QRect &geometry, const QRect &frameGeometry) override;
     void updateScrollPosition(const QPointF &position) override;
@@ -139,7 +139,7 @@ public:
                            const QRect &bounds, bool autoselectFirstSuggestion) override;
     void hideAutofillPopup() override;
     void showWebAuthDialog(QWebEngineWebAuthUxRequest *request) override;
-    QWebEnginePermission createFeaturePermissionObject(const QUrl &securityOrigin, QWebEnginePermission::Feature feature) override;
+    QWebEnginePermission createFeaturePermissionObject(const QUrl &securityOrigin, QWebEnginePermission::PermissionType permissionType) override;
 
     void updateAction(QQuickWebEngineView::WebAction) const;
     bool adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);

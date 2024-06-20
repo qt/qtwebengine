@@ -63,7 +63,7 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
     , m_downloadPath(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation))
     , m_httpCacheType(DiskHttpCache)
     , m_persistentCookiesPolicy(AllowPersistentCookies)
-    , m_persistentPermissionsPolicy(PersistentPermissionsOnDisk)
+    , m_persistentPermissionsPolicy(PersistentPermissionsPolicy::StoreOnDisk)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
     , m_clientHintsEnabled(true)
     , m_pushServiceEnabled(false)
@@ -265,6 +265,7 @@ void ProfileAdapter::setDataPath(const QString &path)
         return;
     m_dataPath = path;
     m_profile->setupPrefService();
+    m_profile->setupPermissionsManager();
     if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
         m_profile->m_profileIOData->resetNetworkContext();
     if (!m_offTheRecord && m_visitedLinksManager)
@@ -377,10 +378,10 @@ void ProfileAdapter::setPersistentCookiesPolicy(ProfileAdapter::PersistentCookie
 
 ProfileAdapter::PersistentPermissionsPolicy ProfileAdapter::persistentPermissionsPolicy() const
 {
-    if (m_persistentPermissionsPolicy == NoPersistentPermissions)
-        return NoPersistentPermissions;
+    if (m_persistentPermissionsPolicy == PersistentPermissionsPolicy::AskEveryTime)
+        return PersistentPermissionsPolicy::AskEveryTime;
     if (isOffTheRecord() || m_name.isEmpty())
-        return PersistentPermissionsInMemory;
+        return PersistentPermissionsPolicy::StoreInMemory;
     return m_persistentPermissionsPolicy;
 }
 
@@ -567,25 +568,25 @@ UserResourceControllerHost *ProfileAdapter::userResourceController()
     return m_userResourceController.data();
 }
 
-void ProfileAdapter::setPermission(const QUrl &origin, QWebEnginePermission::Feature feature, QWebEnginePermission::State state)
+void ProfileAdapter::setPermission(const QUrl &origin, QWebEnginePermission::PermissionType permissionType, QWebEnginePermission::State state)
 {
-    static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->setPermission(origin, feature, state);
+    static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->setPermission(origin, permissionType, state);
 }
 
-QWebEnginePermission::State ProfileAdapter::getPermissionState(const QUrl &origin, QWebEnginePermission::Feature feature)
+QWebEnginePermission::State ProfileAdapter::getPermissionState(const QUrl &origin, QWebEnginePermission::PermissionType permissionType)
 {
-    if (persistentPermissionsPolicy() == ProfileAdapter::NoPersistentPermissions)
-        return QWebEnginePermission::Ask;
+    if (persistentPermissionsPolicy() == ProfileAdapter::PersistentPermissionsPolicy::AskEveryTime)
+        return QWebEnginePermission::State::Ask;
 
-    return static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->getPermissionState(origin, feature);
+    return static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->getPermissionState(origin, permissionType);
 }
 
-QList<QWebEnginePermission> ProfileAdapter::listPermissions(const QUrl &origin, QWebEnginePermission::Feature feature)
+QList<QWebEnginePermission> ProfileAdapter::listPermissions(const QUrl &origin, QWebEnginePermission::PermissionType permissionType)
 {
-    if (persistentPermissionsPolicy() == ProfileAdapter::NoPersistentPermissions)
+    if (persistentPermissionsPolicy() == ProfileAdapter::PersistentPermissionsPolicy::AskEveryTime)
         return QList<QWebEnginePermission>();
 
-    return static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->listPermissions(origin, feature);
+    return static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->listPermissions(origin, permissionType);
 }
 
 QString ProfileAdapter::httpAcceptLanguageWithoutQualities() const

@@ -79,7 +79,7 @@ bool QQuickWebEngineSettings::javascriptCanOpenWindows() const
 
     Since unrestricted clipboard access is a potential security concern, it is
     recommended that applications leave this disabled and instead respond to
-    \l{WebEnginePermission::ClipboardReadWrite}{ClipboardReadWrite} feature permission requests.
+    \l{webEnginePermission::permissionType}{ClipboardReadWrite} feature permission requests.
 
     Disabled by default.
 */
@@ -389,7 +389,7 @@ bool QQuickWebEngineSettings::webRTCPublicInterfacesOnly() const
 
     Since unrestricted clipboard access is a potential security concern, it is
     recommended that applications leave this disabled and instead respond to
-    \l{WebEnginePermission::ClipboardReadWrite}{ClipboardReadWrite} feature permission requests.
+    \l{webEnginePermission::permissionType}{ClipboardReadWrite} feature permission requests.
 
     Disabled by default.
 */

@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 
     QObject::connect(view.page(), &QWebEnginePage::permissionRequested,
                      [&](QWebEnginePermission permission) {
-                         if (permission.feature() != QWebEnginePermission::Notifications)
+                         if (permission.permissionType() != QWebEnginePermission::PermissionType::Notifications)
                              return;
 
                          permission.grant();

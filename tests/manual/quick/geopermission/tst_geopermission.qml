@@ -14,7 +14,7 @@ WebEngineView {
     property bool geoPermissionRequested: false
 
     onPermissionRequested: function(perm) {
-        if (perm.feature === WebEnginePermission.Geolocation) {
+        if (perm.permissionType === WebEnginePermission.PermissionType.Geolocation) {
             geoPermissionRequested = true
             if (deniedGeolocation) {
                 perm.deny()

@@ -168,23 +168,18 @@ QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
 QT_WARNING_POP
 #endif
 #if QT_DEPRECATED_SINCE(6, 8)
-QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
-    enum QT_DEPRECATED_VERSION_X_6_8(
-        "WebEnginePage::Feature has been deprecated. "
-        "The updated permissions API uses WebEnginePermission::Feature.")
-    Feature {
-        MediaAudioCapture,
-        MediaVideoCapture,
-        MediaAudioVideoCapture,
-        Geolocation,
-        DesktopVideoCapture,
-        DesktopAudioVideoCapture,
-        Notifications,
-        ClipboardReadWrite,
-        LocalFontsAccess,
+    enum Feature {
+        MediaAudioCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::MediaAudioCapture instead"),
+        MediaVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::MediaVideoCapture instead"),
+        MediaAudioVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::MediaAudioVideoCapture instead"),
+        Geolocation Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::Geolocation instead"),
+        DesktopVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::DesktopVideoCapture instead"),
+        DesktopAudioVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::DesktopAudioVideoCapture instead"),
+        Notifications Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::Notifications instead"),
+        ClipboardReadWrite Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::ClipboardReadWrite instead"),
+        LocalFontsAccess Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::LocalFontsAccess instead"),
     };
     Q_ENUM(Feature)
-QT_WARNING_POP
 #endif
 
     enum WebAction {
@@ -497,15 +492,8 @@ public Q_SLOTS:
     Q_REVISION(1,1) void findText(const QString &subString, FindFlags options = { }, const QJSValue &callback = QJSValue());
     Q_REVISION(1,1) void fullScreenCancelled();
 #if QT_DEPRECATED_SINCE(6, 8)
-#if !defined(Q_MOC_RUN)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-#endif // !defined(Q_MOC_RUN)
     QT_DEPRECATED_VERSION_X_6_8("Setting permissions through WebEngineView has been deprecated. Please use WebEnginePermission instead.")
     Q_REVISION(1,1) void grantFeaturePermission(const QUrl &securityOrigin, QQuickWebEngineView::Feature, bool granted);
-#if !defined(Q_MOC_RUN)
-QT_WARNING_POP
-#endif // !defined(Q_MOC_RUN)
 #endif // QT_DEPRECATED_SINCE(6, 8)
     Q_REVISION(1,2) void setActiveFocusOnPress(bool arg);
     Q_REVISION(1,2) void triggerWebAction(WebAction action);
