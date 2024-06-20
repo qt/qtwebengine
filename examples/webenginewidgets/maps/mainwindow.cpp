@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(page, &QWebEnginePage::permissionRequested,
             [this, page](QWebEnginePermission permission) {
-        if (permission.feature() != QWebEnginePermission::Geolocation)
+        if (permission.permissionType() != QWebEnginePermission::PermissionType::Geolocation)
             return;
 
         QMessageBox msgBox(this);

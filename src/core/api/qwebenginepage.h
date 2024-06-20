@@ -150,17 +150,12 @@ public:
     Q_ENUM(WebWindowType)
 
 #if QT_DEPRECATED_SINCE(6, 8)
-QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
-    enum QT_DEPRECATED_VERSION_X_6_8(
-        "QWebEnginePage::PermissionPolicy has been deprecated. "
-        "The updated permissions API uses QWebEnginePermission::State.")
-    PermissionPolicy {
-        PermissionUnknown,
-        PermissionGrantedByUser,
-        PermissionDeniedByUser
+    enum PermissionPolicy {
+        PermissionUnknown Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::State::Ask instead"),
+        PermissionGrantedByUser Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::State::Granted instead"),
+        PermissionDeniedByUser Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::State::Denied instead")
     };
     Q_ENUM(PermissionPolicy)
-QT_WARNING_POP
 #endif
 
     // must match WebContentsAdapterClient::NavigationType
@@ -176,24 +171,19 @@ QT_WARNING_POP
     Q_ENUM(NavigationType)
 
 #if QT_DEPRECATED_SINCE(6, 8)
-QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
-    enum QT_DEPRECATED_VERSION_X_6_8(
-        "QWebEnginePage::Feature has been deprecated. "
-        "The updated permissions API uses QWebEnginePermission::Feature.")
-    Feature {
-        Notifications = 0,
-        Geolocation = 1,
-        MediaAudioCapture = 2,
-        MediaVideoCapture,
-        MediaAudioVideoCapture,
-        MouseLock,
-        DesktopVideoCapture,
-        DesktopAudioVideoCapture,
-        ClipboardReadWrite,
-        LocalFontsAccess,
+    enum Feature {
+        Notifications Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::Notifications instead") = 0,
+        Geolocation Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::Geolocation instead") = 1,
+        MediaAudioCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::MediaAudioCapture instead") = 2,
+        MediaVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::MediaVideoCapture instead"),
+        MediaAudioVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::MediaAudioVideoCapture instead"),
+        MouseLock Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::MouseLock instead"),
+        DesktopVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::DesktopVideoCapture instead"),
+        DesktopAudioVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::DesktopAudioVideoCapture instead"),
+        ClipboardReadWrite Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::ClipboardReadWrite instead"),
+        LocalFontsAccess Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::LocalFontsAccess instead"),
     };
     Q_ENUM(Feature)
-QT_WARNING_POP
 #endif
 
     // Ex-QWebFrame enum
@@ -253,10 +243,8 @@ QT_WARNING_POP
     void findText(const QString &subString, FindFlags options = {}, const std::function<void(const QWebEngineFindTextResult &)> &resultCallback = std::function<void(const QWebEngineFindTextResult &)>());
 
 #if QT_DEPRECATED_SINCE(6, 8)
-QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     QT_DEPRECATED_VERSION_X_6_8("Setting permissions through QWebEnginePage has been deprecated. Please use QWebEnginePermission instead.")
     void setFeaturePermission(const QUrl &securityOrigin, Feature feature, PermissionPolicy policy);
-QT_WARNING_POP
 #endif
 
     bool isLoading() const;
@@ -341,17 +329,10 @@ Q_SIGNALS:
     void windowCloseRequested();
 
 #if QT_DEPRECATED_SINCE(6, 8)
-#if !defined(Q_MOC_RUN)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-#endif // !defined(Q_MOC_RUN)
     QT_MOC_COMPAT QT_DEPRECATED_VERSION_X_6_8("The signal has been deprecated; please use permissionRequested instead.")
     void featurePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature);
     QT_MOC_COMPAT QT_DEPRECATED_VERSION_X_6_8("The signal has been deprecated, and no longer functions.")
     void featurePermissionRequestCanceled(const QUrl &securityOrigin, QWebEnginePage::Feature feature);
-#if !defined(Q_MOC_RUN)
-QT_WARNING_POP
-#endif // !defined(Q_MOC_RUN)
 #endif // QT_DEPRECATED_SINCE(6, 8)
 
     void fullScreenRequested(QWebEngineFullScreenRequest fullScreenRequest);

@@ -15,12 +15,12 @@ PermissionDialog::PermissionDialog(const QWebEngineProfile *profile, QWidget *pa
 {
     setupUi(this);
 
-    auto metaEnum = QMetaEnum::fromType<QWebEnginePermission::Feature>();
-    Q_ASSERT(metaEnum.value(QWebEnginePermission::Unsupported) == 0);
+    auto metaEnum = QMetaEnum::fromType<QWebEnginePermission::PermissionType>();
+    Q_ASSERT(metaEnum.value((quint8)QWebEnginePermission::PermissionType::Unsupported) == 0);
     for (int i = 1; i < metaEnum.keyCount(); ++i) {
-        QWebEnginePermission::Feature feature = QWebEnginePermission::Feature(metaEnum.value(i));
-        if (!QWebEnginePermission::isTransient(feature))
-            m_featureComboBox->addItem(metaEnum.valueToKey(feature), QVariant(feature));
+        QWebEnginePermission::PermissionType permissionType = QWebEnginePermission::PermissionType(metaEnum.value(i));
+        if (QWebEnginePermission::isPersistent(permissionType))
+            m_permissionTypeComboBox->addItem(metaEnum.valueToKey((quint8)permissionType), QVariant::fromValue(permissionType));
     }
 }
 
@@ -31,8 +31,8 @@ PermissionDialog::~PermissionDialog()
 
 QWebEnginePermission PermissionDialog::permission()
 {
-    return m_profile->getPermission(QUrl(m_originLineEdit->text()),
-        QWebEnginePermission::Feature(m_featureComboBox->itemData(m_featureComboBox->currentIndex()).toInt()));
+    return m_profile->queryPermission(QUrl(m_originLineEdit->text()),
+        QWebEnginePermission::PermissionType(m_permissionTypeComboBox->itemData(m_permissionTypeComboBox->currentIndex()).toInt()));
 }
 
 PermissionWidget::PermissionWidget(const QWebEnginePermission &permission, QWidget *parent)
@@ -64,23 +64,23 @@ PermissionWidget::PermissionWidget(const QWebEnginePermission &permission, QWidg
 void PermissionWidget::updateState()
 {
     switch (m_permission.state()) {
-    case QWebEnginePermission::Invalid:
+    case QWebEnginePermission::State::Invalid:
         m_stateLabel->setText("<font color='gray'>Invalid</font>");
         m_grantButton->setEnabled(false);
         m_denyButton->setEnabled(false);
         break;
-    case QWebEnginePermission::Ask:
+    case QWebEnginePermission::State::Ask:
         m_stateLabel->setText("<font color='yellow'>Waiting for response</font>");
         break;
-    case QWebEnginePermission::Granted:
+    case QWebEnginePermission::State::Granted:
         m_stateLabel->setText("<font color='green'>Granted</font>");
         break;
-    case QWebEnginePermission::Denied:
+    case QWebEnginePermission::State::Denied:
         m_stateLabel->setText("<font color='red'>Denied</font>");
         break;
     }
 
-    m_typeLabel->setText(QMetaEnum::fromType<QWebEnginePermission::Feature>().valueToKey(m_permission.feature()));
+    m_typeLabel->setText(QMetaEnum::fromType<QWebEnginePermission::PermissionType>().valueToKey((quint8)m_permission.permissionType()));
     m_originLabel->setText(m_permission.origin().toDisplayString());
 }
 
@@ -153,9 +153,9 @@ void MainWindow::handlePermissionModified(PermissionWidget *widget)
     m_pendingFrame->layout()->removeWidget(widget);
     m_pendingWidget = nullptr;
 
-    if (QWebEnginePermission::isTransient(widget->m_permission.feature())
-        || widget->m_permission.state() == QWebEnginePermission::Ask
-        || m_profile->persistentPermissionsPolicy() == QWebEngineProfile::NoPersistentPermissions) {
+    if (!QWebEnginePermission::isPersistent(widget->m_permission.permissionType())
+        || widget->m_permission.state() == QWebEnginePermission::State::Ask
+        || m_profile->persistentPermissionsPolicy() == QWebEngineProfile::PersistentPermissionsPolicy::AskEveryTime) {
 
         widget->deleteLater();
         return;
@@ -209,13 +209,13 @@ void MainWindow::handlePolicyComboBoxIndexChanged(int index)
     QWebEngineProfile::PersistentPermissionsPolicy policy;
     switch (index) {
     case 0:
-        policy = QWebEngineProfile::PersistentPermissionsOnDisk;
+        policy = QWebEngineProfile::PersistentPermissionsPolicy::AskEveryTime;
         break;
     case 1:
-        policy = QWebEngineProfile::PersistentPermissionsInMemory;
+        policy = QWebEngineProfile::PersistentPermissionsPolicy::StoreInMemory;
         break;
     case 2:
-        policy = QWebEngineProfile::NoPersistentPermissions;
+        policy = QWebEngineProfile::PersistentPermissionsPolicy::StoreOnDisk;
         break;
     }
 
@@ -261,7 +261,7 @@ PermissionWidget *MainWindow::createPermissionWidget(const QWebEnginePermission 
 
 void MainWindow::loadStoredPermissions()
 {
-    QList<QWebEnginePermission> permissionsList = m_profile->listPermissions();
+    QList<QWebEnginePermission> permissionsList = m_profile->listAllPermissions();
     for (QWebEnginePermission &permission : permissionsList) {
         PermissionWidget *widget = createPermissionWidget(permission);
         if (widget)

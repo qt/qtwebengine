@@ -11,7 +11,7 @@ TestWebEngineView {
     height: 400
 
     settings.screenCaptureEnabled: true
-    profile.persistentPermissionsPolicy: WebEngineProfile.NoPersistentPermissions
+    profile.persistentPermissionsPolicy: WebEngineProfile.PersistentPermissionsPolicy.AskEveryTime
 
     TestCase {
         name: "GetUserMedia"
@@ -22,17 +22,17 @@ TestWebEngineView {
                 {
                     tag: "device audio",
                     constraints: { audio: true },
-                    feature: WebEnginePermission.MediaAudioCapture,
+                    feature: WebEnginePermission.PermissionType.MediaAudioCapture,
                 },
                 {
                     tag: "device video",
                     constraints: { video: true },
-                    feature: WebEnginePermission.MediaVideoCapture,
+                    feature: WebEnginePermission.PermissionType.MediaVideoCapture,
                 },
                 {
                     tag: "device audio+video",
                     constraints: { audio: true, video: true },
-                    feature: WebEnginePermission.MediaAudioVideoCapture,
+                    feature: WebEnginePermission.PermissionType.MediaAudioVideoCapture,
                 },
                 {
                     tag: "desktop video",
@@ -43,7 +43,7 @@ TestWebEngineView {
                             }
                         }
                     },
-                    feature: WebEnginePermission.DesktopVideoCapture,
+                    feature: WebEnginePermission.PermissionType.DesktopVideoCapture,
                 },
                 {
                     tag: "desktop audio+video",
@@ -59,7 +59,7 @@ TestWebEngineView {
                             }
                         }
                     },
-                    feature: WebEnginePermission.DesktopAudioVideoCapture,
+                    feature: WebEnginePermission.PermissionType.DesktopAudioVideoCapture,
                 }
             ]
         }
@@ -123,7 +123,7 @@ TestWebEngineView {
     }
 
     function gotFeatureRequest(expectedFeature) {
-        return permissionObject && permissionObject.feature == expectedFeature
+        return permissionObject && permissionObject.permissionType == expectedFeature
     }
 
     function acceptPendingRequest() {

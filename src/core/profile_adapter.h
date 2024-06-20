@@ -128,10 +128,10 @@ public:
         TrackVisitedLinksOnDisk,
     };
 
-    enum PersistentPermissionsPolicy {
-        NoPersistentPermissions = 0,
-        PersistentPermissionsInMemory,
-        PersistentPermissionsOnDisk,
+    enum class PersistentPermissionsPolicy : quint8 {
+        AskEveryTime = 0,
+        StoreInMemory,
+        StoreOnDisk,
     };
 
     enum ClientHint : uchar {
@@ -172,9 +172,10 @@ public:
     const QList<QByteArray> customUrlSchemes() const;
     UserResourceControllerHost *userResourceController();
 
-    void setPermission(const QUrl &origin, QWebEnginePermission::Feature feature, QWebEnginePermission::State state);
-    QWebEnginePermission::State getPermissionState(const QUrl &origin, QWebEnginePermission::Feature feature);
-    QList<QWebEnginePermission> listPermissions(const QUrl &origin = QUrl(), QWebEnginePermission::Feature feature = QWebEnginePermission::Unsupported);
+    void setPermission(const QUrl &origin, QWebEnginePermission::PermissionType permissionType, QWebEnginePermission::State state);
+    QWebEnginePermission::State getPermissionState(const QUrl &origin, QWebEnginePermission::PermissionType permissionType);
+    QList<QWebEnginePermission> listPermissions(const QUrl &origin = QUrl(),
+        QWebEnginePermission::PermissionType permissionType = QWebEnginePermission::PermissionType::Unsupported);
 
     QString httpAcceptLanguageWithoutQualities() const;
     QString httpAcceptLanguage() const;

@@ -195,7 +195,7 @@ public:
     virtual QObject *accessibilityParentObject() = 0;
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) = 0;
     virtual void authenticationRequired(QSharedPointer<AuthenticationDialogController>) = 0;
-    virtual void runFeaturePermissionRequest(QWebEnginePermission::Feature, const QUrl &securityOrigin) = 0;
+    virtual void runFeaturePermissionRequest(QWebEnginePermission::PermissionType, const QUrl &securityOrigin) = 0;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) = 0;
     virtual void runMouseLockPermissionRequest(const QUrl &securityOrigin) = 0;
     virtual void runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest) = 0;
@@ -229,7 +229,7 @@ public:
     virtual WebContentsAdapter* webContentsAdapter() = 0;
     virtual void releaseProfile() = 0;
     virtual void showWebAuthDialog(QWebEngineWebAuthUxRequest *request) = 0;
-    virtual QWebEnginePermission createFeaturePermissionObject(const QUrl &securityOrigin, QWebEnginePermission::Feature feature) = 0;
+    virtual QWebEnginePermission createFeaturePermissionObject(const QUrl &securityOrigin, QWebEnginePermission::PermissionType permissionType) = 0;
 };
 
 } // namespace QtWebEngineCore

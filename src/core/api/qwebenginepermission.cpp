@@ -10,17 +10,19 @@ QT_BEGIN_NAMESPACE
 
 QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QWebEnginePermissionPrivate)
 
+/*! \internal */
 QWebEnginePermissionPrivate::QWebEnginePermissionPrivate()
     : QSharedData()
-    , feature(QWebEnginePermission::Unsupported)
+    , permissionType(QWebEnginePermission::PermissionType::Unsupported)
 {
 }
 
-QWebEnginePermissionPrivate::QWebEnginePermissionPrivate(const QUrl &origin_, QWebEnginePermission::Feature feature_,
+/*! \internal */
+QWebEnginePermissionPrivate::QWebEnginePermissionPrivate(const QUrl &origin_, QWebEnginePermission::PermissionType permissionType_,
         QSharedPointer<QtWebEngineCore::WebContentsAdapter> webContentsAdapter_, QtWebEngineCore::ProfileAdapter *profileAdapter_)
     : QSharedData()
     , origin(origin_)
-    , feature(feature_)
+    , permissionType(permissionType_)
     , webContentsAdapter(webContentsAdapter_)
     , profileAdapter(profileAdapter_)
 {
@@ -35,32 +37,39 @@ QWebEnginePermissionPrivate::QWebEnginePermissionPrivate(const QUrl &origin_, QW
 
     The typical usage pattern is as follows:
     \list 1
-        \li A website requests a specific feature, triggering the QWebEnginePage::permissionRequested() signal;
+        \li A website requests a specific permission, triggering the QWebEnginePage::permissionRequested() signal;
         \li The signal handler triggers a prompt asking the user whether they want to grant the permission;
         \li When the user has made their decision, the application calls \l grant() or \l deny();
     \endlist
 
-    Alternatively, an application interested in modifying already granted permissions may use QWebEngineProfile::listPermissions()
-    to get a list of existing permissions associated with a profile, or QWebEngineProfile::getPermission() to get
+    Alternatively, an application interested in modifying already granted permissions may use QWebEngineProfile::listAllPermissions()
+    to get a list of existing permissions associated with a profile, or QWebEngineProfile::queryPermission() to get
     a QWebEnginePermission object for a specific permission.
 
     The \l origin() property can be used to query which origin the QWebEnginePermission is associated with, while the
-    \l feature() property describes the associated feature. A website origin is the combination of its scheme, hostname,
-    and port. Permissions are granted on a per-origin basis; thus, if the web page \c{https://www.example.com:12345/some/page.html}
-    requests a permission, it will be granted to the origin \c{https://www.example.com:12345/}.
+    \l permissionType() property describes the type of the requested permission. A website origin is the combination of
+    its scheme, hostname, and port. Permissions are granted on a per-origin basis; thus, if the web page
+    \c{https://www.example.com:12345/some/page.html} requests a permission, it will be granted to the origin
+    \c{https://www.example.com:12345/}.
 
-    \l QWebEnginePermission::Feature describes all the feature types Qt WebEngine supports. Some Features are transient;
-    in practice, this means that they are never remembered, and a website that uses them will trigger a permission
-    prompt every time the Feature is needed. Transient Features cannot be granted in advance.
+    \l QWebEnginePermission::PermissionType describes all the permission types Qt WebEngine supports. Only some permission types
+    are remembered between browsing sessions; they are \e persistent. Non-persistent permissions query the user every time a
+    website requests them, and cannot be granted in advance. You can check whether a permission type is persistent at runtime
+    using the static method QWebEnginePermission::isPersistent().
 
-    The usability lifetime of a QWebEnginePermission is tied either to its associated QWebEnginePage
-    (for transient feature types), or QWebEngineProfile (for permanent feature types). A transient permission is one which
-    needs to be explicitly granted or denied every time it's needed (e.g. webcam/screen sharing permission), whereas a permanent
-    one might be stored inside the current profile, depending on the value of QWebEngineProfile::persistentPermissionsPolicy().
+    Persistent permissions are stored inside the active QWebEngineProfile, and their lifetime depends on the value of
+    QWebEngineProfile::persistentPermissionsPolicy(). By default, named profiles store their permissions on disk, whereas
+    off-the-record ones store them in memory (and destroy them when the profile is destroyed). A stored permission will not
+    query the user the next time a website requests it; instead it will be automatically granted or denied, depending on
+    the resolution the user picked initially. To erase a stored permission, call \l reset() on it.
+
+    A non-persistent permission, on the other hand, is only usable until the related QWebEnginePage performs a navigation to
+    a different URL, or is destroyed.
+
     You can check whether a QWebEnginePermission is in a valid state using its \l isValid() property. For invalid objects, calls to \l grant(),
     \l deny(), or \l reset() will do nothing, while calls to \l state() will always return QWebEnginePermission::Invalid.
 
-    \sa QWebEnginePage::permissionRequested(), QWebEngineProfile::getPermission(), QWebEngineProfile::listPermissions()
+    \sa QWebEnginePage::permissionRequested(), QWebEngineProfile::queryPermission(), QWebEngineProfile::listAllPermissions()
 */
 
 /*! \fn QWebEnginePermission::QWebEnginePermission()
@@ -100,10 +109,10 @@ bool QWebEnginePermission::comparesEqual(const QWebEnginePermission &other) cons
     if (this == &other)
         return true;
 
-    if (d_ptr->feature != other.d_ptr->feature || d_ptr->origin != other.d_ptr->origin)
+    if (d_ptr->permissionType != other.d_ptr->permissionType || d_ptr->origin != other.d_ptr->origin)
         return false;
 
-    if (isTransient(d_ptr->feature)) {
+    if (!isPersistent(d_ptr->permissionType)) {
         if (d_ptr->webContentsAdapter != other.d_ptr->webContentsAdapter)
             return false;
     } else {
@@ -129,49 +138,49 @@ bool QWebEnginePermission::comparesEqual(const QWebEnginePermission &other) cons
     per-origin basis; thus, if the web page \c{https://www.example.com:12345/some/page.html}
     requests a permission, it will be granted to the origin \c{https://www.example.com:12345/}.
 */
-const QUrl QWebEnginePermission::origin() const
+QUrl QWebEnginePermission::origin() const
 {
     return d_ptr->origin;
 }
 
 /*!
-    \enum QWebEnginePermission::Feature
+    \enum QWebEnginePermission::PermissionType
 
-    This enum type holds the type of the requested feature:
+    This enum type holds the type of the requested permission type:
 
-    \value MediaAudioCapture Access to a microphone, or another audio source. This feature is transient.
-    \value MediaVideoCapture Access to a webcam, or another video source. This feature is transient.
-    \value MediaAudioVideoCapture Combination of \l MediaAudioCapture and \l MediaVideoCapture. This feature is transient.
-    \value DesktopVideoCapture Access to the contents of the user's screen. This feature is transient.
-    \value DesktopAudioVideoCapture Access to the contents of the user's screen, and application audio. This feature is transient.
-    \value MouseLock Locks the pointer inside an element on the web page. This feature is transient.
-    \value Notifications Allows the website to send notifications to the user.
-    \value Geolocation Access to the user's physical location.
-    \value ClipboardReadWrite Access to the user's clipboard.
-    \value LocalFontsAccess Access to the fonts installed on the user's machine. Only available on desktops.
-    \value Unsupported An unsupported feature type.
+    \value MediaAudioCapture Access to a microphone, or another audio source. This permission is \e not persistent.
+    \value MediaVideoCapture Access to a webcam, or another video source. This permission is \e not persistent.
+    \value MediaAudioVideoCapture Combination of \l MediaAudioCapture and \l MediaVideoCapture. This permission is \e not persistent.
+    \value DesktopVideoCapture Access to the contents of the user's screen. This permission is \e not persistent.
+    \value DesktopAudioVideoCapture Access to the contents of the user's screen, and application audio. This permission is \e not persistent.
+    \value MouseLock Locks the pointer inside an element on the web page. This permission is \e not persistent.
+    \value Notifications Allows the website to send notifications to the user. This permission is persistent.
+    \value Geolocation Access to the user's physical location. This permission is persistent.
+    \value ClipboardReadWrite Access to the user's clipboard. This permission is persistent.
+    \value LocalFontsAccess Access to the fonts installed on the user's machine. Only available on desktops. This permission is persistent.
+    \value Unsupported An unsupported permission type.
 
-    \note Transient feature types are ones that will never be remembered by the underlying storage, and will trigger
-    a permission request every time a website tries to use them. Transient Features can only be denied/granted
-    as they're needed; any attempts to pre-grant a transient Feature will fail.
+    \note Non-persistent permission types are ones that will never be remembered by the underlying storage, and will trigger
+    a permission request every time a website tries to use them. They can only be denied/granted as they're needed;
+    any attempts to pre-grant a non-persistent permission will fail.
 */
 
 /*!
-    \property QWebEnginePermission::feature
-    \brief The feature type associated with this permission.
+    \property QWebEnginePermission::permissionType
+    \brief The permission type associated with this permission.
 */
-QWebEnginePermission::Feature QWebEnginePermission::feature() const
+QWebEnginePermission::PermissionType QWebEnginePermission::permissionType() const
 {
-    return d_ptr->feature;
+    return d_ptr->permissionType;
 }
 
 /*!
     \enum QWebEnginePermission::State
 
-    This enum type holds the current state of the requested feature:
+    This enum type holds the current state of the requested permission:
 
     \value Invalid Object is in an invalid state, and any attempts to modify the described permission will fail.
-    \value Ask Either the permission has not been requested before, or the feature() is transient.
+    \value Ask Either the permission has not been requested before, or the permissionType() is not persistent.
     \value Granted Permission has already been granted.
     \value Denied Permission has already been denied.
 */
@@ -180,24 +189,24 @@ QWebEnginePermission::Feature QWebEnginePermission::feature() const
     \property QWebEnginePermission::state
     \brief The current state of the permission.
 
-    If a permission for the specified \l feature() and \l origin() has already been granted or denied,
+    If a permission for the specified \l permissionType() and \l origin() has already been granted or denied,
     the return value is QWebEnginePermission::Granted, or QWebEnginePermission::Denied, respectively.
-    When this is the first time the permission is requested, or if the \l feature() is transient,
+    When this is the first time the permission is requested, or if the \l permissionType() is non-persistent,
     the return value is QWebEnginePermission::Ask. If the object is in an invalid state, the returned
     value is QWebEnginePermission::Invalid.
 
-    \sa isValid(), isTransient()
+    \sa isValid(), isPersistent()
 */
 QWebEnginePermission::State QWebEnginePermission::state() const
 {
     if (!isValid())
-        return Invalid;
+        return State::Invalid;
     if (d_ptr->webContentsAdapter)
-        return d_ptr->webContentsAdapter.toStrongRef()->getPermissionState(origin(), feature());
+        return d_ptr->webContentsAdapter.toStrongRef()->getPermissionState(origin(), permissionType());
     if (d_ptr->profileAdapter)
-        return d_ptr->profileAdapter->getPermissionState(origin(), feature());
+        return d_ptr->profileAdapter->getPermissionState(origin(), permissionType());
     Q_UNREACHABLE();
-    return Ask;
+    return State::Ask;
 }
 
 /*!
@@ -206,19 +215,19 @@ QWebEnginePermission::State QWebEnginePermission::state() const
 
     An invalid QWebEnginePermission is either:
     \list
-        \li One whose \l feature() is unsupported;
-        \li One whose \l feature() is transient, and the associated page/view has been destroyed;
-        \li One whose \l feature() is permanent, but the associated profile has been destroyed;
+        \li One whose \l permissionType() is unsupported;
+        \li One whose \l permissionType() is non-persistent, and the user has navigated away from the web page that triggered the request;
+        \li One whose \l permissionType() is persistent, but the associated profile has been destroyed;
         \li One whose \l origin() is invalid.
     \endlist
 
-    \sa isTransient()
+    \sa isPersistent()
 */
 bool QWebEnginePermission::isValid() const
 {
-    if (feature() == Unsupported)
+    if (permissionType() == PermissionType::Unsupported)
         return false;
-    if (isTransient(feature()) && !d_ptr->webContentsAdapter)
+    if (!isPersistent(permissionType()) && !d_ptr->webContentsAdapter)
         return false;
     if (!d_ptr->profileAdapter)
         return false;
@@ -228,7 +237,7 @@ bool QWebEnginePermission::isValid() const
 }
 
 /*!
-    Allows the associated origin to access the requested feature. Does nothing when \l isValid() evaluates to false.
+    Allows the associated origin to access the requested permissionType. Does nothing when \l isValid() evaluates to false.
 
     \sa deny(), reset(), isValid()
 */
@@ -237,13 +246,13 @@ void QWebEnginePermission::grant() const
     if (!isValid())
         return;
     if (d_ptr->webContentsAdapter)
-        d_ptr->webContentsAdapter.toStrongRef()->setFeaturePermission(origin(), feature(), Granted);
+        d_ptr->webContentsAdapter.toStrongRef()->setPermission(origin(), permissionType(), State::Granted);
     else if (d_ptr->profileAdapter)
-        d_ptr->profileAdapter->setPermission(origin(), feature(), Granted);
+        d_ptr->profileAdapter->setPermission(origin(), permissionType(), State::Granted);
 }
 
 /*!
-    Stops the associated origin from accessing the requested feature. Does nothing when \l isValid() evaluates to false.
+    Stops the associated origin from accessing the requested permissionType. Does nothing when \l isValid() evaluates to false.
 
     \sa grant(), reset(), isValid()
 */
@@ -252,9 +261,9 @@ void QWebEnginePermission::deny() const
     if (!isValid())
         return;
     if (d_ptr->webContentsAdapter)
-        d_ptr->webContentsAdapter.toStrongRef()->setFeaturePermission(origin(), feature(), Denied);
+        d_ptr->webContentsAdapter.toStrongRef()->setPermission(origin(), permissionType(), State::Denied);
     else if (d_ptr->profileAdapter)
-        d_ptr->profileAdapter->setPermission(origin(), feature(), Denied);
+        d_ptr->profileAdapter->setPermission(origin(), permissionType(), State::Denied);
 }
 
 /*!
@@ -273,31 +282,31 @@ void QWebEnginePermission::reset() const
     if (!isValid())
         return;
     if (d_ptr->webContentsAdapter)
-        d_ptr->webContentsAdapter.toStrongRef()->setFeaturePermission(origin(), feature(), Ask);
+        d_ptr->webContentsAdapter.toStrongRef()->setPermission(origin(), permissionType(), State::Ask);
     else if (d_ptr->profileAdapter)
-        d_ptr->profileAdapter->setPermission(origin(), feature(), Ask);
+        d_ptr->profileAdapter->setPermission(origin(), permissionType(), State::Ask);
 }
 
 /*!
-    Returns whether \a feature is transient, meaning that a permission will be requested
-    every time the associated functionality is used by a web page.
+    Returns whether a \a permissionType is \e persistent, meaning that a permission's state will be remembered
+    and the user will not be queried the next time the website requests the same permission.
 */
-bool QWebEnginePermission::isTransient(QWebEnginePermission::Feature feature)
+bool QWebEnginePermission::isPersistent(QWebEnginePermission::PermissionType permissionType)
 {
-    switch (feature) {
-    case QWebEnginePermission::MediaAudioCapture:
-    case QWebEnginePermission::MediaVideoCapture:
-    case QWebEnginePermission::MediaAudioVideoCapture:
-    case QWebEnginePermission::DesktopVideoCapture:
-    case QWebEnginePermission::DesktopAudioVideoCapture:
-    case QWebEnginePermission::MouseLock:
+    switch (permissionType) {
+    case QWebEnginePermission::PermissionType::Notifications:
+    case QWebEnginePermission::PermissionType::Geolocation:
+    case QWebEnginePermission::PermissionType::ClipboardReadWrite:
+    case QWebEnginePermission::PermissionType::LocalFontsAccess:
         return true;
-    case QWebEnginePermission::Notifications:
-    case QWebEnginePermission::Geolocation:
-    case QWebEnginePermission::ClipboardReadWrite:
-    case QWebEnginePermission::LocalFontsAccess:
+    case QWebEnginePermission::PermissionType::MediaAudioCapture:
+    case QWebEnginePermission::PermissionType::MediaVideoCapture:
+    case QWebEnginePermission::PermissionType::MediaAudioVideoCapture:
+    case QWebEnginePermission::PermissionType::DesktopVideoCapture:
+    case QWebEnginePermission::PermissionType::DesktopAudioVideoCapture:
+    case QWebEnginePermission::PermissionType::MouseLock:
         return false;
-    case QWebEnginePermission::Unsupported:
+    case QWebEnginePermission::PermissionType::Unsupported:
         return false;
     }
 

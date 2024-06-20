@@ -22,9 +22,9 @@ public:
     PermissionManagerQt(ProfileAdapter *adapter);
     ~PermissionManagerQt();
 
-    void setPermission(const QUrl &origin, QWebEnginePermission::Feature feature, QWebEnginePermission::State state);
-    QWebEnginePermission::State getPermissionState(const QUrl &origin, QWebEnginePermission::Feature feature);
-    QList<QWebEnginePermission> listPermissions(const QUrl &origin, QWebEnginePermission::Feature feature);
+    void setPermission(const QUrl &origin, QWebEnginePermission::PermissionType permissionType, QWebEnginePermission::State state);
+    QWebEnginePermission::State getPermissionState(const QUrl &origin, QWebEnginePermission::PermissionType permissionType);
+    QList<QWebEnginePermission> listPermissions(const QUrl &origin, QWebEnginePermission::PermissionType permissionType);
 
     void commit();
 
@@ -68,7 +68,7 @@ public:
 private:
     struct Request {
         int id;
-        QWebEnginePermission::Feature type;
+        QWebEnginePermission::PermissionType type;
         QUrl origin;
         base::OnceCallback<void(blink::mojom::PermissionStatus)> callback;
     };
@@ -79,7 +79,7 @@ private:
         base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus>&)> callback;
     };
     struct Subscription {
-        QWebEnginePermission::Feature type;
+        QWebEnginePermission::PermissionType type;
         QUrl origin;
         base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback;
     };
@@ -90,7 +90,7 @@ private:
 
     std::vector<Request> m_requests;
     std::vector<MultiRequest> m_multiRequests;
-    std::vector<QWebEnginePermission::Feature> m_featureTypes;
+    std::vector<QWebEnginePermission::PermissionType> m_permissionTypes;
     std::map<content::PermissionControllerDelegate::SubscriptionId, Subscription> m_subscribers;
     content::PermissionControllerDelegate::SubscriptionId::Generator subscription_id_generator_;
     int m_requestIdCount;

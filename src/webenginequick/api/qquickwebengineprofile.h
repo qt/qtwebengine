@@ -64,10 +64,10 @@ public:
     };
     Q_ENUM(PersistentCookiesPolicy)
 
-    enum PersistentPermissionsPolicy : quint8 {
-        NoPersistentPermissions,
-        PersistentPermissionsInMemory,
-        PersistentPermissionsOnDisk,
+    enum class PersistentPermissionsPolicy : quint8 {
+        AskEveryTime = 0,
+        StoreInMemory,
+        StoreOnDisk,
     };
     Q_ENUM(PersistentPermissionsPolicy)
 
@@ -129,10 +129,10 @@ public:
     QWebEngineClientCertificateStore *clientCertificateStore();
     QWebEngineClientHints *clientHints() const;
 
-    Q_REVISION(6,8) Q_INVOKABLE QWebEnginePermission getPermission(const QUrl &securityOrigin, QWebEnginePermission::Feature feature) const;
-    Q_REVISION(6,8) Q_INVOKABLE QList<QWebEnginePermission> listPermissions() const;
-    Q_REVISION(6,8) Q_INVOKABLE QList<QWebEnginePermission> listPermissions(const QUrl &securityOrigin) const;
-    Q_REVISION(6,8) Q_INVOKABLE QList<QWebEnginePermission> listPermissions(QWebEnginePermission::Feature feature) const;
+    Q_REVISION(6,8) Q_INVOKABLE QWebEnginePermission queryPermission(const QUrl &securityOrigin, QWebEnginePermission::PermissionType permissionType) const;
+    Q_REVISION(6,8) Q_INVOKABLE QList<QWebEnginePermission> listAllPermissions() const;
+    Q_REVISION(6,8) Q_INVOKABLE QList<QWebEnginePermission> listPermissionsForOrigin(const QUrl &securityOrigin) const;
+    Q_REVISION(6,8) Q_INVOKABLE QList<QWebEnginePermission> listPermissionsForPermissionType(QWebEnginePermission::PermissionType permissionType) const;
 
     static QQuickWebEngineProfile *defaultProfile();
 

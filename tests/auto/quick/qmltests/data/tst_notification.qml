@@ -15,7 +15,7 @@ TestWebEngineView {
     property bool grantPermission: false
     property var permissionObject
 
-    profile.persistentPermissionsPolicy: WebEngineProfile.NoPersistentPermissions
+    profile.persistentPermissionsPolicy: WebEngineProfile.PersistentPermissionsPolicy.AskEveryTime
 
     signal consoleMessage(string message)
 
@@ -26,7 +26,7 @@ TestWebEngineView {
     }
 
     onPermissionRequested: function(perm) {
-        if (perm.feature === WebEnginePermission.Notifications) {
+        if (perm.permissionType === WebEnginePermission.PermissionType.Notifications) {
             view.permissionRequested = true
             view.permissionObject = perm
             if (grantPermission)
@@ -70,9 +70,8 @@ TestWebEngineView {
             tryCompare(result, 'permission', 'default')
 
             view.runJavaScript('requestPermission()')
-            spyRequest.wait()
+            tryCompare(spyRequest, "count", 1)
             verify(permissionRequested)
-            compare(spyRequest.count, 1)
 
             view.runJavaScript('getPermission()', function (permission) { result.permission = permission })
             tryCompare(result, 'permission', data.permission)
@@ -85,7 +84,7 @@ TestWebEngineView {
             view.waitForLoadSucceeded()
 
             view.runJavaScript('requestPermission()')
-            spyRequest.wait()
+            tryCompare(spyRequest, "count", 1)
             verify(permissionRequested)
 
             let title = 'Title', message = 'Message', notification = null

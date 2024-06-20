@@ -113,18 +113,18 @@ using QtWebEngineCore::ProfileAdapter;
 
     This enum describes the policy for permission persistence:
 
-    \value  NoPersistentPermissions
+    \value  AskEveryTime
             The application will ask for permissions every time they're needed, regardless of
             whether they've been granted before or not. This is intended for backwards compatibility
             with existing applications, and otherwise not recommended.
-    \value  PersistentPermissionsInMemory
+    \value  StoreInMemory
             A request will be made only the first time a permission is needed. Any subsequent
             requests will be automatically granted or denied, depending on the initial user choice.
             This carries over to all pages that use the same QWebEngineProfile instance, until the
             application is shut down. This is the setting applied if \c off-the-record is set
             or no persistent data path is available.
-    \value  PersistentPermissionsOnDisk
-            Works the same way as \c PersistentPermissionsInMemory, but the permissions are saved to
+    \value  StoreOnDisk
+            Works the same way as \c StoreInMemory, but the permissions are saved to
             and restored from disk. This is the default setting.
 */
 
@@ -597,9 +597,9 @@ void QWebEngineProfile::setPersistentCookiesPolicy(QWebEngineProfile::Persistent
     Returns the current policy for persistent permissions.
 
     Off-the-record profiles are not allowed to save data to the disk, so they can only return
-    PersistentPermissionsInMemory or NoPersistentPermissions.
+    \c StoreInMemory or \c AskEveryTime.
 
-    \sa setPersistentPermissionsPolicy()
+    \sa QWebEngineProfile::PersistentPermissionsPolicy, setPersistentPermissionsPolicy()
 */
 QWebEngineProfile::PersistentPermissionsPolicy QWebEngineProfile::persistentPermissionsPolicy() const
 {
@@ -610,7 +610,7 @@ QWebEngineProfile::PersistentPermissionsPolicy QWebEngineProfile::persistentPerm
 /*!
     Sets the policy for persistent permissions to \a newPersistentPermissionsPolicy.
 
-    \sa persistentPermissionsPolicy()
+    \sa QWebEngineProfile::PersistentPermissionsPolicy, persistentPermissionsPolicy()
 */
 void QWebEngineProfile::setPersistentPermissionsPolicy(QWebEngineProfile::PersistentPermissionsPolicy newPersistentPermissionsPolicy)
 {
@@ -979,44 +979,45 @@ void QWebEngineProfile::requestIconForIconURL(const QUrl &url, int desiredSizeIn
 
 /*!
  * Returns a QWebEnginePermission object corresponding to a single permission for the provided \a securityOrigin and
- * \a feature. The object may be used to query for the current state of the permission, or to change it. It is not required
+ * \a permissionType. The object may be used to query for the current state of the permission, or to change it. It is not required
  * for a permission to already exist; the returned object may also be used to pre-grant a permission if a website is
  * known to use it.
  *
- * \note This may only be used for permanent feature types. Calling it with a transient \a feature will return an invalid object.
+ * \note This may only be used for persistent permission types. Calling it with a non-persistent type will return an invalid object.
  * \since 6.8
- * \sa listPermissions(), QWebEnginePermission::Feature
+ * \sa listAllPermissions(), listPermissionsForOrigin(), listPermissionsForPermissionType(), QWebEnginePermission::PermissionType
  */
-QWebEnginePermission QWebEngineProfile::getPermission(const QUrl &securityOrigin, QWebEnginePermission::Feature feature) const
+QWebEnginePermission QWebEngineProfile::queryPermission(const QUrl &securityOrigin, QWebEnginePermission::PermissionType permissionType) const
 {
     Q_D(const QWebEngineProfile);
 
-    if (feature == QWebEnginePermission::Unsupported) {
+    if (permissionType == QWebEnginePermission::PermissionType::Unsupported) {
         qWarning("Attempting to get unsupported permission. Returned object will be in an invalid state.");
         return QWebEnginePermission(new QWebEnginePermissionPrivate());
     }
 
-    if (QWebEnginePermission::isTransient(feature)) {
-        qWarning() << "Attempting to get permission for feature" << feature << ". Returned object will be in an invalid state.";
+    if (!QWebEnginePermission::isPersistent(permissionType)) {
+        qWarning() << "Attempting to get permission for permission type" << permissionType << ". Returned object will be in an invalid state.";
         return QWebEnginePermission(new QWebEnginePermissionPrivate());
     }
 
-    auto *pvt = new QWebEnginePermissionPrivate(securityOrigin, feature, nullptr, d->profileAdapter());
+    auto *pvt = new QWebEnginePermissionPrivate(securityOrigin, permissionType, nullptr, d->profileAdapter());
     return QWebEnginePermission(pvt);
 }
 
 /*!
  * Returns a QList of QWebEnginePermission objects, each one representing a single permission currently
  * present in the permissions store. The returned list contains all previously granted/denied permissions for this profile,
- * except for those of a transient feature type.
+ * provided they are of a \e persistent type.
  *
+ * \note When persistentPermissionPolicy() is set to \c AskEveryTime, this will return an empty list.
  * \since 6.8
- * \sa getPermission(), QWebEnginePermission::Feature
+ * \sa queryPermission(), QWebEnginePermission::PermissionType, QWebEnginePermission::isPersistent()
  */
-QList<QWebEnginePermission> QWebEngineProfile::listPermissions() const
+QList<QWebEnginePermission> QWebEngineProfile::listAllPermissions() const
 {
     Q_D(const QWebEngineProfile);
-    if (persistentPermissionsPolicy() == NoPersistentPermissions)
+    if (persistentPermissionsPolicy() == PersistentPermissionsPolicy::AskEveryTime)
         return QList<QWebEnginePermission>();
     return d->profileAdapter()->listPermissions();
 }
@@ -1024,46 +1025,49 @@ QList<QWebEnginePermission> QWebEngineProfile::listPermissions() const
 /*!
  * Returns a QList of QWebEnginePermission objects, each one representing a single permission currently
  * present in the permissions store. The returned list contains all previously granted/denied permissions associated with a
- * specific \a securityOrigin for this profile, except for those of a transient feature type.
+ * specific \a securityOrigin for this profile, provided they are of a \e persistent type.
  *
  * \note Since permissions are granted on a per-origin basis, the provided \a securityOrigin will be stripped to its
  * origin form, and the returned list will contain all permissions for the origin. Thus, passing https://www.example.com/some/page.html
  * is the same as passing just https://www.example.com/.
+ * \note When persistentPermissionPolicy() is set to \c AskEveryTime, this will return an empty list.
  * \since 6.8
- * \sa getPermission(), QWebEnginePermission::Feature
+ * \sa queryPermission(), QWebEnginePermission::PermissionType, QWebEnginePermission::isPersistent()
  */
-QList<QWebEnginePermission> QWebEngineProfile::listPermissions(const QUrl &securityOrigin) const
+QList<QWebEnginePermission> QWebEngineProfile::listPermissionsForOrigin(const QUrl &securityOrigin) const
 {
     Q_D(const QWebEngineProfile);
-    if (persistentPermissionsPolicy() == NoPersistentPermissions)
+    if (persistentPermissionsPolicy() == PersistentPermissionsPolicy::AskEveryTime)
         return QList<QWebEnginePermission>();
     return d->profileAdapter()->listPermissions(securityOrigin);
 }
 
 /*!
  * Returns a QList of QWebEnginePermission objects, each one representing a single permission currently
- * present in the permissions store. The returned list contains all previously granted/denied permissions of the \a feature
- * type for this profile. If the feature is of a transient or unsupported type, the list will be empty.
+ * present in the permissions store. The returned list contains all previously granted/denied permissions of the provided
+ * \a permissionType. If the \permissionType is non-persistent, the list will be empty.
+ *
+ * \note When persistentPermissionPolicy() is set to \c AskEveryTime, this will return an empty list.
  * \since 6.8
- * \sa getPermission(), QWebEnginePermission::Feature
+ * \sa queryPermission(), QWebEnginePermission::PermissionType, QWebEnginePermission::isPersistent()
  */
-QList<QWebEnginePermission> QWebEngineProfile::listPermissions(QWebEnginePermission::Feature feature) const
+QList<QWebEnginePermission> QWebEngineProfile::listPermissionsForPermissionType(QWebEnginePermission::PermissionType permissionType) const
 {
     Q_D(const QWebEngineProfile);
-    if (persistentPermissionsPolicy() == NoPersistentPermissions)
+    if (persistentPermissionsPolicy() == PersistentPermissionsPolicy::AskEveryTime)
         return QList<QWebEnginePermission>();
 
-    if (feature == QWebEnginePermission::Unsupported) {
+    if (permissionType == QWebEnginePermission::PermissionType::Unsupported) {
         qWarning("Attempting to get permission list for an unsupported type. Returned list will be empty.");
         return QList<QWebEnginePermission>();
     }
 
-    if (QWebEnginePermission::isTransient(feature)) {
-        qWarning() << "Attempting to get permission list for feature" << feature << ". Returned list will be empty.";
+    if (!QWebEnginePermission::isPersistent(permissionType)) {
+        qWarning() << "Attempting to get permission list for permission type" << permissionType << ". Returned list will be empty.";
         return QList<QWebEnginePermission>();
     }
 
-    return d->profileAdapter()->listPermissions(QUrl(), feature);
+    return d->profileAdapter()->listPermissions(QUrl(), permissionType);
 }
 
 /*!

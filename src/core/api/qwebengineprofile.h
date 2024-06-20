@@ -50,10 +50,10 @@ public:
     };
     Q_ENUM(PersistentCookiesPolicy)
 
-    enum PersistentPermissionsPolicy : quint8 {
-        NoPersistentPermissions,
-        PersistentPermissionsInMemory,
-        PersistentPermissionsOnDisk,
+    enum class PersistentPermissionsPolicy : quint8 {
+        AskEveryTime = 0,
+        StoreInMemory,
+        StoreOnDisk,
     };
     Q_ENUM(PersistentPermissionsPolicy)
 
@@ -121,10 +121,10 @@ public:
     void requestIconForPageURL(const QUrl &url, int desiredSizeInPixel, std::function<void(const QIcon &, const QUrl &, const QUrl &)> iconAvailableCallback) const;
     void requestIconForIconURL(const QUrl &url, int desiredSizeInPixel, std::function<void(const QIcon &, const QUrl &)> iconAvailableCallback) const;
 
-    QWebEnginePermission getPermission(const QUrl &securityOrigin, QWebEnginePermission::Feature feature) const;
-    QList<QWebEnginePermission> listPermissions() const;
-    QList<QWebEnginePermission> listPermissions(const QUrl &securityOrigin) const;
-    QList<QWebEnginePermission> listPermissions(QWebEnginePermission::Feature feature) const;
+    QWebEnginePermission queryPermission(const QUrl &securityOrigin, QWebEnginePermission::PermissionType permissionType) const;
+    QList<QWebEnginePermission> listAllPermissions() const;
+    QList<QWebEnginePermission> listPermissionsForOrigin(const QUrl &securityOrigin) const;
+    QList<QWebEnginePermission> listPermissionsForPermissionType(QWebEnginePermission::PermissionType permissionType) const;
 
     static QWebEngineProfile *defaultProfile();
 

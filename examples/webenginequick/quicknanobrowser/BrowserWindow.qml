@@ -748,53 +748,54 @@ ApplicationWindow {
         contentItem: Item {
             Label {
                 id: mainTextForPermissionDialog
-                text: permissionDialog.questionForFeature()
             }
         }
 
         onAccepted: permission.grant()
         onRejected: permission.deny()
         onVisibleChanged: {
-            if (visible)
+            if (visible) {
+                mainTextForPermissionDialog.text = questionForPermissionType();
                 width = contentWidth + 20;
+            }
         }
 
-        function questionForFeature() {
+        function questionForPermissionType() {
             var question = "Allow " + permission.origin + " to "
 
-            switch (permission.feature) {
-            case WebEnginePermission.Geolocation:
+            switch (permission.permissionType) {
+            case WebEnginePermission.PermissionType.Geolocation:
                 question += "access your location information?";
                 break;
-            case WebEnginePermission.MediaAudioCapture:
+            case WebEnginePermission.PermissionType.MediaAudioCapture:
                 question += "access your microphone?";
                 break;
-            case WebEnginePermission.MediaVideoCapture:
+            case WebEnginePermission.PermissionType.MediaVideoCapture:
                 question += "access your webcam?";
                 break;
-            case WebEnginePermission.MediaAudioVideoCapture:
+            case WebEnginePermission.PermissionType.MediaAudioVideoCapture:
                 question += "access your microphone and webcam?";
                 break;
-            case WebEnginePermission.MouseLock:
+            case WebEnginePermission.PermissionType.MouseLock:
                 question += "lock your mouse cursor?";
                 break;
-            case WebEnginePermission.DesktopVideoCapture:
+            case WebEnginePermission.PermissionType.DesktopVideoCapture:
                 question += "capture video of your desktop?";
                 break;
-            case WebEnginePermission.DesktopAudioVideoCapture:
+            case WebEnginePermission.PermissionType.DesktopAudioVideoCapture:
                 question += "capture audio and video of your desktop?";
                 break;
-            case WebEnginePermission.Notifications:
+            case WebEnginePermission.PermissionType.Notifications:
                 question += "show notification on your desktop?";
                 break;
-            case WebEnginePermission.ClipboardReadWrite:
+            case WebEnginePermission.PermissionType.ClipboardReadWrite:
                 question += "read from and write to your clipboard?";
                 break;
-            case WebEnginePermission.LocalFontsAccess:
+            case WebEnginePermission.PermissionType.LocalFontsAccess:
                 question += "access the fonts stored on your machine?";
                 break;
             default:
-                question += "access unknown or unsupported feature [" + permission.feature + "] ?";
+                question += "access unknown or unsupported permission type [" + permission.permissionType + "] ?";
                 break;
             }
 

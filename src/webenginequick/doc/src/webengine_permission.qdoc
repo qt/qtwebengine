@@ -15,26 +15,34 @@
         \li When the user has made their decision, the application calls \l grant() or \l deny();
     \endlist
 
-    Alternatively, an application interested in modifying already granted permissions may use WebEngineProfile::listPermissions()
-    to get a list of existing permissions associated with a profile, or WebEngineProfile::getPermission() to get
+    Alternatively, an application interested in modifying already granted permissions may use WebEngineProfile::listAllPermissions()
+    to get a list of existing permissions associated with a profile, or WebEngineProfile::queryPermission() to get
     a webEnginePermission object for a specific permission.
 
     The \l origin property can be used to query which origin the webEnginePermission is associated with, while the
-    \l feature property describes the associated feature. A website origin is the combination of its scheme, hostname,
+    \l permissionType property describes the associated feature. A website origin is the combination of its scheme, hostname,
     and port. Permissions are granted on a per-origin basis; thus, if the web page \c{https://www.example.com:12345/some/page.html}
     requests a permission, it will be granted to the origin \c{https://www.example.com:12345/}.
 
-    The usability lifetime of a webEnginePermission is tied either to its associated WebEngineView
-    (for transient feature types), or WebEngineProfile (for permanent feature types). A transient permission is one which
-    needs to be explicitly granted or denied every time it's needed (e.g. webcam/screen sharing permission), whereas a permanent
-    one might be stored inside the current profile, depending on the value of WebEngineProfile::persistentPermissionsPolicy.
-    You can check whether a webEnginePermission is in a valid state using its \l isValid() property. For invalid objects, calls to \l grant(),
-    \l deny(), or \l reset() will do nothing, and their \l state() will always be WebEnginePermission.Invalid.
+    The \l permissionType enumeration describes all the permission types Qt WebEngine supports. Only some permission types
+    are remembered between browsing sessions; they are \e persistent. Non-persistent permissions query the user every time a
+    website requests them, and cannot be granted in advance. You can check whether a permission type is persistent at runtime
+    using the static method WebEnginePermission::isPersistent().
 
-    The feature types Qt WebEngine supports are described in \l feature.
+    Persistent permissions are stored inside the active WebEngineProfile, and their lifetime depends on the value of
+    WebEngineProfile::persistentPermissionsPolicy. By default, named profiles store their permissions on disk, whereas
+    off-the-record ones store them in memory (and destroy them when the profile is destroyed). A stored permission will not
+    query the user the next time a website requests it; instead it will be automatically granted or denied, depending on
+    the resolution the user picked initially. To erase a stored permission, call \l reset() on it.
 
-    \sa WebEngineView::permissionRequested, WebEngineProfile::getPermission(),
-    WebEngineProfile::listPermissions()
+    A non-persistent permission, on the other hand, is only usable until the related WebEngineView performs a navigation to
+    a different URL, or is destroyed.
+
+    You can check whether a WebEnginePermission is in a valid state using its \l isValid property. For invalid objects, calls to \l grant(),
+    \l deny(), or \l reset() will do nothing, while calls to \l state will always return WebEnginePermission::Invalid.
+
+    \sa WebEngineView::permissionRequested, WebEngineProfile::queryPermission(),
+    WebEngineProfile::listAllPermissions()
 */
 
 /*!
@@ -47,23 +55,24 @@
 */
 
 /*!
-    \qmlproperty enumeration webEnginePermission::feature
-    \brief The feature type associated with this permission.
+    \qmlproperty enumeration webEnginePermission::permissionType
+    \brief The permission type associated with this permission.
 
-    \value WebEnginePermission.MediaAudioCapture Access to a microphone, or another audio source. This feature is transient.
-    \value WebEnginePermission.MediaVideoCapture Access to a webcam, or another video source. This feature is transient.
-    \value WebEnginePermission.MediaAudioVideoCapture Combination of \l MediaAudioCapture and \l MediaVideoCapture. This feature is transient.
-    \value WebEnginePermission.DesktopVideoCapture Access to the contents of the user's screen. This feature is transient.
-    \value WebEnginePermission.DesktopAudioVideoCapture Access to the contents of the user's screen, and application audio. This feature is transient.
-    \value WebEnginePermission.MouseLock Locks the pointer inside an element on the web page. This feature is transient.
-    \value WebEnginePermission.Notifications Allows the website to send notifications to the user.
-    \value WebEnginePermission.Geolocation Access to the user's physical location.
-    \value WebEnginePermission.ClipboardReadWrite Access to the user's clipboard.
-    \value WebEnginePermission.LocalFontsAccess Access to the fonts installed on the user's machine. Only available on desktops.
+    \value WebEnginePermission.MediaAudioCapture Access to a microphone, or another audio source. This permission is \e not persistent.
+    \value WebEnginePermission.MediaVideoCapture Access to a webcam, or another video source. This permission is \e not persistent.
+    \value WebEnginePermission.MediaAudioVideoCapture Combination of \e MediaAudioCapture and \e MediaVideoCapture. This permission is \e not persistent.
+    \value WebEnginePermission.DesktopVideoCapture Access to the contents of the user's screen. This permission is \e not persistent.
+    \value WebEnginePermission.DesktopAudioVideoCapture Access to the contents of the user's screen, and application audio. This permission is \e not persistent.
+    \value WebEnginePermission.Notifications Allows the website to send notifications to the user. This permission is persistent.
+    \value WebEnginePermission.Geolocation Access to the user's physical location. This permission is persistent.
+    \value WebEnginePermission.ClipboardReadWrite Access to the user's clipboard. This permission is persistent.
+    \value WebEnginePermission.LocalFontsAccess Access to the fonts installed on the user's machine. Only available on desktops. This permission is persistent.
     \value WebEnginePermission.Unsupported An unsupported feature type.
+    \omitvalue WebEnginePermission.MouseLock
 
-    \note Transient feature types are ones that will never be remembered by the underlying storage, and will trigger
-    a permission request every time a website tries to use them.
+    \note Non-persistent permission types are ones that will never be remembered by the underlying storage, and will trigger
+    a permission request every time a website tries to use them. They can only be denied/granted as they're needed;
+    any attempts to pre-grant a non-persistent permission will fail.
 */
 
 /*!
@@ -71,17 +80,17 @@
     \brief The current state of the permission.
 
     \value WebEnginePermission.Invalid Object is in an invalid state, and any attempts to modify the described permission will fail.
-    \value WebEnginePermission.Ask Either the permission has not been requested before, or the feature() is transient.
+    \value WebEnginePermission.Ask Either the permission has not been requested before, or the \l permissionType is not persistent.
     \value WebEnginePermission.Granted Permission has already been granted.
     \value WebEnginePermission.Denied Permission has already been denied.
 
-    If a permission for the specified \l feature and \l origin has already been granted or denied,
+    If a permission for the specified \l permissionType and \l origin has already been granted or denied,
     the return value is WebEnginePermission.Granted, or WebEnginePermission.Denied, respectively.
-    When this is the first time the permission is requested, or if the \l feature is transient,
+    When this is the first time the permission is requested, or if the \l permissionType is non-persistent,
     the return value is WebEnginePermission.Ask. If the object is in an invalid state, the returned
     value is WebEnginePermission.Invalid.
 
-    \sa isValid, isTransient
+    \sa isValid, isPersistent
 */
 
 /*!
@@ -90,19 +99,19 @@
 
     An invalid webEnginePermission is either:
     \list
-        \li One whose \l feature is unsupported;
-        \li One whose \l feature is transient, and the associated page/view has been destroyed;
-        \li One whose \l feature is permanent, but the associated profile has been destroyed;
+        \li One whose \l permissionType is unsupported;
+        \li One whose \l permissionType is non-persistent, and the user has navigated away from the web page that triggered the request;
+        \li One whose \l permissionType is persistent, but the associated profile has been destroyed;
         \li One whose \l origin is invalid.
     \endlist
 
-    \sa isTransient
+    \sa isPersistent
 */
 
 /*!
     \qmlmethod void webEnginePermission::grant()
 
-    Allows the associated origin to access the requested feature. Does nothing when \l isValid evaluates to false.
+    Allows the associated origin to access the requested per. Does nothing when \l isValid evaluates to false.
 
     \sa deny, reset, isValid
 */
@@ -130,8 +139,8 @@
 */
 
 /*!
-    \qmlmethod void webEnginePermission::isTransient(WebEnginePermission.Feature feature)
+    \qmlmethod void webEnginePermission::isPersistent(WebEnginePermission.PermissionType permissionType)
 
-    Returns whether \a feature is transient, meaning that a permission will be requested
-    every time the associated functionality is used by a web page.
+    Returns whether a \a permissionType is \e persistent, meaning that a permission's state will be remembered
+    and the user will not be queried the next time the website requests the same permission.
 */
