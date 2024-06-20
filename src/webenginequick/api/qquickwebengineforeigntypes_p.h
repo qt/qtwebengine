@@ -236,7 +236,7 @@ struct ForeginWebEngineWebAuthPinRequest
 {
     Q_GADGET
     QML_FOREIGN(QWebEngineWebAuthPinRequest)
-    QML_NAMED_ELEMENT(WebEngineWebAuthPinRequest)
+    QML_VALUE_TYPE(webEngineWebAuthPinRequest)
     QML_ADDED_IN_VERSION(6, 8)
     QML_UNCREATABLE("")
 };

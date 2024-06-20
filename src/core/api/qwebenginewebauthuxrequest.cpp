@@ -94,8 +94,8 @@
 */
 
 /*!
-    \qmltype WebEngineWebAuthPinRequest
-    \instantiates QWebEngineWebAuthPinRequest
+    \qmlvaluetype webEngineWebAuthPinRequest
+    \ingroup qmlvaluetypes
     \inqmlmodule QtWebEngine
     \since QtWebEngine 6.8
     \brief Encapsulates the data of a PIN WebAuth UX request.
@@ -105,7 +105,7 @@
     \li The reason for the PIN prompt.
     \li The error details for the PIN prompt.
     \li The number of attempts remaining before a hard lock. Should be ignored unless
-        \l{WebEngineWebAuthPinRequest::reason} is
+        \l{webEngineWebAuthPinRequest::reason} is
         \c{WebEngineWebAuthUxRequest.PinEntryReason.Challenge}.
     \li The minimum PIN length that the authenticator will accept for the PIN.
     \endlist
@@ -114,7 +114,7 @@
 */
 
 /*!
-    \qmlproperty enumeration WebEngineWebAuthPinRequest::reason
+    \qmlproperty enumeration QtWebEngine::webEngineWebAuthPinRequest::reason
     \brief The reason for the PIN prompt.
 
     \value WebEngineWebAuthUxRequest.PinEntryReason.Set A new PIN is being set.
@@ -123,7 +123,7 @@
 */
 
 /*!
-    \qmlproperty enumeration WebEngineWebAuthPinRequest::error
+    \qmlproperty enumeration QtWebEngine::webEngineWebAuthPinRequest::error
     \brief The error details for the PIN prompt.
 
     \value WebEngineWebAuthUxRequest.PinEntryError.NoError No error has occurred.
@@ -135,14 +135,14 @@
 */
 
 /*!
-    \qmlproperty int WebEngineWebAuthPinRequest::remainingAttempts
+    \qmlproperty int QtWebEngine::webEngineWebAuthPinRequest::remainingAttempts
     \brief The number of attempts remaining before a hard lock. Should be ignored unless
            \l{WebEngineWebAuthPinRequest::reason} is
            \c{WebEngineWebAuthUxRequest.PinEntryReason.Challenge}.
 */
 
 /*!
-    \qmlproperty int WebEngineWebAuthPinRequest::minPinLength
+    \qmlproperty int QtWebEngine::webEngineWebAuthPinRequest::minPinLength
     \brief The minimum PIN length that the authenticator will accept for the PIN.
 */
 
