@@ -14,7 +14,7 @@
 #include "ui/gl/gl_display_manager.h"
 #include "ui/gl/init/gl_factory.h"
 
-#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN)
+#if defined(USE_OZONE)
 
 using ui::GetLastEGLErrorString;
 
@@ -45,6 +45,21 @@ gl::GLDisplay *GLSurfaceEGLQt::InitializeOneOff(gl::GpuPreference preference)
     if (!egl_display->GetDisplay()) {
         LOG(ERROR) << "GLContextHelper::getEGLDisplay() failed.";
         return nullptr;
+    }
+
+    egl_display->ext->InitializeExtensionSettings(egl_display->GetDisplay());
+    if (egl_display->ext->b_EGL_EXT_create_context_robustness) {
+        egl_display->ext->b_EGL_EXT_create_context_robustness =
+                GLContextHelper::isCreateContextRobustnessSupported();
+    }
+
+    if (egl_display->ext->b_EGL_EXT_image_dma_buf_import
+        || egl_display->ext->b_EGL_EXT_image_dma_buf_import_modifiers
+        || egl_display->ext->b_EGL_MESA_image_dma_buf_export) {
+        const bool dmaBufSupported = EGLHelper::instance()->isDmaBufSupported();
+        egl_display->ext->b_EGL_EXT_image_dma_buf_import = dmaBufSupported;
+        egl_display->ext->b_EGL_EXT_image_dma_buf_import_modifiers = dmaBufSupported;
+        egl_display->ext->b_EGL_MESA_image_dma_buf_export = dmaBufSupported;
     }
 
     g_config = GLContextHelper::getEGLConfig();
@@ -195,4 +210,4 @@ void* GLSurfacelessQtEGL::GetShareHandle()
 }
 
 } // namespace gl
-#endif // !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN)
+#endif // defined(USE_OZONE)
