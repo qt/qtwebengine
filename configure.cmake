@@ -560,7 +560,21 @@ add_check_for_support(
     CONDITION NOT LINUX OR NOT QT_FEATURE_webengine_system_ffmpeg OR TEST_libavformat
     MESSAGE "Unmodified ffmpeg >= 5.0 is not supported."
 )
-
+# FIXME: This prevents non XCB Linux builds from building:
+set(xcbSupport X11 LIBDRM XCOMPOSITE XCURSOR XRANDR XI XPROTO XSHMFENCE XTST)
+foreach(xs ${xcbSupport})
+    if(${xs}_FOUND)
+       set(xcbErrorMessage "${xcbErrorMessage} ${xs}:YES")
+    else()
+       set(xcbErrorMessage "${xcbErrorMessage} ${xs}:NO")
+    endif()
+endforeach()
+add_check_for_support(
+   MODULES QtWebEngine
+   CONDITION NOT LINUX OR NOT QT_FEATURE_xcb OR QT_FEATURE_webengine_ozone_x11
+   MESSAGE "Could not find all necessary libraries for qpa-xcb support.\
+${xcbErrorMessage}"
+)
 add_check_for_support(
    MODULES QtWebEngine
    CONDITION MSVC OR
@@ -685,25 +699,6 @@ qt_configure_add_report_entry(
     MESSAGE "Building fat libray with device and simulator architectures will disable NEON."
     CONDITION IOS AND simulator AND device AND QT_FEATURE_qtpdf_build
 )
-
-if(LINUX AND QT_FEATURE_xcb AND TARGET Qt::Gui)
-    set(ozone_x11_support X11 LIBDRM XCOMPOSITE XCURSOR XRANDR XI XPROTO XSHMFENCE XTST)
-    set(ozone_x11_error OFF)
-    foreach(xs ${ozone_x11_support})
-        if(NOT ${xs}_FOUND)
-            set(ozone_x11_error ON)
-            set(ozone_x11_error_message "${ozone_x11_error_message}\n-- ${xs} libray not found")
-        endif()
-    endforeach()
-    if(ozone_x11_error)
-        qt_configure_add_report_entry(
-            TYPE WARNING
-            MESSAGE
-            "Could not find all necessary libraries for qpa-xcb support.${ozone_x11_error_message}"
-        )
-    endif()
-endif()
-
 if(PRINT_BFD_LINKER_WARNING)
     qt_configure_add_report_entry(
         TYPE WARNING
