@@ -101,8 +101,7 @@ TestWebEngineView {
             webEngineView.url = Qt.resolvedUrl("favicon.html"); // favicon.png -> 165
             verify(webEngineView.waitForLoadSucceeded());
 
-            iconChangedSpy.wait();
-            compare(iconChangedSpy.count, 1);
+            tryCompare(iconChangedSpy, "count", 1);
 
             var previousIcon = webEngineView.icon;
             iconChangedSpy.clear();
@@ -213,4 +212,3 @@ TestWebEngineView {
         }
     }
 }
-
