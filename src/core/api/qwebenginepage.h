@@ -11,6 +11,7 @@
 #include <QtWebEngineCore/qwebengineframe.h>
 #include <QtWebEngineCore/qwebenginepermission.h>
 
+#include <QtCore/qanystringview.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
 #include <QtGui/qpagelayout.h>
@@ -324,7 +325,7 @@ QT_WARNING_POP
     void setVisible(bool visible);
 
     QWebEngineFrame mainFrame();
-    std::optional<QWebEngineFrame> findFrameByName(const QString &name);
+    std::optional<QWebEngineFrame> findFrameByName(QAnyStringView name);
 
     void acceptAsNewWindow(QWebEngineNewWindowRequest &request);
 
