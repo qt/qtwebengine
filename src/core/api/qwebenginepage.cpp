@@ -2574,10 +2574,10 @@ QWebEngineFrame QWebEnginePage::mainFrame()
     Returns the frame with the given \a name. If there are multiple frames with the same
     name, which one is returned is arbitrary. If no frame was found, returns \c std::nullopt.
 */
-std::optional<QWebEngineFrame> QWebEnginePage::findFrameByName(const QString &name)
+std::optional<QWebEngineFrame> QWebEnginePage::findFrameByName(QAnyStringView name)
 {
     Q_D(QWebEnginePage);
-    if (auto maybeId = d->adapter->findFrameIdByName(name)) {
+    if (auto maybeId = d->adapter->findFrameIdByName(name.toString())) {
         return QWebEngineFrame(d, *maybeId);
     }
     return {};
