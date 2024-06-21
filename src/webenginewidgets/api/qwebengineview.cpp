@@ -141,6 +141,11 @@ public:
     void Destroy() override
     {
         deleteLater();
+
+        // The event loop may be exited at this point.
+        // Ensure deferred deletion in this scenario.
+        if (QThread::currentThread()->loopLevel() == 0)
+            QCoreApplication::sendPostedEvents(this, QEvent::DeferredDelete);
     }
 
     bool ActiveFocusOnPress() override
