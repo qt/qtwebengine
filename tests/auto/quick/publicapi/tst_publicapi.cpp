@@ -20,6 +20,7 @@
 #include <QtWebEngineCore/QWebEngineNotification>
 #include <QtWebEngineCore/QWebEngineQuotaRequest>
 #include <QtWebEngineCore/QWebEngineRegisterProtocolHandlerRequest>
+#include <QtWebEngineCore/QWebEngineClientHints>
 #include <QtWebEngineCore/QWebEngineContextMenuRequest>
 #include <QtWebEngineCore/QWebEngineDownloadRequest>
 #include <QtWebEngineCore/QWebEngineScript>
@@ -80,6 +81,7 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QWebEngineWebAuthUxRequest::staticMetaObject
     << &QWebEngineWebAuthPinRequest::staticMetaObject
     << &QWebEngineFrame::staticMetaObject
+    << &QWebEngineClientHints::staticMetaObject
     ;
 
 static QList<QMetaEnum> knownEnumNames = QList<QMetaEnum>()
@@ -144,6 +146,17 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineCertificateError.overridable --> bool"
     << "QWebEngineCertificateError.rejectCertificate() --> void"
     << "QWebEngineCertificateError.url --> QUrl"
+    << "QWebEngineClientHints.arch --> QString"
+    << "QWebEngineClientHints.platform --> QString"
+    << "QWebEngineClientHints.model --> QString"
+    << "QWebEngineClientHints.mobile --> bool"
+    << "QWebEngineClientHints.fullVersion --> QString"
+    << "QWebEngineClientHints.platformVersion --> QString"
+    << "QWebEngineClientHints.bitness --> QString"
+    << "QWebEngineClientHints.fullVersionList --> QVariantMap"
+    << "QWebEngineClientHints.wow64 --> bool"
+    << "QWebEngineClientHints.isAllClientHintsEnabled --> bool"
+    << "QWebEngineClientHints.resetAll() --> void"
     << "QQuickWebEngineClientCertificateOption.issuer --> QString"
     << "QQuickWebEngineClientCertificateOption.subject --> QString"
     << "QQuickWebEngineClientCertificateOption.effectiveDate --> QDateTime"
@@ -395,6 +408,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineProfile.cachePathChanged() --> void"
     << "QQuickWebEngineProfile.clearHttpCache() --> void"
     << "QQuickWebEngineProfile.clearHttpCacheCompleted() --> void"
+    << "QQuickWebEngineProfile.clientHints --> QWebEngineClientHints*"
     << "QQuickWebEngineProfile.downloadFinished(QQuickWebEngineDownloadRequest*) --> void"
     << "QQuickWebEngineProfile.downloadRequested(QQuickWebEngineDownloadRequest*) --> void"
     << "QQuickWebEngineProfile.downloadPath --> QString"

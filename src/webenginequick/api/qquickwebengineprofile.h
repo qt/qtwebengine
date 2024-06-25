@@ -41,6 +41,7 @@ class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineProfile : public QObject {
     Q_PROPERTY(QQuickWebEngineScriptCollection *userScripts READ userScripts)
     Q_PROPERTY(QString downloadPath READ downloadPath WRITE setDownloadPath NOTIFY downloadPathChanged FINAL REVISION(1,5))
     Q_PROPERTY(bool isPushServiceEnabled READ isPushServiceEnabled WRITE setPushServiceEnabled NOTIFY pushServiceEnabledChanged FINAL REVISION(6,5))
+    Q_PROPERTY(QWebEngineClientHints *clientHints READ clientHints FINAL REVISION(6,8))
     QML_NAMED_ELEMENT(WebEngineProfile)
     QML_ADDED_IN_VERSION(1, 1)
     QML_EXTRA_VERSION(2, 0)

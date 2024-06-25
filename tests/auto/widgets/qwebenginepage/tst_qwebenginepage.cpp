@@ -5433,11 +5433,11 @@ void tst_QWebEnginePage::clientHints_data()
     QTest::addColumn<QString>("platformVersion");
     QTest::addColumn<QString>("bitness");
     QTest::addColumn<bool>("isWOW64");
-    QTest::addColumn<QHash<QString, QString>>("fullVersionList");
+    QTest::addColumn<QVariantMap>("fullVersionList");
 
-    QTest::newRow("Modify values") << true << "Abc" << "AmigaOS" << "Ultra" << true << "1.99" << "3" << "x64" << true << QHash<QString, QString>({{"APITest", "1.0.0"}, {"App", "5.0"}});
-    QTest::newRow("Empty values") << true << "" << "" << "" << false << "" << "" << "" << false << QHash<QString, QString>();
-    QTest::newRow("Disable headers") << false << "" << "" << "" << false << "" << "" << "" << false << QHash<QString, QString>();
+    QTest::newRow("Modify values") << true << "Abc" << "AmigaOS" << "Ultra" << true << "1.99" << "3" << "x64" << true << QVariantMap({{"APITest", "1.0.0"}, {"App", "5.0"}});
+    QTest::newRow("Empty values") << true << "" << "" << "" << false << "" << "" << "" << false << QVariantMap();
+    QTest::newRow("Disable headers") << false << "" << "" << "" << false << "" << "" << "" << false << QVariantMap();
 }
 
 void tst_QWebEnginePage::clientHints()
@@ -5451,8 +5451,7 @@ void tst_QWebEnginePage::clientHints()
     QFETCH(QString, platformVersion);
     QFETCH(QString, bitness);
     QFETCH(bool, isWOW64);
-    typedef QHash<QString, QString> brandVersionPairs;
-    QFETCH(brandVersionPairs, fullVersionList);
+    QFETCH(QVariantMap, fullVersionList);
 
     QWebEnginePage page;
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
