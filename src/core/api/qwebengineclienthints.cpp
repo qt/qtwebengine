@@ -6,6 +6,7 @@
 #include "profile_adapter.h"
 
 #include <QJsonObject>
+#include <QVariantMap>
 
 QT_BEGIN_NAMESPACE
 
@@ -35,11 +36,15 @@ QT_BEGIN_NAMESPACE
     \sa QWebEngineProfile::clientHints(), QQuickWebEngineProfile::clientHints()
 */
 
+/*! \internal
+ */
 QWebEngineClientHints::QWebEngineClientHints(QtWebEngineCore::ProfileAdapter *profileAdapter)
     : m_profileAdapter(profileAdapter)
 {
 }
 
+/*! \internal
+ */
 QWebEngineClientHints::~QWebEngineClientHints()
 {
 }
@@ -50,6 +55,8 @@ QWebEngineClientHints::~QWebEngineClientHints()
 */
 QString QWebEngineClientHints::arch() const
 {
+    if (!m_profileAdapter)
+        return QString();
     return m_profileAdapter->clientHint(QtWebEngineCore::ProfileAdapter::UAArchitecture).toString();
 }
 
@@ -61,6 +68,8 @@ QString QWebEngineClientHints::arch() const
 */
 QString QWebEngineClientHints::platform() const
 {
+    if (!m_profileAdapter)
+        return QString();
     return m_profileAdapter->clientHint(QtWebEngineCore::ProfileAdapter::UAPlatform).toString();
 }
 
@@ -70,6 +79,8 @@ QString QWebEngineClientHints::platform() const
 */
 QString QWebEngineClientHints::model() const
 {
+    if (!m_profileAdapter)
+        return QString();
     return m_profileAdapter->clientHint(QtWebEngineCore::ProfileAdapter::UAModel).toString();
 }
 
@@ -81,6 +92,8 @@ QString QWebEngineClientHints::model() const
 */
 bool QWebEngineClientHints::isMobile() const
 {
+    if (!m_profileAdapter)
+        return false;
     return m_profileAdapter->clientHint(QtWebEngineCore::ProfileAdapter::UAMobile).toBool();
 }
 
@@ -90,6 +103,8 @@ bool QWebEngineClientHints::isMobile() const
 */
 QString QWebEngineClientHints::fullVersion() const
 {
+    if (!m_profileAdapter)
+        return QString();
     return m_profileAdapter->clientHint(QtWebEngineCore::ProfileAdapter::UAFullVersion).toString();
 }
 
@@ -99,6 +114,8 @@ QString QWebEngineClientHints::fullVersion() const
 */
 QString QWebEngineClientHints::platformVersion() const
 {
+    if (!m_profileAdapter)
+        return QString();
     return m_profileAdapter->clientHint(QtWebEngineCore::ProfileAdapter::UAPlatformVersion).toString();
 }
 
@@ -108,6 +125,8 @@ QString QWebEngineClientHints::platformVersion() const
 */
 QString QWebEngineClientHints::bitness() const
 {
+    if (!m_profileAdapter)
+        return QString();
     return m_profileAdapter->clientHint(QtWebEngineCore::ProfileAdapter::UABitness).toString();
 }
 
@@ -115,15 +134,17 @@ QString QWebEngineClientHints::bitness() const
     \property QWebEngineClientHints::fullVersionList
     The value of the \c{Sec-CH-UA-Full-Version-List} HTTP header and \c{fullVersionList} member of NavigatorUAData in JavaScript.
 
-    It holds brand name and version number pairs in a QHash. The provided values will be automatically extended by the currently used version
+    It holds brand name and version number pairs in a QVariantMap. The provided values will be automatically extended by the currently used version
     of Chromium and a semi-random brand.
 */
-QHash<QString,QString> QWebEngineClientHints::fullVersionList() const
+QVariantMap QWebEngineClientHints::fullVersionList() const
 {
-    QHash<QString, QString> ret;
+    QVariantMap ret;
+    if (!m_profileAdapter)
+        return ret;
     QJsonObject fullVersionList = m_profileAdapter->clientHint(QtWebEngineCore::ProfileAdapter::UAFullVersionList).toJsonObject();
     for (const QString &key : fullVersionList.keys())
-        ret.insert(key, fullVersionList.value(key).toString());
+        ret.insert(key, fullVersionList.value(key).toVariant());
     return ret;
 }
 
@@ -133,54 +154,74 @@ QHash<QString,QString> QWebEngineClientHints::fullVersionList() const
 */
 bool QWebEngineClientHints::isWow64() const
 {
+    if (!m_profileAdapter)
+        return false;
     return m_profileAdapter->clientHint(QtWebEngineCore::ProfileAdapter::UAWOW64).toBool();
 }
 
 void QWebEngineClientHints::setArch(const QString &arch)
 {
+    if (!m_profileAdapter)
+        return;
     m_profileAdapter->setClientHint(QtWebEngineCore::ProfileAdapter::UAArchitecture, QVariant(arch));
 }
 
 void QWebEngineClientHints::setPlatform(const QString &platform)
 {
+    if (!m_profileAdapter)
+        return;
     m_profileAdapter->setClientHint(QtWebEngineCore::ProfileAdapter::UAPlatform, QVariant(platform));
 }
 
 void QWebEngineClientHints::setModel(const QString &model)
 {
+    if (!m_profileAdapter)
+        return;
     m_profileAdapter->setClientHint(QtWebEngineCore::ProfileAdapter::UAModel, QVariant(model));
 }
 
-void QWebEngineClientHints::setIsMobile(const bool mobile)
+void QWebEngineClientHints::setIsMobile(bool mobile)
 {
+    if (!m_profileAdapter)
+        return;
     m_profileAdapter->setClientHint(QtWebEngineCore::ProfileAdapter::UAMobile, QVariant(mobile));
 }
 
 void QWebEngineClientHints::setFullVersion(const QString &fullVerson)
 {
+    if (!m_profileAdapter)
+        return;
     m_profileAdapter->setClientHint(QtWebEngineCore::ProfileAdapter::UAFullVersion, QVariant(fullVerson));
 }
 
 void QWebEngineClientHints::setPlatformVersion(const QString &platformVersion)
 {
+    if (!m_profileAdapter)
+        return;
     m_profileAdapter->setClientHint(QtWebEngineCore::ProfileAdapter::UAPlatformVersion, QVariant(platformVersion));
 }
 
 void QWebEngineClientHints::setBitness(const QString &bitness)
 {
+    if (!m_profileAdapter)
+        return;
     m_profileAdapter->setClientHint(QtWebEngineCore::ProfileAdapter::UABitness, QVariant(bitness));
 }
 
-void QWebEngineClientHints::setFullVersionList(const QHash<QString,QString> &fullVersionList)
+void QWebEngineClientHints::setFullVersionList(const QVariantMap &fullVersionList)
 {
+    if (!m_profileAdapter)
+        return;
     QJsonObject jsonObject;
     for (auto i = fullVersionList.cbegin(), end = fullVersionList.cend(); i != end; ++i)
-        jsonObject.insert(i.key(), QJsonValue(i.value()));
+        jsonObject.insert(i.key(), QJsonValue(i.value().toString()));
     m_profileAdapter->setClientHint(QtWebEngineCore::ProfileAdapter::UAFullVersionList, QVariant(jsonObject));
 }
 
-void QWebEngineClientHints::setIsWow64(const bool wow64)
+void QWebEngineClientHints::setIsWow64(bool wow64)
 {
+    if (!m_profileAdapter)
+        return;
     m_profileAdapter->setClientHint(QtWebEngineCore::ProfileAdapter::UAWOW64, QVariant(wow64));
 }
 
@@ -192,11 +233,15 @@ void QWebEngineClientHints::setIsWow64(const bool wow64)
 */
 bool QWebEngineClientHints::isAllClientHintsEnabled()
 {
+    if (!m_profileAdapter)
+        return true;
     return m_profileAdapter->clientHintsEnabled();
 }
 
 void QWebEngineClientHints::setAllClientHintsEnabled(bool enabled)
 {
+    if (!m_profileAdapter)
+        return;
     m_profileAdapter->setClientHintsEnabled(enabled);
 }
 
@@ -205,6 +250,8 @@ void QWebEngineClientHints::setAllClientHintsEnabled(bool enabled)
 */
 void QWebEngineClientHints::resetAll()
 {
+    if (!m_profileAdapter)
+        return;
     m_profileAdapter->resetClientHints();
 }
 
