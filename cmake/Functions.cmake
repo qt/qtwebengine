@@ -30,20 +30,6 @@ function(get_install_config result)
     endif()
 endfunction()
 
-# we need to pass -F or -iframework in case of frameworks builds, which gn treats as
-# compiler flag and cmake as include dir, so swap it.
-function(recoverFrameworkBuild includeDirs compilerFlags)
-    foreach(includeDir ${${includeDirs}})
-        if(includeDir MATCHES "^\"(.*/([^/]+)\\.framework)\"$")
-            list(APPEND frameworkDirs \"-iframework${CMAKE_MATCH_1}/..\")
-        else()
-            list(APPEND newIncludeDirs ${includeDir})
-        endif()
-    endforeach()
-    set(${includeDirs} ${newIncludeDirs} PARENT_SCOPE)
-    set(${compilerFlags} ${${compilerFlags}} ${frameworkDirs} PARENT_SCOPE)
-endfunction()
-
 # we need to fix namespace ambiguity issues between Qt and Chromium like
 # forward declarations of NSString.
 function(get_forward_declaration_macro result)

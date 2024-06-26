@@ -27,6 +27,20 @@ macro(set_properties_on_directory_scope)
     endforeach()
 endmacro()
 
+# we need to pass -F or -iframework in case of frameworks builds, which gn treats as
+# compiler flag and cmake as include dir, so swap it.
+function(recover_framework_build includeDirs compilerFlags)
+    foreach(includeDir ${${includeDirs}})
+        if(includeDir MATCHES "^\"(.*/([^/]+)\\.framework)\"$")
+            list(APPEND frameworkDirs \"-iframework${CMAKE_MATCH_1}/..\")
+        else()
+            list(APPEND newIncludeDirs ${includeDir})
+        endif()
+    endforeach()
+    set(${includeDirs} ${newIncludeDirs} PARENT_SCOPE)
+    set(${compilerFlags} ${${compilerFlags}} ${frameworkDirs} PARENT_SCOPE)
+endfunction()
+
 function(configure_gn_target source_dir in_file_path out_file_path path_mode)
 
     # GN_SOURCES GN_HEADERS
@@ -78,8 +92,8 @@ function(configure_gn_target source_dir in_file_path out_file_path path_mode)
     # GN_SOURCE_ROOT
     get_filename_component(GN_SOURCE_ROOT "${source_dir}" ${path_mode})
 
-    if(APPLE) # this runs in scrpit mode without qt-cmake so on MACOS here
-        recoverFrameworkBuild(GN_INCLUDE_DIRS GN_CFLAGS_C)
+    if(APPLE) # this runs in scrpit mode without qt-cmake so no MACOS here
+        recover_framework_build(GN_INCLUDE_DIRS GN_CFLAGS_C)
     endif()
 
     # Static setup
