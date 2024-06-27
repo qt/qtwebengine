@@ -36,7 +36,7 @@
 
 using namespace QtWebEngineCore;
 
-Q_LOGGING_CATEGORY(webEngineLibraryInfoLog, "qt.webengine.libraryinfo")
+Q_STATIC_LOGGING_CATEGORY(webEngineLibraryInfoLog, "qt.webengine.libraryinfo")
 
 namespace {
 

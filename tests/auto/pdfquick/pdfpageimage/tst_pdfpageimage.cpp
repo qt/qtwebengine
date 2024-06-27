@@ -11,7 +11,7 @@
 
 using namespace Qt::StringLiterals;
 
-Q_LOGGING_CATEGORY(lcTests, "qt.pdf.tests")
+Q_STATIC_LOGGING_CATEGORY(lcTests, "qt.pdf.tests")
 
 // #define DEBUG_WRITE_OUTPUT
 

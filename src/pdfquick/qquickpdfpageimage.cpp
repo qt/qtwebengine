@@ -8,7 +8,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(qLcImg, "qt.pdf.image")
+Q_STATIC_LOGGING_CATEGORY(qLcImg, "qt.pdf.image")
 
 /*!
     \qmltype PdfPageImage

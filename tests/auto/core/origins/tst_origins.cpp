@@ -25,7 +25,7 @@
 #define QSL QStringLiteral
 #define QBAL QByteArrayLiteral
 
-Q_LOGGING_CATEGORY(lc, "qt.webengine.tests")
+Q_STATIC_LOGGING_CATEGORY(lc, "qt.webengine.tests")
 
 void registerSchemes()
 {

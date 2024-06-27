@@ -7,7 +7,7 @@
 #include <QPdfDocument>
 #include <QPdfSearchModel>
 
-Q_LOGGING_CATEGORY(lcTests, "qt.pdf.tests")
+Q_STATIC_LOGGING_CATEGORY(lcTests, "qt.pdf.tests")
 
 class tst_QPdfSearchModel: public QObject
 {

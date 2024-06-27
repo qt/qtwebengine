@@ -6,7 +6,7 @@
 #include <QLoggingCategory>
 #include <QMimeDatabase>
 
-Q_LOGGING_CATEGORY(gHttpServerLog, "HttpServer")
+Q_STATIC_LOGGING_CATEGORY(gHttpServerLog, "HttpServer")
 
 HttpServer::HttpServer(QObject *parent)
     : HttpServer(new QTcpServer, "http", QHostAddress::LocalHost, 0, parent)

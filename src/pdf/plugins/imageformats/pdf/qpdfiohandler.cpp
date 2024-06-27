@@ -8,7 +8,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(qLcPdf, "qt.imageformat.pdf")
+Q_STATIC_LOGGING_CATEGORY(qLcPdf, "qt.imageformat.pdf")
 
 QPdfIOHandler::QPdfIOHandler()
 {
