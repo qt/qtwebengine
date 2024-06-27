@@ -19,9 +19,9 @@ class WebContentsAdapterClient;
 
 QT_BEGIN_NAMESPACE
 
-class Q_WEBENGINECORE_EXPORT QWebEngineFrame
+class QWebEngineFrame
 {
-    Q_GADGET
+    Q_GADGET_EXPORT(Q_WEBENGINECORE_EXPORT)
 
     Q_PROPERTY(bool isValid READ isValid FINAL)
     Q_PROPERTY(QString name READ name FINAL)
@@ -34,26 +34,29 @@ public:
     QML_VALUE_TYPE(webEngineFrame)
     QML_ADDED_IN_VERSION(6, 8)
 
-    bool isValid() const;
-    QString name() const;
-    QString htmlName() const;
-    QList<QWebEngineFrame> children() const;
-    QUrl url() const;
-    QSizeF size() const;
-    bool isMainFrame() const;
+    Q_WEBENGINECORE_EXPORT bool isValid() const;
+    Q_WEBENGINECORE_EXPORT QString name() const;
+    Q_WEBENGINECORE_EXPORT QString htmlName() const;
+    Q_WEBENGINECORE_EXPORT QList<QWebEngineFrame> children() const;
+    Q_WEBENGINECORE_EXPORT QUrl url() const;
+    Q_WEBENGINECORE_EXPORT QSizeF size() const;
+    Q_WEBENGINECORE_EXPORT bool isMainFrame() const;
 
-    void runJavaScript(const QString &script,
-                       const std::function<void(const QVariant &)> &callback);
-    void runJavaScript(const QString &script, quint32 worldId,
-                       const std::function<void(const QVariant &)> &callback);
-    Q_INVOKABLE void runJavaScript(const QString &script, quint32 worldId = 0);
-    Q_INVOKABLE void runJavaScript(const QString &script, const QJSValue &callback);
-    Q_INVOKABLE void runJavaScript(const QString &script, quint32 worldId,
-                                   const QJSValue &callback);
+    Q_WEBENGINECORE_EXPORT void
+    runJavaScript(const QString &script, const std::function<void(const QVariant &)> &callback);
+    Q_WEBENGINECORE_EXPORT void
+    runJavaScript(const QString &script, quint32 worldId,
+                  const std::function<void(const QVariant &)> &callback);
+    Q_WEBENGINECORE_EXPORT Q_INVOKABLE void runJavaScript(const QString &script,
+                                                          quint32 worldId = 0);
+    Q_WEBENGINECORE_EXPORT Q_INVOKABLE void runJavaScript(const QString &script,
+                                                          const QJSValue &callback);
+    Q_WEBENGINECORE_EXPORT Q_INVOKABLE void runJavaScript(const QString &script, quint32 worldId,
+                                                          const QJSValue &callback);
 
-    Q_INVOKABLE void printToPdf(const QString &filePath);
-    void printToPdf(const std::function<void(const QByteArray &)> &callback);
-    Q_INVOKABLE void printToPdf(const QJSValue &callback);
+    Q_WEBENGINECORE_EXPORT Q_INVOKABLE void printToPdf(const QString &filePath);
+    Q_WEBENGINECORE_EXPORT void printToPdf(const std::function<void(const QByteArray &)> &callback);
+    Q_WEBENGINECORE_EXPORT Q_INVOKABLE void printToPdf(const QJSValue &callback);
 
     friend inline bool comparesEqual(const QWebEngineFrame &lhs,
                                      const QWebEngineFrame &rhs) noexcept
@@ -69,7 +72,8 @@ private:
     friend class QQuickWebEngineView;
     friend class QQuickWebEngineViewPrivate;
 
-    QWebEngineFrame(QtWebEngineCore::WebContentsAdapterClient *page, quint64 id);
+    Q_WEBENGINECORE_EXPORT QWebEngineFrame(QtWebEngineCore::WebContentsAdapterClient *page,
+                                           quint64 id);
 
     QtWebEngineCore::WebContentsAdapterClient *m_adapterClient;
     quint64 m_id;
