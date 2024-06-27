@@ -775,4 +775,18 @@ if(NOT FEATURE_webengine_opus_system AND NOT Perl_FOUND)
         MESSAGE "No perl found, compiling opus without some optimizations."
     )
 endif()
+if(NOT QT_SUPERBUILD)
+    qt_configure_add_report_entry(
+        TYPE NOTE
+        MESSAGE "\nTo build only QtPdf configure with:\n 'qt-configure-module path/to/src -- -DFEATURE_qtwebengine_build=OFF'\n"
+        CONDITION QT_FEATURE_qtwebengine_build
+    )
+
+    # Note this should be last message as scaning can take a while...
+    qt_configure_add_report_entry(
+        TYPE NOTE
+        MESSAGE "\nScanning for ide sources...\nPlease note configure can execute faster if called with:\n 'qt-configure-module path/to/src -- -DQT_SHOW_EXTRA_IDE_SOURCES=OFF'"
+        CONDITION NOT QT_SHOW_EXTRA_IDE_SOURCES
+    )
+endif()
 
