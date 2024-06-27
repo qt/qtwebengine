@@ -98,7 +98,6 @@ private:
 
 tst_QQuickWebEngineView::tst_QQuickWebEngineView()
 {
-    QtWebEngineQuick::initialize();
 
     QVERIFY(QQuickWebEngineProfile::defaultProfile()->isOffTheRecord());
 
