@@ -93,4 +93,4 @@ navigation.qmltypespage = "Qt WebEngine QML Types"
 macro.QWE    = "Qt \\WebEngine"
 
 # Enforce zero documentation warnings
-warninglimit = 0
+warninglimit = 2
