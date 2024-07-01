@@ -13,6 +13,8 @@ set(qml_files
     "PdfStyle.qml"
 )
 
+qt_policy(SET QTP0004 OLD)
+
 qt_internal_add_qml_module(PdfQuick
     URI "QtQuick.Pdf"
     VERSION "${PROJECT_VERSION}"
