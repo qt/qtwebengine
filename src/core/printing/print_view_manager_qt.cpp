@@ -364,6 +364,11 @@ void PrintViewManagerQt::RequestPrintPreview(printing::mojom::RequestPrintPrevie
         content::WebContentsView *view = static_cast<content::WebContentsImpl*>(web_contents()->GetOutermostWebContents())->GetView();
         if (WebContentsAdapterClient *client = WebContentsViewQt::from(view)->client())
             client->printRequested();
+
+        content::GlobalRenderFrameHostId rfhId = GetCurrentTargetFrame()->GetGlobalId();
+        auto *renderFrameHost = content::RenderFrameHost::FromID(rfhId);
+        if (renderFrameHost && renderFrameHost->IsRenderFrameLive())
+            GetPrintRenderFrame(renderFrameHost)->OnPrintPreviewDialogClosed();
         return;
     }
 
