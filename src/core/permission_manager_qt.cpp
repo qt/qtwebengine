@@ -324,7 +324,7 @@ QList<QWebEnginePermission> PermissionManagerQt::listPermissions(const QUrl &ori
         auto *prefDict = pref->GetValue()->GetIfDict();
         Q_ASSERT(prefDict);
 
-        for (const auto &entry : *prefDict) {
+        for (auto &&entry : *prefDict) {
             if (!originSpec.empty() && entry.first != originSpec)
                 continue;
 

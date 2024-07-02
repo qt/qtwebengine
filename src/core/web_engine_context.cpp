@@ -661,8 +661,8 @@ void WebEngineContext::addProfileAdapter(ProfileAdapter *profileAdapter)
     Q_ASSERT(!m_profileAdapters.contains(profileAdapter));
     const QString path = profileAdapter->dataPath();
     if (!profileAdapter->isOffTheRecord() && !profileAdapter->storageName().isEmpty()) {
-        for (auto profileAdapter : m_profileAdapters) {
-            if (profileAdapter->dataPath() == path) {
+        for (auto existingProfileAdapter : m_profileAdapters) {
+            if (existingProfileAdapter->dataPath() == path) {
                 // QTBUG-66068
                 qWarning("Using the same data path for profile, may corrupt the data.");
                 break;

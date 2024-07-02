@@ -652,8 +652,10 @@ void RenderWidgetHostViewQtDelegateClient::handleTouchEvent(QTouchEvent *event)
         case QEvent::TouchUpdate:
             for (; lastPressIndex >= 0; --lastPressIndex) {
                 Q_ASSERT(touchPoints[lastPressIndex].second.state() == QEventPoint::Pressed);
-                MotionEventQt me(touchPoints.mid(lastPressIndex), eventTimestamp, ui::MotionEvent::Action::POINTER_DOWN, event->modifiers(), 0);
-                m_rwhv->processMotionEvent(me);
+                MotionEventQt updateMe(touchPoints.mid(lastPressIndex), eventTimestamp,
+                                       ui::MotionEvent::Action::POINTER_DOWN, event->modifiers(),
+                                       0);
+                m_rwhv->processMotionEvent(updateMe);
             }
 
             if (event->touchPointStates() & Qt::TouchPointMoved)
@@ -663,9 +665,13 @@ void RenderWidgetHostViewQtDelegateClient::handleTouchEvent(QTouchEvent *event)
 
         case QEvent::TouchEnd:
             while (!touchPoints.isEmpty() && touchPoints.back().second.state() == QEventPoint::Released) {
-                auto action = touchPoints.size() > 1 ? ui::MotionEvent::Action::POINTER_UP : ui::MotionEvent::Action::UP;
-                int index = action == ui::MotionEvent::Action::POINTER_UP ? touchPoints.size() - 1 : -1;
-                m_rwhv->processMotionEvent(MotionEventQt(touchPoints, eventTimestamp, action, event->modifiers(), index));
+                auto endAction = touchPoints.size() > 1 ? ui::MotionEvent::Action::POINTER_UP
+                                                        : ui::MotionEvent::Action::UP;
+                int index = endAction == ui::MotionEvent::Action::POINTER_UP
+                        ? touchPoints.size() - 1
+                        : -1;
+                m_rwhv->processMotionEvent(MotionEventQt(touchPoints, eventTimestamp, endAction,
+                                                         event->modifiers(), index));
                 touchPoints.pop_back();
             }
             break;

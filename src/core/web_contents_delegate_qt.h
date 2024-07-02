@@ -133,6 +133,7 @@ public:
     void InnerWebContentsAttached(content::WebContents *inner_web_contents,
                                   content::RenderFrameHost *render_frame_host,
                                   bool is_full_page) override;
+    using content::WebContentsObserver::BeforeUnloadFired;
 
     void emitLoadSucceeded(const QUrl &url);
     void didFailLoad(const QUrl &url, int errorCode, const QString &errorDescription);
