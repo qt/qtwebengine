@@ -63,7 +63,7 @@ public:
     gfx::NativeViewAccessible GetNativeViewAccessible() override { return nullptr; }
     void Focus() override;
     bool HasFocus() override;
-    bool IsMouseLocked() override;
+    bool IsPointerLocked() override;
     viz::FrameSinkId GetRootFrameSinkId() override;
     bool IsSurfaceAvailableForCopy() override;
     void CopyFromSurface(const gfx::Rect &src_rect,
@@ -74,17 +74,17 @@ public:
     bool IsShowing() override;
     gfx::Rect GetViewBounds() override;
     void UpdateBackgroundColor() override;
-    blink::mojom::PointerLockResult LockMouse(bool) override;
-    blink::mojom::PointerLockResult ChangeMouseLock(bool) override;
-    void UnlockMouse() override;
+    blink::mojom::PointerLockResult LockPointer(bool) override;
+    blink::mojom::PointerLockResult ChangePointerLock(bool) override;
+    void UnlockPointer() override;
     void UpdateCursor(const ui::Cursor&) override;
     void DisplayCursor(const ui::Cursor&) override;
     content::CursorManager *GetCursorManager() override;
     void SetIsLoading(bool) override;
     void ImeCancelComposition() override;
     void ImeCompositionRangeChanged(const gfx::Range &,
-                                    const absl::optional<std::vector<gfx::Rect>> &,
-                                    const absl::optional<std::vector<gfx::Rect>> &) override;
+                                    const std::optional<std::vector<gfx::Rect>> &,
+                                    const std::optional<std::vector<gfx::Rect>> &) override;
     void RenderProcessGone() override;
     bool TransformPointToCoordSpaceForView(const gfx::PointF &point,
                                            content::RenderWidgetHostViewBase *target_view,
@@ -117,7 +117,7 @@ public:
     void DidStopFlinging() override;
     std::unique_ptr<content::SyntheticGestureTarget> CreateSyntheticGestureTarget() override;
     ui::Compositor *GetCompositor() override;
-    absl::optional<content::DisplayFeature> GetDisplayFeature() override;
+    std::optional<content::DisplayFeature> GetDisplayFeature() override;
     void SetDisplayFeatureForTesting(const content::DisplayFeature*) override;
     content::WebContentsAccessibility *GetWebContentsAccessibility() override;
 #if BUILDFLAG(IS_MAC)
@@ -179,7 +179,7 @@ public:
     ui::TextInputType getTextInputType() const;
 
     void synchronizeVisualProperties(
-            const absl::optional<viz::LocalSurfaceId> &childSurfaceId);
+            const std::optional<viz::LocalSurfaceId> &childSurfaceId);
 
     void resetTouchSelectionController();
 

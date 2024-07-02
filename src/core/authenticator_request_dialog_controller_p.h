@@ -70,7 +70,7 @@ private:
     // m_pendingState holds requested steps until the UI is shown. The UI is only
     // shown once the TransportAvailabilityInfo is available, but authenticators
     // may request, e.g., PIN entry prior to that.
-    absl::optional<QWebEngineWebAuthUxRequest::WebAuthUxState> m_pendingState;
+    std::optional<QWebEngineWebAuthUxRequest::WebAuthUxState> m_pendingState;
 };
 
 } // namespace QtWebEngineCore

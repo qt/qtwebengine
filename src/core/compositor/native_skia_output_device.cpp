@@ -84,7 +84,7 @@ bool NativeSkiaOutputDevice::Reshape(const SkImageInfo &image_info,
     return true;
 }
 
-void NativeSkiaOutputDevice::Present(const absl::optional<gfx::Rect> &update_rect,
+void NativeSkiaOutputDevice::Present(const std::optional<gfx::Rect> &update_rect,
                                      BufferPresentedCallback feedback,
                                      viz::OutputSurfaceFrame frame)
 {
@@ -410,7 +410,7 @@ scoped_refptr<gfx::NativePixmap> NativeSkiaOutputDevice::Buffer::nativePixmap()
     return m_scopedOverlayReadAccess->GetNativePixmap();
 }
 #elif defined(Q_OS_WIN)
-absl::optional<gl::DCLayerOverlayImage> NativeSkiaOutputDevice::Buffer::overlayImage() const
+std::optional<gl::DCLayerOverlayImage> NativeSkiaOutputDevice::Buffer::overlayImage() const
 {
     DCHECK(m_presentCount);
     return m_scopedOverlayReadAccess->GetDCLayerOverlayImage();

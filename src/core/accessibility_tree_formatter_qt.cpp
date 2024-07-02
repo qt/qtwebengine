@@ -177,23 +177,31 @@ std::string AccessibilityTreeFormatterQt::ProcessTreeForOutput(const base::Value
 #endif // QT_CONFIG(accessibility)
 
 // static
-std::unique_ptr<ui::AXTreeFormatter>
-AXInspectFactory::CreatePlatformFormatter()
+ui::AXApiType::Type AXInspectFactory::DefaultPlatformFormatterType()
 {
-    return AXInspectFactory::CreateFormatter(ui::AXApiType::kQt);
+    return ui::AXApiType::kQt;
 }
 
 // static
-std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreatePlatformRecorder(BrowserAccessibilityManager *manager,
-                                                                              base::ProcessId pid,
-                                                                              const ui::AXTreeSelector &selector)
+ui::AXApiType::Type AXInspectFactory::DefaultPlatformRecorderType()
 {
-    return AXInspectFactory::CreateRecorder(ui::AXApiType::kQt, manager, pid, selector);
+    return ui::AXApiType::kQt;
+}
+
+// static
+std::vector<ui::AXApiType::Type> AXInspectFactory::SupportedApis()
+{
+    return {ui::AXApiType::kBlink, ui::AXApiType::kQt};
 }
 
 // static
 std::unique_ptr<ui::AXTreeFormatter> AXInspectFactory::CreateFormatter(ui::AXApiType::Type type)
 {
+    // Developer mode: crash immediately on any accessibility fatal error.
+    // This only runs during integration tests, or if a developer is
+    // using an inspection tool, e.g. chrome://accessibility.
+    BrowserAccessibilityManager::AlwaysFailFast();
+
     switch (type) {
     case ui::AXApiType::kBlink:
         return std::make_unique<AccessibilityTreeFormatterBlink>();

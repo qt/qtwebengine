@@ -416,7 +416,7 @@ void RenderWidgetHostViewQtDelegateClient::handlePointerEvent(T *event)
     webEvent.movement_y = event->globalPosition().y() - m_previousMousePosition.y();
     webEvent.is_raw_movement_event = true;
 
-    if (m_rwhv->IsMouseLocked())
+    if (m_rwhv->IsPointerLocked())
         QCursor::setPos(m_previousMousePosition);
     else
         m_previousMousePosition = event->globalPosition().toPoint();
@@ -450,9 +450,9 @@ void RenderWidgetHostViewQtDelegateClient::handleMouseEvent(QMouseEvent *event)
 
 void RenderWidgetHostViewQtDelegateClient::handleKeyEvent(QKeyEvent *event)
 {
-    if (m_rwhv->IsMouseLocked() && event->key() == Qt::Key_Escape
+    if (m_rwhv->IsPointerLocked() && event->key() == Qt::Key_Escape
         && event->type() == QEvent::KeyRelease)
-        m_rwhv->UnlockMouse();
+        m_rwhv->UnlockPointer();
 
     if (m_receivedEmptyImeEvent) {
         // IME composition was not finished with a valid commit string.

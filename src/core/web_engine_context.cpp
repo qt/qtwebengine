@@ -21,6 +21,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/common/features.h"
 #include "content/common/process_visibility_tracker.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -214,7 +215,7 @@ public:
         if (deviceName.contains(QLatin1StringView("Nvidia"), Qt::CaseInsensitive))
             return Nvidia;
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
         if (deviceName.contains(QLatin1StringView("Mesa llvmpipe")))
             return Mesa;
 #endif
@@ -498,7 +499,7 @@ static void logContext(const std::string &glType, base::CommandLine *cmd)
         log << QLatin1StringView("\n");
 
 #if QT_CONFIG(opengl)
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
         log << QLatin1StringView("Using GLX:")
             << QLatin1StringView(GLContextHelper::getGlxPlatformInterface() ? "yes" : "no")
             << QLatin1StringView("\n");
@@ -922,16 +923,15 @@ WebEngineContext::WebEngineContext()
     enableFeatures.push_back("ScreenCaptureKitMacScreen");
 #endif // defined(Q_OS_MACOS)
 
-    // Avoid crashing when websites tries using this feature (since 83)
-    disableFeatures.push_back(features::kInstalledApp.name);
-
     // Not implemented but it overrides the devtools eyedropper
     // Should be sync with kEyeDropper base::Feature
     parsedCommandLine->AppendSwitchASCII(switches::kDisableBlinkFeatures, "EyeDropperAPI");
     disableFeatures.push_back(features::kEyeDropper.name);
 
     // Explicitly tell Chromium about default-on features we do not support
+    disableFeatures.push_back(features::kAttributionReportingCrossAppWebOverride.name);
     disableFeatures.push_back(features::kBackgroundFetch.name);
+    disableFeatures.push_back(features::kInstalledApp.name);
     parsedCommandLine->AppendSwitchASCII(switches::kDisableBlinkFeatures, "WebOTP");
     disableFeatures.push_back(features::kWebOTP.name);
     disableFeatures.push_back(features::kWebPayments.name);
@@ -941,10 +941,11 @@ WebEngineContext::WebEngineContext()
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
         enableFeatures.push_back(features::kOverlayScrollbar.name);
         parsedCommandLine->AppendSwitch(switches::kEnableViewport);
+        parsedCommandLine->AppendSwitch(switches::kValidateInputEventStream);
         parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
     }
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
     if (GPUInfo::instance()->vendor() == GPUInfo::Nvidia) {
         disableFeatures.push_back(media::kVaapiVideoDecodeLinux.name);
         parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferVideoFrames);

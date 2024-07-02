@@ -51,7 +51,7 @@ inline QString toQt(const std::u16string &string)
     return QString::fromStdU16String(string);
 }
 
-inline QString toQt(const absl::optional<std::u16string> &string)
+inline QString toQt(const std::optional<std::u16string> &string)
 {
     if (!string.has_value())
         return QString();
@@ -89,11 +89,11 @@ inline std::u16string toString16(const QString &qString)
     return qString.toStdU16String();
 }
 
-inline absl::optional<std::u16string> toOptionalString16(const QString &qString)
+inline std::optional<std::u16string> toOptionalString16(const QString &qString)
 {
     if (qString.isNull())
-        return absl::nullopt;
-    return absl::make_optional(qString.toStdU16String());
+        return std::nullopt;
+    return std::make_optional(qString.toStdU16String());
 }
 
 inline QUrl toQt(const GURL &url)

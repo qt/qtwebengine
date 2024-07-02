@@ -324,7 +324,7 @@ bool RenderWidgetHostViewQt::HasFocus()
     return m_delegate->hasKeyboardFocus();
 }
 
-bool RenderWidgetHostViewQt::IsMouseLocked()
+bool RenderWidgetHostViewQt::IsPointerLocked()
 {
     return m_isMouseLocked;
 }
@@ -393,7 +393,7 @@ void RenderWidgetHostViewQt::UpdateBackgroundColor()
 }
 
 // Return value indicates whether the mouse is locked successfully or not.
-blink::mojom::PointerLockResult RenderWidgetHostViewQt::LockMouse(bool request_unadjusted_movement)
+blink::mojom::PointerLockResult RenderWidgetHostViewQt::LockPointer(bool request_unadjusted_movement)
 {
     if (request_unadjusted_movement)
         return blink::mojom::PointerLockResult::kUnsupportedOptions;
@@ -405,19 +405,19 @@ blink::mojom::PointerLockResult RenderWidgetHostViewQt::LockMouse(bool request_u
     return blink::mojom::PointerLockResult::kSuccess;
 }
 
-blink::mojom::PointerLockResult RenderWidgetHostViewQt::ChangeMouseLock(bool request_unadjusted_movement)
+blink::mojom::PointerLockResult RenderWidgetHostViewQt::ChangePointerLock(bool request_unadjusted_movement)
 {
     if (request_unadjusted_movement)
         return blink::mojom::PointerLockResult::kUnsupportedOptions;
     return blink::mojom::PointerLockResult::kSuccess;
 }
 
-void RenderWidgetHostViewQt::UnlockMouse()
+void RenderWidgetHostViewQt::UnlockPointer()
 {
     m_delegate->unlockMouse();
     qApp->restoreOverrideCursor();
     m_isMouseLocked = false;
-    host()->LostMouseLock();
+    host()->LostPointerLock();
 }
 
 bool RenderWidgetHostViewQt::updateCursorFromResource(ui::mojom::CursorType type)
@@ -430,7 +430,8 @@ bool RenderWidgetHostViewQt::updateCursorFromResource(ui::mojom::CursorType type
 
 #if defined(USE_AURA)
     gfx::Point hotspot;
-    if (!wm::GetCursorDataFor(ui::CursorSize::kNormal, type, hotspotDpr, &resourceId, &hotspot))
+    bool isAnimated;
+    if (!wm::GetCursorDataFor(ui::CursorSize::kNormal, type, hotspotDpr, &resourceId, &hotspot, &isAnimated))
         return false;
     hotX = hotspot.x();
     hotY = hotspot.y();
@@ -624,8 +625,8 @@ void RenderWidgetHostViewQt::ImeCancelComposition()
 }
 
 void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const gfx::Range &,
-                                                        const absl::optional<std::vector<gfx::Rect>> &,
-                                                        const absl::optional<std::vector<gfx::Rect>> &)
+                                                        const std::optional<std::vector<gfx::Rect>> &,
+                                                        const std::optional<std::vector<gfx::Rect>> &)
 {
     // FIXME: not implemented?
     QT_NOT_YET_IMPLEMENTED
@@ -1040,7 +1041,7 @@ void RenderWidgetHostViewQt::OnRenderFrameMetadataChangedAfterActivation(base::T
         m_adapterClient->updateContentsSize(toQt(m_lastContentsSize));
 }
 
-void RenderWidgetHostViewQt::synchronizeVisualProperties(const absl::optional<viz::LocalSurfaceId> &childSurfaceId)
+void RenderWidgetHostViewQt::synchronizeVisualProperties(const std::optional<viz::LocalSurfaceId> &childSurfaceId)
 {
     if (childSurfaceId)
         m_dfhLocalSurfaceIdAllocator.UpdateFromChild(*childSurfaceId);
@@ -1084,9 +1085,9 @@ ui::Compositor *RenderWidgetHostViewQt::GetCompositor()
     return m_uiCompositor.get();
 }
 
-absl::optional<content::DisplayFeature> RenderWidgetHostViewQt::GetDisplayFeature()
+std::optional<content::DisplayFeature> RenderWidgetHostViewQt::GetDisplayFeature()
 {
-    return absl::nullopt;
+    return std::nullopt;
 }
 
 void RenderWidgetHostViewQt::SetDisplayFeatureForTesting(const content::DisplayFeature *)

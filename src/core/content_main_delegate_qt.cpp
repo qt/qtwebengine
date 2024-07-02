@@ -253,7 +253,7 @@ static void SafeOverridePathImpl(const char *keyName, int key, const base::FileP
 
 #define SafeOverridePath(KEY, PATH) SafeOverridePathImpl(#KEY, KEY, PATH)
 
-absl::optional<int> ContentMainDelegateQt::BasicStartupComplete()
+std::optional<int> ContentMainDelegateQt::BasicStartupComplete()
 {
     SafeOverridePath(base::FILE_EXE, WebEngineLibraryInfo::getPath(base::FILE_EXE));
     SafeOverridePath(base::DIR_QT_LIBRARY_DATA, WebEngineLibraryInfo::getPath(base::DIR_QT_LIBRARY_DATA));
@@ -266,7 +266,7 @@ absl::optional<int> ContentMainDelegateQt::BasicStartupComplete()
 
     url::CustomScheme::LoadSchemes(base::CommandLine::ForCurrentProcess());
 
-    return absl::nullopt;
+    return std::nullopt;
 }
 
 } // namespace QtWebEngineCore

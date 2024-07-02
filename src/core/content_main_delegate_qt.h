@@ -31,7 +31,7 @@ public:
 #endif
     content::ContentRendererClient* CreateContentRendererClient() override;
     content::ContentUtilityClient* CreateContentUtilityClient() override;
-    absl::optional<int> BasicStartupComplete() override;
+    std::optional<int> BasicStartupComplete() override;
 
 private:
     ContentClientQt m_contentClient;

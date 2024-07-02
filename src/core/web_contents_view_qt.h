@@ -75,6 +75,7 @@ public:
     void FullscreenStateChanged(bool) override { }
     void UpdateWindowControlsOverlay(const gfx::Rect &) override { QT_NOT_YET_IMPLEMENTED }
 
+    content::BackForwardTransitionAnimationManager *GetBackForwardTransitionAnimationManager() override { return nullptr; }
 #if BUILDFLAG(IS_MAC)
     bool CloseTabAfterEventTrackingIfNeeded() override { QT_NOT_YET_IMPLEMENTED return false; }
 #endif

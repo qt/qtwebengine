@@ -293,8 +293,6 @@ source_set("qtwebengine_sources") {
     "//third_party/blink/public/mojom:mojom_platform",
   ]
   sources = [
-    "//chrome/browser/accessibility/accessibility_ui.cc",
-    "//chrome/browser/accessibility/accessibility_ui.h",
     "//chrome/browser/gcm/gcm_product_util.cc",
     "//chrome/browser/gcm/gcm_product_util.h",
     "//chrome/browser/gcm/gcm_profile_service_factory.cc",
@@ -353,6 +351,8 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/tab_contents/form_interaction_tab_helper.h",
     "//chrome/browser/tab_contents/web_contents_collection.cc",
     "//chrome/browser/tab_contents/web_contents_collection.h",
+    "//chrome/browser/ui/webui/accessibility/accessibility_ui.cc",
+    "//chrome/browser/ui/webui/accessibility/accessibility_ui.h",
     "//chrome/browser/ui/webui/device_log/device_log_ui.cc",
     "//chrome/browser/ui/webui/device_log/device_log_ui.h",
     "//chrome/browser/ui/webui/devtools/devtools_ui.cc",
@@ -490,7 +490,6 @@ source_set("qtwebengine_sources") {
       "//chrome/browser/resources/pdf:resources",
       "//components/pdf/browser",
       "//components/pdf/browser:interceptors",
-      "//components/pdf/common",
       "//components/pdf/renderer",
       "//components/printing/browser",
       "//components/printing/renderer",

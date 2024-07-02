@@ -35,7 +35,7 @@ QSGTexture *NativeSkiaOutputDeviceDirect3D11::texture(QQuickWindow *win, uint32_
     if (!m_frontBuffer || !m_readyWithTexture)
         return nullptr;
 
-    absl::optional<gl::DCLayerOverlayImage> overlayImage = m_frontBuffer->overlayImage();
+    std::optional<gl::DCLayerOverlayImage> overlayImage = m_frontBuffer->overlayImage();
     if (!overlayImage) {
         qWarning("D3D: No overlay image.");
         return nullptr;

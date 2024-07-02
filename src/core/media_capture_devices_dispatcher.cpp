@@ -275,8 +275,13 @@ WebContentsAdapterClient::MediaRequestFlags mediaRequestFlagsForRequest(const co
         request.video_type == MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB)
         return {WebContentsAdapterClient::MediaDesktopAudioCapture, WebContentsAdapterClient::MediaDesktopVideoCapture};
 
+    if (request.audio_type == MediaStreamType::DISPLAY_AUDIO_CAPTURE &&
+        request.video_type == MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET)
+        return {WebContentsAdapterClient::MediaDesktopAudioCapture, WebContentsAdapterClient::MediaDesktopVideoCapture};
+
     if (request.video_type == MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE ||
         request.video_type == MediaStreamType::DISPLAY_VIDEO_CAPTURE ||
+        request.video_type == MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET ||
         request.video_type == MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB)
         return {WebContentsAdapterClient::MediaDesktopVideoCapture};
 
@@ -384,7 +389,8 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
             case blink::MEDIA_DEVICE_UPDATE:
             case blink::MEDIA_GENERATE_STREAM:
             case blink::MEDIA_GET_OPEN_DEVICE:
-                getDefaultDevices(request.requested_audio_device_id, request.requested_video_device_id,
+                getDefaultDevices(request.requested_audio_device_ids.empty() ? "" :request.requested_audio_device_ids.front(),
+                                  request.requested_video_device_ids.empty() ? "" :request.requested_video_device_ids.front(),
                                   microphoneRequested, webcamRequested, deviceSet);
                 break;
             }
@@ -462,12 +468,12 @@ void MediaCaptureDevicesDispatcher::processMediaAccessRequest(
         const bool screenCaptureEnabled = adapterClient->webEngineSettings()->testAttribute(
                 QWebEngineSettings::ScreenCaptureEnabled);
         const bool originIsSecure = network::IsUrlPotentiallyTrustworthy(request.security_origin);
-        if (!screenCaptureEnabled || !originIsSecure || (id.is_null() && request.requested_video_device_id.empty())) {
+        if (!screenCaptureEnabled || !originIsSecure || (id.is_null() && request.requested_video_device_ids.empty())) {
             std::move(callback).Run(blink::mojom::StreamDevicesSet(), MediaStreamRequestResult::INVALID_STATE, std::unique_ptr<content::MediaStreamUI>());
             return;
         }
 
-        if (!request.requested_video_device_id.empty()) {
+        if (!request.requested_video_device_ids.empty()) {
             // Non-empty device id from the chooseDesktopMedia() extension API.
             processDesktopCaptureAccessRequest(webContents, request, std::move(callback));
             return;
@@ -491,7 +497,7 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
     if (main_frame) {
         // Resolve DesktopMediaID for the specified device id.
         mediaId = content::DesktopStreamsRegistry::GetInstance()->RequestMediaForStreamId(
-                request.requested_video_device_id, main_frame->GetProcess()->GetID(),
+                request.requested_video_device_ids.front(), main_frame->GetProcess()->GetID(),
                 main_frame->GetRoutingID(), url::Origin::Create(request.security_origin),
                 content::kRegistryStreamTypeDesktop);
     }

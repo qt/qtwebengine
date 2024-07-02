@@ -14,6 +14,7 @@
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/cdm/renderer/external_clear_key_key_system_info.h"
+#include "components/cdm/renderer/key_system_support_update.h"
 #include "components/cdm/renderer/widevine_key_system_info.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/localized_error.h"
@@ -25,8 +26,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/buildflags/buildflags.h"
-#include "media/base/key_system_info.h"
-#include "media/cdm/cdm_capability.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "net/base/net_errors.h"
@@ -196,14 +195,17 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_fr
 #endif
 
     auto password_autofill_agent =
-            std::make_unique<autofill::PasswordAutofillAgent>(render_frame, associated_interfaces);
+            std::make_unique<autofill::PasswordAutofillAgent>(render_frame, associated_interfaces, autofill::PasswordAutofillAgent::EnableHeavyFormDataScraping(false));
     auto password_generation_agent =
             std::make_unique<autofill::PasswordGenerationAgent>(render_frame, password_autofill_agent.get(), associated_interfaces);
 
     new autofill::AutofillAgent(
             render_frame,
-            { autofill::AutofillAgent::UsesKeyboardAccessoryForSuggestions(false),
-              autofill::AutofillAgent::ExtractAllDatalists(false) },
+            {
+              autofill::AutofillAgent::ExtractAllDatalists(true), autofill::AutofillAgent::FocusRequiresScroll(false),
+              autofill::AutofillAgent::QueryPasswordSuggestions(true), autofill::AutofillAgent::SecureContextRequired(true),
+              autofill::AutofillAgent::UserGestureRequired(false), autofill::AutofillAgent::UsesKeyboardAccessoryForSuggestions(false)
+            },
             std::move(password_autofill_agent), std::move(password_generation_agent),
             associated_interfaces);
 }
@@ -469,223 +471,9 @@ void ContentRendererClientQt::GetInterface(const std::string &interface_name, mo
     content::RenderThread::Get()->BindHostReceiver(mojo::GenericPendingReceiver(interface_name, std::move(interface_pipe)));
 }
 
-// The following is based on chrome/renderer/media/chrome_key_systems.cc:
-// Copyright 2013 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE.Chromium file.
-
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-// External Clear Key (used for testing).
-static void AddExternalClearKey(const media::mojom::KeySystemCapabilityPtr &capability,
-                                media::KeySystemInfos* key_systems)
+std::unique_ptr<media::KeySystemSupportObserver> ContentRendererClientQt::GetSupportedKeySystems(media::GetSupportedKeySystemsCB cb)
 {
-    Q_UNUSED(capability);
-    if (!base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting)) {
-        DLOG(ERROR) << "ExternalClearKey supported despite not enabled.";
-        return;
-    }
-
-    // TODO(xhwang): Actually use `capability` to determine capabilities.
-    key_systems->push_back(std::make_unique<cdm::ExternalClearKeyKeySystemInfo>());
-}
-
-#if BUILDFLAG(ENABLE_WIDEVINE)
-media::SupportedCodecs GetVP9Codecs(const base::flat_set<media::VideoCodecProfile> &profiles)
-{
-    if (profiles.empty()) {
-        // If no profiles are specified, then all are supported.
-        return media::EME_CODEC_VP9_PROFILE0 | media::EME_CODEC_VP9_PROFILE2;
-    }
-
-    media::SupportedCodecs supported_vp9_codecs = media::EME_CODEC_NONE;
-    for (const auto& profile : profiles) {
-        switch (profile) {
-        case media::VP9PROFILE_PROFILE0:
-            supported_vp9_codecs |= media::EME_CODEC_VP9_PROFILE0;
-            break;
-        case media::VP9PROFILE_PROFILE2:
-            supported_vp9_codecs |= media::EME_CODEC_VP9_PROFILE2;
-            break;
-        default:
-            DVLOG(1) << "Unexpected " << media::GetCodecName(media::VideoCodec::kVP9)
-                     << " profile: " << media::GetProfileName(profile);
-            break;
-        }
-    }
-
-    return supported_vp9_codecs;
-}
-
-#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
-media::SupportedCodecs GetHevcCodecs(const base::flat_set<media::VideoCodecProfile> &profiles)
-{
-    // If no profiles are specified, then all are supported.
-    if (profiles.empty()) {
-        return media::EME_CODEC_HEVC_PROFILE_MAIN |
-               media::EME_CODEC_HEVC_PROFILE_MAIN10;
-    }
-
-    media::SupportedCodecs supported_hevc_codecs = media::EME_CODEC_NONE;
-    for (const auto& profile : profiles) {
-        switch (profile) {
-        case media::HEVCPROFILE_MAIN:
-            supported_hevc_codecs |= media::EME_CODEC_HEVC_PROFILE_MAIN;
-            break;
-        case media::HEVCPROFILE_MAIN10:
-            supported_hevc_codecs |= media::EME_CODEC_HEVC_PROFILE_MAIN10;
-            break;
-        default:
-            DVLOG(1) << "Unexpected " << media::GetCodecName(media::VideoCodec::kHEVC)
-                     << " profile: " << media::GetProfileName(profile);
-            break;
-        }
-    }
-
-    return supported_hevc_codecs;
-}
-#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
-
-static media::SupportedCodecs GetSupportedCodecs(const media::CdmCapability& capability,
-                                                 bool is_secure)
-{
-    media::SupportedCodecs supported_codecs = media::EME_CODEC_NONE;
-
-    for (const auto& codec : capability.audio_codecs) {
-        switch (codec) {
-        case media::AudioCodec::kOpus:
-            supported_codecs |= media::EME_CODEC_OPUS;
-            break;
-        case media::AudioCodec::kVorbis:
-            supported_codecs |= media::EME_CODEC_VORBIS;
-            break;
-        case media::AudioCodec::kFLAC:
-            supported_codecs |= media::EME_CODEC_FLAC;
-            break;
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-        case media::AudioCodec::kAAC:
-            supported_codecs |= media::EME_CODEC_AAC;
-            break;
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
-        default:
-            DVLOG(1) << "Unexpected supported codec: " << GetCodecName(codec);
-            break;
-        }
-    }
-
-    for (const auto &codec : capability.video_codecs) {
-        switch (codec.first) {
-        case media::VideoCodec::kVP8:
-            supported_codecs |= media::EME_CODEC_VP8;
-            break;
-        case media::VideoCodec::kVP9:
-            supported_codecs |= GetVP9Codecs(codec.second.supported_profiles);
-            break;
-        case media::VideoCodec::kAV1:
-            supported_codecs |= media::EME_CODEC_AV1;
-            break;
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-        case media::VideoCodec::kH264:
-            supported_codecs |= media::EME_CODEC_AVC1;
-            break;
-#endif // BUILDFLAG(USE_PROPRIETARY_CODECS)
-#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
-        case media::VideoCodec::kHEVC:
-            supported_codecs |= GetHevcCodecs(codec.second.supported_profiles);
-            break;
-#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
-        default:
-            DVLOG(1) << "Unexpected supported codec: " << GetCodecName(codec.first);
-            break;
-        }
-    }
-
-    return supported_codecs;
-}
-
-static void AddWidevine(const media::mojom::KeySystemCapabilityPtr &capability,
-                        media::KeySystemInfos *key_systems)
-{
-    // Codecs and encryption schemes.
-    media::SupportedCodecs codecs = media::EME_CODEC_NONE;
-    media::SupportedCodecs hw_secure_codecs = media::EME_CODEC_NONE;
-    base::flat_set<media::EncryptionScheme> encryption_schemes;
-    base::flat_set<media::EncryptionScheme> hw_secure_encryption_schemes;
-    base::flat_set<media::CdmSessionType> session_types;
-    base::flat_set<media::CdmSessionType> hw_secure_session_types;
-    if (capability->sw_secure_capability) {
-        codecs = GetSupportedCodecs(capability->sw_secure_capability.value(), /*is_secure=*/false);
-        encryption_schemes = capability->sw_secure_capability->encryption_schemes;
-        if (!base::Contains(capability->sw_secure_capability->session_types, media::CdmSessionType::kTemporary)) {
-            DVLOG(1) << "Temporary sessions must be supported.";
-            return;
-        }
-    }
-
-    if (capability->hw_secure_capability) {
-        hw_secure_codecs = GetSupportedCodecs(capability->hw_secure_capability.value(), /*is_secure=*/true);
-        hw_secure_encryption_schemes = capability->hw_secure_capability->encryption_schemes;
-        if (!base::Contains(capability->hw_secure_capability->session_types, media::CdmSessionType::kTemporary)) {
-            DVLOG(1) << "Temporary sessions must be supported.";
-            return;
-        }
-    }
-
-    // Robustness.
-    using Robustness = cdm::WidevineKeySystemInfo::Robustness;
-    auto max_audio_robustness = Robustness::SW_SECURE_CRYPTO;
-    auto max_video_robustness = Robustness::SW_SECURE_DECODE;
-
-    if (base::FeatureList::IsEnabled(media::kHardwareSecureDecryption)) {
-        max_audio_robustness = Robustness::HW_SECURE_CRYPTO;
-        max_video_robustness = Robustness::HW_SECURE_ALL;
-    }
-
-    // Others.
-    auto persistent_state_support = media::EmeFeatureSupport::REQUESTABLE;
-    auto distinctive_identifier_support = media::EmeFeatureSupport::NOT_SUPPORTED;
-
-    key_systems->emplace_back(new cdm::WidevineKeySystemInfo(
-                                  codecs, std::move(encryption_schemes), std::move(session_types),
-                                  hw_secure_codecs, std::move(hw_secure_encryption_schemes),
-                                  std::move(hw_secure_session_types),
-                                  max_audio_robustness, max_video_robustness,
-                                  persistent_state_support,
-                                  distinctive_identifier_support));
-}
-#endif // BUILDFLAG(ENABLE_WIDEVINE)
-#endif // BUILDFLAG(ENABLE_LIBRARY_CDMS)
-
-void OnKeySystemSupportUpdated(media::GetSupportedKeySystemsCB cb,
-                               content::KeySystemCapabilityPtrMap key_system_capabilities)
-{
-    media::KeySystemInfos key_systems;
-    for (const auto &entry : key_system_capabilities) {
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-        const auto &key_system = entry.first;
-        const auto &capability = entry.second;
-#if BUILDFLAG(ENABLE_WIDEVINE)
-        if (key_system == kWidevineKeySystem) {
-            AddWidevine(capability, &key_systems);
-            continue;
-        }
-#endif // BUILDFLAG(ENABLE_WIDEVINE)
-
-        if (key_system == media::kExternalClearKeyKeySystem) {
-            AddExternalClearKey(capability, &key_systems);
-            continue;
-        }
-
-        DLOG(ERROR) << "Unrecognized key system: " << key_system;
-#endif // BUILDFLAG(ENABLE_LIBRARY_CDMS)
-    }
-
-    cb.Run(std::move(key_systems));
-}
-
-void ContentRendererClientQt::GetSupportedKeySystems(media::GetSupportedKeySystemsCB cb)
-{
-    content::ObserveKeySystemSupportUpdate(
-        base::BindRepeating(&OnKeySystemSupportUpdated, std::move(cb)));
+    return cdm::GetSupportedKeySystemsUpdates(/*can_persist_data=*/false, std::move(cb));
 }
 
 #if QT_CONFIG(webengine_spellchecker)

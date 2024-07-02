@@ -548,6 +548,8 @@ macro(append_build_type_setup)
         use_partition_alloc_as_malloc=false
         use_custom_libcxx=false
         enable_rust=false # We do not yet support rust
+        enable_chromium_prelude=false
+        build_tflite_with_xnnpack=false
     )
     if(${config} STREQUAL "Debug")
         list(APPEND gnArgArg is_debug=true symbol_level=2)

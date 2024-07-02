@@ -11,6 +11,8 @@
 #include "web_contents_view_qt.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -25,8 +27,7 @@ void AutofillClientQt::CreateForWebContents(content::WebContents *contents)
 }
 
 AutofillClientQt::AutofillClientQt(content::WebContents *webContents)
-    : autofill::ContentAutofillClient(
-            webContents, base::BindRepeating(&autofill::BrowserDriverInitHook, this, ""))
+    : autofill::ContentAutofillClient(webContents)
     , content::WebContentsObserver(webContents)
     , m_popupController(new AutofillPopupController(new AutofillPopupControllerPrivate))
 {
@@ -42,6 +43,11 @@ autofill::PersonalDataManager *AutofillClientQt::GetPersonalDataManager()
 autofill::AutocompleteHistoryManager *AutofillClientQt::GetAutocompleteHistoryManager()
 {
     return nullptr;
+}
+
+std::unique_ptr<autofill::AutofillManager> AutofillClientQt::CreateManager(base::PassKey<autofill::ContentAutofillDriver>, autofill::ContentAutofillDriver &driver)
+{
+    return base::WrapUnique(new autofill::BrowserAutofillManager(&driver, std::string()));
 }
 
 PrefService *AutofillClientQt::GetPrefs()
@@ -83,13 +89,6 @@ void AutofillClientQt::PinPopupView()
     NOTIMPLEMENTED();
 }
 
-autofill::AutofillClient::PopupOpenArgs AutofillClientQt::GetReopenPopupArgs(autofill::AutofillSuggestionTriggerSource trigger_source) const
-{
-    // Called by password_manager component only.
-    NOTIMPLEMENTED();
-    return autofill::AutofillClient::PopupOpenArgs();
-}
-
 std::vector<autofill::Suggestion> AutofillClientQt::GetPopupSuggestions() const
 {
     // Called by password_manager component only.
@@ -112,7 +111,7 @@ bool AutofillClientQt::IsPasswordManagerEnabled()
     return false;
 }
 
-bool AutofillClientQt::IsOffTheRecord()
+bool AutofillClientQt::IsOffTheRecord() const
 {
     return web_contents()->GetBrowserContext()->IsOffTheRecord();
 }

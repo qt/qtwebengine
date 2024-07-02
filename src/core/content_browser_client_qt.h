@@ -17,10 +17,6 @@ class WebContents;
 struct Referrer;
 } // namespace content
 
-namespace device {
-class GeolocationManager;
-} // namespace device
-
 namespace QtWebEngineCore {
 
 class BrowserMainPartsQt;
@@ -100,13 +96,13 @@ public:
             WebSocketFactory factory,
             const GURL &url,
             const net::SiteForCookies &site_for_cookies,
-            const absl::optional<std::string> &user_agent,
+            const std::optional<std::string> &user_agent,
             mojo::PendingRemote<network::mojom::WebSocketHandshakeClient> handshake_client) override;
 
     content::AllowServiceWorkerResult AllowServiceWorker(
             const GURL &scope,
             const net::SiteForCookies &site_for_cookies,
-            const absl::optional<url::Origin> &top_frame_origin,
+            const std::optional<url::Origin> &top_frame_origin,
             const GURL &script_url,
             content::BrowserContext *context) override;
 
@@ -125,7 +121,7 @@ public:
 #if QT_CONFIG(webengine_geolocation)
     std::unique_ptr<device::LocationProvider> OverrideSystemLocationProvider() override;
 #endif
-    device::GeolocationManager *GetGeolocationManager() override;
+    device::GeolocationSystemPermissionManager *GetGeolocationSystemPermissionManager() override;
 
     bool ShouldIsolateErrorPage(bool in_main_frame) override;
     bool ShouldUseProcessPerSite(content::BrowserContext *browser_context, const GURL &effective_url) override;
@@ -161,7 +157,7 @@ public:
             network::mojom::WebSandboxFlags sandbox_flags,
             ui::PageTransition page_transition,
             bool has_user_gesture,
-            const absl::optional<url::Origin> &initiating_origin,
+            const std::optional<url::Origin> &initiating_origin,
             content::RenderFrameHost *initiator_document,
             mojo::PendingRemote<network::mojom::URLLoaderFactory> *out_factory) override;
 
@@ -170,7 +166,7 @@ public:
                              content::BrowserContext *browser_context,
                              const base::RepeatingCallback<content::WebContents *()> &wc_getter,
                              content::NavigationUIData *navigation_ui_data, int frame_tree_node_id,
-                             absl::optional<int64_t> navigation_id) override;
+                             std::optional<int64_t> navigation_id) override;
 
     std::vector<std::unique_ptr<content::NavigationThrottle>> CreateThrottlesForNavigation(
             content::NavigationHandle *navigation_handle) override;
@@ -184,14 +180,14 @@ public:
                                            int frame_tree_node_id,
                                            int64_t navigation_id,
                                            scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner) override;
-    bool WillCreateURLLoaderFactory(content::BrowserContext *browser_context,
+    void WillCreateURLLoaderFactory(content::BrowserContext *browser_context,
                                     content::RenderFrameHost *frame,
                                     int render_process_id,
                                     URLLoaderFactoryType type,
                                     const url::Origin &request_initiator,
-                                    absl::optional<int64_t> navigation_id,
+                                    std::optional<int64_t> navigation_id,
                                     ukm::SourceIdObj ukm_source_id,
-                                    mojo::PendingReceiver<network::mojom::URLLoaderFactory> *factory_receiver,
+                                    network::URLLoaderFactoryBuilder &factory_builder,
                                     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient> *header_client,
                                     bool *bypass_redirect_checks,
                                     bool *disable_secure_dns,
@@ -207,10 +203,10 @@ public:
                                        cert_verifier::mojom::CertVerifierCreationParams *cert_verifier_creation_params) override;
 
     std::vector<base::FilePath> GetNetworkContextsParentDirectory() override;
-    void RegisterNonNetworkNavigationURLLoaderFactories(
-            int frame_tree_node_id, NonNetworkURLLoaderFactoryMap *factories) override;
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> CreateNonNetworkNavigationURLLoaderFactory(const std::string &scheme,
+                                                                                                     int frame_tree_node_id) override;
     void RegisterNonNetworkSubresourceURLLoaderFactories(int render_process_id, int render_frame_id,
-                                                         const absl::optional<url::Origin>& request_initiator_origin,
+                                                         const std::optional<url::Origin>& request_initiator_origin,
                                                          NonNetworkURLLoaderFactoryMap *factories) override;
     void RegisterNonNetworkWorkerMainResourceURLLoaderFactories(content::BrowserContext* browser_context,
                                                                 NonNetworkURLLoaderFactoryMap* factories) override;

@@ -96,7 +96,7 @@ extern void CFHtmlExtractMetadata(const std::string &cf_html, std::string *base_
 void ClipboardQt::WritePortableAndPlatformRepresentations(ui::ClipboardBuffer type,
                                                           const ObjectMap &objects,
                                                           std::vector<ui::Clipboard::PlatformRepresentation> platform_representations,
-                                                          std::unique_ptr<ui::DataTransferEndpoint> data_src)
+                                                          std::unique_ptr<ui::DataTransferEndpoint> data_src, uint32_t val)
 {
     DCHECK(CalledOnValidThread());
     DCHECK(IsSupportedClipboardBuffer(type));
@@ -119,7 +119,7 @@ void ClipboardQt::WritePortableAndPlatformRepresentations(ui::ClipboardBuffer ty
             WritePortableAndPlatformRepresentations(ui::ClipboardBuffer::kSelection,
                                                     ObjectMap(text_iter, ++text_iter),
                                                     {},
-                                                    nullptr);
+                                                    nullptr, val);
         }
     }
     m_dataSrc[type] = std::move(data_src);
@@ -130,8 +130,7 @@ void ClipboardQt::WriteText(base::StringPiece text)
     getUncommittedData()->setText(toQString(text));
 }
 
-void ClipboardQt::WriteHTML(base::StringPiece markup, absl::optional<base::StringPiece> source_url,
-                            ui::ClipboardContentType /*content_type*/)
+void ClipboardQt::WriteHTML(base::StringPiece markup, std::optional<base::StringPiece> source_url)
 {
 
     QString markup_string = toQString(markup);
@@ -394,7 +393,7 @@ const ui::ClipboardSequenceNumberToken &ClipboardQt::GetSequenceNumber(ui::Clipb
             : clipboardChangeObserver()->getSelectionSequenceNumber();
 }
 
-absl::optional<ui::DataTransferEndpoint> ClipboardQt::GetSource(ui::ClipboardBuffer buffer) const
+std::optional<ui::DataTransferEndpoint> ClipboardQt::GetSource(ui::ClipboardBuffer buffer) const
 {
     return base::OptionalFromPtr(base::FindPtrOrNull(m_dataSrc, buffer));
 }
@@ -432,6 +431,19 @@ bool ClipboardQt::IsSelectionBufferAvailable() const
     return QGuiApplication::clipboard()->supportsSelection();
 }
 #endif
+
+void ClipboardQt::WriteClipboardHistory()
+{
+    NOTIMPLEMENTED();
+}
+void ClipboardQt::WriteUploadCloudClipboard()
+{
+    NOTIMPLEMENTED();
+}
+void ClipboardQt::WriteConfidentialDataForPassword()
+{
+    NOTIMPLEMENTED();
+}
 
 // This is the same as ReadAvailableTypes minus dealing with custom-data
 std::vector<std::u16string> ClipboardQt::GetStandardFormats(ui::ClipboardBuffer buffer, const ui::DataTransferEndpoint *data_dst) const

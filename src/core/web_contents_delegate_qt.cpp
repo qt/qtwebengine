@@ -643,7 +643,7 @@ static void processMediaAccessRequest(content::WebContents *webContents,
 
 static inline bool needsPickerDialog(const content::MediaStreamRequest &request)
 {
-    return (request.requested_video_device_id.empty() && // device already selected in chooseDesktopMedia
+    return (request.requested_video_device_ids.empty() && // device already selected in chooseDesktopMedia
             (request.video_type == blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE
             || request.video_type == blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE));
 }
@@ -700,12 +700,12 @@ void WebContentsDelegateQt::ActivateContents(content::WebContents* contents)
         contents->Focus();
 }
 
-void WebContentsDelegateQt::RequestToLockMouse(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target)
+void WebContentsDelegateQt::RequestPointerLock(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target)
 {
     Q_UNUSED(user_gesture);
 
     if (last_unlocked_by_target)
-        web_contents->GotResponseToLockMouseRequest(blink::mojom::PointerLockResult::kSuccess);
+        web_contents->GotResponseToPointerLockRequest(blink::mojom::PointerLockResult::kSuccess);
     else
         m_viewClient->runMouseLockPermissionRequest(toQt(web_contents->GetLastCommittedURL().DeprecatedGetOriginAsURL()));
 }

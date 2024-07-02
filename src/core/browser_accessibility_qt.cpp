@@ -395,9 +395,9 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
         return QAccessible::Paragraph;
     case ax::mojom::Role::kDescriptionList:
         return QAccessible::List;
-    case ax::mojom::Role::kDescriptionListDetail:
+    case ax::mojom::Role::kDescriptionListDetailDeprecated:
         return QAccessible::Paragraph;
-    case ax::mojom::Role::kDescriptionListTerm:
+    case ax::mojom::Role::kDescriptionListTermDeprecated:
         return QAccessible::ListItem;
     case ax::mojom::Role::kDetails:
         return QAccessible::Grouping;
@@ -986,7 +986,7 @@ QAccessibleInterface *BrowserAccessibilityInterface::cellAt(int row, int column)
     if (row < 0 || row >= rows || column < 0 || column >= columns)
         return nullptr;
 
-    absl::optional<int> cell_id = q->GetCellId(row, column);
+    std::optional<int> cell_id = q->GetCellId(row, column);
     content::BrowserAccessibility *cell = cell_id ? q->manager()->GetFromID(*cell_id) : nullptr;
     if (cell)
         return content::toQAccessibleInterface(cell);

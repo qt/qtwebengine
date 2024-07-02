@@ -16,10 +16,8 @@ ExtensionsDispatcherDelegateQt::~ExtensionsDispatcherDelegateQt()
 {
 }
 
-void ExtensionsDispatcherDelegateQt::PopulateSourceMap(extensions::ResourceBundleSourceMap *source_map)
+void ExtensionsDispatcherDelegateQt::OnActiveExtensionsUpdated(const std::set<std::string> &extension_ids)
 {
-    // Custom binding for hangout services extension.
-    source_map->RegisterSource("webrtcDesktopCapturePrivate", IDR_WEBRTC_DESKTOP_CAPTURE_PRIVATE_CUSTOM_BINDINGS_JS);
 }
 
 } //namespace QtWebEngineCore

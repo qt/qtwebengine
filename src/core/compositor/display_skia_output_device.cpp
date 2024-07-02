@@ -131,7 +131,7 @@ bool DisplaySkiaOutputDevice::Reshape(const SkImageInfo &image_info,
     return true;
 }
 
-void DisplaySkiaOutputDevice::Present(const absl::optional<gfx::Rect> &update_rect,
+void DisplaySkiaOutputDevice::Present(const std::optional<gfx::Rect> &update_rect,
                                       BufferPresentedCallback feedback,
                                       viz::OutputSurfaceFrame frame)
 {

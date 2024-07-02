@@ -15,6 +15,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
+#include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "v8/include/v8.h"
 #include "qtwebengine/browser/qtwebchannel.mojom.h"
 
@@ -41,7 +42,7 @@ gin::WrapperInfo WebChannelTransport::kWrapperInfo = { gin::kEmbedderNativeGin }
 
 void WebChannelTransport::Install(blink::WebLocalFrame *frame, uint worldId)
 {
-    v8::Isolate *isolate = blink::MainThreadIsolate();
+    v8::Isolate *isolate = frame->GetAgentGroupScheduler()->Isolate();
     v8::HandleScope handleScope(isolate);
     v8::Local<v8::Context> context;
     if (worldId == 0)
@@ -69,7 +70,7 @@ void WebChannelTransport::Install(blink::WebLocalFrame *frame, uint worldId)
 
 void WebChannelTransport::Uninstall(blink::WebLocalFrame *frame, uint worldId)
 {
-    v8::Isolate *isolate = blink::MainThreadIsolate();
+    v8::Isolate *isolate = frame->GetAgentGroupScheduler()->Isolate();
     v8::HandleScope handleScope(isolate);
     v8::Local<v8::Context> context;
     if (worldId == 0)
@@ -103,7 +104,7 @@ void WebChannelTransport::NativeQtSendMessage(gin::Arguments *args)
         args->ThrowTypeError("Missing argument");
         return;
     }
-    v8::Isolate *isolate = blink::MainThreadIsolate();
+    v8::Isolate *isolate = frame->GetAgentGroupScheduler()->Isolate();
     v8::HandleScope handleScope(isolate);
 
     if (!jsonValue->IsString()) {
@@ -179,7 +180,7 @@ void WebChannelIPCTransport::DispatchWebChannelMessage(const std::vector<uint8_t
         return;
 
     blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
-    v8::Isolate *isolate = blink::MainThreadIsolate();
+    v8::Isolate *isolate = frame->GetAgentGroupScheduler()->Isolate();
     v8::HandleScope handleScope(isolate);
     v8::Local<v8::Context> context;
     if (worldId == 0)

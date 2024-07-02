@@ -16,7 +16,8 @@ public:
 
 private:
     // extensions::DispatcherDelegate implementation.
-    void PopulateSourceMap(extensions::ResourceBundleSourceMap *source_map) override;
+    void OnActiveExtensionsUpdated(const std::set<std::string>& extension_ids) override;
+
 };
 
 } // namespace QtWebEngineCore

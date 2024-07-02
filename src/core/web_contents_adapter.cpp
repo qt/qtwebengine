@@ -1530,8 +1530,8 @@ void WebContentsAdapter::grantMouseLockPermission(const QUrl &securityOrigin, bo
             granted = false;
     }
 
-    m_webContents->GotResponseToLockMouseRequest(granted ? blink::mojom::PointerLockResult::kSuccess
-                                                         : blink::mojom::PointerLockResult::kPermissionDenied);
+    m_webContents->GotResponseToPointerLockRequest(granted ? blink::mojom::PointerLockResult::kSuccess
+                                                           : blink::mojom::PointerLockResult::kPermissionDenied);
 }
 
 void WebContentsAdapter::handlePendingMouseLockPermission()
@@ -1539,8 +1539,8 @@ void WebContentsAdapter::handlePendingMouseLockPermission()
     CHECK_INITIALIZED();
     auto it = m_pendingMouseLockPermissions.find(toQt(m_webContents->GetLastCommittedURL().DeprecatedGetOriginAsURL()));
     if (it != m_pendingMouseLockPermissions.end()) {
-        m_webContents->GotResponseToLockMouseRequest(it.value() ? blink::mojom::PointerLockResult::kSuccess
-                                                                : blink::mojom::PointerLockResult::kPermissionDenied);
+        m_webContents->GotResponseToPointerLockRequest(it.value() ? blink::mojom::PointerLockResult::kSuccess
+                                                                  : blink::mojom::PointerLockResult::kPermissionDenied);
         m_pendingMouseLockPermissions.erase(it);
     }
 }

@@ -68,13 +68,14 @@ void ProxyingRestrictedCookieManagerQt::GetAllForUrl(const GURL &url,
                                                      const url::Origin &top_frame_origin, bool has_storage_access,
                                                      network::mojom::CookieManagerGetOptionsPtr options,
                                                      bool is_ad_tagged,
+                                                     bool force_disable_third_party_cookies,
                                                      GetAllForUrlCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     if (allowCookies(url, site_for_cookies)) {
         underlying_restricted_cookie_manager_->GetAllForUrl(url, site_for_cookies, top_frame_origin, has_storage_access,
-                                                            std::move(options), is_ad_tagged, std::move(callback));
+                                                            std::move(options), is_ad_tagged, force_disable_third_party_cookies, std::move(callback));
     } else {
         std::move(callback).Run(std::vector<net::CookieWithAccessResult>());
     }
@@ -131,6 +132,7 @@ void ProxyingRestrictedCookieManagerQt::GetCookiesString(const GURL &url,
                                                          const url::Origin &top_frame_origin,
                                                          bool has_storage_access, bool get_version_shared_memory,
                                                          bool is_ad_tagged,
+                                                         bool force_disable_third_party_cookies,
                                                          GetCookiesStringCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -138,7 +140,7 @@ void ProxyingRestrictedCookieManagerQt::GetCookiesString(const GURL &url,
     if (allowCookies(url, site_for_cookies)) {
         underlying_restricted_cookie_manager_->GetCookiesString(url, site_for_cookies, top_frame_origin,
                                                                 has_storage_access, get_version_shared_memory,
-                                                                is_ad_tagged,
+                                                                is_ad_tagged, force_disable_third_party_cookies,
                                                                 std::move(callback));
     } else {
         std::move(callback).Run(network::mojom::kInvalidCookieVersion, base::ReadOnlySharedMemoryRegion(), "");

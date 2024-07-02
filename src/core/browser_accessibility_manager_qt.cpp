@@ -23,7 +23,7 @@ namespace content {
 // static
 BrowserAccessibilityManager *BrowserAccessibilityManager::Create(
         const ui::AXTreeUpdate &initialTree,
-        WebAXPlatformTreeManagerDelegate *delegate)
+        ui::AXPlatformTreeManagerDelegate *delegate)
 {
 #if QT_CONFIG(accessibility)
     Q_ASSERT(delegate);
@@ -45,7 +45,7 @@ BrowserAccessibilityManager *BrowserAccessibilityManager::Create(
 
 // static
 BrowserAccessibilityManager *BrowserAccessibilityManager::Create(
-        WebAXPlatformTreeManagerDelegate *delegate)
+        ui::AXPlatformTreeManagerDelegate *delegate)
 {
 #if QT_CONFIG(accessibility)
     return BrowserAccessibilityManager::Create(BrowserAccessibilityManagerQt::GetEmptyDocument(), delegate);
@@ -59,7 +59,7 @@ BrowserAccessibilityManager *BrowserAccessibilityManager::Create(
 BrowserAccessibilityManagerQt::BrowserAccessibilityManagerQt(
     QtWebEngineCore::WebContentsAccessibilityQt *webContentsAccessibility,
     const ui::AXTreeUpdate &initialTree,
-    WebAXPlatformTreeManagerDelegate* delegate)
+    ui::AXPlatformTreeManagerDelegate *delegate)
       : BrowserAccessibilityManager(delegate)
       , m_webContentsAccessibility(webContentsAccessibility)
 {

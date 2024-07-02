@@ -30,6 +30,7 @@ public:
                       bool has_storage_access,
                       network::mojom::CookieManagerGetOptionsPtr options,
                       bool is_ad_tagged,
+                      bool force_disable_third_party_cookies,
                       GetAllForUrlCallback callback) override;
 
     void SetCanonicalCookie(const net::CanonicalCookie& cookie,
@@ -56,6 +57,7 @@ public:
                           const url::Origin &top_frame_origin,
                           bool has_storage_access, bool get_version_shared_memory,
                           bool is_ad_tagged,
+                          bool force_disable_third_party_cookies,
                           GetCookiesStringCallback callback) override;
     void CookiesEnabledFor(const GURL &url,
                            const net::SiteForCookies &site_for_cookies,

@@ -36,7 +36,7 @@ public:
 
     std::vector<std::u16string> GetStandardFormats(ui::ClipboardBuffer buffer, const ui::DataTransferEndpoint *data_dst) const override;
 
-    absl::optional<ui::DataTransferEndpoint> GetSource(ui::ClipboardBuffer buffer) const override;
+    std::optional<ui::DataTransferEndpoint> GetSource(ui::ClipboardBuffer buffer) const override;
 
     void ReadFilenames(ui::ClipboardBuffer buffer,
                        const ui::DataTransferEndpoint *data_dst,
@@ -45,12 +45,11 @@ public:
 protected:
     void WritePortableAndPlatformRepresentations(ui::ClipboardBuffer buffer,
                                                  const ObjectMap &objects,
-                                                 std::vector<Clipboard::PlatformRepresentation> platform_representations,
-                                                 std::unique_ptr<ui::DataTransferEndpoint> data_src) override;
-
+                                                 std::vector<PlatformRepresentation> platform_representations,
+                                                 std::unique_ptr<ui::DataTransferEndpoint> data_src,
+                                                 uint32_t) override;
     void WriteText(base::StringPiece text) override;
-    void WriteHTML(base::StringPiece markup, absl::optional<base::StringPiece> source_url,
-                   ui::ClipboardContentType content_type) override;
+    void WriteHTML(base::StringPiece markup, std::optional<base::StringPiece> source_url) override;
     void WriteRTF(base::StringPiece rtf) override;
     void WriteBookmark(base::StringPiece title, base::StringPiece url) override;
     void WriteWebSmartPaste() override;
@@ -58,6 +57,10 @@ protected:
     void WriteData(const ui::ClipboardFormatType &format, base::span<const uint8_t> data) override;
     void WriteSvg(base::StringPiece markup) override;
     void WriteFilenames(std::vector<ui::FileInfo> filenames) override;
+
+    void WriteClipboardHistory() override;
+    void WriteUploadCloudClipboard() override;
+    void WriteConfidentialDataForPassword() override;
 
     base::flat_map<ui::ClipboardBuffer, std::unique_ptr<ui::DataTransferEndpoint>> m_dataSrc;
 };

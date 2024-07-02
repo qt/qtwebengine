@@ -60,18 +60,19 @@ private:
     void InspectedContentsClosing() override;
     void OnLoadCompleted() override;
 
-    void InspectElementCompleted() override{};
+    void InspectElementCompleted() override {}
     void CloseWindow() override;
-    void Inspect(scoped_refptr<content::DevToolsAgentHost>) override{};
-    void SetInspectedPageBounds(const gfx::Rect &) override{};
-    void SetIsDocked(bool) override{};
-    void SetWhitelistedShortcuts(const std::string &) override{};
-    void OpenNodeFrontend() override{};
-    void ReadyForTest() override{};
-    void ConnectionReady() override{};
-    void SetOpenNewWindowForPopups(bool) override{};
-    void RenderProcessGone(bool) override{};
-    void ShowCertificateViewer(const std::string &) override{};
+    void Inspect(scoped_refptr<content::DevToolsAgentHost>) override {}
+    void SetInspectedPageBounds(const gfx::Rect &) override {}
+    void SetIsDocked(bool) override {}
+    void SetWhitelistedShortcuts(const std::string &) override {}
+    void OpenNodeFrontend() override {}
+    void ReadyForTest() override {}
+    void ConnectionReady() override {}
+    void SetOpenNewWindowForPopups(bool) override {}
+    void RenderProcessGone(bool) override {}
+    void ShowCertificateViewer(const std::string &) override {}
+    void OpenSearchResultsInNewTab(const std::string &) override {}
 
     // We shouldn't be keeping it alive
     QWeakPointer<WebContentsAdapter> m_frontendAdapter;

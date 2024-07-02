@@ -65,7 +65,7 @@ public:
                  int sample_count,
                  float device_scale_factor,
                  gfx::OverlayTransform transform) override;
-    void Present(const absl::optional<gfx::Rect>& update_rect,
+    void Present(const std::optional<gfx::Rect>& update_rect,
                  BufferPresentedCallback feedback,
                  viz::OutputSurfaceFrame frame) override;
     void EnsureBackbuffer() override;
@@ -121,7 +121,7 @@ protected:
 #if defined(USE_OZONE)
         scoped_refptr<gfx::NativePixmap> nativePixmap();
 #elif defined(Q_OS_WIN)
-        absl::optional<gl::DCLayerOverlayImage> overlayImage() const;
+        std::optional<gl::DCLayerOverlayImage> overlayImage() const;
 #elif defined(Q_OS_MACOS)
         gfx::ScopedIOSurface ioSurface() const;
 #endif

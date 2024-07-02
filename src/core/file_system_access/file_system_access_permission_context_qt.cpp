@@ -476,4 +476,11 @@ void FileSystemAccessPermissionContextQt::NotifyEntryMoved(const url::Origin &, 
 {
 }
 
+void FileSystemAccessPermissionContextQt::CheckPathsAgainstEnterprisePolicy(
+        std::vector<PathInfo> entries, content::GlobalRenderFrameHostId,
+        EntriesAllowedByEnterprisePolicyCallback callback)
+{
+    std::move(callback).Run(std::move(entries));
+}
+
 } // namespace QtWebEngineCore

@@ -111,7 +111,7 @@ void ExtensionsRendererClientQt::RenderThreadStarted()
     if (!extension_dispatcher_)
         extension_dispatcher_.reset(new extensions::Dispatcher(
                 std::make_unique<ExtensionsDispatcherDelegateQt>(),
-                std::vector<std::unique_ptr<extensions::ExtensionsRendererAPIProvider>>()));
+                std::vector<std::unique_ptr<const extensions::ExtensionsRendererAPIProvider>>()));
     extension_dispatcher_->OnRenderThreadStarted(thread);
     permissions_policy_delegate_.reset(new RendererPermissionsPolicyDelegateQt(extension_dispatcher_.get()));
     resource_request_policy_.reset(new extensions::ResourceRequestPolicyQt(extension_dispatcher_.get()));

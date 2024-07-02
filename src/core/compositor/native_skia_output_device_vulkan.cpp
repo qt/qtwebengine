@@ -95,7 +95,7 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
 #elif defined(Q_OS_WIN)
     Q_ASSERT(m_contextState->gr_context_type() == gpu::GrContextType::kGL);
 
-    absl::optional<gl::DCLayerOverlayImage> overlayImage = m_frontBuffer->overlayImage();
+    std::optional<gl::DCLayerOverlayImage> overlayImage = m_frontBuffer->overlayImage();
     if (!overlayImage) {
         qWarning("No overlay image.");
         return nullptr;

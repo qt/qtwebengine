@@ -271,6 +271,8 @@ def isInChromiumBlacklist(file_path):
         ))
         or '/android/java/' in file_path
         or ('/fuzz' in file_path
+          and not file_path.startswith('third_party/blink/renderer/modules/fuzzing')
+          and not file_path.startswith('v8/src/wasm/fuzzing')
           and ('/fuzz/' in file_path
             or '/fuzzer/' in file_path
             or '/fuzzers/' in file_path

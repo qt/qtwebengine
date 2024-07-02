@@ -54,7 +54,9 @@ public:
     std::u16string GetPickerTitle(const blink::mojom::FilePickerOptionsPtr &) override;
     void NotifyEntryMoved(const url::Origin &, const base::FilePath &, const base::FilePath &) override;
     void OnFileCreatedFromShowSaveFilePicker(const GURL &file_picker_binding_context,
-                                             const storage::FileSystemURL &url) override{};
+                                             const storage::FileSystemURL &url) override {};
+    void CheckPathsAgainstEnterprisePolicy(std::vector<PathInfo>, content::GlobalRenderFrameHostId,
+                                           EntriesAllowedByEnterprisePolicyCallback) override;
 
     void NavigatedAwayFromOrigin(const url::Origin &origin);
     content::BrowserContext *profile() const { return m_profile; }

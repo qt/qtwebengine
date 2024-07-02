@@ -104,7 +104,7 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
         gfx::Size size,
         gfx::BufferFormat format,
         gfx::BufferUsage usage,
-        absl::optional<gfx::Size> framebuffer_size)
+        std::optional<gfx::Size> framebuffer_size)
 {
     if (!SupportsNativePixmaps())
         return nullptr;

@@ -52,7 +52,7 @@ const char kWidevineCdmFileName[] =
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if QT_CONFIG(webengine_printing_and_pdf)
-#include "components/pdf/common/internal_plugin_helpers.h"
+#include "components/pdf/common/constants.h"
 #include "pdf/pdf.h"
 const char kPdfPluginPath[] = "internal-pdf-viewer";
 #endif // QT_CONFIG(webengine_printing_and_pdf)

@@ -104,7 +104,7 @@ public:
                                       content::MediaResponseCallback callback) override;
     void SetContentsBounds(content::WebContents *source, const gfx::Rect &bounds) override;
     void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
-    void RequestToLockMouse(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target) override;
+    void RequestPointerLock(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target) override;
     void BeforeUnloadFired(content::WebContents* tab, bool proceed, bool* proceed_to_fire_unload) override;
     bool CheckMediaAccessPermission(content::RenderFrameHost *render_frame_host,
                                     const url::Origin &security_origin,
