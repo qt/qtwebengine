@@ -135,6 +135,8 @@ class GPUInfo
 public:
     enum Vendor {
         Unknown = -1,
+
+        // PCI-SIG-registered vendors
         AMD,
         Apple,
         ARM,
@@ -142,10 +144,20 @@ public:
         ImgTec,
         Intel,
         Microsoft,
-        Mesa,
         Nvidia,
         Qualcomm,
-        Samsung
+        Samsung,
+        Broadcom,
+        VMWare,
+        VirtIO,
+
+        // Khronos-registered vendors
+        Vivante,
+        VeriSilicon,
+        Kazan,
+        CodePlay,
+        Mesa,
+        PoCL,
     };
 
     static GPUInfo *instance()
@@ -157,7 +169,7 @@ public:
     static Vendor vendorIdToVendor(quint64 vendorId)
     {
         // clang-format off
-        // Based on //third_party/dawn/src/dawn/gpu_info.json
+        // Based on //third_party/angle/src/gpu_info_util/SystemInfo.h
         static const std::map<quint64, Vendor> vendorIdMap = {
             {0x0, Unknown},
             {0x1002, AMD},
@@ -166,11 +178,19 @@ public:
             {0x1AE0, Google},
             {0x1010, ImgTec},
             {0x8086, Intel},
-            {0x10005, Mesa},
             {0x1414, Microsoft},
             {0x10DE, Nvidia},
             {0x5143, Qualcomm},
-            {0x144D, Samsung}
+            {0x144D, Samsung},
+            {0x14E4, Broadcom},
+            {0x15AD, VMWare},
+            {0x1AF4, VirtIO},
+            {0x10001, Vivante},
+            {0x10002, VeriSilicon},
+            {0x10003, Kazan},
+            {0x10004, CodePlay},
+            {0x10005, Mesa},
+            {0x10006, PoCL},
         };
         // clang-format on
 
@@ -216,11 +236,19 @@ public:
             {Google, "Google"},
             {ImgTec, "Img Tec"},
             {Intel, "Intel"},
-            {Mesa, "Mesa"},
             {Microsoft, "Microsoft"},
             {Nvidia, "Nvidia"},
             {Qualcomm, "Qualcomm"},
-            {Samsung, "Samsung"}
+            {Samsung, "Samsung"},
+            {Broadcom, "Broadcom"},
+            {VMWare, "VMWare"},
+            {VirtIO, "VirtIO"},
+            {Vivante, "Vivante"},
+            {VeriSilicon, "VeriSilicon"},
+            {Kazan, "Kazan"},
+            {CodePlay, "CodePlay"},
+            {Mesa, "Mesa"},
+            {PoCL, "PoCL"},
         };
         // clang-format on
 
