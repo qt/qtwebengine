@@ -162,11 +162,16 @@ bool GLContextHelper::isCreateContextRobustnessSupported()
 class ScopedGLContext
 {
 public:
-    ScopedGLContext(QOffscreenSurface *surface)
-        : m_context(new QOpenGLContext())
-        , m_previousContext(gl::GLContext::GetCurrent())
-        , m_previousSurface(gl::GLSurface::GetCurrent())
+    ScopedGLContext(QOffscreenSurface *surface) : m_context(new QOpenGLContext())
     {
+        if (gl::GLContext::GetCurrent()) {
+            auto eglFun = EGLHelper::instance()->functions();
+            m_previousEGLContext = eglFun->eglGetCurrentContext();
+            m_previousEGLDrawSurface = eglFun->eglGetCurrentSurface(EGL_DRAW);
+            m_previousEGLReadSurface = eglFun->eglGetCurrentSurface(EGL_READ);
+            m_previousEGLDisplay = eglFun->eglGetCurrentDisplay();
+        }
+
         if (!m_context->create()) {
             qWarning("Failed to create OpenGL context.");
             return;
@@ -186,8 +191,18 @@ public:
             glFun->glDeleteTextures(m_textures.size(), m_textures.data());
         }
 
-        if (m_previousContext)
-            m_previousContext->MakeCurrent(m_previousSurface);
+        if (m_previousEGLContext) {
+            // Make sure the scoped context is not current when restoring the previous
+            // EGL context otherwise the QOpenGLContext destructor resets the restored
+            // current context.
+            m_context->doneCurrent();
+
+            auto eglFun = EGLHelper::instance()->functions();
+            eglFun->eglMakeCurrent(m_previousEGLDisplay, m_previousEGLDrawSurface,
+                                   m_previousEGLReadSurface, m_previousEGLContext);
+            if (eglFun->eglGetError() != EGL_SUCCESS)
+                qWarning("Failed to restore EGL context.");
+        }
     }
 
     bool isValid() const { return m_context->isValid() && (m_context->surface() != nullptr); }
@@ -223,8 +238,10 @@ public:
 
 private:
     QScopedPointer<QOpenGLContext> m_context;
-    gl::GLContext *m_previousContext;
-    gl::GLSurface *m_previousSurface;
+    EGLContext m_previousEGLContext = nullptr;
+    EGLSurface m_previousEGLDrawSurface = nullptr;
+    EGLSurface m_previousEGLReadSurface = nullptr;
+    EGLDisplay m_previousEGLDisplay = nullptr;
     std::vector<uint> m_textures;
 };
 
@@ -235,11 +252,18 @@ EGLHelper::EGLFunctions::EGLFunctions()
 
     eglCreateImage = reinterpret_cast<PFNEGLCREATEIMAGEPROC>(getProcAddress("eglCreateImage"));
     eglDestroyImage = reinterpret_cast<PFNEGLDESTROYIMAGEPROC>(getProcAddress("eglDestroyImage"));
-    eglGetError = reinterpret_cast<PFNEGLGETERRORPROC>(getProcAddress("eglGetError"));
     eglExportDMABUFImageMESA = reinterpret_cast<PFNEGLEXPORTDMABUFIMAGEMESAPROC>(
             getProcAddress("eglExportDMABUFImageMESA"));
     eglExportDMABUFImageQueryMESA = reinterpret_cast<PFNEGLEXPORTDMABUFIMAGEQUERYMESAPROC>(
             getProcAddress("eglExportDMABUFImageQueryMESA"));
+    eglGetCurrentContext =
+            reinterpret_cast<PFNEGLGETCURRENTCONTEXTPROC>(getProcAddress("eglGetCurrentContext"));
+    eglGetCurrentDisplay =
+            reinterpret_cast<PFNEGLGETCURRENTDISPLAYPROC>(getProcAddress("eglGetCurrentDisplay"));
+    eglGetCurrentSurface =
+            reinterpret_cast<PFNEGLGETCURRENTSURFACEPROC>(getProcAddress("eglGetCurrentSurface"));
+    eglGetError = reinterpret_cast<PFNEGLGETERRORPROC>(getProcAddress("eglGetError"));
+    eglMakeCurrent = reinterpret_cast<PFNEGLMAKECURRENTPROC>(getProcAddress("eglMakeCurrent"));
     eglQueryString = reinterpret_cast<PFNEGLQUERYSTRINGPROC>(getProcAddress("eglQueryString"));
 }
 

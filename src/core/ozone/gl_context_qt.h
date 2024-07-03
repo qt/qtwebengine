@@ -50,7 +50,11 @@ private:
 #undef eglDestroyImage
 #undef eglExportDMABUFImageMESA
 #undef eglExportDMABUFImageQueryMESA
+#undef eglGetCurrentContext
+#undef eglGetCurrentDisplay
+#undef eglGetCurrentSurface
 #undef eglGetError
+#undef eglMakeCurrent
 #undef eglQueryString
 
 class EGLHelper
@@ -64,7 +68,11 @@ public:
         PFNEGLDESTROYIMAGEPROC eglDestroyImage;
         PFNEGLEXPORTDMABUFIMAGEMESAPROC eglExportDMABUFImageMESA;
         PFNEGLEXPORTDMABUFIMAGEQUERYMESAPROC eglExportDMABUFImageQueryMESA;
+        PFNEGLGETCURRENTCONTEXTPROC eglGetCurrentContext;
+        PFNEGLGETCURRENTDISPLAYPROC eglGetCurrentDisplay;
+        PFNEGLGETCURRENTSURFACEPROC eglGetCurrentSurface;
         PFNEGLGETERRORPROC eglGetError;
+        PFNEGLMAKECURRENTPROC eglMakeCurrent;
         PFNEGLQUERYSTRINGPROC eglQueryString;
     };
 
