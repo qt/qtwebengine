@@ -898,7 +898,7 @@ void QQuickWebEngineViewPrivate::printRequestedByFrame(quint64 frameId)
 {
     Q_Q(QQuickWebEngineView);
     QTimer::singleShot(0, q, [this, q, frameId]() {
-        Q_EMIT q->printRequestedByFrame(QWebEngineFrame(this, frameId));
+        Q_EMIT q->printRequestedByFrame(QWebEngineFrame(this->adapter, frameId));
     });
 }
 
@@ -2597,14 +2597,14 @@ QQmlComponent *QQuickWebEngineView::touchHandleDelegate() const
 QWebEngineFrame QQuickWebEngineView::mainFrame()
 {
     Q_D(QQuickWebEngineView);
-    return QWebEngineFrame(d, d->adapter->mainFrameId());
+    return QWebEngineFrame(d->adapter, d->adapter->mainFrameId());
 }
 
 QWebEngineFrame QQuickWebEngineView::findFrameByName(const QString &name)
 {
     Q_D(QQuickWebEngineView);
     auto maybeId = d->adapter->findFrameIdByName(name);
-    return QWebEngineFrame(d, maybeId.value_or(WebContentsAdapter::kInvalidFrameId));
+    return QWebEngineFrame(d->adapter, maybeId.value_or(WebContentsAdapter::kInvalidFrameId));
 }
 
 void QQuickWebEngineView::save(const QString &filePath,

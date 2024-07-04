@@ -1561,6 +1561,11 @@ content::WebContents *WebContentsAdapter::guestWebContents() const
     return !innerWebContents.empty() ? innerWebContents[0] : nullptr;
 }
 
+WebContentsAdapterClient *WebContentsAdapter::adapterClient()
+{
+    return m_adapterClient;
+}
+
 #if QT_CONFIG(webengine_webchannel)
 QWebChannel *WebContentsAdapter::webChannel() const
 {
