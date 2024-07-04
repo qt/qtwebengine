@@ -104,7 +104,7 @@ QWebEnginePermission &QWebEnginePermission::operator=(const QWebEnginePermission
     return *this;
 }
 
-bool QWebEnginePermission::comparesEqual(const QWebEnginePermission &other) const
+bool QWebEnginePermission::equals(const QWebEnginePermission &other) const
 {
     if (this == &other)
         return true;

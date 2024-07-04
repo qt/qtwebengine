@@ -79,11 +79,11 @@ public:
 
 private:
     inline friend bool operator==(const QWebEnginePermission &lhs, const QWebEnginePermission &rhs)
-        { return lhs.comparesEqual(rhs); };
+        { return lhs.equals(rhs); };
     inline friend bool operator!=(const QWebEnginePermission &lhs, const QWebEnginePermission &rhs)
-        { return !lhs.comparesEqual(rhs); };
+        { return !lhs.equals(rhs); };
 
-    Q_WEBENGINECORE_EXPORT bool comparesEqual(const QWebEnginePermission &other) const;
+    Q_WEBENGINECORE_EXPORT bool equals(const QWebEnginePermission &other) const;
 
 protected:
     friend class QWebEnginePagePrivate;
