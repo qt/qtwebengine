@@ -336,12 +336,17 @@ void UIDelegatesManager::showDialog(QSharedPointer<AuthenticationDialogControlle
 
     QQmlProperty acceptSignal(authenticationDialog, QStringLiteral("onAccepted"));
     QQmlProperty rejectSignal(authenticationDialog, QStringLiteral("onRejected"));
+    QQmlProperty credentialsSignal(authenticationDialog, QStringLiteral("onCredentials"));
     CHECK_QML_SIGNAL_PROPERTY(acceptSignal, authenticationDialogComponent->url());
     CHECK_QML_SIGNAL_PROPERTY(rejectSignal, authenticationDialogComponent->url());
 
-    static int acceptIndex = dialogController->metaObject()->indexOfSlot("accept(QString,QString)");
+    static int acceptIndex = dialogController->metaObject()->indexOfSlot("accept()");
+    static int credentialsIndex =
+            dialogController->metaObject()->indexOfSlot("credentials(QString,QString)");
     static int deleteLaterIndex = authenticationDialog->metaObject()->indexOfSlot("deleteLater()");
     QObject::connect(authenticationDialog, acceptSignal.method(), dialogController.data(), dialogController->metaObject()->method(acceptIndex));
+    QObject::connect(authenticationDialog, credentialsSignal.method(), dialogController.data(),
+                     dialogController->metaObject()->method(credentialsIndex));
     QObject::connect(authenticationDialog, acceptSignal.method(), authenticationDialog, authenticationDialog->metaObject()->method(deleteLaterIndex));
     static int rejectIndex = dialogController->metaObject()->indexOfSlot("reject()");
     QObject::connect(authenticationDialog, rejectSignal.method(), dialogController.data(), dialogController->metaObject()->method(rejectIndex));

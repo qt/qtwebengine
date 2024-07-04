@@ -571,7 +571,8 @@ void QWebEnginePagePrivate::authenticationRequired(QSharedPointer<Authentication
         return;
     }
 
-    controller->accept(networkAuth.user(), networkAuth.password());
+    controller->credentials(networkAuth.user(), networkAuth.password());
+    controller->accept();
 }
 
 void QWebEnginePagePrivate::releaseProfile()
