@@ -13,6 +13,11 @@
 
 QT_BEGIN_NAMESPACE
 
+#define LOCK_ADAPTER(adapter_variable, return_value)                                               \
+    auto adapter = m_adapter.lock();                                                               \
+    if (!adapter)                                                                                  \
+    return return_value
+
 /*!
     \class QWebEngineFrame
     \brief The QWebEngineFrame class gives information about and control over a page frame.
@@ -34,8 +39,9 @@ QT_BEGIN_NAMESPACE
 
 /*! \internal
  */
-QWebEngineFrame::QWebEngineFrame(QtWebEngineCore::WebContentsAdapterClient *adapter, quint64 id)
-    : m_adapterClient(adapter), m_id(id)
+QWebEngineFrame::QWebEngineFrame(QWeakPointer<QtWebEngineCore::WebContentsAdapter> adapter,
+                                 quint64 id)
+    : m_adapter(std::move(adapter)), m_id(id)
 {
 }
 
@@ -46,7 +52,8 @@ QWebEngineFrame::QWebEngineFrame(QtWebEngineCore::WebContentsAdapterClient *adap
 */
 bool QWebEngineFrame::isValid() const
 {
-    return m_adapterClient->webContentsAdapter()->hasFrame(m_id);
+    LOCK_ADAPTER(adapter, false);
+    return adapter->hasFrame(m_id);
 }
 
 /*!
@@ -58,7 +65,8 @@ bool QWebEngineFrame::isValid() const
 */
 QString QWebEngineFrame::name() const
 {
-    return m_adapterClient->webContentsAdapter()->frameName(m_id);
+    LOCK_ADAPTER(adapter, QString());
+    return adapter->frameName(m_id);
 }
 
 /*!
@@ -70,7 +78,8 @@ QString QWebEngineFrame::name() const
 */
 QString QWebEngineFrame::htmlName() const
 {
-    return m_adapterClient->webContentsAdapter()->frameHtmlName(m_id);
+    LOCK_ADAPTER(adapter, QString());
+    return adapter->frameHtmlName(m_id);
 }
 
 /*!
@@ -80,9 +89,10 @@ QString QWebEngineFrame::htmlName() const
  */
 QList<QWebEngineFrame> QWebEngineFrame::children() const
 {
+    LOCK_ADAPTER(adapter, {});
     QList<QWebEngineFrame> result;
-    for (auto childId : m_adapterClient->webContentsAdapter()->frameChildren(m_id))
-        result.push_back(QWebEngineFrame{ m_adapterClient, childId });
+    for (auto childId : adapter->frameChildren(m_id))
+        result.push_back(QWebEngineFrame{ m_adapter, childId });
     return result;
 }
 
@@ -93,7 +103,8 @@ QList<QWebEngineFrame> QWebEngineFrame::children() const
  */
 QUrl QWebEngineFrame::url() const
 {
-    return m_adapterClient->webContentsAdapter()->frameUrl(m_id);
+    LOCK_ADAPTER(adapter, QUrl());
+    return adapter->frameUrl(m_id);
 }
 
 /*!
@@ -103,7 +114,8 @@ QUrl QWebEngineFrame::url() const
  */
 QSizeF QWebEngineFrame::size() const
 {
-    return m_adapterClient->webContentsAdapter()->frameSize(m_id);
+    LOCK_ADAPTER(adapter, QSizeF());
+    return adapter->frameSize(m_id);
 }
 
 /*!
@@ -111,7 +123,8 @@ QSizeF QWebEngineFrame::size() const
 */
 bool QWebEngineFrame::isMainFrame() const
 {
-    return m_adapterClient->webContentsAdapter()->mainFrameId() == m_id;
+    LOCK_ADAPTER(adapter, false);
+    return adapter->mainFrameId() == m_id;
 }
 
 /*! \fn void QWebEngineFrame::runJavaScript(const QString &script, const std::function<void(const QVariant &)> &callback)
@@ -153,7 +166,8 @@ void QWebEngineFrame::runJavaScript(const QString &script,
 void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId,
                                     const std::function<void(const QVariant &)> &callback)
 {
-    m_adapterClient->runJavaScript(script, worldId, m_id, callback);
+    LOCK_ADAPTER(adapter, );
+    adapter->runJavaScript(script, worldId, m_id, callback);
 }
 
 void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId)
@@ -169,9 +183,10 @@ void QWebEngineFrame::runJavaScript(const QString &script, const QJSValue &callb
 void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId,
                                     const QJSValue &callback)
 {
+    LOCK_ADAPTER(adapter, );
     std::function<void(const QVariant &)> wrappedCallback;
     if (!callback.isUndefined()) {
-        const QObject *holdingObject = m_adapterClient->holdingQObject();
+        const QObject *holdingObject = adapter->adapterClient()->holdingQObject();
         wrappedCallback = [holdingObject, callback](const QVariant &result) {
             if (auto engine = qmlEngine(holdingObject)) {
                 QJSValueList args;
@@ -203,8 +218,9 @@ void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId,
  */
 void QWebEngineFrame::printToPdf(const QString &filePath)
 {
+    LOCK_ADAPTER(adapter, );
     QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF());
-    m_adapterClient->printToPdf(filePath, layout, QPageRanges(), m_id);
+    adapter->adapterClient()->printToPdf(filePath, layout, QPageRanges(), m_id);
 }
 
 /*!
@@ -219,19 +235,21 @@ void QWebEngineFrame::printToPdf(const QString &filePath)
 */
 void QWebEngineFrame::printToPdf(const std::function<void(const QByteArray &)> &callback)
 {
+    LOCK_ADAPTER(adapter, );
     std::function wrappedCallback = [callback](QSharedPointer<QByteArray> result) {
         if (callback)
             callback(result ? *result : QByteArray());
     };
     QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF());
-    m_adapterClient->printToPdf(std::move(wrappedCallback), layout, QPageRanges(), m_id);
+    adapter->adapterClient()->printToPdf(std::move(wrappedCallback), layout, QPageRanges(), m_id);
 }
 
 void QWebEngineFrame::printToPdf(const QJSValue &callback)
 {
+    LOCK_ADAPTER(adapter, );
     std::function<void(QSharedPointer<QByteArray>)> wrappedCallback;
     if (!callback.isUndefined()) {
-        const QObject *holdingObject = m_adapterClient->holdingQObject();
+        const QObject *holdingObject = adapter->adapterClient()->holdingQObject();
         wrappedCallback = [holdingObject, callback](QSharedPointer<QByteArray> result) {
             if (auto engine = qmlEngine(holdingObject)) {
                 QJSValueList args;
@@ -243,7 +261,7 @@ void QWebEngineFrame::printToPdf(const QJSValue &callback)
         };
     }
     QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF());
-    m_adapterClient->printToPdf(std::move(wrappedCallback), layout, QPageRanges(), m_id);
+    adapter->adapterClient()->printToPdf(std::move(wrappedCallback), layout, QPageRanges(), m_id);
 }
 
 /*! \fn bool QWebEngineFrame::operator==(const QWebEngineFrame &left, const QWebEngineFrame &right) noexcept

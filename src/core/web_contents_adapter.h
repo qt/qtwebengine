@@ -238,6 +238,7 @@ public:
     void initialize(content::SiteInstance *site);
     content::WebContents *webContents() const;
     content::WebContents *guestWebContents() const;
+    WebContentsAdapterClient *adapterClient();
     void updateRecommendedState();
     void setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
     QWebEngineUrlRequestInterceptor* requestInterceptor() const;

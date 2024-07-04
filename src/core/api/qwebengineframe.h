@@ -12,9 +12,10 @@
 #include <QtCore/QSizeF>
 #include <QtCore/QString>
 #include <QtCore/QUrl>
+#include <QtCore/QWeakPointer>
 
 namespace QtWebEngineCore {
-class WebContentsAdapterClient;
+class WebContentsAdapter;
 }
 
 QT_BEGIN_NAMESPACE
@@ -61,7 +62,7 @@ public:
     friend inline bool comparesEqual(const QWebEngineFrame &lhs,
                                      const QWebEngineFrame &rhs) noexcept
     {
-        return lhs.m_adapterClient == rhs.m_adapterClient && lhs.m_id == rhs.m_id;
+        return lhs.m_adapter == rhs.m_adapter && lhs.m_id == rhs.m_id;
     }
 
     Q_DECLARE_EQUALITY_COMPARABLE(QWebEngineFrame);
@@ -72,10 +73,10 @@ private:
     friend class QQuickWebEngineView;
     friend class QQuickWebEngineViewPrivate;
 
-    Q_WEBENGINECORE_EXPORT QWebEngineFrame(QtWebEngineCore::WebContentsAdapterClient *page,
-                                           quint64 id);
+    Q_WEBENGINECORE_EXPORT
+    QWebEngineFrame(QWeakPointer<QtWebEngineCore::WebContentsAdapter> adapter, quint64 id);
 
-    QtWebEngineCore::WebContentsAdapterClient *m_adapterClient;
+    QWeakPointer<QtWebEngineCore::WebContentsAdapter> m_adapter;
     quint64 m_id;
 };
 

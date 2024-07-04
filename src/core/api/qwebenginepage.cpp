@@ -1768,7 +1768,7 @@ void QWebEnginePagePrivate::printRequested()
 void QWebEnginePagePrivate::printRequestedByFrame(quint64 frameId)
 {
     Q_Q(QWebEnginePage);
-    QWebEngineFrame frame(this, frameId);
+    QWebEngineFrame frame(adapter, frameId);
     QTimer::singleShot(0, q, [q, frame]() { Q_EMIT q->printRequestedByFrame(frame); });
     if (view)
         view->printRequestedByFrame(frame);
@@ -2555,7 +2555,7 @@ void QWebEnginePage::setVisible(bool visible)
 QWebEngineFrame QWebEnginePage::mainFrame()
 {
     Q_D(QWebEnginePage);
-    return QWebEngineFrame(d, d->adapter->mainFrameId());
+    return QWebEngineFrame(d->adapter, d->adapter->mainFrameId());
 }
 
 /*!
@@ -2568,7 +2568,7 @@ std::optional<QWebEngineFrame> QWebEnginePage::findFrameByName(QAnyStringView na
 {
     Q_D(QWebEnginePage);
     if (auto maybeId = d->adapter->findFrameIdByName(name.toString())) {
-        return QWebEngineFrame(d, *maybeId);
+        return QWebEngineFrame(d->adapter, *maybeId);
     }
     return {};
 }
