@@ -800,7 +800,7 @@ void tst_QQuickWebEngineView::setZoomFactor()
     view->setZoomFactor(2.5);
     QCOMPARE(view->zoomFactor(), 2.5);
 
-    const QUrl url1 = urlFromTestPath("html/basic_page.html"), url2 = urlFromTestPath("html/basic_page2.html");
+    const QUrl url1 = urlFromTestPath("html/basic_page.html");
 
     view->setUrl(url1);
     QVERIFY(waitForLoadSucceeded(view));
@@ -817,20 +817,22 @@ void tst_QQuickWebEngineView::setZoomFactor()
     view2->setParentItem(m_window->contentItem());
 
     // try loading different url and check new values after load
-    for (auto &&p : {
-            qMakePair(view, 2.5), // navigating away to different url should keep zoom
-            qMakePair(view2.get(), 1.0), // same url navigation in diffent page shouldn't be affected
-        }) {
-        auto &&view = p.first; auto zoomFactor = p.second;
-        view->setUrl(url2);
-        QVERIFY(waitForLoadSucceeded(view));
-        QCOMPARE(view->zoomFactor(), zoomFactor);
-    }
+    const QUrl url2 = urlFromTestPath("html/basic_page2.html");
 
-    // should have no influence on first page
+    // navigating away to different url should keep zoom
+    view->setUrl(url2);
+    QVERIFY(waitForLoadSucceeded(view));
+    QCOMPARE(view->zoomFactor(), 2.5);
+
+    // same url navigation in different view shouldn't be affected
+    view2->setUrl(url2);
+    QVERIFY(waitForLoadSucceeded(view2.get()));
+    QCOMPARE(view2->zoomFactor(), 1.0);
+
+    // should have no influence on first view
     view2->setZoomFactor(3.5);
-    for (auto &&p : { qMakePair(view, 2.5), qMakePair(view2.get(), 3.5), })
-        QCOMPARE(p.first->zoomFactor(), p.second);
+    QCOMPARE(view->zoomFactor(), 2.5);
+    QCOMPARE(view2->zoomFactor(), 3.5);
 }
 
 void tst_QQuickWebEngineView::printToPdf()

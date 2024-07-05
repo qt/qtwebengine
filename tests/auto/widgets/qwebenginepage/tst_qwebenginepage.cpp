@@ -3234,13 +3234,13 @@ void tst_QWebEnginePage::toPlainTextLoadFinishedRace()
 
 void tst_QWebEnginePage::setZoomFactor()
 {
-    TestBasePage page, page2;
+    TestBasePage page;
 
     QCOMPARE(page.zoomFactor(), 1.0);
     page.setZoomFactor(2.5);
     QCOMPARE(page.zoomFactor(), 2.5);
 
-    const QUrl url1("qrc:/resources/test1.html"), url2(QUrl("qrc:/resources/test2.html"));
+    const QUrl url1("qrc:/resources/test1.html");
 
     page.load(url1);
     QTRY_COMPARE(page.loadSpy.size(), 1);
@@ -3254,22 +3254,26 @@ void tst_QWebEnginePage::setZoomFactor()
     QCOMPARE(page.zoomFactor(), 2.5);
 
     // try loading different url and check new values after load
+    const QUrl url2(QUrl("qrc:/resources/test2.html"));
+
+    // navigating away to different url should keep zoom
     page.loadSpy.clear();
-    for (auto &&p : {
-            qMakePair(&page, 2.5), // navigating away to different url should keep zoom
-            qMakePair(&page2, 1.0), // same url navigation in diffent page shouldn't be affected
-        }) {
-        auto &&page = *p.first; auto zoomFactor = p.second;
-        page.load(url2);
-        QTRY_COMPARE(page.loadSpy.size(), 1);
-        QVERIFY(page.loadSpy.last().first().toBool());
-        QCOMPARE(page.zoomFactor(), zoomFactor);
-    }
+    page.load(url2);
+    QTRY_COMPARE(page.loadSpy.size(), 1);
+    QVERIFY(page.loadSpy.last().first().toBool());
+    QCOMPARE(page.zoomFactor(), 2.5);
+
+    // same url navigation in different page shouldn't be affected
+    TestBasePage page2;
+    page2.load(url2);
+    QTRY_COMPARE(page2.loadSpy.size(), 1);
+    QVERIFY(page2.loadSpy.last().first().toBool());
+    QCOMPARE(page2.zoomFactor(), 1.0);
 
     // should have no influence on first page
     page2.setZoomFactor(3.5);
-    for (auto &&p : { qMakePair(&page, 2.5), qMakePair(&page2, 3.5), })
-        QCOMPARE(p.first->zoomFactor(), p.second);
+    QCOMPARE(page.zoomFactor(), 2.5);
+    QCOMPARE(page2.zoomFactor(), 3.5);
 }
 
 void tst_QWebEnginePage::mouseButtonTranslation()
