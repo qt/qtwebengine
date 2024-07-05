@@ -510,10 +510,6 @@ foreach(arch ${archs})
                 ARGS rtc_use_x11
                 CONDITION QT_FEATURE_webengine_ozone_x11 AND QT_FEATURE_webengine_webrtc
             )
-            extend_gn_list(gnArgArg
-                ARGS use_vaapi_x11
-                CONDITION QT_FEATURE_webengine_ozone_x11 AND QT_FEATURE_webengine_vaapi
-            )
 
             if(QT_FEATURE_webengine_kerberos)
                 list(APPEND gnArgArg
