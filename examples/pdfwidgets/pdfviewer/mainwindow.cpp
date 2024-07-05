@@ -19,6 +19,8 @@
 #include <QStandardPaths>
 #include <QtMath>
 
+using namespace Qt::StringLiterals;
+
 const qreal zoomMultiplier = qSqrt(2.0);
 
 Q_LOGGING_CATEGORY(lcExample, "qt.examples.pdfviewer")
@@ -115,8 +117,9 @@ void MainWindow::pageSelected(int page)
     const auto documentTitle = m_document->metaData(QPdfDocument::MetaDataField::Title).toString();
     setWindowTitle(!documentTitle.isEmpty() ? documentTitle : QStringLiteral("PDF Viewer"));
     setWindowTitle(tr("%1: page %2 (%3 of %4)")
-                   .arg(documentTitle.isEmpty() ? u"PDF Viewer"_qs : documentTitle,
-                        m_pageSelector->currentPageLabel(), QString::number(page + 1), QString::number(m_document->pageCount())));
+                           .arg(documentTitle.isEmpty() ? u"PDF Viewer"_s : documentTitle,
+                                m_pageSelector->currentPageLabel(), QString::number(page + 1),
+                                QString::number(m_document->pageCount())));
 }
 
 void MainWindow::searchResultSelected(const QModelIndex &current, const QModelIndex &previous)
