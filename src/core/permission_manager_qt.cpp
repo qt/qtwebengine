@@ -531,6 +531,8 @@ void PermissionManagerQt::setPermission(
 
     ScopedDictPrefUpdate updater(m_prefService.get(), permissionTypeString(permissionType));
     updater.Get().Set(requesting_origin.spec(), granted);
+
+    m_prefService->SchedulePendingLossyWrites();
 }
 
 } // namespace QtWebEngineCore

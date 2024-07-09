@@ -150,6 +150,8 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     m_prefService->ClearPref(spellcheck::prefs::kSpellCheckEnable);
     m_prefService->ClearPref(spellcheck::prefs::kSpellCheckDictionaries);
 #endif // QT_CONFIG(webengine_spellchecker)
+
+    m_prefService->SchedulePendingLossyWrites();
 }
 
 void PrefServiceAdapter::commit()
@@ -185,6 +187,7 @@ void PrefServiceAdapter::setSpellCheckLanguages(const QStringList &languages)
     for (const auto &language : languages)
         dictionaries.push_back(language.toStdString());
     dictionaries_pref.SetValue(dictionaries);
+    m_prefService->SchedulePendingLossyWrites();
 }
 
 QStringList PrefServiceAdapter::spellCheckLanguages() const
@@ -201,6 +204,7 @@ QStringList PrefServiceAdapter::spellCheckLanguages() const
 void PrefServiceAdapter::setSpellCheckEnabled(bool enabled)
 {
     m_prefService->SetBoolean(spellcheck::prefs::kSpellCheckEnable, enabled);
+    m_prefService->SchedulePendingLossyWrites();
 }
 
 bool PrefServiceAdapter::isSpellCheckEnabled() const
