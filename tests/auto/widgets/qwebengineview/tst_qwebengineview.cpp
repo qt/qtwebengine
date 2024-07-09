@@ -3164,6 +3164,9 @@ void tst_QWebEngineView::globalMouseSelection()
         return;
     }
 
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: Manipulating the clipboard requires real input events. Can't auto test.");
+
     QApplication::clipboard()->clear(QClipboard::Selection);
     QWebEngineView view;
     view.resize(640, 480);

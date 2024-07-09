@@ -574,6 +574,9 @@ void tst_QWebEnginePage::callbackSpyDeleted()
 
 void tst_QWebEnginePage::pasteImage()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: Manipulating the clipboard requires real input events. Can't auto test.");
+
     // Pixels with an alpha value of 0 will have different RGB values after the
     // test -> clipboard -> webengine -> test roundtrip.
     // Clear the alpha channel to make QCOMPARE happy.
@@ -1424,6 +1427,10 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
 #if defined(Q_OS_MACOS) && (defined(__arm64__) || defined(__aarch64__))
     QSKIP("This test crashes for Apple M1");
 #endif
+
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: Moving the window requires real input events. Can't auto test.");
+
     QWebEngineView view;
     QTRY_VERIFY(QGuiApplication::primaryScreen());
     view.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft());
@@ -3332,6 +3339,9 @@ void tst_QWebEnginePage::mouseButtonTranslation()
 
 void tst_QWebEnginePage::mouseMovementProperties()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: Can't manipulating the mouse cursor in auto test.");
+
     QWebEngineView view;
     ConsolePage page;
     view.setPage(&page);

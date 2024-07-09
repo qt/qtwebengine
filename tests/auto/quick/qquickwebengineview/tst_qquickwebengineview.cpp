@@ -1097,6 +1097,9 @@ void tst_QQuickWebEngineView::javascriptClipboard_data()
 
 void tst_QQuickWebEngineView::javascriptClipboard()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: Manipulating the clipboard requires real input events. Can't auto test.");
+
     QFETCH(bool, javascriptCanAccessClipboard);
     QFETCH(bool, javascriptCanPaste);
     QFETCH(bool, copyResult);
