@@ -20,6 +20,9 @@ qt_webengine_set_version(re2 11.0.0)
 qt_webengine_set_version(icu 70)
 qt_webengine_set_version(opus 1.3.1)
 qt_webengine_set_version(vpx 1.10.0)
+qt_webengine_set_version(libavutil 58.29.100)
+qt_webengine_set_version(libavcodec 60.31.102)
+qt_webengine_set_version(libavformat 60.16.100)
 
 if(QT_CONFIGURE_RUNNING)
     function(qt_webengine_configure_check)
@@ -72,7 +75,10 @@ if(PkgConfig_FOUND)
     pkg_check_modules(LCMS2 lcms2)
     pkg_check_modules(FREETYPE freetype2 IMPORTED_TARGET)
     pkg_check_modules(LIBXML2 libxml-2.0 libxslt IMPORTED_TARGET)
-    pkg_check_modules(FFMPEG libavcodec libavformat libavutil IMPORTED_TARGET)
+    pkg_check_modules(FFMPEG libavcodec>=${QT_CONFIGURE_CHECK_libavcodec_version}
+                             libavformat>=${QT_CONFIGURE_CHECK_libavformat_version}
+                             libavutil>=${QT_CONFIGURE_CHECK_libavutil_version}
+                             IMPORTED_TARGET)
     pkg_check_modules(OPUS opus>=${QT_CONFIGURE_CHECK_opus_version})
     pkg_check_modules(VPX vpx>=${QT_CONFIGURE_CHECK_vpx_version} IMPORTED_TARGET)
     pkg_check_modules(LIBPCI libpci)
