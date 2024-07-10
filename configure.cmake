@@ -52,7 +52,10 @@ if(PkgConfig_FOUND)
     pkg_check_modules(LCMS2 lcms2)
     pkg_check_modules(FREETYPE freetype2 IMPORTED_TARGET)
     pkg_check_modules(LIBXML2 libxml-2.0 libxslt IMPORTED_TARGET)
-    pkg_check_modules(FFMPEG libavcodec libavformat libavutil IMPORTED_TARGET)
+    pkg_check_modules(FFMPEG libavcodec>=60.31.102
+                             libavformat>=60.16.100
+                             libavutil>=58.29.100
+                             IMPORTED_TARGET)
     pkg_check_modules(OPUS opus>=1.3.1)
     pkg_check_modules(VPX vpx>=1.10.0 IMPORTED_TARGET)
     pkg_check_modules(LIBPCI libpci)
