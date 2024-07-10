@@ -15,7 +15,6 @@ class WebView : public QWebEngineView
 public:
     void activateMenu(QWidget *widget, const QPoint &position)
     {
-        QTest::mouseMove(widget, position);
         QTest::mousePress(widget, Qt::RightButton, {}, position);
         QContextMenuEvent evcont(QContextMenuEvent::Mouse, position, mapToGlobal(position));
         event(&evcont);
@@ -146,8 +145,7 @@ void tst_Spellchecking::spellcheck()
     QRect rect(list[0].value<int>(),list[1].value<int>(),list[2].value<int>(),list[3].value<int>());
 
     QTRY_VERIFY(m_view->focusWidget());
-    //type text, spellchecker needs time
-    QTest::mouseMove(m_view->focusWidget(), QPoint(20,20));
+    // type text, spellchecker needs time
     QTest::mousePress(m_view->focusWidget(), Qt::LeftButton, {}, QPoint(20,20));
     QTest::mouseRelease(m_view->focusWidget(), Qt::LeftButton, {}, QPoint(20,20));
     QString text("I lowe Qt ....");

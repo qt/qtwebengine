@@ -74,9 +74,6 @@ bool QQuickDataTest::showView(QQuickView &view, const QUrl &url)
     const QSize size = view.size();
     const QPoint offset = QPoint(size.width() / 2, size.height() / 2);
     view.setFramePosition(screenGeometry.center() - offset);
-#if QT_CONFIG(cursor) // Get the cursor out of the way.
-     QCursor::setPos(view.geometry().topRight() + QPoint(100, 100));
-#endif
     view.show();
     if (!QTest::qWaitForWindowExposed(&view))
         return false;
