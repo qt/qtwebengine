@@ -1847,6 +1847,10 @@ void tst_QWebEngineView::postData()
 
 void tst_QWebEngineView::inputFieldOverridesShortcuts()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(
+                QPlatformIntegration::WindowActivation))
+        QSKIP("Cannot test on platforms without window activation capability");
+
     QWebEngineView view;
     bool actionTriggered = false;
     QAction *action = new QAction(&view);
