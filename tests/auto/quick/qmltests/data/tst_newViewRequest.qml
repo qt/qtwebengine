@@ -34,18 +34,17 @@ TestWebEngineView {
             "requestedUrl": request.requestedUrl
         };
 
-        dialog = Qt.createQmlObject(
-            "import QtQuick.Window\n" +
-            "Window {\n" +
-            "    width: 100; height: 100\n" +
-            "    visible: true; flags: Qt.Dialog\n" +
-            "    property alias webEngineView: webView\n" +
-            "    TestWebEngineView { id: webView; anchors.fill: parent }\n" +
-            "}", webEngineView);
-
-        if (viewType === "dialog")
+        if (viewType === "dialog") {
+            dialog = Qt.createQmlObject(
+                "import QtQuick.Window\n" +
+                "Window {\n" +
+                "    width: 100; height: 100\n" +
+                "    visible: true; flags: Qt.Dialog\n" +
+                "    property alias webEngineView: webView\n" +
+                "    TestWebEngineView { id: webView; anchors.fill: parent }\n" +
+                "}", webEngineView);
             request.openIn(dialog.webEngineView);
-        else if (viewType === "null")
+        } else if (viewType === "null")
             request.openIn(0);
         else if (viewType === "webEngineView")
             request.openIn(webEngineView);
