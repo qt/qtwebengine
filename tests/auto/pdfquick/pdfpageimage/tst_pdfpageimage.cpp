@@ -55,7 +55,10 @@ void tst_PdfPageImage::settableProperties_data()
     QTest::addColumn<QRegularExpression>("expectedWarning");
 
     const QRegularExpression NoWarning;
-    const qreal dpr = qGuiApp->devicePixelRatio();
+    QQuickView window;
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    auto dpr = window.devicePixelRatio();
 
     QTest::newRow("source") << Properties(Source) << (QSizeF(600, 790) * dpr).toSize()
         << QRegularExpression("document property not set: falling back to inefficient loading"); // QTBUG-104767
