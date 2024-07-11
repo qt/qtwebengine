@@ -492,7 +492,8 @@ public Q_SLOTS:
     Q_REVISION(1,1) void findText(const QString &subString, FindFlags options = { }, const QJSValue &callback = QJSValue());
     Q_REVISION(1,1) void fullScreenCancelled();
 #if QT_DEPRECATED_SINCE(6, 8)
-    QT_MOC_COMPAT QT_DEPRECATED_VERSION_X_6_8("Setting permissions through WebEngineView has been deprecated. Please use WebEnginePermission instead.")
+    QT_MOC_COMPAT QT_DEPRECATED_VERSION_X_6_8(
+        "Setting permissions through WebEngineView has been deprecated. Please use WebEnginePermission instead.")
     Q_REVISION(1,1) void grantFeaturePermission(const QUrl &securityOrigin, QQuickWebEngineView::Feature, bool granted);
 #endif // QT_DEPRECATED_SINCE(6, 8)
     Q_REVISION(1,2) void setActiveFocusOnPress(bool arg);
@@ -521,7 +522,8 @@ Q_SIGNALS:
     Q_REVISION(1,1) void fullScreenRequested(const QWebEngineFullScreenRequest &request);
     Q_REVISION(1,1) void isFullScreenChanged();
 #if QT_DEPRECATED_SINCE(6, 8)
-    QT_MOC_COMPAT QT_DEPRECATED_VERSION_X_6_8("The signal has been deprecated; please use permissionRequested instead.")
+    QT_MOC_COMPAT QT_DEPRECATED_VERSION_X_6_8(
+        "The signal has been deprecated; please use permissionRequested instead.")
     Q_REVISION(1, 1)
     void featurePermissionRequested(const QUrl &securityOrigin,
                                     QQuickWebEngineView::Feature feature);

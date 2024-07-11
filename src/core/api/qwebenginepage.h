@@ -151,9 +151,12 @@ public:
 
 #if QT_DEPRECATED_SINCE(6, 8)
     enum PermissionPolicy {
-        PermissionUnknown Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::State::Ask instead"),
-        PermissionGrantedByUser Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::State::Granted instead"),
-        PermissionDeniedByUser Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::State::Denied instead")
+        PermissionUnknown Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::State::Ask instead"),
+        PermissionGrantedByUser Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::State::Granted instead"),
+        PermissionDeniedByUser Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::State::Denied instead")
     };
     Q_ENUM(PermissionPolicy)
 #endif
@@ -172,16 +175,26 @@ public:
 
 #if QT_DEPRECATED_SINCE(6, 8)
     enum Feature {
-        Notifications Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::Notifications instead") = 0,
-        Geolocation Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::Geolocation instead") = 1,
-        MediaAudioCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::MediaAudioCapture instead") = 2,
-        MediaVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::MediaVideoCapture instead"),
-        MediaAudioVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::MediaAudioVideoCapture instead"),
-        MouseLock Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::MouseLock instead"),
-        DesktopVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::DesktopVideoCapture instead"),
-        DesktopAudioVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::DesktopAudioVideoCapture instead"),
-        ClipboardReadWrite Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::ClipboardReadWrite instead"),
-        LocalFontsAccess Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::LocalFontsAccess instead"),
+        Notifications Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::Notifications instead") = 0,
+        Geolocation Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::Geolocation instead") = 1,
+        MediaAudioCapture Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::MediaAudioCapture instead") = 2,
+        MediaVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::MediaVideoCapture instead"),
+        MediaAudioVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::MediaAudioVideoCapture instead"),
+        MouseLock Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::MouseLock instead"),
+        DesktopVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::DesktopVideoCapture instead"),
+        DesktopAudioVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::DesktopAudioVideoCapture instead"),
+        ClipboardReadWrite Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::ClipboardReadWrite instead"),
+        LocalFontsAccess Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::LocalFontsAccess instead"),
     };
     Q_ENUM(Feature)
 #endif
@@ -243,7 +256,8 @@ public:
     void findText(const QString &subString, FindFlags options = {}, const std::function<void(const QWebEngineFindTextResult &)> &resultCallback = std::function<void(const QWebEngineFindTextResult &)>());
 
 #if QT_DEPRECATED_SINCE(6, 8)
-    QT_DEPRECATED_VERSION_X_6_8("Setting permissions through QWebEnginePage has been deprecated. Please use QWebEnginePermission instead.")
+    QT_DEPRECATED_VERSION_X_6_8(
+        "Setting permissions through QWebEnginePage has been deprecated. Please use QWebEnginePermission instead.")
     void setFeaturePermission(const QUrl &securityOrigin, Feature feature, PermissionPolicy policy);
 #endif
 
@@ -329,9 +343,11 @@ Q_SIGNALS:
     void windowCloseRequested();
 
 #if QT_DEPRECATED_SINCE(6, 8)
-    QT_MOC_COMPAT QT_DEPRECATED_VERSION_X_6_8("The signal has been deprecated; please use permissionRequested instead.")
+    QT_MOC_COMPAT QT_DEPRECATED_VERSION_X_6_8(
+        "The signal has been deprecated; please use permissionRequested instead.")
     void featurePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature);
-    QT_MOC_COMPAT QT_DEPRECATED_VERSION_X_6_8("The signal has been deprecated, and no longer functions.")
+    QT_MOC_COMPAT QT_DEPRECATED_VERSION_X_6_8(
+        "The signal has been deprecated, and no longer functions.")
     void featurePermissionRequestCanceled(const QUrl &securityOrigin, QWebEnginePage::Feature feature);
 #endif // QT_DEPRECATED_SINCE(6, 8)
 
