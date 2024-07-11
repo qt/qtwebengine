@@ -93,6 +93,11 @@ QWebEnginePermission::QWebEnginePermission(const QWebEnginePermission &other)
 {
 }
 
+QWebEnginePermission::QWebEnginePermission(QWebEnginePermission &&other)
+    : d_ptr(std::move(other.d_ptr))
+{
+}
+
 QWebEnginePermission::~QWebEnginePermission() = default;
 
 QWebEnginePermission &QWebEnginePermission::operator=(const QWebEnginePermission &other)
@@ -108,6 +113,9 @@ bool QWebEnginePermission::equals(const QWebEnginePermission &other) const
 {
     if (this == &other)
         return true;
+
+    if (!d_ptr || !other.d_ptr)
+        return false;
 
     if (d_ptr->permissionType != other.d_ptr->permissionType || d_ptr->origin != other.d_ptr->origin)
         return false;
@@ -140,7 +148,7 @@ bool QWebEnginePermission::equals(const QWebEnginePermission &other) const
 */
 QUrl QWebEnginePermission::origin() const
 {
-    return d_ptr->origin;
+    return d_ptr ? d_ptr->origin : QUrl();
 }
 
 /*!
@@ -171,7 +179,7 @@ QUrl QWebEnginePermission::origin() const
 */
 QWebEnginePermission::PermissionType QWebEnginePermission::permissionType() const
 {
-    return d_ptr->permissionType;
+    return d_ptr ? d_ptr->permissionType : PermissionType::Unsupported;
 }
 
 /*!
@@ -225,6 +233,8 @@ QWebEnginePermission::State QWebEnginePermission::state() const
 */
 bool QWebEnginePermission::isValid() const
 {
+    if (!d_ptr)
+        return false;
     if (permissionType() == PermissionType::Unsupported)
         return false;
     if (!isPersistent(permissionType()) && !d_ptr->webContentsAdapter)

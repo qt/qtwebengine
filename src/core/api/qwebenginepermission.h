@@ -37,6 +37,7 @@ public:
     Q_WEBENGINECORE_EXPORT QWebEnginePermission();
 
     Q_WEBENGINECORE_EXPORT QWebEnginePermission(const QWebEnginePermission &other);
+    Q_WEBENGINECORE_EXPORT QWebEnginePermission(QWebEnginePermission &&other);
     Q_WEBENGINECORE_EXPORT ~QWebEnginePermission();
 
     Q_WEBENGINECORE_EXPORT QWebEnginePermission &operator=(const QWebEnginePermission &other);
