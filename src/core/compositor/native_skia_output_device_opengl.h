@@ -6,7 +6,11 @@
 
 #include "native_skia_output_device.h"
 
+#include <QSharedPointer>
+
 namespace QtWebEngineCore {
+
+class D3DInteropContext;
 
 class NativeSkiaOutputDeviceOpenGL final : public NativeSkiaOutputDevice
 {
@@ -21,6 +25,11 @@ public:
 
     // Overridden from Compositor:
     QSGTexture *texture(QQuickWindow *win, uint32_t textureOptions) override;
+
+private:
+#if defined(Q_OS_WIN)
+    QSharedPointer<D3DInteropContext> m_interop;
+#endif
 };
 
 } // namespace QtWebEngineCore

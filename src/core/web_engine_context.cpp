@@ -406,16 +406,9 @@ static std::string getGLType(bool enableGLSoftwareRendering, bool disableGpu)
     if (disableGpu || (!tryGL && !enableGLSoftwareRendering))
         return gl::kGLImplementationDisabledName;
 
-#if defined(Q_OS_MACOS)
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
     return gl::kGLImplementationANGLEName;
 #else
-#if defined(Q_OS_WIN)
-    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11
-        || QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan) {
-        return gl::kGLImplementationANGLEName;
-    }
-#endif
-
     if (!qt_gl_global_share_context() || !qt_gl_global_share_context()->isValid()) {
         qWarning("WebEngineContext is used before QtWebEngineQuick::initialize() or OpenGL context "
                  "creation failed.");
@@ -443,7 +436,7 @@ static std::string getGLType(bool enableGLSoftwareRendering, bool disableGpu)
     }
 
     return gl::kGLImplementationDisabledName;
-#endif // defined(Q_OS_MACOS)
+#endif // defined(Q_OS_WIN) || defined(Q_OS_MACOS)
 }
 #else
 static std::string getGLType(bool /*enableGLSoftwareRendering*/, bool disableGpu)

@@ -57,6 +57,11 @@
 #include "ozone/gl_context_qt.h"
 #endif // defined(USE_OZONE)
 
+#if defined(Q_OS_WIN)
+#include <QtCore/private/qsystemerror_p.h>
+#include <d3d11_1.h>
+#endif
+
 namespace QtWebEngineCore {
 
 #if BUILDFLAG(IS_OZONE_X11)
@@ -131,6 +136,273 @@ GLXFBConfig GetFBConfig(Display *display)
 
 } // namespace
 #endif // BUILDFLAG(IS_OZONE_X11)
+
+#if defined(Q_OS_WIN)
+#if defined(WGL_NV_DX_interop)
+#undef wglDXOpenDeviceNV
+#undef wglDXCloseDeviceNV
+#undef wglDXRegisterObjectNV
+#undef wglDXUnregisterObjectNV
+#undef wglDXLockObjectsNV
+#undef wglDXUnlockObjectsNV
+#else
+#define WGL_ACCESS_READ_ONLY_NV 0x00000000
+#define WGL_ACCESS_READ_WRITE_NV 0x00000001
+#define WGL_ACCESS_WRITE_DISCARD_NV 0x00000002
+#endif // defined(WGL_NV_DX_interop)
+
+class D3DInteropContext
+{
+public:
+    struct WGLFunctions
+    {
+#if !defined(WGL_NV_DX_interop)
+        typedef BOOL(WINAPI *PFNWGLDXSETRESOURCESHAREHANDLENVPROC)(void *dxObject,
+                                                                   HANDLE shareHandle);
+        typedef HANDLE(WINAPI *PFNWGLDXOPENDEVICENVPROC)(void *dxDevice);
+        typedef BOOL(WINAPI *PFNWGLDXCLOSEDEVICENVPROC)(HANDLE hDevice);
+        typedef HANDLE(WINAPI *PFNWGLDXREGISTEROBJECTNVPROC)(HANDLE hDevice, void *dxObject,
+                                                             GLuint name, GLenum type,
+                                                             GLenum access);
+        typedef BOOL(WINAPI *PFNWGLDXUNREGISTEROBJECTNVPROC)(HANDLE hDevice, HANDLE hObject);
+        typedef BOOL(WINAPI *PFNWGLDXOBJECTACCESSNVPROC)(HANDLE hObject, GLenum access);
+        typedef BOOL(WINAPI *PFNWGLDXLOCKOBJECTSNVPROC)(HANDLE hDevice, GLint count,
+                                                        HANDLE *hObjects);
+        typedef BOOL(WINAPI *PFNWGLDXUNLOCKOBJECTSNVPROC)(HANDLE hDevice, GLint count,
+                                                          HANDLE *hObjects);
+#endif
+
+        WGLFunctions(QOpenGLContext *context)
+        {
+            typedef PROC(WINAPI * PFNWGLGETPROCADDRESSPROC)(LPCSTR);
+            static const auto getProcAddress = reinterpret_cast<PFNWGLGETPROCADDRESSPROC>(
+                    context->getProcAddress("wglGetProcAddress"));
+
+            wglDXOpenDeviceNV =
+                    reinterpret_cast<PFNWGLDXOPENDEVICENVPROC>(getProcAddress("wglDXOpenDeviceNV"));
+            wglDXCloseDeviceNV = reinterpret_cast<PFNWGLDXCLOSEDEVICENVPROC>(
+                    getProcAddress("wglDXCloseDeviceNV"));
+            wglDXRegisterObjectNV = reinterpret_cast<PFNWGLDXREGISTEROBJECTNVPROC>(
+                    getProcAddress("wglDXRegisterObjectNV"));
+            wglDXUnregisterObjectNV = reinterpret_cast<PFNWGLDXUNREGISTEROBJECTNVPROC>(
+                    getProcAddress("wglDXUnregisterObjectNV"));
+            wglDXLockObjectsNV = reinterpret_cast<PFNWGLDXLOCKOBJECTSNVPROC>(
+                    getProcAddress("wglDXLockObjectsNV"));
+            wglDXUnlockObjectsNV = reinterpret_cast<PFNWGLDXUNLOCKOBJECTSNVPROC>(
+                    getProcAddress("wglDXUnlockObjectsNV"));
+        }
+
+        PFNWGLDXOPENDEVICENVPROC wglDXOpenDeviceNV;
+        PFNWGLDXCLOSEDEVICENVPROC wglDXCloseDeviceNV;
+        PFNWGLDXREGISTEROBJECTNVPROC wglDXRegisterObjectNV;
+        PFNWGLDXUNREGISTEROBJECTNVPROC wglDXUnregisterObjectNV;
+        PFNWGLDXLOCKOBJECTSNVPROC wglDXLockObjectsNV;
+        PFNWGLDXUNLOCKOBJECTSNVPROC wglDXUnlockObjectsNV;
+    };
+
+    D3DInteropContext()
+    {
+        HRESULT hr;
+
+        hr = CreateDXGIFactory(IID_PPV_ARGS(&m_factory));
+        if (FAILED(hr)) {
+            qFatal() << "WGL: Failed to create DXGI Factory:"
+                     << qPrintable(QSystemError::windowsComString(hr));
+        }
+
+        hr = m_factory->EnumAdapters(0, &m_adapter);
+        if (FAILED(hr)) {
+            qFatal() << "WGL: Failed to enumerate adapters:"
+                     << qPrintable(QSystemError::windowsComString(hr));
+        }
+
+        uint devFlags = 0;
+#if !defined(QT_NO_DEBUG)
+        devFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
+        const D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_1 };
+        hr = D3D11CreateDevice(m_adapter.Get(), D3D_DRIVER_TYPE_UNKNOWN, /*Software=*/nullptr,
+                               devFlags, featureLevels, std::size(featureLevels), D3D11_SDK_VERSION,
+                               &m_device, /*pFeatureLevel=*/nullptr, &m_immediateContext);
+        if (FAILED(hr)) {
+            qFatal() << "WGL: Failed to create D3D11 device:"
+                     << qPrintable(QSystemError::windowsComString(hr));
+        }
+    }
+
+    ~D3DInteropContext()
+    {
+        if (m_interopDevice != INVALID_HANDLE_VALUE)
+            wglFunctions()->wglDXCloseDeviceNV(m_interopDevice);
+    }
+
+    ID3D11Device *device() const { return m_device.Get(); }
+    ID3D11DeviceContext *immediateContext() const { return m_immediateContext.Get(); }
+
+    HANDLE interopDevice()
+    {
+        if (m_interopDevice == INVALID_HANDLE_VALUE) {
+            auto *wglFun = wglFunctions();
+            Q_ASSERT(wglFun);
+
+            m_interopDevice = wglFun->wglDXOpenDeviceNV(m_device.Get());
+            if (m_interopDevice == INVALID_HANDLE_VALUE)
+                qWarning() << "WGL: Failed to open interop device:" << ::GetLastError();
+        }
+
+        return m_interopDevice;
+    }
+
+    WGLFunctions *wglFunctions()
+    {
+
+        if (!m_functions) {
+            auto *glContext = QOpenGLContext::currentContext();
+            if (!glContext) {
+                qWarning("WGL: Unable to bind WGL functions without OpenGL context!");
+                return nullptr;
+            }
+
+            m_functions.reset(new WGLFunctions(glContext));
+        }
+
+        return m_functions.get();
+    }
+
+private:
+    QScopedPointer<WGLFunctions> m_functions;
+
+    Microsoft::WRL::ComPtr<IDXGIFactory> m_factory;
+    Microsoft::WRL::ComPtr<IDXGIAdapter> m_adapter;
+    Microsoft::WRL::ComPtr<ID3D11Device> m_device;
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_immediateContext;
+
+    HANDLE m_interopDevice = INVALID_HANDLE_VALUE;
+};
+
+class D3DSharedTexture
+{
+public:
+    D3DSharedTexture(QSharedPointer<D3DInteropContext> interop, HANDLE dxgiSharedHandle)
+        : m_interop(interop)
+    {
+        HRESULT hr;
+
+        Microsoft::WRL::ComPtr<ID3D11Device1> device1;
+        hr = m_interop->device()->QueryInterface(IID_PPV_ARGS(&device1));
+        Q_ASSERT(SUCCEEDED(hr));
+
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> srcTexture;
+        hr = device1->OpenSharedResource1(dxgiSharedHandle, IID_PPV_ARGS(&srcTexture));
+        if (FAILED(hr)) {
+            qWarning("WGL: Failed to share D3D11 texture (%s). This will result in failed rendering. "
+                     "Report the bug, and try restarting with QTWEBENGINE_CHROMIUM_FLAGS=--disble-gpu",
+                     qPrintable(QSystemError::windowsComString(hr)));
+            return;
+        }
+        Q_ASSERT(srcTexture);
+
+        D3D11_TEXTURE2D_DESC srcDesc;
+        srcTexture->GetDesc(&srcDesc);
+
+        D3D11_TEXTURE2D_DESC textureDesc = {};
+        textureDesc.Width = srcDesc.Width;
+        textureDesc.Height = srcDesc.Height;
+        textureDesc.MipLevels = srcDesc.MipLevels;
+        textureDesc.ArraySize = srcDesc.ArraySize;
+        textureDesc.Format = srcDesc.Format;
+        textureDesc.SampleDesc = srcDesc.SampleDesc;
+        textureDesc.Usage = D3D11_USAGE_DEFAULT;
+
+        m_interop->device()->CreateTexture2D(&textureDesc, nullptr, &m_d3dTexture);
+
+        // Copy texture from GPU thread to UI thread.
+        // This is a workaround because Intel driver doesn't seem to support interop
+        // for an already shared texture.
+        m_interop->immediateContext()->CopyResource(m_d3dTexture.Get(), srcTexture.Get());
+
+        auto *glContext = QOpenGLContext::currentContext();
+        Q_ASSERT(glContext);
+        auto *glFun = glContext->functions();
+        auto *wglFun = m_interop->wglFunctions();
+
+        glFun->glGenTextures(1, &m_glTexture);
+
+        // Bind the DXGI texture to a GL texture.
+        m_glTextureHandle =
+                wglFun->wglDXRegisterObjectNV(m_interop->interopDevice(), m_d3dTexture.Get(),
+                                              m_glTexture, GL_TEXTURE_2D, WGL_ACCESS_READ_ONLY_NV);
+        Q_ASSERT(glFun->glGetError() == GL_NO_ERROR);
+        Q_ASSERT(m_glTextureHandle != INVALID_HANDLE_VALUE);
+    }
+
+    ~D3DSharedTexture()
+    {
+        if (m_glTextureHandle != INVALID_HANDLE_VALUE) {
+            if (m_isLocked) {
+                qWarning("WGL: Shared texture is still locked during destruction!");
+                unlockObject();
+            }
+
+            auto *wglFun = m_interop->wglFunctions();
+            wglFun->wglDXUnregisterObjectNV(m_interop->interopDevice(), m_glTextureHandle);
+        }
+
+        auto *glContext = QOpenGLContext::currentContext();
+        if (m_glTexture && glContext) {
+            auto *glFun = glContext->functions();
+            glFun->glDeleteTextures(1, &m_glTexture);
+        }
+    }
+
+    void lockObject()
+    {
+        if (m_isLocked) {
+            qWarning("WGL: Shared texture is already locked!");
+            return;
+        }
+
+        auto *wglFun = m_interop->wglFunctions();
+        bool status = wglFun->wglDXLockObjectsNV(m_interop->interopDevice(), 1, &m_glTextureHandle);
+        if (!status) {
+            qWarning() << "WGL: Failed to lock shared texture:" << ::GetLastError();
+            return;
+        }
+
+        m_isLocked = true;
+    }
+
+    void unlockObject()
+    {
+        if (!m_isLocked) {
+            qWarning("WGL: Shared texture is already unlocked!");
+            return;
+        }
+
+        auto *wglFun = m_interop->wglFunctions();
+        bool status =
+                wglFun->wglDXUnlockObjectsNV(m_interop->interopDevice(), 1, &m_glTextureHandle);
+        if (!status) {
+            qWarning() << "WGL: Failed to unlock shared texture:" << ::GetLastError();
+            return;
+        }
+
+        m_isLocked = false;
+    }
+
+    GLuint glTexture() const { return m_glTexture; }
+
+private:
+    QSharedPointer<D3DInteropContext> m_interop;
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_d3dTexture;
+
+    GLuint m_glTexture = 0;
+    HANDLE m_glTextureHandle = INVALID_HANDLE_VALUE;
+
+    bool m_isLocked = false;
+};
+#endif // defined(Q_OS_WIN)
 
 NativeSkiaOutputDeviceOpenGL::NativeSkiaOutputDeviceOpenGL(
         scoped_refptr<gpu::SharedContextState> contextState, bool requiresAlpha,
@@ -375,8 +647,41 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
     texture = QNativeInterface::QSGOpenGLTexture::fromNative(glTexture, win, size(), texOpts);
     Q_ASSERT(glFun->glGetError() == GL_NO_ERROR);
 #elif defined(Q_OS_WIN)
-    // TODO: Add WGL support over ANGLE.
-    QT_NOT_YET_IMPLEMENTED
+    Q_ASSERT(m_contextState->gr_context_type() == gpu::GrContextType::kGL);
+
+    Q_ASSERT(overlayImage->type() == gl::DCLayerOverlayType::kNV12Texture);
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> chromeTexture = overlayImage->nv12_texture();
+    if (!chromeTexture) {
+        qWarning("WGL: No D3D texture.");
+        return nullptr;
+    }
+
+    HRESULT hr;
+
+    Microsoft::WRL::ComPtr<IDXGIResource1> dxgiResource;
+    hr = chromeTexture->QueryInterface(IID_PPV_ARGS(&dxgiResource));
+    Q_ASSERT(SUCCEEDED(hr));
+
+    HANDLE sharedHandle = INVALID_HANDLE_VALUE;
+    hr = dxgiResource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
+                                          &sharedHandle);
+    Q_ASSERT(SUCCEEDED(hr));
+    Q_ASSERT(sharedHandle != INVALID_HANDLE_VALUE);
+
+    if (!m_interop)
+        m_interop.reset(new D3DInteropContext);
+    D3DSharedTexture *d3dSharedTexture = new D3DSharedTexture(m_interop, sharedHandle);
+    d3dSharedTexture->lockObject();
+    ::CloseHandle(sharedHandle);
+
+    texture = QNativeInterface::QSGOpenGLTexture::fromNative(d3dSharedTexture->glTexture(), win,
+                                                             size(), texOpts);
+
+    m_frontBuffer->textureCleanupCallback = [d3dSharedTexture]() {
+        d3dSharedTexture->unlockObject();
+        delete d3dSharedTexture;
+    };
+
 #elif defined(Q_OS_MACOS)
     uint32_t glTexture = makeCGLTexture(win, ioSurface.get(), size());
     texture = QNativeInterface::QSGOpenGLTexture::fromNative(glTexture, win, size(), texOpts);
