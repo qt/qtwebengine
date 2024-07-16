@@ -1,0 +1,151 @@
+<html>
+<head>
+<style>
+
+@page a4-portrait {
+    size: A4 portrait;
+    margin-left: 2cm;
+    margin-right: 4cm;
+}
+
+@page a4-landscape {
+    size: A4 landscape;
+    margin-left: 4cm;
+    margin-right: 2cm;
+}
+
+@page a5-portrait {
+    size: A5 portrait;
+    margin-left: 2cm;
+    margin-right: 4cm;
+}
+
+@page a5-landscape {
+    size: A5 landscape;
+    margin-left: 4cm;
+    margin-right: 2cm;
+}
+
+#first {
+    page: a4-portrait;
+}
+
+#second {
+    page: a4-landscape;
+}
+
+#third {
+    page: a5-portrait;
+}
+
+#fourth {
+    page: a5-landscape;
+}
+
+body {
+    background-color: lightsteelblue;
+}
+
+h1 {
+   color: navy;
+}
+
+article {
+    page-break-before: always;
+}
+
+</style>
+</head>
+<body>
+
+<article id="first">
+<h1>First page</h1>
+
+<h3>CSS settings:</h3>
+<pre>
+@page a4-portrait {
+    size: A4 portrait;
+    margin-left: 2cm;
+    margin-right: 4cm;
+}
+</pre>
+
+<p>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum volutpat pulvinar nisi vitae tincidunt. Nullam posuere ipsum id purus vulputate semper. Duis posuere nisl at hendrerit vehicula. Sed pellentesque placerat sem commodo bibendum. Ut ante mi, ultricies vel sem at, pellentesque maximus lectus. Ut condimentum ante id dui sollicitudin aliquet. Ut tempor magna rutrum venenatis eleifend. Aenean id nisl tempus, auctor nisl id, aliquet leo. Aliquam elementum erat fermentum est laoreet, vitae egestas ex molestie. Pellentesque a leo ultrices tortor consequat mollis. Ut malesuada id urna in consectetur. Integer sollicitudin lectus imperdiet vestibulum pellentesque. Proin eu odio vitae magna vestibulum euismod. Cras vitae leo ac tortor interdum elementum in ac felis. Sed quis efficitur diam. Donec at turpis arcu.
+</p>
+
+<p>
+Ut tristique elit felis, id tempus turpis dapibus in. Suspendisse ipsum sem, convallis ac porttitor eget, sagittis vel velit. Quisque odio diam, convallis eget turpis ut, facilisis tincidunt ligula. Integer molestie, mauris feugiat euismod auctor, nunc tortor venenatis nulla, sit amet finibus elit urna vitae risus. Mauris dapibus, nunc sed ultricies imperdiet, eros magna consequat erat, a molestie elit nibh at ante. Duis faucibus, metus sit amet facilisis vulputate, ligula nunc mattis leo, quis tincidunt ante orci nec metus. Integer ipsum eros, dapibus ut imperdiet eget, laoreet eu lorem. Mauris vulputate nibh at eros ultricies ultrices. Phasellus laoreet, lectus et ultrices vestibulum, arcu quam blandit purus, sit amet ullamcorper dolor libero et magna. Curabitur suscipit urna sapien, eget finibus lorem consequat quis. Proin vehicula diam eget ultrices dignissim. Praesent pellentesque turpis eget ante consequat, eget faucibus sapien euismod. Sed velit risus, blandit tincidunt elit eu, consectetur lacinia ex. Phasellus consequat risus eu pretium rutrum. Pellentesque augue justo, mollis ut consequat et, dignissim et sem. Donec hendrerit odio in felis consequat imperdiet.
+</p>
+</article>
+
+
+
+<article id="second">
+<h1>Second page</h1>
+
+<h3>CSS settings:</h3>
+<pre>
+@page a4-landscape {
+    size: A4 landscape;
+    margin-left: 4cm;
+    margin-right: 2cm;
+}
+</pre>
+
+<p>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum volutpat pulvinar nisi vitae tincidunt. Nullam posuere ipsum id purus vulputate semper. Duis posuere nisl at hendrerit vehicula. Sed pellentesque placerat sem commodo bibendum. Ut ante mi, ultricies vel sem at, pellentesque maximus lectus. Ut condimentum ante id dui sollicitudin aliquet. Ut tempor magna rutrum venenatis eleifend. Aenean id nisl tempus, auctor nisl id, aliquet leo. Aliquam elementum erat fermentum est laoreet, vitae egestas ex molestie. Pellentesque a leo ultrices tortor consequat mollis. Ut malesuada id urna in consectetur. Integer sollicitudin lectus imperdiet vestibulum pellentesque. Proin eu odio vitae magna vestibulum euismod. Cras vitae leo ac tortor interdum elementum in ac felis. Sed quis efficitur diam. Donec at turpis arcu.
+</p>
+
+<p>
+Ut tristique elit felis, id tempus turpis dapibus in. Suspendisse ipsum sem, convallis ac porttitor eget, sagittis vel velit. Quisque odio diam, convallis eget turpis ut, facilisis tincidunt ligula. Integer molestie, mauris feugiat euismod auctor, nunc tortor venenatis nulla, sit amet finibus elit urna vitae risus. Mauris dapibus, nunc sed ultricies imperdiet, eros magna consequat erat, a molestie elit nibh at ante. Duis faucibus, metus sit amet facilisis vulputate, ligula nunc mattis leo, quis tincidunt ante orci nec metus. Integer ipsum eros, dapibus ut imperdiet eget, laoreet eu lorem. Mauris vulputate nibh at eros ultricies ultrices. Phasellus laoreet, lectus et ultrices vestibulum, arcu quam blandit purus, sit amet ullamcorper dolor libero et magna. Curabitur suscipit urna sapien, eget finibus lorem consequat quis. Proin vehicula diam eget ultrices dignissim. Praesent pellentesque turpis eget ante consequat, eget faucibus sapien euismod. Sed velit risus, blandit tincidunt elit eu, consectetur lacinia ex. Phasellus consequat risus eu pretium rutrum. Pellentesque augue justo, mollis ut consequat et, dignissim et sem. Donec hendrerit odio in felis consequat imperdiet.
+</p>
+</article>
+
+
+<article id="third">
+<h1>Third page</h1>
+
+<h3>CSS settings:</h3>
+<pre>
+@page a5-portrait {
+    size: A5 portrait;
+    margin-left: 2cm;
+    margin-right: 4cm;
+}
+</pre>
+
+<p>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum volutpat pulvinar nisi vitae tincidunt. Nullam posuere ipsum id purus vulputate semper. Duis posuere nisl at hendrerit vehicula. Sed pellentesque placerat sem commodo bibendum. Ut ante mi, ultricies vel sem at, pellentesque maximus lectus. Ut condimentum ante id dui sollicitudin aliquet. Ut tempor magna rutrum venenatis eleifend. Aenean id nisl tempus, auctor nisl id, aliquet leo. Aliquam elementum erat fermentum est laoreet, vitae egestas ex molestie. Pellentesque a leo ultrices tortor consequat mollis. Ut malesuada id urna in consectetur. Integer sollicitudin lectus imperdiet vestibulum pellentesque. Proin eu odio vitae magna vestibulum euismod. Cras vitae leo ac tortor interdum elementum in ac felis. Sed quis efficitur diam. Donec at turpis arcu.
+</p>
+
+<p>
+Ut tristique elit felis, id tempus turpis dapibus in. Suspendisse ipsum sem, convallis ac porttitor eget, sagittis vel velit. Quisque odio diam, convallis eget turpis ut, facilisis tincidunt ligula. Integer molestie, mauris feugiat euismod auctor, nunc tortor venenatis nulla, sit amet finibus elit urna vitae risus. Mauris dapibus, nunc sed ultricies imperdiet, eros magna consequat erat, a molestie elit nibh at ante. Duis faucibus, metus sit amet facilisis vulputate, ligula nunc mattis leo, quis tincidunt ante orci nec metus. Integer ipsum eros, dapibus ut imperdiet eget, laoreet eu lorem. Mauris vulputate nibh at eros ultricies ultrices. Phasellus laoreet, lectus et ultrices vestibulum, arcu quam blandit purus, sit amet ullamcorper dolor libero et magna. Curabitur suscipit urna sapien, eget finibus lorem consequat quis. Proin vehicula diam eget ultrices dignissim. Praesent pellentesque turpis eget ante consequat, eget faucibus sapien euismod. Sed velit risus, blandit tincidunt elit eu, consectetur lacinia ex. Phasellus consequat risus eu pretium rutrum. Pellentesque augue justo, mollis ut consequat et, dignissim et sem. Donec hendrerit odio in felis consequat imperdiet.
+</p>
+</article>
+
+
+
+<article id="fourth">
+<h1>Fourth page</h1>
+
+<h3>CSS settings:</h3>
+<pre>
+@page a5-landscape {
+    size: A5 landscape;
+    margin-left: 4cm;
+    margin-right: 2cm;
+}
+</pre>
+
+<p>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum volutpat pulvinar nisi vitae tincidunt. Nullam posuere ipsum id purus vulputate semper. Duis posuere nisl at hendrerit vehicula. Sed pellentesque placerat sem commodo bibendum. Ut ante mi, ultricies vel sem at, pellentesque maximus lectus. Ut condimentum ante id dui sollicitudin aliquet. Ut tempor magna rutrum venenatis eleifend. Aenean id nisl tempus, auctor nisl id, aliquet leo. Aliquam elementum erat fermentum est laoreet, vitae egestas ex molestie. Pellentesque a leo ultrices tortor consequat mollis. Ut malesuada id urna in consectetur. Integer sollicitudin lectus imperdiet vestibulum pellentesque. Proin eu odio vitae magna vestibulum euismod. Cras vitae leo ac tortor interdum elementum in ac felis. Sed quis efficitur diam. Donec at turpis arcu.
+</p>
+
+<p>
+Ut tristique elit felis, id tempus turpis dapibus in. Suspendisse ipsum sem, convallis ac porttitor eget, sagittis vel velit. Quisque odio diam, convallis eget turpis ut, facilisis tincidunt ligula. Integer molestie, mauris feugiat euismod auctor, nunc tortor venenatis nulla, sit amet finibus elit urna vitae risus. Mauris dapibus, nunc sed ultricies imperdiet, eros magna consequat erat, a molestie elit nibh at ante. Duis faucibus, metus sit amet facilisis vulputate, ligula nunc mattis leo, quis tincidunt ante orci nec metus. Integer ipsum eros, dapibus ut imperdiet eget, laoreet eu lorem. Mauris vulputate nibh at eros ultricies ultrices. Phasellus laoreet, lectus et ultrices vestibulum, arcu quam blandit purus, sit amet ullamcorper dolor libero et magna. Curabitur suscipit urna sapien, eget finibus lorem consequat quis. Proin vehicula diam eget ultrices dignissim. Praesent pellentesque turpis eget ante consequat, eget faucibus sapien euismod. Sed velit risus, blandit tincidunt elit eu, consectetur lacinia ex. Phasellus consequat risus eu pretium rutrum. Pellentesque augue justo, mollis ut consequat et, dignissim et sem. Donec hendrerit odio in felis consequat imperdiet.
+</p>
+</article>
+
+</body>
+</html>

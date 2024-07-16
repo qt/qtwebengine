@@ -1,5 +1,6 @@
 add_subdirectory(inputmethods)
 add_subdirectory(geolocation)
+add_subdirectory(printing)
 add_subdirectory(touchbrowser)
 if(QT_FEATURE_opengl)
     add_subdirectory(webgl)
