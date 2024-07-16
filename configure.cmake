@@ -482,7 +482,7 @@ add_check_for_support(
    MESSAGE "Static build is not supported."
 )
 add_check_for_support(
-   MODULES QtWebEngine QtPdf
+   MODULES QtWebEngine
    CONDITION TARGET Nodejs::Nodejs
    MESSAGE "node.js version 14 or later is required."
 )
@@ -499,22 +499,22 @@ add_check_for_support(
    MESSAGE "Python version 3.8 or later is required."
 )
 add_check_for_support(
-   MODULES QtWebEngine QtPdf
+   MODULES QtWebEngine
    CONDITION Python3_EXECUTABLE AND NOT html5lib_NOT_FOUND
    MESSAGE "Python3 html5lib is missing."
 )
 add_check_for_support(
-   MODULES QtWebEngine QtPdf
+   MODULES QtWebEngine
    CONDITION GPerf_FOUND
    MESSAGE "Tool gperf is required."
 )
 add_check_for_support(
-   MODULES QtWebEngine QtPdf
+   MODULES QtWebEngine
    CONDITION BISON_FOUND
    MESSAGE "Tool bison is required."
 )
 add_check_for_support(
-   MODULES QtWebEngine QtPdf
+   MODULES QtWebEngine
    CONDITION FLEX_FOUND
    MESSAGE "Tool flex is required."
 )
@@ -524,12 +524,12 @@ add_check_for_support(
    MESSAGE "A pkg-config support is required."
 )
 add_check_for_support(
-   MODULES QtWebEngine QtPdf
+   MODULES QtWebEngine
    CONDITION NOT LINUX OR TEST_glibc
    MESSAGE "A suitable version >= 2.17 of glibc is required."
 )
 add_check_for_support(
-   MODULES QtWebEngine QtPdf
+   MODULES QtWebEngine
    CONDITION NOT LINUX OR TEST_khr
    MESSAGE "Build requires Khronos development headers for build - see mesa/libegl1-mesa-dev"
 )
