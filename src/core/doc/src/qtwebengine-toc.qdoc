@@ -1,0 +1,39 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qtwebengine-toc.html
+    \title Qt WebEngine module topics
+
+    The following list has links to all the individual topics (HTML files)
+    in the Qt WebEngine module.
+
+    \list
+    \li \l {Qt WebEngine Overview}{Overview}
+    \li \l {Qt WebEngine Features}{Features}
+    \li \l {Qt WebEngine Platform Notes}{Platform Notes}
+    \li \l {Qt WebEngine Core}
+        \list
+            \li \l {Qt WebEngine Core C++ Classes}
+        \endlist
+    \li \l {Qt WebEngine Widgets}
+        \list
+            \li \l {Qt WebEngine Widgets C++ Classes}
+            \li \l {Qt WebEngine Widgets Examples}
+        \endlist
+    \li \l {Qt WebEngine QML Types}{Qt WebEngine Quick}
+        \list
+            \li \l {Qt WebEngine Quick C++ Classes}
+            \li \l {Qt WebEngine Quick Examples}
+        \endlist
+    \li \l {Qt WebEngine Debugging and Profiling}{Debugging and Profiling}
+    \li \l {Deploying Qt WebEngine Applications}
+    \li \l {Porting from Qt WebKit to Qt WebEngine}
+    \li \l {Changes to Qt WebEngine}{Upgrading from Qt 5}
+    \li \l {Qt WebEngine Licensing}
+        \list
+            \li \l{Chromium License}
+        \endlist
+    \endlist
+
+*/

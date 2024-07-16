@@ -13,7 +13,7 @@ qhp.QtPdf.virtualFolder       = qtpdf
 qhp.QtPdf.indexTitle          = Qt PDF
 qhp.QtPdf.indexRoot           =
 
-qhp.QtPdf.subprojects         = classes qmltypes examples
+qhp.QtPdf.subprojects = manual examples classes qmltypes
 
 qhp.QtPdf.subprojects.classes.title = C++ Classes
 qhp.QtPdf.subprojects.classes.indexTitle = Qt PDF C++ Classes
@@ -29,6 +29,10 @@ qhp.QtPdf.subprojects.examples.title = Examples
 qhp.QtPdf.subprojects.examples.indexTitle = Qt PDF Examples
 qhp.QtPdf.subprojects.examples.selectors = doc:example
 qhp.QtPdf.subprojects.examples.sortPages = true
+
+qhp.QtPdf.subprojects.manual.title = Qt PDF
+qhp.QtPdf.subprojects.manual.indexTitle = Qt PDF module topics
+qhp.QtPdf.subprojects.manual.type = manual
 
 manifestmeta.highlighted.names += "QtPdf/PDF Multipage Viewer Example"
 
@@ -62,6 +66,9 @@ imagedirs   += images
 navigation.landingpage = "Qt PDF"
 navigation.cppclassespage = "Qt PDF C++ Classes"
 navigation.qmltypespage = "Qt Quick PDF QML Types"
+# Auto-generate navigation linking based on "Qt PDF module topics":
+navigation.toctitles = "Qt PDF module topics"
+navigation.toctitles.inclusive = false
 
 # Enforce zero documentation warnings
 warninglimit = 0

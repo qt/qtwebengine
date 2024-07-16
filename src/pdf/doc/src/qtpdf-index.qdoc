@@ -67,7 +67,7 @@
 
     \section1 Articles and Guides
     \list
-        \li {Qt PDF Platform Notes} {Platform Notes}
+        \li \l{Qt PDF Platform Notes} {Platform Notes}
     \endlist
 
     \section1 Licenses and Attributions

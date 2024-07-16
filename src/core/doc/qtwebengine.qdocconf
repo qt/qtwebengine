@@ -13,7 +13,7 @@ qhp.QtWebEngine.virtualFolder       = qtwebengine
 qhp.QtWebEngine.indexTitle          = Qt WebEngine
 qhp.QtWebEngine.indexRoot           =
 
-qhp.QtWebEngine.subprojects         = classes qmltypes examples
+qhp.QtWebEngine.subprojects = manual examples classes qmltypes
 
 qhp.QtWebEngine.subprojects.classes.title = C++ Classes and Namespaces
 qhp.QtWebEngine.subprojects.classes.indexTitle = Qt WebEngine C++ Classes and Namespaces
@@ -29,6 +29,10 @@ qhp.QtWebEngine.subprojects.examples.title = Examples
 qhp.QtWebEngine.subprojects.examples.indexTitle = Qt WebEngine Examples
 qhp.QtWebEngine.subprojects.examples.selectors = doc:example
 qhp.QtWebEngine.subprojects.examples.sortPages = true
+
+qhp.QtWebEngine.subprojects.manual.title = Qt WebEngine
+qhp.QtWebEngine.subprojects.manual.indexTitle = Qt WebEngine module topics
+qhp.QtWebEngine.subprojects.manual.type = manual
 
 manifestmeta.highlighted.names += "QtWebEngine/WebEngine Widgets Simple Browser Example" \
                 "QtWebEngine/WebEngine Quick Nano Browser" \
@@ -88,6 +92,9 @@ imagedirs += \
 navigation.landingpage = "Qt WebEngine"
 navigation.cppclassespage = "Qt WebEngine C++ Classes and Namespaces"
 navigation.qmltypespage = "Qt WebEngine QML Types"
+# Auto-generate navigation linking based on "Qt WebEngine module topics":
+navigation.toctitles = "Qt WebEngine module topics"
+navigation.toctitles.inclusive = false
 
 # \QWE macro expands to 'Qt WebEngine' without auto-linking anywhere.
 macro.QWE    = "Qt \\WebEngine"
