@@ -3,7 +3,6 @@
 
 cmake_minimum_required(VERSION 3.19)
 find_package(Ninja 1.7.2 REQUIRED)
-find_package(Nodejs 14.19 REQUIRED)
 find_package(PkgConfig)
 if(PkgConfig_FOUND)
     create_pkg_config_host_wrapper(${CMAKE_CURRENT_BINARY_DIR})
@@ -145,11 +144,17 @@ foreach(arch ${archs})
 
         if(LINUX OR ANDROID)
             list(APPEND gnArgArg
+                enable_vr=false
                 is_cfi=false
                 ozone_auto_platforms=false
                 enable_arcore=false
                 use_ml_inliner=false
                 use_udev=false
+                use_gio=false
+                use_glib=false
+                use_nss_certs=false
+                use_xkbcommon=false
+                v8_use_external_startup_data=false
             )
             extend_gn_list(gnArgArg
                 ARGS use_system_icu

@@ -313,7 +313,7 @@ qt_webengine_configure_check("static-build"
 )
 
 qt_webengine_configure_check("nodejs"
-    MODULES QtWebEngine QtPdf
+    MODULES QtWebEngine
     CONDITION TARGET Nodejs::Nodejs AND
         NOT (Nodejs_ARCH STREQUAL "ia32") AND
         NOT (Nodejs_ARCH STREQUAL "x86") AND
@@ -328,24 +328,24 @@ qt_webengine_configure_check("python3"
     DOCUMENTATION "Python ${QT_CONFIGURE_CHECK_python3_version} version or later."
 )
 qt_webengine_configure_check("python3-html5lib"
-    MODULES QtWebEngine QtPdf
+    MODULES QtWebEngine
     CONDITION Python3_EXECUTABLE AND NOT html5lib_NOT_FOUND
     MESSAGE "Python3 html5lib is missing (${Python3_EXECUTABLE})."
     DOCUMENTATION "Python3 html5lib module.")
 qt_webengine_configure_check("gperf"
-    MODULES QtWebEngine QtPdf
+    MODULES QtWebEngine
     CONDITION GPerf_FOUND
     MESSAGE "Tool gperf is required."
     DOCUMENTATION "GNU gperf binary."
 )
 qt_webengine_configure_check("bison"
-    MODULES QtWebEngine QtPdf
+    MODULES QtWebEngine
     CONDITION BISON_FOUND
     MESSAGE "Tool bison is required."
     DOCUMENTATION "GNU bison binary."
 )
 qt_webengine_configure_check("flex"
-    MODULES QtWebEngine QtPdf
+    MODULES QtWebEngine
     CONDITION FLEX_FOUND
     MESSAGE "Tool flex is required."
     DOCUMENTATION "GNU flex binary."
@@ -358,14 +358,14 @@ qt_webengine_configure_check("pkg-config"
     TAGS LINUX_PLATFORM
 )
 qt_webengine_configure_check("glibc"
-    MODULES QtWebEngine QtPdf
+    MODULES QtWebEngine
     CONDITION NOT LINUX OR TEST_glibc
     MESSAGE "A suitable version >= ${QT_CONFIGURE_CHECK_glibc_version} of glibc is required."
     DOCUMENTATION "glibc library at least ${QT_CONFIGURE_CHECK_glibc_version} version or later."
     TAGS LINUX_PLATFORM
 )
 qt_webengine_configure_check("glib"
-    MODULES QtWebEngine QtPdf
+    MODULES QtWebEngine
     CONDITION NOT UNIX OR GLIB_FOUND
     MESSAGE "No glib library at least ${QT_CONFIGURE_CHECK_glib_version} version or later. Using build-in one"
     DOCUMENTATION "glib library at least ${QT_CONFIGURE_CHECK_glib_version} version or later."
@@ -381,7 +381,7 @@ qt_webengine_configure_check("harfbuzz"
     OPTIONAL
 )
 qt_webengine_configure_check("mesa-headers"
-    MODULES QtWebEngine QtPdf
+    MODULES QtWebEngine
     CONDITION NOT LINUX OR TEST_khr
     MESSAGE "Build requires Khronos development headers for build - see mesa/libegl1-mesa-dev"
     DOCUMENTATION "Mesa development headers."

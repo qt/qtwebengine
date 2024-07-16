@@ -17,8 +17,8 @@ qnx-710-armv7-on-linux                        OFF             OFF
 qnx-710-x86_64-developer-build-on-linux       OFF             OFF
 rhel-8.10                                     ON              ON
 rhel-9.4                                      ON              ON
-sles-15_sp5-static                            OFF             OFF
-sles-15_sp6-static                            OFF             OFF
+sles-15_sp5-static                            OFF             ON
+sles-15_sp6-static                            OFF             ON
 ubuntu-22.04                                  ON              ON
 ubuntu-22.04-developer-build                  ON              ON
 ubuntu-24.04-arm64                            ON              ON
