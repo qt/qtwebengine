@@ -241,9 +241,10 @@ QString localesPath()
 }
 
 #if QT_CONFIG(webengine_spellchecker)
-QString dictionariesPath()
+QString dictionariesPath(bool showWarnings)
 {
     static QString potentialDictionariesPath;
+    static QStringList warningMessage;
     static bool initialized = false;
     QStringList candidatePaths;
     if (!initialized) {
@@ -284,12 +285,23 @@ QString dictionariesPath()
                 break;
             }
         }
-
         if (potentialDictionariesPath.isEmpty()) {
-            // return path for error message
-            potentialDictionariesPath = QCoreApplication::applicationDirPath() % QDir::separator()
-                    % QLatin1String("qtwebengine_dictionaries");
+            warningMessage.append(QStringLiteral(
+                    "The following paths were searched for Qt WebEngine dictionaries:"));
+            for (const QString &candidate : std::as_const(candidatePaths))
+                warningMessage.append(QStringLiteral("  ") % candidate);
+            warningMessage.append(QStringLiteral("but could not find it."));
+            if (fromEnv.isEmpty()) {
+                warningMessage.append(
+                        QStringLiteral("You may override the default search path by using "
+                                       "QTWEBENGINE_DICTIONARIES_PATH environment variable."));
+            }
+            warningMessage.append(QStringLiteral("Spellchecking can not be enabled."));
         }
+    }
+
+    if (showWarnings && !warningMessage.isEmpty()) {
+        qWarning("%s", qPrintable(warningMessage.join('\n')));
     }
 
     return potentialDictionariesPath;
@@ -346,7 +358,7 @@ QString resourcesPath()
 }
 } // namespace
 
-base::FilePath WebEngineLibraryInfo::getPath(int key)
+base::FilePath WebEngineLibraryInfo::getPath(int key, bool showWarnings)
 {
     QString directory;
     switch (key) {
@@ -382,7 +394,7 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
         return toFilePath(localesPath());
 #if QT_CONFIG(webengine_spellchecker)
     case base::DIR_APP_DICTIONARIES:
-        return toFilePath(dictionariesPath());
+        return toFilePath(dictionariesPath(showWarnings));
 #endif
     case base::DIR_ASSETS:
         return toFilePath(resourcesPath());
