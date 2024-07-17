@@ -69,7 +69,7 @@ TestWebEngineView {
 
             // 1. Rejecting request on QML side should reject promise on JS side.
             jsGetUserMedia(row.constraints)
-            tryVerify(function(){ return gotFeatureRequest(row.feature) })
+            tryVerify(function(){ return gotExpectedRequests(row.feature) })
             rejectPendingRequest()
             tryVerify(function(){ return !jsPromiseFulfilled() && jsPromiseRejected() })
 
@@ -79,13 +79,13 @@ TestWebEngineView {
             // always be fulfilled, however in this case an error should be returned to
             // JS instead of leaving the Promise in limbo.
             jsGetUserMedia(row.constraints)
-            tryVerify(function(){ return gotFeatureRequest(row.feature) })
+            tryVerify(function(){ return gotExpectedRequests(row.feature) })
             acceptPendingRequest()
             tryVerify(function(){ return jsPromiseFulfilled() || jsPromiseRejected() });
 
             // 3. Media feature permissions are not remembered.
             jsGetUserMedia(row.constraints);
-            tryVerify(function(){ return gotFeatureRequest(row.feature) })
+            tryVerify(function(){ return gotExpectedRequests(row.feature) })
             acceptPendingRequest()
             tryVerify(function(){ return jsPromiseFulfilled() || jsPromiseRejected() });
         }
@@ -117,23 +117,48 @@ TestWebEngineView {
     // synchronous permission requests
 
     property variant permissionObject
+    property bool gotDesktopMediaRequest: false
+    property bool gotEmptyDesktopMediaRequest: false
 
     onPermissionRequested: function(perm) {
         permissionObject = perm
     }
 
-    function gotFeatureRequest(expectedFeature) {
+    onDesktopMediaRequested: function(request) {
+        gotDesktopMediaRequest = true
+        gotEmptyDesktopMediaRequest = request.screensModel.rowCount() == 0
+        if (gotEmptyDesktopMediaRequest)
+            request.cancel()
+        else
+            request.selectScreen(request.screensModel.index(0, 0))
+    }
+
+    function gotExpectedRequests(expectedFeature) {
+        var isDesktopPermission = expectedFeature == WebEnginePermission.PermissionType.DesktopAudioVideoCapture ||
+            expectedFeature == WebEnginePermission.PermissionType.DesktopVideoCapture;
+        if (isDesktopPermission != gotDesktopMediaRequest)
+            return false
+        if (isDesktopPermission && gotEmptyDesktopMediaRequest)
+            return permissionObject == undefined
         return permissionObject && permissionObject.permissionType == expectedFeature
     }
 
     function acceptPendingRequest() {
-        permissionObject.grant()
+        if (permissionObject)
+            permissionObject.grant()
+        resetRequestState()
+    }
+
+    function resetRequestState() {
         permissionObject = undefined
+        gotDesktopMediaRequest = false
+        gotEmptyDesktopMediaRequest = false
     }
 
     function rejectPendingRequest() {
-        permissionObject.deny()
-        permissionObject = undefined
+        if (permissionObject)
+            permissionObject.deny()
+        resetRequestState()
     }
 
     ////

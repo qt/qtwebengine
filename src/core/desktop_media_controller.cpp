@@ -15,6 +15,8 @@
 #include "content/public/browser/desktop_capture.h"
 #endif // QT_CONFIG(webengine_webrtc)
 
+#include <QtCore/QTimer>
+
 namespace QtWebEngineCore {
 namespace {
 DesktopMediaList::Type toMediaListType(DesktopMediaType type)
@@ -39,15 +41,21 @@ std::unique_ptr<DesktopMediaList> createMediaList(DesktopMediaType type)
     case DesktopMediaList::Type::kScreen: {
         std::unique_ptr<webrtc::DesktopCapturer> screenCapturer =
                 webrtc::DesktopCapturer::CreateScreenCapturer(options);
-        std::unique_ptr<DesktopCapturerWrapper> capturer =
-                std::make_unique<DesktopCapturerWrapper>(std::move(screenCapturer));
+        if (!screenCapturer) {
+            qWarning() << "Screen capturing is not available. Media list will be empty.";
+            return nullptr;
+        }
+        auto capturer = std::make_unique<DesktopCapturerWrapper>(std::move(screenCapturer));
         return std::make_unique<NativeDesktopMediaList>(listType, std::move(capturer));
     }
     case DesktopMediaList::Type::kWindow: {
         std::unique_ptr<webrtc::DesktopCapturer> windowCapturer =
                 webrtc::DesktopCapturer::CreateWindowCapturer(options);
-        std::unique_ptr<DesktopCapturerWrapper> capturer =
-                std::make_unique<DesktopCapturerWrapper>(std::move(windowCapturer));
+        if (!windowCapturer) {
+            qWarning() << "Window capturing is not available. Media list will be empty.";
+            return nullptr;
+        }
+        auto capturer = std::make_unique<DesktopCapturerWrapper>(std::move(windowCapturer));
         return std::make_unique<NativeDesktopMediaList>(
                 listType, std::move(capturer),
                 !content::desktop_capture::ShouldEnumerateCurrentProcessWindows());
@@ -69,6 +77,7 @@ public:
 
     void init();
     void startUpdating();
+    int getSourceCount() const;
     const DesktopMediaList::Source& getSource(int index) const;
 
     void OnSourceAdded(int index) override;
@@ -80,21 +89,19 @@ public:
     void OnDelegatedSourceListSelection() override { }
     void OnDelegatedSourceListDismissed() override { }
 
-    bool isInitialized;
     std::unique_ptr<DesktopMediaList> mediaList;
     DesktopMediaListQt *q_ptr;
     Q_DECLARE_PUBLIC(DesktopMediaListQt)
 };
 
 DesktopMediaListQtPrivate::DesktopMediaListQtPrivate(DesktopMediaType type, DesktopMediaListQt *qq)
-    : isInitialized(false)
-    , mediaList(createMediaList(type))
-    , q_ptr(qq)
+    : mediaList(createMediaList(type)), q_ptr(qq)
 {
 }
 
 const DesktopMediaList::Source& DesktopMediaListQtPrivate::getSource(int index) const
 {
+    Q_ASSERT(mediaList);
     return mediaList->GetSource(index);
 }
 
@@ -105,19 +112,28 @@ void DesktopMediaListQtPrivate::init()
     // This makes direct 'selectScreen/Window' calls possible from the frontend.
     // Note: StartUpdating should be called after Update is completed as it can overwrite the
     // internal cb.
-    base::OnceCallback<void()> onComplete = base::BindOnce(
-            [](DesktopMediaListQtPrivate *observer) {
-                observer->isInitialized = true;
-                Q_EMIT observer->q_ptr->initialized();
-                observer->startUpdating();
-            },
-            this);
-    mediaList->Update(std::move(onComplete));
+    if (mediaList) {
+        base::OnceCallback<void()> onComplete = base::BindOnce(
+                [](DesktopMediaListQtPrivate *observer) {
+                    Q_EMIT observer->q_ptr->initialized();
+                    observer->startUpdating();
+                },
+                this);
+        mediaList->Update(std::move(onComplete));
+    } else {
+        QTimer::singleShot(0, q_ptr, [this]() { Q_EMIT q_ptr->initialized(); });
+    }
 }
 
 void DesktopMediaListQtPrivate::startUpdating()
 {
+    Q_ASSERT(mediaList);
     mediaList->StartUpdating(this);
+}
+
+int DesktopMediaListQtPrivate::getSourceCount() const
+{
+    return mediaList ? mediaList->GetSourceCount() : 0;
 }
 
 void DesktopMediaListQtPrivate::OnSourceAdded(int index)
@@ -159,12 +175,7 @@ QString DesktopMediaListQt::getSourceName(int index) const
 
 int DesktopMediaListQt::getSourceCount() const
 {
-    return d->mediaList->GetSourceCount();
-}
-
-bool DesktopMediaListQt::isInitialized() const
-{
-    return d->isInitialized;
+    return d->getSourceCount();
 }
 
 DesktopMediaControllerPrivate::DesktopMediaControllerPrivate(
@@ -172,6 +183,7 @@ DesktopMediaControllerPrivate::DesktopMediaControllerPrivate(
     : doneCallback(std::move(doneCallback))
     , screens(new DesktopMediaListQt(DesktopMediaType::Screen))
     , windows(new DesktopMediaListQt(DesktopMediaType::Window))
+    , numInitialized(0)
 {
 }
 
@@ -198,16 +210,14 @@ DesktopMediaController::DesktopMediaController(DesktopMediaControllerPrivate *dd
     // Make sure both lists are populated before sending the request.
     DesktopMediaListQt *screens = DesktopMediaController::screens();
     DesktopMediaListQt *windows = DesktopMediaController::windows();
-    QObject::connect(screens, &DesktopMediaListQt::initialized, [windows, this]() {
-        if (windows->isInitialized())
+    auto initCb = [this] {
+        ++d->numInitialized;
+        if (d->numInitialized == 2)
             Q_EMIT mediaListsInitialized();
-    });
+    };
 
-    QObject::connect(windows, &DesktopMediaListQt::initialized, [screens, this]() {
-        if (screens->isInitialized())
-            Q_EMIT mediaListsInitialized();
-    });
-
+    QObject::connect(screens, &DesktopMediaListQt::initialized, initCb);
+    QObject::connect(windows, &DesktopMediaListQt::initialized, initCb);
     screens->d->init();
     windows->d->init();
 }

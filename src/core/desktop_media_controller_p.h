@@ -21,6 +21,7 @@ public:
     base::OnceCallback<void(content::DesktopMediaID)> doneCallback;
     QScopedPointer<DesktopMediaListQt> screens;
     QScopedPointer<DesktopMediaListQt> windows;
+    int numInitialized;
 };
 
 } // namespace QtWebEngineCore

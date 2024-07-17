@@ -35,7 +35,6 @@ Q_SIGNALS:
 private:
     friend class DesktopMediaController;
     friend class DesktopMediaControllerPrivate;
-    bool isInitialized() const;
     explicit DesktopMediaListQt(DesktopMediaType type);
     std::unique_ptr<DesktopMediaListQtPrivate> d;
 };

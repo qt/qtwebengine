@@ -108,7 +108,8 @@ QWebEngineDesktopMediaRequestPrivate::~QWebEngineDesktopMediaRequestPrivate()
 {
     // Keep old behavior, if there were no user action select the primary screen.
     if (!didSelectOrCancel)
-        controller->selectScreen(0);
+        controller->screens()->getSourceCount() > 0 ? controller->selectScreen(0)
+                                                    : controller->cancel();
 }
 
 void QWebEngineDesktopMediaRequestPrivate::selectWindow(const QModelIndex &index)
