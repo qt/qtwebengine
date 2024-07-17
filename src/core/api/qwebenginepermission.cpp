@@ -89,7 +89,7 @@ QWebEnginePermission::QWebEnginePermission(QWebEnginePermissionPrivate *pvt)
 }
 
 QWebEnginePermission::QWebEnginePermission(const QWebEnginePermission &other)
-    : d_ptr(new QWebEnginePermissionPrivate(*other.d_ptr))
+    : d_ptr(other.d_ptr)
 {
 }
 
@@ -102,10 +102,7 @@ QWebEnginePermission::~QWebEnginePermission() = default;
 
 QWebEnginePermission &QWebEnginePermission::operator=(const QWebEnginePermission &other)
 {
-    if (this == &other)
-        return *this;
-
-    d_ptr.reset(new QWebEnginePermissionPrivate(*other.d_ptr));
+    d_ptr = other.d_ptr;
     return *this;
 }
 
