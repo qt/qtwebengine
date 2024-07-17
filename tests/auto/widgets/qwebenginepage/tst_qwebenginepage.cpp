@@ -1678,11 +1678,14 @@ Q_OBJECT
 
 public:
     GetUserMediaTestPage()
-        : m_gotRequest(false)
+        : m_gotDesktopMediaRequest(false)
+        , m_gotEmptyDesktopMediaRequest(false)
         , m_loadSucceeded(false)
         , m_permission(nullptr)
     {
         connect(this, &QWebEnginePage::permissionRequested, this, &GetUserMediaTestPage::onPermissionRequested);
+        connect(this, &QWebEnginePage::desktopMediaRequested, this,
+                &GetUserMediaTestPage::onDesktopMediaRequested);
         connect(this, &QWebEnginePage::loadFinished, [this](bool success){
             m_loadSucceeded = success;
         });
@@ -1720,25 +1723,26 @@ public:
 
     void rejectPendingRequest()
     {
-        QVERIFY(m_permission);
-        m_permission->deny();
-        m_gotRequest = false;
+        if (m_permission)
+            m_permission->deny();
+        resetRequestState();
     }
+
     void acceptPendingRequest()
     {
-        QVERIFY(m_permission);
-        m_permission->grant();
-        m_gotRequest = false;
+        if (m_permission)
+            m_permission->grant();
+        resetRequestState();
     }
 
-    bool gotFeatureRequest(QWebEnginePermission::PermissionType permissionType)
+    bool gotExpectedRequests(bool isDesktopPermission,
+                             QWebEnginePermission::PermissionType permissionType) const
     {
-        return m_gotRequest && m_permission && m_permission->permissionType() == permissionType;
-    }
-
-    bool gotFeatureRequest() const
-    {
-        return m_gotRequest;
+        if (isDesktopPermission != m_gotDesktopMediaRequest)
+            return false;
+        if (isDesktopPermission && m_gotEmptyDesktopMediaRequest)
+            return !m_permission;
+        return m_permission && m_permission->permissionType() == permissionType;
     }
 
     bool loadSucceeded() const
@@ -1750,11 +1754,26 @@ private Q_SLOTS:
     void onPermissionRequested(QWebEnginePermission permission)
     {
         m_permission.reset(new QWebEnginePermission(permission));
-        m_gotRequest = true;
+    }
+
+    void onDesktopMediaRequested(QWebEngineDesktopMediaRequest request)
+    {
+        m_gotDesktopMediaRequest = true;
+        m_gotEmptyDesktopMediaRequest = request.screensModel()->rowCount() == 0;
+        // On destruction, the request will automatically select screen 0, or cancel
+        // if no screens are available.
     }
 
 private:
-    bool m_gotRequest;
+    void resetRequestState()
+    {
+        m_gotDesktopMediaRequest = false;
+        m_gotEmptyDesktopMediaRequest = false;
+        m_permission.reset();
+    }
+
+    bool m_gotDesktopMediaRequest;
+    bool m_gotEmptyDesktopMediaRequest;
     bool m_loadSucceeded;
     std::unique_ptr<QWebEnginePermission> m_permission;
 };
@@ -1763,21 +1782,20 @@ void tst_QWebEnginePage::getUserMediaRequest_data()
 {
     QTest::addColumn<QString>("call");
     QTest::addColumn<QWebEnginePermission::PermissionType>("permissionType");
+    using PT = QWebEnginePermission::PermissionType;
 
-    QTest::addRow("device audio")
-        << "getUserMedia({audio: true})" << QWebEnginePermission::PermissionType::MediaAudioCapture;
-    QTest::addRow("device video")
-        << "getUserMedia({video: true})" << QWebEnginePermission::PermissionType::MediaVideoCapture;
+    QTest::addRow("device audio") << "getUserMedia({audio: true})" << PT::MediaAudioCapture;
+    QTest::addRow("device video") << "getUserMedia({video: true})" << PT::MediaVideoCapture;
     QTest::addRow("device audio+video")
-        << "getUserMedia({audio: true, video: true})" << QWebEnginePermission::PermissionType::MediaAudioVideoCapture;
+            << "getUserMedia({audio: true, video: true})" << PT::MediaAudioVideoCapture;
     QTest::addRow("desktop video")
-        << "getUserMedia({video: { mandatory: { chromeMediaSource: 'desktop' }}})"
-        << QWebEnginePermission::PermissionType::DesktopVideoCapture;
+            << "getUserMedia({video: { mandatory: { chromeMediaSource: 'desktop' }}})"
+            << PT::DesktopVideoCapture;
     QTest::addRow("desktop audio+video")
-        << "getUserMedia({audio: { mandatory: { chromeMediaSource: 'desktop' }}, video: { mandatory: { chromeMediaSource: 'desktop' }}})"
-        << QWebEnginePermission::PermissionType::DesktopAudioVideoCapture;
-    QTest::addRow("display video")
-        << "getDisplayMedia()" << QWebEnginePermission::PermissionType::DesktopVideoCapture;
+            << "getUserMedia({audio: { mandatory: { chromeMediaSource: 'desktop' }}, video: { "
+               "mandatory: { chromeMediaSource: 'desktop' }}})"
+            << PT::DesktopAudioVideoCapture;
+    QTest::addRow("display video") << "getDisplayMedia()" << PT::DesktopVideoCapture;
 }
 
 void tst_QWebEnginePage::getUserMediaRequest()
@@ -1785,10 +1803,12 @@ void tst_QWebEnginePage::getUserMediaRequest()
     QFETCH(QString, call);
     QFETCH(QWebEnginePermission::PermissionType, permissionType);
 
+    bool isDesktopPermission =
+            permissionType == QWebEnginePermission::PermissionType::DesktopVideoCapture
+            || permissionType == QWebEnginePermission::PermissionType::DesktopAudioVideoCapture;
     GetUserMediaTestPage page;
     QWebEngineView view;
-    if (permissionType == QWebEnginePermission::PermissionType::DesktopVideoCapture
-            || permissionType == QWebEnginePermission::PermissionType::DesktopAudioVideoCapture) {
+    if (isDesktopPermission) {
         // Desktop capture needs to be on a desktop.
         view.setPage(&page);
         view.resize(640, 480);
@@ -1801,7 +1821,7 @@ void tst_QWebEnginePage::getUserMediaRequest()
 
     // 1. Rejecting request on C++ side should reject promise on JS side.
     page.jsGetMedia(call);
-    QTRY_VERIFY(page.gotFeatureRequest(permissionType));
+    QTRY_VERIFY(page.gotExpectedRequests(isDesktopPermission, permissionType));
     page.rejectPendingRequest();
     QTRY_VERIFY(!page.jsPromiseFulfilled() && page.jsPromiseRejected());
 
@@ -1811,13 +1831,13 @@ void tst_QWebEnginePage::getUserMediaRequest()
     // always be fulfilled, however in this case an error should be returned to
     // JS instead of leaving the Promise in limbo.
     page.jsGetMedia(call);
-    QTRY_VERIFY(page.gotFeatureRequest(permissionType));
+    QTRY_VERIFY(page.gotExpectedRequests(isDesktopPermission, permissionType));
     page.acceptPendingRequest();
     QTRY_VERIFY(page.jsPromiseFulfilled() || page.jsPromiseRejected());
 
     // 3. Media permissions are not remembered.
     page.jsGetMedia(call);
-    QTRY_VERIFY(page.gotFeatureRequest(permissionType));
+    QTRY_VERIFY(page.gotExpectedRequests(isDesktopPermission, permissionType));
     page.acceptPendingRequest();
     QTRY_VERIFY(page.jsPromiseFulfilled() || page.jsPromiseRejected());
 }
@@ -1879,7 +1899,7 @@ void tst_QWebEnginePage::getUserMediaRequestDesktopVideoManyPages()
     for (GetUserMediaTestPage &page : pages)
         page.jsGetUserMedia(constraints);
     for (GetUserMediaTestPage &page : pages)
-        QTRY_VERIFY(page.gotFeatureRequest(permissionType));
+        QTRY_VERIFY(page.gotExpectedRequests(/*isDesktopPermission*/ true, permissionType));
     for (GetUserMediaTestPage &page : pages)
         page.acceptPendingRequest();
     for (GetUserMediaTestPage &page : pages)
@@ -1905,7 +1925,7 @@ void tst_QWebEnginePage::getUserMediaRequestDesktopVideoManyRequests()
     page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
     for (int i = 0; i != 100; ++i) {
         page.jsGetUserMedia(constraints);
-        QTRY_VERIFY(page.gotFeatureRequest(permissionType));
+        QTRY_VERIFY(page.gotExpectedRequests(/*isDesktopPermission*/ true, permissionType));
         page.acceptPendingRequest();
         QTRY_VERIFY(page.jsPromiseFulfilled() || page.jsPromiseRejected());
     }
@@ -5807,11 +5827,13 @@ void tst_QWebEnginePage::chooseDesktopMedia()
     page.profile()->setPersistentPermissionsPolicy(QWebEngineProfile::PersistentPermissionsPolicy::AskEveryTime);
 
     bool desktopMediaRequested = false;
+    bool emptyDesktopMediaRequested = false;
     bool permissionRequested = false;
 
     connect(&page, &QWebEnginePage::desktopMediaRequested,
-            [&](const QWebEngineDesktopMediaRequest &) {
+            [&](const QWebEngineDesktopMediaRequest &request) {
                 desktopMediaRequested = true;
+                emptyDesktopMediaRequested = request.screensModel()->rowCount() == 0;
             });
 
     connect(&page, &QWebEnginePage::permissionRequested,
@@ -5831,7 +5853,7 @@ void tst_QWebEnginePage::chooseDesktopMedia()
                                "})()").arg(extensionId));
 
     QTRY_VERIFY(desktopMediaRequested);
-    QTRY_VERIFY(permissionRequested);
+    QTRY_VERIFY(permissionRequested || emptyDesktopMediaRequested);
 #endif // QT_CONFIG(webengine_extensions) && QT_CONFIG(webengine_webrtc)
 }
 
