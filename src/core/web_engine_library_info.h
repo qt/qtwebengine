@@ -18,7 +18,7 @@ enum {
 
 class WebEngineLibraryInfo {
 public:
-    static base::FilePath getPath(int key);
+    static base::FilePath getPath(int key, bool showWarnings = false);
     // Called by localized_error in our custom chrome layer
     static std::u16string getApplicationName();
     static std::string getResolvedLocale();
