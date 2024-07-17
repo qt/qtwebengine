@@ -38,6 +38,7 @@ qt_internal_add_module(Pdf
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
+    SBOM_INCOMPLETE_3RD_PARTY_DEPENDENCIES
 )
 
 add_subdirectory(plugins/imageformats/pdf)
