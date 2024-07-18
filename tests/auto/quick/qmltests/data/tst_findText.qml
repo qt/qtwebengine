@@ -105,6 +105,27 @@ TestWebEngineView {
             compare(findTextSpy.signalArguments[0][0].activeMatch, 1)
         }
 
+        function test_toggleCaseSensitivity() {
+            var findFlags = 0
+            webEngineView.url = Qt.resolvedUrl("test1.html")
+            verify(webEngineView.waitForLoadSucceeded())
+
+            webEngineView.clear()
+            webEngineView.findText("heLLo", findFlags, webEngineView.findTextCallback)
+            tryCompare(webEngineView, "matchCount", 1)
+            verify(!findFailed)
+            tryCompare(findTextSpy, "count", 1)
+            compare(findTextSpy.signalArguments[0][0].numberOfMatches, 1)
+            compare(findTextSpy.signalArguments[0][0].activeMatch, 1)
+
+            findTextSpy.clear()
+            webEngineView.clear()
+            findFlags = WebEngineView.FindCaseSensitively
+            webEngineView.findText("heLLo", findFlags, webEngineView.findTextCallback)
+            tryCompare(findTextSpy, "count", 1)
+            compare(findTextSpy.signalArguments[0][0].numberOfMatches, 0)
+        }
+
         function test_findTextManyMatches() {
             var findFlags = 0
             webEngineView.url = Qt.resolvedUrl("test4.html")
