@@ -61,6 +61,7 @@ private:
     int m_lastCompletedFindRequestId;
 
     QString m_previousFindText;
+    bool m_previousCaseSensitively;
 
     QMap<int, QJSValue> m_quickCallbacks;
     QMap<int, std::function<void(const QWebEngineFindTextResult &)>> m_widgetCallbacks;
