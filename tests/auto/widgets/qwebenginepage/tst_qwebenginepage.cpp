@@ -1162,6 +1162,23 @@ void tst_QWebEnginePage::findText()
         QTRY_VERIFY(m_view->selectedText().isEmpty());
     }
 
+    // Toggling case sensitivity without changing the text that's being looked up
+    // will clear previously found text
+    {
+        auto *callbackSpy = new CallbackSpy<QWebEngineFindTextResult>();
+        QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
+        m_view->findText("FOO", {}, callbackSpy->ref());
+        QVERIFY(callbackSpy->waitForResult().numberOfMatches() > 0);
+        QTRY_COMPARE(signalSpy.size(), 1);
+        delete callbackSpy;
+        callbackSpy = new CallbackSpy<QWebEngineFindTextResult>();
+        m_view->findText("FOO", QWebEnginePage::FindCaseSensitively, callbackSpy->ref());
+        QVERIFY(callbackSpy->waitForResult().numberOfMatches() == 0);
+        QVERIFY(callbackSpy->wasCalled());
+        QTRY_COMPARE(signalSpy.size(), 2);
+        delete callbackSpy;
+    }
+
     // Select whole page contents again.
     m_view->page()->triggerAction(QWebEnginePage::SelectAll);
     QTRY_COMPARE(m_view->hasSelection(), true);
