@@ -116,7 +116,7 @@ GLXFBConfig GetFBConfig(Display *display)
         GLX_DRAWABLE_TYPE, GLX_PIXMAP_BIT,
         GLX_BIND_TO_TEXTURE_TARGETS_EXT, GLX_TEXTURE_2D_BIT_EXT,
         GLX_DOUBLEBUFFER, 0,
-        GLX_Y_INVERTED_EXT, GLX_DONT_CARE,
+        GLX_Y_INVERTED_EXT, static_cast<int>(GLX_DONT_CARE),
         0
     };
     // clang-format on
@@ -288,10 +288,10 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
                 EGL_HEIGHT, size().height(),
                 EGL_LINUX_DRM_FOURCC_EXT, drmFormat,
                 EGL_DMA_BUF_PLANE0_FD_EXT, scopedFd.get(),
-                EGL_DMA_BUF_PLANE0_OFFSET_EXT, nativePixmap->GetDmaBufOffset(0),
+                EGL_DMA_BUF_PLANE0_OFFSET_EXT, static_cast<EGLAttrib>(nativePixmap->GetDmaBufOffset(0)),
                 EGL_DMA_BUF_PLANE0_PITCH_EXT, nativePixmap->GetDmaBufPitch(0),
-                EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT, modifier & 0xffffffff,
-                EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT, modifier >> 32,
+                EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT, static_cast<EGLAttrib>(modifier & 0xffffffff),
+                EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT, static_cast<EGLAttrib>(modifier >> 32),
                 EGL_NONE
             };
             // clang-format on
