@@ -1405,3 +1405,36 @@ function(add_code_attributions_target)
      )
      add_custom_target(${arg_TARGET} DEPENDS ${arg_OUTPUT})
 endfunction()
+
+macro(qt_webengine_build_and_install_gn)
+    set(suppress_warning "${BUILD_ONLY_GN} ${QT_INTERNAL_CALLED_FROM_CONFIGURE}")
+    qt_internal_project_setup()
+    qt_webengine_externalproject_add(gn
+        SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/src/gn
+        BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR}/src/gn
+        INSTALL_DIR ${PROJECT_BINARY_DIR}/install
+    )
+    qt_internal_set_cmake_build_type()
+    get_install_config(install_config)
+    qt_install(
+        PROGRAMS "${PROJECT_BINARY_DIR}/install/bin/gn${CMAKE_EXECUTABLE_SUFFIX}"
+        CONFIGURATIONS ${install_config}
+        RUNTIME DESTINATION "${INSTALL_LIBEXECDIR}"
+    )
+    unset(suppress_warning)
+    unset(install_config)
+endmacro()
+
+macro(qt_webengine_externalproject_add)
+    externalproject_add(${ARGN}
+        PREFIX      gn
+        USES_TERMINAL_BUILD TRUE
+        CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release
+                   -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                   -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                   -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                   -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>
+                   -DWEBENGINE_ROOT_BUILD_DIR=${PROJECT_BINARY_DIR}
+                   -DQT_ALLOW_SYMLINK_IN_PATHS=${QT_ALLOW_SYMLINK_IN_PATHS}
+    )
+endmacro()
