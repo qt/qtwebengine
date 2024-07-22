@@ -45,14 +45,13 @@ public:
                                     bool printInColor, const QString &filePath, quint64 frameId,
                                     PrintToPDFFileCallback callback);
     void PrintToPDFWithCallback(const QPageLayout &pageLayout, const QPageRanges &pageRanges,
-                                bool printInColor, bool useCustomMargins, quint64 frameId,
-                                PrintToPDFCallback callback);
+                                bool printInColor, quint64 frameId, PrintToPDFCallback callback);
 
 protected:
     explicit PrintViewManagerQt(content::WebContents*);
 
     bool PrintToPDFInternal(const QPageLayout &, const QPageRanges &, bool printInColor,
-                            bool useCustomMargins, quint64 frameId);
+                            quint64 frameId);
 
     // content::WebContentsObserver implementation.
     // Cancels the print job.
@@ -91,4 +90,3 @@ private:
 
 } // namespace QtWebEngineCore
 #endif // PRINT_VIEW_MANAGER_QT_H
-

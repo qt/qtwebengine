@@ -29,10 +29,12 @@ void PrinterWorker::print()
     // the device object. Make its settings restoreable.
     QPageSize defaultPageSize = m_device->pageLayout().pageSize();
     QPageLayout::Orientation defaultOrientation = m_device->pageLayout().orientation();
+    QMarginsF defaultMargins = m_device->pageLayout().margins();
 
     auto finish = [&](bool ok) {
         m_device->setPageSize(defaultPageSize);
         m_device->setPageOrientation(defaultOrientation);
+        m_device->setPageMargins(defaultMargins);
         Q_EMIT resultReady(ok);
     };
 
@@ -66,6 +68,9 @@ void PrinterWorker::print()
             bool isLandscape = pageSizePoints.width() > pageSizePoints.height();
             m_device->setPageOrientation(isLandscape ? QPageLayout::Landscape
                                                       : QPageLayout::Portrait);
+
+            // Margins: they are determined at PDF generation; don't apply them here again
+            m_device->setPageMargins(QMarginsF());
 
             QSizeF documentSize = pageSizePoints * resolution;
             QRectF paintRect = m_device->pageLayout().paintRectPixels(m_deviceResolution);

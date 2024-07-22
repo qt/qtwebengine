@@ -112,38 +112,24 @@ static base::Value::Dict createPrintSettings()
     return printSettings;
 }
 
-static base::Value::Dict createPrintSettingsFromQPageLayout(const QPageLayout &pageLayout,
-                                                                 bool useCustomMargins)
+static base::Value::Dict createPrintSettingsFromQPageLayout(const QPageLayout &pageLayout)
 {
     base::Value::Dict printSettings = createPrintSettings();
-    QRectF pageSizeInMillimeter;
 
-    if (useCustomMargins) {
-        // Apply page margins when printing to PDF
-        pageSizeInMillimeter = pageLayout.pageSize().rect(QPageSize::Millimeter);
+    QMargins pageMarginsInPoints = pageLayout.marginsPoints();
+    base::Value::Dict marginsDict;
+    marginsDict.Set(printing::kSettingMarginTop, pageMarginsInPoints.top());
+    marginsDict.Set(printing::kSettingMarginBottom, pageMarginsInPoints.bottom());
+    marginsDict.Set(printing::kSettingMarginLeft, pageMarginsInPoints.left());
+    marginsDict.Set(printing::kSettingMarginRight, pageMarginsInPoints.right());
+    printSettings.Set(printing::kSettingMarginsCustom, std::move(marginsDict));
+    printSettings.Set(printing::kSettingMarginsType, (int)printing::mojom::MarginType::kCustomMargins);
 
-        QMargins pageMarginsInPoints = pageLayout.marginsPoints();
-        base::Value::Dict marginsDict;
-        marginsDict.Set(printing::kSettingMarginTop, pageMarginsInPoints.top());
-        marginsDict.Set(printing::kSettingMarginBottom, pageMarginsInPoints.bottom());
-        marginsDict.Set(printing::kSettingMarginLeft, pageMarginsInPoints.left());
-        marginsDict.Set(printing::kSettingMarginRight, pageMarginsInPoints.right());
+    printSettings.Set(printing::kSettingLandscape,
+                      pageLayout.orientation() == QPageLayout::Landscape);
 
-        printSettings.Set(printing::kSettingMarginsCustom, std::move(marginsDict));
-        printSettings.Set(printing::kSettingMarginsType, (int)printing::mojom::MarginType::kCustomMargins);
-
-        // pageSizeInMillimeter is in portrait orientation. Transpose it if necessary.
-        printSettings.Set(printing::kSettingLandscape, pageLayout.orientation() == QPageLayout::Landscape);
-    } else {
-        // QPrinter will handle margins
-        pageSizeInMillimeter = pageLayout.paintRect(QPageLayout::Millimeter);
-        printSettings.Set(printing::kSettingMarginsType, (int)printing::mojom::MarginType::kNoMargins);
-
-        // pageSizeInMillimeter already contains the orientation.
-        printSettings.Set(printing::kSettingLandscape, false);
-    }
-
-    //Set page size attributes, chromium expects these in micrometers
+    // Set page size attributes, Chromium expects these in micrometers
+    QRectF pageSizeInMillimeter = pageLayout.pageSize().rect(QPageSize::Millimeter);
     base::Value::Dict sizeDict;
     sizeDict.Set(printing::kSettingMediaSizeWidthMicrons, int(pageSizeInMillimeter.width() * kMicronsToMillimeter));
     sizeDict.Set(printing::kSettingMediaSizeHeightMicrons, int(pageSizeInMillimeter.height() * kMicronsToMillimeter));
@@ -189,8 +175,7 @@ void PrintViewManagerQt::PrintToPDFFileWithCallback(const QPageLayout &pageLayou
 
     m_pdfOutputPath = toFilePath(filePath);
     m_pdfSaveCallback = std::move(callback);
-    if (!PrintToPDFInternal(pageLayout, pageRanges, printInColor, /*useCustomMargins*/ true,
-                            frameId)) {
+    if (!PrintToPDFInternal(pageLayout, pageRanges, printInColor, frameId)) {
         content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
                        base::BindOnce(std::move(m_pdfSaveCallback), false));
         resetPdfState();
@@ -199,8 +184,7 @@ void PrintViewManagerQt::PrintToPDFFileWithCallback(const QPageLayout &pageLayou
 
 void PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout,
                                                 const QPageRanges &pageRanges, bool printInColor,
-                                                bool useCustomMargins, quint64 frameId,
-                                                PrintToPDFCallback callback)
+                                                quint64 frameId, PrintToPDFCallback callback)
 {
     if (callback.is_null())
         return;
@@ -213,7 +197,7 @@ void PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout,
     }
 
     m_pdfPrintCallback = std::move(callback);
-    if (!PrintToPDFInternal(pageLayout, pageRanges, printInColor, useCustomMargins, frameId)) {
+    if (!PrintToPDFInternal(pageLayout, pageRanges, printInColor, frameId)) {
         content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
                        base::BindOnce(std::move(m_pdfPrintCallback), QSharedPointer<QByteArray>()));
 
@@ -223,12 +207,12 @@ void PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout,
 
 bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
                                             const QPageRanges &pageRanges, const bool printInColor,
-                                            const bool useCustomMargins, quint64 frameId)
+                                            quint64 frameId)
 {
     if (!pageLayout.isValid())
         return false;
 
-    m_printSettings = createPrintSettingsFromQPageLayout(pageLayout, useCustomMargins);
+    m_printSettings = createPrintSettingsFromQPageLayout(pageLayout);
     m_printSettings.Set(printing::kSettingShouldPrintBackgrounds,
                                 web_contents()->GetOrCreateWebPreferences().should_print_backgrounds);
     m_printSettings.Set(printing::kSettingColor,

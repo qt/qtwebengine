@@ -1380,7 +1380,7 @@ void QQuickWebEngineViewPrivate::printToPdf(
         const QPageRanges &ranges, quint64 frameId)
 {
     adapter->printToPDFCallbackResult(std::move(callback), layout, ranges, /*colorMode*/ true,
-                                      /*useCustomMargins*/ true, frameId);
+                                      frameId);
 }
 
 void QQuickWebEngineViewPrivate::didPrintPageToPdf(const QString &filePath, bool success)

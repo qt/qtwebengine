@@ -212,7 +212,7 @@ public:
     void printToPDF(const QPageLayout &, const QPageRanges &, const QString &, quint64 frameId);
     void printToPDFCallbackResult(std::function<void(QSharedPointer<QByteArray>)> &&,
                                   const QPageLayout &, const QPageRanges &, bool colorMode,
-                                  bool useCustomMargins, quint64 frameId);
+                                  quint64 frameId);
     void didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result);
 
     void replaceMisspelling(const QString &word);

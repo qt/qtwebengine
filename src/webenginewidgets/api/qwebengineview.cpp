@@ -1510,7 +1510,7 @@ void QWebEngineView::print(QPrinter *printer)
     };
     dPage->adapter->printToPDFCallbackResult(std::move(callback), printer->pageLayout(),
                                              printer->pageRanges(),
-                                             printer->colorMode() == QPrinter::Color, false,
+                                             printer->colorMode() == QPrinter::Color,
                                              QtWebEngineCore::WebContentsAdapter::kUseMainFrameId);
 #else
     Q_UNUSED(printer);

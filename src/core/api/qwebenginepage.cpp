@@ -286,7 +286,7 @@ void QWebEnginePagePrivate::printToPdf(std::function<void(QSharedPointer<QByteAr
                                        quint64 frameId)
 {
     adapter->printToPDFCallbackResult(std::move(callback), layout, ranges, /*colorMode*/ true,
-                                      /*useCustomMargins*/ true, frameId);
+                                      frameId);
 }
 
 void QWebEnginePagePrivate::didPrintPageToPdf(const QString &filePath, bool success)
