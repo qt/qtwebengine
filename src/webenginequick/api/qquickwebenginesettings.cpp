@@ -484,6 +484,20 @@ bool QQuickWebEngineSettings::printHeaderAndFooter() const
 }
 
 /*!
+    \qmlproperty bool WebEngineSettings::preferCSSMarginsForPrinting
+    \since QtWebEngine 6.9
+
+    Turns on preferring CSS margins over the default (0, 0, 0, 0) sizes when
+    printing a web page.
+
+    Disabled by default.
+*/
+bool QQuickWebEngineSettings::preferCSSMarginsForPrinting() const
+{
+    return d_ptr->testAttribute(QWebEngineSettings::PreferCSSMarginsForPrinting);
+}
+
+/*!
     \qmlproperty bool WebEngineSettings::scrollAnimatorEnabled
     \since QtWebEngine 6.8
 
@@ -829,6 +843,14 @@ void QQuickWebEngineSettings::setPrintHeaderAndFooter(bool on)
     d_ptr->setAttribute(QWebEngineSettings::PrintHeaderAndFooter, on);
     if (wasOn != on)
         Q_EMIT printHeaderAndFooterChanged();
+}
+
+void QQuickWebEngineSettings::setPreferCSSMarginsForPrinting(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::PreferCSSMarginsForPrinting);
+    d_ptr->setAttribute(QWebEngineSettings::PreferCSSMarginsForPrinting, on);
+    if (wasOn != on)
+        Q_EMIT preferCSSMarginsForPrintingChanged();
 }
 
 void QQuickWebEngineSettings::setScrollAnimatorEnabled(bool on)

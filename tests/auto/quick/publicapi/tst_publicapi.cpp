@@ -499,6 +499,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.playbackRequiresUserGestureChanged() --> void"
     << "QQuickWebEngineSettings.pluginsEnabled --> bool"
     << "QQuickWebEngineSettings.pluginsEnabledChanged() --> void"
+    << "QQuickWebEngineSettings.preferCSSMarginsForPrinting --> bool"
+    << "QQuickWebEngineSettings.preferCSSMarginsForPrintingChanged() --> void"
     << "QQuickWebEngineSettings.printElementBackgrounds --> bool"
     << "QQuickWebEngineSettings.printElementBackgroundsChanged() --> void"
     << "QQuickWebEngineSettings.printHeaderAndFooter --> bool"

@@ -63,6 +63,7 @@ public:
         ReadingFromCanvasEnabled,
         ForceDarkMode,
         PrintHeaderAndFooter,
+        PreferCSSMarginsForPrinting,
     };
 
     enum FontSize {

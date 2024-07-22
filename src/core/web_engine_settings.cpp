@@ -301,6 +301,7 @@ void WebEngineSettings::initDefaults()
         bool forceDarkMode = commandLine->HasSwitch(switches::kForceDarkMode);
         s_defaultAttributes.insert(QWebEngineSettings::ForceDarkMode, forceDarkMode);
         s_defaultAttributes.insert(QWebEngineSettings::PrintHeaderAndFooter, false);
+        s_defaultAttributes.insert(QWebEngineSettings::PreferCSSMarginsForPrinting, false);
     }
 
     if (s_defaultFontFamilies.isEmpty()) {

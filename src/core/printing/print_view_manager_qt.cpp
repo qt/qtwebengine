@@ -114,18 +114,25 @@ static base::Value::Dict createPrintSettings()
     return printSettings;
 }
 
-static base::Value::Dict createPrintSettingsFromQPageLayout(const QPageLayout &pageLayout)
+static base::Value::Dict createPrintSettingsFromQPageLayout(const QPageLayout &pageLayout,
+                                                            bool useCSSMargins)
 {
     base::Value::Dict printSettings = createPrintSettings();
 
-    QMargins pageMarginsInPoints = pageLayout.marginsPoints();
-    base::Value::Dict marginsDict;
-    marginsDict.Set(printing::kSettingMarginTop, pageMarginsInPoints.top());
-    marginsDict.Set(printing::kSettingMarginBottom, pageMarginsInPoints.bottom());
-    marginsDict.Set(printing::kSettingMarginLeft, pageMarginsInPoints.left());
-    marginsDict.Set(printing::kSettingMarginRight, pageMarginsInPoints.right());
-    printSettings.Set(printing::kSettingMarginsCustom, std::move(marginsDict));
-    printSettings.Set(printing::kSettingMarginsType, (int)printing::mojom::MarginType::kCustomMargins);
+    if (useCSSMargins) {
+        printSettings.Set(printing::kSettingMarginsType,
+                          (int)printing::mojom::MarginType::kDefaultMargins);
+    } else {
+        QMargins pageMarginsInPoints = pageLayout.marginsPoints();
+        base::Value::Dict marginsDict;
+        marginsDict.Set(printing::kSettingMarginTop, pageMarginsInPoints.top());
+        marginsDict.Set(printing::kSettingMarginBottom, pageMarginsInPoints.bottom());
+        marginsDict.Set(printing::kSettingMarginLeft, pageMarginsInPoints.left());
+        marginsDict.Set(printing::kSettingMarginRight, pageMarginsInPoints.right());
+        printSettings.Set(printing::kSettingMarginsCustom, std::move(marginsDict));
+        printSettings.Set(printing::kSettingMarginsType,
+                          (int)printing::mojom::MarginType::kCustomMargins);
+    }
 
     printSettings.Set(printing::kSettingLandscape,
                       pageLayout.orientation() == QPageLayout::Landscape);
@@ -215,14 +222,17 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
         return false;
 
     bool printHeaderAndFooter = false;
+    bool useCSSMargins = false;
     content::WebContentsView *view =
             static_cast<content::WebContentsImpl *>(web_contents()->GetOutermostWebContents())
                     ->GetView();
-    if (WebContentsAdapterClient *client = WebContentsViewQt::from(view)->client())
-        printHeaderAndFooter = client->webEngineSettings()->testAttribute(
-                QWebEngineSettings::PrintHeaderAndFooter);
+    if (WebContentsAdapterClient *client = WebContentsViewQt::from(view)->client()) {
+        QWebEngineSettings *settings = client->webEngineSettings();
+        printHeaderAndFooter = settings->testAttribute(QWebEngineSettings::PrintHeaderAndFooter);
+        useCSSMargins = settings->testAttribute(QWebEngineSettings::PreferCSSMarginsForPrinting);
+    }
 
-    m_printSettings = createPrintSettingsFromQPageLayout(pageLayout);
+    m_printSettings = createPrintSettingsFromQPageLayout(pageLayout, useCSSMargins);
     m_printSettings.Set(printing::kSettingShouldPrintBackgrounds,
                                 web_contents()->GetOrCreateWebPreferences().should_print_backgrounds);
     m_printSettings.Set(printing::kSettingColor,

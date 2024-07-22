@@ -183,6 +183,9 @@
            (URL, title, date, page number) in header and footer area. It is the embedder's responsibility
            to provide enough space for these texts by setting proper top and bottom margins.
            Disabled by default. (Added in Qt 6.9)
+    \value PreferCSSMarginsForPrinting Turns on preferring CSS margins over the margins
+           of the specified QPageLayout.
+           Disabled by default. (Added in Qt 6.9)
 */
 
 /*!

@@ -39,6 +39,7 @@ PrintTester::PrintTester(const QString &outputDir, const QUrl &url)
     connect(&m_view, &QWebEngineView::printFinished, this, &PrintTester::printingFinished);
 
     m_view.settings()->setAttribute(QWebEngineSettings::PrintHeaderAndFooter, false);
+    m_view.settings()->setAttribute(QWebEngineSettings::PreferCSSMarginsForPrinting, false);
 }
 
 int PrintTester::run()
@@ -59,16 +60,19 @@ void PrintTester::loadFinished(bool ok)
         QApplication::exit();
     }
 
+    // Expected to be ignored; page sizes are coming from CSS
     const std::map<QString, QPageSize::PageSizeId> pageSizes = {
         { "a4", QPageSize::A4 },
         { "a5", QPageSize::A5 },
     };
 
+    // Expected to be ignored; orientations are coming from CSS
     const std::map<QString, QPageLayout::Orientation> orientations = {
         { "portrait", QPageLayout::Portrait },
         { "landscape", QPageLayout::Landscape },
     };
 
+    // Should be ignored when PreferCSSMarginsForPrinting is enabled
     const std::map<QString, QMargins> margins = {
         { "default", QMargins() },
         { "uniform", QMargins(20, 20, 20, 20) },
