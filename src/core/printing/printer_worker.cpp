@@ -25,6 +25,17 @@ void PrinterWorker::print()
         return;
     }
 
+    // We will modify device settings for individual pages, but we don't own
+    // the device object. Make its settings restoreable.
+    QPageSize defaultPageSize = m_device->pageLayout().pageSize();
+    QPageLayout::Orientation defaultOrientation = m_device->pageLayout().orientation();
+
+    auto finish = [&](bool ok) {
+        m_device->setPageSize(defaultPageSize);
+        m_device->setPageOrientation(defaultOrientation);
+        Q_EMIT resultReady(ok);
+    };
+
     PdfiumDocumentWrapperQt pdfiumWrapper(m_data->constData(), m_data->size());
 
     const int fromPage = m_firstPageFirst ? 0 : pdfiumWrapper.pageCount() - 1;
@@ -45,10 +56,18 @@ void PrinterWorker::print()
             m_device->newPage();
 
         for (int i = fromPage; i != toPage; m_firstPageFirst ? i++ : i--) {
-            QSizeF documentSize = (pdfiumWrapper.pageSize(i) * resolution);
-            bool isLandscape = documentSize.width() > documentSize.height();
+            // Page size (A4, A5, etc...)
+            QSizeF pageSizePoints = pdfiumWrapper.pageSize(i);
+            QPageSize pageSize(pageSizePoints, QPageSize::Point, QString(),
+                               QPageSize::FuzzyOrientationMatch);
+            m_device->setPageSize(pageSize);
+
+            // Page orientation
+            bool isLandscape = pageSizePoints.width() > pageSizePoints.height();
             m_device->setPageOrientation(isLandscape ? QPageLayout::Landscape
                                                       : QPageLayout::Portrait);
+
+            QSizeF documentSize = pageSizePoints * resolution;
             QRectF paintRect = m_device->pageLayout().paintRectPixels(m_deviceResolution);
             documentSize = documentSize.scaled(paintRect.size(), Qt::KeepAspectRatio);
 
@@ -57,8 +76,7 @@ void PrinterWorker::print()
             // first page
             if (!painter.isActive() && !painter.begin(m_device)) {
                 qWarning("Failure to print on device: Could not open printer for painting.");
-                Q_EMIT resultReady(false);
-                return;
+                return finish(false);
             }
 
             if (i != fromPage)
@@ -70,18 +88,15 @@ void PrinterWorker::print()
 
                 QImage currentImage =
                         pdfiumWrapper.pageAsQImage(i, documentSize.width(), documentSize.height());
-                if (currentImage.isNull()) {
-                    Q_EMIT resultReady(false);
-                    return;
-                }
+                if (currentImage.isNull())
+                    return finish(false);
                 painter.drawImage(0, 0, currentImage);
             }
         }
     }
     painter.end();
 
-    Q_EMIT resultReady(true);
-    return;
+    return finish(true);
 }
 
 } // namespace QtWebEngineCore
