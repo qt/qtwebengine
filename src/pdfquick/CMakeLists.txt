@@ -13,7 +13,9 @@ set(qml_files
     "PdfStyle.qml"
 )
 
-qt_policy(SET QTP0004 OLD)
+if(QT_KNOWN_POLICY_QTP0004)
+    qt_policy(SET QTP0004 OLD)
+endif()
 
 qt_internal_add_qml_module(PdfQuick
     URI "QtQuick.Pdf"
@@ -40,4 +42,3 @@ qt_internal_add_qml_module(PdfQuick
         Qt::Qml
     NO_GENERATE_CPP_EXPORTS
 )
-
