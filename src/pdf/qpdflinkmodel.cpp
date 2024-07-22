@@ -14,7 +14,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_STATIC_LOGGING_CATEGORY(qLcLink, "qt.pdf.links")
+Q_LOGGING_CATEGORY(qLcLink, "qt.pdf.links")
 
 /*!
     \class QPdfLinkModel

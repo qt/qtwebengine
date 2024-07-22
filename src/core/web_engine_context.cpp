@@ -128,7 +128,7 @@ QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
 
-Q_STATIC_LOGGING_CATEGORY(webEngineContextLog, "qt.webenginecontext")
+Q_LOGGING_CATEGORY(webEngineContextLog, "qt.webenginecontext")
 
 class GPUInfo
 {

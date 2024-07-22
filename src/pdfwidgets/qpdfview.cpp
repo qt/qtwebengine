@@ -19,7 +19,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_STATIC_LOGGING_CATEGORY(qLcWLink, "qt.pdf.widgets.links")
+Q_LOGGING_CATEGORY(qLcWLink, "qt.pdf.widgets.links")
 //#define DEBUG_LINKS
 
 static const QColor SearchResultHighlight("#80B0C4DE");

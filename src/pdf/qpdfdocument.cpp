@@ -25,7 +25,7 @@ QT_BEGIN_NAMESPACE
 Q_GLOBAL_STATIC(QRecursiveMutex, pdfMutex)
 static int libraryRefCount;
 static const double CharacterHitTolerance = 16.0;
-Q_STATIC_LOGGING_CATEGORY(qLcDoc, "qt.pdf.document")
+Q_LOGGING_CATEGORY(qLcDoc, "qt.pdf.document")
 
 QPdfMutexLocker::QPdfMutexLocker()
     : std::unique_lock<QRecursiveMutex>(*pdfMutex())

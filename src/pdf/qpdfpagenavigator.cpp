@@ -10,7 +10,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_STATIC_LOGGING_CATEGORY(qLcNav, "qt.pdf.pagenavigator")
+Q_LOGGING_CATEGORY(qLcNav, "qt.pdf.pagenavigator")
 
 struct QPdfPageNavigatorPrivate
 {

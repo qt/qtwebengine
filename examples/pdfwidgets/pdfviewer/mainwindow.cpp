@@ -23,7 +23,7 @@ using namespace Qt::StringLiterals;
 
 const qreal zoomMultiplier = qSqrt(2.0);
 
-Q_STATIC_LOGGING_CATEGORY(lcExample, "qt.examples.pdfviewer")
+Q_LOGGING_CATEGORY(lcExample, "qt.examples.pdfviewer")
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)

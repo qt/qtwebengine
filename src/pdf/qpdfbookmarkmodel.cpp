@@ -17,7 +17,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_STATIC_LOGGING_CATEGORY(qLcBM, "qt.pdf.bookmarks")
+Q_LOGGING_CATEGORY(qLcBM, "qt.pdf.bookmarks")
 
 class BookmarkNode
 {

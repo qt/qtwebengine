@@ -99,7 +99,7 @@ struct RequestInfo {
 
 static const QUrl kRedirectUrl = QUrl("qrc:///resources/content.html");
 
-Q_STATIC_LOGGING_CATEGORY(lc, "qt.webengine.tests")
+Q_LOGGING_CATEGORY(lc, "qt.webengine.tests")
 
 class TestRequestInterceptor : public QWebEngineUrlRequestInterceptor
 {

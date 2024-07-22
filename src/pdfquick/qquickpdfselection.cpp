@@ -12,7 +12,7 @@
 #include <QStandardPaths>
 #include <QtPdf/private/qpdfdocument_p.h>
 
-Q_STATIC_LOGGING_CATEGORY(qLcIm, "qt.pdf.im")
+Q_LOGGING_CATEGORY(qLcIm, "qt.pdf.im")
 
 QT_BEGIN_NAMESPACE
 
