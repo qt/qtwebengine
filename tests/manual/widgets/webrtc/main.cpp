@@ -28,7 +28,7 @@ class Page : public QWebEnginePage
 public:
     Page(QWebEngineProfile *profile, QObject *parent = nullptr);
 private slots:
-    void handlePermissionRequest(const QUrl &origin, Feature feature);
+    void handlePermissionRequest(QWebEnginePermission permission);
     void handleDesktopMediaRequest(const QWebEngineDesktopMediaRequest &request);
 };
 
@@ -66,13 +66,21 @@ void Page::handleDesktopMediaRequest(const QWebEngineDesktopMediaRequest &reques
     windowsView->setModel(windowsModel);
 
     if (dialog.exec() == QDialog::Accepted) {
-        if (mediaPickerDialog.tabWidget->currentIndex() == 0)
-            request.selectWindow(windowsView->selectionModel()->selectedIndexes().first());
-        else
-            request.selectScreen(screensView->selectionModel()->selectedIndexes().first());
-    } else {
-        request.cancel();
+        if (mediaPickerDialog.tabWidget->currentIndex() == 0) {
+            auto list = windowsView->selectionModel()->selectedIndexes();
+            if (!list.empty()) {
+                request.selectWindow(list.first());
+                return;
+            }
+        } else {
+            auto list = screensView->selectionModel()->selectedIndexes();
+            if (!list.empty()) {
+                request.selectScreen(list.first());
+                return;
+            }
+        }
     }
+    request.cancel();
 }
 
 int main(int argc, char *argv[])
