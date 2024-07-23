@@ -67,6 +67,10 @@ qt_internal_add_module(WebEngineCore
     SBOM_INCOMPLETE_3RD_PARTY_DEPENDENCIES
 )
 
+if(MSVC)
+    qt_internal_skip_intel_cet_hardening(WebEngineCore)
+endif()
+
 set_target_properties(WebEngineCore PROPERTIES QTWEBENGINEPROCESS_NAME ${qtWebEngineProcessName})
 set_target_properties(WebEngineCore PROPERTIES CXX_STANDARD 20)
 # Chromium included headers are not clean
