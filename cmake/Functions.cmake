@@ -872,7 +872,7 @@ macro(append_build_type_setup)
     if(QT_FEATURE_webengine_jumbo_build)
         list(APPEND gnArgArg jumbo_file_merge_limit=${QT_FEATURE_webengine_jumbo_file_merge_limit})
         if(QT_FEATURE_webengine_jumbo_file_merge_limit LESS_EQUAL 8)
-            list(APPEND gnArgArg jumbo_build_excluded=[\"browser\"])
+            list(APPEND gnArgArg "jumbo_build_excluded=[\"browser\"]")
         endif()
     endif()
 
