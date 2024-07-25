@@ -91,6 +91,10 @@
 #include "location_provider_qt.h"
 #endif
 
+#if BUILDFLAG(IS_MAC)
+#include "services/device/public/cpp/geolocation/geolocation_system_permission_manager.h"
+#endif
+
 #if QT_CONFIG(webengine_spellchecker)
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
 #include "chrome/browser/spellchecker/spell_check_initialization_host_impl.h"
@@ -511,12 +515,15 @@ void ContentBrowserClientQt::RegisterAssociatedInterfaceBindersForRenderFrameHos
             },
             &rfh));
 #if BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
-    associated_registry.AddInterface<pdf::mojom::PdfService>(
-                base::BindRepeating(
-                    [](content::RenderFrameHost *render_frame_host,
-                       mojo::PendingAssociatedReceiver<pdf::mojom::PdfService> receiver) {
-                        pdf::PDFDocumentHelper::BindPdfService(std::move(receiver), render_frame_host, std::make_unique<PDFDocumentHelperClientQt>());
-                    }, &rfh));
+    associated_registry.AddInterface<pdf::mojom::PdfHost>(
+            base::BindRepeating(
+                [](content::RenderFrameHost *render_frame_host,
+                   mojo::PendingAssociatedReceiver<pdf::mojom::PdfHost> receiver) {
+                    pdf::PDFDocumentHelper::BindPdfHost(
+                            std::move(receiver), render_frame_host,
+                            std::make_unique<PDFDocumentHelperClientQt>());
+                },
+            &rfh));
 #endif  // BUILDFLAG(ENABLE_PDF)
     ContentBrowserClient::RegisterAssociatedInterfaceBindersForRenderFrameHost(rfh, associated_registry);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -579,7 +586,7 @@ std::unique_ptr<device::LocationProvider> ContentBrowserClientQt::OverrideSystem
 device::GeolocationSystemPermissionManager *ContentBrowserClientQt::GetGeolocationSystemPermissionManager()
 {
 #if BUILDFLAG(IS_MAC)
-    return m_browserMainParts->GetGeolocationManager();
+    return m_browserMainParts->GetGeolocationSystemPermissionManager();
 #else
     return nullptr;
 #endif
@@ -1199,6 +1206,7 @@ void ContentBrowserClientQt::WillCreateURLLoaderFactory(
         int render_process_id,
         URLLoaderFactoryType type,
         const url::Origin &request_initiator,
+        const net::IsolationInfo &isolation_info,
         std::optional<int64_t> navigation_id,
         ukm::SourceIdObj ukm_source_id,
         network::URLLoaderFactoryBuilder &factory_builder,
@@ -1208,6 +1216,7 @@ void ContentBrowserClientQt::WillCreateURLLoaderFactory(
         network::mojom::URLLoaderFactoryOverridePtr *factory_override,
         scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner)
 {
+    Q_UNUSED(isolation_info);
     Q_UNUSED(render_process_id);
     Q_UNUSED(type);
     Q_UNUSED(request_initiator);

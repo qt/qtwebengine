@@ -20,10 +20,6 @@ if(QT_FEATURE_webenginedriver)
         TARGET generate_webenginedriver_attributions
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/webenginedriver_attributions.qdoc
         GN_TARGET //chrome/test/chromedriver:chromedriver_server
-        EXTRA_THIRD_PARTY_DIRS
-            third_party/selenium-atoms/sizzle
-            third_party/selenium-atoms/wgxpath
-            third_party/selenium-atoms/closure-lib
         FILE_TEMPLATE ../../doc/about_credits.tmpl
         ENTRY_TEMPLATE ../../doc/about_credits_entry.tmpl
         BUILDDIR ${buildDir}/${config}/${arch}

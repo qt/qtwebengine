@@ -103,3 +103,9 @@ void PdfStreamDelegateQt::OnPdfEmbedderSandboxed(int)
     NOTIMPLEMENTED();
 }
 
+bool PdfStreamDelegateQt::ShouldAllowPdfFrameNavigation(content::NavigationHandle*)
+{
+    // Only for the OOPIF PDF viewer
+    return true;
+}
+

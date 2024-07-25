@@ -25,7 +25,7 @@ public:
                              base::TimeTicks activation_time) override;
     float GetDeviceScaleFactor() const override;
     void InvalidateLocalSurfaceIdOnEviction() override;
-    std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction() override;
+    viz::FrameEvictorClient::EvictIds CollectSurfaceIdsForEviction() override;
     bool ShouldShowStaleContentOnEviction() override;
 
 private:

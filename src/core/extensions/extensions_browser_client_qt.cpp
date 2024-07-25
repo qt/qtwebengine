@@ -106,7 +106,7 @@ public:
     void FollowRedirect(const std::vector<std::string> &removed_headers,
                         const net::HttpRequestHeaders &modified_headers,
                         const net::HttpRequestHeaders &modified_cors_exempt_headers,
-                        const absl::optional<GURL> &new_url) override
+                        const std::optional<GURL> &new_url) override
     {
         NOTREACHED() << "No redirects for local file loads.";
     }
@@ -166,9 +166,9 @@ private:
         if (!head->mime_type.empty()) {
             head->headers->AddHeader(net::HttpRequestHeaders::kContentType, head->mime_type.c_str());
         }
-        client_->OnReceiveResponse(std::move(head), std::move(consumer_handle), absl::nullopt);
+        client_->OnReceiveResponse(std::move(head), std::move(consumer_handle), std::nullopt);
 
-        uint32_t write_size = data->size();
+        size_t write_size = data->size();
         MojoResult result = producer_handle->WriteData(data->front(), &write_size, MOJO_WRITE_DATA_FLAG_NONE);
         OnFileWritten(result);
     }
@@ -543,7 +543,7 @@ media_device_salt::MediaDeviceSaltService *ExtensionsBrowserClientQt::GetMediaDe
     return nullptr;
 }
 mojo::PendingRemote<network::mojom::URLLoaderFactory>
-ExtensionsBrowserClientQt::GetControlledFrameEmbedderURLLoader(
+ExtensionsBrowserClientQt::GetControlledFrameEmbedderURLLoader(const url::Origin &,
         int frame_tree_node_id, content::BrowserContext *browser_context)
 {
     return mojo::PendingRemote<network::mojom::URLLoaderFactory>();

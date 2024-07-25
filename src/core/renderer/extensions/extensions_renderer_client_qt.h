@@ -38,7 +38,6 @@ class ResourceRequestPolicyQt;
 
 namespace QtWebEngineCore {
 
-class ExtensionsDispatcherDelegateQt;
 class RendererPermissionsPolicyDelegateQt;
 
 class ExtensionsRendererClientQt : public extensions::ExtensionsRendererClient
@@ -53,9 +52,9 @@ public:
     extensions::Dispatcher *GetDispatcher() override;
     void OnExtensionLoaded(const extensions::Extension &extension) override;
     void OnExtensionUnloaded(const extensions::ExtensionId &extension_id) override;
+    void RenderThreadStarted() override;
 
     // Match ContentRendererClientQt's method names...
-    void RenderThreadStarted();
     void WebViewCreated(blink::WebView *web_view,
                         const url::Origin *outermost_origin);
     void RenderFrameCreated(content::RenderFrame *, service_manager::BinderRegistry *);
@@ -86,7 +85,6 @@ public:
     static ExtensionsRendererClientQt *GetInstance();
 
 private:
-    std::unique_ptr<ExtensionsDispatcherDelegateQt> extension_dispatcher_delegate_;
     std::unique_ptr<RendererPermissionsPolicyDelegateQt> permissions_policy_delegate_;
     std::unique_ptr<extensions::Dispatcher> extension_dispatcher_;
     std::unique_ptr<extensions::ResourceRequestPolicyQt> resource_request_policy_;

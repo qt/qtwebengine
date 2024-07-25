@@ -67,13 +67,6 @@ void ProfileIODataQt::shutdownOnUIThread()
     }
 }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-extensions::ExtensionSystemQt* ProfileIODataQt::GetExtensionSystem()
-{
-    return m_profile->GetExtensionSystem();
-}
-#endif // BUILDFLAG(ENABLE_EXTENSIONS)
-
 base::WeakPtr<ProfileIODataQt> ProfileIODataQt::getWeakPtrOnIOThread()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);

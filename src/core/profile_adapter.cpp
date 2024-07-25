@@ -822,14 +822,12 @@ QString ProfileAdapter::determineDownloadPath(const QString &downloadDirectory, 
     QString suggestedFilePath = suggestedFile.absoluteFilePath();
     base::FilePath tmpFilePath(toFilePath(suggestedFilePath).NormalizePathSeparatorsTo('/'));
 
-    int uniquifier = 0;
+    base::FilePath uniqueFilePath;
     {
         base::ScopedAllowBlocking allowBlock;
-        uniquifier = base::GetUniquePathNumber(tmpFilePath);
+        uniqueFilePath = base::GetUniquePath(tmpFilePath);
     }
-    if (uniquifier > 0)
-        suggestedFilePath = toQt(tmpFilePath.InsertBeforeExtensionASCII(base::StringPrintf(" (%d)", uniquifier)).AsUTF8Unsafe());
-    else if (uniquifier == -1) {
+    if (uniqueFilePath.empty()) {
         base::Time::Exploded exploded;
         base::Time::FromTimeT(startTime).LocalExplode(&exploded);
         std::string suffix = base::StringPrintf(
@@ -837,6 +835,8 @@ QString ProfileAdapter::determineDownloadPath(const QString &downloadDirectory, 
                     exploded.day_of_month, exploded.hour, exploded.minute,
                     exploded.second, exploded.millisecond);
         suggestedFilePath = toQt(tmpFilePath.InsertBeforeExtensionASCII(suffix).AsUTF8Unsafe());
+    } else if (uniqueFilePath != tmpFilePath) {
+        suggestedFilePath = toQt(uniqueFilePath.AsUTF8Unsafe());
     }
     return suggestedFilePath;
 }

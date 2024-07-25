@@ -291,7 +291,6 @@ foreach(arch ${archs})
                 extensions/mime_handler_view_guest_delegate_qt.cpp extensions/mime_handler_view_guest_delegate_qt.h
                 extensions/plugin_service_filter_qt.cpp extensions/plugin_service_filter_qt.h
                 net/plugin_response_interceptor_url_loader_throttle.cpp net/plugin_response_interceptor_url_loader_throttle.h
-                renderer/extensions/extensions_dispatcher_delegate_qt.cpp renderer/extensions/extensions_dispatcher_delegate_qt.h
                 renderer/extensions/extensions_renderer_client_qt.cpp renderer/extensions/extensions_renderer_client_qt.h
                 renderer/extensions/renderer_permissions_policy_delegate_qt.cpp renderer/extensions/renderer_permissions_policy_delegate_qt.h
                 renderer/extensions/resource_request_policy_qt.cpp renderer/extensions/resource_request_policy_qt.h
@@ -363,17 +362,17 @@ foreach(arch ${archs})
             devtools_fast_bundle=false
             devtools_skip_typecheck=false
             use_static_angle=true
-            use_perfetto_client_library=false
             content_enable_legacy_ipc=true
             enable_extensions_legacy_ipc=true
             enable_bound_session_credentials=false
+            webnn_use_tflite=false
         )
         extend_gn_list(gnArgArg
             ARGS use_v8_context_snapshot v8_use_external_startup_data
             CONDITION QT_FEATURE_webengine_v8_context_snapshot
         )
         extend_gn_list(gnArgArg
-            ARGS enable_printing enable_basic_printing enable_print_preview enable_pdf
+            ARGS enable_printing enable_print_preview enable_pdf
             CONDITION QT_FEATURE_webengine_printing_and_pdf
         )
         extend_gn_list(gnArgArg

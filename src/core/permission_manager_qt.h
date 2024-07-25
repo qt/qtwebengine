@@ -42,7 +42,8 @@ public:
         const GURL& requesting_origin,
         const GURL& embedding_origin) override;
 
-    blink::mojom::PermissionStatus GetPermissionStatusForCurrentDocument(blink::PermissionType, content::RenderFrameHost *) override;
+
+    content::PermissionStatus GetPermissionStatusForCurrentDocument(blink::PermissionType, content::RenderFrameHost*, bool) override;
 
     blink::mojom::PermissionStatus GetPermissionStatusForWorker(blink::PermissionType, content::RenderProcessHost *, const GURL &) override;
 
@@ -67,7 +68,7 @@ public:
 
     content::PermissionControllerDelegate::SubscriptionId SubscribeToPermissionStatusChange(
             blink::PermissionType permission, content::RenderProcessHost *render_process_host,
-            content::RenderFrameHost *render_frame_host, const GURL &requesting_origin,
+            content::RenderFrameHost *render_frame_host, const GURL &requesting_origin, bool,
             const base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback) override;
 
     void UnsubscribeFromPermissionStatusChange(

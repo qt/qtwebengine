@@ -21,7 +21,7 @@
 #include "components/autofill/core/browser/ui/suggestion.h"
 
 namespace autofill {
-class AutofillPopupDelegate;
+class AutofillSuggestionDelegate;
 }
 
 namespace QtWebEngineCore {
@@ -31,7 +31,7 @@ class AutofillPopupControllerPrivate
 public:
     AutofillPopupControllerPrivate() = default;
 
-    base::WeakPtr<autofill::AutofillPopupDelegate> delegate = nullptr;
+    base::WeakPtr<autofill::AutofillSuggestionDelegate> delegate = nullptr;
     std::vector<autofill::Suggestion> suggestions;
 };
 

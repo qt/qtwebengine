@@ -5,12 +5,13 @@
 #define URL_REQUEST_CUSTOM_JOB_PROXY_H_
 
 #include "base/task/sequenced_task_runner.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
 #include <QtCore/QPointer>
 #include <QMap>
 #include <QByteArray>
+#include <optional>
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
 
@@ -63,7 +64,7 @@ public:
     void fail(int error);
     void succeed();
     void release();
-    void initialize(GURL url, std::string method, absl::optional<url::Origin> initiatorOrigin,
+    void initialize(GURL url, std::string method, std::optional<url::Origin> initiatorOrigin,
                     std::map<std::string, std::string> headers,
                     scoped_refptr<network::ResourceRequestBody> requestBody);
     void readyRead();

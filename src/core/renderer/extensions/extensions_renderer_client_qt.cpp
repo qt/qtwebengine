@@ -8,7 +8,6 @@
 
 #include "extensions_renderer_client_qt.h"
 
-#include "extensions_dispatcher_delegate_qt.h"
 #include "renderer/render_configuration.h"
 #include "renderer_permissions_policy_delegate_qt.h"
 #include "resource_request_policy_qt.h"
@@ -109,9 +108,7 @@ void ExtensionsRendererClientQt::RenderThreadStarted()
 {
     content::RenderThread *thread = content::RenderThread::Get();
     if (!extension_dispatcher_)
-        extension_dispatcher_.reset(new extensions::Dispatcher(
-                std::make_unique<ExtensionsDispatcherDelegateQt>(),
-                std::vector<std::unique_ptr<const extensions::ExtensionsRendererAPIProvider>>()));
+        extension_dispatcher_.reset(new extensions::Dispatcher(std::move(api_providers_)));
     extension_dispatcher_->OnRenderThreadStarted(thread);
     permissions_policy_delegate_.reset(new RendererPermissionsPolicyDelegateQt(extension_dispatcher_.get()));
     resource_request_policy_.reset(new extensions::ResourceRequestPolicyQt(extension_dispatcher_.get()));

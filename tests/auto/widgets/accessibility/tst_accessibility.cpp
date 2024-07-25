@@ -372,7 +372,6 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kDefinition") << QString("<div role='definition'>landmark</div>") << 0 << QAccessible::Paragraph;
     QTest::newRow("ax::mojom::Role::kDescriptionList") << QString("<dl>a</dl>") << 0 << QAccessible::List;
     QTest::newRow("ax::mojom::Role::kDescriptionListDetail") << QString("<dd>a</dd>") << 0 << QAccessible::Paragraph;
-    QTest::newRow("ax::mojom::Role::kDescriptionListTerm") << QString("<dt>a</dt>") << 0 << QAccessible::ListItem;
     QTest::newRow("ax::mojom::Role::kDetails") << QString("<details>a</details>") << 0 << QAccessible::Grouping;
     //QTest::newRow("ax::mojom::Role::kDesktop"); // No mapping to ARIA role
     QTest::newRow("ax::mojom::Role::kDialog") << QString("<div role='dialog'></div>") << 0 << QAccessible::Dialog;
@@ -457,7 +456,7 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kList") << QString("<ul></ul>") << 0 << QAccessible::List;
     QTest::newRow("ax::mojom::Role::kListBox") << QString("<select multiple></select>") << 1 << QAccessible::ComboBox;
     QTest::newRow("ax::mojom::Role::kListBoxOption") << QString("<option>a</option>") << 0 << QAccessible::ListItem;
-    QTest::newRow("ax::mojom::Role::kListItem") << QString("<li>a</li>") << 0 << QAccessible::ListItem;
+    QTest::newRow("ax::mojom::Role::kListItem") << QString("<ul><li>a</li></ul>") << 1 << QAccessible::ListItem;
     //QTest::newRow("ax::mojom::Role::kListGrid"); // No mapping to ARIA role
     QTest::newRow("ax::mojom::Role::kListMarker") << QString("<li><ul></ul></li>") << 1 << QAccessible::StaticText;
     QTest::newRow("ax::mojom::Role::kLog") << QString("<div role='log'>a</div>") << 0 << QAccessible::Section;
@@ -471,8 +470,8 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kMenuItemCheckBox") << QString("<menu role='menu'><input type='checkbox'></input></menu>") << 1 << QAccessible::CheckBox;
     QTest::newRow("ax::mojom::Role::kMenuItemRadio") << QString("<menu role='menu'><input type='radio'></input></menu>") << 1 << QAccessible::RadioButton;
     QTest::newRow("ax::mojom::Role::kMenuButton") << QString("<menu role='menu'><input type='button' /></menu>") << 1 << QAccessible::Button;
-    QTest::newRow("ax::mojom::Role::kMenuListOption") << QString("<select role='menu'><option>a</option></select>") << 3 << QAccessible::MenuItem;
-    QTest::newRow("ax::mojom::Role::kMenuListPopup") << QString("<select role='menu'><option>a</option></select>") << 2 << QAccessible::PopupMenu;
+    QTest::newRow("ax::mojom::Role::kMenuListOption") << QString("<select role='menu'><option>a</option></select>") << 2 << QAccessible::MenuItem;
+    QTest::newRow("ax::mojom::Role::kMenuListPopup") << QString("<select role='menu'><option>a</option></select>") << 1 << QAccessible::PopupMenu;
     QTest::newRow("ax::mojom::Role::kMeter") << QString("<meter>a</meter>") << 1 << QAccessible::Chart;
     QTest::newRow("ax::mojom::Role::kNavigation") << QString("<nav>a</nav>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kNote") << QString("<div role='note'>a</div>") << 0 << QAccessible::Note;
@@ -563,10 +562,10 @@ void tst_Accessibility::objectName()
     QSignalSpy spyFinished(&webView, &QWebEngineView::loadFinished);
     webView.setHtml("<html><body><p id='my_id'></p></body></html>");
     webView.show();
-    QVERIFY(spyFinished.wait());
+    QTRY_COMPARE_WITH_TIMEOUT(spyFinished.size(), 1, 20000);
     QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
+    QTRY_COMPARE_WITH_TIMEOUT(view->child(0)->childCount(), 1, 20000);
     QAccessibleInterface *document = view->child(0);
-    QTRY_COMPARE(document->childCount(), 1);
     QAccessibleInterface *p = document->child(0);
     QVERIFY(p);
     QVERIFY(p->object());
@@ -630,8 +629,8 @@ void tst_Accessibility::tableCellInterface()
     QTRY_COMPARE(spyFinished.size(), 1);
 
     QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
+    QTRY_COMPARE_WITH_TIMEOUT(view->child(0)->childCount(), 2, 20000);
     QAccessibleInterface *document = view->child(0);
-    QTRY_COMPARE(document->childCount(), 2);
 
     // ListItem without Table parent.
     {

@@ -89,7 +89,8 @@ WebContentsDelegateQt::~WebContentsDelegateQt()
     // might be already deleted.
 }
 
-content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params)
+content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params,
+                                                            base::OnceCallback<void(content::NavigationHandle&)> navigation_handle_callback)
 {
     content::WebContents *target = source;
     content::SiteInstance *target_site_instance = params.source_site_instance.get();
@@ -643,9 +644,9 @@ static void processMediaAccessRequest(content::WebContents *webContents,
 
 static inline bool needsPickerDialog(const content::MediaStreamRequest &request)
 {
-    return (request.requested_video_device_ids.empty() && // device already selected in chooseDesktopMedia
-            (request.video_type == blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE
-            || request.video_type == blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE));
+    return !MediaCaptureDevicesDispatcher::hasDeviceId(request) // device already selected in chooseDesktopMedia
+            && (request.video_type == blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE
+            || request.video_type == blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE);
 }
 
 void WebContentsDelegateQt::RequestMediaAccessPermission(content::WebContents *web_contents, const content::MediaStreamRequest &request,  content::MediaResponseCallback callback)

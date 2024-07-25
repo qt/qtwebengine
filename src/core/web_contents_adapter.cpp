@@ -317,8 +317,8 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
         std::unique_ptr<content::NavigationEntry> entry = content::NavigationController::CreateNavigationEntry(
             toGurl(virtualUrl),
             content::Referrer(toGurl(referrerUrl), static_cast<network::mojom::ReferrerPolicy>(referrerPolicy)),
-            absl::nullopt, // optional initiator_origin
-            absl::nullopt, // optional initiator_base_url
+            std::nullopt, // optional initiator_origin
+            std::nullopt, // optional initiator_base_url
             // Use a transition type of reload so that we don't incorrectly
             // increase the typed count.
             ui::PAGE_TRANSITION_RELOAD,
@@ -504,7 +504,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     Q_ASSERT(rvh);
     if (!m_webContents->GetPrimaryMainFrame()->IsRenderFrameLive())
         static_cast<content::WebContentsImpl*>(m_webContents.get())->CreateRenderViewForRenderManager(
-                rvh, absl::nullopt, nullptr);
+                rvh, std::nullopt, nullptr);
 
     m_webContentsDelegate->RenderViewHostChanged(nullptr, rvh);
 
@@ -2283,7 +2283,7 @@ void WebContentsAdapter::undiscard()
     Q_ASSERT(rvh);
     if (!m_webContents->GetPrimaryMainFrame()->IsRenderFrameLive())
         static_cast<content::WebContentsImpl *>(m_webContents.get())
-                ->CreateRenderViewForRenderManager(rvh, absl::nullopt, nullptr);
+                ->CreateRenderViewForRenderManager(rvh, std::nullopt, nullptr);
     m_webContentsDelegate->RenderViewHostChanged(nullptr, rvh);
     m_adapterClient->initializationFinished();
     m_adapterClient->selectionChanged();

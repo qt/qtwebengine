@@ -65,9 +65,6 @@ public:
 #if QT_CONFIG(webengine_spellchecker)
     void FailedToLoadDictionary(const std::string &language) override;
 #endif
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    extensions::ExtensionSystemQt* GetExtensionSystem();
-#endif // defined(ENABLE_EXTENSIONS)
 
     // Build/Re-build the preference service. Call when updating the storage
     // data path.
@@ -89,10 +86,6 @@ private:
     ProfileAdapter *m_profileAdapter;
     PrefServiceAdapter m_prefServiceAdapter;
     blink::UserAgentMetadata m_userAgentMetadata;
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    extensions::ExtensionSystemQt *m_extensionSystem;
-#endif //ENABLE_EXTENSIONS
 
     friend class ProfileAdapter;
     friend class ProfileIODataQt;

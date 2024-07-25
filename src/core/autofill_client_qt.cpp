@@ -61,8 +61,8 @@ const PrefService *AutofillClientQt::GetPrefs() const
     return profile->GetPrefs();
 }
 
-void AutofillClientQt::ShowAutofillPopup(const autofill::AutofillClient::PopupOpenArgs &open_args,
-                                         base::WeakPtr<autofill::AutofillPopupDelegate> delegate)
+void AutofillClientQt::ShowAutofillSuggestions(const autofill::AutofillClient::PopupOpenArgs &open_args,
+                                               base::WeakPtr<autofill::AutofillSuggestionDelegate> delegate)
 {
     m_popupController->d->delegate = delegate;
     m_popupController->d->suggestions = open_args.suggestions;
@@ -76,27 +76,28 @@ void AutofillClientQt::ShowAutofillPopup(const autofill::AutofillClient::PopupOp
                                        autoSelectFirstSuggestion);
 }
 
-void AutofillClientQt::UpdateAutofillPopupDataListValues(
+void AutofillClientQt::UpdateAutofillDataListValues(
         base::span<const autofill::SelectOption> datalist)
 {
     if (datalist.empty())
-        HideAutofillPopup(autofill::PopupHidingReason::kNoSuggestions);
+        HideAutofillSuggestions(autofill::SuggestionHidingReason::kNoSuggestions);
 }
 
-void AutofillClientQt::PinPopupView()
+void AutofillClientQt::PinAutofillSuggestions()
 {
     // Called by password_manager component only.
     NOTIMPLEMENTED();
 }
 
-std::vector<autofill::Suggestion> AutofillClientQt::GetPopupSuggestions() const
+
+base::span<const autofill::Suggestion> AutofillClientQt::GetAutofillSuggestions() const
 {
     // Called by password_manager component only.
     NOTIMPLEMENTED();
     return {};
 }
 
-void AutofillClientQt::HideAutofillPopup(autofill::PopupHidingReason)
+void AutofillClientQt::HideAutofillSuggestions(autofill::SuggestionHidingReason)
 {
     adapterClient()->hideAutofillPopup();
 }

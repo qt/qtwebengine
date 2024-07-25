@@ -87,7 +87,6 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckEnable, false);
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckUseSpellingService, false);
 #endif // QT_CONFIG(webengine_spellchecker)
-    registry->RegisterBooleanPref(prefs::kShowInternalAccessibilityTree, false);
     registry->RegisterBooleanPref(prefs::kAccessibilityImageLabelsEnabled, false);
 
     // chrome/browser/notifications
@@ -126,6 +125,7 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     // Can't be a random value since every time we run the setup code the
     // default value will be different. We'll need to initialize it later.
     registry->RegisterStringPref(kPrefMediaDeviceIDSalt, std::string());
+    registry->RegisterStringPref(prefs::kShownAccessibilityApiType, "qt");
 
     registry->RegisterBooleanPref(autofill::prefs::kAutofillEnabledDeprecated, false);
     registry->RegisterBooleanPref(autofill::prefs::kAutofillProfileEnabled, false);

@@ -25,7 +25,7 @@ public:
         const gl::GLVersionInfo &gl_info,
         gl::GLWindowSystemBindingInfo *info) override;
 
-    bool CanImportNativePixmap() override;
+    bool CanImportNativePixmap(gfx::BufferFormat format) override;
     std::unique_ptr<ui::NativePixmapGLBinding> ImportNativePixmap(
             scoped_refptr<gfx::NativePixmap>, gfx::BufferFormat, gfx::BufferPlane,
             gfx::Size, const gfx::ColorSpace &, GLenum, GLuint) override;

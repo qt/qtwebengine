@@ -175,7 +175,7 @@ void DevToolsFrontendQt::OpenInNewTab(const std::string &url)
                                   WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                   ui::PAGE_TRANSITION_LINK, false);
 
-    m_inspectedContents->OpenURL(params);
+    m_inspectedContents->OpenURL(params, base::DoNothing());
 }
 
 void DevToolsFrontendQt::SetEyeDropperActive(bool active)

@@ -17,7 +17,7 @@ class ServiceManagerConnection;
 }
 
 namespace device {
-class GeolocationManager;
+class GeolocationSystemPermissionManager;
 }
 
 namespace performance_manager {
@@ -43,14 +43,14 @@ public:
     void PostCreateThreads() override;
 
 #if BUILDFLAG(IS_MAC)
-    device::GeolocationManager *GetGeolocationManager();
+    device::GeolocationSystemPermissionManager *GetGeolocationSystemPermissionManager();
 #endif
 
 private:
     std::unique_ptr<performance_manager::PerformanceManagerLifetime> performance_manager_lifetime_;
     std::unique_ptr<WebUsbDetectorQt> m_webUsbDetector;
 #if BUILDFLAG(IS_MAC)
-    std::unique_ptr<device::GeolocationManager> m_geolocationManager;
+    std::unique_ptr<device::GeolocationSystemPermissionManager> m_geolocationSystemPermissionManager;
 #endif
 };
 

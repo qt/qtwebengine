@@ -638,7 +638,7 @@ void RenderWidgetHostViewQt::RenderProcessGone()
 }
 
 bool RenderWidgetHostViewQt::TransformPointToCoordSpaceForView(const gfx::PointF &point,
-                                                               content::RenderWidgetHostViewBase *target_view,
+                                                               content::RenderWidgetHostViewInput *target_view,
                                                                gfx::PointF *transformed_point)
 {
     if (target_view == this) {

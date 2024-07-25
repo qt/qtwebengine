@@ -109,20 +109,20 @@ media::mojom::CaptureHandlePtr CreateCaptureHandle(content::WebContents *capture
     return result;
 }
 
-absl::optional<int> GetZoomLevel(content::WebContents *capturer,
+std::optional<int> GetZoomLevel(content::WebContents *capturer,
                                  const content::DesktopMediaID &captured_id)
 {
     content::RenderFrameHost *const captured_rfh =
             content::RenderFrameHost::FromID(captured_id.web_contents_id.render_process_id,
                                              captured_id.web_contents_id.main_render_frame_id);
     if (!captured_rfh || !captured_rfh->IsActive()) {
-        return absl::nullopt;
+        return std::nullopt;
     }
 
     content::WebContents *const captured_wc =
             content::WebContents::FromRenderFrameHost(captured_rfh);
     if (!captured_wc) {
-        return absl::nullopt;
+        return std::nullopt;
     }
 
     double zoom_level =
@@ -330,7 +330,7 @@ private:
         Q_UNUSED(label);
         Q_UNUSED(media_id);
     }
-    void OnDeviceStoppedForSourceChange(const std::string&, const content::DesktopMediaID&, const content::DesktopMediaID&) override
+    void OnDeviceStoppedForSourceChange(const std::string&, const content::DesktopMediaID&, const content::DesktopMediaID&, bool captured_surface_control_active) override
     {}
     base::WeakPtr<WebContentsDelegateQt> m_delegate;
     const blink::mojom::StreamDevices m_devices;
@@ -428,6 +428,13 @@ MediaCaptureDevicesDispatcher *MediaCaptureDevicesDispatcher::GetInstance()
     return base::Singleton<MediaCaptureDevicesDispatcher>::get();
 }
 
+// static
+bool MediaCaptureDevicesDispatcher::hasDeviceId(const content::MediaStreamRequest &request)
+{
+    return !request.requested_video_device_ids.empty()
+            && !request.requested_video_device_ids.front().empty();
+}
+
 MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
     : m_webContentsCollection(this)
 {
@@ -461,6 +468,7 @@ void MediaCaptureDevicesDispatcher::processMediaAccessRequest(
         return;
     }
 
+    bool hasDeviceId = MediaCaptureDevicesDispatcher::hasDeviceId(request);
     WebContentsDelegateQt *delegate = static_cast<WebContentsDelegateQt *>(webContents->GetDelegate());
     WebContentsAdapterClient *adapterClient = delegate->adapterClient();
 
@@ -468,12 +476,12 @@ void MediaCaptureDevicesDispatcher::processMediaAccessRequest(
         const bool screenCaptureEnabled = adapterClient->webEngineSettings()->testAttribute(
                 QWebEngineSettings::ScreenCaptureEnabled);
         const bool originIsSecure = network::IsUrlPotentiallyTrustworthy(request.security_origin);
-        if (!screenCaptureEnabled || !originIsSecure || (id.is_null() && request.requested_video_device_ids.empty())) {
+        if (!screenCaptureEnabled || !originIsSecure || (id.is_null() && !hasDeviceId)) {
             std::move(callback).Run(blink::mojom::StreamDevicesSet(), MediaStreamRequestResult::INVALID_STATE, std::unique_ptr<content::MediaStreamUI>());
             return;
         }
 
-        if (!request.requested_video_device_ids.empty()) {
+        if (hasDeviceId) {
             // Non-empty device id from the chooseDesktopMedia() extension API.
             processDesktopCaptureAccessRequest(webContents, request, std::move(callback));
             return;

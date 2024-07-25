@@ -28,11 +28,6 @@
 
 namespace QtWebEngineCore {
 
-// Extra permission types that don't exist on the Chromium side.
-enum class ExtraPermissionType {
-    POINTER_LOCK = 39, // TODO this exists in Chromium 126, remove after we merge
-};
-
 static QWebEnginePermission::PermissionType toQt(blink::PermissionType type)
 {
     switch (type) {
@@ -53,17 +48,17 @@ static QWebEnginePermission::PermissionType toQt(blink::PermissionType type)
         return QWebEnginePermission::PermissionType::Notifications;
     case blink::PermissionType::LOCAL_FONTS:
         return QWebEnginePermission::PermissionType::LocalFontsAccess;
-    case (blink::PermissionType)ExtraPermissionType::POINTER_LOCK:
+    case blink::PermissionType::POINTER_LOCK:
         return QWebEnginePermission::PermissionType::MouseLock;
     case blink::PermissionType::ACCESSIBILITY_EVENTS:
     case blink::PermissionType::CAMERA_PAN_TILT_ZOOM:
     case blink::PermissionType::WINDOW_MANAGEMENT:
+    case blink::PermissionType::BACKGROUND_SYNC:
         return QWebEnginePermission::PermissionType::Unsupported;
     case blink::PermissionType::MIDI_SYSEX:
     case blink::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
     case blink::PermissionType::MIDI:
     case blink::PermissionType::DURABLE_STORAGE:
-    case blink::PermissionType::BACKGROUND_SYNC:
     case blink::PermissionType::SENSORS:
     case blink::PermissionType::PAYMENT_HANDLER:
     case blink::PermissionType::BACKGROUND_FETCH:
@@ -79,6 +74,8 @@ static QWebEnginePermission::PermissionType toQt(blink::PermissionType type)
     case blink::PermissionType::CAPTURED_SURFACE_CONTROL:
     case blink::PermissionType::SMART_CARD:
     case blink::PermissionType::WEB_PRINTING:
+    case blink::PermissionType::SPEAKER_SELECTION:
+    case blink::PermissionType::KEYBOARD_LOCK:
     case blink::PermissionType::NUM:
         LOG(INFO) << "Unexpected unsupported Blink permission type: " << static_cast<int>(type);
         break;
@@ -105,7 +102,7 @@ static blink::PermissionType toBlink(QWebEnginePermission::PermissionType permis
     case QWebEnginePermission::PermissionType::LocalFontsAccess:
         return blink::PermissionType::LOCAL_FONTS;
     case QWebEnginePermission::PermissionType::MouseLock:
-        return (blink::PermissionType)ExtraPermissionType::POINTER_LOCK;
+        return blink::PermissionType::POINTER_LOCK;
     case QWebEnginePermission::PermissionType::MediaAudioVideoCapture:
     case QWebEnginePermission::PermissionType::Unsupported:
         LOG(INFO) << "Unexpected unsupported WebEngine permission type: " << static_cast<int>(permissionType);
@@ -326,7 +323,7 @@ QWebEnginePermission::State PermissionManagerQt::getPermissionState(const QUrl &
 {
     if (rfh) {
         // Ignore the origin parameter
-        return toQt(GetPermissionStatusForCurrentDocument(toBlink(permissionType), rfh));
+        return toQt(GetPermissionStatusForCurrentDocument(toBlink(permissionType), rfh, false));
     }
 
     return toQt(GetPermissionStatus(toBlink(permissionType), toGurl(origin), GURL()));
@@ -502,7 +499,7 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatus(
 
 blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForCurrentDocument(
         blink::PermissionType permission,
-        content::RenderFrameHost *render_frame_host)
+        content::RenderFrameHost *render_frame_host, bool)
 {
     Q_ASSERT(render_frame_host);
 
@@ -591,7 +588,7 @@ void PermissionManagerQt::ResetPermission(
 content::PermissionControllerDelegate::SubscriptionId
 PermissionManagerQt::SubscribeToPermissionStatusChange(
         blink::PermissionType permission, content::RenderProcessHost * /*render_process_host*/,
-        content::RenderFrameHost * /* render_frame_host */, const GURL &requesting_origin,
+        content::RenderFrameHost * /* render_frame_host */, const GURL &requesting_origin, bool,
         base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback)
 {
     auto subscriber_id = subscription_id_generator_.GenerateNextId();

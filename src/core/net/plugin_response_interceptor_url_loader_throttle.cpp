@@ -147,7 +147,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
     mojo::ScopedDataPipeConsumerHandle consumer_handle;
     CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(kFullPageMimeHandlerDataPipeSize, producer_handle, consumer_handle));
 
-    uint32_t len = static_cast<uint32_t>(payload.size());
+    size_t len = payload.size();
     CHECK_EQ(MOJO_RESULT_OK,
                 producer_handle->WriteData(
                     payload.c_str(), &len, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));

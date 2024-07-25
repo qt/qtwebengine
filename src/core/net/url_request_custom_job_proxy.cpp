@@ -131,7 +131,7 @@ void URLRequestCustomJobProxy::readyRead()
 }
 
 void URLRequestCustomJobProxy::initialize(GURL url, std::string method,
-                                          absl::optional<url::Origin> initiator,
+                                          std::optional<url::Origin> initiator,
                                           std::map<std::string, std::string> headers,
                                           scoped_refptr<network::ResourceRequestBody> requestBody)
 {

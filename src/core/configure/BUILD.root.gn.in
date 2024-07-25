@@ -279,6 +279,7 @@ source_set("qtwebengine_sources") {
     "//chrome/common:version_header",
     "//components/custom_handlers",
     "//components/embedder_support:embedder_support",
+    "//components/enterprise/buildflags:buildflags",
     "//components/nacl/common:buildflags",
     "//components/performance_manager",
     "//components/permissions:permissions_common",
@@ -472,7 +473,7 @@ source_set("qtwebengine_sources") {
       "//chrome/renderer/pepper/pepper_shared_memory_message_filter.h",
     ]
   }
-  if (enable_basic_printing || enable_print_preview) {
+  if (enable_print_preview) {
     sources += [
       "//chrome/browser/printing/printer_query.cc",
       "//chrome/browser/printing/printer_query.h",

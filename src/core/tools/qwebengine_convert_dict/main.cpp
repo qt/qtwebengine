@@ -84,8 +84,8 @@ inline bool VerifyWords(const convert_dict::DicReader::WordList& org_words,
                         const std::string& serialized, QTextStream& out)
 {
     hunspell::BDictReader reader;
-    if (!reader.Init(reinterpret_cast<const unsigned char*>(serialized.data()),
-                     serialized.size())) {
+    if (!reader.Init({reinterpret_cast<const unsigned char*>(serialized.data()),
+                     serialized.size()})) {
         out << "BDict is invalid\n";
         return false;
     }

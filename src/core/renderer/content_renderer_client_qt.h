@@ -69,7 +69,7 @@ public:
     uint64_t VisitedLinkHash(std::string_view canonical_url) override;
     bool IsLinkVisited(uint64_t linkHash) override;
     std::unique_ptr<blink::WebPrescientNetworking> CreatePrescientNetworking(content::RenderFrame *render_frame) override;
-    std::unique_ptr<media::KeySystemSupportObserver> GetSupportedKeySystems(media::GetSupportedKeySystemsCB cb) override;
+    std::unique_ptr<media::KeySystemSupportRegistration> GetSupportedKeySystems(content::RenderFrame *render_frame, media::GetSupportedKeySystemsCB cb) override;
     void RunScriptsAtDocumentStart(content::RenderFrame *render_frame) override;
     void RunScriptsAtDocumentEnd(content::RenderFrame *render_frame) override;
     void RunScriptsAtDocumentIdle(content::RenderFrame *render_frame) override;

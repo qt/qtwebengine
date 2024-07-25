@@ -18,7 +18,7 @@ public:
                                                      gfx::AcceleratedWidget window) override;
     scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(gl::GLDisplay *display,
                                                           const gfx::Size &size) override;
-    bool CanImportNativePixmap() override;
+    bool CanImportNativePixmap(gfx::BufferFormat format) override;
     std::unique_ptr<NativePixmapGLBinding>
     ImportNativePixmap(scoped_refptr<gfx::NativePixmap> pixmap, gfx::BufferFormat plane_format,
                        gfx::BufferPlane plane, gfx::Size plane_size,

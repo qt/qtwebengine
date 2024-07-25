@@ -45,16 +45,17 @@ public:
     PrefService *GetPrefs() override;
     const PrefService *GetPrefs() const override;
 
-    void ShowAutofillPopup(const autofill::AutofillClient::PopupOpenArgs &open_args,
-                           base::WeakPtr<autofill::AutofillPopupDelegate> delegate) override;
-    void UpdateAutofillPopupDataListValues(
+    void ShowAutofillSuggestions(
+            const PopupOpenArgs &open_args,
+            base::WeakPtr<autofill::AutofillSuggestionDelegate> delegate) override;
+    void UpdateAutofillDataListValues(
             base::span<const autofill::SelectOption> datalist) override;
-    void PinPopupView() override;
-    std::vector<autofill::Suggestion> GetPopupSuggestions() const override;
+    void PinAutofillSuggestions() override;
+    base::span<const autofill::Suggestion> GetAutofillSuggestions() const override;
     void UpdatePopup(const std::vector<autofill::Suggestion> &suggestions,
                      autofill::FillingProduct main_filling_product,
                      autofill::AutofillSuggestionTriggerSource trigger_source) override{};
-    void HideAutofillPopup(autofill::PopupHidingReason reason) override;
+    void HideAutofillSuggestions(autofill::SuggestionHidingReason reason) override;
     bool IsAutocompleteEnabled() const override;
     bool IsPasswordManagerEnabled() override;
     bool IsOffTheRecord() const override;

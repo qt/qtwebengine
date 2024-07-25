@@ -17,7 +17,6 @@ public:
 
 private:
     // pdf::PDFDocumentHelperClient:
-    content::RenderFrameHost* FindPdfFrame(content::WebContents *contents) override;
     void OnPDFHasUnsupportedFeature(content::WebContents *contents) override {}
     void OnSaveURL(content::WebContents *contents) override {}
     void SetPluginCanSave(content::RenderFrameHost *render_frame_host, bool can_save) override;

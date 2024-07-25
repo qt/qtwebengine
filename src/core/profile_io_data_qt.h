@@ -20,10 +20,6 @@ namespace mojom {
 class CertVerifierCreationParams;
 }}
 
-namespace extensions {
-class ExtensionSystemQt;
-}
-
 namespace net {
 class ClientCertStore;
 }
@@ -62,9 +58,6 @@ public:
     virtual ~ProfileIODataQt();
 
     QPointer<ProfileAdapter> profileAdapter();
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    extensions::ExtensionSystemQt* GetExtensionSystem();
-#endif // BUILDFLAG(ENABLE_EXTENSIONS)
 
     void initializeOnUIThread(); // runs on ui thread
     void shutdownOnUIThread(); // runs on ui thread

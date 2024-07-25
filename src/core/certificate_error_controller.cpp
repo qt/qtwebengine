@@ -182,7 +182,7 @@ QString CertificateErrorController::errorString() const
     case QWebEngineCertificateError::CertificateWeakSignatureAlgorithm:
         return getQStringForMessageId(IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_DESCRIPTION);
     case QWebEngineCertificateError::CertificateNonUniqueName:
-        return getQStringForMessageId(IDS_PAGE_INFO_SECURITY_TAB_NON_UNIQUE_NAME);
+        return getQStringForMessageId(IDS_CERT_ERROR_NON_UNIQUE_NAME_DESCRIPTION);
     case QWebEngineCertificateError::CertificateWeakKey:
         return getQStringForMessageId(IDS_CERT_ERROR_WEAK_KEY_DESCRIPTION);
     case QWebEngineCertificateError::CertificateNameConstraintViolation:

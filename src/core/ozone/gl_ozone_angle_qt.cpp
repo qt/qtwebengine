@@ -99,7 +99,7 @@ gl::EGLDisplayPlatform GLOzoneANGLEQt::GetNativeDisplay()
     return gl::EGLDisplayPlatform(EGL_DEFAULT_DISPLAY);
 }
 
-bool GLOzoneANGLEQt::CanImportNativePixmap()
+bool GLOzoneANGLEQt::CanImportNativePixmap(gfx::BufferFormat format)
 {
     return gl::GLSurfaceEGL::GetGLDisplayEGL()->ext->b_EGL_EXT_image_dma_buf_import;
 }

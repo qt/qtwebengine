@@ -59,6 +59,7 @@
 #include "extensions/extensions_renderer_client_qt.h"
 
 #include "extensions/common/constants.h"
+#include "extensions/renderer/api/core_extensions_renderer_api_provider.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_manager.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -124,7 +125,11 @@ void ContentRendererClientQt::RenderThreadStarted()
             network::mojom::CorsDomainMatchMode::kAllowSubdomains, network::mojom::CorsPortMatchMode::kAllowAnyPort,
             network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
 
-    ExtensionsRendererClientQt::GetInstance()->RenderThreadStarted();
+    auto *extensions_renderer_client = extensions::ExtensionsRendererClient::Get();
+    extensions_renderer_client->AddAPIProvider(
+            std::make_unique<extensions::CoreExtensionsRendererAPIProvider>());
+
+    extensions_renderer_client->RenderThreadStarted();
 #endif
 }
 
@@ -202,9 +207,9 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_fr
     new autofill::AutofillAgent(
             render_frame,
             {
-              autofill::AutofillAgent::ExtractAllDatalists(true), autofill::AutofillAgent::FocusRequiresScroll(false),
-              autofill::AutofillAgent::QueryPasswordSuggestions(true), autofill::AutofillAgent::SecureContextRequired(true),
-              autofill::AutofillAgent::UserGestureRequired(false), autofill::AutofillAgent::UsesKeyboardAccessoryForSuggestions(false)
+              autofill::AutofillAgent::ExtractAllDatalists(false), autofill::AutofillAgent::FocusRequiresScroll(true),
+              autofill::AutofillAgent::QueryPasswordSuggestions(false), autofill::AutofillAgent::SecureContextRequired(false),
+              autofill::AutofillAgent::UserGestureRequired(true), autofill::AutofillAgent::UsesKeyboardAccessoryForSuggestions(false)
             },
             std::move(password_autofill_agent), std::move(password_generation_agent),
             associated_interfaces);
@@ -471,9 +476,9 @@ void ContentRendererClientQt::GetInterface(const std::string &interface_name, mo
     content::RenderThread::Get()->BindHostReceiver(mojo::GenericPendingReceiver(interface_name, std::move(interface_pipe)));
 }
 
-std::unique_ptr<media::KeySystemSupportObserver> ContentRendererClientQt::GetSupportedKeySystems(media::GetSupportedKeySystemsCB cb)
+std::unique_ptr<media::KeySystemSupportRegistration> ContentRendererClientQt::GetSupportedKeySystems(content::RenderFrame *render_frame, media::GetSupportedKeySystemsCB cb)
 {
-    return cdm::GetSupportedKeySystemsUpdates(/*can_persist_data=*/false, std::move(cb));
+    return cdm::GetSupportedKeySystemsUpdates(render_frame, /*can_persist_data=*/false, std::move(cb));
 }
 
 #if QT_CONFIG(webengine_spellchecker)

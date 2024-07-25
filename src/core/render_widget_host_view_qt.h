@@ -87,7 +87,7 @@ public:
                                     const std::optional<std::vector<gfx::Rect>> &) override;
     void RenderProcessGone() override;
     bool TransformPointToCoordSpaceForView(const gfx::PointF &point,
-                                           content::RenderWidgetHostViewBase *target_view,
+                                           content::RenderWidgetHostViewInput *target_view,
                                            gfx::PointF *transformed_point) override;
     void Destroy() override;
     void UpdateTooltipUnderCursor(const std::u16string &tooltip_text) override;
@@ -131,6 +131,7 @@ public:
     void SpeakSelection() override { QT_NOT_YET_IMPLEMENTED }
     void ShowDefinitionForSelection() override { QT_NOT_YET_IMPLEMENTED }
     void SetWindowFrameInScreen(const gfx::Rect&) override { QT_NOT_YET_IMPLEMENTED }
+    uint64_t GetNSViewId() const override { QT_NOT_YET_IMPLEMENTED return 0; }
 #endif // BUILDFLAG(IS_MAC)
     void NotifyHostAndDelegateOnWasShown(blink::mojom::RecordContentToVisibleTimeRequestPtr) override { QT_NOT_YET_IMPLEMENTED }
     void RequestSuccessfulPresentationTimeFromHostOrDelegate(blink::mojom::RecordContentToVisibleTimeRequestPtr) override {}

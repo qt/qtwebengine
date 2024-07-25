@@ -64,7 +64,7 @@ ClientCertStoreQt::ClientCertStoreQt(ClientCertificateStoreData *storeData)
 ClientCertStoreQt::~ClientCertStoreQt() = default;
 
 #if QT_CONFIG(ssl)
-net::ClientCertIdentityList ClientCertStoreQt::GetClientCertsOnUIThread(const net::SSLCertRequestInfo &cert_request_info)
+net::ClientCertIdentityList ClientCertStoreQt::GetClientCertsOnUIThread(scoped_refptr<const net::SSLCertRequestInfo> cert_request_info)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     const auto &clientCertOverrideData = m_storeData->extraCerts;
@@ -78,8 +78,8 @@ net::ClientCertIdentityList ClientCertStoreQt::GetClientCertsOnUIThread(const ne
                 qWarning() << "Expired certificate" << clientCertOverrideData[i];
                 continue;
             }
-            if (cert_request_info.cert_authorities.empty()
-                || cert->IsIssuedByEncoded(cert_request_info.cert_authorities)) {
+            if (cert_request_info->cert_authorities.empty()
+                || cert->IsIssuedByEncoded(cert_request_info->cert_authorities)) {
                 selected_identities.push_back(std::make_unique<ClientCertIdentityQt>(
                         cert, clientCertOverrideData[i]->keyPtr));
             }
@@ -88,9 +88,9 @@ net::ClientCertIdentityList ClientCertStoreQt::GetClientCertsOnUIThread(const ne
     return selected_identities;
 }
 
-void ClientCertStoreQt::GetClientCertsReturn(const net::SSLCertRequestInfo &cert_request_info,
-                                                   ClientCertListCallback callback,
-                                                   net::ClientCertIdentityList &&result)
+void ClientCertStoreQt::GetClientCertsReturn(scoped_refptr<const net::SSLCertRequestInfo> cert_request_info,
+                                             ClientCertListCallback callback,
+                                             net::ClientCertIdentityList &&result)
 {
     // Continue with native cert store and append them after memory certificates
     if (m_nativeStore) {
@@ -112,17 +112,17 @@ void ClientCertStoreQt::GetClientCertsReturn(const net::SSLCertRequestInfo &cert
 
 #endif // QT_CONFIG(ssl)
 
-void ClientCertStoreQt::GetClientCerts(const net::SSLCertRequestInfo &cert_request_info,
-                                             ClientCertListCallback callback)
+void ClientCertStoreQt::GetClientCerts(scoped_refptr<const net::SSLCertRequestInfo> cert_request_info,
+                                       ClientCertListCallback callback)
 {
 #if QT_CONFIG(ssl)
     // Access the user-provided data from the UI thread, but return on whatever thread this is.
     bool ok = content::GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
             FROM_HERE,
             base::BindOnce(&ClientCertStoreQt::GetClientCertsOnUIThread,
-                           base::Unretained(this), std::cref(cert_request_info)),
+                           base::Unretained(this), cert_request_info),
             base::BindOnce(&ClientCertStoreQt::GetClientCertsReturn,
-                           base::Unretained(this), std::cref(cert_request_info), std::move(callback)));
+                           base::Unretained(this), cert_request_info, std::move(callback)));
     DCHECK(ok); // callback is already moved and we can't really recover here.
 #else
     if (m_nativeStore)

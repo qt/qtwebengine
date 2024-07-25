@@ -134,7 +134,6 @@ foreach(arch ${archs})
           enable_web_speech=false
           chrome_pgo_phase=0
           strip_absolute_paths_from_debug_symbols=false
-          use_perfetto_client_library=false
           v8_enable_webassembly=false
         )
 

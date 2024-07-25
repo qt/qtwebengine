@@ -109,7 +109,7 @@ public:
     media_device_salt::MediaDeviceSaltService *GetMediaDeviceSaltService(content::BrowserContext *context) override;
 
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
-    GetControlledFrameEmbedderURLLoader(int frame_tree_node_id,
+    GetControlledFrameEmbedderURLLoader(const url::Origin &, int frame_tree_node_id,
                                         content::BrowserContext *browser_context) override;
 
 private:

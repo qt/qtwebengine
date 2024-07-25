@@ -4,12 +4,12 @@
 #include "autofill_popup_controller.h"
 #include "autofill_popup_controller_p.h"
 
-#include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
+#include "components/autofill/core/browser/ui/autofill_suggestion_delegate.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 
 namespace QtWebEngineCore {
 
-using SuggestionPosition = autofill::AutofillPopupDelegate::SuggestionPosition;
+using SuggestionPosition = autofill::AutofillSuggestionDelegate::SuggestionPosition;
 
 AutofillPopupController::AutofillPopupController(AutofillPopupControllerPrivate *dd)
 {
@@ -86,12 +86,12 @@ void AutofillPopupController::acceptSuggestion()
 
 void AutofillPopupController::notifyPopupShown()
 {
-    d->delegate->OnPopupShown();
+    d->delegate->OnSuggestionsShown();
 }
 
 void AutofillPopupController::notifyPopupHidden()
 {
-    d->delegate->OnPopupHidden();
+    d->delegate->OnSuggestionsHidden();
 }
 
 void AutofillPopupController::selectSuggestion(int index)

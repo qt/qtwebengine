@@ -224,8 +224,9 @@ NativeSkiaOutputDevice::Buffer::~Buffer()
 bool NativeSkiaOutputDevice::Buffer::initialize()
 {
     uint32_t kDefaultSharedImageUsage = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ
-            | gpu::SHARED_IMAGE_USAGE_DISPLAY_WRITE
-            | gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
+                                      | gpu::SHARED_IMAGE_USAGE_DISPLAY_WRITE;
+    if (m_parent->m_contextState->gr_context_type() == gpu::GrContextType::kGL)
+        kDefaultSharedImageUsage |= gpu::SHARED_IMAGE_USAGE_GLES2_READ;
     if (m_parent->m_isNativeBufferSupported)
         kDefaultSharedImageUsage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
 

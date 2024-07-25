@@ -51,9 +51,6 @@ ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
     : m_profileIOData(new ProfileIODataQt(this))
     , m_profileAdapter(profileAdapter)
     , m_userAgentMetadata(embedder_support::GetUserAgentMetadata())
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    , m_extensionSystem(nullptr)
-#endif // BUILDFLAG(ENABLE_EXTENSIONS)
 {
     profile_metrics::SetBrowserProfileType(this, IsOffTheRecord()
         ? profile_metrics::BrowserProfileType::kIncognito
@@ -69,8 +66,7 @@ ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
     BrowserContextDependencyManager::GetInstance()->MarkBrowserContextLive(this);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    m_extensionSystem = static_cast<extensions::ExtensionSystemQt*>(extensions::ExtensionSystem::Get(this));
-    m_extensionSystem->InitForRegularProfile(true);
+    static_cast<extensions::ExtensionSystemQt*>(extensions::ExtensionSystem::Get(this))->InitForRegularProfile(true);
 #endif
 }
 
@@ -210,13 +206,6 @@ void ProfileQt::FailedToLoadDictionary(const std::string &language)
     LOG(INFO) << "Make sure that correct bdic file is in:" << WebEngineLibraryInfo::getPath(base::DIR_APP_DICTIONARIES);
 }
 #endif // QT_CONFIG(webengine_spellchecker)
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-extensions::ExtensionSystemQt* ProfileQt::GetExtensionSystem()
-{
-    return m_extensionSystem;
-}
-#endif // BUILDFLAG(ENABLE_EXTENSIONS)
 
 std::string ProfileQt::GetMediaDeviceIDSalt()
 {

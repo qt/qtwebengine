@@ -108,7 +108,7 @@ scoped_refptr<gl::GLSurface> GLOzoneGLXQt::CreateOffscreenGLSurface(
     return nullptr;
 }
 
-bool GLOzoneGLXQt::CanImportNativePixmap()
+bool GLOzoneGLXQt::CanImportNativePixmap(gfx::BufferFormat format)
 {
     return false;
 }

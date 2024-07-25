@@ -23,6 +23,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
 {
 public:
     static MediaCaptureDevicesDispatcher *GetInstance();
+    static bool hasDeviceId(const content::MediaStreamRequest &request);
 
     void processMediaAccessRequest(content::WebContents *, const content::MediaStreamRequest &,
                                    content::MediaResponseCallback, content::DesktopMediaID);

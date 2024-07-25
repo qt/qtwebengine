@@ -550,6 +550,7 @@ macro(append_build_type_setup)
         enable_rust=false # We do not yet support rust
         enable_chromium_prelude=false
         build_tflite_with_xnnpack=false
+        assert_cpp20=false
     )
     if(${config} STREQUAL "Debug")
         list(APPEND gnArgArg is_debug=true symbol_level=2)

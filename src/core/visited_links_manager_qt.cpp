@@ -37,6 +37,7 @@ class VisitedLinkDelegateQt : public visitedlink::VisitedLinkDelegate
 public:
     ~VisitedLinkDelegateQt() {}
     void RebuildTable(const scoped_refptr<URLEnumerator> &enumerator) override { enumerator->OnComplete(true); }
+    void BuildVisitedLinkTable(const scoped_refptr<VisitedLinkEnumerator> &enumerator) override { enumerator->OnVisitedLinkComplete(true); }
 };
 
 void VisitedLinksManagerQt::deleteAllVisitedLinkData()

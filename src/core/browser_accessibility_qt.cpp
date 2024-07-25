@@ -405,7 +405,7 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
         return QAccessible::Pane;
     case ax::mojom::Role::kDialog:
         return QAccessible::Dialog;
-    case ax::mojom::Role::kDirectory:
+    case ax::mojom::Role::kDirectoryDeprecated:
         return QAccessible::List;
     case ax::mojom::Role::kDisclosureTriangle:
     case ax::mojom::Role::kDisclosureTriangleGrouped:
@@ -647,6 +647,7 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
     case ax::mojom::Role::kSearchBox:
         return QAccessible::EditableText;
     case ax::mojom::Role::kSection:
+    case ax::mojom::Role::kSectionWithoutName:
         return QAccessible::Section;
     case ax::mojom::Role::kSlider:
         return QAccessible::Slider;

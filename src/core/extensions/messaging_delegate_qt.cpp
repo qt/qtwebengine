@@ -11,10 +11,10 @@ MessagingDelegateQt::MessagingDelegateQt()
 {
 }
 
-absl::optional<base::Value::Dict> MessagingDelegateQt::MaybeGetTabInfo(content::WebContents *web_contents)
+std::optional<base::Value::Dict> MessagingDelegateQt::MaybeGetTabInfo(content::WebContents *web_contents)
 {
     Q_UNUSED(web_contents);
-    return absl::nullopt;
+    return std::nullopt;
 }
 
 } // namespace extensions

@@ -13,7 +13,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/media_switches.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
@@ -449,7 +448,7 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
     }
 
     // Apply native CaptionStyle parameters.
-    absl::optional<ui::CaptionStyle> style;
+    std::optional<ui::CaptionStyle> style;
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceCaptionStyle)) {
         style = ui::CaptionStyle::FromSpec(
                     base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kForceCaptionStyle));

@@ -147,7 +147,7 @@ void ResourceRequestBody::readDataElementPipe(
 {
     MojoResult result;
     do {
-        uint32_t bytesToRead = 1;
+        size_t bytesToRead = 1;
         result = consumerHandle->ReadData(*data, &bytesToRead, MOJO_READ_DATA_FLAG_NONE);
 
         if (result == MOJO_RESULT_OK) {

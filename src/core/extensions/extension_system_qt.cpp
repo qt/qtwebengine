@@ -79,14 +79,14 @@ std::string GenerateId(const base::Value::Dict &manifest, const base::FilePath &
 }
 
 // Implementation based on ComponentLoader::ParseManifest.
-absl::optional<base::Value::Dict> ParseManifest(base::StringPiece manifest_contents)
+std::optional<base::Value::Dict> ParseManifest(base::StringPiece manifest_contents)
 {
     JSONStringValueDeserializer deserializer(manifest_contents);
     std::unique_ptr<base::Value> manifest = deserializer.Deserialize(nullptr, nullptr);
 
     if (!manifest.get() || !manifest->is_dict()) {
         LOG(ERROR) << "Failed to parse extension manifest.";
-        return absl::nullopt;
+        return std::nullopt;
     }
 
     return std::move(*manifest).TakeDict();
@@ -326,7 +326,7 @@ void ExtensionSystemQt::Init(bool extensions_enabled)
 
 #if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
         {
-            std::string hangout_manifest = ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(IDR_HANGOUT_SERVICES_MANIFEST);
+            std::string hangout_manifest = ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(IDR_HANGOUT_SERVICES_MANIFEST_V2);
             auto hangoutManifestDict = ParseManifest(hangout_manifest);
             CHECK(hangoutManifestDict);
             base::FilePath path;
