@@ -599,6 +599,7 @@ void QWebEngineProfile::setPersistentCookiesPolicy(QWebEngineProfile::Persistent
     Off-the-record profiles are not allowed to save data to the disk, so they can only return
     \c StoreInMemory or \c AskEveryTime.
 
+    \since 6.8
     \sa QWebEngineProfile::PersistentPermissionsPolicy, setPersistentPermissionsPolicy()
 */
 QWebEngineProfile::PersistentPermissionsPolicy QWebEngineProfile::persistentPermissionsPolicy() const
@@ -610,6 +611,7 @@ QWebEngineProfile::PersistentPermissionsPolicy QWebEngineProfile::persistentPerm
 /*!
     Sets the policy for persistent permissions to \a newPersistentPermissionsPolicy.
 
+    \since 6.8
     \sa QWebEngineProfile::PersistentPermissionsPolicy, persistentPermissionsPolicy()
 */
 void QWebEngineProfile::setPersistentPermissionsPolicy(QWebEngineProfile::PersistentPermissionsPolicy newPersistentPermissionsPolicy)
