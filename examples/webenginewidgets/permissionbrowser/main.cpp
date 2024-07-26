@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication::setOrganizationName("QtExamples");
     QApplication app(argc, argv);
-    app.setWindowIcon(QIcon(QString(u":AppLogoColor.png")));
+    app.setWindowIcon(QIcon(QString(QLatin1StringView(":AppLogoColor.png"))));
     MainWindow window(QUrl("qrc:/landing.html"));
     window.resize(1024, 768);
     window.show();
