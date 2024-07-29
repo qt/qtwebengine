@@ -28,11 +28,12 @@ QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QWebEngineDesktopMediaRequestPrivate)
 
     The data model's \e Qt::DisplayRole specifies the name of the source which is the title of a
     window or the number of the display.
-    The model is dynamically updates if the available list of sources has changed e.g a window is
-    opened/closed.
+    The model is dynamically updated if the available list of sources has changed;
+    e.g when a window is opened/closed.
 
-    The signal handler needs to then either call QWebEngineDesktopMediaRequest:selectScreen() or
-    QWebEngineDesktopMediaRequest::selectWindow() to accept the request and start screensharing.
+    The signal handler needs to then either call \l selectScreen() or \l selectWindow() to accept
+    the request and start screensharing.
+
     \sa QWebEnginePage::desktopMediaRequested().
 */
 
@@ -175,7 +176,7 @@ QAbstractListModel *QWebEngineDesktopMediaRequest::windowsModel() const
 }
 
 /*!
-    Selects the window on the \a index to be captured.
+    Selects the window at the \a index to be captured.
 
     \sa QWebEngineDesktopMediaRequest::selectScreen()
 */
@@ -185,7 +186,7 @@ void QWebEngineDesktopMediaRequest::selectWindow(const QModelIndex &index) const
 }
 
 /*!
-    Selects the screen on the \a index to be captured.
+    Selects the screen at the \a index to be captured.
 
     \sa QWebEngineDesktopMediaRequest::selectWindow()
 */

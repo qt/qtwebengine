@@ -1575,6 +1575,17 @@ bool QWebEnginePage::event(QEvent *e)
     return QObject::event(e);
 }
 
+/*!
+    \fn QWebEnginePage::desktopMediaRequested(const QWebEngineDesktopMediaRequest &request)
+    \since 6.7
+
+    This signal is emitted when a web application requests access to the contents of a display.
+
+    The \a request argument holds references to data models for windows and screens available
+    for capturing. To accept the request, the signal handler can call either
+    QWebEngineDesktopMediaRequest::selectScreen() or QWebEngineDesktopMediaRequest::selectWindow().
+*/
+
 void QWebEnginePagePrivate::desktopMediaRequested(
         QtWebEngineCore::DesktopMediaController *controller)
 {
