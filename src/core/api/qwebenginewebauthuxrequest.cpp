@@ -106,7 +106,7 @@
     \li The error details for the PIN prompt.
     \li The number of attempts remaining before a hard lock. Should be ignored unless
         \l{WebEngineWebAuthPinRequest::reason} is
-        \l{WebEngineWebAuthUxRequest.PinEntryReason.Challenge}.
+        \c{WebEngineWebAuthUxRequest.PinEntryReason.Challenge}.
     \li The minimum PIN length that the authenticator will accept for the PIN.
     \endlist
     Use this structure to update the WebAuth UX dialog when the WebAuth UX state is \l
@@ -138,7 +138,7 @@
     \qmlproperty int WebEngineWebAuthPinRequest::remainingAttempts
     \brief The number of attempts remaining before a hard lock. Should be ignored unless
            \l{WebEngineWebAuthPinRequest::reason} is
-           \l{WebEngineWebAuthUxRequest.PinEntryReason.Challenge}.
+           \c{WebEngineWebAuthUxRequest.PinEntryReason.Challenge}.
 */
 
 /*!
