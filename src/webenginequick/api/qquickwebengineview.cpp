@@ -259,8 +259,9 @@ public:
 
     void InitAsPopup(const QRect &screenRect) override
     {
-        Q_UNUSED(screenRect);
-        Q_UNREACHABLE();
+        // note this is called when there is no windowing system
+        // otherwsie see RenderWidgetHostViewQtDelegateQuickWindow
+        m_contentItem->setPosition(screenRect.topLeft());
     }
 
     void Bind(WebContentsAdapterClient *client) override
