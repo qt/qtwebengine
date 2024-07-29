@@ -119,7 +119,8 @@ QQuickWebEngineScriptCollection::~QQuickWebEngineScriptCollection() { }
 /*!
     \qmlmethod bool WebEngineScriptCollection::contains(WebEngineScript script)
     \since QtWebEngine 6.2
-    Checks if the specified \a script is in the collection.
+    Returns \c true if the specified \a script is in the collection, \c false
+    otherwise.
     \sa find()
 */
 

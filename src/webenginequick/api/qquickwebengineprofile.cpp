@@ -505,7 +505,7 @@ void QQuickWebEngineProfile::setStorageName(const QString &name)
     Changing a profile from \e off-the-record to disk-based behavior also requires setting a
     proper storageName.
 
-    \sa storageName()
+    \sa storageName
 */
 
 
