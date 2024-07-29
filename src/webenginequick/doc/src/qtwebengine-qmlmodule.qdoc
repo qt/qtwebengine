@@ -7,6 +7,7 @@
     \brief Provides QML types for rendering web content within a QML application.
     \ingroup qtwebengine-modules
     \ingroup qmlmodules
+    \noautolist
 
     To link against the module using build with qmake,
     add the following QT variable to your qmake .pro file:
@@ -26,4 +27,10 @@
     Where the content of main.qml is simply:
 
     \snippet minimal/main.qml Minimal Example
+
+    \section1 QML object types
+    \generatelist qmltypesbymodule QtWebEngine
+
+    \section1 QML value types
+    \generatelist qmlvaluetypesbymodule QtWebEngine
 */

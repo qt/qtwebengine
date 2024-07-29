@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-    \qmltype webEnginePermission
+    \qmlvaluetype webEnginePermission
     \instantiates QWebEnginePermission
     \inqmlmodule QtWebEngine
+    \since 6.8
     \brief An object used to access and modify the state of a single permission that's been
     granted or denied to a specific origin URL.
 

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-    \qmltype webEngineFrame
-    \instantiates QQuickWebEngineFrame
+    \qmlvaluetype webEngineFrame
+    \instantiates QWebEngineFrame
     \brief webEngineFrame provides information about and control over a page frame.
     \since 6.8
     \ingroup qmlvaluetypes

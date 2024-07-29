@@ -22,7 +22,7 @@ qhp.QtWebEngine.subprojects.classes.sortPages = true
 
 qhp.QtWebEngine.subprojects.qmltypes.title = QML Types
 qhp.QtWebEngine.subprojects.qmltypes.indexTitle = Qt WebEngine QML Types
-qhp.QtWebEngine.subprojects.qmltypes.selectors = qmltype
+qhp.QtWebEngine.subprojects.qmltypes.selectors = qmltype qmlvaluetype
 qhp.QtWebEngine.subprojects.qmltypes.sortPages = true
 
 qhp.QtWebEngine.subprojects.examples.title = Examples
