@@ -11,7 +11,6 @@ if(NOT QT_CONFIGURE_RUNNING)
         pkg_check_modules(ALSA alsa IMPORTED_TARGET)
         pkg_check_modules(PULSEAUDIO libpulse>=0.9.10 libpulse-mainloop-glib)
         pkg_check_modules(XDAMAGE xdamage)
-        pkg_check_modules(POPPLER_CPP poppler-cpp IMPORTED_TARGET)
         pkg_check_modules(GBM gbm)
         pkg_check_modules(LIBVA libva>=1.14)
         if(NOT GIO_FOUND)
@@ -23,19 +22,6 @@ if(NOT QT_CONFIGURE_RUNNING)
 endif()
 
 #### Tests
-
-qt_config_compile_test(poppler
-    LABEL "poppler"
-    LIBRARIES
-        PkgConfig::POPPLER_CPP
-    CODE
-"
-#include <poppler-document.h>
-
-int main() {
-   auto *pdf = poppler::document::load_from_raw_data(\"file\",100,std::string(\"user\"));
-}"
-)
 
 qt_config_compile_test(alsa
     LABEL "alsa"
@@ -177,11 +163,6 @@ qt_feature("webenginedriver" PUBLIC
     CONDITION NOT CMAKE_CROSSCOMPILING
               AND NOT (CMAKE_OSX_ARCHITECTURES AND osx_arch_count GREATER 1)
     DISABLE CMAKE_BUILD_TYPE STREQUAL Debug
-)
-# internal testing feature
-qt_feature("webengine-system-poppler" PRIVATE
-    LABEL "poppler"
-    CONDITION UNIX AND TEST_poppler
 )
 qt_configure_add_summary_section(NAME "Qt WebEngineCore")
 qt_configure_add_summary_entry(ARGS "webengine-embedded-build")

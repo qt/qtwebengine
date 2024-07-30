@@ -3,25 +3,21 @@
 
 include(../../util/util.cmake)
 
-find_package(PkgConfig)
-if(PkgConfig_FOUND)
-    pkg_check_modules(POPPLER_CPP poppler-cpp IMPORTED_TARGET)
-endif()
-
 qt_internal_add_test(tst_printing
     SOURCES
         tst_printing.cpp
     LIBRARIES
         Qt::CorePrivate
         Qt::WebEngineWidgets
-        Qt::WebEngineCorePrivate
         Test::Util
 )
 
 qt_internal_extend_target(tst_printing
-    CONDITION POPPLER_CPP_FOUND AND QT_FEATURE_webengine_system_poppler
+    CONDITION TARGET Qt::Pdf
     LIBRARIES
-        PkgConfig::POPPLER_CPP
+        Qt::Pdf
+    DEFINES
+        QTPDF_SUPPORT
 )
 
 set(tst_printing_resource_files

@@ -1,7 +1,6 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 #include <QtWebEngineCore/qtwebenginecore-config.h>
 #include <QWebEngineSettings>
 #include <QWebEngineView>
@@ -10,9 +9,10 @@
 #include <QSignalSpy>
 #include <util.h>
 
-#if QT_CONFIG(webengine_system_poppler)
-#include <poppler-document.h>
-#include <poppler-page.h>
+#ifdef QTPDF_SUPPORT
+#include <QBuffer>
+#include <QPdfDocument>
+#include <QPdfSearchModel>
 #endif
 
 class tst_Printing : public QObject
@@ -21,10 +21,8 @@ class tst_Printing : public QObject
 private slots:
     void printToPdfBasic();
     void printRequest();
-#if QT_CONFIG(webengine_system_poppler)
-    void printToPdfPoppler();
+    void pdfContent();
     void printFromPdfViewer();
-#endif
     void interruptPrinting();
 };
 
@@ -89,11 +87,12 @@ void tst_Printing::printRequest()
      QVERIFY(data.size() > 0);
 }
 
-#if QT_CONFIG(webengine_system_poppler)
-void tst_Printing::printToPdfPoppler()
+void tst_Printing::pdfContent()
 {
+#if !defined(QTPDF_SUPPORT)
+    QSKIP("QtPdf is required, but missing");
+#else
     // check if generated pdf is correct by searching for a know string on the page
-    using namespace poppler;
     QWebEngineView view;
     QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0.0, 0.0, 0.0, 0.0));
 
@@ -107,22 +106,29 @@ void tst_Printing::printToPdfPoppler()
     const QByteArray data = resultSpy.waitForResult();
     QVERIFY(data.length() > 0);
 
-    QScopedPointer<document> pdf(document::load_from_raw_data(data.constData(), data.length()));
-    QVERIFY(pdf);
+    QPdfDocument document;
+    QSignalSpy statusChangedSpy(&document, &QPdfDocument::statusChanged);
 
-    const int pages = pdf->pages();
-    QVERIFY(pages == 1);
+    QBuffer buffer;
+    buffer.setData((data));
+    buffer.open(QBuffer::ReadWrite);
+    document.load(&buffer);
+    QTRY_COMPARE(statusChangedSpy.size(), 2);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Ready);
+    QCOMPARE(document.pageCount(), 1);
 
-    QScopedPointer<page> pdfPage(pdf->create_page(0));
-    rectf rect;
-    QVERIFY2(pdfPage->search(ustring::from_latin1("Hello Paper World"), rect, page::search_from_top,
-                     case_sensitive ), "Could not find text");
+    QPdfSearchModel searchModel;
+    searchModel.setDocument(&document);
+    searchModel.setSearchString("Hello Paper World");
+    QTRY_COMPARE(searchModel.count(), 1);
+#endif
 }
 
 void tst_Printing::printFromPdfViewer()
 {
-    using namespace poppler;
-
+#if !defined(QTPDF_SUPPORT)
+    QSKIP("QtPdf is required, but missing");
+#else
     QWebEngineView view;
     view.page()->settings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
     view.page()->settings()->setAttribute(QWebEngineSettings::PdfViewerEnabled, true);
@@ -141,7 +147,7 @@ void tst_Printing::printFromPdfViewer()
     QTRY_COMPARE(savePdfSpy.size(), 1);
 
     // Open the new file with the PDF viewer plugin
-    view.load(QUrl("file://" + path));
+    view.load(QUrl::fromLocalFile(path));
     QTRY_COMPARE(spy.size(), 2);
 
     // Print from the plugin
@@ -154,15 +160,30 @@ void tst_Printing::printFromPdfViewer()
 
         // Check if the result contains text from the original basic HTML
         // This catches all the typical issues: empty result or printing the WebUI without PDF content.
-        QScopedPointer<document> pdf(document::load_from_raw_data(data.constData(), data.length()));
-        QScopedPointer<page> pdfPage(pdf->create_page(0));
-        rectf rect;
-        return pdfPage->search(ustring::from_latin1("Hello Paper World"), rect, page::search_from_top,
-                            case_sensitive);
+        QPdfDocument document;
+        QSignalSpy statusChangedSpy(&document, &QPdfDocument::statusChanged);
+
+        QBuffer buffer;
+        buffer.setData((data));
+        buffer.open(QBuffer::ReadWrite);
+        document.load(&buffer);
+        statusChangedSpy.wait(500);
+        if (document.status() != QPdfDocument::Status::Ready)
+            return false;
+
+        QPdfSearchModel searchModel;
+        QSignalSpy countChangedSpy(&searchModel, &QPdfSearchModel::countChanged);
+        searchModel.setDocument(&document);
+        searchModel.setSearchString("Hello Paper World");
+        countChangedSpy.wait(500);
+        if (searchModel.count() != 1)
+            return false;
+
+        return true;
     }, 10000);
     QVERIFY(ok);
-}
 #endif
+}
 
 void tst_Printing::interruptPrinting()
 {
