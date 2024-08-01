@@ -164,18 +164,17 @@ private:
 
     void SwapBuffersFinished();
 
+    bool m_requiresAlpha;
+    gpu::SharedImageFactory *const m_factory;
+    gpu::SharedImageRepresentationFactory *const m_representationFactory;
+    viz::SkiaOutputSurfaceDependency *const m_deps;
     mutable QMutex m_mutex;
     Shape m_shape;
     std::unique_ptr<Buffer> m_middleBuffer;
     std::unique_ptr<Buffer> m_backBuffer;
     viz::OutputSurfaceFrame m_frame;
     bool m_readyToUpdate = false;
-    bool m_requiresAlpha;
     scoped_refptr<base::SingleThreadTaskRunner> m_gpuTaskRunner;
-
-    const raw_ptr<gpu::SharedImageFactory> m_factory;
-    const raw_ptr<gpu::SharedImageRepresentationFactory> m_representationFactory;
-    const raw_ptr<viz::SkiaOutputSurfaceDependency> m_deps;
 };
 
 } // namespace QtWebEngineCore

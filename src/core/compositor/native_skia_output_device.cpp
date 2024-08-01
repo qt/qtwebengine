@@ -212,7 +212,7 @@ NativeSkiaOutputDevice::Buffer::~Buffer()
     if (m_scopedSkiaWriteAccess)
         endWriteSkia(false);
 
-    if (!m_mailbox.IsZero())
+    if (!m_mailbox.IsZero() && m_parent->m_factory)
         m_parent->m_factory->DestroySharedImage(m_mailbox);
 }
 
