@@ -34,7 +34,7 @@
     \printuntil /^\}/
 
     The rest of the layout for the application is defined inside mainwindow.ui,
-    and was created using Qt Creator's Design mode. \c MainWindow is a child class
+    and was created using \QC \uicontrol Design mode. \c MainWindow is a child class
     of Ui_MainWindow, which is a C++ class generated at compile time from the
     definitions found inside mainwindow.ui.
 
