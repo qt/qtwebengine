@@ -177,22 +177,24 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
     externalMemoryImageCreateInfo.pNext = nullptr;
     externalMemoryImageCreateInfo.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT;
 
-    HRESULT status = S_OK;
-    HANDLE sharedHandle = nullptr;
-    IDXGIResource1 *resource = nullptr;
-    if (!overlayImage->nv12_texture()) {
+    Q_ASSERT(overlayImage->type() == gl::DCLayerOverlayType::kNV12Texture);
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> chromeTexture = overlayImage->nv12_texture();
+    if (!chromeTexture) {
         qWarning("VULKAN: No D3D texture.");
         return nullptr;
     }
-    status = overlayImage->nv12_texture()->QueryInterface(__uuidof(IDXGIResource1),
-                                                          (void **)&resource);
-    Q_ASSERT(status == S_OK);
-    status = resource->CreateSharedHandle(NULL, DXGI_SHARED_RESOURCE_READ, NULL, &sharedHandle);
-    Q_ASSERT(status == S_OK);
-    resource->Release();
 
-    if (!sharedHandle)
-        qFatal("VULKAN: Unable to extract shared handle.");
+    HRESULT hr;
+
+    Microsoft::WRL::ComPtr<IDXGIResource1> dxgiResource;
+    hr = chromeTexture->QueryInterface(IID_PPV_ARGS(&dxgiResource));
+    Q_ASSERT(SUCCEEDED(hr));
+
+    HANDLE sharedHandle = INVALID_HANDLE_VALUE;
+    hr = dxgiResource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
+                                          &sharedHandle);
+    Q_ASSERT(SUCCEEDED(hr));
+    Q_ASSERT(sharedHandle != INVALID_HANDLE_VALUE);
 #endif
 
     constexpr VkImageUsageFlags kUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
