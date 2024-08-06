@@ -16,12 +16,12 @@
 #include "ui/gl/gl_implementation.h"
 
 #if defined(USE_OZONE)
+#include "base/posix/eintr_wrapper.h"
 #include "third_party/skia/include/gpu/ganesh/gl/GrGLBackendSurface.h"
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
 
 #if BUILDFLAG(IS_OZONE_X11)
-#include "base/posix/eintr_wrapper.h"
 #include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/dri3.h"
 #include "ui/gfx/x/future.h"
