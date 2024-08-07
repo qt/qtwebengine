@@ -102,7 +102,6 @@ gl::GLDisplay *InitializeGLOneOffPlatform(gl::GpuPreference gpu_preference)
     GLDisplayEGL *display = GetDisplayEGL(gpu_preference);
     switch (GetGLImplementation()) {
     case kGLImplementationEGLANGLE:
-    case kGLImplementationEGLGLES2:
         if (!InitializeDisplay(display, EGLDisplayPlatform(GetDC(nullptr)))) {
             LOG(ERROR) << "GLDisplayEGL::Initialize failed.";
             return nullptr;
@@ -139,8 +138,7 @@ scoped_refptr<GLSurface> CreateOffscreenGLSurface(GLDisplay *display, const gfx:
             return surface;
         break;
     }
-    case kGLImplementationEGLANGLE:
-    case kGLImplementationEGLGLES2: {
+    case kGLImplementationEGLANGLE: {
         GLDisplayEGL *display_egl = display->GetAs<gl::GLDisplayEGL>();
         if (display_egl->IsEGLSurfacelessContextSupported() && size.width() == 0 && size.height() == 0)
             return InitializeGLSurface(new SurfacelessEGL(display_egl, size));

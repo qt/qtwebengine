@@ -391,7 +391,6 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup *share_group,
         return context;
     }
     case kGLImplementationEGLANGLE:
-    case kGLImplementationEGLGLES2:
         return InitializeGLContext(new GLContextEGL(share_group),
                                    compatible_surface, attribs);
     case kGLImplementationDisabled:
