@@ -390,7 +390,7 @@ void WebContentsDelegateQt::emitLoadFinished(bool isErrorPage)
     QWebEngineLoadingInfo info(m_loadingInfo.url, loadStatus, m_loadingInfo.isErrorPage,
                                m_loadingInfo.errorDescription, m_loadingInfo.errorCode,
                                QWebEngineLoadingInfo::ErrorDomain(m_loadingInfo.errorDomain),
-                               m_loadingInfo.responseHeaders);
+                               m_loadingInfo.responseHeaders, m_loadingInfo.isDownload);
     m_viewClient->loadFinished(std::move(info));
     m_viewClient->updateNavigationActions();
 }
@@ -406,6 +406,9 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
 {
     if (!navigation_handle->IsInMainFrame())
         return;
+
+    if (navigation_handle->IsDownload())
+        m_loadingInfo.isDownload = true;
 
     if (navigation_handle->HasCommitted() && !navigation_handle->IsErrorPage()) {
         ProfileAdapter *profileAdapter = m_viewClient->profileAdapter();

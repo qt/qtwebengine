@@ -207,6 +207,7 @@ private:
         QString errorDescription;
         bool triggersErrorPage = false;
         QMultiMap<QByteArray, QByteArray> responseHeaders;
+        bool isDownload = false;
         void clear() { *this = LoadingInfo(); }
     } m_loadingInfo;
 

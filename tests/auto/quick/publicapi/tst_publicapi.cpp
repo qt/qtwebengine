@@ -333,6 +333,7 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineLoadingInfo.errorString --> QString"
     << "QWebEngineLoadingInfo.status --> QWebEngineLoadingInfo::LoadStatus"
     << "QWebEngineLoadingInfo.url --> QUrl"
+    << "QWebEngineLoadingInfo.isDownload --> bool"
     << "QWebEngineLoadingInfo.isErrorPage --> bool"
     << "QWebEngineLoadingInfo.LoadFailedStatus --> LoadStatus"
     << "QWebEngineLoadingInfo.LoadStartedStatus --> LoadStatus"

@@ -68,6 +68,11 @@ TestWebEngineView {
         }
     }
 
+    property var loadInfoArray: []
+    onLoadingChanged: function(load) {
+        loadInfoArray.push(load);
+    }
+
     WebEngineProfile {
         id: testDownloadProfile
 
@@ -110,6 +115,7 @@ TestWebEngineView {
         name: "WebEngineViewDownload"
 
         function init() {
+            loadInfoArray = [];
             downLoadRequestedSpy.clear()
             downloadFinishedSpy.clear()
             totalBytes = 0
@@ -285,6 +291,24 @@ TestWebEngineView {
             compare(totalBytes, receivedBytes);
             tryCompare(downloadState, "2", WebEngineDownloadRequest.DownloadCompleted);
             verify(!downloadInterruptReason);
+        }
+
+        function test_loadingSignals() {
+            compare(loadInfoArray.length, 0);
+            compare(downLoadRequestedSpy.count, 0);
+            downloadDirectory = "/test_downloadSucceeded/";
+            webEngineView.url = Qt.resolvedUrl("download.zip");
+            downLoadRequestedSpy.wait();
+            compare(downLoadRequestedSpy.count, 1);
+            downloadFinishedSpy.wait();
+            tryCompare(downloadState, "2", WebEngineDownloadRequest.DownloadCompleted);
+
+            // The navigation was intercepted by the download manager
+            compare(loadInfoArray.length, 2);
+            compare(loadInfoArray[0].status, WebEngineLoadingInfo.LoadStartedStatus);
+            verify(!loadInfoArray[0].isDownload);
+            compare(loadInfoArray[1].status, WebEngineLoadingInfo.LoadStoppedStatus);
+            verify(loadInfoArray[1].isDownload);
         }
     }
 }
