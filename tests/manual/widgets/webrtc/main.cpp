@@ -8,6 +8,7 @@
 #include <QHttpServer>
 #include <QListView>
 #include <QMessageBox>
+#include <QTcpServer>
 #include <QWebEnginePage>
 #include <QWebEngineProfile>
 #include <QWebEngineSettings>
@@ -87,8 +88,6 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    QHttpServer server;
-
     QFile file(":index.html");
 
     if (!file.open(QIODeviceBase::ReadOnly)) {
@@ -102,11 +101,12 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    server.route("/index.html", [data]() {
-        return data;
-    });
+    QHttpServer httpServer;
+    httpServer.route("/index.html", [data]() { return data; });
 
-    server.listen(QHostAddress::Any, 3000);
+    auto tcpServer = new QTcpServer(&httpServer);
+    tcpServer->listen(QHostAddress::Any, 3000);
+    httpServer.bind(tcpServer);
 
     QWebEngineView view;
     Page *page = new Page(QWebEngineProfile::defaultProfile(), &view);
