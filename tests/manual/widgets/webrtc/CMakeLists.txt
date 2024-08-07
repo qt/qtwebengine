@@ -22,3 +22,8 @@ qt_internal_add_manual_test(webrtc
         Qt::Gui
         Qt::WebEngineWidgets
 )
+
+set_target_properties(webrtc PROPERTIES
+    MACOSX_BUNDLE TRUE
+    MACOSX_BUNDLE_GUI_IDENTIFIER "io.qt.dev.webenginewidgets.webrtc"
+)
