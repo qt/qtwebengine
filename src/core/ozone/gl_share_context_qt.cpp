@@ -20,9 +20,6 @@ QtShareGLContext::QtShareGLContext(QOpenGLContext *context)
     : gl::GLContext(nullptr), m_handle(nullptr)
 {
 #if QT_CONFIG(opengl)
-#if defined(Q_OS_MACOS)
-    qFatal("macOS only support using ANGLE.");
-#endif
 #if defined(Q_OS_WIN)
     auto *win_ctx = context->nativeInterface<QNativeInterface::QWGLContext>();
     if (win_ctx && !m_handle)
