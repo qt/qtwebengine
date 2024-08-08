@@ -98,7 +98,6 @@ foreach(arch ${archs})
                 color_chooser_qt.cpp color_chooser_qt.h
                 common/qt_messages.cpp common/qt_messages.h
                 compositor/compositor.cpp compositor/compositor.h
-                compositor/content_gpu_client_qt.cpp compositor/content_gpu_client_qt.h
                 compositor/display_overrides.cpp
                 compositor/display_software_output_surface.cpp compositor/display_software_output_surface.h
                 compositor/native_skia_output_device.cpp compositor/native_skia_output_device.h
@@ -148,15 +147,6 @@ foreach(arch ${archs})
                 net/url_request_custom_job_proxy.cpp net/url_request_custom_job_proxy.h
                 net/version_ui_qt.cpp net/version_ui_qt.h
                 net/webui_controller_factory_qt.cpp net/webui_controller_factory_qt.h
-                ozone/gl_context_qt.cpp ozone/gl_context_qt.h
-                ozone/gl_ozone_angle_qt.cpp ozone/gl_ozone_angle_qt.h
-                ozone/gl_ozone_egl_qt.cpp ozone/gl_ozone_egl_qt.h
-                ozone/gl_share_context_qt.cpp ozone/gl_share_context_qt.h
-                ozone/gl_surface_egl_qt.cpp ozone/gl_surface_egl_qt.h
-                ozone/gl_surface_qt.cpp ozone/gl_surface_qt.h
-                ozone/gl_surface_wgl_qt.cpp ozone/gl_surface_wgl_qt.h
-                ozone/platform_window_qt.cpp ozone/platform_window_qt.h
-                ozone/surface_factory_qt.cpp ozone/surface_factory_qt.h
                 permission_manager_qt.cpp permission_manager_qt.h
                 pdf_util_qt.cpp pdf_util_qt.h
                 platform_notification_service_qt.cpp platform_notification_service_qt.h
@@ -208,6 +198,28 @@ foreach(arch ${archs})
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_accessibility
             SOURCES
                 accessibility_activation_observer.cpp accessibility_activation_observer.h
+        )
+
+        extend_gn_target(${buildGn} CONDITION LINUX OR WIN32
+            SOURCES
+                compositor/content_gpu_client_qt.cpp compositor/content_gpu_client_qt.h
+                ozone/gl_context_qt.cpp ozone/gl_context_qt.h
+                ozone/gl_share_context_qt.cpp ozone/gl_share_context_qt.h
+                ozone/gl_surface_qt.cpp ozone/gl_surface_qt.h
+        )
+
+        extend_gn_target(${buildGn} CONDITION WIN32
+            SOURCES
+                ozone/gl_surface_wgl_qt.cpp ozone/gl_surface_wgl_qt.h
+        )
+
+        extend_gn_target(${buildGn} CONDITION LINUX
+            SOURCES
+                ozone/gl_ozone_angle_qt.cpp ozone/gl_ozone_angle_qt.h
+                ozone/gl_ozone_egl_qt.cpp ozone/gl_ozone_egl_qt.h
+                ozone/gl_surface_egl_qt.cpp ozone/gl_surface_egl_qt.h
+                ozone/platform_window_qt.cpp ozone/platform_window_qt.h
+                ozone/surface_factory_qt.cpp ozone/surface_factory_qt.h
         )
 
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_ozone_x11

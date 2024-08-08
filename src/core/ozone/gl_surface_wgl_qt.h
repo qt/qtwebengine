@@ -6,8 +6,6 @@
 
 #include "gl_surface_qt.h"
 
-#if BUILDFLAG(IS_WIN)
-
 namespace gl {
 
 class PbufferGLSurfaceWGL;
@@ -31,7 +29,7 @@ private:
     scoped_refptr<PbufferGLSurfaceWGL> m_surfaceBuffer;
 };
 
-}
-#endif // BUILDFLAG(IS_WIN)
+} // namespace gl
+
 #endif // GL_SURFACE_WGL_QT_H
 

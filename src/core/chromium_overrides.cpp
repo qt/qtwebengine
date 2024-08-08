@@ -17,6 +17,7 @@
 #include "gpu/vulkan/buildflags.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
+#include "ui/base/ozone_buildflags.h"
 
 #include <QGuiApplication>
 #include <QFontDatabase>
@@ -37,10 +38,12 @@
 #endif // defined(USE_OZONE)
 #endif // defined(ENABLE_VULKAN)
 
+#if BUILDFLAG(IS_OZONE_X11)
 void *GetQtXDisplay()
 {
     return GLContextHelper::getXDisplay();
 }
+#endif
 
 namespace content {
 class RenderViewHostDelegateView;

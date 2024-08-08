@@ -7,27 +7,9 @@
 
 #include "qtwebenginecoreglobal_p.h"
 
-#if !defined(Q_OS_MACOS)
-
 #include "gl_surface_qt.h"
 
 #include "base/logging.h"
-
-#if BUILDFLAG(IS_WIN)
-#include "web_engine_context.h"
-#include "ozone/gl_surface_wgl_qt.h"
-
-#include "gpu/ipc/service/image_transport_surface.h"
-#include "ui/gl/init/gl_display_initializer.h"
-#include "ui/gl/direct_composition_support.h"
-#include "ui/gl/gl_angle_util_win.h"
-#include "ui/gl/gl_display.h"
-#include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_surface_egl.h"
-#include "ui/gl/gl_utils.h"
-#include "ui/gl/vsync_provider_win.h"
-#endif
-
 
 namespace gl {
 
@@ -89,77 +71,4 @@ void* GLSurfaceQt::GetConfig()
     return g_config;
 }
 
-#if BUILDFLAG(IS_WIN)
-namespace init {
-
-gl::GLDisplay *InitializeGLOneOffPlatform(gl::GpuPreference gpu_preference)
-{
-    VSyncProviderWin::InitializeOneOff();
-
-    if (GetGLImplementation() == kGLImplementationDesktopGL || GetGLImplementation() == kGLImplementationDesktopGLCoreProfile)
-        return GLSurfaceWGLQt::InitializeOneOff(gpu_preference);
-
-    GLDisplayEGL *display = GetDisplayEGL(gpu_preference);
-    switch (GetGLImplementation()) {
-    case kGLImplementationEGLANGLE:
-        if (!InitializeDisplay(display, EGLDisplayPlatform(GetDC(nullptr)))) {
-            LOG(ERROR) << "GLDisplayEGL::Initialize failed.";
-            return nullptr;
-        }
-        if (auto d3d11_device = QueryD3D11DeviceObjectFromANGLE())
-            InitializeDirectComposition(std::move(d3d11_device));
-        break;
-    case kGLImplementationMockGL:
-    case kGLImplementationStubGL:
-        break;
-    default:
-        NOTREACHED();
-    }
-    return display;
-}
-
-bool usingSoftwareDynamicGL()
-{
-#if QT_CONFIG(opengl)
-    return QtWebEngineCore::usingSoftwareDynamicGL();
-#else
-    return false;
-#endif // QT_CONFIG(opengl)
-}
-
-scoped_refptr<GLSurface> CreateOffscreenGLSurface(GLDisplay *display, const gfx::Size &size)
-{
-    scoped_refptr<GLSurface> surface;
-    switch (GetGLImplementation()) {
-    case kGLImplementationDesktopGLCoreProfile:
-    case kGLImplementationDesktopGL: {
-        surface = new GLSurfaceWGLQt(size);
-        if (surface->Initialize(GLSurfaceFormat()))
-            return surface;
-        break;
-    }
-    case kGLImplementationEGLANGLE: {
-        GLDisplayEGL *display_egl = display->GetAs<gl::GLDisplayEGL>();
-        if (display_egl->IsEGLSurfacelessContextSupported() && size.width() == 0 && size.height() == 0)
-            return InitializeGLSurface(new SurfacelessEGL(display_egl, size));
-        return InitializeGLSurface(new PbufferGLSurfaceEGL(display_egl, size));
-    }
-    default:
-        break;
-    }
-    LOG(ERROR) << "Requested OpenGL implementation is not supported. Implementation: " << GetGLImplementation();
-    Q_UNREACHABLE();
-    return nullptr;
-}
-
-scoped_refptr<GLSurface>
-CreateViewGLSurface(GLDisplay *display, gfx::AcceleratedWidget window)
-{
-    return nullptr;
-}
-
-} // namespace init
-#endif  // BUILDFLAG(IS_WIN)
 } // namespace gl
-
-#endif // !defined(Q_OS_MACOS)

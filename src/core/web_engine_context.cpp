@@ -95,7 +95,6 @@
 #include "devtools_manager_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #include "net/webui_controller_factory_qt.h"
-#include "ozone/gl_context_qt.h"
 #include "profile_adapter.h"
 #include "type_conversion.h"
 #include "web_engine_library_info.h"
@@ -114,7 +113,9 @@
 #include <QtQuick/private/qsgrhisupport_p.h>
 #include <QLoggingCategory>
 
-#if QT_CONFIG(opengl)
+#if QT_CONFIG(opengl) && (defined(USE_OZONE) || defined(Q_OS_WIN))
+#include "ozone/gl_context_qt.h"
+
 #include <QOpenGLContext>
 #include <qopenglcontext_platform.h>
 
@@ -527,6 +528,7 @@ static void logContext(const std::string &glType, base::CommandLine *cmd)
             << QLatin1StringView(GLContextHelper::getEglPlatformInterface() ? "yes" : "no")
             << QLatin1StringView("\n");
 #endif
+#if defined(USE_OZONE) || defined(Q_OS_WIN)
         log << QLatin1StringView("Using Shared GL:")
             << QLatin1StringView(qt_gl_global_share_context() ? "yes" : "no")
             << QLatin1StringView("\n");
@@ -552,6 +554,7 @@ static void logContext(const std::string &glType, base::CommandLine *cmd)
                             .arg(sharedFormat.minorVersion());
         }
         log << QLatin1StringView("\n");
+#endif // defined(USE_OZONE) || defined(Q_OS_WIN)
 #endif // QT_CONFIG(opengl)
 
         log << QLatin1StringView("Init Parameters:\n");
@@ -732,8 +735,11 @@ void WebEngineContext::destroy()
 
     // Destroy the main runner, this stops main message loop
     m_browserRunner.reset();
-    // gpu thread is no longer around, so no more cotnext is used, remove the helper
+
+#if QT_CONFIG(opengl) && (defined(USE_OZONE) || defined(Q_OS_WIN))
+    // gpu thread is no longer around, so no more context is used, remove the helper
     GLContextHelper::destroy();
+#endif
 
     // These would normally be in the content-runner, but we allocated them separately:
     m_mojoIpcSupport.reset();
@@ -1027,7 +1033,9 @@ WebEngineContext::WebEngineContext()
 
     initializeFeatureList(parsedCommandLine, enableFeatures, disableFeatures);
 
+#if QT_CONFIG(opengl) && (defined(USE_OZONE) || defined(Q_OS_WIN))
     GLContextHelper::initialize();
+#endif
 
     // If user requested GL support instead of using Skia rendering to
     // bitmaps, use software rendering via software OpenGL. This might be less
