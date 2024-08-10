@@ -13,7 +13,7 @@ qhp.QtWebEngine.virtualFolder       = qtwebengine
 qhp.QtWebEngine.indexTitle          = Qt WebEngine
 qhp.QtWebEngine.indexRoot           =
 
-qhp.QtWebEngine.subprojects = manual examples classes qmltypes
+qhp.QtWebEngine.subprojects = manual examples widgetexamples classes qmltypes
 
 qhp.QtWebEngine.subprojects.classes.title = C++ Classes and Namespaces
 qhp.QtWebEngine.subprojects.classes.indexTitle = Qt WebEngine C++ Classes and Namespaces
@@ -25,10 +25,15 @@ qhp.QtWebEngine.subprojects.qmltypes.indexTitle = Qt WebEngine QML Types
 qhp.QtWebEngine.subprojects.qmltypes.selectors = qmltype qmlvaluetype
 qhp.QtWebEngine.subprojects.qmltypes.sortPages = true
 
-qhp.QtWebEngine.subprojects.examples.title = Examples
-qhp.QtWebEngine.subprojects.examples.indexTitle = Qt WebEngine Examples
-qhp.QtWebEngine.subprojects.examples.selectors = doc:example
+qhp.QtWebEngine.subprojects.examples.title = Examples (Quick)
+qhp.QtWebEngine.subprojects.examples.indexTitle = Qt WebEngine Quick Examples
+qhp.QtWebEngine.subprojects.examples.selectors = group:webengine-examples
 qhp.QtWebEngine.subprojects.examples.sortPages = true
+
+qhp.QtWebEngine.subprojects.widgetexamples.title = Examples (Widgets)
+qhp.QtWebEngine.subprojects.widgetexamples.indexTitle = Qt WebEngine Widgets Examples
+qhp.QtWebEngine.subprojects.widgetexamples.selectors = group:webengine-widgetexamples
+qhp.QtWebEngine.subprojects.widgetexamples.sortPages = true
 
 qhp.QtWebEngine.subprojects.manual.title = Qt WebEngine
 qhp.QtWebEngine.subprojects.manual.indexTitle = Qt WebEngine module topics
