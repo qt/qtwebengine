@@ -313,6 +313,7 @@ qt_feature("webengine-developer-build" PRIVATE
 )
 qt_feature("webengine-system-re2" PRIVATE
     LABEL "re2"
+    AUTODETECT FALSE
     CONDITION UNIX AND TEST_re2
 )
 qt_feature("webengine-system-icu" PRIVATE
