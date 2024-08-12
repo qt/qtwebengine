@@ -195,6 +195,4 @@ static inline QPoint elementCenter(QWebEnginePage *page, const QString &id)
     return elementGeometry(page, id).center();
 }
 
-#define W_QSKIP(a, b) QSKIP(a)
-
 #endif /* UTIL_H */

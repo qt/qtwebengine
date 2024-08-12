@@ -439,11 +439,10 @@ void tst_QWebEngineUrlRequestInterceptor::firstPartyUrlNestedIframes()
 
     if (requestUrl.scheme() == "file"
         && !QDir(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()).exists())
-        W_QSKIP(QString("This test requires access to resources found in '%1'")
+        QSKIP(QString("This test requires access to resources found in '%1'")
                         .arg(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath())
                         .toLatin1()
-                        .constData(),
-                SkipAll);
+                        .constData());
 
     QString adjustedUrl = requestUrl.adjusted(QUrl::RemoveFilename).toString();
 
@@ -528,11 +527,10 @@ void tst_QWebEngineUrlRequestInterceptor::requestInterceptorByResourceType_data(
 void tst_QWebEngineUrlRequestInterceptor::requestInterceptorByResourceType()
 {
     if (!QDir(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()).exists())
-        W_QSKIP(QString("This test requires access to resources found in '%1'")
+        QSKIP(QString("This test requires access to resources found in '%1'")
                         .arg(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath())
                         .toLatin1()
-                        .constData(),
-                SkipAll);
+                        .constData());
     QFETCH(QUrl, requestUrl);
     QFETCH(QUrl, firstPartyUrl);
     QFETCH(int, resourceType);

@@ -74,11 +74,10 @@ void tst_Favicon::cleanup()
 void tst_Favicon::faviconLoad()
 {
     if (!QDir(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()).exists())
-        W_QSKIP(QString("This test requires access to resources found in '%1'")
+        QSKIP(QString("This test requires access to resources found in '%1'")
                         .arg(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath())
                         .toLatin1()
-                        .constData(),
-                SkipAll);
+                        .constData());
 
     QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
     QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));
@@ -134,11 +133,10 @@ void tst_Favicon::faviconLoadFromResources()
 void tst_Favicon::faviconLoadEncodedUrl()
 {
     if (!QDir(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()).exists())
-        W_QSKIP(QString("This test requires access to resources found in '%1'")
+        QSKIP(QString("This test requires access to resources found in '%1'")
                         .arg(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath())
                         .toLatin1()
-                        .constData(),
-                SkipAll);
+                        .constData());
 
     QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
     QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));
@@ -237,11 +235,10 @@ void tst_Favicon::faviconLoadPushState()
 void tst_Favicon::noFavicon()
 {
     if (!QDir(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()).exists())
-        W_QSKIP(QString("This test requires access to resources found in '%1'")
+        QSKIP(QString("This test requires access to resources found in '%1'")
                         .arg(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath())
                         .toLatin1()
-                        .constData(),
-                SkipAll);
+                        .constData());
 
     QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
     QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));
@@ -279,11 +276,10 @@ void tst_Favicon::aboutBlank()
 void tst_Favicon::unavailableFavicon()
 {
     if (!QDir(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()).exists())
-        W_QSKIP(QString("This test requires access to resources found in '%1'")
+        QSKIP(QString("This test requires access to resources found in '%1'")
                         .arg(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath())
                         .toLatin1()
-                        .constData(),
-                SkipAll);
+                        .constData());
 
     QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
     QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));
@@ -342,11 +338,10 @@ void tst_Favicon::errorPageDisabled()
 void tst_Favicon::touchIcon()
 {
     if (!QDir(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()).exists())
-        W_QSKIP(QString("This test requires access to resources found in '%1'")
+        QSKIP(QString("This test requires access to resources found in '%1'")
                         .arg(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath())
                         .toLatin1()
-                        .constData(),
-                SkipAll);
+                        .constData());
 
     QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
     QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));
@@ -367,11 +362,10 @@ void tst_Favicon::touchIcon()
 void tst_Favicon::multiIcon()
 {
     if (!QDir(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()).exists())
-        W_QSKIP(QString("This test requires access to resources found in '%1'")
+        QSKIP(QString("This test requires access to resources found in '%1'")
                         .arg(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath())
                         .toLatin1()
-                        .constData(),
-                SkipAll);
+                        .constData());
 
     QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
     QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));

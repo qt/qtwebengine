@@ -479,11 +479,10 @@ void tst_QWebEngineView::reusePage_data()
 void tst_QWebEngineView::reusePage()
 {
     if (!QDir(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()).exists())
-        W_QSKIP(QString("This test requires access to resources found in '%1'")
+        QSKIP(QString("This test requires access to resources found in '%1'")
                         .arg(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath())
                         .toLatin1()
-                        .constData(),
-                SkipAll);
+                        .constData());
 
     QDir::setCurrent(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath());
 

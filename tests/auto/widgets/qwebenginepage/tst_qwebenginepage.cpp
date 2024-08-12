@@ -500,7 +500,7 @@ void tst_QWebEnginePage::geolocationRequestJS()
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     if (evaluateJavaScriptSync(newPage, QLatin1String("!navigator.geolocation")).toBool())
-        W_QSKIP("Geolocation is not supported.", SkipSingle);
+        QSKIP("Geolocation is not supported.");
 
     evaluateJavaScriptSync(newPage, "var errorCode = 0; var done = false; function error(err) { errorCode = err.code; done = true; } function success(pos) { done = true; } navigator.geolocation.getCurrentPosition(success, error)");
 
@@ -2444,11 +2444,10 @@ void tst_QWebEnginePage::setHtmlWithBaseURL()
     // As we are using a local file as baseUrl, its security origin should be able to load local resources.
 
     if (!QDir(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()).exists())
-        W_QSKIP(QString("This test requires access to resources found in '%1'")
+        QSKIP(QString("This test requires access to resources found in '%1'")
                         .arg(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath())
                         .toLatin1()
-                        .constData(),
-                SkipAll);
+                        .constData());
 
     QDir::setCurrent(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath());
     qDebug()<<QDir::current();
@@ -3425,11 +3424,10 @@ void tst_QWebEnginePage::viewSourceURL_data()
 void tst_QWebEnginePage::viewSourceURL()
 {
     if (!QDir(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()).exists())
-        W_QSKIP(QString("This test requires access to resources found in '%1'")
+        QSKIP(QString("This test requires access to resources found in '%1'")
                         .arg(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath())
                         .toLatin1()
-                        .constData(),
-                SkipAll);
+                        .constData());
 
     QFETCH(QUrl, userInputUrl);
     QFETCH(bool, loadSucceed);
@@ -4220,7 +4218,7 @@ void tst_QWebEnginePage::localFontAccessPermission() {
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     if (evaluateJavaScriptSync(&page, QStringLiteral("!window.queryLocalFonts")).toBool())
-        W_QSKIP("Local fonts access is not supported.", SkipSingle);
+        QSKIP("Local fonts access is not supported.");
 
     // Access to the API requires recent user interaction
     QTest::keyPress(view.focusProxy(), Qt::Key_Space);
