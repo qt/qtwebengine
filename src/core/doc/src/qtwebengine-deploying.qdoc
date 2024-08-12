@@ -29,6 +29,8 @@
         \li On Windows, \QWE only supports Windows Vista or newer as
             target platform. Due to use of newer API in Chromium, Windows XP is
             not supported. WinRT is not supported, either.
+        \li On Windows, the Visual C++ Redistributable version 14.28 or higher
+            is needed to run \QWE applications.
     \endlist
 
     \section1 Deploying Applications Manually
