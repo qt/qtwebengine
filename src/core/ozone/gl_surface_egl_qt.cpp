@@ -53,6 +53,7 @@ gl::GLDisplay *GLSurfaceEGLQt::InitializeOneOff(gl::GpuPreference preference)
                 GLContextHelper::isCreateContextRobustnessSupported();
     }
 
+#if QT_CONFIG(opengl)
     if (egl_display->ext->b_EGL_EXT_image_dma_buf_import
         || egl_display->ext->b_EGL_EXT_image_dma_buf_import_modifiers
         || egl_display->ext->b_EGL_MESA_image_dma_buf_export) {
@@ -61,6 +62,7 @@ gl::GLDisplay *GLSurfaceEGLQt::InitializeOneOff(gl::GpuPreference preference)
         egl_display->ext->b_EGL_EXT_image_dma_buf_import_modifiers = dmaBufSupported;
         egl_display->ext->b_EGL_MESA_image_dma_buf_export = dmaBufSupported;
     }
+#endif
 
     g_config = GLContextHelper::getEGLConfig();
     if (!g_config) {
