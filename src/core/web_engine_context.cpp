@@ -983,7 +983,7 @@ WebEngineContext::WebEngineContext()
         }
     }
 
-    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan) {
+    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan && usingSupportedSGBackend()) {
         enableFeatures.push_back(features::kVulkan.name);
         parsedCommandLine->AppendSwitchASCII(switches::kUseVulkan,
                                              switches::kVulkanImplementationNameNative);
