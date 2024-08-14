@@ -60,6 +60,8 @@ if(PkgConfig_FOUND)
     pkg_check_modules(VPX vpx>=1.10.0 IMPORTED_TARGET)
     pkg_check_modules(LIBPCI libpci)
     pkg_check_modules(LIBOPENJP2 libopenjp2)
+    pkg_check_modules(XKBCOMMON xkbcommon)
+    pkg_check_modules(XKBFILE xkbfile)
 endif()
 
 if(Python3_EXECUTABLE)
@@ -431,7 +433,7 @@ qt_feature("webengine-system-libpci" PRIVATE
 )
 
 qt_feature("webengine-ozone-x11" PRIVATE
-    LABEL "Support GLX on qpa-xcb"
+    LABEL "Support X11 on qpa-xcb"
     CONDITION LINUX
         AND TARGET Qt::Gui
         AND QT_FEATURE_xcb
@@ -444,6 +446,8 @@ qt_feature("webengine-ozone-x11" PRIVATE
         AND XRANDR_FOUND
         AND XTST_FOUND
         AND XSHMFENCE_FOUND
+        AND XKBCOMMON_FOUND
+        AND XKBFILE_FOUND
 )
 
 #### Support Checks
@@ -691,7 +695,7 @@ qt_configure_add_report_entry(
 )
 
 if(LINUX AND QT_FEATURE_xcb AND TARGET Qt::Gui)
-    set(ozone_x11_support X11 LIBDRM XCOMPOSITE XCURSOR XRANDR XI XPROTO XSHMFENCE XTST)
+    set(ozone_x11_support X11 LIBDRM XCOMPOSITE XCURSOR XRANDR XI XPROTO XSHMFENCE XTST XKBCOMMON XKBFILE)
     set(ozone_x11_error OFF)
     foreach(xs ${ozone_x11_support})
         if(NOT ${xs}_FOUND)
