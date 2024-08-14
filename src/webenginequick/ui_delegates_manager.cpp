@@ -111,6 +111,10 @@ UIDelegatesManager::~UIDelegatesManager()
 bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
 {
     QQmlEngine* engine = qmlEngine(m_view);
+
+    if (!engine)
+        return false;
+
     if (m_importDirs.isEmpty() && !initializeImportDirs(m_importDirs, engine))
         return false;
 
@@ -128,8 +132,6 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
 #else // Unconditionally reload the components each time.
     fprintf(stderr, "%s: %s\n", Q_FUNC_INFO, qPrintable(fileName));
 #endif
-    if (!engine)
-        return false;
 
     for (const QString &importDir : std::as_const(m_importDirs)) {
         const QString componentFilePath = importDir % QLatin1Char('/') % fileName;
