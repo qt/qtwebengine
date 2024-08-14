@@ -1433,15 +1433,19 @@ macro(qt_webengine_build_and_install_gn)
 endmacro()
 
 macro(qt_webengine_externalproject_add)
+    list(JOIN CMAKE_OSX_ARCHITECTURES "," OSX_ARCH_STR)
     externalproject_add(${ARGN}
         PREFIX      gn
         USES_TERMINAL_BUILD TRUE
+        LIST_SEPARATOR ","
         CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release
                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                    -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>
+                   -DCMAKE_OSX_ARCHITECTURES=${OSX_ARCH_STR}
                    -DWEBENGINE_ROOT_BUILD_DIR=${PROJECT_BINARY_DIR}
                    -DQT_ALLOW_SYMLINK_IN_PATHS=${QT_ALLOW_SYMLINK_IN_PATHS}
     )
+    unset(OSX_ARCH_STR)
 endmacro()
