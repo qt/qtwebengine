@@ -124,6 +124,7 @@ foreach(arch ${archs})
           enable_swiftshader_vulkan=false
           angle_enable_swiftshader=false
           dawn_use_swiftshader=false
+          use_cups=false
           use_dawn=false
           build_dawn_tests=false
           enable_ipc_fuzzer=false
