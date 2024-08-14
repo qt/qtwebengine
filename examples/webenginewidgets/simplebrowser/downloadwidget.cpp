@@ -59,7 +59,7 @@ void DownloadWidget::updateWidget()
         Q_UNREACHABLE();
         break;
     case QWebEngineDownloadRequest::DownloadInProgress:
-        if (totalBytes >= 0) {
+        if (totalBytes > 0) {
             m_progressBar->setValue(qRound(100 * receivedBytes / totalBytes));
             m_progressBar->setDisabled(false);
             m_progressBar->setFormat(
