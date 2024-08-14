@@ -83,6 +83,8 @@ if(PkgConfig_FOUND)
     pkg_check_modules(VPX vpx>=${QT_CONFIGURE_CHECK_vpx_version} IMPORTED_TARGET)
     pkg_check_modules(LIBPCI libpci)
     pkg_check_modules(LIBOPENJP2 libopenjp2)
+    pkg_check_modules(XKBCOMMON xkbcommon)
+    pkg_check_modules(XKBFILE xkbfile)
 endif()
 
 if(Python3_EXECUTABLE)
@@ -420,7 +422,7 @@ qt_webengine_configure_check("dbus"
     TAGS LINUX_PKG_CONFIG
 )
 
-set(x_libs X11 LIBDRM XCOMPOSITE XCURSOR XRANDR XI XPROTO XSHMFENCE XTST)
+set(x_libs X11 LIBDRM XCOMPOSITE XCURSOR XRANDR XI XPROTO XSHMFENCE XTST XKBCOMMON XKBFILE)
 set(qpa_xcb_support_check TRUE)
 foreach(x_lib ${x_libs})
     string(TOLOWER ${x_lib} x)
@@ -690,7 +692,7 @@ qt_feature("webengine-system-libpci" PRIVATE
 )
 
 qt_feature("webengine-ozone-x11" PRIVATE
-    LABEL "Support GLX on qpa-xcb"
+    LABEL "Support X11 on qpa-xcb"
     CONDITION LINUX
         AND TARGET Qt::Gui
         AND QT_FEATURE_xcb
