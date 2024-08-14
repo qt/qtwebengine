@@ -356,6 +356,7 @@ foreach(arch ${archs})
             optimize_webui=false
             strip_absolute_paths_from_debug_symbols=false
             pdf_use_skia=true
+            use_cups=false
             use_dawn=false
             skia_use_dawn=false
             devtools_fast_bundle=false
@@ -372,10 +373,6 @@ foreach(arch ${archs})
         extend_gn_list(gnArgArg
             ARGS enable_printing enable_basic_printing enable_print_preview enable_pdf
             CONDITION QT_FEATURE_webengine_printing_and_pdf
-        )
-        extend_gn_list(gnArgArg
-            ARGS use_cups
-            CONDITION QT_FEATURE_webengine_printing_and_pdf AND NOT WIN32
         )
         extend_gn_list(gnArgArg
             ARGS enable_plugins
@@ -443,7 +440,6 @@ foreach(arch ${archs})
                 angle_enable_gl=true
                 use_gtk=false # GTK toolkit bindings
                 use_qt=false # Qt5 toolkit bindings
-                use_cups=false
                 use_gio=false
                 use_bundled_fontconfig=false
                 use_glib=false
