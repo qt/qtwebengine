@@ -28,6 +28,11 @@
 
 namespace QtWebEngineCore {
 
+// Extra permission types that don't exist on the Chromium side.
+enum class ExtraPermissionType {
+    POINTER_LOCK = 39, // TODO this exists in Chromium 126, remove after we merge
+};
+
 static QWebEnginePermission::PermissionType toQt(blink::PermissionType type)
 {
     switch (type) {
@@ -48,6 +53,8 @@ static QWebEnginePermission::PermissionType toQt(blink::PermissionType type)
         return QWebEnginePermission::PermissionType::Notifications;
     case blink::PermissionType::LOCAL_FONTS:
         return QWebEnginePermission::PermissionType::LocalFontsAccess;
+    case (blink::PermissionType)ExtraPermissionType::POINTER_LOCK:
+        return QWebEnginePermission::PermissionType::MouseLock;
     case blink::PermissionType::ACCESSIBILITY_EVENTS:
     case blink::PermissionType::CAMERA_PAN_TILT_ZOOM:
     case blink::PermissionType::WINDOW_MANAGEMENT:
@@ -97,8 +104,9 @@ static blink::PermissionType toBlink(QWebEnginePermission::PermissionType permis
         return blink::PermissionType::CLIPBOARD_READ_WRITE;
     case QWebEnginePermission::PermissionType::LocalFontsAccess:
         return blink::PermissionType::LOCAL_FONTS;
-    case QWebEnginePermission::PermissionType::MediaAudioVideoCapture:
     case QWebEnginePermission::PermissionType::MouseLock:
+        return (blink::PermissionType)ExtraPermissionType::POINTER_LOCK;
+    case QWebEnginePermission::PermissionType::MediaAudioVideoCapture:
     case QWebEnginePermission::PermissionType::Unsupported:
         LOG(INFO) << "Unexpected unsupported WebEngine permission type: " << static_cast<int>(permissionType);
         return blink::PermissionType::NUM;
@@ -138,6 +146,14 @@ std::string permissionTypeString(QWebEnginePermission::PermissionType permission
     // e.g. in case we add extra Features that do not correspond to a PermissionType, and
     // we need to store them.
     switch (permissionType) {
+    case QWebEnginePermission::PermissionType::MediaAudioCapture:
+        return "MediaAudioCapture";
+    case QWebEnginePermission::PermissionType::MediaVideoCapture:
+        return "MediaVideoCapture";
+    case QWebEnginePermission::PermissionType::DesktopAudioVideoCapture:
+        return "DesktopAudioVideoCapture";
+    case QWebEnginePermission::PermissionType::MouseLock:
+        return "MouseLock";
     case QWebEnginePermission::PermissionType::Notifications:
         return "Notifications";
     case QWebEnginePermission::PermissionType::Geolocation:
@@ -146,12 +162,6 @@ std::string permissionTypeString(QWebEnginePermission::PermissionType permission
         return "ClipboardReadWrite";
     case QWebEnginePermission::PermissionType::LocalFontsAccess:
         return "LocalFontsAccess";
-    case QWebEnginePermission::PermissionType::MediaAudioCapture:
-        return "MediaAudioCapture";
-    case QWebEnginePermission::PermissionType::MediaVideoCapture:
-        return "MediaVideoCapture";
-    case QWebEnginePermission::PermissionType::DesktopAudioVideoCapture:
-        return "DesktopAudioVideoCapture";
     default:
         Q_UNREACHABLE();
         return nullptr;
@@ -174,6 +184,7 @@ static blink::mojom::PermissionStatus getStatusFromSettings(blink::PermissionTyp
 
 PermissionManagerQt::PermissionManagerQt(ProfileAdapter *profileAdapter)
     : m_requestIdCount(0)
+    , m_transientWriteCount(0)
     , m_profileAdapter(profileAdapter)
     , m_persistence(true)
 {
@@ -195,14 +206,13 @@ PermissionManagerQt::PermissionManagerQt(ProfileAdapter *profileAdapter)
         factory.set_user_prefs(new InMemoryPrefStore);
     }
 
+    m_permissionTypes.push_back(QWebEnginePermission::PermissionType::MediaAudioCapture);
+    m_permissionTypes.push_back(QWebEnginePermission::PermissionType::MediaVideoCapture);
+    m_permissionTypes.push_back(QWebEnginePermission::PermissionType::MouseLock);
     m_permissionTypes.push_back(QWebEnginePermission::PermissionType::Notifications);
     m_permissionTypes.push_back(QWebEnginePermission::PermissionType::Geolocation);
     m_permissionTypes.push_back(QWebEnginePermission::PermissionType::ClipboardReadWrite);
     m_permissionTypes.push_back(QWebEnginePermission::PermissionType::LocalFontsAccess);
-
-    // Transient, but the implementation relies on them being written to storage
-    m_permissionTypes.push_back(QWebEnginePermission::PermissionType::MediaAudioCapture);
-    m_permissionTypes.push_back(QWebEnginePermission::PermissionType::MediaVideoCapture);
 
     // Register all preference types as keys prior to doing anything else
     for (auto &type : m_permissionTypes) {
@@ -224,23 +234,39 @@ PermissionManagerQt::~PermissionManagerQt()
     commit();
 }
 
-void PermissionManagerQt::setPermission(const QUrl &url, QWebEnginePermission::PermissionType permissionType, QWebEnginePermission::State state)
+void PermissionManagerQt::setPermission(
+    const QUrl &url,
+    QWebEnginePermission::PermissionType permissionType,
+    QWebEnginePermission::State state,
+    content::RenderFrameHost *rfh)
 {
     // Normalize the QUrl to Chromium origin form.
     const GURL gorigin = toGurl(url).DeprecatedGetOriginAsURL();
     const QUrl origin = gorigin.is_empty() ? url : toQt(gorigin);
     if (origin.isEmpty())
         return;
-    if (state == QWebEnginePermission::State::Ask)
-        ResetPermission(toBlink(permissionType), gorigin, gorigin);
-    else
-        setPermission(toBlink(permissionType), gorigin, state == QWebEnginePermission::State::Granted);
-    blink::mojom::PermissionStatus status = toBlink(state);
-    if (state != QWebEnginePermission::State::Ask) {
+
+    // Send eligible permissions with an associated rfh to the transient store. When pre-granting
+    // a non-persistent permission (or pre-granting any permission in AskEveryTime mode), it is allowed
+    // to pass through the persistent store. It will be moved to the transient store and associated
+    // with a rfh the next time its status is requested.
+    bool inTransientStore = rfh && (!QWebEnginePermission::isPersistent(permissionType) || !m_persistence);
+
+    blink::mojom::PermissionStatus blinkStatus = toBlink(state);
+    if (state == QWebEnginePermission::State::Ask) {
+        if (inTransientStore)
+            resetTransientPermission(toBlink(permissionType), gorigin, rfh->GetGlobalFrameToken());
+        else
+            ResetPermission(toBlink(permissionType), gorigin, gorigin);
+    } else {
+        if (inTransientStore)
+            setTransientPermission(toBlink(permissionType), gorigin, state == QWebEnginePermission::State::Granted, rfh->GetGlobalFrameToken());
+        else
+            setPersistentPermission(toBlink(permissionType), gorigin, state == QWebEnginePermission::State::Granted);
         auto it = m_requests.begin();
         while (it != m_requests.end()) {
             if (it->origin == origin && it->type == permissionType) {
-                std::move(it->callback).Run(status);
+                std::move(it->callback).Run(blinkStatus);
                 it = m_requests.erase(it);
             } else
                 ++it;
@@ -249,7 +275,7 @@ void PermissionManagerQt::setPermission(const QUrl &url, QWebEnginePermission::P
 
     for (const auto &it : m_subscribers) {
         if (it.second.origin == origin && it.second.type == permissionType)
-            it.second.callback.Run(status);
+            it.second.callback.Run(blinkStatus);
     }
 
     if (state == QWebEnginePermission::State::Ask)
@@ -267,7 +293,12 @@ void PermissionManagerQt::setPermission(const QUrl &url, QWebEnginePermission::P
                     continue;
                 }
 
-                blink::mojom::PermissionStatus permissionStatus = GetPermissionStatus(permission, gorigin, GURL());
+                blink::mojom::PermissionStatus permissionStatus;
+                if (inTransientStore)
+                    permissionStatus = toBlink(getPermissionState(url, permissionType, rfh));
+                else
+                    permissionStatus = GetPermissionStatus(permission, gorigin, GURL());
+
                 if (permissionStatus == toBlink(state)) {
                     if (permissionStatus == blink::mojom::PermissionStatus::ASK) {
                         answerable = false;
@@ -290,8 +321,14 @@ void PermissionManagerQt::setPermission(const QUrl &url, QWebEnginePermission::P
     }
 }
 
-QWebEnginePermission::State PermissionManagerQt::getPermissionState(const QUrl &origin, QWebEnginePermission::PermissionType permissionType)
+QWebEnginePermission::State PermissionManagerQt::getPermissionState(const QUrl &origin, QWebEnginePermission::PermissionType permissionType,
+    content::RenderFrameHost *rfh)
 {
+    if (rfh) {
+        // Ignore the origin parameter
+        return toQt(GetPermissionStatusForCurrentDocument(toBlink(permissionType), rfh));
+    }
+
     return toQt(GetPermissionStatus(toBlink(permissionType), toGurl(origin), GURL()));
 }
 
@@ -368,8 +405,35 @@ void PermissionManagerQt::RequestPermissions(content::RenderFrameHost *frameHost
 
         blink::mojom::PermissionStatus permissionStatus = getStatusFromSettings(permission, contentsDelegate->webEngineSettings());
         if (permissionStatus == blink::mojom::PermissionStatus::ASK) {
-            permissionStatus = GetPermissionStatus(permission, requestDescription.requesting_origin, GURL());
-            if (m_persistence && permissionStatus != blink::mojom::PermissionStatus::ASK) {
+            const GURL &rorigin = requestDescription.requesting_origin;
+
+            if (!m_persistence) {
+                answerable = false;
+                break;
+            }
+
+            bool inTransientStore = !QWebEnginePermission::isPersistent(toQt(permission));
+            if (inTransientStore) {
+                permissionStatus = getTransientPermissionStatus(permission, rorigin, frameHost->GetGlobalFrameToken());
+
+                if (permissionStatus != blink::mojom::PermissionStatus::ASK) {
+                    result.push_back(permissionStatus);
+                    continue;
+                }
+
+                // Fall through to check if permission was pre-granted (and thus landed in the permanent store)
+            }
+
+            permissionStatus = GetPermissionStatus(permission, rorigin, rorigin);
+
+            if (inTransientStore && permissionStatus != blink::mojom::PermissionStatus::ASK) {
+                // Move the pre-granted permission to the transient store and associate it with the rfh
+                ResetPermission(permission, rorigin, rorigin);
+                setTransientPermission(permission, rorigin, permissionStatus == blink::mojom::PermissionStatus::GRANTED,
+                    frameHost->GetGlobalFrameToken());
+            }
+
+            if (permissionStatus != blink::mojom::PermissionStatus::ASK) {
                 // Automatically grant/deny without prompt if already asked once
                 result.push_back(permissionStatus);
             } else {
@@ -428,8 +492,7 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatus(
     // Workaround: local fonts are entirely managed by Chromium, which only calls RequestPermission() _after_
     // it's checked whether the permission has been granted. By always returning ASK, we force the request to
     // come through every time.
-    if (permission == blink::PermissionType::LOCAL_FONTS
-        && m_profileAdapter->persistentPermissionsPolicy() == ProfileAdapter::PersistentPermissionsPolicy::AskEveryTime)
+    if (permission == blink::PermissionType::LOCAL_FONTS && !m_persistence)
         return blink::mojom::PermissionStatus::ASK;
 
     if (requestedPermission.value())
@@ -441,6 +504,8 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForCurren
         blink::PermissionType permission,
         content::RenderFrameHost *render_frame_host)
 {
+    Q_ASSERT(render_frame_host);
+
     if (permission == blink::PermissionType::CLIPBOARD_READ_WRITE ||
             permission == blink::PermissionType::CLIPBOARD_SANITIZED_WRITE) {
         WebContentsDelegateQt *delegate = static_cast<WebContentsDelegateQt *>(
@@ -451,10 +516,34 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForCurren
             return status;
     }
 
-    return GetPermissionStatus(
-                permission,
-                render_frame_host->GetLastCommittedOrigin().GetURL(),
-                render_frame_host->GetLastCommittedOrigin().GetURL());
+    permission = toBlink(toQt(permission)); // Filter out merged/unsupported permissions (e.g. clipboard)
+    if (toQt(permission) == QWebEnginePermission::PermissionType::Unsupported)
+        return blink::mojom::PermissionStatus::DENIED;
+
+    GURL origin = render_frame_host->GetLastCommittedOrigin().GetURL();
+    auto status = blink::mojom::PermissionStatus::ASK;
+
+    bool inTransientStore = !QWebEnginePermission::isPersistent(toQt(permission)) || !m_persistence;
+    if (inTransientStore) {
+        status = getTransientPermissionStatus(permission, origin, render_frame_host->GetGlobalFrameToken());
+
+        if (status != blink::mojom::PermissionStatus::ASK) {
+            return status;
+        }
+
+        // Fall through to check if permission was pre-granted (and thus landed in the permanent store)
+    }
+
+    status = GetPermissionStatus(permission, origin, origin);
+
+    if (inTransientStore && status != blink::mojom::PermissionStatus::ASK) {
+        // Move the pre-granted permission to the transient store and associate it with the rfh
+        ResetPermission(permission, origin, origin);
+        setTransientPermission(permission, origin, status == blink::mojom::PermissionStatus::GRANTED,
+            render_frame_host->GetGlobalFrameToken());
+    }
+
+    return status;
 }
 
 blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForWorker(
@@ -462,6 +551,7 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForWorker
         content::RenderProcessHost *render_process_host,
         const GURL &url)
 {
+    Q_UNUSED(render_process_host);
     return GetPermissionStatus(permission, url, url);
 }
 
@@ -517,7 +607,28 @@ void PermissionManagerQt::UnsubscribeFromPermissionStatusChange(
         LOG(WARNING) << "PermissionManagerQt::UnsubscribePermissionStatusChange called on unknown subscription id" << subscription_id;
 }
 
-void PermissionManagerQt::setPermission(
+blink::mojom::PermissionStatus PermissionManagerQt::getTransientPermissionStatus(blink::PermissionType permission,
+        const GURL& requesting_origin,
+        content::GlobalRenderFrameHostToken token)
+{
+    const QWebEnginePermission::PermissionType permissionType = toQt(permission);
+    if (permissionType == QWebEnginePermission::PermissionType::Unsupported)
+        return blink::mojom::PermissionStatus::DENIED;
+
+    if (!m_transientPermissions.contains(token))
+        return blink::mojom::PermissionStatus::ASK;
+
+    auto &permissionsForToken = m_transientPermissions[token];
+    for (auto p = permissionsForToken.begin(); p != permissionsForToken.end(); ++p) {
+        if (get<0>(*p) == requesting_origin && get<1>(*p) == permission) {
+            return get<2>(*p) ? blink::mojom::PermissionStatus::GRANTED : blink::mojom::PermissionStatus::DENIED;
+        }
+    }
+
+    return blink::mojom::PermissionStatus::ASK;
+}
+
+void PermissionManagerQt::setPersistentPermission(
     blink::PermissionType permission,
     const GURL& requesting_origin,
     bool granted)
@@ -533,6 +644,57 @@ void PermissionManagerQt::setPermission(
     updater.Get().Set(requesting_origin.spec(), granted);
 
     m_prefService->SchedulePendingLossyWrites();
+}
+
+void PermissionManagerQt::setTransientPermission(blink::PermissionType permission,
+        const GURL& requesting_origin,
+        bool granted,
+        content::GlobalRenderFrameHostToken token)
+{
+    const QWebEnginePermission::PermissionType permissionType = toQt(permission);
+    if (permissionType == QWebEnginePermission::PermissionType::Unsupported)
+        return;
+
+    auto &permissionsForToken = m_transientPermissions[token];
+    for (auto &p : permissionsForToken) {
+        if (get<0>(p) == requesting_origin && get<1>(p) == permission) {
+            get<2>(p) = granted;
+            return;
+        }
+    }
+
+    permissionsForToken.push_back({requesting_origin, permission, granted});
+
+    // Render frame hosts get discarded often, so the map will eventualy fill up with junk unless
+    // periodically cleaned. The number 25 was chosen arbitrarily.
+    if (++m_transientWriteCount > 25) {
+        content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+            base::BindOnce([](PermissionManagerQt *p){
+                for (auto i = p->m_transientPermissions.begin(); i != p->m_transientPermissions.end(); ++i) {
+                    if (content::RenderFrameHost::FromFrameToken(i->first) == nullptr) {
+                        i = p->m_transientPermissions.erase(i);
+                    }
+                }
+            }, this));
+        m_transientWriteCount = 0;
+    }
+}
+
+void PermissionManagerQt::resetTransientPermission(blink::PermissionType permission,
+        const GURL& requesting_origin,
+        content::GlobalRenderFrameHostToken token)
+{
+    const QWebEnginePermission::PermissionType permissionType = toQt(permission);
+    if (permissionType == QWebEnginePermission::PermissionType::Unsupported)
+        return;
+
+    auto &permissionsForToken = m_transientPermissions[token];
+    for (auto i = permissionsForToken.begin(); i != permissionsForToken.end(); ++i) {
+        if (get<0>(*i) == requesting_origin && get<1>(*i) == permission) {
+            permissionsForToken.erase(i);
+            return;
+        }
+    }
 }
 
 } // namespace QtWebEngineCore

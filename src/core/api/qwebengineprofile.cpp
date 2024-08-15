@@ -985,7 +985,11 @@ void QWebEngineProfile::requestIconForIconURL(const QUrl &url, int desiredSizeIn
  * for a permission to already exist; the returned object may also be used to pre-grant a permission if a website is
  * known to use it.
  *
- * \note This may only be used for persistent permission types. Calling it with a non-persistent type will return an invalid object.
+ * You may use this to pre-grant a permission of a non-persistent type. Doing so will keep the permission in
+ * the granted (or denied) state until the next time a website with the associated origin requests it. At that point,
+ * the permission's lifetime will be tied to that specific web page's lifetime, and navigating away will invalidate
+ * the permission.
+ *
  * \since 6.8
  * \sa listAllPermissions(), listPermissionsForOrigin(), listPermissionsForPermissionType(), QWebEnginePermission::PermissionType
  */
@@ -995,11 +999,6 @@ QWebEnginePermission QWebEngineProfile::queryPermission(const QUrl &securityOrig
 
     if (permissionType == QWebEnginePermission::PermissionType::Unsupported) {
         qWarning("Attempting to get unsupported permission. Returned object will be in an invalid state.");
-        return QWebEnginePermission(new QWebEnginePermissionPrivate());
-    }
-
-    if (!QWebEnginePermission::isPersistent(permissionType)) {
-        qWarning() << "Attempting to get permission for permission type" << permissionType << ". Returned object will be in an invalid state.";
         return QWebEnginePermission(new QWebEnginePermissionPrivate());
     }
 

@@ -33,6 +33,7 @@ BrowserWindow *Browser::createHiddenWindow(bool offTheRecord)
     }
     auto profile = !offTheRecord ? m_profile.get() : QWebEngineProfile::defaultProfile();
     auto mainWindow = new BrowserWindow(this, profile, false);
+    profile->setPersistentPermissionsPolicy(QWebEngineProfile::PersistentPermissionsPolicy::AskEveryTime);
     m_windows.append(mainWindow);
     QObject::connect(mainWindow, &QObject::destroyed, [this, mainWindow]() {
         m_windows.removeOne(mainWindow);

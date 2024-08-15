@@ -794,17 +794,24 @@ void WebContentsDelegateQt::BeforeUnloadFired(content::WebContents *tab, bool pr
         m_viewClient->windowCloseRejected();
 }
 
-bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost *,
+bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost *rfh,
                                                        const url::Origin &security_origin,
                                                        blink::mojom::MediaStreamType type)
 {
+    Q_ASSERT(rfh);
     switch (type) {
     case blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE:
-        return m_viewClient->profileAdapter()->getPermissionState(toQt(security_origin), QWebEnginePermission::PermissionType::MediaAudioCapture)
-            == QWebEnginePermission::State::Granted;
+        return m_viewClient->profileAdapter()->getPermissionState(
+            toQt(security_origin),
+            QWebEnginePermission::PermissionType::MediaAudioCapture,
+            rfh)
+                == QWebEnginePermission::State::Granted;
     case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE:
-        return m_viewClient->profileAdapter()->getPermissionState(toQt(security_origin), QWebEnginePermission::PermissionType::MediaVideoCapture)
-            == QWebEnginePermission::State::Granted;
+        return m_viewClient->profileAdapter()->getPermissionState(
+            toQt(security_origin),
+            QWebEnginePermission::PermissionType::MediaVideoCapture,
+            rfh)
+                == QWebEnginePermission::State::Granted;
     default:
         LOG(INFO) << "WebContentsDelegateQt::CheckMediaAccessPermission: "
                   << "Unsupported media stream type checked " << type;

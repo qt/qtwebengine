@@ -46,6 +46,9 @@ TestWebEngineView {
         }
 
         function init() {
+            if (permissionObject != undefined) {
+                permissionObject.reset()
+            }
             permissionRequested = false
             spyRequest.clear()
         }
@@ -63,7 +66,6 @@ TestWebEngineView {
             view.url = resolverUrl('notification.html')
             verify(view.waitForLoadSucceeded())
 
-            view.runJavaScript('resetPermission()')
             let result = {}
 
             view.runJavaScript('getPermission()', function (permission) { result.permission = permission })

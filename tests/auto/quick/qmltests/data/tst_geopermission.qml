@@ -12,6 +12,7 @@ TestWebEngineView {
 
     property bool deniedGeolocation: false
     property bool geoPermissionRequested: false
+    property var permissionObject: undefined
 
     profile.persistentPermissionsPolicy: WebEngineProfile.PersistentPermissionsPolicy.AskEveryTime
 
@@ -24,6 +25,7 @@ TestWebEngineView {
     onPermissionRequested: function(perm) {
         if (perm.permissionType === WebEnginePermission.PermissionType.Geolocation) {
             geoPermissionRequested = true
+            permissionObject = perm
             if (deniedGeolocation) {
                 perm.deny()
             }
@@ -56,6 +58,9 @@ TestWebEngineView {
         }
 
         function init() {
+            if (permissionObject != undefined) {
+                permissionObject.reset()
+            }
             deniedGeolocation = false
             permissionSpy.clear()
         }

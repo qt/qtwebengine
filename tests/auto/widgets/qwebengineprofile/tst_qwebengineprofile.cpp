@@ -1109,13 +1109,13 @@ void tst_QWebEngineProfile::queryPermission_data()
     QTest::addColumn<bool>("expectedValid");
 
     QTest::newRow("badUrl")
-        << QWebEnginePermission::PermissionType::Notifications << QUrl(QStringLiteral("//:bad-url"))                   << false;
+        << QWebEnginePermission::PermissionType::Notifications << QUrl(QStringLiteral("//:bad-url"))                     << false;
     QTest::newRow("badFeature")
-        << QWebEnginePermission::PermissionType::Unsupported   << QUrl(QStringLiteral("qrc:/resources/hedgehog.html")) << false;
+        << QWebEnginePermission::PermissionType::Unsupported   << QUrl(QStringLiteral("qrc:/resources/permission.html")) << false;
     QTest::newRow("transientFeature")
-        << QWebEnginePermission::PermissionType::MouseLock     << QUrl(QStringLiteral("qrc:/resources/hedgehog.html")) << false;
+        << QWebEnginePermission::PermissionType::MouseLock     << QUrl(QStringLiteral("qrc:/resources/permission.html")) << true;
     QTest::newRow("good")
-        << QWebEnginePermission::PermissionType::Notifications << QUrl(QStringLiteral("qrc:/resources/hedgehog.html")) << true;
+        << QWebEnginePermission::PermissionType::Notifications << QUrl(QStringLiteral("qrc:/resources/permission.html")) << true;
 }
 
 void tst_QWebEngineProfile::queryPermission()

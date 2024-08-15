@@ -568,17 +568,16 @@ UserResourceControllerHost *ProfileAdapter::userResourceController()
     return m_userResourceController.data();
 }
 
-void ProfileAdapter::setPermission(const QUrl &origin, QWebEnginePermission::PermissionType permissionType, QWebEnginePermission::State state)
+void ProfileAdapter::setPermission(const QUrl &origin, QWebEnginePermission::PermissionType permissionType,
+    QWebEnginePermission::State state, content::RenderFrameHost *rfh)
 {
-    static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->setPermission(origin, permissionType, state);
+    static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->setPermission(origin, permissionType, state, rfh);
 }
 
-QWebEnginePermission::State ProfileAdapter::getPermissionState(const QUrl &origin, QWebEnginePermission::PermissionType permissionType)
+QWebEnginePermission::State ProfileAdapter::getPermissionState(const QUrl &origin, QWebEnginePermission::PermissionType permissionType,
+    content::RenderFrameHost *rfh)
 {
-    if (persistentPermissionsPolicy() == ProfileAdapter::PersistentPermissionsPolicy::AskEveryTime)
-        return QWebEnginePermission::State::Ask;
-
-    return static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->getPermissionState(origin, permissionType);
+    return static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->getPermissionState(origin, permissionType, rfh);
 }
 
 QList<QWebEnginePermission> ProfileAdapter::listPermissions(const QUrl &origin, QWebEnginePermission::PermissionType permissionType)

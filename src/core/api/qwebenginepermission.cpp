@@ -54,7 +54,7 @@ QWebEnginePermissionPrivate::QWebEnginePermissionPrivate(const QUrl &origin_, QW
 
     \l QWebEnginePermission::PermissionType describes all the permission types Qt WebEngine supports. Only some permission types
     are remembered between browsing sessions; they are \e persistent. Non-persistent permissions query the user every time a
-    website requests them, and cannot be granted in advance. You can check whether a permission type is persistent at runtime
+    website requests them. You can check whether a permission type is persistent at runtime
     using the static method QWebEnginePermission::isPersistent().
 
     Persistent permissions are stored inside the active QWebEngineProfile, and their lifetime depends on the value of
@@ -166,8 +166,7 @@ QUrl QWebEnginePermission::origin() const
     \value Unsupported An unsupported permission type.
 
     \note Non-persistent permission types are ones that will never be remembered by the underlying storage, and will trigger
-    a permission request every time a website tries to use them. They can only be denied/granted as they're needed;
-    any attempts to pre-grant a non-persistent permission will fail.
+    a permission request every time a website tries to use them.
 */
 
 /*!
@@ -196,7 +195,7 @@ QWebEnginePermission::PermissionType QWebEnginePermission::permissionType() cons
 
     If a permission for the specified \l permissionType() and \l origin() has already been granted or denied,
     the return value is QWebEnginePermission::Granted, or QWebEnginePermission::Denied, respectively.
-    When this is the first time the permission is requested, or if the \l permissionType() is non-persistent,
+    When this is the first time the permission is requested,
     the return value is QWebEnginePermission::Ask. If the object is in an invalid state, the returned
     value is QWebEnginePermission::Invalid.
 
@@ -210,8 +209,7 @@ QWebEnginePermission::State QWebEnginePermission::state() const
         return d_ptr->webContentsAdapter.toStrongRef()->getPermissionState(origin(), permissionType());
     if (d_ptr->profileAdapter)
         return d_ptr->profileAdapter->getPermissionState(origin(), permissionType());
-    Q_UNREACHABLE();
-    return State::Ask;
+    Q_UNREACHABLE_RETURN(State::Ask);
 }
 
 /*!
@@ -221,9 +219,8 @@ QWebEnginePermission::State QWebEnginePermission::state() const
     An invalid QWebEnginePermission is either:
     \list
         \li One whose \l permissionType() is unsupported;
-        \li One whose \l permissionType() is non-persistent, and the user has navigated away from the web page that triggered the request;
-        \li One whose \l permissionType() is persistent, but the associated profile has been destroyed;
-        \li One whose \l origin() is invalid.
+        \li One whose \l origin() is invalid;
+        \li One whose associated profile has been destroyed
     \endlist
 
     \sa isPersistent()
@@ -234,9 +231,7 @@ bool QWebEnginePermission::isValid() const
         return false;
     if (permissionType() == PermissionType::Unsupported)
         return false;
-    if (!isPersistent(permissionType()) && !d_ptr->webContentsAdapter)
-        return false;
-    if (!d_ptr->profileAdapter)
+    if (!d_ptr->profileAdapter && !d_ptr->webContentsAdapter)
         return false;
     if (!d_ptr->origin.isValid())
         return false;
@@ -277,7 +272,7 @@ void QWebEnginePermission::deny() const
     Removes the permission from the profile's underlying storage. By default, permissions are stored on disk (except for
     off-the-record profiles, where permissions are stored in memory and are destroyed with the profile).
     This means that an already granted/denied permission will not be requested twice, but will get automatically
-    granted/denied every subsequent time a website requests it. Calling reset() allows the query to be asked
+    granted/denied every subsequent time a website requests it. Calling reset() allows the query to be displayed
     again the next time the website requests it.
 
     Does nothing when \l isValid() evaluates to false.

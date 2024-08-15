@@ -1416,7 +1416,12 @@ void WebContentsAdapter::setPermission(const QUrl &origin, QWebEnginePermission:
     if (QWebEnginePermission::isPersistent(permissionType)) {
         // Do not check for initialization in this path so permissions can be set before first navigation
         Q_ASSERT(m_profileAdapter);
-        m_profileAdapter->setPermission(origin, permissionType, state);
+        if (!isInitialized()) {
+            m_profileAdapter->setPermission(origin, permissionType, state);
+        } else {
+            m_profileAdapter->setPermission(origin, permissionType, state, m_webContents.get()->GetPrimaryMainFrame());
+        }
+
         return;
     }
 
@@ -1484,11 +1489,7 @@ void WebContentsAdapter::setPermission(const QUrl &origin, QWebEnginePermission:
 
 QWebEnginePermission::State WebContentsAdapter::getPermissionState(const QUrl &origin, QWebEnginePermission::PermissionType permissionType)
 {
-    // For now, we just return Ask for transient (a.k.a non-persistent) PermissionTypes
-    if (!QWebEnginePermission::isPersistent(permissionType))
-        return QWebEnginePermission::State::Ask;
-
-    return m_profileAdapter->getPermissionState(origin, permissionType);
+    return m_profileAdapter->getPermissionState(origin, permissionType, m_webContents.get()->GetPrimaryMainFrame());
 }
 
 void WebContentsAdapter::grantMediaAccessPermission(const QUrl &origin, WebContentsAdapterClient::MediaRequestFlags flags)
@@ -1496,9 +1497,15 @@ void WebContentsAdapter::grantMediaAccessPermission(const QUrl &origin, WebConte
     CHECK_INITIALIZED();
     // Let the permission manager remember the reply.
     if (flags & WebContentsAdapterClient::MediaAudioCapture)
-        m_profileAdapter->setPermission(origin, QWebEnginePermission::PermissionType::MediaAudioCapture, QWebEnginePermission::State::Granted);
+        m_profileAdapter->setPermission(origin,
+            QWebEnginePermission::PermissionType::MediaAudioCapture,
+            QWebEnginePermission::State::Granted,
+            m_webContents.get()->GetPrimaryMainFrame());
     if (flags & WebContentsAdapterClient::MediaVideoCapture)
-        m_profileAdapter->setPermission(origin, QWebEnginePermission::PermissionType::MediaVideoCapture, QWebEnginePermission::State::Granted);
+        m_profileAdapter->setPermission(origin,
+            QWebEnginePermission::PermissionType::MediaVideoCapture,
+            QWebEnginePermission::State::Granted,
+            m_webContents.get()->GetPrimaryMainFrame());
     MediaCaptureDevicesDispatcher::GetInstance()->handleMediaAccessPermissionResponse(m_webContents.get(), origin, flags);
 }
 
