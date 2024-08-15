@@ -3861,7 +3861,6 @@ public:
 
     QString getPermission() { return evaluateJavaScriptSync(this, "getPermission()").toString(); }
     void requestPermission() { runJavaScript("requestPermission()"); }
-    void resetPermission() { runJavaScript("resetPermission()"); }
     void sendNotification(const QString &title, const QString &body) {
         runJavaScript("sendNotification('" + title + "', '" + body + "')");
     }
@@ -3942,7 +3941,6 @@ void tst_QWebEnginePage::sendNotification()
     NotificationPage page(QWebEnginePermission::State::Granted);
     QVERIFY(page.spyLoad.waitForResult());
 
-    page.resetPermission();
     page.requestPermission();
     auto origin = page.spyRequest.waitForResult();
     QVERIFY(page.spyRequest.wasCalled());

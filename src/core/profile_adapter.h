@@ -37,6 +37,10 @@ namespace base {
 class CancelableTaskTracker;
 }
 
+namespace content {
+class RenderFrameHost;
+}
+
 namespace QtWebEngineCore {
 
 class UserNotificationController;
@@ -172,8 +176,10 @@ public:
     const QList<QByteArray> customUrlSchemes() const;
     UserResourceControllerHost *userResourceController();
 
-    void setPermission(const QUrl &origin, QWebEnginePermission::PermissionType permissionType, QWebEnginePermission::State state);
-    QWebEnginePermission::State getPermissionState(const QUrl &origin, QWebEnginePermission::PermissionType permissionType);
+    void setPermission(const QUrl &origin, QWebEnginePermission::PermissionType permissionType,
+        QWebEnginePermission::State state, content::RenderFrameHost *rfh = nullptr);
+    QWebEnginePermission::State getPermissionState(const QUrl &origin, QWebEnginePermission::PermissionType permissionType,
+        content::RenderFrameHost *rfh = nullptr);
     QList<QWebEnginePermission> listPermissions(const QUrl &origin = QUrl(),
         QWebEnginePermission::PermissionType permissionType = QWebEnginePermission::PermissionType::Unsupported);
 
