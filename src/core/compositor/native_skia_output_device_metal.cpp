@@ -28,7 +28,8 @@ NativeSkiaOutputDeviceMetal::NativeSkiaOutputDeviceMetal(
 NativeSkiaOutputDeviceMetal::~NativeSkiaOutputDeviceMetal() { }
 
 QSGTexture *makeMetalTexture(QQuickWindow *win, IOSurfaceRef ioSurface, uint ioSurfacePlane,
-                             const QSize &size, QQuickWindow::CreateTextureOptions texOpts);
+                             const QSize &size, QQuickWindow::CreateTextureOptions texOpts,
+                             void** nativeTexturePointer);
 void releaseMetalTexture(void *texture);
 
 QSGTexture *NativeSkiaOutputDeviceMetal::texture(QQuickWindow *win, uint32_t textureOptions)
@@ -55,10 +56,7 @@ QSGTexture *NativeSkiaOutputDeviceMetal::texture(QQuickWindow *win, uint32_t tex
     }
 
     QQuickWindow::CreateTextureOptions texOpts(textureOptions);
-    QSGTexture *qsgTexture = makeMetalTexture(win, ioSurface.get(), /* plane */ 0, size(), texOpts);
-
-    auto ni = qsgTexture->nativeInterface<QNativeInterface::QSGMetalTexture>();
-    m_currentMetalTexture = ni->nativeTexture();
+    QSGTexture *qsgTexture = makeMetalTexture(win, ioSurface.get(), /* plane */ 0, size(), texOpts, &m_currentMetalTexture);
 
     return qsgTexture;
 }

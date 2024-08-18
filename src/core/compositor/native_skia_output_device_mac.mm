@@ -27,7 +27,7 @@
 namespace QtWebEngineCore {
 
 QSGTexture *makeMetalTexture(QQuickWindow *win, IOSurfaceRef ioSurface, uint ioSurfacePlane,
-                             const QSize &size, QQuickWindow::CreateTextureOptions texOpts)
+                             const QSize &size, QQuickWindow::CreateTextureOptions texOpts, void** nativeTexturePointer)
 {
     auto desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
                                                                    width:size.width()
@@ -39,6 +39,10 @@ QSGTexture *makeMetalTexture(QQuickWindow *win, IOSurfaceRef ioSurface, uint ioS
     id<MTLTexture> texture = [device newTextureWithDescriptor:desc
                                                     iosurface:ioSurface
                                                         plane:ioSurfacePlane];
+
+    // Work-around for QNativeInterface::QSGMetalTexture not being entirely functional:
+    // return the pointer that we would like to use as a reference.
+    *nativeTexturePointer = static_cast<void*>(texture);
     return QNativeInterface::QSGMetalTexture::fromNative(texture, win, size, texOpts);
 }
 
