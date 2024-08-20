@@ -3,7 +3,7 @@
 
 /*!
     \qmlvaluetype webEngineFrame
-    \instantiates QWebEngineFrame
+    \nativetype QWebEngineFrame
     \brief webEngineFrame provides information about and control over a page frame.
     \since 6.8
     \ingroup qmlvaluetypes

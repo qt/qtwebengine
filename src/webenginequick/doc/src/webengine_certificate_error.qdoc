@@ -3,7 +3,7 @@
 
 /*!
     \qmltype WebEngineCertificateError
-    \instantiates QWebEngineCertificateError
+    \nativetype QWebEngineCertificateError
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
 

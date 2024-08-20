@@ -41,7 +41,7 @@ public:
 
 /*!
     \qmltype WebEngineNavigationRequest
-    \instantiates QWebEngineNavigationRequest
+    \nativetype QWebEngineNavigationRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.0
 

@@ -10,7 +10,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmltype PdfLinkModel
-//!    \instantiates QQuickPdfLinkModel
+//!    \nativetype QQuickPdfLinkModel
     \inqmlmodule QtQuick.Pdf
     \ingroup pdf
     \brief A representation of links within a PDF document.

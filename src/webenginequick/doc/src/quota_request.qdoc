@@ -3,7 +3,7 @@
 
 /*!
     \qmltype QuotaRequest
-    \instantiates QWebEngineQuotaRequest
+    \nativetype QWebEngineQuotaRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.7
     \deprecated [6.5] Requesting host quota is no longer supported by Chromium.

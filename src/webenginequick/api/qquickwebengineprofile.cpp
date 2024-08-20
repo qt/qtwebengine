@@ -340,7 +340,7 @@ QQuickWebEngineScriptCollection *QQuickWebEngineProfilePrivate::getUserScripts()
 }
 /*!
     \qmltype WebEngineProfile
-    \instantiates QQuickWebEngineProfile
+    \nativetype QQuickWebEngineProfile
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
     \brief Contains settings, scripts, and visited links common to multiple web engine views.

@@ -35,7 +35,7 @@ ASSERT_ENUMS_MATCH(FilePickerController::Save,
 
 /*!
     \qmltype AuthenticationDialogRequest
-    //! \instantiates QQuickWebEngineAuthenticationDialogRequest
+    //! \nativetype QQuickWebEngineAuthenticationDialogRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.4
 
@@ -210,7 +210,7 @@ void QQuickWebEngineAuthenticationDialogRequest::dialogReject()
 
 /*!
     \qmltype JavaScriptDialogRequest
-    //! \instantiates QQuickWebEngineJavaScriptDialogRequest
+    //! \nativetype QQuickWebEngineJavaScriptDialogRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.4
 
@@ -405,7 +405,7 @@ void QQuickWebEngineJavaScriptDialogRequest::dialogReject()
 
 /*!
     \qmltype ColorDialogRequest
-    //! \instantiates QQuickWebEngineColorDialogRequest
+    //! \nativetype QQuickWebEngineColorDialogRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.4
 
@@ -524,7 +524,7 @@ void QQuickWebEngineColorDialogRequest::dialogReject()
 
 /*!
     \qmltype FileDialogRequest
-    //! \instantiates QQuickWebEngineFileDialogRequest
+    //! \nativetype QQuickWebEngineFileDialogRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.4
 
@@ -680,7 +680,7 @@ void QQuickWebEngineFileDialogRequest::dialogReject()
 
 /*!
     \qmltype TooltipRequest
-    //! \instantiates QQuickWebEngineTooltipRequest
+    //! \nativetype QQuickWebEngineTooltipRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.10
 

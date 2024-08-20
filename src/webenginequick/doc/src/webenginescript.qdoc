@@ -3,7 +3,7 @@
 
 /*!
     \qmltype WebEngineScript
-    \instantiates QWebEngineScript
+    \nativetype QWebEngineScript
     \brief Enables the programmatic injection of scripts in the JavaScript engine.
     \since QtWebEngine 1.1
     \ingroup qmlvaluetypes

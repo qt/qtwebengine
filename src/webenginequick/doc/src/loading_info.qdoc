@@ -3,7 +3,7 @@
 
 /*!
     \qmltype WebEngineLoadingInfo
-    \instantiates QWebEngineLoadingInfo
+    \nativetype QWebEngineLoadingInfo
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.0
 

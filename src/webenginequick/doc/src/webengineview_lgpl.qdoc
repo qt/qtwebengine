@@ -8,7 +8,7 @@
 
 /*!
     \qmltype WebEngineView
-    \instantiates QQuickWebEngineView
+    \nativetype QQuickWebEngineView
     \inherits Item
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.0
@@ -1460,7 +1460,7 @@
 
 /*!
     \qmltype FindTextResult
-    \instantiates QWebEngineFindTextResult
+    \nativetype QWebEngineFindTextResult
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.10
 
