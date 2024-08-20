@@ -25,12 +25,13 @@
 #include "find_text_helper.h"
 #include "javascript_dialog_controller.h"
 #include "render_widget_host_view_qt_delegate_item.h"
-#include "render_widget_host_view_qt_delegate_quickwindow.h"
+#include "render_widget_host_view_qt_delegate_quickwindow_p.h"
 #include "touch_selection_menu_controller.h"
-#include "ui_delegates_manager.h"
+#include "ui_delegates_manager_p.h"
 #include "web_contents_adapter.h"
 
 #include <QtWebEngineCore/qwebenginecertificateerror.h>
+#include <QtWebEngineCore/qwebenginedesktopmediarequest.h>
 #include <QtWebEngineCore/qwebenginefilesystemaccessrequest.h>
 #include <QtWebEngineCore/qwebenginefindtextresult.h>
 #include <QtWebEngineCore/qwebenginefullscreenrequest.h>
@@ -39,7 +40,9 @@
 #include <QtWebEngineCore/qwebenginepage.h>
 #include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
 #include <QtWebEngineCore/qwebenginescriptcollection.h>
+#include <QtWebEngineCore/qwebenginewebauthuxrequest.h>
 #include <QtWebEngineCore/private/qwebenginecontextmenurequest_p.h>
+#include <QtWebEngineCore/private/qwebenginedesktopmediarequest_p.h>
 #include <QtWebEngineCore/private/qwebenginehistory_p.h>
 #include <QtWebEngineCore/private/qwebenginenewwindowrequest_p.h>
 #include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
@@ -60,7 +63,7 @@
 #include <QtQml/qqmlproperty.h>
 
 #if QT_CONFIG(accessibility)
-#include "qquickwebengine_accessible.h"
+#include "qquickwebengine_accessible_p.h"
 
 #include <QtGui/qaccessible.h>
 #endif
@@ -329,8 +332,7 @@ QQuickWebEngineViewPrivate::~QQuickWebEngineViewPrivate()
 {
     Q_ASSERT(m_profileInitialized);
     m_profile->d_ptr->removeWebContentsAdapterClient(this);
-    if (m_faviconProvider)
-        m_faviconProvider->detach(q_ptr);
+    FaviconProviderHelper::instance()->detach(q_ptr);
     bindViewAndDelegateItem(this, nullptr);
 }
 
@@ -707,6 +709,15 @@ void QQuickWebEngineViewPrivate::windowCloseRejected()
         QMetaObject::invokeMethod(q, "windowCloseRejected");
 }
 
+void QQuickWebEngineViewPrivate::desktopMediaRequested(
+        QtWebEngineCore::DesktopMediaController *controller)
+{
+    Q_Q(QQuickWebEngineView);
+    QTimer::singleShot(0, q, [q, controller]() {
+        Q_EMIT q->desktopMediaRequested(QWebEngineDesktopMediaRequest(controller));
+    });
+}
+
 void QQuickWebEngineViewPrivate::requestFullScreenMode(const QUrl &origin, bool fullscreen)
 {
     Q_Q(QQuickWebEngineView);
@@ -919,6 +930,8 @@ QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
 
 QQuickWebEngineView::~QQuickWebEngineView()
 {
+    if (hasFocus())
+        setFocus(false);
 }
 
 void QQuickWebEngineViewPrivate::ensureContentsAdapter()
@@ -933,16 +946,7 @@ void QQuickWebEngineViewPrivate::ensureContentsAdapter()
             adapter->loadDefault();
     }
 
-    if (!m_faviconProvider) {
-        QQmlEngine *engine = qmlEngine(q_ptr);
-        // TODO: this is a workaround for QTBUG-65044
-        if (!engine)
-            return;
-        m_faviconProvider = static_cast<QQuickWebEngineFaviconProvider *>(
-                engine->imageProvider(QQuickWebEngineFaviconProvider::identifier()));
-        m_faviconProvider->attach(q_ptr);
-        Q_ASSERT(m_faviconProvider);
-    }
+    FaviconProviderHelper::instance()->attach(q_ptr);
 }
 
 void QQuickWebEngineViewPrivate::initializationFinished()
@@ -1433,6 +1437,12 @@ void QQuickWebEngineViewPrivate::showTouchSelectionMenu(QtWebEngineCore::TouchSe
 void QQuickWebEngineViewPrivate::hideTouchSelectionMenu()
 {
     ui()->hideTouchSelectionMenu();
+}
+
+void QQuickWebEngineViewPrivate::showWebAuthDialog(QWebEngineWebAuthUxRequest *request)
+{
+    Q_Q(QQuickWebEngineView);
+    Q_EMIT q->webAuthUxRequested(request);
 }
 
 bool QQuickWebEngineView::isLoading() const

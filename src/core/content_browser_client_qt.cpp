@@ -83,6 +83,7 @@
 #include "web_engine_context.h"
 #include "web_engine_library_info.h"
 #include "web_engine_settings.h"
+#include "authenticator_request_client_delegate_qt.h"
 #include "api/qwebenginecookiestore.h"
 #include "api/qwebenginecookiestore_p.h"
 #include "api/qwebengineurlrequestinfo_p.h"
@@ -145,7 +146,9 @@
 #if BUILDFLAG(ENABLE_PDF)
 #include "components/pdf/browser/pdf_navigation_throttle.h"
 #include "components/pdf/browser/pdf_url_loader_request_interceptor.h"
-#include "components/pdf/browser/pdf_web_contents_helper.h"
+#include "components/pdf/browser/pdf_document_helper.h"
+
+#include "printing/pdf_document_helper_client_qt.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
@@ -285,13 +288,15 @@ void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webCont
 }
 
 
-base::OnceClosure ContentBrowserClientQt::SelectClientCertificate(content::WebContents *webContents,
+base::OnceClosure ContentBrowserClientQt::SelectClientCertificate(content::BrowserContext *browser_context,
+                                                                  content::WebContents *webContents,
                                                                   net::SSLCertRequestInfo *certRequestInfo,
                                                                   net::ClientCertIdentityList clientCerts,
                                                                   std::unique_ptr<content::ClientCertificateDelegate> delegate)
 {
+    Q_UNUSED(browser_context);
     if (!clientCerts.empty()) {
-        WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
+        WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
 
         QSharedPointer<ClientCertSelectController> certSelectController(
                 new ClientCertSelectController(certRequestInfo, std::move(clientCerts), std::move(delegate)));
@@ -508,7 +513,7 @@ void ContentBrowserClientQt::RegisterAssociatedInterfaceBindersForRenderFrameHos
                 base::BindRepeating(
                     [](content::RenderFrameHost *render_frame_host,
                        mojo::PendingAssociatedReceiver<pdf::mojom::PdfService> receiver) {
-                        pdf::PDFWebContentsHelper::BindPdfService(std::move(receiver), render_frame_host);
+                        pdf::PDFDocumentHelper::BindPdfService(std::move(receiver), render_frame_host, std::make_unique<PDFDocumentHelperClientQt>());
                     }, &rfh));
 #endif  // BUILDFLAG(ENABLE_PDF)
     ContentBrowserClient::RegisterAssociatedInterfaceBindersForRenderFrameHost(rfh, associated_registry);
@@ -1191,7 +1196,8 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
         mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient> *header_client,
         bool *bypass_redirect_checks,
         bool *disable_secure_dns,
-        network::mojom::URLLoaderFactoryOverridePtr *factory_override)
+        network::mojom::URLLoaderFactoryOverridePtr *factory_override,
+        scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner)
 {
     Q_UNUSED(render_process_id);
     Q_UNUSED(type);
@@ -1207,6 +1213,7 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
     mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_url_loader_factory;
     *factory_receiver = pending_url_loader_factory.InitWithNewPipeAndPassReceiver();
     // Will manage its own lifetime
+    // FIXME: use navigation_response_task_runner?
     new ProxyingURLLoaderFactoryQt(adapter,
                                    frame ? frame->GetFrameTreeNodeId() : content::RenderFrameHost::kNoFrameTreeNodeId,
                                    std::move(proxied_receiver), std::move(pending_url_loader_factory));
@@ -1215,7 +1222,8 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
 
 std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
 ContentBrowserClientQt::WillCreateURLLoaderRequestInterceptors(content::NavigationUIData* navigation_ui_data,
-                                       int frame_tree_node_id)
+                                       int frame_tree_node_id, int64_t navigation_id,
+                                       scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner)
 {
     std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>> interceptors;
 #if BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1304,30 +1312,19 @@ void ContentBrowserClientQt::SiteInstanceGotProcess(content::SiteInstance *site_
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     content::BrowserContext *context = site_instance->GetBrowserContext();
     extensions::ExtensionRegistry *registry = extensions::ExtensionRegistry::Get(context);
-    const extensions::Extension *extension = registry->enabled_extensions().GetExtensionOrAppByURL(site_instance->GetSiteURL());
+    if (!registry)
+        return;
+    if (site_instance->IsGuest())
+        return;
+    auto site_url = site_instance->GetSiteURL();
+    if (!site_url.SchemeIs(extensions::kExtensionScheme))
+        return;
+    const extensions::Extension *extension = registry->enabled_extensions().GetByID(site_url.host());
     if (!extension)
         return;
 
     extensions::ProcessMap *processMap = extensions::ProcessMap::Get(context);
-    processMap->Insert(extension->id(), site_instance->GetProcess()->GetID(), site_instance->GetId());
-#endif
-}
-
-void ContentBrowserClientQt::SiteInstanceDeleting(content::SiteInstance *site_instance)
-{
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    // Don't do anything if we're shutting down.
-    if (content::BrowserMainRunner::ExitedMainMessageLoop() || !site_instance->HasProcess())
-       return;
-
-    content::BrowserContext *context = site_instance->GetBrowserContext();
-    extensions::ExtensionRegistry *registry = extensions::ExtensionRegistry::Get(context);
-    const extensions::Extension *extension = registry->enabled_extensions().GetExtensionOrAppByURL(site_instance->GetSiteURL());
-    if (!extension)
-        return;
-
-    extensions::ProcessMap *processMap = extensions::ProcessMap::Get(context);
-    processMap->Remove(extension->id(), site_instance->GetProcess()->GetID(), site_instance->GetId());
+    processMap->Insert(extension->id(), site_instance->GetProcess()->GetID());
 #endif
 }
 
@@ -1348,6 +1345,38 @@ ContentBrowserClientQt::AllowWebBluetooth(content::BrowserContext *browser_conte
 {
     DCHECK(browser_context);
     return content::ContentBrowserClient::AllowWebBluetoothResult::BLOCK_GLOBALLY_DISABLED;
+}
+
+content::WebAuthenticationDelegate *ContentBrowserClientQt::GetWebAuthenticationDelegate()
+{
+    static base::NoDestructor<WebAuthenticationDelegateQt> delegate;
+    return delegate.get();
+}
+
+#if !BUILDFLAG(IS_ANDROID)
+std::unique_ptr<content::AuthenticatorRequestClientDelegate>
+ContentBrowserClientQt::GetWebAuthenticationRequestDelegate(
+        content::RenderFrameHost *render_frame_host)
+{
+    return std::make_unique<AuthenticatorRequestClientDelegateQt>(render_frame_host);
+}
+#endif
+
+void ContentBrowserClientQt::GetMediaDeviceIDSalt(content::RenderFrameHost *rfh,
+                                                  const net::SiteForCookies & /*site_for_cookies*/,
+                                                  const blink::StorageKey & /*storage_key*/,
+                                                  base::OnceCallback<void(bool, const std::string&)> callback)
+{
+#if BUILDFLAG(ENABLE_WEBRTC)
+    content::BrowserContext *browser_context = rfh->GetBrowserContext();
+    if (!browser_context->IsOffTheRecord()) {
+        ProfileQt *profile = static_cast<ProfileQt *>(browser_context);
+        std::string mediaId = profile->GetMediaDeviceIDSalt();
+        std::move(callback).Run(true, mediaId);
+        return;
+    }
+#endif
+    std::move(callback).Run(false, "");
 }
 
 } // namespace QtWebEngineCore

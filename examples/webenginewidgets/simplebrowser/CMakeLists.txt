@@ -1,5 +1,5 @@
 # Copyright (C) 2022 The Qt Company Ltd.
-# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.16)
 project(simplebrowser LANGUAGES CXX)
@@ -27,6 +27,7 @@ qt_add_executable(simplebrowser
     webpage.cpp webpage.h
     webpopupwindow.cpp webpopupwindow.h
     webview.cpp webview.h
+    webauthdialog.cpp webauthdialog.h webauthdialog.ui
 )
 
 if(WIN32)
@@ -90,8 +91,14 @@ if (APPLE)
 
     if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
         # Need to sign application for location permissions to work
+        if(QT_FEATURE_debug_and_release)
+            set(exe_path "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/")
+        else()
+            unset(exe_path)
+        endif()
         add_custom_command(TARGET simplebrowser
-            POST_BUILD COMMAND codesign -s - simplebrowser.app)
+            POST_BUILD COMMAND codesign --force -s - ${exe_path}simplebrowser.app
+        )
     endif()
 endif()
 

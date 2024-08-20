@@ -16,6 +16,7 @@
 namespace base {
 class RunLoop;
 class CommandLine;
+class FieldTrialList;
 }
 
 namespace content {
@@ -84,8 +85,6 @@ public:
     static base::CommandLine *initCommandLine(bool &useEmbeddedSwitches,
                                               bool &enableGLSoftwareRendering);
 
-    static bool isGpuServiceOnUIThread();
-
 private:
     friend class base::RefCounted<WebEngineContext>;
     friend class ProfileAdapter;
@@ -93,7 +92,6 @@ private:
     ~WebEngineContext();
 
     static void registerMainThreadFactories();
-    static void destroyGpuProcess();
 
     std::unique_ptr<base::RunLoop> m_runLoop;
     std::unique_ptr<ContentMainDelegateQt> m_mainDelegate;
@@ -105,6 +103,7 @@ private:
     std::unique_ptr<ProfileAdapter> m_defaultProfileAdapter;
     std::unique_ptr<DevToolsServerQt> m_devtoolsServer;
     QList<ProfileAdapter*> m_profileAdapters;
+    std::unique_ptr<base::FieldTrialList> m_fieldTrialList;
 #if QT_CONFIG(accessibility)
     std::unique_ptr<AccessibilityActivationObserver> m_accessibilityActivationObserver;
 #endif

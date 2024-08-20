@@ -4,28 +4,20 @@
 #include "profile_io_data_qt.h"
 
 #include "content/browser/storage_partition_impl.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
-#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
-#include "content/public/common/content_features.h"
-#include "net/ssl/ssl_config_service_defaults.h"
-#include "services/cert_verifier/cert_verifier_creation.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
-#include "services/network/public/mojom/cert_verifier_service.mojom.h"
 
 #include "net/client_cert_qt.h"
 #include "net/client_cert_store_data.h"
 #include "net/cookie_monster_delegate_qt.h"
 #include "net/system_network_context_manager.h"
+#include "profile_adapter_client.h"
 #include "profile_qt.h"
 #include "type_conversion.h"
-
-#include <QDebug>
-#include <mutex>
 
 namespace QtWebEngineCore {
 
@@ -65,11 +57,9 @@ void ProfileIODataQt::shutdownOnUIThread()
         m_cookieDelegate->unsetMojoCookieManager();
     m_proxyConfigMonitor.reset();
 
-    if (m_clearHttpCacheInProgress) {
-        m_clearHttpCacheInProgress = false;
-        content::BrowsingDataRemover *remover =
-                m_profileAdapter->profile()->GetBrowsingDataRemover();
-        remover->RemoveObserver(&m_removerObserver);
+    if (m_clearHttpCacheState == Removing) {
+        m_clearHttpCacheState = Completed;
+        removeBrowsingDataRemoverObserver();
     }
 
     bool posted = content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE, this);
@@ -110,8 +100,8 @@ void ProfileIODataQt::initializeOnUIThread()
 void ProfileIODataQt::clearHttpCache()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    if (!m_clearHttpCacheInProgress) {
-        m_clearHttpCacheInProgress = true;
+    if (m_clearHttpCacheState == Completed) {
+        m_clearHttpCacheState = Removing;
         content::BrowsingDataRemover *remover =
                 m_profileAdapter->profile()->GetBrowsingDataRemover();
         remover->AddObserver(&m_removerObserver);
@@ -137,9 +127,9 @@ BrowsingDataRemoverObserverQt::BrowsingDataRemoverObserverQt(ProfileIODataQt *pr
 
 void BrowsingDataRemoverObserverQt::OnBrowsingDataRemoverDone(uint64_t)
 {
-    Q_ASSERT(m_profileIOData->m_clearHttpCacheInProgress);
+    Q_ASSERT(m_profileIOData->m_clearHttpCacheState == ProfileIODataQt::Removing);
     m_profileIOData->removeBrowsingDataRemoverObserver();
-    m_profileIOData->m_clearHttpCacheInProgress = false;
+    m_profileIOData->m_clearHttpCacheState = ProfileIODataQt::Resetting;
     m_profileIOData->resetNetworkContext();
 }
 
@@ -160,13 +150,44 @@ void ProfileIODataQt::setFullConfiguration()
 void ProfileIODataQt::resetNetworkContext()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    Q_ASSERT(m_clearHttpCacheState != Removing);
     setFullConfiguration();
     m_profile->ForEachLoadedStoragePartition(
-            base::BindRepeating([](content::StoragePartition *storage) {
+            base::BindRepeating([](ProfileIODataQt *profileData,
+                                   content::StoragePartition *storage) {
+                storage->SetNetworkContextCreatedObserver(profileData);
+
                 auto storage_impl = static_cast<content::StoragePartitionImpl *>(storage);
                 storage_impl->ResetURLLoaderFactories();
                 storage_impl->ResetNetworkContext();
-            }));
+            }, this));
+}
+
+void ProfileIODataQt::OnNetworkContextCreated(content::StoragePartition *storage)
+{
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+    storage->SetNetworkContextCreatedObserver(nullptr);
+
+    if (m_clearHttpCacheState != Resetting)
+        return;
+
+    bool pendingReset = false;
+    m_profile->ForEachLoadedStoragePartition(
+            base::BindRepeating([](bool *pendingReset,
+                                   ProfileIODataQt *profileData,
+                                   content::StoragePartition *storage) {
+                if (storage->GetNetworkContextCreatedObserver() == profileData)
+                    *pendingReset = true;
+            }, &pendingReset, this));
+
+    if (pendingReset)
+        return;
+
+    m_clearHttpCacheState = Completed;
+
+    for (ProfileAdapterClient *client : m_profileAdapter->clients())
+        client->clearHttpCacheCompleted();
 }
 
 bool ProfileIODataQt::canGetCookies(const QUrl &firstPartyUrl, const QUrl &url) const
@@ -208,8 +229,6 @@ void ProfileIODataQt::ConfigureNetworkContextParams(bool in_memory,
 
     network_context_params->http_cache_enabled = m_httpCacheType != ProfileAdapter::NoCache;
     network_context_params->http_cache_max_size = m_httpCacheMaxSize;
-    if (m_httpCacheType == ProfileAdapter::DiskHttpCache && !m_httpCachePath.isEmpty() && !m_inMemoryOnly && !in_memory)
-        network_context_params->http_cache_directory = toFilePath(m_httpCachePath);
 
     network_context_params->persist_session_cookies = false;
     if (!m_inMemoryOnly && !in_memory) {
@@ -219,6 +238,8 @@ void ProfileIODataQt::ConfigureNetworkContextParams(bool in_memory,
         network_context_params->file_paths->http_server_properties_file_name = base::FilePath::FromASCII("Network Persistent State");
         network_context_params->file_paths->transport_security_persister_file_name = base::FilePath::FromASCII("TransportSecurity");
         network_context_params->file_paths->trust_token_database_name = base::FilePath::FromASCII("Trust Tokens");
+        if (m_httpCacheType == ProfileAdapter::DiskHttpCache && !m_httpCachePath.isEmpty())
+            network_context_params->file_paths->http_cache_directory = toFilePath(m_httpCachePath);
         if (m_persistentCookiesPolicy != ProfileAdapter::NoPersistentCookies) {
             network_context_params->file_paths->cookie_database_name = base::FilePath::FromASCII("Cookies");
             network_context_params->restore_old_session_cookies = m_persistentCookiesPolicy == ProfileAdapter::ForcePersistentCookies;

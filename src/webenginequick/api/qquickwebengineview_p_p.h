@@ -19,7 +19,7 @@
 #include "qquickwebengineview_p.h"
 #include "render_view_context_menu_qt.h"
 #include "touch_handle_drawable_client.h"
-#include "ui_delegates_manager.h"
+#include "ui_delegates_manager_p.h"
 #include "web_contents_adapter_client.h"
 
 #include <QtCore/qcompilerdetection.h>
@@ -37,7 +37,6 @@ class WebContentsAdapter;
 
 QT_BEGIN_NAMESPACE
 class QQmlComponent;
-class QQuickWebEngineFaviconProvider;
 class QQuickWebEngineScriptCollection;
 class QQuickWebEngineSettings;
 class QQuickWebEngineView;
@@ -91,6 +90,7 @@ public:
     void navigationRequested(int navigationType, const QUrl &url, bool &accepted, bool isMainFrame) override;
     void javascriptDialog(QSharedPointer<QtWebEngineCore::JavaScriptDialogController>) override;
     void runFileChooser(QSharedPointer<QtWebEngineCore::FilePickerController>) override;
+    void desktopMediaRequested(QtWebEngineCore::DesktopMediaController *) override;
     void showColorDialog(QSharedPointer<QtWebEngineCore::ColorChooserController>) override;
     void didRunJavaScript(quint64, const QVariant&) override;
     void didFetchDocumentMarkup(quint64, const QString&) override { }
@@ -132,6 +132,7 @@ public:
     void showAutofillPopup(QtWebEngineCore::AutofillPopupController *controller,
                            const QRect &bounds, bool autoselectFirstSuggestion) override;
     void hideAutofillPopup() override;
+    void showWebAuthDialog(QWebEngineWebAuthUxRequest *request) override;
 
     void updateAction(QQuickWebEngineView::WebAction) const;
     bool adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
@@ -176,7 +177,6 @@ private:
     bool m_profileInitialized;
     QWebEngineContextMenuRequest *m_contextMenuRequest;
     QScopedPointer<QQuickWebEngineScriptCollection> m_scriptCollection;
-    QPointer<QQuickWebEngineFaviconProvider> m_faviconProvider;
     QQmlComponent *m_touchHandleDelegate;
 };
 

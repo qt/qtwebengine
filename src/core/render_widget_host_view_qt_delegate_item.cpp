@@ -126,6 +126,8 @@ void RenderWidgetHostViewQtDelegateItem::readyToSwap()
 
 void RenderWidgetHostViewQtDelegateItem::updateCursor(const QCursor &cursor)
 {
+    if (m_widgetDelegate)
+        m_widgetDelegate->SetCursor(cursor);
     setCursor(cursor);
 }
 
@@ -327,13 +329,12 @@ void RenderWidgetHostViewQtDelegateItem::itemChange(ItemChange change, const Ite
                                                &RenderWidgetHostViewQtDelegateItem::onAfterFrameEnd,
                                                Qt::DirectConnection));
             m_windowConnections.append(connect(value.window, SIGNAL(xChanged(int)), SLOT(onWindowPosChanged())));
-            m_windowConnections.append(connect(value.window, SIGNAL(yChanged(int)), SLOT(onWindowPosChanged())));
-#if QT_CONFIG(webengine_vulkan)
+            m_windowConnections.append(
+                    connect(value.window, SIGNAL(yChanged(int)), SLOT(onWindowPosChanged())));
             m_windowConnections.append(
                     connect(value.window, &QQuickWindow::sceneGraphAboutToStop, this,
                             &RenderWidgetHostViewQtDelegateItem::releaseTextureResources,
                             Qt::DirectConnection));
-#endif
             if (!m_isPopup)
                 m_windowConnections.append(connect(value.window, SIGNAL(closing(QQuickCloseEvent *)), SLOT(onHide())));
         }
@@ -408,7 +409,7 @@ void RenderWidgetHostViewQtDelegateItem::onBeforeRendering()
 void RenderWidgetHostViewQtDelegateItem::onAfterFrameEnd()
 {
     auto comp = compositor();
-    if (!comp || comp->type() != Compositor::Type::NativeBuffer)
+    if (!comp || comp->type() != Compositor::Type::Native)
         return;
     comp->releaseTexture();
 }
@@ -427,10 +428,10 @@ void RenderWidgetHostViewQtDelegateItem::onHide()
 void RenderWidgetHostViewQtDelegateItem::releaseTextureResources()
 {
     auto comp = compositor();
-    if (!comp || (comp->type() != Compositor::Type::Vulkan && comp->type() != Compositor::Type::NativeBuffer))
+    if (!comp || comp->type() != Compositor::Type::Native)
         return;
 
-    comp->releaseResources(QQuickItem::window());
+    comp->releaseResources();
 }
 
 void RenderWidgetHostViewQtDelegateItem::adapterClientChanged(WebContentsAdapterClient *client)

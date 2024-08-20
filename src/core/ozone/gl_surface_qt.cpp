@@ -20,6 +20,7 @@
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/gl/init/gl_display_initializer.h"
 #include "ui/gl/direct_composition_support.h"
+#include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_display.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -106,7 +107,8 @@ gl::GLDisplay *InitializeGLOneOffPlatform(gl::GpuPreference gpu_preference)
             LOG(ERROR) << "GLDisplayEGL::Initialize failed.";
             return nullptr;
         }
-        InitializeDirectComposition(display);
+        if (auto d3d11_device = QueryD3D11DeviceObjectFromANGLE())
+            InitializeDirectComposition(std::move(d3d11_device));
         break;
     case kGLImplementationMockGL:
     case kGLImplementationStubGL:

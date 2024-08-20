@@ -12,6 +12,7 @@
 
     \list
         \li \l{Audio and Video Codecs}
+        \li \l{WebEngineDriver}
         \li \l{Chromium DevTools}
         \li \l{Client Certificates}
         \li \l{Custom Schemes}
@@ -75,6 +76,68 @@
     licensing issues during distribution with the codec libraries. For some
     codecs, open source implementations, such as \l{OpenH264 Project Homepage}
     {OpenH264}, are available.
+
+    \section1 WebEngineDriver
+
+    With WebEngineDriver, you can automate the testing of web sites across browsers.
+    WebEngineDriver is based on ChromeDriver and can be used the same way.
+    For more information about ChromeDriver and its use, visit
+    \l {https://chromedriver.chromium.org/}{ChromeDriver user site}.
+
+    WebEngineDriver has slight modifications compared to ChromeDriver to be able to connect to
+    \QWE based browsers. It is compatible with \QWE example browsers, such as
+    \l {WebEngine Widgets Simple Browser Example}{Simple Browser} or
+    \l{WebEngine Quick Nano Browser}{Nano Browser}.
+
+    The browser automation is scripted through a WebDriver client like the
+    \l {https://www.selenium.dev/}{Selenium WebDriver}.
+    For example, WebEngineDriver can be used with the Python lanugage bindings of
+    Selenium WebDriver:
+
+    \code
+    from selenium import webdriver
+    from selenium.webdriver.chrome.service import Service
+
+    service = Service(executable_path='QTDIR/libexec/webenginedriver')
+    options = webdriver.ChromeOptions()
+    options.binary_location = 'path/to/browser_binary'
+
+    driver = webdriver.Chrome(service=service, options=options)
+    driver.get("http://www.google.com/")
+    driver.quit()
+    \endcode
+
+    In this example,
+    \list
+    \li \c executable_path has to be set to the WebEngineDriver's binary path
+    \li \c QTDIR is the directory where Qt is installed
+    \li \c options.binary_location has to be set to the browser's binary path
+    \endlist
+
+    \note On Windows: \c executable_path='QTDIR/bin/webenginedriver.exe'
+
+    Before executing the script, the \c QTWEBENGINE_REMOTE_DEBUGGING environment variable has to
+    be set. Its value is a port number what is used by both the browser and WebEngineDriver to
+    communicate with each other.
+    \badcode
+    export QTWEBENGINE_REMOTE_DEBUGGING=12345
+    \endcode
+
+    By executing, the script opens the specified web browser and loads the Google web site.
+
+    WebEngineDriver can be also attached to an already running browser if it was started with the
+    remote debugging port set. \c options.debugger_address has to be set to the remote debugging
+    address in the script:
+
+    \code
+    options.debugger_address = 'localhost:12345'
+    \endcode
+
+    In this case, \c options.binary_location should not be set because the browser is already
+    running. The environment variable \c QTWEBENGINE_REMOTE_DEBUGGING is not used by the
+    WebEngineDriver if \c options.debugger_address is set.
+
+    \note WebEngineDriver must be built with the same version of Chromium as \QWE is using.
 
     \section1 Chromium DevTools
 

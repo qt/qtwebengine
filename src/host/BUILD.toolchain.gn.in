@@ -12,6 +12,7 @@ gcc_toolchain("@GN_TOOLCHAIN@") {
     current_cpu = "@GN_CPU@"
     v8_current_cpu = "@GN_V8_CPU@"
     is_clang = @GN_IS_CLANG@
+    is_mingw = @GN_IS_MINGW@
     use_gold = false
   }
 }

@@ -51,6 +51,7 @@
 #include <qnetworkreply.h>
 #include <qnetworkrequest.h>
 #include <qwebenginedownloadrequest.h>
+#include <qwebenginedesktopmediarequest.h>
 #include <qwebenginefilesystemaccessrequest.h>
 #include <qwebenginefindtextresult.h>
 #include <qwebenginefullscreenrequest.h>
@@ -273,6 +274,7 @@ private Q_SLOTS:
     void openLinkInNewPageWithWebWindowType_data();
     void openLinkInNewPageWithWebWindowType();
     void keepInterceptorAfterNewWindowRequested();
+    void chooseDesktopMedia();
 
 private:
     static bool isFalseJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
@@ -685,19 +687,19 @@ void tst_QWebEnginePage::acceptNavigationRequestNavigationType()
     QTRY_COMPARE(loadSpy.size(), 4);
     QTRY_COMPARE(page.navigations.size(), 4);
 
-    page.load(QUrl("qrc:///resources/reload.html"));
-    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 6, 20000);
-    QTRY_COMPARE(page.navigations.size(), 6);
-
     QList<QWebEngineNavigationRequest::NavigationType> expectedList;
     expectedList << QWebEngineNavigationRequest::TypedNavigation
                  << QWebEngineNavigationRequest::TypedNavigation
                  << QWebEngineNavigationRequest::BackForwardNavigation
-                 << QWebEngineNavigationRequest::ReloadNavigation
-                 << QWebEngineNavigationRequest::TypedNavigation
-                 << QWebEngineNavigationRequest::RedirectNavigation;
+                 << QWebEngineNavigationRequest::ReloadNavigation;
 
     // client side redirect
+    page.load(QUrl("qrc:///resources/reload.html"));
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 6, 20000);
+    QTRY_COMPARE(page.navigations.size(), 6);
+    expectedList += { QWebEngineNavigationRequest::TypedNavigation, QWebEngineNavigationRequest::RedirectNavigation };
+
+
     page.load(QUrl("qrc:///resources/redirect.html"));
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 7, 20000);
     QTRY_COMPARE(page.navigations.size(), 8);
@@ -1158,6 +1160,23 @@ void tst_QWebEnginePage::findText()
         auto result = signalSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
         QCOMPARE(result.numberOfMatches(), 0);
         QTRY_VERIFY(m_view->selectedText().isEmpty());
+    }
+
+    // Toggling case sensitivity without changing the text that's being looked up
+    // will clear previously found text
+    {
+        auto *callbackSpy = new CallbackSpy<QWebEngineFindTextResult>();
+        QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
+        m_view->findText("FOO", {}, callbackSpy->ref());
+        QVERIFY(callbackSpy->waitForResult().numberOfMatches() > 0);
+        QTRY_COMPARE(signalSpy.size(), 1);
+        delete callbackSpy;
+        callbackSpy = new CallbackSpy<QWebEngineFindTextResult>();
+        m_view->findText("FOO", QWebEnginePage::FindCaseSensitively, callbackSpy->ref());
+        QVERIFY(callbackSpy->waitForResult().numberOfMatches() == 0);
+        QVERIFY(callbackSpy->wasCalled());
+        QTRY_COMPARE(signalSpy.size(), 2);
+        delete callbackSpy;
     }
 
     // Select whole page contents again.
@@ -5375,6 +5394,51 @@ void tst_QWebEnginePage::keepInterceptorAfterNewWindowRequested()
     QTRY_COMPARE(loadFinishedSpy.size(), 1);
     QVERIFY(loadFinishedSpy.takeFirst().value(0).toBool());
     QVERIFY(interceptor.ran);
+}
+
+void tst_QWebEnginePage::chooseDesktopMedia()
+{
+#if QT_CONFIG(webengine_extensions) && QT_CONFIG(webengine_webrtc)
+    HttpServer server;
+    server.setHostDomain("localhost");
+    connect(&server, &HttpServer::newRequest, &server, [&] (HttpReqRep *r) {
+        if (r->requestMethod() == "GET")
+                r->setResponseBody("<html></html>");
+    });
+    QVERIFY(server.start());
+
+    QWebEnginePage page;
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+    page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
+
+    bool desktopMediaRequested = false;
+    bool permissionRequested = false;
+
+    connect(&page, &QWebEnginePage::desktopMediaRequested,
+            [&](const QWebEngineDesktopMediaRequest &) {
+                desktopMediaRequested = true;
+            });
+
+    connect(&page, &QWebEnginePage::featurePermissionRequested,
+            [&](const QUrl &securityOrigin, QWebEnginePage::Feature feature) {
+                permissionRequested = true;
+                // Handle permission to 'complete' the media request
+                page.setFeaturePermission(securityOrigin, feature,
+                                          QWebEnginePage::PermissionGrantedByUser);
+            });
+
+    page.load(QUrl(server.url()));
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 20000);
+
+    const QString extensionId("nkeimhogjdpnpccoofpliimaahmaaome");
+    page.runJavaScript(QString("(() => {"
+                               "  let port = chrome.runtime.connect(\"%1\", {name: \"chooseDesktopMedia\"});"
+                               "  port.postMessage({method: \"chooseDesktopMedia\"});"
+                               "})()").arg(extensionId));
+
+    QTRY_VERIFY(desktopMediaRequested);
+    QTRY_VERIFY(permissionRequested);
+#endif // QT_CONFIG(webengine_extensions) && QT_CONFIG(webengine_webrtc)
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};

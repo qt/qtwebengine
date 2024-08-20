@@ -19,6 +19,8 @@
 
 #include "render_view_context_menu_qt.h"
 
+#include <QtCore/qpointer.h>
+
 namespace QtWebEngineCore {
 class AutofillPopupController;
 class QWebEngineContextMenuRequest;

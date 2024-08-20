@@ -1,5 +1,5 @@
 # Copyright (C) 2023 The Qt Company Ltd.
-# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.16)
 project(maps LANGUAGES CXX)
@@ -38,8 +38,14 @@ if (APPLE)
 
     if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
         # Need to sign application for location permissions to work
+        if(QT_FEATURE_debug_and_release)
+            set(exe_path "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/")
+        else()
+            unset(exe_path)
+        endif()
         add_custom_command(TARGET maps
-            POST_BUILD COMMAND codesign -s - maps.app)
+            POST_BUILD COMMAND codesign --force -s - ${exe_path}maps.app
+        )
     endif()
 endif()
 

@@ -51,6 +51,9 @@ public:
     ui::TouchSelectionController* GetTouchSelectionController() override;
     void AddObserver(Observer* observer) override;
     void RemoveObserver(Observer* observer) override;
+    void OnSwipeToMoveCursorBegin() override {}
+    void OnSwipeToMoveCursorEnd() override {}
+    void OnClientHitTestRegionUpdated(ui::TouchSelectionControllerClient *) override {}
 
     // ui::TouchSelectionControllerClient overrides
     bool SupportsAnimation() const override;

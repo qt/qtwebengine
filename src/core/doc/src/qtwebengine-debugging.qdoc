@@ -90,6 +90,14 @@
             sandboxing of the network service though.
     \endlist
 
+    Any WebEngine command line options should be specified after the
+    \c {--webEngineArgs} option, which is used to separate the user's application
+    specific options from the WebEngine's ones.
+
+    \badcode
+    --webEngineArgs [WebEngine specific options]
+    \endcode
+
     Alternatively, the environment variable QTWEBENGINE_CHROMIUM_FLAGS can be
     set. For example, the following value could be set to disable logging while
     debugging an application called \e mybrowser:

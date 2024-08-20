@@ -32,7 +32,9 @@ void PrintHandler::print()
 void PrintHandler::printDocument(QPrinter *printer)
 {
     m_view->print(printer);
-    m_waitForResult.exec();
+    // User input in the print preview dialog while we're waiting on a print task
+    // can mess up the internal state and cause a crash.
+    m_waitForResult.exec(QEventLoop::ExcludeUserInputEvents);
 }
 
 void PrintHandler::printFinished(bool success)

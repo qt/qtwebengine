@@ -137,9 +137,6 @@ private:
 
     GURL m_bypassCachePageURL;
 
-    // nullopt until the actual list is reported via DidUpdateFaviconURL().
-    absl::optional<std::vector<blink::mojom::FaviconURLPtr>> m_faviconUrls;
-
     int m_completedHandlersCount = 0;
     FaviconStatusQt m_latestFavicon;
 

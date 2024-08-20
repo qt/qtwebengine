@@ -14,6 +14,7 @@ qt_internal_add_module(WebEngineCore
         qwebengineclientcertificatestore.cpp qwebengineclientcertificatestore.h
         qwebenginecontextmenurequest.cpp qwebenginecontextmenurequest.h qwebenginecontextmenurequest_p.h
         qwebenginecookiestore.cpp qwebenginecookiestore.h qwebenginecookiestore_p.h
+        qwebenginedesktopmediarequest.cpp qwebenginedesktopmediarequest.h qwebenginedesktopmediarequest_p.h
         qwebenginedownloadrequest.cpp qwebenginedownloadrequest.h qwebenginedownloadrequest_p.h
         qwebenginefilesystemaccessrequest.cpp qwebenginefilesystemaccessrequest.h
         qwebenginefindtextresult.cpp qwebenginefindtextresult.h
@@ -38,6 +39,7 @@ qt_internal_add_module(WebEngineCore
         qwebengineurlscheme.cpp qwebengineurlscheme.h
         qwebengineurlschemehandler.cpp qwebengineurlschemehandler.h
         qwebengineglobalsettings.cpp qwebengineglobalsettings.h qwebengineglobalsettings_p.h
+        qwebenginewebauthuxrequest.cpp qwebenginewebauthuxrequest.h qwebenginewebauthuxrequest_p.h
     DEFINES
         BUILDING_CHROMIUM
     INCLUDE_DIRECTORIES
@@ -60,6 +62,7 @@ qt_internal_add_module(WebEngineCore
 )
 
 set_target_properties(WebEngineCore PROPERTIES QTWEBENGINEPROCESS_NAME ${qtWebEngineProcessName})
+set_target_properties(WebEngineCore PROPERTIES CXX_STANDARD 20)
 
 # Chromium included headers are not clean
 qt_skip_warnings_are_errors(WebEngineCore)

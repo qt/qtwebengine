@@ -23,13 +23,6 @@ public:
     bool checkPermission(const QUrl &origin, ProfileAdapter::PermissionType type);
 
     // content::PermissionManager implementation:
-    void RequestPermission(
-        blink::PermissionType permission,
-        content::RenderFrameHost* render_frame_host,
-        const GURL& requesting_origin,
-        bool user_gesture,
-        base::OnceCallback<void(blink::mojom::PermissionStatus)> callback) override;
-
     blink::mojom::PermissionStatus GetPermissionStatus(
         blink::PermissionType permission,
         const GURL& requesting_origin,
@@ -39,7 +32,9 @@ public:
 
     blink::mojom::PermissionStatus GetPermissionStatusForWorker(blink::PermissionType, content::RenderProcessHost *, const GURL &) override;
 
-    content::PermissionResult GetPermissionResultForOriginWithoutContext(blink::PermissionType, const url::Origin &) override;
+    blink::mojom::PermissionStatus GetPermissionStatusForEmbeddedRequester(blink::PermissionType, content::RenderFrameHost*, const url::Origin&) override;
+
+    content::PermissionResult GetPermissionResultForOriginWithoutContext(blink::PermissionType, const url::Origin&, const url::Origin&) override;
 
     void ResetPermission(
         blink::PermissionType permission,
@@ -47,19 +42,14 @@ public:
         const GURL& embedding_origin) override;
 
     void RequestPermissions(
-        const std::vector<blink::PermissionType>& permission,
-        content::RenderFrameHost* render_frame_host,
-        const GURL& requesting_origin,
-        bool user_gesture,
-        base::OnceCallback<void(
-            const std::vector<blink::mojom::PermissionStatus>&)> callback) override;
+            content::RenderFrameHost *render_frame_host,
+            const content::PermissionRequestDescription &request_description,
+            base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus>&)> callback) override;
 
     void RequestPermissionsFromCurrentDocument(
-        const std::vector<blink::PermissionType>& permissions,
-        content::RenderFrameHost* render_frame_host,
-        bool user_gesture,
-        base::OnceCallback<void(
-            const std::vector<blink::mojom::PermissionStatus>&)> callback) override;
+            content::RenderFrameHost *render_frame_host,
+            const content::PermissionRequestDescription &request_description,
+            base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus> &)> callback) override;
 
     content::PermissionControllerDelegate::SubscriptionId SubscribePermissionStatusChange(
         blink::PermissionType permission,

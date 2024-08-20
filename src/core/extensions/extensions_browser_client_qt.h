@@ -29,15 +29,15 @@ public:
     bool IsShuttingDown() override;
     bool AreExtensionsDisabled(const base::CommandLine &command_line,
                                content::BrowserContext *context) override;
-    bool IsValidContext(content::BrowserContext *context) override;
+    bool IsValidContext(void*) override;
     bool IsSameContext(content::BrowserContext *first,
                        content::BrowserContext *second) override;
     bool HasOffTheRecordContext(content::BrowserContext *context) override;
     content::BrowserContext *GetOffTheRecordContext(content::BrowserContext *context) override;
     content::BrowserContext *GetOriginalContext(content::BrowserContext *context) override;
-    content::BrowserContext *GetRedirectedContextInIncognito(content::BrowserContext *context, bool, bool) override;
-    content::BrowserContext *GetContextForRegularAndIncognito(content::BrowserContext *context, bool, bool) override;
-    content::BrowserContext *GetRegularProfile(content::BrowserContext *context, bool, bool) override;
+    content::BrowserContext *GetContextRedirectedToOriginal(content::BrowserContext*, bool) override;
+    content::BrowserContext *GetContextOwnInstance(content::BrowserContext*, bool) override;
+    content::BrowserContext *GetContextForOriginalOnly(content::BrowserContext*, bool) override;
     bool IsGuestSession(content::BrowserContext *context) const override;
     bool IsExtensionIncognitoEnabled(const std::string &extension_id, content::BrowserContext *context) const override;
     bool CanExtensionCrossIncognito(const Extension *extension, content::BrowserContext *context) const override;
@@ -103,6 +103,10 @@ public:
 
     // Sets the API client.
     void SetAPIClientForTest(ExtensionsAPIClient *api_client);
+
+    bool AreExtensionsDisabledForContext(content::BrowserContext*) override;
+
+    media_device_salt::MediaDeviceSaltService *GetMediaDeviceSaltService(content::BrowserContext *context) override;
 
 private:
     // Support for extension APIs.

@@ -11,12 +11,14 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_display.h"
 #include "ui/gl/gl_display_manager.h"
+#include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_surface_glx.h"
 
 namespace gl {
 
-void GLSurfaceGLX::ShutdownOneOff()
+static bool HasGLXExtension(const char *name)
 {
+    return GLSurface::ExtensionsContain(GLSurfaceQt::g_extensions.c_str(), name);
 }
 
 bool GLSurfaceGLX::IsCreateContextSupported()
@@ -29,16 +31,6 @@ bool GLSurfaceGLX::IsCreateContextRobustnessSupported()
     return GLContextHelper::isCreateContextRobustnessSupported() && HasGLXExtension("GLX_ARB_create_context_robustness");
 }
 
-bool GLSurfaceGLX::IsEXTSwapControlSupported()
-{
-    return HasGLXExtension("GLX_EXT_swap_control");
-}
-
-bool GLSurfaceGLX::IsMESASwapControlSupported()
-{
-    return HasGLXExtension("GLX_MESA_swap_control");
-}
-
 bool GLSurfaceGLX::IsCreateContextProfileSupported()
 {
     return false; // ExtensionsContain(g_extensions, "GLX_ARB_create_context_profile");
@@ -49,29 +41,9 @@ bool GLSurfaceGLX::IsCreateContextES2ProfileSupported()
     return HasGLXExtension("GLX_ARB_create_context_es2_profile");
 }
 
-bool GLSurfaceGLX::IsOMLSyncControlSupported()
-{
-    return false; // ExtensionsContain(g_extensions, "GLX_OML_sync_control");
-}
-
-bool GLSurfaceGLX::HasGLXExtension(const char *name)
-{
-    return ExtensionsContain(GLSurfaceQt::g_extensions.c_str(), name);
-}
-
-bool GLSurfaceGLX::IsTextureFromPixmapSupported()
-{
-    return HasGLXExtension("GLX_EXT_texture_from_pixmap");
-}
-
 bool GLSurfaceGLX::IsRobustnessVideoMemoryPurgeSupported()
 {
     return false;
-}
-
-const char* GLSurfaceGLX::GetGLXExtensions()
-{
-    return GLSurfaceQt::g_extensions.c_str();
 }
 
 
@@ -121,7 +93,6 @@ GLDisplay *GLSurfaceGLXQt::InitializeOneOff(gl::GpuPreference preference)
     return g_display;
 }
 
-
 bool GLSurfaceGLXQt::InitializeExtensionSettingsOneOff()
 {
     if (!s_initialized)
@@ -131,11 +102,6 @@ bool GLSurfaceGLXQt::InitializeExtensionSettingsOneOff()
     GLSurfaceQt::g_extensions = glXQueryExtensionsString(display, 0);
     g_driver_glx.InitializeExtensionBindings(g_extensions.c_str());
     return true;
-}
-
-bool GLSurfaceGLX::InitializeExtensionSettingsOneOff()
-{
-    return GLSurfaceGLXQt::InitializeExtensionSettingsOneOff();
 }
 
 bool GLSurfaceGLXQt::Initialize(GLSurfaceFormat format)

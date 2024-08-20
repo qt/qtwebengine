@@ -5,15 +5,14 @@
 #define PROFILE_QT_H
 
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/resource_context.h"
 #include "extensions/buildflags/buildflags.h"
 #include "pref_service_adapter.h"
-#include "profile_io_data_qt.h"
-#include <QtGlobal>
 
-class InMemoryPrefStore;
 class PrefService;
+
+namespace content {
+class ResourceContext;
+}
 
 namespace extensions {
 class ExtensionSystemQt;
@@ -22,8 +21,9 @@ class ExtensionSystemQt;
 namespace QtWebEngineCore {
 
 class BrowsingDataRemoverDelegateQt;
-class ProfileAdapter;
 class PermissionManagerQt;
+class ProfileAdapter;
+class ProfileIODataQt;
 class SSLHostStateDelegateQt;
 
 class ProfileQt : public Profile
@@ -54,7 +54,6 @@ public:
     content::ClientHintsControllerDelegate *GetClientHintsControllerDelegate() override;
     content::StorageNotificationService *GetStorageNotificationService() override;
     content::PlatformNotificationService *GetPlatformNotificationService() override;
-    std::string GetMediaDeviceIDSalt() override;
     content::FileSystemAccessPermissionContext *GetFileSystemAccessPermissionContext() override;
     content::ReduceAcceptLanguageControllerDelegate *GetReduceAcceptLanguageControllerDelegate() override;
 
@@ -65,6 +64,7 @@ public:
 
     void DoFinalInit();
     ProfileAdapter *profileAdapter() { return m_profileAdapter; }
+    std::string GetMediaDeviceIDSalt();
 
 #if QT_CONFIG(webengine_spellchecker)
     void FailedToLoadDictionary(const std::string &language) override;

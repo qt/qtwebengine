@@ -5,13 +5,23 @@
 #define GL_GL_CONTEXT_QT_H_
 
 #include <QObject>
+#include <QtCore/qscopedpointer.h>
+#include <QtGui/qtgui-config.h>
+
 #include "ui/gl/gl_context.h"
+
+#if QT_CONFIG(opengl) && defined(USE_OZONE)
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#endif
 
 namespace gl {
 class GLSurface;
 }
 
 QT_BEGIN_NAMESPACE
+
+class QOffscreenSurface;
 
 class GLContextHelper : public QObject {
     Q_OBJECT
@@ -37,6 +47,45 @@ private:
     static GLContextHelper* contextHelper;
     bool m_robustness = false;
 };
+
+#if QT_CONFIG(opengl) && defined(USE_OZONE)
+#undef eglCreateImage
+#undef eglDestroyImage
+#undef eglExportDMABUFImageMESA
+#undef eglExportDMABUFImageQueryMESA
+#undef eglGetError
+#undef eglQueryString
+
+class EGLHelper
+{
+public:
+    struct EGLFunctions
+    {
+        EGLFunctions();
+
+        PFNEGLCREATEIMAGEPROC eglCreateImage;
+        PFNEGLDESTROYIMAGEPROC eglDestroyImage;
+        PFNEGLEXPORTDMABUFIMAGEMESAPROC eglExportDMABUFImageMESA;
+        PFNEGLEXPORTDMABUFIMAGEQUERYMESAPROC eglExportDMABUFImageQueryMESA;
+        PFNEGLGETERRORPROC eglGetError;
+        PFNEGLQUERYSTRINGPROC eglQueryString;
+    };
+
+    static EGLHelper *instance();
+
+    EGLFunctions *functions() const { return m_functions.get(); }
+    void queryDmaBuf(const int width, const int height, int *fd, int *stride, int *offset,
+                     uint64_t *modifiers);
+    bool isDmaBufSupported();
+
+private:
+    EGLHelper();
+
+    QScopedPointer<EGLFunctions> m_functions;
+    QScopedPointer<QOffscreenSurface> m_offscreenSurface;
+    bool m_isDmaBufSupported = false;
+};
+#endif // QT_CONFIG(opengl) && defined(USE_OZONE)
 
 QT_END_NAMESPACE
 

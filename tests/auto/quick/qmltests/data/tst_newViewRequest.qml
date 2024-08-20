@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 import QtQuick
 import QtTest
@@ -101,8 +101,7 @@ TestWebEngineView {
                 compare(dialog.webEngineView.url, Qt.url("about:blank"));
                 dialog.destroy();
             }
-            // https://chromium-review.googlesource.com/c/chromium/src/+/1300395
-            compare(newViewRequest.requestedUrl, 'about:blank#blocked');
+            compare(newViewRequest.requestedUrl, 'about:blank');
             newViewRequestedSpy.clear();
 
             // Open a page in a new dialog

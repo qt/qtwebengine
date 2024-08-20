@@ -17,12 +17,17 @@
 
 #include "base/memory/ref_counted.h"
 #include "qtwebenginecoreglobal_p.h"
+#include "resource_request_body_qt.h"
 
 #include <QMap>
 #include <QObject>
 #include <QUrl>
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
+
+namespace network {
+class ResourceRequestBody;
+}
 
 namespace QtWebEngineCore {
 
@@ -47,6 +52,7 @@ public:
     QByteArray method() const;
     QUrl initiator() const;
     QMap<QByteArray, QByteArray> requestHeaders() const;
+    QIODevice *requestBody();
 
     void
     setAdditionalResponseHeaders(const QMultiMap<QByteArray, QByteArray> &additionalResponseHeaders);
@@ -59,11 +65,10 @@ private Q_SLOTS:
     void slotReadyRead();
 
 private:
-    URLRequestCustomJobDelegate(URLRequestCustomJobProxy *proxy,
-                                const QUrl &url,
-                                const QByteArray &method,
-                                const QUrl &initiatorOrigin,
-                                const QMap<QByteArray, QByteArray> &requestHeaders);
+    URLRequestCustomJobDelegate(URLRequestCustomJobProxy *proxy, const QUrl &url,
+                                const QByteArray &method, const QUrl &initiatorOrigin,
+                                const QMap<QByteArray, QByteArray> &requestHeaders,
+                                network::ResourceRequestBody *requestBody);
 
     friend class URLRequestCustomJobProxy;
     scoped_refptr<URLRequestCustomJobProxy> m_proxy;
@@ -72,6 +77,7 @@ private:
     QUrl m_initiatorOrigin;
     const QMap<QByteArray, QByteArray> m_requestHeaders;
     QMultiMap<QByteArray, QByteArray> m_additionalResponseHeaders;
+    ResourceRequestBody m_resourceRequestBody;
 };
 
 } // namespace

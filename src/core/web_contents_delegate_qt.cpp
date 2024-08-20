@@ -12,10 +12,13 @@
 #include "color_chooser_qt.h"
 #include "custom_handlers/protocol_handler_registry_factory.h"
 #include "custom_handlers/register_protocol_handler_request_controller_impl.h"
+#include "desktop_media_controller.h"
+#include "desktop_media_controller_p.h"
 #include "file_picker_controller.h"
 #include "find_text_helper.h"
 #include "javascript_dialog_manager_qt.h"
 #include "media_capture_devices_dispatcher.h"
+#include "native_web_keyboard_event_qt.h"
 #include "profile_adapter.h"
 #include "profile_qt.h"
 #include "qwebengineloadinginfo.h"
@@ -244,9 +247,9 @@ void WebContentsDelegateQt::LoadProgressChanged(double progress)
 
 bool WebContentsDelegateQt::HandleKeyboardEvent(content::WebContents *, const content::NativeWebKeyboardEvent &event)
 {
-    Q_ASSERT(!event.skip_in_browser);
+    Q_ASSERT(!event.skip_if_unhandled);
     if (event.os_event)
-        m_viewClient->unhandledKeyEvent(reinterpret_cast<QKeyEvent *>(event.os_event));
+        m_viewClient->unhandledKeyEvent(ToKeyEvent(event.os_event));
     // FIXME: ?
     return true;
 }
@@ -618,9 +621,45 @@ void WebContentsDelegateQt::FindReply(content::WebContents *source, int request_
     m_findTextHelper->handleFindReply(source, request_id, number_of_matches, selection_rect, active_match_ordinal, final_update);
 }
 
+static void processMediaAccessRequest(content::WebContents *webContents,
+                                      const content::MediaStreamRequest &request,
+                                      content::MediaResponseCallback callback,
+                                      content::DesktopMediaID id)
+{
+    MediaCaptureDevicesDispatcher::GetInstance()->processMediaAccessRequest(
+            webContents, request, std::move(callback), id);
+}
+
+static inline bool needsPickerDialog(const content::MediaStreamRequest &request)
+{
+    return (request.requested_video_device_id.empty() && // device already selected in chooseDesktopMedia
+            (request.video_type == blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE
+            || request.video_type == blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE));
+}
+
 void WebContentsDelegateQt::RequestMediaAccessPermission(content::WebContents *web_contents, const content::MediaStreamRequest &request,  content::MediaResponseCallback callback)
 {
-    MediaCaptureDevicesDispatcher::GetInstance()->processMediaAccessRequest(web_contents, request, std::move(callback));
+    if (needsPickerDialog(request)) {
+#if QT_CONFIG(webengine_webrtc)
+        base::OnceCallback<void(content::DesktopMediaID)> cb = base::BindOnce(
+                &processMediaAccessRequest, web_contents, std::move(request), std::move(callback));
+        // ownership is taken by the request
+        auto *controller = new DesktopMediaController(
+                new DesktopMediaControllerPrivate(std::move(cb)));
+        QObject::connect(controller, &DesktopMediaController::mediaListsInitialized, [controller, delegate = AsWeakPtr()]() {
+            if (delegate)
+                delegate->adapterClient()->desktopMediaRequested(controller);
+            else
+                controller->deleteLater();
+        });
+#else
+    // To keep the old behavior return the default screen even if webrtc is disabled
+    processMediaAccessRequest(web_contents, std::move(request), std::move(callback),
+                              content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0));
+#endif  // QT_CONFIG(webengine_webrtc)
+    } else {
+        processMediaAccessRequest(web_contents, std::move(request), std::move(callback), {});
+    }
 }
 
 void WebContentsDelegateQt::SetContentsBounds(content::WebContents *source, const gfx::Rect &bounds)

@@ -11,7 +11,7 @@ npm install web-push express
 //! [1]
 
 //! [2]
-./node_odules/.bin/web-push generate-vapid-keys
+./node_modules/.bin/web-push generate-vapid-keys
 //! [2]
 
 //! [3]

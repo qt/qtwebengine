@@ -6,7 +6,7 @@
 
 #include "QtGui/qtguiglobal.h"
 
-#include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/common/input/native_web_keyboard_event.h"
 #if QT_CONFIG(gestures)
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #endif

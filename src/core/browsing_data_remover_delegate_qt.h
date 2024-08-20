@@ -19,13 +19,15 @@ public:
     content::BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher GetOriginTypeMatcher() override;
     bool MayRemoveDownloadHistory() override;
     void RemoveEmbedderData(
-        const base::Time &delete_begin,
-        const base::Time &delete_end,
-        uint64_t remove_mask,
-        content::BrowsingDataFilterBuilder *filter_builder,
-        uint64_t origin_type_mask,
-        base::OnceCallback<void(/*failed_data_types=*/uint64_t)> callback) override;
-    std::vector<std::string> GetDomainsForDeferredCookieDeletion(uint64_t) override;
+            const base::Time &delete_begin,
+            const base::Time &delete_end,
+            uint64_t remove_mask,
+            content::BrowsingDataFilterBuilder *filter_builder,
+            uint64_t origin_type_mask,
+            base::OnceCallback<void(/*failed_data_types=*/uint64_t)> callback) override;
+    std::vector<std::string> GetDomainsForDeferredCookieDeletion(
+            content::StoragePartition *storage_partition,
+            uint64_t remove_mask) override;
 };
 
 } // namespace QtWebEngineCore

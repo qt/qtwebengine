@@ -1,5 +1,5 @@
 // Copyright (C) 2022 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
@@ -24,7 +24,7 @@ ApplicationWindow {
             ToolButton {
                 action: Action {
                     shortcut: StandardKey.Open
-                    icon.source: "../../../../examples/pdf/pdfviewer/resources/document-open.svg"
+                    icon.source: "../../../../examples/pdf/singlepage/resources/document-open.svg"
                     onTriggered: fileDialog.open()
                 }
             }
@@ -32,7 +32,7 @@ ApplicationWindow {
                 action: Action {
                     shortcut: StandardKey.ZoomIn
                     enabled: pageView.sourceSize.width < 10000
-                    icon.source: "../../../../examples/pdf/pdfviewer/resources/zoom-in.svg"
+                    icon.source: "../../../../examples/pdf/singlepage/resources/zoom-in.svg"
                     onTriggered: pageView.renderScale *= root.scaleStep
                 }
             }
@@ -40,46 +40,46 @@ ApplicationWindow {
                 action: Action {
                     shortcut: StandardKey.ZoomOut
                     enabled: pageView.sourceSize.width > 50
-                    icon.source: "../../../../examples/pdf/pdfviewer/resources/zoom-out.svg"
+                    icon.source: "../../../../examples/pdf/singlepage/resources/zoom-out.svg"
                     onTriggered: pageView.renderScale /= root.scaleStep
                 }
             }
             ToolButton {
                 action: Action {
-                    icon.source: "../../../../examples/pdf/pdfviewer/resources/zoom-fit-width.svg"
+                    icon.source: "../../../../examples/pdf/singlepage/resources/zoom-fit-width.svg"
                     onTriggered: pageView.scaleToWidth(root.contentItem.width, root.contentItem.height)
                 }
             }
             ToolButton {
                 action: Action {
-                    icon.source: "../../../../examples/pdf/pdfviewer/resources/zoom-fit-best.svg"
+                    icon.source: "../../../../examples/pdf/singlepage/resources/zoom-fit-best.svg"
                     onTriggered: pageView.scaleToPage(root.contentItem.width, root.contentItem.height)
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: "Ctrl+0"
-                    icon.source: "../../../../examples/pdf/pdfviewer/resources/zoom-original.svg"
+                    icon.source: "../../../../examples/pdf/singlepage/resources/zoom-original.svg"
                     onTriggered: pageView.resetScale()
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: "Ctrl+L"
-                    icon.source: "../../../../examples/pdf/pdfviewer/resources/rotate-left.svg"
+                    icon.source: "../../../../examples/pdf/singlepage/resources/rotate-left.svg"
                     onTriggered: pageView.rotation -= 90
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: "Ctrl+R"
-                    icon.source: "../../../../examples/pdf/pdfviewer/resources/rotate-right.svg"
+                    icon.source: "../../../../examples/pdf/singlepage/resources/rotate-right.svg"
                     onTriggered: pageView.rotation += 90
                 }
             }
             ToolButton {
                 action: Action {
-                    icon.source: "../../../../examples/pdf/pdfviewer/resources/go-previous-view-page.svg"
+                    icon.source: "../../../../examples/pdf/singlepage/resources/go-previous-view-page.svg"
                     enabled: pageView.backEnabled
                     onTriggered: pageView.back()
                 }
@@ -115,7 +115,7 @@ ApplicationWindow {
             }
             ToolButton {
                 action: Action {
-                    icon.source: "../../../../examples/pdf/pdfviewer/resources/go-next-view-page.svg"
+                    icon.source: "../../../../examples/pdf//resources/go-next-view-page.svg"
                     enabled: pageView.forwardEnabled
                     onTriggered: pageView.forward()
                 }
@@ -126,7 +126,7 @@ ApplicationWindow {
             ToolButton {
                 action: Action {
                     shortcut: StandardKey.Copy
-                    icon.source: "../../../../examples/pdf/pdfviewer/resources/edit-copy.svg"
+                    icon.source: "../../../../examples/pdf/singlepage/resources/edit-copy.svg"
                     enabled: pageView.selectedText !== ""
                     onTriggered: pageView.copySelectionToClipboard()
                 }
@@ -246,7 +246,7 @@ ApplicationWindow {
             RowLayout {
                 ToolButton {
                     action: Action {
-                        icon.source: "../../../../examples/pdf/pdfviewer/resources/go-up-search.svg"
+                        icon.source: "../../../../examples/pdf/singlepage/resources/go-up-search.svg"
                         shortcut: StandardKey.FindPrevious
                         onTriggered: pageView.searchBack()
                     }
@@ -261,7 +261,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Image {
                         visible: searchField.text !== ""
-                        source: "../../../../examples/pdf/pdfviewer/resources/edit-clear.svg"
+                        source: "../../../../examples/pdf/singlepage/resources/edit-clear.svg"
                         anchors {
                             right: parent.right
                             top: parent.top
@@ -276,7 +276,7 @@ ApplicationWindow {
                 }
                 ToolButton {
                     action: Action {
-                        icon.source: "../../../../examples/pdf/pdfviewer/resources/go-down-search.svg"
+                        icon.source: "../../../../examples/pdf/singlepage/resources/go-down-search.svg"
                         shortcut: StandardKey.FindNext
                         onTriggered: pageView.searchForward()
                     }

@@ -24,6 +24,7 @@
 #include "web_contents_adapter.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_view_qt.h"
+#include "net/resource_request_body_qt.h"
 
 // originally based on aw_proxying_url_loader_factory.cc:
 // Copyright 2018 The Chromium Authors. All rights reserved.
@@ -163,6 +164,7 @@ private:
     // error didn't occur.
     int error_status_ = net::OK;
     network::ResourceRequest request_;
+    ResourceRequestBody request_body_;
     network::mojom::URLResponseHeadPtr current_response_;
 
     const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
@@ -196,6 +198,7 @@ InterceptedRequest::InterceptedRequest(ProfileAdapter *profile_adapter,
     , request_id_(request_id)
     , options_(options)
     , request_(request)
+    , request_body_(ResourceRequestBody(request_.request_body.get()))
     , traffic_annotation_(traffic_annotation)
     , proxied_loader_receiver_(this, std::move(loader_receiver))
     , target_client_(std::move(client))
@@ -332,7 +335,7 @@ void InterceptedRequest::Restart()
 
     auto info = new QWebEngineUrlRequestInfoPrivate(
             resourceType, navigationType, originalUrl, firstPartyUrl, initiator,
-            QByteArray::fromStdString(request_.method), headers);
+            QByteArray::fromStdString(request_.method), &request_body_, headers);
     Q_ASSERT(!request_info_);
     request_info_.reset(new QWebEngineUrlRequestInfo(info));
 

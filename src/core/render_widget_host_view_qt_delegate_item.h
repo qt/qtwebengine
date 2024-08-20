@@ -35,6 +35,7 @@ public:
     virtual void Destroy() = 0;
     virtual void Resize(int, int) { }
     virtual QWindow *Window() { return nullptr; }
+    virtual void SetCursor(const QCursor &) { }
     virtual void unhandledWheelEvent(QWheelEvent *) { }
 };
 

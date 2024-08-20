@@ -16,8 +16,8 @@ public:
     ~PdfStreamDelegateQt() override;
 
     // pdf::PdfStreamDelegate:
-    absl::optional<GURL> MapToOriginalUrl(content::WebContents *contents, const GURL &stream_url) override;
-    absl::optional<StreamInfo> GetStreamInfo(content::WebContents *contents) override;
+    absl::optional<GURL> MapToOriginalUrl(content::NavigationHandle &navigation_handle) override;
+    absl::optional<StreamInfo> GetStreamInfo(content::RenderFrameHost *embedder_frame) override;
 };
 
 #endif // PDF_STREAM_DELEGATE_QT_H

@@ -58,9 +58,19 @@ inline QString toQt(const absl::optional<std::u16string> &string)
     return QString::fromStdU16String(*string);
 }
 
+inline QString toQString(const base::StringPiece &string)
+{
+    return QString::fromUtf8(string.data(), string.size());
+}
+
 inline QString toQString(const std::string &string)
 {
     return QString::fromStdString(string);
+}
+
+inline QByteArray toQByteArray(const base::StringPiece &string)
+{
+    return QByteArray(string.data(), string.size());
 }
 
 inline QByteArray toQByteArray(const std::string &string)

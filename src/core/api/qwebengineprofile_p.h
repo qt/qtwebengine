@@ -54,6 +54,7 @@ public:
     void downloadUpdated(const DownloadItemInfo &info) override;
 
     void showNotification(QSharedPointer<QtWebEngineCore::UserNotificationController> &) override;
+    void clearHttpCacheCompleted() override;
 
     void addWebContentsAdapterClient(QtWebEngineCore::WebContentsAdapterClient *adapter) override;
     void removeWebContentsAdapterClient(QtWebEngineCore::WebContentsAdapterClient *adapter) override;

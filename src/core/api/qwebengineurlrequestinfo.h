@@ -7,6 +7,7 @@
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
 #include <QtCore/qurl.h>
+#include <QtCore/qiodevice.h>
 
 #include <memory>
 
@@ -14,6 +15,8 @@ namespace QtWebEngineCore {
 class ContentBrowserClientQt;
 class InterceptedRequest;
 } // namespace QtWebEngineCore
+
+class TestPostRequestInterceptor;
 
 QT_BEGIN_NAMESPACE
 
@@ -68,6 +71,7 @@ public:
     QUrl firstPartyUrl() const;
     QUrl initiator() const;
     QByteArray requestMethod() const;
+    QIODevice *requestBody() const;
     bool changed() const;
 
     void block(bool shouldBlock);
@@ -78,6 +82,7 @@ public:
 private:
     friend class QtWebEngineCore::ContentBrowserClientQt;
     friend class QtWebEngineCore::InterceptedRequest;
+    friend class ::TestPostRequestInterceptor;
     Q_DISABLE_COPY(QWebEngineUrlRequestInfo)
     Q_DECLARE_PRIVATE(QWebEngineUrlRequestInfo)
 

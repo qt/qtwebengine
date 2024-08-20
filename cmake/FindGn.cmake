@@ -7,10 +7,10 @@ endif()
 find_program(Gn_EXECUTABLE NAMES gn PATHS "${WEBENGINE_ROOT_BUILD_DIR}/install/bin" NO_DEFAULT_PATH)
 if(NOT QT_HOST_PATH STREQUAL "")
    find_program(Gn_EXECUTABLE NAMES gn PATHS ${QT_HOST_PATH}/${INSTALL_LIBEXECDIR} NO_DEFAULT_PATH)
-endif()
-# script mode does not have QT_HOST_PATH or INSTALL_LIBEXECDIR instead it uses QT_HOST_GN_PATH
-if(NOT QT_HOST_GN_PATH STREQUAL "")
-   find_program(Gn_EXECUTABLE NAMES gn PATHS ${QT_HOST_GN_PATH} NO_DEFAULT_PATH)
+   # note: mingw installs with INSTALL_LIBEXECDIR = bin,
+   # however android on windows has INSTALL_LIBEXECDIR = libexec,
+   # so cover this case also
+   find_program(Gn_EXECUTABLE NAMES gn PATHS ${QT_HOST_PATH}/${INSTALL_BINDIR} NO_DEFAULT_PATH)
 endif()
 find_program(Gn_EXECUTABLE NAMES gn)
 

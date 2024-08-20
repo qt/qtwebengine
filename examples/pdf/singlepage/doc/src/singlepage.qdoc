@@ -1,0 +1,62 @@
+// Copyright (C) 2023 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \example singlepage
+    \meta installpath pdf
+    \ingroup qtpdf-examples
+    \examplecategory {User Interface Components}
+
+    \title PDF Single Page Viewer Example
+    \brief A Qt Quick PDF viewer that views one page at a time.
+
+    \image singlepageviewer.webp
+
+    \e {PDF Single Page Viewer Example} demonstrates how to use the PdfScrollablePageView
+    component to render PDF documents and search for text in them.
+
+    \include examples-run.qdocinc
+
+    \section1 Creating the Main Window
+
+    Instantiate an \l ApplicationWindow, bind its title to the title of the
+    PDF document, and create a toolbar:
+
+    \quotefromfile singlepage/viewer.qml
+    \skipto ApplicationWindow
+    \printuntil rightMargin
+
+    The toolbar has buttons for most of the common actions,
+    plus a SpinBox to show and control the current page number:
+
+    \printuntil ZoomOut
+    \dots
+    \skipto SpinBox
+    \printto onValueModified
+    \dots
+
+    Add dialogs to inform the user when an error occurs and to prompt for a
+    password if required:
+
+    \skipto onAccepted
+    \skipto Dialog
+    \printto PdfScrollablePageView
+
+    Add the main component, PdfScrollablePageView:
+
+    \printto Drawer {
+
+    A \l Drawer holds a ListView to show search results from the
+    \l {PdfScrollablePageView::searchModel}{searchModel}:
+
+    \printto ToolBar
+
+    Finally, add a second toolbar as a footer, to hold the search field,
+    search up/down buttons and some status information:
+
+    \printuntil
+
+    \section1 Files and Attributions
+
+    \sa {PDF Multipage Viewer Example}
+*/

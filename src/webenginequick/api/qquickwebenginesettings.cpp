@@ -449,6 +449,19 @@ bool QQuickWebEngineSettings::readingFromCanvasEnabled() const
 }
 
 /*!
+    \qmlproperty bool WebEngineSettings::forceDarkMode
+    \since QtWebEngine 6.7
+
+    Automatically render all web contents using a dark theme.
+
+    Disabled by default.
+ */
+bool QQuickWebEngineSettings::forceDarkMode() const
+{
+    return d_ptr->testAttribute(QWebEngineSettings::ForceDarkMode);
+}
+
+/*!
     \qmlproperty string WebEngineSettings::defaultTextEncoding
     \since QtWebEngine 1.2
 
@@ -737,6 +750,14 @@ void QQuickWebEngineSettings::setReadingFromCanvasEnabled(bool on)
     d_ptr->setAttribute(QWebEngineSettings::ReadingFromCanvasEnabled, on);
     if (wasOn != on)
         Q_EMIT readingFromCanvasEnabledChanged();
+}
+
+void QQuickWebEngineSettings::setForceDarkMode(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::ForceDarkMode);
+    d_ptr->setAttribute(QWebEngineSettings::ForceDarkMode, on);
+    if (wasOn != on)
+        Q_EMIT forceDarkModeChanged();
 }
 
 void QQuickWebEngineSettings::setUnknownUrlSchemePolicy(QQuickWebEngineSettings::UnknownUrlSchemePolicy policy)

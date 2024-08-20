@@ -5,20 +5,49 @@
 \group qtwebengine-licensing
 \title Qt WebEngine Licensing
 
-The Qt specific parts of the \QWE module are dual-licensed
-under Commercial and GNU Lesser General Public License (LGPLv3).
-In addition, the module contains code licensed under LGPLv2.
+The \QWE module uses Chromium to provide most of its
+functionality. During the build process, Chromium becomes
+a part of the \l{Qt WebEngine Core} library.
+Therefore, when distributing \QWE, users need to comply
+to both the licenses of the \QWE part as developed under
+the Qt Project, as well as the licenses that are part of
+Chromium.
 
-The module includes a snapshot of Chromium. As such, users need to
-respect the licenses of Chromium, and third-party code included in
-Chromium. The arguably most restrictive license to be respected by
-all users is LGPLv2.1.
+The Qt specific parts of the \QWE module are available under
+commercial licenses from The Qt Company. Alternatively,
+they are available under GNU Lesser General Public License v3.0,
+or GNU General Public License v3.0, or
+GNU General Public License v2.0.
+
+The Chromium part contains code available under various
+licenses, with the most restrictive license being the
+\e{GNU Lesser General Public License v2.1} (LGPL 2.1).
+For a full list, see \l{Third-Party Licenses} below.
+
+\section1 Complying with LGPL 2.1
+
+The Qt Company allows commercial customers to
+distribute the source code of the \QWE module alongside the
+\QWE binaries, and allows recipients to customize and build
+\QWE from sources. This includes building and using
+such a modified \QWE with an application or system using
+an otherwise commercially licensed Qt.
+
+The Qt Company also keeps the Qt specific parts of the \QWE
+module available under the GNU Lesser General Public License v3.0,
+or the GNU General Public License v3.0, or
+the GNU General Public License v2.0, even if WebEngine is released
+as part of a commercial-only Long-Term Support release (LTS, see
+also \l{Long-Term Support releases}).
+
+\section1 Third-Party Licenses
+
+Third party licenses included in the sources as part of Chromium
+are found below.
 
 \note Any GPL licenses listed below are only used to access Linux system
-resources. \QWE does not link to nor distribute GPL binary code, and
-it does not affect users of \QWE.
-
-Third party licenses included in the sources are:
+resources. The \QWE libraries and plugins does not link to nor distribute
+GPL binary code, and it does not affect users of \QWE.
 */
 
 /*!

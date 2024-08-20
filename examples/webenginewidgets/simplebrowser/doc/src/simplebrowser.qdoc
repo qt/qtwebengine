@@ -322,6 +322,30 @@
     finished or when an error occurs. See \c downloadmanagerwidget.cpp for an
     example of how these signals can be handled.
 
+    \section1 Managing WebAuth/FIDO UX Requests
+
+    WebAuth UX requests are associated with \l QWebEnginePage. Whenever an authenticator
+    requires user interaction, a UX request is triggered on the QWebEnginePage and
+    the \l QWebEnginePage::webAuthUxRequested signal is emitted with
+    \l QWebEngineWebAuthUxRequest, which in this example is forwarded
+    to \c WebView::handleAuthenticatorRequired:
+
+    \quotefromfile webenginewidgets/simplebrowser/webview.cpp
+    \skipto connect(page, &QWebEnginePage::webAuthUxRequested
+    \printline connect(page, &QWebEnginePage::webAuthUxRequested
+
+    This method creates a WebAuth UX dialog and initiates the UX request flow.
+
+    \quotefromfile webenginewidgets/simplebrowser/webview.cpp
+    \skipto void WebView::handleWebAuthUxRequested(QWebEngineWebAuthUxRequest *request)
+    \printuntil /^\}/
+
+    The \l QWebEngineWebAuthUxRequest object periodically emits the \l
+    {QWebEngineWebAuthUxRequest::}{stateChanged} signal to notify potential
+    observers of the current WebAuth UX states. The observers update the WebAuth
+    dialog accordingly. See \c webview.cpp and \c webauthdialog.cpp for an example
+    of how these signals can be handled.
+
     \section1 Signing Requirement for macOS
 
     To allow web sites access to the location, camera, and microphone when running

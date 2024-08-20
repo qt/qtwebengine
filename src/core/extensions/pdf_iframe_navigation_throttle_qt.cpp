@@ -124,7 +124,10 @@ content::NavigationThrottle::ThrottleCheckResult PDFIFrameNavigationThrottleQt::
 
     // We MUST download responses marked as attachments rather than showing
     // a placeholder.
-    if (content::download_utils::MustDownload(navigation_handle()->GetURL(), response_headers, mime_type))
+    if (content::download_utils::MustDownload(navigation_handle()->GetWebContents()
+                                                  ? navigation_handle()->GetWebContents()->GetBrowserContext()
+                                                  : nullptr,
+                                              navigation_handle()->GetURL(), response_headers, mime_type))
         return content::NavigationThrottle::PROCEED;
 
     bool is_stale = false;

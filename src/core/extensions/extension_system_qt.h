@@ -58,14 +58,8 @@ public:
     StateStore *rules_store() override;
     StateStore *dynamic_user_scripts_store() override;
     scoped_refptr<value_store::ValueStoreFactory> store_factory() override;
-    InfoMap *info_map() override;
     QuotaService *quota_service() override;
     AppSorting *app_sorting() override;
-
-    void RegisterExtensionWithRequestContexts(const Extension *extension,
-                                              base::OnceClosure callback) override;
-
-    void UnregisterExtensionWithRequestContexts(const std::string &extension_id) override;
 
     ContentVerifier *content_verifier() override;
     std::unique_ptr<ExtensionSet> GetDependentExtensions(const Extension *extension) override;
@@ -77,22 +71,16 @@ public:
     const base::OneShotEvent &ready() const override { return ready_; }
     bool is_ready() const override;
 
-    void PerformActionBasedOnOmahaAttributes(const std::string &, const base::Value &) override { /* fixme? */}
+    void PerformActionBasedOnOmahaAttributes(const std::string &, const base::Value::Dict &) override { /* fixme? */}
 
 private:
-    void OnExtensionRegisteredWithRequestContexts(scoped_refptr<const extensions::Extension> extension);
-
     void NotifyExtensionLoaded(const Extension *extension);
     void LoadExtension(std::string extension_id, const base::Value::Dict &manifest, const base::FilePath &directory);
+
     // The services that are shared between normal and incognito profiles.
-
-    // Data to be accessed on the IO thread. Must outlive process_manager_.
-    scoped_refptr<InfoMap> info_map_;
-
     std::unique_ptr<ServiceWorkerManager> service_worker_manager_;
     std::unique_ptr<QuotaService> quota_service_;
     std::unique_ptr<UserScriptManager> user_script_manager_;
-
 
     // For verifying the contents of extensions read from disk.
     scoped_refptr<ContentVerifier> content_verifier_;

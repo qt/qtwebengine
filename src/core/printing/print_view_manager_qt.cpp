@@ -244,7 +244,7 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
     content::RenderFrameHost *full_page_plugin = GetFullPagePlugin(web_contents());
     if (content::RenderFrameHost *pdf_rfh = FindPdfChildFrame(full_page_plugin ? full_page_plugin : rfh))
         rfh = pdf_rfh;
-    GetPrintRenderFrame(rfh)->InitiatePrintPreview(mojo::PendingAssociatedRemote<printing::mojom::PrintRenderer>(), false);
+    GetPrintRenderFrame(rfh)->InitiatePrintPreview(false);
 
     DCHECK(!m_printPreviewRfh);
     m_printPreviewRfh = rfh;

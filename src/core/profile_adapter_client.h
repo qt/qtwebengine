@@ -110,6 +110,8 @@ public:
     virtual void addWebContentsAdapterClient(WebContentsAdapterClient *adapter) = 0;
     virtual void removeWebContentsAdapterClient(WebContentsAdapterClient *adapter) = 0;
     virtual WebEngineSettings *coreSettings() const = 0;
+    virtual void clearHttpCacheCompleted() = 0;
+
     static QString downloadInterruptReasonToString(DownloadInterruptReason reason);
 };
 

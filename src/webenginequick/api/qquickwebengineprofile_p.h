@@ -53,6 +53,7 @@ public:
     void downloadUpdated(const DownloadItemInfo &info) override;
 
     void showNotification(QSharedPointer<QtWebEngineCore::UserNotificationController> &controller) override;
+    void clearHttpCacheCompleted() override;
 
 private:
     QQuickWebEngineProfile *q_ptr;

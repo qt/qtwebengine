@@ -112,6 +112,20 @@ QMap<QByteArray, QByteArray> QWebEngineUrlRequestJob::requestHeaders() const
 }
 
 /*!
+    Returns a pointer to a QIODevice that gives access to the request body.
+    The request body can contain data for example when the request is
+    a POST request. If the request body is empty the QIODevice reflects this
+    and does not return any data when performing read operations on it.
+
+    \since 6.7
+    \sa QIODevice
+*/
+QIODevice *QWebEngineUrlRequestJob::requestBody() const
+{
+    return d_ptr->requestBody();
+}
+
+/*!
     \since 6.6
     Set \a additionalResponseHeaders. These additional headers of the response
     are only used when QWebEngineUrlRequestJob::reply(const QByteArray&, QIODevice*)

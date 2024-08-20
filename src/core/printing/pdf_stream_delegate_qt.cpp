@@ -7,40 +7,44 @@
 
 #include "base/no_destructor.h"
 #include "chrome/grit/pdf_resources.h"
+#include "content/public/browser/document_user_data.h"
+#include "content/public/browser/navigation_handle.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/constants.h"
 #include "ui/base/resource/resource_bundle.h"
 
-// Associates a `pdf::PdfStreamDelegate::StreamInfo` with a `WebContents`.
-// `PdfStreamDelegateQt::MapToOriginalUrl()` initializes this in
-// `PdfNavigationThrottle`, and then `PdfStreamDelegateQt::GetStreamInfo()`
+// Associates a `pdf::PdfStreamDelegate::StreamInfo` with the PDF extension's
+// or Print Preview's `blink::Document`.
+// `ChromePdfStreamDelegate::MapToOriginalUrl()` initializes this in
+// `PdfNavigationThrottle`, and then `ChromePdfStreamDelegate::GetStreamInfo()`
 // returns the stashed result to `PdfURLLoaderRequestInterceptor`.
-class StreamInfoHelper : public content::WebContentsUserData<StreamInfoHelper>
+class StreamInfoHelper : public content::DocumentUserData<StreamInfoHelper>
 {
 public:
     absl::optional<pdf::PdfStreamDelegate::StreamInfo> TakeStreamInfo()
     { return std::move(stream_info_); }
 
 private:
-    friend class content::WebContentsUserData<StreamInfoHelper>;
-    WEB_CONTENTS_USER_DATA_KEY_DECL();
+    friend class content::DocumentUserData<StreamInfoHelper>;
+    DOCUMENT_USER_DATA_KEY_DECL();
 
-    StreamInfoHelper(content::WebContents *contents,
+    StreamInfoHelper(content::RenderFrameHost* embedder_frame,
                      pdf::PdfStreamDelegate::StreamInfo stream_info)
-        : content::WebContentsUserData<StreamInfoHelper>(*contents),
+        : content::DocumentUserData<StreamInfoHelper>(embedder_frame),
           stream_info_(std::move(stream_info)) {}
 
     absl::optional<pdf::PdfStreamDelegate::StreamInfo> stream_info_;
 };
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(StreamInfoHelper);
+DOCUMENT_USER_DATA_KEY_IMPL(StreamInfoHelper);
 
 PdfStreamDelegateQt::PdfStreamDelegateQt() = default;
 PdfStreamDelegateQt::~PdfStreamDelegateQt() = default;
 
-absl::optional<GURL> PdfStreamDelegateQt::MapToOriginalUrl(content::WebContents *contents, const GURL &stream_url)
+absl::optional<GURL> PdfStreamDelegateQt::MapToOriginalUrl(content::NavigationHandle &navigation_handle)
 {
-    StreamInfoHelper *helper = StreamInfoHelper::FromWebContents(contents);
+    content::RenderFrameHost *embedder_frame = navigation_handle.GetParentFrame();
+    StreamInfoHelper *helper = StreamInfoHelper::GetForCurrentDocument(embedder_frame);
     if (helper) {
         // PDF viewer and Print Preview only do this once per WebContents.
         return absl::nullopt;
@@ -49,12 +53,13 @@ absl::optional<GURL> PdfStreamDelegateQt::MapToOriginalUrl(content::WebContents 
     GURL original_url;
     StreamInfo info;
 
+    content::WebContents* contents = navigation_handle.GetWebContents();
     extensions::MimeHandlerViewGuest *guest =
             extensions::MimeHandlerViewGuest::FromWebContents(contents);
     if (guest) {
         base::WeakPtr<extensions::StreamContainer> stream = guest->GetStreamWeakPtr();
         if (!stream || stream->extension_id() != extension_misc::kPdfExtensionId ||
-            stream->stream_url() != stream_url ||
+            stream->stream_url() != navigation_handle.GetURL() ||
             !stream->pdf_plugin_attributes()) {
             return absl::nullopt;
         }
@@ -71,17 +76,20 @@ absl::optional<GURL> PdfStreamDelegateQt::MapToOriginalUrl(content::WebContents 
                 ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
                     IDR_PDF_PDF_INTERNAL_PLUGIN_WRAPPER_ROLLUP_JS));
 
-    info.stream_url = stream_url;
+    info.stream_url = navigation_handle.GetURL();
     info.original_url = original_url;
     info.injected_script = injected_script.get();
-    StreamInfoHelper::CreateForWebContents(contents, std::move(info));
+    StreamInfoHelper::CreateForCurrentDocument(embedder_frame, std::move(info));
     return original_url;
 }
 
 absl::optional<pdf::PdfStreamDelegate::StreamInfo>
-PdfStreamDelegateQt::GetStreamInfo(content::WebContents *contents)
+PdfStreamDelegateQt::GetStreamInfo(content::RenderFrameHost* embedder_frame)
 {
-    StreamInfoHelper *helper = StreamInfoHelper::FromWebContents(contents);
+    if (!embedder_frame)
+        return absl::nullopt;
+
+    StreamInfoHelper *helper = StreamInfoHelper::GetForCurrentDocument(embedder_frame);
     if (!helper)
         return absl::nullopt;
 

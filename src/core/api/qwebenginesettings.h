@@ -61,6 +61,7 @@ public:
         PdfViewerEnabled,
         NavigateOnDropEnabled,
         ReadingFromCanvasEnabled,
+        ForceDarkMode,
     };
 
     enum FontSize {

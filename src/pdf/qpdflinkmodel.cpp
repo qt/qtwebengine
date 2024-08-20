@@ -203,7 +203,28 @@ void QPdfLinkModelPrivate::update()
             std::swap(rect.bottom, rect.top);
 
         QPdfLink linkData;
-        linkData.d->rects << document->d->mapPageToView(pdfPage, rect.left, rect.top, rect.right, rect.bottom);
+        // Use quad points if present; otherwise use the rect.
+        if (int quadPointsCount = FPDFLink_CountQuadPoints(linkAnnot) > 0) {
+            for (int i = 0; i < quadPointsCount; ++i) {
+                FS_QUADPOINTSF point;
+                if (FPDFLink_GetQuadPoints(linkAnnot, i, &point)) {
+                    // Quadpoints are counter clockwise from bottom left (x1, y1)
+                    QPolygonF poly;
+                    poly << QPointF(point.x1, point.y1);
+                    poly << QPointF(point.x2, point.y2);
+                    poly << QPointF(point.x3, point.y3);
+                    poly << QPointF(point.x4, point.y4);
+                    QRectF bounds = poly.boundingRect();
+                    bounds = document->d->mapPageToView(pdfPage, bounds.left(), bounds.top(), bounds.right(), bounds.bottom());
+                    qCDebug(qLcLink) << "quadpoints" << i << "of" << quadPointsCount << ":" << poly << "mapped bounds" << bounds;
+                    linkData.d->rects << bounds;
+                    // QPdfLink could store polygons rather than rects, to get the benefit of quadpoints;
+                    // so far we didn't bother. It would be an API change, and we'd need to use Shapes in PdfLinkDelegate.qml
+                }
+            }
+        } else {
+            linkData.d->rects << document->d->mapPageToView(pdfPage, rect.left, rect.top, rect.right, rect.bottom);
+        }
         FPDF_DEST dest = FPDFLink_GetDest(doc, linkAnnot);
         FPDF_ACTION action = FPDFLink_GetAction(linkAnnot);
         switch (FPDFAction_GetType(action)) {
@@ -211,7 +232,7 @@ void QPdfLinkModelPrivate::update()
         case PDFACTION_GOTO: {
             linkData.d->page = FPDFDest_GetDestPageIndex(doc, dest);
             if (linkData.d->page < 0) {
-                qCWarning(qLcLink) << "skipping link with invalid page number";
+                qCWarning(qLcLink) << "skipping link with invalid page number" << linkData.d->page;
                 continue; // while enumerating links
             }
             FPDF_BOOL hasX, hasY, hasZoom;

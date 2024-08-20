@@ -12,8 +12,10 @@
 #endif
 #include <QWebEnginePage>
 #include <QWebEngineRegisterProtocolHandlerRequest>
+#include <QWebEngineWebAuthUxRequest>
 
 class WebPage;
+class WebAuthDialog;
 
 class WebView : public QWebEngineView
 {
@@ -45,13 +47,16 @@ private slots:
     void handleRegisterProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest request);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
     void handleFileSystemAccessRequested(QWebEngineFileSystemAccessRequest request);
+    void handleWebAuthUxRequested(QWebEngineWebAuthUxRequest *request);
 #endif
 
 private:
     void createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction);
+    void onStateChanged(QWebEngineWebAuthUxRequest::WebAuthUxState state);
 
 private:
     int m_loadProgress = 100;
+    WebAuthDialog *m_authDialog = nullptr;
 };
 
 #endif

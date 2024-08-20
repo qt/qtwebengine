@@ -1,9 +1,11 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Pdf
 import QtQuick.Shapes
-import Qt.labs.animation
 
 /*!
     \qmltype PdfPageView
@@ -28,7 +30,7 @@ Rectangle {
 
         A PdfDocument object with a valid \c source URL is required:
 
-        \snippet multipageview.qml 0
+        \snippet pdfpageview.qml 0
     */
     required property PdfDocument document
 

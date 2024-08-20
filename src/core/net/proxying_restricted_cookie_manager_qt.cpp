@@ -10,8 +10,7 @@
 
 #include "api/qwebenginecookiestore.h"
 #include "api/qwebenginecookiestore_p.h"
-#include "profile_adapter.h"
-#include "profile_qt.h"
+#include "profile_io_data_qt.h"
 #include "type_conversion.h"
 
 #include "base/memory/ptr_util.h"
@@ -128,16 +127,18 @@ void ProxyingRestrictedCookieManagerQt::SetCookieFromString(const GURL &url,
 
 void ProxyingRestrictedCookieManagerQt::GetCookiesString(const GURL &url,
                                                          const net::SiteForCookies &site_for_cookies,
-                                                         const url::Origin &top_frame_origin, bool has_storage_access,
+                                                         const url::Origin &top_frame_origin,
+                                                         bool has_storage_access, bool get_version_shared_memory,
                                                          GetCookiesStringCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     if (allowCookies(url, site_for_cookies)) {
         underlying_restricted_cookie_manager_->GetCookiesString(url, site_for_cookies, top_frame_origin,
-                                                                has_storage_access, std::move(callback));
+                                                                has_storage_access, get_version_shared_memory,
+                                                                std::move(callback));
     } else {
-        std::move(callback).Run("");
+        std::move(callback).Run(network::mojom::kInvalidCookieVersion, base::ReadOnlySharedMemoryRegion(), "");
     }
 }
 

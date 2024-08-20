@@ -1,5 +1,5 @@
 # Copyright (C) 2016 Olivier Goffart <ogoffart@woboq.com>
-# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+# SPDX-License-Identifier: BSD-3-Clause
 
 # This is the clang-format configuration style to be used by Qt,
 # based on the rules from https://wiki.qt.io/Qt_Coding_Style and
@@ -59,7 +59,7 @@ ContinuationIndentWidth: 8
 NamespaceIndentation: None
 
 # Allow indentation for preprocessing directives (if/ifdef/endif). https://reviews.llvm.org/rL312125
-IndentPPDirectives: AfterHash
+# IndentPPDirectives: AfterHash - Redefined for QtWebEngine Qt Style
 
 # Horizontally align arguments after an open bracket.
 # The coding style does not specify the following, but this is what gives
@@ -81,7 +81,7 @@ SortIncludes: false
 ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH, forever, Q_FOREVER, QBENCHMARK, QBENCHMARK_ONCE ]
 
 # Break constructor initializers before the colon and after the commas.
-BreakConstructorInitializers: BeforeColon
+# BreakConstructorInitializers: BeforeColon - Redefined for QtWebEngine Qt Style
 
 # Avoids the addition of a space between an identifier and the
 # initializer list in list-initialization.

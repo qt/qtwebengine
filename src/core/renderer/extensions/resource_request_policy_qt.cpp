@@ -27,8 +27,9 @@ ResourceRequestPolicyQt::ResourceRequestPolicyQt(Dispatcher *dispatcher)
 
 void ResourceRequestPolicyQt::OnExtensionLoaded(const Extension &extension)
 {
-    if (WebAccessibleResourcesInfo::HasWebAccessibleResources(&extension)
-        || WebviewInfo::HasWebviewAccessibleResources(extension, m_dispatcher->webview_partition_id())
+    if (WebAccessibleResourcesInfo::HasWebAccessibleResources(&extension) ||
+            WebviewInfo::HasWebviewAccessibleResources(extension,
+                    m_dispatcher->webview_partition_id().value_or(std::string()))
 //          // Hosted app icons are accessible.
 //          // TODO(devlin): Should we incorporate this into
 //          // WebAccessibleResourcesInfo?
@@ -131,7 +132,9 @@ bool ResourceRequestPolicyQt::CanRequestResource(const GURL &resource_url,
     // Disallow loading of extension resources which are not explicitly listed
     // as web or WebView accessible if the manifest version is 2 or greater.
     if (!WebAccessibleResourcesInfo::IsResourceWebAccessible(extension, resource_url.path(), initiator_origin) &&
-        !WebviewInfo::IsResourceWebviewAccessible(extension, m_dispatcher->webview_partition_id(), resource_url.path()))
+            !WebviewInfo::IsResourceWebviewAccessible(extension,
+                                                      m_dispatcher->webview_partition_id().value_or(std::string()),
+                                                      resource_url.path()))
     {
         std::string message = base::StringPrintf(
                     "Denying load of %s. Resources must be listed in the "

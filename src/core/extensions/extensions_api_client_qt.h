@@ -25,7 +25,7 @@ public:
     AppViewGuestDelegate *CreateAppViewGuestDelegate() const override;
     FileSystemDelegate *GetFileSystemDelegate() override;
     std::unique_ptr<guest_view::GuestViewManagerDelegate>
-    CreateGuestViewManagerDelegate(content::BrowserContext *context) const override;
+    CreateGuestViewManagerDelegate() const override;
     std::unique_ptr<MimeHandlerViewGuestDelegate>
     CreateMimeHandlerViewGuestDelegate(MimeHandlerViewGuest *guest) const override;
     void AttachWebContentsHelpers(content::WebContents *web_contents) const override;

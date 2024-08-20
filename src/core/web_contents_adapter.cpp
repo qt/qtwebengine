@@ -40,7 +40,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_request_utils.h"
@@ -61,6 +60,7 @@
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/font_render_params.h"
+#include "ui/native_theme/native_theme.h"
 #include "qtwebengine/browser/qtwebenginepage.mojom.h"
 
 #include <QtCore/QVariant>
@@ -81,8 +81,6 @@
 #endif
 
 #if QT_CONFIG(webengine_printing_and_pdf)
-#include "components/pdf/browser/pdf_web_contents_helper.h"
-#include "printing/pdf_web_contents_helper_client_qt.h"
 #include "printing/print_view_manager_qt.h"
 #endif
 
@@ -281,7 +279,7 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
     int count;
     input >> count >> *currentIndex;
 
-    std::unique_ptr<content::NavigationEntryRestoreContext> context = content::NavigationEntryRestoreContext::Create(); // FIXME?
+    std::unique_ptr<content::NavigationEntryRestoreContext> context = content::NavigationEntryRestoreContext::Create();
 
     entries->reserve(count);
     // Logic taken from SerializedNavigationEntry::ReadFromPickle and ToNavigationEntries.
@@ -409,17 +407,6 @@ QSharedPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavig
     content::NavigationController &controller = newWebContents->GetController();
     controller.Restore(currentIndex, content::RestoreType::kRestored, &entries);
 
-    if (controller.GetActiveEntry()) {
-        // Set up the file access rights for the selected navigation entry.
-        // TODO(joth): This is duplicated from chrome/.../session_restore.cc and
-        // should be shared e.g. in  NavigationController. http://crbug.com/68222
-        const int id = newWebContents->GetPrimaryMainFrame()->GetProcess()->GetID();
-        const blink::PageState& pageState = controller.GetActiveEntry()->GetPageState();
-        const std::vector<base::FilePath>& filePaths = pageState.GetReferencedFiles();
-        for (std::vector<base::FilePath>::const_iterator file = filePaths.begin(); file != filePaths.end(); ++file)
-            content::ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(id, *file);
-    }
-
     return QSharedPointer<WebContentsAdapter>::create(std::move(newWebContents));
 }
 
@@ -467,6 +454,10 @@ bool WebContentsAdapter::isInitialized() const
     return (bool)m_webContentsDelegate;
 }
 
+ui::NativeTheme::PreferredColorScheme toWeb(Qt::ColorScheme colorScheme) {
+    return colorScheme == Qt::ColorScheme::Dark ? ui::NativeTheme::PreferredColorScheme::kDark : ui::NativeTheme::PreferredColorScheme::kLight;
+}
+
 void WebContentsAdapter::initialize(content::SiteInstance *site)
 {
     Q_ASSERT(m_adapterClient);
@@ -504,14 +495,6 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
             webContents(), FaviconServiceFactoryQt::GetForBrowserContext(context), m_adapterClient);
 
     AutofillClientQt::CreateForWebContents(webContents());
-    autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
-            webContents(), AutofillClientQt::FromWebContents(webContents()),
-             base::BindRepeating(&autofill::BrowserDriverInitHook, AutofillClientQt::FromWebContents(webContents()), ""));
-
-#if QT_CONFIG(webengine_printing_and_pdf) && QT_CONFIG(webengine_extensions)
-    pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
-            webContents(), std::make_unique<PDFWebContentsHelperClientQt>());
-#endif
 
     // Create an instance of WebEngineVisitedLinksManager to catch the first
     // content::NOTIFICATION_RENDERER_PROCESS_CREATED event. This event will
@@ -527,6 +510,12 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
                 rvh, absl::nullopt, nullptr);
 
     m_webContentsDelegate->RenderViewHostChanged(nullptr, rvh);
+
+    // Make sure the system theme's light/dark mode is propagated to webpages
+    QObject::connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, [](Qt::ColorScheme colorScheme){
+        ui::NativeTheme::GetInstanceForWeb()->set_preferred_color_scheme(toWeb(colorScheme));
+    });
+    ui::NativeTheme::GetInstanceForWeb()->set_preferred_color_scheme(toWeb(QGuiApplication::styleHints()->colorScheme()));
 
     m_adapterClient->initializationFinished();
 }
@@ -1272,7 +1261,10 @@ void WebContentsAdapter::openDevToolsFrontend(QSharedPointer<WebContentsAdapter>
 
     setLifecycleState(LifecycleState::Active);
 
-    m_devToolsFrontend = DevToolsFrontendQt::Show(frontendAdapter, m_webContents.get());
+    content::WebContents *webContents = m_webContents.get();
+    if (content::WebContents *guest = guestWebContents())
+        webContents = guest;
+    m_devToolsFrontend = DevToolsFrontendQt::Show(frontendAdapter, webContents);
     updateRecommendedState();
 }
 
@@ -1627,7 +1619,7 @@ static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeDat
     }
     if (!dropData->filenames.empty())
         return;
-    if (mimeData->hasUrls()) {
+    if (!urls.empty()) {
         dropData->url = toGurl(urls.first());
         if (mimeData->hasText())
             dropData->url_title = toString16(mimeData->text());
