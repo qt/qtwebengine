@@ -13,7 +13,7 @@ using QtWebEngineCore::UserNotificationController;
 
 /*!
     \qmltype WebEngineNotification
-    \instantiates QWebEngineNotification
+    \nativetype QWebEngineNotification
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.9
     \brief Encapsulates the data of an HTML5 web notification.

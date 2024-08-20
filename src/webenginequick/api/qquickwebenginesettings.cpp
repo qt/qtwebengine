@@ -14,7 +14,7 @@ QQuickWebEngineSettings::QQuickWebEngineSettings(QQuickWebEngineSettings *parent
 
 /*!
     \qmltype WebEngineSettings
-    //! \instantiates QQuickWebEngineSettings
+    //! \nativetype QQuickWebEngineSettings
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
     \brief Allows configuration of browser properties and attributes.

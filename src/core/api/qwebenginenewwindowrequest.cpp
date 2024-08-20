@@ -24,7 +24,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmltype WebEngineNewWindowRequest
-    \instantiates QWebEngineNewWindowRequest
+    \nativetype QWebEngineNewWindowRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.12
 

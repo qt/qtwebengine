@@ -3,7 +3,7 @@
 
 /*!
     \qmlvaluetype webEnginePermission
-    \instantiates QWebEnginePermission
+    \nativetype QWebEnginePermission
     \inqmlmodule QtWebEngine
     \since 6.8
     \brief An object used to access and modify the state of a single permission that's been

@@ -7,7 +7,7 @@
 
 /*!
     \qmltype WebEngineWebAuthUxRequest
-    \instantiates QWebEngineWebAuthUxRequest
+    \nativetype QWebEngineWebAuthUxRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 6.7
     \brief Encapsulates the data of a WebAuth UX request.

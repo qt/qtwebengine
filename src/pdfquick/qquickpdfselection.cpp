@@ -20,7 +20,7 @@ static const QRegularExpression WordDelimiter(QStringLiteral("\\s"));
 
 /*!
     \qmltype PdfSelection
-//!    \instantiates QQuickPdfSelection
+//!    \nativetype QQuickPdfSelection
     \inqmlmodule QtQuick.Pdf
     \ingroup pdf
     \inherits Item

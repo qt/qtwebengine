@@ -10,7 +10,7 @@ Q_LOGGING_CATEGORY(qLcSearch, "qt.pdf.search")
 
 /*!
     \qmltype PdfSearchModel
-//!    \instantiates QQuickPdfSearchModel
+//!    \nativetype QQuickPdfSearchModel
     \inqmlmodule QtQuick.Pdf
     \ingroup pdf
     \brief A representation of text search results within a PDF Document.

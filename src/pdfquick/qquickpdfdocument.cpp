@@ -14,7 +14,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmltype PdfDocument
-//!    \instantiates QQuickPdfDocument
+//!    \nativetype QQuickPdfDocument
     \inqmlmodule QtQuick.Pdf
     \ingroup pdf
     \brief A representation of a PDF document.

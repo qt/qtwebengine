@@ -3,7 +3,7 @@
 
 /*!
     \qmltype FullScreenRequest
-    \instantiates QWebEngineFullScreenRequest
+    \nativetype QWebEngineFullScreenRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
 
