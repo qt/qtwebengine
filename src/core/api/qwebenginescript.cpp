@@ -131,12 +131,26 @@ void QWebEngineScript::setName(const QString &scriptName)
     d->setName(scriptName);
 }
 
-
+/*!
+ * Returns the remote source location of the user script (if any).
+ */
 QUrl QWebEngineScript::sourceUrl() const
 {
     return d->sourceUrl();
 }
 
+/*!
+ * Sets the remote source location of the user script to \a url.
+ *
+ * Unlike \l setSourceCode(), this function allows referring to user scripts that
+ * are not already loaded in memory, for instance, when stored on disk.
+ *
+ * Setting this value will change the \l sourceCode of the script.
+ *
+ * \note At present, only file-based sources are supported.
+ *
+ * \sa setSourceCode()
+ */
 void QWebEngineScript::setSourceUrl(const QUrl &url)
 {
     if (url == sourceUrl())
