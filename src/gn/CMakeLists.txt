@@ -61,10 +61,12 @@ add_custom_command(
     WORKING_DIRECTORY ${GN_BINARY_DIR}
     COMMAND ${Python3_EXECUTABLE} ${GN_SOURCE_DIR}/build/gen.py
         --no-last-commit-position
+        --no-static-libstdc++
         --out-path ${GN_BINARY_DIR}/$<CONFIG>
         --cc ${CMAKE_C_COMPILER}
         --cxx ${CMAKE_CXX_COMPILER}
         --ld ${GN_LINKER}
+        --allow-warnings
         --platform ${platform}
         --ar ${CMAKE_AR}
         --qt-version "${QT_REPO_MODULE_VERSION}.qtwebengine.qt.io"
