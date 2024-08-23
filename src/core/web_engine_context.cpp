@@ -939,6 +939,10 @@ WebEngineContext::WebEngineContext()
 
     enableFeatures.push_back(features::kNetworkServiceInProcess.name);
     enableFeatures.push_back(features::kTracingServiceInProcess.name);
+#if defined(Q_OS_MACOS) && BUILDFLAG(USE_SCK)
+    // The feature name should match the definition of kScreenCaptureKitMacScreen.
+    enableFeatures.push_back("ScreenCaptureKitMacScreen");
+#endif // defined(Q_OS_MACOS)
 
     // Avoid crashing when websites tries using this feature (since 83)
     disableFeatures.push_back(features::kInstalledApp.name);

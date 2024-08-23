@@ -922,6 +922,12 @@ macro(append_compiler_linker_sdk_setup)
                 mac_sdk_min="${macSdkVersion}"
                 use_libcxx=true
             )
+            _qt_internal_get_apple_sdk_version(apple_sdk_version)
+            if (apple_sdk_version LESS 13.2)
+                list(APPEND gnArgArg
+                    use_sck=false
+                )
+            endif()
         endif()
         if(IOS)
             list(APPEND gnArgArg
