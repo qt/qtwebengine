@@ -21,8 +21,7 @@ class QQuickWebEngineViewPrivate;
 class QQuickWebEngineProfile;
 
 struct QWebEnginePermissionPrivate;
-QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QWebEnginePermissionPrivate,
-                                                 Q_WEBENGINECORE_EXPORT)
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR(QWebEnginePermissionPrivate)
 
 class QWebEnginePermission
 {
@@ -37,7 +36,7 @@ public:
     Q_WEBENGINECORE_EXPORT QWebEnginePermission();
 
     Q_WEBENGINECORE_EXPORT QWebEnginePermission(const QWebEnginePermission &other);
-    Q_WEBENGINECORE_EXPORT QWebEnginePermission(QWebEnginePermission &&other);
+    QWebEnginePermission(QWebEnginePermission &&other) noexcept = default;
     Q_WEBENGINECORE_EXPORT ~QWebEnginePermission();
 
     Q_WEBENGINECORE_EXPORT QWebEnginePermission &operator=(const QWebEnginePermission &other);
