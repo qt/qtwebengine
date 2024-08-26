@@ -93,11 +93,6 @@ QWebEnginePermission::QWebEnginePermission(const QWebEnginePermission &other)
 {
 }
 
-QWebEnginePermission::QWebEnginePermission(QWebEnginePermission &&other)
-    : d_ptr(std::move(other.d_ptr))
-{
-}
-
 QWebEnginePermission::~QWebEnginePermission() = default;
 
 QWebEnginePermission &QWebEnginePermission::operator=(const QWebEnginePermission &other)
