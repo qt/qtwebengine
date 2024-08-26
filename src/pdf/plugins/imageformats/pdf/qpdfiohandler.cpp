@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qpdfiohandler_p.h"
+#include "../../../../core/web_engine_logging.h"
 #include <QLoggingCategory>
 #include <QPainter>
 #include <QtPdf/private/qpdffile_p.h>
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(qLcPdf, "qt.imageformat.pdf")
+Q_WEBENGINE_LOGGING_CATEGORY(qLcPdf, "qt.imageformat.pdf")
 
 QPdfIOHandler::QPdfIOHandler()
 {

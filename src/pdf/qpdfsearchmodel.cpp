@@ -9,13 +9,15 @@
 #include "third_party/pdfium/public/fpdf_text.h"
 #include "third_party/pdfium/public/fpdfview.h"
 
+#include "../core/web_engine_logging.h"
+
 #include <QtCore/qelapsedtimer.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/QMetaEnum>
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(qLcS, "qt.pdf.search")
+Q_WEBENGINE_LOGGING_CATEGORY(qLcS, "qt.pdf.search")
 
 static const int UpdateTimerInterval = 100;
 static const int ContextChars = 64;

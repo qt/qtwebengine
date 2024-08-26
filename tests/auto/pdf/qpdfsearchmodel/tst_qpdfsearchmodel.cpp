@@ -1,13 +1,14 @@
 // Copyright (C) 2020 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#include "../../../../src/core/web_engine_logging.h"
 
 #include <QtTest/QtTest>
 
 #include <QPdfDocument>
 #include <QPdfSearchModel>
 
-Q_LOGGING_CATEGORY(lcTests, "qt.pdf.tests")
+Q_WEBENGINE_LOGGING_CATEGORY(lcTests, "qt.pdf.tests")
 
 class tst_QPdfSearchModel: public QObject
 {

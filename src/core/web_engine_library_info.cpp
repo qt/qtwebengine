@@ -16,6 +16,7 @@
 #include "ui/base/ui_base_switches.h"
 
 #include "type_conversion.h"
+#include "web_engine_logging.h"
 
 #include <QByteArray>
 #include <QCoreApplication>
@@ -36,7 +37,7 @@
 
 using namespace QtWebEngineCore;
 
-Q_LOGGING_CATEGORY(webEngineLibraryInfoLog, "qt.webengine.libraryinfo")
+Q_WEBENGINE_LOGGING_CATEGORY(webEngineLibraryInfoLog, "qt.webengine.libraryinfo")
 
 namespace {
 

@@ -12,10 +12,11 @@
 #include <QtPdfQuick/private/qquickpdfsearchmodel_p.h>
 #include <QtPdfQuick/private/qquickpdfpageimage_p.h>
 #include "../shared/util.h"
+#include "../../../../src/core/web_engine_logging.h"
 
 using namespace Qt::StringLiterals;
 
-Q_LOGGING_CATEGORY(lcTests, "qt.pdf.tests")
+Q_WEBENGINE_LOGGING_CATEGORY(lcTests, "qt.pdf.tests")
 
 class tst_MultiPageView : public QQuickDataTest
 {

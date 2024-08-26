@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qquickpdfsearchmodel_p.h"
+#include "../core/web_engine_logging.h"
 #include <QtCore/qloggingcategory.h>
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(qLcSearch, "qt.pdf.search")
+Q_WEBENGINE_LOGGING_CATEGORY(qLcSearch, "qt.pdf.search")
 
 /*!
     \qmltype PdfSearchModel

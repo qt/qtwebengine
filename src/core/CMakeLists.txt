@@ -188,6 +188,7 @@ foreach(arch ${archs})
                 web_engine_context.cpp web_engine_context.h
                 web_engine_error.cpp web_engine_error.h
                 web_engine_library_info.cpp web_engine_library_info.h
+                web_engine_logging.h
                 web_engine_settings.cpp web_engine_settings.h
                 web_event_factory.cpp web_event_factory.h
                 web_usb_detector_qt.cpp web_usb_detector_qt.h

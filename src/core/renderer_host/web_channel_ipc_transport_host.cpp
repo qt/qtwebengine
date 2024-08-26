@@ -10,6 +10,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "qtwebengine/browser/qtwebchannel.mojom.h"
+#include "web_engine_logging.h"
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -17,7 +18,7 @@
 
 namespace QtWebEngineCore {
 
-Q_LOGGING_CATEGORY(log, "qt.webengine.webchanneltransport")
+Q_WEBENGINE_LOGGING_CATEGORY(log, "qt.webengine.webchanneltransport")
 
 inline QDebug operator<<(QDebug stream, content::RenderFrameHost *frame)
 {

@@ -7,6 +7,8 @@
 
 #include "qpdfpagerenderer.h"
 
+#include "../core/web_engine_logging.h"
+
 #include <QGuiApplication>
 #include <QLoggingCategory>
 #include <QPainter>
@@ -19,7 +21,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(qLcWLink, "qt.pdf.widgets.links")
+Q_WEBENGINE_LOGGING_CATEGORY(qLcWLink, "qt.pdf.widgets.links")
 //#define DEBUG_LINKS
 
 static const QColor SearchResultHighlight("#80B0C4DE");

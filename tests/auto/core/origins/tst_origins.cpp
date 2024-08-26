@@ -4,6 +4,8 @@
 #include <util.h>
 #include "httpserver.h"
 
+#include "../../../../src/core/web_engine_logging.h"
+
 #include <QtCore/qfile.h>
 #include <QtTest/QtTest>
 #include <QtWebEngineCore/qwebengineurlrequestinterceptor.h>
@@ -25,7 +27,7 @@
 #define QSL QStringLiteral
 #define QBAL QByteArrayLiteral
 
-Q_LOGGING_CATEGORY(lc, "qt.webengine.tests")
+Q_WEBENGINE_LOGGING_CATEGORY(lc, "qt.webengine.tests")
 
 void registerSchemes()
 {

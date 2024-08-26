@@ -13,6 +13,8 @@
 #include <QtWebEngineCore/qwebenginepage.h>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
 
+#include "../../../../src/core/web_engine_logging.h"
+
 #include <httpserver.h>
 #include <httpreqrep.h>
 
@@ -99,7 +101,7 @@ struct RequestInfo {
 
 static const QUrl kRedirectUrl = QUrl("qrc:///resources/content.html");
 
-Q_LOGGING_CATEGORY(lc, "qt.webengine.tests")
+Q_WEBENGINE_LOGGING_CATEGORY(lc, "qt.webengine.tests")
 
 class TestRequestInterceptor : public QWebEngineUrlRequestInterceptor
 {

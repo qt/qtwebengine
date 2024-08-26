@@ -3,6 +3,7 @@
 
 #include "qquickpdfselection_p.h"
 #include "qquickpdfdocument_p.h"
+#include "../core/web_engine_logging.h"
 #include <QClipboard>
 #include <QGuiApplication>
 #include <QLoggingCategory>
@@ -12,7 +13,7 @@
 #include <QStandardPaths>
 #include <QtPdf/private/qpdfdocument_p.h>
 
-Q_LOGGING_CATEGORY(qLcIm, "qt.pdf.im")
+Q_WEBENGINE_LOGGING_CATEGORY(qLcIm, "qt.pdf.im")
 
 QT_BEGIN_NAMESPACE
 
