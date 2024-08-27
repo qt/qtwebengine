@@ -1,0 +1,12 @@
+<!doctype html>
+<html>
+<body>
+    <script type="text/javascript">
+    var request = new XMLHttpRequest();
+    request.open('POST', 'requestbodyhandler:about', /* async = */ false);
+    request.setRequestHeader('Content-Type', 'text/plain');
+    request.send('reading request body successful');
+    console.log("TST_REQUESTBODY;" + request.response);
+    </script>
+</body>
+</html>

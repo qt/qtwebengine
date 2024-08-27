@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QMetaEnum>
 #include <QMetaMethod>
@@ -10,6 +10,7 @@
 #include <QtTest/QtTest>
 #include <QtWebEngineQuick/QQuickWebEngineProfile>
 #include <QtWebEngineCore/QWebEngineCertificateError>
+#include <QtWebEngineCore/QWebEngineDesktopMediaRequest>
 #include <QtWebEngineCore/QWebEngineFileSystemAccessRequest>
 #include <QtWebEngineCore/QWebEngineFindTextResult>
 #include <QtWebEngineCore/QWebEngineFullScreenRequest>
@@ -23,6 +24,7 @@
 #include <QtWebEngineCore/QWebEngineDownloadRequest>
 #include <QtWebEngineCore/QWebEngineScript>
 #include <QtWebEngineCore/QWebEngineLoadingInfo>
+#include <QtWebEngineCore/QWebEngineWebAuthUxRequest>
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebengineaction_p.h>
 #include <private/qquickwebengineclientcertificateselection_p.h>
@@ -61,15 +63,19 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QQuickWebEngineTooltipRequest::staticMetaObject
     << &QWebEngineContextMenuRequest::staticMetaObject
     << &QWebEngineCertificateError::staticMetaObject
+    << &QWebEngineDesktopMediaRequest::staticMetaObject
     << &QWebEngineFileSystemAccessRequest::staticMetaObject
     << &QWebEngineFindTextResult::staticMetaObject
     << &QWebEngineLoadingInfo::staticMetaObject
+    << &QAbstractListModel::staticMetaObject
     << &QWebEngineNavigationRequest::staticMetaObject
     << &QWebEngineNewWindowRequest::staticMetaObject
     << &QWebEngineNotification::staticMetaObject
     << &QWebEngineQuotaRequest::staticMetaObject
     << &QWebEngineRegisterProtocolHandlerRequest::staticMetaObject
     << &QQuickWebEngineTouchSelectionMenuRequest::staticMetaObject
+    << &QWebEngineWebAuthUxRequest::staticMetaObject
+    << &QWebEngineWebAuthPinRequest::staticMetaObject
     ;
 
 static QList<QMetaEnum> knownEnumNames = QList<QMetaEnum>()
@@ -264,6 +270,11 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineTooltipRequest.text --> QString"
     << "QQuickWebEngineTooltipRequest.type --> QQuickWebEngineTooltipRequest::RequestType"
     << "QQuickWebEngineTooltipRequest.accepted --> bool"
+    << "QWebEngineDesktopMediaRequest.screensModel --> QAbstractListModel*"
+    << "QWebEngineDesktopMediaRequest.windowsModel --> QAbstractListModel*"
+    << "QWebEngineDesktopMediaRequest.selectScreen(QModelIndex) --> void"
+    << "QWebEngineDesktopMediaRequest.selectWindow(QModelIndex) --> void"
+    << "QWebEngineDesktopMediaRequest.cancel() --> void"
     << "QWebEngineFullScreenRequest.accept() --> void"
     << "QWebEngineFullScreenRequest.origin --> QUrl"
     << "QWebEngineFullScreenRequest.reject() --> void"
@@ -348,6 +359,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineProfile.cachePath --> QString"
     << "QQuickWebEngineProfile.cachePathChanged() --> void"
     << "QQuickWebEngineProfile.clearHttpCache() --> void"
+    << "QQuickWebEngineProfile.clearHttpCacheCompleted() --> void"
     << "QQuickWebEngineProfile.downloadFinished(QQuickWebEngineDownloadRequest*) --> void"
     << "QQuickWebEngineProfile.downloadRequested(QQuickWebEngineDownloadRequest*) --> void"
     << "QQuickWebEngineProfile.downloadPath --> QString"
@@ -397,6 +409,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.dnsPrefetchEnabledChanged() --> void"
     << "QQuickWebEngineSettings.errorPageEnabled --> bool"
     << "QQuickWebEngineSettings.errorPageEnabledChanged() --> void"
+    << "QQuickWebEngineSettings.forceDarkMode --> bool"
+    << "QQuickWebEngineSettings.forceDarkModeChanged() --> void"
     << "QQuickWebEngineSettings.focusOnNavigationEnabled --> bool"
     << "QQuickWebEngineSettings.focusOnNavigationEnabledChanged() --> void"
     << "QQuickWebEngineSettings.fullScreenSupportEnabled --> bool"
@@ -689,6 +703,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.contentsSize --> QSizeF"
     << "QQuickWebEngineView.contentsSizeChanged(QSizeF) --> void"
     << "QQuickWebEngineView.contextMenuRequested(QWebEngineContextMenuRequest*) --> void"
+    << "QQuickWebEngineView.desktopMediaRequested(QWebEngineDesktopMediaRequest) --> void"
     << "QQuickWebEngineView.devToolsId --> QString"
     << "QQuickWebEngineView.devToolsView --> QQuickWebEngineView*"
     << "QQuickWebEngineView.devToolsViewChanged() --> void"
@@ -811,6 +826,50 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineNotification.click() --> void"
     << "QWebEngineNotification.close() --> void"
     << "QWebEngineNotification.closed() --> void"
+    << "QQuickWebEngineView.webAuthUxRequested(QWebEngineWebAuthUxRequest*) --> void"
+    << "QWebEngineWebAuthUxRequest.WebAuthUxState.NotStarted --> WebAuthUxState"
+    << "QWebEngineWebAuthUxRequest.WebAuthUxState.SelectAccount --> WebAuthUxState"
+    << "QWebEngineWebAuthUxRequest.WebAuthUxState.CollectPin --> WebAuthUxState"
+    << "QWebEngineWebAuthUxRequest.WebAuthUxState.FinishTokenCollection --> WebAuthUxState"
+    << "QWebEngineWebAuthUxRequest.WebAuthUxState.RequestFailed --> WebAuthUxState"
+    << "QWebEngineWebAuthUxRequest.WebAuthUxState.Cancelled --> WebAuthUxState"
+    << "QWebEngineWebAuthUxRequest.WebAuthUxState.Completed --> WebAuthUxState"
+    << "QWebEngineWebAuthUxRequest.PinEntryReason.Set --> PinEntryReason"
+    << "QWebEngineWebAuthUxRequest.PinEntryReason.Change --> PinEntryReason"
+    << "QWebEngineWebAuthUxRequest.PinEntryReason.Challenge --> PinEntryReason"
+    << "QWebEngineWebAuthUxRequest.PinEntryError.NoError --> PinEntryError"
+    << "QWebEngineWebAuthUxRequest.PinEntryError.InternalUvLocked --> PinEntryError"
+    << "QWebEngineWebAuthUxRequest.PinEntryError.WrongPin --> PinEntryError"
+    << "QWebEngineWebAuthUxRequest.PinEntryError.TooShort --> PinEntryError"
+    << "QWebEngineWebAuthUxRequest.PinEntryError.InvalidCharacters --> PinEntryError"
+    << "QWebEngineWebAuthUxRequest.PinEntryError.SameAsCurrentPin --> PinEntryError"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.Timeout --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.KeyNotRegistered --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.KeyAlreadyRegistered --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.SoftPinBlock --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.HardPinBlock --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.AuthenticatorRemovedDuringPinEntry --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.AuthenticatorMissingResidentKeys --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.AuthenticatorMissingUserVerification --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.AuthenticatorMissingLargeBlob --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.NoCommonAlgorithms --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.StorageFull --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.UserConsentDenied --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.RequestFailureReason.WinUserCancelled --> RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.userNames --> QStringList"
+    << "QWebEngineWebAuthUxRequest.state --> QWebEngineWebAuthUxRequest::WebAuthUxState"
+    << "QWebEngineWebAuthUxRequest.relyingPartyId --> QString"
+    << "QWebEngineWebAuthUxRequest.pinRequest --> QWebEngineWebAuthPinRequest"
+    << "QWebEngineWebAuthUxRequest.requestFailureReason --> QWebEngineWebAuthUxRequest::RequestFailureReason"
+    << "QWebEngineWebAuthUxRequest.stateChanged(QWebEngineWebAuthUxRequest::WebAuthUxState) --> void"
+    << "QWebEngineWebAuthUxRequest.cancel() --> void"
+    << "QWebEngineWebAuthUxRequest.retry() --> void"
+    << "QWebEngineWebAuthUxRequest.setSelectedAccount(QString) --> void"
+    << "QWebEngineWebAuthUxRequest.setPin(QString) --> void"
+    << "QWebEngineWebAuthPinRequest.reason --> QWebEngineWebAuthUxRequest::PinEntryReason"
+    << "QWebEngineWebAuthPinRequest.error --> QWebEngineWebAuthUxRequest::PinEntryError"
+    << "QWebEngineWebAuthPinRequest.minPinLength --> int"
+    << "QWebEngineWebAuthPinRequest.remainingAttempts --> int"
     ;
 
 static bool isCheckedEnum(QMetaType t)

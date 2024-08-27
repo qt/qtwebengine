@@ -29,6 +29,8 @@
         \li On Windows, \QWE only supports Windows Vista or newer as
             target platform. Due to use of newer API in Chromium, Windows XP is
             not supported. WinRT is not supported, either.
+        \li On Windows, the Visual C++ Redistributable version 14.28 or higher
+            is needed to run \QWE applications.
     \endlist
 
     \section1 Deploying Applications Manually
@@ -147,7 +149,7 @@
 
     \section2 \macos Specific Deployment Steps
 
-    To deploy a \QWE application on \maocs, you will need to ensure that the \QWE process is signed
+    To deploy a \QWE application on \macos, you will need to ensure that the \QWE process is signed
     with an entitlements file that at least contains the entitlements listed in
     QtWebEngineCore.framework/Helpers/QtWebEngineProcess.app/Contents/Resources/QtWebEngineProcess.entitlements.
 

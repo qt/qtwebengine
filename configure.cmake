@@ -45,7 +45,8 @@ if(PkgConfig_FOUND)
     pkg_check_modules(PNG libpng>=1.6.0)
     pkg_check_modules(TIFF libtiff-4>=4.2.0)
     pkg_check_modules(ZLIB zlib)
-    pkg_check_modules(RE2 re2 IMPORTED_TARGET)
+    # TODO: chromium may replace base::StringView with std::string_view. See: crbug.com/691162
+    pkg_check_modules(RE2 re2>=11.0.0 IMPORTED_TARGET)
     pkg_check_modules(ICU icu-uc>=70 icu-i18n>=70)
     pkg_check_modules(WEBP libwebp libwebpmux libwebpdemux)
     pkg_check_modules(LCMS2 lcms2)
@@ -216,25 +217,6 @@ int main(void) {
 }"
 )
 
-qt_config_compile_test(libavformat
-    LABEL "libavformat"
-    LIBRARIES
-        PkgConfig::FFMPEG
-    CODE
-"
-#include \"libavformat/version.h\"
-extern \"C\" {
-#include \"libavformat/avformat.h\"
-}
-int main(void) {
-#if LIBAVFORMAT_VERSION_MAJOR >= 59
-    AVStream stream;
-    auto first_dts = av_stream_get_first_dts(&stream);
-#endif
-    return 0;
-}"
-)
-
 #### Features
 
 qt_feature("qtwebengine-build" PUBLIC
@@ -329,12 +311,13 @@ qt_feature("webengine-developer-build" PRIVATE
 )
 qt_feature("webengine-system-re2" PRIVATE
     LABEL "re2"
+    AUTODETECT FALSE
     CONDITION UNIX AND TEST_re2
 )
 qt_feature("webengine-system-icu" PRIVATE
     LABEL "icu"
     AUTODETECT FALSE
-    CONDITION ICU_FOUND
+    CONDITION UNIX AND NOT APPLE AND ICU_FOUND
 )
 qt_feature("webengine-system-libwebp" PRIVATE
     LABEL "libwebp, libwebpmux and libwebpdemux"
@@ -462,7 +445,8 @@ qt_feature("webengine-ozone-x11" PRIVATE
 )
 
 #### Support Checks
-if(WIN32 AND (CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64" OR CMAKE_CROSSCOMPILING))
+if(WIN32 AND (CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM64"
+        OR CMAKE_CROSSCOMPILING))
    set(WIN_ARM_64 ON)
 else()
    set(WIN_ARM_64 OFF)
@@ -489,8 +473,8 @@ add_check_for_support(
 )
 add_check_for_support(
    MODULES QtPdf
-   CONDITION LINUX OR (WIN32 AND NOT WIN_ARM_64) OR MACOS OR IOS OR (ANDROID AND NOT CMAKE_HOST_WIN32)
-   MESSAGE "Build can be done only on Linux, Windows, macO, iOS and Android(on non-Windows hosts only)."
+   CONDITION LINUX OR (WIN32 AND NOT WIN_ARM_64) OR MACOS OR IOS OR ANDROID
+   MESSAGE "Build can be done only on Linux, Windows, macO, iOS and Android."
 )
 if(LINUX AND CMAKE_CROSSCOMPILING)
    set(supportedTargets "arm" "arm64" "armv7-a" "x86_64")

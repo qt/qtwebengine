@@ -111,5 +111,26 @@ bool SSLHostStateDelegateQt::HasAllowException(const std::string &host, content:
            policy_iterator->second.HasAllowException();
 }
 
+bool SSLHostStateDelegateQt::HasAllowExceptionForAnyHost(content::StoragePartition *storage_partition)
+{
+    for (auto const &it : m_certPolicyforHost) {
+        if (it.second.HasAllowException()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void SSLHostStateDelegateQt::SetHttpsEnforcementForHost(const std::string &host, bool enforce,
+                                                        content::StoragePartition *storage_partition)
+{
+    // Intentional no-op see aw_ssl_host_state_delegate
+}
+
+bool SSLHostStateDelegateQt::IsHttpsEnforcedForHost(const std::string &host, content::StoragePartition *storage_partition)
+{
+    // Intentional no-op
+    return false;
+}
 
 } // namespace QtWebEngineCore

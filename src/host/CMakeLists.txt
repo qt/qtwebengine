@@ -20,10 +20,7 @@ project(QtWebEngineConfigure
     LANGUAGES CXX C)
 
 find_package(Qt6 6.5 CONFIG REQUIRED COMPONENTS BuildInternals Core)
-
-if(COMMAND qt_internal_project_setup)
-    qt_internal_project_setup()
-endif()
+qt_internal_project_setup()
 get_gn_arch(target_arch ${GN_TARGET_CPU})
 get_gn_arch(host_arch ${TEST_architecture_arch})
 get_v8_arch(v8_arch ${target_arch} ${host_arch})
@@ -55,9 +52,10 @@ if(QT_FEATURE_qtpdf_build)
 endif()
 
 # TODO: this could be run as part of main configure with execute_process
+# Skip for qtpdf(android)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL GNU AND TEST_architecture_arch STREQUAL "x86_64"
-AND GN_TARGET_CPU STREQUAL "arm")
+    AND GN_TARGET_CPU STREQUAL "arm" AND NOT MINGW AND NOT ANDROID)
     try_compile(
         has32HostCompiler
         "${CMAKE_CURRENT_BINARY_DIR}/config.tests/hostcompiler"

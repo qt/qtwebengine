@@ -27,9 +27,13 @@ namespace net {
 class URLRequest;
 }
 
+namespace QtWebEngineCore {
+class ResourceRequestBody;
+}
+
 QT_BEGIN_NAMESPACE
 
-class QWebEngineUrlRequestInfoPrivate
+class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineUrlRequestInfoPrivate
 {
     Q_DECLARE_PUBLIC(QWebEngineUrlRequestInfo)
 public:
@@ -37,6 +41,7 @@ public:
                                     QWebEngineUrlRequestInfo::NavigationType navigation,
                                     const QUrl &u, const QUrl &fpu, const QUrl &i,
                                     const QByteArray &m,
+                                    QtWebEngineCore::ResourceRequestBody *const rb = nullptr,
                                     const QHash<QByteArray, QByteArray> &h = {});
 
     QWebEngineUrlRequestInfo::ResourceType resourceType;
@@ -49,8 +54,11 @@ public:
     const QByteArray method;
     bool changed;
     QHash<QByteArray, QByteArray> extraHeaders;
+    QtWebEngineCore::ResourceRequestBody *const resourceRequestBody;
 
     QWebEngineUrlRequestInfo *q_ptr;
+
+    void appendFileToResourceRequestBodyForTest(const QString &path);
 };
 
 QT_END_NAMESPACE

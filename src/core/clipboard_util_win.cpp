@@ -1,6 +1,6 @@
 // Copyright (C) 2007, 2008 Apple Inc. All rights reserved.
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+// SPDX-License-Identifier: BSD-3-Clause
 
 #include <string>
 

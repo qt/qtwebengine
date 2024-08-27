@@ -11,22 +11,11 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
-#include "extensions/buildflags/buildflags.h"
-#include "services/network/public/cpp/features.h"
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/browser/info_map.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/manifest_handlers/mime_types_handler.h"
-#endif // BUILDFLAG(ENABLE_EXTENSIONS)
-
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/features.h"
 
 #include "authentication_dialog_controller.h"
 #include "authentication_dialog_controller_p.h"
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/extension_system_qt.h"
-#endif // BUILDFLAG(ENABLE_EXTENSIONS)
 #include "type_conversion.h"
 #include "web_contents_view_qt.h"
 #include "web_engine_context.h"

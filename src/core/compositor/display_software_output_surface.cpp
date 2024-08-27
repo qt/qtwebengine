@@ -56,7 +56,7 @@ void DisplaySoftwareOutputSurface::Device::Resize(const gfx::Size &sizeInPixels,
         return;
     m_devicePixelRatio = devicePixelRatio;
     viewport_pixel_size_ = sizeInPixels;
-    surface_ = SkSurface::MakeRaster(SkImageInfo::MakeN32Premul(sizeInPixels.width(), sizeInPixels.height()));
+    surface_ = SkSurfaces::Raster(SkImageInfo::MakeN32Premul(sizeInPixels.width(), sizeInPixels.height()));
 }
 
 void DisplaySoftwareOutputSurface::Device::OnSwapBuffers(SwapBuffersCallback swap_ack_callback, gfx::FrameData data)

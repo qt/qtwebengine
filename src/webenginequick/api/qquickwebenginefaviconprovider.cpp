@@ -11,9 +11,9 @@
 #include "web_contents_adapter.h"
 
 #include <QtCore/qmimedatabase.h>
-#include <QtCore/qtimer.h>
 #include <QtGui/qicon.h>
 #include <QtGui/qpixmap.h>
+#include <QThread>
 
 QT_BEGIN_NAMESPACE
 
@@ -79,123 +79,167 @@ static bool isIconURL(const QUrl &url)
     return false;
 }
 
-static QQuickWebEngineView *findViewById(const QString &id, QList<QQuickWebEngineView *> *views)
-{
-    QQuickWebEngineView *result = nullptr;
-    for (QQuickWebEngineView *view : *views) {
-        if (isIconURL(QUrl(id))) {
-            if (view->icon() == QQuickWebEngineFaviconProvider::faviconProviderUrl(QUrl(id))) {
-                result = view;
-                break;
-            }
-        } else if (view->url() == QUrl(id)) {
-            result = view;
-            break;
-        }
-    }
-
-    return result;
-}
-
-FaviconImageResponseRunnable::FaviconImageResponseRunnable(const QString &id,
-                                                           const QSize &requestedSize,
-                                                           QList<QQuickWebEngineView *> *views)
-    : m_id(id), m_requestedSize(requestedSize), m_views(views)
+FaviconImageRequester::FaviconImageRequester(const QUrl &imageSource, const QSize &requestedSize)
+    : m_imageSource(imageSource), m_requestedSize(requestedSize)
 {
 }
 
-void FaviconImageResponseRunnable::run()
+void FaviconImageRequester::start()
 {
-    if (tryNextView() == -1) {
+    if (!tryNextView()) {
         // There is no non-otr view to access icon database.
         Q_EMIT done(QPixmap());
     }
 }
 
-void FaviconImageResponseRunnable::iconRequestDone(const QIcon &icon)
+void FaviconImageRequester::iconRequestDone(const QIcon &icon)
 {
     if (icon.isNull()) {
-        if (tryNextView() == -1) {
+        if (!tryNextView()) {
             // Ran out of views.
             Q_EMIT done(QPixmap());
         }
         return;
     }
 
-    Q_EMIT done(extractPixmap(icon, m_requestedSize).copy());
+    Q_EMIT done(extractPixmap(icon, m_requestedSize));
 }
 
-int FaviconImageResponseRunnable::tryNextView()
+bool FaviconImageRequester::tryNextView()
 {
-    for (; m_nextViewIndex < m_views->size(); ++m_nextViewIndex) {
-        QQuickWebEngineView *view = m_views->at(m_nextViewIndex);
+    if (auto view = getNextViewForProcessing()) {
+        requestFaviconFromDatabase(view);
+        return true;
+    }
+
+    return false;
+}
+
+void FaviconImageRequester::requestFaviconFromDatabase(QPointer<QQuickWebEngineView> view)
+{
+    QtWebEngineCore::ProfileAdapter *profileAdapter = view->d_ptr->profileAdapter();
+    bool touchIconsEnabled = view->profile()->settings()->touchIconsEnabled();
+    if (isIconURL(m_imageSource)) {
+        profileAdapter->requestIconForIconURL(
+                m_imageSource, qMax(m_requestedSize.width(), m_requestedSize.height()),
+                touchIconsEnabled, [this](const QIcon &icon, const QUrl &) {
+                    QMetaObject::invokeMethod(this, "iconRequestDone", Qt::QueuedConnection,
+                                              Q_ARG(const QIcon &, icon));
+                });
+    } else {
+        profileAdapter->requestIconForPageURL(
+                m_imageSource, qMax(m_requestedSize.width(), m_requestedSize.height()),
+                touchIconsEnabled, [this](const QIcon &icon, const QUrl &, const QUrl &) {
+                    QMetaObject::invokeMethod(this, "iconRequestDone", Qt::QueuedConnection,
+                                              Q_ARG(const QIcon &, icon));
+                });
+    }
+}
+
+QPointer<QQuickWebEngineView> FaviconImageRequester::getNextViewForProcessing()
+{
+    Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
+
+    for (QPointer<QQuickWebEngineView> view : FaviconProviderHelper::instance()->views()) {
+        if (view.isNull())
+            continue;
         if (view->profile()->isOffTheRecord())
             continue;
-
-        requestIconOnUIThread(view);
-
-        return m_nextViewIndex++;
+        if (m_processedViews.contains(view))
+            continue;
+        m_processedViews.append(view);
+        return view;
     }
-
-    return -1;
+    return nullptr;
 }
 
-void FaviconImageResponseRunnable::requestIconOnUIThread(QQuickWebEngineView *view)
+FaviconProviderHelper::FaviconProviderHelper()
 {
-    QTimer *timer = new QTimer();
-    timer->moveToThread(qApp->thread());
-    timer->setSingleShot(true);
-    QObject::connect(timer, &QTimer::timeout, [this, view, timer]() {
-        QtWebEngineCore::ProfileAdapter *profileAdapter = view->d_ptr->profileAdapter();
-        bool touchIconsEnabled = view->profile()->settings()->touchIconsEnabled();
-        if (isIconURL(QUrl(m_id))) {
-            profileAdapter->requestIconForIconURL(QUrl(m_id),
-                                                  qMax(m_requestedSize.width(), m_requestedSize.height()),
-                                                  touchIconsEnabled,
-                                                  [this](const QIcon &icon, const QUrl &) { iconRequestDone(icon); });
-        } else {
-            profileAdapter->requestIconForPageURL(QUrl(m_id),
-                                                  qMax(m_requestedSize.width(), m_requestedSize.height()),
-                                                  touchIconsEnabled,
-                                                  [this](const QIcon &icon, const QUrl &, const QUrl &) { iconRequestDone(icon); });
+    moveToThread(qApp->thread());
+}
+
+FaviconProviderHelper *FaviconProviderHelper::instance()
+{
+    static FaviconProviderHelper instance;
+    return &instance;
+}
+
+void FaviconProviderHelper::attach(QPointer<QQuickWebEngineView> view)
+{
+    if (!m_views.contains(view))
+        m_views.append(view);
+}
+
+void FaviconProviderHelper::detach(QPointer<QQuickWebEngineView> view)
+{
+    m_views.removeAll(view);
+}
+
+void FaviconProviderHelper::handleImageRequest(QPointer<FaviconImageResponse> faviconResponse)
+{
+    Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
+
+    if (faviconResponse.isNull())
+        return;
+
+    if (m_views.isEmpty()) {
+        QMetaObject::invokeMethod(faviconResponse, "handleDone", Qt::QueuedConnection,
+                                  Q_ARG(QPixmap, QPixmap()));
+        return;
+    }
+
+    auto view = findViewByImageSource(faviconResponse->imageSource());
+    if (view) {
+        QIcon icon = view->d_ptr->adapter->icon();
+        if (!icon.isNull()) {
+            QMetaObject::invokeMethod(
+                    faviconResponse, "handleDone", Qt::QueuedConnection,
+                    Q_ARG(QPixmap, extractPixmap(icon, faviconResponse->requestedSize())));
+            return;
         }
-        timer->deleteLater();
-    });
-    QMetaObject::invokeMethod(timer, "start", Qt::QueuedConnection, Q_ARG(int, 0));
-}
-
-FaviconImageResponse::FaviconImageResponse()
-{
-    Q_EMIT finished();
-}
-
-FaviconImageResponse::FaviconImageResponse(const QString &id, const QSize &requestedSize,
-                                           QList<QQuickWebEngineView *> *views, QThreadPool *pool)
-{
-    if (QQuickWebEngineView *view = findViewById(id, views)) {
-        QTimer *timer = new QTimer();
-        timer->moveToThread(qApp->thread());
-        timer->setSingleShot(true);
-        QObject::connect(timer, &QTimer::timeout, [this, id, requestedSize, views, pool, view, timer]() {
-            QIcon icon = view->d_ptr->adapter->icon();
-            if (icon.isNull())
-                startRunnable(id, requestedSize, views, pool);
-            else
-                handleDone(extractPixmap(icon, requestedSize).copy());
-            timer->deleteLater();
-        });
-        QMetaObject::invokeMethod(timer, "start", Qt::QueuedConnection, Q_ARG(int, 0));
-    } else {
-        startRunnable(id, requestedSize, views, pool);
     }
+    startFaviconRequest(faviconResponse);
 }
 
-FaviconImageResponse::~FaviconImageResponse() { }
+QPointer<QQuickWebEngineView> FaviconProviderHelper::findViewByImageSource(const QUrl &imageSource) const
+{
+    for (QPointer<QQuickWebEngineView> view : m_views) {
+        if (view.isNull())
+            continue;
+
+        if (isIconURL(imageSource)) {
+            if (view->icon() == QQuickWebEngineFaviconProvider::faviconProviderUrl(imageSource)) {
+                return view;
+            }
+        } else if (view->url() == imageSource) {
+            return view;
+        }
+    }
+
+    return nullptr;
+}
+
+void FaviconProviderHelper::startFaviconRequest(QPointer<FaviconImageResponse> faviconResponse)
+{
+    FaviconImageRequester *requester = new FaviconImageRequester(faviconResponse->imageSource(),
+                                                                 faviconResponse->requestedSize());
+
+    connect(requester, &FaviconImageRequester::done, [requester, faviconResponse](QPixmap pixmap) {
+        QMetaObject::invokeMethod(faviconResponse, "handleDone", Qt::QueuedConnection,
+                                  Q_ARG(QPixmap, pixmap));
+        requester->deleteLater();
+    });
+
+    requester->start();
+}
+
+FaviconImageResponse::FaviconImageResponse(const QUrl &imageSource, const QSize &requestedSize)
+    : m_imageSource(imageSource), m_requestedSize(requestedSize)
+{
+}
 
 void FaviconImageResponse::handleDone(QPixmap pixmap)
 {
-    if (m_runnable)
-        delete m_runnable;
     m_image = pixmap.toImage();
     Q_EMIT finished();
 }
@@ -203,16 +247,6 @@ void FaviconImageResponse::handleDone(QPixmap pixmap)
 QQuickTextureFactory *FaviconImageResponse::textureFactory() const
 {
     return QQuickTextureFactory::textureFactoryForImage(m_image);
-}
-
-void FaviconImageResponse::startRunnable(const QString &id, const QSize &requestedSize,
-                                         QList<QQuickWebEngineView *> *views, QThreadPool *pool)
-{
-    m_runnable = new FaviconImageResponseRunnable(id, requestedSize, views);
-    m_runnable->setAutoDelete(false);
-    connect(m_runnable, &FaviconImageResponseRunnable::done, this,
-            &FaviconImageResponse::handleDone);
-    pool->start(m_runnable);
 }
 
 QString QQuickWebEngineFaviconProvider::identifier()
@@ -238,17 +272,17 @@ QUrl QQuickWebEngineFaviconProvider::faviconProviderUrl(const QUrl &url)
     return providerUrl;
 }
 
-QQuickWebEngineFaviconProvider::QQuickWebEngineFaviconProvider() { }
-
-QQuickWebEngineFaviconProvider::~QQuickWebEngineFaviconProvider() { }
+QQuickWebEngineFaviconProvider::QQuickWebEngineFaviconProvider()
+{
+    connect(this, &QQuickWebEngineFaviconProvider::imageResponseRequested,
+            FaviconProviderHelper::instance(), &FaviconProviderHelper::handleImageRequest);
+}
 
 QQuickImageResponse *
 QQuickWebEngineFaviconProvider::requestImageResponse(const QString &id, const QSize &requestedSize)
 {
-    if (m_views.empty())
-        return new FaviconImageResponse;
-
-    FaviconImageResponse *response = new FaviconImageResponse(id, requestedSize, &m_views, &m_pool);
+    FaviconImageResponse *response = new FaviconImageResponse(QUrl(id), requestedSize);
+    emit imageResponseRequested(response);
     return response;
 }
 

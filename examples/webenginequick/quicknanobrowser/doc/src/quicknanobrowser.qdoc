@@ -144,6 +144,30 @@
     \skipto Escape
     \printuntil /^\ {4}\}/
 
+    \section1 Handling WebAuth/FIDO UX Requests
+
+    We use the \c onWebAuthUxRequested() signal handler to handle requests for
+    WebAuth/FIDO UX. The \c request parameter is an instance of WebEngineWebAuthUxRequest
+    which contains UX request details and APIs required to process the request.
+    We use it to construct WebAuthUX dialog and initiates the UX request flow.
+
+    \quotefromfile webenginequick/quicknanobrowser/BrowserWindow.qml
+    \skipto onWebAuthUxRequested
+    \printuntil }
+
+    The \l WebEngineWebAuthUxRequest object periodically emits the \l
+    {WebEngineWebAuthUxRequest::}{stateChanged} signal to notify potential
+    observers of the current WebAuth UX states. The observers update the WebAuth
+    dialog accordingly. We use onStateChanged() signal handler to handle
+    state change requests. See \c WebAuthDialog.qml for an example
+    of how these signals can be handled.
+
+    \quotefromfile webenginequick/quicknanobrowser/WebAuthDialog.qml
+    \skipto Connections
+    \printuntil }
+    \skipto function init(request)
+    \printuntil }
+
     \section1 Signing Requirement for macOS
 
     To allow web sites access to the location, camera, and microphone when running

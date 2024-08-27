@@ -112,6 +112,7 @@ public:
 
 Q_SIGNALS:
     void downloadRequested(QWebEngineDownloadRequest *download);
+    void clearHttpCacheCompleted();
 
 private:
     Q_DISABLE_COPY(QWebEngineProfile)

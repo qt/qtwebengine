@@ -5,6 +5,7 @@
 #include "qwebengineurlrequestinfo_p.h"
 
 #include "web_contents_adapter_client.h"
+#include "net/resource_request_body_qt.h"
 
 #include <memory>
 #include <utility>
@@ -79,7 +80,8 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::RedirectNavigation
 QWebEngineUrlRequestInfoPrivate::QWebEngineUrlRequestInfoPrivate(
         QWebEngineUrlRequestInfo::ResourceType resource,
         QWebEngineUrlRequestInfo::NavigationType navigation, const QUrl &u, const QUrl &fpu,
-        const QUrl &i, const QByteArray &m, const QHash<QByteArray, QByteArray> &h)
+        const QUrl &i, const QByteArray &m, QtWebEngineCore::ResourceRequestBody *const rb,
+        const QHash<QByteArray, QByteArray> &h)
     : resourceType(resource)
     , navigationType(navigation)
     , shouldBlockRequest(false)
@@ -90,6 +92,7 @@ QWebEngineUrlRequestInfoPrivate::QWebEngineUrlRequestInfoPrivate(
     , method(m)
     , changed(false)
     , extraHeaders(h)
+    , resourceRequestBody(rb)
 {}
 
 /*!
@@ -240,6 +243,20 @@ QByteArray QWebEngineUrlRequestInfo::requestMethod() const
 }
 
 /*!
+    Returns a pointer to a QIODevice that gives access to the request body.
+    The request body can contain data for example when the request is
+    a POST request. If the request body is empty the QIODevice reflects this
+    and does not return any data when performing read operations on it.
+
+    \since 6.7
+*/
+
+QIODevice *QWebEngineUrlRequestInfo::requestBody() const
+{
+    return d_ptr->resourceRequestBody;
+}
+
+/*!
     \internal
 */
 bool QWebEngineUrlRequestInfo::changed() const
@@ -306,6 +323,15 @@ void QWebEngineUrlRequestInfo::setHttpHeader(const QByteArray &name, const QByte
 QHash<QByteArray, QByteArray> QWebEngineUrlRequestInfo::httpHeaders() const
 {
     return d_ptr->extraHeaders;
+}
+
+/*!
+    \internal
+*/
+void QWebEngineUrlRequestInfoPrivate::appendFileToResourceRequestBodyForTest(const QString &path)
+{
+    if (resourceRequestBody)
+        resourceRequestBody->appendFilesForTest(path);
 }
 
 QT_END_NAMESPACE

@@ -82,7 +82,9 @@ public:
     content::CursorManager *GetCursorManager() override;
     void SetIsLoading(bool) override;
     void ImeCancelComposition() override;
-    void ImeCompositionRangeChanged(const gfx::Range&, const std::vector<gfx::Rect>&) override;
+    void ImeCompositionRangeChanged(const gfx::Range &,
+                                    const absl::optional<std::vector<gfx::Rect>> &,
+                                    const absl::optional<std::vector<gfx::Rect>> &) override;
     void RenderProcessGone() override;
     bool TransformPointToCoordSpaceForView(const gfx::PointF &point,
                                            content::RenderWidgetHostViewBase *target_view,
@@ -134,6 +136,8 @@ public:
     void NotifyHostAndDelegateOnWasShown(blink::mojom::RecordContentToVisibleTimeRequestPtr) override { QT_NOT_YET_IMPLEMENTED }
     void RequestSuccessfulPresentationTimeFromHostOrDelegate(blink::mojom::RecordContentToVisibleTimeRequestPtr) override {}
     void CancelSuccessfulPresentationTimeRequestForHostAndDelegate() override {}
+    void InvalidateLocalSurfaceIdAndAllocationGroup() override {}
+    void OnRendererWidgetCreated() override;
 
     // Overridden from ui::GestureProviderClient.
     void OnGestureEvent(const ui::GestureEventData& gesture) override;

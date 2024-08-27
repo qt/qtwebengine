@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <util.h>
 #include <QtCore/qbuffer.h>
@@ -190,6 +190,7 @@ void tst_QWebEngineProfile::clearDataFromCache()
     AutoDir cacheDir("./tst_QWebEngineProfile_clearDataFromCache");
 
     QWebEngineProfile profile(QStringLiteral("clearDataFromCache"));
+    QSignalSpy cacheSpy(&profile, &QWebEngineProfile::clearHttpCacheCompleted);
     profile.setCachePath(cacheDir.path());
     profile.setHttpCacheType(QWebEngineProfile::DiskHttpCache);
 
@@ -201,8 +202,7 @@ void tst_QWebEngineProfile::clearDataFromCache()
     QVERIFY(cacheDir.exists("Cache"));
     qint64 sizeBeforeClear = totalSize(cacheDir);
     profile.clearHttpCache();
-    // Wait for cache to be cleared.
-    QTest::qWait(1000);
+    QTRY_COMPARE(cacheSpy.size(), 1);
     QVERIFY(sizeBeforeClear > totalSize(cacheDir));
 
     (void)server.stop();

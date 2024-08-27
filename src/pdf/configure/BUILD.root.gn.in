@@ -39,13 +39,12 @@ config("QtPdf_config") {
   ]
 }
 
-config("cpp17_config") {
-  # static initialized constexpr expressions must be compiled always as c++14 or always as c++17
-  # and our qtwebengine core sources use them as c++17
+config("cpp20_config") {
+  # Chromium headers now use concepts and requires c++20
   if (is_win) {
-    cflags_cc = [ "/std:c++17" ]
+    cflags_cc = [ "/std:c++20" ]
   } else {
-    cflags_cc = [ "-std=c++17" ]
+    cflags_cc = [ "-std=c++20" ]
   }
 }
 
@@ -53,7 +52,7 @@ static_library("QtPdf") {
   complete_static_lib = true
   rsp_types = [ "objects", "archives", "libs", "ldir" ]
   configs += [
-    ":cpp17_config",
+    ":cpp20_config",
     ":QtPdf_config"
   ]
   deps = [

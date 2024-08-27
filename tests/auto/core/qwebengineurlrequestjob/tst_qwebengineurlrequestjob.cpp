@@ -1,5 +1,5 @@
 // Copyright (C) 2023 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtTest/QtTest>
 #include <QtWebEngineCore/qwebengineurlschemehandler.h>
@@ -7,6 +7,48 @@
 #include <QtWebEngineCore/qwebengineurlrequestjob.h>
 #include <QtWebEngineCore/qwebengineprofile.h>
 #include <QtWebEngineCore/qwebenginepage.h>
+
+class CustomPage : public QWebEnginePage
+{
+    Q_OBJECT
+
+public:
+    CustomPage(QWebEngineProfile *profile, QString compareStringPrefix, QString compareStringSuffix,
+               QObject *parent = nullptr)
+        : QWebEnginePage(profile, parent)
+        , m_compareStringPrefix(compareStringPrefix)
+        , m_compareStringSuffix(compareStringSuffix)
+        , m_comparedMessageCount(0)
+    {
+    }
+
+    int comparedMessageCount() const { return m_comparedMessageCount; }
+
+signals:
+    void receivedMessage();
+
+protected:
+    void javaScriptConsoleMessage(QWebEnginePage::JavaScriptConsoleMessageLevel level,
+                                  const QString &message, int lineNumber,
+                                  const QString &sourceID) override
+    {
+        Q_UNUSED(level);
+        Q_UNUSED(lineNumber);
+        Q_UNUSED(sourceID);
+
+        auto splitMessage = message.split(";");
+        if (splitMessage[0] == m_compareStringPrefix) {
+            QCOMPARE(splitMessage[1], m_compareStringSuffix);
+            m_comparedMessageCount++;
+            emit receivedMessage();
+        }
+    }
+
+private:
+    QString m_compareStringPrefix;
+    QString m_compareStringSuffix;
+    int m_comparedMessageCount;
+};
 
 class AdditionalResponseHeadersHandler : public QWebEngineUrlSchemeHandler
 {
@@ -51,33 +93,36 @@ private:
     bool m_addAdditionalResponseHeaders;
 };
 
-class AdditionalResponseHeadersPage : public QWebEnginePage
+class RequestBodyHandler : public QWebEngineUrlSchemeHandler
 {
     Q_OBJECT
-
 public:
-    AdditionalResponseHeadersPage(QWebEngineProfile *profile, QString compareString,
-                                  QObject *parent = nullptr)
-        : QWebEnginePage(profile, parent), m_compareString(compareString)
+    void requestStarted(QWebEngineUrlRequestJob *job) override
     {
+        QCOMPARE(job->requestUrl(), QUrl(schemeName + ":about"));
+        QCOMPARE(job->requestMethod(), QByteArrayLiteral("POST"));
+
+        QIODevice *requestBodyDevice = job->requestBody();
+        requestBodyDevice->open(QIODevice::ReadOnly);
+        QByteArray requestBody = requestBodyDevice->readAll();
+        requestBodyDevice->close();
+
+        QBuffer *buf = new QBuffer(job);
+        buf->open(QBuffer::ReadWrite);
+        buf->write(requestBody);
+        job->reply(QByteArrayLiteral("text/plain"), buf);
+        buf->close();
     }
 
-protected:
-    void javaScriptConsoleMessage(QWebEnginePage::JavaScriptConsoleMessageLevel level,
-                                  const QString &message, int lineNumber,
-                                  const QString &sourceID) override
+    static void registerUrlScheme()
     {
-        Q_UNUSED(level);
-        Q_UNUSED(lineNumber);
-        Q_UNUSED(sourceID);
-
-        auto splitMessage = message.split(";");
-        if (splitMessage[0] == QString("TST_ADDITIONALRESPONSEHEADERS"))
-            QCOMPARE(splitMessage[1], m_compareString);
+        QWebEngineUrlScheme webUiScheme(schemeName);
+        webUiScheme.setFlags(QWebEngineUrlScheme::CorsEnabled
+                             | QWebEngineUrlScheme::FetchApiAllowed);
+        QWebEngineUrlScheme::registerScheme(webUiScheme);
     }
 
-private:
-    QString m_compareString;
+    const static inline QByteArray schemeName = QByteArrayLiteral("requestbodyhandler");
 };
 
 class tst_QWebEngineUrlRequestJob : public QObject
@@ -88,7 +133,11 @@ public:
     tst_QWebEngineUrlRequestJob() { }
 
 private Q_SLOTS:
-    void initTestCase() { AdditionalResponseHeadersHandler::registerUrlScheme(); }
+    void initTestCase()
+    {
+        AdditionalResponseHeadersHandler::registerUrlScheme();
+        RequestBodyHandler::registerUrlScheme();
+    }
 
     void withAdditionalResponseHeaders_data()
     {
@@ -109,11 +158,28 @@ private Q_SLOTS:
         AdditionalResponseHeadersHandler handler(withHeaders);
         profile.installUrlSchemeHandler(AdditionalResponseHeadersHandler::schemeName, &handler);
 
-        AdditionalResponseHeadersPage page(&profile, expectedHeaders);
+        CustomPage page(&profile, "TST_ADDITIONALRESPONSEHEADERS", expectedHeaders);
         QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
 
         page.load(QUrl("qrc:///additionalResponseHeadersScript.html"));
         QVERIFY(spy.wait());
+        QCOMPARE(page.comparedMessageCount(), 1);
+    }
+
+    void requestBody()
+    {
+        QWebEngineProfile profile;
+
+        RequestBodyHandler handler;
+        profile.installUrlSchemeHandler(RequestBodyHandler::schemeName, &handler);
+
+        const QString expected = "reading request body successful";
+        CustomPage page(&profile, "TST_REQUESTBODY", expected);
+        QSignalSpy spy(&page, SIGNAL(receivedMessage()));
+
+        page.load(QUrl("qrc:///requestBodyScript.html"));
+        QVERIFY(spy.wait());
+        QCOMPARE(page.comparedMessageCount(), 1);
     }
 };
 

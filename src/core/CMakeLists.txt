@@ -14,7 +14,8 @@ endif()
 set(buildDir "${CMAKE_CURRENT_BINARY_DIR}")
 
 add_subdirectory(api)
-add_subdirectory(tools)
+add_subdirectory(tools/webenginedriver)
+add_subdirectory(tools/qwebengine_convert_dict)
 
 ##
 #   TOOLCHAIN SETUP
@@ -110,6 +111,7 @@ foreach(arch ${archs})
                 custom_handlers/register_protocol_handler_request_controller.h
                 custom_handlers/register_protocol_handler_request_controller_impl.cpp custom_handlers/register_protocol_handler_request_controller_impl.h
                 delegated_frame_host_client_qt.cpp delegated_frame_host_client_qt.h
+                desktop_media_controller.cpp desktop_media_controller.h desktop_media_controller_p.h
                 desktop_screen_qt.cpp desktop_screen_qt.h
                 devtools_frontend_qt.cpp devtools_frontend_qt.h
                 devtools_manager_delegate_qt.cpp devtools_manager_delegate_qt.h
@@ -129,7 +131,7 @@ foreach(arch ${archs})
                 javascript_dialog_manager_qt.cpp javascript_dialog_manager_qt.h
                 login_delegate_qt.cpp login_delegate_qt.h
                 media_capture_devices_dispatcher.cpp media_capture_devices_dispatcher.h
-                native_web_keyboard_event_qt.cpp
+                native_web_keyboard_event_qt.cpp native_web_keyboard_event_qt.h
                 net/client_cert_qt.cpp net/client_cert_qt.h
                 net/client_cert_store_data.cpp net/client_cert_store_data.h
                 net/cookie_monster_delegate_qt.cpp net/cookie_monster_delegate_qt.h
@@ -139,6 +141,7 @@ foreach(arch ${archs})
                 net/proxying_restricted_cookie_manager_qt.cpp net/proxying_restricted_cookie_manager_qt.h
                 net/proxying_url_loader_factory_qt.cpp net/proxying_url_loader_factory_qt.h
                 net/qrc_url_scheme_handler.cpp net/qrc_url_scheme_handler.h
+                net/resource_request_body_qt.cpp net/resource_request_body_qt.h
                 net/ssl_host_state_delegate_qt.cpp net/ssl_host_state_delegate_qt.h
                 net/system_network_context_manager.cpp net/system_network_context_manager.h
                 net/url_request_custom_job_delegate.cpp net/url_request_custom_job_delegate.h
@@ -192,12 +195,13 @@ foreach(arch ${archs})
                 web_contents_delegate_qt.cpp web_contents_delegate_qt.h
                 web_contents_view_qt.cpp web_contents_view_qt.h
                 web_engine_context.cpp web_engine_context.h
-                web_engine_context_threads.cpp
                 web_engine_error.cpp web_engine_error.h
                 web_engine_library_info.cpp web_engine_library_info.h
                 web_engine_settings.cpp web_engine_settings.h
                 web_event_factory.cpp web_event_factory.h
                 web_usb_detector_qt.cpp web_usb_detector_qt.h
+                authenticator_request_client_delegate_qt.cpp authenticator_request_client_delegate_qt.h
+                authenticator_request_dialog_controller.cpp authenticator_request_dialog_controller.h authenticator_request_dialog_controller_p.h
         )
 
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_accessibility
@@ -213,6 +217,7 @@ foreach(arch ${archs})
 
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_vulkan
             SOURCES
+                compositor/native_skia_output_device_vulkan.cpp compositor/native_skia_output_device_vulkan.h
                 compositor/vulkan_implementation_qt.cpp compositor/vulkan_implementation_qt.h
         )
 
@@ -220,12 +225,14 @@ foreach(arch ${archs})
             SOURCES
                 compositor/compositor_resource_fence.cpp compositor/compositor_resource_fence.h
                 compositor/display_skia_output_device.cpp compositor/display_skia_output_device.h
+                compositor/native_skia_output_device_opengl.cpp compositor/native_skia_output_device_opengl.h
         )
 
         extend_gn_target(${buildGn} CONDITION MACOS
             SOURCES
+                native_web_keyboard_event_qt_mac.mm
                 compositor/native_skia_output_device_mac.mm
-                compositor/native_skia_output_device_mac2.mm
+                compositor/native_skia_output_device_metal.cpp compositor/native_skia_output_device_metal.h
         )
 
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_pepper_plugins
@@ -280,12 +287,13 @@ foreach(arch ${archs})
             SOURCES
                 extensions/pdf_iframe_navigation_throttle_qt.cpp extensions/pdf_iframe_navigation_throttle_qt.h
                 printing/pdf_stream_delegate_qt.cpp printing/pdf_stream_delegate_qt.h
-                printing/pdf_web_contents_helper_client_qt.cpp printing/pdf_web_contents_helper_client_qt.h
+                printing/pdf_document_helper_client_qt.cpp printing/pdf_document_helper_client_qt.h
         )
 
         extend_gn_target(${buildGn} CONDITION WIN32
             SOURCES
                 clipboard_util_win.cpp
+                compositor/native_skia_output_device_direct3d11.cpp compositor/native_skia_output_device_direct3d11.h
         )
 
         ##
@@ -302,11 +310,13 @@ foreach(arch ${archs})
 
         list(APPEND gnArgArg
             qtwebengine_target="${buildDir}/${config}/${arch}:QtWebEngineCore"
+            build_dawn_tests=false
             build_with_tflite_lib=false
             enable_background_contents=false
             enable_background_mode=false
             enable_ipc_fuzzer=false
             enable_ipc_logging=false
+            enable_java_templates=false
             enable_media_remoting=false
             enable_message_center=false
             enable_nacl=false
@@ -321,8 +331,6 @@ foreach(arch ${archs})
             enable_swiftshader_vulkan=false
             angle_enable_swiftshader=false
             dawn_use_swiftshader=false
-            use_dawn=false
-            build_dawn_tests=false
             enable_vr=false
             enable_web_speech=false
             enable_widevine=true
@@ -330,16 +338,17 @@ foreach(arch ${archs})
             fatal_linker_warnings=false
             has_native_accessibility=false
             safe_browsing_mode=0
-            skia_use_dawn=false
             toolkit_views=false
             chrome_pgo_phase=0
             optimize_webui=false
             strip_absolute_paths_from_debug_symbols=false
             pdf_use_skia=true
+            use_dawn=false
+            skia_use_dawn=false
             devtools_fast_bundle=false
             devtools_skip_typecheck=false
             use_static_angle=true
-            chrome_root_store_supported=false
+            use_perfetto_client_library=false
             trial_comparison_cert_verifier_supported=false
         )
         extend_gn_list(gnArgArg
@@ -410,6 +419,10 @@ foreach(arch ${archs})
             ARGS use_embedded_config
             CONDITION QT_FEATURE_webengine_embedded_build
         )
+        extend_gn_list(gnArgArg
+            ARGS enable_webenginedriver
+            CONDITION QT_FEATURE_webenginedriver
+        )
 
         if(LINUX)
             list(APPEND gnArgArg
@@ -417,7 +430,6 @@ foreach(arch ${archs})
                 use_qt=false # Qt5 toolkit bindings
                 use_cups=false
                 use_gio=false
-                use_gnome_keyring=false
                 use_bundled_fontconfig=false
                 use_glib=false
                 use_bluez=false
@@ -482,6 +494,10 @@ foreach(arch ${archs})
                 CONDITION QT_FEATURE_webengine_system_pulseaudio
             )
             extend_gn_list(gnArgArg
+                ARGS use_system_minigbm
+                CONDITION QT_FEATURE_webengine_system_gbm
+            )
+            extend_gn_list(gnArgArg
                 ARGS use_vaapi
                 CONDITION QT_FEATURE_webengine_vaapi
             )
@@ -526,12 +542,8 @@ foreach(arch ${archs})
         if(MACOS)
             list(APPEND gnArgArg
                 use_external_popup_menu=false
+                skia_use_metal=false
             )
-        endif()
-
-        if(NOT CLANG)
-            list(APPEND gnArgArg
-                enable_location_source=false)
         endif()
 
         if(WIN32)
@@ -539,7 +551,6 @@ foreach(arch ${archs})
                 ninja_use_custom_environment_files=false
                 com_init_check_hook_disabled=true
                 heterogeneous_executables=true
-                use_static_angle=true
             )
         endif()
 
@@ -633,6 +644,23 @@ if(QT_FEATURE_webengine_spellchecker AND NOT CMAKE_CROSSCOMPILING)
     )
     add_dependencies(${dict_target_name} run_core_NinjaDone)
     add_dependencies(${dict_target_name} WebEngineCore)
+endif()
+
+##
+#  WEBENGINEDRIVER
+##
+
+if(QT_FEATURE_webenginedriver)
+    add_ninja_command(
+        TARGET webenginedriver_group
+        OUTPUT ${WEBENGINEDRIVER_EXECUTABLE}
+        BUILDDIR ${buildDir}/$<CONFIG>/${arch}
+        MODULE core
+    )
+    add_custom_target(webenginedriver
+        DEPENDS
+            ${buildDir}/$<CONFIG>/${arch}/${WEBENGINEDRIVER_EXECUTABLE})
+    add_dependencies(run_core_NinjaDone webenginedriver)
 endif()
 
 ##

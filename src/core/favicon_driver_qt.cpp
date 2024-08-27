@@ -263,13 +263,6 @@ void FaviconDriverQt::DidUpdateFaviconURL(
     if (!entry)
         return;
 
-    // We update |m_faviconUrls| even if the list is believed to be partial
-    // (checked below), because callers of our getter favicon_urls() expect so.
-    std::vector<blink::mojom::FaviconURLPtr> faviconUrls;
-    for (const auto &candidate : candidates)
-        faviconUrls.push_back(candidate.Clone());
-    m_faviconUrls = std::move(faviconUrls);
-
     if (!rfh->IsDocumentOnLoadCompletedInMainFrame())
         return;
 

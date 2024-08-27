@@ -34,9 +34,14 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_win.h"
-#include "components/os_crypt/os_crypt.h"
-#include "content/public/common/network_service_util.h"
+#include "components/os_crypt/sync/os_crypt.h"
+#include "content/public/browser/network_service_util.h"
 #endif
+
+ASSERT_ENUMS_MATCH(net::SecureDnsMode::kSecure, QWebEngineGlobalSettings::SecureDnsMode::SecureOnly)
+ASSERT_ENUMS_MATCH(net::SecureDnsMode::kAutomatic,
+                   QWebEngineGlobalSettings::SecureDnsMode::SecureWithFallback)
+ASSERT_ENUMS_MATCH(net::SecureDnsMode::kOff, QWebEngineGlobalSettings::SecureDnsMode::SystemOnly)
 
 namespace {
 
@@ -324,6 +329,31 @@ network::mojom::NetworkContextParamsPtr SystemNetworkContextManager::CreateNetwo
     network_context_params->cert_verifier_params =
          content::GetCertVerifierParams(std::move(cert_verifier_creation_params));
     return network_context_params;
+}
+
+bool isValidTemplates(std::string templates)
+{
+    absl::optional<net::DnsOverHttpsConfig> dnsOverHttpsConfig =
+            net::DnsOverHttpsConfig::FromString(templates);
+    return dnsOverHttpsConfig.has_value();
+}
+
+
+void configureStubHostResolver(QWebEngineGlobalSettings::SecureDnsMode dnsMode,
+                               std::string dnsOverHttpsTemplates, bool insecureDnsClientEnabled,
+                               bool additionalInsecureDnsTypesEnabled)
+{
+    if (content::IsNetworkServiceCreated()) {
+        network::mojom::NetworkService *networkService = content::GetNetworkService();
+        if (networkService) {
+            absl::optional<net::DnsOverHttpsConfig> dohConfig = dnsOverHttpsTemplates.empty()
+                    ? net::DnsOverHttpsConfig()
+                    : net::DnsOverHttpsConfig::FromString(dnsOverHttpsTemplates);
+            networkService->ConfigureStubHostResolver(insecureDnsClientEnabled,
+                                                      net::SecureDnsMode(dnsMode), *dohConfig,
+                                                      additionalInsecureDnsTypesEnabled);
+        }
+    }
 }
 
 } // namespace QtWebEngineCore

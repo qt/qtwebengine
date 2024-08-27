@@ -180,44 +180,12 @@ bool PermissionManagerQt::checkPermission(const QUrl &origin, ProfileAdapter::Pe
     return m_permissions.contains(key) && m_permissions[key];
 }
 
-void PermissionManagerQt::RequestPermission(blink::PermissionType permission,
-                                            content::RenderFrameHost *frameHost,
-                                            const GURL& requesting_origin,
-                                            bool /*user_gesture*/,
-                                            base::OnceCallback<void(blink::mojom::PermissionStatus)> callback)
+void PermissionManagerQt::RequestPermissions(content::RenderFrameHost *frameHost,
+                                             const content::PermissionRequestDescription &requestDescription,
+                                             base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus>&)> callback)
 {
-    if (requesting_origin.is_empty()) {
-        std::move(callback).Run(blink::mojom::PermissionStatus::DENIED);
-        return;
-    }
-
-    WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt *>(
-        content::WebContents::FromRenderFrameHost(frameHost)->GetDelegate());
-    Q_ASSERT(contentsDelegate);
-
-    ProfileAdapter::PermissionType permissionType = toQt(permission);
-    if (permissionType == ProfileAdapter::ClipboardRead || permissionType == ProfileAdapter::ClipboardWrite) {
-        std::move(callback).Run(getStatusFromSettings(permission, contentsDelegate->webEngineSettings()));
-        return;
-    } else if (!canRequestPermissionFor(permissionType)) {
-        std::move(callback).Run(blink::mojom::PermissionStatus::DENIED);
-        return;
-    }
-
-    int request_id = ++m_requestIdCount;
-    auto requestOrigin = toQt(requesting_origin);
-    m_requests.push_back({ request_id, permissionType, requestOrigin, std::move(callback) });
-    contentsDelegate->requestFeaturePermission(permissionType, requestOrigin);
-}
-
-void PermissionManagerQt::RequestPermissions(const std::vector<blink::PermissionType> &permissions,
-                                             content::RenderFrameHost *frameHost,
-                                             const GURL &requesting_origin,
-                                             bool /*user_gesture*/,
-                                             base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus> &)> callback)
-{
-    if (requesting_origin.is_empty()) {
-        std::move(callback).Run(std::vector<blink::mojom::PermissionStatus>(permissions.size(), blink::mojom::PermissionStatus::DENIED));
+    if (requestDescription.requesting_origin.is_empty()) {
+        std::move(callback).Run(std::vector<content::PermissionStatus>(requestDescription.permissions.size(), blink::mojom::PermissionStatus::DENIED));
         return;
     }
 
@@ -226,9 +194,9 @@ void PermissionManagerQt::RequestPermissions(const std::vector<blink::Permission
     Q_ASSERT(contentsDelegate);
 
     bool answerable = true;
-    std::vector<blink::mojom::PermissionStatus> result;
-    result.reserve(permissions.size());
-    for (blink::PermissionType permission : permissions) {
+    std::vector<content::PermissionStatus> result;
+    result.reserve(requestDescription.permissions.size());
+    for (blink::PermissionType permission : requestDescription.permissions) {
         const ProfileAdapter::PermissionType permissionType = toQt(permission);
         if (permissionType == ProfileAdapter::UnsupportedPermission)
             result.push_back(blink::mojom::PermissionStatus::DENIED);
@@ -245,21 +213,21 @@ void PermissionManagerQt::RequestPermissions(const std::vector<blink::Permission
     }
 
     int request_id = ++m_requestIdCount;
-    auto requestOrigin = toQt(requesting_origin);
-    m_multiRequests.push_back({ request_id, permissions, requestOrigin, std::move(callback) });
-    for (blink::PermissionType permission : permissions) {
+    auto requestOrigin = toQt(requestDescription.requesting_origin);
+    m_multiRequests.push_back({ request_id, requestDescription.permissions, requestOrigin, std::move(callback) });
+    for (blink::PermissionType permission : requestDescription.permissions) {
         const ProfileAdapter::PermissionType permissionType = toQt(permission);
         if (canRequestPermissionFor(permissionType))
             contentsDelegate->requestFeaturePermission(permissionType, requestOrigin);
     }
 }
 
-void PermissionManagerQt::RequestPermissionsFromCurrentDocument(const std::vector<blink::PermissionType> &permissions,
-                                                                content::RenderFrameHost *frameHost,
-                                                                bool user_gesture,
+void PermissionManagerQt::RequestPermissionsFromCurrentDocument(content::RenderFrameHost *frameHost,
+                                                                const content::PermissionRequestDescription &requestDescription,
                                                                 base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus>&)> callback)
 {
-    RequestPermissions(permissions, frameHost, frameHost->GetLastCommittedOrigin().GetURL(), user_gesture, std::move(callback));
+
+    RequestPermissions(frameHost, requestDescription, std::move(callback));
 }
 
 blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatus(
@@ -305,12 +273,22 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForWorker
     return GetPermissionStatus(permission, url, url);
 }
 
+blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForEmbeddedRequester(
+        blink::PermissionType permission,
+        content::RenderFrameHost *render_frame_host,
+        const url::Origin &requesting_origin)
+{
+    return GetPermissionStatus(permission, requesting_origin.GetURL(),
+                               render_frame_host->GetLastCommittedOrigin().GetURL());
+}
+
 content::PermissionResult PermissionManagerQt::GetPermissionResultForOriginWithoutContext(
         blink::PermissionType permission,
-        const url::Origin &origin)
+        const url::Origin &requesting_origin,
+        const url::Origin &embedding_origin)
 {
     blink::mojom::PermissionStatus status =
-            GetPermissionStatus(permission, origin.GetURL(), origin.GetURL());
+            GetPermissionStatus(permission, requesting_origin.GetURL(), embedding_origin.GetURL());
 
     return content::PermissionResult(status, content::PermissionStatusSource::UNSPECIFIED);
 }

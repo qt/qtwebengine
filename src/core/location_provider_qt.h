@@ -23,16 +23,17 @@ public:
     // LocationProvider
     void StartProvider(bool high_accuracy) override;
     void StopProvider() override;
-    const device::mojom::Geoposition& GetPosition() override { return m_lastKnownPosition; }
+    const device::mojom::GeopositionResult* GetPosition() override { return m_lastKnownPosition.get(); }
     void OnPermissionGranted() override;
-    void SetUpdateCallback(const LocationProviderUpdateCallback& callback) override;
+    void SetUpdateCallback(const LocationProviderUpdateCallback &callback) override;
+    void FillDiagnostics(device::mojom::GeolocationDiagnostics &) override {}
 
 private:
     friend class QtPositioningHelper;
 
-    void updatePosition(const device::mojom::Geoposition &);
+    void updatePosition(device::mojom::GeopositionResultPtr);
 
-    device::mojom::Geoposition m_lastKnownPosition;
+    device::mojom::GeopositionResultPtr m_lastKnownPosition;
     LocationProviderUpdateCallback m_callback;
     QtPositioningHelper *m_positioningHelper;
 };

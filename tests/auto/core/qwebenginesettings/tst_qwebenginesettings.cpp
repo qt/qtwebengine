@@ -27,6 +27,7 @@
 
 #include <QtGui/qclipboard.h>
 #include <QtGui/qguiapplication.h>
+#include <QtWebEngineWidgets/qwebengineview.h>
 
 class tst_QWebEngineSettings: public QObject {
     Q_OBJECT
@@ -40,6 +41,8 @@ private Q_SLOTS:
     void setInAcceptNavigationRequest();
     void disableReadingFromCanvas_data();
     void disableReadingFromCanvas();
+    void forceDarkMode();
+    void forceDarkModeMultiView();
 };
 
 void tst_QWebEngineSettings::resetAttributes()
@@ -235,6 +238,68 @@ void tst_QWebEngineSettings::disableReadingFromCanvas()
                          "   return src.length ? true : false;"
                          "})();");
     QCOMPARE(evaluateJavaScriptSync(&page, jsCode).toBool(), result);
+}
+
+void tst_QWebEngineSettings::forceDarkMode()
+{
+    QWebEnginePage page;
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+    page.settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
+
+    // based on: https://developer.chrome.com/blog/auto-dark-theme/#detecting-auto-dark-theme
+    page.setHtml("<html><body>"
+                 "<div id=\"detection\", style=\"display: none; background-color: canvas; color-scheme: light\"</div>"
+                 "</body></html>");
+
+    const QString isAutoDark("(() => {"
+                         "  const detectionDiv = document.querySelector('#detection');"
+                         "  return getComputedStyle(detectionDiv).backgroundColor != 'rgb(255, 255, 255)';"
+                         "})()");
+
+    QVERIFY(loadFinishedSpy.wait());
+    QTRY_COMPARE(evaluateJavaScriptSync(&page, isAutoDark).toBool(), false);
+    page.settings()->setAttribute(QWebEngineSettings::ForceDarkMode, true);
+    QTRY_COMPARE(evaluateJavaScriptSync(&page, isAutoDark).toBool(), true);
+}
+
+void tst_QWebEngineSettings::forceDarkModeMultiView()
+{
+    QWebEngineView view1;
+    QWebEngineView view2;
+    QWebEnginePage *page1 = view1.page();
+    QWebEnginePage *page2 = view2.page();
+    page1->settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
+    page2->settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
+    view1.resize(300,300);
+    view2.resize(300,300);
+    view1.show();
+    view2.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view1));
+    QVERIFY(QTest::qWaitForWindowExposed(&view2));
+
+    QSignalSpy loadFinishedSpy(page1, SIGNAL(loadFinished(bool)));
+    QSignalSpy loadFinishedSpy2(page2, SIGNAL(loadFinished(bool)));
+    QString html("<html><body>"
+                 "<div id=\"detection\", style=\"display: none; background-color: canvas; color-scheme: light\"</div>"
+                 "</body></html>");
+
+    const QString isAutoDark("(() => {"
+                            "  const detectionDiv = document.querySelector('#detection');"
+                            "  return getComputedStyle(detectionDiv).backgroundColor != 'rgb(255, 255, 255)';"
+                            "})()");
+
+    view1.setHtml(html);
+    QVERIFY(loadFinishedSpy.wait());
+    view2.setHtml(html);
+    QVERIFY(loadFinishedSpy2.wait());
+
+    // both views has light color-scheme
+    QTRY_COMPARE(evaluateJavaScriptSync(page1, isAutoDark).toBool(), false);
+    QTRY_COMPARE(evaluateJavaScriptSync(page2, isAutoDark).toBool(), false);
+    view1.settings()->setAttribute(QWebEngineSettings::ForceDarkMode, true);
+    // dark mode should apply only for view1
+    QTRY_COMPARE(evaluateJavaScriptSync(page1, isAutoDark).toBool(), true);
+    QTRY_COMPARE(evaluateJavaScriptSync(page2, isAutoDark).toBool(), false);
 }
 
 QTEST_MAIN(tst_QWebEngineSettings)

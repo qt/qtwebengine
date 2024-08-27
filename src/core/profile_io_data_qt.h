@@ -5,7 +5,7 @@
 #define PROFILE_IO_DATA_QT_H
 
 #include "content/public/browser/browsing_data_remover.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/storage_partition.h"
 #include "extensions/buildflags/buildflags.h"
 
 #include "net/proxy_config_monitor.h"
@@ -13,19 +13,23 @@
 
 #include <QtCore/QString>
 #include <QtCore/QPointer>
-#include <QtCore/QMutex>
+#include <QtCore/QRecursiveMutex>
 
 namespace cert_verifier {
 namespace mojom {
 class CertVerifierCreationParams;
 }}
 
-namespace net {
-class ClientCertStore;
+namespace content {
+class ResourceContext;
 }
 
 namespace extensions {
 class ExtensionSystemQt;
+}
+
+namespace net {
+class ClientCertStore;
 }
 
 namespace QtWebEngineCore {
@@ -49,9 +53,15 @@ private:
 // we still use shared memebers and use mutex which breaks
 // idea for this object, but this is wip.
 
-class ProfileIODataQt {
+class ProfileIODataQt : public content::StoragePartition::NetworkContextCreatedObserver {
 
 public:
+    enum ClearHttpCacheState {
+        Completed = 0,
+        Removing,
+        Resetting
+    };
+
     ProfileIODataQt(ProfileQt *profile); // runs on ui thread
     virtual ~ProfileIODataQt();
 
@@ -68,8 +78,9 @@ public:
 
     void setFullConfiguration(); // runs on ui thread
     void resetNetworkContext(); // runs on ui thread
+
     void clearHttpCache(); // runs on ui thread
-    bool isClearHttpCacheInProgress() { return m_clearHttpCacheInProgress; }
+    bool isClearHttpCacheInProgress() const { return m_clearHttpCacheState != Completed; }
 
     void ConfigureNetworkContextParams(bool in_memory,
                                        const base::FilePath &relative_partition_path,
@@ -85,6 +96,9 @@ public:
     base::WeakPtr<ProfileIODataQt> getWeakPtrOnIOThread();
 
     CookieMonsterDelegateQt *cookieDelegate() const { return m_cookieDelegate.get(); }
+
+    // content::StoragePartition::NetworkContextCreatedObserver overrides:
+    void OnNetworkContextCreated(content::StoragePartition *storage) override; // runs on ui thread
 
 private:
     void removeBrowsingDataRemoverObserver();
@@ -109,7 +123,7 @@ private:
     int m_httpCacheMaxSize = 0;
     BrowsingDataRemoverObserverQt m_removerObserver;
     QString m_dataPath;
-    bool m_clearHttpCacheInProgress = false;
+    ClearHttpCacheState m_clearHttpCacheState = Completed;
     base::WeakPtrFactory<ProfileIODataQt> m_weakPtrFactory; // this should be always the last member
 
     friend class BrowsingDataRemoverObserverQt;

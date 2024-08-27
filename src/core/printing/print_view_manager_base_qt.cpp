@@ -69,24 +69,6 @@ void OnDidGetDefaultPrintSettings(scoped_refptr<printing::PrintQueriesQueue> que
     }
 }
 
-printing::mojom::PrintPagesParamsPtr CreateEmptyPrintPagesParamsPtr()
-{
-    auto params = printing::mojom::PrintPagesParams::New();
-    params->params = printing::mojom::PrintParams::New();
-    return params;
-}
-
-// Runs |callback| with |params| to reply to
-// mojom::PrintManagerHost::UpdatePrintSettings.
-void UpdatePrintSettingsReply(printing::mojom::PrintManagerHost::UpdatePrintSettingsCallback callback,
-                              printing::mojom::PrintPagesParamsPtr params, bool canceled)
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (!params)
-        params = CreateEmptyPrintPagesParamsPtr();
-    std::move(callback).Run(std::move(params), canceled);
-}
-
 void OnDidUpdatePrintSettings(scoped_refptr<printing::PrintQueriesQueue> queue,
                                   std::unique_ptr<printing::PrinterQuery> printer_query,
                                   printing::mojom::PrintManagerHost::UpdatePrintSettingsCallback callback,
@@ -101,22 +83,21 @@ void OnDidUpdatePrintSettings(scoped_refptr<printing::PrintQueriesQueue> queue,
         params->params->document_cookie = printer_query->cookie();
         params->pages = printer_query->settings().ranges();
     }
-    bool canceled = printer_query->last_status() == printing::mojom::ResultCode::kCanceled;
 
-    UpdatePrintSettingsReply(std::move(callback), std::move(params), canceled);
+    std::move(callback).Run(std::move(params));
 
     if (printer_query->cookie() && printer_query->settings().dpi()) {
         queue->QueuePrinterQuery(std::move(printer_query));
     }
 }
 
-
 void OnDidScriptedPrint(scoped_refptr<printing::PrintQueriesQueue> queue,
                             std::unique_ptr<printing::PrinterQuery> printer_query,
                             printing::mojom::PrintManagerHost::ScriptedPrintCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    printing::mojom::PrintPagesParamsPtr params = CreateEmptyPrintPagesParamsPtr();
+    auto params = printing::mojom::PrintPagesParams::New();
+    params->params = printing::mojom::PrintParams::New();
     if (printer_query->last_status() == printing::mojom::ResultCode::kSuccess && printer_query->settings().dpi()) {
         RenderParamsFromPrintSettings(printer_query->settings(), params->params.get());
         params->params->document_cookie = printer_query->cookie();
@@ -583,21 +564,20 @@ void PrintViewManagerBaseQt::StopWorker(int documentCookie)
             m_printerQueriesQueue->PopPrinterQuery(documentCookie);
 }
 
-void PrintViewManagerBaseQt::UpdatePrintSettings(int32_t cookie, base::Value::Dict job_settings,
+void PrintViewManagerBaseQt::UpdatePrintSettings(base::Value::Dict job_settings,
                                                  UpdatePrintSettingsCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     if (!job_settings.FindInt(printing::kSettingPrinterType)) {
-        UpdatePrintSettingsReply(std::move(callback), nullptr, false);
+        std::move(callback).Run(nullptr);
         return;
     }
 
     content::RenderFrameHost *render_frame_host =
             print_manager_host_receivers_.GetCurrentTargetFrame();
-    std::unique_ptr<printing::PrinterQuery> printer_query = m_printerQueriesQueue->PopPrinterQuery(cookie);
-    if (!printer_query)
-         printer_query = m_printerQueriesQueue->CreatePrinterQuery(content::GlobalRenderFrameHostId());
+    std::unique_ptr<printing::PrinterQuery> printer_query =
+            m_printerQueriesQueue->CreatePrinterQuery(content::GlobalRenderFrameHostId());
 
     auto *printer_query_ptr = printer_query.get();
     printer_query_ptr->SetSettings(

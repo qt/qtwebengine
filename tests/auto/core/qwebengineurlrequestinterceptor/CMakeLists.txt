@@ -9,6 +9,8 @@ qt_internal_add_test(tst_qwebengineurlrequestinterceptor
         tst_qwebengineurlrequestinterceptor.cpp
     LIBRARIES
         Qt::WebEngineCore
+        Qt::WebEngineCorePrivate
+        Qt::CorePrivate
         Test::HttpServer
         Test::Util
 )
@@ -36,6 +38,7 @@ set(tst_qwebengineurlrequestinterceptor_resource_files
     "resources/style.css"
     "resources/sw.html"
     "resources/sw.js"
+    "resources/postBodyFile.txt"
 )
 
 qt_internal_add_resource(tst_qwebengineurlrequestinterceptor "tst_qwebengineurlrequestinterceptor"

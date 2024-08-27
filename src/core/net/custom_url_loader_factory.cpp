@@ -32,6 +32,7 @@
 #include <QtCore/qiodevice.h>
 #include <QtCore/qmimedatabase.h>
 #include <QtCore/qmimedata.h>
+#include <QtCore/qpointer.h>
 #include <QtCore/qurl.h>
 
 namespace QtWebEngineCore {
@@ -150,9 +151,11 @@ private:
             m_firstBytePosition = m_byteRange.first_byte_position();
 
 //        m_taskRunner->PostTask(FROM_HERE,
-        content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
-                       base::BindOnce(&URLRequestCustomJobProxy::initialize, m_proxy,
-                                      m_request.url, m_request.method, m_request.request_initiator, std::move(headers)));
+        content::GetUIThreadTaskRunner({})->PostTask(
+                FROM_HERE,
+                base::BindOnce(&URLRequestCustomJobProxy::initialize, m_proxy, m_request.url,
+                               m_request.method, m_request.request_initiator, std::move(headers),
+                               m_request.request_body));
     }
 
     void CompleteWithFailure(network::CorsErrorStatus cors_error)

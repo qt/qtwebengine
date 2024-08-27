@@ -49,7 +49,8 @@ public:
                                bool is_main_frame_request,
                                bool strict_enforcement,
                                base::OnceCallback<void(content::CertificateRequestResultType)> callback) override;
-    base::OnceClosure SelectClientCertificate(content::WebContents* web_contents,
+    base::OnceClosure SelectClientCertificate(content::BrowserContext* browser_context,
+                                              content::WebContents* web_contents,
                                               net::SSLCertRequestInfo* cert_request_info,
                                               net::ClientCertIdentityList client_certs,
                                               std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
@@ -187,7 +188,9 @@ public:
                                 const std::string &scheme) override;
     std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
     WillCreateURLLoaderRequestInterceptors(content::NavigationUIData *navigation_ui_data,
-                                           int frame_tree_node_id) override;
+                                           int frame_tree_node_id,
+                                           int64_t navigation_id,
+                                           scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner) override;
     bool WillCreateURLLoaderFactory(content::BrowserContext *browser_context,
                                     content::RenderFrameHost *frame,
                                     int render_process_id,
@@ -199,7 +202,8 @@ public:
                                     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient> *header_client,
                                     bool *bypass_redirect_checks,
                                     bool *disable_secure_dns,
-                                    network::mojom::URLLoaderFactoryOverridePtr *factory_override) override;
+                                    network::mojom::URLLoaderFactoryOverridePtr *factory_override,
+                                    scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner) override;
     scoped_refptr<network::SharedURLLoaderFactory> GetSystemSharedURLLoaderFactory() override;
     network::mojom::NetworkContext *GetSystemNetworkContext() override;
     void OnNetworkServiceCreated(network::mojom::NetworkService *network_service) override;
@@ -221,7 +225,6 @@ public:
     void RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(content::BrowserContext* browser_context,
                                                                  NonNetworkURLLoaderFactoryMap* factories) override;
     void SiteInstanceGotProcess(content::SiteInstance *site_instance) override;
-    void SiteInstanceDeleting(content::SiteInstance *site_instance) override;
     base::flat_set<std::string> GetPluginMimeTypesWithExternalHandlers(content::BrowserContext *browser_context) override;
 
     std::unique_ptr<content::WebContentsViewDelegate> GetWebContentsViewDelegate(content::WebContents *web_contents) override;
@@ -232,6 +235,17 @@ public:
     std::string GetUserAgent() override { return getUserAgent(); }
     blink::UserAgentMetadata GetUserAgentMetadata() override { return getUserAgentMetadata(); }
     std::string GetProduct() override;
+
+    content::WebAuthenticationDelegate *GetWebAuthenticationDelegate() override;
+#if !BUILDFLAG(IS_ANDROID)
+    std::unique_ptr<content::AuthenticatorRequestClientDelegate>
+    GetWebAuthenticationRequestDelegate(content::RenderFrameHost *render_frame_host) override;
+#endif
+
+    void GetMediaDeviceIDSalt(content::RenderFrameHost *rfh,
+                              const net::SiteForCookies &site_for_cookies,
+                              const blink::StorageKey &storage_key,
+                              base::OnceCallback<void(bool, const std::string&)> callback) override;
 
 private:
     BrowserMainPartsQt *m_browserMainParts = nullptr;

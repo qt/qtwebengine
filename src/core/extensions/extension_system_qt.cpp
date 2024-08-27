@@ -43,11 +43,10 @@
 #include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/info_map.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/browser/service_worker_manager.h"
+#include "extensions/browser/task_queue_util.h"
 #include "extensions/browser/user_script_manager.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_constants.h"
@@ -143,23 +142,9 @@ void ExtensionSystemQt::LoadExtension(std::string extension_id, const base::Valu
     if (!extension.get())
         LOG(ERROR) << error;
 
-    content::GetIOThreadTaskRunner({})->PostTask(FROM_HERE,
-            base::BindOnce(&InfoMap::AddExtension,
-                           base::Unretained(info_map()),
-                           base::RetainedRef(extension),
-                           base::Time::Now(),
-                           true,
-                           false));
     extension_registry_->AddEnabled(extension.get());
 
     NotifyExtensionLoaded(extension.get());
-}
-
-void ExtensionSystemQt::OnExtensionRegisteredWithRequestContexts(scoped_refptr<const extensions::Extension> extension)
-{
-    extension_registry_->AddReady(extension);
-    if (extension_registry_->enabled_extensions().Contains(extension->id()))
-        extension_registry_->TriggerOnReady(extension.get());
 }
 
 // Implementation based on ExtensionService::NotifyExtensionLoaded.
@@ -171,11 +156,7 @@ void ExtensionSystemQt::NotifyExtensionLoaded(const Extension *extension)
     // that the request context doesn't yet know about. The profile is responsible
     // for ensuring its URLRequestContexts appropriately discover the loaded
     // extension.
-    RegisterExtensionWithRequestContexts(
-            extension,
-            base::BindRepeating(&ExtensionSystemQt::OnExtensionRegisteredWithRequestContexts,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                base::WrapRefCounted(extension)));
+    ActivateTaskQueueForExtension(browser_context_, extension);
 
     // Tell renderers about the loaded extension.
     renderer_helper_->OnExtensionLoaded(*extension);
@@ -220,6 +201,10 @@ void ExtensionSystemQt::NotifyExtensionLoaded(const Extension *extension)
     if (plugins_changed)
       content::PluginService::GetInstance()->PurgePluginListCache(browser_context_, false);
 #endif // BUILDFLAG(ENABLE_PLUGINS)
+
+    extension_registry_->AddReady(extension);
+    if (extension_registry_->enabled_extensions().Contains(extension->id()))
+        extension_registry_->TriggerOnReady(extension);
 }
 
 bool ExtensionSystemQt::FinishDelayedInstallationIfReady(const std::string &extension_id, bool install_immediately)
@@ -272,13 +257,6 @@ StateStore *ExtensionSystemQt::dynamic_user_scripts_store()
 scoped_refptr<value_store::ValueStoreFactory> ExtensionSystemQt::store_factory()
 {
     return store_factory_;
-}
-
-InfoMap *ExtensionSystemQt::info_map()
-{
-    if (!info_map_.get())
-        info_map_ = new InfoMap;
-    return info_map_.get();
 }
 
 QuotaService *ExtensionSystemQt::quota_service()
@@ -365,8 +343,6 @@ void ExtensionSystemQt::InitForRegularProfile(bool extensions_enabled)
 {
     if (initialized_)
         return; // Already initialized.
-    // The InfoMap needs to be created before the ProcessManager.
-    info_map();
 
     Init(extensions_enabled);
 }
@@ -374,27 +350,6 @@ void ExtensionSystemQt::InitForRegularProfile(bool extensions_enabled)
 std::unique_ptr<ExtensionSet> ExtensionSystemQt::GetDependentExtensions(const Extension *extension)
 {
     return base::WrapUnique(new ExtensionSet());
-}
-
-void ExtensionSystemQt::RegisterExtensionWithRequestContexts(const Extension *extension,
-                                                             base::OnceClosure callback)
-{
-    base::Time install_time = base::Time::Now();
-
-    bool incognito_enabled = false;
-    bool notifications_disabled = false;
-
-    content::GetIOThreadTaskRunner({})->PostTaskAndReply(FROM_HERE,
-            base::BindOnce(&InfoMap::AddExtension, info_map(),
-                           base::RetainedRef(extension), install_time, incognito_enabled,
-                           notifications_disabled),
-            std::move(callback));
-}
-
-void ExtensionSystemQt::UnregisterExtensionWithRequestContexts(const std::string &extension_id)
-{
-    content::GetIOThreadTaskRunner({})->PostTask(FROM_HERE,
-        base::BindOnce(&InfoMap::RemoveExtension, info_map(), extension_id));
 }
 
 bool ExtensionSystemQt::is_ready() const

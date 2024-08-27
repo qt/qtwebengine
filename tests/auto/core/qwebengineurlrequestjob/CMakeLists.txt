@@ -11,6 +11,7 @@ qt_internal_add_test(tst_qwebengineurlrequestjob
 # Resources:
 set(tst_qwebengineurlrequestjob_resource_files
     "additionalResponseHeadersScript.html"
+    "requestBodyScript.html"
 )
 
 qt_add_resources(tst_qwebengineurlrequestjob "tst_qwebengineurlrequestjob"

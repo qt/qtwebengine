@@ -17,6 +17,7 @@
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtWebEngineCore/qwebenginequotarequest.h>
+#include <QtWebEngineCore/qwebenginedesktopmediarequest.h>
 #include <QtWebEngineCore/qwebenginedownloadrequest.h>
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 #include <QtGui/qcolor.h>
@@ -51,6 +52,7 @@ class QWebEngineNewWindowRequest;
 class QWebEngineRegisterProtocolHandlerRequest;
 class QQuickWebEngineScriptCollection;
 class QQuickWebEngineTouchSelectionMenuRequest;
+class QWebEngineWebAuthUxRequest;
 
 class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
@@ -550,6 +552,8 @@ Q_SIGNALS:
     Q_REVISION(6,3) void touchSelectionMenuRequested(QQuickWebEngineTouchSelectionMenuRequest *request);
     Q_REVISION(6,4) void touchHandleDelegateChanged();
     Q_REVISION(6,4) void fileSystemAccessRequested(const QWebEngineFileSystemAccessRequest &request);
+    Q_REVISION(6, 7) void webAuthUxRequested(QWebEngineWebAuthUxRequest *request);
+    Q_REVISION(6,7) void desktopMediaRequested(const QWebEngineDesktopMediaRequest &request);
 
 protected:
     void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;
@@ -566,8 +570,8 @@ private:
     QScopedPointer<QQuickWebEngineViewPrivate> d_ptr;
 
     friend class QQuickContextMenuBuilder;
-    friend class FaviconImageResponse;
-    friend class FaviconImageResponseRunnable;
+    friend class FaviconProviderHelper;
+    friend class FaviconImageRequester;
 #if QT_CONFIG(accessibility)
     friend class QQuickWebEngineViewAccessible;
 #endif // QT_CONFIG(accessibility)

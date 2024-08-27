@@ -1,5 +1,5 @@
 // Copyright (C) 2021 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <util.h>
 #include <QtTest/QtTest>
@@ -34,6 +34,7 @@ private Q_SLOTS:
     // as it checks storage manipulation without navigation
     void setAndDeleteCookie();
 
+    void setInvalidCookie();
     void cookieSignals();
     void batchCookieTasks();
     void basicFilter();
@@ -146,6 +147,37 @@ void tst_QWebEngineCookieStore::setAndDeleteCookie()
     client->deleteCookie(cookie2);
     QWE_TRY_COMPARE(cookieAddedSpy.size(), 1);
     QWE_TRY_COMPARE(cookieRemovedSpy.size(), 2);
+}
+
+void tst_QWebEngineCookieStore::setInvalidCookie()
+{
+    QWebEnginePage page(m_profile);
+    QWebEngineCookieStore *client = m_profile->cookieStore();
+
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(const QNetworkCookie &)));
+    QSignalSpy cookieRemovedSpy(client, SIGNAL(cookieRemoved(const QNetworkCookie &)));
+
+    QNetworkCookie goodCookie(
+            QNetworkCookie::parseCookies(
+                    QByteArrayLiteral("khaos=I9GX8CWI; Domain=.example.com; Path=/docs"))
+                    .first());
+    QNetworkCookie badCookie(
+            QNetworkCookie::parseCookies(QByteArrayLiteral("TestCookie=foo\tbar;")).first());
+
+    // force to init storage as it's done lazily upon first navigation
+    client->loadAllCookies();
+    // /* FIXME remove 'blank' navigation once loadAllCookies api is fixed
+    page.load(QUrl("about:blank"));
+    QWE_TRY_COMPARE(loadSpy.size(), 1);
+    // */
+
+    client->setCookie(badCookie);
+    client->setCookie(goodCookie);
+    client->deleteCookie(goodCookie);
+    // by the time the second cookie is removed, only one cookie should have been added
+    QWE_TRY_COMPARE(cookieRemovedSpy.size(), 1);
+    QWE_TRY_COMPARE(cookieAddedSpy.size(), 1);
 }
 
 void tst_QWebEngineCookieStore::batchCookieTasks()

@@ -7,6 +7,7 @@
 #include <QWebEnginePage>
 #include <QWebEngineRegisterProtocolHandlerRequest>
 #include <QWebEngineCertificateError>
+#include <QWebEngineDesktopMediaRequest>
 
 class WebPage : public QWebEnginePage
 {
@@ -21,6 +22,7 @@ signals:
 private slots:
     void handleCertificateError(QWebEngineCertificateError error);
     void handleSelectClientCertificate(QWebEngineClientCertificateSelection clientCertSelection);
+    void handleDesktopMediaRequest(const QWebEngineDesktopMediaRequest &request);
 };
 
 #endif // WEBPAGE_H

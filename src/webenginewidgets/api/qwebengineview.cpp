@@ -30,9 +30,10 @@
 #include <QStyle>
 #include <QGuiApplication>
 #include <QQuickWidget>
+#include <QtWidgets/private/qapplication_p.h>
 
 #if QT_CONFIG(accessibility)
-#include "qwebengine_accessible.h"
+#include "qwebengine_accessible_p.h"
 #endif
 
 #if QT_CONFIG(action)
@@ -140,6 +141,11 @@ public:
     void Destroy() override
     {
         deleteLater();
+
+        // The event loop may be exited at this point.
+        // Ensure deferred deletion in this scenario.
+        if (QThread::currentThread()->loopLevel() == 0)
+            QCoreApplication::sendPostedEvents(this, QEvent::DeferredDelete);
     }
 
     bool ActiveFocusOnPress() override
@@ -187,9 +193,16 @@ public:
     {
         auto parentWidget = QQuickWidget::parentWidget();
         if (parentWidget) {
+            if (QApplicationPrivate::wheel_widget)
+                QApplicationPrivate::wheel_widget = nullptr;
             QSpontaneKeyEvent::makeSpontaneous(ev);
             qApp->notify(parentWidget, ev);
         }
+    }
+    void SetCursor(const QCursor &cursor) override
+    {
+        if (auto parentWidget = QQuickWidget::parentWidget())
+            parentWidget->setCursor(cursor);
     }
 
 protected:

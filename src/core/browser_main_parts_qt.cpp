@@ -60,7 +60,7 @@
 #endif
 
 #if BUILDFLAG(IS_MAC)
-#include "base/message_loop/message_pump_mac.h"
+#include "base/message_loop/message_pump_apple.h"
 #include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #include "services/device/public/cpp/geolocation/system_geolocation_source.h"
 #include "ui/base/idle/idle.h"
@@ -73,8 +73,8 @@
 #endif
 
 #if defined(Q_OS_LINUX)
-#include "components/os_crypt/key_storage_config_linux.h"
-#include "components/os_crypt/os_crypt.h"
+#include "components/os_crypt/sync/key_storage_config_linux.h"
+#include "components/os_crypt/sync/os_crypt.h"
 #endif
 
 namespace QtWebEngineCore {
@@ -146,55 +146,9 @@ private:
                              seqMan->controller_.get());
         }
     }
-    // Both Qt and Chromium keep track of the current GL context by using
-    // thread-local variables, and naturally they are completely unaware of each
-    // other. As a result, when a QOpenGLContext is made current, the previous
-    // gl::GLContext is not released, and vice-versa. This is fine as long as
-    // each thread uses exclusively either Qt or Chromium GL bindings, which is
-    // usually the case.
-    //
-    // The only exception is when the GL driver is considered thread-unsafe
-    // (QOpenGLContext::supportsThreadedOpenGL() is false), in which case we
-    // have to run all GL operations, including Chromium's GPU service, on the
-    // UI thread. Now the bindings are being mixed and both Qt and Chromium get
-    // quite confused regarding the current state of the surface.
-    //
-    // To get this to work we have to release the current QOpenGLContext before
-    // executing any tasks from Chromium's GPU service and the gl::GLContext
-    // afterwards. Since GPU service just posts tasks to the UI thread task
-    // runner, we'll have to instrument the entire UI thread message pump.
-    class ScopedGLContextChecker
-    {
-#if QT_CONFIG(opengl)
-    public:
-        ScopedGLContextChecker()
-        {
-            if (!m_enabled)
-                return;
-
-            if (QOpenGLContext *context = QOpenGLContext::currentContext())
-                context->doneCurrent();
-        }
-
-        ~ScopedGLContextChecker()
-        {
-            if (!m_enabled)
-                return;
-
-            if (gl::GLContext *context = gl::GLContext::GetCurrent())
-                context->ReleaseCurrent(nullptr);
-        }
-
-    private:
-        bool m_enabled = WebEngineContext::isGpuServiceOnUIThread();
-#endif // QT_CONFIG(opengl)
-    };
-
 
     void handleScheduledWork()
     {
-        ScopedGLContextChecker glContextChecker;
-
         QDeadlineTimer timer(std::chrono::milliseconds(2));
         base::MessagePump::Delegate::NextWorkInfo more_work_info = m_delegate->DoWork();
         while (more_work_info.is_immediate() && !timer.hasExpired())
@@ -228,6 +182,7 @@ public:
         callback.Run(device::LocationSystemPermissionStatus::kDenied);
     }
     void RegisterPositionUpdateCallback(PositionUpdateCallback callback) {}
+    void RequestPermission() override {}
 };
 #endif // BUILDFLAG(IS_MAC)
 
@@ -239,7 +194,7 @@ std::unique_ptr<base::MessagePump> messagePumpFactory()
         return std::make_unique<MessagePumpForUIQt>();
     }
 #if BUILDFLAG(IS_MAC)
-    return base::MessagePumpMac::Create();
+    return base::message_pump_apple::Create();
 #else
     return std::make_unique<base::MessagePumpForUI>();
 #endif
@@ -266,9 +221,8 @@ void BrowserMainPartsQt::PostCreateMainMessageLoop()
         device_event_log::Initialize(0 /* default max entries */);
 
 #if defined(Q_OS_LINUX)
-    std::unique_ptr<os_crypt::Config> config = std::make_unique<os_crypt::Config>();
+    auto config = std::make_unique<os_crypt::Config>();
     config->product_name = "Qt WebEngine";
-    config->main_thread_runner = content::GetUIThreadTaskRunner({});
     config->should_use_preference = false;
     config->user_data_path = toFilePath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
     OSCrypt::SetConfig(std::move(config));
@@ -277,7 +231,7 @@ void BrowserMainPartsQt::PostCreateMainMessageLoop()
 
 int BrowserMainPartsQt::PreMainMessageLoopRun()
 {
-    ui::SelectFileDialog::SetFactory(new SelectFileDialogFactoryQt());
+    ui::SelectFileDialog::SetFactory(std::make_unique<SelectFileDialogFactoryQt>());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::ExtensionsClient::Set(new extensions::ExtensionsClientQt());

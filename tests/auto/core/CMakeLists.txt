@@ -19,3 +19,7 @@ if(QT_FEATURE_ssl)
     add_subdirectory(qwebengineclientcertificatestore)
     add_subdirectory(certificateerror)
 endif()
+
+if(QT_FEATURE_webenginedriver)
+    add_subdirectory(webenginedriver)
+endif()

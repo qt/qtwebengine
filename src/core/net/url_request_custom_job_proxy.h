@@ -4,7 +4,6 @@
 #ifndef URL_REQUEST_CUSTOM_JOB_PROXY_H_
 #define URL_REQUEST_CUSTOM_JOB_PROXY_H_
 
-#include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -14,6 +13,10 @@
 #include <QByteArray>
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
+
+namespace network {
+class ResourceRequestBody;
+}
 
 namespace QtWebEngineCore {
 
@@ -58,7 +61,9 @@ public:
     void abort();
     void fail(int error);
     void release();
-    void initialize(GURL url, std::string method, absl::optional<url::Origin> initiatorOrigin, std::map<std::string, std::string> headers);
+    void initialize(GURL url, std::string method, absl::optional<url::Origin> initiatorOrigin,
+                    std::map<std::string, std::string> headers,
+                    scoped_refptr<network::ResourceRequestBody> requestBody);
     void readyRead();
 
     // IO thread owned:

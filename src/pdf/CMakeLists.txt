@@ -71,7 +71,7 @@ add_dependencies(prepare_docs_Pdf generate_pdf_attributions)
 #   TOOLCHAIN SETUP
 ##
 
-if(LINUX OR MINGW)
+if(LINUX OR MINGW OR ANDROID)
     setup_toolchains()
 endif()
 
@@ -126,20 +126,23 @@ foreach(arch ${archs})
           angle_enable_swiftshader=false
           dawn_use_swiftshader=false
           use_dawn=false
+          build_dawn_tests=false
           enable_ipc_fuzzer=false
           enable_remoting=false
           enable_resource_allowlist_generation=false
+          enable_vr=false
           enable_web_speech=false
           chrome_pgo_phase=0
           strip_absolute_paths_from_debug_symbols=false
+          use_perfetto_client_library=false
+          v8_enable_webassembly=false
         )
 
         if(LINUX OR ANDROID)
             list(APPEND gnArgArg
                 is_cfi=false
                 ozone_auto_platforms=false
-                use_gnome_keyring=false
-                enable_vr=false
+                enable_arcore=false
                 use_ml_inliner=false
             )
             extend_gn_list(gnArgArg
@@ -155,12 +158,13 @@ foreach(arch ${archs})
             list(APPEND gnArgArg angle_enable_vulkan=false)
         endif()
         if(IOS)
+            list(APPEND gnArgArg enable_base_tracing=false)
             extend_gn_list(gnArgArg
                 ARGS enable_ios_bitcode
                 CONDITION QT_FEATURE_pdf_bitcode
             )
         endif()
-        if(WIN32)
+        if(WIN32 OR ANDROID)
           list(APPEND gnArgArg
               ninja_use_custom_environment_files=false
               safe_browsing_mode=0

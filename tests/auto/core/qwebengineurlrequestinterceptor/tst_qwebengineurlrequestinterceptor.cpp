@@ -1,9 +1,12 @@
 // Copyright (C) 2017 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
+
+#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
 
 #include <util.h>
 #include <QtTest/QtTest>
 #include <QtWebEngineCore/qwebengineurlrequestinfo.h>
+#include <QtWebEngineCore/private/qwebengineurlrequestinfo_p.h>
 #include <QtWebEngineCore/qwebengineurlrequestinterceptor.h>
 #include <QtWebEngineCore/qwebenginesettings.h>
 #include <QtWebEngineCore/qwebengineprofile.h>
@@ -48,6 +51,8 @@ private Q_SLOTS:
     void replaceInterceptor();
     void replaceOnIntercept();
     void multipleRedirects();
+    void postWithBody_data();
+    void postWithBody();
     void profilePreventsPageInterception_data();
     void profilePreventsPageInterception();
 };
@@ -935,6 +940,125 @@ void tst_QWebEngineUrlRequestInterceptor::multipleRedirects()
     QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 20000);
     QTRY_COMPARE(multiInterceptor.redirectCount, 2);
     QTRY_COMPARE(multiInterceptor.requestInfos.size(), 2);
+}
+
+class TestPostRequestInterceptor : public QWebEngineUrlRequestInterceptor
+{
+public:
+    TestPostRequestInterceptor(QString expected, bool isAppendFile, QObject *parent = nullptr)
+        : QWebEngineUrlRequestInterceptor(parent)
+        , m_expected(expected)
+        , m_isAppendFile(isAppendFile)
+    {};
+
+    void interceptRequest(QWebEngineUrlRequestInfo &info) override
+    {
+        info.block(true);
+        isCalled = true;
+
+        QIODevice *requestBodyDevice = info.requestBody();
+
+        if (m_isAppendFile) {
+            info.d_ptr->appendFileToResourceRequestBodyForTest(":/resources/postBodyFile.txt");
+        }
+
+        requestBodyDevice->open(QIODevice::ReadOnly);
+
+        const QString webKitBoundary = requestBodyDevice->read(40);
+        QVERIFY(webKitBoundary.contains("------WebKitFormBoundary"));
+
+        const QString fullBodyWithoutBoundaries = (webKitBoundary + requestBodyDevice->readAll())
+                                                          .replace(webKitBoundary, "")
+                                                          .replace("\r", "")
+                                                          .replace("\n", "")
+                                                          .replace(" ", "");
+
+        QCOMPARE(fullBodyWithoutBoundaries, m_expected);
+
+        requestBodyDevice->close();
+    }
+
+    bool isCalled = false;
+    QString m_expected;
+    bool m_isAppendFile;
+};
+
+void tst_QWebEngineUrlRequestInterceptor::postWithBody_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("output");
+    QTest::addColumn<bool>("isAppendFile");
+    QTest::addRow("FormData append (DataElementByte)")
+            << "fd.append('userId', 1);"
+               "fd.append('title',' Test123');"
+               "fd.append('completed', false);"
+            << "Content-Disposition:form-data;name=\"userId"
+               "\"1Content-Disposition:form-data"
+               ";name=\"title\"Test123Content-Di"
+               "sposition:form-data;name=\"completed\"f"
+               "alse--"
+            << false;
+    QTest::addRow("FormData blob (DataElementPipe)")
+            << "const blob1 = new Blob(['blob1thisisablob'],"
+               "{type: 'text/plain'});"
+               "fd.append('blob1', blob1);"
+            << "Content-Disposition:form-data;name=\"blob1"
+               "\";filename=\"blob\"Content-Type:text/plai"
+               "nblob1thisisablob--"
+            << false;
+    QTest::addRow("Append file (DataElementFile)") << ""
+                                                   << "--{\"test\":\"1234\"}\"1234\"}" << true;
+    QTest::addRow("All combined") << "fd.append('userId', 1);"
+                                     "fd.append('title', 'Test123');"
+                                     "fd.append('completed', false);"
+                                     "const blob1 = new Blob(['blob1thisisablob'],"
+                                     "{type: 'text/plain'});"
+                                     "const blob2 = new Blob(['blob2thisisanotherblob'],"
+                                     "{type: 'text/plain'});"
+                                     "fd.append('blob1', blob1);"
+                                     "fd.append('userId', 2);"
+                                     "fd.append('title', 'Test456');"
+                                     "fd.append('completed', true);"
+                                     "fd.append('blob2', blob2);"
+                                  << "Content-Disposition:form-data;name=\"userId\""
+                                     "1Content-Disposition:form-data;na"
+                                     "me=\"title\"Test123Content-Disposit"
+                                     "ion:form-data;name=\"completed\"false"
+                                     "Content-Disposition:form-data;name=\"blob1\";"
+                                     "filename=\"blob\"Content-Type:text/plain"
+                                     "blob1thisisablobContent-Disposition:form-"
+                                     "data;name=\"userId\"2Content-Dispos"
+                                     "ition:form-data;name=\"title\"Test456"
+                                     "Content-Disposition:form-data;name=\"complete"
+                                     "d\"trueContent-Disposition:form-da"
+                                     "ta;name=\"blob2\";filename=\"blob\"Content-Ty"
+                                     "pe:text/plainblob2thisisanotherblob--"
+                                     "{\"test\":\"1234\"}\"1234\"}"
+                                  << true;
+}
+
+void tst_QWebEngineUrlRequestInterceptor::postWithBody()
+{
+    QFETCH(QString, input);
+    QFETCH(QString, output);
+    QFETCH(bool, isAppendFile);
+
+    QString script;
+    script.append("const fd = new FormData();");
+    script.append(input);
+    script.append("fetch('http://127.0.0.1', {method: 'POST',body: fd});");
+
+    QWebEngineProfile profile;
+    profile.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
+    TestPostRequestInterceptor interceptor(output, isAppendFile);
+    profile.setUrlRequestInterceptor(&interceptor);
+    QWebEnginePage page(&profile);
+    bool ok = false;
+
+    page.runJavaScript(script, [&ok](const QVariant result) { ok = true; });
+
+    QTRY_VERIFY(ok);
+    QVERIFY(interceptor.isCalled);
 }
 
 class PageOrProfileInterceptor : public QWebEngineUrlRequestInterceptor

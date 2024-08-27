@@ -298,6 +298,12 @@ content::WebContentsAccessibility *RenderWidgetHostViewQt::GetWebContentsAccessi
     return m_webContentsAccessibility.get();
 }
 
+void RenderWidgetHostViewQt::OnRendererWidgetCreated()
+{
+    if (m_adapterClient)
+        SetBackgroundColor(toSk(m_adapterClient->backgroundColor()));
+}
+
 QObject *WebContentsAccessibilityQt::accessibilityParentObject() const
 {
     return m_rwhv->m_adapterClient->accessibilityParentObject();
@@ -615,7 +621,9 @@ void RenderWidgetHostViewQt::ImeCancelComposition()
     qApp->inputMethod()->reset();
 }
 
-void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const gfx::Range&, const std::vector<gfx::Rect>&)
+void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const gfx::Range &,
+                                                        const absl::optional<std::vector<gfx::Rect>> &,
+                                                        const absl::optional<std::vector<gfx::Rect>> &)
 {
     // FIXME: not implemented?
     QT_NOT_YET_IMPLEMENTED
@@ -834,11 +842,11 @@ void RenderWidgetHostViewQt::notifyHidden()
     m_delegatedFrameHost->DetachFromCompositor();
 }
 
-void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, blink::mojom::InputEventResultState ack_result) {
-    Q_UNUSED(touch);
-    const bool eventConsumed = ack_result == blink::mojom::InputEventResultState::kConsumed;
-    const bool isSetNonBlocking = content::InputEventResultStateIsSetNonBlocking(ack_result);
-    m_gestureProvider.OnTouchEventAck(touch.event.unique_touch_event_id, eventConsumed, isSetNonBlocking);
+void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, blink::mojom::InputEventResultState ack_result)
+{
+    const bool eventConsumed = (ack_result == blink::mojom::InputEventResultState::kConsumed);
+    const bool isSetBlocking = content::InputEventResultStateIsSetBlocking(ack_result);
+    m_gestureProvider.OnTouchEventAck(touch.event.unique_touch_event_id, eventConsumed, isSetBlocking);
 }
 
 void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEvent)
@@ -982,7 +990,6 @@ void RenderWidgetHostViewQt::TakeFallbackContentFrom(content::RenderWidgetHostVi
     CopyBackgroundColorIfPresentFrom(*viewQt);
 
     m_delegatedFrameHost->TakeFallbackContentFrom(viewQt->m_delegatedFrameHost.get());
-    host()->GetContentRenderingTimeoutFrom(viewQt->host());
 }
 
 void RenderWidgetHostViewQt::EnsureSurfaceSynchronizedForWebTest()

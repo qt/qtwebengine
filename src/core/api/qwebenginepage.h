@@ -26,6 +26,7 @@ class QRect;
 class QVariant;
 class QWebChannel;
 class QWebEngineCertificateError;
+class QWebEngineDesktopMediaRequest;
 class QWebEngineFileSystemAccessRequest;
 class QWebEngineFindTextResult;
 class QWebEngineFullScreenRequest;
@@ -40,6 +41,7 @@ class QWebEngineRegisterProtocolHandlerRequest;
 class QWebEngineScriptCollection;
 class QWebEngineSettings;
 class QWebEngineUrlRequestInterceptor;
+class QWebEngineWebAuthUxRequest;
 
 class Q_WEBENGINECORE_EXPORT QWebEnginePage : public QObject
 {
@@ -324,6 +326,7 @@ Q_SIGNALS:
     void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator, const QString &proxyHost);
 
     void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode);
+    void desktopMediaRequested(const QWebEngineDesktopMediaRequest &request);
     void certificateError(const QWebEngineCertificateError &certificateError);
     void navigationRequested(QWebEngineNavigationRequest &request);
     void newWindowRequested(QWebEngineNewWindowRequest &request);
@@ -352,6 +355,8 @@ Q_SIGNALS:
 
     // TODO: fixme / rewrite bindPageToView
     void _q_aboutToDelete();
+
+    void webAuthUxRequested(QWebEngineWebAuthUxRequest *request);
 
 protected:
     virtual QWebEnginePage *createWindow(WebWindowType type);

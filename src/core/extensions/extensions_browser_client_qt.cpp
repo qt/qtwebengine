@@ -264,7 +264,7 @@ bool ExtensionsBrowserClientQt::AreExtensionsDisabled(const base::CommandLine &c
     return false;
 }
 
-bool ExtensionsBrowserClientQt::IsValidContext(BrowserContext *context)
+bool ExtensionsBrowserClientQt::IsValidContext(void *)
 {
     return true;
 }
@@ -291,22 +291,28 @@ BrowserContext *ExtensionsBrowserClientQt::GetOriginalContext(BrowserContext *co
     return context;
 }
 
-BrowserContext *ExtensionsBrowserClientQt::GetRedirectedContextInIncognito(BrowserContext *context, bool, bool)
+content::BrowserContext* ExtensionsBrowserClientQt::GetContextRedirectedToOriginal(content::BrowserContext *context, bool)
 {
     // like in ShellExtensionsBrowserClient:
     return context;
 }
 
-BrowserContext *ExtensionsBrowserClientQt::GetContextForRegularAndIncognito(BrowserContext *context, bool, bool)
+content::BrowserContext* ExtensionsBrowserClientQt::GetContextOwnInstance(content::BrowserContext *context, bool)
 {
     // like in ShellExtensionsBrowserClient:
     return context;
 }
 
-BrowserContext *ExtensionsBrowserClientQt::GetRegularProfile(BrowserContext *context, bool, bool)
+content::BrowserContext* ExtensionsBrowserClientQt::GetContextForOriginalOnly(content::BrowserContext *context, bool)
 {
     // like in ShellExtensionsBrowserClient:
     return context;
+}
+
+bool ExtensionsBrowserClientQt::AreExtensionsDisabledForContext(content::BrowserContext*)
+{
+    // like in ShellExtensionsBrowserClient:
+    return false;
 }
 
 bool ExtensionsBrowserClientQt::IsGuestSession(BrowserContext *context) const
@@ -529,6 +535,12 @@ bool ExtensionsBrowserClientQt::IsScreensaverInDemoMode(const std::string &app_i
 void ExtensionsBrowserClientQt::SetAPIClientForTest(ExtensionsAPIClient *api_client)
 {
     api_client_.reset(api_client);
+}
+
+media_device_salt::MediaDeviceSaltService *ExtensionsBrowserClientQt::GetMediaDeviceSaltService(content::BrowserContext *context)
+{
+    // Not needed for QWE
+    return nullptr;
 }
 
 } // namespace extensions

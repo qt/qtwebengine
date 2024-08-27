@@ -36,7 +36,7 @@ qt_internal_add_module(WebEngineWidgets
 
 qt_internal_extend_target(WebEngineWidgets CONDITION QT_FEATURE_accessibility
     SOURCES
-        qwebengine_accessible.cpp qwebengine_accessible.h
+        qwebengine_accessible.cpp qwebengine_accessible_p.h
 )
 
 qt_internal_extend_target(WebEngineWidgets CONDITION QT_FEATURE_webengine_printing_and_pdf

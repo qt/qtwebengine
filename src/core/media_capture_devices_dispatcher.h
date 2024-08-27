@@ -24,7 +24,8 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
 public:
     static MediaCaptureDevicesDispatcher *GetInstance();
 
-    void processMediaAccessRequest(content::WebContents *, const content::MediaStreamRequest &, content::MediaResponseCallback);
+    void processMediaAccessRequest(content::WebContents *, const content::MediaStreamRequest &,
+                                   content::MediaResponseCallback, content::DesktopMediaID);
 
     // Called back from our WebContentsAdapter to grant the requested permission.
     void handleMediaAccessPermissionResponse(content::WebContents *, const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags);
@@ -52,11 +53,13 @@ private:
     friend struct base::DefaultSingletonTraits<MediaCaptureDevicesDispatcher>;
 
     struct PendingAccessRequest {
-        PendingAccessRequest(const content::MediaStreamRequest &request, content::MediaResponseCallback callback);
+        PendingAccessRequest(const content::MediaStreamRequest &request,
+                             content::MediaResponseCallback callback, content::DesktopMediaID id);
         ~PendingAccessRequest();
 
         content::MediaStreamRequest request;
         content::MediaResponseCallback callback;
+        content::DesktopMediaID mediaId;
     };
     typedef base::circular_deque<std::unique_ptr<PendingAccessRequest>> RequestsQueue;
     typedef base::flat_map<content::WebContents *, RequestsQueue> RequestsQueues;
@@ -68,8 +71,10 @@ private:
     void WebContentsDestroyed(content::WebContents *webContents) override;
 
     // Helpers for ProcessMediaAccessRequest().
+    void handleRequest(content::WebContents *, const content::MediaStreamRequest &, content::MediaResponseCallback);
     void processDesktopCaptureAccessRequest(content::WebContents *, const content::MediaStreamRequest &, content::MediaResponseCallback);
-    void enqueueMediaAccessRequest(content::WebContents *, const content::MediaStreamRequest &, content::MediaResponseCallback);
+    void enqueueMediaAccessRequest(content::WebContents *, const content::MediaStreamRequest &,
+                                   content::MediaResponseCallback, content::DesktopMediaID);
     void ProcessQueuedAccessRequest(content::WebContents *);
 
     // Called by the MediaObserver() functions, executed on UI thread.

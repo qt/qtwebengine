@@ -122,6 +122,7 @@ public:
     bool isBeingAdopted() override;
     void close() override;
     void windowCloseRejected() override;
+    void desktopMediaRequested(QtWebEngineCore::DesktopMediaController *) override;
     void contextMenuRequested(QWebEngineContextMenuRequest *request) override;
     void navigationRequested(int navigationType, const QUrl &url, bool &accepted, bool isMainFrame) override;
     void requestFullScreenMode(const QUrl &origin, bool fullscreen) override;
@@ -171,6 +172,7 @@ public:
     void showAutofillPopup(QtWebEngineCore::AutofillPopupController *controller,
                            const QRect &bounds, bool autoselectFirstSuggestion) override;
     void hideAutofillPopup() override;
+    void showWebAuthDialog(QWebEngineWebAuthUxRequest *controller) override;
 
     QtWebEngineCore::ProfileAdapter *profileAdapter() override;
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;

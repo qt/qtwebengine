@@ -1,3 +1,3 @@
 TEMPLATE=subdirs
 
-qtHaveModule(svg): SUBDIRS += pdfviewer multipage
+qtHaveModule(svg): SUBDIRS += singlepage multipage

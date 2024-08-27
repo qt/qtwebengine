@@ -152,7 +152,8 @@ if(NOT Gn_FOUND)
     endif()
 endif()
 
-if(NOT Gn_FOUND OR Gn_EXECUTABLE MATCHES "^${installDir}")
+string(REGEX REPLACE "(.)" "\\\\\\1" path_to_match "${installDir}")
+if(NOT Gn_FOUND OR Gn_EXECUTABLE MATCHES "^${path_to_match}")
     set(INSTALL_GN 1 CACHE INTERNAL "")
 endif()
 
@@ -191,28 +192,31 @@ if(CMAKE_CROSSCOMPILING AND NOT IOS AND NOT MACOS)
 endif()
 
 # install gn for cross build
-if((LINUX OR MACOS) AND INSTALL_GN)
-    get_install_config(installConfig)
-    install(
-        PROGRAMS ${installDir}/bin/gn
-        CONFIGURATIONS ${installConfig}
-        RUNTIME DESTINATION "${INSTALL_LIBEXECDIR}"
-    )
+if((LINUX OR MACOS OR WIN32) AND INSTALL_GN)
     if(NOT QT_WILL_INSTALL)
-        add_custom_target(copy-gn ALL DEPENDS
-            ${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/gn
+        set(copyOutput
+            ${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/gn${CMAKE_EXECUTABLE_SUFFIX}
         )
         if(Gn_FOUND)
+            set(copyInput ${Gn_EXECUTABLE})
             set(copyDep ${Gn_EXECUTABLE})
         else()
+            set(copyInput ${installDir}/bin/gn${CMAKE_EXECUTABLE_SUFFIX})
             set(copyDep gn)
         endif()
+        add_custom_target(copy-gn ALL DEPENDS ${copyOutput})
         add_custom_command(
-            OUTPUT ${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/gn
-            COMMAND ${CMAKE_COMMAND} -E copy ${installDir}/bin/gn
-            ${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}
+            OUTPUT ${copyOutput}
+            COMMAND ${CMAKE_COMMAND} -E copy ${copyInput} ${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}
             DEPENDS ${copyDep}
             USES_TERMINAL
+        )
+    else()
+        get_install_config(installConfig)
+        install(
+            PROGRAMS "${installDir}/bin/gn${CMAKE_EXECUTABLE_SUFFIX}"
+            CONFIGURATIONS ${installConfig}
+            RUNTIME DESTINATION "${INSTALL_LIBEXECDIR}"
         )
     endif()
 endif()

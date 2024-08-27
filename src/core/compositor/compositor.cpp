@@ -152,10 +152,7 @@ bool Compositor::textureIsFlipped()
     return false;
 }
 
-void Compositor::releaseResources(QQuickWindow *)
-{
-    Q_UNREACHABLE();
-}
+void Compositor::releaseResources() { }
 
 // static
 void Compositor::unlockBindings()

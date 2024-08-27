@@ -19,6 +19,7 @@ FindTextHelper::FindTextHelper(content::WebContents *webContents, WebContentsAda
     , m_viewClient(viewClient)
     , m_currentFindRequestId(m_findRequestIdCounter++)
     , m_lastCompletedFindRequestId(m_currentFindRequestId)
+    , m_previousCaseSensitively(false)
 {
 }
 
@@ -64,7 +65,7 @@ void FindTextHelper::startFinding(const QString &findText, bool caseSensitively,
 {
     Q_ASSERT(!findText.isEmpty());
 
-    const bool findNext = !m_previousFindText.isEmpty() && findText == m_previousFindText;
+    const bool findNext = !m_previousFindText.isEmpty() && findText == m_previousFindText && caseSensitively == m_previousCaseSensitively;
     if (isFindTextInProgress()) {
         // There are cases where the render process will overwrite a previous request
         // with the new search and we'll have a dangling callback, leaving the application
@@ -83,6 +84,7 @@ void FindTextHelper::startFinding(const QString &findText, bool caseSensitively,
     options->match_case = caseSensitively;
     options->new_session = !findNext;
     m_previousFindText = findText;
+    m_previousCaseSensitively = caseSensitively;
 
     m_currentFindRequestId = m_findRequestIdCounter++;
     m_webContents->Find(m_currentFindRequestId, toString16(findText), std::move(options), /*skip_delay=*/true);

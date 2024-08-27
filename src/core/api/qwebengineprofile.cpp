@@ -128,6 +128,16 @@ void QWebEngineProfilePrivate::showNotification(QSharedPointer<QtWebEngineCore::
   \sa QWebEngineDownloadRequest, QWebEnginePage::download()
 */
 
+/*!
+  \fn QWebEngineProfile::clearHttpCacheCompleted()
+
+  \since 6.7
+
+  This signal is emitted when the clearHttpCache() operation is completed.
+
+  \sa QWebEngineProfile::clearHttpCache()
+*/
+
 QWebEngineProfilePrivate::QWebEngineProfilePrivate(ProfileAdapter* profileAdapter)
     : m_settings(new QWebEngineSettings())
     , m_profileAdapter(profileAdapter)
@@ -239,6 +249,12 @@ void QWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
     }
 
     download->d_func()->update(info);
+}
+
+void QWebEngineProfilePrivate::clearHttpCacheCompleted()
+{
+    Q_Q(QWebEngineProfile);
+    Q_EMIT q->clearHttpCacheCompleted();
 }
 
 void QWebEngineProfilePrivate::addWebContentsAdapterClient(QtWebEngineCore::WebContentsAdapterClient *adapter)
@@ -817,6 +833,12 @@ void QWebEngineProfile::removeAllUrlSchemeHandlers()
     \since 5.7
 
     Removes the profile's cache entries.
+
+    \note Make sure that you do not start new navigation or any operation on the profile while
+    the clear operation is in progress. The clearHttpCacheCompleted() signal notifies about the
+    completion.
+
+    \sa QWebEngineProfile::clearHttpCacheCompleted()
 */
 void QWebEngineProfile::clearHttpCache()
 {

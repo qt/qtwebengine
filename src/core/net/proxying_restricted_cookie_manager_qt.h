@@ -53,7 +53,7 @@ public:
     void GetCookiesString(const GURL &url,
                           const net::SiteForCookies &site_for_cookies,
                           const url::Origin &top_frame_origin,
-                          bool has_storage_access,
+                          bool has_storage_access, bool get_version_shared_memory,
                           GetCookiesStringCallback callback) override;
     void CookiesEnabledFor(const GURL &url,
                            const net::SiteForCookies &site_for_cookies,

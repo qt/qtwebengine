@@ -17,8 +17,6 @@
 
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 #include <QtCore/qlist.h>
-#include <QtCore/qrunnable.h>
-#include <QtCore/qthreadpool.h>
 #include <QtGui/qimage.h>
 #include <QtQuick/qquickimageprovider.h>
 
@@ -26,65 +24,84 @@ QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineView;
 
-class FaviconImageResponseRunnable : public QObject, public QRunnable
+class FaviconImageResponse : public QQuickImageResponse
 {
     Q_OBJECT
 
 public:
-    FaviconImageResponseRunnable(const QString &id, const QSize &requestedSize,
-                                 QList<QQuickWebEngineView *> *views);
-    void run() override;
+    FaviconImageResponse(const QUrl &imageSource, const QSize &requestedSize);
+
+    QQuickTextureFactory *textureFactory() const override;
+    const QUrl &imageSource() const { return m_imageSource; }
+    const QSize &requestedSize() const { return m_requestedSize; }
+
+public slots:
+    void handleDone(QPixmap pixmap);
+
+private:
+    QImage m_image;
+    QUrl m_imageSource;
+    QSize m_requestedSize;
+};
+
+class FaviconImageRequester : public QObject
+{
+    Q_OBJECT
+
+public:
+    FaviconImageRequester(const QUrl &imageSource, const QSize &requestedSize);
+    void start();
+
+public slots:
     void iconRequestDone(const QIcon &icon);
 
 signals:
     void done(QPixmap pixmap);
 
 private:
-    int tryNextView();
-    void requestIconOnUIThread(QQuickWebEngineView *view);
+    bool tryNextView();
+    void requestFaviconFromDatabase(QPointer<QQuickWebEngineView> view);
+    QPointer<QQuickWebEngineView> getNextViewForProcessing();
 
-    QString m_id;
+    QUrl m_imageSource;
     QSize m_requestedSize;
-    QList<QQuickWebEngineView *> *m_views;
-    int m_nextViewIndex = 0;
-};
-
-class FaviconImageResponse : public QQuickImageResponse
-{
-public:
-    FaviconImageResponse();
-    FaviconImageResponse(const QString &id, const QSize &requestedSize,
-                         QList<QQuickWebEngineView *> *views, QThreadPool *pool);
-    ~FaviconImageResponse();
-    void handleDone(QPixmap pixmap);
-    QQuickTextureFactory *textureFactory() const override;
-
-private:
-    void startRunnable(const QString &id, const QSize &requestedSize,
-                       QList<QQuickWebEngineView *> *views, QThreadPool *pool);
-
-    FaviconImageResponseRunnable *m_runnable = nullptr;
-    QImage m_image;
+    QList<QPointer<QQuickWebEngineView>> m_processedViews;
 };
 
 class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineFaviconProvider : public QQuickAsyncImageProvider
 {
+    Q_OBJECT
+
 public:
     static QString identifier();
     static QUrl faviconProviderUrl(const QUrl &);
 
     QQuickWebEngineFaviconProvider();
-    ~QQuickWebEngineFaviconProvider();
-
-    void attach(QQuickWebEngineView *view) { m_views.append(view); }
-    void detach(QQuickWebEngineView *view) { m_views.removeAll(view); }
-
     QQuickImageResponse *requestImageResponse(const QString &id,
                                               const QSize &requestedSize) override;
 
+signals:
+    void imageResponseRequested(QPointer<FaviconImageResponse> faviconResponse);
+};
+
+class Q_WEBENGINEQUICK_EXPORT FaviconProviderHelper : public QObject
+{
+    Q_OBJECT
+
+public:
+    static FaviconProviderHelper *instance();
+    void attach(QPointer<QQuickWebEngineView> view);
+    void detach(QPointer<QQuickWebEngineView> view);
+    const QList<QPointer<QQuickWebEngineView>> &views() const { return m_views; }
+
+public slots:
+    void handleImageRequest(QPointer<FaviconImageResponse> faviconResponse);
+
 private:
-    QThreadPool m_pool;
-    QList<QQuickWebEngineView *> m_views;
+    FaviconProviderHelper();
+    void startFaviconRequest(QPointer<FaviconImageResponse> faviconResponse);
+    QPointer<QQuickWebEngineView> findViewByImageSource(const QUrl &imageSource) const;
+    QList<QPointer<QQuickWebEngineView>> m_views;
 };
 
 QT_END_NAMESPACE

@@ -43,8 +43,8 @@ class DEPSParser(ABC):
         return self.local_scope["recursedeps"]
 
 
-chromium_version = '112.0.5615.213'
-chromium_branch = '5615'
+chromium_version = '118.0.5993.220'
+chromium_branch = '5993'
 ninja_version = 'v1.8.2'
 
 json_url = 'http://omahaproxy.appspot.com/all.json'
@@ -57,7 +57,13 @@ submodule_blacklist = [
   'buildtools/clang_format/script',
   'buildtools/third_party/libc++/trunk',
   'buildtools/third_party/libc++abi/trunk',
-  'buildtools/third_party/libunwind/trunk'
+  'buildtools/third_party/libunwind/trunk',
+  'chrome/browser/resources/chromeos/quickoffice',
+  'remoting/host/installer/linux/internal',
+  'third_party/widevine/cdm/chromeos',
+  'third_party/widevine/cdm/linux',
+  'third_party/widevine/test/license_server',
+  'ui/file_manager/internal'
 ]
 submodule_whitelist = [ 'src/third_party/android_ndk' , 'src/third_party/libunwindstack' ]
 

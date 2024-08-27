@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qwebenginepage.h"
+#include "authenticator_request_dialog_controller.h"
 #include "qwebenginepage_p.h"
 
 #include "qwebenginecertificateerror.h"
+#include "qwebenginedesktopmediarequest.h"
 #include "qwebenginefilesystemaccessrequest.h"
 #include "qwebenginefindtextresult.h"
 #include "qwebenginefullscreenrequest.h"
@@ -21,6 +23,7 @@
 #include "qwebenginescript.h"
 #include "qwebenginescriptcollection_p.h"
 #include "qwebenginesettings.h"
+#include "qwebenginewebauthuxrequest.h"
 
 #include "authentication_dialog_controller.h"
 #include "autofill_popup_controller.h"
@@ -42,8 +45,10 @@
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QIcon>
+
 #include <QLoggingCategory>
 #include <QMimeData>
+#include <QtCore/QPointer>
 #include <QRect>
 #include <QTimer>
 #include <QUrl>
@@ -789,6 +794,12 @@ void QWebEnginePagePrivate::ensureInitialized() const
         adapter->loadDefault();
 }
 
+void QWebEnginePagePrivate::showWebAuthDialog(QWebEngineWebAuthUxRequest *request)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->webAuthUxRequested(request);
+}
+
 QWebEnginePage::QWebEnginePage(QObject* parent)
     : QObject(parent)
     , d_ptr(new QWebEnginePagePrivate())
@@ -1474,6 +1485,15 @@ void QWebEnginePage::findText(const QString &subString, FindFlags options, const
 bool QWebEnginePage::event(QEvent *e)
 {
     return QObject::event(e);
+}
+
+void QWebEnginePagePrivate::desktopMediaRequested(
+        QtWebEngineCore::DesktopMediaController *controller)
+{
+    Q_Q(QWebEnginePage);
+    QTimer::singleShot(0, q, [q, controller]() {
+        Q_EMIT q->desktopMediaRequested(QWebEngineDesktopMediaRequest(controller));
+    });
 }
 
 void QWebEnginePagePrivate::contextMenuRequested(QWebEngineContextMenuRequest *data)

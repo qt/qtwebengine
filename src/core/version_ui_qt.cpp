@@ -26,7 +26,7 @@ VersionUIQt::VersionUIQt(content::WebUI *web_ui) : content::WebUIController(web_
 
     Profile *profile = Profile::FromWebUI(web_ui);
     content::WebUIDataSource *html_source =
-            content::WebUIDataSource::Create(chrome::kChromeUIVersionQtHost);
+            content::WebUIDataSource::CreateAndAdd(profile, chrome::kChromeUIVersionQtHost);
     html_source->OverrideContentSecurityPolicy(
             network::mojom::CSPDirectiveName::ScriptSrc,
             "script-src chrome://resources 'self' 'unsafe-inline';");
@@ -51,7 +51,6 @@ VersionUIQt::VersionUIQt(content::WebUI *web_ui) : content::WebUIController(web_
         command_line += " " + *iter;
     html_source->AddString(kCommandLine, command_line);
 #endif
-    content::WebUIDataSource::Add(profile, html_source);
 }
 
 VersionUIQt::~VersionUIQt() { }

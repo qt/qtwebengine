@@ -364,9 +364,6 @@ base::FilePath FileSystemAccessPermissionContextQt::GetWellKnownDirectoryPath(
 {
     QStandardPaths::StandardLocation location = QStandardPaths::DocumentsLocation;
     switch (directory) {
-    case blink::mojom::WellKnownDirectory::kDefault:
-        location = QStandardPaths::DocumentsLocation;
-        break;
     case blink::mojom::WellKnownDirectory::kDirDesktop:
         location = QStandardPaths::DesktopLocation;
         break;
