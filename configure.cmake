@@ -422,24 +422,28 @@ qt_webengine_configure_check("dbus"
     TAGS LINUX_PKG_CONFIG
 )
 
-set(x_libs X11 LIBDRM XCOMPOSITE XCURSOR XRANDR XI XPROTO XSHMFENCE XTST XKBCOMMON XKBFILE)
-set(qpa_xcb_support_check TRUE)
-foreach(x_lib ${x_libs})
-    string(TOLOWER ${x_lib} x)
-    qt_webengine_configure_check("${x}"
-        MODULES QtWebEngine
-        CONDITION NOT LINUX OR NOT QT_FEATURE_xcb OR ${x_lib}_FOUND
-        MESSAGE "Could not find ${x} librarary for qpa-xcb support."
-        DOCUMENTATION "${x}"
-        TAGS LINUX_XCB
-        OPTIONAL
-    )
-    if(qpa_xcb_support_check AND NOT QT_CONFIGURE_CHECK_${x})
-        set(qpa_xcb_support_check FALSE)
-    endif()
-    unset(x)
-endforeach()
-unset(x_libs)
+# Only check for the 'xcb' feature if the Gui targets exists, aka Qt was not configured with
+# -no-gui.
+if(TARGET Qt6::Gui)
+    set(x_libs X11 LIBDRM XCOMPOSITE XCURSOR XRANDR XI XPROTO XSHMFENCE XTST XKBCOMMON XKBFILE)
+    set(qpa_xcb_support_check TRUE)
+    foreach(x_lib ${x_libs})
+        string(TOLOWER ${x_lib} x)
+        qt_webengine_configure_check("${x}"
+            MODULES QtWebEngine
+            CONDITION NOT LINUX OR NOT QT_FEATURE_xcb OR ${x_lib}_FOUND
+            MESSAGE "Could not find ${x} librarary for qpa-xcb support."
+            DOCUMENTATION "${x}"
+            TAGS LINUX_XCB
+            OPTIONAL
+        )
+        if(qpa_xcb_support_check AND NOT QT_CONFIGURE_CHECK_${x})
+            set(qpa_xcb_support_check FALSE)
+        endif()
+        unset(x)
+    endforeach()
+    unset(x_libs)
+endif()
 
 qt_webengine_configure_check("compiler"
     MODULES QtWebEngine
