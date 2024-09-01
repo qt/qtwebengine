@@ -36,7 +36,8 @@ bool QPdfIOHandler::canRead() const
 bool QPdfIOHandler::canRead(QIODevice *device)
 {
     char buf[6];
-    device->peek(buf, 6);
+    if (device->peek(buf, 6) != 6)
+        return false;
     return (!qstrncmp(buf, "%PDF-", 5) || Q_UNLIKELY(!qstrncmp(buf, "\012%PDF-", 6)));
 }
 
