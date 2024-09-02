@@ -904,7 +904,8 @@ void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &even
 {
     if (event.phase == blink::WebMouseWheelEvent::kPhaseEnded)
         return;
-    Q_ASSERT(m_wheelAckPending);
+    if (!m_wheelAckPending)
+        return;
     m_wheelAckPending = false;
     while (!m_pendingWheelEvents.isEmpty() && !m_wheelAckPending) {
         blink::WebMouseWheelEvent webEvent = m_pendingWheelEvents.takeFirst();
