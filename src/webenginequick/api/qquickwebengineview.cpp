@@ -1681,7 +1681,7 @@ void QQuickWebEngineView::printToPdf(const QJSValue &callback, PrintedPageSizeId
 
     // Call back with null result.
     QJSValueList args;
-    args.append(QJSValue(QByteArray().data()));
+    args.append(QJSValue(QLatin1String("")));
     QJSValue callbackCopy = callback;
     callbackCopy.call(args);
 #endif
