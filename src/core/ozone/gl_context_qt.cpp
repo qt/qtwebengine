@@ -385,6 +385,10 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup *share_group,
     }
     case kGLImplementationEGLANGLE:
     case kGLImplementationEGLGLES2:
+        if (Q_UNLIKELY(!compatible_surface)) {
+            qWarning("EGL: no compatible surface.");
+            return nullptr;
+        }
         return InitializeGLContext(new GLContextEGL(share_group),
                                    compatible_surface, attribs);
     case kGLImplementationDisabled:
