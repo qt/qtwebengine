@@ -36,6 +36,42 @@ static void deleteShareContext()
     shareContext = 0;
 }
 
+static void ensureShareContext()
+{
+    // No need to override the shared context if QApplication already set one (e.g with Qt::AA_ShareOpenGLContexts).
+    if (qt_gl_global_share_context())
+        return;
+
+    QCoreApplication *app = QCoreApplication::instance();
+    if (!app) {
+        qFatal("QtWebEngineQuick::initialize() but no core application instance.");
+        return;
+    }
+
+    // Bail out silently if the user did not construct a QGuiApplication.
+    if (!qobject_cast<QGuiApplication *>(app))
+        return;
+
+    if (app->thread() != QThread::currentThread()) {
+        qFatal("QtWebEngineQuick::initialize() must be called from the Qt gui thread.");
+        return;
+    }
+
+    if (shareContext)
+        return;
+
+    shareContext = new QOpenGLContext;
+    QSurfaceFormat format = QSurfaceFormat::defaultFormat();
+
+    shareContext->setFormat(format);
+    shareContext->create();
+    qAddPostRoutine(deleteShareContext);
+    qt_gl_set_global_share_context(shareContext);
+
+    // Classes like QOpenGLWidget check for the attribute
+    app->setAttribute(Qt::AA_ShareOpenGLContexts);
+}
+
 #endif
 // ### Qt 6: unify this logic and Qt::AA_ShareOpenGLContexts.
 // QtWebEngineQuick::initialize was introduced first and meant to be called
@@ -56,39 +92,10 @@ Q_WEBENGINECORE_EXPORT void initialize()
 #endif
     )
         QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
-    // No need to override the shared context if QApplication already set one (e.g with Qt::AA_ShareOpenGLContexts).
-    if (!qt_gl_global_share_context()) {
 
-        QCoreApplication *app = QCoreApplication::instance();
-        if (!app) {
-            qFatal("QtWebEngineQuick::initialize() but no core application instance.");
-            return;
-        }
-
-        // Bail out silently if the user did not construct a QGuiApplication.
-        if (!qobject_cast<QGuiApplication *>(app))
-            return;
-
-        if (app->thread() != QThread::currentThread()) {
-            qFatal("QtWebEngineQuick::initialize() must be called from the Qt gui thread.");
-            return;
-        }
-
-        if (shareContext)
-            return;
-
-        shareContext = new QOpenGLContext;
-        QSurfaceFormat format = QSurfaceFormat::defaultFormat();
-
-        shareContext->setFormat(format);
-        shareContext->create();
-        qAddPostRoutine(deleteShareContext);
-        qt_gl_set_global_share_context(shareContext);
-
-        // Classes like QOpenGLWidget check for the attribute
-        app->setAttribute(Qt::AA_ShareOpenGLContexts);
-    }
-
+    // ensure we have shared OpenGL context
+    if (QQuickWindow::graphicsApi() != QSGRendererInterface::Direct3D11)
+        ensureShareContext();
 #endif // QT_CONFIG(opengl) && !defined(Q_OS_MACOS)
 }
 
