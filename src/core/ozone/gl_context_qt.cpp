@@ -158,7 +158,7 @@ bool GLContextHelper::isCreateContextRobustnessSupported()
     return contextHelper->m_robustness;
 }
 
-#if QT_CONFIG(opengl) && defined(USE_OZONE)
+#if QT_CONFIG(opengl) && QT_CONFIG(egl) && defined(USE_OZONE)
 class ScopedGLContext
 {
 public:
@@ -244,7 +244,9 @@ private:
     EGLDisplay m_previousEGLDisplay = nullptr;
     std::vector<uint> m_textures;
 };
+#endif // QT_CONFIG(opengl) && QT_COFNIG(egl) && defined(USE_OZONE)
 
+#if QT_CONFIG(opengl) && defined(USE_OZONE)
 EGLHelper::EGLFunctions::EGLFunctions()
 {
     const static auto getProcAddress =
@@ -329,6 +331,7 @@ EGLHelper::EGLHelper()
 void EGLHelper::queryDmaBuf(const int width, const int height, int *fd, int *stride, int *offset,
                             uint64_t *modifiers)
 {
+#if QT_CONFIG(egl)
     if (!m_isDmaBufSupported)
         return;
 
@@ -364,6 +367,7 @@ void EGLHelper::queryDmaBuf(const int width, const int height, int *fd, int *str
                    << ui::GetEGLErrorString(m_functions->eglGetError());
 
     m_functions->eglDestroyImage(eglDisplay, eglImage);
+#endif // QT_CONFIG(egl)
 }
 
 bool EGLHelper::isDmaBufSupported()
