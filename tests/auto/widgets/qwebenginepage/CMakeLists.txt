@@ -9,6 +9,7 @@ qt_internal_add_test(tst_qwebenginepage
         tst_qwebenginepage.cpp
     LIBRARIES
         Qt::CorePrivate
+        Qt::GuiPrivate
         Qt::NetworkPrivate
         Qt::WebEngineCorePrivate
         Qt::WebEngineWidgets
