@@ -41,6 +41,8 @@
 #    include <QStateMachine>
 #endif
 #include <QtGui/QClipboard>
+#include <QtGui/qpa/qplatformintegration.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <QtTest/QtTest>
 #include <QTextCharFormat>
 #if QT_CONFIG(webengine_webchannel)
@@ -267,6 +269,7 @@ private Q_SLOTS:
     void renderProcessCrashed();
     void renderProcessPid();
     void backgroundColor();
+    void popupOnTransparentBackground();
     void audioMuted();
     void closeContents();
     void isSafeRedirect_data();
@@ -5341,6 +5344,27 @@ void tst_QWebEnginePage::backgroundColor()
 
     QCOMPARE(page->backgroundColor(), Qt::green);
     QTRY_COMPARE(view.grab().toImage().pixelColor(center), Qt::green);
+}
+
+void tst_QWebEnginePage::popupOnTransparentBackground()
+{
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(
+                QPlatformIntegration::WindowActivation))
+        QSKIP("Cannot test on platforms without window activation capability");
+
+    QWebEngineView view;
+    view.resize(640, 480);
+    view.page()->setBackgroundColor(Qt::transparent);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QSignalSpy spyLoadFinished(&view, SIGNAL(loadFinished(bool)));
+    view.setHtml(QLatin1String("<html><head></head><body><select id='foo' name='meow'>"
+                               "<option>fran</option><option>troz</option>"
+                               "</select></body></html>"));
+    QTRY_COMPARE(spyLoadFinished.size(), 1);
+    makeClick(view.windowHandle(), false, elementCenter(view.page(), "foo"));
+    QPointer<QWidget> popup;
+    QTRY_VERIFY((popup = QApplication::activePopupWidget()));
 }
 
 void tst_QWebEnginePage::audioMuted()

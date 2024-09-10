@@ -388,7 +388,7 @@ void RenderWidgetHostViewQt::UpdateBackgroundColor()
     m_rootLayer->SetColor(color);
     m_uiCompositor->SetBackgroundColor(color);
 
-    if (color == SK_ColorTRANSPARENT)
+    if (color == SK_ColorTRANSPARENT && host()->owner_delegate())
         host()->owner_delegate()->SetBackgroundOpaque(false);
 }
 
