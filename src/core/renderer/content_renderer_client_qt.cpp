@@ -56,6 +56,7 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "common/extensions/extensions_client_qt.h"
+#include "extensions/extensions_renderer_api_provider_qt.h"
 #include "extensions/extensions_renderer_client_qt.h"
 
 #include "extensions/common/constants.h"
@@ -128,6 +129,8 @@ void ContentRendererClientQt::RenderThreadStarted()
     auto *extensions_renderer_client = extensions::ExtensionsRendererClient::Get();
     extensions_renderer_client->AddAPIProvider(
             std::make_unique<extensions::CoreExtensionsRendererAPIProvider>());
+    extensions_renderer_client->AddAPIProvider(
+            std::make_unique<extensions::ExtensionsRendererAPIProviderQt>());
 
     extensions_renderer_client->RenderThreadStarted();
 #endif

@@ -291,6 +291,7 @@ foreach(arch ${archs})
                 extensions/mime_handler_view_guest_delegate_qt.cpp extensions/mime_handler_view_guest_delegate_qt.h
                 extensions/plugin_service_filter_qt.cpp extensions/plugin_service_filter_qt.h
                 net/plugin_response_interceptor_url_loader_throttle.cpp net/plugin_response_interceptor_url_loader_throttle.h
+                renderer/extensions/extensions_renderer_api_provider_qt.cpp renderer/extensions/extensions_renderer_api_provider_qt.h
                 renderer/extensions/extensions_renderer_client_qt.cpp renderer/extensions/extensions_renderer_client_qt.h
                 renderer/extensions/renderer_permissions_policy_delegate_qt.cpp renderer/extensions/renderer_permissions_policy_delegate_qt.h
                 renderer/extensions/resource_request_policy_qt.cpp renderer/extensions/resource_request_policy_qt.h

@@ -35,6 +35,7 @@
 #include "ui/display/screen.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/browser/api/messaging/message_service.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/extensions_browser_client_qt.h"
@@ -236,6 +237,7 @@ int BrowserMainPartsQt::PreMainMessageLoopRun()
     ui::SelectFileDialog::SetFactory(std::make_unique<SelectFileDialogFactoryQt>());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+    extensions::MessageService::GetFactoryInstance(); // required for communicating with hangouts
     extensions::ExtensionsClient::Set(new extensions::ExtensionsClientQt());
     extensions::ExtensionsBrowserClient::Set(new extensions::ExtensionsBrowserClientQt());
     extensions::ExtensionSystemFactoryQt::GetInstance();
