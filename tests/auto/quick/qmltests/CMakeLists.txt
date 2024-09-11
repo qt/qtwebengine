@@ -63,6 +63,11 @@ set(testList
     tst_save.qml
 )
 
+# QTBUG-128652
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "(arm|aarch).*64" AND LINUX)
+    list(REMOVE_ITEM testList tst_faviconDatabase.qml)
+endif()
+
 if(QT_FEATURE_webengine_webchannel)
     list(APPEND testList tst_webchannel.qml)
 endif()
