@@ -1,2 +1,5 @@
 [javascriptClipboard]
 ubuntu-20.04
+
+[htmlSelectPopup]
+ubuntu-24.04 offscreen # QTBUG-128653
