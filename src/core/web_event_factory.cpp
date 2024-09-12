@@ -1505,6 +1505,7 @@ WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev)
     case Qt::ZoomNativeGesture:
         webKitEvent.SetType(WebInputEvent::Type::kGesturePinchUpdate);
         webKitEvent.data.pinch_update.scale = static_cast<float>(ev->value() + 1.0);
+        webKitEvent.SetNeedsWheelEvent(true);
         break;
     case Qt::SmartZoomNativeGesture:
         webKitEvent.SetType(WebInputEvent::Type::kGestureDoubleTap);

@@ -925,6 +925,8 @@ void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &even
 void RenderWidgetHostViewQt::GestureEventAck(const blink::WebGestureEvent &event,
                                              blink::mojom::InputEventResultState ack_result)
 {
+    ForwardTouchpadZoomEventIfNecessary(event, ack_result);
+
     // Forward unhandled scroll events back as wheel events
     if (event.GetType() != blink::WebInputEvent::Type::kGestureScrollUpdate)
         return;
