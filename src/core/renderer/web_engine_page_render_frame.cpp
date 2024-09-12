@@ -5,10 +5,36 @@
 #include "content/public/renderer/render_frame.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 
+#include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_frame_content_dumper.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
+
+namespace {
+// Forces layouting of document and it's subtree.
+void updateStyleAndLayoutForTree(blink::Document *document)
+{
+    // Document::UpdateStyleAndLayout must run on the main thread of the render processs
+    CHECK(WTF::IsMainThread());
+
+    if (!document)
+        return;
+
+    document->UpdateStyleAndLayout(blink::DocumentUpdateReason::kUnknown);
+
+    blink::Frame *frame = document->GetFrame();
+    for (blink::Frame *child = frame->Tree().FirstChild(); child;
+         child = child->Tree().TraverseNext(frame)) {
+        if (child->IsLocalFrame())
+            if (auto *localFrame = DynamicTo<blink::LocalFrame>(child))
+                if (auto *doc = localFrame->GetDocument())
+                    updateStyleAndLayoutForTree(doc);
+    }
+}
+} // namespace
 
 namespace QtWebEngineCore {
 
@@ -43,6 +69,8 @@ void WebEnginePageRenderFrame::FetchDocumentInnerText(uint64_t requestId,
     blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
     blink::WebString text;
     if (m_ready) {
+        auto *document = To<blink::WebLocalFrameImpl>(frame)->GetFrame()->GetDocument();
+        updateStyleAndLayoutForTree(document);
         text = blink::WebFrameContentDumper::DumpFrameTreeAsText(
                 frame, std::numeric_limits<int32_t>::max());
     }
