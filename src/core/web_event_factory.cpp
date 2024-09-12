@@ -1633,8 +1633,8 @@ bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent,
     webEvent.SetPositionInScreen(static_cast<float>(ev->globalPosition().x()),
                                  static_cast<float>(ev->globalPosition().y()));
 
-    webEvent.wheel_ticks_x = ev->angleDelta().x() / static_cast<float>(QWheelEvent::DefaultDeltasPerStep);
-    webEvent.wheel_ticks_y = ev->angleDelta().y() / static_cast<float>(QWheelEvent::DefaultDeltasPerStep);
+    webEvent.wheel_ticks_x += ev->angleDelta().x() / static_cast<float>(QWheelEvent::DefaultDeltasPerStep);
+    webEvent.wheel_ticks_y += ev->angleDelta().y() / static_cast<float>(QWheelEvent::DefaultDeltasPerStep);
     setBlinkWheelEventDelta(webEvent);
 
     return true;
