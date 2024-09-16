@@ -65,6 +65,7 @@ NativeSkiaOutputDevice::NativeSkiaOutputDevice(
 
 NativeSkiaOutputDevice::~NativeSkiaOutputDevice()
 {
+    unbind();
 }
 
 void NativeSkiaOutputDevice::SetFrameSinkId(const viz::FrameSinkId &id)
