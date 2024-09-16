@@ -113,6 +113,7 @@ DisplaySkiaOutputDevice::DisplaySkiaOutputDevice(
 
 DisplaySkiaOutputDevice::~DisplaySkiaOutputDevice()
 {
+    unbind();
 }
 
 void DisplaySkiaOutputDevice::SetFrameSinkId(const viz::FrameSinkId &id)

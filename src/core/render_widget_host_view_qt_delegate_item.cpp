@@ -30,11 +30,12 @@ RenderWidgetHostViewQtDelegateItem::RenderWidgetHostViewQtDelegateItem(RenderWid
         setFocus(true);
         setActiveFocusOnTab(true);
     }
-    bind(client->compositorId());
+    bind(client->compositorId()); // Compositor::Observer
 }
 
 RenderWidgetHostViewQtDelegateItem::~RenderWidgetHostViewQtDelegateItem()
 {
+    unbind(); // Compositor::Observer
     releaseTextureResources();
     if (m_widgetDelegate) {
         m_widgetDelegate->Unbind();
