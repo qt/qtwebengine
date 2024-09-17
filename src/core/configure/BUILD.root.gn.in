@@ -110,7 +110,8 @@ shared_library("QtWebEngineCore") {
     "//skia/config",
     "//third_party",
     "//third_party/boringssl/src/include",
-    "//third_party/skia/include/core"
+    "//third_party/skia/include/core",
+    "//third_party/skia/include/third_party/vulkan"
   ]
   data_deps = []
   defines = [ "CHROMIUM_VERSION=" + chromium_version[0] ]
