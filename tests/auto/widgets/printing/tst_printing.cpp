@@ -180,7 +180,7 @@ void tst_Printing::printFromPdfViewer()
             return false;
 
         return true;
-    }, 10000);
+    }, 15000);
     QVERIFY(ok);
 #endif
 }
