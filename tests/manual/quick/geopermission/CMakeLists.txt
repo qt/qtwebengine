@@ -18,13 +18,6 @@ qt_internal_add_manual_test(tst_geopermission
         Qt::WebEngineQuick
 )
 
-if(WIN32)
-    set_property(
-        TARGET tst_geopermission
-        APPEND PROPERTY
-            SOURCES tst_geopermission.exe.manifest)
-endif()
-
 set_target_properties(tst_geopermission PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
