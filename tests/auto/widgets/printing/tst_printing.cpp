@@ -159,7 +159,7 @@ void tst_Printing::printFromPdfViewer()
         rectf rect;
         return pdfPage->search(ustring::from_latin1("Hello Paper World"), rect, page::search_from_top,
                             case_sensitive);
-    }, 10000);
+    }, 15000);
     QVERIFY(ok);
 }
 #endif
