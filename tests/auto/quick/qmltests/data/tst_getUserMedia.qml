@@ -4,6 +4,7 @@
 import QtQuick
 import QtTest
 import QtWebEngine
+import Test.Shared as Shared
 
 TestWebEngineView {
     id: webEngineView
@@ -134,8 +135,9 @@ TestWebEngineView {
     }
 
     function gotExpectedRequests(expectedFeature) {
-        var isDesktopPermission = expectedFeature == WebEnginePermission.PermissionType.DesktopAudioVideoCapture ||
-            expectedFeature == WebEnginePermission.PermissionType.DesktopVideoCapture;
+        // When webrtc is disabled, desktop media requests come through as non-desktop.
+        var isDesktopPermission = Shared.TestEnvironment.hasWebRTC() && (expectedFeature == WebEnginePermission.PermissionType.DesktopAudioVideoCapture ||
+            expectedFeature == WebEnginePermission.PermissionType.DesktopVideoCapture);
         if (isDesktopPermission != gotDesktopMediaRequest)
             return false
         if (isDesktopPermission && gotEmptyDesktopMediaRequest)

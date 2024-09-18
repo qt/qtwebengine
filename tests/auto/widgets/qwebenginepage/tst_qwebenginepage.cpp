@@ -1735,6 +1735,10 @@ public:
     bool gotExpectedRequests(bool isDesktopPermission,
                              QWebEnginePermission::PermissionType permissionType) const
     {
+#if !QT_CONFIG(webengine_webrtc)
+        // When webrtc is disabled, these come through as media requests and not desktop requests.
+        isDesktopPermission = false;
+#endif
         if (isDesktopPermission != m_gotDesktopMediaRequest)
             return false;
         if (isDesktopPermission && m_gotEmptyDesktopMediaRequest)
