@@ -383,33 +383,20 @@ bool usingSoftwareDynamicGL()
         if (requested == "software")
             return true;
     }
-#if defined(Q_OS_WIN)
-    HMODULE handle = QNativeInterface::QWGLContext::openGLModuleHandle();
-    wchar_t path[MAX_PATH];
-    DWORD size = GetModuleFileName(handle, path, MAX_PATH);
-    QFileInfo openGLModule(QString::fromWCharArray(path, size));
-    return openGLModule.fileName().contains(QLatin1StringView("opengl32sw"), Qt::CaseInsensitive);
-#else
     return false;
-#endif
-}
-
-static bool openGLPlatformSupport()
-{
-    return QGuiApplicationPrivate::platformIntegration()->hasCapability(
-            QPlatformIntegration::OpenGL);
 }
 
 static std::string getGLType(bool enableGLSoftwareRendering, bool disableGpu)
 {
-    const bool tryGL =
-            usingSupportedSGBackend() && !usingSoftwareDynamicGL() && openGLPlatformSupport();
-    if (disableGpu || (!tryGL && !enableGLSoftwareRendering))
+    if (disableGpu || !usingSupportedSGBackend())
         return gl::kGLImplementationDisabledName;
 
 #if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
     return gl::kGLImplementationANGLEName;
 #else
+    if (usingSoftwareDynamicGL() && !enableGLSoftwareRendering)
+        return gl::kGLImplementationDisabledName;
+
     if (!qt_gl_global_share_context() || !qt_gl_global_share_context()->isValid()) {
         qWarning("WebEngineContext is used before QtWebEngineQuick::initialize() or OpenGL context "
                  "creation failed.");
@@ -442,17 +429,14 @@ static std::string getGLType(bool enableGLSoftwareRendering, bool disableGpu)
 #else
 static std::string getGLType(bool /*enableGLSoftwareRendering*/, bool disableGpu)
 {
-    if (disableGpu)
+    if (disableGpu || !usingSupportedSGBackend())
         return gl::kGLImplementationDisabledName;
-#if defined(Q_OS_MACOS)
+
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
     return gl::kGLImplementationANGLEName;
-#elif defined(Q_OS_WIN)
-    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11
-        || QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan) {
-        return gl::kGLImplementationANGLEName;
-    }
-#endif
+#else
     return gl::kGLImplementationDisabledName;
+#endif
 }
 #endif // QT_CONFIG(opengl)
 
