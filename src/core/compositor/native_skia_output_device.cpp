@@ -123,6 +123,9 @@ SkSurface *NativeSkiaOutputDevice::BeginPaint(std::vector<GrBackendSemaphore> *e
         }
     }
     auto surface = m_backBuffer->beginWriteSkia();
+    if (!surface)
+        return nullptr;
+
     *end_semaphores = m_backBuffer->takeEndWriteSkiaSemaphores();
     return surface;
 }
@@ -274,7 +277,10 @@ SkSurface *NativeSkiaOutputDevice::Buffer::beginWriteSkia()
     m_scopedSkiaWriteAccess = m_skiaRepresentation->BeginScopedWriteAccess(
             m_shape.sampleCount, surface_props, &beginSemaphores, &m_endSemaphores,
             gpu::SharedImageRepresentation::AllowUnclearedAccess::kYes);
-    DCHECK(m_scopedSkiaWriteAccess);
+    if (!m_scopedSkiaWriteAccess) {
+        qWarning("SKIA: Failed to begin write access.");
+        return nullptr;
+    }
     if (!beginSemaphores.empty()) {
         m_scopedSkiaWriteAccess->surface()->wait(beginSemaphores.size(), beginSemaphores.data(),
                                                  /*deleteSemaphoresAfterWait=*/false);
