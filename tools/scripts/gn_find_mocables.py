@@ -28,7 +28,7 @@ for f in filter(os.path.isfile, files):
             line = line.partition("//")[0]
         if re.match(".*Q_OBJECT", line):
             mocables.add(f)
-        im = re.search('#include "(moc_\w+.cpp)"', line)
+        im = re.search(r'#include "(moc_\w+.cpp)"', line)
         if im:
             includedMocs.add(im.group(1))
 
