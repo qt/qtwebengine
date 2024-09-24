@@ -946,6 +946,9 @@ WebEngineContext::WebEngineContext()
     }
 
 #if BUILDFLAG(IS_OZONE)
+    disableFeatures.push_back(media::kUseMultiPlaneFormatForSoftwareVideo.name);
+    disableFeatures.push_back(media::kUseMultiPlaneFormatForHardwareVideo.name);
+
     if (GPUInfo::instance()->vendor() == GPUInfo::Nvidia) {
         disableFeatures.push_back(media::kVaapiVideoDecodeLinux.name);
         parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
