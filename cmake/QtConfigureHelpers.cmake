@@ -190,15 +190,15 @@ function(qt_webengine_configure_check check)
 endfunction()
 
 function(qt_webengine_configure_check_for_ulimit)
-    message("-- Checking 'ulimit -n'")
+    message(STATUS "Checking 'ulimit -n'")
     execute_process(COMMAND bash -c "ulimit -n"
         OUTPUT_VARIABLE ulimit_output
     )
     string(REGEX MATCHALL "[0-9]+" limit "${ulimit_output}")
-    message(" -- Open files limit ${limit}")
+    message(STATUS "Open files limit ${limit}")
     if(NOT (QT_FEATURE_use_gold_linker OR QT_FEATURE_use_lld_linker) AND ulimit_output LESS 4096)
         if(NOT ${CMAKE_VERSION} VERSION_LESS "3.21.0")
-            message(" -- Creating linker launcher")
+            message(STATUS "Creating linker launcher")
             file(GENERATE OUTPUT ${PROJECT_BINARY_DIR}/linker_ulimit.sh
                 CONTENT "#!/bin/bash\nulimit -n 4096\nexec \"$@\""
                 FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
