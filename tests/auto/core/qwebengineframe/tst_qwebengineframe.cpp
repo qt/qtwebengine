@@ -22,6 +22,7 @@
 #include <QtTest/QtTest>
 
 #include <QtWebEngineCore/qwebengineframe.h>
+#include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
 
 class tst_QWebEngineFrame : public QObject
 {
@@ -39,10 +40,12 @@ private Q_SLOTS:
     void size();
     void isMainFrame();
     void runJavaScript();
+#if QT_CONFIG(webengine_printing_and_pdf)
     void printRequestedByFrame();
     void printToPdfFile();
     void printToPdfFileFailures();
     void printToPdfFunction();
+#endif
 
 private:
 };
@@ -207,6 +210,7 @@ void tst_QWebEngineFrame::runJavaScript()
     QCOMPARE(result, QString("test-subframe0"));
 }
 
+#if QT_CONFIG(webengine_printing_and_pdf)
 void tst_QWebEngineFrame::printRequestedByFrame()
 {
     QWebEnginePage page;
@@ -340,6 +344,7 @@ void tst_QWebEngineFrame::printToPdfFunction()
     QVERIFY(invalidSpy.wasCalled());
     QCOMPARE(invalidPdfData.size(), 0);
 }
+#endif
 
 QTEST_MAIN(tst_QWebEngineFrame)
 
