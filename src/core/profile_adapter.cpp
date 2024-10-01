@@ -34,10 +34,6 @@
 #include "web_contents_adapter_client.h"
 #include "web_engine_context.h"
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/browser/extension_system.h"
-#endif
-
 #include <QCoreApplication>
 #include <QDir>
 #include <QJsonObject>
@@ -78,10 +74,6 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
     // fixme: this should not be here
     m_profile->m_profileIOData->initializeOnUIThread();
     m_customUrlSchemeHandlers.insert(QByteArrayLiteral("qrc"), &m_qrcHandler);
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    if (!storageName.isEmpty())
-        extensions::ExtensionSystem::Get(m_profile.data())->InitForRegularProfile(true);
-#endif
     m_cancelableTaskTracker.reset(new base::CancelableTaskTracker());
 
     m_profile->DoFinalInit();

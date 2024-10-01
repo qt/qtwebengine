@@ -75,7 +75,7 @@ public:
 
 private:
     void NotifyExtensionLoaded(const Extension *extension);
-    void LoadExtension(std::string extension_id, const base::Value::Dict &manifest, const base::FilePath &directory);
+    void LoadExtension(const base::Value::Dict &manifest, const base::FilePath &directory);
 
     // The services that are shared between normal and incognito profiles.
     std::unique_ptr<ServiceWorkerManager> service_worker_manager_;

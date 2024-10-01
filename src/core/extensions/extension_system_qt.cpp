@@ -68,16 +68,6 @@ namespace extensions {
 
 namespace {
 
-std::string GenerateId(const base::Value::Dict &manifest, const base::FilePath &path)
-{
-    const std::string *raw_key;
-    std::string id_input;
-    CHECK(raw_key = manifest.FindString(manifest_keys::kPublicKey));
-    CHECK(Extension::ParsePEMKeyBytes(*raw_key, &id_input));
-    std::string id = crx_file::id_util::GenerateId(id_input);
-    return id;
-}
-
 // Implementation based on ComponentLoader::ParseManifest.
 std::optional<base::Value::Dict> ParseManifest(base::StringPiece manifest_contents)
 {
@@ -128,7 +118,7 @@ public:
     void Shutdown() override {}
 };
 
-void ExtensionSystemQt::LoadExtension(std::string extension_id, const base::Value::Dict &manifest, const base::FilePath &directory)
+void ExtensionSystemQt::LoadExtension(const base::Value::Dict &manifest, const base::FilePath &directory)
 {
     int flags = Extension::REQUIRE_KEY;
     std::string error;
@@ -319,8 +309,7 @@ void ExtensionSystemQt::Init(bool extensions_enabled)
             base::FilePath path;
             base::PathService::Get(base::DIR_QT_LIBRARY_DATA, &path);
             path = path.Append(base::FilePath(FILE_PATH_LITERAL("pdf")));
-            std::string id = GenerateId(pdfManifestDict.value(), path);
-            LoadExtension(id, pdfManifestDict.value(), path);
+            LoadExtension(pdfManifestDict.value(), path);
         }
 #endif // BUILDFLAG(ENABLE_PDF)
 
@@ -332,8 +321,7 @@ void ExtensionSystemQt::Init(bool extensions_enabled)
             base::FilePath path;
             base::PathService::Get(base::DIR_QT_LIBRARY_DATA, &path);
             path = path.Append(base::FilePath(FILE_PATH_LITERAL("hangout_services")));
-            std::string id = GenerateId(hangoutManifestDict.value(), path);
-            LoadExtension(id, hangoutManifestDict.value(), path);
+            LoadExtension(hangoutManifestDict.value(), path);
         }
 #endif // BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
     }
