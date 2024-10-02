@@ -38,8 +38,6 @@ class ResourceRequestPolicyQt;
 
 namespace QtWebEngineCore {
 
-class RendererPermissionsPolicyDelegateQt;
-
 class ExtensionsRendererClientQt : public extensions::ExtensionsRendererClient
 {
 public:
@@ -67,12 +65,6 @@ public:
                          const url::Origin *initiator_origin,
                          GURL *new_url);
 
-    static bool ShouldFork(blink::WebLocalFrame *frame,
-                           const GURL &url,
-                           bool is_initial_navigation,
-                           bool is_server_redirect,
-                           bool *send_referrer);
-
     bool ExtensionAPIEnabledForServiceWorkerScript(const GURL &scope, const GURL &script_url) const override;
 
     void RunScriptsAtDocumentStart(content::RenderFrame *render_frame);
@@ -85,7 +77,6 @@ public:
     static ExtensionsRendererClientQt *GetInstance();
 
 private:
-    std::unique_ptr<RendererPermissionsPolicyDelegateQt> permissions_policy_delegate_;
     std::unique_ptr<extensions::Dispatcher> extension_dispatcher_;
     std::unique_ptr<extensions::ResourceRequestPolicyQt> resource_request_policy_;
 };

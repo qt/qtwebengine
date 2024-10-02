@@ -49,9 +49,6 @@
 #include <QWebChannel>
 #endif
 #include <httpserver.h>
-#include <qnetworkcookiejar.h>
-#include <qnetworkreply.h>
-#include <qnetworkrequest.h>
 #include <qwebengineclienthints.h>
 #include <qwebenginedownloadrequest.h>
 #include <qwebenginedesktopmediarequest.h>
@@ -833,23 +830,6 @@ void tst_QWebEnginePage::popupFormSubmission()
     // Check if the form submission was OK.
     QTRY_VERIFY(page.createdWindows[0]->url().toString().contains("?foo=bar"));
 }
-
-class TestNetworkManager : public QNetworkAccessManager
-{
-public:
-    TestNetworkManager(QObject* parent) : QNetworkAccessManager(parent) {}
-
-    QList<QUrl> requestedUrls;
-    QList<QNetworkRequest> requests;
-
-protected:
-    QNetworkReply* createRequest(Operation op, const QNetworkRequest &request, QIODevice* outgoingData) override
-    {
-        requests.append(request);
-        requestedUrls.append(request.url());
-        return QNetworkAccessManager::createRequest(op, request, outgoingData);
-    }
-};
 
 void tst_QWebEnginePage::multipleProfilesAndLocalStorage()
 {
@@ -2263,96 +2243,6 @@ void tst_QWebEnginePage::urlChange()
     QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), testUrl);
 }
 
-class FakeReply : public QNetworkReply {
-    Q_OBJECT
-
-public:
-    static const QUrl urlFor404ErrorWithoutContents;
-
-    FakeReply(const QNetworkRequest& request, QObject* parent = 0)
-        : QNetworkReply(parent)
-    {
-        setOperation(QNetworkAccessManager::GetOperation);
-        setRequest(request);
-        setUrl(request.url());
-        if (request.url() == QUrl("qrc:/test1.html")) {
-            setHeader(QNetworkRequest::LocationHeader, QString("qrc:/test2.html"));
-            setAttribute(QNetworkRequest::RedirectionTargetAttribute, QUrl("qrc:/test2.html"));
-            QTimer::singleShot(0, this, SLOT(continueRedirect()));
-        }
-#if QT_CONFIG(openssl)
-        else if (request.url() == QUrl("qrc:/fake-ssl-error.html")) {
-            setError(QNetworkReply::SslHandshakeFailedError, tr("Fake error!"));
-            QTimer::singleShot(0, this, SLOT(continueError()));
-        }
-#endif
-        else if (request.url().host() == QLatin1String("abcdef.abcdef")) {
-            setError(QNetworkReply::HostNotFoundError, tr("Invalid URL"));
-            QTimer::singleShot(0, this, SLOT(continueError()));
-        } else if (request.url() == FakeReply::urlFor404ErrorWithoutContents) {
-            setError(QNetworkReply::ContentNotFoundError, "Not found");
-            setAttribute(QNetworkRequest::HttpStatusCodeAttribute, 404);
-            QTimer::singleShot(0, this, SLOT(continueError()));
-        }
-
-        open(QIODevice::ReadOnly);
-    }
-    ~FakeReply()
-    {
-        close();
-    }
-    void abort() override {}
-    void close() override {}
-
-protected:
-    qint64 readData(char*, qint64) override
-    {
-        return 0;
-    }
-
-private Q_SLOTS:
-    void continueRedirect()
-    {
-        emit metaDataChanged();
-        emit finished();
-    }
-
-    void continueError()
-    {
-        emit errorOccurred(this->error());
-        emit finished();
-    }
-};
-
-const QUrl FakeReply::urlFor404ErrorWithoutContents = QUrl("http://this.will/return-http-404-error-without-contents.html");
-
-class FakeNetworkManager : public QNetworkAccessManager {
-    Q_OBJECT
-
-public:
-    FakeNetworkManager(QObject* parent) : QNetworkAccessManager(parent) { }
-
-protected:
-    QNetworkReply* createRequest(Operation op, const QNetworkRequest& request, QIODevice* outgoingData) override
-    {
-        QString url = request.url().toString();
-        if (op == QNetworkAccessManager::GetOperation) {
-#if QT_CONFIG(openssl)
-            if (url == "qrc:/fake-ssl-error.html") {
-                FakeReply* reply = new FakeReply(request, this);
-                QList<QSslError> errors;
-                emit sslErrors(reply, errors << QSslError(QSslError::UnspecifiedError));
-                return reply;
-            }
-#endif
-            if (url == "qrc:/test1.html" || url == "http://abcdef.abcdef/" || request.url() == FakeReply::urlFor404ErrorWithoutContents)
-                return new FakeReply(request, this);
-        }
-
-        return QNetworkAccessManager::createRequest(op, request, outgoingData);
-    }
-};
-
 void tst_QWebEnginePage::requestedUrlAfterSetAndLoadFailures()
 {
     QWebEnginePage page;
@@ -2707,33 +2597,6 @@ void tst_QWebEnginePage::setContent()
     QVERIFY(loadSpy.wait());
     QCOMPARE(toPlainTextSync(m_view->page()), expected);
 }
-
-class CacheNetworkAccessManager : public QNetworkAccessManager {
-public:
-    CacheNetworkAccessManager(QObject* parent = 0)
-        : QNetworkAccessManager(parent)
-        , m_lastCacheLoad(QNetworkRequest::PreferNetwork)
-    {
-    }
-
-    QNetworkReply* createRequest(Operation, const QNetworkRequest& request, QIODevice*) override
-    {
-        QVariant cacheLoad = request.attribute(QNetworkRequest::CacheLoadControlAttribute);
-        if (cacheLoad.isValid())
-            m_lastCacheLoad = static_cast<QNetworkRequest::CacheLoadControl>(cacheLoad.toUInt());
-        else
-            m_lastCacheLoad = QNetworkRequest::PreferNetwork; // default value
-        return new FakeReply(request, this);
-    }
-
-    QNetworkRequest::CacheLoadControl lastCacheLoad() const
-    {
-        return m_lastCacheLoad;
-    }
-
-private:
-    QNetworkRequest::CacheLoadControl m_lastCacheLoad;
-};
 
 void tst_QWebEnginePage::setUrlWithPendingLoads()
 {
