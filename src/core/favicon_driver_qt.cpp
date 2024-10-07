@@ -13,12 +13,14 @@
 
 #include "components/favicon/content/favicon_url_util.h"
 #include "components/favicon/core/favicon_service.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 
 namespace QtWebEngineCore {
@@ -51,6 +53,17 @@ void FaviconDriverQt::CreateForWebContents(content::WebContents *webContents,
             base::WrapUnique(new FaviconDriverQt(webContents, faviconService, viewClient)));
 }
 
+// static
+FaviconDriverQt *FaviconDriverQt::GetForBrowserContext(content::BrowserContext *context)
+{
+    for (auto *webContents : content::WebContentsImpl::GetAllWebContents())
+        if (webContents->GetBrowserContext() == context) {
+            return FromWebContents(webContents);
+        }
+
+    return nullptr;
+}
+
 FaviconDriverQt::FaviconDriverQt(content::WebContents *webContents,
                                  favicon::CoreFaviconService *faviconService,
                                  WebContentsAdapterClient *viewClient)
@@ -59,15 +72,14 @@ FaviconDriverQt::FaviconDriverQt(content::WebContents *webContents,
     , m_faviconService(faviconService)
     , m_viewClient(viewClient)
 {
-    if (!m_faviconService)
-        return;
+    initFaviconHandlers();
+}
 
-    m_handlers.push_back(std::make_unique<favicon::FaviconHandler>(
-            m_faviconService, this, favicon::FaviconDriverObserver::NON_TOUCH_16_DIP));
-    m_handlers.push_back(std::make_unique<favicon::FaviconHandler>(
-            m_faviconService, this, favicon::FaviconDriverObserver::NON_TOUCH_LARGEST));
-    m_handlers.push_back(std::make_unique<favicon::FaviconHandler>(
-            m_faviconService, this, favicon::FaviconDriverObserver::TOUCH_LARGEST));
+void FaviconDriverQt::setFaviconService(favicon::CoreFaviconService *service)
+{
+    Q_ASSERT(service);
+    m_faviconService = service;
+    initFaviconHandlers();
 }
 
 void FaviconDriverQt::FetchFavicon(const GURL &page_url, bool is_same_document)
@@ -406,6 +418,20 @@ void FaviconDriverQt::emitIconChangedIfNeeded()
     }
 
     m_viewClient->iconChanged(toQt(m_latestFavicon.url));
+}
+
+void FaviconDriverQt::initFaviconHandlers()
+{
+    if (!m_faviconService)
+        return;
+
+    m_handlers.clear();
+    m_handlers.push_back(std::make_unique<favicon::FaviconHandler>(
+            m_faviconService, this, favicon::FaviconDriverObserver::NON_TOUCH_16_DIP));
+    m_handlers.push_back(std::make_unique<favicon::FaviconHandler>(
+            m_faviconService, this, favicon::FaviconDriverObserver::NON_TOUCH_LARGEST));
+    m_handlers.push_back(std::make_unique<favicon::FaviconHandler>(
+            m_faviconService, this, favicon::FaviconDriverObserver::TOUCH_LARGEST));
 }
 
 NAVIGATION_HANDLE_USER_DATA_KEY_IMPL(FaviconDriverQt::NavigationManifestData);

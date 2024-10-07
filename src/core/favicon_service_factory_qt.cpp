@@ -68,6 +68,12 @@ HistoryServiceFactoryQt *HistoryServiceFactoryQt::GetInstance()
     return base::Singleton<HistoryServiceFactoryQt>::get();
 }
 
+// static
+void HistoryServiceFactoryQt::RemoveFromBrowserContext(content::BrowserContext *context)
+{
+    GetInstance()->Disassociate(context);
+}
+
 HistoryServiceFactoryQt::HistoryServiceFactoryQt()
     : BrowserContextKeyedServiceFactory("HistoryService",
                                         BrowserContextDependencyManager::GetInstance())
@@ -136,6 +142,12 @@ FaviconServiceFactoryQt::GetForBrowserContext(content::BrowserContext *context)
 FaviconServiceFactoryQt *FaviconServiceFactoryQt::GetInstance()
 {
     return base::Singleton<FaviconServiceFactoryQt>::get();
+}
+
+// static
+void FaviconServiceFactoryQt::RemoveFromBrowserContext(content::BrowserContext *context)
+{
+    GetInstance()->Disassociate(context);
 }
 
 FaviconServiceFactoryQt::FaviconServiceFactoryQt()

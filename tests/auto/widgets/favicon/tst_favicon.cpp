@@ -46,6 +46,7 @@ private Q_SLOTS:
     void requestIconForPageURL_data();
     void requestIconForPageURL();
     void desiredSize();
+    void changePersistentStorage();
 
 private:
     QWebEngineView *m_view;
@@ -852,6 +853,55 @@ void tst_Favicon::desiredSize()
             QVERIFY(pixel != expectedPixel);
             QCOMPARE(iconUrl, QUrl("qrc:/resources/icons/qtmulti.ico"));
             QCOMPARE(pageUrl, QUrl("qrc:/resources/favicon-multi.html"));
+            iconRequestDone = true;
+        });
+        QTRY_VERIFY(iconRequestDone);
+    }
+}
+
+void tst_Favicon::changePersistentStorage()
+{
+    QTemporaryDir tmpDir;
+    const QString tmpDirPath = tmpDir.path();
+    QWebEngineProfile profile("test");
+    profile.setPersistentStoragePath(tmpDirPath);
+
+    QWebEnginePage page(&profile);
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy iconChangedSpy(&page, SIGNAL(iconChanged(QIcon)));
+
+    const QUrl url("qrc:/resources/favicon-single.html");
+    page.load(url);
+
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QTRY_COMPARE(iconChangedSpy.size(), 1);
+
+    {
+        bool iconRequestDone = false;
+        profile.requestIconForPageURL(url, 0, [&](const QIcon &icon, const QUrl &, const QUrl &) {
+            QVERIFY(!icon.isNull());
+            iconRequestDone = true;
+        });
+        QTRY_VERIFY(iconRequestDone);
+    }
+
+    // It is expected to find nothing here since we changed the storagePath
+    profile.setPersistentStoragePath(tmpDirPath + "/subDir");
+    {
+        bool iconRequestDone = false;
+        profile.requestIconForPageURL(url, 0, [&](const QIcon &icon, const QUrl &, const QUrl &) {
+            QVERIFY(icon.isNull());
+            iconRequestDone = true;
+        });
+        QTRY_VERIFY(iconRequestDone);
+    }
+
+    // Reconnect to the original database
+    profile.setPersistentStoragePath(tmpDirPath);
+    {
+        bool iconRequestDone = false;
+        profile.requestIconForPageURL(url, 0, [&](const QIcon &icon, const QUrl &, const QUrl &) {
+            QVERIFY(!icon.isNull());
             iconRequestDone = true;
         });
         QTRY_VERIFY(iconRequestDone);

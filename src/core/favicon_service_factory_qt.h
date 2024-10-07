@@ -59,6 +59,7 @@ class HistoryServiceFactoryQt : public BrowserContextKeyedServiceFactory
 public:
     static history::HistoryService *GetForBrowserContext(content::BrowserContext *context);
     static HistoryServiceFactoryQt *GetInstance();
+    static void RemoveFromBrowserContext(content::BrowserContext *context);
 
 private:
     friend struct base::DefaultSingletonTraits<HistoryServiceFactoryQt>;
@@ -93,6 +94,7 @@ class FaviconServiceFactoryQt : public BrowserContextKeyedServiceFactory
 public:
     static favicon::FaviconService *GetForBrowserContext(content::BrowserContext *context);
     static FaviconServiceFactoryQt *GetInstance();
+    static void RemoveFromBrowserContext(content::BrowserContext *context);
 
 private:
     friend struct base::DefaultSingletonTraits<FaviconServiceFactoryQt>;

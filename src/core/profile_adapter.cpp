@@ -22,6 +22,7 @@
 #include "api/qwebengineurlscheme.h"
 #include "content_browser_client_qt.h"
 #include "download_manager_delegate_qt.h"
+#include "favicon_driver_qt.h"
 #include "favicon_service_factory_qt.h"
 #include "permission_manager_qt.h"
 #include "profile_adapter_client.h"
@@ -805,12 +806,19 @@ void ProfileAdapter::reinitializeHistoryService()
 {
     Q_ASSERT(!m_offTheRecord);
     if (ensureDataPathExists()) {
+        // remove the associated services first, so we can get new ones (inited with
+        // the new data paths) from the factory
+        FaviconServiceFactoryQt::RemoveFromBrowserContext(m_profile.data());
+        HistoryServiceFactoryQt::RemoveFromBrowserContext(m_profile.data());
+
         favicon::FaviconService *faviconService =
                 FaviconServiceFactoryQt::GetForBrowserContext(m_profile.data());
         history::HistoryService *historyService = static_cast<history::HistoryService *>(
                 HistoryServiceFactoryQt::GetInstance()->GetForBrowserContext(m_profile.data()));
         Q_ASSERT(historyService);
         faviconService->SetHistoryService(historyService);
+        if (auto *faviconDriver = FaviconDriverQt::GetForBrowserContext(m_profile.data()))
+            faviconDriver->setFaviconService(faviconService);
     } else {
         qWarning("Favicon database is not available for this profile.");
     }
