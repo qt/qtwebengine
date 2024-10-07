@@ -103,7 +103,9 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
 {
     memset(actions, 0, sizeof(actions));
 
+#if QT_DEPRECATED_SINCE(6, 5)
     qRegisterMetaType<QWebEngineQuotaRequest>();
+#endif
     qRegisterMetaType<QWebEngineRegisterProtocolHandlerRequest>();
     qRegisterMetaType<QWebEngineFileSystemAccessRequest>();
     qRegisterMetaType<QWebEngineFindTextResult>();
@@ -507,6 +509,15 @@ void QWebEnginePagePrivate::runRegisterProtocolHandlerRequest(QWebEngineRegister
     Q_Q(QWebEnginePage);
     Q_EMIT q->registerProtocolHandlerRequested(request);
 }
+
+/*!
+    \fn void QWebEnginePage::fileSystemAccessRequested(QWebEngineFileSystemAccessRequest request)
+    \since 6.4
+
+    This signal is emitted when the web page requests access to local files or directories.
+
+    The request object \a request can be used to accept or reject the request.
+*/
 
 void QWebEnginePagePrivate::runFileSystemAccessRequest(QWebEngineFileSystemAccessRequest request)
 {
@@ -1502,7 +1513,7 @@ void QWebEnginePagePrivate::contextMenuRequested(QWebEngineContextMenuRequest *d
 }
 
 /*!
-    \fn bool QWebEnginePage::navigationRequested(QWebEngineNavigationRequest &request)
+    \fn void QWebEnginePage::navigationRequested(QWebEngineNavigationRequest &request)
     \since 6.2
 
     This signal is emitted on navigation together with the call the acceptNavigationRequest().
@@ -1642,6 +1653,17 @@ void QWebEnginePagePrivate::setToolTip(const QString &toolTipText)
     if (view)
         view->setToolTip(toolTipText);
 }
+
+/*!
+    \fn void QWebEnginePage::printRequested()
+    \since 5.12
+
+    This signal is emitted when the JavaScript \c{window.print()} method is called or the user pressed the print
+    button of PDF viewer plugin.
+    Typically, the signal handler can simply call printToPdf().
+
+    \sa printToPdf()
+*/
 
 void QWebEnginePagePrivate::printRequested()
 {

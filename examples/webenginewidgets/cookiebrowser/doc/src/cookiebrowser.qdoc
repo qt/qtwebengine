@@ -3,6 +3,7 @@
 
 /*!
     \example webenginewidgets/cookiebrowser
+    \examplecategory {Web Technologies}
     \title WebEngine Cookie Browser Example
     \ingroup webengine-widgetexamples
     \brief A cookie browser based on \QWE Widgets.

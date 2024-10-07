@@ -4,6 +4,7 @@
 /*!
     \page qtwebengine-features.html
     \title Qt WebEngine Features
+    \ingroup explanations-webtechnologies
 
     \brief Summarizes \QWE features.
 
@@ -303,6 +304,10 @@
     \uicontrol {Privacy & Security} > \uicontrol {Location}, enable \uicontrol
     {Location services}, \uicontrol {Let apps access your location} and \uicontrol
     {Let desktop apps access your location}.
+
+    \note On macOS add a description text explaining why use of the location is needed
+    using the \c NSLocationUsageDescription in your application's \c Info.plist file
+    and sign the application to trigger \c macos to ask the user for permission.
 
     See \l{Qt Positioning} for a possible backend setup like the GPS or IP based positioning.
 

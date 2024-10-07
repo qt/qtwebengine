@@ -3,6 +3,7 @@
 
 /*!
     \example webenginewidgets/notifications
+    \examplecategory {Web Technologies}
     \title WebEngine Notifications Example
     \ingroup webengine-widgetexamples
     \brief Demonstrates how to pass HTML5 web notifications to users.

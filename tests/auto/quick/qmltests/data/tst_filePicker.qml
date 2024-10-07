@@ -11,7 +11,6 @@ TestWebEngineView {
     id: webEngineView
     width: 400
     height: 300
-    property var titleChanges: []
 
     function driveLetter() {
         if (Qt.platform.os !== "windows")
@@ -30,8 +29,6 @@ TestWebEngineView {
         signalName: "renderProcessTerminated"
     }
 
-    onTitleChanged: { titleChanges.push(webEngineView.title) }
-
     TestCase {
         id: testCase
         name: "WebEngineViewSingleFileUpload"
@@ -44,7 +41,6 @@ TestWebEngineView {
             FilePickerParams.nameFilters = []
             titleSpy.clear()
             terminationSpy.clear()
-            titleChanges = []
         }
 
         function cleanup() {
@@ -87,10 +83,10 @@ TestWebEngineView {
 
             keyClick(Qt.Key_Enter); // Focus is on the button. Open FileDialog.
             tryCompare(FilePickerParams, "filePickerOpened", true);
+            tryCompare(webEngineView, "title", row.expected);
             webEngineView.url = Qt.resolvedUrl("about:blank");
             verify(webEngineView.waitForLoadSucceeded());
             tryCompare(webEngineView, "title", "about:blank");
-            compare(titleChanges[titleChanges.length-2], row.expected);
 
 
             // Custom dialog
@@ -98,7 +94,7 @@ TestWebEngineView {
 
             function acceptedFileHandler(request) {
                 request.accepted = true;
-                request.dialogAccept(row.input);
+                request.dialogAccept([row.input]);
                 finished = true;
             }
 
@@ -108,10 +104,10 @@ TestWebEngineView {
 
             keyClick(Qt.Key_Enter); // Focus is on the button. Open FileDialog.
             tryVerify(function() { return finished; });
+            tryCompare(webEngineView, "title", row.expected);
             webEngineView.url = Qt.resolvedUrl("about:blank");
             verify(webEngineView.waitForLoadSucceeded());
             tryCompare(webEngineView, "title", "about:blank");
-            compare(titleChanges[titleChanges.length-2], row.expected);
             webEngineView.fileDialogRequested.disconnect(acceptedFileHandler);
         }
 
@@ -242,10 +238,10 @@ TestWebEngineView {
 
             keyClick(Qt.Key_Enter); // Focus is on the button. Open FileDialog.
             tryCompare(FilePickerParams, "filePickerOpened", true);
+            tryCompare(webEngineView, "title", row.expected);
             webEngineView.url = Qt.resolvedUrl("about:blank");
             verify(webEngineView.waitForLoadSucceeded());
             tryCompare(webEngineView, "title", "about:blank");
-            compare(titleChanges[titleChanges.length-2], row.expected);
 
 
             // Custom dialog
@@ -253,7 +249,7 @@ TestWebEngineView {
 
             function acceptedFileHandler(request) {
                 request.accepted = true;
-                request.dialogAccept(row.input);
+                request.dialogAccept([row.input]);
                 finished = true;
             }
 
@@ -263,10 +259,10 @@ TestWebEngineView {
 
             keyClick(Qt.Key_Enter); // Focus is on the button. Open FileDialog.
             tryVerify(function() { return finished; });
+            tryCompare(webEngineView, "title", row.expected);
             webEngineView.url = Qt.resolvedUrl("about:blank");
             verify(webEngineView.waitForLoadSucceeded());
             tryCompare(webEngineView, "title", "about:blank");
-            compare(titleChanges[titleChanges.length-2], row.expected);
             webEngineView.fileDialogRequested.disconnect(acceptedFileHandler);
         }
 

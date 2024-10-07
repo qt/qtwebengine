@@ -52,3 +52,17 @@ if(QT_FEATURE_qtpdf_build)
     )
 endif()
 
+# TODO: this could be run as part of main configure with execute_process
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL GNU AND TEST_architecture_arch STREQUAL "x86_64"
+AND GN_TARGET_CPU STREQUAL "arm")
+    try_compile(
+        has32HostCompiler
+        "${CMAKE_CURRENT_BINARY_DIR}/config.tests/hostcompiler"
+        "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/hostcompiler"
+        hostcompiler
+    )
+    if(NOT has32HostCompiler)
+        MESSAGE(FATAL_ERROR "Compiler does not support 32bit compilation")
+    endif()
+endif()

@@ -122,8 +122,7 @@ void MainWindow::loadDefaultStyleSheets()
     settings.beginGroup("styleSheets");
 
     for (auto it = defaultStyleSheets.constBegin(); it != defaultStyleSheets.constEnd(); ++it) {
-        settings.setValue(it.key(), QVariant::fromValue(qMakePair(it.value(), true)));
-        insertStyleSheet(it.key(), it.value(), false);
+        settings.setValue(it.key(), QVariant::fromValue(qMakePair(it.value(), false)));
     }
 
     settings.endGroup();

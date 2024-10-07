@@ -88,7 +88,8 @@ if(isFramework)
         COMPONENT Runtime
     )
     qt_enable_separate_debug_info(${qtWebEngineProcessName}
-         "${INSTALL_LIBDIR}/QtWebEngineCore.framework/Versions/A/Helpers" QT_EXECUTABLE
+        "${INSTALL_LIBDIR}" QT_EXECUTABLE
+        DSYM_OUTPUT_DIR "${CMAKE_BINARY_DIR}/${INSTALL_LIBDIR}"
     )
 else()
     qt_apply_rpaths(TARGET ${qtWebEngineProcessName} INSTALL_PATH "${INSTALL_LIBEXECDIR}" RELATIVE_RPATH)

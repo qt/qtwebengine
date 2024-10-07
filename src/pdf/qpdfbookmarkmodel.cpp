@@ -176,17 +176,7 @@ struct QPdfBookmarkModelPrivate
 
             const FPDF_DEST dest = FPDFBookmark_GetDest(document, bookmark);
             const int pageNumber = FPDFDest_GetDestPageIndex(document, dest);
-            double pageHeight = 11.69 * 72; // A4 height
-            {
-                // get actual page height
-                const QPdfMutexLocker lock;
-                FPDF_PAGE pdfPage = FPDF_LoadPage(document, pageNumber);
-                if (pdfPage)
-                    pageHeight = FPDF_GetPageHeight(pdfPage);
-                else
-                    qCWarning(qLcBM) << "failed to load page" << pageNumber;
-            }
-
+            const qreal pageHeight = m_document->pagePointSize(pageNumber).height();
             FPDF_BOOL hasX, hasY, hasZoom;
             FS_FLOAT x, y, zoom;
             bool ok = FPDFDest_GetLocationInPage(dest, &hasX, &hasY, &hasZoom, &x, &y, &zoom);

@@ -3,6 +3,7 @@
 
 /*!
     \example webenginewidgets/html2pdf
+    \examplecategory {Web Technologies}
     \title WebEngine Widgets Html2Pdf Example
     \ingroup webengine-widgetexamples
     \brief Converts web pages to PDF documents using \QWE.

@@ -62,7 +62,7 @@ DevToolsFrontendQt *DevToolsFrontendQt::Show(QSharedPointer<WebContentsAdapter> 
             new DevToolsFrontendQt(frontendAdapter, inspectedContents);
 
     if (contents->GetURL() == GURL(GetFrontendURL())) {
-        contents->GetController().Reload(content::ReloadType::ORIGINAL_REQUEST_URL, false);
+        contents->GetController().LoadOriginalRequestURL();
     } else {
         content::NavigationController::LoadURLParams loadParams((GURL(GetFrontendURL())));
         loadParams.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_AUTO_TOPLEVEL
@@ -162,7 +162,7 @@ void DevToolsFrontendQt::ActivateWindow()
     web_contents()->Focus();
 }
 
-void DevToolsFrontendQt::InspectElementCompleted()
+void DevToolsFrontendQt::OnLoadCompleted()
 {
     m_bindings->CallClientMethod("DevToolsAPI", "setUseSoftMenu", base::Value(true));
 }
@@ -202,6 +202,11 @@ bool DevToolsFrontendQt::IsValidFrontendURL(const GURL &url)
 void DevToolsFrontendQt::InspectedContentsClosing()
 {
     web_contents()->ClosePage();
+}
+
+void DevToolsFrontendQt::CloseWindow()
+{
+    web_contents()->Close();
 }
 
 } // namespace QtWebEngineCore
