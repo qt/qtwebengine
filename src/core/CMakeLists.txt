@@ -364,7 +364,6 @@ foreach(arch ${archs})
             devtools_skip_typecheck=false
             use_static_angle=true
             content_enable_legacy_ipc=true
-            enable_extensions_legacy_ipc=true
             enable_bound_session_credentials=false
             webnn_use_tflite=false
         )
