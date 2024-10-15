@@ -8,7 +8,7 @@ endif()
 
 qt_webengine_set_version(cmake ${QT_SUPPORTED_MIN_CMAKE_VERSION_FOR_BUILDING_WEBENGINE})
 qt_webengine_set_version(ninja 1.7.2)
-qt_webengine_set_version(python3 3.6)
+qt_webengine_set_version(python3 3.8)
 qt_webengine_set_version(nodejs 14.9)
 qt_webengine_set_version(nss 3.26)
 qt_webengine_set_version(glib 2.32.0)
