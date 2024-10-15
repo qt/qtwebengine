@@ -13,7 +13,7 @@ else()
     find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT)
     find_program(Python3_EXECUTABLE NAMES python3 python HINTS $ENV{PYTHON3_PATH})
     if(NOT Python3_EXECUTABLE)
-        find_package(Python3 3.6)
+        find_package(Python3 3.8)
     endif()
     find_package(GPerf)
     find_package(BISON)
@@ -511,7 +511,7 @@ add_check_for_support(
 add_check_for_support(
    MODULES QtWebEngine QtPdf
    CONDITION Python3_EXECUTABLE
-   MESSAGE "Python version 3.6 or later is required."
+   MESSAGE "Python version 3.8 or later is required."
 )
 add_check_for_support(
    MODULES QtWebEngine QtPdf
