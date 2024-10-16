@@ -1693,14 +1693,13 @@ public:
 
     void jsGetMedia(const QString &call)
     {
+        m_jsPromiseFulfilled = false;
+        m_jsPromiseRejected = false;
         evaluateJavaScriptSync(this,
-            QStringLiteral(
-                "var promiseFulfilled = false;"
-                "var promiseRejected = false;"
-                "navigator.mediaDevices.%1"
-                ".then(stream => { promiseFulfilled = true})"
-                ".catch(err => { promiseRejected = true})")
-            .arg(call));
+                               QStringLiteral("navigator.mediaDevices.%1"
+                                              ".then(stream => { console.info('fulfilled') })"
+                                              ".catch(err => { console.info('rejected') })")
+                                       .arg(call));
     }
 
     void jsGetUserMedia(const QString &constraints)
@@ -1708,15 +1707,11 @@ public:
         jsGetMedia(QStringLiteral("getUserMedia(%1)").arg(constraints));
     }
 
-    bool jsPromiseFulfilled()
-    {
-        return evaluateJavaScriptSync(this, QStringLiteral("promiseFulfilled")).toBool();
-    }
+    bool jsPromiseSettled() { return m_jsPromiseFulfilled || m_jsPromiseRejected; }
 
-    bool jsPromiseRejected()
-    {
-        return evaluateJavaScriptSync(this, QStringLiteral("promiseRejected")).toBool();
-    }
+    bool jsPromiseFulfilled() { return m_jsPromiseFulfilled; }
+
+    bool jsPromiseRejected() { return m_jsPromiseRejected; }
 
     void rejectPendingRequest()
     {
@@ -1773,6 +1768,15 @@ private:
         m_permission.reset();
     }
 
+    void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel, const QString &message, int,
+                                  const QString &) override
+    {
+        m_jsPromiseFulfilled = (message == "fulfilled");
+        m_jsPromiseRejected = (message == "rejected");
+    }
+
+    bool m_jsPromiseFulfilled;
+    bool m_jsPromiseRejected;
     bool m_gotDesktopMediaRequest;
     bool m_gotEmptyDesktopMediaRequest;
     bool m_loadSucceeded;
@@ -1824,7 +1828,7 @@ void tst_QWebEnginePage::getUserMediaRequest()
     page.jsGetMedia(call);
     QTRY_VERIFY(page.gotExpectedRequests(isDesktopPermission, permissionType));
     page.rejectPendingRequest();
-    QTRY_VERIFY(!page.jsPromiseFulfilled() && page.jsPromiseRejected());
+    QTRY_VERIFY(page.jsPromiseRejected());
 
     // 2. Accepting request on C++ side should either fulfill or reject the
     // Promise on JS side. Due to the potential lack of physical media devices
@@ -1834,13 +1838,13 @@ void tst_QWebEnginePage::getUserMediaRequest()
     page.jsGetMedia(call);
     QTRY_VERIFY(page.gotExpectedRequests(isDesktopPermission, permissionType));
     page.acceptPendingRequest();
-    QTRY_VERIFY(page.jsPromiseFulfilled() || page.jsPromiseRejected());
+    QTRY_VERIFY(page.jsPromiseSettled());
 
     // 3. Media permissions are not remembered.
     page.jsGetMedia(call);
     QTRY_VERIFY(page.gotExpectedRequests(isDesktopPermission, permissionType));
     page.acceptPendingRequest();
-    QTRY_VERIFY(page.jsPromiseFulfilled() || page.jsPromiseRejected());
+    QTRY_VERIFY(page.jsPromiseSettled());
 }
 
 void tst_QWebEnginePage::getUserMediaRequestDesktopAudio()
@@ -1854,11 +1858,11 @@ void tst_QWebEnginePage::getUserMediaRequestDesktopAudio()
 
     page.jsGetUserMedia(
         QStringLiteral("{audio: { mandatory: { chromeMediaSource: 'desktop' }}}"));
-    QTRY_VERIFY(!page.jsPromiseFulfilled() && page.jsPromiseRejected());
+    QTRY_VERIFY(page.jsPromiseRejected());
 
     page.jsGetUserMedia(
         QStringLiteral("{audio: { mandatory: { chromeMediaSource: 'desktop' }}, video: true}"));
-    QTRY_VERIFY(!page.jsPromiseFulfilled() && page.jsPromiseRejected());
+    QTRY_VERIFY(page.jsPromiseRejected());
 }
 
 void tst_QWebEnginePage::getUserMediaRequestSettingDisabled()
@@ -1871,7 +1875,7 @@ void tst_QWebEnginePage::getUserMediaRequestSettingDisabled()
     // asking for permission first.
 
     page.jsGetUserMedia(QStringLiteral("{video: { mandatory: { chromeMediaSource: 'desktop' }}}"));
-    QTRY_VERIFY(!page.jsPromiseFulfilled() && page.jsPromiseRejected());
+    QTRY_VERIFY(page.jsPromiseRejected());
 }
 
 // Try to trigger any possible race condition between the UI thread (permission
@@ -1904,7 +1908,7 @@ void tst_QWebEnginePage::getUserMediaRequestDesktopVideoManyPages()
     for (GetUserMediaTestPage &page : pages)
         page.acceptPendingRequest();
     for (GetUserMediaTestPage &page : pages)
-        QTRY_VERIFY(page.jsPromiseFulfilled() || page.jsPromiseRejected());
+        QTRY_VERIFY(page.jsPromiseSettled());
 }
 
 // Try to trigger any possible race condition between the UI or audio/device
@@ -1928,7 +1932,7 @@ void tst_QWebEnginePage::getUserMediaRequestDesktopVideoManyRequests()
         page.jsGetUserMedia(constraints);
         QTRY_VERIFY(page.gotExpectedRequests(/*isDesktopPermission*/ true, permissionType));
         page.acceptPendingRequest();
-        QTRY_VERIFY(page.jsPromiseFulfilled() || page.jsPromiseRejected());
+        QTRY_VERIFY(page.jsPromiseSettled());
     }
 }
 
