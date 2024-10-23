@@ -247,7 +247,7 @@ void WebContentsDelegateQt::LoadProgressChanged(double progress)
     }
 }
 
-bool WebContentsDelegateQt::HandleKeyboardEvent(content::WebContents *, const content::NativeWebKeyboardEvent &event)
+bool WebContentsDelegateQt::HandleKeyboardEvent(content::WebContents *, const input::NativeWebKeyboardEvent &event)
 {
     Q_ASSERT(!event.skip_if_unhandled);
     if (event.os_event)

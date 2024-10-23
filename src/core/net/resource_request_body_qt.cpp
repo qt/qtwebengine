@@ -143,23 +143,25 @@ ResourceRequestBody::getConsumerHandleFromPipeGetter(
 
 void ResourceRequestBody::readDataElementPipe(
         const mojo::ScopedHandleBase<mojo::DataPipeConsumerHandle> &consumerHandle,
-        qint64 &bytesRead, const qint64 &maxSize, char **data)
+        qint64 &bytesRead, qint64 maxSize, char **data)
 {
     MojoResult result;
     do {
         size_t bytesToRead = 1;
-        result = consumerHandle->ReadData(*data, &bytesToRead, MOJO_READ_DATA_FLAG_NONE);
+        base::span<uint8_t> buffer = base::make_span(reinterpret_cast<uint8_t*>(*data), reinterpret_cast<uint8_t*>(*data) + maxSize);
+        result = consumerHandle->ReadData(MOJO_READ_DATA_FLAG_NONE, buffer, bytesToRead);
 
         if (result == MOJO_RESULT_OK) {
             *data += bytesToRead;
             bytesRead += bytesToRead;
+            maxSize -= bytesToRead;
         } else if (result != MOJO_RESULT_SHOULD_WAIT && result != MOJO_RESULT_FAILED_PRECONDITION) {
             setErrorString(QString::fromLatin1("Error while reading from data pipe, skipping"
                                                "remaining content of data pipe. Mojo error code: ")
                            + QString::number(result));
         }
     } while ((result == MOJO_RESULT_SHOULD_WAIT || result == MOJO_RESULT_OK)
-             && bytesRead < maxSize);
+             && maxSize > 0);
 
     m_dataElementsIdx++;
 }

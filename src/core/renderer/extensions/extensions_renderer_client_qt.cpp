@@ -84,25 +84,6 @@ void ExtensionsRendererClientQt::OnExtensionUnloaded(const extensions::Extension
     resource_request_policy_->OnExtensionUnloaded(extension_id);
 }
 
-bool ExtensionsRendererClientQt::ExtensionAPIEnabledForServiceWorkerScript(const GURL &scope, const GURL &script_url) const
-{
-    if (!script_url.SchemeIs(extensions::kExtensionScheme))
-        return false;
-
-    const extensions::Extension* extension =
-            extensions::RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(script_url);
-
-    if (!extension || !extensions::BackgroundInfo::IsServiceWorkerBased(extension))
-        return false;
-
-    if (scope != extension->url())
-        return false;
-
-    const std::string& sw_script = extensions::BackgroundInfo::GetBackgroundServiceWorkerScript(extension);
-
-    return extension->GetResourceURL(sw_script) == script_url;
-}
-
 void ExtensionsRendererClientQt::RenderThreadStarted()
 {
     content::RenderThread *thread = content::RenderThread::Get();

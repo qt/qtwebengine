@@ -10,6 +10,8 @@
 #if !defined(Q_OS_MACOS)
 #include "native_web_keyboard_event_qt.h"
 
+#include "components/input/native_web_keyboard_event.h"
+
 #include <QtGui/QKeyEvent>
 
 namespace QtWebEngineCore {
@@ -45,7 +47,7 @@ void DestroyEvent(gfx::NativeEvent nativeEvent)
 } // namespace
 
 
-namespace content {
+namespace input {
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(const blink::WebKeyboardEvent &web_event, gfx::NativeView)
     : blink::WebKeyboardEvent(web_event)
@@ -90,5 +92,5 @@ NativeWebKeyboardEvent::~NativeWebKeyboardEvent() {
     DestroyEvent(os_event);
 }
 
-}  // namespace content
+}  // namespace input
 #endif // !defined(Q_OS_MACOS)

@@ -32,6 +32,7 @@
 #endif
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/download/public/common/download_task_runner.h"
+#include "components/input/switches.h"
 #include "components/viz/common/features.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/app/mojo_ipc_support.h"
@@ -777,10 +778,6 @@ WebEngineContext::WebEngineContext()
     base::apple::SetOverrideAmIBundled(false);
 #endif
 
-    base::ThreadPoolInstance::Create("Browser");
-    m_contentRunner = content::ContentMainRunner::Create();
-    m_browserRunner = content::BrowserMainRunner::Create();
-
 #ifdef Q_OS_LINUX
     // Call qputenv before BrowserMainRunnerImpl::Initialize is called.
     // http://crbug.com/245466
@@ -846,7 +843,6 @@ WebEngineContext::WebEngineContext()
     disableFeatures.push_back(features::kEyeDropper.name);
 
     // Explicitly tell Chromium about default-on features we do not support
-    disableFeatures.push_back(features::kAttributionReportingCrossAppWebOverride.name);
     disableFeatures.push_back(features::kBackgroundFetch.name);
     disableFeatures.push_back(features::kInstalledApp.name);
     parsedCommandLine->AppendSwitchASCII(switches::kDisableBlinkFeatures, "WebOTP");
@@ -858,7 +854,7 @@ WebEngineContext::WebEngineContext()
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
         enableFeatures.push_back(features::kOverlayScrollbar.name);
         parsedCommandLine->AppendSwitch(switches::kEnableViewport);
-        parsedCommandLine->AppendSwitch(switches::kValidateInputEventStream);
+        parsedCommandLine->AppendSwitch(input::switches::kValidateInputEventStream);
         parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
     }
 
@@ -979,6 +975,7 @@ WebEngineContext::WebEngineContext()
         contentMainParams.sandbox_info = &sandbox_info;
     }
 #endif
+    m_contentRunner = content::ContentMainRunner::Create();
     m_contentRunner->Initialize(std::move(contentMainParams));
 
     mojo::core::Configuration mojoConfiguration;
@@ -1007,6 +1004,7 @@ WebEngineContext::WebEngineContext()
 
     content::MainFunctionParams mainParams(base::CommandLine::ForCurrentProcess());
     mainParams.startup_data = std::move(startupData);
+    m_browserRunner = content::BrowserMainRunner::Create();
     m_browserRunner->Initialize(std::move(mainParams));
 
     m_devtoolsServer.reset(new DevToolsServerQt());

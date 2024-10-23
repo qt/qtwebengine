@@ -69,10 +69,10 @@ NativeSkiaOutputDeviceOpenGL::NativeSkiaOutputDeviceOpenGL(
         skColorType = kBGRA_8888_SkColorType;
 #endif
 
-    capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBA_8888)] = skColorType;
-    capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBX_8888)] = skColorType;
-    capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::BGRA_8888)] = skColorType;
-    capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::BGRX_8888)] = skColorType;
+    capabilities_.sk_color_type_map[viz::SinglePlaneFormat::kRGBA_8888] = skColorType;
+    capabilities_.sk_color_type_map[viz::SinglePlaneFormat::kRGBX_8888] = skColorType;
+    capabilities_.sk_color_type_map[viz::SinglePlaneFormat::kBGRA_8888] = skColorType;
+    capabilities_.sk_color_type_map[viz::SinglePlaneFormat::kBGRX_8888] = skColorType;
 }
 
 NativeSkiaOutputDeviceOpenGL::~NativeSkiaOutputDeviceOpenGL() { }

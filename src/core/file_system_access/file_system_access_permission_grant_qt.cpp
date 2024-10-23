@@ -3,6 +3,11 @@
 
 #include "file_system_access_permission_grant_qt.h"
 
+// based on chrome_file_system_access_permission_context.cc:
+// Copyright 2019 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "file_system_access_permission_request_manager_qt.h"
 
 #include "components/permissions/permission_util.h"
@@ -93,7 +98,8 @@ void FileSystemAccessPermissionGrantQt::RequestPermission(
     }
 
     // Drop fullscreen mode so that the user sees the URL bar.
-    base::ScopedClosureRunner fullscreen_block = web_contents->ForSecurityDropFullscreen();
+    base::ScopedClosureRunner fullscreen_block =
+            web_contents->ForSecurityDropFullscreen(display::kInvalidDisplayId);
 
     FileSystemAccessPermissionRequestManagerQt::Access access = m_type == GrantType::kRead
             ? FileSystemAccessPermissionRequestManagerQt::Access::kRead

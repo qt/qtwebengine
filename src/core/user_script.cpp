@@ -10,11 +10,11 @@
 namespace {
 
 // Helper function to parse Greasemonkey headers
-bool GetDeclarationValue(const base::StringPiece& line,
-                         const base::StringPiece& prefix,
+bool GetDeclarationValue(std::string_view line,
+                         std::string_view prefix,
                          std::string* value) {
-    base::StringPiece::size_type index = line.find(prefix);
-    if (index == base::StringPiece::npos)
+    std::string_view::size_type index = line.find(prefix);
+    if (index == std::string_view::npos)
         return false;
 
     std::string temp(line.data() + index + prefix.length(),
@@ -138,24 +138,24 @@ void UserScript::parseMetadataHeader()
     // Logic taken from Chromium (extensions/browser/user_script_loader.cc)
     // http://wiki.greasespot.net/Metadata_block
     const std::string &script_text = m_scriptData.source;
-    base::StringPiece line;
+    std::string_view line;
     size_t line_start = 0;
     size_t line_end = line_start;
     bool in_metadata = false;
 
-    static const base::StringPiece kUserScriptBegin("// ==UserScript==");
-    static const base::StringPiece kUserScriptEnd("// ==/UserScript==");
-    static const base::StringPiece kNameDeclaration("// @name");
-    static const base::StringPiece kIncludeDeclaration("// @include");
-    static const base::StringPiece kExcludeDeclaration("// @exclude");
-    static const base::StringPiece kMatchDeclaration("// @match");
-    static const base::StringPiece kRunAtDeclaration("// @run-at");
-    static const base::StringPiece kRunAtDocumentStartValue("document-start");
-    static const base::StringPiece kRunAtDocumentEndValue("document-end");
-    static const base::StringPiece kRunAtDocumentIdleValue("document-idle");
+    static const std::string_view kUserScriptBegin("// ==UserScript==");
+    static const std::string_view kUserScriptEnd("// ==/UserScript==");
+    static const std::string_view kNameDeclaration("// @name");
+    static const std::string_view kIncludeDeclaration("// @include");
+    static const std::string_view kExcludeDeclaration("// @exclude");
+    static const std::string_view kMatchDeclaration("// @match");
+    static const std::string_view kRunAtDeclaration("// @run-at");
+    static const std::string_view kRunAtDocumentStartValue("document-start");
+    static const std::string_view kRunAtDocumentEndValue("document-end");
+    static const std::string_view kRunAtDocumentIdleValue("document-idle");
     // FIXME: Scripts don't run in subframes by default. If we would like to
     // support @noframes rule, we have to change the current default behavior.
-    // static const base::StringPiece kNoFramesDeclaration("// @noframes");
+    // static const std::string_view kNoFramesDeclaration("// @noframes");
 
     while (line_start < script_text.length()) {
         line_end = script_text.find('\n', line_start);
@@ -164,7 +164,7 @@ void UserScript::parseMetadataHeader()
         if (line_end == std::string::npos)
             line_end = script_text.length() - 1;
 
-        line = base::StringPiece(script_text.data() + line_start, line_end - line_start);
+        line = std::string_view(script_text.data() + line_start, line_end - line_start);
 
         if (!in_metadata) {
             if (base::StartsWith(line, kUserScriptBegin))

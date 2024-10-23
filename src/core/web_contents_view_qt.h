@@ -91,8 +91,6 @@ public:
 
     void UpdateDragOperation(ui::mojom::DragOperation dragOperation, bool document_is_handling_drag) override;
 
-    void TransferDragSecurityInfo(content::WebContentsView *) override {}
-
     void ShowContextMenu(content::RenderFrameHost &, const content::ContextMenuParams &params) override;
 
     void GotFocus(content::RenderWidgetHostImpl *render_widget_host) override;

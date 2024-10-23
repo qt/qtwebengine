@@ -10,8 +10,8 @@
 #include "web_contents_adapter_client.h"
 #include "web_event_factory.h"
 
+#include "components/input/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 
 #include <QEvent>
@@ -486,10 +486,9 @@ void RenderWidgetHostViewQtDelegateClient::handleKeyEvent(QKeyEvent *event)
     if (!m_rwhv->GetFocusedWidget())
         return;
 
-    content::NativeWebKeyboardEvent webEvent = WebEventFactory::toWebKeyboardEvent(event);
+    input::NativeWebKeyboardEvent webEvent = WebEventFactory::toWebKeyboardEvent(event);
     if (webEvent.GetType() == blink::WebInputEvent::Type::kRawKeyDown && !m_editCommand.empty()) {
         ui::LatencyInfo latency;
-        latency.set_source_event_type(ui::SourceEventType::KEY_PRESS);
         std::vector<blink::mojom::EditCommandPtr> commands;
         commands.emplace_back(blink::mojom::EditCommand::New(m_editCommand, ""));
         m_editCommand.clear();

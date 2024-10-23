@@ -12,6 +12,8 @@
 #include "web_contents_adapter_client.h"
 #include "web_event_factory.h"
 
+#include "components/input/cursor_manager.h"
+#include "components/input/render_widget_host_input_event_router.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
@@ -20,14 +22,12 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
-#include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
-#include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/cursors/webcursor.h"
+#include "content/common/input/events_helper.h"
 #include "content/common/input/synthetic_gesture_target.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -136,7 +136,7 @@ public:
 
     void BeginMainFrame(const viz::BeginFrameArgs &args) override
     {
-        if (args.type != viz::BeginFrameArgs::MISSED && !m_rwhv->is_currently_scrolling_viewport())
+        if (args.type != viz::BeginFrameArgs::MISSED && !m_rwhv->GetViewRenderInputRouter()->is_currently_scrolling_viewport())
             m_rwhv->host()->ProgressFlingIfNeeded(args.frame_time);
         ui::Compositor::BeginMainFrame(args);
     }
@@ -176,7 +176,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     if (host()->delegate() && host()->delegate()->GetInputEventRouter())
         host()->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(GetFrameSinkId(), this);
 
-    m_cursorManager.reset(new content::CursorManager(this));
+    m_cursorManager.reset(new input::CursorManager(this));
 
     m_touchSelectionControllerClient.reset(new TouchSelectionControllerClientQt(this));
     resetTouchSelectionController();
@@ -609,7 +609,7 @@ void RenderWidgetHostViewQt::DisplayCursor(const ui::Cursor &cursorInfo)
     m_delegate->updateCursor(QCursor(shape));
 }
 
-content::CursorManager *RenderWidgetHostViewQt::GetCursorManager()
+input::CursorManager *RenderWidgetHostViewQt::GetCursorManager()
 {
     return m_cursorManager.get();
 }
@@ -638,7 +638,7 @@ void RenderWidgetHostViewQt::RenderProcessGone()
 }
 
 bool RenderWidgetHostViewQt::TransformPointToCoordSpaceForView(const gfx::PointF &point,
-                                                               content::RenderWidgetHostViewInput *target_view,
+                                                               input::RenderWidgetHostViewInput *target_view,
                                                                gfx::PointF *transformed_point)
 {
     if (target_view == this) {
@@ -763,9 +763,9 @@ void RenderWidgetHostViewQt::OnTextSelectionChanged(content::TextInputManager *t
 
 void RenderWidgetHostViewQt::OnGestureEvent(const ui::GestureEventData& gesture)
 {
-    if ((gesture.type() == ui::ET_GESTURE_PINCH_BEGIN
-         || gesture.type() == ui::ET_GESTURE_PINCH_UPDATE
-         || gesture.type() == ui::ET_GESTURE_PINCH_END)
+    if ((gesture.type() == ui::kGesturePinchBegin
+         || gesture.type() == ui::kGesturePinchUpdate
+         || gesture.type() == ui::kGesturePinchEnd)
         && !content::IsPinchToZoomEnabled()) {
         return;
     }
@@ -845,7 +845,7 @@ void RenderWidgetHostViewQt::notifyHidden()
     m_delegatedFrameHost->DetachFromCompositor();
 }
 
-void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, blink::mojom::InputEventResultState ack_result)
+void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const input::TouchEventWithLatencyInfo &touch, blink::mojom::InputEventResultState ack_result)
 {
     const bool eventConsumed = (ack_result == blink::mojom::InputEventResultState::kConsumed);
     const bool isSetBlocking = content::InputEventResultStateIsSetBlocking(ack_result);
@@ -925,6 +925,7 @@ void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &even
 }
 
 void RenderWidgetHostViewQt::GestureEventAck(const blink::WebGestureEvent &event,
+                                             blink::mojom::InputEventResultSource ack_source,
                                              blink::mojom::InputEventResultState ack_result)
 {
     ForwardTouchpadZoomEventIfNecessary(event, ack_result);

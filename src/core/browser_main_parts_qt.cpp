@@ -153,8 +153,7 @@ private:
         if (more_work_info.is_immediate())
             return m_scheduler.scheduleImmediateWork();
 
-        if (m_delegate->DoIdleWork())
-            return m_scheduler.scheduleIdleWork();
+        m_delegate->DoIdleWork();
 
         ScheduleDelayedWork(more_work_info.delayed_run_time);
     }

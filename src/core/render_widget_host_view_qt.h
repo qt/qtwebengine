@@ -79,7 +79,7 @@ public:
     void UnlockPointer() override;
     void UpdateCursor(const ui::Cursor&) override;
     void DisplayCursor(const ui::Cursor&) override;
-    content::CursorManager *GetCursorManager() override;
+    input::CursorManager *GetCursorManager() override;
     void SetIsLoading(bool) override;
     void ImeCancelComposition() override;
     void ImeCompositionRangeChanged(const gfx::Range &,
@@ -87,7 +87,7 @@ public:
                                     const std::optional<std::vector<gfx::Rect>> &) override;
     void RenderProcessGone() override;
     bool TransformPointToCoordSpaceForView(const gfx::PointF &point,
-                                           content::RenderWidgetHostViewInput *target_view,
+                                           input::RenderWidgetHostViewInput *target_view,
                                            gfx::PointF *transformed_point) override;
     void Destroy() override;
     void UpdateTooltipUnderCursor(const std::u16string &tooltip_text) override;
@@ -95,6 +95,7 @@ public:
     void WheelEventAck(const blink::WebMouseWheelEvent &event,
                        blink::mojom::InputEventResultState ack_result) override;
     void GestureEventAck(const blink::WebGestureEvent &event,
+                         blink::mojom::InputEventResultSource ack_source,
                          blink::mojom::InputEventResultState ack_result) override;
     content::MouseWheelPhaseHandler *GetMouseWheelPhaseHandler() override;
     viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(const cc::RenderFrameMetadata &metadata) override;
@@ -102,7 +103,7 @@ public:
 
     // Overridden from RenderWidgetHostViewBase:
     gfx::Rect GetBoundsInRootWindow() override;
-    void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch,
+    void ProcessAckedTouchEvent(const input::TouchEventWithLatencyInfo &touch,
                                 blink::mojom::InputEventResultState ack_result) override;
     viz::SurfaceId GetCurrentSurfaceId() const override;
     const viz::FrameSinkId &GetFrameSinkId() const override;
@@ -194,7 +195,7 @@ private:
 
     scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
 
-    std::unique_ptr<content::CursorManager> m_cursorManager;
+    std::unique_ptr<input::CursorManager> m_cursorManager;
 
     ui::FilteredGestureProvider m_gestureProvider;
 

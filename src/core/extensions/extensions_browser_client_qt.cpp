@@ -61,7 +61,7 @@ void DetermineCharset(const std::string &mime_type,
     if (base::StartsWith(mime_type, "text/", base::CompareCase::INSENSITIVE_ASCII)) {
         // All of our HTML files should be UTF-8 and for other resource types
         // (like images), charset doesn't matter.
-        DCHECK(base::IsStringUTF8(base::StringPiece(reinterpret_cast<const char *>(data->front()), data->size())));
+        DCHECK(base::IsStringUTF8(std::string_view(reinterpret_cast<const char *>(data->front()), data->size())));
         *out_charset = "utf-8";
     }
 }
@@ -76,7 +76,7 @@ scoped_refptr<base::RefCountedMemory> GetResource(int resource_id, const std::st
             : nullptr;
 
     if (replacements) {
-        base::StringPiece input(reinterpret_cast<const char *>(bytes->front()), bytes->size());
+        std::string_view input(reinterpret_cast<const char *>(bytes->front()), bytes->size());
         std::string temp_str = ui::ReplaceTemplateExpressions(input, *replacements);
         DCHECK(!temp_str.empty());
         return base::MakeRefCounted<base::RefCountedString>(std::move(temp_str));
@@ -169,7 +169,7 @@ private:
         client_->OnReceiveResponse(std::move(head), std::move(consumer_handle), std::nullopt);
 
         size_t write_size = data->size();
-        MojoResult result = producer_handle->WriteData(data->front(), &write_size, MOJO_WRITE_DATA_FLAG_NONE);
+        MojoResult result = producer_handle->WriteData((base::span<const uint8_t>)(*data), MOJO_WRITE_DATA_FLAG_NONE, write_size);
         OnFileWritten(result);
     }
 
@@ -383,7 +383,8 @@ bool ExtensionsBrowserClientQt::AllowCrossRendererResourceLoad(const network::Re
                                                                bool is_incognito,
                                                                const Extension *extension,
                                                                const ExtensionSet &extensions,
-                                                               const ProcessMap &process_map)
+                                                               const ProcessMap &process_map,
+                                                               const GURL& upstream_url)
 {
     if (extension && extension->id() == extension_misc::kPdfExtensionId)
         return true;
@@ -396,7 +397,7 @@ bool ExtensionsBrowserClientQt::AllowCrossRendererResourceLoad(const network::Re
     if (url_request_util::AllowCrossRendererResourceLoad(request, destination,
                                                          page_transition, child_id,
                                                          is_incognito, extension, extensions,
-                                                         process_map, &allowed)) {
+                                                         process_map, upstream_url, &allowed)) {
         return allowed;
     }
     // Couldn't determine if resource is allowed. Block the load.

@@ -86,7 +86,7 @@ public:
                         WindowOpenDisposition disposition, const blink::mojom::WindowFeatures &window_features, bool user_gesture, bool *was_blocked) override;
     void CloseContents(content::WebContents *source) override;
     void LoadProgressChanged(double progress) override;
-    bool HandleKeyboardEvent(content::WebContents *source, const content::NativeWebKeyboardEvent &event) override;
+    bool HandleKeyboardEvent(content::WebContents *source, const input::NativeWebKeyboardEvent &event) override;
     std::unique_ptr<content::ColorChooser> OpenColorChooser(content::WebContents *source, SkColor color, const std::vector<blink::mojom::ColorSuggestionPtr> &suggestions) override;
     void WebContentsCreated(content::WebContents *source_contents, int opener_render_process_id, int opener_render_frame_id,
                             const std::string &frame_name, const GURL &target_url, content::WebContents *new_contents) override;

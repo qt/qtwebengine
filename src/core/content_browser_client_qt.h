@@ -39,6 +39,7 @@ public:
                                bool strict_enforcement,
                                base::OnceCallback<void(content::CertificateRequestResultType)> callback) override;
     base::OnceClosure SelectClientCertificate(content::BrowserContext* browser_context,
+                                              int process_id,
                                               content::WebContents* web_contents,
                                               net::SSLCertRequestInfo* cert_request_info,
                                               net::ClientCertIdentityList client_certs,
@@ -127,8 +128,9 @@ public:
     bool ShouldUseProcessPerSite(content::BrowserContext *browser_context, const GURL &effective_url) override;
     bool DoesSiteRequireDedicatedProcess(content::BrowserContext *browser_context,
                                          const GURL &effective_site_url) override;
-    bool ShouldUseSpareRenderProcessHost(content::BrowserContext *browser_context, const GURL& site_url) override;
-    bool ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(base::StringPiece scheme,
+    std::optional<SpareProcessRefusedByEmbedderReason>
+    ShouldUseSpareRenderProcessHost(content::BrowserContext *browser_context, const GURL& site_url) override;
+    bool ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(std::string_view scheme,
                                                       bool is_embedded_origin_secure) override;
     bool DoesSchemeAllowCrossOriginSharedWorker(const std::string &scheme) override;
     void OverrideURLLoaderFactoryParams(content::BrowserContext *browser_context,
@@ -179,6 +181,7 @@ public:
     WillCreateURLLoaderRequestInterceptors(content::NavigationUIData *navigation_ui_data,
                                            int frame_tree_node_id,
                                            int64_t navigation_id,
+                                           bool force_no_https_upgrade,
                                            scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner) override;
     void WillCreateURLLoaderFactory(content::BrowserContext *browser_context,
                                     content::RenderFrameHost *frame,

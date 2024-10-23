@@ -980,10 +980,10 @@ void WebContentsAdapter::serializeNavigationHistory(QDataStream &output)
 void WebContentsAdapter::setZoomFactor(qreal factor)
 {
     CHECK_INITIALIZED();
-    if (factor < blink::kMinimumPageZoomFactor || factor > blink::kMaximumPageZoomFactor)
+    if (factor < blink::kMinimumBrowserZoomFactor || factor > blink::kMaximumBrowserZoomFactor)
         return;
 
-    double zoomLevel = blink::PageZoomFactorToZoomLevel(static_cast<double>(factor));
+    double zoomLevel = blink::ZoomFactorToZoomLevel(static_cast<double>(factor));
     content::HostZoomMap *zoomMap = content::HostZoomMap::GetForWebContents(m_webContents.get());
 
     if (zoomMap) {
@@ -998,7 +998,7 @@ void WebContentsAdapter::setZoomFactor(qreal factor)
 qreal WebContentsAdapter::currentZoomFactor() const
 {
     CHECK_INITIALIZED(1);
-    return blink::PageZoomLevelToZoomFactor(content::HostZoomMap::GetZoomLevel(m_webContents.get()));
+    return blink::ZoomLevelToZoomFactor(content::HostZoomMap::GetZoomLevel(m_webContents.get()));
 }
 
 ProfileQt* WebContentsAdapter::profile()
@@ -1620,7 +1620,8 @@ static QMimeData *mimeDataFromDropData(const content::DropData &dropData)
     if (!dropData.custom_data.empty()) {
         base::Pickle pickle;
         ui::WriteCustomDataToPickle(dropData.custom_data, &pickle);
-        mimeData->setData(QLatin1String(ui::kMimeTypeWebCustomData), QByteArray((const char*)pickle.data(), pickle.size()));
+        mimeData->setData(QLatin1String(ui::ClipboardFormatType::DataTransferCustomType().Serialize()),
+                          QByteArray((const char*)pickle.data(), pickle.size()));
     }
     return mimeData;
 }
@@ -1750,8 +1751,8 @@ static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeDat
         dropData->html = toOptionalString16(mimeData->html());
     if (mimeData->hasText())
         dropData->text = toOptionalString16(mimeData->text());
-    if (mimeData->hasFormat(QLatin1String(ui::kMimeTypeWebCustomData))) {
-        const QByteArray customData = mimeData->data(QLatin1String(ui::kMimeTypeWebCustomData));
+    if (mimeData->hasFormat(QLatin1String(ui::ClipboardFormatType::DataTransferCustomType().Serialize()))) {
+        const QByteArray customData = mimeData->data(QLatin1String(ui::ClipboardFormatType::DataTransferCustomType().Serialize()));
         const base::span custom_data(customData.constData(), (long unsigned)customData.length());
         if (auto maybe_data = ui::ReadCustomDataIntoMap(base::as_bytes(custom_data)))
             dropData->custom_data = *std::move(maybe_data);

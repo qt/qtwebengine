@@ -16,11 +16,6 @@ void QWebEngineMessagePumpScheduler::scheduleImmediateWork()
     QCoreApplication::postEvent(this, new QTimerEvent(0), Qt::NormalEventPriority);
 }
 
-void QWebEngineMessagePumpScheduler::scheduleIdleWork()
-{
-    QCoreApplication::postEvent(this, new QTimerEvent(0), Qt::LowEventPriority);
-}
-
 void QWebEngineMessagePumpScheduler::scheduleDelayedWork(int delay)
 {
     if (delay < 0) {

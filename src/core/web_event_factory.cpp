@@ -1660,9 +1660,9 @@ void WebEventFactory::sendUnhandledWheelEvent(const blink::WebGestureEvent &even
     delegate->unhandledWheelEvent(&ev);
 }
 
-content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *ev)
+input::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *ev)
 {
-    content::NativeWebKeyboardEvent webKitEvent(ToNativeEvent(ev));
+    input::NativeWebKeyboardEvent webKitEvent(ToNativeEvent(ev));
     webKitEvent.SetTimeStamp(base::TimeTicks::Now());
     bool isBackTabWithoutModifier =
             ev->key() == Qt::Key_Backtab && ev->modifiers() == Qt::NoModifier;

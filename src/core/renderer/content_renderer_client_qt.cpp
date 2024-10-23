@@ -311,7 +311,7 @@ void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderF
         resourceId = IDR_NET_ERROR_HTML;
 
         std::string extracted_string = ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(resourceId);
-        const base::StringPiece template_html(extracted_string.data(), extracted_string.size());
+        const std::string_view template_html(extracted_string.data(), extracted_string.size());
         if (template_html.empty())
             NOTREACHED() << "unable to load template. ID: " << resourceId;
         else // "t" is the id of the templates root node.
@@ -494,13 +494,14 @@ void ContentRendererClientQt::InitSpellCheck()
 
 void ContentRendererClientQt::WillSendRequest(blink::WebLocalFrame *frame,
                                               ui::PageTransition transition_type,
-                                              const blink::WebURL &url,
+                                              const blink::WebURL &upstream_url,
+                                              const blink::WebURL &target_url,
                                               const net::SiteForCookies &site_for_cookies,
                                               const url::Origin *initiator_origin,
                                               GURL *new_url)
 {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    ExtensionsRendererClientQt::GetInstance()->WillSendRequest(frame, transition_type, url, site_for_cookies,
+    ExtensionsRendererClientQt::GetInstance()->WillSendRequest(frame, transition_type, target_url, site_for_cookies,
                                                                initiator_origin, new_url);
     if (!new_url->is_empty())
         return;

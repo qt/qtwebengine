@@ -27,7 +27,7 @@ public:
     void GetAllForUrl(const GURL &url,
                       const net::SiteForCookies &site_for_cookies,
                       const url::Origin &top_frame_origin,
-                      bool has_storage_access,
+                      net::StorageAccessApiStatus storage_access_api_status,
                       network::mojom::CookieManagerGetOptionsPtr options,
                       bool is_ad_tagged,
                       bool force_disable_third_party_cookies,
@@ -37,32 +37,33 @@ public:
                             const GURL &url,
                             const net::SiteForCookies &site_for_cookies,
                             const url::Origin &top_frame_origin,
-                            bool has_storage_access,
+                            net::StorageAccessApiStatus storage_access_api_status,
                             net::CookieInclusionStatus status,
                             SetCanonicalCookieCallback callback) override;
     void AddChangeListener(const GURL &url,
                            const net::SiteForCookies &site_for_cookies,
                            const url::Origin &top_frame_origin,
-                           bool has_storage_access,
+                           net::StorageAccessApiStatus storage_access_api_status,
                            mojo::PendingRemote<network::mojom::CookieChangeListener> listener,
                            AddChangeListenerCallback callback) override;
     void SetCookieFromString(const GURL &url,
                              const net::SiteForCookies &site_for_cookies,
                              const url::Origin &top_frame_origin,
-                             bool has_storage_access,
+                             net::StorageAccessApiStatus storage_access_api_status,
                              const std::string &cookie,
                              SetCookieFromStringCallback callback) override;
     void GetCookiesString(const GURL &url,
                           const net::SiteForCookies &site_for_cookies,
                           const url::Origin &top_frame_origin,
-                          bool has_storage_access, bool get_version_shared_memory,
+                          net::StorageAccessApiStatus storage_access_api_status,
+                          bool get_version_shared_memory,
                           bool is_ad_tagged,
                           bool force_disable_third_party_cookies,
                           GetCookiesStringCallback callback) override;
     void CookiesEnabledFor(const GURL &url,
                            const net::SiteForCookies &site_for_cookies,
                            const url::Origin &top_frame_origin,
-                           bool has_storage_access,
+                           net::StorageAccessApiStatus storage_access_api_status,
                            CookiesEnabledForCallback callback) override;
 
     // Internal:

@@ -65,8 +65,6 @@ public:
                          const url::Origin *initiator_origin,
                          GURL *new_url);
 
-    bool ExtensionAPIEnabledForServiceWorkerScript(const GURL &scope, const GURL &script_url) const override;
-
     void RunScriptsAtDocumentStart(content::RenderFrame *render_frame);
     void RunScriptsAtDocumentEnd(content::RenderFrame *render_frame);
     void RunScriptsAtDocumentIdle(content::RenderFrame *render_frame);

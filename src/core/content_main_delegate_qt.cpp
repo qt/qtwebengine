@@ -46,7 +46,6 @@
 #if BUILDFLAG(IS_MAC)
 #include "base/trace_event/trace_event.h"
 #include "content/public/common/content_features.h"
-#include "media/gpu/mac/vt_video_decode_accelerator_mac.h"
 #endif
 
 #include <QtCore/qcoreapplication.h>
@@ -170,13 +169,6 @@ void ContentMainDelegateQt::PreSandboxStartup()
         // from gpu_main.cc:
 #if BUILDFLAG(IS_WIN)
         media::PreSandboxMediaFoundationInitialization();
-#endif
-
-#if BUILDFLAG(IS_MAC)
-        {
-            TRACE_EVENT0("gpu", "Initialize VideoToolbox");
-            media::InitializeVideoToolbox();
-        }
 #endif
     }
 

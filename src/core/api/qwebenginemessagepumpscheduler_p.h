@@ -29,7 +29,6 @@ class Q_WEBENGINECORE_EXPORT QWebEngineMessagePumpScheduler : public QObject
 public:
     QWebEngineMessagePumpScheduler(std::function<void()> callback);
     void scheduleImmediateWork();
-    void scheduleIdleWork();
     void scheduleDelayedWork(int delay);
 
 protected:

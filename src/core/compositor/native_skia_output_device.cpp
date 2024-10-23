@@ -73,14 +73,10 @@ void NativeSkiaOutputDevice::SetFrameSinkId(const viz::FrameSinkId &id)
     bind(id);
 }
 
-bool NativeSkiaOutputDevice::Reshape(const SkImageInfo &image_info,
-                                     const gfx::ColorSpace &colorSpace,
-                                     int sample_count,
-                                     float device_scale_factor,
-                                     gfx::OverlayTransform transform)
+bool NativeSkiaOutputDevice::Reshape(const ReshapeParams &params)
 {
-    m_shape = Shape{image_info, device_scale_factor, colorSpace, sample_count};
-    DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
+    m_shape = Shape{ params.image_info, params.device_scale_factor, params.color_space, params.sample_count };
+    DCHECK_EQ(params.transform, gfx::OVERLAY_TRANSFORM_NONE);
     return true;
 }
 
@@ -226,21 +222,22 @@ NativeSkiaOutputDevice::Buffer::~Buffer()
 // found in the LICENSE file.
 bool NativeSkiaOutputDevice::Buffer::initialize()
 {
-    uint32_t kDefaultSharedImageUsage = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ
-                                      | gpu::SHARED_IMAGE_USAGE_DISPLAY_WRITE;
+    gpu::SharedImageUsageSet sharedImageUsage =
+            gpu::SHARED_IMAGE_USAGE_DISPLAY_READ
+          | gpu::SHARED_IMAGE_USAGE_DISPLAY_WRITE;
     if (m_parent->m_contextState->gr_context_type() == gpu::GrContextType::kGL)
-        kDefaultSharedImageUsage |= gpu::SHARED_IMAGE_USAGE_GLES2_READ;
+        sharedImageUsage |= gpu::SHARED_IMAGE_USAGE_GLES2_READ;
     if (m_parent->m_isNativeBufferSupported)
-        kDefaultSharedImageUsage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
+        sharedImageUsage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
-    auto mailbox = gpu::Mailbox::GenerateForSharedImage();
+    auto mailbox = gpu::Mailbox::Generate();
 
     SkColorType skColorType = m_shape.imageInfo.colorType();
     if (!m_parent->m_factory->CreateSharedImage(
                 mailbox, viz::SkColorTypeToSinglePlaneSharedImageFormat(skColorType),
                 { m_shape.imageInfo.width(), m_shape.imageInfo.height() }, m_shape.colorSpace,
                 kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, m_parent->m_deps->GetSurfaceHandle(),
-                kDefaultSharedImageUsage, "QWE_SharedImageBuffer")) {
+                sharedImageUsage, "QWE_SharedImageBuffer")) {
         LOG(ERROR) << "CreateSharedImage failed.";
         return false;
     }

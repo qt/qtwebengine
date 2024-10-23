@@ -162,7 +162,7 @@
 
 // Implement IsHandledProtocol as declared in //url/url_util_qt.h.
 namespace url {
-bool IsHandledProtocol(base::StringPiece scheme)
+bool IsHandledProtocol(std::string_view scheme)
 {
     static const char *const kProtocolList[] = {
         url::kHttpScheme,
@@ -288,6 +288,7 @@ void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webCont
 
 
 base::OnceClosure ContentBrowserClientQt::SelectClientCertificate(content::BrowserContext *browser_context,
+                                                                  int process_id,
                                                                   content::WebContents *webContents,
                                                                   net::SSLCertRequestInfo *certRequestInfo,
                                                                   net::ClientCertIdentityList clientCerts,
@@ -936,17 +937,18 @@ bool ContentBrowserClientQt::DoesSiteRequireDedicatedProcess(content::BrowserCon
     return ContentBrowserClient::DoesSiteRequireDedicatedProcess(browser_context, effective_site_url);
 }
 
-bool ContentBrowserClientQt::ShouldUseSpareRenderProcessHost(content::BrowserContext *browser_context,
-                                                             const GURL &site_url)
+std::optional<content::ContentBrowserClient::SpareProcessRefusedByEmbedderReason>
+ContentBrowserClientQt::ShouldUseSpareRenderProcessHost(content::BrowserContext *browser_context,
+                                                        const GURL &site_url)
 {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     if (site_url.SchemeIs(extensions::kExtensionScheme))
-       return false;
+       return SpareProcessRefusedByEmbedderReason::ExtensionProcess;
 #endif
     return ContentBrowserClient::ShouldUseSpareRenderProcessHost(browser_context, site_url);
 }
 
-bool ContentBrowserClientQt::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(base::StringPiece scheme, bool is_embedded_origin_secure)
+bool ContentBrowserClientQt::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(std::string_view scheme, bool is_embedded_origin_secure)
 {
     if (is_embedded_origin_secure && scheme == content::kChromeUIScheme)
         return true;
@@ -1251,8 +1253,10 @@ void ContentBrowserClientQt::WillCreateURLLoaderFactory(
 }
 
 std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
-ContentBrowserClientQt::WillCreateURLLoaderRequestInterceptors(content::NavigationUIData *navigation_ui_data,
+ContentBrowserClientQt::WillCreateURLLoaderRequestInterceptors(
+                                       content::NavigationUIData *navigation_ui_data,
                                        int frame_tree_node_id, int64_t navigation_id,
+                                       bool force_no_https_upgrade,
                                        scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner)
 {
     Q_UNUSED(navigation_ui_data);

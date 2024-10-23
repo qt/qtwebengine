@@ -112,7 +112,7 @@ QKeyEvent *ToKeyEvent(base::apple::OwnedNSEvent event)
 
 } // namespace QtWebEngineCore
 
-namespace content {
+namespace input {
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(const blink::WebKeyboardEvent &web_event, gfx::NativeView)
     : blink::WebKeyboardEvent(web_event)
@@ -152,4 +152,4 @@ NativeWebKeyboardEvent &NativeWebKeyboardEvent::operator=(const NativeWebKeyboar
 
 NativeWebKeyboardEvent::~NativeWebKeyboardEvent() = default;
 
-}  // namespace content
+}  // namespace input

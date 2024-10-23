@@ -34,11 +34,15 @@ public:
     // content::AuthenticatorRequestClientDelegate ovverrides
     void SetRelyingPartyId(const std::string &rp_id) override;
     bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override;
-    void RegisterActionCallbacks(base::OnceClosure cancel_callback,
-                            base::RepeatingClosure start_over_callback,
-                            AccountPreselectedCallback account_preselected_callback,
-                            device::FidoRequestHandlerBase::RequestCallback request_callback,
-                            base::RepeatingClosure bluetooth_adapter_power_on_callback) override;
+    void RegisterActionCallbacks(
+        base::OnceClosure cancel_callback,
+        base::RepeatingClosure start_over_callback,
+        AccountPreselectedCallback account_preselected_callback,
+        device::FidoRequestHandlerBase::RequestCallback request_callback,
+        base::RepeatingClosure bluetooth_adapter_power_on_callback,
+        base::RepeatingCallback<
+            void(device::FidoRequestHandlerBase::BlePermissionCallback)>
+            request_ble_permission_callback) override;
     void ShouldReturnAttestation(const std::string &relying_party_id,
                                  const device::FidoAuthenticator *authenticator,
                                  bool is_enterprise_attestation,

@@ -385,20 +385,21 @@ private:
             if (m_error || !m_device)
                 break;
 
-            void *buffer = nullptr;
-            size_t bufferSize = 0;
-            MojoResult beginResult = m_pipeProducerHandle->BeginWriteData(
-                    &buffer, &bufferSize, MOJO_BEGIN_WRITE_DATA_FLAG_NONE);
+            base::span<uint8_t> buffer;
+            MojoResult beginResult =
+                    m_pipeProducerHandle->BeginWriteData(
+                        0, MOJO_BEGIN_WRITE_DATA_FLAG_NONE, buffer);
             if (beginResult == MOJO_RESULT_SHOULD_WAIT) {
                 m_watcher->ArmOrNotify();
                 return false; // Wait for pipe watcher
             }
             if (beginResult != MOJO_RESULT_OK)
                 break;
+            size_t bufferSize = buffer.size();
             if (m_maxBytesToRead > 0 && m_maxBytesToRead <= int64_t{std::numeric_limits<uint32_t>::max()})
                 bufferSize = std::min(bufferSize, size_t(m_maxBytesToRead));
 
-            int readResult = m_device->read(static_cast<char *>(buffer), bufferSize);
+            int readResult = m_device->read(reinterpret_cast<char *>(buffer.data()), bufferSize);
             uint32_t bytesRead = std::max(readResult, 0);
             m_pipeProducerHandle->EndWriteData(bytesRead);
             m_totalBytesRead += bytesRead;

@@ -169,9 +169,11 @@ FaviconDriverQt::NavigationManifestData::NavigationManifestData(
 FaviconDriverQt::NavigationManifestData::~NavigationManifestData() = default;
 
 void FaviconDriverQt::OnDidDownloadManifest(ManifestDownloadCallback callback,
+                                            blink::mojom::ManifestRequestResult result,
                                             const GURL &manifest_url,
                                             blink::mojom::ManifestPtr manifest)
 {
+    Q_UNUSED(result);
     Q_UNUSED(manifest_url);
 
     // ~WebContentsImpl triggers running any pending callbacks for manifests.

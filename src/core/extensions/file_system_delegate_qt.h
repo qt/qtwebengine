@@ -42,9 +42,9 @@ private:
     ~FileEntryPickerQt() override;
 
     // ui::SelectFileDialog::Listener implementation.
-    void FileSelected(const ui::SelectedFileInfo &file, int index, void *params) override;
-    void MultiFilesSelected(const std::vector<ui::SelectedFileInfo> &files, void *params) override;
-    void FileSelectionCanceled(void *params) override;
+    void FileSelected(const ui::SelectedFileInfo &file, int index) override;
+    void MultiFilesSelected(const std::vector<ui::SelectedFileInfo> &files) override;
+    void FileSelectionCanceled() override;
 
     FileSystemDelegate::FilesSelectedCallback m_filesSelectedCallback;
     base::OnceClosure m_fileSelectionCanceledCallback;

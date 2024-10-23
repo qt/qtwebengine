@@ -65,7 +65,8 @@ ProxyingRestrictedCookieManagerQt::~ProxyingRestrictedCookieManagerQt()
 
 void ProxyingRestrictedCookieManagerQt::GetAllForUrl(const GURL &url,
                                                      const net::SiteForCookies &site_for_cookies,
-                                                     const url::Origin &top_frame_origin, bool has_storage_access,
+                                                     const url::Origin &top_frame_origin,
+                                                     net::StorageAccessApiStatus storage_access_api_status,
                                                      network::mojom::CookieManagerGetOptionsPtr options,
                                                      bool is_ad_tagged,
                                                      bool force_disable_third_party_cookies,
@@ -74,7 +75,7 @@ void ProxyingRestrictedCookieManagerQt::GetAllForUrl(const GURL &url,
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     if (allowCookies(url, site_for_cookies)) {
-        underlying_restricted_cookie_manager_->GetAllForUrl(url, site_for_cookies, top_frame_origin, has_storage_access,
+        underlying_restricted_cookie_manager_->GetAllForUrl(url, site_for_cookies, top_frame_origin, storage_access_api_status,
                                                             std::move(options), is_ad_tagged, force_disable_third_party_cookies, std::move(callback));
     } else {
         std::move(callback).Run(std::vector<net::CookieWithAccessResult>());
@@ -85,7 +86,7 @@ void ProxyingRestrictedCookieManagerQt::SetCanonicalCookie(const net::CanonicalC
                                                            const GURL &url,
                                                            const net::SiteForCookies &site_for_cookies,
                                                            const url::Origin &top_frame_origin,
-                                                           bool has_storage_access,
+                                                           net::StorageAccessApiStatus storage_access_api_status,
                                                            net::CookieInclusionStatus status,
                                                            SetCanonicalCookieCallback callback)
 {
@@ -93,7 +94,7 @@ void ProxyingRestrictedCookieManagerQt::SetCanonicalCookie(const net::CanonicalC
 
     if (allowCookies(url, site_for_cookies)) {
         underlying_restricted_cookie_manager_->SetCanonicalCookie(cookie, url, site_for_cookies, top_frame_origin,
-                                                                  has_storage_access, status, std::move(callback));
+                                                                  storage_access_api_status, status, std::move(callback));
     } else {
         std::move(callback).Run(false);
     }
@@ -102,25 +103,26 @@ void ProxyingRestrictedCookieManagerQt::SetCanonicalCookie(const net::CanonicalC
 void ProxyingRestrictedCookieManagerQt::AddChangeListener(const GURL &url,
                                                           const net::SiteForCookies &site_for_cookies,
                                                           const url::Origin &top_frame_origin,
-                                                          bool has_storage_access,
+                                                          net::StorageAccessApiStatus storage_access_api_status,
                                                           mojo::PendingRemote<network::mojom::CookieChangeListener> listener,
                                                           AddChangeListenerCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    underlying_restricted_cookie_manager_->AddChangeListener(url, site_for_cookies, top_frame_origin, has_storage_access,
+    underlying_restricted_cookie_manager_->AddChangeListener(url, site_for_cookies, top_frame_origin, storage_access_api_status,
                                                              std::move(listener), std::move(callback));
 }
 
 void ProxyingRestrictedCookieManagerQt::SetCookieFromString(const GURL &url,
                                                             const net::SiteForCookies &site_for_cookies,
-                                                            const url::Origin &top_frame_origin, bool has_storage_access,
+                                                            const url::Origin &top_frame_origin,
+                                                            net::StorageAccessApiStatus storage_access_api_status,
                                                             const std::string &cookie,
                                                             SetCookieFromStringCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     if (allowCookies(url, site_for_cookies)) {
-        underlying_restricted_cookie_manager_->SetCookieFromString(url, site_for_cookies, top_frame_origin, has_storage_access,
+        underlying_restricted_cookie_manager_->SetCookieFromString(url, site_for_cookies, top_frame_origin, storage_access_api_status,
                                                                    cookie, std::move(callback));
     } else {
         std::move(callback).Run();
@@ -130,7 +132,8 @@ void ProxyingRestrictedCookieManagerQt::SetCookieFromString(const GURL &url,
 void ProxyingRestrictedCookieManagerQt::GetCookiesString(const GURL &url,
                                                          const net::SiteForCookies &site_for_cookies,
                                                          const url::Origin &top_frame_origin,
-                                                         bool has_storage_access, bool get_version_shared_memory,
+                                                         net::StorageAccessApiStatus storage_access_api_status,
+                                                         bool get_version_shared_memory,
                                                          bool is_ad_tagged,
                                                          bool force_disable_third_party_cookies,
                                                          GetCookiesStringCallback callback)
@@ -139,7 +142,7 @@ void ProxyingRestrictedCookieManagerQt::GetCookiesString(const GURL &url,
 
     if (allowCookies(url, site_for_cookies)) {
         underlying_restricted_cookie_manager_->GetCookiesString(url, site_for_cookies, top_frame_origin,
-                                                                has_storage_access, get_version_shared_memory,
+                                                                storage_access_api_status, get_version_shared_memory,
                                                                 is_ad_tagged, force_disable_third_party_cookies,
                                                                 std::move(callback));
     } else {
@@ -150,7 +153,7 @@ void ProxyingRestrictedCookieManagerQt::GetCookiesString(const GURL &url,
 void ProxyingRestrictedCookieManagerQt::CookiesEnabledFor(const GURL &url,
                                                           const net::SiteForCookies &site_for_cookies,
                                                           const url::Origin & /*top_frame_origin*/,
-                                                          bool /*has_storage_access*/,
+                                                          net::StorageAccessApiStatus /*storage_access_api_status*/,
                                                           CookiesEnabledForCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);

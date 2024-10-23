@@ -126,7 +126,7 @@ std::optional<int> GetZoomLevel(content::WebContents *capturer,
     }
 
     double zoom_level =
-            blink::PageZoomLevelToZoomFactor(content::HostZoomMap::GetZoomLevel(captured_wc));
+            blink::ZoomLevelToZoomFactor(content::HostZoomMap::GetZoomLevel(captured_wc));
     return std::round(100 * zoom_level);
 }
 
