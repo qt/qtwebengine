@@ -374,8 +374,9 @@ void InterceptedRequest::ContinueAfterIntercept()
         }
 
         if (info.changed) {
+            // Used the same error code as AwProxyingURLLoaderFactory's blocked request.
             if (info.shouldBlockRequest)
-                return SendErrorAndCompleteImmediately(net::ERR_BLOCKED_BY_CLIENT);
+                return SendErrorAndCompleteImmediately(net::ERR_ACCESS_DENIED);
 
             if (info.shouldRedirectRequest) {
                 net::RedirectInfo::FirstPartyURLPolicy first_party_url_policy =
