@@ -214,14 +214,28 @@ if(QT_FEATURE_framework)
     )
 
 else()
+    set(locale_install_path "${INSTALL_TRANSLATIONSDIR}/qtwebengine_locales")
     install(FILES ${localeFiles}
-        DESTINATION ${INSTALL_TRANSLATIONSDIR}/qtwebengine_locales
+        DESTINATION ${locale_install_path}
         CONFIGURATIONS ${config}
     )
+    qt_internal_sbom_add_files(WebEngineCore
+        FILES "${localeFiles}"
+        FILE_TYPE "TRANSLATIONS"
+        INSTALL_PATH "${locale_install_path}"
+    )
+
+    set(resource_install_path "${INSTALL_DATADIR}/resources")
     install(FILES ${resourceFiles}
-        DESTINATION ${INSTALL_DATADIR}/resources
+        DESTINATION ${resource_install_path}
         CONFIGURATIONS ${config}
     )
+    qt_internal_sbom_add_files(WebEngineCore
+        FILES "${resourceFiles}"
+        FILE_TYPE "RESOURCES"
+        INSTALL_PATH "${resource_install_path}"
+    )
+
     if(QT_SUPERBUILD OR NOT QT_WILL_INSTALL)
         addCopyCommand(WebEngineCore "${localeFiles}"
             ${QT_BUILD_DIR}/${INSTALL_TRANSLATIONSDIR}/qtwebengine_locales

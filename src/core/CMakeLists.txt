@@ -642,6 +642,7 @@ if(WIN32)
             BUILDDIR ${buildDir}/${config}/${arch}
             MODULE core
         )
+        qt_webengine_add_gn_target_to_sbom(QtWebEngineCoreSandbox ${buildDir}/${config}/${arch})
         set(sandboxLibraryPath ${buildDir}/${config}/${arch}/QtWebEngineCoreSandbox.lib)
         set_property(TARGET WebEngineCoreSandbox
             PROPERTY IMPORTED_LOCATION_${cfg} ${sandboxLibraryPath}
@@ -689,6 +690,7 @@ if(QT_FEATURE_webenginedriver)
         BUILDDIR ${buildDir}/$<CONFIG>/${arch}
         MODULE core
     )
+    qt_webengine_add_gn_target_to_sbom(webenginedriver_group ${buildDir}/$<CONFIG>/${arch})
     add_custom_target(webenginedriver
         DEPENDS
             ${buildDir}/$<CONFIG>/${arch}/${WEBENGINEDRIVER_EXECUTABLE})

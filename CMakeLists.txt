@@ -12,6 +12,7 @@ include(cmake/Functions.cmake)
 include(cmake/QtGnTargetHelpers.cmake)
 include(cmake/QtGnConfigHelpers.cmake)
 include(cmake/QtConfigureHelpers.cmake)
+include(cmake/QtWebEngineSbomHelpers.cmake)
 
 project(QtWebEngineDummy)
 find_package(Qt6 6.5 CONFIG REQUIRED COMPONENTS BuildInternals Core)

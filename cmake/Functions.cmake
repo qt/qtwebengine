@@ -972,6 +972,8 @@ function(add_gn_build_artifacts_to_target)
                 MODULE ${arg_MODULE}
                 DEPENDS ${arg_DEPENDS}
             )
+            qt_webengine_add_gn_target_to_sbom(${arg_NINJA_TARGET} ${arg_BUILDDIR}/${config}/${arch})
+            qt_webengine_add_gn_artifact_relationship_to_sbom(${arg_NINJA_TARGET} ${arg_CMAKE_TARGET})
             add_dependencies(run_${arg_MODULE}_NinjaDone ${target})
             set_target_properties(${arg_CMAKE_TARGET} PROPERTIES
                 LINK_DEPENDS ${arg_BUILDDIR}/${config}/${arch}/${arg_NINJA_STAMP}
