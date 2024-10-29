@@ -172,9 +172,12 @@ static blink::mojom::PermissionStatus getStatusFromSettings(blink::PermissionTyp
 {
     switch (type) {
     case blink::PermissionType::CLIPBOARD_READ_WRITE:
-    case blink::PermissionType::CLIPBOARD_SANITIZED_WRITE:
         if (settings->testAttribute(QWebEngineSettings::JavascriptCanPaste)
             && settings->testAttribute(QWebEngineSettings::JavascriptCanAccessClipboard))
+            return blink::mojom::PermissionStatus::GRANTED;
+        return blink::mojom::PermissionStatus::ASK;
+    case blink::PermissionType::CLIPBOARD_SANITIZED_WRITE:
+        if (settings->testAttribute(QWebEngineSettings::JavascriptCanAccessClipboard))
             return blink::mojom::PermissionStatus::GRANTED;
         return blink::mojom::PermissionStatus::ASK;
     default:

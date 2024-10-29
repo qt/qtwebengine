@@ -4013,18 +4013,22 @@ void tst_QWebEnginePage::clipboardReadWritePermissionInitialState_data()
 {
     QTest::addColumn<bool>("canAccessClipboard");
     QTest::addColumn<bool>("canPaste");
-    QTest::addColumn<QString>("permission");
-    QTest::newRow("access and paste should grant") << true << true << "granted";
-    QTest::newRow("no access should prompt") << false << true << "prompt";
-    QTest::newRow("no paste should prompt") << true << false << "prompt";
-    QTest::newRow("no access or paste should prompt") << false << false << "prompt";
+    QTest::addColumn<QString>("readPermission");
+    QTest::addColumn<QString>("writePermission");
+    QTest::newRow("access and paste should grant both") << true << true << "granted" << "granted";
+    QTest::newRow("paste only should prompt for both") << false << true << "prompt" << "prompt";
+    QTest::newRow("access only should grant for write only")
+            << true << false << "prompt" << "granted";
+    QTest::newRow("no access or paste should prompt for both")
+            << false << false << "prompt" << "prompt";
 }
 
 void tst_QWebEnginePage::clipboardReadWritePermissionInitialState()
 {
     QFETCH(bool, canAccessClipboard);
     QFETCH(bool, canPaste);
-    QFETCH(QString, permission);
+    QFETCH(QString, readPermission);
+    QFETCH(QString, writePermission);
 
     QWebEngineProfile otr;
     otr.setPersistentPermissionsPolicy(QWebEngineProfile::PersistentPermissionsPolicy::AskEveryTime);
@@ -4041,9 +4045,9 @@ void tst_QWebEnginePage::clipboardReadWritePermissionInitialState()
     QTRY_COMPARE(spy.size(), 1);
 
     evaluateJavaScriptSync(&page, clipboardPermissionQuery("readPermission", "clipboard-read"));
-    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("readPermission")), permission);
+    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("readPermission")), readPermission);
     evaluateJavaScriptSync(&page, clipboardPermissionQuery("writePermission", "clipboard-write"));
-    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("writePermission")), permission);
+    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("writePermission")), writePermission);
 }
 
 void tst_QWebEnginePage::clipboardReadWritePermission_data()

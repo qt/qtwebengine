@@ -70,10 +70,13 @@
             Allows JavaScript programs to open popup windows without user
             interaction. Enabled by default.
     \value  JavascriptCanAccessClipboard
-            Allows JavaScript programs to read from and write to the clipboard.
-            Writing to the clipboard is always allowed if it is specifically requested by the user.
-            See JavascriptCanPaste to also allow pasting the content of the clipboard content from
-            JavaScript. Since unrestricted clipboard access is a potential security concern, it is
+            Allows JavaScript programs to write (copy) sanitized content to the clipboard. A
+            sanitized write is done with the \c{write} and \c{writeText} JavaScript Clipboard API
+            calls and must be accompanied by user action.
+            Unsanitized writes, and reading from the clipboard, are
+            enabled by \l{JavascriptCanPaste}.
+            Prior to Chromium version 81, this setting enabled all clipboard writes.
+            Since unrestricted clipboard access is a potential security concern, it is
             recommended that applications leave this disabled and instead respond to
             \l{QWebEnginePage::ClipboardReadWrite}{ClipboardReadWrite} feature permission requests.
             Disabled by default.
@@ -152,11 +155,15 @@
             similar to Chrome on desktops. To overwrite the default behavior,
             disable this setting. (Added in Qt 5.11)
     \value  JavascriptCanPaste
-            Enables JavaScript \c{execCommand("paste")}. This also requires enabling
-            JavascriptCanAccessClipboard. Since unrestricted clipboard access is a potential
-            security concern, it is recommended that applications leave this disabled
-            and instead respond to \l{QWebEnginePage::ClipboardReadWrite}{ClipboardReadWrite}
-            feature permission requests.
+            Allows JavaScript programs to read (paste) from the clipboard and to write unsanitized
+            content. A sanitized write is done with the \c{write} and \c{writeText} JavaScript
+            Clipboard API calls and must be accompanied by user action; unsanitized writes are any
+            writes which do not meet these criteria.
+            For this setting to have any effect, \l{JavascriptCanAccessClipboard} must also be
+            enabled.
+            Since unrestricted clipboard access is a potential security concern, it is
+            recommended that applications leave this disabled and instead respond to
+            \l{QWebEnginePage::ClipboardReadWrite}{ClipboardReadWrite} feature permission requests.
             Disabled by default. (Added in Qt 5.11)
     \value  WebRTCPublicInterfacesOnly
             Limits WebRTC to public IP addresses only. When disabled WebRTC may also use
