@@ -13,8 +13,6 @@
 #include "components/prefs/pref_member.h"
 #include "components/printing/browser/print_manager.h"
 #include "components/printing/common/print.mojom-forward.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 namespace base {
 class RefCountedBytes;
@@ -130,7 +128,6 @@ private:
     void ReleasePrinterQuery();
 
 private:
-    content::NotificationRegistrar m_registrar;
     scoped_refptr<printing::PrintJob> m_printJob;
     content::RenderFrameHost *m_printingRFH;
     bool m_didPrintingSucceed;

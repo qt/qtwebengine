@@ -32,7 +32,6 @@ class Origin;
 }
 
 namespace extensions {
-class Dispatcher;
 class ResourceRequestPolicyQt;
 }
 
@@ -47,15 +46,11 @@ public:
     // extensions::ExtensionsRendererClient implementation.
     bool IsIncognitoProcess() const override;
     int GetLowestIsolatedWorldId() const override;
-    extensions::Dispatcher *GetDispatcher() override;
-    void OnExtensionLoaded(const extensions::Extension &extension) override;
-    void OnExtensionUnloaded(const extensions::ExtensionId &extension_id) override;
-    void RenderThreadStarted() override;
+    void FinishInitialization() override;
 
     // Match ContentRendererClientQt's method names...
     void WebViewCreated(blink::WebView *web_view,
                         const url::Origin *outermost_origin);
-    void RenderFrameCreated(content::RenderFrame *, service_manager::BinderRegistry *);
     bool OverrideCreatePlugin(content::RenderFrame *render_frame,
                               const blink::WebPluginParams &params);
     void WillSendRequest(blink::WebLocalFrame *frame,
@@ -69,13 +64,9 @@ public:
     void RunScriptsAtDocumentEnd(content::RenderFrame *render_frame);
     void RunScriptsAtDocumentIdle(content::RenderFrame *render_frame);
 
-    extensions::Dispatcher *extension_dispatcher()
-    { return extension_dispatcher_.get(); }
-
     static ExtensionsRendererClientQt *GetInstance();
 
 private:
-    std::unique_ptr<extensions::Dispatcher> extension_dispatcher_;
     std::unique_ptr<extensions::ResourceRequestPolicyQt> resource_request_policy_;
 };
 

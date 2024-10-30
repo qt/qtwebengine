@@ -6,7 +6,6 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -400,7 +399,8 @@ void ContentClientQt::AddAdditionalSchemes(Schemes* schemes)
 #endif
 }
 
-base::StringPiece ContentClientQt::GetDataResource(int resource_id, ui::ResourceScaleFactor scale_factor)
+std::string_view ContentClientQt::GetDataResource(int resource_id,
+                                                  ui::ResourceScaleFactor scale_factor)
 {
     return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(resource_id, scale_factor);
 }

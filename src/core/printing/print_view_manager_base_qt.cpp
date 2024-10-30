@@ -27,8 +27,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "printing/metafile_skia.h"
 #include "printing/print_job_constants.h"
 #include "printing/printed_document.h"

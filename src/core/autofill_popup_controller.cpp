@@ -9,7 +9,7 @@
 
 namespace QtWebEngineCore {
 
-using SuggestionPosition = autofill::AutofillSuggestionDelegate::SuggestionPosition;
+using SuggestionPosition = autofill::AutofillSuggestionDelegate::SuggestionMetadata;
 
 AutofillPopupController::AutofillPopupController(AutofillPopupControllerPrivate *dd)
 {
@@ -86,7 +86,7 @@ void AutofillPopupController::acceptSuggestion()
 
 void AutofillPopupController::notifyPopupShown()
 {
-    d->delegate->OnSuggestionsShown();
+    d->delegate->OnSuggestionsShown({});
 }
 
 void AutofillPopupController::notifyPopupHidden()

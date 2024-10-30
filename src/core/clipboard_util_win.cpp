@@ -45,7 +45,7 @@ std::string HtmlToCFHtml(const std::string &html, const std::string &base_url)
     size_t end_fragment_offset = start_fragment_offset + html.length();
     size_t end_html_offset = end_fragment_offset + strlen(end_markup);
 
-    std::string result = base::StringPrintf(header, start_html_offset, end_html_offset,
+    std::string result = base::StringPrintfNonConstexpr(header, start_html_offset, end_html_offset,
                                             start_fragment_offset, end_fragment_offset);
     if (!base_url.empty()) {
         result += source_url_prefix;

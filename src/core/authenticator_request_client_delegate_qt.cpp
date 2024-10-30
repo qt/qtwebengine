@@ -121,13 +121,6 @@ void AuthenticatorRequestClientDelegateQt::RegisterActionCallbacks(
     m_bluetoothAdapterPowerOnCallback = std::move(bluetooth_adapter_power_on_callback);
 }
 
-void AuthenticatorRequestClientDelegateQt::ShouldReturnAttestation(
-        const std::string &relying_party_id, const device::FidoAuthenticator *authenticator,
-        bool is_enterprise_attestation, base::OnceCallback<void(bool)> callback)
-{
-    std::move(callback).Run(!is_enterprise_attestation);
-}
-
 void AuthenticatorRequestClientDelegateQt::SelectAccount(
         std::vector<device::AuthenticatorGetAssertionResponse> responses,
         base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)> callback)

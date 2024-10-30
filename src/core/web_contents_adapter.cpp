@@ -76,7 +76,7 @@
 
 #if QT_CONFIG(accessibility)
 #include "browser_accessibility_qt.h"
-#include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "ui/accessibility/platform/browser_accessibility_manager.h"
 #include <QtGui/qaccessible.h>
 #endif
 
@@ -750,7 +750,8 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     content::NavigationController::LoadURLParams params((dataUrlToLoad));
     params.load_type = content::NavigationController::LOAD_TYPE_DATA;
     params.base_url_for_data_url = toGurl(baseUrl);
-    params.virtual_url_for_data_url = baseUrl.isEmpty() ? GURL(url::kAboutBlankURL) : toGurl(baseUrl);
+    params.virtual_url_for_special_cases =
+            baseUrl.isEmpty() ? GURL(url::kAboutBlankURL) : toGurl(baseUrl);
     params.can_load_local_resources = true;
     params.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_API);
     params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
@@ -1030,12 +1031,12 @@ QAccessibleInterface *WebContentsAdapter::browserAccessible()
     content::RenderFrameHostImpl *rfh = static_cast<content::RenderFrameHostImpl *>(m_webContents->GetPrimaryMainFrame());
     if (!rfh)
         return nullptr;
-    content::BrowserAccessibilityManager *manager = rfh->GetOrCreateBrowserAccessibilityManager();
+    ui::BrowserAccessibilityManager *manager = rfh->GetOrCreateBrowserAccessibilityManager();
     if (!manager) // FIXME!
         return nullptr;
-    content::BrowserAccessibility *acc = manager->GetFromAXNode(manager->GetRoot());
+    ui::BrowserAccessibility *acc = manager->GetFromAXNode(manager->GetRoot());
 
-    return content::toQAccessibleInterface(acc);
+    return ui::toQAccessibleInterface(acc);
 }
 #endif // QT_CONFIG(accessibility)
 
@@ -1045,7 +1046,8 @@ content::RenderFrameHost *WebContentsAdapter::renderFrameHostFromFrameId(quint64
     if (frameId == kUseMainFrameId) {
         result = m_webContents->GetPrimaryMainFrame();
     } else {
-        auto *ftn = content::FrameTreeNode::GloballyFindByID(static_cast<int>(frameId));
+        auto *ftn = content::FrameTreeNode::GloballyFindByID(
+                static_cast<content::FrameTreeNodeId>(frameId));
         if (!ftn)
             return nullptr;
 
@@ -1943,17 +1945,18 @@ void WebContentsAdapter::changeTextDirection(bool leftToRight)
 
 quint64 WebContentsAdapter::mainFrameId() const
 {
-    CHECK_INITIALIZED(content::RenderFrameHost::kNoFrameTreeNodeId);
-    return static_cast<quint64>(m_webContents->GetPrimaryMainFrame()->GetFrameTreeNodeId());
+    CHECK_INITIALIZED(-1); // content::RenderFrameHost::kNoFrameTreeNodeId);
+    return static_cast<quint64>(
+            m_webContents->GetPrimaryMainFrame()->GetFrameTreeNodeId().GetUnsafeValue());
 }
 
 #define CHECK_INITIALIZED_AND_VALID_FRAME(webengine_frame_id_variable, frame_tree_node_variable,   \
                                           return_value)                                            \
     CHECK_INITIALIZED(return_value);                                                               \
-    if (webengine_frame_id_variable == kInvalidFrameId)                                            \
+    if (webengine_frame_id_variable == -1) /* kInvalidFrameId)*/                                   \
         return return_value;                                                                       \
     auto *frame_tree_node_variable = content::FrameTreeNode::GloballyFindByID(                     \
-            static_cast<int>(webengine_frame_id_variable));                                        \
+            static_cast<content::FrameTreeNodeId>(webengine_frame_id_variable));                   \
     if (!frame_tree_node_variable)                                                                 \
     return return_value
 
@@ -1977,7 +1980,7 @@ QList<quint64> WebContentsAdapter::frameChildren(quint64 id) const
     size_t numChildren = ftn->child_count();
     result.reserve(numChildren);
     for (size_t i = 0; i < numChildren; ++i) {
-        result.push_back(ftn->child_at(i)->frame_tree_node_id());
+        result.push_back(ftn->child_at(i)->frame_tree_node_id().GetUnsafeValue());
     }
     return result;
 }
@@ -2003,7 +2006,7 @@ std::optional<quint64> WebContentsAdapter::findFrameIdByName(const QString &name
     auto *ftn = content::FrameTreeNode::From(m_webContents->GetPrimaryMainFrame());
     Q_ASSERT(ftn);
     if (auto *foundFtn = ftn->frame_tree().FindByName(name.toStdString()))
-        return foundFtn->frame_tree_node_id();
+        return foundFtn->frame_tree_node_id().GetUnsafeValue();
     return {};
 }
 

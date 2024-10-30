@@ -8,7 +8,6 @@
 #include "delegated_frame_host_client_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
 
-#include "base/memory/weak_ptr.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_client.h"
@@ -39,7 +38,6 @@ class WebContentsAdapterClient;
 class RenderWidgetHostViewQt
     : public content::RenderWidgetHostViewBase
     , public ui::GestureProviderClient
-    , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
     , public content::TextInputManager::Observer
     , public content::RenderFrameMetadataProvider::Observer
     , public content::RenderWidgetHost::InputEventObserver
@@ -233,8 +231,6 @@ private:
     std::unique_ptr<ui::TouchSelectionController> m_touchSelectionController;
     gfx::SelectionBound m_selectionStart;
     gfx::SelectionBound m_selectionEnd;
-
-    base::WeakPtrFactory<RenderWidgetHostViewQt> m_weakPtrFactory { this };
 };
 
 class WebContentsAccessibilityQt : public content::WebContentsAccessibility

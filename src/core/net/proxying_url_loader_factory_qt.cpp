@@ -100,8 +100,9 @@ class InterceptedRequest : public network::mojom::URLLoader
                          , public network::mojom::URLLoaderClient
 {
 public:
-    InterceptedRequest(ProfileAdapter *profile_adapter, int frame_tree_node_id, int32_t request_id,
-                       uint32_t options, const network::ResourceRequest &request,
+    InterceptedRequest(ProfileAdapter *profile_adapter, content::FrameTreeNodeId frame_tree_node_id,
+                       int32_t request_id, uint32_t options,
+                       const network::ResourceRequest &request,
                        const net::MutableNetworkTrafficAnnotationTag &traffic_annotation,
                        mojo::PendingReceiver<network::mojom::URLLoader> loader,
                        mojo::PendingRemote<network::mojom::URLLoaderClient> client,
@@ -150,7 +151,7 @@ private:
     QWebEngineUrlRequestInterceptor* getPageInterceptor();
 
     QPointer<ProfileAdapter> profile_adapter_;
-    const int frame_tree_node_id_;
+    const content::FrameTreeNodeId frame_tree_node_id_;
     const int32_t request_id_;
     const uint32_t options_;
     bool allow_local_ = false;
@@ -189,8 +190,8 @@ private:
 };
 
 InterceptedRequest::InterceptedRequest(
-        ProfileAdapter *profile_adapter, int frame_tree_node_id, int32_t request_id,
-        uint32_t options, const network::ResourceRequest &request,
+        ProfileAdapter *profile_adapter, content::FrameTreeNodeId frame_tree_node_id,
+        int32_t request_id, uint32_t options, const network::ResourceRequest &request,
         const net::MutableNetworkTrafficAnnotationTag &traffic_annotation,
         mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
         mojo::PendingRemote<network::mojom::URLLoaderClient> client,
@@ -243,7 +244,7 @@ InterceptedRequest::~InterceptedRequest()
 
 content::WebContents* InterceptedRequest::webContents()
 {
-    if (frame_tree_node_id_ == content::RenderFrameHost::kNoFrameTreeNodeId)
+    if (frame_tree_node_id_.is_null())
         return nullptr;
     return content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
 }
@@ -551,7 +552,7 @@ void InterceptedRequest::SendErrorAndCompleteImmediately(int error_code)
 }
 
 ProxyingURLLoaderFactoryQt::ProxyingURLLoaderFactoryQt(
-        ProfileAdapter *adapter, int frame_tree_node_id,
+        ProfileAdapter *adapter, content::FrameTreeNodeId frame_tree_node_id,
         mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
         mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_info,
         content::ContentBrowserClient::URLLoaderFactoryType type)

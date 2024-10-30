@@ -267,9 +267,8 @@ private:
             }
         }
         if (m_corsEnabled) {
-            std::string origin;
-            if (m_request.headers.GetHeader("Origin", &origin)) {
-                headers += base::StringPrintf("Access-Control-Allow-Origin: %s\n", origin.c_str());
+            if (std::optional<std::string> origin = m_request.headers.GetHeader("Origin")) {
+                headers += base::StringPrintf("Access-Control-Allow-Origin: %s\n", origin->c_str());
                 headers += "Access-Control-Allow-Credentials: true\n";
             }
         }
@@ -428,10 +427,9 @@ private:
     }
     bool ParseRange(const net::HttpRequestHeaders &headers)
     {
-        std::string range_header;
-        if (headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header)) {
+        if (auto range_header = headers.GetHeader(net::HttpRequestHeaders::kRange)) {
             std::vector<net::HttpByteRange> ranges;
-            if (net::HttpUtil::ParseRangeHeader(range_header, &ranges)) {
+            if (net::HttpUtil::ParseRangeHeader(*range_header, &ranges)) {
                 // Chromium doesn't support multirange requests.
                 if (ranges.size() == 1) {
                     m_byteRange = ranges[0];

@@ -122,10 +122,12 @@ foreach(arch ${archs})
           qt_freetype_config="${buildDir}/${config}/${arch}:qt_freetype_config"
           is_qtwebengine=true
           is_qtpdf=true
+          enable_bluetooth_emulation=false
           enable_swiftshader=false
           enable_swiftshader_vulkan=false
           angle_enable_swiftshader=false
           dawn_use_swiftshader=false
+          pdf_enable_fontations=false
           use_cups=false
           use_dawn=false
           build_dawn_tests=false
@@ -137,7 +139,9 @@ foreach(arch ${archs})
           chrome_pgo_phase=0
           strip_absolute_paths_from_debug_symbols=false
           v8_enable_webassembly=false
-        )
+          use_v8_context_snapshot=false
+          v8_use_external_startup_data=false
+  )
 
         if(LINUX OR ANDROID)
             list(APPEND gnArgArg

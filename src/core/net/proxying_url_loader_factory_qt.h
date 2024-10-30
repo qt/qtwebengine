@@ -6,6 +6,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/frame_tree_node_id.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -29,7 +30,7 @@ class ProxyingURLLoaderFactoryQt : public network::mojom::URLLoaderFactory
 {
 public:
     ProxyingURLLoaderFactoryQt(
-            ProfileAdapter *adapter, int frameTreeNodeId,
+            ProfileAdapter *adapter, content::FrameTreeNodeId frameTreeNodeId,
             mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
             mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_target_factory_remote,
             content::ContentBrowserClient::URLLoaderFactoryType type);
@@ -49,7 +50,7 @@ private:
     void OnProxyBindingError();
 
     QPointer<ProfileAdapter> m_profileAdapter;
-    int m_frameTreeNodeId;
+    content::FrameTreeNodeId m_frameTreeNodeId;
     mojo::ReceiverSet<network::mojom::URLLoaderFactory> m_proxyReceivers;
     mojo::Remote<network::mojom::URLLoaderFactory> m_targetFactory;
     base::WeakPtrFactory<ProxyingURLLoaderFactoryQt> m_weakFactory;

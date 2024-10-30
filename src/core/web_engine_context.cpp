@@ -33,6 +33,7 @@
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "components/input/switches.h"
+#include "components/power_monitor/make_power_monitor_device_source.h"
 #include "components/viz/common/features.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/app/mojo_ipc_support.h"
@@ -995,7 +996,7 @@ WebEngineContext::WebEngineContext()
     content::StartBrowserThreadPool();
     content::BrowserTaskExecutor::PostFeatureListSetup();
     tracing::InitTracingPostThreadPoolStartAndFeatureList(false);
-    base::PowerMonitor::Initialize(std::make_unique<base::PowerMonitorDeviceSource>());
+    base::PowerMonitor::GetInstance()->Initialize(MakePowerMonitorDeviceSource());
     content::ProcessVisibilityTracker::GetInstance();
     m_discardableSharedMemoryManager = std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
 

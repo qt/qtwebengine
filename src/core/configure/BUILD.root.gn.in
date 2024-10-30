@@ -288,6 +288,7 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/resources/net_internals:resources",
     "//chrome/browser/signin:identity_manager_provider",
     "//chrome/common:buildflags",
+    "//chrome/common:channel_info",
     "//chrome/common:version_header",
     "//components/custom_handlers",
     "//components/embedder_support:embedder_support",

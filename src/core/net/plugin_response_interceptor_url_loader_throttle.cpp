@@ -80,7 +80,7 @@ namespace QtWebEngineCore {
 
 PluginResponseInterceptorURLLoaderThrottle::PluginResponseInterceptorURLLoaderThrottle(
         network::mojom::RequestDestination request_destination,
-        int frame_tree_node_id)
+        content::FrameTreeNodeId frame_tree_node_id)
     : m_request_destination(request_destination), m_frame_tree_node_id(frame_tree_node_id)
 {}
 

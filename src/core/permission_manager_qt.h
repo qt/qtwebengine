@@ -66,14 +66,6 @@ public:
             const content::PermissionRequestDescription &request_description,
             base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus> &)> callback) override;
 
-    content::PermissionControllerDelegate::SubscriptionId SubscribeToPermissionStatusChange(
-            blink::PermissionType permission, content::RenderProcessHost *render_process_host,
-            content::RenderFrameHost *render_frame_host, const GURL &requesting_origin, bool,
-            const base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback) override;
-
-    void UnsubscribeFromPermissionStatusChange(
-            content::PermissionControllerDelegate::SubscriptionId subscription_id) override;
-
 private:
     struct Request {
         int id;
@@ -115,8 +107,6 @@ private:
     std::vector<QWebEnginePermission::PermissionType> m_permissionTypes;
     std::map<content::GlobalRenderFrameHostToken,
         QList<std::tuple<GURL, blink::PermissionType, bool>>> m_transientPermissions;
-    std::map<content::PermissionControllerDelegate::SubscriptionId, Subscription> m_subscribers;
-    content::PermissionControllerDelegate::SubscriptionId::Generator subscription_id_generator_;
     int m_requestIdCount;
     int m_transientWriteCount;
     std::unique_ptr<PrefService> m_prefService;

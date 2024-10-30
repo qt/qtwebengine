@@ -210,8 +210,10 @@ QUrl WebContentsDelegateQt::url(content::WebContents *source) const
     m_pendingUrlUpdate = false;
     return newUrl;
 }
-void WebContentsDelegateQt::AddNewContents(content::WebContents *source, std::unique_ptr<content::WebContents> new_contents, const GURL &target_url,
-                                           WindowOpenDisposition disposition, const blink::mojom::WindowFeatures &window_features, bool user_gesture, bool *was_blocked)
+content::WebContents *WebContentsDelegateQt::AddNewContents(
+        content::WebContents *source, std::unique_ptr<content::WebContents> new_contents,
+        const GURL &target_url, WindowOpenDisposition disposition,
+        const blink::mojom::WindowFeatures &window_features, bool user_gesture, bool *was_blocked)
 {
     Q_UNUSED(source)
     QSharedPointer<WebContentsAdapter> newAdapter = createWindow(std::move(new_contents), disposition, window_features.bounds, toQt(target_url), user_gesture);
@@ -226,6 +228,8 @@ void WebContentsDelegateQt::AddNewContents(content::WebContents *source, std::un
         newAdapter->loadDefault();
     if (was_blocked)
         *was_blocked = !newAdapter;
+
+    return nullptr;
 }
 
 void WebContentsDelegateQt::CloseContents(content::WebContents *source)
@@ -881,8 +885,7 @@ void WebContentsDelegateQt::ResourceLoadComplete(content::RenderFrameHost* rende
 }
 
 void WebContentsDelegateQt::InnerWebContentsAttached(content::WebContents *inner_web_contents,
-                                        content::RenderFrameHost *render_frame_host,
-                                        bool is_full_page)
+                                                     content::RenderFrameHost *render_frame_host)
 {
     blink::web_pref::WebPreferences guestPrefs = inner_web_contents->GetOrCreateWebPreferences();
     webEngineSettings()->overrideWebPreferences(inner_web_contents, &guestPrefs);

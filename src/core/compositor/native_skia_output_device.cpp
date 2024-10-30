@@ -53,8 +53,6 @@ NativeSkiaOutputDevice::NativeSkiaOutputDevice(
     capabilities_.uses_default_gl_framebuffer = false;
     capabilities_.supports_surfaceless = true;
     capabilities_.output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
-    capabilities_.preserve_buffer_content = true;
-    capabilities_.only_invalidates_damage_rect = false;
 
 #if BUILDFLAG(IS_OZONE)
     m_isNativeBufferSupported = ui::OzonePlatform::GetInstance()

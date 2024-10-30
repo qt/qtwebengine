@@ -763,9 +763,9 @@ void RenderWidgetHostViewQt::OnTextSelectionChanged(content::TextInputManager *t
 
 void RenderWidgetHostViewQt::OnGestureEvent(const ui::GestureEventData& gesture)
 {
-    if ((gesture.type() == ui::kGesturePinchBegin
-         || gesture.type() == ui::kGesturePinchUpdate
-         || gesture.type() == ui::kGesturePinchEnd)
+    if ((gesture.type() == ui::EventType::kGesturePinchBegin
+         || gesture.type() == ui::EventType::kGesturePinchUpdate
+         || gesture.type() == ui::EventType::kGesturePinchEnd)
         && !content::IsPinchToZoomEnabled()) {
         return;
     }

@@ -543,6 +543,7 @@ macro(append_build_type_setup)
         forbid_non_component_debug_builds=false
         treat_warnings_as_errors=false
         use_allocator_shim=false
+        use_freelist_dispatcher=false
         use_partition_alloc=true
         use_partition_alloc_as_malloc=false
         use_custom_libcxx=false

@@ -124,11 +124,11 @@ private:
 
 // Helper class to create WeakPtrs so the AfterLoad tasks can be canceled and to
 // avoid running scripts more than once per injection point.
-class UserResourceController::RenderFrameObserverHelper::Runner : public base::SupportsWeakPtr<Runner>
+class UserResourceController::RenderFrameObserverHelper::Runner
 {
 public:
     explicit Runner(blink::WebLocalFrame *frame, UserResourceController *controller)
-        : m_frame(frame), m_userResourceController(controller)
+        : m_frame(frame), m_userResourceController(controller), m_weakPtrFactory(this)
     {
     }
 
@@ -140,11 +140,13 @@ public:
             m_ran[p] = true;
         }
     }
+    base::WeakPtr<Runner> AsWeakPtr() { return m_weakPtrFactory.GetWeakPtr(); }
 
 private:
     blink::WebLocalFrame *m_frame;
     std::bitset<3> m_ran;
     UserResourceController *m_userResourceController;
+    base::WeakPtrFactory<Runner> m_weakPtrFactory;
 };
 
 void UserResourceController::runScripts(QtWebEngineCore::UserScriptData::InjectionPoint p,

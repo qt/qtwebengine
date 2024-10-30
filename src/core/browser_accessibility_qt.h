@@ -9,13 +9,13 @@
 #if QT_CONFIG(accessibility)
 QT_FORWARD_DECLARE_CLASS(QAccessibleInterface)
 
-namespace content {
+namespace ui {
 class BrowserAccessibility;
 
 QAccessibleInterface *toQAccessibleInterface(BrowserAccessibility *obj);
 const QAccessibleInterface *toQAccessibleInterface(const BrowserAccessibility *obj);
 
-} // namespace content
+} // namespace ui
 #endif // QT_CONFIG(accessibility)
 
 #endif // BROWSER_ACCESSIBILITY_QT_H

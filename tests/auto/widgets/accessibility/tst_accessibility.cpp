@@ -427,15 +427,15 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kFigcaption") << QString("<figcaption>a</figcaption>") << 0 << QAccessible::Heading;
     QTest::newRow("ax::mojom::Role::kFigure") << QString("<figure>a</figure>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kFooter") << QString("<footer>a</footer>") << 0 << QAccessible::Section;
-    QTest::newRow("ax::mojom::Role::kFooterAsNonLandmark") << QString("<article><footer>a</footer><article>") << 1 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kForm") << QString("<form aria-label=Name></form>") << 0 << QAccessible::Form;
     QTest::newRow("ax::mojom::Role::kGraphicsDocument") << QString("<div role='graphics-document'></div>") << 0 << QAccessible::Document;
     QTest::newRow("ax::mojom::Role::kGraphicsObject") << QString("<div role='graphics-object'></div>") << 0 << QAccessible::Pane;
     QTest::newRow("ax::mojom::Role::kGraphicsSymbol") << QString("<div role='graphics-symbol'></div>") << 0 << QAccessible::Graphic;
     QTest::newRow("ax::mojom::Role::kGrid") << QString("<div role='grid'></div>") << 0 << QAccessible::Table;
+    QTest::newRow("ax::mojom::Role::kGridCell")
+            << QString("<div role='gridcell'></div>") << 0 << QAccessible::Cell;
     QTest::newRow("ax::mojom::Role::kGroup") << QString("<fieldset></fieldset>") << 0 << QAccessible::Grouping;
     QTest::newRow("ax::mojom::Role::Header") << QString("<header>a</header>") << 0 << QAccessible::Section;
-    QTest::newRow("ax::mojom::Role::HeaderAsNonLandMark") << QString("<article><header>a</header><article>") << 1 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kHeading") << QString("<h1>a</h1>") << 0 << QAccessible::Heading;
     QTest::newRow("ax::mojom::Role::kIframe") << QString("<iframe>a</iframe>") << 1 << QAccessible::WebDocument;
     QTest::newRow("ax::mojom::Role::kIframePresentational") << QString("<iframe role='presentation'>a</iframe>") << 1 << QAccessible::Grouping;
@@ -494,6 +494,10 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kSearch") << QString("<div role='search'>landmark</div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kSearchBox") << QString("<input type='search'></input>") << 1 << QAccessible::EditableText;
     QTest::newRow("ax::mojom::Role::kSection") << QString("<section></section>") << 0 << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kSectionFooter")
+            << QString("<article><footer>a</footer><article>") << 1 << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kSectionHeader")
+            << QString("<article><header>a</header><article>") << 1 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kSlider") << QString("<input type='range'>") << 1 << QAccessible::Slider;
     //QTest::newRow("ax::mojom::Role::kSliderThumb") << QString("<input type='range'>") << 1 << QAccessible::Slider; // TODO: blink/renderer/modules/accessibility/ax_slider.cc
     QTest::newRow("ax::mojom::Role::kSpinButton") << QString("<input type='number'></input>") << 1 << QAccessible::SpinBox;

@@ -150,16 +150,11 @@ public:
                         LoginAuthRequiredCallback auth_required_callback) override;
 
     bool HandleExternalProtocol(
-            const GURL &url,
-            base::RepeatingCallback<content::WebContents*()> web_contents_getter,
-            int frame_tree_node_id,
-            content::NavigationUIData *navigation_data,
-            bool is_primary_main_frame,
-            bool is_in_fenced_frame_tree,
-            network::mojom::WebSandboxFlags sandbox_flags,
-            ui::PageTransition page_transition,
-            bool has_user_gesture,
-            const std::optional<url::Origin> &initiating_origin,
+            const GURL &url, base::RepeatingCallback<content::WebContents *()> web_contents_getter,
+            content::FrameTreeNodeId frame_tree_node_id, content::NavigationUIData *navigation_data,
+            bool is_primary_main_frame, bool is_in_fenced_frame_tree,
+            network::mojom::WebSandboxFlags sandbox_flags, ui::PageTransition page_transition,
+            bool has_user_gesture, const std::optional<url::Origin> &initiating_origin,
             content::RenderFrameHost *initiator_document,
             mojo::PendingRemote<network::mojom::URLLoaderFactory> *out_factory) override;
 
@@ -167,7 +162,8 @@ public:
     CreateURLLoaderThrottles(const network::ResourceRequest &request,
                              content::BrowserContext *browser_context,
                              const base::RepeatingCallback<content::WebContents *()> &wc_getter,
-                             content::NavigationUIData *navigation_ui_data, int frame_tree_node_id,
+                             content::NavigationUIData *navigation_ui_data,
+                             content::FrameTreeNodeId frame_tree_node_id,
                              std::optional<int64_t> navigation_id) override;
 
     std::vector<std::unique_ptr<content::NavigationThrottle>> CreateThrottlesForNavigation(
@@ -178,11 +174,11 @@ public:
     bool HasCustomSchemeHandler(content::BrowserContext *browser_context,
                                 const std::string &scheme) override;
     std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
-    WillCreateURLLoaderRequestInterceptors(content::NavigationUIData *navigation_ui_data,
-                                           int frame_tree_node_id,
-                                           int64_t navigation_id,
-                                           bool force_no_https_upgrade,
-                                           scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner) override;
+    WillCreateURLLoaderRequestInterceptors(
+            content::NavigationUIData *navigation_ui_data,
+            content::FrameTreeNodeId frame_tree_node_id, int64_t navigation_id,
+            bool force_no_https_upgrade,
+            scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner) override;
     void WillCreateURLLoaderFactory(content::BrowserContext *browser_context,
                                     content::RenderFrameHost *frame,
                                     int render_process_id,
@@ -207,8 +203,9 @@ public:
                                        cert_verifier::mojom::CertVerifierCreationParams *cert_verifier_creation_params) override;
 
     std::vector<base::FilePath> GetNetworkContextsParentDirectory() override;
-    mojo::PendingRemote<network::mojom::URLLoaderFactory> CreateNonNetworkNavigationURLLoaderFactory(const std::string &scheme,
-                                                                                                     int frame_tree_node_id) override;
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+    CreateNonNetworkNavigationURLLoaderFactory(
+            const std::string &scheme, content::FrameTreeNodeId frame_tree_node_id) override;
     void RegisterNonNetworkSubresourceURLLoaderFactories(int render_process_id, int render_frame_id,
                                                          const std::optional<url::Origin>& request_initiator_origin,
                                                          NonNetworkURLLoaderFactoryMap *factories) override;

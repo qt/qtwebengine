@@ -43,10 +43,6 @@ public:
         base::RepeatingCallback<
             void(device::FidoRequestHandlerBase::BlePermissionCallback)>
             request_ble_permission_callback) override;
-    void ShouldReturnAttestation(const std::string &relying_party_id,
-                                 const device::FidoAuthenticator *authenticator,
-                                 bool is_enterprise_attestation,
-                                 base::OnceCallback<void(bool)> callback) override;
     void SelectAccount(
             std::vector<device::AuthenticatorGetAssertionResponse> responses,
             base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)> callback) override;

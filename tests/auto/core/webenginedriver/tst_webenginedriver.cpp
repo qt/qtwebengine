@@ -116,8 +116,9 @@ public:
 
                     for (QString line : m_stdout) {
                         if (line.contains(
-                                    QLatin1String("WebEngineDriver was started successfully.")))
+                                    QLatin1String("WebEngineDriver was started successfully"))) {
                             return true;
+                        }
                     }
 
                     return false;

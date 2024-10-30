@@ -61,8 +61,9 @@ const PrefService *AutofillClientQt::GetPrefs() const
     return profile->GetPrefs();
 }
 
-void AutofillClientQt::ShowAutofillSuggestions(const autofill::AutofillClient::PopupOpenArgs &open_args,
-                                               base::WeakPtr<autofill::AutofillSuggestionDelegate> delegate)
+autofill::AutofillClient::SuggestionUiSessionId AutofillClientQt::ShowAutofillSuggestions(
+        const autofill::AutofillClient::PopupOpenArgs &open_args,
+        base::WeakPtr<autofill::AutofillSuggestionDelegate> delegate)
 {
     m_popupController->d->delegate = delegate;
     m_popupController->d->suggestions = open_args.suggestions;
@@ -74,6 +75,7 @@ void AutofillClientQt::ShowAutofillSuggestions(const autofill::AutofillClient::P
     adapterClient()->showAutofillPopup(m_popupController.data(),
                                        QRect(toQt(gfx::ToEnclosingRect(open_args.element_bounds))),
                                        autoSelectFirstSuggestion);
+    return {};
 }
 
 void AutofillClientQt::UpdateAutofillDataListValues(

@@ -704,17 +704,12 @@ static void LaunchURL(const GURL& url,
     contentsDelegate->launchExternalURL(toQt(url), page_transition, is_main_frame, has_user_gesture);
 }
 
-
-bool ContentBrowserClientQt::HandleExternalProtocol(const GURL &url,
-        base::RepeatingCallback<content::WebContents*()> web_contents_getter,
-        int frame_tree_node_id,
-        content::NavigationUIData *navigation_data,
-        bool is_primary_main_frame,
-        bool is_in_fenced_frame_tree,
-        network::mojom::WebSandboxFlags sandbox_flags,
-        ui::PageTransition page_transition,
-        bool has_user_gesture,
-        const std::optional<url::Origin> &initiating_origin,
+bool ContentBrowserClientQt::HandleExternalProtocol(
+        const GURL &url, base::RepeatingCallback<content::WebContents *()> web_contents_getter,
+        content::FrameTreeNodeId frame_tree_node_id, content::NavigationUIData *navigation_data,
+        bool is_primary_main_frame, bool is_in_fenced_frame_tree,
+        network::mojom::WebSandboxFlags sandbox_flags, ui::PageTransition page_transition,
+        bool has_user_gesture, const std::optional<url::Origin> &initiating_origin,
         content::RenderFrameHost *initiator_document,
         mojo::PendingRemote<network::mojom::URLLoaderFactory> *out_factory)
 {
@@ -780,8 +775,8 @@ std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 ContentBrowserClientQt::CreateURLLoaderThrottles(
         const network::ResourceRequest &request, content::BrowserContext *browser_context,
         const base::RepeatingCallback<content::WebContents *()> & /*wc_getter*/,
-        content::NavigationUIData * /*navigation_ui_data*/, int frame_tree_node_id,
-        std::optional<int64_t> navigation_id)
+        content::NavigationUIData * /*navigation_ui_data*/,
+        content::FrameTreeNodeId frame_tree_node_id, std::optional<int64_t> navigation_id)
 {
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> result;
     result.push_back(std::make_unique<ProtocolHandlerThrottle>(
@@ -1046,8 +1041,9 @@ std::vector<base::FilePath> ContentBrowserClientQt::GetNetworkContextsParentDire
         toFilePath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)) };
 }
 
-mojo::PendingRemote<network::mojom::URLLoaderFactory> ContentBrowserClientQt::CreateNonNetworkNavigationURLLoaderFactory(
-        const std::string &scheme, int frame_tree_node_id)
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
+ContentBrowserClientQt::CreateNonNetworkNavigationURLLoaderFactory(
+        const std::string &scheme, content::FrameTreeNodeId frame_tree_node_id)
 {
     content::WebContents *web_contents = content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
     Profile *profile = Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -1247,17 +1243,15 @@ void ContentBrowserClientQt::WillCreateURLLoaderFactory(
     // Will manage its own lifetime
     // FIXME: use navigation_response_task_runner?
     new ProxyingURLLoaderFactoryQt(
-            adapter,
-            frame ? frame->GetFrameTreeNodeId() : content::RenderFrameHost::kNoFrameTreeNodeId,
+            adapter, frame ? frame->GetFrameTreeNodeId() : content::FrameTreeNodeId{},
             std::move(proxied_receiver), std::move(pending_url_loader_factory), type);
 }
 
 std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
 ContentBrowserClientQt::WillCreateURLLoaderRequestInterceptors(
-                                       content::NavigationUIData *navigation_ui_data,
-                                       int frame_tree_node_id, int64_t navigation_id,
-                                       bool force_no_https_upgrade,
-                                       scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner)
+        content::NavigationUIData *navigation_ui_data, content::FrameTreeNodeId frame_tree_node_id,
+        int64_t navigation_id, bool force_no_https_upgrade,
+        scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner)
 {
     Q_UNUSED(navigation_ui_data);
     Q_UNUSED(navigation_id);

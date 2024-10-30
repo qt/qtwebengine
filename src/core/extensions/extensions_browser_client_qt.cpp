@@ -518,9 +518,16 @@ bool ExtensionsBrowserClientQt::IsInDemoMode()
     return false;
 }
 
-ExtensionWebContentsObserver *ExtensionsBrowserClientQt::GetExtensionWebContentsObserver(content::WebContents *web_contents)
+extensions::ExtensionWebContentsObserver *
+ExtensionsBrowserClientQt::GetExtensionWebContentsObserver(content::WebContents *web_contents)
 {
     return ExtensionWebContentsObserverQt::FromWebContents(web_contents);
+}
+
+void ExtensionsBrowserClientQt::CreateExtensionWebContentsObserver(
+        content::WebContents *web_contents)
+{
+    ExtensionWebContentsObserverQt::CreateForWebContents(web_contents);
 }
 
 KioskDelegate *ExtensionsBrowserClientQt::GetKioskDelegate()
@@ -544,8 +551,9 @@ media_device_salt::MediaDeviceSaltService *ExtensionsBrowserClientQt::GetMediaDe
     return nullptr;
 }
 mojo::PendingRemote<network::mojom::URLLoaderFactory>
-ExtensionsBrowserClientQt::GetControlledFrameEmbedderURLLoader(const url::Origin &,
-        int frame_tree_node_id, content::BrowserContext *browser_context)
+ExtensionsBrowserClientQt::GetControlledFrameEmbedderURLLoader(
+        const url::Origin &, content::FrameTreeNodeId frame_tree_node_id,
+        content::BrowserContext *browser_context)
 {
     return mojo::PendingRemote<network::mojom::URLLoaderFactory>();
 }

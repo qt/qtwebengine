@@ -5,6 +5,7 @@
 #define PLUGIN_RESPONSE_INTERCEPTOR_URL_LOADER_THROTTLE_H_
 
 #include "base/memory/weak_ptr.h"
+#include "content/public/browser/frame_tree_node_id.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
@@ -17,8 +18,9 @@ namespace QtWebEngineCore {
 class PluginResponseInterceptorURLLoaderThrottle : public blink::URLLoaderThrottle
 {
 public:
-    PluginResponseInterceptorURLLoaderThrottle(network::mojom::RequestDestination request_destination,
-                                               int frame_tree_node_id);
+    PluginResponseInterceptorURLLoaderThrottle(
+            network::mojom::RequestDestination request_destination,
+            content::FrameTreeNodeId frame_tree_node_id);
     ~PluginResponseInterceptorURLLoaderThrottle() override = default;
 
 private:
@@ -30,7 +32,7 @@ private:
     void ResumeLoad();
 
     const network::mojom::RequestDestination m_request_destination;
-    const int m_frame_tree_node_id;
+    const content::FrameTreeNodeId m_frame_tree_node_id;
 
     base::WeakPtrFactory<PluginResponseInterceptorURLLoaderThrottle>
         weak_factory_{this};

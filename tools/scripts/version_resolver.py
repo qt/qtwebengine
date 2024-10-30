@@ -43,8 +43,8 @@ class DEPSParser(ABC):
         return self.local_scope["recursedeps"]
 
 
-chromium_version = '128.0.6613.193'
-chromium_branch = '6613'
+chromium_version = '130.0.6723.85'
+chromium_branch = '6723'
 
 json_url = 'http://omahaproxy.appspot.com/all.json'
 

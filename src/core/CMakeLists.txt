@@ -324,11 +324,15 @@ foreach(arch ${archs})
             build_with_tflite_lib=false
             is_qtwebengine=true
             is_qtpdf=false
+            chrome_pgo_phase=0
+            disable_fieldtrial_testing_config=true
             enable_background_contents=false
             enable_background_mode=false
+            enable_bluetooth_emulation=false
             enable_ipc_fuzzer=false
             enable_ipc_logging=false
             enable_java_templates=false
+            enable_library_cdms=true
             enable_media_remoting=false
             enable_message_center=false
             enable_nacl=false
@@ -343,27 +347,27 @@ foreach(arch ${archs})
             enable_swiftshader_vulkan=false
             angle_enable_swiftshader=false
             dawn_use_swiftshader=false
+            pdf_enable_fontations=false
+            skia_use_fontations=false
             enable_vr=false
             enable_web_speech=false
             enable_widevine=true
-            enable_library_cdms=true
+            enable_bound_session_credentials=false
             fatal_linker_warnings=false
             has_native_accessibility=false
-            safe_browsing_mode=0
-            toolkit_views=false
-            chrome_pgo_phase=0
             optimize_webui=false
+            safe_browsing_mode=0
             strip_absolute_paths_from_debug_symbols=false
+            toolkit_views=false
             pdf_use_skia=true
             use_cups=false
             use_dawn=false
             skia_use_dawn=false
+            use_static_angle=true
             devtools_fast_bundle=false
             devtools_skip_typecheck=false
-            use_static_angle=true
             content_enable_legacy_ipc=true
-            enable_bound_session_credentials=false
-            webnn_use_tflite=false
+            headless_use_policy=false
         )
         extend_gn_list(gnArgArg
             ARGS use_v8_context_snapshot v8_use_external_startup_data
@@ -444,6 +448,9 @@ foreach(arch ${archs})
                 use_glib=false
                 use_bluez=false
                 is_cfi=false
+                libyuv_use_sve=false # FIXME: arch not supported on our old CI gcc.
+                libyuv_use_sme=false # FIXME: arch not supported on our old CI gcc.
+                libyuv_use_neon=false # FIXME: udot instruction not working on our old CI gcc.
                 use_ozone=true
                 ozone_auto_platforms=false
                 ozone_platform_headless=false

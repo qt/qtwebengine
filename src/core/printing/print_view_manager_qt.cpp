@@ -265,7 +265,8 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
                     FindPdfChildFrame(full_page_plugin ? full_page_plugin : rfh))
             rfh = pdf_rfh;
     } else {
-        auto *ftn = content::FrameTreeNode::GloballyFindByID(static_cast<int>(frameId));
+        auto *ftn = content::FrameTreeNode::GloballyFindByID(
+                static_cast<content::FrameTreeNodeId>(frameId));
         if (!ftn)
             return false;
         rfh = ftn->current_frame_host();
@@ -362,7 +363,8 @@ void PrintViewManagerQt::SetupScriptedPrintPreview(SetupScriptedPrintPreviewCall
     if (web_contents()->GetPrimaryMainFrame() == rfh)
         client->printRequested();
     else
-        client->printRequestedByFrame(static_cast<quint64>(rfh->GetFrameTreeNodeId()));
+        client->printRequestedByFrame(
+                static_cast<quint64>(rfh->GetFrameTreeNodeId().GetUnsafeValue()));
 }
 
 void PrintViewManagerQt::ShowScriptedPrintPreview(bool /*source_is_modifiable*/)

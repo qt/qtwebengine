@@ -82,8 +82,11 @@ public:
     content::WebContents *OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params,
                                          base::OnceCallback<void(content::NavigationHandle&)> navigation_handle_callback) override;
     void NavigationStateChanged(content::WebContents* source, content::InvalidateTypes changed_flags) override;
-    void AddNewContents(content::WebContents *source, std::unique_ptr<content::WebContents> new_contents, const GURL &target_url,
-                        WindowOpenDisposition disposition, const blink::mojom::WindowFeatures &window_features, bool user_gesture, bool *was_blocked) override;
+    content::WebContents *AddNewContents(content::WebContents *source,
+                                         std::unique_ptr<content::WebContents> new_contents,
+                                         const GURL &target_url, WindowOpenDisposition disposition,
+                                         const blink::mojom::WindowFeatures &window_features,
+                                         bool user_gesture, bool *was_blocked) override;
     void CloseContents(content::WebContents *source) override;
     void LoadProgressChanged(double progress) override;
     bool HandleKeyboardEvent(content::WebContents *source, const input::NativeWebKeyboardEvent &event) override;
@@ -132,8 +135,7 @@ public:
                               const content::GlobalRequestID& request_id,
                               const blink::mojom::ResourceLoadInfo& resource_load_info) override;
     void InnerWebContentsAttached(content::WebContents *inner_web_contents,
-                                  content::RenderFrameHost *render_frame_host,
-                                  bool is_full_page) override;
+                                  content::RenderFrameHost *render_frame_host) override;
     using content::WebContentsObserver::BeforeUnloadFired;
 
     void emitLoadSucceeded(const QUrl &url);

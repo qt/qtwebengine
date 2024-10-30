@@ -98,7 +98,7 @@ PdfStreamDelegateQt::GetStreamInfo(content::RenderFrameHost* embedder_frame)
     return helper->TakeStreamInfo();
 }
 
-void PdfStreamDelegateQt::OnPdfEmbedderSandboxed(int)
+void PdfStreamDelegateQt::OnPdfEmbedderSandboxed(content::FrameTreeNodeId)
 {
     NOTIMPLEMENTED();
 }

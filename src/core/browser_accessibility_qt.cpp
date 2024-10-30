@@ -11,19 +11,18 @@
 #include "type_conversion.h"
 
 #if QT_CONFIG(accessibility)
-#include "content/browser/accessibility/browser_accessibility.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/platform/browser_accessibility.h"
 
 #include <QtGui/qaccessible.h>
 
 namespace QtWebEngineCore {
 class BrowserAccessibilityInterface;
 
-class BrowserAccessibilityQt
-    : public content::BrowserAccessibility
+class BrowserAccessibilityQt : public ui::BrowserAccessibility
 {
 public:
-    BrowserAccessibilityQt(content::BrowserAccessibilityManager *manager, ui::AXNode *node);
+    BrowserAccessibilityQt(ui::BrowserAccessibilityManager *manager, ui::AXNode *node);
     ~BrowserAccessibilityQt();
 
     bool isReady() const;
@@ -127,17 +126,16 @@ public:
     void modelChange(QAccessibleTableModelChangeEvent *event) override;
 
 private:
-    content::BrowserAccessibility *findTable() const;
+    ui::BrowserAccessibility *findTable() const;
 
     QObject *m_object = nullptr;
     QAccessible::Id m_id = 0;
     BrowserAccessibilityQt *q;
 };
 
-BrowserAccessibilityQt::BrowserAccessibilityQt(content::BrowserAccessibilityManager *manager,
+BrowserAccessibilityQt::BrowserAccessibilityQt(ui::BrowserAccessibilityManager *manager,
                                                ui::AXNode *node)
-    : content::BrowserAccessibility(manager, node)
-    , interface(new BrowserAccessibilityInterface(this))
+    : ui::BrowserAccessibility(manager, node), interface(new BrowserAccessibilityInterface(this))
 {
 }
 
@@ -182,7 +180,7 @@ bool BrowserAccessibilityInterface::isValid() const
     if (!q->isReady())
         return false;
 
-    auto managerQt = static_cast<content::BrowserAccessibilityManagerQt *>(q->manager());
+    auto managerQt = static_cast<ui::BrowserAccessibilityManagerQt *>(q->manager());
     return managerQt && managerQt->isValid();
 }
 
@@ -246,15 +244,15 @@ void *BrowserAccessibilityInterface::interface_cast(QAccessible::InterfaceType t
 
 QAccessibleInterface *BrowserAccessibilityInterface::parent() const
 {
-    content::BrowserAccessibility *chromiumParent = q->PlatformGetParent();
+    ui::BrowserAccessibility *chromiumParent = q->PlatformGetParent();
     if (chromiumParent)
         return toQAccessibleInterface(chromiumParent);
-    return static_cast<content::BrowserAccessibilityManagerQt*>(q->manager())->rootParentAccessible();
+    return static_cast<ui::BrowserAccessibilityManagerQt *>(q->manager())->rootParentAccessible();
 }
 
 QAccessibleInterface *BrowserAccessibilityInterface::child(int index) const
 {
-    content::BrowserAccessibility *chromiumChild = q->PlatformGetChild(index);
+    ui::BrowserAccessibility *chromiumChild = q->PlatformGetChild(index);
     return chromiumChild ? toQAccessibleInterface(chromiumChild) : nullptr;
 }
 
@@ -478,8 +476,6 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
     case ax::mojom::Role::kFooter:
         // CORE-AAM recommends LANDMARK instead of FOOTER.
         return QAccessible::Section;
-    case ax::mojom::Role::kFooterAsNonLandmark:
-        return QAccessible::Section;
     case ax::mojom::Role::kForm:
         return QAccessible::Form;
     case ax::mojom::Role::kGraphicsDocument:
@@ -490,10 +486,11 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
         return QAccessible::Graphic;
     case ax::mojom::Role::kGrid:
         return QAccessible::Table;
+    case ax::mojom::Role::kGridCell:
+        return QAccessible::Cell;
     case ax::mojom::Role::kGroup:
         return QAccessible::Grouping;
     case ax::mojom::Role::kHeader:
-    case ax::mojom::Role::kHeaderAsNonLandmark:
         return QAccessible::Section;
     case ax::mojom::Role::kHeading:
         return QAccessible::Heading;
@@ -647,6 +644,8 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
     case ax::mojom::Role::kSearchBox:
         return QAccessible::EditableText;
     case ax::mojom::Role::kSection:
+    case ax::mojom::Role::kSectionFooter:
+    case ax::mojom::Role::kSectionHeader:
     case ax::mojom::Role::kSectionWithoutName:
         return QAccessible::Section;
     case ax::mojom::Role::kSlider:
@@ -838,7 +837,8 @@ BrowserAccessibilityInterface::keyBindingsForAction(const QString & /*actionName
 
 void BrowserAccessibilityInterface::addSelection(int startOffset, int endOffset)
 {
-    q->manager()->SetSelection(content::BrowserAccessibility::AXRange(q->CreatePositionAt(startOffset), q->CreatePositionAt(endOffset)));
+    q->manager()->SetSelection(ui::BrowserAccessibility::AXRange(q->CreatePositionAt(startOffset),
+                                                                 q->CreatePositionAt(endOffset)));
 }
 
 QString BrowserAccessibilityInterface::attributes(int offset, int *startOffset, int *endOffset) const
@@ -896,19 +896,22 @@ QString BrowserAccessibilityInterface::text(int startOffset, int endOffset) cons
 
 void BrowserAccessibilityInterface::removeSelection(int selectionIndex)
 {
-    q->manager()->SetSelection(content::BrowserAccessibility::AXRange(q->CreatePositionAt(0), q->CreatePositionAt(0)));
+    q->manager()->SetSelection(
+            ui::BrowserAccessibility::AXRange(q->CreatePositionAt(0), q->CreatePositionAt(0)));
 }
 
 void BrowserAccessibilityInterface::setCursorPosition(int position)
 {
-    q->manager()->SetSelection(content::BrowserAccessibility::AXRange(q->CreatePositionAt(position), q->CreatePositionAt(position)));
+    q->manager()->SetSelection(ui::BrowserAccessibility::AXRange(q->CreatePositionAt(position),
+                                                                 q->CreatePositionAt(position)));
 }
 
 void BrowserAccessibilityInterface::setSelection(int selectionIndex, int startOffset, int endOffset)
 {
     if (selectionIndex != 0)
         return;
-    q->manager()->SetSelection(content::BrowserAccessibility::AXRange(q->CreatePositionAt(startOffset), q->CreatePositionAt(endOffset)));
+    q->manager()->SetSelection(ui::BrowserAccessibility::AXRange(q->CreatePositionAt(startOffset),
+                                                                 q->CreatePositionAt(endOffset)));
 }
 
 int BrowserAccessibilityInterface::characterCount() const
@@ -988,9 +991,9 @@ QAccessibleInterface *BrowserAccessibilityInterface::cellAt(int row, int column)
         return nullptr;
 
     std::optional<int> cell_id = q->GetCellId(row, column);
-    content::BrowserAccessibility *cell = cell_id ? q->manager()->GetFromID(*cell_id) : nullptr;
+    ui::BrowserAccessibility *cell = cell_id ? q->manager()->GetFromID(*cell_id) : nullptr;
     if (cell)
-        return content::toQAccessibleInterface(cell);
+        return ui::toQAccessibleInterface(cell);
 
     return nullptr;
 }
@@ -1132,9 +1135,9 @@ bool BrowserAccessibilityInterface::isSelected() const
     return false;
 }
 
-content::BrowserAccessibility *BrowserAccessibilityInterface::findTable() const
+ui::BrowserAccessibility *BrowserAccessibilityInterface::findTable() const
 {
-    content::BrowserAccessibility *parent = q->PlatformGetParent();
+    ui::BrowserAccessibility *parent = q->PlatformGetParent();
     while (parent && parent->GetRole() != ax::mojom::Role::kTable)
         parent = parent->PlatformGetParent();
 
@@ -1143,9 +1146,9 @@ content::BrowserAccessibility *BrowserAccessibilityInterface::findTable() const
 
 QAccessibleInterface *BrowserAccessibilityInterface::table() const
 {
-    content::BrowserAccessibility *table = findTable();
+    ui::BrowserAccessibility *table = findTable();
     Q_ASSERT(table);
-    return content::toQAccessibleInterface(table);
+    return ui::toQAccessibleInterface(table);
 }
 
 void BrowserAccessibilityInterface::modelChange(QAccessibleTableModelChangeEvent *)
@@ -1155,7 +1158,7 @@ void BrowserAccessibilityInterface::modelChange(QAccessibleTableModelChangeEvent
 } // namespace QtWebEngineCore
 
 #endif // QT_CONFIG(accessibility)
-namespace content {
+namespace ui {
 
 // static
 std::unique_ptr<BrowserAccessibility> BrowserAccessibility::Create(BrowserAccessibilityManager *man, ui::AXNode *node)
@@ -1181,4 +1184,4 @@ const QAccessibleInterface *toQAccessibleInterface(const BrowserAccessibility *o
 }
 #endif // #if QT_CONFIG(accessibility)
 
-} // namespace content
+} // namespace ui

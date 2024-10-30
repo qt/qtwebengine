@@ -58,7 +58,7 @@ std::unique_ptr<DesktopMediaList> createMediaList(DesktopMediaType type)
         auto capturer = std::make_unique<DesktopCapturerWrapper>(std::move(windowCapturer));
         return std::make_unique<NativeDesktopMediaList>(
                 listType, std::move(capturer),
-                !content::desktop_capture::ShouldEnumerateCurrentProcessWindows());
+                !content::desktop_capture::ShouldEnumerateCurrentProcessWindows(), /*auto_show_delegated_source_list:*/ false);
     }
     default: {
         Q_UNREACHABLE();
