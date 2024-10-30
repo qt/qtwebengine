@@ -287,13 +287,12 @@ endif()
 
 qt_webengine_configure_check("supported-platform"
     MODULES QtWebEngine
-    CONDITION LINUX OR (WIN32 AND NOT WIN_ARM_64) OR MACOS
+    CONDITION LINUX OR (WIN32 AND NOT (WIN_ARM_64 AND DEFINED ENV{COIN_PLATFORM_ID})) OR MACOS
     MESSAGE "Build can be done only on Linux, Windows or macOS."
 )
 qt_webengine_configure_check("supported-platform"
     MODULES QtPdf
-    CONDITION (LINUX OR WIN32 OR MACOS OR IOS OR ANDROID) AND
-        NOT (WIN32 AND CMAKE_CROSSCOMPILING)
+    CONDITION LINUX OR WIN32 OR MACOS OR IOS OR ANDROID
     MESSAGE "Build can be done only on Linux, Windows, macO, iOS and Android."
 )
 

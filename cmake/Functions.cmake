@@ -542,6 +542,7 @@ endmacro()
 
 macro(append_build_type_setup)
     list(APPEND gnArgArg
+        use_ml=false
         init_stack_vars=false
         is_component_build=false
         is_shared=true
@@ -810,8 +811,14 @@ endmacro()
 
 macro(append_toolchain_setup)
     if(WIN32)
-        get_gn_arch(host_cpu ${TEST_architecture_arch})
-        set(target_cpu ${host_cpu})
+        if(CMAKE_CROSSCOMPILING)
+           #TODO: fetch this from HOST QT or gn
+           set(host_cpu "x64")
+           get_gn_arch(target_cpu ${TEST_architecture_arch})
+        else()
+           get_gn_arch(host_cpu ${TEST_architecture_arch})
+           set(target_cpu ${host_cpu})
+        endif()
         list(APPEND gnArgArg target_cpu="${target_cpu}")
         if(MINGW)
             list(APPEND gnArgArg
