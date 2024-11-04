@@ -111,7 +111,7 @@
 
     Web pages can request access to platform features such as geolocation, or audio and video
     capture devices. The \l permissionRequested() signal is emitted when a web page requests
-    to make use of a resource. The supported platform features are described by the QWebEnginePermission::Feature
+    to make use of a resource. The supported platform features are described by the WebEnginePermission::Feature
     property.
 
     \section2 Rendering to OpenGL Surface
@@ -603,7 +603,7 @@
 */
 
 /*!
-    \qmlmethod void WebEngineView::acceptAsNewWindow(QWebEngineNewWindowRequest *request)
+    \qmlmethod void WebEngineView::acceptAsNewWindow(WebEngineNewWindowRequest request)
     \since QtWebEngine 2.0
 
     Handle the newWindowRequested signal by opening the \a request in this view.
@@ -1176,7 +1176,7 @@
 */
 
 /*!
-    \qmlmethod void WebEngineView::replaceMisspelledWord(const QString &replacement)
+    \qmlmethod void WebEngineView::replaceMisspelledWord(const string replacement)
     \since QtWebEngine 1.3
 
     Replace the current misspelled word with \a replacement.
@@ -1531,7 +1531,7 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::touchSelectionMenuRequested(TouchSelectionMenuRequest *request)
+    \qmlsignal WebEngineView::touchSelectionMenuRequested(TouchSelectionMenuRequest request)
     \since QtWebEngine 6.3
     \readonly
 
@@ -1610,7 +1610,7 @@
 */
 
 /*!
-    \qmlmethod void WebEngineView::save(const QString &filePath, QWebEngineDownloadRequest::SavePageFormat format)
+    \qmlmethod void WebEngineView::save(string filePath, WebEngineDownloadRequest::SavePageFormat format)
     \since QtWebEngine 6.6
 
     Save the current web page to disk.
@@ -1625,19 +1625,19 @@
 
     This function issues an asynchronous download request for the web page and returns immediately.
 
-    \sa QWebEngineDownloadRequest::SavePageFormat
+    \sa WebEngineDownloadRequest::SavePageFormat
 */
 
 /*!
-    \qmlsignal WebEngineView::webAuthUxRequested(QWebEngineWebAuthUxRequest *request);
+    \qmlsignal WebEngineView::webAuthUxRequested(WebEngineWebAuthUxRequest request);
     \since QtWebEngine 6.7
 
     This signal is emitted when a WebAuth authenticator requires user interaction
     during the authentication process. These requests are handled by displaying a dialog to the user.
 
-    The \a request contains the information and API required to complete the WebAuth UX request.
+    The \a request object contains the information and API required to complete the WebAuth UX request.
 
-    \sa QWebEngineWebAuthUxRequest
+    \sa WebEngineWebAuthUxRequest
 */
 
 /*!
