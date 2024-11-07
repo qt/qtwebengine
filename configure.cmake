@@ -591,6 +591,16 @@ add_check_for_support(
    MESSAGE
        "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
 )
+
+add_check_for_support(
+   MODULES QtWebEngine QtPdf
+   CONDITION ((LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
+              (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")) AND
+             CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 10.0
+   MESSAGE
+       "GCC build requires version 10.0 or later. Version ${CMAKE_CXX_COMPILER_VERSION} is not supported."
+)
+
 if(WIN32)
     if(MSVC)
         if(MSVC_TOOLSET_VERSION EQUAL 142) # VS 2019 (16.0)

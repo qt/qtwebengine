@@ -57,7 +57,7 @@
 
     \section2 Linux
 
-    On Linux, Clang or GCC version 9 or later is required.
+    On Linux, Clang or GCC version 10 or later is required.
 
     \QWE requires \c pkg-config to detect most of its dependencies. The
     following \c pkg-config files are required:
