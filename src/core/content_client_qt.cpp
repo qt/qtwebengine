@@ -342,9 +342,12 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
 {
     Q_UNUSED(cdm_host_file_paths);
     if (cdms) {
+#if defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT) || BUILDFLAG(ENABLE_LIBRARY_CDMS)
+        media::CdmCapability capability;
+#endif
+
 #if defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
         base::FilePath cdm_path;
-        media::CdmCapability capability;
         if (IsWidevineAvailable(&cdm_path, &capability)) {
             const base::Version version;
             cdms->push_back(content::CdmInfo(kWidevineKeySystem, Robustness::kSoftwareSecure, std::move(capability),
@@ -359,10 +362,10 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
         base::FilePath clear_key_cdm_path = command_line->GetSwitchValuePath(switches::kClearKeyCdmPathForTesting);
         if (!clear_key_cdm_path.empty() && base::PathExists(clear_key_cdm_path)) {
             // Supported codecs are hard-coded in ExternalClearKeyProperties.
-            media::CdmCapability capability(
-                {}, {}, {media::EncryptionScheme::kCenc, media::EncryptionScheme::kCbcs},
-                {media::CdmSessionType::kTemporary,
-                 media::CdmSessionType::kPersistentLicense});
+            capability = media::CdmCapability(
+                    {}, {}, { media::EncryptionScheme::kCenc, media::EncryptionScheme::kCbcs },
+                    { media::CdmSessionType::kTemporary,
+                      media::CdmSessionType::kPersistentLicense });
 
             // Register media::kExternalClearKeyDifferentCdmTypeTestKeySystem first separately.
             // Otherwise, it'll be treated as a sub-key-system of normal
