@@ -326,10 +326,12 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
         VkDeviceMemory importedImageMemory = vkImageInfo.fAlloc.fMemory;
         VkDeviceSize importedImageSize = vkImageInfo.fAlloc.fSize;
 
-        VkMemoryGetFdInfoKHR exportInfo = { VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR };
-        exportInfo.pNext = nullptr;
-        exportInfo.memory = importedImageMemory;
-        exportInfo.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
+        VkMemoryGetFdInfoKHR exportInfo = {
+            .sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR,
+            .pNext = nullptr,
+            .memory = importedImageMemory,
+            .handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR,
+        };
 
         int fd = -1;
         if (vfp->vkGetMemoryFdKHR(vulkanDevice, &exportInfo, &fd) != VK_SUCCESS)

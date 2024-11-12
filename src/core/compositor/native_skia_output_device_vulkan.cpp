@@ -121,14 +121,28 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
     }
 
     VkExternalMemoryImageCreateInfoKHR externalMemoryImageCreateInfo = {
-        VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR
+        .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR,
+        .pNext = nullptr,
+        .handleTypes = 0,
     };
 #if defined(USE_OZONE)
-    VkSubresourceLayout planeLayout = {};
-    VkImageDrmFormatModifierExplicitCreateInfoEXT modifierInfo = {
-        VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_EXPLICIT_CREATE_INFO_EXT
-    };
     base::ScopedFD scopedFd;
+
+    VkSubresourceLayout planeLayout = {
+        .offset = 0,
+        .size = 0,
+        .rowPitch = 0,
+        .arrayPitch = 0,
+        .depthPitch = 0,
+    };
+
+    VkImageDrmFormatModifierExplicitCreateInfoEXT modifierInfo = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_EXPLICIT_CREATE_INFO_EXT,
+        .pNext = nullptr,
+        .drmFormatModifier = 0,
+        .drmFormatModifierPlaneCount = 1,
+        .pPlaneLayouts = &planeLayout,
+    };
 
     if (nativePixmap) {
         gfx::NativePixmapHandle nativePixmapHandle = nativePixmap->ExportHandle();
@@ -136,28 +150,23 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
             qFatal("VULKAN: Multiple planes are not supported.");
 
         planeLayout.offset = nativePixmapHandle.planes[0].offset;
-        planeLayout.size = 0;
         planeLayout.rowPitch = nativePixmapHandle.planes[0].stride;
-        planeLayout.arrayPitch = 0;
-        planeLayout.depthPitch = 0;
-
         modifierInfo.drmFormatModifier = nativePixmapHandle.modifier;
-        modifierInfo.drmFormatModifierPlaneCount = 1;
-        modifierInfo.pPlaneLayouts = &planeLayout;
 
         externalMemoryImageCreateInfo.pNext = &modifierInfo;
         externalMemoryImageCreateInfo.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT;
 
         scopedFd = std::move(nativePixmapHandle.planes[0].fd);
     } else {
-        externalMemoryImageCreateInfo.pNext = nullptr;
         externalMemoryImageCreateInfo.handleTypes =
                 VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
 
-        VkMemoryGetFdInfoKHR exportInfo = { VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR };
-        exportInfo.pNext = nullptr;
-        exportInfo.memory = vkImageInfo.fAlloc.fMemory;
-        exportInfo.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
+        VkMemoryGetFdInfoKHR exportInfo = {
+            .sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR,
+            .pNext = nullptr,
+            .memory = vkImageInfo.fAlloc.fMemory,
+            .handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR,
+        };
 
         gpu::VulkanFunctionPointers *vfp = gpu::GetVulkanFunctionPointers();
         gpu::VulkanDeviceQueue *vulkanDeviceQueue =
@@ -174,7 +183,6 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
     if (!scopedFd.is_valid())
         qFatal("VULKAN: Unable to extract file descriptor.");
 #elif defined(Q_OS_WIN)
-    externalMemoryImageCreateInfo.pNext = nullptr;
     externalMemoryImageCreateInfo.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT;
 
     Q_ASSERT(overlayImage->type() == gl::DCLayerOverlayType::kNV12Texture);
@@ -201,23 +209,27 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
             | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT
             | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
-    VkImageCreateInfo importedImageCreateInfo = { VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO };
-    importedImageCreateInfo.pNext = &externalMemoryImageCreateInfo;
-    importedImageCreateInfo.flags = 0;
-    importedImageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-    importedImageCreateInfo.format = gpu::ToVkFormatSinglePlanar(m_frontBuffer->sharedImageFormat());
-    importedImageCreateInfo.extent.width = static_cast<uint32_t>(size().width());
-    importedImageCreateInfo.extent.height = static_cast<uint32_t>(size().height());
-    importedImageCreateInfo.extent.depth = 1;
-    importedImageCreateInfo.mipLevels = 1;
-    importedImageCreateInfo.arrayLayers = 1;
-    importedImageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-    importedImageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    importedImageCreateInfo.usage = kUsage;
-    importedImageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    importedImageCreateInfo.queueFamilyIndexCount = 0;
-    importedImageCreateInfo.pQueueFamilyIndices = nullptr;
-    importedImageCreateInfo.initialLayout = imageLayout;
+    VkImageCreateInfo importedImageCreateInfo = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        .pNext = &externalMemoryImageCreateInfo,
+        .flags = 0,
+        .imageType = VK_IMAGE_TYPE_2D,
+        .format = gpu::ToVkFormatSinglePlanar(m_frontBuffer->sharedImageFormat()),
+        .extent = {
+            .width = static_cast<uint32_t>(size().width()),
+            .height = static_cast<uint32_t>(size().height()),
+            .depth = 1,
+        },
+        .mipLevels = 1,
+        .arrayLayers = 1,
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .tiling = VK_IMAGE_TILING_OPTIMAL,
+        .usage = kUsage,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+        .queueFamilyIndexCount = 0,
+        .pQueueFamilyIndices = nullptr,
+        .initialLayout = imageLayout,
+    };
 
 #if defined(USE_OZONE)
     if (nativePixmap)
@@ -235,30 +247,22 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
 
 #if defined(USE_OZONE)
     VkImportMemoryFdInfoKHR importMemoryHandleInfo = {
-        VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR
+        .sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR,
+        .pNext = nullptr,
+        .handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR,
+        .fd = scopedFd.release(),
     };
-    importMemoryHandleInfo.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
-    importMemoryHandleInfo.fd = scopedFd.release();
 
     if (nativePixmap)
         importMemoryHandleInfo.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT;
 #elif defined(Q_OS_WIN)
     VkImportMemoryWin32HandleInfoKHR importMemoryHandleInfo = {
-        VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR
+        .sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR,
+        .pNext = nullptr,
+        .handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT,
+        .handle = sharedHandle,
     };
-    importMemoryHandleInfo.pNext = nullptr;
-    importMemoryHandleInfo.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT;
-    importMemoryHandleInfo.handle = sharedHandle;
 #endif
-
-    VkMemoryDedicatedAllocateInfoKHR dedicatedMemoryInfo = {
-        VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO_KHR
-    };
-    dedicatedMemoryInfo.pNext = &importMemoryHandleInfo;
-    dedicatedMemoryInfo.image = importedImage;
-
-    VkMemoryAllocateInfo memoryAllocateInfo = { VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
-    memoryAllocateInfo.pNext = &dedicatedMemoryInfo;
 
     VkMemoryRequirements requirements;
     df->vkGetImageMemoryRequirements(qtVulkanDevice, importedImage, &requirements);
@@ -282,8 +286,19 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
     if (memoryTypeIndex > kMaxIndex)
         qFatal("VULKAN: Cannot find valid memory type index.");
 
-    memoryAllocateInfo.allocationSize = requirements.size;
-    memoryAllocateInfo.memoryTypeIndex = memoryTypeIndex;
+    VkMemoryDedicatedAllocateInfoKHR dedicatedMemoryInfo = {
+        .sType = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO_KHR,
+        .pNext = &importMemoryHandleInfo,
+        .image = importedImage,
+        .buffer = VK_NULL_HANDLE,
+    };
+
+    VkMemoryAllocateInfo memoryAllocateInfo = {
+        .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+        .pNext = &dedicatedMemoryInfo,
+        .allocationSize = requirements.size,
+        .memoryTypeIndex = memoryTypeIndex,
+    };
 
     VkDeviceMemory importedImageMemory = VK_NULL_HANDLE;
     result = df->vkAllocateMemory(qtVulkanDevice, &memoryAllocateInfo, nullptr /* pAllocator */,
