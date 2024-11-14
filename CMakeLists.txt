@@ -45,4 +45,7 @@ if(MATRIX_BUILD AND NOT MATRIX_SUBBUILD AND NOT QT_SUPERBUILD)
     return()
 endif()
 
+# Don't auto create the SBOM projects, they will be manually created
+# for each sub-project.
+set(QT_SKIP_SBOM_AUTO_PROJECT TRUE)
 qt_build_repo()
