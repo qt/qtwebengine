@@ -16,6 +16,7 @@ Item {
     property string downloadLocation: getPath(getPath(StandardPaths.writableLocation(StandardPaths.DownloadLocation).toString(), 3))
 
     TestCase {
+        id: basicProfileTest
         name: "BasicProfiles"
 
         function test_defaultProfile() {
@@ -72,6 +73,51 @@ Item {
             compare(p.userScripts.collection, [])
 
             compare(p.storageName, 'Test')
+            compare(getPath(p.cachePath), cacheLocation + '/QtWebEngine/' + p.storageName)
+            compare(getPath(p.persistentStoragePath), appDataLocation + '/QtWebEngine/' + p.storageName)
+
+            compare(p.httpCacheType, WebEngineProfile.DiskHttpCache)
+            compare(p.httpCacheMaximumSize, 0)
+            compare(p.persistentCookiesPolicy, WebEngineProfile.AllowPersistentCookies)
+        }
+
+        function test_nonOtrProfileInitializationOrderCheck_data() {
+            return [
+                   { tag: "normal", isReverseOrder: false },
+                   { tag: "reverse", isReverseOrder: true },
+            ];
+        }
+
+        function test_nonOtrProfileInitializationOrderCheck(row) {
+           var isReverseOrder = row.isReverseOrder
+
+            var profileSetupQml = "";
+            if (row.isReverseOrder) {
+                profileSetupQml = "import QtWebEngine\n
+                                   WebEngineProfile {\n
+                                        storageName: 'ReverseOrder'\n
+                                        offTheRecord: false\n
+                                   }"
+            } else {
+                profileSetupQml = "import QtWebEngine\n
+                                   WebEngineProfile {\n
+                                        offTheRecord: false\n
+                                        storageName: 'NormalOrder'\n
+                                   }"
+            }
+
+            var p = Qt.createQmlObject(profileSetupQml, basicProfileTest);
+
+            compare(p.storageName, isReverseOrder ? 'ReverseOrder' : 'NormalOrder')
+            verify(!p.offTheRecord)
+
+            compare(getPath(p.downloadPath), downloadLocation)
+            compare(p.httpAcceptLanguage, '')
+            verify(p.httpUserAgent !== '')
+            compare(p.spellCheckEnabled, false)
+            compare(p.spellCheckLanguages, [])
+
+            compare(p.userScripts.collection, [])
             compare(getPath(p.cachePath), cacheLocation + '/QtWebEngine/' + p.storageName)
             compare(getPath(p.persistentStoragePath), appDataLocation + '/QtWebEngine/' + p.storageName)
 
