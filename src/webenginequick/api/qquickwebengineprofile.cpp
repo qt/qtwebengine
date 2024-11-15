@@ -518,7 +518,17 @@ void QQuickWebEngineProfile::setOffTheRecord(bool offTheRecord)
 
     if (!offTheRecord && d->profileAdapter()->storageName().isEmpty()) {
         qWarning("Storage name is empty. Cannot change profile from off-the-record "
-                 "to disk-based behavior as it requires a proper storage name");
+                 "to disk-based behavior until a proper storage name is set");
+        // Wait for the profile storage name is set
+        QObject::connect(
+                this, &QQuickWebEngineProfile::storageNameChanged, this,
+                [this]() {
+                    if (!storageName().isEmpty()) {
+                        qWarning("Switching to disk-based behavior");
+                        this->setOffTheRecord(false);
+                    }
+                },
+                Qt::SingleShotConnection);
         return;
     }
 
