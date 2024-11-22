@@ -45,6 +45,7 @@ private:
 
     // WebContentsObserver
     void RenderFrameCreated(content::RenderFrameHost *frame) override;
+    void RenderFrameHostChanged(content::RenderFrameHost *oldHost, content::RenderFrameHost *newHost) override;
     void RenderFrameDeleted(content::RenderFrameHost *render_frame_host) override;
 
     // qtwebchannel::mojom::WebChannelTransportHost

@@ -107,6 +107,16 @@ void WebChannelIPCTransportHost::RenderFrameCreated(content::RenderFrameHost *fr
     setWorldId(frame, m_worldId);
 }
 
+void WebChannelIPCTransportHost::RenderFrameHostChanged(content::RenderFrameHost *oldHost, content::RenderFrameHost *newHost)
+{
+    if (oldHost) {
+        if (oldHost->IsRenderFrameLive())
+            GetWebChannelIPCTransportRemote(oldHost)->ResetWorldId();
+    }
+    if (newHost) // this might set it again, but that is harmless
+        setWorldId(newHost, m_worldId);
+}
+
 void WebChannelIPCTransportHost::RenderFrameDeleted(content::RenderFrameHost *rfh)
 {
     m_renderFrames.erase(rfh);
