@@ -266,6 +266,7 @@ bool NativeSkiaOutputDevice::Buffer::initialize()
 SkSurface *NativeSkiaOutputDevice::Buffer::beginWriteSkia()
 {
     DCHECK(!m_scopedSkiaWriteAccess);
+    DCHECK(!m_scopedOverlayReadAccess);
     DCHECK(!m_presentCount);
     DCHECK(m_endSemaphores.empty());
 
