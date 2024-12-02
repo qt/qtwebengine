@@ -199,8 +199,10 @@ void RenderWidgetHostViewQtDelegateClient::visualPropertiesChanged()
 
     bool screenInfoChanged = m_rwhv->updateScreenInfo();
 
-    if (m_viewRectInDips != oldViewRect || m_windowRectInDips != oldWindowRect)
+    if (m_viewRectInDips != oldViewRect || m_windowRectInDips != oldWindowRect) {
         m_rwhv->host()->SendScreenRects();
+        m_rwhv->synchronizeVisualProperties(std::nullopt);
+    }
 
     if (m_viewRectInDips.size() != oldViewRect.size() || screenInfoChanged)
         m_rwhv->synchronizeVisualProperties(absl::nullopt);
