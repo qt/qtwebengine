@@ -664,7 +664,7 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
                                                            strlen(content::kViewSourceScheme) + 1));
         if (pageUrl.scheme().isEmpty()) {
             QUrl extendedUrl = QUrl::fromUserInput(pageUrl.toString());
-            extendedUrl = QUrl(QString("%1:%2").arg(content::kViewSourceScheme,
+            extendedUrl = QUrl(QString("%1:%2").arg(QString::fromUtf8(content::kViewSourceScheme),
                                                     extendedUrl.toString()));
             gurl = toGurl(extendedUrl);
         }
