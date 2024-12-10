@@ -1348,6 +1348,9 @@ void tst_QWebEngineView::changeLocale()
     QStringList errorLines;
     QUrl url("http://non.existent/");
 
+    auto restoreLocale = qScopeGuard([original = QLocale()] {
+        QLocale::setDefault(original);
+    });
     QLocale::setDefault(QLocale("de"));
     QWebEngineView viewDE;
     QSignalSpy loadFinishedSpyDE(&viewDE, SIGNAL(loadFinished(bool)));
@@ -1398,6 +1401,9 @@ void tst_QWebEngineView::mixLangLocale()
     QFETCH(QString, locale);
     QFETCH(QByteArray, formattedNumber);
 
+    auto restoreLocale = qScopeGuard([original = QLocale()] {
+        QLocale::setDefault(original);
+    });
     QLocale::setDefault(QLocale(locale));
 
     QWebEngineView view;
@@ -1421,8 +1427,6 @@ void tst_QWebEngineView::mixLangLocale()
     if (locale == "eu-ES")
         QEXPECT_FAIL("", "Basque number formatting is somehow dependent on environment", Continue);
     QCOMPARE(evaluateJavaScriptSync(view.page(), "Number(1234567890).toLocaleString()").toByteArray(), formattedNumber);
-
-    QLocale::setDefault(QLocale("en"));
 }
 
 void tst_QWebEngineView::inputMethodsTextFormat_data()

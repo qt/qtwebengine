@@ -1026,6 +1026,9 @@ void tst_QQuickWebEngineView::changeLocale()
     QStringList errorLines;
     QUrl url("http://non.existent/");
 
+    auto restoreLocale = qScopeGuard([original = QLocale()] {
+        QLocale::setDefault(original);
+    });
     QLocale::setDefault(QLocale("de"));
     QScopedPointer<QQuickWebEngineView> viewDE(newWebEngineView());
     viewDE->setUrl(url);
