@@ -609,6 +609,25 @@ macro(append_build_type_setup)
     )
 endmacro()
 
+function(get_clang_version_from_runtime_path result)
+if(CLANG AND CMAKE_CXX_COMPILER)
+    if( NOT DEFINED CLANG_RUNTIME_PATH)
+       execute_process(
+           COMMAND ${CMAKE_CXX_COMPILER} -print-runtime-dir
+           OUTPUT_VARIABLE clang_output
+           ERROR_QUIET
+           OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        cmake_path(CONVERT "${clang_output}" TO_CMAKE_PATH_LIST clang_output NORMALIZE)
+        set(CLANG_RUNTIME_PATH "${clang_output}" CACHE INTERNAL "internal")
+        mark_as_advanced(CLANG_RUNTIME_PATH)
+     endif()
+     string(REGEX MATCH "\\/([0-9.]+)\\/" clang_run_time_path_version "${CLANG_RUNTIME_PATH}")
+     string(REPLACE "/" "" clang_run_time_path_version ${clang_run_time_path_version})
+     set(${result} ${clang_run_time_path_version} PARENT_SCOPE)
+endif()
+endfunction()
+
 macro(append_compiler_linker_sdk_setup)
     if(CMAKE_CXX_COMPILER_LAUNCHER)
         list(APPEND gnArgArg cc_wrapper="${CMAKE_CXX_COMPILER_LAUNCHER}")
@@ -629,12 +648,16 @@ macro(append_compiler_linker_sdk_setup)
             get_filename_component(clangBasePath ${CMAKE_CXX_COMPILER} DIRECTORY)
             get_filename_component(clangBasePath ${clangBasePath} DIRECTORY)
         endif()
-
-        string(REGEX MATCH "[0-9]+" clangVersion ${CMAKE_CXX_COMPILER_VERSION})
+            get_clang_version_from_runtime_path(clang_version)
+        if (NOT DEFINED clang_version)
+            message(FATAL_ERROR "Clang version for runtime is missing."
+                    "Please open bug report.Found clang runtime path: ${CLANG_RUNTIME_PATH}"
+            )
+        endif()
         list(APPEND gnArgArg
             clang_base_path="${clangBasePath}"
+            clang_version="${clang_version}"
             clang_use_chrome_plugins=false
-            clang_version=${clangVersion}
             fatal_linker_warnings=false
         )
 
