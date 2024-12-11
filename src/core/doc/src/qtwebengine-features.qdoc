@@ -395,7 +395,7 @@
     WebEngineView::javaScriptDialogRequested(),
     WebEngineView::colorDialogRequested(),
     WebEngineView::fileDialogRequested(), and
-    WebEngineView::formValidationMessageRequested() signals. For an example,
+    WebEngineView::formValidationMessageRequested() signals.
 
     \section1 Pepper Plugin API
 
