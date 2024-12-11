@@ -35,6 +35,7 @@
 #include "components/input/switches.h"
 #include "components/power_monitor/make_power_monitor_device_source.h"
 #include "components/viz/common/features.h"
+#include "components/variations/variations_ids_provider.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/app/mojo_ipc_support.h"
 #include "content/browser/devtools/devtools_http_handler.h"
@@ -992,6 +993,11 @@ WebEngineContext::WebEngineContext()
     m_mainDelegate->PreBrowserMain();
     base::MessagePump::OverrideMessagePumpForUIFactory(messagePumpFactory);
     content::BrowserTaskExecutor::Create();
+    auto* provider = m_mainDelegate->CreateVariationsIdsProvider();
+    if (!provider) {
+        variations::VariationsIdsProvider::Create(
+                variations::VariationsIdsProvider::Mode::kUseSignedInState);
+    }
     m_mainDelegate->PostEarlyInitialization({});
     content::StartBrowserThreadPool();
     content::BrowserTaskExecutor::PostFeatureListSetup();
