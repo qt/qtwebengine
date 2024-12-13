@@ -213,7 +213,7 @@ foreach(arch ${archs})
                 ozone/gl_helper.cpp ozone/gl_helper.h
         )
 
-        extend_gn_target(${buildGn} CONDITION LINUX AND QT_FEATURE_opengl AND QT_FEATURE_webengine_ozone_x11
+        extend_gn_target(${buildGn} CONDITION LINUX AND QT_FEATURE_opengl AND QT_FEATURE_webengine_ozone_x11 AND QT_FEATURE_xcb_glx_plugin
             SOURCES
                 ozone/glx_helper.cpp ozone/glx_helper.h
         )

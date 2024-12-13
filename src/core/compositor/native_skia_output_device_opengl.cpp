@@ -20,7 +20,9 @@
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
 
 #if BUILDFLAG(IS_OZONE_X11)
+#if QT_CONFIG(xcb_glx_plugin)
 #include "ozone/glx_helper.h"
+#endif
 
 #if !defined(GL_RGBA8_OES)
 #define GL_RGBA8_OES 0x8058
@@ -169,7 +171,7 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
     if (nativePixmap) {
         Q_ASSERT(m_contextState->gr_context_type() == gpu::GrContextType::kGL);
 
-#if BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
         if (OzoneUtilQt::usingGLX()) {
             qCDebug(lcWebEngineCompositor, "GLX: Importing NativePixmap into GL Texture.");
 
@@ -224,7 +226,7 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
                 glXDestroyGLXPixmap(display, glxPixmap);
             };
         }
-#endif // BUILDFLAG(IS_OZONE_X11)
+#endif // BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
 
 #if QT_CONFIG(egl)
         if (OzoneUtilQt::usingEGL()) {
