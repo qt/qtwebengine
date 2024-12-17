@@ -29,7 +29,6 @@ private:
     content::BrowserContext *
     GetBrowserContextToUse(content::BrowserContext *context) const override;
     KeyedService *BuildServiceInstanceFor(content::BrowserContext *profile) const override;
-    void BrowserContextShutdown(content::BrowserContext *context) override;
 };
 
 } // namespace QtWebEngineCore

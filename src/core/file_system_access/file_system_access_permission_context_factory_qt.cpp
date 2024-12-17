@@ -52,10 +52,4 @@ KeyedService *FileSystemAccessPermissionContextFactoryQt::BuildServiceInstanceFo
     return new FileSystemAccessPermissionContextQt(context);
 }
 
-void FileSystemAccessPermissionContextFactoryQt::BrowserContextShutdown(
-        content::BrowserContext *context)
-{
-    Q_UNUSED(context);
-}
-
 } // namespace QtWebEngineCore
