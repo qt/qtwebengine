@@ -143,6 +143,7 @@ foreach(arch ${archs})
                 ozone_auto_platforms=false
                 enable_arcore=false
                 use_ml_inliner=false
+                use_udev=false
             )
             extend_gn_list(gnArgArg
                 ARGS use_system_icu

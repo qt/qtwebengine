@@ -441,7 +441,6 @@ foreach(arch ${archs})
                 use_bundled_fontconfig=false
                 use_glib=false
                 use_bluez=false
-                use_udev=true
                 is_cfi=false
                 use_ozone=true
                 ozone_auto_platforms=false
@@ -516,6 +515,10 @@ foreach(arch ${archs})
             extend_gn_list(gnArgArg
                 ARGS rtc_use_x11
                 CONDITION QT_FEATURE_webengine_ozone_x11 AND QT_FEATURE_webengine_webrtc
+            )
+            extend_gn_list(gnArgArg
+                ARGS use_udev
+                CONDITION QT_FEATURE_webengine_system_libudev
             )
 
             if(QT_FEATURE_webengine_kerberos)

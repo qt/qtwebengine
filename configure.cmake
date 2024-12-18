@@ -86,6 +86,7 @@ if(PkgConfig_FOUND)
     pkg_check_modules(XKBCOMMON xkbcommon)
     pkg_check_modules(XKBFILE xkbfile)
     pkg_check_modules(XCBDRI3 xcb-dri3)
+    pkg_check_modules(LIBUDEV libudev)
 endif()
 
 if(Python3_EXECUTABLE)
@@ -422,6 +423,14 @@ qt_webengine_configure_check("dbus"
     DOCUMENTATION "Dbus"
     TAGS LINUX_PKG_CONFIG
 )
+qt_webengine_configure_check("libudev"
+    MODULES QtWebEngine
+    CONDITION NOT UNIX OR LIBUDEV_FOUND
+    MESSAGE "No libudev found."
+    DOCUMENTATION "libudev library."
+    TAGS PLATFROM_MACOS PLATFORM_LINUX
+    OPTIONAL
+)
 
 # Only check for the 'xcb' feature if the Gui targets exists, aka Qt was not configured with
 # -no-gui.
@@ -703,6 +712,11 @@ qt_feature("webengine-system-libpci" PRIVATE
     CONDITION UNIX AND LIBPCI_FOUND
 )
 
+qt_feature("webengine-system-libudev" PRIVATE
+    LABEL "libudev"
+    CONDITION UNIX AND LIBUDEV_FOUND
+)
+
 qt_feature("webengine-ozone-x11" PRIVATE
     LABEL "Support X11 on qpa-xcb"
     CONDITION LINUX
@@ -751,6 +765,7 @@ if(UNIX)
     qt_configure_add_summary_entry(ARGS "webengine-system-harfbuzz")
     qt_configure_add_summary_entry(ARGS "webengine-system-freetype")
     qt_configure_add_summary_entry(ARGS "webengine-system-libpci")
+    qt_configure_add_summary_entry(ARGS "webengine-system-libudev")
     qt_configure_end_summary_section()
 endif()
 
