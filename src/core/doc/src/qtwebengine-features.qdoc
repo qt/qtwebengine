@@ -643,6 +643,11 @@
     When the \QWE spellchecker initializes, it will try to load the
     \c bdict dictionaries and to check them for consistency.
 
+    For CMake, you can use the \l qt_add_webengine_dictionary command to convert
+    Hunspell \c .dic files into the \c .bdic binary format. The command creates
+    a \c qtwebengine_dictionaries target, which your project can use a
+    dependency.
+
     If \c QTWEBENGINE_DICTIONARIES_PATH is set, the spellchecker uses the
     dictionaries in the specified directory without looking anywere else.
     Otherwise, it uses the \e qtwebengine_dictionaries directory relative to the
