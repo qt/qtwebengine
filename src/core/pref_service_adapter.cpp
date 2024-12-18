@@ -205,7 +205,10 @@ QStringList PrefServiceAdapter::spellCheckLanguages() const
 
 void PrefServiceAdapter::setSpellCheckEnabled(bool enabled)
 {
-    if (!WebEngineLibraryInfo::getPath(base::DIR_APP_DICTIONARIES, true).empty()) {
+    if (enabled == m_prefService->GetBoolean(spellcheck::prefs::kSpellCheckEnable))
+        return;
+
+    if (!WebEngineLibraryInfo::getPath(base::DIR_APP_DICTIONARIES, enabled).empty()) {
         m_prefService->SetBoolean(spellcheck::prefs::kSpellCheckEnable, enabled);
         m_prefService->SchedulePendingLossyWrites();
     }
