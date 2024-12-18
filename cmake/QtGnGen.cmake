@@ -29,7 +29,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 
 find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT)
 if(NOT Python3_EXECUTABLE)
-    find_package(Python3 3.6 REQUIRED)
+    message(FATAL_ERROR "\nPython3_EXECUTABLE not set.\n")
 endif()
 
 set(gn_command ${Gn_EXECUTABLE})

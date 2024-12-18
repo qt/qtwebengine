@@ -35,10 +35,7 @@ if(QT_CONFIGURE_RUNNING)
 else()
     find_package(Ninja ${QT_CONFIGURE_CHECK_ninja_version})
     find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT)
-    find_program(Python3_EXECUTABLE NAMES python3 python HINTS $ENV{PYTHON3_PATH})
-    if(NOT Python3_EXECUTABLE)
-        find_package(Python3 ${QT_CONFIGURE_CHECK_python3_version})
-    endif()
+    find_package(Python3 ${QT_CONFIGURE_CHECK_python3_version})
     find_package(GPerf)
     find_package(BISON)
     find_package(FLEX)
@@ -338,8 +335,8 @@ qt_webengine_configure_check("nodejs"
 )
 qt_webengine_configure_check("python3"
     MODULES QtWebEngine QtPdf
-    CONDITION Python3_EXECUTABLE
-    MESSAGE "Python ${QT_CONFIGURE_CHECK_python3_version} or later is required."
+    CONDITION Python3_FOUND
+    MESSAGE "Python ${QT_CONFIGURE_CHECK_python3_version} or later is required. Please use -DPython3_EXECUTBALE for custom path to interpreter."
     DOCUMENTATION "Python ${QT_CONFIGURE_CHECK_python3_version} version or later."
 )
 qt_webengine_configure_check("python3-html5lib"
