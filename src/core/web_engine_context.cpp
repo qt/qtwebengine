@@ -178,31 +178,6 @@ bool usingSoftwareDynamicGL()
 #endif
 }
 
-#if defined(Q_OS_WIN)
-static QString getAdapterLuid() {
-    static const bool preferSoftwareDevice = qEnvironmentVariableIntValue("QSG_RHI_PREFER_SOFTWARE_RENDERER");
-    QRhiD3D11InitParams rhiParams;
-    QRhi::Flags flags;
-    if (preferSoftwareDevice) {
-        flags |= QRhi::PreferSoftwareRenderer;
-    }
-    QScopedPointer<QRhi> rhi(QRhi::create(QRhi::D3D11,&rhiParams,flags,nullptr));
-    // mimic what QSGRhiSupport and QBackingStoreRhi does
-    if (!rhi && !preferSoftwareDevice) {
-        flags |= QRhi::PreferSoftwareRenderer;
-        rhi.reset(QRhi::create(QRhi::D3D11, &rhiParams, flags));
-    }
-    if (rhi) {
-        const QRhiD3D11NativeHandles *handles =
-                static_cast<const QRhiD3D11NativeHandles *>(rhi->nativeHandles());
-        Q_ASSERT(handles);
-        return QString("%1,%2").arg(handles->adapterLuidHigh).arg(handles->adapterLuidLow);
-    } else {
-        return QString();
-    }
-}
-#endif
-
 static bool openGLPlatformSupport()
 {
     return QGuiApplicationPrivate::platformIntegration()->hasCapability(
@@ -277,6 +252,31 @@ static const char *getGLType(bool /*enableGLSoftwareRendering*/, bool disableGpu
     return gl::kGLImplementationDisabledName;
 }
 #endif // QT_CONFIG(opengl)
+
+#if defined(Q_OS_WIN)
+static QString getAdapterLuid() {
+    static const bool preferSoftwareDevice = qEnvironmentVariableIntValue("QSG_RHI_PREFER_SOFTWARE_RENDERER");
+    QRhiD3D11InitParams rhiParams;
+    QRhi::Flags flags;
+    if (preferSoftwareDevice) {
+        flags |= QRhi::PreferSoftwareRenderer;
+    }
+    QScopedPointer<QRhi> rhi(QRhi::create(QRhi::D3D11,&rhiParams,flags,nullptr));
+    // mimic what QSGRhiSupport and QBackingStoreRhi does
+    if (!rhi && !preferSoftwareDevice) {
+        flags |= QRhi::PreferSoftwareRenderer;
+        rhi.reset(QRhi::create(QRhi::D3D11, &rhiParams, flags));
+    }
+    if (rhi) {
+        const QRhiD3D11NativeHandles *handles =
+                static_cast<const QRhiD3D11NativeHandles *>(rhi->nativeHandles());
+        Q_ASSERT(handles);
+        return QString("%1,%2").arg(handles->adapterLuidHigh).arg(handles->adapterLuidLow);
+    } else {
+        return QString();
+    }
+}
+#endif
 
 #if QT_CONFIG(webengine_pepper_plugins)
 void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
@@ -720,6 +720,9 @@ WebEngineContext::WebEngineContext()
     enableFeatures.push_back(features::kNetworkServiceInProcess.name);
     enableFeatures.push_back(features::kTracingServiceInProcess.name);
 
+#if QT_CONFIG(webengine_webrtc_pipewire)
+    enableFeatures.push_back(features::kWebRtcPipeWireCapturer.name);
+#endif
     // When enabled, event.movement is calculated in blink instead of in browser.
     disableFeatures.push_back(features::kConsolidatedMovementXY.name);
 
@@ -971,7 +974,7 @@ const char *qWebEngineChromiumVersion() noexcept
 
 const char *qWebEngineChromiumSecurityPatchVersion() noexcept
 {
-    return "117.0.5938.63"; // FIXME: Remember to update
+    return "119.0.6045.199"; // FIXME: Remember to update
 }
 
 QT_END_NAMESPACE

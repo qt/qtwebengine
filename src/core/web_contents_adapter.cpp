@@ -210,10 +210,28 @@ static std::unique_ptr<content::WebContents> createBlankWebContents(WebContentsA
     return webContents;
 }
 
+static int navigationListSize(content::NavigationController &controller) {
+    // If we're currently on the initial NavigationEntry, no navigation has
+    // committed, so the initial NavigationEntry should not be part of the
+    // "Navigation List", and we should return 0 as the navigation list size.
+    if (controller.GetLastCommittedEntry()->IsInitialEntry())
+        return 0;
+    return controller.GetEntryCount();
+}
+
+static int navigationListCurrentIndex(content::NavigationController &controller) {
+    // If we're currently on the initial NavigationEntry, no navigation has
+    // committed, so the initial NavigationEntry should not be part of the
+    // "Navigation List", and we should return -1 as the current index.
+    if (controller.GetLastCommittedEntry()->IsInitialEntry())
+        return -1;
+    return controller.GetCurrentEntryIndex();
+}
+
 static void serializeNavigationHistory(content::NavigationController &controller, QDataStream &output)
 {
-    const int currentIndex = controller.GetCurrentEntryIndex();
-    const int count = controller.GetEntryCount();
+    const int currentIndex = navigationListCurrentIndex(controller);
+    const int count = navigationListSize(controller);
     const int pendingIndex = controller.GetPendingEntryIndex();
 
     output << kHistoryStreamVersion;
@@ -535,6 +553,8 @@ void WebContentsAdapter::initializeRenderPrefs()
                 ? blink::kWebRTCIPHandlingDefaultPublicInterfaceOnly
                 : blink::kWebRTCIPHandlingDefault;
 #endif
+    rendererPrefs->can_accept_load_drops = m_adapterClient->webEngineSettings()->testAttribute(QWebEngineSettings::NavigateOnDropEnabled);
+
     // Set web-contents font settings to the default font settings as Chromium constantly overrides
     // the global font defaults with the font settings of the latest web-contents created.
     static const gfx::FontRenderParams params = gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr);
@@ -909,13 +929,13 @@ void WebContentsAdapter::navigateToOffset(int offset)
 int WebContentsAdapter::navigationEntryCount()
 {
     CHECK_INITIALIZED(0);
-    return m_webContents->GetController().GetEntryCount();
+    return navigationListSize(m_webContents->GetController());
 }
 
 int WebContentsAdapter::currentNavigationEntryIndex()
 {
     CHECK_INITIALIZED(0);
-    return m_webContents->GetController().GetCurrentEntryIndex();
+    return navigationListCurrentIndex(m_webContents->GetController());
 }
 
 QUrl WebContentsAdapter::getNavigationEntryOriginalUrl(int index)

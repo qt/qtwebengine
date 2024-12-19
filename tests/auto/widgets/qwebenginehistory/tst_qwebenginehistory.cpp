@@ -487,9 +487,9 @@ void tst_QWebEngineHistory::clear()
 
     QWebEnginePage page2(this);
     QWebEngineHistory* hist2 = page2.history();
-    QCOMPARE(hist2->count(), 1);
+    QCOMPARE(hist2->count(), 0);
     hist2->clear();
-    QCOMPARE(hist2->count(), 1); // Do not change anything.
+    QCOMPARE(hist2->count(), 0); // Do not change anything.
 }
 
 void tst_QWebEngineHistory::historyItemFromDeletedPage()
