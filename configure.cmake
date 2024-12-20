@@ -336,13 +336,13 @@ qt_webengine_configure_check("nodejs"
 qt_webengine_configure_check("python3"
     MODULES QtWebEngine QtPdf
     CONDITION Python3_FOUND
-    MESSAGE "Python ${QT_CONFIGURE_CHECK_python3_version} or later is required. Please use -DPython3_EXECUTBALE for custom path to interpreter."
+    MESSAGE "Python ${QT_CONFIGURE_CHECK_python3_version} or later is required. Please use -DPython3_EXECUTABLE for custom path to interpreter."
     DOCUMENTATION "Python ${QT_CONFIGURE_CHECK_python3_version} version or later."
 )
 qt_webengine_configure_check("python3-html5lib"
     MODULES QtWebEngine QtPdf
     CONDITION Python3_EXECUTABLE AND NOT html5lib_NOT_FOUND
-    MESSAGE "Python3 html5lib is missing."
+    MESSAGE "Python3 html5lib is missing (${Python3_EXECUTABLE})."
     DOCUMENTATION "Python3 html5lib module.")
 qt_webengine_configure_check("gperf"
     MODULES QtWebEngine QtPdf
