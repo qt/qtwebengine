@@ -170,21 +170,6 @@ int main() {
 }"
 )
 
-qt_config_compile_test(libxml2
-    LABEL "compatible libxml2 and libxslt"
-    LIBRARIES
-        PkgConfig::LIBXML2
-    CODE
-"
-#include \"libxml/xmlversion.h\"
-#if !defined(LIBXML_ICU_ENABLED)
-#error libxml icu not enabled
-#endif
-int main() {
-    return 0;
-}"
-)
-
 qt_config_compile_test(jpeg
     LABEL "compatible libjpeg"
     LIBRARIES
@@ -653,7 +638,7 @@ qt_feature("webengine-system-libevent" PRIVATE
 )
 qt_feature("webengine-system-libxml" PRIVATE
     LABEL "libxml2 and libxslt"
-    CONDITION UNIX AND TEST_libxml2
+    CONDITION UNIX AND LIBXML2_FOUND
 )
 qt_feature("webengine-system-lcms2" PRIVATE
     LABEL "lcms2"
