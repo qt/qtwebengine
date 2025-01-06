@@ -1102,6 +1102,7 @@ macro(qt_webengine_externalproject_add)
                    -DCMAKE_OSX_ARCHITECTURES=${OSX_ARCH_STR}
                    -DWEBENGINE_ROOT_BUILD_DIR=${PROJECT_BINARY_DIR}
                    -DQT_ALLOW_SYMLINK_IN_PATHS=${QT_ALLOW_SYMLINK_IN_PATHS}
+                   -DPython3_EXECUTABLE=${Python3_EXECUTABLE}
     )
     unset(OSX_ARCH_STR)
 endmacro()
