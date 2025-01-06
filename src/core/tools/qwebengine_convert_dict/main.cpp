@@ -93,20 +93,20 @@ inline bool VerifyWords(const convert_dict::DicReader::WordList& org_words,
 
     int affix_ids[hunspell::BDict::MAX_AFFIXES_PER_WORD];
 
-    static const int buf_size = 128;
-    char buf[buf_size];
     for (size_t i = 0; i < org_words.size(); i++) {
-        int affix_matches = iter.Advance(buf, buf_size, affix_ids);
+        auto buf_size = org_words[i].first.size() + 1;
+        std::string buf(buf_size, '\0');
+        int affix_matches = iter.Advance(buf.data(), buf_size, affix_ids);
         if (affix_matches == 0) {
             out << "Found the end before we expected\n";
             return false;
         }
 
-        if (org_words[i].first != buf) {
+        if (buf.back() != '\0' || buf.compare(0, buf_size - 1, org_words[i].first) != 0) {
             out << "Word does not match!\n"
                 << "  Index:    " << i << "\n"
                 << "  Expected: " << QString::fromStdString(org_words[i].first) << "\n"
-                << "  Actual:   " << QString::fromUtf8(buf) << "\n";
+                << "  Actual:   " << QString::fromStdString(buf) << "\n";
             return false;
         }
 
@@ -118,7 +118,7 @@ inline bool VerifyWords(const convert_dict::DicReader::WordList& org_words,
                         [](int a, int b) { return a == b; })) {
             out << "Affixes do not match!\n"
                 << "  Index:    " << i << "\n"
-                << "  Word:     " << QString::fromUtf8(buf) << "\n"
+                << "  Word:     " << QString::fromStdString(buf) << "\n"
                 << "  Expected: " << expectedAffixes << "\n"
                 << "  Actual:   " << actualAffixes << "\n";
             return false;
