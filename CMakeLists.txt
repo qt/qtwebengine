@@ -52,3 +52,10 @@ endif()
 # for each sub-project.
 set(QT_SKIP_SBOM_AUTO_PROJECT TRUE)
 qt_build_repo()
+
+# Coin sanity check after qt_build_repo report is printed
+
+qt_webengine_configure_check_coin(coin.nodes
+    "${QT_CONFIGURE_CHECK_qtwebengine_build}"
+    "${QT_CONFIGURE_CHECK_qtpdf_build}"
+)
