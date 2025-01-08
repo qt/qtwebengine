@@ -78,6 +78,7 @@
 #include "ui/native_theme/native_theme_features.h"
 #include "ui/gl/gl_utils.h"
 #include "ui/gl/gl_switches.h"
+#include "url/url_features.h"
 #if defined(Q_OS_WIN)
 #include "sandbox/win/src/sandbox_types.h"
 #include "content/public/app/sandbox_helper_win.h"
@@ -849,6 +850,10 @@ WebEngineContext::WebEngineContext()
     disableFeatures.push_back(features::kWebOTP.name);
     disableFeatures.push_back(features::kWebPayments.name);
     disableFeatures.push_back(features::kWebUsb.name);
+
+    // Currently causing more issues than it fixes.
+    // Probably will be removed in 134, tst_origins should be updated in this case.
+    disableFeatures.push_back(url::kStandardCompliantNonSpecialSchemeURLParsing.name);
 
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
