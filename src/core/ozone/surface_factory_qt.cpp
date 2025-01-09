@@ -9,6 +9,7 @@
 #include "ozone/gl_ozone_angle_qt.h"
 #include "ozone/gl_ozone_egl_qt.h"
 #include "qtwebenginecoreglobal_p.h"
+#include "web_engine_context.h"
 
 #include "media/gpu/buildflags.h"
 #include "ui/base/ozone_buildflags.h"
@@ -265,8 +266,10 @@ bool SurfaceFactoryQt::SupportsNativePixmaps()
 {
 #if QT_CONFIG(opengl)
 #if BUILDFLAG(IS_OZONE_X11)
-    if (GLContextHelper::getGlxPlatformInterface())
-        return ui::GpuMemoryBufferSupportX11::GetInstance()->has_gbm_device();
+    if (GLContextHelper::getGlxPlatformInterface()) {
+        return QtWebEngineCore::WebEngineContext::isGbmSupported()
+                && ui::GpuMemoryBufferSupportX11::GetInstance()->has_gbm_device();
+    }
 #endif // BUILDFLAG(IS_OZONE_X11)
 
     if (GLContextHelper::getEglPlatformInterface())
