@@ -231,6 +231,7 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
 
 #if defined(USE_OZONE)
     QOpenGLContext *glContext = QOpenGLContext::currentContext();
+    Q_ASSERT(glContext);
     auto glFun = glContext->functions();
     GLuint glTexture = 0;
 
