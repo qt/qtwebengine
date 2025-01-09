@@ -19,6 +19,7 @@
 #include <QtGui/qtgui-config.h>
 
 #if QT_CONFIG(opengl) && BUILDFLAG(IS_OZONE_X11)
+#include "ozone/glx_helper.h"
 #include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
 #endif
 
@@ -269,7 +270,7 @@ bool SurfaceFactoryQt::SupportsNativePixmaps()
 #if QT_CONFIG(opengl)
 #if BUILDFLAG(IS_OZONE_X11)
     if (OzoneUtilQt::usingGLX())
-        return ui::GpuMemoryBufferSupportX11::GetInstance()->has_gbm_device();
+        return GLXHelper::instance()->isDmaBufSupported();
 #endif // BUILDFLAG(IS_OZONE_X11)
 
 #if QT_CONFIG(egl)

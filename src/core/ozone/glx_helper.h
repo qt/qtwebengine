@@ -7,6 +7,7 @@
 #include <QtCore/qscopedpointer.h>
 
 #include <GL/glx.h>
+#include <xcb/xcb.h>
 
 #undef glXBindTexImageEXT
 #undef glXReleaseTexImageEXT
@@ -32,6 +33,7 @@ public:
     GLXFBConfig getFBConfig() const { return m_configs[0]; }
     GLXPixmap importBufferAsPixmap(int dmaBufFd, uint32_t size, uint16_t width, uint16_t height,
                                    uint16_t stride) const;
+    bool isDmaBufSupported() const { return m_isDmaBufSupported; }
 
 private:
     GLXHelper();
@@ -40,6 +42,7 @@ private:
     Display *m_display = nullptr;
     xcb_connection_t *m_connection = nullptr;
     GLXFBConfig *m_configs = nullptr;
+    bool m_isDmaBufSupported = false;
 };
 
 QT_END_NAMESPACE

@@ -7,6 +7,9 @@
 
 #include "glx_helper.h"
 #include "ozone_util_qt.h"
+#include "web_engine_context.h"
+
+#include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
 
 #include <unistd.h>
 #include <xcb/dri3.h>
@@ -60,6 +63,9 @@ GLXHelper::GLXHelper() : m_functions(new GLXHelper::GLXFunctions())
     m_configs = glXChooseFBConfig(m_display, /* screen */ 0, configAttribs, &numConfigs);
     if (!m_configs || numConfigs < 1)
         qFatal("GLX: Failed to find frame buffer configuration.");
+
+    m_isDmaBufSupported = QtWebEngineCore::WebEngineContext::isGbmSupported()
+            && ui::GpuMemoryBufferSupportX11::GetInstance()->has_gbm_device();
 }
 
 GLXPixmap GLXHelper::importBufferAsPixmap(int dmaBufFd, uint32_t size, uint16_t width,
