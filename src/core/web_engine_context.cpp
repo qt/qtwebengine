@@ -883,12 +883,10 @@ WebEngineContext::WebEngineContext()
 #if QT_CONFIG(webengine_vulkan)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::OpenGL && usingSupportedSGBackend()) {
         if (usingANGLE && GPUInfo::instance()->vendor() == GPUInfo::Nvidia) {
-            qWarning("Disable ANGLE because GBM is not supported with the current configuration. "
+            qWarning("GBM is not supported with the current configuration. "
                      "Fallback to Vulkan rendering in Chromium.");
-            parsedCommandLine->RemoveSwitch(switches::kUseANGLE);
-            parsedCommandLine->RemoveSwitch(switches::kUseGL);
-            parsedCommandLine->AppendSwitchASCII(switches::kUseGL,
-                                                 gl::kGLImplementationDesktopName);
+            parsedCommandLine->AppendSwitchASCII(switches::kUseANGLE,
+                                                 gl::kANGLEImplementationDefaultName);
             parsedCommandLine->AppendSwitchASCII(switches::kUseVulkan,
                                                  switches::kVulkanImplementationNameNative);
             enableFeatures.push_back(features::kVulkan.name);
