@@ -868,7 +868,7 @@ endmacro()
 
 function(add_ninja_command)
     cmake_parse_arguments(PARSE_ARGV 0 arg
-        "" "TARGET;BUILDDIR;MODULE" "OUTPUT;BYPRODUCTS"
+        "" "TARGET;BUILDDIR;MODULE" "OUTPUT;BYPRODUCTS;DEPENDS"
     )
     _qt_internal_validate_all_args_are_parsed(arg)
 
@@ -888,7 +888,7 @@ function(add_ninja_command)
         USES_TERMINAL
         VERBATIM
         COMMAND_EXPAND_LISTS
-        DEPENDS run_${arg_MODULE}_NinjaReady
+        DEPENDS run_${arg_MODULE}_NinjaReady ${arg_DEPENDS}
     )
 endfunction()
 
@@ -918,7 +918,7 @@ endfunction()
 
 function(add_gn_build_artifacts_to_target)
     cmake_parse_arguments(PARSE_ARGV 0 arg
-        "" "CMAKE_TARGET;NINJA_TARGET;BUILDDIR;MODULE;COMPLETE_STATIC;NINJA_STAMP;NINJA_DATA_STAMP" ""
+        "" "CMAKE_TARGET;NINJA_TARGET;BUILDDIR;MODULE;COMPLETE_STATIC;NINJA_STAMP;NINJA_DATA_STAMP;DEPENDS" ""
     )
     _qt_internal_validate_all_args_are_parsed(arg)
 
@@ -946,6 +946,7 @@ function(add_gn_build_artifacts_to_target)
                 OUTPUT ${stamps}
                 BUILDDIR ${arg_BUILDDIR}/${config}/${arch}
                 MODULE ${arg_MODULE}
+                DEPENDS ${arg_DEPENDS}
             )
             add_dependencies(run_${arg_MODULE}_NinjaDone ${target})
             set_target_properties(${arg_CMAKE_TARGET} PROPERTIES

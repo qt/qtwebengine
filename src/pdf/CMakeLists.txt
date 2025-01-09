@@ -259,6 +259,7 @@ add_gn_build_artifacts_to_target(
     CMAKE_TARGET Pdf
     NINJA_TARGET QtPdf
     MODULE pdf
+    DEPENDS Pdf_sync_headers
     BUILDDIR ${buildDir}
     COMPLETE_STATIC TRUE
     NINJA_STAMP QtPdf.stamp

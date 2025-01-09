@@ -605,6 +605,7 @@ add_gn_build_artifacts_to_target(
     CMAKE_TARGET WebEngineCore
     NINJA_TARGET QtWebEngineCore
     MODULE core
+    DEPENDS WebEngineCore_sync_headers
     BUILDDIR ${buildDir}
     COMPLETE_STATIC FALSE
     NINJA_STAMP QtWebEngineCore.stamp
