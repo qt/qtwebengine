@@ -150,6 +150,7 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
 
 #if BUILDFLAG(IS_OZONE)
     QOpenGLContext *glContext = QOpenGLContext::currentContext();
+    Q_ASSERT(glContext);
     auto glFun = glContext->functions();
     GLuint glTexture = 0;
 

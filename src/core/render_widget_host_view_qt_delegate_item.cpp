@@ -14,6 +14,8 @@
 #include <QtGui/qaccessible.h>
 #endif
 
+using namespace Qt::StringLiterals;
+
 namespace QtWebEngineCore {
 
 RenderWidgetHostViewQtDelegateItem::RenderWidgetHostViewQtDelegateItem(RenderWidgetHostViewQtDelegateClient *client, bool isPopup)
@@ -367,6 +369,12 @@ QSGNode *RenderWidgetHostViewQtDelegateItem::updatePaintNode(QSGNode *oldNode, U
     auto comp = compositor();
     if (!comp)
         return oldNode;
+
+    if (comp->type() == Compositor::Type::Native
+        && QGuiApplication::platformName() == "offscreen"_L1) {
+        comp->swapFrame();
+        return oldNode;
+    }
 
     QQuickWindow *win = QQuickItem::window();
 
