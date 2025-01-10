@@ -32,6 +32,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
+#include "base/version_info/version_info.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
@@ -979,8 +980,8 @@ std::string ContentBrowserClientQt::getUserAgent()
 {
     // Mention the Chromium version we're based on to get passed stupid UA-string-based feature detection (several WebRTC demos need this)
     return content::BuildUserAgentFromProduct("QtWebEngine/" + std::string(qWebEngineVersion())
-                                              + " Chrome/"
-                                              + std::string(qWebEngineChromiumVersion()));
+                                              + " Chrome/" + version_info::GetMajorVersionNumber()
+                                              + ".0.0.0");
 }
 
 blink::UserAgentMetadata ContentBrowserClientQt::GetUserAgentMetadata()
