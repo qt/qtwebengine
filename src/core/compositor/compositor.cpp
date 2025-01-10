@@ -94,10 +94,8 @@ void Compositor::Observer::unbind()
 
 Compositor::Handle<Compositor> Compositor::Observer::compositor()
 {
-    if (!m_binding)
-        return nullptr;
     g_bindings.lock();
-    if (m_binding->compositor)
+    if (m_binding && m_binding->compositor)
         return m_binding->compositor; // delay unlock
     g_bindings.unlock();
     return nullptr;
@@ -128,10 +126,8 @@ void Compositor::unbind()
 
 Compositor::Handle<Compositor::Observer> Compositor::observer()
 {
-    if (!m_binding)
-        return nullptr;
     g_bindings.lock();
-    if (m_binding->observer)
+    if (m_binding && m_binding->observer)
         return m_binding->observer; // delay unlock
     g_bindings.unlock();
     return nullptr;

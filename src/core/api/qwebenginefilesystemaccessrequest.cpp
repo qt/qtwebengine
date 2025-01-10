@@ -27,6 +27,25 @@ QT_BEGIN_NAMESPACE
     either call accept() or reject().
 */
 
+/*!
+   \enum QWebEngineFileSystemAccessRequest::AccessFlag
+
+   This enum describes the type of the requested access: read, write or both. The options
+   can be OR-ed together from the following list:
+
+   \value Read
+   \value Write
+*/
+
+/*!
+   \enum QWebEngineFileSystemAccessRequest::HandleType
+
+   This enum describes the type of the requested file system entry.
+
+   \value File
+   \value Directory
+*/
+
 QWebEngineFileSystemAccessRequest::QWebEngineFileSystemAccessRequest(
         const QWebEngineFileSystemAccessRequest &other) = default;
 QWebEngineFileSystemAccessRequest &QWebEngineFileSystemAccessRequest::operator=(

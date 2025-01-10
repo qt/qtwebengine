@@ -1315,10 +1315,11 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::printRequest
+    \qmlsignal WebEngineView::printRequested
     \since QtWebEngine 1.8
 
-    This signal is emitted when the JavaScript \c{window.print()} method is called.
+    This signal is emitted when the JavaScript \c{window.print()} method is called or the user pressed the print
+    button of PDF viewer plugin.
     Typically, the signal handler can simply call printToPdf().
 
     \sa printToPdf
