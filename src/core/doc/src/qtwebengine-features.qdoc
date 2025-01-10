@@ -711,7 +711,7 @@
     Some websites use this API to decide whether they run on a mobile device or on desktop and base their design on it.
     This can cause unwanted results on touchscreen laptops or other setups that emulate a fake touch device.
 
-    Applications can set this feature explicitly with \l {QWebEngineSettings::JSTouchEventsEnabled}.
+    Applications can set this feature explicitly with \l {QWebEngineSettings::TouchEventsApiEnabled}.
 
     Note that touch events will still be delivered to web pages even if the API is disabled.
     Dispatching touch events to web pages can be prohibited by installing an event filter object

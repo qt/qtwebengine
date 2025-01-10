@@ -63,7 +63,7 @@ class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(ImageAnimationPolicy imageAnimationPolicy READ imageAnimationPolicy WRITE setImageAnimationPolicy NOTIFY imageAnimationPolicyChanged REVISION(6,8) FINAL)
     Q_PROPERTY(bool printHeaderAndFooter READ printHeaderAndFooter WRITE setPrintHeaderAndFooter NOTIFY printHeaderAndFooterChanged REVISION(6,9) FINAL)
     Q_PROPERTY(bool preferCSSMarginsForPrinting READ preferCSSMarginsForPrinting WRITE setPreferCSSMarginsForPrinting NOTIFY preferCSSMarginsForPrintingChanged REVISION(6,9) FINAL)
-    Q_PROPERTY(bool jsTouchEventsEnabled READ jsTouchEventsEnabled WRITE setJSTouchEventsEnabled NOTIFY jsTouchEventsEnabledChanged REVISION(6,9) FINAL)
+    Q_PROPERTY(bool touchEventsApiEnabled READ touchEventsApiEnabled WRITE setTouchEventsApiEnabled NOTIFY touchEventsApiEnabledChanged REVISION(6,9) FINAL)
 
     QML_NAMED_ELEMENT(WebEngineSettings)
     QML_ADDED_IN_VERSION(1, 1)
@@ -126,7 +126,7 @@ public:
     ImageAnimationPolicy imageAnimationPolicy() const;
     bool printHeaderAndFooter() const;
     bool preferCSSMarginsForPrinting() const;
-    bool jsTouchEventsEnabled() const;
+    bool touchEventsApiEnabled() const;
 
     void setAutoLoadImages(bool on);
     void setJavascriptEnabled(bool on);
@@ -166,7 +166,7 @@ public:
     void setImageAnimationPolicy(ImageAnimationPolicy policy);
     void setPrintHeaderAndFooter(bool on);
     void setPreferCSSMarginsForPrinting(bool on);
-    void setJSTouchEventsEnabled(bool on);
+    void setTouchEventsApiEnabled(bool on);
 
 signals:
     void autoLoadImagesChanged();
@@ -207,7 +207,7 @@ signals:
     Q_REVISION(6,8) void imageAnimationPolicyChanged();
     Q_REVISION(6,9) void printHeaderAndFooterChanged();
     Q_REVISION(6,9) void preferCSSMarginsForPrintingChanged();
-    Q_REVISION(6,9) void jsTouchEventsEnabledChanged();
+    Q_REVISION(6,9) void touchEventsApiEnabledChanged();
 
 private:
     explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = nullptr);

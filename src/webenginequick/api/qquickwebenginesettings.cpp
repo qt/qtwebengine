@@ -519,7 +519,7 @@ bool QQuickWebEngineSettings::scrollAnimatorEnabled() const
 }
 
 /*!
-    \qmlproperty bool WebEngineSettings::jsTouchEventsEnabled
+    \qmlproperty bool WebEngineSettings::touchEventsApiEnabled
     \since QtWebEngine 6.9
 
     Enables support for JavaScript touch events API, meaning \c ontouchstart,
@@ -532,9 +532,9 @@ bool QQuickWebEngineSettings::scrollAnimatorEnabled() const
     Enabled by default if a touch device detected by the system
     and disabled otherwise.
  */
-bool QQuickWebEngineSettings::jsTouchEventsEnabled() const
+bool QQuickWebEngineSettings::touchEventsApiEnabled() const
 {
-    return d_ptr->testAttribute(QWebEngineSettings::JSTouchEventsEnabled);
+    return d_ptr->testAttribute(QWebEngineSettings::TouchEventsApiEnabled);
 }
 
 /*!
@@ -921,12 +921,12 @@ void QQuickWebEngineSettings::setImageAnimationPolicy(
         Q_EMIT imageAnimationPolicyChanged();
 }
 
-void QQuickWebEngineSettings::setJSTouchEventsEnabled(bool on)
+void QQuickWebEngineSettings::setTouchEventsApiEnabled(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::JSTouchEventsEnabled);
-    d_ptr->setAttribute(QWebEngineSettings::JSTouchEventsEnabled, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::TouchEventsApiEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::TouchEventsApiEnabled, on);
     if (wasOn != on)
-        Q_EMIT jsTouchEventsEnabledChanged();
+        Q_EMIT touchEventsApiEnabledChanged();
 }
 
 QT_END_NAMESPACE

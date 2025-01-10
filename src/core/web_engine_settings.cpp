@@ -284,7 +284,7 @@ void WebEngineSettings::initDefaults()
         s_defaultAttributes.insert(QWebEngineSettings::ForceDarkMode, forceDarkMode);
         s_defaultAttributes.insert(QWebEngineSettings::PrintHeaderAndFooter, false);
         s_defaultAttributes.insert(QWebEngineSettings::PreferCSSMarginsForPrinting, false);
-        s_defaultAttributes.insert(QWebEngineSettings::JSTouchEventsEnabled,
+        s_defaultAttributes.insert(QWebEngineSettings::TouchEventsApiEnabled,
                                    isTouchScreenDetected());
     }
 
@@ -399,8 +399,8 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
     prefs->dns_prefetching_enabled = testAttribute(QWebEngineSettings::DnsPrefetchEnabled);
     prefs->disable_reading_from_canvas = !testAttribute(QWebEngineSettings::ReadingFromCanvasEnabled);
     prefs->animation_policy = toBlinkImageAnimationPolicy(imageAnimationPolicy());
-    bool touchEventsEnabled = isAttributeExplicitlySet(QWebEngineSettings::JSTouchEventsEnabled)
-            ? testAttribute(QWebEngineSettings::JSTouchEventsEnabled)
+    bool touchEventsEnabled = isAttributeExplicitlySet(QWebEngineSettings::TouchEventsApiEnabled)
+            ? testAttribute(QWebEngineSettings::TouchEventsApiEnabled)
             : isTouchScreenDetected();
     prefs->touch_event_feature_detection_enabled = touchEventsEnabled;
 

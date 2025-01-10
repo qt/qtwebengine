@@ -193,7 +193,7 @@
     \value PreferCSSMarginsForPrinting Turns on preferring CSS margins over the margins
            of the specified QPageLayout.
            Disabled by default. (Added in Qt 6.9)
-    \value JSTouchEventsEnabled Enables support for JavaScript touch events API,
+    \value TouchEventsApiEnabled Enables support for JavaScript touch events API,
            meaning \c ontouchstart, \c ontouchend and \c ontouchmove handlers will be present in the \c document.window object.
            Enabled by default if a touch device detected by the system and disabled otherwise. (Added in Qt 6.9)
            Note that some websites use this API to decide whether they run on a mobile device or on desktop and base their design on it.

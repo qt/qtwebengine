@@ -335,7 +335,7 @@ void tst_QWebEngineSettings::javaScriptTouchEvents()
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
 
     if (isExplicitlySet)
-        page.settings()->setAttribute(QWebEngineSettings::JSTouchEventsEnabled,
+        page.settings()->setAttribute(QWebEngineSettings::TouchEventsApiEnabled,
                                       jsTouchEventsEnabled);
 
     page.settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
