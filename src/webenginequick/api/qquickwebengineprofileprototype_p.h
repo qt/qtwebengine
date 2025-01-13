@@ -48,7 +48,7 @@ public:
     ~QQuickWebEngineProfilePrototype();
 
     QString storageName() const;
-    void setStorageName(const QString &path);
+    void setStorageName(const QString &storageName);
 
     QString persistentStoragePath() const;
     void setPersistentStoragePath(const QString &path);
