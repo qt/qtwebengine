@@ -20,9 +20,8 @@
 #include "qwebengineprofile.h"
 
 QT_BEGIN_NAMESPACE
-struct Q_WEBENGINECORE_EXPORT QWebEngineProfileBuilderPrivate
+struct QWebEngineProfileBuilderPrivate
 {
-    QString m_storageName;
     QString m_dataPath;
     QString m_cachePath;
     QWebEngineProfile::HttpCacheType m_httpCacheType = QWebEngineProfile::DiskHttpCache;

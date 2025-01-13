@@ -4,31 +4,32 @@
 #ifndef QWEBENGINEPROFILEBUILDER_H
 #define QWEBENGINEPROFILEBUILDER_H
 
-#include <QtCore/QScopedPointer>
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtWebEngineCore/qwebengineprofile.h>
+
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
 struct QWebEngineProfileBuilderPrivate;
-class Q_WEBENGINECORE_EXPORT QWebEngineProfileBuilder
+class QWebEngineProfileBuilder
 {
 public:
-    QWebEngineProfileBuilder();
-    ~QWebEngineProfileBuilder();
-    QWebEngineProfile *createProfile(const QString &storageName, QObject *parent = nullptr);
-    static QWebEngineProfile *createOffTheRecordProfile(QObject *parent = nullptr);
-    QWebEngineProfileBuilder &setPersistentStoragePath(const QString &path);
-    QWebEngineProfileBuilder &setCachePath(const QString &path);
-    QWebEngineProfileBuilder &setHttpCacheType(QWebEngineProfile::HttpCacheType httpCacheType);
-    QWebEngineProfileBuilder &setPersistentCookiesPolicy(
-            QWebEngineProfile::PersistentCookiesPolicy persistentCookiesPolicy);
-    QWebEngineProfileBuilder &setHttpCacheMaximumSize(int maxSizeInBytes);
-    QWebEngineProfileBuilder &setPersistentPermissionsPolicy(
+    Q_WEBENGINECORE_EXPORT QWebEngineProfileBuilder();
+    Q_WEBENGINECORE_EXPORT ~QWebEngineProfileBuilder();
+    Q_WEBENGINECORE_EXPORT QWebEngineProfile *createProfile(const QString &storageName, QObject *parent = nullptr) const;
+    Q_WEBENGINECORE_EXPORT static QWebEngineProfile *createOffTheRecordProfile(QObject *parent = nullptr);
+    Q_WEBENGINECORE_EXPORT QWebEngineProfileBuilder &setPersistentStoragePath(const QString &path);
+    Q_WEBENGINECORE_EXPORT QWebEngineProfileBuilder &setCachePath(const QString &path);
+    Q_WEBENGINECORE_EXPORT QWebEngineProfileBuilder &setHttpCacheType(QWebEngineProfile::HttpCacheType httpCacheType);
+    Q_WEBENGINECORE_EXPORT QWebEngineProfileBuilder &setPersistentCookiesPolicy(
+                                    QWebEngineProfile::PersistentCookiesPolicy persistentCookiesPolicy);
+    Q_WEBENGINECORE_EXPORT QWebEngineProfileBuilder &setHttpCacheMaximumSize(int maxSizeInBytes);
+    Q_WEBENGINECORE_EXPORT QWebEngineProfileBuilder &setPersistentPermissionsPolicy(
             QWebEngineProfile::PersistentPermissionsPolicy persistentPermissionPolicy);
 
 private:
-    Q_DISABLE_COPY(QWebEngineProfileBuilder)
+    Q_DISABLE_COPY_MOVE(QWebEngineProfileBuilder)
     std::unique_ptr<QWebEngineProfileBuilderPrivate> d_ptr;
 };
 

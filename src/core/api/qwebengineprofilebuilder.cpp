@@ -53,9 +53,8 @@ QWebEngineProfile *QWebEngineProfileBuilder::createOffTheRecordProfile(QObject *
     \sa QWebEngineProfile::storageName()
 */
 QWebEngineProfile *QWebEngineProfileBuilder::createProfile(const QString &storageName,
-                                                           QObject *parent)
+                                                           QObject *parent) const
 {
-    d_ptr->m_storageName = storageName;
     auto buildLocationFromStandardPath = [](const QString &standardPath, const QString &name) {
         QString location = standardPath;
         if (location.isEmpty())
@@ -80,7 +79,7 @@ QWebEngineProfile *QWebEngineProfileBuilder::createProfile(const QString &storag
 
     return new QWebEngineProfile(
             new QWebEngineProfilePrivate(new QtWebEngineCore::ProfileAdapter(
-                    d_ptr->m_storageName, d_ptr->m_dataPath, d_ptr->m_cachePath,
+                    storageName, d_ptr->m_dataPath, d_ptr->m_cachePath,
                     QtWebEngineCore::ProfileAdapter::HttpCacheType(d_ptr->m_httpCacheType),
                     QtWebEngineCore::ProfileAdapter::PersistentCookiesPolicy(
                             d_ptr->m_persistentCookiesPolicy),
