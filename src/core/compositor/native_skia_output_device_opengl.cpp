@@ -153,6 +153,16 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
     auto glFun = glContext->functions();
     GLuint glTexture = 0;
 
+#if !defined(QT_NO_DEBUG) || defined(QT_FORCE_ASSERTS)
+    // Log and clear error flags for assert at end of function
+    while (true) {
+        auto glError = glFun->glGetError();
+        if (glError == GL_NO_ERROR)
+            break;
+        qWarning() << "GL error flag set on entry: " << getGLErrorString(glError);
+    }
+#endif // !defined(QT_NO_DEBUG) || defined(QT_FORCE_ASSERTS)
+
     if (nativePixmap) {
         Q_ASSERT(m_contextState->gr_context_type() == gpu::GrContextType::kGL);
 

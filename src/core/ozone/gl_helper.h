@@ -19,6 +19,8 @@
 
 QT_BEGIN_NAMESPACE
 
+const char *getGLErrorString(uint32_t error);
+
 class GLHelper
 {
 public:
