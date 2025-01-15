@@ -11,7 +11,8 @@ path = ["src/core/doc/QtWebEngineDoc",
         "src/process/QtWebEngineProcess.exe.manifest",
         "src/webenginequick/ui/information.png",
         "src/webenginequick/ui/question.png",
-        "src/webenginewidgets/plugins/qwebengineview/images/qwebengineview.png"]
+        "src/webenginewidgets/plugins/qwebengineview/images/qwebengineview.png",
+        "src/pdf/plugins/imageformats/pdf/pdf.json"]
 precedence = "closest"
 comment = "module and plugin"
 SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
@@ -70,8 +71,9 @@ SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
 SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR GPL-3.0-only"
 
 [[annotations]]
-path = ["**.pro", "**.qrc", "**CMakeLists.txt", ".cmake.conf", "**.yaml", "**.json",
-        "**.cfg", "**BLACKLIST", "**.plist", "**.plist.in", "**BUILD**.in", "coin.nodes"]
+path = ["**.pro", "**.qrc", "**CMakeLists.txt", ".cmake.conf", "**.yaml",
+        "**.cfg", "**BLACKLIST", "**.plist", "**.plist.in", "**BUILD**.in", "coin.nodes",
+        "coin/qt-installer-package-config.json", ".gitmodules"]
 precedence = "closest"
 comment = "build system"
 SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
@@ -85,14 +87,14 @@ SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
 SPDX-License-Identifier = "BSD-3-Clause"
 
 [[annotations]]
-path = ["**/doc/images/**", "examples/**", "tests/manual/examples/**", "**/doc/snippets/**"]
+path = ["examples/**", "tests/manual/examples/**", "**/doc/snippets/**"]
 comment = "this must be after the build system table because example and snippets take precedence over build system"
 precedence = "closest"
 SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
 SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR BSD-3-Clause"
 
 [[annotations]]
-path = ["**.qdocconf", "config_help.txt", ".gitmodules"]
+path = ["**/doc/images/**", "**.qdocconf", "config_help.txt"]
 comment = "documentation"
 precedence = "closest"
 SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."

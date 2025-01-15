@@ -10,7 +10,11 @@
                      "Files with other endings can also be build system files"
                      ],
         "file_pattern_ending" : ["CMakeLists.txt", ".cmake", ".pro", ".pri", ".prf",
-                     "configure", "configure.bat", "cmake.in", "plist.in", "CMakeLists.txt.in", ".clang-format"],
+                     "configure", "configure.bat", "cmake.in", "plist.in", "CMakeLists.txt.in",
+                     ".clang-format", ".plist", ".qrc", "BLACKLIST", ".gitignore", ".gitattributes",
+                     ".tag", ".cmake.conf", ".yaml", "coin/qt-installer-package-config.json",
+                     "BUILD.root.gn.in", "BUILD.toolchain.gn.in", "BUILD.msvc.toolchain.gn.in",
+                     ".cfg", "coin.nodes", ".gitmodules"],
         "location" : {
             "" : {
                 "comment" : "Default",
@@ -44,7 +48,8 @@
     },
     {
         "comment" : "Files with the following endings are Documentation licensed.",
-        "file_pattern_ending" : [".qdoc", ".qdoc.in", ".qdocinc" , ".qdocconf", ".txt", "README", "qt_attribution.json"],
+        "file_pattern_ending" : [".qdoc", ".qdoc.in", ".qdocinc" , ".qdocconf", "README", "qt_attribution.json",
+                                 "REUSE.toml", "config_help.txt", "licenseRule.json"],
         "location" :{
             "" : {
                 "comment" : "",
@@ -64,6 +69,11 @@
                 "file type" : "module and plugin",
                 "spdx"      : ["LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"]
             },
+            "dist/" : {
+                "comment" : "Default",
+                "file type" : "documentation",
+                "spdx"      : ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
+            },
             "src/" : {
                 "comment" : "Default",
                 "file type" : "module and plugin",
@@ -78,6 +88,11 @@
                 "comment" : "Default",
                 "file type" : "examples and snippets",
                 "spdx" : ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
+            },
+            "(.*|examples).*doc/images/" : {
+                "comment" : "Default",
+                "file type" : "documentation",
+                "spdx" : ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
             },
             "src/host/config\\.tests/" : {
                 "comment" : "Default",
@@ -98,6 +113,36 @@
                 "comment" : "Partially from Chromium",
                 "file type" : "module and plugin",
                 "spdx" : ["BSD-3-Clause"]
+            },
+            "tests/auto/widgets/qwebengine(view|script|page|history)/tst_qwebengine.*.cpp" : {
+                "comment" : "exception",
+                "file type" : "test",
+                "spdx" : ["LGPL-2.0-or-later"]
+            },
+            "tests/auto/widgets/accessibility/tst_accessibility.cpp" : {
+                "comment" : "exception",
+                "file type" : "test",
+                "spdx" : ["LGPL-2.0-or-later"]
+            },
+            "tests/auto/core/qwebengine(settings|frame)/tst_qwebengine.*.cpp" : {
+                "comment" : "exception",
+                "file type" : "test",
+                "spdx" : ["LGPL-2.0-or-later"]
+            },
+            "examples/webenginewidgets/contentmanipulation/jquery.min.js" : {
+                "comment" : "",
+                "file type" : "3rd party",
+                "spdx" : ["MIT"]
+            },
+            "src/core/ozone/(ozone_extra.gni|BUILD.gn)" : {
+                "comment" : "Chrominum",
+                "file type" : "3rd party",
+                "spdx" : ["BSD-3-Clause"]
+            },
+            "CHROMIUM_VERSION" : {
+                "comment" : "Chrominum",
+                "file type" : "3rd party",
+                "spdx" : ["CC0-1.0"]
             }
         }
     }
