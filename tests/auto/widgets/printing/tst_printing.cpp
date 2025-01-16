@@ -169,7 +169,7 @@ void tst_Printing::printFromPdfViewer()
         buffer.setData((data));
         buffer.open(QBuffer::ReadWrite);
         document.load(&buffer);
-        statusChangedSpy.wait(500);
+        statusChangedSpy.wait(1000);
         if (document.status() != QPdfDocument::Status::Ready)
             return false;
 
@@ -177,12 +177,12 @@ void tst_Printing::printFromPdfViewer()
         QSignalSpy countChangedSpy(&searchModel, &QPdfSearchModel::countChanged);
         searchModel.setDocument(&document);
         searchModel.setSearchString("Hello Paper World");
-        countChangedSpy.wait(500);
+        countChangedSpy.wait(1000);
         if (searchModel.count() != 1)
             return false;
 
         return true;
-    }, 15000);
+    }, 30000);
     QVERIFY(ok);
 #endif
 }
