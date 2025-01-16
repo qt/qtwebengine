@@ -356,7 +356,7 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
     case ax::mojom::Role::kCaption:
         return QAccessible::Heading;
     case ax::mojom::Role::kCaret:
-        return QAccessible::NoRole; // FIXME: https://codereview.chromium.org/2781613003
+        return QAccessible::Caret;
     case ax::mojom::Role::kCell:
         return QAccessible::Cell;
     case ax::mojom::Role::kCheckBox:
@@ -373,7 +373,6 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
         return QAccessible::ColumnHeader;
     case ax::mojom::Role::kComboBoxGrouping:
     case ax::mojom::Role::kComboBoxMenuButton:
-    case ax::mojom::Role::kTextFieldWithComboBox:
         return QAccessible::ComboBox;
     case ax::mojom::Role::kComboBoxSelect:
         return QAccessible::PopupMenu;
@@ -684,6 +683,8 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
         return QAccessible::StaticText;
     case ax::mojom::Role::kTextField:
         return QAccessible::EditableText;
+    case ax::mojom::Role::kTextFieldWithComboBox:
+        return QAccessible::ComboBox;
     case ax::mojom::Role::kTime:
     case ax::mojom::Role::kTimer:
         return QAccessible::Clock;

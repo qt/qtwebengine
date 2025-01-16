@@ -341,8 +341,8 @@ void tst_Accessibility::roles_data()
 
     QTest::newRow("ax::mojom::Role::kAbbr") << QString("<abbr>a</abbr>") << 1 << QAccessible::StaticText;
     QTest::newRow("ax::mojom::Role::kAlert") << QString("<div role='alert'>alert</div>") << 0 << QAccessible::AlertMessage;
-    QTest::newRow("ax::mojom::Role::kAlertDialog") << QString("<div role='alertdialog'>alert</div>") << 0 << QAccessible::AlertMessage;
-    QTest::newRow("ax::mojom::Role::kAnchor") << QString("<a id='a'>Chapter a</a>") << 1 << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kAlertDialog")
+            << QString("<div role='alertdialog'>alert</div>") << 0 << QAccessible::AlertMessage;
     QTest::newRow("ax::mojom::Role::kApplication") << QString("<div role='application'>landmark</div>") << 0 << QAccessible::Document;
     QTest::newRow("ax::mojom::Role::kArticle") << QString("<article>a</article>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kAudio") << QString("<audio controls><source src='test.mp3' type='audio/mpeg'></audio>") << 1 << QAccessible::Sound;
@@ -357,27 +357,33 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kClient") << QString("") << 0 << QAccessible::Client;
     QTest::newRow("ax::mojom::Role::kCode") << QString("<code>a</code>") << 1 << QAccessible::StaticText;
     QTest::newRow("ax::mojom::Role::kColorWell") << QString("<input type='color'>a</input>") << 1 << QAccessible::ColorChooser;
-    //QTest::newRow("ax::mojom::Role::kColumn") << QString("<table><tr><td>a</td></tr></table>") << 0 << QAccessible::Column; // FIXME: The test case might be wrong (see AXTableColumn.h)
+    // QTest::newRow("ax::mojom::Role::kColumn"); // No mapping to ARIA role
     QTest::newRow("ax::mojom::Role::kColumnHeader") << QString("<table role=table><tr><th>a</th></tr><tr><td>a</td></tr></table>") << 2 << QAccessible::ColumnHeader;
     QTest::newRow("ax::mojom::Role::kComboBoxGrouping") << QString("<div role='combobox'><input></div>") << 0 << QAccessible::ComboBox;
     QTest::newRow("ax::mojom::Role::kComboBoxMenuButton") << QString("<div tabindex=0 role='combobox'>Select</div>") << 0 << QAccessible::ComboBox;
-    QTest::newRow("ax::mojom::Role::kTextFieldWithComboBox") << QString("<input role='combobox'>") << 1 << QAccessible::ComboBox;
+    // QTest::newRow("ax::mojom::Role::kComboBoxSelect"); // No mapping to ARIA role
     QTest::newRow("ax::mojom::Role::kComplementary") << QString("<aside>a</aside>") << 0 << QAccessible::ComplementaryContent;
     QTest::newRow("ax::mojom::Role::kComment") << QString("<div role='comment'></div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kContentDeletion") << QString("<div role='deletion'></div>") << 0 << QAccessible::Grouping;
     QTest::newRow("ax::mojom::Role::kContentInsertion") << QString("<div role='insertion'></div>") << 0 << QAccessible::Grouping;
     QTest::newRow("ax::mojom::Role::kContentInfo") << QString("<div role='contentinfo'></div>") << 0 << QAccessible::Section;
-    QTest::newRow("ax::mojom::Role::kData") << QString("<input type='date'></input>") << 1 << QAccessible::Clock;
+    QTest::newRow("ax::mojom::Role::kDate")
+            << QString("<input type='date'></input>") << 1 << QAccessible::Clock;
     QTest::newRow("ax::mojom::Role::kDateTime") << QString("<input type='datetime-local'></input>") << 1 << QAccessible::Clock;
     QTest::newRow("ax::mojom::Role::kDefinition") << QString("<div role='definition'>landmark</div>") << 0 << QAccessible::Paragraph;
     QTest::newRow("ax::mojom::Role::kDescriptionList") << QString("<dl>a</dl>") << 0 << QAccessible::List;
-    QTest::newRow("ax::mojom::Role::kDescriptionListDetail") << QString("<dd>a</dd>") << 0 << QAccessible::Paragraph;
+    QTest::newRow("ax::mojom::Role::kDescriptionListDetailDeprecated")
+            << QString("<dd>a</dd>") << 0 << QAccessible::Paragraph;
+    // QTest::newRow("ax::mojom::Role::kDescriptionListTermDeprecated");
     QTest::newRow("ax::mojom::Role::kDetails") << QString("<details>a</details>") << 0 << QAccessible::Grouping;
     //QTest::newRow("ax::mojom::Role::kDesktop"); // No mapping to ARIA role
     QTest::newRow("ax::mojom::Role::kDialog") << QString("<div role='dialog'></div>") << 0 << QAccessible::Dialog;
-    //QTest::newRow("ax::mojom::Role::kDirectory") << QString("<ul role='directory'></ul>") << 0 << QAccessible::List; // FIXME: Aria role 'directory' should work
+    QTest::newRow("ax::mojom::Role::kDirectoryDeprecated")
+            << QString("<ul role='directory'></ul>") << 0 << QAccessible::List;
     QTest::newRow("ax::mojom::Role::kDisclosureTriangle") << QString("<details><summary>a</summary></details>") << 1 << QAccessible::Button;
-    QTest::newRow("ax::mojom::Role::kDisclosureTriangleGroup") << QString("<details name='groupName'><summary>a</summary></details>") << 1 << QAccessible::Button;
+    QTest::newRow("ax::mojom::Role::kDisclosureTriangleGrouped")
+            << QString("<details name='groupName'><summary>a</summary></details>") << 1
+            << QAccessible::Button;
     QTest::newRow("ax::mojom::Role::kGenericContainer") << QString("<div>a</div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kDocCover") << QString("<div role='doc-cover'></div>") << 0 << QAccessible::Graphic;
     QTest::newRow("ax::mojom::Role::kDocBackLink") << QString("<div role='doc-backlink'></div>") << 0 << QAccessible::Link;
@@ -389,7 +395,8 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kDocFootnote") << QString("<div role='doc-footnote'></div>") << 0 << QAccessible::ListItem;
     QTest::newRow("ax::mojom::Role::kDocPageBreak") << QString("<div role='doc-pagebreak'></div>") << 0 << QAccessible::Separator;
     QTest::newRow("ax::mojom::Role::kDocAbstract") << QString("<div role='doc-abstract'></div>") << 0 << QAccessible::Section;
-    QTest::newRow("ax::mojom::Role::kDocAcknowledgements") << QString("<div role='doc-acknowledgments'></div>") << 0 << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kDocAcknowledgments")
+            << QString("<div role='doc-acknowledgments'></div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kDocAfterword") << QString("<div role='doc-afterword'></div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kDocAppendix") << QString("<div role='doc-appendix'></div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kDocBibliography") << QString("<div role='doc-bibliography'></div>") << 0 << QAccessible::Section;
@@ -403,14 +410,18 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kDocEpigraph") << QString("<div role='doc-epigraph'></div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kDocEpilogue") << QString("<div role='doc-epilogue'></div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kDocErrata") << QString("<div role='doc-errata'></div>") << 0 << QAccessible::Section;
-    QTest::newRow("ax::mojom::Role::kDocExample") << QString("<div role='doc-example'></div>") << 0 << QAccessible::Section;
-    QTest::newRow("ax::mojom::Role::kDocFooter") << QString("<section role='doc-pagefooter'>a</section>") << 0 << QAccessible::Footer;
+    QTest::newRow("ax::mojom::Role::kDocExample")
+            << QString("<div role='doc-example'></div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kDocForeword") << QString("<div role='doc-foreword'></div>") << 0 << QAccessible::Section;
-    QTest::newRow("ax::mojom::Role::kDocGlossary") << QString("<div role='doc-glossary'></div>") << 0 << QAccessible::Section;
-    QTest::newRow("ax::mojom::Role::kDocHeader") << QString("<section role='doc-pageheader'>a</section>") << 0 << QAccessible::Heading;
+    QTest::newRow("ax::mojom::Role::kDocGlossary")
+            << QString("<div role='doc-glossary'></div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kDocIndex") << QString("<div role='doc-index'></div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kDocIntroduction") << QString("<div role='doc-introduction'></div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kDocNotice") << QString("<div role='doc-notice'></div>") << 0 << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kDocPageFooter")
+            << QString("<section role='doc-pagefooter'>a</section>") << 0 << QAccessible::Footer;
+    QTest::newRow("ax::mojom::Role::kDocPageHeader")
+            << QString("<section role='doc-pageheader'>a</section>") << 0 << QAccessible::Heading;
     QTest::newRow("ax::mojom::Role::kDocPageList") << QString("<div role='doc-pagelist'></div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kDocPart") << QString("<div role='doc-part'></div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kDocPreface") << QString("<div role='doc-preface'></div>") << 0 << QAccessible::Section;
@@ -421,7 +432,8 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kDocTip") << QString("<div role='doc-tip'></div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kDocToc") << QString("<div role='doc-toc'></div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kDocument") << QString("<div role='document'>a</div>") << 0 << QAccessible::Document;
-    QTest::newRow("ax::mojom::Role::kEmbeddedObject") << QString("<object width='10' height='10'></object>") << 1 << QAccessible::Grouping;
+    QTest::newRow("ax::mojom::Role::kEmbeddedObject")
+            << QString("<embed src=''>") << 1 << QAccessible::Grouping;
     QTest::newRow("ax::mojom::Role::kEmphasis") << QString("<em>a</em>") << 1 << QAccessible::StaticText;
     QTest::newRow("ax::mojom::Role::kFeed") << QString("<div role='feed'>a</div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kFigcaption") << QString("<figcaption>a</figcaption>") << 0 << QAccessible::Heading;
@@ -435,20 +447,20 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kGridCell")
             << QString("<div role='gridcell'></div>") << 0 << QAccessible::Cell;
     QTest::newRow("ax::mojom::Role::kGroup") << QString("<fieldset></fieldset>") << 0 << QAccessible::Grouping;
-    QTest::newRow("ax::mojom::Role::Header") << QString("<header>a</header>") << 0 << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kHeader")
+            << QString("<header>a</header>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kHeading") << QString("<h1>a</h1>") << 0 << QAccessible::Heading;
     QTest::newRow("ax::mojom::Role::kIframe") << QString("<iframe>a</iframe>") << 1 << QAccessible::WebDocument;
-    QTest::newRow("ax::mojom::Role::kIframePresentational") << QString("<iframe role='presentation'>a</iframe>") << 1 << QAccessible::Grouping;
-    //QTest::newRow("ax::mojom::Role::kIgnored") << QString("<tag>a</tag>") << 0 << QAccessible::NoRole; // FIXME: The HTML element should not be exposed as an element (see AXNodeObject.cpp)
+    QTest::newRow("ax::mojom::Role::kIframePresentational")
+            << QString("<iframe role='presentation'>a</iframe>") << 1 << QAccessible::Grouping;
     QTest::newRow("ax::mojom::Role::kImage") << QString("<img>") << 1 << QAccessible::Graphic;
-    //QTest::newRow("ax::mojom::Role::kImageMap") << QString("<img usemap='map'>") << 0 << QAccessible::Document; // FIXME: AXLayoutObject::DetermineAccessiblityRole returns kImageMap but something overrides it
     //QTest::newRow("ax::mojom::Role::kInlineTextBox"); // No mapping to ARIA role
-    QTest::newRow("ax::mojom::Role::kInputTime") << QString("<input type='time'></input>") << 1 << QAccessible::SpinBox;
-    //QTest::newRow("ax::mojom::Role::kKeyboard"); // No mapping to ARIA role
+    QTest::newRow("ax::mojom::Role::kInputTime")
+            << QString("<input type='time'></input>") << 1 << QAccessible::SpinBox;
     QTest::newRow("ax::mojom::Role::kLabelText") << QString("<label>a</label>") << 1 << QAccessible::StaticText;
     QTest::newRow("ax::mojom::Role::kLayoutTable") << QString("<table><tr><td></td></tr></table>") << 0 << QAccessible::Section;
-    QTest::newRow("ax::mojom::Role::kLayoutTableCell") << QString("<table><tr><td></td></tr></table>") << 2 << QAccessible::Section;
-    //QTest::newRow("ax::mojom::Role::kLayoutTableColumn") << QString("<table><tr></tr></table>") << 1 << QAccessible::Section; // FIXME: The test case might be wrong
+    QTest::newRow("ax::mojom::Role::kLayoutTableCell")
+            << QString("<table><tr><td></td></tr></table>") << 2 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kLayoutTableRow") << QString("<table><tr><td></td></tr></table>") << 1 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kLegend") << QString("<legend>a</legend>") << 0 << QAccessible::StaticText;
     QTest::newRow("ax::mojom::Role::kLineBreak") << QString("<br>") << 1 << QAccessible::Separator;
@@ -463,13 +475,72 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kMain") << QString("<main>a</main>") << 0 << QAccessible::Grouping;
     QTest::newRow("ax::mojom::Role::kMark") << QString("<mark>a</mark>") << 1 << QAccessible::StaticText;
     QTest::newRow("ax::mojom::Role::kMarquee") << QString("<div role='marquee'>a</div>") << 0 << QAccessible::Section;
-    QTest::newRow("ax::mojom::Role::kMath") << QString("<math>a</math>") << 1 << QAccessible::Equation;
+    QTest::newRow("ax::mojom::Role::kMath")
+            << QString("<math>x</math>") << 1 << QAccessible::Equation;
+    QTest::newRow("ax::mojom::Role::kMathMLMath")
+            << QString("<math><mi>x</mi></math>") << 1 << QAccessible::Equation;
+    QTest::newRow("ax::mojom::Role::kMathMLFraction")
+            << QString("<math><mfrac><mn>1</mn><mn>2</mn></mfrac></math>") << 2
+            << QAccessible::Grouping;
+    QTest::newRow("ax::mojom::Role::kMathMLIdentifier")
+            << QString("<math><mi>x</mi></math>") << 2 << QAccessible::StaticText;
+    QTest::newRow("ax::mojom::Role::kMathMLMultiscripts")
+            << QString("<math><mmultiscripts><mi>X</mi><mi>a</mi><mi>b</mi></mmultiscripts></math>")
+            << 2 << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kMathMLNoneScript")
+            << QString("<math><mmultiscripts><none/></mmultiscripts><math>") << 3
+            << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kMathMLNumber")
+            << QString("<math><mn>1</mn></math>") << 2 << QAccessible::StaticText;
+    QTest::newRow("ax::mojom::Role::kMathMLOperator")
+            << QString("<math><mo>+</mo></math>") << 2 << QAccessible::StaticText;
+    QTest::newRow("ax::mojom::Role::kMathMLOver")
+            << QString("<math><mover><mi>x</mi><mo>-</mo></mover>") << 2 << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kMathMLPrescriptDelimiter")
+            << QString("<math><mmultiscripts><mprescripts/></mmultiscripts></math>") << 3
+            << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kMathMLRoot")
+            << QString("<math><mroot><mi>x</mi><mn>3</mn></mroot></math>") << 2
+            << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kMathMLRow")
+            << QString("<math><mrow><mn>1</mn></mrow></mi>") << 2 << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kMathMLSquareRoot")
+            << QString("<math><msqrt><mi>x</mi></msqrt></math>") << 2 << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kMathMLStringLiteral")
+            << QString("<math><ms>a</ms></math>") << 2 << QAccessible::StaticText;
+    QTest::newRow("ax::mojom::Role::kMathMLSub")
+            << QString("<math><msub><mi>X</mi><mn>1</mn></msub></math>") << 2
+            << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kMathMLSubSup")
+            << QString("<math><msubsup><mi>X</mi><mn>0</mn><mn>1</mn></msubsup></math>") << 2
+            << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kMathMLSup")
+            << QString("<math><msup><mi>X</mi><mn>1</mn></msup></math>") << 2
+            << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kMathMLTable")
+            << QString("<math><mtable><mtr><mtd><mi>x</mi></mtd></mtd></mtr></mtable></math>") << 2
+            << QAccessible::Table;
+    QTest::newRow("ax::mojom::Role::kMathMLTableCell")
+            << QString("<math><mtable><mtr><mtd><mi>x</mi></mtd></mtd></mtr></mtable></math>") << 4
+            << QAccessible::Cell;
+    QTest::newRow("ax::mojom::Role::kMathMLTableRow")
+            << QString("<math><mtable><mtr><mtd><mi>x</mi></mtd></mtd></mtr></mtable></math>") << 3
+            << QAccessible::Row;
+    QTest::newRow("ax::mojom::Role::kMathMLText")
+            << QString("<math><mtext>a</mtext></math>") << 2 << QAccessible::StaticText;
+    QTest::newRow("ax::mojom::Role::kMathMLUnder")
+            << QString("<math><munder><mi>x</mi><mo>-</mo></munder></math>") << 2
+            << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kMathMLUnderOver")
+            << QString("<math><munderover><mi>x</mi><mo>+</mo><mo>-</mo></munderover>") << 2
+            << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kMenu") << QString("<div role='menu'>a</div>") << 0 << QAccessible::PopupMenu;
     QTest::newRow("ax::mojom::Role::kMenuBar") << QString("<div role='menubar'>a</div>") << 0 << QAccessible::MenuBar;
     QTest::newRow("ax::mojom::Role::kMenuItem") << QString("<menu role='group'><div role='menuitem'>a</div></menu>") << 1 << QAccessible::MenuItem;
     QTest::newRow("ax::mojom::Role::kMenuItemCheckBox") << QString("<menu role='menu'><input type='checkbox'></input></menu>") << 1 << QAccessible::CheckBox;
-    QTest::newRow("ax::mojom::Role::kMenuItemRadio") << QString("<menu role='menu'><input type='radio'></input></menu>") << 1 << QAccessible::RadioButton;
-    QTest::newRow("ax::mojom::Role::kMenuButton") << QString("<menu role='menu'><input type='button' /></menu>") << 1 << QAccessible::Button;
+    QTest::newRow("ax::mojom::Role::kMenuItemRadio")
+            << QString("<menu role='menu'><input type='radio'></input></menu>") << 1
+            << QAccessible::RadioButton;
     QTest::newRow("ax::mojom::Role::kMenuListOption") << QString("<select role='menu'><option>a</option></select>") << 2 << QAccessible::MenuItem;
     QTest::newRow("ax::mojom::Role::kMenuListPopup") << QString("<select role='menu'><option>a</option></select>") << 1 << QAccessible::PopupMenu;
     QTest::newRow("ax::mojom::Role::kMeter") << QString("<meter>a</meter>") << 1 << QAccessible::Chart;
@@ -477,13 +548,18 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kNote") << QString("<div role='note'>a</div>") << 0 << QAccessible::Note;
     //QTest::newRow("ax::mojom::Role::kPane"); // No mapping to ARIA role
     QTest::newRow("ax::mojom::Role::kParagraph") << QString("<p>a</p>") << 0 << QAccessible::Paragraph;
+    // QTest::newRow("ax::mojom::Role::kPdfActionableHighlight"); // No mapping to ARIA role
+    // QTest::newRow("ax::mojom::Role::kPdfRoot"); // No mapping to ARIA role
+    QTest::newRow("ax::mojom::Role::kPluginObject")
+            << QString("<object width='10' height='10'></object>") << 1 << QAccessible::Grouping;
     QTest::newRow("ax::mojom::Role::kPopUpButton") << QString("<select><option>a</option></select>") << 1 << QAccessible::PopupMenu;
-    QTest::newRow("ax::mojom::Role::kPre") << QString("<pre>a</pre>") << 0 << QAccessible::Section;
-    //QTest::newRow("ax::mojom::Role::kPresentational") << QString("<div role='presentation'>a</div>") << 0 << QAccessible::NoRole; // FIXME: Aria role 'presentation' should work
+    // QTest::newRow("ax::mojom::Role::kPortalDeprecated"); // No mapping to ARIA role
+    // QTest::newRow("ax::mojom::Role::kPreDeprecated"); // No mapping to ARIA role
     QTest::newRow("ax::mojom::Role::kProgressIndicator") << QString("<div role='progressbar' aria-valuenow='77' aria-valuemin='22' aria-valuemax='99'></div>") << 0 << QAccessible::ProgressBar;
     QTest::newRow("ax::mojom::Role::kRadioButton") << QString("<input type='radio'></input>") << 1 << QAccessible::RadioButton;
     QTest::newRow("ax::mojom::Role::kRadioGroup") << QString("<fieldset role='radiogroup'></fieldset>") << 0 << QAccessible::Grouping;
-    QTest::newRow("ax::mojom::Role::kRegion") << QString("<div role='region'>a</div>") << 0 << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kRegion")
+            << QString("<section aria-label='section with name'/>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kRow") << QString("<table role=table><tr><td>a</td></tr></table>") << 1 << QAccessible::Row;
     QTest::newRow("ax::mojom::Role::kRowGroup") << QString("<table role=table><tbody role=rowgroup><tr><td>a</td></tr></tbody></table>") << 1 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kRowHeader") << QString("<table role=table><tr><th>a</td><td>b</td></tr></table>") << 2 << QAccessible::RowHeader;
@@ -493,19 +569,25 @@ void tst_Accessibility::roles_data()
     //QTest::newRow("ax::mojom::Role::kScrollView"); // No mapping to ARIA role
     QTest::newRow("ax::mojom::Role::kSearch") << QString("<div role='search'>landmark</div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kSearchBox") << QString("<input type='search'></input>") << 1 << QAccessible::EditableText;
-    QTest::newRow("ax::mojom::Role::kSection") << QString("<section></section>") << 0 << QAccessible::Section;
+    // QTest::newRow("ax::mojom::Role::kSection"); // Abstract role, not used
     QTest::newRow("ax::mojom::Role::kSectionFooter")
             << QString("<article><footer>a</footer><article>") << 1 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kSectionHeader")
             << QString("<article><header>a</header><article>") << 1 << QAccessible::Section;
-    QTest::newRow("ax::mojom::Role::kSlider") << QString("<input type='range'>") << 1 << QAccessible::Slider;
-    //QTest::newRow("ax::mojom::Role::kSliderThumb") << QString("<input type='range'>") << 1 << QAccessible::Slider; // TODO: blink/renderer/modules/accessibility/ax_slider.cc
+    QTest::newRow("ax::mojom::Role::kSectionWithoutName")
+            << QString("<section/>") << 0 << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kSlider")
+            << QString("<input type='range'>") << 1 << QAccessible::Slider;
     QTest::newRow("ax::mojom::Role::kSpinButton") << QString("<input type='number'></input>") << 1 << QAccessible::SpinBox;
     QTest::newRow("ax::mojom::Role::kSplitter") << QString("<hr>") << 0 << QAccessible::Splitter;
     QTest::newRow("ax::mojom::Role::kStaticText") << QString("a") << 1 << QAccessible::StaticText;
     QTest::newRow("ax::mojom::Role::kStatus") << QString("<output>a</output>") << 1 << QAccessible::Indicator;
     QTest::newRow("ax::mojom::Role::kStrong") << QString("<strong>a</strong>") << 1 << QAccessible::StaticText;
+    QTest::newRow("ax::mojom::Role::kSubscript")
+            << QString("<sub>subscript</sub>") << 1 << QAccessible::Grouping;
     QTest::newRow("ax::mojom::Role::kSuggestion") << QString("<div role='suggestion'></div>") << 0 << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kSuperscript")
+            << QString("<sup>superscript</sup>") << 1 << QAccessible::Grouping;
     QTest::newRow("ax::mojom::Role::kSvgRoot") << QString("<svg width='10' height='10'><text font-size='10'>SVG</text></svg>") << 1 << QAccessible::WebDocument;
     QTest::newRow("ax::mojom::Role::kSwitch") << QString("<button aria-checked='false'>a</button>") << 1 << QAccessible::Button;
     QTest::newRow("ax::mojom::Role::kTable") << QString("<table role=table><td>a</td></table>") << 0 << QAccessible::Table;
@@ -515,12 +597,15 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kTabPanel") << QString("<div role='tabpanel'>a</div>") << 0 << QAccessible::Pane;
     QTest::newRow("ax::mojom::Role::kTerm") << QString("<div role='term'>a</div>") << 0 << QAccessible::StaticText;
     QTest::newRow("ax::mojom::Role::kTextField") << QString("<input type='text'></input>") << 1 << QAccessible::EditableText;
+    QTest::newRow("ax::mojom::Role::kTextFieldWithComboBox")
+            << QString("<input role='combobox'>") << 1 << QAccessible::ComboBox;
     QTest::newRow("ax::mojom::Role::kTime") << QString("<time>a</time>") << 1 << QAccessible::Clock;
     QTest::newRow("ax::mojom::Role::kTimer") << QString("<div role='timer'>a</div>") << 0 << QAccessible::Clock;
     //QTest::newRow("ax::mojom::Role::kTitleBar"); // No mapping to ARIA role
     QTest::newRow("ax::mojom::Role::kToggleButton") << QString("<button aria-pressed='false'>a</button>") << 1 << QAccessible::Button;
     QTest::newRow("ax::mojom::Role::kToolbar") << QString("<div role='toolbar'>a</div>") << 0 << QAccessible::ToolBar;
-    QTest::newRow("ax::mojom::Role::kToolTip") << QString("<div role='tooltip'>a</div>") << 0 << QAccessible::ToolTip;
+    QTest::newRow("ax::mojom::Role::kTooltip")
+            << QString("<div role='tooltip'>a</div>") << 0 << QAccessible::ToolTip;
     QTest::newRow("ax::mojom::Role::kTree") << QString("<div role='tree'>a</div>") << 0 << QAccessible::Tree;
     QTest::newRow("ax::mojom::Role::kTreeGrid") << QString("<div role='treegrid'>a</div>") << 0 << QAccessible::Tree;
     QTest::newRow("ax::mojom::Role::kTreeItem") << QString("<div role='treeitem'>a</div>") << 0 << QAccessible::TreeItem;
