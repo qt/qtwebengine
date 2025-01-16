@@ -12,6 +12,7 @@ endif()
 
 include(${WEBENGINE_ROOT_SOURCE_DIR}/.cmake.conf)
 include(${WEBENGINE_ROOT_SOURCE_DIR}/cmake/Functions.cmake)
+include(${WEBENGINE_ROOT_SOURCE_DIR}/cmake/QtToolchainHelpers.cmake)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${WEBENGINE_ROOT_SOURCE_DIR}/cmake")
 
