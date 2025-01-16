@@ -28,7 +28,7 @@ class Q_WEBENGINECORE_EXPORT QWebEngineLoadingInfo
     Q_PROPERTY(ErrorDomain errorDomain READ errorDomain CONSTANT FINAL)
     Q_PROPERTY(int errorCode READ errorCode CONSTANT FINAL)
     Q_PROPERTY(QMultiMap<QByteArray,QByteArray> responseHeaders READ responseHeaders CONSTANT REVISION(6,6) FINAL)
-    Q_PROPERTY(bool isDownload READ isDownload CONSTANT REVISION(6,9) FINAL)
+    Q_PROPERTY(bool isDownload READ isDownload CONSTANT REVISION(6,9))
 
 public:
     enum LoadStatus {
