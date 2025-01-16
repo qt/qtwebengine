@@ -21,8 +21,6 @@
 #include <QWebEngineFindTextResult>
 #include <QWebEngineProfile>
 
-using namespace Qt::StringLiterals;
-
 BrowserWindow::BrowserWindow(Browser *browser, QWebEngineProfile *profile, bool forDevTools)
     : m_browser(browser)
     , m_profile(profile)
@@ -52,7 +50,8 @@ BrowserWindow::BrowserWindow(Browser *browser, QWebEngineProfile *profile, bool 
 
         m_progressBar->setMaximumHeight(1);
         m_progressBar->setTextVisible(false);
-        m_progressBar->setStyleSheet(u"QProgressBar {border: 0px} QProgressBar::chunk {background-color: #da4453}"_s);
+        m_progressBar->setStyleSheet(QStringLiteral(
+                "QProgressBar {border: 0px} QProgressBar::chunk {background-color: #da4453}"));
 
         layout->addWidget(m_progressBar);
     }
@@ -320,7 +319,7 @@ QToolBar *BrowserWindow::createToolBar()
     backShortcuts.append(QKeySequence(Qt::Key_Back));
     m_historyBackAction->setShortcuts(backShortcuts);
     m_historyBackAction->setIconVisibleInMenu(false);
-    m_historyBackAction->setIcon(QIcon(u":go-previous.png"_s));
+    m_historyBackAction->setIcon(QIcon(QStringLiteral(":go-previous.png")));
     m_historyBackAction->setToolTip(tr("Go back in history"));
     connect(m_historyBackAction, &QAction::triggered, [this]() {
         m_tabWidget->triggerWebPageAction(QWebEnginePage::Back);
@@ -332,7 +331,7 @@ QToolBar *BrowserWindow::createToolBar()
     fwdShortcuts.append(QKeySequence(Qt::Key_Forward));
     m_historyForwardAction->setShortcuts(fwdShortcuts);
     m_historyForwardAction->setIconVisibleInMenu(false);
-    m_historyForwardAction->setIcon(QIcon(u":go-next.png"_s));
+    m_historyForwardAction->setIcon(QIcon(QStringLiteral(":go-next.png")));
     m_historyForwardAction->setToolTip(tr("Go forward in history"));
     connect(m_historyForwardAction, &QAction::triggered, [this]() {
         m_tabWidget->triggerWebPageAction(QWebEnginePage::Forward);
@@ -352,7 +351,7 @@ QToolBar *BrowserWindow::createToolBar()
     navigationBar->addWidget(m_urlLineEdit);
 
     auto downloadsAction = new QAction(this);
-    downloadsAction->setIcon(QIcon(u":go-bottom.png"_s));
+    downloadsAction->setIcon(QIcon(QStringLiteral(":go-bottom.png")));
     downloadsAction->setToolTip(tr("Show downloads"));
     navigationBar->addAction(downloadsAction);
     connect(downloadsAction, &QAction::triggered,
@@ -456,8 +455,8 @@ WebView *BrowserWindow::currentTab() const
 
 void BrowserWindow::handleWebViewLoadProgress(int progress)
 {
-    static QIcon stopIcon(u":process-stop.png"_s);
-    static QIcon reloadIcon(u":view-refresh.png"_s);
+    static QIcon stopIcon(QStringLiteral(":process-stop.png"));
+    static QIcon reloadIcon(QStringLiteral(":view-refresh.png"));
 
     if (0 < progress && progress < 100) {
         m_stopReloadAction->setData(QWebEnginePage::Stop);

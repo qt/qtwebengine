@@ -6,6 +6,7 @@
 
 #include <QtGui/QPageLayout>
 #include <QtGui/qpageranges.h>
+#include <QtWidgets/qmenu.h>
 #include <QtWidgets/qwidget.h>
 
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>

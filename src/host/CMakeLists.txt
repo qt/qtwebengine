@@ -19,7 +19,7 @@ project(QtWebEngineConfigure
     VERSION "${QT_REPO_MODULE_VERSION}"
     LANGUAGES CXX C)
 
-find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core)
+find_package(Qt6 6.2 CONFIG REQUIRED COMPONENTS BuildInternals Core)
 
 if(COMMAND qt_internal_project_setup)
     qt_internal_project_setup()

@@ -9,8 +9,6 @@
 #include <QTabBar>
 #include <QWebEngineProfile>
 
-using namespace Qt::StringLiterals;
-
 TabWidget::TabWidget(QWebEngineProfile *profile, QWidget *parent)
     : QTabWidget(parent)
     , m_profile(profile)
@@ -34,10 +32,10 @@ TabWidget::TabWidget(QWebEngineProfile *profile, QWidget *parent)
 
     if (profile->isOffTheRecord()) {
         QLabel *icon = new QLabel(this);
-        QPixmap pixmap(u":ninja.png"_s);
+        QPixmap pixmap(QStringLiteral(":ninja.png"));
         icon->setPixmap(pixmap.scaledToHeight(tabBar->height()));
-        setStyleSheet(u"QTabWidget::tab-bar { left: %1px; }"_s.
-                      arg(icon->pixmap().width()));
+        setStyleSheet(
+                QStringLiteral("QTabWidget::tab-bar { left: %1px; }").arg(icon->pixmap().width()));
     }
 }
 
