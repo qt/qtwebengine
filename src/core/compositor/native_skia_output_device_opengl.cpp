@@ -157,7 +157,7 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
     // Log and clear error flags for assert at end of function
     while (true) {
         auto glError = glFun->glGetError();
-        if (glError == GL_NO_ERROR)
+        if (glError == GL_NO_ERROR || glError == GL_CONTEXT_LOST)
             break;
         qWarning() << "GL error flag set on entry: " << getGLErrorString(glError);
     }
