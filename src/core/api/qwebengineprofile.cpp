@@ -90,7 +90,7 @@ using QtWebEngineCore::ProfileAdapter;
     \value DiskHttpCache Use a disk cache. This is the default if the profile
     is not \c off-the-record. If set on an \c off-the-record profile will instead
     set \c MemoryHttpCache.
-    \value NoCache Disable both in-memory and disk caching. (Added in Qt 5.7)
+    \value [since 5.7] NoCache Disable both in-memory and disk caching.
 */
 
 /*!

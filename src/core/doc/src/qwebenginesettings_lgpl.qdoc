@@ -39,8 +39,7 @@
     \value SansSerifFont
     \value CursiveFont
     \value FantasyFont
-    \value PictographFont
-           (added in Qt 5.7, deprecated Qt 6.4)
+    \value [since 5.7, deprecated in Qt 6.4] PictographFont
 */
 
 /*!
@@ -106,104 +105,103 @@
             Enables animated scrolling. Disabled by default.
     \value  ErrorPageEnabled
             Enables displaying the built-in error pages of Chromium. Enabled by default.
-    \value  PluginsEnabled
+    \value  [since 5.6] PluginsEnabled
             Enables support for Pepper plugins, such as the Flash player. Disabled by default.
-    \value  FullScreenSupportEnabled
-            Enables fullscreen support in an application. Disabled by default. (Added in Qt 5.6)
-    \value  ScreenCaptureEnabled
-            Enables screen capture in an application. Disabled by default. (Added in Qt 5.7)
-    \value  WebGLEnabled
-            Enables support for HTML 5 WebGL. Enabled by default if available. (Added in Qt 5.7)
-    \value  Accelerated2dCanvasEnabled
+            See also \l{Pepper Plugin API}.
+    \value  [since 5.6] FullScreenSupportEnabled
+            Enables fullscreen support in an application. Disabled by default.
+    \value  [since 5.7] ScreenCaptureEnabled
+            Enables screen capture in an application. Disabled by default.
+    \value  [since 5.7] WebGLEnabled
+            Enables support for HTML 5 WebGL. Enabled by default if available.
+    \value  [since 5.7] Accelerated2dCanvasEnabled
             Specifies whether the HTML5 2D canvas should be a OpenGL framebuffer.
-            This makes many painting operations faster, but slows down pixel access. Enabled by default if available. (Added in Qt 5.7)
-    \value  AutoLoadIconsForPage
-            Automatically downloads icons for web pages. Enabled by default. (Added in Qt 5.7)
-    \value  TouchIconsEnabled
+            This makes many painting operations faster, but slows down pixel access. Enabled by default if available.
+    \value  [since 5.7] AutoLoadIconsForPage
+            Automatically downloads icons for web pages. Enabled by default.
+    \value  [since 5.7] TouchIconsEnabled
             Enables support for touch icons and precomposed touch icons
-            Disabled by default. (Added in Qt 5.7)
-    \value  FocusOnNavigationEnabled
+            Disabled by default.
+    \value  [since 5.8] FocusOnNavigationEnabled
             Gives focus to the view associated with the page, whenever a navigation operation occurs
             (load, stop, reload, reload and bypass cache, forward, backward, set content, and so
             on).
-            Disabled by default. (Added in Qt 5.8)
-    \value  PrintElementBackgrounds
+            Disabled by default.
+    \value  [since 5.8] PrintElementBackgrounds
             Turns on printing of CSS backgrounds when printing a web page.
-            Enabled by default. (Added in Qt 5.8)
-    \value  AllowRunningInsecureContent
+            Enabled by default.
+    \value  [since 5.8] AllowRunningInsecureContent
             By default, HTTPS pages cannot run JavaScript, CSS, plugins or
             web-sockets from HTTP URLs. This provides an override to get
             the old insecure behavior.
-            Disabled by default. (Added in Qt 5.8)
-    \value  AllowGeolocationOnInsecureOrigins
+            Disabled by default.
+    \value  [since 5.9] AllowGeolocationOnInsecureOrigins
             Since Qt 5.7, only secure origins such as HTTPS have been able to request
             Geolocation features. This provides an override to allow non secure
             origins to access Geolocation again.
-            Disabled by default. (Added in Qt 5.9)
-    \value  AllowWindowActivationFromJavaScript
+            Disabled by default.
+    \value  [since 5.10] AllowWindowActivationFromJavaScript
             Allows activating windows by using the window.focus() JavaScript
             method. Disabled by default.
-            (Added in Qt 5.10)
-    \value  ShowScrollBars
+    \value  [since 5.10] ShowScrollBars
             Shows scroll bars.
-            Enabled by default. (Added in Qt 5.10)
-    \value  PlaybackRequiresUserGesture
+            Enabled by default.
+    \value  [since 5.11] PlaybackRequiresUserGesture
             Inhibits playback of media content until the user interacts with
             the page. By default, WebEngine uses Chromium settings, as described
             in \l {Autoplay Policy Changes}. This is similar to how Chrome on
             Android behaves, while the default behavior when it is disabled is
             similar to Chrome on desktops. To overwrite the default behavior,
-            disable this setting. (Added in Qt 5.11)
-    \value  JavascriptCanPaste
-            Allows JavaScript programs to read (paste) from the clipboard and to write unsanitized
-            content. A sanitized write is done with the \c{write} and \c{writeText} JavaScript
-            Clipboard API calls and must be accompanied by user action; unsanitized writes are any
-            writes which do not meet these criteria.
-            For this setting to have any effect, \l{JavascriptCanAccessClipboard} must also be
-            enabled.
-            Since unrestricted clipboard access is a potential security concern, it is
-            recommended that applications leave this disabled and instead respond to
-            \l{QWebEnginePage::ClipboardReadWrite}{ClipboardReadWrite} feature permission requests.
-            Disabled by default. (Added in Qt 5.11)
-    \value  WebRTCPublicInterfacesOnly
+            disable this setting.
+    \value  [since 5.11] JavascriptCanPaste
+            Enables JavaScript \c{execCommand("paste")}. This also requires enabling
+            JavascriptCanAccessClipboard. Since unrestricted clipboard access is a potential
+            security concern, it is recommended that applications leave this disabled
+            and instead respond to \l{QWebEnginePage::ClipboardReadWrite}{ClipboardReadWrite}
+            feature permission requests.
+            Disabled by default.
+    \value  [since 5.11] WebRTCPublicInterfacesOnly
             Limits WebRTC to public IP addresses only. When disabled WebRTC may also use
             local network IP addresses, but remote hosts can also see your local network
             IP address.
-            Disabled by default. (Added in Qt 5.11)
-    \value DnsPrefetchEnabled Specifies whether WebEngine will try to pre-fetch DNS entries to
-            speed up browsing.
-            Disabled by default. (Added in Qt 5.12)
-    \value PdfViewerEnabled Specifies that PDF documents will be opened in the internal PDF viewer
-           instead of being downloaded.
-           Enabled by default. (Added in Qt 5.13)
-    \value NavigateOnDropEnabled Specifies that navigations can be triggered by dropping URLs on
-           the view.
-           Enabled by default. (Added in Qt 6.4)
-    \value ReadingFromCanvasEnabled Specifies that reading from all canvas elements is enabled.
-           This setting will have impact on all HTML5 canvas elements irrespective of origin, and can be disabled
-           to prevent canvas fingerprinting.
-           Enabled by default. (Added in Qt 6.6)
-    \value ForceDarkMode Specifies that all web contents will be rendered using a dark theme.
-           For more information, see \l{https://developer.chrome.com/blog/auto-dark-theme/}{Auto dark theme}.
-           Disabled by default. (Added in Qt 6.7)
-    \value PrintHeaderAndFooter Specifies that printing results will contain basic page information
-           (URL, title, date, page number) in header and footer area. It is the embedder's responsibility
-           to provide enough space for these texts by setting proper top and bottom margins.
-           Disabled by default. (Added in Qt 6.9)
-    \value PreferCSSMarginsForPrinting Turns on preferring CSS margins over the margins
-           of the specified QPageLayout.
-           Disabled by default. (Added in Qt 6.9)
-    \value TouchEventsApiEnabled Enables support for JavaScript touch events API,
-           meaning \c ontouchstart, \c ontouchend and \c ontouchmove handlers will be present in the \c document.window object.
-           Enabled by default if a touch device detected by the system and disabled otherwise. (Added in Qt 6.9)
-           Note that some websites use this API to decide whether they run on a mobile device or on desktop and base their design on it.
-           This can cause unwanted results on touchscreen laptops or other setups that emulate a fake touch device.
-    \value BackForwardCacheEnabled Enables support for back/forward cache (or bfcache) to speed up back and
+            Disabled by default.
+    \value  [since 5.12] DnsPrefetchEnabled
+            Specifies whether WebEngine will try to pre-fetch DNS entries to speed up browsing.
+            Disabled by default.
+    \value  [since 5.13] PdfViewerEnabled
+            Specifies that PDF documents will be opened in the internal PDF viewer
+            instead of being downloaded.
+            Enabled by default.
+    \value  [since 6.4] NavigateOnDropEnabled
+            Specifies that navigations can be triggered by dropping URLs on the view.
+            Enabled by default.
+    \value  [since 6.6] ReadingFromCanvasEnabled
+            Specifies that reading from all canvas elements is enabled.
+            This setting will have impact on all HTML5 canvas elements irrespective of origin, and can be disabled
+            to prevent canvas fingerprinting.
+            Enabled by default.
+    \value  [since 6.7] ForceDarkMode
+            Specifies that all web contents will be rendered using a dark theme.
+            For more information, see \l{https://developer.chrome.com/blog/auto-dark-theme/}{Auto dark theme}.
+            Disabled by default.
+    \value  [since 6.9] PrintHeaderAndFooter Specifies that printing results will contain basic page information
+            (URL, title, date, page number) in header and footer area. It is the embedder's responsibility
+            to provide enough space for these texts by setting proper top and bottom margins.
+            Disabled by default.
+    \value  [since 6.9] PreferCSSMarginsForPrinting Turns on preferring CSS margins over the margins
+            of the specified QPageLayout.
+            Disabled by default.
+    \value  [since 6.9] TouchEventsApiEnabled Enables support for JavaScript touch events API,
+            meaning \c ontouchstart, \c ontouchend and \c ontouchmove handlers will be present in the \c document.window object.
+            Enabled by default if a touch device detected by the system and disabled otherwise.
+            Note that some websites use this API to decide whether they run on a mobile device or on desktop and base their design on it.
+            This can cause unwanted results on touchscreen laptops or other setups that emulate a fake touch device.
+    \value [since 6.10] BackForwardCacheEnabled Enables support for back/forward cache (or bfcache) to speed up back and
            forward navigation.
-           Disabled by default. (Added in Qt 6.10)
-    \value TrimAccessibilityIdentifiers Forces the HTML 'id' attribute to be used as the automation ID (QAccessible::Identifier)
+           Disabled by default.
+    \value [since 6.11] TrimAccessibilityIdentifiers Forces the HTML 'id' attribute to be used as the automation ID (QAccessible::Identifier)
            without modification. When disabled, Qt will instead prepend the entire object hierarchy to the identifier.
-           Disabled by default. (Added in Qt 6.11)
+           Disabled by default.
 */
 
 /*!

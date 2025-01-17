@@ -771,96 +771,93 @@
             should be enabled to get automatic focus.
     \value  WebEngineView.PasteAndMatchStyle
             Paste content from the clipboard with current style.
-    \value  WebEngineView.OpenLinkInThisWindow
-            Open the current link in the current window. (Added in Qt 5.6)
-    \value  WebEngineView.OpenLinkInNewWindow
+    \value  [since 5.6] WebEngineView.OpenLinkInThisWindow
+            Open the current link in the current window.
+    \value  [since 5.6] WebEngineView.OpenLinkInNewWindow
             Open the current link in a new window. Requires a handler for the
-            \l newWindowRequested() signal. (Added in Qt 5.6)
-    \value  WebEngineView.OpenLinkInNewTab
+            \l newWindowRequested() signal.
+    \value  [since 5.6] WebEngineView.OpenLinkInNewTab
             Open the current link in a new tab. Requires a handler for the
-            \l newWindowRequested() signal. (Added in Qt 5.6)
-    \value  WebEngineView.CopyLinkToClipboard
-            Copy the current link to the clipboard. (Added in Qt 5.6)
-    \value  WebEngineView.CopyImageToClipboard
-            Copy the clicked image to the clipboard. (Added in Qt 5.6)
-    \value  WebEngineView.CopyImageUrlToClipboard
-            Copy the clicked image's URL to the clipboard. (Added in Qt 5.6)
-    \value  WebEngineView.CopyMediaUrlToClipboard
-            Copy the hovered audio or video's URL to the clipboard. (Added in Qt 5.6)
-    \value  WebEngineView.ToggleMediaControls
+            \l newWindowRequested() signal.
+    \value  [since 5.6] WebEngineView.CopyLinkToClipboard
+            Copy the current link to the clipboard.
+    \value  [since 5.6] WebEngineView.CopyImageToClipboard
+            Copy the clicked image to the clipboard.
+    \value  [since 5.6] WebEngineView.CopyImageUrlToClipboard
+            Copy the clicked image's URL to the clipboard.
+    \value  [since 5.6] WebEngineView.CopyMediaUrlToClipboard
+            Copy the hovered audio or video's URL to the clipboard.
+    \value  [since 5.6] WebEngineView.ToggleMediaControls
             Toggle between showing and hiding the controls for the hovered audio or video element.
-            (Added in Qt 5.6)
-    \value  WebEngineView.ToggleMediaLoop
+    \value  [since 5.6] WebEngineView.ToggleMediaLoop
             Toggle whether the hovered audio or video should loop on completetion or not.
-           (Added in Qt 5.6)
-    \value  WebEngineView.ToggleMediaPlayPause
-            Toggle the play/pause state of the hovered audio or video element. (Added in Qt 5.6)
-    \value  WebEngineView.ToggleMediaMute
-            Mute or unmute the hovered audio or video element. (Added in Qt 5.6)
-    \value  WebEngineView.DownloadLinkToDisk
+    \value  [since 5.6] WebEngineView.ToggleMediaPlayPause
+            Toggle the play/pause state of the hovered audio or video element.
+    \value  [since 5.6] WebEngineView.ToggleMediaMute
+            Mute or unmute the hovered audio or video element.
+    \value  [since 5.6] WebEngineView.DownloadLinkToDisk
             Download the current link to the disk. To implement download
             actions, connect to the \l {QQuickWebEngineProfile::downloadRequested}
-            {WebEngineProfile.downloadRequested} signal. (Added in Qt 5.6)
-    \value  WebEngineView.DownloadImageToDisk
-            Download the highlighted image to the disk. (Added in Qt 5.6)
-    \value  WebEngineView.DownloadMediaToDisk
-            Download the hovered audio or video to the disk. (Added in Qt 5.6)
-    \value  WebEngineView.InspectElement
+            {WebEngineProfile.downloadRequested} signal.
+    \value  [since 5.6] WebEngineView.DownloadImageToDisk
+            Download the highlighted image to the disk.
+    \value  [since 5.6] WebEngineView.DownloadMediaToDisk
+            Download the hovered audio or video to the disk.
+    \value  [since 5.6] WebEngineView.InspectElement
             Trigger any attached Web Inspector to inspect the highlighed element.
-           (Added in Qt 5.6)
-    \value  WebEngineView.ExitFullScreen
-            Exit the fullscreen mode. (Added in Qt 5.6)
-    \value  WebEngineView.SavePage
-            Save the current web page to disk. (Added in Qt 5.7)
+    \value  [since 5.6] WebEngineView.ExitFullScreen
+            Exit the fullscreen mode.
+    \value  [since 5.7] WebEngineView.SavePage
+            Save the current web page to disk.
     \omitvalue WebEngineView.OpenLinkInNewBackgroundTab
-    \value  WebEngineView.ViewSource
+    \value  [since 5.8] WebEngineView.ViewSource
             Show the source of the current page in a new tab. Requires a handler for the
-            \l newWindowRequested() signal. (Added in Qt 5.8)
+            \l newWindowRequested() signal.
 
-    \value  WebEngineView.ToggleBold
+    \value  [since 5.10] WebEngineView.ToggleBold
             Toggles boldness for the selection or at the cursor position.
-            Requires \c contenteditable="true". (Added in Qt 5.10)
-    \value  WebEngineView.ToggleItalic
+            Requires \c contenteditable="true".
+    \value  [since 5.10] WebEngineView.ToggleItalic
             Toggles italics for the selection or at the cursor position.
-            Requires \c contenteditable="true". (Added in Qt 5.10)
-    \value  WebEngineView.ToggleUnderline
+            Requires \c contenteditable="true".
+    \value  [since 5.10] WebEngineView.ToggleUnderline
             Toggles underlining of the selection or at the cursor position.
-            Requires \c contenteditable="true". (Added in Qt 5.10)
-    \value  WebEngineView.ToggleStrikethrough
+            Requires \c contenteditable="true".
+    \value  [since 5.10] WebEngineView.ToggleStrikethrough
             Toggles striking through the selection or at the cursor position.
-            Requires \c contenteditable="true". (Added in Qt 5.10)
+            Requires \c contenteditable="true".
 
-    \value  WebEngineView.AlignLeft
+    \value  [since 5.10] WebEngineView.AlignLeft
             Aligns the lines containing the selection or the cursor to the left.
-            Requires \c contenteditable="true". (Added in Qt 5.10)
-    \value  WebEngineView.AlignCenter
+            Requires \c contenteditable="true".
+    \value  [since 5.10] WebEngineView.AlignCenter
             Aligns the lines containing the selection or the cursor at the center.
-            Requires \c contenteditable="true". (Added in Qt 5.10)
-    \value  WebEngineView.AlignRight
+            Requires \c contenteditable="true".
+    \value  [since 5.10] WebEngineView.AlignRight
             Aligns the lines containing the selection or the cursor to the right.
-            Requires \c contenteditable="true". (Added in Qt 5.10)
-    \value  WebEngineView.AlignJustified
+            Requires \c contenteditable="true".
+    \value  [since 5.10] WebEngineView.AlignJustified
             Stretches the lines containing the selection or the cursor so that each
             line has equal width.
-            Requires \c contenteditable="true". (Added in Qt 5.10)
-    \value  WebEngineView.Indent
+            Requires \c contenteditable="true".
+    \value  [since 5.10] WebEngineView.Indent
             Indents the lines containing the selection or the cursor.
-            Requires \c contenteditable="true". (Added in Qt 5.10)
-    \value  WebEngineView.Outdent
+            Requires \c contenteditable="true".
+    \value  [since 5.10] WebEngineView.Outdent
             Outdents the lines containing the selection or the cursor.
-            Requires \c contenteditable="true". (Added in Qt 5.10)
+            Requires \c contenteditable="true".
 
-    \value  WebEngineView.InsertOrderedList
+    \value  [since 5.10] WebEngineView.InsertOrderedList
             Inserts an ordered list at the current cursor position, deleting the current selection.
-            Requires \c contenteditable="true". (Added in Qt 5.10)
-    \value  WebEngineView.InsertUnorderedList
+            Requires \c contenteditable="true".
+    \value  [since 5.10] WebEngineView.InsertUnorderedList
             Inserts an unordered list at the current cursor position,
             deleting the current selection.
-            Requires \c contenteditable="true". (Added in Qt 5.10)
-    \value  WebEngineView.ChangeTextDirectionLTR
-            Changes text direction to left-to-right in the focused input element. (Added in Qt 6.6)
-    \value  WebEngineView.ChangeTextDirectionRTL
-            Changes text direction to right-to-left in the focused input element. (Added in Qt 6.6)
+            Requires \c contenteditable="true".
+    \value  [since 6.6] WebEngineView.ChangeTextDirectionLTR
+            Changes text direction to left-to-right in the focused input element.
+    \value  [since 6.6] WebEngineView.ChangeTextDirectionRTL
+            Changes text direction to right-to-left in the focused input element.
     \omitvalue WebActionCount
 */
 
@@ -879,22 +876,19 @@
             Video devices, such as cameras.
     \value  WebEngineView.MediaAudioVideoCapture
             Both audio and video capture devices.
-    \value  WebEngineView.DesktopVideoCapture
+    \value  [since 5.10] WebEngineView.DesktopVideoCapture
             Video output capture, that is, the capture of the user's display.
-            (Added in Qt 5.10)
-    \value  WebEngineView.DesktopAudioVideoCapture
-            Both audio and video output capture. (Added in Qt 5.10)
+    \value  [since 5.10] WebEngineView.DesktopAudioVideoCapture
+            Both audio and video output capture.
     \value  WebEngineView.Notifications
             Web notifications for the end-user.
-    \value  WebEngineView.ClipboardReadWrite
+    \value  [since 6.8] WebEngineView.ClipboardReadWrite
             Read and write access for the clipboard. If both \l{WebEngineSettings::}
             {javascriptCanPaste} and \l{WebEngineSettings::}
             {javascriptCanAccessClipboard} settings are enabled, this permission will always be granted
             automatically and no feature requests will be made.
-            (Added in Qt 6.8)
-    \value  WebEngineView.LocalFontsAccess
+    \value  [since 6.8] WebEngineView.LocalFontsAccess
             Access to the fonts installed on the user's machine. Only available on desktop platforms.
-            (Added in Qt 6.8)
 
     \sa featurePermissionRequested(), grantFeaturePermission()
 */

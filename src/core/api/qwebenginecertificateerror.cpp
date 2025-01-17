@@ -62,14 +62,13 @@ QWebEngineCertificateError::~QWebEngineCertificateError() = default;
     \value CertificateNonUniqueName The host name specified in the certificate is not unique.
     \value CertificateWeakKey The certificate contains a weak key.
     \value CertificateNameConstraintViolation The certificate claimed DNS names that are in violation of name constraints.
-    \value CertificateValidityTooLong The certificate has a validity period that is too long. (Added in Qt 5.7)
-    \value CertificateTransparencyRequired Certificate Transparency was required for this connection, but the server
-            did not provide CT information that complied with the policy. (Added in Qt 5.8)
-    \value CertificateKnownInterceptionBlocked The certificate is known to be
-            used for interception by an entity other the device owner. (Added in
-            5.15)
-    \value SslObsoleteVersion The connection uses an obsolete version of SSL/TLS. (Added in Qt 6.2, deprecated in Qt 6.4)
-    \value CertificateSymantecLegacy The certificate is a legacy Symantec one that's no longer valid. (Added in Qt 6.2)
+    \value [since 5.7] CertificateValidityTooLong The certificate has a validity period that is too long.
+    \value [since 5.8] CertificateTransparencyRequired Certificate Transparency was required for this connection, but the server
+            did not provide CT information that complied with the policy.
+    \value [since 5.15] CertificateKnownInterceptionBlocked The certificate is known to be
+            used for interception by an entity other the device owner.
+    \value [since 6.2, deprecated in Qt 6.4] SslObsoleteVersion The connection uses an obsolete version of SSL/TLS.
+    \value [since 6.2] CertificateSymantecLegacy The certificate is a legacy Symantec one that's no longer valid.
 */
 
 /*!
