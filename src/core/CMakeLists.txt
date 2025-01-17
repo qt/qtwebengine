@@ -348,7 +348,6 @@ foreach(arch ${archs})
             angle_enable_swiftshader=false
             dawn_use_swiftshader=false
             pdf_enable_fontations=false
-            skia_use_fontations=false
             enable_vr=false
             enable_web_speech=false
             enable_widevine=true
