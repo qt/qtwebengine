@@ -162,7 +162,7 @@ public:
     {
         QList<RequestInfo> infos;
 
-        foreach (auto requestInfo, requestInfos) {
+        for (const auto &requestInfo : requestInfos) {
             if (shouldSkipRequest(requestInfo))
                 continue;
 
@@ -175,7 +175,7 @@ public:
 
     bool hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceType type)
     {
-        foreach (auto requestInfo, requestInfos) {
+        for (const auto &requestInfo : requestInfos) {
             if (shouldSkipRequest(requestInfo))
                 continue;
 
@@ -803,17 +803,17 @@ void tst_QWebEngineUrlRequestInterceptor::jsServiceWorker()
 void tst_QWebEngineUrlRequestInterceptor::replaceInterceptor_data()
 {
     QTest::addColumn<bool>("firstInterceptIsInPage");
-    QTest::addColumn<bool>("keepInterceptionPoint");
+    QTest::addColumn<bool>("secondInterceptIsInPage");
     QTest::newRow("page")         << true << true;
     QTest::newRow("page-profile") << true << false;
-    QTest::newRow("profile")      << false << true;
-    QTest::newRow("profile-page") << false << false;
+    QTest::newRow("profile")      << false << false;
+    QTest::newRow("profile-page") << false << true;
 }
 
 void tst_QWebEngineUrlRequestInterceptor::replaceInterceptor()
 {
     QFETCH(bool, firstInterceptIsInPage);
-    QFETCH(bool, keepInterceptionPoint);
+    QFETCH(bool, secondInterceptIsInPage);
 
     HttpServer server;
     server.setResourceDirs({ ":/resources" });
@@ -838,17 +838,14 @@ void tst_QWebEngineUrlRequestInterceptor::replaceInterceptor()
         requestsOnReplace.push_back(interceptors[currentInterceptorIndex].requestInfos.size());
 
         bool isFirstReinstall = currentInterceptorIndex == 0;
-        bool interceptInPage = keepInterceptionPoint ? firstInterceptIsInPage : (isFirstReinstall ^ firstInterceptIsInPage);
+        bool interceptInPage = isFirstReinstall ? firstInterceptIsInPage : secondInterceptIsInPage;
         setInterceptor(&interceptors[++currentInterceptorIndex], interceptInPage);
-        if (!keepInterceptionPoint)
-            setInterceptor(nullptr, !interceptInPage);
+        setInterceptor(nullptr, !interceptInPage);
 
         if (isFirstReinstall) {
             page.triggerAction(QWebEnginePage::Reload);
         } else {
-            page.runJavaScript("fetch('http://nonexistent.invalid').catch(() => {})", [&, interceptInPage] (const QVariant &) {
-                requestsOnReplace.push_back(interceptors.back().requestInfos.size());
-                setInterceptor(nullptr, interceptInPage);
+            page.runJavaScript("fetch('http://nonexistent.invalid').catch(() => {})", [&fetchFinished] (const QVariant &) {
                 fetchFinished = true;
             });
         }
@@ -857,6 +854,10 @@ void tst_QWebEngineUrlRequestInterceptor::replaceInterceptor()
     page.setUrl(server.url("/favicon.html"));
     QTRY_COMPARE_WITH_TIMEOUT(spy.size(), 2, 20000);
     QTRY_VERIFY(fetchFinished);
+    QTRY_VERIFY(!interceptors.back().requestInfos.isEmpty());
+    setInterceptor(nullptr, true);
+    setInterceptor(nullptr, false);
+    requestsOnReplace.push_back(interceptors.back().requestInfos.size());
 
     QString s; QDebug d(&s);
     for (auto i = 0u; i < interceptors.size(); ++i) {
