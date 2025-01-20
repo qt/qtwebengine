@@ -22,8 +22,10 @@ endif()
 #  MODULES
 ##
 
-# Use implicit PROJECT_NAME.
-qt_internal_sbom_begin_qt_repo_project()
+if(QT_FEATURE_qtwebengine_build)
+    # Use implicit PROJECT_NAME.
+    qt_internal_sbom_begin_qt_repo_project()
+endif()
 if(QT_FEATURE_qtwebengine_core_build)
     add_subdirectory(core)
     add_subdirectory(process)
@@ -38,10 +40,12 @@ endif()
 if(QT_FEATURE_qtwebengine_quick_build)
     add_subdirectory(webenginequick)
 endif()
-qt_internal_sbom_end_qt_repo_project()
+if(QT_FEATURE_qtwebengine_build)
+    qt_internal_sbom_end_qt_repo_project()
+endif()
 
-qt_internal_sbom_begin_qt_repo_project(SBOM_PROJECT_NAME QtPdf)
 if(QT_FEATURE_qtpdf_build)
+    qt_internal_sbom_begin_qt_repo_project(SBOM_PROJECT_NAME QtPdf)
     add_subdirectory(pdf)
 endif()
 if(QT_FEATURE_qtpdf_widgets_build)
@@ -68,7 +72,9 @@ endif()
 # No SBOM information will be generated for any targets created past this point in the file
 # or any add_subdirectory calls. For the external project GN, we'll have to come up with some
 # additional API.
-qt_internal_sbom_end_qt_repo_project()
+if(QT_FEATURE_qtpdf_build)
+    qt_internal_sbom_end_qt_repo_project()
+endif()
 
 set(installDir ${PROJECT_BINARY_DIR}/install)
 
