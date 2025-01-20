@@ -70,7 +70,7 @@ add_dependencies(prepare_docs_Pdf generate_pdf_attributions)
 #   TOOLCHAIN SETUP
 ##
 
-if(LINUX OR MINGW OR ANDROID)
+if(LINUX OR MINGW OR ANDROID OR WIN32)
     setup_toolchains()
 endif()
 
@@ -172,7 +172,6 @@ foreach(arch ${archs})
         endif()
         if(WIN32 OR ANDROID)
           list(APPEND gnArgArg
-              ninja_use_custom_environment_files=false
               safe_browsing_mode=0
           )
           extend_gn_list(gnArgArg

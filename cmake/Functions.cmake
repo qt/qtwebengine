@@ -519,19 +519,25 @@ macro(create_pkg_config_host_wrapper buildDir)
 endmacro()
 
 macro(setup_toolchains)
+    if(MSVC AND NOT CLANG)
+        set(toolchain_in_file "BUILD.msvc.toolchain.gn.in")
+    else()
+        set(toolchain_in_file "BUILD.toolchain.gn.in")
+    endif()
     get_gn_arch(gn_arch ${TEST_architecture_arch})
     if(NOT CMAKE_CROSSCOMPILING) # delivered by hostBuild project
         configure_gn_toolchain(host ${gn_arch} ${gn_arch}
-            ${WEBENGINE_ROOT_SOURCE_DIR}/src/host/BUILD.toolchain.gn.in
+            ${WEBENGINE_ROOT_SOURCE_DIR}/src/host/${toolchain_in_file}
             ${buildDir}/host_toolchain)
         configure_gn_toolchain(v8 ${gn_arch} ${gn_arch}
-            ${WEBENGINE_ROOT_SOURCE_DIR}/src/host/BUILD.toolchain.gn.in
+            ${WEBENGINE_ROOT_SOURCE_DIR}/src/host/${toolchain_in_file}
             ${buildDir}/v8_toolchain)
     endif()
     configure_gn_toolchain(target ${gn_arch} ${gn_arch}
-        ${WEBENGINE_ROOT_SOURCE_DIR}/src/host/BUILD.toolchain.gn.in
+        ${WEBENGINE_ROOT_SOURCE_DIR}/src/host/${toolchain_in_file}
         ${buildDir}/target_toolchain)
     unset(gn_arch)
+    unset(toolchain_in_file)
 endmacro()
 
 macro(append_build_type_setup)
@@ -549,7 +555,6 @@ macro(append_build_type_setup)
         use_custom_libcxx=false
         enable_rust=false # We do not yet support rust
         enable_chromium_prelude=false
-        build_tflite_with_xnnpack=false
         assert_cpp20=false
     )
     if(${config} STREQUAL "Debug")
@@ -712,6 +717,7 @@ macro(append_compiler_linker_sdk_setup)
     if(MSVC)
         get_filename_component(windows_sdk_path $ENV{WINDOWSSDKDIR} ABSOLUTE)
         get_filename_component(visual_studio_path $ENV{VSINSTALLDIR} ABSOLUTE)
+        get_filename_component(wdk_path $ENV{WINDOWSSDKDIR} ABSOLUTE)
         qt_webengine_get_windows_sdk_version(windows_sdk_version sdk_minor)
         list(APPEND gnArgArg
             win_linker_timing=true
@@ -720,6 +726,8 @@ macro(append_compiler_linker_sdk_setup)
             visual_studio_path=\"${visual_studio_path}\"
             windows_sdk_version=\"${windows_sdk_version}\"
             windows_sdk_path=\"${windows_sdk_path}\"
+            wdk_path=\"${windows_sdk_path}\"
+            setup_toolchain_script=\"//build/toolchain/win/qwe_setup_toolchain.py\"
         )
     endif()
     get_gn_arch(cpu ${TEST_architecture_arch})
@@ -802,17 +810,26 @@ endmacro()
 
 macro(append_toolchain_setup)
     if(WIN32)
-        get_gn_arch(cpu ${arch})
-        list(APPEND gnArgArg target_cpu="${cpu}")
+        get_gn_arch(host_cpu ${TEST_architecture_arch})
+        set(target_cpu ${host_cpu})
+        list(APPEND gnArgArg target_cpu="${target_cpu}")
         if(MINGW)
-            get_gn_arch(cpu ${TEST_architecture_arch})
             list(APPEND gnArgArg
                 # note '/' prefix
                 custom_toolchain="/${buildDir}/target_toolchain:target"
                 host_toolchain="/${buildDir}/host_toolchain:host"
-                host_cpu="${cpu}"
+                host_cpu="${host_cpu}"
+            )
+        else()
+            #TODO: no point genrete this in buildDir, it is a fixed set of toolchain afterall
+            list(APPEND gnArgArg
+                # note '/' prefix
+                custom_toolchain="/${buildDir}/target_toolchain:${target_cpu}"
+                host_toolchain="/${buildDir}/target_toolchain:${host_cpu}"
             )
         endif()
+        unset(host_cpu)
+        unset(target_cpu)
     elseif(LINUX)
         get_gn_arch(cpu ${TEST_architecture_arch})
         list(APPEND gnArgArg

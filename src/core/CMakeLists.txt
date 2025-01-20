@@ -21,7 +21,7 @@ add_subdirectory(tools/qwebengine_convert_dict)
 #   TOOLCHAIN SETUP
 ##
 
-if(LINUX)
+if(LINUX OR WIN32)
     setup_toolchains()
 endif()
 
@@ -564,7 +564,6 @@ foreach(arch ${archs})
 
         if(WIN32)
             list(APPEND gnArgArg
-                ninja_use_custom_environment_files=false
                 com_init_check_hook_disabled=true
                 heterogeneous_executables=true
             )
