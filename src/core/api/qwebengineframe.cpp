@@ -116,7 +116,10 @@ QUrl QWebEngineFrame::url() const
 }
 
 /*!
-    Returns the size of the frame within the viewport.
+    Returns the size of the frame within the viewport, measured in logical pixels. On devices
+    with a scale factor other than 100%, this will not correspond to the on-screen size;
+    instead, it will be the size before scaling is applied. In such cases, the size may contain
+    fractional values.
 
     If the frame could not be found, returns QSizeF().
  */
