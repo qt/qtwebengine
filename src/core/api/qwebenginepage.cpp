@@ -923,7 +923,10 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
     \property QWebEnginePage::contentsSize
     \since 5.7
 
-    \brief The size of the page contents.
+    The size of the full page contents, measured in logical pixels. On devices with a
+    scale factor other than 100%, this will not correspond to the on-screen size; instead,
+    it will be the size before scaling is applied. In such cases, the size may contain
+    fractional values.
 */
 
 /*!
