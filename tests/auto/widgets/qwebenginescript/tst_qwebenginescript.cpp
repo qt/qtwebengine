@@ -359,7 +359,10 @@ private:
 static QString readFile(const QString &path)
 {
     QFile file(path);
-    file.open(QFile::ReadOnly);
+    if (!file.open(QFile::ReadOnly)) {
+        qWarning("Failed to read file %s: %s", qPrintable(path), qPrintable(file.errorString()));
+        return QString();
+    }
     QByteArray contents = file.readAll();
     file.close();
     return contents;

@@ -962,7 +962,8 @@ public:
             info.d_ptr->appendFileToResourceRequestBodyForTest(":/resources/postBodyFile.txt");
         }
 
-        requestBodyDevice->open(QIODevice::ReadOnly);
+        QVERIFY2(requestBodyDevice->open(QIODevice::ReadOnly),
+                 qPrintable(requestBodyDevice->errorString()));
 
         const QString webKitBoundary = requestBodyDevice->read(40);
         QVERIFY(webKitBoundary.contains("------WebKitFormBoundary"));

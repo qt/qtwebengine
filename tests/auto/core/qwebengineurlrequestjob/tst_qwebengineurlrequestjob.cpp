@@ -77,7 +77,7 @@ public:
         job->setAdditionalResponseHeaders(additionalResponseHeaders);
 
         QFile *file = new QFile(QStringLiteral(":additionalResponseHeadersScript.html"), job);
-        file->open(QIODevice::ReadOnly);
+        QVERIFY2(file->open(QIODevice::ReadOnly), qPrintable(file->errorString()));
 
         job->reply(QByteArrayLiteral("text/html"), file);
     }
@@ -106,12 +106,13 @@ public:
         QCOMPARE(job->requestMethod(), QByteArrayLiteral("POST"));
 
         QIODevice *requestBodyDevice = job->requestBody();
-        requestBodyDevice->open(QIODevice::ReadOnly);
+        QVERIFY2(requestBodyDevice->open(QIODevice::ReadOnly),
+                 qPrintable(requestBodyDevice->errorString()));
         QByteArray requestBody = requestBodyDevice->readAll();
         requestBodyDevice->close();
 
         QBuffer *buf = new QBuffer(job);
-        buf->open(QBuffer::ReadWrite);
+        QVERIFY2(buf->open(QBuffer::ReadWrite), qPrintable(buf->errorString()));
         buf->write(requestBody);
         job->reply(QByteArrayLiteral("text/plain"), buf);
         buf->close();
