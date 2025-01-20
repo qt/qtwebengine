@@ -292,7 +292,8 @@ qt_webengine_configure_check("supported-platform"
 )
 qt_webengine_configure_check("supported-platform"
     MODULES QtPdf
-    CONDITION LINUX OR (WIN32 AND NOT WIN_ARM_64) OR MACOS OR IOS OR ANDROID
+    CONDITION (LINUX OR WIN32 OR MACOS OR IOS OR ANDROID) AND
+        NOT (WIN32 AND CMAKE_CROSSCOMPILING)
     MESSAGE "Build can be done only on Linux, Windows, macO, iOS and Android."
 )
 
