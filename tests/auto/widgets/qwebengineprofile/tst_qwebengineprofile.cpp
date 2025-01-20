@@ -173,7 +173,7 @@ private:
         }
 
         QFile file(resourceDir.filePath(path));
-        file.open(QIODevice::ReadOnly);
+        QVERIFY2(file.open(QIODevice::ReadOnly), qPrintable(file.errorString()));
         QByteArray data = file.readAll();
         rr->setResponseBody(data);
         QMimeDatabase db;
@@ -671,7 +671,7 @@ public:
         QString path = job->requestUrl().path();
         if (path == "/") {
             QBuffer *buffer = new QBuffer(job);
-            buffer->open(QBuffer::ReadWrite);
+            QVERIFY2(buffer->open(QBuffer::ReadWrite), qPrintable(buffer->errorString()));
             buffer->write(QByteArrayLiteral(R"(
 <html>
   <body>
@@ -695,7 +695,7 @@ public:
             job->reply("text/html", buffer);
         } else if (path == "/qwebchannel.js") {
             QFile *file = new QFile(":/qtwebchannel/qwebchannel.js", job);
-            file->open(QFile::ReadOnly);
+            QVERIFY2(file->open(QFile::ReadOnly), qPrintable(file->errorString()));
             job->reply("application/javascript", file);
         } else if (path == "/ok") {
             QBuffer *buffer = new QBuffer(job);

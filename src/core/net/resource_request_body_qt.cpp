@@ -9,6 +9,8 @@
 #include "services/network/public/mojom/url_request.mojom-shared.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
+using namespace Qt::StringLiterals;
+
 namespace QtWebEngineCore {
 
 ResourceRequestBody::ResourceRequestBody(network::ResourceRequestBody *requestBody, QObject *parent)
@@ -110,7 +112,14 @@ void ResourceRequestBody::readDataElementFile(const base::FilePath &filePath, co
     const std::size_t fileSize = std::min(file.size(), length) - realOffset;
     const std::size_t bytesToRead = std::min(fileSize, static_cast<std::size_t>(maxSize));
 
-    file.open(QFile::ReadOnly);
+    if (!file.open(QFile::ReadOnly)) {
+        m_dataElementsIdx++;
+        m_dataElementFileIdx = 0;
+        setErrorString(u"Error while reading from file, skipping remaining content of "_s
+                       % file.fileName() % u": "_s % file.errorString());
+        return;
+    }
+
     file.seek(realOffset);
 
     std::memcpy(*data, file.read(bytesToRead).data(), bytesToRead);

@@ -2582,7 +2582,7 @@ void tst_QWebEnginePage::setContent_data()
     QTest::newRow("UTF-8 plain text") << "text/plain; charset=utf-8" << str.toUtf8() << str;
 
     QBuffer out16;
-    out16.open(QIODevice::WriteOnly);
+    QVERIFY2(out16.open(QIODevice::WriteOnly), qPrintable(out16.errorString()));
     QTextStream stream16(&out16);
     stream16.setEncoding(QStringConverter::Utf16);
     stream16 << str;

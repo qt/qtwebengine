@@ -113,7 +113,7 @@ void tst_Printing::pdfContent()
 
     QBuffer buffer;
     buffer.setData((data));
-    buffer.open(QBuffer::ReadWrite);
+    QVERIFY2(buffer.open(QBuffer::ReadWrite), qPrintable(buffer.errorString()));
     document.load(&buffer);
     QTRY_COMPARE(statusChangedSpy.size(), 2);
     QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Status::Ready);
@@ -167,7 +167,10 @@ void tst_Printing::printFromPdfViewer()
 
         QBuffer buffer;
         buffer.setData((data));
-        buffer.open(QBuffer::ReadWrite);
+        if (!buffer.open(QBuffer::ReadWrite)) {
+            qWarning("Failed to open buffer: %s", qPrintable(buffer.errorString()));
+            return false;
+        }
         document.load(&buffer);
         statusChangedSpy.wait(1000);
         if (document.status() != QPdfDocument::Status::Ready)
@@ -221,7 +224,7 @@ void tst_Printing::printHeaderAndFooter()
 
     QBuffer buffer;
     buffer.setData((data));
-    buffer.open(QBuffer::ReadWrite);
+    QVERIFY2(buffer.open(QBuffer::ReadWrite), qPrintable(buffer.errorString()));
     document.load(&buffer);
     QTRY_COMPARE(document.status(), QPdfDocument::Status::Ready);
 

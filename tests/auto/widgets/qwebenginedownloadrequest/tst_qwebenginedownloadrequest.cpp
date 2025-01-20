@@ -983,13 +983,13 @@ void tst_QWebEngineDownloadRequest::downloadUniqueFilenameWithTimestamp()
     // Create the first empty file without uniquifier.
     {
         QFile file(m_profile->downloadPath() + "/" + fileName);
-        file.open(QIODevice::ReadWrite);
+        QVERIFY2(file.open(QIODevice::ReadWrite), qPrintable(file.errorString()));
     }
 
     // Create 99 empty files with uniquifier.
     for (int i = 1; i < 100; i++) {
         QFile file(m_profile->downloadPath() + "/" + baseName + " (" + QString::number(i) + ")." + extension);
-        file.open(QIODevice::ReadWrite);
+        QVERIFY2(file.open(QIODevice::ReadWrite), qPrintable(file.errorString()));
     }
 
     // Create 100th (kMaxUniqueFiles) empty file with uniquifier.
