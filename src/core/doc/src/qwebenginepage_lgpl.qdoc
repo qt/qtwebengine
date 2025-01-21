@@ -703,10 +703,10 @@
 
     \note This method will not affect session or global history for the page.
 
-    \warning This function works only for HTML, for other mime types (such as XHTML and SVG)
+    \warning This function works only for HTML. For other MIME types (such as XHTML and SVG)
     setContent() should be used instead.
 
-    \warning The content will be percent encoded before being sent to the renderer via IPC.
+    \warning The content will be percent encoded before being sent to the renderer.
     This may increase its size. The maximum size of the percent encoded content is
     2 megabytes minus 30 bytes.
 
@@ -725,7 +725,7 @@
 
     \note This method will not affect session or global history for the page.
 
-    \warning The content will be percent encoded before being sent to the renderer via IPC.
+    \warning The content will be percent encoded before being sent to the renderer.
     This may increase its size. The maximum size of the percent encoded content is
     2 megabytes minus 6 bytes plus the length of the mime type string.
 
