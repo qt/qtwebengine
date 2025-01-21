@@ -1747,7 +1747,7 @@ void QWebEnginePagePrivate::setToolTip(const QString &toolTipText)
     \since 5.12
 
     This signal is emitted when the JavaScript \c{window.print()} method is called on the main
-    frame, or the user pressed the print button of PDF viewer plugin.
+    frame, or the user pressed the print button of the PDF viewer plugin.
     Typically, the signal handler can simply call printToPdf().
 
     Since 6.8, this signal is only emitted for the main frame, instead of being emitted for any
@@ -2072,7 +2072,7 @@ QUrl QWebEnginePage::iconUrl() const
 
     By default, this property contains a null icon. If touch icons are disabled
     (see \c QWebEngineSettings::TouchIconsEnabled), the favicon is provided in two sizes
-    (16x16 and 32x32 pixels) encapsulated in \c{QIcon}. Otherwise, single icon is provided
+    (16x16 and 32x32 pixels) encapsulated in \c{QIcon}. Otherwise, a single icon is provided
     with the largest available size.
 
     \sa iconChanged(), iconUrl(), iconUrlChanged(), QWebEngineSettings::TouchIconsEnabled
@@ -2234,7 +2234,7 @@ void QWebEnginePage::setDevToolsPage(QWebEnginePage *devToolsPage)
 
     If remote debugging is enabled (see \l{Qt WebEngine Developer Tools}), the id can be used to
    build the URL to connect to the developer tool websocket:
-   \c{ws://localhost:<debugggin-port>/devtools/page/<id>)}. The websocket can be used to to interact
+   \c{ws://localhost:<debugging-port>/devtools/page/<id>)}. The websocket can be used to to interact
    with the page using the \l{https://chromedevtools.github.io/devtools-protocol/}{DevTools
    Protocol}.
 */
@@ -2525,7 +2525,7 @@ QWebEnginePage::LifecycleState QWebEnginePage::recommendedState() const
   user.
 
   If the page is connected to a \e {view} then this property will be managed
-  automatically by the view according to it's own visibility.
+  automatically by the view according to its own visibility.
 
   \sa lifecycleState
 */

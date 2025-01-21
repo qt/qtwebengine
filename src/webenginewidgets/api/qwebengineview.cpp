@@ -1480,7 +1480,7 @@ void QWebEngineView::printToPdf(const std::function<void(const QByteArray&)> &re
 
     When finished the signal printFinished() is emitted with the \c true for success or \c false for failure.
 
-    It is the users responsibility to ensure the \a printer remains valid until printFinished()
+    It is the user's responsibility to ensure the \a printer remains valid until printFinished()
     has been emitted.
 
     \note Printing runs on the browser process, which is by default not sandboxed.

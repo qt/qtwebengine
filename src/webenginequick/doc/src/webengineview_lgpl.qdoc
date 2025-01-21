@@ -1334,7 +1334,7 @@
 
     If remote debugging is enabled (see \l{Qt WebEngine Developer Tools}), the id can be used to
     build the URL to connect to the developer tool websocket:
-    \c{ws://localhost:<debugggin-port>/devtools/page/<id>)}. The websocket can be used to to interact
+    \c{ws://localhost:<debugging-port>/devtools/page/<id>)}. The websocket can be used to to interact
     with the page using the \l{https://chromedevtools.github.io/devtools-protocol/}{DevTools
     Protocol}.
 */
