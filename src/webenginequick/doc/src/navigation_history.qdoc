@@ -88,21 +88,30 @@
     \qmlproperty WebEngineHistoryModel WebEngineHistory::items
     \readonly
 
-    URLs of back items, forward items, and the current item in the history.
+    A WebEngineHistoryModel object that you can use to extract information about back items,
+    forward items, and the current item in the history.
+
+    \sa WebEngineHistoryModel, backItems, forwardItems
 */
 
 /*!
     \qmlproperty WebEngineHistoryModel WebEngineHistory::backItems
     \readonly
 
-    URLs of visited pages.
+    A WebEngineHistoryModel object that you can use to extract information about back items;
+    that is, the pages that were visited before the current page.
+
+    \sa WebEngineHistoryModel, forwardItems, items
 */
 
 /*!
     \qmlproperty WebEngineHistoryModel WebEngineHistory::forwardItems
     \readonly
 
-    URLs of the pages that were visited after visiting the current page.
+    A WebEngineHistoryModel object that you can use to extract information about forward items;
+    that is, the pages that were visited after the current page.
+
+    \sa WebEngineHistoryModel, backItems, items
 */
 
 /*!
