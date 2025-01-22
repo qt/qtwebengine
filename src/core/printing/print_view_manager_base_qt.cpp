@@ -31,6 +31,10 @@
 #include "printing/print_job_constants.h"
 #include "printing/printed_document.h"
 
+#include <string>
+
+using namespace std::string_literals;
+
 namespace QtWebEngineCore {
 
 namespace {
@@ -158,7 +162,7 @@ void PrintViewManagerBaseQt::NavigationStopped()
 
 std::u16string PrintViewManagerBaseQt::RenderSourceName()
 {
-     return toString16(QLatin1String(""));
+    return u""s;
 }
 
 void PrintViewManagerBaseQt::PrintDocument(scoped_refptr<base::RefCountedMemory> print_data,

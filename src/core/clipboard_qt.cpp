@@ -32,6 +32,8 @@
 
 #include <memory>
 
+using namespace Qt::StringLiterals;
+
 namespace QtWebEngineCore {
 
 static void registerMetaTypes()
@@ -138,7 +140,7 @@ void ClipboardQt::WriteHTML(std::string_view markup, std::optional<std::string_v
     // We need to prepend the charset on macOS to prevent garbled Unicode characters
     // when pasting to certain applications (e.g. Notes, TextEdit)
     // Mirrors the behavior in ui/base/clipboard/clipboard_mac.mm in Chromium.
-    markup_string.prepend(QLatin1String("<meta charset='utf-8'>"));
+    markup_string.prepend("<meta charset='utf-8'>"_L1);
 #endif
 
 #if !defined(Q_OS_WIN)

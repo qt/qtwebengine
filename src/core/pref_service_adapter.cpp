@@ -55,6 +55,8 @@ namespace {
 static const char kPrefMediaDeviceIDSalt[] = "qtwebengine.media_device_salt_id";
 }
 
+using namespace Qt::StringLiterals;
+
 namespace QtWebEngineCore {
 
 void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
@@ -64,11 +66,12 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     factory.set_command_line_prefs(base::MakeRefCounted<ChromeCommandLinePrefStore>(
             base::CommandLine::ForCurrentProcess()));
 
-    QString userPrefStorePath = profileAdapter.dataPath();
+    QString userPrefStorePath;
+    userPrefStorePath += profileAdapter.dataPath();
     if (!profileAdapter.isOffTheRecord() && !userPrefStorePath.isEmpty() &&
             const_cast<ProfileAdapter *>(&profileAdapter)->ensureDataPathExists()) {
         userPrefStorePath += QDir::separator();
-        userPrefStorePath += QStringLiteral("user_prefs.json");
+        userPrefStorePath += "user_prefs.json"_L1;
         factory.set_user_prefs(base::MakeRefCounted<JsonPrefStore>(toFilePath(userPrefStorePath)));
     } else {
         factory.set_user_prefs(new InMemoryPrefStore);

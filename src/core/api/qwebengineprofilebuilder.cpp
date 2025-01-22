@@ -10,6 +10,8 @@
 #include <QDir>
 #include <QStandardPaths>
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QWebEngineProfileBuilder
     \brief The QWebEngineProfileBuilder class provides a way to construct \l{QWebEngineProfile}.
@@ -56,11 +58,12 @@ QWebEngineProfile *QWebEngineProfileBuilder::createProfile(const QString &storag
                                                            QObject *parent) const
 {
     auto buildLocationFromStandardPath = [](const QString &standardPath, const QString &name) {
-        QString location = standardPath;
+        QString location;
+        location += standardPath;
         if (location.isEmpty())
-            location = QDir::homePath() % QLatin1String("/.") % QCoreApplication::applicationName();
+            location += QDir::homePath() % "/."_L1 % QCoreApplication::applicationName();
 
-        location.append(QLatin1String("/QtWebEngine/") % name);
+        location += "/QtWebEngine/"_L1 % name;
         return location;
     };
 

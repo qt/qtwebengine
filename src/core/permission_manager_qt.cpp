@@ -26,6 +26,8 @@
 #include "web_contents_delegate_qt.h"
 #include "web_engine_settings.h"
 
+using namespace Qt::StringLiterals;
+
 namespace QtWebEngineCore {
 
 static QWebEnginePermission::PermissionType toQt(blink::PermissionType type)
@@ -198,14 +200,15 @@ PermissionManagerQt::PermissionManagerQt(ProfileAdapter *profileAdapter)
     factory.set_command_line_prefs(base::MakeRefCounted<ChromeCommandLinePrefStore>(
             base::CommandLine::ForCurrentProcess()));
 
-    QString userPrefStorePath = profileAdapter->dataPath();
+    QString userPrefStorePath;
+    userPrefStorePath += profileAdapter->dataPath();
     auto prefRegistry = base::MakeRefCounted<PrefRegistrySimple>();
 
     auto policy = profileAdapter->persistentPermissionsPolicy();
     if (!profileAdapter->isOffTheRecord() && policy == ProfileAdapter::PersistentPermissionsPolicy::StoreOnDisk &&
             !userPrefStorePath.isEmpty() && profileAdapter->ensureDataPathExists()) {
         userPrefStorePath += QDir::separator();
-        userPrefStorePath += QStringLiteral("permissions.json");
+        userPrefStorePath += "permissions.json"_L1;
         factory.set_user_prefs(base::MakeRefCounted<JsonPrefStore>(toFilePath(userPrefStorePath)));
     } else {
         factory.set_user_prefs(new InMemoryPrefStore);

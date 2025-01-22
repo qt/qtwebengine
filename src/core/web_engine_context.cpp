@@ -126,6 +126,8 @@
 #define STRINGIFY_LITERAL(x) #x
 #define STRINGIFY_EXPANDED(x) STRINGIFY_LITERAL(x)
 
+using namespace Qt::StringLiterals;
+
 namespace QtWebEngineCore {
 
 Q_WEBENGINE_LOGGING_CATEGORY(webEngineContextLog, "qt.webenginecontext")
@@ -202,23 +204,23 @@ public:
         return Unknown;
     }
 
-    static Vendor deviceNameToVendor(const QString &deviceName)
+    static Vendor deviceNameToVendor(QLatin1StringView deviceName)
     {
         // TODO: Test and add more vendors to the list.
-        if (deviceName.contains(QLatin1StringView("AMD"), Qt::CaseInsensitive))
+        if (deviceName.contains("AMD"_L1, Qt::CaseInsensitive))
             return AMD;
-        if (deviceName.contains(QLatin1StringView("Intel"), Qt::CaseInsensitive))
+        if (deviceName.contains("Intel"_L1, Qt::CaseInsensitive))
             return Intel;
-        if (deviceName.contains(QLatin1StringView("Nvidia"), Qt::CaseInsensitive))
+        if (deviceName.contains("Nvidia"_L1, Qt::CaseInsensitive))
             return Nvidia;
 
 #if BUILDFLAG(IS_OZONE)
-        if (deviceName.contains(QLatin1StringView("Mesa llvmpipe")))
+        if (deviceName.contains("Mesa llvmpipe"_L1))
             return Mesa;
 #endif
 
 #if defined(Q_OS_MACOS)
-        if (deviceName.contains(QLatin1StringView("Apple")))
+        if (deviceName.contains("Apple"_L1))
             return Apple;
 #endif
 
@@ -355,7 +357,7 @@ static bool usingSupportedSGBackend()
     QString device = QQuickWindow::sceneGraphBackend();
 
     for (int index = 0; index < args.count(); ++index) {
-        if (args.at(index).startsWith(QLatin1StringView("--device="))) {
+        if (args.at(index).startsWith("--device="_L1)) {
             device = args.at(index).mid(9);
             break;
         }
@@ -366,7 +368,7 @@ static bool usingSupportedSGBackend()
     if (device.isEmpty())
         device = qEnvironmentVariable("QMLSCENE_DEVICE");
 
-    return device.isEmpty() || device == QLatin1StringView("rhi");
+    return device.isEmpty() || device == "rhi"_L1;
 }
 
 static std::string getGLType(bool disableGpu)
@@ -414,44 +416,36 @@ void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
 static void logContext(const std::string &glType, base::CommandLine *cmd)
 {
     if (Q_UNLIKELY(webEngineContextLog().isDebugEnabled())) {
-        QStringList log;
-        log << QLatin1StringView("\n");
+        QString log;
+        log += u'\n';
 
-        log << QLatin1StringView("Chromium GL Backend: " + glType) << QLatin1StringView("\n");
-        log << QLatin1StringView("Chromium ANGLE Backend: " + getAngleType(glType, cmd))
-            << QLatin1StringView("\n");
-        log << QLatin1StringView("Chromium Vulkan Backend: " + getVulkanType(cmd))
-            << QLatin1StringView("\n");
-        log << QLatin1StringView("\n");
+        log += "Chromium GL Backend: "_L1 + QLatin1StringView(glType) + "\n"_L1;
+        log += "Chromium ANGLE Backend: "_L1 + QLatin1StringView(getAngleType(glType, cmd)) + u'\n';
+        log += "Chromium Vulkan Backend: "_L1 + QLatin1StringView(getVulkanType(cmd)) + u'\n';
+        log += u'\n';
 
-        log << QLatin1StringView("QSG RHI Backend:") << QSGRhiSupport::instance()->rhiBackendName()
-            << QLatin1StringView("\n");
-        log << QLatin1StringView("QSG RHI Backend Supported:")
-            << QLatin1StringView(usingSupportedSGBackend() ? "yes" : "no")
-            << QLatin1StringView("\n");
-        log << QLatin1StringView("GPU Vendor: "
-                                 + GPUInfo::vendorToString(GPUInfo::instance()->vendor()))
-            << QLatin1StringView("\n");
-        log << QLatin1StringView("\n");
+        log += "QSG RHI Backend: "_L1 + QSGRhiSupport::instance()->rhiBackendName() + u'\n';
+        log += "QSG RHI Backend Supported: "_L1 + (usingSupportedSGBackend() ? "yes"_L1 : "no"_L1)
+                + u'\n';
+        log += "GPU Vendor: "_L1
+                + QLatin1StringView(GPUInfo::vendorToString(GPUInfo::instance()->vendor())) + u'\n';
+        log += u'\n';
 
 #if QT_CONFIG(opengl)
 #if BUILDFLAG(IS_OZONE)
-        log << QLatin1StringView("Using GLX:")
-            << QLatin1StringView(OzoneUtilQt::usingGLX() ? "yes" : "no") << QLatin1StringView("\n");
-        log << QLatin1StringView("Using EGL:")
-            << QLatin1StringView(OzoneUtilQt::usingEGL() ? "yes" : "no") << QLatin1StringView("\n");
+        log += "Using GLX: "_L1 + (OzoneUtilQt::usingGLX() ? "yes"_L1 : "no"_L1) + u'\n';
+        log += "Using EGL: "_L1 + (OzoneUtilQt::usingEGL() ? "yes"_L1 : "no"_L1) + u'\n';
 #endif // BUILDFLAG(IS_OZONE)
-        log << QLatin1StringView("Using Shared GL:")
-            << QLatin1StringView(QOpenGLContext::globalShareContext() ? "yes" : "no")
-            << QLatin1StringView("\n");
+        log += "Using Shared GL:"_L1 + (QOpenGLContext::globalShareContext() ? "yes"_L1 : "no"_L1)
+                + u'\n';
 #endif // QT_CONFIG(opengl)
 
-        log << QLatin1StringView("Init Parameters:\n");
+        log += "Init Parameters:\n"_L1;
         const base::CommandLine::SwitchMap switchMap = cmd->GetSwitches();
         for (const auto &pair : switchMap)
-            log << QStringLiteral(" *  %1 %2\n").arg(toQt(pair.first)).arg(toQt(pair.second));
+            log += " *  "_L1 + toQt(pair.first) + u' ' + toQt(pair.second) + u'\n';
 
-        qCDebug(webEngineContextLog) << qPrintable(log.join(QLatin1Char(' ')));
+        qCDebug(webEngineContextLog, "%ls", qUtf16Printable(log));
     }
 }
 
@@ -463,7 +457,7 @@ static void setupProxyPac(base::CommandLine *commandLine)
         QUrl pac_url(toQt(commandLine->GetSwitchValueASCII(switches::kProxyPacUrl)));
         if (pac_url.isValid()
             && (pac_url.isLocalFile()
-                || !pac_url.scheme().compare(QLatin1StringView("qrc"), Qt::CaseInsensitive))) {
+                || !pac_url.scheme().compare("qrc"_L1, Qt::CaseInsensitive))) {
             QFile file;
             if (pac_url.isLocalFile())
                 file.setFileName(pac_url.toLocalFile());

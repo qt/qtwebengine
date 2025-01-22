@@ -32,6 +32,8 @@
 #include <QDir>
 #include <QCoreApplication>
 
+using namespace Qt::StringLiterals;
+
 // see also src/core/type_conversion.h
 inline base::FilePath::StringType toFilePathString(const QString &str)
 {
@@ -131,8 +133,8 @@ inline bool VerifyWords(const convert_dict::DicReader::WordList& org_words,
 #if defined(Q_OS_DARWIN) && defined(QT_MAC_FRAMEWORK_BUILD)
 QString frameworkIcuDataPath()
 {
-    return QLibraryInfo::location(QLibraryInfo::LibrariesPath) +
-            QStringLiteral("/QtWebEngineCore.framework/Resources/");
+    return QLibraryInfo::location(QLibraryInfo::LibrariesPath)
+            + "/QtWebEngineCore.framework/Resources/"_L1;
 }
 #endif
 
@@ -155,15 +157,14 @@ int main(int argc, char *argv[])
     }
 #if defined(USE_ICU_FILE)
     bool icuDataDirFound = false;
-    QString icuDataDir = QLibraryInfo::path(QLibraryInfo::DataPath)
-            % QLatin1String("/resources");
+    QString icuDataDir = QLibraryInfo::path(QLibraryInfo::DataPath) % "/resources"_L1;
 
     // Try to look up the path to the ICU data directory via an environment variable
     // (e.g. for the case when the tool is ran during build phase, and regular installed
     // ICU data file is not available).
     const QString icuPossibleEnvDataDir = qEnvironmentVariable("QT_WEBENGINE_ICU_DATA_DIR");
     const QString appPath = QCoreApplication::applicationDirPath();
-    QLatin1String icuDataFilePath("/icudtl.dat");
+    const auto icuDataFilePath = "/icudtl.dat"_L1;
     if (!icuPossibleEnvDataDir.isEmpty() && QFileInfo::exists(icuPossibleEnvDataDir)) {
         icuDataDir = icuPossibleEnvDataDir;
         icuDataDirFound = true;

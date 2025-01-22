@@ -22,6 +22,8 @@
 #include "type_conversion.h"
 #include "web_contents_delegate_qt.h"
 
+using namespace Qt::StringLiterals;
+
 namespace QtWebEngineCore {
 
 DownloadManagerDelegateQt::DownloadManagerDelegateQt(ProfileAdapter *profileAdapter)
@@ -266,8 +268,8 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
     }
 
     if (suggestedFilePath.isEmpty()) {
-        suggestedFilePath = QFileInfo(toQt(suggested_path.AsUTF8Unsafe())).completeBaseName()
-                + QStringLiteral(".mhtml");
+        suggestedFilePath +=
+                QFileInfo(toQt(suggested_path.AsUTF8Unsafe())).completeBaseName() + ".mhtml"_L1;
     } else {
         acceptedByDefault = true;
     }
