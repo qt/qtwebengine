@@ -93,6 +93,8 @@
 #include "extensions/extension_web_contents_observer_qt.h"
 #endif
 
+using namespace Qt::StringLiterals;
+
 namespace QtWebEngineCore {
 
 #define CHECK_INITIALIZED(return_value)         \
@@ -659,12 +661,12 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
     Q_UNUSED(guard);
 
     // Add URL scheme if missing from view-source URL.
-    if (request.url().scheme() == content::kViewSourceScheme) {
+    if (request.url().scheme() == QLatin1StringView(content::kViewSourceScheme)) {
         QUrl pageUrl = QUrl(request.url().toString().remove(0,
                                                            strlen(content::kViewSourceScheme) + 1));
         if (pageUrl.scheme().isEmpty()) {
             QUrl extendedUrl = QUrl::fromUserInput(pageUrl.toString());
-            extendedUrl = QUrl(QString("%1:%2").arg(content::kViewSourceScheme,
+            extendedUrl = QUrl(QString("%1:%2").arg(QLatin1StringView(content::kViewSourceScheme),
                                                     extendedUrl.toString()));
             gurl = toGurl(extendedUrl);
         }
@@ -1620,7 +1622,8 @@ static QMimeData *mimeDataFromDropData(const content::DropData &dropData)
     if (!dropData.custom_data.empty()) {
         base::Pickle pickle;
         ui::WriteCustomDataToPickle(dropData.custom_data, &pickle);
-        mimeData->setData(QLatin1String(ui::kMimeTypeWebCustomData), QByteArray((const char*)pickle.data(), pickle.size()));
+        mimeData->setData(QLatin1StringView(ui::kMimeTypeWebCustomData),
+                          QByteArray((const char *)pickle.data(), pickle.size()));
     }
     return mimeData;
 }
@@ -1750,8 +1753,9 @@ static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeDat
         dropData->html = toOptionalString16(mimeData->html());
     if (mimeData->hasText())
         dropData->text = toOptionalString16(mimeData->text());
-    if (mimeData->hasFormat(QLatin1String(ui::kMimeTypeWebCustomData))) {
-        const QByteArray customData = mimeData->data(QLatin1String(ui::kMimeTypeWebCustomData));
+    const QString mimeType = QString::fromLatin1(ui::kMimeTypeWebCustomData);
+    if (mimeData->hasFormat(mimeType)) {
+        const QByteArray customData = mimeData->data(mimeType);
         const base::span custom_data(customData.constData(), (long unsigned)customData.length());
         if (auto maybe_data = ui::ReadCustomDataIntoMap(base::as_bytes(custom_data)))
             dropData->custom_data = *std::move(maybe_data);
@@ -1966,7 +1970,7 @@ QString WebContentsAdapter::frameHtmlName(quint64 id) const
 {
     CHECK_INITIALIZED_AND_VALID_FRAME(id, ftn, QString());
     auto &maybeName = ftn->html_name();
-    return maybeName ? QString::fromStdString(*maybeName) : QString("");
+    return maybeName ? QString::fromStdString(*maybeName) : ""_L1;
 }
 
 QList<quint64> WebContentsAdapter::frameChildren(quint64 id) const

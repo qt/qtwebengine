@@ -51,6 +51,8 @@
 #endif
 #include <QWheelEvent>
 
+using namespace Qt::StringLiterals;
+
 namespace QtWebEngineCore {
 
 using namespace blink;
@@ -61,24 +63,24 @@ static KeyboardDriver keyboardDriverImpl()
 {
     QString platformName = QGuiApplication::platformName();
 
-    if (platformName == QLatin1String("windows"))
+    if (platformName == "windows"_L1)
         return KeyboardDriver::Windows;
 
-    if (platformName == QLatin1String("cocoa"))
+    if (platformName == "cocoa"_L1)
         return KeyboardDriver::Cocoa;
 
-    if (platformName == QLatin1String("xcb") || platformName == QLatin1String("wayland"))
+    if (platformName == "xcb"_L1 || platformName == "wayland"_L1)
         return KeyboardDriver::Xkb;
 
 #if QT_CONFIG(libinput)
     // Based on QEglFSIntegration::createInputHandlers and QLibInputKeyboard::processKey.
-    if (platformName == QLatin1String("eglfs") && !qEnvironmentVariableIntValue("QT_QPA_EGLFS_NO_LIBINPUT"))
+    if (platformName == "eglfs"_L1 && !qEnvironmentVariableIntValue("QT_QPA_EGLFS_NO_LIBINPUT"))
         return KeyboardDriver::Xkb;
 #endif
 
 #if QT_CONFIG(evdev)
     // Based on QEglFSIntegration::createInputHandlers.
-    if (platformName == QLatin1String("eglfs"))
+    if (platformName == "eglfs"_L1)
         return KeyboardDriver::Evdev;
 #endif
 

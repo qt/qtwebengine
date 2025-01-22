@@ -57,6 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
 using namespace QtWebEngineCore;
 
 static QWebEnginePage::WebWindowType toWindowType(WebContentsAdapterClient::WindowOpenDisposition disposition)
@@ -1341,11 +1342,10 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
             QString linkText = d->view->lastContextMenuRequest()->linkText().toHtmlEscaped();
             QString title = d->view->lastContextMenuRequest()->titleText();
             if (!title.isEmpty())
-                title = QStringLiteral(" title=\"%1\"").arg(title.toHtmlEscaped());
+                title = " title=\""_L1 + title.toHtmlEscaped() + u'"';
             QMimeData *data = new QMimeData();
             data->setText(urlString);
-            QString html = QStringLiteral("<a href=\"") + urlString + QStringLiteral("\"") + title + QStringLiteral(">")
-                         + linkText + QStringLiteral("</a>");
+            QString html = "<a href=\""_L1 + urlString + u'"' + title + u'>' + linkText + "</a>"_L1;
             data->setHtml(html);
             data->setUrls(QList<QUrl>() << d->view->lastContextMenuRequest()->linkUrl());
             QGuiApplication::clipboard()->setMimeData(data);
@@ -1376,13 +1376,13 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
                     d->view->lastContextMenuRequest()->mediaUrl().toString(QUrl::FullyEncoded);
             QString alt = d->view->lastContextMenuRequest()->altText();
             if (!alt.isEmpty())
-                alt = QStringLiteral(" alt=\"%1\"").arg(alt.toHtmlEscaped());
+                alt = " alt=\""_L1 + alt.toHtmlEscaped() + u'"';
             QString title = d->view->lastContextMenuRequest()->titleText();
             if (!title.isEmpty())
-                title = QStringLiteral(" title=\"%1\"").arg(title.toHtmlEscaped());
+                title = " title=\""_L1 + title.toHtmlEscaped() + u'"';
             QMimeData *data = new QMimeData();
             data->setText(urlString);
-            QString html = QStringLiteral("<img src=\"") + urlString + QStringLiteral("\"") + title + alt + QStringLiteral("></img>");
+            QString html = "<img src=\""_L1 + urlString + u'"' + title + alt + "></img>"_L1;
             data->setHtml(html);
             data->setUrls(QList<QUrl>() << d->view->lastContextMenuRequest()->mediaUrl());
             QGuiApplication::clipboard()->setMimeData(data);
@@ -1406,16 +1406,15 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
                     d->view->lastContextMenuRequest()->mediaUrl().toString(QUrl::FullyEncoded);
             QString title = d->view->lastContextMenuRequest()->titleText();
             if (!title.isEmpty())
-                title = QStringLiteral(" title=\"%1\"").arg(title.toHtmlEscaped());
+                title = " title=\""_L1 + title.toHtmlEscaped() + u'"';
             QMimeData *data = new QMimeData();
             data->setText(urlString);
-            if (d->view->lastContextMenuRequest()->mediaType()
-                == QWebEngineContextMenuRequest::MediaTypeAudio)
-                data->setHtml(QStringLiteral("<audio src=\"") + urlString + QStringLiteral("\"") + title +
-                              QStringLiteral("></audio>"));
-            else
-                data->setHtml(QStringLiteral("<video src=\"") + urlString + QStringLiteral("\"") + title +
-                              QStringLiteral("></video>"));
+            const bool isAudio = d->view->lastContextMenuRequest()->mediaType()
+                    == QWebEngineContextMenuRequest::MediaTypeAudio;
+            const auto avTagName = isAudio ? "audio"_L1 : "video"_L1;
+            QString html = u'<' + avTagName + "src=\""_L1 + urlString + u'"' + title + "></"_L1
+                    + avTagName + u'>';
+            data->setHtml(html);
             data->setUrls(QList<QUrl>() << d->view->lastContextMenuRequest()->mediaUrl());
             QGuiApplication::clipboard()->setMimeData(data);
         }

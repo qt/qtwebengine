@@ -44,13 +44,16 @@
 #include <QString>
 #include <QStandardPaths>
 
+using namespace Qt::StringLiterals;
+
 namespace {
 inline QString buildLocationFromStandardPath(const QString &standardPath, const QString &name) {
-    QString location = standardPath;
+    QString location;
+    location += standardPath;
     if (location.isEmpty())
-        location = QDir::homePath() % QLatin1String("/.") % QCoreApplication::applicationName();
+        location += QDir::homePath() % "/."_L1 % QCoreApplication::applicationName();
 
-    location.append(QLatin1String("/QtWebEngine/") % name);
+    location += "/QtWebEngine/"_L1 % name;
     return location;
 }
 }
@@ -307,7 +310,7 @@ QString ProfileAdapter::httpCachePath() const
         return QString();
     QString basePath = cachePath();
     if (!basePath.isEmpty())
-        return basePath % QLatin1String("/Cache");
+        return basePath % "/Cache"_L1;
     return QString();
 }
 

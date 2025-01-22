@@ -12,6 +12,8 @@
 
 #include <memory>
 
+using namespace Qt::StringLiterals;
+
 namespace QtWebEngineCore {
 
 void QrcUrlSchemeHandler::requestStarted(QWebEngineUrlRequestJob *job)
@@ -33,7 +35,7 @@ void QrcUrlSchemeHandler::requestStarted(QWebEngineUrlRequestJob *job)
     QFileInfo fileInfo(*file);
     QMimeDatabase mimeDatabase;
     QMimeType mimeType = mimeDatabase.mimeTypeForFile(fileInfo);
-    if (mimeType.name() == QStringLiteral("application/x-extension-html"))
+    if (mimeType.name() == "application/x-extension-html"_L1)
         job->reply("text/html", file.release());
     else
         job->reply(mimeType.name().toUtf8(), file.release());

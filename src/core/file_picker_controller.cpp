@@ -18,6 +18,8 @@
 #include <QStringList>
 #include <QVariant>
 
+using namespace Qt::StringLiterals;
+
 namespace QtWebEngineCore {
 
 class FilePickerControllerPrivate {
@@ -75,7 +77,7 @@ void FilePickerController::accepted(const QStringList &files)
             continue;
         }
 
-        if (urlString.startsWith("file:")) {
+        if (urlString.startsWith("file:"_L1)) {
             base::FilePath filePath = toFilePath(urlString).NormalizePathSeparators();
             std::vector<base::FilePath::StringType> pathComponents;
             // Splits the file URL into scheme, host name, path and file name.
@@ -91,7 +93,7 @@ void FilePickerController::accepted(const QStringList &files)
 #if defined(Q_OS_WIN)
                 // There is no slash at the end of the file scheme and it is valid on Windows: file:C:/
                 if (scheme.size() == 7 && scheme.at(5).isLetter() && scheme.at(6) == ':') {
-                    absolutePath += scheme.at(5) + ":/";
+                    absolutePath += scheme.at(5) + ":/"_L1;
                 } else {
 #endif
                     qWarning("Ignoring invalid item in FilePickerController::accepted(QStringList): %s", qPrintable(urlString));
@@ -107,7 +109,7 @@ void FilePickerController::accepted(const QStringList &files)
                 && !base::FilePath::IsSeparator(urlString.at(7).toLatin1())) {
 #if defined(Q_OS_WIN)
                 if (urlString.at(8) != ':' && pathComponents.size() > 2) {
-                    absolutePath += "//";
+                    absolutePath += "//"_L1;
 #else
                 if (pathComponents.size() > 2) {
                     absolutePath += "/";
@@ -161,7 +163,7 @@ static QStringList listRecursively(const QDir &dir)
     const QFileInfoList infoList(dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden));
     for (const QFileInfo &fileInfo : infoList) {
         if (fileInfo.isDir()) {
-            ret.append(fileInfo.absolutePath() + QStringLiteral("/.")); // Match chromium's behavior. See chrome/browser/file_select_helper.cc
+            ret.append(fileInfo.absolutePath() + "/."_L1); // Match chromium's behavior. See chrome/browser/file_select_helper.cc
             ret.append(listRecursively(QDir(fileInfo.absoluteFilePath())));
         } else
             ret.append(fileInfo.absoluteFilePath());
@@ -256,7 +258,7 @@ QStringList FilePickerController::nameFilters(const QStringList &acceptedMimeTyp
             if (mimeType.isValid()) {
                 QString glob = "*" + type;
                 acceptedGlobs.append(glob);
-                nameFilters.append(mimeType.comment() + " (" + glob + ")");
+                nameFilters.append(mimeType.comment() + " ("_L1 + glob + ")");
             }
         } else if (type.contains("/") && !type.endsWith("*")) {
             // All suffixes for a given MIME type
@@ -264,9 +266,9 @@ QStringList FilePickerController::nameFilters(const QStringList &acceptedMimeTyp
             if (mimeType.isValid() && !mimeType.globPatterns().isEmpty()) {
                 QString globs = mimeType.globPatterns().join(" ");
                 acceptedGlobs.append(mimeType.globPatterns());
-                nameFilters.append(mimeType.comment() + " (" + globs + ")");
+                nameFilters.append(mimeType.comment() + " ("_L1 + globs + ")");
             }
-        } else if (type.endsWith("/*")) {
+        } else if (type.endsWith("/*"_L1)) {
             // All MIME types for audio/*, image/* or video/*
             // as separate filters as Chrome does
             static const QList<QMimeType> &allMimeTypes = mimeDatabase.allMimeTypes();
@@ -275,7 +277,7 @@ QStringList FilePickerController::nameFilters(const QStringList &acceptedMimeTyp
                 if (m.name().startsWith(type) && !m.globPatterns().isEmpty()) {
                     QString globs = m.globPatterns().join(" ");
                     acceptedGlobs.append(m.globPatterns());
-                    nameFilters.append(m.comment() + " (" + globs + ")");
+                    nameFilters.append(m.comment() + " ("_L1 + globs + ")");
                 }
             }
         } else {

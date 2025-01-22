@@ -7,6 +7,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 
+using namespace Qt::StringLiterals;
 using QtWebEngineCore::UserScript;
 
 QT_BEGIN_NAMESPACE
@@ -161,7 +162,7 @@ void QWebEngineScript::setSourceUrl(const QUrl &url)
     QFile file;
     if (url.isLocalFile()) {
         file.setFileName(url.toLocalFile());
-    } else if (url.scheme().compare(QLatin1String("qrc"), Qt::CaseInsensitive) == 0) {
+    } else if (url.scheme().compare("qrc"_L1, Qt::CaseInsensitive) == 0) {
         if (url.authority().isEmpty())
             file.setFileName(QLatin1Char(':') + url.path());
     }

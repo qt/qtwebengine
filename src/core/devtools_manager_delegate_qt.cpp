@@ -20,6 +20,7 @@
 #include "net/socket/tcp_server_socket.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using namespace Qt::StringLiterals;
 using content::DevToolsAgentHost;
 
 namespace {
@@ -52,7 +53,7 @@ private:
 namespace QtWebEngineCore {
 
 DevToolsServerQt::DevToolsServerQt()
-    : m_bindAddress(QLatin1String("127.0.0.1"))
+    : m_bindAddress(u"127.0.0.1"_s)
     , m_port(0)
     , m_valid(false)
     , m_isStarted(false)
