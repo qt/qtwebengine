@@ -309,7 +309,7 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
         download::DownloadItem::IN_PROGRESS,
         -1, /* totalBytes */
         0, /* receivedBytes */
-        QStringLiteral("application/x-mimearchive"),
+        u"application/x-mimearchive"_s,
         suggestedFilePath,
         suggestedSaveFormat,
         acceptedByDefault,
