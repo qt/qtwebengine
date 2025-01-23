@@ -191,9 +191,9 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
     if (!widevine_argument.empty())
         pluginPaths << QtWebEngineCore::toQt(widevine_argument);
     else {
-        pluginPaths << webenginePluginsPath() + QStringLiteral("/") + QLatin1StringView(kWidevineCdmFileName);
+        pluginPaths << webenginePluginsPath() + u'/' + QLatin1StringView(kWidevineCdmFileName);
 #if QT_CONFIG(webengine_pepper_plugins)
-        pluginPaths << ppapiPluginsPath() + QStringLiteral("/") + QLatin1StringView(kWidevineCdmFileName);
+        pluginPaths << ppapiPluginsPath() + u'/' + QLatin1StringView(kWidevineCdmFileName);
 #endif
 #if defined(Q_OS_OSX)
     QDir potentialWidevineDir("/Applications/Google Chrome.app/Contents/Frameworks");

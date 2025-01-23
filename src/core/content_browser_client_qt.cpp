@@ -993,7 +993,7 @@ blink::UserAgentMetadata ContentBrowserClientQt::GetUserAgentMetadata()
 
 std::string ContentBrowserClientQt::GetProduct()
 {
-    QString productName(qApp->applicationName() % '/' % qApp->applicationVersion());
+    QString productName(qApp->applicationName() % u'/' % qApp->applicationVersion());
     return productName.toStdString();
 }
 

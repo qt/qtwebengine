@@ -158,7 +158,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
         suggestedFilename = QStringLiteral("qwe_download");
         QMimeType mimeType = QMimeDatabase().mimeTypeForName(mimeTypeString);
         if (mimeType.isValid() && !mimeType.preferredSuffix().isEmpty())
-            suggestedFilename += QStringLiteral(".") + mimeType.preferredSuffix();
+            suggestedFilename += u'.' + mimeType.preferredSuffix();
     }
 
     QDir defaultDownloadDirectory(m_profileAdapter->downloadPath());
