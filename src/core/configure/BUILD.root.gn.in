@@ -107,7 +107,7 @@ if (ozone_platform_x11) {
 }
 
 shared_library("QtWebEngineCore") {
-  rsp_types = [ "objects", "archives", "libs", "ldir"]
+  rsp_types = [ "objects", "archives", "libs", "ldir", "lflags" ]
   configs += [
     ":cpp20_config",
     ":QtWebEngineCore_config",
@@ -825,7 +825,7 @@ if (enable_extensions) {
 
 if (enable_spellcheck) {
   shared_library("convert_dict") {
-    rsp_types = [ "objects", "archives", "libs", "ldir" ]
+    rsp_types = [ "objects", "archives", "libs", "ldir", "lflags" ]
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
     deps = [
       "//chrome/tools/convert_dict:lib",

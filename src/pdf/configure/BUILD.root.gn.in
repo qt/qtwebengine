@@ -50,7 +50,7 @@ config("cpp20_config") {
 
 static_library("QtPdf") {
   complete_static_lib = true
-  rsp_types = [ "objects", "archives", "libs", "ldir" ]
+  rsp_types = [ "objects", "archives", "libs", "ldir", "lflags" ]
   configs += [
     ":cpp20_config",
     ":QtPdf_config"

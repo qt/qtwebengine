@@ -242,6 +242,16 @@ macro(setup_toolchains)
     unset(toolchain_in_file)
 endmacro()
 
+function(get_rustc_version_from_runtime result)
+    execute_process(
+        COMMAND ${Rustc_EXECUTABLE} -V
+        OUTPUT_VARIABLE rust_output
+        ERROR_QUIET
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+     )
+     set(${result} ${rust_output} PARENT_SCOPE)
+endfunction()
+
 macro(append_build_type_setup)
     list(APPEND gnArgArg
         use_ml=false
@@ -257,12 +267,34 @@ macro(append_build_type_setup)
         use_partition_alloc_as_malloc=false
         use_custom_libcxx=false
         use_custom_libcxx_for_host=false
-        enable_rust=false # We do not yet support rust
-        enable_chromium_prelude=false
-        enable_rust_png=false
-        pdf_enable_fontations=false
         assert_cpp20=false
     )
+    if (QT_FEATURE_webengine_rust_build)
+      list(APPEND gnArgArg
+          enable_rust=true
+          enable_rust_cxx=true
+          enable_tetanus=false # assuming stable rust
+          enable_chromium_prelude=false)
+
+      find_program(Rustc_EXECUTABLE NAMES rustc)
+      # if(NOT Rustc_EXECUTABLE)
+      #     set(Rustc_EXECUTABLE "/usr/bin/rustc")
+      # endif()
+      get_filename_component(rustBasePath ${Rustc_EXECUTABLE} DIRECTORY)
+      get_filename_component(rustBasePath ${rustBasePath} DIRECTORY)
+      get_rustc_version_from_runtime(rustc_version)
+      list(APPEND gnArgArg rust_bindgen_root="${rustBasePath}")
+      list(APPEND gnArgArg rust_sysroot_absolute="${rustBasePath}")
+      list(APPEND gnArgArg rustc_version="${rustc_version}")
+    else()
+      list(APPEND gnArgArg
+          enable_rust=false
+          enable_rust_cxx=false
+          enable_rust_png=false
+          enable_chromium_prelude=false
+          pdf_enable_fontations=false)
+    endif()
+
     if(${config} STREQUAL "Debug")
         list(APPEND gnArgArg
             is_debug=true
@@ -335,7 +367,13 @@ macro(append_build_type_setup)
 endmacro()
 
 function(get_clang_version_from_runtime_path result)
-if(CLANG AND CMAKE_CXX_COMPILER)
+    if(CLANG AND CMAKE_CXX_COMPILER)
+        set(clang_bin ${CMAKE_CXX_COMPILER})
+    elseif (MSVC)
+        set(clang_bin "clang-cl.exe")
+    else()
+        set(clang_bin "clang")
+    endif()
     if(NOT DEFINED CLANG_RUNTIME_PATH)
         set(CLANG_PRINT_RUNTIME_DIR_COMMAND -print-runtime-dir)
         if (MSVC)
@@ -343,7 +381,7 @@ if(CLANG AND CMAKE_CXX_COMPILER)
             set(CLANG_PRINT_RUNTIME_DIR_COMMAND /clang:-print-runtime-dir)
         endif()
         execute_process(
-           COMMAND ${CMAKE_CXX_COMPILER} ${CLANG_PRINT_RUNTIME_DIR_COMMAND}
+           COMMAND ${clang_bin} ${CLANG_PRINT_RUNTIME_DIR_COMMAND}
            OUTPUT_VARIABLE clang_output
            ERROR_QUIET
            OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -359,7 +397,44 @@ if(CLANG AND CMAKE_CXX_COMPILER)
          string(REGEX MATCH "[0-9]+" clang_run_time_path_version ${CMAKE_CXX_COMPILER_VERSION})
      endif()
      set(${result} ${clang_run_time_path_version} PARENT_SCOPE)
-endif()
+     unset(clang_bin)
+endfunction()
+
+function(get_clang_base_path result)
+    if(NOT CLANG AND NOT QT_FEATURE_webengine_rust_build AND QT_FEATURE_use_lld_linker)
+        set(CLANG_FULL_PATH ${CMAKE_LINKER})
+    else()
+        if(CLANG AND MACOS)
+            set(clang_bin ${CMAKE_OBJCXX_COMPILER})
+        elseif(CLANG)
+            set(clang_bin ${CMAKE_CXX_COMPILER})
+        elseif(MSVC)
+            set(clang_bin "clang-cl.exe")
+        else()
+            set(clang_bin "clang")
+        endif()
+        if(NOT DEFINED CLANG_FULL_PATH)
+            if(MSVC)
+                set(CLANG_PRINT_PATH_COMMAND /clang:-print-prog-name=clang)
+            elseif(LINUX)
+                set(CLANG_PRINT_PATH_COMMAND -print-prog-name=clang-check)
+            else()
+                set(CLANG_PRINT_PATH_COMMAND -print-prog-name=clang)
+            endif()
+            execute_process(
+                COMMAND ${clang_bin} ${CLANG_PRINT_PATH_COMMAND}
+                OUTPUT_VARIABLE clang_output
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+            )
+            cmake_path(CONVERT "${clang_output}" TO_CMAKE_PATH_LIST clang_output NORMALIZE)
+            set(CLANG_FULL_PATH "${clang_output}" CACHE INTERNAL "internal")
+            mark_as_advanced(CLANG_FULL_PATH)
+        endif()
+        unset(clang_bin)
+    endif()
+    get_filename_component(clang_base_path "${CLANG_FULL_PATH}" DIRECTORY) # $base_path/bin
+    get_filename_component(clang_base_path "${clang_base_path}" DIRECTORY) # $base_path
+    set(${result} ${clang_base_path} PARENT_SCOPE)
 endfunction()
 
 macro(append_compiler_linker_sdk_setup)
@@ -373,29 +448,22 @@ macro(append_compiler_linker_sdk_setup)
     extend_gn_list(gnArgArg ARGS is_gcc CONDITION LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
     if(CLANG)
-        if(MACOS)
-            get_darwin_sdk_version(macSdkVersion)
-            # macOS needs to use the objcxx compiler as the cxx compiler is just a link
-            get_filename_component(clangBasePath ${CMAKE_OBJCXX_COMPILER} DIRECTORY)
-            get_filename_component(clangBasePath ${clangBasePath} DIRECTORY)
-        else()
-            get_filename_component(clangBasePath ${CMAKE_CXX_COMPILER} DIRECTORY)
-            get_filename_component(clangBasePath ${clangBasePath} DIRECTORY)
-        endif()
-            get_clang_version_from_runtime_path(clang_version)
+        get_clang_base_path(clang_base_path)
+        get_clang_version_from_runtime_path(clang_version)
         if (NOT DEFINED clang_version)
             message(FATAL_ERROR "Clang version for runtime is missing."
                     "Please open bug report.Found clang runtime path: ${CLANG_RUNTIME_PATH}"
             )
         endif()
         list(APPEND gnArgArg
-            clang_base_path="${clangBasePath}"
+            clang_base_path="${clang_base_path}"
             clang_version="${clang_version}"
             clang_use_chrome_plugins=false
             fatal_linker_warnings=false
         )
 
         if(MACOS)
+            get_darwin_sdk_version(macSdkVersion)
             list(APPEND gnArgArg
                 use_system_xcode=true
                 mac_deployment_target="${CMAKE_OSX_DEPLOYMENT_TARGET}"
@@ -432,11 +500,13 @@ macro(append_compiler_linker_sdk_setup)
             )
         endif()
     else()
-        if(QT_FEATURE_use_lld_linker)
-            get_filename_component(clangBasePath ${CMAKE_LINKER} DIRECTORY)
-            get_filename_component(clangBasePath ${clangBasePath} DIRECTORY)
+        if(QT_FEATURE_use_lld_linker OR QT_FEATURE_webengine_rust_build)
+            get_clang_version_from_runtime_path(clang_version)
+            get_clang_base_path(clang_base_path)
+
             list(APPEND gnArgArg
-                clang_base_path="${clangBasePath}"
+                clang_base_path="${clang_base_path}"
+                clang_version="${clang_version}"
                 fatal_linker_warnings=false
             )
         endif()
