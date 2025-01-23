@@ -119,7 +119,7 @@ void SelectFileDialogQt::SelectFileImpl(Type type, const std::u16string &title,
     if (file_types) {
         for (const auto &type : file_types->extensions) {
             for (const auto &extension : type)
-                acceptedSuffixes.append("." + toQt(extension));
+                acceptedSuffixes.append(u'.' + toQt(extension));
         }
     }
 

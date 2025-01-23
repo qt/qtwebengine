@@ -73,7 +73,7 @@ void DevToolsServerQt::parseAddressAndPort()
     if (commandLine.HasSwitch(switches::kRemoteDebuggingPort)) {
         portStr = QString::fromStdString(commandLine.GetSwitchValueASCII(switches::kRemoteDebuggingPort));
     } else if (!inspectorEnv.isEmpty()) {
-        int portColonPos = inspectorEnv.lastIndexOf(':');
+        int portColonPos = inspectorEnv.lastIndexOf(u':');
         if (portColonPos != -1) {
             portStr = inspectorEnv.mid(portColonPos + 1);
             m_bindAddress = inspectorEnv.mid(0, portColonPos);

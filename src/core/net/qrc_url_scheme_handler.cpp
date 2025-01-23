@@ -26,7 +26,7 @@ void QrcUrlSchemeHandler::requestStarted(QWebEngineUrlRequestJob *job)
 
     QUrl requestUrl = job->requestUrl();
     QString requestPath = requestUrl.path();
-    auto file = std::make_unique<QFile>(':' + requestPath, job);
+    auto file = std::make_unique<QFile>(u':' + requestPath, job);
     if (!file->exists() || file->size() == 0) {
         qWarning("QResource '%s' not found or is empty", qUtf8Printable(requestPath));
         job->fail(QWebEngineUrlRequestJob::UrlNotFound);
