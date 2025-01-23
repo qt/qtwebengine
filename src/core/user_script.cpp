@@ -62,7 +62,7 @@ QString UserScript::name() const
 void UserScript::setName(const QString &name)
 {
     m_name = name;
-    m_scriptData.url = GURL(QStringLiteral("userScript:%1").arg(name).toStdString());
+    m_scriptData.url = GURL("userScript:" + name.toStdString());
 }
 
 QString UserScript::sourceCode() const

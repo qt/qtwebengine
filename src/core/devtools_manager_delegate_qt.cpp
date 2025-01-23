@@ -124,8 +124,9 @@ void DevToolsServerQt::stop()
 void DevToolsManagerDelegateQt::Initialized(const net::IPEndPoint *ip_address)
 {
     if (ip_address && ip_address->address().size()) {
-        QString addressAndPort = QString::fromStdString(ip_address->ToString());
-        qWarning("Remote debugging server started successfully. Try pointing a Chromium-based browser to http://%s", qPrintable(addressAndPort));
+        qWarning("Remote debugging server started successfully. "
+                 "Try pointing a Chromium-based browser to http://%s",
+                 ip_address->ToString().c_str());
     }
     else
         qWarning("Couldn't start the inspector server on bind address. In case of invalid input, try something like: \"12345\" or \"192.168.2.14:12345\" (with the address of one of this host's interface).");

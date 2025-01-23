@@ -225,8 +225,7 @@ void DownloadManagerDelegateQt::downloadTargetDetermined(quint32 downloadId, boo
     target_info.danger_type = download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT;
     target_info.insecure_download_status = download::DownloadItem::VALIDATED;
     target_info.mime_type = item->GetMimeType();
-    target_info.intermediate_path =
-            targetPath.AddExtension(toFilePathString("download"));
+    target_info.intermediate_path = targetPath.AddExtensionASCII("download");
     target_info.display_name = base::FilePath();
     target_info.target_path = targetPath;
     target_info.interrupt_reason = download::DOWNLOAD_INTERRUPT_REASON_NONE;

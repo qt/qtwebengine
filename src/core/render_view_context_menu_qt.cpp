@@ -36,7 +36,7 @@ namespace QtWebEngineCore {
             QT_TRANSLATE_NOOP("RenderViewContextMenuQt", "Save page"),
             QT_TRANSLATE_NOOP("RenderViewContextMenuQt", "View page source")
         };
-        return QCoreApplication::translate("RenderViewContextMenuQt", qUtf8Printable(names[menuItem]));
+        return QCoreApplication::translate("RenderViewContextMenuQt", names[menuItem]);
     }
 
     RenderViewContextMenuQt::RenderViewContextMenuQt(QWebEngineContextMenuRequest *request)

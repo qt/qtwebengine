@@ -275,7 +275,7 @@ QStringList FilePickerController::nameFilters(const QStringList &acceptedMimeTyp
             // All MIME types for audio/*, image/* or video/*
             // as separate filters as Chrome does
             static const QList<QMimeType> &allMimeTypes = mimeDatabase.allMimeTypes();
-            type = type.remove("/*");
+            type.chop(2);
             for (const QMimeType &m : allMimeTypes) {
                 if (m.name().startsWith(type) && !m.globPatterns().isEmpty()) {
                     QString globs = m.globPatterns().join(u' ');
