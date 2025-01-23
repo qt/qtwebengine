@@ -24,6 +24,8 @@
 #include <QFont>
 #include <QTimer>
 
+using namespace Qt::StringLiterals;
+
 namespace QtWebEngineCore {
 
 QHash<QWebEngineSettings::WebAttribute, bool> WebEngineSettings::s_defaultAttributes;
@@ -318,7 +320,7 @@ void WebEngineSettings::initDefaults()
         s_defaultFontSizes.insert(QWebEngineSettings::DefaultFontSize, 16);
     }
 
-    m_defaultEncoding = QStringLiteral("ISO-8859-1");
+    m_defaultEncoding = u"ISO-8859-1"_s;
     m_unknownUrlSchemePolicy = QWebEngineSettings::InheritedUnknownUrlSchemePolicy;
     m_imageAnimationPolicy = QWebEngineSettings::ImageAnimationPolicy::Inherited;
 }

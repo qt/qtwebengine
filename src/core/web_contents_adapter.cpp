@@ -2237,7 +2237,7 @@ void WebContentsAdapter::discard()
 
     if (m_webContents->IsLoading()) {
         m_webContentsDelegate->didFailLoad(m_webContentsDelegate->url(webContents()), net::Error::ERR_ABORTED,
-                                           QStringLiteral("Discarded"));
+                                           u"Discarded"_s);
         m_webContentsDelegate->DidStopLoading();
     }
 

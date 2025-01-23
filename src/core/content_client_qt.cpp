@@ -297,17 +297,18 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         }
 
         // Fixed paths:
-        pluginPaths << QStringLiteral("/usr/lib/chromium/libwidevinecdm.so") // Arch
-                    << QStringLiteral("/usr/lib/chromium-browser/libwidevinecdm.so") // Ubuntu/neon
-                    << QStringLiteral("/usr/lib64/chromium/libwidevinecdm.so") // OpenSUSE style
+        pluginPaths
+                << u"/usr/lib/chromium/libwidevinecdm.so"_s // Arch
+                << u"/usr/lib/chromium-browser/libwidevinecdm.so"_s // Ubuntu/neon
+                << u"/usr/lib64/chromium/libwidevinecdm.so"_s // OpenSUSE style
 #if Q_PROCESSOR_WORDSIZE == 8
-                    << QStringLiteral("/usr/lib64/chromium-browser/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so") // Gentoo
-                    << QStringLiteral("/opt/google/chrome/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so") // Old Google Chrome
+                << u"/usr/lib64/chromium-browser/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so"_s // Gentoo
+                << u"/opt/google/chrome/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so"_s // Old Google Chrome
 #else
-                    << QStringLiteral("/usr/lib/chromium-browser/WidevineCdm/_platform_specific/linux_x86/libwidevinecdm.so") // Gentoo
-                    << QStringLiteral("/opt/google/chrome/WidevineCdm/_platform_specific/linux_x86/libwidevinecdm.so") // Old Google Chrome
+                << u"/usr/lib/chromium-browser/WidevineCdm/_platform_specific/linux_x86/libwidevinecdm.so"_s // Gentoo
+                << u"/opt/google/chrome/WidevineCdm/_platform_specific/linux_x86/libwidevinecdm.so"_s // Old Google Chrome
 #endif
-                    << QStringLiteral("/opt/google/chrome/libwidevinecdm.so"); // Older Google Chrome
+                << u"/opt/google/chrome/libwidevinecdm.so"_s; // Older Google Chrome
 #endif
     }
 

@@ -57,6 +57,8 @@
 #include <QTimer>
 #include <QWindow>
 
+using namespace Qt::StringLiterals;
+
 namespace QtWebEngineCore {
 
 static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(blink::mojom::ConsoleMessageLevel log_level)
@@ -786,10 +788,13 @@ void WebContentsDelegateQt::launchExternalURL(const QUrl &url, ui::PageTransitio
 
     if (!navigationAllowedByPolicy || !navigationRequestAccepted) {
         QString errorDescription;
-        if (!navigationAllowedByPolicy)
-            errorDescription = QStringLiteral("Launching external protocol forbidden by WebEngineSettings::UnknownUrlSchemePolicy");
-        else
-            errorDescription = QStringLiteral("Launching external protocol suppressed by 'navigationRequested' API");
+        if (!navigationAllowedByPolicy) {
+            errorDescription = u"Launching external protocol forbidden by "
+                               "WebEngineSettings::UnknownUrlSchemePolicy"_s;
+        } else {
+            errorDescription = u"Launching external protocol suppressed by "
+                               "'navigationRequested' API"_s;
+        }
         didFailLoad(url, net::Error::ERR_ABORTED, errorDescription);
     }
 }

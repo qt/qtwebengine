@@ -1490,40 +1490,47 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         QTimer::singleShot(0, this, [d](){ d->adapter->viewSource(); });
         break;
     case ToggleBold:
-        runJavaScript(QStringLiteral("document.execCommand('bold');"), QWebEngineScript::ApplicationWorld);
+        runJavaScript(u"document.execCommand('bold');"_s, QWebEngineScript::ApplicationWorld);
         break;
     case ToggleItalic:
-        runJavaScript(QStringLiteral("document.execCommand('italic');"), QWebEngineScript::ApplicationWorld);
+        runJavaScript(u"document.execCommand('italic');"_s, QWebEngineScript::ApplicationWorld);
         break;
     case ToggleUnderline:
-        runJavaScript(QStringLiteral("document.execCommand('underline');"), QWebEngineScript::ApplicationWorld);
+        runJavaScript(u"document.execCommand('underline');"_s, QWebEngineScript::ApplicationWorld);
         break;
     case ToggleStrikethrough:
-        runJavaScript(QStringLiteral("document.execCommand('strikethrough');"), QWebEngineScript::ApplicationWorld);
+        runJavaScript(u"document.execCommand('strikethrough');"_s,
+                      QWebEngineScript::ApplicationWorld);
         break;
     case AlignLeft:
-        runJavaScript(QStringLiteral("document.execCommand('justifyLeft');"), QWebEngineScript::ApplicationWorld);
+        runJavaScript(u"document.execCommand('justifyLeft');"_s,
+                      QWebEngineScript::ApplicationWorld);
         break;
     case AlignCenter:
-        runJavaScript(QStringLiteral("document.execCommand('justifyCenter');"), QWebEngineScript::ApplicationWorld);
+        runJavaScript(u"document.execCommand('justifyCenter');"_s,
+                      QWebEngineScript::ApplicationWorld);
         break;
     case AlignRight:
-        runJavaScript(QStringLiteral("document.execCommand('justifyRight');"), QWebEngineScript::ApplicationWorld);
+        runJavaScript(u"document.execCommand('justifyRight');"_s,
+                      QWebEngineScript::ApplicationWorld);
         break;
     case AlignJustified:
-        runJavaScript(QStringLiteral("document.execCommand('justifyFull');"), QWebEngineScript::ApplicationWorld);
+        runJavaScript(u"document.execCommand('justifyFull');"_s,
+                      QWebEngineScript::ApplicationWorld);
         break;
     case Indent:
-        runJavaScript(QStringLiteral("document.execCommand('indent');"), QWebEngineScript::ApplicationWorld);
+        runJavaScript(u"document.execCommand('indent');"_s, QWebEngineScript::ApplicationWorld);
         break;
     case Outdent:
-        runJavaScript(QStringLiteral("document.execCommand('outdent');"), QWebEngineScript::ApplicationWorld);
+        runJavaScript(u"document.execCommand('outdent');"_s, QWebEngineScript::ApplicationWorld);
         break;
     case InsertOrderedList:
-        runJavaScript(QStringLiteral("document.execCommand('insertOrderedList');"), QWebEngineScript::ApplicationWorld);
+        runJavaScript(u"document.execCommand('insertOrderedList');"_s,
+                      QWebEngineScript::ApplicationWorld);
         break;
     case InsertUnorderedList:
-        runJavaScript(QStringLiteral("document.execCommand('insertUnorderedList');"), QWebEngineScript::ApplicationWorld);
+        runJavaScript(u"document.execCommand('insertUnorderedList');"_s,
+                      QWebEngineScript::ApplicationWorld);
         break;
     case ChangeTextDirectionLTR:
         d->adapter->changeTextDirection(true /*left to right*/);
@@ -2014,7 +2021,7 @@ void QWebEnginePage::toPlainText(const std::function<void(const QString &)> &res
 
 void QWebEnginePage::setHtml(const QString &html, const QUrl &baseUrl)
 {
-    setContent(html.toUtf8(), QStringLiteral("text/html;charset=UTF-8"), baseUrl);
+    setContent(html.toUtf8(), u"text/html;charset=UTF-8"_s, baseUrl);
 }
 
 void QWebEnginePage::setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl)

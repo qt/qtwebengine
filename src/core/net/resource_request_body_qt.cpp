@@ -60,8 +60,8 @@ qint64 ResourceRequestBody::readData(char *data, qint64 maxSize)
                 break;
             }
             case network::mojom::DataElementDataView::Tag::kChunkedDataPipe: {
-                setErrorString(QStringLiteral("Chunked data pipe is used in request body upload, which "
-                                              "is currently not supported"));
+                setErrorString(u"Chunked data pipe is used in request body upload, which "
+                               "is currently not supported"_s);
                 // Nothing should come before or after DataElementChunkedDataPipe
                 return -1;
             }

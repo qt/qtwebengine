@@ -273,9 +273,9 @@ QString ProfileAdapter::dataPath() const
     // a location to do so.
     QString name = m_name;
     if (m_offTheRecord)
-        name = QStringLiteral("OffTheRecord");
+        name = u"OffTheRecord"_s;
     else if (m_name.isEmpty())
-        name = QStringLiteral("UnknownProfile");
+        name = u"UnknownProfile"_s;
     return buildLocationFromStandardPath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation), name);
 }
 

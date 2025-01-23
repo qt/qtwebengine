@@ -1086,16 +1086,16 @@ base::CommandLine *WebEngineContext::initCommandLine(bool &useEmbeddedSwitches,
 
     bool isRemoteDebugPort =
             (-1
-             != appArgs.indexOf(QRegularExpression(QStringLiteral("--remote-debugging-port=.*"),
+             != appArgs.indexOf(QRegularExpression(u"--remote-debugging-port=.*"_s,
                                                    QRegularExpression::CaseInsensitiveOption)))
             || !qEnvironmentVariable("QTWEBENGINE_REMOTE_DEBUGGING").isEmpty();
     bool isRemoteAllowOrigins =
             (-1
-             != appArgs.indexOf(QRegularExpression(QStringLiteral("--remote-allow-origins=.*"),
+             != appArgs.indexOf(QRegularExpression(u"--remote-allow-origins=.*"_s,
                                                    QRegularExpression::CaseInsensitiveOption)));
 
     if (isRemoteDebugPort && !isRemoteAllowOrigins) {
-        appArgs.append(QStringLiteral("--remote-allow-origins=*"));
+        appArgs.append(u"--remote-allow-origins=*"_s);
         qWarning("Added {--remote-allow-origins=*} to command-line arguments "
                  "to avoid web socket connection errors during remote debugging.");
     }

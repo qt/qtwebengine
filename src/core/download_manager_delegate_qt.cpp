@@ -301,7 +301,7 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
     info.state = download::DownloadItem::IN_PROGRESS;
     info.totalBytes = -1;
     info.receivedBytes = 0;
-    info.mimeType = QStringLiteral("application/x-mimearchive");
+    info.mimeType = u"application/x-mimearchive"_s;
     info.path = suggestedFilePath;
     info.savePageFormat = suggestedSaveFormat;
     info.accepted = acceptedByDefault;
