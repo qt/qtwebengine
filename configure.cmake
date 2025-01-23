@@ -62,6 +62,8 @@ else()
         OUT_VAR_DEPS_FOUND sbom_deps_found
         OUT_VAR_REASON_FAILURE_MESSAGE sbom_missing_deps_message
     )
+    find_program(rustc_EXECUTABLE NAMES rustc rustc.exe)
+    find_program(bindgen_EXECUTABLE NAMES bindgen bindgen.exe)
 endif()
 
 #### pkg_config checks
@@ -761,6 +763,12 @@ qt_feature("webengine-system-openh264" PRIVATE
     CONDITION UNIX AND OPENH264_FOUND
 )
 
+qt_feature("webengine-rust-build" PRIVATE
+    LABEL "Build with rust"
+    AUTODETECT OFF
+    CONDITION rustc_EXECUTABLE AND bindgen_EXECUTABLE
+)
+
 qt_feature("webengine-ozone-x11" PRIVATE
     LABEL "Support X11 on qpa-xcb"
     CONDITION LINUX
@@ -785,6 +793,7 @@ qt_configure_add_summary_section(NAME "WebEngine Repository Build Options")
 qt_configure_add_summary_entry(ARGS "webengine-build-gn")
 qt_configure_add_summary_entry(ARGS "webengine-jumbo-build")
 qt_configure_add_summary_entry(ARGS "webengine-developer-build")
+qt_configure_add_summary_entry(ARGS "webengine-rust-build")
 qt_configure_add_summary_section(NAME "Build QtWebEngine Modules")
 qt_configure_add_summary_entry(ARGS "qtwebengine-core-build")
 qt_configure_add_summary_entry(ARGS "qtwebengine-widgets-build")

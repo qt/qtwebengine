@@ -365,13 +365,13 @@ foreach(arch ${archs})
             enable_resource_allowlist_generation=false
             enable_screen_ai_service=false
             enable_session_service=false
+            enable_skia_graphite_gtests=false
             enable_supervised_users=false
             enable_swiftshader=false
             enable_swiftshader_vulkan=false
             enable_nocompile_tests=false
             angle_enable_swiftshader=false
             dawn_use_swiftshader=false
-            pdf_enable_fontations=false
             enable_vr=false
             enable_web_speech=false
             enable_widevine=true
