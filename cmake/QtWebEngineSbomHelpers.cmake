@@ -124,3 +124,13 @@ message(STATUS \"Done generating Chromium SBOM for ${project_name}.\")
         )
     endwhile()
 endfunction()
+
+# Shims for SBOM commands that may be missing < 6.9
+if(NOT COMMAND qt_internal_sbom_begin_qt_repo_project)
+    function(qt_internal_sbom_begin_qt_repo_project)
+    endfunction()
+    function(qt_internal_sbom_end_qt_repo_project)
+    endfunction()
+    function(qt_internal_sbom_add_files)
+    endfunction()
+endif()
