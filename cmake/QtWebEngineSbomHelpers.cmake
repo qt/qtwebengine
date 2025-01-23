@@ -59,19 +59,15 @@ function(qt_webengine_sbom_project_end)
     get_property(cmake_to_gn_dep_pairs GLOBAL PROPERTY
         QTWEBENGINE_SBOM_CMAKE_TO_GN_DEPENDENCY_PAIRS)
 
-    _qt_internal_find_git_package()
-    _qt_internal_query_git_version(
-        EMPTY_VALUE_WHEN_NOT_GIT_REPO
-        WORKING_DIRECTORY ${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty
-        OUT_VAR_PREFIX __sbom_
-    )
-
     string(TOLOWER ${project_name} project_name_lower)
-    # Later on this should be generated more dynamically; for now we hardcode it
-    set(doc_namespace
-        "https://qt.io/spdxdocs/qtwebengine-chromium-${project_name_lower}-${__sbom_git_version}")
-    set(output_file_name
-        ${WEBENGINE_ROOT_BUILD_DIR}/qt_sbom/qtwebengine-chromium-${project_name_lower}.spdx.json)
+    set(chromium_project_name QtWebEngine-Chromium-${project_name})
+    string(TOLOWER ${chromium_project_name} chromium_project_name_lower)
+    qt_internal_sbom_get_project_supplier_url(supplier_url)
+    qt_internal_sbom_compute_project_namespace(doc_namespace SUPPLIER_URL ${supplier_url}
+        PROJECT_NAME ${chromium_project_name_lower})
+    qt_internal_sbom_compute_project_file_name(output_file_name EXTENSION_JSON
+        PROJECT_NAME ${chromium_project_name_lower})
+    set(output_file_path ${WEBENGINE_ROOT_BUILD_DIR}/qt_sbom/${output_file_name})
 
     set(generate_sbom_script_path
         "${CMAKE_CURRENT_BINARY_DIR}/gen_qtwebengine_chromium_sbom_${project_name}-$<CONFIG>.cmake")
@@ -89,26 +85,25 @@ execute_process(
         \"-DQT6_HOST_INFO_BINDIR=${QT6_HOST_INFO_BINDIR}\"
         -DPACKAGE_ID=${project_name}
         -DDOC_NAMESPACE=${doc_namespace}
-        \"-DOUTPUT=${output_file_name}\"
+        \"-DOUTPUT=${output_file_path}\"
         \"-DPython3_EXECUTABLE=${Python3_EXECUTABLE}\"
         -P \"${WEBENGINE_ROOT_SOURCE_DIR}/cmake/QtGnSbom.cmake\"
     WORKING_DIRECTORY \"${WEBENGINE_ROOT_BUILD_DIR}\"
     COMMAND_ERROR_IS_FATAL ANY
 )
-file(INSTALL \"${output_file_name}\" DESTINATION \"${QT6_INSTALL_PREFIX}/${INSTALL_SBOMDIR}\")
+file(INSTALL \"${output_file_path}\" DESTINATION \"${QT6_INSTALL_PREFIX}/${INSTALL_SBOMDIR}\")
 message(STATUS \"Done generating Chromium SBOM for ${project_name}.\")
 ")
     file(GENERATE OUTPUT "${generate_sbom_script_path}" CONTENT "${generate_sbom_script_contents}")
     qt_internal_sbom_add_cmake_include_step(STEP BEGIN INCLUDE_PATH "${generate_sbom_script_path}")
-    set(json_operation_id qtwebengine-chromium-${project_name})
     qt_internal_sbom_generate_tag_value_spdx_document(
-        OPERATION_ID ${json_operation_id}
-        INPUT_JSON_FILE_PATH "${output_file_name}"
+        OPERATION_ID ${chromium_project_name_lower}
+        INPUT_JSON_FILE_PATH "${output_file_path}"
         OUT_VAR_OUTPUT_FILE_NAME external_output_file_name
     )
     # Reference to external document.
-    qt_internal_sbom_get_external_document_ref_spdx_id(${json_operation_id} document_ref_spdx_id)
-    set(external_package_spdx_id "SPDXRef-QtWebEngine-Chromium-${project_name}-Internal-Components")
+    qt_internal_sbom_get_external_document_ref_spdx_id(${chromium_project_name_lower} document_ref_spdx_id)
+    set(external_package_spdx_id "SPDXRef-${chromium_project_name}-Internal-Components")
     qt_internal_sbom_add_external_reference(
         EXTERNAL_DOCUMENT_FILE_PATH "sbom/${external_output_file_name}"
         EXTERNAL_DOCUMENT_SPDX_ID "${document_ref_spdx_id}"
@@ -118,8 +113,8 @@ message(STATUS \"Done generating Chromium SBOM for ${project_name}.\")
     while(NOT "${cmake_to_gn_dep_pairs}" STREQUAL "")
         list(POP_FRONT cmake_to_gn_dep_pairs cmake_target gn_target)
         qt_internal_sbom_get_target_spdx_id("${cmake_target}" cmake_spdx_id)
-        _qt_internal_sbom_get_sanitized_spdx_id(gn_spdx_id
-            "SPDXRef-QtWebEngine-Chromium-${project_name}-${gn_target}")
+        qt_internal_sbom_get_sanitized_spdx_id(gn_spdx_id
+            "SPDXRef-${chromium_project_name}-${gn_target}")
         set(relationship "${cmake_spdx_id} CONTAINS ${document_ref_spdx_id}:${gn_spdx_id}")
         qt_internal_extend_target(${cmake_target}
             SBOM_RELATIONSHIPS
