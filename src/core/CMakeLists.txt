@@ -447,8 +447,6 @@ foreach(arch ${archs})
                 use_glib=false
                 use_bluez=false
                 is_cfi=false
-                libyuv_use_sve=false # FIXME: arch not supported on our old CI gcc.
-                libyuv_use_sme=false # FIXME: arch not supported on our old CI gcc.
                 use_ozone=true
                 ozone_auto_platforms=false
                 ozone_platform_headless=false
@@ -545,6 +543,9 @@ foreach(arch ${archs})
                 if(NOT armThumb AND NOT QT_FEATURE_webengine_system_ffmpeg)
                     list(APPEND gnArgArg media_use_ffmpeg=false use_webaudio_ffmpeg=false)
                 endif()
+                # sme and sve depend on armv9
+                list(APPEND gnArgArg libyuv_use_sme=false
+                                     libyuv_use_sve=false)
             endif()
 
             if(CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm64")
@@ -554,6 +555,14 @@ foreach(arch ${archs})
                         v8_enable_sandbox=false
                         arm_control_flow_integrity="none"
                     )
+                endif()
+            endif()
+            if(cpu STREQUAL "arm64")
+                if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "14.0.0")
+                    list(APPEND gnArgArg libyuv_use_sme=false)
+                endif()
+                if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "12.0.0")
+                    list(APPEND gnArgArg libyuv_use_sve=false)
                 endif()
             endif()
             unset(cpu)
