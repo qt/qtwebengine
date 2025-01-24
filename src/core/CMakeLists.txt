@@ -449,7 +449,6 @@ foreach(arch ${archs})
                 is_cfi=false
                 libyuv_use_sve=false # FIXME: arch not supported on our old CI gcc.
                 libyuv_use_sme=false # FIXME: arch not supported on our old CI gcc.
-                libyuv_use_neon=false # FIXME: udot instruction not working on our old CI gcc.
                 use_ozone=true
                 ozone_auto_platforms=false
                 ozone_platform_headless=false
@@ -535,7 +534,13 @@ foreach(arch ${archs})
                 )
             endif()
             get_gn_arch(cpu ${TEST_architecture_arch})
-            if(CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm")
+            if(cpu STREQUAL "arm" OR cpu STREQUAL "arm64")
+                if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11.0.0")
+                    # udot assembler
+                    list(APPEND gnArgArg libyuv_use_neon=false)
+                endif()
+            endif()
+            if(cpu STREQUAL "arm")
                 check_thumb(armThumb)
                 if(NOT armThumb AND NOT QT_FEATURE_webengine_system_ffmpeg)
                     list(APPEND gnArgArg media_use_ffmpeg=false use_webaudio_ffmpeg=false)
