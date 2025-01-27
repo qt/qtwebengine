@@ -18,6 +18,8 @@ class FrameSinkId;
 
 namespace QtWebEngineCore {
 
+Q_DECLARE_LOGGING_CATEGORY(lcWebEngineCompositor);
+
 // Produces composited frames for display.
 //
 // Used by quick/widgets libraries for accessing the frames and
@@ -132,7 +134,7 @@ public:
     virtual void releaseResources();
 
 protected:
-    Compositor(Type type) : m_type(type) { }
+    Compositor(Type type);
     virtual ~Compositor();
 
 private:

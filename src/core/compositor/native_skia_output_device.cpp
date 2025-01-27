@@ -50,6 +50,9 @@ NativeSkiaOutputDevice::NativeSkiaOutputDevice(
     , m_representationFactory(shared_image_representation_factory)
     , m_deps(dependency)
 {
+    qCDebug(lcWebEngineCompositor, "Skia Graphics Context Type: %s",
+            gpu::GrContextTypeToString(contextState->gr_context_type()).c_str());
+
     capabilities_.uses_default_gl_framebuffer = false;
     capabilities_.supports_surfaceless = true;
     capabilities_.output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
@@ -58,6 +61,8 @@ NativeSkiaOutputDevice::NativeSkiaOutputDevice(
     m_isNativeBufferSupported = ui::OzonePlatform::GetInstance()
                                         ->GetPlatformRuntimeProperties()
                                         .supports_native_pixmaps;
+    qCDebug(lcWebEngineCompositor, "Native Buffer Supported: %s",
+            m_isNativeBufferSupported ? "yes" : "no");
 #endif
 }
 
@@ -220,6 +225,8 @@ NativeSkiaOutputDevice::Buffer::~Buffer()
 // found in the LICENSE file.
 bool NativeSkiaOutputDevice::Buffer::initialize()
 {
+    qCDebug(lcWebEngineCompositor, "Initializing buffer %p with SharedImage:", this);
+
     gpu::SharedImageUsageSet sharedImageUsage =
             gpu::SHARED_IMAGE_USAGE_DISPLAY_READ
           | gpu::SHARED_IMAGE_USAGE_DISPLAY_WRITE;
@@ -228,11 +235,20 @@ bool NativeSkiaOutputDevice::Buffer::initialize()
     if (m_parent->m_isNativeBufferSupported)
         sharedImageUsage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
+    qCDebug(lcWebEngineCompositor, "  Usage: %s",
+            gpu::CreateLabelForSharedImageUsage(sharedImageUsage).c_str());
+    qCDebug(lcWebEngineCompositor, "  Pixels size: %dx%d", m_shape.imageInfo.width(),
+            m_shape.imageInfo.height());
+
     auto mailbox = gpu::Mailbox::Generate();
 
-    SkColorType skColorType = m_shape.imageInfo.colorType();
+    const SkColorType skColorType = m_shape.imageInfo.colorType();
+    const viz::SharedImageFormat sharedImageFormat =
+            viz::SkColorTypeToSinglePlaneSharedImageFormat(skColorType);
+    qCDebug(lcWebEngineCompositor, "  Format: %s", sharedImageFormat.ToString().c_str());
+
     if (!m_parent->m_factory->CreateSharedImage(
-                mailbox, viz::SkColorTypeToSinglePlaneSharedImageFormat(skColorType),
+                mailbox, sharedImageFormat,
                 { m_shape.imageInfo.width(), m_shape.imageInfo.height() }, m_shape.colorSpace,
                 kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, m_parent->m_deps->GetSurfaceHandle(),
                 sharedImageUsage, "QWE_SharedImageBuffer")) {
@@ -247,6 +263,7 @@ bool NativeSkiaOutputDevice::Buffer::initialize()
         LOG(ERROR) << "ProduceSkia() failed.";
         return false;
     }
+    qCDebug(lcWebEngineCompositor, "  Backing: %s", m_skiaRepresentation->backing_name());
 
     if (m_parent->m_isNativeBufferSupported) {
         m_overlayRepresentation = m_parent->m_representationFactory->ProduceOverlay(m_mailbox);

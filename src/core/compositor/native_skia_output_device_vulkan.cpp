@@ -37,6 +37,8 @@ NativeSkiaOutputDeviceVulkan::NativeSkiaOutputDeviceVulkan(
                              shared_image_factory, shared_image_representation_factory,
                              didSwapBufferCompleteCallback)
 {
+    qCDebug(lcWebEngineCompositor, "Native Skia Output Device: Vulkan");
+
     SkColorType skColorType = kRGBA_8888_SkColorType;
     capabilities_.sk_color_type_map[viz::SinglePlaneFormat::kRGBA_8888] = skColorType;
     capabilities_.sk_color_type_map[viz::SinglePlaneFormat::kRGBX_8888] = skColorType;
@@ -145,6 +147,7 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
     };
 
     if (nativePixmap) {
+        qCDebug(lcWebEngineCompositor, "VULKAN: Importing NativePixmap into VkImage.");
         gfx::NativePixmapHandle nativePixmapHandle = nativePixmap->ExportHandle();
         if (nativePixmapHandle.planes.size() != 1)
             qFatal("VULKAN: Multiple planes are not supported.");
@@ -158,6 +161,7 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
 
         scopedFd = std::move(nativePixmapHandle.planes[0].fd);
     } else {
+        qCDebug(lcWebEngineCompositor, "VULKAN: Importing VkImage into VkImage.");
         externalMemoryImageCreateInfo.handleTypes =
                 VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
 
@@ -183,6 +187,7 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
     if (!scopedFd.is_valid())
         qFatal("VULKAN: Unable to extract file descriptor.");
 #elif defined(Q_OS_WIN)
+    qCDebug(lcWebEngineCompositor, "VULKAN: Importing DXGI Resource into VkImage.");
     externalMemoryImageCreateInfo.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT;
 
     Q_ASSERT(overlayImage->type() == gl::DCLayerOverlayType::kNV12Texture);

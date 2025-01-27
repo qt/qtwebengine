@@ -21,6 +21,8 @@ NativeSkiaOutputDeviceDirect3D11::NativeSkiaOutputDeviceDirect3D11(
                              shared_image_factory, shared_image_representation_factory,
                              didSwapBufferCompleteCallback)
 {
+    qCDebug(lcWebEngineCompositor, "Native Skia Output Device: Direct3D11");
+
     SkColorType skColorType = kRGBA_8888_SkColorType;
     capabilities_.sk_color_type_map[viz::SinglePlaneFormat::kRGBA_8888] = skColorType;
     capabilities_.sk_color_type_map[viz::SinglePlaneFormat::kRGBX_8888] = skColorType;
@@ -40,6 +42,8 @@ QSGTexture *NativeSkiaOutputDeviceDirect3D11::texture(QQuickWindow *win, uint32_
         qWarning("D3D: No overlay image.");
         return nullptr;
     }
+
+    qCDebug(lcWebEngineCompositor, "D3D: Importing DXGI Resource into D3D11 Texture.");
 
     Q_ASSERT(overlayImage->type() == gl::DCLayerOverlayType::kNV12Texture);
     Microsoft::WRL::ComPtr<ID3D11Texture2D> chromeTexture = overlayImage->nv12_texture();

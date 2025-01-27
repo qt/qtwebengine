@@ -6,11 +6,14 @@
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 
+#include <QGuiApplication>
 #include <QHash>
 #include <QMutex>
 #include <QQuickWindow>
 
 namespace QtWebEngineCore {
+
+Q_LOGGING_CATEGORY(lcWebEngineCompositor, "qt.webengine.compositor");
 
 // Compositor::Id
 
@@ -160,6 +163,14 @@ bool Compositor::textureIsFlipped()
 }
 
 void Compositor::releaseResources() { }
+
+Compositor::Compositor(Type type) : m_type(type)
+{
+    qCDebug(lcWebEngineCompositor, "Compositor Type: %s",
+            m_type == Type::Software ? "Software" : "Native");
+    qCDebug(lcWebEngineCompositor, "QPA Platform Plugin: %s",
+            qPrintable(QGuiApplication::platformName()));
+}
 
 Compositor::~Compositor()
 {

@@ -63,6 +63,8 @@ NativeSkiaOutputDeviceOpenGL::NativeSkiaOutputDeviceOpenGL(
                              shared_image_factory, shared_image_representation_factory,
                              didSwapBufferCompleteCallback)
 {
+    qCDebug(lcWebEngineCompositor, "Native Skia Output Device: OpenGL");
+
     SkColorType skColorType = kRGBA_8888_SkColorType;
 #if BUILDFLAG(IS_OZONE_X11)
     if (OzoneUtilQt::usingGLX() && m_contextState->gr_context_type() == gpu::GrContextType::kGL)
@@ -169,6 +171,8 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
 
 #if BUILDFLAG(IS_OZONE_X11)
         if (OzoneUtilQt::usingGLX()) {
+            qCDebug(lcWebEngineCompositor, "GLX: Importing NativePixmap into GL Texture.");
+
             GLXHelper *glxHelper = GLXHelper::instance();
             auto *glxFun = glxHelper->functions();
 
@@ -224,6 +228,8 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
 
 #if QT_CONFIG(egl)
         if (OzoneUtilQt::usingEGL()) {
+            qCDebug(lcWebEngineCompositor, "EGL: Importing NativePixmap into GL Texture.");
+
             EGLHelper *eglHelper = EGLHelper::instance();
             auto *eglFun = eglHelper->functions();
             auto *glExtFun = GLHelper::instance()->functions();
@@ -271,6 +277,7 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
 #endif // QT_CONFIG(egl)
     } else {
 #if BUILDFLAG(ENABLE_VULKAN)
+        qCDebug(lcWebEngineCompositor, "VULKAN: Importing VkImage into GL Texture.");
         Q_ASSERT(m_contextState->gr_context_type() == gpu::GrContextType::kVulkan);
 
         gpu::VulkanFunctionPointers *vfp = gpu::GetVulkanFunctionPointers();
@@ -318,6 +325,7 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
     texture = QNativeInterface::QSGOpenGLTexture::fromNative(glTexture, win, size(), texOpts);
     Q_ASSERT(glFun->glGetError() == GL_NO_ERROR);
 #elif defined(Q_OS_WIN)
+    qCDebug(lcWebEngineCompositor, "WGL: Importing DXGI Resource into GL Texture.");
     Q_ASSERT(m_contextState->gr_context_type() == gpu::GrContextType::kGL);
 
     Q_ASSERT(overlayImage->type() == gl::DCLayerOverlayType::kNV12Texture);
@@ -355,6 +363,7 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
         delete d3dSharedTexture;
     };
 #elif defined(Q_OS_MACOS)
+    qCDebug(lcWebEngineCompositor, "CGL: Importing IOSurface into GL Texture.");
     uint32_t glTexture = makeCGLTexture(win, ioSurface.get(), size());
     texture = QNativeInterface::QSGOpenGLTexture::fromNative(glTexture, win, size(), texOpts);
 
