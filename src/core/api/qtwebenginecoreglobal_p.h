@@ -18,6 +18,7 @@
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtCore/private/qglobal_p.h>
 #include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
+#include <QLoggingCategory>
 
 #ifdef QT_WEBENGINE_LOGGING
 #define QT_NOT_YET_IMPLEMENTED fprintf(stderr, "function %s not implemented! - %s:%d\n", __func__, __FILE__, __LINE__);

@@ -26,6 +26,10 @@ public:
     }
     void initialize()
     {
+        qCDebug(lcWebEngineCompositor, "Initializing buffer %p with GrBackendTexture:", this);
+        qCDebug(lcWebEngineCompositor, "  Pixels size: %dx%d", m_shape.imageInfo.width(),
+                m_shape.imageInfo.height());
+
         const auto &colorType = m_shape.imageInfo.colorType();
         DCHECK(colorType != kUnknown_SkColorType);
 
@@ -95,6 +99,8 @@ DisplaySkiaOutputDevice::DisplaySkiaOutputDevice(
     , m_contextState(contextState)
     , m_requiresAlpha(requiresAlpha)
 {
+    qCDebug(lcWebEngineCompositor, "Display Skia Output Device: OpenGL");
+
     capabilities_.uses_default_gl_framebuffer = false;
     capabilities_.supports_surfaceless = true;
     capabilities_.preserve_buffer_content = true;
@@ -194,6 +200,8 @@ void DisplaySkiaOutputDevice::waitForTexture()
 
 QSGTexture *DisplaySkiaOutputDevice::texture(QQuickWindow *win, uint32_t textureOptions)
 {
+    qCDebug(lcWebEngineCompositor, "OPENGL: Importing shared GL Texture.");
+
     if (!m_frontBuffer)
         return nullptr;
 
