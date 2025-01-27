@@ -137,6 +137,7 @@ QImage toQImage(const SkBitmap &bitmap)
         }
         break;
     case kRGBA_F16_SkColorType:
+    case kRGB_F16F16F16x_SkColorType:
         switch (bitmap.alphaType()) {
         case kUnknown_SkAlphaType:
             break;
