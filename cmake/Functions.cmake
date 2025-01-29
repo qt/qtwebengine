@@ -618,9 +618,14 @@ endmacro()
 
 function(get_clang_version_from_runtime_path result)
 if(CLANG AND CMAKE_CXX_COMPILER)
-    if( NOT DEFINED CLANG_RUNTIME_PATH)
-       execute_process(
-           COMMAND ${CMAKE_CXX_COMPILER} -print-runtime-dir
+    if(NOT DEFINED CLANG_RUNTIME_PATH)
+        set(CLANG_PRINT_RUNTIME_DIR_COMMAND -print-runtime-dir)
+        if (MSVC)
+            # clang-cl does not accept the argument unless it's piped via /clang:
+            set(CLANG_PRINT_RUNTIME_DIR_COMMAND /clang:-print-runtime-dir)
+        endif()
+        execute_process(
+           COMMAND ${CMAKE_CXX_COMPILER} ${CLANG_PRINT_RUNTIME_DIR_COMMAND}
            OUTPUT_VARIABLE clang_output
            ERROR_QUIET
            OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -630,7 +635,11 @@ if(CLANG AND CMAKE_CXX_COMPILER)
         mark_as_advanced(CLANG_RUNTIME_PATH)
      endif()
      string(REGEX MATCH "\\/([0-9.]+)\\/" clang_run_time_path_version "${CLANG_RUNTIME_PATH}")
-     string(REPLACE "/" "" clang_run_time_path_version ${clang_run_time_path_version})
+     if(clang_run_time_path_version)
+         string(REPLACE "/" "" clang_run_time_path_version ${clang_run_time_path_version})
+     else()
+         string(REGEX MATCH "[0-9]+" clang_run_time_path_version ${CMAKE_CXX_COMPILER_VERSION})
+     endif()
      set(${result} ${clang_run_time_path_version} PARENT_SCOPE)
 endif()
 endfunction()
