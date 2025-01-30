@@ -205,6 +205,12 @@ void tst_QWebEngineProfile::clearDataFromCache()
     // Wait for GET /favicon.ico
     QTRY_COMPARE(serverSpy.size(), 3);
 
+#if defined(Q_OS_WIN)
+    // FIXME: A http cache entry might be still in use after all the wait above and this blocks
+    //        clearing the http cache. Find a better way to wait for cache entries.
+    QTest::qWait(500);
+#endif
+
     QVERIFY(cacheDir.exists("Cache"));
     qint64 sizeBeforeClear = totalSize(cacheDir);
     QCOMPARE_GT(sizeBeforeClear, 0);
