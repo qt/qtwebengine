@@ -24,6 +24,7 @@ qt_webengine_set_version(vpx 1.10.0)
 qt_webengine_set_version(libavutil 58.29.100)
 qt_webengine_set_version(libavcodec 60.31.102)
 qt_webengine_set_version(libavformat 60.16.100)
+qt_webengine_set_version(windows_sdk 26100) # we only care about minor number "10.0.26100.0"
 
 if(QT_CONFIGURE_RUNNING)
     function(qt_webengine_configure_check)
@@ -498,9 +499,9 @@ endif()
 
 qt_webengine_configure_check("windows-sdk"
     MODULES QtWebEngine
-    CONDITION NOT WIN32 OR sdk_minor GREATER_EQUAL 22621
-    MESSAGE "Build requires Windows 11 SDK at least version 10.0.22621.0"
-    DOCUMENTATION "Windows 11 SDK at least version 10.0.22621.0"
+    CONDITION NOT WIN32 OR sdk_minor GREATER_EQUAL ${QT_CONFIGURE_CHECK_windows_sdk_version}
+    MESSAGE "Build requires Windows 11 SDK at least version 10.0.${QT_CONFIGURE_CHECK_windows_sdk_version}.0"
+    DOCUMENTATION "Windows 11 SDK at least version 10.0.${QT_CONFIGURE_CHECK_windows_sdk_version}.0"
     TAGS WINDOWS_PLATFORM
 )
 unset(sdk_minor)
