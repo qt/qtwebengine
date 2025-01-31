@@ -14,7 +14,7 @@
                      ".clang-format", ".plist", ".qrc", "BLACKLIST", ".gitignore", ".gitattributes",
                      ".tag", ".cmake.conf", ".yaml", "coin/qt-installer-package-config.json",
                      "BUILD.root.gn.in", "BUILD.toolchain.gn.in", "BUILD.msvc.toolchain.gn.in",
-                     ".cfg", "coin.nodes", ".gitmodules"],
+                     "BUILD.clang-cl.toolchain.gn.in", ".cfg", "coin.nodes", ".gitmodules"],
         "location" : {
             "" : {
                 "comment" : "Default",

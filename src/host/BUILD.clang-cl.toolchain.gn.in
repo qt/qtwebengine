@@ -1,0 +1,80 @@
+import("//build/config/sysroot.gni")
+import("//build/toolchain/win/toolchain.gni")
+
+msvc_toolchain("x64") {
+  cl = "clang-cl.exe"
+  environment = "environment.x64"
+  toolchain_args = {
+    current_os = "win"
+    current_cpu = "x64"
+    is_clang = true
+    use_clang_coverage = false
+  }
+}
+
+msvc_toolchain("x86") {
+  cl = "clang-cl.exe"
+  environment = "environment.x86"
+  toolchain_args = {
+    current_os = "win"
+    current_cpu = "x86"
+    is_clang = true
+    use_clang_coverage = false
+  }
+}
+
+msvc_toolchain("arm64") {
+  cl = "clang-cl.exe"
+  environment = "environment.arm64"
+  toolchain_args = {
+    current_os = "win"
+    current_cpu = "arm64"
+    is_clang = true
+    use_clang_coverage = false
+  }
+}
+
+#TODO: drop it after clean up breakpad, remove upload symbols exacutable
+msvc_system_allocator_toolchain("x64_host_with_system_allocator") {
+  cl = "clang-cl.exe"
+  environment = "environment.x64"
+  toolchain_args = {
+    current_cpu = "x64"
+    current_os = "win"
+    is_clang = true
+    use_clang_coverage = false
+  }
+}
+
+msvc_system_allocator_toolchain("arm64_host_with_system_allocator") {
+  cl = "clang-cl.exe"
+  environment = "environment.arm64"
+  toolchain_args = {
+    current_cpu = "arm64"
+    current_os = "win"
+    is_clang = true
+    use_clang_coverage = false
+  }
+}
+
+msvc_system_allocator_toolchain("x64_with_system_allocator") {
+  cl = "clang-cl.exe"
+  environment = "environment.x64"
+  toolchain_args = {
+    current_cpu = "x64"
+    current_os = "win"
+    is_clang = true
+    use_clang_coverage = false
+  }
+}
+
+msvc_system_allocator_toolchain("arm64_with_system_allocator") {
+  cl = "clang-cl.exe"
+  environment = "environment.arm64"
+  toolchain_args = {
+    current_cpu = "arm64"
+    current_os = "win"
+    is_clang = true
+    use_clang_coverage = false
+  }
+}
