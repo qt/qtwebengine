@@ -418,7 +418,7 @@ foreach(arch ${archs})
             CONDITION QT_FEATURE_webengine_kerberos
         )
         extend_gn_list(gnArgArg
-            ARGS proprietary_codecs
+            ARGS proprietary_codecs rtc_use_h264
             CONDITION QT_FEATURE_webengine_proprietary_codecs
         )
         if(QT_FEATURE_webengine_proprietary_codecs)
