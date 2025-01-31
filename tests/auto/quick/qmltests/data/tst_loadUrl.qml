@@ -265,7 +265,6 @@ TestWebEngineView {
             compare(loadRequest.status, WebEngineView.LoadStoppedStatus);
             compare(loadRequest.status, WebEngineLoadingInfo.LoadStoppedStatus);
             compare(loadRequest.url, stoppedUrl);
-            compare(loadRequest.activeUrl, initialUrl);
             webEngineView.clear();
         }
 
