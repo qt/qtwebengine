@@ -778,7 +778,7 @@ macro(append_compiler_linker_sdk_setup)
     )
     extend_gn_list(gnArgArg
         ARGS use_lld
-        CONDITION QT_FEATURE_use_lld_linker
+        CONDITION QT_FEATURE_use_lld_linker OR (MSVC AND CLANG)
     )
     unset(cpu)
 endmacro()
