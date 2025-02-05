@@ -130,6 +130,7 @@ foreach(arch ${archs})
           use_cups=false
           use_dawn=false
           build_dawn_tests=false
+          enable_nocompile_tests=false
           enable_ipc_fuzzer=false
           enable_remoting=false
           enable_resource_allowlist_generation=false

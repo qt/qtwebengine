@@ -345,6 +345,7 @@ foreach(arch ${archs})
             enable_supervised_users=false
             enable_swiftshader=false
             enable_swiftshader_vulkan=false
+            enable_nocompile_tests=false
             angle_enable_swiftshader=false
             dawn_use_swiftshader=false
             pdf_enable_fontations=false
