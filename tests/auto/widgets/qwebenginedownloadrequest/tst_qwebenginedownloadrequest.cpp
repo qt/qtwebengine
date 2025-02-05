@@ -16,6 +16,38 @@
 #include <QWebEngineView>
 #include <httpserver.h>
 
+using namespace Qt::StringLiterals;
+
+// Based on PageWithPaintListeners in tests/auto/widgets/qwebengineview/tst_qwebengineview.cpp
+// TODO: Factor PageWithPaintListeners out to tests/auto/util/util.h
+class TestPage : public QWebEnginePage
+{
+    Q_OBJECT
+public:
+    TestPage(QWebEngineProfile *profile) : QWebEnginePage(profile)
+    {
+        QObject::connect(this, &QWebEnginePage::loadFinished, [this]() {
+            const QString jsLCPObserver = QStringLiteral(
+                    "new PerformanceObserver((list) => {"
+                    "    const entries = list.getEntries();"
+                    "    const lastEntry = entries[entries.length - 1];"
+                    "    console.log('largestContentfulPaint: ' + lastEntry.element);"
+                    "}).observe({type: 'largest-contentful-paint', buffered: true});");
+            runJavaScript(jsLCPObserver);
+        });
+    }
+
+    void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel, const QString &message, int,
+                                  const QString &) override
+    {
+        if (message == "largestContentfulPaint: [object HTMLBodyElement]"_L1)
+            emit htmlBodyElementPainted();
+    }
+
+signals:
+    void htmlBodyElementPainted();
+};
+
 class tst_QWebEngineDownloadRequest : public QObject
 {
     Q_OBJECT
@@ -68,7 +100,7 @@ private:
 
     HttpServer *m_server;
     QWebEngineProfile *m_profile;
-    QWebEnginePage *m_page;
+    TestPage *m_page;
     QWebEngineView *m_view;
     QSet<QWebEngineDownloadRequest *> m_requestedDownloads;
     QSet<QWebEngineDownloadRequest *> m_finishedDownloads;
@@ -93,7 +125,7 @@ void tst_QWebEngineDownloadRequest::initTestCase()
             m_finishedDownloads.insert(item);
         });
     });
-    m_page = new QWebEnginePage(m_profile);
+    m_page = new TestPage(m_profile);
     m_view = new QWebEngineView;
     m_view->setPage(m_page);
     m_view->resize(640, 480);
@@ -454,10 +486,12 @@ void tst_QWebEngineDownloadRequest::downloadLink()
     // The only variation being whether the <a> element has a "download"
     // attribute or not.
     QSignalSpy loadSpy(m_page, &QWebEnginePage::loadFinished);
+    QSignalSpy paintSpy(m_page, &TestPage::htmlBodyElementPainted);
     m_view->load(m_server->url());
     QTRY_COMPARE(loadSpy.size(), 1);
     QCOMPARE(loadSpy.takeFirst().value(0).toBool(), true);
     QCOMPARE(indexRequestCount, 1);
+    QTRY_COMPARE(paintSpy.size(), 1);
 
     simulateUserAction(QPoint(10, 10), userAction);
 
@@ -552,9 +586,11 @@ void tst_QWebEngineDownloadRequest::downloadTwoLinks()
     });
 
     QSignalSpy loadSpy(m_page, &QWebEnginePage::loadFinished);
+    QSignalSpy paintSpy(m_page, &TestPage::htmlBodyElementPainted);
     m_view->load(m_server->url());
     QTRY_COMPARE(loadSpy.size(), 1);
     QCOMPARE(loadSpy.takeFirst().value(0).toBool(), true);
+    QTRY_COMPARE(paintSpy.size(), 1);
 
     // Trigger downloads
     simulateUserAction(QPoint(10, 10), action1);
@@ -1336,9 +1372,11 @@ void tst_QWebEngineDownloadRequest::downloadDataUrls()
     });
 
     QSignalSpy loadSpy(m_page, &QWebEnginePage::loadFinished);
+    QSignalSpy paintSpy(m_page, &TestPage::htmlBodyElementPainted);
     m_view->load(m_server->url());
     QTRY_COMPARE(loadSpy.size(), 1);
     QCOMPARE(loadSpy.takeFirst().value(0).toBool(), true);
+    QTRY_COMPARE(paintSpy.size(), 1);
 
     // Trigger download
     simulateUserAction(QPoint(10, 10), UserAction::ClickLink);
