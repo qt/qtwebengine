@@ -215,21 +215,6 @@
             <property name="sizeAdjustPolicy">
              <enum>QComboBox::AdjustToContents</enum>
             </property>
-            <item>
-             <property name="text">
-              <string>Persist on disk</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Persist in memory</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Do not persist</string>
-             </property>
-            </item>
            </widget>
           </item>
          </layout>
