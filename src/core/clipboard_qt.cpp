@@ -136,13 +136,14 @@ void ClipboardQt::WriteHTML(base::StringPiece markup, absl::optional<base::Strin
                             ui::ClipboardContentType /*content_type*/)
 {
 
-    QString markup_string = toQString(markup);
+    QString markup_string;
 #if defined (Q_OS_MACOS)
     // We need to prepend the charset on macOS to prevent garbled Unicode characters
     // when pasting to certain applications (e.g. Notes, TextEdit)
     // Mirrors the behavior in ui/base/clipboard/clipboard_mac.mm in Chromium.
-    markup_string.prepend("<meta charset='utf-8'>"_L1);
+    markup_string += "<meta charset='utf-8'>"_L1;
 #endif
+    markup_string += toQString(markup);
 
 #if !defined(Q_OS_WIN)
     getUncommittedData()->setHtml(markup_string);
