@@ -157,16 +157,20 @@ int main() {
 }"
 )
 
-qt_config_compile_test(snappy
+qt_config_compile_test(webengine_system_snappy
     LABEL "snappy"
     LIBRARIES
         Snappy::Snappy
     CODE
 "
 #include \"snappy.h\"
+#include <string>
 int main() {
     snappy::Source *src = 0;
     snappy::Sink *sink = 0;
+    const char *str = \"string\";
+    std::string compressed;
+    snappy::Compress(str, 7, &compressed);
     return 0;
 }"
 )
@@ -613,7 +617,7 @@ qt_feature("webengine-system-libvpx" PRIVATE
 )
 qt_feature("webengine-system-snappy" PRIVATE
     LABEL "snappy"
-    CONDITION UNIX AND TEST_snappy
+    CONDITION UNIX AND TEST_webengine_system_snappy
 )
 qt_feature("webengine-system-glib" PRIVATE
     LABEL "glib"
