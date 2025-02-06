@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 
     QObject::connect(
             &page, &QWebEnginePage::selectClientCertificate, &page,
-            [&cert](QWebEngineClientCertificateSelection selection) {
+            [](QWebEngineClientCertificateSelection selection) {
                 QDialog dialog;
                 QVBoxLayout *layout = new QVBoxLayout;
                 QLabel *label = new QLabel(QLatin1String("Select certificate"));

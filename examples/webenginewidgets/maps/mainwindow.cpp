@@ -13,8 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QWebEnginePage *page = m_view->page();
 
-    connect(page, &QWebEnginePage::permissionRequested,
-            [this, page](QWebEnginePermission permission) {
+    connect(page, &QWebEnginePage::permissionRequested, [this](QWebEnginePermission permission) {
         if (permission.permissionType() != QWebEnginePermission::PermissionType::Geolocation)
             return;
 
