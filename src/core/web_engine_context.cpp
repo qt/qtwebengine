@@ -1171,7 +1171,7 @@ base::CommandLine *WebEngineContext::initCommandLine(bool &useEmbeddedSwitches,
     }
 
     base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
-    int index = appArgs.indexOf(QRegularExpression(QLatin1StringView("--webEngineArgs"),
+    int index = appArgs.indexOf(QRegularExpression(u"--webEngineArgs"_s,
                                                    QRegularExpression::CaseInsensitiveOption));
     if (qEnvironmentVariableIsSet(kChromiumFlagsEnv)) {
         appArgs = appArgs.mid(0, 1); // Take application name and drop the rest
