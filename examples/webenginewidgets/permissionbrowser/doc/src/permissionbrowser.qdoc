@@ -193,7 +193,7 @@
     \list
         \li \l QWebEngineProfile::StoreOnDisk is the default, and it ensures
         that any permissions that have been granted in the current application run will be
-        loaded back up at next startup. A permission onlycneeds to be granted once, and
+        loaded back up at next startup. A permission only needs to be granted once, and
         subsequent uses of the API that triggered the request will automatically be granted,
         until the application calls QWebEnginePermission::reset().
         \li \l QWebEngineProfile::StoreInMemory Has the same behavior as above,

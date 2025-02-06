@@ -9,30 +9,23 @@
 #include <QUrl>
 
 PermissionDialog::PermissionDialog(const QWebEngineProfile *profile, QWidget *parent)
-    : QDialog(parent)
-    , m_profile(profile)
-    , m_permission(nullptr)
+    : QDialog(parent), m_profile(profile)
 {
     setupUi(this);
 
     auto metaEnum = QMetaEnum::fromType<QWebEnginePermission::PermissionType>();
-    Q_ASSERT(metaEnum.value((quint8)QWebEnginePermission::PermissionType::Unsupported) == 0);
-    for (int i = 1; i < metaEnum.keyCount(); ++i) {
-        QWebEnginePermission::PermissionType permissionType = QWebEnginePermission::PermissionType(metaEnum.value(i));
+    for (int i = 0; i < metaEnum.keyCount(); ++i) {
+        auto permissionType = QWebEnginePermission::PermissionType(metaEnum.value(i));
         if (QWebEnginePermission::isPersistent(permissionType))
-            m_permissionTypeComboBox->addItem(metaEnum.valueToKey((quint8)permissionType), QVariant::fromValue(permissionType));
+            m_permissionTypeComboBox->addItem(metaEnum.key(i), QVariant::fromValue(permissionType));
     }
 }
 
-PermissionDialog::~PermissionDialog()
+QWebEnginePermission PermissionDialog::permission() const
 {
-    delete m_permission;
-}
-
-QWebEnginePermission PermissionDialog::permission()
-{
-    return m_profile->queryPermission(QUrl(m_originLineEdit->text()),
-        QWebEnginePermission::PermissionType(m_permissionTypeComboBox->itemData(m_permissionTypeComboBox->currentIndex()).toInt()));
+    return m_profile->queryPermission(
+            QUrl(m_originLineEdit->text()),
+            m_permissionTypeComboBox->currentData().value<QWebEnginePermission::PermissionType>());
 }
 
 PermissionWidget::PermissionWidget(const QWebEnginePermission &permission, QWidget *parent)
@@ -92,6 +85,13 @@ MainWindow::MainWindow(const QUrl &url)
     , m_pendingWidget(nullptr)
 {
     setupUi(this);
+
+    auto metaEnum = QMetaEnum::fromType<QWebEngineProfile::PersistentPermissionsPolicy>();
+    for (int i = 0; i < metaEnum.keyCount(); ++i) {
+        auto policy = QWebEngineProfile::PersistentPermissionsPolicy(metaEnum.value(i));
+        m_policyComboBox->addItem(metaEnum.key(i), QVariant::fromValue(policy));
+    }
+
     m_urlLineEdit->setText(url.toString());
 
     m_layout->addItem(new QSpacerItem(0,0, QSizePolicy::Minimum, QSizePolicy::Expanding));
@@ -204,21 +204,10 @@ void MainWindow::handleForwardClicked()
     m_webview->triggerPageAction(QWebEnginePage::Forward);
 }
 
-void MainWindow::handlePolicyComboBoxIndexChanged(int index)
+void MainWindow::handlePolicyComboBoxIndexChanged(int)
 {
-    QWebEngineProfile::PersistentPermissionsPolicy policy;
-    switch (index) {
-    case 0:
-        policy = QWebEngineProfile::PersistentPermissionsPolicy::AskEveryTime;
-        break;
-    case 1:
-        policy = QWebEngineProfile::PersistentPermissionsPolicy::StoreInMemory;
-        break;
-    case 2:
-        policy = QWebEngineProfile::PersistentPermissionsPolicy::StoreOnDisk;
-        break;
-    }
-
+    auto policy =
+            m_policyComboBox->currentData().value<QWebEngineProfile::PersistentPermissionsPolicy>();
     if (policy == m_profile->persistentPermissionsPolicy())
         return;
 
