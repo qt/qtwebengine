@@ -182,7 +182,7 @@ void QWebEngineDownloadRequestPrivate::answer()
         return;
 
     if (profileAdapter) {
-        QString path = QDir(downloadDirectory).filePath(downloadFileName);
+        const QString path = QDir(downloadDirectory).filePath(downloadFileName);
         bool accepted = downloadState != QWebEngineDownloadRequest::DownloadCancelled
                 && downloadState != QWebEngineDownloadRequest::DownloadRequested;
         profileAdapter->acceptDownload(downloadId, accepted, useDownloadTargetCallback, path, savePageFormat);

@@ -463,7 +463,7 @@ static void setupProxyPac(base::CommandLine *commandLine)
             else
                 file.setFileName(pac_url.path().prepend(QLatin1Char(':')));
             if (file.exists() && file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-                QByteArray ba = file.readAll();
+                const QByteArray ba = file.readAll();
                 commandLine->RemoveSwitch(switches::kProxyPacUrl);
                 commandLine->AppendSwitchASCII(switches::kProxyPacUrl,
                         ba.toBase64().prepend("data:application/x-javascript-config;base64,").toStdString());

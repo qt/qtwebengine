@@ -325,7 +325,7 @@ QString ProfileAdapter::httpCachePath() const
 {
     if (m_offTheRecord)
         return QString();
-    QString basePath = cachePath();
+    const QString basePath = cachePath();
     if (!basePath.isEmpty())
         return basePath % "/Cache"_L1;
     return QString();
@@ -540,7 +540,7 @@ void ProfileAdapter::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
 
 void ProfileAdapter::removeUrlScheme(const QByteArray &scheme)
 {
-    QByteArray canonicalScheme = scheme.toLower();
+    const QByteArray canonicalScheme = scheme.toLower();
     if (schemeType(canonicalScheme) == SchemeType::Protected) {
         qWarning("Cannot remove the URL scheme handler for an internal scheme: %s", scheme.constData());
         return;
@@ -552,7 +552,7 @@ void ProfileAdapter::removeUrlScheme(const QByteArray &scheme)
 void ProfileAdapter::installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler)
 {
     Q_ASSERT(handler);
-    QByteArray canonicalScheme = scheme.toLower();
+    const QByteArray canonicalScheme = scheme.toLower();
     SchemeType type = schemeType(canonicalScheme);
 
     if (type == SchemeType::Protected) {

@@ -42,7 +42,8 @@ Q_WEBENGINE_LOGGING_CATEGORY(webEngineLibraryInfoLog, "qt.webengine.libraryinfo"
 namespace {
 
 QString fallbackDir() {
-    static QString directory = QDir::homePath() % "/."_L1 % QCoreApplication::applicationName();
+    static const QString directory =
+            QDir::homePath() % "/."_L1 % QCoreApplication::applicationName();
     return directory;
 }
 

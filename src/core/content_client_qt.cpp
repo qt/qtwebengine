@@ -214,7 +214,7 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
     if (oldPotentialWidevineDir.exists()) {
         QFileInfoList widevineVersionDirs = oldPotentialWidevineDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
         for (int i = 0; i < widevineVersionDirs.size(); ++i) {
-            QString versionDirPath(widevineVersionDirs.at(i).absoluteFilePath());
+            const QString versionDirPath = widevineVersionDirs.at(i).absoluteFilePath();
             QString potentialWidevinePluginPath = versionDirPath + "/_platform_specific/"_L1 + archDir
                     + QLatin1StringView(kWidevineCdmFileName);
             pluginPaths << potentialWidevinePluginPath;
@@ -229,7 +229,7 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         if (d.exists()) {
             QFileInfoList widevineVersionDirs = d.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
             for (int i = 0; i < widevineVersionDirs.size(); ++i) {
-                QString versionDirPath(widevineVersionDirs.at(i).absoluteFilePath());
+                const QString versionDirPath = widevineVersionDirs.at(i).absoluteFilePath();
 #ifdef WIN64
                 QString potentialWidevinePluginPath = versionDirPath +
                                                         "/WidevineCdm/_platform_specific/win_x64/"_L1 +
@@ -247,7 +247,7 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
     if (potentialWidevineDir.exists()) {
         QFileInfoList widevineVersionDirs = potentialWidevineDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
         for (int i = 0; i < widevineVersionDirs.size(); ++i) {
-            QString versionDirPath(widevineVersionDirs.at(i).absoluteFilePath());
+            const QString versionDirPath = widevineVersionDirs.at(i).absoluteFilePath();
 #ifdef WIN64
             QString potentialWidevinePluginPath = versionDirPath + "/_platform_specific/win_x64/"_L1 + QLatin1StringView(kWidevineCdmFileName);
 #else

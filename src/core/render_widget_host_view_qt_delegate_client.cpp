@@ -743,8 +743,8 @@ void RenderWidgetHostViewQtDelegateClient::handleInputMethodEvent(QInputMethodEv
     if (!m_rwhv->host())
         return;
 
-    QString commitString = event->commitString();
-    QString preeditString = event->preeditString();
+    const QString commitString = event->commitString();
+    const QString preeditString = event->preeditString();
 
     int cursorPositionInPreeditString = -1;
     gfx::Range selectionRange = gfx::Range::InvalidRange();

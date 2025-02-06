@@ -92,8 +92,8 @@ namespace QtWebEngineCore {
 
 void ClientCertificateStoreData::add(const QSslCertificate &certificate, const QSslKey &privateKey)
 {
-    QByteArray sslKeyInBytes = privateKey.toPem();
-    QByteArray certInBytes = certificate.toDer();
+    const QByteArray sslKeyInBytes = privateKey.toPem();
+    const QByteArray certInBytes = certificate.toDer();
 
     Entry *data = new Entry;
     data->keyPtr = wrapOpenSSLPrivateKey(sslKeyInBytes);

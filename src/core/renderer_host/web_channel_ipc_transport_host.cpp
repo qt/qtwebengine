@@ -49,7 +49,7 @@ uint WebChannelIPCTransportHost::worldId() const
 void WebChannelIPCTransportHost::sendMessage(const QJsonObject &message)
 {
     QJsonDocument doc(message);
-    QByteArray json = doc.toJson(QJsonDocument::Compact);
+    const QByteArray json = doc.toJson(QJsonDocument::Compact);
     content::RenderFrameHost *frame = web_contents()->GetPrimaryMainFrame();
     qCDebug(log).nospace() << "sending webchannel message to " << frame << ": " << doc;
     GetWebChannelIPCTransportRemote(frame)->DispatchWebChannelMessage(

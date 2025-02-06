@@ -172,7 +172,7 @@ void QWebEngineScript::setSourceUrl(const QUrl &url)
         return;
     }
 
-    QString source = QString::fromUtf8(file.readAll());
+    const QString source = QString::fromUtf8(file.readAll());
     setSourceCode(source);
 }
 

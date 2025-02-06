@@ -101,7 +101,7 @@ QKeyEvent *ToKeyEvent(base::apple::OwnedNSEvent event)
         key = QAppleKeyMapper::fromCocoaKey(character);
     }
 
-    QString text = QString::fromNSString(characters);
+    const QString text = QString::fromNSString(characters);
     bool autorep = nsevent.ARepeat;
 
     return new QKeyEvent(type, key, modifiers, nativeScanCode, nativeVirtualKey, nativeModifiers,
