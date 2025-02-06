@@ -735,7 +735,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
 
     WebEngineSettings::get(m_adapterClient->webEngineSettings())->doApply();
 
-    QByteArray encodedData = data.toPercentEncoding();
+    const QByteArray encodedData = data.toPercentEncoding();
     std::string urlString;
     if (!mimeType.isEmpty())
         urlString = std::string("data:") + mimeType.toStdString() + std::string(",");

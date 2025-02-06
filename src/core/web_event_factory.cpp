@@ -62,7 +62,7 @@ enum class KeyboardDriver { Unknown, Windows, Cocoa, Xkb, Evdev };
 
 static KeyboardDriver keyboardDriverImpl()
 {
-    QString platformName = QGuiApplication::platformName();
+    const QString platformName = QGuiApplication::platformName();
 
     if (platformName == "windows"_L1)
         return KeyboardDriver::Windows;
@@ -1676,7 +1676,7 @@ content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *e
     int qtKey = qtKeyForKeyEvent(ev);
     Qt::KeyboardModifiers qtModifiers =
             isBackTabWithoutModifier ? Qt::ShiftModifier : qtModifiersForEvent(ev);
-    QString qtText = qtTextForKeyEvent(ev, qtKey, qtModifiers);
+    const QString qtText = qtTextForKeyEvent(ev, qtKey, qtModifiers);
 
     webKitEvent.native_key_code = nativeKeyCodeForKeyEvent(ev);
     webKitEvent.windows_key_code = windowsKeyCodeForQtKey(qtKey, qtModifiers & Qt::KeypadModifier);

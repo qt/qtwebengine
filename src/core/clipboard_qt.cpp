@@ -185,8 +185,8 @@ void ClipboardQt::WriteBookmark(base::StringPiece title_in, base::StringPiece ur
 {
     // FIXME: Untested, seems to be used only for drag-n-drop.
     // Write as a mozilla url (UTF16: URL, newline, title).
-    QString url = toQString(url_in);
-    QString title = toQString(title_in);
+    const QString url = toQString(url_in);
+    const QString title = toQString(title_in);
 
     QByteArray data;
     data.append(reinterpret_cast<const char *>(url.utf16()), url.size() * 2);

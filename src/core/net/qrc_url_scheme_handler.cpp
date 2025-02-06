@@ -18,14 +18,14 @@ namespace QtWebEngineCore {
 
 void QrcUrlSchemeHandler::requestStarted(QWebEngineUrlRequestJob *job)
 {
-    QByteArray requestMethod = job->requestMethod();
+    const QByteArray requestMethod = job->requestMethod();
     if (requestMethod != "GET") {
         job->fail(QWebEngineUrlRequestJob::RequestDenied);
         return;
     }
 
-    QUrl requestUrl = job->requestUrl();
-    QString requestPath = requestUrl.path();
+    const QUrl requestUrl = job->requestUrl();
+    const QString requestPath = requestUrl.path();
     auto file = std::make_unique<QFile>(u':' + requestPath, job);
     if (!file->exists() || file->size() == 0) {
         qWarning("QResource '%s' not found or is empty", qUtf8Printable(requestPath));
