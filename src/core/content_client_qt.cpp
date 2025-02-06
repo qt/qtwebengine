@@ -197,7 +197,7 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         pluginPaths << ppapiPluginsPath() + u'/' + QLatin1StringView(kWidevineCdmFileName);
 #endif
 #if defined(Q_OS_OSX)
-    QDir potentialWidevineDir("/Applications/Google Chrome.app/Contents/Frameworks");
+    QDir potentialWidevineDir(u"/Applications/Google Chrome.app/Contents/Frameworks"_s);
     const auto archDir = QSysInfo::currentCpuArchitecture() == "x86_64"_L1
                        ? "mac_x64/"_L1
                        : "mac_arm64/"_L1;
