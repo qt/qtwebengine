@@ -152,8 +152,8 @@ QString subProcessPath()
         for (const QString &candidate : std::as_const(candidatePaths)) {
             if (QFileInfo::exists(candidate)) {
                 processPath = candidate;
-                qCDebug(webEngineLibraryInfoLog, "Qt WebEngine process path: %s",
-                        qPrintable(candidate));
+                qCDebug(webEngineLibraryInfoLog, "Qt WebEngine process path: %ls",
+                        qUtf16Printable(candidate));
                 break;
             }
         }
@@ -209,8 +209,8 @@ QString localesPath()
         for (const QString &candidate : std::as_const(candidatePaths)) {
             if (QFileInfo::exists(candidate % QDir::separator() % translationPakFilename)) {
                 potentialLocalesPath = candidate;
-                qCDebug(webEngineLibraryInfoLog, "Qt WebEngine locales path: %s",
-                        qPrintable(candidate));
+                qCDebug(webEngineLibraryInfoLog, "Qt WebEngine locales path: %ls",
+                        qUtf16Printable(candidate));
                 break;
             }
         }
@@ -276,8 +276,8 @@ QString dictionariesPath(bool showWarnings)
         for (const QString &candidate : std::as_const(candidatePaths)) {
             if (QFileInfo::exists(candidate)) {
                 potentialDictionariesPath = candidate;
-                qCDebug(webEngineLibraryInfoLog, "Qt WebEngine dictionaries path: %s",
-                        qPrintable(candidate));
+                qCDebug(webEngineLibraryInfoLog, "Qt WebEngine dictionaries path: %ls",
+                        qUtf16Printable(candidate));
                 break;
             }
         }
@@ -329,8 +329,8 @@ QString resourcesPath()
         for (const QString &candidate : std::as_const(candidatePaths)) {
             if (QFileInfo::exists(candidate % QDir::separator() % resourcesPakFilename)) {
                 potentialResourcesPath = candidate;
-                qCDebug(webEngineLibraryInfoLog, "Qt WebEngine resources path: %s",
-                        qPrintable(candidate));
+                qCDebug(webEngineLibraryInfoLog, "Qt WebEngine resources path: %ls",
+                        qUtf16Printable(candidate));
                 break;
             }
         }

@@ -366,8 +366,12 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
     bool securityOriginsMatch = (requestSecurityOrigin.host() == securityOrigin.host()
                                  && requestSecurityOrigin.scheme() == securityOrigin.scheme()
                                  && requestSecurityOrigin.port() == securityOrigin.port());
-    if (!securityOriginsMatch)
-        qWarning("Security origin mismatch for media access permission: %s requested and %s provided\n", qPrintable(requestSecurityOrigin.toString()), qPrintable(securityOrigin.toString()));
+    if (!securityOriginsMatch) {
+        qWarning("Security origin mismatch for media access permission: %ls requested "
+                 "and %ls provided\n",
+                 qUtf16Printable(requestSecurityOrigin.toString()),
+                 qUtf16Printable(securityOrigin.toString()));
+    }
 
     WebContentsAdapterClient::MediaRequestFlags requestFlags = mediaRequestFlagsForRequest(request);
     WebContentsAdapterClient::MediaRequestFlags finalFlags = requestFlags & authorizationFlags;

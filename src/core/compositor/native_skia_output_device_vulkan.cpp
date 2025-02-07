@@ -248,7 +248,7 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
     result = df->vkCreateImage(qtVulkanDevice, &importedImageCreateInfo, nullptr /* pAllocator */,
                                &importedImage);
     if (result != VK_SUCCESS)
-        qFatal() << "VULKAN: vkCreateImage failed result:" << result;
+        qFatal("VULKAN: vkCreateImage failed result: %d", static_cast<int>(result));
 
 #if BUILDFLAG(IS_OZONE)
     VkImportMemoryFdInfoKHR importMemoryHandleInfo = {
@@ -309,7 +309,7 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
     result = df->vkAllocateMemory(qtVulkanDevice, &memoryAllocateInfo, nullptr /* pAllocator */,
                                   &importedImageMemory);
     if (result != VK_SUCCESS)
-        qFatal() << "VULKAN: vkAllocateMemory failed result:" << result;
+        qFatal("VULKAN: vkAllocateMemory failed result: %d", static_cast<int>(result));
 
     df->vkBindImageMemory(qtVulkanDevice, importedImage, importedImageMemory, 0);
 

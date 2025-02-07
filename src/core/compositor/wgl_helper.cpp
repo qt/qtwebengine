@@ -46,14 +46,14 @@ WGLHelper::WGLHelper() : m_functions(new WGLHelper::WGLFunctions())
 
     hr = CreateDXGIFactory(IID_PPV_ARGS(&m_factory));
     if (FAILED(hr)) {
-        qFatal() << "WGL: Failed to create DXGI Factory:"
-                 << qPrintable(QSystemError::windowsComString(hr));
+        qFatal("WGL: Failed to create DXGI Factory: %ls",
+               qUtf16Printable(QSystemError::windowsComString(hr)));
     }
 
     hr = m_factory->EnumAdapters(0, &m_adapter);
     if (FAILED(hr)) {
-        qFatal() << "WGL: Failed to enumerate adapters:"
-                 << qPrintable(QSystemError::windowsComString(hr));
+        qFatal("WGL: Failed to enumerate adapters: %ls",
+               qUtf16Printable(QSystemError::windowsComString(hr)));
     }
 
     uint devFlags = 0;
@@ -66,13 +66,15 @@ WGLHelper::WGLHelper() : m_functions(new WGLHelper::WGLFunctions())
                            featureLevels, std::size(featureLevels), D3D11_SDK_VERSION, &m_device,
                            /*pFeatureLevel=*/nullptr, &m_immediateContext);
     if (FAILED(hr)) {
-        qFatal() << "WGL: Failed to create D3D11 device:"
-                 << qPrintable(QSystemError::windowsComString(hr));
+        qFatal("WGL: Failed to create D3D11 device: %ls",
+               qUtf16Printable(QSystemError::windowsComString(hr)));
     }
 
     m_interopDevice = m_functions->wglDXOpenDeviceNV(m_device.Get());
-    if (m_interopDevice == INVALID_HANDLE_VALUE)
-        qWarning() << "WGL: Failed to open interop device:" << ::GetLastError();
+    if (m_interopDevice == INVALID_HANDLE_VALUE) {
+        qWarning("WGL: Failed to open interop device: %ls",
+                 qUtf16Printable(QSystemError::windowsString()));
+    }
 }
 
 WGLHelper::~WGLHelper()
@@ -95,9 +97,9 @@ D3DSharedTexture::D3DSharedTexture(WGLHelper::WGLFunctions *wglFun, ID3D11Device
     Microsoft::WRL::ComPtr<ID3D11Texture2D> srcTexture;
     hr = device1->OpenSharedResource1(dxgiSharedHandle, IID_PPV_ARGS(&srcTexture));
     if (FAILED(hr)) {
-        qWarning("WGL: Failed to share D3D11 texture (%s). This will result in failed rendering. "
+        qWarning("WGL: Failed to share D3D11 texture (%ls). This will result in failed rendering. "
                  "Report the bug, and try restarting with QTWEBENGINE_CHROMIUM_FLAGS=--disble-gpu",
-                 qPrintable(QSystemError::windowsComString(hr)));
+                 qUtf16Printable(QSystemError::windowsComString(hr)));
         return;
     }
     Q_ASSERT(srcTexture);
@@ -161,7 +163,8 @@ void D3DSharedTexture::lockObject()
 
     bool status = m_wglFun->wglDXLockObjectsNV(m_interopDevice, 1, &m_glTextureHandle);
     if (!status) {
-        qWarning() << "WGL: Failed to lock shared texture:" << ::GetLastError();
+        qWarning("WGL: Failed to lock shared texture: %ls",
+                 qUtf16Printable(QSystemError::windowsString()));
         return;
     }
 
@@ -177,7 +180,8 @@ void D3DSharedTexture::unlockObject()
 
     bool status = m_wglFun->wglDXUnlockObjectsNV(m_interopDevice, 1, &m_glTextureHandle);
     if (!status) {
-        qWarning() << "WGL: Failed to unlock shared texture:" << ::GetLastError();
+        qWarning("WGL: Failed to unlock shared texture: %ls",
+                 qUtf16Printable(QSystemError::windowsString()));
         return;
     }
 

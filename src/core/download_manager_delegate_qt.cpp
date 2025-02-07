@@ -236,7 +236,8 @@ void DownloadManagerDelegateQt::downloadTargetDetermined(quint32 downloadId, boo
 
     QFileInfo suggestedFile(path);
     if (!suggestedFile.absoluteDir().mkpath(suggestedFile.absolutePath())) {
-        qWarning() << "Creating download path failed, download cancelled:" << suggestedFile.absolutePath();
+        qWarning("Creating download path failed, download cancelled: %ls",
+                 qUtf16Printable(suggestedFile.absolutePath()));
         cancelDownload(std::move(callback));
         return;
     }

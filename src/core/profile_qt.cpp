@@ -267,7 +267,8 @@ void ProfileQt::setupStoragePath()
     auto it = std::find(storagePaths.begin(), storagePaths.end(), thisStoragePath);
     if (it == storagePaths.end()) {
         if (storagePaths.size() >= (PATH_QT_END - PATH_QT_START)) {
-            qWarning() << "Number of profile paths exceeded " << PATH_QT_END - PATH_QT_START << ", storage may break";
+            qWarning("Number of profile paths exceeded %ull, storage may break",
+                     static_cast<qulonglong>(PATH_QT_END - PATH_QT_START));
             return;
         }
 

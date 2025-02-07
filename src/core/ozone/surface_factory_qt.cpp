@@ -58,7 +58,7 @@ ui::GLOzone *SurfaceFactoryQt::GetGLOzone(const gl::GLImplementationParts &imple
             return impl.second.get();
     }
 
-    qFatal() << "GLOzone not found for" << gl::GetGLImplementationGLName(implementation);
+    qFatal("GLOzone not found for %s", gl::GetGLImplementationGLName(implementation));
     return nullptr;
 }
 
@@ -227,7 +227,7 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
                 eglFun->eglCreateImage(eglDisplay, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT,
                                        (EGLClientBuffer)NULL, attrs.data());
         if (eglImage == EGL_NO_IMAGE_KHR) {
-            qFatal() << "Failed to import EGLImage:" << eglHelper->getLastEGLErrorString();
+            qFatal("Failed to import EGLImage: %s", eglHelper->getLastEGLErrorString());
         }
 
         Q_ASSERT(numPlanes <= 3);
@@ -235,7 +235,7 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
         int strides[3];
         int offsets[3];
         if (!eglFun->eglExportDMABUFImageMESA(eglDisplay, eglImage, fds, strides, offsets)) {
-            qFatal() << "Failed to export EGLImage:" << eglHelper->getLastEGLErrorString();
+            qFatal("Failed to export EGLImage: %s", eglHelper->getLastEGLErrorString());
         }
 
         bufferHandle.modifier = handle.modifier;

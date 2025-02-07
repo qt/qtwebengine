@@ -335,29 +335,33 @@ void QWebEngineUrlScheme::setFlags(Flags newValue)
 void QWebEngineUrlScheme::registerScheme(const QWebEngineUrlScheme &scheme)
 {
     if (scheme.d->name.empty()) {
-        qWarning() << "QWebEngineUrlScheme::registerScheme: Scheme name cannot be empty";
+        qWarning("QWebEngineUrlScheme::registerScheme: Scheme name cannot be empty");
         return;
     }
 
     bool needsPort = scheme.d->has_port_component();
     bool hasPort = scheme.d->default_port != url::PORT_UNSPECIFIED;
     if (needsPort && !hasPort) {
-        qWarning() << "QWebEngineUrlScheme::registerScheme: Scheme" << scheme.name() << "needs a default port";
+        qWarning("QWebEngineUrlScheme::registerScheme: Scheme %s needs a default port",
+                 scheme.d->name.data());
         return;
     }
 
     if (url::CustomScheme::FindScheme(scheme.d->name)) {
-        qWarning() << "QWebEngineUrlScheme::registerScheme: Scheme" << scheme.name() << "already registered";
+        qWarning("QWebEngineUrlScheme::registerScheme: Scheme %s already registered",
+                 scheme.d->name.data());
         return;
     }
 
     if (url::IsStandard(scheme.d->name.data(), url::Component(0, static_cast<int>(scheme.d->name.size())))) {
-        qWarning() << "QWebEngineUrlScheme::registerScheme: Scheme" << scheme.name() << "is a standard scheme";
+        qWarning("QWebEngineUrlScheme::registerScheme: Scheme %s is a standard scheme",
+                 scheme.d->name.data());
         return;
     }
 
     if (g_schemesLocked) {
-        qWarning() << "QWebEngineUrlScheme::registerScheme: Too late to register scheme" << scheme.name();
+        qWarning("QWebEngineUrlScheme::registerScheme: Too late to register scheme %s",
+                 scheme.d->name.data());
         return;
     }
 

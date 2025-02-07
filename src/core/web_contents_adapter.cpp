@@ -1073,7 +1073,7 @@ void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldI
     if (!rfh)
         return exit();
     if (!static_cast<content::RenderFrameHostImpl*>(rfh)->GetAssociatedLocalFrame()) {
-        qWarning() << "Local frame is gone, not running script";
+        qWarning("Local frame is gone, not running script");
         return exit();
     }
 

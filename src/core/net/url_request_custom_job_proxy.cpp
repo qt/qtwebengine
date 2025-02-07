@@ -55,7 +55,9 @@ void URLRequestCustomJobProxy::reply(std::string contentType, QIODevice *device,
             m_client->m_charset = qcontentType.mid(cidx + 8).trimmed().toStdString();
             qcontentType = qcontentType.first(sidx);
         } else {
-            qWarning() << "QWebEngineUrlRequestJob::reply(): Unrecognized content-type format with ';'" << qcontentType;
+            qWarning("QWebEngineUrlRequestJob::reply(): Unrecognized content-type format with ';' "
+                     "%s",
+                     qcontentType.constData());
         }
     }
     m_client->m_mimeType = qcontentType.trimmed().toStdString();

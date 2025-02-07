@@ -158,7 +158,7 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
         auto glError = glFun->glGetError();
         if (glError == GL_NO_ERROR || glError == GL_CONTEXT_LOST)
             break;
-        qWarning() << "GL error flag set on entry: " << getGLErrorString(glError);
+        qWarning("GL error flag set on entry: %s", getGLErrorString(glError));
     }
 #endif // !defined(QT_NO_DEBUG) || defined(QT_FORCE_ASSERTS)
 

@@ -84,8 +84,12 @@ void DevToolsServerQt::parseAddressAndPort()
 
     m_port = portStr.toInt(&m_valid);
     m_valid = m_valid && (m_port > 0 && m_port < 65535);
-    if (!m_valid)
-        qWarning("Invalid port given for the inspector server \"%s\". Examples of valid input: \"12345\" or \"192.168.2.14:12345\" (with the address of one of this host's network interface).", qPrintable(portStr));
+    if (!m_valid) {
+        qWarning("Invalid port given for the inspector server \"%ls\". "
+                 "Examples of valid input: \"12345\" or \"192.168.2.14:12345\" "
+                 "(with the address of one of this host's network interface).",
+                 qUtf16Printable(portStr));
+    }
 }
 
 std::unique_ptr<content::DevToolsSocketFactory> DevToolsServerQt::CreateSocketFactory()

@@ -166,8 +166,8 @@ Compositor::Compositor(Type type) : m_type(type)
 {
     qCDebug(lcWebEngineCompositor, "Compositor Type: %s",
             m_type == Type::Software ? "Software" : "Native");
-    qCDebug(lcWebEngineCompositor, "QPA Platform Plugin: %s",
-            qPrintable(QGuiApplication::platformName()));
+    qCDebug(lcWebEngineCompositor, "QPA Platform Plugin: %ls",
+            qUtf16Printable(QGuiApplication::platformName()));
 }
 
 Compositor::~Compositor()

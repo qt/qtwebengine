@@ -232,20 +232,22 @@ void EGLHelper::queryDmaBuf(const int width, const int height, int *fd, int *str
     EGLImage eglImage = m_functions->eglCreateImage(m_eglDisplay, eglContext, EGL_GL_TEXTURE_2D,
                                                     (EGLClientBuffer)textureId, NULL);
     if (eglImage == EGL_NO_IMAGE) {
-        qWarning() << "EGL: Failed to create EGLImage:" << getLastEGLErrorString();
+        qWarning("EGL: Failed to create EGLImage: %s", getLastEGLErrorString());
         return;
     }
 
     int numPlanes = 0;
     if (!m_functions->eglExportDMABUFImageQueryMESA(m_eglDisplay, eglImage, nullptr, &numPlanes,
-                                                    modifiers))
-        qWarning() << "EGL: Failed to retrieve the pixel format of the buffer:"
-                   << getLastEGLErrorString();
+                                                    modifiers)) {
+        qWarning("EGL: Failed to retrieve the pixel format of the buffer: %s",
+                 getLastEGLErrorString());
+    }
     Q_ASSERT(numPlanes == 1);
 
-    if (!m_functions->eglExportDMABUFImageMESA(m_eglDisplay, eglImage, fd, stride, offset))
-        qWarning() << "EGL: Failed to retrieve the dma_buf file descriptor:"
-                   << getLastEGLErrorString();
+    if (!m_functions->eglExportDMABUFImageMESA(m_eglDisplay, eglImage, fd, stride, offset)) {
+        qWarning("EGL: Failed to retrieve the dma_buf file descriptor: %s",
+                 getLastEGLErrorString());
+    }
 
     m_functions->eglDestroyImage(m_eglDisplay, eglImage);
 }

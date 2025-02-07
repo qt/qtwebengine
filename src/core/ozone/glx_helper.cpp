@@ -91,8 +91,8 @@ GLXPixmap GLXHelper::importBufferAsPixmap(int dmaBufFd, uint32_t size, uint16_t 
                                                 height, stride, depth, bpp, dmaBufFd);
     xcb_generic_error_t *error = xcb_request_check(m_connection, cookie);
     if (error) {
-        qWarning() << "GLX: XCB_DRI3_PIXMAP_FROM_BUFFER failed with error code:"
-                   << error->error_code;
+        qWarning("GLX: XCB_DRI3_PIXMAP_FROM_BUFFER failed with error code: 0x%x",
+                 error->error_code);
         free(error);
         return 0;
     }
