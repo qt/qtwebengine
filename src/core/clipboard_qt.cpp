@@ -237,8 +237,10 @@ void ClipboardQt::ReadAvailableTypes(ui::ClipboardBuffer type,
     for (const auto& mime_type : GetStandardFormats(type, data_dst))
         types->push_back(mime_type);
 
-    if (mimeData->hasFormat(QString::fromLatin1(ui::ClipboardFormatType::DataTransferCustomType().Serialize()))) {
-        const QByteArray customData = mimeData->data(QString::fromLatin1(ui::ClipboardFormatType::DataTransferCustomType().Serialize()));
+    const QString serializedDataTransferCustomType =
+            QString::fromStdString(ui::ClipboardFormatType::DataTransferCustomType().Serialize());
+    if (mimeData->hasFormat(serializedDataTransferCustomType)) {
+        const QByteArray customData = mimeData->data(serializedDataTransferCustomType);
         const base::span custom_data(customData.constData(), (unsigned long)customData.size());
         ui::ReadCustomDataTypes(base::as_bytes(custom_data), types);
     }
@@ -347,7 +349,9 @@ void ClipboardQt::ReadDataTransferCustomData(ui::ClipboardBuffer clipboard_type,
             clipboard_type == ui::ClipboardBuffer::kCopyPaste ? QClipboard::Clipboard : QClipboard::Selection);
     if (!mimeData)
         return;
-    const QByteArray customData = mimeData->data(QString::fromLatin1(ui::ClipboardFormatType::DataTransferCustomType().Serialize()));
+    const QString serializedDataTransferCustomType =
+            QString::fromStdString(ui::ClipboardFormatType::DataTransferCustomType().Serialize());
+    const QByteArray customData = mimeData->data(serializedDataTransferCustomType);
     const base::span custom_data(customData.constData(), (unsigned long)customData.size());
     if (auto maybe_result = ui::ReadCustomDataForType(base::as_bytes(custom_data), type))
         *result = *std::move(maybe_result);
