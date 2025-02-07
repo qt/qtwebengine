@@ -12,6 +12,7 @@ qt_webengine_set_version(python3 3.8)
 qt_webengine_set_version(nodejs 14.9)
 qt_webengine_set_version(nss 3.26)
 qt_webengine_set_version(gcc 10.0)
+qt_webengine_set_version(gcc-pdf 9.0)
 qt_webengine_set_version(glib 2.32.0)
 qt_webengine_set_version(glibc 2.16)
 qt_webengine_set_version(harfbuzz 4.3.0)
@@ -499,11 +500,20 @@ qt_webengine_configure_check("msvc-2022"
 )
 
 qt_webengine_configure_check("gcc"
-    MODULES QtWebEngine QtPdf
+    MODULES QtWebEngine
     CONDITION NOT (LINUX OR MINGW) OR NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
               NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${QT_CONFIGURE_CHECK_gcc_version}
     MESSAGE "GCC version must be at least ${QT_CONFIGURE_CHECK_gcc_version}"
     DOCUMENTATION "GCC version must be at least ${QT_CONFIGURE_CHECK_gcc_version}"
+    TAGS LINUX_PLATFORM
+)
+
+qt_webengine_configure_check("gcc-pdf"
+    MODULES QtPdf
+    CONDITION NOT (LINUX OR MINGW) OR NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
+              NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${QT_CONFIGURE_CHECK_gcc-pdf_version}
+    MESSAGE "GCC version must be at least ${QT_CONFIGURE_CHECK_gcc-pdf_version}"
+    DOCUMENTATION "GCC version must be at least ${QT_CONFIGURE_CHECK_gcc-pdf_version}"
     TAGS LINUX_PLATFORM
 )
 
@@ -727,6 +737,12 @@ qt_feature("webengine-ozone-x11" PRIVATE
         AND qpa_xcb_support_check
 )
 
+qt_feature("webengine-gcc-legacy-support" PRIVATE
+    LABEL "gcc-legacy-support"
+    CONDITION UNIX AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
+        AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0
+        AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL ${QT_CONFIGURE_CHECK_gcc-pdf_version}
+)
 
 #### Summary
 

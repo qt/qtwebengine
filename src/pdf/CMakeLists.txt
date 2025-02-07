@@ -165,7 +165,11 @@ foreach(arch ${archs})
                 ARGS use_system_libopenjpeg2
                 CONDITION QT_FEATURE_webengine_system_libopenjpeg2
             )
-        endif()
+            extend_gn_list(gnArgArg
+                ARGS is_gcc_legacy
+                CONDITION QT_FEATURE_webengine_gcc_legacy_support
+            )
+         endif()
         if(MACOS)
             list(APPEND gnArgArg angle_enable_vulkan=false)
         endif()

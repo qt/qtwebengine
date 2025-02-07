@@ -545,6 +545,7 @@ macro(qt_webengine_externalproject_add)
                    -DWEBENGINE_ROOT_BUILD_DIR=${PROJECT_BINARY_DIR}
                    -DQT_ALLOW_SYMLINK_IN_PATHS=${QT_ALLOW_SYMLINK_IN_PATHS}
                    -DPython3_EXECUTABLE=${Python3_EXECUTABLE}
+                   -DGCC_LEGACY_SUPPORT=${QT_FEATURE_webengine_gcc_legacy_support}
     )
     unset(OSX_ARCH_STR)
 endmacro()

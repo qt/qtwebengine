@@ -135,6 +135,7 @@ if(CMAKE_CROSSCOMPILING AND NOT IOS AND NOT MACOS AND NOT WIN32)
                    -DCMAKE_CXX_FLAGS=
                    -DQT_FEATURE_qtwebengine_build=${QT_FEATURE_qtwebengine_build}
                    -DQT_FEATURE_qtpdf_build=${QT_FEATURE_qtpdf_build}
+                   -DGCC_LEGACY_SUPPORT=${QT_FEATURE_webengine_gcc_legacy_support}
     )
     if(QT_FEATURE_qtwebengine_build)
         add_dependencies(run_core_GnReady hostBuild)

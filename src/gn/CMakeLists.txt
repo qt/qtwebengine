@@ -55,6 +55,10 @@ else()
     message(FATAL_ERROR "Unsupported gn platform !")
 endif()
 
+if(GCC_LEGACY_SUPPORT)
+    set(GN_GCC_LEGACY_SUPPORT --gcc-legacy-support)
+endif()
+
 list(JOIN CMAKE_OSX_ARCHITECTURES "$<COMMA>" OSX_ARCH)
 add_custom_command(
     OUTPUT ${GN_EXECUTABLE}
@@ -74,6 +78,7 @@ add_custom_command(
         $<$<AND:$<PLATFORM_ID:Darwin>,$<BOOL:${CMAKE_OSX_SYSROOT}>>:${CMAKE_OSX_SYSROOT}>
         $<$<AND:$<PLATFORM_ID:Darwin>,$<BOOL:${OSX_ARCH}>>:--osx-architectures>
         $<$<AND:$<PLATFORM_ID:Darwin>,$<BOOL:${OSX_ARCH}>>:${OSX_ARCH}>
+        ${GN_GCC_LEGACY_SUPPORT}
     COMMAND Ninja::ninja -C ${GN_BINARY_DIR}/$<CONFIG> ${GN_EXECUTABLE}
     VERBATIM
     USES_TERMINAL
