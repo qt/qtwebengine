@@ -96,7 +96,9 @@ void FilePickerController::accepted(const QStringList &files)
                     absolutePath += scheme.at(5) + ":/"_L1;
                 } else {
 #endif
-                    qWarning("Ignoring invalid item in FilePickerController::accepted(QStringList): %s", qPrintable(urlString));
+                    qWarning("Ignoring invalid item in "
+                             "FilePickerController::accepted(QStringList): %ls",
+                             qUtf16Printable(urlString));
                     continue;
 #if defined(Q_OS_WIN)
                 }
@@ -115,7 +117,9 @@ void FilePickerController::accepted(const QStringList &files)
                     absolutePath += u'/';
 #endif
                 } else {
-                    qWarning("Ignoring invalid item in FilePickerController::accepted(QStringList): %s", qPrintable(urlString));
+                    qWarning("Ignoring invalid item in "
+                             "FilePickerController::accepted(QStringList): %ls",
+                             qUtf16Printable(urlString));
                     continue;
                 }
             }
@@ -132,7 +136,8 @@ void FilePickerController::accepted(const QStringList &files)
                 continue;
             }
         }
-        qWarning("Ignoring invalid item in FilePickerController::accepted(QStringList): %s", qPrintable(urlString));
+        qWarning("Ignoring invalid item in FilePickerController::accepted(QStringList): %ls",
+                 qUtf16Printable(urlString));
     }
 
     FilePickerController::filesSelectedInChooser(stringList);

@@ -179,8 +179,8 @@ Compositor::Compositor(Type type) : m_type(type)
             break;
         }
     }
-    qCDebug(lcWebEngineCompositor, "QPA Platform Plugin: %s",
-            qPrintable(QGuiApplication::platformName()));
+    qCDebug(lcWebEngineCompositor, "QPA Platform Plugin: %ls",
+            qUtf16Printable(QGuiApplication::platformName()));
 }
 
 Compositor::~Compositor()

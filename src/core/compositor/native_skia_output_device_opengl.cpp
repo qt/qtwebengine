@@ -97,9 +97,9 @@ x11::Pixmap XPixmapFromNativePixmap(const gfx::NativePixmap &nativePixmap)
                             .Sync();
 
     if (response.error) {
-        qWarning() << "Could not import the dma-buf as an XPixmap because "
-                      "PixmapFromBuffer() failed; error: "
-                   << response.error->ToString();
+        qWarning("Could not import the dma-buf as an XPixmap because PixmapFromBuffer() "
+                 "failed; error: %s",
+                 response.error->ToString().c_str());
         return x11::Pixmap::None;
     }
 

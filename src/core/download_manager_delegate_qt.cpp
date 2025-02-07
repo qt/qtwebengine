@@ -220,7 +220,8 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
             QDir suggestedDir = QDir(suggestedFile.absolutePath());
             if (!suggestedDir.isRoot() || !suggestedDir.exists()) {
 #endif
-            qWarning("Creating download path failed, download cancelled: %s", suggestedFile.absolutePath().toUtf8().data());
+            qWarning("Creating download path failed, download cancelled: %ls",
+                     qUtf16Printable(suggestedFile.absolutePath()));
             info.accepted = false;
 #if defined(Q_OS_WIN)
             }

@@ -201,7 +201,7 @@ public:
         if (it != vendorIdMap.end())
             return it->second;
 
-        qWarning() << "Unknown Vendor ID:" << QStringLiteral("0x%1").arg(vendorId, 0, 16);
+        qWarning("Unknown Vendor ID: 0x%llx", vendorId);
         return Unknown;
     }
 
@@ -913,7 +913,7 @@ WebEngineContext::WebEngineContext()
 #endif
     } else {
         parsedCommandLine->AppendSwitch(sandbox::policy::switches::kNoSandbox);
-        qInfo() << "Sandboxing disabled by user.";
+        qInfo("Sandboxing disabled by user.");
     }
 
     // Do not advertise a feature we have removed at compile time
@@ -994,11 +994,10 @@ WebEngineContext::WebEngineContext()
                     found++;
             }
             if (found != requiredDeviceExtensions.size()) {
-                qWarning().nospace()
-                        << "Vulkan rendering may fail because " << deviceExtensionsVar
-                        << " environment variable is already set but it doesn't contain"
-                        << " some of the required Vulkan device extensions:\n"
-                        << qPrintable(requiredDeviceExtensions.join('\n'));
+                qWarning("Vulkan rendering may fail because %s environment variable is already "
+                         "set but it doesn't contain some of the required Vulkan device "
+                         "extensions:\n%s",
+                         deviceExtensionsVar, requiredDeviceExtensions.join('\n').constData());
             }
         } else {
             qputenv(deviceExtensionsVar, requiredDeviceExtensions.join(';'));
