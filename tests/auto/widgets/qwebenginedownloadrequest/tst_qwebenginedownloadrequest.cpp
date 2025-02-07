@@ -92,6 +92,7 @@ private Q_SLOTS:
     void downloadToDirectoryWithFileName();
     void downloadDataUrls_data();
     void downloadDataUrls();
+    void pauseDownload();
 
 private:
     void saveLink(QPoint linkPos);
@@ -1381,6 +1382,55 @@ void tst_QWebEngineDownloadRequest::downloadDataUrls()
     // Trigger download
     simulateUserAction(QPoint(10, 10), UserAction::ClickLink);
     QTRY_COMPARE(downloadRequestCount, 1);
+}
+
+void tst_QWebEngineDownloadRequest::pauseDownload()
+{
+    const int fileSize = 1024 * 1024 * 512;
+
+    // Set up HTTP server
+    ScopedConnection sc1 = connect(m_server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
+        if (rr->requestMethod() == "GET" && rr->requestPath() == "/") {
+            rr->setResponseHeader(QByteArrayLiteral("content-type"),
+                                  QByteArrayLiteral("application/octet-stream"));
+            static const QByteArray bigfile(fileSize, '0');
+            rr->setResponseBody(bigfile);
+            rr->sendResponse();
+        }
+    });
+
+    // Set up profile and download handler
+    QTemporaryDir tmpDir;
+    QVERIFY(tmpDir.isValid());
+    m_profile->setDownloadPath(tmpDir.path());
+
+    bool firstBytesReceived = true;
+    int pausedCount = 0;
+    ScopedConnection sc2 = connect(
+            m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *item) {
+                QCOMPARE(item->state(), QWebEngineDownloadRequest::DownloadRequested);
+                connect(item, &QWebEngineDownloadRequest::receivedBytesChanged, [item, &firstBytesReceived] {
+                    if (firstBytesReceived) {
+                        firstBytesReceived = false;
+                        item->pause();
+                    }
+                });
+                connect(item, &QWebEngineDownloadRequest::isPausedChanged, [item, &pausedCount]() {
+                    if (item->isPaused()) {
+                        pausedCount++;
+                        item->resume();
+                    }
+                });
+                item->accept();
+            });
+
+    QSignalSpy loadSpy(m_page, &QWebEnginePage::loadFinished);
+    m_view->load(m_server->url());
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 1, 10000);
+    QTRY_COMPARE_WITH_TIMEOUT(pausedCount, 1, 10000);
+    QTRY_COMPARE_WITH_TIMEOUT(m_finishedDownloads.size(), 1, 10000);
+    QTRY_COMPARE(m_finishedDownloads.values()[0]->isPaused(), false);
+    QTRY_COMPARE(m_finishedDownloads.values()[0]->receivedBytes(), fileSize);
 }
 
 QTEST_MAIN(tst_QWebEngineDownloadRequest)
