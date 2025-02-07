@@ -28,6 +28,7 @@
 #include <QFile>
 #include <QLibraryInfo>
 #include <QString>
+#include <QSysInfo>
 
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -197,13 +198,16 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
 #endif
 #if defined(Q_OS_OSX)
     QDir potentialWidevineDir("/Applications/Google Chrome.app/Contents/Frameworks");
+    const auto archDir = QSysInfo::currentCpuArchitecture() == "x86_64"_L1
+                       ? "mac_x64/"_L1
+                       : "mac_arm64/"_L1;
     if (potentialWidevineDir.exists()) {
         QFileInfoList widevineVersionDirs = potentialWidevineDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot,
                                                                                QDir::Name | QDir::Reversed);
-        const auto library =
-                "/Versions/Current/Libraries/WidevineCdm/_platform_specific/mac_x64/libwidevinecdm.dylib"_L1;
+        const auto libraryBase = "/Versions/Current/Libraries/WidevineCdm/_platform_specific/"_L1;
+        const auto libraryFilename = "libwidevinecdm.dylib"_L1;
         for (const QFileInfo &info : widevineVersionDirs)
-            pluginPaths << info.absoluteFilePath() + library;
+            pluginPaths << info.absoluteFilePath() + libraryBase + archDir + libraryFilename;
     }
 
     QDir oldPotentialWidevineDir(QDir::homePath() + "/Library/Application Support/Google/Chrome/WidevineCDM"_L1);
@@ -211,7 +215,7 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         QFileInfoList widevineVersionDirs = oldPotentialWidevineDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
         for (int i = 0; i < widevineVersionDirs.size(); ++i) {
             QString versionDirPath(widevineVersionDirs.at(i).absoluteFilePath());
-            QString potentialWidevinePluginPath = versionDirPath + "/_platform_specific/mac_x64/"_L1
+            QString potentialWidevinePluginPath = versionDirPath + "/_platform_specific/"_L1 + archDir
                     + QLatin1StringView(kWidevineCdmFileName);
             pluginPaths << potentialWidevinePluginPath;
         }
