@@ -14,6 +14,7 @@
 #include <QFileInfo>
 #include <QMimeDatabase>
 #include <QStandardPaths>
+#include <QTimer>
 
 #include "profile_adapter_client.h"
 #include "profile_adapter.h"
@@ -211,7 +212,8 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
         info.startTime = item->GetStartTime().ToTimeT();
 
         m_pendingDownloads.emplace(m_currentId, std::move(*callback));
-        clients[0]->downloadRequested(info);
+        QTimer::singleShot(0, m_profileAdapter,
+                           [client = clients[0], info]() { client->downloadRequested(info); });
     } else
         cancelDownload(std::move(*callback));
 
@@ -315,7 +317,8 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
     info.startTime = QDateTime::currentMSecsSinceEpoch();
 
     m_pendingSaves.emplace(m_currentId, std::move(callback));
-    clients[0]->downloadRequested(info);
+    QTimer::singleShot(0, m_profileAdapter,
+                       [client = clients[0], info]() { client->downloadRequested(info); });
 }
 
 void DownloadManagerDelegateQt::savePathDetermined(quint32 downloadId, bool accepted,
@@ -374,9 +377,8 @@ void DownloadManagerDelegateQt::OnDownloadUpdated(download::DownloadItem *downlo
         info.suggestedFileName = toQt(download->GetSuggestedFilename());
         info.startTime = download->GetStartTime().ToTimeT();
 
-        for (ProfileAdapterClient *client : std::as_const(clients)) {
-            client->downloadUpdated(info);
-        }
+        QTimer::singleShot(0, m_profileAdapter,
+                           [client = clients[0], info]() { client->downloadUpdated(info); });
     }
 }
 

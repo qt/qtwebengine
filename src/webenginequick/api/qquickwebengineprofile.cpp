@@ -243,7 +243,7 @@ void QQuickWebEngineProfilePrivate::cleanDownloads()
     m_ongoingDownloads.clear();
 }
 
-void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
+void QQuickWebEngineProfilePrivate::downloadRequested(const DownloadItemInfo &info)
 {
     Q_Q(QQuickWebEngineProfile);
 

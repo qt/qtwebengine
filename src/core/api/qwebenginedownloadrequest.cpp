@@ -145,17 +145,13 @@ void QWebEngineDownloadRequestPrivate::update(const ProfileAdapterClient::Downlo
         downloadState = toDownloadState(info.state);
         Q_EMIT q->stateChanged(downloadState);
     }
-
-    if (info.receivedBytes != receivedBytes || info.totalBytes != totalBytes) {
-
-      if (info.receivedBytes != receivedBytes) {
-          receivedBytes = info.receivedBytes;
-          Q_EMIT q->receivedBytesChanged();
-      }
-      if (info.totalBytes != totalBytes) {
-          totalBytes = info.totalBytes;
-          Q_EMIT q->totalBytesChanged();
-      }
+    if (info.receivedBytes != receivedBytes) {
+        receivedBytes = info.receivedBytes;
+        Q_EMIT q->receivedBytesChanged();
+    }
+    if (info.totalBytes != totalBytes) {
+        totalBytes = info.totalBytes;
+        Q_EMIT q->totalBytesChanged();
     }
 
     if (info.done)
