@@ -109,8 +109,9 @@
         \c{WebEngineWebAuthUxRequest.PinEntryReason.Challenge}.
     \li The minimum PIN length that the authenticator will accept for the PIN.
     \endlist
-    Use this structure to update the WebAuth UX dialog when the WebAuth UX state is \l
-    WebEngineWebAuthUxRequest.WebAuthUxState.CollectPin.
+    Use this structure to update the WebAuth UX dialog when the WebAuth UX
+    \l {WebEngineWebAuthUxRequest::}{state} is
+    \c {WebEngineWebAuthUxRequest.WebAuthUxState.CollectPin}.
 */
 
 /*!
@@ -137,7 +138,7 @@
 /*!
     \qmlproperty int QtWebEngine::webEngineWebAuthPinRequest::remainingAttempts
     \brief The number of attempts remaining before a hard lock. Should be ignored unless
-           \l{WebEngineWebAuthPinRequest::reason} is
+           \l{webEngineWebAuthPinRequest::reason} is
            \c{WebEngineWebAuthUxRequest.PinEntryReason.Challenge}.
 */
 
