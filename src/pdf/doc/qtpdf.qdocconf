@@ -42,6 +42,7 @@ depends += qtcore \
            qtdoc \
            qmake \
            qtdesigner \
+           qtqml \
            qtquick \
            qtquickcontrols \
            qtcmake \
