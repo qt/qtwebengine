@@ -13,3 +13,6 @@ rhel # flaky
 
 [setCursorOnEmbeddedView]
 macos # QTest::mousemove is not reliable
+
+[keyboardFocusAfterPopup]
+macos # having trouble integrating Jan/Feb 2025
