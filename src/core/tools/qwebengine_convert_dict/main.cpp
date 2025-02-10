@@ -70,11 +70,11 @@ template<class T>
 QTextStream &operator<<(QTextStream &out, base::span<T> span)
 {
     out << '[';
-    QString prefix;
+    QLatin1StringView prefix;
     for (const auto &element : span) {
         out << prefix;
         out << element;
-        prefix = QStringLiteral(",");
+        prefix = ","_L1;
     }
     out << ']';
     return out;
