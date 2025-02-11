@@ -202,7 +202,7 @@ def isInChromiumBlacklist(file_path):
               and not file_path.startswith('third_party/node/node_modules/polymer-analyzer/')
               and not file_path.startswith('third_party/node/node_modules/polymer-css-build/')
               and not file_path.startswith('third_party/node/node_modules/resolve/')
-              and not file_path.startswith('third_party/node/node_modules/rollup/')
+              and not file_path.startswith('third_party/node/node_modules/@rollup/')
               and not file_path.startswith('third_party/node/node_modules/shady-css-parser/')
               and not file_path.startswith('third_party/node/node_modules/source-map/')
               and not file_path.startswith('third_party/node/node_modules/stable/')
@@ -283,7 +283,7 @@ def isInChromiumBlacklist(file_path):
         ))
         or ('/test' in file_path
          and ('/testdata/' in file_path
-           or '/tests/' in file_path
+           or ('/tests/' in file_path and not file_path.startswith('third_party/rust/'))
            or ('/test/' in file_path
              and not '/webrtc/' in file_path
              and not file_path.startswith('net/test/')
