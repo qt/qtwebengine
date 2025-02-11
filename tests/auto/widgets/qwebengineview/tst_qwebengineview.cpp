@@ -1620,6 +1620,7 @@ void tst_QWebEngineView::keyboardFocusAfterPopup()
     connect(window.lineEdit, &QLineEdit::editingFinished, [&] { window.webView->setHtml(html); });
     window.webView->settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
 
     // Focus will initially go to the QLineEdit.
     QTRY_COMPARE(QApplication::focusWidget(), window.lineEdit);
