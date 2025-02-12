@@ -2274,7 +2274,7 @@ QSizeF QWebEnginePage::contentsSize() const
     This signal is emitted when \a request is issued to load a page in a separate
     web engine window. This can either be because the current page requested it explicitly
     through a JavaScript call to \c window.open, or because the user clicked on a link
-    while holding Shift, Ctrl, or a built-in combination that triggers the page to open
+    while holding Shift, Cmd/Ctrl, or a built-in combination that triggers the page to open
     in a new window.
 
     The signal is handled by calling openIn() with the new page on the request.
