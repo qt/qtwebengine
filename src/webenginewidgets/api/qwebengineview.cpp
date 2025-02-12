@@ -439,6 +439,7 @@ void QWebEngineViewPrivate::widgetChanged(QtWebEngineCore::WebEngineQuickWidget 
 {
     Q_Q(QWebEngineView);
 
+    bool hasFocus = oldWidget ? oldWidget->hasFocus() : false;
     if (oldWidget) {
         q->layout()->removeWidget(oldWidget);
         oldWidget->hide();
@@ -457,7 +458,7 @@ void QWebEngineViewPrivate::widgetChanged(QtWebEngineCore::WebEngineQuickWidget 
 #endif
         q->layout()->addWidget(newWidget);
         q->setFocusProxy(newWidget);
-        if (oldWidget && oldWidget == QApplication::focusWidget())
+        if (hasFocus)
             newWidget->setFocus();
         newWidget->show();
     }
