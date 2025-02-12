@@ -808,9 +808,6 @@
     \fn void QWebEnginePage::featurePermissionRequestCanceled(const QUrl &securityOrigin, Feature feature)
     \deprecated [6.8] This signal is no longer emitted.
 
-    This signal is emitted when the web site identified by \a securityOrigin cancels a previously issued
-    request to make use of \a feature.
-
     \sa featurePermissionRequested(), setFeaturePermission()
 
 */
