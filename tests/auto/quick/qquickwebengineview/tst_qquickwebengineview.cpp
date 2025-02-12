@@ -27,6 +27,8 @@
 
 #include <functional>
 
+using namespace Qt::StringLiterals;
+
 class tst_QQuickWebEngineView : public QObject {
     Q_OBJECT
 public:
@@ -80,6 +82,7 @@ private Q_SLOTS:
     void htmlSelectPopup();
     void savePage_data();
     void savePage();
+    void javaScriptConsoleMessage();
 
 private:
     inline QQuickWebEngineView *newWebEngineView();
@@ -1363,6 +1366,82 @@ void tst_QQuickWebEngineView::savePage()
     QCOMPARE(evaluateJavaScriptSync(view, "document.getElementsByTagName('h1')[0].innerText")
                      .toString(),
              originalData);
+}
+
+class TestJSMessageHandler
+{
+public:
+    inline static QList<QtMsgType> levels;
+    inline static QStringList messages;
+    inline static QList<int> lineNumbers;
+    inline static QStringList sourceIDs;
+
+    static void handler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+    {
+        if (strcmp(context.category, "js") != 0) {
+            m_originalHandler(type, context, msg);
+            return;
+        }
+
+        levels.append(type);
+        messages.append(msg);
+        lineNumbers.append(context.line);
+        sourceIDs.append(context.file);
+    }
+
+    TestJSMessageHandler() { m_originalHandler = qInstallMessageHandler(handler); }
+    ~TestJSMessageHandler() { qInstallMessageHandler(m_originalHandler); }
+
+private:
+    inline static QtMessageHandler m_originalHandler = nullptr;
+};
+
+void tst_QQuickWebEngineView::javaScriptConsoleMessage()
+{
+    QQuickWebEngineView *view = webEngineView();
+
+    // Test QQuickWebEngineView::javaScriptConsoleMessage() signal.
+    {
+        QSignalSpy jsSpy(
+                view,
+                SIGNAL(javaScriptConsoleMessage(QQuickWebEngineView::JavaScriptConsoleMessageLevel,
+                                                const QString &, int, const QString &)));
+        view->setUrl(urlFromTestPath("html/script2.html"));
+        QVERIFY(waitForLoadSucceeded(view));
+
+        runJavaScript("sayHello()");
+        QTRY_COMPARE(jsSpy.size(), 1);
+        QCOMPARE(jsSpy.last().at(0).toInt(), QWebEnginePage::WarningMessageLevel);
+        QCOMPARE(jsSpy.last().at(1).toString(), "hello"_L1);
+        QCOMPARE(jsSpy.last().at(2).toInt(), 6);
+        QCOMPARE(jsSpy.last().at(3).toString(), urlFromTestPath("html/resources/hello.js"));
+
+        runJavaScript("sayHi()");
+        QTRY_COMPARE(jsSpy.size(), 2);
+        QCOMPARE(jsSpy.last().at(0).toInt(), QWebEnginePage::WarningMessageLevel);
+        QCOMPARE(jsSpy.last().at(1).toString(), "hi"_L1);
+        QCOMPARE(jsSpy.last().at(2).toInt(), 7);
+        QCOMPARE(jsSpy.last().at(3).toString(), urlFromTestPath("html/resources/hi.js"));
+    }
+
+    // Test default QQuickWebEngineViewPrivate::javaScriptConsoleMessage() handler.
+    {
+        TestJSMessageHandler handler;
+        view->setUrl(urlFromTestPath("html/script2.html"));
+        QVERIFY(waitForLoadSucceeded(view));
+
+        evaluateJavaScriptSync(view, "sayHello()");
+        QCOMPARE(handler.levels.last(), QtMsgType::QtWarningMsg);
+        QCOMPARE(handler.messages.last(), "hello"_L1);
+        QCOMPARE(handler.lineNumbers.last(), 6);
+        QCOMPARE(handler.sourceIDs.last(), urlFromTestPath("html/resources/hello.js"));
+
+        evaluateJavaScriptSync(view, "sayHi()");
+        QCOMPARE(handler.levels.last(), QtMsgType::QtWarningMsg);
+        QCOMPARE(handler.messages.last(), "hi"_L1);
+        QCOMPARE(handler.lineNumbers.last(), 7);
+        QCOMPARE(handler.sourceIDs.last(), urlFromTestPath("html/resources/hi.js"));
+    }
 }
 
 #if QT_CONFIG(accessibility)

@@ -2282,7 +2282,7 @@ bool QWebEnginePage::javaScriptPrompt(const QUrl &securityOrigin, const QString 
 void QWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID)
 {
     static QLoggingCategory loggingCategory("js", QtWarningMsg);
-    static QByteArray file = sourceID.toUtf8();
+    const QByteArray file = sourceID.toUtf8();
     QMessageLogger logger(file.constData(), lineNumber, nullptr, loggingCategory.categoryName());
 
     switch (level) {
