@@ -288,20 +288,20 @@ void tst_QWebEngineView::pageWithPaintListeners()
 
     page.setHtml(empty);
     QTest::qWait(500); // empty page should not trigger
-    QVERIFY(firstContentfulPaintSpy.size() == 0);
-    QVERIFY(largestContentfulPaintSpy.size() == 0);
+    QCOMPARE(firstContentfulPaintSpy.size(), 0);
+    QCOMPARE(largestContentfulPaintSpy.size(), 0);
 
     page.setHtml(backgroundColor);
-    QTRY_VERIFY(firstContentfulPaintSpy.size() == 1);
+    QTRY_COMPARE(firstContentfulPaintSpy.size(), 1);
 
     page.setHtml(text);
-    QTRY_VERIFY(firstContentfulPaintSpy.size() == 2);
-    QTRY_VERIFY(largestContentfulPaintSpy.size() == 1);
+    QTRY_COMPARE(firstContentfulPaintSpy.size(), 2);
+    QTRY_COMPARE(largestContentfulPaintSpy.size(), 1);
 
-#if !QT_CONFIG(webengine_embedded_build)
-    // Embedded builds have different scrollbars that are only painted on hover
+#if !QT_CONFIG(webengine_embedded_build) && !defined(Q_OS_MACOS)
+    // Embedded builds and macOS have different scrollbars that are only painted on hover
     page.setHtml(scrollBars);
-    QTRY_VERIFY(firstContentfulPaintSpy.size() == 3);
+    QTRY_COMPARE(firstContentfulPaintSpy.size(), 3);
 #endif
 }
 
