@@ -80,6 +80,8 @@
 #include <QQuickRenderControl>
 #include <QQuickWindow>
 
+using namespace Qt::StringLiterals;
+
 static void removeRecursive(const QString& dirname)
 {
     QDir dir(dirname);
@@ -137,6 +139,7 @@ private Q_SLOTS:
     void backActionUpdate();
     void localStorageVisibility();
     void consoleOutput();
+    void javaScriptConsoleMessage();
     void userAgentNewlineStripping();
     void renderWidgetHostViewNotShowTopLevel();
     void getUserMediaRequest_data();
@@ -613,7 +616,7 @@ public:
         sourceIDs.append(sourceID);
     }
 
-    QList<int> levels;
+    QList<JavaScriptConsoleMessageLevel> levels;
     QStringList messages;
     QList<int> lineNumbers;
     QStringList sourceIDs;
@@ -626,6 +629,78 @@ void tst_QWebEnginePage::consoleOutput()
     evaluateJavaScriptSync(&page, "this is not valid JavaScript");
     QCOMPARE(page.messages.size(), 1);
     QCOMPARE(page.lineNumbers.at(0), 1);
+}
+
+class TestJSMessageHandler
+{
+public:
+    inline static QList<QtMsgType> levels;
+    inline static QStringList messages;
+    inline static QList<int> lineNumbers;
+    inline static QStringList sourceIDs;
+
+    static void handler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+    {
+        if (strcmp(context.category, "js") != 0) {
+            m_originalHandler(type, context, msg);
+            return;
+        }
+
+        levels.append(type);
+        messages.append(msg);
+        lineNumbers.append(context.line);
+        sourceIDs.append(context.file);
+    }
+
+    TestJSMessageHandler() { m_originalHandler = qInstallMessageHandler(handler); }
+    ~TestJSMessageHandler() { qInstallMessageHandler(m_originalHandler); }
+
+private:
+    inline static QtMessageHandler m_originalHandler = nullptr;
+};
+
+void tst_QWebEnginePage::javaScriptConsoleMessage()
+{
+    // Test overridden QWebEnginePage::javaScriptConsoleMessage().
+    {
+        ConsolePage page;
+        QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+        page.load(QUrl("qrc:///resources/script2.html"));
+        QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 1, 20000);
+
+        evaluateJavaScriptSync(&page, "sayHello()");
+        QCOMPARE(page.levels.last(), QWebEnginePage::WarningMessageLevel);
+        QCOMPARE(page.messages.last(), "hello"_L1);
+        QCOMPARE(page.lineNumbers.last(), 6);
+        QCOMPARE(page.sourceIDs.last(), "qrc:///resources/hello.js"_L1);
+
+        evaluateJavaScriptSync(&page, "sayHi()");
+        QCOMPARE(page.levels.last(), QWebEnginePage::WarningMessageLevel);
+        QCOMPARE(page.messages.last(), "hi"_L1);
+        QCOMPARE(page.lineNumbers.last(), 7);
+        QCOMPARE(page.sourceIDs.last(), "qrc:///resources/hi.js"_L1);
+    }
+
+    // Test default QWebEnginePage::javaScriptConsoleMessage() handler.
+    {
+        TestJSMessageHandler handler;
+        QWebEnginePage page;
+        QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+        page.load(QUrl("qrc:///resources/script2.html"));
+        QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 1, 20000);
+
+        evaluateJavaScriptSync(&page, "sayHello()");
+        QCOMPARE(handler.levels.last(), QtMsgType::QtWarningMsg);
+        QCOMPARE(handler.messages.last(), "hello"_L1);
+        QCOMPARE(handler.lineNumbers.last(), 6);
+        QCOMPARE(handler.sourceIDs.last(), "qrc:///resources/hello.js"_L1);
+
+        evaluateJavaScriptSync(&page, "sayHi()");
+        QCOMPARE(handler.levels.last(), QtMsgType::QtWarningMsg);
+        QCOMPARE(handler.messages.last(), "hi"_L1);
+        QCOMPARE(handler.lineNumbers.last(), 7);
+        QCOMPARE(handler.sourceIDs.last(), "qrc:///resources/hi.js"_L1);
+    }
 }
 
 class TestPage : public QWebEnginePage {
