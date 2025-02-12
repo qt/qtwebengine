@@ -945,11 +945,11 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
     audio being played or stopped.
 
     \note The signal is also emitted when the \l audioMuted property changes.
-    Also, if the audio is paused this signal is emitted with an approximate \b{two-second
+    Also, if the audio is paused, this signal is emitted with an approximate \b{two-second
     delay} from the moment the audio is paused.
 
     If a web page contains two videos that are started in sequence, this signal
-    gets emitted only once, for the first video to generate sound. After both
+    gets emitted only once for the first video to generate sound. After both
     videos are stopped, the signal is emitted upon the last sound generated.
     This means that the signal is emitted both when any kind of sound is
     generated and when everything is completely silent within a web page,
