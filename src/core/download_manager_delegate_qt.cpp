@@ -26,6 +26,20 @@ using namespace Qt::StringLiterals;
 
 namespace QtWebEngineCore {
 
+void provideDownloadTarget(download::DownloadItem *item, download::DownloadTargetCallback *callback,
+                           const base::FilePath &target)
+{
+    download::DownloadTargetInfo target_info;
+    target_info.target_disposition = download::DownloadItem::TARGET_DISPOSITION_OVERWRITE;
+    target_info.danger_type = download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT;
+    target_info.insecure_download_status = download::DownloadItem::VALIDATED;
+    target_info.mime_type = item->GetMimeType();
+    target_info.display_name = item->GetFileNameToReportUser();
+    target_info.target_path = target;
+    target_info.intermediate_path = target.AddExtensionASCII("download");
+    std::move(*callback).Run(std::move(target_info));
+}
+
 DownloadManagerDelegateQt::DownloadManagerDelegateQt(ProfileAdapter *profileAdapter)
     : m_profileAdapter(profileAdapter)
     , m_currentId(0)
@@ -88,6 +102,14 @@ void DownloadManagerDelegateQt::removeDownload(quint32 downloadId)
 bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *item,
                                                         download::DownloadTargetCallback *callback)
 {
+    // The item came back for another round of target determination; this happens for example when
+    // network error occurs. We already gave it a target path, let it use that, then it can report
+    // the reason of its failure in OnDownloadUpdated().
+    if (m_currentId >= item->GetId() && !item->GetTargetFilePath().empty()) {
+        provideDownloadTarget(item, callback, item->GetTargetFilePath());
+        return true;
+    }
+
     m_currentId = item->GetId();
 
     // Keep the forced file path if set, also as the temporary file, so the check for existence
@@ -165,7 +187,6 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
     item->AddObserver(this);
     QList<ProfileAdapterClient*> clients = m_profileAdapter->clients();
     if (!clients.isEmpty()) {
-        Q_ASSERT(m_currentId == item->GetId());
         ProfileAdapterClient::DownloadItemInfo info = {
             item->GetId(),
             toQt(item->GetURL()),
