@@ -157,8 +157,8 @@ BrowserAccessibilityInterface::BrowserAccessibilityInterface(BrowserAccessibilit
 {
     if (parent() && parent()->object()) {
         m_object = new QObject(parent()->object());
-        QString name = toQt(q->GetAuthorUniqueId());
-        if (!name.isEmpty())
+        const std::u16string name = q->GetAuthorUniqueId();
+        if (!name.empty())
             m_object->setObjectName(name);
     }
 

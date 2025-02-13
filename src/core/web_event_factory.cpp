@@ -38,6 +38,7 @@
 #include "native_web_keyboard_event_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
 
+#include <QtCore/private/qstringiterator_p.h>
 #include <QtGui/private/qtgui-config_p.h>
 
 #include <QCoreApplication>
@@ -1680,9 +1681,10 @@ input::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *ev)
 
     if (qtKey >= Qt::Key_Escape)
         webKitEvent.dom_key = domKeyForQtKey(qtKey);
-    else if (!qtText.isEmpty())
-        webKitEvent.dom_key = ui::DomKey::FromCharacter(qtText.toUcs4().first());
-    else {
+    else if (!qtText.isEmpty()) {
+        QStringIterator it(qtText);
+        webKitEvent.dom_key = ui::DomKey::FromCharacter(it.next());
+    } else {
         QChar ch(qtKey);
         if (!(qtModifiers & Qt::ShiftModifier)) // No way to check for caps lock
             ch = ch.toLower();
