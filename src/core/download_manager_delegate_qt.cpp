@@ -193,8 +193,8 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
             item->GetState(),
             item->GetTotalBytes(),
             item->GetReceivedBytes(),
-            mimeTypeString,
-            suggestedFilePath,
+            std::move(mimeTypeString),
+            std::move(suggestedFilePath),
             ProfileAdapterClient::UnknownSavePageFormat,
             acceptedByDefault,
             false /* paused */,
@@ -202,7 +202,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
             isSavePageDownload,
             item->GetLastReason(),
             adapterClient,
-            suggestedFilename,
+            std::move(suggestedFilename),
             item->GetStartTime().ToTimeT()
         };
 

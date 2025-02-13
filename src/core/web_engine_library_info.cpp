@@ -129,11 +129,9 @@ QString subProcessPath()
 #endif
 
         QStringList candidatePaths;
-        const QString fromEnv = qEnvironmentVariable("QTWEBENGINEPROCESS_PATH");
-        if (!fromEnv.isEmpty()) {
-            // Only search in QTWEBENGINEPROCESS_PATH if set
-            candidatePaths << fromEnv;
-        } else {
+        bool includeOverrideMessage = false;
+        if (QString fromEnv = qEnvironmentVariable("QTWEBENGINEPROCESS_PATH"); fromEnv.isEmpty()) {
+            includeOverrideMessage = true;
 #if defined(Q_OS_DARWIN) && defined(QT_MAC_FRAMEWORK_BUILD)
             candidatePaths << getBundlePath(frameworkBundle()) % "/Helpers/"_L1
                             % qWebEngineProcessName() % ".app/Contents/MacOS/"_L1
@@ -146,6 +144,9 @@ QString subProcessPath()
 #endif
             candidatePaths << QCoreApplication::applicationDirPath()
                               % QLatin1Char('/') % processBinary;
+        } else {
+            // Only search in QTWEBENGINEPROCESS_PATH if set
+            candidatePaths.append(std::move(fromEnv));
         }
 
         for (const QString &candidate : std::as_const(candidatePaths)) {
@@ -162,7 +163,7 @@ QString subProcessPath()
             for (const QString &candidate : std::as_const(candidatePaths))
                 errorMessage += "  "_L1 + candidate + u'\n';
             errorMessage += "but could not find it.\n"_L1;
-            if (fromEnv.isEmpty()) {
+            if (includeOverrideMessage) {
                 errorMessage += "You may override the default search path by using "
                                 "QTWEBENGINEPROCESS_PATH environment variable.\n"_L1;
             }
@@ -190,11 +191,9 @@ QString localesPath()
         QStringList candidatePaths;
         const QString translationPakFilename =
                 QLatin1StringView(WebEngineLibraryInfo::getResolvedLocale()) % ".pak"_L1;
-        const QString fromEnv = qEnvironmentVariable("QTWEBENGINE_LOCALES_PATH");
-        if (!fromEnv.isEmpty()) {
-            // Only search in QTWEBENGINE_LOCALES_PATH if set
-            candidatePaths << fromEnv;
-        } else {
+        bool includeOverrideMessage = false;
+        if (QString fromEnv = qEnvironmentVariable("QTWEBENGINE_LOCALES_PATH"); fromEnv.isEmpty()) {
+            includeOverrideMessage = true;
 #if defined(Q_OS_DARWIN) && defined(QT_MAC_FRAMEWORK_BUILD)
             candidatePaths << getResourcesPath(frameworkBundle()) % QDir::separator()
                             % "qtwebengine_locales"_L1;
@@ -202,6 +201,9 @@ QString localesPath()
             candidatePaths << QLibraryInfo::path(QLibraryInfo::TranslationsPath) % QDir::separator()
                             % "qtwebengine_locales"_L1;
             candidatePaths << fallbackDir();
+        } else {
+            // Only search in QTWEBENGINE_LOCALES_PATH if set
+            candidatePaths.append(std::move(fromEnv));
         }
 
         for (const QString &candidate : std::as_const(candidatePaths)) {
@@ -220,7 +222,7 @@ QString localesPath()
                 warningMessage += "  "_L1 % candidate + u'\n';
             warningMessage += "but could not find the translation file for the current locale: "_L1
                     + translationPakFilename + u'\n';
-            if (fromEnv.isEmpty()) {
+            if (includeOverrideMessage) {
                 warningMessage += "You may override the default search paths by using "
                                   "QTWEBENGINE_LOCALES_PATH environment variable.\n"_L1;
             }
@@ -242,31 +244,33 @@ QString dictionariesPath(bool showWarnings)
     if (!initialized) {
         initialized = true;
 
-        const QString fromEnv = qEnvironmentVariable("QTWEBENGINE_DICTIONARIES_PATH");
-        if (!fromEnv.isEmpty()) {
-            // Only search in QTWEBENGINE_DICTIONARIES_PATH if set
-            candidatePaths << fromEnv;
-        } else {
+        bool includeOverrideMessage = false;
+        if (QString fromEnv = qEnvironmentVariable("QTWEBENGINE_DICTIONARIES_PATH");
+            fromEnv.isEmpty()) {
+            includeOverrideMessage = true;
             // First try to find dictionaries near the application.
 #ifdef Q_OS_DARWIN
             QString resourcesDictionariesPath = getMainApplicationResourcesPath()
                     % QDir::separator() % "qtwebengine_dictionaries"_L1;
-            candidatePaths << resourcesDictionariesPath;
+            candidatePaths.append(std::move(resourcesDictionariesPath));
 #endif
             QString applicationDictionariesPath = QCoreApplication::applicationDirPath()
                     % QDir::separator() % "qtwebengine_dictionaries"_L1;
-            candidatePaths << applicationDictionariesPath;
+            candidatePaths.append(std::move(applicationDictionariesPath));
 
             // Then try to find dictionaries near the installed library.
 #if defined(Q_OS_DARWIN) && defined(QT_MAC_FRAMEWORK_BUILD)
             QString frameworkDictionariesPath =
                     getResourcesPath(frameworkBundle()) % "/qtwebengine_dictionaries"_L1;
-            candidatePaths << frameworkDictionariesPath;
+            candidatePaths.append(std::move(frameworkDictionariesPath));
 #endif
 
             QString libraryDictionariesPath = QLibraryInfo::path(QLibraryInfo::DataPath)
                     % QDir::separator() % "qtwebengine_dictionaries"_L1;
-            candidatePaths << libraryDictionariesPath;
+            candidatePaths.append(std::move(libraryDictionariesPath));
+        } else {
+            // Only search in QTWEBENGINE_DICTIONARIES_PATH if set
+            candidatePaths.append(std::move(fromEnv));
         }
 
         for (const QString &candidate : std::as_const(candidatePaths)) {
@@ -283,7 +287,7 @@ QString dictionariesPath(bool showWarnings)
             for (const QString &candidate : std::as_const(candidatePaths))
                 warningMessage += "  "_L1 + candidate + u'\n';
             warningMessage += "but could not find it.\n"_L1;
-            if (fromEnv.isEmpty()) {
+            if (includeOverrideMessage) {
                 warningMessage += "You may override the default search path by using "
                                   "QTWEBENGINE_DICTIONARIES_PATH environment variable.\n"_L1;
             }
@@ -305,11 +309,10 @@ QString resourcesPath()
     if (potentialResourcesPath.isEmpty()) {
         QStringList candidatePaths;
         const auto resourcesPakFilename = "qtwebengine_resources.pak"_L1;
-        const QString fromEnv = qEnvironmentVariable("QTWEBENGINE_RESOURCES_PATH");
-        if (!fromEnv.isEmpty()) {
-            // Only search in QTWEBENGINE_RESOURCES_PATH if set
-            candidatePaths << fromEnv;
-        } else {
+        bool includeOverrideMessage = false;
+        if (QString fromEnv = qEnvironmentVariable("QTWEBENGINE_RESOURCES_PATH");
+            fromEnv.isEmpty()) {
+            includeOverrideMessage = true;
 #if defined(Q_OS_DARWIN) && defined(QT_MAC_FRAMEWORK_BUILD)
             candidatePaths << getResourcesPath(frameworkBundle());
 #endif
@@ -318,6 +321,9 @@ QString resourcesPath()
             candidatePaths << QLibraryInfo::path(QLibraryInfo::DataPath);
             candidatePaths << QCoreApplication::applicationDirPath();
             candidatePaths << fallbackDir();
+        } else {
+            // Only search in QTWEBENGINE_RESOURCES_PATH if set
+            candidatePaths.append(std::move(fromEnv));
         }
 
         for (const QString &candidate : std::as_const(candidatePaths)) {
@@ -335,7 +341,7 @@ QString resourcesPath()
             for (const QString &candidate : std::as_const(candidatePaths))
                 errorMessage += "  "_L1 + candidate + u'\n';
             errorMessage += "but could not find any.\n"_L1;
-            if (fromEnv.isEmpty()) {
+            if (includeOverrideMessage) {
                 errorMessage += "You may override the default search paths by using "
                                 "QTWEBENGINE_RESOURCES_PATH environment variable.\n"_L1;
             }
