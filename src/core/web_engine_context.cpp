@@ -1076,14 +1076,13 @@ base::CommandLine *WebEngineContext::initCommandLine(bool &useEmbeddedSwitches,
         }
     }
 #if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
-    useEmbeddedSwitches = !appArgs.contains(QStringLiteral("--disable-embedded-switches"));
+    useEmbeddedSwitches = !appArgs.contains("--disable-embedded-switches"_L1);
 #else
-    useEmbeddedSwitches = appArgs.contains(QStringLiteral("--enable-embedded-switches"));
+    useEmbeddedSwitches = appArgs.contains("--enable-embedded-switches"_L1);
 #endif
-    enableGLSoftwareRendering =
-            appArgs.removeAll(QStringLiteral("--enable-webgl-software-rendering"));
-    appArgs.removeAll(QStringLiteral("--disable-embedded-switches"));
-    appArgs.removeAll(QStringLiteral("--enable-embedded-switches"));
+    enableGLSoftwareRendering = appArgs.removeAll("--enable-webgl-software-rendering"_L1);
+    appArgs.removeAll("--disable-embedded-switches"_L1);
+    appArgs.removeAll("--enable-embedded-switches"_L1);
 
     bool isRemoteDebugPort =
             (-1

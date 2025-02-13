@@ -257,7 +257,7 @@ QStringList FilePickerController::nameFilters(const QStringList &acceptedMimeTyp
             // A single suffix
             // Filename.type doesn't have to exist and mimeTypeForFile() supports
             // custom suffixes as valid (but unknown) MIME types.
-            const QMimeType &mimeType = mimeDatabase.mimeTypeForFile("filename" + type);
+            const QMimeType &mimeType = mimeDatabase.mimeTypeForFile("filename"_L1 + type);
             if (mimeType.isValid()) {
                 QString glob = u'*' + type;
                 nameFilters.append(mimeType.comment() + " ("_L1 + glob + u')');

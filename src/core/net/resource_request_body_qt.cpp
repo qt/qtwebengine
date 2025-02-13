@@ -165,8 +165,8 @@ void ResourceRequestBody::readDataElementPipe(
             bytesRead += bytesToRead;
             maxSize -= bytesToRead;
         } else if (result != MOJO_RESULT_SHOULD_WAIT && result != MOJO_RESULT_FAILED_PRECONDITION) {
-            setErrorString(QString::fromLatin1("Error while reading from data pipe, skipping"
-                                               "remaining content of data pipe. Mojo error code: ")
+            setErrorString("Error while reading from data pipe, skipping "
+                           "remaining content of data pipe. Mojo error code: "_L1
                            + QString::number(result));
         }
     } while ((result == MOJO_RESULT_SHOULD_WAIT || result == MOJO_RESULT_OK)

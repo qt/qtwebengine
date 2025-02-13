@@ -177,7 +177,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
     }
 
     if (suggestedFilename.isEmpty()) {
-        suggestedFilename += QStringLiteral("qwe_download");
+        suggestedFilename += "qwe_download"_L1;
         QMimeType mimeType = QMimeDatabase().mimeTypeForName(mimeTypeString);
         if (mimeType.isValid() && !mimeType.preferredSuffix().isEmpty())
             suggestedFilename += u'.' + mimeType.preferredSuffix();
