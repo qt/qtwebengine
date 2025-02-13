@@ -45,7 +45,10 @@ endfunction()
 
 # Join all the targets into (at most) two documents for Pdf / WebEngine
 function(qt_webengine_sbom_project_end)
-    if(NOT QT_GENERATE_SBOM)
+    if(NOT QT_GENERATE_SBOM
+            # Temporarily skip generating sbom if tag-value generation dependencies are not found.
+            OR (NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
+            OR (NOT QT_INTERNAL_SBOM_DEPS_FOUND_FOR_GENERATE_JSON))
         return()
     endif()
 
