@@ -26,6 +26,8 @@
 #include <map>
 #include <mutex>
 
+using namespace Qt::StringLiterals;
+
 class tst_QWebEngineProfile : public QObject
 {
     Q_OBJECT
@@ -847,6 +849,12 @@ void tst_QWebEngineProfile::httpAcceptLanguage()
     // Test changing an existing page and profile
     QWebEngineProfile::defaultProfile()->setHttpAcceptLanguage(testLang);
     QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("navigator.languages")).toStringList(), QStringList(testLang));
+
+    // Test language list with quality values
+    QWebEngineProfile::defaultProfile()->setHttpAcceptLanguage(
+            u"en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7"_s);
+    QCOMPARE(evaluateJavaScriptSync(&page, u"navigator.languages"_s).toStringList(),
+             QStringList({u"en-US"_s, u"en"_s, u"zh-CN"_s, u"zh"_s}));
 }
 
 void tst_QWebEngineProfile::downloadItem()

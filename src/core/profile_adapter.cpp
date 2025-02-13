@@ -611,12 +611,12 @@ QList<QWebEnginePermission> ProfileAdapter::listPermissions(const QUrl &origin, 
 
 QString ProfileAdapter::httpAcceptLanguageWithoutQualities() const
 {
-    const QStringList list = m_httpAcceptLanguage.split(QLatin1Char(','));
     QString out;
-    for (const QString &str : list) {
-        if (!out.isEmpty())
-            out.append(QLatin1Char(','));
-        out.append(str.split(QLatin1Char(';')).first());
+    auto sep = ""_L1;
+    for (auto lang : m_httpAcceptLanguage.tokenize(u',')) {
+        out += sep;
+        out += *lang.tokenize(u';').begin(); // tokenize() is never empty with KeepEmptyParts!
+        sep = ","_L1;
     }
     return out;
 }
