@@ -46,6 +46,10 @@ else()
     find_package(PkgConfig)
     find_package(Snappy)
     find_package(Nodejs ${QT_CONFIGURE_CHECK_nodejs_version})
+    _qt_internal_sbom_verify_deps_for_generate_tag_value_spdx_document(
+        OUT_VAR_DEPS_FOUND sbom_deps_found
+        OUT_VAR_REASON_FAILURE_MESSAGE sbom_missing_deps_message
+    )
 endif()
 
 if(PkgConfig_FOUND)
@@ -332,6 +336,14 @@ qt_webengine_configure_check("python3"
     MESSAGE "Python ${QT_CONFIGURE_CHECK_python3_version} or later is required. Please use -DPython3_EXECUTABLE for custom path to interpreter."
     DOCUMENTATION "Python ${QT_CONFIGURE_CHECK_python3_version} version or later."
 )
+if(QT_GENERATE_SBOM AND QT_SBOM_GENERATE_JSON AND QT_SBOM_REQUIRE_GENERATE_JSON)
+    qt_webengine_configure_check("sbom-generate-json"
+        MODULES QtWebEngine QtPdf
+        CONDITION sbom_deps_found
+        MESSAGE
+            "SBOM JSON file generation requirements missing, but JSON files were explicitly required. ${sbom_missing_deps_message}"
+    )
+endif()
 qt_webengine_configure_check("python3-html5lib"
     MODULES QtWebEngine
     CONDITION Python3_EXECUTABLE AND NOT html5lib_NOT_FOUND
@@ -815,4 +827,12 @@ if(NOT QT_SUPERBUILD)
         CONDITION QT_SHOW_EXTRA_IDE_SOURCES OR (NOT DEFINED QT_SHOW_EXTRA_IDE_SOURCES AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.20)
     )
 endif()
-
+# Only show the warning if JSON generation is not required. For the case when it is required,
+# there's an extra configure check.
+if(QT_GENERATE_SBOM AND NOT QT_SBOM_REQUIRE_GENERATE_JSON)
+    qt_configure_add_report_entry(
+        TYPE WARNING
+        MESSAGE "Qt WebEngine And Qt Pdf SBOM generation will be skipped due to missing dependencies. ${sbom_missing_deps_message}"
+        CONDITION NOT sbom_deps_found
+    )
+endif()

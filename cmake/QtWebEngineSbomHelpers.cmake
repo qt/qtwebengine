@@ -45,10 +45,21 @@ endfunction()
 
 # Join all the targets into (at most) two documents for Pdf / WebEngine
 function(qt_webengine_sbom_project_end)
-    if(NOT QT_GENERATE_SBOM
-            # Temporarily skip generating sbom if tag-value generation dependencies are not found.
-            OR (NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
-            OR (NOT QT_INTERNAL_SBOM_DEPS_FOUND_FOR_GENERATE_JSON))
+    if(NOT QT_GENERATE_SBOM)
+        return()
+    endif()
+
+    # We have the situation that qtbase by default does not generate JSON files if the required
+    # python dependency spdx-tools is not found.
+    # But QtWebEngine requires the spdx-tools package to be available, otherwise we can't generate
+    # a tag/value document from the Chromium-generated json file, and then link the Chromium
+    # SBOM document to the qtwebengine one.
+    # Skip the Chromium SBOM generation if the dependency is not found.
+    # A warning or skip message should have already been shown at general configure check time.
+    qt_internal_sbom_verify_deps_for_generate_tag_value_spdx_document(
+        OUT_VAR_DEPS_FOUND sbom_deps_found
+    )
+    if(NOT sbom_deps_found)
         return()
     endif()
 
