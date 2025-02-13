@@ -221,6 +221,21 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         }
     }
 #elif defined(Q_OS_WIN)
+    const auto arch = QSysInfo::currentCpuArchitecture();
+    auto appendArchitectureAndFilename = [&arch](QString &inString) {
+        if (arch == "x86_64"_L1) {
+            inString += "/win_x64/"_L1;
+        } else if (arch == "i386"_L1) {
+            inString += "/win_x86/"_L1;
+        } else if (arch == "arm64"_L1) {
+            inString += "/win_arm64/"_L1;
+        } else {
+            Q_UNREACHABLE();
+        }
+
+        inString += QLatin1StringView(kWidevineCdmFileName);
+    };
+
     const auto googleChromeDir = "/Google/Chrome/Application"_L1;
     const QStringList programFileDirs{getProgramFilesDir() + googleChromeDir,
                                       getProgramFilesDir(true) + googleChromeDir};
@@ -229,17 +244,12 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         if (d.exists()) {
             QFileInfoList widevineVersionDirs = d.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
             for (int i = 0; i < widevineVersionDirs.size(); ++i) {
-                const QString versionDirPath = widevineVersionDirs.at(i).absoluteFilePath();
-#ifdef WIN64
-                QString potentialWidevinePluginPath = versionDirPath +
-                                                        "/WidevineCdm/_platform_specific/win_x64/"_L1 +
-                                                        QLatin1StringView(kWidevineCdmFileName);
-#else
-                QString potentialWidevinePluginPath = versionDirPath +
-                                                        "/WidevineCdm/_platform_specific/win_x86/"_L1 +
-                                                        QLatin1StringView(kWidevineCdmFileName);
-#endif
-                pluginPaths.append(std::move(potentialWidevinePluginPath));
+                QString potentialWidevinePluginPath
+                    = widevineVersionDirs.at(i).absoluteFilePath()
+                    + "/WidevineCdm/_platform_specific"_L1;
+
+                appendArchitectureAndFilename(potentialWidevinePluginPath);
+                pluginPaths << potentialWidevinePluginPath;
             }
         }
     }
@@ -247,13 +257,12 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
     if (potentialWidevineDir.exists()) {
         QFileInfoList widevineVersionDirs = potentialWidevineDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
         for (int i = 0; i < widevineVersionDirs.size(); ++i) {
-            const QString versionDirPath = widevineVersionDirs.at(i).absoluteFilePath();
-#ifdef WIN64
-            QString potentialWidevinePluginPath = versionDirPath + "/_platform_specific/win_x64/"_L1 + QLatin1StringView(kWidevineCdmFileName);
-#else
-            QString potentialWidevinePluginPath = versionDirPath + "/_platform_specific/win_x86/"_L1 + QLatin1StringView(kWidevineCdmFileName);
-#endif
-            pluginPaths.append(std::move(potentialWidevinePluginPath));
+            QString potentialWidevinePluginPath
+                = widevineVersionDirs.at(i).absoluteFilePath()
+                + "/_platform_specific"_L1;
+
+            appendArchitectureAndFilename(potentialWidevinePluginPath);
+            pluginPaths << potentialWidevinePluginPath;
         }
     }
 #elif defined(Q_OS_LINUX)
