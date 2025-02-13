@@ -197,8 +197,8 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
         info.state = item->GetState();
         info.totalBytes = item->GetTotalBytes();
         info.receivedBytes = item->GetReceivedBytes();
-        info.mimeType = mimeTypeString;
-        info.path = suggestedFilePath;
+        info.mimeType = std::move(mimeTypeString);
+        info.path = std::move(suggestedFilePath);
         info.savePageFormat = ProfileAdapterClient::UnknownSavePageFormat;
         info.accepted = acceptedByDefault;
         info.paused = false;
@@ -207,7 +207,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
         info.useDownloadTargetCallback = true;
         info.downloadInterruptReason = item->GetLastReason();
         info.page = adapterClient;
-        info.suggestedFileName = suggestedFilename;
+        info.suggestedFileName = std::move(suggestedFilename);
         info.startTime = item->GetStartTime().ToTimeT();
 
         m_pendingDownloads.emplace(m_currentId, std::move(*callback));

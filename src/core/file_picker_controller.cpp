@@ -260,16 +260,16 @@ QStringList FilePickerController::nameFilters(const QStringList &acceptedMimeTyp
             const QMimeType &mimeType = mimeDatabase.mimeTypeForFile("filename" + type);
             if (mimeType.isValid()) {
                 QString glob = u'*' + type;
-                acceptedGlobs.append(glob);
                 nameFilters.append(mimeType.comment() + " ("_L1 + glob + u')');
+                acceptedGlobs.append(std::move(glob));
             }
         } else if (type.contains(u'/') && !type.endsWith(u'*')) {
             // All suffixes for a given MIME type
             const QMimeType &mimeType = mimeDatabase.mimeTypeForName(type);
             if (mimeType.isValid() && !mimeType.globPatterns().isEmpty()) {
                 QString globs = mimeType.globPatterns().join(u' ');
-                acceptedGlobs.append(mimeType.globPatterns());
                 nameFilters.append(mimeType.comment() + " ("_L1 + globs + u')');
+                acceptedGlobs.append(mimeType.globPatterns());
             }
         } else if (type.endsWith("/*"_L1)) {
             // All MIME types for audio/*, image/* or video/*
@@ -279,8 +279,8 @@ QStringList FilePickerController::nameFilters(const QStringList &acceptedMimeTyp
             for (const QMimeType &m : allMimeTypes) {
                 if (m.name().startsWith(type) && !m.globPatterns().isEmpty()) {
                     QString globs = m.globPatterns().join(u' ');
-                    acceptedGlobs.append(m.globPatterns());
                     nameFilters.append(m.comment() + " ("_L1 + globs + u')');
+                    acceptedGlobs.append(m.globPatterns());
                 }
             }
         } else {

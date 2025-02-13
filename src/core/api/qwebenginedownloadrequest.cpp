@@ -479,7 +479,7 @@ void QWebEngineDownloadRequest::setDownloadDirectory(const QString &directory)
                                                                                  d->suggestedFileName,
                                                                                  d->startTime)).fileName();
         if (d->downloadFileName != newFileName) {
-            d->downloadFileName = newFileName;
+            d->downloadFileName = std::move(newFileName);
             Q_EMIT downloadFileNameChanged();
         }
     }

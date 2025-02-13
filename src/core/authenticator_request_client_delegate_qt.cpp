@@ -148,7 +148,7 @@ void AuthenticatorRequestClientDelegateQt::SelectAccount(
         if (has_user_identifying_info) {
             QString userName = toQt(*response.user_entity->name);
             m_userMap[userName] = nIndex;
-            userList.append(userName);
+            userList.append(std::move(userName));
         }
     }
     m_dialogController->selectAccount(userList);

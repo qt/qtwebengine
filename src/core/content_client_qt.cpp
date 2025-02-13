@@ -217,7 +217,7 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
             const QString versionDirPath = widevineVersionDirs.at(i).absoluteFilePath();
             QString potentialWidevinePluginPath = versionDirPath + "/_platform_specific/"_L1 + archDir
                     + QLatin1StringView(kWidevineCdmFileName);
-            pluginPaths << potentialWidevinePluginPath;
+            pluginPaths.append(std::move(potentialWidevinePluginPath));
         }
     }
 #elif defined(Q_OS_WIN)
@@ -239,7 +239,7 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
                                                         "/WidevineCdm/_platform_specific/win_x86/"_L1 +
                                                         QLatin1StringView(kWidevineCdmFileName);
 #endif
-                pluginPaths << potentialWidevinePluginPath;
+                pluginPaths.append(std::move(potentialWidevinePluginPath));
             }
         }
     }
@@ -253,7 +253,7 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
 #else
             QString potentialWidevinePluginPath = versionDirPath + "/_platform_specific/win_x86/"_L1 + QLatin1StringView(kWidevineCdmFileName);
 #endif
-            pluginPaths << potentialWidevinePluginPath;
+            pluginPaths.append(std::move(potentialWidevinePluginPath));
         }
     }
 #elif defined(Q_OS_LINUX)
