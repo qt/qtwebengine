@@ -13,8 +13,16 @@ find_package(Qt6 COMPONENTS Gui)
 get_target_property(qtWebEngineProcessName WebEngineCore QTWEBENGINEPROCESS_NAME)
 get_target_property(isFramework WebEngineCore FRAMEWORK)
 
-qt_internal_add_executable(${qtWebEngineProcessName}
+if(isFramework)
+  set(install_dir "${INSTALL_LIBDIR}/QtWebEngineCore.framework/Versions/A/Helpers")
+else()
+  set(install_dir "${INSTALL_LIBEXECDIR}")
+endif()
+
+qt_internal_add_app(${qtWebEngineProcessName}
+    TARGET_DESCRIPTION "QtWebEngine internal process"
     NO_INSTALL
+    INCLUDE_DIRECTORIES ../core
     SOURCES main.cpp
 )
 
@@ -43,21 +51,12 @@ qt_internal_extend_target(${qtWebEngineProcessName}
         Qt::WebEngineCorePrivate
 )
 
-target_include_directories(${qtWebEngineProcessName} PRIVATE ../core)
-
 qt_get_cmake_configurations(configs)
 
 foreach(config ${configs})
     string(TOUPPER "${config}" config_upper)
-    if(isFramework)
-       set(outputPath
-           "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/QtWebEngineCore.framework/Versions/A/Helpers"
-       )
-    else()
-       set(outputPath "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}")
-    endif()
     set_target_properties(${qtWebEngineProcessName} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY_${config_upper} "${outputPath}"
+        RUNTIME_OUTPUT_DIRECTORY_${config_upper} "${QT_BUILD_DIR}/${install_dir}"
     )
 
     if("${config}" STREQUAL "Debug")
@@ -66,6 +65,8 @@ foreach(config ${configs})
         )
     endif()
 endforeach()
+
+set_property(TARGET ${qtWebEngineProcessName} PROPERTY EXCLUDE_FROM_ALL OFF)
 
 if(isFramework)
     set_target_properties(${qtWebEngineProcessName} PROPERTIES
@@ -86,7 +87,7 @@ if(isFramework)
         USES_TERMINAL
     )
     install(TARGETS ${qtWebEngineProcessName}
-        BUNDLE DESTINATION "${INSTALL_LIBDIR}/QtWebEngineCore.framework/Versions/A/Helpers"
+        BUNDLE DESTINATION "${install_dir}"
         COMPONENT Runtime
     )
     qt_enable_separate_debug_info(${qtWebEngineProcessName}
@@ -94,12 +95,12 @@ if(isFramework)
         DSYM_OUTPUT_DIR "${CMAKE_BINARY_DIR}/${INSTALL_LIBDIR}"
     )
 else()
-    qt_apply_rpaths(TARGET ${qtWebEngineProcessName} INSTALL_PATH "${INSTALL_LIBEXECDIR}" RELATIVE_RPATH)
+    qt_apply_rpaths(TARGET ${qtWebEngineProcessName} INSTALL_PATH "${install_dir}" RELATIVE_RPATH)
     install(TARGETS ${qtWebEngineProcessName}
         CONFIGURATIONS ${configs}
-        RUNTIME DESTINATION "${INSTALL_LIBEXECDIR}"
+        RUNTIME DESTINATION "${install_dir}"
     )
-    qt_enable_separate_debug_info(${qtWebEngineProcessName} "${INSTALL_LIBEXECDIR}" QT_EXECUTABLE)
-    qt_internal_install_pdb_files(${qtWebEngineProcessName} "${INSTALL_LIBEXECDIR}")
+    qt_enable_separate_debug_info(${qtWebEngineProcessName} "${install_dir}" QT_EXECUTABLE)
+    qt_internal_install_pdb_files(${qtWebEngineProcessName} "${install_dir}")
 endif()
 
