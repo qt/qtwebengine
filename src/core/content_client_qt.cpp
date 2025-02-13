@@ -79,18 +79,33 @@ static QString webenginePluginsPath()
 static QString getLocalAppDataDir()
 {
     QString result;
-    wchar_t path[MAX_PATH];
-    if (SHGetSpecialFolderPath(0, path, CSIDL_LOCAL_APPDATA, FALSE))
+    PWSTR path;
+    HRESULT hr = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &path);
+    if (SUCCEEDED(hr))
         result = QDir::fromNativeSeparators(QString::fromWCharArray(path));
+    CoTaskMemFree(path);
     return result;
 }
 
 static QString getProgramFilesDir(bool x86Dir = false)
 {
     QString result;
-    wchar_t path[MAX_PATH];
-    if (SHGetSpecialFolderPath(0, path, x86Dir ? CSIDL_PROGRAM_FILESX86 : CSIDL_PROGRAM_FILES, FALSE))
+    PWSTR path;
+    HRESULT hr = SHGetKnownFolderPath(x86Dir ? FOLDERID_ProgramFilesX86 : FOLDERID_ProgramFilesX64, 0, NULL, &path);
+    if (SUCCEEDED(hr))
         result = QDir::fromNativeSeparators(QString::fromWCharArray(path));
+    CoTaskMemFree(path);
+    return result;
+}
+
+static QString getSystem32Dir()
+{
+    QString result;
+    PWSTR path;
+    HRESULT hr = SHGetKnownFolderPath(FOLDERID_System, 0, NULL, &path);
+    if (SUCCEEDED(hr))
+        result = QDir::fromNativeSeparators(QString::fromWCharArray(path));
+    CoTaskMemFree(path);
     return result;
 }
 #endif
@@ -236,9 +251,16 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         inString += QLatin1StringView(kWidevineCdmFileName);
     };
 
+    // Look inside Program Files; first for Microsoft Edge, then for Google Chrome
+    const auto microsoftEdgeDir = "/Microsoft/Edge/Application"_L1;
     const auto googleChromeDir = "/Google/Chrome/Application"_L1;
-    const QStringList programFileDirs{getProgramFilesDir() + googleChromeDir,
-                                      getProgramFilesDir(true) + googleChromeDir};
+    const QStringList programFileDirs {
+        getProgramFilesDir() + microsoftEdgeDir,
+        getProgramFilesDir(true) + microsoftEdgeDir,
+        getProgramFilesDir() + googleChromeDir,
+        getProgramFilesDir(true) + googleChromeDir
+    };
+
     for (const QString &dir : programFileDirs) {
         QDir d(dir);
         if (d.exists()) {
@@ -253,9 +275,19 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
             }
         }
     }
-    QDir potentialWidevineDir(getLocalAppDataDir() + "/Google/Chrome/User Data/WidevineCDM"_L1);
-    if (potentialWidevineDir.exists()) {
-        QFileInfoList widevineVersionDirs = potentialWidevineDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
+
+    // Look inside WebView data that lives in system32
+    QDir potentialEdgeWebViewDir(getSystem32Dir() + "/Microsoft-Edge-WebView"_L1);
+    if (potentialEdgeWebViewDir.exists()) {
+        QString potentialWidevinePluginPath = potentialEdgeWebViewDir.absolutePath() + "/WidevineCdm/_platform_specific"_L1;
+        appendArchitectureAndFilename(potentialWidevinePluginPath);
+        pluginPaths << potentialWidevinePluginPath;
+    }
+
+    // As a last resort, look for Google Chrome data inside %APPDATA%. This may be obsolete
+    QDir potentialChromeUserDataDir(getLocalAppDataDir() + "/Google/Chrome/User Data/WidevineCDM"_L1);
+    if (potentialChromeUserDataDir.exists()) {
+        QFileInfoList widevineVersionDirs = potentialChromeUserDataDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
         for (int i = 0; i < widevineVersionDirs.size(); ++i) {
             QString potentialWidevinePluginPath
                 = widevineVersionDirs.at(i).absoluteFilePath()
