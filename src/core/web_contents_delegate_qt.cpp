@@ -200,8 +200,8 @@ QUrl WebContentsDelegateQt::url(content::WebContents *source) const
         if (source->GetVisibleURL().SchemeIs(content::kViewSourceScheme) &&
             (url.has_password() || url.has_username() || url.has_ref())) {
             GURL strippedUrl = net::SimplifyUrlForRequest(url);
-            newUrl = QUrl(QString("%1:%2").arg(QLatin1StringView(content::kViewSourceScheme),
-                                               QString::fromStdString(strippedUrl.spec())));
+            newUrl = QUrl(QLatin1StringView(content::kViewSourceScheme) + u':'
+                          + QString::fromStdString(strippedUrl.spec()));
         }
         // If there is a visible entry there are special cases where we dont wan't to use the actual URL
         if (newUrl.isEmpty())
