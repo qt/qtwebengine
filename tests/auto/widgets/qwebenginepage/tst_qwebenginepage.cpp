@@ -4789,7 +4789,7 @@ void tst_QWebEnginePage::discardAbortsPendingLoadAndPreservesCommittedLoad()
 
     connect(&page, &QWebEnginePage::loadStarted,
             [&]() { page.setLifecycleState(QWebEnginePage::LifecycleState::Discarded); });
-    QString url2 = QStringLiteral("about:blank");
+    QString url2 = QStringLiteral("qrc:/resources/test1.html");
     page.setUrl(url2);
     QTRY_COMPARE(loadStartedSpy.size(), 1);
     loadStartedSpy.clear();
