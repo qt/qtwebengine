@@ -1,8 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include "testwindow.h"
 #include "quickutil.h"
 #include "util.h"
@@ -617,7 +615,7 @@ void tst_QQuickWebEngineView::inputContextQueryInput()
     QTest::mouseClick(view->window(), Qt::LeftButton, {}, textInputCenter);
     QTRY_COMPARE(testContext.infos.size(), 2);
     QCOMPARE(evaluateJavaScriptSync(view, "document.activeElement.id").toString(), QStringLiteral("input1"));
-    foreach (const InputMethodInfo &info, testContext.infos) {
+    for (const InputMethodInfo &info : std::as_const(testContext.infos)) {
         QCOMPARE(info.cursorPosition, 0);
         QCOMPARE(info.anchorPosition, 0);
         QCOMPARE(info.surroundingText, QStringLiteral(""));
@@ -712,7 +710,7 @@ void tst_QQuickWebEngineView::inputContextQueryInput()
         QGuiApplication::sendEvent(qApp->focusObject(), &event);
     }
     QTRY_COMPARE(testContext.infos.size(), 2);
-    foreach (const InputMethodInfo &info, testContext.infos) {
+    for (const InputMethodInfo &info : std::as_const(testContext.infos)) {
         QCOMPARE(info.cursorPosition, 0);
         QCOMPARE(info.anchorPosition, 0);
         QCOMPARE(info.surroundingText, QStringLiteral("QtWebEngine!"));

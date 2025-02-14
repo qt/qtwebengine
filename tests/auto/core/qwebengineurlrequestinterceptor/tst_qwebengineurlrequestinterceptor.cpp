@@ -1,8 +1,6 @@
 // Copyright (C) 2017 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <util.h>
 #include <QtTest/QtTest>
 #include <QtWebEngineCore/qwebengineurlrequestinfo.h>
@@ -573,43 +571,43 @@ void tst_QWebEngineUrlRequestInterceptor::firstPartyUrlHttp()
     // Stylesheet
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeStylesheet));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeStylesheet);
-    foreach (auto info, infos)
+    for (const RequestInfo &info : std::as_const(infos))
         QCOMPARE(info.firstPartyUrl, firstPartyUrl);
 
     // Script
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeScript));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeScript);
-    foreach (auto info, infos)
+    for (const RequestInfo &info : std::as_const(infos))
         QCOMPARE(info.firstPartyUrl, firstPartyUrl);
 
     // Image
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeImage));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeImage);
-    foreach (auto info, infos)
+    for (const RequestInfo &info : std::as_const(infos))
         QCOMPARE(info.firstPartyUrl, firstPartyUrl);
 
     // FontResource
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeFontResource));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeFontResource);
-    foreach (auto info, infos)
+    for (const RequestInfo &info : std::as_const(infos))
         QCOMPARE(info.firstPartyUrl, firstPartyUrl);
 
     // Media
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeMedia));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeMedia);
-    foreach (auto info, infos)
+    for (const RequestInfo &info : std::as_const(infos))
         QCOMPARE(info.firstPartyUrl, firstPartyUrl);
 
     // Favicon
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeFavicon));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeFavicon);
-    foreach (auto info, infos)
+    for (const RequestInfo &info : std::as_const(infos))
         QCOMPARE(info.firstPartyUrl, firstPartyUrl);
 
     // XMLHttpRequest
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeXhr));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeXhr);
-    foreach (auto info, infos)
+    for (const RequestInfo &info : std::as_const(infos))
         QCOMPARE(info.firstPartyUrl, firstPartyUrl);
 }
 
@@ -725,43 +723,43 @@ void tst_QWebEngineUrlRequestInterceptor::initiator()
     // Stylesheet
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeStylesheet));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeStylesheet);
-    foreach (auto info, infos)
+    for (const RequestInfo &info : std::as_const(infos))
         QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // Script
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeScript));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeScript);
-    foreach (auto info, infos)
+    for (const RequestInfo &info : std::as_const(infos))
         QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // Image
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeImage));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeImage);
-    foreach (auto info, infos)
+    for (const RequestInfo &info : std::as_const(infos))
         QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // FontResource
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeFontResource));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeFontResource);
-    foreach (auto info, infos)
+    for (const RequestInfo &info : std::as_const(infos))
         QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // Media
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeMedia));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeMedia);
-    foreach (auto info, infos)
+    for (const RequestInfo &info : std::as_const(infos))
         QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // Favicon
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeFavicon));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeFavicon);
-    foreach (auto info, infos)
+    for (const RequestInfo &info : std::as_const(infos))
         QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // XMLHttpRequest
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeXhr));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeXhr);
-    foreach (auto info, infos)
+    for (const RequestInfo &info : std::as_const(infos))
         QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 }
 
@@ -794,7 +792,7 @@ void tst_QWebEngineUrlRequestInterceptor::jsServiceWorker()
     // Service Worker
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeServiceWorker));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeServiceWorker);
-    foreach (auto info, infos)
+    for (const RequestInfo &info : std::as_const(infos))
         QCOMPARE(info.firstPartyUrl, firstPartyUrl);
 
     QVERIFY(server.stop());

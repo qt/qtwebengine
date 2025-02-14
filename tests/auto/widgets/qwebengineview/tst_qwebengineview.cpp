@@ -19,8 +19,6 @@
     Boston, MA 02110-1301, USA.
 */
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
 #include <qtest.h>
 #include <util.h>
@@ -2077,7 +2075,7 @@ void tst_QWebEngineView::inputContextQueryInput()
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, textInputCenter);
     QTRY_COMPARE(testContext.infos.size(), 2);
     QCOMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
-    foreach (const InputMethodInfo &info, testContext.infos) {
+    for (const InputMethodInfo &info : std::as_const(testContext.infos)) {
         QCOMPARE(info.cursorPosition, 0);
         QCOMPARE(info.anchorPosition, 0);
         QCOMPARE(info.surroundingText, QStringLiteral(""));
@@ -2176,7 +2174,7 @@ void tst_QWebEngineView::inputContextQueryInput()
         QApplication::sendEvent(view.focusProxy(), &event);
     }
     QTRY_COMPARE(testContext.infos.size(), 2);
-    foreach (const InputMethodInfo &info, testContext.infos) {
+    for (const InputMethodInfo &info : std::as_const(testContext.infos)) {
         QCOMPARE(info.cursorPosition, 0);
         QCOMPARE(info.anchorPosition, 0);
         QCOMPARE(info.surroundingText, QStringLiteral("QtWebEngine!"));
