@@ -195,6 +195,11 @@ foreach(arch ${archs})
                 authenticator_request_dialog_controller.cpp authenticator_request_dialog_controller.h authenticator_request_dialog_controller_p.h
         )
 
+        extend_gn_target(${buildGn} CONDITION config STREQUAL "Debug"
+            DEFINES
+                QT_USE_DEBUG_RESOURCES
+        )
+
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_accessibility
             SOURCES
                 accessibility_activation_observer.cpp accessibility_activation_observer.h
