@@ -74,6 +74,7 @@ headerdirs  += ../../core/api \
 
 sourcedirs  += ../../core/api \
                ../../core/doc \
+               ../../core/tools/webenginedriver \
                ../../webenginequick/api \
                ../../webenginequick/doc \
                ../../webenginewidgets/api \
