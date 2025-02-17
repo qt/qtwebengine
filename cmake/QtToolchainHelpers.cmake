@@ -261,21 +261,34 @@ macro(append_build_type_setup)
         assert_cpp20=false
     )
     if(${config} STREQUAL "Debug")
-        list(APPEND gnArgArg is_debug=true symbol_level=2)
+        list(APPEND gnArgArg
+            is_debug=true
+            symbol_level=2
+            enable_mojom_message_id_scrambling=false
+        )
         if(WIN32)
             list(APPEND gnArgArg enable_iterator_debugging=true)
         endif()
     elseif(${config} STREQUAL "Release")
-        list(APPEND gnArgArg is_debug=false symbol_level=0)
+        list(APPEND gnArgArg
+            is_debug=false
+            symbol_level=0
+            enable_mojom_message_id_scrambling=true
+        )
     elseif(${config} STREQUAL "RelWithDebInfo")
-        list(APPEND gnArgArg is_debug=false)
+        list(APPEND gnArgArg is_debug=false enable_mojom_message_id_scrambling=true)
         if(WIN32 AND NOT CLANG)
             list(APPEND gnArgArg symbol_level=2)
         else()
             list(APPEND gnArgArg symbol_level=1)
         endif()
     elseif(${config} STREQUAL "MinSizeRel")
-        list(APPEND gnArgArg is_debug=false symbol_level=0 optimize_for_size=true)
+        list(APPEND gnArgArg
+            is_debug=false
+            symbol_level=0
+            optimize_for_size=true
+            enable_mojom_message_id_scrambling=true
+        )
     endif()
     if(FEATURE_developer_build OR (${config} STREQUAL "Debug") OR QT_FEATURE_webengine_sanitizer)
         list(APPEND gnArgArg

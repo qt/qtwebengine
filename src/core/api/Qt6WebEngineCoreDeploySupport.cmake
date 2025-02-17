@@ -117,14 +117,25 @@ function(_qt_internal_deploy_webenginecore_binary)
 endfunction()
 
 function(_qt_internal_deploy_webenginecore_data)
+    # used for deployment on Linux, using the CMake deployment API.
     _qt_internal_webenginecore_status_message("Deploying the WebEngineCore data files")
-    set(data_files
-        icudtl.dat
-        qtwebengine_devtools_resources.pak
-        qtwebengine_resources.pak
-        qtwebengine_resources_100p.pak
-        qtwebengine_resources_200p.pak
-    )
+    if(__QT_DEPLOY_ACTIVE_CONFIG STREQUAL "Debug")
+        set(data_files
+            icudtl.dat
+            qtwebengine_devtools_resources.debug.pak
+            qtwebengine_resources.debug.pak
+            qtwebengine_resources_100p.debug.pak
+            qtwebengine_resources_200p.debug.pak
+        )
+    else()
+        set(data_files
+            icudtl.dat
+            qtwebengine_devtools_resources.pak
+            qtwebengine_resources.pak
+            qtwebengine_resources_100p.pak
+            qtwebengine_resources_200p.pak
+        )
+    endif()
     get_filename_component(resources_dir "resources" ABSOLUTE
         BASE_DIR "${__QT_DEPLOY_QT_INSTALL_PREFIX}/${__QT_DEPLOY_QT_INSTALL_DATA}"
     )

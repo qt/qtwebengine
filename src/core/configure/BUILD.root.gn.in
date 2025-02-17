@@ -617,7 +617,12 @@ repack("qtwebengine_repack_resources") {
     "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",
   ]
-  output = "$root_out_dir/qtwebengine_resources.pak"
+  if (!is_debug) {
+    output = "$root_out_dir/qtwebengine_resources.pak"
+  } else {
+    output = "$root_out_dir/qtwebengine_resources.debug.pak"
+  }
+
   deps = [
      "//qtwebengine/browser:qt_webengine_resources",
      "//chrome/browser:dev_ui_browser_resources_grit",
@@ -697,7 +702,11 @@ repack("qtwebengine_repack_resources_100") {
     "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
   ]
-  output = "$root_out_dir/qtwebengine_resources_100p.pak"
+  if (!is_debug) {
+    output = "$root_out_dir/qtwebengine_resources_100p.pak"
+  } else {
+    output = "$root_out_dir/qtwebengine_resources_100p.debug.pak"
+  }
   deps = [
     "//chrome/renderer:resources_grit",
     "//components/resources:components_scaled_resources_grit",
@@ -721,7 +730,11 @@ repack("qtwebengine_repack_resources_200") {
     "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_200_percent.pak",
     "$root_gen_dir/ui/resources/ui_resources_200_percent.pak",
   ]
-  output = "$root_out_dir/qtwebengine_resources_200p.pak"
+  if (!is_debug) {
+    output = "$root_out_dir/qtwebengine_resources_200p.pak"
+  } else {
+    output = "$root_out_dir/qtwebengine_resources_200p.debug.pak"
+  }
   deps = [
     "//chrome/renderer:resources_grit",
     "//components/resources:components_scaled_resources_grit",
@@ -743,7 +756,11 @@ repack("qtwebengine_repack_resources_devtools") {
     "$root_gen_dir/content/browser/devtools/devtools_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/inspector_overlay_resources.pak",
   ]
-  output = "$root_out_dir/qtwebengine_devtools_resources.pak"
+  if (!is_debug) {
+    output = "$root_out_dir/qtwebengine_devtools_resources.pak"
+  } else {
+    output = "$root_out_dir/qtwebengine_devtools_resources.debug.pak"
+  }
   deps = [
     "//content/browser/devtools:devtools_resources_grit",
     "//third_party/blink/public:devtools_inspector_resources_grit",
