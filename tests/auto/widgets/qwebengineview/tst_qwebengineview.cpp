@@ -4011,16 +4011,22 @@ void tst_QWebEngineView::longKeyEventText()
 
 void tst_QWebEngineView::deferredDelete()
 {
+    // TODO: Remove this workaround when temporary qt_desktopWidget is removed from
+    //       qapplication.cpp.
+    const size_t desktopWidget = QApplication::allWidgets().size();
+    QVERIFY(desktopWidget <= 1);
+
     {
         QWebEngineView view;
         QSignalSpy loadFinishedSpy(view.page(), &QWebEnginePage::loadFinished);
         view.load(QUrl("chrome://qt"));
         view.show();
         QTRY_VERIFY(loadFinishedSpy.size());
-        QCOMPARE(QApplication::allWidgets().size(), 2); // QWebEngineView and WebEngineQuickWidget
+        // QWebEngineView and WebEngineQuickWidget
+        QCOMPARE(QApplication::allWidgets().size(), desktopWidget + 2);
     }
 
-    QCOMPARE(QApplication::allWidgets().size(), 0);
+    QCOMPARE(QApplication::allWidgets().size(), desktopWidget);
 }
 
 // QTBUG-111927
