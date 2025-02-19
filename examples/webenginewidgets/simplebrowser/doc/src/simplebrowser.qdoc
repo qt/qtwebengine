@@ -180,7 +180,7 @@
 
     We add a menu item to the context menu, so that users can right-click to have an inspector
     opened in a new window. We override QWebEngineView::contextMenuEvent and use
-    QWebEnginePage::createStandardContextMenu to create a default QMenu with a
+    QWebEngineView::createStandardContextMenu to create a default QMenu with a
     default list of QWebEnginePage::WebAction actions.
 
     The default name for QWebEnginePage::InspectElement action is
