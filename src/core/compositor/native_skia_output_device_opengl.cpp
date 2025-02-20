@@ -19,15 +19,9 @@
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
 
-#if BUILDFLAG(IS_OZONE_X11)
-#if QT_CONFIG(xcb_glx_plugin)
+#if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
 #include "ozone/glx_helper.h"
 #endif
-
-#if !defined(GL_RGBA8_OES)
-#define GL_RGBA8_OES 0x8058
-#endif
-#endif // BUILDFLAG(IS_OZONE_X11)
 
 #if QT_CONFIG(egl)
 #include "ozone/egl_helper.h"
@@ -303,14 +297,26 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
 
         auto *glExtFun = GLHelper::instance()->functions();
 
+        // Import memory object
         GLuint glMemoryObject;
-        glFun->glGenTextures(1, &glTexture);
-        glFun->glBindTexture(GL_TEXTURE_2D, glTexture);
         glExtFun->glCreateMemoryObjectsEXT(1, &glMemoryObject);
+        GLint dedicated = GL_TRUE;
+        glExtFun->glMemoryObjectParameterivEXT(glMemoryObject, GL_DEDICATED_MEMORY_OBJECT_EXT,
+                                               &dedicated);
         glExtFun->glImportMemoryFdEXT(glMemoryObject, importedImageSize,
                                       GL_HANDLE_TYPE_OPAQUE_FD_EXT, fd);
-        glExtFun->glTextureStorageMem2DEXT(glTexture, 1, GL_RGBA8_OES, size().width(),
-                                           size().height(), glMemoryObject, 0);
+        if (!glExtFun->glIsMemoryObjectEXT(glMemoryObject))
+            qFatal("VULKAN: Failed to import memory object.");
+
+        // Bind memory object to texture
+        glFun->glGenTextures(1, &glTexture);
+        glFun->glBindTexture(GL_TEXTURE_2D, glTexture);
+        glFun->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_TILING_EXT,
+                               vkImageInfo.fImageTiling == VK_IMAGE_TILING_OPTIMAL
+                                       ? GL_OPTIMAL_TILING_EXT
+                                       : GL_LINEAR_TILING_EXT);
+        glExtFun->glTexStorageMem2DEXT(GL_TEXTURE_2D, 1, GL_RGBA8, size().width(), size().height(),
+                                       glMemoryObject, 0);
         glFun->glBindTexture(GL_TEXTURE_2D, 0);
 
         m_frontBuffer->textureCleanupCallback = [glFun, glExtFun, glTexture, glMemoryObject]() {

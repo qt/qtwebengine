@@ -46,8 +46,12 @@ GLHelper::GLExtFunctions::GLExtFunctions()
             context->getProcAddress("glEGLImageTargetTexture2DOES"));
     glImportMemoryFdEXT = reinterpret_cast<PFNGLIMPORTMEMORYFDEXTPROC>(
             context->getProcAddress("glImportMemoryFdEXT"));
-    glTextureStorageMem2DEXT = reinterpret_cast<PFNGLTEXTURESTORAGEMEM2DEXTPROC>(
-            context->getProcAddress("glTextureStorageMem2DEXT"));
+    glIsMemoryObjectEXT = reinterpret_cast<PFNGLISMEMORYOBJECTEXTPROC>(
+            context->getProcAddress("glIsMemoryObjectEXT"));
+    glMemoryObjectParameterivEXT = reinterpret_cast<PFNGLMEMORYOBJECTPARAMETERIVEXTPROC>(
+            context->getProcAddress("glMemoryObjectParameterivEXT"));
+    glTexStorageMem2DEXT = reinterpret_cast<PFNGLTEXSTORAGEMEM2DEXTPROC>(
+            context->getProcAddress("glTexStorageMem2DEXT"));
 }
 
 GLHelper *GLHelper::instance()
