@@ -67,6 +67,9 @@ public:
     static ProxyAuthentication qProxyNetworkAuthentication(QString host, int port);
     static void flushMessages();
     static bool closingDown();
+#if defined(USE_OZONE)
+    static bool isGbmSupported();
+#endif
     ProfileAdapter *createDefaultProfileAdapter();
     ProfileAdapter *defaultProfileAdapter();
 

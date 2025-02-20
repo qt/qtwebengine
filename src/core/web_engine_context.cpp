@@ -952,7 +952,7 @@ WebEngineContext::WebEngineContext()
     }
 
 #if defined(USE_OZONE)
-    if (GPUInfo::instance()->vendor() == GPUInfo::Nvidia) {
+    if (!isGbmSupported()) {
         disableFeatures.push_back(media::kVaapiVideoDecodeLinux.name);
         parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
     }
@@ -965,7 +965,7 @@ WebEngineContext::WebEngineContext()
         if (parsedCommandLine->HasSwitch(switches::kUseGL))
             usingANGLE = (parsedCommandLine->GetSwitchValueASCII(switches::kUseGL)
                           == gl::kGLImplementationANGLEName);
-        if (usingANGLE && GPUInfo::instance()->vendor() == GPUInfo::Nvidia) {
+        if (usingANGLE && !isGbmSupported()) {
             qWarning("Disable ANGLE because GBM is not supported with the current configuration. "
                      "Fallback to Vulkan rendering in Chromium.");
             parsedCommandLine->RemoveSwitch(switches::kUseANGLE);
@@ -1228,6 +1228,46 @@ bool WebEngineContext::closingDown()
 {
     return m_closingDown;
 }
+
+#if defined(USE_OZONE)
+bool WebEngineContext::isGbmSupported()
+{
+    static bool supported = []() {
+        const static char kForceGbmEnv[] = "QTWEBENGINE_FORCE_USE_GBM";
+        if (Q_UNLIKELY(qEnvironmentVariableIsSet(kForceGbmEnv))) {
+            qWarning("%s environment variable is set and it is for debugging purposes only.",
+                     kForceGbmEnv);
+            bool ok;
+            int forceGbm = qEnvironmentVariableIntValue(kForceGbmEnv, &ok);
+            if (ok) {
+                qWarning("GBM support is force %s.", forceGbm != 0 ? "enabled" : "disabled");
+                return (forceGbm != 0);
+            }
+
+            qWarning("Ignoring invalid value of %s and do not force GBM. "
+                     "Use 0 to force disable or 1 to force enable.",
+                     kForceGbmEnv);
+        }
+
+        if (GPUInfo::instance()->vendor() == GPUInfo::Nvidia) {
+            // FIXME: This disables GBM for Nvidia. Remove this when Nvidia fixes its GBM support.
+            //
+            // "Buffer allocation and submission to DRM KMS using gbm is not currently supported."
+            // See: https://download.nvidia.com/XFree86/Linux-x86_64/570.86.16/README/kms.html"
+            //
+            // Chromium uses GBM to allocate scanout buffers. Scanout requires DRM KMS. If KMS is
+            // enabled, gbm_device and gbm_buffer are created without any issues but rendering to
+            // the buffer will malfunction. It is not known how to detect this problem before
+            // rendering so we just disable GBM for Nvidia.
+            return false;
+        }
+
+        return true;
+    }();
+
+    return supported;
+}
+#endif
 
 void WebEngineContext::registerMainThreadFactories()
 {
