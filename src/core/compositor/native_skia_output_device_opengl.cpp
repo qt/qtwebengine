@@ -24,7 +24,10 @@
 #undef glGenTextures
 #undef glGetError
 #undef glImportMemoryFdEXT
-#undef glTextureStorageMem2DEXT
+#undef glIsMemoryObjectEXT
+#undef glMemoryObjectParameterivEXT
+#undef glTexParameteri
+#undef glTexStorageMem2DEXT
 
 #include "base/posix/eintr_wrapper.h"
 #include "third_party/skia/include/gpu/ganesh/gl/GrGLBackendSurface.h"
@@ -350,17 +353,32 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
                         "glCreateMemoryObjectsEXT");
         static PFNGLIMPORTMEMORYFDEXTPROC glImportMemoryFdEXT =
                 (PFNGLIMPORTMEMORYFDEXTPROC)glContext->getProcAddress("glImportMemoryFdEXT");
-        static PFNGLTEXTURESTORAGEMEM2DEXTPROC glTextureStorageMem2DEXT =
-                (PFNGLTEXTURESTORAGEMEM2DEXTPROC)glContext->getProcAddress(
-                        "glTextureStorageMem2DEXT");
+        static PFNGLISMEMORYOBJECTEXTPROC glIsMemoryObjectEXT =
+                (PFNGLISMEMORYOBJECTEXTPROC)glContext->getProcAddress("glIsMemoryObjectEXT");
+        static PFNGLMEMORYOBJECTPARAMETERIVEXTPROC glMemoryObjectParameterivEXT =
+                (PFNGLMEMORYOBJECTPARAMETERIVEXTPROC)glContext->getProcAddress(
+                        "glMemoryObjectParameterivEXT");
+        static PFNGLTEXSTORAGEMEM2DEXTPROC glTexStorageMem2DEXT =
+                (PFNGLTEXSTORAGEMEM2DEXTPROC)glContext->getProcAddress("glTexStorageMem2DEXT");
 
+        // Import memory object
         GLuint glMemoryObject;
+        glCreateMemoryObjectsEXT(1, &glMemoryObject);
+        GLint dedicated = GL_TRUE;
+        glMemoryObjectParameterivEXT(glMemoryObject, GL_DEDICATED_MEMORY_OBJECT_EXT, &dedicated);
+        glImportMemoryFdEXT(glMemoryObject, importedImageSize, GL_HANDLE_TYPE_OPAQUE_FD_EXT, fd);
+        if (!glIsMemoryObjectEXT(glMemoryObject))
+            qFatal("VULKAN: Failed to import memory object.");
+
+        // Bind memory object to texture
         glFun->glGenTextures(1, &glTexture);
         glFun->glBindTexture(GL_TEXTURE_2D, glTexture);
-        glCreateMemoryObjectsEXT(1, &glMemoryObject);
-        glImportMemoryFdEXT(glMemoryObject, importedImageSize, GL_HANDLE_TYPE_OPAQUE_FD_EXT, fd);
-        glTextureStorageMem2DEXT(glTexture, 1, GL_RGBA8_OES, size().width(), size().height(),
-                                 glMemoryObject, 0);
+        glFun->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_TILING_EXT,
+                               vkImageInfo.fImageTiling == VK_IMAGE_TILING_OPTIMAL
+                                       ? GL_OPTIMAL_TILING_EXT
+                                       : GL_LINEAR_TILING_EXT);
+        glTexStorageMem2DEXT(GL_TEXTURE_2D, 1, GL_RGBA8, size().width(), size().height(),
+                             glMemoryObject, 0);
         glFun->glBindTexture(GL_TEXTURE_2D, 0);
 
         m_frontBuffer->textureCleanupCallback = [glTexture, glMemoryObject]() {
