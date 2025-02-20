@@ -3,6 +3,7 @@
 
 #include "egl_helper.h"
 #include "ozone_util_qt.h"
+#include "web_engine_context.h"
 
 #include <QtCore/qthread.h>
 #include <QtGui/qguiapplication.h>
@@ -190,23 +191,14 @@ EGLHelper::EGLHelper()
     Q_ASSERT(QThread::currentThread() == qApp->thread());
     m_offscreenSurface->create();
 
-    const char *displayExtensions = m_functions->eglQueryString(m_eglDisplay, EGL_EXTENSIONS);
-    m_isDmaBufSupported = strstr(displayExtensions, "EGL_EXT_image_dma_buf_import")
-            && strstr(displayExtensions, "EGL_EXT_image_dma_buf_import_modifiers")
-            && strstr(displayExtensions, "EGL_MESA_image_dma_buf_export");
+    m_isDmaBufSupported = QtWebEngineCore::WebEngineContext::isGbmSupported();
 
+    // Check extensions.
     if (m_isDmaBufSupported) {
-        // FIXME: This disables GBM for nvidia. Remove this when nvidia fixes its GBM support.
-        //
-        // "Buffer allocation and submission to DRM KMS using gbm is not currently supported."
-        // See: https://download.nvidia.com/XFree86/Linux-x86_64/550.40.07/README/kms.html
-        //
-        // Chromium uses GBM to allocate scanout buffers. Scanout requires DRM KMS. If KMS is
-        // enabled, gbm_device and gbm_buffer are created without any issues but rendering to the
-        // buffer will malfunction. It is not known how to detect this problem before rendering
-        // so we just disable GBM for nvidia.
-        const char *displayVendor = m_functions->eglQueryString(m_eglDisplay, EGL_VENDOR);
-        m_isDmaBufSupported = !strstr(displayVendor, "NVIDIA");
+        const char *displayExtensions = m_functions->eglQueryString(m_eglDisplay, EGL_EXTENSIONS);
+        m_isDmaBufSupported = strstr(displayExtensions, "EGL_EXT_image_dma_buf_import")
+                && strstr(displayExtensions, "EGL_EXT_image_dma_buf_import_modifiers")
+                && strstr(displayExtensions, "EGL_MESA_image_dma_buf_export");
     }
 
     // Try to create dma-buf.
