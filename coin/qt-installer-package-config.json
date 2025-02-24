@@ -3,6 +3,7 @@
     "module-split": {
         "qtpdf": [
             "**/bin/*Pdf*",
+            "**/sbom/qtpdf*",
             "**/include/*QtPdf*/**/*",
             "**/lib/cmake/Qt*Gui/*Pdf*",
             "**/lib/cmake/Qt*Pdf*/*",
