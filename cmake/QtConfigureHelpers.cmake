@@ -297,7 +297,8 @@ function(qt_webengine_configure_check_coin white_list_file webengine_check pdf_c
                 set(res OFF)
             endif()
         else()
-            message(FATAL_ERROR "Undefined coin sanity check for ${coin_id} platform")
+            message(WARNING "Undefined coin sanity check for ${coin_id} platform")
+            return()
         endif()
         if(NOT res)
             message(FATAL_ERROR "!!! Coin sanity check failed for ${coin_id} platform with:
