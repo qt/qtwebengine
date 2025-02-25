@@ -48,6 +48,7 @@ class Compositor::BindingMap
 {
 public:
     void lock() { m_mutex.lock(); }
+    bool tryLock() { return m_mutex.tryLock(); }
 
     void unlock() { m_mutex.unlock(); }
 
@@ -142,6 +143,18 @@ Compositor::Handle<Compositor::Observer> Compositor::observer()
     return nullptr;
 }
 
+void Compositor::readyToSwap()
+{
+    m_readyToSwap.store(true, std::memory_order_release);
+    if (g_bindings.tryLock()) {
+        if (m_readyToSwap.exchange(false, std::memory_order_relaxed)) {
+            if (m_binding && m_binding->observer)
+                m_binding->observer->readyToSwap();
+        }
+        g_bindings.unlock();
+    }
+}
+
 void Compositor::waitForTexture()
 {
 }
@@ -173,6 +186,16 @@ Compositor::Compositor(Type type) : m_type(type)
 Compositor::~Compositor()
 {
     DCHECK(!m_binding); // check that unbind() was called by derived final class
+}
+
+void Compositor::preUnlockBindings()
+{
+    if (m_readyToSwap.exchange(false, std::memory_order_relaxed)) {
+        if (m_binding && m_binding->observer)
+            m_binding->observer->readyToSwap();
+    }
+    // Note there is technically still a race condition here if m_readyToSwap is set after we test it above and before we unlock the mutex below,
+    // but the risk is only a single missed animation update. It can be avoided by a second primitive, but I dont think it is worth it.
 }
 
 // static

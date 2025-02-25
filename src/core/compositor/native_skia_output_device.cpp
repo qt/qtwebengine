@@ -98,9 +98,7 @@ void NativeSkiaOutputDevice::Present(const std::optional<gfx::Rect> &update_rect
         std::swap(m_middleBuffer, m_backBuffer);
         m_readyToUpdate = true;
     }
-
-    if (auto obs = observer())
-        obs->readyToSwap();
+    readyToSwap();
 }
 
 void NativeSkiaOutputDevice::EnsureBackbuffer()
