@@ -62,7 +62,7 @@ NativeSkiaOutputDeviceOpenGL::NativeSkiaOutputDeviceOpenGL(
     qCDebug(lcWebEngineCompositor, "Native Skia Output Device: OpenGL");
 
     SkColorType skColorType = kRGBA_8888_SkColorType;
-#if BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
     if (OzoneUtilQt::usingGLX() && m_contextState->gr_context_type() == gpu::GrContextType::kGL)
         skColorType = kBGRA_8888_SkColorType;
 #endif
