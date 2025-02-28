@@ -481,6 +481,13 @@ static void cleanupVizProcess()
     content::GetHostFrameSinkManager()->SetConnectionLostCallback(base::DoNothing());
     auto factory = static_cast<content::VizProcessTransportFactory*>(content::ImageTransportFactory::GetInstance());
     factory->PrepareForShutDown();
+
+    // Wait for viz destroy tasks to be completed on the GPU thread.
+    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
+    gpuChildThread->main_thread_runner()->PostTask(
+            FROM_HERE, base::BindOnce([](base::WaitableEvent *event) { event->Signal(); }, &event));
+    event.Wait();
 }
 
 static QStringList parseEnvCommandLine(const QString &cmdLine)
