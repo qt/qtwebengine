@@ -6,8 +6,6 @@
 
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 
-#include <atomic>
-
 QT_BEGIN_NAMESPACE
 class QQuickWindow;
 class QSize;
@@ -61,10 +59,6 @@ public:
         Handle(Handle &&that) : m_data(that.m_data) { that.m_data = nullptr; }
         ~Handle()
         {
-            if constexpr(std::is_same<T, Compositor>::value) {
-                if (m_data)
-                    m_data->preUnlockBindings();
-            }
             if (m_data)
                 Compositor::unlockBindings();
         }
@@ -107,8 +101,6 @@ public:
     void bind(Id id);
     void unbind();
 
-    // Observer if bound.
-    Handle<Observer> observer();
     // Tell observer ready to swap
     void readyToSwap();
 
@@ -141,8 +133,6 @@ public:
     // Release resources created in texture()
     virtual void releaseResources();
 
-    void preUnlockBindings();
-
 protected:
     Compositor(Type type);
     virtual ~Compositor();
@@ -156,7 +146,6 @@ private:
 
     const Type m_type;
     Binding *m_binding = nullptr;
-    std::atomic<bool> m_readyToSwap = false;
 };
 
 } // namespace QtWebEngineCore

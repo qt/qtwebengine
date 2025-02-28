@@ -73,8 +73,7 @@ void DisplaySoftwareOutputSurface::Device::OnSwapBuffers(SwapBuffersCallback swa
         m_swapCompletionCallback = std::move(swap_ack_callback);
     }
 
-    if (auto obs = observer())
-        obs->readyToSwap();
+    readyToSwap();
 }
 
 inline QImage::Format imageFormat(SkColorType colorType)

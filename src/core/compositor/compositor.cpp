@@ -8,7 +8,7 @@
 
 #include <QGuiApplication>
 #include <QHash>
-#include <QMutex>
+#include <QReadWriteLock>
 #include <QQuickWindow>
 
 namespace QtWebEngineCore {
@@ -47,8 +47,8 @@ struct Compositor::Binding
 class Compositor::BindingMap
 {
 public:
-    void lock() { m_mutex.lock(); }
-    bool tryLock() { return m_mutex.tryLock(); }
+    void lock() { m_mutex.lockForRead(); }
+    void lockForWrite() { m_mutex.lockForWrite(); }
 
     void unlock() { m_mutex.unlock(); }
 
@@ -63,7 +63,7 @@ public:
     void remove(Id id) { m_map.remove(id); }
 
 private:
-    QMutex m_mutex;
+    QReadWriteLock m_mutex;
     QHash<Id, Binding *> m_map;
 } static g_bindings;
 
@@ -77,7 +77,7 @@ Compositor::Binding::~Binding()
 void Compositor::Observer::bind(Id id)
 {
     DCHECK(!m_binding);
-    g_bindings.lock();
+    g_bindings.lockForWrite();
     m_binding = g_bindings.findOrCreate(id);
     DCHECK(!m_binding->observer);
     m_binding->observer = this;
@@ -86,7 +86,7 @@ void Compositor::Observer::bind(Id id)
 
 void Compositor::Observer::unbind()
 {
-    g_bindings.lock();
+    g_bindings.lockForWrite();
     if (m_binding) {
         m_binding->observer = nullptr;
         if (m_binding->compositor == nullptr)
@@ -115,7 +115,7 @@ Compositor::Observer::~Observer()
 void Compositor::bind(Id id)
 {
     DCHECK(!m_binding);
-    g_bindings.lock();
+    g_bindings.lockForWrite();
     m_binding = g_bindings.findOrCreate(id);
     DCHECK(!m_binding->compositor);
     m_binding->compositor = this;
@@ -124,7 +124,7 @@ void Compositor::bind(Id id)
 
 void Compositor::unbind()
 {
-    g_bindings.lock();
+    g_bindings.lockForWrite();
     if (m_binding) {
         m_binding->compositor = nullptr;
         if (m_binding->observer == nullptr)
@@ -134,25 +134,12 @@ void Compositor::unbind()
     g_bindings.unlock();
 }
 
-Compositor::Handle<Compositor::Observer> Compositor::observer()
+void Compositor::readyToSwap()
 {
     g_bindings.lock();
     if (m_binding && m_binding->observer)
-        return m_binding->observer; // delay unlock
+        m_binding->observer->readyToSwap();
     g_bindings.unlock();
-    return nullptr;
-}
-
-void Compositor::readyToSwap()
-{
-    m_readyToSwap.store(true, std::memory_order_release);
-    if (g_bindings.tryLock()) {
-        if (m_readyToSwap.exchange(false, std::memory_order_relaxed)) {
-            if (m_binding && m_binding->observer)
-                m_binding->observer->readyToSwap();
-        }
-        g_bindings.unlock();
-    }
 }
 
 void Compositor::waitForTexture()
@@ -186,16 +173,6 @@ Compositor::Compositor(Type type) : m_type(type)
 Compositor::~Compositor()
 {
     DCHECK(!m_binding); // check that unbind() was called by derived final class
-}
-
-void Compositor::preUnlockBindings()
-{
-    if (m_readyToSwap.exchange(false, std::memory_order_relaxed)) {
-        if (m_binding && m_binding->observer)
-            m_binding->observer->readyToSwap();
-    }
-    // Note there is technically still a race condition here if m_readyToSwap is set after we test it above and before we unlock the mutex below,
-    // but the risk is only a single missed animation update. It can be avoided by a second primitive, but I dont think it is worth it.
 }
 
 // static
