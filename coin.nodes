@@ -15,6 +15,9 @@ qemu-mips64-developer-build                   OFF             OFF
 qnx-710-arm64-on-linux                        OFF             OFF
 qnx-710-armv7-on-linux                        OFF             OFF
 qnx-710-x86_64-developer-build-on-linux       OFF             OFF
+qnx-710-arm64-on-windows                      OFF             OFF
+qnx-800-arm64-on-linux                        OFF             OFF
+qnx-800-x86_64-developer-build-on-linux       OFF             OFF
 rhel-8.10                                     ON              ON
 rhel-9.4                                      ON              ON
 sles-15_sp5-static                            OFF             ON
