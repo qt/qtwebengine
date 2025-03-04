@@ -210,6 +210,8 @@ NativeSkiaOutputDevice::Buffer::Buffer(NativeSkiaOutputDevice *parent)
 
 NativeSkiaOutputDevice::Buffer::~Buffer()
 {
+    DCHECK(!textureCleanupCallback);
+
     if (m_scopedSkiaWriteAccess)
         endWriteSkia(false);
 
