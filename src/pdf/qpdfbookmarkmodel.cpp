@@ -219,7 +219,7 @@ struct QPdfBookmarkModelPrivate
     \inmodule QtPdf
     \inherits QAbstractItemModel
 
-    \brief The QPdfBookmarkModel class holds a tree of of links (anchors)
+    \brief The QPdfBookmarkModel class holds a tree of links (anchors)
     within a PDF document, such as the table of contents.
 
     This is used in the \l {Model/View Programming} paradigm to display a
