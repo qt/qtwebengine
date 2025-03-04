@@ -37,8 +37,8 @@ RenderWidgetHostViewQtDelegateItem::RenderWidgetHostViewQtDelegateItem(RenderWid
 
 RenderWidgetHostViewQtDelegateItem::~RenderWidgetHostViewQtDelegateItem()
 {
-    unbind(); // Compositor::Observer
     releaseTextureResources();
+    unbind(); // Compositor::Observer
     if (m_widgetDelegate) {
         m_widgetDelegate->Unbind();
         m_widgetDelegate->Destroy();
