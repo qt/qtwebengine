@@ -41,6 +41,7 @@ opensuse-15.6-host-asan                       OFF             OFF
 opensuse-15.6-developer-build                 OFF             OFF
 jammy-arm64-debian-pkg-packaging              ON              ON
 jammy-amd64-debian-pkg-packaging              ON              ON
+bookworm-gles-arm64-debian-pkg-packaging      ON              ON
 documentation-warnings                        ON              ON
 offline-documentation                         ON              ON
 visionos-developer-build                      OFF             OFF
