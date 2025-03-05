@@ -37,17 +37,17 @@ TouchSelectionControllerClientQt::~TouchSelectionControllerClientQt()
 
 bool TouchSelectionControllerClientQt::handleContextMenu(const content::ContextMenuParams& params)
 {
-    if ((params.source_type == ui::MENU_SOURCE_LONG_PRESS ||
-         params.source_type == ui::MENU_SOURCE_LONG_TAP) &&
+    if ((params.source_type == ui::mojom::MenuSourceType::kLongPress ||
+         params.source_type == ui::mojom::MenuSourceType::kLongTap) &&
         params.is_editable && params.selection_text.empty()) {
         m_menuRequested = true;
         updateMenu();
         return true;
     }
 
-    const bool from_touch = params.source_type == ui::MENU_SOURCE_LONG_PRESS ||
-                            params.source_type == ui::MENU_SOURCE_LONG_TAP ||
-                            params.source_type == ui::MENU_SOURCE_TOUCH;
+    const bool from_touch = params.source_type == ui::mojom::MenuSourceType::kLongPress ||
+                            params.source_type == ui::mojom::MenuSourceType::kLongTap ||
+                            params.source_type == ui::mojom::MenuSourceType::kTouch;
     if (from_touch && !params.selection_text.empty())
         return true;
 
@@ -132,7 +132,7 @@ void TouchSelectionControllerClientQt::RunContextMenu()
 
     content::RenderWidgetHostImpl *host = m_rwhv->host();
     host->ShowContextMenuAtPoint(gfx::ToRoundedPoint(anchorPoint),
-                                 ui::MENU_SOURCE_TOUCH_EDIT_MENU);
+                                 ui::mojom::MenuSourceType::kTouchEditMenu);
 
     // Hide selection handles after getting rect-between-bounds from touch
     // selection controller; otherwise, rect would be empty and the above

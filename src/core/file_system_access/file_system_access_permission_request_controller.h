@@ -16,6 +16,7 @@ class FileSystemAccessPermissionRequestController : public RequestController
 {
 public:
     FileSystemAccessPermissionRequestController(const QUrl &origin, const QUrl &filePath,
+                                                const QString &displayName,
                                                 HandleType handleType, AccessFlags accessType)
         : RequestController(origin)
         , m_filePath(filePath)
@@ -25,11 +26,13 @@ public:
     }
 
     QUrl filePath() const { return m_filePath; }
+    QString displayName() const { return m_displayName; }
     HandleType handleType() const { return m_handleType; }
     AccessFlags accessFlags() const { return m_accessType; }
 
 private:
     QUrl m_filePath;
+    QString m_displayName;
     HandleType m_handleType;
     AccessFlags m_accessType;
 };

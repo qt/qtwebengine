@@ -918,12 +918,12 @@ WebEngineContext::WebEngineContext()
         enableFeatures.push_back(features::kOverlayScrollbar.name);
         parsedCommandLine.AppendSwitch(switches::kEnableViewport);
         parsedCommandLine.AppendSwitch(input::switches::kValidateInputEventStream);
-        parsedCommandLine.AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
+        parsedCommandLine.AppendSwitch(switches::kDisableCompositedAntialiasing);
     }
 
 #if BUILDFLAG(IS_OZONE)
     if (!isGbmSupported()) {
-        disableFeatures.push_back(media::kVaapiVideoDecodeLinux.name);
+        disableFeatures.push_back(media::kAcceleratedVideoDecodeLinux.name);
         parsedCommandLine.AppendSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
     }
 #endif

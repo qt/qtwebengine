@@ -77,7 +77,7 @@ base::FilePath getSandboxPath()
 #endif
 } // namespace content
 
-#if defined(USE_AURA) || BUILDFLAG(IS_OZONE)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_OZONE)
 namespace content {
 
 // content/common/font_list.h
@@ -96,7 +96,7 @@ base::Value::List GetFontList_SlowBlocking()
 }
 
 } // namespace content
-#endif // defined(USE_AURA) || BUILDFLAG(IS_OZONE)
+#endif // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_OZONE)
 
 #if BUILDFLAG(ENABLE_VULKAN)
 namespace gpu {

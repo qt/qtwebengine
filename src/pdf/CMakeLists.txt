@@ -126,7 +126,6 @@ foreach(arch ${archs})
           enable_swiftshader_vulkan=false
           angle_enable_swiftshader=false
           dawn_use_swiftshader=false
-          pdf_enable_fontations=false
           use_cups=false
           use_dawn=false
           build_dawn_tests=false
@@ -141,6 +140,7 @@ foreach(arch ${archs})
           v8_enable_webassembly=false
           use_v8_context_snapshot=false
           v8_use_external_startup_data=false
+          webnn_use_tflite=false
   )
 
         if(LINUX OR ANDROID)

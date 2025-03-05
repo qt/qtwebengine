@@ -112,7 +112,7 @@ void AuthenticatorRequestDialogControllerPrivate::setCurrentState(
 
     m_currentState = uxState;
 
-    if (m_isConditionalRequest)
+    if (m_uiPresentation == content::AuthenticatorRequestClientDelegate::UIPresentation ::kAutofill)
         return;
 
     if (!m_isDialogCreated) {
@@ -159,12 +159,31 @@ AuthenticatorRequestDialogControllerPrivate::state() const
     return m_currentState;
 }
 
-void AuthenticatorRequestDialogControllerPrivate::startRequest(bool isConditionalRequest)
+void AuthenticatorRequestDialogController::setUiPresentation(content::AuthenticatorRequestClientDelegate::UIPresentation modality)
+{
+    d_ptr->setUiPresentation(modality);
+}
+
+content::AuthenticatorRequestClientDelegate::UIPresentation AuthenticatorRequestDialogController::uiPresentation() const
+{
+    return d_ptr->uiPresentation();
+}
+
+void AuthenticatorRequestDialogControllerPrivate::setUiPresentation(content::AuthenticatorRequestClientDelegate::UIPresentation modality)
+{
+    m_uiPresentation = modality;
+}
+
+content::AuthenticatorRequestClientDelegate::UIPresentation AuthenticatorRequestDialogControllerPrivate::uiPresentation() const
+{
+    return m_uiPresentation;
+}
+
+void AuthenticatorRequestDialogControllerPrivate::startRequest()
 {
     DCHECK(!m_isStarted);
 
     m_isStarted = true;
-    m_isConditionalRequest = isConditionalRequest;
 
     if (m_pendingState) {
         setCurrentState(*m_pendingState);
@@ -263,9 +282,9 @@ QWebEngineWebAuthUxRequest::WebAuthUxState AuthenticatorRequestDialogController:
     return d_ptr->state();
 }
 
-void AuthenticatorRequestDialogController::startRequest(bool bIsConditionalRequest)
+void AuthenticatorRequestDialogController::startRequest()
 {
-    d_ptr->startRequest(bIsConditionalRequest);
+    d_ptr->startRequest();
 }
 
 void AuthenticatorRequestDialogController::setRelyingPartyId(const std::string &rpId)

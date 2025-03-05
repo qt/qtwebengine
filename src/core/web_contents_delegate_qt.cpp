@@ -606,9 +606,24 @@ bool WebContentsDelegateQt::IsFullscreenForTabOrPending(const content::WebConten
 ASSERT_ENUMS_MATCH(FilePickerController::Open, blink::mojom::FileChooserParams::Mode::kOpen)
 ASSERT_ENUMS_MATCH(FilePickerController::OpenMultiple, blink::mojom::FileChooserParams::Mode::kOpenMultiple)
 ASSERT_ENUMS_MATCH(FilePickerController::UploadFolder, blink::mojom::FileChooserParams::Mode::kUploadFolder)
-ASSERT_ENUMS_MATCH(FilePickerController::Save, blink::mojom::FileChooserParams::Mode::kSave)
+// ASSERT_ENUMS_MATCH(FilePickerController::Save, blink::mojom::FileChooserParams::Mode::kSave)
 
 extern FilePickerController *createFilePickerController(FilePickerController::FileChooserMode mode, scoped_refptr<content::FileSelectListener> listener, const QString &defaultFileName, const QStringList &acceptedMimeTypes, QObject *parent = nullptr);
+
+FilePickerController::FileChooserMode toFileChooserMode(blink::mojom::FileChooserParams_Mode mode)
+{
+    switch (mode) {
+    case blink::mojom::FileChooserParams_Mode::kOpen:
+    case blink::mojom::FileChooserParams_Mode::kOpenMultiple:
+    case blink::mojom::FileChooserParams_Mode::kUploadFolder:
+        break;
+    case blink::mojom::FileChooserParams_Mode::kOpenDirectory:
+        return FilePickerController::OpenDirectory;
+    case blink::mojom::FileChooserParams_Mode::kSave:
+        return FilePickerController::Save;
+    }
+    return static_cast<FilePickerController::FileChooserMode>(mode);
+}
 
 void WebContentsDelegateQt::RunFileChooser(content::RenderFrameHost * /*frameHost*/,
                                            scoped_refptr<content::FileSelectListener> listener,
@@ -619,7 +634,7 @@ void WebContentsDelegateQt::RunFileChooser(content::RenderFrameHost * /*frameHos
     for (std::vector<std::u16string>::const_iterator it = params.accept_types.begin(); it < params.accept_types.end(); ++it)
         acceptedMimeTypes.append(toQt(*it));
 
-    m_filePickerController.reset(createFilePickerController(static_cast<FilePickerController::FileChooserMode>(params.mode),
+    m_filePickerController.reset(createFilePickerController(toFileChooserMode(params.mode),
                                                             listener, toQt(params.default_file_name.value()), acceptedMimeTypes));
 
     // Defer the call to not block base::MessageLoop::RunTask with modal dialogs.

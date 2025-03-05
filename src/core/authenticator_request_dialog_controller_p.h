@@ -34,6 +34,9 @@ public:
     void setCurrentState(QWebEngineWebAuthUxRequest::WebAuthUxState uxState);
     void setRelyingPartyId(const QString &rpId);
 
+    content::AuthenticatorRequestClientDelegate::UIPresentation uiPresentation() const;
+    void setUiPresentation(content::AuthenticatorRequestClientDelegate::UIPresentation modality);
+
     // Support pin functionality
     void collectPin(QWebEngineWebAuthPinRequest pinRequestInfo);
     void finishCollectToken();
@@ -46,7 +49,7 @@ public:
     // cancel request
     void cancelRequest();
     void retryRequest();
-    void startRequest(bool isConditionalRequest);
+    void startRequest();
 
     AuthenticatorRequestDialogController *q_ptr;
 
@@ -57,7 +60,8 @@ private:
     QString m_relyingPartyId;
 
     bool m_isStarted = false;
-    bool m_isConditionalRequest = false;
+    content::AuthenticatorRequestClientDelegate::UIPresentation m_uiPresentation =
+            content::AuthenticatorRequestClientDelegate::UIPresentation::kModal;
     QWebEngineWebAuthUxRequest::WebAuthUxState m_currentState =
             QWebEngineWebAuthUxRequest::WebAuthUxState::NotStarted;
     base::WeakPtr<AuthenticatorRequestClientDelegateQt> m_authenticatorRequestDelegate;

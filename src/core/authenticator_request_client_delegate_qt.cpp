@@ -47,7 +47,7 @@ void AuthenticatorRequestClientDelegateQt::SetRelyingPartyId(const std::string &
 bool AuthenticatorRequestClientDelegateQt::DoesBlockRequestOnFailure(
         InterestingFailureReason reason)
 {
-    if (!IsWebAuthnUIEnabled())
+    if (m_isUiDisabled)
         return false;
 
     switch (reason) {
@@ -132,7 +132,7 @@ void AuthenticatorRequestClientDelegateQt::SelectAccount(
         return;
     }
 
-    if (m_isConditionalRequest) {
+    if (m_dialogController->uiPresentation() == UIPresentation::kAutofill) {
         return;
     }
 
@@ -154,19 +154,10 @@ void AuthenticatorRequestClientDelegateQt::SelectAccount(
     m_dialogController->selectAccount(userList);
 }
 
-void AuthenticatorRequestClientDelegateQt::DisableUI()
+void AuthenticatorRequestClientDelegateQt::SetUIPresentation(UIPresentation ui_presentation)
 {
-    m_isUiDisabled = true;
-}
-
-bool AuthenticatorRequestClientDelegateQt::IsWebAuthnUIEnabled()
-{
-    return !m_isUiDisabled;
-}
-
-void AuthenticatorRequestClientDelegateQt::SetConditionalRequest(bool is_conditional)
-{
-    m_isConditionalRequest = is_conditional;
+    m_isUiDisabled = (ui_presentation == UIPresentation::kDisabled);
+    m_dialogController->setUiPresentation(ui_presentation);
 }
 
 // This method will not be invoked until the observer is set.
@@ -182,7 +173,7 @@ void AuthenticatorRequestClientDelegateQt::OnTransportAvailabilityEnumerated(
     // Start WebAuth UX
     // we may need to pass data as well. for SelectAccount and SupportPin it is not required,
     // skipping that for the timebeing.
-    m_dialogController->startRequest(m_isConditionalRequest);
+    m_dialogController->startRequest();
 }
 
 bool AuthenticatorRequestClientDelegateQt::SupportsPIN() const

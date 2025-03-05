@@ -96,6 +96,7 @@ public:
     void GotFocus(content::RenderWidgetHostImpl *render_widget_host) override;
     void LostFocus(content::RenderWidgetHostImpl *render_widget_host) override;
     void TakeFocus(bool reverse) override;
+    void DestroyBackForwardTransitionAnimationManager() override {}
 
 private:
     static void update(QWebEngineContextMenuRequest *request,

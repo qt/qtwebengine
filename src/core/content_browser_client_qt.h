@@ -154,7 +154,9 @@ public:
     std::unique_ptr<content::LoginDelegate>
     CreateLoginDelegate(const net::AuthChallengeInfo &auth_info, content::WebContents *web_contents,
                         content::BrowserContext *browser_context,
-                        const content::GlobalRequestID &request_id, bool is_request_for_main_frame,
+                        const content::GlobalRequestID &request_id,
+                        bool is_request_for_main_frame,
+                        bool is_request_for_navigation,
                         const GURL &url, scoped_refptr<net::HttpResponseHeaders> response_headers,
                         bool first_auth_attempt,
                         LoginAuthRequiredCallback auth_required_callback) override;
@@ -166,6 +168,7 @@ public:
             network::mojom::WebSandboxFlags sandbox_flags, ui::PageTransition page_transition,
             bool has_user_gesture, const std::optional<url::Origin> &initiating_origin,
             content::RenderFrameHost *initiator_document,
+            const net::IsolationInfo &isolation_info,
             mojo::PendingRemote<network::mojom::URLLoaderFactory> *out_factory) override;
 
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>>

@@ -256,8 +256,11 @@ macro(append_build_type_setup)
         use_partition_alloc=true
         use_partition_alloc_as_malloc=false
         use_custom_libcxx=false
+        use_custom_libcxx_for_host=false
         enable_rust=false # We do not yet support rust
         enable_chromium_prelude=false
+        enable_rust_png=false
+        pdf_enable_fontations=false
         assert_cpp20=false
     )
     if(${config} STREQUAL "Debug")

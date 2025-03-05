@@ -204,7 +204,7 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_fr
 #endif
 
     auto password_autofill_agent =
-            std::make_unique<autofill::PasswordAutofillAgent>(render_frame, associated_interfaces, autofill::PasswordAutofillAgent::EnableHeavyFormDataScraping(false));
+            std::make_unique<autofill::PasswordAutofillAgent>(render_frame, associated_interfaces);
     auto password_generation_agent =
             std::make_unique<autofill::PasswordGenerationAgent>(render_frame, password_autofill_agent.get(), associated_interfaces);
 

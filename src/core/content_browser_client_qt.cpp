@@ -12,6 +12,7 @@
 #include "components/error_page/common/localized_error.h"
 #include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/network_hints/browser/simple_network_hints_handler_impl.h"
+#include "components/performance_manager/embedder/binders.h"
 #include "components/performance_manager/embedder/performance_manager_lifetime.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/public/performance_manager.h"
@@ -480,8 +481,10 @@ void ContentBrowserClientQt::ExposeInterfacesToRenderer(service_manager::BinderR
                                                         blink::AssociatedInterfaceRegistry *associated_registry,
                                                         content::RenderProcessHost *render_process_host)
 {
-    if (auto *manager = performance_manager::PerformanceManagerRegistry::GetInstance())
-        manager->CreateProcessNodeAndExposeInterfacesToRendererProcess(registry, render_process_host);
+    if (auto *manager = performance_manager::PerformanceManagerRegistry::GetInstance()) {
+        manager->CreateProcessNode(render_process_host);
+        manager->GetBinders().ExposeInterfacesToRendererProcess(registry, render_process_host);
+    }
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     associated_registry->AddInterface<extensions::mojom::EventRouter>(base::BindRepeating(
             &extensions::EventRouter::BindForRenderer, render_process_host->GetID()));
@@ -733,6 +736,7 @@ bool ContentBrowserClientQt::HandleExternalProtocol(
         network::mojom::WebSandboxFlags sandbox_flags, ui::PageTransition page_transition,
         bool has_user_gesture, const std::optional<url::Origin> &initiating_origin,
         content::RenderFrameHost *initiator_document,
+        const net::IsolationInfo &isolation_info,
         mojo::PendingRemote<network::mojom::URLLoaderFactory> *out_factory)
 {
     Q_UNUSED(frame_tree_node_id);
@@ -921,7 +925,7 @@ bool ContentBrowserClientQt::HasErrorPage(int httpStatusCode, content::WebConten
 std::unique_ptr<content::LoginDelegate> ContentBrowserClientQt::CreateLoginDelegate(
         const net::AuthChallengeInfo &authInfo, content::WebContents *web_contents,
         content::BrowserContext *browser_context, const content::GlobalRequestID & /*request_id*/,
-        bool /*is_main_frame*/, const GURL &url,
+        bool /*is_main_frame*/, bool /*is_request_for_navigation*/, const GURL &url,
         scoped_refptr<net::HttpResponseHeaders> /*response_headers*/, bool first_auth_attempt,
         LoginAuthRequiredCallback auth_required_callback)
 {

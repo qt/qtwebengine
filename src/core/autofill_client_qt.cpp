@@ -131,4 +131,9 @@ WebContentsAdapterClient *AutofillClientQt::adapterClient()
             ->client();
 }
 
+base::WeakPtr<autofill::AutofillClient> AutofillClientQt::GetWeakPtr()
+{
+    return weak_ptr_factory_.GetWeakPtr();
+}
+
 } // namespace QtWebEngineCore

@@ -52,7 +52,6 @@ static QWebEnginePermission::PermissionType toQt(blink::PermissionType type)
         return QWebEnginePermission::PermissionType::LocalFontsAccess;
     case blink::PermissionType::POINTER_LOCK:
         return QWebEnginePermission::PermissionType::MouseLock;
-    case blink::PermissionType::ACCESSIBILITY_EVENTS:
     case blink::PermissionType::CAMERA_PAN_TILT_ZOOM:
     case blink::PermissionType::WINDOW_MANAGEMENT:
     case blink::PermissionType::BACKGROUND_SYNC:

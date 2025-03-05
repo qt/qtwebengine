@@ -35,9 +35,9 @@ public:
     bool HasOffTheRecordContext(content::BrowserContext *context) override;
     content::BrowserContext *GetOffTheRecordContext(content::BrowserContext *context) override;
     content::BrowserContext *GetOriginalContext(content::BrowserContext *context) override;
-    content::BrowserContext *GetContextRedirectedToOriginal(content::BrowserContext*, bool) override;
-    content::BrowserContext *GetContextOwnInstance(content::BrowserContext*, bool) override;
-    content::BrowserContext *GetContextForOriginalOnly(content::BrowserContext*, bool) override;
+    content::BrowserContext *GetContextRedirectedToOriginal(content::BrowserContext*) override;
+    content::BrowserContext *GetContextOwnInstance(content::BrowserContext*) override;
+    content::BrowserContext *GetContextForOriginalOnly(content::BrowserContext*) override;
     bool IsGuestSession(content::BrowserContext *context) const override;
     bool IsExtensionIncognitoEnabled(const std::string &extension_id, content::BrowserContext *context) const override;
     bool CanExtensionCrossIncognito(const Extension *extension, content::BrowserContext *context) const override;

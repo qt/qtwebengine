@@ -7,6 +7,7 @@
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 #include <QtCore/qobject.h>
 #include "qwebenginewebauthuxrequest.h"
+#include "content/public/browser/authenticator_request_client_delegate.h"
 
 namespace content {
 class WebContents;
@@ -33,6 +34,9 @@ public:
     void retryRequest();
     QWebEngineWebAuthUxRequest::RequestFailureReason requestFailureReason() const;
 
+    content::AuthenticatorRequestClientDelegate::UIPresentation uiPresentation() const;
+    void setUiPresentation(content::AuthenticatorRequestClientDelegate::UIPresentation modality);
+
 Q_SIGNALS:
     void stateChanged(QWebEngineWebAuthUxRequest::WebAuthUxState state);
 
@@ -40,7 +44,7 @@ private:
     void selectAccount(const QStringList &userList);
     void collectPin(QWebEngineWebAuthPinRequest pinRequest);
     void finishCollectToken();
-    void startRequest(bool bIsConditionalRequest);
+    void startRequest();
     void finishRequest();
     void setRelyingPartyId(const std::string &rpId);
     void handleRequestFailure(QWebEngineWebAuthUxRequest::RequestFailureReason reason);

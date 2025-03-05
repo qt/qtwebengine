@@ -337,6 +337,7 @@ foreach(arch ${archs})
             qtwebengine_target="${buildDir}/${config}/${arch}:QtWebEngineCore"
             build_dawn_tests=false
             build_with_tflite_lib=false
+            webnn_use_tflite=false
             is_qtwebengine=true
             is_qtpdf=false
             chrome_pgo_phase=0

@@ -23,8 +23,8 @@ namespace QtWebEngineCore {
 
 FileSystemAccessPermissionGrantQt::FileSystemAccessPermissionGrantQt(
         base::WeakPtr<FileSystemAccessPermissionContextQt> context, const url::Origin &origin,
-        const base::FilePath &path, HandleType handle_type, GrantType type)
-    : m_context(context), m_origin(origin), m_path(path), m_handleType(handle_type), m_type(type)
+        const content::PathInfo &pathInfo, HandleType handle_type, GrantType type)
+    : m_context(context), m_origin(origin), m_pathInfo(pathInfo), m_handleType(handle_type), m_type(type)
 {
 }
 FileSystemAccessPermissionGrantQt::~FileSystemAccessPermissionGrantQt()
@@ -111,7 +111,7 @@ void FileSystemAccessPermissionGrantQt::RequestPermission(
     // code does not have to have any way to request Access::kReadWrite.
 
     request_manager->AddRequest(
-            { m_origin, m_path, m_handleType, access },
+            { m_origin, m_pathInfo, m_handleType, access },
             base::BindOnce(&FileSystemAccessPermissionGrantQt::OnPermissionRequestResult, this,
                            std::move(callback)),
             std::move(fullscreen_block));

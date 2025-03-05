@@ -182,7 +182,21 @@ static QStringList listRecursively(const QDir &dir)
 ASSERT_ENUMS_MATCH(FilePickerController::Open, blink::mojom::FileChooserParams_Mode::kOpen)
 ASSERT_ENUMS_MATCH(FilePickerController::OpenMultiple, blink::mojom::FileChooserParams_Mode::kOpenMultiple)
 ASSERT_ENUMS_MATCH(FilePickerController::UploadFolder, blink::mojom::FileChooserParams_Mode::kUploadFolder)
-ASSERT_ENUMS_MATCH(FilePickerController::Save, blink::mojom::FileChooserParams_Mode::kSave)
+
+blink::mojom::FileChooserParams_Mode toFileChooserParams(FilePickerController::FileChooserMode mode)
+{
+    switch (mode) {
+    case FilePickerController::Open:
+    case FilePickerController::OpenMultiple:
+    case FilePickerController::UploadFolder:
+        break;
+    case FilePickerController::OpenDirectory:
+        return blink::mojom::FileChooserParams_Mode::kOpenDirectory;
+    case FilePickerController::Save:
+        return blink::mojom::FileChooserParams_Mode::kSave;
+    }
+    return static_cast<blink::mojom::FileChooserParams_Mode>(mode);
+}
 
 void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
 {
@@ -203,7 +217,7 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
         std::vector<blink::mojom::FileChooserFileInfoPtr> chooser_files;
         for (const auto &file : std::as_const(files)) {
             chooser_files.push_back(blink::mojom::FileChooserFileInfo::NewNativeFile(
-                    blink::mojom::NativeFileInfo::New(toFilePath(file), std::u16string())));
+                    blink::mojom::NativeFileInfo::New(toFilePath(file), std::u16string(), std::vector<std::u16string>{})));
         }
 
         if (files.isEmpty())
@@ -211,7 +225,7 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
         else
             d_ptr->fileDialogListener->FileSelected(
                     std::move(chooser_files), baseDir,
-                    static_cast<blink::mojom::FileChooserParams::Mode>(d_ptr->mode));
+                    toFileChooserParams(d_ptr->mode));
 
         // release the fileSelectListener manually because it blocks fullscreen requests in chromium
         // see QTBUG-106975

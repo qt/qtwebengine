@@ -155,11 +155,6 @@ bool ClientHints::IsJavaScriptAllowed(const GURL &url, content::RenderFrameHost 
     return true;
 }
 
-bool ClientHints::AreThirdPartyCookiesBlocked(const GURL &url, content::RenderFrameHost *rfh)
-{
-    return false; // we probably can not report anything more specific
-}
-
 blink::UserAgentMetadata ClientHints::GetUserAgentMetadata()
 {
     return static_cast<ProfileQt *>(context_)->userAgentMetadata();

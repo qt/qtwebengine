@@ -285,7 +285,6 @@ source_set("qtwebengine_sources") {
     ":devtools_sources",
     "//build:branding_buildflags",
     "//build/config/chromebox_for_meetings:buildflags",
-    "//chrome/browser:dev_ui_browser_resources_grit",
     "//chrome/browser/resources/accessibility:resources",
     "//chrome/browser/resources/net_internals:resources",
     "//chrome/browser/signin:identity_manager_provider",
@@ -606,7 +605,6 @@ repack("qtwebengine_repack_resources") {
     "$root_gen_dir/qtwebengine/qt_webengine_resources.pak",
     "$root_gen_dir/chrome/accessibility_resources.pak",
     "$root_gen_dir/chrome/common_resources.pak",
-    "$root_gen_dir/chrome/dev_ui_browser_resources.pak",
     "$root_gen_dir/chrome/device_log_resources.pak",
     "$root_gen_dir/chrome/net_internals_resources.pak",
     "$root_gen_dir/components/components_resources.pak",
@@ -626,7 +624,7 @@ repack("qtwebengine_repack_resources") {
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
-    "$root_gen_dir/ui/resources/webui_resources.pak",
+    "$root_gen_dir/ui/webui/resources/webui_resources.pak",
   ]
   if (!is_debug) {
     output = "$root_out_dir/qtwebengine_resources.pak"
@@ -636,7 +634,6 @@ repack("qtwebengine_repack_resources") {
 
   deps = [
      "//qtwebengine/browser:qt_webengine_resources",
-     "//chrome/browser:dev_ui_browser_resources_grit",
      "//chrome/browser/resources/accessibility:resources",
      "//chrome/browser/resources/net_internals:resources",
      "//chrome/common:resources_grit",
@@ -658,7 +655,7 @@ repack("qtwebengine_repack_resources") {
      "//mojo/public/js:resources",
      "//net:net_resources_grit",
      "//third_party/blink/public:resources_grit",
-     "//ui/resources:webui_resources_grd",
+     "//ui/webui/resources",
   ]
   if (enable_extensions) {
     sources += [

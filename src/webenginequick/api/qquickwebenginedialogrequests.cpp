@@ -622,7 +622,8 @@ QString QQuickWebEngineFileDialogRequest::defaultFileName() const
 
 QQuickWebEngineFileDialogRequest::FileMode QQuickWebEngineFileDialogRequest::mode() const
 {
-    return m_mode;
+    // map opendirectory to openmultiple
+    return m_mode > FileMode::FileModeSave ? FileMode::FileModeOpenMultiple : m_mode;
 }
 
 /*!

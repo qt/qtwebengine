@@ -200,12 +200,12 @@ FileSystemAccessPermissionContextQt::~FileSystemAccessPermissionContextQt() = de
 
 scoped_refptr<content::FileSystemAccessPermissionGrant>
 FileSystemAccessPermissionContextQt::GetReadPermissionGrant(const url::Origin &origin,
-                                                            const base::FilePath &path,
+                                                            const content::PathInfo &path_info,
                                                             HandleType handle_type,
                                                             UserAction user_action)
 {
     auto &origin_state = m_origins[origin];
-    auto *&existing_grant = origin_state.read_grants[path];
+    auto *&existing_grant = origin_state.read_grants[path_info.path];
     scoped_refptr<FileSystemAccessPermissionGrantQt> new_grant;
 
     if (existing_grant && existing_grant->handleType() != handle_type) {
@@ -218,12 +218,12 @@ FileSystemAccessPermissionContextQt::GetReadPermissionGrant(const url::Origin &o
 
     if (!existing_grant) {
         new_grant = base::MakeRefCounted<FileSystemAccessPermissionGrantQt>(
-                m_weakFactory.GetWeakPtr(), origin, path, handle_type, GrantType::kRead);
+                m_weakFactory.GetWeakPtr(), origin, path_info, handle_type, GrantType::kRead);
         existing_grant = new_grant.get();
     }
 
     // If a parent directory is already readable this new grant should also be readable.
-    if (new_grant && AncestorHasActivePermission(origin, path, GrantType::kRead)) {
+    if (new_grant && AncestorHasActivePermission(origin, path_info.path, GrantType::kRead)) {
         existing_grant->SetStatus(blink::mojom::PermissionStatus::GRANTED);
         return existing_grant;
     }
@@ -250,12 +250,12 @@ FileSystemAccessPermissionContextQt::GetReadPermissionGrant(const url::Origin &o
 
 scoped_refptr<content::FileSystemAccessPermissionGrant>
 FileSystemAccessPermissionContextQt::GetWritePermissionGrant(const url::Origin &origin,
-                                                             const base::FilePath &path,
+                                                             const content::PathInfo &path_info,
                                                              HandleType handle_type,
                                                              UserAction user_action)
 {
     auto &origin_state = m_origins[origin];
-    auto *&existing_grant = origin_state.write_grants[path];
+    auto *&existing_grant = origin_state.write_grants[path_info.path];
     scoped_refptr<FileSystemAccessPermissionGrantQt> new_grant;
 
     if (existing_grant && existing_grant->handleType() != handle_type) {
@@ -268,12 +268,12 @@ FileSystemAccessPermissionContextQt::GetWritePermissionGrant(const url::Origin &
 
     if (!existing_grant) {
         new_grant = base::MakeRefCounted<FileSystemAccessPermissionGrantQt>(
-                m_weakFactory.GetWeakPtr(), origin, path, handle_type, GrantType::kWrite);
+                m_weakFactory.GetWeakPtr(), origin, path_info, handle_type, GrantType::kWrite);
         existing_grant = new_grant.get();
     }
 
     // If a parent directory is already writable this new grant should also be writable.
-    if (new_grant && AncestorHasActivePermission(origin, path, GrantType::kWrite)) {
+    if (new_grant && AncestorHasActivePermission(origin, path_info.path, GrantType::kWrite)) {
         existing_grant->SetStatus(blink::mojom::PermissionStatus::GRANTED);
         return existing_grant;
     }
@@ -295,21 +295,21 @@ FileSystemAccessPermissionContextQt::GetWritePermissionGrant(const url::Origin &
 }
 
 void FileSystemAccessPermissionContextQt::ConfirmSensitiveEntryAccess(
-        const url::Origin &origin, PathType path_type, const base::FilePath &path,
+        const url::Origin &origin, const content::PathInfo &info,
         HandleType handle_type, UserAction user_action,
         content::GlobalRenderFrameHostId frame_id,
         base::OnceCallback<void(SensitiveEntryResult)> callback)
 {
-    if (path_type == PathType::kExternal) {
+    if (info.type == content::PathType::kExternal) {
         std::move(callback).Run(SensitiveEntryResult::kAllowed);
         return;
     }
 
     base::ThreadPool::PostTaskAndReplyWithResult(
             FROM_HERE, { base::MayBlock(), base::TaskPriority::USER_VISIBLE },
-            base::BindOnce(&ShouldBlockAccessToPath, path, handle_type),
+            base::BindOnce(&ShouldBlockAccessToPath, info.path, handle_type),
             base::BindOnce(&FileSystemAccessPermissionContextQt::DidConfirmSensitiveDirectoryAccess,
-                           m_weakFactory.GetWeakPtr(), origin, path, handle_type, user_action, frame_id,
+                           m_weakFactory.GetWeakPtr(), origin, info.path, handle_type, user_action, frame_id,
                            std::move(callback)));
 }
 
@@ -337,18 +337,14 @@ bool FileSystemAccessPermissionContextQt::CanObtainWritePermission(const url::Or
 
 void FileSystemAccessPermissionContextQt::SetLastPickedDirectory(const url::Origin &origin,
                                                                  const std::string &id,
-                                                                 const base::FilePath &path,
-                                                                 const PathType type)
+                                                                 const content::PathInfo &info)
 {
     Q_UNUSED(origin);
 
-    FileSystemAccessPermissionContextQt::PathInfo info;
-    info.path = path;
-    info.type = type;
     m_lastPickedDirectories.insert({ id, info });
 }
 
-FileSystemAccessPermissionContextQt::PathInfo
+content::PathInfo
 FileSystemAccessPermissionContextQt::GetLastPickedDirectory(const url::Origin &origin,
                                                             const std::string &id)
 {
@@ -356,7 +352,7 @@ FileSystemAccessPermissionContextQt::GetLastPickedDirectory(const url::Origin &o
 
     return m_lastPickedDirectories.find(id) != m_lastPickedDirectories.end()
             ? m_lastPickedDirectories[id]
-            : FileSystemAccessPermissionContextQt::PathInfo();
+            : content::PathInfo();
 }
 
 base::FilePath FileSystemAccessPermissionContextQt::GetWellKnownDirectoryPath(
@@ -472,12 +468,18 @@ void FileSystemAccessPermissionContextQt::PermissionGrantDestroyed(
         grants.erase(grant_it);
 }
 
-void FileSystemAccessPermissionContextQt::NotifyEntryMoved(const url::Origin &, const base::FilePath &, const base::FilePath &)
+void FileSystemAccessPermissionContextQt::NotifyEntryMoved(const url::Origin &, const content::PathInfo &, const content::PathInfo &)
 {
 }
 
+base::expected<void, std::string> FileSystemAccessPermissionContextQt::CanShowFilePicker(content::RenderFrameHost*)
+{
+    // Matching AwFileSystemAccessPermissionContext::CanShowFilePicker()
+    return base::ok();
+}
+
 void FileSystemAccessPermissionContextQt::CheckPathsAgainstEnterprisePolicy(
-        std::vector<PathInfo> entries, content::GlobalRenderFrameHostId,
+        std::vector<content::PathInfo> entries, content::GlobalRenderFrameHostId,
         EntriesAllowedByEnterprisePolicyCallback callback)
 {
     std::move(callback).Run(std::move(entries));

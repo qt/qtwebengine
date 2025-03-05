@@ -292,19 +292,19 @@ BrowserContext *ExtensionsBrowserClientQt::GetOriginalContext(BrowserContext *co
     return context;
 }
 
-content::BrowserContext* ExtensionsBrowserClientQt::GetContextRedirectedToOriginal(content::BrowserContext *context, bool)
+content::BrowserContext* ExtensionsBrowserClientQt::GetContextRedirectedToOriginal(content::BrowserContext *context)
 {
     // like in ShellExtensionsBrowserClient:
     return context;
 }
 
-content::BrowserContext* ExtensionsBrowserClientQt::GetContextOwnInstance(content::BrowserContext *context, bool)
+content::BrowserContext* ExtensionsBrowserClientQt::GetContextOwnInstance(content::BrowserContext *context)
 {
     // like in ShellExtensionsBrowserClient:
     return context;
 }
 
-content::BrowserContext* ExtensionsBrowserClientQt::GetContextForOriginalOnly(content::BrowserContext *context, bool)
+content::BrowserContext* ExtensionsBrowserClientQt::GetContextForOriginalOnly(content::BrowserContext *context)
 {
     // like in ShellExtensionsBrowserClient:
     return context;

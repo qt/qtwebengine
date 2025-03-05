@@ -58,6 +58,7 @@ public:
     bool IsOffTheRecord() const override;
     scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
     std::unique_ptr<autofill::AutofillManager> CreateManager(base::PassKey<autofill::ContentAutofillDriver>, autofill::ContentAutofillDriver&) override;
+    base::WeakPtr<autofill::AutofillClient> GetWeakPtr() override;
 
 private:
     explicit AutofillClientQt(content::WebContents *webContents);
@@ -65,6 +66,7 @@ private:
     WebContentsAdapterClient *adapterClient();
 
     QScopedPointer<AutofillPopupController> m_popupController;
+    base::WeakPtrFactory<AutofillClientQt> weak_ptr_factory_{this};
 };
 
 } // namespace QtWebEngineCore

@@ -38,7 +38,7 @@ public:
     struct RequestData
     {
         url::Origin origin;
-        base::FilePath path;
+        content::PathInfo pathInfo;
         content::FileSystemAccessPermissionContext::HandleType handle_type;
         Access access;
     };

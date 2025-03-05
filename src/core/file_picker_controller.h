@@ -29,7 +29,8 @@ public:
         Open,
         OpenMultiple,
         UploadFolder,
-        Save
+        Save,
+        OpenDirectory,
     };
 
     FilePickerController(FilePickerControllerPrivate *priv, QObject *parent = nullptr);

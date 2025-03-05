@@ -13,7 +13,6 @@
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
-#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/gpu_fence.h"

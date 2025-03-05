@@ -13,7 +13,9 @@
 #include "web_event_factory.h"
 
 #include "components/input/cursor_manager.h"
+#include "components/input/events_helper.h"
 #include "components/input/render_widget_host_input_event_router.h"
+#include "components/input/switches.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
@@ -27,7 +29,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/cursors/webcursor.h"
-#include "content/common/input/events_helper.h"
 #include "content/common/input/synthetic_gesture_target.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -646,7 +647,7 @@ bool RenderWidgetHostViewQt::TransformPointToCoordSpaceForView(const gfx::PointF
         return true;
     }
 
-    return target_view->TransformPointToLocalCoordSpace(point, GetCurrentSurfaceId(), transformed_point);
+    return target_view->TransformPointToLocalCoordSpace(point, GetFrameSinkId(), transformed_point);
 }
 
 void RenderWidgetHostViewQt::Destroy()
@@ -766,7 +767,7 @@ void RenderWidgetHostViewQt::OnGestureEvent(const ui::GestureEventData& gesture)
     if ((gesture.type() == ui::EventType::kGesturePinchBegin
          || gesture.type() == ui::EventType::kGesturePinchUpdate
          || gesture.type() == ui::EventType::kGesturePinchEnd)
-        && !content::IsPinchToZoomEnabled()) {
+        && !input::switches::IsPinchToZoomEnabled()) {
         return;
     }
 
@@ -848,7 +849,7 @@ void RenderWidgetHostViewQt::notifyHidden()
 void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const input::TouchEventWithLatencyInfo &touch, blink::mojom::InputEventResultState ack_result)
 {
     const bool eventConsumed = (ack_result == blink::mojom::InputEventResultState::kConsumed);
-    const bool isSetBlocking = content::InputEventResultStateIsSetBlocking(ack_result);
+    const bool isSetBlocking = input::InputEventResultStateIsSetBlocking(ack_result);
     m_gestureProvider.OnTouchEventAck(touch.event.unique_touch_event_id, eventConsumed, isSetBlocking);
 }
 

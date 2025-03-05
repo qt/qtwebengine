@@ -507,6 +507,8 @@ QStringList QWebEngineViewPrivate::chooseFiles(QWebEnginePage::FileSelectionMode
     QStringList ret;
     QString str;
     switch (static_cast<QtWebEngineCore::FilePickerController::FileChooserMode>(mode)) {
+    case QtWebEngineCore::FilePickerController::OpenDirectory:
+        Q_FALLTHROUGH();
     case QtWebEngineCore::FilePickerController::OpenMultiple:
         ret = QFileDialog::getOpenFileNames(q, QString(), QString(),
                                             filter.join(QStringLiteral(";;")), nullptr,
