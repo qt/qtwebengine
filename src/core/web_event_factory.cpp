@@ -1252,9 +1252,9 @@ static WebInputEvent::Modifiers lockKeyModifiers(const quint32 nativeModifiers)
 {
     unsigned result = 0;
     if (keyboardDriver() == KeyboardDriver::Xkb) {
-        if (nativeModifiers & 0x42) /* Caps_Lock */
+        if (nativeModifiers & 0x2) /* XCB_MOD_MASK_LOCK */
             result |= WebInputEvent::kCapsLockOn;
-        if (nativeModifiers & 0x4d) /* Num_Lock */
+        if (nativeModifiers & 0x10) /* XCB_MOD_MASK_2 */
             result |= WebInputEvent::kNumLockOn;
     } else if (keyboardDriver() == KeyboardDriver::Windows) {
         if (nativeModifiers & 0x100) /* CapsLock */
