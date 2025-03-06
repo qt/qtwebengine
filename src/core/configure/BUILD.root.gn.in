@@ -405,11 +405,14 @@ source_set("qtwebengine_sources") {
       deps += [
         "//ui/base/x:gl",
         "//ui/gfx/linux:gpu_memory_buffer_support_x11",
+        "//ui/gfx/x",
       ]
 
       sources += [
         "//ui/ozone/platform/x11/gl_egl_utility_x11.cc",
         "//ui/ozone/platform/x11/gl_egl_utility_x11.h",
+        "//ui/ozone/platform/x11/native_pixmap_egl_x11_binding.cc",
+        "//ui/ozone/platform/x11/native_pixmap_egl_x11_binding.h",
       ]
     }
   }
