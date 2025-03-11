@@ -73,18 +73,18 @@ SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR GPL-3.0-only"
 [[annotations]]
 path = ["**.pro", "**.qrc", "**CMakeLists.txt", ".cmake.conf", "**.yaml",
         "**.cfg", "**BLACKLIST", "**.plist", "**.plist.in", "**BUILD**.in", "coin.nodes",
-        "coin/qt-installer-package-config.json", ".gitmodules"]
+        "coin/qt-installer-package-config.json", ".tag"]
 precedence = "closest"
 comment = "build system"
 SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
 SPDX-License-Identifier = "BSD-3-Clause"
 
 [[annotations]]
-path = [".tag", "**/.gitattributes", "**.gitignore"]
+path = ["**/.gitattributes", "**.gitignore", ".gitmodules", "**.gitreview"]
 precedence = "closest"
-comment = "version control system. Licensed as build system"
+comment = "version control system. Infrastructure"
 SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
-SPDX-License-Identifier = "BSD-3-Clause"
+SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR BSD-3-Clause"
 
 [[annotations]]
 path = ["examples/**", "tests/manual/examples/**", "**/doc/snippets/**"]
@@ -102,10 +102,10 @@ SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-on
 
 [[annotations]]
 path = ["**.toml", "licenseRule.json"]
-comment = "documentation"
+comment = "infrastructure"
 precedence = "override"
 SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
-SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"
+SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR BSD-3-Clause"
 
 [[annotations]]
 path = ["**/qt_attribution.json"]
