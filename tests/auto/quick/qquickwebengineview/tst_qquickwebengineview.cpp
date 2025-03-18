@@ -1,6 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#include "QtWidgets/qapplication.h"
 #include "testwindow.h"
 #include "quickutil.h"
 #include "util.h"
@@ -1347,7 +1348,14 @@ void tst_QQuickWebEngineView::htmlSelectPopup()
 
     makeTouch(view.window(), elementCenter(&view, "select"));
     QPointer<QQuickWindow> popup;
-    QTRY_VERIFY((popup = m_window->findChild<QQuickWindow *>()));
+    auto findPopup = [](QQuickView *view) -> QQuickWindow * {
+        for (auto window : QApplication::topLevelWindows()) {
+            if (window->transientParent() == view)
+                return dynamic_cast<QQuickWindow *>(window);
+        }
+        return nullptr;
+    };
+    QTRY_VERIFY((popup = findPopup(m_window.get())));
     QCOMPARE(activeElementId(&view), QStringLiteral("select"));
 
     makeTouch(popup, QPoint(popup->width() / 2, popup->height() / 2));
