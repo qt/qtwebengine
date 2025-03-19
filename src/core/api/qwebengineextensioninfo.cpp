@@ -5,6 +5,7 @@
 #include "qwebengineextensioninfo_p.h"
 
 #if QT_CONFIG(webengine_extensions)
+#include <QtCore/qdir.h>
 #include <QtCore/qfileinfo.h>
 
 #include "extensions/extension_manager.h"
@@ -87,7 +88,7 @@ bool QWebEngineExtensionInfoPrivate::isLoaded() const
 
 bool QWebEngineExtensionInfoPrivate::isInstalled() const
 {
-    return QFileInfo(m_data.path).path() == m_manager->installDirectory();
+    return QFileInfo(m_data.path).dir() == QDir(m_manager->installDirectory());
 }
 
 QWebEngineExtensionInfo::QWebEngineExtensionInfo() : d_ptr(nullptr) { }
