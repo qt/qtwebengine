@@ -11,6 +11,8 @@
 #include "web_contents_delegate_qt.h"
 #include "web_contents_view_qt.h"
 #include "web_engine_settings.h"
+#include "permission_manager_qt.h"
+#include "type_conversion.h"
 
 #include "base/strings/strcat.h"
 #include "blink/public/common/page/page_zoom.h"
@@ -21,6 +23,8 @@
 #include "content/public/browser/desktop_streams_registry.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/media_capture_devices.h"
+#include "content/public/browser/permission_controller_delegate.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager_base.h"
@@ -493,8 +497,17 @@ void MediaCaptureDevicesDispatcher::processMediaAccessRequest(
     }
 
     enqueueMediaAccessRequest(webContents, request, std::move(callback), id);
-    // We might not require this approval for pepper requests.
-    adapterClient->runMediaAccessPermissionRequest(toQt(request.security_origin), flags);
+
+    PermissionManagerQt *permissionManager = static_cast<PermissionManagerQt *>(
+        webContents->GetBrowserContext()->GetPermissionControllerDelegate());
+    permissionManager->requestMediaPermissions(
+        content::RenderFrameHost::FromID(request.render_process_id, request.render_frame_id),
+        flags,
+        base::BindOnce(
+            &MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse,
+            base::Unretained(this),
+            webContents,
+            toQt(request.url_origin)));
 }
 
 void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::WebContents *webContents, const content::MediaStreamRequest &request, content::MediaResponseCallback callback)
@@ -558,9 +571,18 @@ void MediaCaptureDevicesDispatcher::ProcessQueuedAccessRequest(content::WebConte
 
     RequestsQueue &queue(it->second);
     content::MediaStreamRequest &request = queue.front()->request;
+    WebContentsAdapterClient::MediaRequestFlags flags = mediaRequestFlagsForRequest(request);
 
-    WebContentsAdapterClient *adapterClient = WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(webContents)->GetView())->client();
-    adapterClient->runMediaAccessPermissionRequest(toQt(request.security_origin), mediaRequestFlagsForRequest(request));
+    PermissionManagerQt *permissionManager = static_cast<PermissionManagerQt *>(
+        webContents->GetBrowserContext()->GetPermissionControllerDelegate());
+    permissionManager->requestMediaPermissions(
+        content::RenderFrameHost::FromID(request.render_process_id, request.render_frame_id),
+        flags,
+        base::BindOnce(
+            &MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse,
+            base::Unretained(this),
+            webContents,
+            toQt(request.url_origin)));
 }
 
 void MediaCaptureDevicesDispatcher::getDefaultDevices(const std::string &audioDeviceId, const std::string &videoDeviceId,

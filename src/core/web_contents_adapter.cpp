@@ -16,6 +16,7 @@
 #include "find_text_helper.h"
 #include "media_capture_devices_dispatcher.h"
 #include "pdf_util_qt.h"
+#include "permission_manager_qt.h"
 #include "profile_adapter.h"
 #include "profile_qt.h"
 #include "qwebengineloadinginfo.h"
@@ -1417,17 +1418,18 @@ QSizeF WebContentsAdapter::lastContentsSize() const
     return QSizeF();
 }
 
-void WebContentsAdapter::setPermission(const QUrl &origin, QWebEnginePermission::PermissionType permissionType, QWebEnginePermission::State state)
+void WebContentsAdapter::setPermission(
+        const QUrl &origin,
+        QWebEnginePermission::PermissionType permissionType,
+        QWebEnginePermission::State state,
+        int childId, const std::string &serializedToken)
 {
+    auto *manager = static_cast<PermissionManagerQt*>(m_profileAdapter->profile()->GetPermissionControllerDelegate());
+
     if (QWebEnginePermission::isPersistent(permissionType)) {
         // Do not check for initialization in this path so permissions can be set before first navigation
         Q_ASSERT(m_profileAdapter);
-        if (!isInitialized()) {
-            m_profileAdapter->setPermission(origin, permissionType, state);
-        } else {
-            m_profileAdapter->setPermission(origin, permissionType, state, m_webContents.get()->GetPrimaryMainFrame());
-        }
-
+        manager->setPermission(origin, permissionType, state, childId, serializedToken);
         return;
     }
 
@@ -1440,115 +1442,87 @@ void WebContentsAdapter::setPermission(const QUrl &origin, QWebEnginePermission:
             // Do nothing
             break;
         case QWebEnginePermission::State::Denied:
-            grantMouseLockPermission(origin, false);
+            grantMouseLockPermission(origin, childId, serializedToken, false);
             break;
         case QWebEnginePermission::State::Granted:
-            grantMouseLockPermission(origin, true);
+            grantMouseLockPermission(origin, childId, serializedToken, true);
             break;
         }
 
         return;
     }
 
-    const WebContentsAdapterClient::MediaRequestFlags audioVideoCaptureFlags(
-        WebContentsAdapterClient::MediaVideoCapture |
-        WebContentsAdapterClient::MediaAudioCapture);
-    const WebContentsAdapterClient::MediaRequestFlags desktopAudioVideoCaptureFlags(
-        WebContentsAdapterClient::MediaDesktopVideoCapture |
-        WebContentsAdapterClient::MediaDesktopAudioCapture);
+    // If we reach this, we must be handling media access permissions
+    manager->setPermission(origin, permissionType, state, childId, serializedToken);
 
-    switch (state) {
-    case QWebEnginePermission::State::Invalid:
-    case QWebEnginePermission::State::Ask:
-        // Do nothing
-        return;
-    case QWebEnginePermission::State::Denied:
-        // Deny all media access
-        grantMediaAccessPermission(origin, WebContentsAdapterClient::MediaNone);
-        return;
-    case QWebEnginePermission::State::Granted:
-        // Enable only the requested capture type
-        break;
+    WebContentsAdapterClient::MediaRequestFlags flags = WebContentsAdapterClient::MediaNone;
+    if (state == QWebEnginePermission::State::Granted) {
+        switch (permissionType) {
+        case QWebEnginePermission::PermissionType::MediaAudioCapture:
+            flags.setFlag(WebContentsAdapterClient::MediaAudioCapture);
+            break;
+        case QWebEnginePermission::PermissionType::MediaVideoCapture:
+            flags.setFlag(WebContentsAdapterClient::MediaVideoCapture);
+            break;
+        case QWebEnginePermission::PermissionType::MediaAudioVideoCapture:
+            flags.setFlag(WebContentsAdapterClient::MediaAudioCapture);
+            flags.setFlag(WebContentsAdapterClient::MediaVideoCapture);
+            break;
+        case QWebEnginePermission::PermissionType::DesktopVideoCapture:
+            flags.setFlag(WebContentsAdapterClient::MediaDesktopVideoCapture);
+            break;
+        case QWebEnginePermission::PermissionType::DesktopAudioVideoCapture:
+            flags.setFlag(WebContentsAdapterClient::MediaDesktopAudioCapture);
+            flags.setFlag(WebContentsAdapterClient::MediaDesktopVideoCapture);
+            break;
+        default:
+            break;
+        }
     }
 
-    switch (permissionType) {
-    case QWebEnginePermission::PermissionType::MediaAudioVideoCapture:
-        grantMediaAccessPermission(origin, audioVideoCaptureFlags);
-        break;
-    case QWebEnginePermission::PermissionType::MediaAudioCapture:
-        grantMediaAccessPermission(origin, WebContentsAdapterClient::MediaAudioCapture);
-        break;
-    case QWebEnginePermission::PermissionType::MediaVideoCapture:
-        grantMediaAccessPermission(origin, WebContentsAdapterClient::MediaVideoCapture);
-        break;
-    case QWebEnginePermission::PermissionType::DesktopAudioVideoCapture:
-        grantMediaAccessPermission(origin, desktopAudioVideoCaptureFlags);
-        break;
-    case QWebEnginePermission::PermissionType::DesktopVideoCapture:
-        grantMediaAccessPermission(origin, WebContentsAdapterClient::MediaDesktopVideoCapture);
-        break;
-    default:
-        Q_UNREACHABLE();
-        break;
-    }
-}
-
-QWebEnginePermission::State WebContentsAdapter::getPermissionState(const QUrl &origin, QWebEnginePermission::PermissionType permissionType)
-{
-    return m_profileAdapter->getPermissionState(origin, permissionType, m_webContents.get()->GetPrimaryMainFrame());
-}
-
-void WebContentsAdapter::grantMediaAccessPermission(const QUrl &origin, WebContentsAdapterClient::MediaRequestFlags flags)
-{
-    CHECK_INITIALIZED();
-    // Let the permission manager remember the reply.
-    if (flags & WebContentsAdapterClient::MediaAudioCapture)
-        m_profileAdapter->setPermission(origin,
-            QWebEnginePermission::PermissionType::MediaAudioCapture,
-            QWebEnginePermission::State::Granted,
-            m_webContents.get()->GetPrimaryMainFrame());
-    if (flags & WebContentsAdapterClient::MediaVideoCapture)
-        m_profileAdapter->setPermission(origin,
-            QWebEnginePermission::PermissionType::MediaVideoCapture,
-            QWebEnginePermission::State::Granted,
-            m_webContents.get()->GetPrimaryMainFrame());
     MediaCaptureDevicesDispatcher::GetInstance()->handleMediaAccessPermissionResponse(m_webContents.get(), origin, flags);
 }
 
-void WebContentsAdapter::grantMouseLockPermission(const QUrl &securityOrigin, bool granted)
+void WebContentsAdapter::grantMouseLockPermission(const QUrl &securityOrigin, int childId,
+                                                  const std::string &serializedToken, bool granted)
 {
     CHECK_INITIALIZED();
-    if (securityOrigin != toQt(m_webContents->GetLastCommittedURL().DeprecatedGetOriginAsURL()))
-        return;
 
-    if (granted) {
-        if (RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView())) {
-            rwhv->Focus();
-            if (!rwhv->HasFocus()) {
-                // We tried to activate our RWHVQtDelegate, but we failed. This probably means that
-                // the permission was granted from a modal dialog and the windowing system is not ready
-                // to set focus on the originating view. Since pointer lock strongly requires it, we just
-                // wait until the next FocusIn event.
-                m_pendingMouseLockPermissions.insert(securityOrigin, granted);
-                return;
-            }
-        } else
-            granted = false;
+    bool focused = false;
+    if (RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView())) {
+        rwhv->Focus();
+        if (rwhv->HasFocus()) {
+            focused = true;
+        }
+    } else {
+        granted = false;
     }
 
-    m_webContents->GotResponseToPointerLockRequest(granted ? blink::mojom::PointerLockResult::kSuccess
-                                                           : blink::mojom::PointerLockResult::kPermissionDenied);
+    m_pendingMouseLockPermissions.enqueue({ securityOrigin, granted, childId, serializedToken });
+
+    if (focused) {
+        handlePendingMouseLockPermission();
+    }
 }
 
 void WebContentsAdapter::handlePendingMouseLockPermission()
 {
     CHECK_INITIALIZED();
-    auto it = m_pendingMouseLockPermissions.find(toQt(m_webContents->GetLastCommittedURL().DeprecatedGetOriginAsURL()));
-    if (it != m_pendingMouseLockPermissions.end()) {
-        m_webContents->GotResponseToPointerLockRequest(it.value() ? blink::mojom::PointerLockResult::kSuccess
-                                                                  : blink::mojom::PointerLockResult::kPermissionDenied);
-        m_pendingMouseLockPermissions.erase(it);
-    }
+    if (!m_pendingMouseLockPermissions.size())
+        return;
+
+    auto pending = m_pendingMouseLockPermissions.dequeue();
+
+    // Simply set the permission in the manager. The callback from WebContentsDelegateQt::RequestPointerLock()
+    // will ensure WebContents receives the response
+    auto *manager = static_cast<PermissionManagerQt*>(m_profileAdapter->profile()->GetPermissionControllerDelegate());
+    manager->setPermission(
+        get<0>(pending),  // origin
+        QWebEnginePermission::PermissionType::MouseLock,
+        get<1>(pending)   // granted
+            ? QWebEnginePermission::State::Granted : QWebEnginePermission::State::Denied,
+        get<2>(pending),  // childId
+        get<3>(pending)); // serializedToken
 }
 
 void WebContentsAdapter::setBackgroundColor(const QColor &color)

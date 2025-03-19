@@ -33,12 +33,14 @@ struct QWebEnginePermissionPrivate : public QSharedData
 {
     Q_WEBENGINECORE_EXPORT QWebEnginePermissionPrivate();
     Q_WEBENGINECORE_EXPORT QWebEnginePermissionPrivate(const QUrl &, QWebEnginePermission::PermissionType,
-        QSharedPointer<QtWebEngineCore::WebContentsAdapter>, QtWebEngineCore::ProfileAdapter *);
+        QtWebEngineCore::ProfileAdapter *, int = -1, const std::string & = std::string());
 
     QUrl origin;
     QWebEnginePermission::PermissionType permissionType;
 
-    QWeakPointer<QtWebEngineCore::WebContentsAdapter> webContentsAdapter;
+    int childId = -1;
+    std::string serializedToken;
+
     QPointer<QtWebEngineCore::ProfileAdapter> profileAdapter;
 };
 

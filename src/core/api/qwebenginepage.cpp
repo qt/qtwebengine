@@ -590,49 +590,6 @@ void QWebEnginePagePrivate::showColorDialog(QSharedPointer<ColorChooserControlle
         view->showColorDialog(controller);
 }
 
-void QWebEnginePagePrivate::runMediaAccessPermissionRequest(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags requestFlags)
-{
-    Q_Q(QWebEnginePage);
-    QWebEnginePermission::PermissionType permissionType;
-
-    if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture)
-            && requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
-        permissionType = QWebEnginePermission::PermissionType::MediaAudioVideoCapture;
-    else if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture))
-        permissionType = QWebEnginePermission::PermissionType::MediaAudioCapture;
-    else if (requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
-        permissionType = QWebEnginePermission::PermissionType::MediaVideoCapture;
-    else if (requestFlags.testFlag(WebContentsAdapterClient::MediaDesktopAudioCapture)
-            && requestFlags.testFlag(WebContentsAdapterClient::MediaDesktopVideoCapture))
-        permissionType = QWebEnginePermission::PermissionType::DesktopAudioVideoCapture;
-    else // if (requestFlags.testFlag(WebContentsAdapterClient::MediaDesktopVideoCapture))
-        permissionType = QWebEnginePermission::PermissionType::DesktopVideoCapture;
-
-    Q_EMIT q->permissionRequested(createFeaturePermissionObject(securityOrigin, permissionType));
-
-#if QT_DEPRECATED_SINCE(6, 8)
-    QT_WARNING_PUSH
-    QT_WARNING_DISABLE_DEPRECATED
-    QWebEnginePage::Feature deprecatedFeature;
-
-    if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture)
-            && requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
-        deprecatedFeature = QWebEnginePage::MediaAudioVideoCapture;
-    else if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture))
-        deprecatedFeature = QWebEnginePage::MediaAudioCapture;
-    else if (requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
-        deprecatedFeature = QWebEnginePage::MediaVideoCapture;
-    else if (requestFlags.testFlag(WebContentsAdapterClient::MediaDesktopAudioCapture)
-            && requestFlags.testFlag(WebContentsAdapterClient::MediaDesktopVideoCapture))
-        deprecatedFeature = QWebEnginePage::DesktopAudioVideoCapture;
-    else // if (requestFlags.testFlag(WebContentsAdapterClient::MediaDesktopVideoCapture))
-        deprecatedFeature = QWebEnginePage::DesktopVideoCapture;
-
-    Q_EMIT q->featurePermissionRequested(securityOrigin, deprecatedFeature);
-    QT_WARNING_POP
-#endif // QT_DEPRECATED_SINCE(6, 8)
-}
-
 #if QT_DEPRECATED_SINCE(6, 8)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
@@ -668,33 +625,19 @@ static QWebEnginePage::Feature toDeprecatedFeature(QWebEnginePermission::Permiss
 QT_WARNING_POP
 #endif // QT_DEPRECATED_SINCE(6, 8)
 
-void QWebEnginePagePrivate::runFeaturePermissionRequest(QWebEnginePermission::PermissionType permissionType, const QUrl &securityOrigin)
+void QWebEnginePagePrivate::runFeaturePermissionRequest(
+        QWebEnginePermission::PermissionType permissionType,
+        const QUrl &securityOrigin,
+        int childId, const std::string &serializedToken)
 {
     Q_Q(QWebEnginePage);
 
-    if (QWebEnginePermission::isPersistent(permissionType)) {
-        Q_EMIT q->permissionRequested(createFeaturePermissionObject(securityOrigin, permissionType));
-#if QT_DEPRECATED_SINCE(6, 8)
-        QT_WARNING_PUSH
-        QT_WARNING_DISABLE_DEPRECATED
-        Q_EMIT q->featurePermissionRequested(securityOrigin, toDeprecatedFeature(permissionType));
-        QT_WARNING_POP
-#endif // QT_DEPRECATED_SINCE(6, 8)
-        return;
-    }
-
-    Q_UNREACHABLE();
-}
-
-void QWebEnginePagePrivate::runMouseLockPermissionRequest(const QUrl &securityOrigin)
-{
-    Q_Q(QWebEnginePage);
-    Q_EMIT q->permissionRequested(createFeaturePermissionObject(securityOrigin, QWebEnginePermission::PermissionType::MouseLock));
-
+    Q_EMIT q->permissionRequested(QWebEnginePermission(
+        new QWebEnginePermissionPrivate(securityOrigin, permissionType, profileAdapter(), childId, serializedToken)));
 #if QT_DEPRECATED_SINCE(6, 8)
     QT_WARNING_PUSH
     QT_WARNING_DISABLE_DEPRECATED
-    Q_EMIT q->featurePermissionRequested(securityOrigin, QWebEnginePage::MouseLock);
+    Q_EMIT q->featurePermissionRequested(securityOrigin, toDeprecatedFeature(permissionType));
     QT_WARNING_POP
 #endif // QT_DEPRECATED_SINCE(6, 8)
 }
@@ -883,12 +826,6 @@ void QWebEnginePagePrivate::showWebAuthDialog(QWebEngineWebAuthUxRequest *reques
 {
     Q_Q(QWebEnginePage);
     Q_EMIT q->webAuthUxRequested(request);
-}
-
-QWebEnginePermission QWebEnginePagePrivate::createFeaturePermissionObject(const QUrl &securityOrigin, QWebEnginePermission::PermissionType feature)
-{
-    auto *returnPrivate = new QWebEnginePermissionPrivate(securityOrigin, feature, adapter, profileAdapter());
-    return QWebEnginePermission(returnPrivate);
 }
 
 QWebEnginePage::QWebEnginePage(QObject* parent)
@@ -1918,7 +1855,7 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
         Q_UNREACHABLE();
     }
 
-    d->adapter->setPermission(securityOrigin, f, s);
+    d->adapter->setPermission(securityOrigin, f, s, {});
 }
 QT_WARNING_POP
 #endif // QT_DEPRECATED_SINCE(6, 8)

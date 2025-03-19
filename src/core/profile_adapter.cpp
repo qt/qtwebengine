@@ -33,7 +33,9 @@
 #include "renderer_host/user_resource_controller_host.h"
 #include "type_conversion.h"
 #include "visited_links_manager_qt.h"
+#include "web_contents_adapter.h"
 #include "web_contents_adapter_client.h"
+#include "web_contents_delegate_qt.h"
 #include "web_engine_context.h"
 
 #include <QCoreApplication>
@@ -627,15 +629,29 @@ UserResourceControllerHost *ProfileAdapter::userResourceController()
 }
 
 void ProfileAdapter::setPermission(const QUrl &origin, QWebEnginePermission::PermissionType permissionType,
-    QWebEnginePermission::State state, content::RenderFrameHost *rfh)
+    QWebEnginePermission::State state, int childId, const std::string &serializedToken)
 {
-    static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->setPermission(origin, permissionType, state, rfh);
+    auto token = PermissionManagerQt::deserializeToken(childId, serializedToken);
+
+    // Check if the frame token is valid, and defer to WebContentsAdapter if so
+    auto *rfh = content::RenderFrameHost::FromFrameToken(token);
+    if (rfh) {
+        static_cast<WebContentsDelegateQt *>(content::WebContents::FromRenderFrameHost(rfh)->GetDelegate())
+            ->webContentsAdapter()
+                ->setPermission(origin, permissionType, state, childId, serializedToken);
+        return;
+    }
+
+    // Otherwise, set the permission directly
+    static_cast<PermissionManagerQt *>(profile()->GetPermissionControllerDelegate())
+        ->setPermission(origin, permissionType, state, token);
 }
 
 QWebEnginePermission::State ProfileAdapter::getPermissionState(const QUrl &origin, QWebEnginePermission::PermissionType permissionType,
-    content::RenderFrameHost *rfh)
+    int childId, const std::string &serializedToken)
 {
-    return static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->getPermissionState(origin, permissionType, rfh);
+    return static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())
+        ->getPermissionState(origin, permissionType, PermissionManagerQt::deserializeToken(childId, serializedToken));
 }
 
 QList<QWebEnginePermission> ProfileAdapter::listPermissions(const QUrl &origin, QWebEnginePermission::PermissionType permissionType)

@@ -1229,7 +1229,7 @@ QWebEnginePermission QQuickWebEngineProfile::queryPermission(const QUrl &securit
         return QWebEnginePermission(new QWebEnginePermissionPrivate());
     }
 
-    auto *pvt = new QWebEnginePermissionPrivate(securityOrigin, permissionType, nullptr, d->profileAdapter());
+    auto *pvt = new QWebEnginePermissionPrivate(securityOrigin, permissionType, d->profileAdapter());
     return QWebEnginePermission(pvt);
 }
 

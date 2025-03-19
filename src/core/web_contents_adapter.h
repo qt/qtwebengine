@@ -21,6 +21,7 @@
 #include <QtCore/QUrl>
 #include <QtCore/QVariant>
 #include <QtCore/QPointer>
+#include <QtCore/QQueue>
 #include <QtGui/qtgui-config.h>
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 #include <QtWebEngineCore/qwebenginecontextmenurequest.h>
@@ -48,6 +49,7 @@ namespace content {
 class WebContents;
 class SiteInstance;
 class RenderFrameHost;
+struct GlobalRenderFrameHostToken;
 }
 
 QT_BEGIN_NAMESPACE
@@ -179,11 +181,9 @@ public:
     void devToolsFrontendDestroyed(DevToolsFrontendQt *frontend);
     QString devToolsId();
 
-    void setPermission(const QUrl &origin, QWebEnginePermission::PermissionType permissionType, QWebEnginePermission::State state);
-    QWebEnginePermission::State getPermissionState(const QUrl &origin, QWebEnginePermission::PermissionType permissionType);
-
-    void grantMediaAccessPermission(const QUrl &origin, WebContentsAdapterClient::MediaRequestFlags flags);
-    void grantMouseLockPermission(const QUrl &origin, bool granted);
+    void setPermission(const QUrl &origin, QWebEnginePermission::PermissionType permissionType,
+        QWebEnginePermission::State state, int childId = -1, const std::string &serializedToken = std::string());
+    void grantMouseLockPermission(const QUrl &origin, int childId, const std::string &serializedToken, bool granted);
     void handlePendingMouseLockPermission();
 
     void setBackgroundColor(const QColor &color);
@@ -272,7 +272,7 @@ private:
 #endif
     WebContentsAdapterClient *m_adapterClient;
     quint64 m_nextRequestId;
-    QMap<QUrl, bool> m_pendingMouseLockPermissions;
+    QQueue<std::tuple<QUrl, bool, int, std::string>> m_pendingMouseLockPermissions;
     QMap<quint64, std::function<void(const QVariant &)>> m_javaScriptCallbacks;
     std::map<quint64, std::function<void(QSharedPointer<QByteArray>)>> m_printCallbacks;
     std::unique_ptr<content::DropData> m_currentDropData;

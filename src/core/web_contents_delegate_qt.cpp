@@ -19,6 +19,7 @@
 #include "javascript_dialog_manager_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #include "native_web_keyboard_event_qt.h"
+#include "permission_manager_qt.h"
 #include "profile_adapter.h"
 #include "profile_qt.h"
 #include "qwebengineloadinginfo.h"
@@ -418,6 +419,12 @@ void WebContentsDelegateQt::emitLoadCommitted()
 
 void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navigation_handle)
 {
+    if (navigation_handle->HasCommitted() && !navigation_handle->IsSameOrigin()) {
+        PermissionManagerQt *permissionManager = static_cast<PermissionManagerQt *>(
+            navigation_handle->GetWebContents()->GetBrowserContext()->GetPermissionControllerDelegate());
+        permissionManager->onCrossOriginNavigation(navigation_handle->GetRenderFrameHost());
+    }
+
     if (!navigation_handle->IsInMainFrame())
         return;
 
@@ -731,13 +738,31 @@ void WebContentsDelegateQt::ActivateContents(content::WebContents* contents)
 
 void WebContentsDelegateQt::RequestPointerLock(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target)
 {
-    Q_UNUSED(user_gesture);
-
     if (last_unlocked_by_target)
         web_contents->GotResponseToPointerLockRequest(blink::mojom::PointerLockResult::kSuccess);
-    else
-        m_viewClient->runMouseLockPermissionRequest(toQt(web_contents->GetLastCommittedURL().DeprecatedGetOriginAsURL()));
+    else {
+        PermissionManagerQt *permissionManager = static_cast<PermissionManagerQt *>(
+            web_contents->GetBrowserContext()->GetPermissionControllerDelegate());
+
+        auto *rfh = web_contents->GetFocusedFrame();
+        if (!rfh)
+            rfh = web_contents->GetPrimaryMainFrame();
+
+        permissionManager->RequestPermissions(
+            rfh,
+            content::PermissionRequestDescription(blink::PermissionType::POINTER_LOCK, user_gesture, rfh->GetLastCommittedOrigin().GetURL()),
+            base::BindOnce([](content::WebContents *web_contents, PermissionManagerQt *manager, const std::vector<blink::mojom::PermissionStatus> &status)
+            {
+                Q_ASSERT(status.size() == 1);
+
+                web_contents->GotResponseToPointerLockRequest(status[0] == blink::mojom::PermissionStatus::GRANTED
+                    ? blink::mojom::PointerLockResult::kSuccess
+                    : blink::mojom::PointerLockResult::kPermissionDenied);
+            }, web_contents, permissionManager)
+        );
+    }
 }
+
 
 void WebContentsDelegateQt::overrideWebPreferences(content::WebContents *webContents, blink::web_pref::WebPreferences *webPreferences)
 {
@@ -773,9 +798,12 @@ void WebContentsDelegateQt::selectClientCert(const QSharedPointer<ClientCertSele
     m_viewClient->selectClientCert(selectController);
 }
 
-void WebContentsDelegateQt::requestFeaturePermission(QWebEnginePermission::PermissionType permissionType, const QUrl &requestingOrigin)
+void WebContentsDelegateQt::requestFeaturePermission(
+        QWebEnginePermission::PermissionType permissionType,
+        const QUrl &requestingOrigin,
+        const content::GlobalRenderFrameHostToken &frameToken)
 {
-    m_viewClient->runFeaturePermissionRequest(permissionType, requestingOrigin);
+    m_viewClient->runFeaturePermissionRequest(permissionType, requestingOrigin, frameToken.child_id, frameToken.frame_token.ToString());
 }
 
 extern WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(ui::PageTransition transition);
@@ -834,18 +862,22 @@ bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost 
                                                        blink::mojom::MediaStreamType type)
 {
     Q_ASSERT(rfh);
+
+    auto token = rfh->GetGlobalFrameToken();
+    std::string serializedToken = token.frame_token.ToString();
+
     switch (type) {
     case blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE:
         return m_viewClient->profileAdapter()->getPermissionState(
             toQt(security_origin),
             QWebEnginePermission::PermissionType::MediaAudioCapture,
-            rfh)
+            token.child_id, serializedToken)
                 == QWebEnginePermission::State::Granted;
     case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE:
         return m_viewClient->profileAdapter()->getPermissionState(
             toQt(security_origin),
             QWebEnginePermission::PermissionType::MediaVideoCapture,
-            rfh)
+            token.child_id, serializedToken)
                 == QWebEnginePermission::State::Granted;
     default:
         LOG(INFO) << "WebContentsDelegateQt::CheckMediaAccessPermission: "

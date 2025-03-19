@@ -16,6 +16,7 @@
 #define PROFILE_ADAPTER_H
 
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
+#include <QtWebEngineCore/private/qwebenginepermission_p.h>
 
 #include <QHash>
 #include <QList>
@@ -187,9 +188,9 @@ public:
     UserResourceControllerHost *userResourceController();
 
     void setPermission(const QUrl &origin, QWebEnginePermission::PermissionType permissionType,
-        QWebEnginePermission::State state, content::RenderFrameHost *rfh = nullptr);
+        QWebEnginePermission::State state, int childId = -1, const std::string &serializedToken = std::string());
     QWebEnginePermission::State getPermissionState(const QUrl &origin, QWebEnginePermission::PermissionType permissionType,
-        content::RenderFrameHost *rfh = nullptr);
+        int childId = -1, const std::string &serializedToken = std::string());
     QList<QWebEnginePermission> listPermissions(const QUrl &origin = QUrl(),
         QWebEnginePermission::PermissionType permissionType = QWebEnginePermission::PermissionType::Unsupported);
 
