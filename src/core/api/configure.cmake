@@ -36,6 +36,20 @@ qt_config_compile_test(alsa
 int main(){};
 ")
 
+qt_config_compile_test(udot
+    LABEL "udot on arm64"
+    CODE
+"
+static_assert(__aarch64__);
+static void test_dot_prod(){
+asm volatile (
+\"udot v0.4s, v4.16b, v16.16b\"
+:
+:
+: \"v0\",\"v4\",\"v16\");
+}
+")
+
 #### Features
 
 qt_feature("webengine-embedded-build" PRIVATE
@@ -167,6 +181,10 @@ qt_feature("webenginedriver" PUBLIC
     CONDITION NOT CMAKE_CROSSCOMPILING
               AND NOT (CMAKE_OSX_ARCHITECTURES AND osx_arch_count GREATER 1)
     DISABLE CMAKE_BUILD_TYPE STREQUAL Debug
+)
+qt_feature("webengine-arm64-udot-support" PRIVATE
+    LABEL "Use libyuv on neon64"
+    CONDITION UNIX AND TEST_udot
 )
 qt_configure_add_summary_section(NAME "Qt WebEngineCore")
 qt_configure_add_summary_entry(ARGS "webengine-embedded-build")

@@ -533,11 +533,15 @@ foreach(arch ${archs})
                 )
             endif()
             get_gn_arch(cpu ${TEST_architecture_arch})
-            if(cpu STREQUAL "arm" OR cpu STREQUAL "arm64")
-                if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11.0.0")
-                    # udot assembler
-                    list(APPEND gnArgArg libyuv_use_neon=false)
-                endif()
+
+            if(cpu STREQUAL "arm" AND
+               CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
+               CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11.0.0")
+                list(APPEND gnArgArg libyuv_use_neon=false)
+                #TODO check if libyuv really uses udot in case of arm32
+            endif()
+            if(cpu STREQUAL "arm64" AND NOT QT_FEATURE_webengine_arm64_udot_support)
+                list(APPEND gnArgArg libyuv_use_neon=false)
             endif()
             if(cpu STREQUAL "arm")
                 check_thumb(armThumb)
