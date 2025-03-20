@@ -45,6 +45,7 @@ qt_internal_add_module(WebEngineCore
         qwebenginewebauthuxrequest.cpp qwebenginewebauthuxrequest.h qwebenginewebauthuxrequest_p.h
     DEFINES
         BUILDING_CHROMIUM
+        TOOLKIT_QT
     INCLUDE_DIRECTORIES
         ../
         ../../3rdparty/chromium
