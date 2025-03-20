@@ -40,6 +40,7 @@ private Q_SLOTS:
     void loadInIncognito();
     void installInIncognito();
     void loadInstalledExtensions();
+    void serviceWorkerMessaging();
 
 private:
     int installedFiles();
@@ -354,6 +355,21 @@ void tst_QWebEngineExtension::loadInstalledExtensions()
     profile = profileBuilder.createProfile("Test");
     auto manager2 = profile->extensionManager();
     QTRY_COMPARE(manager2->extensions().size(), extensionCount);
+}
+
+void tst_QWebEngineExtension::serviceWorkerMessaging()
+{
+    int lastExtensionCount = extensionCount();
+    QWebEngineExtensionInfo extension = loadExtensionSync(resourcesPath() + u"service_worker_ext");
+    QVERIFY(extension.isLoaded());
+    m_manager->setExtensionEnabled(extension, true);
+    QCOMPARE(extensionCount(), ++lastExtensionCount);
+    QCOMPARE(installedFiles(), 0);
+
+    QSignalSpy loadSpy(m_page, SIGNAL(loadFinished(bool)));
+    m_page->load(QUrl("qrc:///resources/index.html"));
+    QTRY_COMPARE(loadSpy.size(), 1);
+    QTRY_COMPARE(evaluateJavaScriptSync(m_page, "document.body.childElementCount"), 1);
 }
 
 QTEST_MAIN(tst_QWebEngineExtension)

@@ -61,6 +61,7 @@
 
 #include "extensions/common/constants.h"
 #include "extensions/renderer/api/core_extensions_renderer_api_provider.h"
+#include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_manager.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -474,6 +475,39 @@ chrome::WebRtcLoggingAgentImpl *ContentRendererClientQt::GetWebRtcLoggingAgent()
     return m_webrtcLoggingAgentImpl.get();
 }
 #endif // QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
+
+#if QT_CONFIG(webengine_extensions)
+void ContentRendererClientQt::WillEvaluateServiceWorkerOnWorkerThread(
+        blink::WebServiceWorkerContextProxy *context_proxy, v8::Local<v8::Context> v8_context,
+        int64_t service_worker_version_id, const GURL &service_worker_scope, const GURL &script_url,
+        const blink::ServiceWorkerToken &service_worker_token)
+{
+    ExtensionsRendererClientQt::GetInstance()
+            ->dispatcher()
+            ->WillEvaluateServiceWorkerOnWorkerThread(
+                    context_proxy, v8_context, service_worker_version_id, service_worker_scope,
+                    script_url, service_worker_token);
+}
+
+void ContentRendererClientQt::DidInitializeServiceWorkerContextOnWorkerThread(
+        blink::WebServiceWorkerContextProxy *context_proxy, const GURL &service_worker_scope,
+        const GURL &script_url)
+{
+    extensions::ExtensionsRendererClient::Get()
+            ->dispatcher()
+            ->DidInitializeServiceWorkerContextOnWorkerThread(context_proxy, service_worker_scope,
+                                                              script_url);
+}
+
+void ContentRendererClientQt::DidStartServiceWorkerContextOnWorkerThread(
+        int64_t service_worker_version_id, const GURL &service_worker_scope, const GURL &script_url)
+{
+    extensions::ExtensionsRendererClient::Get()
+            ->dispatcher()
+            ->DidStartServiceWorkerContextOnWorkerThread(service_worker_version_id,
+                                                         service_worker_scope, script_url);
+}
+#endif // QT_CONFIG(webengine_extensions)
 
 void ContentRendererClientQt::GetInterface(const std::string &interface_name, mojo::ScopedMessagePipeHandle interface_pipe)
 {

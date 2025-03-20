@@ -6,6 +6,11 @@
 
 #include "qtwebenginecoreglobal_p.h"
 #include "content/public/browser/content_browser_client.h"
+#include "extensions/buildflags/buildflags.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "content/public/browser/service_worker_version_base_info.h"
+#endif
 
 namespace content {
 class BrowserContext;
@@ -66,6 +71,11 @@ public:
                                     content::RenderProcessHost *render_process_host) override;
     void RegisterAssociatedInterfaceBindersForRenderFrameHost(content::RenderFrameHost &render_frame_host,
                                                               blink::AssociatedInterfaceRegistry &associated_registry) override;
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    void RegisterAssociatedInterfaceBindersForServiceWorker(
+            const content::ServiceWorkerVersionBaseInfo &service_worker_version_info,
+            blink::AssociatedInterfaceRegistry &associated_registry) override;
+#endif
 
     bool CanCreateWindow(content::RenderFrameHost *opener,
                          const GURL &opener_url,

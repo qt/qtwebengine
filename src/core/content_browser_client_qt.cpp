@@ -124,6 +124,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/process_map.h"
+#include "extensions/browser/service_worker/service_worker_host.h"
 #include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
@@ -545,6 +546,16 @@ void ContentBrowserClientQt::RegisterAssociatedInterfaceBindersForRenderFrameHos
             &extensions::ExtensionsGuestView::CreateForExtensions, rfh.GetGlobalId()));
 #endif
 }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+void ContentBrowserClientQt::RegisterAssociatedInterfaceBindersForServiceWorker(
+        const content::ServiceWorkerVersionBaseInfo &service_worker_version_info,
+        blink::AssociatedInterfaceRegistry &associated_registry)
+{
+    associated_registry.AddInterface<extensions::mojom::ServiceWorkerHost>(base::BindRepeating(
+            &extensions::ServiceWorkerHost::BindReceiver, service_worker_version_info.process_id));
+}
+#endif
 
 bool ContentBrowserClientQt::CanCreateWindow(
         content::RenderFrameHost* opener,
