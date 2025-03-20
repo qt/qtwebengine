@@ -46,6 +46,7 @@ qt_internal_add_module(WebEngineCore
         qwebengineprofilebuilder.cpp qwebengineprofilebuilder.h qwebengineprofilebuilder_p.h
     DEFINES
         BUILDING_CHROMIUM
+        TOOLKIT_QT
     INCLUDE_DIRECTORIES
         ../
         ../../3rdparty/chromium
