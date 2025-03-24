@@ -213,11 +213,12 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
             glxFun->glXBindTexImageEXT(display, glxPixmap, GLX_FRONT_LEFT_EXT, nullptr);
             glFun->glBindTexture(GL_TEXTURE_2D, 0);
 
-            m_frontBuffer->textureCleanupCallback = [glFun, glxFun, display, glxPixmap,
-                                                     glTexture]() {
+            m_frontBuffer->textureCleanupCallback = [glFun, glxFun, display, glxPixmap, glTexture,
+                                                     glxHelper, pixmapId]() {
                 glxFun->glXReleaseTexImageEXT(display, glxPixmap, GLX_FRONT_LEFT_EXT);
                 glFun->glDeleteTextures(1, &glTexture);
                 glXDestroyGLXPixmap(display, glxPixmap);
+                glxHelper->freePixmap(pixmapId);
             };
         }
 #endif // BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)

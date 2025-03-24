@@ -100,4 +100,14 @@ GLXPixmap GLXHelper::importBufferAsPixmap(int dmaBufFd, uint32_t size, uint16_t 
     return pixmapId;
 }
 
+void GLXHelper::freePixmap(uint32_t pixmapId) const
+{
+    xcb_void_cookie_t cookie = xcb_free_pixmap_checked(m_connection, pixmapId);
+    xcb_generic_error_t *error = xcb_request_check(m_connection, cookie);
+    if (error) {
+        qWarning("GLX: XCB_FREE_PIXMAP failed with error code: 0x%x", error->error_code);
+        free(error);
+    }
+}
+
 QT_END_NAMESPACE

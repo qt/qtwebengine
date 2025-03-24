@@ -33,6 +33,7 @@ public:
     GLXFBConfig getFBConfig() const { return m_configs[0]; }
     GLXPixmap importBufferAsPixmap(int dmaBufFd, uint32_t size, uint16_t width, uint16_t height,
                                    uint16_t stride) const;
+    void freePixmap(uint32_t pixmapId) const;
     bool isDmaBufSupported() const { return m_isDmaBufSupported; }
 
 private:
