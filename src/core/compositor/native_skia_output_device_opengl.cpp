@@ -106,6 +106,12 @@ x11::Pixmap XPixmapFromNativePixmap(const gfx::NativePixmap &nativePixmap)
     return pixmapId;
 }
 
+void FreeXPixmap(x11::Pixmap pixmap)
+{
+    auto *connection = x11::Connection::Get();
+    connection->FreePixmap({ pixmap });
+}
+
 GLXFBConfig GetFBConfig(Display *display)
 {
     // clang-format off
@@ -269,9 +275,11 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
             glXBindTexImageEXT(display, glxPixmap, GLX_FRONT_LEFT_EXT, nullptr);
             glFun->glBindTexture(GL_TEXTURE_2D, 0);
 
-            m_frontBuffer->textureCleanupCallback = [glFun, glTexture, display, glxPixmap]() {
+            m_frontBuffer->textureCleanupCallback = [glFun, glTexture, display, glxPixmap,
+                                                     pixmapId]() {
                 glFun->glDeleteTextures(1, &glTexture);
                 glXDestroyGLXPixmap(display, glxPixmap);
+                FreeXPixmap(pixmapId);
             };
         }
 #endif // BUILDFLAG(IS_OZONE_X11)
