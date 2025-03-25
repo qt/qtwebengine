@@ -112,16 +112,6 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
     QVulkanFunctions *f = win->vulkanInstance()->functions();
     QVulkanDeviceFunctions *df = win->vulkanInstance()->deviceFunctions(qtVulkanDevice);
 
-    VkImageLayout imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    VkPhysicalDeviceProperties deviceProperties;
-    f->vkGetPhysicalDeviceProperties(qtPhysicalDevice, &deviceProperties);
-    if (deviceProperties.vendorID == 0x10DE) {
-        // FIXME: This is a workaround for Nvidia driver.
-        // The imported image is empty if the initialLayout is not
-        // VK_IMAGE_LAYOUT_PREINITIALIZED.
-        imageLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
-    }
-
     VkExternalMemoryImageCreateInfoKHR externalMemoryImageCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR,
         .pNext = nullptr,
@@ -210,10 +200,6 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
     Q_ASSERT(sharedHandle != INVALID_HANDLE_VALUE);
 #endif
 
-    constexpr VkImageUsageFlags kUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
-            | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT
-            | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-
     VkImageCreateInfo importedImageCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
         .pNext = &externalMemoryImageCreateInfo,
@@ -229,11 +215,13 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
         .arrayLayers = 1,
         .samples = VK_SAMPLE_COUNT_1_BIT,
         .tiling = VK_IMAGE_TILING_OPTIMAL,
-        .usage = kUsage,
+        // The image is fed into a combined image sampler
+        .usage = VK_IMAGE_USAGE_SAMPLED_BIT,
         .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
         .queueFamilyIndexCount = 0,
         .pQueueFamilyIndices = nullptr,
-        .initialLayout = imageLayout,
+        // VkExternalMemoryImageCreateInfo only allows UNDEFINED
+        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
     };
 
 #if BUILDFLAG(IS_OZONE)
@@ -314,8 +302,8 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
     df->vkBindImageMemory(qtVulkanDevice, importedImage, importedImageMemory, 0);
 
     QQuickWindow::CreateTextureOptions texOpts(textureOptions);
-    QSGTexture *texture = QNativeInterface::QSGVulkanTexture::fromNative(importedImage, imageLayout,
-                                                                         win, size(), texOpts);
+    QSGTexture *texture = QNativeInterface::QSGVulkanTexture::fromNative(
+            importedImage, importedImageCreateInfo.initialLayout, win, size(), texOpts);
 
     m_frontBuffer->textureCleanupCallback = [=]() {
         df->vkDestroyImage(qtVulkanDevice, importedImage, nullptr);
