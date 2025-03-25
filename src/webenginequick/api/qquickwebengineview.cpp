@@ -525,15 +525,15 @@ QT_WARNING_POP
 void QQuickWebEngineViewPrivate::runFeaturePermissionRequest(QWebEnginePermission::PermissionType permissionType, const QUrl &securityOrigin)
 {
     Q_Q(QQuickWebEngineView);
-
-    if (QWebEnginePermission::isPersistent(permissionType)) {
-        Q_EMIT q->permissionRequested(createFeaturePermissionObject(securityOrigin, permissionType));
 #if QT_DEPRECATED_SINCE(6, 8)
         QT_WARNING_PUSH
         QT_WARNING_DISABLE_DEPRECATED
         Q_EMIT q->featurePermissionRequested(securityOrigin, toDeprecatedFeature(permissionType));
         QT_WARNING_POP
 #endif // QT_DEPRECATED_SINCE(6, 8)
+
+    if (QWebEnginePermission::isPersistent(permissionType)) {
+        Q_EMIT q->permissionRequested(createFeaturePermissionObject(securityOrigin, permissionType));
         return;
     }
 

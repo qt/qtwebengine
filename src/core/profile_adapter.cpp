@@ -66,7 +66,7 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
     , m_downloadPath(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation))
     , m_httpCacheType(DiskHttpCache)
     , m_persistentCookiesPolicy(AllowPersistentCookies)
-    , m_persistentPermissionsPolicy(PersistentPermissionsPolicy::StoreOnDisk)
+    , m_persistentPermissionsPolicy(PersistentPermissionsPolicy::AskEveryTime)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
     , m_clientHintsEnabled(true)
     , m_pushServiceEnabled(false)

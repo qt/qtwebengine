@@ -12,25 +12,21 @@ TestWebEngineView {
 
     property bool deniedGeolocation: false
     property bool geoPermissionRequested: false
-    property var permissionObject: undefined
-
-    profile.persistentPermissionsPolicy: WebEngineProfile.PersistentPermissionsPolicy.AskEveryTime
 
     SignalSpy {
-        id: permissionSpy
+        id: featurePermissionSpy
         target: webEngineView
-        signalName: "permissionRequested"
+        signalName: "featurePermissionRequested"
     }
 
-    onPermissionRequested: function(perm) {
-        if (perm.permissionType === WebEnginePermission.PermissionType.Geolocation) {
+    onFeaturePermissionRequested: function(securityOrigin, feature) {
+        if (feature === WebEngineView.Geolocation) {
             geoPermissionRequested = true
-            permissionObject = perm
             if (deniedGeolocation) {
-                perm.deny()
+                webEngineView.grantFeaturePermission(securityOrigin, feature, false)
             }
             else {
-                perm.grant()
+                webEngineView.grantFeaturePermission(securityOrigin, feature, true)
             }
         }
     }
@@ -58,27 +54,24 @@ TestWebEngineView {
         }
 
         function init() {
-            if (permissionObject != undefined) {
-                permissionObject.reset()
-            }
             deniedGeolocation = false
-            permissionSpy.clear()
+            featurePermissionSpy.clear()
         }
 
         function test_geoPermissionRequest() {
-            compare(permissionSpy.count, 0)
+            compare(featurePermissionSpy.count, 0)
             webEngineView.url = Qt.resolvedUrl("geolocation.html")
-            tryCompare(permissionSpy, "count", 1)
+            featurePermissionSpy.wait()
             verify(geoPermissionRequested)
+            compare(featurePermissionSpy.count, 1)
             tryVerify(isHandled, 5000)
             verify(getErrorMessage() === "")
         }
 
         function test_deniedGeolocationByUser() {
-            compare(permissionSpy.count, 0)
             deniedGeolocation = true
             webEngineView.url = Qt.resolvedUrl("geolocation.html")
-            tryCompare(permissionSpy, "count", 1)
+            featurePermissionSpy.wait()
             tryVerify(isHandled, 5000)
             compare(getErrorMessage(), "User denied Geolocation")
         }

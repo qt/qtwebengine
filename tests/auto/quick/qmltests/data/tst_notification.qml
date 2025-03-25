@@ -13,24 +13,21 @@ TestWebEngineView {
 
     property bool permissionRequested: false
     property bool grantPermission: false
-    property var permissionObject
+    property url securityOrigin: ''
 
-    profile.persistentPermissionsPolicy: WebEngineProfile.PersistentPermissionsPolicy.AskEveryTime
+    signal consoleMessage(string message)
 
     SignalSpy {
         id: spyRequest
         target: view
-        signalName: 'permissionRequested'
+        signalName: 'featurePermissionRequested'
     }
 
-    onPermissionRequested: function(perm) {
-        if (perm.permissionType === WebEnginePermission.PermissionType.Notifications) {
+    onFeaturePermissionRequested: function(securityOrigin, feature) {
+        if (feature === WebEngineView.Notifications) {
             view.permissionRequested = true
-            view.permissionObject = perm
-            if (grantPermission)
-                perm.grant()
-            else
-                perm.deny()
+            view.securityOrigin = securityOrigin
+            view.grantFeaturePermission(securityOrigin, feature, grantPermission)
         }
     }
 
@@ -43,9 +40,6 @@ TestWebEngineView {
         }
 
         function init() {
-            if (permissionObject != undefined) {
-                permissionObject.reset()
-            }
             permissionRequested = false
             spyRequest.clear()
         }
@@ -63,14 +57,16 @@ TestWebEngineView {
             view.url = resolverUrl('notification.html')
             verify(view.waitForLoadSucceeded())
 
+            view.runJavaScript('resetPermission()')
             let result = {}
 
             view.runJavaScript('getPermission()', function (permission) { result.permission = permission })
             tryCompare(result, 'permission', 'default')
 
             view.runJavaScript('requestPermission()')
-            tryCompare(spyRequest, "count", 1)
+            spyRequest.wait()
             verify(permissionRequested)
+            compare(spyRequest.count, 1)
 
             view.runJavaScript('getPermission()', function (permission) { result.permission = permission })
             tryCompare(result, 'permission', data.permission)
@@ -83,7 +79,7 @@ TestWebEngineView {
             view.waitForLoadSucceeded()
 
             view.runJavaScript('requestPermission()')
-            tryCompare(spyRequest, "count", 1)
+            spyRequest.wait()
             verify(permissionRequested)
 
             let title = 'Title', message = 'Message', notification = null
@@ -94,7 +90,7 @@ TestWebEngineView {
             compare(notification.title, title)
             compare(notification.message, message)
             compare(notification.direction, Qt.RightToLeft)
-            compare(notification.origin, permissionObject.origin)
+            compare(notification.origin, securityOrigin)
             compare(notification.tag, 'tst')
             compare(notification.language, 'de')
         }

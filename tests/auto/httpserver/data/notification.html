@@ -3,7 +3,9 @@
 <head>
 <title>Desktop Notifications Demo</title>
 <script>
-    function getPermission() { return Notification.permission }
+    function resetPermission() { document.Notification = 'default' }
+
+    function getPermission() { return document.Notification }
 
     function sendNotification(title, body) {
         let notification = new Notification(title, { body: body, dir: 'rtl', lang: 'de', tag: 'tst' })

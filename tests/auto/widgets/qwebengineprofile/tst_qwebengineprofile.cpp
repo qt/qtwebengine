@@ -1139,9 +1139,9 @@ void tst_QWebEngineProfile::queryPermission()
     QFETCH(bool, expectedValid);
 
     QWebEngineProfile profile;
-    // In-memory is the default for otr profiles
-    QVERIFY(profile.persistentPermissionsPolicy() == QWebEngineProfile::PersistentPermissionsPolicy::StoreInMemory);
-
+    // AskEveryTime is the default for otr profiles
+    QVERIFY(profile.persistentPermissionsPolicy() == QWebEngineProfile::PersistentPermissionsPolicy::AskEveryTime);
+    profile.setPersistentPermissionsPolicy(QWebEngineProfile::PersistentPermissionsPolicy::StoreOnDisk);
     QWebEnginePermission permission = profile.queryPermission(url, permissionType);
     bool valid = permission.isValid();
     QVERIFY(valid == expectedValid);
@@ -1172,8 +1172,9 @@ void tst_QWebEngineProfile::queryPermission()
 void tst_QWebEngineProfile::listPermissions()
 {
     QWebEngineProfile profile;
-    // In-memory is the default for otr profiles
-    QVERIFY(profile.persistentPermissionsPolicy() == QWebEngineProfile::PersistentPermissionsPolicy::StoreInMemory);
+    // AskEveryTime is the default for otr profiles
+    QVERIFY(profile.persistentPermissionsPolicy() == QWebEngineProfile::PersistentPermissionsPolicy::AskEveryTime);
+    profile.setPersistentPermissionsPolicy(QWebEngineProfile::PersistentPermissionsPolicy::StoreOnDisk);
 
     QUrl commonUrl = QUrl(QStringLiteral("http://www.bing.com/maps"));
     QWebEnginePermission::PermissionType commonType = QWebEnginePermission::PermissionType::Notifications;
