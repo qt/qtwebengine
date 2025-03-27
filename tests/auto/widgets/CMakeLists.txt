@@ -3,6 +3,7 @@
 
 add_subdirectory(defaultsurfaceformat)
 add_subdirectory(qwebenginepage)
+add_subdirectory(qwebenginepermission)
 add_subdirectory(qwebengineprofile)
 add_subdirectory(qwebengineprofilebuilder)
 add_subdirectory(qwebengineview)

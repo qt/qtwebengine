@@ -75,6 +75,9 @@ TestWebEngineView {
             rejectPendingRequest()
             tryVerify(jsPromiseRejected)
 
+            resetRequestState()
+            wait(1000)
+
             // 2. Accepting request on QML side should either fulfill or reject the
             // Promise on JS side. Due to the potential lack of physical media devices
             // deeper in the content layer we cannot guarantee that the promise will
@@ -85,11 +88,16 @@ TestWebEngineView {
             acceptPendingRequest()
             tryVerify(jsPromiseSettled)
 
+            resetRequestState()
+            wait(1000)
+
             // 3. Media feature permissions are not remembered.
             jsGetUserMedia(row.constraints);
             verifyPermissionType(row.feature)
             acceptPendingRequest()
             tryVerify(jsPromiseSettled)
+
+            resetRequestState()
         }
     }
 
@@ -158,10 +166,12 @@ TestWebEngineView {
     function acceptPendingRequest() {
         if (permissionObject)
             permissionObject.grant()
-        resetRequestState()
     }
 
     function resetRequestState() {
+        if (permissionObject)
+            permissionObject.reset()
+
         permissionObject = undefined
         isDesktopMediaRequestHandled = false
         gotEmptyDesktopMediaRequest = false
@@ -170,7 +180,6 @@ TestWebEngineView {
     function rejectPendingRequest() {
         if (permissionObject)
             permissionObject.deny()
-        resetRequestState()
     }
 
     ////

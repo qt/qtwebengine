@@ -24,6 +24,7 @@ path = ["tests/auto/widgets/qwebenginepage/resources/*",
         "tests/auto/widgets/qwebengineview/resources/*",
         "tests/auto/widgets/qwebengineprofile/resources/*",
         "tests/auto/widgets/qwebengineprofilebuilder/resources/*",
+        "tests/auto/widgets/qwebenginepermission/resources/*",
         "tests/auto/widgets/qwebenginehistory/resources/*",
         "tests/auto/core/certificateerror/resources/*",
         "tests/auto/core/origins/resources/subdir/*",
@@ -121,4 +122,3 @@ precedence = "override"
 comment = "License file."
 SPDX-FileCopyrightText = "None"
 SPDX-License-Identifier = "CC0-1.0"
-
