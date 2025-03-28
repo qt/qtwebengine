@@ -151,7 +151,7 @@ public:
         Qualcomm,
         Samsung,
         Broadcom,
-        VMWare,
+        VMware,
         VirtIO,
 
         // Khronos-registered vendors
@@ -186,7 +186,7 @@ public:
             {0x5143, Qualcomm},
             {0x144D, Samsung},
             {0x14E4, Broadcom},
-            {0x15AD, VMWare},
+            {0x15AD, VMware},
             {0x1AF4, VirtIO},
             {0x10001, Vivante},
             {0x10002, VeriSilicon},
@@ -214,6 +214,8 @@ public:
             return Intel;
         if (deviceName.contains("Nvidia"_L1, Qt::CaseInsensitive))
             return Nvidia;
+        if (deviceName.contains("VMware"_L1, Qt::CaseInsensitive))
+            return VMware;
 
 #if defined(USE_OZONE)
         if (deviceName.contains("Mesa llvmpipe"_L1))
@@ -244,7 +246,7 @@ public:
             {Qualcomm, "Qualcomm"},
             {Samsung, "Samsung"},
             {Broadcom, "Broadcom"},
-            {VMWare, "VMWare"},
+            {VMware, "VMware"},
             {VirtIO, "VirtIO"},
             {Vivante, "Vivante"},
             {VeriSilicon, "VeriSilicon"},
