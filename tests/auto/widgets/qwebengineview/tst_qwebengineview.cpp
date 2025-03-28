@@ -2068,6 +2068,7 @@ void tst_QWebEngineView::inputContextQueryInput()
                  "</body></html>");
     QTRY_COMPARE(loadFinishedSpy.size(), 1);
     QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QTRY_VERIFY(qApp->focusObject());
     QCOMPARE(testContext.infos.size(), 0);
 
     // Set focus on an input field.
