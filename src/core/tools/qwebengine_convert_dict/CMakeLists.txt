@@ -7,10 +7,14 @@ if(QT_FEATURE_webengine_spellchecker AND NOT CMAKE_CROSSCOMPILING)
         TARGET_DESCRIPTION "QtWebEngine Dictionary Conversion Tool"
         INSTALL_DIR ${INSTALL_LIBEXECDIR}
         TOOLS_TARGET WebEngineCore
+        DEFINES TOOLKIT_QT
         SOURCES main.cpp
         INCLUDE_DIRECTORIES
             ../../../3rdparty/chromium/third_party/abseil-cpp
     )
+    if(MSVC AND NOT CLANG)
+        target_compile_options(${dict_target_name} PRIVATE "/Zc:preprocessor")
+    endif()
     if(COMMAND qt_internal_return_unless_building_tools)
         qt_internal_return_unless_building_tools()
     endif()

@@ -11,14 +11,18 @@
 class tst_qtbug_70248: public QObject {
     Q_OBJECT
 public:
-    tst_qtbug_70248(){}
+    static void initMain();
 private slots:
     void test();
 };
 
-void tst_qtbug_70248::test()
+void tst_qtbug_70248::initMain()
 {
     QtWebEngineQuick::initialize();
+}
+
+void tst_qtbug_70248::test()
+{
     QScopedPointer<QQmlApplicationEngine> engine;
     QQuickWebEngineProfile::defaultProfile()->setOffTheRecord(true);
     engine.reset(new QQmlApplicationEngine());

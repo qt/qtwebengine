@@ -1,15 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# this macro is missing in 6.2
-if(NOT COMMAND _qt_internal_validate_all_args_are_parsed)
-    macro(_qt_internal_validate_all_args_are_parsed result)
-        if(DEFINED ${result}_UNPARSED_ARGUMENTS)
-            message(FATAL_ERROR "Unknown arguments (${${result}_UNPARSED_ARGUMENTS}).")
-        endif()
-    endmacro()
-endif()
-
 function(assertTargets)
     cmake_parse_arguments(PARSE_ARGV 0 arg
         "" "" "MODULES;TARGETS"
@@ -627,16 +618,17 @@ endfunction()
 # Function maps TEST_architecture_arch or CMAKE_SYSTEM_PROCESSOR into gn architecture
 function(get_gn_arch result arch)
     set(armList arm armv7-a)
+    set(arm64List arm64 ARM64 aarch64)
     set(mips64List mips64 mipsel64)
     set(x86List i386 i686)
-    set(x64List x86_64 AMD64 x86_64h aarch64)
+    set(x64List x86_64 AMD64 x86_64h)
     if(arch IN_LIST x86List)
         set(${result} "x86" PARENT_SCOPE)
     elseif(arch IN_LIST x64List)
         set(${result} "x64" PARENT_SCOPE)
     elseif(arch IN_LIST armList)
         set(${result} "arm" PARENT_SCOPE)
-    elseif(arch STREQUAL "arm64")
+    elseif(arch IN_LIST arm64List)
         set(${result} "arm64" PARENT_SCOPE)
     elseif(arch STREQUAL "mipsel")
         set(${result} "mipsel" PARENT_SCOPE)
@@ -832,11 +824,16 @@ macro(append_build_type_setup)
         forbid_non_component_debug_builds=false
         treat_warnings_as_errors=false
         use_allocator_shim=false
-        use_partition_alloc=true
         use_partition_alloc_as_malloc=false
         use_custom_libcxx=false
         enable_rust=false # We do not yet support rust
     )
+    # quick hack to compile qtpdf on older andorid sdk
+    if(ANDROID AND ${QT_COMPILER_VERSION_MAJOR} LESS 15)
+        list(APPEND gnArgArg use_partition_alloc=false)
+    else()
+        list(APPEND gnArgArg use_partition_alloc=true)
+    endif()
     if(${config} STREQUAL "Debug")
         list(APPEND gnArgArg is_debug=true symbol_level=2)
         if(WIN32)
@@ -881,7 +878,7 @@ macro(append_build_type_setup)
     if(QT_FEATURE_webengine_jumbo_build)
         list(APPEND gnArgArg jumbo_file_merge_limit=${QT_FEATURE_webengine_jumbo_file_merge_limit})
         if(QT_FEATURE_webengine_jumbo_file_merge_limit LESS_EQUAL 8)
-            list(APPEND gnArgArg jumbo_build_excluded=[\"browser\"])
+            list(APPEND gnArgArg "jumbo_build_excluded=[\"browser\"]")
         endif()
     endif()
 
@@ -894,6 +891,25 @@ macro(append_build_type_setup)
         CONDITION QT_FEATURE_force_asserts
     )
 endmacro()
+
+function(get_clang_version_from_runtime_path result)
+if(CLANG AND CMAKE_CXX_COMPILER)
+    if( NOT DEFINED CLANG_RUNTIME_PATH)
+       execute_process(
+           COMMAND ${CMAKE_CXX_COMPILER} -print-runtime-dir
+           OUTPUT_VARIABLE clang_output
+           ERROR_QUIET
+           OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        cmake_path(CONVERT "${clang_output}" TO_CMAKE_PATH_LIST clang_output NORMALIZE)
+        set(CLANG_RUNTIME_PATH "${clang_output}" CACHE INTERNAL "internal")
+        mark_as_advanced(CLANG_RUNTIME_PATH)
+     endif()
+     string(REGEX MATCH "\\/([0-9.]+)\\/" clang_run_time_path_version "${CLANG_RUNTIME_PATH}")
+     string(REPLACE "/" "" clang_run_time_path_version ${clang_run_time_path_version})
+     set(${result} ${clang_run_time_path_version} PARENT_SCOPE)
+endif()
+endfunction()
 
 macro(append_compiler_linker_sdk_setup)
     if(CMAKE_CXX_COMPILER_LAUNCHER)
@@ -915,12 +931,16 @@ macro(append_compiler_linker_sdk_setup)
             get_filename_component(clangBasePath ${CMAKE_CXX_COMPILER} DIRECTORY)
             get_filename_component(clangBasePath ${clangBasePath} DIRECTORY)
         endif()
-
-        string(REGEX MATCH "[0-9]+" clangVersion ${CMAKE_CXX_COMPILER_VERSION})
+            get_clang_version_from_runtime_path(clang_version)
+        if (NOT DEFINED clang_version)
+            message(FATAL_ERROR "Clang version for runtime is missing."
+                    "Please open bug report.Found clang runtime path: ${CLANG_RUNTIME_PATH}"
+            )
+        endif()
         list(APPEND gnArgArg
             clang_base_path="${clangBasePath}"
+            clang_version="${clang_version}"
             clang_use_chrome_plugins=false
-            clang_version=${clangVersion}
             fatal_linker_warnings=false
         )
 
@@ -931,6 +951,12 @@ macro(append_compiler_linker_sdk_setup)
                 mac_sdk_min="${macSdkVersion}"
                 use_libcxx=true
             )
+            _qt_internal_get_apple_sdk_version(apple_sdk_version)
+            if (apple_sdk_version LESS 13.2)
+                list(APPEND gnArgArg
+                    use_sck=false
+                )
+            endif()
         endif()
         if(IOS)
             list(APPEND gnArgArg
@@ -1124,7 +1150,7 @@ endmacro()
 
 function(add_ninja_command)
     cmake_parse_arguments(PARSE_ARGV 0 arg
-        "" "TARGET;BUILDDIR;MODULE" "OUTPUT;BYPRODUCTS"
+        "" "TARGET;BUILDDIR;MODULE" "OUTPUT;BYPRODUCTS;DEPENDS"
     )
     _qt_internal_validate_all_args_are_parsed(arg)
 
@@ -1144,7 +1170,7 @@ function(add_ninja_command)
         USES_TERMINAL
         VERBATIM
         COMMAND_EXPAND_LISTS
-        DEPENDS run_${arg_MODULE}_NinjaReady
+        DEPENDS run_${arg_MODULE}_NinjaReady ${arg_DEPENDS}
     )
 endfunction()
 
@@ -1174,7 +1200,7 @@ endfunction()
 
 function(add_gn_build_artifacts_to_target)
     cmake_parse_arguments(PARSE_ARGV 0 arg
-        "" "CMAKE_TARGET;NINJA_TARGET;BUILDDIR;MODULE;COMPLETE_STATIC;NINJA_STAMP;NINJA_DATA_STAMP" ""
+        "" "CMAKE_TARGET;NINJA_TARGET;BUILDDIR;MODULE;COMPLETE_STATIC;NINJA_STAMP;NINJA_DATA_STAMP;DEPENDS" ""
     )
     _qt_internal_validate_all_args_are_parsed(arg)
 
@@ -1202,6 +1228,7 @@ function(add_gn_build_artifacts_to_target)
                 OUTPUT ${stamps}
                 BUILDDIR ${arg_BUILDDIR}/${config}/${arch}
                 MODULE ${arg_MODULE}
+                DEPENDS ${arg_DEPENDS}
             )
             add_dependencies(run_${arg_MODULE}_NinjaDone ${target})
             set_target_properties(${arg_CMAKE_TARGET} PROPERTIES
@@ -1275,8 +1302,8 @@ function(add_gn_command)
              -DSOURCE_DIR=${CMAKE_CURRENT_LIST_DIR}
              -DMODULE=${arg_MODULE}
              -DQT_HOST_PATH=${QT_HOST_PATH}
-             -DINSTALL_LIBEXECDIR=${INSTALL_LIBEXECDIR}
-             -DINSTALL_BINDIR=${INSTALL_BINDIR}
+             -DQT6_HOST_INFO_LIBEXECDIR=${QT6_HOST_INFO_LIBEXECDIR}
+             -DQT6_HOST_INFO_BINDIR=${QT6_HOST_INFO_BINDIR}
              -DPython3_EXECUTABLE=${Python3_EXECUTABLE}
              -DGN_THREADS=$ENV{QTWEBENGINE_GN_THREADS}
              -DQT_ALLOW_SYMLINK_IN_PATHS=${QT_ALLOW_SYMLINK_IN_PATHS}
@@ -1414,3 +1441,40 @@ function(add_code_attributions_target)
      )
      add_custom_target(${arg_TARGET} DEPENDS ${arg_OUTPUT})
 endfunction()
+
+macro(qt_webengine_build_and_install_gn)
+    set(suppress_warning "${BUILD_ONLY_GN} ${QT_INTERNAL_CALLED_FROM_CONFIGURE}")
+    qt_internal_project_setup()
+    qt_webengine_externalproject_add(gn
+        SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/src/gn
+        BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR}/src/gn
+        INSTALL_DIR ${PROJECT_BINARY_DIR}/install
+    )
+    qt_internal_set_cmake_build_type()
+    get_install_config(install_config)
+    qt_install(
+        PROGRAMS "${PROJECT_BINARY_DIR}/install/bin/gn${CMAKE_EXECUTABLE_SUFFIX}"
+        CONFIGURATIONS ${install_config}
+        RUNTIME DESTINATION "${INSTALL_LIBEXECDIR}"
+    )
+    unset(suppress_warning)
+    unset(install_config)
+endmacro()
+
+macro(qt_webengine_externalproject_add)
+    list(JOIN CMAKE_OSX_ARCHITECTURES "," OSX_ARCH_STR)
+    externalproject_add(${ARGN}
+        PREFIX      gn
+        USES_TERMINAL_BUILD TRUE
+        LIST_SEPARATOR ","
+        CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release
+                   -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                   -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                   -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                   -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>
+                   -DCMAKE_OSX_ARCHITECTURES=${OSX_ARCH_STR}
+                   -DWEBENGINE_ROOT_BUILD_DIR=${PROJECT_BINARY_DIR}
+                   -DQT_ALLOW_SYMLINK_IN_PATHS=${QT_ALLOW_SYMLINK_IN_PATHS}
+    )
+    unset(OSX_ARCH_STR)
+endmacro()

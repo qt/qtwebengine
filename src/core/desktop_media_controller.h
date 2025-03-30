@@ -15,7 +15,7 @@ class DesktopMediaControllerPrivate;
 
 enum DesktopMediaType { Screen = 0, Window };
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT DesktopMediaListQt : public QObject
+class Q_WEBENGINECORE_EXPORT DesktopMediaListQt : public QObject
 {
     Q_OBJECT
 public:
@@ -35,12 +35,11 @@ Q_SIGNALS:
 private:
     friend class DesktopMediaController;
     friend class DesktopMediaControllerPrivate;
-    bool isInitialized() const;
     explicit DesktopMediaListQt(DesktopMediaType type);
     std::unique_ptr<DesktopMediaListQtPrivate> d;
 };
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT DesktopMediaController : public QObject
+class Q_WEBENGINECORE_EXPORT DesktopMediaController : public QObject
 {
     Q_OBJECT
 public:

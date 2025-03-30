@@ -34,7 +34,7 @@ class SSLCertRequestInfo;
 
 namespace QtWebEngineCore {
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT ClientCertSelectController {
+class Q_WEBENGINECORE_EXPORT ClientCertSelectController {
 public:
     ClientCertSelectController(net::SSLCertRequestInfo *certRequestInfo,
                                std::vector<std::unique_ptr<net::ClientCertIdentity>> clientCerts,

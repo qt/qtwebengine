@@ -188,6 +188,10 @@ def isInChromiumBlacklist(file_path):
               and not file_path.startswith('third_party/node/node_modules/js-tokens/')
               and not file_path.startswith('third_party/node/node_modules/jsesc/')
               and not file_path.startswith('third_party/node/node_modules/jsonschema/')
+              and not file_path.startswith('third_party/node/node_modules/@lit/reactive-element/')
+              and not file_path.startswith('third_party/node/node_modules/lit-element/')
+              and not file_path.startswith('third_party/node/node_modules/lit-html/')
+              and not file_path.startswith('third_party/node/node_modules/lit/')
               and not file_path.startswith('third_party/node/node_modules/lodash.camelcase/')
               and not file_path.startswith('third_party/node/node_modules/lodash.sortby/')
               and not file_path.startswith('third_party/node/node_modules/minimatch/')
@@ -271,6 +275,7 @@ def isInChromiumBlacklist(file_path):
             or '/fuzzer/' in file_path
             or '/fuzzers/' in file_path
             or '/fuzzing/' in file_path
+            and not file_path.endswith('internals_fuzzing.idl')
         ))
         or ('/test' in file_path
          and ('/testdata/' in file_path
@@ -377,21 +382,6 @@ def exportGn():
             copyFile(f, os.path.join(third_party_gn, f))
     print("")
 
-def exportNinja():
-    third_party_upstream_ninja = os.path.join(third_party_upstream, 'ninja')
-    third_party_ninja = os.path.join(third_party, 'ninja')
-    os.makedirs(third_party_ninja);
-    print('exporting contents of:' + third_party_upstream_ninja)
-    os.chdir(third_party_upstream_ninja)
-    files = listFilesInCurrentRepository()
-    print('copying files to ' + third_party_ninja)
-    for i in range(len(files)):
-        printProgress(i+1, len(files))
-        f = files[i].decode()
-        if not isInGitBlacklist(f):
-            copyFile(f, os.path.join(third_party_ninja, f))
-    print("")
-
 def exportChromium():
     third_party_upstream_chromium = os.path.join(third_party_upstream, 'chromium')
     third_party_chromium = os.path.join(third_party, 'chromium')
@@ -456,7 +446,6 @@ if b'true' in ignore_case_setting:
 clearDirectory(third_party)
 
 exportGn()
-exportNinja()
 exportChromium()
 
 print('done.')

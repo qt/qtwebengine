@@ -144,12 +144,10 @@ void AccessibilityTreeFormatterQt::AddProperties(const BrowserAccessibility &nod
 
 std::string AccessibilityTreeFormatterQt::ProcessTreeForOutput(const base::Value::Dict &node) const
 {
-    std::string error_value;
     if (auto error_value = node.FindString("error"))
         return *error_value;
 
     std::string line;
-    std::string role_value;
     if (auto role_value = node.FindString("role"))
         WriteAttribute(true, base::StringPrintf("%s", role_value->c_str()), &line);
 
@@ -166,9 +164,7 @@ std::string AccessibilityTreeFormatterQt::ProcessTreeForOutput(const base::Value
     if (auto description_value = node.FindString("description"))
         WriteAttribute(false, base::StringPrintf("description='%s'", description_value->c_str()), &line);
 
-    int id_value;
-    if (auto maybe_id = node.FindInt("id"))
-        id_value = *maybe_id;
+    int id_value = node.FindInt("id").value_or(0);
     WriteAttribute(false, base::StringPrintf("id=%d", id_value), &line);
 
     return line + "\n";

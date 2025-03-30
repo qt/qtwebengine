@@ -117,9 +117,10 @@ QQuickWebEngineScriptCollection::QQuickWebEngineScriptCollection(QQuickWebEngine
 QQuickWebEngineScriptCollection::~QQuickWebEngineScriptCollection() { }
 
 /*!
-    \qmlmethod void WebEngineScriptCollection::contains(WebEngineScript script)
+    \qmlmethod bool WebEngineScriptCollection::contains(WebEngineScript script)
     \since QtWebEngine 6.2
-    Checks if the specified \a script is in the collection.
+    Returns \c true if the specified \a script is in the collection, \c false
+    otherwise.
     \sa find()
 */
 
@@ -132,7 +133,7 @@ bool QQuickWebEngineScriptCollection::contains(const QWebEngineScript &value) co
     \qmlmethod list<WebEngineScript> WebEngineScriptCollection::find(string name)
     \since QtWebEngine 6.2
     Returns a list of all user script objects with the given \a name.
-    \sa find()
+    \sa contains()
 */
 QList<QWebEngineScript> QQuickWebEngineScriptCollection::find(const QString &name) const
 {
@@ -143,7 +144,7 @@ QList<QWebEngineScript> QQuickWebEngineScriptCollection::find(const QString &nam
     \qmlmethod void WebEngineScriptCollection::insert(WebEngineScript script)
     \since QtWebEngine 6.2
     Inserts a single \a script into the collection.
-    \sa find()
+    \sa remove()
 */
 void QQuickWebEngineScriptCollection::insert(const QWebEngineScript &s)
 {
@@ -154,7 +155,7 @@ void QQuickWebEngineScriptCollection::insert(const QWebEngineScript &s)
     \qmlmethod void WebEngineScriptCollection::insert(list<WebEngineScript> list)
     \since QtWebEngine 6.2
     Inserts a \a list of WebEngineScript values into the user script collection.
-    \sa find()
+    \sa remove()
 */
 void QQuickWebEngineScriptCollection::insert(const QList<QWebEngineScript> &list)
 {

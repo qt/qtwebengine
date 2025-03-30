@@ -13,14 +13,14 @@ WebEngineView {
     property bool deniedGeolocation: false
     property bool geoPermissionRequested: false
 
-    onFeaturePermissionRequested: function(securityOrigin, feature) {
-        if (feature === WebEngineView.Geolocation) {
+    onPermissionRequested: function(perm) {
+        if (perm.permissionType === WebEnginePermission.PermissionType.Geolocation) {
             geoPermissionRequested = true
             if (deniedGeolocation) {
-                webEngineView.grantFeaturePermission(securityOrigin, feature, false)
+                perm.deny()
             }
             else {
-                webEngineView.grantFeaturePermission(securityOrigin, feature, true)
+                perm.grant()
             }
         }
     }

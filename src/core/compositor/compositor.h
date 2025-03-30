@@ -18,11 +18,13 @@ class FrameSinkId;
 
 namespace QtWebEngineCore {
 
+Q_DECLARE_LOGGING_CATEGORY(lcWebEngineCompositor);
+
 // Produces composited frames for display.
 //
 // Used by quick/widgets libraries for accessing the frames and
 // controlling frame swapping.
-class Q_WEBENGINECORE_PRIVATE_EXPORT Compositor
+class Q_WEBENGINECORE_EXPORT Compositor
 {
     struct Binding;
 
@@ -75,7 +77,7 @@ public:
     // Observes the compositor corresponding to the given id.
     //
     // Only one observer can exist per compositor.
-    class Q_WEBENGINECORE_PRIVATE_EXPORT Observer
+    class Q_WEBENGINECORE_EXPORT Observer
     {
     public:
         // Binding to compositor
@@ -90,7 +92,7 @@ public:
 
     protected:
         Observer() = default;
-        ~Observer() { if (m_binding) unbind(); }
+        ~Observer();
 
     private:
         Binding *m_binding = nullptr;
@@ -136,8 +138,8 @@ public:
     virtual void releaseResources();
 
 protected:
-    Compositor(Type type) : m_type(type) { }
-    virtual ~Compositor() { if (m_binding) unbind(); }
+    Compositor(Type type);
+    virtual ~Compositor();
 
 private:
     template<typename T>

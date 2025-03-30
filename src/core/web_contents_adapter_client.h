@@ -16,6 +16,7 @@
 #define WEB_CONTENTS_ADAPTER_CLIENT_H
 
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
+#include <QtWebEngineCore/qwebenginepermission.h>
 
 #include "profile_adapter.h"
 
@@ -26,6 +27,8 @@
 #include <QUrl>
 
 QT_FORWARD_DECLARE_CLASS(QKeyEvent)
+QT_FORWARD_DECLARE_CLASS(QPageLayout)
+QT_FORWARD_DECLARE_CLASS(QPageRanges)
 QT_FORWARD_DECLARE_CLASS(QVariant)
 QT_FORWARD_DECLARE_CLASS(QWebEngineFileSystemAccessRequest)
 QT_FORWARD_DECLARE_CLASS(QWebEngineFindTextResult)
@@ -61,7 +64,7 @@ class WebContentsAdapter;
 class WebContentsDelegateQt;
 class WebEngineSettings;
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT WebContentsAdapterClient {
+class Q_WEBENGINECORE_EXPORT WebContentsAdapterClient {
 public:
     // This must match window_open_disposition_list.h.
     enum WindowOpenDisposition {
@@ -147,6 +150,7 @@ public:
     virtual void titleChanged(const QString&) = 0;
     virtual void urlChanged() = 0;
     virtual void iconChanged(const QUrl&) = 0;
+    virtual void zoomFactorChanged(qreal factor) = 0;
     virtual void loadProgressChanged(int progress) = 0;
     virtual void didUpdateTargetURL(const QUrl&) = 0;
     virtual void selectionChanged() = 0;
@@ -169,16 +173,21 @@ public:
     virtual void windowCloseRejected() = 0;
     virtual void contextMenuRequested(QWebEngineContextMenuRequest *request) = 0;
     virtual void desktopMediaRequested(DesktopMediaController *) = 0;
-    virtual void navigationRequested(int navigationType, const QUrl &url, bool &accepted, bool isMainFrame) = 0;
+    virtual void navigationRequested(int navigationType, const QUrl &url, bool &accepted, bool isMainFrame, bool hasFormData) = 0;
     virtual void requestFullScreenMode(const QUrl &origin, bool fullscreen) = 0;
     virtual bool isFullScreenMode() const = 0;
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) = 0;
     virtual void runFileChooser(QSharedPointer<FilePickerController>) = 0;
     virtual void showColorDialog(QSharedPointer<ColorChooserController>) = 0;
-    virtual void didRunJavaScript(quint64 requestId, const QVariant& result) = 0;
+    virtual void runJavaScript(const QString &script, quint32 worldId, quint64 frameId,
+                               const std::function<void(const QVariant &)> &callback) = 0;
     virtual void didFetchDocumentMarkup(quint64 requestId, const QString& result) = 0;
     virtual void didFetchDocumentInnerText(quint64 requestId, const QString& result) = 0;
-    virtual void didPrintPage(quint64 requestId, QSharedPointer<QByteArray>) = 0;
+    virtual void printToPdf(const QString &filePath, const QPageLayout &layout,
+                            const QPageRanges &ranges, quint64 frameId) = 0;
+    virtual void printToPdf(std::function<void(QSharedPointer<QByteArray>)> &&callback,
+                            const QPageLayout &layout, const QPageRanges &ranges,
+                            quint64 frameId) = 0;
     virtual void didPrintPageToPdf(const QString &filePath, bool success) = 0;
     virtual bool passOnFocus(bool reverse) = 0;
     // returns the last QObject (QWidget/QQuickItem) based object in the accessibility
@@ -186,7 +195,7 @@ public:
     virtual QObject *accessibilityParentObject() = 0;
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) = 0;
     virtual void authenticationRequired(QSharedPointer<AuthenticationDialogController>) = 0;
-    virtual void runFeaturePermissionRequest(ProfileAdapter::PermissionType, const QUrl &securityOrigin) = 0;
+    virtual void runFeaturePermissionRequest(QWebEnginePermission::PermissionType, const QUrl &securityOrigin) = 0;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) = 0;
     virtual void runMouseLockPermissionRequest(const QUrl &securityOrigin) = 0;
     virtual void runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest) = 0;
@@ -207,6 +216,7 @@ public:
     virtual void setToolTip(const QString& toolTipText) = 0;
     virtual ClientType clientType() = 0;
     virtual void printRequested() = 0;
+    virtual void printRequestedByFrame(quint64 frameId) = 0;
     virtual TouchHandleDrawableDelegate * createTouchHandleDelegate(const QMap<int, QImage> &images) = 0;
     virtual void showTouchSelectionMenu(TouchSelectionMenuController *menuController, const QRect &bounds, const QSize &handleSize) = 0;
     virtual void hideTouchSelectionMenu() = 0;
@@ -219,6 +229,7 @@ public:
     virtual WebContentsAdapter* webContentsAdapter() = 0;
     virtual void releaseProfile() = 0;
     virtual void showWebAuthDialog(QWebEngineWebAuthUxRequest *request) = 0;
+    virtual QWebEnginePermission createFeaturePermissionObject(const QUrl &securityOrigin, QWebEnginePermission::PermissionType permissionType) = 0;
 };
 
 } // namespace QtWebEngineCore

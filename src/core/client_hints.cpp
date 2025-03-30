@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 #include "client_hints.h"
 
+#include "profile_qt.h"
 #include "web_contents_delegate_qt.h"
 #include "web_engine_settings.h"
 
@@ -59,6 +60,7 @@ content::BrowserContext *ClientHintsFactory::GetBrowserContextToUse(content::Bro
 // found in the LICENSE file.
 
 ClientHints::ClientHints(content::BrowserContext *context)
+    : context_(context)
 {
 }
 
@@ -81,8 +83,9 @@ void ClientHints::PersistClientHints(const url::Origin &primary_origin,
         return;
 
     blink::EnabledClientHints enabled_hints;
+    ProfileAdapter *profileAdapter = static_cast<ProfileQt *>(context_)->profileAdapter();
     for (auto hint : client_hints) {
-        enabled_hints.SetIsEnabled(hint, true);
+        enabled_hints.SetIsEnabled(hint, profileAdapter->clientHintsEnabled());
     }
     accept_ch_cache_[primary_origin] = enabled_hints;
 }
@@ -103,8 +106,9 @@ void ClientHints::GetAllowedClientHintsFromSource(const url::Origin &origin,
         *client_hints = it->second;
     }
 
+    ProfileAdapter *profileAdapter = static_cast<ProfileQt *>(context_)->profileAdapter();
     for (auto hint : additional_hints_)
-        client_hints->SetIsEnabled(hint, true);
+        client_hints->SetIsEnabled(hint, profileAdapter->clientHintsEnabled());
 }
 
 void ClientHints::SetAdditionalClientHints(const std::vector<network::mojom::WebClientHintsType> &hints)
@@ -158,7 +162,7 @@ bool ClientHints::AreThirdPartyCookiesBlocked(const GURL &url, content::RenderFr
 
 blink::UserAgentMetadata ClientHints::GetUserAgentMetadata()
 {
-    return embedder_support::GetUserAgentMetadata();
+    return static_cast<ProfileQt *>(context_)->userAgentMetadata();
 }
 
 void ClientHints::SetMostRecentMainFrameViewportSize(

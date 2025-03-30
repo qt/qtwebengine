@@ -26,7 +26,7 @@ QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT PrinterWorker : public QObject
+class Q_WEBENGINECORE_EXPORT PrinterWorker : public QObject
 {
     Q_OBJECT
 public:

@@ -17,7 +17,11 @@
 #include <QtTest/qtest.h>
 #include <QtWebEngineQuick/qquickwebengineprofile.h>
 #include <QtWebEngineQuick/qtwebenginequickglobal.h>
+#include <QtWebEngineCore/qtwebenginecore-config.h>
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 #include <qt_webengine_quicktest.h>
+
+#include <cstdio>
 
 #if defined(Q_OS_LINUX) && defined(QT_DEBUG)
 #include <fcntl.h>
@@ -75,7 +79,7 @@ static void stackTrace()
 
     fprintf(stderr, "\n========= Received signal, dumping stack ==============\n");
     char cmd[512];
-    qsnprintf(cmd, 512, "gdb --pid %d 2>/dev/null <<EOF\n"
+    std::snprintf(cmd, 512, "gdb --pid %d 2>/dev/null <<EOF\n"
                         "set prompt\n"
                         "set height 0\n"
                         "thread apply all where full\n"
@@ -95,6 +99,14 @@ static void sigSegvHandler(int signum)
     qFatal("Received signal %d", signum);
 }
 #endif
+
+class TestEnvironment : public QObject
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE bool hasWebRTC() const { return QT_CONFIG(webengine_webrtc); }
+};
 
 class TempDir : public QObject {
     Q_OBJECT
@@ -252,6 +264,9 @@ int main(int argc, char **argv)
     qmlRegisterType<TestInputEvent>("Test.util", 1, 0, "TestInputEvent");
 
     QTEST_SET_MAIN_SOURCE_PATH
+    qmlRegisterSingletonType<TestEnvironment>(
+            "Test.Shared", 1, 0, "TestEnvironment",
+            [&](QQmlEngine *, QJSEngine *) { return new TestEnvironment; });
     qmlRegisterSingletonType<HttpServer>("Test.Shared", 1, 0, "HttpServer", [&] (QQmlEngine *, QJSEngine *) {
         auto server = new HttpServer;
         server->setResourceDirs(

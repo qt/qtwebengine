@@ -21,6 +21,8 @@ NativeSkiaOutputDeviceDirect3D11::NativeSkiaOutputDeviceDirect3D11(
                              shared_image_factory, shared_image_representation_factory,
                              didSwapBufferCompleteCallback)
 {
+    qCDebug(lcWebEngineCompositor, "Native Skia Output Device: Direct3D11");
+
     SkColorType skColorType = kRGBA_8888_SkColorType;
     capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBA_8888)] = skColorType;
     capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBX_8888)] = skColorType;
@@ -37,42 +39,56 @@ QSGTexture *NativeSkiaOutputDeviceDirect3D11::texture(QQuickWindow *win, uint32_
 
     absl::optional<gl::DCLayerOverlayImage> overlayImage = m_frontBuffer->overlayImage();
     if (!overlayImage) {
-        qWarning("No overlay image.");
+        qWarning("D3D: No overlay image.");
         return nullptr;
     }
 
-    QSGRendererInterface *ri = win->rendererInterface();
+    qCDebug(lcWebEngineCompositor, "D3D: Importing DXGI Resource into D3D11 Texture.");
 
-    HRESULT status = S_OK;
-    HANDLE sharedHandle = nullptr;
-    IDXGIResource1 *resource = nullptr;
-    if (!overlayImage->nv12_texture()) {
-        qWarning("No D3D texture.");
+    Q_ASSERT(overlayImage->type() == gl::DCLayerOverlayType::kNV12Texture);
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> chromeTexture = overlayImage->nv12_texture();
+    if (!chromeTexture) {
+        qWarning("D3D: No D3D texture.");
         return nullptr;
     }
-    status = overlayImage->nv12_texture()->QueryInterface(__uuidof(IDXGIResource1),
-                                                          (void **)&resource);
-    Q_ASSERT(status == S_OK);
-    status = resource->CreateSharedHandle(NULL, DXGI_SHARED_RESOURCE_READ, NULL, &sharedHandle);
-    Q_ASSERT(status == S_OK);
-    Q_ASSERT(sharedHandle);
+
+    HRESULT hr;
+
+    Microsoft::WRL::ComPtr<IDXGIResource1> dxgiResource;
+    hr = chromeTexture->QueryInterface(IID_PPV_ARGS(&dxgiResource));
+    Q_ASSERT(SUCCEEDED(hr));
+
+    HANDLE sharedHandle = INVALID_HANDLE_VALUE;
+    hr = dxgiResource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
+                                          &sharedHandle);
+    Q_ASSERT(SUCCEEDED(hr));
+    Q_ASSERT(sharedHandle != INVALID_HANDLE_VALUE);
 
     // Pass texture between two D3D devices:
-    ID3D11Device1 *device = static_cast<ID3D11Device1 *>(
+    QSGRendererInterface *ri = win->rendererInterface();
+    ID3D11Device *device = static_cast<ID3D11Device *>(
             ri->getResource(win, QSGRendererInterface::DeviceResource));
-
-    ID3D11Texture2D *qtTexture;
-    status = device->OpenSharedResource1(sharedHandle, __uuidof(ID3D11Texture2D),
-                                         (void **)&qtTexture);
-    if (status != S_OK) {
-        qWarning("Failed to share D3D11 texture (%s). This will result in failed rendering. Report "
-                 "the bug, and try restarting with QTWEBENGINE_CHROMIUM_FLAGS=--disble-gpu",
-                 qPrintable(QSystemError::windowsComString(status)));
+    if (!device) {
+        qWarning("D3D: No D3D device.");
         ::CloseHandle(sharedHandle);
         return nullptr;
     }
 
+    Microsoft::WRL::ComPtr<ID3D11Device1> device1;
+    hr = device->QueryInterface(IID_PPV_ARGS(&device1));
+    Q_ASSERT(SUCCEEDED(hr));
+
+    ID3D11Texture2D *qtTexture = nullptr;
+    hr = device1->OpenSharedResource1(sharedHandle, IID_PPV_ARGS(&qtTexture));
+    if (FAILED(hr)) {
+        qWarning("D3D: Failed to share D3D11 texture (%ls). This will result in failed rendering. "
+                 "Report the bug, and try restarting with QTWEBENGINE_CHROMIUM_FLAGS=--disble-gpu",
+                 qUtf16Printable(QSystemError::windowsComString(hr)));
+        ::CloseHandle(sharedHandle);
+        return nullptr;
+    }
     Q_ASSERT(qtTexture);
+
     QQuickWindow::CreateTextureOptions texOpts(textureOptions);
     QSGTexture *texture =
             QNativeInterface::QSGD3D11Texture::fromNative(qtTexture, win, size(), texOpts);

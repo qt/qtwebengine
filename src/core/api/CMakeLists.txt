@@ -12,12 +12,14 @@ qt_internal_add_module(WebEngineCore
         qwebenginecertificateerror.cpp qwebenginecertificateerror.h
         qwebengineclientcertificateselection.cpp qwebengineclientcertificateselection.h
         qwebengineclientcertificatestore.cpp qwebengineclientcertificatestore.h
+        qwebengineclienthints.cpp qwebengineclienthints.h
         qwebenginecontextmenurequest.cpp qwebenginecontextmenurequest.h qwebenginecontextmenurequest_p.h
         qwebenginecookiestore.cpp qwebenginecookiestore.h qwebenginecookiestore_p.h
         qwebenginedesktopmediarequest.cpp qwebenginedesktopmediarequest.h qwebenginedesktopmediarequest_p.h
         qwebenginedownloadrequest.cpp qwebenginedownloadrequest.h qwebenginedownloadrequest_p.h
         qwebenginefilesystemaccessrequest.cpp qwebenginefilesystemaccessrequest.h
         qwebenginefindtextresult.cpp qwebenginefindtextresult.h
+        qwebengineframe.cpp qwebengineframe.h
         qwebenginefullscreenrequest.cpp qwebenginefullscreenrequest.h
         qwebenginehistory.cpp qwebenginehistory.h qwebenginehistory_p.h
         qwebenginehttprequest.cpp qwebenginehttprequest.h
@@ -27,6 +29,7 @@ qt_internal_add_module(WebEngineCore
         qwebenginenewwindowrequest.cpp qwebenginenewwindowrequest.h qwebenginenewwindowrequest_p.h
         qwebenginenotification.cpp qwebenginenotification.h
         qwebenginepage.cpp qwebenginepage.h qwebenginepage_p.h
+        qwebenginepermission.cpp qwebenginepermission.h qwebenginepermission_p.h
         qwebengineprofile.cpp qwebengineprofile.h qwebengineprofile_p.h
         qwebenginequotarequest.cpp qwebenginequotarequest.h
         qwebengineregisterprotocolhandlerrequest.cpp qwebengineregisterprotocolhandlerrequest.h
@@ -42,12 +45,14 @@ qt_internal_add_module(WebEngineCore
         qwebenginewebauthuxrequest.cpp qwebenginewebauthuxrequest.h qwebenginewebauthuxrequest_p.h
     DEFINES
         BUILDING_CHROMIUM
+        TOOLKIT_QT
     INCLUDE_DIRECTORIES
         ../
         ../../3rdparty/chromium
         ../../3rdparty/chromium/third_party/abseil-cpp
         ../../3rdparty/chromium/third_party/perfetto/include
         ../../3rdparty/chromium/third_party/boringssl/src/include
+        ../../3rdparty/chromium/base/allocator/partition_allocator/src
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
@@ -63,9 +68,12 @@ qt_internal_add_module(WebEngineCore
 
 set_target_properties(WebEngineCore PROPERTIES QTWEBENGINEPROCESS_NAME ${qtWebEngineProcessName})
 set_target_properties(WebEngineCore PROPERTIES CXX_STANDARD 20)
-
 # Chromium included headers are not clean
 qt_skip_warnings_are_errors(WebEngineCore)
+
+if(MSVC AND NOT CLANG)
+    target_compile_options(WebEngineCore PRIVATE "/Zc:preprocessor")
+endif()
 
 if(CLANG OR GCC)
     target_compile_options(WebEngineCore PRIVATE

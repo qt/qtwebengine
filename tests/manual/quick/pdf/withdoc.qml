@@ -19,6 +19,11 @@ Window {
         onPasswordRequired: function() { passwordDialog.open() }
     }
 
+    Component.onCompleted: {
+        if (Application.arguments.length > 2)
+            doc.source = Application.arguments[Application.arguments.length - 1]
+    }
+
     FileDialog {
         id: fileDialog
         title: "Open a PDF file"
@@ -85,6 +90,7 @@ Window {
                 PdfPageImage {
                     id: image
                     document: doc
+                    retainWhileLoading: true
 
                     property real zoomFactor: Math.sqrt(2)
 

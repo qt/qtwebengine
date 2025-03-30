@@ -13,7 +13,7 @@ else()
     find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT)
     find_program(Python3_EXECUTABLE NAMES python3 python HINTS $ENV{PYTHON3_PATH})
     if(NOT Python3_EXECUTABLE)
-        find_package(Python3 3.6)
+        find_package(Python3 3.8)
     endif()
     find_package(GPerf)
     find_package(BISON)
@@ -52,11 +52,16 @@ if(PkgConfig_FOUND)
     pkg_check_modules(LCMS2 lcms2)
     pkg_check_modules(FREETYPE freetype2 IMPORTED_TARGET)
     pkg_check_modules(LIBXML2 libxml-2.0 libxslt IMPORTED_TARGET)
-    pkg_check_modules(FFMPEG libavcodec libavformat libavutil IMPORTED_TARGET)
+    pkg_check_modules(FFMPEG libavcodec>=60.31.102
+                             libavformat>=60.16.100
+                             libavutil>=58.29.100
+                             IMPORTED_TARGET)
     pkg_check_modules(OPUS opus>=1.3.1)
     pkg_check_modules(VPX vpx>=1.10.0 IMPORTED_TARGET)
     pkg_check_modules(LIBPCI libpci)
     pkg_check_modules(LIBOPENJP2 libopenjp2)
+    pkg_check_modules(XKBCOMMON xkbcommon)
+    pkg_check_modules(XKBFILE xkbfile)
 endif()
 
 if(Python3_EXECUTABLE)
@@ -429,7 +434,7 @@ qt_feature("webengine-system-libpci" PRIVATE
 )
 
 qt_feature("webengine-ozone-x11" PRIVATE
-    LABEL "Support GLX on qpa-xcb"
+    LABEL "Support X11 on qpa-xcb"
     CONDITION LINUX
         AND TARGET Qt::Gui
         AND QT_FEATURE_xcb
@@ -442,6 +447,8 @@ qt_feature("webengine-ozone-x11" PRIVATE
         AND XRANDR_FOUND
         AND XTST_FOUND
         AND XSHMFENCE_FOUND
+        AND XKBCOMMON_FOUND
+        AND XKBFILE_FOUND
 )
 
 #### Support Checks
@@ -505,7 +512,7 @@ add_check_for_support(
 add_check_for_support(
    MODULES QtWebEngine QtPdf
    CONDITION Python3_EXECUTABLE
-   MESSAGE "Python version 3.6 or later is required."
+   MESSAGE "Python version 3.8 or later is required."
 )
 add_check_for_support(
    MODULES QtWebEngine QtPdf
@@ -562,21 +569,7 @@ add_check_for_support(
     CONDITION NOT LINUX OR NOT QT_FEATURE_webengine_system_ffmpeg OR TEST_libavformat
     MESSAGE "Unmodified ffmpeg >= 5.0 is not supported."
 )
-# FIXME: This prevents non XCB Linux builds from building:
-set(xcbSupport X11 LIBDRM XCOMPOSITE XCURSOR XRANDR XI XPROTO XSHMFENCE XTST)
-foreach(xs ${xcbSupport})
-    if(${xs}_FOUND)
-       set(xcbErrorMessage "${xcbErrorMessage} ${xs}:YES")
-    else()
-       set(xcbErrorMessage "${xcbErrorMessage} ${xs}:NO")
-    endif()
-endforeach()
-add_check_for_support(
-   MODULES QtWebEngine
-   CONDITION NOT LINUX OR NOT QT_FEATURE_xcb OR QT_FEATURE_webengine_ozone_x11
-   MESSAGE "Could not find all necessary libraries for qpa-xcb support.\
-${xcbErrorMessage}"
-)
+
 add_check_for_support(
    MODULES QtWebEngine
    CONDITION MSVC OR
@@ -594,11 +587,21 @@ add_check_for_support(
        (LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR
        (APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") OR
        (ANDROID AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR
-       (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
-       (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+       (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
    MESSAGE
        "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
 )
+
+if (LINUX OR MINGW)
+    add_check_for_support(
+        MODULES QtWebEngine QtPdf
+        CONDITION NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
+                  NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0
+        MESSAGE
+            "GCC build requires version 10.0 or later. Version ${CMAKE_CXX_COMPILER_VERSION} is not supported."
+    )
+endif()
+
 if(WIN32)
     if(MSVC)
         if(MSVC_TOOLSET_VERSION EQUAL 142) # VS 2019 (16.0)
@@ -701,6 +704,25 @@ qt_configure_add_report_entry(
     MESSAGE "Building fat libray with device and simulator architectures will disable NEON."
     CONDITION IOS AND simulator AND device AND QT_FEATURE_qtpdf_build
 )
+
+if(LINUX AND QT_FEATURE_xcb AND TARGET Qt::Gui)
+    set(ozone_x11_support X11 LIBDRM XCOMPOSITE XCURSOR XRANDR XI XPROTO XSHMFENCE XTST XKBCOMMON XKBFILE)
+    set(ozone_x11_error OFF)
+    foreach(xs ${ozone_x11_support})
+        if(NOT ${xs}_FOUND)
+            set(ozone_x11_error ON)
+            set(ozone_x11_error_message "${ozone_x11_error_message}\n-- ${xs} libray not found")
+        endif()
+    endforeach()
+    if(ozone_x11_error)
+        qt_configure_add_report_entry(
+            TYPE WARNING
+            MESSAGE
+            "Could not find all necessary libraries for qpa-xcb support.${ozone_x11_error_message}"
+        )
+    endif()
+endif()
+
 if(PRINT_BFD_LINKER_WARNING)
     qt_configure_add_report_entry(
         TYPE WARNING

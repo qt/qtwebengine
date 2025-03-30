@@ -12,6 +12,7 @@ qt_internal_add_test(tst_qmltests
         Qt::QuickTest
         Qt::TestPrivate
         Qt::WebEngineQuick
+        Qt::WebEngineCorePrivate
         Test::HttpServer
         Test::Util
 )
@@ -62,6 +63,11 @@ set(testList
     tst_viewSource.qml
     tst_save.qml
 )
+
+# QTBUG-128652
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "(arm|aarch).*64" AND LINUX)
+    list(REMOVE_ITEM testList tst_faviconDatabase.qml)
+endif()
 
 if(QT_FEATURE_webengine_webchannel)
     list(APPEND testList tst_webchannel.qml)

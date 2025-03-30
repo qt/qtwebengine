@@ -3,7 +3,7 @@
 
 /*!
     \qmltype WebEngineDownloadRequest
-    \instantiates QWebEngineDownloadRequest
+    \nativetype QWebEngineDownloadRequest
     \inqmlmodule QtWebEngine
     \brief Provides information about a download.
 

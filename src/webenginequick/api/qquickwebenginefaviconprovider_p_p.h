@@ -68,7 +68,7 @@ private:
     QList<QPointer<QQuickWebEngineView>> m_processedViews;
 };
 
-class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineFaviconProvider : public QQuickAsyncImageProvider
+class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineFaviconProvider : public QQuickAsyncImageProvider
 {
     Q_OBJECT
 

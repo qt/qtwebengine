@@ -12,7 +12,10 @@ MainWindow::MainWindow(const QUrl& url)
 
     QFile file;
     file.setFileName(":/jquery.min.js");
-    file.open(QIODevice::ReadOnly);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qFatal("Failed to read jQuery file %s: %s", qPrintable(file.fileName()),
+               qPrintable(file.errorString()));
+    }
     jQuery = file.readAll();
     jQuery.append("\nvar qt = { 'jQuery': jQuery.noConflict(true) };");
     file.close();

@@ -8,7 +8,10 @@
 #include <QtWebEngineCore/qwebengineclientcertificateselection.h>
 #include <QtWebEngineCore/qwebenginedownloadrequest.h>
 #include <QtWebEngineCore/qwebenginequotarequest.h>
+#include <QtWebEngineCore/qwebengineframe.h>
+#include <QtWebEngineCore/qwebenginepermission.h>
 
+#include <QtCore/qanystringview.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
 #include <QtGui/qpagelayout.h>
@@ -16,6 +19,7 @@
 #include <QtGui/qtgui-config.h>
 
 #include <functional>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -49,8 +53,8 @@ class Q_WEBENGINECORE_EXPORT QWebEnginePage : public QObject
     Q_PROPERTY(QString selectedText READ selectedText)
     Q_PROPERTY(bool hasSelection READ hasSelection)
     Q_PROPERTY(QUrl requestedUrl READ requestedUrl)
-    Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor)
-    Q_PROPERTY(QString title READ title)
+    Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged)
+    Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(QUrl iconUrl READ iconUrl NOTIFY iconUrlChanged)
     Q_PROPERTY(QIcon icon READ icon NOTIFY iconChanged)
@@ -145,12 +149,17 @@ public:
     };
     Q_ENUM(WebWindowType)
 
+#if QT_DEPRECATED_SINCE(6, 8)
     enum PermissionPolicy {
-        PermissionUnknown,
-        PermissionGrantedByUser,
-        PermissionDeniedByUser
+        PermissionUnknown Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::State::Ask instead"),
+        PermissionGrantedByUser Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::State::Granted instead"),
+        PermissionDeniedByUser Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::State::Denied instead")
     };
     Q_ENUM(PermissionPolicy)
+#endif
 
     // must match WebContentsAdapterClient::NavigationType
     enum NavigationType {
@@ -164,17 +173,31 @@ public:
     };
     Q_ENUM(NavigationType)
 
+#if QT_DEPRECATED_SINCE(6, 8)
     enum Feature {
-        Notifications = 0,
-        Geolocation = 1,
-        MediaAudioCapture = 2,
-        MediaVideoCapture,
-        MediaAudioVideoCapture,
-        MouseLock,
-        DesktopVideoCapture,
-        DesktopAudioVideoCapture
+        Notifications Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::Notifications instead") = 0,
+        Geolocation Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::Geolocation instead") = 1,
+        MediaAudioCapture Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::MediaAudioCapture instead") = 2,
+        MediaVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::MediaVideoCapture instead"),
+        MediaAudioVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::MediaAudioVideoCapture instead"),
+        MouseLock Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::MouseLock instead"),
+        DesktopVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::DesktopVideoCapture instead"),
+        DesktopAudioVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::DesktopAudioVideoCapture instead"),
+        ClipboardReadWrite Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::ClipboardReadWrite instead"),
+        LocalFontsAccess Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use QWebEnginePermission::PermissionType::LocalFontsAccess instead"),
     };
     Q_ENUM(Feature)
+#endif
 
     // Ex-QWebFrame enum
 
@@ -232,7 +255,11 @@ public:
 
     void findText(const QString &subString, FindFlags options = {}, const std::function<void(const QWebEngineFindTextResult &)> &resultCallback = std::function<void(const QWebEngineFindTextResult &)>());
 
+#if QT_DEPRECATED_SINCE(6, 8)
+    QT_DEPRECATED_VERSION_X_6_8(
+        "Setting permissions through QWebEnginePage has been deprecated. Please use QWebEnginePermission instead.")
     void setFeaturePermission(const QUrl &securityOrigin, Feature feature, PermissionPolicy policy);
+#endif
 
     bool isLoading() const;
 
@@ -299,6 +326,9 @@ public:
     bool isVisible() const;
     void setVisible(bool visible);
 
+    QWebEngineFrame mainFrame();
+    std::optional<QWebEngineFrame> findFrameByName(QAnyStringView name);
+
     void acceptAsNewWindow(QWebEngineNewWindowRequest &request);
 
 Q_SIGNALS:
@@ -312,9 +342,18 @@ Q_SIGNALS:
     void geometryChangeRequested(const QRect &geom);
     void windowCloseRequested();
 
+#if QT_DEPRECATED_SINCE(6, 8)
+    QT_MOC_COMPAT QT_DEPRECATED_VERSION_X_6_8(
+        "The signal has been deprecated; please use permissionRequested instead.")
     void featurePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature);
+    QT_MOC_COMPAT QT_DEPRECATED_VERSION_X_6_8(
+        "The signal has been deprecated, and no longer functions.")
     void featurePermissionRequestCanceled(const QUrl &securityOrigin, QWebEnginePage::Feature feature);
+#endif // QT_DEPRECATED_SINCE(6, 8)
+
     void fullScreenRequested(QWebEngineFullScreenRequest fullScreenRequest);
+    void permissionRequested(QWebEnginePermission permissionRequest);
+
 #if QT_DEPRECATED_SINCE(6, 5)
     QT_DEPRECATED_VERSION_X_6_5("Requesting host quota is no longer supported.")
     void quotaRequested(QWebEngineQuotaRequest quotaRequest);
@@ -337,6 +376,7 @@ Q_SIGNALS:
     void iconUrlChanged(const QUrl &url);
     void iconChanged(const QIcon &icon);
 
+    void zoomFactorChanged(qreal factor);
     void scrollPositionChanged(const QPointF &position);
     void contentsSizeChanged(const QSizeF &size);
     void audioMutedChanged(bool muted);
@@ -345,6 +385,7 @@ Q_SIGNALS:
 
     void pdfPrintingFinished(const QString &filePath, bool success);
     void printRequested();
+    void printRequestedByFrame(QWebEngineFrame frame);
 
     void visibleChanged(bool visible);
 

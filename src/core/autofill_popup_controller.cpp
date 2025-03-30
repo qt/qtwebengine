@@ -9,6 +9,8 @@
 
 namespace QtWebEngineCore {
 
+using SuggestionPosition = autofill::AutofillPopupDelegate::SuggestionPosition;
+
 AutofillPopupController::AutofillPopupController(AutofillPopupControllerPrivate *dd)
 {
     Q_ASSERT(dd);
@@ -26,7 +28,7 @@ void AutofillPopupController::setCurrentIndex(const QModelIndex &index)
 
     if (m_currentIndex.isValid()) {
         const autofill::Suggestion &suggestion = d->suggestions[m_currentIndex.row()];
-        d->delegate->DidSelectSuggestion(suggestion, autofill::AutofillSuggestionTriggerSource::kFormControlElementClicked);
+        d->delegate->DidSelectSuggestion(suggestion);
     }
 
     Q_EMIT currentIndexChanged(index);
@@ -79,7 +81,7 @@ void AutofillPopupController::acceptSuggestion()
 
     const int index = m_currentIndex.row();
     const autofill::Suggestion &suggestion = d->suggestions[index];
-    d->delegate->DidAcceptSuggestion(suggestion, index, autofill::AutofillSuggestionTriggerSource::kFormControlElementClicked);
+    d->delegate->DidAcceptSuggestion(suggestion, SuggestionPosition{ .row = index });
 }
 
 void AutofillPopupController::notifyPopupShown()

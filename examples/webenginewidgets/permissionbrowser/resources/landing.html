@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Permissions example page</title>
+        <script>
+            function copyText() {
+                navigator.clipboard.writeText(document.getElementById("copyTextInput").value);
+            }
+
+            function pasteText() {
+                navigator.clipboard.readText()
+                    .then((text) => (
+                        document.getElementById("pasteTextInput").value = text
+                    ))
+                    .catch((err) => (
+                        document.getElementById("pasteTextInput").value = "<permission denied>"
+                    ));
+            }
+
+            function showNotification() {
+                new Notification("Example notification", {
+                    body: "Notification contents",
+                    tag: "notifTag",
+                    lang: "",
+                    dir: "auto",
+                    icon: "./3rdparty/go-next.png"
+                });
+            }
+
+            function tryShowNotification() {
+                if (Notification.permission !== "granted") {
+                    Notification.requestPermission()
+                        .then((permission) => {
+                            if (permission === "granted") { showNotification() }
+
+                        })
+                        .catch((err) => (
+                            document.getElementById("pasteTextInput").value = err
+                        ));
+                } else {
+                    showNotification();
+                }
+            }
+
+            function listFonts() {
+                var fontSelect = document.getElementById("fontSelect");
+                var i, length = fontSelect.options.length - 1;
+                for (i = length; i >= 0; i--) {
+                    fontSelect.remove(i);
+                }
+
+                window.queryLocalFonts()
+                    .then((fontsList) => {
+                        for (const font of fontsList) {
+                            fontSelect.add(new Option(text = font.fullName));
+                        }
+                    })
+                    .catch()
+            }
+        </script>
+    </head>
+    <body>
+        <h1>Permission Browser Example</h1>
+        <div>
+            <h2>Clipboard</h2>
+            <div>
+                <button onclick="copyText()">Copy text</button>
+                <input id="copyTextInput" value="Example text"></input>
+            </div>
+            <div>
+                <button onclick="pasteText()">Paste text</button>
+                <input id="pasteTextInput" placeholder="Text will be pasted here"></input>
+            </div>
+        </div>
+        <div>
+            <h2>Notifications</h2>
+            <div>
+                <button onclick="tryShowNotification()">Show notification</button>
+            </div>
+        </div>
+        <div>
+            <h2>Local fonts</h2>
+            <button onclick="listFonts()">List fonts</button>
+            <select id="fontSelect"></select>
+        </div>
+    </body>
+</html>

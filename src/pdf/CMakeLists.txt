@@ -125,6 +125,7 @@ foreach(arch ${archs})
           enable_swiftshader_vulkan=false
           angle_enable_swiftshader=false
           dawn_use_swiftshader=false
+          use_cups=false
           use_dawn=false
           build_dawn_tests=false
           enable_ipc_fuzzer=false
@@ -253,6 +254,7 @@ add_gn_build_artifacts_to_target(
     CMAKE_TARGET Pdf
     NINJA_TARGET QtPdf
     MODULE pdf
+    DEPENDS Pdf_sync_headers
     BUILDDIR ${buildDir}
     COMPLETE_STATIC TRUE
     NINJA_STAMP QtPdf.stamp

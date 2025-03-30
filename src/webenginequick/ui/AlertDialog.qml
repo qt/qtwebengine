@@ -8,28 +8,10 @@ import QtQuick.Layouts
 Dialog {
     property alias text: message.text
     property bool handled: false
-    signal accepted()
-    signal rejected()
     title: qsTr("Alert Dialog")
     modal: false
     anchors.centerIn: parent
     objectName: "alertDialog"
-
-    //handle the case where users simply closes the dialog
-    onVisibleChanged: {
-        if (visible == false && handled == false) {
-            handled = true;
-            rejected();
-        } else {
-            handled = false;
-        }
-    }
-
-    function acceptDialog() {
-        accepted();
-        handled = true;
-        close();
-    }
 
     ColumnLayout {
         id: rootLayout
@@ -58,7 +40,7 @@ Dialog {
         Button {
             Layout.alignment: Qt.AlignHCenter
             text: qsTr("OK")
-            onClicked: acceptDialog()
+            onClicked: accept()
         }
     }
 }

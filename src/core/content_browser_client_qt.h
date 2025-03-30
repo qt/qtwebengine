@@ -10,17 +10,10 @@
 namespace content {
 class BrowserContext;
 class BrowserMainParts;
-
-#if QT_CONFIG(webengine_pepper_plugins)
-class BrowserPpapiHost;
-#endif
-
 class DevToolsManagerDelegate;
 class RenderFrameHost;
 class RenderProcessHost;
-class ResourceContext;
 class WebContents;
-struct MainFunctionParams;
 struct Referrer;
 } // namespace content
 
@@ -150,15 +143,13 @@ public:
     void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::PosixFileDescriptorInfo* mappings) override;
 #endif
 
-    std::unique_ptr<content::LoginDelegate> CreateLoginDelegate(
-            const net::AuthChallengeInfo &auth_info,
-            content::WebContents *web_contents,
-            const content::GlobalRequestID& request_id,
-            bool is_request_for_main_frame,
-            const GURL &url,
-            scoped_refptr<net::HttpResponseHeaders> response_headers,
-            bool first_auth_attempt,
-            LoginAuthRequiredCallback auth_required_callback) override;
+    std::unique_ptr<content::LoginDelegate>
+    CreateLoginDelegate(const net::AuthChallengeInfo &auth_info, content::WebContents *web_contents,
+                        content::BrowserContext *browser_context,
+                        const content::GlobalRequestID &request_id, bool is_request_for_main_frame,
+                        const GURL &url, scoped_refptr<net::HttpResponseHeaders> response_headers,
+                        bool first_auth_attempt,
+                        LoginAuthRequiredCallback auth_required_callback) override;
 
     bool HandleExternalProtocol(
             const GURL &url,
@@ -174,10 +165,12 @@ public:
             content::RenderFrameHost *initiator_document,
             mojo::PendingRemote<network::mojom::URLLoaderFactory> *out_factory) override;
 
-    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> CreateURLLoaderThrottles(
-            const network::ResourceRequest &request, content::BrowserContext *browser_context,
-            const base::RepeatingCallback<content::WebContents *()> &wc_getter,
-            content::NavigationUIData *navigation_ui_data, int frame_tree_node_id) override;
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
+    CreateURLLoaderThrottles(const network::ResourceRequest &request,
+                             content::BrowserContext *browser_context,
+                             const base::RepeatingCallback<content::WebContents *()> &wc_getter,
+                             content::NavigationUIData *navigation_ui_data, int frame_tree_node_id,
+                             absl::optional<int64_t> navigation_id) override;
 
     std::vector<std::unique_ptr<content::NavigationThrottle>> CreateThrottlesForNavigation(
             content::NavigationHandle *navigation_handle) override;
@@ -214,9 +207,8 @@ public:
                                        cert_verifier::mojom::CertVerifierCreationParams *cert_verifier_creation_params) override;
 
     std::vector<base::FilePath> GetNetworkContextsParentDirectory() override;
-    void RegisterNonNetworkNavigationURLLoaderFactories(int frame_tree_node_id,
-                                                        ukm::SourceIdObj ukm_source_id,
-                                                        NonNetworkURLLoaderFactoryMap *factories) override;
+    void RegisterNonNetworkNavigationURLLoaderFactories(
+            int frame_tree_node_id, NonNetworkURLLoaderFactoryMap *factories) override;
     void RegisterNonNetworkSubresourceURLLoaderFactories(int render_process_id, int render_frame_id,
                                                          const absl::optional<url::Origin>& request_initiator_origin,
                                                          NonNetworkURLLoaderFactoryMap *factories) override;
@@ -224,16 +216,15 @@ public:
                                                                 NonNetworkURLLoaderFactoryMap* factories) override;
     void RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(content::BrowserContext* browser_context,
                                                                  NonNetworkURLLoaderFactoryMap* factories) override;
-    void SiteInstanceGotProcess(content::SiteInstance *site_instance) override;
+    void SiteInstanceGotProcessAndSite(content::SiteInstance *site_instance) override;
     base::flat_set<std::string> GetPluginMimeTypesWithExternalHandlers(content::BrowserContext *browser_context) override;
 
     std::unique_ptr<content::WebContentsViewDelegate> GetWebContentsViewDelegate(content::WebContents *web_contents) override;
 
     static std::string getUserAgent();
-    static blink::UserAgentMetadata getUserAgentMetadata();
 
     std::string GetUserAgent() override { return getUserAgent(); }
-    blink::UserAgentMetadata GetUserAgentMetadata() override { return getUserAgentMetadata(); }
+    blink::UserAgentMetadata GetUserAgentMetadata() override;
     std::string GetProduct() override;
 
     content::WebAuthenticationDelegate *GetWebAuthenticationDelegate() override;

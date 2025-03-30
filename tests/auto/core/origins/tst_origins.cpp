@@ -1646,9 +1646,8 @@ public:
     }
 
 protected:
-    void javaScriptConsoleMessage(QWebEnginePage::JavaScriptConsoleMessageLevel level,
-                                  const QString &message, int lineNumber,
-                                  const QString &sourceID) override
+    void javaScriptConsoleMessage(QWebEnginePage::JavaScriptConsoleMessageLevel,
+                                  const QString &message, int, const QString &) override
     {
         qCritical() << "js:" << message;
         emit jsCalled();

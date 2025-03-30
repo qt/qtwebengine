@@ -5,6 +5,7 @@
 #define QWEBENGINEPROFILE_H
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
+#include <QtWebEngineCore/qwebenginepermission.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qscopedpointer.h>
@@ -17,6 +18,7 @@ QT_BEGIN_NAMESPACE
 
 class QUrl;
 class QWebEngineClientCertificateStore;
+class QWebEngineClientHints;
 class QWebEngineCookieStore;
 class QWebEngineDownloadRequest;
 class QWebEngineNotification;
@@ -48,6 +50,13 @@ public:
     };
     Q_ENUM(PersistentCookiesPolicy)
 
+    enum class PersistentPermissionsPolicy : quint8 {
+        AskEveryTime = 0,
+        StoreInMemory,
+        StoreOnDisk,
+    };
+    Q_ENUM(PersistentPermissionsPolicy)
+
     QString storageName() const;
     bool isOffTheRecord() const;
 
@@ -69,6 +78,9 @@ public:
     PersistentCookiesPolicy persistentCookiesPolicy() const;
     void setPersistentCookiesPolicy(QWebEngineProfile::PersistentCookiesPolicy);
 
+    PersistentPermissionsPolicy persistentPermissionsPolicy() const;
+    void setPersistentPermissionsPolicy(QWebEngineProfile::PersistentPermissionsPolicy);
+
     int httpCacheMaximumSize() const;
     void setHttpCacheMaximumSize(int maxSize);
 
@@ -81,6 +93,7 @@ public:
 
     QWebEngineSettings *settings() const;
     QWebEngineScriptCollection *scripts() const;
+    QWebEngineClientHints *clientHints() const;
 
     const QWebEngineUrlSchemeHandler *urlSchemeHandler(const QByteArray &) const;
     void installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *);
@@ -107,6 +120,11 @@ public:
 
     void requestIconForPageURL(const QUrl &url, int desiredSizeInPixel, std::function<void(const QIcon &, const QUrl &, const QUrl &)> iconAvailableCallback) const;
     void requestIconForIconURL(const QUrl &url, int desiredSizeInPixel, std::function<void(const QIcon &, const QUrl &)> iconAvailableCallback) const;
+
+    QWebEnginePermission queryPermission(const QUrl &securityOrigin, QWebEnginePermission::PermissionType permissionType) const;
+    QList<QWebEnginePermission> listAllPermissions() const;
+    QList<QWebEnginePermission> listPermissionsForOrigin(const QUrl &securityOrigin) const;
+    QList<QWebEnginePermission> listPermissionsForPermissionType(QWebEnginePermission::PermissionType permissionType) const;
 
     static QWebEngineProfile *defaultProfile();
 

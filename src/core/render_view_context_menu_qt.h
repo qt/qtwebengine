@@ -15,13 +15,13 @@
 #ifndef RENDER_VIEW_CONTEXT_MENU_QT_H
 #define RENDER_VIEW_CONTEXT_MENU_QT_H
 
-#include "web_contents_adapter_client.h"
+#include "qtwebenginecoreglobal.h"
 
 QT_FORWARD_DECLARE_CLASS(QWebEngineContextMenuRequest)
 
 namespace QtWebEngineCore {
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT RenderViewContextMenuQt
+class Q_WEBENGINECORE_EXPORT RenderViewContextMenuQt
 {
 public:
     enum ContextMenuItem {

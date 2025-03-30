@@ -5,6 +5,7 @@
 #define BROWSER_MESSAGE_FILTER_QT_H
 
 #include "base/functional/callback.h"
+#include "content/common/buildflags.h"
 #include "content/public/browser/browser_message_filter.h"
 
 class GURL;
@@ -20,8 +21,9 @@ public:
     BrowserMessageFilterQt(int render_process_id, Profile *profile);
 
 private:
+#if BUILDFLAG(CONTENT_ENABLE_LEGACY_IPC)
     bool OnMessageReceived(const IPC::Message& message) override;
-
+#endif
 
     void OnAllowStorageAccess(int render_frame_id,
                               const GURL &origin_url,

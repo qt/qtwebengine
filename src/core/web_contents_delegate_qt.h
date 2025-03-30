@@ -106,7 +106,9 @@ public:
     void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
     void RequestToLockMouse(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target) override;
     void BeforeUnloadFired(content::WebContents* tab, bool proceed, bool* proceed_to_fire_unload) override;
-    bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host, const GURL& security_origin, blink::mojom::MediaStreamType type) override;
+    bool CheckMediaAccessPermission(content::RenderFrameHost *render_frame_host,
+                                    const url::Origin &security_origin,
+                                    blink::mojom::MediaStreamType type) override;
     void RegisterProtocolHandler(content::RenderFrameHost* frame_host, const std::string& protocol, const GURL& url, bool user_gesture) override;
     void UnregisterProtocolHandler(content::RenderFrameHost* frame_host, const std::string& protocol, const GURL& url, bool user_gesture) override;
     bool TakeFocus(content::WebContents *source, bool reverse) override;
@@ -132,11 +134,12 @@ public:
                                   content::RenderFrameHost *render_frame_host,
                                   bool is_full_page) override;
 
+    void emitLoadSucceeded(const QUrl &url);
     void didFailLoad(const QUrl &url, int errorCode, const QString &errorDescription);
     void overrideWebPreferences(content::WebContents *, blink::web_pref::WebPreferences*);
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &);
     void selectClientCert(const QSharedPointer<ClientCertSelectController> &);
-    void requestFeaturePermission(ProfileAdapter::PermissionType feature, const QUrl &requestingOrigin);
+    void requestFeaturePermission(QWebEnginePermission::PermissionType permissionType, const QUrl &requestingOrigin);
     void launchExternalURL(const QUrl &url, ui::PageTransition page_transition, bool is_main_frame, bool has_user_gesture);
     FindTextHelper *findTextHelper();
 

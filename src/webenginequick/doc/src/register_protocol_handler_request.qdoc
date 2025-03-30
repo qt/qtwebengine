@@ -3,7 +3,7 @@
 
 /*!
     \qmltype RegisterProtocolHandlerRequest
-    \instantiates QWebEngineRegisterProtocolHandlerRequest
+    \nativetype QWebEngineRegisterProtocolHandlerRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.7
     \brief The RegisterProtocolHandlerRequest type enables accepting

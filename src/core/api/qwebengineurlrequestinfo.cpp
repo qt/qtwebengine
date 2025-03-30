@@ -161,6 +161,7 @@ QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfoPriva
     \value ResourceTypeNavigationPreloadSubFrame  A sub-frame service worker navigation preload request. (Added in Qt 5.14)
     \value ResourceTypeWebSocket  A WebSocket request. (Added in Qt 6.4)
     \value ResourceTypeUnknown  Unknown request type.
+    \value ResourceTypeJson A JSON module. (Added in Qt 6.8)
 
     \note For forward compatibility all values not matched should be treated as unknown,
     not just \c ResourceTypeUnknown.
@@ -274,7 +275,6 @@ void QWebEngineUrlRequestInfo::resetChanged()
 
 /*!
     Redirects this request to \a url.
-    It is only possible to redirect requests that do not have payload data, such as GET requests.
 */
 
 void QWebEngineUrlRequestInfo::redirect(const QUrl &url)

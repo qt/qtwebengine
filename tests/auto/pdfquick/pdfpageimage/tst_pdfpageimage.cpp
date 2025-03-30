@@ -11,9 +11,11 @@
 
 using namespace Qt::StringLiterals;
 
-Q_LOGGING_CATEGORY(lcTests, "qt.pdf.tests")
-
 // #define DEBUG_WRITE_OUTPUT
+
+#ifdef DEBUG_WRITE_OUTPUT
+Q_LOGGING_CATEGORY(lcTests, "qt.pdf.tests")
+#endif
 
 class tst_PdfPageImage : public QQuickDataTest
 {

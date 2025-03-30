@@ -19,6 +19,10 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
+namespace ui {
+struct SelectedFileInfo;
+}
+
 namespace extensions {
 
 class FileEntryPickerQt : public ui::SelectFileDialog::Listener {
@@ -38,17 +42,8 @@ private:
     ~FileEntryPickerQt() override;
 
     // ui::SelectFileDialog::Listener implementation.
-    void FileSelected(const base::FilePath &path,
-        int index,
-        void *params) override;
-    void FileSelectedWithExtraInfo(const ui::SelectedFileInfo &file,
-        int index,
-        void *params) override;
-    void MultiFilesSelected(const std::vector<base::FilePath> &files,
-                          void *params) override;
-    void MultiFilesSelectedWithExtraInfo(
-        const std::vector<ui::SelectedFileInfo> &files,
-        void *params) override;
+    void FileSelected(const ui::SelectedFileInfo &file, int index, void *params) override;
+    void MultiFilesSelected(const std::vector<ui::SelectedFileInfo> &files, void *params) override;
     void FileSelectionCanceled(void *params) override;
 
     FileSystemDelegate::FilesSelectedCallback m_filesSelectedCallback;

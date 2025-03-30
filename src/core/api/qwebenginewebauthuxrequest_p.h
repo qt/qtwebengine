@@ -26,7 +26,7 @@ class AuthenticatorRequestDialogController;
 
 QT_BEGIN_NAMESPACE
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineWebAuthUxRequestPrivate
+class Q_WEBENGINECORE_EXPORT QWebEngineWebAuthUxRequestPrivate
 {
 
 public:

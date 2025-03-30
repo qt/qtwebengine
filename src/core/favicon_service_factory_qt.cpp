@@ -46,7 +46,7 @@ std::unique_ptr<history::HistoryBackendClient> HistoryClientQt::CreateBackendCli
     return nullptr;
 }
 
-void HistoryClientQt::UpdateBookmarkLastUsedTime(const base::Uuid &, base::Time /*time*/)
+void HistoryClientQt::UpdateBookmarkLastUsedTime(int64_t /*bookmark_node_id*/, base::Time /*time*/)
 {
 }
 

@@ -25,6 +25,7 @@ public:
     QByteArray requestMethod() const { return m_requestMethod; }
     QByteArray requestPath() const { return m_requestPath; }
     QByteArray requestHeader(const QByteArray &key) const;
+    bool hasRequestHeader(const QByteArray &key) const;
 
     // Response parameters (can be set until sendResponse()/close()).
 

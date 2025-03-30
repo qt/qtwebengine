@@ -214,8 +214,12 @@ void QtPositioningHelper::error(QGeoPositionInfoSource::Error positioningError)
         break;
     }
     auto newResult = device::mojom::GeopositionResult::NewError(std::move(newError));
-    if (m_locationProvider)
+    if (m_locationProvider) {
         postToLocationProvider(base::BindOnce(&LocationProviderQt::updatePosition, m_locationProviderFactory.GetWeakPtr(), std::move(newResult)));
+        if (positioningError == QGeoPositionInfoSource::AccessError) {
+            postToLocationProvider(base::BindOnce(&LocationProviderQt::StopProvider, m_locationProviderFactory.GetWeakPtr()));
+        }
+    }
 }
 
 inline void QtPositioningHelper::postToLocationProvider(base::OnceClosure task)

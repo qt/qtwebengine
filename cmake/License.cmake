@@ -16,7 +16,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 
 find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT)
 if(NOT Python3_EXECUTABLE)
-    find_package(Python3 3.6 REQUIRED)
+    find_package(Python3 3.8 REQUIRED)
 endif()
 
 set(extraThirdPartyDirs "")

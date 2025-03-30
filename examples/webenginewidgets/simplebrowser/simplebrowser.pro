@@ -30,11 +30,6 @@ win32 {
     QMAKE_MANIFEST = $$PWD/simplebrowser.exe.manifest
 }
 
-win32 {
-    CONFIG -= embed_manifest_exe
-    QMAKE_MANIFEST = $$PWD/simplebrowser.exe.manifest
-}
-
 FORMS += \
     certificateerrordialog.ui \
     passworddialog.ui \

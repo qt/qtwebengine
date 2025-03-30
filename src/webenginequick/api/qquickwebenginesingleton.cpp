@@ -12,7 +12,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmltype WebEngine
-    //! \instantiates QQuickWebEngineSingleton
+    //! \nativetype QQuickWebEngineSingleton
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
     \brief Provides access to the default settings and profiles shared by all web engine views.
@@ -65,7 +65,7 @@ QQuickWebEngineProfile *QQuickWebEngineSingleton::defaultProfile() const
 
 /*!
     \qmlmethod WebEngineScript WebEngine::script
-    //! \instantiates QWebEngineScript
+    //! \nativetype QWebEngineScript
     \since QtWebEngine 6.2
 
     Constructs WebEngineScript, which can be set up and inserted into user scripts' collection

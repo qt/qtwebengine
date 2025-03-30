@@ -1,0 +1,13 @@
+version = 1
+
+[[annotations]]
+path = "marked.js"
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (c) 2011-2018, Christopher Jeffrey"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = "markdown.css"
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright 2011 Kevin Burke Copyright Twitter Inc."
+SPDX-License-Identifier = "Apache-2.0"

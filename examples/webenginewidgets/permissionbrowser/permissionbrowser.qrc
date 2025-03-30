@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="view-refresh.png">resources/3rdparty/view-refresh.png</file>
+        <file alias="go-next.png">resources/3rdparty/go-next.png</file>
+        <file alias="go-previous.png">resources/3rdparty/go-previous.png</file>
+    </qresource>
+</RCC>

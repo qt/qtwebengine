@@ -1,0 +1,13 @@
+version = 1
+
+[[annotations]]
+path = ["core/qwebengineframe/tst_qwebengineframe.cpp",
+        "core/qwebenginesettings/tst_qwebenginesettings.cpp",
+        "widgets/accessibility/tst_accessibility.cpp",
+        "widgets/qwebenginehistory/tst_qwebenginehistory.cpp",
+        "widgets/qwebenginepage/tst_qwebenginepage.cpp",
+        "widgets/qwebenginescript/tst_qwebenginescript.cpp",
+        "widgets/qwebengineview/tst_qwebengineview.cpp"]
+precedence = "aggregate"
+comment = "the license is not reuse readable"
+SPDX-License-Identifier = "LGPL-2.0-or-later"

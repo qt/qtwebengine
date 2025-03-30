@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "gl_context_qt.h"
+#include "web_engine_context.h"
 
 #include <QGuiApplication>
 #include <QOpenGLContext>
@@ -73,23 +74,6 @@ void GLContextHelper::destroy()
 {
     delete contextHelper;
     contextHelper = nullptr;
-}
-
-bool GLContextHelper::initializeContextOnBrowserThread(gl::GLContext* context, gl::GLSurface* surface, gl::GLContextAttribs attribs)
-{
-    return context->Initialize(surface, attribs);
-}
-
-bool GLContextHelper::initializeContext(gl::GLContext* context, gl::GLSurface* surface, gl::GLContextAttribs attribs)
-{
-    bool ret = false;
-    Qt::ConnectionType connType = (QThread::currentThread() == qApp->thread()) ? Qt::DirectConnection : Qt::BlockingQueuedConnection;
-    QMetaObject::invokeMethod(contextHelper, "initializeContextOnBrowserThread", connType,
-            Q_RETURN_ARG(bool, ret),
-            Q_ARG(gl::GLContext*, context),
-            Q_ARG(gl::GLSurface*, surface),
-            Q_ARG(gl::GLContextAttribs, attribs));
-    return ret;
 }
 
 void* GLContextHelper::getEGLConfig()
@@ -175,15 +159,20 @@ bool GLContextHelper::isCreateContextRobustnessSupported()
     return contextHelper->m_robustness;
 }
 
-#if QT_CONFIG(opengl) && defined(USE_OZONE)
+#if QT_CONFIG(opengl) && QT_CONFIG(egl) && defined(USE_OZONE)
 class ScopedGLContext
 {
 public:
-    ScopedGLContext(QOffscreenSurface *surface)
-        : m_context(new QOpenGLContext())
-        , m_previousContext(gl::GLContext::GetCurrent())
-        , m_previousSurface(gl::GLSurface::GetCurrent())
+    ScopedGLContext(QOffscreenSurface *surface) : m_context(new QOpenGLContext())
     {
+        if (gl::GLContext::GetCurrent()) {
+            auto eglFun = EGLHelper::instance()->functions();
+            m_previousEGLContext = eglFun->eglGetCurrentContext();
+            m_previousEGLDrawSurface = eglFun->eglGetCurrentSurface(EGL_DRAW);
+            m_previousEGLReadSurface = eglFun->eglGetCurrentSurface(EGL_READ);
+            m_previousEGLDisplay = eglFun->eglGetCurrentDisplay();
+        }
+
         if (!m_context->create()) {
             qWarning("Failed to create OpenGL context.");
             return;
@@ -203,8 +192,18 @@ public:
             glFun->glDeleteTextures(m_textures.size(), m_textures.data());
         }
 
-        if (m_previousContext)
-            m_previousContext->MakeCurrent(m_previousSurface);
+        if (m_previousEGLContext) {
+            // Make sure the scoped context is not current when restoring the previous
+            // EGL context otherwise the QOpenGLContext destructor resets the restored
+            // current context.
+            m_context->doneCurrent();
+
+            auto eglFun = EGLHelper::instance()->functions();
+            eglFun->eglMakeCurrent(m_previousEGLDisplay, m_previousEGLDrawSurface,
+                                   m_previousEGLReadSurface, m_previousEGLContext);
+            if (eglFun->eglGetError() != EGL_SUCCESS)
+                qWarning("Failed to restore EGL context.");
+        }
     }
 
     bool isValid() const { return m_context->isValid() && (m_context->surface() != nullptr); }
@@ -240,11 +239,15 @@ public:
 
 private:
     QScopedPointer<QOpenGLContext> m_context;
-    gl::GLContext *m_previousContext;
-    gl::GLSurface *m_previousSurface;
+    EGLContext m_previousEGLContext = nullptr;
+    EGLSurface m_previousEGLDrawSurface = nullptr;
+    EGLSurface m_previousEGLReadSurface = nullptr;
+    EGLDisplay m_previousEGLDisplay = nullptr;
     std::vector<uint> m_textures;
 };
+#endif // QT_CONFIG(opengl) && QT_COFNIG(egl) && defined(USE_OZONE)
 
+#if QT_CONFIG(opengl) && defined(USE_OZONE)
 EGLHelper::EGLFunctions::EGLFunctions()
 {
     const static auto getProcAddress =
@@ -252,11 +255,18 @@ EGLHelper::EGLFunctions::EGLFunctions()
 
     eglCreateImage = reinterpret_cast<PFNEGLCREATEIMAGEPROC>(getProcAddress("eglCreateImage"));
     eglDestroyImage = reinterpret_cast<PFNEGLDESTROYIMAGEPROC>(getProcAddress("eglDestroyImage"));
-    eglGetError = reinterpret_cast<PFNEGLGETERRORPROC>(getProcAddress("eglGetError"));
     eglExportDMABUFImageMESA = reinterpret_cast<PFNEGLEXPORTDMABUFIMAGEMESAPROC>(
             getProcAddress("eglExportDMABUFImageMESA"));
     eglExportDMABUFImageQueryMESA = reinterpret_cast<PFNEGLEXPORTDMABUFIMAGEQUERYMESAPROC>(
             getProcAddress("eglExportDMABUFImageQueryMESA"));
+    eglGetCurrentContext =
+            reinterpret_cast<PFNEGLGETCURRENTCONTEXTPROC>(getProcAddress("eglGetCurrentContext"));
+    eglGetCurrentDisplay =
+            reinterpret_cast<PFNEGLGETCURRENTDISPLAYPROC>(getProcAddress("eglGetCurrentDisplay"));
+    eglGetCurrentSurface =
+            reinterpret_cast<PFNEGLGETCURRENTSURFACEPROC>(getProcAddress("eglGetCurrentSurface"));
+    eglGetError = reinterpret_cast<PFNEGLGETERRORPROC>(getProcAddress("eglGetError"));
+    eglMakeCurrent = reinterpret_cast<PFNEGLMAKECURRENTPROC>(getProcAddress("eglMakeCurrent"));
     eglQueryString = reinterpret_cast<PFNEGLQUERYSTRINGPROC>(getProcAddress("eglQueryString"));
 }
 
@@ -289,23 +299,14 @@ EGLHelper::EGLHelper()
     Q_ASSERT(QThread::currentThread() == qApp->thread());
     m_offscreenSurface->create();
 
-    const char *displayExtensions = m_functions->eglQueryString(eglDisplay, EGL_EXTENSIONS);
-    m_isDmaBufSupported = strstr(displayExtensions, "EGL_EXT_image_dma_buf_import")
-            && strstr(displayExtensions, "EGL_EXT_image_dma_buf_import_modifiers")
-            && strstr(displayExtensions, "EGL_MESA_image_dma_buf_export");
+    m_isDmaBufSupported = QtWebEngineCore::WebEngineContext::isGbmSupported();
 
+    // Check extensions.
     if (m_isDmaBufSupported) {
-        // FIXME: This disables GBM for nvidia. Remove this when nvidia fixes its GBM support.
-        //
-        // "Buffer allocation and submission to DRM KMS using gbm is not currently supported."
-        // See: https://download.nvidia.com/XFree86/Linux-x86_64/550.40.07/README/kms.html
-        //
-        // Chromium uses GBM to allocate scanout buffers. Scanout requires DRM KMS. If KMS is
-        // enabled, gbm_device and gbm_buffer are created without any issues but rendering to the
-        // buffer will malfunction. It is not known how to detect this problem before rendering
-        // so we just disable GBM for nvidia.
-        const char *displayVendor = m_functions->eglQueryString(eglDisplay, EGL_VENDOR);
-        m_isDmaBufSupported = !strstr(displayVendor, "NVIDIA");
+        const char *displayExtensions = m_functions->eglQueryString(eglDisplay, EGL_EXTENSIONS);
+        m_isDmaBufSupported = strstr(displayExtensions, "EGL_EXT_image_dma_buf_import")
+                && strstr(displayExtensions, "EGL_EXT_image_dma_buf_import_modifiers")
+                && strstr(displayExtensions, "EGL_MESA_image_dma_buf_export");
     }
 
     // Try to create dma-buf.
@@ -322,6 +323,7 @@ EGLHelper::EGLHelper()
 void EGLHelper::queryDmaBuf(const int width, const int height, int *fd, int *stride, int *offset,
                             uint64_t *modifiers)
 {
+#if QT_CONFIG(egl)
     if (!m_isDmaBufSupported)
         return;
 
@@ -340,23 +342,24 @@ void EGLHelper::queryDmaBuf(const int width, const int height, int *fd, int *str
     EGLImage eglImage = m_functions->eglCreateImage(eglDisplay, eglContext, EGL_GL_TEXTURE_2D,
                                                     (EGLClientBuffer)textureId, NULL);
     if (eglImage == EGL_NO_IMAGE) {
-        qWarning() << "EGL: Failed to create EGLImage:"
-                   << ui::GetEGLErrorString(m_functions->eglGetError());
+        qWarning("EGL: Failed to create EGLImage: %s",
+                 ui::GetEGLErrorString(m_functions->eglGetError()));
         return;
     }
 
     int numPlanes = 0;
     if (!m_functions->eglExportDMABUFImageQueryMESA(eglDisplay, eglImage, nullptr, &numPlanes,
                                                     modifiers))
-        qWarning() << "EGL: Failed to retrieve the pixel format of the buffer:"
-                   << ui::GetEGLErrorString(m_functions->eglGetError());
+        qWarning("EGL: Failed to retrieve the pixel format of the buffer: %s",
+                 ui::GetEGLErrorString(m_functions->eglGetError()));
     Q_ASSERT(numPlanes == 1);
 
     if (!m_functions->eglExportDMABUFImageMESA(eglDisplay, eglImage, fd, stride, offset))
-        qWarning() << "EGL: Failed to retrieve the dma_buf file descriptor:"
-                   << ui::GetEGLErrorString(m_functions->eglGetError());
+        qWarning("EGL: Failed to retrieve the dma_buf file descriptor: %s",
+                 ui::GetEGLErrorString(m_functions->eglGetError()));
 
     m_functions->eglDestroyImage(eglDisplay, eglImage);
+#endif // QT_CONFIG(egl)
 }
 
 bool EGLHelper::isDmaBufSupported()
@@ -384,7 +387,10 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup *share_group,
         return context;
     }
     case kGLImplementationEGLANGLE:
-    case kGLImplementationEGLGLES2:
+        if (Q_UNLIKELY(!compatible_surface)) {
+            qWarning("EGL: no compatible surface.");
+            return nullptr;
+        }
         return InitializeGLContext(new GLContextEGL(share_group),
                                    compatible_surface, attribs);
     case kGLImplementationDisabled:

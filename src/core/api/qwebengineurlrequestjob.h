@@ -26,8 +26,11 @@ public:
     ~QWebEngineUrlRequestJob();
 
     enum Error {
-        NoError = 0,
-        UrlNotFound,
+#if QT_DEPRECATED_SINCE(6, 8)
+        NoError Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "This attribute has no effect.") = 0,
+#endif
+        UrlNotFound = 1,
         UrlInvalid,
         RequestAborted,
         RequestDenied,

@@ -78,6 +78,13 @@ public:
         AllowAllUnknownUrlSchemes
     };
 
+    enum class ImageAnimationPolicy : uint8_t {
+        Inherited = 0,
+        Allow,
+        AnimateOnce,
+        Disallow,
+    };
+
 public:
     ~QWebEngineSettings();
     void setFontFamily(FontFamily which, const QString &family);
@@ -98,6 +105,10 @@ public:
     UnknownUrlSchemePolicy unknownUrlSchemePolicy() const;
     void setUnknownUrlSchemePolicy(UnknownUrlSchemePolicy policy);
     void resetUnknownUrlSchemePolicy();
+
+    void setImageAnimationPolicy(ImageAnimationPolicy policy);
+    ImageAnimationPolicy imageAnimationPolicy() const;
+    void resetImageAnimationPolicy();
 
 private:
     explicit QWebEngineSettings(QWebEngineSettings *parentSettings = nullptr);

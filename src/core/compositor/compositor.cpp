@@ -6,11 +6,14 @@
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 
+#include <QGuiApplication>
 #include <QHash>
 #include <QMutex>
 #include <QQuickWindow>
 
 namespace QtWebEngineCore {
+
+Q_LOGGING_CATEGORY(lcWebEngineCompositor, "qt.webengine.compositor");
 
 // Compositor::Id
 
@@ -82,12 +85,13 @@ void Compositor::Observer::bind(Id id)
 
 void Compositor::Observer::unbind()
 {
-    DCHECK(m_binding);
     g_bindings.lock();
-    m_binding->observer = nullptr;
-    if (m_binding->compositor == nullptr)
-        delete m_binding;
-    m_binding = nullptr;
+    if (m_binding) {
+        m_binding->observer = nullptr;
+        if (m_binding->compositor == nullptr)
+            delete m_binding;
+        m_binding = nullptr;
+    }
     g_bindings.unlock();
 }
 
@@ -98,6 +102,11 @@ Compositor::Handle<Compositor> Compositor::Observer::compositor()
         return m_binding->compositor; // delay unlock
     g_bindings.unlock();
     return nullptr;
+}
+
+Compositor::Observer::~Observer()
+{
+    DCHECK(!m_binding); // check that unbind() was called by derived final class
 }
 
 // Compositor
@@ -114,12 +123,13 @@ void Compositor::bind(Id id)
 
 void Compositor::unbind()
 {
-    DCHECK(m_binding);
     g_bindings.lock();
-    m_binding->compositor = nullptr;
-    if (m_binding->observer == nullptr)
-        delete m_binding;
-    m_binding = nullptr;
+    if (m_binding) {
+        m_binding->compositor = nullptr;
+        if (m_binding->observer == nullptr)
+            delete m_binding;
+        m_binding = nullptr;
+    }
     g_bindings.unlock();
 }
 
@@ -153,6 +163,30 @@ bool Compositor::textureIsFlipped()
 }
 
 void Compositor::releaseResources() { }
+
+Compositor::Compositor(Type type) : m_type(type)
+{
+    if (Q_UNLIKELY(lcWebEngineCompositor().isDebugEnabled())) {
+        switch (m_type) {
+        case Type::Software:
+            qCDebug(lcWebEngineCompositor, "Compositor Type: Software");
+            break;
+        case Type::OpenGL:
+            qCDebug(lcWebEngineCompositor, "Compositor Type: OpenGL");
+            break;
+        case Type::Native:
+            qCDebug(lcWebEngineCompositor, "Compositor Type: Native");
+            break;
+        }
+    }
+    qCDebug(lcWebEngineCompositor, "QPA Platform Plugin: %ls",
+            qUtf16Printable(QGuiApplication::platformName()));
+}
+
+Compositor::~Compositor()
+{
+    DCHECK(!m_binding); // check that unbind() was called by derived final class
+}
 
 // static
 void Compositor::unlockBindings()

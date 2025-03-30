@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
             const QUrl url = job->requestUrl();
 
             if (isValidUrl(url)) {
-                if (method == QByteArrayLiteral("GET")) {
+                if (method == QByteArrayLiteral("GET"))
                     job->reply(QByteArrayLiteral("text/html"), makeReply(url));
                 else // Unsupported method
                     job->fail(QWebEngineUrlRequestJob::RequestDenied);

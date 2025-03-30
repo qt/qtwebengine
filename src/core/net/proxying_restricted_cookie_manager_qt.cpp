@@ -67,13 +67,14 @@ void ProxyingRestrictedCookieManagerQt::GetAllForUrl(const GURL &url,
                                                      const net::SiteForCookies &site_for_cookies,
                                                      const url::Origin &top_frame_origin, bool has_storage_access,
                                                      network::mojom::CookieManagerGetOptionsPtr options,
+                                                     bool is_ad_tagged,
                                                      GetAllForUrlCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     if (allowCookies(url, site_for_cookies)) {
         underlying_restricted_cookie_manager_->GetAllForUrl(url, site_for_cookies, top_frame_origin, has_storage_access,
-                                                            std::move(options), std::move(callback));
+                                                            std::move(options), is_ad_tagged, std::move(callback));
     } else {
         std::move(callback).Run(std::vector<net::CookieWithAccessResult>());
     }
@@ -121,7 +122,7 @@ void ProxyingRestrictedCookieManagerQt::SetCookieFromString(const GURL &url,
         underlying_restricted_cookie_manager_->SetCookieFromString(url, site_for_cookies, top_frame_origin, has_storage_access,
                                                                    cookie, std::move(callback));
     } else {
-        std::move(callback).Run(false, false); // FIXME: is true, true in aw_proxying_restricted_cookie_manager.cc though..
+        std::move(callback).Run();
     }
 }
 
@@ -129,6 +130,7 @@ void ProxyingRestrictedCookieManagerQt::GetCookiesString(const GURL &url,
                                                          const net::SiteForCookies &site_for_cookies,
                                                          const url::Origin &top_frame_origin,
                                                          bool has_storage_access, bool get_version_shared_memory,
+                                                         bool is_ad_tagged,
                                                          GetCookiesStringCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -136,6 +138,7 @@ void ProxyingRestrictedCookieManagerQt::GetCookiesString(const GURL &url,
     if (allowCookies(url, site_for_cookies)) {
         underlying_restricted_cookie_manager_->GetCookiesString(url, site_for_cookies, top_frame_origin,
                                                                 has_storage_access, get_version_shared_memory,
+                                                                is_ad_tagged,
                                                                 std::move(callback));
     } else {
         std::move(callback).Run(network::mojom::kInvalidCookieVersion, base::ReadOnlySharedMemoryRegion(), "");

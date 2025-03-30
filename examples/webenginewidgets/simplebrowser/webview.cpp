@@ -63,25 +63,39 @@ WebView::WebView(QWidget *parent)
     });
 }
 
-inline QString questionForFeature(QWebEnginePage::Feature feature)
+WebView::~WebView()
 {
-    switch (feature) {
-    case QWebEnginePage::Geolocation:
+    if (m_imageAnimationGroup)
+        delete m_imageAnimationGroup;
+
+    m_imageAnimationGroup = nullptr;
+}
+
+inline QString questionForPermissionType(QWebEnginePermission::PermissionType permissionType)
+{
+    switch (permissionType) {
+    case QWebEnginePermission::PermissionType::Geolocation:
         return QObject::tr("Allow %1 to access your location information?");
-    case QWebEnginePage::MediaAudioCapture:
+    case QWebEnginePermission::PermissionType::MediaAudioCapture:
         return QObject::tr("Allow %1 to access your microphone?");
-    case QWebEnginePage::MediaVideoCapture:
+    case QWebEnginePermission::PermissionType::MediaVideoCapture:
         return QObject::tr("Allow %1 to access your webcam?");
-    case QWebEnginePage::MediaAudioVideoCapture:
+    case QWebEnginePermission::PermissionType::MediaAudioVideoCapture:
         return QObject::tr("Allow %1 to access your microphone and webcam?");
-    case QWebEnginePage::MouseLock:
+    case QWebEnginePermission::PermissionType::MouseLock:
         return QObject::tr("Allow %1 to lock your mouse cursor?");
-    case QWebEnginePage::DesktopVideoCapture:
+    case QWebEnginePermission::PermissionType::DesktopVideoCapture:
         return QObject::tr("Allow %1 to capture video of your desktop?");
-    case QWebEnginePage::DesktopAudioVideoCapture:
+    case QWebEnginePermission::PermissionType::DesktopAudioVideoCapture:
         return QObject::tr("Allow %1 to capture audio and video of your desktop?");
-    case QWebEnginePage::Notifications:
+    case QWebEnginePermission::PermissionType::Notifications:
         return QObject::tr("Allow %1 to show notification on your desktop?");
+    case QWebEnginePermission::PermissionType::ClipboardReadWrite:
+        return QObject::tr("Allow %1 to read from and write to the clipboard?");
+    case QWebEnginePermission::PermissionType::LocalFontsAccess:
+        return QObject::tr("Allow %1 to access fonts stored on this machine?");
+    case QWebEnginePermission::PermissionType::Unsupported:
+        break;
     }
     return QString();
 }
@@ -93,8 +107,8 @@ void WebView::setPage(WebPage *page)
                    &WebView::handleCertificateError);
         disconnect(oldPage, &QWebEnginePage::authenticationRequired, this,
                    &WebView::handleAuthenticationRequired);
-        disconnect(oldPage, &QWebEnginePage::featurePermissionRequested, this,
-                   &WebView::handleFeaturePermissionRequested);
+        disconnect(oldPage, &QWebEnginePage::permissionRequested, this,
+                   &WebView::handlePermissionRequested);
         disconnect(oldPage, &QWebEnginePage::proxyAuthenticationRequired, this,
                    &WebView::handleProxyAuthenticationRequired);
         disconnect(oldPage, &QWebEnginePage::registerProtocolHandlerRequested, this,
@@ -114,8 +128,8 @@ void WebView::setPage(WebPage *page)
     connect(page, &WebPage::createCertificateErrorDialog, this, &WebView::handleCertificateError);
     connect(page, &QWebEnginePage::authenticationRequired, this,
             &WebView::handleAuthenticationRequired);
-    connect(page, &QWebEnginePage::featurePermissionRequested, this,
-            &WebView::handleFeaturePermissionRequested);
+    connect(page, &QWebEnginePage::permissionRequested, this,
+            &WebView::handlePermissionRequested);
     connect(page, &QWebEnginePage::proxyAuthenticationRequired, this,
             &WebView::handleProxyAuthenticationRequired);
     connect(page, &QWebEnginePage::registerProtocolHandlerRequested, this,
@@ -204,6 +218,49 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
     } else {
         (*inspectElement)->setText(tr("Inspect element"));
     }
+
+    // add conext menu for image policy
+    QMenu *editImageAnimation = new QMenu(tr("Image animation policy"));
+
+    m_imageAnimationGroup = new QActionGroup(editImageAnimation);
+    m_imageAnimationGroup->setExclusive(true);
+
+    QAction *disableImageAnimation =
+            editImageAnimation->addAction(tr("Disable all image animation"));
+    disableImageAnimation->setCheckable(true);
+    m_imageAnimationGroup->addAction(disableImageAnimation);
+    connect(disableImageAnimation, &QAction::triggered, [this]() {
+        handleImageAnimationPolicyChange(QWebEngineSettings::ImageAnimationPolicy::Disallow);
+    });
+    QAction *allowImageAnimationOnce =
+            editImageAnimation->addAction(tr("Allow animated images, but only once"));
+    allowImageAnimationOnce->setCheckable(true);
+    m_imageAnimationGroup->addAction(allowImageAnimationOnce);
+    connect(allowImageAnimationOnce, &QAction::triggered,
+            [this]() { handleImageAnimationPolicyChange(QWebEngineSettings::ImageAnimationPolicy::AnimateOnce); });
+    QAction *allowImageAnimation = editImageAnimation->addAction(tr("Allow all animated images"));
+    allowImageAnimation->setCheckable(true);
+    m_imageAnimationGroup->addAction(allowImageAnimation);
+    connect(allowImageAnimation, &QAction::triggered, [this]() {
+        handleImageAnimationPolicyChange(QWebEngineSettings::ImageAnimationPolicy::Allow);
+    });
+
+    switch (page()->settings()->imageAnimationPolicy()) {
+    case QWebEngineSettings::ImageAnimationPolicy::Allow:
+        allowImageAnimation->setChecked(true);
+        break;
+    case QWebEngineSettings::ImageAnimationPolicy::AnimateOnce:
+        allowImageAnimationOnce->setChecked(true);
+        break;
+    case QWebEngineSettings::ImageAnimationPolicy::Disallow:
+        disableImageAnimation->setChecked(true);
+        break;
+    default:
+        allowImageAnimation->setChecked(true);
+        break;
+    }
+
+    menu->addMenu(editImageAnimation);
     menu->popup(event->globalPos());
 }
 
@@ -255,17 +312,14 @@ void WebView::handleAuthenticationRequired(const QUrl &requestUrl, QAuthenticato
     }
 }
 
-void WebView::handleFeaturePermissionRequested(const QUrl &securityOrigin,
-                                               QWebEnginePage::Feature feature)
+void WebView::handlePermissionRequested(QWebEnginePermission permission)
 {
     QString title = tr("Permission Request");
-    QString question = questionForFeature(feature).arg(securityOrigin.host());
+    QString question = questionForPermissionType(permission.permissionType()).arg(permission.origin().host());
     if (!question.isEmpty() && QMessageBox::question(window(), title, question) == QMessageBox::Yes)
-        page()->setFeaturePermission(securityOrigin, feature,
-                                     QWebEnginePage::PermissionGrantedByUser);
+        permission.grant();
     else
-        page()->setFeaturePermission(securityOrigin, feature,
-                                     QWebEnginePage::PermissionDeniedByUser);
+        permission.deny();
 }
 
 void WebView::handleProxyAuthenticationRequired(const QUrl &, QAuthenticator *auth,
@@ -364,5 +418,13 @@ void WebView::handleFileSystemAccessRequested(QWebEngineFileSystemAccessRequest 
         request.accept();
     else
         request.reject();
+}
+
+void WebView::handleImageAnimationPolicyChange(QWebEngineSettings::ImageAnimationPolicy policy)
+{
+    if (!page())
+        return;
+
+    page()->settings()->setImageAnimationPolicy(policy);
 }
 #endif // QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)

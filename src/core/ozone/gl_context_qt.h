@@ -28,7 +28,6 @@ class GLContextHelper : public QObject {
 public:
     static void initialize();
     static void destroy();
-    static bool initializeContext(gl::GLContext* context, gl::GLSurface* surface, gl::GLContextAttribs attribs);
 
     static void* getEGLConfig();
     static void* getGlXConfig();
@@ -42,8 +41,6 @@ public:
     static void *getEglPlatformInterface();
 
 private:
-    Q_INVOKABLE bool initializeContextOnBrowserThread(gl::GLContext* context, gl::GLSurface* surface, gl::GLContextAttribs attribs);
-
     static GLContextHelper* contextHelper;
     bool m_robustness = false;
 };
@@ -53,7 +50,11 @@ private:
 #undef eglDestroyImage
 #undef eglExportDMABUFImageMESA
 #undef eglExportDMABUFImageQueryMESA
+#undef eglGetCurrentContext
+#undef eglGetCurrentDisplay
+#undef eglGetCurrentSurface
 #undef eglGetError
+#undef eglMakeCurrent
 #undef eglQueryString
 
 class EGLHelper
@@ -67,7 +68,11 @@ public:
         PFNEGLDESTROYIMAGEPROC eglDestroyImage;
         PFNEGLEXPORTDMABUFIMAGEMESAPROC eglExportDMABUFImageMESA;
         PFNEGLEXPORTDMABUFIMAGEQUERYMESAPROC eglExportDMABUFImageQueryMESA;
+        PFNEGLGETCURRENTCONTEXTPROC eglGetCurrentContext;
+        PFNEGLGETCURRENTDISPLAYPROC eglGetCurrentDisplay;
+        PFNEGLGETCURRENTSURFACEPROC eglGetCurrentSurface;
         PFNEGLGETERRORPROC eglGetError;
+        PFNEGLMAKECURRENTPROC eglMakeCurrent;
         PFNEGLQUERYSTRINGPROC eglQueryString;
     };
 

@@ -20,13 +20,12 @@ int main(int argc, char *argv[])
     QWebEngineView view(profile.data());
     auto popup = new NotificationPopup(&view);
 
-    QObject::connect(view.page(), &QWebEnginePage::featurePermissionRequested,
-                     [&](const QUrl &origin, QWebEnginePage::Feature feature) {
-                         if (feature != QWebEnginePage::Notifications)
+    QObject::connect(view.page(), &QWebEnginePage::permissionRequested,
+                     [&](QWebEnginePermission permission) {
+                         if (permission.permissionType() != QWebEnginePermission::PermissionType::Notifications)
                              return;
 
-                         view.page()->setFeaturePermission(origin, feature,
-                                                           QWebEnginePage::PermissionGrantedByUser);
+                         permission.grant();
                      });
 
     profile->setPushServiceEnabled(true);

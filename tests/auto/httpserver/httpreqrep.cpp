@@ -57,6 +57,11 @@ QByteArray HttpReqRep::requestHeader(const QByteArray &key) const
     return {};
 }
 
+bool HttpReqRep::hasRequestHeader(const QByteArray &key) const
+{
+    return m_requestHeaders.find(key.toLower()) != m_requestHeaders.end();
+}
+
 void HttpReqRep::handleReadyRead()
 {
     while (m_socket->canReadLine()) {

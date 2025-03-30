@@ -3,7 +3,7 @@
 
 /*!
     \qmltype TouchSelectionMenuRequest
-    //! \instantiates QQuickWebEngineTouchSelectionMenuRequest
+    //! \nativetype QQuickWebEngineTouchSelectionMenuRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 6.3
 

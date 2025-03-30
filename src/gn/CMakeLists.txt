@@ -55,20 +55,25 @@ else()
     message(FATAL_ERROR "Unsupported gn platform !")
 endif()
 
+list(JOIN CMAKE_OSX_ARCHITECTURES "$<COMMA>" OSX_ARCH)
 add_custom_command(
     OUTPUT ${GN_EXECUTABLE}
     WORKING_DIRECTORY ${GN_BINARY_DIR}
     COMMAND ${Python3_EXECUTABLE} ${GN_SOURCE_DIR}/build/gen.py
         --no-last-commit-position
+        --no-static-libstdc++
         --out-path ${GN_BINARY_DIR}/$<CONFIG>
         --cc ${CMAKE_C_COMPILER}
         --cxx ${CMAKE_CXX_COMPILER}
         --ld ${GN_LINKER}
+        --allow-warnings
         --platform ${platform}
         --ar ${CMAKE_AR}
         --qt-version "${QT_REPO_MODULE_VERSION}.qtwebengine.qt.io"
         $<$<PLATFORM_ID:Darwin>:--isysroot>
         $<$<PLATFORM_ID:Darwin>:${CMAKE_OSX_SYSROOT}>
+        $<$<AND:$<PLATFORM_ID:Darwin>,$<BOOL:${OSX_ARCH}>>:--osx-architectures>
+        $<$<AND:$<PLATFORM_ID:Darwin>,$<BOOL:${OSX_ARCH}>>:${OSX_ARCH}>
     COMMAND Ninja::ninja -C ${GN_BINARY_DIR}/$<CONFIG> ${GN_EXECUTABLE}
     VERBATIM
     USES_TERMINAL

@@ -159,8 +159,8 @@ BrowserAccessibilityInterface::BrowserAccessibilityInterface(BrowserAccessibilit
 {
     if (parent() && parent()->object()) {
         m_object = new QObject(parent()->object());
-        QString name = toQt(q->GetAuthorUniqueId());
-        if (!name.isEmpty())
+        const std::u16string name = q->GetAuthorUniqueId();
+        if (!name.empty())
             m_object->setObjectName(name);
     }
 
@@ -408,6 +408,7 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
     case ax::mojom::Role::kDirectory:
         return QAccessible::List;
     case ax::mojom::Role::kDisclosureTriangle:
+    case ax::mojom::Role::kDisclosureTriangleGrouped:
         return QAccessible::Button;
     case ax::mojom::Role::kGenericContainer:
         return QAccessible::Section;
@@ -617,7 +618,7 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
         return QAccessible::ComboBox;
     case ax::mojom::Role::kPortal:
         return QAccessible::Button;
-    case ax::mojom::Role::kPre:
+    case ax::mojom::Role::kPreDeprecated:
         return QAccessible::Section;
     case ax::mojom::Role::kProgressIndicator:
         return QAccessible::ProgressBar;

@@ -36,7 +36,8 @@ public:
 
     std::vector<std::u16string> GetStandardFormats(ui::ClipboardBuffer buffer, const ui::DataTransferEndpoint *data_dst) const override;
 
-    const ui::DataTransferEndpoint *GetSource(ui::ClipboardBuffer buffer) const override;
+    absl::optional<ui::DataTransferEndpoint> GetSource(ui::ClipboardBuffer buffer) const override;
+
     void ReadFilenames(ui::ClipboardBuffer buffer,
                        const ui::DataTransferEndpoint *data_dst,
                        std::vector<ui::FileInfo> *result) const override;
@@ -48,7 +49,8 @@ protected:
                                                  std::unique_ptr<ui::DataTransferEndpoint> data_src) override;
 
     void WriteText(base::StringPiece text) override;
-    void WriteHTML(base::StringPiece markup, absl::optional<base::StringPiece> source_url) override;
+    void WriteHTML(base::StringPiece markup, absl::optional<base::StringPiece> source_url,
+                   ui::ClipboardContentType content_type) override;
     void WriteRTF(base::StringPiece rtf) override;
     void WriteBookmark(base::StringPiece title, base::StringPiece url) override;
     void WriteWebSmartPaste() override;
@@ -56,7 +58,6 @@ protected:
     void WriteData(const ui::ClipboardFormatType &format, base::span<const uint8_t> data) override;
     void WriteSvg(base::StringPiece markup) override;
     void WriteFilenames(std::vector<ui::FileInfo> filenames) override;
-    void WriteUnsanitizedHTML(base::StringPiece markup, absl::optional<base::StringPiece> source_url) override;
 
     base::flat_map<ui::ClipboardBuffer, std::unique_ptr<ui::DataTransferEndpoint>> m_dataSrc;
 };

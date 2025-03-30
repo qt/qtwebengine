@@ -19,6 +19,7 @@ class Q_PDF_EXPORT QPdfSearchModel : public QAbstractListModel
     Q_OBJECT
     Q_PROPERTY(QPdfDocument *document READ document WRITE setDocument NOTIFY documentChanged)
     Q_PROPERTY(QString searchString READ searchString WRITE setSearchString NOTIFY searchStringChanged)
+    Q_PROPERTY(int count READ count NOTIFY countChanged REVISION(6, 8) FINAL)
 
 public:
     enum class Role : int {
@@ -44,6 +45,8 @@ public:
     int rowCount(const QModelIndex &parent) const override;
     QVariant data(const QModelIndex &index, int role) const override;
 
+    int count() const;
+
 public Q_SLOTS:
     void setSearchString(const QString &searchString);
     void setDocument(QPdfDocument *document);
@@ -51,6 +54,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void documentChanged();
     void searchStringChanged();
+    Q_REVISION(6, 8) void countChanged();
 
 protected:
     void updatePage(int page);

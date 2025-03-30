@@ -70,12 +70,10 @@ void AutofillClientQt::ShowAutofillPopup(const autofill::AutofillClient::PopupOp
                                        autoSelectFirstSuggestion);
 }
 
-void AutofillClientQt::UpdateAutofillPopupDataListValues(const std::vector<std::u16string> &values,
-                                                         const std::vector<std::u16string> &labels)
+void AutofillClientQt::UpdateAutofillPopupDataListValues(
+        base::span<const autofill::SelectOption> datalist)
 {
-    Q_UNUSED(labels);
-
-    if (values.empty())
+    if (datalist.empty())
         HideAutofillPopup(autofill::PopupHidingReason::kNoSuggestions);
 }
 
@@ -97,12 +95,6 @@ std::vector<autofill::Suggestion> AutofillClientQt::GetPopupSuggestions() const
     // Called by password_manager component only.
     NOTIMPLEMENTED();
     return {};
-}
-
-void AutofillClientQt::UpdatePopup(const std::vector<autofill::Suggestion> &, autofill::PopupType, autofill::AutofillSuggestionTriggerSource)
-{
-    // Called by password_manager component only.
-    NOTIMPLEMENTED();
 }
 
 void AutofillClientQt::HideAutofillPopup(autofill::PopupHidingReason)
@@ -128,13 +120,6 @@ bool AutofillClientQt::IsOffTheRecord()
 scoped_refptr<network::SharedURLLoaderFactory> AutofillClientQt::GetURLLoaderFactory()
 {
     return nullptr;
-}
-
-void AutofillClientQt::PropagateAutofillPredictionsDeprecated(autofill::AutofillDriver *,
-                                                              const std::vector<autofill::FormStructure *> &)
-{
-    // For testing purposes only.
-    NOTIMPLEMENTED();
 }
 
 WebContentsAdapterClient *AutofillClientQt::adapterClient()

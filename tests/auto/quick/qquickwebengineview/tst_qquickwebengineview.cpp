@@ -1,8 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include "testwindow.h"
 #include "quickutil.h"
 #include "util.h"
@@ -15,17 +13,19 @@
 #include <QtGui/qpa/qwindowsysteminterface.h>
 #include <QtQml/QQmlEngine>
 #include <QtTest/QtTest>
+#include <QtWebEngineQuick/QQuickWebEngineDownloadRequest>
 #include <QtWebEngineQuick/QQuickWebEngineProfile>
 #include <QtGui/private/qinputmethod_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginescriptcollection_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginesettings_p.h>
-#include <QtWebEngineQuick/private/qquickwebenginedownloadrequest_p.h>
 #include <QtWebEngineQuick/private/qquickwebengineview_p.h>
 #include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
 #include <qpa/qplatforminputcontext.h>
 #include <QtTest/private/qemulationdetector_p.h>
 
 #include <functional>
+
+using namespace Qt::StringLiterals;
 
 class tst_QQuickWebEngineView : public QObject {
     Q_OBJECT
@@ -76,10 +76,12 @@ private Q_SLOTS:
 #if QT_CONFIG(accessibility)
     void focusChild_data();
     void focusChild();
+    void accessibilityRect();
 #endif
     void htmlSelectPopup();
     void savePage_data();
     void savePage();
+    void javaScriptConsoleMessage();
 
 private:
     inline QQuickWebEngineView *newWebEngineView();
@@ -98,8 +100,8 @@ private:
 
 tst_QQuickWebEngineView::tst_QQuickWebEngineView()
 {
-    QtWebEngineQuick::initialize();
-    QQuickWebEngineProfile::defaultProfile()->setOffTheRecord(true);
+
+    QVERIFY(QQuickWebEngineProfile::defaultProfile()->isOffTheRecord());
 
     m_testSourceDirPath = QDir(QT_TESTCASE_SOURCEDIR).canonicalPath();
     if (!m_testSourceDirPath.endsWith(QLatin1Char('/')))
@@ -614,7 +616,7 @@ void tst_QQuickWebEngineView::inputContextQueryInput()
     QTest::mouseClick(view->window(), Qt::LeftButton, {}, textInputCenter);
     QTRY_COMPARE(testContext.infos.size(), 2);
     QCOMPARE(evaluateJavaScriptSync(view, "document.activeElement.id").toString(), QStringLiteral("input1"));
-    foreach (const InputMethodInfo &info, testContext.infos) {
+    for (const InputMethodInfo &info : std::as_const(testContext.infos)) {
         QCOMPARE(info.cursorPosition, 0);
         QCOMPARE(info.anchorPosition, 0);
         QCOMPARE(info.surroundingText, QStringLiteral(""));
@@ -709,7 +711,7 @@ void tst_QQuickWebEngineView::inputContextQueryInput()
         QGuiApplication::sendEvent(qApp->focusObject(), &event);
     }
     QTRY_COMPARE(testContext.infos.size(), 2);
-    foreach (const InputMethodInfo &info, testContext.infos) {
+    for (const InputMethodInfo &info : std::as_const(testContext.infos)) {
         QCOMPARE(info.cursorPosition, 0);
         QCOMPARE(info.anchorPosition, 0);
         QCOMPARE(info.surroundingText, QStringLiteral("QtWebEngine!"));
@@ -799,7 +801,7 @@ void tst_QQuickWebEngineView::setZoomFactor()
     view->setZoomFactor(2.5);
     QCOMPARE(view->zoomFactor(), 2.5);
 
-    const QUrl url1 = urlFromTestPath("html/basic_page.html"), url2 = urlFromTestPath("html/basic_page2.html");
+    const QUrl url1 = urlFromTestPath("html/basic_page.html");
 
     view->setUrl(url1);
     QVERIFY(waitForLoadSucceeded(view));
@@ -816,20 +818,22 @@ void tst_QQuickWebEngineView::setZoomFactor()
     view2->setParentItem(m_window->contentItem());
 
     // try loading different url and check new values after load
-    for (auto &&p : {
-            qMakePair(view, 2.5), // navigating away to different url should keep zoom
-            qMakePair(view2.get(), 1.0), // same url navigation in diffent page shouldn't be affected
-        }) {
-        auto &&view = p.first; auto zoomFactor = p.second;
-        view->setUrl(url2);
-        QVERIFY(waitForLoadSucceeded(view));
-        QCOMPARE(view->zoomFactor(), zoomFactor);
-    }
+    const QUrl url2 = urlFromTestPath("html/basic_page2.html");
 
-    // should have no influence on first page
+    // navigating away to different url should keep zoom
+    view->setUrl(url2);
+    QVERIFY(waitForLoadSucceeded(view));
+    QCOMPARE(view->zoomFactor(), 2.5);
+
+    // same url navigation in different view shouldn't be affected
+    view2->setUrl(url2);
+    QVERIFY(waitForLoadSucceeded(view2.get()));
+    QCOMPARE(view2->zoomFactor(), 1.0);
+
+    // should have no influence on first view
     view2->setZoomFactor(3.5);
-    for (auto &&p : { qMakePair(view, 2.5), qMakePair(view2.get(), 3.5), })
-        QCOMPARE(p.first->zoomFactor(), p.second);
+    QCOMPARE(view->zoomFactor(), 2.5);
+    QCOMPARE(view2->zoomFactor(), 3.5);
 }
 
 void tst_QQuickWebEngineView::printToPdf()
@@ -1152,9 +1156,9 @@ void tst_QQuickWebEngineView::javascriptClipboard()
                 "if (result.state == 'prompt') accessPrompt = true;"
             "})"));
 
-    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessGranted").toBool(), copyResult);
-    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessDenied").toBool(), !javascriptCanAccessClipboard);
-    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessPrompt").toBool(), false);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessGranted").toBool(), javascriptCanAccessClipboard);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessDenied").toBool(), false);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessPrompt").toBool(), !javascriptCanAccessClipboard);
 
     evaluateJavaScriptSync(view,
         QStringLiteral(
@@ -1168,9 +1172,9 @@ void tst_QQuickWebEngineView::javascriptClipboard()
                 "if (result.state == 'prompt') accessPrompt = true;"
             "})"));
 
-    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessGranted").toBool(), pasteResult);
-    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessDenied").toBool(), !javascriptCanAccessClipboard || !javascriptCanPaste);
-    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessPrompt").toBool(), false);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessGranted").toBool(), javascriptCanAccessClipboard && javascriptCanPaste);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessDenied").toBool(), false);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessPrompt").toBool(), !javascriptCanAccessClipboard || !javascriptCanPaste);
 }
 
 void tst_QQuickWebEngineView::setProfile() {
@@ -1251,6 +1255,74 @@ void tst_QQuickWebEngineView::focusChild()
     // <html> -> <body> -> <input>
     QCOMPARE(traverseToWebDocumentAccessibleInterface(iface)->child(0)->child(0), iface->focusChild());
 }
+
+void tst_QQuickWebEngineView::accessibilityRect()
+{
+    auto *engine = new QQmlEngine(this);
+    auto *component = new QQmlComponent(engine, this);
+    component->setData(QByteArrayLiteral("import QtQuick\n"
+                                           "import QtWebEngine\n"
+                                           "Window {\n"
+                                           " visible: true; width: 600; height: 400\n"
+                                           " Text { id: textId; text: \"text\"; width: 100; Accessible.focusable: true; Accessible.name: \"text\" }\n"
+                                           " WebEngineView { anchors.left: textId.right; anchors.top: textId.bottom; anchors.right: parent.right; anchors.bottom: parent.bottom }\n"
+                                           "}")
+                         , QUrl());
+    QObject *rootObject = component->create();
+    QVERIFY(rootObject);
+
+    QQuickWebEngineView *webView = rootObject->findChild<QQuickWebEngineView*>();
+    QVERIFY(webView);
+
+    webView->loadHtml("<html><body bgcolor=\"red\"><input type='text' id='input1' /></body></html>");
+    QVERIFY(waitForLoadSucceeded(webView));
+
+    QAccessibleInterface *rootObjectIface = QAccessible::queryAccessibleInterface(rootObject);
+    QVERIFY(rootObjectIface);
+    QCOMPARE(rootObjectIface->childCount(), 2);
+
+    QAccessibleInterface *textIface = rootObjectIface->child(0);
+    QVERIFY(textIface);
+    QCOMPARE(textIface->role(), QAccessible::StaticText);
+
+    QCOMPARE(textIface->rect().width(), 100);
+    QVERIFY(textIface->rect().height() > 0);
+
+    // It takes a while for the webIface to get its width, unfortunately we can't have a
+    // QTRY_COMPARE since it seems in some platforms the iface gets recreated and we end up
+    // accessible the wrong pointer, so roll up our own try+compare
+    QAccessibleInterface *webIface = nullptr;
+    QElapsedTimer t;
+    t.start();
+    bool isWebIfaceOfCorrectWidth = false;
+    while (!isWebIfaceOfCorrectWidth && t.elapsed() < 5000) {
+        QTest::qWait(100);
+        webIface = rootObjectIface->child(1)->child(0);
+        QVERIFY(webIface);
+        QCOMPARE(webIface->role(), QAccessible::WebDocument);
+        isWebIfaceOfCorrectWidth = webIface->rect().width() == 500;
+    }
+
+    QVERIFY(isWebIfaceOfCorrectWidth);
+    QCOMPARE(webIface->rect().height(), 400 - textIface->rect().height());
+    QCOMPARE(webIface->rect().x(), textIface->rect().x() + textIface->rect().width());
+    QCOMPARE(webIface->rect().y(), textIface->rect().y() + textIface->rect().height());
+
+    // Set active focus on the input field.
+    webView->runJavaScript("document.getElementById('input1').focus();");
+    QTRY_COMPARE(evaluateJavaScriptSync(webView, "document.activeElement.id").toString(), QStringLiteral("input1"));
+
+    // Check that children of the web rect are inside it
+    QAccessibleInterface *inputIface = webIface->focusChild();
+    QVERIFY(inputIface);
+    QTRY_COMPARE(inputIface->role(), QAccessible::EditableText);
+    QVERIFY(webIface->rect().contains(inputIface->rect()));
+
+    delete rootObject;
+    delete component;
+    delete engine;
+}
+
 #endif // QT_CONFIG(accessibility)
 
 void tst_QQuickWebEngineView::htmlSelectPopup()
@@ -1358,6 +1430,83 @@ void tst_QQuickWebEngineView::savePage()
     QCOMPARE(evaluateJavaScriptSync(view, "document.getElementsByTagName('h1')[0].innerText")
                      .toString(),
              originalData);
+}
+
+class TestJSMessageHandler
+{
+public:
+    inline static QList<QtMsgType> levels;
+    inline static QStringList messages;
+    inline static QList<int> lineNumbers;
+    inline static QStringList sourceIDs;
+
+    static void handler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+    {
+        if (strcmp(context.category, "js") != 0) {
+            m_originalHandler(type, context, msg);
+            return;
+        }
+
+        levels.append(type);
+        messages.append(msg);
+        lineNumbers.append(context.line);
+        sourceIDs.append(context.file);
+    }
+
+    TestJSMessageHandler() { m_originalHandler = qInstallMessageHandler(handler); }
+    ~TestJSMessageHandler() { qInstallMessageHandler(m_originalHandler); }
+
+private:
+    inline static QtMessageHandler m_originalHandler = nullptr;
+};
+
+void tst_QQuickWebEngineView::javaScriptConsoleMessage()
+{
+    QQuickWebEngineView *view = webEngineView();
+
+    // Test QQuickWebEngineView::javaScriptConsoleMessage() signal.
+    {
+        QSignalSpy jsSpy(
+                view,
+                SIGNAL(javaScriptConsoleMessage(QQuickWebEngineView::JavaScriptConsoleMessageLevel,
+                                                const QString &, int, const QString &)));
+        view->setUrl(urlFromTestPath("html/script2.html"));
+        QVERIFY(waitForLoadSucceeded(view));
+
+        runJavaScript("sayHello()");
+        QTRY_COMPARE(jsSpy.size(), 1);
+        QCOMPARE(jsSpy.last().at(0).toInt(), QWebEnginePage::WarningMessageLevel);
+        QCOMPARE(jsSpy.last().at(1).toString(), "hello"_L1);
+        QCOMPARE(jsSpy.last().at(2).toInt(), 6);
+        QCOMPARE(jsSpy.last().at(3).toString(),
+                 urlFromTestPath("html/resources/hello.js").toString());
+
+        runJavaScript("sayHi()");
+        QTRY_COMPARE(jsSpy.size(), 2);
+        QCOMPARE(jsSpy.last().at(0).toInt(), QWebEnginePage::WarningMessageLevel);
+        QCOMPARE(jsSpy.last().at(1).toString(), "hi"_L1);
+        QCOMPARE(jsSpy.last().at(2).toInt(), 7);
+        QCOMPARE(jsSpy.last().at(3).toString(), urlFromTestPath("html/resources/hi.js").toString());
+    }
+
+    // Test default QQuickWebEngineViewPrivate::javaScriptConsoleMessage() handler.
+    {
+        TestJSMessageHandler handler;
+        view->setUrl(urlFromTestPath("html/script2.html"));
+        QVERIFY(waitForLoadSucceeded(view));
+
+        evaluateJavaScriptSync(view, "sayHello()");
+        QCOMPARE(handler.levels.last(), QtMsgType::QtWarningMsg);
+        QCOMPARE(handler.messages.last(), "hello"_L1);
+        QCOMPARE(handler.lineNumbers.last(), 6);
+        QCOMPARE(handler.sourceIDs.last(), urlFromTestPath("html/resources/hello.js").toString());
+
+        evaluateJavaScriptSync(view, "sayHi()");
+        QCOMPARE(handler.levels.last(), QtMsgType::QtWarningMsg);
+        QCOMPARE(handler.messages.last(), "hi"_L1);
+        QCOMPARE(handler.lineNumbers.last(), 7);
+        QCOMPARE(handler.sourceIDs.last(), urlFromTestPath("html/resources/hi.js").toString());
+    }
 }
 
 #if QT_CONFIG(accessibility)

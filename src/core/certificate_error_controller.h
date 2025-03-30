@@ -33,11 +33,11 @@ class GURL;
 
 namespace QtWebEngineCore {
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT CertificateErrorController {
+class Q_WEBENGINECORE_EXPORT CertificateErrorController {
 public:
     CertificateErrorController(
             int cert_error, const net::SSLInfo &ssl_info, const GURL &request_url,
-            bool strict_enforcement,
+            bool main_frame, bool strict_enforcement,
             base::OnceCallback<void(content::CertificateRequestResultType)> callback);
     ~CertificateErrorController();
 
@@ -47,6 +47,7 @@ public:
     QString errorString() const;
     QDateTime validExpiry() const;
     QList<QSslCertificate> certificateChain() const;
+    bool isMainFrame() const;
 
     bool deferred() const;
     void defer();
@@ -65,6 +66,7 @@ public:
     bool m_overridable;
     base::OnceCallback<void(content::CertificateRequestResultType)> m_callback;
     QList<QSslCertificate> m_certificateChain;
+    bool m_mainFrame;
 
     bool m_answered = false, m_deferred = false;
 

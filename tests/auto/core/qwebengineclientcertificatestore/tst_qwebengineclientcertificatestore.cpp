@@ -10,6 +10,9 @@
 #include <QtWebEngineCore/qwebenginecertificateerror.h>
 #include <QtWebEngineCore/qwebenginesettings.h>
 
+#include <QtCore/qoperatingsystemversion.h>
+#include <QtCore/qsystemdetection.h>
+
 class tst_QWebEngineClientCertificateStore : public QObject
 {
     Q_OBJECT
@@ -52,22 +55,22 @@ void tst_QWebEngineClientCertificateStore::addAndListCertificates()
 {
     // Load QSslCertificate
     QFile certFile(":/resources/certificate.crt");
-    certFile.open(QIODevice::ReadOnly);
+    QVERIFY2(certFile.open(QIODevice::ReadOnly), qPrintable(certFile.errorString()));
     const QSslCertificate cert(certFile.readAll(), QSsl::Pem);
 
     // Load QSslKey
     QFile keyFile(":/resources/privatekey.key");
-    keyFile.open(QIODevice::ReadOnly);
+    QVERIFY2(keyFile.open(QIODevice::ReadOnly), qPrintable(keyFile.errorString()));
     const QSslKey sslKey(keyFile.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey, "");
 
     // Load second QSslCertificate
     QFile certFileSecond(":/resources/certificate1.crt");
-    certFileSecond.open(QIODevice::ReadOnly);
+    QVERIFY2(certFileSecond.open(QIODevice::ReadOnly), qPrintable(certFileSecond.errorString()));
     const QSslCertificate certSecond(certFileSecond.readAll(), QSsl::Pem);
 
     // Load second QSslKey
     QFile keyFileSecond(":/resources/privatekey1.key");
-    keyFileSecond.open(QIODevice::ReadOnly);
+    QVERIFY2(keyFileSecond.open(QIODevice::ReadOnly), qPrintable(keyFileSecond.errorString()));
     const QSslKey sslKeySecond(keyFileSecond.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey, "");
 
     // Add certificates to in-memory store
@@ -115,6 +118,16 @@ void tst_QWebEngineClientCertificateStore::clientAuthentication()
     QFETCH(bool, in_memory);
     QFETCH(bool, add_more_in_memory_certificates);
 
+#ifdef Q_OS_MACOS
+#if !QT_MACOS_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(150000, 180000)
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSSequoia
+        && QSslSocket::activeBackend() == QLatin1String("securetransport")) {
+        // Built with SDK < 15, with file-based keychains that no longer work on macOS >= 15.
+        QSKIP("SecureTransport will block the test server while accessing the login keychain");
+    }
+#endif
+#endif // Q_OS_MACOS
+
     HttpsServer server(":/resources/server.pem", ":/resources/server.key", ":resources/ca.pem");
     server.setExpectError(false);
     QVERIFY(server.start());
@@ -125,11 +138,11 @@ void tst_QWebEngineClientCertificateStore::clientAuthentication()
     });
 
     QFile certFile(client_certificate);
-    certFile.open(QIODevice::ReadOnly);
+    QVERIFY2(certFile.open(QIODevice::ReadOnly), qPrintable(certFile.errorString()));
     const QSslCertificate cert(certFile.readAll(), QSsl::Pem);
 
     QFile keyFile(client_key);
-    keyFile.open(QIODevice::ReadOnly);
+    QVERIFY2(keyFile.open(QIODevice::ReadOnly), qPrintable(keyFile.errorString()));
     const QSslKey sslKey(keyFile.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey, "");
 
     if (in_memory)

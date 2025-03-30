@@ -18,6 +18,8 @@ NativeSkiaOutputDeviceMetal::NativeSkiaOutputDeviceMetal(
                              shared_image_factory, shared_image_representation_factory,
                              didSwapBufferCompleteCallback)
 {
+    qCDebug(lcWebEngineCompositor, "Native Skia Output Device: Metal");
+
     SkColorType skColorType = kRGBA_8888_SkColorType;
     capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBA_8888)] = skColorType;
     capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBX_8888)] = skColorType;
@@ -43,6 +45,8 @@ QSGTexture *NativeSkiaOutputDeviceMetal::texture(QQuickWindow *win, uint32_t tex
         return nullptr;
     }
 
+    qCDebug(lcWebEngineCompositor, "METAL: Importing IOSurface into Metal Texture.");
+
     // This is a workaround to not to release metal texture too early.
     // In RHI, QMetalTexture wraps MTLTexture. QMetalTexture seems to be only destructed after the
     // next MTLTexture is imported. The "old" MTLTexture can be still pontentially used by RHI
@@ -56,7 +60,7 @@ QSGTexture *NativeSkiaOutputDeviceMetal::texture(QQuickWindow *win, uint32_t tex
     }
 
     QQuickWindow::CreateTextureOptions texOpts(textureOptions);
-    QSGTexture *qsgTexture = makeMetalTexture(win, ioSurface.get(), /* plane */ 0, size(), texOpts, &m_currentMetalTexture);
+ QSGTexture *qsgTexture = makeMetalTexture(win, ioSurface.get(), /* plane */ 0, size(), texOpts, &m_currentMetalTexture);
 
     return qsgTexture;
 }

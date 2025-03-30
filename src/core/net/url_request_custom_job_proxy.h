@@ -44,6 +44,7 @@ public:
         virtual void notifyCanceled() = 0;
         virtual void notifyAborted() = 0;
         virtual void notifyStartFailure(int) = 0;
+        virtual void notifySuccess() = 0;
         virtual void notifyReadyRead() = 0;
         virtual base::SequencedTaskRunner *taskRunner() = 0;
     };
@@ -60,6 +61,7 @@ public:
     void redirect(GURL url);
     void abort();
     void fail(int error);
+    void succeed();
     void release();
     void initialize(GURL url, std::string method, absl::optional<url::Origin> initiatorOrigin,
                     std::map<std::string, std::string> headers,

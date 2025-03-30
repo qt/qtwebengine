@@ -98,7 +98,6 @@ foreach(arch ${archs})
                 color_chooser_qt.cpp color_chooser_qt.h
                 common/qt_messages.cpp common/qt_messages.h
                 compositor/compositor.cpp compositor/compositor.h
-                compositor/content_gpu_client_qt.cpp compositor/content_gpu_client_qt.h
                 compositor/display_overrides.cpp
                 compositor/display_software_output_surface.cpp compositor/display_software_output_surface.h
                 compositor/native_skia_output_device.cpp compositor/native_skia_output_device.h
@@ -146,15 +145,8 @@ foreach(arch ${archs})
                 net/system_network_context_manager.cpp net/system_network_context_manager.h
                 net/url_request_custom_job_delegate.cpp net/url_request_custom_job_delegate.h
                 net/url_request_custom_job_proxy.cpp net/url_request_custom_job_proxy.h
+                net/version_ui_qt.cpp net/version_ui_qt.h
                 net/webui_controller_factory_qt.cpp net/webui_controller_factory_qt.h
-                ozone/gl_context_qt.cpp ozone/gl_context_qt.h
-                ozone/gl_ozone_egl_qt.cpp ozone/gl_ozone_egl_qt.h
-                ozone/gl_share_context_qt.cpp ozone/gl_share_context_qt.h
-                ozone/gl_surface_egl_qt.cpp ozone/gl_surface_egl_qt.h
-                ozone/gl_surface_qt.cpp ozone/gl_surface_qt.h
-                ozone/gl_surface_wgl_qt.cpp ozone/gl_surface_wgl_qt.h
-                ozone/platform_window_qt.cpp ozone/platform_window_qt.h
-                ozone/surface_factory_qt.cpp ozone/surface_factory_qt.h
                 permission_manager_qt.cpp permission_manager_qt.h
                 pdf_util_qt.cpp pdf_util_qt.h
                 platform_notification_service_qt.cpp platform_notification_service_qt.h
@@ -188,7 +180,6 @@ foreach(arch ${archs})
                 type_conversion.cpp type_conversion.h
                 user_notification_controller.cpp user_notification_controller.h
                 user_script.cpp user_script.h
-                version_ui_qt.cpp version_ui_qt.h
                 visited_links_manager_qt.cpp visited_links_manager_qt.h
                 web_contents_adapter.cpp web_contents_adapter.h
                 web_contents_adapter_client.h
@@ -207,6 +198,28 @@ foreach(arch ${archs})
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_accessibility
             SOURCES
                 accessibility_activation_observer.cpp accessibility_activation_observer.h
+        )
+
+        extend_gn_target(${buildGn} CONDITION LINUX OR WIN32
+            SOURCES
+                compositor/content_gpu_client_qt.cpp compositor/content_gpu_client_qt.h
+                ozone/gl_context_qt.cpp ozone/gl_context_qt.h
+                ozone/gl_share_context_qt.cpp ozone/gl_share_context_qt.h
+                ozone/gl_surface_qt.cpp ozone/gl_surface_qt.h
+        )
+
+        extend_gn_target(${buildGn} CONDITION WIN32
+            SOURCES
+                ozone/gl_surface_wgl_qt.cpp ozone/gl_surface_wgl_qt.h
+        )
+
+        extend_gn_target(${buildGn} CONDITION LINUX
+            SOURCES
+                ozone/gl_ozone_angle_qt.cpp ozone/gl_ozone_angle_qt.h
+                ozone/gl_ozone_egl_qt.cpp ozone/gl_ozone_egl_qt.h
+                ozone/gl_surface_egl_qt.cpp ozone/gl_surface_egl_qt.h
+                ozone/platform_window_qt.cpp ozone/platform_window_qt.h
+                ozone/surface_factory_qt.cpp ozone/surface_factory_qt.h
         )
 
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_ozone_x11
@@ -343,13 +356,16 @@ foreach(arch ${archs})
             optimize_webui=false
             strip_absolute_paths_from_debug_symbols=false
             pdf_use_skia=true
+            use_cups=false
             use_dawn=false
             skia_use_dawn=false
             devtools_fast_bundle=false
             devtools_skip_typecheck=false
             use_static_angle=true
             use_perfetto_client_library=false
-            trial_comparison_cert_verifier_supported=false
+            content_enable_legacy_ipc=true
+            enable_extensions_legacy_ipc=true
+            enable_bound_session_credentials=false
         )
         extend_gn_list(gnArgArg
             ARGS use_v8_context_snapshot v8_use_external_startup_data
@@ -360,10 +376,6 @@ foreach(arch ${archs})
             CONDITION QT_FEATURE_webengine_printing_and_pdf
         )
         extend_gn_list(gnArgArg
-            ARGS use_cups
-            CONDITION QT_FEATURE_webengine_printing_and_pdf AND NOT WIN32
-        )
-        extend_gn_list(gnArgArg
             ARGS enable_plugins
             CONDITION QT_FEATURE_webengine_printing_and_pdf OR
             QT_FEATURE_webengine_pepper_plugins
@@ -372,7 +384,7 @@ foreach(arch ${archs})
             ARGS enable_ppapi
             CONDITION QT_FEATURE_webengine_pepper_plugins
         )
-         extend_gn_list(gnArgArg
+        extend_gn_list(gnArgArg
             ARGS enable_spellcheck
             CONDITION QT_FEATURE_webengine_spellchecker
         )
@@ -405,7 +417,7 @@ foreach(arch ${archs})
             CONDITION QT_FEATURE_webengine_kerberos
         )
         extend_gn_list(gnArgArg
-            ARGS proprietary_codecs
+            ARGS proprietary_codecs rtc_use_h264
             CONDITION QT_FEATURE_webengine_proprietary_codecs
         )
         if(QT_FEATURE_webengine_proprietary_codecs)
@@ -426,9 +438,9 @@ foreach(arch ${archs})
 
         if(LINUX)
             list(APPEND gnArgArg
+                angle_enable_gl=true
                 use_gtk=false # GTK toolkit bindings
                 use_qt=false # Qt5 toolkit bindings
-                use_cups=false
                 use_gio=false
                 use_bundled_fontconfig=false
                 use_glib=false
@@ -509,10 +521,6 @@ foreach(arch ${archs})
                 ARGS rtc_use_x11
                 CONDITION QT_FEATURE_webengine_ozone_x11 AND QT_FEATURE_webengine_webrtc
             )
-            extend_gn_list(gnArgArg
-                ARGS use_vaapi_x11
-                CONDITION QT_FEATURE_webengine_ozone_x11 AND QT_FEATURE_webengine_vaapi
-            )
 
             if(QT_FEATURE_webengine_kerberos)
                 list(APPEND gnArgArg
@@ -577,6 +585,7 @@ target_include_directories(WebEngineCore PRIVATE
     ${buildDir}/$<CONFIG>/${arch}/gen
     ${buildDir}/$<CONFIG>/${arch}/gen/third_party/perfetto
     ${buildDir}/$<CONFIG>/${arch}/gen/third_party/perfetto/build_config
+    ${buildDir}/$<CONFIG>/${arch}/gen/base/allocator/partition_allocator/src
 )
 
 set(stamps QtWebEngineCore.stamp)
@@ -588,6 +597,7 @@ add_gn_build_artifacts_to_target(
     CMAKE_TARGET WebEngineCore
     NINJA_TARGET QtWebEngineCore
     MODULE core
+    DEPENDS WebEngineCore_sync_headers
     BUILDDIR ${buildDir}
     COMPLETE_STATIC FALSE
     NINJA_STAMP QtWebEngineCore.stamp
@@ -632,7 +642,9 @@ if(QT_FEATURE_webengine_spellchecker AND NOT CMAKE_CROSSCOMPILING)
     target_include_directories(${dict_target_name} PRIVATE
         ../3rdparty/chromium
         ../3rdparty/chromium/third_party/boringssl/src/include
+        ../3rdparty/chromium/base/allocator/partition_allocator/src
         ${buildDir}/$<CONFIG>/${arch}/gen
+        ${buildDir}/$<CONFIG>/${arch}/gen/base/allocator/partition_allocator/src
     )
     add_gn_build_artifacts_to_target(
         CMAKE_TARGET ${dict_target_name}

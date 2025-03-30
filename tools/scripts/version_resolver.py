@@ -43,9 +43,8 @@ class DEPSParser(ABC):
         return self.local_scope["recursedeps"]
 
 
-chromium_version = '118.0.5993.220'
-chromium_branch = '5993'
-ninja_version = 'v1.8.2'
+chromium_version = '122.0.6261.171'
+chromium_branch = '6261'
 
 json_url = 'http://omahaproxy.appspot.com/all.json'
 
@@ -71,9 +70,6 @@ sys.path.append(os.path.join(qtwebengine_root, 'tools', 'scripts'))
 
 def currentVersion():
     return chromium_version
-
-def currentNinjaVersion():
-    return ninja_version
 
 def readReleaseChannels():
     response = urllib2.urlopen(json_url)

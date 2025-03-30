@@ -28,12 +28,17 @@
 #include <QtWebEngineCore/qwebenginecookiestore.h>
 #include <QtWebEngineCore/qwebengineurlrequestinterceptor.h>
 #include <QtWebEngineCore/qwebengineurlschemehandler.h>
+#include <QtWebEngineCore/qwebenginepermission.h>
 #include "net/qrc_url_scheme_handler.h"
 
 QT_FORWARD_DECLARE_CLASS(QObject)
 
 namespace base {
 class CancelableTaskTracker;
+}
+
+namespace content {
+class RenderFrameHost;
 }
 
 namespace QtWebEngineCore {
@@ -46,7 +51,7 @@ class UserResourceControllerHost;
 class VisitedLinksManagerQt;
 class WebContentsAdapterClient;
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT ProfileAdapter : public QObject
+class Q_WEBENGINECORE_EXPORT ProfileAdapter : public QObject
 {
 public:
     explicit ProfileAdapter(const QString &storagePrefix = QString());
@@ -72,6 +77,9 @@ public:
     void pauseDownload(quint32 downloadId);
     void resumeDownload(quint32 downloadId);
     void removeDownload(quint32 downloadId);
+    void acceptDownload(quint32 downloadId, bool accepted,
+                        bool useDownloadTargetCallback, const QString &path,
+                        int savePageFormat);
 
     ProfileQt *profile();
     bool ensureDataPathExists();
@@ -127,20 +135,22 @@ public:
         TrackVisitedLinksOnDisk,
     };
 
-    enum PermissionType {
-        UnsupportedPermission = 0,
-        GeolocationPermission = 1,
-        NotificationPermission = 2,
-        AudioCapturePermission = 3,
-        VideoCapturePermission = 4,
-        ClipboardRead = 5,
-        ClipboardWrite = 6,
+    enum class PersistentPermissionsPolicy : quint8 {
+        AskEveryTime = 0,
+        StoreInMemory,
+        StoreOnDisk,
     };
 
-    enum PermissionState {
-        AskPermission = 0,
-        AllowedPermission = 1,
-        DeniedPermission = 2
+    enum ClientHint : uchar {
+        UAArchitecture,
+        UAPlatform,
+        UAModel,
+        UAMobile,
+        UAFullVersion,
+        UAPlatformVersion,
+        UABitness,
+        UAFullVersionList,
+        UAWOW64,
     };
 
     HttpCacheType httpCacheType() const;
@@ -148,6 +158,9 @@ public:
 
     PersistentCookiesPolicy persistentCookiesPolicy() const;
     void setPersistentCookiesPolicy(ProfileAdapter::PersistentCookiesPolicy);
+
+    PersistentPermissionsPolicy persistentPermissionsPolicy() const;
+    void setPersistentPermissionsPolicy(ProfileAdapter::PersistentPermissionsPolicy);
 
     VisitedLinksPolicy visitedLinksPolicy() const;
     void setVisitedLinksPolicy(ProfileAdapter::VisitedLinksPolicy);
@@ -166,12 +179,23 @@ public:
     const QList<QByteArray> customUrlSchemes() const;
     UserResourceControllerHost *userResourceController();
 
-    void permissionRequestReply(const QUrl &origin, PermissionType type, PermissionState reply);
-    bool checkPermission(const QUrl &origin, PermissionType type);
+    void setPermission(const QUrl &origin, QWebEnginePermission::PermissionType permissionType,
+        QWebEnginePermission::State state, content::RenderFrameHost *rfh = nullptr);
+    QWebEnginePermission::State getPermissionState(const QUrl &origin, QWebEnginePermission::PermissionType permissionType,
+        content::RenderFrameHost *rfh = nullptr);
+    QList<QWebEnginePermission> listPermissions(const QUrl &origin = QUrl(),
+        QWebEnginePermission::PermissionType permissionType = QWebEnginePermission::PermissionType::Unsupported);
 
     QString httpAcceptLanguageWithoutQualities() const;
     QString httpAcceptLanguage() const;
     void setHttpAcceptLanguage(const QString &httpAcceptLanguage);
+
+    QVariant clientHint(ClientHint clientHint) const;
+    void setClientHint(ClientHint clientHint, const QVariant &value);
+    bool clientHintsEnabled();
+    void setClientHintsEnabled(bool enabled);
+    void resetClientHints();
+
 
     void clearHttpCache();
 
@@ -217,10 +241,12 @@ private:
     HttpCacheType m_httpCacheType;
     QString m_httpAcceptLanguage;
     PersistentCookiesPolicy m_persistentCookiesPolicy;
+    PersistentPermissionsPolicy m_persistentPermissionsPolicy;
     VisitedLinksPolicy m_visitedLinksPolicy;
     QHash<QByteArray, QPointer<QWebEngineUrlSchemeHandler>> m_customUrlSchemeHandlers;
     QHash<QByteArray, QWeakPointer<UserNotificationController>> m_ephemeralNotifications;
     QHash<QByteArray, QSharedPointer<UserNotificationController>> m_persistentNotifications;
+    bool m_clientHintsEnabled;
 
     QList<ProfileAdapterClient*> m_clients;
     QList<WebContentsAdapterClient *> m_webContentsAdapterClients;

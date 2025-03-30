@@ -103,4 +103,19 @@ void QWebEngineSettings::setParentSettings(QWebEngineSettings *parentSettings)
     d_ptr->setParentSettings(parentSettings->d_ptr.data());
 }
 
+void QWebEngineSettings::setImageAnimationPolicy(QWebEngineSettings::ImageAnimationPolicy policy)
+{
+    d_ptr->setImageAnimationPolicy(policy);
+}
+
+QWebEngineSettings::ImageAnimationPolicy QWebEngineSettings::imageAnimationPolicy() const
+{
+    return d_ptr->imageAnimationPolicy();
+}
+
+void QWebEngineSettings::resetImageAnimationPolicy()
+{
+    d_ptr->setImageAnimationPolicy(QWebEngineSettings::ImageAnimationPolicy::Inherited);
+}
+
 QT_END_NAMESPACE

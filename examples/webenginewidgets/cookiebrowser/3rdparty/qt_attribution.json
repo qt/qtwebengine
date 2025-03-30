@@ -11,7 +11,6 @@
     "DownloadLocation": "http://tango.freedesktop.org/releases/tango-icon-theme-0.8.90.tar.gz",
     "LicenseId": "LicenseRef-Tango-Icons-Public-Domain",
     "License": "Public Domain",
-    "LicenseFile": "COPYING",
     "Copyright": ["Ulisse Perusin <uli.peru@gmail.com>",
     "Steven Garrity <sgarrity@silverorange.com>",
     "Lapo Calamandrei <calamandrei@gmail.com>",

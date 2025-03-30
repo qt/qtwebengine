@@ -30,6 +30,9 @@
 #include <tuple>
 
 namespace {
+
+constexpr uint32_t kFullPageMimeHandlerDataPipeSize = 512U;
+
 void ClearAllButFrameAncestors(network::mojom::URLResponseHead *response_head)
 {
     response_head->headers->RemoveHeader("Content-Security-Policy");
@@ -121,11 +124,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
     if (extension_id == extension_misc::kPdfExtensionId && response_head->headers)
         ClearAllButFrameAncestors(response_head);
 
-    MimeTypesHandler::ReportUsedHandler(extension_id);
-
-    std::string view_id = base::Uuid::GenerateRandomV4().AsLowercaseString();
-    // The string passed down to the original client with the response body.
-    std::string payload = view_id;
+    const std::string stream_id = base::Uuid::GenerateRandomV4().AsLowercaseString();
 
     mojo::PendingRemote<network::mojom::URLLoader> dummy_new_loader;
     std::ignore = dummy_new_loader.InitWithNewPipeAndPassReceiver();
@@ -133,20 +132,20 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
     mojo::PendingReceiver<network::mojom::URLLoaderClient> new_client_receiver =
         new_client.BindNewPipeAndPassReceiver();
 
-
-    uint32_t data_pipe_size = 64U;
+    const std::string internal_id = base::UnguessableToken::Create().ToString();
     // Provide the MimeHandlerView code a chance to override the payload. This is
     // the case where the resource is handled by frame-based MimeHandlerView.
-    *defer = extensions::MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
-        m_frame_tree_node_id, response_url, response_head->mime_type, view_id,
-        &payload, &data_pipe_size,
-        base::BindOnce(
-            &PluginResponseInterceptorURLLoaderThrottle::ResumeLoad,
-            weak_factory_.GetWeakPtr()));
+    const std::string payload =
+            extensions::MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
+                    m_frame_tree_node_id, response_url, response_head->mime_type, stream_id,
+                    internal_id,
+                    base::BindOnce(&PluginResponseInterceptorURLLoaderThrottle::ResumeLoad,
+                                   weak_factory_.GetWeakPtr()));
+    *defer = true;
 
     mojo::ScopedDataPipeProducerHandle producer_handle;
     mojo::ScopedDataPipeConsumerHandle consumer_handle;
-    CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(data_pipe_size, producer_handle, consumer_handle));
+    CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(kFullPageMimeHandlerDataPipeSize, producer_handle, consumer_handle));
 
     uint32_t len = static_cast<uint32_t>(payload.size());
     CHECK_EQ(MOJO_RESULT_OK,
@@ -186,11 +185,10 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
     bool embedded = m_request_destination !=
             network::mojom::RequestDestination::kDocument;
     content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-            &extensions::StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent,
-            extension_id, view_id, embedded, m_frame_tree_node_id,
-            std::move(transferrable_loader), response_url));
+            FROM_HERE,
+            base::BindOnce(&extensions::StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent,
+                           extension_id, stream_id, embedded, m_frame_tree_node_id,
+                           std::move(transferrable_loader), response_url, internal_id));
 }
 
 void PluginResponseInterceptorURLLoaderThrottle::ResumeLoad()

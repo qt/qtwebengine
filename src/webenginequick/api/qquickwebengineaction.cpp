@@ -10,7 +10,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmltype WebEngineAction
-    \instantiates QQuickWebEngineAction
+    \nativetype QQuickWebEngineAction
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.8
 

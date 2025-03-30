@@ -50,7 +50,7 @@ private:
 
 static GURL sourceUrlForCookie(const QNetworkCookie &cookie)
 {
-    QString urlFragment = QStringLiteral("%1%2").arg(cookie.domain()).arg(cookie.path());
+    const QString urlFragment = cookie.domain() % cookie.path();
     return net::cookie_util::CookieOriginToURL(urlFragment.toStdString(), /* is_https */ cookie.isSecure());
 }
 

@@ -227,6 +227,7 @@ static Qt::DropActions toQtDropActions(blink::DragOperationsMask ops)
 }
 
 void WebContentsViewQt::StartDragging(const content::DropData &drop_data,
+                                      const url::Origin& source_origin,
                                       blink::DragOperationsMask allowed_ops,
                                       const gfx::ImageSkia &image,
                                       const gfx::Vector2d &image_offset,
@@ -256,10 +257,10 @@ void WebContentsViewQt::StartDragging(const content::DropData &drop_data,
 #endif // QT_CONFIG(draganddrop)
 }
 
-void WebContentsViewQt::UpdateDragCursor(ui::mojom::DragOperation dragOperation)
+void WebContentsViewQt::UpdateDragOperation(ui::mojom::DragOperation dragOperation, bool document_is_handling_drag)
 {
 #if QT_CONFIG(draganddrop)
-    m_client->webContentsAdapter()->updateDragAction(int(dragOperation));
+    m_client->webContentsAdapter()->updateDragAction(int(dragOperation), document_is_handling_drag);
 #endif // QT_CONFIG(draganddrop)
 }
 

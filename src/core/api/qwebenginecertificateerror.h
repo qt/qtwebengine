@@ -24,6 +24,7 @@ class Q_WEBENGINECORE_EXPORT QWebEngineCertificateError
     Q_PROPERTY(Type type READ type CONSTANT FINAL)
     Q_PROPERTY(QString description READ description CONSTANT FINAL)
     Q_PROPERTY(bool overridable READ isOverridable CONSTANT FINAL)
+    Q_PROPERTY(bool isMainFrame READ isMainFrame CONSTANT FINAL REVISION(6, 8))
 
 public:
     QWebEngineCertificateError(const QWebEngineCertificateError &other);
@@ -57,6 +58,7 @@ public:
     QUrl url() const;
     bool isOverridable() const;
     QString description() const;
+    bool isMainFrame() const;
 
     Q_INVOKABLE void defer();
     Q_INVOKABLE void rejectCertificate();

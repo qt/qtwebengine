@@ -1,0 +1,221 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \example webenginewidgets/permissionbrowser
+    \examplecategory {Web Technologies}
+    \title WebEngine Widgets Permission Browser Example
+    \ingroup webengine-widgetexamples
+    \brief Demonstrates how to handle website permission requests, and manage
+    existing permissions.
+
+    \image permissionbrowser-example.png
+
+    Permission Browser demonstrates how to use the \l{QWebEnginePermission} class
+    to manage website permissions. The example includes code for handling incoming
+    permission requests, as well as modifying already existing permissions. Also
+    demonstrated are the effects of the different permission persistence policies
+    defined within the \l{QWebEngineProfile} class.
+
+    \include examples-run.qdocinc
+
+    \section1 Class Definitions
+
+    \section2 MainWindow
+
+    The \c MainWindow class inherits \l QMainWindow. Inside, we declare a convenience
+    pointer to the \l QVBoxLayout which will lay out the widgets used to manipulate
+    individual permissions, as well as another convenience pointer to the widget
+    displaying the currently pending permission request. We also declare a
+    \l QWebEngineView, which will be used to display the actual webpage contents.
+
+    \quotefromfile webenginewidgets/permissionbrowser/mainwindow.h
+    \skipto class MainWindow :
+    \printuntil /^\}/
+
+    The rest of the layout for the application is defined inside mainwindow.ui,
+    and was created using Qt Creator's Design mode. \c MainWindow is a child class
+    of Ui_MainWindow, which is a C++ class generated at compile time from the
+    definitions found inside mainwindow.ui.
+
+    \section2 PermissionWidget and PermissionDialog
+
+    The \c PermissionWidget class defines a widget corresponding to a single
+    \l QWebEnginePermission instance. For convenience, the \l QWebEnginePermission
+    object is stored within. The widget itself has controls for granting, denying,
+    or deleting the permission; all of this is defined inside \c PermissionWidget.ui.
+
+    \quotefromfile webenginewidgets/permissionbrowser/mainwindow.h
+    \skipto class PermissionWidget :
+    \printuntil /^\}/
+
+    When clicking the "New" button in the main window's UI, a pop-up window will
+    appear, allowing the user to pre-grant permission to a known origin. That
+    pop-up is defined by the \c PermissionDialog class:
+
+    \quotefromfile webenginewidgets/permissionbrowser/mainwindow.h
+    \skipto class PermissionDialog :
+    \printuntil /^\}/
+
+    \section1 Handling incoming permission requests
+
+    Whenever a website uses an API that might compromise the user's privacy, the
+    browser is expected to show them a prompt asking to either grant or deny permission.
+    The PermissionBrowser example has a dedicated section at the bottom right, which
+    gets populated with a \c PermissionWidget whenever that happens.
+
+    The \c PermissionWidget displays the permission's origin, the requested
+    \l QWebEnginePermission::PermissionType, as well as the current status of that permission.
+    It also has buttons for granting and denying the permission. Since the permission status
+    is (by default) remembered, the delete button allows the user to remove the permission
+    from the underlying storage.
+
+    To achieve all this, we first connect QWebEnginePage's \c permissionRequested signal
+    to \c MainWindow's \c handlePermissionRequested slot:
+
+    \quotefromfile webenginewidgets/permissionbrowser/mainwindow.cpp
+    \skipto connect(m_webview->page(),
+    \printline connect(m_webview->page(),
+
+    The signal handler is relatively simple: it attempts to create a \c PermissionWidget
+    instance for the provided QWebEnginePermission object, and if it succeeds it
+    plugs that widget into the QFrame designated for pending permissions. We also
+    subscribe to \c PermissionWidget's \c permissionModified signal so that we can later move
+    the \c PermissionWidget from the bottom right to the list of existing widgets above.
+
+    \quotefromfile webenginewidgets/permissionbrowser/mainwindow.cpp
+    \skipto void MainWindow::handlePermissionRequested
+    \printuntil /^\}/
+
+    We only create a new \c PermissionWidget if we don't already have an existing one:
+
+    \quotefromfile webenginewidgets/permissionbrowser/mainwindow.cpp
+    \skipto PermissionWidget *MainWindow::create PermissionWidget
+    \printuntil /^\}/
+
+    \target PermissionWidgetConstructor
+    \section1 Modifying a permission and displaying it to the user
+
+    The QWebEnginePermission interface provides the \l {QWebEnginePermission::grant}{grant}()
+    and \l {QWebEnginePermission::deny}{deny}() functions, which are all that's needed to
+    change the status of a permission. If the application needs to forget about a permission,
+    we use the \l {QWebEnginePermission::reset}{reset}() function.
+
+    Inside the \c PermissionWidget constructor, we hook those function up to the buttons'
+    \c clicked signal, so that we can execute the relevant functionality on the
+    QWebEnginePermission object.
+
+    Whenever a button is pressed, we emit the \c permissionModified signal, which
+    \c MainWindow uses to know when it needs to move the widget from the bottom-right
+    to the list of existing permissions. We also make sure to call \c updateState(), which
+    handles visual updates to the widget. When the delete button is pressed, we also make
+    sure mark the widget for deletion, since we only want to display existing permissions to
+    the user.
+
+    \quotefromfile webenginewidgets/permissionbrowser/mainwindow.cpp
+    \skipto PermissionWidget::PermissionWidget
+    \printuntil /^\}/
+
+    The \c updateState() function displays the data supplied by QWebEnginePermission
+    to the user. It also makes sure that, when a permission is in the
+    \l QWebEnginePermission::Invalid state, the buttons for granting or denying it
+    are disabled.
+
+    \quotefromfile webenginewidgets/permissionbrowser/mainwindow.cpp
+    \skipto void PermissionWidget::updateState()
+    \printuntil /^\}/
+
+    When a pending permission is granted or denied, we want to move the associated
+    widget to the list above, which contains all currently existing permissions.
+    We do this in the \c MainWindow::handlePermissionModified slot.
+
+    \quotefromfile webenginewidgets/permissionbrowser/mainwindow.cpp
+    \skipto void MainWindow::handlePermissionModified
+    \printuntil /^\}/
+
+    Notably, we only do this in cases where we know the permission is remembered;
+    some \c PermissionTypes are non-persistent, which means they require
+    a permission prompt be shown to the user every time they're used.
+    We also exclude permissions with a \l QWebEnginePermission::Ask state, which
+    indicates that the permission was \l {QWebEnginePermission::reset}{reset}(),
+    and we don't add anything to the list of existing permissions when
+    \l QWebEngineProfile::persistentPermissionsPolicy is set to
+    \c AskEveryTime.
+
+    \note Check the \l QWebEnginePermission::PermissionType documentation to see which
+    \c PermissionTypes are persistent.
+
+    \section1 Displaying and modifying existing permissions
+
+    By default, permissions are stored to disk and retrieved again on application
+    startup. To get a list of all existing website permissions, we call
+    \l QWebEngineProfile::listAllPermissions():
+
+    \quotefromfile webenginewidgets/permissionbrowser/mainwindow.cpp
+    \skipto void MainWindow::loadStoredPermissions()
+    \printuntil /^\}/
+
+    For every permission in the list, we simply construct a new \c PermissionWidget, and
+    add it to the list on the right-hand side of the screen. Existing permissions
+    are modified \l {PermissionWidgetConstructor}{using the exact same API as pending ones}.
+
+    \section1 Pre-granting permissions
+
+    Certain permissions may be granted in advance, provided the origin and permission type
+    are known. Clicking on the "New" button in the top right will create a pop-up
+    dialog that allows you to do just that. The dialog is implemented by the
+    \c PermissionDialog class:
+
+    \quotefromfile webenginewidgets/permissionbrowser/mainwindow.cpp
+    \skipto PermissionDialog::PermissionDialog
+    \printuntil /^\}/
+
+    We populate the \l QComboBox using the QMetaEnum type associated with
+    \l QWebEnginePermission::PermissionType. We make sure to filter out non-persistent
+    permission types, since pre-granting these is not supported.
+
+    We display the dialog and add show the resulting \c PermissionWidget
+    in the UI inside the \c MainWindow::handleNewClicked slot. The new
+    permission is handled the same way we would if a website requested it:
+    by calling \c handlePermissionRequested().
+
+    \quotefromfile webenginewidgets/permissionbrowser/mainwindow.cpp
+    \skipto void MainWindow::handleNewClicked()
+    \printuntil /^\}/
+
+    \section1 Changing the permission persistence policy
+
+    By default, permissions are stored to disk for every named QWebEngineProfile,
+    and in memory for every unnamed/off-the-record one. Normally, this setting
+    won't be changed at runtime, but this example explores the effects
+    of each option.
+
+    \list
+        \li \l QWebEngineProfile::StoreOnDisk is the default, and it ensures
+        that any permissions that have been granted in the current application run will be
+        loaded back up at next startup. A permission onlycneeds to be granted once, and
+        subsequent uses of the API that triggered the request will automatically be granted,
+        until the application calls QWebEnginePermission::reset().
+        \li \l QWebEngineProfile::StoreInMemory Has the same behavior as above,
+        except that permissions will be destroyed at application exit, and not committed
+        to disk.
+        \li \l QWebEngineProfile::AskEveryTime makes sure permissions are never
+        remembered, and all act as if they're non-persistent. Thus, every time a web API needs
+        a permission, a new prompt will be shown to the user. This option is intended for
+        backwards compatibility and applications which implement their own permission storage.
+    \endlist
+
+    To ensure the user will be shown previously existing permissions, we need to call
+    \l QWebEngineProfile::listAllPermissions():
+
+    \quotefromfile webenginewidgets/permissionbrowser/mainwindow.cpp
+    \skipto void MainWindow::loadStoredPermissions()
+    \printuntil /^\}/
+
+    This is done one time at startup, as well as whenever the user changes the policy
+    from the \l QComboBox from the top right.
+
+    \quotefromfile webenginewidgets/permissionbrowser/mainwindow.cpp
+    \skipto void MainWindow::handlePolicyComboBoxIndexChanged
+    \printuntil /^\}/
+*/

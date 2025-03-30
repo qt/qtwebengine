@@ -31,6 +31,7 @@
 #include "extensions/renderer/extensions_render_frame_observer.h"
 #include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/extensions_renderer_api_provider.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 
@@ -108,7 +109,9 @@ void ExtensionsRendererClientQt::RenderThreadStarted()
 {
     content::RenderThread *thread = content::RenderThread::Get();
     if (!extension_dispatcher_)
-        extension_dispatcher_.reset(new extensions::Dispatcher(std::make_unique<ExtensionsDispatcherDelegateQt>()));
+        extension_dispatcher_.reset(new extensions::Dispatcher(
+                std::make_unique<ExtensionsDispatcherDelegateQt>(),
+                std::vector<std::unique_ptr<extensions::ExtensionsRendererAPIProvider>>()));
     extension_dispatcher_->OnRenderThreadStarted(thread);
     permissions_policy_delegate_.reset(new RendererPermissionsPolicyDelegateQt(extension_dispatcher_.get()));
     resource_request_policy_.reset(new extensions::ResourceRequestPolicyQt(extension_dispatcher_.get()));
@@ -149,7 +152,7 @@ void ExtensionsRendererClientQt::WillSendRequest(blink::WebLocalFrame *frame,
     if (url.ProtocolIs(extensions::kExtensionScheme) &&
             !resource_request_policy_->CanRequestResource(url, frame,
                                                           transition_type,
-                                                          base::OptionalFromPtr(initiator_origin))) {
+                                                          initiator_origin)) {
         *new_url = GURL(chrome::kExtensionInvalidRequestURL);
     }
 }

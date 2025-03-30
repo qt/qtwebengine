@@ -18,13 +18,6 @@ qt_internal_add_manual_test(tst_geopermission
         Qt::WebEngineQuick
 )
 
-if(WIN32)
-    set_property(
-        TARGET tst_geopermission
-        APPEND PROPERTY
-            SOURCES tst_geopermission.exe.manifest)
-endif()
-
 set_target_properties(tst_geopermission PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
@@ -56,8 +49,13 @@ if (APPLE)
 
     if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
         # Need to sign application for location permissions to work
+        if(QT_FEATURE_debug_and_release)
+            set(exe_path "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/")
+        else()
+            unset(exe_path)
+        endif()
         add_custom_command(TARGET tst_geopermission
-            POST_BUILD COMMAND codesign -s - tst_geopermission.app)
+            POST_BUILD COMMAND codesign --force -s - ${exe_path}tst_geopermission.app)
     endif()
 endif()
 

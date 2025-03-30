@@ -38,7 +38,10 @@ int main(int argc, char *argv[])
     configuration.setPeerVerifyMode(QSslSocket::VerifyPeer);
 
     QFile keyFile(":/resources/server.key");
-    keyFile.open(QIODevice::ReadOnly);
+    if (!keyFile.open(QIODevice::ReadOnly)) {
+        qFatal("Failed to read key file %s: %s", qPrintable(keyFile.fileName()),
+               qPrintable(keyFile.errorString()));
+    }
 
     QSslKey key(keyFile.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
     configuration.setPrivateKey(key);

@@ -77,10 +77,12 @@ static int IsCertErrorFatal(int cert_error)
 
 CertificateErrorController::CertificateErrorController(
         int cert_error, const net::SSLInfo &ssl_info, const GURL &request_url,
-        bool strict_enforcement, base::OnceCallback<void(content::CertificateRequestResultType)> cb)
+        bool main_frame, bool strict_enforcement,
+        base::OnceCallback<void(content::CertificateRequestResultType)> cb)
     : m_certError(QWebEngineCertificateError::Type(cert_error))
     , m_requestUrl(toQt(request_url))
     , m_overridable(!IsCertErrorFatal(cert_error) && !strict_enforcement)
+    , m_mainFrame(main_frame)
 {
     // MEMO set callback anyway even for non overridable error since chromium halts load until it's called
     //      callback will be executed either explicitly by use code or implicitly when error goes out of scope
@@ -202,6 +204,11 @@ QString CertificateErrorController::errorString() const
 QList<QSslCertificate> CertificateErrorController::certificateChain() const
 {
     return m_certificateChain;
+}
+
+bool CertificateErrorController::isMainFrame() const
+{
+    return m_mainFrame;
 }
 
 }

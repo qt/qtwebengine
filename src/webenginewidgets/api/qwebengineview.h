@@ -115,6 +115,7 @@ Q_SIGNALS:
                                  int exitCode);
     void pdfPrintingFinished(const QString &filePath, bool success);
     void printRequested();
+    void printRequestedByFrame(QWebEngineFrame frame);
     void printFinished(bool success);
 
 protected:

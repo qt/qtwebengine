@@ -11,7 +11,7 @@
 #include "base/functional/callback.h"
 
 namespace QtWebEngineCore {
-class Q_WEBENGINECORE_PRIVATE_EXPORT DesktopMediaControllerPrivate
+class Q_WEBENGINECORE_EXPORT DesktopMediaControllerPrivate
 {
 public:
     DesktopMediaControllerPrivate(base::OnceCallback<void(content::DesktopMediaID)> doneCallback);
@@ -21,6 +21,7 @@ public:
     base::OnceCallback<void(content::DesktopMediaID)> doneCallback;
     QScopedPointer<DesktopMediaListQt> screens;
     QScopedPointer<DesktopMediaListQt> windows;
+    int numInitialized;
 };
 
 } // namespace QtWebEngineCore

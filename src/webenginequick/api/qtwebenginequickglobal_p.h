@@ -19,10 +19,4 @@
 #include <QtCore/private/qglobal_p.h>
 #include <QtWebEngineQuick/private/qtwebenginequick-config_p.h>
 
-QT_BEGIN_NAMESPACE
-
-#define Q_WEBENGINEQUICK_PRIVATE_EXPORT Q_WEBENGINEQUICK_EXPORT
-
-QT_END_NAMESPACE
-
 #endif // QTWEBENGINEQUICKGLOBAL_P_H

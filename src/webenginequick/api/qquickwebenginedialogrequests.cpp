@@ -35,7 +35,7 @@ ASSERT_ENUMS_MATCH(FilePickerController::Save,
 
 /*!
     \qmltype AuthenticationDialogRequest
-    //! \instantiates QQuickWebEngineAuthenticationDialogRequest
+    //! \nativetype QQuickWebEngineAuthenticationDialogRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.4
 
@@ -186,8 +186,10 @@ void QQuickWebEngineAuthenticationDialogRequest::dialogAccept(const QString &use
     m_accepted = true;
     QSharedPointer<AuthenticationDialogController> controller
             = m_controller.toStrongRef();
-    if (controller)
-        controller->accept(user,password);
+    if (controller) {
+        controller->credentials(user, password);
+        controller->accept();
+    }
 }
 
 /*!
@@ -210,7 +212,7 @@ void QQuickWebEngineAuthenticationDialogRequest::dialogReject()
 
 /*!
     \qmltype JavaScriptDialogRequest
-    //! \instantiates QQuickWebEngineJavaScriptDialogRequest
+    //! \nativetype QQuickWebEngineJavaScriptDialogRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.4
 
@@ -405,7 +407,7 @@ void QQuickWebEngineJavaScriptDialogRequest::dialogReject()
 
 /*!
     \qmltype ColorDialogRequest
-    //! \instantiates QQuickWebEngineColorDialogRequest
+    //! \nativetype QQuickWebEngineColorDialogRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.4
 
@@ -524,7 +526,7 @@ void QQuickWebEngineColorDialogRequest::dialogReject()
 
 /*!
     \qmltype FileDialogRequest
-    //! \instantiates QQuickWebEngineFileDialogRequest
+    //! \nativetype QQuickWebEngineFileDialogRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.4
 
@@ -680,7 +682,7 @@ void QQuickWebEngineFileDialogRequest::dialogReject()
 
 /*!
     \qmltype TooltipRequest
-    //! \instantiates QQuickWebEngineTooltipRequest
+    //! \nativetype QQuickWebEngineTooltipRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.10
 

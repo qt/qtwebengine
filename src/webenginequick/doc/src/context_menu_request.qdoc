@@ -3,7 +3,7 @@
 
 /*!
     \qmltype ContextMenuRequest
-    //! \instantiates QQuickWebEngineContextMenuRequest
+    //! \nativetype QQuickWebEngineContextMenuRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.4
 

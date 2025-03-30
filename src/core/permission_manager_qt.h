@@ -5,22 +5,36 @@
 #define PERMISSION_MANAGER_QT_H
 
 #include "base/functional/callback.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/permission_controller_delegate.h"
+#include "content/public/browser/render_frame_host.h"
 
+#include <QtWebEngineCore/qwebenginepermission.h>
 #include "profile_adapter.h"
 
 #include <map>
+#include <tuple>
+
+class PrefService;
 
 namespace QtWebEngineCore {
 
 class PermissionManagerQt : public content::PermissionControllerDelegate
 {
 public:
-    PermissionManagerQt();
+    PermissionManagerQt(ProfileAdapter *adapter);
     ~PermissionManagerQt();
 
-    void permissionRequestReply(const QUrl &origin, ProfileAdapter::PermissionType type, ProfileAdapter::PermissionState reply);
-    bool checkPermission(const QUrl &origin, ProfileAdapter::PermissionType type);
+    void setPermission(
+        const QUrl &origin,
+        QWebEnginePermission::PermissionType permissionType,
+        QWebEnginePermission::State state,
+        content::RenderFrameHost *rfh = nullptr);
+    QWebEnginePermission::State getPermissionState(const QUrl &origin, QWebEnginePermission::PermissionType permissionType,
+        content::RenderFrameHost *rfh = nullptr);
+    QList<QWebEnginePermission> listPermissions(const QUrl &origin, QWebEnginePermission::PermissionType permissionType);
+
+    void commit();
 
     // content::PermissionManager implementation:
     blink::mojom::PermissionStatus GetPermissionStatus(
@@ -51,20 +65,18 @@ public:
             const content::PermissionRequestDescription &request_description,
             base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus> &)> callback) override;
 
-    content::PermissionControllerDelegate::SubscriptionId SubscribePermissionStatusChange(
-        blink::PermissionType permission,
-        content::RenderProcessHost* render_process_host,
-        content::RenderFrameHost* render_frame_host,
-        const GURL& requesting_origin,
-        const base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback) override;
+    content::PermissionControllerDelegate::SubscriptionId SubscribeToPermissionStatusChange(
+            blink::PermissionType permission, content::RenderProcessHost *render_process_host,
+            content::RenderFrameHost *render_frame_host, const GURL &requesting_origin,
+            const base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback) override;
 
-    void UnsubscribePermissionStatusChange(content::PermissionControllerDelegate::SubscriptionId subscription_id) override;
+    void UnsubscribeFromPermissionStatusChange(
+            content::PermissionControllerDelegate::SubscriptionId subscription_id) override;
 
 private:
-    QHash<QPair<QUrl, ProfileAdapter::PermissionType>, bool> m_permissions;
     struct Request {
         int id;
-        ProfileAdapter::PermissionType type;
+        QWebEnginePermission::PermissionType type;
         QUrl origin;
         base::OnceCallback<void(blink::mojom::PermissionStatus)> callback;
     };
@@ -75,16 +87,40 @@ private:
         base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus>&)> callback;
     };
     struct Subscription {
-        ProfileAdapter::PermissionType type;
+        QWebEnginePermission::PermissionType type;
         QUrl origin;
         base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback;
     };
+
+    blink::mojom::PermissionStatus getTransientPermissionStatus(blink::PermissionType permission,
+        const GURL& requesting_origin,
+        content::GlobalRenderFrameHostToken token);
+
+    void setPersistentPermission(blink::PermissionType permission,
+        const GURL& requesting_origin,
+        bool granted);
+
+    void setTransientPermission(blink::PermissionType permission,
+        const GURL& requesting_origin,
+        bool granted,
+        content::GlobalRenderFrameHostToken token);
+
+    void resetTransientPermission(blink::PermissionType permission,
+        const GURL& requesting_origin,
+        content::GlobalRenderFrameHostToken token);
+
     std::vector<Request> m_requests;
     std::vector<MultiRequest> m_multiRequests;
+    std::vector<QWebEnginePermission::PermissionType> m_permissionTypes;
+    std::map<content::GlobalRenderFrameHostToken,
+        QList<std::tuple<GURL, blink::PermissionType, bool>>> m_transientPermissions;
     std::map<content::PermissionControllerDelegate::SubscriptionId, Subscription> m_subscribers;
     content::PermissionControllerDelegate::SubscriptionId::Generator subscription_id_generator_;
     int m_requestIdCount;
-
+    int m_transientWriteCount;
+    std::unique_ptr<PrefService> m_prefService;
+    QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
+    bool m_persistence;
 };
 
 } // namespace QtWebEngineCore

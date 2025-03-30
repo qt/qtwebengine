@@ -13,6 +13,12 @@ include(cmake/Functions.cmake)
 project(QtWebEngineDummy)
 find_package(Qt6 6.5 CONFIG REQUIRED COMPONENTS BuildInternals Core)
 
+# Sepcial case of just doing gn build
+if(DEFINED BUILD_ONLY_GN)
+    qt_webengine_build_and_install_gn()
+    return()
+endif()
+
 project(QtWebEngine
     VERSION ${Qt6Core_VERSION}
     DESCRIPTION "QtWebEngine and QtPdf modules"
@@ -41,4 +47,7 @@ if(MATRIX_BUILD AND NOT MATRIX_SUBBUILD AND NOT QT_SUPERBUILD)
     return()
 endif()
 
+# Don't auto create the SBOM projects, they will be manually created
+# for each sub-project.
+set(QT_SKIP_SBOM_AUTO_PROJECT TRUE)
 qt_build_repo()

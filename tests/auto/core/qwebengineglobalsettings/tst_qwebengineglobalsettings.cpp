@@ -32,8 +32,6 @@ private Q_SLOTS:
     void dnsOverHttps();
 };
 
-Q_LOGGING_CATEGORY(lc, "qt.webengine.tests")
-
 void tst_QWebEngineGlobalSettings::dnsOverHttps_data()
 {
     QTest::addColumn<QWebEngineGlobalSettings::SecureDnsMode>("dnsMode");

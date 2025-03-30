@@ -20,10 +20,6 @@ namespace mojom {
 class CertVerifierCreationParams;
 }}
 
-namespace content {
-class ResourceContext;
-}
-
 namespace extensions {
 class ExtensionSystemQt;
 }
@@ -66,7 +62,6 @@ public:
     virtual ~ProfileIODataQt();
 
     QPointer<ProfileAdapter> profileAdapter();
-    content::ResourceContext *resourceContext();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::ExtensionSystemQt* GetExtensionSystem();
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
@@ -104,7 +99,6 @@ private:
     void removeBrowsingDataRemoverObserver();
 
     ProfileQt *m_profile;
-    std::unique_ptr<content::ResourceContext> m_resourceContext;
     scoped_refptr<CookieMonsterDelegateQt> m_cookieDelegate;
     QPointer<ProfileAdapter> m_profileAdapter; // never dereferenced in IO thread and it is passed by qpointer
     ProfileAdapter::PersistentCookiesPolicy m_persistentCookiesPolicy;

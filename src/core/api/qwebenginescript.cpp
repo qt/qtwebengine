@@ -7,6 +7,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 
+using namespace Qt::StringLiterals;
 using QtWebEngineCore::UserScript;
 
 QT_BEGIN_NAMESPACE
@@ -131,12 +132,26 @@ void QWebEngineScript::setName(const QString &scriptName)
     d->setName(scriptName);
 }
 
-
+/*!
+ * Returns the remote source location of the user script (if any).
+ */
 QUrl QWebEngineScript::sourceUrl() const
 {
     return d->sourceUrl();
 }
 
+/*!
+ * Sets the remote source location of the user script to \a url.
+ *
+ * Unlike \l setSourceCode(), this function allows referring to user scripts that
+ * are not already loaded in memory, for instance, when stored on disk.
+ *
+ * Setting this value will change the \l sourceCode of the script.
+ *
+ * \note At present, only file-based sources are supported.
+ *
+ * \sa setSourceCode()
+ */
 void QWebEngineScript::setSourceUrl(const QUrl &url)
 {
     if (url == sourceUrl())
@@ -147,17 +162,17 @@ void QWebEngineScript::setSourceUrl(const QUrl &url)
     QFile file;
     if (url.isLocalFile()) {
         file.setFileName(url.toLocalFile());
-    } else if (url.scheme().compare(QLatin1String("qrc"), Qt::CaseInsensitive) == 0) {
+    } else if (url.scheme().compare("qrc"_L1, Qt::CaseInsensitive) == 0) {
         if (url.authority().isEmpty())
             file.setFileName(QLatin1Char(':') + url.path());
     }
 
     if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Can't open user script " << url;
+        qWarning("Can't open user script %ls", qUtf16Printable(url.toString()));
         return;
     }
 
-    QString source = QString::fromUtf8(file.readAll());
+    const QString source = QString::fromUtf8(file.readAll());
     setSourceCode(source);
 }
 

@@ -16,6 +16,8 @@ class tst_UIDelegates : public QObject
 {
     Q_OBJECT
 public:
+    static void initMain();
+
     tst_UIDelegates();
 
 private Q_SLOTS:
@@ -39,9 +41,13 @@ private:
     QScopedPointer<QQmlComponent> m_component;
 };
 
-tst_UIDelegates::tst_UIDelegates()
+void tst_UIDelegates::initMain()
 {
     QtWebEngineQuick::initialize();
+}
+
+tst_UIDelegates::tst_UIDelegates()
+{
     static QQmlEngine *engine = new QQmlEngine(this);
     m_component.reset(new QQmlComponent(engine, this));
     m_component->setData(QByteArrayLiteral("import QtQuick\n"

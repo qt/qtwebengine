@@ -9,6 +9,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/file_select_listener.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/selected_file_info.h"
 
 #include <QtCore/qcoreapplication.h>
 #include <QDir>
@@ -16,6 +17,8 @@
 #include <QMimeDatabase>
 #include <QStringList>
 #include <QVariant>
+
+using namespace Qt::StringLiterals;
 
 namespace QtWebEngineCore {
 
@@ -74,7 +77,7 @@ void FilePickerController::accepted(const QStringList &files)
             continue;
         }
 
-        if (urlString.startsWith("file:")) {
+        if (urlString.startsWith("file:"_L1)) {
             base::FilePath filePath = toFilePath(urlString).NormalizePathSeparators();
             std::vector<base::FilePath::StringType> pathComponents;
             // Splits the file URL into scheme, host name, path and file name.
@@ -82,18 +85,20 @@ void FilePickerController::accepted(const QStringList &files)
 
             QString absolutePath;
 #if !defined(Q_OS_WIN)
-            absolutePath = "/";
+            absolutePath += u'/';
 #endif
 
             QString scheme = toQt(pathComponents[0]);
             if (scheme.size() > 5) {
 #if defined(Q_OS_WIN)
                 // There is no slash at the end of the file scheme and it is valid on Windows: file:C:/
-                if (scheme.size() == 7 && scheme.at(5).isLetter() && scheme.at(6) == ':') {
-                    absolutePath += scheme.at(5) + ":/";
+                if (scheme.size() == 7 && scheme.at(5).isLetter() && scheme.at(6) == u':') {
+                    absolutePath += scheme.at(5) + ":/"_L1;
                 } else {
 #endif
-                    qWarning("Ignoring invalid item in FilePickerController::accepted(QStringList): %s", qPrintable(urlString));
+                    qWarning("Ignoring invalid item in "
+                             "FilePickerController::accepted(QStringList): %ls",
+                             qUtf16Printable(urlString));
                     continue;
 #if defined(Q_OS_WIN)
                 }
@@ -105,28 +110,34 @@ void FilePickerController::accepted(const QStringList &files)
                 && base::FilePath::IsSeparator(urlString.at(6).toLatin1())
                 && !base::FilePath::IsSeparator(urlString.at(7).toLatin1())) {
 #if defined(Q_OS_WIN)
-                if (urlString.at(8) != ':' && pathComponents.size() > 2) {
-                    absolutePath += "//";
+                if (urlString.at(8) != u':' && pathComponents.size() > 2) {
+                    absolutePath += "//"_L1;
 #else
                 if (pathComponents.size() > 2) {
-                    absolutePath += "/";
+                    absolutePath += u'/';
 #endif
                 } else {
-                    qWarning("Ignoring invalid item in FilePickerController::accepted(QStringList): %s", qPrintable(urlString));
+                    qWarning("Ignoring invalid item in "
+                             "FilePickerController::accepted(QStringList): %ls",
+                             qUtf16Printable(urlString));
                     continue;
                 }
             }
 
-            // Build absolute path from file URI componenets.
-            for (size_t j = 1; j < pathComponents.size(); j++)
-                absolutePath += toQt(pathComponents[j]) + (j != pathComponents.size()-1 ? "/" : "");
+            // Build absolute path from file URI components.
+            for (size_t j = 1; j < pathComponents.size(); j++) {
+                absolutePath += toQt(pathComponents[j]);
+                if (j != pathComponents.size() - 1)
+                    absolutePath += u'/';
+            }
 
             if (toFilePath(absolutePath).IsAbsolute()) {
                 stringList.append(absolutePath);
                 continue;
             }
         }
-        qWarning("Ignoring invalid item in FilePickerController::accepted(QStringList): %s", qPrintable(urlString));
+        qWarning("Ignoring invalid item in FilePickerController::accepted(QStringList): %ls",
+                 qUtf16Printable(urlString));
     }
 
     FilePickerController::filesSelectedInChooser(stringList);
@@ -160,7 +171,7 @@ static QStringList listRecursively(const QDir &dir)
     const QFileInfoList infoList(dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden));
     for (const QFileInfo &fileInfo : infoList) {
         if (fileInfo.isDir()) {
-            ret.append(fileInfo.absolutePath() + QStringLiteral("/.")); // Match chromium's behavior. See chrome/browser/file_select_helper.cc
+            ret.append(fileInfo.absolutePath() + "/."_L1); // Match chromium's behavior. See chrome/browser/file_select_helper.cc
             ret.append(listRecursively(QDir(fileInfo.absoluteFilePath())));
         } else
             ret.append(fileInfo.absoluteFilePath());
@@ -213,8 +224,12 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
 
         if (files.empty())
             d_ptr->fileSystemAccessDialogListener->FileSelectionCanceled(nullptr);
+        else if (files.size() == 1)
+            d_ptr->fileSystemAccessDialogListener->FileSelected(
+                    ui::SelectedFileInfo(files[0]), 0, nullptr);
         else
-            d_ptr->fileSystemAccessDialogListener->MultiFilesSelected(files, nullptr);
+            d_ptr->fileSystemAccessDialogListener->MultiFilesSelected(
+                    ui::FilePathListToSelectedFileInfoList(files), nullptr);
     }
 }
 
@@ -243,34 +258,34 @@ QStringList FilePickerController::nameFilters(const QStringList &acceptedMimeTyp
         return nameFilters;
 
     for (QString type : acceptedMimeTypes) {
-        if (type.startsWith(".")) {
+        if (type.startsWith(u'.')) {
             // A single suffix
             // Filename.type doesn't have to exist and mimeTypeForFile() supports
             // custom suffixes as valid (but unknown) MIME types.
-            const QMimeType &mimeType = mimeDatabase.mimeTypeForFile("filename" + type);
+            const QMimeType &mimeType = mimeDatabase.mimeTypeForFile("filename"_L1 + type);
             if (mimeType.isValid()) {
-                QString glob = "*" + type;
-                acceptedGlobs.append(glob);
-                nameFilters.append(mimeType.comment() + " (" + glob + ")");
+                QString glob = u'*' + type;
+                nameFilters.append(mimeType.comment() + " ("_L1 + glob + u')');
+                acceptedGlobs.append(std::move(glob));
             }
-        } else if (type.contains("/") && !type.endsWith("*")) {
+        } else if (type.contains(u'/') && !type.endsWith(u'*')) {
             // All suffixes for a given MIME type
             const QMimeType &mimeType = mimeDatabase.mimeTypeForName(type);
             if (mimeType.isValid() && !mimeType.globPatterns().isEmpty()) {
-                QString globs = mimeType.globPatterns().join(" ");
+                QString globs = mimeType.globPatterns().join(u' ');
+                nameFilters.append(mimeType.comment() + " ("_L1 + globs + u')');
                 acceptedGlobs.append(mimeType.globPatterns());
-                nameFilters.append(mimeType.comment() + " (" + globs + ")");
             }
-        } else if (type.endsWith("/*")) {
+        } else if (type.endsWith("/*"_L1)) {
             // All MIME types for audio/*, image/* or video/*
             // as separate filters as Chrome does
             static const QList<QMimeType> &allMimeTypes = mimeDatabase.allMimeTypes();
-            type = type.remove("/*");
+            type.chop(2);
             for (const QMimeType &m : allMimeTypes) {
                 if (m.name().startsWith(type) && !m.globPatterns().isEmpty()) {
-                    QString globs = m.globPatterns().join(" ");
+                    QString globs = m.globPatterns().join(u' ');
+                    nameFilters.append(m.comment() + " ("_L1 + globs + u')');
                     acceptedGlobs.append(m.globPatterns());
-                    nameFilters.append(m.comment() + " (" + globs + ")");
                 }
             }
         } else {
@@ -280,7 +295,7 @@ QStringList FilePickerController::nameFilters(const QStringList &acceptedMimeTyp
 
     const QString filter =
         QCoreApplication::translate("FilePickerController",
-                                    "Accepted types (%1)").arg(acceptedGlobs.join(' '));
+                                    "Accepted types (%1)").arg(acceptedGlobs.join(u' '));
     nameFilters.prepend(filter);
 
     return nameFilters;

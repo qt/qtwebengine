@@ -8,6 +8,7 @@
 #include <QHttpServer>
 #include <QListView>
 #include <QMessageBox>
+#include <QTcpServer>
 #include <QWebEnginePage>
 #include <QWebEngineProfile>
 #include <QWebEngineSettings>
@@ -28,58 +29,64 @@ class Page : public QWebEnginePage
 public:
     Page(QWebEngineProfile *profile, QObject *parent = nullptr);
 private slots:
-    void handlePermissionRequest(const QUrl &origin, Feature feature);
+    void handlePermissionRequest(QWebEnginePermission permission);
     void handleDesktopMediaRequest(const QWebEngineDesktopMediaRequest &request);
 };
 
 Page::Page(QWebEngineProfile *profile, QObject *parent) : QWebEnginePage(profile, parent)
 {
     settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
-    connect(this, &QWebEnginePage::featurePermissionRequested, this,
+    connect(this, &QWebEnginePage::permissionRequested, this,
             &Page::handlePermissionRequest);
     connect(this, &QWebEnginePage::desktopMediaRequested, this, &Page::handleDesktopMediaRequest);
 }
 
-void Page::handlePermissionRequest(const QUrl &origin, Feature feature)
+void Page::handlePermissionRequest(QWebEnginePermission permission)
 {
     if (QMessageBox::question(QApplication::activeWindow(), tr("Permission request"),
                               tr("allow access?"))
         == QMessageBox::Yes)
-        setFeaturePermission(origin, feature, PermissionGrantedByUser);
+        permission.grant();
     else
-        setFeaturePermission(origin, feature, PermissionDeniedByUser);
+        permission.deny();
 }
 
 void Page::handleDesktopMediaRequest(const QWebEngineDesktopMediaRequest &request)
 {
-        Ui::MediaPickerDialog mediaPickerDialog;
-        QDialog dialog;
-        dialog.setModal(true);
-        mediaPickerDialog.setupUi(&dialog);
+    Ui::MediaPickerDialog mediaPickerDialog;
+    QDialog dialog;
+    dialog.setModal(true);
+    mediaPickerDialog.setupUi(&dialog);
 
-        auto *screensView = mediaPickerDialog.screensView;
-        auto *windowsView = mediaPickerDialog.windowsView;
-        auto *screensModel = request.screensModel();
-        auto *windowsModel = request.windowsModel();
+    auto *screensView = mediaPickerDialog.screensView;
+    auto *windowsView = mediaPickerDialog.windowsView;
+    auto *screensModel = request.screensModel();
+    auto *windowsModel = request.windowsModel();
 
-        screensView->setModel(screensModel);
-        windowsView->setModel(windowsModel);
+    screensView->setModel(screensModel);
+    windowsView->setModel(windowsModel);
 
-        if (dialog.exec() == QDialog::Accepted) {
-            if (mediaPickerDialog.tabWidget->currentIndex() == 0)
-                request.selectWindow(windowsView->selectionModel()->selectedIndexes().first());
-            else
-                request.selectScreen(screensView->selectionModel()->selectedIndexes().first());
+    if (dialog.exec() == QDialog::Accepted) {
+        if (mediaPickerDialog.tabWidget->currentIndex() == 0) {
+            auto list = windowsView->selectionModel()->selectedIndexes();
+            if (!list.empty()) {
+                request.selectWindow(list.first());
+                return;
+            }
         } else {
-            request.cancel();
+            auto list = screensView->selectionModel()->selectedIndexes();
+            if (!list.empty()) {
+                request.selectScreen(list.first());
+                return;
+            }
         }
+    }
+    request.cancel();
 }
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-
-    QHttpServer server;
 
     QFile file(":index.html");
 
@@ -94,11 +101,12 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    server.route("/index.html", [data]() {
-        return data;
-    });
+    QHttpServer httpServer;
+    httpServer.route("/index.html", [data]() { return data; });
 
-    server.listen(QHostAddress::Any, 3000);
+    auto tcpServer = new QTcpServer(&httpServer);
+    tcpServer->listen(QHostAddress::Any, 3000);
+    httpServer.bind(tcpServer);
 
     QWebEngineView view;
     Page *page = new Page(QWebEngineProfile::defaultProfile(), &view);

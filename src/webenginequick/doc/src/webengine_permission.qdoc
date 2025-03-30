@@ -1,0 +1,146 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \qmlvaluetype webEnginePermission
+    \nativetype QWebEnginePermission
+    \inqmlmodule QtWebEngine
+    \since 6.8
+    \brief An object used to access and modify the state of a single permission that's been
+    granted or denied to a specific origin URL.
+
+    The typical usage pattern is as follows:
+    \list 1
+        \li A website requests a specific feature, triggering the WebEngineView::permissionRequested signal;
+        \li The signal handler triggers a prompt asking the user whether they want to grant the permission;
+        \li When the user has made their decision, the application calls \l grant() or \l deny();
+    \endlist
+
+    Alternatively, an application interested in modifying already granted permissions may use WebEngineProfile::listAllPermissions()
+    to get a list of existing permissions associated with a profile, or WebEngineProfile::queryPermission() to get
+    a webEnginePermission object for a specific permission.
+
+    The \l origin property can be used to query which origin the webEnginePermission is associated with, while the
+    \l permissionType property describes the associated feature. A website origin is the combination of its scheme, hostname,
+    and port. Permissions are granted on a per-origin basis; thus, if the web page \c{https://www.example.com:12345/some/page.html}
+    requests a permission, it will be granted to the origin \c{https://www.example.com:12345/}.
+
+    The \l permissionType enumeration describes all the permission types Qt WebEngine supports. Only some permission types
+    are remembered between browsing sessions; they are \e persistent. Non-persistent permissions query the user every time a
+    website requests them. You can check whether a permission type is persistent at runtime
+    using the static method WebEnginePermission::isPersistent().
+
+    Persistent permissions are stored inside the active WebEngineProfile, and their lifetime depends on the value of
+    WebEngineProfile::persistentPermissionsPolicy. By default, named profiles store their permissions on disk, whereas
+    off-the-record ones store them in memory (and destroy them when the profile is destroyed). A stored permission will not
+    query the user the next time a website requests it; instead it will be automatically granted or denied, depending on
+    the resolution the user picked initially. To erase a stored permission, call \l reset() on it.
+
+    A non-persistent permission, on the other hand, is only usable until the related WebEngineView performs a navigation to
+    a different URL, or is destroyed.
+
+    You can check whether a WebEnginePermission is in a valid state using its \l isValid property. For invalid objects, calls to \l grant(),
+    \l deny(), or \l reset() will do nothing, while calls to \l state will always return WebEnginePermission::Invalid.
+
+    \sa WebEngineView::permissionRequested, WebEngineProfile::queryPermission(),
+    WebEngineProfile::listAllPermissions()
+*/
+
+/*!
+    \qmlproperty url webEnginePermission::origin
+    \brief The URL of the permission's associated origin.
+
+    A website origin is the combination of its scheme, hostname, and port. Permissions are granted on a
+    per-origin basis; thus, if the web page \c{https://www.example.com:12345/some/page.html}
+    requests a permission, it will be granted to the origin \c{https://www.example.com:12345/}.
+*/
+
+/*!
+    \qmlproperty enumeration webEnginePermission::permissionType
+    \brief The permission type associated with this permission.
+
+    \value WebEnginePermission.MediaAudioCapture Access to a microphone, or another audio source. This permission is \e not persistent.
+    \value WebEnginePermission.MediaVideoCapture Access to a webcam, or another video source. This permission is \e not persistent.
+    \value WebEnginePermission.MediaAudioVideoCapture Combination of \e MediaAudioCapture and \e MediaVideoCapture. This permission is \e not persistent.
+    \value WebEnginePermission.DesktopVideoCapture Access to the contents of the user's screen. This permission is \e not persistent.
+    \value WebEnginePermission.DesktopAudioVideoCapture Access to the contents of the user's screen, and application audio. This permission is \e not persistent.
+    \value WebEnginePermission.Notifications Allows the website to send notifications to the user. This permission is persistent.
+    \value WebEnginePermission.Geolocation Access to the user's physical location. This permission is persistent.
+    \value WebEnginePermission.ClipboardReadWrite Access to the user's clipboard. This permission is persistent.
+    \value WebEnginePermission.LocalFontsAccess Access to the fonts installed on the user's machine. Only available on desktops. This permission is persistent.
+    \value WebEnginePermission.Unsupported An unsupported feature type.
+    \omitvalue WebEnginePermission.MouseLock
+
+    \note Non-persistent permission types are ones that will never be remembered by the underlying storage, and will trigger
+    a permission request every time a website tries to use them.
+*/
+
+/*!
+    \qmlproperty enumeration webEnginePermission::state
+    \brief The current state of the permission.
+
+    \value WebEnginePermission.Invalid Object is in an invalid state, and any attempts to modify the described permission will fail.
+    \value WebEnginePermission.Ask Either the permission has not been requested before, or the \l permissionType is not persistent.
+    \value WebEnginePermission.Granted Permission has already been granted.
+    \value WebEnginePermission.Denied Permission has already been denied.
+
+    If a permission for the specified \l permissionType and \l origin has already been granted or denied,
+    the return value is WebEnginePermission.Granted, or WebEnginePermission.Denied, respectively.
+    When this is the first time the permission is requested,
+    the return value is WebEnginePermission.Ask. If the object is in an invalid state, the returned
+    value is WebEnginePermission.Invalid.
+
+    \sa isValid, isPersistent
+*/
+
+/*!
+    \qmlproperty bool webEnginePermission::isValid
+    \brief Indicates whether attempts to change the permission's state will be successful.
+
+    An invalid webEnginePermission is either:
+    \list
+        \li One whose \l permissionType is unsupported;
+        \li One whose \l permissionType is non-persistent, and the user has navigated away from the web page that triggered the request;
+        \li One whose \l permissionType is persistent, but the associated profile has been destroyed;
+        \li One whose \l origin is invalid.
+    \endlist
+
+    \sa isPersistent
+*/
+
+/*!
+    \qmlmethod void webEnginePermission::grant()
+
+    Allows the associated origin to access the requested per. Does nothing when \l isValid evaluates to false.
+
+    \sa deny, reset, isValid
+*/
+
+/*!
+    \qmlmethod void webEnginePermission::deny()
+
+    Stops the associated origin from accessing the requested feature. Does nothing when \l isValid evaluates to false.
+
+    \sa grant, reset, isValid
+*/
+
+/*!
+    \qmlmethod void webEnginePermission::reset()
+
+    Removes the permission from the profile's underlying storage. By default, permissions are stored on disk (except for
+    off-the-record profiles, where permissions are stored in memory and are destroyed with the profile).
+    This means that an already granted/denied permission will not be requested twice, but will get automatically
+    granted/denied every subsequent time a website requests it. Calling reset() allows the query to be displayed
+    again the next time the website requests it.
+
+    Does nothing when \l isValid evaluates to false.
+
+    \sa grant, deny, isValid, WebEngineProfile::persistentPermissionsPolicy
+*/
+
+/*!
+    \qmlmethod void webEnginePermission::isPersistent(WebEnginePermission.PermissionType permissionType)
+
+    Returns whether a \a permissionType is \e persistent, meaning that a permission's state will be remembered
+    and the user will not be queried the next time the website requests the same permission.
+*/

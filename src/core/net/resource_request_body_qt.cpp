@@ -9,6 +9,8 @@
 #include "services/network/public/mojom/url_request.mojom-shared.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
+using namespace Qt::StringLiterals;
+
 namespace QtWebEngineCore {
 
 ResourceRequestBody::ResourceRequestBody(network::ResourceRequestBody *requestBody, QObject *parent)
@@ -58,8 +60,8 @@ qint64 ResourceRequestBody::readData(char *data, qint64 maxSize)
                 break;
             }
             case network::mojom::DataElementDataView::Tag::kChunkedDataPipe: {
-                setErrorString(QStringLiteral("Chunked data pipe is used in request body upload, which "
-                                              "is currently not supported"));
+                setErrorString(u"Chunked data pipe is used in request body upload, which "
+                               "is currently not supported"_s);
                 // Nothing should come before or after DataElementChunkedDataPipe
                 return -1;
             }
@@ -110,7 +112,14 @@ void ResourceRequestBody::readDataElementFile(const base::FilePath &filePath, co
     const std::size_t fileSize = std::min(file.size(), length) - realOffset;
     const std::size_t bytesToRead = std::min(fileSize, static_cast<std::size_t>(maxSize));
 
-    file.open(QFile::ReadOnly);
+    if (!file.open(QFile::ReadOnly)) {
+        m_dataElementsIdx++;
+        m_dataElementFileIdx = 0;
+        setErrorString(u"Error while reading from file, skipping remaining content of "_s
+                       % file.fileName() % u": "_s % file.errorString());
+        return;
+    }
+
     file.seek(realOffset);
 
     std::memcpy(*data, file.read(bytesToRead).data(), bytesToRead);
@@ -154,8 +163,8 @@ void ResourceRequestBody::readDataElementPipe(
             *data += bytesToRead;
             bytesRead += bytesToRead;
         } else if (result != MOJO_RESULT_SHOULD_WAIT && result != MOJO_RESULT_FAILED_PRECONDITION) {
-            setErrorString(QString::fromLatin1("Error while reading from data pipe, skipping"
-                                               "remaining content of data pipe. Mojo error code: ")
+            setErrorString("Error while reading from data pipe, skipping "
+                           "remaining content of data pipe. Mojo error code: "_L1
                            + QString::number(result));
         }
     } while ((result == MOJO_RESULT_SHOULD_WAIT || result == MOJO_RESULT_OK)

@@ -245,6 +245,7 @@
 
 /*!
     \enum QWebEnginePage::PermissionPolicy
+    \deprecated [6.8] Replaced by QWebEnginePermission::State.
 
     This enum describes the permission policies that the user may set for data or device access:
 
@@ -273,6 +274,7 @@
 
 /*!
     \enum QWebEnginePage::Feature
+    \deprecated [6.8] Replaced by QWebEnginePermission::Feature.
 
     This enum describes the platform feature access categories that the user may be asked to grant
     or deny access to:
@@ -295,6 +297,13 @@
             for screen sharing purposes for example.
     \value [since 5.10] DesktopAudioVideoCapture
             Both audio and video output capture.
+    \value [since 6.8] ClipboardReadWrite
+            Read and write access for the clipboard. If both \l{QWebEngineSettings::JavascriptCanPaste}
+            {JavascriptCanPaste} and \l{QWebEngineSettings::JavascriptCanAccessClipboard}
+            {JavascriptCanAccessClipboard} settings are enabled, this permission will always be granted
+            automatically and no feature requests will be made.
+    \value [since 6.8] LocalFontsAccess
+            Access to the fonts installed on the user's machine. Only available on desktop platforms.
 
     \sa featurePermissionRequested(), featurePermissionRequestCanceled(), setFeaturePermission(), PermissionPolicy
 
@@ -452,7 +461,7 @@
     The action is owned by the QWebEnginePage but you can customize the look by
     changing its properties.
 
-    \l{QWebEnginePage::action(WebAction action)} does not have a default styled icon.
+    The returned action does not have a default styled icon.
     Use \l{QWebEngineView::pageAction()} to have an action with a default styled icon.
 
     QWebEnginePage also takes care of implementing the action, so that upon
@@ -728,6 +737,8 @@
     \brief The zoom factor for the page content.
 
     Valid values are within the range from \c{0.25} to \c{5.0}. The default factor is \c{1.0}.
+
+    \sa zoomFactorChanged()
 */
 
 /*!
@@ -765,11 +776,13 @@
     during page destruction. When QWebEnginePage is deleted, the callback is triggered with an invalid
     value and it is not safe to use the corresponding QWebEnginePage or QWebEngineView instance inside it.
 
-    \sa scripts(), QWebEngineScript::ScriptWorldId, {Script Injection}
+    \sa scripts(), QWebEngineScript::ScriptWorldId, QWebEngineFrame::runJavaScript, {Script Injection}
 */
 
 /*!
     \fn void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, Feature feature, PermissionPolicy policy)
+    \deprecated [6.8] Use QWebEnginePermission's \l {QWebEnginePermission::grant} {grant}(),
+    \l {QWebEnginePermission::deny} {deny}(), and \l {QWebEnginePermission::reset} {reset}() functions instead.
 
     Sets the permission for the web site identified by \a securityOrigin to use \a feature to \a policy.
 
@@ -783,6 +796,7 @@
 
 /*!
     \fn void QWebEnginePage::featurePermissionRequested(const QUrl &securityOrigin, Feature feature)
+    \deprecated [6.8] Use permissionRequested() instead.
 
     This signal is emitted when the web site identified by \a securityOrigin requests to make use of
     the resource or device identified by \a feature.
@@ -792,12 +806,22 @@
 
 /*!
     \fn void QWebEnginePage::featurePermissionRequestCanceled(const QUrl &securityOrigin, Feature feature)
+    \deprecated [6.8] This signal is no longer emitted.
 
     This signal is emitted when the web site identified by \a securityOrigin cancels a previously issued
     request to make use of \a feature.
 
     \sa featurePermissionRequested(), setFeaturePermission()
 
+*/
+
+/*!
+    \fn void QWebEnginePage::permissionRequested(QWebEnginePermission permission)
+    \since 6.8
+
+    This signal is emitted when a web site requests to make use of a feature (e.g. geolocation access,
+    permission to send notifications). The \a permission object can queried for the requesting URL
+    and the \c{QWebEnginePermission::Feature} it's asking for, as well as to grant or deny permission.
 */
 
 /*!
@@ -828,4 +852,13 @@
     The \a request contains the information and API required to complete the WebAuth UX request.
 
     \sa QWebEngineWebAuthUxRequest
+*/
+
+/*!
+    \fn void QWebEnginePage::zoomFactorChanged(qreal factor)
+    \since 6.8
+
+    This signal is emitted whenever the zoom \a factor for the page changes.
+
+    \sa zoomFactor(), setZoomFactor()
 */

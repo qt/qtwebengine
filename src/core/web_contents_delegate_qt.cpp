@@ -57,6 +57,8 @@
 #include <QTimer>
 #include <QWindow>
 
+using namespace Qt::StringLiterals;
+
 namespace QtWebEngineCore {
 
 static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(blink::mojom::ConsoleMessageLevel log_level)
@@ -199,7 +201,8 @@ QUrl WebContentsDelegateQt::url(content::WebContents *source) const
         if (source->GetVisibleURL().SchemeIs(content::kViewSourceScheme) &&
             (url.has_password() || url.has_username() || url.has_ref())) {
             GURL strippedUrl = net::SimplifyUrlForRequest(url);
-            newUrl = QUrl(QString("%1:%2").arg(content::kViewSourceScheme, QString::fromStdString(strippedUrl.spec())));
+            newUrl = QUrl(QLatin1StringView(content::kViewSourceScheme) + u':'
+                          + QString::fromStdString(strippedUrl.spec()));
         }
         // If there is a visible entry there are special cases where we dont wan't to use the actual URL
         if (newUrl.isEmpty())
@@ -479,6 +482,14 @@ void WebContentsDelegateQt::DidStopLoading()
     m_loadingInfo.clear();
 }
 
+void WebContentsDelegateQt::emitLoadSucceeded(const QUrl &url)
+{
+    // Used by CustomURLLoader to emit LoadSucceeded bypassing the inner state of this delegate
+    m_viewClient->loadFinished(
+            QWebEngineLoadingInfo(url, QWebEngineLoadingInfo::LoadSucceededStatus));
+    m_viewClient->updateNavigationActions();
+}
+
 void WebContentsDelegateQt::didFailLoad(const QUrl &url, int errorCode, const QString &errorDescription)
 {
     m_viewClient->iconChanged(QUrl());
@@ -733,9 +744,9 @@ void WebContentsDelegateQt::selectClientCert(const QSharedPointer<ClientCertSele
     m_viewClient->selectClientCert(selectController);
 }
 
-void WebContentsDelegateQt::requestFeaturePermission(ProfileAdapter::PermissionType feature, const QUrl &requestingOrigin)
+void WebContentsDelegateQt::requestFeaturePermission(QWebEnginePermission::PermissionType permissionType, const QUrl &requestingOrigin)
 {
-    m_viewClient->runFeaturePermissionRequest(feature, requestingOrigin);
+    m_viewClient->runFeaturePermissionRequest(permissionType, requestingOrigin);
 }
 
 extern WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(ui::PageTransition transition);
@@ -760,7 +771,7 @@ void WebContentsDelegateQt::launchExternalURL(const QUrl &url, ui::PageTransitio
     }
 
     if (navigationAllowedByPolicy) {
-        m_viewClient->navigationRequested(pageTransitionToNavigationType(page_transition), url, navigationRequestAccepted, is_main_frame);
+        m_viewClient->navigationRequested(pageTransitionToNavigationType(page_transition), url, navigationRequestAccepted, is_main_frame, false);
 #if QT_CONFIG(desktopservices)
         if (navigationRequestAccepted)
             QDesktopServices::openUrl(url);
@@ -769,10 +780,13 @@ void WebContentsDelegateQt::launchExternalURL(const QUrl &url, ui::PageTransitio
 
     if (!navigationAllowedByPolicy || !navigationRequestAccepted) {
         QString errorDescription;
-        if (!navigationAllowedByPolicy)
-            errorDescription = QStringLiteral("Launching external protocol forbidden by WebEngineSettings::UnknownUrlSchemePolicy");
-        else
-            errorDescription = QStringLiteral("Launching external protocol suppressed by 'navigationRequested' API");
+        if (!navigationAllowedByPolicy) {
+            errorDescription = u"Launching external protocol forbidden by "
+                               "WebEngineSettings::UnknownUrlSchemePolicy"_s;
+        } else {
+            errorDescription = u"Launching external protocol suppressed by "
+                               "'navigationRequested' API"_s;
+        }
         didFailLoad(url, net::Error::ERR_ABORTED, errorDescription);
     }
 }
@@ -786,13 +800,24 @@ void WebContentsDelegateQt::BeforeUnloadFired(content::WebContents *tab, bool pr
         m_viewClient->windowCloseRejected();
 }
 
-bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost *, const GURL& security_origin, blink::mojom::MediaStreamType type)
+bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost *rfh,
+                                                       const url::Origin &security_origin,
+                                                       blink::mojom::MediaStreamType type)
 {
+    Q_ASSERT(rfh);
     switch (type) {
     case blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE:
-        return m_viewClient->profileAdapter()->checkPermission(toQt(security_origin), ProfileAdapter::AudioCapturePermission);
+        return m_viewClient->profileAdapter()->getPermissionState(
+            toQt(security_origin),
+            QWebEnginePermission::PermissionType::MediaAudioCapture,
+            rfh)
+                == QWebEnginePermission::State::Granted;
     case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE:
-        return m_viewClient->profileAdapter()->checkPermission(toQt(security_origin), ProfileAdapter::VideoCapturePermission);
+        return m_viewClient->profileAdapter()->getPermissionState(
+            toQt(security_origin),
+            QWebEnginePermission::PermissionType::MediaVideoCapture,
+            rfh)
+                == QWebEnginePermission::State::Granted;
     default:
         LOG(INFO) << "WebContentsDelegateQt::CheckMediaAccessPermission: "
                   << "Unsupported media stream type checked " << type;

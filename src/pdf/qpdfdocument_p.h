@@ -16,7 +16,7 @@
 //
 
 #include "qpdfdocument.h"
-#include "private/qtpdfexports_p.h"
+#include "qtpdfexports.h"
 
 #include "third_party/pdfium/public/fpdfview.h"
 #include "third_party/pdfium/public/fpdf_dataavail.h"
@@ -38,7 +38,7 @@ public:
 
 class QPdfPageModel;
 
-class Q_PDF_PRIVATE_EXPORT QPdfDocumentPrivate: public FPDF_FILEACCESS, public FX_FILEAVAIL, public FX_DOWNLOADHINTS
+class Q_PDF_EXPORT QPdfDocumentPrivate: public FPDF_FILEACCESS, public FX_FILEAVAIL, public FX_DOWNLOADHINTS
 {
 public:
     QPdfDocumentPrivate();

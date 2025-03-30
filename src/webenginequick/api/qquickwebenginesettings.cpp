@@ -14,7 +14,7 @@ QQuickWebEngineSettings::QQuickWebEngineSettings(QQuickWebEngineSettings *parent
 
 /*!
     \qmltype WebEngineSettings
-    //! \instantiates QQuickWebEngineSettings
+    //! \nativetype QQuickWebEngineSettings
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
     \brief Allows configuration of browser properties and attributes.
@@ -71,11 +71,18 @@ bool QQuickWebEngineSettings::javascriptCanOpenWindows() const
 /*!
     \qmlproperty bool WebEngineSettings::javascriptCanAccessClipboard
 
-    Allows JavaScript programs to read from or write to the clipboard.
-    Writing to the clipboard is always allowed if it is specifically requested by the user.
+    Allows JavaScript programs to write (copy) sanitized content to the clipboard. A
+    sanitized write is done with the \c{write} and \c{writeText} JavaScript Clipboard API
+    calls and must be accompanied by user action.
 
-    To enable also the pasting of clipboard content from JavaScript,
-    use javascriptCanPaste.
+    Unsanitized writes, and reading from the clipboard, are
+    enabled by \l{javascriptCanPaste}.
+
+    Prior to Chromium version 81, this setting enabled all clipboard writes.
+
+    Since unrestricted clipboard access is a potential security concern, it is
+    recommended that applications leave this disabled and instead respond to
+    \l{webEnginePermission::permissionType}{ClipboardReadWrite} feature permission requests.
 
     Disabled by default.
 */
@@ -180,8 +187,6 @@ bool QQuickWebEngineSettings::errorPageEnabled() const
     Enables support for Pepper plugins, such as the Flash player.
 
     Disabled by default.
-
-   \sa {Pepper Plugin API}
 */
 bool QQuickWebEngineSettings::pluginsEnabled() const
 {
@@ -380,8 +385,17 @@ bool QQuickWebEngineSettings::webRTCPublicInterfacesOnly() const
     \qmlproperty bool WebEngineSettings::javascriptCanPaste
     \since QtWebEngine 1.7
 
-    Enables JavaScript \c{execCommand("paste")}.
-    This also requires enabling javascriptCanAccessClipboard.
+    Allows JavaScript programs to read (paste) from the clipboard and to write unsanitized
+    content. A sanitized write is done with the \c{write} and \c{writeText} JavaScript
+    Clipboard API calls and must be accompanied by user action; unsanitized writes are any
+    writes which do not meet these criteria.
+
+    For this setting to have any effect, \l{javascriptCanAccessClipboard} must also be
+    enabled.
+
+    Since unrestricted clipboard access is a potential security concern, it is
+    recommended that applications leave this disabled and instead respond to
+    \l{webEnginePermission::permissionType}{ClipboardReadWrite} feature permission requests.
 
     Disabled by default.
 */
@@ -462,6 +476,19 @@ bool QQuickWebEngineSettings::forceDarkMode() const
 }
 
 /*!
+    \qmlproperty bool WebEngineSettings::scrollAnimatorEnabled
+    \since QtWebEngine 6.8
+
+    Enables animated scrolling.
+
+    Disabled by default.
+ */
+bool QQuickWebEngineSettings::scrollAnimatorEnabled() const
+{
+    return d_ptr->testAttribute(QWebEngineSettings::ScrollAnimatorEnabled);
+}
+
+/*!
     \qmlproperty string WebEngineSettings::defaultTextEncoding
     \since QtWebEngine 1.2
 
@@ -473,6 +500,34 @@ bool QQuickWebEngineSettings::forceDarkMode() const
 QString QQuickWebEngineSettings::defaultTextEncoding() const
 {
     return d_ptr->defaultTextEncoding();
+}
+
+ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::ImageAnimationPolicy::Allow,
+                   QWebEngineSettings::ImageAnimationPolicy::Allow)
+ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::ImageAnimationPolicy::AnimateOnce,
+                   QWebEngineSettings::ImageAnimationPolicy::AnimateOnce)
+ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::ImageAnimationPolicy::Disallow,
+                   QWebEngineSettings::ImageAnimationPolicy::Disallow)
+/*!
+    \qmlproperty enumeration WebEngineSettings::imageAnimationPolicy
+    \since QtWebEngine 6.8
+
+    Specifies how an image animation should be handled when the image frames
+    are rendered for animation.
+
+    \value WebEngineSettings.ImageAnimationPolicy.Allow
+           Allows all image animations when the image frames are rendered.
+    \value WebEngineSettings.ImageAnimationPolicy.AnimateOnce
+           Animate the image once when the image frames are rendered.
+    \value WebEngineSettings.ImageAnimationPolicy.Disallow
+           Disallows all image animations when the image frames are rendered.
+
+    Default value is \c {WebEngineSettings.ImageAnimationPolicy.Allow}.
+*/
+QQuickWebEngineSettings::ImageAnimationPolicy QQuickWebEngineSettings::imageAnimationPolicy() const
+{
+    return static_cast<QQuickWebEngineSettings::ImageAnimationPolicy>(
+            d_ptr->imageAnimationPolicy());
 }
 
 ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::DisallowUnknownUrlSchemes, QWebEngineSettings::DisallowUnknownUrlSchemes)
@@ -760,6 +815,14 @@ void QQuickWebEngineSettings::setForceDarkMode(bool on)
         Q_EMIT forceDarkModeChanged();
 }
 
+void QQuickWebEngineSettings::setScrollAnimatorEnabled(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::ScrollAnimatorEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::ScrollAnimatorEnabled, on);
+    if (wasOn != on)
+        Q_EMIT scrollAnimatorEnabledChanged();
+}
+
 void QQuickWebEngineSettings::setUnknownUrlSchemePolicy(QQuickWebEngineSettings::UnknownUrlSchemePolicy policy)
 {
     QWebEngineSettings::UnknownUrlSchemePolicy oldPolicy = d_ptr->unknownUrlSchemePolicy();
@@ -780,6 +843,17 @@ void QQuickWebEngineSettings::setWebRTCPublicInterfacesOnly(bool on)
 void QQuickWebEngineSettings::setParentSettings(QQuickWebEngineSettings *parentSettings)
 {
     d_ptr->setParentSettings(parentSettings->d_ptr.data());
+}
+
+void QQuickWebEngineSettings::setImageAnimationPolicy(
+        QQuickWebEngineSettings::ImageAnimationPolicy policy)
+{
+    QWebEngineSettings::ImageAnimationPolicy oldPolicy = d_ptr->imageAnimationPolicy();
+    QWebEngineSettings::ImageAnimationPolicy newPolicy =
+            static_cast<QWebEngineSettings::ImageAnimationPolicy>(policy);
+    d_ptr->setImageAnimationPolicy(newPolicy);
+    if (oldPolicy != newPolicy)
+        Q_EMIT imageAnimationPolicyChanged();
 }
 
 QT_END_NAMESPACE

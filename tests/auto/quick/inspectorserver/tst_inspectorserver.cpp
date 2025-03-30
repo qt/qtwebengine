@@ -17,6 +17,8 @@ static const QUrl s_inspectorServerHttpBaseUrl("http://localhost:" INSPECTOR_SER
 class tst_InspectorServer : public QObject {
     Q_OBJECT
 public:
+    static void initMain();
+
     tst_InspectorServer();
 
 private Q_SLOTS:
@@ -36,11 +38,15 @@ private:
     QScopedPointer<QQmlComponent> m_component;
 };
 
+void tst_InspectorServer::initMain()
+{
+    QtWebEngineQuick::initialize();
+}
+
 tst_InspectorServer::tst_InspectorServer()
 {
     qputenv("QTWEBENGINE_CHROMIUM_FLAGS", "--remote-allow-origins=*");
     qputenv("QTWEBENGINE_REMOTE_DEBUGGING", INSPECTOR_SERVER_PORT);
-    QtWebEngineQuick::initialize();
     QQuickWebEngineProfile::defaultProfile()->setOffTheRecord(true);
     prepareWebViewComponent();
 }
@@ -81,7 +87,7 @@ inline QQuickWebEngineView* tst_InspectorServer::webView() const
 QJsonArray tst_InspectorServer::fetchPageList() const
 {
     QNetworkAccessManager qnam;
-    QSignalSpy spy(&qnam, &QNetworkAccessManager::finished);;
+    QSignalSpy spy(&qnam, &QNetworkAccessManager::finished);
     QNetworkRequest request(s_inspectorServerHttpBaseUrl.resolved(QUrl("json/list")));
     QScopedPointer<QNetworkReply> reply(qnam.get(request));
     spy.wait();

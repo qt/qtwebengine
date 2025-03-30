@@ -8,7 +8,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmltype PdfPageNavigator
-//!    \instantiates QQuickPdfPageNavigator
+//!    \nativetype QQuickPdfPageNavigator
     \inqmlmodule QtQuick.Pdf
     \ingroup pdf
     \brief History of the destinations visited within a PDF Document.

@@ -51,7 +51,7 @@ bool RenderFrameObserverQt::OnAssociatedInterfaceRequestForFrame(const std::stri
     return m_associated_interfaces.TryBindInterface(interface_name, handle);
 }
 
-void RenderFrameObserverQt::WillDetach()
+void RenderFrameObserverQt::WillDetach(blink::DetachReason reason)
 {
     m_isFrameDetached = true;
 }

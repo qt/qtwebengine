@@ -64,6 +64,10 @@ QPdfSearchModel::QPdfSearchModel(QObject *parent)
         roleName[0] = QChar::toLower(roleName[0]);
         m_roleNames.insert(r, roleName);
     }
+    connect(this, &QAbstractListModel::dataChanged, this, &QPdfSearchModel::countChanged);
+    connect(this, &QAbstractListModel::modelReset, this, &QPdfSearchModel::countChanged);
+    connect(this, &QAbstractListModel::rowsRemoved, this, &QPdfSearchModel::countChanged);
+    connect(this, &QAbstractListModel::rowsInserted, this, &QPdfSearchModel::countChanged);
 }
 
 /*!
@@ -121,6 +125,16 @@ QVariant QPdfSearchModel::data(const QModelIndex &index, int role) const
         return ret;
     }
     return QVariant();
+}
+
+/*!
+    \since 6.8
+    \property QPdfSearchModel::count
+    \brief the number of search results found
+*/
+int QPdfSearchModel::count() const
+{
+    return rowCount(QModelIndex());
 }
 
 void QPdfSearchModel::updatePage(int page)

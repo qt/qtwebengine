@@ -1,0 +1,129 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \qmlvaluetype webEngineFrame
+    \nativetype QWebEngineFrame
+    \brief webEngineFrame provides information about and control over a page frame.
+    \since 6.8
+    \ingroup qmlvaluetypes
+    \inqmlmodule QtWebEngine
+
+    A web engine frame represents a single frame within a web page, such as those created by
+    \c <frame> or \c <iframe> HTML elements.
+    An active \l WebEngineView has one or more frames arranged in a tree structure. The top-level
+    frame, the root of this tree, can be accessed through the view's \l {WebEngineView::mainFrame}
+    {mainFrame} property.
+
+    A frame's lifetime is, at most, as long as the \l WebEngineView object that produced it.
+    However, frames may be created and deleted spontaneously and dynamically, for example through
+    navigation and script execution.
+*/
+
+/*!
+    \qmlproperty bool webEngineFrame::isValid
+
+    Returns \c{true} if this object represents an existing frame; \c{false} otherwise.
+
+    Once a frame is invalid, it never becomes valid again.
+*/
+
+/*!
+    \qmlproperty string webEngineFrame::name
+
+    Returns the frame name; that is, what would be returned by \c window.name in JavaScript.
+
+    If the frame could not be found, returns an empty string.
+
+    \sa htmlName
+*/
+
+/*!
+    \qmlproperty string webEngineFrame::htmlName
+
+    Returns the value of the frame's \c name HTML attribute, or an empty string if it has none.
+
+    If the frame could not be found, returns an empty string.
+
+    \sa name
+*/
+
+/*!
+    \qmlproperty url webEngineFrame::url
+
+    Returns the URL of the content currently loaded in this frame.
+
+    If the frame could not be found, returns an empty URL.
+*/
+
+/*!
+    \qmlproperty size webEngineFrame::size
+
+    Returns the size of the frame within the viewport.
+
+    If the frame could not be found, returns a default size with dimensions (-1, -1).
+*/
+
+/*!
+    \qmlproperty bool webEngineFrame::isMainFrame
+
+    Returns \c{true} if this object represents the page's main frame; \c{false} otherwise.
+*/
+
+/*!
+    \qmlmethod void webEngineFrame::runJavaScript(string script, variant callback)
+    \qmlmethod void webEngineFrame::runJavaScript(string script, uint worldId, variant callback)
+
+    Runs the JavaScript code contained in \a script on this frame, without checking
+    whether the DOM of the page has been constructed.
+
+    To avoid conflicts with other scripts executed on the page, the world in
+    which the script is run is specified by \a worldId. The world ID values are
+    the same as provided by QWebEngineScript::ScriptWorldId, and between \c 0
+    and \c 256. If you leave out the \c world ID, the script is run in the
+    \c MainWorld.
+
+    The \a callback parameter is optional. If a callback function is provided, it will be
+    invoked after the script finishes running.
+    \code
+    frame.runJavaScript("document.title", function(result) { console.log(result); });
+    \endcode
+
+    Only plain data can be returned from JavaScript as the result value.
+    Supported data types include all of the JSON data types as well as, for
+    example, \c{Date} and \c{ArrayBuffer}. Unsupported data types include, for
+    example, \c{Function} and \c{Promise}.
+
+    The script will run in the same \e world as other scripts that are
+    part of the loaded site.
+
+    \warning Do not execute lengthy routines in the callback function, because it might block the
+    rendering of the web content.
+
+    For more information about injecting scripts, see \l {Script Injection}.
+    For an alternative way to inject scripts, see WebEngineView::userScripts.
+*/
+
+/*!
+    \qmlmethod void webEngineFrame::printToPdf(string filePath)
+
+    Prints the frame's current content to a PDF document and stores it
+    under \a filePath. The resulting document will have A4 page size and
+    portrait orientation.
+
+    This method issues an asynchronous request for printing the web page into a
+    PDF and returns immediately. To be informed about the result of the
+    request, connect to the signal \l WebEngineView::pdfPrintingFinished().
+
+    \sa WebEngineView::pdfPrintingFinished()
+*/
+
+/*!
+    \qmlmethod void webEngineFrame::printToPdf(variant callback)
+
+    Prints the frame's current content to a PDF document and returns it in a byte array. The
+    resulting document will have A4 page size and portrait orientation.
+
+    The \a callback must take a string parameter. This string will contain the document's data upon
+    successful printing and an empty string otherwise.
+*/

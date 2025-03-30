@@ -75,7 +75,8 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLQt::CreateOffscreenGLSurface(gl::GLDispla
 gl::EGLDisplayPlatform GLOzoneEGLQt::GetNativeDisplay()
 {
     static void *display = GLContextHelper::getNativeDisplay();
-    static gl::EGLDisplayPlatform platform(display ? reinterpret_cast<intptr_t>(display) : EGL_DEFAULT_DISPLAY);
+    static gl::EGLDisplayPlatform platform(display ? reinterpret_cast<EGLNativeDisplayType>(display)
+                                                   : EGL_DEFAULT_DISPLAY);
     return platform;
 }
 

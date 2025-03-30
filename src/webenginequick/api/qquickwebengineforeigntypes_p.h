@@ -32,6 +32,7 @@
 #include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
 #include <QtWebEngineCore/qwebenginefilesystemaccessrequest.h>
 #include <QtWebEngineCore/qwebenginewebauthuxrequest.h>
+#include <QtWebEngineCore/qwebenginepermission.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -228,6 +229,39 @@ struct ForeignWebEngineWebAuthUxRequest
     QML_FOREIGN(QWebEngineWebAuthUxRequest)
     QML_NAMED_ELEMENT(WebEngineWebAuthUxRequest)
     QML_ADDED_IN_VERSION(6, 7)
+    QML_UNCREATABLE("")
+};
+
+struct ForeginWebEngineWebAuthPinRequest
+{
+    Q_GADGET
+    QML_FOREIGN(QWebEngineWebAuthPinRequest)
+    QML_VALUE_TYPE(webEngineWebAuthPinRequest)
+    QML_ADDED_IN_VERSION(6, 8)
+    QML_UNCREATABLE("")
+};
+
+// To prevent the same type from being exported twice into qmltypes
+// (for value type and for the enums)
+class QWebEnginePermissionDerived : public QWebEnginePermission
+{
+    Q_GADGET
+};
+
+namespace ForeignWebEnginePermissionNamespace
+{
+    Q_NAMESPACE
+    QML_FOREIGN_NAMESPACE(QWebEnginePermissionDerived)
+    QML_NAMED_ELEMENT(WebEnginePermission)
+    QML_ADDED_IN_VERSION(6, 8)
+}
+
+struct ForeignWebEnginePermission
+{
+    Q_GADGET
+    QML_FOREIGN(QWebEnginePermission)
+    QML_VALUE_TYPE(webEnginePermission)
+    QML_ADDED_IN_VERSION(6, 8)
     QML_UNCREATABLE("")
 };
 

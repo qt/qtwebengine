@@ -22,7 +22,7 @@ namespace QtWebEngineCore {
 
 class AuthenticationDialogControllerPrivate;
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT AuthenticationDialogController : public QObject {
+class Q_WEBENGINECORE_EXPORT AuthenticationDialogController : public QObject {
     Q_OBJECT
 public:
     ~AuthenticationDialogController();
@@ -33,7 +33,8 @@ public:
     bool isProxy() const;
 
 public Q_SLOTS:
-    void accept(const QString &user, const QString &password);
+    void credentials(const QString &user, const QString &password);
+    void accept();
     void reject();
 
 private:

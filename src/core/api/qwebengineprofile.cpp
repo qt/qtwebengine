@@ -3,6 +3,7 @@
 
 #include "qwebengineprofile.h"
 #include "qwebengineprofile_p.h"
+#include "qwebengineclienthints.h"
 #include "qwebenginecookiestore.h"
 #include "qwebenginedownloadrequest.h"
 #include "qwebenginedownloadrequest_p.h"
@@ -10,12 +11,13 @@
 #include "qwebenginesettings.h"
 #include "qwebenginescriptcollection.h"
 #include "qwebenginescriptcollection_p.h"
+#include "qwebenginepermission_p.h"
 #include "qtwebenginecoreglobal.h"
 #include "profile_adapter.h"
 #include "visited_links_manager_qt.h"
 #include "web_engine_settings.h"
 
-#include <QDir>
+#include <QFileInfo>
 #include <QtWebEngineCore/qwebengineurlscheme.h>
 
 QT_BEGIN_NAMESPACE
@@ -92,7 +94,7 @@ using QtWebEngineCore::ProfileAdapter;
 /*!
     \enum QWebEngineProfile::PersistentCookiesPolicy
 
-    This enum describes policy for cookie persistency:
+    This enum describes policy for cookie persistence:
 
     \value  NoPersistentCookies
             Both session and persistent cookies are stored in memory. This is the only setting
@@ -102,6 +104,28 @@ using QtWebEngineCore::ProfileAdapter;
             are only stored to disk for crash recovery. This is the default setting.
     \value  ForcePersistentCookies
             Both session and persistent cookies are saved to and restored from disk.
+*/
+
+/*!
+    \enum QWebEngineProfile::PersistentPermissionsPolicy
+
+    \since 6.8
+
+    This enum describes the policy for permission persistence:
+
+    \value  AskEveryTime
+            The application will ask for permissions every time they're needed, regardless of
+            whether they've been granted before or not. This is intended for backwards compatibility
+            with existing applications, and otherwise not recommended.
+    \value  StoreInMemory
+            A request will be made only the first time a permission is needed. Any subsequent
+            requests will be automatically granted or denied, depending on the initial user choice.
+            This carries over to all pages that use the same QWebEngineProfile instance, until the
+            application is shut down. This is the setting applied if \c off-the-record is set
+            or no persistent data path is available.
+    \value  StoreOnDisk
+            Works the same way as \c StoreInMemory, but the permissions are saved to
+            and restored from disk. This is the default setting.
 */
 
 void QWebEngineProfilePrivate::showNotification(QSharedPointer<QtWebEngineCore::UserNotificationController> &controller)
@@ -143,6 +167,7 @@ QWebEngineProfilePrivate::QWebEngineProfilePrivate(ProfileAdapter* profileAdapte
     , m_profileAdapter(profileAdapter)
     , m_scriptCollection(new QWebEngineScriptCollection(
                              new QWebEngineScriptCollectionPrivate(profileAdapter->userResourceController())))
+    , m_clientHints(new QWebEngineClientHints(profileAdapter))
 {
     m_profileAdapter->addClient(this);
 }
@@ -195,6 +220,12 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
 {
     Q_Q(QWebEngineProfile);
 
+    if (!q->receivers(SIGNAL(downloadRequested(QWebEngineDownloadRequest *)))) {
+        m_profileAdapter->acceptDownload(info.id, info.accepted, info.useDownloadTargetCallback, info.path,
+                                         info.savePageFormat);
+        return;
+    }
+
     Q_ASSERT(!m_ongoingDownloads.contains(info.id));
     QWebEngineDownloadRequestPrivate *itemPrivate =
             new QWebEngineDownloadRequestPrivate(m_profileAdapter);
@@ -210,6 +241,7 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     itemPrivate->mimeType = info.mimeType;
     itemPrivate->savePageFormat = static_cast<QWebEngineDownloadRequest::SavePageFormat>(info.savePageFormat);
     itemPrivate->isSavePageDownload = info.isSavePageDownload;
+    itemPrivate->useDownloadTargetCallback = info.useDownloadTargetCallback;
     if (info.page && info.page->clientType() == QtWebEngineCore::WebContentsAdapterClient::WidgetsClient)
         itemPrivate->adapterClient = info.page;
     else
@@ -222,18 +254,9 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
 
     Q_EMIT q->downloadRequested(download);
 
-    QWebEngineDownloadRequest::DownloadState state = download->state();
-
-    info.path = QDir(download->downloadDirectory()).filePath(download->downloadFileName());
-    info.savePageFormat = static_cast<QtWebEngineCore::ProfileAdapterClient::SavePageFormat>(
-                download->savePageFormat());
-    info.accepted = state != QWebEngineDownloadRequest::DownloadCancelled;
-
-    if (state == QWebEngineDownloadRequest::DownloadRequested) {
-        // Delete unaccepted downloads.
-        info.accepted = false;
-        delete download;
-    }
+    // Callbacks of automatically accepted save operations have to be called here
+    if (info.isSavePageDownload && info.accepted)
+        itemPrivate->answer();
 }
 
 void QWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
@@ -566,6 +589,33 @@ void QWebEngineProfile::setPersistentCookiesPolicy(QWebEngineProfile::Persistent
 {
     Q_D(QWebEngineProfile);
     d->profileAdapter()->setPersistentCookiesPolicy(ProfileAdapter::PersistentCookiesPolicy(newPersistentCookiesPolicy));
+}
+
+/*!
+    Returns the current policy for persistent permissions.
+
+    Off-the-record profiles are not allowed to save data to the disk, so they can only return
+    \c StoreInMemory or \c AskEveryTime.
+
+    \since 6.8
+    \sa QWebEngineProfile::PersistentPermissionsPolicy, setPersistentPermissionsPolicy()
+*/
+QWebEngineProfile::PersistentPermissionsPolicy QWebEngineProfile::persistentPermissionsPolicy() const
+{
+    Q_D(const QWebEngineProfile);
+    return QWebEngineProfile::PersistentPermissionsPolicy(d->profileAdapter()->persistentPermissionsPolicy());
+}
+
+/*!
+    Sets the policy for persistent permissions to \a newPersistentPermissionsPolicy.
+
+    \since 6.8
+    \sa QWebEngineProfile::PersistentPermissionsPolicy, persistentPermissionsPolicy()
+*/
+void QWebEngineProfile::setPersistentPermissionsPolicy(QWebEngineProfile::PersistentPermissionsPolicy newPersistentPermissionsPolicy)
+{
+    Q_D(QWebEngineProfile);
+    d->profileAdapter()->setPersistentPermissionsPolicy(ProfileAdapter::PersistentPermissionsPolicy(newPersistentPermissionsPolicy));
 }
 
 /*!
@@ -925,6 +975,110 @@ void QWebEngineProfile::requestIconForIconURL(const QUrl &url, int desiredSizeIn
     d->profileAdapter()->requestIconForIconURL(url, desiredSizeInPixel,
                                                settings()->testAttribute(QWebEngineSettings::TouchIconsEnabled),
                                                iconAvailableCallback);
+}
+
+/*!
+ * Returns a QWebEnginePermission object corresponding to a single permission for the provided \a securityOrigin and
+ * \a permissionType. The object may be used to query for the current state of the permission, or to change it. It is not required
+ * for a permission to already exist; the returned object may also be used to pre-grant a permission if a website is
+ * known to use it.
+ *
+ * You may use this to pre-grant a permission of a non-persistent type. Doing so will keep the permission in
+ * the granted (or denied) state until the next time a website with the associated origin requests it. At that point,
+ * the permission's lifetime will be tied to that specific web page's lifetime, and navigating away will invalidate
+ * the permission.
+ *
+ * \since 6.8
+ * \sa listAllPermissions(), listPermissionsForOrigin(), listPermissionsForPermissionType(), QWebEnginePermission::PermissionType
+ */
+QWebEnginePermission QWebEngineProfile::queryPermission(const QUrl &securityOrigin, QWebEnginePermission::PermissionType permissionType) const
+{
+    Q_D(const QWebEngineProfile);
+
+    if (permissionType == QWebEnginePermission::PermissionType::Unsupported) {
+        qWarning("Attempting to get unsupported permission. Returned object will be in an invalid state.");
+        return QWebEnginePermission(new QWebEnginePermissionPrivate());
+    }
+
+    auto *pvt = new QWebEnginePermissionPrivate(securityOrigin, permissionType, nullptr, d->profileAdapter());
+    return QWebEnginePermission(pvt);
+}
+
+/*!
+ * Returns a QList of QWebEnginePermission objects, each one representing a single permission currently
+ * present in the permissions store. The returned list contains all previously granted/denied permissions for this profile,
+ * provided they are of a \e persistent type.
+ *
+ * \note When persistentPermissionPolicy() is set to \c AskEveryTime, this will return an empty list.
+ * \since 6.8
+ * \sa queryPermission(), QWebEnginePermission::PermissionType, QWebEnginePermission::isPersistent()
+ */
+QList<QWebEnginePermission> QWebEngineProfile::listAllPermissions() const
+{
+    Q_D(const QWebEngineProfile);
+    if (persistentPermissionsPolicy() == PersistentPermissionsPolicy::AskEveryTime)
+        return QList<QWebEnginePermission>();
+    return d->profileAdapter()->listPermissions();
+}
+
+/*!
+ * Returns a QList of QWebEnginePermission objects, each one representing a single permission currently
+ * present in the permissions store. The returned list contains all previously granted/denied permissions associated with a
+ * specific \a securityOrigin for this profile, provided they are of a \e persistent type.
+ *
+ * \note Since permissions are granted on a per-origin basis, the provided \a securityOrigin will be stripped to its
+ * origin form, and the returned list will contain all permissions for the origin. Thus, passing https://www.example.com/some/page.html
+ * is the same as passing just https://www.example.com/.
+ * \note When persistentPermissionPolicy() is set to \c AskEveryTime, this will return an empty list.
+ * \since 6.8
+ * \sa queryPermission(), QWebEnginePermission::PermissionType, QWebEnginePermission::isPersistent()
+ */
+QList<QWebEnginePermission> QWebEngineProfile::listPermissionsForOrigin(const QUrl &securityOrigin) const
+{
+    Q_D(const QWebEngineProfile);
+    if (persistentPermissionsPolicy() == PersistentPermissionsPolicy::AskEveryTime)
+        return QList<QWebEnginePermission>();
+    return d->profileAdapter()->listPermissions(securityOrigin);
+}
+
+/*!
+ * Returns a QList of QWebEnginePermission objects, each one representing a single permission currently
+ * present in the permissions store. The returned list contains all previously granted/denied permissions of the provided
+ * \a permissionType. If the \permissionType is non-persistent, the list will be empty.
+ *
+ * \note When persistentPermissionPolicy() is set to \c AskEveryTime, this will return an empty list.
+ * \since 6.8
+ * \sa queryPermission(), QWebEnginePermission::PermissionType, QWebEnginePermission::isPersistent()
+ */
+QList<QWebEnginePermission> QWebEngineProfile::listPermissionsForPermissionType(QWebEnginePermission::PermissionType permissionType) const
+{
+    Q_D(const QWebEngineProfile);
+    if (persistentPermissionsPolicy() == PersistentPermissionsPolicy::AskEveryTime)
+        return QList<QWebEnginePermission>();
+
+    if (permissionType == QWebEnginePermission::PermissionType::Unsupported) {
+        qWarning("Attempting to get permission list for an unsupported type. Returned list will be empty.");
+        return QList<QWebEnginePermission>();
+    }
+
+    if (!QWebEnginePermission::isPersistent(permissionType)) {
+        qWarning() << "Attempting to get permission list for permission type" << permissionType << ". Returned list will be empty.";
+        return QList<QWebEnginePermission>();
+    }
+
+    return d->profileAdapter()->listPermissions(QUrl(), permissionType);
+}
+
+/*!
+    Return the Client Hints settings associated with this browsing context.
+
+    \since 6.8
+    \sa QWebEngineClientHints
+*/
+QWebEngineClientHints *QWebEngineProfile::clientHints() const
+{
+    Q_D(const QWebEngineProfile);
+    return d->m_clientHints.data();
 }
 
 QT_END_NAMESPACE

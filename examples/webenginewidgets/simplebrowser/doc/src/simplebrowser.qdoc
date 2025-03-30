@@ -103,6 +103,25 @@
     \skipto TabWidget::setupView
     \printuntil /^\}/
 
+    \section1 Closing Tabs
+
+    When the user closes a tab, we first trigger the \l {QWebEnginePage::}{RequestClose} web action
+    on the corresponding \c WebView:
+
+    \quotefromfile webenginewidgets/simplebrowser/tabwidget.cpp
+    \skipto QTabBar::tabCloseRequested
+    \printuntil }
+
+    This allows any JavaScript \c beforeunload event listeners to fire, which may
+    prompt the user with a dialog to confirm that they want to close the page.
+    In this case, the user can reject the close request and leave the tab open,
+    otherwise the \l {QWebEnginePage::}{windowCloseRequested} signal is emitted and we close the
+    tab:
+
+    \quotefromfile webenginewidgets/simplebrowser/tabwidget.cpp
+    \skipto QWebEnginePage::windowCloseRequested
+    \printuntil }
+
     \section1 Implementing WebView Functionality
 
     The \c WebView is derived from QWebEngineView to support the following
@@ -161,7 +180,7 @@
 
     We add a menu item to the context menu, so that users can right-click to have an inspector
     opened in a new window. We override QWebEngineView::contextMenuEvent and use
-    QWebEnginePage::createStandardContextMenu to create a default QMenu with a
+    QWebEngineView::createStandardContextMenu to create a default QMenu with a
     default list of QWebEnginePage::WebAction actions.
 
     The default name for QWebEnginePage::InspectElement action is
@@ -204,11 +223,15 @@
     The \c handleProxyAuthenticationRequired signal handler implements the very same
     steps for the authentication of HTTP proxies.
 
-    In case of SSL errors, we just need to return a boolean value indicating
-    whether the certificate should be ignored.
+    In case of SSL errors, we check whether they come from the main frame, or
+    from a resource inside the page. Resource errors automatically trigger a
+    certificate rejection, since a user won't have enough context to make a
+    decision. For all other cases, we trigger a dialog where the user can
+    allow or reject the certificate.
 
     \quotefromfile webenginewidgets/simplebrowser/webpage.cpp
     \skipto WebPage::handleCertificateError(
+    \printuntil }
     \printuntil }
     \printuntil }
 

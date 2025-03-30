@@ -26,7 +26,6 @@
         \li \l{HTTP/2 Protocol}
         \li \l{Local Storage}
         \li \l{Native Dialogs}
-        \li \l{Pepper Plugin API}
         \li \l{PDF File Viewing}
         \li \l{Page Lifecycle API}
         \li \l{Print to PDF}
@@ -359,9 +358,9 @@
 
     \QWE supports JavaScript Geolocation API with \l {Qt Positioning} as a
     backend. HTML5 geolocation is disabled by default. To explicitly allow it, the application
-    needs to listen to QWebEnginePage::featurePermissionRequested. Use QWebEnginePage::Geolocation
-    with a QWebEnginePage::setFeaturePermission() call or \l{WebEngineView::Feature}
-    with a \l{WebEngineView::grantFeaturePermission} {WebEngineView.grantFeaturePermission}() call
+    needs to listen to QWebEnginePage::permissionRequested. When a permission request
+    with a type of QWebEnginePermission::PermissionType::Geolocation is received,
+    you can call QWebEnginePermission::grant() on the received object
     to grant the required permission.
 
     If \QWE was built with Qt Positioning support then this feature can be
@@ -458,33 +457,7 @@
     WebEngineView::javaScriptDialogRequested(),
     WebEngineView::colorDialogRequested(),
     WebEngineView::fileDialogRequested(), and
-    WebEngineView::formValidationMessageRequested() signals. For an example,
-
-    \section1 Pepper Plugin API
-
-    \QWE supports loading Pepper Plugin API (PPAPI) plugins if
-    WebEngineSettings::pluginsEnabled or QWebEngineSettings::PluginsEnabled
-    is set.
-
-    The plugins must be loaded manually using the Chromium command line syntax with the
-    \c --register-pepper-plugins argument. The argument value is a list of
-    entries, separated by commas, that contain the file path and one or several
-    MIME types, separated by semicolons:
-
-    \badcode
-    <file-path-plugin1>;<mime-type-plugin1>,<file-path-plugin2>;<mime-type1-plugin2>;<mime-type2-plugin2>
-    \endcode
-
-    For example:
-
-    \badcode
-    --webEngineArgs --register-pepper-plugins="libppapi_example.so;application/x-ppapi-example"
-    \endcode
-
-    The MIME type is important because it determines which embeds the plugin is
-    used for.
-
-    Support for this feature was added in Qt 5.6.0.
+    WebEngineView::formValidationMessageRequested() signals.
 
     \section1 PDF File Viewing
 
@@ -669,6 +642,11 @@
     \c qwebengine_convert_dict tool that is shipped together with Qt.
     When the \QWE spellchecker initializes, it will try to load the
     \c bdict dictionaries and to check them for consistency.
+
+    For CMake, you can use the \l qt_add_webengine_dictionary command to convert
+    Hunspell \c .dic files into the \c .bdic binary format. The command creates
+    a \c qtwebengine_dictionaries target, which your project can use a
+    dependency.
 
     If \c QTWEBENGINE_DICTIONARIES_PATH is set, the spellchecker uses the
     dictionaries in the specified directory without looking anywere else.

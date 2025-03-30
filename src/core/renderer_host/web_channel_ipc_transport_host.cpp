@@ -48,7 +48,7 @@ uint WebChannelIPCTransportHost::worldId() const
 void WebChannelIPCTransportHost::sendMessage(const QJsonObject &message)
 {
     QJsonDocument doc(message);
-    QByteArray json = doc.toJson(QJsonDocument::Compact);
+    const QByteArray json = doc.toJson(QJsonDocument::Compact);
     content::RenderFrameHost *frame = web_contents()->GetPrimaryMainFrame();
     qCDebug(log).nospace() << "sending webchannel message to " << frame << ": " << doc;
     GetWebChannelIPCTransportRemote(frame)->DispatchWebChannelMessage(
@@ -105,6 +105,16 @@ void WebChannelIPCTransportHost::DispatchWebChannelMessage(const std::vector<uin
 void WebChannelIPCTransportHost::RenderFrameCreated(content::RenderFrameHost *frame)
 {
     setWorldId(frame, m_worldId);
+}
+
+void WebChannelIPCTransportHost::RenderFrameHostChanged(content::RenderFrameHost *oldHost, content::RenderFrameHost *newHost)
+{
+    if (oldHost) {
+        if (oldHost->IsRenderFrameLive())
+            GetWebChannelIPCTransportRemote(oldHost)->ResetWorldId();
+    }
+    if (newHost) // this might set it again, but that is harmless
+        setWorldId(newHost, m_worldId);
 }
 
 void WebChannelIPCTransportHost::RenderFrameDeleted(content::RenderFrameHost *rfh)

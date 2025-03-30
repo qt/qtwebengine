@@ -27,7 +27,6 @@ net::ProxyServer ProxyConfigServiceQt::fromQNetworkProxy(const QNetworkProxy &qt
         return net::ProxyServer::FromSchemeHostAndPort(net::ProxyServer::SCHEME_HTTP, host, port);
     case QNetworkProxy::NoProxy:
     case QNetworkProxy::DefaultProxy:
-        return net::ProxyServer(net::ProxyServer::SCHEME_DIRECT, net::HostPortPair());
     default:
         return net::ProxyServer(net::ProxyServer::SCHEME_INVALID, net::HostPortPair());
     }

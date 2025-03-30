@@ -27,7 +27,7 @@ class UserResourceControllerHost;
 } // namespace
 
 QT_BEGIN_NAMESPACE
-class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineScriptCollectionPrivate
+class Q_WEBENGINECORE_EXPORT QWebEngineScriptCollectionPrivate
 {
 public:
     QWebEngineScriptCollectionPrivate(QtWebEngineCore::UserResourceControllerHost *, QSharedPointer<QtWebEngineCore::WebContentsAdapter> = QSharedPointer<QtWebEngineCore::WebContentsAdapter>());

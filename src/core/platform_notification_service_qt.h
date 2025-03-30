@@ -56,6 +56,8 @@ public:
     // Records a given notification to UKM.
     void RecordNotificationUkmEvent(const content::NotificationDatabaseData&) override { }
 
+    void GetDisplayedNotificationsForOrigin(const GURL&, DisplayedNotificationsCallback callback) override;
+
     content::BrowserContext *browser_context;
 };
 

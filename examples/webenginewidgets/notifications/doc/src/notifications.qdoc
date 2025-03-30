@@ -45,11 +45,11 @@
 
     \section2 Requesting Feature Permissions
 
-    We then use the \l QWebEnginePage::featurePermissionRequested() call to
+    We then use the \l QWebEnginePage::permissionRequested() call to
     request the user's permission to show notifications on their device.
 
     \quotefromfile webenginewidgets/notifications/main.cpp
-    \skipto featurePermissionRequested
+    \skipto permissionRequested
     \printuntil });
 
     \section2 Handling New Notifications

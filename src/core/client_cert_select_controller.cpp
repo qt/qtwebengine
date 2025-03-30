@@ -75,7 +75,7 @@ void ClientCertSelectController::select(const QSslCertificate &certificate)
         LOG(WARNING) << "ClientCertSelectController::select() certificate already selected";
         return;
     }
-    QByteArray derCertificate = certificate.toDer();
+    const QByteArray derCertificate = certificate.toDer();
     scoped_refptr<net::X509Certificate> selectedCert =
             net::X509Certificate::CreateFromBytes(base::make_span((const unsigned char *)derCertificate.constData(),
                                                                   (long unsigned)derCertificate.length()));

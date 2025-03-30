@@ -19,8 +19,6 @@
     Boston, MA 02110-1301, USA.
 */
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
 #include <qtest.h>
 #include <util.h>
@@ -288,20 +286,20 @@ void tst_QWebEngineView::pageWithPaintListeners()
 
     page.setHtml(empty);
     QTest::qWait(500); // empty page should not trigger
-    QVERIFY(firstContentfulPaintSpy.size() == 0);
-    QVERIFY(largestContentfulPaintSpy.size() == 0);
+    QCOMPARE(firstContentfulPaintSpy.size(), 0);
+    QCOMPARE(largestContentfulPaintSpy.size(), 0);
 
     page.setHtml(backgroundColor);
-    QTRY_VERIFY(firstContentfulPaintSpy.size() == 1);
+    QTRY_COMPARE(firstContentfulPaintSpy.size(), 1);
 
     page.setHtml(text);
-    QTRY_VERIFY(firstContentfulPaintSpy.size() == 2);
-    QTRY_VERIFY(largestContentfulPaintSpy.size() == 1);
+    QTRY_COMPARE(firstContentfulPaintSpy.size(), 2);
+    QTRY_COMPARE(largestContentfulPaintSpy.size(), 1);
 
-#if !QT_CONFIG(webengine_embedded_build)
-    // Embedded builds have different scrollbars that are only painted on hover
+#if !QT_CONFIG(webengine_embedded_build) && !defined(Q_OS_MACOS)
+    // Embedded builds and macOS have different scrollbars that are only painted on hover
     page.setHtml(scrollBars);
-    QTRY_VERIFY(firstContentfulPaintSpy.size() == 3);
+    QTRY_COMPARE(firstContentfulPaintSpy.size(), 3);
 #endif
 }
 
@@ -1620,6 +1618,7 @@ void tst_QWebEngineView::keyboardFocusAfterPopup()
     connect(window.lineEdit, &QLineEdit::editingFinished, [&] { window.webView->setHtml(html); });
     window.webView->settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
 
     // Focus will initially go to the QLineEdit.
     QTRY_COMPARE(QApplication::focusWidget(), window.lineEdit);
@@ -2077,7 +2076,7 @@ void tst_QWebEngineView::inputContextQueryInput()
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, textInputCenter);
     QTRY_COMPARE(testContext.infos.size(), 2);
     QCOMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
-    foreach (const InputMethodInfo &info, testContext.infos) {
+    for (const InputMethodInfo &info : std::as_const(testContext.infos)) {
         QCOMPARE(info.cursorPosition, 0);
         QCOMPARE(info.anchorPosition, 0);
         QCOMPARE(info.surroundingText, QStringLiteral(""));
@@ -2176,7 +2175,7 @@ void tst_QWebEngineView::inputContextQueryInput()
         QApplication::sendEvent(view.focusProxy(), &event);
     }
     QTRY_COMPARE(testContext.infos.size(), 2);
-    foreach (const InputMethodInfo &info, testContext.infos) {
+    for (const InputMethodInfo &info : std::as_const(testContext.infos)) {
         QCOMPARE(info.cursorPosition, 0);
         QCOMPARE(info.anchorPosition, 0);
         QCOMPARE(info.surroundingText, QStringLiteral("QtWebEngine!"));
@@ -2949,8 +2948,8 @@ void tst_QWebEngineView::imeJSInputEvents()
 
     QTRY_COMPARE(logLines().size(), 4);
     QCOMPARE(logLines()[0], QStringLiteral("[object CompositionEvent] compositionstart "));
-    QCOMPARE(logLines()[1], QStringLiteral("[object InputEvent] beforeinput preedit"));
-    QCOMPARE(logLines()[2], QStringLiteral("[object CompositionEvent] compositionupdate preedit"));
+    QCOMPARE(logLines()[1], QStringLiteral("[object CompositionEvent] compositionupdate preedit"));
+    QCOMPARE(logLines()[2], QStringLiteral("[object InputEvent] beforeinput preedit"));
     QCOMPARE(logLines()[3], QStringLiteral("[object InputEvent] input preedit"));
 
     {
@@ -2962,8 +2961,8 @@ void tst_QWebEngineView::imeJSInputEvents()
     }
 
     QTRY_COMPARE(logLines().size(), 9);
-    QCOMPARE(logLines()[4], QStringLiteral("[object InputEvent] beforeinput commit"));
-    QCOMPARE(logLines()[5], QStringLiteral("[object CompositionEvent] compositionupdate commit"));
+    QCOMPARE(logLines()[4], QStringLiteral("[object CompositionEvent] compositionupdate commit"));
+    QCOMPARE(logLines()[5], QStringLiteral("[object InputEvent] beforeinput commit"));
     QCOMPARE(logLines()[6], QStringLiteral("[object TextEvent] textInput commit"));
     QCOMPARE(logLines()[7], QStringLiteral("[object InputEvent] input commit"));
     QCOMPARE(logLines()[8], QStringLiteral("[object CompositionEvent] compositionend commit"));
@@ -2981,8 +2980,8 @@ void tst_QWebEngineView::imeJSInputEvents()
 
     QTRY_COMPARE(logLines().size(), 4);
     QCOMPARE(logLines()[0], QStringLiteral("[object CompositionEvent] compositionstart "));
-    QCOMPARE(logLines()[1], QStringLiteral("[object InputEvent] beforeinput preedit"));
-    QCOMPARE(logLines()[2], QStringLiteral("[object CompositionEvent] compositionupdate preedit"));
+    QCOMPARE(logLines()[1], QStringLiteral("[object CompositionEvent] compositionupdate preedit"));
+    QCOMPARE(logLines()[2], QStringLiteral("[object InputEvent] beforeinput preedit"));
     QCOMPARE(logLines()[3], QStringLiteral("[object InputEvent] input preedit"));
 
     {
@@ -2993,8 +2992,8 @@ void tst_QWebEngineView::imeJSInputEvents()
     }
 
     QTRY_COMPARE(logLines().size(), 9);
-    QCOMPARE(logLines()[4], QStringLiteral("[object InputEvent] beforeinput "));
-    QCOMPARE(logLines()[5], QStringLiteral("[object CompositionEvent] compositionupdate "));
+    QCOMPARE(logLines()[4], QStringLiteral("[object CompositionEvent] compositionupdate "));
+    QCOMPARE(logLines()[5], QStringLiteral("[object InputEvent] beforeinput "));
     QCOMPARE(logLines()[6], QStringLiteral("[object TextEvent] textInput "));
     QCOMPARE(logLines()[7], QStringLiteral("[object InputEvent] input null"));
     QCOMPARE(logLines()[8], QStringLiteral("[object CompositionEvent] compositionend "));
@@ -3896,10 +3895,13 @@ void tst_QWebEngineView::datalist()
     QTest::keyClick(view.windowHandle(), Qt::Key_Escape);
     QTRY_VERIFY(!listView());
 
-    // Key Down should open the popup and select the first suggestion.
+    // The first Key Down opens the popup.
     QTest::keyClick(view.windowHandle(), Qt::Key_Down);
     QTRY_VERIFY(listView());
-    QCOMPARE(listView()->currentIndex().row(), 0);
+
+    // The second Key Down selects the first suggestion.
+    QTest::keyClick(view.windowHandle(), Qt::Key_Down);
+    QTRY_COMPARE(listView()->currentIndex().row(), 0);
 
     // Test keyboard navigation in list.
     QTest::keyClick(view.windowHandle(), Qt::Key_Up);
@@ -4007,16 +4009,22 @@ void tst_QWebEngineView::longKeyEventText()
 
 void tst_QWebEngineView::deferredDelete()
 {
+    // TODO: Remove this workaround when temporary qt_desktopWidget is removed from
+    //       qapplication.cpp.
+    const size_t desktopWidget = QApplication::allWidgets().size();
+    QVERIFY(desktopWidget <= 1);
+
     {
         QWebEngineView view;
         QSignalSpy loadFinishedSpy(view.page(), &QWebEnginePage::loadFinished);
         view.load(QUrl("chrome://qt"));
         view.show();
         QTRY_VERIFY(loadFinishedSpy.size());
-        QCOMPARE(QApplication::allWidgets().size(), 2); // QWebEngineView and WebEngineQuickWidget
+        // QWebEngineView and WebEngineQuickWidget
+        QCOMPARE(QApplication::allWidgets().size(), desktopWidget + 2);
     }
 
-    QCOMPARE(QApplication::allWidgets().size(), 0);
+    QCOMPARE(QApplication::allWidgets().size(), desktopWidget);
 }
 
 // QTBUG-111927

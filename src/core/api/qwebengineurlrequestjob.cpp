@@ -32,7 +32,7 @@ QT_BEGIN_NAMESPACE
     This enum type holds the type of the error that occurred:
 
     \value  NoError
-            The request was successful.
+            The request was successful. (Deprecated since Qt 6.8)
     \value  UrlNotFound
             The requested URL was not found.
     \value  UrlInvalid

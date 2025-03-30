@@ -47,8 +47,9 @@ public:
         ResourceTypePluginResource, // A resource requested by a plugin
         ResourceTypeNavigationPreloadMainFrame = 19, // A main-frame service worker navigation preload request
         ResourceTypeNavigationPreloadSubFrame,  // A sub-frame service worker navigation preload request
+        ResourceTypeJson, // a JSON module (import ... with { type: "json" })
 #ifndef Q_QDOC
-        ResourceTypeLast = ResourceTypeNavigationPreloadSubFrame,
+        ResourceTypeLast = ResourceTypeJson,
 #endif
         ResourceTypeWebSocket = 254,
         ResourceTypeUnknown = 255

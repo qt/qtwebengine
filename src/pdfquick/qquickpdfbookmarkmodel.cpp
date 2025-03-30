@@ -8,7 +8,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmltype PdfBookmarkModel
-//!    \instantiates QQuickPdfBookmarkModel
+//!    \nativetype QQuickPdfBookmarkModel
     \inqmlmodule QtQuick.Pdf
     \ingroup pdf
     \brief A tree of links (anchors) within a PDF document, such as the table of contents.

@@ -20,6 +20,7 @@
 #include "net/socket/tcp_server_socket.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using namespace Qt::StringLiterals;
 using content::DevToolsAgentHost;
 
 namespace {
@@ -52,7 +53,7 @@ private:
 namespace QtWebEngineCore {
 
 DevToolsServerQt::DevToolsServerQt()
-    : m_bindAddress(QLatin1String("127.0.0.1"))
+    : m_bindAddress(u"127.0.0.1"_s)
     , m_port(0)
     , m_valid(false)
     , m_isStarted(false)
@@ -72,7 +73,7 @@ void DevToolsServerQt::parseAddressAndPort()
     if (commandLine.HasSwitch(switches::kRemoteDebuggingPort)) {
         portStr = QString::fromStdString(commandLine.GetSwitchValueASCII(switches::kRemoteDebuggingPort));
     } else if (!inspectorEnv.isEmpty()) {
-        int portColonPos = inspectorEnv.lastIndexOf(':');
+        int portColonPos = inspectorEnv.lastIndexOf(u':');
         if (portColonPos != -1) {
             portStr = inspectorEnv.mid(portColonPos + 1);
             m_bindAddress = inspectorEnv.mid(0, portColonPos);
@@ -83,8 +84,12 @@ void DevToolsServerQt::parseAddressAndPort()
 
     m_port = portStr.toInt(&m_valid);
     m_valid = m_valid && (m_port > 0 && m_port < 65535);
-    if (!m_valid)
-        qWarning("Invalid port given for the inspector server \"%s\". Examples of valid input: \"12345\" or \"192.168.2.14:12345\" (with the address of one of this host's network interface).", qPrintable(portStr));
+    if (!m_valid) {
+        qWarning("Invalid port given for the inspector server \"%ls\". "
+                 "Examples of valid input: \"12345\" or \"192.168.2.14:12345\" "
+                 "(with the address of one of this host's network interface).",
+                 qUtf16Printable(portStr));
+    }
 }
 
 std::unique_ptr<content::DevToolsSocketFactory> DevToolsServerQt::CreateSocketFactory()
@@ -123,8 +128,9 @@ void DevToolsServerQt::stop()
 void DevToolsManagerDelegateQt::Initialized(const net::IPEndPoint *ip_address)
 {
     if (ip_address && ip_address->address().size()) {
-        QString addressAndPort = QString::fromStdString(ip_address->ToString());
-        qWarning("Remote debugging server started successfully. Try pointing a Chromium-based browser to http://%s", qPrintable(addressAndPort));
+        qWarning("Remote debugging server started successfully. "
+                 "Try pointing a Chromium-based browser to http://%s",
+                 ip_address->ToString().c_str());
     }
     else
         qWarning("Couldn't start the inspector server on bind address. In case of invalid input, try something like: \"12345\" or \"192.168.2.14:12345\" (with the address of one of this host's interface).");

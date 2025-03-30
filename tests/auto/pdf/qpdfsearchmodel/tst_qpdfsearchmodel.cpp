@@ -56,7 +56,7 @@ void tst_QPdfSearchModel::findText()
     model.setDocument(&document);
     model.setSearchString(searchString);
 
-    QTRY_COMPARE(model.rowCount({}), expectedMatchCount); // wait for the timer
+    QTRY_COMPARE(model.count(), expectedMatchCount); // wait for the timer
     QPdfLink match = model.resultAtIndex(matchIndexToCheck);
     qCDebug(lcTests) << match;
     QList<QRectF> rects = match.rectangles();

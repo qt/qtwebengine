@@ -47,7 +47,7 @@ using UserResourceControllerRemote = mojo::AssociatedRemote<qtwebengine::mojom::
 using UserResourceControllerRenderFrameRemote = mojo::AssociatedRemote<qtwebengine::mojom::UserResourceControllerRenderFrame>;
 class WebContentsAdapter;
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT UserResourceControllerHost
+class Q_WEBENGINECORE_EXPORT UserResourceControllerHost
 {
 
 public:

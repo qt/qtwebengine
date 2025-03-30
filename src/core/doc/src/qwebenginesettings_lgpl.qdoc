@@ -70,10 +70,15 @@
             Allows JavaScript programs to open popup windows without user
             interaction. Enabled by default.
     \value  JavascriptCanAccessClipboard
-            Allows JavaScript programs to read from and write to the clipboard.
-            Writing to the clipboard is always allowed if it is specifically requested by the user.
-            See JavascriptCanPaste to also allow pasting the content of the clipboard content from
-            JavaScript.
+            Allows JavaScript programs to write (copy) sanitized content to the clipboard. A
+            sanitized write is done with the \c{write} and \c{writeText} JavaScript Clipboard API
+            calls and must be accompanied by user action.
+            Unsanitized writes, and reading from the clipboard, are
+            enabled by \l{JavascriptCanPaste}.
+            Prior to Chromium version 81, this setting enabled all clipboard writes.
+            Since unrestricted clipboard access is a potential security concern, it is
+            recommended that applications leave this disabled and instead respond to
+            \l{QWebEnginePage::ClipboardReadWrite}{ClipboardReadWrite} feature permission requests.
             Disabled by default.
     \value  LinksIncludedInFocusChain
             Includes hyperlinks in the keyboard focus chain. Enabled by default.
@@ -103,7 +108,6 @@
             Enables displaying the built-in error pages of Chromium. Enabled by default.
     \value  PluginsEnabled
             Enables support for Pepper plugins, such as the Flash player. Disabled by default.
-            See also \l{Pepper Plugin API}. (Added in Qt 5.6)
     \value  FullScreenSupportEnabled
             Enables fullscreen support in an application. Disabled by default. (Added in Qt 5.6)
     \value  ScreenCaptureEnabled
@@ -151,8 +155,15 @@
             similar to Chrome on desktops. To overwrite the default behavior,
             disable this setting. (Added in Qt 5.11)
     \value  JavascriptCanPaste
-            Enables JavaScript \c{execCommand("paste")}. This also requires
-            enabling JavascriptCanAccessClipboard.
+            Allows JavaScript programs to read (paste) from the clipboard and to write unsanitized
+            content. A sanitized write is done with the \c{write} and \c{writeText} JavaScript
+            Clipboard API calls and must be accompanied by user action; unsanitized writes are any
+            writes which do not meet these criteria.
+            For this setting to have any effect, \l{JavascriptCanAccessClipboard} must also be
+            enabled.
+            Since unrestricted clipboard access is a potential security concern, it is
+            recommended that applications leave this disabled and instead respond to
+            \l{QWebEnginePage::ClipboardReadWrite}{ClipboardReadWrite} feature permission requests.
             Disabled by default. (Added in Qt 5.11)
     \value  WebRTCPublicInterfacesOnly
             Limits WebRTC to public IP addresses only. When disabled WebRTC may also use
@@ -194,6 +205,24 @@
     \omitvalue InheritedUnknownUrlSchemePolicy
 
     \sa unknownUrlSchemePolicy setUnknownUrlSchemePolicy resetUnknownUrlSchemePolicy
+*/
+
+/*!
+    \enum QWebEngineSettings::ImageAnimationPolicy
+    \since Qt 6.8
+
+    This enum describes how an image animation should be handled when the image frames
+    are rendered for animation.
+
+    \value Allow
+           Allows image animation when the image frames are rendered.
+    \value AnimateOnce
+           Animate the image once when the image frames are rendered.
+    \value Disallow
+           Disallows image animation when the image frames are rendered.
+    \omitvalue Inherited
+
+    \sa imageAnimationPolicy setImageAnimationPolicy resetImageAnimationPolicy
 */
 
 /*!
@@ -283,4 +312,27 @@
 
     Resets the setting of \a attribute to the value specified in the
     profile that the page belongs to.
+*/
+
+/*!
+    \fn QWebEngineSettings::ImageAnimationPolicy QWebEngineSettings::imageAnimationPolicy() const
+    \since Qt 6.8
+    Returns the currently selected policy for handling image animation when the image frames are rendered.
+    Default is \l{QWebEngineSettings::ImageAnimationPolicy::Allow}.
+    \sa setImageAnimationPolicy resetImageAnimationPolicy
+*/
+
+/*!
+    \fn void QWebEngineSettings::setImageAnimationPolicy(QWebEngineSettings::ImageAnimationPolicy policy)
+    \since Qt 6.8
+    Sets the policy for handling image animation when the image frames are rendered to \a policy.
+    Default is \l{QWebEngineSettings::ImageAnimationPolicy::Allow}.
+    \sa imageAnimationPolicy resetImageAnimationPolicy
+*/
+
+/*!
+    \fn void QWebEngineSettings::resetImageAnimationPolicy()
+    \since Qt 6.8
+    Removes the policy for handling image animation.
+    \sa imageAnimationPolicy setImageAnimationPolicy
 */

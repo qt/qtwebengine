@@ -209,11 +209,11 @@ QIcon toQIcon(const std::vector<SkBitmap> &bitmaps);
 
 inline QDateTime toQt(base::Time time)
 {
-    return QDateTime::fromMSecsSinceEpoch(time.ToJavaTime());
+    return QDateTime::fromMSecsSinceEpoch(time.InMillisecondsSinceUnixEpoch());
 }
 
 inline base::Time toTime(const QDateTime &dateTime) {
-    return base::Time::FromJavaTime(dateTime.toMSecsSinceEpoch());
+    return base::Time::FromMillisecondsSinceUnixEpoch(dateTime.toMSecsSinceEpoch());
 }
 
 inline QNetworkCookie toQt(const net::CanonicalCookie & cookie)

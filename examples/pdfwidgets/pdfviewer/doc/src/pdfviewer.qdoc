@@ -15,11 +15,12 @@
     \e {PDF Viewer} demonstrates how to use the QPdfView class to render
     PDF documents and the QPdfPageNavigator class to navigate them.
 
-    Qt Creator and the integrated Qt Designer were used to create the example
-    UI and to connect it to the code. This affects the code, which might be
-    somewhat different to what you would typically write by hand.
-    For more information about using Qt Designer, see \l{Qt Designer Manual}
-    and \l{Qt Creator: Creating a Qt Widget Based Application}.
+    Qt Creator and the integrated Qt Widgets Designer were used to create the
+    example UI and to connect it to the code. This affects the code, which
+    might be somewhat different to what you would typically write by hand.
+    For more information about using Qt Widgets Designer, see
+    \l{Qt Widgets Designer Manual} and
+    \l{Qt Creator: Creating a Qt Widget Based Application}.
 
     \include examples-run.qdocinc
 

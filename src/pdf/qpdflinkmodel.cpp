@@ -335,4 +335,4 @@ void QPdfLinkModel::onStatusChanged(QPdfDocument::Status status)
 
 QT_END_NAMESPACE
 
-#include "moc_qpdflinkmodel_p.cpp"
+#include "moc_qpdflinkmodel.cpp"

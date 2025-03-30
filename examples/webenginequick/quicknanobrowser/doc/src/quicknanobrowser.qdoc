@@ -75,12 +75,15 @@
 
     \section1 Handling Certificate Errors
 
-    If the certificate of the site being loaded triggers a certificate error, we call the
-    \l{WebEngineCertificateError::}{defer()} QML method to pause the URL request and wait for user
-    input:
+    In case of a certificate error, we check whether it came from the main frame, or from a
+    resource inside the page. Resource errors automatically trigger a certificate rejection,
+    since a user won't have enough context to make a decision.
+    For all other cases, we call the \l{WebEngineCertificateError::}{defer()} QML method to pause
+    the URL request and wait for user input:
 
     \quotefromfile webenginequick/quicknanobrowser/BrowserWindow.qml
     \skipto onCertificateError
+    \printuntil }
     \printuntil }
 
     We use the Dialog type to prompt users to continue or cancel the loading of the web page.
@@ -93,25 +96,22 @@
     \skipto Dialog {
     \printuntil /^\ {4}\}/
 
-    \section1 Handling Feature Permission Requests
+    \section1 Handling Permission Requests
 
-    We use the \c onFeaturePermissionRequested() signal handler to handle requests for
-    accessing a certain feature or device. The \c securityOrigin parameter identifies the
-    requester web site, and the \c feature parameter is the requested feature. We use these
-    to construct the message of the dialog:
+    We use the \c onPermissionRequested() signal handler to handle requests for
+    accessing a certain feature or device. The \c permission parameter is an object of the
+    WebEnginePermission type, which can be used to handle the incoming request. We temporarily store
+    this object, since we need to use it to construct the message of the dialog:
 
     \quotefromfile webenginequick/quicknanobrowser/BrowserWindow.qml
-    \skipto onFeaturePermissionRequested
+    \skipto onPermissionRequested
     \printuntil }
 
-    We show a dialog where the user is asked to grant or deny access. The custom
+    We display a dialog where the user is asked to grant or deny access. The custom
     \c questionForFeature() JavaScript function generates a human-readable question about
     the request.
-    If users select \uicontrol Yes, we call the \l{WebEngineView::}{grantFeaturePermission()}
-    method with a third \c true parameter to grant the \c securityOrigin web site the permission
-    to access the \c feature.
-    If users select \uicontrol No, we call the same method but with the \c false parameter to
-    deny access:
+    If user selects \uicontrol Yes, we call the \l{webEnginePermission::grant}{grant()}
+    method, and if they select \uicontrol No we call \l{webEnginePermission::deny}{deny()}.
 
     \skipto id: sslDialog
     \skipto Dialog {

@@ -1,0 +1,8 @@
+version = 1
+
+[[annotations]]
+path = "jquery.min.js"
+comment = "license is not reuse readable."
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (c) 2009 John Resig"
+SPDX-License-Identifier = "MIT"

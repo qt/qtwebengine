@@ -32,7 +32,7 @@ namespace QtWebEngineCore {
 class ProfileQt;
 class VisitedLinkDelegateQt;
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT VisitedLinksManagerQt {
+class Q_WEBENGINECORE_EXPORT VisitedLinksManagerQt {
 
 public:
     virtual~VisitedLinksManagerQt();

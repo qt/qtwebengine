@@ -41,6 +41,7 @@
 #include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
 #include <QtWebEngineCore/qwebenginescriptcollection.h>
 #include <QtWebEngineCore/qwebenginewebauthuxrequest.h>
+#include <QtWebEngineCore/qwebenginepermission.h>
 #include <QtWebEngineCore/private/qwebenginecontextmenurequest_p.h>
 #include <QtWebEngineCore/private/qwebenginedesktopmediarequest_p.h>
 #include <QtWebEngineCore/private/qwebenginehistory_p.h>
@@ -48,6 +49,7 @@
 #include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
 #include <QtWebEngineCore/private/qwebenginepage_p.h>
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
+#include <QtWebEngineCore/private/qwebenginepermission_p.h>
 
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qmimedata.h>
@@ -259,8 +261,9 @@ public:
 
     void InitAsPopup(const QRect &screenRect) override
     {
-        Q_UNUSED(screenRect);
-        Q_UNREACHABLE();
+        // note this is called when there is no windowing system
+        // otherwsie see RenderWidgetHostViewQtDelegateQuickWindow
+        m_contentItem->setPosition(screenRect.topLeft());
     }
 
     void Bind(WebContentsAdapterClient *client) override
@@ -445,10 +448,10 @@ void QQuickWebEngineViewPrivate::contextMenuRequested(QWebEngineContextMenuReque
     ui()->showMenu(menu);
 }
 
-void QQuickWebEngineViewPrivate::navigationRequested(int navigationType, const QUrl &url, bool &accepted, bool isMainFrame)
+void QQuickWebEngineViewPrivate::navigationRequested(int navigationType, const QUrl &url, bool &accepted, bool isMainFrame, bool hasFrameData)
 {
     Q_Q(QQuickWebEngineView);
-    auto request = new QWebEngineNavigationRequest(url, static_cast<QWebEngineNavigationRequest::NavigationType>(navigationType), isMainFrame);
+    auto request = new QWebEngineNavigationRequest(url, static_cast<QWebEngineNavigationRequest::NavigationType>(navigationType), isMainFrame, hasFrameData);
     qmlEngine(q)->newQObject(request);
     Q_EMIT q->navigationRequested(request);
 
@@ -484,25 +487,57 @@ void QQuickWebEngineViewPrivate::selectClientCert(
     Q_EMIT q->selectClientCertificate(certSelection);
 }
 
-static QQuickWebEngineView::Feature toFeature(QtWebEngineCore::ProfileAdapter::PermissionType type)
+#if QT_DEPRECATED_SINCE(6, 8)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+static QQuickWebEngineView::Feature toDeprecatedFeature(QWebEnginePermission::PermissionType permissionType)
 {
-    switch (type) {
-    case QtWebEngineCore::ProfileAdapter::NotificationPermission:
+    switch (permissionType) {
+    case QWebEnginePermission::PermissionType::Notifications:
         return QQuickWebEngineView::Notifications;
-    case QtWebEngineCore::ProfileAdapter::GeolocationPermission:
+    case QWebEnginePermission::PermissionType::Geolocation:
         return QQuickWebEngineView::Geolocation;
-    default:
+    case QWebEnginePermission::PermissionType::ClipboardReadWrite:
+        return QQuickWebEngineView::ClipboardReadWrite;
+    case QWebEnginePermission::PermissionType::LocalFontsAccess:
+        return QQuickWebEngineView::LocalFontsAccess;
+    case QWebEnginePermission::PermissionType::MediaAudioCapture:
+        return QQuickWebEngineView::MediaAudioCapture;
+    case QWebEnginePermission::PermissionType::MediaVideoCapture:
+        return QQuickWebEngineView::MediaVideoCapture;
+    case QWebEnginePermission::PermissionType::MediaAudioVideoCapture:
+        return QQuickWebEngineView::MediaAudioVideoCapture;
+    case QWebEnginePermission::PermissionType::DesktopVideoCapture:
+        return QQuickWebEngineView::DesktopVideoCapture;
+    case QWebEnginePermission::PermissionType::DesktopAudioVideoCapture:
+        return QQuickWebEngineView::DesktopAudioVideoCapture;
+    case QWebEnginePermission::PermissionType::MouseLock:
+    case QWebEnginePermission::PermissionType::Unsupported:
         break;
     }
+
     Q_UNREACHABLE();
     return QQuickWebEngineView::Feature(-1);
 }
+QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(6, 8)
 
-
-void QQuickWebEngineViewPrivate::runFeaturePermissionRequest(QtWebEngineCore::ProfileAdapter::PermissionType permission, const QUrl &url)
+void QQuickWebEngineViewPrivate::runFeaturePermissionRequest(QWebEnginePermission::PermissionType permissionType, const QUrl &securityOrigin)
 {
     Q_Q(QQuickWebEngineView);
-    Q_EMIT q->featurePermissionRequested(url, toFeature(permission));
+
+    if (QWebEnginePermission::isPersistent(permissionType)) {
+        Q_EMIT q->permissionRequested(createFeaturePermissionObject(securityOrigin, permissionType));
+#if QT_DEPRECATED_SINCE(6, 8)
+        QT_WARNING_PUSH
+        QT_WARNING_DISABLE_DEPRECATED
+        Q_EMIT q->featurePermissionRequested(securityOrigin, toDeprecatedFeature(permissionType));
+        QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(6, 8)
+        return;
+    }
+
+    Q_UNREACHABLE();
 }
 
 void QQuickWebEngineViewPrivate::showColorDialog(QSharedPointer<ColorChooserController> controller)
@@ -566,6 +601,12 @@ void QQuickWebEngineViewPrivate::iconChanged(const QUrl &url)
     iconUrl = QQuickWebEngineFaviconProvider::faviconProviderUrl(url);
     m_history->reset();
     QTimer::singleShot(0, q, &QQuickWebEngineView::iconChanged);
+}
+
+void QQuickWebEngineViewPrivate::zoomFactorChanged(qreal factor)
+{
+    Q_Q(QQuickWebEngineView);
+    Q_EMIT q->zoomFactorChanged(factor);
 }
 
 void QQuickWebEngineViewPrivate::loadProgressChanged(int progress)
@@ -774,19 +815,41 @@ void QQuickWebEngineViewPrivate::runMediaAccessPermissionRequest(const QUrl &sec
     Q_Q(QQuickWebEngineView);
     if (!requestFlags)
         return;
-    QQuickWebEngineView::Feature feature;
+    QWebEnginePermission::PermissionType permissionType;
     if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture) && requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
-        feature = QQuickWebEngineView::MediaAudioVideoCapture;
+        permissionType = QWebEnginePermission::PermissionType::MediaAudioVideoCapture;
     else if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture))
-        feature = QQuickWebEngineView::MediaAudioCapture;
+        permissionType = QWebEnginePermission::PermissionType::MediaAudioCapture;
     else if (requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
-        feature = QQuickWebEngineView::MediaVideoCapture;
+        permissionType = QWebEnginePermission::PermissionType::MediaVideoCapture;
     else if (requestFlags.testFlag(WebContentsAdapterClient::MediaDesktopAudioCapture) &&
              requestFlags.testFlag(WebContentsAdapterClient::MediaDesktopVideoCapture))
-        feature = QQuickWebEngineView::DesktopAudioVideoCapture;
+        permissionType = QWebEnginePermission::PermissionType::DesktopAudioVideoCapture;
     else // if (requestFlags.testFlag(WebContentsAdapterClient::MediaDesktopVideoCapture))
-        feature = QQuickWebEngineView::DesktopVideoCapture;
-    Q_EMIT q->featurePermissionRequested(securityOrigin, feature);
+        permissionType = QWebEnginePermission::PermissionType::DesktopVideoCapture;
+    Q_EMIT q->permissionRequested(createFeaturePermissionObject(securityOrigin, permissionType));
+
+#if QT_DEPRECATED_SINCE(6, 8)
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
+    QQuickWebEngineView::Feature deprecatedFeature;
+
+    if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture)
+            && requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
+        deprecatedFeature = QQuickWebEngineView::MediaAudioVideoCapture;
+    else if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture))
+        deprecatedFeature = QQuickWebEngineView::MediaAudioCapture;
+    else if (requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
+        deprecatedFeature = QQuickWebEngineView::MediaVideoCapture;
+    else if (requestFlags.testFlag(WebContentsAdapterClient::MediaDesktopAudioCapture)
+            && requestFlags.testFlag(WebContentsAdapterClient::MediaDesktopVideoCapture))
+        deprecatedFeature = QQuickWebEngineView::DesktopAudioVideoCapture;
+    else // if (requestFlags.testFlag(WebContentsAdapterClient::MediaDesktopVideoCapture))
+        deprecatedFeature = QQuickWebEngineView::DesktopVideoCapture;
+
+    Q_EMIT q->featurePermissionRequested(securityOrigin, deprecatedFeature);
+    QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(6, 8)
 }
 
 void QQuickWebEngineViewPrivate::runMouseLockPermissionRequest(const QUrl &securityOrigin)
@@ -829,6 +892,14 @@ void QQuickWebEngineViewPrivate::printRequested()
     Q_Q(QQuickWebEngineView);
     QTimer::singleShot(0, q, [q]() {
         Q_EMIT q->printRequested();
+    });
+}
+
+void QQuickWebEngineViewPrivate::printRequestedByFrame(quint64 frameId)
+{
+    Q_Q(QQuickWebEngineView);
+    QTimer::singleShot(0, q, [this, q, frameId]() {
+        Q_EMIT q->printRequestedByFrame(QWebEngineFrame(this->adapter, frameId));
     });
 }
 
@@ -1221,7 +1292,6 @@ void QQuickWebEngineView::setZoomFactor(qreal arg)
         d->adapter->setZoomFactor(arg);
         // MEMO: should reset if factor was not applied due to being invalid
         d->m_zoomFactor = zoomFactor();
-        emit zoomFactorChanged(d->m_zoomFactor);
     } else {
         d->m_zoomFactor = arg;
     }
@@ -1292,22 +1362,26 @@ bool QQuickWebEngineView::activeFocusOnPress() const
     return d->m_activeFocusOnPress;
 }
 
-void QQuickWebEngineViewPrivate::didRunJavaScript(quint64 requestId, const QVariant &result)
+void QQuickWebEngineViewPrivate::runJavaScript(
+        const QString &script, quint32 worldId, quint64 frameId,
+        const std::function<void(const QVariant &)> &callback)
 {
-    Q_Q(QQuickWebEngineView);
-    QJSValue callback = m_callbacks.take(requestId);
-    QJSValueList args;
-    args.append(qmlEngine(q)->toScriptValue(result));
-    callback.call(args);
+    ensureContentsAdapter();
+    adapter->runJavaScript(script, worldId, frameId, callback);
 }
 
-void QQuickWebEngineViewPrivate::didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result)
+void QQuickWebEngineViewPrivate::printToPdf(const QString &filePath, const QPageLayout &layout,
+                                            const QPageRanges &ranges, quint64 frameId)
 {
-    Q_Q(QQuickWebEngineView);
-    QJSValue callback = m_callbacks.take(requestId);
-    QJSValueList args;
-    args.append(qmlEngine(q)->toScriptValue(*(result.data())));
-    callback.call(args);
+    adapter->printToPDF(layout, ranges, filePath, frameId);
+}
+
+void QQuickWebEngineViewPrivate::printToPdf(
+        std::function<void(QSharedPointer<QByteArray>)> &&callback, const QPageLayout &layout,
+        const QPageRanges &ranges, quint64 frameId)
+{
+    adapter->printToPDFCallbackResult(std::move(callback), layout, ranges, /*colorMode*/ true,
+                                      /*useCustomMargins*/ true, frameId);
 }
 
 void QQuickWebEngineViewPrivate::didPrintPageToPdf(const QString &filePath, bool success)
@@ -1445,6 +1519,12 @@ void QQuickWebEngineViewPrivate::showWebAuthDialog(QWebEngineWebAuthUxRequest *r
     Q_EMIT q->webAuthUxRequested(request);
 }
 
+QWebEnginePermission QQuickWebEngineViewPrivate::createFeaturePermissionObject(const QUrl &securityOrigin, QWebEnginePermission::PermissionType permissionType)
+{
+    auto *returnPrivate = new QWebEnginePermissionPrivate(securityOrigin, permissionType, adapter, profileAdapter());
+    return QWebEnginePermission(returnPrivate);
+}
+
 bool QQuickWebEngineView::isLoading() const
 {
     Q_D(const QQuickWebEngineView);
@@ -1483,16 +1563,15 @@ void QQuickWebEngineView::runJavaScript(const QString &script, const QJSValue &c
 void QQuickWebEngineView::runJavaScript(const QString &script, quint32 worldId, const QJSValue &callback)
 {
     Q_D(QQuickWebEngineView);
-    d->ensureContentsAdapter();
+    std::function<void(const QVariant &)> wrappedCallback;
     if (!callback.isUndefined()) {
-        quint64 requestId = d_ptr->adapter->runJavaScriptCallbackResult(script, worldId);
-        if (requestId) {
-            d->m_callbacks.insert(requestId, callback);
-        } else {
-            callback.call();
-        }
-    } else
-        d->adapter->runJavaScript(script, worldId);
+        wrappedCallback = [this, callback](const QVariant &result) {
+            QJSValueList args;
+            args.append(qmlEngine(this)->toScriptValue(result));
+            callback.call(args);
+        };
+    }
+    d->runJavaScript(script, worldId, WebContentsAdapter::kUseMainFrameId, wrappedCallback);
 }
 
 qreal QQuickWebEngineView::zoomFactor() const
@@ -1567,7 +1646,7 @@ void QQuickWebEngineView::printToPdf(const QString& filePath, PrintedPageSizeId 
     QPageLayout pageLayout(layoutSize, layoutOrientation, QMarginsF(0.0, 0.0, 0.0, 0.0));
     QPageRanges ranges;
     d->ensureContentsAdapter();
-    d->adapter->printToPDF(pageLayout, ranges, filePath);
+    d->printToPdf(filePath, pageLayout, ranges, WebContentsAdapter::kUseMainFrameId);
 #else
     Q_UNUSED(filePath);
     Q_UNUSED(pageSizeId);
@@ -1588,8 +1667,14 @@ void QQuickWebEngineView::printToPdf(const QJSValue &callback, PrintedPageSizeId
         return;
 
     d->ensureContentsAdapter();
-    quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout, ranges);
-    d->m_callbacks.insert(requestId, callback);
+    std::function wrappedCallback = [this, callback](QSharedPointer<QByteArray> result) {
+        QJSValueList args;
+        args.append(qmlEngine(this)->toScriptValue(*result));
+        callback.call(args);
+    };
+
+    d->printToPdf(std::move(wrappedCallback), pageLayout, ranges,
+                  WebContentsAdapter::kUseMainFrameId);
 #else
     Q_UNUSED(pageSizeId);
     Q_UNUSED(orientation);
@@ -1735,46 +1820,50 @@ void QQuickWebEngineView::setDevToolsView(QQuickWebEngineView *devToolsView)
     Q_EMIT devToolsViewChanged();
 }
 
+#if QT_DEPRECATED_SINCE(6, 8)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
 void QQuickWebEngineView::grantFeaturePermission(const QUrl &securityOrigin, QQuickWebEngineView::Feature feature, bool granted)
 {
-    if (!granted && ((feature >= MediaAudioCapture && feature <= MediaAudioVideoCapture) ||
-                     (feature >= DesktopVideoCapture && feature <= DesktopAudioVideoCapture))) {
-         d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaNone);
-         return;
-    }
+    Q_D(QQuickWebEngineView);
+    QWebEnginePermission::PermissionType permissionType;
 
     switch (feature) {
-    case MediaAudioCapture:
-        d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaAudioCapture);
+    case QQuickWebEngineView::Notifications:
+        permissionType = QWebEnginePermission::PermissionType::Notifications;
         break;
-    case MediaVideoCapture:
-        d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaVideoCapture);
+    case QQuickWebEngineView::Geolocation:
+        permissionType = QWebEnginePermission::PermissionType::Geolocation;
         break;
-    case MediaAudioVideoCapture:
-        d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaRequestFlags(WebContentsAdapterClient::MediaAudioCapture                                                                                                               | WebContentsAdapterClient::MediaVideoCapture));
+    case QQuickWebEngineView::MediaAudioCapture:
+        permissionType = QWebEnginePermission::PermissionType::MediaAudioCapture;
         break;
-    case DesktopVideoCapture:
-        d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaDesktopVideoCapture);
+    case QQuickWebEngineView::MediaVideoCapture:
+        permissionType = QWebEnginePermission::PermissionType::MediaVideoCapture;
         break;
-    case DesktopAudioVideoCapture:
-        d_ptr->adapter->grantMediaAccessPermission(
-            securityOrigin,
-            WebContentsAdapterClient::MediaRequestFlags(
-                WebContentsAdapterClient::MediaDesktopAudioCapture |
-                WebContentsAdapterClient::MediaDesktopVideoCapture));
+    case QQuickWebEngineView::MediaAudioVideoCapture:
+        permissionType = QWebEnginePermission::PermissionType::MediaAudioVideoCapture;
         break;
-    case Geolocation:
-        d_ptr->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::GeolocationPermission,
-                                               granted ? ProfileAdapter::AllowedPermission : ProfileAdapter::DeniedPermission);
+    case QQuickWebEngineView::DesktopVideoCapture:
+        permissionType = QWebEnginePermission::PermissionType::DesktopVideoCapture;
         break;
-    case Notifications:
-        d_ptr->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::NotificationPermission,
-                                               granted ? ProfileAdapter::AllowedPermission : ProfileAdapter::DeniedPermission);
+    case QQuickWebEngineView::DesktopAudioVideoCapture:
+        permissionType = QWebEnginePermission::PermissionType::DesktopAudioVideoCapture;
+        break;
+    case QQuickWebEngineView::ClipboardReadWrite:
+        permissionType = QWebEnginePermission::PermissionType::ClipboardReadWrite;
+        break;
+    case QQuickWebEngineView::LocalFontsAccess:
+        permissionType = QWebEnginePermission::PermissionType::LocalFontsAccess;
         break;
     default:
         Q_UNREACHABLE();
     }
+
+    d->adapter->setPermission(securityOrigin, permissionType,
+        granted ? QWebEnginePermission::State::Granted : QWebEnginePermission::State::Denied);
 }
+QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(6, 8)
 
 void QQuickWebEngineView::setActiveFocusOnPress(bool arg)
 {
@@ -2126,7 +2215,8 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
         d->adapter->changeTextDirection(false /*left to right*/);
         break;
     default:
-        Q_UNREACHABLE();
+        // Reachable when a spell checker replacement word has been selected
+        break;
     }
 }
 
@@ -2429,6 +2519,8 @@ void QQuickContextMenuBuilder::addMenuItem(ContextMenuItem menuItem)
             action = new QQuickWebEngineAction(m_menu);
             QString replacement = m_contextData->spellCheckerSuggestions().at(i);
             QObject::connect(action, &QQuickWebEngineAction::triggered, [thisRef, replacement] { thisRef->replaceMisspelledWord(replacement); });
+            action->d_ptr->m_text = replacement;
+            action->d_ptr->m_enabled = true;
             m_view->d_ptr->ui()->addMenuItem(action, m_menu);
         }
         return;
@@ -2501,6 +2593,19 @@ void QQuickWebEngineView::setTouchHandleDelegate(QQmlComponent *delegate)
 QQmlComponent *QQuickWebEngineView::touchHandleDelegate() const
 {
     return d_ptr->m_touchHandleDelegate;
+}
+
+QWebEngineFrame QQuickWebEngineView::mainFrame()
+{
+    Q_D(QQuickWebEngineView);
+    return QWebEngineFrame(d->adapter, d->adapter->mainFrameId());
+}
+
+QWebEngineFrame QQuickWebEngineView::findFrameByName(const QString &name)
+{
+    Q_D(QQuickWebEngineView);
+    auto maybeId = d->adapter->findFrameIdByName(name);
+    return QWebEngineFrame(d->adapter, maybeId.value_or(WebContentsAdapter::kInvalidFrameId));
 }
 
 void QQuickWebEngineView::save(const QString &filePath,

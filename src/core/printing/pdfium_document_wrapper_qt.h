@@ -21,7 +21,7 @@
 
 namespace QtWebEngineCore {
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT PdfiumDocumentWrapperQt
+class Q_WEBENGINECORE_EXPORT PdfiumDocumentWrapperQt
 {
 public:
     PdfiumDocumentWrapperQt(const void *pdfData, size_t size, const char *password = nullptr);

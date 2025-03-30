@@ -34,7 +34,7 @@ public:
         const std::string &interface_name,
         mojo::ScopedInterfaceEndpointHandle *handle) override;
     void OnDestruct() override;
-    void WillDetach() override;
+    void WillDetach(blink::DetachReason detach_reason) override;
 
     bool isFrameDetached() const;
 

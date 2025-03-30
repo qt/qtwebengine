@@ -41,21 +41,18 @@ public:
     typedef base::OnceCallback<void(bool success)> PrintToPDFFileCallback;
 
     // Method to print a page to a Pdf document with page size \a pageSize in location \a filePath.
-    void PrintToPDFFileWithCallback(const QPageLayout &pageLayout,
-                                    const QPageRanges &pageRanges,
-                                    bool printInColor,
-                                    const QString &filePath,
+    void PrintToPDFFileWithCallback(const QPageLayout &pageLayout, const QPageRanges &pageRanges,
+                                    bool printInColor, const QString &filePath, quint64 frameId,
                                     PrintToPDFFileCallback callback);
-    void PrintToPDFWithCallback(const QPageLayout &pageLayout,
-                                const QPageRanges &pageRanges,
-                                bool printInColor,
-                                bool useCustomMargins,
+    void PrintToPDFWithCallback(const QPageLayout &pageLayout, const QPageRanges &pageRanges,
+                                bool printInColor, bool useCustomMargins, quint64 frameId,
                                 PrintToPDFCallback callback);
 
 protected:
     explicit PrintViewManagerQt(content::WebContents*);
 
-    bool PrintToPDFInternal(const QPageLayout &, const QPageRanges &, bool printInColor, bool useCustomMargins = true);
+    bool PrintToPDFInternal(const QPageLayout &, const QPageRanges &, bool printInColor,
+                            bool useCustomMargins, quint64 frameId);
 
     // content::WebContentsObserver implementation.
     // Cancels the print job.

@@ -42,7 +42,7 @@ namespace QtWebEngineCore {
 
 class CookieMonsterDelegateQtPrivate;
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT CookieMonsterDelegateQt : public base::RefCountedThreadSafe<CookieMonsterDelegateQt>
+class Q_WEBENGINECORE_EXPORT CookieMonsterDelegateQt : public base::RefCountedThreadSafe<CookieMonsterDelegateQt>
 {
     QPointer<QWebEngineCookieStore> m_client;
     std::vector<std::unique_ptr<net::CookieChangeSubscription>> m_subscriptions;

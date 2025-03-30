@@ -33,7 +33,7 @@ namespace QtWebEngineCore {
 
 class URLRequestCustomJobProxy;
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT URLRequestCustomJobDelegate : public QObject
+class Q_WEBENGINECORE_EXPORT URLRequestCustomJobDelegate : public QObject
 {
     Q_OBJECT
 public:

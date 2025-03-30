@@ -6,7 +6,7 @@
 #include "base/files/file_util.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/time/time_to_iso8601.h"
+#include "components/embedder_support/user_agent_utils.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/content/browser/history_database_helper.h"
 #include "components/history/core/browser/history_database_params.h"
@@ -39,17 +39,21 @@
 
 #include <QCoreApplication>
 #include <QDir>
+#include <QJsonObject>
 #include <QSet>
 #include <QString>
 #include <QStandardPaths>
 
+using namespace Qt::StringLiterals;
+
 namespace {
 inline QString buildLocationFromStandardPath(const QString &standardPath, const QString &name) {
-    QString location = standardPath;
+    QString location;
+    location += standardPath;
     if (location.isEmpty())
-        location = QDir::homePath() % QLatin1String("/.") % QCoreApplication::applicationName();
+        location += QDir::homePath() % "/."_L1 % QCoreApplication::applicationName();
 
-    location.append(QLatin1String("/QtWebEngine/") % name);
+    location += "/QtWebEngine/"_L1 % name;
     return location;
 }
 }
@@ -62,13 +66,17 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
     , m_downloadPath(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation))
     , m_httpCacheType(DiskHttpCache)
     , m_persistentCookiesPolicy(AllowPersistentCookies)
+    , m_persistentPermissionsPolicy(PersistentPermissionsPolicy::StoreOnDisk)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
+    , m_clientHintsEnabled(true)
     , m_pushServiceEnabled(false)
     , m_httpCacheMaxSize(0)
 {
     WebEngineContext::current()->addProfileAdapter(this);
     // creation of profile requires webengine context
     m_profile.reset(new ProfileQt(this));
+    // initialize permissions store
+    profile()->GetPermissionControllerDelegate();
     // fixme: this should not be here
     m_profile->m_profileIOData->initializeOnUIThread();
     m_customUrlSchemeHandlers.insert(QByteArrayLiteral("qrc"), &m_qrcHandler);
@@ -106,6 +114,7 @@ void ProfileAdapter::setStorageName(const QString &storageName)
     m_name = storageName;
     if (!m_offTheRecord) {
         m_profile->setupPrefService();
+        m_profile->setupPermissionsManager();
         if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
             m_profile->m_profileIOData->resetNetworkContext();
         if (m_visitedLinksManager)
@@ -121,6 +130,7 @@ void ProfileAdapter::setOffTheRecord(bool offTheRecord)
         return;
     m_offTheRecord = offTheRecord;
     m_profile->setupPrefService();
+    m_profile->setupPermissionsManager();
     if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
         m_profile->m_profileIOData->resetNetworkContext();
     if (m_visitedLinksManager)
@@ -221,6 +231,15 @@ void ProfileAdapter::removeDownload(quint32 downloadId)
     downloadManagerDelegate()->removeDownload(downloadId);
 }
 
+void ProfileAdapter::acceptDownload(quint32 downloadId, bool accepted, bool useDownloadTargetCallback,
+                                    const QString &path, int savePageFormat)
+{
+    if (useDownloadTargetCallback)
+        downloadManagerDelegate()->downloadTargetDetermined(downloadId, accepted, path);
+    else
+        downloadManagerDelegate()->savePathDetermined(downloadId, accepted, path, savePageFormat);
+}
+
 ProfileAdapter *ProfileAdapter::createDefaultProfileAdapter()
 {
     return WebEngineContext::current()->createDefaultProfileAdapter();
@@ -246,9 +265,9 @@ QString ProfileAdapter::dataPath() const
     // a location to do so.
     QString name = m_name;
     if (m_offTheRecord)
-        name = QStringLiteral("OffTheRecord");
+        name = u"OffTheRecord"_s;
     else if (m_name.isEmpty())
-        name = QStringLiteral("UnknownProfile");
+        name = u"UnknownProfile"_s;
     return buildLocationFromStandardPath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation), name);
 }
 
@@ -258,6 +277,8 @@ void ProfileAdapter::setDataPath(const QString &path)
         return;
     m_dataPath = path;
     m_profile->setupPrefService();
+    m_profile->setupPermissionsManager();
+    m_profile->setupStoragePath();
     if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
         m_profile->m_profileIOData->resetNetworkContext();
     if (!m_offTheRecord && m_visitedLinksManager)
@@ -296,9 +317,9 @@ QString ProfileAdapter::httpCachePath() const
 {
     if (m_offTheRecord)
         return QString();
-    QString basePath = cachePath();
+    const QString basePath = cachePath();
     if (!basePath.isEmpty())
-        return basePath % QLatin1String("/Cache");
+        return basePath % "/Cache"_L1;
     return QString();
 }
 
@@ -319,13 +340,16 @@ void ProfileAdapter::setHttpUserAgent(const QString &userAgent)
 
     std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
     for (content::WebContentsImpl *web_contents : list)
-        if (web_contents->GetBrowserContext() == m_profile.data())
-            web_contents->SetUserAgentOverride(blink::UserAgentOverride::UserAgentOnly(stdUserAgent), true);
+        if (web_contents->GetBrowserContext() == m_profile.data()) {
+            auto userAgentOverride = blink::UserAgentOverride::UserAgentOnly(stdUserAgent);
+            userAgentOverride.ua_metadata_override = m_profile->m_userAgentMetadata;
+            web_contents->SetUserAgentOverride(userAgentOverride, true);
+        }
 
     m_profile->ForEachLoadedStoragePartition(
-                base::BindRepeating([](const std::string &user_agent, content::StoragePartition *storage_partition) {
-                    storage_partition->GetNetworkContext()->SetUserAgent(user_agent);
-                }, stdUserAgent));
+            [stdUserAgent](content::StoragePartition *storage_partition) {
+                storage_partition->GetNetworkContext()->SetUserAgent(stdUserAgent);
+            });
 }
 
 ProfileAdapter::HttpCacheType ProfileAdapter::httpCacheType() const
@@ -363,6 +387,24 @@ void ProfileAdapter::setPersistentCookiesPolicy(ProfileAdapter::PersistentCookie
         return;
     if (!m_offTheRecord && !m_profile->m_profileIOData->isClearHttpCacheInProgress())
         m_profile->m_profileIOData->resetNetworkContext();
+}
+
+ProfileAdapter::PersistentPermissionsPolicy ProfileAdapter::persistentPermissionsPolicy() const
+{
+    if (m_persistentPermissionsPolicy == PersistentPermissionsPolicy::AskEveryTime)
+        return PersistentPermissionsPolicy::AskEveryTime;
+    if (isOffTheRecord() || m_name.isEmpty())
+        return PersistentPermissionsPolicy::StoreInMemory;
+    return m_persistentPermissionsPolicy;
+}
+
+void ProfileAdapter::setPersistentPermissionsPolicy(ProfileAdapter::PersistentPermissionsPolicy newPersistentPermissionsPolicy)
+{
+    ProfileAdapter::PersistentPermissionsPolicy oldPolicy = persistentPermissionsPolicy();
+    m_persistentPermissionsPolicy = newPersistentPermissionsPolicy;
+    if (oldPolicy == persistentPermissionsPolicy())
+        return;
+    m_profile->setupPermissionsManager();
 }
 
 ProfileAdapter::VisitedLinksPolicy ProfileAdapter::visitedLinksPolicy() const
@@ -462,10 +504,9 @@ const QList<QByteArray> ProfileAdapter::customUrlSchemes() const
 
 void ProfileAdapter::updateCustomUrlSchemeHandlers()
 {
-    m_profile->ForEachLoadedStoragePartition(
-        base::BindRepeating([](content::StoragePartition *storage_partition) {
-            storage_partition->ResetURLLoaderFactories();
-        }));
+    m_profile->ForEachLoadedStoragePartition([](content::StoragePartition *storage_partition) {
+        storage_partition->ResetURLLoaderFactories();
+    });
 }
 
 void ProfileAdapter::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
@@ -491,7 +532,7 @@ void ProfileAdapter::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
 
 void ProfileAdapter::removeUrlScheme(const QByteArray &scheme)
 {
-    QByteArray canonicalScheme = scheme.toLower();
+    const QByteArray canonicalScheme = scheme.toLower();
     if (schemeType(canonicalScheme) == SchemeType::Protected) {
         qWarning("Cannot remove the URL scheme handler for an internal scheme: %s", scheme.constData());
         return;
@@ -503,7 +544,7 @@ void ProfileAdapter::removeUrlScheme(const QByteArray &scheme)
 void ProfileAdapter::installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler)
 {
     Q_ASSERT(handler);
-    QByteArray canonicalScheme = scheme.toLower();
+    const QByteArray canonicalScheme = scheme.toLower();
     SchemeType type = schemeType(canonicalScheme);
 
     if (type == SchemeType::Protected) {
@@ -540,24 +581,34 @@ UserResourceControllerHost *ProfileAdapter::userResourceController()
     return m_userResourceController.data();
 }
 
-void ProfileAdapter::permissionRequestReply(const QUrl &origin, PermissionType type, PermissionState reply)
+void ProfileAdapter::setPermission(const QUrl &origin, QWebEnginePermission::PermissionType permissionType,
+    QWebEnginePermission::State state, content::RenderFrameHost *rfh)
 {
-    static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->permissionRequestReply(origin, type, reply);
+    static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->setPermission(origin, permissionType, state, rfh);
 }
 
-bool ProfileAdapter::checkPermission(const QUrl &origin, PermissionType type)
+QWebEnginePermission::State ProfileAdapter::getPermissionState(const QUrl &origin, QWebEnginePermission::PermissionType permissionType,
+    content::RenderFrameHost *rfh)
 {
-    return static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->checkPermission(origin, type);
+    return static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->getPermissionState(origin, permissionType, rfh);
+}
+
+QList<QWebEnginePermission> ProfileAdapter::listPermissions(const QUrl &origin, QWebEnginePermission::PermissionType permissionType)
+{
+    if (persistentPermissionsPolicy() == ProfileAdapter::PersistentPermissionsPolicy::AskEveryTime)
+        return QList<QWebEnginePermission>();
+
+    return static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->listPermissions(origin, permissionType);
 }
 
 QString ProfileAdapter::httpAcceptLanguageWithoutQualities() const
 {
-    const QStringList list = m_httpAcceptLanguage.split(QLatin1Char(','));
     QString out;
-    for (const QString &str : list) {
-        if (!out.isEmpty())
-            out.append(QLatin1Char(','));
-        out.append(str.split(QLatin1Char(';')).first());
+    auto sep = ""_L1;
+    for (auto lang : m_httpAcceptLanguage.tokenize(u',')) {
+        out += sep;
+        out += *lang.tokenize(u';').begin(); // tokenize() is never empty with KeepEmptyParts!
+        sep = ","_L1;
     }
     return out;
 }
@@ -585,9 +636,113 @@ void ProfileAdapter::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
     }
 
     m_profile->ForEachLoadedStoragePartition(
-        base::BindRepeating([](std::string accept_language, content::StoragePartition *storage_partition) {
-            storage_partition->GetNetworkContext()->SetAcceptLanguage(accept_language);
-        }, http_accept_language));
+            [http_accept_language](content::StoragePartition *storage_partition) {
+                storage_partition->GetNetworkContext()->SetAcceptLanguage(http_accept_language);
+            });
+}
+
+QVariant ProfileAdapter::clientHint(ClientHint clientHint) const
+{
+    blink::UserAgentMetadata &userAgentMetadata = m_profile->m_userAgentMetadata;
+    switch (clientHint) {
+    case ProfileAdapter::UAArchitecture:
+        return QVariant(toQString(userAgentMetadata.architecture));
+    case ProfileAdapter::UAPlatform:
+        return QVariant(toQString(userAgentMetadata.platform));
+    case ProfileAdapter::UAModel:
+        return QVariant(toQString(userAgentMetadata.model));
+    case ProfileAdapter::UAMobile:
+        return QVariant(userAgentMetadata.mobile);
+    case ProfileAdapter::UAFullVersion:
+        return QVariant(toQString(userAgentMetadata.full_version));
+    case ProfileAdapter::UAPlatformVersion:
+        return QVariant(toQString(userAgentMetadata.platform_version));
+    case ProfileAdapter::UABitness:
+        return QVariant(toQString(userAgentMetadata.bitness));
+    case ProfileAdapter::UAFullVersionList: {
+            QJsonObject ret;
+            for (const auto &value : userAgentMetadata.brand_full_version_list)
+                ret.insert(toQString(value.brand), QJsonValue(toQString(value.version)));
+            return QVariant(ret);
+        }
+    case ProfileAdapter::UAWOW64:
+        return QVariant(userAgentMetadata.wow64);
+    default:
+        return QVariant();
+    }
+}
+
+void ProfileAdapter::setClientHint(ClientHint clientHint, const QVariant &value)
+{
+    blink::UserAgentMetadata &userAgentMetadata = m_profile->m_userAgentMetadata;
+    switch (clientHint) {
+    case ProfileAdapter::UAArchitecture:
+        userAgentMetadata.architecture = value.toString().toStdString();
+        break;
+    case ProfileAdapter::UAPlatform:
+        userAgentMetadata.platform = value.toString().toStdString();
+        break;
+    case ProfileAdapter::UAModel:
+        userAgentMetadata.model = value.toString().toStdString();
+        break;
+    case ProfileAdapter::UAMobile:
+        userAgentMetadata.mobile = value.toBool();
+        break;
+    case ProfileAdapter::UAFullVersion:
+        userAgentMetadata.full_version = value.toString().toStdString();
+        break;
+    case ProfileAdapter::UAPlatformVersion:
+        userAgentMetadata.platform_version = value.toString().toStdString();
+        break;
+    case ProfileAdapter::UABitness:
+        userAgentMetadata.bitness = value.toString().toStdString();
+        break;
+    case ProfileAdapter::UAFullVersionList: {
+        userAgentMetadata.brand_full_version_list.clear();
+        QJsonObject fullVersionList = value.toJsonObject();
+        for (const QString &key : fullVersionList.keys())
+            userAgentMetadata.brand_full_version_list.push_back({
+                key.toStdString(),
+                fullVersionList.value(key).toString().toStdString()
+            });
+        break;
+    }
+    case ProfileAdapter::UAWOW64:
+        userAgentMetadata.wow64 = value.toBool();
+        break;
+    default:
+        break;
+    }
+
+    std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
+    for (content::WebContentsImpl *web_contents : list) {
+        if (web_contents->GetBrowserContext() == m_profile.data()) {
+            web_contents->GetMutableRendererPrefs()->user_agent_override.ua_metadata_override = userAgentMetadata;
+            web_contents->SyncRendererPrefs();
+        }
+    }
+}
+
+bool ProfileAdapter::clientHintsEnabled()
+{
+    return m_clientHintsEnabled;
+}
+
+void ProfileAdapter::setClientHintsEnabled(bool enabled)
+{
+    m_clientHintsEnabled = enabled;
+}
+
+void ProfileAdapter::resetClientHints()
+{
+    m_profile->m_userAgentMetadata = embedder_support::GetUserAgentMetadata();
+    std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
+    for (content::WebContentsImpl *web_contents : list) {
+        if (web_contents->GetBrowserContext() == m_profile.data()) {
+            web_contents->GetMutableRendererPrefs()->user_agent_override.ua_metadata_override = m_profile->m_userAgentMetadata;
+            web_contents->SyncRendererPrefs();
+        }
+    }
 }
 
 void ProfileAdapter::clearHttpCache()

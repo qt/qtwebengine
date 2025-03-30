@@ -45,7 +45,7 @@ public:
 // but will still receive mouse input (all mouse QEvent moves and clicks will be given to the popup
 // RWHVQD instance, and the mouse interaction area covers the surface of the whole parent
 // QWebEngineView, and not only the smaller surface that an HTML select popup would occupy).
-class Q_WEBENGINECORE_PRIVATE_EXPORT RenderWidgetHostViewQtDelegateItem
+class Q_WEBENGINECORE_EXPORT RenderWidgetHostViewQtDelegateItem
         : public QQuickItem
         , public RenderWidgetHostViewQtDelegate
         , public Compositor::Observer

@@ -60,11 +60,14 @@ NativeSkiaOutputDevice::NativeSkiaOutputDevice(
     m_isNativeBufferSupported = ui::OzonePlatform::GetInstance()
                                         ->GetPlatformRuntimeProperties()
                                         .supports_native_pixmaps;
+    qCDebug(lcWebEngineCompositor, "Native Buffer Supported: %s",
+            m_isNativeBufferSupported ? "yes" : "no");
 #endif
 }
 
 NativeSkiaOutputDevice::~NativeSkiaOutputDevice()
 {
+    unbind();
 }
 
 void NativeSkiaOutputDevice::SetFrameSinkId(const viz::FrameSinkId &id)
@@ -122,6 +125,9 @@ SkSurface *NativeSkiaOutputDevice::BeginPaint(std::vector<GrBackendSemaphore> *e
         }
     }
     auto surface = m_backBuffer->beginWriteSkia();
+    if (!surface)
+        return nullptr;
+
     *end_semaphores = m_backBuffer->takeEndWriteSkiaSemaphores();
     return surface;
 }
@@ -209,10 +215,12 @@ NativeSkiaOutputDevice::Buffer::Buffer(NativeSkiaOutputDevice *parent)
 
 NativeSkiaOutputDevice::Buffer::~Buffer()
 {
+    DCHECK(!textureCleanupCallback);
+
     if (m_scopedSkiaWriteAccess)
         endWriteSkia(false);
 
-    if (!m_mailbox.IsZero())
+    if (!m_mailbox.IsZero() && m_parent->m_factory)
         m_parent->m_factory->DestroySharedImage(m_mailbox);
 }
 
@@ -222,14 +230,29 @@ NativeSkiaOutputDevice::Buffer::~Buffer()
 // found in the LICENSE file.
 bool NativeSkiaOutputDevice::Buffer::initialize()
 {
-    static const uint32_t kDefaultSharedImageUsage = gpu::SHARED_IMAGE_USAGE_SCANOUT
-            | gpu::SHARED_IMAGE_USAGE_DISPLAY_READ | gpu::SHARED_IMAGE_USAGE_DISPLAY_WRITE
+    qCDebug(lcWebEngineCompositor, "Initializing buffer %p with SharedImage:", this);
+
+    uint32_t kDefaultSharedImageUsage = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ
+            | gpu::SHARED_IMAGE_USAGE_DISPLAY_WRITE
             | gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
+
+    if (m_parent->m_isNativeBufferSupported)
+        kDefaultSharedImageUsage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
+
+    qCDebug(lcWebEngineCompositor, "  Usage: %s",
+            gpu::CreateLabelForSharedImageUsage(kDefaultSharedImageUsage).c_str());
+    qCDebug(lcWebEngineCompositor, "  Pixels size: %dx%d", m_shape.imageInfo.width(),
+            m_shape.imageInfo.height());
+
     auto mailbox = gpu::Mailbox::GenerateForSharedImage();
 
-    SkColorType skColorType = m_shape.imageInfo.colorType();
+    const SkColorType skColorType = m_shape.imageInfo.colorType();
+    const viz::SharedImageFormat sharedImageFormat =
+            viz::SkColorTypeToSinglePlaneSharedImageFormat(skColorType);
+    qCDebug(lcWebEngineCompositor, "  Format: %s", sharedImageFormat.ToString().c_str());
+
     if (!m_parent->m_factory->CreateSharedImage(
-                mailbox, viz::SkColorTypeToSinglePlaneSharedImageFormat(skColorType),
+                mailbox, sharedImageFormat,
                 { m_shape.imageInfo.width(), m_shape.imageInfo.height() }, m_shape.colorSpace,
                 kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, m_parent->m_deps->GetSurfaceHandle(),
                 kDefaultSharedImageUsage, "QWE_SharedImageBuffer")) {
@@ -259,6 +282,7 @@ bool NativeSkiaOutputDevice::Buffer::initialize()
 SkSurface *NativeSkiaOutputDevice::Buffer::beginWriteSkia()
 {
     DCHECK(!m_scopedSkiaWriteAccess);
+    DCHECK(!m_scopedOverlayReadAccess);
     DCHECK(!m_presentCount);
     DCHECK(m_endSemaphores.empty());
 
@@ -270,7 +294,10 @@ SkSurface *NativeSkiaOutputDevice::Buffer::beginWriteSkia()
     m_scopedSkiaWriteAccess = m_skiaRepresentation->BeginScopedWriteAccess(
             m_shape.sampleCount, surface_props, &beginSemaphores, &m_endSemaphores,
             gpu::SharedImageRepresentation::AllowUnclearedAccess::kYes);
-    DCHECK(m_scopedSkiaWriteAccess);
+    if (!m_scopedSkiaWriteAccess) {
+        qWarning("SKIA: Failed to begin write access.");
+        return nullptr;
+    }
     if (!beginSemaphores.empty()) {
         m_scopedSkiaWriteAccess->surface()->wait(beginSemaphores.size(), beginSemaphores.data(),
                                                  /*deleteSemaphoresAfterWait=*/false);

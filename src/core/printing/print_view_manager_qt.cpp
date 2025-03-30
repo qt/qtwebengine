@@ -11,6 +11,7 @@
 #include "pdf_util_qt.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
+#include "web_contents_adapter.h"
 #include "web_contents_view_qt.h"
 #include "web_engine_context.h"
 
@@ -173,8 +174,8 @@ PrintViewManagerQt::~PrintViewManagerQt()
 
 void PrintViewManagerQt::PrintToPDFFileWithCallback(const QPageLayout &pageLayout,
                                                     const QPageRanges &pageRanges,
-                                                    bool printInColor,
-                                                    const QString &filePath,
+                                                    bool printInColor, const QString &filePath,
+                                                    quint64 frameId,
                                                     PrintToPDFFileCallback callback)
 {
     if (callback.is_null())
@@ -188,7 +189,8 @@ void PrintViewManagerQt::PrintToPDFFileWithCallback(const QPageLayout &pageLayou
 
     m_pdfOutputPath = toFilePath(filePath);
     m_pdfSaveCallback = std::move(callback);
-    if (!PrintToPDFInternal(pageLayout, pageRanges, printInColor)) {
+    if (!PrintToPDFInternal(pageLayout, pageRanges, printInColor, /*useCustomMargins*/ true,
+                            frameId)) {
         content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
                        base::BindOnce(std::move(m_pdfSaveCallback), false));
         resetPdfState();
@@ -196,9 +198,8 @@ void PrintViewManagerQt::PrintToPDFFileWithCallback(const QPageLayout &pageLayou
 }
 
 void PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout,
-                                                const QPageRanges &pageRanges,
-                                                bool printInColor,
-                                                bool useCustomMargins,
+                                                const QPageRanges &pageRanges, bool printInColor,
+                                                bool useCustomMargins, quint64 frameId,
                                                 PrintToPDFCallback callback)
 {
     if (callback.is_null())
@@ -212,7 +213,7 @@ void PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout,
     }
 
     m_pdfPrintCallback = std::move(callback);
-    if (!PrintToPDFInternal(pageLayout, pageRanges, printInColor, useCustomMargins)) {
+    if (!PrintToPDFInternal(pageLayout, pageRanges, printInColor, useCustomMargins, frameId)) {
         content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
                        base::BindOnce(std::move(m_pdfPrintCallback), QSharedPointer<QByteArray>()));
 
@@ -221,9 +222,8 @@ void PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout,
 }
 
 bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
-                                            const QPageRanges &pageRanges,
-                                            const bool printInColor,
-                                            const bool useCustomMargins)
+                                            const QPageRanges &pageRanges, const bool printInColor,
+                                            const bool useCustomMargins, quint64 frameId)
 {
     if (!pageLayout.isValid())
         return false;
@@ -239,11 +239,22 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
     if (web_contents()->IsCrashed())
         return false;
 
-    content::RenderFrameHost *rfh = web_contents()->GetPrimaryMainFrame();
-    // Use the plugin frame for printing if web_contents() is a PDF viewer guest
-    content::RenderFrameHost *full_page_plugin = GetFullPagePlugin(web_contents());
-    if (content::RenderFrameHost *pdf_rfh = FindPdfChildFrame(full_page_plugin ? full_page_plugin : rfh))
-        rfh = pdf_rfh;
+    content::RenderFrameHost *rfh = nullptr;
+    if (frameId == WebContentsAdapter::kInvalidFrameId) {
+        return false;
+    } else if (frameId == WebContentsAdapter::kUseMainFrameId) {
+        rfh = web_contents()->GetPrimaryMainFrame();
+        // Use the plugin frame for printing if web_contents() is a PDF viewer guest
+        content::RenderFrameHost *full_page_plugin = GetFullPagePlugin(web_contents());
+        if (content::RenderFrameHost *pdf_rfh =
+                    FindPdfChildFrame(full_page_plugin ? full_page_plugin : rfh))
+            rfh = pdf_rfh;
+    } else {
+        auto *ftn = content::FrameTreeNode::GloballyFindByID(static_cast<int>(frameId));
+        if (!ftn)
+            return false;
+        rfh = ftn->current_frame_host();
+    }
     GetPrintRenderFrame(rfh)->InitiatePrintPreview(false);
 
     DCHECK(!m_printPreviewRfh);
@@ -333,7 +344,10 @@ void PrintViewManagerQt::SetupScriptedPrintPreview(SetupScriptedPrintPreviewCall
     if (rfh)
         GetPrintRenderFrame(rfh)->OnPrintPreviewDialogClosed();
 
-    client->printRequested();
+    if (web_contents()->GetPrimaryMainFrame() == rfh)
+        client->printRequested();
+    else
+        client->printRequestedByFrame(static_cast<quint64>(rfh->GetFrameTreeNodeId()));
 }
 
 void PrintViewManagerQt::ShowScriptedPrintPreview(bool /*source_is_modifiable*/)
@@ -350,6 +364,11 @@ void PrintViewManagerQt::RequestPrintPreview(printing::mojom::RequestPrintPrevie
         content::WebContentsView *view = static_cast<content::WebContentsImpl*>(web_contents()->GetOutermostWebContents())->GetView();
         if (WebContentsAdapterClient *client = WebContentsViewQt::from(view)->client())
             client->printRequested();
+
+        content::GlobalRenderFrameHostId rfhId = GetCurrentTargetFrame()->GetGlobalId();
+        auto *renderFrameHost = content::RenderFrameHost::FromID(rfhId);
+        if (renderFrameHost && renderFrameHost->IsRenderFrameLive())
+            GetPrintRenderFrame(renderFrameHost)->OnPrintPreviewDialogClosed();
         return;
     }
 

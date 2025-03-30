@@ -5,6 +5,7 @@
 #define QQUICKWEBENGINEPROFILE_H
 
 #include <QtWebEngineQuick/qtwebenginequickglobal.h>
+#include <QtWebEngineCore/qwebenginepermission.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qstring.h>
@@ -15,6 +16,7 @@ QT_BEGIN_NAMESPACE
 class QQuickWebEngineDownloadRequest;
 class QQuickWebEngineSettings;
 class QWebEngineClientCertificateStore;
+class QWebEngineClientHints;
 class QWebEngineCookieStore;
 class QWebEngineNotification;
 class QWebEngineUrlRequestInterceptor;
@@ -32,12 +34,14 @@ class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineProfile : public QObject {
     Q_PROPERTY(HttpCacheType httpCacheType READ httpCacheType WRITE setHttpCacheType NOTIFY httpCacheTypeChanged FINAL)
     Q_PROPERTY(QString httpAcceptLanguage READ httpAcceptLanguage WRITE setHttpAcceptLanguage NOTIFY httpAcceptLanguageChanged FINAL REVISION(1,1))
     Q_PROPERTY(PersistentCookiesPolicy persistentCookiesPolicy READ persistentCookiesPolicy WRITE setPersistentCookiesPolicy NOTIFY persistentCookiesPolicyChanged FINAL)
+    Q_PROPERTY(PersistentPermissionsPolicy persistentPermissionsPolicy READ persistentPermissionsPolicy WRITE setPersistentPermissionsPolicy NOTIFY persistentPermissionsPolicyChanged FINAL REVISION(6,8))
     Q_PROPERTY(int httpCacheMaximumSize READ httpCacheMaximumSize WRITE setHttpCacheMaximumSize NOTIFY httpCacheMaximumSizeChanged FINAL)
     Q_PROPERTY(QStringList spellCheckLanguages READ spellCheckLanguages WRITE setSpellCheckLanguages NOTIFY spellCheckLanguagesChanged FINAL REVISION(1,3))
     Q_PROPERTY(bool spellCheckEnabled READ isSpellCheckEnabled WRITE setSpellCheckEnabled NOTIFY spellCheckEnabledChanged FINAL REVISION(1,3))
     Q_PROPERTY(QQuickWebEngineScriptCollection *userScripts READ userScripts)
     Q_PROPERTY(QString downloadPath READ downloadPath WRITE setDownloadPath NOTIFY downloadPathChanged FINAL REVISION(1,5))
     Q_PROPERTY(bool isPushServiceEnabled READ isPushServiceEnabled WRITE setPushServiceEnabled NOTIFY pushServiceEnabledChanged FINAL REVISION(6,5))
+    Q_PROPERTY(QWebEngineClientHints *clientHints READ clientHints FINAL REVISION(6,8))
     QML_NAMED_ELEMENT(WebEngineProfile)
     QML_ADDED_IN_VERSION(1, 1)
     QML_EXTRA_VERSION(2, 0)
@@ -60,6 +64,13 @@ public:
     };
     Q_ENUM(PersistentCookiesPolicy)
 
+    enum class PersistentPermissionsPolicy : quint8 {
+        AskEveryTime = 0,
+        StoreInMemory,
+        StoreOnDisk,
+    };
+    Q_ENUM(PersistentPermissionsPolicy)
+
     QString storageName() const;
     void setStorageName(const QString &name);
 
@@ -80,6 +91,9 @@ public:
 
     PersistentCookiesPolicy persistentCookiesPolicy() const;
     void setPersistentCookiesPolicy(QQuickWebEngineProfile::PersistentCookiesPolicy);
+
+    PersistentPermissionsPolicy persistentPermissionsPolicy() const;
+    void setPersistentPermissionsPolicy(QQuickWebEngineProfile::PersistentPermissionsPolicy);
 
     int httpCacheMaximumSize() const;
     void setHttpCacheMaximumSize(int maxSize);
@@ -113,6 +127,12 @@ public:
     void setPushServiceEnabled(bool enable);
 
     QWebEngineClientCertificateStore *clientCertificateStore();
+    QWebEngineClientHints *clientHints() const;
+
+    Q_REVISION(6,8) Q_INVOKABLE QWebEnginePermission queryPermission(const QUrl &securityOrigin, QWebEnginePermission::PermissionType permissionType) const;
+    Q_REVISION(6,8) Q_INVOKABLE QList<QWebEnginePermission> listAllPermissions() const;
+    Q_REVISION(6,8) Q_INVOKABLE QList<QWebEnginePermission> listPermissionsForOrigin(const QUrl &securityOrigin) const;
+    Q_REVISION(6,8) Q_INVOKABLE QList<QWebEnginePermission> listPermissionsForPermissionType(QWebEnginePermission::PermissionType permissionType) const;
 
     static QQuickWebEngineProfile *defaultProfile();
 
@@ -131,6 +151,7 @@ Q_SIGNALS:
     Q_REVISION(1,5) void downloadPathChanged();
     Q_REVISION(6,5) void pushServiceEnabledChanged();
     Q_REVISION(6,7) void clearHttpCacheCompleted();
+    Q_REVISION(6,8) void persistentPermissionsPolicyChanged();
     void downloadRequested(QQuickWebEngineDownloadRequest *download);
     void downloadFinished(QQuickWebEngineDownloadRequest *download);
 

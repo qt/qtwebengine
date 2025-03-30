@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+    <head><title>Test-title</title></head>
+    <script>
+        window.name = 'test-main-frame'
+        onload = (e) => {
+            const frames = window.frames;
+            for (let i = 0; i < frames.length; i++) {
+                frames[i].name = 'test-subframe' + i;
+            }
+        };
+    </script>
+    <body>
+        <iframe name="iframe0-300x200" width="300" height="200"></iframe>
+        <iframe name="iframe1-350x250" width="350" height="250"></iframe>
+    </body>
+</html>

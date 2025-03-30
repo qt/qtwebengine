@@ -65,6 +65,7 @@ ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeCspReport, blink::mojom
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePluginResource, blink::mojom::ResourceType::kPluginResource)
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeNavigationPreloadMainFrame, blink::mojom::ResourceType::kNavigationPreloadMainFrame)
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeNavigationPreloadSubFrame, blink::mojom::ResourceType::kNavigationPreloadSubFrame)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeJson, blink::mojom::ResourceType::kJson)
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeLast, blink::mojom::ResourceType::kMaxValue)
 
 extern WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(ui::PageTransition transition);
@@ -373,8 +374,9 @@ void InterceptedRequest::ContinueAfterIntercept()
         }
 
         if (info.changed) {
+            // Used the same error code as AwProxyingURLLoaderFactory's blocked request.
             if (info.shouldBlockRequest)
-                return SendErrorAndCompleteImmediately(net::ERR_BLOCKED_BY_CLIENT);
+                return SendErrorAndCompleteImmediately(net::ERR_ACCESS_DENIED);
 
             if (info.shouldRedirectRequest) {
                 net::RedirectInfo::FirstPartyURLPolicy first_party_url_policy =

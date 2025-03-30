@@ -5,6 +5,8 @@
 
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 
+using namespace Qt::StringLiterals;
+
 namespace QtWebEngineCore {
 
 namespace {
@@ -14,9 +16,8 @@ bool isAccessibilityEnabled() {
     // QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY environment variable to 0. For details,
     // see QTBUG-59922.
 #ifdef Q_OS_LINUX
-    static bool accessibility_enabled
-            = qEnvironmentVariable("QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY", QLatin1String("1"))
-                == QLatin1String("1");
+    static bool accessibility_enabled =
+            qEnvironmentVariable("QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY", u"1"_s) == "1"_L1;
 #else
     const bool accessibility_enabled = true;
 #endif

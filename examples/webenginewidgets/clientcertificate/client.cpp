@@ -21,11 +21,17 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     QFile certFile(":/resources/client.pem");
-    certFile.open(QIODevice::ReadOnly);
+    if (!certFile.open(QIODevice::ReadOnly)) {
+        qFatal("Failed to read cert file %s: %s", qPrintable(certFile.fileName()),
+               qPrintable(certFile.errorString()));
+    }
     const QSslCertificate cert(certFile.readAll(), QSsl::Pem);
 
     QFile keyFile(":/resources/client.key");
-    keyFile.open(QIODevice::ReadOnly);
+    if (!keyFile.open(QIODevice::ReadOnly)) {
+        qFatal("Failed to read key file %s: %s", qPrintable(keyFile.fileName()),
+               qPrintable(keyFile.errorString()));
+    }
     const QSslKey sslKey(keyFile.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey, "");
 
     QWebEngineProfile::defaultProfile()->clientCertificateStore()->add(cert, sslKey);
@@ -36,7 +42,7 @@ int main(int argc, char *argv[])
 
     QObject::connect(
             &page, &QWebEnginePage::selectClientCertificate, &page,
-            [&cert](QWebEngineClientCertificateSelection selection) {
+            [](QWebEngineClientCertificateSelection selection) {
                 QDialog dialog;
                 QVBoxLayout *layout = new QVBoxLayout;
                 QLabel *label = new QLabel(QLatin1String("Select certificate"));

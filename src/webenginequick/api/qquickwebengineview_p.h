@@ -19,6 +19,8 @@
 #include <QtWebEngineCore/qwebenginequotarequest.h>
 #include <QtWebEngineCore/qwebenginedesktopmediarequest.h>
 #include <QtWebEngineCore/qwebenginedownloadrequest.h>
+#include <QtWebEngineCore/qwebengineframe.h>
+#include <QtWebEngineCore/qwebenginepermission.h>
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 #include <QtGui/qcolor.h>
 #include <QtQml/qqmlregistration.h>
@@ -54,7 +56,7 @@ class QQuickWebEngineScriptCollection;
 class QQuickWebEngineTouchSelectionMenuRequest;
 class QWebEngineWebAuthUxRequest;
 
-class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
+class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
     Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged FINAL)
@@ -91,6 +93,7 @@ class Q_WEBENGINEQUICK_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(qint64 renderProcessPid READ renderProcessPid NOTIFY renderProcessPidChanged FINAL REVISION(1,11))
     Q_PROPERTY(QQmlComponent *touchHandleDelegate READ touchHandleDelegate WRITE
                        setTouchHandleDelegate NOTIFY touchHandleDelegateChanged REVISION(0) FINAL)
+    Q_PROPERTY(QWebEngineFrame mainFrame READ mainFrame FINAL REVISION(6, 8))
     QML_NAMED_ELEMENT(WebEngineView)
     QML_ADDED_IN_VERSION(1, 0)
     QML_EXTRA_VERSION(2, 0)
@@ -164,17 +167,20 @@ QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     Q_ENUM(NewViewDestination)
 QT_WARNING_POP
 #endif
-
+#if QT_DEPRECATED_SINCE(6, 8)
     enum Feature {
-        MediaAudioCapture,
-        MediaVideoCapture,
-        MediaAudioVideoCapture,
-        Geolocation,
-        DesktopVideoCapture,
-        DesktopAudioVideoCapture,
-        Notifications,
+        MediaAudioCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::MediaAudioCapture instead"),
+        MediaVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::MediaVideoCapture instead"),
+        MediaAudioVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::MediaAudioVideoCapture instead"),
+        Geolocation Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::Geolocation instead"),
+        DesktopVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::DesktopVideoCapture instead"),
+        DesktopAudioVideoCapture Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::DesktopAudioVideoCapture instead"),
+        Notifications Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::Notifications instead"),
+        ClipboardReadWrite Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::ClipboardReadWrite instead"),
+        LocalFontsAccess Q_DECL_ENUMERATOR_DEPRECATED_X("Use QWebEnginePermission::PermissionType::LocalFontsAccess instead"),
     };
     Q_ENUM(Feature)
+#endif
 
     enum WebAction {
         NoWebAction = - 1,
@@ -470,6 +476,9 @@ QT_WARNING_POP
     QQmlComponent *touchHandleDelegate() const;
     void setTouchHandleDelegate(QQmlComponent *delegagte);
 
+    QWebEngineFrame mainFrame();
+    Q_REVISION(6, 8) Q_INVOKABLE QWebEngineFrame findFrameByName(const QString &name);
+
 public Q_SLOTS:
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
     Q_REVISION(1,3) void runJavaScript(const QString&, quint32 worldId, const QJSValue & = QJSValue());
@@ -482,7 +491,11 @@ public Q_SLOTS:
     void stop();
     Q_REVISION(1,1) void findText(const QString &subString, FindFlags options = { }, const QJSValue &callback = QJSValue());
     Q_REVISION(1,1) void fullScreenCancelled();
+#if QT_DEPRECATED_SINCE(6, 8)
+    QT_MOC_COMPAT QT_DEPRECATED_VERSION_X_6_8(
+        "Setting permissions through WebEngineView has been deprecated. Please use WebEnginePermission instead.")
     Q_REVISION(1,1) void grantFeaturePermission(const QUrl &securityOrigin, QQuickWebEngineView::Feature, bool granted);
+#endif // QT_DEPRECATED_SINCE(6, 8)
     Q_REVISION(1,2) void setActiveFocusOnPress(bool arg);
     Q_REVISION(1,2) void triggerWebAction(WebAction action);
     Q_REVISION(1,3) void printToPdf(const QString &filePath, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
@@ -508,9 +521,13 @@ Q_SIGNALS:
     Q_REVISION(1,1) void certificateError(const QWebEngineCertificateError &error);
     Q_REVISION(1,1) void fullScreenRequested(const QWebEngineFullScreenRequest &request);
     Q_REVISION(1,1) void isFullScreenChanged();
+#if QT_DEPRECATED_SINCE(6, 8)
+    QT_MOC_COMPAT QT_DEPRECATED_VERSION_X_6_8(
+        "The signal has been deprecated; please use permissionRequested instead.")
     Q_REVISION(1, 1)
     void featurePermissionRequested(const QUrl &securityOrigin,
                                     QQuickWebEngineView::Feature feature);
+#endif // QT_DEPRECATED_SINCE(6, 8)
     Q_REVISION(1,1) void zoomFactorChanged(qreal arg);
     Q_REVISION(1,1) void profileChanged();
     Q_REVISION(1,1) void webChannelChanged();
@@ -554,6 +571,8 @@ Q_SIGNALS:
     Q_REVISION(6,4) void fileSystemAccessRequested(const QWebEngineFileSystemAccessRequest &request);
     Q_REVISION(6, 7) void webAuthUxRequested(QWebEngineWebAuthUxRequest *request);
     Q_REVISION(6,7) void desktopMediaRequested(const QWebEngineDesktopMediaRequest &request);
+    Q_REVISION(6, 8) void printRequestedByFrame(QWebEngineFrame frame);
+    Q_REVISION(6,8) void permissionRequested(QWebEnginePermission permissionRequest);
 
 protected:
     void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;

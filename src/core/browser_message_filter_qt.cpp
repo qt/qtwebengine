@@ -19,6 +19,7 @@ BrowserMessageFilterQt::BrowserMessageFilterQt(int /*render_process_id*/, Profil
 {
 }
 
+#if BUILDFLAG(CONTENT_ENABLE_LEGACY_IPC)
 bool BrowserMessageFilterQt::OnMessageReceived(const IPC::Message& message)
 {
     IPC_BEGIN_MESSAGE_MAP(BrowserMessageFilterQt, message)
@@ -31,6 +32,7 @@ bool BrowserMessageFilterQt::OnMessageReceived(const IPC::Message& message)
     IPC_END_MESSAGE_MAP()
     return true;
 }
+#endif
 
 void BrowserMessageFilterQt::OnAllowStorageAccess(int /*render_frame_id*/,
                                                   const GURL &origin_url,

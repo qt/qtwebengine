@@ -3,7 +3,7 @@
 
 /*!
     \qmltype WebEngineScript
-    \instantiates QWebEngineScript
+    \nativetype QWebEngineScript
     \brief Enables the programmatic injection of scripts in the JavaScript engine.
     \since QtWebEngine 1.1
     \ingroup qmlvaluetypes
@@ -90,7 +90,7 @@
 */
 
 /*!
-    \qmlproperty int WebEngineScript::runOnSubframes
+    \qmlproperty bool WebEngineScript::runsOnSubFrames
 
     Set this property to \c true if the script is executed on every frame in the page, or \c false
     if it is only ran for the main frame.
