@@ -165,6 +165,9 @@ void tst_InspectorServer::testRemoteDebuggingMessage()
 
 void tst_InspectorServer::openRemoteDebuggingSession()
 {
+#if defined(Q_OS_MACOS) && (defined(__arm64__) || defined(__aarch64__))
+    QSKIP("This test crashes for Apple M1");
+#endif
     const QUrl testPageUrl = QUrl::fromLocalFile(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
                                                  + QLatin1String("/html/basic_page.html"));
     QSignalSpy loadSpy(webView(), SIGNAL(loadingChanged(QWebEngineLoadingInfo)));
