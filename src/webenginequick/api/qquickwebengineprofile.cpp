@@ -105,7 +105,7 @@ QT_BEGIN_NAMESPACE
     \value  AskEveryTime
             The application will ask for permissions every time they're needed, regardless of
             whether they've been granted before or not. This is intended for backwards compatibility
-            with existing applications, and otherwise not recommended.
+            with existing applications. This is the default setting.
     \value  StoreInMemory
             A request will be made only the first time a permission is needed. Any subsequent
             requests will be automatically granted or denied, depending on the initial user choice.
@@ -114,7 +114,7 @@ QT_BEGIN_NAMESPACE
             or no persistent data path is available.
     \value  StoreOnDisk
             Works the same way as \c PersistentPermissionsInMemory, but the permissions are saved to
-            and restored from disk. This is the default setting.
+            and restored from disk.
 */
 
 /*!

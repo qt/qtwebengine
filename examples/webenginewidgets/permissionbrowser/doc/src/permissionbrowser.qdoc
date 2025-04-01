@@ -185,13 +185,13 @@
 
     \section1 Changing the permission persistence policy
 
-    By default, permissions are stored to disk for every named QWebEngineProfile,
-    and in memory for every unnamed/off-the-record one. Normally, this setting
-    won't be changed at runtime, but this example explores the effects
+    Permissions can be stored to disk for every named QWebEngineProfile,
+    or in memory for every unnamed/off-the-record one. By default, however
+    they are never stored. This example explores the effects
     of each option.
 
     \list
-        \li \l QWebEngineProfile::StoreOnDisk is the default, and it ensures
+        \li \l QWebEngineProfile::StoreOnDisk ensures
         that any permissions that have been granted in the current application run will be
         loaded back up at next startup. A permission onlycneeds to be granted once, and
         subsequent uses of the API that triggered the request will automatically be granted,
@@ -203,6 +203,7 @@
         remembered, and all act as if they're non-persistent. Thus, every time a web API needs
         a permission, a new prompt will be shown to the user. This option is intended for
         backwards compatibility and applications which implement their own permission storage.
+        This is the default setting.
     \endlist
 
     To ensure the user will be shown previously existing permissions, we need to call
