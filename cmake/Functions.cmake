@@ -1352,7 +1352,6 @@ function(addCopyCommand target src dst)
         COMMAND ${CMAKE_COMMAND} -E make_directory ${dst}
         COMMAND ${CMAKE_COMMAND} -E copy ${src} ${dst}
         TARGET ${target}
-        DEPENDS ${src}
         USES_TERMINAL
     )
 endfunction()
