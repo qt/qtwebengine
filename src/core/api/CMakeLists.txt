@@ -226,7 +226,7 @@ else()
         INSTALL_PATH "${locale_install_path}"
     )
 
-    set(resource_install_path "${INSTALL_DATADIR}/resources")
+    qt_path_join(resource_install_path "${INSTALL_DATADIR}" "resources")
     install(FILES ${resourceFiles}
         DESTINATION ${resource_install_path}
         CONFIGURATIONS ${config}
