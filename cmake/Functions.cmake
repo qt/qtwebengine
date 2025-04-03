@@ -343,12 +343,16 @@ function(add_gn_build_artifacts_to_target)
         foreach(arch ${archs})
             set(target ${arg_NINJA_TARGET}_${config}_${arch})
             set(stamps ${arg_NINJA_STAMP} ${arg_NINJA_DATA_STAMP})
+            set(data_stamp_option "")
+            if(arg_NINJA_DATA_STAMP)
+                set(data_stamp_option NINJA_DATA_STAMP ${arg_NINJA_DATA_STAMP})
+            endif()
             add_ninja_target(
                 TARGET ${target}
                 NINJA_TARGET ${arg_NINJA_TARGET}
                 CMAKE_TARGET ${arg_CMAKE_TARGET}
                 NINJA_STAMP ${arg_NINJA_STAMP}
-                NINJA_DATA_STAMP ${arg_NINJA_DATA_STAMP}
+                ${data_stamp_option}
                 CONFIG ${config}
                 ARCH ${arch}
                 BUILDDIR ${arg_BUILDDIR}
