@@ -136,17 +136,23 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
         .pPlaneLayouts = &planeLayout,
     };
 
+    bool usingDrmModifier = false;
     if (nativePixmap) {
         qCDebug(lcWebEngineCompositor, "VULKAN: Importing NativePixmap into VkImage.");
         gfx::NativePixmapHandle nativePixmapHandle = nativePixmap->ExportHandle();
-        if (nativePixmapHandle.planes.size() != 1)
-            qFatal("VULKAN: Multiple planes are not supported.");
+        qCDebug(lcWebEngineCompositor, "  DRM Format Modifier: 0x%lx", nativePixmapHandle.modifier);
 
-        planeLayout.offset = nativePixmapHandle.planes[0].offset;
-        planeLayout.rowPitch = nativePixmapHandle.planes[0].stride;
-        modifierInfo.drmFormatModifier = nativePixmapHandle.modifier;
+        if (nativePixmapHandle.modifier != gfx::NativePixmapHandle::kNoModifier) {
+            usingDrmModifier = true;
+            if (nativePixmapHandle.planes.size() != 1)
+                qFatal("VULKAN: Multiple planes are not supported.");
 
-        externalMemoryImageCreateInfo.pNext = &modifierInfo;
+            planeLayout.offset = nativePixmapHandle.planes[0].offset;
+            planeLayout.rowPitch = nativePixmapHandle.planes[0].stride;
+            modifierInfo.drmFormatModifier = nativePixmapHandle.modifier;
+
+            externalMemoryImageCreateInfo.pNext = &modifierInfo;
+        }
         externalMemoryImageCreateInfo.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT;
 
         scopedFd = std::move(nativePixmapHandle.planes[0].fd);
@@ -225,9 +231,9 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
     };
 
 #if BUILDFLAG(IS_OZONE)
-    if (nativePixmap)
+    if (usingDrmModifier)
         importedImageCreateInfo.tiling = VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT;
-    else
+    else if (vkImageInfo.fAlloc.fMemory != VK_NULL_HANDLE)
         importedImageCreateInfo.tiling = vkImageInfo.fImageTiling;
 #endif
 
