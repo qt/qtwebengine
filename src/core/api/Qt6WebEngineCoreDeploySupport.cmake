@@ -74,24 +74,31 @@ function(_qt_internal_deploy_webenginecore_binary)
         endif()
     endforeach()
 
-    set(install_destination "${QT_DEPLOY_PREFIX}/")
+    # CMAKE_INSTALL_PREFIX does not contain $ENV{DESTDIR}, whereas QT_DEPLOY_PREFIX does.
+    # The install_ variant should be used in file(INSTALL) to avoid double DESTDIR in paths.
+    # Other code should reference the destdir_ variant instead.
+    set(install_destination "${CMAKE_INSTALL_PREFIX}/")
+    set(destdir_destination "${QT_DEPLOY_PREFIX}/")
+
     if(__QT_DEPLOY_SYSTEM_NAME STREQUAL "Windows")
         string(APPEND install_destination "${QT_DEPLOY_BIN_DIR}")
+        string(APPEND destdir_destination "${QT_DEPLOY_BIN_DIR}")
     else()
         string(APPEND install_destination "${QT_DEPLOY_LIBEXEC_DIR}")
+        string(APPEND destdir_destination "${QT_DEPLOY_LIBEXEC_DIR}")
     endif()
     file(INSTALL "${process_path}" DESTINATION "${install_destination}")
 
     get_filename_component(process_file_name "${process_path}" NAME)
     if(CMAKE_VERSION GREATER_EQUAL "3.19")
-        file(CHMOD "${install_destination}/${process_file_name}"
+        file(CHMOD "${destdir_destination}/${process_file_name}"
             PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
                         GROUP_EXECUTE GROUP_READ
                         WORLD_EXECUTE WORLD_READ
         )
     else()
         execute_process(
-            COMMAND chmod 0755 "${install_destination}/${process_file_name}"
+            COMMAND chmod 0755 "${destdir_destination}/${process_file_name}"
         )
     endif()
 endfunction()
@@ -117,8 +124,9 @@ function(_qt_internal_deploy_webenginecore_data)
         list(APPEND data_files "${snapshot_file}")
     endif()
 
+    # See comment above why we use CMAKE_INSTALL_PREFIX instead of QT_DEPLOY_PREFIX.
     get_filename_component(install_destination "${QT_DEPLOY_WEBENGINECORE_RESOURCES_DIR}" ABSOLUTE
-        BASE_DIR "${QT_DEPLOY_PREFIX}/${QT_DEPLOY_DATA_DIR}"
+        BASE_DIR "${CMAKE_INSTALL_PREFIX}/${QT_DEPLOY_DATA_DIR}"
     )
     foreach(data_file IN LISTS data_files)
         file(INSTALL "${resources_dir}/${data_file}" DESTINATION "${install_destination}")
@@ -163,8 +171,9 @@ function(_qt_internal_deploy_webenginecore_translations)
     get_filename_component(locales_dir "qtwebengine_locales" ABSOLUTE
         BASE_DIR "${__QT_DEPLOY_QT_INSTALL_PREFIX}/${__QT_DEPLOY_QT_INSTALL_TRANSLATIONS}"
     )
+    # See comment above why we use CMAKE_INSTALL_PREFIX instead of QT_DEPLOY_PREFIX.
     get_filename_component(install_destination "qtwebengine_locales" ABSOLUTE
-        BASE_DIR "${QT_DEPLOY_PREFIX}/${QT_DEPLOY_TRANSLATIONS_DIR}"
+        BASE_DIR "${CMAKE_INSTALL_PREFIX}/${QT_DEPLOY_TRANSLATIONS_DIR}"
     )
     file(GLOB locale_files "${locales_dir}/*.pak")
     foreach(locale_file IN LISTS locale_files)
