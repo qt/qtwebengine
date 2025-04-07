@@ -101,6 +101,19 @@ function(_qt_internal_deploy_webenginecore_binary)
             COMMAND chmod 0755 "${destdir_destination}/${process_file_name}"
         )
     endif()
+
+    # Checking for __QT_DEPLOY_MUST_ADJUST_PLUGINS_RPATH is a bit strange because this is not a
+    # plugin, but it gives a single common way to detect when the rpath adjustment must be done,
+    # because the lib dir is different than the original Qt configured one.
+    if(__QT_DEPLOY_MUST_ADJUST_PLUGINS_RPATH)
+        _qt_internal_get_rpath_origin(rpath_origin)
+        file(RELATIVE_PATH rel_lib_dir "${destdir_destination}"
+            "${QT_DEPLOY_PREFIX}/${QT_DEPLOY_LIB_DIR}")
+        _qt_internal_set_rpath(
+            FILE "${destdir_destination}/${process_file_name}"
+            NEW_RPATH "${rpath_origin}/${rel_lib_dir}"
+        )
+    endif()
 endfunction()
 
 function(_qt_internal_deploy_webenginecore_data)
