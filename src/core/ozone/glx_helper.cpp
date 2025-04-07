@@ -43,8 +43,17 @@ GLXHelper::GLXHelper() : m_functions(new GLXHelper::GLXFunctions())
     m_display = x11Application->display();
     m_connection = x11Application->connection();
 
+    m_isDmaBufSupported = QtWebEngineCore::WebEngineContext::isGbmSupported()
+            && ui::GpuMemoryBufferSupportX11::GetInstance()->has_gbm_device();
+}
+
+GLXFBConfig GLXHelper::getFBConfig()
+{
+    if (m_configs)
+        return m_configs[0];
+
     // clang-format off
-    const int configAttribs[] = {
+    static const int configAttribs[] = {
         GLX_RED_SIZE, 8,
         GLX_GREEN_SIZE, 8,
         GLX_BLUE_SIZE, 8,
@@ -59,13 +68,17 @@ GLXHelper::GLXHelper() : m_functions(new GLXHelper::GLXFunctions())
     };
     // clang-format on
 
+    if (Q_UNLIKELY(!m_isDmaBufSupported)) {
+        qWarning("GLX: Frame buffer configuration is not expected to be used without dma-buf "
+                 "support.");
+    }
+
     int numConfigs = 0;
     m_configs = glXChooseFBConfig(m_display, /* screen */ 0, configAttribs, &numConfigs);
     if (!m_configs || numConfigs < 1)
         qFatal("GLX: Failed to find frame buffer configuration.");
 
-    m_isDmaBufSupported = QtWebEngineCore::WebEngineContext::isGbmSupported()
-            && ui::GpuMemoryBufferSupportX11::GetInstance()->has_gbm_device();
+    return m_configs[0];
 }
 
 GLXPixmap GLXHelper::importBufferAsPixmap(int dmaBufFd, uint32_t size, uint16_t width,
