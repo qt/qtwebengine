@@ -37,7 +37,7 @@ find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS
     WebChannel WebChannelQuick Positioning QuickControls2
     Test QuickWidgets QuickTest WebSockets Designer
     JpegPrivate PngPrivate HarfbuzzPrivate FreetypePrivate ZlibPrivate
-    HttpServer
+    HttpServer Svg
 )
 
 if(MATRIX_BUILD AND NOT MATRIX_SUBBUILD AND NOT QT_SUPERBUILD)
