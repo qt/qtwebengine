@@ -189,6 +189,24 @@ function(qt_webengine_configure_check check)
     endforeach()
 endfunction()
 
+# trivial wrapper around qt_webengine_configure_check to avoid excessive typing
+macro(qt_webengine_configure_check_for_optional_unix lib condition)
+    string(SUBSTRING ${lib} 0 1 first_letter)
+    string(TOUPPER ${first_letter} first_letter)
+    string(REGEX REPLACE "^.(.*)" "${first_letter}\\1" lib_cap "${lib}")
+    qt_webengine_configure_check(${lib}
+        MODULES QtWebEngine
+        CONDITION NOT UNIX OR ${condition}
+        MESSAGE "No ${lib} library with version ${QT_CONFIGURE_CHECK_${lib}_version} or later. Using built-in one"
+        DOCUMENTATION "${lib_cap} library version ${QT_CONFIGURE_CHECK_${lib}_version}
+            or later. (optional, built-in used otherwise)"
+        TAGS MACOS_PLATFORM LINUX_PLATFORM
+        OPTIONAL
+    )
+    unset(first_letter)
+    unset(lib_cap)
+endmacro()
+
 function(qt_webengine_configure_check_for_ulimit)
     message(STATUS "Checking 'ulimit -n'")
     execute_process(COMMAND bash -c "ulimit -n"
