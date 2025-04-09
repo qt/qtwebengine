@@ -19,7 +19,7 @@ isUniversal() {
    pdfcore.depends += pdfcore_prl_generator
 }
 
-!qtConfig(webengine-qtpdf-support):qtConfig(build-qtpdf)::!build_pass {
+!qtConfig(webengine-qtpdf-support):qtConfig(build-qtpdf):!build_pass {
     !qtwebengine_makeCheckPdfError() {
         errorbuild.commands = @echo $$shell_quote("QtPdf will not be built. $${skipBuildReason}")
     } else {
