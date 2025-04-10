@@ -23,6 +23,7 @@ class Q_WEBENGINECORE_EXPORT QWebEngineFullScreenRequest
     Q_PROPERTY(QUrl origin READ origin CONSTANT)
 
 public:
+    QWebEngineFullScreenRequest() : QWebEngineFullScreenRequest(QUrl(), false, [](bool){}) {}
     QWebEngineFullScreenRequest(const QWebEngineFullScreenRequest &other);
     QWebEngineFullScreenRequest &operator=(const QWebEngineFullScreenRequest &other);
     QWebEngineFullScreenRequest(QWebEngineFullScreenRequest &&other);
