@@ -51,6 +51,7 @@ public:
     };
     Q_ENUM(ErrorDomain)
 
+    QWebEngineLoadingInfo() : QWebEngineLoadingInfo(QUrl(), LoadStartedStatus) {}
     QWebEngineLoadingInfo(const QWebEngineLoadingInfo &other);
     QWebEngineLoadingInfo &operator=(const QWebEngineLoadingInfo &other);
     QWebEngineLoadingInfo(QWebEngineLoadingInfo &&other);
