@@ -34,8 +34,9 @@ public:
     std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(bool is_integration_test) override;
     void RenderProcessWillLaunch(content::RenderProcessHost *host) override;
     content::MediaObserver* GetMediaObserver() override;
-    void OverrideWebkitPrefs(content::WebContents *web_contents,
-                             blink::web_pref::WebPreferences *prefs) override;
+    void OverrideWebPreferences(content::WebContents *,
+                                content::SiteInstance &,
+                                blink::web_pref::WebPreferences *) override;
     void AllowCertificateError(content::WebContents *web_contents,
                                int cert_error,
                                const net::SSLInfo &ssl_info,
@@ -159,6 +160,7 @@ public:
                         bool is_request_for_navigation,
                         const GURL &url, scoped_refptr<net::HttpResponseHeaders> response_headers,
                         bool first_auth_attempt,
+                        content::GuestPageHolder *guest_page_holder,
                         LoginAuthRequiredCallback auth_required_callback) override;
 
     bool HandleExternalProtocol(

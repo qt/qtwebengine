@@ -44,9 +44,9 @@ ClientHintsFactory::ClientHintsFactory()
 
 ClientHintsFactory::~ClientHintsFactory() = default;
 
-KeyedService *ClientHintsFactory::BuildServiceInstanceFor(content::BrowserContext *context) const
+std::unique_ptr<KeyedService> ClientHintsFactory::BuildServiceInstanceForBrowserContext(content::BrowserContext *profile) const
 {
-    return new ClientHints(context);
+    return std::make_unique<ClientHints>(profile);
 }
 
 content::BrowserContext *ClientHintsFactory::GetBrowserContextToUse(content::BrowserContext *context) const

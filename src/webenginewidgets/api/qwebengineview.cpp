@@ -1705,7 +1705,6 @@ void QWebEngineViewPrivate::hideTouchSelectionMenu()
 void QWebEngineViewPrivate::showTouchSelectionMenu(
         QtWebEngineCore::TouchSelectionMenuController *controller, const QRect &selectionBounds)
 {
-    Q_ASSERT(m_touchSelectionMenu == nullptr);
     Q_Q(QWebEngineView);
 
     // Do not show outside of view

@@ -344,8 +344,8 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
     qCDebug(lcWebEngineCompositor, "WGL: Importing DXGI Resource into GL Texture.");
     Q_ASSERT(m_contextState->gr_context_type() == gpu::GrContextType::kGL);
 
-    Q_ASSERT(overlayImage->type() == gl::DCLayerOverlayType::kNV12Texture);
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> chromeTexture = overlayImage->nv12_texture();
+    Q_ASSERT(overlayImage->type() == gl::DCLayerOverlayType::kD3D11Texture);
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> chromeTexture = overlayImage->d3d11_video_texture();
     if (!chromeTexture) {
         qWarning("WGL: No D3D texture.");
         return nullptr;

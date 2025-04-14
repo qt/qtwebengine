@@ -140,8 +140,9 @@ foreach(arch ${archs})
           v8_enable_webassembly=false
           use_v8_context_snapshot=false
           v8_use_external_startup_data=false
+          build_with_tflite_lib=false
           webnn_use_tflite=false
-  )
+        )
 
         if(LINUX OR ANDROID)
             list(APPEND gnArgArg

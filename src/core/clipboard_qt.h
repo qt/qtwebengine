@@ -46,6 +46,7 @@ public:
 protected:
     void WritePortableAndPlatformRepresentations(ui::ClipboardBuffer buffer,
                                                  const ObjectMap &objects,
+                                                 const std::vector<RawData> &raw_objects,
                                                  std::vector<PlatformRepresentation> platform_representations,
                                                  std::unique_ptr<ui::DataTransferEndpoint> data_src,
                                                  uint32_t) override;

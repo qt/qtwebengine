@@ -3,13 +3,14 @@
 
 #include "extensions_ui_qt.h"
 
+#include "base/containers/span.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/webui_util.h"
 #include "qtwebengine/browser/extensions/resources/grit/extensions_ui_qt_resources.h"
 #include "qtwebengine/browser/extensions/resources/grit/extensions_ui_qt_resources_map.h"
+#include "ui/webui/webui_util.h"
 
 #include "extensions_ui_page_handler_qt.h"
 
@@ -19,7 +20,7 @@ ExtensionsUIQt::ExtensionsUIQt(content::WebUI *web_ui) : ui::MojoWebUIController
             web_ui->GetWebContents()->GetBrowserContext(), chrome::kChromeUIExtensionsHost);
 
     webui::SetupWebUIDataSource(
-            source, base::make_span(kExtensionsUiQtResources, kExtensionsUiQtResourcesSize),
+            source, base::span(kExtensionsUiQtResources, kExtensionsUiQtResourcesSize),
             IDR_EXTENSIONS_UI_QT_EXTENSIONS_UI_QT_HTML);
 
     source->OverrideContentSecurityPolicy(network::mojom::CSPDirectiveName::TrustedTypes,

@@ -157,7 +157,7 @@ void ResourceRequestBody::readDataElementPipe(
     MojoResult result;
     do {
         size_t bytesToRead = 1;
-        base::span<uint8_t> buffer = base::make_span(reinterpret_cast<uint8_t*>(*data), reinterpret_cast<uint8_t*>(*data) + maxSize);
+        base::span<uint8_t> buffer(reinterpret_cast<uint8_t*>(*data), static_cast<size_t>(maxSize));
         result = consumerHandle->ReadData(MOJO_READ_DATA_FLAG_NONE, buffer, bytesToRead);
 
         if (result == MOJO_RESULT_OK) {

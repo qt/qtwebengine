@@ -114,8 +114,6 @@ public:
     // Current implementation reads all resource data at start of resource
     // load, so priority, and pausing is not currently implemented.
     void SetPriority(net::RequestPriority priority, int32_t intra_priority_value) override {}
-    void PauseReadingBodyFromNet() override {}
-    void ResumeReadingBodyFromNet() override {}
 
 private:
     ResourceBundleFileLoader(scoped_refptr<net::HttpResponseHeaders> headers)
@@ -494,11 +492,6 @@ bool ExtensionsBrowserClientQt::IsBackgroundUpdateAllowed()
 bool ExtensionsBrowserClientQt::IsMinBrowserVersionSupported(const std::string &min_version)
 {
     return true;
-}
-
-bool ExtensionsBrowserClientQt::IsLockScreenContext(content::BrowserContext *context)
-{
-    return false;
 }
 
 // Returns the locale used by the application.

@@ -4,6 +4,7 @@
 #include "net/client_cert_store_data.h"
 
 #if QT_CONFIG(ssl)
+#include "base/containers/span.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_platform_key_util.h"
@@ -97,8 +98,8 @@ void ClientCertificateStoreData::add(const QSslCertificate &certificate, const Q
 
     Entry *data = new Entry;
     data->keyPtr = wrapOpenSSLPrivateKey(sslKeyInBytes);
-    data->certPtr = net::X509Certificate::CreateFromBytes(base::make_span((const unsigned char *)certInBytes.data(),
-                                                                          (unsigned long)certInBytes.length()));
+    data->certPtr = net::X509Certificate::CreateFromBytes(base::span<const unsigned char>((const unsigned char *)certInBytes.data(),
+                                                                                          (unsigned long)certInBytes.length()));
     data->key = privateKey;
     data->certificate = certificate;
     extraCerts.append(data);

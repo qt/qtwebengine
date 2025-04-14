@@ -60,11 +60,10 @@ bool ProtocolHandlerRegistryFactory::ServiceIsNULLWhileTesting() const
     return true;
 }
 
-KeyedService *ProtocolHandlerRegistryFactory::BuildServiceInstanceFor(content::BrowserContext *context) const
+std::unique_ptr<KeyedService> ProtocolHandlerRegistryFactory::BuildServiceInstanceForBrowserContext(content::BrowserContext *profile) const
 {
-    custom_handlers::ProtocolHandlerRegistry *registry =
-        new custom_handlers::ProtocolHandlerRegistry(/*prefs*/ nullptr,
-                                                     std::make_unique<ProtocolHandlerRegistryDelegateQt>());
+    auto registry = std::make_unique<custom_handlers::ProtocolHandlerRegistry>(/*prefs*/ nullptr,
+                                                                               std::make_unique<ProtocolHandlerRegistryDelegateQt>());
 
     // Must be called as a part of the creation process.
     registry->InitProtocolSettings();

@@ -5,6 +5,7 @@
 
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
+#include <memory>
 #include <QtGlobal>
 
 namespace QtWebEngineCore {
@@ -46,10 +47,9 @@ content::BrowserContext *FileSystemAccessPermissionContextFactoryQt::GetBrowserC
     return context;
 }
 
-KeyedService *FileSystemAccessPermissionContextFactoryQt::BuildServiceInstanceFor(
-        content::BrowserContext *context) const
+std::unique_ptr<KeyedService> FileSystemAccessPermissionContextFactoryQt::BuildServiceInstanceForBrowserContext(content::BrowserContext *context) const
 {
-    return new FileSystemAccessPermissionContextQt(context);
+    return std::make_unique<FileSystemAccessPermissionContextQt>(context);
 }
 
 } // namespace QtWebEngineCore

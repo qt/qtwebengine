@@ -59,6 +59,7 @@ public:
                                            EntriesAllowedByEnterprisePolicyCallback) override;
 
     base::expected<void, std::string> CanShowFilePicker(content::RenderFrameHost*) override;
+    bool IsFileTypeDangerous(const base::FilePath &path, const url::Origin &origin) override;
 
     void NavigatedAwayFromOrigin(const url::Origin &origin);
     content::BrowserContext *profile() const { return m_profile; }

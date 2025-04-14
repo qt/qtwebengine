@@ -68,7 +68,7 @@ bool IsPDFPluginEnabled(content::NavigationHandle *navigation_handle, bool *is_s
     if (web_contents->IsInnerWebContentsForGuest())
         web_contents = web_contents->GetOuterWebContents();
 
-    int process_id = web_contents->GetPrimaryMainFrame()->GetProcess()->GetID();
+    int process_id = web_contents->GetPrimaryMainFrame()->GetProcess()->GetDeprecatedID();
     int routing_id = web_contents->GetPrimaryMainFrame()->GetRoutingID();
     content::WebPluginInfo plugin_info;
     // Will check WebEngineSettings by PluginServiceFilterQt

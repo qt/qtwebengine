@@ -465,12 +465,14 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
 bool WebEngineSettings::applySettingsToRendererPreferences(blink::RendererPreferences *prefs)
 {
     bool changed = false;
+    prefs->uses_platform_autofill = false;
 #if QT_CONFIG(webengine_webrtc)
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceWebRtcIPHandlingPolicy)) {
-        std::string webrtc_ip_handling_policy =
-                testAttribute(QWebEngineSettings::WebRTCPublicInterfacesOnly)
-                ? blink::kWebRTCIPHandlingDefaultPublicInterfaceOnly
-                : blink::kWebRTCIPHandlingDefault;
+        auto webrtc_ip_handling_policy =
+                blink::ToWebRTCIPHandlingPolicy(
+                    testAttribute(QWebEngineSettings::WebRTCPublicInterfacesOnly)
+                    ? blink::kWebRTCIPHandlingDefaultPublicInterfaceOnly
+                    : blink::kWebRTCIPHandlingDefault);
         if (prefs->webrtc_ip_handling_policy != webrtc_ip_handling_policy) {
             prefs->webrtc_ip_handling_policy = webrtc_ip_handling_policy;
             changed = true;

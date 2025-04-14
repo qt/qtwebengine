@@ -97,6 +97,7 @@ extern void CFHtmlExtractMetadata(const std::string &cf_html, std::string *base_
 
 void ClipboardQt::WritePortableAndPlatformRepresentations(ui::ClipboardBuffer type,
                                                           const ObjectMap &objects,
+                                                          const std::vector<RawData> &raw_objects,
                                                           std::vector<ui::Clipboard::PlatformRepresentation> platform_representations,
                                                           std::unique_ptr<ui::DataTransferEndpoint> data_src, uint32_t val)
 {
@@ -120,6 +121,7 @@ void ClipboardQt::WritePortableAndPlatformRepresentations(ui::ClipboardBuffer ty
             // Copy text and SourceTag to the selection clipboard.
             WritePortableAndPlatformRepresentations(ui::ClipboardBuffer::kSelection,
                                                     ObjectMap(text_iter, ++text_iter),
+                                                    raw_objects,
                                                     {},
                                                     nullptr, val);
         }

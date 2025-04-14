@@ -224,7 +224,7 @@ std::unique_ptr<content::BrowserMainParts> ContentBrowserClientQt::CreateBrowser
 
 void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost *host)
 {
-    const int id = host->GetID();
+    const int id = host->GetDeprecatedID();
     Profile *profile = Profile::FromBrowserContext(host->GetBrowserContext());
 
 #if QT_CONFIG(webengine_spellchecker)
@@ -256,8 +256,11 @@ content::MediaObserver *ContentBrowserClientQt::GetMediaObserver()
     return MediaCaptureDevicesDispatcher::GetInstance();
 }
 
-void ContentBrowserClientQt::OverrideWebkitPrefs(content::WebContents *webContents, blink::web_pref::WebPreferences *web_prefs)
+void ContentBrowserClientQt::OverrideWebPreferences(content::WebContents *webContents,
+                                                    content::SiteInstance &mainFrameSite,
+                                                    blink::web_pref::WebPreferences *webPrefs)
 {
+    Q_UNUSED(mainFrameSite);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     if (guest_view::GuestViewBase::IsGuest(webContents))
         return;
@@ -268,7 +271,7 @@ void ContentBrowserClientQt::OverrideWebkitPrefs(content::WebContents *webConten
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
     WebContentsDelegateQt* delegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
     if (delegate)
-        delegate->overrideWebPreferences(webContents, web_prefs);
+        delegate->overrideWebPreferences(webContents, webPrefs);
 }
 
 void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webContents,
@@ -391,7 +394,7 @@ void ContentBrowserClientQt::BindHostReceiverForRenderer(content::RenderProcessH
 {
 #if QT_CONFIG(webengine_spellchecker)
     if (auto host_receiver = receiver.As<spellcheck::mojom::SpellCheckInitializationHost>()) {
-        SpellCheckInitializationHostImpl::Create(render_process_host->GetID(),
+        SpellCheckInitializationHostImpl::Create(render_process_host->GetDeprecatedID(),
                                                  std::move(host_receiver));
         return;
     }
@@ -449,7 +452,7 @@ void ContentBrowserClientQt::RegisterBrowserInterfaceBindersForFrame(
     map->Add<spellcheck::mojom::SpellCheckHost>(base::BindRepeating(
             [](content::RenderFrameHost *frame_host,
                mojo::PendingReceiver<spellcheck::mojom::SpellCheckHost> receiver) {
-                SpellCheckHostChromeImpl::Create(frame_host->GetProcess()->GetID(),
+                SpellCheckHostChromeImpl::Create(frame_host->GetProcess()->GetDeprecatedID(),
                                                  std::move(receiver));
             }));
 #endif
@@ -487,7 +490,7 @@ void ContentBrowserClientQt::ExposeInterfacesToRenderer(service_manager::BinderR
     }
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     associated_registry->AddInterface<extensions::mojom::EventRouter>(base::BindRepeating(
-            &extensions::EventRouter::BindForRenderer, render_process_host->GetID()));
+            &extensions::EventRouter::BindForRenderer, render_process_host->GetDeprecatedID()));
 #else
     Q_UNUSED(associated_registry);
 #endif
@@ -840,22 +843,25 @@ WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(ui::Page
     }
 }
 
-static bool navigationThrottleCallback(content::NavigationHandle *handle)
+static void navigationThrottleCallback(content::NavigationHandle *handle,
+                                       bool should_run_async,
+                                       navigation_interception::InterceptNavigationThrottle::ResultCallback result_callback)
 {
+    Q_ASSERT(!should_run_async);
     // We call navigationRequested later in launchExternalUrl for external protocols.
     // The is_external_protocol parameter here is not fully accurate though,
     // and doesn't know about profile specific custom URL schemes.
     content::WebContents *source = handle->GetWebContents();
     ProfileQt *profile = static_cast<ProfileQt *>(source->GetBrowserContext());
     if (handle->IsExternalProtocol() && !profile->profileAdapter()->urlSchemeHandler(toQByteArray(handle->GetURL().scheme())))
-        return false;
+        return std::move(result_callback).Run(false);
 
     bool navigationAccepted = true;
 
     WebContentsAdapterClient *client =
         WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(source)->GetView())->client();
     if (!client)
-        return false;
+        return std::move(result_callback).Run(false);
 
     // Redirects might not be reflected in transition_type at this point (see also chrome/.../web_navigation_api_helpers.cc)
     auto transition_type = handle->GetPageTransition();
@@ -867,7 +873,7 @@ static bool navigationThrottleCallback(content::NavigationHandle *handle)
                                 navigationAccepted,
                                 handle->IsInPrimaryMainFrame(),
                                 handle->IsFormSubmission());
-    return !navigationAccepted;
+    std::move(result_callback).Run(!navigationAccepted);
 }
 
 std::vector<std::unique_ptr<content::NavigationThrottle>> ContentBrowserClientQt::CreateThrottlesForNavigation(
@@ -877,7 +883,8 @@ std::vector<std::unique_ptr<content::NavigationThrottle>> ContentBrowserClientQt
     throttles.push_back(std::make_unique<navigation_interception::InterceptNavigationThrottle>(
                             navigation_handle,
                             base::BindRepeating(&navigationThrottleCallback),
-                            navigation_interception::SynchronyMode::kSync));
+                            navigation_interception::SynchronyMode::kSync,
+                            std::nullopt /* async callback */));
 
 #if BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
     MaybeAddThrottle(
@@ -927,6 +934,7 @@ std::unique_ptr<content::LoginDelegate> ContentBrowserClientQt::CreateLoginDeleg
         content::BrowserContext *browser_context, const content::GlobalRequestID & /*request_id*/,
         bool /*is_main_frame*/, bool /*is_request_for_navigation*/, const GURL &url,
         scoped_refptr<net::HttpResponseHeaders> /*response_headers*/, bool first_auth_attempt,
+        content::GuestPageHolder * /*guest_page_holder*/,
         LoginAuthRequiredCallback auth_required_callback)
 {
     auto loginDelegate = std::make_unique<LoginDelegateQt>(authInfo, web_contents, url, first_auth_attempt, std::move(auth_required_callback));
@@ -1381,7 +1389,7 @@ void ContentBrowserClientQt::SiteInstanceGotProcessAndSite(content::SiteInstance
         return;
 
     extensions::ProcessMap *processMap = extensions::ProcessMap::Get(context);
-    processMap->Insert(extension->id(), site_instance->GetProcess()->GetID());
+    processMap->Insert(extension->id(), site_instance->GetProcess()->GetDeprecatedID());
 #endif
 }
 

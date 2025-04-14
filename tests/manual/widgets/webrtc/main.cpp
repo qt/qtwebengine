@@ -17,8 +17,8 @@
 #include "ui_mediaPicker.h"
 #include <QWebEngineDesktopMediaRequest>
 
-// Test the screen/window selection and capturing APIs using QWebEngineDesktopMediaRequest,
-// getDisplayMedia (js) and chooseDesktopMedia (hangouts)
+// Test the screen/window selection and capturing APIs using QWebEngineDesktopMediaRequest
+// and getDisplayMedia
 
 // Note: Wayland compositors require Pipewire support in QWE
 

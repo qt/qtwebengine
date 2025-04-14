@@ -70,7 +70,7 @@ private:
     // BrowserContextKeyedServiceFactory:
     content::BrowserContext *
     GetBrowserContextToUse(content::BrowserContext *context) const override;
-    KeyedService *BuildServiceInstanceFor(content::BrowserContext *context) const override;
+    std::unique_ptr<KeyedService> BuildServiceInstanceForBrowserContext(content::BrowserContext *context) const override;
 };
 
 class FaviconClientQt : public favicon::FaviconClient
@@ -105,7 +105,7 @@ private:
     // BrowserContextKeyedServiceFactory:
     content::BrowserContext *
     GetBrowserContextToUse(content::BrowserContext *context) const override;
-    KeyedService *BuildServiceInstanceFor(content::BrowserContext *context) const override;
+    std::unique_ptr<KeyedService> BuildServiceInstanceForBrowserContext(content::BrowserContext *context) const override;
 };
 
 } // namespace QtWebEngineCore

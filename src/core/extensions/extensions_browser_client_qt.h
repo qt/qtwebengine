@@ -77,9 +77,6 @@ public:
     ExtensionWebContentsObserver *GetExtensionWebContentsObserver(content::WebContents *web_contents) override;
     KioskDelegate *GetKioskDelegate() override;
 
-    // Whether the browser context is associated with Chrome OS lock screen.
-    bool IsLockScreenContext(content::BrowserContext *context) override;
-
     bool IsAppModeForcedForApp(const ExtensionId &id) override;
     bool IsInDemoMode() override;
 

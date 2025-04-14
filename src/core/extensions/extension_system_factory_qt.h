@@ -33,7 +33,7 @@ private:
     ~ExtensionSystemFactoryQt() override;
 
     // BrowserContextKeyedServiceFactory implementation:
-    KeyedService *BuildServiceInstanceFor(content::BrowserContext *context) const override;
+    std::unique_ptr<KeyedService> BuildServiceInstanceForBrowserContext(content::BrowserContext *context) const override;
     content::BrowserContext *GetBrowserContextToUse(content::BrowserContext *context) const override;
     bool ServiceIsCreatedWithBrowserContext() const override;
 };

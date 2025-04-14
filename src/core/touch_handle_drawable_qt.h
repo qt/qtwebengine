@@ -6,7 +6,7 @@
 
 #include "ui/touch_selection/touch_handle.h"
 #include "ui/touch_selection/touch_handle_orientation.h"
-#include "ui/gfx/image/image.h"
+#include "ui/base/models/image_model.h"
 
 #include <QtCore/QScopedPointer>
 
@@ -19,7 +19,7 @@ class TouchHandleDrawableQt : public ui::TouchHandleDrawable
 public:
     explicit TouchHandleDrawableQt(TouchHandleDrawableDelegate *delegate);
     ~TouchHandleDrawableQt() override;
-    static gfx::Image *GetHandleImage(ui::TouchHandleOrientation orientation);
+    static ui::ImageModel GetHandleVectorIcon(ui::TouchHandleOrientation orientation);
 
 private:
     void UpdateBounds();

@@ -84,8 +84,6 @@ public:
         Start();
     }
     void SetPriority(net::RequestPriority priority, int32_t intra_priority_value) override { }
-    void PauseReadingBodyFromNet() override { }
-    void ResumeReadingBodyFromNet() override { }
 
 private:
     CustomURLLoader(const network::ResourceRequest &request,

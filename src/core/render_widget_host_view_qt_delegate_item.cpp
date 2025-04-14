@@ -355,6 +355,8 @@ void RenderWidgetHostViewQtDelegateItem::itemChange(ItemChange change, const Ite
         if (value.boolValue) {
             m_client->notifyShown();
         } else {
+            if (!m_widgetDelegate)
+                return;
             m_client->notifyHidden();
             if (!m_isPopup)
                 onHide();

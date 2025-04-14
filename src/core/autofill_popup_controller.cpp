@@ -5,7 +5,7 @@
 #include "autofill_popup_controller_p.h"
 
 #include "components/autofill/core/browser/ui/autofill_suggestion_delegate.h"
-#include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/browser/suggestions/suggestion.h"
 
 namespace QtWebEngineCore {
 

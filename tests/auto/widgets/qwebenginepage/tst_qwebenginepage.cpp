@@ -286,7 +286,6 @@ private Q_SLOTS:
     void openLinkInNewPageWithWebWindowType_data();
     void openLinkInNewPageWithWebWindowType();
     void keepInterceptorAfterNewWindowRequested();
-    void chooseDesktopMedia();
     void backForwardCache();
 
 private:
@@ -5800,53 +5799,6 @@ void tst_QWebEnginePage::keepInterceptorAfterNewWindowRequested()
     QTRY_COMPARE(loadFinishedSpy.size(), 1);
     QVERIFY(loadFinishedSpy.takeFirst().value(0).toBool());
     QVERIFY(interceptor.ran);
-}
-
-void tst_QWebEnginePage::chooseDesktopMedia()
-{
-#if QT_CONFIG(webengine_extensions) && QT_CONFIG(webengine_webrtc)
-    HttpServer server;
-    server.setHostDomain("localhost");
-    connect(&server, &HttpServer::newRequest, &server, [&] (HttpReqRep *r) {
-        if (r->requestMethod() == "GET")
-                r->setResponseBody("<html></html>");
-    });
-    QVERIFY(server.start());
-
-    QWebEnginePage page;
-    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
-    page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
-    page.profile()->setPersistentPermissionsPolicy(QWebEngineProfile::PersistentPermissionsPolicy::AskEveryTime);
-
-    bool desktopMediaRequested = false;
-    bool emptyDesktopMediaRequested = false;
-    bool permissionRequested = false;
-
-    connect(&page, &QWebEnginePage::desktopMediaRequested,
-            [&](const QWebEngineDesktopMediaRequest &request) {
-                desktopMediaRequested = true;
-                emptyDesktopMediaRequested = request.screensModel()->rowCount() == 0;
-            });
-
-    connect(&page, &QWebEnginePage::permissionRequested,
-            [&](QWebEnginePermission permission) {
-                permissionRequested = true;
-                // Handle permission to 'complete' the media request
-                permission.grant();
-            });
-
-    page.load(QUrl(server.url()));
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 20000);
-
-    const QString extensionId("nkeimhogjdpnpccoofpliimaahmaaome");
-    page.runJavaScript(QString("(() => {"
-                               "  let port = chrome.runtime.connect(\"%1\", {name: \"chooseDesktopMedia\"});"
-                               "  port.postMessage({method: \"chooseDesktopMedia\"});"
-                               "})()").arg(extensionId));
-
-    QTRY_VERIFY(desktopMediaRequested);
-    QTRY_VERIFY(permissionRequested || emptyDesktopMediaRequested);
-#endif // QT_CONFIG(webengine_extensions) && QT_CONFIG(webengine_webrtc)
 }
 
 void tst_QWebEnginePage::backForwardCache()

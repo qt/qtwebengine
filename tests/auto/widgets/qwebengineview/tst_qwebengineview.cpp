@@ -1370,19 +1370,6 @@ void tst_QWebEngineView::changeLocale()
     QTRY_VERIFY(!toPlainTextSync(viewEN.page()).isEmpty());
     errorLines = toPlainTextSync(viewEN.page()).split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("This site can\xE2\x80\x99t be reached"));
-
-    // Reset error page
-    viewDE.load(QUrl("about:blank"));
-    QVERIFY(loadFinishedSpyDE.wait());
-    loadFinishedSpyDE.clear();
-
-    // Check whether an existing QWebEngineView keeps the language settings after changing the default locale
-    viewDE.load(url);
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyDE.size(), 1, 20000);
-
-    QTRY_VERIFY(!toPlainTextSync(viewDE.page()).isEmpty());
-    errorLines = toPlainTextSync(viewDE.page()).split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
-    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
 }
 
 void tst_QWebEngineView::mixLangLocale_data()

@@ -43,9 +43,9 @@ ExtensionSystemFactoryQt::~ExtensionSystemFactoryQt()
 {
 }
 
-KeyedService *ExtensionSystemFactoryQt::BuildServiceInstanceFor(content::BrowserContext *context) const
+std::unique_ptr<KeyedService> ExtensionSystemFactoryQt::BuildServiceInstanceForBrowserContext(content::BrowserContext *context) const
 {
-    return new ExtensionSystemQt(context);
+    return std::make_unique<ExtensionSystemQt>(context);
 }
 
 content::BrowserContext *ExtensionSystemFactoryQt::GetBrowserContextToUse(content::BrowserContext *context) const

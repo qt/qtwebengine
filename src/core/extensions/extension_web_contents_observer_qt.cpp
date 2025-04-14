@@ -48,7 +48,7 @@ void ExtensionWebContentsObserverQt::RenderFrameCreated(content::RenderFrameHost
     if (!extension)
         return;
 
-    int process_id = render_frame_host->GetProcess()->GetID();
+    const int process_id = render_frame_host->GetProcess()->GetDeprecatedID();
     auto *policy = content::ChildProcessSecurityPolicy::GetInstance();
 
     if (extension->is_extension() && Manifest::IsComponentLocation(extension->location()))

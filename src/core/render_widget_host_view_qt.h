@@ -153,8 +153,8 @@ public:
     void OnLocalSurfaceIdChanged(const cc::RenderFrameMetadata &) override {}
 
     // Overridden from content::RenderWidgetHost::InputEventObserver
-    void OnInputEvent(const blink::WebInputEvent &) override { }
-    void OnInputEventAck(blink::mojom::InputEventResultSource,
+    void OnInputEventAck(const content::RenderWidgetHost &,
+                         blink::mojom::InputEventResultSource,
                          blink::mojom::InputEventResultState state,
                          const blink::WebInputEvent &event) override;
 

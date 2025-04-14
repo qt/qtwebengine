@@ -13,8 +13,10 @@
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
 
+#include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/touch_selection/vector_icons/vector_icons.h"
 
 namespace QtWebEngineCore {
 
@@ -89,11 +91,12 @@ void TouchHandleDrawableQt::SetOrientation(ui::TouchHandleOrientation orientatio
     if (m_orientation == orientation)
         return;
     m_orientation = orientation;
-    gfx::Image* image = GetHandleImage(orientation);
+
+    ui::ImageModel imageModel = GetHandleVectorIcon(orientation);
     m_delegate->setImage(static_cast<int>(orientation));
 
     // Calculate the relative bounds.
-    gfx::Size image_size = image->Size();
+    gfx::Size image_size = imageModel.Size();
     int window_width = image_size.width() + 2 * kSelectionHandlePadding;
     int window_height = image_size.height() + 2 * kSelectionHandlePadding;
     m_relativeBounds =
@@ -142,25 +145,24 @@ float TouchHandleDrawableQt::GetDrawableHorizontalPaddingRatio() const
     return 0.0;
 }
 
-// Returns the appropriate handle image based on the handle orientation.
-gfx::Image *TouchHandleDrawableQt::GetHandleImage(ui::TouchHandleOrientation orientation)
-{
-    int resource_id = 0;
+// [static] Returns the appropriate handle vector icon based on the handle orientation.
+ui::ImageModel TouchHandleDrawableQt::GetHandleVectorIcon(ui::TouchHandleOrientation orientation) {
+    const gfx::VectorIcon* icon = nullptr;
     switch (orientation) {
     case ui::TouchHandleOrientation::LEFT:
-        resource_id = IDR_TEXT_SELECTION_HANDLE_LEFT;
+        icon = &ui::kTextSelectionHandleLeftIcon;
         break;
     case ui::TouchHandleOrientation::CENTER:
-        resource_id = IDR_TEXT_SELECTION_HANDLE_CENTER;
+        icon = &ui::kTextSelectionHandleCenterIcon;
         break;
     case ui::TouchHandleOrientation::RIGHT:
-        resource_id = IDR_TEXT_SELECTION_HANDLE_RIGHT;
+        icon = &ui::kTextSelectionHandleRightIcon;
         break;
     case ui::TouchHandleOrientation::UNDEFINED:
         NOTREACHED() << "Invalid touch handle bound type.";
-        return nullptr;
-    };
-    return &ui::ResourceBundle::GetSharedInstance().GetImageNamed(resource_id);
+    }
+    return ui::ImageModel::FromVectorIcon(*icon,
+                                          /*color_id=*/ui::kColorSysPrimary);
 }
 
 } // namespace QtWebEngineCore

@@ -89,6 +89,8 @@ WebContentsDelegateQt::~WebContentsDelegateQt()
     // The destruction of this object should take place before
     // WebContents destruction since WebContentsAdapterClient
     // might be already deleted.
+
+    GetJavaScriptDialogManager(web_contents())->CancelDialogs(web_contents(), false);
 }
 
 content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params,

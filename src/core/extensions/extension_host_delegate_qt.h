@@ -16,7 +16,6 @@ public:
     // EtensionHostDelegate implementation.
     void OnExtensionHostCreated(content::WebContents *web_contents) override;
     void OnMainFrameCreatedForBackgroundPage(ExtensionHost *host) override;
-    content::JavaScriptDialogManager *GetJavaScriptDialogManager() override;
     void CreateTab(std::unique_ptr<content::WebContents> web_contents,
                    const std::string &extension_id,
                    WindowOpenDisposition disposition,

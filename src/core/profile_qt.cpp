@@ -305,30 +305,16 @@ const PrefServiceAdapter &ProfileQt::prefServiceAdapter() const
 void ProfileQt::initUserAgentMetadata()
 {
     m_userAgentMetadata = embedder_support::GetUserAgentMetadata();
-    m_userAgentMetadata.brand_version_list.clear();
-    m_userAgentMetadata.brand_full_version_list.clear();
-
-    // Chromium version
-    m_userAgentMetadata.brand_version_list.emplace_back(
-            blink::UserAgentBrandVersion("Chromium", version_info::GetMajorVersionNumber()));
-    m_userAgentMetadata.brand_full_version_list.emplace_back(blink::UserAgentBrandVersion(
-            "Chromium", std::string(version_info::GetVersionNumber())));
-
     // We keep the brand lists identical throughout the lifetime of each major version of Chromium.
     int seed = version_info::GetMajorVersionNumberAsInt();
-    // Generate a greasey version
-    const std::vector<std::vector<int>> orders{ { 0, 1, 2 }, { 0, 2, 1 }, { 1, 0, 2 },
-                                                { 1, 2, 0 }, { 2, 0, 1 }, { 2, 1, 0 } };
-    const std::vector<int> order = orders[seed % 6];
-    m_userAgentMetadata.brand_version_list.emplace_back(
-            embedder_support::GetGreasedUserAgentBrandVersion(
-                    order, seed, std::nullopt, std::nullopt, true,
-                    blink::UserAgentBrandVersionType::kMajorVersion));
-
-    m_userAgentMetadata.brand_full_version_list.emplace_back(
-            embedder_support::GetGreasedUserAgentBrandVersion(
-                    order, seed, std::nullopt, std::nullopt, true,
-                    blink::UserAgentBrandVersionType::kFullVersion));
+    std::string version = version_info::GetMajorVersionNumber();
+    m_userAgentMetadata.brand_version_list =
+            embedder_support::GenerateBrandVersionList(seed, {}, version,
+                                                       blink::UserAgentBrandVersionType::kMajorVersion);
+    version = version_info::GetVersionNumber();
+    m_userAgentMetadata.brand_full_version_list =
+            embedder_support::GenerateBrandVersionList(seed, {}, version,
+                                                       blink::UserAgentBrandVersionType::kFullVersion);
 }
 
 const blink::UserAgentMetadata &ProfileQt::userAgentMetadata()

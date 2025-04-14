@@ -21,7 +21,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/containers/span.h"
 #include "components/autofill/content/browser/content_autofill_client.h"
-#include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/foundations/autofill_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 
 #include <QScopedPointer>
@@ -40,7 +40,6 @@ public:
     static void CreateForWebContents(content::WebContents *contents);
 
     // autofill::AutofillClient overrides:
-    autofill::PersonalDataManager *GetPersonalDataManager() override;
     autofill::AutocompleteHistoryManager *GetAutocompleteHistoryManager() override;
     PrefService *GetPrefs() override;
     const PrefService *GetPrefs() const override;
@@ -50,15 +49,21 @@ public:
                             base::WeakPtr<autofill::AutofillSuggestionDelegate> delegate) override;
     void UpdateAutofillDataListValues(
             base::span<const autofill::SelectOption> datalist) override;
-    void PinAutofillSuggestions() override;
     base::span<const autofill::Suggestion> GetAutofillSuggestions() const override;
     void HideAutofillSuggestions(autofill::SuggestionHidingReason reason) override;
+
+    bool IsAutofillEnabled() const override;
+    bool IsAutofillProfileEnabled() const override;
+    bool IsAutofillPaymentMethodsEnabled() const override;
     bool IsAutocompleteEnabled() const override;
-    bool IsPasswordManagerEnabled() override;
+    bool IsPasswordManagerEnabled() const override;
+
     bool IsOffTheRecord() const override;
     scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
     std::unique_ptr<autofill::AutofillManager> CreateManager(base::PassKey<autofill::ContentAutofillDriver>, autofill::ContentAutofillDriver&) override;
     base::WeakPtr<autofill::AutofillClient> GetWeakPtr() override;
+
+    const std::string& GetAppLocale() const override;
 
 private:
     explicit AutofillClientQt(content::WebContents *webContents);

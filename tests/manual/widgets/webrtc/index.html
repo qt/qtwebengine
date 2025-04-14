@@ -17,13 +17,11 @@
     <body>
         <div id="buttons" >
             <input value ="getDisplayMedia" onclick="getDisplayMedia(true, true);" type="button">
-            <input value = "chooseDesktopMedia" onclick="chooseDesktopMedia();" type="button">
             <input value ="Stop" onclick="stop();" type="button">
         </div>
         <div id="content"></div>
     </body>
     <script>
-        const EXTENSION_ID = "nkeimhogjdpnpccoofpliimaahmaaome"; // hangout services extension
         const content = document.getElementById("content");
         const video = document.createElement("video");
         video.setAttribute("width", 640);
@@ -40,35 +38,6 @@
             console.error(error);
             });
         }
-
-        function chooseDesktopMedia() {
-            stop();
-            // Connect to the 'chooseDesktopMedia' listener within the hangout services extension.
-            let port = chrome.runtime.connect(EXTENSION_ID, {name: "chooseDesktopMedia"})
-
-            // The 'chooseDesktopMedia' api returns a streamId that
-            // identifies a media source in the constraints of 'getUserMedia'
-            // (see chromeMediaSourceId)
-            port.onMessage.addListener(result => {
-                navigator.mediaDevices.getUserMedia({
-                    video: {
-                        mandatory: {
-                            chromeMediaSource: "desktop",
-                            chromeMediaSourceId: result.value.streamId
-                        },
-                    }
-                }).then(stream => {
-                    start(stream);
-                }, error => {
-                    console.error(error);
-                })
-            })
-
-            // Trigger the listener on the other side,
-            // we should see the picker dialog after this call.
-            port.postMessage({method: "chooseDesktopMedia"})
-        }
-
         function stop() {
             if (video.srcObject)
                 for (const track of video.srcObject.getTracks())

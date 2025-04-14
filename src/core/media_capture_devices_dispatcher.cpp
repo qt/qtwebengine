@@ -187,7 +187,7 @@ std::string DeviceNamePrefix(content::WebContents *web_contents,
     // dialog for DISPLAY_VIDEO_CAPTURE_THIS_TAB could still return something
     // other than the current tab - be it a screen, window, or another tab.
     if (media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS &&
-            web_contents->GetPrimaryMainFrame()->GetProcess()->GetID() ==
+            web_contents->GetPrimaryMainFrame()->GetProcess()->GetDeprecatedID() ==
                 media_id.web_contents_id.render_process_id &&
             web_contents->GetPrimaryMainFrame()->GetRoutingID() ==
                 media_id.web_contents_id.main_render_frame_id) {
@@ -509,7 +509,7 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
     if (main_frame) {
         // Resolve DesktopMediaID for the specified device id.
         mediaId = content::DesktopStreamsRegistry::GetInstance()->RequestMediaForStreamId(
-                request.requested_video_device_ids.front(), main_frame->GetProcess()->GetID(),
+                request.requested_video_device_ids.front(), main_frame->GetProcess()->GetDeprecatedID(),
                 main_frame->GetRoutingID(), url::Origin::Create(request.security_origin),
                 content::kRegistryStreamTypeDesktop);
     }

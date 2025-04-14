@@ -186,8 +186,8 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
     qCDebug(lcWebEngineCompositor, "VULKAN: Importing DXGI Resource into VkImage.");
     externalMemoryImageCreateInfo.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT;
 
-    Q_ASSERT(overlayImage->type() == gl::DCLayerOverlayType::kNV12Texture);
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> chromeTexture = overlayImage->nv12_texture();
+    Q_ASSERT(overlayImage->type() == gl::DCLayerOverlayType::kD3D11Texture);
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> chromeTexture = overlayImage->d3d11_video_texture();
     if (!chromeTexture) {
         qWarning("VULKAN: No D3D texture.");
         return nullptr;

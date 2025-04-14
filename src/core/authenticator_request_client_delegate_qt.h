@@ -6,6 +6,7 @@
 
 #include "qtwebenginecoreglobal_p.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
+#include "content/public/browser/web_authentication_delegate.h"
 #include <unordered_map>
 #include <QSharedPointer>
 

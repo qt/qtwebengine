@@ -37,7 +37,7 @@ private:
     ~ClientHintsFactory() override;
 
     // BrowserContextKeyedServiceFactory methods:
-    KeyedService *BuildServiceInstanceFor(content::BrowserContext *profile) const override;
+    std::unique_ptr<KeyedService> BuildServiceInstanceForBrowserContext(content::BrowserContext *profile) const override;
     content::BrowserContext *GetBrowserContextToUse(content::BrowserContext *context) const override;
 };
 

@@ -1045,7 +1045,6 @@ WebEngineContext::WebEngineContext()
     }
     m_mainDelegate->PostEarlyInitialization({});
     content::StartBrowserThreadPool();
-    content::BrowserTaskExecutor::PostFeatureListSetup();
     tracing::InitTracingPostThreadPoolStartAndFeatureList(false);
     base::PowerMonitor::GetInstance()->Initialize(MakePowerMonitorDeviceSource());
     content::ProcessVisibilityTracker::GetInstance();
@@ -1243,7 +1242,7 @@ const char *qWebEngineChromiumVersion() noexcept
 
 const char *qWebEngineChromiumSecurityPatchVersion() noexcept
 {
-    return "137.0.7151.68"; // FIXME: Remember to update
+    return "134.0.6998.208"; // FIXME: Remember to update
 }
 
 QT_END_NAMESPACE

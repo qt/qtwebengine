@@ -150,7 +150,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
     size_t len = payload.size();
     CHECK_EQ(MOJO_RESULT_OK,
                 producer_handle->WriteData(
-                     base::make_span(reinterpret_cast<const uint8_t*>(payload.data()), len),
+                     base::span<const uint8_t>(reinterpret_cast<const uint8_t*>(payload.data()), len),
                      MOJO_WRITE_DATA_FLAG_ALL_OR_NONE, len));
 
     network::URLLoaderCompletionStatus status(net::OK);

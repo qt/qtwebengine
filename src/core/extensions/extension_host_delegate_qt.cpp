@@ -34,11 +34,6 @@ void ExtensionHostDelegateQt::OnMainFrameCreatedForBackgroundPage(ExtensionHost 
     Q_UNUSED(host);
 }
 
-content::JavaScriptDialogManager *ExtensionHostDelegateQt::GetJavaScriptDialogManager()
-{
-    Q_UNREACHABLE_RETURN(nullptr);
-}
-
 void ExtensionHostDelegateQt::CreateTab(std::unique_ptr<content::WebContents> web_contents,
                                         const std::string &extension_id,
                                         WindowOpenDisposition disposition,

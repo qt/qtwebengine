@@ -478,6 +478,12 @@ base::expected<void, std::string> FileSystemAccessPermissionContextQt::CanShowFi
     return base::ok();
 }
 
+bool FileSystemAccessPermissionContextQt::IsFileTypeDangerous(const base::FilePath &path, const url::Origin &origin)
+{
+    // Matching AwFileSystemAccessPermissionContext::IsFileTypeDangerous()
+    return false;
+}
+
 void FileSystemAccessPermissionContextQt::CheckPathsAgainstEnterprisePolicy(
         std::vector<content::PathInfo> entries, content::GlobalRenderFrameHostId,
         EntriesAllowedByEnterprisePolicyCallback callback)

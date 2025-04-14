@@ -13,6 +13,9 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/color/color_provider.h"
+#include "ui/color/color_provider_manager.h"
+#include "ui/native_theme/native_theme.h"
 
 #include <QClipboard>
 #include <QGuiApplication>
@@ -260,12 +263,16 @@ std::unique_ptr<ui::TouchHandleDrawable> TouchSelectionControllerClientQt::Creat
 {
     Q_ASSERT(m_rwhv);
     Q_ASSERT(m_rwhv->adapterClient());
+
+    auto color_provider = ui::ColorProviderManager::Get().GetColorProviderFor(
+            ui::NativeTheme::GetInstanceForNativeUi()->GetColorProviderKey(nullptr));
     QMap<int, QImage> images;
     for (int orientation = 0; orientation < static_cast<int>(ui::TouchHandleOrientation::UNDEFINED);
          ++orientation) {
-        gfx::Image *image = TouchHandleDrawableQt::GetHandleImage(
+        ui::ImageModel imageModel = TouchHandleDrawableQt::GetHandleVectorIcon(
                 static_cast<ui::TouchHandleOrientation>(orientation));
-        images.insert(orientation, toQImage(image->AsBitmap()));
+        gfx::ImageSkia image = imageModel.Rasterize(color_provider);
+        images.insert(orientation, toQImage(*image.bitmap()));
     }
     auto delegate = m_rwhv->adapterClient()->createTouchHandleDelegate(images);
     return std::unique_ptr<ui::TouchHandleDrawable>(new TouchHandleDrawableQt(delegate));

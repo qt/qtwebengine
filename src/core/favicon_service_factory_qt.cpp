@@ -88,8 +88,7 @@ HistoryServiceFactoryQt::GetBrowserContextToUse(content::BrowserContext *context
     return context;
 }
 
-KeyedService *
-HistoryServiceFactoryQt::BuildServiceInstanceFor(content::BrowserContext *context) const
+std::unique_ptr<KeyedService> HistoryServiceFactoryQt::BuildServiceInstanceForBrowserContext(content::BrowserContext *context) const
 {
     Q_ASSERT(!context->IsOffTheRecord());
 
@@ -98,7 +97,7 @@ HistoryServiceFactoryQt::BuildServiceInstanceFor(content::BrowserContext *contex
     if (!historyService->Init(history::HistoryDatabaseParamsForPath(context->GetPath(), version_info::Channel::DEFAULT))) {
         return nullptr;
     }
-    return historyService.release();
+    return historyService;
 }
 
 bool FaviconClientQt::IsNativeApplicationURL(const GURL &url)
@@ -164,12 +163,12 @@ FaviconServiceFactoryQt::GetBrowserContextToUse(content::BrowserContext *context
     return context;
 }
 
-KeyedService *
-FaviconServiceFactoryQt::BuildServiceInstanceFor(content::BrowserContext *context) const
+std::unique_ptr<KeyedService>
+FaviconServiceFactoryQt::BuildServiceInstanceForBrowserContext(content::BrowserContext *context) const
 {
     history::HistoryService *historyService = static_cast<history::HistoryService *>(
             HistoryServiceFactoryQt::GetInstance()->GetForBrowserContext(context));
-    return new favicon::FaviconServiceImpl(std::make_unique<FaviconClientQt>(), historyService);
+    return std::make_unique<favicon::FaviconServiceImpl>(std::make_unique<FaviconClientQt>(), historyService);
 }
 
 } // namespace QtWebEngineCore

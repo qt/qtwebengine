@@ -53,6 +53,7 @@ qt_internal_add_module(WebEngineCore
         ../
         ../../3rdparty/chromium
         ../../3rdparty/chromium/third_party/abseil-cpp
+        ../../3rdparty/chromium/third_party/icu/source/common
         ../../3rdparty/chromium/third_party/perfetto/include
         ../../3rdparty/chromium/third_party/boringssl/src/include
         ../../3rdparty/chromium/base/allocator/partition_allocator/src

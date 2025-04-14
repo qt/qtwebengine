@@ -281,7 +281,7 @@ void PrintViewManagerBaseQt::ScriptedPrint(printing::mojom::ScriptedPrintParamsP
 
     auto callback_wrapper = base::BindOnce(
         &PrintViewManagerBaseQt::ScriptedPrintReply, weak_ptr_factory_.GetWeakPtr(),
-        std::move(callback), render_process_host->GetID());
+        std::move(callback), render_process_host->GetDeprecatedID());
 
     std::unique_ptr<printing::PrinterQuery> printer_query =
          m_printerQueriesQueue->PopPrinterQuery(params->cookie);
@@ -585,7 +585,7 @@ void PrintViewManagerBaseQt::UpdatePrintSettings(base::Value::Dict job_settings,
                     std::move(job_settings),
                     base::BindOnce(&OnDidUpdatePrintSettings,
                                    m_printerQueriesQueue, std::move(printer_query), std::move(callback),
-                                   render_frame_host->GetProcess()->GetID(), render_frame_host->GetRoutingID()));
+                                   render_frame_host->GetProcess()->GetDeprecatedID(), render_frame_host->GetRoutingID()));
 }
 
 } // namespace QtWebEngineCore

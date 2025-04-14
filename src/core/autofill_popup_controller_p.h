@@ -18,7 +18,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/browser/suggestions/suggestion.h"
 
 namespace autofill {
 class AutofillSuggestionDelegate;

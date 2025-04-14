@@ -22,7 +22,7 @@ Q_WEBENGINE_LOGGING_CATEGORY(log, "qt.webengine.webchanneltransport")
 
 inline QDebug operator<<(QDebug stream, content::RenderFrameHost *frame)
 {
-    return stream << "frame " << frame->GetRoutingID() << " in process " << frame->GetProcess()->GetID();
+    return stream << "frame " << frame->GetRoutingID() << " in process " << frame->GetProcess()->GetDeprecatedID();
 }
 
 WebChannelIPCTransportHost::WebChannelIPCTransportHost(content::WebContents *contents, uint worldId, QObject *parent)

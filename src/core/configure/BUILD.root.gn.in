@@ -162,6 +162,7 @@ shared_library("QtWebEngineCore") {
     "//third_party/blink/public:blink",
     "//ui/accessibility",
     "//ui/gl",
+    "//ui/touch_selection/vector_icons",
     "//qtwebengine/browser:interfaces",
     "//qtwebengine/userscript",
     "//qtwebengine/common:mojo_bindings",
@@ -380,8 +381,6 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/ui/webui/user_actions/user_actions_ui.h",
     "//chrome/browser/ui/webui/user_actions/user_actions_ui_handler.cc",
     "//chrome/browser/ui/webui/user_actions/user_actions_ui_handler.h",
-    "//chrome/browser/ui/webui/webui_util.cc",
-    "//chrome/browser/ui/webui/webui_util.h",
     "//chrome/common/chrome_switches.cc",
     "//chrome/common/chrome_switches.h",
     "//chrome/common/pref_names.h",
@@ -390,6 +389,8 @@ source_set("qtwebengine_sources") {
     "//chrome/common/webui_url_constants.h",
     "//components/embedder_support/user_agent_utils.cc",
     "//components/embedder_support/user_agent_utils.h",
+    "//ui/webui/webui_util.cc",
+    "//ui/webui/webui_util.h",
   ]
   if (use_ozone) {
     deps += [
@@ -625,6 +626,7 @@ repack("qtwebengine_repack_resources") {
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
     "$root_gen_dir/ui/webui/resources/webui_resources.pak",
+    "$root_gen_dir/components/user_actions_ui_resources.pak",
   ]
   if (!is_debug) {
     output = "$root_out_dir/qtwebengine_resources.pak"
@@ -641,6 +643,7 @@ repack("qtwebengine_repack_resources") {
      "//components/resources:components_resources_grit",
      "//components/resources:dev_ui_components_resources_grit",
      "//components/ukm/debug:resources",
+     "//components/webui/user_actions/resources",
      "//content/browser/resources/attribution_reporting:resources",
      "//content/browser/resources/gpu:resources",
      "//content/browser/resources/histograms:resources_grit",

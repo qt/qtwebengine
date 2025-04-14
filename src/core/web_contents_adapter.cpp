@@ -33,7 +33,7 @@
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/values.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
-#include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/foundations/autofill_manager.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/embedder_support/user_agent_utils.h"
 #include "components/favicon/core/favicon_service.h"
@@ -535,13 +535,13 @@ void WebContentsAdapter::initializeRenderPrefs()
     base::CommandLine* commandLine = base::CommandLine::ForCurrentProcess();
     if (commandLine->HasSwitch(switches::kForceWebRtcIPHandlingPolicy))
         rendererPrefs->webrtc_ip_handling_policy =
-                commandLine->GetSwitchValueASCII(switches::kForceWebRtcIPHandlingPolicy);
+                blink::ToWebRTCIPHandlingPolicy(commandLine->GetSwitchValueASCII(switches::kForceWebRtcIPHandlingPolicy));
     else
         rendererPrefs->webrtc_ip_handling_policy =
                 m_adapterClient->webEngineSettings()->testAttribute(
                         QWebEngineSettings::WebRTCPublicInterfacesOnly)
-                ? blink::kWebRTCIPHandlingDefaultPublicInterfaceOnly
-                : blink::kWebRTCIPHandlingDefault;
+                ? blink::mojom::WebRtcIpHandlingPolicy::kDefaultPublicInterfaceOnly
+                : blink::mojom::WebRtcIpHandlingPolicy::kDefault;
 #endif
     rendererPrefs->can_accept_load_drops = m_adapterClient->webEngineSettings()->testAttribute(QWebEngineSettings::NavigateOnDropEnabled);
 
@@ -693,9 +693,11 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
                         net::ERR_DISALLOWED_URL_SCHEME));
             return;
         }
-        params.post_data = network::ResourceRequestBody::CreateFromBytes(
-                    (const char*)request.postData().constData(),
-                    request.postData().length());
+        {
+            std::vector<uint8_t> data(request.postData().length());
+            memcpy(data.data(), request.postData().constData(), data.size());
+            params.post_data = network::ResourceRequestBody::CreateFromBytes(std::move(data));
+        }
         break;
     }
 

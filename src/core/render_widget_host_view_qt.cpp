@@ -228,7 +228,8 @@ void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterC
                                                             m_adapterClient = nullptr; });
 }
 
-void RenderWidgetHostViewQt::OnInputEventAck(blink::mojom::InputEventResultSource,
+void RenderWidgetHostViewQt::OnInputEventAck(const content::RenderWidgetHost &,
+                                             blink::mojom::InputEventResultSource,
                                              blink::mojom::InputEventResultState state,
                                              const blink::WebInputEvent &event)
 {
@@ -386,8 +387,6 @@ void RenderWidgetHostViewQt::UpdateBackgroundColor()
 
     m_delegate->setClearColor(toQt(color));
 
-    bool opaque = SkColorGetA(color) == SK_AlphaOPAQUE;
-    m_rootLayer->SetFillsBoundsOpaquely(opaque);
     m_rootLayer->SetColor(color);
     m_uiCompositor->SetBackgroundColor(color);
 
@@ -439,32 +438,8 @@ bool RenderWidgetHostViewQt::updateCursorFromResource(ui::mojom::CursorType type
     hotX = hotspot.x();
     hotY = hotspot.y();
 #elif defined(Q_OS_MACOS)
-    // See chromium/content/common/cursors/webcursor_mac.mm
-    switch (type) {
-    case ui::mojom::CursorType::kVerticalText:
-        // TODO: [NSCursor IBeamCursorForVerticalLayout]
-        return false;
-    case ui::mojom::CursorType::kCell:
-        resourceId = IDR_CELL_CURSOR;
-        hotX = 7;
-        hotY = 7;
-        break;
-    case ui::mojom::CursorType::kContextMenu:
-        // TODO: [NSCursor contextualMenuCursor]
-        return false;
-    case ui::mojom::CursorType::kZoomIn:
-        resourceId = IDR_ZOOMIN_CURSOR;
-        hotX = 7;
-        hotY = 7;
-        break;
-    case ui::mojom::CursorType::kZoomOut:
-        resourceId = IDR_ZOOMOUT_CURSOR;
-        hotX = 7;
-        hotY = 7;
-        break;
-    default:
-        Q_UNREACHABLE_RETURN(false);
-    }
+    // FIXME: find a way to reimplement
+    return false;
 #else
     Q_UNREACHABLE_RETURN(false);
 #endif
