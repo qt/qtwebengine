@@ -161,6 +161,9 @@ void QQuickWebEngineProfilePrototype::setHttpCacheType(
             Cookies marked persistent are saved to and restored from disk, whereas session cookies
             are only stored to disk for crash recovery.
             This is the default value for non off-the-record profile with storageName.
+    \value  WebEngineProfile.OnlyPersistentCookies
+            Cookies marked persistent are saved to and restored from disk, whereas session cookies
+            are never stored to the disk, even for crash recovery.
     \value  WebEngineProfile.ForcePersistentCookies
             Both session and persistent cookies are saved to and restored from disk.
 */

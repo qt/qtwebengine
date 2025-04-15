@@ -61,7 +61,8 @@ public:
     enum PersistentCookiesPolicy {
         NoPersistentCookies = 0,
         AllowPersistentCookies,
-        ForcePersistentCookies
+        ForcePersistentCookies,
+        OnlyPersistentCookies,
     };
 
     enum VisitedLinksPolicy {

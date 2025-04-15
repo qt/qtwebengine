@@ -164,10 +164,16 @@ void tst_QWebEngineProfileBuilder::persistentCookiesPolicy_data()
             << QWebEngineProfile::NoPersistentCookies << true;
     QTest::newRow("allowPersistentCookiesOffTheRecord")
             << QWebEngineProfile::AllowPersistentCookies << true;
+    QTest::newRow("onlyPersistentCookiesOffTheRecord")
+            << QWebEngineProfile::OnlyPersistentCookies << true;
+    QTest::newRow("forcePersistentCookiesOffTheRecord")
+            << QWebEngineProfile::ForcePersistentCookies << true;
     QTest::newRow("forcePersistentCookiesDiskBasedProfile")
             << QWebEngineProfile::ForcePersistentCookies << false;
     QTest::newRow("allowPersistentCookiesDiskBasedProfile")
             << QWebEngineProfile::AllowPersistentCookies << false;
+    QTest::newRow("onlyPersistentCookiesDiskBasedProfile")
+            << QWebEngineProfile::OnlyPersistentCookies << false;
     QTest::newRow("noPersistentCookiesDiskBasedProfile")
             << QWebEngineProfile::NoPersistentCookies << false;
 }

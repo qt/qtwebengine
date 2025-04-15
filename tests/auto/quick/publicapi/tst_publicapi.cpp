@@ -437,6 +437,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineProfile.MemoryHttpCache --> HttpCacheType"
     << "QQuickWebEngineProfile.NoCache --> HttpCacheType"
     << "QQuickWebEngineProfile.NoPersistentCookies --> PersistentCookiesPolicy"
+    << "QQuickWebEngineProfile.OnlyPersistentCookies --> PersistentCookiesPolicy"
     << "QQuickWebEngineProfile.PersistentPermissionsPolicy.AskEveryTime --> PersistentPermissionsPolicy"
     << "QQuickWebEngineProfile.PersistentPermissionsPolicy.StoreInMemory --> PersistentPermissionsPolicy"
     << "QQuickWebEngineProfile.PersistentPermissionsPolicy.StoreOnDisk --> PersistentPermissionsPolicy"

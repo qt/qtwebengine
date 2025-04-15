@@ -103,6 +103,9 @@ using QtWebEngineCore::ProfileAdapter;
     \value  AllowPersistentCookies
             Cookies marked persistent are saved to and restored from disk, whereas session cookies
             are only stored to disk for crash recovery. This is the default setting.
+    \value  OnlyPersistentCookies
+            Cookies marked persistent are saved to and restored from disk, whereas session cookies
+            are not stored to disk, even for crash recovery.
     \value  ForcePersistentCookies
             Both session and persistent cookies are saved to and restored from disk.
 */

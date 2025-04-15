@@ -48,7 +48,8 @@ public:
     enum PersistentCookiesPolicy {
         NoPersistentCookies,
         AllowPersistentCookies,
-        ForcePersistentCookies
+        ForcePersistentCookies,
+        OnlyPersistentCookies,
     };
     Q_ENUM(PersistentCookiesPolicy)
 

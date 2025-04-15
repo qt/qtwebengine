@@ -224,7 +224,8 @@ void ProfileIODataQt::ConfigureNetworkContextParams(bool in_memory,
         if (m_persistentCookiesPolicy != ProfileAdapter::NoPersistentCookies) {
             network_context_params->file_paths->cookie_database_name = base::FilePath::FromASCII("Cookies");
             network_context_params->restore_old_session_cookies = m_persistentCookiesPolicy == ProfileAdapter::ForcePersistentCookies;
-            network_context_params->persist_session_cookies = m_persistentCookiesPolicy != ProfileAdapter::NoPersistentCookies;
+            network_context_params->persist_session_cookies =
+                    m_persistentCookiesPolicy != ProfileAdapter::OnlyPersistentCookies;
         }
     }
 
