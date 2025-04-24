@@ -9,9 +9,11 @@
 #include "base/synchronization/lock.h"
 #include "components/embedder_support/origin_trials/origin_trial_policy_impl.h"
 #include "content/public/common/content_client.h"
+#include "gpu/config/gpu_info.h"
 #include "ui/base/layout.h"
 
 #include <memory>
+#include <optional>
 
 namespace QtWebEngineCore {
 
@@ -29,11 +31,13 @@ public:
     gfx::Image &GetNativeImageNamed(int resource_id) override;
     std::u16string GetLocalizedString(int message_id) override;
     blink::OriginTrialPolicy *GetOriginTrialPolicy() override;
+    void SetGpuInfo(const gpu::GPUInfo &gpu_info) override;
 
 private:
     // Used to lock when |origin_trial_policy_| is initialized.
     base::Lock origin_trial_policy_lock_;
     std::unique_ptr<embedder_support::OriginTrialPolicyImpl> origin_trial_policy_;
+    std::optional<gpu::GPUInfo> m_gpuInfo;
 };
 
 } // namespace QtWebEngineCore

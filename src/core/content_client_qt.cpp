@@ -3,6 +3,8 @@
 
 #include "content_client_qt.h"
 
+#include "compositor/compositor.h"
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
@@ -29,7 +31,7 @@
 #include <QLibraryInfo>
 #include <QString>
 #include <QSysInfo>
-
+#include <QThread>
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_paths.h"  // nogncheck
@@ -483,6 +485,106 @@ blink::OriginTrialPolicy *ContentClientQt::GetOriginTrialPolicy()
     if (!origin_trial_policy_)
         origin_trial_policy_ = std::make_unique<embedder_support::OriginTrialPolicyImpl>();
     return origin_trial_policy_.get();
+}
+
+void ContentClientQt::SetGpuInfo(const gpu::GPUInfo &gpu_info)
+{
+    if (Q_LIKELY(!lcWebEngineCompositor().isDebugEnabled()))
+        return;
+
+    base::CommandLine *commandLine = base::CommandLine::ForCurrentProcess();
+    const bool isBrowserProcess = !commandLine->HasSwitch(switches::kProcessType);
+    const bool isMainThread = QThread::currentThread() == qApp->thread();
+
+    // Limit this to the main thread of the browser process for now.
+    if (!isBrowserProcess || !isMainThread)
+        return;
+
+    if (!gpu_info.IsInitialized()) {
+        // This is probably not an issue but suspicious.
+        qCDebug(lcWebEngineCompositor, "Failed to initialize GPUInfo.");
+        return;
+    }
+
+    const gpu::GPUInfo::GPUDevice &primary = gpu_info.gpu;
+
+    // Do not print the info again if the device hasn't been changed.
+    // Change of the device is unexpected: we don't support or implement fallback yet.
+    // It is suspicious if the info is logged twice.
+    if (m_gpuInfo && m_gpuInfo->gpu.device_string == primary.device_string)
+        return;
+    m_gpuInfo = gpu_info;
+
+    auto deviceToString = [](const gpu::GPUInfo::GPUDevice &device) -> QString {
+        if (device.vendor_id == 0x0)
+            return "Disabled"_L1;
+
+        QString log;
+
+        // TODO: Factor vendor translation out from QtWebEngineCore::GPUInfo.
+        // Only name the most commmon desktop GPU hardware vendors for now.
+        switch (device.vendor_id) {
+        case 0x1002:
+            log += "AMD"_L1;
+            break;
+        case 0x10DE:
+            log += "Nvidia"_L1;
+            break;
+        case 0x8086:
+            log += "Intel"_L1;
+            break;
+        default:
+            log += "vendor id: 0x"_L1 + QString::number(device.vendor_id, 16);
+        }
+
+        log += ", device id: 0x"_L1 + QString::number(device.device_id, 16);
+
+        if (!device.driver_vendor.empty()) {
+            log += ", driver: "_L1 + QLatin1StringView(device.driver_vendor) + u' '
+                    + QLatin1StringView(device.driver_version);
+        }
+        log += ", system device id: 0x"_L1 + QString::number(device.system_device_id, 16);
+
+        log += ", preference: "_L1;
+        switch (device.gpu_preference) {
+        case gl::GpuPreference::kNone:
+            log += "None"_L1;
+            break;
+        case gl::GpuPreference::kDefault:
+            log += "Default"_L1;
+            break;
+        case gl::GpuPreference::kLowPower:
+            log += "LowPower"_L1;
+            break;
+        case gl::GpuPreference::kHighPerformance:
+            log += "HighPerformance"_L1;
+            break;
+        }
+
+        log += ", active: "_L1 + (device.active ? "yes"_L1 : "no"_L1);
+        return log;
+    };
+
+    QString log;
+    if (gpu_info.gl_vendor.empty() || gpu_info.gl_vendor == "Disabled") {
+        log += "ANGLE is disabled:\n"_L1;
+        log += "  GL Renderer: "_L1 + QLatin1StringView(gpu_info.gl_renderer) + u'\n';
+        log += "  Software Renderer: "_L1 + (primary.IsSoftwareRenderer() ? "yes"_L1 : "no"_L1)
+                + u'\n';
+        log += "  Primary GPU: "_L1 + deviceToString(primary) + u'\n';
+    } else {
+        log += QLatin1StringView(gpu_info.display_type) + " display is initialized:\n"_L1;
+        log += "  GL Renderer: "_L1 + QLatin1StringView(gpu_info.gl_renderer) + u'\n';
+        log += "  "_L1 + QString::number(gpu_info.GpuCount()) + " GPU(s) detected:\n"_L1;
+        log += "    "_L1 + deviceToString(primary) + u'\n';
+        for (auto &secondary : gpu_info.secondary_gpus)
+            log += "    "_L1 + deviceToString(secondary) + u'\n';
+
+        log += "  NVIDIA Optimus: "_L1 + (gpu_info.optimus ? "enabled"_L1 : "disabled"_L1) + u'\n';
+        log += "  AMD Switchable: "_L1 + (gpu_info.amd_switchable ? "enabled"_L1 : "disabled"_L1);
+    }
+
+    qCDebug(lcWebEngineCompositor, "%ls", qUtf16Printable(log));
 }
 
 } // namespace QtWebEngineCore
