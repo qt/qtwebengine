@@ -102,6 +102,15 @@ function(_qt_internal_deploy_webenginecore_binary)
         )
     endif()
 
+    if(NOT __QT_DEPLOY_SYSTEM_NAME STREQUAL "Windows")
+        qt6_deploy_qt_conf("${install_destination}/qt.conf"
+            PREFIX "${QT_DEPLOY_PREFIX}"
+            BIN_DIR "${QT_DEPLOY_BIN_DIR}"
+            LIB_DIR "${QT_DEPLOY_LIB_DIR}"
+            PLUGINS_DIR "${QT_DEPLOY_PLUGINS_DIR}"
+            QML_DIR "${QT_DEPLOY_QML_DIR}"
+        )
+    endif()
     # Checking for __QT_DEPLOY_MUST_ADJUST_PLUGINS_RPATH is a bit strange because this is not a
     # plugin, but it gives a single common way to detect when the rpath adjustment must be done,
     # because the lib dir is different than the original Qt configured one.
