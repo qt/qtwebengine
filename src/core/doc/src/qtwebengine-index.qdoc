@@ -27,6 +27,7 @@
         \li \l{Qt WebEngine Debugging and Profiling}
         \li \l{Deploying Qt WebEngine Applications}
         \li \l{Porting from Qt WebKit to Qt WebEngine}
+        \li \l{Qt WebEngine Security Considerations}
     \endlist
 
     \section1 Module Evolution
