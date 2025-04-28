@@ -1,0 +1,68 @@
+// Copyright (C) 2025 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qtwebengine-security.html
+    \title Qt WebEngine Security Considerations
+    \ingroup security-considerations
+    \brief Overview of security topics in Qt WebEngine
+
+    This page covers security issues for Qt WebEngine users. As part of Qt,
+    Qt WebEngine follows Qt's security policies. Refer to \l{Security in Qt}
+    for policy information.
+
+    \section1 Chromium Releases and Security Fixes
+
+    Qt WebEngine tracks the release schedule of Chromium. The latest Qt
+    WebEngine version includes the security fixes released in Chromium.
+    For the precise version numbers and released fixes, visit the wiki page
+    at \l{https://wiki.qt.io/QtWebEngine/ChromiumVersions}
+    {QtWebEngine/ChromiumVersions}.
+
+    For more information about how Qt WebEngine Core implements Chromium
+    features and specific versions, read the
+    \l{Qt WebEngine Core Module} section. It is also beneficial to be familiar
+    with Chromium's
+    \l{https://www.chromium.org/Home/chromium-security/}{Security Policy}.
+
+    \section1 Security Topics for Qt WebEngine Applications
+
+    Be aware of handling untrusted data and sensitive data within your
+    application. Data such as images, user information, and system
+    information can be loaded from remote resources, from within the
+    application, or locally on the system. Take care how you process untrusted
+    data in a secure way without degrading performance and exposing sensitive
+    information. Even revealing filenames and directory paths can expose
+    sensitive data such as system information and database structure.
+
+    Qt WebEngine and Chromium have mechanisms such as the
+    \e{same-origin policy} to minimize the risk of loading from unknown sources.
+    Many websites trick users with dialogues and by mimicking popular websites.
+    With \l{Qt WebEngine}, it is possible to simply load and show trusted data
+    to end-users and lock the interface to prevent unwanted input. Your user
+    interface should be robust to handle erroneous inputs and unexpected events.
+
+    A serious security issue for web applications is
+    \e{cross-site scripting} (XSS). The attack involves executing a piece of
+    code that can trick a web application to generate malicious HTML content to
+    gain the trust of your user. For example, your application unknowingly
+    takes malicious code to generate a dialog asking for user credentials.
+    Those credentials are then sent to an external service which can lead to
+    breached accounts. Because it is your application that generates the
+    dialog, users trust the malicious action. Be careful parsing URLs and make
+    sure that nobody can misuse your user interface.
+
+    Refer to \l{Handling Untrusted Data} for additional information about risks
+    and mitigation.
+
+    \section1 Configure Qt WebEngine Settings
+
+    It is good practice to enforce \e zero-trust policies that restrict access
+    by default. Configuring your Qt WebEngine deployment can help restrict user
+    and remote execution. \l QWebEngineSettings has attributes that can disable
+    JavaScript execution, disable auto-loading of images, or other mechanisms
+    to prevent unintended usage. For example, disabling
+    \l QWebEngineSettings::LocalContentCanAccessFileUrls can create a sandbox
+    environment similar to Chrome or Firefox.
+
+*/
