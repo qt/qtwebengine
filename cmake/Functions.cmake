@@ -444,6 +444,7 @@ function(add_gn_command)
             run_${arg_MODULE}_GnReady
             "${WEBENGINE_ROOT_SOURCE_DIR}/src/${arg_MODULE}/configure/BUILD.root.gn.in"
             "${WEBENGINE_ROOT_SOURCE_DIR}/cmake/QtGnGen.cmake"
+            "${WEBENGINE_ROOT_SOURCE_DIR}/cmake/QtBuildGnHelpers.cmake"
     )
     add_custom_target(runGn_${arg_GN_TARGET}
         DEPENDS #TODO this is fixed in cmake 3.20 so we could simply use GN_TARGET and not create new one

@@ -41,6 +41,25 @@ function(recover_framework_build includeDirs compilerFlags)
     set(${compilerFlags} ${${compilerFlags}} ${frameworkDirs} PARENT_SCOPE)
 endfunction()
 
+# CMake uses a "SHELL:" prefix to group options and avoid unwanted option de-duplication; we
+# need to strip these after manually de-duplicating, but before passing to GN.
+# See https://cmake.org/cmake/help/latest/command/target_compile_options.html#option-de-duplication
+function(transform_cmake_compile_options_for_gn out_var compile_options_var)
+    get_property(flags_var DIRECTORY PROPERTY ${compile_options_var})
+
+    list(REMOVE_DUPLICATES flags_var)
+    set(out_flags "")
+    foreach(elem IN LISTS flags_var)
+        if(elem MATCHES "^SHELL:(.*)")
+            # Split on spaces and enclose each argument with quotes.
+            string(REPLACE " " "\";\"" elem "${CMAKE_MATCH_1}")
+        endif()
+        list(APPEND out_flags "\"${elem}\"")
+    endforeach()
+
+    set(${out_var} ${out_flags} PARENT_SCOPE)
+endfunction()
+
 function(configure_gn_target source_dir in_file_path out_file_path path_mode)
 
     # GN_SOURCES GN_HEADERS
@@ -76,18 +95,10 @@ function(configure_gn_target source_dir in_file_path out_file_path path_mode)
     set(GN_ARGS_MOC_BIN \"${moc_file_path}\")
 
     # GN_CFLAGS_CC
-    get_property(gn_cxx_compile_options DIRECTORY PROPERTY GN_CXX_COMPILE_OPTIONS)
-    foreach(gn_cxx_compile_option ${gn_cxx_compile_options})
-        list(APPEND GN_CFLAGS_CC \"${gn_cxx_compile_option}\")
-    endforeach()
-    list(REMOVE_DUPLICATES GN_CFLAGS_CC)
+    transform_cmake_compile_options_for_gn(GN_CFLAGS_CC GN_CXX_COMPILE_OPTIONS)
 
     # GN_CFLAGS_C
-    get_property(gn_c_compile_options DIRECTORY PROPERTY GN_C_COMPILE_OPTIONS)
-    foreach(gn_c_compile_option ${gn_c_compile_options})
-        list(APPEND GN_CFLAGS_C \"${gn_c_compile_option}\")
-    endforeach()
-    list(REMOVE_DUPLICATES GN_CFLAGS_C)
+    transform_cmake_compile_options_for_gn(GN_CFLAGS_C GN_C_COMPILE_OPTIONS)
 
     # GN_SOURCE_ROOT
     get_filename_component(GN_SOURCE_ROOT "${source_dir}" ${path_mode})

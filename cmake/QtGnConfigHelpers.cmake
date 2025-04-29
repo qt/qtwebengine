@@ -62,7 +62,7 @@ endfunction()
 function(create_c_config cmake_target arch config_file_name)
     file(GENERATE
           OUTPUT $<CONFIG>/${arch}/${config_file_name}
-          CONTENT "set(GN_C_COMPILE_OPTIONS $<TARGET_PROPERTY:COMPILE_OPTIONS>)"
+          CONTENT "set(GN_C_COMPILE_OPTIONS \"$<TARGET_PROPERTY:COMPILE_OPTIONS>\")"
           CONDITION $<COMPILE_LANGUAGE:C>
           TARGET ${cmake_target})
 endfunction()
