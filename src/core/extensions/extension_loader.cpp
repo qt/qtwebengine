@@ -82,6 +82,11 @@ void ExtensionLoader::addExtension(scoped_refptr<const Extension> extension)
         m_extensionRegistry->AddDisabled(extension);
 }
 
+void ExtensionLoader::reloadExtension(const std::string &id)
+{
+    m_extensionRegistrar.ReloadExtension(id, ExtensionRegistrar::LoadErrorBehavior::kQuiet);
+}
+
 void ExtensionLoader::loadExtensionFinished(const LoadingInfo &loadingInfo)
 {
     if (!loadingInfo.error.empty()) {

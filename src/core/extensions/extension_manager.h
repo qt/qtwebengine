@@ -45,6 +45,7 @@ public:
     void setExtensionEnabled(const std::string &id, bool enabled);
     void unloadExtension(const std::string &id);
     void uninstallExtension(const std::string &id);
+    void reloadExtension(const std::string &id);
 
     bool isExtensionEnabled(const std::string &id) const;
     bool isExtensionLoaded(const std::string &id) const;

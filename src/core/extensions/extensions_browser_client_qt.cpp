@@ -37,6 +37,7 @@
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#include "api/runtime_api_delegate_qt.h"
 #include "component_extension_resource_manager_qt.h"
 #include "extension_system_factory_qt.h"
 #include "extension_web_contents_observer_qt.h"
@@ -459,9 +460,7 @@ void ExtensionsBrowserClientQt::RegisterBrowserInterfaceBindersForFrame(
 
 std::unique_ptr<RuntimeAPIDelegate> ExtensionsBrowserClientQt::CreateRuntimeAPIDelegate(content::BrowserContext *context) const
 {
-    // TODO(extensions): Implement to support Apps.
-    NOTREACHED();
-    return std::unique_ptr<RuntimeAPIDelegate>();
+    return std::make_unique<RuntimeAPIDelegateQt>(context);
 }
 
 const ComponentExtensionResourceManager *ExtensionsBrowserClientQt::GetComponentExtensionResourceManager()

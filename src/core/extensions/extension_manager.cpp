@@ -104,6 +104,11 @@ void ExtensionManager::uninstallExtension(const std::string &id)
     }
 }
 
+void ExtensionManager::reloadExtension(const std::string &id)
+{
+    m_loader->reloadExtension(id);
+}
+
 bool ExtensionManager::isExtensionEnabled(const std::string &id) const
 {
     return m_loader->isExtensionEnabled(id);

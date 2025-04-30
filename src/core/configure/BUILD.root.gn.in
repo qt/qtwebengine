@@ -455,6 +455,8 @@ source_set("qtwebengine_sources") {
       "//chrome/common/extensions/permissions/chrome_permission_message_rules.h",
       "//extensions/browser/zipfile_installer.cc",
       "//extensions/browser/zipfile_installer.h",
+      "//components/update_client/update_query_params.cc",
+      "//components/update_client/update_query_params.h",
       "//components/services/unzip/unzipper_impl.cc",
       "//components/services/unzip/unzipper_impl.h",
       "//ui/webui/mojo_web_ui_controller.cc",

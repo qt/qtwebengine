@@ -43,6 +43,7 @@ public:
 
     void loadExtension(const base::FilePath &path);
     void unloadExtension(const std::string &id);
+    void reloadExtension(const std::string &id);
 
     void addExtension(scoped_refptr<const extensions::Extension> extension);
     extensions::ExtensionSet extensions() const;
