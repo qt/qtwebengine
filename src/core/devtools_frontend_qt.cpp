@@ -26,7 +26,7 @@
 using namespace QtWebEngineCore;
 
 namespace {
-static const char kScreencastEnabled[] = "screencastEnabled";
+static const char kScreencastEnabled[] = "screencast-enabled";
 
 static std::string GetFrontendURL()
 {
