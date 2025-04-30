@@ -275,6 +275,7 @@ foreach(arch ${archs})
             SOURCES
                 common/extensions/extensions_api_provider_qt.cpp common/extensions/extensions_api_provider_qt.h
                 common/extensions/extensions_client_qt.cpp common/extensions/extensions_client_qt.h
+                extensions/api/display_info_provider_qt.cpp extensions/api/display_info_provider_qt.h
                 extensions/api/runtime_api_delegate_qt.cpp extensions/api/runtime_api_delegate_qt.h
                 extensions/component_extension_resource_manager_qt.cpp extensions/component_extension_resource_manager_qt.h
                 extensions/extension_action_manager.cpp extensions/extension_action_manager.h

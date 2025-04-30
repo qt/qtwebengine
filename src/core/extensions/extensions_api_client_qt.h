@@ -13,6 +13,7 @@
 
 namespace extensions {
 
+class DisplayInfoProvider;
 class FileSystemDelegate;
 class MessagingDelegate;
 
@@ -30,6 +31,7 @@ public:
     CreateMimeHandlerViewGuestDelegate(MimeHandlerViewGuest *guest) const override;
     void AttachWebContentsHelpers(content::WebContents *web_contents) const override;
     MessagingDelegate *GetMessagingDelegate() override;
+    std::unique_ptr<DisplayInfoProvider> CreateDisplayInfoProvider() const override;
 
 private:
     std::unique_ptr<FileSystemDelegate> m_fileSystemDelegate;
