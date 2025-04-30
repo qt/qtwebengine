@@ -35,6 +35,7 @@
 #include "ui/display/screen.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "components/storage_monitor/storage_monitor.h"
 #include "extensions/browser/api/messaging/message_service.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extensions_client.h"
@@ -235,6 +236,7 @@ int BrowserMainPartsQt::PreMainMessageLoopRun()
     extensions::ExtensionsClient::Set(new extensions::ExtensionsClientQt());
     extensions::ExtensionsBrowserClient::Set(new extensions::ExtensionsBrowserClientQt());
     extensions::ExtensionSystemFactoryQt::GetInstance();
+    storage_monitor::StorageMonitor::Create();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
     content::PluginService *plugin_service = content::PluginService::GetInstance();
