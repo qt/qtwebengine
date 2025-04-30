@@ -107,6 +107,7 @@ public:
     void DidStartServiceWorkerContextOnWorkerThread(int64_t service_worker_version_id,
                                                     const GURL &service_worker_scope,
                                                     const GURL &script_url) override;
+    bool AllowScriptExtensionForServiceWorker(const url::Origin &script_origin) override;
 #endif
 
 private:

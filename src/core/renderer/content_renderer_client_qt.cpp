@@ -507,6 +507,12 @@ void ContentRendererClientQt::DidStartServiceWorkerContextOnWorkerThread(
             ->DidStartServiceWorkerContextOnWorkerThread(service_worker_version_id,
                                                          service_worker_scope, script_url);
 }
+
+bool ContentRendererClientQt::AllowScriptExtensionForServiceWorker(const url::Origin &script_origin)
+{
+    return script_origin.scheme() == extensions::kExtensionScheme;
+}
+
 #endif // QT_CONFIG(webengine_extensions)
 
 void ContentRendererClientQt::GetInterface(const std::string &interface_name, mojo::ScopedMessagePipeHandle interface_pipe)
