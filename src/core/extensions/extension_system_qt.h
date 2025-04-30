@@ -31,6 +31,7 @@ namespace extensions {
 
 class ExtensionRegistry;
 class InfoMap;
+class ManagementPolicy;
 class RendererStartupHelper;
 class ServiceWorkerManager;
 class StateStoreNotificationObserver;
@@ -87,6 +88,7 @@ private:
     std::unique_ptr<ServiceWorkerManager> service_worker_manager_;
     std::unique_ptr<QuotaService> quota_service_;
     std::unique_ptr<UserScriptManager> user_script_manager_;
+    std::unique_ptr<ManagementPolicy> management_policy_;
 
     // For verifying the contents of extensions read from disk.
     scoped_refptr<ContentVerifier> content_verifier_;

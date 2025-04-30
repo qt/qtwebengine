@@ -119,6 +119,12 @@ bool ExtensionManager::isExtensionLoaded(const std::string &id) const
     return m_loader->isExtensionLoaded(id);
 }
 
+bool ExtensionManager::isExtensionInstalled(const std::string &id) const
+{
+    scoped_refptr<const Extension> extension = m_loader->getExtensionById(id);
+    return QFileInfo(toQt(extension->path())).dir() == QDir(installDirectory());
+}
+
 QUrl ExtensionManager::actionPopupUrl(const std::string &id) const
 {
     scoped_refptr<const Extension> extension = m_loader->getExtensionById(id);

@@ -49,6 +49,7 @@ public:
 
     bool isExtensionEnabled(const std::string &id) const;
     bool isExtensionLoaded(const std::string &id) const;
+    bool isExtensionInstalled(const std::string &id) const;
     QUrl actionPopupUrl(const std::string &id) const;
     QString installDirectory() const;
     QList<QWebEngineExtensionInfo> extensions();

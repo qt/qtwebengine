@@ -32,6 +32,7 @@ public:
     void AttachWebContentsHelpers(content::WebContents *web_contents) const override;
     MessagingDelegate *GetMessagingDelegate() override;
     std::unique_ptr<DisplayInfoProvider> CreateDisplayInfoProvider() const override;
+    ManagementAPIDelegate *CreateManagementAPIDelegate() const override;
 
 private:
     std::unique_ptr<FileSystemDelegate> m_fileSystemDelegate;
