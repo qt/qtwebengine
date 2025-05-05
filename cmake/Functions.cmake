@@ -308,7 +308,10 @@ function(add_ninja_command)
     )
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    string(REPLACE " " ";" NINJAFLAGS "$ENV{NINJAFLAGS}")
+    string(REPLACE " " ";" ninja_flags "$ENV{NINJAFLAGS}")
+    if(CMAKE_VERBOSE_MAKEFILE)
+        list(APPEND ninja_flags -v)
+    endif()
     list(TRANSFORM arg_OUTPUT PREPEND "${arg_BUILDDIR}/")
     list(TRANSFORM arg_BYPRODUCTS PREPEND "${arg_BUILDDIR}/")
     add_custom_command(
@@ -318,7 +321,7 @@ function(add_ninja_command)
         BYPRODUCTS ${arg_BYPRODUCTS}
         COMMENT "Running ninja for ${arg_TARGET} in ${arg_BUILDDIR}"
         COMMAND Ninja::ninja
-            ${NINJAFLAGS}
+            ${ninja_flags}
             -C ${arg_BUILDDIR}
             ${arg_TARGET}
         USES_TERMINAL
@@ -542,6 +545,7 @@ macro(qt_webengine_externalproject_add)
                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                    -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>
                    -DCMAKE_OSX_ARCHITECTURES=${OSX_ARCH_STR}
+                   -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE}
                    -DWEBENGINE_ROOT_BUILD_DIR=${PROJECT_BINARY_DIR}
                    -DQT_ALLOW_SYMLINK_IN_PATHS=${QT_ALLOW_SYMLINK_IN_PATHS}
                    -DPython3_EXECUTABLE=${Python3_EXECUTABLE}

@@ -59,6 +59,11 @@ if(GCC_LEGACY_SUPPORT)
     set(GN_GCC_LEGACY_SUPPORT --gcc-legacy-support)
 endif()
 
+string(REPLACE " " ";" ninja_flags "$ENV{NINJAFLAGS}")
+if(CMAKE_VERBOSE_MAKEFILE)
+    list(APPEND ninja_flags -v)
+endif()
+
 list(JOIN CMAKE_OSX_ARCHITECTURES "$<COMMA>" OSX_ARCH)
 add_custom_command(
     OUTPUT ${GN_EXECUTABLE}
@@ -79,7 +84,7 @@ add_custom_command(
         $<$<AND:$<PLATFORM_ID:Darwin>,$<BOOL:${OSX_ARCH}>>:--osx-architectures>
         $<$<AND:$<PLATFORM_ID:Darwin>,$<BOOL:${OSX_ARCH}>>:${OSX_ARCH}>
         ${GN_GCC_LEGACY_SUPPORT}
-    COMMAND Ninja::ninja -C ${GN_BINARY_DIR}/$<CONFIG> ${GN_EXECUTABLE}
+    COMMAND Ninja::ninja ${ninja_flags} -C ${GN_BINARY_DIR}/$<CONFIG> ${GN_EXECUTABLE}
     VERBATIM
     USES_TERMINAL
     COMMAND_EXPAND_LISTS
